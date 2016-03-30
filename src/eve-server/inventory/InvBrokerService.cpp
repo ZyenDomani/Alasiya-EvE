@@ -174,8 +174,7 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
 		"FROM "
 		"  entity e "
 		"WHERE "
-		"  locationID=%d AND "
-		"  flag=5", itemID))
+		"  locationID=%d", itemID))
 	{
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
 		return NULL;

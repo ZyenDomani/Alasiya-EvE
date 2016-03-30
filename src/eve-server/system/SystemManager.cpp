@@ -70,29 +70,36 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)//, ItemData ida
 }
 
 SystemManager::~SystemManager() {
-    // gotta figure out how to remove items and bubbles (bubbles destructor isnt working)
-    //Inventory::DeleteContents(m_services.item_factory);
-    SystemEntity* pSE = nullptr;
-    std::map<uint32, SystemEntity *>::iterator cur = m_entities.begin();
-    while (cur != m_entities.end()) {
-        pSE = cur->second;
-        cur++;
-        if (!pSE) continue;
-
-		// If entity is an NPC, save its data to DB for persietence across server restarts:
-        if (pSE->IsNPC())
-            pSE->CastToNPC()->SaveNPC();
-        //we mustn't delete clients because they are owned by the entity list.
-        if (!pSE->IsClient())
-            SafeDelete(pSE);
+    /*
+    if (m_players || !m_clients.empty()) {
+        _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %u clients in mmaps", GetID(), m_players, m_clients.size());
+        for (auto cur : m_clients)
+            sEntityList.Remove(cur.second);
     }
+    for (auto cur : m_entities) {
+        if (IsStation(cur.first))
+            sEntityList.RemoveStation(cur.first);
+        else if (cur.second->IsNPCSE())
+            cur.second->GetNPCSE()->SaveNPC();
+        else if (cur.second->IsAsteroidSE())
+            cur.second->GetSelf()->SaveItem();
+
+        //itemFactory().RemoveItem(cur.first);
+
+        // this is a failsafe, as there should be no piloted ships in this system now
+        if (cur.second->HasPilot()) {
+            Client* pClient = cur.second->GetPilot();
+            SafeDelete(pClient);
+        }
+        SafeDelete(cur.second);
+    } */
 
     m_entities.clear();
-    // this must be deleted AFTER all the NPCs which it controls
-    SafeDelete(m_spawnManager);
+    //m_clients.clear();
 
-    bubbles.clear();
-    m_systems--;
+    //SafeDelete(m_anomMgr);
+    //SafeDelete(m_beltMgr);
+    //SafeDelete(m_spawnMgr);
 }
 
 static const int num_hack_sentry_locs = 8;
