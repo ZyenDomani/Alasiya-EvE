@@ -1,0 +1,113 @@
+/*
+    ------------------------------------------------------------------------------------
+    LICENSE:
+    ------------------------------------------------------------------------------------
+    This file is part of EVEmu: EVE Online Server Emulator
+    Copyright 2006 - 2011 The EVEmu Team
+    For the latest information visit http://evemu.org
+    ------------------------------------------------------------------------------------
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any later
+    version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+    http://www.gnu.org/copyleft/lesser.txt.
+    ------------------------------------------------------------------------------------
+    Author:        Zhur
+    Updates:    Allan
+*/
+
+#ifndef __SYSTEMDB_H_INCL__
+#define __SYSTEMDB_H_INCL__
+
+#include "ServiceDB.h"
+
+class DBSystemEntity {
+public:
+    uint32 itemID;
+    uint32 typeID;
+    uint32 groupID;
+    uint32 categoryID;  //TODO populate this for simple system entities. (recently added - 1Dec15)
+    uint32 orbitID;
+    GPoint position;
+    double radius;
+    double security;
+    std::string itemName;
+};
+
+class DBSystemDynamicEntity {
+public:
+    uint32 itemID;
+    std::string itemName;
+    uint32 typeID;
+    uint32 groupID;
+    uint32 ownerID;
+    uint32 locationID;
+    uint32 flag;
+    uint32 categoryID;
+    uint32 corporationID;
+    uint32 allianceID;
+    double x;
+    double y;
+    double z;
+};
+
+class DBWreckEntity {
+public:
+    uint32 itemID;
+    std::string itemName;
+    uint32 typeID;
+    uint32 groupID;
+    uint32 ownerID;
+    uint32 locationID;
+    uint32 flag;
+    uint32 categoryID;
+    uint32 corporationID;
+    uint32 allianceID;
+    double x;
+    double y;
+    double z;
+};
+
+struct DBGPointEntity {
+	uint8 idx;
+    uint32 itemID;
+    double radius;
+	GPoint position;
+	double x;
+	double y;
+	double z;
+};
+
+class SystemDB
+: public ServiceDB
+{
+public:
+    bool LoadSystemEntities(uint32 systemID, std::vector<DBSystemEntity>& into);
+    bool LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into);
+    static bool GetWrecksToTypes(DBQueryResult& res);
+    static void GetLootGroups(DBQueryResult& res);
+    static void GetLootGroupTypes(DBQueryResult& res);
+    static void GetSalvageGroups(DBQueryResult& res);
+    static uint32 GetObjectLocationID( uint32 itemID );
+    double GetObjectRadius( uint32 typeID );
+
+    PyObject* ListFactions();
+    PyObject* ListJumps(uint32);
+
+    void GetPlanets(uint32 systemID, std::vector<DBGPointEntity>* planetIDs, uint8* total);
+	void GetMoons(uint32 systemID, std::vector<DBGPointEntity>* moonIDs, uint8* total);
+    void GetGates(uint32 systemID, std::vector<DBGPointEntity>* gateIDs, uint8* total);
+    void GetBelts(uint32 systemID, std::vector<DBGPointEntity>* beltIDs, uint8* total);
+
+};
+
+
+#endif

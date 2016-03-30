@@ -1,0 +1,333 @@
+/*
+    ------------------------------------------------------------------------------------
+    LICENSE:
+    ------------------------------------------------------------------------------------
+    This file is part of EVEmu: EVE Online Server Emulator
+    Copyright 2006 - 2011 The EVEmu Team
+    For the latest information visit http://evemu.org
+    ------------------------------------------------------------------------------------
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any later
+    version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+    http://www.gnu.org/copyleft/lesser.txt.
+    ------------------------------------------------------------------------------------
+    Author:     Zhur
+*/
+#ifndef EVE_INVENTORY_ITEM_H
+#define EVE_INVENTORY_ITEM_H
+
+#include "inventory/EVEAttributeMgr.h"
+#include "inventory/ItemFactory.h"
+#include "inventory/ItemType.h"
+
+class PyRep;
+class PyDict;
+class PyObject;
+
+class ServiceDB;
+
+class ItemContainer;
+class Rsp_CommonGetInfo_Entry;
+class ItemRowset_Row;
+
+/*
+ * NOTE:
+ * this object system should somehow be merged with the SystemEntity stuff
+ * and class hierarchy built from it (Client, NPC, etc..) in the system manager...
+ * however, the creation and destruction time logic is why it has not been done.
+ *
+ *  NOTE:
+ * this system cannot and should not be merged with SE class, as not all Items are SE.
+ * doing so would cause unnecessiary SEs to be created for items that are NOT SE.
+ * keeping this as a seperate class is cleaner and better for creation and destruction
+ * for both base and derived classes.       -allan 23.2.16
+ */
+
+
+/**
+ * Class which maintains generic item.
+ */
+class InventoryItem
+: public RefObject
+{
+public:
+    /**
+     * Loads item from DB.
+     *
+     * @param[in] factory
+     * @param[in] itemID ID of item to load.
+     * @return Pointer to InventoryItem object; NULL if failed.
+     */
+    static InventoryItemRef Load(ItemFactory &factory, uint32 itemID);
+    /**
+     * Spawns new item.
+     *
+     * @param[in] factory
+     * @param[in] data Item data of item to spawn.
+     * @return Pointer to InventoryItem object; NULL if failed.
+     */
+    static InventoryItemRef Spawn(ItemFactory &factory, ItemData &data);
+
+    /*
+     * Primary public interface:
+     */
+    void Rename(const char *to);
+    void ChangeOwner(uint32 new_owner, bool notify=true);
+    void Move(uint32 location, EVEItemFlags flag=flagAutoFit, bool notify=true);
+    void MoveInto(Inventory &new_home, EVEItemFlags flag=flagAutoFit, bool notify=true);
+    bool ChangeSingleton(bool singleton, bool notify=true);
+    bool AlterQuantity(int32 qty_change, bool notify=true);
+    bool SetQuantity(uint32 qty_new, bool notify=true);
+    bool SetFlag(EVEItemFlags new_flag, bool notify=true);
+    void Relocate(const GPoint &pos);
+    void SetCustomInfo(const char *ci);
+    ItemFactory *GetItemFactory() { return &m_factory; };
+
+
+    /*
+     * Helper routines:
+     */
+    virtual void Delete();  //remove the item from the DB.
+    virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true);
+    virtual bool Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
+
+    void PutOnline() { SetOnline(true); }
+    void PutOffline() { SetOnline(false); }
+    bool IsOnline() { return (GetAttribute(AttrIsOnline).get_int() ? true : false); }
+
+    /*
+     * Primary public packet builders:
+     */
+    bool Populate(Rsp_CommonGetInfo_Entry &into);
+
+    //PyTuple* GetItemRow() const;
+    PyPackedRow* GetItemRow() const;
+    void GetItemRow( PyPackedRow* into ) const;
+
+    PyPackedRow* GetItemStatusRow() const;
+    void GetItemStatusRow( PyPackedRow* into ) const;
+
+    PyPackedRow* GetModuleStatusRow() const;
+    void GetModuleStatusRow( PyPackedRow* into ) const;
+
+    PyList* GetItemInfo();
+    PyObject* ItemGetInfo();
+
+    /*
+     * Public Fields:
+     */
+    uint32                  itemID() const      { return m_itemID; }
+    const std::string &     itemName() const    { return m_itemName; }
+    const ItemType &        type() const        { return m_type; }
+    uint32                  ownerID() const     { return m_ownerID; }
+    uint32                  locationID() const  { return m_locationID; }
+    EVEItemFlags            flag() const        { return m_flag; }
+    bool                    contraband() const  { return m_contraband; }
+    bool                    singleton() const   { return m_singleton; }
+    int32                   quantity() const    { return m_quantity; }
+    const GPoint &          position() const    { return m_position; }
+    const std::string &     customInfo() const  { return m_customInfo; }
+
+
+    // helper type methods
+    uint32                  typeID() const      { return type().id(); }
+    const ItemGroup &       group() const       { return type().group(); }
+    uint32                  groupID() const     { return type().groupID(); }
+    const ItemCategory &    category() const    { return type().category(); }
+    EVEItemCategories       categoryID() const  { return type().categoryID(); }
+
+
+    uint32 GetSaveTimerExpiry() { return m_saveTimerExpiryTime; };
+    void SetSaveTimerExpiry(uint32 saveTimerExpiry) { m_saveTimerExpiryTime = saveTimerExpiry; };
+    bool IsSaveTimerEnabled() { return m_saveTimer.Enabled(); };
+    void EnableSaveTimer() { m_saveTimer.Start( m_saveTimerExpiryTime * 1000, true ); };   // Ensure actual time is set in milliseconds
+    void DisableSaveTimer() { return m_saveTimer.Disable(); };
+    bool CheckSaveTimer(bool iReset = true) { return m_saveTimer.Check( iReset ); };
+
+    void SaveItem();  //save the item to the DB.
+
+    /************************************************************************/
+    /* start experimental new attribute system ( semi-operational )         */
+    /************************************************************************/
+protected:
+    AttributeMap mAttributeMap;
+    AttributeMap mDefaultAttributeMap;
+public:
+    bool SetAttribute(uint32 attributeID, int num, bool notify = true, bool shadow_copy_to_default_set = false);
+    bool SetAttribute(uint32 attributeID, uint32 num, bool notify = true, bool shadow_copy_to_default_set = false);
+    bool SetAttribute(uint32 attributeID, int64 num, bool notify = true, bool shadow_copy_to_default_set = false);
+    bool SetAttribute(uint32 attributeID, uint64 num, bool notify = true, bool shadow_copy_to_default_set = false);
+    bool SetAttribute(uint32 attributeID, double num, bool notify = true, bool shadow_copy_to_default_set = false);
+    bool SetAttribute(uint32 attributeID, EvilNumber num, bool notify = true, bool shadow_copy_to_default_set = false);
+
+    /**
+     * GetAttribute
+     * Retrieves the attribute of the entity.
+     * @param attributeID the attribute to check for.
+     * @returns the attribute value
+     * @note a value of zero is returned and an error message generated if the value is not found.
+     *
+     * @note this function should be used very infrequently and only for specific reasons
+     */
+    EvilNumber GetAttribute(const uint32 attributeID) const;
+    EvilNumber GetDefaultAttribute(const uint32 attributeID) const;
+    /**
+     * GetAttribute
+     * Retrieves the attribute of the entity.
+     * @note Should only be used when the attribute might not be defined.
+     * @param attributeID the attribute to check for.
+     * @param defaultValue a default value to return if no attribute is found.
+     * @returns the attribute value or the default value.
+     * @note does not generate an error message if the value is not found.
+     *
+     * @note this function should be used very infrequently and only for specific reasons
+     */
+    //EvilNumber GetAttribute(const uint32 attributeID, const uint32 defaultValue) const;
+
+    /**
+     * HasAttribute
+     * Checks to see if the entity has the specified attribute.
+     * value not altered if attribute not found.  This could be useful for preserving a default value.
+     * @param attributeID the attribute to check for.
+     * @returns true if this item has the attribute 'attributeID', false if it does not have this attribute
+     *
+     * returns true if this item has the attribute 'attributeID', false if it does not have this attribute
+     * @note this function should be used very infrequently and only for specific reasons
+     */
+    bool HasAttribute(const uint32 attributeID) const;
+    /**
+     * HasAttribute
+     * Checks to see if the entity has the specified attribute.
+     * @param attributeID the attribute to check for.
+     * @param value the location to return the attribute if it exist.
+     * @returns true if this item has the attribute 'attributeID', false if it does not have this attribute
+     *
+     * @note this function should be used very infrequently and only for specific reasons
+     */
+    bool HasAttribute(const uint32 attributeID, EvilNumber &value) const;
+
+    /**
+     * SaveAttributes
+     *
+     * save all the attributes from a InventoryItem.
+     *
+     * @note this should be incorporated into the normal save function and only save when things have changes.
+     */
+    bool SaveAttributes();
+
+    /*
+     * ResetAttribute
+     *
+     *@note this function will force reload the default value for the specified attribute
+     */
+    bool ResetAttribute(uint32 attrID, bool notify);
+
+    uint32              m_locationID; //where is this item located - Moving it to public so we can access it from the module manager (AlTahir, 12.11.2015)
+    /************************************************************************/
+    /* end experimental new attribute system                                */
+    /************************************************************************/
+
+protected:
+    InventoryItem(
+        ItemFactory &_factory,
+        uint32 _itemID,
+        // InventoryItem stuff:
+        const ItemType &_type,
+        const ItemData &_data);
+    virtual ~InventoryItem();
+
+    /*
+     * Internal helper routines:
+     */
+    // Template helper:
+    template<class _Ty>
+    static RefPtr<_Ty> Load(ItemFactory &factory, uint32 itemID)
+    {
+        // static load
+        RefPtr<_Ty> i = _Ty::template _Load<_Ty>( factory, itemID );
+        if( !i )
+            return RefPtr<_Ty>();
+
+        // dynamic load
+        if( !i->_Load() )
+            return RefPtr<_Ty>();
+
+        return i;
+    }
+
+    // Template loader:
+    template<class _Ty>
+    static RefPtr<_Ty> _Load(ItemFactory &factory, uint32 itemID)
+    {
+        // pull the item info
+        ItemData data;
+        if( !factory.db().GetItem( itemID, data ) )
+            return RefPtr<_Ty>();
+
+        // obtain type
+        const ItemType *type = factory.GetType( data.typeID );
+        if( type == NULL )
+            return RefPtr<_Ty>();
+
+        return _Ty::template _LoadItem<_Ty>( factory, itemID, *type, data );
+    }
+
+    // Actual loading stuff:
+    template<class _Ty>
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 itemID,
+        // InventoryItem stuff:
+        const ItemType &type, const ItemData &data
+    );
+
+    virtual bool _Load();
+
+	static InventoryItemRef LoadEntity(ItemFactory &factory, uint32 itemID, const ItemData &data);
+
+    static uint32 _Spawn(ItemFactory &factory,
+        // InventoryItem stuff:
+        ItemData &data
+    );
+
+	static uint32 _SpawnEntity(ItemFactory &factory,
+		// InventoryItem stuff:
+		ItemData &data
+	);
+
+    void SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const;
+    void SetOnline(bool online);
+
+    /*
+     * Member variables
+     */
+    // our save timer and our default countdown value
+    Timer m_saveTimer;
+    uint32 m_saveTimerExpiryTime;
+
+    // our factory
+    ItemFactory &       m_factory;
+
+    // our item data:
+    const uint32        m_itemID;
+    std::string         m_itemName;
+    const ItemType &    m_type;
+    uint32              m_ownerID;
+    EVEItemFlags        m_flag;
+    bool                m_contraband;
+    bool                m_singleton;
+    int32               m_quantity;
+    GPoint              m_position;
+    std::string         m_customInfo;
+
+	std::map<EVEItemFlags, double> m_cargoHoldsUsedVolumeByFlag;
+};
+
+#endif

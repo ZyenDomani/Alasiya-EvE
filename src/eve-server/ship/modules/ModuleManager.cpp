@@ -1,0 +1,1618 @@
+/*
+    ------------------------------------------------------------------------------------
+    LICENSE:
+    ------------------------------------------------------------------------------------
+    This file is part of EVEmu: EVE Online Server Emulator
+    Copyright 2006 - 2011 The EVEmu Team
+    For the latest information visit http://evemu.org
+    ------------------------------------------------------------------------------------
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any later
+    version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+    http://www.gnu.org/copyleft/lesser.txt.
+    ------------------------------------------------------------------------------------
+    Author:        Aknor Jaden, Luck
+    Updates:    Allan
+*/
+
+/* updates to implement basic memory management (remove naked 'new')  -allan 30Mar16 */
+
+#include "eve-server.h"
+
+#include "log/Basic_Log.h"
+#include "PyCallable.h"
+#include "EVEServerConfig.h"
+#include "Client.h"
+#include "ship/DestinyManager.h"
+#include "ship/Ship.h"
+#include "ship/modules/ModuleManager.h"
+#include "ship/modules/ModuleFactory.h"
+#include "ship/modules/ActiveModule.h"
+#include "system/SystemBubble.h"
+#include "system/SystemManager.h"
+
+
+//////////////////////////////////////////////////////////////////////////////////
+// Modifier class definitions
+#pragma region Modifier
+
+// No functions defined here at this time.
+
+#pragma endregion
+/////////////////////////////// END MODIFIER /////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////
+// ModuleContainer class definitions
+#pragma region ModuleContainerClass
+ModuleContainer::ModuleContainer(uint32 lowSlots, uint32 medSlots, uint32 highSlots, uint32 rigSlots, uint32 subSystemSlots,
+    uint32 turretSlots, uint32 launcherSlots, ModuleManager * myManager)
+{
+    m_LowSlots = lowSlots;
+    m_MediumSlots = medSlots;
+    m_HighSlots = highSlots;
+    m_RigSlots = rigSlots;
+    m_SubSystemSlots = subSystemSlots;
+    m_TurretSlots = turretSlots;
+    m_LauncherSlots = launcherSlots;
+
+    _initializeModuleContainers();
+
+    m_TotalTurretsFitted = 0;
+    m_TotalLaunchersFitted = 0;
+
+    m_MyManager = myManager;
+}
+
+ModuleContainer::~ModuleContainer()
+{
+    //clean up array objects
+    /** @todo  look into this...crashes when module array is populated.  */
+    int i = 0;
+    for (i = 0; i < m_HighSlots; i++)
+        delete[] m_HighSlotModules[i];
+
+    for (i = 0; i < m_MediumSlots; i++)
+        delete[] m_MediumSlotModules[i];
+
+    for (i = 0; i < m_LowSlots; i++)
+        delete[] m_LowSlotModules[i];
+
+    for (i = 0; i < m_RigSlots; i++)
+        delete[] m_RigModules[i];
+
+    for (i = 0; i < m_SubSystemSlots; i++)
+        delete[] m_SubSystemModules[i];
+
+    //clean up arrays of module pointers
+    delete[] m_LowSlotModules;
+    delete[] m_MediumSlotModules;
+    delete[] m_HighSlotModules;
+    delete[] m_RigModules;
+    delete[] m_SubSystemModules;
+
+    //nullify pointers
+    SafeDelete(m_LowSlotModules);
+    SafeDelete(m_MediumSlotModules);
+    SafeDelete(m_HighSlotModules);
+    SafeDelete(m_RigModules);
+    SafeDelete(m_SubSystemModules);
+}
+
+void ModuleContainer::_initializeModuleContainers() {
+    /** @todo  change this to use vector instead of pointer arrays .. mem mgmt and cleanup update*/
+    //initialize our arrays of pointers for avalible ship slots.
+    //  this solves a segfault when iterating (and the cooresponding dereference) past avalible ship slots
+    m_HighSlotModules = new GenericModule*[m_HighSlots];
+    m_MediumSlotModules = new GenericModule*[m_MediumSlots];
+    m_LowSlotModules = new GenericModule*[m_LowSlots];
+    m_RigModules = new GenericModule*[m_RigSlots];
+    m_SubSystemModules = new GenericModule*[m_SubSystemSlots];
+
+    for (int i = 0; i < m_HighSlots; i++)
+        m_HighSlotModules[i] = nullptr;
+
+    for (int i = 0; i < m_MediumSlots; i++)
+        m_MediumSlotModules[i] = nullptr;
+
+    for (int i = 0; i < m_LowSlots; i++)
+        m_LowSlotModules[i] = nullptr;
+
+    for (int i = 0; i < m_RigSlots; i++)
+        m_RigModules[i] = nullptr;
+
+    for ( int i = 0; i < m_SubSystemSlots; i++)
+        m_SubSystemModules[i] = nullptr;
+
+}
+bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* mod)
+{
+    switch(_checkBounds(flag))
+    {
+        case NaT:
+            sLog.Error("ModuleContainer::AddModule()","Flag Out of bounds");
+			return false;
+            break;
+        case slotTypeSubSystem:
+			if (!m_SubSystemModules[flag - flagSubSystem0])
+				m_SubSystemModules[flag - flagSubSystem0] = mod;
+			else
+				return false;
+            break;
+        case slotTypeRig:
+			if (!m_RigModules[flag - flagRigSlot0])
+	            m_RigModules[flag - flagRigSlot0] = mod;
+			else
+				return false;
+            break;
+        case slotTypeLowPower:
+			if (!m_LowSlotModules[flag - flagLowSlot0])
+	            m_LowSlotModules[flag - flagLowSlot0] = mod;
+			else
+				return false;
+            break;
+        case slotTypeMedPower:
+			if (!m_MediumSlotModules[flag - flagMedSlot0])
+	            m_MediumSlotModules[flag - flagMedSlot0] = mod;
+			else
+				return false;
+            break;
+        case slotTypeHiPower:
+			if (!m_HighSlotModules[flag - flagHiSlot0])
+	            m_HighSlotModules[flag - flagHiSlot0] = mod;
+			else
+				return false;
+            break;
+    }
+
+    // Maintain Turret and Launcher Fitted module counts:
+    if ( mod->isTurretFitted() )
+        ++m_TotalTurretsFitted;
+    if ( mod->isLauncherFitted() )
+        ++m_TotalLaunchersFitted;
+
+    // Maintain the Modules Fitted By Group counter for this module group:
+    if ( m_ModulesFittedByGroupID.find(mod->getItem()->groupID()) != m_ModulesFittedByGroupID.end() )
+        m_ModulesFittedByGroupID.find(mod->getItem()->groupID())->second++;
+    else
+        m_ModulesFittedByGroupID.insert(std::pair<uint32,uint32>(mod->getItem()->groupID(), 1));
+
+	return true;
+}
+
+bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
+    GenericModule* mod = GetModule(flag);
+    if (!mod) return false;
+
+    _deleteModuleRef(mod->flag(), mod);
+    //delete the module object
+    SafeDelete(mod);
+	return true;
+}
+
+bool ModuleContainer::RemoveModule(uint32 itemID) {
+    GenericModule* mod = GetModule(itemID);
+    if (!mod) return false;
+
+    _deleteModuleRef(mod->flag(), mod);
+    //delete the module object
+    SafeDelete(mod);
+	return true;
+}
+
+GenericModule* ModuleContainer::GetModule(EVEItemFlags flag)
+{
+    switch(_checkBounds(flag))
+    {
+        case slotTypeLowPower:
+            return m_LowSlotModules[flag - flagLowSlot0];
+            break;
+        case slotTypeMedPower:
+            return m_MediumSlotModules[flag - flagMedSlot0];
+            break;
+        case slotTypeHiPower:
+            return m_HighSlotModules[flag - flagHiSlot0];
+            break;
+        case slotTypeSubSystem:
+            return m_SubSystemModules[flag - flagSubSystem0];
+            break;
+        case slotTypeRig:
+            return m_RigModules[flag - flagRigSlot0];
+            break;
+        case NaT:
+            _log(SHIP__ERROR, "ModuleContainer::GetModule() - Flag Out of bounds");
+            break;
+    }
+
+    return NULL;
+}
+
+GenericModule* ModuleContainer::GetModule(uint32 itemID)
+{
+    //iterate through the list and see if we have it
+    uint8 r = 0;
+    for (r = 0; r < m_HighSlots; r++)
+        if (m_HighSlotModules[r] && (m_HighSlotModules[r]->itemID() == itemID))
+            return m_HighSlotModules[r];
+
+    for (r = 0; r < m_MediumSlots; r++)
+        if (m_MediumSlotModules[r] && (m_MediumSlotModules[r]->itemID() == itemID))
+            return m_MediumSlotModules[r];
+
+    for (r = 0; r < m_LowSlots; r++)
+        if (m_LowSlotModules[r] && (m_LowSlotModules[r]->itemID() == itemID))
+            return m_LowSlotModules[r];
+
+    for (r = 0; r < m_SubSystemSlots; r++)
+        if (m_SubSystemModules[r] && (m_SubSystemModules[r]->itemID() == itemID))
+            return m_SubSystemModules[r];
+
+    for (r = 0; r < m_RigSlots; r++)
+        if (m_RigModules[r] && (m_RigModules[r]->itemID() == itemID))
+            return m_RigModules[r];
+
+    return nullptr;  //we don't
+}
+
+
+void ModuleContainer::Process() {
+    _process(typeProcessAll);
+}
+
+void ModuleContainer::OnlineAll() {
+    _process(typeOnlineAll);
+}
+
+void ModuleContainer::OfflineAll() {
+    _process(typeOfflineAll);
+}
+
+void ModuleContainer::DeactivateAll() {
+    _process(typeDeactivateAll);
+}
+
+void ModuleContainer::UnloadAll() {
+    _process(typeUnloadAll);
+}
+
+bool ModuleContainer::isSlotOccupied(EVEItemFlags flag) {
+    switch(_checkBounds(flag)) {
+        case slotTypeLowPower:
+            if ( m_LowSlotModules[flag-flagLowSlot0] )
+                return true;
+            break;
+        case slotTypeMedPower:
+            if ( m_MediumSlotModules[flag-flagMedSlot0] )
+                return true;
+            break;
+        case slotTypeHiPower:
+            if ( m_HighSlotModules[flag-flagHiSlot0] )
+                return true;
+            break;
+        case slotTypeSubSystem:
+            if ( m_SubSystemModules[flag-flagSubSystem0] )
+                return true;
+            break;
+        case slotTypeRig:
+            if ( m_RigModules[flag-flagRigSlot0] )
+                return true;
+            break;
+        case NaT:
+            sLog.Error("ModuleContainer::isSlotOccupied()","Flag Out of bounds");
+            break;
+    }
+    return false;
+}
+
+uint32 ModuleContainer::GetAvailableSlotInBank(EveEffectEnum slotBank)
+{
+	uint32 slot = 0;
+	uint32 slotFound = flagIllegal;
+
+	switch (slotBank)
+	{
+		case Effect_loPower:
+			for ( slot=0; slot < m_LowSlots; slot++)
+				if ( m_LowSlotModules[slot] == NULL )
+				{
+					slotFound = slot + flagLowSlot0;
+					break;
+				}
+			break;
+		case Effect_medPower:
+			for ( slot=0; slot < m_MediumSlots; slot++)
+				if ( m_MediumSlotModules[slot] == NULL )
+				{
+					slotFound = slot + flagMedSlot0;
+					break;
+				}
+			break;
+		case Effect_hiPower:
+			for ( slot=0; slot < m_HighSlots; slot++)
+				if ( m_HighSlotModules[slot] == NULL )
+				{
+					slotFound = slot + flagHiSlot0;
+					break;
+				}
+			break;
+		case Effect_rigSlot:
+			for ( slot=0; slot < m_RigSlots; slot++)
+				if ( m_RigModules[slot] == NULL )
+				{
+					slotFound = slot + flagRigSlot0;
+					break;
+				}
+			break;
+		case Effect_subSystem:
+			for ( slot=0; slot < m_SubSystemSlots; slot++)
+				if ( m_SubSystemModules[slot] == NULL )
+				{
+					slotFound = slot + flagSubSystem0;
+					break;
+				}
+			break;
+		default:
+			// ERROR: This is not a module that fits in any of the slot banks
+			break;
+	}
+
+	return slotFound;
+}
+
+uint32 ModuleContainer::GetFittedModuleCountByGroup(uint32 groupID)
+{
+    if ( m_ModulesFittedByGroupID.find(groupID) == m_ModulesFittedByGroupID.end() )
+        return 0;
+    else
+        return m_ModulesFittedByGroupID.find(groupID)->second;
+}
+
+void ModuleContainer::GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList)
+{
+    uint8 r;
+    for (r = 0; r < m_HighSlots; r++) {
+        if (m_HighSlotModules[r])
+			pModuleList->push_back( m_HighSlotModules[r]->getItem() );
+    }
+
+    for (r = 0; r < m_MediumSlots; r++) {
+        if (m_MediumSlotModules[r])
+            pModuleList->push_back( m_MediumSlotModules[r]->getItem() );
+    }
+
+    for (r = 0; r < m_LowSlots; r++) {
+        if (m_LowSlotModules[r])
+            pModuleList->push_back( m_LowSlotModules[r]->getItem() );
+    }
+
+    for (r = 0; r < m_SubSystemSlots; r++) {
+        if (m_SubSystemModules[r])
+            pModuleList->push_back( m_SubSystemModules[r]->getItem() );
+    }
+
+    for (r = 0; r < m_RigSlots; r++) {
+        if (m_RigModules[r])
+            pModuleList->push_back( m_RigModules[r]->getItem() );
+    }
+}
+
+void ModuleContainer::SaveModules()
+{
+    uint8 r;
+    for (r = 0; r < m_HighSlots; r++) {
+        if (m_HighSlotModules[r])
+            m_HighSlotModules[r]->getItem()->SaveItem();
+    }
+
+    for (r = 0; r < m_MediumSlots; r++) {
+        if (m_MediumSlotModules[r])
+            m_MediumSlotModules[r]->getItem()->SaveItem();
+    }
+
+    for (r = 0; r < m_LowSlots; r++) {
+        if (m_LowSlotModules[r])
+            m_LowSlotModules[r]->getItem()->SaveItem();
+    }
+
+    for (r = 0; r < m_SubSystemSlots; r++) {
+        if (m_SubSystemModules[r])
+            m_SubSystemModules[r]->getItem()->SaveItem();
+    }
+
+    for (r = 0; r < m_RigSlots; r++) {
+        if (m_RigModules[r])
+            m_RigModules[r]->getItem()->SaveItem();
+    }
+}
+
+void ModuleContainer::_deleteModuleRef(EVEItemFlags flag, GenericModule* mod)
+{
+    switch(_checkBounds(flag))
+    {
+    case NaT:
+        sLog.Error("ModuleContainer::_deleteModuleRef()","Flag %u retuned NaT.", flag);
+        break;
+    case slotTypeSubSystem:
+        m_SubSystemModules[flag-flagSubSystem0] = nullptr;
+        break;
+    case slotTypeRig:
+        m_RigModules[flag-flagRigSlot0] = nullptr;
+        break;
+    case slotTypeLowPower:
+        m_LowSlotModules[flag-flagLowSlot0] = nullptr;
+        break;
+    case slotTypeMedPower:
+        m_MediumSlotModules[flag-flagMedSlot0] = nullptr;
+        break;
+    case slotTypeHiPower:
+        m_HighSlotModules[flag-flagHiSlot0] = nullptr;
+        break;
+    default:
+        sLog.Error("ModuleContainer::_deleteModuleRef()","Flag %u not handled.", flag);
+        return;
+    }
+
+    // Maintain Turret and Launcher Fitted module counts:
+    if ( mod->isTurretFitted() )
+        m_TotalTurretsFitted--;
+    if ( mod->isLauncherFitted() )
+        m_TotalLaunchersFitted--;
+
+    // Maintain the Modules Fitted By Group counter for this module group:
+    if (m_ModulesFittedByGroupID.find(mod->getItem()->groupID()) != m_ModulesFittedByGroupID.end()) {
+        if (m_ModulesFittedByGroupID.find(mod->getItem()->groupID())->second > 1) {
+            // We still have more than one module of this group fitted, so just reduce number fitted by 1:
+            m_ModulesFittedByGroupID.find(mod->getItem()->groupID())->second--;
+        } else {
+            // This was the last module of this group fitted, so remove the entry from the map:
+            m_ModulesFittedByGroupID.erase(mod->getItem()->groupID());
+        }
+    } else
+        sLog.Error( "ModuleContainer::_deleteModuleRef()", "Removing Module from ship fit when it had NO entry in m_ModulesFittedByGroup !" );
+}
+
+void ModuleContainer::_process(processType p)
+{
+    //high slots
+    _processEx(p, highSlot);
+
+    //med slots
+    _processEx(p, mediumSlot);
+
+    //low slots
+    _processEx(p, lowSlot);
+}
+
+void ModuleContainer::_processEx(processType p, slotType t)
+{
+    uint8 r, COUNT;
+    GenericModule** cur = nullptr;
+
+    switch(t) {
+    case highSlot:
+        COUNT = m_HighSlots;
+        cur = m_HighSlotModules;
+        break;
+    case mediumSlot:
+        COUNT = m_MediumSlots;
+        cur = m_MediumSlotModules;
+        break;
+    case lowSlot:
+        COUNT = m_LowSlots;
+        cur = m_LowSlotModules;
+        break;
+    case rigSlot:
+        COUNT = m_RigSlots;
+        cur = m_RigModules;
+        break;
+    case subSystemSlot:
+        COUNT = m_SubSystemSlots;
+        cur = m_SubSystemModules;
+        break;
+    }
+
+    switch(p) {
+    case typeOnlineAll:
+        for (r = 0; r < COUNT; r++, cur++) {
+            if (*cur == nullptr)
+                continue;
+            (*cur)->Online();
+        } break;
+
+    case typeOfflineAll:
+        for (r = 0; r < COUNT; r++, cur++) {
+            if (*cur == nullptr)
+                continue;
+            (*cur)->Offline();
+        } break;
+
+    case typeDeactivateAll:
+        for (r = 0; r < COUNT; r++, cur++) {
+            if (*cur == nullptr)
+                continue;
+            (*cur)->Deactivate();
+        } break;
+
+    case typeUnloadAll:
+        for (r = 0; r < COUNT; r++, cur++) {
+            if (*cur == nullptr)
+                continue;
+            (*cur)->Unload();
+        } break;
+
+    case typeProcessAll:
+        for (r = 0; r < COUNT; r++, cur++) {
+            if (*cur == nullptr)
+                continue;
+            (*cur)->Process();
+        } break;
+    }
+}
+
+EVEItemSlotType ModuleContainer::_checkBounds(EVEItemFlags flag)
+{
+    //this could be done better
+    if ( flag >= flagLowSlot0 && flag <= flagLowSlot7 )
+        return slotTypeLowPower;
+
+    if ( flag >= flagMedSlot0 && flag <= flagMedSlot7 )
+        return slotTypeMedPower;
+
+    if ( flag >= flagHiSlot0 && flag <= flagHiSlot7 )
+        return slotTypeHiPower;
+
+    if ( flag >= flagRigSlot0 && flag <= flagRigSlot7 )
+        return slotTypeRig;
+
+    if ( flag >= flagSubSystem0 && flag <= flagSubSystem7 )
+        return slotTypeSubSystem;
+
+    return NaT;  //Not a Type
+}
+
+#pragma endregion
+/////////////////////////// END MODULECONTAINER //////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////
+// ModuleManager class definitions
+#pragma region ModuleManagerClass
+ModuleManager::ModuleManager(Ship *const ship)
+{
+    // Create ModuleContainer object and initialize with sizes for avalible slot banks for this ship:
+    m_Modules = new ModuleContainer((uint32)ship->GetAttribute(AttrLowSlots).get_int(),
+                                    (uint32)ship->GetAttribute(AttrMedSlots).get_int(),
+                                    (uint32)ship->GetAttribute(AttrHiSlots).get_int(),
+                                    (uint32)ship->GetAttribute(AttrRigSlots).get_int(),
+                                    (uint32)ship->GetAttribute(AttrSubSystemSlot).get_int(),
+                                    (uint32)ship->GetAttribute(AttrTurretSlotsLeft).get_int(),
+                                    (uint32)ship->GetAttribute(AttrLauncherSlotsLeft).get_int(),
+                                    this);
+
+    // Store reference to the Ship object to which the ModuleManager belongs:
+    m_Ship = ship;
+// this shit creates WAAYY too many log files for only 2lines each....not worth the trouble.
+    if (0) {
+	// Initialize the log file for this Module Manager instance
+	std::string logsubdirectory = "ModuleManagers";
+	//std::string logfilename = "On_Ship_" + m_Ship->itemName();		// This method using ship's name string may NOT be path friendly as players naming ships may use path-unfriendly characters - need function to convert to path-friendly ship name string
+
+	std::string logfilename = "On_Ship_" /*+ m_Ship->itemName() + "_("*/ + std::string(itoa(m_Ship->itemID())); // + ")";
+
+	m_pLog = new Basic_Log( sConfig.files.logDir, logsubdirectory, logfilename );
+
+	m_pLog->InitializeLogging( sConfig.files.logDir, logsubdirectory, logfilename );
+    }
+}
+
+ModuleManager::~ModuleManager()
+{
+    //module cleanup is handled in the ModuleContainer destructor
+    delete m_Modules;
+    m_Modules = nullptr;
+
+    //modifier map cleanup is handled in the std::map destructor
+    delete m_LocalSubsystemModifierMaps;
+    delete m_LocalShipSkillModifierMaps;
+    delete m_LocalModuleRigModifierMaps;
+    delete m_LocalImplantModifierMaps;
+    delete m_RemoteModifierMaps;
+    m_LocalSubsystemModifierMaps = nullptr;
+    m_LocalShipSkillModifierMaps = nullptr;
+    m_LocalModuleRigModifierMaps = nullptr;
+    m_LocalImplantModifierMaps = nullptr;
+    m_RemoteModifierMaps = nullptr;
+}
+
+bool ModuleManager::Initialize() {
+    // Load modules, rigs and subsystems from Ship's inventory into ModuleContainer:
+	//m_pLog->Log("ModuleManager", "Loading modules...");
+
+    std::vector<InventoryItemRef> itemVec;
+    m_Ship->GetInventoryVec(itemVec);
+    GenericModule* mod = nullptr;
+    for (auto cur : itemVec) {
+        if (cur->flag() == flagCargoHold) {
+            continue;
+        } else if (cur->categoryID() == EVEDB::invCategories::Module) {
+            mod = ModuleFactory(cur, ShipRef(m_Ship));
+            if (m_Modules->AddModule(cur->flag(), mod)) {
+                if ( cur->GetAttribute(AttrIsOnline).get_int() == 1 )
+                    Online(cur->itemID());
+                else
+                    Offline(cur->itemID());
+            } else {
+                _log(SHIP__ERROR, "ModuleManager::Initialize() - Cannot initalize module %s(%u)",
+                            cur->itemName().c_str(), cur->itemID() );
+                continue;
+            }
+        } else if (cur->categoryID() == EVEDB::invCategories::Charge) {
+            if (GetModule(cur->flag())) {
+                // the module here should be loaded BEFORE calling this.  if it isnt, the charge wont load
+                GetModule(cur->flag())->Load(cur);
+            } else
+                _log(SHIP__ERROR, "ModuleManager::Initialize() - Cannot find module to load %s(%u)",
+                     cur->itemName().c_str(), cur->itemID() );
+        } else if (cur->categoryID() == EVEDB::invCategories::Subsystem) {
+            mod = ModuleFactory(cur, ShipRef(m_Ship));
+            if (!m_Modules->AddModule(cur->flag(), mod)) {
+                _log(SHIP__ERROR, "ModuleManager::Initialize() - Cannot initalize Subsystem %s(%u)",
+                     cur->itemName().c_str(), cur->itemID() );
+                continue;
+            }
+        }
+    }
+	//m_pLog->Log("ModuleManager", "Module loading complete!");
+
+    //modifier maps, we own these
+    m_LocalSubsystemModifierMaps = new ModifierMaps;
+    m_LocalShipSkillModifierMaps = new ModifierMaps;
+    m_LocalModuleRigModifierMaps = new ModifierMaps;
+    m_LocalImplantModifierMaps = new ModifierMaps;
+    m_RemoteModifierMaps = new ModifierMaps;
+
+    return true;
+}
+
+bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
+{
+    if (m_Modules->GetModule(flag))
+        return true;
+
+    return false;
+}
+
+uint32 ModuleManager::GetAvailableSlotInBank(EveEffectEnum slotBank)
+{
+	// Call into ModuleContainer class with slotBank effectID to have it check for and return any available slot flag in
+	// in the specified slot bank:
+	return m_Modules->GetAvailableSlotInBank(slotBank);
+}
+
+void ModuleManager::_SendInfoMessage(const char *fmt, ...)
+{
+    if (!m_Ship->GetOperator())     // Operator assumed to be Client *
+        sLog.Error("SendMessage","message should have been sent to character, but *m_Client is null.  Did you forget to call GetShip()->SetOwner(Client *c)?");
+    else
+    {
+        va_list args;
+        va_start(args,fmt);
+        m_Ship->GetOperator()->SendNotifyMsg(fmt,args);
+        va_end(args);
+
+    }
+}
+
+void ModuleManager::_SendErrorMessage(const char *fmt, ...)
+{
+    if (!m_Ship->GetOperator())     // Operator assumed to be Client *
+        sLog.Error("SendMessage","message should have been sent to character, but *m_Client is null.  Did you forget to call GetShip()->SetOwner(Client *c)?");
+    else
+    {
+        va_list args;
+        va_start(args,fmt);
+        m_Ship->GetOperator()->SendErrorMsg(fmt,args);
+        va_end(args);
+    }
+}
+
+bool ModuleManager::InstallRig(InventoryItemRef item, EVEItemFlags flag) {
+    if ((item->groupID() >= 773 && item->groupID() <= 782) || item->groupID() == 786) {
+        _fitModule(item,flag);
+        return true;
+    } else
+        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s tried to fit item %u, which is not a rig", m_Ship->GetOperator()->GetName(), item->itemID());
+
+    return false;
+}
+
+void ModuleManager::UninstallRig(uint32 itemID)
+{
+    GenericModule* mod = m_Modules->GetModule(itemID);
+    if (mod) {
+        mod->Offline();
+        if (!sConfig.world.testServer)
+            mod->DestroyRig();
+    }
+    m_Modules->RemoveModule(itemID);
+}
+
+bool ModuleManager::InstallSubSystem(InventoryItemRef item, EVEItemFlags flag)
+{
+    if (item->categoryID() == EVEDB::invCategories::Subsystem) {
+        _fitModule(item,flag);
+        return true;
+    } else
+        sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a subsystem", m_Ship->GetOperator()->GetName(), item->itemID());
+
+    return false;
+}
+
+bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
+{
+    if (item->categoryID() == EVEDB::invCategories::Module) {
+        /** @todo  cpu/pg isnt working right.  comment out for now.
+        // check PG and CPU usage to see if we have enough to online this module
+        EvilNumber cpuNeed = (m_Ship->GetAttribute(AttrCpuLoad) + item->GetAttribute(AttrCpu));
+        EvilNumber cpuOutput = m_Ship->GetAttribute(AttrCpuOutput);
+        if (cpuNeed  > cpuOutput)
+            return false;
+        EvilNumber pgNeed = (m_Ship->GetAttribute(AttrPowerLoad) + item->GetAttribute(AttrPower));
+        EvilNumber pgOutput = m_Ship->GetAttribute(AttrPowerOutput);
+        if (pgNeed > pgOutput)
+            return false;
+        */
+        // Attempt to fit the module
+        if ( _fitModule(item, flag) ) {
+            // Now that module is successfully fitted, attempt to put it Online:
+            Online(item->itemID());
+            return true;
+        }
+    } else
+        sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a module", m_Ship->GetOperator()->GetName(), item->itemID());
+
+    return false;
+}
+
+void ModuleManager::UnfitModule(uint32 itemID)
+{
+    GenericModule* mod = m_Modules->GetModule(itemID);
+    if (mod) {
+        mod->Offline();
+        if (mod->isLoaded()) {
+            InventoryItemRef loadedChargeRef = mod->GetLoadedChargeRef();
+            if (IsStation(m_Ship->locationID()))
+                loadedChargeRef->Move(m_Ship->locationID(), flagHangar);
+            else {
+                //m_Ship->ValidateAddItem(flagCargoHold,loadedChargeRef);
+                if (m_Ship->ValidateAddItem(flagCargoHold,loadedChargeRef)) {
+                    loadedChargeRef->Move(m_Ship->itemID(), flagCargoHold);
+                    mod->Unload();
+                } else {
+                    throw PyException( MakeCustomError( "Not enough cargo space!") );
+                    return;
+                }
+            }
+        }
+    }
+    m_Modules->RemoveModule(itemID);
+}
+
+bool ModuleManager::_fitModule(InventoryItemRef item, EVEItemFlags flag)
+{
+    bool verifyFailed = false;
+	// First, check to see if this module item is already fitted, and if so, let's instruct ModuleContainer to move the module
+	GenericModule* existingMod = m_Modules->GetModule(item->itemID());
+
+	if (existingMod) {
+		if (m_Modules->isSlotOccupied(flag))
+			throw PyException( MakeUserError("SlotAlreadyOccupied"));
+		return false;
+	} else {
+        // create new module object
+		GenericModule* mod = ModuleFactory(item, ShipRef(m_Ship));
+		if (!mod) return false;
+		// Check for max turret modules allowed:
+		if (mod->isTurretFitted() && (m_Modules->GetFittedTurretCount() == m_Ship->GetMaxTurrentHardpoints().get_int())) {
+			throw PyException( MakeUserError( "NotEnoughTurretSlots" ) );
+			verifyFailed = true;
+		}
+		// Check for max launcher modules allowed:
+		if (mod->isLauncherFitted() && (m_Modules->GetFittedLauncherCount() == m_Ship->GetMaxLauncherHardpoints().get_int())) {
+			throw PyException( MakeUserError( "NotEnoughLauncherSlots" ) );
+			verifyFailed = true;
+		}
+		// Check for max modules of group allowed:
+		if (mod->isMaxGroupFitLimited() && (m_Modules->GetFittedModuleCountByGroup(item->groupID()) == mod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int())) {
+			throw PyException( MakeUserError( "CantFitTooManyByGroup" ) );
+			verifyFailed = true;
+		}
+        if (verifyFailed) {
+            if (mod)
+                SafeDelete(mod);
+            return false;
+        }
+		// Fit Module now that all checks have passed:
+		return m_Modules->AddModule(flag, mod);
+	}
+}
+
+void ModuleManager::Online(uint32 itemID)
+{
+    GenericModule* mod = m_Modules->GetModule(itemID);
+    if (mod) {
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Online() -  %s going Online", mod->getItem()->itemName().c_str());
+        mod->Online();
+    } else
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Online() -  Module %u not found", itemID);
+}
+
+void ModuleManager::OnlineAll()
+{
+    m_Modules->OnlineAll();
+}
+
+void ModuleManager::Offline(uint32 itemID)
+{
+    GenericModule* mod = m_Modules->GetModule(itemID);
+    if (mod) {
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline() -  %s going Offline", mod->getItem()->itemName().c_str());
+        mod->Offline();
+    } else
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline() -  Module %u not found", itemID);
+}
+
+void ModuleManager::OfflineAll()
+{
+    m_Modules->OfflineAll();
+}
+
+void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targetID, uint32 repeat)
+{
+    GenericModule* mod = m_Modules->GetModule(itemID);
+    if (!mod) {
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Activate() - WARNING! Called Activate() on a module that is NOT loaded!" );
+        return;
+    } else {
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Activate() - Module %s: effectName %s.", mod->getItem()->itemName().c_str(), effectName.c_str());
+        bool targetNotNeeded = false;
+        // these calls DO NOT need a target...
+        if (effectName == "online") {
+            mod->Online();
+            targetNotNeeded =true;
+        } else if (effectName == "cloaking") {//FIXME  set this to use module code, drain cap, etc.
+            if (m_Ship->GetOperator()->GetDestiny()->IsCloaked())
+                m_Ship->GetOperator()->GetDestiny()->UnCloak();
+            else
+                m_Ship->GetOperator()->GetDestiny()->Cloak();
+            targetNotNeeded =true;
+        } else if (effectName == "speedBoostMassAddition") {    // AB
+            mod->Activate(nullptr);
+            targetNotNeeded =true;
+        } else if (effectName == "speedBoostMassSigRad") {  //MicroWarpdrive
+            mod->Activate(nullptr);
+            targetNotNeeded =true;
+        } else if (effectName == "damageControl") { //DCM
+            mod->Activate(nullptr);
+            targetNotNeeded =true;
+        } else if (effectName == "armorRepair") {
+            mod->Activate(nullptr);
+            targetNotNeeded =true;
+        } else if (effectName == "shieldBoosting") {
+            mod->Activate(nullptr);
+            targetNotNeeded =true;
+        } else if (effectName == "structureRepair") {   //Hull Repairer
+            mod->Activate(nullptr);
+            targetNotNeeded =true;
+        } else if (effectName == "modifyActiveShieldResonanceAndNullifyPassiveResonance") { //Shield Hardener
+            mod->Activate(nullptr);
+            targetNotNeeded =true;
+        } else if (effectName == "modifyActiveArmorResonanceAndNullifyPassiveResonance") {  //Armor Hardener
+            mod->Activate(nullptr);
+            targetNotNeeded =true;
+        }
+        if (targetNotNeeded) return;
+		if (!targetID) {
+			sLog.Error("ModuleManager::Activate()", "targetID == 0");
+			// i dislike doing this to get a client object to send an errormsg, but it's all i can think of right now.
+			SystemEntity* pSE = m_Ship->GetOperator()->GetSystemEntity();
+			pSE->CastToClient()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
+			return;
+		}
+		 SystemEntity* targetEntity = m_Ship->GetOperator()->GetDestiny()->GetCurrentBubble()->GetEntity(targetID);
+        if (!targetEntity) {
+            sLog.Error("ModuleManager::Activate()", "targetEntity == NULL");
+            // i dislike doing this to get a client object to send an errormsg, but it's all i can think of right now.
+            SystemEntity* pSE = m_Ship->GetOperator()->GetSystemEntity();
+            pSE->CastToClient()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
+            return;
+        }
+
+        if (effectName == "tractorBeamCan") {
+            mod->Activate(targetEntity);
+        } else if (effectName == "miningLaser") {   // mining of all types...cloud, ore, strip, etc.
+            mod->Activate(targetEntity);
+        } else if (effectName == "miningClouds") {   // Gas Harvesters (12November15) - AlTahir
+            mod->Activate(targetEntity);
+        } else if (effectName == "targetAttack") {   // ship lasers.....all sizes, all types
+            mod->Activate(targetEntity);
+        } else if (effectName == "projectileFired") {   //ship projectile guns...all sizes, all types
+            mod->Activate(targetEntity);
+        } else if (effectName == "shieldTransfer"){		// Shield transporters. All sizes (12November15) - AlTahir
+            mod->Activate(targetEntity);
+        } else if (effectName == "energyTransfer"){		// Energy Transfer. All sizes (11.16.2015) - AlTahir
+        	mod->Activate(targetEntity);
+        } else if (effectName == "useMissiles") {   //implemented Missiles    18May15  -allan
+            mod->Activate(targetEntity);
+        } else if (effectName == "decreaseTargetSpeed") {   //Stasis Webifier	-crashing server -allan 20June15
+            ;//mod->Activate(targetEntity);
+        } else if (effectName == "salvaging") {
+            mod->Activate(targetEntity);
+        } else if (effectName == "warpScrambleTargetMWDBlockActivation") {  //Warp Scrambler
+            mod->Activate(targetEntity);
+        } else if (effectName == "targetArmorRepair") { //Remote Armor Repair System (AlTahir, 14.11.2015)
+            mod->Activate(targetEntity);
+        } else if (effectName == "remoteHullRepair") {  // Remote Hull Repair System (Altahir, 14.11.2015)
+            mod->Activate(targetEntity);
+    /** @todo these below are not wrote, not tested, in testing, or otherwise unknown.
+        } else if (effectName == "surveyScan") {
+			; //mod->Activate(targetEntity);
+        } else if (effectName == "superWeaponAmarr") {  //Judgement
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "siegeModeEffect6") {  //Siege Module
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "empWave") {   //EMP Smartbomb
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "openSpawnContainer") {   //Analyzer I
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "ewTargetPaint") { //Target Painter
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "gangMiningLaserAndIceHarvesterAndGasCloudHarvesterMaxRangeBonus") {   //Mining Foreman Link - Mining Laser Field Enhancement
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "gangGasHarvesterAndIceHarvesterAndMiningLaserCapNeedBonus") { //Mining Foreman Link - Harvester Capacitor Efficiency
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "gangArmorRepairCapReducerSelfAndProjected") { //Armored Warfare Link - Damage Control
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "triageModeEffect3") { //Triage Module
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "ewTestEffectJam") {   //ECM - White Noise Generator
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "scanStrengthBonusPercentActivate") {  //ECCM - Gravimetric    ECCM - Magnetometric
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "remoteEcmBurst") {    //Remote ECM Burst
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "sensorBoosterActivePercentage") { //Sensor Booster
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "industrialCoreEffect2") {  //Industrial Core
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "cynosuralGeneration") {  //Cynosural Field Generator
+            ; //mod->Activate(targetEntity);
+        } else if (effectName == "gunneryMaxRangeFalloffTrackingSpeedBonus") {  //not sure
+            ; //mod->Activate(targetEntity);
+            */
+	} else {
+            sLog.Warning("ModuleManager::Activate()", "Module '%s' effectName '%s' not found.",
+                     mod->getItem()->itemName().c_str(), effectName.c_str());
+        }
+    }
+}
+
+void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
+{
+    GenericModule* mod = m_Modules->GetModule(itemID);
+    if (mod) {
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Deactivate() - %s Deactivating...", mod->getItem()->itemName().c_str());
+        if (effectName == "online") {
+			mod->Offline();
+
+			// We should check for "online" here or something else, then either call the mod->Offline() or mod->Deactivate()
+			//if (cmd == OFFLINE)
+			//    mod->Offline();     // this currently fails since m_selectedEffect and m_defaultEffect in the ModuleEffect class are undefined
+			//there needs to be more cases here i just don't know what they're called yet
+		} else
+			mod->Deactivate();
+    }
+}
+
+void ModuleManager::DeactivateAllModules()
+{
+    m_Modules->DeactivateAll();
+}
+
+void ModuleManager::Overload(uint32 itemID)
+{
+    GenericModule* mod = m_Modules->GetModule(itemID);
+    if (mod) {
+        mod->Overload();
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Overload() - %s Overloading...", mod->getItem()->itemName().c_str());
+    }
+}
+
+void ModuleManager::DeOverload(uint32 itemID)
+{
+    GenericModule* mod = m_Modules->GetModule(itemID);
+    if (mod) {
+        mod->DeOverload();
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Overload() - %s DeOverload...", mod->getItem()->itemName().c_str());
+    }
+}
+
+void ModuleManager::DamageModule(uint32 itemID, EvilNumber val)
+{
+    GenericModule* mod = m_Modules->GetModule(itemID);
+    if (mod) {
+        mod->SetAttribute(AttrHP, val);
+        _log(SHIP__MODULE_TRACE, "ModuleManager::DamageModule() - %s taking %f damage.", mod->getItem()->itemName().c_str(), val.get_float());
+    }
+}
+
+void ModuleManager::RepairModule(uint32 itemID)
+{
+    GenericModule* mod = m_Modules->GetModule(itemID);
+    if (mod)
+        mod->Repair();
+}
+
+void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
+{
+    GenericModule* mod = m_Modules->GetModule(flag);
+    if (mod) {
+		// Scenarios to handle:
+		// + no charge loaded: check capacity >= volume of charge to add, if true, LOAD
+		//     - ELSE: if charge to load is qty > 1, calculate smallest integer qty that will EQUAL capacity, SPLIT remainder off, then LOAD!
+		// + some charge loaded: check capacity >= volume of charge to add, if true, MERGE new charge to existing
+		//     - ELSE: if charge to load is qty > 1, calculate smallest integer qty that added to existing charge qty will EQUAL capacity, SPLIT remainder off, then LOAD!
+
+		// Key facts to get:
+		// * existing charge ref -> qty and volume/unit
+		// * module ref -> capacity of module
+		// * charge to add ref -> qty and volume/unit
+
+		EvilNumber modCapacity = mod->getItem()->GetAttribute(AttrCapacity);
+		EvilNumber chargeToLoadVolume = chargeRef->GetAttribute(AttrVolume);
+		EvilNumber chargeToLoadQty = EvilNumber(chargeRef->quantity());
+
+		/////////////////////////////////////////
+		// chargeRef->Split();
+		// chargeRef->Merge();
+		// mod->Load(chargeRef);
+		// chargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
+		/////////////////////////////////////////
+
+		//m_Ship->GetOperator()->Client()->MoveItem(chargeRef->itemID(), m_Ship->itemID(), flag);
+
+		if ( mod->isLoaded() )
+		{
+			// Module is loaded, let's check available capacity:
+			InventoryItemRef loadedChargeRef = mod->GetLoadedChargeRef();
+			EvilNumber loadedChargeVolume = loadedChargeRef->GetAttribute(AttrVolume);
+			EvilNumber loadedChargeQty = EvilNumber(loadedChargeRef->quantity());
+			modCapacity -= (loadedChargeVolume * loadedChargeQty);		// Calculate remaining capacity
+			if ( chargeRef->typeID() != loadedChargeRef->typeID() )
+			{
+				// Different charge type is being swapped into this module, so unload what's loaded
+				if ( IsStation(m_Ship->GetOperator()->GetLocationID()) )
+					loadedChargeRef->Move(m_Ship->locationID(), flagHangar);
+				else
+				{
+					m_Ship->ValidateAddItem(flagCargoHold,loadedChargeRef);
+					loadedChargeRef->Move(m_Ship->itemID(), flagCargoHold);
+				}
+				mod->Unload();
+
+				// Loading of charge will be performed below
+			}
+			else
+			{
+				if ( modCapacity > chargeToLoadVolume )
+				{
+					// Great!  We can load at least one, let's top off the loaded charges:
+					uint32 quantityWeCanLoad = floor((modCapacity / chargeToLoadVolume).get_float());
+					if ( quantityWeCanLoad > 0 )
+					{
+						if ( quantityWeCanLoad < chargeToLoadQty.get_int() )
+						{
+							// Split chargeRef to qty 'quantityWeCanLoad'
+							// Merge new smaller qty 'quantityWeCanLoad' with loadedChargeRef
+							// Load this merged charge Ref into module
+							InventoryItemRef loadableChargeQtyRef = chargeRef->Split( quantityWeCanLoad );
+							loadableChargeQtyRef->ChangeOwner( chargeRef->ownerID() );
+							loadedChargeRef->Merge( loadableChargeQtyRef );
+							mod->Load( loadedChargeRef );
+							loadedChargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
+						}
+						else
+						{
+							// Merge chargeRef with loadedChargeRef
+							// Load this merged charge Ref into module
+							loadedChargeRef->Merge( chargeRef );
+							mod->Load( loadedChargeRef );
+							loadedChargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
+						}
+					}
+					else
+						throw PyException( MakeCustomError( "Cannot load even one unit of this charge!" ) );
+				}
+				else
+				{
+					throw PyException( MakeCustomError( "Charge is full!" ) );
+				}
+			}
+		}
+
+		// Refresh ammo capacity of module in case it was modified in previous code block ahead of a load action:
+		modCapacity = mod->getItem()->GetAttribute(AttrCapacity);
+
+		// Load charge supplied if this module was either never loaded, or just unloaded from a different type right above:
+		if ( !(mod->isLoaded()) )
+		{
+			// Module is not loaded at all, let's check total volume of charge to load against available capacity:
+			if ( modCapacity >= (chargeToLoadVolume * chargeToLoadQty) )
+			{
+				// We can insert entire stack of chargeRef into module
+				// Load chargeRef as-is into module
+				mod->Load( chargeRef );
+				chargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
+			}
+			else
+			{
+				// We need to split off only as many charge units as can fit into this module
+				// Split chargeRef
+				uint32 quantityWeCanLoad = floor((modCapacity / chargeToLoadVolume).get_float());
+				if ( quantityWeCanLoad > 0 )
+				{
+					// Split chargeRef to qty 'quantityWeCanLoad'
+					// Merge new smaller qty 'quantityWeCanLoad' with loadedChargeRef
+					// Load this merged charge Ref into module
+					InventoryItemRef loadableChargeQtyRef = chargeRef->Split( quantityWeCanLoad );
+					loadableChargeQtyRef->ChangeOwner( chargeRef->ownerID() );
+					mod->Load( loadableChargeQtyRef );
+					loadableChargeQtyRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
+				}
+				else
+		            throw PyException( MakeCustomError( "Cannot load even one unit of this charge!" ) );
+			}
+		}
+    }
+    return;
+}
+
+void ModuleManager::UnloadCharge(EVEItemFlags flag) {
+    GenericModule* mod = m_Modules->GetModule(flag);
+    if (mod && mod->isLoaded() ) {
+        _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s",
+             mod->getItem()->itemName().c_str(), mod->GetLoadedChargeRef()->itemName().c_str());
+        mod->Unload();
+	}
+}
+
+InventoryItemRef ModuleManager::GetLoadedChargeOnModule(EVEItemFlags flag) {
+    GenericModule* mod = m_Modules->GetModule(flag);
+    if (mod && mod->isLoaded() )
+    	return mod->GetLoadedChargeRef();
+	return InventoryItemRef();
+}
+
+bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
+{
+    if (m_Modules->GetModule(slot1)->GetModulePowerLevel() == m_Modules->GetModule(slot2)->GetModulePowerLevel())
+        return true;
+    return false;
+}
+
+void ModuleManager::UnloadAllModules() {
+    m_Modules->UnloadAll();
+}
+
+void ModuleManager::UpdateModules()
+{
+    //TODO  figure out what needs to be done here, and implement it.
+    // this one is called from board,
+    //  ALL modules need skillcheck, online check, cpu/pg check, etc.  run everthing on these and make calls as required.
+    //  this should also update all ship attribs.
+    //sLog.Magenta("ModuleManager::UpdateModules()","Needs to be implemented");
+}
+
+void ModuleManager::UpdateModules(EVEItemFlags flag)
+{
+    //TODO  figure out what needs to be done here, and implement it.
+    //  this should update all ship attribs for this bank.
+    //sLog.Magenta("ModuleManager::UpdateModules()","Needs to be implemented");
+}
+
+void ModuleManager::CharacterLeavingShip()
+{
+    sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
+    //this is complicated and im gonna leave it alone for now until
+    //a few things become more clear
+}
+
+void ModuleManager::CharacterBoardingShip()
+{
+    sLog.Magenta("ModuleManager::CharacterBoardingShip()","Needs to be implemented");
+    //this is complicated and im gonna leave it alone for now until
+    //a few things become more clear
+}
+
+void ModuleManager::ShipWarping()
+{
+    sLog.Magenta("ModuleManager::ShipWarping()","Needs to be implemented");
+    //need to remove targets and such
+}
+
+void ModuleManager::ShipJumping()
+{
+    //disable non-warpsafe modules
+
+    //probably should to send a message to the client
+    //TODO  figure out what needs to be done here, and implement it.
+    sLog.Magenta("ModuleManager::ShipJumping()","Needs to be implemented");
+}
+
+
+void ModuleManager::Process()
+{
+    double profileStartTime = 0.0;
+    if (sConfig.misc.UseProfiling)
+        profileStartTime = GetTimeUSeconds();
+
+    m_Modules->Process();
+
+    if (sConfig.misc.UseProfiling)
+        sProfile.AddTime(_modulesProfile, GetTimeUSeconds() - profileStartTime);
+}
+
+void ModuleManager::ProcessExternalEffect(Effect* e)
+{
+    while (e->hasEffect())
+        _processExternalEffect(e->next());
+}
+
+std::vector<GenericModule*> ModuleManager::GetStackedItems(uint32 typeID, ModulePowerLevel level)
+{
+    std::vector<GenericModule*> mods;
+    GenericModule* tmp = nullptr;
+
+    //iterate through the list and see if we have it
+    switch(level) {
+        case MODULE_BANK_HIGH_POWER: {
+            for (uint8 r = 0; r < m_Modules->m_HighSlots; r++)
+                if (m_Modules->m_HighSlotModules[r] && (m_Modules->m_HighSlotModules[r]->typeID() == typeID)) {
+                    tmp = m_Modules->m_HighSlotModules[r];
+                    mods.push_back(tmp);
+                }
+        } break;
+        case MODULE_BANK_MEDIUM_POWER: {
+            for (uint8 r = 0; r < m_Modules->m_MediumSlots; r++)
+                if (m_Modules->m_MediumSlotModules[r] && (m_Modules->m_MediumSlotModules[r]->typeID() == typeID)) {
+                    tmp = m_Modules->m_MediumSlotModules[r];
+                    mods.push_back(tmp);
+                }
+        } break;
+        case MODULE_BANK_LOW_POWER: {
+            for (uint8 r = 0; r < m_Modules->m_LowSlots; r++)
+                if (m_Modules->m_LowSlotModules[r] && (m_Modules->m_LowSlotModules[r]->typeID() == typeID)) {
+                    tmp = m_Modules->m_LowSlotModules[r];
+                    mods.push_back(tmp);
+                }
+        } break;
+        case MODULE_BANK_RIG: {
+            for (uint8 r = 0; r < m_Modules->m_RigSlots; r++)
+                if (m_Modules->m_RigModules[r] && (m_Modules->m_RigModules[r]->typeID() == typeID)) {
+                    tmp = m_Modules->m_RigModules[r];
+                    mods.push_back(tmp);
+                }
+        } break;
+        case MODULE_BANK_SUBSYSTEM: {
+            for (uint8 r = 0; r < m_Modules->m_SubSystemSlots; r++)
+                if (m_Modules->m_SubSystemModules[r] && (m_Modules->m_SubSystemModules[r]->typeID() == typeID)) {
+                    tmp = m_Modules->m_SubSystemModules[r];
+                    mods.push_back(tmp);
+                }
+        } break;
+        case MODULE_BANK_UNDEFINED:
+            sLog.Error("ModuleManager::GetStackedItems()","Module Bank Undefined for typeID %u.", typeID);
+            break;
+    }
+
+    return mods;
+}
+
+void ModuleManager::GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList)
+{
+	m_Modules->GetModuleListOfRefs(pModuleList);
+}
+
+void ModuleManager::SaveModules()
+{
+    m_Modules->SaveModules();
+}
+
+int32 ModuleManager::ApplyRemoteEffect(uint32 attributeID, uint32 originatorID, SystemEntity * systemEntity, ModifierRef modifierRef)
+{
+    sLog.Magenta("ModuleManager::ApplyRemoteEffect()","Needs to be implemented");
+    return 1;
+}
+
+int32 ModuleManager::RemoveRemoteEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+{
+    sLog.Magenta("ModuleManager::RemoveRemoteEffect()","Needs to be implemented");
+    return 1;
+}
+
+int32 ModuleManager::ApplySubsystemEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+{
+    ModifierMap* modMap = nullptr;
+
+    // Make sure the ModifierRef passed in is not NULL:
+    if (!modifierRef.get())
+        return -1;
+
+    // Check to see if this attributeID does not have a ModifierMap in the Map of ModifierMaps
+    if ( m_LocalSubsystemModifierMaps->find(attributeID) == m_LocalSubsystemModifierMaps->end() )
+    {
+        // A Modifier Map for this attributeID does not exist, create a new one:
+        modMap = new ModifierMap();
+        if (!modMap)
+            return -1;
+    }
+    else
+    {
+        // A Modifier Map for this attributeID already exists, find it and get its pointer:
+        modMap = m_LocalSubsystemModifierMaps->find(attributeID)->second;
+        if (!modMap)
+            return -1;
+    }
+
+    // Check to see if the modifier map has any entries corresponding to the passed-in modifier's value:
+    if ( modMap->m_ModifierMap.find(modifierRef->GetModifierValue()) != modMap->m_ModifierMap.end() )
+    {
+        // Modifier entry in this attributeID's Modifier Map already exists (modifierRef->GetModifierValue() found a match),
+        // so check its originatorID and if that matches, DO NOT add this Modifier object to the map as the reference
+        // already exists, the Module class can modify the contents of the Modifier object without really calling this function,
+        // however, to maintain consistent code, the Module classes will always call this function to notify the map class
+        // that the contents of the map was changed, or made 'dirty':
+        modMap->m_MapIsDirty = true;
+        ModifierMapType::iterator cur;
+        std::pair<ModifierMapType::iterator,ModifierMapType::iterator> range;
+        range = modMap->m_ModifierMap.equal_range(modifierRef->GetModifierValue());   // Get the one or more modifier map entries matching this modifier being added
+        for (cur=range.first; cur!=range.second; ++cur)
+            if ( cur->second->GetOriginatorID() == originatorID )
+                return 1;   // Yep, we found the Modifier owned by this originatorID, so we return "success" because the Module
+                            // class object already updated this Modifier through its own ModifierRef, we don't need to do anything
+                            // else here except return and prevent ADDING to the ModifierMap
+
+        // For loop searching existing modifiers completed, so this originatorID's Modifier
+        // is NOT in the map yet... Let's add it:
+        modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
+    }
+    else
+    {
+        // Modifier entry in this attributeID's Modifier Map does not exist yet, so lets insert it for the first time:
+        // Insert the (modifierValue, ModifierRef) pair into the Modifier Map for this attributeID:
+        modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
+        modMap->m_MapIsDirty = true;
+        m_LocalSubsystemModifierMaps->insert(std::pair<uint32, ModifierMap *>(attributeID, modMap));
+    }
+
+    return 1;
+}
+
+int32 ModuleManager::RemoveSubsystemEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+{
+    bool bModifierFound = false;
+    ModifierMap * modMap = nullptr;
+
+    if ( m_LocalSubsystemModifierMaps->find(attributeID) != m_LocalSubsystemModifierMaps->end() )
+    {
+        modMap = m_LocalSubsystemModifierMaps->find(attributeID)->second;
+        modMap->m_MapIsDirty = true;
+
+        if ( modMap->m_ModifierMap.find(modifierRef->GetModifierValue()) != modMap->m_ModifierMap.end() )
+        {
+            modMap->m_MapIsDirty = true;
+            ModifierMapType::iterator cur;
+            std::pair<ModifierMapType::iterator,ModifierMapType::iterator> range;
+            range = modMap->m_ModifierMap.equal_range(modifierRef->GetModifierValue());   // Get the one or more modifier map entries matching this modifier being removed
+            for (cur=range.first; cur!=range.second; ++cur)
+                if ( cur->second->GetOriginatorID() == originatorID )
+                {
+                    bModifierFound = true;  // Yep, we found the Modifier owned by this originatorID, so we break out of the for ()
+                                            // so we can now remove this exact Modifier object from the multimap
+                    break;
+                }
+
+            if ( bModifierFound == true )
+            {
+                // For loop searching existing modifiers completed, so this originatorID's Modifier
+                // was found in the map
+                modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
+            }
+            else
+                return -1;  // This modifier's originatorID was not found in the map, so return error code
+        }
+        else
+            return -1;  // This modifier's modifier value was not even found in the map, so return error code
+    }
+    else
+        return -1;  // Modifier Map for supplied attributeID does not exist, return error value
+
+    return 1;
+}
+
+int32 ModuleManager::ApplyShipSkillEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+{
+    ModifierMap * modMap = nullptr;
+
+    // Make sure the ModifierRef passed in is not NULL:
+    if (!modifierRef.get())
+        return -1;
+
+    // Check to see if this attributeID does not have a ModifierMap in the Map of ModifierMaps
+    if ( m_LocalShipSkillModifierMaps->find(attributeID) == m_LocalShipSkillModifierMaps->end() )
+    {
+        // A Modifier Map for this attributeID does not exist, create a new one:
+        modMap = new ModifierMap();
+        if (!modMap)
+            return -1;
+    }
+    else
+    {
+        // A Modifier Map for this attributeID already exists, find it and get its pointer:
+        modMap = m_LocalShipSkillModifierMaps->find(attributeID)->second;
+        if (!modMap)
+            return -1;
+    }
+
+    // Check to see if the modifier map has any entries corresponding to the passed-in modifier's value:
+    if ( modMap->m_ModifierMap.find(modifierRef->GetModifierValue()) != modMap->m_ModifierMap.end() )
+    {
+        // Modifier entry in this attributeID's Modifier Map already exists (modifierRef->GetModifierValue() found a match),
+        // so check its originatorID and if that matches, DO NOT add this Modifier object to the map as the reference
+        // already exists, the Module class can modify the contents of the Modifier object without really calling this function,
+        // however, to maintain consistent code, the Module classes will always call this function to notify the map class
+        // that the contents of the map was changed, or made 'dirty':
+        modMap->m_MapIsDirty = true;
+        ModifierMapType::iterator cur;
+        std::pair<ModifierMapType::iterator,ModifierMapType::iterator> range;
+        range = modMap->m_ModifierMap.equal_range(modifierRef->GetModifierValue());   // Get the one or more modifier map entries matching this modifier being added
+        for (cur=range.first; cur!=range.second; ++cur)
+            if ( cur->second->GetOriginatorID() == originatorID )
+                return 1;   // Yep, we found the Modifier owned by this originatorID, so we return "success" because the Module
+                            // class object already updated this Modifier through its own ModifierRef, we don't need to do anything
+                            // else here except return and prevent ADDING to the ModifierMap
+
+        // For loop searching existing modifiers completed, so this originatorID's Modifier
+        // is NOT in the map yet... Let's add it:
+        modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
+    }
+    else
+    {
+        // Modifier entry in this attributeID's Modifier Map does not exist yet, so lets insert it for the first time:
+        // Insert the (modifierValue, ModifierRef) pair into the Modifier Map for this attributeID:
+        modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
+        modMap->m_MapIsDirty = true;
+        m_LocalShipSkillModifierMaps->insert(std::pair<uint32, ModifierMap *>(attributeID, modMap));
+    }
+
+    return 1;
+}
+
+int32 ModuleManager::RemoveShipSkillEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+{
+    bool bModifierFound = false;
+    ModifierMap * modMap = nullptr;
+
+    if ( m_LocalShipSkillModifierMaps->find(attributeID) != m_LocalShipSkillModifierMaps->end() )
+    {
+        modMap = m_LocalShipSkillModifierMaps->find(attributeID)->second;
+        modMap->m_MapIsDirty = true;
+
+        if ( modMap->m_ModifierMap.find(modifierRef->GetModifierValue()) != modMap->m_ModifierMap.end() )
+        {
+            modMap->m_MapIsDirty = true;
+            ModifierMapType::iterator cur;
+            std::pair<ModifierMapType::iterator,ModifierMapType::iterator> range;
+            range = modMap->m_ModifierMap.equal_range(modifierRef->GetModifierValue());   // Get the one or more modifier map entries matching this modifier being removed
+            for (cur=range.first; cur!=range.second; ++cur)
+                if ( cur->second->GetOriginatorID() == originatorID )
+                {
+                    bModifierFound = true;  // Yep, we found the Modifier owned by this originatorID, so we break out of the for ()
+                                            // so we can now remove this exact Modifier object from the multimap
+                    break;
+                }
+
+            if ( bModifierFound == true )
+            {
+                // For loop searching existing modifiers completed, so this originatorID's Modifier
+                // was found in the map
+                modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
+            }
+            else
+                return -1;  // This modifier's originatorID was not found in the map, so return error code
+        }
+        else
+            return -1;  // This modifier's modifier value was not even found in the map, so return error code
+    }
+    else
+        return -1;  // Modifier Map for supplied attributeID does not exist, return error value
+
+    return 1;
+}
+
+int32 ModuleManager::ApplyModuleRigEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+{
+    sLog.Magenta("ModuleManager::ApplyModuleRigEffect()","Needs to be implemented");
+    return 1;
+}
+
+int32 ModuleManager::RemoveModuleRigEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+{
+    sLog.Magenta("ModuleManager::RemoveModuleRigEffect()","Needs to be implemented");
+    return 1;
+}
+
+int32 ModuleManager::ApplyImplantEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+{
+    sLog.Magenta("ModuleManager::ApplyImplantEffect()","Needs to be implemented");
+    return 1;
+}
+
+int32 ModuleManager::RemoveImplantEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+{
+    sLog.Magenta("ModuleManager::RemoveImplantEffect()","Needs to be implemented");
+    return 1;
+}
+
+void ModuleManager::_processExternalEffect(SubEffect * s)
+{
+    //50-50 it's targeting a specific module ( i'm assuming here )
+    GenericModule* mod = m_Modules->GetModule(s->TargetItemID());
+    if (mod)
+    {
+        //calculate new attribute
+        mod->SetAttribute(s->AttributeID(),
+                          CalculateNewAttributeValue(mod->GetAttribute(s->AttributeID()),
+                                                                       s->AppliedValue(), s->CalculationType()));
+    }
+    else if ( s->TargetItemID() == m_Ship->itemID() ) //guess it's not, but that means it should be targeting our ship itself
+    {
+        //calculate new attribute
+        m_Ship->SetAttribute(s->AttributeID(),
+                             CalculateNewAttributeValue(m_Ship->GetAttribute(s->AttributeID()),
+                                                                             s->AppliedValue(), s->CalculationType()));
+    }
+    else //i have no idea what their targeting X_X
+        sLog.Error("ModuleManager", "Process external effect inconsistency.  This shouldn't happen");
+
+}
+
+ModuleCommand ModuleManager::_translateEffectName(std::string s)
+{
+    //slow but it's better to do it once then many times as it gets passed around in modules or w/e
+    //all modules should expect a ModuleCommand instead of a string
+
+    //slightly faster version for when I know what things are really called
+    //might as well use, but will definately not be right
+
+    switch(s[0])
+    {
+        case 'a': return ACTIVATE;
+        case 'd': return (s[2] == 'a' ? DEACTIVATE : DEOVERLOAD);
+        case 'o': return (s[1] == 'n' ? ONLINE : (s[1] == 'f' ? OFFLINE : OVERLOAD)); //compound booleans ftw
+    }
+
+    return CMD_ERROR;
+}
+
+#pragma endregion
+//////////////////////////////////////////////////////////////////////////////////

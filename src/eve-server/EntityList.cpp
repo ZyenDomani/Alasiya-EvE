@@ -1,0 +1,384 @@
+/*
+    ------------------------------------------------------------------------------------
+    LICENSE:
+    ------------------------------------------------------------------------------------
+    This file is part of EVEmu: EVE Online Server Emulator
+    Copyright 2006 - 2011 The EVEmu Team
+    For the latest information visit http://evemu.org
+    ------------------------------------------------------------------------------------
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any later
+    version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+    http://www.gnu.org/copyleft/lesser.txt.
+    ------------------------------------------------------------------------------------
+    Author:        Zhur
+    Updates:    Allan
+*/
+
+#include "eve-server.h"
+
+#include "Client.h"
+#include "EntityList.h"
+#include "EVEServerConfig.h"
+#include "ServiceDB.h"
+#include "ship/DestinyManager.h"
+#include "system/SystemManager.h"
+
+EntityList::EntityList()
+: m_services( nullptr ),
+m_stamp(1000),    /* start at 1k.  in ms.  used for destiny and client counters */
+m_stampTimer(1000, true)
+{
+    m_systems.clear();
+    m_clients.clear();
+    m_stations.clear();
+}
+
+EntityList::~EntityList() {
+    sLog.Log(" EntityList::~EntityList()", "there are %u clients, %u systems, and %u stations in list", \
+    m_clients.size(), m_systems.size(), m_stations.size());
+
+    for(auto cur : m_systems)
+        SafeDelete(cur.second);
+
+    m_systems.clear();
+    m_clients.clear();
+    m_stations.clear();
+
+    sLog.Success("   ServerShutdown", " Complete.");
+}
+
+void EntityList::Init() {
+    /* start the timer */
+    m_stampTimer.Start(1000);
+    m_clientSeedID = m_db->SetClientSeed();
+}
+
+void EntityList::Shutdown() {
+    /** @todo finish this....
+     * halt server called from admin client. (gm command ingame)
+     * call d'tor on all connected clients
+     * server run loop will exit after control is returned from this function, which will clean up remaining items.
+     */
+    for (auto cur : m_clients) {
+        SafeDelete(cur);
+    }
+    m_clients.clear();
+}
+
+void EntityList::Add( Client* client ) {
+    if (client)
+        m_clients.push_back(client);
+    ++m_connections;
+}
+
+void EntityList::Remove(Client* client) {
+    /*  this has to use a 'real' iterator for erase() to work. */
+    for (std::vector<Client*>::iterator cur; cur != m_clients.end(); ++cur)
+        if ((*cur) == client)
+            m_clients.erase(cur);
+}
+
+void EntityList::Process() {
+    double profileStartTime = 0.0;
+    if (sConfig.misc.UseProfiling)
+        profileStartTime = GetTimeUSeconds();
+
+    Client* pClient = nullptr;
+    std::vector<Client*>::iterator cur_client = m_clients.begin();
+    while (cur_client != m_clients.end()) {
+        if ((*cur_client)->ProcessNet())
+            cur_client++;
+        else {
+            pClient = *cur_client;
+            cur_client = m_clients.erase(cur_client);
+            sLog.Log("Entity List", "Deleting client for account %u", pClient->GetUserID());
+            if (pClient)
+                SafeDelete(pClient);
+        }
+    }
+
+    if (sConfig.misc.UseProfiling)
+        sProfile.AddTime(_entityCProfile, GetTimeUSeconds() - profileStartTime);
+
+    SystemManager* active_system = nullptr;
+
+    if (sConfig.misc.UseProfiling)
+        profileStartTime = GetTimeUSeconds();
+
+    /* check for 1Hz timer tic */
+    bool tic = false;
+    if (m_stampTimer.Check()) {
+        tic = true;
+        ++m_stamp;
+    }
+
+    std::map<uint32, SystemManager*>::iterator cur = m_systems.begin();
+    while (cur != m_systems.end()) {
+        active_system = cur->second;
+        if (!active_system) {
+            sLog.Log(" EntityList::Proc", "Deleting System %u", cur->first);
+            SafeDelete(cur->second);
+            cur = m_systems.erase(cur);
+            continue;
+        } else {
+            if (tic) {
+                if (!active_system->ProcessDestiny()) {
+                    sLog.Log(" EntityList::Proc", "active_system->Process() returned false.  Destroying System %u", active_system->GetID());
+                    active_system->UnloadSystem();
+                    SafeDelete(active_system);
+                    cur = m_systems.erase(cur);
+                    continue;
+                }
+            }
+
+            active_system->Process();
+            ++cur;
+        }
+    }
+
+    if (sConfig.misc.UseProfiling)
+        sProfile.AddTime(_entitySProfile, GetTimeUSeconds() - profileStartTime);
+}
+
+SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
+    if (!IsSolarSystem(systemID)) {
+        _log(SERVER__INIT_ERR, "BootSystem() called with invalid systemID (%u)", systemID);
+        return nullptr;
+    }
+
+    std::map<uint32, SystemManager*>::iterator res = m_systems.find(systemID);
+    if (res != m_systems.end())
+        return res->second;
+
+    SystemManager* mgr = new SystemManager(systemID,* m_services);
+    if ((!mgr) || (!mgr->BootSystem())) {
+        _log(SERVER__INIT_ERR, "BootSystem() - Booting system %u failed", systemID);
+        SafeDelete(mgr);
+        return nullptr;
+    }
+
+    _log(SERVER__INIT, "BootSystem() - Booted system %u", systemID);
+    m_systems[systemID] = mgr;
+    return mgr;
+}
+
+/* note...all of the Find* methods below can get very expensive for many players */
+Client* EntityList::FindClientByCharID(uint32 char_id) const {
+    for (auto cur : m_clients) {
+        if (cur->GetCharacterID() == char_id)
+            return cur;
+    }
+    return nullptr;
+}
+
+Client* EntityList::FindClientByName(const char* name) const {
+    for (auto cur : m_clients) {
+        CharacterRef cRef = cur->GetChar();
+		if (cRef)
+			if (cRef->itemName().c_str() == name)
+                return cur;
+    }
+    return nullptr;
+}
+
+Client* EntityList::FindClientByShip(uint32 ship_id) const {
+    for (auto cur : m_clients) {
+        if (cur->GetShipID() == ship_id)
+            return cur;
+    }
+    return nullptr;
+}
+
+Client* EntityList::FindClientByAccount(uint32 account_id) const {
+    for (auto cur : m_clients) {
+        if (cur->GetUserID() == account_id)
+            return cur;
+    }
+    return nullptr;
+}
+
+void EntityList::FindClientByStationID(uint32 stationID, std::vector<Client*> &result) const {
+    for (auto cur : m_clients) {
+        if (cur->GetStationID() == stationID) {
+            sLog.Warning( "EntityList::FindByStationID()", "Client %s (%u) added to GuestList for station %u",
+						  cur->GetName(), cur->GetCharacterID(), stationID );
+            result.push_back(cur);
+		}
+    }
+}
+
+void EntityList::FindByRegionID(uint32 regionID, std::vector<Client*> &result) const {
+    for (auto cur : m_clients) {
+        if (cur->GetRegionID() == regionID) {
+            sLog.Warning( "EntityList::FindByStationID()", "Client %s (%u) added to GuestList for region %u",
+						  cur->GetName(), cur->GetCharacterID(), regionID );
+            result.push_back(cur);
+		}
+    }
+}
+
+void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const {
+    //build a little notification out of it.
+    EVENotificationStream notify;
+        notify.remoteObject = 1;
+        notify.args = *payload;
+    *payload = nullptr;    //consumed
+
+    //now sent it to the client
+    PyAddress dest;
+        dest.type = PyAddress::Broadcast;
+        dest.service = notifyType;
+        dest.bcast_idtype = idType;
+    Broadcast(dest, notify);
+}
+
+void EntityList::Broadcast(const PyAddress &dest, EVENotificationStream &noti) const {
+    for (auto cur : m_clients)
+        cur->SendNotification(dest, noti);
+}
+
+void EntityList::Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const {
+    //this could likely be done better
+    std::vector<Client*> result;
+    GetClients(cset, result);
+
+    std::vector<Client*>::iterator cur = result.begin();
+    for (; cur != result.end(); cur++)
+        (*cur)->SendNotification(dest, noti);
+}
+
+//in theory this could be written in terms of the more generic
+//MulticastTarget function, but this is much more efficient.
+void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple** payload, NotificationDestination target, uint32 target_id, bool seq )
+{
+    PyTuple* p = *payload;
+    *payload = nullptr;
+
+    for (auto cur : m_clients) {
+        switch( target ) {
+        case NOTIF_DEST__LOCATION:
+            if( cur->GetLocationID() != target_id )
+                continue;
+            break;
+        case NOTIF_DEST__CORPORATION:
+            if( cur->GetCorporationID() != target_id )
+                continue;
+            break;
+        }
+
+        PyTuple* temp = new PyTuple(* p );
+        cur->SendNotification( notifyType, idType, &temp, seq );
+    }
+
+    PyDecRef( p );
+}
+
+void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple** in_payload, const MulticastTarget &mcset, bool seq)
+{
+    // consume payload
+    PyTuple* payload = *in_payload;
+    *in_payload = nullptr;
+
+    //cache these locally to avoid calling empty each iteration.
+    const bool chars_empty = mcset.characters.empty();
+    const bool locs_empty = mcset.locations.empty();
+    const bool corps_empty = mcset.corporations.empty();
+
+    if ( !chars_empty || !locs_empty || !corps_empty ) {
+        for (auto cur : m_clients) {
+            if(      !chars_empty
+                 && mcset.characters.find(cur->GetCharacterID()) != mcset.characters.end() )
+            {
+                //found, carry on...
+            } else if(   !locs_empty
+                      && mcset.locations.find(cur->GetLocationID()) != mcset.locations.end() )
+            {
+                //found, carry on...
+            } else if(   !corps_empty
+                      && mcset.corporations.find(cur->GetCorporationID()) != mcset.corporations.end() )
+            {
+                //found, carry on...
+            } else {
+                //not found in any of the above sets.
+                continue;
+            }
+
+            PyTuple* temp = new PyTuple(*payload);
+            cur->SendNotification( notifyType, idType, &temp, seq );
+        }
+    }
+
+    PyDecRef( payload );
+}
+
+void EntityList::Multicast(const character_set &cset, const char* notifyType, const char* idType, PyTuple** in_payload, bool seq) const {
+    std::vector<Client*> result;
+    GetClients(cset, result);
+
+    size_t num_remaining = result.size();
+
+    std::vector<Client*>::iterator cur = result.begin();
+    PyTuple* payload;
+    for (; cur != result.end(); cur++, num_remaining--) {
+        //keep a counter to eliminate an extra copy of in_payload
+        if (num_remaining < 2) {
+            payload = *in_payload;
+            *in_payload = nullptr;
+        } else {
+            if (*in_payload == nullptr)
+                payload = nullptr;
+            else
+                payload = (PyTuple*) (*in_payload)->Clone();
+        }
+
+        (*cur)->SendNotification(notifyType, idType, &payload, seq);
+    }
+}
+
+void EntityList::Unicast(uint32 charID, const char* notifyType, const char* idType, PyTuple** payload, bool seq) {
+    //this could be implemented more efficiently, but I dont feel like it right now.
+    character_set cset;
+    cset.insert(charID);
+    Multicast(cset, notifyType, idType, payload, seq);
+}
+
+void EntityList::GetClients(const character_set &cset, std::vector<Client*> &result) const {
+    //this could likely be done better
+    character_set::const_iterator res;
+    for (auto cur : m_clients) {
+        res = cset.find(cur->GetCharacterID());
+        if (res != cset.end()) {
+            result.push_back(cur);
+        }
+    }
+}
+
+void EntityList::GetClients(std::vector<Client*> &result) const {
+    for (auto cur : m_clients)
+        result.push_back(cur);
+}
+
+void EntityList::AddStation(uint32 stationID, InventoryItemRef itemRef) {
+    m_stations[stationID] = itemRef;
+}
+
+void EntityList::RemoveStation(uint32 stationID) {
+    m_stations.erase(stationID);
+}
+
+InventoryItemRef EntityList::GetStationByID(uint32 stationID) {
+    std::map<uint32, InventoryItemRef>::iterator res = m_stations.find(stationID);
+    if (res != m_stations.end())
+        return res->second;
+    return InventoryItemRef();
+}

@@ -1,0 +1,324 @@
+
+<elements>
+<!--  This is where all scanning-related packets will go.  -->
+
+  <elementDef name="Call_ConeScan">
+    <tupleInline>
+      <real name="ScanAngle" />
+      <long name="range" />
+      <real name="x" />
+      <real name="y" />
+      <real name="z" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="DirectionScanResult">
+    <objectInline>
+      <stringInline value="util.KeyVal" />
+      <dictInline>
+        <dictInlineEntry key="id">
+          <int name="id" />
+        </dictInlineEntry>
+        <dictInlineEntry key="typeID">
+          <int name="typeID" />
+        </dictInlineEntry>
+        <dictInlineEntry key="groupID">
+          <int name="groupID" />
+        </dictInlineEntry>
+        <dictInlineEntry key="categoryID">
+          <int name="categoryID" />
+        </dictInlineEntry>
+      </dictInline>
+    </objectInline>
+  </elementDef>
+
+<!--  direction scan results
+        PyDict* res = new PyDict;
+            res->SetItemString("id",         new PyInt(i->GetID()));
+            res->SetItemString("typeID",     new PyInt(i->Item()->typeID()));
+            res->SetItemString("groupID",    new PyInt(i->Item()->groupID()));
+            res->SetItemString("categoryID", new PyInt(i->Item()->categoryID()));
+    put a Vector3 in for item position?
+
+-->
+
+<!--
+        [PyString "OnSystemScanStarted"]  macho.Notification  -type 7
+    [PyInt 5654387]
+    [PyTuple 1 items]
+      [PyTuple 2 items]
+        [PyInt 0]
+        [PySubStream 26 bytes]                 << substream packet  - t3 in above code
+          [PyTuple 2 items]
+            [PyInt 0]                           << unknown -always 0
+            [PyTuple 2 items]
+              [PyInt 1]                         << unknown -always 1 - t4 ends here
+              [PyTuple 3 items]                     << OnSystemScanStarted packet starts here
+                [PyIntegerVar 129813155720852448]       << timestamp
+                [PyInt 10000]                           << scan duration in ms
+                [PyDict 0 kvp]                          << dict of active probes.  0= ship scanner
+    [PyNone]
+    [PyNone]
+    -->
+  <elementDef name="OnSystemScanStarted">
+    <tupleInline>
+      <long name="timestamp" />
+      <int name="duration" />
+      <dict name="scanProbesDict" />
+    </tupleInline>
+  </elementDef>
+
+
+  <elementDef name="OnSystemScanStopped">
+    <tupleInline>
+      <dict name="scanProbesDict" />
+      <list name="systemScanResult" />
+      <list name="absentTargets" />
+    </tupleInline>
+  </elementDef>
+<!--
+        [PyString "OnSystemScanStopped"]  macho.Notification  -type 7
+    [PyInt 5654387]
+    [PyTuple 1 items]
+      [PyTuple 2 items]
+        [PyInt 0]
+        [PySubStream 1266 bytes]                 << substream packet  - t3 in above code
+          [PyTuple 2 items]
+            [PyInt 0]                           << unknown -always 0
+            [PyTuple 2 items]
+              [PyInt 1]                         << unknown -always 1 - t4 ends here
+              [PyTuple 3 items]                     << OnSystemScanStopped starts here
+                [PyDict 0 kvp]                      << dict of active probes  -ScanProbesDict goes here
+                [PyList 9 items]                    << list of results        -SystemScanResult goes here
+                  [PyObjectData Name: util.KeyVal]
+                    [PyDict 12 kvp]
+                      [PyString "deviation"]
+                      [PyInt 0]
+                      [PyString "typeID"]
+                      [PyInt 28356]
+                      [PyString "probeID"]
+                      [PyIntegerVar 1328534410]
+                      [PyString "scanGroupID"]
+                      [PyInt 128]
+                      [PyString "certainty"]
+                      [PyFloat 1]
+                      [PyString "pos"]
+                      [PyObjectEx Type2]
+                        [PyTuple 2 items]
+                          [PyTuple 1 items]
+                            [PyToken foo.Vector3]
+                          [PyTuple 3 items]
+                            [PyFloat 924428329391.783]
+                            [PyFloat 8194006649.63061]
+                            [PyFloat 165918840569.438]
+                      [PyString "groupID"]
+                      [PyInt 885]
+                      [PyString "strengthAttributeID"]
+                      [PyInt 1136]
+                      [PyString "dungeonName"]
+                      [PyString "Drone Squad"]
+                      [PyString "degraded"]
+                      [PyBool False]
+                      [PyString "data"]
+                      [PyObjectEx Type2]
+                        [PyTuple 2 items]
+                          [PyTuple 1 items]
+                            [PyObjectEx Type2]
+                              [PyTuple 2 items]
+                                [PyTuple 1 items]
+                                  [PyToken foo.Vector3]
+                                [PyTuple 3 items]
+                                  [PyFloat 924428329391.783]
+                                  [PyFloat 8194006649.63061]
+                                  [PyFloat 165918840569.438]
+                          [PyTuple 3 items]
+                            [PyFloat 1231197245226]
+                            [PyFloat -146772910080]
+                            [PyFloat 111531171840]
+                      [PyString "id"]
+                      [PyString "LAN-331"]
+                [PyList 0 items]                    << unknown
+    [PyNone]
+    -->
+
+  <elementDef name="SystemScanResultPositive">
+        <objectInline>
+          <stringInline value="util.KeyVal" />
+          <dictInline>
+            <dictInlineEntry key="deviation">
+              <int name="deviation" />
+            </dictInlineEntry>
+            <dictInlineEntry key="typeID">
+              <int name="typeID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="probeID">
+              <int name="probeID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="scanGroupID">
+              <int name="scanGroupID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="certainty">
+              <real name="certainty" />
+            </dictInlineEntry>
+            <dictInlineEntry key="pos">
+              <!-- <objectEx name="pos" type="PyObjectEx" optional="true" /> optional="true" will change this to PyNone if non-existant -->
+              <raw name="pos" />
+            </dictInlineEntry>
+            <dictInlineEntry key="groupID">
+              <int name="groupID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="strengthAttributeID">
+              <int name="strengthAttributeID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="dungeonName">
+              <string name="dungeonName" />
+            </dictInlineEntry>
+            <dictInlineEntry key="degraded">
+              <bool name="degraded" />
+            </dictInlineEntry>
+            <dictInlineEntry key="data">
+              <!-- <objectEx name="data" type="PyObjectEx" /> -->
+              <raw name="data" />
+            </dictInlineEntry>
+            <dictInlineEntry key="id">
+              <string name="id" />
+            </dictInlineEntry>
+          </dictInline>
+        </objectInline>
+  </elementDef>
+
+  <!-- client/anomaly position data to go in objects "pos" and "data" in SystemScanResultPositive packet -->
+  <elementDef name="SSR_ObjectEx_Pos">
+    <tupleInline>
+      <real name="x" />
+      <real name="y" />
+      <real name="z" />
+    </tupleInline>
+  </elementDef>
+
+  <!--
+                [PyDict 6 kvp]                              << dict of probes
+                  [PyIntegerVar 9000000000000020470]
+                  [PyObjectData Name: util.KeyVal]
+                    [PyDict 10 kvp]
+                      [PyString "typeID"]
+                      [PyInt 30028]
+                      [PyString "scanStrength"]
+                      [PyFloat 0.528125]
+                      [PyString "probeID"]
+                      [PyIntegerVar 9000000000000020470]
+                      [PyString "target"]
+                      [PyObjectEx Type2]
+                        [PyTuple 2 items]
+                          [PyTuple 1 items]
+                            [PyToken foo.Vector3]
+                          [PyTuple 3 items]
+                            [PyFloat 506169425920]
+                            [PyFloat 2437608374272]
+                            [PyFloat 1636387389440]
+                      [PyString "rangeStep"]
+                      [PyInt 7]
+                      [PyString "pos"]
+                      [PyObjectEx Type2]
+                        [PyTuple 2 items]
+                          [PyTuple 1 items]
+                            [PyToken foo.Vector3]
+                          [PyTuple 3 items]
+                            [PyFloat 506169425920]
+                            [PyFloat 2437608374272]
+                            [PyFloat 1636387389440]
+                      [PyString "expiry"]
+                      [PyIntegerVar 129527560551490562]
+                      [PyString "state"]
+                      [PyNone]
+                      [PyString "maxDeviation"]
+                      [PyFloat 1675496151840]
+                      [PyString "scanRange"]
+                      [PyFloat 4787131862400]
+-->
+<!--
+  <elementDef name="ScanProbesDict">
+      <objectInline>
+        <stringInline value="util.KeyVal" />
+          <dictInline>
+            <dictInlineEntry key="typeID">
+              <int name="typeID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="probeID">
+              <int name="probeID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="scanStrength">
+              <real name="scanStrength" />
+            </dictInlineEntry>
+            <dictInlineEntry key="target">
+              <objectEx name="target" type="PyFloat">
+            </dictInlineEntry>
+            <dictInlineEntry key="rangeStep">
+              <int name="rangeStep" />
+            </dictInlineEntry>
+            <dictInlineEntry key="pos">
+              <objectEx name="pos" type="PyFloat" />
+            </dictInlineEntry>
+            <dictInlineEntry key="expiry">
+              <int name="expiry" />
+            </dictInlineEntry>
+            <dictInlineEntry key="state">
+              <int name="probeState" none_marker="0" />
+            </dictInlineEntry>
+            <dictInlineEntry key="maxDeviation">
+              <real name="maxDeviation" />
+            </dictInlineEntry>
+            <dictInlineEntry key="scanRange">
+              <real name="scanRange" />
+            </dictInlineEntry>
+          </dictInline>
+      </objectInline>
+  </elementDef>
+-->
+  <!-- rsp for partial result of object -->
+  <!--
+  <elementDef name="SystemScanResultPartial">
+        <objectInline>
+          <stringInline value="util.KeyVal" />
+          <dictInline>
+            <dictInlineEntry key="deviation">
+              <int name="deviation" />
+            </dictInlineEntry>
+            <dictInlineEntry key="typeID">
+              <int name="typeID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="probeID">
+              <int name="probeID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="scanGroupID">
+              <int name="scanGroupID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="certainty">
+              <real name="certainty" />
+            </dictInlineEntry>
+            <dictInlineEntry key="pos">
+              <objectEx name="pos" type="PyObjectEx_Type1" optional="true" />
+            </dictInlineEntry>
+            <dictInlineEntry key="groupID">
+              <int name="groupID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="strengthAttributeID">
+              <int name="strengthAttributeID" />
+            </dictInlineEntry>
+            <dictInlineEntry key="dungeonName">
+              <string name="dungeonName" />
+            </dictInlineEntry>
+            <dictInlineEntry key="degraded">
+              <bool name="degraded" />
+            </dictInlineEntry>
+            <dictInlineEntry key="data">
+              <objectEx name="data" type="PyObjectEx_Type1" />
+            </dictInlineEntry>
+            <dictInlineEntry key="id">
+              <string name="id" />
+            </dictInlineEntry>
+          </dictInline>
+        </objectInline>
+  </elementDef>
+-->
+</elements>

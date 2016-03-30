@@ -1,0 +1,15 @@
+
+<elements>
+<!--
+    //     [0] PyInt:      sends id of entity the calling char is in...ship/station/system/pos/etc
+    //     [1] PyInt:       ownerID = charID of char making the bm
+    //     [2] PyWString:  label (called memo in db) for the bookmark
+    //     [3] PyString:  text for the note (comment) field in the bookmark
+    //     [4] PyInt:        folderID bookmark is being placed into.  default=0
+    -->
+  <elementDef name="Call_GetBookmarks">
+    <tupleInline>
+    </tupleInline>
+  </elementDef>
+
+</elements>

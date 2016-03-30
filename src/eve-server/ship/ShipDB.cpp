@@ -1,0 +1,132 @@
+/*
+------------------------------------------------------------------------------------
+LICENSE:
+------------------------------------------------------------------------------------
+This file is part of EVEmu: EVE Online Server Emulator
+Copyright 2006 - 2011 The EVEmu Team
+For the latest information visit http://evemu.org
+------------------------------------------------------------------------------------
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+http://www.gnu.org/copyleft/lesser.txt.
+------------------------------------------------------------------------------------
+Author: Zhur, Allan
+*/
+
+#include "eve-server.h"
+
+#include "PyBoundObject.h"
+#include "ship/ShipDB.h"
+
+PyTuple* ShipDB::GetFormations()
+{
+    //vicious crap... but this is gunna be a bit of work to load from the DB (nested tuples)
+    PyTuple* res = new PyTuple( 2 );
+
+    Beyonce_Formation f;
+
+    //Diamond formation
+    f.name = "Diamond";
+
+    f.pos1.x = 100;
+    f.pos1.y = 0;
+    f.pos1.z = 0;
+
+    f.pos2.x = 0;
+    f.pos2.y = 100;
+    f.pos2.z = 0;
+
+    f.pos3.x = -100;
+    f.pos3.y = 0;
+    f.pos3.z = 0;
+
+    f.pos4.x = 0;
+    f.pos4.y = -100;
+    f.pos4.z = 0;
+
+    res->SetItem( 0, f.Encode() );
+
+    //Arrow formation
+    f.name = "Arrow";
+
+    f.pos1.x = 100;
+    f.pos1.y = 0;
+    f.pos1.z = -50;
+
+    f.pos2.x = 50;
+    f.pos2.y = 0;
+    f.pos2.z = 0;
+
+    f.pos3.x = -100;
+    f.pos3.y = 0;
+    f.pos3.z = -50;
+
+    f.pos4.x = -50;
+    f.pos4.y = 0;
+    f.pos4.z = 0;
+
+    res->SetItem( 1, f.Encode() );
+
+    return res;
+}
+
+PyRep *ShipDB::GetInsuranceByShipID(uint32 shipID) {
+    DBQueryResult res;
+    DBResultRow row;
+    sDatabase.RunQuery(res,
+        "SELECT startDate, shipName, shipID, endDate, ownerID, fraction"
+		" FROM shipInsurance"
+        " WHERE shipID = %u", shipID );
+
+    if(res.GetRow(row))
+        return DBRowToRow(row);
+    else
+        return 0;
+}
+
+PyRep *ShipDB::GetInsuranceByOwnerID(uint32 ownerID) {
+    DBQueryResult res;
+    sDatabase.RunQuery(res,
+        "SELECT startDate, shipName, shipID, endDate, ownerID, fraction"
+		" FROM shipInsurance"
+        " WHERE ownerID = %u", ownerID );
+
+    return DBResultToRowset(res);
+}
+
+bool ShipDB::InsertInsuranceByShipID(uint32 shipID, std::string name, uint32 ownerID, float fraction, double payOut, bool isCorpItem, uint8 numWeeks) {
+    uint64 endDate = (Win32TimeNow() + (Win32Time_Day * numWeeks * 7));
+
+    DBerror err;
+    sDatabase.RunQuery(err, "INSERT INTO "
+        "  shipInsurance (shipID, shipName, ownerID, isCorpItem, startDate, endDate, fraction, payOutAmount)"
+        " VALUES (%u, '%s', %u, %u, %" PRIu64 ", %" PRIu64 ", %.2f, %f)",
+            shipID, name.c_str(), ownerID, isCorpItem, Win32TimeNow(), endDate, fraction, payOut );
+
+    return true;
+}
+
+void ShipDB::DeleteInsuranceByShipID(uint32 shipID) {
+    DBerror err;
+	sDatabase.RunQuery(err, "DELETE FROM shipInsurance WHERE shipID=%u", shipID);
+}
+
+float ShipDB::GetShipInsurancePayout(uint32 shipID) {
+    DBQueryResult res;
+    DBResultRow row;
+    sDatabase.RunQuery(res, "SELECT payOutAmount FROM shipInsurance WHERE shipID = %u", shipID);
+    if(res.GetRow(row))
+        return row.GetFloat(0);
+    else
+        return 150000;  //default to flat 150K for no insurance.
+}
