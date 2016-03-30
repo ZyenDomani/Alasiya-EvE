@@ -1,0 +1,300 @@
+/*
+    ------------------------------------------------------------------------------------
+    LICENSE:
+    ------------------------------------------------------------------------------------
+    This file is part of EVEmu: EVE Online Server Emulator
+    Copyright 2006 - 2011 The EVEmu Team
+    For the latest information visit http://evemu.org
+    ------------------------------------------------------------------------------------
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any later
+    version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+    http://www.gnu.org/copyleft/lesser.txt.
+    ------------------------------------------------------------------------------------
+    Author:        Zhur
+    Additions:  Allan
+    Log Version: 4.4
+*/
+ /*  see log.ini for matching versions */
+
+#ifndef LOG_CATEGORY
+#define LOG_CATEGORY(name)
+#endif
+#ifndef LOG_TYPE
+#define LOG_TYPE(cat, type, default_value, str)
+#endif
+#ifndef ENABLED
+#define ENABLED true
+#endif
+#ifndef DISABLED
+#define DISABLED false
+#endif
+
+/*
+ * Recommended log level names and ordering:
+ *  0 - fatal error     (not used)
+ *  1 - error
+ *  2 - warning
+ *  3 - message
+ *  4 - debug
+ *  5 - info
+ *  6 - trace
+ *  7 - success         (not used)
+ *
+*/
+
+LOG_CATEGORY( DEBUG )
+LOG_TYPE( DEBUG, DEBUG, ENABLED, "Debug" )
+
+LOG_CATEGORY( NET )
+LOG_TYPE( NET, PRES_ERROR, ENABLED, "PresError" )
+LOG_TYPE( NET, PRES_DEBUG, DISABLED, "PresDebug" )
+LOG_TYPE( NET, PRES_TRACE, DISABLED, "PresTrace" )
+LOG_TYPE( NET, PRES_REP, DISABLED, "PresRep" )
+LOG_TYPE( NET, PRES_RAW, DISABLED, "PresRaw" )
+LOG_TYPE( NET, PRES_REP_OUT, DISABLED, "PresOut" )
+LOG_TYPE( NET, PRES_RAW_OUT, DISABLED, "RawOut" )
+LOG_TYPE( NET, MARSHAL_ERROR, ENABLED, "MarshalError" )
+LOG_TYPE( NET, MARSHAL_TRACE, DISABLED, "MarshalTrace" )
+LOG_TYPE( NET, UNMARSHAL_TRACE, DISABLED, "UnmarshalTrace" )
+LOG_TYPE( NET, UNMARSHAL_BUFHEX, DISABLED, "UnmarshalHex" )
+LOG_TYPE( NET, UNMARSHAL_ERROR, ENABLED, "UnmarshalError" )
+LOG_TYPE( NET, ZEROINFL, DISABLED, "0Inflate" )
+LOG_TYPE( NET, ZEROCOMP, DISABLED, "0Compress" )
+LOG_TYPE( NET, PACKET_ERROR, ENABLED, "PacketError" )
+LOG_TYPE( NET, PACKET_WARNING, DISABLED, "PacketWarning" )
+LOG_TYPE( NET, DISPATCH_ERROR, ENABLED, "NetDispatch" )
+
+LOG_CATEGORY( COLLECT )
+LOG_TYPE( COLLECT, MESSAGE, DISABLED, "CollectMsg" )
+LOG_TYPE( COLLECT, ERROR, ENABLED, "CollectError" )
+LOG_TYPE( COLLECT, ERROR_DETAIL, ENABLED, "CollectErrorDetail" )
+LOG_TYPE( COLLECT, TCP, DISABLED, "CollectTCP" )
+LOG_TYPE( COLLECT, RAW_HEX, DISABLED, "CollectRawHex" )
+LOG_TYPE( COLLECT, PYREP_DUMP, DISABLED, "CollectPyRep" )
+LOG_TYPE( COLLECT, PACKET_DUMP, DISABLED, "PacketDump" )
+LOG_TYPE( COLLECT, PACKET_SRC, DISABLED, "PacketSrc" )
+LOG_TYPE( COLLECT, PACKET_DEST, DISABLED, "PacketDest" )
+LOG_TYPE( COLLECT, CALL_SUMMARY, ENABLED, "CallSummary" )
+LOG_TYPE( COLLECT, DESTINY, DISABLED, "CollectDestiny" )
+LOG_TYPE( COLLECT, DESTINY_REP, DISABLED, "CollectDestinyRep" )
+LOG_TYPE( COLLECT, DESTINY_HEX, DISABLED, "CollectDestinyHex" )
+LOG_TYPE( COLLECT, CALL_DUMP, DISABLED, "CollectCallDump" )
+LOG_TYPE( COLLECT, NOTIFY_SUMMARY, DISABLED, "NotifySummary" )
+LOG_TYPE( COLLECT, NOTIFY_DUMP, DISABLED, "NotifyDump" )
+LOG_TYPE( COLLECT, OTHER_DUMP, DISABLED, "BindDump" )
+LOG_TYPE( COLLECT, CALL_XML, DISABLED, "CallReqXML" )
+LOG_TYPE( COLLECT, CALLRSP_XML, DISABLED, "CallRspXML" )
+LOG_TYPE( COLLECT, NOTIFY_XML, DISABLED, "NotifyXML" )
+LOG_TYPE( COLLECT, MISC_XML, DISABLED, "MiscXML" )
+LOG_TYPE( COLLECT, CALLRSP_SQL, DISABLED, "CallRspSQL" )
+
+LOG_CATEGORY( SERVICE )
+LOG_TYPE( SERVICE, ERROR, ENABLED, "SvcError" )
+LOG_TYPE( SERVICE, WARNING, DISABLED, "SvcWarning" )
+LOG_TYPE( SERVICE, CALLS, DISABLED, "SvcCall" )
+LOG_TYPE( SERVICE, CALL_DUMP, DISABLED, "SvcCallDump" )
+LOG_TYPE( SERVICE, MESSAGE, DISABLED, "SvcMsg" )
+LOG_TYPE( SERVICE, CACHE, DISABLED, "SvcCache" )
+LOG_TYPE( SERVICE, CACHE_DUMP, DISABLED, "SvcCache" )
+LOG_TYPE( SERVICE, CALL_TRACE, DISABLED, "SvcCallTrace" )
+
+LOG_CATEGORY( SPAWN )
+LOG_TYPE( SPAWN, ERROR,   ENABLED, "SpawnError" )
+LOG_TYPE( SPAWN, WARNING, DISABLED, "SpawnWarning" )
+LOG_TYPE( SPAWN, MESSAGE, DISABLED, "SpawnMsg" )
+LOG_TYPE( SPAWN, POP, DISABLED, "SpawnPop" )
+LOG_TYPE( SPAWN, DEPOP, DISABLED, "SpawnDepop" )
+
+LOG_CATEGORY( MAIL )
+LOG_TYPE( MAIL, ERROR,   ENABLED, "MailError" )
+LOG_TYPE( MAIL, WARNING, DISABLED, "MailWarning" )
+LOG_TYPE( MAIL, MESSAGE, DISABLED, "MailMsg" )
+LOG_TYPE( MAIL, DEBUG, DISABLED, "MailDebug" )
+LOG_TYPE( MAIL, INFO, DISABLED, "MailInfo" )
+LOG_TYPE( MAIL, TRACE, DISABLED, "MailTrace" )
+
+LOG_CATEGORY( ITEM )
+LOG_TYPE( ITEM, ERROR,   ENABLED, "ItemError" )
+LOG_TYPE( ITEM, WARNING, DISABLED, "ItemWarning" )
+LOG_TYPE( ITEM, MESSAGE, DISABLED, "ItemMsg" )
+LOG_TYPE( ITEM, DEBUG, DISABLED, "ItemDebug" )
+LOG_TYPE( ITEM, TRACE, DISABLED, "ItemTrace" )
+
+LOG_CATEGORY( CORP )
+LOG_TYPE( CORP, ERROR,   ENABLED, "CorpError" )
+LOG_TYPE( CORP, WARNING, DISABLED, "CorpWarning" )
+LOG_TYPE( CORP, MESSAGE, DISABLED, "CorpMsg" )
+LOG_TYPE( CORP, INFO, DISABLED, "CorpInfo" )
+LOG_TYPE( CORP, TRACE, DISABLED, "CorpTrace" )
+
+LOG_CATEGORY( INV )
+LOG_TYPE( INV, ERROR,   ENABLED, "InvError" )
+LOG_TYPE( INV, WARNING, DISABLED, "InvWarning" )
+LOG_TYPE( INV, MESSAGE, DISABLED, "InvMsg" )
+LOG_TYPE( INV, INFO, DISABLED, "InvInfo" )
+LOG_TYPE( INV, TRACE, DISABLED, "InvTrace" )
+
+LOG_CATEGORY( NPC )
+LOG_TYPE( NPC, ERROR,   ENABLED, "NPCError" )
+LOG_TYPE( NPC, WARNING, DISABLED, "NPCWarning" )
+LOG_TYPE( NPC, MESSAGE, DISABLED, "NPCMsg" )
+LOG_TYPE( NPC, INFO, DISABLED, "NPCInfo" )
+LOG_TYPE( NPC, TRACE, DISABLED, "NPCTrace" )
+LOG_TYPE( NPC, AI_TRACE, DISABLED, "NPCAITrace" )
+
+LOG_CATEGORY( CONCORD )
+LOG_TYPE( CONCORD, ERROR,   ENABLED, "ConcordError" )
+LOG_TYPE( CONCORD, WARNING, DISABLED, "ConcordWarning" )
+LOG_TYPE( CONCORD, MESSAGE, DISABLED, "ConcordMsg" )
+LOG_TYPE( CONCORD, INFO, DISABLED, "ConcordInfo" )
+LOG_TYPE( CONCORD, TRACE, DISABLED, "ConcordTrace" )
+LOG_TYPE( CONCORD, AI_TRACE, DISABLED, "ConcordAITrace" )
+
+LOG_CATEGORY( AGENT )
+LOG_TYPE( AGENT, ERROR,   ENABLED, "AgentError" )
+LOG_TYPE( AGENT, WARNING, DISABLED, "AgentWarning" )
+LOG_TYPE( AGENT, MESSAGE, DISABLED, "AgentMsg" )
+LOG_TYPE( AGENT, DEBUG, DISABLED, "AgentDebug" )
+LOG_TYPE( AGENT, INFO, DISABLED, "AgentInfo" )
+LOG_TYPE( AGENT, TRACE, DISABLED, "AgentTrace" )
+
+LOG_CATEGORY( MARKET )
+LOG_TYPE( MARKET, ERROR,   ENABLED, "MarketError" )
+LOG_TYPE( MARKET, WARNING, DISABLED, "MarketWarning" )
+LOG_TYPE( MARKET, MESSAGE, DISABLED, "MarketMsg" )
+LOG_TYPE( MARKET, DEBUG, DISABLED, "MarketDebug" )
+LOG_TYPE( MARKET, TRACE, DISABLED, "MarketTrace" )
+
+LOG_CATEGORY( MINING )
+LOG_TYPE( MINING, ERROR,   ENABLED, "MiningError" )
+LOG_TYPE( MINING, WARNING, DISABLED, "MiningWarning" )
+LOG_TYPE( MINING, MESSAGE, DISABLED, "MiningMsg" )
+LOG_TYPE( MINING, INFO, DISABLED, "MiningInfo" )
+LOG_TYPE( MINING, DEBUG, DISABLED, "MiningDebug" )
+LOG_TYPE( MINING, TRACE, DISABLED, "MiningTrace" )
+
+LOG_CATEGORY( DESTINY )
+LOG_TYPE( DESTINY, ERROR,   ENABLED, "DestinyError" )
+LOG_TYPE( DESTINY, WARNING, DISABLED, "DestinyWarning" )
+LOG_TYPE( DESTINY, MESSAGE, DISABLED, "DestinyMsg" )
+LOG_TYPE( DESTINY, DEBUG, DISABLED, "DestinyDebug" )
+LOG_TYPE( DESTINY, TRACE, DISABLED, "DestinyTrace" )
+LOG_TYPE( DESTINY, SETSTATE, DISABLED, "DestinySetState" )
+LOG_TYPE( DESTINY, BUBBLE_DEBUG, DISABLED, "DestinyBubbleDebug" )
+LOG_TYPE( DESTINY, BUBBLE_TRACE, DISABLED, "DestinyBubbleTrace" )
+LOG_TYPE( DESTINY, UPDATES, DISABLED, "DestinyUpdate" )
+
+LOG_CATEGORY( PHYSICS )
+LOG_TYPE( PHYSICS, ERROR, ENABLED, "PhysicsError" )
+LOG_TYPE( PHYSICS, WARNING, DISABLED, "PhysicsWarning" )
+LOG_TYPE( PHYSICS, MESSAGE, DISABLED, "PhysicsMsg" )
+LOG_TYPE( PHYSICS, INFO, DISABLED, "PhysicsInfo" )
+LOG_TYPE( PHYSICS, TRACE, DISABLED, "Physics" )
+LOG_TYPE( PHYSICS, TRACEPOS, DISABLED, "Physics" )
+
+LOG_CATEGORY( COMMON )
+LOG_TYPE( COMMON, ERROR,   ENABLED, "CommonError" )
+LOG_TYPE( COMMON, WARNING, DISABLED, "CommonWarning" )
+LOG_TYPE( COMMON, MESSAGE, DISABLED, "CommonMsg" )
+LOG_TYPE( COMMON, INFO, DISABLED, "CommonInfo" )
+LOG_TYPE( COMMON, PYREP, DISABLED, "CommonPyRep" )
+
+LOG_CATEGORY( SERVER )
+LOG_TYPE( SERVER, INIT_ERR, ENABLED, "ServerInitError" )
+LOG_TYPE( SERVER, INIT, DISABLED, "ServerInit" )
+LOG_TYPE( SERVER, INFO, DISABLED, "ServerInfo" )
+LOG_TYPE( SERVER, CLIENTS, DISABLED, "ServerClients" )
+LOG_TYPE( SERVER, SHUTDOWN, DISABLED, "ServerShutdown" )
+
+LOG_CATEGORY( COMMAND )
+LOG_TYPE( COMMAND, ERROR, ENABLED, "CmdError" )
+LOG_TYPE( COMMAND, MESSAGE, DISABLED, "CmdMsg" )
+
+LOG_CATEGORY( SHIP )
+LOG_TYPE( SHIP, ERROR, ENABLED, "ShipError" )
+LOG_TYPE( SHIP, MESSAGE, DISABLED, "ShipMsg" )
+LOG_TYPE( SHIP, INFO, DISABLED, "ShipInfo" )
+LOG_TYPE( SHIP, TRACE, DISABLED, "ShipTrace" )
+LOG_TYPE( SHIP, MODULE_ERROR, ENABLED, "ModError" )
+LOG_TYPE( SHIP, MODULE_TRACE, DISABLED, "ModTrace" )
+LOG_TYPE( SHIP, MODULE_INFO, DISABLED, "ModInfo" )
+LOG_TYPE( SHIP, MODULE_DEBUG, DISABLED, "ModDebug" )
+
+LOG_CATEGORY( TARGET )
+LOG_TYPE( TARGET, ERROR, ENABLED, "TargetError" )
+LOG_TYPE( TARGET, WARNING, DISABLED, "TargetWarning" )
+LOG_TYPE( TARGET, MESSAGE, DISABLED, "TargetMsg" )
+LOG_TYPE( TARGET, INFO, DISABLED, "TargetInfo" )
+LOG_TYPE( TARGET, DEBUG, DISABLED, "TargetDebug" )
+LOG_TYPE( TARGET, TRACE, DISABLED, "TargetTrace" )
+LOG_TYPE( TARGET, DAMAGE, DISABLED, "TargetDmg" )
+LOG_TYPE( TARGET, DUMP, DISABLED, "TargetDump" )
+
+LOG_CATEGORY( LSC )
+LOG_TYPE( LSC, ERROR, ENABLED, "LSCError" )
+LOG_TYPE( LSC, WARNING, DISABLED, "LSCWarning" )
+LOG_TYPE( LSC, MESSAGE, DISABLED, "LSCMsg" )
+LOG_TYPE( LSC, INFO, DISABLED, "LSCInfo" )
+LOG_TYPE( LSC, CHANNELS, DISABLED, "LSCChan" )
+
+LOG_CATEGORY( LP )
+LOG_TYPE( LP, ERROR, ENABLED, "LPError" )
+LOG_TYPE( LP, WARNING, DISABLED, "LPWarning" )
+LOG_TYPE( LP, MESSAGE, DISABLED, "LPMsg" )
+LOG_TYPE( LP, INFO, DISABLED, "LPInfo" )
+LOG_TYPE( LP, DEBUG, DISABLED, "LPDebug" )
+
+LOG_CATEGORY( CLIENT )
+LOG_TYPE( CLIENT, ERROR, ENABLED, "ClientError" )
+LOG_TYPE( CLIENT, WARNING, DISABLED, "ClientWarning" )
+LOG_TYPE( CLIENT, MESSAGE, DISABLED, "ClientMsg" )
+LOG_TYPE( CLIENT, INFO, DISABLED, "ClientInfo" )
+LOG_TYPE( CLIENT, CALL_REP, DISABLED, "ClientCallRep" )
+LOG_TYPE( CLIENT, CALL_DUMP, DISABLED, "ClientCallDump" )
+LOG_TYPE( CLIENT, IN_ALL, DISABLED, "ClientInAll" )
+LOG_TYPE( CLIENT, OUT_ALL, DISABLED, "ClientOutAll" )
+LOG_TYPE( CLIENT, NOTIFY_REP, DISABLED, "ClientNotifyRep" )
+LOG_TYPE( CLIENT, NOTIFY_DUMP, DISABLED, "ClientNotifyDump" )
+LOG_TYPE( CLIENT, QUEUE_DUMP, DISABLED, "ClientQueueDump" )
+LOG_TYPE( CLIENT, SESSION, DISABLED, "ClientSession" )
+LOG_TYPE( CLIENT, TRACE, DISABLED, "ClientTrace" )
+LOG_TYPE( CLIENT, TEXT, DISABLED, "ClientText" )
+
+LOG_CATEGORY( PLAYER )
+LOG_TYPE( PLAYER, ERROR, ENABLED, "PlayerError" )
+LOG_TYPE( PLAYER, WARNING, DISABLED, "PlayerWarning" )
+LOG_TYPE( PLAYER, MESSAGE, DISABLED, "PlayerMsg" )
+LOG_TYPE( PLAYER, INFO, DISABLED, "PlayerInfo" )
+LOG_TYPE( PLAYER, TRACE, DISABLED, "PlayerTrace" )
+
+LOG_CATEGORY( DATABASE )
+LOG_TYPE( DATABASE, ERROR, ENABLED, "DBError" )
+LOG_TYPE( DATABASE, ALL_ERRORS, ENABLED, "DBAllErrors" )
+LOG_TYPE( DATABASE, MESSAGE, DISABLED, "DBMsg" )
+LOG_TYPE( DATABASE, INFO, DISABLED, "DBInfo" )
+LOG_TYPE( DATABASE, QUERIES, DISABLED, "DBQuery" )
+LOG_TYPE( DATABASE, RESULTS, DISABLED, "DBResult" )
+LOG_TYPE( DATABASE, PACKED, DISABLED, "DBPacked" )
+
+LOG_CATEGORY( THREAD )
+LOG_TYPE( THREAD, ERROR, ENABLED, "ThreadError" )
+LOG_TYPE( THREAD, WARNING, DISABLED, "ThreadWarning" )
+LOG_TYPE( THREAD, MESSAGE, DISABLED, "ThreadMsg" )
+LOG_TYPE( THREAD, INFO, DISABLED, "ThreadInfo" )
+LOG_TYPE( THREAD, TRACE, DISABLED, "ThreadTrace" )
+
+
+#undef LOG_TYPE
+#undef LOG_CATEGORY
+#undef ENABLED
+#undef DISABLED

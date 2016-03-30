@@ -1,0 +1,498 @@
+/*
+    ------------------------------------------------------------------------------------
+    LICENSE:
+    ------------------------------------------------------------------------------------
+    This file is part of EVEmu: EVE Online Server Emulator
+    Copyright 2006 - 2011 The EVEmu Team
+    For the latest information visit http://evemu.org
+    ------------------------------------------------------------------------------------
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any later
+    version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+    http://www.gnu.org/copyleft/lesser.txt.
+    ------------------------------------------------------------------------------------
+    Author:     Bloody.Rabbit
+*/
+
+#include "eve-server.h"
+
+#include "Client.h"
+#include "EVEServerConfig.h"
+#include "PyCallable.h"
+#include "character/Character.h"
+#include "inventory/Inventory.h"
+#include "pos/Structure.h"
+#include "ship/Ship.h"
+#include "station/Station.h"
+#include "system/Container.h"
+#include "system/SolarSystem.h"
+
+/*
+ * Inventory
+ */
+
+Inventory::Inventory() : mContentsLoaded(false) {}
+Inventory::~Inventory() {}
+
+Inventory *Inventory::Cast(InventoryItemRef item)
+{
+    if (!item)
+        return NULL;
+    switch(item->categoryID())
+    {
+        //! TODO: not handled.
+        case EVEDB::invCategories::_System:
+        case EVEDB::invCategories::Material:
+        case EVEDB::invCategories::Accessories:
+        case EVEDB::invCategories::Module:
+        case EVEDB::invCategories::Charge:
+        case EVEDB::invCategories::Blueprint:
+        case EVEDB::invCategories::Trading:
+        case EVEDB::invCategories::Entity:
+        case EVEDB::invCategories::Bonus:
+        case EVEDB::invCategories::Commodity:
+        case EVEDB::invCategories::Drone:
+        case EVEDB::invCategories::Implant:
+        case EVEDB::invCategories::Deployable:
+        case EVEDB::invCategories::Reaction:
+        case EVEDB::invCategories::Asteroid:
+        case EVEDB::invCategories::Apparel:
+        case EVEDB::invCategories::Subsystem:
+        case EVEDB::invCategories::AncientRelics:
+        case EVEDB::invCategories::Decryptors:
+        case EVEDB::invCategories::StructureUpgrade:
+        case EVEDB::invCategories::SovereigntyStructure:
+        case EVEDB::invCategories::PlanetaryInteraction:
+        case EVEDB::invCategories::PlanetaryResources:
+        case EVEDB::invCategories::PlanetaryCommodities:
+        case EVEDB::invCategories::Orbitals:
+        case EVEDB::invCategories::Placeables:
+        case EVEDB::invCategories::Effects:
+        case EVEDB::invCategories::Lights:
+        case EVEDB::invCategories::Cells:
+            sLog.Debug("Inventory", "unhandled item categoryID used on cast");
+            break;
+        case EVEDB::invCategories::Owner:
+            sLog.Debug("Inventory", "Owner item categoryID used on cast");
+            //return OwnerRef::StaticCast(item).get();
+            break;
+        case EVEDB::invCategories::WorldSpace:
+            sLog.Debug("Inventory", "WorldSpace item categoryID used on cast");
+            break;
+        case EVEDB::invCategories::Skill:
+            sLog.Debug("Inventory", "Skill item categoryID used on cast");
+            //return SkillRef::StaticCast(item).get();
+            break;
+        case EVEDB::invCategories::Celestial:
+            sLog.Debug("Inventory", "Celestial item categoryID used on cast");
+            //don't know how to do this but it's missing in a lot of places in the log
+            //it says that the return is not of Inventory type
+            //return CelestialObjectRef::StaticCast(item).get();
+            break;
+        case EVEDB::invCategories::Station:
+            sLog.Debug("Inventory", "Station item categoryID used on cast");
+            return StationRef::StaticCast(item).get();
+            break;
+        case EVEDB::invCategories::Structure:
+            sLog.Debug("Inventory", "Structure item categoryID used on cast");
+            return StructureRef::StaticCast(item).get();
+            break;
+        case EVEDB::invCategories::Ship:
+            sLog.Debug("Inventory", "Ship item categoryID used on cast");
+            return ShipRef::StaticCast(item).get();
+            break;
+    }
+
+    switch(item->groupID())
+    {
+        case EVEDB::invGroups::Wreck:
+            //return WreckContainerRef::StaticCast(item.get());
+        case EVEDB::invGroups::Secure_Cargo_Container:
+        case EVEDB::invGroups::Audit_Log_Secure_Container:
+        case EVEDB::invGroups::Cargo_Container:
+        case EVEDB::invGroups::Freight_Container:
+        case EVEDB::invGroups::Spawn_Container:
+            return CargoContainerRef::StaticCast(item).get();
+        case EVEDB::invGroups::Station:
+            return StationRef::StaticCast(item).get();
+        case EVEDB::invGroups::Character:
+            return CharacterRef::StaticCast(item).get();
+        case EVEDB::invGroups::Solar_System:
+            return SolarSystemRef::StaticCast(item).get();
+    }
+
+    // maybe add extra debug info on what for type or item.
+    sLog.Error("Inventory::Cast()", "Item cast not supported for item typeID = %u, groupID = %u, categoryID = %u", item->typeID(), item->groupID(), item->categoryID());
+    return NULL;
+}
+
+bool Inventory::LoadContents(ItemFactory &factory) {
+    // check if the contents has already been loaded...
+    if (ContentsLoaded()) {
+        sLog.Debug("Inventory::LoadContents()", "Not Loading contents of inventory %u", inventoryID());
+        return true;
+    }
+    sLog.Debug("Inventory::LoadContents()", "Loading contents of inventory %u", inventoryID());
+
+    //  this loads EVERYTHING in a system....dynamics, saved npcs, celestials, etc...
+    std::vector<uint32> items;
+    if (!GetItems(factory, items)) {
+        sLog.Error("Inventory::LoadContents()", "Failed to get items of %u", inventoryID());
+        return false;
+    }
+
+    //Now get each one from the factory (possibly recursing)  yes, twice   -allan
+    ItemData into;
+    uint32 characterID = 0, corporationID = 0, locationID = 0;
+    std::vector<uint32>::iterator cur = items.begin();
+    for (; cur != items.end(); ++cur) {
+        // check current item to see if it is an agent or npc in the system...continue if true  -allan
+        //if (IsAgent(*cur)) continue;
+
+        // Each "cur" itemID should be checked to see if they are "owned" by the character connected to this client,
+        // and if not, then do not "get" the entire contents of this for() loop for that item, except in the case that
+        // this item is located in space or belongs to this character's corporation:
+        factory.db().GetItem(*cur, into);
+        if (factory.GetUsingClient()) {
+            characterID = factory.GetUsingClient()->GetCharacterID();
+            corporationID = factory.GetUsingClient()->GetCorporationID();
+            locationID = factory.GetUsingClient()->GetLocationID();
+            if ((into.ownerID == characterID)
+                || (characterID == 0)
+                || (into.ownerID == 1)
+                || (into.ownerID == corporationID)
+                || (into.locationID == locationID))
+            {
+                // Continue to GetItem() if the client calling this is owned by the character that owns this item
+                // --OR--
+                // The characterID == 0, which means this is attempting to load the character of this client for the first time.
+                InventoryItemRef i = factory.GetItem(*cur);
+                if (!i) {
+                    sLog.Warning("Inventory::LoadContents()", "Failed to load item %u contained in %u. Skipping.", *cur, inventoryID());
+                    continue;
+                } else
+                    AddItem(i);
+            }
+        } //  the char this item belongs to is not online....dont load it, dont throw error.  -allan
+    }
+
+    mContentsLoaded = true;
+    return true;
+}
+
+void Inventory::DeleteContents(ItemFactory &factory)
+{
+    LoadContents(factory);
+
+    std::map<uint32, InventoryItemRef>::iterator cur = mContents.begin();
+    while (cur != mContents.end()) {
+        // Our "cur" iterator becomes invalid once RemoveItem
+        // for its item is called, so we need to increment it
+        // before calling Delete().
+        InventoryItemRef i = cur->second;
+        ++cur;
+        i->Delete();
+    }
+
+    mContents.clear();
+}
+
+CRowSet* Inventory::List(EVEItemFlags _flag, uint32 forOwner) const
+{
+    PyList *keywords = new PyList();
+    keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
+    keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
+
+    DBRowDescriptor* header = new DBRowDescriptor(keywords);
+    header->AddColumn("itemID",     DBTYPE_I8);
+    header->AddColumn("typeID",     DBTYPE_I4);
+    header->AddColumn("ownerID",    DBTYPE_I4);
+    header->AddColumn("locationID", DBTYPE_I8);
+    header->AddColumn("flagID",     DBTYPE_I2);
+    header->AddColumn("quantity",   DBTYPE_I4);
+    header->AddColumn("groupID",    DBTYPE_I2);
+    header->AddColumn("categoryID", DBTYPE_I4);   //should be I2 (int16)
+    header->AddColumn("customInfo", DBTYPE_STR);
+
+    //header->AddColumn("singleton",  DBTYPE_BOOL);
+    //header->AddColumn("stacksize" , DBTYPE_I4);
+
+    CRowSet* rowset = new CRowSet(&header);
+    List(rowset, _flag, forOwner);
+    return rowset;
+}
+
+void Inventory::List(CRowSet* into, EVEItemFlags _flag, uint32 forOwner) const
+{
+    //there has to be a better way to build this...
+    std::map<uint32, InventoryItemRef>::const_iterator cur = mContents.begin();
+    for (; cur != mContents.end(); ++cur) {
+        InventoryItemRef i = cur->second;
+
+        if (  (i->flag() == _flag       || _flag == flagAnywhere)
+            && (i->ownerID() == forOwner || forOwner == 0))
+        {
+            PyPackedRow* row = into->NewRow();
+            i->GetItemRow(row);
+        }
+    }
+}
+
+InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags _flag) const
+{
+    for (auto cur : mContents)
+        if (cur.second->flag() == _flag)
+            return cur.second;
+
+    sLog.Error("Inventory", "unable to find first by flag");
+    return InventoryItemRef();
+}
+
+InventoryItemRef Inventory::GetByID(uint32 id) const
+{
+    std::map<uint32, InventoryItemRef>::const_iterator res = mContents.find(id);
+    if (res != mContents.end())
+        return res->second;
+    else
+        return InventoryItemRef();
+}
+
+InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const
+{
+    for (auto cur : mContents)
+        if (cur.second->typeID() == typeID
+            && cur.second->flag() == flag)
+            return cur.second;
+
+    return InventoryItemRef();
+}
+
+void Inventory::GetInventoryList(std::map<uint32, InventoryItemRef> &inventory)
+{
+    for (auto cur : mContents)
+        inventory.insert(std::pair<uint32, InventoryItemRef>(cur.first, cur.second));
+}
+
+void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
+    std::vector<InventoryItemRef> itemVecTmp;
+    itemVecTmp.clear();
+    for (auto cur : mContents)
+        itemVecTmp.push_back(cur.second);
+    // make sorting method to put modules first, cargo second, and charges last
+    itemVec = _sortVector(itemVecTmp);
+}
+
+std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRef> &itemVec)
+{
+    //15:53:09 L Inventory::_sortVector: 41 items sorted in 0.177us with 480 loops.
+    
+    //sorts a vector of items by category, with loaded modules first (in slot order), then loaded charges (in slot order), then cargo
+    // if there is only one item, no sorting required...
+    if (itemVec.size() < 2)
+        return itemVec;
+
+    uint16 count = 0;
+    double start = 0.0;
+    if (sConfig.world.testServer)
+        if (sConfig.misc.UseProfiling)
+            start = GetTimeUSeconds();
+
+    //begin basic sort
+    bool done = false;
+    InventoryItemRef tmp;
+
+    while (!done) { //check if sorted
+        done = true;  //assume sorted
+        for (int i = 0, i2 = 1; (i < itemVec.size()) && (i2 < itemVec.size()); i++, i2++) { //iterate though list
+            if ((IsModuleSlot(itemVec[i]->flag())) && (IsModuleSlot(itemVec[i2]->flag()))) {
+                if (itemVec[i]->categoryID() > itemVec[i2]->categoryID()) {  //check if each pair is sorted by category.  charges > modules
+                    //it's not, so flip the values
+                    tmp = itemVec[i];
+                    itemVec[i] = itemVec[i2];
+                    itemVec[i2] = tmp;
+                    done = false;  //we weren't sorted, so now go back and check if we are
+                }
+            } else if ((IsCargoHoldFlag(itemVec[i]->flag())) && (IsModuleSlot(itemVec[i2]->flag()))) { //check if each pair is sorted by flag.  cargo > module
+                //it's not, so flip the values
+                tmp = itemVec[i];
+                itemVec[i] = itemVec[i2];
+                itemVec[i2] = tmp;
+                done = false;  //we weren't sorted, so now go back and check if we are
+            }
+            count++;
+        }
+    }
+
+    if (sConfig.world.testServer)
+        if (sConfig.misc.UseProfiling)
+            sLog.Log("Inventory::_sortVector", "%u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
+
+    return itemVec;  //return sorted list
+}
+
+uint32 Inventory::FindByFlag(EVEItemFlags _flag, std::vector<InventoryItemRef> &items) const
+{
+    for (auto cur : mContents)
+        if (cur.second)
+            if (cur.second->flag() == _flag)
+                items.push_back(cur.second);
+
+            return items.size();
+}
+
+uint32 Inventory::ListByFlag(EVEItemFlags _flag, std::vector<InventoryItemRef> &items) const
+{
+    for (auto cur : mContents)
+        if (cur.second)
+            if (cur.second->flag() == _flag)
+                items.push_back(cur.second);
+
+            return items.size();
+}
+
+bool Inventory::FindSingleByFlag(EVEItemFlags flag, InventoryItemRef &item) const
+{
+    for (auto cur : mContents)
+        if (cur.second)
+            if (cur.second->flag() == flag) {
+                item = cur.second;
+                return true;
+            }
+
+    return false;
+}
+
+bool Inventory::IsEmptyByFlag(EVEItemFlags flag)
+{
+    for (auto cur : mContents)
+        if (cur.second)
+            if (cur.second->flag() == flag)
+                return false;
+
+    return true;
+}
+
+bool Inventory::IsEmpty()
+{
+    return mContents.empty();
+}
+
+
+uint32 Inventory::FindByFlagRange(EVEItemFlags low_flag, EVEItemFlags high_flag, std::vector<InventoryItemRef> &items) const
+{
+    uint32 count = 0;
+    for (auto cur : mContents)
+        if (cur.second->flag() >= low_flag
+            && cur.second->flag() <= high_flag)
+        {
+            items.push_back(cur.second);
+            ++count;
+        }
+
+    return count;
+}
+
+uint32 Inventory::FindByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const
+{
+    uint32 count = 0;
+    for (auto cur : mContents)
+        if (flags.find(cur.second->flag()) != flags.end()) {
+            items.push_back(cur.second);
+            ++count;
+        }
+
+    return count;
+}
+
+void Inventory::AddItem(InventoryItemRef item)
+{
+    if (!item.get()) return;    //segfault check
+    std::map<uint32, InventoryItemRef>::iterator res = mContents.find(item->itemID());
+    std::pair <std::_Rb_tree_iterator <std::pair <const uint32, InventoryItemRef > >, bool > test;
+    if (res == mContents.end())
+        test = mContents.insert(std::make_pair(item->itemID(), item));
+
+    if (test.second)
+        _log(ITEM__TRACE, "Inventory::AddItem()  Updated location %u to contain item %u with flag %d.", inventoryID(), item->itemID(), (int)item->flag());
+	else
+        _log(ITEM__TRACE, "Inventory::AddItem()  location %u already contains item %u with flag %d.", inventoryID(), item->itemID(), (int)item->flag());
+}
+
+void Inventory::RemoveItem(InventoryItemRef item)
+{
+    if (!item.get()) return;    //segfault check
+    std::map<uint32, InventoryItemRef>::iterator res = mContents.find(item->itemID());
+    if (res != mContents.end())
+    {
+        mContents.erase(res->first);
+        _log(ITEM__TRACE, "Inventory::RemoveItem()  Updated location %u to no longer contain item %u.", inventoryID(), item->itemID());
+    }
+	else
+        _log(ITEM__TRACE,"Inventory::RemoveItem()  location %u does not contain item %u.", inventoryID(), item->itemID());
+}
+
+void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner)
+{
+    std::map<uint32, InventoryItemRef> types;
+
+    std::map<uint32, InventoryItemRef>::const_iterator cur = mContents.begin();
+    while (cur != mContents.end()) {
+        // Iterator becomes invalid when the item
+        // is moved out; we have to increment before
+        // calling Merge().
+        InventoryItemRef i = cur->second;
+        cur++;
+
+        if ((!i->singleton()) && (forOwner == 0 || forOwner == i->ownerID())) {
+            std::map<uint32, InventoryItemRef>::iterator res = types.find(i->typeID());
+            if (res == types.end())
+                types.insert(std::make_pair(i->typeID(), i));
+            else
+                res->second->Merge(i);
+        }
+    }
+}
+
+double Inventory::GetStoredVolume(EVEItemFlags locationFlag) const
+{
+    //double totalVolume = 0.0;
+    EvilNumber totalVolume(0.0f);
+    //TODO: And implement Sizes for packaged ships
+
+    for (auto cur : mContents)
+        if (cur.second->flag() == locationFlag) {
+        	// This formula is a hybrid of both old and new ones...and it works \o/
+            totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume);
+            //totalVolume += (cur.second->GetAttribute(AttrQuantity) * cur.second->GetAttribute(AttrVolume));
+        }
+
+    // this is crap... bleh... as it should return a EvilNumber
+    return totalVolume.get_float();
+}
+
+/*
+ * InventoryEx
+ */
+bool InventoryEx::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
+{
+    EvilNumber volume = EvilNumber(item->quantity()) * item->GetAttribute(AttrVolume);
+    double capacity = GetRemainingCapacity(flag);
+    if (volume > capacity) {
+        std::map<std::string, PyRep *> args;
+            args["available"] = new PyFloat(capacity);
+            args["volume"] = volume.GetPyObject();
+
+        throw PyException(MakeUserError("NotEnoughCargoSpace", args));
+        return false;
+    }
+    return true;
+}

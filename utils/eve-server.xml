@@ -1,0 +1,133 @@
+<!--  notes here
+    unless otherwise noted, ALL fractional values use fuzzy logic.
+-->
+
+<eve-server>
+
+    <world>
+        <testServer>1</testServer>  <!-- some functions disabled for live server -->
+    <!-- not implemented yet -->
+        <chatLogs>0</chatLogs><!-- bool -->
+        <globalChat>1</globalChat><!-- bool -->
+        <!-- grid Unloading is implemented -->
+        <gridUnload>1</gridUnload><!-- bool -->
+        <gridUnloadTime>300</gridUnloadTime><!-- in seconds (5 min default)-->
+        <loginInfo>1</loginInfo><!-- bool -->
+        <loginMsg>1</loginMsg><!-- bool -->
+        <mailDeliveryDelay>5</mailDeliveryDelay>
+        <maxPlayers>2500</maxPlayers>
+        <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
+    </world>
+
+    <rates>
+        <secRate>1.0</secRate><!--  only used if != 1.0 -->
+        <damageRate>1.0</damageRate><!--  ALL damage. only used if != 1.0 -->
+        <missileRate>1.0</missileRate><!--  ALL missiles. only used if != 1.0 -->
+        <missileTime>1.0</missileTime><!--  ALL missiles. only used if != 1.0 -->
+        <turrentRate>1.0</turrentRate><!--  PC turrents. only used if != 1.0 -->
+        <missileRoF>1.1</missileRoF><!-- ALL missiles. only used if != 1.0 -->
+        <turrentRoF>1.1</turrentRoF><!-- PC turrents. only used if != 1.0 -->
+        <npcBountyMultiply>1.0</npcBountyMultiply><!--  only used if != 1.0 -->
+        <corpCost>20000000</corpCost>
+        <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
+        <!-- Decay is implemented -->
+        <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default) -->
+        <NPCDecay>90</NPCDecay><!-- in minutes (90 min default) -->
+        <!-- these rates are not implemented yet -->
+        <RateDropItem>1.0</RateDropItem><!--  only used if != 1.0 -->
+        <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
+        <RepairCost>1.0</RepairCost><!--  only used if != 1.0 -->
+    </rates>
+
+    <account><!-- 0  disable AutoAccount,
+ 6917529029788565504 (0x6000000080000000)  ROLE_STD     = ROLE_LOGIN | ROLE_PLAYER | ROLE_IGB
+ 7061644217868615680 (0x6200000080400000)  ROLE_VIP     = ROLE_STD | ROLE_VIPLOGIN | ROLE_HEALSELF
+ 7079658624976683008 (0x6240000280c40000)  ROLE_SLASH   = ROLE_GML | ROLE_LEGIONEER | ROLE_SPAWN | ROLE_VIP | ROLE_HEALOTHERS
+ 7124694621250387968 (0x62e0000280c40000)  ROLE_CREATOR = ROLE_SLASH | ROLE_GMH | ROLE_CONTENT
+ 7131450020691443712 (0x62f8000280c40000)  ROLE_DEV     = ROLE_CREATOR | ROLE_QA | ROLE_PROGRAMMER
+ 7203507614729371648 (0x63f8000280c40000)  ROLE_BOSS    = ROLE_ADMIN | ROLE_DEV
+        -->
+        <autoAccountRole>7079658624976683008</autoAccountRole>
+        <!--
+        <loginMessage>
+            &lt;html&gt;
+                &lt;head&gt;
+                    &lt;b&gt;UPDATED....27June2015&lt;/b&gt;.&lt;br&gt;
+                &lt;/head&gt;
+                &lt;body&gt;
+                    Everything is between 0% and 100% working, most of which are ~75%.&lt;br&gt;
+                &lt;/body&gt;
+            &lt;/html&gt;
+        </loginMessage>
+        -->
+    </account>
+
+    <character>
+        <startBalance>600000000.0</startBalance>
+        <startAurBalance>600.0</startAurBalance>
+        <startStation>0</startStation>
+        <startSecRating>1.0</startSecRating>
+        <startCorporation>0</startCorporation>
+        <terminationDelay>180</terminationDelay> <!-- seconds -->
+    </character>
+
+    <npc>
+        <!-- Threat not implemented yet -->
+        <ThreatRadius>1.0</ThreatRadius> <!-- percent of default 0.0 to 1.0 -->
+        <!-- Spawn Checks and RoamingSpawns are implemented but StaticSpawns are not-->
+        <RoamingSpawns>0</RoamingSpawns><!-- bool -->
+        <StaticSpawns>0</StaticSpawns><!-- bool -->
+        <RoamingTimer>15</RoamingTimer><!-- time between spawn checks, in minutes (initial spawn is this x3) -->
+        <StaticTimer>10</StaticTimer><!-- time between spawn checks, in minutes (initial spawn is this x3) -->
+    </npc>
+
+    <database>
+        <host>localhost</host>
+        <username>allan</username>
+        <password>none</password>
+        <db>squirrel</db>
+        <port>3306</port>
+    </database>
+
+    <files>
+        <logDir>../logs/</logDir>
+        <logSettings>../etc/log.ini</logSettings>
+        <cacheDir>../server_cache/</cacheDir>
+        <imageDir>../image_cache/</imageDir>
+    </files>
+
+    <net>
+        <port>26000</port>
+        <imageServer>192.168.1.13</imageServer>
+        <imageServerPort>26001</imageServerPort>
+        <apiServer>192.168.1.13</apiServer>
+        <apiServerPort>26002</apiServerPort>
+    </net>
+
+    <threads><!-- not implemented yet -->
+        <NetworkThreads>2</NetworkThreads>
+        <DatabaseThreads>2</DatabaseThreads>
+        <WorldThreads>2</WorldThreads>
+        <APIThreads>1</APIThreads>
+        <ImageServerThreads>1</ImageServerThreads>
+        <ConsoleThreads>1</ConsoleThreads>
+    </threads>
+
+    <misc>
+        <UseProfiling>0</UseProfiling><!-- bool -->
+        <UseAPIServer>0</UseAPIServer><!-- bool -->
+        <!--  BE VERY CAREFUL WITH THE SETTING BELOW! This will create a jetcan at player's ship position every tic while ship is moving -->
+        <UseShipTracking>0</UseShipTracking><!-- bool -->
+        <!--  This changes how the main server loop sleeps (loop count) -->
+        <ServerSleepTime>10</ServerSleepTime><!-- server sleep time in ms -->
+    </misc>
+
+    <crime><!-- not implemented yet -->
+        <CrimFlagTime>900</CrimFlagTime> <!-- seconds  (15m default) -->
+        <AggFlagTime>900</AggFlagTime> <!-- seconds (15m default) -->
+        <WeaponFlagTime>60</WeaponFlagTime> <!-- seconds (60s default) -->
+        <CWSessionTime>60</CWSessionTime> <!-- seconds (60s default) -->
+        <KillRightTime>900</KillRightTime> <!-- seconds (15m default) -->
+    </crime>
+
+</eve-server>

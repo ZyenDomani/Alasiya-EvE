@@ -1,0 +1,63 @@
+
+
+<elements>
+
+  <elementDef name="OnAccountChange">
+    <tupleInline>
+      <string name="accountKey" />
+      <int name="ownerid" />
+      <real name="balance" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_GiveCash">
+    <tupleInline>
+      <int  name="toID" />
+      <real name="amount" />
+      <wstring name="reason" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_GiveCorpCash">
+    <tupleInline>
+      <int  name="toID" />
+      <real name="amount" />
+      <int name="fromAccountKey" />
+      <wstring name="reason" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="CallGetCashBalance">
+    <tupleInline>
+      <!-- 0 -->
+      <bool name="isCorpWallet" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_GetJournal">
+  <!--  GetJournal(     keyID, fromDate, None, 1)
+        GetJournal(accountKey, fromDate, refType, self.isCorpWallet, rev=1)
+        GetJournal(accountKey, fromDate, entryTypeID, corpAccount, transactionID, rev)  -->
+    <tupleInline>
+      <int name="accountKey" />
+      <long name="fromDate" />
+      <int name="entryTypeID" none_marker="1" />
+      <!-- corpAccount could be either bool or interger  -->
+      <raw name="corpAccount" />
+      <int name="transactionID" none_marker="1" />
+      <int name="rev" none_marker="1" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="RspGetCashBalance">
+    <tupleInline>
+      <!-- 0 -->
+      <substreamInline>
+        <real name="credits" />
+      </substreamInline>
+    </tupleInline>
+  </elementDef>
+
+</elements>
+
+

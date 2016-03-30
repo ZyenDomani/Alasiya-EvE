@@ -1,0 +1,445 @@
+/*
+    ------------------------------------------------------------------------------------
+    LICENSE:
+    ------------------------------------------------------------------------------------
+    This file is part of EVEmu: EVE Online Server Emulator
+    Copyright 2006 - 2011 The EVEmu Team
+    For the latest information visit http://evemu.org
+    ------------------------------------------------------------------------------------
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License as published by the Free Software
+    Foundation; either version 2 of the License, or (at your option) any later
+    version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License along with
+    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+    http://www.gnu.org/copyleft/lesser.txt.
+    ------------------------------------------------------------------------------------
+    Author:        Zhur, Allan
+*/
+
+/*
+ * AgentMgr bound(agentID):
+ *  -> DoAction(actionID or None)
+ *  -> WarpToLocation(locationType, locationNumber, warpRange, is_gang)
+ *
+ *   Also sent an OnRemoteMessage(AgtMissionOfferWarning)
+ *
+ *   and various OnAgentMissionChange()
+ *
+*/
+
+#include "eve-server.h"
+
+#include "PyBoundObject.h"
+#include "PyServiceCD.h"
+#include "cache/ObjCacheService.h"
+#include "agents/Agent.h"
+#include "agents/AgentMgrService.h"
+
+class AgentMgrBound
+: public PyBoundObject {
+public:
+
+    PyCallable_Make_Dispatcher(AgentMgrBound)
+
+    AgentMgrBound(PyServiceMgr *mgr, AgentDB *db, Agent *agt)
+    : PyBoundObject(mgr),
+      m_db(db),
+      m_dispatch(new Dispatcher(this)),
+      m_agent(agt)
+    {
+        _SetCallDispatcher(m_dispatch);
+
+        m_strBoundObjectName = "AgentMgrBound";
+
+        PyCallable_REG_CALL(AgentMgrBound, GetInfoServiceDetails);
+        PyCallable_REG_CALL(AgentMgrBound, DoAction);
+        PyCallable_REG_CALL(AgentMgrBound, GetMyJournalDetails);
+        PyCallable_REG_CALL(AgentMgrBound, GetMyEpicJournalDetails);
+        PyCallable_REG_CALL(AgentMgrBound, GetAgentLocationWrap);
+        PyCallable_REG_CALL(AgentMgrBound, GetMissionBriefingInfo);
+        PyCallable_REG_CALL(AgentMgrBound, GetMissionObjectiveInfo);
+    }
+    virtual ~AgentMgrBound() { delete m_dispatch; }
+    virtual void Release() {
+        //I hate this statement
+        delete this;
+    }
+
+    PyCallable_DECL_CALL(GetInfoServiceDetails);
+    PyCallable_DECL_CALL(DoAction);
+    PyCallable_DECL_CALL(GetMyJournalDetails);
+    PyCallable_DECL_CALL(GetMyEpicJournalDetails);
+    PyCallable_DECL_CALL(GetAgentLocationWrap);
+    PyCallable_DECL_CALL(GetMissionBriefingInfo);
+    PyCallable_DECL_CALL(GetMissionObjectiveInfo);
+
+protected:
+    AgentDB *const m_db;        //we do not own this
+    Dispatcher *const m_dispatch;    //we own this
+    Agent *const m_agent;    //we do not own this.
+};
+
+PyCallable_Make_InnerDispatcher(AgentMgrService)
+
+AgentMgrService::AgentMgrService(PyServiceMgr *mgr)
+: PyService(mgr, "agentMgr"),
+  m_dispatch(new Dispatcher(this))
+{
+    _SetCallDispatcher(m_dispatch);
+
+    PyCallable_REG_CALL(AgentMgrService, GetAgents);
+    PyCallable_REG_CALL(AgentMgrService, GetMyJournalDetails);
+    PyCallable_REG_CALL(AgentMgrService, GetSolarSystemOfAgent);
+    PyCallable_REG_CALL(AgentMgrService, GetCareerAgents);
+}
+
+AgentMgrService::~AgentMgrService() {
+    delete m_dispatch;
+    std::map<uint32, Agent *>::iterator cur = m_agents.begin();
+    for(; cur != m_agents.end(); cur++) {
+        delete cur->second;
+    }
+}
+
+Agent *AgentMgrService::_GetAgent(uint32 agentID) {
+    std::map<uint32, Agent *>::iterator res;
+    res = m_agents.find(agentID);
+    if(res != m_agents.end())
+        return(res->second);
+    Agent *a = new Agent(agentID);
+    if(!a->Load(&m_db)) {
+        delete a;
+        return NULL;
+    }
+    m_agents[agentID] = a;
+    return(a);
+}
+
+PyBoundObject *AgentMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+    if(!bind_args->IsInt()) {
+        codelog(CLIENT__ERROR, "%s: Non-integer bind argument '%s'", c->GetName(), bind_args->TypeString());
+        return NULL;
+    }
+
+    uint32 agentID = bind_args->AsInt()->value();
+
+    Agent *agent = _GetAgent(agentID);
+    if(agent == NULL) {
+        codelog(CLIENT__ERROR, "%s: Unable to obtain agent %u", c->GetName(), agentID);
+        return NULL;
+    }
+
+    return(new AgentMgrBound(m_manager, &m_db, agent));
+}
+
+
+//20:49:34 L AgentMgrService::Handle_GetAgents(): size= 0
+PyResult AgentMgrService::Handle_GetAgents(PyCallArgs &call) {
+  /*
+22:07:37 L AgentMgrService::Handle_GetAgents(): size= 0
+22:07:37 [SvcCall]   Call Arguments:
+22:07:37 [SvcCall]       Tuple: Empty
+22:07:37 [SvcCall]   Call Named Arguments:
+22:07:37 [SvcCall]     Argument 'machoVersion':
+22:07:37 [SvcCall]         List: 2 elements
+22:07:37 [SvcCall]           [ 0] Integer field: 130409676630000000
+22:07:37 [SvcCall]           [ 1] Integer field: -164492702
+  sLog.Log( "AgentMgrService::Handle_GetAgents()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALLS);
+    */
+
+    PyRep *result = NULL;
+
+    ObjectCachedMethodID method_id(GetName(), "GetAgents");
+
+    //check to see if this method is in the cache already.
+    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
+        //this method is not in cache yet, load up the contents and cache it.
+        result = m_db.GetAgents();
+        if(result == NULL) {
+            codelog(SERVICE__ERROR, "Failed to load cache, generating empty contents.");
+            result = new PyNone();
+        }
+        m_manager->cache_service->GiveCache(method_id, &result);
+    }
+
+    //now we know its in the cache one way or the other, so build a
+    //cached object cached method call result.
+    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
+
+    return result;
+}
+
+///  this really needs to be a cached object....
+PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
+{/*
+  uint8 size = call.tuple->size();
+  uint32 int1 = call.tuple->GetItem(0)->AsInt()->value();
+  sLog.Log( "AgentMgrService::Handle_GetSolarSystemOfAgent()", "size= %u, 0=%s(%u)", size, call.tuple->GetItem( 0 )->TypeString(), int1 );
+22:28:49 [SvcCall]   Call Arguments:
+22:28:49 [SvcCall]       Tuple: 1 elements
+22:28:49 [SvcCall]         [ 0] Integer field: 3019442      // <- this value increments @ 10/sec
+22:28:49 [SvcCall]   Call Named Arguments:
+22:28:49 [SvcCall]     Argument 'machoVersion':
+22:28:49 [SvcCall]         Integer field: 1
+
+    call.Dump(SERVICE__CALLS);
+    */
+    Call_SingleArg args;
+    if(!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "Failed to decode args from '%s'", call.client->GetName());
+        return NULL;
+    }
+
+	//return (m_db.GetAgentSolarSystem(args.arg));
+	return NULL;
+}
+
+//15:39:45 L AgentMgrBound::Handle_DoAction(): size= 1, 0=None
+PyResult AgentMgrBound::Handle_DoAction(PyCallArgs &call) {
+  /*
+17:00:59 L AgentMgrBound::Handle_DoAction(): size= 1, 0=None
+17:00:59 [SvcCall]   Call Arguments:
+17:00:59 [SvcCall]       Tuple: 1 elements
+17:00:59 [SvcCall]         [ 0] (None)
+17:00:59 [SvcCall]   Call Arguments:
+17:00:59 [SvcCall]       Tuple: Empty
+17:00:59 [SvcCall]   Call Named Arguments:
+17:00:59 [SvcCall]     Argument 'machoVersion':
+17:00:59 [SvcCall]         Integer field: 1
+  sLog.Log( "AgentMgrBound::Handle_DoAction()", "size= %u, 0=%s", call.tuple->size(), call.tuple->GetItem( 0 )->TypeString() );
+    call.Dump(SERVICE__CALLS);
+    */
+  /**
+16:53:45 [SvcMessage] agentMgr Service: MachoBindObject also contains call to DoAction
+16:53:45 [SvcCallTrace]   Call Arguments:
+16:53:45 [SvcCallTrace]       Tuple: 1 elements
+16:53:45 [SvcCallTrace]         [ 0] (None)
+16:53:45 [SvcCallTrace] Call DoAction returned:
+16:53:45 [SvcCallTrace]       Tuple: 2 elements
+16:53:45 [SvcCallTrace]         [ 0] Tuple: 2 elements
+16:53:45 [SvcCallTrace]         [ 0]   [ 0] String: 'Result of DoAction(0)'
+16:53:45 [SvcCallTrace]         [ 0]   [ 1] List: 2 elements
+16:53:45 [SvcCallTrace]         [ 0]   [ 1]   [ 0] Tuple: 2 elements
+16:53:45 [SvcCallTrace]         [ 0]   [ 1]   [ 0]   [ 0] Integer field: 2
+16:53:45 [SvcCallTrace]         [ 0]   [ 1]   [ 0]   [ 1] String: 'I want work, do you have anything?'
+16:53:45 [SvcCallTrace]         [ 0]   [ 1]   [ 1] Tuple: 2 elements
+16:53:45 [SvcCallTrace]         [ 0]   [ 1]   [ 1]   [ 0] Integer field: 15
+16:53:45 [SvcCallTrace]         [ 0]   [ 1]   [ 1]   [ 1] String: 'I need to find somebody.  Can you help me?'
+16:53:45 [SvcCallTrace]         [ 1] Dictionary: 1 entries
+16:53:45 [SvcCallTrace]         [ 1]   [ 0] Key: String: 'loyaltyPoints'
+16:53:45 [SvcCallTrace]         [ 1]   [ 0] Value: Integer field: 0
+*/
+    //takes a single argument, which may be None, or may be an integer actionID
+    Call_SingleArg args;
+    if(!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "Failed to decode args from '%s'", call.client->GetName());
+        return NULL;
+    }
+
+    //TODO: send loyaltyPoints in the keywords return.
+    //uint32 loyaltyPoints = m_agent->GetLoyaltyPoints(call.client);
+
+    DoAction_Result res;
+    res.dialogue = new PyList;
+
+    std::map<uint32, std::string> choices;
+//00:20:34 E AgentMgrBound::Handle_DoAction(): args.arg->IsInt() failed.  Expected type Int, got type None
+    if (args.arg->IsInt())
+        m_agent->DoAction( call.client, args.arg->AsInt()->value(), res.agentSays, choices );
+    else   //* EVE client calls DoAction without parameters, let's see where it leads.
+        m_agent->DoAction( call.client, 0, res.agentSays, choices );
+
+    DoAction_Dialogue_Item choice;
+
+    std::map<uint32, std::string>::iterator cur = choices.begin();
+    for (; cur != choices.end(); cur++)
+    {
+        choice.actionID = cur->first;
+        choice.actionText = cur->second;
+
+        res.dialogue->AddItem( choice.Encode() );
+    }
+
+    return res.Encode();
+}
+
+
+//21:13:12 L AgentMgrBound::Handle_GetAgentLocationWrap(): size= 0
+PyResult AgentMgrBound::Handle_GetAgentLocationWrap(PyCallArgs &call)
+{
+    /*
+     *    06:48:06 L AgentMgrBound::Handle_GetInfoServiceDetails(): size= 0
+     *    06:48:31 L AgentMgrBound::Handle_GetMissionBriefingInfo(): size= 0
+     *    06:48:31 L AgentMgrBound::Handle_GetAgentLocationWrap(): size= 0, AgentID = 3017337
+     */
+    sLog.Log( "AgentMgrBound::Handle_GetAgentLocationWrap()", "size= %u, AgentID = %u", call.tuple->size(), m_agent->GetID() );
+    call.Dump(SERVICE__CALLS);
+
+    return m_agent->GetLocation();
+}
+
+//21:13:12 L AgentMgrBound::Handle_GetMissionBriefingInfo(): size= 0
+PyResult AgentMgrBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
+  /**
+16:53:46 [SvcCallTrace] Call GetMissionBriefingInfo returned:
+16:53:46 [SvcCallTrace]       Dictionary: 7 entries
+16:53:46 [SvcCallTrace]         [ 0] Key: String: 'ContentID'
+16:53:46 [SvcCallTrace]         [ 0] Value: Integer field: 123
+16:53:46 [SvcCallTrace]         [ 1] Key: String: 'Mission Briefing ID'
+16:53:46 [SvcCallTrace]         [ 1] Value: String: 'Mission Briefing ID'
+16:53:46 [SvcCallTrace]         [ 2] Key: String: 'Decline Time'
+16:53:46 [SvcCallTrace]         [ 2] Value: Real field: 130486424260000000.000000
+16:53:46 [SvcCallTrace]         [ 3] Key: String: 'Expiration Time'
+16:53:46 [SvcCallTrace]         [ 3] Value: Real field: 130487252260000000.000000
+16:53:46 [SvcCallTrace]         [ 4] Key: String: 'Mission Title ID'
+16:53:46 [SvcCallTrace]         [ 4] Value: String: 'Mission Title ID'
+16:53:46 [SvcCallTrace]         [ 5] Key: String: 'Mission Image'
+16:53:46 [SvcCallTrace]         [ 5] Value: String: 'MissionImage'
+16:53:46 [SvcCallTrace]         [ 6] Key: String: 'Mission Keywords'
+16:53:46 [SvcCallTrace]         [ 6] Value: String: 'Mission Keywords'
+*/
+  sLog.Log( "AgentMgrBound::Handle_GetMissionBriefingInfo()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALLS);
+    PyDict *res = new PyDict();
+
+    res->SetItemString("ContentID", new PyInt(123) ) ;
+    res->SetItemString("Mission Keywords", new PyString("Mission Keywords"));
+    res->SetItemString("Mission Title ID", new PyString("Mission Title ID") );
+    res->SetItemString("Mission Briefing ID", new PyString("Mission Briefing ID") );
+    res->SetItemString("Decline Time", new PyFloat( Win32TimeNow() + Win32Time_Hour ) );
+    res->SetItemString("Expiration Time", new PyFloat( Win32TimeNow()+Win32Time_Day ) );
+    res->SetItemString("Mission Image", new PyString("MissionImage") );
+
+    return res;
+}
+
+
+/** not handled */
+PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
+  sLog.Log( "AgentMgrService::Handle_GetMyJournalDetails()", "size= %u", call.tuple->size() );
+  /*
+20:12:42 [SvcCall] Service agentMgr: calling GetMyJournalDetails
+20:12:42 [SvcCall]   Call Arguments:
+20:12:42 [SvcCall]       Tuple: Empty
+20:12:42 [SvcCall]   Call Named Arguments:
+20:12:42 [SvcCall]     Argument 'machoVersion':
+20:12:42 [SvcCall]         Integer field: 1
+    call.Dump(SERVICE__CALLS);
+    */
+    PyRep *result = NULL;
+    PyTuple *t = new PyTuple(3);
+    //missions:
+    t->items[0] = new PyList();
+    //offers:
+    t->items[1] = new PyList();
+    //research:
+    t->items[2] = new PyList();
+    result = t;
+
+    return result;
+}
+
+PyResult AgentMgrBound::Handle_GetMyJournalDetails(PyCallArgs &call) {
+  sLog.Log( "AgentMgrBound::Handle_GetMyJournalDetails()", "size= %u", call.tuple->size() );
+
+}
+
+PyResult AgentMgrBound::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
+{
+    //no args
+  sLog.Log( "AgentMgrBound::Handle_GetMyEpicJournalDetails()", "size= %u", call.tuple->size() );
+
+    return new PyList;
+}
+
+PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)
+{
+  sLog.Log( "AgentMgrBound::Handle_GetCareerAgents()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALLS);
+
+    return new PyInt( 0 );
+}
+
+//17:09:07 L AgentMgrBound::Handle_GetInfoServiceDetails(): size= 0
+PyResult AgentMgrBound::Handle_GetInfoServiceDetails( PyCallArgs& call ) {
+  sLog.Log( "AgentMgrBound::Handle_GetInfoServiceDetails()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALLS);
+    //takes no arguments
+    return new PyNone;
+}
+
+//15:46:37 L AgentMgrBound::Handle_GetMissionObjectiveInfo(): size= 0
+PyResult AgentMgrBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
+{/*     called when clicking on line item (actionText)
+06:08:55 L AgentMgrBound::Handle_GetMissionObjectiveInfo(): size= 0
+06:08:55 [SvcCall]   Call Arguments:
+06:08:55 [SvcCall]       Tuple: Empty
+06:08:55 [SvcCall]   Call Named Arguments:
+06:08:55 [SvcCall]     Argument 'machoVersion':
+06:08:55 [SvcCall]         Integer field: 1
+*/
+    return new PyInt( 0 );
+}
+
+
+PyCallable_Make_InnerDispatcher(EpicArcService)
+
+EpicArcService::EpicArcService(PyServiceMgr *mgr)
+: PyService(mgr, "epicArcStatus"),
+  m_dispatch(new Dispatcher(this))
+{
+    _SetCallDispatcher(m_dispatch);
+
+    PyCallable_REG_CALL(EpicArcService, AgentHasEpicMissionsForCharacter);
+}
+
+EpicArcService::~EpicArcService() {
+    delete m_dispatch;
+}
+
+PyResult EpicArcService::Handle_AgentHasEpicMissionsForCharacter(PyCallArgs &call) {
+  /**
+     epicArcStatusSvc = sm.RemoteSvc('epicArcStatus').AgentHasEpicMissionsForCharacter(agent.agentID):
+     */
+  sLog.Log( "EpicArcService::Handle_AgentHasEpicMissionsForCharacter()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALLS);
+    //takes no arguments
+    return new PyNone;
+
+}
+
+/**
+agents.GetAgentsByStationID()
+agents.GetDivisions()
+
+agentTypeNonAgent = 1
+agentTypeBasicAgent = 2
+agentTypeTutorialAgent = 3
+agentTypeResearchAgent = 4
+agentTypeGenericStorylineMissionAgent = 6
+agentTypeStorylineMissionAgent = 7
+agentTypeEventMissionAgent = 8
+agentTypeFactionalWarfareAgent = 9
+agentTypeEpicArcAgent = 10
+agentTypeAura = 11
+
+//  mission states
+typedef enum {
+	MissionAllocated = 0,
+	MissionOffered = 1,
+	MissionAccepted = 2,
+	MissionFailed = 3,
+	DungeonStarted = 0,
+	DungeonCompleted = 1,
+	DungeonFailed = 2
+} missionState;
+
+*/
