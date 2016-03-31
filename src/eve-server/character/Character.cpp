@@ -442,7 +442,7 @@ bool Character::_Load() {
 
 	bool bLoadSuccessful = false;
 
-    if( !LoadContents( m_factory ) ) {
+    if( !LoadContents( &m_factory ) ) {
         sLog.Warning("Character::_Load","LoadContents returned false for char %u", itemID());
         return false;
     }
@@ -469,7 +469,7 @@ bool Character::_Load() {
 
 void Character::Delete() {
     // delete contents
-    DeleteContents( m_factory );
+    DeleteContents( &m_factory );
 
     // delete character record
     m_factory.db().DeleteCharacter(itemID());
@@ -982,7 +982,7 @@ PyDict *Character::CharGetInfo() {
               [PyString "activeEffects"]
               [PyDict 0 kvp]
             */
-    if( !LoadContents( m_factory ) ) {
+    if( !LoadContents( &m_factory ) ) {
         codelog(ITEM__ERROR, "%s (%u): Failed to load contents for CharGetInfo", m_itemName.c_str(), m_itemID);
         return NULL;
     }

@@ -181,9 +181,10 @@ public:
     // From <misc/>
     struct
     {
-        uint8 UseProfiling;
-        uint8 UseAPIServer;
-        uint8 UseShipTracking;
+        bool UseProfiling;
+        bool UseAPIServer;
+        bool UseShipTracking;
+        bool UseStackTrace;
         uint8 ServerSleepTime;
     } misc;
 

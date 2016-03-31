@@ -169,7 +169,7 @@ PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& c
     }
 
     Character::Certificates crt;
-    m_manager->item_factory.GetCharacter(arg.arg)->GetCertificates(crt);
+    m_manager->item_factory->GetCharacter(arg.arg)->GetCertificates(crt);
 
     util_Rowset rs;
     rs.lines = new PyList;

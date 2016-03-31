@@ -135,7 +135,7 @@ Inventory *Inventory::Cast(InventoryItemRef item)
     return NULL;
 }
 
-bool Inventory::LoadContents(ItemFactory &factory) {
+bool Inventory::LoadContents(ItemFactory* factory) {
     // check if the contents has already been loaded...
     if (ContentsLoaded()) {
         sLog.Debug("Inventory::LoadContents()", "Not Loading contents of inventory %u", inventoryID());
@@ -161,11 +161,11 @@ bool Inventory::LoadContents(ItemFactory &factory) {
         // Each "cur" itemID should be checked to see if they are "owned" by the character connected to this client,
         // and if not, then do not "get" the entire contents of this for() loop for that item, except in the case that
         // this item is located in space or belongs to this character's corporation:
-        factory.db().GetItem(*cur, into);
-        if (factory.GetUsingClient()) {
-            characterID = factory.GetUsingClient()->GetCharacterID();
-            corporationID = factory.GetUsingClient()->GetCorporationID();
-            locationID = factory.GetUsingClient()->GetLocationID();
+        factory->db().GetItem(*cur, into);
+        if (factory->GetUsingClient()) {
+            characterID = factory->GetUsingClient()->GetCharacterID();
+            corporationID = factory->GetUsingClient()->GetCorporationID();
+            locationID = factory->GetUsingClient()->GetLocationID();
             if ((into.ownerID == characterID)
                 || (characterID == 0)
                 || (into.ownerID == 1)
@@ -175,21 +175,21 @@ bool Inventory::LoadContents(ItemFactory &factory) {
                 // Continue to GetItem() if the client calling this is owned by the character that owns this item
                 // --OR--
                 // The characterID == 0, which means this is attempting to load the character of this client for the first time.
-                InventoryItemRef i = factory.GetItem(*cur);
+                InventoryItemRef i = factory->GetItem(*cur);
                 if (!i) {
                     sLog.Warning("Inventory::LoadContents()", "Failed to load item %u contained in %u. Skipping.", *cur, inventoryID());
                     continue;
                 } else
                     AddItem(i);
             }
-        } //  the char this item belongs to is not online....dont load it, dont throw error.  -allan
+        }
     }
 
-    mContentsLoaded = true;
-    return true;
+
+    return (mContentsLoaded = true);
 }
 
-void Inventory::DeleteContents(ItemFactory &factory)
+void Inventory::DeleteContents(ItemFactory* factory)
 {
     LoadContents(factory);
 
@@ -294,7 +294,7 @@ void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
 std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRef> &itemVec)
 {
     //15:53:09 L Inventory::_sortVector: 41 items sorted in 0.177us with 480 loops.
-    
+
     //sorts a vector of items by category, with loaded modules first (in slot order), then loaded charges (in slot order), then cargo
     // if there is only one item, no sorting required...
     if (itemVec.size() < 2)

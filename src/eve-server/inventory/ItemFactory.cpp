@@ -42,65 +42,54 @@ uint32 ItemFactory::m_nextEntityID = EVEMU_MINIMUM_ENTITY_ID;
 uint32 ItemFactory::m_nextAsteroidID = EVEMU_ASTEROID_ID;
 uint32 ItemFactory::m_nextMissileID = EVEMU_MISSILE_ID;
 
-ItemFactory::ItemFactory(EntityList& el) { m_itemCount = 0; }
+ItemFactory::ItemFactory(EntityList& el)
+{
+    m_itemCount = 0;
+    m_pClient = nullptr;
+}
 
 ItemFactory::~ItemFactory() {
     // items
-    {
-        double startTime = GetTimeMSeconds();
-        std::map<uint32, InventoryItemRef>::const_iterator cur = m_items.begin();
-		float total_item_count = (float)m_items.size(), items_saved = 0.0f;
-		float current_percent_items_saved = 0.0f;
-        for(; cur != m_items.end(); cur++) {
-            // save attributes of item
-            if (cur->second->itemID() >= EVEMU_MINIMUM_ENTITY_ID)
-				cur->second->SaveItem();
-
-            ++items_saved;
-            if( (items_saved / total_item_count) > (current_percent_items_saved + 0.05) ) {
-                current_percent_items_saved = items_saved / total_item_count;
-				sLog.Warning( "     Saving Items", " %3.2f%%", (current_percent_items_saved * 100) );
-			}
-        }
-		sLog.Warning("   ServerShutdown", "Saved %u of %u Loaded Items in %.2f seconds.", \
-            (uint16)items_saved, (uint16)total_item_count, (GetTimeMSeconds() -startTime) );
-    }
+    SaveItems();
+    m_items.clear();
+    m_itemCount = 0;
     // types
     for (auto cur : m_types)
-        delete cur.second;
+        SafeDelete(cur.second);
     m_types.clear();
     // groups
     for (auto cur : m_groups)
-        delete cur.second;
+        SafeDelete(cur.second);
     m_groups.clear();
     // categories
     for (auto cur : m_categories)
-        delete cur.second;
+        SafeDelete(cur.second);
     m_categories.clear();
 
     // Set Client pointer to NULL
     m_pClient = nullptr;
 }
 
+
 void ItemFactory::SaveItems() {
-    std::map<uint32, InventoryItemRef>::const_iterator cur = m_items.begin();
-	uint32 total_item_count = m_items.size();
-	uint32 items_saved = 0;
-	float current_percent_items_saved = 0.0f;
-    for(; cur != m_items.end(); cur++) {
+    double startTime = GetTimeMSeconds();
+    float total_item_count = (float)m_items.size(), items_saved = 0.0f;
+    float current_percent_items_saved = 0.0f;
+    for (auto cur : m_items) {
         // save attributes of item
-        if (cur->second->itemID() >= EVEMU_MINIMUM_ENTITY_ID)
-			cur->second->SaveItem();
+        if (cur.second->itemID() >= EVEMU_MINIMUM_ENTITY_ID)
+            cur.second->SaveItem();
 
         ++items_saved;
-        if( ((float)items_saved / (float)total_item_count) > (current_percent_items_saved + 0.05) ) {
-            current_percent_items_saved = (float)items_saved / (float)total_item_count;
+        if( (items_saved / total_item_count) > (current_percent_items_saved + 0.05) ) {
+            current_percent_items_saved = items_saved / total_item_count;
             sLog.Warning( "     Saving Items", " %3.2f%%", (current_percent_items_saved * 100) );
         }
     }
-	sLog.Warning("          SaveAll", " Saved %u of %u Loaded Items.", items_saved, total_item_count );
-	sLog.Success("          SaveAll", "  Complete.");
+    sLog.Warning("        SaveItems", "Saved %u of %u Loaded Items in %.2f seconds.", \
+    (uint32)items_saved, (uint32)total_item_count, (GetTimeMSeconds() -startTime) );
 }
+
 
 const ItemCategory* ItemFactory::GetCategory(EVEItemCategories category) {
     std::map<EVEItemCategories, ItemCategory *>::iterator res = m_categories.find(category);
@@ -396,18 +385,14 @@ void ItemFactory::UnsetUsingClient()
 
 uint32 ItemFactory::GetNextEntityID()
 {
-	uint32 nextID = 0;
-
 	// This algorithm should be improved to search for reusable IDs that are no longer used,
 	// but for now, just implement a simple wrap-around method once IDs have reached the maximum value:
 	if ( m_nextEntityID < EVEMU_MAXIMUM_ENTITY_ID )
-		nextID = m_nextEntityID++;
-	else {
+		++m_nextEntityID;
+	else
 		m_nextEntityID = EVEMU_MINIMUM_ENTITY_ID;
-		nextID = m_nextEntityID;
-	}
 
-	return nextID;
+	return m_nextEntityID;
 }
 
 uint32 ItemFactory::GetNextAsteroidID()

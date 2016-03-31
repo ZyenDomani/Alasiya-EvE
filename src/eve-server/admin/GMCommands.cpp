@@ -80,7 +80,7 @@ PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, cons
         qty
    );
 
-    InventoryItemRef i = services->item_factory.SpawnItem(idata);
+    InventoryItemRef i = services->item_factory->SpawnItem(idata);
     if (!i)
         throw PyException(MakeCustomError("Unable to create item of type %s.", args.arg(1).c_str()));
 
@@ -132,7 +132,7 @@ PyResult Command_createitem(Client* who, CommandDB* db, PyServiceMgr* services, 
         qty
    );
 
-    InventoryItemRef i = services->item_factory.SpawnItem(idata);
+    InventoryItemRef i = services->item_factory->SpawnItem(idata);
     if (!i)
         throw PyException(MakeCustomError("Unable to create item of type %s.", args.arg(1).c_str()));
 
@@ -458,7 +458,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
         loc
    );
 
-    item = services->item_factory.SpawnItem(idata);
+    item = services->item_factory->SpawnItem(idata);
     if (!item)
         throw PyException(MakeCustomError("Unable to spawn item of type %u.", typeID));
 
@@ -593,7 +593,7 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
             loc
        );
 
-        item = services->item_factory.SpawnItem(idata);
+        item = services->item_factory->SpawnItem(idata);
         if (!item)
             throw PyException(MakeCustomError("Unable to spawn item of type %u.", typeID));
 
@@ -707,7 +707,7 @@ PyResult Command_setbpattr(Client* who, CommandDB* db, PyServiceMgr* services, c
         throw PyException(MakeCustomError("Argument 5 must be remaining licensed production runs. (got %s)", args.arg(5).c_str()));
     uint32 licensedProductionRunsRemaining = atoi(args.arg(5).c_str());
 
-    BlueprintRef bp = services->item_factory.GetBlueprint(blueprintID);
+    BlueprintRef bp = services->item_factory->GetBlueprint(blueprintID);
     if (!bp)
         throw PyException(MakeCustomError("Failed to load blueprint %u.", blueprintID));
 
@@ -762,7 +762,7 @@ PyResult Command_getattr(Client* who, CommandDB* db, PyServiceMgr* services, con
         throw PyException(MakeCustomError("2nd argument must be attributeID (got %s).", args.arg(2).c_str()));
     const ItemAttributeMgr::Attr attribute = (ItemAttributeMgr::Attr)atoi(args.arg(2).c_str());
 
-    InventoryItemRef item = services->item_factory.GetItem(itemID);
+    InventoryItemRef item = services->item_factory->GetItem(itemID);
     if (!item)
         throw PyException(MakeCustomError("Failed to load item %u.", itemID));
 
@@ -804,7 +804,7 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
     if (itemID < EVEMU_MINIMUM_ID)
         throw PyException(MakeCustomError("1st argument must be a valid 'entity' table itemID (got %s) that MUST be larger >= 140000000.", args.arg(1).c_str()));
 
-    InventoryItemRef item = services->item_factory.GetItem(itemID);
+    InventoryItemRef item = services->item_factory->GetItem(itemID);
     if (!item)
         throw PyException(MakeCustomError("Failed to load item %u.", itemID));
 
@@ -864,7 +864,7 @@ PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const S
             qty
        );
 
-        InventoryItemRef i = services->item_factory.SpawnItem(idata);
+        InventoryItemRef i = services->item_factory->SpawnItem(idata);
         if (!i)
             throw PyException(MakeCustomError("Unable to create item of type %u.", typeID));
 
@@ -934,7 +934,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
                 }
             } else {    // Character DOES NOT have this skill
                 ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
-                InventoryItemRef item = services->item_factory.SpawnItem(idata);
+                InventoryItemRef item = services->item_factory->SpawnItem(idata);
 
                 if (!item)
                     throw PyException(MakeCustomError("Unable to create item of type %s.", item->typeID()));
@@ -1027,10 +1027,10 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
                 skill->SetAttribute(AttrExpiryTime, 0, false);
             }
 
-            item = services->item_factory.GetItem(skill.get()->itemID());
+            item = services->item_factory->GetItem(skill.get()->itemID());
         } else {    // Character DOES NOT have this skill
             ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
-            item = services->item_factory.SpawnItem(idata);
+            item = services->item_factory->SpawnItem(idata);
 
             if (!item) {
                 throw PyException(MakeCustomError("Unable to create item for skillID %u.", skillID));
@@ -1205,7 +1205,7 @@ PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, con
         throw PyException(MakeCustomError("You must be in space to unspawn things."));
 
     // Search for the itemRef for itemID:
-    InventoryItemRef itemRef = who->services().item_factory.GetItem(itemID);
+    InventoryItemRef itemRef = who->services().item_factory->GetItem(itemID);
     SystemEntity* entityRef = who->System()->get(itemID);
 
     // Actually do the unspawn using SystemManager's RemoveEntity:
@@ -1245,7 +1245,7 @@ PyResult Command_dogma(Client* who, CommandDB* db, PyServiceMgr* services, const
     double attributeValue = atof(args.arg(4).c_str());
 
     //get item
-    InventoryItemRef item = services->item_factory.GetItem(itemID);
+    InventoryItemRef item = services->item_factory->GetItem(itemID);
 
     //get attributeID
     uint32 attributeID = db->GetAttributeID(attributeName);
@@ -1368,7 +1368,7 @@ PyResult Command_kill(Client* who, CommandDB* db, PyServiceMgr* services, const 
             }
         uint32 entity = atoi(args.arg(1).c_str());
 
-        InventoryItemRef itemRef = services->item_factory.GetShip(entity);
+        InventoryItemRef itemRef = services->item_factory->GetShip(entity);
         if (itemRef.get() == NULL)
             throw PyException(MakeCustomError("/kill NOT supported on non-ship types at this time"));
 

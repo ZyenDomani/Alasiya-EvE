@@ -237,7 +237,7 @@ bool Ship::_Load()
     if (m_IsLoaded && m_ModuleManager) return true;
 
     // load contents
-    if ( !LoadContents( m_factory ) )
+    if ( !LoadContents( &m_factory ) )
         return false;
 
     if (!InventoryItem::_Load())      // Attributes are loaded here!
@@ -392,7 +392,7 @@ void Ship::_DecreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToConsu
 void Ship::Delete()
 {
     // delete contents first
-    DeleteContents( m_factory );
+    DeleteContents( &m_factory );
 
     InventoryItem::Delete();
 }
@@ -664,7 +664,7 @@ PyDict* Ship::ShipGetInfo()
                 [PyString "activeEffects"]      << set in Populate()
                 [PyDict 0 kvp]
             */
-    if ( !LoadContents( m_factory ) )
+    if ( !LoadContents( &m_factory ) )
     {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for ShipGetInfo", itemName().c_str(), itemID() );
         return NULL;
@@ -750,7 +750,7 @@ PyDict* Ship::GetShipInfo()
                         [PyInt 1]
                         [PyNone]
                 */
-    if ( !LoadContents( m_factory ) )
+    if ( !LoadContents( &m_factory ) )
     {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for ShipGetInfo", itemName().c_str(), itemID() );
         return NULL;
@@ -790,7 +790,7 @@ PyDict* Ship::GetShipInfo()
 
 PyDict* Ship::ShipGetState()
 {
-    if ( !LoadContents( m_factory ) )
+    if ( !LoadContents( &m_factory ) )
     {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for ShipGetInfo", itemName().c_str(), itemID() );
         return NULL;
@@ -814,7 +814,7 @@ PyDict* Ship::ShipGetState()
 
 PyList* Ship::ShipGetModuleList()
 {
-    if ( !LoadContents( m_factory ) )
+    if ( !LoadContents( &m_factory ) )
     {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for ShipGetInfo", itemName().c_str(), itemID() );
         return NULL;
@@ -838,7 +838,7 @@ PyList* Ship::ShipGetModuleList()
 
 PyDict* Ship::ShipGetModuleInfo()
 {
-    if ( !LoadContents( m_factory ) )
+    if ( !LoadContents( &m_factory ) )
     {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for ShipGetInfo", itemName().c_str(), itemID() );
         return NULL;
@@ -862,7 +862,7 @@ PyDict* Ship::ShipGetModuleInfo()
 
 PyDict* Ship::ShipGetWeaponInfo()
 {
-    if ( !LoadContents( m_factory ) )
+    if ( !LoadContents( &m_factory ) )
     {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for ShipGetInfo", itemName().c_str(), itemID() );
         return NULL;

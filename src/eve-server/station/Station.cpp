@@ -163,7 +163,7 @@ RefPtr<_Ty> Station::_LoadStation(ItemFactory &factory, uint32 stationID,
 bool Station::_Load()
 {
     // load contents
-    if( !LoadContents( m_factory ) )
+    if( !LoadContents( &m_factory ) )
         return false;
 
     return CelestialObject::_Load();

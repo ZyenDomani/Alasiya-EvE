@@ -47,7 +47,7 @@ public:
     {
         _SetCallDispatcher(m_dispatch);
         m_colony = new Colony(charID, m_planetID);
-        
+
         m_strBoundObjectName = "PlanetMgrBound";
 
         PyCallable_REG_CALL(PlanetMgrBound, GetPlanetInfo);
@@ -298,7 +298,7 @@ PyResult PlanetMgrBound::Handle_UserUpdateNetwork(PyCallArgs &call) {
             case 1: //COMMAND_CREATEPIN
             {
                 uint32 typeID = uunc.command_data->GetItem(1)->AsInt()->value();
-                uint32 groupID = m_manager->item_factory.GetType(typeID)->groupID();
+                uint32 groupID = m_manager->item_factory->GetType(typeID)->groupID();
                 if(groupID == 1027) {
                     /* Command Pin
                      */

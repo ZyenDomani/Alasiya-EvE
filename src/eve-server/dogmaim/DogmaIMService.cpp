@@ -329,7 +329,7 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
         return new PyNone;
     }
 
-    InventoryItemRef item = m_manager->item_factory.GetItem(args.arg);
+    InventoryItemRef item = m_manager->item_factory->GetItem(args.arg);
     if ( !item ) {
         codelog(SERVICE__ERROR, "Unable to load item %u", args.arg);
         return new PyNone;
@@ -434,7 +434,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
 
     // Get Reference to Ship, Module, and Charge
     ShipRef shipRef = pClient->GetShip();
-    InventoryItemRef chargeRef = m_manager->item_factory.GetItem(args.itemID);
+    InventoryItemRef chargeRef = m_manager->item_factory->GetItem(args.itemID);
     Call_SingleIntList chargeList;
 
     for (uint8 i=0; i<args.moduleIDs.size(); ++i) {
@@ -504,7 +504,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 
 	if (!args.itemIDs.empty()) {
         //TODO this still needs to call modulemanager to add charge to module.
-	    InventoryItemRef chargeRef = m_manager->item_factory.GetItem(args.itemIDs.at(0));
+	    InventoryItemRef chargeRef = m_manager->item_factory->GetItem(args.itemIDs.at(0));
 
 	    EVEItemFlags moduleFlag = moduleRef->flag();
 		// Move Charge into Ship's Inventory and change the Charge's flag to match flag of Module
@@ -565,16 +565,16 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
                 // Send notification SFX appropriate effect for the value effect value supplied:
                 switch(effect) {
                     case 649:
-                        //pClient->Destiny()->SendContainerAnchor( pClient->services().item_factory.GetCargoContainer( itemID ) );
+                        //pClient->Destiny()->SendContainerAnchor( pClient->services().item_factory->GetCargoContainer( itemID ) );
                         break;
                     case 650:
-                        //pClient->Destiny()->SendContainerUnanchor( pClient->services().item_factory.GetCargoContainer( itemID ) );
+                        //pClient->Destiny()->SendContainerUnanchor( pClient->services().item_factory->GetCargoContainer( itemID ) );
                         break;
                     case 1022:
-                        //pClient->Destiny()->SendStructureAnchor( pClient->services().item_factory.GetStructure( itemID ) );
+                        //pClient->Destiny()->SendStructureAnchor( pClient->services().item_factory->GetStructure( itemID ) );
                         break;
                     case 1023:
-                        //pClient->Destiny()->SendStructureUnanchor( pClient->services().item_factory.GetStructure( itemID ) );
+                        //pClient->Destiny()->SendStructureUnanchor( pClient->services().item_factory->GetStructure( itemID ) );
                         break;
                     default:
                         break;

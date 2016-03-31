@@ -67,13 +67,9 @@ dgmtypeattributemgr::dgmtypeattributemgr()
     }
 }
 
-dgmtypeattributemgr::~dgmtypeattributemgr()
-{
-    DgmTypeAttributeMapItr itr = mDgmTypeAttrInfo.begin();
-    for (; itr != mDgmTypeAttrInfo.end(); itr++)
-    {
-        delete itr->second;
-    }
+dgmtypeattributemgr::~dgmtypeattributemgr() {
+    for (auto cur : mDgmTypeAttrInfo)
+        SafeDelete(cur.second);
 }
 
 DgmTypeAttributeSet* dgmtypeattributemgr::GetDmgTypeAttributeSet( uint32 typeID )
@@ -96,12 +92,7 @@ DgmTypeAttributeSet* dgmtypeattributemgr::GetDmgTypeAttributeSet( uint32 typeID 
     return itr->second;
 }
 
-
-DgmTypeAttributeSet::~DgmTypeAttributeSet()
-{
-    AttrSetItr itr = attributeset.begin();
-    for (; itr != attributeset.end(); itr++)
-    {
-        delete (*itr);
-    }
+DgmTypeAttributeSet::~DgmTypeAttributeSet() {
+    for (auto cur : attributeset)
+        SafeDelete(cur);
 }

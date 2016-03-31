@@ -31,7 +31,7 @@
 #include "PyBoundObject.h"
 #include "Client.h"
 
-PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityList& elist, ItemFactory& ifactory )
+PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityList& elist, ItemFactory* ifactory )
 : item_factory( ifactory ),
   lsc_service( NULL ),
   cache_service( NULL ),

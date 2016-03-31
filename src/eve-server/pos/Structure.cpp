@@ -92,7 +92,7 @@ uint32 Structure::_Spawn(ItemFactory &factory,
 bool Structure::_Load()
 {
     // load contents
-    if( !LoadContents( m_factory ) )
+    if( !LoadContents( &m_factory ) )
         return false;
 
     return InventoryItem::_Load();
@@ -101,7 +101,7 @@ bool Structure::_Load()
 void Structure::Delete()
 {
     // delete contents first
-    DeleteContents( m_factory );
+    DeleteContents( &m_factory );
 
     InventoryItem::Delete();
 }
@@ -175,7 +175,7 @@ void Structure::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item, Client
 
 PyObject *Structure::StructureGetInfo()
 {
-    if( !LoadContents( m_factory ) )
+    if( !LoadContents( &m_factory ) )
     {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for StructureGetInfo", itemName().c_str(), itemID() );
         return NULL;

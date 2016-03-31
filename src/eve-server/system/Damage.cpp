@@ -439,7 +439,7 @@ void Client::Killed(Damage &fatal_blow) {
             deadPodPosition
         );
 
-        InventoryItemRef corpseItemRef = m_services.item_factory.SpawnItem( corpseItemData );
+        InventoryItemRef corpseItemRef = m_services.item_factory->SpawnItem( corpseItemData );
         if (!corpseItemRef )
             throw PyException( MakeCustomError( "Unable to spawn item of type %u.", corpseTypeID ) );
 
@@ -489,8 +489,8 @@ void Client::Killed(Damage &fatal_blow) {
         float radius = GetShip()->GetAttribute(AttrRadius).get_float();
         capsulePosition.MakeRandomPointOnSphere(radius + (MakeRandomFloat(200, 400)));
 
-        m_services.item_factory.SetUsingClient(this);
-        ShipRef podRef = services().item_factory.GetShip(GetPodID());
+        m_services.item_factory->SetUsingClient(this);
+        ShipRef podRef = services().item_factory->GetShip(GetPodID());
         podRef->Move(GetSystemID(), flagCapsule);
         podRef->Relocate(capsulePosition);
 
@@ -515,8 +515,8 @@ void Client::Killed(Damage &fatal_blow) {
 			deadShipPosition
 		);
 
-		InventoryItemRef wreckItemRef = m_services.item_factory.SpawnItem( wreckItemData );
-        m_services.item_factory.UnsetUsingClient();
+		InventoryItemRef wreckItemRef = m_services.item_factory->SpawnItem( wreckItemData );
+        m_services.item_factory->UnsetUsingClient();
 		if (!wreckItemRef )
 			throw PyException( MakeCustomError( "Unable to spawn wreck of type %u.", wreckTypeID ) );
 
@@ -603,7 +603,7 @@ void NPC::Killed(Damage &fatal_blow) {
 		deadNPCPosition
 	);
 
-    InventoryItemRef wreckItemRef = System()->GetServiceMgr()->item_factory.SpawnItem( wreckItemData );
+    InventoryItemRef wreckItemRef = System()->GetServiceMgr()->item_factory->SpawnItem( wreckItemData );
 	if (!wreckItemRef)
 		throw PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
 
@@ -713,7 +713,7 @@ void ShipEntity::Killed(Damage &fatal_blow)
 		wreckPosition
 	);
 
-	wreckItemRef = System()->GetServiceMgr()->item_factory.SpawnItem( wreckItemData );
+	wreckItemRef = System()->GetServiceMgr()->item_factory->SpawnItem( wreckItemData );
 	if (!wreckItemRef )
 		throw PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
 
@@ -965,7 +965,7 @@ void Client::_DropLoot(uint32 groupID, uint32 owner, uint32 locationID) {
                 quantity = static_cast<uint32>(MakeRandomInt(cur->minDrop, cur->maxDrop));
             if (quantity < 1) quantity = 1;
             ItemData iLoot(cur->itemID, owner, locationID, flagAutoFit, quantity);
-            m_system->itemFactory().SpawnItem(iLoot);
+            m_system->itemFactory()->SpawnItem(iLoot);
             ++cur;
         }
     }
@@ -986,7 +986,7 @@ void NPC::_DropLoot(uint32 groupID, uint32 owner, uint32 locationID) {
                 quantity = static_cast<uint32>(MakeRandomInt(cur->minDrop, cur->maxDrop));
             if (quantity < 1) quantity = 1;
             ItemData iLoot(cur->itemID, owner, locationID, flagAutoFit, quantity);
-            m_system->itemFactory().SpawnItem(iLoot);
+            m_system->itemFactory()->SpawnItem(iLoot);
             ++cur;
         }
     }
@@ -1007,7 +1007,7 @@ void ShipEntity::_DropLoot(uint32 groupID, uint32 owner, uint32 locationID) {
                 quantity = static_cast<uint32>(MakeRandomInt(cur->minDrop, cur->maxDrop));
             if (quantity < 1) quantity = 1;
             ItemData iLoot(cur->itemID, owner, locationID, flagAutoFit, quantity);
-            m_system->itemFactory().SpawnItem(iLoot);
+            m_system->itemFactory()->SpawnItem(iLoot);
             ++cur;
         }
     }

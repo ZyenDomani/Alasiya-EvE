@@ -27,6 +27,8 @@
 
 #include "PyServiceCD.h"
 #include "admin/AlertService.h"
+//#include "python/PyTraceLog.h"
+
 
 PyCallable_Make_InnerDispatcher(AlertService)
 
@@ -41,9 +43,9 @@ AlertService::AlertService(PyServiceMgr *mgr)
     m_dispatch->RegisterCall("BeanDelivery", &AlertService::Handle_BeanDelivery);
     m_dispatch->RegisterCall("SendClientStackTraceAlert", &AlertService::Handle_SendClientStackTraceAlert);
 
-#ifdef DEV_DEBUG_TREAT
-    traceLogger = new PyTraceLog("evemu_client_stack_trace.txt", true, true);
-#endif//DEV_DEBUG_TREAT
+    if (sConfig.misc.UseStackTrace)
+        _log(SERVER__INIT_ERR, "UseStackTrace in eve-server.xml is true, yet PyTraceLog was not included in AlertService.cpp");
+        //traceLogger = new PyTraceLog("evemu_client_stack_trace.txt", true, true);
 }
 
 AlertService::~AlertService()

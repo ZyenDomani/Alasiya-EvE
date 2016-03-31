@@ -239,7 +239,7 @@ int main( int argc, char* argv[] )
 
     /* create a single item factory and the entity list singleton */
     sLog.Success("       ServerInit", "Starting Item Factory and Entity List");
-    ItemFactory item_factory( sEntityList );
+    ItemFactory* item_factory = new ItemFactory( sEntityList );
 
     /* create a service manager */
     sLog.Success("       ServerInit", "Starting Service Manager");
@@ -256,7 +256,7 @@ int main( int argc, char* argv[] )
 
     /* create console command interperter singleton */
     sLog.Success("       ServerInit", "Starting Console Manager");
-    sConsole.Init(&command_dispatcher, &item_factory);
+    sConsole.Init(&command_dispatcher, item_factory);
 
     /* initialize clientID seed and start tic timer */
     sEntityList.Init();
@@ -266,6 +266,7 @@ int main( int argc, char* argv[] )
 
     /* Please keep the services list clean so it's easier to find things */
     /* service here are systems responding to client calls */
+    /** @todo  update these to smart pointers.  -allan */
     services.RegisterService(new AccountService(&services));
     services.RegisterService(new AgentMgrService(&services));
     services.RegisterService(new AggressionMgrService(&services));
@@ -493,6 +494,7 @@ int main( int argc, char* argv[] )
     }
 
     sLog.Warning("   ServerShutdown", "Main loop stopped" );
+    services.serviceDB().SetServerOnlineStatus(false);
 
     /* stop TCP listener */
     tcps.Close();
@@ -505,20 +507,21 @@ int main( int argc, char* argv[] )
     /* Stop Console Command Interperter */
     //sConsole.Stop();
 
-    sLog.Warning("   ServerShutdown", "Cleanup db cache" );
+    sLog.Warning("   ServerShutdown", "Cleanup Dogma Attribute cache" );
     SafeDelete(_sDgmTypeAttrMgr);
 
 	/* Shut down the Item system */
-	sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
-	sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.  Saving Items...");
+	sLog.Warning("   ServerShutdown", "Saving Items and Shutting down Item Factory." );
+    SafeDelete(item_factory);
 
-    services.serviceDB().SetServerOnlineStatus(false);
-
+    /* close db handler */
+    sDatabase.Close();
     /** @todo  the thread system still needs work....todo later. */
     /* end open threads */
     sThread.EndThreads();
     /* close server config singleton */
     sConfig.~EVEServerConfig();
+    sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
     /* close logfile */
     log_close_logfile();
 

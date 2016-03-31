@@ -42,13 +42,13 @@ EVEServerConfig::EVEServerConfig()
     // items with /*x*/ behind them denote time idetifier, with x = (s=seconds, m=minutes, etc)
 
     // world
-    world.testServer = 1;
-    world.chatLogs = 0;//N
-    world.globalChat = 1;//N
-    world.gridUnload = 1;
+    world.testServer = true;
+    world.chatLogs = false;//N
+    world.globalChat = true;//N
+    world.gridUnload = true;
     world.gridUnloadTime = 300 /*s*/; // 5 mins
-    world.loginInfo = 0;//N
-    world.loginMsg = 0;//N
+    world.loginInfo = false;//N
+    world.loginMsg = false;//N
     world.mailDelay = 5;//N
     world.maxPlayers = 500;//N
     world.idleSleepTime = 1000;
@@ -81,8 +81,8 @@ EVEServerConfig::EVEServerConfig()
 
     // npc
     npc.ThreatRadius = 1.0;//N
-    npc.RoamingSpawns = 0;//P
-    npc.StaticSpawns = 0;//N
+    npc.RoamingSpawns = false;//P
+    npc.StaticSpawns = false;//N
     npc.RoamingTimer = 15 /*m*/;//P
     npc.StaticTimer = 10 /*m*/;//P
 
@@ -115,17 +115,18 @@ EVEServerConfig::EVEServerConfig()
     threads.WorldThreads = 2;//N
 
     // misc
-    misc.UseProfiling = 0;
-    misc.UseAPIServer = 0;
-    misc.UseShipTracking = 0;
-    misc.ServerSleepTime = 10;  // sleep time in ms
+    misc.UseProfiling = false;
+    misc.UseAPIServer = false;//N
+    misc.UseShipTracking = false;
+    misc.UseStackTrace = false;//N
+    misc.ServerSleepTime = 10 /*ms*/;
 
     // crime
-    crime.AggFlagTime = 900;
-    crime.CrimFlagTime = 900;
-    crime.CWSessionTime = 60;
-    crime.KillRightTime = 900;
-    crime.WeaponFlagTime = 60;
+    crime.AggFlagTime = 900 /*s*/;//N
+    crime.CrimFlagTime = 900 /*s*/;//N
+    crime.CWSessionTime = 60 /*s*/;//N
+    crime.KillRightTime = 900 /*s*/;//N
+    crime.WeaponFlagTime = 60 /*s*/;//N
 }
 
 bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
@@ -359,6 +360,7 @@ bool EVEServerConfig::ProcessMisc( const TiXmlElement* ele )
     AddValueParser( "UseProfiling",     misc.UseProfiling );
     AddValueParser( "UseAPIServer",     misc.UseAPIServer );
     AddValueParser( "UseShipTracking",  misc.UseShipTracking );
+    AddValueParser( "UseStackTrace",  misc.UseStackTrace );
     AddValueParser( "ServerSleepTime",  misc.ServerSleepTime );
 
     const bool result = ParseElementChildren( ele );
@@ -366,6 +368,7 @@ bool EVEServerConfig::ProcessMisc( const TiXmlElement* ele )
     RemoveParser( "UseProfiling" );
     RemoveParser( "UseAPIServer" );
     RemoveParser( "UseShipTracking" );
+    RemoveParser( "UseStackTrace" );
     RemoveParser( "ServerSleepTime" );
 
     return result;

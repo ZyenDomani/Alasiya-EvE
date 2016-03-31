@@ -31,9 +31,11 @@
 
 class PyRep;
 
+/** @todo  great storage class for static db data....can be interegrated into other things later  */
+
 /**
  * a example of a storage class for static db data. not exactly doxygen commented.
- */
+ *
 class storage
 {
 public:
@@ -41,7 +43,6 @@ public:
 
     bool load()
     {
-        /* check if its already loaded */
         if (mLoaded == true)
             return true;
 
@@ -108,7 +109,7 @@ protected:
     DataContainer mStorageContainer;
     bool mLoaded;
 };
-
+*/
 
 class StationDB : public ServiceDB
 {
@@ -120,7 +121,7 @@ public:
     PyRep *GetStationItemBits(uint32 sid);
 
 protected:
-    static storage g_station_db_storage;
+    //static storage g_station_db_storage;
 };
 
 #endif

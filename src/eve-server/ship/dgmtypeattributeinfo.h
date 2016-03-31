@@ -33,12 +33,13 @@
 /**
  * DgmTypeAttributeInfo cache
  * The main idea is that we need to cache most of the important db tables and DgmTypeAttributeInfo is one of them.
- * This file contains all the required parts to make this happen for this table. Its not perfect but its good enough
- * for now.
+ * This file contains all the required parts to make this happen for this table.
+ * Its not perfect but its good enough for now.
  * The dgmtypeattributemgr loads the data from the db on startup and puts them into DgmTypeAttributeSets. Those
- * sets are comparable to db query results, you iterate trough the result using begin() and end() iterators like
- * we would use normal std systems.
+ * sets are comparable to db query results, you iterate through the result using begin() and end() like stl containers.
  */
+
+/** @todo see if we can update/optimize this class */
 
 // this represents 1 attribute modifier
 #pragma pack(push,1)
@@ -109,27 +110,5 @@ static EvilNumber e_log(EvilNumber num)
     else
         return EvilNumber(log(double(num.get_int())));
 }
-
-/* DEPRECATED as having both of these functions causes compiler errors
-   YOU MUST use the EvilNumber::pow() function instead
-
-static EvilNumber e_pow(EvilNumber num, int power_of)
-{
-    if (num.get_type() == evil_number_float)
-        return EvilNumber(pow(num.get_float(), power_of));
-    else
-        return EvilNumber(pow(double(num.get_int()), power_of));
-
-}
-
-static EvilNumber e_pow(int num, EvilNumber power_of)
-{
-    if (power_of.get_type() == evil_number_float)
-        return EvilNumber(pow(num, power_of.get_float()));
-    else
-        return EvilNumber(pow(num, double(power_of.get_int())));
-
-}
-*/
 
 #endif // dgmtypeattributeinfo_h__

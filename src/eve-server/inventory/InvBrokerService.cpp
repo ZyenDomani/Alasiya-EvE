@@ -191,10 +191,10 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
     }
     //bool passive = (args.arg2 != 0);  //no idea what this is for.
 
-    m_manager->item_factory.SetUsingClient( call.client );
+    m_manager->item_factory->SetUsingClient( call.client );
     // TODO: this line is insufficient for some object types, like containers in space, so expand it
     // by having a switch that acts differently based on either categoryID or groupID or both:
-    Inventory *inventory = m_manager->item_factory.GetInventory( args.arg1 );
+    Inventory *inventory = m_manager->item_factory->GetInventory( args.arg1 );
     if(inventory == NULL) {
         codelog(SERVICE__ERROR, "%s: Unable to load inventory %u", call.client->GetName(), args.arg1);
         return (NULL);
@@ -206,7 +206,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
     PyRep *result = m_manager->BindObject(call.client, ib);
 
     // Release the item factory now that the ItemFactory is finished being used:
-    m_manager->item_factory.UnsetUsingClient();
+    m_manager->item_factory->UnsetUsingClient();
 
     return result;
 }
@@ -250,8 +250,8 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
             return NULL;
     }
 
-    m_manager->item_factory.SetUsingClient( call.client );
-    Inventory *inventory = m_manager->item_factory.GetInventory( m_entityID );
+    m_manager->item_factory->SetUsingClient( call.client );
+    Inventory *inventory = m_manager->item_factory->GetInventory( m_entityID );
     if(inventory == NULL) {
         codelog(SERVICE__ERROR, "%s: Unable to load item %u", call.client->GetName(), m_entityID);
         return (NULL);
@@ -264,7 +264,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
     PyRep *result = m_manager->BindObject(call.client, ib);
 
     // Release the item factory now that the ItemFactory is finished being used:
-    m_manager->item_factory.UnsetUsingClient();
+    m_manager->item_factory->UnsetUsingClient();
 
     return result;
 }
@@ -276,8 +276,8 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
         return NULL;
     }
 
-    m_manager->item_factory.SetUsingClient( call.client );
-    InventoryItemRef item = m_manager->item_factory.GetItem( args.itemID );
+    m_manager->item_factory->SetUsingClient( call.client );
+    InventoryItemRef item = m_manager->item_factory->GetItem( args.itemID );
     if( !item ) {
         codelog(SERVICE__ERROR, "%s: Unable to load item %u", call.client->GetName(), args.itemID);
         return (NULL);
@@ -298,7 +298,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
         call.client->UpdateSession("shipid", item->itemID() );
 
     // Release the item factory now that the ItemFactory is finished being used:
-    m_manager->item_factory.UnsetUsingClient();
+    m_manager->item_factory->UnsetUsingClient();
 
     return NULL;
 }
@@ -312,7 +312,7 @@ PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
 
     std::vector<int32>::const_iterator cur = args.items.begin();
     for(; cur != args.items.end(); cur++) {
-        InventoryItemRef item = m_manager->item_factory.GetItem( *cur );
+        InventoryItemRef item = m_manager->item_factory->GetItem( *cur );
         if (!item)
             codelog(SERVICE__ERROR, "%s: Unable to load item %u to delete it. Skipping.", call.client->GetName(), *cur);
         else if (call.client->GetCharacterID() != item->ownerID())

@@ -231,12 +231,12 @@ void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSe
     PyDict* dict = new PyDict;
     dict->SetItem(new PyInt(ixLocationID), new PyInt(pTSes->m_tradeSession.containerID));
 
-    ItemFactory &factory = pClient->services().item_factory;
+    ItemFactory* factory = pClient->services().item_factory;
 
     DBRowDescriptor* header = m_TSvc->CreateHeader();
     uint32 stationID = pTSes->m_tradeSession.stationID;
     for (auto cur : pTSes->m_tradelist) {
-        InventoryItemRef itemRef = factory.GetItem(cur.itemID);
+        InventoryItemRef itemRef = factory->GetItem(cur.itemID);
         if (!itemRef)  {
             _log(SERVICE__ERROR, "TradeBound::CancelTrade() - Failed to get ItemRef.");
             continue;
@@ -353,7 +353,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
         Handle_Abort(call);
         return new PyNone;
     }
-    InventoryItemRef itemRef = call.client->services().item_factory.GetItem(args.arg1);
+    InventoryItemRef itemRef = call.client->services().item_factory->GetItem(args.arg1);
     if (!itemRef)  {
         _log(SERVICE__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
         //  should i abort trade, or just return null here?  single add, so not a big deal.
@@ -471,12 +471,12 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
 
     uint32 charID = call.client->GetCharacterID();
     uint32 tradeContID = pTSes->m_tradeSession.containerID;
-    ItemFactory &factory = call.client->services().item_factory;
+    ItemFactory* factory = call.client->services().item_factory;
 
     DBRowDescriptor* header = m_TSvc->CreateHeader();
     std::vector<int32> list = args.ints;
     for (auto cur : list) {
-        InventoryItemRef itemRef = factory.GetItem(cur);
+        InventoryItemRef itemRef = factory->GetItem(cur);
         if (!itemRef)  {
             _log(SERVICE__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
             continue;
@@ -631,10 +631,10 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
     PyDict* dict = new PyDict;
         dict->SetItem(new PyInt(ixLocationID), new PyInt(pTSes->m_tradeSession.containerID));
 
-    ItemFactory &factory = pClient->services().item_factory;
+    ItemFactory* factory = pClient->services().item_factory;
     uint32 stationID = pTSes->m_tradeSession.stationID;
     for (auto cur : pTSes->m_tradelist) {
-        InventoryItemRef itemRef = factory.GetItem(cur.itemID);
+        InventoryItemRef itemRef = factory->GetItem(cur.itemID);
         if (!itemRef)  {
             _log(SERVICE__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
             continue;
@@ -693,13 +693,13 @@ void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryIt
     if (itemRef->categoryID() == EVEDB::invCategories::Ship) {
         ShipRef shipRef = pSysMgr->GetShipFromInventory(itemRef->itemID());
         if (!shipRef)
-            shipRef = m_SvcMgr->item_factory.GetShip(itemRef->itemID());
+            shipRef = m_SvcMgr->item_factory->GetShip(itemRef->itemID());
         if (!shipRef->IsEmpty())
             shipRef->GetInventoryList(InventoryMap);
     } else {
         CargoContainerRef contRef = pSysMgr->GetContainerFromInventory(itemRef->itemID());
         if (!contRef)
-            contRef = m_SvcMgr->item_factory.GetCargoContainer(itemRef->itemID());
+            contRef = m_SvcMgr->item_factory->GetCargoContainer(itemRef->itemID());
         if (!contRef->IsEmpty())
             contRef->GetInventoryList(InventoryMap);
     }

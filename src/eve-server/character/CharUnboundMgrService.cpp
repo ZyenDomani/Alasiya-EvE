@@ -187,8 +187,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
             arg.bloodlineID, arg.genderID, arg.ancestryID);
 
     // obtain character type
-    m_manager->item_factory.SetUsingClient( call.client );
-    const CharacterType *char_type = m_manager->item_factory.GetCharacterTypeByBloodline(arg.bloodlineID);
+    m_manager->item_factory->SetUsingClient( call.client );
+    const CharacterType *char_type = m_manager->item_factory->GetCharacterTypeByBloodline(arg.bloodlineID);
     if (!char_type)
         return NULL;
 
@@ -310,7 +310,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     }
     //now we have all the data we need, stick it in the DB
     //create char item
-    CharacterRef char_item = m_manager->item_factory.SpawnCharacter(idata, cdata, corpData);
+    CharacterRef char_item = m_manager->item_factory->SpawnCharacter(idata, cdata, corpData);
     if (!char_item) {
         //a return to the client of 0 seems to be the only means of marking failure
         codelog(CLIENT__ERROR, "Failed to create character '%s'", idata.name.c_str());
@@ -335,7 +335,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     EvilNumber skillPoints;
     for (CharSkillMapItr cur = startingSkills.begin(); cur != startingSkills.end(); cur++) {
         ItemData skillItem( cur->first, char_item->itemID(), char_item->itemID(), flagSkill );
-        SkillRef i = m_manager->item_factory.SpawnSkill( skillItem );
+        SkillRef i = m_manager->item_factory->SpawnSkill( skillItem );
         if (!i) {
             _log(CLIENT__ERROR, "Failed to add skill %u to char %s (%u) during char create.",
                  cur->first, char_item->itemName().c_str(), char_item->itemID());
@@ -361,19 +361,19 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     // add "Damage Control I"
     ItemData itemDamageControl( 2046, char_item->itemID(), char_item->locationID(), flagHangar, 1 );
-    initInvItem = m_manager->item_factory.SpawnItem( itemDamageControl );
+    initInvItem = m_manager->item_factory->SpawnItem( itemDamageControl );
 
     if (!initInvItem)
         codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
 
     // add 1000 units of "Tritanium"    -allan 01/10/14
     ItemData itemTritanium( 34, char_item->itemID(), char_item->locationID(), flagHangar, 1000 );
-    initInvItem = m_manager->item_factory.SpawnItem( itemTritanium );
+    initInvItem = m_manager->item_factory->SpawnItem( itemTritanium );
 
     // add 1 unit of "Clone Grade Alpha"
     ItemData itemCloneAlpha( 164, char_item->itemID(), char_item->locationID(), flagClone, 1 );
     itemCloneAlpha.customInfo="active";
-    initInvItem = m_manager->item_factory.SpawnItem( itemCloneAlpha );
+    initInvItem = m_manager->item_factory->SpawnItem( itemCloneAlpha );
 
     if (!initInvItem)
         codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
@@ -383,9 +383,9 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     std::string pod_name = char_item->itemName() + "'s Capsule";
 
     ItemData shipItem( char_type->shipTypeID(), char_item->itemID(), char_item->locationID(), flagHangar, ship_name.c_str() );
-    ShipRef ship_item = m_manager->item_factory.SpawnShip( shipItem );
+    ShipRef ship_item = m_manager->item_factory->SpawnShip( shipItem );
     ItemData podItem( itemTypeCapsule, char_item->itemID(), char_item->locationID(), flagCapsule, pod_name.c_str() );
-    ShipRef pod_item = m_manager->item_factory.SpawnShip( podItem );
+    ShipRef pod_item = m_manager->item_factory->SpawnShip( podItem );
 
     // Set shipID
     char_item->SetActiveShip( ship_item->itemID() );
@@ -406,7 +406,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     sImageServer.ReportNewCharacter(call.client->GetUserID(), char_item->itemID());
 
     // Release the item factory now that the character is finished being accessed:
-    m_manager->item_factory.UnsetUsingClient();
+    m_manager->item_factory->UnsetUsingClient();
 
     //  add charID to staticOwners
     m_db.addOwnerCache(char_item->itemID(), char_item->itemName(), char_type->id() );

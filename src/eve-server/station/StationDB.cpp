@@ -27,11 +27,13 @@
 
 #include "station/StationDB.h"
 
-storage StationDB::g_station_db_storage;
+/** @todo this needs updating and optimizing.  -allan */
+
+//storage StationDB::g_station_db_storage;
 
 StationDB::StationDB()
 {
-    g_station_db_storage.load();
+    //g_station_db_storage.load();
 }
 
 PyPackedRow *StationDB::GetSolarSystem(uint32 solarSystemID) {

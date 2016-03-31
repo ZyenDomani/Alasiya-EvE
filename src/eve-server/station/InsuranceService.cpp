@@ -96,7 +96,7 @@ PyBoundObject* InsuranceService::_CreateBoundObject( Client* c, const PyRep* bin
 }
 
 PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
-    const ItemType *type = m_manager->item_factory.GetType(call.tuple->GetItem(0)->AsInt()->value());
+    const ItemType *type = m_manager->item_factory->GetType(call.tuple->GetItem(0)->AsInt()->value());
     if (type)
         return new PyFloat(type->basePrice()/10);
     else
@@ -104,7 +104,7 @@ PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
 }
 
 PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
-    const ItemType *type = m_manager->item_factory.GetType(call.tuple->GetItem(0)->AsInt()->value());
+    const ItemType *type = m_manager->item_factory->GetType(call.tuple->GetItem(0)->AsInt()->value());
     if (type)
         return new PyFloat(type->basePrice()/10);
     else
@@ -137,7 +137,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     }
 
     /* added check for groupID 237 (rookie ship - items 588, 596, 601, 606) as they cannot be insured. */
-    InventoryItemRef shipRef = call.client->services().item_factory.GetItem(args.shipID) ;
+    InventoryItemRef shipRef = call.client->services().item_factory->GetItem(args.shipID) ;
     if(shipRef->groupID() == EVEDB::invGroups::Rookie_ship) {
         call.client->SendInfoModalMsg("You cannot insure Rookie ships.");
         return new PyNone;

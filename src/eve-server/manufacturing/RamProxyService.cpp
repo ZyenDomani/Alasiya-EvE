@@ -123,7 +123,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
        sLog.Debug("RamProxyService::Handle_InstallJob", "InstallJob with quoteOnly");
 
 	// load installed item
-    InventoryItemRef installedItem = m_manager->item_factory.GetItem( args.installedItemID );
+    InventoryItemRef installedItem = m_manager->item_factory->GetItem( args.installedItemID );
     if ( !installedItem ){
 		_log(SERVICE__ERROR, "Could not get installedItem");
         return NULL;
@@ -145,7 +145,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         _log(SERVICE__ERROR, "Failed to decode last element of BOM location.");
         return NULL;
     }
-    InventoryItemRef lastContItem = m_manager->item_factory.GetItem(lastContainer.locationID );
+    InventoryItemRef lastContItem = m_manager->item_factory->GetItem(lastContainer.locationID );
     uint32 solarSystemID = lastContItem->locationID();
 
 	// verify call
@@ -280,7 +280,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
         return NULL;
 
     // return item
-    InventoryItemRef installedItem = m_manager->item_factory.GetItem( installedItemID );
+    InventoryItemRef installedItem = m_manager->item_factory->GetItem( installedItemID );
     if ( !installedItem )
         return NULL;
     installedItem->Move( installedItem->locationID(), outputFlag );
@@ -307,7 +307,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                 quantity
             );
 
-            InventoryItemRef item = m_manager->item_factory.SpawnItem( idata );
+            InventoryItemRef item = m_manager->item_factory->SpawnItem( idata );
             if ( !item )
                 return NULL;
 
@@ -332,7 +332,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                     bp->productType().portionSize() * runs
                 );
 
-                InventoryItemRef item = m_manager->item_factory.SpawnItem( idata );
+                InventoryItemRef item = m_manager->item_factory->SpawnItem( idata );
                 if( !item )
                     return NULL;
 
@@ -374,7 +374,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                     licensedProductionRuns
                 );
 
-                BlueprintRef copy = m_manager->item_factory.SpawnBlueprint( idata, bdata );
+                BlueprintRef copy = m_manager->item_factory->SpawnBlueprint( idata, bdata );
                 if( !copy )
                     return NULL;
 
@@ -498,7 +498,7 @@ void RamProxyService::_VerifyInstallJob_Call(const Call_InstallJob &args, Invent
             if(productTypeID == NULL)
                 throw(PyException(MakeUserError("RamInventionNoOutput")));
 
-            productType = m_manager->item_factory.type(productTypeID);
+            productType = m_manager->item_factory->type(productTypeID);
             break;
         } */
         default: {
@@ -963,7 +963,7 @@ void RamProxyService::_EncodeMissingMaterials(const std::vector<RequiredItem> &r
 
 void RamProxyService::_GetBOMItems(const PathElement &bomLocation, std::vector<InventoryItemRef> &into)
 {
-    Inventory *inventory = m_manager->item_factory.GetInventory( bomLocation.locationID );
+    Inventory *inventory = m_manager->item_factory->GetInventory( bomLocation.locationID );
     if( inventory != NULL )
         inventory->FindByFlag( (EVEItemFlags)bomLocation.flag, into );
 }

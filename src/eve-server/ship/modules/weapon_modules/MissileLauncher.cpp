@@ -160,7 +160,7 @@ void MissileLauncher::_LaunchMissile()
     SystemManager* pSystem = m_Ship->GetOperator()->GetClient()->System();
     ItemData idata(m_chargeRef->typeID(), pChar->itemID(), pChar->locationID(), flagMissile, m_chargeRef->itemName().c_str(), m_Ship->position() );
 
-    InventoryItemRef missileRef = pSystem->GetServiceMgr()->item_factory.SpawnItem(idata);
+    InventoryItemRef missileRef = pSystem->GetServiceMgr()->item_factory->SpawnItem(idata);
 
     if (!missileRef)
         throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", \

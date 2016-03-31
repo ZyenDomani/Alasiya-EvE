@@ -62,15 +62,12 @@ public:
 
     bool BootSystem();
     void UnloadSystem();
-    void SetLoadedCharHangars(Client* pClient);
 
     void Process();             // called around 40-60Hz on my system
     bool ProcessDestiny();      // called at 1Hz.
 
     bool BuildDynamicEntity(Client* who, const DBSystemDynamicEntity& entity);
 
-    void LeaveShip(Client* who, uint32 shipID);
-    void BoardShip(Client* who, ShipRef newShipRef);
     void AddClient(Client* who, bool docked=false, bool count=false);
     void RemoveClient(Client* who, bool docked=false, bool count=false);
     void AddNPC(NPC* who);
@@ -89,7 +86,7 @@ public:
     const char* GetSystemSecurityClass()    { return m_securityClass.c_str(); }
     const double GetSystemSecurityRating()  { return m_securityRating; }
 
-    ItemFactory& itemFactory() const;
+    ItemFactory* itemFactory() const;
 
     PyServiceMgr* GetServiceMgr() { return &m_services; }
 

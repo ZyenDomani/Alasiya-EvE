@@ -103,7 +103,7 @@ uint32 CargoContainer::_Spawn(ItemFactory &factory,
 bool CargoContainer::_Load()
 {
     // load contents
-    if( !LoadContents( m_factory ) )
+    if( !LoadContents( &m_factory ) )
         return false;
 
     return InventoryItem::_Load();
@@ -113,7 +113,7 @@ void CargoContainer::Delete()
 {
     sLog.Magenta( "CargoContainer::Delete()", "Garbage Collection is removing Cargo Container %u.", itemID() );
     // delete contents first
-    DeleteContents( m_factory );
+    DeleteContents( &m_factory );
     InventoryItem::Delete();
 }
 
@@ -148,7 +148,7 @@ void CargoContainer::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item, C
 
 PyObject *CargoContainer::CargoContainerGetInfo()
 {
-    if( !LoadContents( m_factory ) )
+    if( !LoadContents( &m_factory ) )
     {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for CargoContainerGetInfo", itemName().c_str(), itemID() );
         return NULL;
@@ -345,7 +345,7 @@ uint32 WreckContainer::_Spawn(ItemFactory &factory,
 bool WreckContainer::_Load()
 {
     // load contents
-    if( !LoadContents( m_factory ) )
+    if( !LoadContents( &m_factory ) )
         return false;
 
     return InventoryItem::_Load();
@@ -355,7 +355,7 @@ void WreckContainer::Delete()
 {
     sLog.Magenta( "WreckContainer::Delete()", "Garbage Collection is removing Wreck %u.", itemID() );
     // delete contents first
-    DeleteContents( m_factory );
+    DeleteContents( &m_factory );
     InventoryItem::Delete();
 }
 
@@ -366,7 +366,7 @@ double WreckContainer::GetCapacity(EVEItemFlags flag) const
 
 PyObject *WreckContainer::WreckContainerGetInfo()
 {
-    if( !LoadContents( m_factory ) )
+    if( !LoadContents( &m_factory ) )
     {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for WreckContainerGetInfo", itemName().c_str(), itemID() );
         return NULL;

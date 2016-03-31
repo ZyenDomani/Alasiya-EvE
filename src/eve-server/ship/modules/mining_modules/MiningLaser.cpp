@@ -402,7 +402,7 @@ void MiningLaser::_ProcessOreCycle(bool partial)
             oreAmount
         );
 
-        InventoryItemRef ore = m_Ship->GetOperator()->GetDestiny()->GetSystemManager()->GetServiceMgr()->item_factory.SpawnItem( idata );
+        InventoryItemRef ore = m_Ship->GetOperator()->GetDestiny()->GetSystemManager()->GetServiceMgr()->item_factory->SpawnItem( idata );
         if (ore) {
             /** @todo change these to new format and stack items after addition */
             m_Ship->AddItem(flagCargoHold, ore);
@@ -500,7 +500,7 @@ void MiningLaser::_ProcessIceCycle(bool partial)
 	    iceAmount
 	    );
 
-	    InventoryItemRef ore = m_Ship->GetOperator()->GetDestiny()->GetSystemManager()->GetServiceMgr()->item_factory.SpawnItem( idata );
+        InventoryItemRef ore = m_Ship->GetOperator()->GetDestiny()->GetSystemManager()->GetServiceMgr()->item_factory->SpawnItem( idata );
         if (ore) {
             /** @todo change these to new format and stack items after addition */
 	       m_Ship->AddItem(flagCargoHold, ore);

@@ -141,10 +141,10 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     // Get ship ItemRefs
     ShipRef oldShipRef = pSysMgr->GetShipFromInventory(args.oldShipID);
     if (!oldShipRef)
-        oldShipRef = pClient->services().item_factory.GetShip(args.oldShipID);
+        oldShipRef = pClient->services().item_factory->GetShip(args.oldShipID);
     ShipRef newShipRef = pSysMgr->GetShipFromInventory(args.newShipID);
     if (!newShipRef)
-        newShipRef = pClient->services().item_factory.GetShip(args.newShipID);
+        newShipRef = pClient->services().item_factory->GetShip(args.newShipID);
 
     if (!newShipRef) {
         sLog.Error("ShipBound::Handle_Board()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
@@ -219,10 +219,10 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     // Get ship ItemRefs
     ShipRef oldShipRef = pSysMgr->GetShipFromInventory(pClient->GetShipID());
     if (!oldShipRef)
-        oldShipRef = pClient->services().item_factory.GetShip(pClient->GetShipID());
+        oldShipRef = pClient->services().item_factory->GetShip(pClient->GetShipID());
     ShipRef capsuleRef = pSysMgr->GetShipFromInventory(pClient->GetPodID());
     if (!capsuleRef)
-        capsuleRef = pClient->services().item_factory.GetShip(pClient->GetPodID());
+        capsuleRef = pClient->services().item_factory->GetShip(pClient->GetPodID());
 
     pClient->Destiny()->SendJettisonPacket(oldShipRef);
 
@@ -257,7 +257,7 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call){
     Client* pClient = call.client;
     ShipRef podRef = pClient->System()->GetShipFromInventory(pClient->GetPodID());
     if (!podRef)
-        podRef = pClient->services().item_factory.GetShip(pClient->GetPodID());
+        podRef = pClient->services().item_factory->GetShip(pClient->GetPodID());
 
     //verify owner (not sure why pod doenst have correct owner...)
     podRef->ChangeOwner(pClient->GetCharacterID(), false);
@@ -285,11 +285,11 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
     Client* pClient = call.client;
     ShipRef oldShipRef = pClient->System()->GetShipFromInventory(args.oldShipID);
     if (!oldShipRef)
-        oldShipRef = pClient->services().item_factory.GetShip(args.oldShipID);
+        oldShipRef = pClient->services().item_factory->GetShip(args.oldShipID);
 
     ShipRef newShipRef = pClient->System()->GetShipFromInventory(args.newShipID);
     if (!newShipRef)
-        newShipRef = pClient->services().item_factory.GetShip(args.newShipID);
+        newShipRef = pClient->services().item_factory->GetShip(args.newShipID);
     if (!newShipRef) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
         throw PyException(MakeCustomError("Something bad happened as you prepared to board the %s, so you stayed in your %s.", \
@@ -479,7 +479,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         itemID = args.items.front();
     }
 
-    ShipRef ship = m_manager->item_factory.GetShip(itemID);
+    ShipRef ship = m_manager->item_factory->GetShip(itemID);
 
     if (!ship) {
         _log(ITEM__ERROR, "Failed to load ship %u to assemble.", itemID);
@@ -504,7 +504,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         // Move the five specified subsystems to the newly assembled Tech 3 ship
         InventoryItemRef subSystemItem;
         for(uint32 index=0; index<subSystemList.size(); index++) {
-            subSystemItem = m_manager->item_factory.GetItem(subSystemList.at(index));
+            subSystemItem = m_manager->item_factory->GetItem(subSystemList.at(index));
             subSystemItem->MoveInto(*ship, (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_int()), true);
         }
     }
@@ -554,7 +554,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
         itemID = (uint32)(PyToDropList->items.at(i)->AsTuple()->items.at(0)->AsInt()->value());
         itemQuantity = (uint32)(PyToDropList->items.at(i)->AsTuple()->items.at(1)->AsInt()->value());
 
-        cargoItemRef = m_manager->item_factory.GetItem(itemID);
+        cargoItemRef = m_manager->item_factory->GetItem(itemID);
         if (!cargoItemRef) {
             sLog.Error("ShipBound::Handle_Drop()", "%s: Unable to find item %u to drop.", pClient->GetName(), itemID);
             continue;
@@ -574,7 +574,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             cargoItemRef->ChangeOwner(1, true);  //default to eve system
 
         // Get groupID and categoryID for item 'itemID' to determine if it is a kind of cargo container, structure, or deployable item
-        uint32 groupID = m_manager->item_factory.GetItem(itemID)->groupID();
+        uint32 groupID = m_manager->item_factory->GetItem(itemID)->groupID();
 
         if ((groupID == EVEDB::invGroups::Audit_Log_Secure_Container)
             || (groupID == EVEDB::invGroups::Secure_Cargo_Container)
@@ -582,7 +582,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             || (groupID == EVEDB::invGroups::Cargo_Container))
         {
             // This item is a cargo container, so move it from the ship's cargo into space:
-            cargoContainerRef = m_manager->item_factory.GetCargoContainer(itemID);
+            cargoContainerRef = m_manager->item_factory->GetCargoContainer(itemID);
 
             if (!cargoContainerRef)
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", cargoContainerRef->typeID()));
@@ -601,10 +601,10 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             continue;
         }
 
-        uint32 categoryID = m_manager->item_factory.GetItem(itemID)->categoryID();
+        uint32 categoryID = m_manager->item_factory->GetItem(itemID)->categoryID();
         if (categoryID == EVEDB::invCategories::Structure) {
             // This item is a POS structure of some kind, so move it from the ship's cargo into space
-            structureItemRef = m_manager->item_factory.GetStructure(itemID);
+            structureItemRef = m_manager->item_factory->GetStructure(itemID);
 
             if (!structureItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", structureItemRef->typeID()));
@@ -624,7 +624,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
         } else if (categoryID == EVEDB::invCategories::Deployable) {
             // This item is a Deployable item of some kind, so move it from the ship's cargo into space
 
-            //cargoItemRef = m_manager->item_factory.GetItem(itemID);
+            //cargoItemRef = m_manager->item_factory->GetItem(itemID);
             if (!cargoItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cargoItemRef->typeID()));
 
@@ -796,7 +796,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     std::vector<int32>::iterator cur = args.ints.begin();
     // loop thru items to see if there is a container in this list.
     for (; cur != args.ints.end(); cur++) {
-        invItemRef = m_manager->item_factory.GetItem(*cur);
+        invItemRef = m_manager->item_factory->GetItem(*cur);
         if (!invItemRef) continue;      //null pointer hack to avoid crash when dereferenced below
         groupID = invItemRef->groupID();
 
@@ -807,7 +807,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             //TODO  *****  there are stipulations on placement of these items.  *****
             //TODO  these types of containers should have an 'is anchored' flag to remove the 2-hour time limit when set.
             // This item IS a cargo container, so move it from the ship's cargo into space:
-            cargoContainerItem = m_manager->item_factory.GetCargoContainer(*cur);
+            cargoContainerItem = m_manager->item_factory->GetCargoContainer(*cur);
             if (!cargoContainerItem)
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", cargoContainerItem->typeID()));
 
@@ -835,7 +835,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     cur = args.ints.begin();
     for (; cur != args.ints.end(); cur++) {
         // loop thru remaining items and determine if *cur is a structure or deployable item
-        invItemRef = m_manager->item_factory.GetItem(*cur);
+        invItemRef = m_manager->item_factory->GetItem(*cur);
         if (!invItemRef)
             continue;      //null pointer hack to avoid crash when dereferenced below
         categoryID = invItemRef->categoryID();
@@ -843,7 +843,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         if (categoryID == EVEDB::invCategories::Structure) {
             // This item is a POS structure of some kind, so move it from the ship's cargo into space
             // whilst keeping ownership of it to the character not using the corporation the character belongs to:
-            structureItemRef = m_manager->item_factory.GetStructure(*cur);
+            structureItemRef = m_manager->item_factory->GetStructure(*cur);
             if (!structureItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", structureItemRef->typeID()));
 
@@ -858,7 +858,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         } else if (categoryID == EVEDB::invCategories::Deployable) {
             // This item is a Deployable item of some kind, so move it from the ship's cargo into space
             // whilst keeping ownership of it to the character not using the corporation the character belongs to:
-            cargoItemRef = m_manager->item_factory.GetItem(*cur);
+            cargoItemRef = m_manager->item_factory->GetItem(*cur);
             if (!cargoItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cargoItemRef->typeID()));
 
@@ -907,7 +907,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                                 location
                                 );
 
-            newJetcanItem = m_manager->item_factory.SpawnCargoContainer(*p_idata);
+            newJetcanItem = m_manager->item_factory->SpawnCargoContainer(*p_idata);
             if (!newJetcanItem)
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", 23));
 

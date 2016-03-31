@@ -364,9 +364,9 @@ bool Client::EnterSystem(uint32 systemID) {
     if (!m_system) {
         sLog.Warning("Client::EnterSystem()", "m_system == NULL, GetSystemID() = %u, mLocation = %u", systemID, GetLocationID());
         //m_system is NULL, so find our new system's manager and register ourself with it.
-        m_services.item_factory.SetUsingClient(this);
+        m_services.item_factory->SetUsingClient(this);
         m_system = sEntityList.FindOrBootSystem(systemID);
-        m_services.item_factory.UnsetUsingClient();
+        m_services.item_factory->UnsetUsingClient();
         if (!m_system) {
             sLog.Error("Client", "Failed to boot system %u for char %s (%u)", systemID, GetName(), GetCharacterID());
             SendErrorMsg("Unable to boot system");
@@ -571,8 +571,8 @@ void Client::MoveToPosition(const GPoint &pt) {
 
 void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
 {
-    m_services.item_factory.SetUsingClient(this);
-    InventoryItemRef item = m_services.item_factory.GetItem(itemID);
+    m_services.item_factory->SetUsingClient(this);
+    InventoryItemRef item = m_services.item_factory->GetItem(itemID);
     if (!item) {
         sLog.Error("Client","%s: Unable to load item %u", GetName(), itemID);
         return;
@@ -591,7 +591,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
     }
 
     // Release the item factory now that the ItemFactory is finished being used:
-    m_services.item_factory.UnsetUsingClient();
+    m_services.item_factory->UnsetUsingClient();
 }
 
 void Client::BoardShip(ShipRef newShipRef) {
@@ -1338,12 +1338,12 @@ bool Client::AddBalance(double amount) {
 }
 
 bool Client::SelectCharacter(uint32 char_id) {
-    m_services.item_factory.SetUsingClient(this);
-    m_char = m_services.item_factory.GetCharacter(char_id);
+    m_services.item_factory->SetUsingClient(this);
+    m_char = m_services.item_factory->GetCharacter(char_id);
     if (!GetChar()) {
           sLog.Error("Client::SelectCharacter()", "GetChar for %u = nullptr", char_id);
         // Release the item factory now that the ItemFactory is finished being used:
-        m_services.item_factory.UnsetUsingClient();
+        m_services.item_factory->UnsetUsingClient();
         return false;
     }
 
@@ -1351,7 +1351,6 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     uint32 systemID =GetSystemID();
     m_system = sEntityList.FindOrBootSystem(systemID);
-    m_system->SetLoadedCharHangars(this);
 
     if (!m_system) {
         sLog.Error("Client::LoginToSystem()", "Failed to boot system %u for char %s (%u)", systemID, GetName(), GetCharacterID());
@@ -1362,16 +1361,16 @@ bool Client::SelectCharacter(uint32 char_id) {
     if (!m_char->capsuleID())
         CreateNewPod();
 
-    ShipRef ship = m_services.item_factory.GetShip(GetShipID());
+    ShipRef ship = m_services.item_factory->GetShip(GetShipID());
     if (!ship) {
         sLog.Error("Client::SelectCharacter()", "ship for %u = nullptr.  Picking new ship...", char_id);
         PickAlternateShip();    // incase shipID wasnt set correctly in db (seen on 'bad' Damage::Killed())
-        ship = m_services.item_factory.GetShip(GetShipID());
+        ship = m_services.item_factory->GetShip(GetShipID());
         if (!ship) {
             sLog.Error("Client::SelectCharacter()", "ship for %u = nullptr Again.  Loading Pod.", char_id);
             // Release the item factory now that the ItemFactory is finished being used:
-            ship = m_services.item_factory.GetShip(GetPodID());
-            m_services.item_factory.UnsetUsingClient();
+            ship = m_services.item_factory->GetShip(GetPodID());
+            m_services.item_factory->UnsetUsingClient();
         }
     }
 
@@ -1387,7 +1386,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     //johnsus - characterOnline mod
     m_services.serviceDB().SetCharacterOnlineStatus(GetCharacterID(), true);
     // Release the item factory now that we're finished with it.
-    m_services.item_factory.UnsetUsingClient();
+    m_services.item_factory->UnsetUsingClient();
     m_char->SetLoginTime();
     sLog.Success("Client::SelectCharacter()", "SelectCharacter for %u completed", char_id);
     return true;
@@ -1403,7 +1402,7 @@ void Client::CreateNewPod() {
     //if (IsDocked()) flag = flagHangar;
     std::string pod_name = m_char->itemName() + "'s Capsule";   // use m_char because GetCharacterName() may not be pouplated (i.e. on login)
     ItemData podItem( itemTypeCapsule, GetCharacterID(), GetLocationID(), flag, pod_name.c_str() );
-    ShipRef podItemRef = m_services.item_factory.SpawnShip( podItem );
+    ShipRef podItemRef = m_services.item_factory->SpawnShip( podItem );
     ShipEntity* pPodEntity = new ShipEntity(podItemRef, System(), m_services, NULL_ORIGIN);
     System()->AddEntity(pPodEntity);
     m_char->SetActivePod(podItemRef->itemID());
@@ -1430,7 +1429,7 @@ void Client::SpawnNewRookieShip() {
         NULL_ORIGIN
     );
     //spawn rookie ship
-    ShipRef i = services().item_factory.SpawnShip(idata);
+    ShipRef i = services().item_factory->SpawnShip(idata);
 
     if (!i)
         throw PyException(MakeCustomError("Unable to generate rookie ship"));
@@ -1505,9 +1504,9 @@ void Client::LoadStationHangar(uint32 stationID)
 {
     sLog.Warning("Client::LoadStationHangar()", "Loading Hangar for %s(%u) in stationID %u", GetName(), GetID(), stationID);
     StationRef sRef = System()->GetStationFromInventory(stationID);
-    m_system->itemFactory().SetUsingClient(this);
+    m_system->itemFactory()->SetUsingClient(this);
     sRef->LoadContents(m_system->itemFactory());
-    m_system->itemFactory().UnsetUsingClient();
+    m_system->itemFactory()->UnsetUsingClient();
 }
 
 void Client::TargetAdded(SystemEntity* who)

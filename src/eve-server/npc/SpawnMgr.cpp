@@ -462,7 +462,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry* spawnEntry)
         "BeltRat"
     );
 
-    InventoryItemRef i = m_services.item_factory.SpawnItem(idata);      // will have to work on this to NOT save npc to db.
+    InventoryItemRef i = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db.
     if (!i) {
         _log(SPAWN__ERROR, "Failed to spawn item type %u.", spawnEntry->typeID);
         return;
@@ -512,7 +512,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
         );
 
         for (uint32 x=0; x!=cur->quantity; x++) {
-            InventoryItemRef i = m_services.item_factory.SpawnItem(idata);      // will have to work on this to NOT save npc to db....or save ALL the spawn shit
+            InventoryItemRef i = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db....or save ALL the spawn shit
             if (!i) {
                 _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur->typeID);
                 continue;
