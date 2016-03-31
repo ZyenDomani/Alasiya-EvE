@@ -463,9 +463,7 @@ int main( int argc, char* argv[] )
 
     /*
      * THE MAIN LOOP
-     *
      * Everything except IO should happen in this loop, in this thread context.
-     *
      */
 
     while (RunLoops) {
@@ -475,12 +473,11 @@ int main( int argc, char* argv[] )
         /* Freeze Detector Code */
         //++m_worldLoopCounter;
 
-        if (tcpc = tcps.PopConnection())
+        tcpc = tcps.PopConnection();
+        if (tcpc)
             sEntityList.Add(new Client(services, &tcpc));
 
         sEntityList.Process();
-        /* we are no longer processing services.  nothing to do now */
-        //services.Process();
 
         //  process console commands, if any, and check for 'exit' command
         RunLoops = sConsole.Process();
@@ -489,7 +486,7 @@ int main( int argc, char* argv[] )
         if (sEntityList.GetClientCount()) {
             if (MAIN_LOOP_DELAY > (GetTimeMSeconds() - start))
                 Sleep(MAIN_LOOP_DELAY /2);
-        } else /* if no clients, let server idle */
+        } else /* if no clients, let server idle longer*/
             Sleep(idle);
     }
 

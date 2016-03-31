@@ -92,7 +92,7 @@ public:
     void SetAccountOnlineStatus(uint32 accountID, bool online);
     void SetAccountBanStatus(uint32 accountID, bool banned);
 
-    void SaveServerStats(double threads, float rss, float vm, float user, float kernel, uint32 items, uint32 systems, uint32 bubbles, uint32 npcs);
+    void SaveServerStats(double threads, float rss, float vm, float user, float kernel, uint32 items, uint32 bubbles);
 
     uint32 SetClientSeed();
 

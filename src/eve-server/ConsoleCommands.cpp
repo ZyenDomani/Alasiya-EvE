@@ -390,6 +390,6 @@ void ConsoleCommand::UpdateStatus() {
      */
     if (sConfig.world.testServer)
         _log(SERVER__INFO, "Current Mem usage - RSS: %f, VM: %f", rss, vm);
-	m_db.SaveServerStats(threads, rss, vm, user, kernel, pFactory->Count(), sEntityList.GetSystemCount(), pBubbles->Count(), sEntityList.GetNPCCount());
+	m_db.SaveServerStats(threads, rss, vm, user, kernel, pFactory->Count(), pBubbles->Count());
 }
 

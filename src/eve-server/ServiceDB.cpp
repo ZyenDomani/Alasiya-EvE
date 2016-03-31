@@ -471,7 +471,7 @@ void ServiceDB::SetCharacterOnlineStatus(uint32 char_id, bool online) {
     DBerror err;
     sDatabase.RunQuery(err, "UPDATE character_ SET online = %d WHERE characterID = %u", online, char_id);
 
-    if ( online )
+    if ( 0 )
         sDatabase.RunQuery(err, "UPDATE srvStatus SET Connections = Connections + 1");
 }
 
@@ -512,7 +512,7 @@ void ServiceDB::SetAccountBanStatus(uint32 accountID, bool banned) {
     }
 }
 
-void ServiceDB::SaveServerStats(double threads, float rss, float vm, float user, float kernel, uint32 items, uint32 systems, uint32 bubbles, uint32 npcs) {
+void ServiceDB::SaveServerStats(double threads, float rss, float vm, float user, float kernel, uint32 items, uint32 bubbles) {
   DBerror err;
   sDatabase.RunQuery(err,
 	"UPDATE srvStatus"
@@ -522,12 +522,13 @@ void ServiceDB::SaveServerStats(double threads, float rss, float vm, float user,
 	"     user = %f,"
 	"     kernel = %f,"
 	"     items = %u,"
+    "     bubbles = %u,"
 	"     systems = %u,"
-	"     bubbles = %u,"
     "     npcs = %u,"
+    "     Connections = %u,"
 	"     updateTime = UNIX_TIMESTAMP(CURRENT_TIMESTAMP)"
-	" WHERE AI = %u",
-	    threads, rss, vm, user, kernel, items, systems, bubbles, npcs, 1);
+	" WHERE AI = 1",
+	    threads, rss, vm, user, kernel, items, bubbles, sEntityList.GetSystemCount(), sEntityList.GetNPCCount(), sEntityList.GetConnections());
 
   if (sConfig.misc.UseProfiling)
       _log(DATABASE__MESSAGE, "Server Stats Saved");
