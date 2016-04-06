@@ -52,10 +52,10 @@ PyResult CorpBookmarkMgrService::Handle_GetBookmarks(PyCallArgs& call)
     ObjectCachedMethodID method_id(GetName(), "GetBookmarks");
     if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
         PyDict *res = m_db.GetBookmarks(call.client->GetCorporationID());
-        if(res == NULL)
-            return NULL;
+        if (!res)
+            return nullptr;
 
-        PyRep* result = NULL;
+        PyRep* result = nullptr;
 
         PyTuple *tuple = new PyTuple(2);
         tuple->items[0] = res;

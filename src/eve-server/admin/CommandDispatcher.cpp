@@ -34,13 +34,13 @@
 CommandDispatcher::CommandDispatcher( PyServiceMgr& services )
 : m_services( services )
 {
+    m_commands.clear();
 }
 
 CommandDispatcher::~CommandDispatcher() {
-    std::map<std::string, CommandRecord *>::iterator cur = m_commands.begin();
-    for(; cur != m_commands.end(); cur++) {
-        delete cur->second;
-    }
+    for (auto cur : m_commands)
+        SafeDelete(cur.second);
+    m_commands.clear();
 }
 
 PyResult CommandDispatcher::Execute( Client* from, const char* msg )
@@ -56,8 +56,7 @@ PyResult CommandDispatcher::Execute( Client* from, const char* msg )
     //might want to check for # or / at the beginning of this crap.
     Seperator sep( &msg[1] );
 
-    if (0 == sep.argCount() )
-    {
+    if (!sep.argCount()) {
         //empty command, return list of commands
         std::string reason = "Commands: ";
 
@@ -99,18 +98,24 @@ PyResult CommandDispatcher::Execute( Client* from, const char* msg )
 void CommandDispatcher::AddCommand( const char* cmd, const char* desc, uint64 required_role, CommandFunc function )
 {
     std::map<std::string, CommandRecord*>::iterator res = m_commands.find( cmd );
-    if (m_commands.end() != res )
+    if (res != m_commands.end())
         SafeDelete( res->second );
 
     m_commands[cmd] = new CommandRecord( cmd, desc, required_role, function );
 }
 
-void CommandDispatcher::ListCommands()
-{
+void CommandDispatcher::ListCommands() {
     sLog.Success("  Alasiya's EvEMu", "Currently Loaded %u Commands:", m_commands.size());
     std::map<std::string, CommandDispatcher::CommandRecord*>::iterator cur = m_commands.begin();
     for (; cur != m_commands.end(); cur++) {
         sLog.Magenta("    Call and Role", "%s - %p (%" PRIu64 ")",
                      cur->first.c_str(), cur->second->required_role, cur->second->required_role);
     }
+}
+
+void CommandDispatcher::Close() {
+    for (auto cur : m_commands)
+        SafeDelete(cur.second);
+    m_commands.clear();
+
 }

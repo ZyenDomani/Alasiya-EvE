@@ -47,7 +47,7 @@ BillMgrService::~BillMgrService() {
 }
 
 PyResult BillMgrService::Handle_GetBillTypes( PyCallArgs& call ) {
-    PyRep* result = NULL;
+    PyRep* result = nullptr;
 
     ObjectCachedMethodID method_id(GetName(), "GetBillTypes");
 
@@ -55,7 +55,7 @@ PyResult BillMgrService::Handle_GetBillTypes( PyCallArgs& call ) {
     if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
         //this method is not in cache yet, load up the contents and cache it.
         result = m_db.GetRefTypes();
-        if(result == NULL) {
+        if (!result) {
             codelog(SERVICE__ERROR, "Failed to load cache, generating empty contents.");
             result = new PyNone();
         }

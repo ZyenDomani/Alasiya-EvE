@@ -46,8 +46,8 @@ Socket::Socket( SOCKET sock )
 
 Socket::~Socket()
 {
-    ::shutdown( mSock, 0x01 );
-    ::shutdown( mSock, 0x00 );
+    ::shutdown( mSock, SHUT_RD );
+    ::shutdown( mSock, SHUT_WR );
 
 #ifdef HAVE_WINSOCK2_H
     ::closesocket( mSock );

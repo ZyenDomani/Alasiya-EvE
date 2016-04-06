@@ -27,7 +27,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
-#include "LiveUpdateDB.h"
+//#include "LiveUpdateDB.h"
 #include "PyBoundObject.h"
 #include "chat/LSCService.h"
 #include "character/CharUnboundMgrService.h"
@@ -1939,7 +1939,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     // no client update available
         ack.client_hash = new PyNone;
         ack.user_clientid = GetClientID();
-        ack.live_updates = sLiveUpdateDB.GetUpdates();
+        ack.live_updates = new PyList; //sLiveUpdateDB.GetUpdates();
     PyRep* r = ack.Encode();
     mNet->QueueRep(r);
     PyDecRef(r);

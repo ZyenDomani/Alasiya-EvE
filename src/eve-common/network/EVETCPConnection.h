@@ -49,6 +49,7 @@ public:
      * @brief Creates empty EVE connection.
      */
     EVETCPConnection();
+    virtual ~EVETCPConnection()                         { /* do nothing here */ }
 
     /**
      * @brief Queues given PyRep into send queue.

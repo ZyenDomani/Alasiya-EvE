@@ -165,6 +165,7 @@ dgmtypeattributemgr* _sDgmTypeAttrMgr;
 int main( int argc, char* argv[] )
 {
     double profileStartTime = GetTimeMSeconds();
+
     /* Load server configuration */
     if (!sConfig.ParseFile(CONFIG_FILE)) {
         printf("ERROR: Loading server configuration '%s' failed.", CONFIG_FILE );
@@ -178,6 +179,8 @@ int main( int argc, char* argv[] )
 
     /* init logging */
     sLog.InitializeLogging(sConfig.files.logDir);
+    sLog.Log( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
+    //sThread.AddThread(pthread_self());
     sLog.Log("       ServerInit", "Loading server");
 
     /* Load server log settings */
@@ -193,9 +196,6 @@ int main( int argc, char* argv[] )
         else
             sLog.Warning( "       ServerInit", "Unable to find log directory '%s', only logging to the screen now.", sConfig.files.logDir.c_str() );
     }
-
-    sLog.Log( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
-    //sThread.AddThread(pthread_self());
 
     sLog.Log("", "");
     sLog.Log("     Server Build", " %.2f", EVE_Build );
@@ -473,21 +473,21 @@ int main( int argc, char* argv[] )
         /* Freeze Detector Code */
         //++m_worldLoopCounter;
 
-        tcpc = tcps.PopConnection();
-        if (tcpc)
+        if (tcpc = tcps.PopConnection())
             sEntityList.Add(new Client(services, &tcpc));
 
         sEntityList.Process();
 
-        //  process console commands, if any, and check for 'exit' command
+        /*  process console commands, if any, and check for 'exit' command */
         RunLoops = sConsole.Process();
 
-        // do the stuff for thread sleeping
+        /* do the stuff for thread sleeping */
         if (sEntityList.GetClientCount()) {
             if (MAIN_LOOP_DELAY > (GetTimeMSeconds() - start))
                 Sleep(MAIN_LOOP_DELAY /2);
         } else /* if no clients, let server idle longer*/
             Sleep(idle);
+
     }
 
     sLog.Warning("   ServerShutdown", "Main loop stopped" );
@@ -496,38 +496,50 @@ int main( int argc, char* argv[] )
     /* stop TCP listener */
     tcps.Close();
     sLog.Warning("   ServerShutdown", "TCP listener stopped." );
-
     /* stop Image Server */
     sImageServer.Stop();
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
-
     /* Stop Console Command Interperter */
     //sConsole.Stop();
-
+    /* delete the dogma attrib object */
     sLog.Warning("   ServerShutdown", "Cleanup Dogma Attribute cache" );
     SafeDelete(_sDgmTypeAttrMgr);
-
 	/* Shut down the Item system */
 	sLog.Warning("   ServerShutdown", "Saving Items and Shutting down Item Factory." );
     SafeDelete(item_factory);
-
-    /* close db handler */
+    /* Close the service manager */
+    services.Close();
+    /* Close the command dispatcher */
+    command_dispatcher.Close();
+    /* close the db handler */
     sDatabase.Close();
-    /** @todo  the thread system still needs work....todo later. */
-    /* end open threads */
-    sThread.EndThreads();
     /* close server config singleton */
     sConfig.~EVEServerConfig();
+    /** @todo  the thread system still needs work....todo later. */
+    /* join open threads */
+    sThread.EndThreads();
     sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
     /* close logfile */
     log_close_logfile();
-
-    //exit(EXIT_SUCCESS);
-    return EXIT_SUCCESS;
+    exit(EXIT_SUCCESS);
 }
 
 static void SetupSignals()
 {
+    /* setup sigaction to prevent zombies */
+    struct sigaction sa;
+    sa.sa_handler = SIG_IGN;
+    sa.sa_flags = SA_NOCLDWAIT;
+    if (sigemptyset(&sa.sa_mask) == -1 ) {  /* MT safe */
+        perror("SigEmptySet Failure");
+        exit(EXIT_FAILURE);     /* NOT MT safe */
+    }
+    if (sigaction(SIGCHLD, &sa, nullptr) == -1) {  /* MT safe */
+        perror("SigAction Failure");
+        exit(EXIT_FAILURE);     /* NOT MT safe */
+    }
+
+    //::signal( SIGCHLD, SIG_IGN );
     ::signal( SIGINT, CatchSignal );
     ::signal( SIGTERM, CatchSignal );
     ::signal( SIGABRT, CatchSignal );

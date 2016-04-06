@@ -11,7 +11,6 @@
 #define EVE_THREADING_H
 
 #include "../eve-core.h"
-#include "log/LogNew.h"
 #include "utils/Singleton.h"
 
 class Threading
@@ -21,15 +20,13 @@ public:
     Threading();
     ~Threading();
 
+    void CreateThread();
+    void EndThreads();
     void ListThreads();
     void AddThread(pthread_t thread);
-    void EndThreads();
+    void RemoveThread(pthread_t thread);
 
     uint8 Count()                           { return (uint8)(m_threads.size()); }
-
-
-    void CreateThread();
-
 
 private:
     std::vector<pthread_t> m_threads;

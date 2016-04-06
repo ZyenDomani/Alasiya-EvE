@@ -167,16 +167,15 @@ PyResult ScanBound::Handle_ReconnectToLostProbes( PyCallArgs& call ) {
     sLog.Log( "ScanMgrService::Handle_ReconnectToLostProbes()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALLS);
 
-    PyRep* result = NULL;
-    return result;
+    return nullptr;
 }
 
 PyResult ScanBound::Handle_RecoverProbes( PyCallArgs& call ) {
     sLog.Log( "ScanMgrService::Handle_RecoverProbes()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALLS);
     //successProbeIDs = sm.RemoteSvc('scanMgr').GetSystemScanMgr().RecoverProbes(probeIDs)
-    PyRep* result = NULL;
-    return result;
+
+    return nullptr;
 }
 
 PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
@@ -184,6 +183,6 @@ PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
     call.Dump(SERVICE__CALLS);
     //scanMan = sm.RemoteSvc('scanMgr').GetSystemScanMgr()
     //scanMan.DestroyProbe(probeID)
-    PyRep* result = NULL;
-    return result;
+
+    return nullptr;
 }

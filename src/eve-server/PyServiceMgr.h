@@ -50,6 +50,7 @@ public:
     PyServiceMgr( uint32 nodeID, EntityList& elist, ItemFactory* ifactory );
     ~PyServiceMgr();
 
+    void Close();
     void Process();
 
     void RegisterService( PyService* d );

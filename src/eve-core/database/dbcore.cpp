@@ -45,6 +45,7 @@ DBcore::DBcore(bool compress, bool ssl)
 DBcore::~DBcore() {
     if (mysql) {
         mysql_close(mysql);
+        free(mysql);
         SafeDelete(mysql);
     } else
         _log(DATABASE__MESSAGE, "DBcore D'tor called but mysql is already null.");

@@ -25,24 +25,30 @@
 
 #include "eve-server.h"
 
+#include "Client.h"
 #include "EntityList.h"
+#include "cache/ObjCacheService.h"
+#include "chat/LSCService.h"
 #include "PyService.h"
 #include "PyServiceMgr.h"
 #include "PyBoundObject.h"
-#include "Client.h"
 
 PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityList& elist, ItemFactory* ifactory )
-: item_factory( ifactory ),
-  lsc_service( NULL ),
-  cache_service( NULL ),
-  m_nextBindID( 100 ),
-  m_nodeID( nodeID ),
+: item_factory(ifactory),
+  lsc_service(nullptr),
+  cache_service(nullptr),
+  m_nextBindID(100),
+  m_nodeID(nodeID),
   m_svcDB()
 {
     elist.SetServices(this);
 }
 
 PyServiceMgr::~PyServiceMgr() {
+    Close();
+}
+
+void PyServiceMgr::Close() {
     for (auto cur : m_services)
         SafeDelete(cur);
     m_services.clear();
@@ -51,10 +57,11 @@ PyServiceMgr::~PyServiceMgr() {
     for ( auto itr : m_boundObjects) {
         bo = itr.second.destination;
         _log(SERVICE__MESSAGE, "Service Mgr Destructor:  Deleting %s at node %u:%u", \
-            bo->GetBoundObjectClassStr().c_str(), bo->m_nodeID, bo->m_bindID);
+        bo->GetBoundObjectClassStr().c_str(), bo->m_nodeID, bo->m_bindID);
         SafeDelete(bo);
     }
     m_boundObjects.clear();
+
 }
 
 void PyServiceMgr::Process() {

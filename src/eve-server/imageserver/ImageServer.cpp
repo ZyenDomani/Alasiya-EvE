@@ -23,6 +23,8 @@
     Author:        caytchen
 */
 
+/** @todo  update this to use pthreads and remove boost */
+
 #include "imageserver/ImageServer.h"
 #include "imageserver/ImageServerListener.h"
 #include <tr1/shared_ptr.h>
@@ -182,7 +184,7 @@ void ImageServer::Run()
     _ioThread = std::shared_ptr<boost::asio::detail::thread>(new boost::asio::detail::thread(std::tr1::bind(&ImageServer::RunInternal, this)));
 
     #ifndef HAVE_WINDOWS_H
-    sLog.Log( "        Threading", "Starting ImageServerLoop with thread ID 0x%X", pthread_self() );
+    //sLog.Log( "        Threading", "Starting ImageServerLoop with thread ID 0x%X", pthread_self() );
     #endif /* !HAVE_WINDOWS_H */
 
 }

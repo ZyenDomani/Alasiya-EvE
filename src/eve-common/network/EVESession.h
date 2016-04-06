@@ -158,7 +158,7 @@ protected:
     virtual bool _VerifyFuncResult( CryptoHandshakeResult& result ) = 0;
 
     /** Connection of this session. */
-    EVETCPConnection* const mNet;
+    EVETCPConnection* mNet;
 
 private:
     // State machine facility:

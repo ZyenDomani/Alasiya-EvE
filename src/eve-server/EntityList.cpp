@@ -101,7 +101,7 @@ void EntityList::Process() {
         else {
             pClient = *cur_client;
             cur_client = m_clients.erase(cur_client);
-            sLog.Log("Entity List", "Deleting client for account %u", pClient->GetUserID());
+            //_log(NET__PRES_TRACE, "Entity List Deleting client for account %u", pClient->GetUserID());
             if (pClient)
                 SafeDelete(pClient);
         }

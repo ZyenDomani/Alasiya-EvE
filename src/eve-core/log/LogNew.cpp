@@ -93,8 +93,6 @@ void NewLog::InitializeLogging( std::string logPath )
     m_initialized = true;
 
     SetLogfileDefault(logPath);
-
-    Warning( "       ServerInit", "NewLog initialized." );
 }
 
 void NewLog::Log( const char* source, const char* fmt, ... )
@@ -161,9 +159,9 @@ void NewLog::Yellow( const char* source, const char* fmt, ... )
 {
 	va_list ap;
 	va_start( ap, fmt );
-	
+
 	PrintMsg( COLOR_YELLOW, 'M', source, fmt, ap );
-	
+
 	va_end( ap );
 }
 
@@ -310,8 +308,6 @@ void NewLog::SetLogfileDefault(std::string logPath)
     //snprintf( filename, FILENAME_MAX + 1, EVEMU_ROOT "/log/log_%02u-%02u-%04u-%02u-%02u.log",
     //          t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min );
 
-    if( SetLogfile( filename ) )
-        Success( "       ServerInit", "Opened NewLog logfile '%s'.", filename );
-    else
+    if (!SetLogfile(filename))
         Warning( "Log", "Unable to open logfile '%s': %s", filename, strerror( errno ) );
 }
