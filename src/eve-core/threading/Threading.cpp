@@ -82,15 +82,13 @@ void Threading::AddSocket(SOCKET soc) {
 
 void Threading::CreateThread(void *(*start_routine) (void *), void *args) {
     pthread_t thread;
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    int status = pthread_create( &thread, &attr, start_routine, args);
+    int status = pthread_create( &thread, nullptr, start_routine, args);
     if (status) {
         _log(THREAD__ERROR, "CreateThread() - Error Creating new thread: %s", strerror(errno));
     } else {
         _log(THREAD__WARNING, "CreateThread() - Creating new threadID 0x%X", thread);
         m_threads.push_back(thread);
+        pthread_detach(thread);
     }
 }
 
