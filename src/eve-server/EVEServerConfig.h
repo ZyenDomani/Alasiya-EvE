@@ -56,9 +56,9 @@ public:
         uint gridUnloadTime;
         bool loginInfo;
         bool loginMsg;
-        uint mailDelay;
-        uint maxPlayers;
-        uint idleSleepTime;
+        uint8 mailDelay;
+        uint16 maxPlayers;
+        uint16 idleSleepTime;
     } world;
 
     // From <rates/>
@@ -79,13 +79,15 @@ public:
         /// Startup Cost to create a corporation.
         double corpCost;
         // Decay timer for item deletion (garbage collection)
-        uint WorldDecay;
+        uint8 WorldDecay;
         // Decay timer for wreck deletion (garbage collection)
         float NPCDecay;
 
         float RateDropItem;
         float RateDropMoney;
         float RepairCost;
+
+        uint8 WebUpdate;
     } rates;
 
     // From <account/>

@@ -394,6 +394,7 @@ private:
     void _SendQueuedUpdates();
 
     uint32 m_nextNotifySequence;
+    uint16 m_connection;
 
     /************************************************************************/
     /* new system for MultiEvents                                           */

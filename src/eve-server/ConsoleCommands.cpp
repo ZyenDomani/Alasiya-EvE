@@ -33,7 +33,7 @@
 
 
 ConsoleCommand::ConsoleCommand() :
-m_updateTimer(900000)	//15 mins
+m_updateTimer(sConfig.rates.WebUpdate * 60000)	//15 mins
 {
     m_updateTimer.Disable();
 }
@@ -46,7 +46,7 @@ void ConsoleCommand::Init(CommandDispatcher* cd, ItemFactory* itmf)
 {
     pCommand = cd;
     pFactory = itmf;
-	m_updateTimer.Start(900000);	//sConfig.rates.WebUpdate
+	m_updateTimer.Start(sConfig.rates.WebUpdate * 60000);	// change minutes to ms for timer
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 	UpdateStatus();	//initial status setting
@@ -61,12 +61,13 @@ bool ConsoleCommand::Process() {
         return false;
     }
 	if (m_updateTimer.Check())
-		UpdateStatus();
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
+        UpdateStatus();
+    /* reset timeouts because select() reset them */
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
     FD_ZERO(&fds);
     FD_SET(0, &fds);
-	select(1, &fds, NULL, NULL, &tv);
+	select(1, &fds, nullptr, nullptr, &tv);
 	if (!FD_ISSET(0, &fds)) {
 	    return true;
 	} else {
@@ -264,8 +265,13 @@ bool ConsoleCommand::Process() {
             } else if (strncmp(buf, "t", 1) == 0) {
                 Test();
             } else if (strncmp(buf, "d", 1) == 0) {
-                sLog.Blue("   Active Threads", "There are %u active threads running in the server.", sThread.Count());
-                sThread.ListThreads();
+                uint8 maxCount = 20;    // sConfig.misc.MaxThreadReport
+                uint16 count = sThread.Count();
+                sLog.Blue("   Active Threads", "There are %u active threads running in the server.", count);
+                if (count > maxCount)
+                    sLog.Warning("   Active Threads", "Individual thread IDs are not displayed for more than %u active threads.", maxCount);
+                else
+                    sThread.ListThreads();
 			} else {
 				sLog.Error("  Alasiya's EvEMu", "Command not recognized: %s", buf);
 			}

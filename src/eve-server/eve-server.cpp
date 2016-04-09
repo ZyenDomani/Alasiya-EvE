@@ -179,6 +179,7 @@ int main( int argc, char* argv[] )
 
     /* init logging */
     sLog.InitializeLogging(sConfig.files.logDir);
+    sThread.Init();
     sLog.Log( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
     //sThread.AddThread(pthread_self());
     sLog.Log("       ServerInit", "Loading server");
@@ -515,7 +516,7 @@ int main( int argc, char* argv[] )
     sDatabase.Close();
     /* close server config singleton */
     sConfig.~EVEServerConfig();
-    /** @todo  the thread system still needs work....todo later. */
+    /** @todo  the thread system is only implemented for tcp connections at this time. */
     /* join open threads */
     sThread.EndThreads();
     sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");

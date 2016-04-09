@@ -117,7 +117,7 @@ bool EVETCPConnection::RecvData( char* errbuf )
     if( mTimeoutTimer.Check() )
     {
         if( errbuf )
-            snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "EVETCPConnection::RecvData(): Connection timeout" );
+            snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "Connection timeout" );
         return false;
     }
 
@@ -158,24 +158,15 @@ void EVETCPConnection::DumpBuffer( Buffer* buf, packet_direction packet_directio
     std::string path = EVEMU_ROOT "/packet_log/";
     path += timestamp;
     if(packet_direction == PACKET_INBOUND)
-    {
         path += "_client_";
-    } else
-    {
+    else
         path += "_server_";
-    }
-
     path += ".txt";
-
     logpacket = fopen(path.c_str(), "w");
 
-    Buffer::iterator<uint8> cur, end;
-    cur = buf->begin<uint8>();
-    end = buf->end<uint8>();
-    for(; cur != end; ++cur)
-    {
+    Buffer::iterator<uint8> cur = buf->begin<uint8>();
+    for (; cur != buf->end<uint8>(); ++cur) {
         uint8 test = *cur;
-
         fputc(test, logpacket);
     }
     fclose(logpacket);

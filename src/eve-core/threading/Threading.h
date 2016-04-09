@@ -20,13 +20,27 @@ public:
     Threading();
     ~Threading();
 
-    void CreateThread();
+    void Init();
+    void RunLoop();
+    void Process();
+    void AddSocket(SOCKET soc);
+    void CreateThread(void *(*start_routine) (void *), void *args);
     void EndThreads();
     void ListThreads();
     void AddThread(pthread_t thread);
     void RemoveThread(pthread_t thread);
 
+
     uint8 Count()                           { return (uint8)(m_threads.size()); }
+
+protected:
+    char* buf;
+    fd_set rSoc, wSoc;
+    struct timeval tv;
+
+    uint8 nfds;
+    uint8 sleepTime;
+    uint32 bufferLen;
 
 private:
     std::vector<pthread_t> m_threads;

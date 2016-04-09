@@ -58,13 +58,13 @@ TCPConnection::TCPConnection( Socket* socket, uint32 mrIP, uint16 mrPort )
 
 TCPConnection::~TCPConnection()
 {
+    _log(THREAD__WARNING, "Destroying TCPConnection for thread 0x%X", pthread_self());
     // Make sure we are disconnected
     Disconnect();
     // Wait for loop to stop
     WaitLoop();
     // Clear buffers
     ClearBuffers();
-    sThread.RemoveThread(pthread_self());
 }
 
 std::string TCPConnection::GetAddress()
@@ -112,7 +112,7 @@ bool TCPConnection::Connect( uint32 rIP, uint16 rPort, char* errbuf )
     if( mSock->connect( (sockaddr*)&server_sin, sizeof( server_sin ) ) == SOCKET_ERROR )
     {
         if( errbuf )
-            _log(TCP_CLIENT__ERROR, "Connect() - Failed with Error %s", strerror( errno ) );
+            snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "%s", strerror( errno ) );
 
         SafeDelete( mSock );
         return false;
@@ -190,11 +190,17 @@ bool TCPConnection::Send( Buffer** data )
 
 void TCPConnection::StartLoop()
 {
+    /** @note  update this to use thread pool instead of creating new threads.
+     * check with sThread.XXXX() for avalible thread from current thread pool.
+     * if one is avalible, it will be used, and if not, sThread will create a new one
+     */
+    sThread.CreateThread(TCPConnectionLoop, this);
+    /*   ORIGINAL CODE HERE
     // Spawn new thread
     pthread_t thread;
     pthread_create( &thread, nullptr, TCPConnectionLoop, this );
     _log(THREAD__WARNING, "StartLoop() - Created thread ID 0x%X for TCPConnectionLoop", thread);
-    sThread.AddThread(thread);
+    sThread.AddThread(thread);*/
 }
 
 void TCPConnection::WaitLoop()
@@ -212,30 +218,26 @@ bool TCPConnection::Process() {
     switch (GetState()) {
         case STATE_CONNECTING: {
             if (!Connect( GetrIP(), GetrPort(), errbuf)) {
-                _log(TCP_CLIENT__TRACE, "Process() - Connecting Failed at %s: %s.", GetAddress().c_str(), errbuf );
-                DoDisconnect();
+                _log(TCP_CLIENT__TRACE, "Process() - Connecting Failed at %s: %s", GetAddress().c_str(), errbuf );
                 return false;
             }
-            _log(TCP_CLIENT__INFO, "Process() - TCP connectection from %s.", GetAddress().c_str() );
+            _log(TCP_CLIENT__INFO, "Process() - TCP connectection from %s", GetAddress().c_str() );
             return true;
         }
         case STATE_CONNECTED: {
             if (!RecvData(errbuf)) {
-                _log(TCP_CLIENT__TRACE, "Process() - Connected RecvData() Failed at %s: %s.", GetAddress().c_str(), errbuf );
-                DoDisconnect();
+                _log(TCP_CLIENT__TRACE, "Process() - Connected RecvData() Failed at %s: %s", GetAddress().c_str(), errbuf );
                 return false;
             }
             if (!SendData(errbuf)) {
-                _log(TCP_CLIENT__TRACE, "Process() - Connected SendData() Failed at", "%s: %s.", GetAddress().c_str(), errbuf );
-                DoDisconnect();
+                _log(TCP_CLIENT__TRACE, "Process() - Connected SendData() Failed at", "%s: %s", GetAddress().c_str(), errbuf );
                 return false;
             }
             return true;
         }
         case STATE_DISCONNECTING: {
             if (!SendData(errbuf)) {
-                _log(TCP_CLIENT__TRACE, "Process() - Disconnecting SendData() Failed at", "%s: %s.", GetAddress().c_str(), errbuf );
-                DoDisconnect();
+                _log(TCP_CLIENT__TRACE, "Process() - Disconnecting SendData() Failed at", "%s: %s", GetAddress().c_str(), errbuf );
                 return false;
             }
             DoDisconnect();
@@ -266,14 +268,16 @@ bool TCPConnection::SendData( char* errbuf )
         buf = mSendQueue.front();
         mSendQueue.pop_front();
         mMSendQueue.Unlock();
-        status = mSock->send( &(*buf)[ 0 ], (uint)buf->size(), MSG_NOSIGNAL );
+        if (mSendQueue.empty())
+            status = mSock->send( &(*buf)[ 0 ], (uint)buf->size(), MSG_NOSIGNAL);
+        else
+            status = mSock->send( &(*buf)[ 0 ], (uint)buf->size(), (MSG_NOSIGNAL | MSG_MORE) );
         if (status == SOCKET_ERROR) {
             if (errno == EWOULDBLOCK) {
                 status = 0;
             } else {
                 if( errbuf )
-                    _log(TCP_CLIENT__ERROR, "TCPConnection::SendData(): send(): Errorcode: %s", strerror( errno ) );
-
+                    snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "%s", strerror( errno ) );
                 SafeDelete( buf );
                 return false;
             }
@@ -281,7 +285,7 @@ bool TCPConnection::SendData( char* errbuf )
 
         if ((size_t)status > buf->size()) {
             if (errbuf)
-                _log(TCP_CLIENT__ERROR, "TCPConnection::SendData(): WTF?!?   status > size." );
+                snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "WTF?!?   status > size." );
 
             SafeDelete( buf );
             return false;
@@ -318,22 +322,29 @@ bool TCPConnection::RecvData( char* errbuf )
         else if( mRecvBuf->size() < TCPCONN_RECVBUF_SIZE )
             mRecvBuf->Resize<uint8>( TCPCONN_RECVBUF_SIZE );
 
-        status = mSock->recv( &(*mRecvBuf)[ 0 ], (uint)mRecvBuf->size(), 0 );
-        if (status > 0) {
-            mRecvBuf->Resize<uint8>(status);
-            if (!ProcessReceivedData(errbuf))
-                return false;
-        } else if (status == 0) {
-            _log(TCP_CLIENT__WARNING, "TCPConnection::RecvData(): Connection closed" );
-            return false;
-        } else if (status == SOCKET_ERROR) {
+        status = mSock->recv( &(*mRecvBuf)[ 0 ], (uint)mRecvBuf->size(), MSG_DONTWAIT);
+        if (status == SOCKET_ERROR) {
             if (errno == EWOULDBLOCK)
                 return true;
             if (errbuf)
-                _log(TCP_CLIENT__ERROR, "TCPConnection::RecvData(): Error: %s", strerror( errno ) );
+                snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "%s", strerror(errno));
+            return false;
+        } else if (status == 0) {
+            if (errbuf)
+                snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "No Data Received.");
+            return false;
+        } else if (status) {
+            mRecvBuf->Resize<uint8>(status);
+            if (!ProcessReceivedData(errbuf))
+                return false;
+        } else {
+            if (errbuf)
+                snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "recv() returned unknown status");
+            _log(TCP_CLIENT__ERROR, "TCPConnection::RecvData(): Error: recv() returned unknown status");
             return false;
         }
     }
+    return true;
 }
 
 void TCPConnection::DoDisconnect()
@@ -344,9 +355,9 @@ void TCPConnection::DoDisconnect()
     if ((state != STATE_CONNECTED) && (state != STATE_DISCONNECTING))
         return;
 
-    SafeDelete( mSock );
-    mrIP = mrPort = 0;
     ClearBuffers();
+    mrIP = mrPort = 0;
+    SafeDelete( mSock );
 
     mSockState = STATE_DISCONNECTED;
 }
@@ -370,6 +381,7 @@ void* TCPConnection::TCPConnectionLoop( void* arg )
     assert( tcpc != nullptr );
 
     tcpc->TCPConnectionLoop();
+    sThread.RemoveThread(pthread_self());
 
     return nullptr;
 }
@@ -384,5 +396,6 @@ void TCPConnection::TCPConnectionLoop()
             Sleep(TCPCONN_LOOP_GRANULARITY);
         start = GetTickCount();
     }
+    DoDisconnect();
     mMLoopRunning.Unlock();
 }

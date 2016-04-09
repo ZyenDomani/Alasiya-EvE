@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 4.4
+    Log Version: 4.6
 */
  /*  see log.ini for matching versions */
 

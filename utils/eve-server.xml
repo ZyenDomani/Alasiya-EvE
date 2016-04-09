@@ -33,6 +33,8 @@
         <!-- Decay is implemented -->
         <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default) -->
         <NPCDecay>90</NPCDecay><!-- in minutes (90 min default) -->
+        <!-- WebUpdate is implemented -->
+        <WebUpdate>15</WebUpdate><!-- save current server status in db.  in minutes  15m default -->
         <!-- these rates are not implemented yet -->
         <RateDropItem>1.0</RateDropItem><!--  only used if != 1.0 -->
         <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->

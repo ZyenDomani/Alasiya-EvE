@@ -66,6 +66,7 @@ EVEServerConfig::EVEServerConfig()
     rates.RateDropItem = 1.0;//N
     rates.RateDropMoney = 1.0;//N
     rates.RepairCost = 1.0;//N
+    rates.WebUpdate = 15 /*m*/;
 
     // account
     account.autoAccountRole = ROLE_STD;
@@ -207,6 +208,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "RateDropItem",         rates.RateDropItem );
     AddValueParser( "RateDropMoney",        rates.RateDropMoney );
     AddValueParser( "RepairCost",           rates.RepairCost );
+    AddValueParser( "WebUpdate",            rates.WebUpdate );
 
     const bool result = ParseElementChildren( ele );
 
@@ -222,6 +224,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "RateDropItem" );
     RemoveParser( "RateDropMoney" );
     RemoveParser( "RepairCost" );
+    RemoveParser( "WebUpdate" );
 
     return result;
 }

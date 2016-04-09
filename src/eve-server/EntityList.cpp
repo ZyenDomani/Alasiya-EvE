@@ -41,6 +41,8 @@ m_stampTimer(1000, true)
     m_systems.clear();
     m_clients.clear();
     m_stations.clear();
+
+    m_connections = 0;
 }
 
 EntityList::~EntityList() {
@@ -76,9 +78,9 @@ void EntityList::Shutdown() {
 }
 
 void EntityList::Add( Client* client ) {
+    ++m_connections;
     if (client)
         m_clients.push_back(client);
-    ++m_connections;
 }
 
 void EntityList::Remove(Client* client) {

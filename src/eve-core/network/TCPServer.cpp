@@ -46,6 +46,7 @@ BaseTCPServer::~BaseTCPServer()
     Close();
     // Wait until worker thread terminates
     WaitLoop();
+    /*  delete thread here and remove from list */
     sThread.RemoveThread(pthread_self());
 }
 
@@ -66,8 +67,9 @@ bool BaseTCPServer::Open( uint16 port, char* errbuf )
     MutexLock lock( mMSock );
 
     if (IsOpen()) {
+        _log(TCP_SERVER__ERROR, "Open() - Listening socket already open" );
         if (errbuf)
-            _log(TCP_SERVER__ERROR, "Open() - Listening socket already open" );
+            snprintf( errbuf, TCPSRV_ERRBUF_SIZE, "Listening socket already open" );
         return false;
     } else {
         mMSock.Unlock();
@@ -78,9 +80,6 @@ bool BaseTCPServer::Open( uint16 port, char* errbuf )
     // Setting up TCP port for new TCP connections
     mSock = new Socket( AF_INET, SOCK_STREAM, 0 );
 
-    // Quag: don't think following is good stuff for TCP, good for UDP
-    // Mis: SO_REUSEADDR shouldn't be a problem for tcp - allows you to restart
-    //      without waiting for conn's in TIME_WAIT to die
     unsigned int reuse_addr = 1;
     mSock->setopt( SOL_SOCKET, SO_REUSEADDR, &reuse_addr, sizeof( reuse_addr ) );
 
@@ -93,8 +92,9 @@ bool BaseTCPServer::Open( uint16 port, char* errbuf )
         address.sin_addr.s_addr = htonl( INADDR_ANY );
 
     if (mSock->bind((sockaddr*)&address, sizeof(address)) < 0) {
+        _log(TCP_SERVER__ERROR, "Open()::bind() < 0" );
         if (errbuf)
-            _log(TCP_SERVER__ERROR, "Open()::bind() < 0" );
+            snprintf( errbuf, TCPSRV_ERRBUF_SIZE, "%s", strerror( errno ) );
         SafeDelete( mSock );
         return false;
     }
@@ -103,8 +103,9 @@ bool BaseTCPServer::Open( uint16 port, char* errbuf )
     mSock->setopt( SOL_SOCKET, SO_RCVBUF, &bufsize, sizeof( bufsize ) );
     mSock->fcntl( F_SETFL, O_NONBLOCK );
     if (mSock->listen() == SOCKET_ERROR) {
+        _log(TCP_SERVER__ERROR, "Open()::listen() failed, Error: %s", strerror( errno ) );
         if (errbuf)
-            _log(TCP_SERVER__ERROR, "Open()::listen() failed, Error: %s", strerror( errno ) );
+            snprintf( errbuf, TCPSRV_ERRBUF_SIZE, "%s", strerror( errno ) );
         SafeDelete( mSock );
         return false;
     }
@@ -123,10 +124,16 @@ void BaseTCPServer::Close()
 
 void BaseTCPServer::StartLoop()
 {
+    /* since there is only one instance of BaseTCPServer, we can create thread here instead
+     * of sending to Thread class for creation and management
+     * update this to use Thread class management (sThread) if management here becomes a problem.
+     */
+    sThread.CreateThread(TCPServerLoop, this);
+    /*
     pthread_t thread;
     pthread_create( &thread, nullptr, TCPServerLoop, this );
     _log(THREAD__WARNING, "StartLoop() - Created thread ID 0x%X for TCPServerLoop", thread);
-    sThread.AddThread(thread);
+    sThread.AddThread(thread);*/
 }
 
 void BaseTCPServer::WaitLoop()

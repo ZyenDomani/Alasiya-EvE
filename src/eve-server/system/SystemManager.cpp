@@ -460,7 +460,12 @@ bool SystemManager::BootSystem() {
 void SystemManager::Process() {
     std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
     while (cur != m_entities.end()) {
-        cur->second->Process();
+        if (cur->second)
+            cur->second->Process();
+        else {
+            cur = m_entities.erase(cur);
+            continue;
+        }
         if (m_entityChanged) {
             m_entityChanged = false;
             cur = m_entities.begin();
