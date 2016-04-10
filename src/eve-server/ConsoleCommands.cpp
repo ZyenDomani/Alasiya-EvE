@@ -363,7 +363,8 @@ void ConsoleCommand::MemStatus(float* vm_usage, float* resident_set)
 void ConsoleCommand::Test()
 {
     sLog.Success("  Alasiya's EvEMu", "Server Test:");
-    //sLog.Error("     Allan\'s Test", "Not Avalible Yet.");
+    sLog.Error("     Allan\'s Test", "Not Avalible Yet.");
+    /*
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT `itemID`, `typeID`, `itemName` FROM `entity` WHERE itemID < %u", maxAgent);
 
@@ -383,7 +384,7 @@ void ConsoleCommand::Test()
     res.Reset();
     for (auto cur : vec)
         sDatabase.RunQuery(res, "UPDATE `agtAgents` SET `typeID` = %u, `agentName` = %s WHERE `itemID` = %u", cur.typeID, cur.name.c_str(), cur.itemID );
-
+    */
 }
 
 void ConsoleCommand::UpdateStatus() {
@@ -391,11 +392,8 @@ void ConsoleCommand::UpdateStatus() {
 	int64 threads = 0;
 	float vm = 0.0f, rss = 0.0f, user = 0.0f, kernel = 0.0f;
 	Status(&state, &threads, &vm, &rss, &user, &kernel);
-    /* make check here for mem usage
-     * if too high (tbd), log error and run GC (to be written)
-     */
     if (sConfig.world.testServer)
         _log(SERVER__INFO, "Current Mem usage - RSS: %f, VM: %f", rss, vm);
-	m_db.SaveServerStats(threads, rss, vm, user, kernel, pFactory->Count(), pBubbles->Count());
+	m_db.SaveServerStats(threads + sThread.Count(), rss, vm, user, kernel, pFactory->Count(), pBubbles->Count());
 }
 

@@ -186,8 +186,9 @@ void BaseTCPServer::TCPServerLoop()
     uint32 start = GetTickCount();
     while (Process()) {
         // do the stuff for thread sleeping
-        if (TCPSRV_LOOP_GRANULARITY > (GetTickCount() - start))
-            Sleep(TCPSRV_LOOP_GRANULARITY);
+        start = GetTickCount() - start;
+        if (TCPSRV_LOOP_GRANULARITY > start)
+            Sleep(TCPSRV_LOOP_GRANULARITY - start);
         start = GetTickCount();
     }
     mMLoopRunning.Unlock();

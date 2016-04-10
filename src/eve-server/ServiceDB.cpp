@@ -471,7 +471,7 @@ void ServiceDB::SetCharacterOnlineStatus(uint32 char_id, bool online) {
     DBerror err;
     sDatabase.RunQuery(err, "UPDATE character_ SET online = %d WHERE characterID = %u", online, char_id);
 
-    if ( 0 )
+    if ( online )
         sDatabase.RunQuery(err, "UPDATE srvStatus SET Connections = Connections + 1");
 }
 
@@ -525,10 +525,10 @@ void ServiceDB::SaveServerStats(double threads, float rss, float vm, float user,
     "     bubbles = %u,"
 	"     systems = %u,"
     "     npcs = %u,"
-    "     Connections = %u,"
+    //"     Connections = %u,"
 	"     updateTime = UNIX_TIMESTAMP(CURRENT_TIMESTAMP)"
 	" WHERE AI = 1",
-	    threads, rss, vm, user, kernel, items, bubbles, sEntityList.GetSystemCount(), sEntityList.GetNPCCount(), sEntityList.GetConnections());
+	    threads, rss, vm, user, kernel, items, bubbles, sEntityList.GetSystemCount(), sEntityList.GetNPCCount()/*, sEntityList.GetConnections()*/);
 
   if (sConfig.misc.UseProfiling)
       _log(DATABASE__MESSAGE, "Server Stats Saved");

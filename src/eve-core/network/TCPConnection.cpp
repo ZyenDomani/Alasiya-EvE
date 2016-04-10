@@ -392,8 +392,9 @@ void TCPConnection::TCPConnectionLoop()
     uint32 start = GetTickCount();
     while (Process()) {
         // do the stuff for thread sleeping
-        if (TCPCONN_LOOP_GRANULARITY > (GetTickCount() - start))
-            Sleep(TCPCONN_LOOP_GRANULARITY);
+        start = GetTickCount() - start;
+        if (TCPCONN_LOOP_GRANULARITY > start)
+            Sleep(TCPCONN_LOOP_GRANULARITY - start);
         start = GetTickCount();
     }
     DoDisconnect();
