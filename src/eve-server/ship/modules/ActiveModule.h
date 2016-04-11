@@ -63,6 +63,8 @@ public:
 	virtual double DoCycle();
 	virtual void StopCycle(bool abort=false)				{ /* Do nothing here */ }
 
+	void DoEffect(bool active);
+
 protected:
     uint32 m_targetID;                                      //passed to us by activate
 	SystemEntity* m_targetEntity;	                        // we do not own this

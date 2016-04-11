@@ -498,6 +498,7 @@ void ModuleEffects::_populate()
 
                         // verify this effect is for current module's groupID (avoid previous clusterfuck)
                         if ((groupID == testID) || (testID == 0)) { // second check for "all groups"
+                            m_effects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));    // keep map of all effects.
                             if (cur.second)
                                 m_defaultEffect = mEffectPtr.get();
 

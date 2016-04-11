@@ -78,12 +78,14 @@ enum ModuleEffectAppliedBehaviors
 {
     // means the effect is active AT ALL TIMES; used ONLY for skill, ship, subsystem effects
     EFFECT_PERSISTENT           = 1300,
-    // means the effect takes effect on the target (see below) upon entering the ONLINE state
-    EFFECT_ONLINE               = 1301,
+    // means the effect takes effect upon entering the ONLINE state
+    EFFECT_ONLINE               = 16,
     // used only for ACTIVE modules operating in non-Overloaded mode
-    EFFECT_ACTIVE               = 1302,
+    EFFECT_ACTIVE               = 12,
     // used only for ACTIVE modules operating in Overloaded mode
-    EFFECT_OVERLOAD             = 1303
+    EFFECT_OVERLOAD             = 8,
+    // used only for ACTIVE modules when not activated
+    EFFECT_PASSIVE              = 2
 };
 
 // These are the target types to which module and other types' effects are applied when activated:

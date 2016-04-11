@@ -484,8 +484,9 @@ int main( int argc, char* argv[] )
 
         /* do the stuff for thread sleeping */
         if (sEntityList.GetClientCount()) {
-            if (MAIN_LOOP_DELAY > (GetTimeMSeconds() - start))
-                Sleep(MAIN_LOOP_DELAY /2);
+            start = GetTimeMSeconds() - start;
+            if (MAIN_LOOP_DELAY > start)
+                Sleep(start);
         } else /* if no clients, let server idle longer*/
             Sleep(idle);
 

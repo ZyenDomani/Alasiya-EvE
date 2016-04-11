@@ -97,3 +97,8 @@ bool ActiveModule::RequiresTarget()
     else
         return false;
 }
+
+void ActiveModule::DoEffect(bool active)
+{
+    /* common location for all modules that have a visual effect when active */
+}

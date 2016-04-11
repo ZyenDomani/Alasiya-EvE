@@ -101,6 +101,11 @@ void ImageServerConnection::ProcessHeaders()
     _imageData = sImageServer.GetImage(_category, _id, _size);
     if (!_imageData)
     {
+        if (IsNotStaticItem(_id)) {
+            sLog.Error("     Image Server","Image for itemID %u not found.", _id);
+            NotFound();
+            return;
+        }
         Redirect();
         return;
     }
@@ -126,7 +131,7 @@ void ImageServerConnection::Redirect()
 
 void ImageServerConnection::RedirectLocation()
 {
-    sLog.Error("      Main Server"," RedirectLocation() called.");
+    sLog.Error("     Image Server"," RedirectLocation() called.");
     std::string extension = _category == "Character" ? "jpg" : "png";
     std::stringstream url;
     url << ImageServer::FallbackURL << _category << "/" << _id << "_" << _size << "." << extension;

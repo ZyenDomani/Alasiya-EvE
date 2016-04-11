@@ -264,6 +264,7 @@ private:
     InventoryItem* m_pItem;
 
     //data members
+    std::map<uint32, std::shared_ptr<MEffect>> m_effects;
     std::map<uint32, std::shared_ptr<MEffect>> m_OnlineEffects;
     std::map<uint32, std::shared_ptr<MEffect>> m_ActiveEffects;
     std::map<uint32, std::shared_ptr<MEffect>> m_OverloadEffects;

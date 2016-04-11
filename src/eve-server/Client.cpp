@@ -99,15 +99,11 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
 
 	m_systemName = "";
 
-    m_connection = sEntityList.GetConnections();
-    //sLog.Blue("Client()", "Created client for connection %u", m_connection);
-
     // Start handshake
     Reset();
 }
 
 Client::~Client() {
-    //sLog.Blue("Client()", "Destroying client for connection %u", m_connection);
     if (GetChar()) {   // we have valid character
         // remove targets before anything else, to avoid crash with npcai targeting.
         TargMgr.DoDestruction();

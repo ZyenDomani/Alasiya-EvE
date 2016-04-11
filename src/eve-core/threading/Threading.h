@@ -24,11 +24,11 @@ public:
     void RunLoop();
     void Process();
     void AddSocket(SOCKET soc);
+    void AddThread(pthread_t thread);
+    void RemoveThread(pthread_t thread);
     void CreateThread(void *(*start_routine) (void *), void *args);
     void EndThreads();
     void ListThreads();
-    void AddThread(pthread_t thread);
-    void RemoveThread(pthread_t thread);
 
 
     uint8 Count()                           { return (uint8)(m_threads.size()); }

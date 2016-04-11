@@ -589,7 +589,7 @@ bool DBResultRow::GetBool( uint32 index ) const
         return 0;       //nothing better to do...
     }
 #endif
-    return GetText(index)[0] == 1;
+    return (GetInt(index) != 0);
 }
 
 uint32 DBResultRow::GetUInt( uint32 index ) const

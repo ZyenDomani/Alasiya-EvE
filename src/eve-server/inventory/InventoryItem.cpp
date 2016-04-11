@@ -128,17 +128,17 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID,
         case EVEDB::invCategories::Blueprint: {
             return Blueprint::_LoadItem<Blueprint>( factory, itemID, type, data );
         }
-        case EVEDB::invCategories::Ship: {
-            return Ship::_LoadItem<Ship>( factory, itemID, type, data );
-        }
         case EVEDB::invCategories::Skill: {
             return Skill::_LoadItem<Skill>( factory, itemID, type, data );
         }
-        case EVEDB::invCategories::Owner: {
-            return Owner::_LoadItem<Owner>( factory, itemID, type, data );
-        }
         case EVEDB::invCategories::Station: {
             return Station::_LoadItem<Station>( factory, itemID, type, data );
+        }
+        case EVEDB::invCategories::Ship: {
+            return Ship::_LoadItem<Ship>( factory, itemID, type, data );
+        }
+        case EVEDB::invCategories::Owner: {
+            return Owner::_LoadItem<Owner>( factory, itemID, type, data );
         }
         case EVEDB::invCategories::Celestial: {
             if (type.groupID() == EVEDB::invGroups::Wreck)
@@ -214,9 +214,9 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID,
 				else
 					return CelestialObjectRef( new CelestialObject( factory, itemID, type, data ) );
         }
-        default:
+        default: {
             _log(ITEM__MESSAGE, "item %u (type %u, cat %u) tried _LoadItem, but is not handled.", itemID, type.id(), type.categoryID());
-            break;
+        }
     }
 
     // Generic item, create one:
