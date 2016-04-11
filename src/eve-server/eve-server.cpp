@@ -149,7 +149,7 @@
 #include "system/Modifiers.h"
 #include "system/ScenarioService.h"
 #include "system/WormholeMgr.h"
-//#include "system/WormholeSvc.h"
+#include "system/WormholeSvc.h"
 #include "system/LootSystem.h"
 //console commands
 #include "ConsoleCommands.h"

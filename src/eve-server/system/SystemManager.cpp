@@ -29,7 +29,6 @@
 #include "EVEServerConfig.h"
 #include "Profile.h"
 #include "chat/LSCService.h"
-#include "mining/Asteroid.h"
 #include "npc/NPC.h"
 #include "npc/SpawnMgr.h"
 #include "pos/Structure.h"
@@ -38,6 +37,9 @@
 #include "ship/Missile.h"
 #include "ship/Ship.h"
 #include "station/Station.h"
+#include "system/AnomalyMgr.h"
+#include "system/Asteroid.h"
+#include "system/BeltMgr.h"
 #include "system/Container.h"
 #include "system/Deployable.h"
 #include "system/SolarSystem.h"
@@ -51,7 +53,9 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)//, ItemData ida
 : m_systemID(systemID),
   m_systemName(""),
   m_services(svc),
-  m_spawnManager(new SpawnMgr(this, m_services)),
+  m_anomMgr(new AnomalyMgr(this, m_services)),
+  m_beltMgr(new BeltMgr(this, m_services)),
+  m_spawnMgr(new SpawnMgr(this, m_services)),
   m_entityChanged(false)
 {
     m_solarSystemRef = svc.item_factory->GetSolarSystem( systemID );
@@ -97,9 +101,9 @@ SystemManager::~SystemManager() {
     m_entities.clear();
     //m_clients.clear();
 
-    //SafeDelete(m_anomMgr);
-    //SafeDelete(m_beltMgr);
-    //SafeDelete(m_spawnMgr);
+    SafeDelete(m_anomMgr);
+    SafeDelete(m_beltMgr);
+    SafeDelete(m_spawnMgr);
 }
 
 static const int num_hack_sentry_locs = 8;
@@ -497,7 +501,7 @@ bool SystemManager::ProcessDestiny() {
 
     //these are here so they not called so frequently. (save proc tics)
     bubbles.Process();
-    m_spawnManager->Process();
+    m_spawnMgr->Process();
 
     return SystemActivity();
 }
@@ -556,8 +560,8 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
     if (count) {
         m_clients++;
         m_activityTime = 0;
-        if (!m_spawnManager->IsTimerStarted())
-            m_spawnManager->StartMainTimer();
+        if (!m_spawnMgr->IsTimerStarted())
+            m_spawnMgr->StartMainTimer();
     }
     _log(CLIENT__TRACE, "Client %s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
 }
@@ -624,7 +628,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
     uint8 count = BeltCount();
     if (count > 5) count -= 2;
     if (m_activeRatSpawns < count ) {
-        m_spawnManager->DoSpawnForBubble(pSysBubble, GetRegionID(), GetSystemSecurityRating());
+        m_spawnMgr->DoSpawnForBubble(pSysBubble, GetRegionID(), GetSystemSecurityRating());
         m_ratBubbles.push_back(pSysBubble->GetID());
     }
     //check for and spawn roids if needed in this bubble.

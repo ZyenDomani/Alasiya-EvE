@@ -20,67 +20,76 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur
+    Author:        Allan
 */
 
 #include "eve-server.h"
 
-#include "mining/Asteroid.h"
-#include "mining/AsteroidBeltManager.h"
+#include "EVEServerConfig.h"
+#include "Profile.h"
+#include "system/BeltMgr.h"
 
-AsteroidBeltManager::AsteroidBeltManager(uint32 belt_id)
-: m_beltID(belt_id),
-  m_growthTimer(ASTEROID_GROWTH_INTERVAL_MS)    //default this to worst case. This will almost certainly be changed with a LoadState()
+/*  this class will keep track of all asteroid belts in a system
+ * it is created on a per-system basis, and will also deal with
+ * calling spawn/delete/grow functions for each belt.
+ *
+ * this class will also be in charge of belts in anomalies
+ *
+ *  a new iteration of this class is created for each system as that system
+ * is booted.
+ */
+
+
+BeltMgr::BeltMgr(SystemManager* mgr, PyServiceMgr& svc)
+: m_system(mgr),
+  m_services(svc),
+  m_growthTimer(m_growthTimer)
 {
-    m_growthTimer.Start();
+    m_growthTimer.Disable();
 }
 
-AsteroidBeltManager::~AsteroidBeltManager() {
+BeltMgr::~BeltMgr()
+{
     _Clear();
 }
 
-void AsteroidBeltManager::_Clear() {
-    std::vector<AsteroidEntity*>::const_iterator cur, end;
-    cur = m_asteroids.begin();
-    end = m_asteroids.end();
-    for(; cur != end; cur++) {
-        delete *cur;
-    }
+void BeltMgr::_Clear() {
+    for(auto cur : m_asteroids)
+        SafeDelete(cur.second);
 }
 
-void AsteroidBeltManager::Process() {
-    if(m_growthTimer.Check()) {
+void BeltMgr::Process() {
+    if (m_growthTimer.Check()) {
         _TriggerGrowth();
     }
 }
 
-void AsteroidBeltManager::_TriggerGrowth() {
-    _log(SERVICE__ERROR, "Asteroid Growth not hooked in yet.");
-    std::vector<AsteroidEntity*>::const_iterator cur, end;
-    cur = m_asteroids.begin();
-    end = m_asteroids.end();
-    for(; cur != end; cur++) {
-        (*cur)->Grow();
-    }
+void BeltMgr::_TriggerGrowth() {
+    _log(SERVICE__ERROR, "Asteroid Growth not implemented yet.");
+    for(auto cur : m_asteroids)
+        cur.second->Grow();
 }
 
-bool AsteroidBeltManager::LoadState() {
+bool BeltMgr::LoadState() {
     //load list of asteroids.
     //load next grow time
-    return false;    //until this is written.
-}
-
-bool AsteroidBeltManager::SaveState() {
-    std::vector<AsteroidEntity*>::const_iterator cur, end;
-    cur = m_asteroids.begin();
-    end = m_asteroids.end();
-    for(; cur != end; cur++) {
-        //TODO: something useful.
+    for (auto cur : m_asteroids) {
+        /** @todo (allan) do something useful here */
     }
     return false;    //until this is written.
 }
 
-void AsteroidBeltManager::ForceGrowth() {
+bool BeltMgr::SaveState() {
+    for (auto cur : m_asteroids) {
+        /** @todo (allan) do something useful here */
+    }
+    return false;    //until this is written.
+}
+
+void BeltMgr::ForceGrowth() {
+    for (auto cur : m_asteroids) {
+        /** @todo (allan) do something useful here */
+    }
     _TriggerGrowth();
     m_growthTimer.Start(ASTEROID_GROWTH_INTERVAL_MS);
 }

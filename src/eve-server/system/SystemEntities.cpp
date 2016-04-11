@@ -25,8 +25,6 @@
 
 #include "eve-server.h"
 
-#include "mining/AsteroidBeltManager.h"
-#include "system/Container.h"
 #include "system/SystemEntities.h"
 #include "SystemBubble.h"
 
@@ -41,8 +39,8 @@ SimpleSystemEntity* SimpleSystemEntity::MakeEntity( SystemManager* system, const
         case EVEDB::invGroups::Moon:
             return new SystemPlanetEntity( system, entity );
 
-        case EVEDB::invGroups::Asteroid_Belt:
-            return new SystemAsteroidBeltEntity( system, entity );
+        //case EVEDB::invGroups::Asteroid_Belt:
+        //    return new SystemBeltEntity( system, entity );
 
         case EVEDB::invGroups::Stargate:    //Stargate
             return new SystemStargateEntity( system, entity );
@@ -195,47 +193,3 @@ PyDict *SystemStargateEntity::MakeSlimItem() const {
     return(slim);
 }
 
-
-SystemAsteroidBeltEntity::SystemAsteroidBeltEntity(SystemManager *system, const DBSystemEntity &entity)
-: SimpleSystemEntity(system, entity),
-  m_manager(NULL)
-{
-      //TODO: fire up the belt manager.
-      //m_manager = new AsteroidBeltManager(data.itemID);
-}
-
-SystemAsteroidBeltEntity::~SystemAsteroidBeltEntity() {
-    TargMgr.DoDestruction();
-    delete m_manager;
-}
-
-void SystemAsteroidBeltEntity::EncodeDestiny( Buffer& into ) const
-{
-    BallHeader head;
-    head.entityID = data.itemID;
-    head.mode = DSTBALL_RIGID;
-    head.radius = data.radius;
-    head.x = data.position.x;
-    head.y = data.position.y;
-    head.z = data.position.z;
-    head.flags = IsGlobal;
-    into.Append( head );
-
-    DSTBALL_RIGID_Struct main;
-    main.formationID = 0xFF;
-    into.Append( main );
-    _log(COMMON__WARNING, "SystemAsteroidBeltEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
-}
-
-bool SystemAsteroidBeltEntity::LoadExtras(SystemDB *db) {
-    if (!SimpleSystemEntity::LoadExtras(db))
-        return false;
-
-    Bubble()->SetBelt(true);
-    _log(DESTINY__BUBBLE_DEBUG, "SystemAsteroidBeltEntity::LoadExtras() - IsBelt set to true for bubble %u.", Bubble()->GetID() );
-    return true;
-}
-
-void SystemAsteroidBeltEntity::Process() {
-    //SimpleSystemEntity::Process();
-}

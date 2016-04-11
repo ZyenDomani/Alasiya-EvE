@@ -32,12 +32,12 @@ PyRep* PlanetDB::GetPlanetInfo(uint32 planetID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT `solarSystemID`, `typeID` AS `planetTypeID`, `itemID` AS `planetID`, `radius`"
                 " FROM mapDenormalize WHERE `itemID` = %u", planetID)) {
-        codelog(SERVICE__ERROR, "Error in GetPlanetInfo query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetPlanetInfo query: %s", res.error.c_str());
         return NULL;
     }
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Error in GetPlanetInfo query, failed to get row");
+        _log(DATABASE__MESSAGE, "GetPlanetInfo failed to get row");
         return NULL;
     }
     return DBRowToKeyVal(row);
@@ -47,9 +47,10 @@ PyRep* PlanetDB::GetPlanetsForChar(uint32 charID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT `solarSystemID`, `planetID`, `typeID`, `numberOfPins`"
          " FROM `chrPlanets` WHERE `characterID` = %u", charID)) {
-        codelog(SERVICE__ERROR, "Error in GetPlanetsForChar Query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetPlanetsForChar query: %s", res.error.c_str());
         return NULL;
-    }
+         }
+         _log(DATABASE__RESULTS, "GetPlanetsForChar returned %u items", res.GetRowCount());
     return DBResultToCRowset(res);
 }
 
@@ -58,12 +59,13 @@ PyRep* PlanetDB::GetPlanetResourceInfo(uint32 planetID) {
     if(!sDatabase.RunQuery(res, "SELECT `itemID1`, `itemID2`, `itemID3`, `itemID4`, `itemID5`,"
         " `quality1`, `quality2`, `quality3`, `quality4`, `quality5`"
         " FROM `planetResourceInfo` WHERE `planetID` = %u", planetID)) {
-        codelog(SERVICE__ERROR, "Error in GetPlanetResourceInfo Query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetPlanetResourceInfo query: %s", res.error.c_str());
         return NULL;
-    }
+        }
+        _log(DATABASE__RESULTS, "GetPlanetResourceInfo returned %u items", res.GetRowCount());
     DBResultRow row;
     if(!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Error in GetPlanetResourceInfo Query, Returned 0 rows.");
+        _log(DATABASE__MESSAGE, "GetPlanetResourceInfo failed to get row.");
         return NULL;
     }
     PyDict *rtn = new PyDict();
@@ -76,11 +78,11 @@ PyRep* PlanetDB::GetPlanetResourceInfo(uint32 planetID) {
 }
 
 PyRep* PlanetDB::GetMyLaunchesDetails(uint32 charID) {
-    //TODO, double check if this requires x,y,z, or if only Beyonce uses them.
+    /** @todo, double check if this requires x,y,z, or if only Beyonce uses them. */
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT `solarSystemID`, `planetID`, `launchTime`, `launchID`, `x`, `y`, `z`"
         " FROM `chrPlanetLaunches` WHERE `characterID` = %u", charID)) {
-        codelog(SERVICE__ERROR, "Error in GetMyLaunchesDetails Query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetMyLaunchesDetails Query: %s", res.error.c_str());
         return NULL;
     }
     return DBResultToRowset(res);
@@ -88,12 +90,12 @@ PyRep* PlanetDB::GetMyLaunchesDetails(uint32 charID) {
 
 
 PyRep* PlanetDB::GetExtractorsForPlanet(uint32 planetID) {
-    /* Incomplete, Needs to retrieve data from tables that do not exist yet.
+    /** @todo Incomplete, Needs to retrieve data from tables that do not exist yet.
      * Currently stops the client from throwing errors.
      */
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT 2130 AS `typeID`, 0 as `ownerID`")) {
-        codelog(SERVICE__ERROR, "Error in GetExtractorsForPlanet Query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetExtractorsForPlanet Query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -107,12 +109,13 @@ bool PlanetDB::GetResourceData(uint32 planetID, DBResultRow &row)
         " `data1`, `data2`, `data3`, `data4`, `data5`,"
         " `numBands1`, `numBands2`, `numBands3`, `numBands4`, `numBands5`"
         " FROM `planetResourceInfo` WHERE `planetID` = %u", planetID)) {
-        codelog(SERVICE__ERROR, "Error in GetResourceData Query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetResourceData Query: %s", res.error.c_str());
         return false;
     }
 
+    _log(DATABASE__RESULTS, "GetResourceData returned %u items", res.GetRowCount());
     if(!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Error in GetResourceData Query failed to get row.");
+        _log(DATABASE__MESSAGE, "GetResourceData failed to get row.");
         return false;
     }
 

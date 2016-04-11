@@ -3,7 +3,7 @@
     LICENSE:
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
+    Copyright 2006 - 2014 The EVEmu Team
     For the latest information visit http://evemu.org
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
@@ -23,35 +23,38 @@
     Author:        Allan
 */
 
-#ifndef EVEMU_SYSTEM_ANOMALYMGR_H_
-#define EVEMU_SYSTEM_ANOMALYMGR_H_
+#ifndef EVEMU_SYSTEM_WORMHOLESVC_H_
+#define EVEMU_SYSTEM_WORMHOLESVC_H_
 
-/* this class will control all aspects of
- * creating, monitoring, removing, logging
- * and saving of all system anomalies.
- */
+#include "PyService.h"
+//#include "system/SystemDB.h"
 
-class DungeonMgr;
-class WormholeMgr;
-class PyServiceMgr;
-class SystemManager;
-
-class AnomalyMgr
+class WormHoleSvc
+: public PyService
 {
-  public:
-      AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
-      virtual ~AnomalyMgr()                             { /* do nothing here */ }
+public:
+    WormHoleSvc(PyServiceMgr *mgr);
+    virtual ~WormHoleSvc();
 
-      void Process();
+protected:
+    class Dispatcher;
+    Dispatcher *const m_dispatch;
 
-private:
-    /* we do not own any of these */
-    DungeonMgr* m_dungMgr;
-    WormholeMgr* m_whMgr;
-    SystemManager* m_system;
-    PyServiceMgr& m_services;
-
+    //WormholeDB m_db;
+    PyCallable_DECL_CALL(WormholeJump);
 };
 
-#endif  // EVEMU_SYSTEM_ANOMALYMGR_H_
+#endif  // EVEMU_SYSTEM_WORMHOLESVC_H_
+/**
+                wormholeClasses = {0: 'UI/Wormholes/Classes/Space',
+                 1: 'UI/Wormholes/Classes/UnknownSpace',
+                 2: 'UI/Wormholes/Classes/UnknownSpace',
+                 3: 'UI/Wormholes/Classes/UnknownSpace',
+                 4: 'UI/Wormholes/Classes/UnknownSpace',
+                 5: 'UI/Wormholes/Classes/DeepUnknownSpace',
+                 6: 'UI/Wormholes/Classes/DeepUnknownSpace',
+                 7: 'UI/Wormholes/Classes/HighSecuritySpace',
+                 8: 'UI/Wormholes/Classes/LowSecuritySpace',
+                 9: 'UI/Wormholes/Classes/NullSecuritySpace'}
 
+                 */

@@ -56,7 +56,6 @@ CREATE TABLE sysAsteroids
 #endif
 
 
-
 /**
  * DynamicSystemEntity which represents structure object in space
  */
@@ -118,18 +117,9 @@ public:
     void SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq=true);
     void SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
 
-    //inline const GPoint &GetPosition() const { return(m_position); }
-    //uint32 GetID() const { return(m_asteroidID); }
-    //virtual const char *GetName() const { return("Asteroid"); }
-    //virtual double GetRadius() const;    // { return(m_radius); }
-
     void Grow();
 
 protected:
-    /*
-     * Member functions
-     */
-
     /*
      * Member fields:
      */
@@ -138,44 +128,45 @@ protected:
     InventoryItemRef _asteroidRef;   // We don't own this
 };
 
-// OLD Asteroid class:
-/*
-class Asteroid : public ItemSystemEntity {
+
+#if 0
+/* this is all new SE rewrite code.....
+/**
+ * ObjectSystemEntity which represents asteroid object in space
+ */
+
+class AsteroidSE
+: public ObjectSystemEntity
+{
 public:
-    Asteroid(SystemManager *system, InventoryItemRef self);
-    virtual ~Asteroid();
+    AsteroidSE(
+        InventoryItemRef self,
+        PyServiceMgr &services,
+        SystemManager *system);
+    virtual ~AsteroidSE()                               { /* Do nothing here */ }
 
-    //SystemEntity interface:
-    virtual void QueueDestinyUpdate(PyTuple **du) {}
-    virtual void QueueDestinyEvent(PyTuple **multiEvent) {}
-    virtual void TargetAdded(SystemEntity *who) {}
-    virtual void TargetLost(SystemEntity *who) {}
-    virtual void TargetedAdd(SystemEntity *who) {}
-    virtual void TargetedLost(SystemEntity *who) {}
-    virtual void TargetsCleared() {}
-    virtual void ProcessDestiny() {}
-    virtual SystemManager *System() const { return(m_system); }
-    virtual bool IsStaticEntity() const { return(true); }
-    virtual bool ApplyDamage(Damage &d);
+    /* class type pointer querys. */
+    virtual AsteroidSE* GetAsteroidSE()                 { return this; }
+    /* class type tests. */
+    virtual bool IsAsteroidSE()                         { return true; }
 
-    //inline const GPoint &GetPosition() const { return(m_position); }
-    //uint32 GetID() const { return(m_asteroidID); }
-    //virtual const char *GetName() const { return("Asteroid"); }
-    //virtual double GetRadius() const;    // { return(m_radius); }
+    /* SystemEntity interface */
+    virtual void Process();
+    virtual void EncodeDestiny( Buffer& into );
+    virtual void MakeDamageState(DoDestinyDamageState &into);
 
+    /* ObjectSystemEntity interface */
+    virtual void ProcessOther();
+
+    /* specific functions handled in this class. */
     void Grow();
 
-    virtual void EncodeDestiny( Buffer& into ) const;
-    //virtual PyDict *MakeSlimItem() const;
-
 protected:
-    //InventoryItem *const m_self;
-    SystemManager *const m_system;
-    //const uint32 m_asteroidID;
-    //const uint32 m_typeID;
-    //const GPoint m_position;
-    //asteroid owner: 500021
-    //double m_radius;    //radius of 91-95 makes for reasonable asteroids.
+
+private:
+    Timer m_growTimer;
+
 };
-*/
+#endif // 0
+
 #endif /* !__ASTEROID__H__INCL__ */

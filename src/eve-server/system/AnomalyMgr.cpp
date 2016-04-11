@@ -25,11 +25,27 @@
 
 #include "eve-server.h"
 
+#include "PyServiceMgr.h"
+#include "dungeon/DungeonMgr.h"
 #include "system/AnomalyMgr.h"
+#include "system/BeltMgr.h"
+#include "system/SystemManager.h"
+#include "system/WormholeMgr.h"
 
-AnomalyMgr::AnomalyMgr() {
+/*  this class is in charge of creating/destroying and maintaining
+ * anomalies in a system.
+ * 
+ *  a new iteration of this class is created for each system as that system
+ * is booted.
+ */
+
+AnomalyMgr::AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc)
+: m_system(mgr),
+  m_services(svc)
+{
 
 }
 
-// this class will control all aspects of creating, monitoring, removing, logging and saving of all system anomalies.
-// should this be in pyservices or as a singleton?
+void AnomalyMgr::Process() {
+
+}

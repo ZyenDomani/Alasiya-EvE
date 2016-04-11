@@ -42,6 +42,8 @@ class SystemBubble;
 class DoDestiny_SetState;
 class DestinyManager;
 
+class BeltMgr;
+class AnomalyMgr;
 class SpawnMgr;
 class PyServiceMgr;
 
@@ -124,7 +126,9 @@ protected:
 
     SystemDB m_db;
     PyServiceMgr& m_services;    //we do not own this
-    SpawnMgr* m_spawnManager;    //we own this, never NULL, dynamic to keep the knowledge down.
+    AnomalyMgr* m_anomMgr;   //we own this, never NULL, dynamic to keep the knowledge down.
+    BeltMgr* m_beltMgr;       //we own this, never NULL, dynamic to keep the knowledge down.
+    SpawnMgr* m_spawnMgr;    //we own this, never NULL, dynamic to keep the knowledge down.
 
     //overall system entity lists:
     bool m_entityChanged = false;
@@ -134,7 +138,7 @@ private:
     // item to hold current number of loaded systems
     uint32 m_systems = 0;
 
-    // for spawn system     -allan 15July15
+    // for spawn systems     -allan 15July15
     uint8 m_beltCount = 0;
     uint8 m_activeRatSpawns = 0;
     uint8 m_activeRoidSpawns = 0;
