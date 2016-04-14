@@ -32,25 +32,18 @@ using namespace Destiny;
 
 SimpleSystemEntity* SimpleSystemEntity::MakeEntity( SystemManager* system, const DBSystemEntity& entity )
 {
-    switch( entity.groupID )
-    {
+    switch( entity.groupID ) {
         case EVEDB::invGroups::Sun:
         case EVEDB::invGroups::Planet:
         case EVEDB::invGroups::Moon:
             return new SystemPlanetEntity( system, entity );
-
         //case EVEDB::invGroups::Asteroid_Belt:
         //    return new SystemBeltEntity( system, entity );
-
         case EVEDB::invGroups::Stargate:    //Stargate
             return new SystemStargateEntity( system, entity );
-
         case EVEDB::invGroups::Station:        //Station
             return new SystemStationEntity( system, entity );
-
         default:
-            sLog.Error( "Simple sys Entity", "Unrecognized entity type '%u' on '%s' (%u), falling back to simple space item.",
-                        entity.typeID, entity.itemName.c_str(), entity.itemID );
             return new SystemSimpleEntity( system, entity );
     }
 }

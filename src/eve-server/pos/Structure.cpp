@@ -119,6 +119,10 @@ double Structure::GetCapacity(EVEItemFlags flag) const
     }
 }
 
+/*
+ * AttrPosCargobayAcceptType = 1351,
+   AttrPosCargobayAcceptGroup = 1352,
+   */
 void Structure::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item, Client *c)
 {
     CharacterRef character = c->GetChar();

@@ -63,6 +63,23 @@ enum EVERace {
     racePirate      = 32
 };
 
+typedef enum {
+    CharAmarr       = 1373,
+    CharNiKunni     = 1374,
+    CharCivire      = 1375,
+    CharDeteis      = 1376,
+    CharGallente    = 1377,
+    CharIntaki      = 1378,
+    CharSebiestor   = 1379,
+    CharBrutor      = 1380,
+    CharStatic      = 1381,
+    CharModifier    = 1382,
+    CharAchura      = 1383,
+    CharJinMei      = 1384,
+    CharKhanid      = 1385,
+    CharVherokior   = 1386
+} EVECharType;
+
 //eve standing change messages in db.repStandingChanges.eventTypeID
 //  not sure where these come from
 typedef enum {

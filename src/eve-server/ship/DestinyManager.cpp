@@ -1645,6 +1645,15 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update, bool selfOnly) {
 }
 
 // settings for ship attributes
+void DestinyManager::SetMaxVelocity(double maxVelocity)
+{
+    double maxSpeed = m_self->Item()->GetAttribute(AttrMaxDirectionalVelocity).get_float();
+    if (maxVelocity > maxSpeed)
+        m_maxShipSpeed = maxSpeed;
+    else
+        m_maxShipSpeed = maxVelocity;
+}
+
 void DestinyManager::SetShipVariables(InventoryItemRef ship)
 {
     double radius = ship->GetAttribute(AttrRadius).get_float();

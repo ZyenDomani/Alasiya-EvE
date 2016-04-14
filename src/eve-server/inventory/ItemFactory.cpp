@@ -81,7 +81,7 @@ void ItemFactory::SaveItems() {
             cur.second->SaveItem();
 
         ++items_saved;
-        if( (items_saved / total_item_count) > (current_percent_items_saved + 0.05) ) {
+        if( (items_saved / total_item_count) > (current_percent_items_saved + 0.1) ) {
             current_percent_items_saved = items_saved / total_item_count;
             sLog.Warning( "     Saving Items", " %3.2f%%", (current_percent_items_saved * 100) );
         }

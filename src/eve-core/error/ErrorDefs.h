@@ -148,9 +148,11 @@ typedef long LibError;
  *
  *
  * Ref: ServerError 12321. << Client::BoardShip()
- * Ref: ServerError 15520. << Ship::InsureShip()
+ * Ref: ServerError 25520. << Ship::InsureShip()
+ * Ref: ServerError 25610. << MSAC::_calculateNewValue() - effectiveness is 0
  * Ref: ServerError 31110. << commandDispatcher::Execute()
  */
+//  throw PyException( MakeCustomError("Internal Server Error.  Ref: ServerError 15610"));
 
 //-----------------------------------------------------------------------------
 //  this is example used in the system i borrowed this code from...

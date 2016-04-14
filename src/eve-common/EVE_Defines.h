@@ -10,6 +10,9 @@
 //  defines based on itemID, per client
 #define maxNonCapitalModuleSize 500
 
+#define minCharType             1373
+#define maxCharType             1386
+
 #define minEveMarketGroup       0
 #define maxEveMarketGroup       350000
 #define minDustMarketGroup      350001
@@ -58,7 +61,7 @@ minFakeClientItem = 17000000000000000000L
 */
 
 //  allan's static defines to ease code checks
-#define EVEMU_MINIMUM_ID            minPlayerItem
+#define EVEMU_MINIMUM_ID          minPlayerItem
 #define EVEMU_TEMP_ENTITY_ID          100000000
 #define EVEMU_MINIMUM_ENTITY_ID       140000000
 #define EVEMU_ASTEROID_ID              70000000
@@ -72,10 +75,8 @@ minFakeClientItem = 17000000000000000000L
 
 #define ASTEROID_GROWTH_INTERVAL_MS  3600000
 
-/* there needs to be more to this check.....
- * #define IsChar(charID) \
- *    (charID > 140000000)
- */
+#define IsCharType(typeID) \
+ ((typeID >= minCharType) && (typeID <= maxCharType))
 
 #define IsContainerLocation(itemID) \
 (itemID >= minValidShipLocation)

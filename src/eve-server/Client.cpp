@@ -125,7 +125,7 @@ Client::~Client() {
         char ci[1];
         snprintf(ci, sizeof(ci), "");
         GetShip()->SetCustomInfo(ci);
-        GetShip()->OfflineAll();
+        //GetShip()->OfflineAll();  //this isnt needed, as module and attrib states are not saved
         SaveAllToDatabase();
 
         if (IsDocked()) {
@@ -1011,14 +1011,11 @@ void Client::_SendQueuedUpdates() {
 
         // attempted fix for trying to update when (bubble == NULL)
         //  seems to work correctly  -allan 18Apr15
-        if (Bubble())
-            dum.waitForBubble = IsBubbleWait();
-        else
-            dum.waitForBubble = false;
+        dum.waitForBubble = IsBubbleWait();
 
         //now send it
         PyTuple* t = dum.Encode();
-        t->Dump(DESTINY__UPDATES, "");
+        t->Dump(CLIENT__QUEUE_DUMP, "");
         SendNotification("DoDestinyUpdate", "clientID", &t);
     } else if (!m_destinyEventQueue->empty()) {
         Notify_OnMultiEvent nom;
@@ -1029,7 +1026,7 @@ void Client::_SendQueuedUpdates() {
 
         //send it
         PyTuple* t = nom.Encode();   //this is consumed below
-        t->Dump(DESTINY__UPDATES, "");
+        t->Dump(CLIENT__QUEUE_DUMP, "");
         SendNotification("OnMultiEvent", "charid", &t);
     } //else nothing to be sent ...
 

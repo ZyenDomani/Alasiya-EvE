@@ -456,8 +456,7 @@ bool Character::_Load() {
 
 	// Update Skill Queue and Total Skill Points Trained:
 	if ( bLoadSuccessful )
-        if (GetSkillInTraining())
-            UpdateSkillQueue();
+        UpdateSkillQueue();
 
     if( !m_factory.db().LoadCertificates( itemID(), m_certificates ) ) {
         sLog.Warning("Character::_Load","LoadCertificates returned false for char %u", itemID());
