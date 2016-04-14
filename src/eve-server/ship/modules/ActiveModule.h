@@ -45,9 +45,14 @@ public:
     virtual void Overload();
     virtual void DeOverload();
     virtual void Deactivate();
-    virtual void Activate(SystemEntity* targetEntity)       { m_targetEntity = targetEntity; m_ActiveModuleProc->ActivateCycle(); }
+    virtual void Activate(SystemEntity* targetEntity);
     virtual bool IsOverloaded()                             { return m_overLoaded; }
     virtual InventoryItemRef GetLoadedChargeRef()           { return m_chargeRef; }
+
+    // generic DoCycle() here is for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
+    //  for those modules that perform action on DoCycle(), they will override this call in their class implementation
+    virtual double DoCycle();
+    virtual void StopCycle(bool abort=false)                { /* Do nothing here */ }
 
     // GenericModule access function overriders
     bool ShipHasCapCharge()                                 { return (_GetCapNeed() <  m_Ship->GetAttribute(AttrCapacitorCharge).get_float()); }
@@ -58,12 +63,8 @@ public:
     // for modules that have charges
     bool isLoaded()                                         { return m_chargeLoaded; }
 
-	// generic DoCycle() here is for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
-	//  for those modules that perform action on DoCycle(), they will override this call in their class implementation
-	virtual double DoCycle();
-	virtual void StopCycle(bool abort=false)				{ /* Do nothing here */ }
-
-	void DoEffect(bool active);
+	/* common method for all modules that have a visual effect when active */
+	void DoEffect(std::string effect, bool active);
 
 protected:
     uint32 m_targetID;                                      //passed to us by activate

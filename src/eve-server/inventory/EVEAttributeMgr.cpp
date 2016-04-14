@@ -286,6 +286,7 @@ void ItemAttributeMgr::_SendAttributeChange(Attr attr, PyRep *oldValue, PyRep *n
             omac.newValue = newValue;
         PyTuple* tmp = omac.Encode();
         c->QueueDestinyEvent(&tmp);
+        _log(ITEM__WARNING, "ItemAttributeMgr::_SendAttributeChange() - old shit called.");
     } else {
         // delete the reps
         PyDecRef( oldValue );
@@ -313,23 +314,22 @@ bool AttributeMap::SetAttribute( uint32 attributeId, EvilNumber &num, bool notif
         mAttributes.insert(std::make_pair(attributeId, num));
 		mChanged = true;	// Mark the map as having been modified by a new attribute being added
         if (notify)
-            return Add(attributeId, num);
-        return true;
+            Add(attributeId, num);
+        return mChanged;
     }
 
-    // if nothing changes... do nothing
     if (itr->second == num)
-        return false;
+        return true;
 
-    // notify dogma to change the attribute
-    // if we are unable to queue the change event, Don't change the value.
+    mChanged = true;
+
+    // notify dogma of attribute change
     if (notify)
-        if (!Change(attributeId, itr->second, num))
-            return false;
+        Change(attributeId, itr->second, num);
 
     itr->second = num;
-	mChanged = true;	// Mark the map as having been modified
-    return true;
+	// Mark the map as having been modified
+    return mChanged;
 }
 
 EvilNumber AttributeMap::GetAttribute( const uint32 attributeId ) const
@@ -359,7 +359,7 @@ bool AttributeMap::HasAttribute(const uint32 attributeID, EvilNumber &value) con
 }
 
 bool AttributeMap::Change( uint32 attributeID, EvilNumber& old_val, EvilNumber& new_val ) {
-    if (old_val == new_val) return false;
+    if (old_val == new_val) return true;
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
         modChange.itemKey = mItem.itemID();
@@ -377,33 +377,32 @@ bool AttributeMap::Add( uint32 attributeID, EvilNumber& num ) {
         modChange.attributeID = attributeID;
         modChange.time = Win32TimeNow();
         modChange.newValue = num.GetPyObject();
-        modChange.oldValue = num.GetPyObject();
+        modChange.oldValue = new PyInt(0);
     return SendAttributeChanges(modChange.Encode());
 }
 
 bool AttributeMap::SendAttributeChanges( PyTuple* attrChange ) {
-    if (!attrChange) return false;
+    if (!attrChange) return true;
+    Client* client(nullptr);
 
-    // Oh hell, this character finding needs to be optimized ( redesigned so its not needed.. ).
-    if ( (mItem.ownerID() == 1) || (IsStation(mItem.itemID())) ) {
-        // This item is owned by the EVE System either directly, as in the case of a character object,
-        // or indirectly, as in the case of a Station, which is owned by the corporation that runs it.
-        // So, we don't need to queue up Destiny events in these cases.
+    if (IsCharType(mItem.typeID()))
+        client = sEntityList.FindClientByCharID(mItem.itemID());
+    else if ((mItem.ownerID() == 1) || IsNPCCorp(mItem.ownerID()))
         return true;
+    else
+        client = sEntityList.FindClientByCharID(mItem.ownerID());
+
+    if (client) {
+        attrChange->Dump(CLIENT__NOTIFY_DUMP, "");
+        client->QueueDestinyEvent(&attrChange);
     } else {
-        Client *client = sEntityList.FindClientByCharID(mItem.ownerID());
-        if (client) {
-            client->QueueDestinyEvent(&attrChange);
-        } else {
-            _log(CLIENT__ERROR, "AttributeMap::SendAttributeChanges() - client returned NULL" );
-            return false;
-        }
+        _log(CLIENT__ERROR, "AttributeMap::SendAttributeChanges() - ownerID for %u not found", mItem.itemID() );
+        return false;
     }
     return true;
 }
 
 bool AttributeMap::ResetAttribute(uint32 attrID, bool notify) {
-    /** @todo modify value by attribute modifiers applied by modules and enemies */
     EvilNumber value = mItem.GetDefaultAttribute(attrID);
     return SetAttribute(attrID, value, notify);
 }
@@ -554,6 +553,52 @@ bool AttributeMap::Save() {
 
 bool AttributeMap::SaveAttributes() {
     return Save();
+}
+
+void AttributeMap::SaveShipState()
+{
+    std::ostringstream Inserts;
+    // start the insert into command.
+    Inserts << "REPLACE INTO entity_attributes ";
+    Inserts << " (itemID, attributeID, valueInt, valueFloat) VALUES";
+    bool shield = false, armor = false, hull = false;
+    AttrMap::iterator cur = mAttributes.find(AttrShieldCharge);
+    if (cur != mAttributes.end()) shield = true;
+    if (shield) {
+        Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
+        if ( cur->second.get_type() == evil_number_int ) {
+            Inserts << cur->second.get_int() << ", NULL)";
+        } else {
+            Inserts << " NULL, " << cur->second.get_float() << ")";
+        }
+    }
+    cur = mAttributes.find(AttrArmorDamage);
+    if (cur != mAttributes.end()) armor = true;
+    if (armor) {
+        if (shield) Inserts << ",";
+        Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
+        if ( cur->second.get_type() == evil_number_int ) {
+            Inserts << cur->second.get_int() << ", NULL)";
+        } else {
+            Inserts << " NULL, " << cur->second.get_float() << ")";
+        }
+    }
+    cur = mAttributes.find(AttrArmorDamage);
+    if (cur != mAttributes.end()) hull = true;
+    if (hull) {
+        if (shield or armor) Inserts << ",";
+        Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
+        if ( cur->second.get_type() == evil_number_int ) {
+            Inserts << cur->second.get_int() << ", NULL)";
+        } else {
+            Inserts << " NULL, " << cur->second.get_float() << ")";
+        }
+    }
+
+    DBerror err;
+    if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
+        _log(DATABASE__ERROR, "SaveShipState - unable to save attributes");
+    }
 }
 
 bool AttributeMap::Delete() {

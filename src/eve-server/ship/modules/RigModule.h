@@ -34,9 +34,9 @@ class RigModule
 {
 public:
     RigModule(InventoryItemRef item, ShipRef ship);
-    virtual ~RigModule() { }
+    virtual ~RigModule()                                { /* do nothing here */ }
 
-    bool IsRigModule() const                    { return true; }
+    bool IsRigModule() const                            { return true; }
 
     ModulePowerLevel GetModulePowerLevel();
 

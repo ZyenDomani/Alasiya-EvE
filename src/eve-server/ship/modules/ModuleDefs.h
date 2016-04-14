@@ -24,6 +24,10 @@
     Updates:    Allan
 */
 
+/** @todo  there is much more to be done here.  this is just the beginning.
+ * many, many effects missing from dgmEffectsInfo table (aknor was hand-writing them)
+ */
+
 #ifndef MODULE_DEFS_H
 #define MODULE_DEFS_H
 
@@ -51,78 +55,101 @@ enum ModuleCommand
     UNLOAD_CHARGE               = 1009
 };
 
-// *** use these values to decode the 'effectAppliedInState' field of the 'dgmEffectsActions' database table
+enum ChargeStates
+{
+    MOD_UNLOADED                = 0,
+    MOD_LOADING                 = 1,
+    MOD_RELOADING               = 2,
+    MOD_LOADED                  = 3
+};
+
+
+enum EffectCategories
+{
+    dgmEffPassive               = 0,
+    dgmEffActivation            = 1,
+    dgmEffTarget                = 2,
+    dgmEffArea                  = 3,
+    dgmEffOnline                = 4,
+    dgmEffOverload              = 5
+};
+
+// These are the module states when an effect will take affect:
+// *** use these values to decode the 'effectAppliedInState' field of the 'dgmEffectsInfo' database table
+/* these are used in ModuleEffects to seperate effects into state containers  */
 enum ModuleStates
 {
     MOD_UNFITTED                = 0,
-    MOD_OFFLINE                 = 1,
+    // means the effect is active AT ALL TIMES; used ONLY for skill, ship, rig, subsystem, and beacon effects
+    MOD_PASSIVE                 = 1,
+    /* 'Online' is used for:
+     * ACTIVE modules fitted and online, but not activated (PASSIVE effects only)
+     * PASSSIVE modules fitted and online
+     * RIG modules fitted
+     */
     MOD_ONLINE                  = 2,
+    // used only for ACTIVE modules operating in non-Overloaded mode
     MOD_ACTIVATED               = 4,
+    // used only for ACTIVE modules operating in Overloaded mode
     MOD_OVERLOADED              = 8,
     MOD_GANG                    = 16,
-	MOD_FLEET                   = 32,
-	MOD_DEACTIVATING            = 64
+    MOD_FLEET                   = 32,
+    // used for internal module status checking
+    MOD_DEACTIVATING            = 64,
+    MOD_OFFLINE                 = 128
 };
 
-enum ChargeStates
-{
-    MOD_UNLOADED                = 1200,
-    MOD_LOADING                 = 1201,
-    MOD_RELOADING               = 1202,
-    MOD_LOADED                  = 1203
-};
-
-// These are the module states where an effect will take affect:
-// *** use these values to decode the 'effectAppliedBehavior' field of the 'dgmEffectsInfo' database table
+// *** use these values to decode the 'effectID' field of the 'dgmEffectsInfo' database table
+/**  depreciated.  use EffectsEnum.h for these
 enum ModuleEffectAppliedBehaviors
 {
-    // means the effect is active AT ALL TIMES; used ONLY for skill, ship, subsystem effects
-    EFFECT_PERSISTENT           = 1300,
-    // means the effect takes effect upon entering the ONLINE state
-    EFFECT_ONLINE               = 16,
-    // used only for ACTIVE modules operating in non-Overloaded mode
-    EFFECT_ACTIVE               = 12,
-    // used only for ACTIVE modules operating in Overloaded mode
+    EFFECT_PERSISTENT           = 1,
+    EFFECT_PASSIVE              = 2,
     EFFECT_OVERLOAD             = 8,
-    // used only for ACTIVE modules when not activated
-    EFFECT_PASSIVE              = 2
+    EFFECT_LOPOWER              = 11,
+    EFFECT_HIPOWER              = 12,
+    EFFECT_MEDPOWER             = 13,
+    EFFECT_ONLINE               = 16,
+    EFFECT_MINING               = 17,
+    EFFECT_RIG                  = 2663,
+    EFFECT_SUBSYSTEM            = 3772
 };
+*/
 
+/** @todo  these next two are way off.  they need updating and implementation....eventually  */
 // These are the target types to which module and other types' effects are applied when activated:
-// *** use these values to decode the 'effectTargetEquipmentType' field of the 'dgmEffectsInfo' database table
+// *** use these values to decode the 'effectingType' field of the 'dgmEffectsInfo' database table
 enum EffectTargetEquipmentTypes
 {
-    EQUIP_MODULE                = 1400,
-    EQUIP_CHARGE                = 1401,
-    EQUIP_THIS_SHIP             = 1402,
-    EQUIP_DRONE                 = 1403,
-    EQUIP_EXTERNAL_SHIP         = 1404,
-    EQUIP_EXTERNAL_SHIP_MODULE  = 1405,
-    EQUIP_EXTERNAL_SHIP_CHARGE  = 1406
+    EQUIP_MODULE                = 0,
+    EQUIP_CHARGE                = 1,
+    EQUIP_THIS_SHIP             = 2,
+    EQUIP_DRONE                 = 3,
+    EQUIP_EXTERNAL_SHIP         = 4,
+    EQUIP_EXTERNAL_SHIP_MODULE  = 5,
+    EQUIP_EXTERNAL_SHIP_CHARGE  = 6
 };
 
 // These are the target types to which module effects are applied when activated:
-// *** use these values to decode the 'effectAppliedTo' field of the 'dgmEffectsInfo' database table
+// *** use these values to decode the 'effectedType' field of the 'dgmEffectsInfo' database table
 enum ModuleEffectAppliedToTargetTypes
 {
-    // 1500: means the target of the effect is the module's own attribute(s)
-    EFFECT_TARGET_SELF          = 1500,
-    // 1501: means the target of the effect is the attribute(s) of the ship to which the module is fitted
-    EFFECT_TARGET_SHIP          = 1501,
-    // 1502: means the target of the effect is the attribute(s) of the current target of the ship to which the module is fitted
-    EFFECT_TARGET_EXTERNAL      = 1502,
-    // 1503: means a module or modules that are fitted to the current ship, this special case will indicate when the effect is
+    // 0: the target of the effect is the module's own attribute(s)
+    EFFECT_TARGET_SELF          = 0,
+    // 1: the target of the effect is the attribute(s) of the ship to which the module is fitted
+    EFFECT_TARGET_SHIP          = 1,
+    // 2: the target of the effect is the attribute(s) of the current target of the ship to which the module is fitted
+    EFFECT_TARGET_EXTERNAL      = 2,
+    // 3: module or modules that are fitted to the current ship, this special case will indicate when the effect is
     // applied to other modules applied to the same ship - the dgmEffectsActions table fields of targetEquipmentType and
     // targetGroupIDs will have additional information for the Module Manager to make use of this effect
-    EFFECT_MODULE_ON_SHIP       = 1503,
-    // 1504: means that the effect is from a charge loaded into a weapon module so this will affect the weapon module the charge
-    // is loaded into
-    EFFECT_LOADED_CHARGE        = 1504,
-    // 1505: means that the effect acts upon a charge loaded into a weapon module so this will affect charges of the specified
-    // groupID loaded into any module on the ship
-    EFFECT_CHARGE               = 1505,
-    // 1506: means that the effect acts upon the character's attribute specific to the effect
-    EFFECT_CHARACTER            = 1506
+    EFFECT_MODULE_ON_SHIP       = 3,
+    // 4: the effect is from a loaded charge, which will affect the weapon module the charge is loaded into
+    EFFECT_LOADED_CHARGE        = 4,
+    // 5: the effect acts upon a charge loaded into a weapon module.  this will affect loaded charges of the specified groupID
+    EFFECT_CHARGE               = 5,
+    // 6: the effect acts upon the character's attribute specific to the effect
+    EFFECT_CHARACTER            = 6
 };
 
 // These are the methods by which module effects are applied to the designated target:
@@ -144,19 +171,18 @@ enum ModuleApplicationTypes
 // *** use these values to decode the 'stackingPenaltyApplied' field of the 'dgmEffectsInfo' database table
 enum ModuleStackingPenaltyState
 {
-    NO_STACKING_PENALTY         = 1700,
-    STACKING_PENALTY_APPLIES    = 1701
+    NO_STACKING_PENALTY         = 0,
+    STACKING_PENALTY_APPLIES    = 1
 };
 
-//this may or may not be redundant...idk
 enum ModulePowerLevel
 {
     MODULE_BANK_UNDEFINED       = 0,
-    MODULE_BANK_LOW_POWER       = 1800,
-    MODULE_BANK_MEDIUM_POWER    = 1801,
-    MODULE_BANK_HIGH_POWER      = 1802,
-    MODULE_BANK_RIG             = 1803,
-    MODULE_BANK_SUBSYSTEM       = 1804
+    MODULE_BANK_LOW_POWER       = 1,
+    MODULE_BANK_MEDIUM_POWER    = 2,
+    MODULE_BANK_HIGH_POWER      = 3,
+    MODULE_BANK_RIG             = 4,
+    MODULE_BANK_SUBSYSTEM       = 5
 };
 
 //calculation types
@@ -191,13 +217,16 @@ enum EVECalculationType
 
     CALC_REVERSE_PERCENTAGE     = 40,
 
-    //  added these but not sure if we'll use them.
+    // for shields
     CALC_ADD_PERCENT            = 50,
     CALC_REV_ADD_PERCENT        = 51,
-    CALC_SUBTRACT_PERCENT       = 52,
-    CALC_REV_SUBTRACT_PERCENT   = 53,
+
     CALC_ADD_AS_PERCENT         = 54,
     CALC_SUBTRACT_AS_PERCENT    = 55,
+
+    //  added these but not sure if we'll use them.
+    CALC_SUBTRACT_PERCENT       = 52,
+    CALC_REV_SUBTRACT_PERCENT   = 53,
     CALC_MODIFY_PERCENT_W_PERCENT       = 56,
     CALC_REV_MODIFY_PERCENT_W_PERCENT   = 57,
     CALC_REDUCE_BY_PERCENT      = 58,
@@ -332,13 +361,12 @@ static EvilNumber SubtractResist(EvilNumber &val1, EvilNumber &val2)
 
 static EvilNumber AddPercent(EvilNumber &val1, EvilNumber &val2)
 {
-    return val1 + ( val1 * val2 );
+    return val1 + ( val2 /100 );
 }
 
 static EvilNumber ReverseAddPercent(EvilNumber &val1, EvilNumber &val2)
 {
-    EvilNumber val3 = 1;
-    return val1 / ( val3 + val2 );
+    return val1 - ( val2 /100 );
 }
 
 static EvilNumber SubtractPercent(EvilNumber &val1, EvilNumber &val2)
@@ -400,8 +428,6 @@ static EvilNumber ReverseReduceByPercent(EvilNumber &val1, EvilNumber &val2)
 
 static EvilNumber CalculateNewAttributeValue(EvilNumber attrVal, EvilNumber attrMod, EVECalculationType type)
 {
-    _log(SHIP__MODULE_TRACE, "MSAC::_calculateNewAttributeValue() -  attrVal: %f - attrMod: %f type: %i", \
-            attrVal.get_float(), attrMod.get_float(), (int)type);
     switch(type)
     {
         case CALC_NONE :                            return attrVal;
@@ -432,7 +458,7 @@ static EvilNumber CalculateNewAttributeValue(EvilNumber attrVal, EvilNumber attr
         //case CALC_SUBTRACT :                        return Subtract(attrVal, attrMod); break;
         //case CALC_DIVIDE :                          return Divide(attrVal, attrMod); break;
         //case CALC_MULTIPLY :                        return Multiply(attrVal, attrMod); break;
-        //case CALC_ADD_PERCENT :                     return AddPercent(attrVal, attrMod); break;
+        case CALC_ADD_PERCENT :                     return AddPercent(attrVal, attrMod); break;
         case CALC_REV_ADD_PERCENT :                 return ReverseAddPercent(attrVal, attrMod); break;
         case CALC_SUBTRACT_PERCENT :                return SubtractPercent(attrVal, attrMod); break;
         case CALC_REV_SUBTRACT_PERCENT :            return ReverseSubtractPercent(attrVal, attrMod); break;

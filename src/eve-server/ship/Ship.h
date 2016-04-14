@@ -254,7 +254,7 @@ public:
 	 * @param Current The current charge of the item.
 	 * @return The rate of charge for the item.
 	 */
-	double CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current);
+	double CalculateRechargeRate(double Capacity, double Current, double RechargeTimeMS);
 
     /* begin new module manager interface */
 	InventoryItemRef GetModule(EVEItemFlags flag);
@@ -283,7 +283,6 @@ public:
     void OnlineAll();
     void OfflineAll();
     ShipOperatorInterface * GetOperator() { return m_pOperator; }
-    std::vector<GenericModule *> GetStackedItems(uint32 typeID, ModulePowerLevel level);
 
 	// Tactical Interface:
     void SetShipShield(double fraction);

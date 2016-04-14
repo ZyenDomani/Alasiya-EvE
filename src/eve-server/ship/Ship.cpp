@@ -94,13 +94,13 @@ Ship::Ship(
     const ItemData &_data)
 : InventoryItem(_factory, _shipID, _shipType, _data),
   m_processTimerTick(SHIP_PROCESS_TICK_MS),
-  m_processTimer(SHIP_PROCESS_TICK_MS)
+  m_processTimer(m_processTimerTick)
 {
     m_ModuleManager = nullptr;
     m_pOperator = new ShipOperatorInterface();
     m_IsLoaded = false;
 
-	m_processTimer.Start();
+    m_processTimer.Start(m_processTimerTick);
 
     _log(ITEM__TRACE, "Created Ship object for item %s (%u).", itemName().c_str(), itemID());
 }
@@ -291,25 +291,37 @@ void Ship::Init()
 
     Character* pChar = GetOperator()->GetChar().get();
 
-    pg *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEngineering, true))));      //5% increase
-    cpu *=  (1 + (0.05 * (pChar->GetSkillLevel(skillElectronics, true))));      // 5% increase
-    hullHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillMechanics, true))));      //5% increase
-    armorHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillHullUpgrades, true))));      // 5% increase
-    capCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEnergyManagement, true))));      // 5% increase
-    capChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillEnergySystemsOperation, true))));      //5% decrease
+    pg *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEngineering, true))));                       // 5% increase
+    cpu *=  (1 + (0.05 * (pChar->GetSkillLevel(skillElectronics, true))));                      // 5% increase
+    hullHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillMechanics, true))));                     // 5% increase
+    armorHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillHullUpgrades, true))));                 // 5% increase
+    capCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEnergyManagement, true))));         // 5% increase
+    capChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillEnergySystemsOperation, true)))); // 5% decrease
     shieldCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillShieldManagement, true))));      // 5% increase
-    shieldChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillShieldOperation, true))));      //5% decrease
+    shieldChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillShieldOperation, true))));     // 5% decrease
 
     // add checks for implants here.
     //  ship bonuses are found in dgmShipBonusModifiers
     //  skill bonuses are found in dgmSkillBonusModifiers
 
-    // reset cpu and pg loads to 0 before updating modules      -- should do this on client logout.  this is catchall for crash
-    SetAttribute(AttrCpuLoad, 0);
-    SetAttribute(AttrPowerLoad, 0);
-    SetAttribute(AttrUpgradeLoad, 0);
-    SetAttribute(AttrUpgradeSlotsLeft, AttrRigSlots);
-    // set ship adjusted attributes and save.
+    // reset some attribs before updating modules   this is catchall incase of server crash
+    ResetAttribute(AttrCpuLoad);
+    ResetAttribute(AttrPowerLoad);
+    ResetAttribute(AttrUpgradeLoad);
+    ResetAttribute(AttrUpgradeSlotsLeft);
+    ResetAttribute(AttrShieldEmDamageResonance);
+    ResetAttribute(AttrShieldExplosiveDamageResonance);
+    ResetAttribute(AttrShieldKineticDamageResonance);
+    ResetAttribute(AttrShieldThermalDamageResonance);
+    ResetAttribute(AttrArmorEmDamageResonance);
+    ResetAttribute(AttrArmorExplosiveDamageResonance);
+    ResetAttribute(AttrArmorKineticDamageResonance);
+    ResetAttribute(AttrArmorThermalDamageResonance);
+    ResetAttribute(AttrEmDamageResonance);
+    ResetAttribute(AttrExplosiveDamageResonance);
+    ResetAttribute(AttrKineticDamageResonance);
+    ResetAttribute(AttrThermalDamageResonance);
+
     SetAttribute(AttrHP, hullHP);
     SetAttribute(AttrArmorHP, armorHP);
     SetAttribute(AttrCpuOutput, cpu);
@@ -318,7 +330,8 @@ void Ship::Init()
     SetAttribute(AttrShieldCapacity, shieldCapacity);
     SetAttribute(AttrCapacitorCharge, capCapacity);
     SetAttribute(AttrShieldRechargeRate,shieldChargeRate );
-    SaveAttributes();
+
+    //SaveAttributes();
 
     // allocate the module manager, only the first time:
     if (!m_ModuleManager)
@@ -328,7 +341,7 @@ void Ship::Init()
     //set everything to full AFTER modules possibably update ship stats
     /** @todo need to check for ship damage status BEFORE or INSTEAD of calling this.
      */
-    Heal();
+    //Heal();
 }
 
 void Ship::InitPod()
@@ -917,10 +930,9 @@ bool Ship::ValidateBoardShip(ShipRef ship, CharacterRef character) {
 
 void Ship::SaveShip()
 {
-    sLog.Debug( "Ship::SaveShip()", "Saving all 'entity' info and attribute info to DB for ship %s (%u)...", itemName().c_str(), itemID() );
-
-    SaveItem();                         // Save all attributes and item info
-    m_ModuleManager->SaveModules();     // Save all attributes and item info for all modules fitted to this ship
+    SaveItem();                         // Save ship info
+    SaveShipState();                    // save ship damage
+    m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
 }
 
 bool Ship::ValidateItemSpecifics(InventoryItemRef equip) {
@@ -1206,16 +1218,14 @@ void Ship::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     InventoryItemRef chargeItemRef1 = m_ModuleManager->GetLoadedChargeOnModule(slot1);
     if (chargeItemRef1)
         m_ModuleManager->UnloadCharge(slot1);
-    //m_ModuleManager->UnfitModule(modItemRef1->itemID());
     modItemRef1->Move(itemID(), flagCargoHold);
 
     if (m_ModuleManager->IsSlotOccupied(slot2)) {
-        // dropped slot is occupied.  procede with moving the module currently in this slot.
+        // dropped-on slot is occupied.  procede with moving the module currently in this slot.
         InventoryItemRef modItemRef2 = GetModule(slot2);
         InventoryItemRef chargeItemRef2 = m_ModuleManager->GetLoadedChargeOnModule(slot2);
         if (chargeItemRef2)
             m_ModuleManager->UnloadCharge(slot2);
-        //m_ModuleManager->UnfitModule(modItemRef2->itemID());
         modItemRef2->Move(itemID(), flagCargoHold);
 
         AddItem(slot1, modItemRef2);
@@ -1289,16 +1299,16 @@ void Ship::Deactivate(int32 itemID, std::string effectName)
 
 void Ship::Overload()
 {
-    // FIXME TODO get module IDs and send to function
-    uint32 modID = 0;
-    m_ModuleManager->Overload(modID);
+    // FIXME TODO get module flag(s) and send to function
+    EVEItemFlags flag = flagNone;
+    m_ModuleManager->Overload(flag);
 }
 
 void Ship::CancelOverloading()
 {
-    // FIXME TODO get module IDs and send to function
-    uint32 modID = 0;
-    m_ModuleManager->DeOverload(modID);
+    // FIXME TODO get module flag(s) and send to function
+    EVEItemFlags flag = flagNone;
+    m_ModuleManager->DeOverload(flag);
 }
 
 void Ship::RemoveRig(InventoryItemRef item) {
@@ -1306,7 +1316,7 @@ void Ship::RemoveRig(InventoryItemRef item) {
     item->Move(itemID(), flagCargoHold);
 }
 
-double Ship::CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current)
+double Ship::CalculateRechargeRate(double Capacity, double Current, double RechargeTimeMS)
 {
     // C = Cmax * [ 1 + ( SQRT(C0/Cmax) - 1 ) * EXP((t0-t1)/tau) ] ^ 2
     // dC/dt = (SQRT(C/Cmax) - C/Cmax) * 2 * Cmax / tau
@@ -1316,6 +1326,7 @@ double Ship::CalculateRechargeRate(double Capacity, double RechargeTimeMS, doubl
     RechargeTimeMS = (RechargeTimeMS < 1 ? 1 : RechargeTimeMS);
     Current = (Current < 1 ? 1 : Current);
     double Cmax = (Capacity < 1 ? 1 : Capacity);
+
     // tau = "cap recharge time" / 5.0
     double tau = (RechargeTimeMS / 5000.0);
     // (2*Cmax) / tau
@@ -1335,47 +1346,36 @@ void Ship::Process() {
         profileStartTime = GetTimeUSeconds();
     // Do Automatic Shield and Capacitor Recharge:
     if (m_processTimer.Check()) {
-        // Get the elapsed interval.
-        double interval = m_processTimerTick / 1000.0;
-
         // shield
-        double shieldCharge = GetAttribute(AttrShieldCharge).get_float();
-        double shieldCapacity = GetAttribute(AttrShieldCapacity).get_float();
-        if (shieldCharge < shieldCapacity) {
-            double shieldRechargeRate = GetAttribute(AttrShieldRechargeRate).get_float();
-            // 5% decrease in recharge time
-            shieldRechargeRate *= (1 - ( 0.05 * (m_pOperator->GetChar()->GetSkillLevel(skillShieldOperation, true))));
-            double newCharge = shieldCharge + (interval * CalculateRechargeRate(shieldCapacity, shieldRechargeRate, shieldCharge));
-            if (newCharge > shieldCapacity)
-                newCharge = shieldCapacity;
-            // if capacity is very close to full charge set to full to prevent lots of VERY small updates.
-            if ((shieldCapacity - newCharge) < 0.1)
-                newCharge = shieldCapacity;
+        double Charge = GetAttribute(AttrShieldCharge).get_float();
+        double Capacity = GetAttribute(AttrShieldCapacity).get_float();
+        if (Charge < Capacity) {
+            double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, GetAttribute(AttrShieldRechargeRate).get_float()));
+            if (newCharge > Capacity)
+                newCharge = Capacity;
+            else if ((Capacity - newCharge) < 0.15)
+                newCharge = Capacity;
             SetAttribute(AttrShieldCharge, newCharge);
-            _log(COMMON__MESSAGE, "Ship::Process(): %s(%u) - New Shield Charge: %f",\
+            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Shield Charge: %f",\
                     m_pOperator->GetName(), m_pOperator->GetShip().get()->itemID(), newCharge );
         }
 
         // capacitor
-        double capCharge = GetAttribute(AttrCapacitorCharge).get_float();
-        double capCapacity = GetAttribute(AttrCapacitorCapacity).get_float();
-        if (capCharge < capCapacity) {
-            double capRechargeRate = GetAttribute(AttrRechargeRate).get_float();
-            // 5% decrease in recharge time
-            capRechargeRate *= (1 - ( 0.05 * (m_pOperator->GetChar()->GetSkillLevel(skillEnergySystemsOperation, true))));
-            double newCharge = capCharge + (interval *CalculateRechargeRate(capCapacity, capRechargeRate, capCharge));
-            if (newCharge > capCapacity)
-                newCharge = capCapacity;
-            // if capacity is very close to full charge set to full to prevent lots of VERY small updates.
-            if ((capCapacity - newCharge) < 0.1)
-                newCharge = capCapacity;
+        Charge = GetAttribute(AttrCapacitorCharge).get_float();
+        Capacity = GetAttribute(AttrCapacitorCapacity).get_float();
+        if (Charge < Capacity) {
+            double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, GetAttribute(AttrRechargeRate).get_float()));
+            if (newCharge > Capacity)
+                newCharge = Capacity;
+            else if ((Capacity - newCharge) < 0.15)
+                newCharge = Capacity;
             SetAttribute(AttrCapacitorCharge, newCharge);
-            _log(COMMON__MESSAGE, "Ship::Process(): %s(%u) - New Cap Charge: %f",\
+            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Cap Charge: %f",\
                         m_pOperator->GetName(), m_pOperator->GetShip().get()->itemID(), newCharge );
         }
     }
 
-    // profile timer for JUST the ship shit
+    // profile timer for JUST the ship recharge shit
     if (sConfig.misc.UseProfiling)
         sProfile.AddTime(_shipProfile, GetTimeUSeconds() - profileStartTime);
 
@@ -1406,14 +1406,7 @@ void Ship::DeactivateAllModules()
     m_ModuleManager->DeactivateAllModules();
 }
 
-std::vector<GenericModule *> Ship::GetStackedItems(uint32 typeID, ModulePowerLevel level)
-{
-    return m_ModuleManager->GetStackedItems(typeID, level);
-}
-
 /* End new Module Manager Interface */
-
-using namespace Destiny;
 
 ShipEntity::ShipEntity(
     ShipRef ship,
@@ -1444,30 +1437,32 @@ void ShipEntity::ForcedSetPosition( const GPoint &pt ) {
 
 void ShipEntity::EncodeDestiny( Buffer& into ) const
 {
+    using namespace Destiny;
+
     // this is an entity in space NOT owned by a player
     const GPoint& position = GetPosition();
 
-    uint8 mode = Destiny::DSTBALL_STOP;
+    uint8 mode = DSTBALL_STOP;
     if (Destiny()->IsWarping())
-        mode = Destiny::DSTBALL_WARP;
+        mode = DSTBALL_WARP;
     else if (Destiny()->IsFollowing())
-        mode = Destiny::DSTBALL_FOLLOW;
+        mode = DSTBALL_FOLLOW;
     else if (Destiny()->IsOrbiting())
-        mode = Destiny::DSTBALL_ORBIT;
+        mode = DSTBALL_ORBIT;
     else if (Destiny()->IsMoving())
-        mode = Destiny::DSTBALL_GOTO;
+        mode = DSTBALL_GOTO;
 
-    Destiny::BallHeader head;
+    BallHeader head;
     head.entityID = GetID();
     head.mode = mode;
     head.radius = GetRadius();
     head.x = position.x;
     head.y = position.y;
     head.z = position.z;
-    head.flags = Destiny::IsMassive | Destiny::IsFree;
+    head.flags = IsMassive | IsFree;
     into.Append( head );
 
-    Destiny::MassSector mass;
+    MassSector mass;
     mass.mass = GetMass();
     mass.cloak = 0;
     mass.Harmonic = -1.0f;
@@ -1475,7 +1470,7 @@ void ShipEntity::EncodeDestiny( Buffer& into ) const
     mass.allianceID = GetAllianceID();
     into.Append( mass );
 
-    Destiny::ShipSector ship;
+    ShipSector ship;
     ship.maxVelocity = GetMaxVelocity();
     ship.velocity_x = GetVelocity().x;
     ship.velocity_y = GetVelocity().y;
@@ -1484,9 +1479,9 @@ void ShipEntity::EncodeDestiny( Buffer& into ) const
     ship.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( ship );
 
-    if (mode == Destiny::DSTBALL_WARP) {
+    if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
-        Destiny::DSTBALL_WARP_Struct warp;
+        DSTBALL_WARP_Struct warp;
         warp.effectStamp = -1;   //unknown value  seen many -1, few other random 4-5 digits
         warp.unknown_x = target.x;
         warp.unknown_y = target.y;
@@ -1495,27 +1490,27 @@ void ShipEntity::EncodeDestiny( Buffer& into ) const
         warp.unk_1 = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
         warp.unk_2 = 0;         //unknown 64bit number
         into.Append( warp );
-    } else if (mode == Destiny::DSTBALL_FOLLOW) {
-        Destiny::DSTBALL_FOLLOW_Struct follow;
+    } else if (mode == DSTBALL_FOLLOW) {
+        DSTBALL_FOLLOW_Struct follow;
         follow.followID = m_destiny->GetTargetID();
         follow.followRange = m_destiny->GetFollowDistance();
         follow.formationID = 0xFF;
         into.Append( follow );
-    } else if (mode == Destiny::DSTBALL_ORBIT) {
-        Destiny::DSTBALL_ORBIT_Struct orbit;
+    } else if (mode == DSTBALL_ORBIT) {
+        DSTBALL_ORBIT_Struct orbit;
         orbit.followID = m_destiny->GetTargetID();
         orbit.followRange = m_destiny->GetFollowDistance();
         orbit.formationID = 0xFF;
         into.Append( orbit );
-    } else if (mode == Destiny::DSTBALL_GOTO) {
+    } else if (mode == DSTBALL_GOTO) {
         GPoint target = m_destiny->GetTargetPoint();
-        Destiny::DSTBALL_GOTO_Struct go;
+        DSTBALL_GOTO_Struct go;
         go.x = target.x;
         go.y = target.y;
         go.z = target.z;
         into.Append( go );
     } else {
-        Destiny::DSTBALL_STOP_Struct main;
+        DSTBALL_STOP_Struct main;
         main.formationID = 0xFF;
         into.Append( main );
     }

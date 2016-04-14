@@ -48,22 +48,35 @@ void ActiveModule::Process()
     m_ActiveModuleProc->Process();
 }
 
+void ActiveModule::Activate(SystemEntity* targetEntity)
+{
+    m_targetEntity = targetEntity;
+    m_ActiveModuleProc->ActivateCycle();
+
+}
+
 void ActiveModule::Deactivate()
 {
-    if ((m_ModuleState != MOD_ACTIVATED) || (m_ModuleState == MOD_OFFLINE) || (m_ModuleState == MOD_UNFITTED)) return;
+    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_PASSIVE) or (m_ModuleState == MOD_UNFITTED)) return;
 
     m_ModuleState = MOD_DEACTIVATING;
     m_ActiveModuleProc->StopCycle();
 }
 
+    /** @todo  Overload and DeOverload will need to check for running module,
+     * and if so, cancel that run, then restart with overloaded settings.
+     * if not running, start with overloaded settings.
+     */
 void ActiveModule::Overload()
 {
     GenericModule::Overload();
+    m_ModuleState = MOD_OVERLOADED;
 }
 
 void ActiveModule::DeOverload()
 {
     GenericModule::DeOverload();
+    m_ModuleState = MOD_ACTIVATED;
 }
 
 void ActiveModule::Load(InventoryItemRef charge)
@@ -93,12 +106,61 @@ double ActiveModule::DoCycle()
 bool ActiveModule::RequiresTarget()
 {
     if (m_Effects->HasDefaultEffect())
-        return (m_Effects->GetDefaultEffect()->GetIsAssistance() || m_Effects->GetDefaultEffect()->GetIsOffensive());
+        return (m_Effects->GetDefaultEffect()->GetIsAssistance() or m_Effects->GetDefaultEffect()->GetIsOffensive());
     else
         return false;
 }
 
-void ActiveModule::DoEffect(bool active)
+void ActiveModule::DoEffect(std::string effect, bool active)
 {
-    /* common location for all modules that have a visual effect when active */
+    // Create Special Effect:
+    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    (
+        m_Ship,
+     m_Item->itemID(),
+     m_Item->typeID(),
+     0,
+     0,
+     "effects.ModifyArmorResonance",
+     0,
+     1,
+     1,
+     _GetDuration(),
+     1
+    );
+
+    // Create Destiny Updates:
+    //  there are slight variations on this.  look into and fix as required.
+    GodmaOther go;
+        go.shipID = m_Ship->itemID();
+        go.slotID = m_Item->flag();
+        go.chargeTypeID = 0;
+
+    GodmaEnvironment ge;
+        ge.selfID = m_Item->itemID();
+        ge.charID = m_Ship->ownerID();
+        ge.shipID = go.shipID;
+        ge.targetID = 0;
+        ge.other = go.Encode();
+        ge.area = new PyList;
+        ge.effectID = effectModifyActiveArmorResonanceAndNullifyPassiveResonance;
+
+    Notify_OnGodmaShipEffect shipEff;
+        shipEff.itemID = ge.selfID;
+        shipEff.effectID = ge.effectID;
+        shipEff.timeNow = Win32TimeNow();
+        shipEff.start = 1;
+        shipEff.active = 1;
+        shipEff.environment = ge.Encode();
+        shipEff.startTime = shipEff.timeNow;
+        shipEff.duration = _GetDuration();
+        shipEff.repeat = 1;  //# times to repeat (should be ammo qty?)
+        shipEff.error = new PyNone;
+
+    std::vector<PyTuple*> events;
+    events.push_back(shipEff.Encode());
+
+    std::vector<PyTuple*> updates;
+
+    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
 }

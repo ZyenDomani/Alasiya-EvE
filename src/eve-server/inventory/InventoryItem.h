@@ -100,9 +100,9 @@ public:
     virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true);
     virtual bool Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
 
-    void PutOnline() { SetOnline(true); }
-    void PutOffline() { SetOnline(false); }
-    bool IsOnline() { return (GetAttribute(AttrIsOnline).get_int() ? true : false); }
+    void PutOnline()                    { SetOnline(true); }
+    void PutOffline()                   { SetOnline(false); }
+    bool IsOnline()                     { return (GetAttribute(AttrIsOnline).get_int() ? true : false); }
 
     /*
      * Primary public packet builders:
@@ -154,6 +154,8 @@ public:
     bool CheckSaveTimer(bool iReset = true) { return m_saveTimer.Check( iReset ); };
 
     void SaveItem();  //save the item to the DB.
+
+    void SaveShipState();   // save ship damage  (persistant damage)
 
     /************************************************************************/
     /* start experimental new attribute system ( semi-operational )         */
@@ -229,7 +231,7 @@ public:
      *
      *@note this function will force reload the default value for the specified attribute
      */
-    bool ResetAttribute(uint32 attrID, bool notify);
+    bool ResetAttribute(uint32 attrID, bool notify=false);
 
     uint32              m_locationID; //where is this item located - Moving it to public so we can access it from the module manager (AlTahir, 12.11.2015)
     /************************************************************************/

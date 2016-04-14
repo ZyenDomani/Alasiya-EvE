@@ -993,6 +993,11 @@ void InventoryItem::SaveItem()
     );
 }
 
+void InventoryItem::SaveShipState()
+{
+    mAttributeMap.SaveShipState();
+}
+
 //contents of changes are consumed and cleared
 void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const {
     //TODO: figure out the appropriate list of interested people...
@@ -1009,17 +1014,6 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
     c->SendNotification("OnItemChange", "charid", &tmp, false); //unsequenced.
 }
 
-
-/*typedef enum {
-    dgmEffPassive = 0,
-    dgmEffActivation = 1,
-    dgmEffTarget = 2,
-    dgmEffArea = 3,
-    dgmEffOnline = 4,
-    dgmEffOverload = 5,
-} EffectCategories;*/
-
-
 void InventoryItem::SetOnline(bool online) {
     //  this is only used by modules    ** check for pos structures also!! **
     if (!SetAttribute(AttrIsOnline, int(online))) {
@@ -1034,6 +1028,8 @@ void InventoryItem::SetOnline(bool online) {
              m_ownerID, m_itemName.c_str(), m_itemID );
         return;
     }
+    if (pClient->IsDocked())
+        return;
 
     GodmaEnvironment ge;
         ge.selfID = m_itemID;
@@ -1160,6 +1156,6 @@ bool InventoryItem::SaveAttributes() {
 	return (mAttributeMap.SaveAttributes() && mDefaultAttributeMap.SaveAttributes());
 }
 
-bool InventoryItem::ResetAttribute(uint32 attrID, bool notify) {
+bool InventoryItem::ResetAttribute(uint32 attrID, bool notify /* false */) {
     return mAttributeMap.ResetAttribute(attrID, notify);
 }
