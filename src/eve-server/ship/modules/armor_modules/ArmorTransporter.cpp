@@ -35,7 +35,7 @@ ArmorTransporter::ArmorTransporter( InventoryItemRef item, ShipRef ship )
 
 void ArmorTransporter::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     // Create Special Effect:

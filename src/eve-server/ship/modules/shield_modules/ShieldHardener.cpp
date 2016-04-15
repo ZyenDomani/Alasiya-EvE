@@ -47,7 +47,7 @@ void ShieldHardener::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectModifyActiveShieldResonanceAndNullifyPassiveResonance;
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     Notify_OnGodmaShipEffect shipEff;

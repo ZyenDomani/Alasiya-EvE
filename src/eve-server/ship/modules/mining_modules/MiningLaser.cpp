@@ -94,7 +94,7 @@ void MiningLaser::Activate(SystemEntity * targetEntity)
 
         // Activate active processing component timer:
         m_Stop_signal = false;
-        m_ActiveModuleProc->ActivateCycle();
+        m_AMPC->ActivateCycle();
         m_IsInitialCycle = true;
         m_cycleStartTime = GetTimeMSeconds();
 
@@ -158,7 +158,7 @@ void MiningLaser::Deactivate()
     	}
     }
     else
-        m_ActiveModuleProc->DeactivateCycle();
+        m_AMPC->DeactivateCycle();
 }
 
 double MiningLaser::DoCycle() {
@@ -380,14 +380,14 @@ void MiningLaser::_ProcessOreCycle(bool partial)
         		oreAmount = remainingCargoVolume /oreVolume;
         		// Not enough cargo space, so module should deactivate and not pull anymore ore from the asteroid
         		m_ModuleState = MOD_DEACTIVATING;
-        		m_ActiveModuleProc->DeactivateCycle();
+        		m_AMPC->DeactivateCycle();
         	}
         } else {
         	if (remainingCargoVolume < oreVolumeToPull) {
         		oreAmount = remainingCargoVolume /oreVolume;
         		// Not enough cargo space, so module should deactivate and not pull anymore ore from the asteroid
         		m_ModuleState = MOD_DEACTIVATING;
-        		m_ActiveModuleProc->DeactivateCycle();
+        		m_AMPC->DeactivateCycle();
         	}
         }
 
@@ -481,7 +481,7 @@ void MiningLaser::_ProcessIceCycle(bool partial)
 	    				 remainingCargoVolume, iceAmount);
 	    			// Not enough cargo space, so module should deactivate and not pull anymore ore from the asteroid
 	    			m_ModuleState = MOD_DEACTIVATING;
-	    			m_ActiveModuleProc->DeactivateCycle();
+	    			m_AMPC->DeactivateCycle();
 	    		} else {
 	    			_log(MINING__TRACE, "Not enough volume for a single piece of ice. Breaking the sequence.");
 	    			return;

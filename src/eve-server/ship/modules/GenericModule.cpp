@@ -24,6 +24,7 @@
 */
 
 #include "ship/modules/GenericModule.h"
+#include "ship/modules/components/ModifyModuleAttributesComponent.h"
 #include "ship/modules/components/ModifyShipAttributesComponent.h"
 
 GenericModule::GenericModule( InventoryItemRef item, ShipRef ship )
@@ -32,7 +33,8 @@ GenericModule::GenericModule( InventoryItemRef item, ShipRef ship )
     m_Ship = ship;
 
     m_Effects = new ModuleEffects(m_Item.get());
-    m_ModShipAttrComp = new ModifyShipAttributesComponent(this, ship);
+    m_MMAC = new ModifyModuleAttributesComponent(this);
+    m_MSAC = new ModifyShipAttributesComponent(this, ship);
 
     m_ModuleState = MOD_UNFITTED;
     m_ChargeState = MOD_UNLOADED;
@@ -44,7 +46,8 @@ GenericModule::~GenericModule()
 {
     //delete members
     SafeDelete(m_Effects);
-    SafeDelete(m_ModShipAttrComp);
+    SafeDelete(m_MMAC);
+    SafeDelete(m_MSAC);
 }
 
 /** @todo  this needs to be updated (as all module effects methods) to test for targetGroupIDs
@@ -87,9 +90,9 @@ void GenericModule::Online()
                         itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
             // check for online and passive effects to set CPU and PG usage without stacking penalities.
             if ((itr->first == Effect_online) or (isRig()) or (isSubSystem()) or (itr->first == Effect_damageControl))
-                m_ModShipAttrComp->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
+                m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
             else
-                m_ModShipAttrComp->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+                m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
             ++cur;
             targetIDs.clear();
         }
@@ -126,9 +129,9 @@ void GenericModule::Offline()
                         itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
             // check for online and passive effects to set CPU and PG usage without stacking penalities.
             if ((itr->first == Effect_online) or (isRig()) or (isSubSystem()) or (itr->first == Effect_damageControl))
-                m_ModShipAttrComp->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
+                m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
             else
-                m_ModShipAttrComp->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+                m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
             ++cur;
             targetIDs.clear();
         }

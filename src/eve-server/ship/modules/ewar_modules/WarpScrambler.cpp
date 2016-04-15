@@ -46,7 +46,7 @@ void WarpScrambler::Activate(SystemEntity * targetEntity)
     m_targetID = targetEntity->GetID();
 
 	// Activate active processing component timer:
-	m_ActiveModuleProc->ActivateCycle();
+	m_AMPC->ActivateCycle();
 	//_ShowCycle();
     //m_ActiveModuleProc->ProcessActiveCycle();
 /*
@@ -71,7 +71,7 @@ void WarpScrambler::Deactivate()
     if ((m_ModuleState != MOD_ACTIVATED) || (m_ModuleState == MOD_OFFLINE)) return;
 
 	m_ModuleState = MOD_DEACTIVATING;
-    m_ActiveModuleProc->DeactivateCycle();
+    m_AMPC->DeactivateCycle();
 
     m_Ship->GetAttribute(AttrWarpScrambleStatus) ;
 
@@ -93,7 +93,7 @@ void WarpScrambler::Deactivate()
 
 void WarpScrambler::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     // Create Special Effect:

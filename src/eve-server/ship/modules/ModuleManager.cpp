@@ -1235,7 +1235,7 @@ void ModuleManager::UnloadAllModules() {
 
 void ModuleManager::UpdateModules()
 {
-    //TODO  figure out what needs to be done here, and implement it.
+    /** @todo  figure out what needs to be done here and implement it. */
     // this one is called from board,
     //  ALL modules need skillcheck, online check, cpu/pg check, etc.  run everthing on these and make calls as required.
     //  this should also update all ship attribs.
@@ -1244,8 +1244,8 @@ void ModuleManager::UpdateModules()
 
 void ModuleManager::UpdateModules(EVEItemFlags flag)
 {
-    //TODO  figure out what needs to be done here, and implement it.
-    //  this should update all modules that affect the same attribs as the module in this slot.
+    /** @todo  figure out what needs to be done here and implement it. */
+    //  this should update all ship attribs for this bank.
     //sLog.Magenta("ModuleManager::UpdateModules()","Needs to be implemented");
 }
 
@@ -1254,6 +1254,8 @@ void ModuleManager::CharacterLeavingShip()
     sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
     //this is complicated and im gonna leave it alone for now until
     //a few things become more clear
+
+    OfflineAll();
 }
 
 void ModuleManager::CharacterBoardingShip()
@@ -1261,6 +1263,7 @@ void ModuleManager::CharacterBoardingShip()
     sLog.Magenta("ModuleManager::CharacterBoardingShip()","Needs to be implemented");
     //this is complicated and im gonna leave it alone for now until
     //a few things become more clear
+    OnlineAll();
 }
 
 void ModuleManager::ShipWarping()

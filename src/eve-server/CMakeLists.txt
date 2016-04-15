@@ -459,9 +459,11 @@ SET( ship_modules_SOURCE
 
 SET( ship_modules_components_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/components/ActiveModuleProcessingComponent.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/components/ModifyModuleAttributesComponent.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/components/ModifyShipAttributesComponent.h" )
 SET( ship_modules_components_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/components/ActiveModuleProcessingComponent.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/components/ModifyModuleAttributesComponent.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/components/ModifyShipAttributesComponent.cpp" )
 
 SET( standing_INCLUDE

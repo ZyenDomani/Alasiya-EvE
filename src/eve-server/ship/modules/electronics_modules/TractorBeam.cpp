@@ -64,7 +64,7 @@ void TractorBeam::Activate(SystemEntity* targetEntity)
 			m_targetID = targetEntity->GetID();
 
 			// Activate active processing component timer:
-			m_ActiveModuleProc->ActivateCycle();
+			m_AMPC->ActivateCycle();
 			//_ShowCycle();
 			//m_ActiveModuleProc->ProcessActiveCycle();
 		}
@@ -73,7 +73,7 @@ void TractorBeam::Activate(SystemEntity* targetEntity)
 
 void TractorBeam::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     // Create Special Effect:

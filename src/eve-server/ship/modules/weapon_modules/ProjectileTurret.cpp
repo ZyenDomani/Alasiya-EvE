@@ -85,7 +85,7 @@ void ProjectileTurret::Activate(SystemEntity * targetEntity)
 	if( this->m_chargeRef ) {
 		m_targetEntity = targetEntity;
 		m_targetID = targetEntity->GetID();
-		m_ActiveModuleProc->ActivateCycle();
+		m_AMPC->ActivateCycle();
 	} else {
 		sLog.Error( "ProjectileTurret::Activate()", "ERROR: Cannot find charge that is supposed to be loaded into this module!" );
 		throw PyException( MakeCustomError( "ERROR!  Cannot find charge that is supposed to be loaded into this module!" ) );
@@ -109,7 +109,7 @@ void ProjectileTurret::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectProjectileFired;
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     Notify_OnGodmaShipEffect shipEff;

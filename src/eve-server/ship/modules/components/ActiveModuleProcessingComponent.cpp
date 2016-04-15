@@ -89,11 +89,11 @@ void ActiveModuleProcessingComponent::ActivateCycle()
             _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
             if (itr->first == Effect_damageControl)
-                m_Mod->m_ModShipAttrComp->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
+                m_Mod->m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
             else if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
-                m_Mod->m_ModShipAttrComp->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
+                m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
             else
-                m_Mod->m_ModShipAttrComp->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+                m_Mod->m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
             ++cur;
         }
     }
@@ -131,11 +131,11 @@ void ActiveModuleProcessingComponent::DeactivateCycle()
             _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
             if (itr->first == Effect_damageControl)
-                m_Mod->m_ModShipAttrComp->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
+                m_Mod->m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
             else if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
-                m_Mod->m_ModShipAttrComp->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
+                m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
             else
-                m_Mod->m_ModShipAttrComp->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+                m_Mod->m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
             ++cur;
         }
     }
@@ -177,12 +177,6 @@ void ActiveModuleProcessingComponent::ProcessActiveCycle()
 	//maybe we can have a check for modules that repeat the same attributes so we
 	//send the changes just once at activation and at deactivation      --in progress  -allan 19Dec15
 
-	//--pseudocode--
-	//if(target != self)
-	//	m_ShipAttrComp->ModifyTargetShipAttribute();
-	//else
-	//	m_ShipAttrComp->ModifyShipAttribute();
-
     // consume capacitor...this will be taken over by module effects when i get to that point.
     EvilNumber capCapacity = m_Ship->GetAttribute(AttrCapacitorCharge);
     capCapacity -= m_Mod->GetAttribute(AttrCapacitorNeed);  // this is reset by modules that need it to be.
@@ -199,12 +193,6 @@ void ActiveModuleProcessingComponent::ProcessDeactivateCycle()
     m_Mod->SetModuleState(MOD_DEACTIVATING);
     m_timer.Disable();
 
-	//check to see who is the target
-	//--pseudocode--
-	//if(target != self)
-	//	m_ShipAttrComp->ModifyTargetShipAttribute();
-	//else
-	//	m_ShipAttrComp->ModifyShipAttribute();
     DeactivateCycle();
 }
 

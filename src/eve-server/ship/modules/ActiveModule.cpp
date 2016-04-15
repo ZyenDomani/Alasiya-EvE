@@ -32,7 +32,7 @@
 ActiveModule::ActiveModule(InventoryItemRef item, ShipRef ship)
 : GenericModule(item, ship)
 {
-    m_ActiveModuleProc = new ActiveModuleProcessingComponent(item, this, ship);
+    m_AMPC = new ActiveModuleProcessingComponent(item, this, ship);
     m_chargeRef = InventoryItemRef();
     m_overLoaded = false;
     m_chargeLoaded = false;
@@ -40,18 +40,18 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipRef ship)
 
 ActiveModule::~ActiveModule()
 {
-    SafeDelete(m_ActiveModuleProc);
+    SafeDelete(m_AMPC);
 }
 
 void ActiveModule::Process()
 {
-    m_ActiveModuleProc->Process();
+    m_AMPC->Process();
 }
 
 void ActiveModule::Activate(SystemEntity* targetEntity)
 {
     m_targetEntity = targetEntity;
-    m_ActiveModuleProc->ActivateCycle();
+    m_AMPC->ActivateCycle();
 
 }
 
@@ -60,7 +60,7 @@ void ActiveModule::Deactivate()
     if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_PASSIVE) or (m_ModuleState == MOD_UNFITTED)) return;
 
     m_ModuleState = MOD_DEACTIVATING;
-    m_ActiveModuleProc->StopCycle();
+    m_AMPC->StopCycle();
 }
 
     /** @todo  Overload and DeOverload will need to check for running module,

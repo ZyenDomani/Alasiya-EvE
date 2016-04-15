@@ -72,7 +72,7 @@ void MissileLauncher::Activate(SystemEntity * targetEntity)
 		m_targetID = targetEntity->GetID();
 
 		// Activate active processing component timer:
-		m_ActiveModuleProc->ActivateCycle();
+		m_AMPC->ActivateCycle();
 	} else {
 		sLog.Error( "MissileLauncher::Activate()", "ERROR: Cannot find charge that is supposed to be loaded into this module!" );
 		throw PyException( MakeCustomError( "ERROR!  Cannot find charge that is supposed to be loaded into this module!" ) );
@@ -108,7 +108,7 @@ void MissileLauncher::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectUseMissiles;
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     Notify_OnGodmaShipEffect shipEff;

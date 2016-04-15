@@ -33,7 +33,7 @@ Salvager::Salvager( InventoryItemRef item, ShipRef ship )
 
 void Salvager::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     // Create Special Effect:
@@ -145,7 +145,7 @@ void Salvager::_ShowCycle()
 
     m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp2);
 
-    m_ActiveModuleProc->DeactivateCycle();
+    m_AMPC->DeactivateCycle();
 }
 
 void Salvager::_SetCapNeed()

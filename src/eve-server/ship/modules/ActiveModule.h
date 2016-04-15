@@ -69,7 +69,7 @@ public:
 protected:
     uint32 m_targetID;                                      //passed to us by activate
 	SystemEntity* m_targetEntity;	                        // we do not own this
-	ActiveModuleProcessingComponent* m_ActiveModuleProc;    // we do not own this
+	ActiveModuleProcessingComponent* m_AMPC;    // we do not own this
 
 	InventoryItemRef m_chargeRef;		                    // we do not own this
 	bool m_overLoaded;

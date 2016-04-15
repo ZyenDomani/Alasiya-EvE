@@ -84,7 +84,7 @@ void EnergyTurret::Activate(SystemEntity* targetEntity)
 	if (this->m_chargeRef) {
 		m_targetEntity = targetEntity;
 		m_targetID = targetEntity->GetID();
-		m_ActiveModuleProc->ActivateCycle();
+		m_AMPC->ActivateCycle();
 	} else {
 		sLog.Error( "EnergyTurret::Activate()", "ERROR: Cannot find charge that is supposed to be loaded into this module!" );
 		throw PyException( MakeCustomError( "ERROR!  Cannot find charge that is supposed to be loaded into this module!" ) );
@@ -108,7 +108,7 @@ void EnergyTurret::StopCycle()
         ge.area = new PyList;
         ge.effectID = effectTargetAttack;
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     Notify_OnGodmaShipEffect shipEff;
@@ -133,7 +133,7 @@ void EnergyTurret::StopCycle()
 
     m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
 
-    m_ActiveModuleProc->DeactivateCycle();
+    m_AMPC->DeactivateCycle();
 }
 
 double EnergyTurret::DoCycle() {

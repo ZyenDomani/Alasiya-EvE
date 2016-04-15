@@ -43,7 +43,7 @@ void DamageControl::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectDamageControl;
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     Notify_OnGodmaShipEffect shipEff;

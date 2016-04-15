@@ -35,6 +35,7 @@
 #include "ship/modules/ModuleEffects.h"
 
 class ModuleEffects;
+class ModifyModuleAttributesComponent;
 class ModifyShipAttributesComponent;
 
 /* generic module base class */
@@ -124,7 +125,8 @@ public:
 
 	/*  these have to be public for ampc to access it's methods */
     ModuleEffects*                  m_Effects;          /* we own this */
-    ModifyShipAttributesComponent*  m_ModShipAttrComp;  /* we own this */
+    ModifyModuleAttributesComponent*  m_MMAC;           /* we own this */
+    ModifyShipAttributesComponent*  m_MSAC;             /* we own this */
 
     ShipRef GetShipRef()                                { return m_Ship; }
 

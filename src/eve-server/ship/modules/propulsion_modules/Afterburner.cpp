@@ -34,7 +34,7 @@ Afterburner::Afterburner( InventoryItemRef item, ShipRef ship )
 
 void Afterburner::Activate(SystemEntity * targetEntity)
 {
-    m_ActiveModuleProc->ActivateCycle();
+    m_AMPC->ActivateCycle();
     double maxSpeed = m_Ship->GetAttribute(AttrMaxVelocity).get_float();
 
     // Tell Destiny Manager about our updated speed so it properly tracks ship movement:
@@ -92,7 +92,7 @@ void Afterburner::StopCycle(bool abort)
         } break;
     }
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     // Create Special Effect:

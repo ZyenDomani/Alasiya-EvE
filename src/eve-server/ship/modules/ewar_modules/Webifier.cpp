@@ -43,7 +43,7 @@ void Webifier::Activate(SystemEntity * targetEntity)
     m_targetID = targetEntity->GetID();
 
 	// Activate active processing component timer:
-	m_ActiveModuleProc->ActivateCycle();
+	m_AMPC->ActivateCycle();
 	//_ShowCycle();
     //m_ActiveModuleProc->ProcessActiveCycle();
 
@@ -59,7 +59,7 @@ void Webifier::Deactivate()
     if ((m_ModuleState != MOD_ACTIVATED) || (m_ModuleState == MOD_OFFLINE)) return;
 
 	m_ModuleState = MOD_DEACTIVATING;
-    m_ActiveModuleProc->DeactivateCycle();
+    m_AMPC->DeactivateCycle();
 
     DynamicSystemEntity* pTarget = static_cast<DynamicSystemEntity *>(m_targetEntity);
     DestinyManager* pDestiny = pTarget->Destiny();
@@ -69,7 +69,7 @@ void Webifier::Deactivate()
 
 void Webifier::StopCycle(bool abort)
 {
-    double timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    double timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     // Create Special Effect:
