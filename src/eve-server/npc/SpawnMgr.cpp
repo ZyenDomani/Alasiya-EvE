@@ -122,7 +122,7 @@ SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
 
 void SpawnMgr::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     // called in SystemManager::ProcessDestiny() for each system.  this will need to be fast.
     //  check timers and call approprate functions as needed.
@@ -179,7 +179,7 @@ void SpawnMgr::Process() {
         }
     }
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
 }
 /*
@@ -237,7 +237,7 @@ void SpawnMgr::SpawnPopped(uint32 itemID)
 void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     //if (!m_enabled) return;
     if (!_FindSpawnForBubble(pSysBubble->GetID())) {
@@ -248,7 +248,7 @@ void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
         pSysBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
     }
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
 }
 

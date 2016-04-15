@@ -184,7 +184,7 @@ bool Client::ProcessNet()
 
 void Client::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     if ((m_timeEndTrain != 0) && (m_timeEndTrain < EvilTimeNow()))
@@ -200,7 +200,7 @@ void Client::Process() {
     if (!IsInSpace()) {
         if (m_killedTimer.Enabled())
             m_killedTimer.Disable();
-        if (sConfig.misc.UseProfiling)
+        if (sConfig.server.UseProfiling)
             sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
         return;
     }
@@ -267,7 +267,7 @@ void Client::Process() {
 		GetShip()->SaveShip();
     }
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
 
     if (!IsUndock()) {
@@ -1985,18 +1985,19 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
             sLog.Error("Client","Unable to find service to handle call to: %s", packet->dest.service.c_str());
             packet->dest.Dump(CLIENT__ERROR, "    ");
 
-//#pragma message("TODO: throw proper exception to client (exceptions.ServiceNotFound).")
+/** @todo  throw proper exception to client (exceptions.ServiceNotFound)  */
             throw PyException(new PyNone);
         }
     }
 
     //Debug code
+    /*
     if (req.method == "BeanCount")
         sLog.Warning("Client::BeanCount","(%s/%s) BeanCount error reporting and handling is not implemented yet.", \
                      req.method.c_str(),packet->dest.service.c_str());
     else
         sLog.Debug("Server", "%s call made to %s",req.method.c_str(),packet->dest.service.c_str());
-
+*/
     //build arguments
     PyCallArgs args(this, req.arg_tuple, req.arg_dict);
 

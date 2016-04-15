@@ -41,9 +41,6 @@
 
 using namespace Destiny;
 
-uint32 DestinyManager::m_stamp(1000);    //start at 1k.  in seconds.  used for warping and client login timer
-Timer DestinyManager::m_stampTimer((TIC_DURATION_IN_SECONDS * 1000), true);
-
 DestinyManager::DestinyManager(SystemEntity *self, SystemManager *system)
 : m_self(self),
 m_system(system),
@@ -99,11 +96,11 @@ DestinyManager::~DestinyManager() {
 // this is called once per tic from ?
 void DestinyManager::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     //check for and process Destiny State changes.
     ProcessState();
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_destinyProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -161,7 +158,7 @@ void DestinyManager::ProcessState() {
 
             if (m_warpState) {
                 //warp is in progress
-                uint16 sec_into_warp = (GetStamp() - m_stateStamp);
+                uint16 sec_into_warp = (sEntityList.GetStamp() - m_stateStamp);
                 //  speed and distance formulas based on current warp distance
                 if (m_warpState->accel)
                     _WarpAccel(sec_into_warp);
@@ -423,7 +420,7 @@ void DestinyManager::Halt() {
 void DestinyManager::_CheckBump()
 {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     //  collision detection code here
@@ -448,7 +445,7 @@ void DestinyManager::_CheckBump()
             _Bump(cur);
     }
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_collisionProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -488,7 +485,7 @@ void DestinyManager::_Bounce(GVector direction, float speed)
      */
     State = DSTBALL_GOTO;
     m_stop = false;
-    m_stateStamp = GetStamp();
+    m_stateStamp = sEntityList.GetStamp();
     m_moveTimer = GetTimeMSeconds();
     m_shipMaxAccelTime = 0.1f;
     m_userSpeedFraction = 1.0f;
@@ -563,7 +560,7 @@ void DestinyManager::_Move(bool orbit) {
         moveVector = _Turn();
 
     double timeStamp = GetTimeMSeconds() - m_moveTimer;
-    //float timeStamp = GetStamp() - m_stateStamp;
+    //float timeStamp = sEntityList.GetStamp() - m_stateStamp;
     float speed = 0.0f, csf = 0.0f;
     std::string move = "";
     // check to make sure we dont overrun usf/asf
@@ -812,7 +809,7 @@ void DestinyManager::_Orbit() {
 
     //this seems to be correct, without rounding error.
     //  use m_moveTimer here.....
-    double v488 = double(GetStamp()-m_stateStamp) * something;
+    double v488 = double(sEntityList.GetStamp()-m_stateStamp) * something;
     _log(PHYSICS__TRACEPOS, "Destiny::_Orbit() - v488 = %.15e", v488);
 
     //this is not quite right... some sort of rounding I think.
@@ -1010,11 +1007,11 @@ void DestinyManager::_InitWarp() {
 
     //  reset deceltime for time check in _WarpDecel()
     m_warpDecelTime = m_warpAccelTime + floor(cruiseTime);
-    m_stateStamp = GetStamp();
+    m_stateStamp = sEntityList.GetStamp();
 
     SafeDelete(m_warpState);
     m_warpState = new WarpState(
-                        GetStamp(),
+                        sEntityList.GetStamp(),
                         m_targetDistance,
                         warpSpeedInMeters,
                         accelDistance,
@@ -1236,7 +1233,7 @@ void DestinyManager::_BeginMovement() {
     m_accel = false;
     m_decel = false;
     m_turning = false;
-    m_stateStamp = GetStamp();
+    m_stateStamp = sEntityList.GetStamp();
     if (m_shipHeading.isZero()) {
         GVector point(m_position);
         point.normalize();
@@ -1478,7 +1475,7 @@ void DestinyManager::SetUndockSpeed() {
     // this simulates being forcefully "ejected" from station
     State = DSTBALL_GOTO;
     m_stop = false;
-    m_stateStamp = GetStamp();
+    m_stateStamp = sEntityList.GetStamp();
     m_moveTimer = GetTimeMSeconds();
     m_shipMaxAccelTime = 0.1f;
     m_userSpeedFraction = 1.0f;
@@ -1788,7 +1785,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
     SystemEntity* pTarget = pMissile->GetTarget();
     State = DSTBALL_MISSILE;
     m_stop = false;
-    m_stateStamp = GetStamp();
+    m_stateStamp = sEntityList.GetStamp();
     m_targetPoint = GPoint(pTarget->GetPosition());
     m_targetEntity.first = pTarget->GetID();
     m_targetEntity.second = pTarget;
@@ -2155,7 +2152,7 @@ void DestinyManager::SendSetState(const SystemBubble* b, uint32 shipID) const {
 
     DoDestiny_SetState ss;
 
-    ss.stamp = GetStamp();
+    ss.stamp = sEntityList.GetStamp();
     if (shipID != m_self->GetID())
         ss.ego = shipID;
     else
@@ -2182,7 +2179,7 @@ void DestinyManager::SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self
 
 void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vector<PyTuple*>& events, bool self_only ) const {
     if( self_only ) {
-        _log( DESTINY__UPDATES, "[%u] Sending destiny update (u:%lu, e:%lu) to self (%u).", GetStamp(), updates.size(), events.size(), m_self->GetID() );
+        _log( DESTINY__UPDATES, "[%u] Sending destiny update (u:%lu, e:%lu) to self (%u).", sEntityList.GetStamp(), updates.size(), events.size(), m_self->GetID() );
 
         std::vector<PyTuple*>::iterator cur = updates.begin();
         for(; cur != updates.end(); cur++) {
@@ -2200,9 +2197,9 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
         }
         events.clear();
     } else if( m_self->Bubble() ) {
-        _log( DESTINY__UPDATES, "[%u] Broadcasting destiny update (u:%lu, e:%lu)", GetStamp(), updates.size(), events.size() );
+        _log( DESTINY__UPDATES, "[%u] Broadcasting destiny update (u:%lu, e:%lu)", sEntityList.GetStamp(), updates.size(), events.size() );
         m_self->Bubble()->BubblecastDestiny( updates, events, "destiny" );
     } else {
-        _log( DESTINY__UPDATES, "[%u] Cannot broadcast destiny update (u:%lu, e:%lu); entity (%u) is not in any bubble.", GetStamp(), updates.size(), events.size(), m_self->GetID() );
+        _log( DESTINY__UPDATES, "[%u] Cannot broadcast destiny update (u:%lu, e:%lu); entity (%u) is not in any bubble.", sEntityList.GetStamp(), updates.size(), events.size(), m_self->GetID() );
     }
 }

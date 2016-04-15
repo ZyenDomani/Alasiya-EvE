@@ -1001,7 +1001,7 @@ void Ship::Dock() {
 }
 
 void Ship::Undock() {
-    if (sConfig.world.testServer) {
+    if (sConfig.server.testServer) {
         // Heal Ship completely on test server
         Heal();
     } else {
@@ -1342,7 +1342,7 @@ double Ship::CalculateRechargeRate(double Capacity, double Current, double Recha
 
 void Ship::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     // Do Automatic Shield and Capacitor Recharge:
     if (m_processTimer.Check()) {
@@ -1376,7 +1376,7 @@ void Ship::Process() {
     }
 
     // profile timer for JUST the ship recharge shit
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_shipProfile, GetTimeUSeconds() - profileStartTime);
 
     // now, process the modules.

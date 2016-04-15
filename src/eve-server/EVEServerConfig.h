@@ -46,10 +46,22 @@ public:
     EVEServerConfig();
     ~EVEServerConfig()          { /* do nothing here */}
 
+    // From <server/>
+    struct
+    {
+        bool UseBeanCount;
+        bool UseProfiling;
+        bool UseAPIServer;
+        bool UseShipTracking;
+        bool UseStackTrace;
+        bool testServer;    // to distuinguish between live production server or experimental testing server
+        uint8 ServerSleepTime;
+        uint16 maxPlayers;
+    } server;
+    
     // From <world/>
     struct
     {
-        bool testServer;    // to distuinguish between live production server or experimental testing server
         bool chatLogs;
         bool globalChat;
         bool gridUnload;
@@ -57,7 +69,6 @@ public:
         bool loginInfo;
         bool loginMsg;
         uint8 mailDelay;
-        uint16 maxPlayers;
         uint16 idleSleepTime;
     } world;
 
@@ -180,16 +191,6 @@ public:
         uint8 ConsoleThreads;
     } threads;
 
-    // From <misc/>
-    struct
-    {
-        bool UseProfiling;
-        bool UseAPIServer;
-        bool UseShipTracking;
-        bool UseStackTrace;
-        uint8 ServerSleepTime;
-    } misc;
-
     // From <crime/>
     struct
     {
@@ -202,6 +203,7 @@ public:
 
 protected:
     bool ProcessEveServer( const TiXmlElement* ele );
+    bool ProcessServer( const TiXmlElement* ele );
     bool ProcessWorld( const TiXmlElement* ele );
     bool ProcessRates( const TiXmlElement* ele );
     bool ProcessAccount( const TiXmlElement* ele );
@@ -211,7 +213,6 @@ protected:
     bool ProcessFiles( const TiXmlElement* ele );
     bool ProcessNet( const TiXmlElement* ele );
     bool ProcessThreads( const TiXmlElement* ele );
-    bool ProcessMisc( const TiXmlElement* ele );
     bool ProcessCrime( const TiXmlElement* ele );
 };
 

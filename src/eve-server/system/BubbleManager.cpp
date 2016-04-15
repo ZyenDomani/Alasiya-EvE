@@ -52,7 +52,7 @@ void BubbleManager::clear() {
 
 void BubbleManager::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     // run wander check every 30 sec for active bubbles
     if (m_wanderTimer.Check()) {
@@ -77,7 +77,7 @@ void BubbleManager::Process() {
             }
         }
     }
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_bubblesProfile, GetTimeUSeconds() - profileStartTime);
 }
 

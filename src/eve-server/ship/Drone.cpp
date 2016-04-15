@@ -95,12 +95,12 @@ Drone::~Drone() {
 
 void Drone::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     SystemEntity::Process();
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_droneProfile, GetTimeUSeconds() - profileStartTime);
 }
 

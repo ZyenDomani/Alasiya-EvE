@@ -722,7 +722,7 @@ void ModuleManager::UninstallRig(uint32 itemID)
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
         mod->Offline();
-        if (!sConfig.world.testServer)
+        if (!sConfig.server.testServer)
             mod->DestroyRig();
     }
     m_Modules->RemoveModule(itemID);
@@ -1298,12 +1298,12 @@ void ModuleManager::ShipJumping()
 void ModuleManager::Process()
 {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     m_Modules->Process();
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_modulesProfile, GetTimeUSeconds() - profileStartTime);
 }
 

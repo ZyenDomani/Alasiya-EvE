@@ -42,8 +42,9 @@ class SystemBubble;
 class DoDestiny_SetState;
 class DestinyManager;
 
-class BeltMgr;
 class AnomalyMgr;
+class BeltMgr;
+class DungeonMgr;
 class SpawnMgr;
 class PyServiceMgr;
 
@@ -127,9 +128,12 @@ protected:
 
     SystemDB m_db;
     PyServiceMgr& m_services;    //we do not own this
-    AnomalyMgr* m_anomMgr;   //we own this, never NULL, dynamic to keep the knowledge down.
-    BeltMgr* m_beltMgr;       //we own this, never NULL, dynamic to keep the knowledge down.
-    SpawnMgr* m_spawnMgr;    //we own this, never NULL, dynamic to keep the knowledge down.
+
+
+    AnomalyMgr* m_anomMgr;   //we own this, never NULL.
+    BeltMgr* m_beltMgr;      //we own this, never NULL.
+    DungeonMgr* m_dunMgr;    //we own this, never NULL.
+    SpawnMgr* m_spawnMgr;    //we own this, never NULL.
 
     //overall system entity lists:
     bool m_entityChanged = false;

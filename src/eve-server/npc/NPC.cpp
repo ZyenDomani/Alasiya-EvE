@@ -112,13 +112,13 @@ NPC::~NPC() {
 
 void NPC::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     SystemEntity::Process();
     m_AI->Process();
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_npcProfile, GetTimeUSeconds() - profileStartTime);
 }
 

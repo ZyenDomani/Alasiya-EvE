@@ -295,7 +295,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     // so until we can get the right string argument for other kinds of session updates,
     // we need to block this call so our characters don't "board" non-ship objects:
     if( item->categoryID() == EVEDB::invCategories::Ship )
-        call.client->UpdateSession("shipid", item->itemID() );
+        call.client->UpdateSessionInt("shipid", item->itemID() );
 
     // Release the item factory now that the ItemFactory is finished being used:
     m_manager->item_factory->UnsetUsingClient();

@@ -302,8 +302,8 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
 
     uint16 count = 0;
     double start = 0.0;
-    if (sConfig.world.testServer)
-        if (sConfig.misc.UseProfiling)
+    if (sConfig.server.testServer)
+        if (sConfig.server.UseProfiling)
             start = GetTimeUSeconds();
 
     //begin basic sort
@@ -332,8 +332,8 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
         }
     }
 
-    if (sConfig.world.testServer)
-        if (sConfig.misc.UseProfiling)
+    if (sConfig.server.testServer)
+        if (sConfig.server.UseProfiling)
             sLog.Log("Inventory::_sortVector", "%u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
 
     return itemVec;  //return sorted list

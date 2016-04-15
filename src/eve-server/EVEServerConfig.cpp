@@ -41,8 +41,17 @@ EVEServerConfig::EVEServerConfig()
 
     // items with /*x*/ behind them denote time idetifier, with x = (s=seconds, m=minutes, etc)
 
+    // server
+    server.UseBeanCount = false;
+    server.testServer = true;
+    server.maxPlayers = 500;//N
+    server.UseProfiling = false;
+    server.UseAPIServer = false;//N
+    server.UseShipTracking = false;
+    server.UseStackTrace = false;//N
+    server.ServerSleepTime = 10 /*ms*/;
+    
     // world
-    world.testServer = true;
     world.chatLogs = false;//N
     world.globalChat = true;//N
     world.gridUnload = true;
@@ -50,7 +59,6 @@ EVEServerConfig::EVEServerConfig()
     world.loginInfo = false;//N
     world.loginMsg = false;//N
     world.mailDelay = 5;//N
-    world.maxPlayers = 500;//N
     world.idleSleepTime = 1000;
 
     // rates
@@ -115,13 +123,6 @@ EVEServerConfig::EVEServerConfig()
     threads.NetworkThreads = 2;//N
     threads.WorldThreads = 2;//N
 
-    // misc
-    misc.UseProfiling = false;
-    misc.UseAPIServer = false;//N
-    misc.UseShipTracking = false;
-    misc.UseStackTrace = false;//N
-    misc.ServerSleepTime = 10 /*ms*/;
-
     // crime
     crime.AggFlagTime = 900 /*s*/;//N
     crime.CrimFlagTime = 900 /*s*/;//N
@@ -133,6 +134,7 @@ EVEServerConfig::EVEServerConfig()
 bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
 {
     // entering element, extend allowed syntax
+    AddMemberParser( "server",      &EVEServerConfig::ProcessServer );
     AddMemberParser( "world",       &EVEServerConfig::ProcessWorld );
     AddMemberParser( "rates",       &EVEServerConfig::ProcessRates );
     AddMemberParser( "account",     &EVEServerConfig::ProcessAccount );
@@ -142,13 +144,13 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     AddMemberParser( "files",       &EVEServerConfig::ProcessFiles );
     AddMemberParser( "net",         &EVEServerConfig::ProcessNet );
     AddMemberParser( "threads",     &EVEServerConfig::ProcessThreads );
-    AddMemberParser( "misc",        &EVEServerConfig::ProcessMisc );
     AddMemberParser( "crime",       &EVEServerConfig::ProcessCrime );
 
     // parse the element
     const bool result = ParseElementChildren( ele );
 
     // leaving element, reduce allowed syntax
+    RemoveParser( "server" );
     RemoveParser( "world" );
     RemoveParser( "rates" );
     RemoveParser( "account" );
@@ -158,16 +160,39 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     RemoveParser( "files" );
     RemoveParser( "net" );
     RemoveParser( "threads" );
-    RemoveParser( "misc" );
     RemoveParser( "crime" );
 
     // return status of parsing
     return result;
 }
 
+bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
+{
+    AddValueParser( "testServer",           server.testServer );
+    AddValueParser( "UseBeanCount",         server.UseBeanCount );
+    AddValueParser( "maxPlayers",           server.maxPlayers );
+    AddValueParser( "UseProfiling",         server.UseProfiling );
+    AddValueParser( "UseAPIServer",         server.UseAPIServer );
+    AddValueParser( "UseShipTracking",      server.UseShipTracking );
+    AddValueParser( "UseStackTrace",        server.UseStackTrace );
+    AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
+
+    const bool result = ParseElementChildren( ele );
+
+    RemoveParser( "testServer" );
+    RemoveParser( "UseBeanCount" );
+    RemoveParser( "maxPlayers" );
+    RemoveParser( "UseProfiling" );
+    RemoveParser( "UseAPIServer" );
+    RemoveParser( "UseShipTracking" );
+    RemoveParser( "UseStackTrace" );
+    RemoveParser( "ServerSleepTime" );
+
+    return result;
+}
+
 bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
 {
-    AddValueParser( "testServer",       world.testServer );
     AddValueParser( "chatLogs",         world.chatLogs );
     AddValueParser( "globalChat",       world.globalChat );
     AddValueParser( "gridUnload",       world.gridUnload );
@@ -175,7 +200,6 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     AddValueParser( "loginInfo",        world.loginInfo );
     AddValueParser( "loginMsg",         world.loginMsg );
     AddValueParser( "mailDelay",        world.mailDelay );
-    AddValueParser( "maxPlayers",       world.maxPlayers );
     AddValueParser( "idleSleepTime",    world.idleSleepTime );
 
     const bool result = ParseElementChildren( ele );
@@ -354,25 +378,6 @@ bool EVEServerConfig::ProcessThreads( const TiXmlElement* ele )
     RemoveParser( "ImageServerThreads" );
     RemoveParser( "NetworkThreads" );
     RemoveParser( "WorldThreads" );
-
-    return result;
-}
-
-bool EVEServerConfig::ProcessMisc( const TiXmlElement* ele )
-{
-    AddValueParser( "UseProfiling",     misc.UseProfiling );
-    AddValueParser( "UseAPIServer",     misc.UseAPIServer );
-    AddValueParser( "UseShipTracking",  misc.UseShipTracking );
-    AddValueParser( "UseStackTrace",  misc.UseStackTrace );
-    AddValueParser( "ServerSleepTime",  misc.ServerSleepTime );
-
-    const bool result = ParseElementChildren( ele );
-
-    RemoveParser( "UseProfiling" );
-    RemoveParser( "UseAPIServer" );
-    RemoveParser( "UseShipTracking" );
-    RemoveParser( "UseStackTrace" );
-    RemoveParser( "ServerSleepTime" );
 
     return result;
 }

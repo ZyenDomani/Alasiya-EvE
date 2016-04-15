@@ -717,7 +717,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         return rsp.Encode();
     }
 
-    if (sConfig.world.testServer) {
+    if (sConfig.server.testServer) {
         GVector vectorToTarget(pClient->GetPosition(), target->GetPosition());
         sLog.Warning("DogmaIMBound::Handle_AddTarget()", "%s(%u) -> %s(%u) at range of %.2f meters.", \
             pClient->GetName(), pClient->GetID(), target->GetName(),target->GetID(), vectorToTarget.length() );

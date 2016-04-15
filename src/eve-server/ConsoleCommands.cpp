@@ -127,7 +127,7 @@ bool ConsoleCommand::Process() {
                         state.data(), threads, aThreads, rss, vm, user, kernel );
                 sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
-                if (sConfig.misc.UseProfiling)
+                if (sConfig.server.UseProfiling)
                     sLog.Success(" Server Profiling","Enabled.");
                 else
 					sLog.Warning(" Server Profiling","Disabled.");
@@ -232,7 +232,7 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("  Console Command", " Modal Message sent to all online clients." );
             } else if (strncmp(buf, "p", 1) == 0) {
                 sLog.Success("  Alasiya's EvEMu", "Server Profile:");
-                if (!sConfig.misc.UseProfiling) {
+                if (!sConfig.server.UseProfiling) {
                     sLog.Error("   Server Profile", "Profiling is turned off.");
                     return true;
                 }
@@ -265,7 +265,7 @@ bool ConsoleCommand::Process() {
             } else if (strncmp(buf, "t", 1) == 0) {
                 Test();
             } else if (strncmp(buf, "d", 1) == 0) {
-                uint8 maxCount = 20;    // sConfig.misc.MaxThreadReport
+                uint8 maxCount = 20;    // sConfig.server.MaxThreadReport
                 uint16 count = sThread.Count();
                 sLog.Blue("   Active Threads", "There are %u active threads running in the server.", count);
                 if (count > maxCount)
@@ -317,7 +317,7 @@ void ConsoleCommand::Status(std::string* state, int64* threads, float* vm_usage,
         >> ignore >> ignore >> vsize >> rss;
 	ifs.close();
 
-    if (sConfig.world.testServer)
+    if (sConfig.server.testServer)
         _log(SERVER__INFO, "ConsoleCommand::Status() proc/self/stat returns RSS: %i, VM: %u", rss, vsize);
 
 	*state = run_state;
@@ -392,7 +392,7 @@ void ConsoleCommand::UpdateStatus() {
 	int64 threads = 0;
 	float vm = 0.0f, rss = 0.0f, user = 0.0f, kernel = 0.0f;
 	Status(&state, &threads, &vm, &rss, &user, &kernel);
-    if (sConfig.world.testServer)
+    if (sConfig.server.testServer)
         _log(SERVER__INFO, "Current Mem usage - RSS: %f, VM: %f", rss, vm);
 	m_db.SaveServerStats(threads + sThread.Count(), rss, vm, user, kernel, pFactory->Count(), pBubbles->Count());
 }

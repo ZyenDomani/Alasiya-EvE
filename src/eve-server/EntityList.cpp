@@ -92,7 +92,7 @@ void EntityList::Remove(Client* client) {
 
 void EntityList::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     Client* pClient = nullptr;
@@ -109,12 +109,12 @@ void EntityList::Process() {
         }
     }
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_entityCProfile, GetTimeUSeconds() - profileStartTime);
 
     SystemManager* active_system = nullptr;
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     /* check for 1Hz timer tic */
@@ -148,7 +148,7 @@ void EntityList::Process() {
         }
     }
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_entitySProfile, GetTimeUSeconds() - profileStartTime);
 }
 

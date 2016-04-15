@@ -77,7 +77,7 @@ Missile::~Missile() {
 
 void Missile::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     if (!IsAlive()) {
         Delete();
@@ -87,7 +87,7 @@ void Missile::Process() {
         m_hitTimer.Disable();
         _HitTarget();
     }
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_missileProfile, GetTimeUSeconds() - profileStartTime);
 }
 

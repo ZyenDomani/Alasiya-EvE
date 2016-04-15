@@ -138,7 +138,7 @@ PyResult InventoryBound::Handle_GetItem(PyCallArgs &call) {
 
 PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 	/*
-    if (sConfig.world.testServer) {
+    if (sConfig.server.testServer) {
         sLog.Log( "InventoryBound::Handle_Add()", "size= %u", call.tuple->size());
         call.Dump(SERVICE__CALL_DUMP);
     } */
@@ -199,7 +199,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 
 PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
 	/*
-    if (sConfig.world.testServer) {
+    if (sConfig.server.testServer) {
         sLog.Log( "InventoryBound::Handle_MultiAdd()", "size= %u", call.tuple->size());
         call.Dump(SERVICE__CALL_DUMP);
     } */
@@ -314,7 +314,7 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
 }
 
 PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
-    if (sConfig.world.testServer) {
+    if (sConfig.server.testServer) {
         sLog.Log( "InventoryBound::Handle_SetPassword()", "size= %u", call.tuple->size());
         call.Dump(SERVICE__CALL_DUMP);
     }

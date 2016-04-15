@@ -27,7 +27,7 @@
 
 #include "PyServiceCD.h"
 #include "admin/AlertService.h"
-//#include "python/PyTraceLog.h"
+#include "python/PyTraceLog.h"
 
 
 PyCallable_Make_InnerDispatcher(AlertService)
@@ -43,9 +43,9 @@ AlertService::AlertService(PyServiceMgr *mgr)
     m_dispatch->RegisterCall("BeanDelivery", &AlertService::Handle_BeanDelivery);
     m_dispatch->RegisterCall("SendClientStackTraceAlert", &AlertService::Handle_SendClientStackTraceAlert);
 
-    if (sConfig.misc.UseStackTrace)
+    if (sConfig.server.UseStackTrace)
+        traceLogger = new PyTraceLog("evemu_client_stack_trace.txt", true, true);
         _log(SERVER__INIT_ERR, "UseStackTrace in eve-server.xml is true, yet PyTraceLog was not included in AlertService.cpp");
-        //traceLogger = new PyTraceLog("evemu_client_stack_trace.txt", true, true);
 }
 
 AlertService::~AlertService()
@@ -64,11 +64,10 @@ PyResult AlertService::Handle_BeanCount(PyCallArgs &call) {
     PyTuple *result = new PyTuple(2);
 
     // what we are sending back is just a static mErrorID and the command not to do anything with it.
-#ifdef DEV_DEBUG_TREAT
-    result->items[0] = new PyNone();
-#else
-    result->items[0] = new PyInt(34135);    //ErrorID
-#endif//DEV_DEBUG_TREAT
+    if (sConfig.server.UseBeanCount and sConfig.server.testServer)
+        result->items[0] = new PyNone();
+    else
+        result->items[0] = new PyInt(34135);    //ErrorID
 
     result->items[1] = new PyInt(0);        //loggingMode, 0=local, 1=DB (Capt: This isn't correct at all as it seems..)
 
@@ -104,8 +103,8 @@ PyResult AlertService::Handle_SendClientStackTraceAlert(PyCallArgs &call) {
 		  SendClientStackTraceAlert(stackID, stackTrace, mode, nextErrorKeyHash)
   */
 
-#ifdef DEV_DEBUG_TREAT
+  if (sConfig.server.UseStackTrace)
     traceLogger->logTrace(*call.tuple);
-#endif//DEV_DEBUG_TREAT
+
     return new PyNone();
 }

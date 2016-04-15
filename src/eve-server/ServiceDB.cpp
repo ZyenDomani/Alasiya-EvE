@@ -530,7 +530,7 @@ void ServiceDB::SaveServerStats(double threads, float rss, float vm, float user,
 	" WHERE AI = 1",
 	    threads, rss, vm, user, kernel, items, bubbles, sEntityList.GetSystemCount(), sEntityList.GetNPCCount()/*, sEntityList.GetConnections()*/);
 
-  if (sConfig.misc.UseProfiling)
+  if (sConfig.server.UseProfiling)
       _log(DATABASE__MESSAGE, "Server Stats Saved");
 }
 

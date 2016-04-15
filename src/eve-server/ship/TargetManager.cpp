@@ -62,7 +62,7 @@ void TargetManager::DoDestruction() {
 
 void TargetManager::Process() {
 //     double profileStartTime = 0.0;
-//     if (sConfig.misc.UseProfiling)
+//     if (sConfig.server.UseProfiling)
 //         profileStartTime = GetTimeUSeconds();
     //process outgoing targeting
     if (!GetTotalTargets()) return;
@@ -102,7 +102,7 @@ void TargetManager::Process() {
             cur->first->TargMgr.TargetLost(m_self);
         }
 }*/
-    //if (sConfig.misc.UseProfiling)
+    //if (sConfig.server.UseProfiling)
     //    sProfile.AddTime(targets, GetTimeUSeconds() - profileStartTime);
 }
 

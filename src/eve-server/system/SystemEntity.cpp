@@ -100,7 +100,7 @@ ItemSystemEntity::~ItemSystemEntity()
 
 void ItemSystemEntity::_SetSelf(InventoryItemRef self) {
     if ( !self ) {
-      /*  if (sConfig.world.testServer)
+      /*  if (sConfig.server.testServer)
             codelog(ITEM__ERROR, "Tried to set self to NULL!");*/
         return;
     }

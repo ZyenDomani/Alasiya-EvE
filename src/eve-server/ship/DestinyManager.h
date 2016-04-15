@@ -68,9 +68,6 @@ public:
     double GetSpeedFraction()                   { return m_currentSpeedFraction; }
 	SystemManager* const GetSystemManager()     { return m_system; }
 	SystemBubble* const GetCurrentBubble()      { return m_self->Bubble(); }
-    static uint32 GetStamp()                    { return m_stamp; }
-    static bool IsTicActive()                   { return (m_stampTimer.Check(false)); }
-    static void TicCompleted()                  { if (m_stampTimer.Check(true)) ++m_stamp; }
     Destiny::BallMode GetState()                { return State; }
 
     //called whenever an entity is going away and can no longer be used as a target
@@ -163,9 +160,6 @@ protected:
 
     SystemEntity* const m_self;			//we do not own this.
     SystemManager* const m_system;		//we do not own this.
-
-    static uint32 m_stamp;
-    static Timer m_stampTimer;
 
     //things dictated by our entity's configuration/equipment:
     double m_radius;                    //in m
@@ -267,7 +261,7 @@ private:
         decel(decel_),
         warp_vector(warp_vector_)
         {}
-        uint32 start_time;          //from Destiny::GetStamp()
+        uint32 start_time;          //from sEntityList::GetStamp()
         double total_distance;      //in m
         double warpSpeed;           //in m/s
         double accelDist;           //in m

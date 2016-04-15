@@ -157,7 +157,7 @@
 static void SetupSignals();
 static void CatchSignal( int sig_num );
 static const char* const CONFIG_FILE = EVEMU_ROOT "/etc/eve-server.xml";
-uint8 MAIN_LOOP_DELAY = sConfig.misc.ServerSleepTime; // delay 10 ms.
+uint8 MAIN_LOOP_DELAY = sConfig.server.ServerSleepTime; // delay 10 ms.
 
 static volatile bool RunLoops = true;
 dgmtypeattributemgr* _sDgmTypeAttrMgr;
@@ -388,8 +388,8 @@ int main( int argc, char* argv[] )
      * current settings displayed on console at start-up
      *   -allan 7June2015
      */
-    if (sConfig.misc.ServerSleepTime != 10) {
-        MAIN_LOOP_DELAY = sConfig.misc.ServerSleepTime;
+    if (sConfig.server.ServerSleepTime != 10) {
+        MAIN_LOOP_DELAY = sConfig.server.ServerSleepTime;
         sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
         sLog.Magenta("  Loop Sleep Time","Changed from default 10ms to %ums.", MAIN_LOOP_DELAY);
     } else
@@ -399,11 +399,15 @@ int main( int argc, char* argv[] )
         sLog.Success("  Idle Sleep Time","Default at 1000ms.");
     else
         sLog.Magenta("  Idle Sleep Time","Changed from default 1000ms to %ums.", idle);
-    if (sConfig.misc.UseShipTracking)
+    if (sConfig.server.UseShipTracking)
         sLog.Error("    Ship Tracking","Enabled. **Be Careful With This Setting!**");
     else
         sLog.Warning("    Ship Tracking","Disabled.");
-    if (sConfig.misc.UseProfiling) {
+    if (sConfig.server.UseBeanCount)
+        sLog.Success("     BeanCounting","Enabled.");
+    else
+        sLog.Warning("     BeanCounting","Disabled.");
+    if (sConfig.server.UseProfiling) {
         sLog.Success(" Server Profiling","Enabled.");
         sProfile.Init();
     } else
