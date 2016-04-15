@@ -140,7 +140,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 	/*
     if (sConfig.world.testServer) {
         sLog.Log( "InventoryBound::Handle_Add()", "size= %u", call.tuple->size());
-        call.Dump(SERVICE__CALLS);
+        call.Dump(SERVICE__CALL_DUMP);
     } */
 
     if (call.tuple->items.size() == 2) {
@@ -201,7 +201,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
 	/*
     if (sConfig.world.testServer) {
         sLog.Log( "InventoryBound::Handle_MultiAdd()", "size= %u", call.tuple->size());
-        call.Dump(SERVICE__CALLS);
+        call.Dump(SERVICE__CALL_DUMP);
     } */
 
     if ( call.tuple->items.size() == 2 ) {
@@ -352,7 +352,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
 00:43:37 L InventoryBound::Handle_CreateBookmarkVouchers(): 5 Vouchers created
 
   sLog.Log( "InventoryBound::Handle_CreateBookmarkVouchers()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
       PyList *list = call.tuple->GetItem( 0 )->AsList();
       uint32 bookmarkID;
@@ -396,7 +396,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
 
 PyResult InventoryBound::Handle_Voucher(PyCallArgs &call){
   sLog.Log( "InventoryBound::Handle_Voucher()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
   return nullptr;
 }
 

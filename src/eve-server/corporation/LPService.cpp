@@ -56,7 +56,7 @@ PyResult LPService::Handle_TakeOffer( PyCallArgs& call )
         */
   sLog.Log( "LPService::Handle_TakeOffer()", "size= %u", call.tuple->size() );
 
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
     return new PyList;
 }
 
@@ -66,7 +66,7 @@ PyResult LPService::Handle_ExchangeConcordLP( PyCallArgs& call )
             */
   sLog.Log( "LPService::Handle_ExchangeConcordLP()", "size= %u", call.tuple->size() );
 
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
     return new PyList;
 }
 
@@ -109,7 +109,7 @@ PyResult LPService::Handle_GetLPsForCharacter( PyCallArgs& call )
     //no args
   sLog.Log( "LPService::Handle_GetLPsForCharacter()", "size= %u", call.tuple->size() );
 
-  //call.Dump(SERVICE__CALLS);
+  //call.Dump(SERVICE__CALL_DUMP);
     return new PyList;
 }
 

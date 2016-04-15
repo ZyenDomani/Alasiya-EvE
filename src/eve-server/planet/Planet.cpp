@@ -87,7 +87,7 @@ PyBoundObject* planetORB::_CreateBoundObject(Client *c, const PyRep *bind_args) 
 PyResult planetORB::Handle_( PyCallArgs& call )
 {
     sLog.Log( "planetORB", "Handle_" );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return new PyNone;
 }

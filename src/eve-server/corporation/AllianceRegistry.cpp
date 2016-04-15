@@ -52,7 +52,7 @@ PyResult AllianceRegistry::Handle_CreateAlliance(PyCallArgs &call) {
     //self.GetCorpRegistry().CreateAlliance(allianceName, shortName, description, url)
 
     sLog.Log("AllianceRegistry", "Handle_CreateAlliance() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -60,7 +60,7 @@ PyResult AllianceRegistry::Handle_CreateAlliance(PyCallArgs &call) {
 PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
 
     sLog.Log("AllianceRegistry", "Handle_GetAllianceApplications() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -68,7 +68,7 @@ PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
 PyResult AllianceRegistry::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
 
     sLog.Log("AllianceRegistry", "Handle_GetSuggestedAllianceShortNames() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }

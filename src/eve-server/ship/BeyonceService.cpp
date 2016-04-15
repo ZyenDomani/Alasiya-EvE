@@ -275,7 +275,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
 04:45:32 [SvcCall]         [ 0] Real field: -0.043847
 04:45:32 [SvcCall]         [ 1] Real field: 0.860934
 04:45:32 [SvcCall]         [ 2] Real field: 0.506824
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 */
 
     Call_PointArg arg;
@@ -375,7 +375,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
             bp.CmdOrbit(id, range)
             */
   sLog.Log( "BeyonceBound", "Handle_CmdOrbit" );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
     Call_Orbit args;
     if (!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
@@ -848,7 +848,7 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 	 *  remotePark.CmdAbandonLoot([wreckID]) <- single itemID
 	 */
   sLog.Log( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
 	Call_SingleIntList arg;
 	if (!arg.Decode(&call.tuple)) {

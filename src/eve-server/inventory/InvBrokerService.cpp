@@ -157,7 +157,7 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
 		Argument 'machoVersion':
 			Integer field: 1
 	*/
-	//call.Dump(SERVICE__CALLS);
+	//call.Dump(SERVICE__CALL_DUMP);
 
 	uint32 itemID = call.tuple->GetItem(0)->AsInt()->value();
 
@@ -333,7 +333,7 @@ PyResult InvBrokerBound::Handle_List(PyCallArgs &call) {
             */
 
   sLog.Log( "InvBrokerBound::Handle_List()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }

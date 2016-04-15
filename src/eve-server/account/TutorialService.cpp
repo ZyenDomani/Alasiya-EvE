@@ -53,13 +53,13 @@ TutorialService::~TutorialService() {
 
 PyResult TutorialService::Handle_GetTutorials(PyCallArgs &call) {
   sLog.Log( "TutorialService::Handle_GetTutorials()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
     return(m_db.GetAllTutorials());
 }
 
 PyResult TutorialService::Handle_GetTutorialInfo(PyCallArgs &call) {
   sLog.Log( "TutorialService::Handle_GetTutorialInfo()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
     Call_GetTutorialInfo args;
     if(!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "Can't parse args.");
@@ -117,27 +117,27 @@ PyResult TutorialService::Handle_GetTutorialAgents(PyCallArgs &call) {
             ["gender" => <0> [Bool]]
                 */
     sLog.Log( "TutorialService::Handle_GetTutorialAgents()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return new PyInt( 0 );
 }
 
 PyResult TutorialService::Handle_GetCriterias(PyCallArgs &call) {
   sLog.Log( "TutorialService::Handle_GetCriterias()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
     return(m_db.GetAllCriterias());
 }
 
 PyResult TutorialService::Handle_GetCategories(PyCallArgs &call) {
   sLog.Log( "TutorialService::Handle_GetCategories()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
     return(m_db.GetCategories());
 }
 
 PyResult TutorialService::Handle_GetContextHelp( PyCallArgs& call )
 {
   sLog.Log( "TutorialService::Handle_GetContextHelp()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return new PyList;
 }

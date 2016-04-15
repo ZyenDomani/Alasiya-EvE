@@ -119,20 +119,20 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     }
     // only called in space
     sLog.Log("ShipBound::Handle_Board()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     Call_BoardShip args;
     //     .arg1 (newShipID) -  itemID of the ship to be boarded
     //     .arg2 (oldShipID) -  itemID of the current ship
     if (!args.Decode(&call.tuple)) {
         sLog.Error("ShipBound::Handle_Board()", "%s: failed to decode arguments", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     Client* pClient = call.client;
     if (pClient->Destiny()->IsMoving()) {
         throw PyException(MakeCustomError("You cannot change ships while moving."));
-        return NULL;
+        return nullptr;
     }
 
     SystemManager* pSysMgr = pClient->System();
@@ -150,19 +150,19 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         sLog.Error("ShipBound::Handle_Board()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
         throw PyException(MakeCustomError("Something bad happened as you prepared to board the %s, so you stayed in your %s.", \
             newShipRef->itemName().c_str(), oldShipRef->itemName().c_str()));
-        return NULL;
+        return nullptr;
     }
 
     if (newShipRef->itemID() == itemTypeCapsule) {
         codelog(ITEM__ERROR, "Empty Pod %u in space.  SystemID %u.", args.newShipID, pSysMgr->GetID());
         throw PyException(MakeCustomError("You already have a pod.  These cannot be boarded manally."));
-        return NULL;
+        return nullptr;
     }
 
     if (!newShipRef->ValidateBoardShip(newShipRef, pClient->GetChar())) {
         // should we eject player here and deny boarding new ship, or just leave char in current ship and return?
         throw PyException(MakeCustomError("You do not have the skills to fly a %s.", newShipRef->itemName().c_str()));
-        return NULL;
+        return nullptr;
     }
 
     bool isPod = pClient->InPod();
@@ -196,7 +196,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     }
     // only called in space
     sLog.Log("ShipBound::Handle_Eject()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     //no arguments.
 
@@ -208,7 +208,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     Client* pClient = call.client;
     if (pClient->Destiny()->IsMoving()) {
         throw PyException(MakeCustomError("You cannot eject while moving."));
-        return NULL;
+        return nullptr;
     }
 
     SystemManager* pSysMgr = pClient->System();
@@ -251,7 +251,7 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call){
     }
     // only called when docked.
     sLog.Log("ShipBound::Handle_LeaveShip()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     //  sends itemID of ship to leave
     Client* pClient = call.client;
@@ -279,7 +279,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
     //     .arg2 (oldShipID) -  itemID of the current ship
     if (!args.Decode(&call.tuple)) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: failed to decode arguments", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     Client* pClient = call.client;
@@ -294,7 +294,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
         throw PyException(MakeCustomError("Something bad happened as you prepared to board the %s, so you stayed in your %s.", \
         newShipRef->itemName().c_str(), oldShipRef->itemName().c_str()));
-        return NULL;
+        return nullptr;
     }
 
     if (oldShipRef->typeID() == itemTypeCapsule) {
@@ -328,7 +328,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode arguments");
         //TODO: throw exception
-        return NULL;
+        return nullptr;
     }
 
     Client* pClient = call.client;
@@ -340,7 +340,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     if (!m_db.GetStationInfo(stationID, &systemID, &constellationID, &regionID, NULL, &dockPosition, &dockOrientation)) {
         _log(SERVICE__ERROR, "%s: Failed to query location of station %u for undock.", pClient->GetName(), stationID);
         //TODO: throw exception
-        return NULL;
+        return nullptr;
     }
 
     GPoint direction = dockOrientation;
@@ -402,7 +402,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
      * 00:42:18 [SvcCall]           [11] Key: Integer field: 20
      * 00:42:18 [SvcCall]           [11] Value: Integer field: 140000868
      */
-    return NULL;
+    return nullptr;
 }
 
 PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
@@ -431,25 +431,25 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
     bool completeTech3Assembly = false;
 
     if (!call.tuple->IsTuple())
-        return NULL;
+        return nullptr;
 
     if (!call.tuple->GetItem(0)->IsList()) {
         if (!call.tuple->GetItem(0)->IsInt()) {
             sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: call.tuple->GetItem(0)->IsInt() == false");
             //TODO: throw exception
-            return NULL;
+            return nullptr;
         } else {
         	// T3 managing is broken now - logging on with T3 assembled causes seg fault.
         	// TODO: Re-work the T3 managing. For now, i'm commenting it and leaving an error message on assembly attempt.
         	sLog.Error( "Handle_AssembleShip", "Modular ships are not implemented yet" );
         	throw PyException( MakeCustomError( "Modular ships are not implemented yet." ) );
-        	return NULL;
+        	return nullptr;
         	/*
             // Tuple contains single Integer, this is for Tech 3 Ship Assembly:
             if (!argsT3.Decode(&call.tuple)) {
                 sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: argsT3.Decode(&call.tuple) failed");
                 //TODO: throw exception
-                return NULL;
+                return nullptr;
             }
             itemID = argsT3.item;
             if (call.byname.find("subSystems") != call.byname.end()) {
@@ -461,11 +461,11 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
                 } else {
                     sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: !call.byname.find(\"subSystems\")->second->IsList() failed");
                     //TODO: throw exception
-                    return NULL;
+                    return nullptr;
                 }
             } else {
                 sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: call.byname.find(\"subSystems\") != call.byname.end() failed");
-                return NULL;
+                return nullptr;
             }
             completeTech3Assembly = true;
             */
@@ -474,7 +474,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "Failed to decode arguments");
             //TODO: throw exception
-            return NULL;
+            return nullptr;
         }
         itemID = args.items.front();
     }
@@ -483,7 +483,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
 
     if (!ship) {
         _log(ITEM__ERROR, "Failed to load ship %u to assemble.", itemID);
-        return NULL;
+        return nullptr;
     }
 
     //check if the ship is a stack
@@ -494,7 +494,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
 		ship = RefPtr<Ship>::StaticCast(ship->Split(1, true));
 		if (!ship) {
 		    _log(ITEM__ERROR, "Failed to split stack to assemble ship %u.", itemID);
-			return NULL;
+			return nullptr;
 		}
     }
 
@@ -509,7 +509,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
@@ -518,19 +518,19 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
         return(new PyList());
     }
     sLog.Log("ShipBound::Handle_Drop()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     if (call.tuple->size() != 3) {
         sLog.Error("ShipBound::Handle_Drop()", "call.tuple wrong size, expected 3 items, actual size = %u", call.tuple->size());
         //TODO: throw exception
-        return NULL;
+        return nullptr;
     }
 
     Call_Drop3 drop3args;
     if (!drop3args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode arguments");
         //TODO: throw exception
-        return NULL;
+        return nullptr;
     }
 
     PyList* PyToDropList = drop3args.toDrop;
@@ -587,13 +587,11 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             if (!cargoContainerRef)
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", cargoContainerRef->typeID()));
 
-            // Properly add the container to the system manager
-            ContainerEntity* containerObj = new ContainerEntity(cargoContainerRef, pSysMgr, *m_manager, location);
-            pSysMgr->AddEntity(containerObj);
-
             // Move item from cargo bay to space:
             cargoContainerRef->Relocate(location);
             cargoContainerRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+            ContainerEntity* containerObj = new ContainerEntity(cargoContainerRef, pSysMgr, *m_manager, location);
+            pSysMgr->AddEntity(containerObj);
 
             // Send notification SFX effects.jettison for the jettisoned Container object:
             pClient->Destiny()->SendJettisonPacket(cargoContainerRef);
@@ -609,13 +607,11 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             if (!structureItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", structureItemRef->typeID()));
 
-            // Properly add the structure item to the system manager
-            StructureEntity* structureObj = new StructureEntity(structureItemRef, pSysMgr, *m_manager, location);
-            pSysMgr->AddEntity(structureObj);
-
             // Move item from cargo bay to space:
             structureItemRef->Relocate(location);
             structureItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+            StructureEntity* structureObj = new StructureEntity(structureItemRef, pSysMgr, *m_manager, location);
+            pSysMgr->AddEntity(structureObj);
 
             // Send notification SFX effects.jettison for the jettisoned Structure object:
             pClient->Destiny()->SendJettisonPacket(structureItemRef);
@@ -628,15 +624,13 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             if (!cargoItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cargoItemRef->typeID()));
 
-            // Properly add the deployable to the system manager
-            DeployableEntity* deployableObj = new DeployableEntity(cargoItemRef, pSysMgr, *m_manager, location);
-            pSysMgr->AddEntity(deployableObj);
-
             // Move item from cargo bay to space:
             cargoItemRef->Relocate(location);
-            cargoItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
             //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
             // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
+            cargoItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+            DeployableEntity* deployableObj = new DeployableEntity(cargoItemRef, pSysMgr, *m_manager, location);
+            pSysMgr->AddEntity(deployableObj);
 
             // Send notification SFX effects.jettison for the jettisoned Deployable object:
             pClient->Destiny()->SendJettisonPacket(cargoItemRef);
@@ -647,10 +641,6 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             if (pClient->LaunchDrone(cargoItemRef))
                 successfully_dropped.ints.push_back(cargoItemRef->itemID());
             continue;
-
-            //TODO  drone-creation code is currenty broken.   deny launching drones for now
-            //pClient->SendInfoModalMsg("Drones are not currently supported, and creation crashes server at this time.");
-            //return NULL;
         }
         //else if ()    // Handle other types of cargo, such as launching assembled ships?
         else {
@@ -665,7 +655,7 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     if (!(call.tuple->items.at(0)->IsInt())) {
         codelog(SERVICE__ERROR, "Failed to decode arguments");
         //TODO: throw exception
-        return NULL;
+        return nullptr;
     }
 
     uint32 objectItemID = call.tuple->items.at(0)->AsInt()->value();
@@ -675,7 +665,7 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     SystemEntity *object = pSysMgr->get(objectItemID);
     if (object == NULL) {
         _log(SERVICE__ERROR, "%s: Unable to find object %u to scoop.", pClient->GetName(), objectItemID);
-        return NULL;
+        return nullptr;
     }
 
     InventoryItemRef item = object->Item();
@@ -697,17 +687,9 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
         item->ChangeOwner(pClient->GetCharacterID(), true);
 
         pClient->MoveItem(item->itemID(), pClient->GetShipID(), flagCargoHold);
-        //item->Move(pClient->GetShipID(), flagCargoHold);
-
-        // Remove object entity from SystemManager:
-        //pClient->System()->RemoveEntity(object);
-
-        //I am not happy with this memory management model...
-        //Aknor agrees because somehow this caused my server to crash...
-        //delete object; //should remove itself from everything.
     }
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
@@ -725,7 +707,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode arguments");
         //TODO: throw exception
-        return NULL;
+        return nullptr;
     }
 
     Client* pClient = call.client;
@@ -764,7 +746,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
@@ -772,13 +754,13 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode arguments");
         //TODO: throw exception
-        return NULL;
+        return nullptr;
     }
 
     Client* pClient = call.client;
     if (!pClient->IsInSpace()) {
         _log(SERVICE__ERROR, "%s: Trying to jettison items when not in space!", pClient->GetName());
-        return NULL;
+        return nullptr;
     }
 
     SystemManager* pSysMgr = pClient->System();
@@ -841,8 +823,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         categoryID = invItemRef->categoryID();
 
         if (categoryID == EVEDB::invCategories::Structure) {
-            // This item is a POS structure of some kind, so move it from the ship's cargo into space
-            // whilst keeping ownership of it to the character not using the corporation the character belongs to:
+            /** @todo (allan)  these need to be rewritten for correct class constructors  */
             structureItemRef = m_manager->item_factory->GetStructure(*cur);
             if (!structureItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", structureItemRef->typeID()));
@@ -856,8 +837,6 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             pClient->Destiny()->SendJettisonPacket(structureItemRef);
             continue;
         } else if (categoryID == EVEDB::invCategories::Deployable) {
-            // This item is a Deployable item of some kind, so move it from the ship's cargo into space
-            // whilst keeping ownership of it to the character not using the corporation the character belongs to:
             cargoItemRef = m_manager->item_factory->GetItem(*cur);
             if (!cargoItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cargoItemRef->typeID()));
@@ -894,7 +873,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 msg += pClient->JetcanTime();
                 msg += " seconds.";
                 pClient->SendNotifyMsg(msg.c_str());
-                return NULL;
+                return nullptr;
             }
             // Spawn jetcan then continue loop
             location.MakeRandomPointOnSphere(500.0);
@@ -920,7 +899,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         }
 
     }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -932,7 +911,7 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
      * 22:13:29 [SvcCall]         [ 0] Integer field: 140000378     <- ship id
      *
   sLog.Log("ShipBound::Handle_SelfDestruct()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
 
     [PyTuple 1 items]
@@ -1029,7 +1008,7 @@ PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call) {
      13:15:58 [SvcCall]       Tuple: Empty
 
      sLog.Log("ShipBound::Handle_GetShipConfiguration()", "size=%u", call.tuple->size());
-     call.Dump(SERVICE__CALLS);
+     call.Dump(SERVICE__CALL_DUMP);
      */
 
     /*

@@ -91,7 +91,7 @@ PyBoundObject *KeeperService::_CreateBoundObject(Client *c, const PyRep *bind_ar
 
 PyResult KeeperService::Handle_GetLevelEditor(PyCallArgs &call) {
     sLog.Log( "KeeperService", "Handle_GetLevelEditor" );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
     PyRep *result = NULL;
 
     KeeperBound *ib = new KeeperBound(m_manager, &m_db);
@@ -103,7 +103,7 @@ PyResult KeeperService::Handle_GetLevelEditor(PyCallArgs &call) {
 PyResult KeeperService::Handle_CanWarpToPathPlex(PyCallArgs &call) {
 //resp = sm.RemoteSvc('keeper').CanWarpToPathPlex(node.rec.instanceID)
 	sLog.Log( "KeeperService", "Handle_CanWarpToPathPlex" );
-	call.Dump(SERVICE__CALLS);
+	call.Dump(SERVICE__CALL_DUMP);
 
 	return NULL;
 }

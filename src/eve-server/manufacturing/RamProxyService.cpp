@@ -411,7 +411,7 @@ PyResult RamProxyService::Handle_GetRelevantCharSkills(PyCallArgs &call) {
 23:54:18 [SvcCall]         Integer field: 1
 
     sLog.Log("RamProxyService::Handle_GetRelevantCharSkills", "Called GetRelevantCharSkills Stub.");
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
   */
 
     return NULL;

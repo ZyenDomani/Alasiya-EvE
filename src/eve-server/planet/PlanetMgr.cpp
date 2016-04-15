@@ -136,7 +136,7 @@ PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
     AttributeError: 'NoneType' object has no attribute 'solarSystemID'
     */
     sLog.Log("PlanetMgrBound", "Handle_GetPlanetInfo() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     sLog.Debug("Server", "Called GetPlanetInfo Incomplete.");
     /* Incomplete, needs to check if planet is colonised by char, if so, return full colony + planet data.
      * Right now every planet is un-colonised.
@@ -146,7 +146,7 @@ PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
 
 PyResult PlanetMgrBound::Handle_GetPlanetResourceInfo(PyCallArgs &call) {
     //sLog.Log("PlanetMgrBound", "Handle_GetPlanetResourceInfo() size=%u", call.tuple->size() );
-    //call.Dump(SERVICE__CALLS);
+    //call.Dump(SERVICE__CALL_DUMP);
 
     /* Used by the client to draw the planet resource bars.
      * returns: {typeID:quality, typeID:quality, typeID:quality, typeID:quality, typeID:quality}

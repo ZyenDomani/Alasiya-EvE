@@ -637,7 +637,7 @@ typedef enum {  //from eveConstants
 
 PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
   sLog.Log( "CorpRegistryBound::Handle_UpdateApplicationOffer()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     /** Incoming:
      *  Tuple
      *   - int 140000017    <- this is the charID, whose app should be handled
@@ -1049,7 +1049,7 @@ PyResult CorpRegistryBound::Handle_GetSharesByShareholder(PyCallArgs &call) {
 16:55:44 [SvcCall]         Integer field: 1
 
   sLog.Log( "CorpRegistryBound::Handle_GetSharesByShareholder()","size= %u, 0=%s", call.tuple->size(), call.tuple->GetItem( 0 )->TypeString() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 */
     return NULL;
 }
@@ -1057,7 +1057,7 @@ PyResult CorpRegistryBound::Handle_GetSharesByShareholder(PyCallArgs &call) {
 PyResult CorpRegistryBound::Handle_GetShareholders(PyCallArgs &call) {
 
     sLog.Log( "CorpRegistryBound::Handle_GetShareholders()","size= %u, 0=%s", call.tuple->size(), call.tuple->GetItem( 0 )->TypeString() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -1077,7 +1077,7 @@ PyResult CorpRegistryBound::Handle_SetAccountKey(PyCallArgs &call) {
 PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
   sLog.Log( "CorpRegistryBound::Handle_PayoutDividend()", "size= %u", call.tuple->size() );
 
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     return NULL;
 }
 
@@ -1094,6 +1094,6 @@ PyResult CorpRegistryBound::Handle_GetVoteCasesByCorporation(PyCallArgs &call) {
 */
   sLog.Log( "CorpRegistryBound::Handle_GetVoteCasesByCorporation()", "size= %u", call.tuple->size() );
 
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     return NULL;
 }

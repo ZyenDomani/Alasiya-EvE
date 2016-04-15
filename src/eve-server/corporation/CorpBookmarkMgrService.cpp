@@ -71,7 +71,7 @@ PyResult CorpBookmarkMgrService::Handle_GetBookmarks(PyCallArgs& call)
 PyResult CorpBookmarkMgrService::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
   uint8 size = call.tuple->size();
   sLog.Log( "CorpBookmarkMgrService::Handle_UpdatePlayerBookmark()", "size=%u ", size );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }

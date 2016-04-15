@@ -157,7 +157,7 @@ PyResult BookmarkService::Handle_GetBookmarks(PyCallArgs &call) {
 
 PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
     sLog.Log("BookmarkService", "Handle_BookmarkScanResult() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -473,7 +473,7 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call)          //no
       */
       sLog.Error( "BookmarkService::Handle_DeleteBookmarks()", "Service is not handled yet.  Returning NULL.");
       call.client->SendInfoModalMsg("Deleting Bookmarks is currently broken.");
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 /*
     uint32 bookmarkID;
     if(call.tuple->IsObjectEx()) {
@@ -534,7 +534,7 @@ PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
 */
   sLog.Error( "BookmarkService::Handle_MoveBookmarksToFolder()", "Service is not handled yet.  Returning NULL.");
   call.client->SendInfoModalMsg("Moving Bookmarks to a folder is currently broken.");
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
       return NULL;
   //return(new PyNone());
   // needs either a 'real' return or nothing.....*SRVERROR* TypeError: 'NoneType' object is not iterable
@@ -557,7 +557,7 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
             */
 
       sLog.Error( "BookmarkService::Handle_CopyBookmarks()", "Service is not handled yet.  Returning NULL.");
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return(new PyNone());
 }
@@ -569,7 +569,7 @@ PyResult BookmarkService::Handle_AddBookmarkFromVoucher(PyCallArgs &call) {
 
   sLog.Error( "BookmarkService::Handle_AddBookmarkFromVoucher()", "Service is not handled yet.  Returning NULL.");
   call.client->SendInfoModalMsg("Creating Bookmarks from Vouchers is currently broken.");
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return(new PyNone());
 }

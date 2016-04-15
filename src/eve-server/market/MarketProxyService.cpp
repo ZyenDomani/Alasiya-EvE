@@ -280,7 +280,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 17:15:42 [SvcCall]         [10] (None)
 
   sLog.Log("MarketProxyService::Handle_PlaceCharOrder", "call.Dump to follow...");
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 */
   Call_PlaceCharOrder args;
     if(!args.Decode(&call.tuple)) {

@@ -49,7 +49,7 @@ ContractProxyService::~ContractProxyService()
 
 PyResult ContractProxyService::Handle_GetMyExpiredContractList(PyCallArgs &call) {
   sLog.Log( "ContractProxyService::Handle_GetMyExpiredContractList()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
 //AttributeError: 'NoneType' object has no attribute 'contracts'
     return NULL;
@@ -57,7 +57,7 @@ PyResult ContractProxyService::Handle_GetMyExpiredContractList(PyCallArgs &call)
 
 PyResult ContractProxyService::Handle_CollectMyPageInfo(PyCallArgs &call) {
   sLog.Log( "ContractProxyService::Handle_CollectMyPageInfo()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }

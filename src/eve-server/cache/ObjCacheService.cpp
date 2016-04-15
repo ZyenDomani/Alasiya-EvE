@@ -259,7 +259,7 @@ PyResult ObjCacheService::Handle_GetCachableObject(PyCallArgs &call) {
 20:27:48 [SvcCall]         [ 3] Integer field: 333444
   */
   //sLog.Log( "ObjCacheService", "Handle_GetCachableObject" );
-  //call.Dump(SERVICE__CALLS);
+  //call.Dump(SERVICE__CALL_DUMP);
     CallGetCachableObject args;
     if(!args.Decode(&call.tuple))
     {

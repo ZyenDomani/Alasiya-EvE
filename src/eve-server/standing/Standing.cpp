@@ -83,7 +83,7 @@ PyResult Standing::Handle_GetMyKillRights(PyCallArgs &call) {
 
 PyResult Standing::Handle_GetMyStandings(PyCallArgs &call) {
   sLog.Log( "Standing::Handle_GetMyStandings()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
    /*
       Args:   [ 4]   [ 0]       Args:   [ 1]     Tuple: 6 elements
       Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0] Object:
@@ -162,7 +162,7 @@ PyResult Standing::Handle_GetCharStandings(PyCallArgs &call) {
 
 PyResult Standing::Handle_GetCorpStandings(PyCallArgs &call) {
   sLog.Log( "Standing::Handle_GetCorpStandings()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     ObjectCachedSessionMethodID method_id(GetName(), "GetCorpStandings", call.client->GetCorporationID());
 
@@ -217,7 +217,7 @@ PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
      * 21:50:56 [SvcCall]         Integer field: 1
      */
     sLog.Log( "Standing::Handle_GetStandingTransactions()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     Call_GetStandingTransactions args;
     if (!args.Decode(&call.tuple)) {
@@ -239,7 +239,7 @@ PyResult Standing::Handle_GetStandingCompositions(PyCallArgs &call) {
                         prior = each.standing
 */
     sLog.Log( "Standing::Handle_GetStandingCompositions()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     Call_GetStandingComposition args;
     if (!args.Decode(&call.tuple)) {

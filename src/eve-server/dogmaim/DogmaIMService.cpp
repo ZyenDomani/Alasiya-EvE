@@ -160,7 +160,7 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
      * 22:04:44 [SvcCall]         [ 0]   [ 2] Value: Integer field: 1
      *
      *    sLog.Log("DogmaIMBound::Handle_ChangeDroneSettings()", "size=%u", call.tuple->size());
-     *    call.Dump(SERVICE__CALLS);
+     *    call.Dump(SERVICE__CALL_DUMP);
      */
 
     Client* pClient = call.client;
@@ -182,7 +182,7 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
     Client* pClient = call.client;
 
     sLog.Log("DogmaIMBound::Handle_LinkWeapons()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
@@ -236,7 +236,7 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
     returns - list of moduleIDs to OL
 
     sLog.Log("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     */
     Client* pClient = call.client;
 
@@ -292,7 +292,7 @@ PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
     Client* pClient = call.client;
 
     sLog.Log("ShipBound::Handle_GetLocationInfo()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     // dummy right now, don't have any meaningful packet logs
     return new PyDict();
 }
@@ -539,7 +539,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
     }
 
     //sLog.Log("DogmaIMBound::Handle_Activate()", "size= %u from '%s'", call.tuple->size(), pClient->GetName() );
-    //call.Dump(SERVICE__CALLS);
+    //call.Dump(SERVICE__CALL_DUMP);
 
     uint32 callTupleSize = (uint32)call.tuple->size(), itemID = 0, effect = 0;
 
@@ -619,7 +619,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
     }
 
     //sLog.Log("DogmaIMBound::Handle_Deactivate()", "size= %u", call.tuple->size() );
-    //call.Dump(SERVICE__CALLS);
+    //call.Dump(SERVICE__CALL_DUMP);
     //18:50:24 [PacketError] Decode Call_Dogma_Deactivate failed: effectName is not a wide string: Integer
     //  this is also used on POS items, so adjust as needed.  (will have to construct it like Activate())
 
@@ -650,7 +650,7 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
     }
 
     sLog.Log("ShipBound::Handle_Overload()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 	return new PyNone;
 }
 
@@ -669,7 +669,7 @@ PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
     }
 
     sLog.Log("ShipBound::Handle_CancelOverloading()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 	return new PyNone;
 }
 
@@ -772,7 +772,7 @@ PyResult DogmaIMBound::Handle_GetTargeters(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_GetWeaponBankInfoForShip(PyCallArgs& call)
 {
     sLog.Log("DogmaIMBound::Handle_GetWeaponBankInfoForShip()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     /*
     [PyTuple 1 items]       << response from server for capsule

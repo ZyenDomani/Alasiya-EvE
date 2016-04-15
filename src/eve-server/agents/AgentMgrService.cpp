@@ -152,7 +152,7 @@ PyResult AgentMgrService::Handle_GetAgents(PyCallArgs &call) {
 22:07:37 [SvcCall]           [ 0] Integer field: 130409676630000000
 22:07:37 [SvcCall]           [ 1] Integer field: -164492702
   sLog.Log( "AgentMgrService::Handle_GetAgents()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     */
 
     PyRep *result = NULL;
@@ -190,7 +190,7 @@ PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
 22:28:49 [SvcCall]     Argument 'machoVersion':
 22:28:49 [SvcCall]         Integer field: 1
 
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     */
     Call_SingleArg args;
     if(!args.Decode(&call.tuple)) {
@@ -215,7 +215,7 @@ PyResult AgentMgrBound::Handle_DoAction(PyCallArgs &call) {
 17:00:59 [SvcCall]     Argument 'machoVersion':
 17:00:59 [SvcCall]         Integer field: 1
   sLog.Log( "AgentMgrBound::Handle_DoAction()", "size= %u, 0=%s", call.tuple->size(), call.tuple->GetItem( 0 )->TypeString() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     */
   /**
 16:53:45 [SvcMessage] agentMgr Service: MachoBindObject also contains call to DoAction
@@ -281,7 +281,7 @@ PyResult AgentMgrBound::Handle_GetAgentLocationWrap(PyCallArgs &call)
      *    06:48:31 L AgentMgrBound::Handle_GetAgentLocationWrap(): size= 0, AgentID = 3017337
      */
     sLog.Log( "AgentMgrBound::Handle_GetAgentLocationWrap()", "size= %u, AgentID = %u", call.tuple->size(), m_agent->GetID() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return m_agent->GetLocation();
 }
@@ -307,7 +307,7 @@ PyResult AgentMgrBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
 16:53:46 [SvcCallTrace]         [ 6] Value: String: 'Mission Keywords'
 */
   sLog.Log( "AgentMgrBound::Handle_GetMissionBriefingInfo()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     PyDict *res = new PyDict();
 
     res->SetItemString("ContentID", new PyInt(123) ) ;
@@ -332,7 +332,7 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
 20:12:42 [SvcCall]   Call Named Arguments:
 20:12:42 [SvcCall]     Argument 'machoVersion':
 20:12:42 [SvcCall]         Integer field: 1
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     */
     PyRep *result = NULL;
     PyTuple *t = new PyTuple(3);
@@ -363,7 +363,7 @@ PyResult AgentMgrBound::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
 PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)
 {
   sLog.Log( "AgentMgrBound::Handle_GetCareerAgents()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return new PyInt( 0 );
 }
@@ -371,7 +371,7 @@ PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)
 //17:09:07 L AgentMgrBound::Handle_GetInfoServiceDetails(): size= 0
 PyResult AgentMgrBound::Handle_GetInfoServiceDetails( PyCallArgs& call ) {
   sLog.Log( "AgentMgrBound::Handle_GetInfoServiceDetails()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     //takes no arguments
     return new PyNone;
 }
@@ -410,7 +410,7 @@ PyResult EpicArcService::Handle_AgentHasEpicMissionsForCharacter(PyCallArgs &cal
      epicArcStatusSvc = sm.RemoteSvc('epicArcStatus').AgentHasEpicMissionsForCharacter(agent.agentID):
      */
   sLog.Log( "EpicArcService::Handle_AgentHasEpicMissionsForCharacter()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     //takes no arguments
     return new PyNone;
 

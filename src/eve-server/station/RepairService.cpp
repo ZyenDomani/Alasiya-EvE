@@ -63,7 +63,7 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
 19:49:29 [SvcCall]         [ 1] List: Empty
 
     sLog.Warning("RepairService::Handle_UnasembleItems", "Called UnasembleItems stub.");
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 */
 call.client->SendNotifyMsg("This Service is Not Implemented at this time.");
     return NULL;
