@@ -1660,3 +1660,121 @@ PyResult Command_pos(Client* who, CommandDB* db, PyServiceMgr* services, const S
      */
     return NULL;
 }
+#if 0
+PyResult Command_inventory(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    /* this command is used to debug inventory
+     * wip.   -allan 15Mar16
+     */
+
+    std::map<uint32, InventoryItemRef> invMap;
+    invMap.clear();
+    uint32 inventoryID = who->GetStationID();
+
+    InventoryItem* item(nullptr);
+    Inventory* inv(nullptr);
+    if (inventoryID) {
+        InventoryItemRef station = sEntityList.GetStationByID(inventoryID);
+        if (!station) throw PyException(MakeCustomError("Cannot find Station Reference for stationID %u", inventoryID));
+        inv = station->GetInventory();
+        inv->GetInventoryList(invMap);
+        item = station.get();
+    } else {
+        Command_list(who,db,services,args);
+        inventoryID = who->GetSystemID();
+        SolarSystemRef system = services->item_factory.GetSolarSystem(inventoryID);
+        inv = system->GetInventory();
+        inv->GetInventoryList(invMap);
+        item = system.get();
+    }
+
+    std::ostringstream str;
+    str << "InventoryID %u(%p) (Item %p) has %u items.<br><br>"; //70
+
+    for (auto cur : invMap)
+        str << cur.first << "(" << cur.second->flag() << "): " << cur.second->itemName() << "<br>"; // 20 + 70 for name (90)
+
+        int count = invMap.size();
+    int size = count * 90;
+    size += 70;
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(), inventoryID, inv, item, count);
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
+PyResult Command_shipinventory(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    /* this command is used to debug inventory
+     * wip.   -allan 15Mar16
+     */
+
+    std::map<uint32, InventoryItemRef> invMap;
+    invMap.clear();
+    uint32 inventoryID = who->GetShipID();
+    ShipItemRef ship = services->item_factory.GetShip(inventoryID);
+    Inventory* inv = ship->GetInventory();
+    inv->GetInventoryList(invMap);
+
+    std::ostringstream str;
+    str << "InventoryID %u(%p) (Ship %p) has %u items.<br><br>"; //50
+
+    for (auto cur : invMap)
+        str << cur.first << "(" << cur.second->flag() << "): " << cur.second->itemName() << "<br>"; // 20 + 40 for name (60)
+
+        int count = invMap.size();
+    int size = count * 60;
+    size += 50;
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(), inventoryID, inv, ship.get(), count);
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
+PyResult Command_showsession(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+
+    std::ostringstream str;
+    str << "Current Session Values.<br><br>"; //32
+
+    str << "charid: %i <br>"; //14+10
+    str << "charname: %s <br>"; //16+10
+    str << "shipid: %i <br>"; //14+10
+    str << "cloneStationID: %i <br>"; //21+10
+
+    str << "clientid: %i <br>"; //16+10
+    str << "userid: %i <br>"; //14+10
+    str << "sessionID: %li <br>"; //18+20
+
+    str << "locationid: %i <br>"; //18+10
+    str << "stationid: %i <br>"; //17+10
+    str << "solarsystemid2: %i <br>"; //22+10
+    str << "constellationid: %i <br>"; //23+10
+    str << "regionid: %i <br>";
+
+    str << "corpid: %i <br>"; //14+10
+    str << "hqID: %i <br>"; //12+10
+    str << "corpAccountKey: %i <br>"; //22+10
+    str << "corpRole: %lu <br>"; //17+20
+    str << "rolesAtAll: %lu <br>"; //19+20
+    str << "rolesAtBase: %lu <br>"; //20+20
+    str << "rolesAtHQ: %lu <br>"; //18+20
+    str << "rolesAtOther: %lu <br>"; //21+20
+
+    str << "gangrole: %i <br>"; //16+10
+    str << "fleetrole: %i <br>"; //17+10
+
+    int size = 32;  // header
+    size += 370;    // text
+    size += 150;    // %i
+    size += 120;    // %lu
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(),
+             who->GetCharacterID(), who->GetName(), who->GetShipID(), who->GetCloneStationID(), who->GetClientID(), who->GetUserID(),
+             who->GetSessionID(), who->GetLocationID(), who->GetStationID(), who->GetSystemID(), who->GetConstellationID(), who->GetRegionID(),
+             who->GetCorporationID(), who->GetCorpHQ(), who->GetCorpAccountKey(), who->GetCorpRole(), who->GetRolesAtAll(), who->GetRolesAtBase(),
+             who->GetRolesAtHQ(), who->GetRolesAtOther(), who->GetGangRole(),who->GetFleetRole() );
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+#endif //0
