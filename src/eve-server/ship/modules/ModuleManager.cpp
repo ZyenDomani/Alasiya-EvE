@@ -580,6 +580,8 @@ ModuleManager::ModuleManager(Ship *const ship)
                                     (uint32)ship->GetAttribute(AttrLauncherSlotsLeft).get_int(),
                                     this);
 
+    m_initalized = false;
+
     // Store reference to the Ship object to which the ModuleManager belongs:
     m_Ship = ship;
 
@@ -611,6 +613,12 @@ ModuleManager::~ModuleManager()
 }
 
 bool ModuleManager::Initialize() {
+    // this ship is already initalized and active (in case of BoardShip() or reactivation)
+    if (m_initalized) {
+        OnlineAll();
+        return true;
+    }
+
     // Load modules, rigs and subsystems from Ship's inventory into ModuleContainer:
     std::vector<InventoryItemRef> itemVec;
     m_Ship->GetInventoryVec(itemVec);
@@ -646,7 +654,7 @@ bool ModuleManager::Initialize() {
         } else
             return false;
     }
-
+    m_initalized = true;
     return true;
 }
 
@@ -1240,6 +1248,9 @@ void ModuleManager::UpdateModules()
     //  ALL modules need skillcheck, online check, cpu/pg check, etc.  run everthing on these and make calls as required.
     //  this should also update all ship attribs.
     //sLog.Magenta("ModuleManager::UpdateModules()","Needs to be implemented");
+
+    if (!m_initalized)
+        Initialize();
 }
 
 void ModuleManager::UpdateModules(EVEItemFlags flag)
@@ -1263,6 +1274,8 @@ void ModuleManager::CharacterBoardingShip()
     sLog.Magenta("ModuleManager::CharacterBoardingShip()","Needs to be implemented");
     //this is complicated and im gonna leave it alone for now until
     //a few things become more clear
+    if (!m_initalized)
+        Initialize();
     OnlineAll();
 }
 

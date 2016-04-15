@@ -58,19 +58,11 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)//, ItemData ida
   m_spawnMgr(new SpawnMgr(this, m_services)),
   m_entityChanged(false)
 {
-    m_solarSystemRef = svc.item_factory->GetSolarSystem( systemID );
-    // check for mis-typed systemID from .tr command.
-    // this needs a TRUE error handling method here.  partially constructed at this point.
-    assert(m_solarSystemRef);
-    //uint32 inventoryID = m_solarSystemRef->itemID();
+    m_db.GetSystemInfo(m_systemID, NULL, &m_regionID, &m_systemName, &m_securityClass, &m_securityRating);
 
-    m_db.GetSystemInfo(GetID(), NULL, &m_regionID, &m_systemName, &m_securityClass, &m_securityRating);
-
-    //create our chat channel
-    m_services.lsc_service->CreateSystemChannel(m_systemID);
-	_log(COMMON__MESSAGE, "Create SystemManager %p for System %s(%u)", this, m_systemName.c_str(), GetID());
     ++m_systems;
     m_activityTime = 0;
+    _log(COMMON__MESSAGE, "Create SystemManager %p for System %s(%u)", this, m_systemName.c_str(), GetID());
 }
 
 SystemManager::~SystemManager() {
@@ -118,11 +110,11 @@ GPoint hack_sentry_locs[num_hack_sentry_locs] = {
     GPoint(35000.0f, 35000.0f, 35000.0f)
 };
 
-bool SystemManager::_LoadSystemCelestials() {
+bool SystemManager::LoadSystemStatics() {
     std::vector<DBSystemEntity> entities;
     entities.clear();
-    if(!m_db.LoadSystemEntities(m_systemID, entities)) {
-        _log(SERVICE__ERROR, "Unable to load celestial entities during boot of system %u.", m_systemID);
+    if(!m_db.LoadSystemStaticEntities(m_systemID, entities)) {
+        _log(INV__ERROR, "Unable to load celestial entities during boot of system %u.", m_systemID);
         return false;
     }
 
@@ -138,9 +130,11 @@ bool SystemManager::_LoadSystemCelestials() {
                     codelog(SERVICE__ERROR, "Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
                     continue;
                 }
+                sEntityList.AddStation(cur.itemID, station);
                 bubbles.Add(se);
                 m_entities[se->GetID()] = se;
-                _log(ITEM__TRACE, "SystemManager::_LoadSystemCelestials() making StationEntity item for %s (%u)", station->itemName().c_str(), station->itemID());
+                AddItemToInventory(station);
+                _log(ITEM__TRACE, "SystemManager::LoadSystemStatics() making StationEntity item for %s (%u)", station->itemName().c_str(), station->itemID());
             } break;
             case EVEDB::invGroups::Asteroid_Belt: {
                 SimpleSystemEntity *se = SimpleSystemEntity::MakeEntity(this, cur);
@@ -157,6 +151,8 @@ bool SystemManager::_LoadSystemCelestials() {
                 }
                 ++m_beltCount;
                 m_entities[se->GetID()] = se;
+                InventoryItemRef itemRef = m_services.item_factory->GetItem(cur.itemID);
+                AddItemToInventory(itemRef);
             } break;
             case EVEDB::invGroups::Stargate: {
                 SimpleSystemEntity *se = SimpleSystemEntity::MakeEntity(this, cur);
@@ -172,6 +168,8 @@ bool SystemManager::_LoadSystemCelestials() {
                     continue;
                 }
                 m_entities[se->GetID()] = se;
+                InventoryItemRef itemRef = m_services.item_factory->GetItem(cur.itemID);
+                AddItemToInventory(itemRef);
             } break;
             default: {
                 SimpleSystemEntity *se = SimpleSystemEntity::MakeEntity(this, cur);
@@ -186,11 +184,15 @@ bool SystemManager::_LoadSystemCelestials() {
                     continue;
                 }
                 m_entities[se->GetID()] = se;
+                InventoryItemRef itemRef = m_services.item_factory->GetItem(cur.itemID);
+                AddItemToInventory(itemRef);
             }
         }
     }
 
     m_entityChanged = true;
+    _log(SERVER__INIT, "%u Static System entities loaded for system %u", entities.size(), m_systemID);
+    entities.clear();
     return true;
 }
 
@@ -276,6 +278,7 @@ public:
                    _log(ITEM__TRACE, "DynamicEntityFactory::SystemEntity::BuildEntity() making ContainerEntity item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return containerObj;
                 }
+                /** @todo (Allan)  need to separate these by class to create proper SE (after updating SE class) */
                 else if( (entity.groupID == EVEDB::invGroups::Biomass)
                     || (entity.groupID == EVEDB::invGroups::Sun) || (entity.groupID == EVEDB::invGroups::Planet)
                     || (entity.groupID == EVEDB::invGroups::Moon) || (entity.groupID == EVEDB::invGroups::Stargate)
@@ -403,17 +406,17 @@ public:
                 return stationObj;
             } break;
             default: {
-                codelog(SERVICE__ERROR, "Unhandled dynamic entity category %d for item %u of type %u", entity.categoryID, entity.itemID, entity.typeID);
+                codelog(INV__ERROR, "Unhandled dynamic entity category %d for item %u of type %u", entity.categoryID, entity.itemID, entity.typeID);
             } break;
         }
         return nullptr;
     }
 };
 
-bool SystemManager::_LoadSystemDynamics() {
+bool SystemManager::LoadSystemDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
     if (!m_db.LoadSystemDynamicEntities(m_systemID, entities)) {
-        _log(SERVICE__ERROR, "Unable to load dynamic entities during boot of system %u.", m_systemID);
+        _log(INV__ERROR, "Unable to load dynamic entities during boot of system %u.", m_systemID);
         return false;
     }
 
@@ -422,11 +425,9 @@ bool SystemManager::_LoadSystemDynamics() {
         SystemEntity *se = DynamicEntityFactory::BuildEntity(*this, *cur);
         if (!se) {
             if (cur->ownerID == 1)
-                codelog(SERVICE__ERROR, "Failed to create entity for item %u (type %u)", cur->itemID, cur->typeID);
+                codelog(INV__ERROR, "Failed to create entity for item %u (type %u)", cur->itemID, cur->typeID);
             continue;
         }
-        //TODO: use proper log type.
-        //_log(SPAWN__MESSAGE, "Loaded dynamic entity %u of type %u for system %u", cur->itemID, cur->typeID, m_systemID);
         AddEntity( se );
     }
 
@@ -440,23 +441,27 @@ bool SystemManager::BuildDynamicEntity(Client* who, const DBSystemDynamicEntity&
         sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (type %u)", entity.itemID, entity.typeID );
         return false;
     }
-
-    sLog.Debug( "SystemManager::BuildDynamicEntity()", "Loaded dynamic entity %u of type %u for system %u", entity.itemID, entity.typeID, m_systemID );
+    _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Loaded dynamic entity %u of type %u for system %u", entity.itemID, entity.typeID, m_systemID );
     AddEntity( se );
     return true;
 }
 
 bool SystemManager::BootSystem() {
-    //load the static system stuff...
-    if (!_LoadSystemCelestials()) {
+    m_solarSystemRef = m_services.item_factory->GetSolarSystem(m_systemID);
+    assert(m_solarSystemRef);
+
+    if (!LoadSystemStatics()) {
         _log(SERVICE__ERROR, "Unable to load Statics during boot of system %u.", m_systemID);
         return false;
     }
-    //load the dynamic system stuff (items, roids, etc...)
-    if (!_LoadSystemDynamics()) {
+    /* this only loads items owned by eve system (ownerID = 1) */
+    if (!LoadSystemDynamics()) {
         _log(SERVICE__ERROR, "Unable to load Dynamics during boot of system %u.", m_systemID);
         return false;
     }
+
+    //create our chat channel
+    m_services.lsc_service->CreateSystemChannel(m_systemID);
     return true;
 }
 
@@ -484,8 +489,10 @@ bool SystemManager::ProcessDestiny() {
     std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
     while (cur != m_entities.end()) {
         if (cur->second) {
-            if (cur->second->IsDynamicEntity())
-                cur->second->ProcessDestiny();
+            if (cur->second->IsDynamicEntity()) /* SE rewrite - ship process is not being called....fix this! */
+                cur->second->ProcessDestiny(); /* call movement on dynamics here */
+            else if (cur->second->IsCelestialEntity())
+                cur->second->ProcessOther();   /* call various other functions on celestials here */
         } else {
             sLog.Error("SystemManager::Process()", "SystemEntity* for %u was deleted from m_entities map...removing from my list.", cur->first);
             m_entities.erase(cur->first);
@@ -501,6 +508,8 @@ bool SystemManager::ProcessDestiny() {
 
     //these are here so they not called so frequently. (save proc tics)
     bubbles.Process();
+    m_anomMgr->Process();
+    m_beltMgr->Process();
     m_spawnMgr->Process();
 
     return SystemActivity();
@@ -686,17 +695,17 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
         //append the destiny binary data...
         cur->EncodeDestiny( *stateBuffer );
 
-        /*  FIXME  this needs more work.  cant get aggressors mapped right into the PyDict
+        /**  @todo (allan)  this needs more work.  should be done same as damageState.  28.2.16
         //ss.aggressors is for players undocking/jumping with aggression (uses GetCriminalTimeStamps)
-        if (cur->IsClient())
-            ss.aggressors.insert(std::make_pair(cur->GetID(), cur->GetAggressors());
+        if (cur->HasPilot() && cur->HasAggression())
+            ss.aggressors[ cur->GetID() ] = cur->GetAggressors());
             */
-
-        //  if ((cur->IsPOS()) || (cur->IsOutpost()))  // TODO  to be written (both)
-        //ss.effectStates  --pos and other structures (using effects.StructureOnline and et.al.)   // TODO  started. ...to be added to other SystemEntities
-
-        //  if (cur->IsJumpBridge)   // TODO  to be written
-        //ss.allianceBridges -- jumpbridges and the like??    // TODO  to be written
+        /** @todo (allan)  to be written (both)   -effectStates is a PyList */
+        //  if ((cur->IsPOSSE()) || (cur->IsOutpost()))
+        //ss.effectStates  --pos and other structures (using effects.StructureOnline and et.al.)
+        /** @todo (allan)  to be written   -jumpbridges is a PyList */
+        //  if (cur->IsJumpBridgeSE)
+        //ss.allianceBridges -- jumpbridges et al.
         //  [for shipID, toSolarsystemID, toBeaconID in bag.allianceBridges:]
     }
 
@@ -705,7 +714,28 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
 
     ss.droneState = m_db.GetSolDroneState( m_systemID );
 
+    /** @todo  create  a PyPackedRow here where we have all the solItem info,
+     * instead of hitting the db for every call. (each client in each system)
+     *
+     *    DBRowDescriptor *header = new DBRowDescriptor( result );
+     *    PyPackedRow* res = new PyPackedRow( header );
+     */
     ss.solItem = m_db.GetSolItem( m_systemID );
+
+    /*
+     *        [PyString "solItem"]
+     *        [PyPackedRow 40 bytes]
+     *            ["itemID" => <30004168> [I8]]
+     *            ["typeID" => <5> [I4]]
+     *            ["ownerID" => <1> [I4]]
+     *            ["locationID" => <20000610> [I8]]
+     *            ["flagID" => <0> [I2]]
+     *            ["quantity" => <-1> [I4]]
+     *            ["groupID" => <5> [I4]]
+     *            ["categoryID" => <2> [I4]]
+     *            ["customInfo" => <empty string> [Str]]
+     */
+
 
     _log( DESTINY__TRACE, "Set State:" );
     //ss.Dump( DESTINY__TRACE, "    " );
@@ -730,6 +760,13 @@ void SystemManager::RemoveItemFromInventory(InventoryItemRef item)
 {
     _log(ITEM__TRACE, "SystemManager::RemoveItemFromInventory() - removing item %s(%u) from inventory of %s(%u)", item->itemName().c_str(), item->itemID(), m_systemName.c_str(), m_systemID);
     m_solarSystemRef->RemoveItemFromInventory( item );
+}
+
+SystemEntity* SystemManager::GetShipSEFromInventory(uint32 shipID) {
+    auto itr = m_entities.find(shipID);
+    if (itr != m_entities.end())
+        return itr->second;
+    return nullptr;
 }
 
 ShipRef SystemManager::GetShipFromInventory(uint32 shipID)

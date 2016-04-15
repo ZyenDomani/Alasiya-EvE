@@ -90,7 +90,7 @@ class SystemDB
 : public ServiceDB
 {
 public:
-    bool LoadSystemEntities(uint32 systemID, std::vector<DBSystemEntity>& into);
+    bool LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into);
     bool LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into);
     static bool GetWrecksToTypes(DBQueryResult& res);
     static void GetLootGroups(DBQueryResult& res);

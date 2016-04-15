@@ -104,7 +104,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
 }
 
 Client::~Client() {
-    if (GetChar()) {   // we have valid character
+    if (m_char) {   // we have valid character
         // remove targets before anything else, to avoid crash with npcai targeting.
         TargMgr.DoDestruction();
 
@@ -188,7 +188,7 @@ void Client::Process() {
         profileStartTime = GetTimeUSeconds();
 
     if ((m_timeEndTrain != 0) && (m_timeEndTrain < EvilTimeNow()))
-        GetChar()->UpdateSkillQueue();
+        m_char->UpdateSkillQueue();
 
     if (m_sessionTimer.Check(false)) {
         _log(CLIENT__TRACE, "Client::Process():  SetSessionChange to false for %s(%u)", GetName(), GetID());
@@ -261,9 +261,9 @@ void Client::Process() {
     }
 
     // Check Character Save Timer Expiry:
-    if (GetChar()->CheckSaveTimer()) {
+    if (m_char->CheckSaveTimer()) {
         _log(CLIENT__TRACE, "Client::Process():  SaveTimer for %s(%u)", GetName(), GetID());
-        GetChar()->SaveCharacter();
+        m_char->SaveCharacter();
 		GetShip()->SaveShip();
     }
 
@@ -319,13 +319,13 @@ void Client::LoginToSystem(uint32 systemID) {
     m_systemName = m_system->GetName();
     sLog.Warning("Client::LoginToSystem()", "Client %s(%u) Login %s in %s", \
         GetName(), GetCharacterID(), (IsInSpace() ? "InSpace" : "InStation"), m_systemName.c_str());
-    GetChar()->chkDynamicSystemID(systemID);
+    m_char->chkDynamicSystemID(systemID);
 
     SetDestiny(true);
     if (IsInSpace()) {
         OnCharNoLongerInStation();
         //WarpIn();
-        GetChar()->AddPilotToDynamicData(systemID, false, true);
+        m_char->AddPilotToDynamicData(systemID, false, true);
         m_invulTimer.Start(20000);
     } else {
         uint32 stationID = GetLocationID();
@@ -335,7 +335,7 @@ void Client::LoginToSystem(uint32 systemID) {
         OnCharNowInStation();
         SetBubbleWait(true);
         m_clientTimer.Start(1000);
-        GetChar()->AddPilotToDynamicData(systemID, true, true);
+        m_char->AddPilotToDynamicData(systemID, true, true);
     }
     return;
 }
@@ -375,8 +375,8 @@ bool Client::EnterSystem(uint32 systemID) {
         m_systemName = m_system->GetName();
         ResetDestiny(true);
 
-        GetChar()->chkDynamicSystemID(systemID);
-        GetChar()->AddPilotToDynamicData(systemID, IsInSpace());
+        m_char->chkDynamicSystemID(systemID);
+        m_char->AddPilotToDynamicData(systemID, IsInSpace());
     }
 
     return true;
@@ -404,7 +404,7 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
         mts->CancelTrade(this);
     }
     sLog.Log("Client::UndockFromStation()", "Character %s(%u) undocking from stationID() %u", \
-               GetName(), GetCharacterID(), GetChar()->stationID());
+               GetName(), GetCharacterID(), m_char->stationID());
 
     SetInvul(true);
     SetUndock(true);  // bool for movement and invul and SendState checks (maybe more later)
@@ -421,14 +421,14 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
 	//remove ship from station inv, add to system inv, and inform client.
     shipRef->Move(systemID, flagAutoFit);
     //set character location to current system, and save.
-    GetChar()->SetLocation(0, systemID, constellationID, regionID);
+    m_char->SetLocation(0, systemID, constellationID, regionID);
     //need mlocation set to current system before updating client with new position.
-    _UpdateSession(GetChar());
+    _UpdateSession(m_char);
     DestinyUndock(direction);
     // set modules online and recharge shields and cap.
     shipRef->Undock();
     //update char session with the new values
-    _SendSessionChange();
+    SendSessionChange();
 
     if (HasBeyonce())
         m_undockTimer.Start(2000);
@@ -493,9 +493,9 @@ void Client::DockToStation(uint32 stationID) {
         nullptr, nullptr, nullptr
    );
     //update char session values
-    GetChar()->SetLocation(stationID, solarsystemID, constellationID, regionID);
+    m_char->SetLocation(stationID, solarsystemID, constellationID, regionID);
     //update session with new values
-    _UpdateSession(GetChar());
+    _UpdateSession(m_char);
     UpdateLocation(stationID);
     shipRef->Move(stationID, flagHangar);
     // When docking, Set ship's InventoryItem to system origin so that when changing ships in stations, they don't appear outside
@@ -507,7 +507,7 @@ void Client::DockToStation(uint32 stationID) {
     if (shipRef->typeID() == itemTypeCapsule)
         SpawnNewRookieShip();
 
-    _SendSessionChange();
+    SendSessionChange();
     SetSessionTimer();
 }
 
@@ -554,11 +554,11 @@ void Client::MoveToLocation(uint32 location, const GPoint& pt)
 
     shipRef->Relocate(pt);
 
-    GetChar()->SetLocation(stationID, solarSystemID, constellationID, regionID);
+    m_char->SetLocation(stationID, solarSystemID, constellationID, regionID);
     //update session with new values
-    _UpdateSession(GetChar());
+    _UpdateSession(m_char);
     EnterSystem(solarSystemID);
-    _SendSessionChange();
+    SendSessionChange();
 }
 
 void Client::MoveToPosition(const GPoint &pt) {
@@ -648,7 +648,7 @@ void Client::UpdateCorpSession(const CharacterConstRef& character)
     mSession.SetULong("rolesAtHQ", character->rolesAtHQ());
     mSession.SetULong("rolesAtOther", character->rolesAtOther());
 
-    _SendSessionChange();
+    SendSessionChange();
 }
 
 void Client::UpdateFleetSession(const CharacterConstRef& character)
@@ -661,7 +661,7 @@ void Client::UpdateFleetSession(const CharacterConstRef& character)
     mSession.SetInt("wingid", character->wingID());
     mSession.SetInt("squadid", character->squadID());
 
-    _SendSessionChange();
+    SendSessionChange();
 }
 
 void Client::_UpdateSession(const CharacterConstRef& character)
@@ -699,35 +699,49 @@ void Client::_UpdateSession(const CharacterConstRef& character)
     mSession.SetInt("regionid", character->regionID());
 }
 
-void Client::_UpdateSession2(uint32 characterID)
+void Client::InitSession(uint32 characterID)
 {
     if (!characterID) {
-        sLog.Error("Client::_UpdateSession2()", "characterID == 0");
+        sLog.Error("Client::InitSession()", "characterID == 0");
         return;
     }
 
     std::map<std::string, uint64> characterDataMap;
     ((CharUnboundMgrService *)(m_services.LookupService("charUnboundMgr")))->GetCharacterData(characterID, characterDataMap);
     if (!characterDataMap.size()) {
-        sLog.Error("Client::_UpdateSession2()", "characterDataMap.size() returned zero.");
+        sLog.Error("Client::InitSession()", "characterDataMap.size() returned zero.");
         return;
     }
-
-    uint32 stationID = static_cast<uint32>(characterDataMap["stationID"]);
-    uint32 solarSystemID = static_cast<uint32>(characterDataMap["solarSystemID"]);
-
     mSession.SetInt("genderID", static_cast<uint32>(characterDataMap["gender"]));
     mSession.SetInt("charid", characterID);
     mSession.SetInt("corpid", static_cast<uint32>(characterDataMap["corporationID"]));
     m_shipId = static_cast<uint32>(characterDataMap["shipID"]);
 
     m_char->SetActiveShip(m_shipId);
+    mSession.SetInt("shipid", m_shipId);
+
+    mSession.SetInt("cloneStationID", static_cast<uint32>(characterDataMap["cloneStationID"]));
+
+    mSession.SetInt("constellationid", static_cast<uint32>(characterDataMap["constellationID"]));
+    mSession.SetInt("regionid", static_cast<uint32>(characterDataMap["regionID"]));
+
+    mSession.SetInt("hqID", static_cast<uint32>(characterDataMap["corporationHQ"]));
+    //mSession.SetInt("baseID", 0); //TODO  added this, means a corp alternate station, outpost/pos maybe?    -allan  28Jan15
+    mSession.SetInt("corpAccountKey", static_cast<int32>(characterDataMap["corpAccountKey"]));
+    mSession.SetULong("corpRole",     characterDataMap["corpRole"]);
+    mSession.SetULong("rolesAtAll",   characterDataMap["rolesAtAll"]);
+    mSession.SetULong("rolesAtBase",  characterDataMap["rolesAtBase"]);
+    mSession.SetULong("rolesAtHQ",    characterDataMap["rolesAtHQ"]);
+    mSession.SetULong("rolesAtOther", characterDataMap["rolesAtOther"]);
+
+
+    uint32 stationID = static_cast<uint32>(characterDataMap["stationID"]);
+    uint32 solarSystemID = static_cast<uint32>(characterDataMap["solarSystemID"]);
 
     if (stationID) {
         sLog.Warning("Client::_UpdateSession2()", "Character %s(%u) IsDocked at %u.",
                       m_char->itemName().c_str(), characterID, stationID);
         mSession.Clear("solarsystemid");
-        mSession.Clear("shipid");
 
         mSession.SetInt("stationid", stationID);
         mSession.SetInt("stationid2", stationID);
@@ -743,25 +757,11 @@ void Client::_UpdateSession2(uint32 characterID)
 	//also used as current system in following menus:  JumpPortalBridgeMenu, GetHybridBeaconJumpMenu, GetHybridBridgeMenu,
         mSession.SetInt("solarsystemid", solarSystemID);
         mSession.SetInt("locationid", solarSystemID);
-        mSession.SetInt("shipid", m_shipId);
     }
-
-    mSession.SetInt("cloneStationID", static_cast<uint32>(characterDataMap["cloneStationID"]));
-
     // solarsystemid2 is used by client to determine current system.
-	//NOTE:  *MUST* be set to current system.
+    //NOTE:  *MUST* be set to current system.
     mSession.SetInt("solarsystemid2", solarSystemID);
-    mSession.SetInt("constellationid", static_cast<uint32>(characterDataMap["constellationID"]));
-    mSession.SetInt("regionid", static_cast<uint32>(characterDataMap["regionID"]));
 
-    mSession.SetInt("hqID", static_cast<uint32>(characterDataMap["corporationHQ"]));
-    //mSession.SetInt("baseID", 0); //TODO  added this, means a corp alternate station, outpost/pos maybe?    -allan  28Jan15
-    mSession.SetInt("corpAccountKey", static_cast<int32>(characterDataMap["corpAccountKey"]));
-    mSession.SetULong("corpRole",     characterDataMap["corpRole"]);
-    mSession.SetULong("rolesAtAll",   characterDataMap["rolesAtAll"]);
-    mSession.SetULong("rolesAtBase",  characterDataMap["rolesAtBase"]);
-    mSession.SetULong("rolesAtHQ",    characterDataMap["rolesAtHQ"]);
-    mSession.SetULong("rolesAtOther", characterDataMap["rolesAtOther"]);
 }
 
 void Client::_SendCallReturn(const PyAddress& source, uint64 callID, uint32 clientID, PyRep** return_value, const char* channel)
@@ -818,7 +818,7 @@ void Client::_SendException(const PyAddress& source, uint64 callID, MACHONETMSG_
     FastQueuePacket(&p);
 }
 
-void Client::_SendSessionChange()
+void Client::SendSessionChange()
 {
     if (!mSession.isDirty())
         return;
@@ -828,7 +828,7 @@ void Client::_SendSessionChange()
         uint32 location = GetSystemID();
         if (IsDocked())
             location = GetStationID();
-        UpdateSession("locationid", location);
+        UpdateSessionInt("locationid", location);
     }
 
     SessionChangeNotification scn;
@@ -842,7 +842,7 @@ void Client::_SendSessionChange()
     scn.changes->Dump(CLIENT__SESSION, "  Changes: ");
 
     //this is probably not necessary...
-    scn.nodesOfInterest.push_back(services().GetNodeID());
+    scn.nodesOfInterest.push_back(m_services.GetNodeID());
 
     //build the packet:
     PyPacket* p = new PyPacket;
@@ -850,7 +850,7 @@ void Client::_SendSessionChange()
     p->type = SESSIONCHANGENOTIFICATION;
 
     p->source.type = PyAddress::Node;
-    p->source.objectID = services().GetNodeID();
+    p->source.objectID = m_services.GetNodeID();
     p->source.callID = 0;
 
     p->dest.type = PyAddress::Client;
@@ -880,7 +880,7 @@ void Client::_SendPingRequest()
     ping_req->type_string = "macho.PingReq";
 
     ping_req->source.type = PyAddress::Node;
-    ping_req->source.objectID = services().GetNodeID();
+    ping_req->source.objectID = m_services.GetNodeID();
     ping_req->source.service = "ping";
     ping_req->source.callID = 0;
 
@@ -1273,13 +1273,13 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
         return;
     }
     //add jump in previous system
-    GetChar()->chkDynamicSystemID(fromSystem);
-    GetChar()->AddJumpToDynamicData(fromSystem);
+    m_char->chkDynamicSystemID(fromSystem);
+    m_char->AddJumpToDynamicData(fromSystem);
     //add jump in this system
-    GetChar()->chkDynamicSystemID(solarSystemID);
-    GetChar()->AddJumpToDynamicData(solarSystemID);
+    m_char->chkDynamicSystemID(solarSystemID);
+    m_char->AddJumpToDynamicData(solarSystemID);
     // used for showing Visited Systems in StarMap(F10)  -allan 30Jan14
-    GetChar()->VisitSystem(solarSystemID);
+    m_char->VisitSystem(solarSystemID);
 
     // call Stop() per packet sniff
     m_destiny->Stop();
@@ -1320,7 +1320,7 @@ void Client::IsJumping()
 }
 
 bool Client::AddBalance(double amount) {
-    if (!GetChar()->AlterBalance(amount))
+    if (!m_char->AlterBalance(amount))
         return false;
 
     //send notification of change
@@ -1337,14 +1337,14 @@ bool Client::AddBalance(double amount) {
 bool Client::SelectCharacter(uint32 char_id) {
     m_services.item_factory->SetUsingClient(this);
     m_char = m_services.item_factory->GetCharacter(char_id);
-    if (!GetChar()) {
+    if (!m_char) {
           sLog.Error("Client::SelectCharacter()", "GetChar for %u = nullptr", char_id);
         // Release the item factory now that the ItemFactory is finished being used:
         m_services.item_factory->UnsetUsingClient();
         return false;
     }
 
-    _UpdateSession2(char_id);
+    InitSession(char_id);
 
     uint32 systemID =GetSystemID();
     m_system = sEntityList.FindOrBootSystem(systemID);
@@ -1378,7 +1378,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_char->SetActiveShip(m_shipId);    // this also saves shipID for char in db. (error fix)
     LoginToSystem(systemID);
     UpdateSkillTraining();
-    _SendSessionChange();
+    SendSessionChange();
 
     //johnsus - characterOnline mod
     m_services.serviceDB().SetCharacterOnlineStatus(GetCharacterID(), true);
@@ -1390,8 +1390,8 @@ bool Client::SelectCharacter(uint32 char_id) {
 }
 
 void Client::PickAlternateShip() {
-    if (GetChar())
-        m_shipId = GetChar()->PickAlternateShip(GetLocationID());
+    if (m_char)
+        m_shipId = m_char->PickAlternateShip(GetLocationID());
 }
 
 void Client::CreateNewPod() {
@@ -1408,7 +1408,7 @@ void Client::CreateNewPod() {
 void Client::SpawnNewRookieShip() {
     //create rookie ship of appropriate type
     uint32 typeID = amarrRookie;
-    EVERace race = GetChar()->race();
+    EVERace race = m_char->race();
     if (race == raceAmarr)  typeID = amarrRookie;
     else if (race == raceCaldari)  typeID = caldariRookie;
     else if (race == raceGallente)  typeID = gallenteRookie;
@@ -1426,7 +1426,7 @@ void Client::SpawnNewRookieShip() {
         NULL_ORIGIN
     );
     //spawn rookie ship
-    ShipRef i = services().item_factory->SpawnShip(idata);
+    ShipRef i = m_services.item_factory->SpawnShip(idata);
 
     if (!i)
         throw PyException(MakeCustomError("Unable to generate rookie ship"));
@@ -1453,7 +1453,7 @@ void Client::ResetAfterPodded()
         &solarsystemID, &constellationID, &regionID,
         nullptr, nullptr, nullptr
     );
-    GetChar()->SetLocation(stationID, solarsystemID, constellationID, regionID);
+    m_char->SetLocation(stationID, solarsystemID, constellationID, regionID);
 
     EnterSystem(solarsystemID);
     SpawnNewRookieShip();
@@ -1470,16 +1470,16 @@ void Client::ResetAfterPodded()
 
     GetShip()->UpdateModules();
     GetShip()->SaveShip();
-    GetChar()->ResetClone();
-    GetChar()->SaveCharacter();
+    m_char->ResetClone();
+    m_char->SaveCharacter();
     //update session with new values
-    _UpdateSession(GetChar());
-    _SendSessionChange();
+    _UpdateSession(m_char);
+    SendSessionChange();
 }
 
 void Client::UpdateSkillTraining() {
-    if (GetChar())
-        m_timeEndTrain = GetChar()->GetEndOfTraining();
+    if (m_char)
+        m_timeEndTrain = m_char->GetEndOfTraining();
     else
         m_timeEndTrain = 0;
 }
@@ -1596,7 +1596,7 @@ void Client::SaveAllToDatabase() {
     SavePosition();
     if (GetShip()) GetShip()->SaveShip();  // Save Ship and Modules' attributes and info to DB
 
-    GetChar()->SaveFullCharacter();         // Save Character info to DB
+    m_char->SaveFullCharacter();         // Save Character info to DB
 }
 
 PyRep *Client::GetInfoWindowDataForChar(Client *pClient) {
@@ -1643,10 +1643,10 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
 
 //assumes that the backend DB stuff was already done.
 void Client::JoinCorporationUpdate(uint32 corp_id) {
-    //GetChar()->JoinCorporation(corp_id);
-    _UpdateSession(GetChar());
+    //m_char->JoinCorporation(corp_id);
+    _UpdateSession(m_char);
     //logs indicate that we need to push this update out asap.
-    _SendSessionChange();
+    SendSessionChange();
 }
 
 /************************************************************************/
@@ -1688,7 +1688,7 @@ void Client::BanClient()
     SendNotifyMsg("You have been banned from this server and will be disconnected shortly.  You will no longer be able to log in");
 
     //ban the client
-    services().serviceDB().SetAccountBanStatus(GetUserID(), true);
+    m_services.serviceDB().SetAccountBanStatus(GetUserID(), true);
 }
 
 /************************************************************************/
@@ -1780,7 +1780,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     //sLog.Debug("Client","%s: Received Client Challenge.", GetAddress().c_str());
     //sLog.Debug("Client","Login with %s:", ccp.user_name.c_str());
 
-    if (!services().serviceDB().GetAccountInformation(
+    if (!m_services.serviceDB().GetAccountInformation(
 				ccp.user_name.c_str(),
 				ccp.user_password_hash.c_str(),
 				account_info))
@@ -1810,7 +1810,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
             goto error_login_auth_failed;
         }
 
-        if (!services().serviceDB().UpdateAccountHash(
+        if (!m_services.serviceDB().UpdateAccountHash(
                 ccp.user_name.c_str(),
                 password_hash))
         {
@@ -1942,7 +1942,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     PyDecRef(r);
 
     // Send out the session change
-    _SendSessionChange();
+    SendSessionChange();
 
     return true;
 }
@@ -1969,7 +1969,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
             return false;
         }
 
-        dest = services().FindBoundObject(bindID);
+        dest = m_services.FindBoundObject(bindID);
         if (dest == nullptr)
         {
             sLog.Error("Client", "Failed to find bound object %u.", bindID);
@@ -1979,7 +1979,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     else
     {
         //service
-        dest = services().LookupService(packet->dest.service);
+        dest = m_services.LookupService(packet->dest.service);
         if (dest == nullptr)
         {
             sLog.Error("Client","Unable to find service to handle call to: %s", packet->dest.service.c_str());
@@ -2003,7 +2003,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     //parts of call may be consumed here
     PyResult result = dest->Call(req.method, args);
 
-    _SendSessionChange();  //send out the session change before the return.
+    SendSessionChange();  //send out the session change before the return.
     result.ssResult->Dump(SERVICE__WARNING, "    ");
     _SendCallReturn(packet->dest, packet->source.callID, GetClientID(), &result.ssResult);
 
@@ -2050,11 +2050,11 @@ bool Client::Handle_Notify(PyPacket* packet)
         return false;
     }
 
-    _SendSessionChange();  //just for good measure...
+    SendSessionChange();  //just for good measure...
     return true;
 }
 
-void Client::UpdateSession(const char *sessionType, int value)
+void Client::UpdateSessionInt(const char *sessionType, int value)
 {
     mSession.SetInt(sessionType, value);
 }

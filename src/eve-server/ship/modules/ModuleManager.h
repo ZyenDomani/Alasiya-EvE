@@ -393,6 +393,7 @@ public:
 
 
 private:
+    bool m_initalized;
     bool _fitModule(InventoryItemRef item, EVEItemFlags flag);
 
     void _processExternalEffect(SubEffect * e);

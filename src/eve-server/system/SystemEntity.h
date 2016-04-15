@@ -73,6 +73,7 @@ public:
     TargetManager TargMgr;
 
     virtual void Process();
+    virtual void ProcessOther() { }
     virtual void ProcessDestiny() = 0;
 
     //this is a bit crude, but I prefer this over RTTI.
@@ -134,6 +135,7 @@ public:
 
     //  class type helpers.  public for anyone to access.
     virtual bool IsStaticEntity() const         { return true; }
+    virtual bool IsCelestialEntity() const      { return false; }
     virtual bool IsDynamicEntity() const        { return false; }
     virtual bool IsVisibleSystemWide() const    { return false; }
     virtual bool IsInanimate() const            { return false; }

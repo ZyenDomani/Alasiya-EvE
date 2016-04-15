@@ -95,6 +95,7 @@ public:
     void AddItemToInventory(InventoryItemRef item);
     void RemoveItemFromInventory(InventoryItemRef item);
     ShipRef GetShipFromInventory(uint32 shipID);
+    SystemEntity* GetShipSEFromInventory(uint32 shipID);
     CargoContainerRef GetContainerFromInventory(uint32 contID);
     StationRef GetStationFromInventory(uint32 stationID);
 
@@ -115,8 +116,8 @@ protected:
     // Solar System Dynamic Inventory manager:
     SolarSystemRef m_solarSystemRef;    // we do not own this
 
-    bool _LoadSystemCelestials();
-    bool _LoadSystemDynamics();
+    bool LoadSystemStatics();
+    bool LoadSystemDynamics();
 
     const uint32 m_systemID;
     double m_securityRating;

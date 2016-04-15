@@ -28,19 +28,18 @@
 
 #include "system/SystemDB.h"
 
-bool SystemDB::LoadSystemEntities(uint32 systemID, std::vector<DBSystemEntity>& into) {
-    DBQueryResult res;
+bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into) {
+    std::stringstream query;
+    query << "SELECT itemID,typeID,groupID,orbitID, x,y,z,radius,security,itemName";
+    query << " FROM mapDenormalize WHERE solarSystemID=%u ORDER BY itemID";
 
-    if(!sDatabase.RunQuery(res,
-        "SELECT "
-        "   itemID,typeID,groupID,orbitID,"
-        "   x,y,z,radius,security,itemName"
-        " FROM mapDenormalize"
-        " WHERE solarSystemID=%u", systemID )) {
-            codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-            sLog.Warning("SystemDB::LoadSystemEntities", "  Loading system entities for system %u failed", systemID);
-            return false;
-        }
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res, query.str().c_str(), systemID )) {
+        _log(DATABASE__ERROR, "Error in LoadSystemStaticEntities query: %s", res.error.c_str());
+        return false;
+    }
+
+    _log(DATABASE__RESULTS, "LoadSystemStaticEntities returned %u items", res.GetRowCount());
 
     DBResultRow row;
     DBSystemEntity entry;
@@ -58,11 +57,11 @@ bool SystemDB::LoadSystemEntities(uint32 systemID, std::vector<DBSystemEntity>& 
         into.push_back(entry);
     }
 
-    sLog.Success("SystemDB::LoadSystemEntities", "  System entities for system %u loaded", systemID);
     return true;
 }
 
 bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into) {
+    using namespace EVEDB::invCategories;
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
@@ -75,32 +74,32 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "   e.flag,"
         "   t.groupID,"
         "   g.categoryID,"
-        "   IFNULL(c.corporationID, e.ownerID),"
+        "   IFNULL(co.corporationID, e.ownerID),"
         "   IFNULL(co.allianceID, 0),"  //10
-        "   e.x, e.y, e.z,"
-        "   customInfo"
+        "   e.x, e.y, e.z"
         " FROM entity AS e"
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
-        "  LEFT JOIN character_ AS c ON e.ownerID = c.characterID"
-        "  LEFT JOIN corporation AS co ON c.corporationID = co.corporationID"
-        " WHERE locationID = %u"
-        "  AND g.categoryID NOT IN (%d, %d)",
+        "  LEFT JOIN corporation AS co ON co.corporationID = e.ownerID"
+        " WHERE e.locationID = %u"
+        "  AND ((g.categoryID NOT IN (%d, %d, %d) AND (e.ownerID = 1))"  // get dynamics owned by the system -include abandonded ships
+        "     OR (g.categoryID IN (%d, %d, %d, %d, %d, %d, %d) AND (e.ownerID != 1)))"  // get dynamics not owned by the system (not abandonded)
+        "  ORDER BY e.itemID",
         systemID,
-        //excluded categories:
-        //celestials:            0                             3
-        EVEDB::invCategories::_System, EVEDB::invCategories::Station
-        //NPCs:                   11
-        //EVEDB::invCategories::Entity,
+        //exclude categories not applicable for in-space system entities or owned by player/corp :
+        _System/*0*/, /*Character*/1, /*Station*/3, //,Asteroid/*25*/, -to keep asteroids dynamic  -allan
+        // include deployed items owned by players or corps
+        Deployable/*22*/, Orbitals/*46*/, Drone/*18*/, Entity/*11*/,    // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
+        /*Structure*/23, StructureUpgrade/*39*/, SovereigntyStructure/*40*/
         )) {
-            codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+            _log(DATABASE__ERROR, "Error in LoadSystemDynamicEntities query: %s", res.error.c_str());
             return false;
         }
 
+    _log(DATABASE__RESULTS, "LoadSystemDynamicEntities returned %u items", res.GetRowCount());
     DBResultRow row;
     DBSystemDynamicEntity entry;
     while(res.GetRow(row)) {
-        if (row.GetText(13) == "BeltRat") continue;     // spawned npcs are not loaded from db.  nasty hack to keep belt rats dynamic -allan
         entry.itemID = row.GetInt(0);
         entry.itemName = row.GetText(1);
         entry.typeID = row.GetInt(2);
@@ -125,26 +124,33 @@ uint32 SystemDB::GetObjectLocationID( uint32 itemID ) {
 
     if(!sDatabase.RunQuery(res,
         "SELECT locationID FROM entity WHERE itemID=%u", itemID )) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetObjectLocationID query: %s", res.error.c_str());
         return 0;
     }
 
     DBResultRow row;
-    if (res.GetRow(row)) return (row.GetUInt(0)); else return 0;
+    if (res.GetRow(row))
+        return (row.GetUInt(0));
+    return 0;
 }
 
 double SystemDB::GetObjectRadius( uint32 typeID ) {
     DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT radius FROM invTypes WHERE typeID=%u", typeID )) {
+        _log(DATABASE__ERROR, "Error in GetObjectRadius query: %s", res.error.c_str());
+        return 0;
+    }
+
     DBResultRow row;
-
-    sDatabase.RunQuery(res, "SELECT radius FROM invTypes WHERE typeID=%u", typeID );
-
-    if (res.GetRow(row)) return (row.GetUInt(0)); else return 0;
+    if (res.GetRow(row))
+        return (row.GetUInt(0));
+    return 0;
 }
 
 bool SystemDB::GetWrecksToTypes(DBQueryResult& res) {
     if(!sDatabase.RunQuery(res, "SELECT * FROM invTypesToWrecks")) {
-       sLog.Error("SystemDB::GetWrecksToTypes()", "Error in query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetWrecksToTypes query: %s", res.error.c_str());
         return false;
     }
     return true;
@@ -153,7 +159,7 @@ bool SystemDB::GetWrecksToTypes(DBQueryResult& res) {
 void SystemDB::GetLootGroups(DBQueryResult& res) {
     //if(!sDatabase.RunQuery(res, "SELECT groupID, lootGroupID, dropChance FROM npcLootGroup")) {
     if(!sDatabase.RunQuery(res, "SELECT npcGroupID, itemGroupID, groupDropChance FROM lootGroup")) {
-        sLog.Error("SystemDB::GetLootGroups()", "Error in query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetLootGroups query: %s", res.error.c_str());
         return;
     }
 }
@@ -161,14 +167,14 @@ void SystemDB::GetLootGroups(DBQueryResult& res) {
 void SystemDB::GetLootGroupTypes(DBQueryResult& res) {
     //if(!sDatabase.RunQuery(res, "SELECT lootGroupID, typeID, chance, minQuantity, maxQuantity FROM npcLootGroupType")) {
     if(!sDatabase.RunQuery(res, "SELECT itemGroupID, itemID, itemMetaLevel, minAmount, maxAmount FROM lootItemGroup")) {
-        sLog.Error("SystemDB::GetLootGroupTypes()", "Error in query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
         return;
     }
 }
 
 void SystemDB::GetSalvageGroups(DBQueryResult& res) {
     if(!sDatabase.RunQuery(res, "SELECT wreckTypeID, salvageItemID, groupID, dropChance, minDrop, maxDrop FROM invWrecksToSalvage")) {
-        sLog.Error("SystemDB::GetSalvageGroups()", "Error in query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetSalvageGroups query: %s", res.error.c_str());
         return;
     }
 }
@@ -177,8 +183,8 @@ PyObject* SystemDB::ListFactions() {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res, "SELECT factionID FROM chrFactions")) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        _log(DATABASE__ERROR, "Error in ListFactions query: %s", res.error.c_str());
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -194,8 +200,8 @@ PyObject* SystemDB::ListJumps(uint32 stargateID) {
         " FROM mapJumps "
         "  LEFT JOIN mapDenormalize ON celestialID=itemID"
         " WHERE stargateID=%u", stargateID)) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        _log(DATABASE__ERROR, "Error in ListJumps query: %s", res.error.c_str());
+        return nullptr;
     }
 
     return DBResultToRowset(res);

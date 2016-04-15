@@ -244,7 +244,7 @@ public:
     void SelfEveMail(const char *subject, const char *fmt, ...);
     void ChannelJoined(LSCChannel *chan);
     void ChannelLeft(LSCChannel *chan);
-    void UpdateSession( const char *sessionType, int value );
+    void UpdateSessionInt( const char *sessionType, int value );
 
     // character notification messages
     void OnCharNowInStation();
@@ -296,12 +296,12 @@ protected:
     void _DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
 
     void _UpdateSession( const CharacterConstRef& character );
-    void _UpdateSession2( uint32 characterID  );
+    void InitSession( uint32 characterID  );
 
     // Packet stuff
     void _SendCallReturn( const PyAddress& source, uint64 callID, uint32 clientID, PyRep** return_value, const char* channel = NULL );
     void _SendException( const PyAddress& source, uint64 callID, MACHONETMSG_TYPE in_response_to, MACHONETERR_TYPE exception_type, PyRep** payload );
-    void _SendSessionChange();
+    void SendSessionChange();
     void _SendPingRequest();
     void _SendPingResponse( const PyAddress& source, uint64 callID );
 
@@ -314,6 +314,9 @@ protected:
     ServiceDB m_sDB;
     Scan* m_scan;
     TradeSession* m_TS;
+
+    Ship* m_ship;
+    uint32 m_shipId;
 
 	SystemGPoint m_SGP;     // interface to my variable 3-d point generating system  (which isnt finished yet... -allan)
 
@@ -358,8 +361,6 @@ protected:
 
     // set true for using autopilot.
     bool m_autoPilot = false;
-
-    uint32 m_shipId;
 
     EvilNumber m_timeEndTrain;
 
