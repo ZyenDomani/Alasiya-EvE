@@ -97,7 +97,7 @@ SystemManager::~SystemManager() {
 
     SafeDelete(m_anomMgr);
     SafeDelete(m_beltMgr);
-    SafeDelete(m_dunMgr);
+    //SafeDelete(m_dunMgr);
     SafeDelete(m_spawnMgr);
 }
 
