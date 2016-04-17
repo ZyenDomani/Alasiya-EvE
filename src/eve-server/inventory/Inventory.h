@@ -52,7 +52,8 @@ public:
     bool ContentsLoaded() const { return mContentsLoaded; }
     bool LoadContents(ItemFactory* factory);
     void DeleteContents(ItemFactory* factory);
-
+    void SetContentsLoaded(bool set=false)    { mContentsLoaded = set; }
+    
     bool Contains(uint32 itemID) const { return mContents.find( itemID ) != mContents.end(); }
     InventoryItemRef GetByID(uint32 id) const;
     InventoryItemRef GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const;

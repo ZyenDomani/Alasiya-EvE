@@ -137,8 +137,8 @@ Inventory *Inventory::Cast(InventoryItemRef item)
 
 bool Inventory::LoadContents(ItemFactory* factory) {
     // check if the contents has already been loaded...
-    if (ContentsLoaded()) {
-        sLog.Debug("Inventory::LoadContents()", "Not Loading contents of inventory %u", inventoryID());
+    if (mContentsLoaded) {
+        sLog.Log("Inventory::LoadContents()", "Not Loading contents of inventory %u", inventoryID());
         return true;
     }
     sLog.Debug("Inventory::LoadContents()", "Loading contents of inventory %u", inventoryID());
