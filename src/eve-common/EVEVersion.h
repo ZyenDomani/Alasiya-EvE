@@ -39,9 +39,9 @@ static const char* const EVEProjectVersion = "EVE-EVE-TRANQUILITY@ccp";
 static const int32 EVEBirthday = 170472;
 
 /*  Allan's Static Definitions */
-static const float Log_Version = 4.6;    /*  match versions here with logtypes.h and log.ini for full logging support */
-static const float EVE_Build = 1.43;    /* this is for bug tracking on my forums.  -allan 3July15 */
-static const char* const EVEMU_REVISION = "0.8.07-allan";
-static const char* const EVEMU_BUILD_DATE = "8 April 2016";
+static const float Log_Version = 4.7;    /*  match versions here with logtypes.h and log.ini for full logging support */
+static const float EVE_Build = 1.45;    /* this is for bug tracking on my forums.  -allan 3July15 */
+static const char* const EVEMU_REVISION = "0.8.08-allan";
+static const char* const EVEMU_BUILD_DATE = "15 April 2016";
 
 #endif

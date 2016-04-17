@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 4.6
+    Log Version: 4.7
 */
  /*  see log.ini for matching versions */
 
@@ -107,6 +107,13 @@ LOG_TYPE( SERVICE, MESSAGE, DISABLED, "SvcMsg" )
 LOG_TYPE( SERVICE, CACHE, DISABLED, "SvcCache" )
 LOG_TYPE( SERVICE, CACHE_DUMP, DISABLED, "SvcCache" )
 LOG_TYPE( SERVICE, CALL_TRACE, DISABLED, "SvcCallTrace" )
+
+LOG_CATEGORY( COSMIC_MGR )
+LOG_TYPE( COSMIC_MGR, ERROR,   ENABLED, "CMgrError" )
+LOG_TYPE( COSMIC_MGR, WARNING, DISABLED, "CMgrWarning" )
+LOG_TYPE( COSMIC_MGR, MESSAGE, DISABLED, "CMgrMsg" )
+LOG_TYPE( COSMIC_MGR, DEBUG, DISABLED, "CMgrDebug" )
+LOG_TYPE( COSMIC_MGR, TRACE, DISABLED, "CMgrTrace" )
 
 LOG_CATEGORY( SPAWN )
 LOG_TYPE( SPAWN, ERROR,   ENABLED, "SpawnError" )

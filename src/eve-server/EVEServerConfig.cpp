@@ -50,7 +50,7 @@ EVEServerConfig::EVEServerConfig()
     server.UseShipTracking = false;
     server.UseStackTrace = false;//N
     server.ServerSleepTime = 10 /*ms*/;
-    
+
     // world
     world.chatLogs = false;//N
     world.globalChat = true;//N
@@ -123,6 +123,11 @@ EVEServerConfig::EVEServerConfig()
     threads.NetworkThreads = 2;//N
     threads.WorldThreads = 2;//N
 
+    // cosmic
+    cosmic.AnomalyEnabled = false;
+    cosmic.DungeonEnabled = false;
+    cosmic.WormHoleEnabled = false;
+
     // crime
     crime.AggFlagTime = 900 /*s*/;//N
     crime.CrimFlagTime = 900 /*s*/;//N
@@ -144,6 +149,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     AddMemberParser( "files",       &EVEServerConfig::ProcessFiles );
     AddMemberParser( "net",         &EVEServerConfig::ProcessNet );
     AddMemberParser( "threads",     &EVEServerConfig::ProcessThreads );
+    AddMemberParser( "cosmic",      &EVEServerConfig::ProcessCosmic );
     AddMemberParser( "crime",       &EVEServerConfig::ProcessCrime );
 
     // parse the element
@@ -160,6 +166,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     RemoveParser( "files" );
     RemoveParser( "net" );
     RemoveParser( "threads" );
+    RemoveParser( "cosmic" );
     RemoveParser( "crime" );
 
     // return status of parsing
@@ -378,6 +385,21 @@ bool EVEServerConfig::ProcessThreads( const TiXmlElement* ele )
     RemoveParser( "ImageServerThreads" );
     RemoveParser( "NetworkThreads" );
     RemoveParser( "WorldThreads" );
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
+{
+    AddValueParser( "AnomalyEnabled",    cosmic.AnomalyEnabled );
+    AddValueParser( "DungeonEnabled",    cosmic.DungeonEnabled );
+    AddValueParser( "WormHoleEnabled",   cosmic.WormHoleEnabled );
+
+    const bool result = ParseElementChildren( ele );
+
+    RemoveParser( "AnomalyEnabled" );
+    RemoveParser( "DungeonEnabled" );
+    RemoveParser( "WormHoleEnabled" );
 
     return result;
 }

@@ -125,6 +125,12 @@
         <ConsoleThreads>1</ConsoleThreads>
     </threads>
 
+    <cosmic><!-- not implemented yet -->
+        <AnomalyEnabled>0</AnomalyEnabled><!-- bool -->
+        <DungeonEnabled>0</DungeonEnabled><!-- bool -->
+        <WormHoleEnabled>0</WormHoleEnabled><!-- bool -->
+    </cosmic>
+
     <crime><!-- not implemented yet -->
         <CrimFlagTime>900</CrimFlagTime> <!-- seconds  (15m default) -->
         <AggFlagTime>900</AggFlagTime> <!-- seconds (15m default) -->

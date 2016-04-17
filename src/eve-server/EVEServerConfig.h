@@ -58,7 +58,7 @@ public:
         uint8 ServerSleepTime;
         uint16 maxPlayers;
     } server;
-    
+
     // From <world/>
     struct
     {
@@ -191,6 +191,14 @@ public:
         uint8 ConsoleThreads;
     } threads;
 
+    // From <cosmic/>
+    struct
+    {
+        bool AnomalyEnabled;
+        bool DungeonEnabled;
+        bool WormHoleEnabled;
+    } cosmic;
+
     // From <crime/>
     struct
     {
@@ -213,6 +221,7 @@ protected:
     bool ProcessFiles( const TiXmlElement* ele );
     bool ProcessNet( const TiXmlElement* ele );
     bool ProcessThreads( const TiXmlElement* ele );
+    bool ProcessCosmic( const TiXmlElement* ele );
     bool ProcessCrime( const TiXmlElement* ele );
 };
 

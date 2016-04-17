@@ -39,11 +39,9 @@ static const char* DamageMessageIDs_Other[7] = {
     "AttackHit6"     //strikes perfectly, wrecking
 };
 
-class GPoint;
 static const GPoint NULL_ORIGIN(0,0,0);  // common place for a zero-value gpoint
 static const GVector NULL_ORIGIN_V(0,0,0);
 
-class EvilNumber;
 const EvilNumber EVIL_SKILL_BASE_POINTS(250);
 
 const int32 ITEM_DB_SAVE_TIMER_EXPIRY(10);
@@ -55,3 +53,8 @@ static const uint32 minWarpDistance(100000);    // 100km
 //   based on client code...
 static const uint64 ONE_LIGHTYEAR = 9460000000000000UL;  // in meters
 static const uint64 ONE_AU_IN_METERS = 149597870700L;     // 1 astronomical unit in meters, per EVElopedia: http://wiki.eveonline.com/en/wiki/Astronomical_Unit
+
+
+// Cosmic Managers constants here
+static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;
+
