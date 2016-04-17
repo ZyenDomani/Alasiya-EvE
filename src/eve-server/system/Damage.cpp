@@ -98,7 +98,7 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar
     //  TODO  this needs tweaking...
     //New Status = ((10 - Old Status) * Sec Incr) + Old Status
     double killBonus = m_self->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
-    killBonus /= 100;
+    //killBonus /= 1000;
     double oldSec = pChar->GetSecurityRating();
     double secAward = (((10 -oldSec) *killBonus) +oldSec) /100;
     secAward *=  (1 + ( 0.05 * (pChar->GetSkillLevel(skillFastTalk, true))));      // 5% increase
@@ -154,11 +154,11 @@ bool StationEntity::ApplyDamage(Damage &d) {
 }
 
 bool ItemSystemEntity::ApplyDamage(Damage &d) {
-    _log(TARGET__TRACE, "%s(%u): Initalizing %.2f damage from %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+    _log(TARGET__MESSAGE, "%s(%u): Initalizing %.2f damage from %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
          GetName(), GetID(), d.GetTotal(), d.source->GetName(), d.source->GetID(),\
         d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
 
-    bool killed = false;
+    bool killed = false, npc = IsNPC();
     int8 damageID = 0;
     if (d.weapon->categoryID() == EVEDB::invCategories::Charge)
         damageID = 4;
@@ -184,6 +184,7 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
     if (sConfig.rates.damageRate != 1.0)
         d *= sConfig.rates.damageRate;
 
+    /** @todo fix these, to NOT call GetAttribute on each damage call  */
     Damage DamageToShield = d.MultiplyDup(
         m_self->GetAttribute(AttrShieldKineticDamageResonance).get_float(),
         m_self->GetAttribute(AttrShieldThermalDamageResonance).get_float(),
@@ -200,15 +201,15 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
                  *  lvl 1 = 80%, 2 = 60%, 3 = 40% 4 = 20%, 5 = 0
                  */
                 //float new_damage = d.GetTotal() * 0.01;
-                //m_self->SetAttribute(AttrArmorDamage, new_damage);
+                //m_self->SetAttribute(AttrArmorDamage, new_damage, npc);
                 ;
             }
         }
         total_damage += shield_damage;
         double new_charge = available_shield - shield_damage;
-        m_self->SetAttribute(AttrShieldCharge, new_charge);
+        m_self->SetAttribute(AttrShieldCharge, new_charge, npc);
 
-        _log(TARGET__DEBUG, "%s(%u): Applying %.2f damage to shields. New charge: %.3f.",
+        _log(TARGET__DAMAGE, "%s(%u): Applying %.2f damage to shields. New charge: %.3f.",
              GetName(), GetID(), shield_damage, new_charge);
     } else {
         // get fraction of damage partial shield absorbs, and lower total damage by that fraction
@@ -216,9 +217,9 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
         total_damage += available_shield;
 
         if (available_shield > 0) {
-            _log(TARGET__DEBUG, "%s(%u): Shield depleted with %.2f damage. %.2f damage remains.",
+            _log(TARGET__TRACE, "%s(%u): Shield depleted with %.2f damage. %.2f damage remains.",
                  GetName(), GetID(), available_shield, d.GetTotal());
-            m_self->SetAttribute(AttrShieldCharge, 0);
+            m_self->SetAttribute(AttrShieldCharge, 0, npc);
         }
 
         //Armor:
@@ -234,23 +235,23 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
             if (IsClient()) {
                 if ( available_armor < ( 1.0  - m_self->GetAttribute(AttrArmorUniformity).get_float()) ) {
                     //float new_damage = d.GetTotal() * 0.01;
-                    //m_self->SetAttribute(AttrDamage, new_damage);
+                    //m_self->SetAttribute(AttrDamage, new_damage, npc);
                     ;
                 }
             }
             total_damage += armor_damage;
             EvilNumber new_damage = m_self->GetAttribute(AttrArmorDamage) + EvilNumber(armor_damage);
-            m_self->SetAttribute(AttrArmorDamage, new_damage);
-            _log(TARGET__DEBUG, "%s(%u): Applying %.2f damage to armor. New armor damage: %.2f",
+            m_self->SetAttribute(AttrArmorDamage, new_damage, npc);
+            _log(TARGET__DAMAGE, "%s(%u): Applying %.2f damage to armor. New armor damage: %.2f",
                  GetName(), GetID(), armor_damage, new_damage.get_float());
         } else {
             d *= (1 - (available_armor /armor_damage));
             total_damage += available_armor;
 
             if (available_armor > 0) {
-                _log(TARGET__DEBUG, "%s(%u): Armor depleated with %.2f damage. %.2f damage remains.",
+                _log(TARGET__TRACE, "%s(%u): Armor depleated with %.2f damage. %.2f damage remains.",
                      GetName(), GetID(), available_armor, d.GetTotal());
-                m_self->SetAttribute(AttrArmorDamage, m_self->GetAttribute(AttrArmorHP));
+                m_self->SetAttribute(AttrArmorDamage, m_self->GetAttribute(AttrArmorHP), npc);
             }
 
             //Hull/Structure:
@@ -266,16 +267,16 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
             if (hull_damage < available_hull) {
                 total_damage += hull_damage;
                 EvilNumber new_damage = m_self->GetAttribute(AttrDamage) + EvilNumber(hull_damage);
-                m_self->SetAttribute(AttrDamage, new_damage);
-                _log(TARGET__DEBUG, "%s(%u): Applying %.2f damage to structure. New structure damage: %.2f",
+                m_self->SetAttribute(AttrDamage, new_damage, npc);
+                _log(TARGET__DAMAGE, "%s(%u): Applying %.2f damage to structure. New structure damage: %.2f",
                      GetName(), GetID(), hull_damage, new_damage.get_float());
             } else {
                 total_damage += available_hull;
                 //dead....
-                _log(TARGET__DEBUG, "%s(%u): %.2f damage has depleated our structure. Time to explode.",
+                _log(TARGET__TRACE, "%s(%u): %.2f damage has depleated our structure. Time to explode.",
                      GetName(), GetID(), hull_damage);
                 killed = true;
-                m_self->SetAttribute(AttrDamage, m_self->GetAttribute(AttrHP));
+                m_self->SetAttribute(AttrDamage, m_self->GetAttribute(AttrHP), npc);
             }
             //TODO: deal with damaging modules. no idea the mechanics on this.
         }
@@ -458,7 +459,7 @@ void Client::Killed(Damage &fatal_blow) {
             corpseEntity.y = deadPodPosition.y;
             corpseEntity.z = deadPodPosition.z;
 
-        if (!System()->BuildDynamicEntity( this, corpseEntity)) {
+        if (!System()->BuildDynamicEntity( corpseEntity)) {
             sLog.Error("Client::Killed()", "Spawning Corpse Failed: typeID or typeName not supported: '%u'", corpseTypeID);
             throw PyException( MakeCustomError ( "Spawning Corpse Failed: typeID or typeName not supported." ) );
         }
@@ -538,7 +539,7 @@ void Client::Killed(Damage &fatal_blow) {
             wreckEntity.y = deadShipPosition.y;
             wreckEntity.z = deadShipPosition.z;
 
-		if (!(System()->BuildDynamicEntity(this, wreckEntity))) {
+		if (!(System()->BuildDynamicEntity(wreckEntity))) {
             sLog.Error("Client::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
             //throw PyException( MakeCustomError("Unable to spawn wreck of type %u.", wreckTypeID));
 			return;
@@ -622,7 +623,7 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckEntity.y = deadNPCPosition.y;
         wreckEntity.z = deadNPCPosition.z;
 
-	if (!System()->BuildDynamicEntity(nullptr, wreckEntity)) {
+	if (!System()->BuildDynamicEntity(wreckEntity)) {
 		sLog.Error("NPC::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
 		throw PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
 		return;
@@ -732,7 +733,7 @@ void ShipEntity::Killed(Damage &fatal_blow)
         wreckEntity.y = wreckPosition.y;
         wreckEntity.z = wreckPosition.z;
 
-	if (!(System()->BuildDynamicEntity( nullptr, wreckEntity )) )		// WARNING! Passing NULL for a client object (this is ok since BuildDynamicEntity() does not use the first argument
+	if (!(System()->BuildDynamicEntity( wreckEntity )) )
 	{
 		sLog.Error("ShipEntity::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
 		throw PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
