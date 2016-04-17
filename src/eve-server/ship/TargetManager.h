@@ -43,6 +43,9 @@ public:
 
     void Process();
 
+    /* nasty hack until i finish removing destiny and SE code from client */
+    void SetSelf(SystemEntity* self);
+
     //clear out our targeting information (incoming and outgoing)
     void ClearAllTargets(bool notify_self=true);
     void ClearTargets(bool notify_self=true);
@@ -112,17 +115,14 @@ protected:
         Timer timer;
     };
 
-    bool m_destroyed;    //true if we have already taken care of destruction logic.
-    bool m_canAttack;   // true if npcs can begin attack (to correct attacking before targetlock)
-    SystemEntity *const m_self;    //we do not own this.
+private:
+    SystemEntity* m_self;    //we do not own this.
+
+    bool m_destroyed = false;    //true if we have already taken care of destruction logic.
+    bool m_canAttack = false;   // true if npcs can begin attack (to correct attacking before targetlock)
+
     std::map<SystemEntity *, TargetEntry *> m_targets;    //we own these values, not the keys
     std::map<SystemEntity *, TargetedByEntry *> m_targetedBy;    //we own these values, not the keys
 };
 
-
-
-
-
 #endif
-
-

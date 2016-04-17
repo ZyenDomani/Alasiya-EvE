@@ -24,6 +24,8 @@
     Updates:        Allan
 */
 
+/** @todo (Allan)  update this class */
+
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
@@ -39,6 +41,7 @@ TargetManager::TargetManager(SystemEntity *self)
   m_self(self)
 {
     m_canAttack = false;
+    _log(TARGET__INFO, "Created TargMgr %p for %s(%u)", this, self->GetID(), self->GetName());
 }
 
 TargetManager::~TargetManager() {
@@ -58,6 +61,11 @@ void TargetManager::DoDestruction() {
     if (!m_destroyed && m_self) {
         ClearTargets(false);
     }
+}
+
+void TargetManager::SetSelf(SystemEntity* self) {
+    m_self = self;
+    _log(TARGET__INFO, "TargMgr set self to %s(%u)", self->GetID(), self->GetName());
 }
 
 void TargetManager::Process() {
@@ -175,7 +183,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
     //first make sure they are not already in the list
     std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(who);
     if (res != m_targets.end()) {
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return true;
     }
@@ -184,13 +192,13 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
         return false;
     // Check invulnerability (undock and jump invul states)
     if (who->IsInvul()) {
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are Invul.  Ignoring request.", \
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are Invul.  Ignoring request.", \
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
     }
     // Check login for client just logging into game.
     if (who->IsLogin()) {
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are just Logging In.  Ignoring request.", \
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are just Logging In.  Ignoring request.", \
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
     }
@@ -202,15 +210,15 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
     targetSkills += pChar->GetSkillLevel(skillMultitasking);    // +1 target/level
     targetRangeModifier += (0.05 * pChar->GetSkillLevel(skillLongRangeTargeting)); // +5% level
 
-	uint32 maxLockedTargets = ship->GetAttribute(AttrMaxLockedTargets).get_int();
-    if (!maxLockedTargets) maxLockedTargets = 1;
+	int64 maxLockedTargets = ship->GetAttribute(AttrMaxLockedTargets).get_int();
+    if (maxLockedTargets < 1) maxLockedTargets = 1;
     // add module updates to target capacity of ship here.
     if (targetSkills < maxLockedTargets)
         maxLockedTargets = targetSkills;
     if (GetTotalTargets() >= maxLockedTargets) {
-        m_self->CastToClient()->SendInfoModalMsg("Your ship and skills combination can only handle %u targe%s at a time.", \
-            maxLockedTargets, (maxLockedTargets == 1) ? "t":"ts");
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
+        m_self->CastToClient()->SendInfoModalMsg("Your ship and skills combination can only handle %i targe%s at a time.", \
+            maxLockedTargets, ((maxLockedTargets == 1) ? "t":"ts"));
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
     }
@@ -221,7 +229,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
     if (rangeToTarget.length() > maxTargetLockRange) {
         m_self->CastToClient()->SendInfoModalMsg("Your ship and skills combination can only target to %f meters.  %s is %f meters away.", \
             maxTargetLockRange, who->GetName(), rangeToTarget.length());
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are too far away.  Ignoring request.", \
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are too far away.  Ignoring request.", \
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
     }
@@ -237,6 +245,10 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
     _log(TARGET__TRACE, "Target 1: %s(%u) started targeting %s(%u) (%.2fs lock time)",
          m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID(), lockTime);
     who->TargetedAdd(m_self);
+
+    if (sConfig.server.testServer)
+        Dump();
+
     return true;
 }
 
@@ -461,15 +473,14 @@ void TargetManager::QueueTBDestinyEvent( PyTuple** up_in ) const
     PyTuple* up = *up_in;
     *up_in = nullptr;    //could optimize out one of the Clones in here...
 
-    PyTuple* up_dup = nullptr;
+    PyTuple* up_dup(nullptr);
 
-    std::map<SystemEntity*, TargetedByEntry*>::const_iterator cur = m_targetedBy.begin();
-    for (; cur != m_targetedBy.end(); ++cur) {
-        if ((*cur).first->IsClient()) {
+    for (auto cur : m_targetedBy) {
+        if (cur.first->IsClient()) {
             if (!up_dup)
                 up_dup = new PyTuple( *up );
 
-            cur->first->QueueDestinyEvent( &up_dup );
+            cur.first->QueueDestinyEvent( &up_dup );
         }
     }
 
@@ -482,15 +493,14 @@ void TargetManager::QueueTBDestinyUpdate( PyTuple** up_in ) const
     PyTuple* up = *up_in;
     *up_in = nullptr;    //could optimize out one of the Clones in here...
 
-    PyTuple* up_dup = nullptr;
+    PyTuple* up_dup(nullptr);
 
-    std::map<SystemEntity*, TargetedByEntry*>::const_iterator cur = m_targetedBy.begin();
-    for (; cur != m_targetedBy.end(); ++cur) {
-        if ((*cur).first->IsClient()) {
+    for (auto cur : m_targetedBy) {
+        if (cur.first->IsClient()) {
             if (!up_dup)
                 up_dup = new PyTuple( *up );
 
-            cur->first->QueueDestinyUpdate( &up_dup );
+            cur.first->QueueDestinyUpdate( &up_dup );
         }
     }
 
@@ -515,7 +525,7 @@ void TargetManager::TargetEntry::Dump() const {
             break;
             //no default on purpose.
     }
-    _log(TARGET__TRACE, "    Targeted %s (%u): %s (%s %d ms)",
+    _log(TARGET__DUMP, "    Targeted %s(%u): %s (Timer %s at %dms remaining)",
          who->GetName(),
          who->GetID(),
          sname,
@@ -538,7 +548,7 @@ void TargetManager::TargetedByEntry::Dump() const {
             break;
             //no default on purpose.
     }
-    _log(TARGET__TRACE, "    Targeted By %s (%u): %s",
+    _log(TARGET__DUMP, "    Targeted By %s (%u): %s",
          who->GetName(),
          who->GetID(),
          sname
@@ -546,17 +556,9 @@ void TargetManager::TargetedByEntry::Dump() const {
 }
 
 void TargetManager::Dump() const {
-    _log(TARGET__TRACE, "Target Dump for %u:", m_self->GetID());
-    {
-        std::map<SystemEntity *, TargetEntry *>::const_iterator cur = m_targets.begin();
-        for (; cur != m_targets.end(); cur++) {
-            cur->second->Dump();
-        }
-    }
-    {
-        std::map<SystemEntity *, TargetedByEntry *>::const_iterator cur = m_targetedBy.begin();
-        for (; cur != m_targetedBy.end(); ++cur) {
-            cur->second->Dump();
-        }
-    }
+    _log(TARGET__DUMP, "Target Dump for %u:", m_self->GetID());
+    for (auto cur : m_targets)
+        cur.second->Dump();
+    for (auto cur : m_targetedBy)
+        cur.second->Dump();
 }
