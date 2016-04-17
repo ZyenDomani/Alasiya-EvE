@@ -23,35 +23,6 @@
     Author:        Zhur
 */
 
-/*
-Dynamic Bodies:
-    - shape
-    - `mass`
-    - `radius`
-    - `volume`???
-    - `Inertia`???
-    - inertia information
-    - position
-    - velocity
-    - angular velocity
-    - collide with things
-        - approximate eve "run into and stop/turn around" collisions
-
-Ship: extends Dynamic
-    - `maxVelocity`
-    - thrust (propulsion + speed ratio)
-    - angular thrust
-    - "stopping" algorithm
-    - "orbit" algorithm
-    - "turning" algorithm
-
-Static Bodies:
-    - shape
-    - position
-
-detect clients moving into agro radius
-*/
-
 #ifndef EVE_CLIENT_H
 #define EVE_CLIENT_H
 
@@ -111,6 +82,7 @@ public:
     uint64 GetAccountRole() const                   { return mSession.GetCurrentULong( "role" ); }
     uint32 GetClientID() const                      { return mSession.GetCurrentInt( "clientid" ); }
     uint32 GetUserID() const                        { return mSession.GetCurrentInt( "userid" ); }
+    uint32 GetSessionID() const                     { return 0; }
 
     uint32 GetCharacterID() const                   { return mSession.GetCurrentInt( "charid" ); }
     std::string GetCharacterName() const            { return mSession.GetCurrentString( "charname" ); }

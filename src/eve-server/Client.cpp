@@ -739,7 +739,7 @@ void Client::InitSession(uint32 characterID)
     uint32 solarSystemID = static_cast<uint32>(characterDataMap["solarSystemID"]);
 
     if (stationID) {
-        sLog.Warning("Client::_UpdateSession2()", "Character %s(%u) IsDocked at %u.",
+        sLog.Warning("Client::InitSession()", "Character %s(%u) IsDocked at %u.",
                       m_char->itemName().c_str(), characterID, stationID);
         mSession.Clear("solarsystemid");
 
@@ -747,7 +747,7 @@ void Client::InitSession(uint32 characterID)
         mSession.SetInt("stationid2", stationID);
         mSession.SetInt("locationid", stationID); // used to be locationID, I don't know if this change will screw up using medical clones and such -- Aknor Jaden
     } else {
-        sLog.Warning("Client::_UpdateSession2()", "Character %s(%u) InSpace at %u",
+        sLog.Warning("Client::InitSession()", "Character %s(%u) InSpace at %u",
                       m_char->itemName().c_str(), characterID, solarSystemID);
         mSession.Clear("stationid");
         mSession.Clear("stationid2");
@@ -1396,7 +1396,6 @@ void Client::PickAlternateShip() {
 
 void Client::CreateNewPod() {
     EVEItemFlags flag = flagCapsule;
-    //if (IsDocked()) flag = flagHangar;
     std::string pod_name = m_char->itemName() + "'s Capsule";   // use m_char because GetCharacterName() may not be pouplated (i.e. on login)
     ItemData podItem( itemTypeCapsule, GetCharacterID(), GetLocationID(), flag, pod_name.c_str() );
     ShipRef podItemRef = m_services.item_factory->SpawnShip( podItem );
@@ -1502,6 +1501,7 @@ void Client::LoadStationHangar(uint32 stationID)
     sLog.Warning("Client::LoadStationHangar()", "Loading Hangar for %s(%u) in stationID %u", GetName(), GetID(), stationID);
     StationRef sRef = System()->GetStationFromInventory(stationID);
     m_system->itemFactory()->SetUsingClient(this);
+    sRef->SetContentsLoaded(false);
     sRef->LoadContents(m_system->itemFactory());
     m_system->itemFactory()->UnsetUsingClient();
 }
