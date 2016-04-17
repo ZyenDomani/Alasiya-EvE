@@ -261,11 +261,11 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
 			// Spawn generic item for Entities at this time:
 			// (commented lines for _SpawnEntity and LoadEntity can be used alternatively to prevent Entities from being created and saved to the DB,
 			//  however, this may be causing weird and bad targetting of NPC ships when they enter the bubble and your ship is already in it)
-			//uint32 itemID = InventoryItem::_SpawnEntity( factory, data );		// Use this to prevent entity from being stored in DB
-            uint32 itemID = InventoryItem::_Spawn( factory, data );
+			uint32 itemID = InventoryItem::_SpawnEntity( factory, data );		// Use this to prevent entity from being stored in DB
+            //uint32 itemID = InventoryItem::_Spawn( factory, data );
             if (!itemID) return InventoryItemRef();
-			//InventoryItemRef itemRef = InventoryItem::LoadEntity( factory, itemID, data );		// Use this to prevent entity from being stored in DB
-            InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
+			InventoryItemRef itemRef = InventoryItem::LoadEntity( factory, itemID, data );		// Use this to prevent entity from being stored in DB
+            //InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
             if (!itemRef) return InventoryItemRef();
 			return itemRef;
 		}
@@ -480,6 +480,7 @@ uint32 InventoryItem::_Spawn(ItemFactory &factory,
 }
 
 /* This Spawn function is meant for in-memory only items created from the following categorys...
+ *  NPC
  *  EVEDB::invCategories::Entity
  *  EVEDB::invCategories::Charge (for launched missiles only)
  *  EVEDB::invCategories::Asteroid
@@ -506,6 +507,8 @@ uint32 InventoryItem::_SpawnEntity(ItemFactory &factory,
         return factory.GetNextAsteroidID();
     else if (data.flag == EVEItemFlags::flagMissile)
         return factory.GetNextMissileID();
+    else if (IsNPCCorp(data.ownerID))
+        return factory.GetNextNPCID();
     else
         return factory.GetNextEntityID();
 }

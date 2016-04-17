@@ -38,6 +38,7 @@
 #include <Client.h>
 
 // Initialize ID Authority variables:
+uint32 ItemFactory::m_nextNPCID = EVEMU_NPC_ID;
 uint32 ItemFactory::m_nextEntityID = EVEMU_MINIMUM_ENTITY_ID;
 uint32 ItemFactory::m_nextAsteroidID = EVEMU_ASTEROID_ID;
 uint32 ItemFactory::m_nextMissileID = EVEMU_MISSILE_ID;
@@ -76,8 +77,8 @@ void ItemFactory::SaveItems() {
     float total_item_count = (float)m_items.size(), items_saved = 0.0f;
     float current_percent_items_saved = 0.0f;
     for (auto cur : m_items) {
-        // save attributes of item
         if (cur.second->itemID() >= EVEMU_MINIMUM_ENTITY_ID)
+            //and (!cur.second->IsAsteroidSE())  /* this needs my SE update to function */
             cur.second->SaveItem();
 
         ++items_saved;
@@ -395,12 +396,17 @@ uint32 ItemFactory::GetNextEntityID()
 	return m_nextEntityID;
 }
 
+uint32 ItemFactory::GetNextNPCID()
+{
+    return ++m_nextNPCID;
+}
+
 uint32 ItemFactory::GetNextAsteroidID()
 {
-    return m_nextAsteroidID++;
+    return ++m_nextAsteroidID;
 }
 
 uint32 ItemFactory::GetNextMissileID()
 {
-    return m_nextMissileID++;
+    return ++m_nextMissileID;
 }

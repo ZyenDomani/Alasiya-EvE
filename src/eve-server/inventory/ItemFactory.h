@@ -259,6 +259,7 @@ public:
     /*
 	 * ID Authority Functions:
      */
+    uint32 GetNextNPCID();
     uint32 GetNextEntityID();
     uint32 GetNextAsteroidID();
     uint32 GetNextMissileID();
@@ -295,6 +296,8 @@ protected:
 
 private:
     // ID Authority:
+    // holds the next valid ID for in-memory only objects of NPC
+    static uint32 m_nextNPCID;
     // holds the next valid ID for in-memory only objects of EVEDB::invCategories::Entity
     static uint32 m_nextEntityID;
     // holds the next valid ID for in-memory only objects of EVEDB::invGroup::Asteroid
