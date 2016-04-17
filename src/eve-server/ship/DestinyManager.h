@@ -215,6 +215,8 @@ protected:
     bool _IsTargetInvalid();              //performs common target checks
 
 private:
+    Timer m_dockTimer;
+    
     // Internal Collision Methods   -allan Nov 2015
     void _CheckBump();                              //iterate thru objects in current bubble to check for collisions
     void _Bump(SystemEntity* who);                  //math methods for determining direction and speed of bumped ships

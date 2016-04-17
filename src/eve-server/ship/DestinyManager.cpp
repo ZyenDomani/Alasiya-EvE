@@ -48,6 +48,7 @@ m_position( NULL_ORIGIN ),    // right in the middle of the star
 m_maxSpeed(1.0f),
 m_shipMaxAccelTime(0.0f),
 State(DSTBALL_STOP),
+m_dockTimer(1000),  // dock acceptance timer at 1sec
 m_warpTimer(5000),  //completely arbitrary.
 m_moveTimer(0.0),
 m_userSpeedFraction(0.0f),
@@ -79,6 +80,7 @@ m_warpState(nullptr)
     m_turning = false;
     m_inBubble = true;
     m_capNeeded = 0;
+    m_dockTimer.Disable();
     m_warpTimer.Disable();
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
@@ -93,13 +95,23 @@ DestinyManager::~DestinyManager() {
     SafeDelete(m_warpState);
 }
 
-// this is called once per tic from ?
+// this is called once per tic
 void DestinyManager::Process() {
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     //check for and process Destiny State changes.
     ProcessState();
+
+    if (m_dockTimer.Enabled())
+        if (m_dockTimer.Check(false)) {
+            m_dockTimer.Disable();
+            if (m_self->IsClient()) {
+                Client* pClient = m_self->CastToClient();
+                pClient->DockToStation(pClient->GetDockStationID());
+            }
+        }
+
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_destinyProfile, GetTimeUSeconds() - profileStartTime);
 }
@@ -687,7 +699,7 @@ bool DestinyManager::_IsTurn() {    //is working.  dont change
     }
     m_radians = acos(dot);
     float degrees = EvE_RadiansToDegrees(m_radians);
-    if ((degrees < TURN_ALIGNMENT) || (m_turnTic > 6)) {    // hard-coded stop.  turns should take no more than 6 seconds.
+    if ((degrees < TURN_ALIGNMENT) || (m_turnTic > 10)) {    // hard-coded stop.  turns should take no more than 10 seconds.
         m_shipHeading = toVec;
         return false;
     }
@@ -1608,7 +1620,7 @@ PyResult DestinyManager::AttemptDockOperation() {
     SendDestinyUpdate(updates, true);
 
     Halt();
-    pClient->DockToStation(stationID);
+    m_dockTimer.Start(2000);  // start docking timer @ 2sec
 
     return NULL;
 }
