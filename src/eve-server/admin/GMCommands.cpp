@@ -42,6 +42,7 @@
 #include "system/Damage.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
+#include "system/cosmicMgrs/BeltMgr.h"
 
 PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     if (args.argCount() < 2) {
@@ -479,7 +480,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
     entity.z = loc.z;
 
     // Actually do the spawn using SystemManager's BuildEntity:
-    if (!who->System()->BuildDynamicEntity(who, entity))
+    if (!who->System()->BuildDynamicEntity(entity))
         return new PyString("Spawn Failed: typeID or typeName not supported.");
 
     sLog.Log("Command", "%s: Spawned %u.", who->GetName(), typeID);
@@ -614,7 +615,7 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
         entity.z = loc.z;
 
         // Actually do the spawn using SystemManager's BuildEntity:
-        if (!who->System()->BuildDynamicEntity(who, entity))
+        if (!who->System()->BuildDynamicEntity(entity))
             return new PyString("Spawn Failed: typeID or typeName not supported.");
 /*
         // TEST FOR FUN:  If this is a drone, make its destiny manager orbit the ship that spawned it like a little lost puppy...
@@ -1660,6 +1661,34 @@ PyResult Command_pos(Client* who, CommandDB* db, PyServiceMgr* services, const S
      */
     return NULL;
 }
+
+PyResult Command_beltlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    /* this command is used to debug asteroid creation/management
+     * wip.   -allan 15April16
+     */
+
+    std::vector<AsteroidEntity*> invMap;
+    invMap.clear();
+    uint32 beltID = who->Bubble()->GetSpawnID(who->Bubble()->GetID());
+    BeltMgr* belt = who->System()->GetBeltMgr();
+    belt->GetList(beltID, invMap);
+
+    std::ostringstream str;
+    str << "BeltID %u has %u roids in it.<br><br>"; //40
+
+    for (auto cur : invMap)
+        str << cur->GetName() << ": " << cur->GetID() << "<br>"; // 20 + 40 for name (60)
+
+    int count = invMap.size();
+    int size = count * 60;
+    size += 50;
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(), beltID, count);
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
 #if 0
 PyResult Command_inventory(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* this command is used to debug inventory
@@ -1731,6 +1760,7 @@ PyResult Command_shipinventory(Client* who, CommandDB* db, PyServiceMgr* service
     return new PyString(reply);
 }
 
+#endif //0
 PyResult Command_showsession(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
 
     std::ostringstream str;
@@ -1777,4 +1807,3 @@ PyResult Command_showsession(Client* who, CommandDB* db, PyServiceMgr* services,
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
-#endif //0

@@ -91,14 +91,16 @@ COMMAND( fixconnections, ROLE_WORLDMOD,
          " - updates current (incorrect) db table for mapConnections")
 COMMAND( shutdown, ROLE_GMH,
          " - save all items, kick all connections, and halt server. immediate command." )
+COMMAND( beltlist, ROLE_PROGRAMMER,
+         " - list all roids in current belt's inventory." )
 /*  need new inventory code to enable these
 COMMAND( inventory, ROLE_PROGRAMMER,
          " - list all items in current location's inventory (either station or solsystem)." )
 COMMAND( shipinventory, ROLE_PROGRAMMER,
          " - list all items in current ship's inventory." )
+*/
 COMMAND( showsession, ROLE_PROGRAMMER,
          " - list current session values." )
-*/
 
 /*COMMAND( entity, ROLE_ADMIN,
         "(entityID) - unknown" )
