@@ -45,12 +45,12 @@ AlertService::AlertService(PyServiceMgr *mgr)
 
     if (sConfig.server.UseStackTrace)
         traceLogger = new PyTraceLog("evemu_client_stack_trace.txt", true, true);
-        _log(SERVER__INIT_ERR, "UseStackTrace in eve-server.xml is true, yet PyTraceLog was not included in AlertService.cpp");
 }
 
 AlertService::~AlertService()
 {
     delete m_dispatch;
+    SafeDelete(traceLogger);
 }
 
 /** Basically BeanCount means that a error has occurred in the client python code, and it asks

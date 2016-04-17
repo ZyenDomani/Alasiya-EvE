@@ -28,6 +28,7 @@
 
 #include <map>
 #include <vector>
+#include <eve-compat.h>
 
 class SystemEntity;
 class PyTuple;
@@ -37,7 +38,7 @@ class SystemManager;
 
 class SystemBubble {
 public:
-    SystemBubble(/*SystemManager* pSystem,*/ const GPoint& center, double radius);
+    SystemBubble(SystemManager* pSystem, const GPoint& center, double radius);
     ~SystemBubble() { clear(); };
 
 
@@ -73,20 +74,21 @@ public:
     bool InBubble(const GPoint &pt) const;
 
     // for spawn system     -allan 15July15
-    bool IsBelt()               { return m_belt; }
-    bool IsGate()               { return m_gate; }
-    bool IsSpawned()            { return m_spawned; }
-    void SetBelt(bool set)      { m_belt = set; }
-    void SetGate(bool set)      { m_gate = set; }
-    void SetSpawned(bool set)   { m_spawned = set; }
+    void SetBelt(uint32 beltID);
+    void SetGate(uint32 gateID);
+    bool IsBelt()                       { return m_belt; }
+    bool IsGate()                       { return m_gate; }
+    bool IsSpawned()                    { return m_spawned; }
+    void SetSpawned(bool set=false)     { m_spawned = set; }
+    uint32 GetSpawnID(uint16 bubbleID);
 
-    uint32 Count()		        { return m_bubbleIncrementer; }
-    uint32 CountDynamics()      { return m_dynamicEntities.size(); }
-    uint32 CountPlayers()       { return m_players.size(); }
+    uint32 Count()		                { return m_bubbleIncrementer; }
+    uint32 CountDynamics()              { return m_dynamicEntities.size(); }
+    uint32 CountPlayers()               { return m_players.size(); }
     uint32 CountNPCs();
 
     void PrintEntityList();
-    
+
 protected:
     void _SendAddBalls(SystemEntity* to_who);
     void _SendRemoveBalls(SystemEntity* to_who);

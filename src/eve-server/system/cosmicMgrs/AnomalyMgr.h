@@ -23,18 +23,47 @@
     Author:        Allan
 */
 
-#ifndef _EVEMU_SYSTEM_DUNGEONDB_H
-#define _EVEMU_SYSTEM_DUNGEONDB_H
+#ifndef EVEMU_SYSTEM_ANOMALYMGR_H_
+#define EVEMU_SYSTEM_ANOMALYMGR_H_
 
-class DungeonDB {
-public:
+/*  this class is in charge of creating/destroying and maintaining
+ * anomalies in a system.
+ *
+ *  a new iteration of this class is created for each system as that system
+ * is booted.
+ */
 
+#include "system/cosmicMgrs/ManagerDB.h"
+
+
+class DungeonMgr;
+class WormholeMgr;
+class PyServiceMgr;
+class SystemManager;
+
+class AnomalyMgr
+{
+  public:
+      AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
+      virtual ~AnomalyMgr()                             { /* do nothing here */ }
+
+      void Init();
+      void Process();
+
+    /* we do not own any of these */
 protected:
+    ManagerDB m_db;
 
 private:
+    /* we do not own any of these */
+    DungeonMgr* m_dungMgr;
+    WormholeMgr* m_whMgr;
+    SystemManager* m_system;
+    PyServiceMgr& m_services;
+
+    bool m_initalized;
 
 };
 
+#endif  // EVEMU_SYSTEM_ANOMALYMGR_H_
 
-
-#endif  // _EVEMU_SYSTEM_DUNGEONDB_H

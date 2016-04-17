@@ -30,8 +30,7 @@
 #include "npc/SpawnDB.h"
 
 struct SystemSpawnGroup { //reference to this bubble's data for spawn groups.  may need later.
-    //SystemBubble* pSysBubble;   //cant use reference or pointer here...
-    uint32 bubbleID;
+    uint16 bubbleID;
     uint32 systemID;
     uint32 regionID;
     double secRating;
@@ -45,7 +44,7 @@ struct SpawnEntry {     // notes for me while creating/writing/testing
     uint8 sub;          // spawn data subtype
     uint8 type;         // spawn data class id (in case we have to look it up again)
     uint16 groupID;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
-    uint16 typeID;      // rat type id
+    uint32 typeID;      // rat type id
     uint32 itemID;      // rat entity id
     uint32 corpID;      // rat corp id
     uint32 factionID;   // rat faction id

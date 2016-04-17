@@ -69,7 +69,7 @@ public:
     void Process();             // called around 40-60Hz on my system
     bool ProcessDestiny();      // called at 1Hz.
 
-    bool BuildDynamicEntity(Client* who, const DBSystemDynamicEntity& entity);
+    bool BuildDynamicEntity(const DBSystemDynamicEntity& entity);
 
     void AddClient(Client* who, bool docked=false, bool count=false);
     void RemoveClient(Client* who, bool docked=false, bool count=false);
@@ -96,7 +96,7 @@ public:
     void AddItemToInventory(InventoryItemRef item);
     void RemoveItemFromInventory(InventoryItemRef item);
     ShipRef GetShipFromInventory(uint32 shipID);
-    SystemEntity* GetShipSEFromInventory(uint32 shipID);
+    SystemEntity* GetSEFromInventory(uint32 itemID);
     CargoContainerRef GetContainerFromInventory(uint32 contID);
     StationRef GetStationFromInventory(uint32 stationID);
 
@@ -108,6 +108,13 @@ public:
     void GetSpawnBubbles(SpawnBubbleVec* bubbleMap);
     void RemoveSpawnBubble();
 
+    // mgr interface
+    BeltMgr* GetBeltMgr()                   { return m_beltMgr; }
+    AnomalyMgr* GetAnomMgr()                { return m_anomMgr; }
+    DungeonMgr* GetDungMgr()                { return m_dunMgr; }
+    SpawnMgr* GetSpawnMgr()                 { return m_spawnMgr; }
+
+
 protected:
     // Solar System Inventory Functions:
     //uint32 inventoryID() const { return itemID(); }
@@ -116,6 +123,8 @@ protected:
 
     // Solar System Dynamic Inventory manager:
     SolarSystemRef m_solarSystemRef;    // we do not own this
+
+    void LoadCosmicMgrs();
 
     bool LoadSystemStatics();
     bool LoadSystemDynamics();

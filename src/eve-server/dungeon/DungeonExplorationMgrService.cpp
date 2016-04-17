@@ -28,7 +28,7 @@
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
-#include "missions/DungeonExplorationMgrService.h"
+#include "dungeon/DungeonExplorationMgrService.h"
 
 PyCallable_Make_InnerDispatcher(DungeonExplorationMgrService)
 

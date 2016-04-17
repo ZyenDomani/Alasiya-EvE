@@ -134,7 +134,7 @@ void BubbleManager::Add(SystemEntity* ent, bool isPostWarp) {
     }
     // this System Entity is not in any existing bubble, so let's make a new bubble
     // TODO check edges of bubbles....should NOT overlap.
-    pBubble = new SystemBubble(/*ent->System(),*/newCenter, BUBBLE_RADIUS_METERS);
+    pBubble = new SystemBubble(ent->System(), newCenter, BUBBLE_RADIUS_METERS);
 
 	_log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add() - Entity '%s'(%u) being added to NEW Bubble %u", ent->GetName(), ent->GetID(), pBubble->GetID() );
     m_bubbles.push_back(pBubble);
@@ -178,4 +178,18 @@ SystemBubble* BubbleManager::FindBubble(const GPoint &pos) const {
     }
     //not in any existing bubble.
     return nullptr;
+}
+
+/* for beltmgr */
+uint32 BubbleManager::GetSpawnID(uint16 bubbleID)
+{
+    std::map<uint16, uint32>::iterator itr = m_spawnIDs.find(bubbleID);
+    if (itr == m_spawnIDs.end())
+        return 0;
+    return itr->second;
+}
+
+void BubbleManager::AddSpawnID(uint16 bubbleID, uint32 spawnID)
+{
+    m_spawnIDs.emplace(std::pair<uint16, uint32>(bubbleID, spawnID));
 }

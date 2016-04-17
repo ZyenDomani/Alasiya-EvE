@@ -25,27 +25,41 @@
 
 #include "eve-server.h"
 
+#include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
-#include "dungeon/DungeonMgr.h"
-#include "system/AnomalyMgr.h"
-#include "system/BeltMgr.h"
 #include "system/SystemManager.h"
-#include "system/WormholeMgr.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
+#include "system/cosmicMgrs/BeltMgr.h"
+#include "system/cosmicMgrs/DungeonMgr.h"
+#include "system/cosmicMgrs/WormholeMgr.h"
 
-/*  this class is in charge of creating/destroying and maintaining
- * anomalies in a system.
- * 
- *  a new iteration of this class is created for each system as that system
- * is booted.
+/*
+ * # Cosmic Mgr Logging:
+ * COSMIC_MGR=1
+ * COSMIC_MGR__ERROR=1
+ * COSMIC_MGR__WARNING=1
+ * COSMIC_MGR__MESSAGE=0
+ * COSMIC_MGR__DEBUG=1
+ * COSMIC_MGR__TRACE=0
  */
-
 AnomalyMgr::AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc)
 : m_system(mgr),
   m_services(svc)
 {
+    m_initalized = false;
 
 }
 
+void AnomalyMgr::Init()
+{
+    if (!sConfig.cosmic.AnomalyEnabled) return;
+
+    m_initalized = true;
+
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+}
+
 void AnomalyMgr::Process() {
+    if (!m_initalized) return;
 
 }

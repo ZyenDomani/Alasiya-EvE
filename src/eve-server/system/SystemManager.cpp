@@ -29,7 +29,6 @@
 #include "EVEServerConfig.h"
 #include "Profile.h"
 #include "chat/LSCService.h"
-#include "dungeon/DungeonMgr.h"
 #include "npc/NPC.h"
 #include "npc/SpawnMgr.h"
 #include "pos/Structure.h"
@@ -38,15 +37,16 @@
 #include "ship/Missile.h"
 #include "ship/Ship.h"
 #include "station/Station.h"
-#include "system/AnomalyMgr.h"
 #include "system/Asteroid.h"
-#include "system/BeltMgr.h"
 #include "system/Container.h"
 #include "system/Deployable.h"
 #include "system/SolarSystem.h"
 #include "system/SystemBubble.h"
 #include "system/SystemEntities.h"
 #include "system/SystemManager.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
+#include "system/cosmicMgrs/BeltMgr.h"
+#include "system/cosmicMgrs/DungeonMgr.h"
 
 using namespace Destiny;
 
@@ -56,7 +56,7 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)//, ItemData ida
   m_services(svc),
   m_anomMgr(new AnomalyMgr(this, m_services)),
   m_beltMgr(new BeltMgr(this, m_services)),
-  //m_dunMgr(new DungeonMgr(this, m_services)),
+  m_dunMgr(new DungeonMgr(this, m_services)),
   m_spawnMgr(new SpawnMgr(this, m_services)),
   m_entityChanged(false)
 {
@@ -64,13 +64,13 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)//, ItemData ida
 
     ++m_systems;
     m_activityTime = 0;
-    _log(COMMON__MESSAGE, "Create SystemManager %p for System %s(%u)", this, m_systemName.c_str(), GetID());
+    _log(COMMON__MESSAGE, "Create SystemManager %p for System %s(%u)", this, m_systemName.c_str(), m_systemID);
 }
 
 SystemManager::~SystemManager() {
     /*
     if (m_players || !m_clients.empty()) {
-        _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %u clients in mmaps", GetID(), m_players, m_clients.size());
+        _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %u clients in mmaps", m_systemID, m_players, m_clients.size());
         for (auto cur : m_clients)
             sEntityList.Remove(cur.second);
     }
@@ -112,6 +112,13 @@ GPoint hack_sentry_locs[num_hack_sentry_locs] = {
     GPoint(35000.0f, 35000.0f, -35000.0f),
     GPoint(35000.0f, 35000.0f, 35000.0f)
 };
+
+void SystemManager::LoadCosmicMgrs()
+{
+    m_anomMgr->Init();
+    m_beltMgr->Init();
+    m_dunMgr->Init();
+}
 
 bool SystemManager::LoadSystemStatics() {
     std::vector<DBSystemEntity> entities;
@@ -156,6 +163,7 @@ bool SystemManager::LoadSystemStatics() {
                 m_entities[se->GetID()] = se;
                 InventoryItemRef itemRef = m_services.item_factory->GetItem(cur.itemID);
                 AddItemToInventory(itemRef);
+                m_beltMgr->RegisterBelt(itemRef);
             } break;
             case EVEDB::invGroups::Stargate: {
                 SimpleSystemEntity *se = SimpleSystemEntity::MakeEntity(this, cur);
@@ -437,7 +445,7 @@ bool SystemManager::LoadSystemDynamics() {
     return true;
 }
 
-bool SystemManager::BuildDynamicEntity(Client* who, const DBSystemDynamicEntity& entity)
+bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity)
 {
     SystemEntity* se = DynamicEntityFactory::BuildEntity(*this, entity );
     if (!se) {
@@ -452,6 +460,8 @@ bool SystemManager::BuildDynamicEntity(Client* who, const DBSystemDynamicEntity&
 bool SystemManager::BootSystem() {
     m_solarSystemRef = m_services.item_factory->GetSolarSystem(m_systemID);
     assert(m_solarSystemRef);
+
+    LoadCosmicMgrs();
 
     if (!LoadSystemStatics()) {
         _log(SERVICE__ERROR, "Unable to load Statics during boot of system %u.", m_systemID);
@@ -533,7 +543,7 @@ void SystemManager::UnloadSystem() {
     // use Inventory::DeleteContents(ItemFactory &factory) to remove system contents from memory.
     //Inventory::DeleteContents(m_services.item_factory);
     sLog.Success("SystemManager::UnloadSystem()", "UnloadSystem() called for empty system %s(%u).", \
-        GetName().c_str(), GetID());
+        GetName().c_str(), m_systemID);
 }
 
 
@@ -636,11 +646,11 @@ void SystemManager::RemoveEntity(SystemEntity* who) {
 void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
 {
     _log(SPAWN__MESSAGE, "Spawn called for bubble %u in system %u(%.4f), region %u.",
-         pSysBubble->GetID(), GetID(), GetSystemSecurityRating(), GetRegionID());
+         pSysBubble->GetID(), m_systemID, m_securityRating, m_regionID);
     uint8 count = BeltCount();
     if (count > 5) count -= 2;
     if (m_activeRatSpawns < count ) {
-        m_spawnMgr->DoSpawnForBubble(pSysBubble, GetRegionID(), GetSystemSecurityRating());
+        m_spawnMgr->DoSpawnForBubble(pSysBubble, m_regionID, m_securityRating);
         m_ratBubbles.push_back(pSysBubble->GetID());
     }
     //check for and spawn roids if needed in this bubble.
@@ -648,7 +658,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
 
 void SystemManager::GetSpawnBubbles(SpawnBubbleVec* bubbleMap)
 {
-    _log(SPAWN__MESSAGE, "SystemManager::GetSpawnBubbles() - called for %s(%u)", GetName().c_str(), GetID());
+    _log(SPAWN__MESSAGE, "SystemManager::GetSpawnBubbles() - called for %s(%u)", GetName().c_str(), m_systemID);
     SpawnBubbleVec::iterator itr = m_ratBubbles.begin();
     while (itr != m_ratBubbles.end())
         bubbleMap->push_back(*itr);
@@ -656,7 +666,7 @@ void SystemManager::GetSpawnBubbles(SpawnBubbleVec* bubbleMap)
 
 void SystemManager::RemoveSpawnBubble()
 {
-    _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for %s(%u), but needs to be written.", GetName().c_str(), GetID());
+    _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for %s(%u), but needs to be written.", GetName().c_str(), m_systemID);
 }
 
 SystemEntity* SystemManager::get(uint32 entityID) const {
@@ -765,8 +775,8 @@ void SystemManager::RemoveItemFromInventory(InventoryItemRef item)
     m_solarSystemRef->RemoveItemFromInventory( item );
 }
 
-SystemEntity* SystemManager::GetShipSEFromInventory(uint32 shipID) {
-    auto itr = m_entities.find(shipID);
+SystemEntity* SystemManager::GetSEFromInventory(uint32 itemID) {
+    auto itr = m_entities.find(itemID);
     if (itr != m_entities.end())
         return itr->second;
     return nullptr;

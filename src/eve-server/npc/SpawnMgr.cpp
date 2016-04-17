@@ -168,7 +168,7 @@ void SpawnMgr::Process() {
                         killTimer = false;
                     }
                 }
-                curBubbleItr++;
+                ++curBubbleItr;
             }
 
             if (killTimer) {
@@ -236,10 +236,10 @@ void SpawnMgr::SpawnPopped(uint32 itemID)
 
 void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
+    if (!m_enabled) return;
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
-    //if (!m_enabled) return;
     if (!_FindSpawnForBubble(pSysBubble->GetID())) {
         sLog.Success("SpawnMgr", "DoSpawnForBubble called for bubble %u in %s(%u)(%.4f). Main Timer enabled.",
                      pSysBubble->GetID(), m_system->GetName().c_str(), m_system->GetID(), secRating);
@@ -263,8 +263,9 @@ bool SpawnMgr::_FindSpawnForBubble(uint32 bubbleID) {
 void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
     // get faction for this region
-    uint32 factionID = factionRogueDrones; // default to rogue drones.  this is my internal rogue drone factionID.
-    if (MakeRandomFloat() > 0.15) { // random chance for ANY beltspawn to be rogue drone...if chance < 0.15, rat = drone.
+    uint32 factionID = factionRogueDrones; // default to rogue drones.  this is my internal rogue drone factionID (500021).
+    /*  random chance for ANY beltspawn to be rogue drone in sec < 0.9 .if chance < 0.15, rat = drone. */
+    if ((secRating > 0.89) or (MakeRandomFloat() > 0.15)) {
         std::map<uint32, uint32>::iterator itr = sSpawnDataMgr.m_regions.find(regionID);
         if (itr != sSpawnDataMgr.m_regions.end())
             factionID = (*itr).second;
@@ -297,17 +298,18 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
             else
                 type = 8;
     }
-    if ((!type) && pSysBubble->IsBelt()) {  // gonna be a 'regular' trusec-based spawn in a belt.
+    if ((!type) && pSysBubble->IsBelt()) {  // gonna be a 'normal' trusec-based spawn in a belt.
         if (secRating < -0.8)  type = 7;
         else if (secRating < -0.5) type = 6;
-        else if (secRating < -0.2) type = 5;
-        else if (secRating < 0.1) type = 4;
-        else if (secRating < 0.4) type = 3;
-        else if (secRating < 0.7) type = 2;
+        else if (secRating < -0.1) type = 5;
+        else if (secRating < 0.2) type = 4;
+        else if (secRating < 0.5) type = 3;
+        else if (secRating < 0.8) type = 2;
         else type = 1;
     }
 
-    // write code to spawn smaller groups on gates
+    /** @todo write code to spawn smaller groups on gates */
+    /** @todo  write checks for subclasses based on trusec */
 
     RatSpawnClassVec spawnEntry;
     RatSpawnClass spawnClass;
@@ -462,13 +464,13 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry* spawnEntry)
         "BeltRat"
     );
 
-    InventoryItemRef i = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db.
+    InventoryItemRef i = m_services.item_factory->SpawnItem(idata);
     if (!i) {
         _log(SPAWN__ERROR, "Failed to spawn item type %u.", spawnEntry->typeID);
         return;
     }
 
-    _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %u", i->itemID());
+    _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %u in bubble %u", i->itemID(), pSysBubble->GetID());
 
     //create them all at the same point to start with...
     //we will move them before they get added to the system
@@ -491,7 +493,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
      *  to somewhere around bubble center.  this will make their origin appear elsewhere,
      * but not from same place every time.  they're pirates, they got other shit to do, too.
      *
-     * however, warping in dont seem to be working.  will look into later.
+     * however, warp-in dont seem to be working.  will look into later.
      */
     GPoint startPos(pSysBubble->GetCenter());
     //startPos.MakeRandomPointOnSphere(500000); //500km from bubble center
@@ -500,7 +502,11 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
     uint32 corpID = GetCorpID(factionID);
 
     RatSpawnGroupVec::iterator cur = m_toSpawn.begin();
-
+    /*
+    // Singleton friendly constructor:
+    ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
+              const GPoint &_position = GPoint(0, 0, 0), const char *_customInfo = "", bool _contraband = false);
+    */
     while (cur != m_toSpawn.end()) {
         ItemData idata(
             cur->typeID,
@@ -512,7 +518,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
         );
 
         for (uint32 x=0; x!=cur->quantity; x++) {
-            InventoryItemRef i = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db....or save ALL the spawn shit
+            InventoryItemRef i = m_services.item_factory->SpawnItem(idata);
             if (!i) {
                 _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur->typeID);
                 continue;
@@ -551,7 +557,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
         cur++;
     }
 
-    m_spawnID++;
+    ++m_spawnID;
     m_bubbles.push_back(pSysBubble);
     //cleanup
     m_ratSpawns.clear();

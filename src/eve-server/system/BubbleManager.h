@@ -62,8 +62,16 @@ public:
     void Remove(SystemEntity* ent);
     void clear();
 
+
+    // for spawn system     -allan 15April16
+    void AddSpawnID(uint16 bubbleID, uint32 spawnID);
+    uint32 GetSpawnID(uint16 bubbleID);
+
 protected:
     Timer m_wanderTimer;
+
+    /* map of bubbleID, spawnID */
+    std::map<uint16, uint32> m_spawnIDs;
 
     //dumb storage for now:
     std::vector<SystemBubble*> m_bubbles;    //we own these. Dynamic only because I am afraid of copy activities.

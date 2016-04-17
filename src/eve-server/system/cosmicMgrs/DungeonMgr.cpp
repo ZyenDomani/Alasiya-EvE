@@ -23,35 +23,30 @@
     Author:        Allan
 */
 
-#ifndef EVEMU_SYSTEM_ANOMALYMGR_H_
-#define EVEMU_SYSTEM_ANOMALYMGR_H_
+#include "eve-server.h"
 
-/* this class will control all aspects of
- * creating, monitoring, removing, logging
- * and saving of all system anomalies.
- */
+#include "EVEServerConfig.h"
+#include "PyServiceMgr.h"
+#include "system/cosmicMgrs/DungeonMgr.h"
 
-class DungeonMgr;
-class WormholeMgr;
-class PyServiceMgr;
-class SystemManager;
-
-class AnomalyMgr
+DungeonMgr::DungeonMgr(SystemManager* mgr, PyServiceMgr& svc)
+: m_system(mgr),
+m_services(svc)
 {
-  public:
-      AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
-      virtual ~AnomalyMgr()                             { /* do nothing here */ }
+    m_initalized = false;
 
-      void Process();
+}
 
-private:
-    /* we do not own any of these */
-    DungeonMgr* m_dungMgr;
-    WormholeMgr* m_whMgr;
-    SystemManager* m_system;
-    PyServiceMgr& m_services;
+void DungeonMgr::Init()
+{
+    if (!sConfig.cosmic.DungeonEnabled) return;
 
-};
+    m_initalized = true;
 
-#endif  // EVEMU_SYSTEM_ANOMALYMGR_H_
+    _log(COSMIC_MGR__MESSAGE, "DungeonMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+}
 
+void DungeonMgr::Process() {
+    if (!m_initalized) return;
+
+}

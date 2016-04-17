@@ -25,8 +25,9 @@
 
 #include "eve-server.h"
 
+#include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
-#include "system/WormholeMgr.h"
+#include "system/cosmicMgrs/WormholeMgr.h"
 
 /*  this class will need to keep track of all WH in universe, what systems they connect to,
  * and how long they last.
@@ -49,16 +50,23 @@ WormholeMgr::WormholeMgr()
 {
     m_services = nullptr;
     m_updateTimer.Disable();
-
+    m_initalized = false;
 }
 
 void WormholeMgr::Init(PyServiceMgr* svc) {
     m_services = svc;
-    sLog.Success("       ServerInit", "Wormhole Manager Initialized.");
-
+    if (!sConfig.cosmic.WormHoleEnabled) {
+        sLog.Warning(" Wormhole Manager", "Wormhole Manager Disabled.");
+        return;
+    }
+    
+    m_initalized = true;
+    sLog.Success(" Wormhole Manager", "Wormhole Manager Initialized.");
+    /* load current data, start timers, process current data, and create new items, if needed */
 }
 
 void WormholeMgr::Process() {
+    if (!m_initalized) return;
     if (m_updateTimer.Check(false)) {
         /* do something useful here */
     }

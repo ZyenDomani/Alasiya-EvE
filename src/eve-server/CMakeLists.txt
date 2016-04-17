@@ -198,14 +198,12 @@ SET( dogmaim_SOURCE
      "${TARGET_SOURCE_DIR}/dogmaim/DogmaService.cpp" )
 
 SET( dungeon_INCLUDE
-     "${TARGET_INCLUDE_DIR}/dungeon/DungeonDB.h"
      #"${TARGET_INCLUDE_DIR}/dungeon/DungeonEditor.h"
-     "${TARGET_INCLUDE_DIR}/dungeon/DungeonMgr.h"
+     "${TARGET_INCLUDE_DIR}/dungeon/DungeonExplorationMgrService.h"
      "${TARGET_INCLUDE_DIR}/dungeon/DungeonService.h")
 SET( dungeon_SOURCE
-     "${TARGET_SOURCE_DIR}/dungeon/DungeonDB.cpp"
      #"${TARGET_SOURCE_DIR}/dungeon/DungeonEditor.cpp"
-     "${TARGET_SOURCE_DIR}/dungeon/DungeonMgr.cpp"
+     "${TARGET_SOURCE_DIR}/dungeon/DungeonExplorationMgrService.cpp"
      "${TARGET_SOURCE_DIR}/dungeon/DungeonService.cpp" )
 
 SET( fleet_INCLUDE
@@ -307,11 +305,9 @@ SET( market_SOURCE
      #"${TARGET_SOURCE_DIR}/market/NPCMarket.cpp")
 
 SET( missions_INCLUDE
-     "${TARGET_INCLUDE_DIR}/missions/DungeonExplorationMgrService.h"
      "${TARGET_INCLUDE_DIR}/missions/MissionDB.h"
      "${TARGET_INCLUDE_DIR}/missions/MissionMgrService.h" )
 SET( missions_SOURCE
-     "${TARGET_SOURCE_DIR}/missions/DungeonExplorationMgrService.cpp"
      "${TARGET_SOURCE_DIR}/missions/MissionDB.cpp"
      "${TARGET_SOURCE_DIR}/missions/MissionMgrService.cpp" )
 
@@ -507,9 +503,7 @@ SET( station_SOURCE
      "${TARGET_SOURCE_DIR}/station/TradeService.cpp" )
 
 SET( system_INCLUDE
-     "${TARGET_INCLUDE_DIR}/system/AnomalyMgr.h"
      "${TARGET_INCLUDE_DIR}/system/Asteroid.h"
-     "${TARGET_INCLUDE_DIR}/system/BeltMgr.h"
      "${TARGET_INCLUDE_DIR}/system/BookmarkDB.h"
      "${TARGET_INCLUDE_DIR}/system/BookmarkService.h"
      "${TARGET_INCLUDE_DIR}/system/BubbleManager.h"
@@ -533,12 +527,9 @@ SET( system_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/SystemEntity.h"
      "${TARGET_INCLUDE_DIR}/system/SystemGPoint.h"
      "${TARGET_INCLUDE_DIR}/system/SystemManager.h"
-     "${TARGET_INCLUDE_DIR}/system/WormholeMgr.h"
      "${TARGET_INCLUDE_DIR}/system/WormholeSvc.h" )
 SET( system_SOURCE
-     "${TARGET_SOURCE_DIR}/system/AnomalyMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/Asteroid.cpp"
-     "${TARGET_SOURCE_DIR}/system/BeltMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/BookmarkDB.cpp"
      "${TARGET_SOURCE_DIR}/system/BookmarkService.cpp"
      "${TARGET_SOURCE_DIR}/system/BubbleManager.cpp"
@@ -562,8 +553,20 @@ SET( system_SOURCE
      "${TARGET_SOURCE_DIR}/system/SystemEntity.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemGPoint.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemManager.cpp"
-     "${TARGET_SOURCE_DIR}/system/WormholeMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/WormholeSvc.cpp")
+
+SET( system_managers_INCLUDE
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/AnomalyMgr.h"
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/BeltMgr.h"
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/DungeonMgr.h"
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/ManagerDB.h"
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/WormholeMgr.h")
+SET( system_managers_SOURCE
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/AnomalyMgr.cpp"
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/BeltMgr.cpp"
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/DungeonMgr.cpp"
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/ManagerDB.cpp"
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/WormholeMgr.cpp")
 
 ########################
 # Setup the executable #
@@ -598,6 +601,7 @@ SOURCE_GROUP( "src\\ship\\modules\\components" FILES ${ship_modules_components_I
 SOURCE_GROUP( "src\\standing"      FILES ${standing_INCLUDE} )
 SOURCE_GROUP( "src\\station"       FILES ${station_INCLUDE} )
 SOURCE_GROUP( "src\\system"        FILES ${system_INCLUDE} )
+SOURCE_GROUP( "src\\system\\cosmicMgrs"  FILES ${system_managers_INCLUDE} )
 
 SOURCE_GROUP( "src"                FILES ${SOURCE} )
 SOURCE_GROUP( "src\\account"       FILES ${account_SOURCE} )
@@ -629,6 +633,7 @@ SOURCE_GROUP( "src\\ship\\modules\\components" FILES ${ship_modules_components_S
 SOURCE_GROUP( "src\\standing"      FILES ${standing_SOURCE} )
 SOURCE_GROUP( "src\\station"       FILES ${station_SOURCE} )
 SOURCE_GROUP( "src\\system"        FILES ${system_SOURCE} )
+SOURCE_GROUP( "src\\system\\cosmicMgrs"  FILES ${system_managers_SOURCE} )
 
 ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${INCLUDE}                ${SOURCE}
@@ -660,7 +665,8 @@ ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${ship_modules_components_INCLUDE} ${ship_modules_components_SOURCE}
                 ${standing_INCLUDE}       ${standing_SOURCE}
                 ${station_INCLUDE}        ${station_SOURCE}
-                ${system_INCLUDE}         ${system_SOURCE} )
+                ${system_INCLUDE}         ${system_SOURCE}
+                ${system_managers_INCLUDE} ${system_managers_SOURCE} )
 
 TARGET_BUILD_PCH( "${TARGET_NAME}"
                   "${TARGET_INCLUDE_DIR}/eve-server.h"

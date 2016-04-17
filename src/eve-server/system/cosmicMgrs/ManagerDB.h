@@ -23,28 +23,38 @@
     Author:        Allan
 */
 
-#ifndef _EVEMU_SYSTEM_DUNGEONMGR_H
-#define _EVEMU_SYSTEM_DUNGEONMGR_H
+#ifndef _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
+#define _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
 
-#include "dungeon/DungeonDB.h"
-#include "system/SystemDB.h"    //for DBSystemEntity
-#include "system/SystemEntity.h"
-#include "system/SystemManager.h"
+#include "system/SystemDB.h"
 
-class SystemDungeonEntity : public ItemSystemEntity {
+/* POD entry for asteroid */
+class DBAsteroidEntity {
 public:
-    SystemDungeonEntity(SystemManager *system, InventoryItemRef self);
-    ~SystemDungeonEntity() { }
-
-    SystemManager *System() const { return(m_system); }
-    bool IsVisibleSystemWide() const { return false; }
-
-    PyDict *MakeSlimItem() const;
-    void EncodeDestiny( Buffer& into ) const;
-
-protected:
-    SystemManager *const m_system;    //we do not own this
-    DungeonDB m_db;
+    uint32 itemID;
+    std::string itemName;
+    uint32 typeID;
+    uint32 systemID;
+    uint32 beltID;
+    double quantity;
+    double radius;
+    double x;
+    double y;
+    double z;
 };
 
-#endif  // _EVEMU_SYSTEM_DUNGEONMGR_H
+class ManagerDB {
+public:
+    bool GetRoidDist(const char * sec, std::map<float, uint32> &roids);
+    bool LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAsteroidEntity>& into);
+    void SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidEntity> roids);
+
+protected:
+
+private:
+
+};
+
+
+
+#endif  // _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H

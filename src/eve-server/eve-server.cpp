@@ -85,6 +85,7 @@
 #include "dogmaim/DogmaIMService.h"
 #include "dogmaim/DogmaService.h"
 // dungeon services
+#include "dungeon/DungeonExplorationMgrService.h"
 #include "dungeon/DungeonService.h"
 // fleet services
 #include "fleet/FleetObject.h"
@@ -111,7 +112,6 @@
 #include "market/ContractProxy.h"
 #include "market/MarketProxyService.h"
 // missions services
-#include "missions/DungeonExplorationMgrService.h"
 #include "missions/MissionMgrService.h"
 // spawn manager
 #include "npc/SpawnMgr.h"
@@ -146,11 +146,12 @@
 // system services
 #include "system/BookmarkService.h"
 #include "system/KeeperService.h"
+#include "system/LootSystem.h"
 #include "system/Modifiers.h"
 #include "system/ScenarioService.h"
-#include "system/WormholeMgr.h"
 #include "system/WormholeSvc.h"
-#include "system/LootSystem.h"
+// cosmic managers
+#include "system/cosmicMgrs/WormholeMgr.h"
 //console commands
 #include "ConsoleCommands.h"
 
@@ -247,8 +248,8 @@ int main( int argc, char* argv[] )
     PyServiceMgr services( 888444, sEntityList, item_factory );
 
     /* create the WormholeMgr singleton */
-    //sLog.Success("       ServerInit", "Starting Wormhole Manager");
-    //sWHMgr.Init(&services);
+    sLog.Success("       ServerInit", "Starting Wormhole Manager");
+    sWHMgr.Init(&services);
 
     /* create a command dispatcher */
     sLog.Success("       ServerInit", "Starting Command Dispatch Manager");
@@ -513,6 +514,8 @@ int main( int argc, char* argv[] )
 	/* Shut down the Item system */
 	sLog.Warning("   ServerShutdown", "Saving Items and Shutting down Item Factory." );
     SafeDelete(item_factory);
+    /* Close the entity list */
+    sEntityList.Close();
     /* Close the service manager */
     services.Close();
     /* Close the command dispatcher */

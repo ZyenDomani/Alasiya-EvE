@@ -32,6 +32,7 @@
 #include "ServiceDB.h"
 #include "ship/DestinyManager.h"
 #include "system/SystemManager.h"
+#include "system/cosmicMgrs/WormholeMgr.h"
 
 EntityList::EntityList()
 : m_services( nullptr ),
@@ -46,16 +47,6 @@ m_stampTimer(1000, true)
 }
 
 EntityList::~EntityList() {
-    sLog.Log(" EntityList::~EntityList()", "there are %u clients, %u systems, and %u stations in list", \
-    m_clients.size(), m_systems.size(), m_stations.size());
-
-    for(auto cur : m_systems)
-        SafeDelete(cur.second);
-
-    m_systems.clear();
-    m_clients.clear();
-    m_stations.clear();
-
     sLog.Success("   ServerShutdown", " Complete.");
 }
 
@@ -63,6 +54,19 @@ void EntityList::Init() {
     /* start the timer */
     m_stampTimer.Start(1000);
     m_clientSeedID = m_db->SetClientSeed();
+}
+
+void EntityList::Close()
+{
+    sLog.Log(" EntityList::Close()", "Cleaning up %u clients, %u systems, and %u stations", \
+                m_clients.size(), m_systems.size(), m_stations.size());
+
+    for(auto cur : m_systems)
+        SafeDelete(cur.second);
+
+    m_systems.clear();
+    m_clients.clear();
+    m_stations.clear();
 }
 
 void EntityList::Shutdown() {
@@ -134,6 +138,7 @@ void EntityList::Process() {
             continue;
         } else {
             if (tic) {
+                sWHMgr.Process();
                 if (!active_system->ProcessDestiny()) {
                     sLog.Log(" EntityList::Proc", "active_system->Process() returned false.  Destroying System %u", active_system->GetID());
                     active_system->UnloadSystem();

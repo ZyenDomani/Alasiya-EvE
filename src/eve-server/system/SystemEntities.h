@@ -128,4 +128,19 @@ public:
     virtual ~SystemSimpleEntity() { TargMgr.DoDestruction(); }
 };
 
+class SystemDungeonEntity : public ItemSystemEntity {
+public:
+    SystemDungeonEntity(SystemManager *system, InventoryItemRef self);
+    ~SystemDungeonEntity() { }
+
+    SystemManager *System() const { return(m_system); }
+    bool IsVisibleSystemWide() const { return false; }
+
+    PyDict *MakeSlimItem() const;
+    void EncodeDestiny( Buffer& into ) const;
+
+protected:
+    SystemManager *const m_system;    //we do not own this
+};
+
 #endif

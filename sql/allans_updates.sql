@@ -1,4 +1,26 @@
 
+CREATE TABLE `roidItems` (
+  `itemID` int(10) unsigned NOT NULL,
+  `itemName` varchar(25) NOT NULL,
+  `typeID` int(11) NOT NULL,
+  `systemID` int(11) NOT NULL,
+  `beltID` int(11) NOT NULL,
+  `quantity` double NOT NULL,
+  `radius` double NOT NULL,
+  `x` double NOT NULL,
+  `y` double NOT NULL,
+  `z` double NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Indexes for table `roidItems`
+--
+ALTER TABLE `roidItems`
+  ADD PRIMARY KEY (`itemID`),
+  ADD UNIQUE KEY `itemID` (`itemID`),
+  ADD KEY `systemID` (`systemID`),
+  ADD KEY `beltID` (`beltID`);
+
 
  /* Table structure for table `shipInsurance` */
 

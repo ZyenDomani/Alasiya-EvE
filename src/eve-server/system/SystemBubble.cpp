@@ -36,11 +36,13 @@
 
 uint32 SystemBubble::m_bubbleIncrementer = 0;
 
-SystemBubble::SystemBubble(/*SystemManager* pSystem,*/const GPoint& center, double radius)
-: m_center(center),
+SystemBubble::SystemBubble(SystemManager* pSystem, const GPoint& center, double radius)
+: m_system(pSystem),
+m_center(center),
 m_radius(radius),
 m_radius_hysteresis(radius+BUBBLE_HYSTERESIS_METERS)
 {
+    m_systemID = pSystem->GetID();
 	m_bubbleID = m_bubbleIncrementer++;
 	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f).",
 	     m_bubbleID, this, m_center.x, m_center.y, m_center.z, m_radius);
@@ -230,8 +232,8 @@ void SystemBubble::Add(SystemEntity* pEntity, bool isPostWarp) {
                 // Trigger SpawnManager for this bubble to generate NPC Spawn, if needed
                 if (IsBelt() && (!IsSpawned()) && sConfig.npc.RoamingSpawns /*&& !pClient->IsLogin()*/)
                     pClient->System()->DoSpawnForBubble(this);
-                //if (IsGate() && (!IsSpawned()) && sConfig.npc.StaticSpawns) //need to write gate spawns before enabling here.
-                //pClient->System()->DoSpawnForBubble(this);
+                if (IsGate() && (!IsSpawned()) && sConfig.npc.StaticSpawns) /* IsGate returns false.  will fix when gate spawns are finished */
+                    pClient->System()->DoSpawnForBubble(this);
             }
         }
 	} else {
@@ -287,6 +289,25 @@ void SystemBubble::clear() {
 	m_dynamicEntities.clear();
 	m_players.clear();
 }
+
+/* i dont really need this here.... */
+uint32 SystemBubble::GetSpawnID(uint16 bubbleID)
+{
+    return m_system->bubbles.GetSpawnID(bubbleID);
+}
+
+void SystemBubble::SetBelt(uint32 beltID)
+{
+    m_belt = true;
+    m_system->bubbles.AddSpawnID(GetID(), beltID);
+}
+
+void SystemBubble::SetGate(uint32 gateID)
+{
+    m_gate = true;
+    m_system->bubbles.AddSpawnID(GetID(), gateID);
+}
+
 
 SystemEntity* const SystemBubble::GetEntity(uint32 entityID) const {
 	/* updated to send ONLY dynamic entities to the following:          -allan 17Apr15

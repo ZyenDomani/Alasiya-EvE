@@ -23,48 +23,45 @@
  *    Author:        Allan
  */
 
-#ifndef EVEMU_SYSTEM_BELTMGR_H_
-#define EVEMU_SYSTEM_BELTMGR_H_
+#ifndef EVEMU_SYSTEM_WORMHOLEMGR_H_
+#define EVEMU_SYSTEM_WORMHOLEMGR_H_
 
-#include <unordered_map>
-#include "system/Asteroid.h"
-#include "system/SystemEntity.h"
+
+#include "ServiceDB.h"
+#include "utils/Singleton.h"
 
 /* this class will control all aspects of
  * creating, monitoring, removing, logging
- * and saving of all asteroid belts in a single system
+ * connecting, and saving of all wormholes.
  */
 
 class PyServiceMgr;
-class SystemManager;
 
-class BeltMgr
+class WormholeMgr
+: public Singleton<WormholeMgr>
 {
 public:
-    BeltMgr(SystemManager* mgr, PyServiceMgr& svc);
-    virtual ~BeltMgr();
+    WormholeMgr();
+    virtual ~WormholeMgr()                              { /* do nothing here */ }
 
+    void Init(PyServiceMgr* svc);
     void Process();
-    void ForceGrowth();
-
-    bool LoadState();
-    bool SaveState();
-
-protected:
-    void _TriggerGrowth();
-    void _Clear();
-
-    Timer m_growthTimer;
-
-    /*  map contains beltID, asteroidSE for entire system */
-    std::unordered_multimap<uint32, AsteroidEntity*> m_asteroids;
 
 private:
-    SystemManager* m_system;    //we do not own this
-    PyServiceMgr& m_services;    //we do not own this
+    ServiceDB* m_db;
+    PyServiceMgr* m_services;
 
+    Timer m_updateTimer;
+
+    bool m_initalized;
+    
 };
 
-#endif  // EVEMU_SYSTEM_BELTMGR_H_
+//Singleton
+#define sWHMgr \
+    ( WormholeMgr::get() )
+
+#endif  // EVEMU_SYSTEM_WORMHOLEMGR_H_
+
 
 

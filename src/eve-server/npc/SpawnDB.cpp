@@ -59,7 +59,7 @@ void SpawnDB::GetGroupTypeIDs(uint32 groupID, DBQueryResult& res) {
 void SpawnDB::DeleteSpawnedRats()
 {
     DBerror err;
-    std::string query = "'beltrat'";
-    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE %s", query.c_str());
+    std::string query = "beltrat";
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%s'", query.c_str());
 }
 
