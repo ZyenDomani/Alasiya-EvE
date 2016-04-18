@@ -386,6 +386,9 @@ void ItemFactory::UnsetUsingClient()
 
 uint32 ItemFactory::GetNextEntityID()
 {
+    assert(true);
+    /* this SHOULD NOT be used!! all char's and their items get the 'next' id from the sql query return */
+    
 	// This algorithm should be improved to search for reusable IDs that are no longer used,
 	// but for now, just implement a simple wrap-around method once IDs have reached the maximum value:
 	if ( m_nextEntityID < EVEMU_MAXIMUM_ENTITY_ID )

@@ -2108,7 +2108,7 @@ UPDATE `mapRegions` SET `ratFactionID` = 500010 WHERE `regionID` = 10000002;
 UPDATE `mapRegions` SET `ratFactionID` = 500010 WHERE `regionID` = 10000003;
 UPDATE `mapRegions` SET `ratFactionID` = 500011 WHERE `regionID` = 10000005;
 UPDATE `mapRegions` SET `ratFactionID` = 500011 WHERE `regionID` = 10000006;
-UPDATE `mapRegions` SET `ratFactionID` = 500021 WHERE `regionID` = 10000007;
+UPDATE `mapRegions` SET `ratFactionID` = 500011 WHERE `regionID` = 10000007;
 UPDATE `mapRegions` SET `ratFactionID` = 500011 WHERE `regionID` = 10000008;
 UPDATE `mapRegions` SET `ratFactionID` = 500011 WHERE `regionID` = 10000009;
 UPDATE `mapRegions` SET `ratFactionID` = 500010 WHERE `regionID` = 10000010;
@@ -2127,9 +2127,9 @@ UPDATE `mapRegions` SET `ratFactionID` = 500019 WHERE `regionID` = 10000022;
 UPDATE `mapRegions` SET `ratFactionID` = 500010 WHERE `regionID` = 10000023;
 UPDATE `mapRegions` SET `ratFactionID` = 500011 WHERE `regionID` = 10000025;
 UPDATE `mapRegions` SET `ratFactionID` = 500021 WHERE `regionID` = 10000027;
-UPDATE `mapRegions` SET `ratFactionID` = 500021 WHERE `regionID` = 10000028;
+UPDATE `mapRegions` SET `ratFactionID` = 500011 WHERE `regionID` = 10000028;
 UPDATE `mapRegions` SET `ratFactionID` = 500010 WHERE `regionID` = 10000029;
-UPDATE `mapRegions` SET `ratFactionID` = 500021 WHERE `regionID` = 10000030;
+UPDATE `mapRegions` SET `ratFactionID` = 500011 WHERE `regionID` = 10000030;
 UPDATE `mapRegions` SET `ratFactionID` = 500011 WHERE `regionID` = 10000031;
 UPDATE `mapRegions` SET `ratFactionID` = 500020 WHERE `regionID` = 10000032;
 UPDATE `mapRegions` SET `ratFactionID` = 500010 WHERE `regionID` = 10000033;
@@ -2169,3 +2169,6 @@ UPDATE `mapRegions` SET `ratFactionID` = 500021 WHERE `regionID` = 10000066;
 UPDATE `mapRegions` SET `ratFactionID` = 500020 WHERE `regionID` = 10000067;
 UPDATE `mapRegions` SET `ratFactionID` = 500020 WHERE `regionID` = 10000068;
 UPDATE `mapRegions` SET `ratFactionID` = 500010 WHERE `regionID` = 10000069;
+
+-- dummy corp for rogue drones
+INSERT INTO `EVE_Squirrel`.`corporation` (`corporationID`, `corporationName`, `description`, `tickerName`, `url`, `taxRate`, `minimumJoinStanding`, `corporationType`, `hasPlayerPersonnelManager`, `sendCharTerminationMessage`, `creatorID`, `ceoID`, `stationID`, `raceID`, `allianceID`, `allianceMemberStartDate`, `shares`, `memberCount`, `memberLimit`, `allowedMemberRaceIDs`, `graphicID`, `shape1`, `shape2`, `shape3`, `color1`, `color2`, `color3`, `typeface`, `division1`, `division2`, `division3`, `division4`, `division5`, `division6`, `division7`, `walletDivision1`, `walletDivision2`, `walletDivision3`, `walletDivision4`, `walletDivision5`, `walletDivision6`, `walletDivision7`, `balance`, `deleted`, `isRecruiting`, `warFactionID`) VALUES ('1000001', 'Rogue Drone', 'Corporation Placeholder for Rogue Drones', 'RD', '', '0', '0', '0', '0', '1', '0', '0', '0', NULL, '0', '', '1000', '0', '10', '0', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '0', '0', '0', '0');

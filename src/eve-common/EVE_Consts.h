@@ -56,5 +56,4 @@ static const uint64 ONE_AU_IN_METERS = 149597870700L;     // 1 astronomical unit
 
 
 // Cosmic Managers constants here
-static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;
-
+static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;  /* this is grow check in ms (1d) */

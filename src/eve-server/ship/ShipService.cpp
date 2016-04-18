@@ -749,6 +749,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     return nullptr;
 }
 
+/** @todo this needs work.... */
 PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
@@ -868,11 +869,12 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             continue;
         } else {
             if (!pClient->IsJetcanAvalible()) {
-                std::string msg = "A Jettison Container is being loaded into your cargo hold. \n";
-                msg += "Your estimated wait time is ";
-                msg += pClient->JetcanTime();
-                msg += " seconds.";
-                pClient->SendNotifyMsg(msg.c_str());
+                std::stringstream msg;
+                msg << "A Jettison Container is being loaded into your cargo hold. \n";
+                msg << "Your estimated wait time is ";
+                msg << pClient->JetcanTime();
+                msg << " seconds.";
+                pClient->SendNotifyMsg(msg.str().c_str());
                 return nullptr;
             }
             // Spawn jetcan then continue loop

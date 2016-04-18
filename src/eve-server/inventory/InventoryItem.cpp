@@ -489,10 +489,7 @@ uint32 InventoryItem::_Spawn(ItemFactory &factory,
  * and be thrown away on server shutdown.
  * Updated 29May15 -Allan
  */
-uint32 InventoryItem::_SpawnEntity(ItemFactory &factory,
-    // InventoryItem stuff:
-    ItemData &data
-) {
+uint32 InventoryItem::_SpawnEntity(ItemFactory &factory, ItemData &data) {
     // obtain type of new item
     // this also checks that the type is valid
     const ItemType *t = factory.GetType(data.typeID);
@@ -509,8 +506,7 @@ uint32 InventoryItem::_SpawnEntity(ItemFactory &factory,
         return factory.GetNextMissileID();
     else if (IsNPCCorp(data.ownerID))
         return factory.GetNextNPCID();
-    else
-        return factory.GetNextEntityID();
+    return 0;
 }
 
 void InventoryItem::Delete() {
@@ -1031,8 +1027,10 @@ void InventoryItem::SetOnline(bool online) {
              m_ownerID, m_itemName.c_str(), m_itemID );
         return;
     }
+    /** @note may not need this here.  could be reason for fitting window not showing while docked
     if (pClient->IsDocked())
         return;
+    */
 
     GodmaEnvironment ge;
         ge.selfID = m_itemID;

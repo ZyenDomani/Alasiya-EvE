@@ -424,6 +424,7 @@ typedef enum {
 
 // mostly pirate corps for now...
 typedef enum {
+    corpRogueDrones         = 1000001,
     corpCONCORD             = 1000125,
     corpSCC                 = 1000132,
     corpDED                 = 1000137,
@@ -433,11 +434,10 @@ typedef enum {
     corpSociety             = 1000131,
     corpMordusLegion        = 1000128,
     corpSanshas             = 1000161,
-    corpSerpentis           = 1000135,
-    corpRogueDrones         = 0
+    corpSerpentis           = 1000135
 } corpDef;
 
-// not sure what these are used for...
+// not sure what these are used for...stateFlags??
 typedef enum {
     mouseOver = 1,
     selected = 2,
