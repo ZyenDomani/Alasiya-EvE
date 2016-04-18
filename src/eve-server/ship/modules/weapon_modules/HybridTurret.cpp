@@ -101,7 +101,10 @@ void HybridTurret::StopCycle(bool abort)
     GodmaOther go;
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
-        go.chargeTypeID = m_chargeRef->typeID();
+        if (m_chargeRef)
+            go.chargeTypeID = m_chargeRef->typeID();
+        else
+            go.chargeTypeID = 0;
 
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();

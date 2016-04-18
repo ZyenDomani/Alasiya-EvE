@@ -67,14 +67,14 @@ MissileLauncher::MissileLauncher( InventoryItemRef item, ShipRef ship )
 
 void MissileLauncher::Activate(SystemEntity * targetEntity)
 {
-    if (this->m_chargeRef) {
+    if (m_chargeRef) {
 		m_targetEntity = targetEntity;
 		m_targetID = targetEntity->GetID();
 
 		// Activate active processing component timer:
 		m_AMPC->ActivateCycle();
 	} else {
-		sLog.Error( "MissileLauncher::Activate()", "ERROR: Cannot find charge that is supposed to be loaded into this module!" );
+        _log(SHIP__MODULE_ERROR,  "MissileLauncher::Activate() - Cannot find charge that is supposed to be loaded into this module!" );
 		throw PyException( MakeCustomError( "ERROR!  Cannot find charge that is supposed to be loaded into this module!" ) );
     }
 }
@@ -97,7 +97,10 @@ void MissileLauncher::StopCycle(bool abort)
     GodmaOther go;
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
-        go.chargeTypeID = m_chargeRef->typeID();
+        if (m_chargeRef)
+            go.chargeTypeID = m_chargeRef->typeID();
+        else
+            go.chargeTypeID = 0;
 
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();

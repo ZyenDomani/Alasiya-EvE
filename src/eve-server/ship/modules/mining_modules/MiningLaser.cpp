@@ -220,7 +220,8 @@ void MiningLaser::StopCycle(bool abort)
 
 	uint32 chargeTypeID = 0;
     if (m_chargeLoaded)
-        chargeTypeID = m_chargeRef->typeID();
+        if (m_chargeRef)
+            chargeTypeID = m_chargeRef->typeID();
 
     uint32 effectID = effectMiningLaser;
     std::string effectsString = "effects.Mining";

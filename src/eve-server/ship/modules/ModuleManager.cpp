@@ -1086,6 +1086,7 @@ void ModuleManager::RepairModule(uint32 itemID)
         mod->Repair();
 }
 
+/** @todo  fix this!!  */
 void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 {
     GenericModule* mod = m_Modules->GetModule(flag);
