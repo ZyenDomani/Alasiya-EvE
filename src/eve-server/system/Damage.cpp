@@ -95,14 +95,12 @@ Damage::~Damage()
 }
 
 void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar) {
-    //  TODO  this needs tweaking...
     //New Status = ((10 - Old Status) * Sec Incr) + Old Status
     double killBonus = m_self->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
-    //killBonus /= 1000;
     double oldSec = pChar->GetSecurityRating();
     double secAward = (((10 -oldSec) *killBonus) +oldSec) /100;
     secAward *=  (1 + ( 0.05 * (pChar->GetSkillLevel(skillFastTalk, true))));      // 5% increase
-    if (secAward) {
+    if (killBonus and secAward) {
         if (sConfig.rates.secRate != 1.0) secAward *= sConfig.rates.secRate;
         sLog.Magenta("SystemEntity::AwardSecurityStatus()"," %s(%u): killBonus: %f.  oldSec: %f.  secAward: %f.",
                      GetName(), GetID(), killBonus, oldSec, secAward);
@@ -258,10 +256,10 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
             //The base hp and damage attributes represent structure.
             double available_hull = m_self->GetAttribute(AttrHP).get_int() - m_self->GetAttribute(AttrDamage).get_float();
             Damage DamageToHull = d.MultiplyDup(
-                m_self->GetAttribute(AttrHullKineticDamageResonance).get_float(),
-                m_self->GetAttribute(AttrHullThermalDamageResonance).get_float(),
-                m_self->GetAttribute(AttrHullEmDamageResonance).get_float(),
-                m_self->GetAttribute(AttrHullExplosiveDamageResonance).get_float() );
+                m_self->GetAttribute(AttrKineticDamageResonance).get_float(),
+                m_self->GetAttribute(AttrThermalDamageResonance).get_float(),
+                m_self->GetAttribute(AttrEmDamageResonance).get_float(),
+                m_self->GetAttribute(AttrExplosiveDamageResonance).get_float() );
 
             double hull_damage = DamageToHull.GetTotal();
             if (hull_damage < available_hull) {
@@ -309,7 +307,7 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
 
     if (d.source->IsClient()) {     //not working
         //if (d.weapon->categoryID() != EVEDB::invCategories::Charge) {
-        if (1) {
+        if (0) {
             //Notifications to ourself:
             Notify_OnEffectHit noeh;
                 noeh.itemID = d.source->GetID();
@@ -317,9 +315,8 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
                 noeh.targetID = GetID();
                 noeh.damage = total_damage;
             up = noeh.Encode();
-            d.source->QueueDestinyEvent(&up);
-        }
-/*
+            d.source->QueueDestinyUpdate(&up);
+
         //  notify player of damage done to other
         Notify_OnDamageMessage ondam;
             ondam.messageID = DamageMessageIDs_Other[damageID];
@@ -328,8 +325,8 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
             ondam.target = GetID();
             ondam.damage = total_damage;
         up = ondam.Encode();
-        d.source->QueueDestinyEvent(&up);
-*/
+        d.source->QueueDestinyUpdate(&up);
+
         //Notifications to others:
         // this displays msg, but text is missing.
         Notify_OnDamageMessage_Other ondamo;
@@ -340,7 +337,8 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
             ondamo.target = GetID();
             ondamo.splash = "";
         up = ondamo.Encode();
-        d.source->QueueDestinyEvent(&up);
+        d.source->QueueDestinyUpdate(&up);
+        }
     }
 
     if (killed) {
