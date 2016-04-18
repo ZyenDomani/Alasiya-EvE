@@ -210,7 +210,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
     targetSkills += pChar->GetSkillLevel(skillMultitasking);    // +1 target/level
     targetRangeModifier += (0.05 * pChar->GetSkillLevel(skillLongRangeTargeting)); // +5% level
 
-	int64 maxLockedTargets = ship->GetAttribute(AttrMaxLockedTargets).get_int();
+	uint8 maxLockedTargets = (uint8)ship->GetAttribute(AttrMaxLockedTargets).get_int();
     if (maxLockedTargets < 1) maxLockedTargets = 1;
     // add module updates to target capacity of ship here.
     if (targetSkills < maxLockedTargets)

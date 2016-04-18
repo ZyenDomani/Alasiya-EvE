@@ -60,7 +60,7 @@ public:
     bool CanAttack() { return m_canAttack; }
     bool HasNoTargets() const { return(m_targets.empty()); }
     bool IsTargetedBySomething() const { return(!m_targetedBy.empty()); }
-    uint32 GetTotalTargets() const { return (uint32)m_targets.size(); }
+    uint8 GetTotalTargets() const { return (uint8)m_targets.size(); }
     float TimeToLock(ShipRef ship, SystemEntity *target) const;
 
     void QueueTBDestinyEvent(PyTuple **up) const;    //queue a destiny event to all people targeting me.
