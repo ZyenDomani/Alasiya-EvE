@@ -37,12 +37,10 @@
 BeltMgr::BeltMgr(SystemManager* mgr, PyServiceMgr& svc)
 : m_system(mgr),
   m_services(svc),
-  m_growthTimer(m_growthTimer)
+  m_growthTimer(15000)  // arbitrary for now
 {
     m_initialized = false;
-
     m_growthTimer.Disable();
-
     m_systemID = m_system->GetID();
 }
 
@@ -63,44 +61,13 @@ void BeltMgr::RegisterBelt(InventoryItemRef itemRef)
     uint32 beltID = itemRef->itemID();
     m_belts.insert(std::pair<uint32, InventoryItemRef>(beltID, itemRef));
     m_spawned.insert(m_spawned.end(), std::pair<uint32, bool>(beltID, false));
-    CheckSpawn(itemRef);
+    //CheckSpawn(itemRef);
     SystemEntity *se = m_system->GetSEFromInventory(beltID);
-    se->Bubble()->SetBelt(beltID);
 }
 
-void BeltMgr::ClearBelt()
+void BeltMgr::ClearBelt(uint16 bubbleID)
 {
     ClearAll();
-}
-
-bool BeltMgr::CheckSpawn(InventoryItemRef itemRef)
-{
-    if (IsSpawned(itemRef)) return true;
-    /*  if there are already roids created for this belt, they will be loaded in Load()
-     * and NOT LOADED in loadsystemdynamics from SystemManager.
-     * if Load() has roids for this belt, this belt will have true already set, and checked in SpawnBelt()
-     */
-    if (!Load(itemRef->itemID()))
-        SpawnBelt(itemRef);
-}
-
-bool BeltMgr::IsSpawned(InventoryItemRef itemRef)
-{
-    return IsSpawned(itemRef->itemID());
-}
-
-bool BeltMgr::IsSpawned(uint32 beltID)
-{
-    std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
-    if (itr != m_spawned.end())
-        return itr->second;
-    return false;
-}
-
-void BeltMgr::Clear() {
-    for(auto cur : m_asteroids)
-        SafeDelete(cur.second);
-    m_asteroids.clear();
 }
 
 void BeltMgr::ClearAll() {
@@ -110,20 +77,41 @@ void BeltMgr::ClearAll() {
     m_belts.clear();
 }
 
+bool BeltMgr::CheckSpawn(uint16 bubbleID)
+{
+    if (IsSpawned(bubbleID)) return true;
+    /*  if there are already roids created for this belt, they will be loaded in Load()
+     * and NOT LOADED in loadsystemdynamics from SystemManager.
+     * if Load() has roids for this belt, this belt will have true already set, and checked in SpawnBelt()
+     */
+    if (!Load(bubbleID))
+        SpawnBelt(bubbleID);
+}
+
+bool BeltMgr::IsSpawned(uint16 bubbleID)
+{
+    uint32 beltID = m_system->bubbles.GetSpawnID(bubbleID);
+    std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
+    if (itr != m_spawned.end())
+        return itr->second;
+    return false;
+}
+
 void BeltMgr::Process() {
     if (m_growthTimer.Check()) {
-        _TriggerGrowth();
+        TriggerGrowth();
     }
 }
 
-void BeltMgr::_TriggerGrowth() {
+void BeltMgr::TriggerGrowth() {
     for(auto cur : m_asteroids)
         cur.second->Grow();
 }
 
-bool BeltMgr::Load(uint32 beltID) {
+bool BeltMgr::Load(uint16 bubbleID) {
     std::vector<DBAsteroidEntity> entities;
     entities.clear();
+    uint32 beltID = m_system->bubbles.GetSpawnID(bubbleID);
     m_db.LoadSystemRoids(m_systemID, beltID, entities);
     if (entities.empty()) return false;
 
@@ -178,7 +166,7 @@ void BeltMgr::ForceGrowth() {
     for (auto cur : m_asteroids) {
         /** @todo (allan) do something useful here */
     }
-    _TriggerGrowth();
+    TriggerGrowth();
     m_growthTimer.Start(ASTEROID_GROWTH_INTERVAL_MS);
 }
 
@@ -189,9 +177,9 @@ void BeltMgr::GetList(uint32 beltID, std::vector< AsteroidEntity* >& list)
         list.push_back(itr->second);
 }
 
-void BeltMgr::SpawnBelt(InventoryItemRef itemRef)
+void BeltMgr::SpawnBelt(uint16 bubbleID)
 {
-    if (IsSpawned(itemRef)) return;
+    if (IsSpawned(bubbleID)) return;
 
     bool makeIceBelt = false;
     bool makeRareIce = false;
@@ -230,7 +218,7 @@ void BeltMgr::SpawnBelt(InventoryItemRef itemRef)
     GPoint mposition = NULL_ORIGIN;
     double roidradius = 0, theta = 0;
     double degreeSeperation = (180/pcs);
-    uint32 beltID = itemRef->itemID();
+    uint32 beltID = m_system->bubbles.GetSpawnID(bubbleID);
     SystemEntity *se = m_system->GetSEFromInventory(beltID);
     GPoint center = se->Bubble()->GetCenter();
 

@@ -130,11 +130,11 @@ public:
     // From <NPC/>
     struct
     {
-        float ThreatRadius;
         bool RoamingSpawns;
         bool StaticSpawns;
         uint8 RoamingTimer;
         uint8 StaticTimer;
+        float ThreatRadius;
     } npc;
 
     // From <database/>

@@ -164,6 +164,7 @@ bool SystemManager::LoadSystemStatics() {
                 InventoryItemRef itemRef = m_services.item_factory->GetItem(cur.itemID);
                 AddItemToInventory(itemRef);
                 m_beltMgr->RegisterBelt(itemRef);
+                se->Bubble()->SetBelt(se->GetID());
             } break;
             case EVEDB::invGroups::Stargate: {
                 SimpleSystemEntity *se = SimpleSystemEntity::MakeEntity(this, cur);

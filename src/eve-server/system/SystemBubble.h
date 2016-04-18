@@ -35,6 +35,7 @@ class PyTuple;
 class DoDestiny_SetState;
 class Client;
 class SystemManager;
+class Timer;
 
 class SystemBubble {
 public:
@@ -53,14 +54,15 @@ public:
 	void BubblecastDestinyEvent(PyTuple** payload, const char* desc) const;
 	void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pEntity) const;
 
-    bool ProcessWander(std::vector<SystemEntity*> &wanderers);
+    void Process();
+    void ProcessWander(std::vector< SystemEntity* >& wanderers);
 
     void Add(SystemEntity* pEntity, bool isPostWarp=false);
     void Remove(SystemEntity* pEntity);
     void AddExclusive(SystemEntity* pEntity);
     void RemoveExclusive(SystemEntity* pEntity);
     void clear();
-    bool IsEmpty() const { return (m_entities.empty()); }   // this is used by empty bubble checks for deletion.
+    bool IsEmpty() const { return (m_entities.empty() ? (m_dynamicEntities.empty() ? true : false) : false); }   // this is used by empty bubble checks for deletion.
     //use m_players for lower npc process usage.  use m_entities for constant npc updates.
     bool HasPlayers() const { return (m_players.empty() ? false : true); }
     SystemEntity* const GetEntity(uint32 entityID) const;
@@ -80,6 +82,7 @@ public:
     bool IsGate()                       { return m_gate; }
     bool IsSpawned()                    { return m_spawned; }
     void SetSpawned(bool set=false)     { m_spawned = set; }
+    void SetSpawnTimer(bool isBelt = false);
     uint32 GetSpawnID(uint16 bubbleID);
 
     uint32 Count()		                { return m_bubbleIncrementer; }
@@ -109,6 +112,8 @@ protected:
     bool m_belt = false;
     bool m_gate = false;
     bool m_spawned = false;
+
+    Timer m_spawnTimer;
 
 };
 

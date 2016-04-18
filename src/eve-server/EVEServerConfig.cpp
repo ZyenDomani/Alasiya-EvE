@@ -92,7 +92,7 @@ EVEServerConfig::EVEServerConfig()
     npc.ThreatRadius = 1.0;//N
     npc.RoamingSpawns = false;//P
     npc.StaticSpawns = false;//N
-    npc.RoamingTimer = 15 /*m*/;//P
+    npc.RoamingTimer = 15 /*m*/;
     npc.StaticTimer = 10 /*m*/;//P
 
     // database

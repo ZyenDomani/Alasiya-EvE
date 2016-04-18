@@ -56,12 +56,11 @@ public:
     void Process();
     void ForceGrowth();
     void RegisterBelt(InventoryItemRef itemRef);
-    void ClearBelt();
+    void ClearBelt(uint16 bubbleID);
 
-    bool Load(uint32 beltID);
-    bool IsSpawned(uint32 beltID);
-    bool IsSpawned(InventoryItemRef itemRef);
-    bool CheckSpawn(InventoryItemRef itemRef);
+    bool Load(uint16 bubbleID);
+    bool IsSpawned(uint16 bubbleID);
+    bool CheckSpawn(uint16 bubbleID);
 
     void GetList(uint32 beltID, std::vector< AsteroidEntity* >& list);
 
@@ -69,10 +68,9 @@ protected:
     ManagerDB m_db;
     Timer m_growthTimer;
 
-    void _TriggerGrowth();
-    void Clear();
+    void TriggerGrowth();
     void ClearAll();
-    void SpawnBelt(InventoryItemRef itemRef);
+    void SpawnBelt(uint16 bubbleID);
     void SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position);
 
     uint32 GetAsteroidType(double p, const std::map<float, uint32>& roids);

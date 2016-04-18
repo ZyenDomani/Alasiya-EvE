@@ -40,8 +40,11 @@ SystemBubble::SystemBubble(SystemManager* pSystem, const GPoint& center, double 
 : m_system(pSystem),
 m_center(center),
 m_radius(radius),
-m_radius_hysteresis(radius+BUBBLE_HYSTERESIS_METERS)
+m_radius_hysteresis(radius+BUBBLE_HYSTERESIS_METERS),
+m_spawnTimer(sConfig.npc.RoamingTimer)
 {
+    m_spawned= false;
+    m_spawnTimer.Disable();
     m_systemID = pSystem->GetID();
 	m_bubbleID = m_bubbleIncrementer++;
 	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f).",
@@ -153,15 +156,25 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
 	PySafeDecRef( ev );
 }
 
+void SystemBubble::Process()
+{
+    if (m_spawnTimer.Enabled())
+        if (m_spawnTimer.Check(false))
+            if (HasPlayers())
+                m_system->DoSpawnForBubble(this);
+            else
+                m_spawnTimer.Disable();
+}
+
 //called every 30s from the bubble manager.
 //verifies that each entity is still in this bubble.
 //if any entity is no longer in the bubble, they are removed
 //from the bubble and stuck into the vector for re-classification.
-bool SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
+void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
 	//the wanderers array may have other stuff in it, so use a local first.
 	std::vector<SystemEntity*> found_wandering;
     found_wandering.clear();
-	DynamicSystemEntity* pDSE = nullptr;
+	DynamicSystemEntity* pDSE(nullptr);
 	for (auto cur : m_dynamicEntities) {
 		pDSE = static_cast<DynamicSystemEntity*>(cur);
 		if (!pDSE) continue;
@@ -179,8 +192,6 @@ bool SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
 			      curw->GetName(), curw->GetID(), GetID() );
 			Remove(curw);
 		}
-
-    return true;
 }
 
 void SystemBubble::Add(SystemEntity* pEntity, bool isPostWarp) {
@@ -230,10 +241,16 @@ void SystemBubble::Add(SystemEntity* pEntity, bool isPostWarp) {
             if (!m_players.empty()) {
                 _BubblecastAddBallExclusive(pEntity);  // adds new player to all entities in bubble
                 // Trigger SpawnManager for this bubble to generate NPC Spawn, if needed
-                if (IsBelt() && (!IsSpawned()) && sConfig.npc.RoamingSpawns /*&& !pClient->IsLogin()*/)
-                    pClient->System()->DoSpawnForBubble(this);
-                if (IsGate() && (!IsSpawned()) && sConfig.npc.StaticSpawns) /* IsGate returns false.  will fix when gate spawns are finished */
-                    pClient->System()->DoSpawnForBubble(this);
+                if (IsBelt() && (!IsSpawned()) && sConfig.npc.RoamingSpawns /*&& !pClient->IsLogin()*/) {
+                    if (!m_spawnTimer.Enabled())
+                        SetSpawnTimer(true);
+                    //pClient->System()->DoSpawnForBubble(this);
+                }
+                if (IsGate() && (!IsSpawned()) && sConfig.npc.StaticSpawns) { /* IsGate returns false.  will fix when gate spawns are finished */
+                    if (!m_spawnTimer.Enabled())
+                        SetSpawnTimer(false);
+                    //pClient->System()->DoSpawnForBubble(this);
+                }
             }
         }
 	} else {
@@ -288,6 +305,17 @@ void SystemBubble::clear() {
 	m_entities.clear();
 	m_dynamicEntities.clear();
 	m_players.clear();
+}
+
+void SystemBubble::SetSpawnTimer(bool isBelt /*false*/)
+{
+    if (sConfig.server.testServer)
+        m_spawnTimer.Start(5000); /* 5s for testing */
+    else
+        if (isBelt)
+            m_spawnTimer.Start(sConfig.npc.RoamingTimer *1000);
+        else
+            m_spawnTimer.Start(sConfig.npc.StaticTimer *1000);
 }
 
 /* i dont really need this here.... */

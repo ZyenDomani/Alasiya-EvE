@@ -54,28 +54,29 @@ void BubbleManager::Process() {
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
+    // process each bubble
+    for (auto cur : m_bubbles) {
+        if (cur->IsBelt() or cur->IsGate())
+            cur->Process();
+    }
     // run wander check every 30 sec for active bubbles
     if (m_wanderTimer.Check()) {
         m_wanderers.clear();
         std::vector<SystemBubble *>::iterator itr = m_bubbles.begin();
         for (; itr != m_bubbles.end(); itr++) {
-            if ((*itr)->IsEmpty()) {
+            if ((*itr)->IsEmpty() and (!(*itr)->IsSpawned())) {
                 // Remove this bubble now that it is empty of ALL dynamic entities
                 _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
-                m_bubbles.erase(itr);
-                itr = m_bubbles.begin();
-            } else {
-                // If wanderers are found, they are processed and moved to new bubbles, if applicable:
+                itr = m_bubbles.erase(itr);
+            } else
                 (*itr)->ProcessWander(m_wanderers);
-            }
         }
 
-        if (!m_wanderers.empty()) {
+        if (!m_wanderers.empty())
             for (auto cur : m_wanderers) {
                 _log(DESTINY__WARNING, "BubbleManager::Process() - Wanderer '%s' being added to a bubble.", cur->GetName() );
                 Add(cur);
             }
-        }
     }
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_bubblesProfile, GetTimeUSeconds() - profileStartTime);
