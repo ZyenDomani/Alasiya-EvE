@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:     Zhur, Allan
+    Author:     Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -153,6 +154,7 @@ bool InventoryDB::GetType(uint32 typeID, TypeData &into) {
     return true;
 }
 
+/** @todo see if this is used, and where/why and move as needed */
 bool InventoryDB::GetTypeEffectsList(uint32 typeID, std::vector<uint32> &into) {
     DBQueryResult res;
 
@@ -180,7 +182,7 @@ bool InventoryDB::GetTypeEffectsList(uint32 typeID, std::vector<uint32> &into) {
 
 	return true;
 }
-
+/** @todo can probably move this to manuf db shit */
 bool InventoryDB::GetBlueprintType(uint32 blueprintTypeID, BlueprintTypeData &into) {
     DBQueryResult res;
 
@@ -376,7 +378,7 @@ bool InventoryDB::GetStationType(uint32 stationTypeID, StationTypeData &into) {
 
     if(!sDatabase.RunQuery(res,
         "SELECT"
-        "  0 as dockingBayGraphicID, 0 as hangarGraphicID,"
+        "  0 as dockingBayGraphicID, 0 as hangarGraphicID,"     // these are NULL in the db.  do we need actual values here?
         "  dockEntryX, dockEntryY, dockEntryZ,"
         "  dockOrientationX, dockOrientationY, dockOrientationZ,"
         "  operationID, officeSlots, reprocessingEfficiency, conquerable"
@@ -842,6 +844,7 @@ bool InventoryDB::EraseAttributes(uint32 itemID) {
     return true;
 }
 
+/** @todo  bp shit can probably move into manuf db */
 bool InventoryDB::GetBlueprint(uint32 blueprintID, BlueprintData &into) {
     DBQueryResult res;
 
@@ -1036,7 +1039,7 @@ bool InventoryDB::GetCorpMemberInfo(uint32 characterID, CorpMemberInfo &into) {
     DBQueryResult res;
     DBResultRow row;
 
-    if (IsAgent(characterID)) {
+    if (IsAgent(characterID)) {     // fix these for agents (and other npcs)
         into.corpAccountKey = 1001;
         into.corpRole = 0;
         into.rolesAtAll = 0;
@@ -1150,20 +1153,20 @@ bool InventoryDB::NewCharacter(uint32 characterID, const CharacterData &data, co
         "  (characterID, accountID, title, description, bounty, balance, aurBalance, securityRating, petitionMessage,"
         "   logonDateTime, logonMinutes, corporationID, corpRole, rolesAtAll, rolesAtBase, rolesAtHQ, rolesAtOther,"
         "   startDateTime, createDateTime, corpAccountKey,"
-        "   ancestryID, careerID, schoolID, careerSpecialityID, gender,"
+        "   ancestryID, bloodlineID, raceID, careerID, schoolID, careerSpecialityID, gender,"
         "   stationID, solarSystemID, constellationID, regionID, freeRespecs, lastRespecDateTime, nextRespecDateTime)"
         " VALUES"
         // CharacterData:
         "  (%u, %u, '%s', '%s', %f, %f, %f, %f, '%s',"
         "   %" PRIu64 ", %u, %u, %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", "
         "   %" PRIu64 ", %" PRIu64 ", %i,"
-        "   %u, %u, %u, %u, %u,"
+        "   %u, %u, %u, %u, %u, %u, %u,"
         "   %u, %u, %u, %u, %u, %u, %u)",
         // CharacterData:
         characterID, data.accountID, titleEsc.c_str(), descriptionEsc.c_str(), data.bounty, data.balance, data.aurBalance, data.securityRating, "No petition",
         Win32TimeNow(), data.logonMinutes, data.corporationID, corpData.corpRole, corpData.rolesAtAll, corpData.rolesAtBase, corpData.rolesAtHQ, corpData.rolesAtOther,
         data.startDateTime, data.createDateTime, corpData.corpAccountKey,
-        data.ancestryID, data.careerID, data.schoolID, data.careerSpecialityID, data.gender,
+        data.ancestryID, data.bloodlineID, data.raceID, data.careerID, data.schoolID, data.careerSpecialityID, data.gender,
         data.stationID, data.solarSystemID, data.constellationID, data.regionID, 2, 0, 0
     )) {
         _log(DATABASE__ERROR, "Failed to insert character %u: %s.", characterID, err.c_str());
@@ -1197,6 +1200,9 @@ bool InventoryDB::NewCharacter(uint32 characterID, const CharacterData &data, co
     return true;
 }
 
+// Undefine the macro used only in NewCharacter and SaveCharacterAppearance.
+#undef _VoN
+
 bool InventoryDB::SaveCharacter(uint32 characterID, const CharacterData &data) {
     DBerror err;
 
@@ -1209,10 +1215,8 @@ bool InventoryDB::SaveCharacter(uint32 characterID, const CharacterData &data) {
     if(!sDatabase.RunQuery(err,
         "UPDATE character_"
         " SET"
-        "  accountID = %u,"
         "  title = '%s',"
         "  description = '%s',"
-        "  gender = %u,"
         "  bounty = %f,"
         "  balance = %f,"
         "  aurBalance = %f,"
@@ -1224,19 +1228,12 @@ bool InventoryDB::SaveCharacter(uint32 characterID, const CharacterData &data) {
         "  solarSystemID = %u,"
         "  constellationID = %u,"
         "  regionID = %u,"
-        "  ancestryID = %u,"
-        "  careerID = %u,"
-        "  schoolID = %u,"
-        "  careerSpecialityID = %u,"
         "  startDateTime = %" PRIu64 ","
-        "  createDateTime = %" PRIu64 ","
         "  shipID = %u,"
         "  capsuleID = %u"
         " WHERE characterID = %u",
-        data.accountID,
         titleEsc.c_str(),
         descriptionEsc.c_str(),
-        data.gender,
         data.bounty,
         data.balance,
         data.aurBalance,
@@ -1248,12 +1245,7 @@ bool InventoryDB::SaveCharacter(uint32 characterID, const CharacterData &data) {
         data.solarSystemID,
         data.constellationID,
         data.regionID,
-        data.ancestryID,
-        data.careerID,
-        data.schoolID,
-        data.careerSpecialityID,
         data.startDateTime,
-        data.createDateTime,
         data.shipID,
         data.capsuleID,
         characterID))
@@ -1268,6 +1260,7 @@ bool InventoryDB::SaveCharacter(uint32 characterID, const CharacterData &data) {
 bool InventoryDB::SaveCorpMemberInfo(uint32 characterID, const CorpMemberInfo &data) {
     DBerror err;
 
+    /** @todo  this should go into it's own table (and put in corpdb shit) eventually */
     if(!sDatabase.RunQuery(err,
         "UPDATE character_"
         " SET"
@@ -1292,9 +1285,6 @@ bool InventoryDB::SaveCorpMemberInfo(uint32 characterID, const CorpMemberInfo &d
 
     return true;
 }
-
-// Undefine the macro used only in NewCharacter and SaveCharacterAppearance.
-#undef _VoN
 
 bool InventoryDB::DeleteCharacter(uint32 characterID) {
     DBerror err;
@@ -1470,6 +1460,7 @@ bool InventoryDB::GetStation(uint32 stationID, StationData &into) {
     return true;
 }
 
+/** @todo this cert shit needs to go into chardb.  see /eve/alasiya/... for updated code */
 bool InventoryDB::LoadCertificates( uint32 characterID, Certificates &into )
 {
     DBQueryResult res;
@@ -1568,6 +1559,7 @@ bool InventoryDB::GetTypeID(uint32 itemID, uint32 &typeID)
     return true;
 }
 
+/* these next two are not used, except by gmcommands */
 bool InventoryDB::GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into)
 {
     DBQueryResult res;

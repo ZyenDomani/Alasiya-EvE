@@ -51,7 +51,6 @@ public:
     {
         bool UseBeanCount;
         bool UseProfiling;
-        bool UseAPIServer;
         bool UseShipTracking;
         bool UseStackTrace;
         bool testServer;    // to distuinguish between live production server or experimental testing server
@@ -174,10 +173,6 @@ public:
         uint16 imageServerPort;
         /// the imageServer for char images. should be the evemu server external ip/host
         std::string imageServer;
-        /// Port at which the apiServer should listen.
-        uint16 apiServerPort;
-        /// the apiServer for API functions. should be the evemu server external ip/host
-        std::string apiServer;
     } net;
 
     // From <thread/>
@@ -186,7 +181,6 @@ public:
         uint8 NetworkThreads;
         uint8 DatabaseThreads;
         uint8 WorldThreads;
-        uint8 APIThreads;
         uint8 ImageServerThreads;
         uint8 ConsoleThreads;
     } threads;

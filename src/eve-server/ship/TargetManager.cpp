@@ -216,8 +216,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
     if (targetSkills < maxLockedTargets)
         maxLockedTargets = targetSkills;
     if (GetTotalTargets() >= maxLockedTargets) {
-        m_self->CastToClient()->SendInfoModalMsg("Your ship and skills combination can only handle %i targe%s at a time.", \
-            maxLockedTargets, ((maxLockedTargets == 1) ? "t":"ts"));
+        m_self->CastToClient()->SendInfoModalMsg("Your ship and skills combination can only handle %u target at a time.", maxLockedTargets);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
@@ -427,7 +426,6 @@ float TargetManager::TimeToLock(ShipRef ship, SystemEntity *target) const {
 
     /*
      * fleet invlovement enhances targeting speed using leadership of highest member (2%/lvl)
-     * modules - sensor boosters
      */
 
     //https://wiki.eveonline.com/en/wiki/Targeting_speed

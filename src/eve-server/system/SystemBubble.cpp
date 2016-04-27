@@ -158,12 +158,13 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
 
 void SystemBubble::Process()
 {
+    if (m_system->GetSystemSecurityRating() > 0.90) return;
     if (m_spawnTimer.Enabled())
-        if (m_spawnTimer.Check(false))
+        if (m_spawnTimer.Check(false)) {
             if (HasPlayers())
                 m_system->DoSpawnForBubble(this);
-            else
-                m_spawnTimer.Disable();
+            m_spawnTimer.Disable();
+        }
 }
 
 //called every 30s from the bubble manager.
@@ -309,6 +310,7 @@ void SystemBubble::clear() {
 
 void SystemBubble::SetSpawnTimer(bool isBelt /*false*/)
 {
+    if (m_system->GetSystemSecurityRating() > 0.90) return;
     if (sConfig.server.testServer)
         m_spawnTimer.Start(5000); /* 5s for testing */
     else

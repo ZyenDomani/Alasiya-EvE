@@ -200,7 +200,7 @@ void TractorBeam::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1000;
+        shipEff.repeat = 1;
         shipEff.error = new PyNone;
 
     std::vector<PyTuple*> events;

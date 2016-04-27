@@ -93,7 +93,7 @@ public:
     bool GetCharItems(uint32 characterID, std::vector<uint32> &into);
     bool GetLocationByStation(uint32 staID, CharacterData &cdata);
     bool GetCareerStationByCorporation(uint32 corporationID, uint32 &stationID);
-    bool GetCareerBySchool(uint32 schoolID, uint32 &careerID);
+    bool GetCareerBySchool(uint32 schoolID, uint8 &raceID, uint32 &careerID);
     bool GetCorporationBySchool(uint32 schoolID, uint32 &corporationID);
     bool GetLocationCorporationByCareer(CharacterData &cdata);
     bool DoesCorporationExist(uint32 corpID);
@@ -172,6 +172,18 @@ public:
 	PyObject*   GetSkillHistory(uint32 characterID);
     void        UpdateSkillQueueEndTime(uint64 endtime, uint32 charID);
 
+    /** Certificates */
+    struct CharCerts {
+        uint32 certificateID;
+        uint64 grantDate;
+        bool visibilityFlags;
+    };
+    typedef std::vector<CharCerts> Certificates;
+    bool LoadCertificates( uint32 characterID, Certificates &into );
+    bool SaveCertificates( uint32 characterID, const Certificates &from );
+    void AddCertificate(uint32 charID, CharCerts cert);
+    void UpdateCertificate(uint32 charID, uint32 certificateID, bool pub);
+
 	bool 		isOffline(uint32 characterID);
 
 	void 		addOwnerCache(uint32 ownerID, std::string ownerName, uint32 typeID);
@@ -185,7 +197,7 @@ public:
 	void        VisitSystem(uint32 solarSystemID, uint32 charID);
 	void        chkDynamicSystemID(uint32 solarSystemID);
 	void        AddJumpToDynamicData(uint32 solarSystemID);
-	void        AddPilotToDynamicData(uint32 solarSystemID, bool isDocked, bool isLogin);
+    void        AddPilotToDynamicData(uint32 solarSystemID, bool isAdd, bool isDocked, bool isLogin);
 	void        AddKillToDynamicData(uint32 solarSystemID);
 	void        AddPodKillToDynamicData(uint32 solarSystemID);
 	void        AddFactionKillToDynamicData(uint32 solarSystemID);

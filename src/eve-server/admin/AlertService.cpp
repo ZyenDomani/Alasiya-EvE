@@ -27,7 +27,6 @@
 
 #include "PyServiceCD.h"
 #include "admin/AlertService.h"
-#include "python/PyTraceLog.h"
 
 
 PyCallable_Make_InnerDispatcher(AlertService)
@@ -35,7 +34,7 @@ PyCallable_Make_InnerDispatcher(AlertService)
 AlertService::AlertService(PyServiceMgr *mgr)
 : PyService(mgr, "alert"),
   m_dispatch(new Dispatcher(this)),
-  traceLogger(NULL)
+  traceLogger(nullptr)
 {
     _SetCallDispatcher(m_dispatch);
 
@@ -60,11 +59,13 @@ AlertService::~AlertService()
   *      to send us the stack trace immediately.
   */
 PyResult AlertService::Handle_BeanCount(PyCallArgs &call) {
+    _log(CLIENT__WARNING, "AlertService::Handle_BeanCount(): size=%u", call.tuple->size() );
+    //call.Dump(CLIENT__CALL_DUMP);
 
     PyTuple *result = new PyTuple(2);
 
     // what we are sending back is just a static mErrorID and the command not to do anything with it.
-    if (sConfig.server.UseBeanCount and sConfig.server.testServer)
+    if (sConfig.server.UseBeanCount or sConfig.server.testServer)
         result->items[0] = new PyNone();
     else
         result->items[0] = new PyInt(34135);    //ErrorID
@@ -80,6 +81,8 @@ PyResult AlertService::Handle_BeanCount(PyCallArgs &call) {
   */
 PyResult AlertService::Handle_BeanDelivery( PyCallArgs& call )
 {
+    _log(CLIENT__WARNING, "AlertService::Handle_BeanDelivery(): size=%u", call.tuple->size() );
+    //call.Dump(CLIENT__CALL_DUMP);
     /* Unhandled for now as we have no interest in receiving batched python stack traces
      * nor official style debugging... Just gimme the info dude (see Handle_SendClientStackTraceAlert).
      */
@@ -99,6 +102,8 @@ PyResult AlertService::Handle_BeanDelivery( PyCallArgs& call )
  * @return guess it should have PyNone back.
  */
 PyResult AlertService::Handle_SendClientStackTraceAlert(PyCallArgs &call) {
+    _log(CLIENT__WARNING, "AlertService::Handle_SendClientStackTraceAlert(): size=%u", call.tuple->size() );
+    //call.Dump(CLIENT__CALL_DUMP);
   /**
 		  SendClientStackTraceAlert(stackID, stackTrace, mode, nextErrorKeyHash)
   */

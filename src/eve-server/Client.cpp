@@ -27,7 +27,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
-//#include "LiveUpdateDB.h"
+#include "LiveUpdateDB.h"
 #include "PyBoundObject.h"
 #include "chat/LSCService.h"
 #include "character/CharUnboundMgrService.h"
@@ -124,8 +124,8 @@ Client::~Client() {
 
         char ci[1];
         snprintf(ci, sizeof(ci), "");
-        GetShip()->SetCustomInfo(ci);
-        //GetShip()->OfflineAll();  //this isnt needed, as module and attrib states are not saved
+        m_ship->SetCustomInfo(ci);
+        //m_ship->OfflineAll();  //this isnt needed, as module and attrib states are not saved
         SaveAllToDatabase();
 
         if (IsDocked()) {
@@ -264,7 +264,7 @@ void Client::Process() {
     if (m_char->CheckSaveTimer()) {
         _log(CLIENT__TRACE, "Client::Process():  SaveTimer for %s(%u)", GetName(), GetID());
         m_char->SaveCharacter();
-		GetShip()->SaveShip();
+		m_ship->SaveShip();
     }
 
     if (sConfig.server.UseProfiling)
@@ -272,7 +272,7 @@ void Client::Process() {
 
     if (!IsUndock()) {
         SystemEntity::Process();
-        GetShip()->Process();
+        m_ship->Process();
     }
 }
 
@@ -286,20 +286,20 @@ void Client::SetDestiny(bool count) {
         m_destiny = new DestinyManager(this, m_system);
     //need to set players position before adding to bubble (if in space)
     if (IsInSpace()) {
-        if (GetShip()->position().isZero())
+        if (m_ship->position().isZero())
             MoveToPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()));
         else
-            m_destiny->SetPosition(GetShip()->position());
+            m_destiny->SetPosition(m_ship->position());
     }
-    m_destiny->SetShipCapabilities(GetShip());
+    m_destiny->SetShipCapabilities(m_ship);
     m_system->AddClient(this, IsDocked(), count);
     SetStateSent(false);
 }
 
 void Client::WarpIn() {
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
-    GPoint warpToPoint(GetShip()->position());
-    GPoint warpFromPoint(GetShip()->position());
+    GPoint warpToPoint(m_ship->position());
+    GPoint warpFromPoint(m_ship->position());
     warpFromPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
     m_destiny->SetPosition(warpFromPoint, false, true);
     m_destiny->WarpTo(warpToPoint);        // Warp ship from the random login point to the position saved on last disconnect
@@ -309,7 +309,7 @@ void Client::WarpOut() {
     sLog.Blue("Client::WarpOut()", "Client Destructor called WarpOut().  Finish code here.");
     return;
     // We are logging out, so we need to warp to a random spot 1Mm away:
-    GPoint warpToPoint(GetShip()->position());
+    GPoint warpToPoint(m_ship->position());
     warpToPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
     m_destiny->WarpTo(warpToPoint);        // Warp ship from the random login point to the position saved on last disconnect
 }
@@ -417,16 +417,15 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     //update client and set session change
     OnCharNoLongerInStation();
     // tell ship its' undocking
-    ShipRef shipRef = GetShip();
 	//remove ship from station inv, add to system inv, and inform client.
-    shipRef->Move(systemID, flagAutoFit);
+    m_ship->Move(systemID, flagAutoFit);
     //set character location to current system, and save.
     m_char->SetLocation(0, systemID, constellationID, regionID);
     //need mlocation set to current system before updating client with new position.
     _UpdateSession(m_char);
     DestinyUndock(direction);
     // set modules online and recharge shields and cap.
-    shipRef->Undock();
+    m_ship->Undock();
     //update char session with the new values
     SendSessionChange();
 
@@ -466,7 +465,7 @@ void Client::HasUndocked() {
 
     char ci[1];
     snprintf(ci, sizeof(ci), "");
-    GetShip()->SetCustomInfo(ci);
+    m_ship->SetCustomInfo(ci);
 }
 
 void Client::DockToStation(uint32 stationID) {
@@ -479,12 +478,11 @@ void Client::DockToStation(uint32 stationID) {
     SetAutoPilot(false);
     SetBubbleWait(false);
 
-    ShipRef shipRef = GetShip();
     char ci[25];
     snprintf(ci, sizeof(ci), "Docked:%u", stationID);
-    shipRef->SetCustomInfo(ci);
+    m_ship->SetCustomInfo(ci);
     //tell ship it's docking.  this deactivates modules.
-    shipRef->Dock();
+    m_ship->Dock();
 
     uint32 solarsystemID = 0,constellationID = 0, regionID = 0;
     m_services.serviceDB().GetStationInfo(
@@ -497,14 +495,14 @@ void Client::DockToStation(uint32 stationID) {
     //update session with new values
     _UpdateSession(m_char);
     UpdateLocation(stationID);
-    shipRef->Move(stationID, flagHangar);
+    m_ship->Move(stationID, flagHangar);
     // When docking, Set ship's InventoryItem to system origin so that when changing ships in stations, they don't appear outside
-    shipRef->Relocate(NULL_ORIGIN);
+    m_ship->Relocate(NULL_ORIGIN);
 
     //Check if player is in pod, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a new, fully-fitted ship as replacement.  we dont....yet
     //  TODO  maybe we should check for recent ship loss to determine if player should get new ship.  ???
-    if (shipRef->typeID() == itemTypeCapsule)
+    if (m_ship->typeID() == itemTypeCapsule)
         SpawnNewRookieShip();
 
     SendSessionChange();
@@ -520,7 +518,6 @@ void Client::MoveToLocation(uint32 location, const GPoint& pt)
         return;
     }
 
-    ShipRef shipRef = GetShip();
     uint32 stationID = 0, solarSystemID = 0, constellationID = 0, regionID = 0;
     if (IsStation(location)) {
         sLog.Warning("Client::MoveToLocation()", "IsStation()");
@@ -533,7 +530,7 @@ void Client::MoveToLocation(uint32 location, const GPoint& pt)
             nullptr, nullptr, nullptr
         );
 
-        shipRef->Move(stationID, flagHangar);
+        m_ship->Move(stationID, flagHangar);
     } else if (IsSolarSystem(location)) {
         sLog.Warning("Client::MoveToLocation()", "IsSolarSystem()");
         // Entering a solarsystem   origin is GetLocation()    destination is location
@@ -546,13 +543,13 @@ void Client::MoveToLocation(uint32 location, const GPoint& pt)
             nullptr, nullptr, nullptr
         );
 
-        shipRef->Move(solarSystemID, flagAutoFit);
+        m_ship->Move(solarSystemID, flagAutoFit);
     } else {
         SendErrorMsg("Move requested to unsupported location %u", location);
         return;
     }
 
-    shipRef->Relocate(pt);
+    m_ship->Relocate(pt);
 
     m_char->SetLocation(stationID, solarSystemID, constellationID, regionID);
     //update session with new values
@@ -566,7 +563,7 @@ void Client::MoveToPosition(const GPoint &pt) {
         return;
     m_destiny->SetPosition(pt, true);
     m_destiny->Halt();
-    GetShip()->Relocate(pt);
+    m_ship->Relocate(pt);
 }
 
 void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
@@ -583,11 +580,11 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
     //do the move. This will update the DB and send the notification.
     item->Move(location, flag);
     //For now - this check is hacked, as i want to make sure holds do get updated and this method works.
-    GetShip()->_UpdateCargoHoldsUsedVolume();
+    m_ship->_UpdateCargoHoldsUsedVolume();
 
     if (was_module || (item->flag() >= flagSlotFirst && item->flag() <= flagSlotLast)) {
         //it was equipped, or is now. so ModuleMgr needs to know.
-        GetShip()->UpdateModules();
+        m_ship->UpdateModules();
     }
 
     // Release the item factory now that the ItemFactory is finished being used:
@@ -629,8 +626,8 @@ void Client::BoardShip(ShipRef newShipRef) {
         m_destiny->UpdateNewShip(newShipRef);
     }
 
-    GetShip()->UpdateModules();
-    GetShip()->SaveShip();
+    m_ship->UpdateModules();
+    m_ship->SaveShip();
 
     SetSessionTimer();
 }
@@ -1011,7 +1008,8 @@ void Client::_SendQueuedUpdates() {
 
         // attempted fix for trying to update when (bubble == NULL)
         //  seems to work correctly  -allan 18Apr15
-        dum.waitForBubble = IsBubbleWait();
+        //  breaks fitting and causes starfield with recent updates  -allan 18Apr16
+        dum.waitForBubble = false; //IsBubbleWait();
 
         //now send it
         PyTuple* t = dum.Encode();
@@ -1083,13 +1081,13 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
 PyDict* Client::MakeSlimItem() const {
     //  this is actually the slimItem for the clients current ship.  easier to get data here.
 
-    _log(COMMON__WARNING, "MakeSlimItem for ShipID %u via Client %u", GetShip()->itemID(), GetCharacterID());
+    _log(COMMON__WARNING, "MakeSlimItem for ShipID %u via Client %u", m_ship->itemID(), GetCharacterID());
     PyDict *slim = new PyDict();
-        slim->SetItemString("itemID",           new PyLong(GetShip()->itemID()));
-        slim->SetItemString("typeID",           new PyInt(GetShip()->typeID()));
-        slim->SetItemString("categoryID",       new PyInt(GetShip()->categoryID()));
-        slim->SetItemString("groupID",          new PyInt(GetShip()->groupID()));
-        slim->SetItemString("name",             new PyString(GetShip()->itemName()));
+        slim->SetItemString("itemID",           new PyLong(m_ship->itemID()));
+        slim->SetItemString("typeID",           new PyInt(m_ship->typeID()));
+        slim->SetItemString("categoryID",       new PyInt(m_ship->categoryID()));
+        slim->SetItemString("groupID",          new PyInt(m_ship->groupID()));
+        slim->SetItemString("name",             new PyString(m_ship->itemName()));
         slim->SetItemString("ownerID",          new PyInt(GetCharacterID()));
         slim->SetItemString("charID",           new PyInt(GetCharacterID()));
         slim->SetItemString("corpID",           new PyInt(GetCorporationID()));
@@ -1100,7 +1098,7 @@ PyDict* Client::MakeSlimItem() const {
 
     //encode the modules list, if we have any visible modules
     std::vector<InventoryItemRef> items;
-    GetShip()->FindByFlagRange(flagLowSlot0, flagHiSlot7, items);
+    m_ship->FindByFlagRange(flagLowSlot0, flagHiSlot7, items);
     if (!items.empty())
     {
         PyList *l = new PyList();
@@ -1253,7 +1251,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
         return;
     }
 
-    GetShip()->DeactivateAllModules();
+    m_ship->DeactivateAllModules();
 
     m_moveSystemID = solarSystemID;
     m_movePoint = position;
@@ -1261,7 +1259,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
 
     char ci[25];
     snprintf(ci, sizeof(ci), "Jumping:%u", toGate);
-    GetShip()->SetCustomInfo(ci);
+    m_ship->SetCustomInfo(ci);
 
     // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
     // this is the code for removing pilot from previous system
@@ -1302,7 +1300,7 @@ void Client::_ExecuteJump() {
 
     char ci[1];
     snprintf(ci, sizeof(ci), "");
-    GetShip()->SetCustomInfo(ci);
+    m_ship->SetCustomInfo(ci);
 
     SetInvul(true);
     SetBubbleWait(true);
@@ -1394,6 +1392,13 @@ void Client::PickAlternateShip() {
         m_shipId = m_char->PickAlternateShip(GetLocationID());
 }
 
+void Client::SetShip(ShipRef shipRef) {
+    m_ship = shipRef;
+    m_shipId = shipRef->itemID();
+    if (m_char)
+        m_char->SetActiveShip(m_shipId);
+}
+
 void Client::CreateNewPod() {
     EVEItemFlags flag = flagCapsule;
     std::string pod_name = m_char->itemName() + "'s Capsule";   // use m_char because GetCharacterName() may not be pouplated (i.e. on login)
@@ -1467,8 +1472,8 @@ void Client::ResetAfterPodded()
     if (m_destiny)
         m_destiny->SetShipCapabilities(podRef);
 
-    GetShip()->UpdateModules();
-    GetShip()->SaveShip();
+    m_ship->UpdateModules();
+    m_ship->SaveShip();
     m_char->ResetClone();
     m_char->SaveCharacter();
     //update session with new values
@@ -1585,16 +1590,16 @@ void Client::TargetsCleared()
 }
 
 void Client::SavePosition() {
-    if (!GetShip().get() || !m_destiny) {
+    if (!m_ship || !m_destiny) {
         sLog.Debug("Client","%s: Unable to save position. We are probably not in space.", GetName());
         return;
     }
-    GetShip()->Relocate(m_destiny->GetPosition());
+    m_ship->Relocate(m_destiny->GetPosition());
 }
 
 void Client::SaveAllToDatabase() {
     SavePosition();
-    if (GetShip()) GetShip()->SaveShip();  // Save Ship and Modules' attributes and info to DB
+    if (m_ship) m_ship->SaveShip();  // Save Ship and Modules' attributes and info to DB
 
     m_char->SaveFullCharacter();         // Save Character info to DB
 }
@@ -1698,15 +1703,10 @@ void Client::_GetVersion(VersionExchangeServer& version)
 {
     version.birthday = EVEBirthday;
     version.macho_version = MachoNetVersion;
-    version.user_count = _GetUserCount();
+    version.user_count = sEntityList.GetClientCount();
     version.version_number = EVEVersionNumber;
     version.build_version = EVEBuildVersion;
     version.project_version = EVEProjectVersion;
-}
-
-uint32 Client::_GetUserCount()
-{
-    return sEntityList.GetClientCount();
 }
 
 bool Client::_VerifyVersion(VersionExchangeClient& version)
@@ -1877,7 +1877,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     server_shake.serverChallenge = "";
     server_shake.func_marshaled_code = new PyBuffer(handshakeFunc, handshakeFunc + sizeof(handshakeFunc));
     server_shake.verification = new PyBool(false);
-    server_shake.cluster_usercount = _GetUserCount();
+    server_shake.cluster_usercount = sEntityList.GetClientCount();
     server_shake.proxy_nodeid = 0xFFAA;
     server_shake.user_logonqueueposition = _GetQueuePosition();
     // binascii.crc_hqx of marshaled single-element tuple containing 64 zero-bytes string
@@ -1901,7 +1901,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     mSession.SetString("languageID", ccp.user_languageid.c_str());
 
     //user type 1 is normal user, type 23 is a trial account user.
-    mSession.SetInt("userType", 1);
+    mSession.SetInt("userType", 1);     //account_info.type);
     mSession.SetInt("userid", account_info.id);
     mSession.SetInt("clientID", account_info.clientID);
     mSession.SetULong("role", account_info.role);
@@ -1923,7 +1923,7 @@ error_login_auth_failed:
 bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
 {
     _log(NET__PRES_DEBUG, "%s: Handshake result received.", GetAddress().c_str());
-
+/** @todo  fix these....accountrole, userid and clientid take from session, which isnt initalized yet. */
     //send this before session change
     CryptoHandshakeAck ack;
         ack.jit = GetLanguageID();
@@ -1936,7 +1936,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     // no client update available
         ack.client_hash = new PyNone;
         ack.user_clientid = GetClientID();
-        ack.live_updates = new PyList; //sLiveUpdateDB.GetUpdates();
+        ack.live_updates = sLiveUpdateDB.GetUpdates();
     PyRep* r = ack.Encode();
     mNet->QueueRep(r);
     PyDecRef(r);
@@ -1991,13 +1991,11 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     }
 
     //Debug code
-    /*
     if (req.method == "BeanCount")
-        sLog.Warning("Client::BeanCount","(%s/%s) BeanCount error reporting and handling is not implemented yet.", \
-                     req.method.c_str(),packet->dest.service.c_str());
+        sLog.Warning("Handle_CallReq()","BeanCount requesting immediate stack trace via %s service.", packet->dest.service.c_str());
     else
         sLog.Debug("Server", "%s call made to %s",req.method.c_str(),packet->dest.service.c_str());
-*/
+
     //build arguments
     PyCallArgs args(this, req.arg_tuple, req.arg_dict);
 

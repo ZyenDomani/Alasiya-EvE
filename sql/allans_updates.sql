@@ -382,8 +382,10 @@ UPDATE `dgmTypeAttributes` SET `valueFloat` = '5' WHERE `typeID` = 9860 AND `att
 /* add rat factions to mapRegions table for belt rat spawns */
 ALTER TABLE `mapRegions` ADD `ratFactionID` INT(8) NOT NULL DEFAULT '0' AFTER `factionID`;
 
-/* update character_ to add capsuleID */
+/* update character_ to add capsuleID, bloodlineID, raceID */
 ALTER TABLE `character_` ADD `capsuleID` INT(10) NOT NULL DEFAULT '0' AFTER `shipID`;
+ALTER TABLE `character_` ADD `bloodlineID` TINYINT UNSIGNED NOT NULL DEFAULT '0' AFTER `ancestryID`;
+ALTER TABLE `character_` ADD `raceID` TINYINT UNSIGNED NOT NULL DEFAULT '0' AFTER `bloodlineID`;
 /* update to add unique interger `clientID` to account */
 ALTER TABLE `account` ADD `clientID` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `accountID`;
 /* update for client seed for making a unique clientID */

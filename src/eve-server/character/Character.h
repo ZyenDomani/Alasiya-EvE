@@ -195,6 +195,7 @@ protected:
 
 /**
  * Container for raw character data.
+ * v6
  */
 class CharacterData {
 public:
@@ -217,6 +218,8 @@ public:
         uint32 _constellationID = 0,
         uint32 _regionID = 0,
         uint32 _ancestryID = 0,
+        uint8 _bloodlineID = 0,
+        uint8 _raceID = 0,
         uint32 _careerID = 0,
         uint32 _schoolID = 0,
         uint32 _careerSpecialityID = 0,
@@ -224,7 +227,7 @@ public:
         uint64 _createDateTime = 0,
         uint32 _shipID = 0,
         uint32 _capsuleID = 0
-                 );
+    );
 
     uint32 accountID;
 
@@ -249,6 +252,8 @@ public:
     uint32 regionID;
 
     uint32 ancestryID;
+    uint8 bloodlineID;
+    uint8 raceID;
     uint32 careerID;
     uint32 schoolID;
     uint32 careerSpecialityID;
@@ -633,6 +638,7 @@ public:
                                              double absolutePoints);
 
     bool                    isOffline(uint32 online);
+    void                    SetLoaded(bool set=false)   { m_loaded = set; }
 
     void                    SetLoginTime();
 
@@ -662,8 +668,8 @@ public:
 	void                    VisitSystem(uint32 solarSystemID);
 	void                    chkDynamicSystemID(uint32 solarSystemID);
 	void                    AddJumpToDynamicData(uint32 solarSystemID);
-	void                    AddPilotToDynamicData(uint32 solarSystemID, bool isDocked=false, bool isLogin=false);
-	void                    AddKillToDynamicData(uint32 solarSystemID);
+    void                    AddPilotToDynamicData(uint32 solarSystemID, bool isAdd = false, bool isDocked = false, bool isLogin = false);
+    void                    AddKillToDynamicData(uint32 solarSystemID);
 	void                    AddPodKillToDynamicData(uint32 solarSystemID);
 	void                    AddFactionKillToDynamicData(uint32 solarSystemID);
 
@@ -678,6 +684,7 @@ protected:
         const CharacterData& _charData,
         const CorpMemberInfo& _corpData
     );
+    virtual ~Character();
 
     /*
      * Member functions:
@@ -796,6 +803,9 @@ protected:
 private:
 	CharacterDB m_db;
     StandingDB s_db;
+    Client* m_pClient;
+
+    bool m_loaded;      /* to avoid multiple load calls (_Load is called 4x) */
 };
 
 #endif /* !__CHARACTER__H__INCL__ */

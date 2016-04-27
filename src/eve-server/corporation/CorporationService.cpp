@@ -137,8 +137,7 @@ PyResult CorporationService::Handle_GetCorpInfo(PyCallArgs &call) {
 
 
 PyResult CorporationService::Handle_GetNPCDivisions(PyCallArgs &call) {
-    PyRep *result = m_db.ListNPCDivisions();
-    return (result);
+    return m_db.ListNPCDivisions();
 }
 
 PyResult CorporationService::Handle_GetEmploymentRecord(PyCallArgs &call) {

@@ -122,59 +122,64 @@ _Ty *CharacterType::_LoadCharacterType(ItemFactory &factory, uint32 typeID, uint
 /*
  * CharacterData
  */
-CharacterData::CharacterData(   //uses v5
-    uint32 _accountID,
-    const char *_title,
-    const char *_desc,
-    bool _gender,
-    double _bounty,
-    double _balance,
-    double _aurBalance,
-    double _securityRating,
-    uint32 _logonMinutes,
-    double _skillPoints,
-    uint32 _corporationID,
-    uint32 _allianceID,
-    uint32 _warFactionID,
-    uint32 _stationID,
-    uint32 _solarSystemID,
-    uint32 _constellationID,
-    uint32 _regionID,
-    uint32 _ancestryID,
-    uint32 _careerID,
-    uint32 _schoolID,
-    uint32 _careerSpecialityID,
-    uint64 _startDateTime,
-    uint64 _createDateTime,
-    uint32 _shipID,
-    uint32 _capsuleID)
+CharacterData::CharacterData(   //uses v6
+uint32 _accountID,
+const char *_title,
+const char *_desc,
+bool _gender,
+double _bounty,
+double _balance,
+double _aurBalance,
+double _securityRating,
+uint32 _logonMinutes,
+double _skillPoints,
+uint32 _corporationID,
+uint32 _allianceID,
+uint32 _warFactionID,
+uint32 _stationID,
+uint32 _solarSystemID,
+uint32 _constellationID,
+uint32 _regionID,
+uint32 _ancestryID,
+uint8 _bloodlineID,
+uint8 _raceID,
+uint32 _careerID,
+uint32 _schoolID,
+uint32 _careerSpecialityID,
+uint64 _startDateTime,
+uint64 _createDateTime,
+uint32 _shipID,
+uint32 _capsuleID)
 : accountID(_accountID),
-  title(_title),
-  description(_desc),
-  gender(_gender),
-  bounty(_bounty),
-  balance(_balance),
-  aurBalance(_aurBalance),
-  securityRating(_securityRating),
-  logonMinutes(_logonMinutes),
-  skillPoints(_skillPoints),
-  corporationID(_corporationID),
-  allianceID(_allianceID),
-  warFactionID(_warFactionID),
-  stationID(_stationID),
-  solarSystemID(_solarSystemID),
-  constellationID(_constellationID),
-  regionID(_regionID),
-  ancestryID(_ancestryID),
-  careerID(_careerID),
-  schoolID(_schoolID),
-  careerSpecialityID(_careerSpecialityID),
-  startDateTime(_startDateTime),
-  createDateTime(_createDateTime),
-  shipID(_shipID),
-  capsuleID(_capsuleID)
+title(_title),
+description(_desc),
+gender(_gender),
+bounty(_bounty),
+balance(_balance),
+aurBalance(_aurBalance),
+securityRating(_securityRating),
+logonMinutes(_logonMinutes),
+skillPoints(_skillPoints),
+corporationID(_corporationID),
+allianceID(_allianceID),
+warFactionID(_warFactionID),
+stationID(_stationID),
+solarSystemID(_solarSystemID),
+constellationID(_constellationID),
+regionID(_regionID),
+ancestryID(_ancestryID),
+bloodlineID(_bloodlineID),
+raceID(_raceID),
+careerID(_careerID),
+schoolID(_schoolID),
+careerSpecialityID(_careerSpecialityID),
+startDateTime(_startDateTime),
+createDateTime(_createDateTime),
+shipID(_shipID),
+capsuleID(_capsuleID)
 {
 }
+
 
 /*
  * CharacterAppearance
@@ -331,46 +336,53 @@ Character::Character(
     const CharacterData &_charData,
     const CorpMemberInfo &_corpData)
 : Owner(_factory, _characterID, _charType, _data),
-  m_accountID(_charData.accountID),
-  m_title(_charData.title),
-  m_description(_charData.description),
-  m_gender(_charData.gender),
-  m_bounty(_charData.bounty),
-  m_balance(_charData.balance),
-  m_aurBalance(_charData.aurBalance),
-  m_securityStatus(_charData.securityRating),
-  m_logonMinutes(_charData.logonMinutes),
-  m_totalSPtrained(((double)(_charData.skillPoints))),
-  m_corporationID(_charData.corporationID),
-  m_corpHQ(_corpData.corpHQ),
-  m_allianceID(_charData.allianceID),
-  m_warFactionID(_charData.warFactionID),
-  m_corpAccountKey(_corpData.corpAccountKey),
-  m_corpRole(_corpData.corpRole),
-  m_rolesAtAll(_corpData.rolesAtAll),
-  m_rolesAtBase(_corpData.rolesAtBase),
-  m_rolesAtHQ(_corpData.rolesAtHQ),
-  m_rolesAtOther(_corpData.rolesAtOther),
-  m_stationID(_charData.stationID),
-  m_solarSystemID(_charData.solarSystemID),
-  m_constellationID(_charData.constellationID),
-  m_regionID(_charData.regionID),
-  m_ancestryID(_charData.ancestryID),
-  m_careerID(_charData.careerID),
-  m_schoolID(_charData.schoolID),
-  m_careerSpecialityID(_charData.careerSpecialityID),
-  m_startDateTime(_charData.startDateTime),
-  m_createDateTime(_charData.createDateTime),
-  m_shipID(_charData.shipID),
-  m_capsuleID(_charData.capsuleID)
+m_accountID(_charData.accountID),
+m_title(_charData.title),
+m_description(_charData.description),
+m_gender(_charData.gender),
+m_bounty(_charData.bounty),
+m_balance(_charData.balance),
+m_aurBalance(_charData.aurBalance),
+m_securityStatus(_charData.securityRating),
+m_logonMinutes(_charData.logonMinutes),
+m_totalSPtrained(((double)(_charData.skillPoints))),
+m_corporationID(_charData.corporationID),
+m_corpHQ(_corpData.corpHQ),
+m_allianceID(_charData.allianceID),
+m_warFactionID(_charData.warFactionID),
+m_corpAccountKey(_corpData.corpAccountKey),
+m_corpRole(_corpData.corpRole),
+m_rolesAtAll(_corpData.rolesAtAll),
+m_rolesAtBase(_corpData.rolesAtBase),
+m_rolesAtHQ(_corpData.rolesAtHQ),
+m_rolesAtOther(_corpData.rolesAtOther),
+m_stationID(_charData.stationID),
+m_solarSystemID(_charData.solarSystemID),
+m_constellationID(_charData.constellationID),
+m_regionID(_charData.regionID),
+m_ancestryID(_charData.ancestryID),
+m_careerID(_charData.careerID),
+m_schoolID(_charData.schoolID),
+m_careerSpecialityID(_charData.careerSpecialityID),
+m_startDateTime(_charData.startDateTime),
+m_createDateTime(_charData.createDateTime),
+m_shipID(_charData.shipID),
+m_capsuleID(_charData.capsuleID),
+m_pClient(nullptr)
 {
+    m_loaded = false;
     // allow characters to be only singletons
     assert(singleton());
 
-    // Activate Save Info Timer with somewhat randomized timer value:
-    //SetSaveTimerExpiry( MakeRandomInt( (10 * 60), (15 * 60) ) );        // Randomize save timer expiry to between 10 and 15 minutes
-    //EnableSaveTimer();
-    m_loginTime = sEntityList.GetStamp();
+    if (!IsAgent(itemID())) {
+        m_loginTime = sEntityList.GetStamp();
+        //m_inventory = new Inventory(InventoryItemRef(this));
+    }
+}
+
+Character::~Character()
+{
+    //SafeDelete(m_inventory);
 }
 
 CharacterRef Character::Load(ItemFactory &factory, uint32 characterID) {
@@ -435,12 +447,13 @@ uint32 Character::_Spawn(ItemFactory &factory,
 }
 
 bool Character::_Load() {
+    if (m_loaded) return true;
+    if (IsAgent(itemID())) return true;
+
     if( !Owner::_Load() ) {
         sLog.Warning("Character::_Load","Owner::_Load returned false for char %u", itemID());
         return false;
     }
-
-	bool bLoadSuccessful = false;
 
     if( !LoadContents( &m_factory ) ) {
         sLog.Warning("Character::_Load","LoadContents returned false for char %u", itemID());
@@ -452,10 +465,10 @@ bool Character::_Load() {
         return false;
     }
 
-    bLoadSuccessful = Owner::_Load();
+    m_loaded = Owner::_Load();
 
 	// Update Skill Queue and Total Skill Points Trained:
-	if ( bLoadSuccessful )
+    if ( m_loaded )
         UpdateSkillQueue();
 
     if( !m_factory.db().LoadCertificates( itemID(), m_certificates ) ) {
@@ -463,7 +476,7 @@ bool Character::_Load() {
         return false;
     }
 
-	return bLoadSuccessful;
+    return m_loaded;
 }
 
 void Character::Delete() {
@@ -1342,8 +1355,8 @@ void Character::AddJumpToDynamicData(uint32 solarSystemID) {  /**jumpsHour, jump
 	m_db.AddJumpToDynamicData(solarSystemID);
 }
 
-void Character::AddPilotToDynamicData(uint32 solarSystemID, bool isDocked, bool isLogin) {  /**pilotsDocked, pilotsInSpace */
-	m_db.AddPilotToDynamicData(solarSystemID, isDocked, isLogin);
+void Character::AddPilotToDynamicData(uint32 solarSystemID, bool isAdd, bool isDocked, bool isLogin) {  /**pilotsDocked, pilotsInSpace */
+    m_db.AddPilotToDynamicData(solarSystemID, isAdd, isDocked, isLogin);
 }
 
 void Character::AddKillToDynamicData(uint32 solarSystemID) {  /**killsHour, kills24Hours */

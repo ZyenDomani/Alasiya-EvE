@@ -1055,7 +1055,7 @@ void InventoryItem::SetOnline(bool online) {
         } else {
             shipEff.duration = 0.0;
         }
-        shipEff.repeat = (online ? 1000 : 0);
+        shipEff.repeat = (online ? 1 : 0);
         shipEff.error = new PyNone;
     PyList* events = new PyList;
         events->AddItem(shipEff.Encode());

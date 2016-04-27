@@ -132,6 +132,7 @@ public:
     bool AddBalance(double amount);
 
     // misc char functions
+    void SetShip(ShipRef shipRef);
     void CreateNewPod();
     void PickAlternateShip();
     void ResetAfterPodded();
@@ -287,7 +288,7 @@ protected:
     Scan* m_scan;
     TradeSession* m_TS;
 
-    Ship* m_ship;
+    ShipRef m_ship;
     uint32 m_shipId;
 
 	SystemGPoint m_SGP;     // interface to my variable 3-d point generating system  (which isnt finished yet... -allan)
@@ -340,7 +341,6 @@ protected:
     /* EVEClientSession interface                                       */
     /********************************************************************/
     void _GetVersion( VersionExchangeServer& version );
-    uint32 _GetUserCount();
     uint32 _GetQueuePosition() { /* hack */ return 1; }
 
     /********************************************************************/

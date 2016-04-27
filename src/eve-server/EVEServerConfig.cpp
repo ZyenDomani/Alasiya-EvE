@@ -22,6 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
+    Version:    6.2
 */
 
 
@@ -46,7 +47,6 @@ EVEServerConfig::EVEServerConfig()
     server.testServer = true;
     server.maxPlayers = 500;//N
     server.UseProfiling = false;
-    server.UseAPIServer = false;//N
     server.UseShipTracking = false;
     server.UseStackTrace = false;//N
     server.ServerSleepTime = 10 /*ms*/;
@@ -112,11 +112,8 @@ EVEServerConfig::EVEServerConfig()
     net.port = 26000;
     net.imageServer = "localhost";
     net.imageServerPort = 26001;
-    net.apiServer = "localhost";
-    net.apiServerPort = 26002;
 
     // threads  -not implemented
-    threads.APIThreads = 1;//N
     threads.ConsoleThreads = 1;//P
     threads.DatabaseThreads = 2;//N
     threads.ImageServerThreads = 1;//N
@@ -179,7 +176,6 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "UseBeanCount",         server.UseBeanCount );
     AddValueParser( "maxPlayers",           server.maxPlayers );
     AddValueParser( "UseProfiling",         server.UseProfiling );
-    AddValueParser( "UseAPIServer",         server.UseAPIServer );
     AddValueParser( "UseShipTracking",      server.UseShipTracking );
     AddValueParser( "UseStackTrace",        server.UseStackTrace );
     AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
@@ -190,7 +186,6 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "UseBeanCount" );
     RemoveParser( "maxPlayers" );
     RemoveParser( "UseProfiling" );
-    RemoveParser( "UseAPIServer" );
     RemoveParser( "UseShipTracking" );
     RemoveParser( "UseStackTrace" );
     RemoveParser( "ServerSleepTime" );
@@ -354,23 +349,18 @@ bool EVEServerConfig::ProcessNet( const TiXmlElement* ele )
     AddValueParser( "port",             net.port );
     AddValueParser( "imageServerPort",  net.imageServerPort);
     AddValueParser( "imageServer",      net.imageServer);
-    AddValueParser( "apiServerPort",    net.apiServerPort);
-    AddValueParser( "apiServer",        net.apiServer);
 
     const bool result = ParseElementChildren( ele );
 
     RemoveParser( "port" );
     RemoveParser( "imageServerPort" );
     RemoveParser( "imageServer" );
-    RemoveParser( "apiServerPort" );
-    RemoveParser( "apiServer" );
 
     return result;
 }
 
 bool EVEServerConfig::ProcessThreads( const TiXmlElement* ele )
 {
-    AddValueParser( "APIThreads",           threads.APIThreads);
     AddValueParser( "ConsoleThreads",       threads.ConsoleThreads);
     AddValueParser( "DatabaseThreads",      threads.DatabaseThreads);
     AddValueParser( "ImageServerThreads",   threads.ImageServerThreads);
@@ -379,7 +369,6 @@ bool EVEServerConfig::ProcessThreads( const TiXmlElement* ele )
 
     const bool result = ParseElementChildren( ele );
 
-    RemoveParser( "APIThreads" );
     RemoveParser( "ConsoleThreads" );
     RemoveParser( "DatabaseThreads" );
     RemoveParser( "ImageServerThreads" );

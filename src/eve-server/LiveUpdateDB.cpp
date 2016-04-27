@@ -29,7 +29,19 @@
 
 PyList* LiveUpdateDB::GenerateUpdates()
 {
-    const char* query = "SELECT updateID, updateName, description, machoVersionMin, machoVersionMax, buildNumberMin, buildNumberMax, methodName, objectID, codeType, code FROM liveupdates";
+    const char* query = "SELECT"
+            " updateID,"
+            " updateName,"
+            " description,"
+            " machoVersionMin,"
+            " machoVersionMax,"
+            " buildNumberMin,"  //5
+            " buildNumberMax,"
+            " methodName,"
+            " objectID,"
+            " codeType,"
+            " code"             //10
+            " FROM liveupdates";
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res, query))
@@ -70,6 +82,7 @@ PyList* LiveUpdateDB::GenerateUpdates()
 
         list->SetItem(listIndex++, packedRow);
     }
+    list->Dump(NET__PRES_DEBUG, "    ");
 
     return list;
 }

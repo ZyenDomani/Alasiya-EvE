@@ -74,24 +74,14 @@ NPC::NPC(
 	// AttrOrbitRange
     self->SetAttribute(AttrOrbitRange, GetOrbitRange(), false);
 
-    // Hull Damage
-    if (!self->HasAttribute(AttrDamage))
-        self->SetAttribute(AttrDamage, 0, true );
-
-    m_emDamage = self->GetAttribute(AttrEmDamage).get_float(),
-    m_kinDamage = self->GetAttribute(AttrKineticDamage).get_float(),
-    m_therDamage = self->GetAttribute(AttrThermalDamage).get_float(),
-    m_expDamage = self->GetAttribute(AttrExplosiveDamage).get_float(),
+    /* Gets the value from the NPC and put on our own vars */
+    m_hullDamage = 0;
+    m_armorDamage = 0;
+    SetResists();
 
 	// Set internal and Destiny values FROM these Attributes, now that they are all setup:
     m_destiny->SetPosition(position, false);
 	m_destiny->SetShipCapabilities(self);
-
-    /* Gets the value from the NPC and put on our own vars */
-    m_hullDamage = self->GetAttribute(AttrDamage).get_float();
-    m_armorDamage = self->GetAttribute(AttrArmorDamage).get_float();
-    m_shieldCharge = self->GetAttribute(AttrShieldCharge).get_float();
-    m_shieldCapacity = self->GetAttribute(AttrShieldCapacity).get_float();
    // _log(NPC__TRACE, "Created NPC object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
 }
 
@@ -131,22 +121,22 @@ void NPC::Orbit(SystemEntity *who) {
 
 double NPC::GetOrbitRange()
 {
-    double orbitRange = (Item()->GetAttribute(AttrOrbitRange).get_int());
+    double orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
     if (!orbitRange) {
-        if (Item()->GetAttribute(AttrMaxRange) < Item()->GetAttribute(AttrFalloff))
-            orbitRange = Item()->GetAttribute(AttrMaxRange).get_float();
+        if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff))
+            orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
         else
-            orbitRange = Item()->GetAttribute(AttrFalloff).get_float();
+            orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
         /*
-        if (Item()->GetAttribute(AttrRadius) < 30)
+        if (m_self->GetAttribute(AttrRadius) < 30)
             orbitRange = 1500;
-        else if (Item()->GetAttribute(AttrRadius) < 60)
+        else if (m_self->GetAttribute(AttrRadius) < 60)
             orbitRange = 2500;
-        else if (Item()->GetAttribute(AttrRadius) < 150)
+        else if (m_self->GetAttribute(AttrRadius) < 150)
             orbitRange = 4000;
-        else if (Item()->GetAttribute(AttrRadius) < 280)
+        else if (m_self->GetAttribute(AttrRadius) < 280)
             orbitRange = 6000;
-        else if (Item()->GetAttribute(AttrRadius) < 550)
+        else if (m_self->GetAttribute(AttrRadius) < 550)
             orbitRange = 8000;
         else
             orbitRange = 13000;
@@ -175,29 +165,30 @@ void NPC::TargetedAdd(SystemEntity *who) {
 
 void NPC::EncodeDestiny( Buffer& into ) const
 {
+    using namespace Destiny;
     const GPoint& position = GetPosition();
 
-    uint8 mode = Destiny::DSTBALL_STOP;
-    if (Destiny()->IsWarping())
-        mode = Destiny::DSTBALL_WARP;
-    else if (Destiny()->IsFollowing())
-        mode = Destiny::DSTBALL_FOLLOW;
-    else if (Destiny()->IsOrbiting())
-        mode = Destiny::DSTBALL_ORBIT;
-    else if (Destiny()->IsMoving())
-        mode = Destiny::DSTBALL_GOTO;
+    uint8 mode = DSTBALL_STOP;
+    if (m_destiny->IsWarping())
+        mode = DSTBALL_WARP;
+    else if (m_destiny->IsFollowing())
+        mode = DSTBALL_FOLLOW;
+    else if (m_destiny->IsOrbiting())
+        mode = DSTBALL_ORBIT;
+    else if (m_destiny->IsMoving())
+        mode = DSTBALL_GOTO;
 
-    Destiny::BallHeader head;
+    BallHeader head;
     head.entityID = GetID();
         head.mode = mode;
         head.radius = GetRadius();
         head.x = position.x;
         head.y = position.y;
         head.z = position.z;
-        head.flags = Destiny::IsMassive | Destiny::IsFree;
+        head.flags = IsMassive | IsFree;
     into.Append( head );
 
-    Destiny::MassSector mass;
+    MassSector mass;
         mass.mass = GetMass();
         mass.cloak = 0;
         mass.Harmonic = -1.0f;
@@ -205,7 +196,7 @@ void NPC::EncodeDestiny( Buffer& into ) const
         mass.allianceID = GetAllianceID();
     into.Append( mass );
 
-    Destiny::ShipSector ship;
+    ShipSector ship;
         ship.maxVelocity = GetMaxVelocity();
         ship.velocity_x = GetVelocity().x;
         ship.velocity_y = GetVelocity().y;
@@ -214,9 +205,9 @@ void NPC::EncodeDestiny( Buffer& into ) const
         ship.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( ship );
 
-    if (mode == Destiny::DSTBALL_WARP) {
+    if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
-        Destiny::DSTBALL_WARP_Struct warp;
+        DSTBALL_WARP_Struct warp;
         warp.effectStamp = -1;   //unknown value  seen many -1, few other random 4-5 digits
         warp.unknown_x = target.x;
         warp.unknown_y = target.y;
@@ -225,27 +216,27 @@ void NPC::EncodeDestiny( Buffer& into ) const
         warp.unk_1 = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
         warp.unk_2 = 0;         //unknown 64bit number
         into.Append( warp );
-    } else if (mode == Destiny::DSTBALL_FOLLOW) {
-        Destiny::DSTBALL_FOLLOW_Struct follow;
+    } else if (mode == DSTBALL_FOLLOW) {
+        DSTBALL_FOLLOW_Struct follow;
         follow.followID = m_destiny->GetTargetID();
         follow.followRange = m_destiny->GetFollowDistance();
         follow.formationID = 0xFF;
         into.Append( follow );
-    } else if (mode == Destiny::DSTBALL_ORBIT) {
-        Destiny::DSTBALL_ORBIT_Struct orbit;
+    } else if (mode == DSTBALL_ORBIT) {
+        DSTBALL_ORBIT_Struct orbit;
         orbit.followID = m_destiny->GetTargetID();
         orbit.followRange = m_destiny->GetFollowDistance();
         orbit.formationID = 0xFF;
         into.Append( orbit );
-    } else if (mode == Destiny::DSTBALL_GOTO) {
+    } else if (mode == DSTBALL_GOTO) {
         GPoint target = m_destiny->GetTargetPoint();
-        Destiny::DSTBALL_GOTO_Struct go;
+        DSTBALL_GOTO_Struct go;
         go.x = target.x;
         go.y = target.y;
         go.z = target.z;
         into.Append( go );
     } else {
-        Destiny::DSTBALL_STOP_Struct main;
+        DSTBALL_STOP_Struct main;
         main.formationID = 0xFF;
         into.Append( main );
     }
@@ -255,21 +246,23 @@ void NPC::EncodeDestiny( Buffer& into ) const
 
 
 void NPC::MakeDamageState(DoDestinyDamageState &into) const {
-    into.shield = m_shieldCharge / m_self->GetAttribute(AttrShieldCapacity).get_float();
+    into.shield = m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float();
     into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() +8;
     into.timestamp = Win32TimeNow();
-    into.armor = 1.0 - (m_armorDamage / m_self->GetAttribute(AttrArmorHP).get_float());
-    into.structure = 1.0 - (m_hullDamage / m_self->GetAttribute(AttrHP).get_float());
+    into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
+    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
 }
 
 void NPC::UseShieldRecharge()
 {
     // We recharge our shield until it's reaches the shield capacity.
-    if (Item()->GetAttribute(AttrShieldCapacity) > m_shieldCharge)
-    {
-        m_shieldCharge += Item()->GetAttribute(AttrEntityShieldBoostAmount).get_float();
-        if (m_shieldCharge > Item()->GetAttribute(AttrShieldCapacity).get_float())
-            m_shieldCharge = Item()->GetAttribute(AttrShieldCapacity).get_float();
+    EvilNumber charge = m_self->GetAttribute(AttrShieldCharge);
+    EvilNumber capacity = m_self->GetAttribute(AttrShieldCapacity);
+    if (capacity > charge) {
+        charge += m_self->GetAttribute(AttrEntityShieldBoostAmount);
+        if (charge > capacity)
+            charge = capacity;
+        m_self->SetAttribute(AttrShieldCharge, capacity);
     } else
         AI()->DisableRepTimers();
     // TODO: Need to send SpecialFX / amount update
@@ -278,10 +271,10 @@ void NPC::UseShieldRecharge()
 
 void NPC::UseArmorRepairer()
 {
-    if( m_armorDamage > 0 )
+    if (m_armorDamage > 0 )
     {
-        m_armorDamage -= Item()->GetAttribute(AttrEntityArmorRepairAmount).get_float();
-        if( m_armorDamage < 0.0 )
+        m_armorDamage -= m_self->GetAttribute(AttrEntityArmorRepairAmount).get_float();
+        if (m_armorDamage < 0.0 )
             m_armorDamage = 0.0;
     } else
         AI()->DisableRepTimers();
@@ -317,3 +310,19 @@ void NPC::RemoveNPC()
     Item()->Delete();
 }
 
+void NPC::SetResists() {
+    /* fix for missing resist attribs -allan 18April16  */
+    if (!m_self->HasAttribute(AttrShieldEmDamageResonance)) m_self->SetAttribute(AttrShieldEmDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrShieldExplosiveDamageResonance)) m_self->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrShieldKineticDamageResonance)) m_self->SetAttribute(AttrShieldKineticDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrShieldThermalDamageResonance)) m_self->SetAttribute(AttrShieldThermalDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrArmorEmDamageResonance)) m_self->SetAttribute(AttrArmorEmDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrArmorExplosiveDamageResonance)) m_self->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrArmorKineticDamageResonance)) m_self->SetAttribute(AttrArmorKineticDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrArmorThermalDamageResonance)) m_self->SetAttribute(AttrArmorThermalDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrEmDamageResonance)) m_self->SetAttribute(AttrEmDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrExplosiveDamageResonance)) m_self->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrKineticDamageResonance)) m_self->SetAttribute(AttrKineticDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrThermalDamageResonance)) m_self->SetAttribute(AttrThermalDamageResonance, 1.0, false);
+
+}

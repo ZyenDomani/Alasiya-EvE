@@ -391,7 +391,7 @@ PyObject *CorporationDB::ListNPCDivisions() {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT "
-		" divisionID, divisionName, description, leaderType"
+        " divisionID, divisionName, description, leaderType"
         " FROM crpNPCDivisions" )) {
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;

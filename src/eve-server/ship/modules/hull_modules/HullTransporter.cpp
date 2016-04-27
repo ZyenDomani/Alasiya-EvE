@@ -146,7 +146,7 @@ void HullTransporter::_ShowCycle()
     shipEff.environment = ge.Encode();
     shipEff.startTime = shipEff.timeNow;
     shipEff.duration = _GetDuration();
-    shipEff.repeat = 0;  //# times to repeat (should be ammo qty?)
+    shipEff.repeat = 0;  /* boolean of repeatable cycles without pilot activation */
     shipEff.error = new PyNone;
 
     std::vector<PyTuple*> events;

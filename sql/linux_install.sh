@@ -7,8 +7,8 @@
 host="localhost"	#Database Host
 port="3306"		#Database Port
 user="allan"		#Database Username
-pass="onlyme"		#Database Password
-database="EVE_Anathema"	#Database name
+pass="none"		#Database Password
+database="new"	#Database name
 
 #######################
 # Dont Edit Past Here #

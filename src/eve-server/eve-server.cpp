@@ -200,14 +200,15 @@ int main( int argc, char* argv[] )
     }
 
     sLog.Log("", "");
-    sLog.Log("     Server Build", " %.2f", EVE_Build );
-    sLog.Log("      Log Version", " %.1f", Log_Version );
-    sLog.Log("  Server Revision", " %s", EVEMU_REVISION );
-    sLog.Log("       Build Date", " %s", EVEMU_BUILD_DATE );
     sLog.Log(" Supported Client"," %s", EVEProjectVersion);
     sLog.Log("   Client Version"," %.2f", EVEVersionNumber);
     sLog.Log("     Client Build"," %d", EVEBuildVersion);
     sLog.Log("         MachoNet"," %u", MachoNetVersion);
+    sLog.Log("     Server Build", " %.2f", EVE_Build );
+    sLog.Log("  Server Revision", " %s", EVEMU_REVISION );
+    sLog.Log("       Build Date", " %s", EVEMU_BUILD_DATE );
+    sLog.Log("   Config Version", " %.1f", Config_Version );
+    sLog.Log("      Log Version", " %.1f", Log_Version );
     sLog.Log("", "");
 
     /* connect to the database */

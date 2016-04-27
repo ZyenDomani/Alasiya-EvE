@@ -307,7 +307,7 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
 
     if (d.source->IsClient()) {     //not working
         //if (d.weapon->categoryID() != EVEDB::invCategories::Charge) {
-        if (0) {
+        if (1) {
             //Notifications to ourself:
             Notify_OnEffectHit noeh;
                 noeh.itemID = d.source->GetID();
@@ -326,7 +326,7 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
             ondam.damage = total_damage;
         up = ondam.Encode();
         d.source->QueueDestinyUpdate(&up);
-
+/*
         //Notifications to others:
         // this displays msg, but text is missing.
         Notify_OnDamageMessage_Other ondamo;
@@ -338,7 +338,7 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
             ondamo.splash = "";
         up = ondamo.Encode();
         d.source->QueueDestinyUpdate(&up);
-        }
+  */      }
     }
 
     if (killed) {
@@ -474,7 +474,8 @@ void Client::Killed(Damage &fatal_blow) {
             will have to look into this more later
          */
 
-        GetShip()->PayInsurance();
+        m_ship->PayInsurance();
+        m_ship->OfflineAll();
 
         GPoint capsulePosition = GetPosition();
         GPoint deadShipPosition = GetPosition();
@@ -485,7 +486,7 @@ void Client::Killed(Damage &fatal_blow) {
         Destiny()->SendTerminalExplosion(oldShipItemID, Bubble()->GetID());
 
 		//set capsule position away from old ship:
-        float radius = GetShip()->GetAttribute(AttrRadius).get_float();
+        float radius = m_ship->GetAttribute(AttrRadius).get_float();
         capsulePosition.MakeRandomPointOnSphere(radius + (MakeRandomFloat(200, 400)));
 
         m_services.item_factory->SetUsingClient(this);

@@ -759,8 +759,6 @@ void ModuleManager::UnfitModule(uint32 itemID)
 {
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
-        if (mod->isOnline())
-            mod->Offline();
         if (mod->isLoaded()) {
             InventoryItemRef loadedChargeRef = mod->GetLoadedChargeRef();
             if (IsStation(m_Ship->locationID()))
@@ -776,6 +774,8 @@ void ModuleManager::UnfitModule(uint32 itemID)
                 }
             }
         }
+        if (mod->isOnline())
+            mod->Offline();
     }
     m_Modules->RemoveModule(itemID);
 }

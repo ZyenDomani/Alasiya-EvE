@@ -332,7 +332,10 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
 
     // get ship class data from spawnEntry.at(subtype)
     // and put this spawn's group information in class designators
-    uint8 subtype = MakeRandomInt(0, spawnEntry.size());
+    uint8 subtype = 0;
+    if (secRating > 0.95) subtype = 1;
+    else if (secRating > 0.88) subtype = 2;
+    else subtype = MakeRandomInt(0, spawnEntry.size());
     uint8 f = spawnEntry.at(subtype).f;
     uint8 d = spawnEntry.at(subtype).d;
     uint8 c = spawnEntry.at(subtype).c;

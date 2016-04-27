@@ -101,7 +101,7 @@ public:
     float GetExplosive() { return m_expDamage; }
 
     double GetOrbitRange();
-    
+
     SystemManager* System() const { return(m_system); }
     NPCAIMgr* AI() const { return(m_AI); }
 
@@ -120,15 +120,18 @@ protected:
 
     NPCAIMgr* m_AI;    //never NULL
 
-    double m_hullDamage;
-    double m_armorDamage;
-    double m_shieldCharge;
-    double m_shieldCapacity;
+private:
+    void SetResists();
 
     double m_emDamage;
     double m_expDamage;
     double m_kinDamage;
     double m_therDamage;
+    double m_hullDamage;
+    double m_armorDamage;
+    double m_shieldCharge;
+    double m_shieldCapacity;
+
 };
 
 #endif

@@ -58,8 +58,9 @@ CharUnboundMgrService::~CharUnboundMgrService() {
     delete m_dispatch;
 }
 
-void CharUnboundMgrService::GetCharacterData(uint32 characterID, std::map<std::string, uint64> &characterDataMap) {
-    m_db.GetCharacterData( characterID, characterDataMap );
+void CharUnboundMgrService::GetCharacterData(uint32 characterID, std::map< std::string, uint64 >& characterDataMap)
+{
+    m_db.GetCharacterData(characterID, characterDataMap);
 }
 
 PyResult CharUnboundMgrService::Handle_IsUserReceivingCharacter(PyCallArgs &call) {
@@ -76,10 +77,10 @@ PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)
     if (!arg.Decode(&call.tuple))
     {
         codelog(CLIENT__ERROR, "Failed to decode args for ValidateNameEx call");
-        return NULL;
+        return nullptr;
     }
 
-    return new PyBool(m_db.ValidateCharName(arg.arg.c_str()));  //TODO see notes in m_db here...NOT boolean
+    return new PyBool(m_db.ValidateCharName(arg.arg.c_str()));  /** @todo see notes in m_db here...NOT boolean */
 }
 
 PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call) {
@@ -90,11 +91,11 @@ PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call) {
     CallSelectCharacterID arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "Failed to decode args for SelectCharacterID call");
-        return NULL;
+        return nullptr;
     }
 
     call.client->SelectCharacter(arg.charID);
-    return NULL;
+    return nullptr;
 }
 
 PyResult CharUnboundMgrService::Handle_GetCharactersToSelect(PyCallArgs &call) {
@@ -105,13 +106,13 @@ PyResult CharUnboundMgrService::Handle_GetCharacterToSelect(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if(!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "Invalid arguments");
-        return NULL;
+        return nullptr;
     }
 
     PyRep *result = m_db.GetCharSelectInfo(args.arg);
     if(result == NULL) {
         _log(CLIENT__ERROR, "Failed to load character %d", args.arg);
-        return NULL;
+        return nullptr;
     }
 
     return result;
@@ -121,7 +122,7 @@ PyResult CharUnboundMgrService::Handle_DeleteCharacter(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "Invalid arguments for DeleteCharacter call");
-        return NULL;
+        return nullptr;
     }
 
     return m_db.DeleteCharacter(call.client->GetUserID(), args.arg);
@@ -131,7 +132,7 @@ PyResult CharUnboundMgrService::Handle_PrepareCharacterForDelete(PyCallArgs &cal
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "Invalid arguments for PrepareCharacterForDelete call");
-        return NULL;
+        return nullptr;
     }
 
     return new PyULong(m_db.PrepareCharacterForDelete(call.client->GetUserID(), args.arg));
@@ -141,27 +142,25 @@ PyResult CharUnboundMgrService::Handle_CancelCharacterDeletePrepare(PyCallArgs &
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "Invalid arguments for CancelCharacterDeletePrepare call");
-        return NULL;
+        return nullptr;
     }
 
     m_db.CancelCharacterDeletePrepare(call.client->GetUserID(), args.arg);
 
     // the client doesn't care what we return here
-    return NULL;
+    return nullptr;
 }
 
 PyResult CharUnboundMgrService::Handle_GetCharacterInfo(PyCallArgs &call) {
-	_log(CLIENT__MESSAGE, "Called GetCharacterInfo stub");
-    return NULL;
+    _log(CLIENT__ERROR, "Called GetCharacterInfo stub");
+    return nullptr;
 }
 
 PyResult CharUnboundMgrService::Handle_GetCharCreationInfo(PyCallArgs &call) {
     PyDict *result = new PyDict();
 
     //send all the cache hints needed for char creation.
-    m_manager->cache_service->InsertCacheHints(
-        ObjCacheService::hCharCreateCachables,
-        result);
+    m_manager->cache_service->InsertCacheHints(ObjCacheService::hCharCreateCachables, result);
     _log(CLIENT__MESSAGE, "Sending char creation info reply");
 
     return result;
@@ -175,11 +174,14 @@ PyResult CharUnboundMgrService::Handle_GetCharNewExtraCreationInfo(PyCallArgs &c
 }
 
 PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call) {
+    /*
+        charID = sm.RemoteSvc('charUnboundMgr').CreateCharacterWithDoll(charactername, bloodlineID, genderID, ancestryID, charInfo, portraitInfo, schoolID)
+        */
     CallCreateCharacterWithDoll arg;
 
     if (!arg.Decode(call.tuple)) {
         codelog(CLIENT__ERROR, "Failed to decode args for CreateCharacterWithDoll call");
-        return NULL;
+        return nullptr;
     }
 
     _log(CLIENT__MESSAGE, "CreateCharacterWithDoll called for '%s'", arg.name.c_str());
@@ -190,7 +192,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     m_manager->item_factory->SetUsingClient( call.client );
     const CharacterType *char_type = m_manager->item_factory->GetCharacterTypeByBloodline(arg.bloodlineID);
     if (!char_type)
-        return NULL;
+        return nullptr;
 
     // we need to fill these to successfully create character item
     ItemData idata;
@@ -207,14 +209,15 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     cdata.accountID = call.client->GetUserID();
     cdata.gender = arg.genderID;
     cdata.ancestryID = arg.ancestryID;
+    cdata.bloodlineID = arg.bloodlineID;
     cdata.schoolID = arg.schoolID;
 
-    //Set the character's career based on the school they picked.
-    if (m_db.GetCareerBySchool(cdata.schoolID, cdata.careerID)) {
+    //Set the character's career and race based on the school they picked.
+    if (m_db.GetCareerBySchool(cdata.schoolID, cdata.raceID, cdata.careerID)) {
         //  The Specialization has been taken out in Crucible.  set to same as Career (default)
         cdata.careerSpecialityID = cdata.careerID;
     } else {
-        codelog(SERVICE__WARNING, "Could not find default School ID %u. Using Caldari Military.", cdata.schoolID);
+        _log(CLIENT__MESSAGE, "Could not find default School ID %u. Using Caldari Military.", cdata.schoolID);
         cdata.careerID = 11;
         cdata.careerSpecialityID = 11;
     }
@@ -238,9 +241,9 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     if (!m_db.GetLocationCorporationByCareer(cdata)
         || !m_db.GetAttributesFromAncestry(cdata.ancestryID, intelligence, charisma, perception, memory, willpower)
     ) {
-        codelog(CLIENT__ERROR, "Failed to load char create details. Bloodline %u, ancestry %u.",
+        _log(CLIENT__ERROR, "Failed to load char create details. Bloodline %u, ancestry %u.",
             char_type->bloodlineID(), cdata.ancestryID);
-        return NULL;
+        return nullptr;
     }
 
     idata.locationID = cdata.stationID; // Just so our starting items end up in the same place.
@@ -250,29 +253,29 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         if( m_db.DoesCorporationExist( sConfig.character.startCorporation ) ) {
             cdata.corporationID = sConfig.character.startCorporation;
         } else {
-            codelog(SERVICE__WARNING, "Could not find default Corporation ID %u. Using Career Defaults instead.", sConfig.character.startCorporation);
+            _log(CLIENT__MESSAGE, "Could not find default Corporation ID %u. Using Career Defaults instead.", sConfig.character.startCorporation);
         }
     } else {
         uint32 corporationID;
         if(m_db.GetCorporationBySchool(cdata.schoolID, corporationID)) {
             cdata.corporationID = corporationID;
         } else {
-            codelog(SERVICE__ERROR, "Could not place character in default corporation for school.");
+            _log(CLIENT__MESSAGE, "Could not place character in default corporation for school.");
         }
     }
 
     // Added ability to set starting station in xml config by Pyrii
     if (sConfig.character.startStation) { // Skip if 0
         if (!m_db.GetLocationByStation(sConfig.character.startStation, cdata)) {
-            codelog(SERVICE__WARNING, "Could not find default station ID %u. Using Career Defaults instead.", sConfig.character.startStation);
+            _log(CLIENT__MESSAGE, "Could not find default station ID %u. Using Career Defaults instead.", sConfig.character.startStation);
         }
     } else {
         uint32 stationID;
         if (m_db.GetCareerStationByCorporation(cdata.corporationID, stationID)) {
             if (!m_db.GetLocationByStation(stationID, cdata))
-                codelog(SERVICE__WARNING, "Could not find default station ID %u.", stationID);
+                _log(CLIENT__MESSAGE, "Could not find default station ID %u.", stationID);
         } else {
-            codelog(SERVICE__ERROR, "Could not place character in default station for school.");
+            _log(CLIENT__ERROR, "Could not place character in default station for school.");
         }
     }
 
@@ -286,71 +289,70 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     cdata.createDateTime = Win32TimeNow();
     cdata.startDateTime = cdata.createDateTime;
 
-    typedef std::map<uint32, uint32>        CharSkillMap;
-    typedef CharSkillMap::iterator          CharSkillMapItr;
-
-    //load skills
-    CharSkillMap startingSkills;
-	//  Base Skills
-    if (!m_db.GetBaseSkills(startingSkills)) {
-        codelog(CLIENT__ERROR, "Failed to load char Base skills. Bloodline %u, Ancestry %u.",
-            char_type->bloodlineID(), cdata.ancestryID);
-        return NULL;
-    }
-	//  Race Skills
-    if (!m_db.GetSkillsByRace(char_type->race(), startingSkills)) {
-        codelog(CLIENT__ERROR, "Failed to load char Race skills. Bloodline %u, Ancestry %u.",
-            char_type->bloodlineID(), cdata.ancestryID);
-        return NULL;
-    }
-	//  Career Skills
-    if (!m_db.GetSkillsByCareer(cdata.careerID, startingSkills)) {
-        codelog(CLIENT__ERROR, "Failed to load char Career skills for %u.", cdata.careerSpecialityID);
-        return NULL;
-    }
-    //now we have all the data we need, stick it in the DB
+    //now we have (almost) all the data we need, stick it in the DB
     //create char item
     CharacterRef char_item = m_manager->item_factory->SpawnCharacter(idata, cdata, corpData);
     if (!char_item) {
         //a return to the client of 0 seems to be the only means of marking failure
-        codelog(CLIENT__ERROR, "Failed to create character '%s'", idata.name.c_str());
-        return NULL;
+        _log(CLIENT__ERROR, "Failed to create character '%s'", idata.name.c_str());
+        return nullptr;
     }
 
-	//this builds appearance data from strdict
-	capp.Build(char_item->itemID(), arg.avatarInfo);
+    //this builds appearance data from strdict
+    capp.Build(char_item->itemID(), arg.avatarInfo);
 
     // add attribute bonuses
-    char_item->SetAttribute(AttrIntelligence, intelligence);
-    char_item->SetAttribute(AttrCharisma, charisma);
-    char_item->SetAttribute(AttrPerception, perception);
-    char_item->SetAttribute(AttrMemory, memory);
-    char_item->SetAttribute(AttrWillpower, willpower);
+    char_item->SetAttribute(AttrIntelligence, intelligence *2);
+    char_item->SetAttribute(AttrCharisma, charisma *2);
+    char_item->SetAttribute(AttrPerception, perception *2);
+    char_item->SetAttribute(AttrMemory, memory *2);
+    char_item->SetAttribute(AttrWillpower, willpower *2);
 
     // register name
     m_db.add_name_validation_set(char_item->itemName().c_str(), char_item->itemID());
 
+    //load skills
+    std::map<uint32, uint32> startingSkills;
+    startingSkills.clear();
+	//  Base Skills
+    if (!m_db.GetBaseSkills(startingSkills)) {
+        _log(CLIENT__ERROR, "Failed to load char Base skills. Bloodline %u, Ancestry %u.",
+            char_type->bloodlineID(), cdata.ancestryID);
+        return nullptr;
+    }
+	//  Race Skills
+    if (!m_db.GetSkillsByRace(char_type->race(), startingSkills)) {
+        _log(CLIENT__ERROR, "Failed to load char Race skills. Bloodline %u, Ancestry %u.",
+            char_type->bloodlineID(), cdata.ancestryID);
+        return nullptr;
+    }
+	//  Career Skills
+    if (!m_db.GetSkillsByCareer(cdata.careerID, startingSkills)) {
+        _log(CLIENT__ERROR, "Failed to load char Career skills for %u.", cdata.careerSpecialityID);
+        return nullptr;
+    }
+
     //spawn all the skills
     uint8 skillLevel;
     EvilNumber skillPoints;
-    for (CharSkillMapItr cur = startingSkills.begin(); cur != startingSkills.end(); cur++) {
-        ItemData skillItem( cur->first, char_item->itemID(), char_item->itemID(), flagSkill );
-        SkillRef i = m_manager->item_factory->SpawnSkill( skillItem );
-        if (!i) {
-            _log(CLIENT__ERROR, "Failed to add skill %u to char %s (%u) during char create.",
-                 cur->first, char_item->itemName().c_str(), char_item->itemID());
+    for (auto cur : startingSkills) {
+        ItemData skillItem( cur.first, char_item->itemID(), char_item->itemID(), flagSkill );
+        SkillRef skill = m_manager->item_factory->SpawnSkill( skillItem );
+        if (!skill) {
+            _log(CLIENT__ERROR, "Failed to add skill %u to char %s(%u) during create.",
+                 cur.first, char_item->itemName().c_str(), char_item->itemID());
             continue;
         }
 
-        skillLevel = cur->second;
-        i->SetAttribute(AttrSkillLevel, skillLevel );
-        skillPoints = i->GetSPForLevel( (EvilNumber)skillLevel );
-        i->SetAttribute(AttrSkillPoints, skillPoints );
-        i->SaveAttributes();
+        skillLevel = cur.second;
+        skill->SetAttribute(AttrSkillLevel, skillLevel );
+        skillPoints = skill->GetSPForLevel( (EvilNumber)skillLevel );
+        skill->SetAttribute(AttrSkillPoints, skillPoints );
+        skill->SaveItem();
         char_item->SaveSkillHistory(skillEventCharCreation,
                                     EvilTimeNow().get_float(),
                                     char_item->itemID(),
-                                    i->typeID(),
+                                    cur.first,
                                     skillLevel,
                                     skillPoints.get_float(),
                                     char_item->GetTotalSP().get_float());
@@ -362,19 +364,19 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     // add "Damage Control I"
     ItemData itemDamageControl( 2046, char_item->itemID(), char_item->locationID(), flagHangar, 1 );
     initInvItem = m_manager->item_factory->SpawnItem( itemDamageControl );
-
     if (!initInvItem)
         codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
 
     // add 1000 units of "Tritanium"    -allan 01/10/14
     ItemData itemTritanium( 34, char_item->itemID(), char_item->locationID(), flagHangar, 1000 );
     initInvItem = m_manager->item_factory->SpawnItem( itemTritanium );
+    if (!initInvItem)
+        codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
 
     // add 1 unit of "Clone Grade Alpha"
     ItemData itemCloneAlpha( 164, char_item->itemID(), char_item->locationID(), flagClone, 1 );
     itemCloneAlpha.customInfo="active";
     initInvItem = m_manager->item_factory->SpawnItem( itemCloneAlpha );
-
     if (!initInvItem)
         codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
 
@@ -384,26 +386,22 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     ItemData shipItem( char_type->shipTypeID(), char_item->itemID(), char_item->locationID(), flagHangar, ship_name.c_str() );
     ShipRef ship_item = m_manager->item_factory->SpawnShip( shipItem );
+    ship_item->SetAttribute(AttrIsOnline, false);
+    ship_item->SaveItem();
     ItemData podItem( itemTypeCapsule, char_item->itemID(), char_item->locationID(), flagCapsule, pod_name.c_str() );
     ShipRef pod_item = m_manager->item_factory->SpawnShip( podItem );
 
-    // Set shipID
+    call.client->SetShip(ship_item);
     char_item->SetActiveShip( ship_item->itemID() );
     char_item->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
     char_item->SaveFullCharacter();
-	ship_item->SaveItem();
-
-    if (!ship_item) {
-        codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
-    } else {
-        //welcome on board your starting ship
-        //char_item->MoveInto( *ship_item, flagPilot, false );
-    }
-
-    _log( CLIENT__MESSAGE, "Sending char create ID %u as reply", char_item->itemID() );
+    pod_item->SetAttribute(AttrIsOnline, false);
+    pod_item->SaveItem();
 
     // we need to report the charID to the ImageServer so it can correctly assign a previously received image
     sImageServer.ReportNewCharacter(call.client->GetUserID(), char_item->itemID());
+
+    char_item->SetLoaded(false);
 
     // Release the item factory now that the character is finished being accessed:
     m_manager->item_factory->UnsetUsingClient();
@@ -411,5 +409,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     //  add charID to staticOwners
     m_db.addOwnerCache(char_item->itemID(), char_item->itemName(), char_type->id() );
 
+    _log( CLIENT__MESSAGE, "Created New Character  - Sending ID %u as reply", char_item->itemID() );
     return new PyInt(char_item->itemID());
 }

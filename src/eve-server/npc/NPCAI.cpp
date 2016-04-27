@@ -113,7 +113,7 @@ void NPCAIMgr::Process() {
                     DestinyManager* pDestiny = (*cur)->Destiny();
                     if (pDestiny->IsCloaked() || pDestiny->IsWarping())
                         continue;
-                    if ((*cur)->IsLogin() || (*cur)->IsInvul() || (*cur)->InPod())
+                    if ((*cur)->IsLogin() || (*cur)->IsInvul() || (*cur)->InPod())  // remove InPod() to allow npc podkilling
                         continue;
                     if (m_npc->GetPosition().distance((*cur)->GetPosition()) > m_entityAttackRange)
                         continue;

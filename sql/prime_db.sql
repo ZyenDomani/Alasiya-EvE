@@ -46,25 +46,6 @@ TRUNCATE TABLE rentalInfo;
  */
 INSERT INTO entity (itemID, itemName, singleton, quantity)
  VALUES (1, 'EVE System', 1, 1);
-/*
- * Insert solar systems
- */
-INSERT INTO entity (itemID, itemName, typeID, ownerID, singleton, quantity, x, y, z)
- SELECT solarSystemID, solarSystemName, 5, 1, 1, 1, x, y, z
- FROM mapSolarSystems;
-/*
- * Insert stations
- */
-INSERT INTO entity (itemID, itemName, typeID, ownerID, locationID, singleton, quantity, x, y, z)
- SELECT stationID, stationName, stationTypeID, corporationID, solarSystemID, 1, 1, x, y, z
- FROM staStations;
-/*
- * Insert characters
- */
-INSERT INTO entity (itemID, itemName, typeID, ownerID, locationID, singleton, quantity)
- SELECT characterID, characterName, typeID, 1, stationID, 1, 1
-  FROM chrNPCCharacters;
-
 ALTER TABLE entity AUTO_INCREMENT=140000000;
 /*
  * Copy over the static owner info.
@@ -96,18 +77,35 @@ INSERT INTO eveStaticOwners (ownerID, ownerName, typeID)
  SELECT corporationID, corporationName, 2 AS typeID
  FROM corporation;
 
+/* regions */
+INSERT INTO eveStaticLocations (locationID, locationName, x, y, z)
+ SELECT regionID, regionName, x, y, z
+ FROM mapRegions;
 
-INSERT INTO cacheLocations(locationID, locationName, x, y, z)
- SELECT e.itemID, e.itemName, e.x, e.y, e.z
- FROM entity AS e
- LEFT JOIN invTypes USING (typeID)
- LEFT JOIN invGroups AS g USING (groupID)
- WHERE g.categoryID IN (0, 2, 3, 6, 22, 23);
+/* constellations */
+INSERT INTO eveStaticLocations (locationID, locationName, x, y, z)
+ SELECT constellationID, constellationName, x, y, z
+ FROM mapConstellations;
+
+/* systems */
+INSERT INTO eveStaticLocations (locationID, locationName, x, y, z)
+ SELECT solarSystemID, solarSystemName, x, y, z
+ FROM mapSolarSystems;
+
+/* stations */
+INSERT INTO eveStaticLocations (locationID, locationName, x, y, z)
+ SELECT stationID, stationName, x, y, z
+ FROM staStations;
 
 
-INSERT INTO cacheOwners(ownerID, ownerName, typeID)
- SELECT e.itemID, e.itemName, e.typeID
- FROM entity AS e
- LEFT JOIN invTypes USING (typeID)
- WHERE invTypes.groupID IN ( /*1,*/ 2, 19, 32 );      /*char, corp, faction, alliance*/
+/* non-static pos, ??  */
+-- INSERT INTO cacheLocations(locationID, locationName, x, y, z, locationNameID)
+
+
+/* this needs more work once factions and alliances are implemented */
+/* non-static corp, faction, and alliance*/
+INSERT INTO cacheOwners(ownerID, ownerName, typeID, ownerNameID)
+ SELECT corporationID, corporationName, 2, 0
+ FROM corporation
+ WHERE corporationID > 1000999;
 

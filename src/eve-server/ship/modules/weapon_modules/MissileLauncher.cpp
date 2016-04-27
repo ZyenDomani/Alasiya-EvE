@@ -208,7 +208,6 @@ void MissileLauncher::_ShowCycle()
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
         go.chargeTypeID = m_chargeRef->typeID();
-
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
@@ -217,7 +216,6 @@ void MissileLauncher::_ShowCycle()
         ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectUseMissiles;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -227,7 +225,7 @@ void MissileLauncher::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetROF();
-        shipEff.repeat = m_chargeRef->quantity();  //# times to repeat (should be ammo qty?)
+        shipEff.repeat = 1; //m_chargeRef->quantity();  /* boolean of repeatable cycles without pilot activation */
         shipEff.error = new PyNone;
 
     std::vector<PyTuple*> events;

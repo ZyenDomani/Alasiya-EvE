@@ -396,7 +396,7 @@ bool AttributeMap::SendAttributeChanges( PyTuple* attrChange ) {
         attrChange->Dump(CLIENT__NOTIFY_DUMP, "");
         client->QueueDestinyEvent(&attrChange);
     } else {
-        _log(CLIENT__ERROR, "AttributeMap::SendAttributeChanges() - ownerID for %u not found", mItem.itemID() );
+        _log(PLAYER__WARNING, "AttributeMap::SendAttributeChanges() - ownerID for %u not found", mItem.itemID() );
         return false;
     }
     return true;

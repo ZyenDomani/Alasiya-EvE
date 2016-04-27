@@ -80,8 +80,10 @@ void ImageServer::ReportNewCharacter(uint32 creatorAccountID, uint32 characterID
     Lock lock(_limboLock);
 
     // check if we received an image from this account previously
-    if (_limboImages.find(creatorAccountID) == _limboImages.end())
+    if (_limboImages.find(creatorAccountID) == _limboImages.end()) {
+        sLog.Error("      ImageServer"," Image not received for characterID %u.", characterID);
         return;
+    }
 
     // we have, so save it
     //std::ofstream stream;

@@ -44,7 +44,7 @@ mPacketHandler( nullptr )
 
 EVEClientSession::~EVEClientSession() {
     // Destroy connection we used
-    //SafeDelete(mNet);
+    delete mNet;
 }
 
 void EVEClientSession::Reset() {

@@ -682,6 +682,7 @@ bool DestinyManager::_IsTurn() {    //is working.  dont change
     if ((m_shipHeading.isZero()) || (m_targetPoint.isZero())) {
         _log(PHYSICS__ERROR, "Destiny::_IsTurn() - Entity %s(%u): Heading or Target is null.", m_self->GetName(), m_self->GetID());
         m_radians = 0;
+        Halt();
         return false;
     }
     // check for turning angle.  returns true if angle is enough to change movement variables

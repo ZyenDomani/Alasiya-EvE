@@ -1,6 +1,11 @@
-<!--  notes here
+
+<!-- Server XML Config Version: 6.2 -->
+
+<!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
+    boolean can use either 0/1 or true/false.
 -->
+
 
 <eve-server>
 
@@ -8,7 +13,6 @@
         <testServer>1</testServer>  <!-- some functions disabled for live server -->
         <UseBeanCount>1</UseBeanCount>  <!-- bool  -client error reporting -->
         <UseProfiling>0</UseProfiling><!-- bool -->
-        <UseAPIServer>0</UseAPIServer><!-- bool -->
         <!--  BE VERY CAREFUL WITH THE SETTING BELOW! This will create a jetcan at player's ship position every tic while ship is moving -->
         <UseShipTracking>0</UseShipTracking><!-- bool -->
         <!--  This changes how the main server loop sleeps (loop count) -->
@@ -112,15 +116,12 @@
         <port>26000</port>
         <imageServer>192.168.1.13</imageServer>
         <imageServerPort>26001</imageServerPort>
-        <apiServer>192.168.1.13</apiServer>
-        <apiServerPort>26002</apiServerPort>
     </net>
 
     <threads><!-- not implemented yet -->
         <NetworkThreads>2</NetworkThreads>
         <DatabaseThreads>2</DatabaseThreads>
         <WorldThreads>2</WorldThreads>
-        <APIThreads>1</APIThreads>
         <ImageServerThreads>1</ImageServerThreads>
         <ConsoleThreads>1</ConsoleThreads>
     </threads>
