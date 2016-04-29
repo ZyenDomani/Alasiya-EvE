@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -54,41 +55,47 @@ void BubbleManager::Process() {
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
-    // process each bubble
+    // process each belt and gate bubble for spawns
     for (auto cur : m_bubbles) {
         if (cur->IsBelt() or cur->IsGate())
             cur->Process();
     }
-    // run wander check every 30 sec for active bubbles
+    // run wander check every 30 sec for all active bubbles
     if (m_wanderTimer.Check()) {
         m_wanderers.clear();
         std::vector<SystemBubble *>::iterator itr = m_bubbles.begin();
         for (; itr != m_bubbles.end(); itr++) {
-            if ((*itr)->IsEmpty() and (!(*itr)->IsSpawned())) {
+            if ((*itr)->HasPlayers() || (*itr)->HasDynamics()) {
+                (*itr)->ProcessWander(m_wanderers);
+            } else if ((*itr)->HasStatics()) {
+                continue;
+            } else if ((*itr)->IsEmpty()) {
                 // Remove this bubble now that it is empty of ALL dynamic entities
                 _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
-                itr = m_bubbles.erase(itr);
-            } else
-                (*itr)->ProcessWander(m_wanderers);
+                m_bubbles.erase(itr);
+                itr = m_bubbles.begin();
+            } else  /* this should never happen */
+                _log(DESTINY__ERROR, "BubbleManager::Process() - Bubble %u has reached the end.", (*itr)->GetID());
         }
 
-        if (!m_wanderers.empty())
+        if (!m_wanderers.empty()) {
             for (auto cur : m_wanderers) {
                 _log(DESTINY__WARNING, "BubbleManager::Process() - Wanderer '%s' being added to a bubble.", cur->GetName() );
                 Add(cur);
             }
+        }
     }
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_bubblesProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void BubbleManager::CheckBubble(SystemEntity *ent, bool isWarping, bool isPostWarp) {
-    SystemBubble *b = ent->Bubble();
+    SystemBubble *b = ent->SysBubble();
     if (b) {
         if ((b->InBubble(ent->GetPosition())) && (!isWarping)) {
             _log(DESTINY__BUBBLE_TRACE, "BubbleManager::CheckBubble() - Entity '%s'(%u) at (%.2f,%.2f,%.2f) is still located in bubble %u at %.2f,%.2f,%.2f.",
                  ent->GetName(), ent->GetID(), ent->GetPosition().x, ent->GetPosition().y, ent->GetPosition().z,
-                 b->GetID(), b->m_center.x, b->m_center.y, b->m_center.z);
+                 b->GetID(), b->x(), b->y(), b->z());
             //still in bubble...
             sLog.Debug( "BubbleManager::CheckBubble()", "SystemEntity '%s' is still located in Bubble %u",
                         ent->GetName(), b->GetID() );
@@ -103,7 +110,7 @@ void BubbleManager::CheckBubble(SystemEntity *ent, bool isWarping, bool isPostWa
 
         _log(DESTINY__BUBBLE_TRACE, "BubbleManager::CheckBubble() - Entity '%s'(%u) at (%.2f,%.2f,%.2f) is no longer located in bubble %u at %.2f,%.2f,%.2f.  Removing...",
              ent->GetName(), ent->GetID(), ent->GetPosition().x, ent->GetPosition().y, ent->GetPosition().z,
-             b->GetID(), b->m_center.x, b->m_center.y, b->m_center.z);
+             b->GetID(), b->x(), b->y(), b->z());
         b->Remove(ent);
     }
 
@@ -112,7 +119,8 @@ void BubbleManager::CheckBubble(SystemEntity *ent, bool isWarping, bool isPostWa
     Add(ent, isPostWarp);
 }
 
-void BubbleManager::Add(SystemEntity* ent, bool isPostWarp) {
+/** @todo update this to new SE code */
+void BubbleManager::Add(SystemEntity* ent, bool isPostWarp /*false*/) {
     DynamicSystemEntity* pDSE = static_cast<DynamicSystemEntity*>(ent);
     if (!pDSE) return;
     const GPoint &pos(pDSE->GetPosition());
@@ -122,22 +130,22 @@ void BubbleManager::Add(SystemEntity* ent, bool isPostWarp) {
     // Calculate new bubble's center based on entity's velocity and current position
     NewBubbleCenter( pDSE->GetVelocity(), newCenter );
 
-    SystemBubble* pBubble = nullptr;
+    SystemBubble* pBubble(nullptr);
     if (isPostWarp)
         pBubble = FindBubble(newCenter);
     else
         pBubble = FindBubble(pDSE->GetPosition());
 
     if (pBubble) {
-         _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add() - Entity %s (%u) being added to existing Bubble %u", ent->GetName(), ent->GetID(), pBubble->GetID() );
+        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add() - Entity %s (%u) being added to existing Bubble %u", ent->GetName(), ent->GetID(), pBubble->GetID() );
         pBubble->Add(ent, isPostWarp);
-       return;
+        return;
     }
     // this System Entity is not in any existing bubble, so let's make a new bubble
     // TODO check edges of bubbles....should NOT overlap.
-    pBubble = new SystemBubble(ent->System(), newCenter, BUBBLE_RADIUS_METERS);
+    pBubble = new SystemBubble(ent->SystemMgr(), newCenter, BUBBLE_RADIUS_METERS);
 
-	_log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add() - Entity '%s'(%u) being added to NEW Bubble %u", ent->GetName(), ent->GetID(), pBubble->GetID() );
+    _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add() - Entity '%s'(%u) being added to NEW Bubble %u", ent->GetName(), ent->GetID(), pBubble->GetID() );
     m_bubbles.push_back(pBubble);
     pBubble->Add(ent, isPostWarp);
 }
@@ -148,7 +156,7 @@ void BubbleManager::NewBubbleCenter(GVector shipVelocity, GPoint &newCenter) {
 }
 
 void BubbleManager::Remove(SystemEntity *ent) {
-    SystemBubble *b = ent->Bubble();
+    SystemBubble *b = ent->SysBubble();
     if (b) {
         _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Remove() - Entity '%s' (%u) being removed from Bubble %u", ent->GetName(), ent->GetID(), b->GetID() );
         b->Remove(ent);
@@ -156,8 +164,10 @@ void BubbleManager::Remove(SystemEntity *ent) {
         _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Remove() - Entity %u is not located in any bubble. Nothing to remove.", ent->GetID());
 }
 
-//NOTE: this should probably eventually be optimized to use a
-//spacial partitioning scheme to speed up this search.
+/** @todo  the following 2 methods can be optimized by using a stl container (multimap?)
+ * with bubbles entered by <systemID, bubbleID> to search only bubbles in desired system,
+ * greatly reducing the search time for many loaded systems, which average 70 bubbles each
+ */
 SystemBubble* BubbleManager::FindBubble(SystemEntity *ent) const {
     GPoint pos = ent->GetPosition();
     for (auto cur : m_bubbles) {
@@ -169,8 +179,6 @@ SystemBubble* BubbleManager::FindBubble(SystemEntity *ent) const {
     return nullptr;
 }
 
-//NOTE: this should probably eventually be optimized to use a
-//spacial partitioning scheme to speed up this search.
 SystemBubble* BubbleManager::FindBubble(const GPoint &pos) const {
     for (auto cur : m_bubbles) {
         if (cur->InBubble(pos)) {

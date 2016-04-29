@@ -1,5 +1,5 @@
 
-CREATE TABLE `roidItems` (
+CREATE TABLE `sysAsteroids` (
   `itemID` int(10) unsigned NOT NULL,
   `itemName` varchar(25) NOT NULL,
   `typeID` int(11) NOT NULL,
@@ -13,9 +13,9 @@ CREATE TABLE `roidItems` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Indexes for table `roidItems`
+-- Indexes for table `sysAsteroids`
 --
-ALTER TABLE `roidItems`
+ALTER TABLE `sysAsteroids`
   ADD PRIMARY KEY (`itemID`),
   ADD UNIQUE KEY `itemID` (`itemID`),
   ADD KEY `systemID` (`systemID`),

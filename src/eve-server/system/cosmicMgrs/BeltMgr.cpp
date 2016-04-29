@@ -29,7 +29,6 @@
 #include "Profile.h"
 #include "PyServiceMgr.h"
 #include "system/SystemBubble.h"
-#include "system/SystemEntities.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 
@@ -63,6 +62,7 @@ void BeltMgr::RegisterBelt(InventoryItemRef itemRef)
     m_spawned.insert(m_spawned.end(), std::pair<uint32, bool>(beltID, false));
     //CheckSpawn(itemRef);
     SystemEntity *se = m_system->GetSEFromInventory(beltID);
+    /** @todo it looks like i havent finished this yet.....guess i should eventually */
 }
 
 void BeltMgr::ClearBelt(uint16 bubbleID)
@@ -109,27 +109,26 @@ void BeltMgr::TriggerGrowth() {
 }
 
 bool BeltMgr::Load(uint16 bubbleID) {
-    std::vector<DBAsteroidEntity> entities;
+    std::vector<DBAsteroidSE> entities;
     entities.clear();
     uint32 beltID = m_system->bubbles.GetSpawnID(bubbleID);
     m_db.LoadSystemRoids(m_systemID, beltID, entities);
     if (entities.empty()) return false;
 
     for(auto entity : entities) {
-        InventoryItemRef asteroid = m_system->GetServiceMgr()->item_factory->GetItem( entity.itemID );
+        InventoryItemRef asteroid = m_system->itemFactory()->GetItem( entity.itemID );
         if( !asteroid ) {
             _log(COSMIC_MGR__WARNING, "BeltMgr::Load() -  Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID);
             continue;
         }
-        GPoint location(entity.x, entity.y, entity.z);
-        AsteroidEntity* asteroidObj = new AsteroidEntity( asteroid, m_system, *(m_system->GetServiceMgr()), location );
+        AsteroidSE* asteroidObj = new AsteroidSE( asteroid, *(m_system->GetServiceMgr()), m_system );
         if( !asteroidObj ) {
             _log(COSMIC_MGR__WARNING, "BeltMgr::Load() -  Unable to spawn entity #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID);
             continue;
         }
         _log(COSMIC_MGR__TRACE, "BeltMgr::Load() - Loaded asteroid %u, type %u for %s(%u)", entity.itemID, entity.typeID, m_system->GetName().c_str(), m_systemID );
         m_system->bubbles.Add( asteroidObj );
-        m_asteroids.emplace(std::pair<uint32, AsteroidEntity*>(beltID, asteroidObj));
+        m_asteroids.emplace(std::pair<uint32, AsteroidSE*>(beltID, asteroidObj));
     }
     std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
     if (itr == m_spawned.end())
@@ -141,13 +140,13 @@ bool BeltMgr::Load(uint16 bubbleID) {
 }
 
 void BeltMgr::Save() {
-    DBAsteroidEntity entry;
-    std::vector<DBAsteroidEntity> roids;
+    DBAsteroidSE entry;
+    std::vector<DBAsteroidSE> roids;
     roids.clear();
     for (auto cur : m_asteroids) {
         entry.itemID = cur.second->GetID();
         entry.itemName = cur.second->GetName();
-        entry.typeID = cur.second->Item()->typeID();
+        entry.typeID = cur.second->GetSelf()->typeID();
         entry.systemID = m_systemID;
         entry.beltID = cur.first;
         entry.radius = cur.second->GetRadius();
@@ -170,7 +169,7 @@ void BeltMgr::ForceGrowth() {
     m_growthTimer.Start(ASTEROID_GROWTH_INTERVAL_MS);
 }
 
-void BeltMgr::GetList(uint32 beltID, std::vector< AsteroidEntity* >& list)
+void BeltMgr::GetList(uint32 beltID, std::vector< AsteroidSE* >& list)
 {
     auto range = m_asteroids.equal_range(beltID);
     for (auto itr = range.first; itr != range.second; ++itr)
@@ -220,7 +219,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID)
     double degreeSeperation = (180/pcs);
     uint32 beltID = m_system->bubbles.GetSpawnID(bubbleID);
     SystemEntity *se = m_system->GetSEFromInventory(beltID);
-    GPoint center = se->Bubble()->GetCenter();
+    GPoint center = se->SysBubble()->GetCenter();
 
     for (uint32 i = 1; i < pcs; ++i) {
         roidradius = MakeRandomFloat( 3000.0, 8000.0 ) *security;
@@ -267,9 +266,9 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
     i->SetAttribute(AttrMass, (i->type().mass() * quantity));      // Mass
     i->SaveAttributes();
 
-    AsteroidEntity* new_roid = new AsteroidEntity( i, m_system, *(m_system->GetServiceMgr()), position );
+    AsteroidSE* new_roid = new AsteroidSE( i, *(m_system->GetServiceMgr()), m_system );
     m_system->bubbles.Add( new_roid );
-    m_asteroids.emplace(std::pair<uint32, AsteroidEntity*>(beltID, new_roid));
+    m_asteroids.emplace(std::pair<uint32, AsteroidSE*>(beltID, new_roid));
 }
 
 /*          this gives random single point on sphere with radius of 'r'
@@ -313,7 +312,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
     radius += (radius * security) *2;
 
     GPoint mposition = NULL_ORIGIN;
-    const GPoint position( who->Bubble()->GetCenter() );
+    const GPoint position( who->SysBubble()->GetCenter() );
     double roidradius = 0, thefloat = 0;
     uint32 theta = 0, angleSeperation = floor(180 /pcs);
 

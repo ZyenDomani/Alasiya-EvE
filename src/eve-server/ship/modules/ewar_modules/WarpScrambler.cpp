@@ -30,7 +30,7 @@
 #include "system/SystemBubble.h"
 
 
-WarpScrambler::WarpScrambler( InventoryItemRef item, ShipRef ship )
+WarpScrambler::WarpScrambler( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 
@@ -39,7 +39,7 @@ WarpScrambler::WarpScrambler( InventoryItemRef item, ShipRef ship )
 void WarpScrambler::Activate(SystemEntity * targetEntity)
 {   // only check i can think of right now to verify target is client, npc, or drone
     DynamicSystemEntity* pTarget = static_cast<DynamicSystemEntity *>(m_targetEntity);
-    DestinyManager* pDestiny = pTarget->Destiny();
+    DestinyManager* pDestiny = pTarget->DestinyMgr();
     if (!pDestiny) return;
 
     m_targetEntity = targetEntity;
@@ -51,18 +51,18 @@ void WarpScrambler::Activate(SystemEntity * targetEntity)
     //m_ActiveModuleProc->ProcessActiveCycle();
 /*
     EvilNumber scramStr = m_Item->GetAttribute(AttrWarpScrambleStrength);
-    if (targetEntity->IsNPC()) {
+    if (targetEntity->IsNPCSE()) {
         NPC* pTarget = static_cast<NPC*>(targetEntity);
-        scramStr += pTarget->Item()->GetAttribute(AttrWarpScrambleStatus);
-        pTarget->Item()->SetAttribute(AttrWarpScrambleStatus, scramStr);
+        scramStr += pTarget->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
+        pTarget->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
     } else if (targetEntity->IsClient()) {
         Client* pTarget = static_cast<Client*>(targetEntity);
         scramStr += pTarget->GetShip()->GetAttribute(AttrWarpScrambleStatus);
         pTarget->GetShip()->SetAttribute(AttrWarpScrambleStatus, scramStr);
-    }if (targetEntity->IsDrone()) {
+    }if (targetEntity->IsDroneSE()) {
         Drone* pTarget = static_cast<Drone*>(targetEntity);
-        scramStr += pTarget->Item()->GetAttribute(AttrWarpScrambleStatus);
-        pTarget->Item()->SetAttribute(AttrWarpScrambleStatus, scramStr);
+        scramStr += pTarget->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
+        pTarget->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
     }*/
 }
 
@@ -76,19 +76,8 @@ void WarpScrambler::Deactivate()
     m_Ship->GetAttribute(AttrWarpScrambleStatus) ;
 
     EvilNumber scramStr = m_Item->GetAttribute(AttrWarpScrambleStrength);
-    if (m_targetEntity->IsNPC()) {
-        NPC* pTarget = static_cast<NPC*>(m_targetEntity);
-        scramStr -= pTarget->Item()->GetAttribute(AttrWarpScrambleStatus);
-        pTarget->Item()->SetAttribute(AttrWarpScrambleStatus, scramStr);
-    } else if (m_targetEntity->IsClient()) {
-        Client* pTarget = static_cast<Client*>(m_targetEntity);
-        scramStr -= pTarget->GetShip()->GetAttribute(AttrWarpScrambleStatus);
-        pTarget->GetShip()->SetAttribute(AttrWarpScrambleStatus, scramStr);
-    }if (m_targetEntity->IsDrone()) {
-        Drone* pTarget = static_cast<Drone*>(m_targetEntity);
-        scramStr -= pTarget->Item()->GetAttribute(AttrWarpScrambleStatus);
-        pTarget->Item()->SetAttribute(AttrWarpScrambleStatus, scramStr);
-    }
+    scramStr -= m_targetEntity->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
+    m_targetEntity->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
 }
 
 void WarpScrambler::StopCycle(bool abort)
@@ -97,7 +86,7 @@ void WarpScrambler::StopCycle(bool abort)
     timeLeft /= 100;
 
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -147,13 +136,13 @@ void WarpScrambler::StopCycle(bool abort)
 
     PyTuple* tmp2 = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp2);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp2);
 }
 
 double WarpScrambler::DoCycle()
 {
-        if ((!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
-            || (!m_Ship->GetOperator()->GetSystemEntity()->Bubble()->GetEntity(m_targetID)) )
+        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
         {
             Deactivate();
             return 0;
@@ -189,7 +178,7 @@ void WarpScrambler::_ShowCycle()
                         [PyNone]
                         */
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -236,7 +225,7 @@ void WarpScrambler::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void WarpScrambler::_SetCapNeed()

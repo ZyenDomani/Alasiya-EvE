@@ -33,7 +33,7 @@
 class ShieldTransporter: public ActiveModule
 {
 public:
-	ShieldTransporter( InventoryItemRef item, ShipRef ship );
+	ShieldTransporter( InventoryItemRef item, ShipItemRef ship );
     virtual ~ShieldTransporter() { }
 
     // GenericModule Methods:

@@ -325,7 +325,7 @@ private:
 class ModuleManager
 {
 public:
-    ModuleManager(Ship* const ship);
+    ModuleManager(ShipItem* const ship);
     ~ModuleManager();
 
     bool Initialize();
@@ -404,7 +404,7 @@ private:
     void _SendErrorMessage(const char* fmt, ...);
 
     //access to the ship its system entity that owns us.  We do not own these
-    Ship* m_Ship;
+    ShipItem* m_Ship;
 
     //modules storage, we own this
     ModuleContainer* m_Modules;                    // Holds Module class objects in container arrays, one for each slot bank, rig, subsystem

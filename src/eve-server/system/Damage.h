@@ -26,30 +26,9 @@
 #ifndef __DAMAGE_H_INCL__
 #define __DAMAGE_H_INCL__
 
-#include "Client.h"
-#include "EntityList.h"
 #include "PyServiceMgr.h"
-#include "EVEServerConfig.h"
-#include "corporation/CorporationDB.h"
-#include "inventory/AttributeEnum.h"
 #include "inventory/InventoryItem.h"
-#include "npc/NPC.h"
-#include "npc/NPCAI.h"
-#include "npc/SpawnMgr.h"
-#include "pos/Structure.h"
-#include "ship/DestinyManager.h"
-#include "ship/Drone.h"
-#include "ship/Ship.h"
-#include "ship/ShipDB.h"
-#include "station/Station.h"
-#include "system/Asteroid.h"
-#include "system/Celestial.h"
-#include "system/Container.h"
-#include "system/Deployable.h"
-#include "system/SystemBubble.h"
-#include "system/SystemEntity.h"
 #include "system/SystemManager.h"
-#include "system/LootSystem.h"
 
 class Damage {
 public:
@@ -66,20 +45,17 @@ public:
     Damage( SystemEntity *_source,
             InventoryItemRef _weapon,  // damage derrived directly from weapon.
             EVEEffectID _effect );
-    Damage( SystemEntity *_source,
-            InventoryItemRef _weapon,    //damage derrived directly from weapon+charge
-            InventoryItemRef _charge,
-            EVEEffectID _effect );
+    Damage( SystemEntity* _source, InventoryItemRef _weapon, InventoryItemRef _charge, EVEEffectID _effect );
 
-    ~Damage();
+    virtual ~Damage() { }
 
-    double GetTotal() const { return ( kinetic + thermal + em + explosive ); }
+    double GetTotal() const { return (kinetic + thermal + em + explosive); }
 
     Damage MultiplyDup( double _kinetic_multiplier,
                         double _thermal_multiplier,
                         double _em_multiplier,
                         double _explosive_multiplier ) const
-                        {       // NOTE:  remember, these come in BACKWARD from 'normal' logic..  0=full and 1=none
+                        {       // NOTE:  remember, these come in BACKWARD from 'normal' fuzzy logic..  0=full and 1=none
                                 // added checks here for > 95% resists, and < 1% to avoid crazy damage shit.
                                 // also added checks for missing resists (some npcs have no hull resist in db which = 100% resist)
                             if (_kinetic_multiplier > 1.0) _kinetic_multiplier = 1.0;
@@ -123,7 +99,6 @@ public:
         explosive += explosive * factor;
     }
 
-
     float GetThermal()      { return thermal; }
     float GetEM()           { return em; }
     float GetKinetic()      { return kinetic; }
@@ -135,18 +110,12 @@ public:
     InventoryItemRef        weapon;    //we own a ref to this.
     InventoryItemRef        charge;    //we own a ref to this. May be null.
 
-    // shared or specific functions.  trying to save a bit of space and make damage methods easier to read.
-    void PodKill();
-    void KillPlayerShip();
-
 private:
     double kinetic;
     double thermal;
     double em;
     double explosive;
     double modifier;
-
-    ShipDB m_sDB;
 };
 
 #endif

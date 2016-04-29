@@ -33,7 +33,7 @@
 class MiningLaser: public ActiveModule
 {
 public:
-    MiningLaser( InventoryItemRef item, ShipRef ship );
+    MiningLaser( InventoryItemRef item, ShipItemRef ship );
     virtual ~MiningLaser() { }
 
     // GenericModule Methods:

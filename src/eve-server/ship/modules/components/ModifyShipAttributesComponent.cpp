@@ -29,7 +29,7 @@
 #include "ship/modules/GenericModule.h"
 
 
-ModifyShipAttributesComponent::ModifyShipAttributesComponent(GenericModule* mod, ShipRef shipRef)
+ModifyShipAttributesComponent::ModifyShipAttributesComponent(GenericModule* mod, ShipItemRef shipRef)
 : m_Mod(mod), m_Ship(shipRef)
 {
 }
@@ -46,7 +46,7 @@ void ModifyShipAttributesComponent::ModifyShipAttribute(uint32 targetAttrID, uin
 }
 
 void ModifyShipAttributesComponent::ModifyTargetShipAttribute(uint32 targetItemID, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type ) {
-    ShipRef target = m_Ship->GetItemFactory()->GetShip(targetItemID);
+    ShipItemRef target = m_Ship->GetItemFactory()->GetShip(targetItemID);
     if (target)
         _modifyShipAttributes(target, targetAttrID, sourceAttrID, type);
     else
@@ -54,13 +54,13 @@ void ModifyShipAttributesComponent::ModifyTargetShipAttribute(uint32 targetItemI
 }
 
 /* rewrote attrib calculations and implemented true stacking penality, with checks for exceptions.  -allan 13April16  */
-void ModifyShipAttributesComponent::_modifyShipAttributes(ShipRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type)
+void ModifyShipAttributesComponent::_modifyShipAttributes(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type)
 {
     EvilNumber newVal = _calculateNewValue(shipRef, targetAttrID, sourceAttrID, type, m_Mod);
     SetAttribute(shipRef, targetAttrID, newVal);
 }
 
-EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, GenericModule* mod)
+EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, GenericModule* mod)
 {
     uint8 stackSize = 1;
     EvilNumber modVal = mod->GetAttribute(sourceAttrID), startVal = shipRef->GetAttribute(targetAttrID);
@@ -113,7 +113,7 @@ EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipRef shipRef, ui
 
 
 // this method will check resist values for fuzzy logic and correct if needed.
-void ModifyShipAttributesComponent::SetAttribute(ShipRef shipRef, uint32 targetAttrID, EvilNumber newVal)
+void ModifyShipAttributesComponent::SetAttribute(ShipItemRef shipRef, uint32 targetAttrID, EvilNumber newVal)
 {
     // basic check for ship resistance attrubutes (fuzzy logic range check)
     if ((targetAttrID >= AttrKineticDamageResonance) and (targetAttrID <= AttrExplosiveDamageResonance)

@@ -26,7 +26,7 @@
 #include "ship/modules/electronics_modules/Salvager.h"
 
 
-Salvager::Salvager( InventoryItemRef item, ShipRef ship )
+Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 }
@@ -37,7 +37,7 @@ void Salvager::StopCycle(bool abort)
     timeLeft /= 100;
 
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -87,13 +87,13 @@ void Salvager::StopCycle(bool abort)
 
     PyTuple* tmp2 = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp2);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp2);
 }
 
 void Salvager::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -143,7 +143,7 @@ void Salvager::_ShowCycle()
 
     PyTuple* tmp2 = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp2);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp2);
 
     m_AMPC->DeactivateCycle();
 }

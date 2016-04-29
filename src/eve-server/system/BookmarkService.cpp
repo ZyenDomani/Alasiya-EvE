@@ -62,6 +62,7 @@ BookmarkService::~BookmarkService() {
     delete m_dispatch;
 }
 
+/** @todo (Allan) update this to NOT hit db on EVERY BM create */
 uint32 BookmarkService::GetNextAvailableBookmarkID()
 {
     DBQueryResult res;
@@ -233,14 +234,14 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
     typeCheck = call.tuple->GetItem( 0 )->AsInt()->value();  //current shipID/stationID/POS_ID/systemID
     typeID = m_db.FindBookmarkTypeID(typeCheck);    // get bm typeID
 
-    if ( typeCheck >= 140000000 ) {      // entity #'s above 140m are player-owned
-        point = call.client->GetPosition();       // Get x,y,z location.  bm type is coordinate as "spot in xxx system"
+    if (IsNotStaticItem(typeCheck)) {      // entity #'s above 140m are player-owned
+        point = call.client->GetShipSE()->GetPosition();       // Get x,y,z location.  bm type is coordinate as "spot in xxx system"
         locationID = call.client->GetLocationID();       // locationID of bm is current sol system
         itemID = locationID;      //  locationID = itemID for coord bm.  shows jumps, s/c/r in bm window, green in system
-    }else if ( typeID == 2502 ){  // not player-owned, check for station.
+    } else if (typeID == 2502){  // not player-owned, check for station.
         itemID =  call.tuple->GetItem( 0 )->AsInt()->value();  // this is stationID
         locationID = call.client->GetSystemID();       // get sol system of current station
-    }else{      // char is passing systemID from map.  char is marking a solar systemID for bm
+    } else {      // char is passing systemID from map.  char is marking a solar systemID for bm
         locationID = call.tuple->GetItem( 0 )->AsInt()->value();  // this is systemID from map
         itemID = locationID;      //  locationID = itemID for coord bm.  shows jumps, s/c/r in bm window, green in system
     }

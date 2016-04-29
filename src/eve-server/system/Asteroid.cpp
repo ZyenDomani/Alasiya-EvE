@@ -27,67 +27,9 @@
 #include "eve-server.h"
 
 #include "system/Asteroid.h"
-
 #include "ship/DestinyManager.h"
 
-using namespace Destiny;
 
-AsteroidEntity::AsteroidEntity(
-    InventoryItemRef asteroid,
-    SystemManager *system,
-    PyServiceMgr &services,
-    const GPoint &position)
-: DynamicSystemEntity(new DestinyManager(this, system), asteroid),
-m_system(system),
-m_services(services)
-{
-    _asteroidRef = asteroid;
-    m_destiny->SetPosition(position, false);
-}
-
-void AsteroidEntity::Process() {
-    SystemEntity::Process();
-}
-
-void AsteroidEntity::ForcedSetPosition(const GPoint &pt) {
-    m_destiny->SetPosition(pt, false);
-}
-
-void AsteroidEntity::Grow() {
-
-}
-
-void AsteroidEntity::EncodeDestiny( Buffer& into ) const
-{
-    const GPoint& position = GetPosition();
-    const std::string itemName( GetName() );
-    BallHeader head;
-    head.entityID = GetID();
-    head.mode = DSTBALL_RIGID;
-    head.radius = GetRadius();
-    head.x = position.x;
-    head.y = position.y;
-    head.z = position.z;
-    head.flags = IsMassive;
-    into.Append( head );
-
-    DSTBALL_RIGID_Struct main;
-    main.formationID = 0xFF;
-    into.Append( main );
-
-    _log(COMMON__WARNING, "AsteroidEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
-}
-
-void AsteroidEntity::MakeDamageState(DoDestinyDamageState &into) const {
-    into.shield = 1.0;
-    into.recharge = 30000;
-    into.timestamp = Win32TimeNow();
-    into.armor = 1.0;
-    into.structure = 1.0;
-}
-
-
-#if (0)
 AsteroidSE::AsteroidSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)
 : ObjectSystemEntity(self, services, system),
 m_growTimer(360000) /* arbitrary for 1 hour */
@@ -112,7 +54,6 @@ void AsteroidSE::ProcessOther() {
 
 }
 
-
 void AsteroidSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
@@ -131,7 +72,7 @@ void AsteroidSE::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(COMMON__WARNING, "AsteroidEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(COMMON__WARNING, "AsteroidSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void AsteroidSE::MakeDamageState(DoDestinyDamageState &into) {
@@ -148,4 +89,3 @@ void AsteroidSE::Grow() {
      * use this to check/update current sizes (radius and mass)
      */
 }
-#endif //0

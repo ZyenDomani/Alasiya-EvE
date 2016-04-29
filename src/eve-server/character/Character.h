@@ -30,9 +30,9 @@
 #include "character/CharacterDB.h"
 #include "character/Skill.h"
 #include "inventory/ItemType.h"
-#include "inventory/Owner.h"
 #include "inventory/Inventory.h"
 #include "inventory/InventoryDB.h"
+#include "inventory/InventoryItem.h"
 #include "standing/StandingDB.h"
 
 /**
@@ -226,34 +226,24 @@ public:
         uint64 _startDateTime = 0,
         uint64 _createDateTime = 0,
         uint32 _shipID = 0,
-        uint32 _capsuleID = 0
-    );
+        uint32 _capsuleID = 0 );
 
-    uint32 accountID;
-
-    std::string title;
-    std::string description;
     bool gender;
 
-    double bounty;
-    double balance;
-    double aurBalance;
-    double securityRating;
+    uint8 bloodlineID;
+    uint8 raceID;
+    uint32 accountID;
+    uint32 shipID;
+    uint32 capsuleID;
     uint32 logonMinutes;
-    double skillPoints;
-
     uint32 corporationID;
     uint32 allianceID;
     uint32 warFactionID;
-
     uint32 stationID;
     uint32 solarSystemID;
     uint32 constellationID;
     uint32 regionID;
-
     uint32 ancestryID;
-    uint8 bloodlineID;
-    uint8 raceID;
     uint32 careerID;
     uint32 schoolID;
     uint32 careerSpecialityID;
@@ -261,8 +251,14 @@ public:
     uint64 startDateTime;
     uint64 createDateTime;
 
-    uint32 shipID;
-    uint32 capsuleID;
+    double bounty;
+    double balance;
+    double aurBalance;
+    double securityRating;
+    double skillPoints;
+
+    std::string title;
+    std::string description;
 };
 
 /**
@@ -341,26 +337,10 @@ public:
  * Class representing character.
  */
 class Character
-: public Owner,
-  public Inventory
+: public InventoryItem
 {
     friend class InventoryItem;    // to let it construct us
-    friend class Owner;    // to let it construct us
 public:
-    typedef CharacterDB::QueuedSkill QueuedSkill;   // structure of <uint32 typeID, uint8 level>
-    typedef CharacterDB::SkillQueue SkillQueue;     // vector of QueuedSkill
-    /*
-    // Certificates:
-    struct currentCertificates {
-        uint32 certificateID;
-        uint64 grantDate;
-        bool visibilityFlags;
-    };
-    typedef std::vector<currentCertificates> Certificates;
-*/
-	typedef InventoryDB::currentCertificates cCertificates;	//structure of <uint32 certificateID, uint64 grantDate, bool visibilityFlags>
-    typedef InventoryDB::Certificates Certificates;	// vector of currentCertificates
-
     /**
      * Loads character.
      *
@@ -381,6 +361,11 @@ public:
      */
     static CharacterRef Spawn(ItemFactory& factory, ItemData& data, CharacterData& charData, CorpMemberInfo& corpData);
 
+    static CharacterRef Spawn(ItemFactory& factory, ItemData& data) {
+        uint32 charID = InventoryItem::CreateItemID( factory, data );
+        if( charID == 0 ) return CharacterRef();
+        return Character::Load( factory, charID );
+    }
     /**
      * Primary public interface:
      */
@@ -393,6 +378,11 @@ public:
     uint32 PickAlternateShip(uint32 locationID);
 
     void Delete();
+    void SetClient(Client* pClient)                     { m_pClient = pClient; }
+    Client* GetClient()                                 { return m_pClient; }
+
+    typedef CharacterDB::QueuedSkill QueuedSkill;   // structure of <uint32 typeID, uint8 level>
+    typedef CharacterDB::SkillQueue SkillQueue;     // vector of QueuedSkill
 
     /**
      * Checks whether character has the skill.
@@ -494,7 +484,6 @@ public:
     /**
      * Send Skill Completion Info to client.
      * @author allan
-     * @param[in] pClient pointer to client object
 	 * @param[in] pSkill  pointer to completed skill object
      * @param[in] oldLevel  previous level (can be 0)
      * @param[in] newLevel  level just completed
@@ -502,10 +491,22 @@ public:
      * @param[in] newPoints  current skill point value
 	 * @param[in] stopped	is training not finished?
      */
-    void            SendSkillComplete(Client* pClient, Skill* pSkill, uint8 oldLevel, uint8 newLevel, EvilNumber EN_Points, int64 newPoints, bool stopped=false);
+    void            SendSkillComplete(Skill* pSkill, uint8 oldLevel, uint8 newLevel, EvilNumber EN_Points, int64 newPoints, bool stopped=false);
 
     PyObject*       GetSkillHistory();
 	EvilNumber      GetTotalSP();
+
+    // Certificates:
+    /*
+    struct CharCerts {
+        uint32 certificateID;
+        uint64 grantDate;
+        bool visibilityFlags;
+    };
+    typedef std::vector<CharCerts> Certificates;
+    */
+    typedef CharacterDB::CharCerts cCertificates;   //structure of CharCerts<uint32 certificateID, uint64 grantDate, bool visibilityFlags>
+    typedef CharacterDB::Certificates Certificates; // vector of CharCerts
 
     /* GrantCertificate( uint32 certificateID )
      *
@@ -527,7 +528,7 @@ public:
     bool HasCertificate( uint32 certificateID ) const;
     /* GetCertificates( )
      *
-     * This will check if the player has a certificate
+     * This will get the char's certificates
      * @author almamu
      */
     void GetCertificates( Certificates& crt );
@@ -541,7 +542,7 @@ public:
     /*
      * Primary public packet builders:
      */
-    PyDict* CharGetInfo();
+    PyDict* GetCharInfo();
     PyObject* GetDescription() const;
     /* GetSkillQueue()
      *
@@ -628,7 +629,7 @@ public:
     void                    SaveCharacter();
     void                    SaveFullCharacter();
     void                    SaveSkillQueue();
-    void                    SaveCertificates() const;
+    void                    SaveCertificates();
     void                    SaveSkillHistory(uint8 eventID,
                                              double logDate,
                                              uint32 characterID,
@@ -667,12 +668,14 @@ public:
     //  Dynamic Data
 	void                    VisitSystem(uint32 solarSystemID);
 	void                    chkDynamicSystemID(uint32 solarSystemID);
-	void                    AddJumpToDynamicData(uint32 solarSystemID);
+    void                    AddJumpToDynamicData(uint32 solarSystemID);
     void                    AddPilotToDynamicData(uint32 solarSystemID, bool isAdd = false, bool isDocked = false, bool isLogin = false);
-    void                    AddKillToDynamicData(uint32 solarSystemID);
+	void                    AddKillToDynamicData(uint32 solarSystemID);
 	void                    AddPodKillToDynamicData(uint32 solarSystemID);
 	void                    AddFactionKillToDynamicData(uint32 solarSystemID);
 
+
+    virtual bool _Load();
 protected:
     Character(
         ItemFactory& _factory,
@@ -690,22 +693,16 @@ protected:
      * Member functions:
      */
     using InventoryItem::_Load;
+    static uint32 _Spawn(ItemFactory& factory, ItemData& data, CharacterData& charData, CorpMemberInfo& corpData)  { }
+
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadOwner(ItemFactory& factory, uint32 characterID,
-        // InventoryItem stuff:
-        const ItemType& type, const ItemData& data)
-    {
-        // check it's a character
-        if( type.groupID() != EVEDB::invGroups::Character )
-        {
+    static RefPtr<_Ty> _LoadItem(ItemFactory& factory, uint32 characterID, const ItemType& type, const ItemData& data) {
+        if( type.groupID() != EVEDB::invGroups::Character ) {
             sLog.Error("Character", "Trying to load %s as Character.", type.group().name().c_str() );
             return RefPtr<_Ty>();
         }
-        // cast the type
-        const CharacterType& charType = static_cast<const CharacterType& >( type );
-
         CharacterData charData;
         if( !factory.db().GetCharacter( characterID, charData ) )
             return RefPtr<_Ty>();
@@ -714,28 +711,18 @@ protected:
         if( !factory.db().GetCorpMemberInfo( characterID, corpData ) )
             return RefPtr<_Ty>();
 
-        return _Ty::template _LoadCharacter<_Ty>( factory, characterID, charType, data, charData, corpData );
+        // cast the type
+        const CharacterType& charType = static_cast<const CharacterType& >( type );
+
+        return _Ty::template CreateCharacter<_Ty>( factory, characterID, charType, data, charData, corpData );
     }
 
-    // Actual loading stuff:
+    // Actual creation method:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadCharacter(ItemFactory& factory, uint32 characterID,
-        // InventoryItem stuff:
+    static RefPtr<_Ty> CreateCharacter(ItemFactory& factory, uint32 characterID,
         const CharacterType& charType, const ItemData& data,
-        // Character stuff:
         const CharacterData& charData, const CorpMemberInfo& corpData
     );
-
-    bool _Load();
-
-    static uint32 _Spawn(ItemFactory& factory,
-        // InventoryItem stuff:
-        ItemData& data,
-        // Character stuff:
-        CharacterData& charData, CorpMemberInfo& corpData);
-
-    uint32 inventoryID() const { return itemID(); }
-    PyRep* GetItem() const { return GetItemRow(); }
 
     void AddItem(InventoryItemRef item);
 
@@ -784,6 +771,8 @@ protected:
     uint32 m_regionID;
 
     uint32 m_ancestryID;
+    uint8  m_bloodlineID;
+    uint8  m_raceID;
     uint32 m_careerID;
     uint32 m_schoolID;
     uint32 m_careerSpecialityID;
@@ -803,6 +792,7 @@ protected:
 private:
 	CharacterDB m_db;
     StandingDB s_db;
+
     Client* m_pClient;
 
     bool m_loaded;      /* to avoid multiple load calls (_Load is called 4x) */

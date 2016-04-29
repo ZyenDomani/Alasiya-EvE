@@ -32,7 +32,7 @@
 class HullTransporter: public ActiveModule
 {
 public:
-	HullTransporter( InventoryItemRef item, ShipRef ship );
+	HullTransporter( InventoryItemRef item, ShipItemRef ship );
     virtual ~HullTransporter() { }
 
     // GenericModule Methods:

@@ -29,10 +29,10 @@
 #include "system/Damage.h"
 
 
-ProjectileTurret::ProjectileTurret( InventoryItemRef item, ShipRef shipRef )
+ProjectileTurret::ProjectileTurret( InventoryItemRef item, ShipItemRef shipRef )
 : TurrentModule(item, shipRef)
 {
-    Character* pChar = m_Ship->GetOperator()->GetChar().get();
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
 
     switch (GetAttribute(AttrChargeSize).get_int()) {
         case 1:
@@ -135,12 +135,12 @@ void ProjectileTurret::StopCycle(bool abort)
 
 	PyTuple* tmp = multi.Encode();
 
-	m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+	m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 double ProjectileTurret::DoCycle() {
-        if ((!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
-            || (!m_Ship->GetOperator()->GetSystemEntity()->Bubble()->GetEntity(m_targetID))
+        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))
             || (!m_chargeLoaded) || (!m_chargeRef) )
         {
             Deactivate();
@@ -154,7 +154,7 @@ double ProjectileTurret::DoCycle() {
 
         _ShowCycle();
 
-        Damage d(m_Ship->GetOperator()->GetSystemEntity(),
+        Damage d(m_Ship->GetPilot()->GetShipSE(),
                  m_Item,
                  m_kinetic,
                  m_thermal,
@@ -178,7 +178,7 @@ double ProjectileTurret::DoCycle() {
 void ProjectileTurret::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -225,7 +225,7 @@ void ProjectileTurret::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double ProjectileTurret::_GetROF() {

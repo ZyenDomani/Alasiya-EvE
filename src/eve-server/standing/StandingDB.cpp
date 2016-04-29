@@ -74,7 +74,7 @@ PyObjectEx *StandingDB::GetCharStandings(Client *pClient) {
 PyObjectEx *StandingDB::GetCorpStandings(uint32 corpID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT fromID, standing FROM repCorp WHERE toID=%u", corpID )) {
-        _log(SERVICE__ERROR, "Error in GetCorpStandings query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetCorpStandings query: %s", res.error.c_str());
         return NULL;
     }
     return DBResultToCRowset(res);
@@ -83,7 +83,7 @@ PyObjectEx *StandingDB::GetCorpStandings(uint32 corpID) {
 PyObjectEx *StandingDB::GetCharNPCStandings(uint32 charID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT toID, standing FROM chrNPCStandings WHERE fromID=%u", charID )) {
-        _log(SERVICE__ERROR, "Error in GetCharNPCStandings query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetCharNPCStandings query: %s", res.error.c_str());
         return NULL;
     }
     return DBResultToCRowset(res);
@@ -101,7 +101,7 @@ PyRep *StandingDB::PrimeCharStandings(uint32 charID) {
         " WHERE itemID < 0"
     ))
     {
-        _log(SERVICE__ERROR, "Error in PrimeCharStandings query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in PrimeCharStandings query: %s", res.error.c_str());
         return NULL;
     }
 

@@ -41,7 +41,7 @@ PyObject *LSCDB::LookupChars(const char *match, bool exact) {
             "  LEFT JOIN entity ON characterID = itemID"
             " WHERE characterID >= %u", EVEMU_MINIMUM_ID))
         {
-            _log(SERVICE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
+            _log(DATABASE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
             return NULL;
         }
     } else {
@@ -54,7 +54,7 @@ PyObject *LSCDB::LookupChars(const char *match, bool exact) {
             exact?"=":"RLIKE", matchEsc.c_str()
         ))
         {
-            _log(SERVICE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
+            _log(DATABASE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
             return NULL;
         }
     }
@@ -750,7 +750,7 @@ uint32 LSCDB::GetChannelIDFromComparisonKey(std::string compkey)
         compkey.c_str()
     ))
     {
-        _log(SERVICE__ERROR, "Error in GetChannelIDFromComparisonKey query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetChannelIDFromComparisonKey query: %s", res.error.c_str());
         return 0;
     }
 
@@ -806,7 +806,7 @@ int LSCDB::WriteNewChannelSubscriptionToDatabase(uint32 characterID, uint32 chan
         channelID, corpID, characterID, allianceID, role, extra
         ))
     {
-        _log(SERVICE__ERROR, "Error in query, Channel Subscription content couldn't be saved: %s", err.c_str());
+        _log(DATABASE__ERROR, "Error in query, Channel Subscription content couldn't be saved: %s", err.c_str());
         return 0;
     }
     else
@@ -831,7 +831,7 @@ int LSCDB::WriteNewChannelToDatabase(uint32 channelID, std::string name, uint32 
         channelID, ownerID, name.c_str(), "", name.c_str(), temporary, mode
         ))
     {
-        _log(SERVICE__ERROR, "Error in query, New Channel couldn't be saved: %s", err.c_str());
+        _log(DATABASE__ERROR, "Error in query, New Channel couldn't be saved: %s", err.c_str());
         return 0;
     }
     else

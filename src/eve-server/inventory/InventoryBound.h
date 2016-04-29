@@ -33,7 +33,7 @@ class InventoryBound
 : public PyBoundObject
 {
 public:
-    InventoryBound(PyServiceMgr *mgr, Inventory &inventory, EVEItemFlags flag);
+    InventoryBound(PyServiceMgr *mgr, InventoryItemRef item, EVEItemFlags flag);
     ~InventoryBound();
 
     virtual void Release() {
@@ -58,11 +58,13 @@ public:
 protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
+    Inventory* mInventory;
 
-    Inventory &mInventory;
+    InventoryItemRef m_self;
+
     EVEItemFlags mFlag;
 
-    PyRep *_ExecAdd(Client *c, const std::vector<int32> &items, uint32 quantity, EVEItemFlags flag);
+    PyRep* _ExecAdd(Client *c, const std::vector<int32> &items, uint32 quantity, EVEItemFlags flag);
 };
 
 #endif//_INVENTORY_BOUND_H

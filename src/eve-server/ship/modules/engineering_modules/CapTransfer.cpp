@@ -28,7 +28,7 @@
 #include "character/Character.h"
 
 
-CapTransfer::CapTransfer( InventoryItemRef item, ShipRef ship )
+CapTransfer::CapTransfer( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 
@@ -40,7 +40,7 @@ void CapTransfer::StopCycle(bool abort)
     timeLeft /= 100;
 
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -85,12 +85,12 @@ void CapTransfer::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 double CapTransfer::DoCycle()
 {
-        if (!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
+        if (!m_Ship->GetPilot()->GetShipSE()->SysBubble())
         {
             Deactivate();
             return 0;
@@ -98,12 +98,12 @@ double CapTransfer::DoCycle()
         _ShowCycle();
 
         // Apply boost amount:
-        EvilNumber capCharge = m_targetEntity->Item()->GetAttribute(AttrCapacitorCharge);
+        EvilNumber capCharge = m_targetEntity->GetSelf()->GetAttribute(AttrCapacitorCharge);
         capCharge += m_Item->GetAttribute(AttrPowerTransferAmount);
-        if (capCharge > m_targetEntity->Item()->GetAttribute(AttrCapacitorCapacity)) {
-            capCharge = m_targetEntity->Item()->GetAttribute(AttrCapacitorCapacity);
+        if (capCharge > m_targetEntity->GetSelf()->GetAttribute(AttrCapacitorCapacity)) {
+            capCharge = m_targetEntity->GetSelf()->GetAttribute(AttrCapacitorCapacity);
         }
-        m_targetEntity->Item()->SetAttribute(AttrCapacitorCharge, capCharge);
+        m_targetEntity->GetSelf()->SetAttribute(AttrCapacitorCharge, capCharge);
 
         return _GetDuration();
 }
@@ -111,7 +111,7 @@ double CapTransfer::DoCycle()
 void CapTransfer::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
      m_Ship,
      m_Item->itemID(),
@@ -154,7 +154,7 @@ void CapTransfer::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double CapTransfer::_GetCapNeed()
@@ -164,11 +164,11 @@ double CapTransfer::_GetCapNeed()
 	double moduleCapNeed = m_Item->GetAttribute(AttrCapacitorNeed).get_float();
 
 	// Now we do the initial cap need calculations
-	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetOperator()->GetChar()->GetSkillLevel(skillEnergyEmissionSystems)));
+	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillEnergyEmissionSystems)));
 
 	// Now we check if our ship is Basilisk or Guardian. If yes - we apply ship's bonuses
 	if(m_Ship->typeID() == 11985 || m_Ship->typeID() == 11987){
-		capacitorNeed *= (1 - (0.15 * m_Ship->GetOperator()->GetChar()->GetSkillLevel(skillLogistics)));
+		capacitorNeed *= (1 - (0.15 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillLogistics)));
 	}
 
     return capacitorNeed;

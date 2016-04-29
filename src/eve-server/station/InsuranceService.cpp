@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:     Zhur, Allan
+    Author:     Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"

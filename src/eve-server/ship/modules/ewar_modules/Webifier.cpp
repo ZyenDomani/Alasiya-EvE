@@ -27,7 +27,7 @@
 #include "system/SystemBubble.h"
 
 
-Webifier::Webifier( InventoryItemRef item, ShipRef ship )
+Webifier::Webifier( InventoryItemRef item, ShipItemRef ship )
 :ActiveModule(item, ship)
 {
 
@@ -36,7 +36,7 @@ Webifier::Webifier( InventoryItemRef item, ShipRef ship )
 void Webifier::Activate(SystemEntity * targetEntity)
 {   // only check i can think of right now to verify target is client, npc, or drone
     DynamicSystemEntity* pTarget = static_cast<DynamicSystemEntity *>(m_targetEntity);
-    DestinyManager* pDestiny = pTarget->Destiny();
+    DestinyManager* pDestiny = pTarget->DestinyMgr();
     if (!pDestiny) return;
 
     m_targetEntity = targetEntity;
@@ -62,7 +62,7 @@ void Webifier::Deactivate()
     m_AMPC->DeactivateCycle();
 
     DynamicSystemEntity* pTarget = static_cast<DynamicSystemEntity *>(m_targetEntity);
-    DestinyManager* pDestiny = pTarget->Destiny();
+    DestinyManager* pDestiny = pTarget->DestinyMgr();
     pDestiny->SetMaxVelocity(m_originalSpeed);
     pDestiny->SetSpeedFraction();
 }
@@ -73,7 +73,7 @@ void Webifier::StopCycle(bool abort)
     timeLeft /= 100;
 
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -123,13 +123,13 @@ void Webifier::StopCycle(bool abort)
 
     PyTuple* tmp2 = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp2);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp2);
 }
 
 double Webifier::DoCycle()
 {
-        if ((!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
-            || (!m_Ship->GetOperator()->GetSystemEntity()->Bubble()->GetEntity(m_targetID)) )
+        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
         {
             Deactivate();
             return 0;
@@ -166,7 +166,7 @@ void Webifier::_ShowCycle()
                         [PyNone]
                         */
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -213,7 +213,7 @@ void Webifier::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void Webifier::_SetCapNeed()

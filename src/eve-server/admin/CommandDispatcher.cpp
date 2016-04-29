@@ -45,13 +45,15 @@ CommandDispatcher::~CommandDispatcher() {
 
 PyResult CommandDispatcher::Execute( Client* from, const char* msg )
 {
-    if (!from->Destiny())
-        throw PyException( MakeCustomError( "Internal Server Error.  Ref: ServerError 31110 " ) );
-
-    if (from->IsInSpace() && from->Destiny()->IsWarping() && (!from->GetAccountRole() & ROLE_GML)) {
-		sLog.Error( "CommandDispatcher", " Command Requested by %s while warping. --Access denied.", from->GetName() );
-		throw PyException( MakeCustomError( "Cannot Request Commands While Warping.  Access Denied. " ) );
-	}
+     /** @todo  fix this shit...
+    if (from->IsInSpace()) {
+        if (!from->DestinyMgr())
+            throw PyException( MakeCustomError( "Internal Server Error.  Ref: ServerError 31110 " ) );
+        if (from->DestinyMgr()->IsWarping() && (!from->GetAccountRole() & ROLE_GML)) {
+            sLog.Error( "CommandDispatcher", " Command Requested by %s while warping. --Access denied.", from->GetName() );
+            throw PyException( MakeCustomError( "ServerError 31113 - Cannot Request Commands While Warping." ) );
+        }
+    } */
 
     //might want to check for # or / at the beginning of this crap.
     Seperator sep( &msg[1] );

@@ -28,24 +28,59 @@
 
 #include <map>
 #include <vector>
-#include <eve-compat.h>
 
-class SystemEntity;
-class PyTuple;
-class DoDestiny_SetState;
+#include "utils/gpoint.h"
+
 class Client;
+class DoDestiny_SetState;
+class PyTuple;
+class SystemEntity;
 class SystemManager;
 class Timer;
 
 class SystemBubble {
 public:
     SystemBubble(SystemManager* pSystem, const GPoint& center, double radius);
-    ~SystemBubble() { clear(); };
+    ~SystemBubble()                                     { clear(); }
 
+    SystemEntity* const GetEntity(uint32 entityID) const;
 
-    const GPoint m_center;
-    const double m_radius;
-    const double m_radius_hysteresis;
+    /* for spawn system     -allan 15July15 */
+    void Process();
+    void SetBelt(uint32 beltID);
+    void SetGate(uint32 gateID);
+    void SetSpawned(bool set)                           { m_spawned = set; }
+    bool IsBelt()                                       { return m_belt; }
+    bool IsGate()                                       { return m_gate; }
+    bool IsSpawned()                                    { return m_spawned; }
+    void SetSpawnTimer(bool isBelt = false);
+    uint32 GetSpawnID(uint16 bubbleID);
+
+    /* various count queries */
+    uint32 Count()                                      { return m_bubbleIncrementer; }
+    uint32 CountDynamics()                              { return m_dynamicEntities.size(); }
+    uint32 CountPlayers()                               { return m_players.size(); }
+    uint32 CountNPCs();
+
+    /* used for bubble management */
+    bool IsEmpty() const                                { return m_entities.empty(); }
+    bool HasStatics() const                             { return (m_entities.empty() ? false : true); }
+    bool HasDynamics() const                            { return (m_dynamicEntities.empty() ? false : true); }
+    bool HasPlayers() const                             { return (m_players.empty() ? false : true); }
+    double x() const                                    { return m_center.x; }
+    double y() const                                    { return m_center.y; }
+    double z() const                                    { return m_center.z; }
+    uint32 GetID()                                      { return m_bubbleID; }
+    GPoint GetCenter()                                  { return m_center; }
+
+    void clear();
+    void PrintEntityList();
+    void Add(SystemEntity* pEntity, bool isPostWarp=false);
+    void Remove(SystemEntity* pEntity);
+    void AddExclusive(SystemEntity* pEntity);
+    void RemoveExclusive(SystemEntity* pEntity);
+    void AppendBalls(SystemEntity* about_who) const;
+    void ProcessWander(std::vector< SystemEntity* >& wanderers);
 
 	void BubblecastDestiny(std::vector<PyTuple*> &updates, std::vector<PyTuple*> &events, const char* desc) const;
 	void BubblecastDestinyUpdate(std::vector<PyTuple*> &updates, const char* desc) const;
@@ -54,45 +89,17 @@ public:
 	void BubblecastDestinyEvent(PyTuple** payload, const char* desc) const;
 	void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pEntity) const;
 
-    void Process();
-    void ProcessWander(std::vector< SystemEntity* >& wanderers);
-
-    void Add(SystemEntity* pEntity, bool isPostWarp=false);
-    void Remove(SystemEntity* pEntity);
-    void AddExclusive(SystemEntity* pEntity);
-    void RemoveExclusive(SystemEntity* pEntity);
-    void clear();
-    bool IsEmpty() const { return (m_entities.empty() ? (m_dynamicEntities.empty() ? true : false) : false); }   // this is used by empty bubble checks for deletion.
-    //use m_players for lower npc process usage.  use m_entities for constant npc updates.
-    bool HasPlayers() const { return (m_players.empty() ? false : true); }
-    SystemEntity* const GetEntity(uint32 entityID) const;
-    void GetEntities(std::vector<SystemEntity*> &into) const;
-    void GetPlayers(std::vector<Client*> &into) const;   /* for targeting purposes */
-    uint32 GetID() { return m_bubbleID; }
-    GPoint GetCenter() { return m_center; }
-
-    void AppendBalls(SystemEntity* about_who) const;
-
     bool InBubble(const GPoint &pt) const;
 
-    // for spawn system     -allan 15July15
-    void SetBelt(uint32 beltID);
-    void SetGate(uint32 gateID);
-    bool IsBelt()                       { return m_belt; }
-    bool IsGate()                       { return m_gate; }
-    bool IsSpawned()                    { return m_spawned; }
-    void SetSpawned(bool set=false)     { m_spawned = set; }
-    void SetSpawnTimer(bool isBelt = false);
-    uint32 GetSpawnID(uint16 bubbleID);
-
-    uint32 Count()		                { return m_bubbleIncrementer; }
-    uint32 CountDynamics()              { return m_dynamicEntities.size(); }
-    uint32 CountPlayers()               { return m_players.size(); }
-    uint32 CountNPCs();
-
-    void PrintEntityList();
+    /* for targeting purposes */
+    void GetEntities(std::vector<SystemEntity*> &into) const;
+    void GetPlayers(std::vector<Client*> &into) const;
 
 protected:
+    const GPoint m_center;
+    const double m_radius;
+    const double m_radius_hysteresis;
+
     void _SendAddBalls(SystemEntity* to_who);
     void _SendRemoveBalls(SystemEntity* to_who);
     void _BubblecastAddBall(SystemEntity* about_who);
@@ -100,21 +107,23 @@ protected:
     void _BubblecastRemoveBall(SystemEntity* about_who);
     void _BubblecastRemoveBallExclusive(SystemEntity* about_who);
 
-    SystemManager* m_system;
-	uint32 m_systemID;
-    uint32 m_bubbleID;
+private:
+    SystemManager* m_system = nullptr;
+
+	uint32 m_systemID = 0;
+    uint32 m_bubbleID = 0;
+
     static uint32 m_bubbleIncrementer;
-    std::map<uint32, SystemEntity*> m_entities;    //we do not own these.
-    std::vector<SystemEntity*> m_dynamicEntities;    //entities which may move. we do not own these.
-    std::vector<Client*> m_players;                // testing with bubble client list (in std::vector)
+
+    std::vector<Client*> m_players;                  // testing with bubble player list (in std::vector)
+    std::vector<SystemEntity*> m_dynamicEntities;    //entities which may/may not move. we do not own these.
+    std::map<uint32, SystemEntity*> m_entities;      //we do not own these.
 
     // for spawn system     -allan 15July15
+    Timer m_spawnTimer;
     bool m_belt = false;
     bool m_gate = false;
     bool m_spawned = false;
-
-    Timer m_spawnTimer;
-
 };
 
 #endif

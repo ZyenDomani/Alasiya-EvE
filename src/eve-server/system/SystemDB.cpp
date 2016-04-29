@@ -87,7 +87,7 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "  ORDER BY e.itemID",
         systemID,
         //exclude categories not applicable for in-space system entities or owned by player/corp :
-        _System/*0*/, /*Character*/1, /*Station*/3, Asteroid/*25*/,
+        _System/*0*/, /*Character*/1, /*Station*/3, /*Asteroid, 25*/ //asteroids are now owned/controlled by BeltMgr - DO NOT load here.
         // include deployed items owned by players or corps
         Deployable/*22*/, Orbitals/*46*/, Drone/*18*/, Entity/*11*/,    // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
         /*Structure*/23, StructureUpgrade/*39*/, SovereigntyStructure/*40*/
@@ -116,6 +116,11 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         into.push_back(entry);
     }
 
+    return true;
+}
+
+bool SystemDB::LoadPlayerDynamicEntities(uint32 ownerID, uint32 systemID, std::vector<DBSystemDynamicEntity>& into)
+{
     return true;
 }
 

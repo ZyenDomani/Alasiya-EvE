@@ -921,13 +921,13 @@ void RamProxyService::_EncodeBillOfMaterials(const std::vector<RequiredItem> &re
     }
 }
 
-void RamProxyService::_EncodeMissingMaterials(const std::vector<RequiredItem> &reqItems, const PathElement &bomLocation, Client *const c, double materialMultiplier, double charMaterialMultiplier, int32 runs, std::map<int32, PyRep *> &into) {
+void RamProxyService::_EncodeMissingMaterials(const std::vector<RequiredItem> &reqItems, const PathElement &bomLocation, Client *const pClient, double materialMultiplier, double charMaterialMultiplier, int32 runs, std::map<int32, PyRep *> &into) {
     //query out what we need
     std::vector<InventoryItemRef> skills, items;
 
     //get the skills
-    c->GetChar()->FindByFlag(flagSkill, skills);
-    c->GetChar()->FindByFlag(flagSkillInTraining, skills);
+    pClient->GetChar()->GetInventory()->FindByFlag(flagSkill, skills);
+    pClient->GetChar()->GetInventory()->FindByFlag(flagSkillInTraining, skills);
 
     //get the items
     _GetBOMItems( bomLocation, items );
@@ -948,7 +948,7 @@ void RamProxyService::_EncodeMissingMaterials(const std::vector<RequiredItem> &r
         curi = (cur->isSkill ? skills.begin() : items.begin());
         endi = (cur->isSkill ? skills.end() : items.end());
         for(; curi != endi && qtyReq > 0; curi++) {
-            if((*curi)->typeID() == cur->typeID && (*curi)->ownerID() == c->GetCharacterID()) {
+            if((*curi)->typeID() == cur->typeID && (*curi)->ownerID() == pClient->GetCharacterID()) {
                 if(cur->isSkill)
                     qtyReq -= std::min((uint32)qtyReq, (uint32)(*curi)->GetAttribute(AttrSkillLevel).get_int() );
                 else
@@ -963,7 +963,7 @@ void RamProxyService::_EncodeMissingMaterials(const std::vector<RequiredItem> &r
 
 void RamProxyService::_GetBOMItems(const PathElement &bomLocation, std::vector<InventoryItemRef> &into)
 {
-    Inventory *inventory = m_manager->item_factory->GetInventory( bomLocation.locationID );
+    Inventory *inventory = m_manager->item_factory->GetInventoryFromId( bomLocation.locationID );
     if( inventory != NULL )
         inventory->FindByFlag( (EVEItemFlags)bomLocation.flag, into );
 }

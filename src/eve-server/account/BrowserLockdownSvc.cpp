@@ -72,15 +72,6 @@ PyString:"util.CachedObject"
     return new PyObject( "util.CachedObject" , arg_tuple );
 }
 
-/**
- * CacheOK python class. This class simulates the python class CacheOK which is derived from the StandardError class.
- */
-class CacheOK : public PyObjectEx_Type1
-{
-public:
-    CacheOK() : PyObjectEx_Type1( new PyToken("objectCaching.CacheOK"), new_tuple("CacheOK") ) {}
-};
-
 //02:40:18 L BrowserLockdownService::Handle_GetFlaggedSitesHash(): size= 0
 PyResult BrowserLockdownService::Handle_GetFlaggedSitesHash(PyCallArgs &call)
 {
@@ -98,6 +89,67 @@ PyResult BrowserLockdownService::Handle_GetFlaggedSitesHash(PyCallArgs &call)
      */
     return new CacheOK();
 }
+/*
+ * ==================== Sent from Client 103 bytes
+ *
+ * [PyObjectData Name: macho.CallReq]
+ *  [PyTuple 7 items]
+ *    [PyInt 6]
+ *    [PyObjectData Name: macho.MachoAddress]
+ *      [PyTuple 4 items]
+ *        [PyInt 2]
+ *        [PyInt 0]
+ *        [PyIntegerVar 112]
+ *        [PyNone]
+ *    [PyObjectData Name: macho.MachoAddress]
+ *      [PyTuple 4 items]
+ *        [PyInt 1]
+ *        [PyInt 791803]
+ *        [PyString "browserLockdownSvc"]
+ *        [PyNone]
+ *    [PyInt 5654387]
+ *    [PyTuple 1 items]
+ *      [PyTuple 2 items]
+ *        [PyInt 0]
+ *        [PySubStream 35 bytes]
+ *          [PyTuple 4 items]
+ *            [PyInt 1]
+ *            [PyString "GetFlaggedSitesHash"]
+ *            [PyTuple 0 items]
+ *            [PyDict 1 kvp]
+ *              [PyString "machoVersion"]
+ *              [PyInt 1]
+ *    [PyNone]
+ *    [PyNone]
+ *
+ *
+ *
+ * ==================== Sent from Server 112 bytes
+ *
+ * [PyObjectData Name: macho.CallRsp]
+ *  [PyTuple 7 items]
+ *    [PyInt 7]
+ *    [PyObjectData Name: macho.MachoAddress]
+ *      [PyTuple 4 items]
+ *        [PyInt 1]
+ *        [PyInt 791803]
+ *        [PyString "browserLockdownSvc"]
+ *        [PyNone]
+ *    [PyObjectData Name: macho.MachoAddress]
+ *      [PyTuple 4 items]
+ *        [PyInt 2]
+ *        [PyIntegerVar 77871000001103]
+ *        [PyIntegerVar 112]
+ *        [PyNone]
+ *    [PyInt 5654387]
+ *    [PyTuple 1 items]
+ *      [PySubStream 39 bytes]
+ *        [PyString "df98509e1e3f0dd839083e7be1d2b360"]
+ *    [PyNone]
+ *    [PyNone]
+ *
+ *
+ */
 
 //02:40:18 L BrowserLockdownService::Handle_GetFlaggedSitesList(): size= 0
 PyResult BrowserLockdownService::Handle_GetFlaggedSitesList(PyCallArgs &call)

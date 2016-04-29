@@ -62,7 +62,7 @@ public:
     bool IsSpawned(uint16 bubbleID);
     bool CheckSpawn(uint16 bubbleID);
 
-    void GetList(uint32 beltID, std::vector< AsteroidEntity* >& list);
+    void GetList(uint32 beltID, std::vector< AsteroidSE* >& list);
 
 protected:
     ManagerDB m_db;
@@ -87,7 +87,7 @@ private:
     /* vector contains belt's itemID, itemRef */
     std::map<uint32, InventoryItemRef> m_belts;
     /*  this map contains beltID, asteroidSE for entire system */
-    std::unordered_multimap<uint32, AsteroidEntity*> m_asteroids;
+    std::unordered_multimap<uint32, AsteroidSE*> m_asteroids;
 
 
 };

@@ -39,6 +39,8 @@ static const char* DamageMessageIDs_Other[7] = {
     "AttackHit6"     //strikes perfectly, wrecking
 };
 
+static const uint16 SHIP_PROCESS_TICK_MS = 5000;    // 5s
+
 static const GPoint NULL_ORIGIN(0,0,0);  // common place for a zero-value gpoint
 static const GVector NULL_ORIGIN_V(0,0,0);
 

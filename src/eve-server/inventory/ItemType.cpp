@@ -279,7 +279,7 @@ _Ty *ItemType::_LoadType(ItemFactory &factory, uint32 typeID,
         case EVEDB::invCategories::Asteroid:
         case EVEDB::invCategories::Orbitals:
             */
-        case EVEDB::invCategories::Owner: {
+        case EVEDB::invCategories::Character: {
             return CharacterType::_LoadType<CharacterType>( factory, typeID, group, data );
         }
         case EVEDB::invCategories::Station: {

@@ -77,8 +77,7 @@ public:
  * CelestialObject which represents solar system.
  */
 class SolarSystem
-: public CelestialObject,
-  public Inventory
+: public CelestialObject
 {
     friend class InventoryItem; // to let it construct us
     friend class CelestialObject; // to let it construct us
@@ -95,23 +94,23 @@ public:
     /*
      * Public Fields:
      */
-    const GPoint &      minPosition() const { return m_minPosition; }
-    const GPoint &      maxPosition() const { return m_maxPosition; }
-    double              luminosity() const { return m_luminosity; }
+    const GPoint &      minPosition() const             { return m_minPosition; }
+    const GPoint &      maxPosition() const             { return m_maxPosition; }
+    double              luminosity() const              { return m_luminosity; }
 
-    bool                border() const { return m_border; }
-    bool                fringe() const { return m_fringe; }
-    bool                corridor() const { return m_corridor; }
-    bool                hub() const { return m_hub; }
-    bool                international() const { return m_international; }
-    bool                regional() const { return m_regional; }
-    bool                constellation() const { return m_constellation; }
+    bool                border() const                  { return m_border; }
+    bool                fringe() const                  { return m_fringe; }
+    bool                corridor() const                { return m_corridor; }
+    bool                hub() const                     { return m_hub; }
+    bool                international() const           { return m_international; }
+    bool                regional() const                { return m_regional; }
+    bool                constellation() const           { return m_constellation; }
 
-    double              security() const { return m_security; }
-    uint32              factionID() const { return m_factionID; }
-    double              radius() const { return m_radius; }
-    const ItemType &    sunType() const { return m_sunType; }
-    const std::string & securityClass() const { return m_securityClass; }
+    double              security() const                { return m_security; }
+    uint32              factionID() const               { return m_factionID; }
+    double              radius() const                  { return m_radius; }
+    const ItemType &    sunType() const                 { return m_sunType; }
+    const std::string & securityClass() const           { return m_securityClass; }
 
     void AddItemToInventory(InventoryItemRef item);
     void RemoveItemFromInventory(InventoryItemRef item);
@@ -129,11 +128,10 @@ protected:
         const ItemType &_sunType,
         const SolarSystemData &_ssData
     );
-    ~SolarSystem();
+    virtual ~SolarSystem()                              { /* Do nothing here */ }
 
     // Solar System Inventory Functions:
-    uint32 inventoryID() const { return itemID(); }
-    PyRep *GetItem() const { return new PyNone(); }
+
     void AddItem(InventoryItemRef item);
     void RemoveItem(InventoryItemRef item);
 
@@ -141,6 +139,7 @@ protected:
      * Member functions:
      */
     using CelestialObject::_Load;
+    virtual bool _Load();
 
     // Template loader:
     template<class _Ty>
@@ -180,8 +179,6 @@ protected:
         // SolarSystem stuff:
         const ItemType &sunType, const SolarSystemData &ssData
     );
-
-    bool _Load();
 
     /*
      * Data members:

@@ -65,6 +65,9 @@ public:
     void Clear( const char* name );
     void EncodeChanges( PyDict* into );
 
+    int64 GetSessionID()        { return m_sessionID; }
+    int64 CreateSessionID();
+
 protected:
     PyTuple* _GetValueTuple( const char* name ) const;
 
@@ -73,7 +76,11 @@ protected:
     void _Set( const char* name, PyRep* value );
 
     PyDict* const mSession;
+
+private:
     bool mDirty;
+
+    int64 m_sessionID;
 };
 
 #endif /* !__CLIENT_SESSION_H__INCL__ */

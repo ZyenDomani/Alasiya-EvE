@@ -30,36 +30,32 @@
 
 void SpawnDB::GetRegionFactionInfo(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res, "SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0")) {
-        sLog.Error("SystemDB::GetLootGroupTypes()", "Error in query: %s", res.error.c_str());
-        return;
-    }
+        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
+    } 
 }
 
 void SpawnDB::GetFactionGroups(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res, "SELECT shipClass, groupID, factionID FROM roidRatClassGroup")) {
-        sLog.Error("SystemDB::GetLootGroupTypes()", "Error in query: %s", res.error.c_str());
-        return;
+        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
     }
 }
 
 void SpawnDB::GetSpawnClasses(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res, "SELECT type, sub, f, d, c, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass")) {
-        sLog.Error("SystemDB::GetLootGroupTypes()", "Error in query: %s", res.error.c_str());
-        return;
+        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
     }
 }
 
 void SpawnDB::GetGroupTypeIDs(uint32 groupID, DBQueryResult& res) {
     if (!sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u", groupID)) {
-        sLog.Error("SystemDB::GetLootGroupTypes()", "Error in query: %s", res.error.c_str());
-        return;
+        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
     }
 }
 
 void SpawnDB::DeleteSpawnedRats()
 {
     DBerror err;
-    std::string query = "beltrat";
-    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%s'", query.c_str());
+    std::string query = "'beltrat'";
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE %s", query.c_str());
 }
 

@@ -37,7 +37,7 @@ class GenericModule;
 class ModifyShipAttributesComponent
 {
 public:
-    ModifyShipAttributesComponent(GenericModule* mod, ShipRef shipRef);
+    ModifyShipAttributesComponent(GenericModule* mod, ShipItemRef shipRef);
     ~ModifyShipAttributesComponent()                    { /* do nothing here */ }
 
     void ModifyShipAttribute(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
@@ -48,11 +48,11 @@ private:
 
     //internal access to owner
     GenericModule* m_Mod;
-    ShipRef m_Ship;
+    ShipItemRef m_Ship;
 
-    void _modifyShipAttributes(ShipRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
-    EvilNumber _calculateNewValue(ShipRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, GenericModule* mod);
-    void SetAttribute(ShipRef shipRef, uint32 targetAttrID, EvilNumber newVal);
+    void _modifyShipAttributes(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
+    EvilNumber _calculateNewValue(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, GenericModule* mod);
+    void SetAttribute(ShipItemRef shipRef, uint32 targetAttrID, EvilNumber newVal);
 
     /* stacking penality (effectiveness) system   -allan
      * each module will have a map of the attribs it affects and it's effectiveness on that attrib

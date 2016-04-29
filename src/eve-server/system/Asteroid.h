@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #ifndef __ASTEROID_H_INCL__
@@ -57,81 +58,6 @@ CREATE TABLE sysAsteroids
 
 
 /**
- * DynamicSystemEntity which represents structure object in space
- */
-class PyServiceMgr;
-class InventoryItem;
-class DestinyManager;
-class SystemManager;
-class ServiceDB;
-
-class AsteroidEntity
-: public DynamicSystemEntity
-{
-public:
-    AsteroidEntity(
-        InventoryItemRef asteroid,
-        SystemManager *system,
-        PyServiceMgr &services,
-        const GPoint &position);
-
-    /*
-     * Primary public interface:
-     */
-    InventoryItemRef GetStructureObject() { return _asteroidRef; }
-    DestinyManager * GetDestiny() { return m_destiny; }
-    SystemManager * GetSystem() { return m_system; }
-
-    /*
-     * Public fields:
-     */
-
-    inline double x() const { return(GetPosition().x); }
-    inline double y() const { return(GetPosition().y); }
-    inline double z() const { return(GetPosition().z); }
-
-    //SystemEntity interface:
-    virtual EntityClass GetClass() const { return(ecAsteroidEntity); }
-    virtual bool IsAsteroidEntity() const { return true; }
-    virtual AsteroidEntity *CastToAsteroidEntity() { return(this); }
-    virtual const AsteroidEntity *CastToAsteroidEntity() const { return(this); }
-    virtual void Process();
-    virtual void EncodeDestiny( Buffer& into ) const;
-    virtual void TargetAdded(SystemEntity *who) {}
-    virtual void TargetLost(SystemEntity *who) {}
-    virtual void TargetedAdd(SystemEntity *who) {}
-    virtual void TargetedLost(SystemEntity *who) {}
-    virtual void TargetsCleared() {}
-    virtual void QueueDestinyUpdate(PyTuple **du) {/* not required to consume */}
-    virtual void QueueDestinyEvent(PyTuple **multiEvent) {/* not required to consume */}
-    virtual uint32 GetCorporationID() const { return(1); }
-    virtual uint32 GetAllianceID() const { return(0); }
-    virtual void Killed(Damage &fatal_blow);
-    virtual SystemManager *System() const { return(m_system); }
-
-    void ForcedSetPosition(const GPoint &pt);
-
-    virtual bool ApplyDamage(Damage &d);
-    virtual void MakeDamageState(DoDestinyDamageState &into) const;
-
-    void SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq=true);
-    void SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
-
-    void Grow();
-
-protected:
-    /*
-     * Member fields:
-     */
-    SystemManager *const m_system;    //we do not own this
-    PyServiceMgr &m_services;    //we do not own this
-    InventoryItemRef _asteroidRef;   // We don't own this
-};
-
-
-#if 0
-/* this is all new SE rewrite code.....
-/**
  * ObjectSystemEntity which represents asteroid object in space
  */
 
@@ -139,10 +65,7 @@ class AsteroidSE
 : public ObjectSystemEntity
 {
 public:
-    AsteroidSE(
-        InventoryItemRef self,
-        PyServiceMgr &services,
-        SystemManager *system);
+    AsteroidSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system);
     virtual ~AsteroidSE()                               { /* Do nothing here */ }
 
     /* class type pointer querys. */
@@ -167,6 +90,5 @@ private:
     Timer m_growTimer;
 
 };
-#endif // 0
 
 #endif /* !__ASTEROID__H__INCL__ */

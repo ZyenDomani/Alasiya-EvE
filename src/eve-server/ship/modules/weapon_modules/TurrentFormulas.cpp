@@ -10,18 +10,18 @@
 #include "ship/modules/weapon_modules/TurrentFormulas.h"
 
 
-float TurrentFormulas::GetToHit(ShipRef shipRef, InventoryItemRef ItemRef, SystemEntity* pTarget)
+float TurrentFormulas::GetToHit(ShipItemRef shipRef, InventoryItemRef ItemRef, SystemEntity* pTarget)
 {
     float ChanceToHit = 1.0f;
 
-    SystemEntity* pSE = shipRef->GetOperator()->GetSystemEntity();
+    SystemEntity* pSE = shipRef->GetPilot()->GetShipSE();
     double range = ItemRef->GetAttribute(AttrMaxRange).get_float();
-    double distance = shipRef->position().distance(pTarget->Item()->position());
+    double distance = shipRef->position().distance(pTarget->GetSelf()->position());
 
     double trackingSpeed = ItemRef->GetAttribute(AttrTrackingSpeed).get_float();
     double falloff = ItemRef->GetAttribute(AttrFalloff).get_float();
 
-    Character* pChar = shipRef->GetOperator()->GetChar().get();
+    Character* pChar = shipRef->GetPilot()->GetChar().get();
     range *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillSharpshooter, true))));      //  5% increase in optimal range
     falloff *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillTrajectoryAnalysis, true))));  //  5% increase in falloff
 
@@ -43,7 +43,7 @@ float TurrentFormulas::GetToHit(ShipRef shipRef, InventoryItemRef ItemRef, Syste
      * tohit =  0.5 ^ (c + e)
      */
     double a = (angVelocity / (distance * trackingSpeed));
-    double b = (ItemRef->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->Item()->GetAttribute(AttrSignatureRadius).get_float());
+    double b = (ItemRef->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
     double c = pow((a * b), 2);
 
     double d = _max(distance - range);
@@ -62,24 +62,24 @@ float TurrentFormulas::GetToHit(ShipRef shipRef, InventoryItemRef ItemRef, Syste
 
 float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
 {
-    double range = pNPC->Item()->GetAttribute(AttrMaxRange).get_float();
-    range += pNPC->Item()->GetAttribute(AttrEntityFlyRange).get_float();
+    double range = pNPC->GetSelf()->GetAttribute(AttrMaxRange).get_float();
+    range += pNPC->GetSelf()->GetAttribute(AttrEntityFlyRange).get_float();
     float ChanceToHit = 1.0f;
 
-    double distance = pNPC->Item()->position().distance(pTarget->Item()->position());
+    double distance = pNPC->GetSelf()->position().distance(pTarget->GetSelf()->position());
 
     if (distance <= range)
         return ChanceToHit;
 
-    double trackingSpeed = pNPC->Item()->GetAttribute(AttrTrackingSpeed).get_float();
-    double falloff = pNPC->Item()->GetAttribute(AttrFalloff).get_float();
+    double trackingSpeed = pNPC->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float();
+    double falloff = pNPC->GetSelf()->GetAttribute(AttrFalloff).get_float();
 
     GPoint vel = pTarget->GetVelocity();
     double speed = vel.length();
     double angVelocity = (speed /distance);
 
     double a = (angVelocity / (distance * trackingSpeed));
-    double b = (pNPC->Item()->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->Item()->GetAttribute(AttrSignatureRadius).get_float());
+    double b = (pNPC->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
     double c = pow((a * b), 2);
 
     double d = _max(distance - range);
@@ -98,24 +98,24 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
 
 float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
 {
-    double range = pDrone->Item()->GetAttribute(AttrMaxRange).get_float();
-    range += pDrone->Item()->GetAttribute(AttrEntityFlyRange).get_float();
+    double range = pDrone->GetSelf()->GetAttribute(AttrMaxRange).get_float();
+    range += pDrone->GetSelf()->GetAttribute(AttrEntityFlyRange).get_float();
     float ChanceToHit = 1.0f;
 
-    double distance = pDrone->Item()->position().distance(pTarget->Item()->position());
+    double distance = pDrone->GetSelf()->position().distance(pTarget->GetSelf()->position());
 
     if (distance <= range)
         return ChanceToHit;
 
-    double trackingSpeed = pDrone->Item()->GetAttribute(AttrTrackingSpeed).get_float();
-    double falloff = pDrone->Item()->GetAttribute(AttrFalloff).get_float();
+    double trackingSpeed = pDrone->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float();
+    double falloff = pDrone->GetSelf()->GetAttribute(AttrFalloff).get_float();
 
     GPoint vel = pTarget->GetVelocity();
     double speed = vel.length();
     double angVelocity = (speed /distance);
 
     double a = (angVelocity / (distance * trackingSpeed));
-    double b = (pDrone->Item()->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->Item()->GetAttribute(AttrSignatureRadius).get_float());
+    double b = (pDrone->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
     double c = pow((a * b), 2);
 
     double d = _max(distance - range);

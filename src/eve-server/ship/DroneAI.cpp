@@ -43,16 +43,16 @@ DroneAIMgr::DroneAIMgr(Drone* who)
   m_beginFindTarget(5000),      //arbitrary.
   m_warpScramblerTimer(5000),   //arbitrary.
   m_webifierTimer(5000),        //arbitrary.
-  m_radius(who->Item()->GetAttribute(AttrSignatureRadius).get_float()),
-  m_attackSpeed(who->Item()->GetAttribute(AttrSpeed).get_float()),
-  m_cruiseSpeed(who->Item()->GetAttribute(AttrEntityCruiseSpeed).get_int()),
-  m_chaseSpeed(who->Item()->GetAttribute(AttrMaxVelocity).get_int()),
-  m_entityFlyRange(who->Item()->GetAttribute(AttrEntityFlyRange).get_float() + who->Item()->GetAttribute(AttrMaxRange).get_float()),
-  m_entityChaseRange(who->Item()->GetAttribute(AttrEntityChaseMaxDistance).get_float() *2),
-  m_entityOrbitRange(who->Item()->GetAttribute(AttrMaxRange).get_float()),
-  m_entityAttackRange(who->Item()->GetAttribute(AttrEntityAttackRange).get_float() *2),
-  m_shieldBoosterDuration(who->Item()->GetAttribute(AttrEntityShieldBoostDuration).get_int()),
-  m_armorRepairDuration(who->Item()->GetAttribute(AttrEntityArmorRepairDuration).get_int())
+  m_radius(who->GetSelf()->GetAttribute(AttrSignatureRadius).get_float()),
+  m_attackSpeed(who->GetSelf()->GetAttribute(AttrSpeed).get_float()),
+  m_cruiseSpeed(who->GetSelf()->GetAttribute(AttrEntityCruiseSpeed).get_int()),
+  m_chaseSpeed(who->GetSelf()->GetAttribute(AttrMaxVelocity).get_int()),
+  m_entityFlyRange(who->GetSelf()->GetAttribute(AttrEntityFlyRange).get_float() + who->GetSelf()->GetAttribute(AttrMaxRange).get_float()),
+  m_entityChaseRange(who->GetSelf()->GetAttribute(AttrEntityChaseMaxDistance).get_float() *2),
+  m_entityOrbitRange(who->GetSelf()->GetAttribute(AttrMaxRange).get_float()),
+  m_entityAttackRange(who->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float() *2),
+  m_shieldBoosterDuration(who->GetSelf()->GetAttribute(AttrEntityShieldBoostDuration).get_int()),
+  m_armorRepairDuration(who->GetSelf()->GetAttribute(AttrEntityArmorRepairDuration).get_int())
 {
     m_processTimer.Start(5000);     //arbitrary.
 
@@ -63,22 +63,22 @@ DroneAIMgr::DroneAIMgr(Drone* who)
     m_warpScramblerTimer.Disable();    //not implemented yet
     m_shieldBoosterTimer.Disable(); //waiting till engaged
 
-    if (who->Item()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float())
-        m_armorRepairChance = who->Item()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float();
-    else if (who->Item()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float())
-        m_armorRepairChance = who->Item()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float();
+    if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float())
+        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float();
+    else if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float())
+        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float();
 
-    if (who->Item()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float())
-        m_shieldBoosterChance = who->Item()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float();
-    else if (who->Item()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float())
-        m_shieldBoosterChance = who->Item()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float();
+    if (who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float())
+        m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float();
+    else if (who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float())
+        m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float();
 
     if (m_entityAttackRange < 10000)   // most of these are low...under 6k  that sux for targeting
         m_entityAttackRange *= 3;
 }
 
 void DroneAIMgr::Process() {
-    if ((!m_processTimer.Check()) || (!m_drone->Bubble()->HasPlayers()) || m_drone->Destiny()->IsWarping())
+    if ((!m_processTimer.Check()) || (!m_drone->SysBubble()->HasPlayers()) || m_drone->DestinyMgr()->IsWarping())
         return;
 
     if (m_shieldBoosterTimer.Enabled() && m_shieldBoosterTimer.Check())
@@ -103,21 +103,20 @@ void DroneAIMgr::Process() {
             if (m_beginFindTarget.Check()) {
                 std::vector<Client*> clientVec;
                 clientVec.clear();
-                m_drone->Bubble()->GetPlayers(clientVec); // what about player drones?
-                std::vector<Client*>::iterator cur = clientVec.begin();
-                // TODO: Determine the weakest target to engage
-                for (; cur != clientVec.end(); cur++) {
-                    if ((!(*cur)->Destiny()) || (!(*cur)->Bubble()))    // this shouldnt be needed, but whatever...
+                DestinyManager* pDestiny(nullptr);
+                m_drone->SysBubble()->GetPlayers(clientVec); // what about player drones?
+                for (auto cur : clientVec) {
+                    if ((!cur->GetShipSE()->DestinyMgr()) || (!cur->GetShipSE()->SysBubble()))    // this shouldnt be needed, but whatever...
                         continue;
-                    DestinyManager* pDestiny = (*cur)->Destiny();
+                    pDestiny = cur->GetShipSE()->DestinyMgr();
                     if (pDestiny->IsCloaked() || pDestiny->IsWarping())
                         continue;
-                    if ((*cur)->IsLogin() || (*cur)->IsInvul() || (*cur)->InPod())
+                    if (cur->IsLogin() || cur->IsInvul() || cur->InPod())
                         continue;
-                    if (m_drone->GetPosition().distance((*cur)->GetPosition()) > m_entityAttackRange)
+                    if (m_drone->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_entityAttackRange)
                         continue;
 
-                    Target(*cur);
+                    Target(cur->GetShipSE());
 					return;
                 }
             } else {
@@ -128,15 +127,15 @@ void DroneAIMgr::Process() {
 
         case Chasing: {
             //NOTE: getting our target like this is pretty weak...
-            SystemEntity* pTarget = m_drone->TargMgr.GetFirstTarget(true);
+            SystemEntity* pTarget = m_drone->TargetMgr()->GetFirstTarget(true);
             if (!pTarget) {
-                if (m_drone->TargMgr.HasNoTargets()) {
+                if (m_drone->TargetMgr()->HasNoTargets()) {
                     _log(NPC__AI_TRACE, "%s(%u): Stopped chasing, GetFirstTarget() returned NULL.",  m_drone->GetName(), m_drone->GetID());
                     m_state = Idle;
                 }
                 return;
-            } else if (!pTarget->Bubble()) {
-                m_drone->TargMgr.ClearTarget(pTarget);
+            } else if (!pTarget->SysBubble()) {
+                m_drone->TargetMgr()->ClearTarget(pTarget);
                 return;
             }
             _CheckDistance(pTarget);
@@ -144,15 +143,15 @@ void DroneAIMgr::Process() {
 
         case Following: {
             //NOTE: getting our target like this is pretty weak...
-            SystemEntity* pTarget = m_drone->TargMgr.GetFirstTarget(true);
+            SystemEntity* pTarget = m_drone->TargetMgr()->GetFirstTarget(true);
             if (!pTarget) {
-                if (m_drone->TargMgr.HasNoTargets()) {
+                if (m_drone->TargetMgr()->HasNoTargets()) {
                     _log(NPC__AI_TRACE, "%s(%u): Stopped following, GetFirstTarget() returned NULL.",  m_drone->GetName(), m_drone->GetID());
                     m_state = Idle;
                 }
                 return;
-            } else if (!pTarget->Bubble()) {
-                m_drone->TargMgr.ClearTarget(pTarget);
+            } else if (!pTarget->SysBubble()) {
+                m_drone->TargetMgr()->ClearTarget(pTarget);
                 return;
             }
             _CheckDistance(pTarget);
@@ -160,15 +159,15 @@ void DroneAIMgr::Process() {
 
         case Engaged: {
             //NOTE: getting our pTarget like this is pretty weak...
-            SystemEntity* pTarget = m_drone->TargMgr.GetFirstTarget(true);
+            SystemEntity* pTarget = m_drone->TargetMgr()->GetFirstTarget(true);
             if (!pTarget) {
-                if (m_drone->TargMgr.HasNoTargets()) {
+                if (m_drone->TargetMgr()->HasNoTargets()) {
                     _log(NPC__AI_TRACE, "%s(%u): Stopped engagement, GetFirstTarget() returned NULL.", m_drone->GetName(), m_drone->GetID());
                     _EnterIdle();
                 }
                 return;
-            } else if (!pTarget->Bubble()) {
-                m_drone->TargMgr.ClearTarget(pTarget);
+            } else if (!pTarget->SysBubble()) {
+                m_drone->TargetMgr()->ClearTarget(pTarget);
                 return;
             }
             _CheckDistance(pTarget);
@@ -192,8 +191,8 @@ void DroneAIMgr::_EnterIdle() {
     _log(NPC__AI_TRACE, "%s(%u): _EnterIdle: returning to idle.",
          m_drone->GetName(), m_drone->GetID());
     m_state = Idle;
-    m_drone->Destiny()->Stop();
-    m_drone->Destiny()->SetMaxVelocity(m_cruiseSpeed);
+    m_drone->DestinyMgr()->Stop();
+    m_drone->DestinyMgr()->SetMaxVelocity(m_cruiseSpeed);
 
     m_webifierTimer.Disable();
     m_beginFindTarget.Disable();
@@ -211,8 +210,8 @@ void DroneAIMgr::_EnterChasing(SystemEntity* pTarget) {
     _log(NPC__AI_TRACE, "%s(%u): _EnterChasing: %s(%u) begin chasing.",
          m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
     // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
-    m_drone->Destiny()->SetMaxVelocity(m_chaseSpeed);
-    m_drone->Destiny()->Follow(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_drone->DestinyMgr()->SetMaxVelocity(m_chaseSpeed);
+    m_drone->DestinyMgr()->Follow(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = Chasing;
 }
 
@@ -221,8 +220,8 @@ void DroneAIMgr::_EnterFollowing(SystemEntity* pTarget) {
     _log(NPC__AI_TRACE, "%s(%u): _EnterFollowing: %s(%u) begin following.",
          m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
     // too close to chase, but to far to engage
-    m_drone->Destiny()->SetMaxVelocity(m_chaseSpeed /2);
-    m_drone->Destiny()->Follow(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_drone->DestinyMgr()->SetMaxVelocity(m_chaseSpeed /2);
+    m_drone->DestinyMgr()->Follow(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = Following;
 }
 
@@ -234,8 +233,8 @@ void DroneAIMgr::_EnterEngaged(SystemEntity* pTarget) {
     //   not sure of the actual orbit speed of npc's, but their 'cruise speed' seems a bit slow.
     //   this sets orbit speed between cruise speed and quarter of max speed (whether mwb or ab)
     //   this will also enable this npc to have a variable speed, instead of fixed upon creation.
-    m_drone->Destiny()->SetMaxVelocity(MakeRandomFloat(m_cruiseSpeed, (m_chaseSpeed /4)));
-    m_drone->Destiny()->Orbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_drone->DestinyMgr()->SetMaxVelocity(MakeRandomFloat(m_cruiseSpeed, (m_chaseSpeed /4)));
+    m_drone->DestinyMgr()->Orbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = Engaged;
 }
 
@@ -246,7 +245,7 @@ void DroneAIMgr::_EnterFleeing(SystemEntity* pTarget) {
     // actively fleeing
     //  use superspeed to disengage, then warp.  << both these will need to be written.
     //  this state is only usable by higher-class npcs.
-    m_drone->Destiny()->SetMaxVelocity(m_chaseSpeed);
+    m_drone->DestinyMgr()->SetMaxVelocity(m_chaseSpeed);
     m_state = Fleeing;
 }
 
@@ -257,8 +256,8 @@ void DroneAIMgr::_EnterSignaling(SystemEntity* pTarget) {
     // actively signaling
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
     //  this state is only usable by higher-class npcs.
-    m_drone->Destiny()->SetMaxVelocity(MakeRandomFloat(m_cruiseSpeed, (m_chaseSpeed /2)));
-    m_drone->Destiny()->Orbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_drone->DestinyMgr()->SetMaxVelocity(MakeRandomFloat(m_cruiseSpeed, (m_chaseSpeed /2)));
+    m_drone->DestinyMgr()->Orbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = Signaling;
 }
 
@@ -272,8 +271,8 @@ void DroneAIMgr::_CheckDistance(SystemEntity* pTarget)
         if (m_state != Idle) {
             // target is no longer in npc's "sight range".  unlock target and return to idle.
             //   should we do anything else here?  search for another target?  wander around?
-            m_drone->TargMgr.ClearTarget(pTarget);
-            if (m_drone->TargMgr.HasNoTargets())
+            m_drone->TargetMgr()->ClearTarget(pTarget);
+            if (m_drone->TargetMgr()->HasNoTargets())
                 _EnterIdle();
         }
         return;
@@ -298,17 +297,17 @@ void DroneAIMgr::_CheckDistance(SystemEntity* pTarget)
 }
 
 void DroneAIMgr::ClearTargets() {
-    m_drone->TargMgr.ClearTargets();
+    m_drone->TargetMgr()->ClearTargets();
 }
 
 void DroneAIMgr::ClearAllTargets() {
-    m_drone->TargMgr.ClearAllTargets();
+    m_drone->TargetMgr()->ClearAllTargets();
 }
 
 void DroneAIMgr::Target(SystemEntity* pTarget) {
     double targetTime = GetTargetTime();
 
-    if (!m_drone->TargMgr.StartTargeting(pTarget, targetTime, m_drone->Item()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange )) {
+    if (!m_drone->TargetMgr()->StartTargeting(pTarget, targetTime, m_drone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange )) {
         _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.",
              m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
         //ClearAllTargets();
@@ -328,7 +327,7 @@ void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
                  m_drone->GetName(), m_drone->GetID(), pAgressor->GetName(), pAgressor->GetID());
             _EnterChasing(pAgressor);
 
-            if (!m_drone->TargMgr.StartTargeting( pAgressor, targetTime, m_drone->Item()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange)) {
+            if (!m_drone->TargetMgr()->StartTargeting( pAgressor, targetTime, m_drone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange)) {
                 _EnterIdle();
                 return;
             }
@@ -336,7 +335,6 @@ void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
             _CheckDistance(pAgressor);
         } break;
 
-        //TODO  determine if new targetedby entity is weaker than current target.
         case Chasing: {
             _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while chasing.",
                  m_drone->GetName(), m_drone->GetID(), pAgressor->GetName(), pAgressor->GetID());
@@ -367,14 +365,13 @@ void DroneAIMgr::TargetLost(SystemEntity* pTarget) {
         case Chasing:
         case Following:
         case Engaged: {
-            if (m_drone->TargMgr.HasNoTargets()) {
+            if (m_drone->TargetMgr()->HasNoTargets()) {
                 _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) lost. No targets remain.  Return to Idle.",
                      m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
                 _EnterIdle();
             } else {
                 _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) lost, but more targets remain.",
                      m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
-                //TODO engage weakest target in current list
             }
 
         } break;
@@ -389,30 +386,30 @@ void DroneAIMgr::Attack(SystemEntity* pTarget)
     if (m_mainAttackTimer.Check()) {
         if (!pTarget) return;
         // Check to see if the target still in the bubble (Client warped out)
-        if (!m_drone->Bubble()->InBubble(pTarget->GetPosition())) {
+        if (!m_drone->SysBubble()->InBubble(pTarget->GetPosition())) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) no longer in bubble.  Clear target and move on",
                  m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
-            m_drone->TargMgr.ClearTarget(pTarget);
+            m_drone->TargetMgr()->ClearTarget(pTarget);
             return;
         }
         // only check i can think of right now to verify target is client, npc, or drone
         DynamicSystemEntity* pDSE = static_cast<DynamicSystemEntity *>(pTarget);
-        DestinyManager* pDestiny = pDSE->Destiny();
+        DestinyManager* pDestiny = pDSE->DestinyMgr();
         if (!pDestiny) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) has no destiny manager.  Clear target and move on",
                  m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
-            m_drone->TargMgr.ClearTarget(pTarget);
+            m_drone->TargetMgr()->ClearTarget(pTarget);
             return;
         }
         // Check to see if the target is not cloaked:
         if (pDestiny->IsCloaked()) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) is cloaked.  Clear target and move on",
                  m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
-            m_drone->TargMgr.ClearTarget(pTarget);
+            m_drone->TargetMgr()->ClearTarget(pTarget);
             return;
         }
 
-        if (m_drone->TargMgr.CanAttack())
+        if (m_drone->TargetMgr()->CanAttack())
             AttackTarget(pTarget);
     }
 }
@@ -425,7 +422,7 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
     _SendWeaponEffect("effects.Laser", pTarget);
 
     Damage d(m_drone,
-             m_drone->Item(),
+             m_drone->GetSelf(),
              m_drone->GetKinetic(),
              m_drone->GetThermal(),
              m_drone->GetEM(),
@@ -434,18 +431,18 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
              effectTargetAttack
             );
 
-    d *= m_drone->Item()->GetAttribute(AttrDamageMultiplier).get_float();
+    d *= m_drone->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
     pTarget->ApplyDamage(d);
 }
 
 //NOTE: duplicated from module manager code. They should share some day!
 void DroneAIMgr::_SendWeaponEffect( const char*effect, SystemEntity* pTarget ) {
     DoDestiny_OnSpecialFX13 sfx;
-    sfx.entityID = m_drone->Item()->itemID();
-    sfx.moduleID = m_drone->Item()->itemID();
-    sfx.moduleTypeID = m_drone->Item()->typeID();
+    sfx.entityID = m_drone->GetSelf()->itemID();
+    sfx.moduleID = m_drone->GetSelf()->itemID();
+    sfx.moduleTypeID = m_drone->GetSelf()->typeID();
     sfx.targetID = pTarget->GetID();
-    sfx.otherTypeID = pTarget->Item()->typeID();
+    sfx.otherTypeID = pTarget->GetSelf()->typeID();
     sfx.effect_type = effect;
     sfx.isOffensive = 1;
     sfx.start = 1;
@@ -455,22 +452,22 @@ void DroneAIMgr::_SendWeaponEffect( const char*effect, SystemEntity* pTarget ) {
     sfx.startTime = Win32TimeNow();
 
     PyTuple* up = sfx.Encode();
-    m_drone->Destiny()->SendSingleDestinyUpdate( &up );    //consumed
+    m_drone->DestinyMgr()->SendSingleDestinyUpdate( &up );    //consumed
 }
 
 double DroneAIMgr::GetTargetTime()
 {
-    double targetTime = (m_drone->Item()->GetAttribute(AttrScanSpeed).get_int());
+    double targetTime = (m_drone->GetSelf()->GetAttribute(AttrScanSpeed).get_int());
     if (!targetTime) {
-        if (m_drone->Item()->GetAttribute(AttrRadius) < 30)
+        if (m_drone->GetSelf()->GetAttribute(AttrRadius) < 30)
             targetTime = 1500;
-        else if (m_drone->Item()->GetAttribute(AttrRadius) < 60)
+        else if (m_drone->GetSelf()->GetAttribute(AttrRadius) < 60)
             targetTime = 2500;
-        else if (m_drone->Item()->GetAttribute(AttrRadius) < 150)
+        else if (m_drone->GetSelf()->GetAttribute(AttrRadius) < 150)
             targetTime = 4000;
-        else if (m_drone->Item()->GetAttribute(AttrRadius) < 280)
+        else if (m_drone->GetSelf()->GetAttribute(AttrRadius) < 280)
             targetTime = 6000;
-        else if (m_drone->Item()->GetAttribute(AttrRadius) < 550)
+        else if (m_drone->GetSelf()->GetAttribute(AttrRadius) < 550)
             targetTime = 8000;
         else
             targetTime = 13000;

@@ -40,6 +40,7 @@ ContractProxyService::ContractProxyService( PyServiceMgr *mgr )
     PyCallable_REG_CALL(ContractProxyService, GetLoginInfo);
     PyCallable_REG_CALL(ContractProxyService, CollectMyPageInfo);
     PyCallable_REG_CALL(ContractProxyService, GetMyExpiredContractList);
+    /*SearchContracts*/
 }
 
 ContractProxyService::~ContractProxyService()

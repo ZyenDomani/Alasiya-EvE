@@ -34,7 +34,7 @@ PyRep* PosMgrDB::GetControlTowerFuelRequirements() {
         "   controlTowerTypeID, resourceTypeID, purpose, quantity, factionID, minSecurityLevel "
         " FROM invControlTowerResources "))
     {
-        _log(SERVICE__ERROR, "Error in GetControlTowerFuelRequirements query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetControlTowerFuelRequirements query: %s", res.error.c_str());
         return (NULL);
     }
 
@@ -49,7 +49,7 @@ PyRep* PosMgrDB::GetSiloCapacityByItemID(uint32 itemID) {
         " FROM dgmTypeAttributes "
         " WHERE typeID = %u AND attributeID = %u", itemID, -1))
     {
-        _log(SERVICE__ERROR, "Error in GetSiloCapacityByItemID query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetSiloCapacityByItemID query: %s", res.error.c_str());
         return (NULL);
     }
 

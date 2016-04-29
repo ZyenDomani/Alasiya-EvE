@@ -27,7 +27,7 @@
 #include "system/SystemBubble.h"
 
 
-TractorBeam::TractorBeam( InventoryItemRef item, ShipRef ship )
+TractorBeam::TractorBeam( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 
@@ -45,19 +45,19 @@ void TractorBeam::Activate(SystemEntity* targetEntity)
 				(m_Ship->typeID() == 28606)		// Orca is the only ship allowed to tractor asteroids and ice chunks
 				&&
 				(
-				((getItem()->typeID() == 16278 || getItem()->typeID() == 22229) && (targetEntity->Item()->groupID() == EVEDB::invGroups::Ice))
+				((getItem()->typeID() == 16278 || getItem()->typeID() == 22229) && (targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice))
 				||
-				(targetEntity->Item()->categoryID() == EVEDB::invCategories::Asteroid)
+				(targetEntity->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid)
 				||
-				((targetEntity->Item()->groupID() == EVEDB::invGroups::Harvestable_Cloud) && (getItem()->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester))
+				((targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud) && (getItem()->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester))
 				)
 				)
 				||
-				(targetEntity->Item()->groupID() == EVEDB::invGroups::Cargo_Container)
+				(targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Cargo_Container)
 				||
-				(targetEntity->Item()->groupID() == EVEDB::invGroups::Secure_Cargo_Container)
+				(targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Secure_Cargo_Container)
 				||
-				(targetEntity->Item()->groupID() == EVEDB::invGroups::Wreck)
+				(targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Wreck)
 			)
 		{
 			m_targetEntity = targetEntity;
@@ -77,7 +77,7 @@ void TractorBeam::StopCycle(bool abort)
     timeLeft /= 100;
 
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -127,12 +127,12 @@ void TractorBeam::StopCycle(bool abort)
 
     PyTuple* tmp2 = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp2);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp2);
 }
 
 double TractorBeam::DoCycle() {
-        if ((!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
-            || (!m_Ship->GetOperator()->GetSystemEntity()->Bubble()->GetEntity(m_targetID)) )
+        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
         {
             Deactivate();
             return 0;
@@ -146,14 +146,14 @@ double TractorBeam::DoCycle() {
 		GVector distanceToTarget(m_Ship->position(), targetEntity->GetPosition());
 		if (distanceToTarget.length() > (2000.0 + m_Ship->GetAttribute(AttrRadius).get_float())) {
 			// Range higher?  Then start it moving toward ship @ 200m/s
-			targetEntity->Destiny()->SetMaxVelocity(500.0);
+			targetEntity->DestinyMgr()->SetMaxVelocity(500.0);
 			// Tractor objects at 500m/s:
-			targetEntity->Destiny()->TractorBeamFollow(m_Ship->GetOperator()->GetSystemEntity(),
+			targetEntity->DestinyMgr()->TractorBeamFollow(m_Ship->GetPilot()->GetShipSE(),
                                                        (2000.0 + m_Ship->GetAttribute(AttrRadius).get_float())
                                                       );
             return _GetDuration();
 		} else {
-			targetEntity->Destiny()->TractorBeamHalt();
+			targetEntity->DestinyMgr()->TractorBeamHalt();
 			Deactivate();
 		}
 }
@@ -161,7 +161,7 @@ double TractorBeam::DoCycle() {
 void TractorBeam::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -208,7 +208,7 @@ void TractorBeam::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void TractorBeam::_SetCapNeed()

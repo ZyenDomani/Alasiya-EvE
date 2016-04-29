@@ -46,7 +46,7 @@
  */
 
 WormholeMgr::WormholeMgr()
-:  m_updateTimer(120000)
+:  m_updateTimer(120000)    // arbitrary 2m default
 {
     m_services = nullptr;
     m_updateTimer.Disable();
@@ -59,7 +59,7 @@ void WormholeMgr::Init(PyServiceMgr* svc) {
         sLog.Warning(" Wormhole Manager", "Wormhole Manager Disabled.");
         return;
     }
-    
+
     m_initalized = true;
     sLog.Success(" Wormhole Manager", "Wormhole Manager Initialized.");
     /* load current data, start timers, process current data, and create new items, if needed */

@@ -104,7 +104,7 @@ ScanMgrService::~ScanMgrService() {
 //02:17:50 L ScanMgrService::Handle_GetSystemScanMgr(): size= 0
 PyResult ScanMgrService::Handle_GetSystemScanMgr( PyCallArgs& call ) {
     Client* pClient = call.client;
-    DestinyManager* pDestiny = pClient->Destiny();
+    DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;

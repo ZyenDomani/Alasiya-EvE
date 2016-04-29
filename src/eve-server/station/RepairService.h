@@ -39,6 +39,7 @@ protected:
     Dispatcher *const m_dispatch;
 
     PyCallable_DECL_CALL(UnasembleItems);
+    PyCallable_DECL_CALL(GetDamageReports);
 };
 
 #endif

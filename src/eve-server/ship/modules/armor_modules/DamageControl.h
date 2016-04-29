@@ -33,7 +33,7 @@
 class DamageControl: public ActiveModule
 {
 public:
-    DamageControl( InventoryItemRef item, ShipRef ship );
+    DamageControl( InventoryItemRef item, ShipItemRef ship );
     virtual ~DamageControl() { }
 
     // GenericModule Methods:

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 4.7
+    Log Version: 4.8
 */
  /*  see log.ini for matching versions */
 
@@ -150,6 +150,8 @@ LOG_TYPE( INV, WARNING, DISABLED, "InvWarning" )
 LOG_TYPE( INV, MESSAGE, DISABLED, "InvMsg" )
 LOG_TYPE( INV, INFO, DISABLED, "InvInfo" )
 LOG_TYPE( INV, TRACE, DISABLED, "InvTrace" )
+LOG_TYPE( INV, DUMP, DISABLED, "InvDump" )
+LOG_TYPE( INV, BIND, DISABLED, "InvBind" )
 
 LOG_CATEGORY( NPC )
 LOG_TYPE( NPC, ERROR,   ENABLED, "NPCError" )
@@ -260,6 +262,13 @@ LOG_TYPE( LP, WARNING, DISABLED, "LPWarning" )
 LOG_TYPE( LP, MESSAGE, DISABLED, "LPMsg" )
 LOG_TYPE( LP, INFO, DISABLED, "LPInfo" )
 LOG_TYPE( LP, DEBUG, DISABLED, "LPDebug" )
+
+LOG_CATEGORY( CHARACTER )
+LOG_TYPE( CHARACTER, ERROR, ENABLED, "CharError" )
+LOG_TYPE( CHARACTER, WARNING, DISABLED, "CharWarning" )
+LOG_TYPE( CHARACTER, MESSAGE, DISABLED, "CharMsg" )
+LOG_TYPE( CHARACTER, INFO, DISABLED, "CharInfo" )
+LOG_TYPE( CHARACTER, DEBUG, DISABLED, "CharDebug" )
 
 LOG_CATEGORY( CLIENT )
 LOG_TYPE( CLIENT, ERROR, ENABLED, "ClientError" )

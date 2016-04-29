@@ -26,7 +26,7 @@
 
 #include "ship/modules/armor_modules/DamageControl.h"
 
-DamageControl::DamageControl( InventoryItemRef item, ShipRef ship )
+DamageControl::DamageControl( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 
@@ -66,7 +66,7 @@ void DamageControl::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 void DamageControl::_ShowCycle()
@@ -96,7 +96,7 @@ void DamageControl::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void DamageControl::_SetCapNeed()

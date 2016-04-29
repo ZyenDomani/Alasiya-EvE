@@ -568,7 +568,7 @@ EVEItemSlotType ModuleContainer::_checkBounds(EVEItemFlags flag)
 //////////////////////////////////////////////////////////////////////////////////
 // ModuleManager class definitions
 #pragma region ModuleManagerClass
-ModuleManager::ModuleManager(Ship *const ship)
+ModuleManager::ModuleManager(ShipItem *const ship)
 {
     // Create ModuleContainer object and initialize with sizes for avalible slot banks for this ship:
     m_Modules = new ModuleContainer((uint32)ship->GetAttribute(AttrLowSlots).get_int(),
@@ -621,12 +621,12 @@ bool ModuleManager::Initialize() {
 
     // Load modules, rigs and subsystems from Ship's inventory into ModuleContainer:
     std::vector<InventoryItemRef> itemVec;
-    m_Ship->GetInventoryVec(itemVec);
+    m_Ship->GetInventory()->GetInventoryVec(itemVec);
     GenericModule* mod = nullptr;
     for (auto cur : itemVec) {
         if (cur->flag() == flagCargoHold) continue;
         if (cur->categoryID() == EVEDB::invCategories::Module) {
-            mod = ModuleFactory(cur, ShipRef(m_Ship));
+            mod = ModuleFactory(cur, ShipItemRef(m_Ship));
             if (m_Modules->AddModule(cur->flag(), mod)) {
                 Online(cur->flag());
             } else {
@@ -643,7 +643,7 @@ bool ModuleManager::Initialize() {
             }
             continue;
         } else if (cur->categoryID() == EVEDB::invCategories::Subsystem) {
-            mod = ModuleFactory(cur, ShipRef(m_Ship));
+            mod = ModuleFactory(cur, ShipItemRef(m_Ship));
             if (m_Modules->AddModule(cur->flag(), mod)) {
                 Online(cur->flag());
             } else {
@@ -675,13 +675,13 @@ uint32 ModuleManager::GetAvailableSlotInBank(EveEffectEnum slotBank)
 
 void ModuleManager::_SendInfoMessage(const char *fmt, ...)
 {
-    if (!m_Ship->GetOperator())     // Operator assumed to be Client *
+    if (!m_Ship->GetPilot())     // Operator assumed to be Client *
         sLog.Error("SendMessage","message should have been sent to character, but *m_Client is null.  Did you forget to call GetShip()->SetOwner(Client *c)?");
     else
     {
         va_list args;
         va_start(args,fmt);
-        m_Ship->GetOperator()->SendNotifyMsg(fmt,args);
+        m_Ship->GetPilot()->SendNotifyMsg(fmt,args);
         va_end(args);
 
     }
@@ -689,13 +689,13 @@ void ModuleManager::_SendInfoMessage(const char *fmt, ...)
 
 void ModuleManager::_SendErrorMessage(const char *fmt, ...)
 {
-    if (!m_Ship->GetOperator())     // Operator assumed to be Client *
+    if (!m_Ship->GetPilot())     // Operator assumed to be Client *
         sLog.Error("SendMessage","message should have been sent to character, but *m_Client is null.  Did you forget to call GetShip()->SetOwner(Client *c)?");
     else
     {
         va_list args;
         va_start(args,fmt);
-        m_Ship->GetOperator()->SendErrorMsg(fmt,args);
+        m_Ship->GetPilot()->SendErrorMsg(fmt,args);
         va_end(args);
     }
 }
@@ -704,7 +704,7 @@ bool ModuleManager::InstallRig(InventoryItemRef item, EVEItemFlags flag) {
     uint8 slots = m_Ship->GetAttribute(AttrUpgradeSlotsLeft).get_int();
     if (!slots) {
         /* send error to player?  or does client do it?  dunno...  */
-        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s tried to fit item %u, which is not a rig", m_Ship->GetOperator()->GetName(), item->itemID());
+        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s tried to fit item %u, which is not a rig", m_Ship->GetPilot()->GetName(), item->itemID());
         return false;
     }
     if (((item->groupID() >= 773) and (item->groupID() <= 782)) or (item->groupID() == 786)) {
@@ -712,7 +712,7 @@ bool ModuleManager::InstallRig(InventoryItemRef item, EVEItemFlags flag) {
         m_Ship->SetAttribute(AttrUpgradeSlotsLeft, --slots);
         return true;
     } else
-        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s tried to fit item %u, which is not a rig", m_Ship->GetOperator()->GetName(), item->itemID());
+        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s tried to fit item %u, which is not a rig", m_Ship->GetPilot()->GetName(), item->itemID());
 
     return false;
 }
@@ -735,7 +735,7 @@ bool ModuleManager::InstallSubSystem(InventoryItemRef item, EVEItemFlags flag)
         _fitModule(item,flag);
         return true;
     } else
-        sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a subsystem", m_Ship->GetOperator()->GetName(), item->itemID());
+        sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a subsystem", m_Ship->GetPilot()->GetName(), item->itemID());
 
     return false;
 }
@@ -750,7 +750,7 @@ bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
             return true;
         }
     } else
-        sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a module", m_Ship->GetOperator()->GetName(), item->itemID());
+        sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a module", m_Ship->GetPilot()->GetName(), item->itemID());
 
     return false;
 }
@@ -791,7 +791,7 @@ bool ModuleManager::_fitModule(InventoryItemRef item, EVEItemFlags flag)
 		return false;
 	} else {
         // create new module object
-		GenericModule* mod = ModuleFactory(item, ShipRef(m_Ship));
+		GenericModule* mod = ModuleFactory(item, ShipItemRef(m_Ship));
 		if (!mod) return false;
 		// Check for max turret modules allowed:
 		if (mod->isTurretFitted() and (m_Modules->GetFittedTurretCount() == m_Ship->GetMaxTurrentHardpoints().get_int())) {
@@ -821,7 +821,7 @@ bool ModuleManager::_fitModule(InventoryItemRef item, EVEItemFlags flag)
 bool ModuleManager::OnlineCheck(GenericModule* mod)
 {
     if (mod->isRig() or mod->isSubSystem()) return true;
-    if (m_Ship->GetOperator()->GetClient()->IsLogin()) return true;
+    if (m_Ship->GetPilot()->IsLogin()) return true;
     // check PG and CPU usage to see if we have enough to online this module
     EvilNumber cpuNeed = (m_Ship->GetAttribute(AttrCpuLoad) + mod->GetAttribute(AttrCpu));
     EvilNumber cpuOutput = m_Ship->GetAttribute(AttrCpuOutput);
@@ -908,10 +908,10 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
             mod->Online();
             targetNotNeeded =true;
         } else if (effectName == "cloaking") {//FIXME  set this to use module code, drain cap, etc.
-            if (m_Ship->GetOperator()->GetDestiny()->IsCloaked())
-                m_Ship->GetOperator()->GetDestiny()->UnCloak();
+            if (m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->IsCloaked())
+                m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->UnCloak();
             else
-                m_Ship->GetOperator()->GetDestiny()->Cloak();
+                m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->Cloak();
             targetNotNeeded =true;
         } else if (effectName == "speedBoostMassAddition") {    // AB
             mod->Activate(nullptr);
@@ -941,17 +941,13 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
         if (targetNotNeeded) return;
 		if (!targetID) {
 			sLog.Error("ModuleManager::Activate()", "targetID == 0");
-			// i dislike doing this to get a client object to send an errormsg, but it's all i can think of right now.
-			SystemEntity* pSE = m_Ship->GetOperator()->GetSystemEntity();
-			pSE->CastToClient()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
+			m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
 			return;
 		}
-		 SystemEntity* targetEntity = m_Ship->GetOperator()->GetDestiny()->GetCurrentBubble()->GetEntity(targetID);
+		 SystemEntity* targetEntity = m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(targetID);
         if (!targetEntity) {
             sLog.Error("ModuleManager::Activate()", "targetEntity == NULL");
-            // i dislike doing this to get a client object to send an errormsg, but it's all i can think of right now.
-            SystemEntity* pSE = m_Ship->GetOperator()->GetSystemEntity();
-            pSE->CastToClient()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
+            m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
             return;
         }
 
@@ -1113,7 +1109,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 		// chargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
 		/////////////////////////////////////////
 
-		//m_Ship->GetOperator()->Client()->MoveItem(chargeRef->itemID(), m_Ship->itemID(), flag);
+		//m_Ship->GetPilot()->MoveItem(chargeRef->itemID(), m_Ship->itemID(), flag);
 
 		if ( mod->isLoaded() )
 		{
@@ -1125,7 +1121,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 			if ( chargeRef->typeID() != loadedChargeRef->typeID() )
 			{
 				// Different charge type is being swapped into this module, so unload what's loaded
-				if ( IsStation(m_Ship->GetOperator()->GetLocationID()) )
+				if ( IsStation(m_Ship->GetPilot()->GetLocationID()) )
 					loadedChargeRef->Move(m_Ship->locationID(), flagHangar);
 				else
 				{
@@ -1266,8 +1262,9 @@ void ModuleManager::CharacterLeavingShip()
     sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
     //this is complicated and im gonna leave it alone for now until
     //a few things become more clear
-
-    OfflineAll();
+    
+    if (m_Ship->GetPilot()->IsInSpace())
+        OfflineAll();
 }
 
 void ModuleManager::CharacterBoardingShip()
@@ -1277,7 +1274,8 @@ void ModuleManager::CharacterBoardingShip()
     //a few things become more clear
     if (!m_initalized)
         Initialize();
-    OnlineAll();
+    if (m_Ship->GetPilot()->IsInSpace())
+        OnlineAll();
 }
 
 void ModuleManager::ShipWarping()

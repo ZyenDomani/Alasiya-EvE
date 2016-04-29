@@ -705,7 +705,7 @@ bool MarketDB::AddCharacterBalance(uint32 char_id, double delta)
     if(!sDatabase.RunQuery(err,
         "UPDATE character_ SET balance=balance+%f WHERE characterID=%u",delta,char_id))
     {
-        _log(SERVICE__ERROR, "Error in query : %s", err.c_str());
+        _log(DATABASE__ERROR, "Error in query : %s", err.c_str());
         return false;
     }
 

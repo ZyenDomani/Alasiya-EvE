@@ -118,7 +118,7 @@ StationData::StationData(
 /*
  * Station
  */
-Station::Station(
+StationItem::StationItem(
     ItemFactory &_factory,
     uint32 _stationID,
     // InventoryItem stuff:
@@ -129,26 +129,34 @@ Station::Station(
     // Station stuff:
     const StationData &_stData)
 : CelestialObject(_factory, _stationID, _type, _data, _cData),
-  m_stationType(_type),
-  m_security(_stData.security),
-  m_dockingCostPerVolume(_stData.dockingCostPerVolume),
-  m_maxShipVolumeDockable(_stData.maxShipVolumeDockable),
-  m_officeRentalCost(_stData.officeRentalCost),
-  m_operationID(_stData.operationID),
-  m_reprocessingEfficiency(_stData.reprocessingEfficiency),
-  m_reprocessingStationsTake(_stData.reprocessingStationsTake),
-  m_reprocessingHangarFlag(_stData.reprocessingHangarFlag)
-  {
-      _log(ITEM__TRACE, "Created Station for item %s (%u).", itemName().c_str(), itemID());
-  }
-
-StationRef Station::Load(ItemFactory &factory, uint32 stationID)
+m_stationType(_type),
+m_security(_stData.security),
+m_dockingCostPerVolume(_stData.dockingCostPerVolume),
+m_maxShipVolumeDockable(_stData.maxShipVolumeDockable),
+m_officeRentalCost(_stData.officeRentalCost),
+m_operationID(_stData.operationID),
+m_reprocessingEfficiency(_stData.reprocessingEfficiency),
+m_reprocessingStationsTake(_stData.reprocessingStationsTake),
+m_reprocessingHangarFlag(_stData.reprocessingHangarFlag)
 {
-    return InventoryItem::Load<Station>( factory, stationID );
+    m_inventory = new Inventory(InventoryItemRef(this));
+    _log(ITEM__TRACE, "Created Station for item %s (%u).", itemName().c_str(), itemID());
+}
+
+StationItemRef StationItem::Load(ItemFactory &factory, uint32 stationID)
+{
+    return InventoryItem::Load<StationItem>( factory, stationID );
+}
+
+bool StationItem::_Load() {
+    if( !m_inventory->LoadContents( &m_factory ) )
+        return false;
+
+    return CelestialObject::_Load();
 }
 
 template<class _Ty>
-RefPtr<_Ty> Station::_LoadStation(ItemFactory &factory, uint32 stationID,
+RefPtr<_Ty> StationItem::_LoadStation(ItemFactory &factory, uint32 stationID,
     // InventoryItem stuff:
     const StationType &type, const ItemData &data,
     // CelestialObject stuff:
@@ -157,19 +165,10 @@ RefPtr<_Ty> Station::_LoadStation(ItemFactory &factory, uint32 stationID,
     const StationData &stData)
 {
     // ready to create
-    return StationRef( new Station( factory, stationID, type, data, cData, stData ) );
+    return StationItemRef( new StationItem( factory, stationID, type, data, cData, stData ) );
 }
 
-bool Station::_Load()
-{
-    // load contents
-    if( !LoadContents( &m_factory ) )
-        return false;
-
-    return CelestialObject::_Load();
-}
-
-uint32 Station::_Spawn(ItemFactory &factory,
+uint32 StationItem::CreateItemID(ItemFactory &factory,
     // InventoryItem stuff:
     ItemData &data
 ) {
@@ -179,7 +178,7 @@ uint32 Station::_Spawn(ItemFactory &factory,
         return 0;
 
     // store item data
-    uint32 stationID = InventoryItem::_Spawn(factory, data);
+    uint32 stationID = InventoryItem::CreateItemID(factory, data);
     if( stationID == 0 )
         return 0;
 
@@ -188,40 +187,34 @@ uint32 Station::_Spawn(ItemFactory &factory,
     return stationID;
 }
 
-using namespace Destiny;
 
-StationEntity::StationEntity(
-    StationRef station,
-    SystemManager *system,
-    PyServiceMgr &services,
-    const GPoint &position)
-: DynamicSystemEntity(new DestinyManager(this, system), station),
-  m_system(system),
-  m_services(services)
+StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManager* system)
+: StaticSystemEntity(station, services, system)
 {
-    _stationRef = station;
-    m_destiny->SetPosition(position, false);
+    // Create default dynamic attributes in the AttributeMap:
+    station->SetAttribute(AttrIsOnline,         1);
+    station->SetAttribute(AttrDamage,           0.0);
+    station->SetAttribute(AttrShieldCapacity,   20000000.0);
+    station->SetAttribute(AttrShieldCharge,     station->GetAttribute(AttrShieldCapacity));
+    station->SetAttribute(AttrArmorHP,          station->GetAttribute(AttrArmorHP));
+    station->SetAttribute(AttrArmorDamage,      0.0);
+    station->SetAttribute(AttrMass,             station->type().mass());
+    station->SetAttribute(AttrRadius,           station->type().radius());
+    station->SetAttribute(AttrVolume,           station->type().volume());
+    station->SaveAttributes();
 }
 
-void StationEntity::Process() {
-    //SystemEntity::Process();
-}
-
-void StationEntity::ForcedSetPosition(const GPoint &pt) {
-    m_destiny->SetPosition(pt, false);
-}
-
-void StationEntity::EncodeDestiny( Buffer& into ) const
+void StationSE::EncodeDestiny( Buffer& into )
 {
-    const GPoint& position = GetPosition();
+    using namespace Destiny;
 
     BallHeader head;
     head.entityID = GetID();
         head.mode = DSTBALL_RIGID;
         head.radius = GetRadius();
-        head.x = position.x;
-        head.y = position.y;
-        head.z = position.z;
+        head.x = x();
+        head.y = y();
+        head.z = z();
         head.flags = HasMiniBalls | IsGlobal;
     into.Append( head );
 
@@ -241,27 +234,19 @@ void StationEntity::EncodeDestiny( Buffer& into ) const
     _log(COMMON__WARNING, "StationEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
-void StationEntity::MakeDamageState(DoDestinyDamageState &into) const {
-    into.shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
-    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() +6;
-    into.timestamp = Win32TimeNow();
-    into.armor = 1.0; // - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
-    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
-}
-
-PyDict *StationEntity::MakeSlimItem() const {
+PyDict *StationSE::MakeSlimItem() {
     _log(COMMON__WARNING, "MakeSlimItem for StationEntity %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     PyDict *slim = new PyDict();
-    slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
-    slim->SetItemString("name",             new PyString(m_self->itemName()));
-    slim->SetItemString("corpID",           new PyInt(0));
-    slim->SetItemString("allianceID",       new PyInt(0));
-    slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
-    slim->SetItemString("ownerID",          new PyInt(m_self->ownerID()));
-    slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
-    slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
-    slim->SetItemString("incapacitated",    new PyInt(0));
-    slim->SetItemString("online",           new PyInt(1));
+        slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
+        slim->SetItemString("name",             new PyString(m_self->itemName()));
+        slim->SetItemString("corpID",           new PyInt(GetCorporationID()));
+        slim->SetItemString("allianceID",       new PyInt(GetAllianceID()));
+        slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
+        slim->SetItemString("ownerID",          new PyInt(m_self->ownerID()));
+        slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
+        slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
+        slim->SetItemString("incapacitated",    new PyInt(0));
+        slim->SetItemString("online",           new PyInt(1));
     return slim;
 }
 

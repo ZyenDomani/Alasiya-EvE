@@ -184,9 +184,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         return nullptr;
     }
 
-    _log(CLIENT__MESSAGE, "CreateCharacterWithDoll called for '%s'", arg.name.c_str());
-    _log(CLIENT__MESSAGE, "  bloodlineID=%u genderID=%u ancestryID=%u",
-            arg.bloodlineID, arg.genderID, arg.ancestryID);
+    _log(CLIENT__MESSAGE, "CreateCharacterWithDoll called for '%s' with schoolID: %u bloodlineID: %u genderID: %u ancestryID: %u", \
+                        arg.name.c_str(), arg.schoolID, arg.bloodlineID, arg.genderID, arg.ancestryID);
 
     // obtain character type
     m_manager->item_factory->SetUsingClient( call.client );
@@ -218,6 +217,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.careerSpecialityID = cdata.careerID;
     } else {
         _log(CLIENT__MESSAGE, "Could not find default School ID %u. Using Caldari Military.", cdata.schoolID);
+        cdata.raceID = 1;
         cdata.careerID = 11;
         cdata.careerSpecialityID = 11;
     }
@@ -248,28 +248,29 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     idata.locationID = cdata.stationID; // Just so our starting items end up in the same place.
 
+    bool defCorp = true;
     // Change starting corporation based on value in XML file.
     if (sConfig.character.startCorporation) { // Skip if 0
         if( m_db.DoesCorporationExist( sConfig.character.startCorporation ) ) {
             cdata.corporationID = sConfig.character.startCorporation;
-        } else {
+            defCorp = false;
+        } else
             _log(CLIENT__MESSAGE, "Could not find default Corporation ID %u. Using Career Defaults instead.", sConfig.character.startCorporation);
-        }
-    } else {
-        uint32 corporationID;
-        if(m_db.GetCorporationBySchool(cdata.schoolID, corporationID)) {
-            cdata.corporationID = corporationID;
-        } else {
+    }
+    if (defCorp) {
+        if (!m_db.GetCorporationBySchool(cdata.schoolID, cdata.corporationID))
             _log(CLIENT__MESSAGE, "Could not place character in default corporation for school.");
-        }
     }
 
+    bool defStation = true;
     // Added ability to set starting station in xml config by Pyrii
     if (sConfig.character.startStation) { // Skip if 0
-        if (!m_db.GetLocationByStation(sConfig.character.startStation, cdata)) {
+        if (!m_db.GetLocationByStation(sConfig.character.startStation, cdata))
             _log(CLIENT__MESSAGE, "Could not find default station ID %u. Using Career Defaults instead.", sConfig.character.startStation);
-        }
-    } else {
+        else
+            defStation = false;
+    }
+    if (defStation) {
         uint32 stationID;
         if (m_db.GetCareerStationByCorporation(cdata.corporationID, stationID)) {
             if (!m_db.GetLocationByStation(stationID, cdata))
@@ -297,6 +298,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         _log(CLIENT__ERROR, "Failed to create character '%s'", idata.name.c_str());
         return nullptr;
     }
+    call.client->SetChar(char_item);
 
     //this builds appearance data from strdict
     capp.Build(char_item->itemID(), arg.avatarInfo);
@@ -380,23 +382,23 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     if (!initInvItem)
         codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
 
-    // give the player its ship.
+    // give the player their pod and ship
     std::string ship_name = char_item->itemName() + "'s Noob Ship";
     std::string pod_name = char_item->itemName() + "'s Capsule";
 
     ItemData shipItem( char_type->shipTypeID(), char_item->itemID(), char_item->locationID(), flagHangar, ship_name.c_str() );
-    ShipRef ship_item = m_manager->item_factory->SpawnShip( shipItem );
+    ShipItemRef ship_item = m_manager->item_factory->SpawnShip( shipItem );
+    ItemData podItem( itemTypeCapsule, char_item->itemID(), char_item->locationID(), flagCapsule, pod_name.c_str() );
+    ShipItemRef pod_item = m_manager->item_factory->SpawnShip( podItem );
+
     ship_item->SetAttribute(AttrIsOnline, false);
     ship_item->SaveItem();
-    ItemData podItem( itemTypeCapsule, char_item->itemID(), char_item->locationID(), flagCapsule, pod_name.c_str() );
-    ShipRef pod_item = m_manager->item_factory->SpawnShip( podItem );
-
-    call.client->SetShip(ship_item);
-    char_item->SetActiveShip( ship_item->itemID() );
-    char_item->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
-    char_item->SaveFullCharacter();
     pod_item->SetAttribute(AttrIsOnline, false);
     pod_item->SaveItem();
+
+    call.client->SetShip(ship_item);
+    char_item->SetActivePod( pod_item->itemID() );
+    char_item->SaveFullCharacter();
 
     // we need to report the charID to the ImageServer so it can correctly assign a previously received image
     sImageServer.ReportNewCharacter(call.client->GetUserID(), char_item->itemID());

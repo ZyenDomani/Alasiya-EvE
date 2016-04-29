@@ -79,7 +79,7 @@ SkillMgrBound::~SkillMgrBound()
     delete m_dispatch;
 }
 
-// TODO: redesign this so this is not needed
+/** @todo redesign this so this is not needed */
 void SkillMgrBound::Release()
 {
     delete this;
@@ -193,6 +193,7 @@ PyResult SkillMgrBound::Handle_AddToEndOfSkillQueue(PyCallArgs &call) {
 
 PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 {
+    /** @todo check this and see if we can update to higher base attribs for faster train times */
     Call_RespecCharacter spec;
     if (!spec.Decode(call.tuple))
     {
@@ -207,8 +208,6 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
     // return early if this is an illegal call
     if (!m_db.ReportRespec(call.client->GetCharacterID()))
         return NULL;
-
-    // TODO: validate these values (and their sum)
     cref->SetAttribute(AttrCharisma, spec.charisma);
     cref->SetAttribute(AttrIntelligence, spec.intelligence);
     cref->SetAttribute(AttrMemory, spec.memory);
@@ -270,7 +269,7 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
 
         if( !ch->InjectSkillIntoBrain( (SkillRef)skill ) )
         {
-            //TODO: build and send UserError about injection failure.
+            /** @todo build and send UserError about injection failure. */
             codelog(ITEM__ERROR, "%s: Injection of skill %u failed", call.client->GetName(), skill->itemID() );
         }
     }

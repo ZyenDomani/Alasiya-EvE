@@ -28,6 +28,7 @@
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
+#include "character/Character.h"
 #include "inventory/AttributeEnum.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
@@ -35,54 +36,59 @@
 #include "system/SystemManager.h"
 
 
-NPC::NPC(
-    SystemManager* system,
-    PyServiceMgr& services,
-    InventoryItemRef self,
-    uint32 corporationID,
-    uint32 allianceID,
-    const GPoint& position,
-    SpawnMgr* spawnMgr)
-: DynamicSystemEntity(new DestinyManager(this, system), self),
-  m_system(system),
-  m_services(services),
-  m_spawnMgr(spawnMgr),
-  m_corporationID(corporationID),
-  m_allianceID(allianceID),
-  m_orbitingID(0)
+NPC::NPC(InventoryItemRef self,
+         PyServiceMgr &services,
+         SystemManager* system,
+         uint32 corpID,
+         uint32 allyID,
+         SpawnMgr* spawnMgr)
+: DynamicSystemEntity(self, services, system),
+  m_spawnMgr(spawnMgr)
 {
-    //NOTE: this is bad if we inherit NPC!
+    m_corpID = corpID;
+    m_allyID = allyID;
+    m_destiny = new DestinyManager(this, system);
     m_AI = new NPCAIMgr(this);
 
+    Init();
+}
+
+void NPC::Init()
+{
 	// SET ALL ATTRIBUTES MISSING FROM DATABASE BEFORE USING THEM FOR ANYTHING:
     // Create default dynamic attributes in the AttributeMap:
-    self->SetAttribute(AttrIsOnline,            1, false);											// Is Online
-    self->SetAttribute(AttrShieldCharge,        self->GetAttribute(AttrShieldCapacity), false);		// Shield Charge
-    self->SetAttribute(AttrArmorDamage,         0.0, false);											// Armor Damage
-    self->SetAttribute(AttrMass,                self->type().mass(), false);				// Mass		--check these functions.
-    self->SetAttribute(AttrRadius,              self->type().radius(), false);			// Radius
-    self->SetAttribute(AttrVolume,              self->type().volume(), false);			// Volume
-    self->SetAttribute(AttrCapacity,            self->type().capacity(), false);			// Capacity
-    self->SetAttribute(AttrInertia,             1, false);	//WARNING!  NO NPC Ships have Inertia, so we're setting it to 1 for ALL NPC ships
-    self->SetAttribute(AttrCapacitorCharge,     self->GetAttribute(AttrCapacitorCapacity), false);	// Set Capacitor Charge to the Capacitor Capacity
-    self->SetAttribute(AttrWarpCapacitorNeed,   self->GetAttribute(AttrWarpCapacitorNeed), false);      // Shield Charge
+    //m_self->SetAttribute(AttrIsOnline,            1, false);											// Is Online
+    m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);		// Shield Charge
+    m_self->SetAttribute(AttrDamage,              0, false);
+    m_self->SetAttribute(AttrArmorDamage,         0, false);											// Armor Damage
+    m_self->SetAttribute(AttrMass,                m_self->type().mass(), false);				// Mass		--check these functions.
+    m_self->SetAttribute(AttrRadius,              m_self->type().radius(), false);			// Radius
+    m_self->SetAttribute(AttrVolume,              m_self->type().volume(), false);			// Volume
+    m_self->SetAttribute(AttrCapacity,            m_self->type().capacity(), false);			// Capacity
+    m_self->SetAttribute(AttrInertia,             1, false);	//WARNING!  NO NPC Ships have Inertia, so we're setting it to 1 for ALL NPC ships
+    m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);	// Set Capacitor Charge to the Capacitor Capacity
+    m_self->SetAttribute(AttrWarpCapacitorNeed,   m_self->GetAttribute(AttrWarpCapacitorNeed), false);      // Shield Charge
+    m_self->SetAttribute(AttrOrbitRange,          GetOrbitRange(), false);
 
-	// Agility
-	if (!self->HasAttribute(AttrAgility))
-        self->SetAttribute(AttrAgility, 1, false);
+    // Agility
+    if (!m_self->HasAttribute(AttrAgility))
+        m_self->SetAttribute(AttrAgility, 1, false);
 
-	// AttrOrbitRange
-    self->SetAttribute(AttrOrbitRange, GetOrbitRange(), false);
-
-    /* Gets the value from the NPC and put on our own vars */
-    m_hullDamage = 0;
-    m_armorDamage = 0;
     SetResists();
 
-	// Set internal and Destiny values FROM these Attributes, now that they are all setup:
-    m_destiny->SetPosition(position, false);
-	m_destiny->SetShipCapabilities(self);
-   // _log(NPC__TRACE, "Created NPC object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
+    m_emDamage = m_self->GetAttribute(AttrEmDamage).get_float(),
+    m_kinDamage = m_self->GetAttribute(AttrKineticDamage).get_float(),
+    m_therDamage = m_self->GetAttribute(AttrThermalDamage).get_float(),
+    m_expDamage = m_self->GetAttribute(AttrExplosiveDamage).get_float(),
+
+	m_destiny->SetShipCapabilities(m_self);
+
+    /* Gets the value from the NPC and put on our own vars */
+    m_hullDamage = m_self->GetAttribute(AttrDamage).get_float();
+    m_armorDamage = m_self->GetAttribute(AttrArmorDamage).get_float();
+    m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
+    m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
+   // _log(NPC__TRACE, "Created NPC object for %s (%u)", m_self.get()->itemName().c_str(), m_self.get()->itemID());
 }
 
 NPC::~NPC() {
@@ -96,7 +102,8 @@ NPC::~NPC() {
     //if (m_spawner)
         //m_spawner->SpawnDepoped(m_self->itemID());
 
-    TargMgr.DoDestruction();
+    m_targMgr->DoDestruction();
+    SafeDelete(m_destiny);
     SafeDelete(m_AI);
 }
 
@@ -119,42 +126,6 @@ void NPC::Orbit(SystemEntity *who) {
         m_orbitingID = who->GetID();
 }
 
-double NPC::GetOrbitRange()
-{
-    double orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
-    if (!orbitRange) {
-        if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff))
-            orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
-        else
-            orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
-        /*
-        if (m_self->GetAttribute(AttrRadius) < 30)
-            orbitRange = 1500;
-        else if (m_self->GetAttribute(AttrRadius) < 60)
-            orbitRange = 2500;
-        else if (m_self->GetAttribute(AttrRadius) < 150)
-            orbitRange = 4000;
-        else if (m_self->GetAttribute(AttrRadius) < 280)
-            orbitRange = 6000;
-        else if (m_self->GetAttribute(AttrRadius) < 550)
-            orbitRange = 8000;
-        else
-            orbitRange = 13000;
-        */
-    }
-    return orbitRange;
-}
-
-void NPC::ForcedSetPosition(const GPoint &pt) {
-    m_destiny->SetPosition(pt, false);
-}
-
-bool NPC::Load(ServiceDB &from) {
-    //The old purpose for this was eliminated. But we might find
-    //something else to stick in here eventually, so it stays for now.
-    return true;
-}
-
 void NPC::TargetLost(SystemEntity *who) {
     m_AI->TargetLost(who);
 }
@@ -163,10 +134,9 @@ void NPC::TargetedAdd(SystemEntity *who) {
     m_AI->Targeted(who);
 }
 
-void NPC::EncodeDestiny( Buffer& into ) const
+void NPC::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-    const GPoint& position = GetPosition();
 
     uint8 mode = DSTBALL_STOP;
     if (m_destiny->IsWarping())
@@ -182,12 +152,11 @@ void NPC::EncodeDestiny( Buffer& into ) const
     head.entityID = GetID();
         head.mode = mode;
         head.radius = GetRadius();
-        head.x = position.x;
-        head.y = position.y;
-        head.z = position.z;
+        head.x = x();
+        head.y = y();
+        head.z = z();
         head.flags = IsMassive | IsFree;
     into.Append( head );
-
     MassSector mass;
         mass.mass = GetMass();
         mass.cloak = 0;
@@ -195,7 +164,6 @@ void NPC::EncodeDestiny( Buffer& into ) const
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
     into.Append( mass );
-
     ShipSector ship;
         ship.maxVelocity = GetMaxVelocity();
         ship.velocity_x = GetVelocity().x;
@@ -204,110 +172,97 @@ void NPC::EncodeDestiny( Buffer& into ) const
         ship.agility = GetAgility();
         ship.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( ship );
-
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
-        warp.effectStamp = -1;   //unknown value  seen many -1, few other random 4-5 digits
-        warp.unknown_x = target.x;
-        warp.unknown_y = target.y;
-        warp.unknown_z = target.z;
-        warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-        warp.unk_1 = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
-        warp.unk_2 = 0;         //unknown 64bit number
+            warp.effectStamp = -1;   //unknown value  seen many -1, few other random 4-5 digits
+            warp.unknown_x = target.x;
+            warp.unknown_y = target.y;
+            warp.unknown_z = target.z;
+            warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
+            warp.unk_1 = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
+            warp.unk_2 = 0;         //unknown 64bit number
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
-        follow.followID = m_destiny->GetTargetID();
-        follow.followRange = m_destiny->GetFollowDistance();
-        follow.formationID = 0xFF;
+            follow.followID = m_destiny->GetTargetID();
+            follow.followRange = m_destiny->GetFollowDistance();
+            follow.formationID = 0xFF;
         into.Append( follow );
     } else if (mode == DSTBALL_ORBIT) {
         DSTBALL_ORBIT_Struct orbit;
-        orbit.followID = m_destiny->GetTargetID();
-        orbit.followRange = m_destiny->GetFollowDistance();
-        orbit.formationID = 0xFF;
+            orbit.followID = m_destiny->GetTargetID();
+            orbit.followRange = m_destiny->GetFollowDistance();
+            orbit.formationID = 0xFF;
         into.Append( orbit );
     } else if (mode == DSTBALL_GOTO) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_GOTO_Struct go;
-        go.x = target.x;
-        go.y = target.y;
-        go.z = target.z;
+            go.x = target.x;
+            go.y = target.y;
+            go.z = target.z;
         into.Append( go );
     } else {
         DSTBALL_STOP_Struct main;
-        main.formationID = 0xFF;
+            main.formationID = 0xFF;
         into.Append( main );
     }
 
-    _log(COMMON__WARNING, "NPC::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
-}
-
-
-void NPC::MakeDamageState(DoDestinyDamageState &into) const {
-    into.shield = m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float();
-    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() +8;
-    into.timestamp = Win32TimeNow();
-    into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
-    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
+    _log(COMMON__WARNING, "NPC::Encodem_destiny: %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void NPC::UseShieldRecharge()
 {
     // We recharge our shield until it's reaches the shield capacity.
-    EvilNumber charge = m_self->GetAttribute(AttrShieldCharge);
-    EvilNumber capacity = m_self->GetAttribute(AttrShieldCapacity);
-    if (capacity > charge) {
-        charge += m_self->GetAttribute(AttrEntityShieldBoostAmount);
-        if (charge > capacity)
-            charge = capacity;
-        m_self->SetAttribute(AttrShieldCharge, capacity);
+    if (m_self->GetAttribute(AttrShieldCapacity) > m_shieldCharge)
+    {
+        m_shieldCharge += m_self->GetAttribute(AttrEntityShieldBoostAmount).get_float();
+        if (m_shieldCharge > m_self->GetAttribute(AttrShieldCapacity).get_float())
+            m_shieldCharge = m_self->GetAttribute(AttrShieldCapacity).get_float();
+        m_self->SetAttribute(AttrShieldCharge, m_shieldCharge, false);
     } else
-        AI()->DisableRepTimers();
+        m_AI->DisableRepTimers();
     // TODO: Need to send SpecialFX / amount update
-    _UpdateDamage();
+    UpdateDamage();
 }
 
 void NPC::UseArmorRepairer()
 {
-    if (m_armorDamage > 0 )
+    if( m_armorDamage > 0 )
     {
         m_armorDamage -= m_self->GetAttribute(AttrEntityArmorRepairAmount).get_float();
-        if (m_armorDamage < 0.0 )
+        if( m_armorDamage < 0.0 )
             m_armorDamage = 0.0;
+        m_self->SetAttribute(AttrArmorDamage, m_armorDamage, false);
     } else
-        AI()->DisableRepTimers();
+        m_AI->DisableRepTimers();
     // TODO: Need to send SpecialFX / amount update
-    _UpdateDamage();
+    UpdateDamage();
 }
 
-void NPC::_UpdateDamage()
+void NPC::UseHullRepairer()
 {
-    DoDestiny_DamageDetails dmgState;
-        dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float();
-        dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
-        dmgState.timestamp = Win32TimeNow();
-        dmgState.armor = 1.0 - m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float();
-        dmgState.structure = 1.0 - m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float();
-    DoDestiny_OnDamageStateChange dmgChange;
-        dmgChange.entityID = GetID();
-        dmgChange.state = dmgState.Encode();
-    PyTuple *up = dmgChange.Encode();
-    //source->QueueDestinyUpdate(&up);
+    if( m_hullDamage > 0 )
+    {
+        //m_hullDamage -= m_self->GetAttribute(AttrEntityhullRepairAmount).get_float();  << NSA - create later
+        if( m_hullDamage < 0.0 )
+            m_hullDamage = 0.0;
+        m_self->SetAttribute(AttrDamage, m_hullDamage, false);
+    } else
+        m_AI->DisableRepTimers();
+    // TODO: Need to send SpecialFX / amount update
+    UpdateDamage();
 }
 
 void NPC::SaveNPC()
 {
-	// Save all data for this NPC to the database:
-	Item()->SaveItem();
+	m_self->SaveItem();
 }
 
 void NPC::RemoveNPC()
 {
     //this is called from SystemManager::RemoveNPC() - no need to RemoveEntity()
-    // Remove all data for this NPC from the database:
-    Item()->Delete();
+    m_self->Delete();
 }
 
 void NPC::SetResists() {
@@ -324,5 +279,4 @@ void NPC::SetResists() {
     if (!m_self->HasAttribute(AttrExplosiveDamageResonance)) m_self->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
     if (!m_self->HasAttribute(AttrKineticDamageResonance)) m_self->SetAttribute(AttrKineticDamageResonance, 1.0, false);
     if (!m_self->HasAttribute(AttrThermalDamageResonance)) m_self->SetAttribute(AttrThermalDamageResonance, 1.0, false);
-
 }

@@ -130,15 +130,15 @@ PyResult AccountService::Handle_GiveCash(PyCallArgs &call) {
     Call_GiveCash args;
     if(!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "Invalid arguments");
-        return NULL;
+        return nullptr;
     }
 
-    if(args.amount == 0) return NULL;
+    if(args.amount == 0) return nullptr;
 
     if(args.amount < 0 || args.amount > call.client->GetBalance()) {
         _log(CLIENT__ERROR, "%s: Invalid amount in GiveCash(): %.2f", call.client->GetName(), args.amount);
         call.client->SendErrorMsg("Invalid amount '%.2f'", args.amount);
-        return NULL;
+        return nullptr;
     }
 
     if (IsCorp(args.toID))
@@ -157,7 +157,7 @@ PyTuple * AccountService::GiveCashToCorp(Client * const client, uint32 corpID, d
             client->GetCharacterID(),
             corpID );
         client->SendErrorMsg("Failed to transfer money from your account.");
-        return NULL;
+        return nullptr;
     }
     if(!m_db.AddBalanceToCorp(corpID, amount)) {
         _log(CLIENT__ERROR, "%s: Failed to add %.2f ISK to %u for donation from %u",
@@ -170,7 +170,7 @@ PyTuple * AccountService::GiveCashToCorp(Client * const client, uint32 corpID, d
         //try to refund the money..
         client->AddBalance(amount);
 
-        return NULL;
+        return nullptr;
     }
 
     uint16 accountKey = accountingKeyCash;  //FIXME  get proper corp wallet division
@@ -212,7 +212,7 @@ PyTuple * AccountService::GiveCashToCorp(Client * const client, uint32 corpID, d
         corpID,
         "unknown",
         corpID,
-        accountingKeyCash,      //TODO set proper wallet division here
+        accountingKeyCash,      /** @todo set proper wallet division here */
         amount,
         cnb,
         reason
@@ -238,7 +238,7 @@ PyTuple * AccountService::GiveCashToChar(Client * const from, Client * const to,
             from->GetCharacterID(),
             to->GetCharacterID() );
         from->SendErrorMsg("Failed to transfer money from your account.");
-        return NULL;
+        return nullptr;
     }
     if(!to->AddBalance(amount)) {
         _log(CLIENT__ERROR, "%s: Failed to add %.2f ISK to %u for donation from %u",
@@ -251,7 +251,7 @@ PyTuple * AccountService::GiveCashToChar(Client * const from, Client * const to,
         //try to refund the money..
         from->AddBalance(amount);
 
-        return NULL;
+        return nullptr;
     }
 
     //record the transactions in the wallet.
@@ -308,8 +308,8 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call) {
 
     Call_GetJournal args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Invalid arguments");
-        return NULL;
+        _log(SERVICE__ERROR, "Could not decode arguments");
+        return nullptr;
     }
 
     bool ca = false;
@@ -320,9 +320,9 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call) {
     else
     {
         // problem
-        _log( SERVICE__WARNING, "%s: Unsupported value for corpAccount", GetName() );
+        _log(CORP__WARNING, "%s: Unsupported value for corpAccount", GetName() );
 
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetJournal(
@@ -338,7 +338,8 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call) {
 // notify OnAccountChange:
 //         accountKey: 'cash', ownerID: charID or corpID, new balance
 
-PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call) { //TODO:  fix corpAccountKey
+PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call) {
+    /** @todo  fix corpAccountKey */
     /*[00m18:58:35 [SvcCall] Service account: calling GiveCashFromCorpAccount
      * 18:58:35 [PacketError] Decode Call_GiveCorpCash failed: tuple0 is the wrong size: expected 4, but got 3
      * 18:58:35 [ClientError] Handle_GiveCashFromCorpAccount(/usr/local/src/eve/evemu_personal/src/eve-server/account/AccountService.cpp:347): Invalid arguments
@@ -350,23 +351,23 @@ PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call) { //TO
     Call_GiveCorpCash args;
     if(!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "Invalid arguments");
-        return NULL;
+        return nullptr;
     }
 
-    if(args.amount == 0) return NULL;
+    if(args.amount == 0) return nullptr;
 
     uint16 accountKey = accountingKeyCash;  //FIXME  get proper corp wallet division
 
     if(args.amount < 0 || args.amount > m_db.GetCorpBalance(call.client->GetCorporationID(), accountKey)) {
         _log(CLIENT__ERROR, "%s: Invalid amount in GiveCashFromCorpAccount(): %.2f", call.client->GetName(), args.amount);
         call.client->SendErrorMsg("Invalid amount '%.2f'", args.amount);
-        return NULL;
+        return nullptr;
     }
 
-    SystemManager *system = call.client->System();
+    SystemManager *system = call.client->SystemMgr();
     if(system == NULL) {
         codelog(CLIENT__ERROR, "%s: bad system", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     //NOTE: this will need work once we reorganize the entity list...
@@ -374,7 +375,7 @@ PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call) { //TO
     if(other == NULL) {
         _log(CLIENT__ERROR, "%s: Failed to find character %u", call.client->GetName(), args.toID);
         call.client->SendErrorMsg("Unable to find the target");
-        return NULL;
+        return nullptr;
     }
 
 
@@ -391,7 +392,7 @@ PyTuple * AccountService::WithdrawCashToChar(Client * const client, Client * con
             corpID,
             other->GetCharacterID() );
         client->SendErrorMsg("Failed to transfer money from your account.");
-        return NULL;
+        return nullptr;
     }
 
     uint16 accountKey = accountingKeyCash;  //FIXME  get proper corp wallet division
@@ -422,7 +423,7 @@ PyTuple * AccountService::WithdrawCashToChar(Client * const client, Client * con
         // if we're here, we have a more serious problem than
         // corp's balance not being displayed properly, so i won't bother with it
 
-        return NULL;
+        return nullptr;
     }
 
     //record the transactions in the wallet.
@@ -436,7 +437,7 @@ PyTuple * AccountService::WithdrawCashToChar(Client * const client, Client * con
         other->GetCharacterID(),
         argID,
         corpID,
-        accountingKeyCash,      //TODO set proper wallet division here
+        accountingKeyCash,      /** @todo set proper wallet division here */
         -amount,
         ncb,
         reason

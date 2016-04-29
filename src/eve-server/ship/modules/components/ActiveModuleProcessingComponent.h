@@ -35,7 +35,7 @@ class ActiveModuleProcessingComponent
 {
 public:
 
-    ActiveModuleProcessingComponent(InventoryItemRef item, ActiveModule* mod, ShipRef ship);
+    ActiveModuleProcessingComponent(InventoryItemRef item, ActiveModule* mod, ShipItemRef ship);
     virtual ~ActiveModuleProcessingComponent() { }
 
 	void Process();
@@ -59,7 +59,7 @@ private:
     //internal access to owner and owner's pointers
 	InventoryItemRef m_Item;
     ActiveModule* m_Mod;
-    ShipRef m_Ship;
+    ShipItemRef m_Ship;
 };
 
 #endif

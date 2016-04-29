@@ -33,7 +33,7 @@
 class CapTransfer: public ActiveModule
 {
 public:
-	CapTransfer( InventoryItemRef item, ShipRef ship );
+	CapTransfer( InventoryItemRef item, ShipItemRef ship );
     virtual ~CapTransfer() { }
 
     // GenericModule Methods:

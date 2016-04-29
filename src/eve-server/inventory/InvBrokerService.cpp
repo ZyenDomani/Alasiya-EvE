@@ -21,7 +21,10 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Updates:    Allan
 */
+
+/** @todo update this code to use throws for client msgs also */
 
 #include "eve-server.h"
 
@@ -37,10 +40,11 @@ public:
 
     PyCallable_Make_Dispatcher(InvBrokerBound)
 
-    InvBrokerBound(PyServiceMgr *mgr, uint32 entityID)
+    InvBrokerBound(PyServiceMgr *mgr, uint32 locationID, uint32 groupID)
     : PyBoundObject(mgr),
       m_dispatch(new Dispatcher(this)),
-      m_entityID(entityID)
+      m_locationID(locationID),
+      m_groupID(groupID)
     {
         _SetCallDispatcher(m_dispatch);
 
@@ -52,6 +56,8 @@ public:
         PyCallable_REG_CALL(InvBrokerBound, SetLabel);
         PyCallable_REG_CALL(InvBrokerBound, TrashItems);
         PyCallable_REG_CALL(InvBrokerBound, List);
+        PyCallable_REG_CALL(InvBrokerBound, AssembleCargoContainer);
+
     }
     virtual ~InvBrokerBound()
     {
@@ -69,12 +75,14 @@ public:
     PyCallable_DECL_CALL(SetLabel);
     PyCallable_DECL_CALL(TrashItems);
     PyCallable_DECL_CALL(List);
+    PyCallable_DECL_CALL(AssembleCargoContainer);
 
 
 protected:
     Dispatcher *const m_dispatch;
 
-    uint32 m_entityID;
+    uint32 m_locationID;
+    uint32 m_groupID;
 };
 
 PyCallable_Make_InnerDispatcher(InvBrokerService)
@@ -124,11 +132,11 @@ PyBoundObject *InvBrokerService::_CreateBoundObject(Client *c, const PyRep *bind
     //temp crap until I rework _CreateBoundObject's signature
     PyRep *t = bind_args->Clone();
     if(!args.Decode(&t)) {
-        codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", c->GetName());
+        codelog(INV__ERROR, "Failed to decode bind args from '%s'", c->GetName());
         return NULL;
     }
-    _log(CLIENT__MESSAGE, "InvBrokerService bind request for:");
-    args.Dump(CLIENT__MESSAGE, "    ");
+    _log(INV__BIND, "InvBrokerService bind request:");
+    args.Dump(INV__BIND, "    ");
     /*
     18:20:13 [ClientMessage] InvBrokerService bind request for:
     18:20:13 [ClientMessage]     InvBroker_BindArgs
@@ -143,128 +151,145 @@ PyBoundObject *InvBrokerService::_CreateBoundObject(Client *c, const PyRep *bind
 
     */
 
-    return new InvBrokerBound(m_manager, args.entityID);
+    return new InvBrokerBound(m_manager, args.locationID, args.groupID);
 }
 
 PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
 {
-	/* Call Arguments:
-	Call Arguments:
-	    Tuple: 2 elements
-			[ 0] Integer field: 140000055		// itemID - the container to search
-			[ 1] Integer field: 60014719		// stationID
-	Call Named Arguments:
-		Argument 'machoVersion':
-			Integer field: 1
-	*/
-	//call.Dump(SERVICE__CALL_DUMP);
+    Call_TwoIntegerArgs args;
+    /* args.arg1 = itemID of container to look into
+     * args.arg2 = locationID of container
+     */
+    if (!args.Decode(&call.tuple)) {
+        _log(INV__ERROR, "%s: Cannot decode arguments", call.client->GetName());
+        return nullptr;
+    }
 
-	uint32 itemID = call.tuple->GetItem(0)->AsInt()->value();
+    InventoryItemRef item = m_manager->item_factory->GetInventoryItemFromID( args.arg1 );
+    if (!item) {
+        _log(INV__ERROR, "%s: Unable to load inventory for itemID %u in locationID %u", call.client->GetName(), args.arg1, args.arg2);
+        return nullptr;
+    }
+    if (item->ownerID() == call.client->GetCharacterID())
+        _log(INV__WARNING, "Handle_GetContainerContents() -  %s(%u) is owned by calling character %s(%u) ", \
+                    item->itemName().c_str(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
+    else
+        _log(INV__WARNING, "Handle_GetContainerContents() -  %s(%u) is not owned by calling character %s(%u) ", \
+                    item->itemName().c_str(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
+        // "CantDoThatWithSomeoneElsesStuff"
 
-	// TODO: check if container is allowed to be examined
-
-	// get list of items in conatiner and return it to client
-    DBQueryResult res;
-	if(!sDatabase.RunQuery(res,
-		"SELECT "
-		"  e.itemID, "
-		"  e.flag as flagID, "
-		"  e.typeID, "
-		"  e.quantity as stacksize "
-		"FROM "
-		"  entity e "
-		"WHERE "
-		"  locationID=%d", itemID))
-	{
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-		return NULL;
-	}
-	return(DBResultToCRowset(res));
+	return item->GetInventory()->List( flagAnywhere );
 }
 
 //this is a view into the entire inventory item.
 PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
+    /** @note this means "Get the Inventory of this itemID */
+    _log(INV__DUMP, "InvBrokerBound::Handle_GetInventoryFromId()", "size=%u", call.tuple->size());
+    call.Dump(INV__DUMP);
+    /** @todo (Allan) this needs more work....
+     *       return sm.GetService('invCache').GetInventoryFromId(self.itemID, locationID=session.stationid2)
+     *        inv = sm.GetService('invCache').GetInventoryFromId(const.containerHangar)
+     *     folder = sm.GetService('invCache').GetInventoryFromId(each.officeFolderID)
+     *     folder = invCache.GetInventoryFromId(office.officeFolderID, locationID=session.stationid2)
+     *       return sm.GetService('invCache').GetInventory(const.containerCorpMarket, eve.session.corpid)
+     *
+     * if eve.session.corprole & (const.corpRoleAccountant | const.corpRoleJuniorAccountant) != 0:
+     *     office = self.corp.GetOffice()
+     *     if office is not None:
+     *         items = sm.GetService('invCache').GetInventoryFromId(office.itemID, locationID=session.stationid2)
+     */
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
-        return (NULL);
+        _log(INV__ERROR, "%s: Cannot decode arguments", call.client->GetName());
+        return nullptr;
     }
     //bool passive = (args.arg2 != 0);  //no idea what this is for.
 
     m_manager->item_factory->SetUsingClient( call.client );
     // TODO: this line is insufficient for some object types, like containers in space, so expand it
     // by having a switch that acts differently based on either categoryID or groupID or both:
-    Inventory *inventory = m_manager->item_factory->GetInventory( args.arg1 );
-    if(inventory == NULL) {
-        codelog(SERVICE__ERROR, "%s: Unable to load inventory %u", call.client->GetName(), args.arg1);
-        return (NULL);
+    InventoryItemRef item = m_manager->item_factory->GetInventoryItemFromID( args.arg1 );
+    m_manager->item_factory->UnsetUsingClient();
+    if (!item) {
+        _log(INV__ERROR, "%s: Unable to load inventory for itemID %u", call.client->GetName(), args.arg1);
+        return nullptr;
     }
 
+    _log(INV__BIND, "Binding inventory object to %s for item %u", call.client->GetName(), args.arg1);
     // live returns node data and timestamp
-    //we just bind up a new inventory object and give it back to them.
-    InventoryBound *ib = new InventoryBound(m_manager, *inventory, flagAutoFit);
+    InventoryBound *ib = new InventoryBound(m_manager, item, flagAutoFit);
     PyRep *result = m_manager->BindObject(call.client, ib);
-
-    // Release the item factory now that the ItemFactory is finished being used:
-    m_manager->item_factory->UnsetUsingClient();
 
     return result;
 }
 
 //this is a view into an inventory item using a specific flag.
 PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
+    /** @note  i *think* this means "Get the Inventory containing this itemID */
+    _log(INV__DUMP, "InvBrokerBound::Handle_GetInventory() size=%u", call.tuple->size());
+    call.Dump(INV__DUMP);
     Inventory_GetInventory args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Unable to decode arguments");
-        return NULL;
+        codelog(INV__ERROR, "Unable to decode arguments");
+        return nullptr;
     }
 
-    EVEItemFlags flag;
+    InventoryItemRef item;
+    if (m_groupID == EVEDB::invGroups::Station) {
+        _log(INV__WARNING, "GetInventory called for station %u", m_locationID);
+        item = sEntityList.GetStationByID(m_locationID);
+    } else if (m_groupID == EVEDB::invGroups::Solar_System) {
+        _log(INV__WARNING, "GetInventory called for solar system %u", m_locationID);
+        item = m_manager->item_factory->/*GetSolarSystem*/GetItem(m_locationID);
+    } else {
+        _log(INV__WARNING, "GetInventory called for item %u (group: %u)", m_locationID, m_groupID);
+        m_manager->item_factory->SetUsingClient( call.client );
+        item = m_manager->item_factory->/*GetInventoryItemFromID*/GetItem(m_locationID);
+        m_manager->item_factory->UnsetUsingClient();
+    }
+    if (!item) {
+        codelog(INV__ERROR, "%s: Unable to load item %u for flag %u", call.client->GetName(), m_locationID, args.container);
+        return nullptr;
+    }
+
+    EVEItemFlags flag = flagAutoFit;
     switch(args.container) {
-        case containerWallet:
+        case containerWallet:/*10001*/
             flag = flagWallet;
             break;
-        case containerCharacter:
+        case containerCharacter:/*10011*/
             flag = flagSkill;
             break;
-        case containerHangar:
+        case containerHangar:/*10004*/
             flag = flagHangar;
             break;
-
-        case containerGlobal:
-            flag = flagNone;
+        case containerCorpMarket:/*10012*/   //this is for corp station deliveries (station button)
+            flag = flagCorpMarket;
             break;
-
-        case containerSolarSystem:
-        case containerScrapHeap:
-        case containerFactory:
-        case containerBank:
-        case containerRecycler:
-        case containerOffices:
-        case containerStationCharacters:
-        case containerCorpMarket:   //this is for corp station deliveries (station button)
+        case containerOffices:/*10009*/
+            flag = flagOfficeSlot1;
+            break;
+        case containerFactory:/*10006*/
+            flag = flagFactory;
+            break;
+        case containerGlobal:/*10002*/
+        case containerSolarSystem:/*10003*/
+        case containerScrapHeap:/*10005*/
+        case containerBank:/*10007*/
+        case containerRecycler:/*10008*/
+        case containerStationCharacters:/*10010*/
             flag = flagNone;
             break;
         default:
-            codelog(SERVICE__ERROR, "Unhandled container type %u", args.container);
-            return NULL;
+            _log(INV__ERROR, "Unhandled container type %u", args.container);
+            return nullptr;
     }
 
-    m_manager->item_factory->SetUsingClient( call.client );
-    Inventory *inventory = m_manager->item_factory->GetInventory( m_entityID );
-    if(inventory == NULL) {
-        codelog(SERVICE__ERROR, "%s: Unable to load item %u", call.client->GetName(), m_entityID);
-        return (NULL);
-    }
+    _log(INV__BIND, "Binding inventory object to %s for inventory of %u with flag %u", call.client->GetName(), m_locationID, flag);
 
-    _log(SERVICE__MESSAGE, "Binding inventory object for %s for inventory %u with flag %u", call.client->GetName(), m_entityID, flag);
-
-    //we just bind up a new inventory object and give it back to them.
-    InventoryBound *ib = new InventoryBound(m_manager, *inventory, flag);
+    //we just bind up a new inventory object for container requested and give it back to them.
+    InventoryBound *ib = new InventoryBound(m_manager, item, flag);
     PyRep *result = m_manager->BindObject(call.client, ib);
-
-    // Release the item factory now that the ItemFactory is finished being used:
-    m_manager->item_factory->UnsetUsingClient();
 
     return result;
 }
@@ -272,20 +297,20 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
 PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     CallSetLabel args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Unable to decode arguments");
-        return NULL;
+        codelog(INV__ERROR, "Unable to decode arguments");
+        return nullptr;
     }
 
     m_manager->item_factory->SetUsingClient( call.client );
     InventoryItemRef item = m_manager->item_factory->GetItem( args.itemID );
     if( !item ) {
-        codelog(SERVICE__ERROR, "%s: Unable to load item %u", call.client->GetName(), args.itemID);
-        return (NULL);
+        codelog(INV__ERROR, "%s: Unable to load item %u", call.client->GetName(), args.itemID);
+        return nullptr;
     }
 
     if(item->ownerID() != call.client->GetCharacterID()) {
-        _log(SERVICE__ERROR, "Character %u tried to rename item %u of character %u.", call.client->GetCharacterID(), item->itemID(), item->ownerID());
-        return NULL;
+        _log(INV__ERROR, "Character %u tried to rename item %u of character %u.", call.client->GetCharacterID(), item->itemID(), item->ownerID());
+        return nullptr;
     }
 
     item->Rename( args.itemName.c_str() );
@@ -300,40 +325,63 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     // Release the item factory now that the ItemFactory is finished being used:
     m_manager->item_factory->UnsetUsingClient();
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
     Call_TrashItems args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Unable to decode arguments");
-        return(new PyList());
+        _log(INV__ERROR, "Unable to decode arguments");
+        return nullptr;
     }
 
     std::vector<int32>::const_iterator cur = args.items.begin();
     for(; cur != args.items.end(); cur++) {
         InventoryItemRef item = m_manager->item_factory->GetItem( *cur );
         if (!item)
-            codelog(SERVICE__ERROR, "%s: Unable to load item %u to delete it. Skipping.", call.client->GetName(), *cur);
+            _log(INV__ERROR, "%s: Unable to load item %u to delete it. Skipping.", call.client->GetName(), *cur);
         else if (call.client->GetCharacterID() != item->ownerID())
-            codelog(SERVICE__ERROR, "%s: Tried to trash item %u which is not yours. Skipping.", call.client->GetName(), *cur);
+            _log(INV__ERROR, "%s: Tried to trash item %u which is not yours. Skipping.", call.client->GetName(), *cur);
         else if (item->locationID() != (uint32)args.locationID)
-            codelog(SERVICE__ERROR, "%s: Item %u is not in location %u. Skipping.", call.client->GetName(), *cur, args.locationID);
+            _log(INV__ERROR, "%s: Item %u is not in location %u. Skipping.", call.client->GetName(), *cur, args.locationID);
         else
             item->Delete();
     }
 
-    return(new PyList());
+    return nullptr;
 }
 
 PyResult InvBrokerBound::Handle_List(PyCallArgs &call) {
 /**
-            realItems = self.moniker.List()
-       returns itemID, ?
+        inv = invCache.GetInventoryFromId(activeShipID, locationID=session.stationid2)
+        shipCargo = inv.List()
             */
 
-  sLog.Log( "InvBrokerBound::Handle_List()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
+    sLog.Log( "InvBrokerBound::Handle_List()", "size= %u", call.tuple->size() );
+    call.Dump(INV__DUMP);
 
-    return NULL;
+    return nullptr;
+}
+
+PyResult InvBrokerBound::Handle_AssembleCargoContainer(PyCallArgs &call) {
+    /* invMgr.AssembleCargoContainer(invItem.itemID, None, 0.0)
+     *
+     * 14:37:46 [BindDump]   Call Arguments:
+     * 14:37:46 [BindDump]       Tuple: 3 elements
+     * 14:37:46 [BindDump]         [ 0] Integer field: 140000489
+     * 14:37:46 [BindDump]         [ 1] (None)
+     * 14:37:46 [BindDump]         [ 2] Real field: 0.000000
+     *
+     * 14:37:46 L InvBrokerBound::Handle_AssembleCargoContainer(): [00msize= 3
+     * 14:37:46 [InvMsg]   Call Arguments:
+     * 14:37:46 [InvMsg]       Tuple: 3 elements
+     * 14:37:46 [InvMsg]         [ 0] Integer field: 140000489
+     * 14:37:46 [InvMsg]         [ 1] (None)
+     * 14:37:46 [InvMsg]         [ 2] Real field: 0.000000
+     */
+
+    sLog.Log( "InvBrokerBound::Handle_AssembleCargoContainer()", "size= %u", call.tuple->size() );
+    call.Dump(INV__DUMP);
+
+    return nullptr;
 }

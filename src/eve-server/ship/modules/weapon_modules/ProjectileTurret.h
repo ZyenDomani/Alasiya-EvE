@@ -33,7 +33,7 @@
 class ProjectileTurret: public TurrentModule
 {
 public:
-    ProjectileTurret( InventoryItemRef item, ShipRef ship );
+    ProjectileTurret( InventoryItemRef item, ShipItemRef ship );
     virtual ~ProjectileTurret() { }
 
     // GenericModule Methods:

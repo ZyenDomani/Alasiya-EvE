@@ -47,22 +47,122 @@ UserService::~UserService() {
 
 PyResult UserService::Handle_GetRedeemTokens( PyCallArgs& call )
 {
-    // takes no args
-
-    sLog.Debug( "UserService", "Called GetRedeemTokens stub." );
+    sLog.Log( "UserService", "Handle_GetRedeemTokens" );
+    call.Dump(SERVICE__CALL_DUMP);
+    /*
+     * ==================== Sent from Client 84 bytes
+     *
+     * [PyObjectData Name: macho.CallReq]
+     *  [PyTuple 7 items]
+     *    [PyInt 6]
+     *    [PyObjectData Name: macho.MachoAddress]
+     *      [PyTuple 4 items]
+     *        [PyInt 2]
+     *        [PyInt 0]
+     *        [PyIntegerVar 13]
+     *        [PyNone]
+     *    [PyObjectData Name: macho.MachoAddress]
+     *      [PyTuple 3 items]
+     *        [PyInt 8]
+     *        [PyString "userSvc"]
+     *        [PyNone]
+     *    [PyInt 5654387]
+     *    [PyTuple 1 items]
+     *      [PyTuple 2 items]
+     *        [PyInt 0]
+     *        [PySubStream 31 bytes]
+     *          [PyTuple 4 items]
+     *            [PyInt 1]
+     *            [PyString "GetRedeemTokens"]
+     *            [PyTuple 0 items]
+     *            [PyDict 1 kvp]
+     *              [PyString "machoVersion"]
+     *              [PyInt 1]
+     *    [PyNone]
+     *    [PyNone]
+     *
+     *
+     *
+     * ==================== Sent from Server 200 bytes [Compressed]
+     *
+     * [PyObjectData Name: macho.CallRsp]
+     *  [PyTuple 7 items]
+     *    [PyInt 7]
+     *    [PyObjectData Name: macho.MachoAddress]
+     *      [PyTuple 3 items]
+     *        [PyInt 8]
+     *        [PyString "userSvc"]
+     *        [PyNone]
+     *    [PyObjectData Name: macho.MachoAddress]
+     *      [PyTuple 4 items]
+     *        [PyInt 2]
+     *        [PyIntegerVar 241241000001103]
+     *        [PyIntegerVar 13]
+     *        [PyNone]
+     *    [PyInt 5654387]
+     *    [PyTuple 1 items]
+     *      [PySubStream 173 bytes]
+     *        [PyObjectEx Type2]
+     *          [PyTuple 2 items]
+     *            [PyTuple 1 items]
+     *              [PyToken dbutil.CRowset]
+     *            [PyDict 1 kvp]
+     *              [PyString "header"]
+     *              [PyObjectEx Normal]
+     *                [PyTuple 2 items]
+     *                  [PyToken blue.DBRowDescriptor]
+     *                  [PyTuple 1 items]
+     *                    [PyTuple 10 items]
+     *                      [PyTuple 2 items]
+     *                        [PyString "tokenID"]
+     *                        [PyInt 3]
+     *                      [PyTuple 2 items]
+     *                        [PyString "massTokenID"]
+     *                        [PyInt 3]
+     *                      [PyTuple 2 items]
+     *                        [PyString "typeID"]
+     *                        [PyInt 3]
+     *                      [PyTuple 2 items]
+     *                        [PyString "quantity"]
+     *                        [PyInt 3]
+     *                      [PyTuple 2 items]
+     *                        [PyString "label"]
+     *                        [PyInt 130]
+     *                      [PyTuple 2 items]
+     *                        [PyString "description"]
+     *                        [PyInt 130]
+     *                      [PyTuple 2 items]
+     *                        [PyString "dateTime"]
+     *                        [PyInt 64]
+     *                      [PyTuple 2 items]
+     *                        [PyString "expireDateTime"]
+     *                        [PyInt 64]
+     *                      [PyTuple 2 items]
+     *                        [PyString "availableDateTime"]
+     *                        [PyInt 64]
+     *                      [PyTuple 2 items]
+     *                        [PyString "stationID"]
+     *                        [PyInt 3]
+     *    [PyNone]
+     *    [PyNone]
+     *
+     */
 
     return new PyList;
 }
 
 PyResult UserService::Handle_GetCreateDate( PyCallArgs& call )
 {
-    sLog.Debug( "UserService", "Called GetCreateDate stub." );
+    sLog.Log( "UserService", "Handle_GetCreateDate" );
+    call.Dump(SERVICE__CALL_DUMP);
 
     return new PyLong((long)Win32TimeNow());
 }
 
 PyResult UserService::Handle_ReportISKSpammer( PyCallArgs& call )
 {
+    sLog.Log( "UserService", "Handle_ReportISKSpammer" );
+    call.Dump(SERVICE__CALL_DUMP);
 /**
         sm.RemoteSvc('userSvc').ReportISKSpammer(charID, channelID, spamEntries)
         */

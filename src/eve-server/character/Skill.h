@@ -120,7 +120,7 @@ protected:
         const ItemType &type, const ItemData &data
     );
 
-    static uint32 _Spawn(ItemFactory &factory,
+    static uint32 CreateItemID(ItemFactory &factory,
         // InventoryItem stuff:
         ItemData &data
     );

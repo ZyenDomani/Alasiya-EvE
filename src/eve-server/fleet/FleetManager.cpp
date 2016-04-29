@@ -136,7 +136,7 @@ PyResult FleetManager::Handle_BroadcastToBubble(PyCallArgs &call) {
   /**
         sm.RemoteSvc('fleetMgr').BroadcastToBubble(name, self.broadcastScope, itemID)
         */
-    sLog.Log("FleetManager", "Handle_BroadcastToBubble() size=%u", call.tuple->size() );
+    sLog.Log("FleetManager", "Handle_BroadcastToSysBubble() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;

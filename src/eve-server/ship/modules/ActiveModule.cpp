@@ -29,7 +29,7 @@
 
 #include "ship/modules/ActiveModule.h"
 
-ActiveModule::ActiveModule(InventoryItemRef item, ShipRef ship)
+ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
 : GenericModule(item, ship)
 {
     m_AMPC = new ActiveModuleProcessingComponent(item, this, ship);
@@ -95,7 +95,7 @@ void ActiveModule::Unload()
 
 double ActiveModule::DoCycle()
 {
-    if (m_Ship->GetOperator()->GetSystemEntity()->Bubble()) {
+    if (m_Ship->GetPilot()->GetShipSE()->SysBubble()) {
         _ShowCycle();
         return _GetDuration();
     }
@@ -114,7 +114,7 @@ bool ActiveModule::RequiresTarget()
 void ActiveModule::DoEffect(std::string effect, bool active)
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
      m_Item->itemID(),
@@ -162,5 +162,5 @@ void ActiveModule::DoEffect(std::string effect, bool active)
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }

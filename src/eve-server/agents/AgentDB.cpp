@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur, Allan
+    Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -46,11 +47,12 @@ PyObjectEx *AgentDB::GetAgents() {
         " LEFT JOIN bloodlineTypes AS bl ON bl.bloodlineID = agt.agentTypeID"
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetAgents query: %s", res.error.c_str());
         return NULL;
     }
 
-    return(DBResultToCRowset(res));
+    _log(DATABASE__RESULTS, "GetAgents returned %u items", res.GetRowCount());
+    return DBResultToCRowset(res);
 }
 
 bool AgentDB::LoadAgentLocation(uint32 agentID, uint32 &locationID, uint32 &locationType, uint32 &solarSystemID) {
@@ -66,7 +68,7 @@ bool AgentDB::LoadAgentLocation(uint32 agentID, uint32 &locationID, uint32 &loca
         " WHERE agt.agentID=%d", agentID
     ))
     {
-        sLog.Error("AgentDB.LoadAgentLocation", "Error in query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in LoadAgentLocation query: %s", res.error.c_str());
         return false;
     }
 
@@ -86,16 +88,16 @@ PyRep *AgentDB::GetAgentSolarSystem(uint32 AgentID){
         " FROM agtAgents AS a"
         "  LEFT JOIN staStations AS s ON s.stationID = a.locationID"
         " WHERE a.agentID = %u",AgentID)) {
-        _log(DATABASE__ERROR, "Failed to query for Agent = %u", AgentID);
+        _log(DATABASE__ERROR, "Error in GetAgentSolarSystem query for Agent = %u", AgentID);
     }
 
     DBResultRow row;
     if(!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "SystemID of Agent %u not found.", AgentID);
+        _log(DATABASE__MESSAGE, "SystemID of Agent %u not found.", AgentID);
         return NULL;
     }
 
-    PyRep *result = NULL;
+    PyRep *result(nullptr);
     PyTuple *t = new PyTuple(1);
     t->items[0] = new PyList(row.GetUInt(0));
     result = t;
@@ -119,15 +121,17 @@ AgentLevel *AgentDB::LoadAgentLevel(uint8 level)
         " WHERE missionLevel=%d",
         level ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in LoadAgentLevel query: %s", res.error.c_str());
         delete result;
-        return NULL;
+        return nullptr;
     }
 
+    _log(DATABASE__RESULTS, "LoadAgentLevel returned %u items", res.GetRowCount());
+
     std::list<uint32> IDs;
+    IDs.clear();
     DBResultRow row;
 
-    IDs.clear();
     while(res.GetRow(row)) {
         AgentMissionSpec *spec = new AgentMissionSpec;
         spec->missionID = row.GetUInt(0);
@@ -138,6 +142,6 @@ AgentLevel *AgentDB::LoadAgentLevel(uint8 level)
         spec->importantMission = (row.GetUInt(6)==0)?false:true;
         result->missions.push_back(spec);
     }
-
 }
+
 #endif

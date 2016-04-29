@@ -99,62 +99,48 @@ void EntityList::Process() {
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
-    Client* pClient = nullptr;
+    Client* pClient(nullptr);
     std::vector<Client*>::iterator cur_client = m_clients.begin();
     while (cur_client != m_clients.end()) {
         if ((*cur_client)->ProcessNet())
-            cur_client++;
+            ++cur_client;
         else {
             pClient = *cur_client;
             cur_client = m_clients.erase(cur_client);
-            //_log(NET__PRES_TRACE, "Entity List Deleting client for account %u", pClient->GetUserID());
             if (pClient)
                 SafeDelete(pClient);
         }
     }
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.server.UseProfiling) {
         sProfile.AddTime(_entityCProfile, GetTimeUSeconds() - profileStartTime);
-
-    SystemManager* active_system = nullptr;
-
-    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
+    }
 
     /* check for 1Hz timer tic */
-    bool tic = false;
     if (m_stampTimer.Check()) {
-        tic = true;
         ++m_stamp;
-    }
+        sWHMgr.Process();
 
-    std::map<uint32, SystemManager*>::iterator cur = m_systems.begin();
-    while (cur != m_systems.end()) {
-        active_system = cur->second;
-        if (!active_system) {
-            sLog.Log(" EntityList::Proc", "Deleting System %u", cur->first);
-            SafeDelete(cur->second);
-            cur = m_systems.erase(cur);
-            continue;
-        } else {
-            if (tic) {
-                sWHMgr.Process();
-                if (!active_system->ProcessDestiny()) {
-                    sLog.Log(" EntityList::Proc", "active_system->Process() returned false.  Destroying System %u", active_system->GetID());
-                    active_system->UnloadSystem();
-                    SafeDelete(active_system);
-                    cur = m_systems.erase(cur);
-                    continue;
-                }
+        std::map<uint32, SystemManager*>::iterator cur = m_systems.begin();
+        while (cur != m_systems.end()) {
+            if (!cur->second) {
+                /* this shouldnt happen.  log error to make note */
+                sLog.Error(" EntityList::Proc", "Deleting System %u", cur->first);
+                SafeDelete(cur->second);
+                cur = m_systems.erase(cur);
+                continue;
+            } else if (!cur->second->ProcessTic()) {
+                cur->second->UnloadSystem();
+                SafeDelete(cur->second);
+                cur = m_systems.erase(cur);
+                continue;
             }
-
-            active_system->Process();
             ++cur;
         }
+        if (sConfig.server.UseProfiling)
+            sProfile.AddTime(_entitySProfile, GetTimeUSeconds() - profileStartTime);
     }
-
-    if (sConfig.server.UseProfiling)
-        sProfile.AddTime(_entitySProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
@@ -389,3 +375,27 @@ InventoryItemRef EntityList::GetStationByID(uint32 stationID) {
         return res->second;
     return InventoryItemRef();
 }
+
+void EntityList::RegisterSID(int64 &sessionID) {
+    /*  this whole method is just made up...eventually it will return a unique long long */
+    /* max for int64 = 9223372036854775807 */
+    if (sessionID >= EVEMU_MAX_LONG_ID) {
+        sessionID /= EvE_Pi;
+        RegisterSID(sessionID);
+    }
+    std::set<int64>::const_iterator cur = m_sessions.find(sessionID);
+    std::pair<std::_Rb_tree_const_iterator<int64>, bool > test;
+    if (cur == m_sessions.end())
+        test = m_sessions.insert(sessionID);
+    if (test.second)
+        return;
+
+    sessionID *= 1.25;
+    RegisterSID(sessionID);
+}
+
+void EntityList::RemoveSID ( int64 sessionID ) {
+    m_sessions.erase(sessionID);
+}
+
+

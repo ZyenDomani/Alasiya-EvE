@@ -31,7 +31,7 @@
 class WarpScrambler: public ActiveModule
 {
 public:
-    WarpScrambler( InventoryItemRef item, ShipRef ship );
+    WarpScrambler( InventoryItemRef item, ShipItemRef ship );
     virtual ~WarpScrambler() { }
 
     // GenericModule Methods:

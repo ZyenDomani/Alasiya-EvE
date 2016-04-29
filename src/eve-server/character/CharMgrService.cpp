@@ -66,7 +66,7 @@ protected:
 
 PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
 {
-	// TODO: really query the database directly?
+    /** @todo really query the database directly? */
     DBQueryResult res;
 	if(!sDatabase.RunQuery(res, "SELECT locationID AS stationID, COUNT(itemID) as itemCount FROM entity WHERE ownerID=%d AND flag=4 GROUP BY locationID", m_characterID))
 	{
@@ -80,7 +80,7 @@ PyResult CharMgrBound::Handle_ListStationItems( PyCallArgs& call )
 {       // this is the assets window
 	uint32 locationID = call.tuple->GetItem(0)->AsInt()->value();
 
-	// TODO: really query the database directly?
+    /** @todo really query the database directly? */
 	DBQueryResult res;
 	if(!sDatabase.RunQuery(res,
 		"SELECT "
@@ -336,7 +336,7 @@ PLAYER_STATUS_AFK = 1
       return NULL;
   }
 */
-/*  TODO  this shit STILL doesnt work right....
+  /** @todo  this shit STILL doesnt work right....
  * 19:35:56[33;01m W [37;01mSetActivityStatus: [33;01mPlayer lee(140000277) AFK:1394629996, time:17556784.
  *   variables here are uninitialilzed...no fuckin clue why....
     uint8 status = call.tuple->GetItem(0)->AsInt()->value();

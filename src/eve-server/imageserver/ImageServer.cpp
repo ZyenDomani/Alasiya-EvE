@@ -23,7 +23,7 @@
     Author:        caytchen
 */
 
-/** @todo  update this to use pthreads and remove boost */
+/** @todo  boost is the only system in this code that does NOT leak */
 
 #include "imageserver/ImageServer.h"
 #include "imageserver/ImageServerListener.h"
@@ -49,18 +49,18 @@ ImageServer::ImageServer()
     _basePath = sConfig.files.imageDir;
     if (_basePath[_basePath.size() - 1] != '/')
         _basePath += "/";
-/*
-    CreateDirectory( _basePath.c_str(), NULL );
 
-    for (int i = 0; i < CategoryCount; i++) {
-        std::string subdir = _basePath;
-        subdir.append(Categories[i]);
-
-        CreateDirectory( subdir.c_str(), NULL );
-    }
-*/
     sLog.Log("       ServerInit", "Image Server URL: %s", _url.c_str());
     sLog.Log("       ServerInit", "Image Server path: %s", _basePath.c_str());
+
+    if (CreateDirectory( _basePath.c_str(), NULL ) == 0) {
+        for (int i = 0; i < CategoryCount; i++) {
+            std::string subdir = _basePath;
+            subdir.append(Categories[i]);
+            CreateDirectory( subdir.c_str(), NULL );
+        }
+        sLog.Success("      ImageServer", "Image Server Created directorys in %s", _basePath.c_str());
+    } /* else directory probably exists */
 }
 
 void ImageServer::ReportNewImage(uint32 accountID, std::tr1::shared_ptr<std::vector<char> > imageData)
@@ -82,6 +82,7 @@ void ImageServer::ReportNewCharacter(uint32 creatorAccountID, uint32 characterID
     // check if we received an image from this account previously
     if (_limboImages.find(creatorAccountID) == _limboImages.end()) {
         sLog.Error("      ImageServer"," Image not received for characterID %u.", characterID);
+        /** @todo  need to get client here, and send msg about emailing char pic and name to charPics@eve.alasiya.net for manual insertion */
         return;
     }
 
@@ -184,11 +185,6 @@ std::string& ImageServer::url()
 void ImageServer::Run()
 {
     _ioThread = std::shared_ptr<boost::asio::detail::thread>(new boost::asio::detail::thread(std::tr1::bind(&ImageServer::RunInternal, this)));
-
-    #ifndef HAVE_WINDOWS_H
-    //sLog.Log( "        Threading", "Starting ImageServerLoop with thread ID 0x%X", pthread_self() );
-    #endif /* !HAVE_WINDOWS_H */
-
 }
 
 void ImageServer::Stop()

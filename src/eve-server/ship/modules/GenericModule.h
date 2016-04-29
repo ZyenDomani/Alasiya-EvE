@@ -42,7 +42,7 @@ class ModifyShipAttributesComponent;
 class GenericModule
 {
 public:
-    GenericModule( InventoryItemRef item, ShipRef ship );
+    GenericModule( InventoryItemRef item, ShipItemRef ship );
     virtual ~GenericModule();
 
     /* generic functions handled in base class */
@@ -128,11 +128,11 @@ public:
     ModifyModuleAttributesComponent*  m_MMAC;           /* we own this */
     ModifyShipAttributesComponent*  m_MSAC;             /* we own this */
 
-    ShipRef GetShipRef()                                { return m_Ship; }
+    ShipItemRef GetShipRef()                                { return m_Ship; }
 
 protected:
     InventoryItemRef                m_Item;
-    ShipRef                         m_Ship;
+    ShipItemRef                         m_Ship;
 
     ModuleStates                    m_ModuleState;
     ChargeStates                    m_ChargeState;

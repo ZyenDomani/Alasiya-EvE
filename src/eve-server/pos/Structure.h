@@ -24,6 +24,9 @@
     Updates:    Allan
 */
 
+/*  NOTE   this is NEW StructureItem and StructureSE code from SE rewrite.  */
+
+
 #ifndef __STRUCTURE__H__INCL__
 #define __STRUCTURE__H__INCL__
 
@@ -36,11 +39,21 @@
 /**
  * InventoryItem which represents Structure.
  */
-class Structure
-: public InventoryItem,
-  public InventoryEx
+class StructureItem
+: public InventoryItem
 {
     friend class InventoryItem;    // to let it construct us
+
+protected:
+    StructureItem(
+        ItemFactory &_factory,
+        uint32 _structureID,
+        // InventoryItem stuff:
+        const ItemType &_itemType,
+        const ItemData &_data
+    );
+    virtual ~StructureItem();
+
 public:
     /**
      * Loads Structure from DB.
@@ -49,7 +62,7 @@ public:
      * @param[in] structureID ID of Structure to load.
      * @return Pointer to Structure object; NULL if failed.
      */
-    static StructureRef Load(ItemFactory &factory, uint32 structureID);
+    static StructureItemRef Load(ItemFactory &factory, uint32 structureID);
     /**
      * Spawns new Structure.
      *
@@ -57,20 +70,19 @@ public:
      * @param[in] data Item data for Structure.
      * @return Pointer to new Structure object; NULL if failed.
      */
-    static StructureRef Spawn(ItemFactory &factory, ItemData &data);
+    static StructureItemRef Spawn(ItemFactory &factory, ItemData &data);
 
     /*
      * Primary public interface:
      */
     void Delete();
 
-    double GetCapacity(EVEItemFlags flag) const;
     /*
      * _ExecAdd validation interface:
      */
-    static void ValidateAddItem(EVEItemFlags flag, InventoryItemRef item, Client *c);
+    void ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
 
-    /*
+    /** @todo (Allan)  will probably need to rewrite all these, too.
      * Public fields:
      */
     const ItemType &    type() const { return InventoryItem::type(); }
@@ -82,18 +94,12 @@ public:
 
 
 protected:
-    Structure(
-        ItemFactory &_factory,
-        uint32 _structureID,
-        // InventoryItem stuff:
-        const ItemType &_itemType,
-        const ItemData &_data
-    );
-
     /*
-     * Member functions
+     * Member functions:
      */
     using InventoryItem::_Load;
+    virtual bool _Load();
+
 
     // Template loader:
     template<class _Ty>
@@ -122,107 +128,73 @@ protected:
         const ItemType &itemType, const ItemData &data
     );
 
-    bool _Load();
-
-    static uint32 _Spawn(ItemFactory &factory,
+    static uint32 CreateItemID(ItemFactory &factory,
         // InventoryItem stuff:
         ItemData &data
     );
 
-    uint32 inventoryID() const { return itemID(); }
-    PyRep *GetItem() const { return GetItemRow(); }
 
     void AddItem(InventoryItemRef item);
+
 };
 
 
 /**
- * DynamicSystemEntity which represents structure object in space
+ * ObjectSystemEntity which represents structure object in space
  */
-class PyServiceMgr;
-class InventoryItem;
-class DestinyManager;
-class SystemManager;
-class ServiceDB;
 
-class StructureEntity
-: public DynamicSystemEntity
+class StructureSE
+: public ObjectSystemEntity
 {
 public:
-    StructureEntity(
-        StructureRef structure,
-        SystemManager *system,
-        PyServiceMgr &services,
-        const GPoint &position);
+    StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system);
+    virtual ~StructureSE()                              { /* Do nothing here */ }
 
-    /*
-     * Primary public interface:
-     */
-    StructureRef GetStructureObject() { return _structureRef; }
-    DestinyManager * GetDestiny() { return m_destiny; }
-    SystemManager * GetSystem() { return m_system; }
+    void Init(StructureItemRef structure);
 
-    /*
-     * Public fields:
-     */
+    /* class type pointer querys. */
+    virtual StructureSE* GetPOSSE()                     { return (m_pos ? this : nullptr); }
+    virtual StructureSE* GetTCUSE()                     { return (m_tcu ? this : nullptr); }
+    virtual StructureSE* GetOutpostSE()                 { return (m_bridge ? this : nullptr); }
+    virtual StructureSE* GetJumpBridgeSE()              { return (m_outpost ? this : nullptr); }
 
-    inline double x() const { return(GetPosition().x); }
-    inline double y() const { return(GetPosition().y); }
-    inline double z() const { return(GetPosition().z); }
+    /* class type tests. */
+    virtual bool IsPOSSE()                              { return m_pos; }
+    virtual bool IsTCUSE()                              { return m_tcu; }
+    virtual bool IsOutpostSE()                          { return m_outpost; }
+    virtual bool IsJumpBridgeSE()                       { return m_bridge; }
 
-    //SystemEntity interface:
-    inline EntityClass GetClass() const { return(ecStructureEntity); }
-    inline bool IsStructureEntity() const { return true; }
-    inline bool IsPOS() const { return true; }
-    inline bool IsTCU() const { return (Item().get()->typeID() == EVEDB::invGroups::Territorial_Claim_Units); }
-
-    virtual StructureEntity *CastToStructureEntity() { return(this); }
-    virtual const StructureEntity *CastToStructureEntity() const { return(this); }
+    /* SystemEntity interface */
     virtual void Process();
-    virtual void EncodeDestiny( Buffer& into ) const;
-    virtual void TargetAdded(SystemEntity *who) {}
-    virtual void TargetLost(SystemEntity *who) {}
-    virtual void TargetedAdd(SystemEntity *who) {}
-    virtual void TargetedLost(SystemEntity *who) {}
-    virtual void TargetsCleared() {}
-    virtual void QueueDestinyUpdate(PyTuple **du) {/* not required to consume */}
-    virtual void QueueDestinyEvent(PyTuple **multiEvent) {/* not required to consume */}
+    virtual void EncodeDestiny( Buffer& into );
+    virtual PyDict *MakeSlimItem();
 
-    inline uint32 GetOwnerID() const { return m_self.get()->ownerID(); }
-    virtual uint32 GetCorporationID() const;
-    virtual uint32 GetAllianceID() const;
-    uint8 GetPOSState() const;
-    inline void SetPOSState(uint8 state) { m_state = state; }
-    PyTuple *GetEffectState() const;
+    /* ObjectSystemEntity interface */
+    virtual void ProcessOther();
 
-    virtual void Killed(Damage &fatal_blow);
-    virtual SystemManager *System() const { return(m_system); }
+    /* specific functions handled in this class. */
+    inline void SetPOSState(uint8 state)                       { m_state = state; }
 
-    void ForcedSetPosition(const GPoint &pt);
+    uint8 GetStructureState() const;
 
-    virtual bool ApplyDamage(Damage &d);
-    virtual void MakeDamageState(DoDestinyDamageState &into) const;
-    virtual PyDict *MakeSlimItem() const;
+    PyTuple *GetEffectState();
 
-    void SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq=true);
-    void SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
+private:
+    bool m_tcu = false;
+    bool m_pos = false;
+    bool m_array = false;
+    bool m_bridge = false;
+    bool m_jammer = false;
+    bool m_module = false;
+    bool m_sentry = false;
+    bool m_battery = false;
+    bool m_outpost = false;
 
-protected:
+    uint8 m_state;          /* used to hold POS state (online, reinforced, operating, etc) */
+    uint32 m_harmonic;      /* this tracks shield frequency for passing thru POS shields.  not sure how to use it yet.... */
+    uint32 m_towerID;       /* this is the controlling towerID for POS modules */
+    uint64 m_timestamp;     /* used to track time on POS states (onlining, reinforced, etc) */
 
-    /*
-     * Member fields:
-     */
-    SystemManager *const m_system;    //we do not own this
-    PyServiceMgr &m_services;    //we do not own this
-    StructureRef _structureRef;   // We don't own this
-
-    double m_shieldCharge;
-    double m_armorDamage;
-    double m_hullDamage;
-
-    uint32 m_harmonic;      //this tracks shield frequency for passing thru POS shields.  not sure how to use it yet....
-    uint64 m_timestamp;     //used to track time on POS states (onlining, reinforced, etc)
-    uint8 m_state;          //used to hold POS state (online, reinforced, operating, etc)
 };
 
 #endif /* !__STRUCTURE__H__INCL__ */

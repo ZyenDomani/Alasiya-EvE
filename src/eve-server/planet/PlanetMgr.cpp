@@ -105,7 +105,7 @@ protected:
 PyCallable_Make_InnerDispatcher(PlanetMgrService)
 
 PlanetMgrService::PlanetMgrService(PyServiceMgr *mgr)
-: PyService(mgr, "planetMgr"),
+: PyService(mgr, "planetMgr"),  /*planetBaseBroker*/
   m_dispatch(new Dispatcher(this))
 {
     _SetCallDispatcher(m_dispatch);
@@ -339,9 +339,8 @@ PyResult PlanetMgrBound::Handle_UserUpdateNetwork(PyCallArgs &call) {
                         sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success creating process");
                     }
                 } else if(groupID == 1063) {
-                    /* Extractor Pin
-                     * //TODO, Still broken, client complains that extractor is not built.
-                     */
+                    /* Extractor Pin */
+                     /** @todo, Still broken, client complains that extractor is not built. */
                     UUNCStandardPin uuncsp;
                     if(!uuncsp.Decode(uunc.command_data)) {
                         codelog(SERVICE__ERROR, "Failed to decode args for UUNCStandardPin!");

@@ -27,7 +27,7 @@
 #include "character/Character.h"
 
 
-HullRepairer::HullRepairer( InventoryItemRef item, ShipRef ship )
+HullRepairer::HullRepairer( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 
@@ -73,12 +73,12 @@ void HullRepairer::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 double HullRepairer::DoCycle()
 {
-        if (!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
+        if (!m_Ship->GetPilot()->GetShipSE()->SysBubble())
         {
             Deactivate();
             return 0;
@@ -100,7 +100,7 @@ double HullRepairer::DoCycle()
 void HullRepairer::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
      m_Item->itemID(),
@@ -147,12 +147,12 @@ void HullRepairer::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double HullRepairer::_GetDuration()
 {
-    Character* pChar = m_Ship->GetOperator()->GetChar().get();
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
     double duration = m_Item->GetAttribute(AttrDuration).get_float();
     duration *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillRepairSystems, true))));      //  5% decrease in cycle time
 

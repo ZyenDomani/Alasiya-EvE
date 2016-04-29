@@ -28,10 +28,10 @@
 #include "system/Damage.h"
 
 
-HybridTurret::HybridTurret( InventoryItemRef item, ShipRef ship )
+HybridTurret::HybridTurret( InventoryItemRef item, ShipItemRef ship )
 : TurrentModule(item, ship)
 {
-    Character* pChar = m_Ship->GetOperator()->GetChar().get();
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
 
     switch (GetAttribute(AttrChargeSize).get_int()) {
         case 1:
@@ -138,12 +138,12 @@ void HybridTurret::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 double HybridTurret::DoCycle() {
-        if ((!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
-            || (!m_Ship->GetOperator()->GetSystemEntity()->Bubble()->GetEntity(m_targetID))
+        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))
             || (!m_chargeLoaded) || (!m_chargeRef) )
         {
             Deactivate();
@@ -157,7 +157,7 @@ double HybridTurret::DoCycle() {
 
 		_ShowCycle();
 
-        Damage d(m_Ship->GetOperator()->GetSystemEntity(),
+        Damage d(m_Ship->GetPilot()->GetShipSE(),
                  m_Item,
                  m_kinetic,
                  m_thermal,
@@ -181,7 +181,7 @@ double HybridTurret::DoCycle() {
 void HybridTurret::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -228,7 +228,7 @@ void HybridTurret::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double HybridTurret::_GetROF() {

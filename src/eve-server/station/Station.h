@@ -29,6 +29,7 @@
 #include "inventory/Inventory.h"
 #include "inventory/ItemType.h"
 #include "system/Celestial.h"
+#include "system/SystemEntity.h"
 
 /**
  * Station type data container.
@@ -180,39 +181,13 @@ public:
 /**
  * CelestialObject which represents station.
  */
-class Station
-: public CelestialObject,
-  public Inventory
+class StationItem
+: public CelestialObject
 {
     friend class InventoryItem; // to let it construct us
     friend class CelestialObject; // to let it construct us
-public:
-    /**
-     * Loads station.
-     *
-     * @param[in] factory
-     * @param[in] stationID ID of station to load.
-     * @return Pointer to new Station object; NULL if fails.
-     */
-    static StationRef Load(ItemFactory &factory, uint32 stationID);
-
-    /*
-     * Access methods:
-     */
-    uint32          security() const { return m_security; }
-    double          dockingCostPerVolume() const { return m_dockingCostPerVolume; }
-    double          maxShipVolumeDockable() const { return m_maxShipVolumeDockable; }
-    uint32          officeRentalCost() const { return m_officeRentalCost; }
-    uint32          operationID() const { return m_operationID; }
-
-    double          reprocessingEfficiency() const { return m_reprocessingEfficiency; }
-    double          reprocessingStationsTake() const { return m_reprocessingStationsTake; }
-    EVEItemFlags    reprocessingHangarFlag() const { return m_reprocessingHangarFlag; }
-
-    StationType *   GetStationType() { return &m_stationType; }
-
 protected:
-    Station(
+    StationItem(
         ItemFactory &_factory,
         uint32 _stationID,
         // InventoryItem stuff:
@@ -223,11 +198,39 @@ protected:
         // Station stuff:
         const StationData &_stData
     );
+    virtual ~StationItem()                              { /* do nothing here */ }
 
+public:
+    /**
+     * Loads station.
+     *
+     * @param[in] factory
+     * @param[in] stationID ID of station to load.
+     * @return Pointer to new Station object; NULL if fails.
+     */
+    static StationItemRef Load(ItemFactory &factory, uint32 stationID);
+
+    /*
+     * Access methods:
+     */
+    uint32 security() const { return m_security; }
+    double dockingCostPerVolume() const { return m_dockingCostPerVolume; }
+    double maxShipVolumeDockable() const { return m_maxShipVolumeDockable; }
+    uint32 officeRentalCost() const { return m_officeRentalCost; }
+    uint32 operationID() const { return m_operationID; }
+
+    double reprocessingEfficiency() const { return m_reprocessingEfficiency; }
+    double reprocessingStationsTake() const { return m_reprocessingStationsTake; }
+    EVEItemFlags reprocessingHangarFlag() const { return m_reprocessingHangarFlag; }
+
+    StationType* GetStationType() { return &m_stationType; }
+
+protected:
     /*
      * Member functions:
      */
-    using CelestialObject::_Load;
+    using InventoryItem::_Load;
+    virtual bool _Load();
 
     // Template loader:
     template<class _Ty>
@@ -265,11 +268,8 @@ protected:
         const StationData &stData
     );
 
-    bool _Load();
-    static uint32 _Spawn(ItemFactory &factory, ItemData &data);
+    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
 
-    uint32 inventoryID() const { return itemID(); }
-    PyRep *GetItem() const { return GetItemRow(); }
 
     /*
      * Data members:
@@ -288,89 +288,28 @@ protected:
 
 
 /**
- * DynamicSystemEntity which represents Station object in space
+ * StaticSystemEntity which represents Station object in space
  */
 class PyServiceMgr;
-class InventoryItem;
-class DestinyManager;
 class SystemManager;
-class ServiceDB;
 
-class StationEntity
-: public DynamicSystemEntity
+class StationSE
+: public StaticSystemEntity
 {
 public:
-    StationEntity(
-        StationRef station,
-        SystemManager *system,
-        PyServiceMgr &services,
-        const GPoint &position);
+    StationSE(StationItemRef station, PyServiceMgr &services, SystemManager* system);
+    virtual ~StationSE()                                { /* Do nothing here */ }
 
-    /*
-     * Primary public interface:
-     */
-    StationRef GetStationObject() { return _stationRef; }
-    DestinyManager * GetDestiny() { return m_destiny; }
-    SystemManager * GetSystem() { return m_system; }
+    /* class type pointer querys. */
+    virtual StationSE* GetStationSE()                   { return this; }
+    /* Static */
+    virtual bool IsStationSE()                          { return true; }
 
-    /*
-     * Public fields:
-     */
+    /* virtual functions to be overridden in derived classes */
+    //virtual void Process();
+    virtual PyDict* MakeSlimItem();
+    virtual void EncodeDestiny( Buffer& into );
 
-    inline double x() const { return(GetPosition().x); }
-    inline double y() const { return(GetPosition().y); }
-    inline double z() const { return(GetPosition().z); }
-
-    //SystemEntity interface:
-    virtual EntityClass GetClass() const { return(ecStation); }
-    virtual bool IsCelestial() const { return true; }
-    virtual bool IsStaticEntity() const { return true; }
-    virtual bool IsVisibleSystemWide() const { return true; }
-    virtual StationEntity *CastToStationEntity() { return(this); }
-    virtual const StationEntity *CastToStationEntity() const { return(this); }
-    virtual void Process();
-    virtual void EncodeDestiny( Buffer& into ) const;
-    virtual void TargetAdded(SystemEntity *who) {}
-    virtual void TargetLost(SystemEntity *who) {}
-    virtual void TargetedAdd(SystemEntity *who) {}
-    virtual void TargetedLost(SystemEntity *who) {}
-    virtual void TargetsCleared() {}
-    virtual void QueueDestinyUpdate(PyTuple **du) {/* not required to consume */}
-    virtual void QueueDestinyEvent(PyTuple **multiEvent) {/* not required to consume */}
-    virtual uint32 GetCorporationID() const { return(1); }
-    virtual uint32 GetAllianceID() const { return(0); }
-    virtual void Killed(Damage &fatal_blow);
-    virtual SystemManager *System() const { return(m_system); }
-
-    void ForcedSetPosition(const GPoint &pt);
-
-    virtual bool ApplyDamage(Damage &d);
-    virtual void MakeDamageState(DoDestinyDamageState &into) const;
-    virtual PyDict *MakeSlimItem() const;
-
-    void SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq=true);
-    void SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
-
-protected:
-    /*
-     * Member functions
-     */
-
-    /*
-     * Member fields:
-     */
-    SystemManager *const m_system;    //we do not own this
-    PyServiceMgr &m_services;    //we do not own this
-    StationRef _stationRef;   // We don't own this
-
-    /* Used to calculate the damages on NPCs
-     * I don't know why, npc->Set_shieldCharge does not work
-     * calling npc->shieldCharge() return the complete shield
-     * So we get the values on creation and use then instead.
-    */
-    double m_shieldCharge;
-    double m_armorDamage;
-    double m_hullDamage;
 };
 
 #endif /* !__STATION__H__INCL__ */

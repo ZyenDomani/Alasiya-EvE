@@ -226,7 +226,7 @@
   <elementDef name="ErrorResponse">
     <tupleInline>
       <!-- 0 -->
-      <int name="CauseMsgType" />
+      <int name="MsgType" />
       <!-- 1 -->
       <int name="ErrorCode" />
       <!-- 2 -->
@@ -248,20 +248,6 @@
           </dictInlineEntry>
       </dictInline>
     </objectInline>
-  </elementDef>
-
-  <elementDef name="macho_MachoException">
-    <tupleInline>
-      <!-- MACHONETMSG_TYPE -->
-      <int name="in_response_to" />
-      <!-- MACHONETERR_TYPE -->
-      <int name="exception_type" />
-      <tupleInline>
-        <substreamInline>
-            <raw name="payload" />
-        </substreamInline>
-      </tupleInline>
-    </tupleInline>
   </elementDef>
 
   <elementDef name="NotifyOnAggressionChange">
@@ -374,7 +360,7 @@
 
   <elementDef name="SessionChangeNotification">
     <tupleInline>
-      <string name="anotherClueless" default="" />
+      <long name="sessionID" />
       <!-- 0 -->
       <tupleInline>
         <!-- 0 -->

@@ -50,6 +50,7 @@ class CorpMemberInfo;
 class CelestialObjectData;
 class SolarSystemData;
 class StationData;
+class OwnerData;
 
 class InventoryDB
 : public ServiceDB
@@ -162,7 +163,8 @@ public:
     bool SaveItem(uint32 itemID, const ItemData &data);
     bool DeleteItem(uint32 itemID);
 
-    bool GetItemContents(uint32 itemID, std::vector<uint32> &into);
+    bool GetItemContents(OwnerData &od, std::vector<uint32> &into);
+    //bool GetItemContents(uint32 itemID, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 ownerID, std::vector<uint32> &into);
 
@@ -205,32 +207,6 @@ public:
     bool SaveCharacter(uint32 characterID, const CharacterData &data);
     bool SaveCorpMemberInfo(uint32 characterID, const CorpMemberInfo &data);
     bool DeleteCharacter(uint32 characterID);
-
-    // Certificates:
-    struct currentCertificates {
-        uint32 certificateID;
-        uint64 grantDate;
-        bool visibilityFlags;
-    };
-    typedef std::vector<currentCertificates> Certificates;
-
-    /**
-    * Loads certificates
-    *
-    * @param[in] characterID ID of character whose certificates should be loaded.
-    * @param[in] into Certificates wich loaded data should be stored.
-    * @return True if load succeeds, false if fails.
-    */
-    bool LoadCertificates( uint32 characterID, Certificates &into );
-
-    /**
-    * Saves Certificates
-    *
-    * @param[in] characterID ID of the character whose Certificates are saved.
-    * @param[in] from Certificates to save.
-    * @return True if save succeds, false if fails.
-    */
-    bool SaveCertificates( uint32 characterID, const Certificates &from );
 
     /*
      * Celestial object stuff
@@ -290,7 +266,7 @@ public:
      * @return True if load succeeds, false if fails.
      * returns arry of slot flags 0 for open, 1 for filled
      */
-    static bool GetOpenPowerSlots(uint32 slotType, ShipRef ship, uint32 &into);
+    static bool GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &into);
 
     static bool GetTypeID(uint32 itemID, uint32 &typeID);
 

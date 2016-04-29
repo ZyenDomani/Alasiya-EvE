@@ -153,10 +153,15 @@ void MRMutex::WriteLock() {
 
 bool MRMutex::TryWriteLock() {
     MCounters.Lock();
-    if (!rl && !wl)
+    if (!rl && !wl) {
         ++wl;
-    MCounters.Unlock();
-    return true;
+        MCounters.Unlock();
+        return true;
+    }
+    else {
+        MCounters.Unlock();
+        return false;
+    }
 }
 
 void MRMutex::UnWriteLock() {

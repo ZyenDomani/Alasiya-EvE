@@ -583,7 +583,7 @@ void AttributeMap::SaveShipState()
             Inserts << " NULL, " << cur->second.get_float() << ")";
         }
     }
-    cur = mAttributes.find(AttrArmorDamage);
+    cur = mAttributes.find(AttrDamage);
     if (cur != mAttributes.end()) hull = true;
     if (hull) {
         if (shield or armor) Inserts << ",";
@@ -595,9 +595,11 @@ void AttributeMap::SaveShipState()
         }
     }
 
-    DBerror err;
-    if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
-        _log(DATABASE__ERROR, "SaveShipState - unable to save attributes");
+    if (shield or armor or hull) {
+        DBerror err;
+        if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
+            _log(DATABASE__ERROR, "SaveShipState - unable to save attributes");
+        }
     }
 }
 

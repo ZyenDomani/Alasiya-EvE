@@ -29,7 +29,7 @@
 #include "system/SystemDB.h"
 
 /* POD entry for asteroid */
-class DBAsteroidEntity {
+class DBAsteroidSE {
 public:
     uint32 itemID;
     std::string itemName;
@@ -46,8 +46,8 @@ public:
 class ManagerDB {
 public:
     bool GetRoidDist(const char * sec, std::map<float, uint32> &roids);
-    bool LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAsteroidEntity>& into);
-    void SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidEntity> roids);
+    bool LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAsteroidSE>& into);
+    void SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidSE> roids);
 
 protected:
 

@@ -139,6 +139,11 @@ ObjCacheService::ObjCacheService(PyServiceMgr *mgr, const char *cacheDir)
   m_dispatch(new Dispatcher(this)),
   m_cacheDir(cacheDir)
 {
+    std::string _basePath = sConfig.files.cacheDir;
+    if (_basePath[_basePath.size() - 1] != '/')
+        _basePath += "/";
+    CreateDirectory(_basePath.c_str(), nullptr);
+
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(ObjCacheService, GetCachableObject);

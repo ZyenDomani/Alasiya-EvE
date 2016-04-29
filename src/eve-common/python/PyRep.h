@@ -1056,4 +1056,10 @@ public:
     BuiltinSet() : PyObjectEx_Type1( new PyToken("collections.defaultdict"), new_tuple(new PyToken("__builtin__.set")) ) {}
 };
 
+class CacheOK : public PyObjectEx_Type1
+{
+public:
+    CacheOK() : PyObjectEx_Type1( new PyToken("objectCaching.CacheOK"), new_tuple("CacheOK") ) {}
+};
+
 #endif//EVE_PY_REP_H

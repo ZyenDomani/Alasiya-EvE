@@ -32,105 +32,71 @@ class PyServiceMgr;
 class InventoryItem;
 class DestinyManager;
 class SystemManager;
-class Ship;
+class ShipItem;
 
 class Missile
 : public DynamicSystemEntity {
 public:
-    Missile( SystemManager* system,
-             PyServiceMgr &services,
-             InventoryItemRef self,
-             InventoryItemRef module,
-             SystemEntity* target,
-             Ship* ship,
-             const GPoint &position );
-
+    Missile(InventoryItemRef self, PyServiceMgr &services, SystemManager* system, InventoryItemRef module, SystemEntity* target, ShipItem* ship);
     virtual ~Missile();
 
-    bool Load(ServiceDB &from);
+    /* class type pointer querys. */
+    virtual Missile* GetMissileSE()                     { return this; }
+    /* Dynamic */
+    virtual bool IsMissile()                            { return true; }
 
-    inline double x() const { return(GetPosition().x); }
-    inline double y() const { return(GetPosition().y); }
-    inline double z() const { return(GetPosition().z); }
+    /* SystemEntity interface */
+    //virtual float GetRadius()                           { return 5.0f; }
+    virtual void Process();
+    virtual void EncodeDestiny( Buffer& into );
+    virtual PyDict *MakeSlimItem();
 
-    //SystemEntity interface:
-    bool IsMissile() const { return true; }
-    bool IsAlive() { return m_alive; }
-    EntityClass GetClass() const { return(ecMissileEntity); }
-    Missile* CastToMissile() { return(this); }
-    const Missile* CastToMissile() const { return(this); }
-    SystemEntity* GetTarget() { return m_target; }
-    SystemManager* System() const { return m_system; }
-    Ship* GetShip() { return m_ship; }
+    /* specific functions handled here. */
+    ShipItem* GetShip()                                 { return m_ship; }
+    SystemEntity* GetTarget()                           { return m_target; }
 
-    bool IsOverloaded() { return false; }
-
-    void Process();
-    void EncodeDestiny( Buffer& into ) const;
-    void QueueDestinyUpdate(PyTuple **du) {/* not required to consume */}
-    void QueueDestinyEvent(PyTuple **multiEvent) {/* not required to consume */}
-
-    void TargetAdded(SystemEntity *who) { /* not used for missiles */ }
-    void TargetLost(SystemEntity *who)  { /* not used for missiles */ }
-    void TargetedAdd(SystemEntity *who)  { /* not used for missiles */ }
-    void TargetedLost(SystemEntity *who)  { /* not used for missiles */ }
-    void TargetsCleared()  { /* not used for missiles */ }
-
-    uint32 GetCorporationID() const { return m_corporationID; }
-    uint32 GetAllianceID() const { return m_allianceID; }
-    uint32 GetOwnerID() const { return m_ownerID; }
-    uint32 GetWarFactionID() const { return m_warFactionID; }
-
-    void ForcedSetPosition(const GPoint &pt);
-
-   // bool ApplyDamage(Damage &d);
-    void MakeDamageState(DoDestinyDamageState &into) const {}
-    PyDict *MakeSlimItem() const;
-
-    float GetThermal() { return m_therDamage; }
-    float GetEM() { return m_emDamage; }
-    float GetKinetic() { return m_kinDamage; }
-    float GetExplosive() { return m_expDamage; }
-    float GetRadius() { return 5.0f; }
-
+    void SetHitTimer(uint32 setTime)                    { m_hitTimer.Start(setTime); }
+    void SetSpeed(double speed)                         { m_speed = speed; }
     void Delete();
 
-    void SetHitTimer(uint32 setTime) { m_hitTimer.Start(setTime); }
+    bool IsAlive()                                      { return m_alive; }
+    bool IsOverloaded()                                 { return false; }
 
-    void SetSpeed(double speed) { m_speed = speed; }
-    double GetSpeed() { return m_speed; }
+    uint32 GetOwnerID()                                 { return m_ownerID; }
+    uint32 GetWarFactionID()                            { return m_warFactionID; }
+
+    float GetThermal()                                  { return m_therDamage; }
+    float GetEM()                                       { return m_emDamage; }
+    float GetKinetic()                                  { return m_kinDamage; }
+    float GetExplosive()                                { return m_expDamage; }
+
+    double GetSpeed()                                   { return m_speed; }
+    double Min(double a, double b);
+
+protected:
+    SystemEntity* m_target;
+    InventoryItemRef m_module;
+    ShipItem* m_ship;
+
+    void _HitTarget();
+    void _EndOfLife();
 
     Timer m_hitTimer;
     Timer m_lifeTimer;
 
-    double Min(double a, double b);
-
-protected:
-    void _HitTarget();
-    void _EndOfLife();
-
-    SystemManager* const m_system;    //we do not own this
-    PyServiceMgr& m_services;    //we do not own this
-    SystemEntity* m_target;
-    InventoryItemRef m_self;
-    InventoryItemRef m_module;
-    Ship* m_ship;
-
     bool m_alive;
-    double m_speed;
 
-    uint32 m_corporationID;
-    uint32 m_allianceID;
     uint32 m_ownerID;
     uint32 m_warFactionID;
-
     uint32 m_orbitingID;
 
+    double m_speed;
     double m_hullHP;
     double m_emDamage;
     double m_therDamage;
     double m_kinDamage;
     double m_expDamage;
+    double m_damageMod;
 };
 
 #endif  //EVE_SHIP_MISSILE_H

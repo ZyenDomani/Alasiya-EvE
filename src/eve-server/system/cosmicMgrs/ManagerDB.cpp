@@ -48,7 +48,7 @@ bool ManagerDB::GetRoidDist(const char * sec, std::map<float, uint32> &roids) {
     return !roids.empty();
 }
 
-bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAsteroidEntity>& into)
+bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAsteroidSE>& into)
 {
     DBQueryResult res;
 
@@ -62,7 +62,7 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAs
         "   quantity,"
         "   radius,"
         "   x, y, z"
-        " FROM roidItems"
+        " FROM roidItems" //sysAsteroids
         " WHERE systemID = %u"
         "  AND beltID = %u", systemID, beltID)) {
         _log(DATABASE__ERROR, "Error in LoadSystemRoids query: %s", res.error.c_str());
@@ -71,7 +71,7 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAs
 
     _log(DATABASE__RESULTS, "LoadSystemRoids returned %u items", res.GetRowCount());
     DBResultRow row;
-    DBAsteroidEntity entry;
+    DBAsteroidSE entry;
     while(res.GetRow(row)) {
         entry.itemID = row.GetInt(0);
         entry.itemName = row.GetText(1);
@@ -89,11 +89,11 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAs
     return !into.empty();
 }
 
-void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidEntity> roids)
+void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidSE> roids)
 {
     std::ostringstream Inserts;
     // start the insert into command.
-    Inserts << "INSERT INTO roidItems";
+    Inserts << "INSERT INTO roidItems"; //sysAsteroids
     Inserts << " (itemID,itemName,typeID,systemID,beltID,quantity,radius,x, y, z)";
     bool first = true;
     for (auto cur : roids) {

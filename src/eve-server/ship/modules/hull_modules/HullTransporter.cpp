@@ -28,7 +28,7 @@
 #include "character/Character.h"
 
 
-HullTransporter::HullTransporter( InventoryItemRef item, ShipRef ship )
+HullTransporter::HullTransporter( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 
@@ -40,7 +40,7 @@ void HullTransporter::StopCycle(bool abort)
     timeLeft /= 100;
 
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -85,12 +85,12 @@ void HullTransporter::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 double HullTransporter::DoCycle()
 {
-        if (!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
+        if (!m_Ship->GetPilot()->GetShipSE()->SysBubble())
         {
             Deactivate();
             return 0;
@@ -98,12 +98,12 @@ double HullTransporter::DoCycle()
         _ShowCycle();
 
         // Apply repair amount:
-        EvilNumber hullDamage = m_targetEntity->Item()->GetAttribute(AttrDamage);
+        EvilNumber hullDamage = m_targetEntity->GetSelf()->GetAttribute(AttrDamage);
         hullDamage -= m_Item->GetAttribute(AttrStructureDamageAmount);
         if (hullDamage <= 0) {
             hullDamage = 0;
         }
-        m_targetEntity->Item()->SetAttribute(AttrDamage, hullDamage);
+        m_targetEntity->GetSelf()->SetAttribute(AttrDamage, hullDamage);
 
         return _GetDuration();
 }
@@ -111,7 +111,7 @@ double HullTransporter::DoCycle()
 void HullTransporter::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
      m_Ship,
      m_Item->itemID(),
@@ -154,7 +154,7 @@ void HullTransporter::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double HullTransporter::_GetCapNeed()
@@ -164,7 +164,7 @@ double HullTransporter::_GetCapNeed()
 	double moduleCapNeed = m_Item->GetAttribute(AttrCapacitorNeed).get_float();
 
 	// Now we do the initial cap need calculations
-	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetOperator()->GetChar()->GetSkillLevel(skillRemoteHullRepairSystems)));
+	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillRemoteHullRepairSystems)));
 
     return capacitorNeed;
 }

@@ -31,10 +31,10 @@
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 
-MissileLauncher::MissileLauncher( InventoryItemRef item, ShipRef ship )
+MissileLauncher::MissileLauncher( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
-    Character* pChar = m_Ship->GetOperator()->GetChar().get();
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
     m_ROF *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMissileLauncherOperation, true)))); //  2% decrease in rof
     m_ROF *= (1 - ( 0.03 * (pChar->GetSkillLevel(skillRapidLaunch, true))));              //  3% decrease in rof
 
@@ -134,12 +134,12 @@ void MissileLauncher::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 double MissileLauncher::DoCycle() {
-        if ((!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
-            || (!m_Ship->GetOperator()->GetSystemEntity()->Bubble()->GetEntity(m_targetID))
+        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))
             || (!m_chargeLoaded) || (!m_chargeRef) )
         {
             Deactivate();
@@ -159,26 +159,23 @@ double MissileLauncher::DoCycle() {
 void MissileLauncher::_LaunchMissile()
 {
     // Actually Launch a missile, creating a new Destiny object for it
-    Character* pChar = m_Ship->GetOperator()->GetChar().get();
-    SystemManager* pSystem = m_Ship->GetOperator()->GetClient()->System();
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
+    SystemManager* pSystem = m_Ship->GetPilot()->SystemMgr();
     ItemData idata(m_chargeRef->typeID(), pChar->itemID(), pChar->locationID(), flagMissile, m_chargeRef->itemName().c_str(), m_Ship->position() );
 
-    InventoryItemRef missileRef = pSystem->GetServiceMgr()->item_factory->SpawnItem(idata);
+    InventoryItemRef missileRef = m_Ship->GetItemFactory()->SpawnItem(idata);
 
     if (!missileRef)
         throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", \
                             m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
 
-    Missile* pMissileObj = new Missile( pSystem, *(pSystem->GetServiceMgr()), missileRef, m_Item, m_targetEntity, m_Ship.get(), m_Ship->position() );
-
-    pMissile = pMissileObj;
-
-    double distance = pMissile->Item()->position().distance(m_targetEntity->GetPosition());
-    double missileSpeed = pMissile->Item()->GetAttribute(AttrMaxVelocity).get_float();
+    pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()),  pSystem, m_Item, m_targetEntity, m_Ship.get());
+    double distance = pMissile->GetSelf()->position().distance(m_targetEntity->GetPosition());
+    double missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
     missileSpeed *=  (1 + ( 0.1 * (pChar->GetSkillLevel(skillMissileProjection, true))));        // 10% increase in velocity
     double travelTime = (distance/missileSpeed);
     pMissile->SetSpeed(missileSpeed);
-    pMissile->Destiny()->MakeMissile(pMissile);
+    pMissile->DestinyMgr()->MakeMissile(pMissile);
     pMissile->SetHitTimer(travelTime *1000);
 
     // Reduce ammo charge by 1 unit:
@@ -188,7 +185,7 @@ void MissileLauncher::_LaunchMissile()
 void MissileLauncher::_ShowCycle()
 {
     // Create Special Effect:
-    pMissile->Destiny()->SendSpecialEffect
+    pMissile->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -233,7 +230,7 @@ void MissileLauncher::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    pMissile->Destiny()->SendDestinyUpdate(updates, events, false);
+    pMissile->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double MissileLauncher::_GetROF() {

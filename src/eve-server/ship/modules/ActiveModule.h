@@ -27,14 +27,16 @@
 #ifndef ACTIVE_MODULES_H
 #define ACTIVE_MODULES_H
 
+#include "Client.h"
 #include "ship/modules/GenericModule.h"
 #include "ship/modules/components/ActiveModuleProcessingComponent.h"
+#include "system/SystemBubble.h"
 
 
 class ActiveModule : public GenericModule
 {
 public:
-    ActiveModule(InventoryItemRef item, ShipRef ship);
+    ActiveModule(InventoryItemRef item, ShipItemRef ship);
     virtual ~ActiveModule();
 
     virtual bool IsActiveModule() const                     { return true; }

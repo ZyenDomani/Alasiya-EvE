@@ -33,7 +33,7 @@
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 
-MiningLaser::MiningLaser( InventoryItemRef item, ShipRef ship )
+MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 	m_IsInitialCycle = true;
@@ -58,35 +58,35 @@ void MiningLaser::Activate(SystemEntity * targetEntity)
            m_Item->typeID() == 17912 ||
            m_Item->groupID() == 54)
            &&
-           (targetEntity->Item()->groupID() == EVEDB::invGroups::Arkonor ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Bistot ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Crokite ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Dark_Ochre ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Hedbergite ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Hemorphite ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Jaspet ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Kernite ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Plagioclase ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Pyroxeres ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Scordite ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Spodumain ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Veldspar ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Gneiss ||
-        	targetEntity->Item()->groupID() == EVEDB::invGroups::Omber)) ||
+           (targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Arkonor ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Bistot ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Crokite ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Dark_Ochre ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Hedbergite ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Hemorphite ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Jaspet ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Kernite ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Plagioclase ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Pyroxeres ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Scordite ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Spodumain ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Veldspar ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Gneiss ||
+        	targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Omber)) ||
 
     	 ((m_Item->typeID() == 12108 ||
     	   m_Item->typeID() == 18068 ||
     	   m_Item->typeID() == 24305 ||
     	   m_Item->typeID() == 28748)
-    	   && (targetEntity->Item()->groupID() == EVEDB::invGroups::Mercoxit)) ||
+    	   && (targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit)) ||
 
          ((m_Item->typeID() == 16278 ||
            m_Item->typeID() == 22229 ||
            m_Item->typeID() == 28752)
-           && (targetEntity->Item()->groupID() == EVEDB::invGroups::Ice)) ||
+           && (targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)) ||
 
          ((m_Item->groupID() == 737)
-           && (targetEntity->Item()->groupID() == EVEDB::invGroups::Harvestable_Cloud))
+           && (targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud))
         ))
     {
         m_targetEntity = targetEntity;
@@ -116,35 +116,35 @@ void MiningLaser::Deactivate()
            m_Item->typeID() == 17912 ||
            m_Item->groupID() == 54)
            &&
-           (m_targetEntity->Item()->groupID() == EVEDB::invGroups::Arkonor ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Bistot ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Crokite ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Dark_Ochre ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Hedbergite ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Hemorphite ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Jaspet ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Kernite ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Plagioclase ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Pyroxeres ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Scordite ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Spodumain ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Veldspar ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Gneiss ||
-         	m_targetEntity->Item()->groupID() == EVEDB::invGroups::Omber)) ||
+           (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Arkonor ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Bistot ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Crokite ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Dark_Ochre ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Hedbergite ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Hemorphite ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Jaspet ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Kernite ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Plagioclase ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Pyroxeres ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Scordite ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Spodumain ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Veldspar ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Gneiss ||
+         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Omber)) ||
 
      	 ((m_Item->typeID() == 12108 ||
      	   m_Item->typeID() == 18068 ||
      	   m_Item->typeID() == 24305 ||
      	   m_Item->typeID() == 28748)
-     	   && (m_targetEntity->Item()->groupID() == EVEDB::invGroups::Mercoxit)) ||
+     	   && (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit)) ||
 
           ((m_Item->typeID() == 16278 ||
             m_Item->typeID() == 22229 ||
             m_Item->typeID() == 28752)
-            && (m_targetEntity->Item()->groupID() == EVEDB::invGroups::Ice)) ||
+            && (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)) ||
 
           ((m_Item->groupID() == 737)
-            && (m_targetEntity->Item()->groupID() == EVEDB::invGroups::Harvestable_Cloud))
+            && (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud))
          )){
     	double timeLeft = (m_cycleStartTime + (_GetDuration() / 1000)) - GetTimeMSeconds();
     	double fraction = 1 - (timeLeft / (_GetDuration() / 1000));
@@ -163,8 +163,8 @@ void MiningLaser::Deactivate()
 
 double MiningLaser::DoCycle() {
 	if (!m_Stop_signal){
-		if ((!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
-			|| (!m_Ship->GetOperator()->GetSystemEntity()->Bubble()->GetEntity(m_targetID)) )
+		if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+			|| (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
         	{
             	Deactivate();
             	return 0;
@@ -184,9 +184,9 @@ double MiningLaser::DoCycle() {
 			m_IsInitialCycle = false;
 		else {
 			// Actually pull in the ore
-			if (m_targetEntity->Item()->groupID() == EVEDB::invGroups::Ice)
+			if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)
 				_ProcessIceCycle();
-			else if (m_targetEntity->Item()->groupID() == EVEDB::invGroups::Harvestable_Cloud)
+			else if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)
 				_ProcessCloudCycle();
 			else
 				_ProcessOreCycle();
@@ -210,9 +210,9 @@ void MiningLaser::StopCycle(bool abort)
         timeLeft = GetTimeMSeconds() - m_cycleStartTime;
 
 	if(abort){
-		if (m_targetEntity->Item()->groupID() == EVEDB::invGroups::Ice)
+		if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)
 			_ProcessIceCycle(abort);
-		else if (m_targetEntity->Item()->groupID() == EVEDB::invGroups::Harvestable_Cloud)
+		else if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)
 			_ProcessCloudCycle(abort);
 		else
 			_ProcessOreCycle(abort);
@@ -230,7 +230,7 @@ void MiningLaser::StopCycle(bool abort)
         effectsString = "effects.CloudMining";
     }
 
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -277,13 +277,14 @@ void MiningLaser::StopCycle(bool abort)
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
+/** @todo rework this */
 void MiningLaser::_ProcessOreCycle(bool partial)
 {
 	// Retrieve ore from target Asteroid and put into Cargo Hold
-	InventoryItemRef asteroidRef = m_targetEntity->Item();
+	InventoryItemRef asteroidRef = m_targetEntity->GetSelf();
 	InventoryItemRef moduleRef = this->m_Item;
     double roidVolume = asteroidRef->GetAttribute(AttrQuantity).get_float();   //    AttrQuantity = 805  -float
     double oreVolume = asteroidRef->GetAttribute(AttrVolume).get_float();       //    AttrVolume = 161  -float
@@ -295,7 +296,7 @@ void MiningLaser::_ProcessOreCycle(bool partial)
         oreVolumeToPull *= m_chargeRef->GetAttribute(AttrSpecialisationAsteroidYieldMultiplier).get_float();   //YieldMultiplier = 782 -float,
 
 	// Calculate the ore volume based on the character's core skills - mining and astrogeology
-    Character* pChar = m_Ship->GetOperator()->GetChar().get();
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
     oreVolumeToPull *= (1 + (0.05 * (pChar->GetSkillLevel(skillMining, true))));        //  5% increase in yield
     oreVolumeToPull *= (1 + (0.05 * (pChar->GetSkillLevel(skillAstrogeology, true))));   //  5% increase in yield
 
@@ -403,7 +404,7 @@ void MiningLaser::_ProcessOreCycle(bool partial)
             oreAmount
         );
 
-        InventoryItemRef ore = m_Ship->GetOperator()->GetDestiny()->GetSystemManager()->GetServiceMgr()->item_factory->SpawnItem( idata );
+        InventoryItemRef ore = m_Ship->GetItemFactory()->SpawnItem( idata );
         if (ore) {
             /** @todo change these to new format and stack items after addition */
             m_Ship->AddItem(flagCargoHold, ore);
@@ -420,13 +421,13 @@ void MiningLaser::_ProcessOreCycle(bool partial)
             //deactivate module
             Deactivate();
 			// remove Asteroid
-			m_targetEntity->System()->RemoveEntity(m_targetEntity);
-			m_targetEntity->Item()->Delete();
+			m_targetEntity->SystemMgr()->RemoveEntity(m_targetEntity);
+			m_targetEntity->GetSelf()->Delete();
 		}
 	}
 	else
 		sLog.Warning( "MiningLaser::DoCycle()", "Somehow MiningLaser could not extract ore from current target asteroid '%s' (id %u)",
-                      m_targetEntity->Item()->itemName().c_str(), m_targetEntity->GetID() );
+                      m_targetEntity->GetSelf()->itemName().c_str(), m_targetEntity->GetID() );
 }
 
 void MiningLaser::_ProcessCloudCycle(bool partial)
@@ -437,7 +438,7 @@ void MiningLaser::_ProcessCloudCycle(bool partial)
 void MiningLaser::_ProcessIceCycle(bool partial)
 {
 	// Variables definition
-	InventoryItemRef asteroidRef = m_targetEntity->Item();
+	InventoryItemRef asteroidRef = m_targetEntity->GetSelf();
 	InventoryItemRef moduleRef = this->m_Item;
 	double roidVolume = asteroidRef->GetAttribute(AttrQuantity).get_float();   //    AttrQuantity = 805  -float
 	double iceVolume = asteroidRef->GetAttribute(AttrVolume).get_float();       //    AttrVolume = 161  -float
@@ -501,7 +502,7 @@ void MiningLaser::_ProcessIceCycle(bool partial)
 	    iceAmount
 	    );
 
-        InventoryItemRef ore = m_Ship->GetOperator()->GetDestiny()->GetSystemManager()->GetServiceMgr()->item_factory->SpawnItem( idata );
+        InventoryItemRef ore = m_Ship->GetItemFactory()->SpawnItem( idata );
         if (ore) {
             /** @todo change these to new format and stack items after addition */
 	       m_Ship->AddItem(flagCargoHold, ore);
@@ -518,12 +519,12 @@ void MiningLaser::_ProcessIceCycle(bool partial)
 	        //deactivate module
 	        Deactivate();
 	        // remove Asteroid
-			m_targetEntity->System()->RemoveEntity(m_targetEntity);
-			m_targetEntity->Item()->Delete();
+			m_targetEntity->SystemMgr()->RemoveEntity(m_targetEntity);
+			m_targetEntity->GetSelf()->Delete();
 		}
 	} else
 		sLog.Warning( "MiningLaser::DoCycle()", "Somehow MiningLaser could not extract ore from current target asteroid '%s' (id %u)",
-	                   m_targetEntity->Item()->itemName().c_str(), m_targetEntity->GetID() );
+	                   m_targetEntity->GetSelf()->itemName().c_str(), m_targetEntity->GetID() );
 }
 
 void MiningLaser::_ShowCycle()
@@ -540,7 +541,7 @@ void MiningLaser::_ShowCycle()
         effectsString = "effects.CloudMining";
     }
 
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -587,12 +588,12 @@ void MiningLaser::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double MiningLaser::_GetDuration()
 {
-    Character* pChar = m_Ship->GetOperator()->GetChar().get();
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
     double duration = m_Item->GetAttribute(AttrDuration).get_float();
 
     //FIXME - For now server cycle end and client cycle indicator are not synchronized, so for now time modification is disabled.

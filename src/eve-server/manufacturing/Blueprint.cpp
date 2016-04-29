@@ -159,13 +159,13 @@ RefPtr<_Ty> Blueprint::_LoadBlueprint(ItemFactory &factory, uint32 blueprintID,
 }
 
 BlueprintRef Blueprint::Spawn(ItemFactory &factory, ItemData &data, BlueprintData &bpData) {
-    uint32 blueprintID = Blueprint::_Spawn(factory, data, bpData);
+    uint32 blueprintID = Blueprint::CreateItemID(factory, data, bpData);
     if(blueprintID == 0)
         return BlueprintRef();
     return Blueprint::Load(factory, blueprintID);
 }
 
-uint32 Blueprint::_Spawn(ItemFactory &factory,
+uint32 Blueprint::CreateItemID(ItemFactory &factory,
     // InventoryItem stuff:
     ItemData &data,
     // Blueprint stuff:
@@ -177,7 +177,7 @@ uint32 Blueprint::_Spawn(ItemFactory &factory,
         return 0;
 
     // get the blueprintID
-    uint32 blueprintID = InventoryItem::_Spawn(factory, data);
+    uint32 blueprintID = InventoryItem::CreateItemID(factory, data);
     if(blueprintID == 0)
         return 0;
 

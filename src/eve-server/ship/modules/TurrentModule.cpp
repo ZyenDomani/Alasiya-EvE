@@ -29,14 +29,14 @@
 #include "character/Character.h"
 #include "ship/modules/TurrentModule.h"
 
-TurrentModule::TurrentModule(InventoryItemRef item, ShipRef shipRef)
+TurrentModule::TurrentModule(InventoryItemRef item, ShipItemRef shipRef)
 : ActiveModule(item, shipRef)
 {
     m_ROF = m_Item->GetAttribute(AttrSpeed).get_float();
     m_capNeed = m_Item->GetAttribute(AttrCapacitorNeed).get_float();
     m_damageModifier = m_Item->GetAttribute(AttrDamageMultiplier).get_float();
 
-    Character* pChar = m_Ship->GetOperator()->GetChar().get();
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
     m_ROF *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillGunnery, true))));      //  2% decrease in rof
     m_ROF *= (1 - ( 0.04 * (pChar->GetSkillLevel(skillRapidFiring, true))));  //  4% decrease in rof
     m_capNeed *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillControlledBursts, true))));  //  5% decrease in cap need

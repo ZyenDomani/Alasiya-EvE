@@ -21,7 +21,9 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
+
 
 #ifndef EVE_CLIENT_H
 #define EVE_CLIENT_H
@@ -59,8 +61,7 @@ class TradeSession;
 
 //DO NOT INHERIT THIS OBJECT!
 class Client
-: public DynamicSystemEntity,
-  protected EVEClientSession,
+: protected EVEClientSession,
   protected EVEPacketDispatcher
 {
 public:
@@ -82,10 +83,11 @@ public:
     uint64 GetAccountRole() const                   { return mSession.GetCurrentULong( "role" ); }
     uint32 GetClientID() const                      { return mSession.GetCurrentInt( "clientid" ); }
     uint32 GetUserID() const                        { return mSession.GetCurrentInt( "userid" ); }
-    uint32 GetSessionID() const                     { return 0; }
+    int64 GetSessionID()                            { return mSession.GetCurrentLong( "sessionID" ); }
 
     uint32 GetCharacterID() const                   { return mSession.GetCurrentInt( "charid" ); }
     std::string GetCharacterName() const            { return mSession.GetCurrentString( "charname" ); }
+    uint32 GetShipID() const                        { return m_shipId; /* mSession.GetCurrentInt( "shipid" );*/ }
     uint32 GetCorporationID() const                 { return mSession.GetCurrentInt( "corpid" ); }
     uint32 GetLocationID() const                    { return mSession.GetCurrentInt( "locationid" ); }
     uint32 GetStationID() const                     { return mSession.GetCurrentInt( "stationid" ); }
@@ -104,39 +106,36 @@ public:
 
     uint32 GetGangRole() const                      { return mSession.GetCurrentInt( "gangrole" ); }
     uint8 GetFleetRole() const                      { return mSession.GetCurrentInt( "fleetrole" ); }
-
+    /** @todo need to add gang and fleet session data here */
 
     //  public functions to update client session when char's roles are changed
-    void UpdateCorpSession( const CharacterConstRef& character );
-    void UpdateFleetSession( const CharacterConstRef& character );
+    void UpdateCorpSession(Character* pChar);
+    void UpdateFleetSession(Character* pChar);
 
     // character data
+    void SetChar(CharacterRef charRef)              { m_char = charRef; }   // only used in char creation
     CharacterRef GetChar() const                    { return m_char; }
-    ShipRef GetShip() const                         { return ShipRef::StaticCast( Item() ); }
-    uint32 GetShipID() const                        { return m_shipId; }
+    ShipItemRef GetShip() const                     { return m_ship; }
+    SystemEntity* GetShipSE()                       { return pShipSE; }
     uint32 GetPodID() const                         { return m_char->capsuleID(); }
+    uint32 GetAllianceID() const                    { return m_char->allianceID(); }
+    uint32 GetWarFactionID() const                  { return m_char->warFactionID(); }
+    double GetBounty() const                        { return m_char->bounty(); }
+    double GetSecurityRating() const                { return m_char->GetSecurityRating(); }
+    double GetBalance() const                       { return m_char->balance(); }
+    double GetAurBalance() const                    { return m_char->aurBalance(); }
 
-    double x() const                                { return GetPosition().x; }    //this is terribly inefficient.
-    double y() const                                { return GetPosition().y; }    //this is terribly inefficient.
-    double z() const                                { return GetPosition().z; }    //this is terribly inefficient.
-
-    uint32 GetAllianceID() const                    { return GetChar()->allianceID(); }
-    uint32 GetWarFactionID() const                  { return GetChar()->warFactionID(); }
-    double GetBounty() const                        { return GetChar()->bounty(); }
-    double GetSecurityRating() const                { return GetChar()->GetSecurityRating(); }
-    double GetBalance() const                       { return GetChar()->balance(); }
-    double GetAurBalance() const                    { return GetChar()->aurBalance(); }
-
-    std::string GetSystemName() const               { return (m_systemName); }
+    std::string GetSystemName() const               { return m_systemName; }
 
     bool AddBalance(double amount);
+    void CreateShipSE();
 
     // misc char functions
-    void SetShip(ShipRef shipRef);
+    void SetShip(ShipItemRef shipRef);
     void CreateNewPod();
     void PickAlternateShip();
     void ResetAfterPodded();
-    void BoardShip(ShipRef newShipRef);
+    void BoardShip(ShipItemRef newShipRef);
     void UndockFromStation(uint32 stationID, uint32 systemID, uint32 constellationID, uint32 regionID, GPoint dockPosition, GPoint direction);
     void DockToStation(uint32 stationID);
     void MoveToLocation(uint32 location, const GPoint &pt);
@@ -144,13 +143,14 @@ public:
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
     void SetDestiny(bool count=false);
     void ResetDestiny(bool count=false);
+    //void CheckSelf();
     void DestinyUndock(GPoint direction);
     void HasUndocked();
     void WarpIn();
     void WarpOut();
     void IsJumping();
     bool EnterSystem(uint32 systemID=0);
-    void LoginToSystem(uint32 systemID=0);
+    void LoginToSystem(uint32 systemID, ShipItemRef ship);
     void UpdateLocation(uint32 locationID=0);
     bool SelectCharacter( uint32 char_id=0);
     void JoinCorporationUpdate(uint32 corp_id=0);
@@ -161,6 +161,7 @@ public:
     bool IsHangarLoaded(uint32 stationID);
     void LoadStationHangar(uint32 stationID);
     void AddStationHangar(uint32 stationID);
+    void RemoveStationHangar(uint32 stationID);
 
     PyRep* GetInfoWindowDataForChar(Client *pClient);
 
@@ -178,7 +179,7 @@ public:
     GPoint GetDockPoint()                           { return m_dockPoint; }
     bool GetPendingDockOperation()                  { return m_needToDock; };
     void SetPendingDockOperation(bool needToDock)   { m_needToDock = needToDock; }
-    bool InPod()                                    { return (GetShip()->groupID() == EVEDB::invGroups::Capsule ? true : false); }
+    bool InPod()                                    { return (m_ship->groupID() == EVEDB::invGroups::Capsule ? true : false); }
     bool IsInSpace()                                { return (GetStationID() ? false : true); }
     bool IsDocked()                                 { return (GetStationID() ? true : false); }
     bool IsJump()                                   { return (m_moveState == msJump ? true : false); }
@@ -204,8 +205,8 @@ public:
 
     //jetcan timer
     bool IsJetcanAvalible();
-    uint32 JetcanTime()                             { return (m_jetcanTimer.GetRemainingTime()); }
-    void StartJetcanTimer()                         { m_jetcanTimer.Start(180000); }
+    uint32 JetcanTime()                                 { return m_jetcanTimer.GetRemainingTime(); }
+    void StartJetcanTimer()                             { m_jetcanTimer.Start(180000); }
 
     //messages and LSC
     void SendErrorMsg(const char *fmt, ...);
@@ -223,15 +224,10 @@ public:
     void OnCharNowInStation();
     void OnCharNoLongerInStation();
 
-    /********************************************************************/
-    /* DynamicSystemEntity interface                                    */
-    /********************************************************************/
-    SystemManager* System() const                   { return m_system; }    //may yeild NULL  we DO NOT own this. (entityList does)
-    EntityClass GetClass() const                    { return ecClient; }
-    bool IsClient() const                           { return true; }
-    Client *CastToClient()                          { return this; }
-    const Client *CastToClient() const              { return this; }
-    const char *GetName() const                     { return (GetChar() ? GetChar()->itemName().c_str() : "(null)"); }
+    SystemManager* SystemMgr() const                    { return m_system; }
+    bool IsClient() const                               { return true; }
+    const char *GetName() const                         { return (m_char ? m_char->itemName().c_str() : "(null)"); }
+
     PyDict *MakeSlimItem() const;
     void EncodeDestiny( Buffer& into ) const;
     PyRep *GetAggressors() const;
@@ -254,15 +250,15 @@ public:
     void DisconnectClient();
     void BanClient();
 
-    Scan* scan()                    { return m_scan; }
-    void SetScan(Scan* pScan)   { m_scan = pScan; }
+    Scan* scan()                                        { return m_scan; }
+    void SetScan(Scan* pScan)                           { m_scan = pScan; }
     // set scan timer in ms  this is used in scan.cpp after time calc's are done
-    void SetScanTimer(uint32 time)   { m_scanTimer.Start(time); }
+    void SetScanTimer(uint32 time)                      { m_scanTimer.Start(time); }
 
     //  trade
-    void SetTradeSession(TradeSession* ts)  { m_TS = ts; }
-    void ClearTradeSession()                { m_TS = nullptr; }
-    TradeSession* GetTradeSession()         { return m_TS; }
+    void SetTradeSession(TradeSession* ts)              { m_TS = ts; }
+    void ClearTradeSession()                            { m_TS = nullptr; }
+    TradeSession* GetTradeSession()                     { return m_TS; }
 
 protected:
     //void _AwardBounty(SystemEntity *who);
@@ -270,6 +266,7 @@ protected:
 
     void _UpdateSession( const CharacterConstRef& character );
     void InitSession( uint32 characterID  );
+    void DestroyShipSE();
 
     // Packet stuff
     void _SendCallReturn( const PyAddress& source, uint64 callID, uint32 clientID, PyRep** return_value, const char* channel = NULL );
@@ -287,9 +284,8 @@ protected:
     ServiceDB m_sDB;
     Scan* m_scan;
     TradeSession* m_TS;
-
-    ShipRef m_ship;
-    uint32 m_shipId;
+    ShipItemRef m_ship;
+    SystemEntity* pShipSE;
 
 	SystemGPoint m_SGP;     // interface to my variable 3-d point generating system  (which isnt finished yet... -allan)
 
@@ -335,12 +331,15 @@ protected:
     // set true for using autopilot.
     bool m_autoPilot = false;
 
+    uint32 m_shipId;
+
     EvilNumber m_timeEndTrain;
 
     /********************************************************************/
     /* EVEClientSession interface                                       */
     /********************************************************************/
     void _GetVersion( VersionExchangeServer& version );
+    uint32 _GetUserCount();
     uint32 _GetQueuePosition() { /* hack */ return 1; }
 
     /********************************************************************/

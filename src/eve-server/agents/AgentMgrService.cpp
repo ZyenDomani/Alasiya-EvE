@@ -244,7 +244,7 @@ PyResult AgentMgrBound::Handle_DoAction(PyCallArgs &call) {
         return NULL;
     }
 
-    //TODO: send loyaltyPoints in the keywords return.
+    /** @todo: send loyaltyPoints in the keywords return. */
     //uint32 loyaltyPoints = m_agent->GetLoyaltyPoints(call.client);
 
     DoAction_Result res;

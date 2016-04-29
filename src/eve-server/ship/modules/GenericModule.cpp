@@ -27,7 +27,7 @@
 #include "ship/modules/components/ModifyModuleAttributesComponent.h"
 #include "ship/modules/components/ModifyShipAttributesComponent.h"
 
-GenericModule::GenericModule( InventoryItemRef item, ShipRef ship )
+GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
 {
     m_Item = item;
     m_Ship = ship;
@@ -57,10 +57,11 @@ GenericModule::~GenericModule()
  * a category is the intended target (common ones are '6' for "ship" and '32' for "subsystem")
  * onlining passives should give a target group, either ship or another module (or group of modules)
  * to adjust attributes for.
- * this will get complicated.  -allan 12April16
+ * ....this will get complicated.  -allan 12April16
  */
 void GenericModule::Online()
 {
+    /** @todo fixme....  rigs DO NOT get AttrIsOnline set! */
     m_Item->PutOnline();
     m_ModuleState = MOD_ONLINE;
 

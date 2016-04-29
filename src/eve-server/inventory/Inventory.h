@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Bloody.Rabbit
+    Updates:    Allan
 */
 
 #ifndef __INVENTORY__H__INCL__
@@ -29,92 +30,70 @@
 #include "inventory/InventoryItem.h"
 
 class CRowSet;
+class OwnerData;
 
+/* this class is content management for items that can contain other items */
 class Inventory
 {
     friend class InventoryItem;
 public:
+    Inventory(InventoryItemRef item);
+    virtual ~Inventory()                                { /* do nothing here*/ }
+
+    void AddItem(InventoryItemRef item);
+    void RemoveItem(InventoryItemRef item);
+    void DeleteContents(ItemFactory &factory);
+    void GetInventoryList(std::map<uint32, InventoryItemRef> &inventory);
+    void GetInventoryVec(std::vector<InventoryItemRef> &itemVec);
+    void StackAll(EVEItemFlags flag, uint32 forOwner = 0);
+
+    bool IsEmpty()                                      { return mContents.empty(); }
+    bool LoadContents(ItemFactory* factory);
+    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
+    bool ContentsLoaded() const                         { return mContentsLoaded; }
+    bool Contains(uint32 itemID) const                  { return mContents.find( itemID ) != mContents.end(); }
+    bool GetItems(OwnerData od, std::vector< uint32 >& into) const;
+
+    double GetCapacity(EVEItemFlags flag) const;
+    double GetStoredVolume(EVEItemFlags flag) const;
+    double GetRemainingCapacity(EVEItemFlags flag) const { return GetCapacity( flag ) - GetStoredVolume( flag ); }
+
+    //uint32 inventoryID() const                          { return m_inventoryID; }
+
+    InventoryItemRef GetByID(uint32 id) const;
+    InventoryItemRef GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const;
+
+    /* Inventory-by-Flag methods */
+    bool IsEmptyByFlag(EVEItemFlags flag) const;
+    bool FindSingleByFlag(EVEItemFlags flag, InventoryItemRef &item) const;
+    uint32 FindByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
+    uint32 ListByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
+    uint32 FindByFlagRange(EVEItemFlags low_flag, EVEItemFlags high_flag, std::vector<InventoryItemRef> &items) const;
+    uint32 FindByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const;
+    InventoryItemRef FindFirstByFlag(EVEItemFlags flag) const;
+
+    /* Primary packet builders */
+    CRowSet* List( EVEItemFlags flag, uint32 forOwner = 0 ) const;
+    void List( CRowSet* into, EVEItemFlags flag, uint32 forOwner = 0 ) const;
+
     /**
      * Casts given InventoryItemRef to Inventory.
      *
      * @return Pointer to Inventory; NULL if given item isn't a valid inventory.
      */
-    static Inventory *Cast(InventoryItemRef item);
+    Inventory *Cast(InventoryItemRef item);
 
-    Inventory();
-    virtual ~Inventory();
-
-    virtual uint32 inventoryID() const = 0;
-
-    /*
-     * Contents management:
-     */
-    bool ContentsLoaded() const { return mContentsLoaded; }
-    bool LoadContents(ItemFactory* factory);
-    void DeleteContents(ItemFactory* factory);
-    void SetContentsLoaded(bool set=false)    { mContentsLoaded = set; }
-    
-    bool Contains(uint32 itemID) const { return mContents.find( itemID ) != mContents.end(); }
-    InventoryItemRef GetByID(uint32 id) const;
-    InventoryItemRef GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const;
-    void GetInventoryList(std::map<uint32, InventoryItemRef> &inventory);
-    void GetInventoryVec(std::vector<InventoryItemRef> &itemVec);
-
-    /*
-     *
-     */
-    InventoryItemRef FindFirstByFlag(EVEItemFlags flag) const;
-    uint32 FindByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
-    uint32 ListByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
-    uint32 FindByFlagRange(EVEItemFlags low_flag, EVEItemFlags high_flag, std::vector<InventoryItemRef> &items) const;
-    uint32 FindByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const;
-
-    /* should do exactly the same as FindFirstByFlag, but only searches a single item.
-     * it asserts when it finds multiple items. It should be used to search single items... like rigs...
-     * @returns true if the object is found and false if its not.
-     */
-    bool FindSingleByFlag(EVEItemFlags flag, InventoryItemRef &item) const;
-
-    /* checks if a a item is present at a certain location flag.
-     *
-     * @returns true if its empty and false if its not.
-     */
-    bool IsEmptyByFlag(EVEItemFlags flag);
-    bool IsEmpty();
-
-    double GetStoredVolume(EVEItemFlags flag) const;
-
-    virtual bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const {}
-    void StackAll(EVEItemFlags flag, uint32 forOwner = 0);
-
-    /*
-     * Primary packet builders:
-     */
-    virtual PyRep* GetItem() const = 0;
-
-    CRowSet* List( EVEItemFlags flag, uint32 forOwner = 0 ) const;
-    void List( CRowSet* into, EVEItemFlags flag, uint32 forOwner = 0 ) const;
 
 protected:
-    virtual void AddItem(InventoryItemRef item);
-    virtual void RemoveItem(InventoryItemRef item);
-
-    virtual bool GetItems(ItemFactory* factory, std::vector<uint32> &into) const { return factory->db().GetItemContents( inventoryID(), into ); }
-
-    std::vector<InventoryItemRef> _sortVector(std::vector<InventoryItemRef> &itemVec);
+    InventoryDB* m_db;
+    InventoryItemRef m_self;
 
     bool mContentsLoaded;
+
+    uint32 m_inventoryID;
+
+    std::vector<InventoryItemRef> _sortVector(std::vector<InventoryItemRef> &itemVec);
     std::map<uint32, InventoryItemRef> mContents;    //maps item ID to its instance. we own a ref to all of these.
-};
-
-class InventoryEx
-: public Inventory
-{
-public:
-    virtual double GetCapacity(EVEItemFlags flag) const = 0;
-    double GetRemainingCapacity(EVEItemFlags flag) const { return GetCapacity( flag ) - GetStoredVolume( flag ); }
-
-    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
 };
 
 #endif /* !__INVENTORY__H__INCL__ */

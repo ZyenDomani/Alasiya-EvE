@@ -30,26 +30,27 @@
 #include "npc/SpawnDB.h"
 
 struct SystemSpawnGroup { //reference to this bubble's data for spawn groups.  may need later.
-    uint16 bubbleID;
+    //SystemBubble* pSysBubble;   //cant use reference or pointer here...
+    uint32 bubbleID;
     uint32 systemID;
     uint32 regionID;
     double secRating;
 };
 
 struct SpawnEntry {     // notes for me while creating/writing/testing
-    bool enabled = false;   // is group timer enabled for this entry?
-    uint8 spawnType = 0;    // spawn type.  1 = roaming, 2 = static
-    uint8 total = 0;        // total number of this group spawned
-    uint8 number = 0;       // this rats number in group (to match up with above total)
-    uint8 sub = 0;          // spawn data subtype
-    uint8 type = 0;         // spawn data class id (in case we have to look it up again)
-    uint16 groupID = 0;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
-    uint32 typeID = 0;      // rat type id
-    uint32 itemID = 0;      // rat entity id
-    uint32 corpID = 0;      // rat corp id
-    uint32 factionID = 0;   // rat faction id
-    uint32 spawnID = 0;     // spawn id (if needed to match up with other spawns of this group (multiple spawn types in this group))
-    uint32 time = 0;        // spawn group timer start time
+    bool enabled;       // is group timer enabled for this entry?
+    uint8 spawnType;    // spawn type.  1 = roaming, 2 = static
+    uint8 total;        // total number of this group spawned
+    uint8 number;       // this rats number in group (to match up with above total)
+    uint8 sub;          // spawn data subtype
+    uint8 type;         // spawn data class id (in case we have to look it up again)
+    uint16 groupID;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
+    uint16 typeID;      // rat type id
+    uint32 itemID;      // rat entity id
+    uint32 corpID;      // rat corp id
+    uint32 factionID;   // rat faction id
+    uint32 spawnID;     // spawn id (if needed to match up with other spawns of this group (multiple spawn types in this group))
+    uint32 time;        // spawn group timer start time
 };
 
 struct SpawnGroup {
@@ -119,7 +120,7 @@ class SpawnMgr
 {
 public:
     SpawnMgr(SystemManager* mgr, PyServiceMgr& svc);
-    virtual ~SpawnMgr();
+    virtual ~SpawnMgr() { /* nothing do to yet */ }
 
     void Process();
     void DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating);

@@ -241,7 +241,6 @@ SET( inventory_INCLUDE
      "${TARGET_INCLUDE_DIR}/inventory/ItemFactory.h"
      "${TARGET_INCLUDE_DIR}/inventory/ItemRef.h"
      "${TARGET_INCLUDE_DIR}/inventory/ItemType.h"
-     "${TARGET_INCLUDE_DIR}/inventory/Owner.h"
      "${TARGET_INCLUDE_DIR}/inventory/Voucher.h" )
 SET( inventory_SOURCE
      "${TARGET_SOURCE_DIR}/inventory/EVEAttributeMgr.cpp"
@@ -253,7 +252,6 @@ SET( inventory_SOURCE
      "${TARGET_SOURCE_DIR}/inventory/ItemDB.cpp"
      "${TARGET_SOURCE_DIR}/inventory/ItemFactory.cpp"
      "${TARGET_SOURCE_DIR}/inventory/ItemType.cpp"
-     "${TARGET_SOURCE_DIR}/inventory/Owner.cpp"
      "${TARGET_SOURCE_DIR}/inventory/Voucher.cpp" )
 
 SET( mail_INCLUDE
@@ -370,7 +368,6 @@ SET( ship_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/Missile.h"
      "${TARGET_INCLUDE_DIR}/ship/Ship.h"
      "${TARGET_INCLUDE_DIR}/ship/ShipDB.h"
-     "${TARGET_INCLUDE_DIR}/ship/ShipOperatorInterface.h"
      "${TARGET_INCLUDE_DIR}/ship/ShipService.h"
      "${TARGET_INCLUDE_DIR}/ship/TargetManager.h" )
 SET( ship_SOURCE
@@ -382,7 +379,6 @@ SET( ship_SOURCE
      "${TARGET_SOURCE_DIR}/ship/Missile.cpp"
      "${TARGET_SOURCE_DIR}/ship/Ship.cpp"
      "${TARGET_SOURCE_DIR}/ship/ShipDB.cpp"
-     "${TARGET_SOURCE_DIR}/ship/ShipOperatorInterface.cpp"
      "${TARGET_SOURCE_DIR}/ship/ShipService.cpp"
      "${TARGET_SOURCE_DIR}/ship/TargetManager.cpp" )
 
@@ -514,7 +510,6 @@ SET( system_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/CrimeWatch.h"
      "${TARGET_INCLUDE_DIR}/system/Container.h"
      "${TARGET_INCLUDE_DIR}/system/Damage.h"
-     "${TARGET_INCLUDE_DIR}/system/Deployable.h"
      "${TARGET_INCLUDE_DIR}/system/IndexManager.h"
      "${TARGET_INCLUDE_DIR}/system/KeeperService.h"
      "${TARGET_INCLUDE_DIR}/system/LootSystem.h"
@@ -523,7 +518,6 @@ SET( system_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/SolarSystem.h"
      "${TARGET_INCLUDE_DIR}/system/SystemBubble.h"
      "${TARGET_INCLUDE_DIR}/system/SystemDB.h"
-     "${TARGET_INCLUDE_DIR}/system/SystemEntities.h"
      "${TARGET_INCLUDE_DIR}/system/SystemEntity.h"
      "${TARGET_INCLUDE_DIR}/system/SystemGPoint.h"
      "${TARGET_INCLUDE_DIR}/system/SystemManager.h"
@@ -540,7 +534,6 @@ SET( system_SOURCE
      "${TARGET_SOURCE_DIR}/system/CrimeWatch.cpp"
      "${TARGET_SOURCE_DIR}/system/Container.cpp"
      "${TARGET_SOURCE_DIR}/system/Damage.cpp"
-     "${TARGET_SOURCE_DIR}/system/Deployable.cpp"
      "${TARGET_SOURCE_DIR}/system/IndexManager.cpp"
      "${TARGET_SOURCE_DIR}/system/KeeperService.cpp"
      "${TARGET_SOURCE_DIR}/system/LootSystem.cpp"
@@ -549,7 +542,6 @@ SET( system_SOURCE
      "${TARGET_SOURCE_DIR}/system/SolarSystem.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemBubble.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemDB.cpp"
-     "${TARGET_SOURCE_DIR}/system/SystemEntities.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemEntity.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemGPoint.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemManager.cpp"

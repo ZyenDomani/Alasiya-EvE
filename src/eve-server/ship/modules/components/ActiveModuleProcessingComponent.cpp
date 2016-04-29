@@ -33,7 +33,7 @@
 #include "ship/modules/components/ActiveModuleProcessingComponent.h"
 
 
-ActiveModuleProcessingComponent::ActiveModuleProcessingComponent(InventoryItemRef item, ActiveModule* mod, ShipRef ship)
+ActiveModuleProcessingComponent::ActiveModuleProcessingComponent(InventoryItemRef item, ActiveModule* mod, ShipItemRef ship)
 :m_Item( item ),
  m_Mod( mod ),
  m_Ship( ship ),

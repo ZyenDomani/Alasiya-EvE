@@ -21,7 +21,7 @@ class TurrentFormulas {
 public:
     //  returns damage modifier from hit, based on calculations made about ship, item, and target.
     //    return 0 is missed
-    float GetToHit(ShipRef shipRef, InventoryItemRef ItemRef, SystemEntity* pTarget);
+    float GetToHit(ShipItemRef shipRef, InventoryItemRef ItemRef, SystemEntity* pTarget);
     float GetNPCToHit(NPC* pNPC, SystemEntity* pTarget);
     float GetDroneToHit(Drone* pDrone, SystemEntity* pTarget);
 
