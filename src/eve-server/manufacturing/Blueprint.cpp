@@ -23,6 +23,8 @@
     Author:        Bloody.Rabbit
 */
 
+/** @todo  load the bp material list from invTypeMaterials */
+
 #include "eve-server.h"
 
 #include "packets/Manufacturing.h"

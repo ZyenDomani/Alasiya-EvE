@@ -1,0 +1,32 @@
+ <elements>
+
+  <elementDef name="RepairListRsp">
+    <objectInline>
+      <stringInline value="util.Row" />
+      <dictInline>
+        <dictInlineEntry key="header">
+          <list name="header" />
+        </dictInlineEntry>
+        <dictInlineEntry key="line">
+          <list name="line" />
+        </dictInlineEntry>
+      </dictInline>
+    </objectInline>
+  </elementDef>
+
+  <elementDef name="RepairListData">
+    <listInline>
+      <long name="ListItemID" />
+      <listInline>
+        <int name="itemID" />
+        <int name="typeID" />
+        <int name="groupID" />
+        <int name="damage" />
+        <int name="maxHealth" />
+        <int name="repairable" />
+        <real name="costToRepairOneUnitOfDamage" />
+      </listInline>
+    </listInline>
+  </elementDef>
+
+</elements>

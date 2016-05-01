@@ -32,6 +32,8 @@
 #include "chat/LSCService.h"
 #include "npc/NPC.h"
 #include "npc/SpawnMgr.h"
+#include "planet/Planet.h"
+#include "planet/Moon.h"
 #include "pos/Structure.h"
 #include "ship/DestinyManager.h"
 #include "ship/Drone.h"
@@ -144,9 +146,17 @@ bool SystemManager::LoadSystemStatics() {
             StargateSE *se = new StargateSE(itemRef, *(GetServiceMgr()), this);
             ++m_gateCount;
             pSE = se;
-        } else {    // planets, moons, suns are all planetse
+        }  else if ( cur.groupID == EVEDB::invGroups::Planet ) {
             InventoryItemRef itemRef = itemFactory()->GetItem(cur.itemID);
             PlanetSE *se = new PlanetSE(itemRef, *(GetServiceMgr()), this);
+            pSE = se;
+        }  else if ( cur.groupID == EVEDB::invGroups::Moon ) {
+            InventoryItemRef itemRef = itemFactory()->GetItem(cur.itemID);
+            MoonSE *se = new MoonSE(itemRef, *(GetServiceMgr()), this);
+            pSE = se;
+        } else {    // suns dont have anything special, so they are generic StaticSystemEntitys
+            InventoryItemRef itemRef = itemFactory()->GetItem(cur.itemID);
+            StaticSystemEntity *se = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
             pSE = se;
         }
         if (!pSE) {

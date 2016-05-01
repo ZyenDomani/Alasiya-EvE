@@ -324,14 +324,20 @@ SET( npc_SOURCE
 
 SET( planet_INCLUDE
      "${TARGET_INCLUDE_DIR}/planet/Colony.h"
+     "${TARGET_INCLUDE_DIR}/planet/Moon.h"
      "${TARGET_INCLUDE_DIR}/planet/Planet.h"
      "${TARGET_INCLUDE_DIR}/planet/PlanetDB.h"
-     "${TARGET_INCLUDE_DIR}/planet/PlanetMgr.h")
+     "${TARGET_INCLUDE_DIR}/planet/PlanetMgr.h"
+     "${TARGET_INCLUDE_DIR}/planet/PlanetMgrBound.h"
+     "${TARGET_INCLUDE_DIR}/planet/PlanetORBBound.h")
 SET( planet_SOURCE
      "${TARGET_SOURCE_DIR}/planet/Colony.cpp"
+     "${TARGET_SOURCE_DIR}/planet/Moon.cpp"
      "${TARGET_SOURCE_DIR}/planet/Planet.cpp"
      "${TARGET_SOURCE_DIR}/planet/PlanetDB.cpp"
-     "${TARGET_SOURCE_DIR}/planet/PlanetMgr.cpp")
+     "${TARGET_SOURCE_DIR}/planet/PlanetMgr.cpp"
+     "${TARGET_SOURCE_DIR}/planet/PlanetMgrBound.cpp"
+     "${TARGET_SOURCE_DIR}/planet/PlanetORBBound.cpp")
 
 SET( pos_INCLUDE
      "${TARGET_INCLUDE_DIR}/pos/PosMgrDB.h"

@@ -18,6 +18,7 @@ MySQL - 5.0.67-community-nt : Database - eve_evemu_dynamic
 -- ----------------------------
 CREATE TABLE `account` (
   `accountID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `clientID` INT(10) UNSIGNED NOT NULL DEFAULT '0',
   `accountName` varchar(43) NOT NULL DEFAULT '',
   `password` varchar(43) NOT NULL DEFAULT '',
   `hash` tinyblob,
@@ -183,6 +184,8 @@ CREATE TABLE IF NOT EXISTS `character_` (
   `startDateTime` bigint(20) unsigned NOT NULL DEFAULT '0',
   `createDateTime` bigint(20) unsigned NOT NULL DEFAULT '0',
   `ancestryID` int(10) unsigned NOT NULL DEFAULT '0',
+  `bloodlineID` TINYINT UNSIGNED NOT NULL DEFAULT '0',
+  `raceID` TINYINT UNSIGNED NOT NULL DEFAULT '0',
   `careerID` int(10) unsigned NOT NULL DEFAULT '0',
   `schoolID` int(10) unsigned NOT NULL DEFAULT '0',
   `careerSpecialityID` int(10) unsigned NOT NULL DEFAULT '0',
@@ -197,6 +200,7 @@ CREATE TABLE IF NOT EXISTS `character_` (
   `nextRespecDateTime` bigint(20) unsigned NOT NULL DEFAULT '0',
   `deletePrepareDateTime` bigint(20) unsigned DEFAULT '0',
   `shipID` int(10) unsigned NOT NULL DEFAULT '0',
+  `capsuleID` INT(10) NOT NULL DEFAULT '0' AFTER,
   `age` int(20) NOT NULL,
   `paperDollState` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`characterID`),

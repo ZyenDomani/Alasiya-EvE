@@ -386,17 +386,13 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
 
     //  get vector of online modules as (k,v) pair,
     //    where key is slotID, value is moduleID
-    /*
-    PyDict* onlineModules = call.byname["onlineModules"]->AsDict();
-
-    if (!onlineModules->empty()) {
-        onlineModules.items.begin();
-        size_t i = onlineModules->size();
-        for (size_t x = 0; x < i; x++) {
-            pShip->AddModuleToOnlineVec(onlineModules->GetItem(x)->AsInt()->value());
-        }
-    } */
-
+    if (call.byname.find("onlineModules") != call.byname.end()) {
+        call.byname["onlineModules"]->Dump(SHIP__MODULE_INFO, "   ");
+        PyDict* onlineModules = call.byname["onlineModules"]->AsDict();
+        PyDict::const_iterator cur = onlineModules->begin();
+        for (; cur != onlineModules->end(); cur++)
+            pShip->AddModuleToOnlineVec(cur->second->AsInt()->value());
+    }
 
     //do session change...
     pClient->UndockFromStation(stationID, systemID, constellationID, regionID, dockPosition, direction);
@@ -1031,7 +1027,7 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
                   [PyString "when"]
                   [PyInt 83]
 
-        throw PyException(MakeCustomError("SelfDestructAborted2"));
+        throw PyException(MakeUserError("SelfDestructAborted2"));
 
 */
 

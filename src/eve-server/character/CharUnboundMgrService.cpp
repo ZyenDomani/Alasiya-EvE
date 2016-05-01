@@ -64,6 +64,7 @@ void CharUnboundMgrService::GetCharacterData(uint32 characterID, std::map< std::
 }
 
 PyResult CharUnboundMgrService::Handle_IsUserReceivingCharacter(PyCallArgs &call) {
+    _log(CLIENT__ERROR, "Called IsUserReceivingCharacter");
     return new PyBool(false);
 }
 
@@ -152,7 +153,7 @@ PyResult CharUnboundMgrService::Handle_CancelCharacterDeletePrepare(PyCallArgs &
 }
 
 PyResult CharUnboundMgrService::Handle_GetCharacterInfo(PyCallArgs &call) {
-    _log(CLIENT__ERROR, "Called GetCharacterInfo stub");
+    _log(CLIENT__ERROR, "Called GetCharacterInfo");
     return nullptr;
 }
 
@@ -346,6 +347,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
             continue;
         }
 
+        skill->ChangeSingleton(true);
         skillLevel = cur.second;
         skill->SetAttribute(AttrSkillLevel, skillLevel );
         skillPoints = skill->GetSPForLevel( (EvilNumber)skillLevel );

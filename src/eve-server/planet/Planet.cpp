@@ -1,105 +1,43 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ /**
+  * @name Planet.cpp
+  *   Specific Class for individual planets.
+  * this class will hold all planet data and relative info for each planet.
+  *
+  * @Author:         Allan
+  * @date:   30 April 2016
+  */
 
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Allan
-*/
 
-#include "eve-server.h"
+#include "Planet.h"
 
-#include "PyBoundObject.h"
-#include "PyServiceCD.h"
-#include "planet/Planet.h"
 
-class PlanetORBBound
-: public PyBoundObject
+PlanetSE::PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
+: StaticSystemEntity(self, services, system)
 {
-public:
-    PyCallable_Make_Dispatcher(PlanetORBBound)
+}
 
-    PlanetORBBound(PyServiceMgr *mgr)
-    : PyBoundObject(mgr),
-    m_dispatch(new Dispatcher(this))
-    {
-        _SetCallDispatcher(m_dispatch);
+bool PlanetSE::LoadExtras(SystemDB *db) {
+    if (!StaticSystemEntity::LoadExtras(db))
+        return false;
+    /** @todo use this to initialize planet data, create planet manager, or whatever else
+     * i decide is needed for planet management
+     *  this is called when SE is created.
+     */
+    return true;
+}
 
-        m_strBoundObjectName = "PlanetORBBound";
+/** @note  general design notes
+ * planetse will have a Planet class to hold data and call other functions/methods as needed
+ * the PlanetMgr class will manage all aspects of planet data, init'd as a single instance (no reason for multiples)
+ * 
+ *
+ *
+ *
+ */
 
-        //PyCallable_REG_CALL(PlanetORBBound, GetPlanetInfo);
-    }
-    virtual ~PlanetORBBound() { delete m_dispatch; }
-    virtual void Release() {
-        //He hates this statement
-        delete this;
-    }
-
-    //PyCallable_DECL_CALL(GetPlanetInfo);
-
-protected:
-    Dispatcher* const m_dispatch;
-    PlanetDB* m_db;
-};
-
-PyCallable_Make_InnerDispatcher(planetORB)
-
-
-planetORB::planetORB(PyServiceMgr *mgr)
-: PyService(mgr, "planetOrbitalRegistryBroker"),
-  m_dispatch(new Dispatcher(this))
+Planet::Planet()
 {
-    _SetCallDispatcher(m_dispatch);
 
-    //PyCallable_REG_CALL(planetORB, );
-    //PyCallable_REG_CALL(planetORB, );
 }
 
-planetORB::~planetORB() {
-    delete m_dispatch;
-}
-
-PyBoundObject* planetORB::_CreateBoundObject(Client *c, const PyRep *bind_args) {
-    if(!bind_args->IsInt()) {
-        codelog(SERVICE__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
-        return NULL;
-    }
-    return new PlanetORBBound(m_manager);
-}
-
-/*
-PyResult planetORB::Handle_( PyCallArgs& call )
-{
-    sLog.Log( "planetORB", "Handle_" );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return new PyNone;
-}
-*/
-
-
-/**
-    def ConfigureOrbital(self, item):
-        sm.GetService('planetUI').OpenConfigureWindow(item)
-
-    def TakeOrbitalOwnership(self, itemID, planetID):
-        registry = moniker.GetPlanetOrbitalRegistry(session.solarsystemid)
-        registry.GMChangeSpaceObjectOwner(itemID, session.corpid)
-
-        */

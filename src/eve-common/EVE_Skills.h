@@ -19,6 +19,7 @@ typedef enum {
     skillEventGMGive = 39,
     skillEventQueueTrainingCompleted = 53,
     skillEventSkillInjected = 56,
+    /** @todo cant use these below, as current eventID is uint8 */
     skillEventHaltedAccountLapsed = 260,
     skillEventSkillPointsApplied = 307,
     skillEventGMReverseFreeSkillPointsUsed = 309

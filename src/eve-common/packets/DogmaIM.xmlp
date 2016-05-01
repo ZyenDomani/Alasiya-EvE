@@ -2,6 +2,13 @@
 
 <elements>
 
+  <elementDef name="DogmaLM_BindArgs">
+    <tupleInline>
+      <int name="locationID" />
+      <int name="groupID" />
+    </tupleInline>
+  </elementDef>
+
   <elementDef name="Call_Dogma_Activate">
     <tupleInline>
       <int name="itemID" />

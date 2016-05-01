@@ -68,7 +68,6 @@ SkillMgrBound::SkillMgrBound(PyServiceMgr *mgr, CharacterDB &db)
     PyCallable_REG_CALL(SkillMgrBound, GetSkillQueueAndFreePoints);
     PyCallable_REG_CALL(SkillMgrBound, SaveSkillQueue);
     PyCallable_REG_CALL(SkillMgrBound, AddToEndOfSkillQueue);
-
     PyCallable_REG_CALL(SkillMgrBound, GetRespecInfo);
     PyCallable_REG_CALL(SkillMgrBound, RespecCharacter);
     PyCallable_REG_CALL(SkillMgrBound, GetCharacterAttributeModifiers);

@@ -32,10 +32,8 @@ UserError *MakeUserError(const char *exceptionType, const std::map<std::string, 
 {
     UserError *err = new UserError( exceptionType );
 
-    std::map<std::string, PyRep *>::const_iterator cur, end;
-    cur = args.begin();
-    end = args.end();
-    for(; cur != end; cur++)
+    std::map<std::string, PyRep *>::const_iterator cur = args.begin();
+    for(; cur != args.end(); cur++)
         err->AddKeyword( cur->first.c_str(), cur->second );
 
     return err;

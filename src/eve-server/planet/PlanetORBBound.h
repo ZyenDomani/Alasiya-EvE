@@ -20,29 +20,31 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:     "everyone" who ever changed this file.
+    Author:        Allan
 */
 
-#ifndef __EVE_VERSION_H
-#define __EVE_VERSION_H
 
-// Client version info
-// (supported client is Crucible v1.6.5 build 360229)
-// (this is ALL CPP information needed by the client)
-static const double EVEVersionNumber = 7.31;
-static const uint16 MachoNetVersion = 320;
-static const int32 EVEBuildVersion = 360229;
-static const char* const EVEProjectRegion = "ccp";
-static const char* const EVEProjectVersion = "EVE-EVE-TRANQUILITY@ccp";
-static const char* const EVEProjectCodename = "EVE-EVE-TRANQUILITY";
+#ifndef EVEMU_PLANET_PLANETORB_BOUND_H_
+#define EVEMU_PLANET_PLANETORB_BOUND_H_
 
-static const int32 EVEBirthday = 170472;
+#include "PyService.h"
+#include "planet/PlanetDB.h"
 
-/*  Allan's Static Definitions */
-static const float Config_Version = 6.2; /* match versions here with eve-server.xml and EveServerConfig.cpp for full config support */
-static const float Log_Version = 4.9;    /*  match versions here with logtypes.h and log.ini for full logging support */
-static const float EVE_Build = 1.47;     /* this is for bug tracking on my forums.  -allan 3July15 */
-static const char* const EVEMU_REVISION = "0.8.11-allan";
-static const char* const EVEMU_BUILD_DATE = "25 April 2016";
+class planetORB : public PyService {
+public:
+    planetORB(PyServiceMgr *mgr);
+    virtual ~planetORB();
 
-#endif
+protected:
+    class Dispatcher;
+    Dispatcher *const m_dispatch;
+
+    virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
+
+private:
+    PlanetDB* m_db;
+
+    //PyCallable_DECL_CALL()
+};
+
+#endif  // EVEMU_PLANET_PLANETORB_BOUND_H_

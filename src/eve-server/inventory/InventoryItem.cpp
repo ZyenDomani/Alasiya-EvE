@@ -671,11 +671,10 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     //PySafeDecRef( result.attributes );
     //result.attributes = new PyDict;
     //PyDict* dict = new PyDict;
-    if (categoryID() == EVEDB::invCategories::Skill)  {
-        /** @todo these should all return interger */
-        result.attributes[AttrSkillTimeConstant] = mAttributeMap.GetAttribute(AttrSkillTimeConstant).GetPyObject();
-        result.attributes[AttrSkillPoints] = mAttributeMap.GetAttribute(AttrSkillPoints).GetPyObject();
-        result.attributes[AttrSkillLevel] = mAttributeMap.GetAttribute(AttrSkillLevel).GetPyObject();
+    if (categoryID() == EVEDB::invCategories::Skill) {
+        result.attributes[AttrSkillTimeConstant] = new PyInt(mAttributeMap.GetAttribute(AttrSkillTimeConstant).get_int());
+        result.attributes[AttrSkillPoints] = new PyInt(mAttributeMap.GetAttribute(AttrSkillPoints).get_int());
+        result.attributes[AttrSkillLevel] = new PyInt(mAttributeMap.GetAttribute(AttrSkillLevel).get_int());
     } else {
         AttributeMap::AttrMapItr itr = mAttributeMap.begin();
         for (; itr != mAttributeMap.end(); itr++) {

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 4.8
+    Log Version: 4.9
 */
  /*  see log.ini for matching versions */
 
@@ -114,6 +114,15 @@ LOG_TYPE( COSMIC_MGR, WARNING, DISABLED, "CMgrWarning" )
 LOG_TYPE( COSMIC_MGR, MESSAGE, DISABLED, "CMgrMsg" )
 LOG_TYPE( COSMIC_MGR, DEBUG, DISABLED, "CMgrDebug" )
 LOG_TYPE( COSMIC_MGR, TRACE, DISABLED, "CMgrTrace" )
+
+LOG_CATEGORY( PLANET )
+LOG_TYPE( PLANET, ERROR,   ENABLED, "PlanetError" )
+LOG_TYPE( PLANET, WARNING, DISABLED, "PlanetWarning" )
+LOG_TYPE( PLANET, MESSAGE, DISABLED, "PlanetMsg" )
+LOG_TYPE( PLANET, DEBUG, DISABLED, "PlanetDebug" )
+LOG_TYPE( PLANET, INFO, DISABLED, "PlanetInfo" )
+LOG_TYPE( PLANET, TRACE, DISABLED, "PlanetTrace" )
+LOG_TYPE( PLANET, DUMP, DISABLED, "PlanetCallDump" )
 
 LOG_CATEGORY( SPAWN )
 LOG_TYPE( SPAWN, ERROR,   ENABLED, "SpawnError" )
@@ -269,6 +278,9 @@ LOG_TYPE( CHARACTER, WARNING, DISABLED, "CharWarning" )
 LOG_TYPE( CHARACTER, MESSAGE, DISABLED, "CharMsg" )
 LOG_TYPE( CHARACTER, INFO, DISABLED, "CharInfo" )
 LOG_TYPE( CHARACTER, DEBUG, DISABLED, "CharDebug" )
+LOG_TYPE( CHARACTER, TRACE, DISABLED, "CharTrace" )
+LOG_TYPE( CHARACTER, BIND, DISABLED, "CharBindDump" )
+LOG_TYPE( CHARACTER, SKILL_TRACE, DISABLED, "CharSkill" )
 
 LOG_CATEGORY( CLIENT )
 LOG_TYPE( CLIENT, ERROR, ENABLED, "ClientError" )

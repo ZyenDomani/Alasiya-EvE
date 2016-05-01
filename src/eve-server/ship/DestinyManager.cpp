@@ -1385,7 +1385,7 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
 
     /** @todo (allan) finish warp scramble system */
     if (m_warpStrength < 0/*m_warpScrambleSrength*/) {
-        throw PyException(MakeCustomError("WarpScrambled"));
+        throw PyException(MakeUserError("WarpScrambled"));
     }
 
     GVector warp_distance(m_position, where);
@@ -1586,7 +1586,7 @@ PyResult DestinyManager::AttemptDockOperation() {
          *        [ 2]   [ 1] Value: (None)
          */
         AlignTo( station );   // Turn ship and move toward docking point - client will call Dock() automatically when close enough...sometimes
-        throw PyException(MakeCustomError("DockingApproach"));
+        throw PyException(MakeUserError("DockingApproach"));
     }
 
     // Docking was accepted, so send the OnDockingAccepted packet:

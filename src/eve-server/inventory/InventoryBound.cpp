@@ -199,6 +199,8 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         }
 
         // TODO  check for 'dividing' byname bool.
+        if (call.byname.find("dividing") != call.byname.end())
+            _log(INV__ERROR, "[Add] byname.dividing found when adding itemID %u (flag %u)", args.itemID, flag);
         std::vector<int32> items;
         items.push_back(args.itemID);
         return _ExecAdd( call.client, items, quantity, (EVEItemFlags)flag );
@@ -436,12 +438,10 @@ PyRep* InventoryBound::_ExecAdd(Client *pClient, const std::vector<int32> &items
             //  cant remove rigs like this.  send error.
             pClient->SendNotifyMsg("You cannot remove ship upgrades manually.");
             /** @todo (allan)  not all macho.ErrorResponse packet keys are complete.  this is one. */
-            //throw PyException("CannotRemoveUpgradeManually");
+            throw PyException( MakeUserError("CannotRemoveUpgradeManually"));
             return nullptr;
 
         }
-
-        //check for removing items from ship and take approprate action
 
         if (IsModuleSlot(old_flag)) {
             if (IsModuleSlot(flag)) {

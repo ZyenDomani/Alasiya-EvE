@@ -456,9 +456,10 @@ void Client::UpdateLocation(uint32 locationID) {
     mSession.SetInt("locationid", locationID);
     if (IsStation(locationID)) {
         sLog.Success("Client::UpdateLocation()", "Character %s (%u) Docked.", m_char->itemName().c_str(), GetCharacterID());
+        m_ship->Relocate(NULL_ORIGIN);
         m_ship->Move(locationID, flagHangar);
         m_ship->SetAttribute(AttrIsOnline, false);
-        m_char->Move(locationID, flagHangar);
+        m_char->Move(locationID, flagAutoFit);
         m_ship->Dock();
         if (!IsHangarLoaded(locationID))
             LoadStationHangar(locationID);

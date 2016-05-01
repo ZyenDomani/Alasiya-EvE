@@ -153,16 +153,13 @@ PyResult UserService::Handle_GetRedeemTokens( PyCallArgs& call )
 
 PyResult UserService::Handle_GetCreateDate( PyCallArgs& call )
 {
-    sLog.Log( "UserService", "Handle_GetCreateDate" );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return new PyLong((long)Win32TimeNow());
+    return new PyULong(call.client->GetChar()->createDateTime());
 }
 
 PyResult UserService::Handle_ReportISKSpammer( PyCallArgs& call )
 {
     sLog.Log( "UserService", "Handle_ReportISKSpammer" );
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(CHARACTER__DEBUG);
 /**
         sm.RemoteSvc('userSvc').ReportISKSpammer(charID, channelID, spamEntries)
         */

@@ -193,6 +193,7 @@ StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManag
 {
     // Create default dynamic attributes in the AttributeMap:
     station->SetAttribute(AttrIsOnline,         1);
+    station->SetAttribute(AttrCapacity,         STATION_HANGAR_MAX_CAPACITY);
     station->SetAttribute(AttrDamage,           0.0);
     station->SetAttribute(AttrShieldCapacity,   20000000.0);
     station->SetAttribute(AttrShieldCharge,     station->GetAttribute(AttrShieldCapacity));
@@ -221,7 +222,7 @@ void StationSE::EncodeDestiny( Buffer& into )
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
-
+if (0) {
     const uint16 miniballsCount = 1;
     into.Append( miniballsCount );
 
@@ -231,6 +232,7 @@ void StationSE::EncodeDestiny( Buffer& into )
         miniball.z = 27878.900;
         miniball.radius = 1639.241;
     into.Append( miniball );
+    }
     _log(COMMON__WARNING, "StationEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 

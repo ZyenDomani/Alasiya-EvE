@@ -158,6 +158,8 @@ CharMgrService::~CharMgrService() {
 }
 
 PyBoundObject *CharMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+    _log(CHARACTER__BIND, "CharMgrService bind request:");
+    bind_args->Dump(CHARACTER__BIND, "    ");
     Call_TwoIntegerArgs args;
     //crap
     PyRep *t = bind_args->Clone();
@@ -165,9 +167,6 @@ PyBoundObject *CharMgrService::_CreateBoundObject(Client *c, const PyRep *bind_a
         _log(SERVICE__ERROR, "%s: Failed to decode bind object params.", GetName());
         return NULL;
     }
-	//bind_args->Dump(SERVICE__ERROR, "    ");
-    //arg1 = characterID
-    //arg2 = ??? (i.e.: 10002)
 
 	return(new CharMgrBound(m_manager, args.arg1));
 }

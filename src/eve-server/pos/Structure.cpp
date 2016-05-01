@@ -151,6 +151,26 @@ void StructureItem::AddItem( InventoryItemRef item )
  *
     flagStructureActive             = 144,
     flagStructureInactive           = 145,
+
+
+    AttrOperationConsumptionRate = 687,
+    AttrReinforcedConsumptionRate = 688,
+    AttrResourceReinforced1Type = 694,
+    AttrResourceReinforced2Type = 695,
+    AttrResourceReinforced3Type = 696,
+    AttrResourceReinforced4Type = 697,
+    AttrResourceReinforced5Type = 698,
+    AttrResourceReinforced1Quantity = 699,
+    AttrResourceReinforced2Quantity = 700,
+    AttrResourceReinforced3Quantity = 701,
+    AttrResourceReinforced4Quantity = 703,
+    AttrResourceReinforced5Quantity = 704,
+    AttrResourceOnline1Type = 705,
+    AttrResourceOnline2Type = 706,
+    AttrResourceOnline3Type = 707,
+    AttrResourceOnline4Type = 708,
+
+    ***  many other attributes for towers and their modules.....
     */
 StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system)
 : ObjectSystemEntity(structure, services, system)

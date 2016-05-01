@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -40,9 +41,11 @@ class DogmaIMBound
 public:
     PyCallable_Make_Dispatcher(DogmaIMBound)
 
-    DogmaIMBound(PyServiceMgr* mgr)
+    DogmaIMBound(PyServiceMgr* mgr, uint32 locationID, uint32 groupID)
     : PyBoundObject(mgr),
-      m_dispatch(new Dispatcher(this))
+    m_dispatch(new Dispatcher(this)),
+    m_locationID(locationID),
+    m_groupID(groupID)
     {
         _SetCallDispatcher(m_dispatch);
 
@@ -113,6 +116,9 @@ public:
     //self.GetDogmaLM().RemoveTargetOBO(sid, tid)
 protected:
     Dispatcher* const m_dispatch;
+
+    uint32 m_locationID;
+    uint32 m_groupID;
 };
 
 PyCallable_Make_InnerDispatcher(DogmaIMService)
@@ -130,6 +136,13 @@ DogmaIMService::~DogmaIMService() {
     delete m_dispatch;
 }
 
+PyResult DogmaIMService::Handle_GetAttributeTypes(PyCallArgs& call) {
+    PyString* str = new PyString("dogmaIM.attributesByName" );
+    PyRep* result = m_manager->cache_service->GetCacheHint( str );
+    PyDecRef( str );
+    return result;
+}
+
 PyBoundObject* DogmaIMService::_CreateBoundObject(Client* c, const PyRep* bind_args) {
     _log(CLIENT__MESSAGE, "DogmaIMService bind request for:");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
@@ -144,8 +157,15 @@ PyBoundObject* DogmaIMService::_CreateBoundObject(Client* c, const PyRep* bind_a
      * 18:26:29 [ClientMessage]       [ 1] Integer field: 5             << groupID
      *
      */
+    DogmaLM_BindArgs args;
+    //temp crap until I rework _CreateBoundObject's signature
+    PyRep *t = bind_args->Clone();
+    if(!args.Decode(&t)) {
+        codelog(INV__ERROR, "Failed to decode bind args from '%s'", c->GetName());
+        return NULL;
+    }
 
-    return new DogmaIMBound(m_manager);
+    return new DogmaIMBound(m_manager, args.locationID, args.groupID);
 }
 
 PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
@@ -241,13 +261,6 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
     Client* pClient = call.client;
 
     return nullptr;
-}
-
-PyResult DogmaIMService::Handle_GetAttributeTypes(PyCallArgs& call) {
-    PyString* str = new PyString("dogmaIM.attributesByName" );
-    PyRep* result = m_manager->cache_service->GetCacheHint( str );
-    PyDecRef( str );
-    return result;
 }
 
 PyResult DogmaIMBound::Handle_GetCharacterBaseAttributes(PyCallArgs& call)
@@ -828,7 +841,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         rsp->SetItemString("shipInfo", shipResult);
     } else
         rsp->SetItemString("shipInfo", new PyDict);
-    
+
     /* Setting "shipState" in the Dictionary  -fixed 26Mar16 */
     if (!pClient->GetShip()) {
         _log(SERVICE__ERROR, "Unable to build shipState for %u", pClient->GetShipID());

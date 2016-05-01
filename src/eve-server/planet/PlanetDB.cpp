@@ -30,8 +30,8 @@
 
 PyRep* PlanetDB::GetPlanetInfo(uint32 planetID) {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT `solarSystemID`, `typeID` AS `planetTypeID`, `itemID` AS `planetID`, `radius`"
-                " FROM mapDenormalize WHERE `itemID` = %u", planetID)) {
+              if (!sDatabase.RunQuery(res, "SELECT solarSystemID, typeID AS planetTypeID, %u, radius"
+                  " FROM mapDenormalize WHERE itemID = %u", planetID, planetID)) {
         _log(DATABASE__ERROR, "Error in GetPlanetInfo query: %s", res.error.c_str());
         return NULL;
     }
@@ -45,8 +45,8 @@ PyRep* PlanetDB::GetPlanetInfo(uint32 planetID) {
 
 PyRep* PlanetDB::GetPlanetsForChar(uint32 charID) {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT `solarSystemID`, `planetID`, `typeID`, `numberOfPins`"
-         " FROM `chrPlanets` WHERE `characterID` = %u", charID)) {
+    if(!sDatabase.RunQuery(res, "SELECT solarSystemID, planetID, typeID, numberOfPins"
+         " FROM chrPlanets WHERE characterID = %u", charID)) {
         _log(DATABASE__ERROR, "Error in GetPlanetsForChar query: %s", res.error.c_str());
         return NULL;
          }
@@ -56,9 +56,9 @@ PyRep* PlanetDB::GetPlanetsForChar(uint32 charID) {
 
 PyRep* PlanetDB::GetPlanetResourceInfo(uint32 planetID) {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT `itemID1`, `itemID2`, `itemID3`, `itemID4`, `itemID5`,"
-        " `quality1`, `quality2`, `quality3`, `quality4`, `quality5`"
-        " FROM `planetResourceInfo` WHERE `planetID` = %u", planetID)) {
+    if(!sDatabase.RunQuery(res, "SELECT itemID1, itemID2, itemID3, itemID4, itemID5,"
+        " quality1, quality2, quality3, quality4, quality5"
+        " FROM planetResourceInfo WHERE planetID = %u", planetID)) {
         _log(DATABASE__ERROR, "Error in GetPlanetResourceInfo query: %s", res.error.c_str());
         return NULL;
         }
@@ -78,10 +78,41 @@ PyRep* PlanetDB::GetPlanetResourceInfo(uint32 planetID) {
 }
 
 PyRep* PlanetDB::GetMyLaunchesDetails(uint32 charID) {
-    /** @todo, double check if this requires x,y,z, or if only Beyonce uses them. */
+    /** @todo   finish these...
+                      [PyTuple 2 items]
+                        [PyString "launchID"]
+                        [PyInt 3]
+                      [PyTuple 2 items]
+                        [PyString "charID"]
+                        [PyInt 3]
+                      [PyTuple 2 items]
+                        [PyString "itemID"]
+                        [PyInt 20]
+                      [PyTuple 2 items]
+                        [PyString "solarSystemID"]
+                        [PyInt 3]
+                      [PyTuple 2 items]
+                        [PyString "planetID"]
+                        [PyInt 3]
+                      [PyTuple 2 items]
+                        [PyString "status"]
+                        [PyInt 17]
+                      [PyTuple 2 items]
+                        [PyString "launchTime"]
+                        [PyInt 64]
+                      [PyTuple 2 items]
+                        [PyString "x"]
+                        [PyInt 5]
+                      [PyTuple 2 items]
+                        [PyString "y"]
+                        [PyInt 5]
+                      [PyTuple 2 items]
+                        [PyString "z"]
+                        [PyInt 5]
+                        */
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT `solarSystemID`, `planetID`, `launchTime`, `launchID`, `x`, `y`, `z`"
-        " FROM `chrPlanetLaunches` WHERE `characterID` = %u", charID)) {
+    if(!sDatabase.RunQuery(res, "SELECT solarSystemID, planetID, launchTime, launchID, x, y, z"
+        " FROM chrPlanetLaunches WHERE characterID = %u", charID)) {
         _log(DATABASE__ERROR, "Error in GetMyLaunchesDetails Query: %s", res.error.c_str());
         return NULL;
     }
@@ -94,7 +125,7 @@ PyRep* PlanetDB::GetExtractorsForPlanet(uint32 planetID) {
      * Currently stops the client from throwing errors.
      */
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT 2130 AS `typeID`, 0 as `ownerID`")) {
+    if(!sDatabase.RunQuery(res, "SELECT 2130 AS typeID, 0 as ownerID")) {
         _log(DATABASE__ERROR, "Error in GetExtractorsForPlanet Query: %s", res.error.c_str());
         return NULL;
     }
@@ -105,10 +136,10 @@ PyRep* PlanetDB::GetExtractorsForPlanet(uint32 planetID) {
 bool PlanetDB::GetResourceData(uint32 planetID, DBResultRow &row)
 {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT `itemID1`, `itemID2`, `itemID3`, `itemID4`, `itemID5`,"
-        " `data1`, `data2`, `data3`, `data4`, `data5`,"
-        " `numBands1`, `numBands2`, `numBands3`, `numBands4`, `numBands5`"
-        " FROM `planetResourceInfo` WHERE `planetID` = %u", planetID)) {
+    if(!sDatabase.RunQuery(res, "SELECT itemID1, itemID2, itemID3, itemID4, itemID5,"
+        " data1, data2, data3, data4, data5,"
+        " numBands1, numBands2, numBands3, numBands4, numBands5"
+        " FROM planetResourceInfo WHERE planetID = %u", planetID)) {
         _log(DATABASE__ERROR, "Error in GetResourceData Query: %s", res.error.c_str());
         return false;
     }

@@ -424,7 +424,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
 
     if (flag == flagDroneBay) {
         if ( item->categoryID() != EVEDB::invCategories::Drone ) {
-            throw PyException( MakeUserError( "Item Cannot be stowed in the Drone Bay" ));
+            throw PyException( MakeCustomError( "Item Cannot be stowed in the Drone Bay" ));
             return false;
         }
     } else if (flag == flagShipHangar) {
@@ -786,6 +786,7 @@ void ShipItem::Heal()
 void ShipItem::AddModuleToOnlineVec(uint32 moduleID)
 {
     m_onlineModuleVec.push_back(moduleID);
+    _log(SHIP__MODULE_INFO, "Added ModuleID %u to Online List", moduleID);
 }
 
 //  Updated fractional ship defense settings.  -allan 1Feb15

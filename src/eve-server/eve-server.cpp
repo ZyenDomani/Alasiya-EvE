@@ -116,8 +116,8 @@
 // spawn manager
 #include "npc/SpawnMgr.h"
 // planet services
-#include "planet/Planet.h"
-#include "planet/PlanetMgr.h"
+#include "planet/PlanetMgrBound.h"
+#include "planet/PlanetORBBound.h"
 // pos services
 #include "pos/PosMgrService.h"
 #include "pos/Structure.h"

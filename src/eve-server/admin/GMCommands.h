@@ -99,6 +99,8 @@ COMMAND( shipinventory, ROLE_PROGRAMMER,
          " - list all items in current ship's inventory." )
 COMMAND( showsession, ROLE_PROGRAMMER,
          " - list current session values." )
+COMMAND( skilllist, ROLE_PROGRAMMER,
+         " - list all skills loaded for character." )
 
 /*
 COMMAND( entity, ROLE_ADMIN,

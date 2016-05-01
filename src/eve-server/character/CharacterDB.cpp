@@ -256,7 +256,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
         "  createDateTime, "    //this is char create date
         "  startDateTime, "     //this is char joined corp date
         "  corporationID, "
-        "  stationID AS worldSpaceID, " /* when docked, worldSpaceID = stationID, else 0 */
+        "  0 AS worldSpaceID, " /* this gives "walking around in [station xxxx] msgs on login screen when !=0 */
         "  stationID, "
         "  solarSystemID, "
         "  constellationID, "

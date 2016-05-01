@@ -169,13 +169,8 @@ StaticSystemEntity::StaticSystemEntity(InventoryItemRef self, PyServiceMgr &serv
 }
 
 bool StaticSystemEntity::LoadExtras(SystemDB *db) {
-    /** @todo (allan)  finish this */
+    /** @todo (allan)  finish this as needed */
     return true;
-}
-
-PlanetSE::PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-: StaticSystemEntity(self, services, system)
-{
 }
 
 BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)

@@ -50,6 +50,7 @@ class WreckSE;
 class StationSE;
 class StaticSystemEntity;
 class PlanetSE;
+class MoonSE;
 class StargateSE;
 class BeltSE;
 class DynamicSystemEntity;
@@ -79,6 +80,7 @@ public:
     virtual StaticSystemEntity* GetSSE()                { return nullptr; }
     virtual StationSE*          GetStationSE()          { return nullptr; }
     virtual PlanetSE*           GetPlanetSE()           { return nullptr; }
+    virtual MoonSE*             GetMoonSE()             { return nullptr; }
     virtual StargateSE*         GetGateSE()             { return nullptr; }
     virtual BeltSE*             GetBeltSE()             { return nullptr; }
     /* Item */
@@ -114,6 +116,7 @@ public:
     virtual bool                IsBeltSE()              { return false; }
     virtual bool                IsGateSE()              { return false; }
     virtual bool                IsPlanetSE()            { return false; }
+    virtual bool                IsMoonSE()              { return false; }
     virtual bool                IsStationSE()           { return false; }
     /* Item */
     virtual bool                IsItemEntity()          { return false; }
@@ -252,19 +255,6 @@ public:
 
     /* specific functions handled in this class. */
 
-};
-
-class PlanetSE
-: public StaticSystemEntity
-{
-public:
-    PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~PlanetSE()                             { /* Do nothing here */ }
-
-    /* class type pointer querys. */
-    virtual PlanetSE* GetPlanetSE()                     { return this; }
-    /* class type tests. */
-    virtual bool IsPlanetSE()                           { return true; }
 };
 
 class BeltSE

@@ -9,26 +9,6 @@ ALTER TABLE `character_` ADD `raceID` TINYINT UNSIGNED NOT NULL DEFAULT '0' AFTE
 ALTER TABLE `account` ADD `clientID` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `accountID`;
 /* update for client seed for making a unique clientID */
 ALTER TABLE `srvStatus` ADD `ClientSeed` INT(10) NOT NULL;
+/*  change skill time constanant to int from float */
+UPDATE `entity_attributes` SET `valueInt`=`valueFloat`, `valueFloat`=NULL WHERE `attributeID`=275 AND `valueFloat` IS NOT NULL;
 
-
-CREATE TABLE `roidItems` (
-  `itemID` int(10) unsigned NOT NULL,
-  `itemName` varchar(25) NOT NULL,
-  `typeID` int(11) NOT NULL,
-  `systemID` int(11) NOT NULL,
-  `beltID` int(11) NOT NULL,
-  `quantity` double NOT NULL,
-  `radius` double NOT NULL,
-  `x` double NOT NULL,
-  `y` double NOT NULL,
-  `z` double NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Indexes for table `roidItems`
---
-ALTER TABLE `roidItems`
-  ADD PRIMARY KEY (`itemID`),
-  ADD UNIQUE KEY `itemID` (`itemID`),
-  ADD KEY `systemID` (`systemID`),
-  ADD KEY `beltID` (`beltID`);

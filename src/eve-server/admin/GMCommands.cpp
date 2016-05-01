@@ -1723,11 +1723,40 @@ PyResult Command_shipinventory(Client* who, CommandDB* db, PyServiceMgr* service
     for (auto cur : invMap)
         str << cur.first << "(" << cur.second->flag() << "): " << cur.second->itemName() << "<br>"; // 20 + 40 for name (60)
 
-        int count = invMap.size();
+    int count = invMap.size();
     int size = count * 60;
     size += 50;
     char reply[size];
     snprintf(reply, size, str.str().c_str(), inventoryID, inv, ship.get(), count);
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
+PyResult Command_skilllist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    /* this command is used to debug char skills
+     * wip.   -allan 15Mar16
+     */
+
+    std::map<uint32, InventoryItemRef> invMap;
+    invMap.clear();
+    uint32 inventoryID = who->GetCharacterID();
+    Inventory* inv = who->GetChar()->GetInventory();
+    inv->GetInventoryList(invMap);
+
+    std::ostringstream str;
+    str << "InventoryID %u(%p) (Char %p) has %u skills.<br><br>"; //50
+
+    for (auto cur : invMap) {
+        str << cur.first << "(" << cur.second->flag() << "): " << cur.second->itemName() << " (";
+        str << cur.second->GetAttribute(AttrSkillLevel).get_int() << ")<br>"; // 20 + 40 + 15 for name (75)
+    }
+
+    int count = invMap.size();
+    int size = count * 75;
+    size += 50;
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(), inventoryID, inv, who->GetChar().get(), count);
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);

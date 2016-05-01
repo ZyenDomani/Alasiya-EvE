@@ -393,11 +393,11 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
 }
 
 double Inventory::GetCapacity(EVEItemFlags flag) const {
-    /** @todo verify the *hangar types */
+    /** @todo verify the *hangar types and make sure flagHangar is for STATIONS ONLY  */
     switch( flag ) {
         case flagAutoFit:
-        case flagCargoHold:                     return m_self->GetAttribute(AttrCapacity).get_float();
-        case flagHangar:                        return m_self->GetAttribute(AttrCorporateHangarCapacity).get_float();
+        case flagCargoHold:
+        case flagHangar:                        return m_self->GetAttribute(AttrCapacity).get_float();
         case flagDroneBay:                      return m_self->GetAttribute(AttrDroneCapacity).get_float();
         case flagShipHangar:                    return m_self->GetAttribute(AttrShipMaintenanceBayCapacity).get_float();
         case flagSecondaryStorage:              return m_self->GetAttribute(AttrCapacitySecondary).get_float();
