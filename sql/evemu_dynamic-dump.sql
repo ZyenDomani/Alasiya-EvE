@@ -160,7 +160,7 @@ CREATE TABLE `channelMods` (
 
 /*Table structure for table `character_` */
 
-CREATE TABLE IF NOT EXISTS `character_` (
+CREATE TABLE `character_` (
   `characterID` int(10) unsigned NOT NULL DEFAULT '0',
   `accountID` int(10) unsigned DEFAULT NULL,
   `title` varchar(85) NOT NULL DEFAULT '',
@@ -305,7 +305,7 @@ CREATE TABLE `chrOwnerNote` (
 
 /*Table structure for table `corporation` */
 
-CREATE TABLE IF NOT EXISTS `corporation` (
+CREATE TABLE `corporation` (
   `corporationID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `corporationName` varchar(100) NOT NULL DEFAULT '',
   `description` mediumtext NOT NULL,

@@ -326,6 +326,30 @@ CREATE TABLE `repStandingChanges` (
   KEY `toID` (`toID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+CREATE TABLE `chrKillTable` (
+  `killID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `solarSystemID` int(10) unsigned NOT NULL DEFAULT '0',
+  `victimCharacterID` int(10) unsigned NOT NULL DEFAULT '0',
+  `victimCorporationID` int(10) unsigned NOT NULL DEFAULT '0',
+  `victimAllianceID` int(10) unsigned NOT NULL DEFAULT '0',
+  `victimFactionID` int(10) unsigned NOT NULL DEFAULT '0',
+  `victimShipTypeID` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `finalCharacterID` int(10) unsigned NOT NULL DEFAULT '0',
+  `finalCorporationID` int(10) unsigned NOT NULL DEFAULT '0',
+  `finalAllianceID` int(10) unsigned NOT NULL DEFAULT '0',
+  `finalFactionID` int(10) unsigned NOT NULL DEFAULT '0',
+  `finalShipTypeID` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `finalWeaponTypeID` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `killBlob` blob NOT NULL,
+  `killTime` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `victimDamageTaken` int(10) unsigned NOT NULL DEFAULT '0',
+  `finalSecurityStatus` double NOT NULL DEFAULT '0',
+  `moonID` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`killID`),
+  KEY `victimCharacterID` (`victimCharacterID`),
+  KEY `finalCharacterID` (`finalCharacterID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
 --
 -- Table structure for table `crtCategories`
 --
