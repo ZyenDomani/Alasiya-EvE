@@ -195,7 +195,7 @@ void ShipItem::Init()
 {
     Character* pChar = m_pilot->GetChar().get();
     if (!pChar) {
-        _log(SHIP__INFO, "ShipItem %s(%u) does not have a pilot.", itemName().c_str(), itemID());
+        _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot.", itemName().c_str(), itemID());
         return;
     }
 
@@ -1160,6 +1160,71 @@ void ShipItem::DeactivateAllModules()
 }
 
 /* End new Module Manager Interface */
+
+std::string ShipItem::GetShipDNA()
+{
+    /* ship dna is shorthand notation to describe a ship and it's fittings
+     *  purely thru the use of typeIDs and quantities
+     *
+     * the format is as follows:
+     * <shipID>:
+     *      <subsystemID>:
+     *      <moduleType-Highslot>;<quantity>:
+     *      <moduleType-Midslot>;<quantity>:
+     *      <moduleType-Lowslot>;<quantity>:
+     *      <moduleType-Rigslot>;<quantity>:
+     *      <chargeType>;<quantity>:
+     *      <droneType>;<quantity>
+     *
+     * Condensed version:
+     *  Ship:Subsystem:Highs:Mids:Lows:Rigs:Charges:Drones
+     *
+     */
+    if (typeID() == EVEDB::invTypes::typeCapsule) {
+        std::stringstream dna;
+        dna << type().id() << ":";
+        _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), itemName().c_str(), itemID());
+        return dna.str();
+    }
+
+    /* find and encode the module typeIDs */
+    std::stringstream modHi, modMid, modLow, subSys, modRig, charges, drones;
+
+    std::vector<InventoryItemRef> modList;
+    m_ModuleManager->GetModuleListOfRefs(&modList);
+
+    for (auto cur : modList) {
+        if (IsRigSlot(cur->flag()))
+            modRig << cur->typeID() << ";" << cur->quantity() << ":";
+        else if (IsHiSlot(cur->flag()))
+            modHi << cur->typeID() << ";" << cur->quantity() << ":";
+        else if (IsMidSlot(cur->flag()))
+            modMid << cur->typeID() << ";" << cur->quantity() << ":";
+        else if (IsLowSlot(cur->flag()))
+            modLow << cur->typeID() << ";" << cur->quantity() << ":";
+        else if (IsSubSystem(cur->flag()))
+            subSys << cur->typeID() << ":";
+        else
+           ; // error?
+    }
+
+    std::map<EVEItemFlags, InventoryItemRef> chargeList;
+    m_ModuleManager->GetLoadedCharges(chargeList);
+    for (auto cur : chargeList)
+        charges << cur.second->typeID() << ";" << cur.second->quantity() << ":";
+
+    /* not sure how to get drones yet.  will work on later */
+    drones << ":";
+
+    /* build the dna stream */
+    std::stringstream dna;
+    dna << type().id() << ":";
+    dna << subSys << modHi << modMid << modLow << modRig << charges << drones;
+
+    _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), itemName().c_str(), itemID());
+    return dna.str();
+}
+
 
 /* DynamicSystemEntity representing ship object in space */
 Ship::Ship(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)

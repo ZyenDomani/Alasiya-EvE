@@ -85,14 +85,7 @@ PyBoundObject* RepairService::_CreateBoundObject(Client* c, const PyRep* bind_ar
     _log(CLIENT__MESSAGE, "RepairService bind request for:");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
 
-    Call_SingleIntegerArg args;
-    PyRep *t = bind_args->Clone();
-    if(!args.Decode(&t)) {
-        codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", c->GetName());
-        return nullptr;
-    }
-
-    return new RepairSvcBound(m_manager, args.arg);
+    return new RepairSvcBound(m_manager, bind_args->AsInt()->value());
 }
 
 PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {

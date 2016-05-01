@@ -334,6 +334,55 @@ public:
 };
 
 /**
+ * Class representing character kill data  -allan 01May16
+ */
+class CharKillData {
+public:
+    CharKillData(
+        uint32 _killID = 0,
+        uint32 _solarSystemID = 0,
+        uint32 _victimCharacterID = 0,
+        uint32 _victimCorporationID = 0,
+        uint32 _victimAllianceID = 0,
+        uint32 _victimFactionID = 0,
+        uint16 _victimShipTypeID = 0,
+        uint32 _finalCharacterID = 0,
+        uint32 _finalCorporationID = 0,
+        uint32 _finalAllianceID = 0,
+        uint32 _finalFactionID = 0,
+        uint16 _finalShipTypeID = 0,
+        uint16 _finalWeaponTypeID = 0,
+        std::string _killBlob = "",
+        uint64 _killTime = 0,
+        uint32 _victimDamageTaken = 0,
+        double _finalSecurityStatus = 0.0,
+        uint32 _finalDamageDone = 0,
+        uint32 _moonID = 0
+    );
+
+    uint32 killID;
+    uint32 solarSystemID;
+    uint32 victimCharacterID;
+    uint32 victimCorporationID;
+    uint32 victimAllianceID;
+    uint32 victimFactionID;
+    uint16 victimShipTypeID;
+    uint32 finalCharacterID;
+    uint32 finalCorporationID;
+    uint32 finalAllianceID;
+    uint32 finalFactionID;
+    uint16 finalShipTypeID;
+    uint16 finalWeaponTypeID;
+    std::string killBlob;
+    uint64 killTime;
+    uint32 victimDamageTaken;
+    double finalSecurityStatus;
+    uint32 finalDamageDone;
+    uint32 moonID;
+
+};
+
+/**
  * Class representing character.
  */
 class Character
@@ -554,76 +603,77 @@ public:
     /*
      * Public fields:
      */
-    const CharacterType&    type() const { return static_cast<const CharacterType& >(InventoryItem::type()); }
-    uint32                  bloodlineID() const { return type().bloodlineID(); }
-    EVERace                 race() const { return type().race(); }
+    const CharacterType&    type() const                        { return static_cast<const CharacterType& >(InventoryItem::type()); }
+    uint32                  bloodlineID() const                 { return type().bloodlineID(); }
+    EVERace                 race() const                        { return type().race(); }
 
     // Account:
-    uint32                  accountID() const { return m_accountID; }
+    uint32                  accountID() const                   { return m_accountID; }
 
-    const std::string&      title() const { return m_title; }
-    const std::string&      description() const { return m_description; }
-    bool                    gender() const { return m_gender; }
+    const std::string&      title() const                       { return m_title; }
+    const std::string&      description() const                 { return m_description; }
+    bool                    gender() const                      { return m_gender; }
 
-    double                  bounty() const { return m_bounty; }
-    double                  balance() const { return m_balance; }
-    double                  aurBalance() const { return m_aurBalance; }
-    double                  GetSecurityRating() const { return m_securityStatus; }
-    uint32					loginTime() const { return m_loginTime; }
-    uint32                  logonMinutes() const { return m_logonMinutes; }
+    double                  bounty() const                      { return m_bounty; }
+    double                  balance() const                     { return m_balance; }
+    double                  aurBalance() const                  { return m_aurBalance; }
+    double                  GetSecurityRating() const           { return m_securityStatus; }
+    uint32					loginTime() const                   { return m_loginTime; }
+    uint32                  logonMinutes() const                { return m_logonMinutes; }
 
     /**
      *  This is used to modifiy a characters Security Status
      *  @in amount to adjust m_securityStatus
      */
-    void                    secStatusChange( double amount ) { m_securityStatus += amount; }
+    void                    secStatusChange( double amount )    { m_securityStatus += amount; }
 
     // Corporation:
-    uint32                  corporationID() const { return m_corporationID; }
-    uint32                  corporationHQ() const { return m_corpHQ; }
-    uint32                  allianceID() const { return m_allianceID; }
-    uint32                  warFactionID() const { return m_warFactionID; }
-    int32                   corpAccountKey() const { return m_corpAccountKey; }
+    uint32                  corporationID() const               { return m_corporationID; }
+    uint32                  corporationHQ() const               { return m_corpHQ; }
+    uint32                  allianceID() const                  { return m_allianceID; }
+    uint32                  warFactionID() const                { return m_warFactionID; }
+    int32                   corpAccountKey() const              { return m_corpAccountKey; }
 
     // Corporation role:
-    uint64                  corpRole() const { return m_corpRole; }
-    uint64                  rolesAtAll() const { return m_rolesAtAll; }
-    uint64                  rolesAtBase() const { return m_rolesAtBase; }
-    uint64                  rolesAtHQ() const { return m_rolesAtHQ; }
-    uint64                  rolesAtOther() const { return m_rolesAtOther; }
+    uint64                  corpRole() const                    { return m_corpRole; }
+    uint64                  rolesAtAll() const                  { return m_rolesAtAll; }
+    uint64                  rolesAtBase() const                 { return m_rolesAtBase; }
+    uint64                  rolesAtHQ() const                   { return m_rolesAtHQ; }
+    uint64                  rolesAtOther() const                { return m_rolesAtOther; }
 
     // Fleet:
-    uint32                  fleetID() const { return /*m_fleetID*/0; }
-    uint32                  wingID() const { return m_wingID; }
-    uint32                  squadID() const { return m_squadID; }
-    uint8                   fleetRole() const { return m_fleetRole; }
-    uint8                   fleetBooster() const { return m_fleetBooster; }
-    uint8                   fleetJob() const { return m_fleetJob; }
+    uint32                  fleetID() const                     { return /*m_fleetID*/0; }
+    uint32                  wingID() const                      { return m_wingID; }
+    uint32                  squadID() const                     { return m_squadID; }
+    uint8                   fleetRole() const                   { return m_fleetRole; }
+    uint8                   fleetBooster() const                { return m_fleetBooster; }
+    uint8                   fleetJob() const                    { return m_fleetJob; }
 
     // Current location:
-    uint32                  stationID() const { return m_stationID; }
-    uint32                  solarSystemID() const { return m_solarSystemID; }
-    uint32                  constellationID() const { return m_constellationID; }
-    uint32                  regionID() const { return m_regionID; }
+    uint32                  stationID() const                   { return m_stationID; }
+    uint32                  solarSystemID() const               { return m_solarSystemID; }
+    uint32                  constellationID() const             { return m_constellationID; }
+    uint32                  regionID() const                    { return m_regionID; }
 
     // Ancestry, career:
-    uint32                  ancestryID() const { return m_ancestryID; }
-    uint32                  careerID() const { return m_careerID; }
-    uint32                  schoolID() const { return m_schoolID; }
-    uint32                  careerSpecialityID() const { return m_careerSpecialityID; }
+    uint32                  ancestryID() const                  { return m_ancestryID; }
+    uint32                  careerID() const                    { return m_careerID; }
+    uint32                  schoolID() const                    { return m_schoolID; }
+    uint32                  careerSpecialityID() const          { return m_careerSpecialityID; }
 
     // Some important dates:
-    uint64                  startDateTime() const { return m_startDateTime; }
-    uint64                  createDateTime() const { return m_createDateTime; }
+    uint64                  startDateTime() const               { return m_startDateTime; }
+    uint64                  createDateTime() const              { return m_createDateTime; }
 
-    uint32                  shipID() const { return m_shipID; }
-    uint32                  capsuleID() const { return m_capsuleID; }
+    uint32                  shipID() const                      { return m_shipID; }
+    uint32                  capsuleID() const                   { return m_capsuleID; }
 
     void                    SetActiveShip(uint32 shipID);
     void                    SetActivePod(uint32 podID);
     void                    ResetClone();
 
     void                    PayBounty(CharacterRef cRef);
+    void                    LogKill(CharKillData data)          { m_db.SaveKillOrLoss(data); }
 
     //  saves
     void                    SaveCharacter();
@@ -676,6 +726,7 @@ public:
 
 
     virtual bool _Load();
+
 protected:
     Character(
         ItemFactory& _factory,
@@ -730,6 +781,7 @@ protected:
 
     void _GetLogonMinutes();
 
+private:
     /*
      * Data members
      */
@@ -789,13 +841,12 @@ protected:
 
     Certificates m_certificates;
 
-private:
 	CharacterDB m_db;
     StandingDB s_db;
 
     Client* m_pClient;
 
-    bool m_loaded;      /* to avoid multiple load calls (_Load is called 4x) */
+    bool m_loaded;      /* to avoid multiple load calls (_Load is called ~4x) */
 };
 
 #endif /* !__CHARACTER__H__INCL__ */

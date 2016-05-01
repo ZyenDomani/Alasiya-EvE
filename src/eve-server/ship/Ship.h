@@ -195,7 +195,9 @@ public:
 
     const ShipType & type() const { return static_cast<const ShipType &>(InventoryItem::type()); }
 
-    bool IsInvul() {return false;}
+    bool IsInvul() {return false;}      /** @todo finish this, and find what it's used for */
+
+    std::string GetShipDNA();
 
     /*
      * Primary public packet builders:

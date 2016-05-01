@@ -151,6 +151,22 @@ minFakeClientItem = 17000000000000000000L
 ((flag == flagCargoHold) || (flag == flagDroneBay) || (flag == flagSecondaryStorage) || (flag == flagShipHangar) \
   || ((flag >= flagSpecializedFuelBay) && (flag <= flagSpecializedAmmoHold)))
 
+#define IsHiSlot(flag) \
+((flag >= flagHiSlot0) && (flag <= flagHiSlot7))
+
+#define IsMidSlot(flag) \
+((flag >= flagMedSlot0) && (flag <= flagMedSlot7))
+
+#define IsLowSlot(flag) \
+((flag >= flagLowSlot0) && (flag <= flagLowSlot7))
+
+#define IsRigSlot(flag) \
+((flag >= flagRigSlot0) && (flag <= flagRigSlot7))
+
+#define IsSubSystem(flag) \
+((flag >= flagSubSystem0) && (flag<=flagSubSystem7))
+
+
 /*
 def IsSystem(ownerID):
     return ownerID <= 10000

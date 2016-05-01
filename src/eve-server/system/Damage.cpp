@@ -434,12 +434,12 @@ void Ship::Killed(Damage &fatal_blow) {
         GPoint wreckPosition = DestinyMgr()->GetPosition();
         InventoryItemRef wreckItemRef;
         ItemData wreckItemData(
-            wreckTypeID,
-            killerID,
-            GetLocationID(),
-                               flagAutoFit,
-                               wreck_name.c_str(),
-                               wreckPosition
+                wreckTypeID,
+                killerID,
+                GetLocationID(),
+                flagAutoFit,
+                wreck_name.c_str(),
+                wreckPosition
         );
 
         wreckItemRef = SystemMgr()->GetServiceMgr()->item_factory->SpawnItem( wreckItemData );
@@ -487,6 +487,37 @@ void Ship::Killed(Damage &fatal_blow) {
         if (!SysBubble()) return;
         if ( pClient )
                pClient->GetChar()->PayBounty(m_player->GetChar());
+
+        /** populate kill data for podKill and save to db  - need to verify this*/
+        CharKillData data;
+            data.solarSystemID = m_system->GetID();
+            data.victimCharacterID = m_player->GetCharacterID();
+            data.victimCorporationID = GetCorporationID();
+            data.victimAllianceID = GetAllianceID();
+            data.victimFactionID = GetWarFactionID();
+            data.victimShipTypeID = GetTypeID();
+
+            data.finalCharacterID = killerID;
+            data.finalCorporationID = killer->GetCorporationID();
+            data.finalAllianceID = killer->GetAllianceID();
+            data.finalFactionID = killer->GetWarFactionID();
+            data.finalShipTypeID = killer->GetTypeID();
+            data.finalWeaponTypeID = fatal_blow.weapon->typeID();
+            data.finalSecurityStatus = 0;
+            data.finalDamageDone = fatal_blow.GetTotal();
+
+        uint32 totalHP = GetSelf()->GetAttribute(AttrHP).get_int();
+            totalHP += GetSelf()->GetAttribute(AttrArmorHP).get_int();
+            totalHP += GetSelf()->GetAttribute(AttrShieldCapacity).get_int();
+
+            data.victimDamageTaken = totalHP;
+            /* killBlob is ship dna, and contains destroyed/dropped items. dna works, but i dont know how to do the rest yet.  -allan 1May16  */
+            data.killBlob = m_player->GetShip()->GetShipDNA();
+            data.killTime = Win32TimeNow();
+
+            data.moonID = 0;    /* dunno wtf this is... */
+
+        pClient->GetChar()->LogKill(data);
 
 		GPoint deadPodPosition = GetPosition();
 		uint32 oldPodItemID = m_player->GetShipID();
@@ -542,6 +573,37 @@ void Ship::Killed(Damage &fatal_blow) {
                 - set coords on client and ship items.
             will have to look into this more later
          */
+
+        /** populate kill data for shipKill and save to db  -- need to verify this*/
+        CharKillData data;
+            data.solarSystemID = m_system->GetID();
+            data.victimCharacterID = m_player->GetCharacterID();
+            data.victimCorporationID = GetCorporationID();
+            data.victimAllianceID = GetAllianceID();
+            data.victimFactionID = GetWarFactionID();
+            data.victimShipTypeID = GetTypeID();
+
+            data.finalCharacterID = killerID;
+            data.finalCorporationID = killer->GetCorporationID();
+            data.finalAllianceID = killer->GetAllianceID();
+            data.finalFactionID = killer->GetWarFactionID();
+            data.finalShipTypeID = killer->GetTypeID();
+            data.finalWeaponTypeID = fatal_blow.weapon->typeID();
+            data.finalSecurityStatus = 0;
+            data.finalDamageDone = fatal_blow.GetTotal();
+
+        uint32 totalHP = GetSelf()->GetAttribute(AttrHP).get_int();
+            totalHP += GetSelf()->GetAttribute(AttrArmorHP).get_int();
+            totalHP += GetSelf()->GetAttribute(AttrShieldCapacity).get_int();
+
+            data.victimDamageTaken = totalHP;
+            /* killBlob is ship dna, and contains destroyed/dropped items. dna works, but i dont know how to do the rest yet.  -allan 1May16  */
+            data.killBlob = m_player->GetShip()->GetShipDNA();
+            data.killTime = Win32TimeNow();
+
+            data.moonID = 0;    /* dunno wtf this is... */
+
+        pClient->GetChar()->LogKill(data);
 
         PayInsurance();
 

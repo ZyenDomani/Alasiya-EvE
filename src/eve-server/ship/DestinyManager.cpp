@@ -1709,7 +1709,7 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
     if (mySE->HasPilot()) {
         Character* pChar = mySE->GetPilot()->GetChar().get();
         if (!pChar) {
-            _log(SHIP__INFO, "ShipItem %s(%u) does not have a pilot. Destiny Variables will be inaccurate.", mySE->GetName(), mySE->GetID());
+            _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot. Destiny Variables will be inaccurate.", mySE->GetName(), mySE->GetID());
             return;
         }
         bool IsCapShip = (ship->GetAttribute(AttrIsCapitalSize).get_float() ? true : false);

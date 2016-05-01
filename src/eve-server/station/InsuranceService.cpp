@@ -156,9 +156,10 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
      */
     // calculate the fraction value
     const ItemType type = shipRef->type();
-    double paymentFraction = (args.amount / (type.basePrice()));
-    float fraction = 0.0f;  // with no insurance, SCC pays 40% on live.  on alasiya-eve, i pay 0%.
-    if (paymentFraction == 0.05) fraction = 0.5f;
+    double paymentFraction = (args.amount / (type.basePrice()));    //need to verify pricing before this works correctly.
+    float fraction = 0.0f;  // with no insurance, SCC pays 40% on live.  on alasiya-eve, i pay 30%.
+    if (paymentFraction < 0.05) fraction = 0.3f;    /* minimum payout, and catchall for fuckedup prices.  */
+    else if (paymentFraction == 0.05) fraction = 0.5f;
     else if (paymentFraction == 0.1) fraction = 0.6f;
     else if (paymentFraction == 0.15) fraction = 0.7f;
     else if (paymentFraction == 0.2) fraction = 0.8f;
@@ -168,7 +169,8 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     if (fraction == 0){
         call.client->SendInfoModalMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 25520.");
         return new PyNone;
-    }
+    } else if (fraction == 0.3)
+        call.client->SendInfoModalMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 25521.");
 
     // delete old insurance, if any
     // TODO  verify they want to cancel old insurance before deleting

@@ -150,6 +150,7 @@ typedef long LibError;
  * Ref: ServerError 12321. << Client::BoardShip()
  * Ref: ServerError 15610. <<
  * Ref: ServerError 25520. << Ship::InsureShip() - fraction is 0
+ * Ref: ServerError 25521. << Ship::InsureShip() - fraction is < 0.05 -- ship is insured @ 30%
  * Ref: ServerError 25610. << MSAC::_calculateNewValue() - effectiveness is 0
  * Ref: ServerError 31110. << commandDispatcher::Execute()
  */

@@ -33,6 +33,7 @@ class PyObject;
 class PyString;
 class PyObjectEx;
 class CharacterAppearance;
+class CharKillData;
 class ItemFactory;
 class InventoryItem;
 class Client;
@@ -192,6 +193,9 @@ public:
     PyRep*      GetTopBounties();
     void        AddBounty(uint32 charID, uint32 ownerID, uint32 amount);
     uint32      PayBounty(CharacterRef cRef);
+
+    void        SaveKillOrLoss(CharKillData& data);
+    PyObjectEx* GetKillOrLoss(uint32 charID);
 
 	// for dynamic db functions    -allan
 	void        VisitSystem(uint32 solarSystemID, uint32 charID);

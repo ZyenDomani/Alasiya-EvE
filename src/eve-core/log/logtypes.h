@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 4.9
+    Log Version: 5.1
 */
  /*  see log.ini for matching versions */
 
@@ -240,6 +240,7 @@ LOG_TYPE( COMMAND, MESSAGE, DISABLED, "CmdMsg" )
 
 LOG_CATEGORY( SHIP )
 LOG_TYPE( SHIP, ERROR, ENABLED, "ShipError" )
+LOG_TYPE( SHIP, WARNING, DISABLED, "ShipWarning" )
 LOG_TYPE( SHIP, MESSAGE, DISABLED, "ShipMsg" )
 LOG_TYPE( SHIP, INFO, DISABLED, "ShipInfo" )
 LOG_TYPE( SHIP, TRACE, DISABLED, "ShipTrace" )

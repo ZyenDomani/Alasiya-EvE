@@ -824,12 +824,10 @@ bool ModuleManager::OnlineCheck(GenericModule* mod)
     if (m_Ship->GetPilot()->IsLogin()) return true;
     // check PG and CPU usage to see if we have enough to online this module
     EvilNumber cpuNeed = (m_Ship->GetAttribute(AttrCpuLoad) + mod->GetAttribute(AttrCpu));
-    EvilNumber cpuOutput = m_Ship->GetAttribute(AttrCpuOutput);
-    if (cpuNeed  > cpuOutput)
+    if (cpuNeed  > m_Ship->GetAttribute(AttrCpuOutput))
         return false;
     EvilNumber pgNeed = (m_Ship->GetAttribute(AttrPowerLoad) + mod->GetAttribute(AttrPower));
-    EvilNumber pgOutput = m_Ship->GetAttribute(AttrPowerOutput);
-    if (pgNeed > pgOutput)
+    if (pgNeed > m_Ship->GetAttribute(AttrPowerOutput))
         return false;
     return true;
 }

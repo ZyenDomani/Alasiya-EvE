@@ -397,9 +397,10 @@ PyObject *CharacterDB::GetCharPublicInfo3(uint32 characterID) {
     if(!sDatabase.RunQuery(res,
         "SELECT "
         "  bounty,"
+        "  title,"
         "  description,"
         "  startDateTime"
-        //"  corporationID AS corpID"
+        "  corporationID"
         " FROM character_ "
         " WHERE characterID=%u", characterID))
     {
@@ -1143,7 +1144,7 @@ PyObjectEx *CharacterDB::GetOwnerNoteLabels(uint32 charID) {
     if (!sDatabase.RunQuery(res, "SELECT noteID, label FROM chrOwnerNote WHERE ownerID = %u", charID))
     {
         codelog(DATABASE__ERROR, "Error on query: %s", res.error.c_str());
-        return (NULL);
+        return nullptr;
     }
 
     return DBResultToCRowset(res);
@@ -1155,7 +1156,7 @@ PyObjectEx *CharacterDB::GetOwnerNote(uint32 charID, uint32 noteID) {
     if (!sDatabase.RunQuery(res, "SELECT note FROM chrOwnerNote WHERE ownerID = %u AND noteID = %u", charID, noteID))
     {
         codelog(DATABASE__ERROR, "Error on query: %s", res.error.c_str());
-        return (NULL);
+        return nullptr;
     }
 
     return DBResultToCRowset(res);
@@ -1494,6 +1495,56 @@ uint32 CharacterDB::PayBounty(CharacterRef cRef)
         return 0;
 }
 
+void CharacterDB::SaveKillOrLoss(CharKillData &data) {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        " INSERT INTO chrKillTable"
+        " VALUES (%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%s,%" PRIu64 ",%u,%f,%u,%u,)",
+        data.killID, data.solarSystemID, data.victimCharacterID, data.victimCorporationID,
+        data.victimAllianceID, data.victimFactionID, data.victimShipTypeID, data.finalCharacterID,
+        data.finalCorporationID, data.finalAllianceID, data.finalFactionID, data.finalShipTypeID,
+        data.finalWeaponTypeID, data.killBlob.c_str(), data.killTime, data.victimDamageTaken, data.finalSecurityStatus,
+        data.finalDamageDone, data.moonID))
+    {
+        codelog(DATABASE__ERROR, "Error on query: %s", res.error.c_str());
+    }
+}
+
+PyObjectEx* CharacterDB::GetKillOrLoss(uint32 charID) {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "  killID,"
+        "  solarSystemID,"
+        "  victimCharacterID,"
+        "  victimCorporationID,"
+        "  victimAllianceID,"
+        "  victimFactionID,"
+        "  victimShipTypeID,"
+        "  finalCharacterID,"
+        "  finalCorporationID,"
+        "  finalAllianceID,"
+        "  finalFactionID,"
+        "  finalShipTypeID,"
+        "  finalWeaponTypeID,"
+        "  killBlob,"
+        "  killTime,"
+        "  victimDamageTaken,"
+        "  finalSecurityStatus,"
+        "  finalDamageDone,"
+        "  moonID"
+        "FROM chrKillTable WHERE ownerID = %u", charID))
+        /* should we limit this? */
+    {
+        codelog(DATABASE__ERROR, "Error on query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    _log(DATABASE__RESULTS, "GetKillOrLoss for %u returned %u items", charID, res.GetRowCount());
+
+    return DBResultToCRowset(res);
+}
+
 void CharacterDB::VisitSystem(uint32 solarSystemID, uint32 charID) {
     DBQueryResult res;
     sDatabase.RunQuery(res,
@@ -1597,6 +1648,8 @@ void CharacterDB::AddFactionKillToDynamicData(uint32 solarSystemID) {     /**fac
 void CharacterDB::GetActivePilotsFromDynamicData(uint32 solarSystemID, uint16 &pilotsDocked, uint16 &pilotsInSpace) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE solarSystemID = %u", solarSystemID );
+
+    _log(DATABASE__RESULTS, "GetActivePilotsFromDynamicData query returned %u items", res.GetRowCount());
 
     DBResultRow row;
     if (res.GetRow(row)) {

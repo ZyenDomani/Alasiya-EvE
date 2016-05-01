@@ -322,6 +322,50 @@ FleetMemberInfo::FleetMemberInfo(
 {
 }
 
+CharKillData::CharKillData(
+    uint32 _killID,
+    uint32 _solarSystemID,
+    uint32 _victimCharacterID,
+    uint32 _victimCorporationID,
+    uint32 _victimAllianceID,
+    uint32 _victimFactionID,
+    uint16 _victimShipTypeID,
+    uint32 _finalCharacterID,
+    uint32 _finalCorporationID,
+    uint32 _finalAllianceID,
+    uint32 _finalFactionID,
+    uint16 _finalShipTypeID,
+    uint16 _finalWeaponTypeID,
+    std::string _killBlob,          /* this is ship fittings and which ones were destroyed.  i dont know how to encode this yet... */
+    uint64 _killTime,
+    uint32 _victimDamageTaken,
+    double _finalSecurityStatus,
+    uint32 _finalDamageDone,
+    uint32 _moonID)
+:
+  killID(_killID),
+  solarSystemID(_solarSystemID),
+  victimCharacterID(_victimCharacterID),
+  victimCorporationID(_victimCorporationID),
+  victimAllianceID(_victimAllianceID),
+  victimFactionID(_victimFactionID),
+  victimShipTypeID(_victimShipTypeID),
+  finalCharacterID(_finalCharacterID),
+  finalCorporationID(_finalCorporationID),
+  finalAllianceID(_finalAllianceID),
+  finalFactionID(_finalFactionID),
+  finalShipTypeID(_finalShipTypeID),
+  finalWeaponTypeID(_finalWeaponTypeID),
+  killBlob(_killBlob),
+  killTime(_killTime),
+  victimDamageTaken(_victimDamageTaken),
+  finalSecurityStatus(_finalSecurityStatus),
+  finalDamageDone(_finalDamageDone),
+  moonID(_moonID)
+{
+
+}
+
 /*
  * Character
  */
