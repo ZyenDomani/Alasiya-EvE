@@ -200,7 +200,7 @@ CREATE TABLE `character_` (
   `nextRespecDateTime` bigint(20) unsigned NOT NULL DEFAULT '0',
   `deletePrepareDateTime` bigint(20) unsigned DEFAULT '0',
   `shipID` int(10) unsigned NOT NULL DEFAULT '0',
-  `capsuleID` INT(10) NOT NULL DEFAULT '0' AFTER,
+  `capsuleID` INT(10) NOT NULL DEFAULT '0',
   `age` int(20) NOT NULL,
   `paperDollState` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`characterID`),
