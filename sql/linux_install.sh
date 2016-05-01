@@ -70,21 +70,17 @@ until [ "${option}" = "x" ]; do
 
 		echo "[+] [4] Importing ofic dump Complete"
 
-		echo "[+] [5] Priming Database"
+        echo "[+] [5] Installing Allan's updates"
+        mysql -h ${host} --user=${user} --port=${port} --password=${pass} ${database} < "allans_updates.sql"
+        echo "[+] [5] Allan's Updates Install Complete"
+
+        echo "[+] [6] Installing Allan's Updates Data"
+        mysql -h ${host} --user=${user} --port=${port} --password=${pass} ${database} < "allans_updates_data.sql"
+        echo "[+] [6] Allan's Updates Data Install Complete"
+
+		echo "[+] [7] Priming Database"
 		mysql -h ${host} --user=${user} --port=${port} --password=${pass} ${database} < "prime_db.sql"
-		echo "[+] [5] Priming Database Complete"
-
-		echo "[+] [6] Live updates Database"
-		mysql -h ${host} --user=${user} --port=${port} --password=${pass} ${database} < "liveupdates.sql"
-		echo "[+] [6] Live updates Database Complete"
-
-		echo "[+] [7] Installing Allan's updates"
-		mysql -h ${host} --user=${user} --port=${port} --password=${pass} ${database} < "allans_updates.sql"
-		echo "[+] [7] Allan's Updates Install Complete"
-
-		echo "[+] [8] Installing Allan's Updates Data"
-		mysql -h ${host} --user=${user} --port=${port} --password=${pass} ${database} < "allans_updates_data.sql"
-		echo "[+] [8] Allan's Updates Data Install Complete"
+		echo "[+] [7] Priming Database Complete"
 
 	    else
 	        echo
