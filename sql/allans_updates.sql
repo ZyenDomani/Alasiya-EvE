@@ -349,7 +349,7 @@ CREATE TABLE IF NOT EXISTS `chrKillTable` (
   `moonID` int(10) unsigned NOT NULL DEFAULT '0'
   PRIMARY KEY (`killID`),
   KEY `victimCharacterID` (`victimCharacterID`),
-  KEY `finalCharacterID` (`finalCharacterID`);
+  KEY `finalCharacterID` (`finalCharacterID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 
@@ -362,9 +362,9 @@ CREATE TABLE `crtCategories` (
   `categoryName` varchar(256) DEFAULT NULL,
   `categoryNameID` int(10) unsigned DEFAULT '0',
   `dataID` int(10) unsigned DEFAULT '0'
+  PRIMARY KEY (`categoryID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-ALTER TABLE `crtCategories` ADD PRIMARY KEY (`categoryID`);
 
   /*  hack for minor client error...we dont have the real data for this yet  */
 ALTER TABLE `staOperations` ADD `descriptionID` INT(3) NOT NULL DEFAULT '0' AFTER `description`;

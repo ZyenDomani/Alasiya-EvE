@@ -77,26 +77,6 @@ INSERT INTO eveStaticOwners (ownerID, ownerName, typeID)
  SELECT corporationID, corporationName, 2 AS typeID
  FROM corporation;
 
-/* regions */
-INSERT INTO eveStaticLocations (locationID, locationName, x, y, z)
- SELECT regionID, regionName, x, y, z
- FROM mapRegions;
-
-/* constellations */
-INSERT INTO eveStaticLocations (locationID, locationName, x, y, z)
- SELECT constellationID, constellationName, x, y, z
- FROM mapConstellations;
-
-/* systems */
-INSERT INTO eveStaticLocations (locationID, locationName, x, y, z)
- SELECT solarSystemID, solarSystemName, x, y, z
- FROM mapSolarSystems;
-
-/* stations */
-INSERT INTO eveStaticLocations (locationID, locationName, x, y, z)
- SELECT stationID, stationName, x, y, z
- FROM staStations;
-
 
 /* non-static pos, ??  */
 -- INSERT INTO cacheLocations(locationID, locationName, x, y, z, locationNameID)
