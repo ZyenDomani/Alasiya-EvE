@@ -83,38 +83,11 @@ INSERT INTO `sklBaseSkills` (`ID`, `skillTypeID`, `level`) VALUES
 /* Dumping data for table `sklRaceSkills`  */
 
 INSERT INTO `sklRaceSkills` (`id`, `raceID`, `skillTypeID`, `level`) VALUES
-(1, 1, 3301, 2),
-(2, 1, 3330, 2),
-(3, 1, 3319, 2),
-(4, 1, 3321, 3),
-(5, 1, 3413, 2),
-(6, 1, 13432, 1),
-(7, 1, 3416, 1),
-(8, 1, 3426, 2),
-(9, 1, 21059, 2),
-(10, 1, 3425, 1),
-(11, 2, 3302, 2),
-(12, 2, 3329, 2),
-(13, 2, 3416, 2),
-(14, 2, 3413, 1),
-(15, 2, 3426, 1),
-(16, 2, 3300, 1),
-(17, 2, 3393, 3),
-(18, 2, 3394, 4),
-(19, 4, 3303, 2),
-(20, 4, 3331, 2),
-(21, 4, 3392, 1),
-(22, 4, 3393, 3),
-(23, 4, 3394, 3),
-(24, 4, 3417, 2),
-(25, 4, 3418, 2),
-(26, 8, 3301, 2),
-(27, 8, 3328, 2),
-(28, 8, 3436, 4),
-(29, 8, 3437, 3),
-(30, 8, 3442, 2),
-(31, 8, 12305, 2),
-(32, 8, 3392, 2);
+(1, 1, 3301, 2),(2, 1, 3330, 2),(3, 1, 3319, 2),(4, 1, 3321, 3),(5, 1, 3413, 2),(6, 1, 13432, 1),(7, 1, 3416, 1),
+(8, 1, 3426, 2),(9, 1, 21059, 2),(10, 1, 3425, 1),(11, 2, 3302, 2),(12, 2, 3329, 2),(13, 2, 3416, 2),(14, 2, 3413, 1),
+(15, 2, 3426, 1),(16, 2, 3300, 1),(17, 2, 3393, 3),(18, 2, 3394, 4),(19, 4, 3303, 2),(20, 4, 3331, 2),(21, 4, 3392, 1),
+(22, 4, 3393, 3),(23, 4, 3394, 3),(24, 4, 3417, 2),(25, 4, 3418, 2),(26, 8, 3301, 2),(27, 8, 3328, 2),(28, 8, 3436, 4),
+(29, 8, 3437, 3),(30, 8, 3442, 2),(31, 8, 12305, 2),(32, 8, 3392, 2);
 
 /* Dumping data for table `sklCareerSkills`  */
 
@@ -497,19 +470,18 @@ INSERT INTO `roidDistributionExtra` (`systemSec`, `roidID`, `percent`) VALUES
 ('K7', 17426, 0.026689),('K7', 11396, 0.008897),('K7', 17869, 0.024911),('K7', 17870, 0.040925),('K7', 17865, 0.024911),('K7', 17866, 0.039146);
 
 
-INSERT INTO `crtCategories` (`categoryID`, `description`, `categoryName`, `categoryNameID`, `dataID`) VALUES
-(3, 'Core', 'Core Certificates', 16, 22250862),
-(4, 'Starter Professions', 'Starter Professions', 15, 16559510),
-(5, 'Defence', 'Defense', 7, 34288261),
-(6, 'Gunnery', 'Gunnery', 8, 16559503),
-(7, 'Missiles', 'Missiles', 9, 16559504),
-(8, 'Drones', 'Drones', 10, 16559505),
-(9, 'Electronic Warfare', 'Electronic Warfare', 11, 16559506),
-(10, 'Navigation', 'Navigation', 12, 16559507),
-(11, 'Leadership', 'Leadership', 17, 22250878),
-(12, 'Harvesting', 'Harvesting', 13, 16559508),
-(13, 'Business and Industry', 'Business and Industry', 14, 16559509),
-(18, 'Planetary Interaction', 'Colony Management', 19, 16559511);
+UPDATE `crtCategories` SET `categoryNameID` = 16, `dataID` = 22250862 WHERE `categoryID` = 3;
+UPDATE `crtCategories` SET `categoryNameID` = 15, `dataID` = 16559510 WHERE `categoryID` = 4;
+UPDATE `crtCategories` SET `categoryNameID` = 7, `dataID` = 34288261 WHERE `categoryID` = 5;
+UPDATE `crtCategories` SET `categoryNameID` = 8, `dataID` = 16559503 WHERE `categoryID` = 6;
+UPDATE `crtCategories` SET `categoryNameID` = 9, `dataID` = 16559504 WHERE `categoryID` = 7;
+UPDATE `crtCategories` SET `categoryNameID` = 10, `dataID` = 16559505 WHERE `categoryID` = 8;
+UPDATE `crtCategories` SET `categoryNameID` = 11, `dataID` = 16559506 WHERE `categoryID` = 9;
+UPDATE `crtCategories` SET `categoryNameID` = 12, `dataID` = 16559507 WHERE `categoryID` = 10;
+UPDATE `crtCategories` SET `categoryNameID` = 17, `dataID` = 22250878 WHERE `categoryID` = 11;
+UPDATE `crtCategories` SET `categoryNameID` = 13, `dataID` = 16559508 WHERE `categoryID` = 12;
+UPDATE `crtCategories` SET `categoryNameID` = 14, `dataID` = 16559509 WHERE `categoryID` = 13;
+UPDATE `crtCategories` SET `categoryNameID` = 19, `dataID` = 16559511 WHERE `categoryID` = 18;
 
 
 UPDATE `mapRegions` SET `ratFactionID` = 500011 WHERE `regionID` = 10000001;

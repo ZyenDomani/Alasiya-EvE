@@ -116,10 +116,10 @@ CREATE TABLE `cacheLocations` (
 /*Table structure for table `cacheOwners` */
 
 CREATE TABLE `cacheOwners` (
-  `ownerID` int(10) unsigned NOT NULL default '0',
-  `ownerName` varchar(100) NOT NULL default '',
-  `typeID` int(10) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`ownerID`)
+  `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
+  `ownerName` varchar(100) NOT NULL DEFAULT '',
+  `ownerNameID` int(10) unsigned NOT NULL DEFAULT '0',
+  `typeID` int(10) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `cacheOwners` */

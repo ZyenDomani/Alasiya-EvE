@@ -346,7 +346,7 @@ CREATE TABLE IF NOT EXISTS `chrKillTable` (
   `finalDamageDone` int(10) unsigned NOT NULL DEFAULT '0',
   `killBlob` blob NOT NULL,
   `killTime` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `moonID` int(10) unsigned NOT NULL DEFAULT '0'
+  `moonID` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`killID`),
   KEY `victimCharacterID` (`victimCharacterID`),
   KEY `finalCharacterID` (`finalCharacterID`)
@@ -368,7 +368,9 @@ CREATE TABLE `crtCategories` (
 
   /*  hack for minor client error...we dont have the real data for this yet  */
 ALTER TABLE `staOperations` ADD `descriptionID` INT(3) NOT NULL DEFAULT '0' AFTER `description`;
-
+/*  add categoryNameID and dataID to crtCategories */
+ALTER TABLE `crtCategories` ADD `categoryNameID` INT(3) NOT NULL DEFAULT '0' AFTER `categoryName`;
+ALTER TABLE `crtCategories` ADD `dataID` INT(10) NOT NULL DEFAULT '0' AFTER `categoryNameID`;
 /* set skill level from float to int */
 UPDATE `dgmTypeAttributes` SET `valueInt`=0,`valueFloat`=NULL WHERE `attributeID`=280 AND `valueFloat`=0;
 /* set skill time constanant to int from float */
