@@ -155,12 +155,14 @@ public:
     /* class type pointer querys. */
     virtual StructureSE* GetPOSSE()                     { return (m_pos ? this : nullptr); }
     virtual StructureSE* GetTCUSE()                     { return (m_tcu ? this : nullptr); }
+    virtual StructureSE* GetSBUSE()                     { return (m_sbu ? this : nullptr); }
     virtual StructureSE* GetOutpostSE()                 { return (m_bridge ? this : nullptr); }
     virtual StructureSE* GetJumpBridgeSE()              { return (m_outpost ? this : nullptr); }
 
     /* class type tests. */
     virtual bool IsPOSSE()                              { return m_pos; }
     virtual bool IsTCUSE()                              { return m_tcu; }
+    virtual bool IsSBUSE()                              { return m_sbu; }
     virtual bool IsOutpostSE()                          { return m_outpost; }
     virtual bool IsJumpBridgeSE()                       { return m_bridge; }
 
@@ -182,6 +184,7 @@ public:
 private:
     bool m_tcu = false;
     bool m_pos = false;
+    bool m_sbu = false;
     bool m_array = false;
     bool m_bridge = false;
     bool m_jammer = false;

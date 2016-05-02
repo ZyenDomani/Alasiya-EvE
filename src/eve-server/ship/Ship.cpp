@@ -1159,6 +1159,14 @@ void ShipItem::DeactivateAllModules()
     m_ModuleManager->DeactivateAllModules();
 }
 
+void ShipItem::StripFitting()
+{
+    std::vector<InventoryItemRef> modList;
+    m_ModuleManager->GetModuleListOfRefs(&modList);
+    for (auto cur : modList)
+        m_ModuleManager->UnfitModule(cur->itemID());
+}
+
 /* End new Module Manager Interface */
 
 std::string ShipItem::GetShipDNA()

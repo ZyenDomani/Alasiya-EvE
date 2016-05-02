@@ -776,6 +776,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
         }
         if (mod->isOnline())
             mod->Offline();
+        mod->getItem()->SetFlag(flagCargoHold);
     }
     m_Modules->RemoveModule(itemID);
 }

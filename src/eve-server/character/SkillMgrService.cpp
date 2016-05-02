@@ -85,8 +85,20 @@ void SkillMgrBound::Release()
 }
 
 PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call) {
+    sLog.Log( "SkillMgrBound::Handle_GetCharacterAttributeModifiers()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
     // since we don't currently support implants (I think), just a dummy
     // expected data: for (itemID, typeID, operation, value,) in modifiers:
+    /*
+     * client sends attrib# of stat in question...
+     * we return this...
+        [PyList 1 items]
+          [PyTuple 4 items]
+            [PyIntegerVar 1866309449]   << implantID
+            [PyInt 9943]                << implantTypeID
+            [PyInt 2]                   << dunno
+            [PyFloat 3]                 << dunno
+            */
     return new PyTuple(0);
 }
 
@@ -112,6 +124,8 @@ PyResult SkillMgrBound::Handle_GetSkillHistory( PyCallArgs& call ) {
 
 PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 {
+    sLog.Log( "SkillMgrBound::Handle_CharAddImplant()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
     //takes itemid
     Call_SingleIntegerArg args;
     if( !args.Decode( &call.tuple ) )
@@ -119,14 +133,14 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
         codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
         return NULL;
     }
-
-    sLog.Debug( "SkillMgrBound", "Called CharAddImplant stub." );
 
     return NULL;
 }
 
 PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
 {
+    sLog.Log( "SkillMgrBound::Handle_RemoveImplantFromCharacter()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
     //takes itemid
     Call_SingleIntegerArg args;
     if( !args.Decode( &call.tuple ) )
@@ -134,8 +148,6 @@ PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
         codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
         return NULL;
     }
-
-    sLog.Debug( "SkillMgrBound", "Called RemoveImplantFromCharacter stub." );
 
     return NULL;
 }
@@ -192,6 +204,8 @@ PyResult SkillMgrBound::Handle_AddToEndOfSkillQueue(PyCallArgs &call) {
 
 PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 {
+    sLog.Log( "SkillMgrBound::Handle_RespecCharacter()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
     /** @todo check this and see if we can update to higher base attribs for faster train times */
     Call_RespecCharacter spec;
     if (!spec.Decode(call.tuple))

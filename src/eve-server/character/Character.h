@@ -346,17 +346,17 @@ public:
         uint32 _victimAllianceID = 0,
         uint32 _victimFactionID = 0,
         uint16 _victimShipTypeID = 0,
+        uint32 _victimDamageTaken = 0,
         uint32 _finalCharacterID = 0,
         uint32 _finalCorporationID = 0,
         uint32 _finalAllianceID = 0,
         uint32 _finalFactionID = 0,
         uint16 _finalShipTypeID = 0,
         uint16 _finalWeaponTypeID = 0,
-        std::string _killBlob = "",
-        uint64 _killTime = 0,
-        uint32 _victimDamageTaken = 0,
         double _finalSecurityStatus = 0.0,
         uint32 _finalDamageDone = 0,
+        std::string _killBlob = "",
+        uint64 _killTime = 0,
         uint32 _moonID = 0
     );
 
@@ -367,17 +367,17 @@ public:
     uint32 victimAllianceID;
     uint32 victimFactionID;
     uint16 victimShipTypeID;
+    uint32 victimDamageTaken;
     uint32 finalCharacterID;
     uint32 finalCorporationID;
     uint32 finalAllianceID;
     uint32 finalFactionID;
     uint16 finalShipTypeID;
     uint16 finalWeaponTypeID;
-    std::string killBlob;
-    uint64 killTime;
-    uint32 victimDamageTaken;
     double finalSecurityStatus;
     uint32 finalDamageDone;
+    std::string killBlob;
+    uint64 killTime;
     uint32 moonID;
 
 };
@@ -542,7 +542,7 @@ public:
      */
     void            SendSkillComplete(Skill* pSkill, uint8 oldLevel, uint8 newLevel, EvilNumber EN_Points, int64 newPoints, bool stopped=false);
 
-    PyObject*       GetSkillHistory();
+    PyRep* GetSkillHistory();
 	EvilNumber      GetTotalSP();
 
     // Certificates:
@@ -581,12 +581,6 @@ public:
      * @author almamu
      */
     void GetCertificates( Certificates& crt );
-
-    /**
-     * Gets char base attributes
-     */
-    PyObject* GetCharacterBaseAttributes();
-
 
     /*
      * Primary public packet builders:
@@ -710,7 +704,6 @@ public:
 	void 					SaveStandingChanges(uint32 fromID,
 												uint32 toID,
 												uint32 direction,
-												uint32 eventID,
 												uint32 eventType,
 												double amount,
 												std::string msg);

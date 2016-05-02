@@ -567,6 +567,7 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     SetInvul(true);
     SetUndock(true);  // bool for movement and invul and SendState checks (maybe more later)
     SetStateSent(false);
+    SetBubbleWait(true);
 
     //  Undock Request -> OnCharNoLongerInStation -> GetCriminalTimeStamps -> Undock -> OnItemsChanged (Undocking:xxxxxxxx) ->
     //set position of docking ramp for later position checks/setting (to remove ship at origin)
@@ -582,9 +583,9 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     SendSessionChange();
 
     if (m_beyonce)
-        m_undockTimer.Start(1000);
-    else
         m_undockTimer.Start(2000);
+    else
+        m_undockTimer.Start(3000);
 
     m_invulTimer.Start(10000);
     SetSessionTimer();

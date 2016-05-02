@@ -234,20 +234,7 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
 }
 
 PyResult CharMgrService::Handle_GetPublicInfo3(PyCallArgs &call) {
-    //takes a single int arg: char id
-    Call_SingleIntegerArg args;
-    if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
-    }
-
-    PyRep *result = m_db.GetCharPublicInfo3(args.arg);
-    if(result == NULL) {
-        codelog(CLIENT__ERROR, "%s: Failed to find char %u", call.client->GetName(), args.arg);
-        return NULL;
-    }
-
-    return result;
+    return m_db.GetCharPublicInfo3(call.client->GetCharacterID());
 }
 
 PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
@@ -295,6 +282,11 @@ PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
 		return new PyNone;
 	}
     return new PyInt(stationID);
+}
+
+PyResult CharMgrService::Handle_GetRecentShipKillsAndLosses( PyCallArgs& call )
+{   /* cached object - can return db object as DBResultToCRowset*/
+    return m_db.GetKillOrLoss(call.client->GetCharacterID());
 }
 
 PyResult CharMgrService::Handle_GetFactions( PyCallArgs& call )
@@ -612,11 +604,6 @@ PyResult CharMgrService::Handle_EditContact( PyCallArgs& call )
   return NULL;
 }
 
-PyResult CharMgrService::Handle_GetRecentShipKillsAndLosses( PyCallArgs& call )
-{   /* cached object - can return db object as DBResultToCRowset*/
-    return m_db.GetKillOrLoss(call.client->GetCharacterID());
-}
-
 PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
 {
   sLog.Log( "CharMgrService::Handle_GetLabels()", "size=%u ", call.tuple->size());
@@ -682,7 +669,9 @@ PyResult CharMgrService::Handle_EditContactsRelationshipID( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_GetImageServerLink( PyCallArgs& call )
 {
-	//  serverLink = sm.RemoteSvc('charMgr').GetImageServerLink()
+    //  serverLink = sm.RemoteSvc('charMgr').GetImageServerLink()
+    sLog.Log( "CharMgrService::Handle_GetImageServerLink()", "size=%u ", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
   return NULL;
 }
 

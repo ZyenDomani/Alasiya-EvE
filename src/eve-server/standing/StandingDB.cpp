@@ -51,7 +51,7 @@
  http://www.eveinfo.net/wiki/ind~4067.htm
  */
 
-PyObjectEx *StandingDB::GetFactionStandings() {
+PyRep *StandingDB::GetFactionStandings() {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT fromID,toID,standing FROM repFactions"  )) {
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
@@ -61,17 +61,20 @@ PyObjectEx *StandingDB::GetFactionStandings() {
 }
 
 
-PyObjectEx *StandingDB::GetCharStandings(Client *pClient) {
-    /*  get faction, corp, agent for this char  */
-
+PyRep *StandingDB::GetCharStandings(Client *pClient) {
+    /*  get faction, corp, agent for this char
+     *      will need more work to get char corps/alliances/factions in the db.
+     */
     DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT fromID, standing FROM repFactions WHERE toID = "
+    sDatabase.RunQuery(res, "SELECT fromID, standing FROM repFactions WHERE toID = " // should this be warfactionID ??
                             " (SELECT factionID FROM crpNPCCorporations WHERE corporationID = %u)", pClient->GetCorporationID());
+    sDatabase.RunQuery(res, "SELECT fromID, standing FROM repNPCCorp WHERE toID = %u", pClient->GetCorporationID());
+    sDatabase.RunQuery(res, "SELECT fromID, standing FROM repAgent WHERE toID = %u", pClient->GetCharacterID());
 
     return DBResultToCRowset(res);
 }
 
-PyObjectEx *StandingDB::GetCorpStandings(uint32 corpID) {
+PyRep *StandingDB::GetCorpStandings(uint32 corpID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT fromID, standing FROM repCorp WHERE toID=%u", corpID )) {
         _log(DATABASE__ERROR, "Error in GetCorpStandings query: %s", res.error.c_str());
@@ -80,7 +83,7 @@ PyObjectEx *StandingDB::GetCorpStandings(uint32 corpID) {
     return DBResultToCRowset(res);
 }
 
-PyObjectEx *StandingDB::GetCharNPCStandings(uint32 charID) {
+PyRep *StandingDB::GetCharNPCStandings(uint32 charID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT toID, standing FROM chrNPCStandings WHERE fromID=%u", charID )) {
         _log(DATABASE__ERROR, "Error in GetCharNPCStandings query: %s", res.error.c_str());
@@ -138,6 +141,8 @@ PyRep *StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 di
 }
 
 PyRep* StandingDB::GetStandingCompositions(uint32 toID, uint32 fromID) {
+    // ownerID, standing ...
+
     return NULL;
 }
 
@@ -316,20 +321,19 @@ void StandingDB::SetNPCCorpStanding(uint32 toID, uint32 fromID, double standing)
                        "VALUES (%u,%u,%f)", toID, fromID, standing );
 }
 
-void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint32 direction, uint32 eventID, uint32 eventType, double amount, std::string msg) {
+void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint32 direction, uint32 eventType, double amount, std::string msg) {
     DBQueryResult res;
     sDatabase.RunQuery(res,
         "INSERT INTO repStandingChanges"
-        "  ( eventID,"
-        "  eventType,"
+        "  ( eventType,"
         "  eventDateTime,"
         "  fromID,"
         "  toID,"
         "  modification,"
         "  direction,"
         "  msg )"
-        " VALUES (%u, %u, UNIX_TIMESTAMP(CURRENT_TIMESTAMP), %u, %u, %f, %u, '%s' )",
-                eventID, eventType, fromID, toID, amount, direction, msg.c_str() );
+        " VALUES (%u, %" PRIu64 ", %u, %u, %f, %u, '%s' )",
+                eventType, Win32TimeNow(), fromID, toID, amount, direction, msg.c_str() );
 }
 
 //FIXME TODO  implement repStandingChanges after standing system is working....

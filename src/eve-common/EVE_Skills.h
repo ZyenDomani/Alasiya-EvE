@@ -8,21 +8,22 @@
 #ifndef EVE_SKILLS_H
 #define EVE_SKILLS_H
 
-
 typedef enum {
-    skillEventCharCreation = 33,
-    skillEventClonePenalty = 34,
-    skillEventTaskMaster = 35,
-    skillEventTrainingStarted = 36,
-    skillEventTrainingComplete = 37,
-    skillEventTrainingCancelled = 38,
-    skillEventGMGive = 39,
-    skillEventQueueTrainingCompleted = 53,
-    skillEventSkillInjected = 56,
+    skillEventGift                          = 24,
+    skillEventCharCreation                  = 33,
+    skillEventClonePenalty                  = 34,
+    skillEventTaskMaster                    = 35,
+    skillEventTrainingStarted               = 36,
+    skillEventTrainingComplete              = 37,
+    skillEventTrainingCancelled             = 38,
+    skillEventGMGive                        = 39,
+    skillEventQueueTrainingCompleted        = 53,
+    skillEventSkillInjected                 = 56,
+    skillEventRemoval                       = 177,
     /** @todo cant use these below, as current eventID is uint8 */
-    skillEventHaltedAccountLapsed = 260,
-    skillEventSkillPointsApplied = 307,
-    skillEventGMReverseFreeSkillPointsUsed = 309
+    skillEventHaltedAccountLapsed           = 260,
+    skillEventSkillPointsApplied            = 307,
+    skillEventGMReverseFreeSkillPointsUsed  = 309
 } EVESkillEvent;
 
  /** Created with MYSQL query:

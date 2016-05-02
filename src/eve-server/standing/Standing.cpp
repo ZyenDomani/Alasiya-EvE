@@ -76,57 +76,15 @@ PyResult Standing::Handle_GetMyKillRights(PyCallArgs &call) {
     PyTuple *tu = new PyTuple(2);
     PyDict *u1 = new PyDict();
     PyDict *u2 = new PyDict();
-    tu->items[0] = u1;
-    tu->items[1] = u2;
+        tu->items[0] = u1;
+        tu->items[1] = u2;
     return tu;
 }
 
 PyResult Standing::Handle_GetMyStandings(PyCallArgs &call) {
+    /* still working on this one (cause i dont completely understand it yet) */
   sLog.Log( "Standing::Handle_GetMyStandings()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
-   /*
-      Args:   [ 4]   [ 0]       Args:   [ 1]     Tuple: 6 elements
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0] Object:
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0]   Type: String: 'util.Rowset'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0]   Args: Dictionary: 3 entries
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0]   Args:   [ 0] Key: String: 'header'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0]   Args:   [ 0] Value: List: 2 elements
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0]   Args:   [ 0] Value:   [ 0] String: 'toID'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0]   Args:   [ 0] Value:   [ 1] String: 'standing'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0]   Args:   [ 1] Key: String: 'RowClass'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0]   Args:   [ 1] Value: String (Type1): 'util.Row'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0]   Args:   [ 2] Key: String: 'lines'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 0]   Args:   [ 2] Value: List: Empty
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1] Object:
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1]   Type: String: 'util.Rowset'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1]   Args: Dictionary: 3 entries
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1]   Args:   [ 0] Key: String: 'header'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1]   Args:   [ 0] Value: List: 3 elements
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1]   Args:   [ 0] Value:   [ 0] String: 'ownerID'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1]   Args:   [ 0] Value:   [ 1] String: 'ownerName'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1]   Args:   [ 0] Value:   [ 2] String: 'typeID'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1]   Args:   [ 1] Key: String: 'RowClass'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1]   Args:   [ 1] Value: String (Type1): 'util.Row'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1]   Args:   [ 2] Key: String: 'lines'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 1]   Args:   [ 2] Value: List: Empty
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2] Object:
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Type: String: 'util.Rowset'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args: Dictionary: 3 entries
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args:   [ 0] Key: String: 'header'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args:   [ 0] Value: List: 2 elements
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args:   [ 0] Value:   [ 0] String: 'fromID'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args:   [ 0] Value:   [ 1] String: 'standing'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args:   [ 1] Key: String: 'RowClass'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args:   [ 1] Value: String (Type1): 'util.Row'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args:   [ 2] Key: String: 'lines'
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args:   [ 2] Value: List: 1 elements
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args:   [ 2] Value:   [ 0] List: 2 elements
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args:   [ 2] Value:   [ 0]   [ 0] Integer field: 3012239
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 2]   Args:   [ 2] Value:   [ 0]   [ 1] Real Field: 10.000000
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 3] Dictionary: 0 entries
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 4] Dictionary: 0 entries
-      Args:   [ 4]   [ 0]       Args:   [ 1]       [ 5] Dictionary: 0 entries
-    */
 
     PyRep *charstandings = m_db.GetCharStandings(call.client);
     PyRep *charprime = m_db.PrimeCharStandings(call.client->GetCharacterID());   //prime, as in to set initial values (initialize)
@@ -137,13 +95,12 @@ PyResult Standing::Handle_GetMyStandings(PyCallArgs &call) {
     PyDict *npccorpstandings = new PyDict();
 
     PyTuple *tu = new PyTuple(6);
-    tu->items[0] = charstandings;
-    tu->items[1] = charprime;
-    tu->items[2] = npccharstandings;
-    tu->items[3] = corpstandings;
-    tu->items[4] = corpprime;
-    tu->items[5] = npccorpstandings;
-
+        tu->items[0] = charstandings;
+        tu->items[1] = charprime;
+        tu->items[2] = npccharstandings;
+        tu->items[3] = corpstandings;
+        tu->items[4] = corpprime;
+        tu->items[5] = npccorpstandings;
     PyRep *result = tu;
     return result;
 }
@@ -152,9 +109,9 @@ PyResult Standing::Handle_GetCharStandings(PyCallArgs &call) {
     ObjectCachedSessionMethodID method_id(GetName(), "GetCharStandings", call.client->GetCharacterID());
 
     if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        PyObjectEx *t = m_db.GetCharStandings(call.client);
+        PyRep *t = m_db.GetCharStandings(call.client);
 
-        m_manager->cache_service->GiveCache(method_id, (PyRep **)&t);
+        m_manager->cache_service->GiveCache(method_id, &t);
     }
 
     return(m_manager->cache_service->MakeObjectCachedSessionMethodCallResult(method_id, "charID"));
@@ -167,9 +124,9 @@ PyResult Standing::Handle_GetCorpStandings(PyCallArgs &call) {
     ObjectCachedSessionMethodID method_id(GetName(), "GetCorpStandings", call.client->GetCorporationID());
 
     if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        PyObjectEx *t = m_db.GetCorpStandings(call.client->GetCorporationID());
+        PyRep *t = m_db.GetCorpStandings(call.client->GetCorporationID());
 
-        m_manager->cache_service->GiveCache(method_id, (PyRep **)&t);
+        m_manager->cache_service->GiveCache(method_id, &t);
     }
 
     return (m_manager->cache_service->MakeObjectCachedSessionMethodCallResult(method_id, "corpID"));
@@ -185,7 +142,7 @@ PyResult Standing::Handle_GetNPCNPCStandings(PyCallArgs &call) {
     if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
         //this method is not in cache yet, load up the contents and cache it.
         result = m_db.GetFactionStandings();
-        if(result == NULL)
+        if (result == NULL)
             result = new PyNone();
         m_manager->cache_service->GiveCache(method_id, &result);
     }
@@ -199,22 +156,7 @@ PyResult Standing::Handle_GetNPCNPCStandings(PyCallArgs &call) {
 
 PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
     /**
-     *            data = sm.RemoteSvc('standing2').GetStandingTransactions(fromID, toID, direction, eventID, eventType, eventDateTime)
-     */
-    /*
-     *        data = sm.RemoteSvc('standing2').GetStandingTransactions(const.ownerCONCORD, eve.session.charid, 1, None, None, None)
-     * 21:50:56 L Standing::Handle_GetStandingTransactions(): size= 6
-     * 21:50:56 [SvcCall]   Call Arguments:
-     * 21:50:56 [SvcCall]       Tuple: 6 elements
-     * 21:50:56 [SvcCall]         [ 0] Integer field: 1000125
-     * 21:50:56 [SvcCall]         [ 1] Integer field: 140000000
-     * 21:50:56 [SvcCall]         [ 2] Integer field: 1
-     * 21:50:56 [SvcCall]         [ 3] (None)
-     * 21:50:56 [SvcCall]         [ 4] (None)
-     * 21:50:56 [SvcCall]         [ 5] (None)
-     * 21:50:56 [SvcCall]   Call Named Arguments:
-     * 21:50:56 [SvcCall]     Argument 'machoVersion':
-     * 21:50:56 [SvcCall]         Integer field: 1
+     * data = sm.RemoteSvc('standing2').GetStandingTransactions(fromID, toID, direction, eventID, eventType, eventDateTime)
      */
     sLog.Log( "Standing::Handle_GetStandingTransactions()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);

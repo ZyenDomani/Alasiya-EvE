@@ -97,6 +97,7 @@ public:
     virtual StructureSE*        GetOutpostSE()          { return nullptr; }
     virtual StructureSE*        GetPOSSE()              { return nullptr; }
     virtual StructureSE*        GetTCUSE()              { return nullptr; }
+    virtual StructureSE*        GetSBUSE()              { return nullptr; }
     virtual DeployableSE*       GetDeployableSE()       { return nullptr; }
     /* Dynamic */
     virtual DynamicSystemEntity* GetDSE()               { return nullptr; }
@@ -128,6 +129,7 @@ public:
     virtual bool                IsObjectEntity()        { return false; }
     virtual bool                IsPOSSE()               { return false; }
     virtual bool                IsTCUSE()               { return false; }
+    virtual bool                IsSBUSE()               { return false; }
     virtual bool                IsOutpostSE()           { return false; }
     virtual bool                IsAsteroidSE()          { return false; }
     virtual bool                IsDeployableSE()        { return false; }

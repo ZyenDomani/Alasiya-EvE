@@ -97,17 +97,19 @@ PyBoundObject* InsuranceService::_CreateBoundObject( Client* c, const PyRep* bin
 }
 
 PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
+    /* called in space */
     const ItemType *type = m_manager->item_factory->GetType(call.tuple->GetItem(0)->AsInt()->value());
     if (type)
-        return new PyFloat(type->basePrice()/10);
+        return new PyFloat(type->basePrice()/15);
     else
         return new PyNone;
 }
 
 PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
+    /* called when docked */
     const ItemType *type = m_manager->item_factory->GetType(call.tuple->GetItem(0)->AsInt()->value());
     if (type)
-        return new PyFloat(type->basePrice()/10);
+        return new PyFloat(type->basePrice()/15);
     else
         return new PyNone;
 }
@@ -120,14 +122,14 @@ PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
             return NULL;
         }
 
-        return (m_db->GetInsuranceByOwnerID(call.client->GetCorporationID()));
+        return m_db->GetInsuranceByOwnerID(call.client->GetCorporationID());
     }
 
-    return (m_db->GetInsuranceByOwnerID(call.client->GetCharacterID()));
+    return m_db->GetInsuranceByOwnerID(call.client->GetCharacterID());
 }
 
 PyResult InsuranceService::Handle_GetContractForShip( PyCallArgs& call ) {
-    return (m_db.GetInsuranceByShipID(call.tuple->GetItem(0)->AsInt()->value()));
+    return m_db.GetInsuranceByShipID(call.tuple->GetItem(0)->AsInt()->value());
 }
 
 PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
@@ -213,7 +215,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 
     m_manager->lsc_service->SendMail(1000132, call.client->GetCharacterID(), subject, body);
 
-    return (m_db->GetInsuranceByShipID(args.shipID));
+    return m_db->GetInsuranceByShipID(args.shipID);
 }
 
 PyResult InsuranceBound::Handle_UnInsureShip( PyCallArgs& call ) {

@@ -155,10 +155,13 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar
         secAward *= sConfig.rates.secRate;
         sLog.Magenta("SystemEntity::AwardSecurityStatus()"," %s(%u): killBonus: %f.  oldSec: %f.  secAward: %f.",
                      GetName(), GetID(), killBonus, oldSec, secAward);
-        //pChar->secStatusChange( secAward );
-        //std::string msg = "Status Change for killing pirates in ";
-        //msg += System()->GetName();
-        //pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), 1,  eventID,  eventType, secAward, msg);
+        pChar->secStatusChange( secAward );
+        std::string msg = "Status Change for killing pirates in ";
+        msg += m_system->GetName();
+        if (m_self->HasPilot())
+            pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), 1, standingCombatShipKill, secAward, msg);
+        else
+            pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), 1, standingPirateKillSecurityStatus, secAward, msg);
     }
 }
 

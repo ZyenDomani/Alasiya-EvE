@@ -315,6 +315,8 @@ PyResult InventoryBound::Handle_StripFitting(PyCallArgs &call) {
         call.Dump(SERVICE__CALL_DUMP);
     }
 
+    call.client->GetShip()->StripFitting();
+
     return nullptr;
 }
 

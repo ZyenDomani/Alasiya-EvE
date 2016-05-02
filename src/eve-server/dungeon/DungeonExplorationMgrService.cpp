@@ -47,14 +47,14 @@ DungeonExplorationMgrService::~DungeonExplorationMgrService()
 }
 
 PyResult DungeonExplorationMgrService::Handle_GetMyEscalatingPathDetails(PyCallArgs &call) {
-    /**00:51:32[00m L [37;01mDungeonExplorationMgrService::Handle_GetMyEscalatingPathDetails(): [00msize= 0
-     * [00m00:51:32 [SvcCall]   Call Arguments:
+    // cached response
+    /**00:51:32 L DungeonExplorationMgrService::Handle_GetMyEscalatingPathDetails(): size= 0
+     * 00:51:32 [SvcCall]   Call Arguments:
      * 00:51:32 [SvcCall]       Tuple: Empty
      * 00:51:32 [SvcCall]   Call Named Arguments:
      * 00:51:32 [SvcCall]     Argument 'machoVersion':
      * 00:51:32 [SvcCall]         Integer field: 1
      * /client/script/ui/shared/neocom/journal.py(1502) ShowExpeditions
-
      */
     sLog.Log("DungeonExplorationMgrService::Handle_GetMyEscalatingPathDetails()",  "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);

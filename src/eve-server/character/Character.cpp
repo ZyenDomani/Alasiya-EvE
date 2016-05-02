@@ -330,17 +330,17 @@ CharKillData::CharKillData(
     uint32 _victimAllianceID,
     uint32 _victimFactionID,
     uint16 _victimShipTypeID,
+    uint32 _victimDamageTaken,
     uint32 _finalCharacterID,
     uint32 _finalCorporationID,
     uint32 _finalAllianceID,
     uint32 _finalFactionID,
     uint16 _finalShipTypeID,
     uint16 _finalWeaponTypeID,
-    std::string _killBlob,          /* this is ship fittings and which ones were destroyed.  i dont know how to encode this yet... */
-    uint64 _killTime,
-    uint32 _victimDamageTaken,
     double _finalSecurityStatus,
     uint32 _finalDamageDone,
+    std::string _killBlob,          /* this is ship DNA  i dont know how to completely encode this yet... */
+    uint64 _killTime,
     uint32 _moonID)
 :
   killID(_killID),
@@ -350,17 +350,17 @@ CharKillData::CharKillData(
   victimAllianceID(_victimAllianceID),
   victimFactionID(_victimFactionID),
   victimShipTypeID(_victimShipTypeID),
+  victimDamageTaken(_victimDamageTaken),
   finalCharacterID(_finalCharacterID),
   finalCorporationID(_finalCorporationID),
   finalAllianceID(_finalAllianceID),
   finalFactionID(_finalFactionID),
   finalShipTypeID(_finalShipTypeID),
   finalWeaponTypeID(_finalWeaponTypeID),
-  killBlob(_killBlob),
-  killTime(_killTime),
-  victimDamageTaken(_victimDamageTaken),
   finalSecurityStatus(_finalSecurityStatus),
   finalDamageDone(_finalDamageDone),
+  killBlob(_killBlob),
+  killTime(_killTime),
   moonID(_moonID)
 {
 
@@ -646,11 +646,6 @@ uint8 Character::GetSkillLevel(uint32 skillTypeID, bool zeroForNotInjected /*tru
     return requiredSkill->GetAttribute(AttrSkillLevel).get_int() ;
 }
 
-PyObject* Character::GetCharacterBaseAttributes()
-{
-    return nullptr;
-}
-
 float Character::GetAgilitySkills(bool cap) {
 	/*    Evasive Maneuvering  5% improved ship agility for all ships per skill level.
 	 *    Spaceship Command   2% improved ship agility for all ships per skill level.
@@ -840,6 +835,8 @@ void Character::UpdateSkillQueue() {
             m_pClient->QueueDestinyEvent(&tmp);
 
             SaveSkillHistory(skillEventTrainingCancelled, EvilTimeNow().get_float(), itemID(), currentTraining->typeID(), oldLevel, skillPointsTrained.get_float(), GetTotalSP().get_float() );
+            _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u", \
+                            itemName().c_str(), itemID(), currentTraining->typeID(), oldLevel);
 
             currentTraining->SetAttribute(AttrSkillPoints, skillPointsTrained);
             currentTraining->SetAttribute(AttrExpiryTime, 0);
@@ -874,7 +871,7 @@ void Character::UpdateSkillQueue() {
             EvilNumber timeTraining = (EvilTimeNow() + (EvilTime_Minute * (SPToNextLevel / GetSPPerMin(currentTraining))));
 
             SaveSkillHistory(skillEventTrainingStarted, EvilTimeNow().get_float(), itemID(), skillID, level.get_int(), CurrentSP.get_float(), GetTotalSP().get_float() );
-            _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining started - skill: %u, level: %d", \
+            _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining started - skill: %u, level: %u", \
                             itemName().c_str(), itemID(), skillID, level.get_int());
 
             currentTraining->SetFlag(flagSkillInTraining);
@@ -901,7 +898,7 @@ void Character::UpdateSkillQueue() {
             if ( completeTime < 1 ) completeTime = EvilTimeNow();
 
             SaveSkillHistory(skillEventTrainingComplete, completeTime.get_float(), itemID(), currentTraining->typeID(), level, currentTraining->GetAttribute(AttrSkillPoints).get_float(), GetTotalSP().get_float() );
-             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining completed - skill: %u, level: %d", \
+             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining completed - skill: %u, level: %u", \
                             itemName().c_str(), itemID(), currentTraining->typeID(), level);
 
             OnSkillTrained ost;
@@ -940,7 +937,7 @@ void Character::UpdateSkillQueue() {
             EvilNumber timeTraining = (completeTime + (EvilTime_Minute * (SPToNextLevel / GetSPPerMin(currentTraining))));
 
             SaveSkillHistory(skillEventTrainingStarted, timeTraining.get_float(), itemID(), skillID, level, CurrentSP.get_float(), GetTotalSP().get_float() );
-             _log(CHARACTER__SKILL_TRACE, "%s(%u) Persistant Training started - skill: %u, level: %d", \
+             _log(CHARACTER__SKILL_TRACE, "%s(%u) Persistant Training started - skill: %u, level: %u", \
                             itemName().c_str(), itemID(), skillID, level);
 
             currentTraining->SetFlag(flagSkillInTraining);
@@ -1213,7 +1210,7 @@ void Character::SaveSkillHistory(uint8 eventID, double logDate, uint32 character
     m_db.SaveSkillHistory(eventID, logDate, characterID, skillTypeID, skillLevel, relativePoints, absolutePoints);
 }
 
-PyObject* Character::GetSkillHistory() {
+PyRep* Character::GetSkillHistory() {
     return m_db.GetSkillHistory(itemID());
 }
 
@@ -1313,8 +1310,8 @@ void Character::SetNPCCorpStanding(uint32 fromID, uint32 toID, double standing) 
 	s_db.SetNPCCorpStanding(fromID, toID, standing);
 }
 
-void Character::SaveStandingChanges(uint32 fromID, uint32 toID, uint32 direction, uint32 eventID, uint32 eventType, double amount, std::string msg) {
-	s_db.SaveStandingChanges(fromID, toID, direction, eventID, eventType, amount, msg);
+void Character::SaveStandingChanges(uint32 fromID, uint32 toID, uint32 direction, uint32 eventType, double amount, std::string msg) {
+	s_db.SaveStandingChanges(fromID, toID, direction, eventType, amount, msg);
 }
 
 // functions and methods for map system

@@ -286,7 +286,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
     return DBResultToCRowset(res);
 }
 
-PyObject *CharacterDB::GetCharPublicInfo(uint32 characterID) {
+PyRep *CharacterDB::GetCharPublicInfo(uint32 characterID) {
     if(characterID < EVEMU_MINIMUM_ID) {
         sLog.Error("CharacterDB::GetCharPublicInfo()", "Character %u is NPC.", characterID);
         return nullptr;
@@ -390,16 +390,15 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, uin
     characterDataMap["cloneStationID"] = stationID;
 }
 
-PyObject *CharacterDB::GetCharPublicInfo3(uint32 characterID) {
-
+PyRep* CharacterDB::GetCharPublicInfo3(uint32 characterID) {
+    // bounty, title, startDateTime, description, corporationID
     DBQueryResult res;
-
     if(!sDatabase.RunQuery(res,
         "SELECT "
         "  bounty,"
         "  title,"
-        "  description,"
         "  startDateTime"
+        "  description,"
         "  corporationID"
         " FROM character_ "
         " WHERE characterID=%u", characterID))
@@ -408,13 +407,12 @@ PyObject *CharacterDB::GetCharPublicInfo3(uint32 characterID) {
         return nullptr;
     }
 
-    return DBResultToRowset(res);
+    return DBResultToCRowset(res);
 }
 
-PyObject *CharacterDB::GetInfoWindowDataForChar(uint32 characterID) {
+PyRep *CharacterDB::GetInfoWindowDataForChar(uint32 characterID) {
     //corpID, allianceID, title
     DBQueryResult res;
-
     if(!sDatabase.RunQuery(res,
         "SELECT "
         "  ch.corporationID AS corpID,"
@@ -1138,7 +1136,7 @@ bool CharacterDB::EditOwnerNote(uint32 charID, uint32 noteID, const std::string 
     return true;
 }
 
-PyObjectEx *CharacterDB::GetOwnerNoteLabels(uint32 charID) {
+PyRep *CharacterDB::GetOwnerNoteLabels(uint32 charID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res, "SELECT noteID, label FROM chrOwnerNote WHERE ownerID = %u", charID))
@@ -1150,7 +1148,35 @@ PyObjectEx *CharacterDB::GetOwnerNoteLabels(uint32 charID) {
     return DBResultToCRowset(res);
 }
 
-PyObjectEx *CharacterDB::GetOwnerNote(uint32 charID, uint32 noteID) {
+PyRep *CharacterDB::GetOwnerNote(uint32 charID, uint32 noteID) {
+    /*
+                    [PyTuple 6 items]
+                      [PyTuple 2 items]
+                        [PyString "noteDate"]
+                        [PyInt 64]
+                      [PyTuple 2 items]
+                        [PyString "typeID"]
+                        [PyInt 2]
+                      [PyTuple 2 items]
+                        [PyString "referenceID"]
+                        [PyInt 3]
+                      [PyTuple 2 items]
+                        [PyString "note"]
+                        [PyInt 130]
+                      [PyTuple 2 items]
+                        [PyString "userID"]
+                        [PyInt 3]
+                      [PyTuple 2 items]
+                        [PyString "label"]
+                        [PyInt 130]
+          [PyPackedRow 19 bytes]
+            ["noteDate" => <129041092800000000> [FileTime]]
+            ["typeID" => <1> [I2]]
+            ["referenceID" => <1661059544> [I4]]
+            ["note" => <1::F::0::Main|> [WStr]]
+            ["userID" => <0> [I4]]
+            ["label" => <S:Folders> [WStr]]
+            */
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res, "SELECT note FROM chrOwnerNote WHERE ownerID = %u AND noteID = %u", charID, noteID))
@@ -1414,7 +1440,7 @@ void CharacterDB::SaveSkillHistory(uint8 eventID, double logDate, uint32 charact
             _log(DATABASE__ERROR, "Failed to set chrSkillHistory for character %u: %s", characterID, err.c_str());
 }
 
-PyObject* CharacterDB::GetSkillHistory(uint32 characterID) {
+PyRep* CharacterDB::GetSkillHistory(uint32 characterID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT logDate, eventTypeID, skillTypeID, relativePoints AS absolutePoints"
@@ -1427,7 +1453,7 @@ PyObject* CharacterDB::GetSkillHistory(uint32 characterID) {
         return nullptr;
     }
 
-    return(DBResultToRowset(res));
+    return DBResultToRowset(res);
 }
 
 void CharacterDB::UpdateSkillQueueEndTime(uint64 endtime, uint32 charID) {
@@ -1441,7 +1467,7 @@ bool CharacterDB::isOffline(uint32 characterID) {
     sDatabase.RunQuery(res, "SELECT Online FROM character_ WHERE characterID = %u", characterID );
 
     DBResultRow row;
-    return(!res.GetRow(row));
+    return (!res.GetRow(row));
 }
 
 void CharacterDB::addOwnerCache(uint32 ownerID, std::string ownerName, uint32 typeID) {
@@ -1455,7 +1481,7 @@ void CharacterDB::addOwnerCache(uint32 ownerID, std::string ownerName, uint32 ty
 PyRep* CharacterDB::GetBounty(uint32 charID, uint32 ownerID) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT characterID, bounty FROM character_ WHERE bounty > 0 ORDER BY bounty DESC");
-    return(DBResultToRowset(res));
+    return DBResultToRowset(res);
 }
 
 PyRep* CharacterDB::GetTopBounties() {
@@ -1467,7 +1493,7 @@ PyRep* CharacterDB::GetTopBounties() {
                        " WHERE c.bounty > 0"
                        " ORDER BY bounty DESC"
                        " LIMIT 15");
-    return(DBResultToRowset(res));
+    return DBResultToRowset(res);
 }
 
 void CharacterDB::AddBounty(uint32 charID, uint32 ownerID, uint32 amount) {
@@ -1499,18 +1525,22 @@ void CharacterDB::SaveKillOrLoss(CharKillData &data) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         " INSERT INTO chrKillTable"
-        " VALUES (%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%s,%" PRIu64 ",%u,%f,%u,%u,)",
+        " VALUES (%u,%u,%u,%u,"
+        "%u,%u,%u,%u,"
+        "%u,%u,%u,%u,"
+        "%u,%u,%f,%u,"
+        "%s,%" PRIu64 ",%u,)",
         data.killID, data.solarSystemID, data.victimCharacterID, data.victimCorporationID,
-        data.victimAllianceID, data.victimFactionID, data.victimShipTypeID, data.finalCharacterID,
-        data.finalCorporationID, data.finalAllianceID, data.finalFactionID, data.finalShipTypeID,
-        data.finalWeaponTypeID, data.killBlob.c_str(), data.killTime, data.victimDamageTaken, data.finalSecurityStatus,
-        data.finalDamageDone, data.moonID))
+        data.victimAllianceID, data.victimFactionID, data.victimShipTypeID, data.victimDamageTaken,
+        data.finalCharacterID, data.finalCorporationID, data.finalAllianceID, data.finalFactionID,
+        data.finalShipTypeID, data.finalWeaponTypeID, data.finalSecurityStatus, data.finalDamageDone,
+        data.killBlob.c_str(), data.killTime, data.moonID))
     {
         codelog(DATABASE__ERROR, "Error on query: %s", res.error.c_str());
     }
 }
 
-PyObjectEx* CharacterDB::GetKillOrLoss(uint32 charID) {
+PyRep* CharacterDB::GetKillOrLoss(uint32 charID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"
@@ -1533,7 +1563,8 @@ PyObjectEx* CharacterDB::GetKillOrLoss(uint32 charID) {
         "  finalSecurityStatus,"
         "  finalDamageDone,"
         "  moonID"
-        "FROM chrKillTable WHERE ownerID = %u", charID))
+        " FROM chrKillTable"
+        " WHERE ((victimCharacterID = %u) OR (finalCharacterID = %u))", charID, charID))
         /* should we limit this? */
     {
         codelog(DATABASE__ERROR, "Error on query: %s", res.error.c_str());

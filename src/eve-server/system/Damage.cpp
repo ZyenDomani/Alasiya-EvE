@@ -304,9 +304,9 @@ bool SystemEntity::ApplyDamage(Damage &d) {
 }
 
 void NPC::Killed(Damage &fatal_blow) {
-    if (!SysBubble() || !DestinyMgr()) return;
+    if (!m_bubble || !m_destiny) return;
 
-    DestinyMgr()->Halt();
+    m_destiny->Halt();
 
     SystemEntity *killer = fatal_blow.source;
     Client* pClient = nullptr;
@@ -324,16 +324,16 @@ void NPC::Killed(Damage &fatal_blow) {
     } else
         killerID = killer->GetID();
 
-    DestinyMgr()->SendTerminalExplosion(GetID(), SysBubble()->GetID());
+    m_destiny->SendTerminalExplosion(GetID(), m_bubble->GetID());
 
     //notify our spawn manager that we are gone.
     if (m_spawnMgr)
-        m_spawnMgr->SpawnDepopped(SysBubble(), m_self->itemID());
+        m_spawnMgr->SpawnDepopped(m_bubble, m_self->itemID());
 
-    GPoint deadNPCPosition = DestinyMgr()->GetPosition();
-    uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(GetSelf()->typeID());
+    GPoint deadNPCPosition = m_destiny->GetPosition();
+    uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
 
-    std::string wreck_name = GetSelf()->itemName();
+    std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
 
     ItemData wreckItemData(
@@ -364,17 +364,17 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckEntity.y = deadNPCPosition.y;
         wreckEntity.z = deadNPCPosition.z;
 
-    if (!SystemMgr()->BuildDynamicEntity(wreckEntity)) {
+    if (!m_system->BuildDynamicEntity(wreckEntity)) {
         sLog.Error("NPC::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
         throw PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
         return;
     }
 
     _log(PHYSICS__TRACE, "NPC::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-        GetName(), GetID(), x(), y(), z(), DestinyMgr()->GetPosition().x, DestinyMgr()->GetPosition().y, DestinyMgr()->GetPosition().z);
+            GetName(), GetID(), x(), y(), z(), m_destiny->GetPosition().x, m_destiny->GetPosition().y, m_destiny->GetPosition().z);
 
     if ( pClient ) {
-        DropLoot(GetSelf()->groupID(), pClient->GetCharacterID(), wreckItemRef->itemID());
+        DropLoot(m_self->groupID(), pClient->GetCharacterID(), wreckItemRef->itemID());
         //award kill bounty.
         AwardBounty( pClient );
         //  log faction kill in dynamic data   -allan
@@ -383,17 +383,17 @@ void NPC::Killed(Damage &fatal_blow) {
         pChar->AddKillToDynamicData(GetLocationID());
         pChar->AddFactionKillToDynamicData(GetLocationID());
         if (m_system->GetSystemSecurityRating() > 0)
-            SystemEntity::AwardSecurityStatus(m_self, pChar);
+            AwardSecurityStatus(m_self, pChar);
     } else
-        DropLoot(GetSelf()->groupID(), killerID, wreckItemRef->itemID());
+        DropLoot(m_self->groupID(), killerID, wreckItemRef->itemID());
 
     // cleanup and removal of dead npc
     //AI()->ClearAllTargets();
-    SystemMgr()->RemoveNPC(this);  //this also removes npc from db
+    m_system->RemoveNPC(this);  //this also removes npc from db
 }
 
 void Ship::Killed(Damage &fatal_blow) {
-    if (!SysBubble() || !DestinyMgr()) return;
+    if (!m_bubble || !m_destiny) return;
 
     SystemEntity *killer = fatal_blow.source;
     Client* pClient = nullptr;
@@ -429,9 +429,9 @@ void Ship::Killed(Damage &fatal_blow) {
         m_destiny->Stop();
 
         // Spawn a wreck for the Ship that was destroyed:
-        uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(GetSelf()->typeID());
-        std::string wreck_name = GetSelf()->itemName();
-        GPoint wreckPosition = DestinyMgr()->GetPosition();
+        uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
+        std::string wreck_name = m_self->itemName();
+        GPoint wreckPosition = m_destiny->GetPosition();
         InventoryItemRef wreckItemRef;
         ItemData wreckItemData(
                 wreckTypeID,
@@ -442,7 +442,7 @@ void Ship::Killed(Damage &fatal_blow) {
                 wreckPosition
         );
 
-        wreckItemRef = SystemMgr()->GetServiceMgr()->item_factory->SpawnItem( wreckItemData );
+        wreckItemRef = m_system->GetServiceMgr()->item_factory->SpawnItem( wreckItemData );
         if (!wreckItemRef )
             throw PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
 
@@ -461,14 +461,14 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckEntity.y = wreckPosition.y;
             wreckEntity.z = wreckPosition.z;
 
-        if (!SystemMgr()->BuildDynamicEntity(wreckEntity))
+        if (!m_system->BuildDynamicEntity(wreckEntity))
         {
             sLog.Error("ShipEntity::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
             throw PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
             return;
         }
 
-        DropLoot(GetSelf()->groupID(), killerID, wreckItemRef->itemID());
+        DropLoot(m_self->groupID(), killerID, wreckItemRef->itemID());
 
         //  log faction kill in dynamic data   -allan
         //  client logs faction kills in total kills.  return is value1(total kills) - value2(faction kills) > 0:
@@ -478,13 +478,13 @@ void Ship::Killed(Damage &fatal_blow) {
             pChar->AddKillToDynamicData(GetLocationID());
             pChar->AddFactionKillToDynamicData(GetLocationID());
             if (m_system->GetSystemSecurityRating() > 0)
-                SystemEntity::AwardSecurityStatus(m_self, pChar);
+                AwardSecurityStatus(m_self, pChar);   // this awards secStatusChange for npcs in empire space
         }
 
         m_system->RemoveEntity(this);
         return;
     } else if (m_player->InPod()) {
-        if (!SysBubble()) return;
+        if (!m_bubble) return;
         if ( pClient )
                pClient->GetChar()->PayBounty(m_player->GetChar());
 
@@ -492,9 +492,9 @@ void Ship::Killed(Damage &fatal_blow) {
         CharKillData data;
             data.solarSystemID = m_system->GetID();
             data.victimCharacterID = m_player->GetCharacterID();
-            data.victimCorporationID = GetCorporationID();
-            data.victimAllianceID = GetAllianceID();
-            data.victimFactionID = GetWarFactionID();
+            data.victimCorporationID = m_corpID;
+            data.victimAllianceID = m_allyID;
+            data.victimFactionID = m_warID;
             data.victimShipTypeID = GetTypeID();
 
             data.finalCharacterID = killerID;
@@ -506,9 +506,9 @@ void Ship::Killed(Damage &fatal_blow) {
             data.finalSecurityStatus = 0;
             data.finalDamageDone = fatal_blow.GetTotal();
 
-        uint32 totalHP = GetSelf()->GetAttribute(AttrHP).get_int();
-            totalHP += GetSelf()->GetAttribute(AttrArmorHP).get_int();
-            totalHP += GetSelf()->GetAttribute(AttrShieldCapacity).get_int();
+        uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
+            totalHP += m_self->GetAttribute(AttrArmorHP).get_int();
+            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_int();
 
             data.victimDamageTaken = totalHP;
             /* killBlob is ship dna, and contains destroyed/dropped items. dna works, but i dont know how to do the rest yet.  -allan 1May16  */
@@ -522,9 +522,9 @@ void Ship::Killed(Damage &fatal_blow) {
 		GPoint deadPodPosition = GetPosition();
 		uint32 oldPodItemID = m_player->GetShipID();
 
-        DestinyMgr()->SendTerminalExplosion(oldPodItemID, SysBubble()->GetID());
+        m_destiny->SendTerminalExplosion(oldPodItemID, m_bubble->GetID());
 
-        SystemMgr()->RemoveEntity(this);
+        m_system->RemoveEntity(this);
 
         std::string corpse_name = GetName();
         corpse_name += "'s Frozen Corpse";
@@ -557,7 +557,7 @@ void Ship::Killed(Damage &fatal_blow) {
             corpseEntity.y = deadPodPosition.y;
             corpseEntity.z = deadPodPosition.z;
 
-        if (!SystemMgr()->BuildDynamicEntity( corpseEntity)) {
+        if (!m_system->BuildDynamicEntity( corpseEntity)) {
             sLog.Error("Client::Killed()", "Spawning Corpse Failed: typeID or typeName not supported: '%u'", corpseTypeID);
             throw PyException( MakeCustomError ( "Spawning Corpse Failed: typeID or typeName not supported." ) );
         }
@@ -578,9 +578,9 @@ void Ship::Killed(Damage &fatal_blow) {
         CharKillData data;
             data.solarSystemID = m_system->GetID();
             data.victimCharacterID = m_player->GetCharacterID();
-            data.victimCorporationID = GetCorporationID();
-            data.victimAllianceID = GetAllianceID();
-            data.victimFactionID = GetWarFactionID();
+            data.victimCorporationID = m_corpID;
+            data.victimAllianceID = m_allyID;
+            data.victimFactionID = m_warID;
             data.victimShipTypeID = GetTypeID();
 
             data.finalCharacterID = killerID;
@@ -592,9 +592,9 @@ void Ship::Killed(Damage &fatal_blow) {
             data.finalSecurityStatus = 0;
             data.finalDamageDone = fatal_blow.GetTotal();
 
-        uint32 totalHP = GetSelf()->GetAttribute(AttrHP).get_int();
-            totalHP += GetSelf()->GetAttribute(AttrArmorHP).get_int();
-            totalHP += GetSelf()->GetAttribute(AttrShieldCapacity).get_int();
+        uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
+            totalHP += m_self->GetAttribute(AttrArmorHP).get_int();
+            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_int();
 
             data.victimDamageTaken = totalHP;
             /* killBlob is ship dna, and contains destroyed/dropped items. dna works, but i dont know how to do the rest yet.  -allan 1May16  */
@@ -612,23 +612,23 @@ void Ship::Killed(Damage &fatal_blow) {
         uint32 oldShipItemID = m_player->GetShipID();
         /** @todo: figure out anybody else which may be referencing this ship */
         ShipItemRef deadShipRef = m_player->GetShip();
-        DestinyMgr()->SendJettisonPacket(deadShipRef);
-        DestinyMgr()->SendTerminalExplosion(oldShipItemID, SysBubble()->GetID());
+        m_destiny->SendJettisonPacket(deadShipRef);
+        m_destiny->SendTerminalExplosion(oldShipItemID, m_bubble->GetID());
 
 		//set capsule position away from old ship:
-        float radius = GetSelf()->GetAttribute(AttrRadius).get_float();
+        float radius = m_self->GetAttribute(AttrRadius).get_float();
         capsulePosition.MakeRandomPointOnSphere(radius + (MakeRandomFloat(200, 400)));
 
         m_services.item_factory->SetUsingClient(m_player);
-        ShipItemRef podRef = GetServices().item_factory->GetShip(m_player->GetPodID());
+        ShipItemRef podRef = m_services.item_factory->GetShip(m_player->GetPodID());
         podRef->Move(m_player->GetSystemID(), flagCapsule);
         podRef->Relocate(capsulePosition);
 
-        SystemEntity* pPodEntity = SystemMgr()->get(m_player->GetPodID());
+        SystemEntity* pPodEntity = m_system->get(m_player->GetPodID());
         if (!pPodEntity)
-            pPodEntity = new Ship(podRef, m_services, SystemMgr());
+            pPodEntity = new Ship(podRef, m_services, m_system);
 
-        SysBubble()->Add(pPodEntity);
+        m_bubble->Add(pPodEntity);
 
         m_player->BoardShip(podRef);
 
@@ -668,7 +668,7 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckEntity.y = deadShipPosition.y;
             wreckEntity.z = deadShipPosition.z;
 
-		if (!SystemMgr()->BuildDynamicEntity(wreckEntity)) {
+		if (!m_system->BuildDynamicEntity(wreckEntity)) {
             sLog.Error("Client::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
             //throw PyException( MakeCustomError("Unable to spawn wreck of type %u.", wreckTypeID));
 			return;
@@ -683,8 +683,8 @@ void Ship::Killed(Damage &fatal_blow) {
 	    for (auto cur : deadShipInventory)
 			cur.second->Move(wreckItemRef->itemID(),flagAutoFit);
 
-        SystemEntity* pEntity = SystemMgr()->get(oldShipItemID);
-        SystemMgr()->RemoveEntity(pEntity);
+        SystemEntity* pEntity = m_system->get(oldShipItemID);
+        m_system->RemoveEntity(pEntity);
         deadShipRef->Delete();
         m_player->StartKilledTimer();
     }

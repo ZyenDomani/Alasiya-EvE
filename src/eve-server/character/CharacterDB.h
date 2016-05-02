@@ -50,12 +50,12 @@ public:
 	void SetAvatarColors(uint32 charID, uint32 colorID, uint32 colorNameA, uint32 colorNameBC, double weight, double gloss);
 	void SetAvatarModifiers(uint32 charID, PyRep* modifierLocationID,  PyRep* paperdollResourceID, PyRep* paperdollResourceVariation);
 	void SetAvatarSculpts(uint32 charID, PyRep* sculptLocationID, PyRep* weightUpDown, PyRep* weightLeftRight, PyRep* weightForwardBack);
-    PyObject *GetCharPublicInfo(uint32 characterID);
-    PyObject *GetCharPublicInfo3(uint32 characterID);
-    PyObject *GetInfoWindowDataForChar(uint32 characterID);
+    PyRep *GetCharPublicInfo(uint32 characterID);
+    PyRep *GetCharPublicInfo3(uint32 characterID);
+    PyRep *GetInfoWindowDataForChar(uint32 characterID);
     //PyObject *GetAgentPublicInfo(uint32 agentID);
-    PyObjectEx *GetOwnerNoteLabels(uint32 charID);
-    PyObjectEx *GetOwnerNote(uint32 charID, uint32 noteID);
+    PyRep *GetOwnerNoteLabels(uint32 charID);
+    PyRep *GetOwnerNote(uint32 charID, uint32 noteID);
     uint32 PickAlternateShip(uint32 charID, uint32 locationID);
     void SetCurrentShip(uint32 charID, uint32 shipID);
     void SetCurrentPod(uint32 charID, uint32 podID);
@@ -170,7 +170,7 @@ public:
     bool        SaveSkillQueue(uint32 characterID, SkillQueue &queue);
     bool        SavePausedSkillQueue(uint32 characterID, SkillQueue &queue);
     void        SaveSkillHistory(uint8 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints);
-	PyObject*   GetSkillHistory(uint32 characterID);
+    PyRep*      GetSkillHistory(uint32 characterID);
     void        UpdateSkillQueueEndTime(uint64 endtime, uint32 charID);
 
     /** Certificates */
@@ -195,7 +195,7 @@ public:
     uint32      PayBounty(CharacterRef cRef);
 
     void        SaveKillOrLoss(CharKillData& data);
-    PyObjectEx* GetKillOrLoss(uint32 charID);
+    PyRep* GetKillOrLoss(uint32 charID);
 
 	// for dynamic db functions    -allan
 	void        VisitSystem(uint32 solarSystemID, uint32 charID);

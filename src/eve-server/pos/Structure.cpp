@@ -188,6 +188,9 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
 void StructureSE::Init(StructureItemRef structure)
 {
     switch(structure->typeID()) {
+        case EVEDB::invGroups::Sovereignty_Blockade_Units: {
+            m_sbu = true;
+        } break;
         case EVEDB::invGroups::Territorial_Claim_Units: {
             m_tcu = true;
         } break;
@@ -355,7 +358,21 @@ PyDict *StructureSE::MakeSlimItem() {
 
     return slim;
 }
-
+/*  Log events
+eventTCUExploded = 280
+eventTCUInvulnerable = 283
+eventTCUOffline = 259
+eventTCUOnline = 258
+eventTCUVulnerable = 282
+eventControlTowerAnchored = 364
+eventControlTowerUnanchored = 365
+eventControlTowerDestroyed = 366
+eventSovereigntyClaimed = 197
+eventSovereigntyLost = 194
+eventSBUExploded = 279
+eventSBUOffline = 257
+eventSBUOnline = 256
+*/
 uint8 StructureSE::GetStructureState() const {
     /** @todo (Allan) fix this when POS system is more operational */
     /*

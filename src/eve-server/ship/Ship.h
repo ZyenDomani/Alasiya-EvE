@@ -263,6 +263,7 @@ public:
     void DeactivateAllModules();
     void OnlineAll();
     void OfflineAll();
+    void StripFitting();
 
     // Tactical Interface:
     void SetShipShield(double fraction);

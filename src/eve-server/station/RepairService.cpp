@@ -96,10 +96,10 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
             for each in damageReports[item.itemID].quote:
                 */
 
-    sLog.Warning("RepairSvcBound::Handle_GetDamageReports", "Called GetDamageReports stub.");
-    call.Dump(SERVICE__CALL_DUMP);
+    //sLog.Warning("RepairSvcBound::Handle_GetDamageReports", "Called GetDamageReports stub.");
+    //call.Dump(SERVICE__CALL_DUMP);
 
-    Call_SingleIntegerArg args;
+    Call_SingleIntList args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", call.client->GetName());
         return nullptr;
@@ -107,7 +107,7 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
 
     /** @todo loop here for each item in repair list */
     PyDict* dict = new PyDict;
-        dict->SetItem(new PyInt(0), m_rs->GetDamageReports());
+    //    dict->SetItem(new PyInt(0), m_rs->GetDamageReports());
     return dict;
 }
 
