@@ -361,7 +361,7 @@ CREATE TABLE `crtCategories` (
   `description` varchar(500) DEFAULT NULL,
   `categoryName` varchar(256) DEFAULT NULL,
   `categoryNameID` int(10) unsigned DEFAULT '0',
-  `dataID` int(10) unsigned DEFAULT '0'
+  `dataID` int(10) unsigned DEFAULT '0',
   PRIMARY KEY (`categoryID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
