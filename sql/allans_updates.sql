@@ -326,8 +326,7 @@ CREATE TABLE `repStandingChanges` (
   KEY `toID` (`toID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-DROP TABLE IF EXISTS `chrKillTable`;
-CREATE TABLE IF NOT EXISTS `chrKillTable` (
+CREATE TABLE `chrKillTable` (
   `killID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `solarSystemID` int(10) unsigned NOT NULL DEFAULT '0',
   `victimCharacterID` int(10) unsigned NOT NULL DEFAULT '0',
@@ -364,6 +363,7 @@ CREATE TABLE `crtCategories` (
   `dataID` int(10) unsigned DEFAULT '0',
   PRIMARY KEY (`categoryID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
 
 
   /*  hack for minor client error...we dont have the real data for this yet  */
