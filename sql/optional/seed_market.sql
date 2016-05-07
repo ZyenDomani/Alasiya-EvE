@@ -1,10 +1,9 @@
 -- seeds specified region with skills and ships
 -- regionID, 02: The Forge - 01:derelik - 30:heimatar - 16:lonetrek - 42:metropolis - 43:domain - 32:Sinq Laison
 set @regionid=10000032;
-set @saturation=1.0; -- 80% of stations are filled with orders
--- change "categoryID in (16,6)" to categories you want to be seeded
+set @saturation=1.0; -- fuzzy logic.  % of stations to fill with orders (random selection)
 
-use EVE_Crucible;
+use EVE_Crucible;   -- set this to your db name
 
 -- select stations to fill
 create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int);
@@ -19,6 +18,25 @@ INSERT INTO market_orders (typeID, charID, regionID, stationID, bid, price, volE
   SELECT typeID,1 as charID, regionID, stationID, 0 as bid, IF(basePrice=0, 1000, basePrice/100) as price, 550 as volEntered, 550 as volRemaining, 130565976636875000 as issued,1 as orderState, 1 as minVolume,0 as contraband, 0 as accountID, 18250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 15 as jumps
   FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
   WHERE invTypes.published = 1 and categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 32, 34, 35, 39, 40, 41, 42, 43, 46);
+UPDATE `market_orders` SET `price`=1000 WHERE `price`=0
+
+  ****************************
+ -- use this to spawn items in market for single station
+
+set @stationid=60014809; --Ryddinjorn VI - Moon 2 - Pator Tech School
+set @solarSystemID=30003410; --Ryddinjorn  - minmatar noob system for pator tech
+set @regionid=10000042;  --metropolis
+create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int);
+truncate table tStations;
+insert into tStations values (60014809, 30003410, 10000042);
+
+-- actual seeding
+INSERT INTO market_orders (typeID, charID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState, minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)
+  SELECT typeID,1 as charID, regionID, stationID, 0 as bid, IF(basePrice>100000, 1000, basePrice/100) as price, 550 as volEntered, 550 as volRemaining, 130565976636875000 as issued,1 as orderState, 1 as minVolume,0 as contraband, 0 as accountID, 18250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 15 as jumps
+  FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
+  WHERE invTypes.published = 1 and categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 32, 34, 35, 39, 40, 41, 42, 43, 46);
+UPDATE `market_orders` SET `price`=1000 WHERE `price`=0
+
 
 groupid 450 - 462  catid    ores
 groupid 34 - 40  catid   minerals

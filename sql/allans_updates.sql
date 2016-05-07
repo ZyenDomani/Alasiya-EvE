@@ -1,4 +1,26 @@
 
+CREATE TABLE `sysAsteroids` (
+  `itemID` int(10) unsigned NOT NULL,
+  `itemName` varchar(25) NOT NULL,
+  `typeID` int(11) NOT NULL,
+  `systemID` int(11) NOT NULL,
+  `beltID` int(11) NOT NULL,
+  `quantity` double NOT NULL,
+  `radius` double NOT NULL,
+  `x` double NOT NULL,
+  `y` double NOT NULL,
+  `z` double NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Indexes for table `sysAsteroids`
+--
+ALTER TABLE `sysAsteroids`
+  ADD PRIMARY KEY (`itemID`),
+  ADD UNIQUE KEY `itemID` (`itemID`),
+  ADD KEY `systemID` (`systemID`),
+  ADD KEY `beltID` (`beltID`);
+
 
  /* Table structure for table `shipInsurance` */
 
@@ -167,6 +189,7 @@ CREATE TABLE IF NOT EXISTS `srvStatus` (
   `srvName` varchar(60) NOT NULL,
   `Online` tinyint(1) NOT NULL,
   `startTime` bigint(20) NOT NULL,
+  `ClientSeed` INT(10) NOT NULL,
   `Connections` smallint(6) NOT NULL,
   `threads` tinyint(4) NOT NULL,
   `rss` decimal(6,3) NOT NULL,
@@ -303,7 +326,32 @@ CREATE TABLE `repStandingChanges` (
   KEY `toID` (`toID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
---
+CREATE TABLE `chrKillTable` (
+  `killID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `solarSystemID` int(10) unsigned NOT NULL DEFAULT '0',
+  `victimCharacterID` int(10) unsigned NOT NULL DEFAULT '0',
+  `victimCorporationID` int(10) unsigned NOT NULL DEFAULT '0',
+  `victimAllianceID` int(10) unsigned NOT NULL DEFAULT '0',
+  `victimFactionID` int(10) unsigned NOT NULL DEFAULT '0',
+  `victimShipTypeID` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `victimDamageTaken` int(10) unsigned NOT NULL DEFAULT '0',
+  `finalCharacterID` int(10) unsigned NOT NULL DEFAULT '0',
+  `finalCorporationID` int(10) unsigned NOT NULL DEFAULT '0',
+  `finalAllianceID` int(10) unsigned NOT NULL DEFAULT '0',
+  `finalFactionID` int(10) unsigned NOT NULL DEFAULT '0',
+  `finalShipTypeID` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `finalWeaponTypeID` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `finalSecurityStatus` double NOT NULL DEFAULT '0',
+  `finalDamageDone` int(10) unsigned NOT NULL DEFAULT '0',
+  `killBlob` blob NOT NULL,
+  `killTime` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `moonID` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`killID`),
+  KEY `victimCharacterID` (`victimCharacterID`),
+  KEY `finalCharacterID` (`finalCharacterID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+
 -- Table structure for table `crtCategories`
 --
 DROP TABLE IF EXISTS `crtCategories`;
@@ -312,21 +360,31 @@ CREATE TABLE `crtCategories` (
   `description` varchar(500) DEFAULT NULL,
   `categoryName` varchar(256) DEFAULT NULL,
   `categoryNameID` int(10) unsigned DEFAULT '0',
-  `dataID` int(10) unsigned DEFAULT '0'
+  `dataID` int(10) unsigned DEFAULT '0',
+  PRIMARY KEY (`categoryID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+-- Table structure for table `chrShipFittings`
 --
--- Dumping data for table `crtCategories`
---
-ALTER TABLE `crtCategories` ADD PRIMARY KEY (`categoryID`);
+CREATE TABLE `chrShipFittings` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `characterID` int(10) unsigned NOT NULL,
+  `shipID` int(10) unsigned NOT NULL,
+  `shipDNA` tinytext NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 COMMENT='Ship Stored Fittings, saved as ShipDNA';
 
+
+/* set initial client seed in db */
+UPDATE `srvStatus` SET `ClientSeed` = '10101' WHERE `AI` = 1;
+/* fix for db type error (datetime not handled in evemu) */
+ALTER TABLE `ramAssemblyLines` CHANGE `nextFreeTime` `nextFreeTime` BIGINT(20) NULL DEFAULT NULL;
   /*  hack for minor client error...we dont have the real data for this yet  */
 ALTER TABLE `staOperations` ADD `descriptionID` INT(3) NOT NULL DEFAULT '0' AFTER `description`;
-
-ALTER TABLE `ramAssemblyLines` CHANGE `nextFreeTime` `nextFreeTime` BIGINT(20) NOT NULL DEFAULT '0';
-
 /* set skill level from float to int */
 UPDATE `dgmTypeAttributes` SET `valueInt`=0,`valueFloat`=NULL WHERE `attributeID`=280 AND `valueFloat`=0;
+/* set skill time constanant to int from float */
+UPDATE `dgmTypeAttributes` SET `valueInt`=`valueFloat`, `valueFloat`=NULL WHERE `attributeID`=275 AND `valueFloat` IS NOT NULL;
 
 /* update beacon type 10124 IsGlobal attribute to true */
 INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES ('10124', '1207', '1', NULL);
@@ -344,33 +402,19 @@ UPDATE `dgmTypeAttributes` SET `valueFloat` = '2' WHERE `typeID` = 587 AND `attr
 UPDATE `dgmTypeAttributes` SET `valueFloat` = '3' WHERE `typeID` = 587 AND `attributeID` = 1281;
 /*  wolf warp speed */
 UPDATE `dgmTypeAttributes` SET `valueFloat` = '4' WHERE `typeID` = 11371 AND `attributeID` = 600;
- UPDATE `dgmTypeAttributes` SET `valueFloat` = '3' WHERE `typeID` = 11371 AND `attributeID` = 1281;
-/* need to make query for ingame entities to change attrIDs 600, 1281  */
+UPDATE `dgmTypeAttributes` SET `valueFloat` = '3' WHERE `typeID` = 11371 AND `attributeID` = 1281;
 
 /* fix radius in mapDenormalize */
 UPDATE mapDenormalize AS md INNER JOIN invTypes AS it USING (typeID) SET md.radius = it.radius WHERE md.groupID = 10;
 
-/*  polaris legerion updates */
-UPDATE `dgmTypeAttributes` SET `valueInt` = '8' WHERE `typeID` = 9860 AND `attributeID` = 12;
-UPDATE `dgmTypeAttributes` SET `valueInt` = '8' WHERE `typeID` = 9860 AND `attributeID` = 13;
-UPDATE `dgmTypeAttributes` SET `valueInt` = '8' WHERE `typeID` = 9860 AND `attributeID` = 14;
-UPDATE `dgmTypeAttributes` SET `valueFloat` = '3' WHERE `typeID` = 9860 AND `attributeID` = 600;
-UPDATE `dgmTypeAttributes` SET `valueFloat` = '5' WHERE `typeID` = 9860 AND `attributeID` = 1281;
-
 /* add rat factions to mapRegions table for belt rat spawns */
 ALTER TABLE `mapRegions` ADD `ratFactionID` INT(8) NOT NULL DEFAULT '0' AFTER `factionID`;
-
-/* update character_ to add capsuleID */
-ALTER TABLE `character_` ADD `capsuleID` INT(10) NOT NULL DEFAULT '0' AFTER `shipID`;
-/* update to add unique interger `clientID` to account */
-ALTER TABLE `account` ADD `clientID` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `accountID`;
-/* update for client seed for making a unique clientID */
-ALTER TABLE `srvStatus` ADD `ClientSeed` INT(10) NOT NULL;
 
 /* set correct radius for these laser modules.  more missing data also */
 UPDATE `invTypes` SET `radius` = '100' WHERE `typeID` = 12346;
 UPDATE `invTypes` SET `radius` = '1000' WHERE `typeID` = 12356;
 
 /*  change charge size to interger from float */
-UPDATE `dgmTypeAttributes` SET `valueInt`=`valueFloat`, `valueFloat`=NULL WHERE `attributeID`=128 AND `valueFloat` IS NOT NULL;
-UPDATE `entity_attributes` SET `valueInt`=`valueFloat`, `valueFloat`=NULL WHERE `attributeID`=128 AND `valueFloat` IS NOT NULL;
+UPDATE `dgmTypeAttributes` SET `valueInt`=`valueFloat`, `valueFloat`= NULL WHERE `attributeID`=128 AND `valueFloat` IS NOT NULL;
+
+

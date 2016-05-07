@@ -18,6 +18,7 @@ MySQL - 5.0.67-community-nt : Database - eve_evemu_dynamic
 -- ----------------------------
 CREATE TABLE `account` (
   `accountID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `clientID` INT(10) UNSIGNED NOT NULL DEFAULT '0',
   `accountName` varchar(43) NOT NULL DEFAULT '',
   `password` varchar(43) NOT NULL DEFAULT '',
   `hash` tinyblob,
@@ -115,10 +116,10 @@ CREATE TABLE `cacheLocations` (
 /*Table structure for table `cacheOwners` */
 
 CREATE TABLE `cacheOwners` (
-  `ownerID` int(10) unsigned NOT NULL default '0',
-  `ownerName` varchar(100) NOT NULL default '',
-  `typeID` int(10) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`ownerID`)
+  `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
+  `ownerName` varchar(100) NOT NULL DEFAULT '',
+  `ownerNameID` int(10) unsigned NOT NULL DEFAULT '0',
+  `typeID` int(10) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `cacheOwners` */
@@ -159,7 +160,7 @@ CREATE TABLE `channelMods` (
 
 /*Table structure for table `character_` */
 
-CREATE TABLE IF NOT EXISTS `character_` (
+CREATE TABLE `character_` (
   `characterID` int(10) unsigned NOT NULL DEFAULT '0',
   `accountID` int(10) unsigned DEFAULT NULL,
   `title` varchar(85) NOT NULL DEFAULT '',
@@ -183,6 +184,8 @@ CREATE TABLE IF NOT EXISTS `character_` (
   `startDateTime` bigint(20) unsigned NOT NULL DEFAULT '0',
   `createDateTime` bigint(20) unsigned NOT NULL DEFAULT '0',
   `ancestryID` int(10) unsigned NOT NULL DEFAULT '0',
+  `bloodlineID` TINYINT UNSIGNED NOT NULL DEFAULT '0',
+  `raceID` TINYINT UNSIGNED NOT NULL DEFAULT '0',
   `careerID` int(10) unsigned NOT NULL DEFAULT '0',
   `schoolID` int(10) unsigned NOT NULL DEFAULT '0',
   `careerSpecialityID` int(10) unsigned NOT NULL DEFAULT '0',
@@ -197,6 +200,7 @@ CREATE TABLE IF NOT EXISTS `character_` (
   `nextRespecDateTime` bigint(20) unsigned NOT NULL DEFAULT '0',
   `deletePrepareDateTime` bigint(20) unsigned DEFAULT '0',
   `shipID` int(10) unsigned NOT NULL DEFAULT '0',
+  `capsuleID` INT(10) NOT NULL DEFAULT '0',
   `age` int(20) NOT NULL,
   `paperDollState` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`characterID`),
@@ -301,7 +305,7 @@ CREATE TABLE `chrOwnerNote` (
 
 /*Table structure for table `corporation` */
 
-CREATE TABLE IF NOT EXISTS `corporation` (
+CREATE TABLE `corporation` (
   `corporationID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `corporationName` varchar(100) NOT NULL DEFAULT '',
   `description` mediumtext NOT NULL,

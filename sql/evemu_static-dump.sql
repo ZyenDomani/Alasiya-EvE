@@ -836,4 +836,15 @@ CREATE TABLE `tutorials_criterias` (
 
 insert  into `tutorials_criterias`(`tutorialID`,`criteriaID`) values (5,1),(6,1),(7,1),(8,1),(9,1),(11,1),(12,1),(13,1),(14,1),(16,1),(15,2),(17,2),(18,2),(19,2),(21,2),(23,2),(24,2),(28,2),(37,2),(38,2);
 
+
+-- Table structure for table `factionWarSystems`
+CREATE TABLE `factionWarSystems` (
+  `systemID` int(10) NOT NULL,
+  `occupierID` int(10) NOT NULL,
+  `factionID` int(10) NOT NULL,
+  PRIMARY KEY (`systemID`),
+  UNIQUE KEY `systemID` (`systemID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Faction War Systems';
+
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
