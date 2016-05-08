@@ -54,7 +54,7 @@ FleetManager::~FleetManager()
 
 PyResult FleetManager::Handle_ForceLeaveFleet(PyCallArgs &call) {
     sLog.Log("FleetManager", "Handle_ForceLeaveFleet() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -64,7 +64,7 @@ PyResult FleetManager::Handle_AddToWatchlist(PyCallArgs &call) {
         sm.RemoteSvc('fleetMgr').AddToWatchlist(charID, fav)
         */
     sLog.Log("FleetManager", "Handle_AddToWatchlist() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -74,7 +74,7 @@ PyResult FleetManager::Handle_RemoveFromWatchlist(PyCallArgs &call) {
         sm.RemoteSvc('fleetMgr').RemoveFromWatchlist(charID, fav)
         */
     sLog.Log("FleetManager", "Handle_RemoveFromWatchlist() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -92,7 +92,7 @@ PyResult FleetManager::Handle_RegisterForDamageUpdates(PyCallArgs &call) {
         17:38:00 [SvcCall]         Integer field: 1
         */
     sLog.Log("FleetManager", "Handle_RegisterForDamageUpdates() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -127,7 +127,7 @@ PyResult FleetManager::Handle_GetActiveStatus(PyCallArgs &call) {
 
     */
     sLog.Log("FleetManager", "Handle_GetActiveStatus() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -136,8 +136,8 @@ PyResult FleetManager::Handle_BroadcastToBubble(PyCallArgs &call) {
   /**
         sm.RemoteSvc('fleetMgr').BroadcastToBubble(name, self.broadcastScope, itemID)
         */
-    sLog.Log("FleetManager", "Handle_BroadcastToBubble() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    sLog.Log("FleetManager", "Handle_BroadcastToSysBubble() size=%u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -147,7 +147,7 @@ PyResult FleetManager::Handle_BroadcastToSystem(PyCallArgs &call) {
         sm.RemoteSvc('fleetMgr').BroadcastToSystem(name, self.broadcastScope, itemID)
         */
     sLog.Log("FleetManager", "Handle_BroadcastToSystem() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }

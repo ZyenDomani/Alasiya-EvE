@@ -37,26 +37,30 @@ class GenericModule;
 class ModifyShipAttributesComponent
 {
 public:
-    ModifyShipAttributesComponent(GenericModule* mod, ShipRef shipRef);
-    ~ModifyShipAttributesComponent();
+    ModifyShipAttributesComponent(GenericModule* mod, ShipItemRef shipRef);
+    ~ModifyShipAttributesComponent()                    { /* do nothing here */ }
 
     void ModifyShipAttribute(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
     void ModifyTargetShipAttribute(uint32 targetItemID, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type );
-    void SetOnlineAttributes(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
+    void ModifyNonStackingShipAttributes(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
 
 private:
 
     //internal access to owner
     GenericModule* m_Mod;
-    ShipRef m_Ship;
+    ShipItemRef m_Ship;
 
-    void _modifyShipAttributes(ShipRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
-    EvilNumber _calculateNewValue(ShipRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, std::vector<GenericModule *> mods);
-    EvilNumber _calculateNewAttributeValue( EvilNumber sourceAttr, EvilNumber targetAttr, EVECalculationType type, int stackNumber );
-    void SetAttribute(ShipRef shipRef, uint32 targetAttrID, EvilNumber newVal);
+    void _modifyShipAttributes(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
+    EvilNumber _calculateNewValue(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, GenericModule* mod);
+    void SetAttribute(ShipItemRef shipRef, uint32 targetAttrID, EvilNumber newVal);
 
-    std::vector<GenericModule*> _sortModules(uint32 sortAttrID, std::vector<GenericModule *> mods);
-
+    /* stacking penality (effectiveness) system   -allan
+     * each module will have a map of the attribs it affects and it's effectiveness on that attrib
+     * this is set and used here, but needs to be kept in GenericModule, as it's specific to each module
+     * this is the other component, attrib stack counting.
+     * it holds a k,v pair where k:attrib and v:count of modules affecting that attrib
+     */
+    std::map<uint16, uint8> m_attribMap;
 };
 
 #endif

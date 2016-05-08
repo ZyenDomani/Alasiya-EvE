@@ -29,14 +29,14 @@
 #include "character/Character.h"
 #include "ship/modules/TurrentModule.h"
 
-TurrentModule::TurrentModule(InventoryItemRef item, ShipRef shipRef)
+TurrentModule::TurrentModule(InventoryItemRef item, ShipItemRef shipRef)
 : ActiveModule(item, shipRef)
 {
     m_ROF = m_Item->GetAttribute(AttrSpeed).get_float();
     m_capNeed = m_Item->GetAttribute(AttrCapacitorNeed).get_float();
     m_damageModifier = m_Item->GetAttribute(AttrDamageMultiplier).get_float();
 
-    Character* pChar = m_Ship->GetOperator()->GetChar().get();
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
     m_ROF *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillGunnery, true))));      //  2% decrease in rof
     m_ROF *= (1 - ( 0.04 * (pChar->GetSkillLevel(skillRapidFiring, true))));  //  4% decrease in rof
     m_capNeed *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillControlledBursts, true))));  //  5% decrease in cap need
@@ -60,6 +60,8 @@ void TurrentModule::DeOverload()
 
 void TurrentModule::Load(InventoryItemRef charge)
 {
+    //if (m_chargeRef) assert(m_chargeRef != charge);
+
     ActiveModule::Load(charge);
     _UpdateModifiers(charge);
     m_kinetic       = m_chargeRef->GetAttribute(AttrKineticDamage).get_float();
@@ -70,7 +72,8 @@ void TurrentModule::Load(InventoryItemRef charge)
 
 void TurrentModule::Unload()
 {
-    _RemoveModifier(m_chargeRef);
+    if (m_chargeRef)
+        _RemoveModifier(m_chargeRef);
     ActiveModule::Unload();
     m_kinetic       = 0;
     m_thermal       = 0;

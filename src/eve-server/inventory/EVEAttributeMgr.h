@@ -325,6 +325,8 @@ public:
 
     bool Load();
 
+    /* only save the ship damage other attribs are calculated when ship activated */
+    void SaveShipState();
     /**
      * SaveAttributes
      *

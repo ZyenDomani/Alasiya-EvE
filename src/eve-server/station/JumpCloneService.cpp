@@ -90,7 +90,7 @@ PyBoundObject* JumpCloneService::_CreateBoundObject( Client* c, const PyRep* bin
 
 PyResult JumpCloneBound::Handle_InstallCloneInStation( PyCallArgs &call ) {
   sLog.Log( "JumpCloneBound::Handle_InstallCloneInStation()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
     PyRep *result = NULL;
 
     return result;
@@ -100,7 +100,7 @@ PyResult JumpCloneBound::Handle_InstallCloneInStation( PyCallArgs &call ) {
 PyResult JumpCloneBound::Handle_GetCloneState(PyCallArgs &call) {
     /*
   sLog.Log( "JumpCloneBound::Handle_GetCloneState()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
   */
 
     //returns (clones, implants, timeLastJump)
@@ -129,7 +129,7 @@ PyResult JumpCloneBound::Handle_GetShipCloneState(PyCallArgs &call) {
      * 00:24:21 Server: Unknown call to 'GetShipCloneState' by 'Lee'
      */
   sLog.Log( "JumpCloneService::Handle_GetShipCloneState()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
     return result;

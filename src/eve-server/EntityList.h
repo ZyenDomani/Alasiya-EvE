@@ -67,6 +67,7 @@ public:
     typedef std::set<uint32> character_set;
 
     void Init();
+    void Close();
     void Shutdown();
     void Process();
     void Add(Client* client);

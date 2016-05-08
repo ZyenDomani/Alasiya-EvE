@@ -122,7 +122,7 @@ SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
 
 void SpawnMgr::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     // called in SystemManager::ProcessDestiny() for each system.  this will need to be fast.
     //  check timers and call approprate functions as needed.
@@ -179,7 +179,7 @@ void SpawnMgr::Process() {
         }
     }
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
 }
 /*
@@ -237,7 +237,7 @@ void SpawnMgr::SpawnPopped(uint32 itemID)
 void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     //if (!m_enabled) return;
     if (!_FindSpawnForBubble(pSysBubble->GetID())) {
@@ -248,7 +248,8 @@ void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
         pSysBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
     }
 
-    if (sConfig.misc.UseProfiling)
+    /* this will throw off the accuracy of the profile, as this and Process() use the same data container */
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -470,13 +471,13 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry* spawnEntry)
 
     _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %u", i->itemID());
 
-    //create them all at the same point to start with...
-    //we will move them before they get added to the system
-    NPC* npc = new NPC(m_system, m_services, i, spawnEntry->corpID, spawnEntry->factionID, startPos, this);
+    startPos.MakeRandomPointOnSphere(8000);
+    i->Relocate(startPos);
+    NPC* npc = new NPC(i, m_services, m_system, spawnEntry->corpID, spawnEntry->factionID, this);
 
     //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
     m_system->AddNPC(npc);
-    //npc->Destiny()->WarpTo(warpToPoint, (MakeRandomInt(0, 5) *1000)); //simulate a formation, until i actually write them.
+    //npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(0, 5) *1000)); //simulate a formation, until i actually write them.
 
     spawnEntry->enabled = false;
 }
@@ -520,19 +521,18 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
 
             _log(SPAWN__POP, "SpawnMgr::MakeSpawn - Spawning NPC %u", i->itemID());
 
-            //create them all at the same point to start with...
-            //we will move them before they get added to the system
-            npc = new NPC(m_system, m_services, i, corpID, factionID, startPos, this);
+            i->Relocate(startPos);
+            npc = new NPC(i, m_services, m_system, corpID, factionID, this);
 
             // NPC::Load() no longer does anything.  it is still here in case we find a new use for it.
             if (!npc->Load(m_services.serviceDB())) {
-                _log(SPAWN__ERROR, "Failed to load NPC data for NPC %u with type %u, depoping.", npc->GetID(), npc->Item()->typeID());
+                _log(SPAWN__ERROR, "Failed to load NPC data for NPC %u with type %u, depoping.", npc->GetID(), npc->GetSelf()->typeID());
                 SafeDelete(npc);
             }
             //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
-            npc->Destiny()->SetPosition(startPos);
+            npc->DestinyMgr()->SetPosition(startPos);
             m_system->AddNPC(npc);
-            //npc->Destiny()->WarpTo(warpToPoint, (MakeRandomInt(0, 5) *1000)); //simulate a formation, until i actually write them.
+            //npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(0, 5) *1000)); //simulate a formation, until i actually write them.
 
             se.enabled = 0;
             se.groupID = i->type().groupID();
@@ -558,7 +558,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
 }
 
 void SpawnMgr::RemoveSpawn(uint32 bubbleID, uint32 itemID)
-{	//TODO:  this isnt right
+{	/** @todo:  this isnt right... */
     auto itr = m_spawns.equal_range(bubbleID);
     for (auto cur = itr.first; cur != itr.second; cur++)
         if ((*cur).second)

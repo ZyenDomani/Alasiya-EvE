@@ -33,7 +33,7 @@
 class ShieldBooster: public ActiveModule
 {
 public:
-    ShieldBooster( InventoryItemRef item, ShipRef ship );
+    ShieldBooster( InventoryItemRef item, ShipItemRef ship );
     virtual ~ShieldBooster() { }
 
     // GenericModule Methods:

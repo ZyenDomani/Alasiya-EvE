@@ -230,6 +230,9 @@
                   </dictInlineEntry>
               </dictInline>
           </dictInlineEntry>
+          <dictInlineEntry key="sessionID">
+              <long name="sessionID" />
+          </dictInlineEntry>
           <dictInlineEntry key="client_hash">
               <raw name="client_hash" />
           </dictInlineEntry>

@@ -33,7 +33,7 @@
 class HybridTurret: public TurrentModule
 {
 public:
-    HybridTurret( InventoryItemRef item, ShipRef ship );
+    HybridTurret( InventoryItemRef item, ShipItemRef ship );
     virtual ~HybridTurret() { }
 
     // GenericModule Methods:

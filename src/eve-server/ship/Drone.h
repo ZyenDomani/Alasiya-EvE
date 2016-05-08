@@ -35,7 +35,7 @@
  */
 class DroneAIMgr;
 class PyServiceMgr;
-class InventoryItem;
+class Item;
 class DestinyManager;
 class SystemManager;
 class ServiceDB;
@@ -45,94 +45,56 @@ class Drone
 : public DynamicSystemEntity
 {
 public:
-    Drone(
-        InventoryItemRef drone,
-        SystemManager *system,
-        PyServiceMgr &services,
-        const GPoint &position);
-    ~Drone();
+    Drone(InventoryItemRef drone, PyServiceMgr& services, SystemManager* system, const GPoint& position);
+    virtual ~Drone();
 
-    /*
-     * Primary public interface:
-     */
-    InventoryItemRef GetDroneObject() { return _droneRef; }
-    DestinyManager * GetDestiny() { return m_destiny; }
-    SystemManager * GetSystem() { return m_system; }
+    /* class type pointer querys. */
+    virtual Drone* GetDroneSE()                         { return this; }
+    /* class type tests. */
+    virtual bool IsDroneSE()                            { return true; }
 
-    /*
-     * Public fields:
-     */
-
-    inline double x() const { return(GetPosition().x); }
-    inline double y() const { return(GetPosition().y); }
-    inline double z() const { return(GetPosition().z); }
-
-    //SystemEntity interface:
-    virtual EntityClass GetClass() const { return(ecDroneEntity); }
-    virtual bool IsDrone() const { return true; }
-    virtual Drone *CastToDroneEntity() { return(this); }
-    virtual const Drone *CastToDroneEntity() const { return(this); }
+    /* SystemEntity interface */
     virtual void Process();
-    virtual void EncodeDestiny( Buffer& into ) const;
-    virtual void TargetAdded(SystemEntity *who) { /* will need code once drones are implemented */ }
+    virtual void EncodeDestiny( Buffer& into );
+    virtual void MakeDamageState(DoDestinyDamageState &into);
+    virtual PyDict* MakeSlimItem();
+
+    virtual void TargetAdded(SystemEntity *who);
     virtual void TargetLost(SystemEntity *who);
     virtual void TargetedAdd(SystemEntity *who);
-    virtual void TargetedLost(SystemEntity *who) { /* will need code once drones are implemented */ }
-    virtual void TargetsCleared() {}
-    virtual void QueueDestinyUpdate(PyTuple **du) {/* not required to consume */}
-    virtual void QueueDestinyEvent(PyTuple **multiEvent) {/* not required to consume */}
-    virtual void Killed(Damage &fatal_blow);
-    virtual SystemManager* System() const { return m_system; }
+    virtual void TargetedLost(SystemEntity *who);
 
-    uint32 GetCorporationID() const     { return (m_owner ? m_owner->GetCorporationID() : 0); }
-    uint32 GetAllianceID() const        { return (m_owner ? m_owner->GetAllianceID() : 0); }
-    uint32 GetWarFactionID() const      { return (m_owner ? m_owner->GetWarFactionID() : 0); }
-    uint32 GetBounty() const            { return 0; }
-    uint32 GetOwnerID() const           { return (m_owner ? m_owner->GetCharacterID() : 1); }
-    float GetSecurityRating() const     { return (m_owner ? m_owner->GetChar()->GetSecurityRating() : 1.0); }
-
-    Client* GetOwner()                  { return (m_owner ? m_owner : nullptr); }
-    void SetOwner(Client* pClient)      { m_owner = pClient; }
-
-    void ForcedSetPosition(const GPoint &pt);
-
-    virtual bool ApplyDamage(Damage &d);
-    virtual void MakeDamageState(DoDestinyDamageState &into) const;
-    virtual PyDict* MakeSlimItem() const;
-
-    void SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq=true);
-    void SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
-
-    void UseShieldRecharge();
-    void UseArmorRepairer();
-
-    float GetThermal() { return m_therDamage; }
-    float GetEM() { return m_emDamage; }
-    float GetKinetic() { return m_kinDamage; }
-    float GetExplosive() { return m_expDamage; }
-
-    void Orbit(SystemEntity *who);
-    double GetOrbitRange();
+    /* specific functions handled here. */
+    Client* GetOwner()                                  { return (m_owner ? m_owner : nullptr); }
 
     void SaveDrone();
     void RemoveDrone();
+    void UseArmorRepairer();
+    void UseShieldRecharge();
+    void Orbit(SystemEntity *who);
+    void SetOwner(Client* pPC);
 
-    DroneAIMgr* AI() const { return m_AI; }
+    uint32 GetBounty() const                            { return 0; }   /** @todo need to finish this */
+    uint32 GetOwnerID() const                           { return (m_owner ? m_owner->GetCharacterID() : 1); }
+
+    float GetThermal()                                  { return m_therDamage; }
+    float GetEM()                                       { return m_emDamage; }
+    float GetKinetic()                                  { return m_kinDamage; }
+    float GetExplosive()                                { return m_expDamage; }
+    float GetSecurityRating() const                     { return (m_owner ? m_owner->GetChar()->GetSecurityRating() : 1.0); }
+
+    double GetOrbitRange()                              { return m_orbitRange; }
 
 protected:
-    /*
-     * Member fields:
-     */
-    Client* m_owner;    // we dont own this
-    PyServiceMgr &m_services;    //we do not own this
-    SystemManager* const m_system;    //we do not own this
-    InventoryItemRef _droneRef;   // We don't own this
+    Client* m_owner;
     DroneAIMgr* m_AI;
 
-private:
-    void _UpdateDamage();
+    InventoryItemRef _droneRef;
 
+private:
     uint32 m_orbitingID;
+
+    double m_orbitRange;
 
     double m_hullDamage;
     double m_armorDamage;

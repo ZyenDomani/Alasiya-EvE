@@ -91,7 +91,7 @@ PyBoundObject *KeeperService::_CreateBoundObject(Client *c, const PyRep *bind_ar
 
 PyResult KeeperService::Handle_GetLevelEditor(PyCallArgs &call) {
     sLog.Log( "KeeperService", "Handle_GetLevelEditor" );
-  call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     PyRep *result = NULL;
 
     KeeperBound *ib = new KeeperBound(m_manager, &m_db);
@@ -103,7 +103,7 @@ PyResult KeeperService::Handle_GetLevelEditor(PyCallArgs &call) {
 PyResult KeeperService::Handle_CanWarpToPathPlex(PyCallArgs &call) {
 //resp = sm.RemoteSvc('keeper').CanWarpToPathPlex(node.rec.instanceID)
 	sLog.Log( "KeeperService", "Handle_CanWarpToPathPlex" );
-	call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
 	return NULL;
 }
@@ -123,9 +123,9 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
 
     Client *pClient = call.client;
 
-    pClient->Destiny()->SendSpecialEffect10(args.arg, pClient->GetShip(), 0, "effects.WarpGateEffect", 0, 1, 0);
+    pClient->GetShipSE()->DestinyMgr()->SendSpecialEffect10(args.arg, pClient->GetShip(), 0, "effects.WarpGateEffect", 0, 1, 0);
 	double distance = MakeRandomFloat(5, 25) * ONE_AU_IN_METERS;
-	GPoint currentPosition(pClient->GetPosition());
+    GPoint currentPosition(pClient->GetShipSE()->GetPosition());
     GPoint deltaPosition;
     deltaPosition.x = MakeRandomFloat(-1.0, 1.0) * distance;
     deltaPosition.y = MakeRandomFloat(-1.0, 1.0) * distance;
@@ -133,7 +133,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     GPoint warpToPoint(currentPosition+deltaPosition);              // Make a warp-in point variable
     GVector vectorToDestination(currentPosition, warpToPoint);
     double distanceToDestination = vectorToDestination.length();
-    pClient->Destiny()->WarpTo(warpToPoint, distanceToDestination);
+    pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint, distanceToDestination);
 
     return result;
 }

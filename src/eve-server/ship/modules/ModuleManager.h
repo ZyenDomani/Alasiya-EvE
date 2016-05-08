@@ -33,8 +33,8 @@ class GenericModule;
 class SystemEntity;
 class Client;
 class ModuleManager;
-class Basic_Log;
 
+#include <unordered_map>
 #include "PyService.h"
 #include "ship/modules/GenericModule.h"
 #include "ship/modules/ModuleDefs.h"
@@ -157,8 +157,6 @@ public:
 
 	uint32 GetAvailableSlotInBank(EveEffectEnum slotBank);
 
-    int NumberOfSameType(uint32 typeID);
-
     //batch processes handlers
     void Process();
     void OfflineAll();
@@ -208,18 +206,6 @@ private:
     void _process(processType p);
     void _processEx(processType p, slotType t);
 
-    GenericModule* _getHighSlotModule(EVEItemFlags flag);
-    GenericModule* _getMediumSlotModule(EVEItemFlags flag);
-    GenericModule* _getLowSlotModule(EVEItemFlags flag);
-    GenericModule* _getRigModule(EVEItemFlags flag);
-    GenericModule* _getSubSystemModule(EVEItemFlags flag);
-
-    void _removeHighSlotModule(EVEItemFlags flag);
-    void _removeMediumSlotModule(EVEItemFlags flag);
-    void _removeLowSlotModule(EVEItemFlags flag);
-    void _removeRigSlotModule(EVEItemFlags flag);
-    void _removeSubSystemModule(EVEItemFlags flag);
-
     EVEItemSlotType _checkBounds(EVEItemFlags flag);
 
     void _initializeModuleContainers();
@@ -242,6 +228,8 @@ private:
     uint8 m_TotalTurretsFitted;
     uint8 m_TotalLaunchersFitted;
     std::map<uint32, uint32> m_ModulesFittedByGroupID;
+
+    std::map<uint8, GenericModule*> m_modules;
 
     ModuleManager* m_MyManager;        // we do not own this
 };
@@ -337,7 +325,7 @@ private:
 class ModuleManager
 {
 public:
-    ModuleManager(Ship* const ship);
+    ModuleManager(ShipItem* const ship);
     ~ModuleManager();
 
     bool Initialize();
@@ -349,15 +337,18 @@ public:
     bool InstallSubSystem(InventoryItemRef item, EVEItemFlags flag);
     bool FitModule(InventoryItemRef item, EVEItemFlags flag);
     void UnfitModule(uint32 itemID);
+    bool OnlineCheck(GenericModule* mod);
     void Online(uint32 itemID);
-    void OnlineAll();
     void Offline(uint32 itemID);
+    void Online(EVEItemFlags flag);
+    void Offline(EVEItemFlags flag);
+    void OnlineAll();
     void OfflineAll();
     void Activate(uint32 itemID, std::string effectName, uint32 targetID, uint32 repeat);
     void Deactivate(uint32 itemID, std::string effectName);
     void DeactivateAllModules();
-    void Overload(uint32 itemID);
-    void DeOverload(uint32 itemID);
+    void Overload(EVEItemFlags flag);
+    void DeOverload(EVEItemFlags flag);
     void DamageModule(uint32 itemID, EvilNumber val);
     void RepairModule(uint32 itemID);
     void LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag);
@@ -372,10 +363,10 @@ public:
     void ShipJumping();
     void Process();
     void ProcessExternalEffect(Effect* e);
-    std::vector<GenericModule*> GetStackedItems(uint32 typeID, ModulePowerLevel level);  //should only be used by components
 
-    GenericModule* GetModule(EVEItemFlags flag)    { return m_Modules->GetModule(flag); }
-    GenericModule* GetModule(uint32 itemID)        { return m_Modules->GetModule(itemID); }
+
+    GenericModule* GetModule(EVEItemFlags flag)         { return m_Modules->GetModule(flag); }
+    GenericModule* GetModule(uint32 itemID)             { return m_Modules->GetModule(itemID); }
 
 	InventoryItemRef GetLoadedChargeOnModule(EVEItemFlags flag);
 
@@ -400,9 +391,9 @@ public:
     int32 ApplyImplantEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef);
     int32 RemoveImplantEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef);
 
-	Basic_Log* GetLogger() { return m_pLog; }
 
 private:
+    bool m_initalized;
     bool _fitModule(InventoryItemRef item, EVEItemFlags flag);
 
     void _processExternalEffect(SubEffect * e);
@@ -413,13 +404,15 @@ private:
     void _SendErrorMessage(const char* fmt, ...);
 
     //access to the ship its system entity that owns us.  We do not own these
-    Ship* m_Ship;
+    ShipItem* m_Ship;
 
     //modules storage, we own this
     ModuleContainer* m_Modules;                    // Holds Module class objects in container arrays, one for each slot bank, rig, subsystem
 
     /* charge storage  k:flag, v:charge  */
     std::map<EVEItemFlags, InventoryItemRef> m_charges;
+    /* attrib storage  k:attrib, v:module */
+    std::unordered_map<uint16, GenericModule*> m_attribMap;
 
     //modifier maps, we own these
     ModifierMaps* m_LocalSubsystemModifierMaps;    // Holds std::map<> maps of Modifiers for attributes applied by SUBSYSTEMS
@@ -427,8 +420,6 @@ private:
     ModifierMaps* m_LocalModuleRigModifierMaps;    // Holds std::map<> maps of Modifiers for attributes applied by MODULES and RIGS
     ModifierMaps* m_LocalImplantModifierMaps;      // Holds std::map<> maps of Modifiers for attributes applied by IMPLANTS
     ModifierMaps* m_RemoteModifierMaps;            // Holds std::map<> maps of Modifiers for attributes applied by EXTERNAL ENTITY MODULES
-
-	Basic_Log* m_pLog;
 };
 
 #pragma endregion

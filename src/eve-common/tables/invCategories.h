@@ -5,7 +5,7 @@ namespace EVEDB {
     namespace invCategories {
         typedef enum {
             _System = 0,
-            Owner = 1,
+            Character = 1,
             Celestial = 2,
             Station = 3,
             Material = 4,

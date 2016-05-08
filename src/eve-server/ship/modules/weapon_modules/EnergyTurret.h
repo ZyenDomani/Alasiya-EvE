@@ -33,7 +33,7 @@
 class EnergyTurret: public TurrentModule
 {
 public:
-    EnergyTurret( InventoryItemRef item, ShipRef ship );
+    EnergyTurret( InventoryItemRef item, ShipItemRef ship );
     virtual ~EnergyTurret() { }
 
     // GenericModule Methods:

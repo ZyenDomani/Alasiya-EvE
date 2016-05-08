@@ -33,7 +33,7 @@ class SubSystemModule
 : public PassiveModule
 {
 public:
-    SubSystemModule(InventoryItemRef item, ShipRef ship);
+    SubSystemModule(InventoryItemRef item, ShipItemRef ship);
     virtual ~SubSystemModule() { }
 
     bool IsSubSystemModule() const              { return true; }

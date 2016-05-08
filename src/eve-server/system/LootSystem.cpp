@@ -64,7 +64,7 @@ void DGM_Types_to_Wrecks_Table::_Populate()
 		m_WrecksToTypesMap.insert(std::pair<uint32, uint32>(typeID,wreckID));
     }
 
-    sLog.Log("     Wrecks Table", "%u wreck objects loaded in %.3fus.",
+    sLog.Log("     Wrecks Table", "%u wreck objects loaded in %.3fms.",
              m_WrecksToTypesMap.size(), (GetTimeUSeconds() - start));
 
     //cleanup
@@ -142,7 +142,7 @@ void DGM_Loot_Groups_Table::_Populate()
     //cleanup
     SafeDelete(res);
 
-    sLog.Log("       Loot Table", "%u loot group buckets and %u definitions loaded in %.3fus.",
+    sLog.Log("       Loot Table", "%u loot group buckets and %u definitions loaded in %.3fms.",
              (m_LootGroupMap.bucket_count() + m_LootGroupTypeMap.bucket_count()),
              (m_LootGroupMap.size() + m_LootGroupTypeMap.size()),
              (GetTimeUSeconds() - start));
@@ -150,7 +150,7 @@ void DGM_Loot_Groups_Table::_Populate()
 
 void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling) profileStartTime = GetTimeUSeconds();
+    if (sConfig.server.UseProfiling) profileStartTime = GetTimeUSeconds();
 
     double randChance = 0.0;
     uint8 metaLevel = 0;
@@ -195,7 +195,7 @@ void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
         }
     }
 
-    if (sConfig.misc.UseProfiling) sProfile.AddTime(_lootProfile, GetTimeUSeconds() - profileStartTime);
+    if (sConfig.server.UseProfiling) sProfile.AddTime(_lootProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 // ////////////////////// DGM_Salvage_Table Class ////////////////////////////
@@ -239,7 +239,7 @@ void DGM_Salvage_Table::_Populate()
     //cleanup
     SafeDelete(res);
 
-    sLog.Log("    Salvage Table", "%u salvage definitions loaded in %.3fus.",
+    sLog.Log("    Salvage Table", "%u salvage definitions loaded in %.3fms.",
              m_SalvageMap.size(), (GetTimeUSeconds() - start));
 }
 
@@ -248,7 +248,7 @@ void DGM_Salvage_Table::GetSalvage(uint32 wreckTypeID, LootListDef &salvageList)
     //TODO  finish later.
     double start = GetTimeUSeconds();
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     double randChance = 0.0;
 
@@ -270,7 +270,7 @@ void DGM_Salvage_Table::GetSalvage(uint32 wreckTypeID, LootListDef &salvageList)
     }
     */
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_salvageProfile, GetTimeUSeconds() - profileStartTime);
     sLog.Log("     GetSalvage()", "Took %fus to iterate thru %u loops, with %u items returned",
              (GetTimeUSeconds() - start), m_SalvageMap.size(), salvageList.size());

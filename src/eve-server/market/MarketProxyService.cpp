@@ -280,7 +280,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 17:15:42 [SvcCall]         [10] (None)
 
   sLog.Log("MarketProxyService::Handle_PlaceCharOrder", "call.Dump to follow...");
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 */
   Call_PlaceCharOrder args;
     if(!args.Decode(&call.tuple)) {
@@ -374,7 +374,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         if(
            (item->locationID() != (uint32)args.stationID)   //item in station hanger
            && !(
-                call.client->GetShip()->Contains( item->itemID() )  //item is in our ship
+                call.client->GetShip()->GetInventory()->Contains( item->itemID() )  //item is in our ship
                 && call.client->GetStationID() == (uint32)args.stationID    //and our ship is in the station
                 )
         ) {
@@ -426,7 +426,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 
         //take item from seller
         if(item->quantity() == (uint32)args.quantity) {
-            call.client->System()->RemoveItemFromInventory(item);
+            call.client->SystemMgr()->RemoveItemFromInventory(item);
             item->Delete();
         } else {
             //update the item.

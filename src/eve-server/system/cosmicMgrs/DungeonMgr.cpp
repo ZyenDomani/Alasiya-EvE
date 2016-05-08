@@ -25,4 +25,28 @@
 
 #include "eve-server.h"
 
-#include "dungeon/DungeonDB.h"
+#include "EVEServerConfig.h"
+#include "PyServiceMgr.h"
+#include "system/cosmicMgrs/DungeonMgr.h"
+
+DungeonMgr::DungeonMgr(SystemManager* mgr, PyServiceMgr& svc)
+: m_system(mgr),
+m_services(svc)
+{
+    m_initalized = false;
+
+}
+
+void DungeonMgr::Init()
+{
+    if (!sConfig.cosmic.DungeonEnabled) return;
+
+    m_initalized = true;
+
+    _log(COSMIC_MGR__MESSAGE, "DungeonMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+}
+
+void DungeonMgr::Process() {
+    if (!m_initalized) return;
+
+}

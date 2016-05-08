@@ -37,19 +37,16 @@ using namespace Destiny;
 
 Drone::Drone(
     InventoryItemRef drone,
-    SystemManager *system,
     PyServiceMgr &services,
+    SystemManager *system,
     const GPoint &position)
-: DynamicSystemEntity(new DestinyManager(this, system), drone),
-  m_system(system),
-  m_services(services)
+: DynamicSystemEntity(drone, services, system)
 {
     _droneRef = drone;
     m_AI = new DroneAIMgr(this);
+    m_destiny = new DestinyManager(this, system);
     m_owner = nullptr;
 
-    // SET ALL ATTRIBUTES MISSING FROM DATABASE BEFORE USING THEM FOR ANYTHING:
-    // Create default dynamic attributes in the AttributeMap:
     drone->SetAttribute(AttrIsOnline,            1, false);                                          // Is Online
     drone->SetAttribute(AttrShieldCharge,        drone->GetAttribute(AttrShieldCapacity), false);     // Shield Charge
     drone->SetAttribute(AttrArmorDamage,         0.0, false);                                            // Armor Damage
@@ -61,24 +58,27 @@ Drone::Drone(
     drone->SetAttribute(AttrCapacitorCharge,     drone->GetAttribute(AttrCapacitorCapacity), false);  // Set Capacitor Charge to the Capacitor Capacity
     drone->SetAttribute(AttrWarpCapacitorNeed,   drone->GetAttribute(AttrWarpCapacitorNeed), false);      // Shield Charge
 
-    // Agility
     if (!drone->HasAttribute(AttrAgility))
         drone->SetAttribute(AttrAgility, 1, false);
 
-    // Hull Damage
     if (!drone->HasAttribute(AttrDamage))
         drone->SetAttribute(AttrDamage, 0, true );
 
-    // AttrOrbitRange
-    drone->SetAttribute(AttrOrbitRange, GetOrbitRange(), false);
+    m_orbitRange = (m_self->GetAttribute(AttrOrbitRange).get_int());
+    if (!m_orbitRange) {
+        if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff))
+            m_orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
+        else
+            m_orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
+    }
+    drone->SetAttribute(AttrOrbitRange, GetOrbitRange());
 
     m_emDamage = drone->GetAttribute(AttrEmDamage).get_float(),
     m_kinDamage = drone->GetAttribute(AttrKineticDamage).get_float(),
     m_therDamage = drone->GetAttribute(AttrThermalDamage).get_float(),
     m_expDamage = drone->GetAttribute(AttrExplosiveDamage).get_float(),
 
-    // Set internal and Destiny values FROM these Attributes, now that they are all setup:
-    m_destiny->SetPosition(position, false);
+    m_destiny->SetPosition(position);
     m_destiny->SetShipCapabilities(drone);
 
     /* Gets the value from the NPC and put on our own vars */
@@ -86,21 +86,33 @@ Drone::Drone(
     m_armorDamage = drone->GetAttribute(AttrArmorDamage).get_float();
     m_shieldCharge = drone->GetAttribute(AttrShieldCharge).get_float();
     m_shieldCapacity = drone->GetAttribute(AttrShieldCapacity).get_float();
-     _log(NPC__TRACE, "Created Drone object for %s (%u)", drone.get()->itemName().c_str(), drone.get()->itemID());
+
+    _log(NPC__TRACE, "Created Drone object for %s (%u)", drone.get()->itemName().c_str(), drone.get()->itemID());
 }
 
 Drone::~Drone() {
-    TargMgr.DoDestruction();
+    m_targMgr->DoDestruction();
+    SafeDelete(m_destiny);
+    SafeDelete(m_AI);
+}
+
+void Drone::SetOwner(Client* pPC) {
+    m_owner = pPC;
+    m_corpID = pPC->GetCorporationID();
+    m_allyID = pPC->GetAllianceID();
+    m_warID = pPC->GetWarFactionID();
 }
 
 void Drone::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     SystemEntity::Process();
+    /** @todo (allan) finish drone AI and processing */
+    m_AI->Process();
 
-    if (sConfig.misc.UseProfiling)
+    if (sConfig.server.UseProfiling)
         sProfile.AddTime(_droneProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -111,16 +123,8 @@ void Drone::Orbit(SystemEntity *who) {
         m_orbitingID = who->GetID();
 }
 
-double Drone::GetOrbitRange()
-{
-    double orbitRange = (Item()->GetAttribute(AttrOrbitRange).get_int());
-    if (!orbitRange) {
-        if (Item()->GetAttribute(AttrMaxRange) < Item()->GetAttribute(AttrFalloff))
-            orbitRange = Item()->GetAttribute(AttrMaxRange).get_float();
-        else
-            orbitRange = Item()->GetAttribute(AttrFalloff).get_float();
-    }
-    return orbitRange;
+void Drone::TargetAdded(SystemEntity* who) {
+    /** @todo (Allan) will need code once drones are implemented */
 }
 
 void Drone::TargetLost(SystemEntity *who) {
@@ -131,109 +135,84 @@ void Drone::TargetedAdd(SystemEntity *who) {
     m_AI->Targeted(who);
 }
 
-void Drone::ForcedSetPosition(const GPoint &pt) {
-    m_destiny->SetPosition(pt, false);
+void Drone::TargetedLost(SystemEntity* who) {
+    /** @todo (Allan) will need code once drones are implemented */
 }
 
-void Drone::UseShieldRecharge()
-{
-    // We recharge our shield until it's reaches the shield capacity.
-    if (Item()->GetAttribute(AttrShieldCapacity) > m_shieldCharge)
-    {
-        m_shieldCharge += Item()->GetAttribute(AttrEntityShieldBoostAmount).get_float();
-        if (m_shieldCharge > Item()->GetAttribute(AttrShieldCapacity).get_float())
-            m_shieldCharge = Item()->GetAttribute(AttrShieldCapacity).get_float();
+void Drone::UseShieldRecharge() {
+    if (m_self->GetAttribute(AttrShieldCapacity) > m_shieldCharge) {
+        m_shieldCharge += m_self->GetAttribute(AttrEntityShieldBoostAmount).get_float();
+        if (m_shieldCharge > m_self->GetAttribute(AttrShieldCapacity).get_float())
+            m_shieldCharge = m_self->GetAttribute(AttrShieldCapacity).get_float();
     } else
-        AI()->DisableRepTimers();
-    // TODO: Need to send SpecialFX / amount update
-    _UpdateDamage();
+        m_AI->DisableRepTimers();
+    /** @todo (allan) Need to send SpecialFX / amount update */
+    UpdateDamage();
 }
 
-void Drone::UseArmorRepairer()
-{
-    if( m_armorDamage > 0 )
-    {
-        m_armorDamage -= Item()->GetAttribute(AttrEntityArmorRepairAmount).get_float();
+void Drone::UseArmorRepairer() {
+    if (m_armorDamage) {
+        m_armorDamage -= m_self->GetAttribute(AttrEntityArmorRepairAmount).get_float();
         if( m_armorDamage < 0.0 )
             m_armorDamage = 0.0;
     } else
-        AI()->DisableRepTimers();
-    // TODO: Need to send SpecialFX / amount update
-    _UpdateDamage();
+        m_AI->DisableRepTimers();
+    /** @todo (allan) Need to send SpecialFX / amount update */
+    UpdateDamage();
 }
 
-void Drone::_UpdateDamage()
-{
-    DoDestiny_DamageDetails dmgState;
-        dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float();
-        dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
-        dmgState.timestamp = Win32TimeNow();
-        dmgState.armor = 1.0 - m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float();
-        dmgState.structure = 1.0 - m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float();
-    DoDestiny_OnDamageStateChange dmgChange;
-        dmgChange.entityID = GetID();
-        dmgChange.state = dmgState.Encode();
-    PyTuple *up = dmgChange.Encode();
-    //source->QueueDestinyUpdate(&up);
+void Drone::SaveDrone() {
+    m_self->SaveItem();
 }
 
-void Drone::SaveDrone()
-{
-    // Save all data for this Drone to the database:
-    Item()->SaveItem();
+void Drone::RemoveDrone() {
+    /** @todo (Allan) this may need more here */
+    m_self->Delete();
 }
 
-void Drone::RemoveDrone()
-{
-    // Remove all data for this Drone from the database:
-    Item()->Delete();
-}
-
-
-PyDict* Drone::MakeSlimItem() const {
+PyDict* Drone::MakeSlimItem() {
     _log(COMMON__WARNING, "MakeSlimItem for Drone %u ", m_self->itemID());
     PyDict *slim = new PyDict();
-    slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
-    slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
-    slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
-    slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
-    slim->SetItemString("name",             new PyString(m_self->itemName()));
-    slim->SetItemString("ownerID",          new PyInt(GetOwnerID()));
-    slim->SetItemString("corpID",           new PyInt(GetCorporationID()));
-    slim->SetItemString("allianceID",       new PyInt(GetAllianceID()));
-    slim->SetItemString("warFactionID",     new PyInt(GetWarFactionID()));
-    slim->SetItemString("bounty",           new PyFloat(GetBounty()));
-    slim->SetItemString("securityStatus",   new PyFloat(GetSecurityRating()));
-
-    return(slim);
+        slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
+        slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
+        slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
+        slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
+        slim->SetItemString("name",             new PyString(m_self->itemName()));
+        slim->SetItemString("ownerID",          new PyInt(GetOwnerID()));
+        slim->SetItemString("corpID",           new PyInt(GetCorporationID()));
+        slim->SetItemString("allianceID",       new PyInt(GetAllianceID()));
+        slim->SetItemString("warFactionID",     new PyInt(GetWarFactionID()));
+        slim->SetItemString("bounty",           new PyFloat(GetBounty()));
+        slim->SetItemString("securityStatus",   new PyFloat(GetSecurityRating()));
+    return slim;
 }
 
-void Drone::EncodeDestiny( Buffer& into ) const
+void Drone::EncodeDestiny( Buffer& into )
 {
-    const GPoint& position = GetPosition();
+    using namespace Destiny;
 
-    uint8 mode = Destiny::DSTBALL_STOP;
-    if (Destiny()->IsWarping())
-        mode = Destiny::DSTBALL_WARP;
-    else if (Destiny()->IsFollowing())
-        mode = Destiny::DSTBALL_FOLLOW;
-    else if (Destiny()->IsOrbiting())
-        mode = Destiny::DSTBALL_ORBIT;
-    else if (Destiny()->IsMoving())
-        mode = Destiny::DSTBALL_GOTO;
+    uint8 mode = DSTBALL_STOP;
+    if (m_destiny->IsWarping())
+        mode = DSTBALL_WARP;
+    else if (m_destiny->IsFollowing())
+        mode = DSTBALL_FOLLOW;
+    else if (m_destiny->IsOrbiting())
+        mode = DSTBALL_ORBIT;
+    else if (m_destiny->IsMoving())
+        mode = DSTBALL_GOTO;
 
     // drone id's WILL be int64 (> 1000000000000L)
-    Destiny::BallHeader head;
+    BallHeader head;
     head.entityID = GetID();
         head.mode = mode;
         head.radius = GetRadius();
-        head.x = position.x;
-        head.y = position.y;
-        head.z = position.z;
-        head.flags = Destiny::IsFree | Destiny::IsInteractive;
+        head.x = x();
+        head.y = y();
+        head.z = z();
+        head.flags = IsFree | IsInteractive;
     into.Append( head );
 
-    Destiny::MassSector mass;
+    MassSector mass;
         mass.mass = GetMass();
         mass.cloak = 0;
         mass.Harmonic = 1.0f;
@@ -241,7 +220,7 @@ void Drone::EncodeDestiny( Buffer& into ) const
         mass.allianceID = GetAllianceID();
     into.Append( mass );
 
-    Destiny::ShipSector ship;
+    ShipSector ship;
         ship.maxVelocity = GetMaxVelocity();
         ship.velocity_x = GetVelocity().x;
         ship.velocity_y = GetVelocity().y;
@@ -250,9 +229,9 @@ void Drone::EncodeDestiny( Buffer& into ) const
         ship.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( ship );
 
-    if (mode == Destiny::DSTBALL_WARP) {
+    if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
-        Destiny::DSTBALL_WARP_Struct warp;
+        DSTBALL_WARP_Struct warp;
             warp.effectStamp = -1;   //unknown value  seen many -1, few other random 4-5 digits
             warp.unknown_x = target.x;
             warp.unknown_y = target.y;
@@ -261,27 +240,27 @@ void Drone::EncodeDestiny( Buffer& into ) const
             warp.unk_1 = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
             warp.unk_2 = 0;         //unknown 64bit number
         into.Append( warp );
-    } else if (mode == Destiny::DSTBALL_FOLLOW) {
-        Destiny::DSTBALL_FOLLOW_Struct follow;
+    } else if (mode == DSTBALL_FOLLOW) {
+        DSTBALL_FOLLOW_Struct follow;
             follow.followID = m_destiny->GetTargetID();
             follow.followRange = m_destiny->GetFollowDistance();
             follow.formationID = 0xFF;
         into.Append( follow );
-    } else if (mode == Destiny::DSTBALL_ORBIT) {
-        Destiny::DSTBALL_ORBIT_Struct orbit;
+    } else if (mode == DSTBALL_ORBIT) {
+        DSTBALL_ORBIT_Struct orbit;
             orbit.followID = m_destiny->GetTargetID();
             orbit.followRange = m_destiny->GetFollowDistance();
             orbit.formationID = 0xFF;
         into.Append( orbit );
-    } else if (mode == Destiny::DSTBALL_GOTO) {
+    } else if (mode == DSTBALL_GOTO) {
         GPoint target = m_destiny->GetTargetPoint();
-        Destiny::DSTBALL_GOTO_Struct go;
+        DSTBALL_GOTO_Struct go;
             go.x = target.x;
             go.y = target.y;
             go.z = target.z;
         into.Append( go );
     } else {
-        Destiny::DSTBALL_STOP_Struct main;
+        DSTBALL_STOP_Struct main;
             main.formationID = 0xFF;
         into.Append( main );
     }
@@ -289,7 +268,7 @@ void Drone::EncodeDestiny( Buffer& into ) const
     _log(COMMON__WARNING, "Drone::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
-void Drone::MakeDamageState(DoDestinyDamageState &into) const
+void Drone::MakeDamageState(DoDestinyDamageState &into)
 {
     into.shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
     into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() +5;

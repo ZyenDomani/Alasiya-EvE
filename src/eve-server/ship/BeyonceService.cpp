@@ -33,7 +33,6 @@
 #include "ship/DestinyManager.h"
 #include "system/BookmarkService.h"
 #include "system/SystemBubble.h"
-#include "system/SystemEntities.h"
 #include "system/SystemManager.h"
 
 class BeyonceBound
@@ -70,9 +69,8 @@ public:
             pClient->HasUndocked();
         } else if (pClient->IsJump()) {
             pClient->IsJumping();
-        } else if (pClient->IsInSpace() && pClient->Bubble() && pClient->IsLogin()) {
-            pClient->Destiny()->SendSetState(pClient->Bubble(), pClient->GetShipID());
-            pClient->SetBubbleWait(false);
+        } else if (pClient->IsInSpace() && pClient->GetShipSE()->SysBubble() && pClient->IsLogin()) {
+            pClient->GetShipSE()->DestinyMgr()->SendSetState(pClient->GetShipSE()->SysBubble(), pClient->GetShipID());
             pClient->SetLogin(false);
         }
         pClient->SetBeyonce(true);
@@ -176,7 +174,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     ? args.distance->AsInt()->value()
     : args.distance->AsFloat()->value();
 
-    DestinyManager* pDestiny = call.client->Destiny();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
 		return NULL;
@@ -184,7 +182,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
 		call.client->SendNotifyMsg( "You can't do this while warping");
 		return NULL;
 	}
-    SystemManager* pSystem = call.client->System();
+	SystemManager* pSystem = call.client->SystemMgr();
     if (!pSystem) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return NULL;
@@ -212,7 +210,7 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
     // client should not legally send anything < 0.1 (except on rare occasion a 0.0 instead of Stop.)
     if ((arg.arg != 0) && (arg.arg < 0.1)) return NULL;
 
-    DestinyManager* pDestiny = call.client->Destiny();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
@@ -239,7 +237,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
         return NULL;
     }
 
-    DestinyManager* pDestiny = call.client->Destiny();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
@@ -248,7 +246,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
         return NULL;
     }
 
-    SystemManager* pSystem = call.client->System();
+    SystemManager* pSystem = call.client->SystemMgr();
     if (!pSystem) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return NULL;
@@ -275,7 +273,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
 04:45:32 [SvcCall]         [ 0] Real field: -0.043847
 04:45:32 [SvcCall]         [ 1] Real field: 0.860934
 04:45:32 [SvcCall]         [ 2] Real field: 0.506824
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 */
 
     Call_PointArg arg;
@@ -284,7 +282,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
         return NULL;
     }
 
-    DestinyManager* pDestiny = call.client->Destiny();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
@@ -312,7 +310,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
     }
     uint32 bookmarkID = call.tuple->GetItem( 0 )->AsInt()->value();
 
-    DestinyManager* pDestiny = call.client->Destiny();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
@@ -350,7 +348,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
         else
         {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
-            SystemManager* pSM = call.client->System();
+            SystemManager* pSM = call.client->SystemMgr();
             if (!pSM) {
                 sLog.Error( "BeyonceService::Handle_GotoBookmark()", "%s: no system manager found", call.client->GetName() );
                 return NULL;
@@ -375,7 +373,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
             bp.CmdOrbit(id, range)
             */
   sLog.Log( "BeyonceBound", "Handle_CmdOrbit" );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
     Call_Orbit args;
     if (!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
@@ -387,7 +385,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         ? args.range->AsInt()->value()
         : args.range->AsFloat()->value();
 
-    DestinyManager* pDestiny = call.client->Destiny();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
@@ -396,7 +394,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         return NULL;
     }
 
-    SystemManager* pSystem = call.client->System();
+    SystemManager* pSystem = call.client->SystemMgr();
     if (!pSystem) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return NULL;
@@ -438,7 +436,7 @@ bookmark, bmid
         return NULL;
     }
 
-    DestinyManager* pDestiny = call.client->Destiny();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
@@ -471,7 +469,7 @@ bookmark, bmid
                     : res->second->AsFloat()->value();
 		}
 
-		SystemManager* pSM = call.client->System();
+		SystemManager* pSM = call.client->SystemMgr();
         if (!pSM) {
 			codelog(CLIENT__ERROR, "%s: no system manager found", call.client->GetName());
 			return NULL;
@@ -485,9 +483,9 @@ bookmark, bmid
         double distanceFromBodyOrigin = 0.0, distanceFromSystemOrigin = 0.0;
         GPoint warpToPoint(pSE->GetPosition());
         float warpPointAdj = 1.0f;
-        if ( IsStaticMapItem(pSE->GetID()) ) {
-            switch( ((SimpleSystemEntity *)(pSE))->data.groupID ) {
-				case EVEDB::invGroups::Sun:
+        if (pSE->IsPlanetSE()) {
+            switch(pSE->GetGroupID() ) {
+                case EVEDB::invGroups::Sun:
 				case EVEDB::invGroups::Planet:
                 {
                     // Calculate final distance out from origin of celestial body along common warp-to vector:
@@ -503,7 +501,7 @@ bookmark, bmid
                         // This is the special case where we are warping to the Star, so we have to construct
                         // a vector from the star's center (0,0,0) to the warp-in point using the distanceFromBodyOrigin
                         // calculated earlier:
-                        vectorFromOrigin = GVector( celestialOrigin, call.client->GetPosition() );
+                        vectorFromOrigin = GVector( celestialOrigin, call.client->GetShipSE()->GetPosition() );
                         vectorFromOrigin.normalize();
                         vectorFromOrigin *= distanceFromBodyOrigin;
                     }
@@ -554,7 +552,7 @@ bookmark, bmid
                     }
 
                     // Randomize warp-in point:
-                    warpToPoint.MakeRandomPointOnSphereLayer(1000.0,(1000.0+call.client->GetRadius()));
+                    warpToPoint.MakeRandomPointOnSphereLayer(1000.0,(1000.0+call.client->GetShipSE()->GetRadius()));
                     break;
                 }
             case EVEDB::invGroups::Moon:
@@ -569,14 +567,14 @@ bookmark, bmid
         } else
             warpPointAdj = pSE->GetRadius();
 
-        distance += call.client->GetRadius();
+        distance += call.client->GetShipSE()->GetRadius();
 
         /* client stops warp at (targetpoint - stopdistance) along common line between the two.
          *  the server will need to be told what and how to match the client.
          *  i am doing that here.
          * set targetpoint = point of object minus radius as distance along common vector
          */
-        GVector vectorFromOrigin( warpToPoint, call.client->GetPosition() );
+        GVector vectorFromOrigin( warpToPoint, call.client->GetShipSE()->GetPosition() );
         vectorFromOrigin.normalize();   //we now have a direction
         GPoint stopPoint = vectorFromOrigin * -warpPointAdj;
         warpToPoint -= stopPoint;
@@ -620,6 +618,7 @@ bookmark, bmid
                    DBResultRow row;
                 uint32 groupID = 0;
 
+                /** @todo (Allan) fkn seriously?  query the db for a groupID?? */
                 // Query database 'invTypes' table for the supplied typeID and retrieve the groupID for this type:
                 if (!sDatabase.RunQuery(result,
                     " SELECT "
@@ -654,7 +653,7 @@ bookmark, bmid
                 }
 
                 // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
-                SystemManager* pSM = call.client->System();
+                SystemManager* pSM = call.client->SystemMgr();
                 if (!pSM) {
                     sLog.Error( "BeyonceService::Handle_WarpToStuff()", "%s: no system manager found", call.client->GetName() );
                     return NULL;
@@ -666,7 +665,7 @@ bookmark, bmid
                 }
 
                 // Add radiuses for ship and destination object:
-                distance += call.client->GetRadius() + pSE->GetRadius();
+                distance += call.client->GetShipSE()->GetRadius() + pSE->GetRadius();
 
 				/*  check for fleet warp here
 				 * else client warp solo
@@ -724,7 +723,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
         return NULL;
 	}
 
-    DestinyManager* pDestiny = call.client->Destiny();
+	DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
@@ -736,7 +735,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     //Change this to change the default autopilot distance (Faster Autopilot FTW)
     int32 distance = 5000; //15000
 
-    SystemManager* pSM = call.client->System();
+    SystemManager* pSM = call.client->SystemMgr();
     if (!pSM) {
         codelog(CLIENT__ERROR, "%s: no system manager found", call.client->GetName());
         return NULL;
@@ -752,7 +751,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
 	if (call.client->IsUndock()) call.client->SetUndock(false);
     //if (call.client->IsInvul()) call.client->SetInvul(false);
 	//Adding in ship and target object radius'
-    distance += call.client->GetRadius() + pSE->GetRadius();
+    distance += call.client->GetShipSE()->GetRadius() + pSE->GetRadius();
     pDestiny->WarpTo(pSE->GetPosition(), distance);
 
     return NULL;
@@ -760,12 +759,13 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
     sLog.Warning( "BeyonceBound", "Handle_CmdStop" );
-    DestinyManager* pDestiny = call.client->Destiny();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
     }
 
+    if (!pDestiny->IsMoving()) return nullptr;
     if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't do this while warping");
         return NULL;
@@ -788,7 +788,7 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
         return NULL;
     }
 
-    DestinyManager* pDestiny = call.client->Destiny();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
@@ -797,7 +797,7 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
         return NULL;
     }
 
-    SystemManager* pSM = call.client->System();
+    SystemManager* pSM = call.client->SystemMgr();
     if (!pSM) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager.", call.client->GetName());
         return NULL;
@@ -825,7 +825,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
         return NULL;
     }
 
-    DestinyManager* pDestiny = call.client->Destiny();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
@@ -834,7 +834,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
         return NULL;
     }
 
-    //TODO  check distance from ship to gate
+    /** @todo  check distance from ship to gate */
 
     if (call.client->IsUndock()) call.client->SetUndock(false);
     //if (call.client->IsInvul()) call.client->SetInvul(false);
@@ -847,7 +847,7 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 	 *  remotePark.CmdAbandonLoot([wreckID]) <- single itemID
 	 */
   sLog.Log( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
 	Call_SingleIntList arg;
 	if (!arg.Decode(&call.tuple)) {
@@ -864,7 +864,7 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
 
     //no arguments.
 
-    DestinyManager* pDestiny = call.client->Destiny();
+    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
@@ -873,7 +873,7 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
         return NULL;
     }
 
-    pDestiny->SendSetState(call.client->Bubble(), call.client->GetShipID());
+    pDestiny->SendSetState(call.client->GetShipSE()->SysBubble(), call.client->GetShipID());
 
     return NULL;
 }

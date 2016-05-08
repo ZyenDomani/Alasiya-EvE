@@ -25,14 +25,14 @@
 #ifndef EVE_ITEM_FACTORY_H
 #define EVE_ITEM_FACTORY_H
 
-#include "eve-compat.h"
+//#include "eve-compat.h"
+
+/** @todo look into making this a singleton to avoid multiple redirection calls when factory is needed */
 
 #include "inventory/InventoryDB.h"
 
 class ItemCategory;
-
 class ItemGroup;
-
 class ItemType;
 class BlueprintType;
 class CharacterType;
@@ -50,248 +50,98 @@ public:
     ItemFactory(EntityList& el);
     ~ItemFactory();
 
-    InventoryDB& db() { return(m_db); }
+    void SaveItems();
+    void RemoveItem(uint32 itemID);
+    void SetUsingClient(Client *pClient)                { m_pClient = pClient; }
+    void UnsetUsingClient()                             { m_pClient = nullptr; }
 
-    /*
-     * Category stuff
-     */
-    const ItemCategory* GetCategory(EVEItemCategories category);
+    uint32 Count()                                      { return m_itemCount; }
 
-    /*
-     * Group stuff
-     */
-    const ItemGroup* GetGroup(uint32 groupID);
+    InventoryDB& db()                                   { return(m_db); }
 
-    /*
-     * Type stuff
-     */
-    const ItemType* GetType(uint32 typeID);
-
-    const BlueprintType* GetBlueprintType(uint32 blueprintTypeID);
+    Client* GetUsingClient()                            { return m_pClient; }
+    Inventory* GetInventoryFromId(uint32 inventoryID, bool load=true);
 
     /**
-     * Loads character type, caches it and returns it.
+     * these load type, cache it and return it.
      *
-     * @param[in] characterTypeID Character type to be returned.
-     * @return Pointer to character type data container; NULL if fails.
+     * @param[in] typeID  type to be returned.
+     * @return Pointer to type data container; NULL if fails.
      */
-    const CharacterType* GetCharacterType(uint32 characterTypeID);
+    const ItemType*         GetType(uint32 typeID);
+    const BlueprintType*    GetBlueprintType(uint32 blueprintTypeID);
+    const ShipType*         GetShipType(uint32 shipTypeID);
+    const StationType*      GetStationType(uint32 stationTypeID);
+    const CharacterType*    GetCharacterType(uint32 characterTypeID);
+    const CharacterType*    GetCharacterTypeByBloodline(uint32 bloodlineID);
+
+    const ItemCategory*     GetCategory(EVEItemCategories category);
+    const ItemGroup*        GetGroup(uint32 groupID);
+
+
     /**
-     * Loads character type, caches it and returns it.
+     * these load an InventoryItem of requested type and returns a RefPtr.
      *
-     * @param[in] characterTypeID Character type to be returned.
-     * @return Pointer to character type data container; NULL if fails.
+     * @param[in]  ID of _item to load.
+     * @return RefPtr to _Ty; NULL if load failed.
      */
-    const CharacterType* GetCharacterTypeByBloodline(uint32 bloodlineID);
+    SkillRef                GetSkill(uint32 skillID);
+    ShipItemRef             GetShip(uint32 shipID);
+    StationItemRef          GetStation(uint32 stationID);
+    BlueprintRef            GetBlueprint(uint32 blueprintID);
+    CharacterRef            GetCharacter(uint32 characterID);
+    SolarSystemRef          GetSolarSystem(uint32 solarSystemID);
+    StructureItemRef        GetStructure(uint32 structureID);
+    InventoryItemRef        GetItem(uint32 itemID);
+    InventoryItemRef        GetItemContainer(uint32 itemID, bool load=true);
+    InventoryItemRef        GetInventoryItemFromID(uint32 itemID, bool load=true);
+    CargoContainerRef       GetCargoContainer(uint32 containerID);
+    WreckContainerRef       GetWreckContainer(uint32 containerID);
+    CelestialObjectRef      GetCelestialObject(uint32 celestialID);
+
 
     /**
-     * Loads ship type, caches it and returns it.
-     *
-     * @param[in] shipTypeID ID of ship type.
-     * @return Pointer to ship type data container; NULL if fails.
-     */
-    const ShipType* GetShipType(uint32 shipTypeID);
-
-    /**
-     * Loads station type, caches it and returns it.
-     *
-     * @param[in] stationTypeID ID of station type to load.
-     * @return Pointer to StationType object; NULL if fails.
-     */
-    const StationType* GetStationType(uint32 stationTypeID);
-
-    /*
-     * Item stuff
-     */
-    InventoryItemRef GetItem(uint32 itemID);
-
-    BlueprintRef GetBlueprint(uint32 blueprintID);
-
-    /**
-     * Loads character.
-     *
-     * @param[in] character ID of character to load.
-     * @return Pointer to Character object; NULL if load failed.
-     */
-    CharacterRef GetCharacter(uint32 characterID);
-
-    /**
-     * Loads ship.
-     *
-     * @param[in] shipID ID of ship to load.
-     * @return Pointer to Ship object; NULL if failed.
-     */
-    ShipRef GetShip(uint32 shipID);
-
-    /**
-     * Loads celestial object.
-     *
-     * @param[in] celestialID ID of celestial object to load.
-     * @return Pointer to CelestialObject; NULL if fails.
-     */
-    CelestialObjectRef GetCelestialObject(uint32 celestialID);
-
-    /**
-     * Loads solar system.
-     *
-     * @param[in] solarSystemID ID of solar system to load.
-     * @return Pointer to solar system object; NULL if failed.
-     */
-    SolarSystemRef GetSolarSystem(uint32 solarSystemID);
-
-    /**
-     * Loads station.
-     *
-     * @param[in] stationID ID of station to load.
-     * @return Pointer to Station object; NULL if fails.
-     */
-    StationRef GetStation(uint32 stationID);
-
-    /**
-     * Loads skill.
-     *
-     * @param[in] skillID ID of skill to load.
-     * @return Pointer to Skill object; NULL if fails.
-     */
-    SkillRef GetSkill(uint32 skillID);
-
-    /**
-     * Loads owner.
-     *
-     * @param[in] ownerID ID of owner to load.
-     * @return Ref to Owner object.
-     */
-    OwnerRef GetOwner(uint32 ownerID);
-
-    /**
-     * Loads structure object.
-     *
-     * @param[in] structureID ID of structure object to load.
-     * @return Pointer to Structure; NULL if fails.
-     */
-    StructureRef GetStructure(uint32 structureID);
-
-    /**
-     * Loads cargo container object.
-     *
-     * @param[in] containerID ID of cargo container object to load.
-     * @return Pointer to CargoContainer; NULL if fails.
-     */
-    CargoContainerRef GetCargoContainer(uint32 containerID);
-
-    /**
-     * Loads wreck object.
-     *
-     * @param[in] containerID ID of wreck object to load.
-     * @return Pointer to WreckContainer; NULL if fails.
-     */
-    WreckContainerRef GetWreckContainer(uint32 containerID);
-
-    //spawn a new item with the specified information, creating it in the DB as well.
-    InventoryItemRef SpawnItem(ItemData &data);
-    BlueprintRef SpawnBlueprint(ItemData &data, BlueprintData &bpData);
-    /**
-     * Spawns new character, caches it and returns it.
+     * creates new InventoryItem, saves to db, caches it and returns reference.
      *
      * @param[in] data Item data (for entity table).
      * @param[in] charData Character data.
      * @param[in] appData Character's appearance.
      * @param[in] corpData Character's corporation-membership data.
-     * @return Pointer to new Character object; NULL if spawn failed.
+     * @return RefPtr to _Ty; NULL if load failed.
      */
-    CharacterRef SpawnCharacter(ItemData &data, CharacterData &charData, CorpMemberInfo &corpData);
-    /**
-     * Spawns new ship.
-     *
-     * @param[in] data Item data for ship.
-     * @return Pointer to Ship object; NULL if failed.
-     */
-    ShipRef SpawnShip(ItemData &data);
-    /**
-     * Spawns new skill.
-     *
-     * @param[in] data Item data for skill.
-     * @return Pointer to new Skill object; NULL if fails.
-     */
-    SkillRef SpawnSkill(ItemData &data);
-    /**
-     * Spawns new owner.
-     *
-     * @param[in] data Item data for owner.
-     * @return Ref to new Owner object.
-     */
-    OwnerRef SpawnOwner(ItemData &data);
-    /**
-     * Spawns new structure.
-     *
-     * @param[in] data Item data for structure.
-     * @return Ref to new Structure object.
-     */
-    StructureRef SpawnStructure(ItemData &data);
-    /**
-     * Spawns new cargo container.
-     *
-     * @param[in] data Item data for cargo container.
-     * @return Ref to new CargoContainer object.
-     */
-    CargoContainerRef SpawnCargoContainer(ItemData &data);
-    /**
-     * Spawns new wreck container.
-     *
-     * @param[in] data Item data for wreck container.
-     * @return Ref to new WreckContainer object.
-     */
-    WreckContainerRef SpawnWreckContainer(ItemData &data);
-    /*
-     * Inventory stuff
-     */
-    Inventory* GetInventory(uint32 inventoryID, bool load=true);
+    SkillRef                SpawnSkill(ItemData &data);
+    ShipItemRef             SpawnShip(ItemData &data);
+    CharacterRef            SpawnCharacter(ItemData &data, CharacterData &charData, CorpMemberInfo &corpData);
+    BlueprintRef            SpawnBlueprint(ItemData &data, BlueprintData &bpData);
+    InventoryItemRef        SpawnItem(ItemData &data);
+    StructureItemRef        SpawnStructure(ItemData &data);
+    CargoContainerRef       SpawnCargoContainer(ItemData &data);
+    WreckContainerRef       SpawnWreckContainer(ItemData &data);
 
-    void SetUsingClient(Client *pClient);
 
-    Client* GetUsingClient();
-
-    void UnsetUsingClient();
-
-    uint32 Count()      { return m_itemCount; }
-
-    void SaveItems();
     /*
 	 * ID Authority Functions:
      */
-    uint32 GetNextEntityID();
-    uint32 GetNextAsteroidID();
-    uint32 GetNextMissileID();
+    uint32                  GetNextEntityID();
+    uint32                  GetNextAsteroidID();
+    uint32                  GetNextMissileID();
 
 
 protected:
     InventoryDB m_db;
-
+    EntityList& entity_list;    //we do not own this.
     Client* m_pClient;     // pointer to client currently using the ItemFactory, we do not own this
 
-    /*
-     * Member functions and variables:
-     */
-    // Categories:
-    std::map<EVEItemCategories, ItemCategory *> m_categories;
+    std::map<EVEItemCategories, ItemCategory*> m_categories;
+    std::map<uint32, ItemGroup*> m_groups;
+    std::map<uint32, ItemType*> m_types;
+    std::map<uint32, InventoryItemRef> m_items;
 
-    // Groups:
-    std::map<uint32, ItemGroup *> m_groups;
-
-    // Types:
     template<class _Ty>
     const _Ty *_GetType(uint32 typeID);
 
-    std::map<uint32, ItemType *> m_types;
-
-    // Items:
     template<class _Ty>
     RefPtr<_Ty> _GetItem(uint32 itemID);
-
-    void _DeleteItem(uint32 itemID);
-
-    std::map<uint32, InventoryItemRef> m_items;
-
 
 private:
     // ID Authority:

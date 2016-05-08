@@ -68,7 +68,6 @@ SkillMgrBound::SkillMgrBound(PyServiceMgr *mgr, CharacterDB &db)
     PyCallable_REG_CALL(SkillMgrBound, GetSkillQueueAndFreePoints);
     PyCallable_REG_CALL(SkillMgrBound, SaveSkillQueue);
     PyCallable_REG_CALL(SkillMgrBound, AddToEndOfSkillQueue);
-
     PyCallable_REG_CALL(SkillMgrBound, GetRespecInfo);
     PyCallable_REG_CALL(SkillMgrBound, RespecCharacter);
     PyCallable_REG_CALL(SkillMgrBound, GetCharacterAttributeModifiers);
@@ -79,15 +78,27 @@ SkillMgrBound::~SkillMgrBound()
     delete m_dispatch;
 }
 
-// TODO: redesign this so this is not needed
+/** @todo redesign this so this is not needed */
 void SkillMgrBound::Release()
 {
     delete this;
 }
 
 PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call) {
+    sLog.Log( "SkillMgrBound::Handle_GetCharacterAttributeModifiers()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
     // since we don't currently support implants (I think), just a dummy
     // expected data: for (itemID, typeID, operation, value,) in modifiers:
+    /*
+     * client sends attrib# of stat in question...
+     * we return this...
+        [PyList 1 items]
+          [PyTuple 4 items]
+            [PyIntegerVar 1866309449]   << implantID
+            [PyInt 9943]                << implantTypeID
+            [PyInt 2]                   << dunno
+            [PyFloat 3]                 << dunno
+            */
     return new PyTuple(0);
 }
 
@@ -113,6 +124,8 @@ PyResult SkillMgrBound::Handle_GetSkillHistory( PyCallArgs& call ) {
 
 PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 {
+    sLog.Log( "SkillMgrBound::Handle_CharAddImplant()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
     //takes itemid
     Call_SingleIntegerArg args;
     if( !args.Decode( &call.tuple ) )
@@ -120,14 +133,14 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
         codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
         return NULL;
     }
-
-    sLog.Debug( "SkillMgrBound", "Called CharAddImplant stub." );
 
     return NULL;
 }
 
 PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
 {
+    sLog.Log( "SkillMgrBound::Handle_RemoveImplantFromCharacter()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
     //takes itemid
     Call_SingleIntegerArg args;
     if( !args.Decode( &call.tuple ) )
@@ -135,8 +148,6 @@ PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
         codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
         return NULL;
     }
-
-    sLog.Debug( "SkillMgrBound", "Called RemoveImplantFromCharacter stub." );
 
     return NULL;
 }
@@ -193,6 +204,9 @@ PyResult SkillMgrBound::Handle_AddToEndOfSkillQueue(PyCallArgs &call) {
 
 PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 {
+    sLog.Log( "SkillMgrBound::Handle_RespecCharacter()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    /** @todo check this and see if we can update to higher base attribs for faster train times */
     Call_RespecCharacter spec;
     if (!spec.Decode(call.tuple))
     {
@@ -207,8 +221,6 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
     // return early if this is an illegal call
     if (!m_db.ReportRespec(call.client->GetCharacterID()))
         return NULL;
-
-    // TODO: validate these values (and their sum)
     cref->SetAttribute(AttrCharisma, spec.charisma);
     cref->SetAttribute(AttrIntelligence, spec.intelligence);
     cref->SetAttribute(AttrMemory, spec.memory);
@@ -270,7 +282,7 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
 
         if( !ch->InjectSkillIntoBrain( (SkillRef)skill ) )
         {
-            //TODO: build and send UserError about injection failure.
+            /** @todo build and send UserError about injection failure. */
             codelog(ITEM__ERROR, "%s: Injection of skill %u failed", call.client->GetName(), skill->itemID() );
         }
     }

@@ -31,7 +31,7 @@
 class SuperWeapon: public TurrentModule
 {
 public:
-    SuperWeapon( InventoryItemRef item, ShipRef ship );
+    SuperWeapon( InventoryItemRef item, ShipItemRef ship );
     virtual ~SuperWeapon() { }
 
     // GenericModule Methods:

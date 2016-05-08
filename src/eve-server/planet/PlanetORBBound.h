@@ -20,63 +20,31 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur
+    Author:        Allan
 */
 
-#ifndef __ASTEROIDBELTMANAGER_H_INCL__
-#define __ASTEROIDBELTMANAGER_H_INCL__
 
-#include "system/SystemEntities.h"
+#ifndef EVEMU_PLANET_PLANETORB_BOUND_H_
+#define EVEMU_PLANET_PLANETORB_BOUND_H_
 
-class AsteroidEntity;
+#include "PyService.h"
+#include "planet/PlanetDB.h"
 
-
-//There is no solid reason for having this as a different object
-//than the SystemEntity subclass, it is just the way the code came out.
-//It is very likely that this will need to be merged into the entity object
-//once the system matures more.
-class AsteroidBeltManager {
+class planetORB : public PyService {
 public:
-    AsteroidBeltManager(uint32 belt_id);
-    virtual ~AsteroidBeltManager();
-
-    //Database operations.
-    virtual bool LoadState();
-    virtual bool SaveState();
-
-    virtual void Process();
-    virtual void ForceGrowth();
+    planetORB(PyServiceMgr *mgr);
+    virtual ~planetORB();
 
 protected:
-    const uint32 m_beltID;
+    class Dispatcher;
+    Dispatcher *const m_dispatch;
 
-    //runtime state:
-    Timer m_growthTimer;
-    std::vector<AsteroidEntity*> m_asteroids;    //we own these
+    virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
 
-    void _TriggerGrowth();
+private:
+    PlanetDB* m_db;
 
-    void _Clear();
+    //PyCallable_DECL_CALL()
 };
 
-class SystemAsteroidBeltEntity : public SimpleSystemEntity {
-public:
-    SystemAsteroidBeltEntity(SystemManager *system, const DBSystemEntity &entity);
-    virtual ~SystemAsteroidBeltEntity();
-
-    //SystemEntity:
-    virtual void EncodeDestiny( Buffer& into ) const;
-    virtual void Process();
-    //SimpleSystemEntity:
-    virtual bool LoadExtras(SystemDB *db);
-
-protected:
-    AsteroidBeltManager *m_manager;    //dynamic to simplify dependancy issues.
-};
-
-
-
-
-#endif
-
-
+#endif  // EVEMU_PLANET_PLANETORB_BOUND_H_

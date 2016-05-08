@@ -21,11 +21,14 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
 
+#include "Client.h"
 #include "character/Character.h"
+#include "inventory/ItemFactory.h"
 #include "manufacturing/Blueprint.h"
 #include "pos/Structure.h"
 #include "ship/Missile.h"
@@ -33,16 +36,15 @@
 #include "station/Station.h"
 #include "system/Container.h"
 #include "system/SolarSystem.h"
-#include <system/SystemManager.h>
-#include "inventory/ItemFactory.h"
-#include <Client.h>
+#include "system/SystemManager.h"
 
 // Initialize ID Authority variables:
-uint32 ItemFactory::m_nextEntityID = EVEMU_MINIMUM_ENTITY_ID;
+uint32 ItemFactory::m_nextEntityID = EVEMU_TEMP_ENTITY_ID;
 uint32 ItemFactory::m_nextAsteroidID = EVEMU_ASTEROID_ID;
 uint32 ItemFactory::m_nextMissileID = EVEMU_MISSILE_ID;
 
 ItemFactory::ItemFactory(EntityList& el)
+: entity_list(el)
 {
     m_itemCount = 0;
     m_pClient = nullptr;
@@ -51,8 +53,6 @@ ItemFactory::ItemFactory(EntityList& el)
 ItemFactory::~ItemFactory() {
     // items
     SaveItems();
-    m_items.clear();
-    m_itemCount = 0;
     // types
     for (auto cur : m_types)
         SafeDelete(cur.second);
@@ -68,8 +68,10 @@ ItemFactory::~ItemFactory() {
 
     // Set Client pointer to NULL
     m_pClient = nullptr;
-}
 
+    /* close db service */
+    sDatabase.Close();
+}
 
 void ItemFactory::SaveItems() {
     double startTime = GetTimeMSeconds();
@@ -81,13 +83,60 @@ void ItemFactory::SaveItems() {
             cur.second->SaveItem();
 
         ++items_saved;
-        if( (items_saved / total_item_count) > (current_percent_items_saved + 0.05) ) {
+        if( (items_saved / total_item_count) > (current_percent_items_saved + 0.1) ) {
             current_percent_items_saved = items_saved / total_item_count;
             sLog.Warning( "     Saving Items", " %3.2f%%", (current_percent_items_saved * 100) );
         }
     }
     sLog.Warning("        SaveItems", "Saved %u of %u Loaded Items in %.2f seconds.", \
-    (uint32)items_saved, (uint32)total_item_count, (GetTimeMSeconds() -startTime) );
+                        (uint32)items_saved, (uint32)total_item_count, (GetTimeMSeconds() -startTime) );
+}
+
+Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
+    InventoryItemRef item;
+    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
+    if (res != m_items.end())
+        item = res->second;
+    else {
+        if (load)
+            item = GetItem( itemID );
+    }
+
+    if (item)
+        return item->GetInventory();
+
+    return nullptr;
+}
+
+InventoryItemRef ItemFactory::GetInventoryItemFromID( uint32 itemID, bool load /*true*/) {
+    InventoryItemRef item;
+    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
+    if (res != m_items.end())
+        item = res->second;
+    else {
+        if (load)
+            item = GetItem( itemID );
+    }
+
+    if (item)
+        return item;
+
+    return InventoryItemRef();
+
+}
+
+InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load /*true*/) {
+
+}
+
+void ItemFactory::RemoveItem(uint32 itemID) {
+    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
+    if (res == m_items.end())
+        _log(ITEM__WARNING, "ItemFactory::_DeleteItem() - Item ID %u not found when requesting deletion", itemID );
+    else {
+        --m_itemCount;
+        m_items.erase( res );
+    }
 }
 
 
@@ -103,7 +152,7 @@ const ItemCategory* ItemFactory::GetCategory(EVEItemCategories category) {
             std::make_pair(category, cat)
         ).first;
     }
-    return(res->second);
+    return res->second;
 }
 
 const ItemGroup* ItemFactory::GetGroup(uint32 groupID) {
@@ -118,7 +167,7 @@ const ItemGroup* ItemFactory::GetGroup(uint32 groupID) {
             std::make_pair(groupID, group)
         ).first;
     }
-    return(res->second);
+    return res->second;
 }
 
 template<class _Ty>
@@ -178,7 +227,7 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
 
         //we keep the original ref.
         res = m_items.insert( std::make_pair( itemID, item ) ).first;
-        m_itemCount++;
+        ++m_itemCount;
 
     }
     // return to the user.
@@ -200,9 +249,9 @@ CharacterRef ItemFactory::GetCharacter(uint32 characterID)
     return _GetItem<Character>( characterID );
 }
 
-ShipRef ItemFactory::GetShip(uint32 shipID)
+ShipItemRef ItemFactory::GetShip(uint32 shipID)
 {
-    return _GetItem<Ship>( shipID );
+    return _GetItem<ShipItem>( shipID );
 }
 
 CelestialObjectRef ItemFactory::GetCelestialObject(uint32 celestialID)
@@ -215,9 +264,9 @@ SolarSystemRef ItemFactory::GetSolarSystem(uint32 solarSystemID)
     return _GetItem<SolarSystem>( solarSystemID );
 }
 
-StationRef ItemFactory::GetStation(uint32 stationID)
+StationItemRef ItemFactory::GetStation(uint32 stationID)
 {
-    return _GetItem<Station>( stationID );
+    return _GetItem<StationItem>( stationID );
 }
 
 SkillRef ItemFactory::GetSkill(uint32 skillID)
@@ -225,14 +274,9 @@ SkillRef ItemFactory::GetSkill(uint32 skillID)
     return _GetItem<Skill>( skillID );
 }
 
-OwnerRef ItemFactory::GetOwner(uint32 ownerID)
+StructureItemRef ItemFactory::GetStructure(uint32 structureID)
 {
-    return _GetItem<Owner>( ownerID );
-}
-
-StructureRef ItemFactory::GetStructure(uint32 structureID)
-{
-    return _GetItem<Structure>( structureID );
+    return _GetItem<StructureItem>( structureID );
 }
 
 CargoContainerRef ItemFactory::GetCargoContainer(uint32 containerID)
@@ -252,7 +296,7 @@ InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
 
     // spawn successful; store the ref
     m_items.insert( std::make_pair( i->itemID(), i ) );
-    m_itemCount++;
+    ++m_itemCount;
     return i;
 }
 
@@ -262,7 +306,7 @@ BlueprintRef ItemFactory::SpawnBlueprint(ItemData &data, BlueprintData &bpData) 
         return BlueprintRef();
 
     m_items.insert( std::make_pair( bi->itemID(), bi ) );
-    m_itemCount++;
+    ++m_itemCount;
     return bi;
 }
 
@@ -272,17 +316,17 @@ CharacterRef ItemFactory::SpawnCharacter(ItemData &data, CharacterData &charData
         return CharacterRef();
 
     m_items.insert( std::make_pair( c->itemID(), c ) );
-    m_itemCount++;
+    ++m_itemCount;
     return c;
 }
 
-ShipRef ItemFactory::SpawnShip(ItemData &data) {
-    ShipRef s = Ship::Spawn(*this, data);
+ShipItemRef ItemFactory::SpawnShip(ItemData &data) {
+    ShipItemRef s = ShipItem::Spawn(*this, data);
     if ( !s )
-        return ShipRef();
+        return ShipItemRef();
 
     m_items.insert( std::make_pair( s->itemID(), s ) );
-    m_itemCount++;
+    ++m_itemCount;
     return s;
 }
 
@@ -293,29 +337,18 @@ SkillRef ItemFactory::SpawnSkill(ItemData &data)
         return SkillRef();
 
     m_items.insert( std::make_pair( s->itemID(), s ) );
-    m_itemCount++;
+    ++m_itemCount;
     return s;
 }
 
-OwnerRef ItemFactory::SpawnOwner(ItemData &data)
+StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
 {
-    OwnerRef o = Owner::Spawn( *this, data );
+    StructureItemRef o = StructureItem::Spawn( *this, data );
     if ( !o )
-        return OwnerRef();
+        return StructureItemRef();
 
     m_items.insert( std::make_pair( o->itemID(), o ) );
-    m_itemCount++;
-    return o;
-}
-
-StructureRef ItemFactory::SpawnStructure(ItemData &data)
-{
-    StructureRef o = Structure::Spawn( *this, data );
-    if ( !o )
-        return StructureRef();
-
-    m_items.insert( std::make_pair( o->itemID(), o ) );
-    m_itemCount++;
+    ++m_itemCount;
     return o;
 }
 
@@ -326,7 +359,7 @@ CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
         return CargoContainerRef();
 
     m_items.insert( std::make_pair( o->itemID(), o ) );
-    m_itemCount++;
+    ++m_itemCount;
     return o;
 }
 
@@ -337,50 +370,8 @@ WreckContainerRef ItemFactory::SpawnWreckContainer(ItemData &data)
         return WreckContainerRef();
 
     m_items.insert( std::make_pair( o->itemID(), o ) );
-    m_itemCount++;
+    ++m_itemCount;
     return o;
-}
-
-Inventory *ItemFactory::GetInventory(uint32 inventoryID, bool load)
-{
-    InventoryItemRef item;
-
-    if ( load )
-        item = GetItem( inventoryID );
-    else
-    {
-        std::map<uint32, InventoryItemRef>::iterator res = m_items.find( inventoryID );
-        if ( res != m_items.end() )
-            item = res->second;
-    }
-
-    return Inventory::Cast( item );
-}
-
-void ItemFactory::_DeleteItem(uint32 itemID)
-{
-    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-    if ( res == m_items.end() ) {
-        codelog(ITEM__ERROR, "ItemFactory::_DeleteItem() - Item ID %u not found when requesting deletion!", itemID );
-    } else {
-        m_itemCount--;
-        m_items.erase( res );
-    }
-}
-
-void ItemFactory::SetUsingClient(Client *pClient)
-{
-    m_pClient = pClient;
-}
-
-Client* ItemFactory::GetUsingClient()
-{
-    return m_pClient;
-}
-
-void ItemFactory::UnsetUsingClient()
-{
-    m_pClient = nullptr;
 }
 
 uint32 ItemFactory::GetNextEntityID()
@@ -397,10 +388,10 @@ uint32 ItemFactory::GetNextEntityID()
 
 uint32 ItemFactory::GetNextAsteroidID()
 {
-    return m_nextAsteroidID++;
+    return ++m_nextAsteroidID;
 }
 
 uint32 ItemFactory::GetNextMissileID()
 {
-    return m_nextMissileID++;
+    return ++m_nextMissileID;
 }

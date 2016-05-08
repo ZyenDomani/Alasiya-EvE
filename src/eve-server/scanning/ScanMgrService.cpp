@@ -104,7 +104,7 @@ ScanMgrService::~ScanMgrService() {
 //02:17:50 L ScanMgrService::Handle_GetSystemScanMgr(): size= 0
 PyResult ScanMgrService::Handle_GetSystemScanMgr( PyCallArgs& call ) {
     Client* pClient = call.client;
-    DestinyManager* pDestiny = pClient->Destiny();
+    DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
@@ -138,7 +138,7 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
 
 PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
     sLog.Log( "ScanMgrService::Handle_RequestScans()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     /*      // using ship scanner
             [PyString "RequestScans"]
             [PyTuple 1 items]
@@ -165,25 +165,24 @@ PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
 
 PyResult ScanBound::Handle_ReconnectToLostProbes( PyCallArgs& call ) {
     sLog.Log( "ScanMgrService::Handle_ReconnectToLostProbes()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
-    PyRep* result = NULL;
-    return result;
+    return nullptr;
 }
 
 PyResult ScanBound::Handle_RecoverProbes( PyCallArgs& call ) {
     sLog.Log( "ScanMgrService::Handle_RecoverProbes()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     //successProbeIDs = sm.RemoteSvc('scanMgr').GetSystemScanMgr().RecoverProbes(probeIDs)
-    PyRep* result = NULL;
-    return result;
+
+    return nullptr;
 }
 
 PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
     sLog.Log( "ScanMgrService::Handle_DestroyProbe()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     //scanMan = sm.RemoteSvc('scanMgr').GetSystemScanMgr()
     //scanMan.DestroyProbe(probeID)
-    PyRep* result = NULL;
-    return result;
+
+    return nullptr;
 }

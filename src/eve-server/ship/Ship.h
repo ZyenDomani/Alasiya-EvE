@@ -30,14 +30,9 @@
 #include "inventory/Inventory.h"
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
-#include "ship/DestinyManager.h"
-#include "ship/ShipOperatorInterface.h"
 #include "ship/modules/ModuleManager.h"
 #include "ship/modules/GenericModule.h"
 #include "ship/ShipDB.h"
-
-
-#define SHIP_PROCESS_TICK_MS	5000
 
 /**
  * Basic container for raw ship type data.
@@ -161,74 +156,62 @@ protected:
 };
 
 /**
- * InventoryItem which represents ship.
+ * InventoryItem which represents ShipItem.
  */
 
-class Ship
-: public InventoryItem,
-  public InventoryEx
+class ShipItem
+: public InventoryItem
 {
     friend class InventoryItem;    // to let it construct us
+
+protected:
+    ShipItem(
+        ItemFactory &_factory,
+        uint32 _shipID,
+        // InventoryItem stuff:
+        const ShipType &_shipType,
+        const ItemData &_data
+    );
+    virtual ~ShipItem();
+
 public:
-    /**
-     * Loads ship from DB.
-     *
-     * @param[in] factory
-     * @param[in] shipID ID of ship to load.
-     * @return Pointer to Ship object; NULL if failed.
-     */
-    static ShipRef Load(ItemFactory &factory, uint32 shipID);
     void Init();
     void InitPod();
-    /**
-     * Spawns new ship.
-     *
-     * @param[in] factory
-     * @param[in] data Item data for ship.
-     * @return Pointer to new Ship object; NULL if failed.
-     */
-    static ShipRef Spawn(ItemFactory &factory, ItemData &data);
+    static ShipItemRef Load(ItemFactory &factory, uint32 shipID);
+    static ShipItemRef Spawn(ItemFactory &factory, ItemData &data);
 
-    /*
-     * Primary public interface:
-     */
+    virtual void SetPlayer(Client* pClient);
+    virtual bool HasPilot()                                     { return (m_pilot ? true : false); }
+    virtual Client* GetPilot()                                  { return m_pilot; }
+
+    bool HasModuleManager()                                     { return (m_ModuleManager ? true : false); }
+    ModuleManager* GetModuleManager()                           { return m_ModuleManager; }
+
     void Delete();
 
-    /*
-     * _ExecAdd validation interface:
-     */
-    double GetCapacity(EVEItemFlags flag) const;
-	double GetRemainingVolumeByFlag(EVEItemFlags flag) const;
+    double GetRemainingVolumeByFlag(EVEItemFlags flag) const;
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item);
-    /*
-     * Checks for conflicts between ship and fitting
-     */
     bool ValidateItemSpecifics(InventoryItemRef equip);
 
-    /*
-     * Public fields:
-     */
     const ShipType & type() const { return static_cast<const ShipType &>(InventoryItem::type()); }
 
-    /*
-	 *  placeholder for invul timer for undock/gate jump
-	 */
-	bool IsInvul() {return false;}
+    bool IsInvul() {return false;}      /** @todo finish this, and find what it's used for */
+
+    std::string GetShipDNA();
 
     /*
      * Primary public packet builders:
      */
     PyDict* ShipGetInfo();
     PyDict* GetShipInfo();
-    PyDict* ShipGetState();
+    PyDict* GetShipState();
     PyList* ShipGetModuleList();
-    PyDict* ShipGetModuleInfo();
-    PyDict* ShipGetWeaponInfo();
+    PyDict* GetChargeState();
 
     /*
      * Validates boarding ship
      */
-    bool ValidateBoardShip(ShipRef ship, CharacterRef who);
+    bool ValidateBoardShip(ShipItemRef ship, CharacterRef who);
 
     /*
      * Saves the ship state
@@ -243,26 +226,24 @@ public:
     void Heal();
     void AddModuleToOnlineVec(uint32 moduleID);
 
-    // for paying out ship insurance
-    void PayInsurance();
-
     /**
-	 * CalculateRechargeRate
-	 * Calculate the recharge rate of capacitor or shields.
-	 * @param Capacity The maximum capacity of the item.
-	 * @param RechargeTimeMS The time in ms that it takes to fully recharge the item.
-	 * @param Current The current charge of the item.
-	 * @return The rate of charge for the item.
-	 */
-	double CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current);
+     * CalculateRechargeRate
+     * Calculate the recharge rate of capacitor or shields.
+     * @param Capacity The maximum capacity of the item.
+     * @param RechargeTimeMS The time in ms that it takes to fully recharge the item.
+     * @param Current The current charge of the item.
+     * @return The rate of charge for the item.
+     */
+    double CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current);
 
     /* begin new module manager interface */
-	InventoryItemRef GetModule(EVEItemFlags flag);
-	InventoryItemRef GetModule(uint32 itemID);
+    InventoryItemRef GetModule(EVEItemFlags flag);
+    InventoryItemRef GetModule(uint32 itemID);
     EVEItemFlags FindAvailableModuleSlot( InventoryItemRef item );
     EvilNumber GetMaxTurrentHardpoints() { return GetAttribute(AttrTurretSlotsLeft); }
     EvilNumber GetMaxLauncherHardpoints() { return GetAttribute(AttrLauncherSlotsLeft); }
     uint32 AddItem( EVEItemFlags flag, InventoryItemRef item);
+    void AddItem(InventoryItemRef item);
     void RemoveItem( InventoryItemRef item/*, uint32 inventoryID, EVEItemFlags flag*/ );
     void UpdateModules();
     void UpdateModules(EVEItemFlags flag);
@@ -270,22 +251,21 @@ public:
     void UnloadAllModules();
     void MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2);
     void RepairModules();
-	void Online(uint32 moduleID);
-	void Offline(uint32 moduleID);
+    void Online(uint32 moduleID);
+    void Offline(uint32 moduleID);
     void Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat);
     void Deactivate(int32 itemID, std::string effectName);
-	void Overload();
-	void CancelOverloading();
+    void Overload();
+    void CancelOverloading();
     void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);
     void RemoveRig(InventoryItemRef item);
     void Process();
     void DeactivateAllModules();
     void OnlineAll();
     void OfflineAll();
-    ShipOperatorInterface * GetOperator() { return m_pOperator; }
-    std::vector<GenericModule *> GetStackedItems(uint32 typeID, ModulePowerLevel level);
+    void StripFitting();
 
-	// Tactical Interface:
+    // Tactical Interface:
     void SetShipShield(double fraction);
     void SetShipArmor(double fraction);
     void SetShipHull(double fraction);
@@ -303,80 +283,52 @@ public:
     EvilNumber GetShipShieldPercent() { return (GetAttribute(AttrShieldCharge) / GetAttribute(AttrShieldCapacity)); }
     EvilNumber GetShipCapacitorPercent() { return (GetAttribute(AttrCapacitorCharge) / GetAttribute(AttrCapacitorCapacity)); }
 
-    void _UpdateCargoHoldsUsedVolume();
+    void UpdateHoldsUsedVolume();
 
     // External Methods For use by hostile entities directing effects to this entity:
     int32 ApplyRemoteEffect() { assert(true); }     // DO NOT CALL THIS YET!!!  This function needs to call down to ModuleManager::ApplyRemoteEffect with the proper argument list.
     int32 RemoveRemoteEffect() { assert(true); }    // DO NOT CALL THIS YET!!!  This function needs to call down to ModuleManager::RemoveRemoteEffect with the proper argument list.
 
-protected:
-    Ship(
-        ItemFactory &_factory,
-        uint32 _shipID,
-        // InventoryItem stuff:
-        const ShipType &_shipType,
-        const ItemData &_data
-    );
-
-    /*
-     * Member functions
-     */
     using InventoryItem::_Load;
+    virtual bool _Load();
 
+protected:
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 shipID,
-        // InventoryItem stuff:
-        const ItemType &type, const ItemData &data)
-    {
-        // check it's a ship
-        if( type.categoryID() != EVEDB::invCategories::Ship )
-        {
-            _log( ITEM__ERROR, "Trying to load %s as Ship.", type.category().name().c_str() );
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 shipID, const ItemType &type, const ItemData &data) {
+        if( type.categoryID() != EVEDB::invCategories::Ship ) {
+            _log( ITEM__ERROR, "Trying to load %s as ShipItem.", type.category().name().c_str() );
             return RefPtr<_Ty>();
         }
-        // cast the type
+
         const ShipType &shipType = static_cast<const ShipType &>( type );
-
-        // no additional stuff
-
         return _Ty::template _LoadShip<_Ty>( factory, shipID, shipType, data );
     }
 
     // Actual loading stuff:
     template<class _Ty>
     static RefPtr<_Ty> _LoadShip(ItemFactory &factory, uint32 shipID,
-        // InventoryItem stuff:
-        const ShipType &shipType, const ItemData &data
+                                 // InventoryItem stuff:
+                                 const ShipType &shipType, const ItemData &data
     );
 
-    bool _Load();
+    //bool LoadAttributes();
     bool m_IsLoaded;
 
-    static uint32 _Spawn(ItemFactory &factory,
-        // InventoryItem stuff:
-        ItemData &data
-    );
+    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
 
-    uint32 inventoryID() const { return itemID(); }
-    PyRep *GetItem() const { return GetItemRow(); }
+    void _IncreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToConsume);  // To release cargo space, make 'volumeToConsume' negative
+    void _DecreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToConsume);  // To release cargo space, make 'volumeToConsume' negative
 
-    void AddItem(InventoryItemRef item);
+    const uint32 m_processTimerTick;
 
-	void _IncreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToConsume);	// To release cargo space, make 'volumeToConsume' negative
-	void _DecreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToConsume);	// To release cargo space, make 'volumeToConsume' negative
-
-	const uint32 m_processTimerTick;
+private:
     Timer m_processTimer;
 
-    // Access to the pilot object, which could be Client, NPC, or other type,
-    // so access is through an interface object.
-    ShipOperatorInterface * m_pOperator;    // We own this
+    Client* m_pilot;
 
     //the ship's module manager.  We own this
     ModuleManager* m_ModuleManager;
-
-    ShipDB m_db;
 
     std::vector<uint32> m_onlineModuleVec;
 };
@@ -390,91 +342,45 @@ class DestinyManager;
 class SystemManager;
 class ServiceDB;
 
-class ShipEntity
+class Ship
 : public DynamicSystemEntity
 {
 public:
-    ShipEntity(
-        ShipRef ship,
-        SystemManager *system,
-        PyServiceMgr &services,
-        const GPoint &position);
-    ~ShipEntity();
+    Ship(InventoryItemRef self, PyServiceMgr& services, SystemManager* system);
+    virtual ~Ship();
 
-    /*
-     * Primary public interface:
-     */
-    ShipRef GetShipObject() { return _shipRef; }
-    DestinyManager * GetDestiny() { return m_destiny; }
-    SystemManager * GetSystem() { return m_system; }
+    /* class type pointer querys. */
+    virtual Ship* GetShipSE()                           { return this; }
+    /* class type tests. */
+    virtual bool IsShipSE()                             { return true; }
 
-    /*
-     * Public fields:
-     */
-
-    inline double x() const { return(GetPosition().x); }
-    inline double y() const { return(GetPosition().y); }
-    inline double z() const { return(GetPosition().z); }
-
-    //SystemEntity interface:
-    virtual EntityClass GetClass() const { return(ecShipEntity); }
-    virtual bool IsShip() const { return true; }
-    virtual ShipEntity *CastToShipEntity() { return(this); }
-    virtual const ShipEntity *CastToShipEntity() const { return(this); }
+    /* SystemEntity interface */
     virtual void Process();
-    virtual void EncodeDestiny( Buffer& into ) const;
-    virtual void TargetAdded(SystemEntity *who) {}
-    virtual void TargetLost(SystemEntity *who) {}
-    virtual void TargetedAdd(SystemEntity *who) {}
-    virtual void TargetedLost(SystemEntity *who) {}
-    virtual void TargetsCleared() {}
-    virtual void QueueDestinyUpdate(PyTuple **du) {/* not required to consume */}
-    virtual void QueueDestinyEvent(PyTuple **multiEvent) {/* not required to consume */}
+    virtual void EncodeDestiny( Buffer& into );
+    virtual void MakeDamageState(DoDestinyDamageState &into);
+    virtual PyDict *MakeSlimItem();
 
-    virtual uint32 GetCorporationID() const { return(1); }
-    virtual uint32 GetAllianceID() const { return(0); }
-    void SetPodShipID(uint32 shipID) { m_podShipID = shipID; }
-    uint32 GetPodShipID() const { return m_podShipID; }
-    uint32 GetWarFactionID() const { return(0); }
-    double GetOwnerBounty() const { return(0); }
+    /* specific functions handled here. */
+    void PayInsurance();
+    void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
+    uint32 GetPodShipID()                               { return m_podShipID; }
 
-    //bool IsEmpty() { return _shipRef->IsEmpty(); }
+    /* virtual functions default to base class and overridden as needed */
+    virtual void Killed(Damage &fatal_blow);    /* This method is defined in Damage.cpp */
 
-    virtual void Killed(Damage &fatal_blow);
-    virtual SystemManager *System() const { return(m_system); }
-
-    void ForcedSetPosition(const GPoint &pt);
-
-    virtual bool ApplyDamage(Damage &d);
-    virtual void MakeDamageState(DoDestinyDamageState &into) const;
-    virtual PyDict* MakeSlimItem() const;
-
-    void SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq=true);
-    void SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
+    /* virtual functions in base to allow common interface calls specific to ship entities */
+    virtual void SetPilot(Client* pClient);
+    virtual bool HasPilot()                             { return (m_player ? true : false); }
+    virtual Client* GetPilot()                          { return m_player; }
 
 protected:
-    /*
-     * Member functions
-     */
-    void _DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
+    Client* m_player;
 
-    /*
-     * Member fields:
-     */
-    SystemManager *const m_system;    //we do not own this
-    PyServiceMgr &m_services;    //we do not own this
-    ShipRef _shipRef;   // We don't own this
-
-    /* Used to calculate the damages on NPCs
-     * I don't know why, npc->Set_shieldCharge does not work
-     * calling npc->shieldCharge() return the complete shield
-     * So we get the values on creation and use then instead.
-    */
-    double m_shieldCharge;
-    double m_armorDamage;
-    double m_hullDamage;
+private:
+    ShipDB m_db;
 
     uint32 m_podShipID;
+
 };
 
 #endif /* !__SHIP__H__INCL__ */

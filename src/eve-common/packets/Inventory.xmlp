@@ -11,8 +11,8 @@
 
   <elementDef name="InvBroker_BindArgs">
     <tupleInline>
-      <int name="entityID" />
-      <raw name="unknown1" />
+      <int name="locationID" />
+      <int name="groupID" />
     </tupleInline>
   </elementDef>
 
@@ -144,22 +144,23 @@
   <elementDef name="Rsp_CommonGetInfo_Entry">
     <dictInline>
       <dictInlineEntry key="itemID">
-        <int name="itemID" />
+        <!-- this is different for modules and charges -->
+        <raw name="itemID" />
       </dictInlineEntry>
-      <!-- this is an ItemRow -->
       <dictInlineEntry key="invItem">
+        <!-- this is an ItemRow -->
         <raw name="invItem" />
       </dictInlineEntry>
-      <!-- this maps effectType to EntityEffectState -->
       <dictInlineEntry key="activeEffects">
+        <!-- this maps effectType to EntityEffectState -->
         <dictInt name="activeEffects" />
       </dictInlineEntry>
-      <!-- maps attribute ID to it's value, which may be int or real -->
       <dictInlineEntry key="attributes">
-       <dictInt name="attributes" />
+        <!-- maps attribute ID to it's value, which may be int or real -->
+        <dictInt name="attributes" />
       </dictInlineEntry>
-        <dictInlineEntry key="time">
-      <long name="time" />
+      <dictInlineEntry key="time">
+        <long name="time" />
       </dictInlineEntry>
     </dictInline>
   </elementDef>

@@ -34,7 +34,7 @@
 class MissileLauncher: public ActiveModule
 {
 public:
-    MissileLauncher( InventoryItemRef item, ShipRef ship );
+    MissileLauncher( InventoryItemRef item, ShipItemRef ship );
     virtual ~MissileLauncher() { }
 
     // GenericModule Methods:

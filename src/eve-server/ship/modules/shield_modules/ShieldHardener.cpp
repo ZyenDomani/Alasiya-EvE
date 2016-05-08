@@ -25,7 +25,7 @@
 
 #include "ship/modules/shield_modules/ShieldHardener.h"
 
-ShieldHardener::ShieldHardener( InventoryItemRef item, ShipRef ship )
+ShieldHardener::ShieldHardener( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 }
@@ -47,7 +47,7 @@ void ShieldHardener::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectModifyActiveShieldResonanceAndNullifyPassiveResonance;
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     Notify_OnGodmaShipEffect shipEff;
@@ -70,13 +70,13 @@ void ShieldHardener::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 void ShieldHardener::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
      m_Item->itemID(),
@@ -115,7 +115,7 @@ void ShieldHardener::_ShowCycle()
     shipEff.environment = ge.Encode();
     shipEff.startTime = shipEff.timeNow;
     shipEff.duration = _GetDuration();
-    shipEff.repeat = 1000;  //# times to repeat (should be ammo qty?)
+    shipEff.repeat = 1;  /* boolean of repeatable cycles without pilot activation */
     shipEff.error = new PyNone;
 
     std::vector<PyTuple*> events;
@@ -123,7 +123,7 @@ void ShieldHardener::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void ShieldHardener::_SetCapNeed()

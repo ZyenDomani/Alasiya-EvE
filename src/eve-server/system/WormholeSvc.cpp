@@ -23,13 +23,11 @@
     Author:        Allan
 */
 
-//  FIXME   should wormholes be created/managed in here, or a seperate file?
-
 
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
-#include "system/WormholeMgr.h"
+#include "system/WormholeSvc.h"
 
 
 PyCallable_Make_InnerDispatcher(WormHoleSvc)
@@ -52,7 +50,7 @@ PyResult WormHoleSvc::Handle_WormholeJump( PyCallArgs& call ) {
       sm.RemoteSvc('wormholeMgr').WormholeJump, itemID)
       */
     sLog.Log("WormHoleSvc", "Handle_WormholeJump() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     /*
      *    char ci[25];

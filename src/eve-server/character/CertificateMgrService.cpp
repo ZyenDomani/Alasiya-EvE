@@ -42,12 +42,10 @@ CertificateMgrService::CertificateMgrService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(CertificateMgrService, GetAllShipCertificateRecommendations);
     PyCallable_REG_CALL(CertificateMgrService, GetCertificateClasses);
     PyCallable_REG_CALL(CertificateMgrService, GrantCertificate);
+    PyCallable_REG_CALL(CertificateMgrService, UpdateCertificateFlags);
     PyCallable_REG_CALL(CertificateMgrService, BatchCertificateGrant);
     PyCallable_REG_CALL(CertificateMgrService, BatchCertificateUpdate);
     PyCallable_REG_CALL(CertificateMgrService, GetCertificatesByCharacter);
-	/*
-        sm.RemoteSvc('certificateMgr').UpdateCertificateFlags(certificateID, visibilityFlags)
-        */
 }
 
 CertificateMgrService::~CertificateMgrService()
@@ -57,16 +55,17 @@ CertificateMgrService::~CertificateMgrService()
 
 PyResult CertificateMgrService::Handle_GetMyCertificates(PyCallArgs &call) {
     Character::Certificates crt;
+    crt.clear();
     call.client->GetChar()->GetCertificates( crt );
 
     util_Rowset rs;
-    rs.lines = new PyList;
-    rs.header.push_back( "certificateID" );
-    rs.header.push_back( "grantDate" );
-    rs.header.push_back( "visibilityFlags" );
+        rs.lines = new PyList;
+        rs.header.push_back( "certificateID" );
+        rs.header.push_back( "grantDate" );
+        rs.header.push_back( "visibilityFlags" );
 
     PyList* fieldData = new PyList;
-    for(uint32 i = 0; i < crt.size(); i++ ) {
+    for(uint32 i = 0; i < crt.size(); ++i ) {
         fieldData->AddItemInt( crt.at( i ).certificateID );
         fieldData->AddItemLong( crt.at( i ).grantDate );
         fieldData->AddItemInt( crt.at( i ).visibilityFlags );
@@ -120,18 +119,30 @@ PyResult CertificateMgrService::Handle_GetCertificateClasses(PyCallArgs &call) {
 PyResult CertificateMgrService::Handle_GrantCertificate(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-		_log(CLIENT__ERROR, "Failed to decode args.");
-		return NULL;
+        _log(CLIENT__ERROR, "Failed to decode args.");
+        return new PyNone;
     }
 
     return (new PyBool(call.client->GetChar()->GrantCertificate(arg.arg)));
+}
+
+PyResult CertificateMgrService::Handle_UpdateCertificateFlags(PyCallArgs &call) {
+    Call_TwoIntegerArgs arg;
+    if (!arg.Decode(&call.tuple)) {
+        _log(CLIENT__ERROR, "Failed to decode args.");
+        return new PyNone;
+    }
+
+    CharacterRef ch = call.client->GetChar();
+    ch->UpdateCertificate( arg.arg1, arg.arg2 );
+    return new PyNone;
 }
 
 PyResult CertificateMgrService::Handle_BatchCertificateGrant(PyCallArgs &call) {
     Call_SingleIntList arg;
     if (!arg.Decode(&call.tuple)) {
         _log(CLIENT__ERROR, "Failed to decode args.");
-        return NULL;
+        return new PyNone;
     }
 
     PyList* res = new PyList;
@@ -147,15 +158,15 @@ PyResult CertificateMgrService::Handle_BatchCertificateGrant(PyCallArgs &call) {
 PyResult CertificateMgrService::Handle_BatchCertificateUpdate(PyCallArgs &call) {
     Call_BatchCertificateUpdate args;
     if(!args.Decode(&call.tuple)) {
-		_log(CLIENT__ERROR, "Failed to decode args.");
-		return NULL;
+        _log(CLIENT__ERROR, "Failed to decode args.");
+        return new PyNone;
     }
 
     CharacterRef ch = call.client->GetChar();
     std::map<uint32, uint32>::iterator cur = args.update.begin();
     for(; cur != args.update.end(); cur++)
         ch->UpdateCertificate( cur->first, cur->second );
-    return NULL;
+    return new PyNone;
 }
 
 PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& call )
@@ -165,17 +176,17 @@ PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& c
     if( !arg.Decode( &call.tuple ) )
     {
         _log( CLIENT__ERROR, "Bad arguments to function GetCertificatesByCharacter" );
-        return NULL;
+        return new PyNone;
     }
 
     Character::Certificates crt;
     m_manager->item_factory->GetCharacter(arg.arg)->GetCertificates(crt);
 
     util_Rowset rs;
-    rs.lines = new PyList;
-    rs.header.push_back("certificateID");
-    rs.header.push_back("grantDate");
-    rs.header.push_back("visibilityFlags");
+        rs.lines = new PyList;
+        rs.header.push_back("certificateID");
+        rs.header.push_back("grantDate");
+        rs.header.push_back("visibilityFlags");
 
     PyList* fieldData = new PyList;
     for(uint32 i = 0; i < crt.size(); i++ ) {

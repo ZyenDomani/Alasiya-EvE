@@ -24,13 +24,13 @@
 */
 
 #include "ClientSession.h"
+#include "EntityList.h"
 
 /* Things todo or missing
     [missing]
         * atribute dep's
         * GetDefaultValueOfAttribute
         * SESSIONCHANGEDELAY = (30 * 10000000L)
-        * create a SID system (session ID system)
 */
 
 ClientSession::ClientSession() : mSession( new PyDict ), mDirty( false )
@@ -43,6 +43,16 @@ ClientSession::ClientSession() : mSession( new PyDict ), mDirty( false )
 ClientSession::~ClientSession()
 {
     PyDecRef( mSession );
+}
+
+int64 ClientSession::CreateSessionID() {
+    /*  session id is unique to each session.
+     * is not saved, or shared between chars
+     */
+    m_sessionID = GetTimeMSeconds() * 25;
+    sEntityList.RegisterSID(m_sessionID);
+
+    return m_sessionID;
 }
 
 int32 ClientSession::GetLastInt( const char* name ) const

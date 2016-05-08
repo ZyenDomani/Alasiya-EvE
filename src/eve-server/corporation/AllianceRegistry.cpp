@@ -39,6 +39,7 @@ AllianceRegistry::AllianceRegistry(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(AllianceRegistry, CreateAlliance);
+    PyCallable_REG_CALL(AllianceRegistry, GetRankedAlliances);
     PyCallable_REG_CALL(AllianceRegistry, GetAllianceApplications);
     PyCallable_REG_CALL(AllianceRegistry, GetSuggestedAllianceShortNames);
 }
@@ -52,7 +53,22 @@ PyResult AllianceRegistry::Handle_CreateAlliance(PyCallArgs &call) {
     //self.GetCorpRegistry().CreateAlliance(allianceName, shortName, description, url)
 
     sLog.Log("AllianceRegistry", "Handle_CreateAlliance() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return NULL;
+}
+
+PyResult AllianceRegistry::Handle_GetRankedAlliances(PyCallArgs &call) {
+    /*
+            self.rankedAlliances.alliances = sm.RemoteSvc('allianceRegistry').GetRankedAlliances(maxLen)
+            self.rankedAlliances.standings = {}
+            for a in self.rankedAlliances.alliances:
+                s = sm.GetService('standing').GetStanding(eve.session.corpid, a.allianceID)
+                self.rankedAlliances.standings[a.allianceID] = s
+         */
+
+    sLog.Log("AllianceRegistry", "Handle_GetRankedAlliances() size=%u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -60,7 +76,7 @@ PyResult AllianceRegistry::Handle_CreateAlliance(PyCallArgs &call) {
 PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
 
     sLog.Log("AllianceRegistry", "Handle_GetAllianceApplications() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -68,7 +84,7 @@ PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
 PyResult AllianceRegistry::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
 
     sLog.Log("AllianceRegistry", "Handle_GetSuggestedAllianceShortNames() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }

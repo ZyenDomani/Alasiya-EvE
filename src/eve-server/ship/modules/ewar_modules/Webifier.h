@@ -32,7 +32,7 @@
 class Webifier: public ActiveModule
 {
 public:
-    Webifier( InventoryItemRef item, ShipRef ship );
+    Webifier( InventoryItemRef item, ShipItemRef ship );
     virtual ~Webifier() { }
 
     // GenericModule Methods:

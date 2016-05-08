@@ -29,7 +29,7 @@
 #include "Client.h"
 #include "PyCallable.h"
 #include "admin/CommandDB.h"
-#include "mining/Asteroid.h"
+#include "system/Asteroid.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 
@@ -54,10 +54,10 @@ PyResult Command_roid( Client* who, CommandDB* db, PyServiceMgr* services, const
 
     sLog.Log( "Command", "Roid %u of radius %f", typeID, radius );
 
-    GPoint position( who->GetPosition() );
-    position.x += radius + 1 + who->GetRadius();    //put it far enough away to not push us around.
+    GPoint position( who->GetShipSE()->GetPosition() );
+    position.x += radius + 1 + who->GetShipSE()->GetRadius();    //put it far enough away to not push us around.
 
-    SpawnAsteroid( who->System(), typeID, radius, position );
+    SpawnAsteroid( who->SystemMgr(), typeID, radius, position );
 
     return new PyString( "Spawn successful." );
 }
@@ -102,7 +102,7 @@ PyResult Command_spawnbelt( Client* who, CommandDB* db, PyServiceMgr* services, 
         }
 	}
 
-    SystemManager* pSystem = who->System();
+	SystemManager* pSystem = who->SystemMgr();
     std::map<float, uint32> roidDist;
 	if( makeIceBelt ) {
 		// put this in db or mem map?
@@ -143,7 +143,7 @@ PyResult Command_spawnbelt( Client* who, CommandDB* db, PyServiceMgr* services, 
     GPoint mposition = NULL_ORIGIN;
     double roidradius = 0, theta = 0;
     double degreeSeperation = (180/pcs);
-    GPoint center = who->Bubble()->GetCenter();
+    GPoint center = who->GetShipSE()->SysBubble()->GetCenter();
 
     for (uint32 i = 1; i < pcs; ++i) {
         roidradius = MakeRandomFloat( 3000.0, 8000.0 ) *security;
@@ -180,9 +180,9 @@ void SpawnAsteroid( SystemManager* pSystem, uint32 typeID, double radius, const 
                     "",    //name
                     position );
 
-    InventoryItemRef i = pSystem->itemFactory()->SpawnItem( idata );
+    InventoryItemRef i = pSystem->itemFactory().SpawnItem(idata);
     if (!i)
-        throw PyException( MakeCustomError( "Unable to spawn item of type %u.", typeID ) );
+        throw PyException(MakeCustomError("Unable to spawn item of type %u.", typeID));
 
     //Amount of Ore = (25000*ln(Radius))-112404.8   V = 25000Ln(r) - 112407
     double quantity = ((25000 * log(radius)) - 112404.8);
@@ -192,9 +192,9 @@ void SpawnAsteroid( SystemManager* pSystem, uint32 typeID, double radius, const 
     i->SetAttribute(AttrMass, (i->type().mass() * quantity));      // Mass
     i->SaveAttributes();
 
-    AsteroidEntity* new_roid = new AsteroidEntity( i, pSystem, *(pSystem->GetServiceMgr()), position );
+    AsteroidSE* se = new AsteroidSE(i, *(pSystem->GetServiceMgr()), pSystem);
 
     //TODO: check for a local asteroid belt object?
     //TODO: actually add this to the asteroid belt too...
-    pSystem->AddEntity( new_roid );
+    pSystem->AddEntity( se );
 }

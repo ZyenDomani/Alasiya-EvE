@@ -28,10 +28,10 @@
 #include "system/Damage.h"
 
 
-HybridTurret::HybridTurret( InventoryItemRef item, ShipRef ship )
+HybridTurret::HybridTurret( InventoryItemRef item, ShipItemRef ship )
 : TurrentModule(item, ship)
 {
-    Character* pChar = m_Ship->GetOperator()->GetChar().get();
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
 
     switch (GetAttribute(AttrChargeSize).get_int()) {
         case 1:
@@ -88,7 +88,7 @@ void HybridTurret::Activate(SystemEntity * targetEntity)
 	if( this->m_chargeRef )	{
 		m_targetEntity = targetEntity;
 		m_targetID = targetEntity->GetID();
-		m_ActiveModuleProc->ActivateCycle();
+		m_AMPC->ActivateCycle();
 	} else {
 		sLog.Error( "HybridTurret::Activate()", "ERROR: Cannot find charge that is supposed to be loaded into this module!" );
 		throw PyException( MakeCustomError( "ERROR!  Cannot find charge that is supposed to be loaded into this module!" ) );
@@ -101,7 +101,10 @@ void HybridTurret::StopCycle(bool abort)
     GodmaOther go;
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
-        go.chargeTypeID = m_chargeRef->typeID();
+        if (m_chargeRef)
+            go.chargeTypeID = m_chargeRef->typeID();
+        else
+            go.chargeTypeID = 0;
 
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
@@ -112,7 +115,7 @@ void HybridTurret::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectProjectileFired;
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     Notify_OnGodmaShipEffect shipEff;
@@ -135,12 +138,12 @@ void HybridTurret::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 double HybridTurret::DoCycle() {
-        if ((!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
-            || (!m_Ship->GetOperator()->GetSystemEntity()->Bubble()->GetEntity(m_targetID))
+        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))
             || (!m_chargeLoaded) || (!m_chargeRef) )
         {
             Deactivate();
@@ -154,7 +157,7 @@ double HybridTurret::DoCycle() {
 
 		_ShowCycle();
 
-        Damage d(m_Ship->GetOperator()->GetSystemEntity(),
+        Damage d(m_Ship->GetPilot()->GetShipSE(),
                  m_Item,
                  m_kinetic,
                  m_thermal,
@@ -178,7 +181,7 @@ double HybridTurret::DoCycle() {
 void HybridTurret::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -217,7 +220,7 @@ void HybridTurret::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetROF();
-        shipEff.repeat = 0;  //# times to repeat (should be ammo qty?)
+        shipEff.repeat = 0;  /* boolean of repeatable cycles without pilot activation */
         shipEff.error = new PyNone;
 
     std::vector<PyTuple*> events;
@@ -225,7 +228,7 @@ void HybridTurret::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double HybridTurret::_GetROF() {

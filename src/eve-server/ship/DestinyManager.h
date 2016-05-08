@@ -31,20 +31,17 @@
 #include "PyCallable.h"
 #include "destiny/DestinyStructs.h"
 #include "inventory/ItemRef.h"
-#include "system/SystemEntity.h"
 
-class SystemEntity;
-class SystemManager;
 class InventoryItem;
+class Missile;
 class PyRep;
 class PyList;
 class PyTuple;
 class SystemBubble;
-class Missile;
-
+class SystemEntity;
+class SystemManager;
 
 // common variables to denote accpetable alignment deviations
-//TODO  update these to use run-time config, to enable changing without recompiling.
 static const float TURN_ALIGNMENT = 8.0f;
 static const float WARP_ALIGNMENT = 10.0f;
 static const uint16 BUMP_DISTANCE = 30;     //in meters.  < this = hit.
@@ -62,34 +59,30 @@ public:
     void SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self_only=false) const;
     void SendDestinyUpdate(std::vector<PyTuple*> &updates, std::vector<PyTuple*> &events, bool self_only=false) const;
 
-	// Information query functions:
-    const GPoint &GetPosition() const           { return m_position; }
-    const GVector &GetVelocity() const          { return m_velocity; }
-    double GetSpeedFraction()                   { return m_currentSpeedFraction; }
-	SystemManager* const GetSystemManager()     { return m_system; }
-	SystemBubble* const GetCurrentBubble()      { return m_self->Bubble(); }
-    static uint32 GetStamp()                    { return m_stamp; }
-    static bool IsTicActive()                   { return (m_stampTimer.Check(false)); }
-    static void TicCompleted()                  { if (m_stampTimer.Check(true)) ++m_stamp; }
-    Destiny::BallMode GetState()                { return State; }
+    /* Informational query functions: */
+    const GPoint &GetPosition() const                   { return m_position; }
+    const GVector &GetVelocity() const                  { return m_velocity; }
+    double GetSpeedFraction()                           { return m_currentSpeedFraction; }
+	SystemManager* GetSystemManager()                   { return m_system; }
+    Destiny::BallMode GetState()                        { return State; }
 
-    //called whenever an entity is going away and can no longer be used as a target
     void EntityRemoved(SystemEntity* who);
 
-    //Configuration:
-    void SetBubble(bool set = false)            { m_inBubble = set; }
+    /* Configuration methods */
+    void SetBubble(bool set = false)                    { m_inBubble = set; }
     void SetPosition(const GPoint &pt, bool update=false, bool selfOnly=false);
-    void SetMaxVelocity(double maxVelocity)     { m_maxShipSpeed = maxVelocity; }
+    void SetMaxVelocity(double maxVelocity);
     void SetShipVariables(InventoryItemRef ship);
-    void SetShipCapabilities(InventoryItemRef ship, bool undock=false);
+    void SetShipCapabilities(InventoryItemRef ship, bool undock = false);
 
-    //Global Actions:
+    /* Global Actions */
     void Stop();
     void Halt();     // puts entity at 0 velocity
-	void TractorBeamHalt()              { Stop(); }
+    /** @todo (Allan) fix this shit */
+	void TractorBeamHalt()                              { Stop(); }
 	void TractorBeamFollow(SystemEntity* who, double distance) { Follow(who, distance); }
 
-    //Local Movement:
+    /* Local Movement */
     void Orbit(SystemEntity* who, double distance, bool update=true);
     void Follow(SystemEntity* who, double distance);
     void AlignTo(SystemEntity* ent);
@@ -97,28 +90,21 @@ public:
     void GotoDirection(const GPoint &direction);
     void SetSpeedFraction(float fraction=1.0f, bool startMovement=false);
 
-    //bigger movement:
+    /* Larger movement */
     void WarpTo(const GPoint where, int32 distance=0);
 
-    //Ship State Query functions:
-    bool IsMoving()                     { return (m_currentSpeedFraction ? true : false); }
-    /*  old IsMoving() query method
-        if ((State == Destiny::DSTBALL_GOTO)
-            || (State == Destiny::DSTBALL_FOLLOW)
-            || (State == Destiny::DSTBALL_ORBIT)
-            || (State == Destiny::DSTBALL_WARP)
-        ) return true; else return false;
-    } */
+    /* Ship State Query functions */
+    bool IsMoving()                                     { return (m_currentSpeedFraction ? true : false); }
 
-    //Movement checks
+    /* Movement checks */
     bool IsAligned(GPoint &targetPoint);
-    bool IsStopped()                    { return ((State == Destiny::DSTBALL_STOP) ? true : false); }
-    bool IsOrbiting()                   { return ((State == Destiny::DSTBALL_ORBIT) ? true : false); }
-    bool IsFollowing()                  { return ((State == Destiny::DSTBALL_FOLLOW) ? true : false); }
-    //bool IsJumping()                  { return ((State == Destiny::DSTBALL_STOP) ? true : false); }
-    bool IsWarping()                    { return (m_warpState ? true : false); }
-	bool IsCloaked()                    { return m_cloaked; }
-	bool IsTurning()                    { return m_turning; }
+    bool IsStopped()                                    { return ((State == Destiny::DSTBALL_STOP) ? true : false); }
+    bool IsOrbiting()                                   { return ((State == Destiny::DSTBALL_ORBIT) ? true : false); }
+    bool IsFollowing()                                  { return ((State == Destiny::DSTBALL_FOLLOW) ? true : false); }
+    //bool IsJumping()                                  { return ((State == Destiny::DSTBALL_STOP) ? true : false); }
+    bool IsWarping()                                    { return (m_warpState ? true : false); }
+	bool IsCloaked()                                    { return m_cloaked; }
+	bool IsTurning()                                    { return m_turning; }
 
 	//Destiny Update stuff:
 	void Cloak();
@@ -135,37 +121,36 @@ public:
 	void SendJumpOutEffect(std::string JumpEffect, uint32 locationID) const;
 	void SendGateActivity(uint32 gateID) const;
     void SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool isGlobal=false) const;
-    void SendBallInteractive(const ShipRef shipRef, bool set = false) const;
-    void UpdateNewShip(const ShipRef newShipRef) const;
-    void UpdateOldShip(const ShipRef oldShipRef) const;
+    void SendBallInteractive(const ShipItemRef shipRef, bool set = false) const;
+    void UpdateNewShip(const ShipItemRef newShipRef) const;
+    void UpdateOldShip(const ShipItemRef oldShipRef) const;
     void SendJettisonPacket(const InventoryItemRef fromItemRef) const;
     void SendAnchorDrop(const InventoryItemRef fromItemRef) const;
     void SendAnchorLift(const InventoryItemRef fromItemRef) const;
     void SendCloakShip(const bool IsWarpSafe) const;
     void SendUncloakShip() const;
-	void SendSpecialEffect10(uint32 gateID, const ShipRef shipRef, uint32 targetID, std::string effectString, bool isOffensive, bool start, bool isActive) const;
-	void SendSpecialEffect(const ShipRef shipRef, uint32 moduleID, uint32 moduleTypeID,
+	void SendSpecialEffect10(uint32 gateID, const ShipItemRef shipRef, uint32 targetID, std::string effectString, bool isOffensive, bool start, bool isActive) const;
+	void SendSpecialEffect(const ShipItemRef shipRef, uint32 moduleID, uint32 moduleTypeID,
     uint32 targetID, uint32 chargeTypeID, std::string effectString, bool isOffensive, bool start, bool isActive, double duration, uint32 repeat) const;
 
     //  functions to return protected variables for SystemBubble exclusive WarpTo updates
-    int32 GetDistance()                 { return m_stopDistance; }
-    int32 GetWarpSpeed()                { return static_cast<int32>(m_shipWarpSpeed * 10); }
-    uint32 GetTargetID()                { return m_targetEntity.first; }
-    SystemEntity* GetTargetEntity()     { return m_targetEntity.second; }
-    GPoint GetTargetPoint()             { return m_targetPoint; }
-    double GetMaxVelocity()             { return m_maxShipSpeed; }
-    double GetFollowDistance()          { return m_targetDistance; }
+    int32 GetDistance()                                 { return m_stopDistance; }
+    int32 GetWarpSpeed()                                { return static_cast<int32>(m_shipWarpSpeed * 10); }
+    uint32 GetTargetID()                                { return m_targetEntity.first; }
+    SystemEntity* GetTargetEntity()                     { return m_targetEntity.second; }
+    GPoint GetTargetPoint()                             { return m_targetPoint; }
+    double GetMaxVelocity()                             { return m_maxShipSpeed; }
+    double GetFollowDistance()                          { return m_targetDistance; }
+    double GetMass()                                    { return m_mass; }
+    double GetAgility()                                 { return m_shipAgility; }
 
     void MakeMissile(Missile* missile);
 
 protected:
     void ProcessState();
 
-    SystemEntity* const m_self;			//we do not own this.
+    SystemEntity* const mySE;			//we do not own this.
     SystemManager* const m_system;		//we do not own this.
-
-    static uint32 m_stamp;
-    static Timer m_stampTimer;
 
     //things dictated by our entity's configuration/equipment:
     double m_radius;                    //in m
@@ -221,10 +206,14 @@ protected:
     bool _IsTargetInvalid();              //performs common target checks
 
 private:
+    // Timer to delay docking (as on live)
+    Timer m_dockTimer;
+
     // Internal Collision Methods   -allan Nov 2015
     void _CheckBump();                              //iterate thru objects in current bubble to check for collisions
     void _Bump(SystemEntity* who);                  //math methods for determining direction and speed of bumped ships
     void _Bounce(GVector direction, float speed);   //packet sending for ships after bounce
+    bool m_bump;
 
     // Internal Turn Methods    -allan  Aug - Oct, 2015
     bool _IsTurn();                     //check for current heading vs target direction. return true if degrees > 2 for warp align and > 0.8 for normal movement

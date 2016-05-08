@@ -35,13 +35,14 @@
 #include "ship/modules/ModuleEffects.h"
 
 class ModuleEffects;
+class ModifyModuleAttributesComponent;
 class ModifyShipAttributesComponent;
 
 /* generic module base class */
 class GenericModule
 {
 public:
-    GenericModule( InventoryItemRef item, ShipRef ship );
+    GenericModule( InventoryItemRef item, ShipItemRef ship );
     virtual ~GenericModule();
 
     /* generic functions handled in base class */
@@ -63,7 +64,7 @@ public:
     virtual bool IsSubSystemModule() const              { return false; }
     virtual bool IsTurrentModule()                      { return false; }
 
-    /* generic access functions handled here, but set elsewhere */
+    /* generic access functions handled here, but set elsewhere.  slower than above */
     bool isOnline()                                     { return (m_Item->GetAttribute(AttrIsOnline) == 1); }
     bool isLowPower()                                   { return m_Effects->isLowSlot(); }
     bool isHighPower()                                  { return m_Effects->isHighSlot(); }
@@ -73,6 +74,7 @@ public:
 
     uint32 itemID()                                     { return m_Item->itemID(); }
     uint32 typeID()                                     { return m_Item->typeID(); }
+    uint32 groupID()                                    { return m_Item->groupID(); }
     EVEItemFlags flag()                                 { return m_Item->flag(); }
     InventoryItemRef getItem()                          { return m_Item; }
 
@@ -83,7 +85,7 @@ public:
     /* functions to be handled in derived classes (must override) */
     virtual bool isLoaded()                             { return false; }
     virtual void Process()                              { /* Do nothing here */ }
-    virtual void Activate(SystemEntity* targetEntity)  { /* Do nothing here */ }
+    virtual void Activate(SystemEntity* targetEntity)   { /* Do nothing here */ }
     virtual void Deactivate()                           { /* Do nothing here */ }
     virtual void Load(InventoryItemRef charge)          { /* Do nothing here */ }
     virtual void Unload()                               { /* Do nothing here */ }
@@ -121,19 +123,16 @@ public:
                                     : MODULE_BANK_UNDEFINED ))));
     }
 
-	void SetLog(Basic_Log* pLog)                        { if (this && pLog) m_pMM_Log = pLog; }
-	Basic_Log* GetLog()                                 { return m_pMM_Log; }
-
 	/*  these have to be public for ampc to access it's methods */
     ModuleEffects*                  m_Effects;          /* we own this */
-    ModifyShipAttributesComponent*  m_ModShipAttrComp;  /* we own this */
+    ModifyModuleAttributesComponent*  m_MMAC;           /* we own this */
+    ModifyShipAttributesComponent*  m_MSAC;             /* we own this */
 
-    ShipRef GetShipRef()                                { return m_Ship; }
+    ShipItemRef GetShipRef()                                { return m_Ship; }
 
 protected:
     InventoryItemRef                m_Item;
-    ShipRef                         m_Ship;
-    Basic_Log*                      m_pMM_Log;          /* We do not own this */
+    ShipItemRef                         m_Ship;
 
     ModuleStates                    m_ModuleState;
     ChargeStates                    m_ChargeState;
@@ -145,6 +144,17 @@ protected:
      */
     virtual void _UpdateModifiers(InventoryItemRef item)        { /* Do nothing here */ }
     virtual void _RemoveModifier(InventoryItemRef item)         { /* Do nothing here */ }
+
+    /* stacking penality system   -allan
+     * each module will have a map of the attribs it affects and it's effectiveness on that attrib
+     * this is set and used in MSAC, but needs to be kept here, as it's specific to *this module
+     * the other component, attrib stack counting, is in MSAC
+     */
+public:
+    void SetEffectiveness(uint16 attrib, double effectiveness);
+    double GetEffectiveness(uint16 attrib);
+private:
+    std::map<uint16, double> m_attribStacking;
 
 };
 

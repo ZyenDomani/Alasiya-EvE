@@ -28,7 +28,7 @@
 //these are not absolutely essential to be included, we could 'class' them all,
 //doing this to make the implementation files need less includes
 #include "admin/CommandDB.h"
-#include "mining/Asteroid.h"
+#include "system/Asteroid.h"
 #include "PyServiceMgr.h"
 #include "PyCallable.h"
 #include "Client.h"

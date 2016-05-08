@@ -26,7 +26,7 @@
 
 #include "ship/modules/armor_modules/DamageControl.h"
 
-DamageControl::DamageControl( InventoryItemRef item, ShipRef ship )
+DamageControl::DamageControl( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 
@@ -43,7 +43,7 @@ void DamageControl::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectDamageControl;
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     Notify_OnGodmaShipEffect shipEff;
@@ -66,7 +66,7 @@ void DamageControl::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 void DamageControl::_ShowCycle()
@@ -89,14 +89,14 @@ void DamageControl::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1;  //# times to repeat (should be ammo qty?)
+        shipEff.repeat = 1;  /* boolean of repeatable cycles without pilot activation */
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
     events.push_back(shipEff.Encode());
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void DamageControl::_SetCapNeed()

@@ -578,15 +578,9 @@ PyTuple& PyTuple::operator=( const PyTuple& oth )
 {
     clear();
     items.resize( oth.size() );
-
-    iterator cur, end;
-    cur = items.begin();
-    end = items.end();
-
-    const_iterator cur_oth, end_oth;
-    cur_oth = oth.begin();
-    end_oth = oth.end();
-    for(; cur != end && cur_oth != end_oth; cur++, cur_oth++)
+    iterator cur = items.begin();
+    const_iterator cur_oth = oth.begin();
+    for(; cur != items.end() && cur_oth != oth.end(); cur++, cur_oth++)
     {
         if( *cur_oth == NULL )
             *cur = NULL;
@@ -658,16 +652,9 @@ PyList& PyList::operator=( const PyList& oth )
 {
     clear();
     items.resize( oth.size() );
-
-    iterator cur, end;
-    cur = items.begin();
-    end = items.end();
-
-    const_iterator cur_oth, end_oth;
-    cur_oth = oth.begin();
-    end_oth = oth.end();
-
-    for(; cur != end && cur_oth != end_oth; cur++, cur_oth++)
+    iterator cur = items.begin();
+    const_iterator cur_oth = oth.begin();
+    for(; cur != items.end() && cur_oth != oth.end(); cur++, cur_oth++)
     {
         if( *cur_oth == NULL )
             *cur = NULL;
@@ -788,11 +775,8 @@ void PyDict::SetItem( const char* key, PyRep* value )
 PyDict& PyDict::operator=( const PyDict& oth )
 {
     clear();
-
-    const_iterator cur, end;
-    cur = oth.begin();
-    end = oth.end();
-    for(; cur != end; cur++)
+    const_iterator cur = oth.begin();
+    for(; cur != oth.end(); cur++)
     {
         if( cur->second == NULL )
             SetItem( cur->first->Clone(), NULL );

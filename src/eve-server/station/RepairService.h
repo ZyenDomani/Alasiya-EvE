@@ -34,11 +34,19 @@ public:
     RepairService(PyServiceMgr* mgr);
     virtual ~RepairService();
 
+    PyObject* GetDamageReports();
+    
 protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
+    virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
+
     PyCallable_DECL_CALL(UnasembleItems);
+
+private:
+    DBRowDescriptor* CreateHeader();
+    DBRowDescriptor* CreateQuoteHeader();
 };
 
 #endif

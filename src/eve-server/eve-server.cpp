@@ -85,6 +85,7 @@
 #include "dogmaim/DogmaIMService.h"
 #include "dogmaim/DogmaService.h"
 // dungeon services
+#include "dungeon/DungeonExplorationMgrService.h"
 #include "dungeon/DungeonService.h"
 // fleet services
 #include "fleet/FleetObject.h"
@@ -111,13 +112,12 @@
 #include "market/ContractProxy.h"
 #include "market/MarketProxyService.h"
 // missions services
-#include "missions/DungeonExplorationMgrService.h"
 #include "missions/MissionMgrService.h"
 // spawn manager
 #include "npc/SpawnMgr.h"
 // planet services
-#include "planet/Planet.h"
-#include "planet/PlanetMgr.h"
+#include "planet/PlanetMgrBound.h"
+#include "planet/PlanetORBBound.h"
 // pos services
 #include "pos/PosMgrService.h"
 #include "pos/Structure.h"
@@ -146,18 +146,19 @@
 // system services
 #include "system/BookmarkService.h"
 #include "system/KeeperService.h"
+#include "system/LootSystem.h"
 #include "system/Modifiers.h"
 #include "system/ScenarioService.h"
-#include "system/WormholeMgr.h"
-//#include "system/WormholeSvc.h"
-#include "system/LootSystem.h"
+#include "system/WormholeSvc.h"
+// cosmic managers
+#include "system/cosmicMgrs/WormholeMgr.h"
 //console commands
 #include "ConsoleCommands.h"
 
 static void SetupSignals();
 static void CatchSignal( int sig_num );
 static const char* const CONFIG_FILE = EVEMU_ROOT "/etc/eve-server.xml";
-uint8 MAIN_LOOP_DELAY = sConfig.misc.ServerSleepTime; // delay 10 ms.
+uint8 MAIN_LOOP_DELAY = sConfig.server.ServerSleepTime; // delay 10 ms.
 
 static volatile bool RunLoops = true;
 dgmtypeattributemgr* _sDgmTypeAttrMgr;
@@ -165,6 +166,7 @@ dgmtypeattributemgr* _sDgmTypeAttrMgr;
 int main( int argc, char* argv[] )
 {
     double profileStartTime = GetTimeMSeconds();
+
     /* Load server configuration */
     if (!sConfig.ParseFile(CONFIG_FILE)) {
         printf("ERROR: Loading server configuration '%s' failed.", CONFIG_FILE );
@@ -178,6 +180,9 @@ int main( int argc, char* argv[] )
 
     /* init logging */
     sLog.InitializeLogging(sConfig.files.logDir);
+    sThread.Init();
+    sLog.Log( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
+    //sThread.AddThread(pthread_self());
     sLog.Log("       ServerInit", "Loading server");
 
     /* Load server log settings */
@@ -194,18 +199,16 @@ int main( int argc, char* argv[] )
             sLog.Warning( "       ServerInit", "Unable to find log directory '%s', only logging to the screen now.", sConfig.files.logDir.c_str() );
     }
 
-    sLog.Log( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
-    //sThread.AddThread(pthread_self());
-
     sLog.Log("", "");
-    sLog.Log("     Server Build", " %.2f", EVE_Build );
-    sLog.Log("      Log Version", " %.1f", Log_Version );
-    sLog.Log("  Server Revision", " %s", EVEMU_REVISION );
-    sLog.Log("       Build Date", " %s", EVEMU_BUILD_DATE );
     sLog.Log(" Supported Client"," %s", EVEProjectVersion);
     sLog.Log("   Client Version"," %.2f", EVEVersionNumber);
     sLog.Log("     Client Build"," %d", EVEBuildVersion);
     sLog.Log("         MachoNet"," %u", MachoNetVersion);
+    sLog.Log("     Server Build", " %.2f", EVE_Build );
+    sLog.Log("  Server Revision", " %s", EVEMU_REVISION );
+    sLog.Log("       Build Date", " %s", EVEMU_BUILD_DATE );
+    sLog.Log("   Config Version", " %.1f", Config_Version );
+    sLog.Log("      Log Version", " %.1f", Log_Version );
     sLog.Log("", "");
 
     /* connect to the database */
@@ -246,8 +249,8 @@ int main( int argc, char* argv[] )
     PyServiceMgr services( 888444, sEntityList, item_factory );
 
     /* create the WormholeMgr singleton */
-    //sLog.Success("       ServerInit", "Starting Wormhole Manager");
-    //sWHMgr.Init(&services);
+    sLog.Success("       ServerInit", "Starting Wormhole Manager");
+    sWHMgr.Init(&services);
 
     /* create a command dispatcher */
     sLog.Success("       ServerInit", "Starting Command Dispatch Manager");
@@ -387,8 +390,8 @@ int main( int argc, char* argv[] )
      * current settings displayed on console at start-up
      *   -allan 7June2015
      */
-    if (sConfig.misc.ServerSleepTime != 10) {
-        MAIN_LOOP_DELAY = sConfig.misc.ServerSleepTime;
+    if (sConfig.server.ServerSleepTime != 10) {
+        MAIN_LOOP_DELAY = sConfig.server.ServerSleepTime;
         sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
         sLog.Magenta("  Loop Sleep Time","Changed from default 10ms to %ums.", MAIN_LOOP_DELAY);
     } else
@@ -398,11 +401,15 @@ int main( int argc, char* argv[] )
         sLog.Success("  Idle Sleep Time","Default at 1000ms.");
     else
         sLog.Magenta("  Idle Sleep Time","Changed from default 1000ms to %ums.", idle);
-    if (sConfig.misc.UseShipTracking)
+    if (sConfig.server.UseShipTracking)
         sLog.Error("    Ship Tracking","Enabled. **Be Careful With This Setting!**");
     else
         sLog.Warning("    Ship Tracking","Disabled.");
-    if (sConfig.misc.UseProfiling) {
+    if (sConfig.server.UseBeanCount)
+        sLog.Success("     BeanCounting","Enabled.");
+    else
+        sLog.Warning("     BeanCounting","Disabled.");
+    if (sConfig.server.UseProfiling) {
         sLog.Success(" Server Profiling","Enabled.");
         sProfile.Init();
     } else
@@ -473,21 +480,22 @@ int main( int argc, char* argv[] )
         /* Freeze Detector Code */
         //++m_worldLoopCounter;
 
-        tcpc = tcps.PopConnection();
-        if (tcpc)
+        if (tcpc = tcps.PopConnection())
             sEntityList.Add(new Client(services, &tcpc));
 
         sEntityList.Process();
 
-        //  process console commands, if any, and check for 'exit' command
+        /*  process console commands, if any, and check for 'exit' command */
         RunLoops = sConsole.Process();
 
-        // do the stuff for thread sleeping
+        /* do the stuff for thread sleeping */
         if (sEntityList.GetClientCount()) {
-            if (MAIN_LOOP_DELAY > (GetTimeMSeconds() - start))
-                Sleep(MAIN_LOOP_DELAY /2);
+            start = GetTimeMSeconds() - start;
+            if (MAIN_LOOP_DELAY > start)
+                Sleep(start);
         } else /* if no clients, let server idle longer*/
             Sleep(idle);
+
     }
 
     sLog.Warning("   ServerShutdown", "Main loop stopped" );
@@ -496,38 +504,52 @@ int main( int argc, char* argv[] )
     /* stop TCP listener */
     tcps.Close();
     sLog.Warning("   ServerShutdown", "TCP listener stopped." );
-
     /* stop Image Server */
     sImageServer.Stop();
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
-
     /* Stop Console Command Interperter */
     //sConsole.Stop();
-
+    /* delete the dogma attrib object */
     sLog.Warning("   ServerShutdown", "Cleanup Dogma Attribute cache" );
     SafeDelete(_sDgmTypeAttrMgr);
-
 	/* Shut down the Item system */
 	sLog.Warning("   ServerShutdown", "Saving Items and Shutting down Item Factory." );
     SafeDelete(item_factory);
-
-    /* close db handler */
+    /* Close the entity list */
+    sEntityList.Close();
+    /* Close the service manager */
+    services.Close();
+    /* Close the command dispatcher */
+    command_dispatcher.Close();
+    /* close the db handler */
     sDatabase.Close();
-    /** @todo  the thread system still needs work....todo later. */
-    /* end open threads */
-    sThread.EndThreads();
     /* close server config singleton */
     sConfig.~EVEServerConfig();
+    /** @todo  the thread system is only implemented for tcp connections at this time. */
+    /* join open threads */
+    sThread.EndThreads();
     sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
     /* close logfile */
     log_close_logfile();
-
-    //exit(EXIT_SUCCESS);
-    return EXIT_SUCCESS;
+    exit(EXIT_SUCCESS);
 }
 
 static void SetupSignals()
 {
+    /* setup sigaction to prevent zombies */
+    struct sigaction sa;
+    sa.sa_handler = SIG_IGN;
+    sa.sa_flags = SA_NOCLDWAIT;
+    if (sigemptyset(&sa.sa_mask) == -1 ) {  /* MT safe */
+        perror("SigEmptySet Failure");
+        exit(EXIT_FAILURE);     /* NOT MT safe */
+    }
+    if (sigaction(SIGCHLD, &sa, nullptr) == -1) {  /* MT safe */
+        perror("SigAction Failure");
+        exit(EXIT_FAILURE);     /* NOT MT safe */
+    }
+
+    //::signal( SIGCHLD, SIG_IGN );
     ::signal( SIGINT, CatchSignal );
     ::signal( SIGTERM, CatchSignal );
     ::signal( SIGABRT, CatchSignal );

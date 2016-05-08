@@ -32,7 +32,7 @@
 class PassiveModule : public GenericModule
 {
 public:
-    PassiveModule(InventoryItemRef item, ShipRef ship);
+    PassiveModule(InventoryItemRef item, ShipItemRef ship);
     virtual ~PassiveModule() { }
 
     bool IsPassiveModule() const                { return true; }

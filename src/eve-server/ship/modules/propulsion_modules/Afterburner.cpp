@@ -26,7 +26,7 @@
 #include "ship/modules/propulsion_modules/Afterburner.h"
 
 
-Afterburner::Afterburner( InventoryItemRef item, ShipRef ship )
+Afterburner::Afterburner( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 
@@ -34,18 +34,18 @@ Afterburner::Afterburner( InventoryItemRef item, ShipRef ship )
 
 void Afterburner::Activate(SystemEntity * targetEntity)
 {
-    m_ActiveModuleProc->ActivateCycle();
+    m_AMPC->ActivateCycle();
     double maxSpeed = m_Ship->GetAttribute(AttrMaxVelocity).get_float();
 
     // Tell Destiny Manager about our updated speed so it properly tracks ship movement:
-    m_Ship->GetOperator()->GetDestiny()->SetMaxVelocity(maxSpeed);
-    m_Ship->GetOperator()->GetDestiny()->SetSpeedFraction(1.0);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetMaxVelocity(maxSpeed);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetSpeedFraction(1.0);
 
     DoDestiny_SetMaxSpeed ms;
         ms.entityID = m_Ship->itemID();
         ms.speedValue = maxSpeed;
     PyTuple *tmp = ms.Encode();
-    m_Ship->GetOperator()->GetDestiny()->SendSingleDestinyUpdate(&tmp);    //consumed
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&tmp);    //consumed
 }
 
 void Afterburner::Deactivate()
@@ -54,28 +54,28 @@ void Afterburner::Deactivate()
     double maxSpeed = m_Ship->GetAttribute(AttrMaxVelocity).get_float();
 
     // Tell Destiny Manager about our updated speed so it properly tracks ship movement:
-    m_Ship->GetOperator()->GetDestiny()->SetMaxVelocity(maxSpeed);
-    m_Ship->GetOperator()->GetDestiny()->SetSpeedFraction(1.0);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetMaxVelocity(maxSpeed);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetSpeedFraction(1.0);
 
     DoDestiny_SetMaxSpeed ms;
         ms.entityID = m_Ship->itemID();
         ms.speedValue = maxSpeed;
     PyTuple *tmp = ms.Encode();
-    m_Ship->GetOperator()->GetDestiny()->SendSingleDestinyUpdate(&tmp);    //consumed
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&tmp);    //consumed
 }
 
 void Afterburner::StopCycle(bool abort)
 {
 	// Tell Destiny Manager about our new speed so it properly tracks ship movement:
     //TODO  get ship speed from destiny, using skill updates.
-    m_Ship->GetOperator()->GetDestiny()->SetMaxVelocity(m_shipSpeed);
-	m_Ship->GetOperator()->GetDestiny()->SetSpeedFraction();    //reset speed variables, update destiny, update client
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetMaxVelocity(m_shipSpeed);
+	m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetSpeedFraction();    //reset speed variables, update destiny, update client
 
     DoDestiny_SetMaxSpeed ms;
         ms.entityID = m_Ship->itemID();
         ms.speedValue = m_shipSpeed;
     PyTuple *tmp = ms.Encode();
-    m_Ship->GetOperator()->GetDestiny()->SendSingleDestinyUpdate(&tmp);    //consumed
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&tmp);    //consumed
 
     std::string effectString = " ";
     uint32 effectID = 0;
@@ -92,11 +92,11 @@ void Afterburner::StopCycle(bool abort)
         } break;
     }
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -140,7 +140,7 @@ void Afterburner::StopCycle(bool abort)
 
     PyTuple* tmp2 = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp2);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp2);
 }
 
 
@@ -162,7 +162,7 @@ void Afterburner::_ShowCycle()
     }
 
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -196,7 +196,7 @@ void Afterburner::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1000;  //# times to repeat (should be ammo qty?)
+        shipEff.repeat = 1;  /* boolean of repeatable cycles without pilot activation */
         shipEff.error = new PyNone;
 
     std::vector<PyTuple*> events;
@@ -204,7 +204,7 @@ void Afterburner::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void Afterburner::_SetCapNeed()

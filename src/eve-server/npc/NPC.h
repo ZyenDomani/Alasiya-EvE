@@ -37,98 +37,64 @@ class InventoryItem;
 class NPCAIMgr;
 class SystemManager;
 class ServiceDB;
-class SpawnMgr;
 
 //Caution: do not inherit this, see constructor.
-// TODO: This class should be inheriting from ShipEntity so as to contain a ShipRef for use with DestinyManager
 class NPC
-: public DynamicSystemEntity {
+: public DynamicSystemEntity
+{
 public:
-    NPC(
-        SystemManager* system,
-        PyServiceMgr& services,
-        InventoryItemRef self,
-        uint32 corporationID,
-        uint32 allianceID,
-        const GPoint &position,
-        SpawnMgr* spawnMgr = nullptr);
+    NPC(InventoryItemRef self, PyServiceMgr &services, SystemManager* system, uint32 corpID, uint32 allyID, SpawnMgr* spawnMgr = nullptr);
     virtual ~NPC();
 
-    bool Load(ServiceDB& from);
+    void Init();
 
-    void Orbit(SystemEntity* who);
+    /* class type pointer querys. */
+    virtual NPC* GetNPCSE()                             { return this; }
+    /* class type tests. */
+    virtual bool IsNPCSE()                              { return true; }
 
-    inline double x() const { return(GetPosition().x); }
-    inline double y() const { return(GetPosition().y); }
-    inline double z() const { return(GetPosition().z); }
+    /* SystemEntity interface */
+    virtual void Process();
+    virtual void TargetLost(SystemEntity* who);
+    virtual void TargetedAdd(SystemEntity* who);
+    virtual void EncodeDestiny(Buffer& into);
 
-    //SystemEntity interface:
-    EntityClass GetClass() const { return(ecNPC); }
-    bool IsNPC() const { return true; }
-    NPC* CastToNPC() { return(this); }
-    const NPC* CastToNPC() const { return(this); }
+    /* virtual functions default to base class and overridden as needed */
+    virtual void Killed(Damage &fatal_blow);    /* This method is defined in Damage.cpp */
 
-    void Process();
-    void EncodeDestiny( Buffer& into ) const;
-    void QueueDestinyUpdate(PyTuple** du) {/* not required to consume */}
-    void QueueDestinyEvent(PyTuple** multiEvent) {/* not required to consume */}
-
-    void TargetAdded(SystemEntity* who) {}
-    void TargetLost(SystemEntity* who);
-    void TargetedAdd(SystemEntity* who);
-    void TargetedLost(SystemEntity* who) {}
-    void TargetsCleared() {}
-
-    uint32 GetCorporationID() const { return(m_corporationID); }
-    uint32 GetAllianceID() const { /* hack for now */ return(m_allianceID); }
-
-    void ForcedSetSpawner(SpawnMgr* spawnMgr) { m_spawnMgr = spawnMgr; }
-    void ForcedSetPosition(const GPoint& pt);
-
-    bool ApplyDamage(Damage& d);
-    void MakeDamageState(DoDestinyDamageState& into) const;
-    void Killed(Damage& fatal_blow);
-
-    void UseShieldRecharge();
-    void UseArmorRepairer();
-
-	void SaveNPC();
+    /* specific functions handled here. */
+    void SaveNPC();
     void RemoveNPC();
+    void SetResists();
+    void UseHullRepairer();
+    void UseArmorRepairer();
+    void UseShieldRecharge();
+    void Orbit(SystemEntity* who);
+    void ForcedSetSpawner(SpawnMgr* spawnMgr)           { m_spawnMgr = spawnMgr; }
 
-    float GetThermal() { return m_therDamage; }
-    float GetEM() { return m_emDamage; }
-    float GetKinetic() { return m_kinDamage; }
-    float GetExplosive() { return m_expDamage; }
+    float GetThermal()                                  { return m_therDamage; }
+    float GetEM()                                       { return m_emDamage; }
+    float GetKinetic()                                  { return m_kinDamage; }
+    float GetExplosive()                                { return m_expDamage; }
 
-    double GetOrbitRange();
-    
-    SystemManager* System() const { return(m_system); }
-    NPCAIMgr* AI() const { return(m_AI); }
+    double GetOrbitRange()                              { return m_orbitRange; }
 
 protected:
-    void _AwardBounty(SystemEntity* who);
-    void _DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
-    void _UpdateDamage();
+    NPCAIMgr* m_AI;
+    SpawnMgr* m_spawnMgr;
 
-    SystemManager* const m_system;    //we do not own this
-    PyServiceMgr& m_services;    //we do not own this
-    SpawnMgr* m_spawnMgr;    //we do not own this, may be NULL
-    uint32 m_corporationID;
-    uint32 m_allianceID;
+private:
+    uint32 m_orbitingID = 0;
 
-    uint32 m_orbitingID;
-
-    NPCAIMgr* m_AI;    //never NULL
-
-    double m_hullDamage;
-    double m_armorDamage;
-    double m_shieldCharge;
-    double m_shieldCapacity;
-
-    double m_emDamage;
-    double m_expDamage;
-    double m_kinDamage;
-    double m_therDamage;
+    double m_orbitRange;
+    double m_emDamage = 0;
+    double m_expDamage = 0;
+    double m_kinDamage = 0;
+    double m_therDamage = 0;
+    double m_hullDamage = 0;
+    double m_armorDamage = 0;
+    double m_shieldCharge = 0;
+    double m_shieldCapacity = 0;
 };
 
 #endif

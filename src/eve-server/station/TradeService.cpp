@@ -31,8 +31,8 @@
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "station/TradeService.h"
-#include <system/SystemManager.h>
-#include <system/Container.h>
+#include "system/SystemManager.h"
+#include "system/Container.h"
 
 PyCallable_Make_InnerDispatcher(TradeService);
 
@@ -649,7 +649,7 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
             || (itemRef->groupID() == EVEDB::invGroups::Cargo_Container)
             || (itemRef->groupID() == EVEDB::invGroups::Freight_Container)
             || (itemRef->groupID() == EVEDB::invGroups::Secure_Cargo_Container))
-            m_TSvc->TransferContainerContents(pClient->System(), itemRef, newOwnerID);
+            m_TSvc->TransferContainerContents(pClient->SystemMgr(), itemRef, newOwnerID);
 
         DBRowDescriptor* header = m_TSvc->CreateHeader();
         PyPackedRow* row = new PyPackedRow( header );
@@ -691,17 +691,17 @@ void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryIt
     InventoryMap.clear();
 
     if (itemRef->categoryID() == EVEDB::invCategories::Ship) {
-        ShipRef shipRef = pSysMgr->GetShipFromInventory(itemRef->itemID());
+        ShipItemRef shipRef = pSysMgr->GetShipFromInventory(itemRef->itemID());
         if (!shipRef)
             shipRef = m_SvcMgr->item_factory->GetShip(itemRef->itemID());
-        if (!shipRef->IsEmpty())
-            shipRef->GetInventoryList(InventoryMap);
+        if (!shipRef->GetInventory()->IsEmpty())
+            shipRef->GetInventory()->GetInventoryList(InventoryMap);
     } else {
         CargoContainerRef contRef = pSysMgr->GetContainerFromInventory(itemRef->itemID());
         if (!contRef)
             contRef = m_SvcMgr->item_factory->GetCargoContainer(itemRef->itemID());
         if (!contRef->IsEmpty())
-            contRef->GetInventoryList(InventoryMap);
+            contRef->GetInventory()->GetInventoryList(InventoryMap);
     }
 
     for (auto cur : InventoryMap)

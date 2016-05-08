@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:     Aknor Jaden, Allan
+    Author:     Aknor Jaden
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -42,13 +43,20 @@ CargoContainer::CargoContainer(
     const ItemData &_data)
 : InventoryItem(_factory, _containerID, _containerType, _data)
 {
+    m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created CargoContainer object for item %s (%u).", itemName().c_str(), itemID());
-
 }
 
 CargoContainerRef CargoContainer::Load(ItemFactory &factory, uint32 containerID)
 {
     return InventoryItem::Load<CargoContainer>( factory, containerID );
+}
+
+bool CargoContainer::_Load() {
+    if (!m_inventory->LoadContents( &m_factory ) )
+        return false;
+
+    return InventoryItem::_Load();
 }
 
 template<class _Ty>
@@ -60,12 +68,9 @@ RefPtr<_Ty> CargoContainer::_LoadCargoContainer(ItemFactory &factory, uint32 con
     return CargoContainerRef( new CargoContainer( factory, containerID, itemType, data ) );
 }
 
-CargoContainerRef CargoContainer::Spawn(ItemFactory &factory,
-    // InventoryItem stuff:
-    ItemData &data
-) {
-    uint32 containerID = CargoContainer::_Spawn( factory, data );
-    if( containerID == 0 )
+CargoContainerRef CargoContainer::Spawn(ItemFactory &factory, ItemData &data) {
+    uint32 containerID = CargoContainer::CreateItemID( factory, data );
+    if (containerID == 0 )
         return CargoContainerRef();
     CargoContainerRef containerRef = CargoContainer::Load( factory, containerID );
 
@@ -75,23 +80,20 @@ CargoContainerRef CargoContainer::Spawn(ItemFactory &factory,
     // Check for existence of some attributes that may or may not have already been loaded and set them
     // to default values:
 	// Hull Damage
-	if( !(containerRef->HasAttribute(AttrDamage)) )
+	if (!(containerRef->HasAttribute(AttrDamage)) )
         containerRef->SetAttribute(AttrDamage, 0, true );
 
 	return containerRef;
 }
 
-uint32 CargoContainer::_Spawn(ItemFactory &factory,
-    // InventoryItem stuff:
-    ItemData &data
-) {
+uint32 CargoContainer::CreateItemID(ItemFactory &factory, ItemData &data) {
     // make sure it's a cargo container
     const ItemType *st = factory.GetType(data.typeID);
     if(st == NULL)
         return 0;
 
     // store item data
-    uint32 containerID = InventoryItem::_Spawn(factory, data);
+    uint32 containerID = InventoryItem::CreateItemID(factory, data);
     if(containerID == 0)
         return 0;
 
@@ -100,20 +102,11 @@ uint32 CargoContainer::_Spawn(ItemFactory &factory,
     return containerID;
 }
 
-bool CargoContainer::_Load()
-{
-    // load contents
-    if( !LoadContents( &m_factory ) )
-        return false;
-
-    return InventoryItem::_Load();
-}
-
 void CargoContainer::Delete()
 {
     sLog.Magenta( "CargoContainer::Delete()", "Garbage Collection is removing Cargo Container %u.", itemID() );
     // delete contents first
-    DeleteContents( &m_factory );
+    m_inventory->DeleteContents( m_factory );
     InventoryItem::Delete();
 }
 
@@ -128,28 +121,21 @@ double CargoContainer::GetCapacity(EVEItemFlags flag) const
     }
 }
 
-void CargoContainer::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item, Client *c)
-{
-    CharacterRef character = c->GetChar();
-
-    if( flag == flagCargoHold )
-    {
-        //get all items in cargohold
+void CargoContainer::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const {
+    if (flag == flagCargoHold )  {
         EvilNumber capacityUsed(0);
         std::vector<InventoryItemRef> items;
-        c->GetShip()->FindByFlag(flag, items);
-        for(uint32 i = 0; i < items.size(); i++){
-            capacityUsed += items[i]->GetAttribute(AttrVolume);
-        }
-        if( capacityUsed + item->GetAttribute(AttrVolume) > c->GetShip()->GetAttribute(AttrCapacity) )
+        m_inventory->FindByFlag(flag, items);
+        for (auto cur : items)
+            capacityUsed += cur->GetAttribute(AttrVolume);
+        capacityUsed += item->GetAttribute(AttrVolume);
+        if (capacityUsed > GetAttribute(AttrCapacity) )
             throw PyException( MakeCustomError( "Not enough cargo space!") );
     }
 }
 
-PyObject *CargoContainer::CargoContainerGetInfo()
-{
-    if( !LoadContents( &m_factory ) )
-    {
+PyObject *CargoContainer::CargoContainerGetInfo() {
+    if (!m_inventory->LoadContents( &m_factory ) ) {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for CargoContainerGetInfo", itemName().c_str(), itemID() );
         return NULL;
     }
@@ -158,7 +144,7 @@ PyObject *CargoContainer::CargoContainerGetInfo()
     Rsp_CommonGetInfo_Entry entry;
 
     //first populate the CargoContainer.
-    if( !Populate( entry ) )
+    if (!Populate( entry ) )
         return NULL;    //print already done.
 
     result.items[ itemID() ] = entry.Encode();
@@ -168,12 +154,12 @@ PyObject *CargoContainer::CargoContainerGetInfo()
 
 void CargoContainer::AddItem(InventoryItemRef item)
 {
-    InventoryEx::AddItem( item );
+    m_inventory->AddItem( item );
 }
 
 void CargoContainer::RemoveItem(InventoryItemRef item)
 {
-    //TODO  put check in here for container owner (if space container) and implement sec penalty
+    /** @todo  put check in here for container owner (if space container) and implement sec penalty */
     /* http://www.eveinfo.net/wiki/ind~4067.htm
      *  relative_sec_status_penalty = base_penalty * system_truesec * (1 + (victim_sec_status - agressor_sec_status) / 90)
      *  The actual drop in security status seen by the attacker is a function of their current security status and the relative penalty:
@@ -184,7 +170,7 @@ void CargoContainer::RemoveItem(InventoryItemRef item)
     double loss = penalty * (client->GetSecurityRating() + 10);
     client->GetChar()->secStatusChange( loss );
     */
-    InventoryEx::RemoveItem( item );
+    m_inventory->RemoveItem( item );
     if ((groupID() == EVEDB::invGroups::Cargo_Container) && (IsEmpty())) {
         sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", itemID() );
         Delete();
@@ -202,26 +188,17 @@ void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
 }
 
 
-using namespace Destiny;
-
-ContainerEntity::ContainerEntity(
-    CargoContainerRef cargoRef,
-    SystemManager *system,
-    PyServiceMgr &services,
-    const GPoint &position)
-: DynamicSystemEntity(new DestinyManager(this, system), cargoRef),
-  m_system(system),
-  m_services(services),
-  m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)   //timer in ms
+ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemManager *system)
+: ItemSystemEntity(self, services, system),
+  m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
 {
-    _containerRef = cargoRef;
-    m_destiny->SetPosition(position, false);
+    _containerRef = self;
     if (!IsStation(m_self->locationID()))
-        m_deleteTimer.Start((sConfig.rates.WorldDecay *60 *1000));   //timer in ms
-    cargoRef->SetAttribute(AttrCapacity,            cargoRef->type().capacity(), false);            // Capacity
+        m_deleteTimer.Start();
+    m_self->SetAttribute(AttrCapacity, m_self->type().capacity(), false);
 }
 
-void ContainerEntity::Process() {
+void ContainerSE::Process() {
     //SystemEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
@@ -230,22 +207,17 @@ void ContainerEntity::Process() {
     }
 }
 
-void ContainerEntity::ForcedSetPosition(const GPoint &pt) {
-    m_destiny->SetPosition(pt, false);
-}
-
-void ContainerEntity::EncodeDestiny( Buffer& into ) const
+void ContainerSE::EncodeDestiny( Buffer& into )
 {
-    const GPoint& position = GetPosition();
-    const std::string itemName( GetName() );
+    using namespace Destiny;
 
     BallHeader head;
     head.entityID = GetID();
         head.mode = DSTBALL_RIGID;
         head.radius = GetRadius();
-        head.x = position.x;
-        head.y = position.y;
-        head.z = position.z;
+        head.x = x();
+        head.y = y();
+        head.z = z();
         head.flags = IsMassive | IsInteractive;
     into.Append( head );
 
@@ -255,7 +227,7 @@ void ContainerEntity::EncodeDestiny( Buffer& into ) const
     _log(COMMON__WARNING, "ContainerEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
-void ContainerEntity::MakeDamageState(DoDestinyDamageState &into) const
+void ContainerSE::MakeDamageState(DoDestinyDamageState &into)
 {
     //FIXME  container attributes here are NOT saved in the db....
     into.shield = 1;
@@ -265,8 +237,7 @@ void ContainerEntity::MakeDamageState(DoDestinyDamageState &into) const
     into.structure = 1.0;
 }
 
-
-PyDict *ContainerEntity::MakeSlimItem() const {
+PyDict *ContainerSE::MakeSlimItem() {
     _log(COMMON__WARNING, "MakeSlimItem for ContainerEntity %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
@@ -275,8 +246,8 @@ PyDict *ContainerEntity::MakeSlimItem() const {
         slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
         slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",       new PyInt(0));
-        slim->SetItemString("allianceID",   new PyInt(0));
+        slim->SetItemString("corpID",       new PyInt(GetCorporationID()));
+        slim->SetItemString("allianceID",   new PyInt(GetAllianceID()));
     return slim;
 }
 
@@ -291,6 +262,7 @@ WreckContainer::WreckContainer(
     const ItemData &_data)
 : InventoryItem(_factory, _containerID, _containerType, _data)
 {
+    m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created WreckContainer object for item %s (%u).", itemName().c_str(), itemID());
 }
 
@@ -299,21 +271,22 @@ WreckContainerRef WreckContainer::Load(ItemFactory &factory, uint32 containerID)
     return InventoryItem::Load<WreckContainer>( factory, containerID );
 }
 
+bool WreckContainer::_Load() {
+    if (!m_inventory->LoadContents( &m_factory ) )
+        return false;
+
+    return InventoryItem::_Load();
+}
+
 template<class _Ty>
-RefPtr<_Ty> WreckContainer::_LoadWreck(ItemFactory &factory, uint32 containerID,
-                                                // InventoryItem stuff:
-                                                const ItemType &itemType, const ItemData &data)
-{
+RefPtr<_Ty> WreckContainer::_LoadWreck(ItemFactory &factory, uint32 containerID, const ItemType &itemType, const ItemData &data) {
     // we don't need any additional stuff
     return WreckContainerRef( new WreckContainer( factory, containerID, itemType, data ) );
 }
 
-WreckContainerRef WreckContainer::Spawn(ItemFactory &factory,
-                                        // InventoryItem stuff:
-                                        ItemData &data
-) {
-    uint32 containerID = WreckContainer::_Spawn( factory, data );
-    if( containerID == 0 )
+WreckContainerRef WreckContainer::Spawn(ItemFactory &factory, ItemData &data) {
+    uint32 containerID = WreckContainer::CreateItemID( factory, data );
+    if (containerID == 0 )
         return WreckContainerRef();
     WreckContainerRef containerRef = WreckContainer::Load( factory, containerID );
 
@@ -323,17 +296,14 @@ WreckContainerRef WreckContainer::Spawn(ItemFactory &factory,
     return containerRef;
 }
 
-uint32 WreckContainer::_Spawn(ItemFactory &factory,
-                              // InventoryItem stuff:
-                              ItemData &data
-) {
+uint32 WreckContainer::CreateItemID(ItemFactory &factory, ItemData &data) {
     // make sure it's a wreck
     const ItemType *st = factory.GetType(data.typeID);
     if(st == NULL)
         return 0;
 
     // store item data
-    uint32 containerID = InventoryItem::_Spawn(factory, data);
+    uint32 containerID = InventoryItem::CreateItemID(factory, data);
     if(containerID == 0)
         return 0;
 
@@ -342,20 +312,11 @@ uint32 WreckContainer::_Spawn(ItemFactory &factory,
     return containerID;
 }
 
-bool WreckContainer::_Load()
-{
-    // load contents
-    if( !LoadContents( &m_factory ) )
-        return false;
-
-    return InventoryItem::_Load();
-}
-
 void WreckContainer::Delete()
 {
     sLog.Magenta( "WreckContainer::Delete()", "Garbage Collection is removing Wreck %u.", itemID() );
     // delete contents first
-    DeleteContents( &m_factory );
+    m_inventory->DeleteContents( m_factory );
     InventoryItem::Delete();
 }
 
@@ -366,7 +327,7 @@ double WreckContainer::GetCapacity(EVEItemFlags flag) const
 
 PyObject *WreckContainer::WreckContainerGetInfo()
 {
-    if( !LoadContents( &m_factory ) )
+    if (!m_inventory->LoadContents( &m_factory ) )
     {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for WreckContainerGetInfo", itemName().c_str(), itemID() );
         return NULL;
@@ -376,7 +337,7 @@ PyObject *WreckContainer::WreckContainerGetInfo()
     Rsp_CommonGetInfo_Entry entry;
 
     //first populate the WreckContainer.
-    if( !Populate( entry ) )
+    if (!Populate( entry ) )
         return NULL;    //print already done.
 
         result.items[ itemID() ] = entry.Encode();
@@ -384,19 +345,19 @@ PyObject *WreckContainer::WreckContainerGetInfo()
     return result.Encode();
 }
 
-void WreckContainer::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item, Client* c)
+void WreckContainer::ValidateAddItem( EVEItemFlags flag, InventoryItemRef item ) const
 {
         //  no code here.  should NOT be able to add items to a wreck contaier.
 }
 
-void WreckContainer::AddItem(InventoryItemRef item)
+void WreckContainer::AddItem( InventoryItemRef item )
 {
-    InventoryEx::AddItem( item );
+    m_inventory->AddItem( item );
 }
 
 void WreckContainer::RemoveItem(InventoryItemRef item)
 {
-    InventoryEx::RemoveItem( item );
+    m_inventory->RemoveItem( item );
     double curCapy = GetAttribute(AttrCapacity).get_float();
     double defCapy = GetDefaultAttribute(AttrCapacity).get_float();
     _log(COMMON__WARNING, "WreckContainer::IsEmpty(): %s(%u) - attrib capy: %d, default capy: %d", itemName().c_str(), itemID(), curCapy, defCapy );
@@ -406,36 +367,22 @@ void WreckContainer::RemoveItem(InventoryItemRef item)
 
 void WreckContainer::MakeSlimItemChange()
 {
+    /** @todo (Allan)  finish this  */
     //  this is used to update all clients in bubble for container empty status (the filled/open icon in overview)
     //new PyObject( "foo.SlimItem", MakeSlimItem() );
 }
-/*
-bool WreckContainer::IsEmpty()
-{
-    double curCapy = GetAttribute(AttrCapacity).get_float();
-    double defCapy = GetDefaultAttribute(AttrCapacity).get_float();
-    _log(COMMON__WARNING, "WreckContainer::IsEmpty(): %s(%u) - attrib capy: %d, default capy: %d", curCapy, defCapy );
-    return (curCapy == defCapy);
-}
-*/
 
-WreckEntity::WreckEntity(
-    WreckContainerRef wreckRef,
-    SystemManager *system,
-    PyServiceMgr &services,
-    const GPoint &position)
-: DynamicSystemEntity(new DestinyManager(this, system), wreckRef),
-m_system(system),
-m_services(services),
-m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)   //set timer in ms
+
+WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* system)
+: ItemSystemEntity(self, services, system),
+ m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
 {
-    _containerRef = wreckRef;
-    m_destiny->SetPosition(position, false);
-    m_deleteTimer.Start((sConfig.rates.WorldDecay *60 *1000));   //set timer in ms
-    wreckRef->SetAttribute(AttrCapacity,            wreckRef->type().capacity(), false);            // Capacity
+    _containerRef = self;
+    m_deleteTimer.Start();
+    m_self->SetAttribute(AttrCapacity, m_self->type().capacity());
 }
 
-void WreckEntity::Process() {
+void WreckSE::Process() {
     //SystemEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
@@ -444,27 +391,22 @@ void WreckEntity::Process() {
     }
 }
 
-void WreckEntity::ForcedSetPosition(const GPoint &pt) {
-    m_destiny->SetPosition(pt, false);
-}
-
-void WreckEntity::EncodeDestiny( Buffer& into ) const
+void WreckSE::EncodeDestiny( Buffer& into )
 {
-    const GPoint& position = GetPosition();
-    const std::string itemName( GetName() );
+    using namespace Destiny;
 
     BallHeader head;
-    head.entityID = GetID();
-        head.mode = DSTBALL_RIGID;      // could be DSTBALL_TROLL ??
+        head.entityID = GetID();
+        head.mode = DSTBALL_TROLL;
         head.radius = GetRadius();
-        head.x = position.x;
-        head.y = position.y;
-        head.z = position.z;
+        head.x = x();
+        head.y = y();
+        head.z = z();
         head.flags = IsFree | IsInteractive;
     into.Append( head );
 
     MassSector mass;
-        mass.mass = GetMass();
+        mass.mass = m_self->type().mass();
         mass.cloak = 0;
         mass.Harmonic = -1.0f;
         mass.corporationID = GetCorporationID();
@@ -484,33 +426,9 @@ void WreckEntity::EncodeDestiny( Buffer& into ) const
         main.formationID = 0xFF;
     into.Append( main );
     _log(COMMON__WARNING, "WreckEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
-    /*
-                                  [Ball]
-                                    [Name: ....]
-                                    [FormationId: 255]
-                                    [Header]
-                                      [ItemId: 1006679225031]
-                                      [Mode: Troll (8)]
-                                      [Flags: IsFree, IsInteractive (9)]
-                                      [Radius: 14]
-                                      [Location: (-124526224948, -183625845242, -228716874797)]
-                                    [ExtraHeader]
-                                      [AllianceId: -1]
-                                      [CorporationId: 1630077495]
-                                      [CloakMode: 0]
-                                      [Harmonic: 2.168984E-35]
-                                      [Mass: 10000]
-                                    [Data]
-                                      [Velocity: (0, 0, 0)]
-                                      [MaxVelocity: 1]
-                                      [SpeedFraction: 1]
-                                      [Unk03: 1]
-                                    [TrollState]
-                                      [Unk01: 1.91025E-41]
-                                */
 }
 
-void WreckEntity::MakeWreckState(DoDestinyDamageState3 &into) const
+void WreckSE::MakeWreckState(DoDestinyDamageState3 &into)
 {
     into.shield = 0;
     into.armor = 0;
@@ -518,9 +436,9 @@ void WreckEntity::MakeWreckState(DoDestinyDamageState3 &into) const
 }
 
 
-PyDict *WreckEntity::MakeSlimItem() const {
+PyDict *WreckSE::MakeSlimItem() {
     _log(COMMON__WARNING, "MakeSlimItem for WreckEntity %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-// NOTE  commented items i havent figure out yet...  -allan 9Dec15
+// NOTE  commented items i havent figured out yet...  -allan 9Dec15
     PyTuple* nameID = new PyTuple(2);
         nameID->SetItem(0,  new PyString("UI/Inflight/WreckNameShipName"));
     PyDict* shipName = new PyDict;
@@ -533,11 +451,16 @@ PyDict *WreckEntity::MakeSlimItem() const {
         //slim->SetItemString("lootRights",       new PyNone);
         slim->SetItemString("corpID",           new PyInt(GetCorporationID()));
         slim->SetItemString("allianceID",       new PyLong(GetAllianceID()));
-        slim->SetItemString("IsEmpty",          new PyBool(true/*_containerRef->IsEmpty()*/));
+        slim->SetItemString("isEmpty",          new PyBool(IsEmpty()));
         slim->SetItemString("launcherID",       new PyLong(m_launchedByID));
         slim->SetItemString("securityStatus",   new PyInt(0));  //FIXME TODO
         slim->SetItemString("ownerID",          new PyInt(m_self->ownerID()));
-        //slim->SetItemString("nameID",         nameID);
+        PyDict* dict = new PyDict;
+            dict->SetItemString("WreckTypeID",  new PyInt(m_self->typeID()));
+        PyTuple* tuple = new PyTuple(2);
+            tuple->SetItem(0, new PyString("UI/Inflight/WreckNameTypeID"));
+            tuple->SetItem(1, dict);
+        slim->SetItemString("nameID",           tuple);
         slim->SetItemString("warFactionID",     new PyInt(GetWarFactionID()));
 
     return slim;

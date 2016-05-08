@@ -37,6 +37,7 @@ class EvilNumber;
 class NPCAIMgr {
 public:
     NPCAIMgr(NPC *who);
+    ~NPCAIMgr()                 { /* do nothing here */ }
 
     void Process();
 

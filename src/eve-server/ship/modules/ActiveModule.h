@@ -27,14 +27,16 @@
 #ifndef ACTIVE_MODULES_H
 #define ACTIVE_MODULES_H
 
+#include "Client.h"
 #include "ship/modules/GenericModule.h"
 #include "ship/modules/components/ActiveModuleProcessingComponent.h"
+#include "system/SystemBubble.h"
 
 
 class ActiveModule : public GenericModule
 {
 public:
-    ActiveModule(InventoryItemRef item, ShipRef ship);
+    ActiveModule(InventoryItemRef item, ShipItemRef ship);
     virtual ~ActiveModule();
 
     virtual bool IsActiveModule() const                     { return true; }
@@ -45,9 +47,14 @@ public:
     virtual void Overload();
     virtual void DeOverload();
     virtual void Deactivate();
-    virtual void Activate(SystemEntity* targetEntity)       { m_targetEntity = targetEntity; m_ActiveModuleProc->ActivateCycle(); }
+    virtual void Activate(SystemEntity* targetEntity);
     virtual bool IsOverloaded()                             { return m_overLoaded; }
     virtual InventoryItemRef GetLoadedChargeRef()           { return m_chargeRef; }
+
+    // generic DoCycle() here is for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
+    //  for those modules that perform action on DoCycle(), they will override this call in their class implementation
+    virtual double DoCycle();
+    virtual void StopCycle(bool abort=false)                { /* Do nothing here */ }
 
     // GenericModule access function overriders
     bool ShipHasCapCharge()                                 { return (_GetCapNeed() <  m_Ship->GetAttribute(AttrCapacitorCharge).get_float()); }
@@ -58,15 +65,13 @@ public:
     // for modules that have charges
     bool isLoaded()                                         { return m_chargeLoaded; }
 
-	// generic DoCycle() here is for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
-	//  for those modules that perform action on DoCycle(), they will override this call in their class implementation
-	virtual double DoCycle();
-	virtual void StopCycle(bool abort=false)				{ /* Do nothing here */ }
+	/* common method for all modules that have a visual effect when active */
+	void DoEffect(std::string effect, bool active);
 
 protected:
     uint32 m_targetID;                                      //passed to us by activate
 	SystemEntity* m_targetEntity;	                        // we do not own this
-	ActiveModuleProcessingComponent* m_ActiveModuleProc;    // we do not own this
+	ActiveModuleProcessingComponent* m_AMPC;    // we do not own this
 
 	InventoryItemRef m_chargeRef;		                    // we do not own this
 	bool m_overLoaded;

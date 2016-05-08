@@ -29,126 +29,96 @@
 #include "ship/modules/GenericModule.h"
 
 
-ModifyShipAttributesComponent::ModifyShipAttributesComponent(GenericModule * mod, ShipRef shipRef)
-: m_Mod( mod ), m_Ship( shipRef )
+ModifyShipAttributesComponent::ModifyShipAttributesComponent(GenericModule* mod, ShipItemRef shipRef)
+: m_Mod(mod), m_Ship(shipRef)
 {
-
 }
 
-ModifyShipAttributesComponent::~ModifyShipAttributesComponent()
-{
-    //nothing to do yet
+// set attributes that are not stackable here...calibration, PG, CPU, etc.
+void ModifyShipAttributesComponent::ModifyNonStackingShipAttributes(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type) {
+    EvilNumber newVal = CalculateNewAttributeValue(m_Ship->GetAttribute(targetAttrID), m_Mod->GetAttribute(sourceAttrID), type);
+    if (!m_Ship->SetAttribute(targetAttrID, newVal))
+        sLog.Error("MSAC::SetOnlineAttributes()","Failed to set attribute %u to %f on ship %u", targetAttrID, newVal.get_float(), m_Ship->itemID());
 }
 
-// set online attributes, as they are not classed in power levels, nor are stackable, and wont work right with "module-type" calculations
-void ModifyShipAttributesComponent::SetOnlineAttributes(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type)
-{
-    if (!m_Ship->SetAttribute(targetAttrID, CalculateNewAttributeValue(m_Ship->GetAttribute(targetAttrID), m_Mod->GetAttribute(sourceAttrID), type)))
-        sLog.Error("MSAC::SetOnlineAttributes()","Failed to set attribute %u on ship %u", targetAttrID, m_Ship->itemID());
-}
-
-//modify our ship
-void ModifyShipAttributesComponent::ModifyShipAttribute(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type)
-{
+void ModifyShipAttributesComponent::ModifyShipAttribute(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type) {
     _modifyShipAttributes(m_Ship, targetAttrID, sourceAttrID, type);
 }
 
-//modify target ship
-void ModifyShipAttributesComponent::ModifyTargetShipAttribute(uint32 targetItemID, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type )
-{
-    //find the ship
-    ShipRef target = m_Ship->GetItemFactory()->GetShip(targetItemID);
-
-    //check if we found the ship
-    if (target) {
-    //modify the attributes properly
-    _modifyShipAttributes(target, targetAttrID, sourceAttrID, type);
-    } else
+void ModifyShipAttributesComponent::ModifyTargetShipAttribute(uint32 targetItemID, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type ) {
+    ShipItemRef target = m_Ship->GetItemFactory()->GetShip(targetItemID);
+    if (target)
+        _modifyShipAttributes(target, targetAttrID, sourceAttrID, type);
+    else
         sLog.Error("MSAC","Failed to find target ship %u", targetItemID);
 }
 
-
-// /////////////// PRIVATE METHODS ///////////////////
-
-// implements a rudimentary but working stacking penalty.  Currently only penalizes for stacking same item,
-// but should penalize for modifying the same attribute, with some exceptions.  These exceptions are why
-// it has not been implemented fully, as more data is needed and this is just a proof of concept.
-// No module code will have to be changed to implement the fully functional stacking penalty
-void ModifyShipAttributesComponent::_modifyShipAttributes(ShipRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type)
+/* rewrote attrib calculations and implemented true stacking penality, with checks for exceptions.  -allan 13April16  */
+void ModifyShipAttributesComponent::_modifyShipAttributes(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type)
 {
-    std::vector<GenericModule*> mods = m_Ship->GetStackedItems(m_Mod->typeID(), m_Mod->GetModulePowerLevel());
-    _log(SHIP__MODULE_TRACE, "MSAC::_modifyShipAttributes() -  mods vector has %u item(s) for attribute: %u", mods.size(), targetAttrID);
-    EvilNumber newVal = _calculateNewValue(shipRef, targetAttrID, sourceAttrID, type, mods);
+    EvilNumber newVal = _calculateNewValue(shipRef, targetAttrID, sourceAttrID, type, m_Mod);
     SetAttribute(shipRef, targetAttrID, newVal);
 }
 
-EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, std::vector<GenericModule*> mods)
+EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, GenericModule* mod)
 {
-    //based on http://wiki.eve-id.net/Stacking
-    //EVEDev had a mistake in their formula, however I have corrected it and verified my results in excel
-
-    std::vector<GenericModule*> sortedMods = _sortModules(targetAttrID, mods);
-
-    EvilNumber currentVal = 0, finalVal = 0;
-    //if (mods.size() > 1) {
-        //first we must reset the attribute in order to properly recalculate the attribute
-        //  but ONLY if there are multiple effects on this attribute.  (no clue how to do this yet)
-        shipRef->ResetAttribute(targetAttrID, false);
-    //}
-    EvilNumber startVal = shipRef->GetAttribute(targetAttrID);  //start value
-    //iterate through all the modules, largest first
-    for(size_t i = 0; i < mods.size(); i++) {
-        currentVal = mods[i]->GetAttribute(sourceAttrID);
-        finalVal = _calculateNewAttributeValue(currentVal, startVal, type, (int)i+1 );
-        startVal = finalVal; //set the starting value as the calculated value
-    }
-
-    return finalVal;
-}
-
-//calculate the new value including the stacking penalty
-EvilNumber ModifyShipAttributesComponent::_calculateNewAttributeValue( EvilNumber attrMod, EvilNumber attrVal, EVECalculationType type, int stackNumber )
-{
-    EvilNumber effectiveness = exp(-pow(((stackNumber - 1)/2.67),2));  //fixed  -allan  20Dec15
-    attrMod *= effectiveness;
-    EvilNumber val = CalculateNewAttributeValue(attrVal, attrMod, type);
-   // _log(SHIP__MODULE_TRACE, "MSAC::_calculateNewAttributeValue() -  attrVal: %f - attrMod: %f - newVal: %f - type: %i", \
-            attrVal.get_float(), attrMod.get_float(), val.get_float(), (int)type);
-    return val;
-}
-
-//sorts a vector of modules in descending order by arbitrary attribute.  That is array[0] > array[1]
-std::vector<GenericModule*> ModifyShipAttributesComponent::_sortModules(uint32 sortAttrID, std::vector<GenericModule*> mods) {
-    // if there is only one module, no sorting required...
-    if (mods.size() < 2)
-        return mods;
-
-    //begin basic bubble sort - this needs to be checked thoroughly for bugs
-    bool done = false;
-    GenericModule* tmp = nullptr;
-
-    while (!done) { //check if sorted
-        done = true;  //assume sorted
-        for ( int i = 0, i2 = 1; (i < mods.size()) && (i2 < mods.size()); i++, i2++)  //iterate though list
-            if( mods[i]->GetAttribute(sortAttrID) > mods[i2]->GetAttribute(sortAttrID) ) {  //check if each pair is sorted
-                //it's not, so flip the values
-                tmp = mods[i];
-                mods[i] = mods[i2];
-                mods[i2] = tmp;
-                done = false;  //we weren't sorted, so now go back and check if we are
+    uint8 stackSize = 1;
+    EvilNumber modVal = mod->GetAttribute(sourceAttrID), startVal = shipRef->GetAttribute(targetAttrID);
+    /* check for attribs that are NOT penalized here, and bypass stacking method. */
+    /* note:  DCU, rigs and subsystems do not use this method */
+    if ((targetAttrID != AttrWarpFactor) or (sourceAttrID != AttrCargoCapacityMultiplier)
+        or (targetAttrID != AttrMiningAmount) or (targetAttrID != AttrCpuOutput)
+        or (targetAttrID != AttrPowerOutput) or (targetAttrID != AttrRechargeRate)
+        or (targetAttrID != AttrCapacitorCapacity) or (targetAttrID != AttrHP)
+        or (targetAttrID != AttrShieldCapacity) or (targetAttrID != AttrArmorHP)
+        or (targetAttrID != AttrAccessDifficulty)
+        or (targetAttrID != AttrDuration)   // weapons use attrSpeed, which IS penalized.
+    ) {
+        std::map<uint16, uint8>::iterator itr = m_attribMap.find(targetAttrID);
+        if (itr != m_attribMap.end()) {
+            /** @todo   verify these module states  */
+            if (mod->GetModuleState() == MOD_ONLINE)
+                stackSize = ++itr->second;
+            else if ((mod->GetModuleState() == MOD_OFFLINE)
+                or (mod->GetModuleState() == MOD_DEACTIVATING))
+                /** @todo  implement the difference between MOD_OFFLINE and MOD_DEACTIVATING */
+            {
+                if (itr->second == 1)
+                    m_attribMap.erase(itr);
+                else
+                    stackSize = --itr->second;
             }
+        } else
+            m_attribMap.emplace(targetAttrID, 1);
     }
 
-    return mods;  //return sorted list
+    double effectiveness = 1;
+    if (mod->GetModuleState() == MOD_ONLINE) {
+        effectiveness = exp(-pow(((stackSize - 1)/2.67),2));  //stacking calculation fixed  -allan  20Dec15
+        mod->SetEffectiveness(targetAttrID, effectiveness);
+    } else if ((mod->GetModuleState() == MOD_OFFLINE) or (mod->GetModuleState() == MOD_DEACTIVATING)) {
+        effectiveness = mod->GetEffectiveness(targetAttrID);
+    }
+    if (effectiveness <= 0) {   /* this should never happen */
+        codelog(SHIP__MODULE_ERROR, "MSAC::_calculateNewValue() -  effectiveness <= 0");
+        throw PyException( MakeCustomError("Internal Server Error.  Ref: ServerError 25610"));
+    }
+    modVal *= effectiveness;
+    EvilNumber newVal = CalculateNewAttributeValue(startVal, modVal, type);
+    _log(SHIP__MODULE_TRACE, "MSAC::_calculateNewValue() -  origVal:%f, Mod:%f, newVal:%f, stackSize:%u, effective:%f, type:%i", \
+                startVal.get_float(), modVal.get_float(), newVal.get_float(), stackSize, effectiveness, (int)type);
+
+    return newVal;
 }
+
 
 // this method will check resist values for fuzzy logic and correct if needed.
-void ModifyShipAttributesComponent::SetAttribute(ShipRef shipRef, uint32 targetAttrID, EvilNumber newVal)
+void ModifyShipAttributesComponent::SetAttribute(ShipItemRef shipRef, uint32 targetAttrID, EvilNumber newVal)
 {
     // basic check for ship resistance attrubutes (fuzzy logic range check)
-    if ((targetAttrID >= AttrKineticDamageResonance) && (targetAttrID <= AttrExplosiveDamageResonance)
-        || (targetAttrID == AttrEmDamageResonance)
-        || ((targetAttrID >= AttrArmorEmDamageResonance) && (targetAttrID <= AttrShieldThermalDamageResonance)))
+    if ((targetAttrID >= AttrKineticDamageResonance) and (targetAttrID <= AttrExplosiveDamageResonance)
+        or (targetAttrID == AttrEmDamageResonance)
+        or ((targetAttrID >= AttrArmorEmDamageResonance) and (targetAttrID <= AttrShieldThermalDamageResonance)))
     {
         if (newVal < 0) newVal = 0;
         if (newVal > 1) newVal = 1;
@@ -156,7 +126,7 @@ void ModifyShipAttributesComponent::SetAttribute(ShipRef shipRef, uint32 targetA
 
     //set the attribute for the ship with the new modifier
     if (!shipRef->SetAttribute(targetAttrID, newVal))
-        sLog.Error("MSAC::SetOnlineAttributes()","Failed to set attribute %u on ship %u", targetAttrID, m_Ship->itemID());
+        sLog.Error("MSAC::SetOnlineAttributes()","Failed to set attribute %u to %f on ship %u", targetAttrID, newVal, m_Ship->itemID());
 }
 
 

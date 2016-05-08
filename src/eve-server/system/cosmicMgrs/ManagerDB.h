@@ -23,11 +23,31 @@
     Author:        Allan
 */
 
-#ifndef _EVEMU_SYSTEM_DUNGEONDB_H
-#define _EVEMU_SYSTEM_DUNGEONDB_H
+#ifndef _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
+#define _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
 
-class DungeonDB {
+#include "system/SystemDB.h"
+
+/* POD entry for asteroid */
+class DBAsteroidSE {
 public:
+    uint32 itemID;
+    std::string itemName;
+    uint32 typeID;
+    uint32 systemID;
+    uint32 beltID;
+    double quantity;
+    double radius;
+    double x;
+    double y;
+    double z;
+};
+
+class ManagerDB {
+public:
+    bool GetRoidDist(const char * sec, std::map<float, uint32> &roids);
+    bool LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAsteroidSE>& into);
+    void SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidSE> roids);
 
 protected:
 
@@ -37,4 +57,4 @@ private:
 
 
 
-#endif  // _EVEMU_SYSTEM_DUNGEONDB_H
+#endif  // _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H

@@ -34,30 +34,31 @@
 CommandDispatcher::CommandDispatcher( PyServiceMgr& services )
 : m_services( services )
 {
+    m_commands.clear();
 }
 
 CommandDispatcher::~CommandDispatcher() {
-    std::map<std::string, CommandRecord *>::iterator cur = m_commands.begin();
-    for(; cur != m_commands.end(); cur++) {
-        delete cur->second;
-    }
+    for (auto cur : m_commands)
+        SafeDelete(cur.second);
+    m_commands.clear();
 }
 
 PyResult CommandDispatcher::Execute( Client* from, const char* msg )
 {
-    if (!from->Destiny())
-        throw PyException( MakeCustomError( "Internal Server Error.  Ref: ServerError 31110 " ) );
-
-    if (from->IsInSpace() && from->Destiny()->IsWarping() && (!from->GetAccountRole() & ROLE_GML)) {
-		sLog.Error( "CommandDispatcher", " Command Requested by %s while warping. --Access denied.", from->GetName() );
-		throw PyException( MakeCustomError( "Cannot Request Commands While Warping.  Access Denied. " ) );
-	}
+     /** @todo  fix this shit...
+    if (from->IsInSpace()) {
+        if (!from->DestinyMgr())
+            throw PyException( MakeCustomError( "Internal Server Error.  Ref: ServerError 31110 " ) );
+        if (from->DestinyMgr()->IsWarping() && (!from->GetAccountRole() & ROLE_GML)) {
+            sLog.Error( "CommandDispatcher", " Command Requested by %s while warping. --Access denied.", from->GetName() );
+            throw PyException( MakeCustomError( "ServerError 31113 - Cannot Request Commands While Warping." ) );
+        }
+    } */
 
     //might want to check for # or / at the beginning of this crap.
     Seperator sep( &msg[1] );
 
-    if (0 == sep.argCount() )
-    {
+    if (!sep.argCount()) {
         //empty command, return list of commands
         std::string reason = "Commands: ";
 
@@ -99,18 +100,24 @@ PyResult CommandDispatcher::Execute( Client* from, const char* msg )
 void CommandDispatcher::AddCommand( const char* cmd, const char* desc, uint64 required_role, CommandFunc function )
 {
     std::map<std::string, CommandRecord*>::iterator res = m_commands.find( cmd );
-    if (m_commands.end() != res )
+    if (res != m_commands.end())
         SafeDelete( res->second );
 
     m_commands[cmd] = new CommandRecord( cmd, desc, required_role, function );
 }
 
-void CommandDispatcher::ListCommands()
-{
+void CommandDispatcher::ListCommands() {
     sLog.Success("  Alasiya's EvEMu", "Currently Loaded %u Commands:", m_commands.size());
     std::map<std::string, CommandDispatcher::CommandRecord*>::iterator cur = m_commands.begin();
     for (; cur != m_commands.end(); cur++) {
         sLog.Magenta("    Call and Role", "%s - %p (%" PRIu64 ")",
                      cur->first.c_str(), cur->second->required_role, cur->second->required_role);
     }
+}
+
+void CommandDispatcher::Close() {
+    for (auto cur : m_commands)
+        SafeDelete(cur.second);
+    m_commands.clear();
+
 }

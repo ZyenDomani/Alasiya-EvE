@@ -21,223 +21,408 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #ifndef __SYSTEMENTITY_H_INCL__
 #define __SYSTEMENTITY_H_INCL__
 
 #include "inventory/InventoryItem.h"
-#include "inventory/ItemRef.h"
+//#include "inventory/ItemRef.h"
+#include "ship/DestinyManager.h"
 #include "ship/TargetManager.h"
+#include "SystemDB.h"
 
-class PyDict;
-class PyList;
-class PyTuple;
-class DoDestiny_AddBall;
-class DoDestinyDamageState;
-class DBSystemEntity;
-class InventoryItem;
-class SystemDB;
-class GPoint;
-class Damage;
-class SystemBubble;
-class SystemManager;
+class AsteroidBeltManager;
 class Character;
 class Client;
+class Concord;
+class ContainerSE;
+class Damage;
+class DBSystemEntity;
+class Drone;
 class NPC;
+class Player;
+class SystemBubble;
+class SystemManager;
+class WreckSE;
 
-//  this is base class for ALL SystemEntities
-class SystemEntity {
-    friend class SystemBubble;    //only to update m_bubble
-public:
-    typedef enum {
-        ecClient,
-        ecNPC,
-        ecCelestial,
-        ecStation,
-        ecSystemEntity,
-        ecAsteroidEntity,
-        ecShipEntity,
-        ecDroneEntity,
-        ecContainerEntity,
-        ecStructureEntity,
-        ecDeployableEntity,
-        ecMissileEntity,
-        ecWreckEntity,
-        ecOther
-    } EntityClass;
-
-    SystemEntity();
-    virtual ~SystemEntity() {}
-
-    TargetManager TargMgr;
-
-    virtual void Process();
-    virtual void ProcessDestiny() = 0;
-
-    //this is a bit crude, but I prefer this over RTTI.
-    virtual Client *CastToClient() { return NULL; }
-    virtual const Client *CastToClient() const { return NULL; }
-    virtual NPC *CastToNPC() { return NULL; }
-    virtual const NPC *CastToNPC() const { return NULL; }
-
-    virtual EntityClass GetClass() const { return(ecSystemEntity); }
-
-    virtual uint32 GetLocationID();
-
-    inline SystemBubble *Bubble() const { return m_bubble; }    //may be NULL
-
-    //may consume the arguments, or not.
-    virtual void QueueDestinyUpdate(PyTuple **du) {/* not required to consume */}
-    virtual void QueueDestinyEvent(PyTuple **multiEvent) {/* not required to consume */}
-
-    //get the item ID of this entity
-    virtual uint32 GetID() const = 0;
-    //get the position of this entity in space.
-    virtual const GPoint &GetPosition() const = 0;
-    //get the velocity vector of this entity in space.
-    virtual const GVector &GetVelocity() const = 0;
-    //get other attributes of the entity:
-    virtual const char *GetName() const = 0;
-    virtual float GetRadius() const;
-
-    //I am not sure if I want this here...
-    virtual InventoryItemRef Item() const = 0;
-
-    virtual SystemManager *System() const = 0;    //will yeild NULL when docked.
-
-    //expand the vector as needed, and encode the destiny update into it.
-    virtual void EncodeDestiny( Buffer& into ) const = 0;
-    //return ownership of a new foo.SlimItem dict
-    virtual PyDict *MakeSlimItem() const = 0;
-    //fill in the supplied damage state object.
-    virtual void MakeDamageState(DoDestinyDamageState &into) const = 0;
-    //return ownership of a new damage state tuple (calls MakeDamageState)
-    PyTuple *MakeDamageState() const;
-    PyList *MakeDamageStateList() const;
-
-    //Im not happy with these being here..
-    virtual void TargetAdded(SystemEntity *who) = 0;
-    virtual void TargetLost(SystemEntity *who) = 0;
-    virtual void TargetedAdd(SystemEntity *who) = 0;
-    virtual void TargetedLost(SystemEntity *who) = 0;
-    virtual void TargetsCleared() = 0;
-
-    //process incoming damage, returns true on death.
-    virtual bool ApplyDamage(Damage &d) = 0;
-    //handles death.
-    virtual void Killed(Damage &fatal_blow);
-    void AwardSecurityStatus(InventoryItemRef m_self, Character* pChar);
-
-    //helpers:
-    double DistanceTo2(const SystemEntity *other) const;
-
-    //  class type helpers.  public for anyone to access.
-    virtual bool IsStaticEntity() const         { return true; }
-    virtual bool IsDynamicEntity() const        { return false; }
-    virtual bool IsVisibleSystemWide() const    { return false; }
-    virtual bool IsInanimate() const            { return false; }
-    virtual bool IsInvul() const                { return false; }
-    virtual bool IsLogin()                      { return false; }
-    virtual bool IsClient() const               { return false; }
-    virtual bool IsNPC() const                  { return false; }
-    virtual bool IsCelestial() const            { return false; }
-    virtual bool IsContainer() const            { return false; }
-    virtual bool IsWreck() const                { return false; }
-    virtual bool IsOutpost() const              { return false; }
-    virtual bool IsAsteroid() const             { return false; }
-    virtual bool IsPOS() const                  { return false; }
-    virtual bool IsJumpBridge() const           { return false; }
-    virtual bool IsTCU() const                  { return false; }
-    virtual bool IsShip() const                 { return false; }
-    virtual bool IsDrone() const                { return false; }
-    virtual bool IsDeployable() const           { return false; }
-    virtual bool IsMissile() const              { return false; }
-
-protected:
-    SystemBubble* m_bubble;    //we do not own this, may be NULL. Only changed by SystemBubble
-
-    void _DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
-};
-
-// this class is for
-class ItemSystemEntity : public SystemEntity {
-public:
-    ItemSystemEntity(InventoryItemRef self = InventoryItemRef());
-    virtual ~ItemSystemEntity();
-
-    //Default implementations fall to m_self.
-    virtual uint32 GetID() const;
-    virtual InventoryItemRef Item() const { return m_self; }
-    virtual const char* GetName() const;
-
-    virtual void ProcessDestiny() { }
-    virtual const GPoint &GetPosition() const;
-    virtual const GVector &GetVelocity() const = 0;     //virtual here because of no DestinyManager
-    //virtual float GetRadius() const;
-    virtual PyDict *MakeSlimItem() const;
-    virtual void MakeDamageState(DoDestinyDamageState &into) const;
-    virtual bool IsStaticEntity() const { return false; }
-    virtual bool IsVisibleSystemWide() const { return false; }
-
-    //process incoming damage, returns true on death.
-    virtual bool ApplyDamage(Damage &d);
-
-protected:
-    InventoryItemRef m_self;
-
-    void _SendDamageStateChanged(SystemEntity* source);
-    void _SetSelf(InventoryItemRef self);
-};
-
-
-class DestinyManager;
-
-// this class is for items that are not static
-class DynamicSystemEntity : public ItemSystemEntity {
-public:
-    DynamicSystemEntity(DestinyManager* mgr=nullptr /*ownership taken*/, InventoryItemRef self = InventoryItemRef());
-    virtual ~DynamicSystemEntity();
-
-    //partial implementation of SystemEntity interface:
-    virtual void ProcessDestiny();
-    virtual const GPoint &GetPosition() const;
-    virtual const GVector &GetVelocity() const;
-    virtual void EncodeDestiny( Buffer& into ) const;
-
-    virtual double GetMass() const;
-    virtual double GetMaxVelocity() const;
-    virtual double GetAgility() const;
-
-    virtual PyDict *MakeSlimItem() const;
-    virtual void MakeDamageState(DoDestinyDamageState &into) const;
-    virtual bool IsDynamicEntity() const        { return true; }
-
-    //Added interface:
-    //get the corporation of this entity
-    virtual uint32 GetCorporationID() const = 0;
-    virtual uint32 GetAllianceID() const = 0;
-
-    inline DestinyManager* Destiny() const { return m_destiny; }
-
-    virtual void Killed(Damage &fatal_blow);
-
-protected:
-    DestinyManager* m_destiny;    //we own this! NULL if we are not in a system
-};
+class StationSE;
+class StaticSystemEntity;
+class PlanetSE;
+class MoonSE;
+class StargateSE;
+class BeltSE;
+class DynamicSystemEntity;
+class ItemSystemEntity;
+class ObjectSystemEntity;
+class StructureSE;
+class DeployableSE;
+class AsteroidSE;
+class Ship;
+class DungeonSE;
 
 /*
- * This class is used for Targetable and Destructable Celestial Objects
+ * base class for all SystemEntities
+ * complete rewrite of entity class system  - allan  9 January 2016
  */
-class CelestialDynamicSystemEntity : public DynamicSystemEntity {
+class SystemEntity {
+    friend class SystemBubble;    /* only to update m_bubble */
 public:
-    CelestialDynamicSystemEntity(DestinyManager *mgr=NULL /*ownership taken*/, InventoryItemRef self = InventoryItemRef());
-    virtual ~CelestialDynamicSystemEntity();
+    SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
+    virtual ~SystemEntity()                             { /* Do nothing here */ }
 
-    //partial implementation of SystemEntity interface:
-    virtual void EncodeDestiny( Buffer& into ) const;
-    virtual PyDict *MakeSlimItem() const;
+    /* (Allan) the next two sections eliminate the overhead of RTTI static casting.  */
+    /* class type pointer querys, grouped by base class.  public for anyone to access. */
+    /* Base */
+    virtual SystemEntity*       GetSE()                 { return this; }
+    /* Static */
+    virtual StaticSystemEntity* GetSSE()                { return nullptr; }
+    virtual StationSE*          GetStationSE()          { return nullptr; }
+    virtual PlanetSE*           GetPlanetSE()           { return nullptr; }
+    virtual MoonSE*             GetMoonSE()             { return nullptr; }
+    virtual StargateSE*         GetGateSE()             { return nullptr; }
+    virtual BeltSE*             GetBeltSE()             { return nullptr; }
+    /* Item */
+    /** @todo  these will have to be adjusted when the classes are finished */
+    virtual ItemSystemEntity*   GetISE()                { return nullptr; }
+    virtual ContainerSE*        GetContSE()             { return nullptr; }
+    virtual WreckSE*            GetWreckSE()            { return nullptr; }
+    virtual DungeonSE*          GetDungeonSE()          { return nullptr; }
+    /* Object */
+    /** @todo  these will have to be adjusted when the classes are finished */
+    virtual ObjectSystemEntity* GetOSE()                { return nullptr; }
+    virtual AsteroidSE*         GetAsteroidSE()         { return nullptr; }
+    virtual StructureSE*        GetJumpBridgeSE()       { return nullptr; }
+    virtual StructureSE*        GetOutpostSE()          { return nullptr; }
+    virtual StructureSE*        GetPOSSE()              { return nullptr; }
+    virtual StructureSE*        GetTCUSE()              { return nullptr; }
+    virtual StructureSE*        GetSBUSE()              { return nullptr; }
+    virtual DeployableSE*       GetDeployableSE()       { return nullptr; }
+    /* Dynamic */
+    virtual DynamicSystemEntity* GetDSE()               { return nullptr; }
+    virtual NPC*                GetNPCSE()              { return nullptr; }
+    virtual Drone*              GetDroneSE()            { return nullptr; }
+    virtual Missile*            GetMissileSE()          { return nullptr; }
+    virtual Ship*               GetShipSE()             { return nullptr; }
+    virtual Concord*            GetConcordSE()          { return nullptr; }
+
+    /* class type tests, grouped by base class.  public for anyone to access. */
+    /* Base */
+    virtual bool                IsCelestialEntity()     { return false; }
+    virtual bool                IsInanimateSE()         { return false; }
+    /* Static */
+    virtual bool                IsStaticEntity()        { return false; }
+    virtual bool                IsVisibleSystemWide()   { return false; }
+    virtual bool                IsBeltSE()              { return false; }
+    virtual bool                IsGateSE()              { return false; }
+    virtual bool                IsPlanetSE()            { return false; }
+    virtual bool                IsMoonSE()              { return false; }
+    virtual bool                IsStationSE()           { return false; }
+    /* Item */
+    virtual bool                IsItemEntity()          { return false; }
+    virtual bool                IsWreckSE()             { return false; }
+    virtual bool                IsDungeonSE()           { return false; }
+    virtual bool                IsCelestialSE()         { return false; }
+    virtual bool                IsContainerSE()         { return false; }
+    /* Object */
+    virtual bool                IsObjectEntity()        { return false; }
+    virtual bool                IsPOSSE()               { return false; }
+    virtual bool                IsTCUSE()               { return false; }
+    virtual bool                IsSBUSE()               { return false; }
+    virtual bool                IsOutpostSE()           { return false; }
+    virtual bool                IsAsteroidSE()          { return false; }
+    virtual bool                IsDeployableSE()        { return false; }
+    virtual bool                IsJumpBridgeSE()        { return false; }
+    /* Dynamic */
+    virtual bool                IsDynamicEntity()       { return false; }
+    virtual bool                IsLogin()               { return false; }
+    virtual bool                IsInvul()               { return false; }
+    virtual bool                IsNPCSE()               { return false; }
+    virtual bool                IsDroneSE()             { return false; }
+    virtual bool                IsMissileSE()           { return false; }
+    virtual bool                IsShipSE()              { return false; }
+    virtual bool                IsConcord()             { return false; }
+
+    /* generic access functions handled here */
+    PyServiceMgr&               GetServices()           { return m_services; }
+    SystemBubble*               SysBubble()             { return m_bubble; }
+    SystemManager*              SystemMgr()             { return m_system; }
+    TargetManager*              TargetMgr()             { return m_targMgr; }
+    DestinyManager*             DestinyMgr()            { return m_destiny; }
+
+    /* common functions for all entities handled here */
+    /* public data queries  */
+    virtual InventoryItemRef    GetSelf()               { return m_self; }
+    virtual uint32              GetID()                 { return m_self->itemID(); }
+    virtual float               GetRadius();            /* too long to put here */
+    virtual uint32              GetLocationID()         { return m_self->locationID(); }
+    virtual const char*         GetName() const         { return m_self->itemName().c_str(); }
+    virtual const GPoint&       GetPosition() const     { return m_self->position(); }
+    virtual void                SetPosition(GPoint &pos){ m_self->Relocate(pos); }
+    inline virtual double       x()                     { return m_self->position().x; }
+    inline virtual double       y()                     { return m_self->position().y; }
+    inline virtual double       z()                     { return m_self->position().z; }
+
+    /* public-access generic functions handled in base class. */
+    void                        DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
+    void                        AwardSecurityStatus(InventoryItemRef m_self, Character* pChar);
+    void                        SendDamageStateChanged(SystemEntity* source);
+    bool                        ApplyDamage(Damage &d); /* This method is defined in Damage.cpp */
+    double                      DistanceTo2(const SystemEntity* other);
+    PyTuple*                    MakeDamageState();
+
+    /* generic access functions handled here, but set elsewhere */
+    virtual const GVector&      GetVelocity()           { return (m_destiny ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
+
+    /* virtual functions default to base class and overridden as needed */
+    virtual void                Process()               { /* Do nothing here */ }
+    virtual void                Killed(Damage &fatal_blow) { /* Do nothing here */ }
+    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                MakeDamageState(DoDestinyDamageState &into);
+    virtual PyDict*             MakeSlimItem();
+
+    /* virtual functions to be overridden in derived classes */
+    virtual void                UpdateDamage()          { /* Do nothing here */ }
+    virtual void                ProcessDestiny()        { /* Do nothing here */ }
+    virtual void                ProcessOther()          { /* Do nothing here */ }
+    virtual void                QueueDestinyUpdate(PyTuple **du) { /* Do nothing here */ }
+    virtual void                QueueDestinyEvent(PyTuple **de)  { /* Do nothing here */ }
+    virtual bool                LoadExtras(SystemDB *db){ return true; }
+
+    /* virtual functions in base to allow common interface calls */
+    /** @todo these need to be move to target manager. */
+    virtual void TargetLost(SystemEntity *who)          { /* Do nothing here */ }
+    virtual void TargetAdded(SystemEntity *who)         { /* Do nothing here */ }
+    virtual void TargetedAdd(SystemEntity *who)         { /* Do nothing here */ }
+    virtual void TargetedLost(SystemEntity *who)        { /* Do nothing here */ }
+    virtual void TargetsCleared()                       { /* Do nothing here */ }
+
+    /* virtual functions in base to allow common interface calls specific to ship entities */
+    virtual void                SetPilot(Client* pClient){ /* Do nothing here */ }
+    virtual bool                HasPilot()              { return false; }
+    virtual Client*             GetPilot()              { return nullptr; }
+
+    virtual uint32              GetTypeID()             { return m_self->typeID(); }
+    virtual uint32              GetGroupID()            { return m_self->groupID(); }
+    virtual EVEItemCategories   GetCategoryID()         { return m_self->categoryID(); }
+    virtual EVEItemFlags        GetFlag()               { return m_self->flag(); }
+
+    /** @todo (allan)  finish these ... not sure how yet.  */
+    virtual uint32              GetCorporationID()      { return m_corpID; };
+    virtual uint32              GetAllianceID()         { return m_allyID; };
+    virtual uint32              GetWarFactionID()       { return m_warID; }
+
+    /* specific functions handled in this class. */
+
+protected:
+    SystemBubble*               m_bubble = nullptr;     /* we do not own this. never NULL in space */
+    TargetManager*              m_targMgr = nullptr;    /* we do not own this. never NULL in space */
+    SystemManager*              m_system = nullptr;     /* we do not own this  never NULL in space */
+    DestinyManager*             m_destiny = nullptr;    /* we do not own this. never NULL in space */
+
+    PyServiceMgr&               m_services;
+
+    InventoryItemRef            m_self = InventoryItemRef();
+
+    uint32                      m_warID = 0;
+    uint32                      m_corpID = 0;
+    uint32                      m_allyID = 0;
 
 };
+
+
+/* Static / Non-Mobile / Non-Destructable / Celestial Objects - Suns, Planets, Moons, Belts, Gates, Stations */
+class StaticSystemEntity : public SystemEntity {
+public:
+    StaticSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
+    virtual ~StaticSystemEntity()                       { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual StaticSystemEntity* GetSSE()                { return this; }
+    /* class type tests. */
+    /* Base */
+    virtual bool IsCelestialEntity()                    { return true; }
+    virtual bool IsInanimateSE()                        { return true; }
+    /* Static */
+    virtual bool IsStaticEntity()                       { return true; }
+    virtual bool IsVisibleSystemWide()                  { return true; }
+
+    /** @todo (allan)  finish these ... not sure how yet.  */
+    //virtual uint32 GetCorporationID()                   { return m_data.corporationID; };
+    //virtual uint32 GetAllianceID()                      { return m_data.allianceID; };
+
+    /* virtual functions default to base class and overridden as needed */
+    virtual bool LoadExtras(SystemDB *db);
+
+    /* specific functions handled in this class. */
+
+};
+
+class BeltSE
+: public StaticSystemEntity
+{
+public:
+    BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
+    virtual ~BeltSE();
+
+    /* class type pointer querys. */
+    virtual BeltSE* GetBeltSE()                         { return this; }
+    /* class type tests. */
+    virtual bool IsBeltSE()                             { return true; }
+
+    /* virtual functions to be overridden in derived classes */
+    virtual bool LoadExtras(SystemDB *db);
+
+    /* generic access functions handled here */
+    AsteroidBeltManager* BeltMgr()                      { return m_beltMgr; }
+
+protected:
+    AsteroidBeltManager* m_beltMgr;
+};
+
+class StargateSE
+: public StaticSystemEntity
+{
+public:
+    StargateSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
+    virtual ~StargateSE()                           { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual StargateSE* GetGateSE()                     { return this; }
+    /* class type tests. */
+    virtual bool IsGateSE()                             { return true; }
+
+    /* SystemEntity interface */
+    virtual PyDict *MakeSlimItem();
+
+    /* virtual functions to be overridden in derived classes */
+    virtual bool LoadExtras(SystemDB *db);
+
+protected:
+    PyRep* m_jumps;
+};
+
+
+/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace */
+class ItemSystemEntity : public SystemEntity {
+public:
+    ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
+    virtual ~ItemSystemEntity()                         { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual ItemSystemEntity* GetISE()                  { return this; }
+    /* class type tests. */
+    /* Base */
+    virtual bool IsCelestialEntity()                    { return true; }
+    virtual bool IsInanimateSE()                        { return true; }
+    /* Item */
+    virtual bool IsItemEntity()                         { return true; }
+
+    /* SystemEntity interface */
+    virtual PyDict *MakeSlimItem();
+    virtual void MakeDamageState(DoDestinyDamageState &into);
+};
+
+class DungeonSE : public ItemSystemEntity {
+public:
+    DungeonSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
+    virtual ~DungeonSE()                                { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual DungeonSE* GetDungeonSE()                   { return this; }
+    /* class type tests. */
+    /* Base */
+    virtual bool IsDungeonSE()                          { return true; }
+
+    /* SystemEntity interface */
+    virtual void EncodeDestiny( Buffer& into );
+
+    virtual PyDict *MakeSlimItem();
+};
+
+/* Non-Static / Non-Mobile / Destructable / Celestial Objects - POS Structures, Outposts, Asteroids, Deployables */
+class ObjectSystemEntity : public SystemEntity {
+public:
+    ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
+    virtual ~ObjectSystemEntity()                       { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual ObjectSystemEntity* GetOSE()                { return this; }
+    /* class type tests. */
+    /* Base */
+    virtual bool IsCelestialEntity()                    { return true; }
+    virtual bool IsInanimateSE()                        { return true; }
+    /* Object */
+    virtual bool IsObjectEntity()                       { return true; }
+
+    /* SystemEntity interface */
+    virtual void UpdateDamage();
+    virtual void EncodeDestiny( Buffer& into );
+    virtual void MakeDamageState(DoDestinyDamageState &into);
+
+    virtual PyDict *MakeSlimItem();
+
+    /* virtual functions default to base class and overridden as needed */
+    virtual void Process();
+    virtual void ProcessOther()                         { /* Do nothing here */ }
+    virtual void Killed(Damage &fatal_blow);
+
+};
+
+class DeployableSE
+: public ObjectSystemEntity
+{
+public:
+    DeployableSE(
+        InventoryItemRef structure,
+        PyServiceMgr &services,
+        SystemManager *system);
+    virtual ~DeployableSE()                             { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual DeployableSE* GetDeployableSE()             { return nullptr; }
+    /* class type tests. */
+    virtual bool IsDeployableSE()                       { return true; }
+
+};
+
+
+/* Non-Static / Mobile / Destructable / Celestial Objects - PC's, NPC's, Drones, Ships, Missiles */
+class DynamicSystemEntity : public SystemEntity {
+public:
+    DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
+    virtual ~DynamicSystemEntity();
+
+    /* class type pointer querys. */
+    virtual DynamicSystemEntity* GetDSE()               { return this; }
+    /* class type tests. */
+    /* Dynamic */
+    virtual bool IsDynamicEntity()                      { return true; }
+
+    /* SystemEntity interface */
+    virtual void UpdateDamage();
+    virtual void ProcessDestiny();
+    virtual void EncodeDestiny( Buffer& into );
+    virtual void MakeDamageState(DoDestinyDamageState &into);
+
+    virtual PyDict *MakeSlimItem();
+
+    /* DynamicSystemEntity interface */
+    virtual double GetMass();
+    virtual double GetMaxVelocity();
+    virtual double GetAgility();
+
+    /* virtual functions default to base class and overridden as needed */
+    virtual void Process();
+    virtual void ProcessOther()                         { /* Do nothing here */ }
+    virtual void Killed(Damage &fatal_blow);
+
+    /* specific functions handled here. */
+    bool Load(ServiceDB& from);
+    void AwardBounty(Client* pClient);
+
+};
+
 
 #endif

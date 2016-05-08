@@ -20,22 +20,34 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Allan
+    Author:        Reve
+    Updates:    Allan
 */
 
-#ifndef EVEMU_SYSTEM_ANOMALYMGR_H_
-#define EVEMU_SYSTEM_ANOMALYMGR_H_
+#ifndef EVEMU_PLANET_PLANETMGR_BOUND_H_
+#define EVEMU_PLANET_PLANETMGR_BOUND_H_
 
+#include "PyService.h"
+#include "planet/PlanetDB.h"
 
-class AnomalyMgr
+class PyRep;
+
+class PlanetMgrService: public PyService
 {
-  public:
-      AnomalyMgr();
-      virtual ~AnomalyMgr() { }
+public:
+    PlanetMgrService(PyServiceMgr* mgr);
+    virtual ~PlanetMgrService();
 
-  private:
+protected:
+    class Dispatcher;
+    Dispatcher *const m_dispatch;
 
+    virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
+
+    PyCallable_DECL_CALL(GetPlanetsForChar)
+    PyCallable_DECL_CALL(GetMyLaunchesDetails)
+
+    PlanetDB* m_db;
 };
 
-#endif  // EVEMU_SYSTEM_ANOMALYMGR_H_
-
+#endif  // EVEMU_PLANET_PLANETMGR_BOUND_H_

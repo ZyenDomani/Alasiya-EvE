@@ -23,6 +23,7 @@
     Author:        Zhur
     Updates:        Allan
 */
+/** @todo (Allan)  update this class */
 
 #include "eve-server.h"
 
@@ -39,6 +40,7 @@ TargetManager::TargetManager(SystemEntity *self)
   m_self(self)
 {
     m_canAttack = false;
+    _log(TARGET__INFO, "Created TargMgr %p for %s(%u)", this, self->GetID(), self->GetName());
 }
 
 TargetManager::~TargetManager() {
@@ -60,9 +62,14 @@ void TargetManager::DoDestruction() {
     }
 }
 
+void TargetManager::SetSelf(SystemEntity* self) {
+    m_self = self;
+    _log(TARGET__INFO, "TargMgr set self to %s(%u)", self->GetID(), self->GetName());
+}
+
 void TargetManager::Process() {
 //     double profileStartTime = 0.0;
-//     if (sConfig.misc.UseProfiling)
+//     if (sConfig.server.UseProfiling)
 //         profileStartTime = GetTimeUSeconds();
     //process outgoing targeting
     if (!GetTotalTargets()) return;
@@ -85,7 +92,7 @@ void TargetManager::Process() {
                     _log(TARGET__TRACE, "%s(%u) has finished locking %s(%u)", \
                             m_self->GetName(), m_self->GetID(), cur->first->GetName(), cur->first->GetID());
                     m_self->TargetAdded(cur->first);
-                    cur->first->TargMgr.TargetedByLocked(m_self);
+                    cur->first->TargetMgr()->TargetedByLocked(m_self);
                     m_canAttack = true;
                 }
             } break;
@@ -99,26 +106,26 @@ void TargetManager::Process() {
         cur = m_targetedBy.begin();
         end = m_targetedBy.end();
         for(; cur != end; cur++) {
-            cur->first->TargMgr.TargetLost(m_self);
+            cur->first->TargetMgr()->TargetLost(m_self);
         }
 }*/
-    //if (sConfig.misc.UseProfiling)
+    //if (sConfig.server.UseProfiling)
     //    sProfile.AddTime(targets, GetTimeUSeconds() - profileStartTime);
 }
 
 void TargetManager::ClearTarget(SystemEntity *who) {
     //let the other entity know they are no longer targeted.
-    who->TargMgr.TargetedByLost(m_self);
+    who->TargetMgr()->TargetedByLost(m_self);
     //clear it from our own state
     TargetLost(who);
-    if (m_self->IsNPC() && HasNoTargets())
+    if (m_self->IsNPCSE() && HasNoTargets())
         m_canAttack = false;
     _log(TARGET__TRACE, "ClearTarget:  %s(%u) has cleared target information for %s(%u).",
          m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
 }
 
 void TargetManager::ClearAllTargets(bool notify_self) {
-    //if ((!m_self->IsNPC()) || (!m_self->IsClient())) return;
+    //if ((!m_self->IsNPCSE()) || (!m_self->HasPilot())) return;
     ClearTargets(notify_self);
     ClearFromTargets();
     _log(TARGET__TRACE, "ClearAllTargets:  %s(%u) has cleared all targeting information.", m_self->GetName(), m_self->GetID());
@@ -132,9 +139,9 @@ void TargetManager::ClearTargets(bool notify_self) {
     _log(TARGET__TRACE, "ClearTargets:  %s(%u) is clearing all targeting information.", m_self->GetName(), m_self->GetID());
     std::map<SystemEntity*, TargetEntry*>::iterator cur = m_targets.begin();
     for(; cur != m_targets.end(); cur++) {
-        _log(TARGET__TRACE, "%s(%u) has cleared target %s(%u) during clear all.",
+        _log(TARGET__INFO, "%s(%u) has cleared target %s(%u) during clear all.",
                 m_self->GetName(), m_self->GetID(), cur->first->GetName(), cur->first->GetID());
-        cur->first->TargMgr.TargetedByLost(m_self);
+        cur->first->TargetMgr()->TargetedByLost(m_self);
         SafeDelete(cur->second);
     }
     m_targets.clear();
@@ -162,12 +169,12 @@ void TargetManager::ClearFromTargets() {
 
     std::vector<SystemEntity *>::iterator curn = ToNotify.begin();
     for (; curn != ToNotify.end(); curn++)
-        (*curn)->TargMgr.TargetLost(m_self);
+        (*curn)->TargetMgr()->TargetLost(m_self);
 }
 
-bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
+bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
 {       // NOTE this is for clients
-    if (!m_self->IsClient()) {
+    if (!m_self->HasPilot()) {
         codelog(TARGET__ERROR, "StartTargeting() called by %s to target %s", m_self->GetName(), who->GetName());
         return false;
     }
@@ -175,7 +182,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
     //first make sure they are not already in the list
     std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(who);
     if (res != m_targets.end()) {
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return true;
     }
@@ -184,20 +191,20 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
         return false;
     // Check invulnerability (undock and jump invul states)
     if (who->IsInvul()) {
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are Invul.  Ignoring request.", \
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are Invul.  Ignoring request.", \
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
     }
     // Check login for client just logging into game.
     if (who->IsLogin()) {
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are just Logging In.  Ignoring request.", \
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are just Logging In.  Ignoring request.", \
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
     }
 
     uint8 targetSkills = 1; //AttrMaxLockedTargets is for characters too!!
     float targetRangeModifier = 1.0f;
-    Character* pChar = m_self->CastToClient()->GetChar().get();
+    Character* pChar = m_self->GetPilot()->GetChar().get();
     targetSkills += pChar->GetSkillLevel(skillTargeting);    // +1 target/level
     targetSkills += pChar->GetSkillLevel(skillMultitasking);    // +1 target/level
     targetRangeModifier += (0.05 * pChar->GetSkillLevel(skillLongRangeTargeting)); // +5% level
@@ -208,9 +215,9 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
     if (targetSkills < maxLockedTargets)
         maxLockedTargets = targetSkills;
     if (GetTotalTargets() >= maxLockedTargets) {
-        m_self->CastToClient()->SendInfoModalMsg("Your ship and skills combination can only handle %u targe%s at a time.", \
+        m_self->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only handle %u targe%s at a time.", \
             maxLockedTargets, (maxLockedTargets == 1) ? "t":"ts");
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
     }
@@ -219,9 +226,9 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
     maxTargetLockRange *= targetRangeModifier;
     GVector rangeToTarget( m_self->GetPosition(), who->GetPosition() );
     if (rangeToTarget.length() > maxTargetLockRange) {
-        m_self->CastToClient()->SendInfoModalMsg("Your ship and skills combination can only target to %f meters.  %s is %f meters away.", \
+        m_self->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only target to %f meters.  %s is %f meters away.", \
             maxTargetLockRange, who->GetName(), rangeToTarget.length());
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are too far away.  Ignoring request.", \
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are too far away.  Ignoring request.", \
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
     }
@@ -234,9 +241,13 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipRef ship)
     te->timer.Start(lockTime *1000);      //timer has ms resolution
 	m_targets[who] = te;
 
-    _log(TARGET__TRACE, "Target 1: %s(%u) started targeting %s(%u) (%.2fs lock time)",
+    _log(TARGET__INFO, "Target 1: %s(%u) started targeting %s(%u) (%.2fs lock time)",
          m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID(), lockTime);
     who->TargetedAdd(m_self);
+
+    if (sConfig.server.testServer)
+        Dump();
+
     return true;
 }
 
@@ -246,7 +257,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 max
     std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(who);
     if (res != m_targets.end()) {
         //what to do?
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.",
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.",
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return true;
     }
@@ -255,7 +266,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 max
         return false;
     // Check against max locked target count
     if (GetTotalTargets() >= maxLockedTargets){
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.",
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.",
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
     }
@@ -267,13 +278,13 @@ bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 max
     }
     // Check invulnerability (undock and jump invul states)
     if (who->IsInvul()) {
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are Invul.  Ignoring request.",
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are Invul.  Ignoring request.",
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
     }
     // Check login for client just logging into game.
     if (who->IsLogin()) {
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are just Logging In.  Ignoring request.",
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are just Logging In.  Ignoring request.",
              m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
         return false;
     }
@@ -283,7 +294,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 max
 	te->timer.Start(lockTime);
 	m_targets[who] = te;
 
-    _log(TARGET__TRACE, "Target 2: %s(%u) started targeting %s(%u) (%.2fs lock time)",
+    _log(TARGET__INFO, "Target 2: %s(%u) started targeting %s(%u) (%.2fs lock time)",
          m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID(), (lockTime /1000));
     who->TargetedAdd(m_self);
     return true;
@@ -298,7 +309,7 @@ void TargetManager::TargetLost(SystemEntity *who) {
     SafeDelete(res->second);
     m_targets.erase(res);
 
-    _log(TARGET__TRACE, "%s(%u) has lost target %s(%u)",
+    _log(TARGET__INFO, "%s(%u) has lost lock on %s(%u)",
          m_self->GetName(), m_self->GetID(), who->GetName(), who->GetID());
 
     m_self->TargetLost(who);
@@ -329,11 +340,11 @@ void TargetManager::TargetedByLost(SystemEntity *from_who) {
         SafeDelete(res->second);
         m_targetedBy.erase(res);
         m_self->TargetedLost(from_who);
-        _log(TARGET__TRACE, "%s(%u) is no longer locked by %s(%u)",
+        _log(TARGET__INFO, "%s(%u) is no longer locked by %s(%u)",
              m_self->GetName(), m_self->GetID(), from_who->GetName(), from_who->GetID());
     } else {
         //not found.. do nothing to our state, no notification?
-        _log(TARGET__TRACE, "%s(%u) was notified of targeted lost by %s(%u), but they did not have us targeted in the first place.",
+        _log(TARGET__DEBUG, "%s(%u) was notified of targeted lost by %s(%u), but they did not have us targeted in the first place.",
              m_self->GetName(), m_self->GetID(), from_who->GetName(), from_who->GetID());
     }
 }
@@ -399,19 +410,19 @@ PyList* TargetManager::GetTargeters() const {
     return result;
 }
 
-float TargetManager::TimeToLock(ShipRef ship, SystemEntity *target) const {
-    if ( (target->IsAsteroid()) || (target->IsDeployable()) || (target->IsWreck())
-        || (target->IsContainer()) || (target->IsInanimate()) || (target->IsStaticEntity()) )
+float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
+    if ( (target->IsAsteroidSE()) || (target->IsDeployableSE()) || (target->IsWreckSE())
+        || (target->IsContainerSE()) || (target->IsInanimateSE()) || (target->IsStaticEntity()) )
         return 2.0;
 
     //  fixed lock time  -allan 24Dec14  -updated 26May15
-    //TODO add ship bonuses in here
+    /** @todo add ship bonuses in here */
     uint32 scanRes = ship->GetAttribute(AttrScanResolution).get_int();
     uint32 sigRad = 25; // set base as capsule with 25m signature radius
 
-	if ( target->Item().get() )
-		if ( target->Item()->HasAttribute(AttrSignatureRadius) )
-			sigRad = target->Item()->GetAttribute(AttrSignatureRadius).get_int();
+	if ( target->GetSelf() )
+        if ( target->GetSelf()->HasAttribute(AttrSignatureRadius) )
+            sigRad = target->GetSelf()->GetAttribute(AttrSignatureRadius).get_int();
 
     /*
      * fleet invlovement enhances targeting speed using leadership of highest member (2%/lvl)
@@ -422,11 +433,11 @@ float TargetManager::TimeToLock(ShipRef ship, SystemEntity *target) const {
     //locktime = 40000/(scanres * asinh(sigrad)^2)
     float time = ( 40000 /(scanRes * pow(asinh(sigRad), 2)));
 
-    if (m_self->IsClient()) {
-        Character* pChar = m_self->CastToClient()->GetChar().get();
+    if (m_self->HasPilot()) {
+        Character* pChar = m_self->GetPilot()->GetChar().get();
         time *= (1 - (0.05 * pChar->GetSkillLevel(skillSignatureAnalysis))); // 5% decrease/level
-        if (pChar->fleetID()) { //FIXME always returns 0 for now
-            //Character* pLeader = pChar->GetFleetLeader;   //TODO this needs to be written
+        if (pChar->fleetID()) { /** @todo  always returns 0 until fleets are implemented */
+            //Character* pLeader = pChar->GetFleetLeader;   /** @todo this needs to be written */
             time *= (1 - (0.02 * pChar->GetSkillLevel(skillLeadership))); // 2% decrease/level
         }
     }
@@ -439,7 +450,7 @@ float TargetManager::TimeToLock(ShipRef ship, SystemEntity *target) const {
      */
     double distance = ship->position().distance(target->GetPosition());
     // check for snipers... >85k distance do NOT need additional 7.5+s to targettime
-    if (m_self->IsNPC())
+    if (m_self->IsNPCSE())
         if (distance > 85000)
             distance -= 75000;
 
@@ -461,15 +472,14 @@ void TargetManager::QueueTBDestinyEvent( PyTuple** up_in ) const
     PyTuple* up = *up_in;
     *up_in = nullptr;    //could optimize out one of the Clones in here...
 
-    PyTuple* up_dup = nullptr;
+    PyTuple* up_dup(nullptr);
 
-    std::map<SystemEntity*, TargetedByEntry*>::const_iterator cur = m_targetedBy.begin();
-    for (; cur != m_targetedBy.end(); ++cur) {
-        if ((*cur).first->IsClient()) {
+    for (auto cur : m_targetedBy) {
+        if (cur.first->HasPilot()) {
             if (!up_dup)
                 up_dup = new PyTuple( *up );
 
-            cur->first->QueueDestinyEvent( &up_dup );
+            cur.first->QueueDestinyEvent( &up_dup );
         }
     }
 
@@ -482,15 +492,14 @@ void TargetManager::QueueTBDestinyUpdate( PyTuple** up_in ) const
     PyTuple* up = *up_in;
     *up_in = nullptr;    //could optimize out one of the Clones in here...
 
-    PyTuple* up_dup = nullptr;
+    PyTuple* up_dup(nullptr);
 
-    std::map<SystemEntity*, TargetedByEntry*>::const_iterator cur = m_targetedBy.begin();
-    for (; cur != m_targetedBy.end(); ++cur) {
-        if ((*cur).first->IsClient()) {
+    for (auto cur : m_targetedBy) {
+        if (cur.first->HasPilot()) {
             if (!up_dup)
                 up_dup = new PyTuple( *up );
 
-            cur->first->QueueDestinyUpdate( &up_dup );
+            cur.first->QueueDestinyEvent( &up_dup );
         }
     }
 
@@ -515,7 +524,7 @@ void TargetManager::TargetEntry::Dump() const {
             break;
             //no default on purpose.
     }
-    _log(TARGET__TRACE, "    Targeted %s (%u): %s (%s %d ms)",
+    _log(TARGET__DUMP, "    Targeted %s(%u): %s (Timer %s at %dms remaining)",
          who->GetName(),
          who->GetID(),
          sname,
@@ -538,7 +547,7 @@ void TargetManager::TargetedByEntry::Dump() const {
             break;
             //no default on purpose.
     }
-    _log(TARGET__TRACE, "    Targeted By %s (%u): %s",
+    _log(TARGET__DUMP, "    Targeted By %s(%u): %s",
          who->GetName(),
          who->GetID(),
          sname
@@ -546,17 +555,9 @@ void TargetManager::TargetedByEntry::Dump() const {
 }
 
 void TargetManager::Dump() const {
-    _log(TARGET__TRACE, "Target Dump for %u:", m_self->GetID());
-    {
-        std::map<SystemEntity *, TargetEntry *>::const_iterator cur = m_targets.begin();
-        for (; cur != m_targets.end(); cur++) {
-            cur->second->Dump();
-        }
-    }
-    {
-        std::map<SystemEntity *, TargetedByEntry *>::const_iterator cur = m_targetedBy.begin();
-        for (; cur != m_targetedBy.end(); ++cur) {
-            cur->second->Dump();
-        }
-    }
+    _log(TARGET__DUMP, "Target Dump for %u:", m_self->GetID());
+    for (auto cur : m_targets)
+        cur.second->Dump();
+    for (auto cur : m_targetedBy)
+        cur.second->Dump();
 }

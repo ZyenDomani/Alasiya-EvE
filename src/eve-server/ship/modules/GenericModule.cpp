@@ -24,32 +24,49 @@
 */
 
 #include "ship/modules/GenericModule.h"
+#include "ship/modules/components/ModifyModuleAttributesComponent.h"
 #include "ship/modules/components/ModifyShipAttributesComponent.h"
 
-GenericModule::GenericModule( InventoryItemRef item, ShipRef ship )
+GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
 {
     m_Item = item;
     m_Ship = ship;
 
     m_Effects = new ModuleEffects(m_Item.get());
-    m_ModShipAttrComp = new ModifyShipAttributesComponent(this, ship);
+    m_MMAC = new ModifyModuleAttributesComponent(this);
+    m_MSAC = new ModifyShipAttributesComponent(this, ship);
 
     m_ModuleState = MOD_UNFITTED;
     m_ChargeState = MOD_UNLOADED;
+
+    m_attribStacking.clear();
 }
 
 GenericModule::~GenericModule()
 {
     //delete members
     SafeDelete(m_Effects);
-    SafeDelete(m_ModShipAttrComp);
+    SafeDelete(m_MMAC);
+    SafeDelete(m_MSAC);
 }
 
+/** @todo  this needs to be updated (as all module effects methods) to test for targetGroupIDs
+ * GetTargetIDList() from ModuleEffects gives a vector of groupIDs each effect works on.
+ * these need to be retrieved and checked against current target when module activated.
+ * here, in Online(), targetGroupIDs should be checked for a value < 50, in which case this means
+ * a category is the intended target (common ones are '6' for "ship" and '32' for "subsystem")
+ * onlining passives should give a target group, either ship or another module (or group of modules)
+ * to adjust attributes for.
+ * ....this will get complicated.  -allan 12April16
+ */
 void GenericModule::Online()
 {
+    /** @todo fixme....  rigs DO NOT get AttrIsOnline set! */
     m_Item->PutOnline();
+    m_ModuleState = MOD_ONLINE;
 
     EVECalculationType ecType = CALC_NONE;
+    typeTargetGroupIDlist targetIDs;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
     std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Effects->GetOnlineEffectsBegin();
     _log(SHIP__MODULE_TRACE, "GenericModule::Online() -  there are %u effects to process", m_Effects->GetOnlineEffectsSize() );
@@ -57,31 +74,37 @@ void GenericModule::Online()
         uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
         _log(SHIP__MODULE_TRACE, "GenericModule::Online() -  there are %u attributes in effect %u", ids, itr->first );
         while (cur < ids) {
-            if (itr->first != 16) {  // effect Online.  this sets CPU and PG usage
+            if (itr->first != Effect_online) {  // effect Online.  this sets CPU and PG usage
                 testID = itr->second->GetAffectingID(cur);
-                if (groupID != testID) {
+                _log(SHIP__MODULE_DEBUG, "GenericModule::Online() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
+                if ((testID != 0) && (groupID != testID)) {
                     ++cur;
                     continue;
                 }
             }
+            // vector<uint32> of targetgroups (or targetCategorys if id < 50)
+            targetIDs = itr->second->GetTargetIDList(cur);
             targetAttrID = itr->second->GetTargetAttributeID(cur);
             sourceAttrID = itr->second->GetSourceAttributeID(cur);
             ecType = itr->second->GetCalculationType(cur);
-            _log(SHIP__MODULE_TRACE, "GenericModule::Online() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
-                 itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            // now process attribute changes, with simple stacking penalities applied.
-            if (itr->first == 16)   // effect Online.  this sets CPU and PG usage
-                m_ModShipAttrComp->SetOnlineAttributes(targetAttrID, sourceAttrID, ecType);
+            _log(SHIP__MODULE_TRACE, "GenericModule::Online() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
+                        itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
+            // check for online and passive effects to set CPU and PG usage without stacking penalities.
+            if ((itr->first == Effect_online) or (isRig()) or (isSubSystem()) or (itr->first == Effect_damageControl))
+                m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
             else
-                m_ModShipAttrComp->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+                m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
             ++cur;
+            targetIDs.clear();
         }
     }
 }
 
 void GenericModule::Offline()
 {
+    m_ModuleState = MOD_OFFLINE;
     EVECalculationType ecType = CALC_NONE;
+    typeTargetGroupIDlist targetIDs;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
     std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Effects->GetOnlineEffectsBegin();
     _log(SHIP__MODULE_TRACE, "GenericModule::Offline() -  there are %u effects to process", m_Effects->GetOnlineEffectsSize() );
@@ -89,25 +112,49 @@ void GenericModule::Offline()
         uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
         _log(SHIP__MODULE_TRACE, "GenericModule::Offline() -  there are %u attributes in effect %u", ids, itr->first );
         while (cur < ids) {
-            if (itr->first != 16) {  // effect Offline.  this sets CPU and PG usage
+            if (itr->first != Effect_online) {  // effect Online.  this sets CPU and PG usage
                 testID = itr->second->GetAffectingID(cur);
-                if (groupID != testID) {
+                _log(SHIP__MODULE_DEBUG, "GenericModule::Offline() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
+                if ((testID != 0) && (groupID != testID)) {
                     ++cur;
                     continue;
                 }
             }
+            // vector<uint32> of targetgroups (or targetCategorys if id < 50)
+            /* this isnt right yet....targetIDsList is vector, but i need size for it to iterate */
+            targetIDs = itr->second->GetTargetIDList(cur);
             targetAttrID = itr->second->GetTargetAttributeID(cur);
             sourceAttrID = itr->second->GetSourceAttributeID(cur);
             ecType = itr->second->GetReverseCalculationType(cur);
-            _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
-                 itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            if (itr->first == 16)   // effect Online.  this sets CPU and PG usage
-                m_ModShipAttrComp->SetOnlineAttributes(targetAttrID, sourceAttrID, ecType);
+            _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
+                        itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
+            // check for online and passive effects to set CPU and PG usage without stacking penalities.
+            if ((itr->first == Effect_online) or (isRig()) or (isSubSystem()) or (itr->first == Effect_damageControl))
+                m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
             else
-                m_ModShipAttrComp->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+                m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
             ++cur;
+            targetIDs.clear();
         }
     }
 
     m_Item->PutOffline();
 }
+
+double GenericModule::GetEffectiveness(uint16 attrib)
+{
+    std::map<uint16, double>::iterator itr = m_attribStacking.find(attrib);
+    if (itr != m_attribStacking.end())
+        return itr->second;
+    return 0.0;
+}
+
+void GenericModule::SetEffectiveness(uint16 attrib, double effectiveness)
+{
+    std::map<uint16, double>::iterator itr = m_attribStacking.find(attrib);
+    if (itr != m_attribStacking.end())
+        itr->second = effectiveness;
+    else
+        m_attribStacking.emplace(attrib, effectiveness);
+}
+

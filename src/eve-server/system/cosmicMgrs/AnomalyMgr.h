@@ -23,28 +23,47 @@
     Author:        Allan
 */
 
-#ifndef _EVEMU_SYSTEM_DUNGEONMGR_H
-#define _EVEMU_SYSTEM_DUNGEONMGR_H
+#ifndef EVEMU_SYSTEM_ANOMALYMGR_H_
+#define EVEMU_SYSTEM_ANOMALYMGR_H_
 
-#include "dungeon/DungeonDB.h"
-#include "system/SystemDB.h"    //for DBSystemEntity
-#include "system/SystemEntity.h"
-#include "system/SystemManager.h"
+/*  this class is in charge of creating/destroying and maintaining
+ * anomalies in a system.
+ *
+ *  a new iteration of this class is created for each system as that system
+ * is booted.
+ */
 
-class SystemDungeonEntity : public ItemSystemEntity {
-public:
-    SystemDungeonEntity(SystemManager *system, InventoryItemRef self);
-    ~SystemDungeonEntity() { }
+#include "system/cosmicMgrs/ManagerDB.h"
 
-    SystemManager *System() const { return(m_system); }
-    bool IsVisibleSystemWide() const { return false; }
 
-    PyDict *MakeSlimItem() const;
-    void EncodeDestiny( Buffer& into ) const;
+class DungeonMgr;
+class WormholeMgr;
+class PyServiceMgr;
+class SystemManager;
 
+class AnomalyMgr
+{
+  public:
+      AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
+      virtual ~AnomalyMgr()                             { /* do nothing here */ }
+
+      void Init();
+      void Process();
+
+    /* we do not own any of these */
 protected:
-    SystemManager *const m_system;    //we do not own this
-    DungeonDB m_db;
+    ManagerDB m_db;
+
+private:
+    /* we do not own any of these */
+    DungeonMgr* m_dungMgr;
+    WormholeMgr* m_whMgr;
+    SystemManager* m_system;
+    PyServiceMgr& m_services;
+
+    bool m_initalized;
+
 };
 
-#endif  // _EVEMU_SYSTEM_DUNGEONMGR_H
+#endif  // EVEMU_SYSTEM_ANOMALYMGR_H_
+

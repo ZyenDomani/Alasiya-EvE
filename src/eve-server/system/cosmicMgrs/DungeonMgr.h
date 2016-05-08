@@ -23,13 +23,43 @@
     Author:        Allan
 */
 
-#include "eve-server.h"
+#ifndef _EVEMU_SYSTEM_DUNGEONMGR_H
+#define _EVEMU_SYSTEM_DUNGEONMGR_H
 
-#include "system/AnomalyMgr.h"
+/*  this class is in charge of creating/destroying and maintaining
+ * dungeons in a system.
+ *
+ *  a new iteration of this class is created for each system as that system
+ * is booted.
+ */
 
-AnomalyMgr::AnomalyMgr() {
+#include "system/SystemManager.h"
+#include "system/cosmicMgrs/ManagerDB.h"
 
-}
+class SpawnMgr;
+class PyServiceMgr;
 
-// this class will control all aspects of creating, monitoring, removing, logging and saving of all system anomalies.
-// should this be in pyservices or as a singleton?
+class DungeonMgr {
+public:
+    DungeonMgr(SystemManager *system, PyServiceMgr& svc);
+    ~DungeonMgr()     { /* do nothing here */ }
+
+
+    void Init();
+    void Process();
+
+    /* we do not own any of these */
+protected:
+    ManagerDB m_db;
+
+    /* we do not own any of these */
+private:
+    SpawnMgr* m_spawnMgr;
+    SystemManager* m_system;
+    PyServiceMgr& m_services;
+
+    bool m_initalized;
+
+};
+
+#endif  // _EVEMU_SYSTEM_DUNGEONMGR_H

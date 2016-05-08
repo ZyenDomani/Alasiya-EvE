@@ -1,11 +1,26 @@
-<!--  notes here
+
+<!-- Server XML Config Version: 6.2 -->
+
+<!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
+    boolean can use either 0/1 or true/false.
 -->
+
 
 <eve-server>
 
-    <world>
+    <server>
         <testServer>1</testServer>  <!-- some functions disabled for live server -->
+        <UseBeanCount>1</UseBeanCount>  <!-- bool  -client error reporting -->
+        <UseProfiling>0</UseProfiling><!-- bool -->
+        <!--  BE VERY CAREFUL WITH THE SETTING BELOW! This will create a jetcan at player's ship position every tic while ship is moving -->
+        <UseShipTracking>0</UseShipTracking><!-- bool -->
+        <!--  This changes how the main server loop sleeps (loop count) -->
+        <ServerSleepTime>10</ServerSleepTime><!-- server sleep time in ms -->
+        <maxPlayers>2500</maxPlayers>
+    </server>
+
+    <world>
     <!-- not implemented yet -->
         <chatLogs>0</chatLogs><!-- bool -->
         <globalChat>1</globalChat><!-- bool -->
@@ -15,7 +30,6 @@
         <loginInfo>1</loginInfo><!-- bool -->
         <loginMsg>1</loginMsg><!-- bool -->
         <mailDeliveryDelay>5</mailDeliveryDelay>
-        <maxPlayers>2500</maxPlayers>
         <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
     </world>
 
@@ -33,6 +47,8 @@
         <!-- Decay is implemented -->
         <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default) -->
         <NPCDecay>90</NPCDecay><!-- in minutes (90 min default) -->
+        <!-- WebUpdate is implemented -->
+        <WebUpdate>15</WebUpdate><!-- save current server status in db.  in minutes  15m default -->
         <!-- these rates are not implemented yet -->
         <RateDropItem>1.0</RateDropItem><!--  only used if != 1.0 -->
         <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
@@ -100,27 +116,21 @@
         <port>26000</port>
         <imageServer>192.168.1.13</imageServer>
         <imageServerPort>26001</imageServerPort>
-        <apiServer>192.168.1.13</apiServer>
-        <apiServerPort>26002</apiServerPort>
     </net>
 
     <threads><!-- not implemented yet -->
         <NetworkThreads>2</NetworkThreads>
         <DatabaseThreads>2</DatabaseThreads>
         <WorldThreads>2</WorldThreads>
-        <APIThreads>1</APIThreads>
         <ImageServerThreads>1</ImageServerThreads>
         <ConsoleThreads>1</ConsoleThreads>
     </threads>
 
-    <misc>
-        <UseProfiling>0</UseProfiling><!-- bool -->
-        <UseAPIServer>0</UseAPIServer><!-- bool -->
-        <!--  BE VERY CAREFUL WITH THE SETTING BELOW! This will create a jetcan at player's ship position every tic while ship is moving -->
-        <UseShipTracking>0</UseShipTracking><!-- bool -->
-        <!--  This changes how the main server loop sleeps (loop count) -->
-        <ServerSleepTime>10</ServerSleepTime><!-- server sleep time in ms -->
-    </misc>
+    <cosmic><!-- not implemented yet -->
+        <AnomalyEnabled>0</AnomalyEnabled><!-- bool -->
+        <DungeonEnabled>0</DungeonEnabled><!-- bool -->
+        <WormHoleEnabled>0</WormHoleEnabled><!-- bool -->
+    </cosmic>
 
     <crime><!-- not implemented yet -->
         <CrimFlagTime>900</CrimFlagTime> <!-- seconds  (15m default) -->

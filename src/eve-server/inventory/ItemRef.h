@@ -27,23 +27,20 @@
 #define __ITEM_REF__H__INCL__
 
 #include "eve-common.h"
-//#include "utils/RefPtr.h"
 
 class InventoryItem;
 class Blueprint;
-class Ship;
+class ShipItem;
 class CelestialObject;
 class Skill;
 class Certificate;
-class Owner;
-class Structure;
+class StructureItem;
 class CargoContainer;
 class SystemEntity;
 class WreckContainer;
 class Character;
 class SolarSystem;
-class Station;
-class Missile;
+class StationItem;
 
 /*
  * Typedefs for all item classes we have:
@@ -52,18 +49,16 @@ typedef RefPtr<InventoryItem>            InventoryItemRef;
 typedef RefPtr<const InventoryItem>      InventoryItemConstRef;
 typedef RefPtr<Blueprint>                BlueprintRef;
 typedef RefPtr<const Blueprint>          BlueprintConstRef;
-typedef RefPtr<Ship>                     ShipRef;
-typedef RefPtr<const Ship>               ShipConstRef;
+typedef RefPtr<ShipItem>                 ShipItemRef;
+typedef RefPtr<const ShipItem>           ShipItemConstRef;
 typedef RefPtr<CelestialObject>          CelestialObjectRef;
 typedef RefPtr<const CelestialObject>    CelestialObjectConstRef;
 typedef RefPtr<Skill>                    SkillRef;
 typedef RefPtr<const Skill>              SkillConstRef;
 typedef RefPtr<Certificate>              CertificateRef;
 typedef RefPtr<const Certificate>        CertificateConstRef;
-typedef RefPtr<Owner>                    OwnerRef;
-typedef RefPtr<const Owner>              OwnerConstRef;
-typedef RefPtr<Structure>                StructureRef;
-typedef RefPtr<const Structure>          StructureConstRef;
+typedef RefPtr<StructureItem>            StructureItemRef;
+typedef RefPtr<const StructureItem>      StructureItemConstRef;
 typedef RefPtr<CargoContainer>           CargoContainerRef;
 typedef RefPtr<const CargoContainer>     CargoContainerConstRef;
 typedef RefPtr<WreckContainer>           WreckContainerRef;
@@ -72,10 +67,8 @@ typedef RefPtr<Character>                CharacterRef;
 typedef RefPtr<const Character>          CharacterConstRef;
 typedef RefPtr<SolarSystem>              SolarSystemRef;
 typedef RefPtr<const SolarSystem>        SolarSystemConstRef;
-typedef RefPtr<Station>                  StationRef;
-typedef RefPtr<const Station>            StationConstRef;
-typedef RefPtr<Missile>                  MissileRef;
-typedef RefPtr<const Missile>            MissileConstRef;
+typedef RefPtr<StationItem>              StationItemRef;
+typedef RefPtr<const StationItem>        StationItemConstRef;
 
 #endif /* !__ITEM_REF__H__INCL__ */
 

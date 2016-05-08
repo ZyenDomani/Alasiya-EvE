@@ -109,7 +109,7 @@ PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
      *
      *
      *  sLog.Log( "CorpMgrService::Handle_GetAssetInventory()", "size= %u", call.tuple->size() );
-     *  call.Dump(SERVICE__CALLS);
+     *  call.Dump(SERVICE__CALL_DUMP);
      */
     Call_GetAssetInventory args;
 
@@ -140,7 +140,7 @@ PyResult CorpMgrService::Handle_GetCorporationStations(PyCallArgs &call) {
 */
 
   sLog.Log( "CorpMgrService::Handle_GetCorporationStations()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -149,7 +149,7 @@ PyResult CorpMgrService::Handle_GetCorporationIDForCharacter(PyCallArgs &call) {
 /**        returns corpID for given charID  */
 
   sLog.Log( "CorpMgrService::Handle_GetCorporationIDForCharacter()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -160,7 +160,7 @@ PyResult CorpMgrService::Handle_GetAssetInventoryForLocation(PyCallArgs &call) {
     */
 
 sLog.Log( "CorpMgrService::Handle_GetAssetInventoryForLocation()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -171,7 +171,7 @@ PyResult CorpMgrService::Handle_AuditMember(PyCallArgs &call) {
      */
 
     sLog.Log( "CorpMgrService::Handle_AuditMember()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }

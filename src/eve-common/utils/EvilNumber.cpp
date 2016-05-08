@@ -343,31 +343,17 @@ bool EvilNumber::isFloat()
 
 int64 EvilNumber::get_int()
 {
-    if( mType != evil_number_int ) {
-        int64 temp = (int64)mValue.fVal;
-
-        /* this checks if the type convention lost stuff behind the decimal point (comma for you Europeans ;)
-        if (double(temp) != mValue.fVal)
-            sLog.Warning("EvilNumber", "Invalid call get_int called on a double");
-        */
-
+    if( mType != evil_number_int )
         return (int64)mValue.fVal;
-    }
+
     return mValue.iVal;
 }
 
 double EvilNumber::get_float()
 {
-    if( mType != evil_number_float ) {
-        double temp = (double)mValue.iVal;
-
-        /* this checks if the type convention ended up on a double overflow
-        if (int64(temp) != mValue.iVal)
-            sLog.Warning("EvilNumber", "Invalid call get_float called on a int");
-        */
-
+    if( mType != evil_number_float )
         return (double)mValue.iVal;
-    }
+
     return mValue.fVal;
 }
 

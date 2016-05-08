@@ -27,8 +27,8 @@
 #define _ALERT_SERVICE_H
 
 #include "PyService.h"
+#include "python/PyTraceLog.h"
 
-class PyTraceLog;
 
 class AlertService : public PyService {
 public:

@@ -27,7 +27,7 @@
 #include "ship/modules/SubSystemModule.h"
 
 
-SubSystemModule::SubSystemModule(InventoryItemRef item, ShipRef ship)
+SubSystemModule::SubSystemModule(InventoryItemRef item, ShipItemRef ship)
 : PassiveModule(item, ship)
 {
 

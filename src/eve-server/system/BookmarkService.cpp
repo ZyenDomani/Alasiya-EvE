@@ -62,6 +62,7 @@ BookmarkService::~BookmarkService() {
     delete m_dispatch;
 }
 
+/** @todo (Allan) update this to NOT hit db on EVERY BM create */
 uint32 BookmarkService::GetNextAvailableBookmarkID()
 {
     DBQueryResult res;
@@ -157,7 +158,7 @@ PyResult BookmarkService::Handle_GetBookmarks(PyCallArgs &call) {
 
 PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
     sLog.Log("BookmarkService", "Handle_BookmarkScanResult() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -233,14 +234,14 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
     typeCheck = call.tuple->GetItem( 0 )->AsInt()->value();  //current shipID/stationID/POS_ID/systemID
     typeID = m_db.FindBookmarkTypeID(typeCheck);    // get bm typeID
 
-    if ( typeCheck >= 140000000 ) {      // entity #'s above 140m are player-owned
-        point = call.client->GetPosition();       // Get x,y,z location.  bm type is coordinate as "spot in xxx system"
+    if (IsNotStaticItem(typeCheck)) {      // entity #'s above 140m are player-owned
+        point = call.client->GetShipSE()->GetPosition();       // Get x,y,z location.  bm type is coordinate as "spot in xxx system"
         locationID = call.client->GetLocationID();       // locationID of bm is current sol system
         itemID = locationID;      //  locationID = itemID for coord bm.  shows jumps, s/c/r in bm window, green in system
-    }else if ( typeID == 2502 ){  // not player-owned, check for station.
+    } else if (typeID == 2502){  // not player-owned, check for station.
         itemID =  call.tuple->GetItem( 0 )->AsInt()->value();  // this is stationID
         locationID = call.client->GetSystemID();       // get sol system of current station
-    }else{      // char is passing systemID from map.  char is marking a solar systemID for bm
+    } else {      // char is passing systemID from map.  char is marking a solar systemID for bm
         locationID = call.tuple->GetItem( 0 )->AsInt()->value();  // this is systemID from map
         itemID = locationID;      //  locationID = itemID for coord bm.  shows jumps, s/c/r in bm window, green in system
     }
@@ -473,7 +474,7 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call)          //no
       */
       sLog.Error( "BookmarkService::Handle_DeleteBookmarks()", "Service is not handled yet.  Returning NULL.");
       call.client->SendInfoModalMsg("Deleting Bookmarks is currently broken.");
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 /*
     uint32 bookmarkID;
     if(call.tuple->IsObjectEx()) {
@@ -534,7 +535,7 @@ PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
 */
   sLog.Error( "BookmarkService::Handle_MoveBookmarksToFolder()", "Service is not handled yet.  Returning NULL.");
   call.client->SendInfoModalMsg("Moving Bookmarks to a folder is currently broken.");
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
       return NULL;
   //return(new PyNone());
   // needs either a 'real' return or nothing.....*SRVERROR* TypeError: 'NoneType' object is not iterable
@@ -557,7 +558,7 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
             */
 
       sLog.Error( "BookmarkService::Handle_CopyBookmarks()", "Service is not handled yet.  Returning NULL.");
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return(new PyNone());
 }
@@ -569,7 +570,7 @@ PyResult BookmarkService::Handle_AddBookmarkFromVoucher(PyCallArgs &call) {
 
   sLog.Error( "BookmarkService::Handle_AddBookmarkFromVoucher()", "Service is not handled yet.  Returning NULL.");
   call.client->SendInfoModalMsg("Creating Bookmarks from Vouchers is currently broken.");
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return(new PyNone());
 }

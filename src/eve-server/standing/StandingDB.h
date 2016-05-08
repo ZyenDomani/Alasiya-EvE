@@ -32,36 +32,34 @@
 #include "packets/Standing.h"
 
 class PyRep;
-class PyObjectEx;
 
 class StandingDB
 : public ServiceDB
 {
 public:
-    PyObjectEx *GetFactionStandings();
-    PyObjectEx *GetCharStandings(Client *pClient);
-    PyObjectEx *GetCorpStandings(uint32 corpID);
-    PyObjectEx *GetCharNPCStandings(uint32 charID);
-    PyRep *GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction, uint32 eventID=0, uint32 eventType=0, uint64 eventDateTime=0);
-    PyRep *GetStandingCompositions(uint32 toID, uint32 fromID);
+    PyRep* GetFactionStandings();
+    PyRep* GetCorpStandings(uint32 corpID);
+    PyRep* GetCharStandings(Client* pClient);
+    PyRep* GetSystemSovInfo(uint32 systemID);
+    PyRep* PrimeCharStandings(uint32 charID);
+    PyRep* GetCharNPCStandings(uint32 charID);
+    PyRep* GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction, uint32 eventID=0, uint32 eventType=0, uint64 eventDateTime=0);
+    PyRep* GetStandingCompositions(uint32 toID, uint32 fromID);
 
-    PyRep *PrimeCharStandings(uint32 charID);
-    PyRep *GetSystemSovInfo(uint32 systemID);
-
+    double GetStandingChanges(uint32 charID);
     double GetAgentStanding(uint32 toID, uint32 fromID);     // from agents to characters. changed by missions status'
     double GetAllianceStanding(uint32 toID, uint32 fromID);  // corporation<-->alliance, alliance<-->alliance - changed thru Corp window
     double GetCharStanding(uint32 toID, uint32 fromID);      // character<-->character, character<-->corporation - changed thru PnP window
     double GetCorpStanding(uint32 toID, uint32 fromID);      // corporation<-->character, corporation<-->corporation - changed thru Corp window
     double GetFactionStanding(uint32 toID, uint32 fromID);   // NPC Faction <--> NPC Faction - pre-set by game history
     double GetNPCCorpStanding(uint32 toID, uint32 fromID);   // NPC corps --> characters - changed by missions and faction kills
-    double GetStandingChanges(uint32 charID);
 
     void SetAgentStanding(uint32 toID, uint32 fromID, double standing);
     void SetAllianceStanding(uint32 toID, uint32 fromID, double standing);
     void SetCharStanding(uint32 toID, uint32 fromID, double standing);
     void SetCorpStanding(uint32 toID, uint32 fromID, double standing);
     void SetNPCCorpStanding(uint32 toID, uint32 fromID, double standing);
-    void SaveStandingChanges(uint32 fromID, uint32 toID, uint32 direction, uint32 eventID, uint32 eventType, double amount, std::string msg);
+    void SaveStandingChanges(uint32 fromID, uint32 toID, uint32 direction, uint32 eventType, double amount, std::string msg);
 
 };
 

@@ -55,7 +55,7 @@
 #include "weapon_modules/SuperWeapon.h"
 
 //how you should access the modules
-static GenericModule* ModuleFactory(InventoryItemRef item, ShipRef ship)
+static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
 {
 
     if( (item->categoryID() != EVEDB::invCategories::Module) && (item->categoryID() != EVEDB::invCategories::Subsystem) )

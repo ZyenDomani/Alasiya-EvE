@@ -32,16 +32,17 @@
 static const double EVEVersionNumber = 7.31;
 static const uint16 MachoNetVersion = 320;
 static const int32 EVEBuildVersion = 360229;
-static const char* const EVEProjectCodename = "EVE-EVE-TRANQUILITY";
 static const char* const EVEProjectRegion = "ccp";
 static const char* const EVEProjectVersion = "EVE-EVE-TRANQUILITY@ccp";
+static const char* const EVEProjectCodename = "EVE-EVE-TRANQUILITY";
 
 static const int32 EVEBirthday = 170472;
 
 /*  Allan's Static Definitions */
-static const float Log_Version = 4.4;    /*  match versions here with logtypes.h and log.ini for full logging support */
-static const float EVE_Build = 1.41;    /* this is for bug tracking on my forums.  -allan 3July15 */
-static const char* const EVEMU_REVISION = "0.8.05-allan";
-static const char* const EVEMU_BUILD_DATE = "10 March 2016";
+static const float Config_Version = 6.2; /* match versions here with eve-server.xml and EveServerConfig.cpp for full config support */
+static const float Log_Version = 5.1;    /*  match versions here with logtypes.h and log.ini for full logging support */
+static const float EVE_Build = 1.47;     /* this is for bug tracking on my forums.  -allan 3July15 */
+static const char* const EVEMU_REVISION = "0.8.11-allan";
+static const char* const EVEMU_BUILD_DATE = "25 April 2016";
 
 #endif

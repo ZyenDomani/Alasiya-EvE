@@ -32,7 +32,6 @@ void ScanningDB::GetScanResults(DBQueryResult &res) {
     if(!sDatabase.RunQuery(res,
         "SELECT typeID, scanGroupID, groupID, strengthAttributeID, dungeonName, id, x, y, z"
         " FROM dedTestTable")) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-    return;
+        _log(DATABASE__ERROR, "Error in GetScanResults query: %s", res.error.c_str());
         }
 }

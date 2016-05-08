@@ -139,6 +139,11 @@ ObjCacheService::ObjCacheService(PyServiceMgr *mgr, const char *cacheDir)
   m_dispatch(new Dispatcher(this)),
   m_cacheDir(cacheDir)
 {
+    std::string _basePath = sConfig.files.cacheDir;
+    if (_basePath[_basePath.size() - 1] != '/')
+        _basePath += "/";
+    CreateDirectory(_basePath.c_str(), nullptr);
+
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(ObjCacheService, GetCachableObject);
@@ -259,7 +264,7 @@ PyResult ObjCacheService::Handle_GetCachableObject(PyCallArgs &call) {
 20:27:48 [SvcCall]         [ 3] Integer field: 333444
   */
   //sLog.Log( "ObjCacheService", "Handle_GetCachableObject" );
-  //call.Dump(SERVICE__CALLS);
+  //call.Dump(SERVICE__CALL_DUMP);
     CallGetCachableObject args;
     if(!args.Decode(&call.tuple))
     {

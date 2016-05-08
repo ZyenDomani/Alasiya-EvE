@@ -137,8 +137,7 @@ PyResult CorporationService::Handle_GetCorpInfo(PyCallArgs &call) {
 
 
 PyResult CorporationService::Handle_GetNPCDivisions(PyCallArgs &call) {
-    PyRep *result = m_db.ListNPCDivisions();
-    return (result);
+    return m_db.ListNPCDivisions();
 }
 
 PyResult CorporationService::Handle_GetEmploymentRecord(PyCallArgs &call) {
@@ -264,7 +263,7 @@ PyResult CorporationService::Handle_GetRecruitmentAdRegistryData(PyCallArgs &cal
 AttributeError: 'NoneType' object has no attribute 'types'
 
       sLog.Log( "CorporationService::Handle_GetRecruitmentAdRegistryData()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 */
   return NULL;
 }
@@ -272,7 +271,7 @@ AttributeError: 'NoneType' object has no attribute 'types'
 PyResult CorporationService::Handle_IsEnemyFaction(PyCallArgs &call)
 {
       sLog.Log( "CorporationService::Handle_IsEnemyFaction()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -290,7 +289,7 @@ PyResult CorporationService::Handle_GetVoteCasesByCorporation(PyCallArgs &call) 
 22:47:43 [SvcCall]         Integer field: 1
 */
       sLog.Log( "CorporationService::Handle_GetVoteCasesByCorporation()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -298,7 +297,7 @@ PyResult CorporationService::Handle_GetVoteCasesByCorporation(PyCallArgs &call) 
 PyResult CorporationService::Handle_MoveCorpHQHere(PyCallArgs &call)
 {
       sLog.Log( "CorporationService::Handle_MoveCorpHQHere()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -307,7 +306,7 @@ PyResult CorporationService::Handle_MoveCorpHQHere(PyCallArgs &call)
 PyResult CorporationService::Handle_AddCorporateContact(PyCallArgs &call)
 {
       sLog.Log( "CorporationService::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
@@ -315,7 +314,7 @@ PyResult CorporationService::Handle_AddCorporateContact(PyCallArgs &call)
 PyResult CorporationService::Handle_GetRecentKillsAndLosses(PyCallArgs &call)
 {
       sLog.Log( "CorporationService::Handle_GetRecentKillsAndLosses()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }

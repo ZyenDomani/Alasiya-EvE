@@ -28,18 +28,18 @@
 #include "character/Character.h"
 
 
-ShieldTransporter::ShieldTransporter( InventoryItemRef item, ShipRef ship )
+ShieldTransporter::ShieldTransporter( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 }
 
 void ShieldTransporter::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -84,12 +84,12 @@ void ShieldTransporter::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 double ShieldTransporter::DoCycle()
 {
-        if (!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
+        if (!m_Ship->GetPilot()->GetShipSE()->SysBubble())
         {
             Deactivate();
             return 0;
@@ -97,12 +97,12 @@ double ShieldTransporter::DoCycle()
         _ShowCycle();
 
         // Apply boost amount:
-        EvilNumber shieldCharge = m_targetEntity->Item()->GetAttribute(AttrShieldCharge);
+        EvilNumber shieldCharge = m_targetEntity->GetSelf()->GetAttribute(AttrShieldCharge);
         shieldCharge += m_Item->GetAttribute(AttrShieldBonus);
-        if (shieldCharge > m_targetEntity->Item()->GetAttribute(AttrShieldCapacity)) {
-            shieldCharge = m_targetEntity->Item()->GetAttribute(AttrShieldCapacity);
+        if (shieldCharge > m_targetEntity->GetSelf()->GetAttribute(AttrShieldCapacity)) {
+            shieldCharge = m_targetEntity->GetSelf()->GetAttribute(AttrShieldCapacity);
         }
-        m_targetEntity->Item()->SetAttribute(AttrShieldCharge, shieldCharge);
+        m_targetEntity->GetSelf()->SetAttribute(AttrShieldCharge, shieldCharge);
 
         return _GetDuration();
 }
@@ -110,7 +110,7 @@ double ShieldTransporter::DoCycle()
 void ShieldTransporter::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
      m_Ship,
      m_Item->itemID(),
@@ -145,7 +145,7 @@ void ShieldTransporter::_ShowCycle()
     shipEff.environment = ge.Encode();
     shipEff.startTime = shipEff.timeNow;
     shipEff.duration = _GetDuration();
-    shipEff.repeat = 0;  //# times to repeat (should be ammo qty?)
+    shipEff.repeat = 0;  /* boolean of repeatable cycles without pilot activation */
     shipEff.error = new PyNone;
 
     std::vector<PyTuple*> events;
@@ -153,7 +153,7 @@ void ShieldTransporter::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double ShieldTransporter::_GetCapNeed()
@@ -163,11 +163,11 @@ double ShieldTransporter::_GetCapNeed()
 	double moduleCapNeed = m_Item->GetAttribute(AttrCapacitorNeed).get_float();
 
 	// Now we do the initial cap need calculations
-	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetOperator()->GetChar()->GetSkillLevel(skillShieldEmissionSystems)));
+	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillShieldEmissionSystems)));
 
 	// Now we check if our ship is Scimitar or Basilisk. If yes - we apply ship's bonuses
 	if(m_Ship->typeID() == 11985 || m_Ship->typeID() == 11978){
-		capacitorNeed *= (1 - (0.15 * m_Ship->GetOperator()->GetChar()->GetSkillLevel(skillLogistics)));
+		capacitorNeed *= (1 - (0.15 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillLogistics)));
 	}
 
     return capacitorNeed;

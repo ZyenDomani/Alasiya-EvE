@@ -58,19 +58,16 @@ RefPtr<_Ty> Skill::_LoadSkill(ItemFactory &factory, uint32 skillID,
 
 SkillRef Skill::Spawn(ItemFactory &factory, ItemData &data)
 {
-    uint32 skillID = _Spawn( factory, data );
+    uint32 skillID = CreateItemID( factory, data );
     if( skillID == 0 )
         return SkillRef();
 
     SkillRef skillRef = Skill::Load( factory, skillID );
-
-    skillRef->SetAttribute(AttrIsOnline, 1); // Is Online
-skillRef->SaveItem();
-
+    skillRef->SaveItem();
     return skillRef;
 }
 
-uint32 Skill::_Spawn(ItemFactory &factory, ItemData &data)
+uint32 Skill::CreateItemID(ItemFactory &factory, ItemData &data)
 {
     // check it's a skill
     const ItemType *type = factory.GetType( data.typeID );
@@ -83,7 +80,7 @@ uint32 Skill::_Spawn(ItemFactory &factory, ItemData &data)
         return 0;
     }
     // spawn item, nothing else
-    return InventoryItem::_Spawn( factory, data );
+    return InventoryItem::CreateItemID( factory, data );
 }
 
 EvilNumber Skill::GetSPForLevel( EvilNumber level ) {

@@ -20,63 +20,62 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:     Aknor Jaden, Allan
+    Author:     Aknor Jaden
+    Updates:    Allan
 */
 
 #include "eve-server.h"
 
-#include "mining/Asteroid.h"
+#include "system/Asteroid.h"
 #include "ship/DestinyManager.h"
 
-using namespace Destiny;
 
-AsteroidEntity::AsteroidEntity(
-    InventoryItemRef asteroid,
-    SystemManager *system,
-    PyServiceMgr &services,
-    const GPoint &position)
-: DynamicSystemEntity(new DestinyManager(this, system), asteroid),
-  m_system(system),
-  m_services(services)
+AsteroidSE::AsteroidSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)
+: ObjectSystemEntity(self, services, system),
+m_growTimer(360000) /* arbitrary for 1 hour */
 {
-    _asteroidRef = asteroid;
-    m_destiny->SetPosition(position, false);
+    m_growTimer.Disable();
 }
 
-void AsteroidEntity::Process() {
+void AsteroidSE::Process() {
+    /* called by EntityList::Process on every loop */
+    /* this is empty default call */
     SystemEntity::Process();
 }
 
-void AsteroidEntity::ForcedSetPosition(const GPoint &pt) {
-    m_destiny->SetPosition(pt, false);
+void AsteroidSE::ProcessOther() {
+    /* called by EntityList::Process on each tic */
+    /* this is empty default call */
+    ObjectSystemEntity::ProcessOther();
+
+    /*  set/check timers for grow/respawn, etc */
+    if (m_growTimer.Check())
+        Grow();
+
 }
 
-void AsteroidEntity::Grow() {
-
-}
-
-void AsteroidEntity::EncodeDestiny( Buffer& into ) const
+void AsteroidSE::EncodeDestiny( Buffer& into )
 {
-    const GPoint& position = GetPosition();
-    const std::string itemName( GetName() );
+    using namespace Destiny;
+
     BallHeader head;
-    head.entityID = GetID();
-    head.mode = DSTBALL_RIGID;
-    head.radius = GetRadius();
-    head.x = position.x;
-    head.y = position.y;
-    head.z = position.z;
-    head.flags = IsMassive;
+        head.entityID = GetID();
+        head.mode = DSTBALL_RIGID;
+        head.radius = GetRadius();
+        head.x = x();
+        head.y = y();
+        head.z = z();
+        head.flags = IsMassive;
     into.Append( head );
 
     DSTBALL_RIGID_Struct main;
-    main.formationID = 0xFF;
+        main.formationID = 0xFF;
     into.Append( main );
 
-    _log(COMMON__WARNING, "AsteroidEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(COMMON__WARNING, "AsteroidSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
-void AsteroidEntity::MakeDamageState(DoDestinyDamageState &into) const {
+void AsteroidSE::MakeDamageState(DoDestinyDamageState &into) {
     into.shield = 1.0;
     into.recharge = 30000;
     into.timestamp = Win32TimeNow();
@@ -84,3 +83,9 @@ void AsteroidEntity::MakeDamageState(DoDestinyDamageState &into) const {
     into.structure = 1.0;
 }
 
+void AsteroidSE::Grow() {
+    /*  not real sure how to implement this
+     * maybe use internal data structure to hold sizes (current, possible) and time interval
+     * use this to check/update current sizes (radius and mass)
+     */
+}

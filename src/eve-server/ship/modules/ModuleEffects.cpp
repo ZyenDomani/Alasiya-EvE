@@ -65,7 +65,6 @@ MEffect::MEffect(uint32 effectID)
 	m_EffectLoaded = false;
 	m_EffectsInfoLoaded = false;
 
-
     m_AffectingIDs.clear();
     m_AffectedTypes.clear();
     m_AffectingTypes.clear();
@@ -216,17 +215,16 @@ void MEffect::_Populate(uint32 effectID)
     SafeDelete(res);
 }
 
-/*
-typeTargetGroupIDlist MEffect::GetTargetGroupIDlist ( uint32 index ) {
-    if ((m_EffectID == 0) || (!m_EffectsInfoLoaded))
-        return 0;
-    std::map<uint32, typeTargetGroupIDlist>::iterator cur = m_TargetGroupIDlists.find(index)->second;
-    if (cur == m_TargetGroupIDlists.end())
-        return 0;
-    return cur.second;
-}
-*/
+typeTargetGroupIDlist MEffect::GetTargetIDList(uint32 index) {
+    typeTargetGroupIDlist nil;
+    if ((!m_EffectID) || (!m_EffectsInfoLoaded))
+        return nil;
+    std::map<uint32, typeTargetGroupIDlist>::iterator cur = m_TargetGroupIDlists.find(index);
+    if (cur != m_TargetGroupIDlists.end())
+        return cur->second;
 
+    return nil;
+}
 
 // ////////////////////// DGM_Type_Effects_Table Class ////////////////////////////
 TypeEffectsList::TypeEffectsList(uint32 typeID)
@@ -246,7 +244,7 @@ TypeEffectsList::TypeEffectsList(uint32 typeID)
     DBResultRow row;
     while (res->GetRow(row) ) {
 		effectID = row.GetUInt(0);
-		isDefault = row.IsNull(1) ? 0 : row.GetUInt(1);
+		isDefault = row.GetUInt(1);
 		m_typeEffectsList.insert(std::pair<uint32,uint32>(effectID,isDefault));
 		++total_effect_count;
         _log(SHIP__MODULE_TRACE, "Effects List - effect %u inserted for typeID %u", effectID, typeID);
@@ -311,7 +309,7 @@ void DGM_Effects_Table::_Populate()
 
     //cleanup
     SafeDelete(res);
-	sLog.Log("    Effects Table", "%u effects objects loaded in %.3fms", total_effect_count, (GetTimeMSeconds() - start));
+	sLog.Log("    Effects Table", "%u effects objects loaded in %.3fs", total_effect_count, (GetTimeMSeconds() - start));
 }
 
 std::shared_ptr<MEffect> DGM_Effects_Table::GetEffect(uint32 effectID)
@@ -393,8 +391,6 @@ m_pItem(pItem)
 
 ModuleEffects::~ModuleEffects()
 {
-    SafeDelete(m_defaultEffect);
-
     m_pItem = nullptr;
 
     m_GangEffects.clear();
@@ -460,8 +456,7 @@ void ModuleEffects::_populate()
 
     std::shared_ptr<MEffect> mEffectPtr = nullptr;
     m_defaultEffect = nullptr;     // Set this to NULL until the default effect is found, if there is any
-    uint32 effectID = 0;
-    uint32 groupID = m_pItem->groupID(), testID = 0;
+    uint32 effectID = 0, groupID = m_pItem->groupID(), testID = 0, state = 0;
 
     //go through and find each effect, then add pointer to effect to our own map
     for (auto cur : effectsList) {
@@ -476,57 +471,59 @@ void ModuleEffects::_populate()
             case 13:    // medPower
                 m_medPower = true;
                 continue;
-            case 2663:  // rig
-                m_rigSlot = true;
-                continue;
             case 3772:  // subsystem
                 m_subSystem = true;
                 continue;
+            case 2663:  // rig - this effectID also sets calibration used on ship, so the effect is needed, if only once to avoid complicated code later.
+                m_rigSlot = true;
             default: {
                 effectID = cur.first;
                 mEffectPtr = sDGM_Effects_Table.GetEffect(effectID);
+                if (!mEffectPtr) continue;
+                if (!mEffectPtr->IsEffectLoaded()) continue;
 
-                if (mEffectPtr && mEffectPtr->IsEffectLoaded()) {
-                    uint32 size = mEffectPtr->GetSizeOfAttributeList();
-                    _log(SHIP__MODULE_TRACE, "ModuleEffects::_populate() - effectID: %u size: %u", effectID, size);
-                    for (int i=0; i < size; i++) {
-                        if (effectID == 16)
-                            testID = groupID;  //  check(hack) for "Online Effect" (#16) since affectingID of 0 means "all groups"
-                        else
-                            testID = mEffectPtr->GetAffectingID(i);
-                        _log(SHIP__MODULE_DEBUG, "ModuleEffects::_populate() - testing testID: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
+                uint32 size = mEffectPtr->GetSizeOfAttributeList();
+                _log(SHIP__MODULE_TRACE, "ModuleEffects::_populate() - effectID: %u size: %u", effectID, size);
+                for (int i=0; i < size; i++) {
+                    if (effectID == 16)
+                        testID = groupID;  //  check(hack) for "Online Effect" (#16) since affectingID of 0 means "all groups"
+                    else
+                        testID = mEffectPtr->GetAffectingID(i);
 
-                        // verify this effect is for current module's groupID (avoid previous clusterfuck)
-                        if ((groupID == testID) || (testID == 0)) { // second check for "all groups"
-                            if (cur.second)
-                                m_defaultEffect = mEffectPtr.get();
+                    _log(SHIP__MODULE_DEBUG, "ModuleEffects::_populate() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
 
-                            switch(mEffectPtr->GetModuleStateWhenEffectApplied()) {
-                                case MOD_UNFITTED:
-                                    _log(SHIP__MODULE_ERROR, "ModuleEffects::_populate() - Illegal value '%u' obtained from the 'effectAppliedInState' field of the 'dgmEffectsInfo' table", mEffectPtr->GetModuleStateWhenEffectApplied());
-                                case MOD_ONLINE:
-                                    m_OnlineEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
-                                case MOD_ACTIVATED:
-                                    m_ActiveEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
-                                case MOD_OVERLOADED:
-                                    m_OverloadEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
-                                case MOD_GANG:
-                                    m_GangEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
-                                case MOD_FLEET:
-                                    m_FleetEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
-                                case MOD_OFFLINE:
-                                case MOD_DEACTIVATING:
-                                    ;   // nothing
-                            }
-                        }
-                    }
+                    // verify this effect is for current module's groupID (avoid previous clusterfuck)
+                    //  or check for "all groups"
+                    if ((testID != 0) && (groupID != testID)) continue;
+
+                    if (cur.second)
+                        m_defaultEffect = mEffectPtr.get();
+
+                    state = mEffectPtr->GetModuleStateWhenEffectApplied();
+                    if (state & MOD_UNFITTED)
+                        _log(SHIP__MODULE_ERROR, "ModuleEffects::_populate() - Illegal value '%u' obtained from the 'effectAppliedInState' field of the 'dgmEffectsInfo' table", mEffectPtr->GetModuleStateWhenEffectApplied());
+                    if (state & MOD_ONLINE)
+                        m_OnlineEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
+                    if (state & MOD_ACTIVATED)
+                        m_ActiveEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
+                    if (state & MOD_OVERLOADED)
+                        m_OverloadEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
+                    if (state & MOD_GANG)
+                        m_GangEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
+                    if (state & MOD_FLEET)
+                        m_FleetEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
+                    if (state & MOD_PASSIVE)
+                        m_PassiveEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
+                    if (state & MOD_DEACTIVATING)
+                        ;   // nothing - not used
                 }
             }
         }
     }
 
-    _log(SHIP__MODULE_INFO, "ModuleEffects::_populate() - created %u Online, %u Active, %u OverLoaded, %u Gang, and %u Fleet effects for %s (typeID %u)", \
-         m_OnlineEffects.size(), m_ActiveEffects.size(), m_OverloadEffects.size(), m_GangEffects.size(), m_FleetEffects.size(), m_pItem->itemName().c_str(), m_pItem->typeID() );
+    _log(SHIP__MODULE_INFO, "ModuleEffects::_populate() - created %u Passive, %u Online, %u Active, %u OverLoaded, %u Gang, and %u Fleet effects for %s (typeID %u)", \
+         m_PassiveEffects.size(), m_OnlineEffects.size(), m_ActiveEffects.size(), m_OverloadEffects.size(), \
+         m_GangEffects.size(), m_FleetEffects.size(), m_pItem->itemName().c_str(), m_pItem->typeID() );
 
     SafeDelete(myTypeEffectsListPtr);
 }

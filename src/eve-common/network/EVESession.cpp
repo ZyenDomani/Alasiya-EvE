@@ -37,9 +37,9 @@
 
 EVEClientSession::EVEClientSession( EVETCPConnection** n )
 : mNet( *n ),
-  mPacketHandler( NULL )
+mPacketHandler( nullptr )
 {
-    *n = NULL;
+    *n = nullptr;
 }
 
 EVEClientSession::~EVEClientSession() {
@@ -48,7 +48,7 @@ EVEClientSession::~EVEClientSession() {
 }
 
 void EVEClientSession::Reset() {
-    mPacketHandler = NULL;
+    mPacketHandler = nullptr;
 
     if ( GetState() != TCPConnection::STATE_CONNECTED )
         // Connection has been lost, there's no point in reset

@@ -66,7 +66,7 @@ protected:
 
 PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
 {
-	// TODO: really query the database directly?
+    /** @todo really query the database directly? */
     DBQueryResult res;
 	if(!sDatabase.RunQuery(res, "SELECT locationID AS stationID, COUNT(itemID) as itemCount FROM entity WHERE ownerID=%d AND flag=4 GROUP BY locationID", m_characterID))
 	{
@@ -80,7 +80,7 @@ PyResult CharMgrBound::Handle_ListStationItems( PyCallArgs& call )
 {       // this is the assets window
 	uint32 locationID = call.tuple->GetItem(0)->AsInt()->value();
 
-	// TODO: really query the database directly?
+    /** @todo really query the database directly? */
 	DBQueryResult res;
 	if(!sDatabase.RunQuery(res,
 		"SELECT "
@@ -158,6 +158,8 @@ CharMgrService::~CharMgrService() {
 }
 
 PyBoundObject *CharMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+    _log(CHARACTER__BIND, "CharMgrService bind request:");
+    bind_args->Dump(CHARACTER__BIND, "    ");
     Call_TwoIntegerArgs args;
     //crap
     PyRep *t = bind_args->Clone();
@@ -165,9 +167,6 @@ PyBoundObject *CharMgrService::_CreateBoundObject(Client *c, const PyRep *bind_a
         _log(SERVICE__ERROR, "%s: Failed to decode bind object params.", GetName());
         return NULL;
     }
-	//bind_args->Dump(SERVICE__ERROR, "    ");
-    //arg1 = characterID
-    //arg2 = ??? (i.e.: 10002)
 
 	return(new CharMgrBound(m_manager, args.arg1));
 }
@@ -180,7 +179,7 @@ PyResult CharMgrService::Handle_GetContactList(PyCallArgs &call) {
 19:52:53 [SvcCall]   Call Named Arguments:
 19:52:53 [SvcCall]     Argument 'machoVersion':
 19:52:53 [SvcCall]         Integer field: 1
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     */
     // another dummy
     DBRowDescriptor *header = new DBRowDescriptor();
@@ -208,7 +207,7 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
 17:01:37 [SvcCall]     Argument 'machoVersion':
 17:01:37 [SvcCall]         Integer field: 1
 
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 */
     //takes a single int arg: char id or corp id
     Call_SingleIntegerArg args;
@@ -235,20 +234,7 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
 }
 
 PyResult CharMgrService::Handle_GetPublicInfo3(PyCallArgs &call) {
-    //takes a single int arg: char id
-    Call_SingleIntegerArg args;
-    if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
-    }
-
-    PyRep *result = m_db.GetCharPublicInfo3(args.arg);
-    if(result == NULL) {
-        codelog(CLIENT__ERROR, "%s: Failed to find char %u", call.client->GetName(), args.arg);
-        return NULL;
-    }
-
-    return result;
+    return m_db.GetCharPublicInfo3(call.client->GetCharacterID());
 }
 
 PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
@@ -298,6 +284,11 @@ PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
     return new PyInt(stationID);
 }
 
+PyResult CharMgrService::Handle_GetRecentShipKillsAndLosses( PyCallArgs& call )
+{   /* cached object - can return db object as DBResultToCRowset*/
+    return m_db.GetKillOrLoss(call.client->GetCharacterID());
+}
+
 PyResult CharMgrService::Handle_GetFactions( PyCallArgs& call )
 {
   sLog.Log( "CharMgrService::Handle_GetFactions()", "size= %u", call.tuple->size() );
@@ -328,7 +319,7 @@ PLAYER_STATUS_AFK = 1
 
   sLog.Log( "CharMgrService::Handle_SetActivityStatus()", "size= %u, 0=%s, 1=%s",
             call.tuple->size(), call.tuple->GetItem(0)->TypeString(), call.tuple->GetItem(1)->TypeString());
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     Call_TwoIntegerArgs args;
   if(!args.Decode(&call.tuple)) {
@@ -336,7 +327,7 @@ PLAYER_STATUS_AFK = 1
       return NULL;
   }
 */
-/*  TODO  this shit STILL doesnt work right....
+  /** @todo  this shit STILL doesnt work right....
  * 19:35:56[33;01m W [37;01mSetActivityStatus: [33;01mPlayer lee(140000277) AFK:1394629996, time:17556784.
  *   variables here are uninitialilzed...no fuckin clue why....
     uint8 status = call.tuple->GetItem(0)->AsInt()->value();
@@ -379,7 +370,7 @@ PyResult CharMgrService::Handle_LogSettings( PyCallArgs& call ) {
   /*
     */
   sLog.Log( "CharMgrService::Handle_GetSettingsInfo()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
  return NULL;
 }
 
@@ -474,7 +465,7 @@ PyResult CharMgrService::Handle_AddOwnerNote( PyCallArgs& call ) {
     */
 
   sLog.Log( "CharMgrService::Handle_AddOwnerNote()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
   return NULL;
 }
@@ -521,7 +512,7 @@ PyResult CharMgrService::Handle_GetOwnerNote(PyCallArgs &call)
             */
 
     sLog.Log( "CharMgrService::Handle_GetOwnerNote()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     return NULL;
     //return m_db.GetOwnerNote(call.client->GetCharacterID());
 }
@@ -566,7 +557,7 @@ PyResult CharMgrService::Handle_GetOwnerNoteLabels(PyCallArgs &call)
     [PyNone]
 */
   sLog.Log( "CharMgrService::Handle_GetOwnerNoteLabels()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return m_db.GetOwnerNoteLabels(call.client->GetCharacterID());
 }
@@ -599,7 +590,7 @@ PyResult CharMgrService::Handle_AddContact( PyCallArgs& call )
 15:48:32 [SvcCall]         Integer field: 1
 */
   sLog.Log( "CharMgrService::Handle_AddContact()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
   // make db call to save contact.  will have to find the call to get contact list....
   return NULL;
@@ -608,42 +599,15 @@ PyResult CharMgrService::Handle_AddContact( PyCallArgs& call )
 PyResult CharMgrService::Handle_EditContact( PyCallArgs& call )
 {
   sLog.Log( "CharMgrService::Handle_EditContact()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
-  return NULL;
-}
-
-PyResult CharMgrService::Handle_GetRecentShipKillsAndLosses( PyCallArgs& call )
-{
-    /*
-    def GetKillsRecentKills(self, num, startIndex):
-        shipKills = sm.RemoteSvc('charMgr').GetRecentShipKillsAndLosses(num, startIndex)
-        return [ k for k in shipKills if k.finalCharacterID == eve.session.charid ]
-
-    def GetKillsRecentLosses(self, num, startIndex):
-        shipKills = sm.RemoteSvc('charMgr').GetRecentShipKillsAndLosses(num, startIndex)
-        return [ k for k in shipKills if k.victimCharacterID == eve.session.charid ]
-    */
-    /* 05:47:40 [SvcCall] Service charMgr: calling GetRecentShipKillsAndLosses
-     * 05:47:40 CharMgrService::Handle_GetRecentShipKillsAndLosses(): size=2
-     * 05:47:40 [SvcCall]   Call Arguments:
-     * 05:47:40 [SvcCall]       Tuple: 2 elements
-     * 05:47:40 [SvcCall]         [ 0] Integer field: 25
-     * 05:47:40 [SvcCall]         [ 1] (None)
-     * 05:47:40 [SvcCall]   Call Named Arguments:
-     * 05:47:40 [SvcCall]     Argument 'machoVersion':
-     * 05:47:40 [SvcCall]         Integer field: 1
-     *
-  sLog.Log( "CharMgrService::Handle_GetRecentShipKillsAndLosses()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALLS);
-*/
   return NULL;
 }
 
 PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
 {
   sLog.Log( "CharMgrService::Handle_GetLabels()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
 //AttributeError: 'NoneType' object has no attribute 'values'
 //AttributeError: 'NoneType' object has no attribute 'itervalues'
@@ -654,7 +618,7 @@ PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
 PyResult CharMgrService::Handle_CreateLabel( PyCallArgs& call )
 {
   sLog.Log( "CharMgrService::Handle_CreateLabel()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
   return NULL;
 }
@@ -665,7 +629,7 @@ PyResult CharMgrService::Handle_DeleteContacts( PyCallArgs& call )
  sm.RemoteSvc('charMgr').DeleteContacts([contactIDs])
  */
   sLog.Log( "CharMgrService::Handle_DeleteContacts()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
   return NULL;
 }
@@ -676,7 +640,7 @@ PyResult CharMgrService::Handle_BlockOwners( PyCallArgs& call )
         sm.RemoteSvc('charMgr').BlockOwners([ownerID])
  */
   sLog.Log( "CharMgrService::Handle_BlockOwners()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
   return NULL;
 }
@@ -687,7 +651,7 @@ PyResult CharMgrService::Handle_UnblockOwners( PyCallArgs& call )
             sm.RemoteSvc('charMgr').UnblockOwners(blocked)
  */
   sLog.Log( "CharMgrService::Handle_UnblockOwners()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
   return NULL;
 }
@@ -698,14 +662,16 @@ PyResult CharMgrService::Handle_EditContactsRelationshipID( PyCallArgs& call )
             sm.RemoteSvc('charMgr').EditContactsRelationshipID(contactIDs, relationshipID)
  */
   sLog.Log( "CharMgrService::Handle_EditContactsRelationshipID()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 
   return NULL;
 }
 
 PyResult CharMgrService::Handle_GetImageServerLink( PyCallArgs& call )
 {
-	//  serverLink = sm.RemoteSvc('charMgr').GetImageServerLink()
+    //  serverLink = sm.RemoteSvc('charMgr').GetImageServerLink()
+    sLog.Log( "CharMgrService::Handle_GetImageServerLink()", "size=%u ", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
   return NULL;
 }
 

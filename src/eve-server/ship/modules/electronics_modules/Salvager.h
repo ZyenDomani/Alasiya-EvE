@@ -32,7 +32,7 @@
 class Salvager: public ActiveModule
 {
 public:
-    Salvager( InventoryItemRef item, ShipRef ship );
+    Salvager( InventoryItemRef item, ShipItemRef ship );
     virtual ~Salvager() { }
 
     // GenericModule Methods:

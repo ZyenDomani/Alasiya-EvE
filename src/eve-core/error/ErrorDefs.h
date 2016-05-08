@@ -140,17 +140,21 @@ typedef long LibError;
 //  eve error code defs
 /*  Error Code layout
  *    code # ABCDE
- *      A =
- *      B =
- *      C =
+ *      A = category (0-server, 1-player, 2-ship, 3-command, 4-, 5-, 6-, 7-, 8-, 9-,)
+ *      B = system (5-ship)
+ *      C = subsystem (5-insurance, 6-modules)
  *      D =
  *      E =
  *
  *
  * Ref: ServerError 12321. << Client::BoardShip()
- * Ref: ServerError 15520. << Ship::InsureShip()
+ * Ref: ServerError 15610. <<
+ * Ref: ServerError 25520. << Ship::InsureShip() - fraction is 0
+ * Ref: ServerError 25521. << Ship::InsureShip() - fraction is < 0.05 -- ship is insured @ 30%
+ * Ref: ServerError 25610. << MSAC::_calculateNewValue() - effectiveness is 0
  * Ref: ServerError 31110. << commandDispatcher::Execute()
  */
+//  throw PyException( MakeCustomError("Internal Server Error.  Ref: ServerError 15610"));
 
 //-----------------------------------------------------------------------------
 //  this is example used in the system i borrowed this code from...

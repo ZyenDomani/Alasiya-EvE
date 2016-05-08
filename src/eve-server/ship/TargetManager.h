@@ -43,12 +43,15 @@ public:
 
     void Process();
 
+    /* nasty hack until i finish removing destiny and SE code from client */
+    void SetSelf(SystemEntity* self);
+
     //clear out our targeting information (incoming and outgoing)
     void ClearAllTargets(bool notify_self=true);
     void ClearTargets(bool notify_self=true);
     void ClearTarget(SystemEntity *who);
 
-    bool StartTargeting(SystemEntity *who, ShipRef ship);
+    bool StartTargeting(SystemEntity *who, ShipItemRef ship);
 	bool StartTargeting(SystemEntity *who, float lockTime, uint32 maxLockedTargets, double maxTargetLockRange);
 
     //Methods for NPC AI:
@@ -58,7 +61,7 @@ public:
     bool HasNoTargets() const { return(m_targets.empty()); }
     bool IsTargetedBySomething() const { return(!m_targetedBy.empty()); }
     uint32 GetTotalTargets() const { return (uint32)m_targets.size(); }
-    float TimeToLock(ShipRef ship, SystemEntity *target) const;
+    float TimeToLock(ShipItemRef ship, SystemEntity *target) const;
 
     void QueueTBDestinyEvent(PyTuple **up) const;    //queue a destiny event to all people targeting me.
     void QueueTBDestinyUpdate(PyTuple **up) const;    //queue a destiny update to all people targeting me.
@@ -112,16 +115,15 @@ protected:
         Timer timer;
     };
 
+private:
+    SystemEntity* m_self;    //we do not own this.
+
     bool m_destroyed;    //true if we have already taken care of destruction logic.
     bool m_canAttack;   // true if npcs can begin attack (to correct attacking before targetlock)
-    SystemEntity *const m_self;    //we do not own this.
+
     std::map<SystemEntity *, TargetEntry *> m_targets;    //we own these values, not the keys
     std::map<SystemEntity *, TargetedByEntry *> m_targetedBy;    //we own these values, not the keys
 };
-
-
-
-
 
 #endif
 

@@ -194,11 +194,7 @@ protected:
      *
      * @param[in] arg Pointer to TCPConnection.
      */
-#ifdef HAVE_WINDOWS_H
-    static DWORD WINAPI TCPConnectionLoop( LPVOID arg );
-#else /* !HAVE_WINDOWS_H */
     static void* TCPConnectionLoop( void* arg );
-#endif /* !HAVE_WINDOWS_H */
     /**
      * @brief Loop for worker threads.
      */

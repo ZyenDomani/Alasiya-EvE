@@ -77,6 +77,6 @@ PyResult FactoryService::Handle_GetMaterialCompositionOfItemType(PyCallArgs &cal
         return NULL;
     }
 
-    return(m_db.GetMaterialCompositionOfItemType(call_args.arg));
+    return m_db.GetMaterialCompositionOfItemType(call_args.arg);
 }
 

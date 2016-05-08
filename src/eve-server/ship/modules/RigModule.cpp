@@ -27,7 +27,7 @@
 #include "ship/modules/RigModule.h"
 
 
-RigModule::RigModule(InventoryItemRef item, ShipRef ship)
+RigModule::RigModule(InventoryItemRef item, ShipItemRef ship)
 : PassiveModule(item, ship)
 {
 

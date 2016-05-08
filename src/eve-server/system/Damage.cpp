@@ -26,6 +26,14 @@
 
 #include "system/Damage.h"
 
+#include "Client.h"
+#include "EVEServerConfig.h"
+#include "npc/NPC.h"
+#include "npc/NPCAI.h"
+#include "ship/Ship.h"
+#include "system/SystemBubble.h"
+#include "system/LootSystem.h"
+
 Damage::Damage(
     SystemEntity *_source,
     InventoryItemRef _weapon,
@@ -36,11 +44,11 @@ Damage::Damage(
     double _modifier,
     EVEEffectID _effect): source(_source), charge(), effect(_effect), modifier(_modifier)
 {
-	kinetic = _kinetic;
-	thermal = _thermal;
-	em = _em;
-	explosive = _explosive;
-	weapon = _weapon;
+	em        = _em;
+	weapon    = _weapon;
+    kinetic   = _kinetic;
+    thermal   = _thermal;
+    explosive = _explosive;
 }
 
 Damage::Damage(
@@ -50,14 +58,14 @@ Damage::Damage(
 	assert(fatal_blow && "Damage() constructor meant for fatal_blow called without 2nd param being true!");
 
 	// No specific damage dealt here, just killed
+    em = 0.0;
 	kinetic = 0.0;
 	thermal = 0.0;
-	em = 0.0;
 	explosive = 0.0;
 
 	// These are set to NULL for this specific case of Damage obj meant for Killed() methods of derived SystemEntity objects
-	weapon = InventoryItemRef();
-	charge = InventoryItemRef();
+    weapon = InventoryItemRef();
+    charge = InventoryItemRef();
 }
 
 Damage::Damage(
@@ -65,9 +73,9 @@ Damage::Damage(
     InventoryItemRef _weapon,
     EVEEffectID _effect): source(_source),  weapon(_weapon), effect(_effect)
     {
+        em = _weapon->GetAttribute(AttrEmDamage).get_float();
         kinetic = _weapon->GetAttribute(AttrKineticDamage).get_float();
         thermal = _weapon->GetAttribute(AttrThermalDamage).get_float();
-        em = _weapon->GetAttribute(AttrEmDamage).get_float();
         explosive = _weapon->GetAttribute(AttrExplosiveDamage).get_float();
 
         charge = InventoryItemRef();
@@ -81,92 +89,30 @@ Damage::Damage(
     InventoryItemRef _charge,
     EVEEffectID _effect): source(_source),  weapon(_weapon), charge(_charge), effect(_effect)
     {
+        em = _weapon->GetAttribute(AttrEmDamage).get_float();
         kinetic = _weapon->GetAttribute(AttrKineticDamage).get_float();
         thermal = _weapon->GetAttribute(AttrThermalDamage).get_float();
-        em = _weapon->GetAttribute(AttrEmDamage).get_float();
         explosive = _weapon->GetAttribute(AttrExplosiveDamage).get_float();
 
         _log(TARGET__TRACE, "Damage:Constructor - Called by source %s(%u) with weapon %s(%u).",
              source->GetName(), source->GetID(), weapon->itemName().c_str(), weapon->itemID() );
     }
 
-Damage::~Damage()
-{
-}
 
-void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar) {
-    //  TODO  this needs tweaking...
-    //New Status = ((10 - Old Status) * Sec Incr) + Old Status
-    double killBonus = m_self->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
-    killBonus /= 100;
-    double oldSec = pChar->GetSecurityRating();
-    double secAward = (((10 -oldSec) *killBonus) +oldSec) /100;
-    secAward *=  (1 + ( 0.05 * (pChar->GetSkillLevel(skillFastTalk, true))));      // 5% increase
-    if (secAward) {
-        if (sConfig.rates.secRate != 1.0) secAward *= sConfig.rates.secRate;
-        sLog.Magenta("SystemEntity::AwardSecurityStatus()"," %s(%u): killBonus: %f.  oldSec: %f.  secAward: %f.",
-                     GetName(), GetID(), killBonus, oldSec, secAward);
-        //pChar->secStatusChange( secAward );
-        //std::string msg = "Status Change for killing pirates in ";
-        //msg += System()->GetName();
-        //pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), 1,  eventID,  eventType, secAward, msg);
-    }
-}
-
-bool Client::ApplyDamage(Damage &d) {
-    return ItemSystemEntity::ApplyDamage(d);
-}
-
-bool NPC::ApplyDamage(Damage &d) {
-    return ItemSystemEntity::ApplyDamage(d);
-}
-
-bool Drone::ApplyDamage(Damage &d) {
-    return ItemSystemEntity::ApplyDamage(d);
-}
-
-bool ShipEntity::ApplyDamage(Damage &d) {
-    return ItemSystemEntity::ApplyDamage(d);
-}
-
-bool StructureEntity::ApplyDamage(Damage &d) {
-    return ItemSystemEntity::ApplyDamage(d);
-}
-
-bool ContainerEntity::ApplyDamage(Damage &d) {
-    return ItemSystemEntity::ApplyDamage(d);
-}
-
-bool DeployableEntity::ApplyDamage(Damage &d) {
-    return ItemSystemEntity::ApplyDamage(d);
-}
-
-bool AsteroidEntity::ApplyDamage(Damage &d) {
-    return ItemSystemEntity::ApplyDamage(d);
-}
-
-bool CelestialEntity::ApplyDamage(Damage &d) {
-    return ItemSystemEntity::ApplyDamage(d);
-}
-
-bool StationEntity::ApplyDamage(Damage &d) {
-    return ItemSystemEntity::ApplyDamage(d);
-}
-
-bool ItemSystemEntity::ApplyDamage(Damage &d) {
+bool SystemEntity::ApplyDamage(Damage &d) {
     _log(TARGET__TRACE, "%s(%u): Initalizing %.2f damage from %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
-         GetName(), GetID(), d.GetTotal(), d.source->GetName(), d.source->GetID(),\
+        GetName(), GetID(), d.GetTotal(), d.source->GetName(), d.source->GetID(),\
         d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
 
     bool killed = false;
     int8 damageID = 0;
-    if (d.weapon->categoryID() == EVEDB::invCategories::Charge)
+    if (d.weapon->categoryID() == EVEDB::invCategories::Charge) {
         damageID = 4;
-    else if (d.weapon->groupID() == EVEDB::invGroups::Super_Weapon) {
+    } else if (d.weapon->groupID() == EVEDB::invGroups::Super_Weapon) {
         /*   TODO
          * this will need to be adjusted based on distance from target,
          *  and modified/corrected as the weapon implementation is completed.
-         *  all modifiers to be calc'd in weapon source, and sent here for correct damageID
+         *  all modifiers to be calc'd in weapon code and sent here for correct damageID
          */
         damageID = 3;
     } else {
@@ -194,7 +140,7 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
     double shield_damage = DamageToShield.GetTotal();
     double available_shield = m_self->GetAttribute(AttrShieldCharge).get_float();
     if (shield_damage <= available_shield) {
-        if (IsClient()) {
+        if (HasPilot()) {
             if (available_shield < ( 1.0  - m_self->GetAttribute(AttrShieldUniformity).get_float())) {
                 /* send 1% damage to armor based on tactical shield manipulation skill
                  *  lvl 1 = 80%, 2 = 60%, 3 = 40% 4 = 20%, 5 = 0
@@ -208,7 +154,7 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
         double new_charge = available_shield - shield_damage;
         m_self->SetAttribute(AttrShieldCharge, new_charge);
 
-        _log(TARGET__DEBUG, "%s(%u): Applying %.2f damage to shields. New charge: %.3f.",
+        _log(TARGET__DAMAGE, "%s(%u): Applying %.2f damage to shields. New charge: %.3f.",
              GetName(), GetID(), shield_damage, new_charge);
     } else {
         // get fraction of damage partial shield absorbs, and lower total damage by that fraction
@@ -216,7 +162,7 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
         total_damage += available_shield;
 
         if (available_shield > 0) {
-            _log(TARGET__DEBUG, "%s(%u): Shield depleted with %.2f damage. %.2f damage remains.",
+            _log(TARGET__TRACE, "%s(%u): Shield depleted with %.2f damage. %.2f damage remains.",
                  GetName(), GetID(), available_shield, d.GetTotal());
             m_self->SetAttribute(AttrShieldCharge, 0);
         }
@@ -231,7 +177,7 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
 
         double armor_damage = DamageToArmor.GetTotal();
         if (armor_damage <= available_armor) {
-            if (IsClient()) {
+            if (HasPilot()) {
                 if ( available_armor < ( 1.0  - m_self->GetAttribute(AttrArmorUniformity).get_float()) ) {
                     //float new_damage = d.GetTotal() * 0.01;
                     //m_self->SetAttribute(AttrDamage, new_damage);
@@ -241,14 +187,14 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
             total_damage += armor_damage;
             EvilNumber new_damage = m_self->GetAttribute(AttrArmorDamage) + EvilNumber(armor_damage);
             m_self->SetAttribute(AttrArmorDamage, new_damage);
-            _log(TARGET__DEBUG, "%s(%u): Applying %.2f damage to armor. New armor damage: %.2f",
+            _log(TARGET__DAMAGE, "%s(%u): Applying %.2f damage to armor. New armor damage: %.2f",
                  GetName(), GetID(), armor_damage, new_damage.get_float());
         } else {
             d *= (1 - (available_armor /armor_damage));
             total_damage += available_armor;
 
             if (available_armor > 0) {
-                _log(TARGET__DEBUG, "%s(%u): Armor depleated with %.2f damage. %.2f damage remains.",
+                _log(TARGET__TRACE, "%s(%u): Armor depleated with %.2f damage. %.2f damage remains.",
                      GetName(), GetID(), available_armor, d.GetTotal());
                 m_self->SetAttribute(AttrArmorDamage, m_self->GetAttribute(AttrArmorHP));
             }
@@ -257,33 +203,35 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
             //The base hp and damage attributes represent structure.
             double available_hull = m_self->GetAttribute(AttrHP).get_int() - m_self->GetAttribute(AttrDamage).get_float();
             Damage DamageToHull = d.MultiplyDup(
-                m_self->GetAttribute(AttrHullKineticDamageResonance).get_float(),
-                m_self->GetAttribute(AttrHullThermalDamageResonance).get_float(),
-                m_self->GetAttribute(AttrHullEmDamageResonance).get_float(),
-                m_self->GetAttribute(AttrHullExplosiveDamageResonance).get_float() );
+                m_self->GetAttribute(AttrKineticDamageResonance).get_float(),
+                m_self->GetAttribute(AttrThermalDamageResonance).get_float(),
+                m_self->GetAttribute(AttrEmDamageResonance).get_float(),
+                m_self->GetAttribute(AttrExplosiveDamageResonance).get_float() );
 
             double hull_damage = DamageToHull.GetTotal();
             if (hull_damage < available_hull) {
                 total_damage += hull_damage;
                 EvilNumber new_damage = m_self->GetAttribute(AttrDamage) + EvilNumber(hull_damage);
                 m_self->SetAttribute(AttrDamage, new_damage);
-                _log(TARGET__DEBUG, "%s(%u): Applying %.2f damage to structure. New structure damage: %.2f",
+                _log(TARGET__DAMAGE, "%s(%u): Applying %.2f damage to structure. New structure damage: %.2f",
                      GetName(), GetID(), hull_damage, new_damage.get_float());
             } else {
                 total_damage += available_hull;
                 //dead....
-                _log(TARGET__DEBUG, "%s(%u): %.2f damage has depleated our structure. Time to explode.",
+                _log(TARGET__TRACE, "%s(%u): %.2f damage has depleated our structure. Time to explode.",
                      GetName(), GetID(), hull_damage);
                 killed = true;
                 m_self->SetAttribute(AttrDamage, m_self->GetAttribute(AttrHP));
             }
-            //TODO: deal with damaging modules. no idea the mechanics on this.
+            /** @todo (allan) deal with damaging modules. no idea the mechanics on this yet.  */
         }
     }
 
     PyTuple* up;
-
-    if (IsClient()) {
+    /*    def OnDamageMessage(self, msgKey, args):
+     * found in /eve/client/script/environment/godma.py
+     */
+    if (HasPilot()) {
         // working  22Apr15
         if (d.weapon->categoryID() != EVEDB::invCategories::Charge) {
             //Notification to bubble?
@@ -306,7 +254,7 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
         QueueDestinyEvent(&up);
     }
 
-    if (d.source->IsClient()) {     //not working
+    if (d.source->HasPilot()) {     //not working
         //if (d.weapon->categoryID() != EVEDB::invCategories::Charge) {
         if (1) {
             //Notifications to ourself:
@@ -344,88 +292,239 @@ bool ItemSystemEntity::ApplyDamage(Damage &d) {
 
     if (killed) {
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
-        TargMgr.ClearAllTargets(false);
+        if (m_targMgr)
+            m_targMgr->ClearAllTargets(false);
         Killed(d);
     } else {
-        if (d.source->IsClient())   //update this to use targetmanager's queue tb destiny event method.
-            _SendDamageStateChanged(d.source);
+        if (d.source->HasPilot())   //update this to use targetmanager's queue tb destiny event method.
+            SendDamageStateChanged(d.source);
     }
 
     return killed;
 }
 
-void ItemSystemEntity::_SendDamageStateChanged(SystemEntity* source) {  //working 24Apr15
-    DoDestiny_DamageDetails dmgState;
-        dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float();
-        dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
-        dmgState.timestamp = Win32TimeNow();
-        dmgState.armor = 1.0 - m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float();
-        dmgState.structure = 1.0 - m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float();
-    DoDestiny_OnDamageStateChange dmgChange;
-        dmgChange.entityID = GetID();
-        dmgChange.state = dmgState.Encode();
-    PyTuple *up = dmgChange.Encode();
-    source->QueueDestinyUpdate(&up);
+void NPC::Killed(Damage &fatal_blow) {
+    if (!m_bubble || !m_destiny) return;
 
-    //_log(TARGET__TRACE, "%s(%u): DamageUpdate - S:%f A:%f H:%f.", GetName(), GetID(), dmgState.shield, dmgState.armor, dmgState.structure);
-}
-
-void SystemEntity::Killed(Damage &fatal_blow) {
-    TargMgr.ClearTargets(false);    //I assume a client does not need this notification.
-}
-
-void DynamicSystemEntity::Killed(Damage &fatal_blow) {
-    if (m_destiny && Bubble())
-        if (IsStaticEntity())
-            m_destiny->SendTerminalExplosion(GetID(), Bubble()->GetID(), true);
-        else
-            m_destiny->SendTerminalExplosion(GetID(), Bubble()->GetID());
-}
-
-void Client::Killed(Damage &fatal_blow) {
+    m_destiny->Halt();
 
     SystemEntity *killer = fatal_blow.source;
     Client* pClient = nullptr;
     uint32 killerID = 0;
 
-    if (killer->IsClient()) {
-        pClient = killer->CastToClient();
+    if (killer->HasPilot()) {
+        pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();
-    } else if (killer->IsDrone()) {
-        pClient = sEntityList.FindClientByShip( killer->Item()->ownerID() );
-        if (!pClient) {
-            pClient = nullptr;
-            sLog.Error("Client::Killed()", "killer == IsDrone and pClient == nullptr");
+    } else if (killer->IsDroneSE()) {
+        pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
+        if (!pClient ) {
+            sLog.Error("NPC::Killed()", "killer == IsDrone and pPlayer == nullptr");
         } else
             killerID = pClient->GetCharacterID();
     } else
         killerID = killer->GetID();
 
-    if (pClient && (m_system->GetSystemSecurityRating() > 0)) {
+    m_destiny->SendTerminalExplosion(GetID(), m_bubble->GetID());
+
+    //notify our spawn manager that we are gone.
+    if (m_spawnMgr)
+        m_spawnMgr->SpawnDepopped(m_bubble, m_self->itemID());
+
+    GPoint deadNPCPosition = m_destiny->GetPosition();
+    uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
+
+    std::string wreck_name = m_self->itemName();
+    wreck_name += " Wreck";
+
+    ItemData wreckItemData(
+        wreckTypeID,
+        killerID,
+        GetLocationID(),
+        flagAutoFit,
+        wreck_name.c_str(),
+        deadNPCPosition
+    );
+
+    InventoryItemRef wreckItemRef = m_self->GetItemFactory()->SpawnItem( wreckItemData );
+    if (!wreckItemRef)
+        throw PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
+
+    DBSystemDynamicEntity wreckEntity;
+        wreckEntity.allianceID = GetAllianceID(); /** @todo (allan) fix this after alliances are implemented */
+        wreckEntity.categoryID = EVEDB::invCategories::Celestial;
+        wreckEntity.corporationID = GetCorporationID();
+        wreckEntity.flag = flagAutoFit;
+        wreckEntity.groupID = EVEDB::invGroups::Wreck;
+        wreckEntity.itemID = wreckItemRef->itemID();
+        wreckEntity.itemName = wreck_name;
+        wreckEntity.locationID = GetLocationID();
+        wreckEntity.ownerID = killerID;
+        wreckEntity.typeID = wreckTypeID;
+        wreckEntity.x = deadNPCPosition.x;
+        wreckEntity.y = deadNPCPosition.y;
+        wreckEntity.z = deadNPCPosition.z;
+
+    if (!m_system->BuildDynamicEntity(wreckEntity)) {
+        sLog.Error("NPC::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
+        throw PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
+        return;
+    }
+
+    _log(PHYSICS__TRACE, "NPC::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
+            GetName(), GetID(), x(), y(), z(), m_destiny->GetPosition().x, m_destiny->GetPosition().y, m_destiny->GetPosition().z);
+
+    if ( pClient ) {
+        DropLoot(m_self->groupID(), pClient->GetCharacterID(), wreckItemRef->itemID());
+        //award kill bounty.
+        AwardBounty( pClient );
+        //  log faction kill in dynamic data   -allan
+        Character* pChar = pClient->GetChar().get();
+        pChar->chkDynamicSystemID(GetLocationID());
+        pChar->AddKillToDynamicData(GetLocationID());
+        pChar->AddFactionKillToDynamicData(GetLocationID());
+        if (m_system->GetSystemSecurityRating() > 0)
+            AwardSecurityStatus(m_self, pChar);
+    } else
+        DropLoot(m_self->groupID(), killerID, wreckItemRef->itemID());
+
+    // cleanup and removal of dead npc
+    //AI()->ClearAllTargets();
+    m_system->RemoveNPC(this);  //this also removes npc from db
+}
+
+void Ship::Killed(Damage &fatal_blow) {
+    if (!m_bubble || !m_destiny) return;
+
+    SystemEntity *killer = fatal_blow.source;
+    Client* pClient = nullptr;
+    uint32 killerID = 0;
+
+    if (killer->HasPilot()) {
+          pClient = killer->GetPilot();
+        killerID = pClient->GetCharacterID();
+    } else if (killer->IsDroneSE()) {
+          pClient = sEntityList.FindClientByShip(killer->GetSelf()->ownerID());
+        if (!pClient ) {
+            sLog.Error("Client::Killed()", "killer == IsDrone and pPlayer == nullptr");
+        } else
+            killerID = pClient->GetCharacterID();
+    } else
+        killerID = killer->GetID();
+
+    if ( pClient && (m_system->GetSystemSecurityRating() > 0)) {
         /* http://www.eveinfo.net/wiki/ind~4067.htm
          *  relative_sec_status_penalty = base_penalty * system_truesec * (1 + (victim_sec_status - agressor_sec_status) / 90)
          *  The actual drop in security status seen by the attacker is a function of their current security status and the relative penalty:
          *  security status loss = relative_penalty * (agressor_sec_status + 10)
          */
-        //TODO: check for faction/corp status modifiers here.
-        double modifier = (1 + ((GetChar()->GetSecurityRating() - pClient->GetSecurityRating()) /90));
+        /** @todo (allan) check for faction/corp status modifiers here. */
+        double modifier = (1 + ((m_player->GetSecurityRating() - pClient->GetSecurityRating()) /90));
         double penalty = 6.0f * m_system->GetSystemSecurityRating() * modifier;
-        double loss = penalty * (pClient->GetSecurityRating() + 10);
+        double loss = penalty * ( pClient->GetSecurityRating() + 10);
         if (sConfig.rates.secRate != 1.0) loss *= sConfig.rates.secRate;
-        pClient->GetChar()->secStatusChange( loss );
+          pClient->GetChar()->secStatusChange( loss );
     }
 
-    if (InPod()) {
-        if (!Bubble()) return;
-        if (pClient)
-            pClient->GetChar()->PayBounty(GetChar());
+    if (!HasPilot()) {
+        m_destiny->Stop();
+
+        // Spawn a wreck for the Ship that was destroyed:
+        uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
+        std::string wreck_name = m_self->itemName();
+        GPoint wreckPosition = m_destiny->GetPosition();
+        InventoryItemRef wreckItemRef;
+        ItemData wreckItemData(
+                wreckTypeID,
+                killerID,
+                GetLocationID(),
+                flagAutoFit,
+                wreck_name.c_str(),
+                wreckPosition
+        );
+
+        wreckItemRef = m_system->GetServiceMgr()->item_factory->SpawnItem( wreckItemData );
+        if (!wreckItemRef )
+            throw PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
+
+        DBSystemDynamicEntity wreckEntity;
+            wreckEntity.allianceID = 0;
+            wreckEntity.categoryID = EVEDB::invCategories::Celestial;
+            wreckEntity.corporationID = 0;
+            wreckEntity.flag = 0;
+            wreckEntity.groupID = EVEDB::invGroups::Wreck;
+            wreckEntity.itemID = wreckItemRef->itemID();
+            wreckEntity.itemName = wreck_name;
+            wreckEntity.locationID = GetLocationID();
+            wreckEntity.ownerID = killerID;
+            wreckEntity.typeID = wreckTypeID;
+            wreckEntity.x = wreckPosition.x;
+            wreckEntity.y = wreckPosition.y;
+            wreckEntity.z = wreckPosition.z;
+
+        if (!m_system->BuildDynamicEntity(wreckEntity))
+        {
+            sLog.Error("ShipEntity::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
+            throw PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
+            return;
+        }
+
+        DropLoot(m_self->groupID(), killerID, wreckItemRef->itemID());
+
+        //  log faction kill in dynamic data   -allan
+        //  client logs faction kills in total kills.  return is value1(total kills) - value2(faction kills) > 0:
+        if (pClient) {
+            Character* pChar = pClient->GetChar().get();
+            pChar->chkDynamicSystemID(GetLocationID());
+            pChar->AddKillToDynamicData(GetLocationID());
+            pChar->AddFactionKillToDynamicData(GetLocationID());
+            if (m_system->GetSystemSecurityRating() > 0)
+                AwardSecurityStatus(m_self, pChar);   // this awards secStatusChange for npcs in empire space
+        }
+
+        m_system->RemoveEntity(this);
+        return;
+    } else if (m_player->InPod()) {
+        if (!m_bubble) return;
+        if ( pClient )
+               pClient->GetChar()->PayBounty(m_player->GetChar());
+
+        /** populate kill data for podKill and save to db  - need to verify this*/
+        CharKillData data;
+            data.solarSystemID = m_system->GetID();
+            data.victimCharacterID = m_player->GetCharacterID();
+            data.victimCorporationID = m_corpID;
+            data.victimAllianceID = m_allyID;
+            data.victimFactionID = m_warID;
+            data.victimShipTypeID = GetTypeID();
+
+            data.finalCharacterID = killerID;
+            data.finalCorporationID = killer->GetCorporationID();
+            data.finalAllianceID = killer->GetAllianceID();
+            data.finalFactionID = killer->GetWarFactionID();
+            data.finalShipTypeID = killer->GetTypeID();
+            data.finalWeaponTypeID = fatal_blow.weapon->typeID();
+            data.finalSecurityStatus = 0;
+            data.finalDamageDone = fatal_blow.GetTotal();
+
+        uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
+            totalHP += m_self->GetAttribute(AttrArmorHP).get_int();
+            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_int();
+
+            data.victimDamageTaken = totalHP;
+            /* killBlob is ship dna, and contains destroyed/dropped items. dna works, but i dont know how to do the rest yet.  -allan 1May16  */
+            data.killBlob = m_player->GetShip()->GetShipDNA();
+            data.killTime = Win32TimeNow();
+
+            data.moonID = 0;    /* dunno wtf this is... */
+
+        pClient->GetChar()->LogKill(data);
 
 		GPoint deadPodPosition = GetPosition();
-		uint32 oldPodItemID = GetShipID();
+		uint32 oldPodItemID = m_player->GetShipID();
 
-        Destiny()->SendTerminalExplosion(oldPodItemID, Bubble()->GetID());
+        m_destiny->SendTerminalExplosion(oldPodItemID, m_bubble->GetID());
 
-        System()->RemoveClient(this);
+        m_system->RemoveEntity(this);
 
         std::string corpse_name = GetName();
         corpse_name += "'s Frozen Corpse";
@@ -458,16 +557,16 @@ void Client::Killed(Damage &fatal_blow) {
             corpseEntity.y = deadPodPosition.y;
             corpseEntity.z = deadPodPosition.z;
 
-        if (!System()->BuildDynamicEntity( this, corpseEntity)) {
+        if (!m_system->BuildDynamicEntity( corpseEntity)) {
             sLog.Error("Client::Killed()", "Spawning Corpse Failed: typeID or typeName not supported: '%u'", corpseTypeID);
             throw PyException( MakeCustomError ( "Spawning Corpse Failed: typeID or typeName not supported." ) );
         }
 
         // this method will reset char variables to last clone state after being podded.
         //  NOTE  *** NOT TESTED YET ***
-        ResetAfterPodded();
+        m_player->ResetAfterPodded();
 	} else {
-        /*  FIXME  when killed while in dock queue, this DOES NOT set client variables correctly,
+        /** @todo (allan)  when killed while in dock queue, this DOES NOT set client variables correctly,
                 meaning, it does not...
                 - remove client from system,
                 - remove destiny and system managers,
@@ -475,32 +574,63 @@ void Client::Killed(Damage &fatal_blow) {
             will have to look into this more later
          */
 
-        GetShip()->PayInsurance();
+        /** populate kill data for shipKill and save to db  -- need to verify this*/
+        CharKillData data;
+            data.solarSystemID = m_system->GetID();
+            data.victimCharacterID = m_player->GetCharacterID();
+            data.victimCorporationID = m_corpID;
+            data.victimAllianceID = m_allyID;
+            data.victimFactionID = m_warID;
+            data.victimShipTypeID = GetTypeID();
+
+            data.finalCharacterID = killerID;
+            data.finalCorporationID = killer->GetCorporationID();
+            data.finalAllianceID = killer->GetAllianceID();
+            data.finalFactionID = killer->GetWarFactionID();
+            data.finalShipTypeID = killer->GetTypeID();
+            data.finalWeaponTypeID = fatal_blow.weapon->typeID();
+            data.finalSecurityStatus = 0;
+            data.finalDamageDone = fatal_blow.GetTotal();
+
+        uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
+            totalHP += m_self->GetAttribute(AttrArmorHP).get_int();
+            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_int();
+
+            data.victimDamageTaken = totalHP;
+            /* killBlob is ship dna, and contains destroyed/dropped items. dna works, but i dont know how to do the rest yet.  -allan 1May16  */
+            data.killBlob = m_player->GetShip()->GetShipDNA();
+            data.killTime = Win32TimeNow();
+
+            data.moonID = 0;    /* dunno wtf this is... */
+
+        pClient->GetChar()->LogKill(data);
+
+        PayInsurance();
 
         GPoint capsulePosition = GetPosition();
         GPoint deadShipPosition = GetPosition();
-        uint32 oldShipItemID = GetShipID();
-        //TODO: figure out anybody else which may be referencing this ship...
-        ShipRef deadShipRef = GetShip();
-        Destiny()->SendJettisonPacket(deadShipRef);
-        Destiny()->SendTerminalExplosion(oldShipItemID, Bubble()->GetID());
+        uint32 oldShipItemID = m_player->GetShipID();
+        /** @todo: figure out anybody else which may be referencing this ship */
+        ShipItemRef deadShipRef = m_player->GetShip();
+        m_destiny->SendJettisonPacket(deadShipRef);
+        m_destiny->SendTerminalExplosion(oldShipItemID, m_bubble->GetID());
 
 		//set capsule position away from old ship:
-        float radius = GetShip()->GetAttribute(AttrRadius).get_float();
+        float radius = m_self->GetAttribute(AttrRadius).get_float();
         capsulePosition.MakeRandomPointOnSphere(radius + (MakeRandomFloat(200, 400)));
 
-        m_services.item_factory->SetUsingClient(this);
-        ShipRef podRef = services().item_factory->GetShip(GetPodID());
-        podRef->Move(GetSystemID(), flagCapsule);
+        m_services.item_factory->SetUsingClient(m_player);
+        ShipItemRef podRef = m_services.item_factory->GetShip(m_player->GetPodID());
+        podRef->Move(m_player->GetSystemID(), flagCapsule);
         podRef->Relocate(capsulePosition);
 
-        SystemEntity* pPodEntity = System()->get(GetPodID());
+        SystemEntity* pPodEntity = m_system->get(m_player->GetPodID());
         if (!pPodEntity)
-            pPodEntity = new ShipEntity(podRef, System(), m_services, capsulePosition);
+            pPodEntity = new Ship(podRef, m_services, m_system);
 
-        Bubble()->Add(pPodEntity);
+        m_bubble->Add(pPodEntity);
 
-        BoardShip(podRef);
+        m_player->BoardShip(podRef);
 
 		uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(deadShipRef->typeID());
         std::string wreck_name = GetName();
@@ -529,486 +659,33 @@ void Client::Killed(Damage &fatal_blow) {
             wreckEntity.itemID = wreckItemRef->itemID();
             wreckEntity.itemName = wreck_name;
             wreckEntity.locationID = GetLocationID();
-            if ((killer->IsClient()) || (killer->IsDrone()))
+            if ((killer->HasPilot()) || (killer->IsDroneSE()))
                 wreckEntity.ownerID = killerID;
             else
-                wreckEntity.ownerID = GetCharacterID();
+                wreckEntity.ownerID = m_player->GetCharacterID();
             wreckEntity.typeID = wreckTypeID;
             wreckEntity.x = deadShipPosition.x;
             wreckEntity.y = deadShipPosition.y;
             wreckEntity.z = deadShipPosition.z;
 
-		if (!(System()->BuildDynamicEntity(this, wreckEntity))) {
+		if (!m_system->BuildDynamicEntity(wreckEntity)) {
             sLog.Error("Client::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
             //throw PyException( MakeCustomError("Unable to spawn wreck of type %u.", wreckTypeID));
 			return;
 		}
 
-		// TODO: Place random selection of Ship's inventory into container of wreck
+		/** @todo Place random selection of Ship's inventory into container of wreck */
 		// For now, just transfer everything in the Ship's inventory to the wreck
 		std::map<uint32, InventoryItemRef> deadShipInventory;
         deadShipInventory.clear();
-        deadShipRef->GetInventoryList(deadShipInventory);
+        deadShipRef->GetInventory()->GetInventoryList(deadShipInventory);
 
 	    for (auto cur : deadShipInventory)
 			cur.second->Move(wreckItemRef->itemID(),flagAutoFit);
 
-        SystemEntity* pEntity = System()->get(oldShipItemID);
-        System()->RemoveEntity(pEntity);    //remove from system
-        deadShipRef->Delete();    //remove from DB.
-        StartKilledTimer();
-    }
-}
-
-void NPC::Killed(Damage &fatal_blow) {
-    if (!Bubble() || !Destiny()) return;
-
-    Destiny()->Halt();
-
-    SystemEntity *killer = fatal_blow.source;
-    Client* pClient = nullptr;
-    uint32 killerID = 0;
-
-    if (killer->IsClient()) {
-        pClient = killer->CastToClient();
-        killerID = pClient->GetCharacterID();
-    } else if (killer->IsDrone()) {
-        pClient = sEntityList.FindClientByShip( killer->Item()->ownerID() );
-        if (!pClient) {
-            pClient = nullptr;
-            sLog.Error("NPC::Killed()", "killer == IsDrone and pClient == nullptr");
-        } else
-            killerID = pClient->GetCharacterID();
-    } else
-        killerID = killer->GetID();
-
-    Destiny()->SendTerminalExplosion(GetID(), Bubble()->GetID());
-
-    //notify our spawn manager that we are gone.
-    if (m_spawnMgr)
-        m_spawnMgr->SpawnDepopped(Bubble(), m_self->itemID());
-
-    GPoint deadNPCPosition = Destiny()->GetPosition();
-	uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(Item()->typeID());
-
-    std::string wreck_name = Item()->itemName();
-    wreck_name += " Wreck";
-
-	ItemData wreckItemData(
-		wreckTypeID,
-        killerID,
-		GetLocationID(),
-		flagAutoFit,
-		wreck_name.c_str(),
-		deadNPCPosition
-	);
-
-    InventoryItemRef wreckItemRef = System()->GetServiceMgr()->item_factory->SpawnItem( wreckItemData );
-	if (!wreckItemRef)
-		throw PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
-
-	DBSystemDynamicEntity wreckEntity;
-        wreckEntity.allianceID = GetAllianceID(); //FIXME fix this after alliances are implemented
-        wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-        wreckEntity.corporationID = GetCorporationID();  //FIXME  this needs work.  corp id for npc, pc, and pc drones using common method
-        wreckEntity.flag = flagAutoFit;
-        wreckEntity.groupID = EVEDB::invGroups::Wreck;
-        wreckEntity.itemID = wreckItemRef->itemID();
-        wreckEntity.itemName = wreck_name;
-        wreckEntity.locationID = GetLocationID();
-        wreckEntity.ownerID = killerID;
-        wreckEntity.typeID = wreckTypeID;
-        wreckEntity.x = deadNPCPosition.x;
-        wreckEntity.y = deadNPCPosition.y;
-        wreckEntity.z = deadNPCPosition.z;
-
-	if (!System()->BuildDynamicEntity(nullptr, wreckEntity)) {
-		sLog.Error("NPC::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
-		throw PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
-		return;
-	}
-
-	_log(PHYSICS__TRACE, "NPC::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-        GetName(), GetID(), GetPosition().x, GetPosition().y, GetPosition().z,
-        Destiny()->GetPosition().x, Destiny()->GetPosition().y, Destiny()->GetPosition().z);
-
-	if (pClient) {
-        _DropLoot(Item()->groupID(), pClient->GetCharacterID(), wreckItemRef->itemID());
-        //award kill bounty.
-        _AwardBounty(pClient);
-        //  log faction kill in dynamic data   -allan
-        Character* pChar = pClient->GetChar().get();
-        pChar->chkDynamicSystemID(GetLocationID());
-        pChar->AddKillToDynamicData(GetLocationID());
-        pChar->AddFactionKillToDynamicData(GetLocationID());
-        if (m_system->GetSystemSecurityRating() > 0)
-            SystemEntity::AwardSecurityStatus(m_self, pChar);
-    } else
-        _DropLoot(Item()->groupID(), killerID, wreckItemRef->itemID());
-
-    // cleanup and removal of dead npc
-    //AI()->ClearAllTargets();
-    System()->RemoveNPC(this);  //this also removes npc from db
-}
-
-void Drone::Killed(Damage &fatal_blow)
-{
-    m_destiny->Stop();
-
-    SystemEntity *killer = fatal_blow.source;
-
-    if (killer->IsNPC()) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    Client* pClient = sEntityList.FindClientByShip( killer->Item()->ownerID() );
-    if (!pClient) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    //TODO: check for faction/corp status modifiers here.
-    Character* pChar = pClient->GetChar().get();
-    if (m_system->GetSystemSecurityRating() > 0)
-        SystemEntity::AwardSecurityStatus(m_self, pChar);
-
-    //_DropLoot(Item()->groupID(), fatal_blow.source->Item()->ownerID(), wreckItemRef->itemID());
-
-    m_system->RemoveEntity(this);
-}
-
-void ShipEntity::Killed(Damage &fatal_blow)
-{
-    m_destiny->Stop();
-
-    SystemEntity *killer = fatal_blow.source;
-    Client* pClient = nullptr;
-    uint32 killerID = 0;
-
-    if (killer->IsClient()) {
-        pClient = killer->CastToClient();
-        killerID = pClient->GetCharacterID();
-    } else if (killer->IsDrone()) {
-        pClient = sEntityList.FindClientByShip( killer->Item()->ownerID() );
-        if (!pClient) {
-            pClient = nullptr;
-            sLog.Error("NPC::Killed()", "killer == IsDrone and pClient == nullptr");
-        } else
-            killerID = pClient->GetCharacterID();
-    } else
-        killerID = killer->GetID();
-
-	// Spawn a wreck for the Ship that was destroyed:
-	uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(Item()->typeID());
-	std::string wreck_name = Item()->itemName();
-	GPoint wreckPosition = Destiny()->GetPosition();
-	InventoryItemRef wreckItemRef;
-	ItemData wreckItemData(
-		wreckTypeID,
-		killerID,
-		GetLocationID(),
-		flagAutoFit,
-		wreck_name.c_str(),
-		wreckPosition
-	);
-
-	wreckItemRef = System()->GetServiceMgr()->item_factory->SpawnItem( wreckItemData );
-	if (!wreckItemRef )
-		throw PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
-
-	DBSystemDynamicEntity wreckEntity;
-        wreckEntity.allianceID = 0;
-        wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-        wreckEntity.corporationID = 0;
-        wreckEntity.flag = 0;
-        wreckEntity.groupID = EVEDB::invGroups::Wreck;
-        wreckEntity.itemID = wreckItemRef->itemID();
-        wreckEntity.itemName = wreck_name;
-        wreckEntity.locationID = GetLocationID();
-        wreckEntity.ownerID = killerID;
-        wreckEntity.typeID = wreckTypeID;
-        wreckEntity.x = wreckPosition.x;
-        wreckEntity.y = wreckPosition.y;
-        wreckEntity.z = wreckPosition.z;
-
-	if (!(System()->BuildDynamicEntity( nullptr, wreckEntity )) )		// WARNING! Passing NULL for a client object (this is ok since BuildDynamicEntity() does not use the first argument
-	{
-		sLog.Error("ShipEntity::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
-		throw PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
-		return;
-	}
-
-	_DropLoot(Item()->groupID(), killerID, wreckItemRef->itemID());
-
-    //  log faction kill in dynamic data   -allan
-    //  client logs faction kills in total kills.  return is value1(total kills) - value2(faction kills) > 0:
-    if (pClient ) {
-        Character* pChar = pClient->GetChar().get();
-        pChar->chkDynamicSystemID(GetLocationID());
-        pChar->AddKillToDynamicData(GetLocationID());
-        pChar->AddFactionKillToDynamicData(GetLocationID());
-        if (m_system->GetSystemSecurityRating() > 0)
-            SystemEntity::AwardSecurityStatus(m_self, pChar);
-    }
-
-    m_system->RemoveEntity(this);
-}
-
-void StructureEntity::Killed(Damage &fatal_blow)
-{
-    m_destiny->Stop();
-
-    SystemEntity *killer = fatal_blow.source;
-
-    if (killer->IsNPC()) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    Client* pClient = sEntityList.FindClientByShip( killer->Item()->ownerID() );
-    if (!pClient) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    //TODO: check for faction/corp status modifiers here.
-    Character* pChar = pClient->GetChar().get();
-    if (m_system->GetSystemSecurityRating() > 0)
-        SystemEntity::AwardSecurityStatus(m_self, pChar);
-
-    //_DropLoot(Item()->groupID(), fatal_blow.source->Item()->ownerID(), wreckItemRef->itemID());
-
-    m_system->RemoveEntity(this);
-}
-
-void ContainerEntity::Killed(Damage &fatal_blow)
-{
-    m_destiny->Stop();
-
-    SystemEntity *killer = fatal_blow.source;
-
-    if (killer->IsNPC()) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    Client* pClient = sEntityList.FindClientByShip( killer->Item()->ownerID() );
-    if (!pClient) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    //TODO: check for faction/corp status modifiers here.
-    Character* pChar = pClient->GetChar().get();
-    if (m_system->GetSystemSecurityRating() > 0)
-        SystemEntity::AwardSecurityStatus(m_self, pChar);
-
-    //_DropLoot(Item()->groupID(), fatal_blow.source->Item()->ownerID(), wreckItemRef->itemID());
-
-    m_system->RemoveEntity(this);
-}
-
-void DeployableEntity::Killed(Damage &fatal_blow)
-{
-    m_destiny->Stop();
-
-    SystemEntity *killer = fatal_blow.source;
-
-    if (killer->IsNPC()) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    Client* pClient = sEntityList.FindClientByShip( killer->Item()->ownerID() );
-    if (!pClient) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    //TODO: check for faction/corp status modifiers here.
-    Character* pChar = pClient->GetChar().get();
-    if (m_system->GetSystemSecurityRating() > 0)
-        SystemEntity::AwardSecurityStatus(m_self, pChar);
-
-    //_DropLoot(Item()->groupID(), fatal_blow.source->Item()->ownerID(), wreckItemRef->itemID());
-
-    m_system->RemoveEntity(this);
-}
-
-void AsteroidEntity::Killed(Damage &fatal_blow)
-{
-    m_destiny->Stop();
-
-    SystemEntity *killer = fatal_blow.source;
-
-    if (killer->IsNPC()) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    Client* pClient = sEntityList.FindClientByShip( killer->Item()->ownerID() );
-    if (!pClient) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    m_system->RemoveEntity(this);
-}
-
-void CelestialEntity::Killed(Damage &fatal_blow)
-{
-    m_destiny->Stop();
-
-    SystemEntity *killer = fatal_blow.source;
-
-    if (killer->IsNPC()) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    Client* pClient = sEntityList.FindClientByShip( killer->Item()->ownerID() );
-    if (!pClient) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    //TODO: check for faction/corp status modifiers here.
-    Character* pChar = pClient->GetChar().get();
-    if (m_system->GetSystemSecurityRating() > 0)
-        SystemEntity::AwardSecurityStatus(m_self, pChar);
-
-    //_DropLoot(Item()->groupID(), fatal_blow.source->Item()->ownerID(), wreckItemRef->itemID());
-
-    m_system->RemoveEntity(this);
-}
-
-void StationEntity::Killed(Damage &fatal_blow)
-{
-    m_destiny->Stop();
-
-    SystemEntity *killer = fatal_blow.source;
-
-    if (killer->IsNPC()) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    Client* pClient = sEntityList.FindClientByShip( killer->Item()->ownerID() );
-    if (!pClient) {
-        m_system->RemoveEntity(this);
-        return;
-    }
-
-    //TODO: check for faction/corp status modifiers here.
-    Character* pChar = pClient->GetChar().get();
-    if (m_system->GetSystemSecurityRating() > 0)
-        SystemEntity::AwardSecurityStatus(m_self, pChar);
-
-    //_DropLoot(Item()->groupID(), fatal_blow.source->Item()->ownerID(), wreckItemRef->itemID());
-
-    m_system->RemoveEntity(this);
-}
-
-void NPC::_AwardBounty(SystemEntity *who) {
-    if(!who->IsClient()) {  // add check/code here for drones to get client(player)
-        _log(NPC__TRACE, "Refusing to award bounty on %u to non-client %u", GetID(), who->GetID());
-        return;
-    }
-
-    double bounty = m_self->GetAttribute(AttrEntityKillBounty).get_float();
-    if (bounty <= 0) {
-        return;    //no bounty to award...
-    }
-
-    if (sConfig.rates.npcBountyMultiply != 1.0) bounty *= sConfig.rates.npcBountyMultiply;
-
-    //TODO: handle case where drone strikes fatal blow... bounty goes to master.
-    //TODO: handle distribution to gangs.
-    //TODO: handle corp tax
-
-    Client *pClient = who->CastToClient();
-    pClient->AddBalance(bounty);
-
-    std::string reason = "Bounty for killing pirates in ";
-    reason += pClient->GetSystemName();
-
-    if(!m_services.serviceDB().GiveCash(
-                                        pClient->GetID(),
-                                        refBounty,
-                                        ownerCONCORD,
-                                        pClient->GetID(),
-                                        "",    //unknown const char *argID1,
-                                        pClient->GetUserID(),
-                                        accountingKeyCash,
-                                        bounty,
-                                        pClient->GetBalance(),
-                                        reason.c_str()
-                                        )) {
-        codelog(CLIENT__ERROR, "%s: Failed to record bountry of %f from death of %u (type %u)", pClient->GetName(), bounty, GetID(), m_self->typeID());
-        //well.. this isnt a huge deal, so we will get over it.
-    }
-}
-
-void Client::_DropLoot(uint32 groupID, uint32 owner, uint32 locationID) {
-    /*   allan 27Nov14    */
-    std::vector<LootList> lootList;
-    sDGM_Loot_Groups_Table.GetLoot(groupID, lootList);
-
-    if (!lootList.empty()) {
-        uint32 quantity = 0;
-        std::vector<LootList>::iterator cur = lootList.begin();
-        while (cur != lootList.end()) {
-            if (cur->minDrop == cur->maxDrop)
-                quantity = cur->minDrop;
-            else
-                quantity = static_cast<uint32>(MakeRandomInt(cur->minDrop, cur->maxDrop));
-            if (quantity < 1) quantity = 1;
-            ItemData iLoot(cur->itemID, owner, locationID, flagAutoFit, quantity);
-            m_system->itemFactory()->SpawnItem(iLoot);
-            ++cur;
-        }
-    }
-}
-
-void NPC::_DropLoot(uint32 groupID, uint32 owner, uint32 locationID) {
-    /*   allan 27Nov14    */
-    std::vector<LootList> lootList;
-    sDGM_Loot_Groups_Table.GetLoot(groupID, lootList);
-
-    if (!lootList.empty()) {
-        uint32 quantity = 0;
-        std::vector<LootList>::iterator cur = lootList.begin();
-        while (cur != lootList.end()) {
-            if (cur->minDrop == cur->maxDrop)
-                quantity = cur->minDrop;
-            else
-                quantity = static_cast<uint32>(MakeRandomInt(cur->minDrop, cur->maxDrop));
-            if (quantity < 1) quantity = 1;
-            ItemData iLoot(cur->itemID, owner, locationID, flagAutoFit, quantity);
-            m_system->itemFactory()->SpawnItem(iLoot);
-            ++cur;
-        }
-    }
-}
-
-void ShipEntity::_DropLoot(uint32 groupID, uint32 owner, uint32 locationID) {
-    /*   allan 27Nov14    */
-    std::vector<LootList> lootList;
-    sDGM_Loot_Groups_Table.GetLoot(groupID, lootList);
-
-    if (!lootList.empty()) {
-        uint32 quantity = 0;
-        std::vector<LootList>::iterator cur = lootList.begin();
-        while (cur != lootList.end()) {
-            if (cur->minDrop == cur->maxDrop)
-                quantity = cur->minDrop;
-            else
-                quantity = static_cast<uint32>(MakeRandomInt(cur->minDrop, cur->maxDrop));
-            if (quantity < 1) quantity = 1;
-            ItemData iLoot(cur->itemID, owner, locationID, flagAutoFit, quantity);
-            m_system->itemFactory()->SpawnItem(iLoot);
-            ++cur;
-        }
+        SystemEntity* pEntity = m_system->get(oldShipItemID);
+        m_system->RemoveEntity(pEntity);
+        deadShipRef->Delete();
+        m_player->StartKilledTimer();
     }
 }

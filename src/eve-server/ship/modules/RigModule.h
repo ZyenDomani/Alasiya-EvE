@@ -33,10 +33,10 @@ class RigModule
 : public PassiveModule
 {
 public:
-    RigModule(InventoryItemRef item, ShipRef ship);
-    virtual ~RigModule() { }
+    RigModule(InventoryItemRef item, ShipItemRef ship);
+    virtual ~RigModule()                                { /* do nothing here */ }
 
-    bool IsRigModule() const                    { return true; }
+    bool IsRigModule() const                            { return true; }
 
     ModulePowerLevel GetModulePowerLevel();
 

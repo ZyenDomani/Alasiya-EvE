@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur, Allan
+    Author:        Zhur
+    Updates:    Allan
 */
 
 /*
@@ -61,7 +62,6 @@ public:
         PyCallable_REG_CALL(AgentMgrBound, GetInfoServiceDetails);
         PyCallable_REG_CALL(AgentMgrBound, DoAction);
         PyCallable_REG_CALL(AgentMgrBound, GetMyJournalDetails);
-        PyCallable_REG_CALL(AgentMgrBound, GetMyEpicJournalDetails);
         PyCallable_REG_CALL(AgentMgrBound, GetAgentLocationWrap);
         PyCallable_REG_CALL(AgentMgrBound, GetMissionBriefingInfo);
         PyCallable_REG_CALL(AgentMgrBound, GetMissionObjectiveInfo);
@@ -75,7 +75,6 @@ public:
     PyCallable_DECL_CALL(GetInfoServiceDetails);
     PyCallable_DECL_CALL(DoAction);
     PyCallable_DECL_CALL(GetMyJournalDetails);
-    PyCallable_DECL_CALL(GetMyEpicJournalDetails);
     PyCallable_DECL_CALL(GetAgentLocationWrap);
     PyCallable_DECL_CALL(GetMissionBriefingInfo);
     PyCallable_DECL_CALL(GetMissionObjectiveInfo);
@@ -98,6 +97,8 @@ AgentMgrService::AgentMgrService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(AgentMgrService, GetMyJournalDetails);
     PyCallable_REG_CALL(AgentMgrService, GetSolarSystemOfAgent);
     PyCallable_REG_CALL(AgentMgrService, GetCareerAgents);
+    PyCallable_REG_CALL(AgentMgrService, GetMyEpicJournalDetails);
+
 }
 
 AgentMgrService::~AgentMgrService() {
@@ -152,7 +153,7 @@ PyResult AgentMgrService::Handle_GetAgents(PyCallArgs &call) {
 22:07:37 [SvcCall]           [ 0] Integer field: 130409676630000000
 22:07:37 [SvcCall]           [ 1] Integer field: -164492702
   sLog.Log( "AgentMgrService::Handle_GetAgents()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     */
 
     PyRep *result = NULL;
@@ -190,7 +191,7 @@ PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
 22:28:49 [SvcCall]     Argument 'machoVersion':
 22:28:49 [SvcCall]         Integer field: 1
 
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     */
     Call_SingleArg args;
     if(!args.Decode(&call.tuple)) {
@@ -215,7 +216,7 @@ PyResult AgentMgrBound::Handle_DoAction(PyCallArgs &call) {
 17:00:59 [SvcCall]     Argument 'machoVersion':
 17:00:59 [SvcCall]         Integer field: 1
   sLog.Log( "AgentMgrBound::Handle_DoAction()", "size= %u, 0=%s", call.tuple->size(), call.tuple->GetItem( 0 )->TypeString() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     */
   /**
 16:53:45 [SvcMessage] agentMgr Service: MachoBindObject also contains call to DoAction
@@ -244,7 +245,7 @@ PyResult AgentMgrBound::Handle_DoAction(PyCallArgs &call) {
         return NULL;
     }
 
-    //TODO: send loyaltyPoints in the keywords return.
+    /** @todo: send loyaltyPoints in the keywords return. */
     //uint32 loyaltyPoints = m_agent->GetLoyaltyPoints(call.client);
 
     DoAction_Result res;
@@ -281,7 +282,7 @@ PyResult AgentMgrBound::Handle_GetAgentLocationWrap(PyCallArgs &call)
      *    06:48:31 L AgentMgrBound::Handle_GetAgentLocationWrap(): size= 0, AgentID = 3017337
      */
     sLog.Log( "AgentMgrBound::Handle_GetAgentLocationWrap()", "size= %u, AgentID = %u", call.tuple->size(), m_agent->GetID() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return m_agent->GetLocation();
 }
@@ -307,7 +308,7 @@ PyResult AgentMgrBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
 16:53:46 [SvcCallTrace]         [ 6] Value: String: 'Mission Keywords'
 */
   sLog.Log( "AgentMgrBound::Handle_GetMissionBriefingInfo()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     PyDict *res = new PyDict();
 
     res->SetItemString("ContentID", new PyInt(123) ) ;
@@ -326,13 +327,21 @@ PyResult AgentMgrBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
 PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
   sLog.Log( "AgentMgrService::Handle_GetMyJournalDetails()", "size= %u", call.tuple->size() );
   /*
-20:12:42 [SvcCall] Service agentMgr: calling GetMyJournalDetails
-20:12:42 [SvcCall]   Call Arguments:
-20:12:42 [SvcCall]       Tuple: Empty
-20:12:42 [SvcCall]   Call Named Arguments:
-20:12:42 [SvcCall]     Argument 'machoVersion':
-20:12:42 [SvcCall]         Integer field: 1
-    call.Dump(SERVICE__CALLS);
+      [PySubStream 59 bytes]
+        [PyTuple 2 items]
+          [PyList 1 items]
+            [PyTuple 9 items]
+              [PyInt 1]
+              [PyInt 0]
+              [PyString "Encounter"]
+              [PyString "Seek and Destroy"]
+              [PyInt 3010819]
+              [PyIntegerVar 129495559223373466]
+              [PyList 0 items]
+              [PyBool False]
+              [PyBool False]
+          [PyList 0 items]
+    call.Dump(SERVICE__CALL_DUMP);
     */
     PyRep *result = NULL;
     PyTuple *t = new PyTuple(3);
@@ -342,6 +351,7 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
     t->items[1] = new PyList();
     //research:
     t->items[2] = new PyList();
+    // LP here?
     result = t;
 
     return result;
@@ -352,7 +362,7 @@ PyResult AgentMgrBound::Handle_GetMyJournalDetails(PyCallArgs &call) {
 
 }
 
-PyResult AgentMgrBound::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
+PyResult AgentMgrService::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
 {
     //no args
   sLog.Log( "AgentMgrBound::Handle_GetMyEpicJournalDetails()", "size= %u", call.tuple->size() );
@@ -363,7 +373,7 @@ PyResult AgentMgrBound::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
 PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)
 {
   sLog.Log( "AgentMgrBound::Handle_GetCareerAgents()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
 
     return new PyInt( 0 );
 }
@@ -371,7 +381,7 @@ PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)
 //17:09:07 L AgentMgrBound::Handle_GetInfoServiceDetails(): size= 0
 PyResult AgentMgrBound::Handle_GetInfoServiceDetails( PyCallArgs& call ) {
   sLog.Log( "AgentMgrBound::Handle_GetInfoServiceDetails()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     //takes no arguments
     return new PyNone;
 }
@@ -410,7 +420,7 @@ PyResult EpicArcService::Handle_AgentHasEpicMissionsForCharacter(PyCallArgs &cal
      epicArcStatusSvc = sm.RemoteSvc('epicArcStatus').AgentHasEpicMissionsForCharacter(agent.agentID):
      */
   sLog.Log( "EpicArcService::Handle_AgentHasEpicMissionsForCharacter()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALLS);
+    call.Dump(SERVICE__CALL_DUMP);
     //takes no arguments
     return new PyNone;
 

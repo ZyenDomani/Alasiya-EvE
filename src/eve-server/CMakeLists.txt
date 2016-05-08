@@ -78,6 +78,7 @@ SET( admin_INCLUDE
      "${TARGET_INCLUDE_DIR}/admin/CommandDispatcher.h"
      "${TARGET_INCLUDE_DIR}/admin/DevToolsProviderService.h"
      "${TARGET_INCLUDE_DIR}/admin/GMCommands.h"
+     "${TARGET_INCLUDE_DIR}/admin/MiningCommands.h"
      "${TARGET_INCLUDE_DIR}/admin/PetitionerService.h"
      "${TARGET_INCLUDE_DIR}/admin/SlashService.h" )
 SET( admin_SOURCE
@@ -88,6 +89,7 @@ SET( admin_SOURCE
      "${TARGET_SOURCE_DIR}/admin/CommandDispatcher.cpp"
      "${TARGET_SOURCE_DIR}/admin/DevToolsProviderService.cpp"
      "${TARGET_SOURCE_DIR}/admin/GMCommands.cpp"
+     "${TARGET_SOURCE_DIR}/admin/MiningCommands.cpp"
      "${TARGET_SOURCE_DIR}/admin/PetitionerService.cpp"
      "${TARGET_SOURCE_DIR}/admin/SlashService.cpp" )
 
@@ -196,14 +198,12 @@ SET( dogmaim_SOURCE
      "${TARGET_SOURCE_DIR}/dogmaim/DogmaService.cpp" )
 
 SET( dungeon_INCLUDE
-     "${TARGET_INCLUDE_DIR}/dungeon/DungeonDB.h"
      #"${TARGET_INCLUDE_DIR}/dungeon/DungeonEditor.h"
-     "${TARGET_INCLUDE_DIR}/dungeon/DungeonMgr.h"
+     "${TARGET_INCLUDE_DIR}/dungeon/DungeonExplorationMgrService.h"
      "${TARGET_INCLUDE_DIR}/dungeon/DungeonService.h")
 SET( dungeon_SOURCE
-     "${TARGET_SOURCE_DIR}/dungeon/DungeonDB.cpp"
      #"${TARGET_SOURCE_DIR}/dungeon/DungeonEditor.cpp"
-     "${TARGET_SOURCE_DIR}/dungeon/DungeonMgr.cpp"
+     "${TARGET_SOURCE_DIR}/dungeon/DungeonExplorationMgrService.cpp"
      "${TARGET_SOURCE_DIR}/dungeon/DungeonService.cpp" )
 
 SET( fleet_INCLUDE
@@ -241,7 +241,6 @@ SET( inventory_INCLUDE
      "${TARGET_INCLUDE_DIR}/inventory/ItemFactory.h"
      "${TARGET_INCLUDE_DIR}/inventory/ItemRef.h"
      "${TARGET_INCLUDE_DIR}/inventory/ItemType.h"
-     "${TARGET_INCLUDE_DIR}/inventory/Owner.h"
      "${TARGET_INCLUDE_DIR}/inventory/Voucher.h" )
 SET( inventory_SOURCE
      "${TARGET_SOURCE_DIR}/inventory/EVEAttributeMgr.cpp"
@@ -253,7 +252,6 @@ SET( inventory_SOURCE
      "${TARGET_SOURCE_DIR}/inventory/ItemDB.cpp"
      "${TARGET_SOURCE_DIR}/inventory/ItemFactory.cpp"
      "${TARGET_SOURCE_DIR}/inventory/ItemType.cpp"
-     "${TARGET_SOURCE_DIR}/inventory/Owner.cpp"
      "${TARGET_SOURCE_DIR}/inventory/Voucher.cpp" )
 
 SET( mail_INCLUDE
@@ -304,47 +302,42 @@ SET( market_SOURCE
      "${TARGET_SOURCE_DIR}/market/MarketProxyService.cpp" )
      #"${TARGET_SOURCE_DIR}/market/NPCMarket.cpp")
 
-SET( mining_INCLUDE
-     "${TARGET_INCLUDE_DIR}/mining/Asteroid.h"
-     "${TARGET_INCLUDE_DIR}/mining/AsteroidBeltManager.h"
-     "${TARGET_INCLUDE_DIR}/mining/MiningCommands.h" )
-SET( mining_SOURCE
-     "${TARGET_SOURCE_DIR}/mining/Asteroid.cpp"
-     "${TARGET_SOURCE_DIR}/mining/AsteroidBeltManager.cpp"
-     "${TARGET_SOURCE_DIR}/mining/MiningCommands.cpp" )
-
 SET( missions_INCLUDE
-     "${TARGET_INCLUDE_DIR}/missions/DungeonExplorationMgrService.h"
      "${TARGET_INCLUDE_DIR}/missions/MissionDB.h"
      "${TARGET_INCLUDE_DIR}/missions/MissionMgrService.h" )
 SET( missions_SOURCE
-     "${TARGET_SOURCE_DIR}/missions/DungeonExplorationMgrService.cpp"
      "${TARGET_SOURCE_DIR}/missions/MissionDB.cpp"
      "${TARGET_SOURCE_DIR}/missions/MissionMgrService.cpp" )
 
 SET( npc_INCLUDE
+     #"${TARGET_INCLUDE_DIR}/npc/Concord.h"
      "${TARGET_INCLUDE_DIR}/npc/NPC.h"
      "${TARGET_INCLUDE_DIR}/npc/NPCAI.h"
-    #"${TARGET_INCLUDE_DIR}/npc/NPCAI_State.h"
      "${TARGET_INCLUDE_DIR}/npc/SpawnDB.h"
      "${TARGET_INCLUDE_DIR}/npc/SpawnMgr.h" )
 SET( npc_SOURCE
+     #"${TARGET_SOURCE_DIR}/npc/Concord.cpp"
      "${TARGET_SOURCE_DIR}/npc/NPC.cpp"
      "${TARGET_SOURCE_DIR}/npc/NPCAI.cpp"
-    #"${TARGET_SOURCE_DIR}/npc/NPCAI_State.cpp"
      "${TARGET_SOURCE_DIR}/npc/SpawnDB.cpp"
      "${TARGET_SOURCE_DIR}/npc/SpawnMgr.cpp" )
 
 SET( planet_INCLUDE
      "${TARGET_INCLUDE_DIR}/planet/Colony.h"
+     "${TARGET_INCLUDE_DIR}/planet/Moon.h"
      "${TARGET_INCLUDE_DIR}/planet/Planet.h"
      "${TARGET_INCLUDE_DIR}/planet/PlanetDB.h"
-     "${TARGET_INCLUDE_DIR}/planet/PlanetMgr.h")
+     "${TARGET_INCLUDE_DIR}/planet/PlanetMgr.h"
+     "${TARGET_INCLUDE_DIR}/planet/PlanetMgrBound.h"
+     "${TARGET_INCLUDE_DIR}/planet/PlanetORBBound.h")
 SET( planet_SOURCE
      "${TARGET_SOURCE_DIR}/planet/Colony.cpp"
+     "${TARGET_SOURCE_DIR}/planet/Moon.cpp"
      "${TARGET_SOURCE_DIR}/planet/Planet.cpp"
      "${TARGET_SOURCE_DIR}/planet/PlanetDB.cpp"
-     "${TARGET_SOURCE_DIR}/planet/PlanetMgr.cpp")
+     "${TARGET_SOURCE_DIR}/planet/PlanetMgr.cpp"
+     "${TARGET_SOURCE_DIR}/planet/PlanetMgrBound.cpp"
+     "${TARGET_SOURCE_DIR}/planet/PlanetORBBound.cpp")
 
 SET( pos_INCLUDE
      "${TARGET_INCLUDE_DIR}/pos/PosMgrDB.h"
@@ -381,7 +374,6 @@ SET( ship_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/Missile.h"
      "${TARGET_INCLUDE_DIR}/ship/Ship.h"
      "${TARGET_INCLUDE_DIR}/ship/ShipDB.h"
-     "${TARGET_INCLUDE_DIR}/ship/ShipOperatorInterface.h"
      "${TARGET_INCLUDE_DIR}/ship/ShipService.h"
      "${TARGET_INCLUDE_DIR}/ship/TargetManager.h" )
 SET( ship_SOURCE
@@ -393,7 +385,6 @@ SET( ship_SOURCE
      "${TARGET_SOURCE_DIR}/ship/Missile.cpp"
      "${TARGET_SOURCE_DIR}/ship/Ship.cpp"
      "${TARGET_SOURCE_DIR}/ship/ShipDB.cpp"
-     "${TARGET_SOURCE_DIR}/ship/ShipOperatorInterface.cpp"
      "${TARGET_SOURCE_DIR}/ship/ShipService.cpp"
      "${TARGET_SOURCE_DIR}/ship/TargetManager.cpp" )
 
@@ -466,9 +457,11 @@ SET( ship_modules_SOURCE
 
 SET( ship_modules_components_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/components/ActiveModuleProcessingComponent.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/components/ModifyModuleAttributesComponent.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/components/ModifyShipAttributesComponent.h" )
 SET( ship_modules_components_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/components/ActiveModuleProcessingComponent.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/components/ModifyModuleAttributesComponent.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/components/ModifyShipAttributesComponent.cpp" )
 
 SET( standing_INCLUDE
@@ -512,7 +505,7 @@ SET( station_SOURCE
      "${TARGET_SOURCE_DIR}/station/TradeService.cpp" )
 
 SET( system_INCLUDE
-     "${TARGET_INCLUDE_DIR}/system/AnomalyMgr.h"
+     "${TARGET_INCLUDE_DIR}/system/Asteroid.h"
      "${TARGET_INCLUDE_DIR}/system/BookmarkDB.h"
      "${TARGET_INCLUDE_DIR}/system/BookmarkService.h"
      "${TARGET_INCLUDE_DIR}/system/BubbleManager.h"
@@ -520,24 +513,23 @@ SET( system_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/CalendarProxy.h"
      "${TARGET_INCLUDE_DIR}/system/CalendarMgrService.h"
      "${TARGET_INCLUDE_DIR}/system/Celestial.h"
+     "${TARGET_INCLUDE_DIR}/system/CrimeWatch.h"
      "${TARGET_INCLUDE_DIR}/system/Container.h"
      "${TARGET_INCLUDE_DIR}/system/Damage.h"
-     "${TARGET_INCLUDE_DIR}/system/Deployable.h"
      "${TARGET_INCLUDE_DIR}/system/IndexManager.h"
      "${TARGET_INCLUDE_DIR}/system/KeeperService.h"
+     "${TARGET_INCLUDE_DIR}/system/LootSystem.h"
      "${TARGET_INCLUDE_DIR}/system/Modifiers.h"
      "${TARGET_INCLUDE_DIR}/system/ScenarioService.h"
      "${TARGET_INCLUDE_DIR}/system/SolarSystem.h"
      "${TARGET_INCLUDE_DIR}/system/SystemBubble.h"
      "${TARGET_INCLUDE_DIR}/system/SystemDB.h"
-     "${TARGET_INCLUDE_DIR}/system/SystemEntities.h"
      "${TARGET_INCLUDE_DIR}/system/SystemEntity.h"
      "${TARGET_INCLUDE_DIR}/system/SystemGPoint.h"
      "${TARGET_INCLUDE_DIR}/system/SystemManager.h"
-     "${TARGET_INCLUDE_DIR}/system/WormholeMgr.h"
-     "${TARGET_INCLUDE_DIR}/system/LootSystem.h" )
+     "${TARGET_INCLUDE_DIR}/system/WormholeSvc.h" )
 SET( system_SOURCE
-     "${TARGET_SOURCE_DIR}/system/AnomalyMgr.cpp"
+     "${TARGET_SOURCE_DIR}/system/Asteroid.cpp"
      "${TARGET_SOURCE_DIR}/system/BookmarkDB.cpp"
      "${TARGET_SOURCE_DIR}/system/BookmarkService.cpp"
      "${TARGET_SOURCE_DIR}/system/BubbleManager.cpp"
@@ -545,22 +537,34 @@ SET( system_SOURCE
      "${TARGET_SOURCE_DIR}/system/CalendarProxy.cpp"
      "${TARGET_SOURCE_DIR}/system/CalendarMgrService.cpp"
      "${TARGET_SOURCE_DIR}/system/Celestial.cpp"
+     "${TARGET_SOURCE_DIR}/system/CrimeWatch.cpp"
      "${TARGET_SOURCE_DIR}/system/Container.cpp"
      "${TARGET_SOURCE_DIR}/system/Damage.cpp"
-     "${TARGET_SOURCE_DIR}/system/Deployable.cpp"
      "${TARGET_SOURCE_DIR}/system/IndexManager.cpp"
      "${TARGET_SOURCE_DIR}/system/KeeperService.cpp"
+     "${TARGET_SOURCE_DIR}/system/LootSystem.cpp"
      "${TARGET_SOURCE_DIR}/system/Modifiers.cpp"
      "${TARGET_SOURCE_DIR}/system/ScenarioService.cpp"
      "${TARGET_SOURCE_DIR}/system/SolarSystem.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemBubble.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemDB.cpp"
-     "${TARGET_SOURCE_DIR}/system/SystemEntities.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemEntity.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemGPoint.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemManager.cpp"
-     "${TARGET_SOURCE_DIR}/system/WormholeMgr.cpp"
-     "${TARGET_SOURCE_DIR}/system/LootSystem.cpp" )
+     "${TARGET_SOURCE_DIR}/system/WormholeSvc.cpp")
+
+SET( system_managers_INCLUDE
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/AnomalyMgr.h"
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/BeltMgr.h"
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/DungeonMgr.h"
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/ManagerDB.h"
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/WormholeMgr.h")
+SET( system_managers_SOURCE
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/AnomalyMgr.cpp"
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/BeltMgr.cpp"
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/DungeonMgr.cpp"
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/ManagerDB.cpp"
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/WormholeMgr.cpp")
 
 ########################
 # Setup the executable #
@@ -583,7 +587,6 @@ SOURCE_GROUP( "src\\mail"          FILES ${mail_INCLUDE} )
 SOURCE_GROUP( "src\\manufacturing" FILES ${manufacturing_INCLUDE} )
 SOURCE_GROUP( "src\\map"           FILES ${map_INCLUDE} )
 SOURCE_GROUP( "src\\market"        FILES ${market_INCLUDE} )
-SOURCE_GROUP( "src\\mining"        FILES ${mining_INCLUDE} )
 SOURCE_GROUP( "src\\missions"      FILES ${missions_INCLUDE} )
 SOURCE_GROUP( "src\\npc"           FILES ${npc_INCLUDE} )
 SOURCE_GROUP( "src\\planet"        FILES ${planet_INCLUDE} )
@@ -596,6 +599,7 @@ SOURCE_GROUP( "src\\ship\\modules\\components" FILES ${ship_modules_components_I
 SOURCE_GROUP( "src\\standing"      FILES ${standing_INCLUDE} )
 SOURCE_GROUP( "src\\station"       FILES ${station_INCLUDE} )
 SOURCE_GROUP( "src\\system"        FILES ${system_INCLUDE} )
+SOURCE_GROUP( "src\\system\\cosmicMgrs"  FILES ${system_managers_INCLUDE} )
 
 SOURCE_GROUP( "src"                FILES ${SOURCE} )
 SOURCE_GROUP( "src\\account"       FILES ${account_SOURCE} )
@@ -615,7 +619,6 @@ SOURCE_GROUP( "src\\mail"          FILES ${mail_SOURCE} )
 SOURCE_GROUP( "src\\manufacturing" FILES ${manufacturing_SOURCE} )
 SOURCE_GROUP( "src\\map"           FILES ${map_SOURCE} )
 SOURCE_GROUP( "src\\market"        FILES ${market_SOURCE} )
-SOURCE_GROUP( "src\\mining"        FILES ${mining_SOURCE} )
 SOURCE_GROUP( "src\\missions"      FILES ${missions_SOURCE} )
 SOURCE_GROUP( "src\\npc"           FILES ${npc_SOURCE} )
 SOURCE_GROUP( "src\\planet"        FILES ${planet_SOURCE} )
@@ -628,6 +631,7 @@ SOURCE_GROUP( "src\\ship\\modules\\components" FILES ${ship_modules_components_S
 SOURCE_GROUP( "src\\standing"      FILES ${standing_SOURCE} )
 SOURCE_GROUP( "src\\station"       FILES ${station_SOURCE} )
 SOURCE_GROUP( "src\\system"        FILES ${system_SOURCE} )
+SOURCE_GROUP( "src\\system\\cosmicMgrs"  FILES ${system_managers_SOURCE} )
 
 ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${INCLUDE}                ${SOURCE}
@@ -648,7 +652,6 @@ ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${manufacturing_INCLUDE}  ${manufacturing_SOURCE}
                 ${map_INCLUDE}            ${map_SOURCE}
                 ${market_INCLUDE}         ${market_SOURCE}
-                ${mining_INCLUDE}         ${mining_SOURCE}
                 ${missions_INCLUDE}       ${missions_SOURCE}
                 ${npc_INCLUDE}            ${npc_SOURCE}
                 ${planet_INCLUDE}         ${planet_SOURCE}
@@ -660,17 +663,18 @@ ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${ship_modules_components_INCLUDE} ${ship_modules_components_SOURCE}
                 ${standing_INCLUDE}       ${standing_SOURCE}
                 ${station_INCLUDE}        ${station_SOURCE}
-                ${system_INCLUDE}         ${system_SOURCE} )
+                ${system_INCLUDE}         ${system_SOURCE}
+                ${system_managers_INCLUDE} ${system_managers_SOURCE} )
 
 TARGET_BUILD_PCH( "${TARGET_NAME}"
                   "${TARGET_INCLUDE_DIR}/eve-server.h"
                   "${TARGET_SOURCE_DIR}/eve-server.cpp" )
 TARGET_INCLUDE_DIRECTORIES( "${TARGET_NAME}"
-                            "${LUA_INCLUDE_DIR}"
+                            #"${LUA_INCLUDE_DIR}"
                             ${eve-common_INCLUDE_DIRS}
                             "${TARGET_INCLUDE_DIR}" )
 TARGET_LINK_LIBRARIES( "${TARGET_NAME}"
-                       ${LUA_LIBRARIES}
+                       #${LUA_LIBRARIES}
                        "eve-common" )
 
 INSTALL( TARGETS "${TARGET_NAME}"

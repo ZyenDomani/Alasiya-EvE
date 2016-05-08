@@ -30,7 +30,7 @@
 #include "system/SystemBubble.h"
 #include "system/Damage.h"
 
-SuperWeapon::SuperWeapon( InventoryItemRef item, ShipRef ship )
+SuperWeapon::SuperWeapon( InventoryItemRef item, ShipItemRef ship )
 : TurrentModule(item, ship),
 	m_buildUpTimer(0), m_effectDurationTimer(0)
 {
@@ -46,7 +46,7 @@ void SuperWeapon::Activate(SystemEntity * targetEntity)
 	m_targetID = targetEntity->GetID();
 
 	// Activate active processing component timer:
-	m_ActiveModuleProc->ActivateCycle();
+	m_AMPC->ActivateCycle();
 	//_ShowCycle();
 	//m_ActiveModuleProc->ProcessActiveCycle();
 }
@@ -81,11 +81,11 @@ void SuperWeapon::StopCycle(bool abort)
 			break;
 	}
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
 	// Create Special Effect:
-	m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+	m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
 	(
         m_Ship,
         m_Item->itemID(),
@@ -129,13 +129,13 @@ void SuperWeapon::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 double SuperWeapon::DoCycle()
 {
-        if ((!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
-            || (!m_Ship->GetOperator()->GetSystemEntity()->Bubble()->GetEntity(m_targetID))
+        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))
             /*|| (!m_chargeLoaded) || (!m_chargeRef)*/ )
         {
             Deactivate();
@@ -165,7 +165,7 @@ double SuperWeapon::DoCycle()
 		//    and calculate distance from target to calculate area-of-effect damage using some 1/x formula, where damage sustained
 		//    drops off the further away from the primary target.
 
-        Damage d(m_Ship->GetOperator()->GetSystemEntity(),
+        Damage d(m_Ship->GetPilot()->GetShipSE(),
                  m_Item,
                  m_chargeRef->GetAttribute(AttrKineticDamage).get_float(),     // kinetic damage
                  m_chargeRef->GetAttribute(AttrThermalDamage).get_float(),     // thermal damage
@@ -210,7 +210,7 @@ void SuperWeapon::_ShowCycle()
 	}
 
 	// Create Special Effect:
-	m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+	m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
 	(
         m_Ship,
         m_Item->itemID(),
@@ -245,7 +245,7 @@ void SuperWeapon::_ShowCycle()
     shipEff.environment = ge.Encode();
     shipEff.startTime = shipEff.timeNow;
     shipEff.duration = _GetDuration();
-    shipEff.repeat = 1000;  //# times to repeat (should be ammo qty?)
+    shipEff.repeat = 1;  /* boolean of repeatable cycles without pilot activation */
     shipEff.error = new PyNone;
 
     std::vector<PyTuple*> events;
@@ -253,7 +253,7 @@ void SuperWeapon::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void SuperWeapon::_SetCapNeed()

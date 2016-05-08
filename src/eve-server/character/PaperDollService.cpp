@@ -49,27 +49,48 @@ PaperDollService::~PaperDollService() {
 }
 
 PyResult PaperDollService::Handle_GetPaperDollData(PyCallArgs &call) {
+    sLog.Log("PaperDollService::Handle_GetPaperDollData()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
     return new PyList;
 }
 
 PyResult PaperDollService::Handle_ConvertAndSavePaperDoll(PyCallArgs &call) {
+    sLog.Log("PaperDollService::Handle_ConvertAndSavePaperDoll()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
     return NULL;
 }
 
 PyResult PaperDollService::Handle_UpdateExistingCharacterFull(PyCallArgs &call) {
+    sLog.Log("PaperDollService::Handle_UpdateExistingCharacterFull()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+    /*
+        sm.RemoteSvc('paperDollServer').UpdateExistingCharacterFull(charID, dollInfo, portraitInfo, dollExists)
+        */
     return NULL;
 }
 
 PyResult PaperDollService::Handle_UpdateExistingCharacterLimited(PyCallArgs &call) {
+    sLog.Log("PaperDollService::Handle_UpdateExistingCharacterLimited()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+    /*
+        sm.RemoteSvc('paperDollServer').UpdateExistingCharacterLimited(charID, dollData, portraitInfo, dollExists)
+        */
     return NULL;
 }
 
 PyResult PaperDollService::Handle_GetPaperDollPortraitDataFor(PyCallArgs &call) {
+    sLog.Log("PaperDollService::Handle_GetPaperDollPortraitDataFor()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+    /*
+    data = sm.RemoteSvc('paperDollServer').GetPaperDollPortraitDataFor(charID)
+    */
     return NULL;
 }
 
 PyResult PaperDollService::Handle_GetMyPaperDollData(PyCallArgs &call)
 {
+    sLog.Log("PaperDollService::Handle_GetMyPaperDollData()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
 
 	PyDict* args = new PyDict;
 

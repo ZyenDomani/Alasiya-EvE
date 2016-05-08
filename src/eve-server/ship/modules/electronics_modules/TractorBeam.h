@@ -32,7 +32,7 @@
 class TractorBeam: public ActiveModule
 {
 public:
-    TractorBeam( InventoryItemRef item, ShipRef ship );
+    TractorBeam( InventoryItemRef item, ShipItemRef ship );
     virtual ~TractorBeam() { }
 
     // GenericModule Methods:

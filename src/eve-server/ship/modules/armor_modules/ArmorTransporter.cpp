@@ -28,18 +28,18 @@
 #include "character/Character.h"
 
 
-ArmorTransporter::ArmorTransporter( InventoryItemRef item, ShipRef ship )
+ArmorTransporter::ArmorTransporter( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 }
 
 void ArmorTransporter::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -84,12 +84,12 @@ void ArmorTransporter::StopCycle(bool abort)
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 double ArmorTransporter::DoCycle()
 {
-        if (!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
+        if (!m_Ship->GetPilot()->GetShipSE()->SysBubble())
         {
             Deactivate();
             return 0;
@@ -97,12 +97,12 @@ double ArmorTransporter::DoCycle()
         _ShowCycle();
 
         // Apply repair amount:
-        EvilNumber armorDamage = m_targetEntity->Item()->GetAttribute(AttrArmorDamage);
+        EvilNumber armorDamage = m_targetEntity->GetSelf()->GetAttribute(AttrArmorDamage);
         armorDamage -= m_Item->GetAttribute(AttrArmorDamageAmount);
         if (armorDamage <= 0) {
             armorDamage = 0;
         }
-        m_targetEntity->Item()->SetAttribute(AttrArmorDamage, armorDamage);
+        m_targetEntity->GetSelf()->SetAttribute(AttrArmorDamage, armorDamage);
 
         return _GetDuration();
 }
@@ -110,7 +110,7 @@ double ArmorTransporter::DoCycle()
 void ArmorTransporter::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
      m_Ship,
      m_Item->itemID(),
@@ -145,7 +145,7 @@ void ArmorTransporter::_ShowCycle()
     shipEff.environment = ge.Encode();
     shipEff.startTime = shipEff.timeNow;
     shipEff.duration = _GetDuration();
-    shipEff.repeat = 0;  //# times to repeat (should be ammo qty?)
+    shipEff.repeat = 0;  /* boolean of repeatable cycles without pilot activation */
     shipEff.error = new PyNone;
 
     std::vector<PyTuple*> events;
@@ -153,7 +153,7 @@ void ArmorTransporter::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double ArmorTransporter::_GetCapNeed()
@@ -163,11 +163,11 @@ double ArmorTransporter::_GetCapNeed()
 	double moduleCapNeed = m_Item->GetAttribute(AttrCapacitorNeed).get_float();
 
 	// Now we do the initial cap need calculations
-	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetOperator()->GetChar()->GetSkillLevel(skillRemoteArmorRepairSystems)));
+	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillRemoteArmorRepairSystems)));
 
 	// Now we check if our ship is Guardian or Oneiros. If yes - we apply ship's bonuses
 	if(m_Ship->typeID() == 11987 || m_Ship->typeID() == 11989){
-		capacitorNeed *= (1 - (0.15 * m_Ship->GetOperator()->GetChar()->GetSkillLevel(skillLogistics)));
+		capacitorNeed *= (1 - (0.15 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillLogistics)));
 	}
 
     return capacitorNeed;

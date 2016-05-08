@@ -45,6 +45,7 @@ DBcore::DBcore(bool compress, bool ssl)
 DBcore::~DBcore() {
     if (mysql) {
         mysql_close(mysql);
+        free(mysql);
         SafeDelete(mysql);
     } else
         _log(DATABASE__MESSAGE, "DBcore D'tor called but mysql is already null.");
@@ -588,7 +589,7 @@ bool DBResultRow::GetBool( uint32 index ) const
         return 0;       //nothing better to do...
     }
 #endif
-    return GetText(index)[0] == 1;
+    return (GetText(index)[0] == 1);
 }
 
 uint32 DBResultRow::GetUInt( uint32 index ) const

@@ -58,10 +58,10 @@ CelestialObject::CelestialObject(
   m_celestialIndex( 0 ),
   m_orbitIndex( 0 )
   {
-      _log(ITEM__TRACE, "Created CelestialObject1 for item %s (%u).", itemName().c_str(), itemID());
+      _log(ITEM__TRACE, "Created Default CelestialObject for item %s (%u).", itemName().c_str(), itemID());
 }
 
-CelestialObject::CelestialObject(   //called for star,
+CelestialObject::CelestialObject(   //called for system, star, planet, moon, belt, stargate, station
     ItemFactory &_factory,
     uint32 _celestialID,
     // InventoryItem stuff:
@@ -75,7 +75,7 @@ CelestialObject::CelestialObject(   //called for star,
   m_celestialIndex(_cData.celestialIndex),
   m_orbitIndex(_cData.orbitIndex)
   {
-      _log(ITEM__TRACE, "Created CelestialObject2 for item %s (%u).", itemName().c_str(), itemID());
+      _log(ITEM__TRACE, "Created CelestialObject for item %s (%u).", itemName().c_str(), itemID());
 }
 
 CelestialObjectRef CelestialObject::Load(ItemFactory &factory, uint32 celestialID)
@@ -85,59 +85,33 @@ CelestialObjectRef CelestialObject::Load(ItemFactory &factory, uint32 celestialI
 
 template<class _Ty>
 RefPtr<_Ty> CelestialObject::_LoadCelestialObject(ItemFactory &factory, uint32 celestialID,
-    // InventoryItem stuff:
-    const ItemType &type, const ItemData &data,
-    // CelestialObject stuff:
-    const CelestialObjectData &cData)
+    const ItemType &type, const ItemData &data, const CelestialObjectData &cData)
 {
-    // Our category is celestial; what to do next:
     switch( type.groupID() ) {
-        ///////////////////////////////////////
-        // Solar system:
-        ///////////////////////////////////////
         case EVEDB::invGroups::Solar_System: {
             return SolarSystem::_LoadCelestialObject<SolarSystem>( factory, celestialID, type, data, cData );
         }
-
-        ///////////////////////////////////////
-        // Station:
-        ///////////////////////////////////////
         case EVEDB::invGroups::Station: {
-            return Station::_LoadCelestialObject<Station>( factory, celestialID, type, data, cData );
+            return StationItem::_LoadCelestialObject<StationItem>( factory, celestialID, type, data, cData );
         }
     }
 
-    // Create a generic one:
     return CelestialObjectRef( new CelestialObject( factory, celestialID, type, data, cData ) );
 }
 
-CelestialObjectRef CelestialObject::Spawn(ItemFactory &factory,
-    // InventoryItem stuff:
-    ItemData &data
-) {
-    uint32 celestialID = CelestialObject::_Spawn( factory, data );
-    if( celestialID == 0 )
-        return CelestialObjectRef();
-    return CelestialObject::Load( factory, celestialID );
+CelestialObjectRef CelestialObject::Spawn(ItemFactory &factory, ItemData &data) {
+    uint32 celestialID = CelestialObject::CreateItemID( factory, data );
+    if (celestialID)
+        return CelestialObject::Load( factory, celestialID );
+    return CelestialObjectRef();
 }
 
-uint32 CelestialObject::_Spawn(ItemFactory &factory,
-    // InventoryItem stuff:
-    ItemData &data
-) {
-    // make sure it's a ship
+uint32 CelestialObject::CreateItemID(ItemFactory &factory, ItemData &data) {
     const ItemType *item = factory.GetType(data.typeID);
-    if( !(item->categoryID() == EVEDB::invCategories::Celestial) )
+    if (item->categoryID() != EVEDB::invCategories::Celestial)
         return 0;
 
-    // store item data
-    uint32 celestialID = InventoryItem::_Spawn(factory, data);
-    if( celestialID == 0 )
-        return 0;
-
-    // nothing additional
-
-    return celestialID;
+    return InventoryItem::CreateItemID(factory, data);
 }
 
 void CelestialObject::Delete() {
@@ -145,74 +119,14 @@ void CelestialObject::Delete() {
 }
 
 
-using namespace Destiny;
-
-CelestialEntity::CelestialEntity(
-    CelestialObjectRef celestial,
-    //InventoryItemRef celestial,
-    SystemManager *system,
-    PyServiceMgr &services,
-    const GPoint &position)
-: CelestialDynamicSystemEntity(new DestinyManager(this, system), celestial),
-  m_system(system),
-  m_services(services)
+CelestialSE::CelestialSE(CelestialObjectRef self, PyServiceMgr &services, SystemManager* system)
+: ItemSystemEntity(self, services, system)
 {
-    _celestialRef = celestial;
-    m_destiny->SetPosition(position, false);
+    // Set radius of celestial object
+    self->SetAttribute(AttrRadius, self->type().radius());
 }
 
-void CelestialEntity::Process() {
-    //SystemEntity::Process();
-}
-
-void CelestialEntity::ForcedSetPosition(const GPoint &pt) {
-    m_destiny->SetPosition(pt, false);
-}
-
-/*
-void CelestialEntity::EncodeDestiny( Buffer& into ) const
-{
-    const GPoint& position = GetPosition();
-
-        BallHeader head;
-        head.id = GetID();
-        head.mode = DSTBALL_STOP;
-        head.radius = GetRadius();
-        head.x = position.x;
-        head.y = position.y;
-        head.z = position.z;
-        head.flags = IsMassive | IsFree;
-        into.Append( head );
-
-        MassSector mass;
-        mass.mass = GetMass();
-        mass.cloak = 0;
-        mass.unknown52 = 0xFFFFFFFFFFFFFFFFLL;
-        mass.corpID = GetCorporationID();
-        mass.allianceID = GetAllianceID();
-        into.Append( mass );
-
-        ShipSector ship;
-        ship.maxVelocity = GetMaxVelocity();
-        ship.velocity_x = 0.0;
-        ship.velocity_y = 0.0;
-        ship.velocity_z = 0.0;
-        ship.unknown_x = 0.0;
-        ship.unknown_y = 0.0;
-        ship.unknown_z = 0.0;
-        ship.agility = GetAgility();
-        ship.speed_fraction = 0.0;
-        into.Append( ship );
-
-        DSTBALL_STOP_Struct main;
-        main.formationID = 0xFF;
-        into.Append( main );
-
-        _log(COMMON__WARNING, "CelestialEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
-}
-*/
-
-void CelestialEntity::MakeDamageState(DoDestinyDamageState &into) const
+void CelestialSE::MakeDamageState(DoDestinyDamageState &into)
 {
     double shield = 0.0, armor = 0.0;       // update to fix frozen corpse sending NaN for shield and armor.
     if (m_self->typeID() != 10041) { //type = frozen corpse
@@ -220,7 +134,7 @@ void CelestialEntity::MakeDamageState(DoDestinyDamageState &into) const
         armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
     }
     into.shield = shield;
-    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() +3;
+    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
     into.timestamp = Win32TimeNow();
     into.armor = armor;
     into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());

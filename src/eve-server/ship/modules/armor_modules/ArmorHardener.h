@@ -32,7 +32,7 @@
 class ArmorHardener: public ActiveModule
 {
 public:
-    ArmorHardener( InventoryItemRef item, ShipRef ship );
+    ArmorHardener( InventoryItemRef item, ShipItemRef ship );
     virtual ~ArmorHardener() { }
 
     // GenericModule Methods:

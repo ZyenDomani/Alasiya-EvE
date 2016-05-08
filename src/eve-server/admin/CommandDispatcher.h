@@ -28,6 +28,8 @@ public:
     CommandDispatcher(PyServiceMgr &services);
     virtual ~CommandDispatcher();
 
+    void Close();
+
     PyResult Execute(Client *from, const char *msg);
 
     void AddCommand(const char *cmd, const char *desc, uint64 required_role, CommandFunc function);

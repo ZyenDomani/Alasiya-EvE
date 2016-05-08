@@ -97,14 +97,18 @@ SolarSystem::SolarSystem(
 {
     // consistency check
     assert(_sunType.id() == _ssData.sunTypeID);
-}
 
-SolarSystem::~SolarSystem() {
+    m_inventory = new Inventory(InventoryItemRef(this));
+    _log(ITEM__TRACE, "Created SolarSystem Item %p for %s (%u).", this, itemName().c_str(), itemID());
 }
 
 SolarSystemRef SolarSystem::Load(ItemFactory &factory, uint32 solarSystemID)
 {
     return InventoryItem::Load<SolarSystem>( factory, solarSystemID );
+}
+
+bool SolarSystem::_Load() {
+    return CelestialObject::_Load();
 }
 
 template<class _Ty>
@@ -120,11 +124,6 @@ RefPtr<_Ty> SolarSystem::_LoadSolarSystem(ItemFactory &factory, uint32 solarSyst
     return SolarSystemRef( new SolarSystem( factory, solarSystemID, type, data, cData, sunType, ssData ) );
 }
 
-bool SolarSystem::_Load()
-{
-    return CelestialObject::_Load();
-}
-
 void SolarSystem::AddItemToInventory(InventoryItemRef item)
 {
     AddItem( item );
@@ -132,17 +131,17 @@ void SolarSystem::AddItemToInventory(InventoryItemRef item)
 
 void SolarSystem::AddItem(InventoryItemRef item)
 {
-    Inventory::AddItem( item );
+    m_inventory->AddItem( item );
 }
 
-void SolarSystem::RemoveItemFromInventory(InventoryItemRef item)
+// unload...loop thru currently loaded inventory and call RemoveItem for each.
+
+void SolarSystem::RemoveItemFromInventory( InventoryItemRef item )
 {
     RemoveItem( item );
 }
 
 void SolarSystem::RemoveItem(InventoryItemRef item)
 {
-    Inventory::RemoveItem( item );
+    m_inventory->RemoveItem( item );
 }
-
-// unload...loop thru currently loaded inventory and call RemoveItem for each.

@@ -31,7 +31,7 @@
 class Afterburner: public ActiveModule
 {
 public:
-    Afterburner( InventoryItemRef item, ShipRef ship );
+    Afterburner( InventoryItemRef item, ShipItemRef ship );
     virtual ~Afterburner() { }
 
     // GenericModule Methods:

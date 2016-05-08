@@ -87,7 +87,8 @@ public:
     uint32 GetEffectApplicationType(uint32 index)               { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_AffectingTypes.at(index); }
     EVECalculationType GetCalculationType(uint32 index)         { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? (EVECalculationType)0 : (EVECalculationType)m_CalculationTypeIDs.at(index);}
     EVECalculationType GetReverseCalculationType(uint32 index)  { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? (EVECalculationType)0 : (EVECalculationType)m_ReverseCalculationTypeIDs.at(index);}
-    //typeTargetGroupIDlist GetTargetGroupIDlist(uint32 index);
+
+    typeTargetGroupIDlist GetTargetIDList(uint32 index);
 
 private:
     void _Populate(uint32 effectID);
@@ -264,11 +265,12 @@ private:
     InventoryItem* m_pItem;
 
     //data members
-    std::map<uint32, std::shared_ptr<MEffect>> m_OnlineEffects;
-    std::map<uint32, std::shared_ptr<MEffect>> m_ActiveEffects;
-    std::map<uint32, std::shared_ptr<MEffect>> m_OverloadEffects;
     std::map<uint32, std::shared_ptr<MEffect>> m_GangEffects;
     std::map<uint32, std::shared_ptr<MEffect>> m_FleetEffects;
+    std::map<uint32, std::shared_ptr<MEffect>> m_OnlineEffects;
+    std::map<uint32, std::shared_ptr<MEffect>> m_ActiveEffects;
+    std::map<uint32, std::shared_ptr<MEffect>> m_PassiveEffects;
+    std::map<uint32, std::shared_ptr<MEffect>> m_OverloadEffects;
 
     //cached stuff
     bool m_hiPower, m_medPower, m_loPower, m_rigSlot, m_subSystem;

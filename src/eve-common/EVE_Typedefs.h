@@ -63,10 +63,32 @@ enum EVERace {
     racePirate      = 32
 };
 
-//eve standing change messages in db.repStandingChanges.eventTypeID
-//  not sure where these come from
 typedef enum {
-    standingGMInterventionReset             = 25,   //Reset by a GM.
+    CharAmarr       = 1373,
+    CharNiKunni     = 1374,
+    CharCivire      = 1375,
+    CharDeteis      = 1376,
+    CharGallente    = 1377,
+    CharIntaki      = 1378,
+    CharSebiestor   = 1379,
+    CharBrutor      = 1380,
+    CharStatic      = 1381,
+    CharModifier    = 1382,
+    CharAchura      = 1383,
+    CharJinMei      = 1384,
+    CharKhanid      = 1385,
+    CharVherokior   = 1386
+} EVECharType;
+
+//eve standing change messages in db.repStandingChanges.eventTypeID
+//  these come from /eve/common/script/mgt/appLogConst.py
+typedef enum {
+    standingPodKill                         = 9,
+    standingPodKilled                       = 10,
+    standingStandingReset                   = 25,   //Reset by a GM.
+    standingShipKill                        = 26,
+    standingShipKilled                      = 27,
+    standingUpdateStanding                  = 45,
     standingDecay                           = 49,   //All standing decays except when user isn't logged in
     standingPlayerSet                       = 65,   //Set by player him/herself. Reason: _msg
     standingCorpSet                         = 68,   //Corp stand set by _int1. Reason: _msg
@@ -76,13 +98,24 @@ typedef enum {
     standingCombatAggression                = 76,   //Combat - Aggression
     standingCombatShipKill                  = 77,   //Combat - Ship Kill
     standingCombatPodKill                   = 78,   //Combat - Pod Kill
+    standingCombatOther                     = 79,
+    standingAgentMissionBonus               = 80,
+    standingPirateKillSecurityStatus        = 89,
     standingDerivedModificationPleased      = 82,   //fromID was pleased
     standingDerivedModificationDispleased   = 83,   //fromID was displeased
     standingGMInterventionDirect            = 84,   //Mod directly by _int1. Reason: _msg
     standingLawEnforcement                  = 89,   //Granted by Concord for actions against _int1
     standingMissionOfferExpired             = 90,   //Mission Offer Expired - _msg
+    standingStandingCorrection              = 96,
+    standingAgentMissionFailedRollback      = 97,
+    standingStandingRollback                = 98,
     standingCombatAssistance                = 112,  //Combat - Assistance
-    standingPropertyDamage                  = 154   //Property Damage
+    standingPropertyDamage                  = 154,  //Property Damage
+    standingCombatShipKillOwnFaction        = 223,
+    standingCombatPodKillOwnFaction         = 224,
+    standingCombatAggressionOwnFaction      = 225,
+    standingCombatAssistanceOwnFaction      = 226,
+    standingCombatOtherOwnFaction           = 228
     //anything up until 500 is 'Standing Change'
 } EVEStandingEventTypeID;
 
@@ -301,12 +334,12 @@ typedef enum {
     calendarMaxInviteeDisplayed = 100,
     calendarAutoEventPosFuel = 1,
     calendarStartYear = 2003,
-    eventResponseUninvited = 0,
-    eventResponseDeleted = 1,
-    eventResponseDeclined = 2,
-    eventResponseUndecided = 3,
-    eventResponseAccepted = 4,
-    eventResponseMaybe = 5
+    calendarResponseUninvited = 0,
+    calendarResponseDeleted = 1,
+    calendarResponseDeclined = 2,
+    calendarResponseUndecided = 3,
+    calendarResponseAccepted = 4,
+    calendarResponseMaybe = 5
 } CalendarDef;
 
 //message format argument types:
@@ -407,6 +440,7 @@ typedef enum {
 
 // mostly pirate corps for now...
 typedef enum {
+    corpRogueDrones         = 1000001,
     corpCONCORD             = 1000125,
     corpSCC                 = 1000132,
     corpDED                 = 1000137,
@@ -416,11 +450,10 @@ typedef enum {
     corpSociety             = 1000131,
     corpMordusLegion        = 1000128,
     corpSanshas             = 1000161,
-    corpSerpentis           = 1000135,
-    corpRogueDrones         = 0
+    corpSerpentis           = 1000135
 } corpDef;
 
-// not sure what these are used for...
+// not sure what these are used for...stateFlags??
 typedef enum {
     mouseOver = 1,
     selected = 2,

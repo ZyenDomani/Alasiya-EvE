@@ -20,8 +20,12 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:     Zhur, Allan
+    Author:     Zhur
+    Updates:    Allan
 */
+
+/** @todo (Allan) this entire file needs updating.  current code calls are shit */
+
 
 #include "eve-server.h"
 
@@ -101,7 +105,6 @@ PyBoundObject *ReprocessingService::_CreateBoundObject(Client *c, const PyRep *b
         return(obj);
 }
 
-//******************************************************************************
 
 ReprocessingServiceBound::ReprocessingServiceBound(PyServiceMgr *mgr, ReprocessingDB& db, uint32 stationID)
 : PyBoundObject(mgr),
@@ -168,7 +171,7 @@ PyResult ReprocessingServiceBound::Handle_GetReprocessingInfo(PyCallArgs &call) 
 
     Rsp_GetReprocessingInfo rsp;
 
-    rsp.reputation = pClient->GetChar()->GetCorpStanding(pClient->GetID(), m_stationCorpID);
+    rsp.reputation = pClient->GetChar()->GetCorpStanding(pClient->GetCharacterID(), m_stationCorpID);
     rsp.tax = _CalcTax( rsp.reputation );
     rsp.yield = m_staEfficiency;
     rsp.combinedyield = _CalcReprocessingEfficiency(pClient);
@@ -292,7 +295,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         if (qtyLeft)
             item->SetQuantity(qtyLeft);
         else {
-            call.client->System()->RemoveItemFromInventory(item);
+            call.client->SystemMgr()->RemoveItemFromInventory(item);
             item->Delete();
         }
     }
@@ -351,7 +354,7 @@ PyRep *ReprocessingServiceBound::_GetQuote(uint32 itemID, const Client *c) const
     quote.lines = new PyList;
     quote.leftOvers = item->quantity() % item->type().portionSize();
     quote.quantityToProcess = item->quantity() - quote.leftOvers;
-    quote.playerStanding = c->GetChar()->GetCorpStanding(c->GetID(), m_stationCorpID);
+    quote.playerStanding = c->GetChar()->GetCorpStanding(c->GetCharacterID(), m_stationCorpID);
 
     double tax = _CalcTax( quote.playerStanding );
 

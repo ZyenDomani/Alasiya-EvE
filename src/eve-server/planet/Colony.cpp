@@ -35,16 +35,16 @@ Colony::Colony(uint32 cID, uint32 pID) {
 
 bool Colony::CreateCommandPin(uint32 pinID, uint32 typeID, float latitude, float longitude) {
     Pin cc;
-    cc.id = pinID;
-    cc.typeID = typeID;
-    cc.latitude = latitude;
-    cc.longitude = longitude;
-    cc.ownerID = charID;
-    cc.state = STATE_IDLE; // ?
-    cc.lastRunTime = 0L;
-    cc.lastLaunchTime = 0L;
-    cc.isLaunchable = true;
-    cc.isCommandCenter = true;
+        cc.id = pinID;
+        cc.typeID = typeID;
+        cc.latitude = latitude;
+        cc.longitude = longitude;
+        cc.ownerID = charID;
+        cc.state = STATE_IDLE; // ?
+        cc.lastRunTime = 0L;
+        cc.lastLaunchTime = 0L;
+        cc.isLaunchable = true;
+        cc.isCommandCenter = true;
     ccPin.level = 0;
     ccPin.currentSimTime = /*CurrentBlueTime()*/0;
     ccPin.pins.push_back(cc);
@@ -53,57 +53,57 @@ bool Colony::CreateCommandPin(uint32 pinID, uint32 typeID, float latitude, float
 
 bool Colony::CreateSpaceportPin(uint32 pinID, uint32 typeID, float latitude, float longitude) {
     Pin sp;
-    sp.id = pinID;
-    sp.typeID = typeID;
-    sp.latitude = latitude;
-    sp.longitude = longitude;
-    sp.ownerID = charID;
-    sp.state = STATE_IDLE; // ?
-    sp.lastRunTime = 0L;
-    sp.lastLaunchTime = 0L;
-    sp.isLaunchable = true;
+        sp.id = pinID;
+        sp.typeID = typeID;
+        sp.latitude = latitude;
+        sp.longitude = longitude;
+        sp.ownerID = charID;
+        sp.state = STATE_IDLE; // ?
+        sp.lastRunTime = 0L;
+        sp.lastLaunchTime = 0L;
+        sp.isLaunchable = true;
     ccPin.pins.push_back(sp);
     return true;    // if we get this far, assume it worked
 }
 
 bool Colony::CreateProcessPin(uint32 pinID, uint32 typeID, float latitude, float longitude) {
     Pin pp;
-    pp.id = pinID;
-    pp.typeID = typeID;
-    pp.latitude = latitude;
-    pp.longitude = longitude;
-    pp.ownerID = charID;
-    pp.state = STATE_IDLE; // ?
-    pp.lastRunTime = 0L;
-    pp.schematicID = 0;
-    pp.hasRecievedInputs = 0;
-    pp.recievedInputsLastCycle = 0;
-    pp.isProcess = true;
+        pp.id = pinID;
+        pp.typeID = typeID;
+        pp.latitude = latitude;
+        pp.longitude = longitude;
+        pp.ownerID = charID;
+        pp.state = STATE_IDLE; // ?
+        pp.lastRunTime = 0L;
+        pp.schematicID = 0;
+        pp.hasRecievedInputs = 0;
+        pp.recievedInputsLastCycle = 0;
+        pp.isProcess = true;
     ccPin.pins.push_back(pp);
     return true;    // if we get this far, assume it worked
 }
 
 bool Colony::CreateExtractorPin(uint32 pinID, uint32 typeID, float latitude, float longitude) {
     Pin ep;
-    ep.id = pinID;
-    ep.typeID = typeID;
-    ep.latitude = latitude;
-    ep.longitude = longitude;
-    ep.ownerID = charID;
-    ep.state = STATE_IDLE; // ?
-    ep.lastRunTime = 0L;
-    ep.isExtractor = true;
+        ep.id = pinID;
+        ep.typeID = typeID;
+        ep.latitude = latitude;
+        ep.longitude = longitude;
+        ep.ownerID = charID;
+        ep.state = STATE_IDLE; // ?
+        ep.lastRunTime = 0L;
+        ep.isExtractor = true;
     ccPin.pins.push_back(ep);
     return true;    // if we get this far, assume it worked
 }
 
 bool Colony::CreateLink(uint32 src, uint32 dest, uint32 level, bool ccConnected) {
     Link link;
-    link.level = level;
-    link.endpoint1 = src;
-    link.endpoint2 = dest;
-    link.typeID = 2280; // Only link type in the game.
-    link.commandCenterConnected = ccConnected;
+        link.level = level;
+        link.endpoint1 = src;
+        link.endpoint2 = dest;
+        link.typeID = 2280; // Only link type in the game.
+        link.commandCenterConnected = ccConnected;
     ccPin.links.push_back(link);
     return true;
 }
@@ -160,7 +160,7 @@ PyResult Colony::GetColony() {
     int index = 0; // used by each for loop.
 
     index = 0;
-    for(auto i:ccPin.pins) {
+    for(auto i : ccPin.pins) {
         PyDict *dict = new PyDict();
         if(i.isCommandCenter) {
             dict->SetItem("id", new PyInt(i.id));
@@ -196,7 +196,7 @@ PyResult Colony::GetColony() {
     }
     index = 0;
 
-    for(auto i:ccPin.links) {
+    for(auto i : ccPin.links) {
         PyDict *dict = new PyDict();
 
         if(i.commandCenterConnected) {
@@ -213,13 +213,13 @@ PyResult Colony::GetColony() {
     }
 
     PyDict *args = new PyDict();
-    args->SetItem("level", new PyInt(ccPin.level));
-    args->SetItem("currentSimTime", new PyLong(ccPin.currentSimTime));
-    args->SetItem("pins", pins);
-    args->SetItem("links", links);
-    args->SetItem("routes", routes);
+        args->SetItem("level", new PyInt(ccPin.level));
+        args->SetItem("currentSimTime", new PyLong(ccPin.currentSimTime));
+        args->SetItem("pins", pins);
+        args->SetItem("links", links);
+        args->SetItem("routes", routes);
     PyObject *rtn = new PyObject("util.KeyVal", args);
 
-    rtn->Dump(stdout, "[DEBUG] GC:  ");
+    rtn->Dump(PLANET__DUMP, "  GC:  ");
     return rtn;
 }

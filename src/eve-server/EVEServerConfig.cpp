@@ -22,6 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
+    Version:    6.2
 */
 
 
@@ -41,8 +42,16 @@ EVEServerConfig::EVEServerConfig()
 
     // items with /*x*/ behind them denote time idetifier, with x = (s=seconds, m=minutes, etc)
 
+    // server
+    server.UseBeanCount = false;
+    server.testServer = true;
+    server.maxPlayers = 500;//N
+    server.UseProfiling = false;
+    server.UseShipTracking = false;
+    server.UseStackTrace = false;//N
+    server.ServerSleepTime = 10 /*ms*/;
+
     // world
-    world.testServer = true;
     world.chatLogs = false;//N
     world.globalChat = true;//N
     world.gridUnload = true;
@@ -50,7 +59,6 @@ EVEServerConfig::EVEServerConfig()
     world.loginInfo = false;//N
     world.loginMsg = false;//N
     world.mailDelay = 5;//N
-    world.maxPlayers = 500;//N
     world.idleSleepTime = 1000;
 
     // rates
@@ -66,6 +74,7 @@ EVEServerConfig::EVEServerConfig()
     rates.RateDropItem = 1.0;//N
     rates.RateDropMoney = 1.0;//N
     rates.RepairCost = 1.0;//N
+    rates.WebUpdate = 15 /*m*/;
 
     // account
     account.autoAccountRole = ROLE_STD;
@@ -83,7 +92,7 @@ EVEServerConfig::EVEServerConfig()
     npc.ThreatRadius = 1.0;//N
     npc.RoamingSpawns = false;//P
     npc.StaticSpawns = false;//N
-    npc.RoamingTimer = 15 /*m*/;//P
+    npc.RoamingTimer = 15 /*m*/;
     npc.StaticTimer = 10 /*m*/;//P
 
     // database
@@ -103,23 +112,18 @@ EVEServerConfig::EVEServerConfig()
     net.port = 26000;
     net.imageServer = "localhost";
     net.imageServerPort = 26001;
-    net.apiServer = "localhost";
-    net.apiServerPort = 26002;
 
     // threads  -not implemented
-    threads.APIThreads = 1;//N
     threads.ConsoleThreads = 1;//P
     threads.DatabaseThreads = 2;//N
     threads.ImageServerThreads = 1;//N
     threads.NetworkThreads = 2;//N
     threads.WorldThreads = 2;//N
 
-    // misc
-    misc.UseProfiling = false;
-    misc.UseAPIServer = false;//N
-    misc.UseShipTracking = false;
-    misc.UseStackTrace = false;//N
-    misc.ServerSleepTime = 10 /*ms*/;
+    // cosmic
+    cosmic.AnomalyEnabled = false;
+    cosmic.DungeonEnabled = false;
+    cosmic.WormHoleEnabled = false;
 
     // crime
     crime.AggFlagTime = 900 /*s*/;//N
@@ -132,6 +136,7 @@ EVEServerConfig::EVEServerConfig()
 bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
 {
     // entering element, extend allowed syntax
+    AddMemberParser( "server",      &EVEServerConfig::ProcessServer );
     AddMemberParser( "world",       &EVEServerConfig::ProcessWorld );
     AddMemberParser( "rates",       &EVEServerConfig::ProcessRates );
     AddMemberParser( "account",     &EVEServerConfig::ProcessAccount );
@@ -141,13 +146,14 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     AddMemberParser( "files",       &EVEServerConfig::ProcessFiles );
     AddMemberParser( "net",         &EVEServerConfig::ProcessNet );
     AddMemberParser( "threads",     &EVEServerConfig::ProcessThreads );
-    AddMemberParser( "misc",        &EVEServerConfig::ProcessMisc );
+    AddMemberParser( "cosmic",      &EVEServerConfig::ProcessCosmic );
     AddMemberParser( "crime",       &EVEServerConfig::ProcessCrime );
 
     // parse the element
     const bool result = ParseElementChildren( ele );
 
     // leaving element, reduce allowed syntax
+    RemoveParser( "server" );
     RemoveParser( "world" );
     RemoveParser( "rates" );
     RemoveParser( "account" );
@@ -157,16 +163,38 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     RemoveParser( "files" );
     RemoveParser( "net" );
     RemoveParser( "threads" );
-    RemoveParser( "misc" );
+    RemoveParser( "cosmic" );
     RemoveParser( "crime" );
 
     // return status of parsing
     return result;
 }
 
+bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
+{
+    AddValueParser( "testServer",           server.testServer );
+    AddValueParser( "UseBeanCount",         server.UseBeanCount );
+    AddValueParser( "maxPlayers",           server.maxPlayers );
+    AddValueParser( "UseProfiling",         server.UseProfiling );
+    AddValueParser( "UseShipTracking",      server.UseShipTracking );
+    AddValueParser( "UseStackTrace",        server.UseStackTrace );
+    AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
+
+    const bool result = ParseElementChildren( ele );
+
+    RemoveParser( "testServer" );
+    RemoveParser( "UseBeanCount" );
+    RemoveParser( "maxPlayers" );
+    RemoveParser( "UseProfiling" );
+    RemoveParser( "UseShipTracking" );
+    RemoveParser( "UseStackTrace" );
+    RemoveParser( "ServerSleepTime" );
+
+    return result;
+}
+
 bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
 {
-    AddValueParser( "testServer",       world.testServer );
     AddValueParser( "chatLogs",         world.chatLogs );
     AddValueParser( "globalChat",       world.globalChat );
     AddValueParser( "gridUnload",       world.gridUnload );
@@ -174,7 +202,6 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     AddValueParser( "loginInfo",        world.loginInfo );
     AddValueParser( "loginMsg",         world.loginMsg );
     AddValueParser( "mailDelay",        world.mailDelay );
-    AddValueParser( "maxPlayers",       world.maxPlayers );
     AddValueParser( "idleSleepTime",    world.idleSleepTime );
 
     const bool result = ParseElementChildren( ele );
@@ -207,6 +234,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "RateDropItem",         rates.RateDropItem );
     AddValueParser( "RateDropMoney",        rates.RateDropMoney );
     AddValueParser( "RepairCost",           rates.RepairCost );
+    AddValueParser( "WebUpdate",            rates.WebUpdate );
 
     const bool result = ParseElementChildren( ele );
 
@@ -222,6 +250,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "RateDropItem" );
     RemoveParser( "RateDropMoney" );
     RemoveParser( "RepairCost" );
+    RemoveParser( "WebUpdate" );
 
     return result;
 }
@@ -320,23 +349,18 @@ bool EVEServerConfig::ProcessNet( const TiXmlElement* ele )
     AddValueParser( "port",             net.port );
     AddValueParser( "imageServerPort",  net.imageServerPort);
     AddValueParser( "imageServer",      net.imageServer);
-    AddValueParser( "apiServerPort",    net.apiServerPort);
-    AddValueParser( "apiServer",        net.apiServer);
 
     const bool result = ParseElementChildren( ele );
 
     RemoveParser( "port" );
     RemoveParser( "imageServerPort" );
     RemoveParser( "imageServer" );
-    RemoveParser( "apiServerPort" );
-    RemoveParser( "apiServer" );
 
     return result;
 }
 
 bool EVEServerConfig::ProcessThreads( const TiXmlElement* ele )
 {
-    AddValueParser( "APIThreads",           threads.APIThreads);
     AddValueParser( "ConsoleThreads",       threads.ConsoleThreads);
     AddValueParser( "DatabaseThreads",      threads.DatabaseThreads);
     AddValueParser( "ImageServerThreads",   threads.ImageServerThreads);
@@ -345,7 +369,6 @@ bool EVEServerConfig::ProcessThreads( const TiXmlElement* ele )
 
     const bool result = ParseElementChildren( ele );
 
-    RemoveParser( "APIThreads" );
     RemoveParser( "ConsoleThreads" );
     RemoveParser( "DatabaseThreads" );
     RemoveParser( "ImageServerThreads" );
@@ -355,21 +378,17 @@ bool EVEServerConfig::ProcessThreads( const TiXmlElement* ele )
     return result;
 }
 
-bool EVEServerConfig::ProcessMisc( const TiXmlElement* ele )
+bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
 {
-    AddValueParser( "UseProfiling",     misc.UseProfiling );
-    AddValueParser( "UseAPIServer",     misc.UseAPIServer );
-    AddValueParser( "UseShipTracking",  misc.UseShipTracking );
-    AddValueParser( "UseStackTrace",  misc.UseStackTrace );
-    AddValueParser( "ServerSleepTime",  misc.ServerSleepTime );
+    AddValueParser( "AnomalyEnabled",    cosmic.AnomalyEnabled );
+    AddValueParser( "DungeonEnabled",    cosmic.DungeonEnabled );
+    AddValueParser( "WormHoleEnabled",   cosmic.WormHoleEnabled );
 
     const bool result = ParseElementChildren( ele );
 
-    RemoveParser( "UseProfiling" );
-    RemoveParser( "UseAPIServer" );
-    RemoveParser( "UseShipTracking" );
-    RemoveParser( "UseStackTrace" );
-    RemoveParser( "ServerSleepTime" );
+    RemoveParser( "AnomalyEnabled" );
+    RemoveParser( "DungeonEnabled" );
+    RemoveParser( "WormHoleEnabled" );
 
     return result;
 }

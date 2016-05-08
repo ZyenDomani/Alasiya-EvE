@@ -27,7 +27,6 @@
 
 #include "PyServiceCD.h"
 #include "admin/AlertService.h"
-//#include "python/PyTraceLog.h"
 
 
 PyCallable_Make_InnerDispatcher(AlertService)
@@ -35,7 +34,7 @@ PyCallable_Make_InnerDispatcher(AlertService)
 AlertService::AlertService(PyServiceMgr *mgr)
 : PyService(mgr, "alert"),
   m_dispatch(new Dispatcher(this)),
-  traceLogger(NULL)
+  traceLogger(nullptr)
 {
     _SetCallDispatcher(m_dispatch);
 
@@ -43,14 +42,14 @@ AlertService::AlertService(PyServiceMgr *mgr)
     m_dispatch->RegisterCall("BeanDelivery", &AlertService::Handle_BeanDelivery);
     m_dispatch->RegisterCall("SendClientStackTraceAlert", &AlertService::Handle_SendClientStackTraceAlert);
 
-    if (sConfig.misc.UseStackTrace)
-        _log(SERVER__INIT_ERR, "UseStackTrace in eve-server.xml is true, yet PyTraceLog was not included in AlertService.cpp");
-        //traceLogger = new PyTraceLog("evemu_client_stack_trace.txt", true, true);
+    if (sConfig.server.UseStackTrace)
+        traceLogger = new PyTraceLog("evemu_client_stack_trace.txt", true, true);
 }
 
 AlertService::~AlertService()
 {
     delete m_dispatch;
+    SafeDelete(traceLogger);
 }
 
 /** Basically BeanCount means that a error has occurred in the client python code, and it asks
@@ -60,15 +59,16 @@ AlertService::~AlertService()
   *      to send us the stack trace immediately.
   */
 PyResult AlertService::Handle_BeanCount(PyCallArgs &call) {
+    _log(CLIENT__WARNING, "AlertService::Handle_BeanCount(): size=%u", call.tuple->size() );
+    //call.Dump(CLIENT__CALL_DUMP);
 
     PyTuple *result = new PyTuple(2);
 
     // what we are sending back is just a static mErrorID and the command not to do anything with it.
-#ifdef DEV_DEBUG_TREAT
-    result->items[0] = new PyNone();
-#else
-    result->items[0] = new PyInt(34135);    //ErrorID
-#endif//DEV_DEBUG_TREAT
+    if (sConfig.server.UseBeanCount or sConfig.server.testServer)
+        result->items[0] = new PyNone();
+    else
+        result->items[0] = new PyInt(34135);    //ErrorID
 
     result->items[1] = new PyInt(0);        //loggingMode, 0=local, 1=DB (Capt: This isn't correct at all as it seems..)
 
@@ -81,6 +81,8 @@ PyResult AlertService::Handle_BeanCount(PyCallArgs &call) {
   */
 PyResult AlertService::Handle_BeanDelivery( PyCallArgs& call )
 {
+    _log(CLIENT__WARNING, "AlertService::Handle_BeanDelivery(): size=%u", call.tuple->size() );
+    //call.Dump(CLIENT__CALL_DUMP);
     /* Unhandled for now as we have no interest in receiving batched python stack traces
      * nor official style debugging... Just gimme the info dude (see Handle_SendClientStackTraceAlert).
      */
@@ -100,12 +102,14 @@ PyResult AlertService::Handle_BeanDelivery( PyCallArgs& call )
  * @return guess it should have PyNone back.
  */
 PyResult AlertService::Handle_SendClientStackTraceAlert(PyCallArgs &call) {
+    _log(CLIENT__WARNING, "AlertService::Handle_SendClientStackTraceAlert(): size=%u", call.tuple->size() );
+    //call.Dump(CLIENT__CALL_DUMP);
   /**
 		  SendClientStackTraceAlert(stackID, stackTrace, mode, nextErrorKeyHash)
   */
 
-#ifdef DEV_DEBUG_TREAT
+  if (sConfig.server.UseStackTrace)
     traceLogger->logTrace(*call.tuple);
-#endif//DEV_DEBUG_TREAT
+
     return new PyNone();
 }

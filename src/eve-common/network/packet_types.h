@@ -150,15 +150,6 @@ enum EVERookieShipTypes {
     minmatarRookie             = 588,
 };
 
-
-typedef enum {
-    dgmEffPassive       = 0,
-    dgmEffActivation    = 1,
-    dgmEffTarget        = 2,
-    dgmEffArea          = 3,
-    dgmEffOnline        = 4,
-} EffectCategories;
-
 //  -allan 5Aug14
 typedef enum {
     searchResultAgent           = 1,
@@ -177,7 +168,7 @@ typedef enum {
     searchMinWildcardLength     = 3
 } SearchTypes;
 
-typedef enum EVETutorialTypes {
+enum EVETutorialTypes {
     advchannelsTutorial = 50,
     cloningTutorial = 42,
     cloningWhenPoddedTutorial = 27,
@@ -225,7 +216,7 @@ typedef enum EVETutorialTypes {
     tutorialWorldspaceNavigation = 235,
     tutorialTutorials = 215,
     tutorialCertificates = 134
-} TutorialTypes;
+};
 
 
 /*

@@ -1,50 +1,49 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Allan
-*/
+ /**
+  * @name Planet.h
+  *   Specific Class for individual planets.
+  * this class will hold all planet data and relative info for each planet.
+  *
+  * @Author:         Allan
+  * @date:   30 April 2016
+  */
 
 
-#ifndef EVEMU_PLANET_PLANETORB_H_
-#define EVEMU_PLANET_PLANETORB_H_
+#ifndef EVEMU_PLANET_PLANET_H_
+#define EVEMU_PLANET_PLANET_H_
 
-#include "PyService.h"
-#include "planet/PlanetDB.h"
+#include "system/SystemEntity.h"
 
-class planetORB : public PyService {
+
+class Planet;
+class PyServiceMgr;
+class SystemManager;
+
+class PlanetSE
+: public StaticSystemEntity
+{
 public:
-    planetORB(PyServiceMgr *mgr);
-    virtual ~planetORB();
+    PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
+    virtual ~PlanetSE()                             { /* Do nothing here */ }
 
-protected:
-    class Dispatcher;
-    Dispatcher *const m_dispatch;
+    /* class type pointer querys. */
+    virtual PlanetSE* GetPlanetSE()                     { return this; }
+    /* class type tests. */
+    virtual bool IsPlanetSE()                           { return true; }
 
-    virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
-
-private:
-    PlanetDB* m_db;
-
-    //PyCallable_DECL_CALL()
+    /* virtual functions default to base class and overridden as needed */
+    virtual bool LoadExtras(SystemDB *db);
 };
 
-#endif  // EVEMU_PLANET_PLANETORB_H_
+class Planet
+{
+public:
+    Planet();
+    ~Planet()       { /* do nothing here */ }
+
+protected:
+private:
+
+};
+
+#endif  // EVEMU_PLANET_PLANET_H_

@@ -28,7 +28,6 @@
 #include "Client.h"
 #include "scanning/Scan.h"
 #include "system/SystemBubble.h"
-#include "system/SystemEntities.h"
 
 Scan::Scan(Client* pClient)
 {
@@ -36,21 +35,21 @@ Scan::Scan(Client* pClient)
 }
 
 Scan::~Scan() {
-    SafeFree(m_client);
+    m_client = nullptr;
 }
 
 PyRep* Scan::ConeScan(Call_ConeScan args) {
     //  WORKING CODE...DONT FUCK WITH THIS!!  -allan 7Dec15
     size_t index = 0;
     std::vector<SystemEntity*> vector;
-    m_client->Bubble()->GetEntities(vector);
+    m_client->GetShipSE()->SysBubble()->GetEntities(vector);
     PyList* list = new PyList(vector.size());
     DirectionScanResult res;
     for (auto i : vector) {
         res.id         = i->GetID();
-        res.typeID     = i->Item()->typeID();
-        res.groupID    = i->Item()->groupID();
-        res.categoryID = i->Item()->categoryID();
+        res.typeID     = i->GetSelf()->typeID();
+        res.groupID    = i->GetSelf()->groupID();
+        res.categoryID = i->GetSelf()->categoryID();
         list->SetItem(index, res.Encode());
         ++index;
     }
@@ -60,7 +59,7 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
 
 void Scan::RequestScans(PyDict* dict) {
     sLog.Log( "Scan::RequestScans()", "called by %s in system %u, bubble %u", \
-        m_client->GetName(), m_client->GetSystemID(), m_client->Bubble()->GetID() );
+        m_client->GetName(), m_client->GetSystemID(), m_client->GetShipSE()->SysBubble()->GetID() );
 
     bool useProbe = false;
     if (dict) {
@@ -87,7 +86,6 @@ void Scan::RequestScans(PyDict* dict) {
         osss.duration = scanTimer;
         osss.scanProbesDict = new PyDict;
     PyTuple* ev = osss.Encode();
-    // now send it, bypassing the extra shit and wrong dest name added in Client::SendNotification
     m_client->SendNotification("OnSystemScanStarted", "charid", &ev);
     m_client->SetScanTimer(scanTimer);
 
@@ -152,8 +150,6 @@ void Scan::ScanResult() {
         osss.systemScanResult = resultList;
         osss.absentTargets = mtList;
     PyTuple* ev = osss.Encode();
-    //ev->Dump(CLIENT__ERROR, "    ");
-    // now send it, bypassing the extra shit and wrong dest name added in Client::SendNotification
     m_client->SendNotification("OnSystemScanStopped", "charid", &ev);
 
     SafeDelete(res);
@@ -191,3 +187,19 @@ AttrScanRadarStrengthBonus = 241,
 AttrScanSpeedMultiplier = 242,
 */
 
+/*
+    uint32 shipID = itemID();
+    PyDict* chargeDict = new PyDict;
+    for (auto cur : charges)
+        chargeDict->SetItem(new PyInt((uint32)cur.first), cur.second->GetChargeStatusRow(shipID));
+
+    PyToken* token = new PyToken("util.IndexedRows");
+    PyTuple* tuple2 = new PyTuple(1);
+        tuple2->SetItem(0, token);
+    PyTuple* tuple1 = new PyTuple(2);
+        tuple1->SetItem(0, tuple2);
+        tuple1->SetItem(1, new PyDict);
+    
+    PyDict *result = new PyDict;
+        result->SetItem(new PyInt(itemID()), new PyObjectEx_Type2(tuple1, chargeDict));
+*/

@@ -956,50 +956,17 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
 }
 
 PyTuple *EVENotificationStream::Encode() {
-
     PyTuple *t4 = new PyTuple(2);
-    t4->items[0] = new PyInt(1);
-    //see notes in other objects about what we could do to avoid this clone.
-    t4->items[1] = args->Clone();
-
+        t4->items[0] = new PyInt(1);
+        t4->items[1] = args->Clone();
     PyTuple *t3 = new PyTuple(2);
-    t3->items[0] = new PyInt(0);
-    t3->items[1] = t4;
-
+        t3->items[0] = new PyInt(0);
+        t3->items[1] = t4;
     PyTuple *t2 = new PyTuple(2);
-    t2->items[0] = new PyInt(0);
-    t2->items[1] = new PySubStream(t3);
-
+        t2->items[0] = new PyInt(0);
+        t2->items[1] = new PySubStream(t3);
     PyTuple *t1 = new PyTuple(2);
-    t1->items[0] = t2;
-    t1->items[1] = new PyNone();
-
+        t1->items[0] = t2;
+        t1->items[1] = new PyNone();
     return(t1);
-/*
-    //remoteObject
-    if(remoteObject == 0)
-        arg_tuple->items[0] = new PyString(remoteObjectStr.c_str());
-    else
-        arg_tuple->items[0] = new PyInt(remoteObject);
-
-    //method name
-    arg_tuple->items[1] = new PyString(method.c_str());
-
-    //args
-    //TODO: we dont really need to clone this if we can figure out a way to say "this is read only"
-    //or if we can change this encode method to consume the PyCallStream (which will almost always be the case)
-    arg_tuple->items[2] = args->Clone();
-
-    //options
-    if(included_options == 0) {
-        arg_tuple->items[3] = new PyNone();
-    } else {
-        PyDict *d = new PyDict();
-        arg_tuple->items[3] = d;
-        if(included_options & oMachoVersion) {
-            d->items[ new PyString("machoVersion") ] = new PyInt( macho_version );
-        }
-    }
-    return(arg_tuple);
-    */
 }

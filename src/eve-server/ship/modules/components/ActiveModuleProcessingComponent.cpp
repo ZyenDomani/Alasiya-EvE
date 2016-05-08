@@ -33,28 +33,15 @@
 #include "ship/modules/components/ActiveModuleProcessingComponent.h"
 
 
-ActiveModuleProcessingComponent::ActiveModuleProcessingComponent(
-        InventoryItemRef item,
-        ActiveModule* mod,
-        ShipRef ship
-    ) :
-    m_Item( item ),
-    m_Mod( mod ),
-    m_Ship( ship ),
-    m_timer(0)
+ActiveModuleProcessingComponent::ActiveModuleProcessingComponent(InventoryItemRef item, ActiveModule* mod, ShipItemRef ship)
+:m_Item( item ),
+ m_Mod( mod ),
+ m_Ship( ship ),
+ m_timer(0)
 {
     m_Stop = false;
     m_timer.Disable();
 }
-
-/****************************************************
-	A little note about the timer:
-		Timer.Check() has two functions:
-			1. It checks if the timer has expired out
-			2. It subtracts from the start time
-	Don't be fooled by it's name because if you don't
-	call it in a loop, you won't get the time moving.
-*****************************************************/
 
 // timing and verification function
 void ActiveModuleProcessingComponent::Process() {
@@ -77,11 +64,20 @@ void ActiveModuleProcessingComponent::ActivateCycle()
     m_Mod->SetModuleState(MOD_ACTIVATED);  //this HAS to be called before mod::DoCycle()
 
     /** @todo   these need to check for targetable actions, and apply changes accordingly */
+    /** @todo  this needs to be updated to check for/use targetGroupIDs */
     EVECalculationType ecType = CALC_NONE;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
-    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Mod->m_Effects->GetActiveEffectsBegin();
-    _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() -  there are %u effects to process", m_Mod->m_Effects->GetOnlineEffectsSize() );
-    for (; itr != m_Mod->m_Effects->GetActiveEffectsEnd(); itr++) {
+    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr, end;
+    if (m_Mod->IsOverloaded()) {
+        itr = m_Mod->m_Effects->GetOverloadEffectsBegin();
+        end = m_Mod->m_Effects->GetOverloadEffectsEnd();
+        _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() -  there are %u OverLoaded effects to process", m_Mod->m_Effects->GetOverloadEffectsSize() );
+    } else {
+        itr = m_Mod->m_Effects->GetActiveEffectsBegin();
+        end = m_Mod->m_Effects->GetActiveEffectsEnd();
+        _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() -  there are %u Active effects to process", m_Mod->m_Effects->GetActiveEffectsSize() );
+    }
+    for (; itr != end; itr++) {
         uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
         _log(SHIP__MODULE_INFO, "AMPC::ActivateCycle() -  there are %u attributes in effect %u", ids, itr->first );
         while (cur < ids) {
@@ -91,12 +87,13 @@ void ActiveModuleProcessingComponent::ActivateCycle()
             sourceAttrID = itr->second->GetSourceAttributeID(cur);
             ecType = itr->second->GetCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
-                 itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            // now process attribute changes, with simple stacking penalities applied.
-            if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
-                m_Mod->m_ModShipAttrComp->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
+                        itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
+            if (itr->first == Effect_damageControl)
+                m_Mod->m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
+            else if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
+                m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
             else
-                m_Mod->m_ModShipAttrComp->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+                m_Mod->m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
             ++cur;
         }
     }
@@ -109,11 +106,20 @@ void ActiveModuleProcessingComponent::ActivateCycle()
 
 void ActiveModuleProcessingComponent::DeactivateCycle()
 {
+    m_Mod->SetModuleState(MOD_DEACTIVATING);
     EVECalculationType ecType = CALC_NONE;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
-    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Mod->m_Effects->GetActiveEffectsBegin();
-    _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() -  there are %u effects to process", m_Mod->m_Effects->GetOnlineEffectsSize() );
-    for (; itr != m_Mod->m_Effects->GetActiveEffectsEnd(); itr++) {
+    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr, end;
+    if (m_Mod->IsOverloaded()) {
+        itr = m_Mod->m_Effects->GetOverloadEffectsBegin();
+        end = m_Mod->m_Effects->GetOverloadEffectsEnd();
+        _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() -  there are %u OverLoaded effects to process", m_Mod->m_Effects->GetOverloadEffectsSize() );
+    } else {
+        itr = m_Mod->m_Effects->GetActiveEffectsBegin();
+        end = m_Mod->m_Effects->GetActiveEffectsEnd();
+        _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() -  there are %u Active effects to process", m_Mod->m_Effects->GetActiveEffectsSize() );
+    }
+    for (; itr != end; itr++) {
         uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
         _log(SHIP__MODULE_INFO, "AMPC::DeactivateCycle() -  there are %u attributes in effect %u", ids, itr->first );
         while (cur < ids) {
@@ -123,12 +129,13 @@ void ActiveModuleProcessingComponent::DeactivateCycle()
             sourceAttrID = itr->second->GetSourceAttributeID(cur);
             ecType = itr->second->GetReverseCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
-                 itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            // now process attribute changes, with simple stacking penalities applied.
-            if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
-                m_Mod->m_ModShipAttrComp->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
+                        itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
+            if (itr->first == Effect_damageControl)
+                m_Mod->m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
+            else if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
+                m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
             else
-                m_Mod->m_ModShipAttrComp->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+                m_Mod->m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
             ++cur;
         }
     }
@@ -145,6 +152,7 @@ void ActiveModuleProcessingComponent::AbortCycle()
 	// Immediately stop active cycle for things such as target destroyed or left bubble, or miner deactivated by player:
     m_Stop = true;
     m_Mod->StopCycle(true);
+    m_Mod->SetModuleState(MOD_ONLINE);
 	m_timer.Disable();
 }
 
@@ -169,12 +177,6 @@ void ActiveModuleProcessingComponent::ProcessActiveCycle()
 	//maybe we can have a check for modules that repeat the same attributes so we
 	//send the changes just once at activation and at deactivation      --in progress  -allan 19Dec15
 
-	//--pseudocode--
-	//if(target != self)
-	//	m_ShipAttrComp->ModifyTargetShipAttribute();
-	//else
-	//	m_ShipAttrComp->ModifyShipAttribute();
-
     // consume capacitor...this will be taken over by module effects when i get to that point.
     EvilNumber capCapacity = m_Ship->GetAttribute(AttrCapacitorCharge);
     capCapacity -= m_Mod->GetAttribute(AttrCapacitorNeed);  // this is reset by modules that need it to be.
@@ -191,12 +193,6 @@ void ActiveModuleProcessingComponent::ProcessDeactivateCycle()
     m_Mod->SetModuleState(MOD_DEACTIVATING);
     m_timer.Disable();
 
-	//check to see who is the target
-	//--pseudocode--
-	//if(target != self)
-	//	m_ShipAttrComp->ModifyTargetShipAttribute();
-	//else
-	//	m_ShipAttrComp->ModifyShipAttribute();
     DeactivateCycle();
 }
 

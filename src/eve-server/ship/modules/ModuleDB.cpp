@@ -159,12 +159,12 @@ void ModuleDB::GetDgmEffectsInfo(uint32 effectID, DBQueryResult &res)
         " calculationTypeID, "
 		" description, "
         " reverseCalculationTypeID, "
-        " targetGroupIDs, "
+        " targetGroupIDs, "         //5
         " stackingPenaltyApplied, "
         " effectAppliedInState, "
         " affectingID, "
         " affectingType, "
-        " affectedType "
+        " affectedType "            //10
         " FROM dgmEffectsInfo "
         " WHERE effectID = '%u' ",
         effectID))

@@ -28,10 +28,10 @@
 #include "system/Damage.h"
 
 
-EnergyTurret::EnergyTurret( InventoryItemRef item, ShipRef ship )
+EnergyTurret::EnergyTurret( InventoryItemRef item, ShipItemRef ship )
 : TurrentModule(item, ship)
 {
-    Character* pChar = m_Ship->GetOperator()->GetChar().get();
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
 
     switch (GetAttribute(AttrChargeSize).get_int()) {
         case 1:
@@ -84,7 +84,7 @@ void EnergyTurret::Activate(SystemEntity* targetEntity)
 	if (this->m_chargeRef) {
 		m_targetEntity = targetEntity;
 		m_targetID = targetEntity->GetID();
-		m_ActiveModuleProc->ActivateCycle();
+		m_AMPC->ActivateCycle();
 	} else {
 		sLog.Error( "EnergyTurret::Activate()", "ERROR: Cannot find charge that is supposed to be loaded into this module!" );
 		throw PyException( MakeCustomError( "ERROR!  Cannot find charge that is supposed to be loaded into this module!" ) );
@@ -97,7 +97,10 @@ void EnergyTurret::StopCycle()
     GodmaOther go;
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
-        go.chargeTypeID = m_chargeRef->typeID();
+        if (m_chargeRef)
+            go.chargeTypeID = m_chargeRef->typeID();
+        else
+            go.chargeTypeID = 0;
 
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
@@ -108,7 +111,7 @@ void EnergyTurret::StopCycle()
         ge.area = new PyList;
         ge.effectID = effectTargetAttack;
 
-    uint32 timeLeft = m_ActiveModuleProc->GetRemainingCycleTimeMS();
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
     Notify_OnGodmaShipEffect shipEff;
@@ -131,14 +134,14 @@ void EnergyTurret::StopCycle()
 
     PyTuple* tmp = multi.Encode();
 
-    m_Ship->GetOperator()->SendDogmaNotification("OnMultiEvent", "clientID", &tmp);
+    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 
-    m_ActiveModuleProc->DeactivateCycle();
+    m_AMPC->DeactivateCycle();
 }
 
 double EnergyTurret::DoCycle() {
-        if ((!m_Ship->GetOperator()->GetSystemEntity()->Bubble())
-            || (!m_Ship->GetOperator()->GetSystemEntity()->Bubble()->GetEntity(m_targetID))
+        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))
             || (!m_chargeLoaded) || (!m_chargeRef) )
         {
             Deactivate();
@@ -152,7 +155,7 @@ double EnergyTurret::DoCycle() {
 
 		_ShowCycle();
 
-        Damage d(m_Ship->GetOperator()->GetSystemEntity(),
+        Damage d(m_Ship->GetPilot()->GetShipSE(),
                  m_Item,
                  m_kinetic,
                  m_thermal,
@@ -174,7 +177,7 @@ double EnergyTurret::DoCycle() {
 void EnergyTurret::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetOperator()->GetDestiny()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -213,7 +216,7 @@ void EnergyTurret::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetROF();
-        shipEff.repeat = 0;  //# times to repeat (should be ammo qty?)
+        shipEff.repeat = 0;  /* boolean of repeatable cycles without pilot activation */
         shipEff.error = new PyNone;
 
     std::vector<PyTuple*> events;
@@ -221,7 +224,7 @@ void EnergyTurret::_ShowCycle()
 
     std::vector<PyTuple*> updates;
 
-    m_Ship->GetOperator()->GetDestiny()->SendDestinyUpdate(updates, events, false);
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double EnergyTurret::_GetROF() {

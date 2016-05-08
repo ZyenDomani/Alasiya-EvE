@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:     Zhur, Allan
+    Author:     Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -96,17 +97,19 @@ PyBoundObject* InsuranceService::_CreateBoundObject( Client* c, const PyRep* bin
 }
 
 PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
+    /* called in space */
     const ItemType *type = m_manager->item_factory->GetType(call.tuple->GetItem(0)->AsInt()->value());
     if (type)
-        return new PyFloat(type->basePrice()/10);
+        return new PyFloat(type->basePrice()/15);
     else
         return new PyNone;
 }
 
 PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
+    /* called when docked */
     const ItemType *type = m_manager->item_factory->GetType(call.tuple->GetItem(0)->AsInt()->value());
     if (type)
-        return new PyFloat(type->basePrice()/10);
+        return new PyFloat(type->basePrice()/15);
     else
         return new PyNone;
 }
@@ -119,14 +122,14 @@ PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
             return NULL;
         }
 
-        return (m_db->GetInsuranceByOwnerID(call.client->GetCorporationID()));
+        return m_db->GetInsuranceByOwnerID(call.client->GetCorporationID());
     }
 
-    return (m_db->GetInsuranceByOwnerID(call.client->GetCharacterID()));
+    return m_db->GetInsuranceByOwnerID(call.client->GetCharacterID());
 }
 
 PyResult InsuranceService::Handle_GetContractForShip( PyCallArgs& call ) {
-    return (m_db.GetInsuranceByShipID(call.tuple->GetItem(0)->AsInt()->value()));
+    return m_db.GetInsuranceByShipID(call.tuple->GetItem(0)->AsInt()->value());
 }
 
 PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
@@ -155,9 +158,10 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
      */
     // calculate the fraction value
     const ItemType type = shipRef->type();
-    double paymentFraction = (args.amount / (type.basePrice()));
-    float fraction = 0.0f;  // with no insurance, SCC pays 40% on live.  on alasiya-eve, i pay 0%.
-    if (paymentFraction == 0.05) fraction = 0.5f;
+    double paymentFraction = (args.amount / (type.basePrice()));    //need to verify pricing before this works correctly.
+    float fraction = 0.0f;  // with no insurance, SCC pays 40% on live.  on alasiya-eve, i pay 30%.
+    if (paymentFraction < 0.05) fraction = 0.3f;    /* minimum payout, and catchall for fuckedup prices.  */
+    else if (paymentFraction == 0.05) fraction = 0.5f;
     else if (paymentFraction == 0.1) fraction = 0.6f;
     else if (paymentFraction == 0.15) fraction = 0.7f;
     else if (paymentFraction == 0.2) fraction = 0.8f;
@@ -165,9 +169,10 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     else if (paymentFraction == 0.3) fraction = 1.0f;
 
     if (fraction == 0){
-        call.client->SendInfoModalMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 15520.");
+        call.client->SendInfoModalMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 25520.");
         return new PyNone;
-    }
+    } else if (fraction == 0.3)
+        call.client->SendInfoModalMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 25521.");
 
     // delete old insurance, if any
     // TODO  verify they want to cancel old insurance before deleting
@@ -210,7 +215,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 
     m_manager->lsc_service->SendMail(1000132, call.client->GetCharacterID(), subject, body);
 
-    return (m_db->GetInsuranceByShipID(args.shipID));
+    return m_db->GetInsuranceByShipID(args.shipID);
 }
 
 PyResult InsuranceBound::Handle_UnInsureShip( PyCallArgs& call ) {

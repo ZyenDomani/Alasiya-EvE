@@ -33,7 +33,7 @@
 
 
 ConsoleCommand::ConsoleCommand() :
-m_updateTimer(900000)	//15 mins
+m_updateTimer(sConfig.rates.WebUpdate * 60000)	//15 mins
 {
     m_updateTimer.Disable();
 }
@@ -46,7 +46,7 @@ void ConsoleCommand::Init(CommandDispatcher* cd, ItemFactory* itmf)
 {
     pCommand = cd;
     pFactory = itmf;
-	m_updateTimer.Start(900000);	//sConfig.rates.WebUpdate
+	m_updateTimer.Start(sConfig.rates.WebUpdate * 60000);	// change minutes to ms for timer
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 	UpdateStatus();	//initial status setting
@@ -61,12 +61,13 @@ bool ConsoleCommand::Process() {
         return false;
     }
 	if (m_updateTimer.Check())
-		UpdateStatus();
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
+        UpdateStatus();
+    /* reset timeouts because select() reset them */
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
     FD_ZERO(&fds);
     FD_SET(0, &fds);
-	select(1, &fds, NULL, NULL, &tv);
+	select(1, &fds, nullptr, nullptr, &tv);
 	if (!FD_ISSET(0, &fds)) {
 	    return true;
 	} else {
@@ -126,7 +127,7 @@ bool ConsoleCommand::Process() {
                         state.data(), threads, aThreads, rss, vm, user, kernel );
                 sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
-                if (sConfig.misc.UseProfiling)
+                if (sConfig.server.UseProfiling)
                     sLog.Success(" Server Profiling","Enabled.");
                 else
 					sLog.Warning(" Server Profiling","Disabled.");
@@ -231,7 +232,7 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("  Console Command", " Modal Message sent to all online clients." );
             } else if (strncmp(buf, "p", 1) == 0) {
                 sLog.Success("  Alasiya's EvEMu", "Server Profile:");
-                if (!sConfig.misc.UseProfiling) {
+                if (!sConfig.server.UseProfiling) {
                     sLog.Error("   Server Profile", "Profiling is turned off.");
                     return true;
                 }
@@ -264,8 +265,13 @@ bool ConsoleCommand::Process() {
             } else if (strncmp(buf, "t", 1) == 0) {
                 Test();
             } else if (strncmp(buf, "d", 1) == 0) {
-                sLog.Blue("   Active Threads", "There are %u active threads running in the server.", sThread.Count());
-                sThread.ListThreads();
+                uint8 maxCount = 20;    // sConfig.server.MaxThreadReport
+                uint16 count = sThread.Count();
+                sLog.Blue("   Active Threads", "There are %u active threads running in the server.", count);
+                if (count > maxCount)
+                    sLog.Warning("   Active Threads", "Individual thread IDs are not displayed for more than %u active threads.", maxCount);
+                else
+                    sThread.ListThreads();
 			} else {
 				sLog.Error("  Alasiya's EvEMu", "Command not recognized: %s", buf);
 			}
@@ -311,7 +317,7 @@ void ConsoleCommand::Status(std::string* state, int64* threads, float* vm_usage,
         >> ignore >> ignore >> vsize >> rss;
 	ifs.close();
 
-    if (sConfig.world.testServer)
+    if (sConfig.server.testServer)
         _log(SERVER__INFO, "ConsoleCommand::Status() proc/self/stat returns RSS: %i, VM: %u", rss, vsize);
 
 	*state = run_state;
@@ -357,7 +363,8 @@ void ConsoleCommand::MemStatus(float* vm_usage, float* resident_set)
 void ConsoleCommand::Test()
 {
     sLog.Success("  Alasiya's EvEMu", "Server Test:");
-    //sLog.Error("     Allan\'s Test", "Not Avalible Yet.");
+    sLog.Error("     Allan\'s Test", "Not Avalible Yet.");
+    /*
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT `itemID`, `typeID`, `itemName` FROM `entity` WHERE itemID < %u", maxAgent);
 
@@ -377,7 +384,7 @@ void ConsoleCommand::Test()
     res.Reset();
     for (auto cur : vec)
         sDatabase.RunQuery(res, "UPDATE `agtAgents` SET `typeID` = %u, `agentName` = %s WHERE `itemID` = %u", cur.typeID, cur.name.c_str(), cur.itemID );
-
+    */
 }
 
 void ConsoleCommand::UpdateStatus() {
@@ -385,11 +392,8 @@ void ConsoleCommand::UpdateStatus() {
 	int64 threads = 0;
 	float vm = 0.0f, rss = 0.0f, user = 0.0f, kernel = 0.0f;
 	Status(&state, &threads, &vm, &rss, &user, &kernel);
-    /* make check here for mem usage
-     * if too high (tbd), log error and run GC (to be written)
-     */
-    if (sConfig.world.testServer)
+    if (sConfig.server.testServer)
         _log(SERVER__INFO, "Current Mem usage - RSS: %f, VM: %f", rss, vm);
-	m_db.SaveServerStats(threads, rss, vm, user, kernel, pFactory->Count(), pBubbles->Count());
+	m_db.SaveServerStats(threads + sThread.Count(), rss, vm, user, kernel, pFactory->Count(), pBubbles->Count());
 }
 

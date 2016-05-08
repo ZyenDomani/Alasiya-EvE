@@ -18,7 +18,7 @@ Items with date style DayMonthYear as last line in comments are accurate for Ala
 Please Note: This page is in the process of being updated for Alasiya's Code Status.<BR>
 Please Also Note:  Items listed as "NOT IMPLEMENTED" means there is no code written for that particular system, and the server will not respond to requests for that system.<BR>
 Items listed as "Skeleton Framework Only" has basic code, with limited or no processing and/or returns, and the server will not respond, or only partially respond to these requests.<BR><BR>
-Last Update:<font color="yellow">12 December 2015</font><BR>
+Last Update:<font color="yellow">01 May 2016</font><BR>
 &nbsp;&nbsp;&nbsp;<font color="green">Current</font><BR><BR></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="System_Foundation_Fundamentals"> System Foundation Fundamentals </span></h2>
@@ -39,12 +39,12 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Progress - tracking and eliminating duplicate method calls, segfaults, and headers/includes, cleaning up code semantics, replacing old C macros and code with new C++/0x11/0x14 code.  Adding Error-handling code to avoid crash on errors.<BR>30Nov15</td></tr>
+<td>In Progress - eliminating duplicated code and headers, tracking/fixing segfaults, updating code to C++/0x11 and to conform to style guidelines from Scott Meyers' Effective C++.<BR>27Feb16</td></tr>
 <tr><td> - Efficient, Accurate Packet Deciphering</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Progress - Most packets understood and correctly processsed<BR>27July15</td></tr>
+<td>In Progress - Most packets understood and correctly processed<BR>27July15</td></tr>
 <tr><td> - Further Mutex-ing</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
@@ -55,31 +55,36 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>In Final test phase <BR>27July15</td></tr>
-<tr><td> - COMPLETE Object Attribute Management overhaul</td><td class="working">80%
+<tr><td> - COMPLETE Module Class rewrite</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Still Some Old Reminanats to Remove<BR>7Sep14</td></tr><tr>
-<td> - COMPLETE investigation of remaining database fields</td><td class="broken">60%
+<td>In Final test phase <BR>21Nov15</td></tr>
+<tr><td> - COMPLETE SystemEntity rewrite</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>In Final test phase <BR>27April16</td></tr>
+<tr><td> - COMPLETE Object Attribute Management overhaul</td><td class="working">90%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Still Some Old Reminanats to Remove<BR>01May16</td></tr><tr>
+<td> - COMPLETE investigation of remaining database fields</td><td class="working">60%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>In Progress<BR>7Sep14</td></tr>
-<tr><td> - Proper spawning and item creating</td><td class="working">80%
+<tr><td> - Proper spawning and item creating(Item class rewrite)</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Many Celestials, All Ships, Most Items<BR>27July15</td></tr>
-<tr><td> - Item Handling</td><td class="working">70%
+<td>In Final test phase <BR>27April16</td></tr>
+<tr><td> - Eliminate all compiler Warnings from the Alasiya EVEmu solution</td><td class="working">50%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Progress<BR>7Sep14</td></tr>
-<tr><td> - Eliminate all compiler Warnings from the Alasiya EVEmu solution</td><td class="working">100%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>COMPLETE<BR>8Jul14</td></tr>
+<td>INCOMPLETE - I forgot to enable -Wall and -Wextra<BR>28Jan16</td></tr>
 <tr><td> - GM commands</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
@@ -167,9 +172,9 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE<BR>15Feb14</td></tr>
-<tr><td> - Character Deletion</td><td class="working">40%
+<tr><td> - Character Deletion</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Working, incomplete<BR>1Feb14</td></tr>
 <tr><td> - Character entrance to last location</td><td class="working">100%
@@ -207,14 +212,14 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00">
 </td><td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE<BR>1Feb14</td></tr>
-<tr><td> - Open Augmentations Window</td><td class="working">50%
+<tr><td> - Open Augmentations Window</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Working - Implants not implemented<BR>1Feb14</td></tr>
-<tr><td> - Open Jump Clones Window</td><td class="broken">20%
+<tr><td> - Open Jump Clones Window</td><td class="broken">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Working - Jump Clones not implemented<BR>1Feb14</td></tr>
 <tr><td> - Open Bio Window</td><td class="working">100%
@@ -227,14 +232,14 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE<BR>4Apr14</td></tr>
-<tr><td> - Open Standings Window</td><td class="working">20%
+<tr><td> - Open Standings Window</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Working -  Standings paritially Implemented - only factions at this time<BR>27July15</td></tr>
-<tr><td> - Open Security Status Window</td><td class="working">20%
+<tr><td> - Open Security Status Window</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Working - SecStatus partially Implemented - changes not saved to db yet.<BR>1Feb14</td></tr>
 <tr><td> - Open Kill Rights Window</td><td class="working">20%
@@ -254,7 +259,7 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <table style="background: #2222EE; width:98.8%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:90%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<table style="background: transparent; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> &#160;<font color="red"><b>98.8</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
@@ -330,11 +335,11 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Shows ALL Docked Players, Regardless of Station<BR>7Sep14</td></tr>
-<tr><td> - Can repackage ships/items</td><td class="broken">10%
+<tr><td> - Can repackage ships/items</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>7Sep14</td></tr>
+<td>In Final test phase <BR>27April16</td></tr>
 <tr><td> - Can assemble ships and items</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -355,11 +360,11 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Mostly Implemented - corp trade not coded.<BR>13Dec15</td></tr>
-<tr><td> - Repair Services</td><td class="broken">10%
+<tr><td> - Repair Services</td><td class="broken">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only.<BR>6Mar14</td></tr>
+<td>In Initial test phase <BR>27April16</td></tr>
 <tr><td> - Insurance Services</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -518,9 +523,9 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <tr><td style="width: 70&amp;;">Service/Something</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Characters show up in Local</td><td class="working">90%
+<tr><td> - Characters show up in Local</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Mostly Working. Existing Chars are not updated to new chars entering system<BR>7Sep14</td></tr>
 <tr><td> - Chat in Local</td><td class="working">100%
@@ -804,11 +809,11 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Skeleton Framework Only<BR>6Mar14</td></tr>
-<tr><td> - View Transactions Entries</td><td class="broken">10%
+<tr><td> - View Transactions Entries</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar14</td></tr>
+<td>Working for Market Transactions and Trade.<BR>6Feb16</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Contracts_Window"> Contracts </span></h2>
@@ -933,7 +938,7 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only.<BR>6Mar14</td></tr>
+<td>Skeleton Framework Only.<BR>Agents not implemented.<BR>6Mar14</td></tr>
 <tr><td> - Can Get My Bookmarks</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -948,17 +953,17 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only.<BR>6Mar14</td></tr>
+<td>Skeleton Framework Only.<BR>Cyno Generator not implemented.<BR>6Mar14</td></tr>
 <tr><td> - Can Get Recent Sovernity Changes</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only.<BR>6Mar14</td></tr>
+<td>Skeleton Framework Only.<BR>Contested Sovernity not implemented.<BR>6Mar14</td></tr>
 <tr><td> - Can Get Incursions</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only.<BR>6Mar14</td></tr></table>
+<td>Skeleton Framework Only.<BR>Incursions not implemented.<BR>6Mar14</td></tr></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Bookmark_System"> Bookmark System </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
@@ -1286,7 +1291,7 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>COMPLETE<BR>1Feb14</td></tr>
+<td>COMPLETE<BR>23Dec15</td></tr>
 <tr><td> - Can drop modules on specific slots in Fitting window</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1404,11 +1409,11 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <tr><td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Working - all turrents, strip miners buggy, no upgrades<BR>27July15</td></tr>
-<tr><td> - Gang Assist</td><td class="working">95%
+<tr><td> - Gang Assist</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Complete - Testing<BR>23Dec15</td></tr>
+<td>Assumed Complete - Need Fleet System Completed to continue.<BR>23Dec15</td></tr>
 <tr><td> - Rigs</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -1460,22 +1465,22 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Somewhat Working - Very Basic - No Specific AI<BR>2Dec15</td></tr>
+<td>Somewhat Working - Very Basic<BR>No Specific AI<BR>2Dec15</td></tr>
 <tr><td> - Combat Drones</td><td class="working">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Somewhat Working - Very Basic - No Specific AI<BR>2Dec15</td></tr>
+<td>Somewhat Working - Very Basic<BR>No Specific AI<BR>2Dec15</td></tr>
 <tr><td> - Electronic Combat Drones</td><td class="working">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Somewhat Working - Very Basic - No Specific AI<BR>2Dec15</td></tr>
+<td>Somewhat Working - Very Basic<BR>No Specific AI<BR>2Dec15</td></tr>
 <tr><td> - Logistics Drones</td><td class="working">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Somewhat Working - Very Basic - No Specific AI<BR>2Dec15</td></tr>
+<td>Somewhat Working - Very Basic<BR>No Specific AI<BR>2Dec15</td></tr>
 <tr><td> - Engage</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
@@ -1833,11 +1838,11 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <tr><td style="width: 70&amp;;">Service/Something</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Create a corporation</td><td class="working">100%
+<tr><td> - Create a corporation</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>COMPLETE<BR>1Feb14</td></tr>
+<td>COMPLETE<BR>(but corp system is broken)<BR>1Feb16</td></tr>
 <tr><td> - Manage Roles</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -1907,49 +1912,49 @@ Last Update:<font color="yellow">12 December 2015</font><BR>
 <tr><td style="width: 70&amp;;">Service/Something</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Deploying Station Structures</td><td class="broken">0%
+<tr><td> - Deploying Station Structures</td><td class="broken">20%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>NOT IMPLEMENTED - No POS object creation code.<BR>30Dec14</td></tr>
+<td>Basic class is complete.  Testing will begin after SE updates.<BR>30Jan16</td></tr>
 <tr><td> - Anchoring POS modules with appropriate roles set</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>NOT IMPLEMENTED - No Anchor code wrote yet.<BR>30Dec14</td></tr>
-<tr><td> - Onlining Structures</td><td class="broken">0%
+<td>NOT IMPLEMENTED - No Anchor code written yet.<BR>30Dec14</td></tr>
+<tr><td> - Onlining Structures</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>NOT IMPLEMENTED - cannot online structures yet.<BR>18Apr14</td></tr>
+<td>Skeleton Code Only - cannot online structures yet.<BR>30Jan16</td></tr>
 <tr><td> - Managing Stations</td><td class="broken">5%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>NOT IMPLEMENTED - Window opens, but is blank<BR>18Apr14</td></tr>
-<tr><td> - Interaction with POS modules</td><td class="working">0%
+<tr><td> - Interaction with POS modules</td><td class="working">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>NOT IMPLEMENTED - cannot online structures yet.<BR>18Apr14</td></tr>
-<tr><td> - Can store/retrieve ships from Ship Maintenance Arrays</td><td class="broken">0%
+<td>Skeleton Code Only - cannot online structures yet.<BR>30Jan16</td></tr>
+<tr><td> - Can store/retrieve ships from Ship Maintenance Arrays</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>NOT IMPLEMENTED - cannot online structures yet.<BR>18Apr14</td></tr>
+<td>Skeleton Code Only - cannot online structures yet.<BR>30Jan16</td></tr>
 <tr><td> - Can store/retrieve items from Corporate Hangar Arrays</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>NOT IMPLEMENTED - cannot online structures yet.<BR>18Apr14</td></tr>
-<tr><td> - Can Add/Remove Fuel for Control Tower with appropriate roles set</td><td class="broken">50%
+<td>Skeleton Code Only - cannot online structures yet.<BR>30Jan16</td></tr>
+<tr><td> - Can Add/Remove Fuel for Control Tower with appropriate roles set</td><td class="working">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Stronium bay works - Wrong Flag for fuel bay<BR>28Apr14</td></tr>
-<tr><td> - Accessing Station Cargo Holds</td><td class="working">50%
+<tr><td> - Accessing Station Cargo Holds</td><td class="working">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Working - Can Access storage facilities for station, but not for offline structures.<BR>18Apr14</td></tr>
 <tr><td> - Can Add/Remove Charges for Defensive Batteries with appropriate roles set</td><td class="broken">0%

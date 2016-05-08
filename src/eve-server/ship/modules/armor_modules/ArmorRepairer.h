@@ -33,7 +33,7 @@
 class ArmorRepairer: public ActiveModule
 {
 public:
-    ArmorRepairer( InventoryItemRef item, ShipRef ship );
+    ArmorRepairer( InventoryItemRef item, ShipItemRef ship );
     virtual ~ArmorRepairer() { }
 
     // GenericModule Methods:

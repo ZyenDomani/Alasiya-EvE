@@ -33,7 +33,7 @@
 class TurrentModule : public ActiveModule
 {
 public:
-    TurrentModule(InventoryItemRef item, ShipRef shipRef);
+    TurrentModule(InventoryItemRef item, ShipItemRef shipRef);
     virtual ~TurrentModule()                                 { /* Do nothing here */ }
 
     //  class type helpers.  public for anyone to access.

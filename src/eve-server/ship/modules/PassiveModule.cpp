@@ -27,7 +27,7 @@
 
 #include "ship/modules/PassiveModule.h"
 
-PassiveModule::PassiveModule(InventoryItemRef item, ShipRef ship)
+PassiveModule::PassiveModule(InventoryItemRef item, ShipItemRef ship)
 : GenericModule(item, ship)
 {
 }

@@ -47,12 +47,11 @@ protected:
     PyCallable_DECL_CALL(GetAllShipCertificateRecommendations);
     PyCallable_DECL_CALL(GetCertificateClasses);
     PyCallable_DECL_CALL(GrantCertificate);
+    PyCallable_DECL_CALL(UpdateCertificateFlags);
     PyCallable_DECL_CALL(BatchCertificateGrant);
     PyCallable_DECL_CALL(BatchCertificateUpdate);
     PyCallable_DECL_CALL(GetCertificatesByCharacter);
 
-    bool _GrantCertificate(uint32 characterID, uint32 certificateID);
-    bool _UpdateCertificate(uint32 characterID, uint32 certificateID, bool pub);
 };
 
 #endif /* __CERTIFICATE_MGR_SERVICE__H__INCL__ */

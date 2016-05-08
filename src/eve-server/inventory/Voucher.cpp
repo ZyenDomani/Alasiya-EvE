@@ -63,7 +63,7 @@ will need to figure out how to save BM with copied original bmID, then get info 
 AttributeError: Rowset instance has no attribute 'GetDescription'
 
   sLog.Log( "VoucherService::Handle_GetObject_1", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALLS);
+  call.Dump(SERVICE__CALL_DUMP);
 */
     DBQueryResult res;
     DBResultRow row;
