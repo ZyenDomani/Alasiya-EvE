@@ -68,9 +68,10 @@ PyRep *StandingDB::GetCharStandings(Client *pClient) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT fromID, standing FROM repFactions WHERE toID = " // should this be warfactionID ??
                             " (SELECT factionID FROM crpNPCCorporations WHERE corporationID = %u)", pClient->GetCorporationID());
+    /*
     sDatabase.RunQuery(res, "SELECT fromID, standing FROM repNPCCorp WHERE toID = %u", pClient->GetCorporationID());
     sDatabase.RunQuery(res, "SELECT fromID, standing FROM repAgent WHERE toID = %u", pClient->GetCharacterID());
-
+    */
     return DBResultToCRowset(res);
 }
 

@@ -179,6 +179,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
     for (auto cur : m_dynamicEntities) {
         pDSE = cur->GetDSE();
 		if (!pDSE) continue;
+        if (pDSE->DestinyMgr() and pDSE->DestinyMgr()->IsWarping()) continue;
 		if (!InBubble(pDSE->GetPosition())) {
 			//we cannot use Remove directly here because it will invalidate
 			//our iterator, so store them away for now.
@@ -216,10 +217,8 @@ void SystemBubble::Add(SystemEntity* pEntity, bool isPostWarp) {
 	double rangeToStar = direction.length();
 	rangeToStar /= ONE_AU_IN_METERS;
 
-	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Adding entity %u at %.2f,%.2f,%.2f to bubble %u at %.2f,%.2f,%.2f. Distance to Star %.2f AU.  %u/%u Entities in bubble",
-	     pEntity->GetID(), startPoint.x, startPoint.y, startPoint.z,
-	     GetID(), m_center.x, m_center.y, m_center.z,
-	     rangeToStar, m_entities.size(), m_dynamicEntities.size());
+	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Adding entity %u to bubble %u. Distance to Star %.2f AU.  %u/%u Entities in bubble",
+	     pEntity->GetID(), GetID(), rangeToStar, m_entities.size(), m_dynamicEntities.size());
 
 	pEntity->m_bubble = this;
 
@@ -232,13 +231,13 @@ void SystemBubble::Add(SystemEntity* pEntity, bool isPostWarp) {
 
 	// all non-global entities (players, npcs, roids, containers, etc) are put into bubble's dynamicEntity map
 	m_dynamicEntities.push_back(pEntity);
-	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Entity %s(%u) is not static.", pEntity->GetName(), pEntity->GetID() );
+	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Entity %s(%u) is dynamic.", pEntity->GetName(), pEntity->GetID() );
 
     if (pEntity->HasPilot()) {
         Client* pClient = pEntity->GetPilot();
         m_players.push_back( pClient );   //add to bubble's player list
         //if (!pClient->IsUndock()) /* logs show undocking player gets AddBall of their ship before SetState, with bubblewait=true */
-        _SendAddBalls( pEntity );     //adds all entities in bubble to new player
+        SendAddBalls( pEntity );     //adds all entities in bubble to new player
         if (!pClient->GetShipSE()->DestinyMgr()->IsCloaked()) {
             _BubblecastAddBallExclusive(pEntity);  // adds new player to all entities in bubble
             // Trigger SpawnManager for this bubble to generate NPC Spawn, if needed
@@ -263,9 +262,7 @@ void SystemBubble::Remove(SystemEntity *pEntity) {
 	if (!pEntity->m_bubble)
 		return;     // Get outta here in case this was called again
 
-    _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Remove() - Removing entity %u at %.2f,%.2f,%.2f from bubble %u at %.2f,%.2f,%.2f", \
-        pEntity->GetID(), pEntity->x(), pEntity->y(), pEntity->z(), \
-        GetID(), m_center.x, m_center.y, m_center.z);
+    _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Remove() - Removing entity %u from bubble %u", pEntity->GetID(), GetID());
 
     m_dynamicEntities.erase(std::remove(m_dynamicEntities.begin(), m_dynamicEntities.end(), pEntity), m_dynamicEntities.end());
 
@@ -282,9 +279,7 @@ void SystemBubble::Remove(SystemEntity *pEntity) {
 }
 
 void SystemBubble::AddExclusive(SystemEntity *pEntity) {
-	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::AddExclusive() - Adding entity %u at %.2f,%.2f,%.2f to bubble %u at %.2f,%.2f,%.2f",
-	     pEntity->GetID(), pEntity->x(), pEntity->y(), pEntity->z(),
-	     GetID(), m_center.x, m_center.y, m_center.z);
+	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::AddExclusive() - Adding entity %u to bubble %u", pEntity->GetID(), GetID());
 	_BubblecastAddBallExclusive(pEntity);
 }
 
@@ -292,9 +287,7 @@ void SystemBubble::RemoveExclusive(SystemEntity *pEntity) {
 	if (!pEntity->m_bubble)
 		return;
 
-	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::RemoveExclusive() - Removing entity %u at %.2f,%.2f,%.2f from bubble %u at %.2f,%.2f,%.2f",
-	     pEntity->GetID(), pEntity->x(), pEntity->y(), pEntity->z(),
-	     GetID(), m_center.x, m_center.y, m_center.z, m_radius);
+	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::RemoveExclusive() - Removing entity %u from bubble %u", pEntity->GetID(), GetID());
 	_BubblecastRemoveBallExclusive(pEntity);
 	pEntity->TargetMgr()->ClearTargets();
 }
@@ -434,7 +427,7 @@ void SystemBubble::PrintEntityList() {
     }
 }
 
-void SystemBubble::_SendAddBalls( SystemEntity* to_who ) {
+void SystemBubble::SendAddBalls( SystemEntity* to_who ) {
     if (!to_who->HasPilot())
         return;
     Client* pClient = to_who->GetPilot();
@@ -458,7 +451,7 @@ void SystemBubble::_SendAddBalls( SystemEntity* to_who ) {
         //  continue;
         //damageState
         if (!cur->IsMissileSE())
-            addballs.damages[ cur->GetID() ] = cur->MakeDamageState();
+            addballs.damageDict[ cur->GetID() ] = cur->MakeDamageState();
         addballs.slims->AddItem( new PyObject( "foo.SlimItem", cur->MakeSlimItem() ) );
         //append the destiny binary data...
         cur->EncodeDestiny( *destinyBuffer );
@@ -469,21 +462,20 @@ void SystemBubble::_SendAddBalls( SystemEntity* to_who ) {
         return;
     }
 
-    addballs.destiny_binary = new PyBuffer( &destinyBuffer );
+    addballs.state = new PyBuffer( &destinyBuffer );
     SafeDelete( destinyBuffer );
 
-    _log( DESTINY__DEBUG, "SystemBubble::_SendAddBalls():" );
+    _log( DESTINY__DEBUG, "SystemBubble::SendAddBalls():" );
     addballs.Dump( DESTINY__DEBUG, "    " );
-    //_log( DESTINY__TRACE, "    Ball Binary:" );
-    //_hex( DESTINY__TRACE, &( addballs.destiny_binary->content() )[0], (uint32)addballs.destiny_binary->content().size() );
+    _log( DESTINY__TRACE, "    Ball Binary:" );
+    _hex( DESTINY__TRACE, &( addballs.state->content() )[0], (uint32)addballs.state->content().size() );
     /*  note:  this shows up in valgrind as an uninitialized value   -allan 24Mar16
-     * Conditional jump or move depends on uninitialised value(s)  SystemBubble.cpp:484 (corrected line#)
+     * Conditional jump or move depends on uninitialised value(s)  SystemBubble.cpp:484 (uncorrected line#)
      * Uninitialised value was created by a heap allocation  SystemBubble.cpp:472
      *
-     _ log( DESTINY__DEBUG, "    Ball Decoded:" );
-     Destiny::DumpUpdate( DESTINY__TRACE, &( addballs.destiny_binary->content() )[0],
-                (uint32)addballs.destiny_binary->content().size() );
      */
+    _log( DESTINY__TRACE, "    Ball Decoded:" );
+    Destiny::DumpUpdate( DESTINY__TRACE, &( addballs.state->content() )[0], (uint32)addballs.state->content().size() );
     PyTuple* t = addballs.Encode();
     pClient->QueueDestinyUpdate( &t );    //may consume, but may not.
     PySafeDecRef( t );
@@ -571,7 +563,7 @@ void SystemBubble::_BubblecastAddBall( SystemEntity* about_who ) {
 
 	//encode destiny binary
 	about_who->EncodeDestiny( *destinyBuffer );
-	addballs.destiny_binary = new PyBuffer( &destinyBuffer );
+	addballs.state = new PyBuffer( &destinyBuffer );
 	SafeDelete( destinyBuffer );
 /*  TODO this needs more work...
     PyTuple* ballState = new PyTuple(2);
@@ -579,7 +571,7 @@ void SystemBubble::_BubblecastAddBall( SystemEntity* about_who ) {
         ballState->SetItem(1, about_who->MakeDamageStateList());
     */
 	//encode damage state
-	addballs.damages[ about_who->GetID() ] = about_who->MakeDamageState();
+	addballs.damageDict[ about_who->GetID() ] = about_who->MakeDamageState();
 	//encode SlimItem
 	addballs.slims->AddItem( new PyObject( "foo.SlimItem", about_who->MakeSlimItem() ) );
 
@@ -603,11 +595,11 @@ void SystemBubble::_BubblecastAddBallExclusive( SystemEntity* about_who ) {
 
 	//encode destiny binary
 	about_who->EncodeDestiny( *destinyBuffer );
-        addballs.destiny_binary = new PyBuffer( &destinyBuffer );
+        addballs.state = new PyBuffer( &destinyBuffer );
 	SafeDelete( destinyBuffer );
 
 	//encode damage state
-        addballs.damages[ about_who->GetID() ] = about_who->MakeDamageState();
+        addballs.damageDict[ about_who->GetID() ] = about_who->MakeDamageState();
 	//encode SlimItem
         addballs.slims->AddItem( new PyObject( "foo.SlimItem", about_who->MakeSlimItem() ) );
 

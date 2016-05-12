@@ -691,8 +691,8 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
             visibleEntities.push_back(cur.second);
     }
 
-    if (bubble)
-       bubble->GetEntities(visibleEntities);
+    //if (bubble)
+    //   bubble->GetEntities(visibleEntities);
 
     ss.slims = new PyList;
     ss.effectStates = new PyList;

@@ -113,7 +113,7 @@ public:
     PyResult AttemptDockOperation();
     void Undock(GPoint direction);
     void SetUndockSpeed();
-    void SendSetState(const SystemBubble* b, uint32 shipID=0) const;
+    void SendSetState() const;
     void SendBallInfoOnUndock() const;
     void SendJumpIn(uint32 stargateID) const;
     void SendJumpOut(uint32 stargateID) const;

@@ -192,7 +192,6 @@ void Inventory::List(CRowSet* into, EVEItemFlags _flag, uint32 forOwner) const {
     }
 }
 
-
 InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags _flag) const {
     for (auto cur : mContents)
         if (cur.second->flag() == _flag)

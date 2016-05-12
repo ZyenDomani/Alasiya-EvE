@@ -48,10 +48,13 @@ PaperDollService::~PaperDollService() {
     delete m_dispatch;
 }
 
+//17:35:32 L PaperDollService::Handle_GetPaperDollData(): size=1
 PyResult PaperDollService::Handle_GetPaperDollData(PyCallArgs &call) {
     sLog.Log("PaperDollService::Handle_GetPaperDollData()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
-    return new PyList;
+    // this is called when viewing full body of a character.
+
+    return m_db.GetPaperDollAvatarColors(call.client->GetCharacterID());
 }
 
 PyResult PaperDollService::Handle_ConvertAndSavePaperDoll(PyCallArgs &call) {
@@ -84,7 +87,7 @@ PyResult PaperDollService::Handle_GetPaperDollPortraitDataFor(PyCallArgs &call) 
     /*
     data = sm.RemoteSvc('paperDollServer').GetPaperDollPortraitDataFor(charID)
     */
-    return NULL;
+    return m_db.GetPaperDollPortraitData(call.client->GetCharacterID());
 }
 
 PyResult PaperDollService::Handle_GetMyPaperDollData(PyCallArgs &call)

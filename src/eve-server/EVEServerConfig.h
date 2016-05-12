@@ -22,6 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
+    Version:    6.4
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -124,6 +125,7 @@ public:
         uint32 startCorporation;
         /// Delay for terminating a character in seconds
         uint32 terminationDelay;
+        uint8 statMultiplier;
     } character;
 
     // From <NPC/>
@@ -190,6 +192,7 @@ public:
     {
         bool AnomalyEnabled;
         bool DungeonEnabled;
+        bool RoidBeltEnabled;
         bool WormHoleEnabled;
     } cosmic;
 

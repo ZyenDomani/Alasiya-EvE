@@ -187,23 +187,10 @@ CharacterData::CharacterData(   //uses v6
 void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 {
 	PyList* colors = new PyList();
-	PyList* modifiers = new PyList();
-	PyObjectEx* appearance;
-	PyList* sculpts = new PyList();
-
-	colors = data->GetItemString("colors")->AsList();
-	modifiers = data->GetItemString("modifiers")->AsList();
-	appearance = data->GetItemString("appearance")->AsObjectEx();
-	sculpts = data->GetItemString("sculpts")->AsList();
-
-	PyList::const_iterator color_cur, color_end;
-	color_cur = colors->begin();
-	color_end = colors->end();
-
-	for(; color_cur != color_end; color_cur++)
-	{
-		if((*color_cur)->IsObjectEx())
-		{
+        colors = data->GetItemString("colors")->AsList();
+	PyList::const_iterator color_cur = colors->begin();
+	for (; color_cur != colors->end(); color_cur++) {
+		if ((*color_cur)->IsObjectEx()) {
 			PyObjectEx_Type2* color_obj = (PyObjectEx_Type2*)(*color_cur)->AsObjectEx();
 			PyTuple* color_tuple = color_obj->GetArgs()->AsTuple();
 
@@ -225,19 +212,18 @@ void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 		}
 	}
 
+    PyObjectEx* appearance;
+        appearance = data->GetItemString("appearance")->AsObjectEx();
 	PyObjectEx_Type2* app_obj = (PyObjectEx_Type2*)appearance;
 	PyTuple* app_tuple = app_obj->GetArgs()->AsTuple();
 
 	m_db.SetAvatar(ownerID, app_tuple->GetItem(1));
 
-	PyList::const_iterator modif_cur, modif_end;
-	modif_cur = modifiers->begin();
-	modif_end = modifiers->end();
-
-	for(; modif_cur != modif_end; modif_cur++)
-	{
-		if((*modif_cur)->IsObjectEx())
-		{
+    PyList* modifiers = new PyList();
+        modifiers = data->GetItemString("modifiers")->AsList();
+	PyList::const_iterator modif_cur = modifiers->begin();
+	for (; modif_cur != modifiers->end(); modif_cur++) {
+		if ((*modif_cur)->IsObjectEx()) {
 			PyObjectEx_Type2* modif_obj = (PyObjectEx_Type2*)(*modif_cur)->AsObjectEx();
 			PyTuple* modif_tuple = modif_obj->GetArgs()->AsTuple();
 
@@ -253,14 +239,11 @@ void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 		}
 	}
 
-	PyList::const_iterator sculpt_cur, sculpt_end;
-	sculpt_cur = sculpts->begin();
-	sculpt_end = sculpts->end();
-
-	for(; sculpt_cur != sculpt_end; sculpt_cur++)
-	{
-		if((*sculpt_cur)->IsObjectEx())
-		{
+    PyList* sculpts = new PyList();
+        sculpts = data->GetItemString("sculpts")->AsList();
+	PyList::const_iterator sculpt_cur = sculpts->begin();
+	for (; sculpt_cur != sculpts->end(); sculpt_cur++) {
+		if ((*sculpt_cur)->IsObjectEx()) {
 			PyObjectEx_Type2* sculpt_obj = (PyObjectEx_Type2*)(*sculpt_cur)->AsObjectEx();
 			PyTuple* sculpt_tuple = sculpt_obj->GetArgs()->AsTuple();
 
@@ -339,7 +322,7 @@ CharKillData::CharKillData(
     uint16 _finalWeaponTypeID,
     double _finalSecurityStatus,
     uint32 _finalDamageDone,
-    std::string _killBlob,          /* this is ship DNA  i dont know how to completely encode this yet... */
+    std::string _killBlob,          /* incomplete.  see notes in Ship::GetShipDNA() (ship/Ship.cpp:1172) */
     uint64 _killTime,
     uint32 _moonID)
 :

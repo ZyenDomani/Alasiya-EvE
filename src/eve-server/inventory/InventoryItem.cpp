@@ -568,7 +568,7 @@ PyPackedRow* InventoryItem::GetChargeStatusRow(uint32 shipID) const {
 
 void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
     into->SetField( "instanceID",    new PyLong( shipID ) );  /* this is shipID */
-    into->SetField( "flagID",        new PyInt( flag() ) );
+    into->SetField( "flagID",        new PyInt( m_flag ) );
     into->SetField( "typeID",        new PyInt( typeID() ) );
     into->SetField( "quantity",      new PyInt( quantity()) );
 }
@@ -585,10 +585,10 @@ PyPackedRow* InventoryItem::GetModuleStatusRow() const {
 }
 
 void InventoryItem::GetModuleStatusRow(PyPackedRow* into) const {
-    into->SetField( "instanceID",    new PyLong( itemID() ) );
-    into->SetField( "flagID",        new PyInt( flag() ) );
+    into->SetField( "instanceID",    new PyLong( m_itemID ) );
+    into->SetField( "flagID",        new PyInt( m_flag ) );
     into->SetField( "typeID",        new PyInt( typeID() ) );
-    into->SetField( "quantity",      new PyInt( singleton() ? -1 : quantity()) );
+    into->SetField( "quantity",      new PyInt( m_singleton ? -1 : quantity()) );
 }
 
 PyPackedRow* InventoryItem::GetItemRow() const
@@ -616,15 +616,15 @@ PyPackedRow* InventoryItem::GetItemRow() const
 
 void InventoryItem::GetItemRow( PyPackedRow* into ) const
 {
-    into->SetField( "itemID",     new PyLong( itemID() ) );
-    into->SetField( "typeID",     new PyInt( typeID() ) );
-    into->SetField( "ownerID",    new PyInt( ownerID() ) );
-    into->SetField( "locationID", new PyLong( locationID() ) );
-    into->SetField( "flagID",     new PyInt( flag() ) );
-    into->SetField( "quantity",   new PyInt( singleton() ? -1 : quantity()) );
-    into->SetField( "groupID",    new PyInt( groupID() ) );
-    into->SetField( "categoryID", new PyInt( categoryID() ) );
-    into->SetField( "customInfo", new PyString( customInfo() ) );
+    into->SetField( "itemID",     new PyLong( m_itemID ) );
+    into->SetField( "typeID",     new PyInt( m_type.id() ) );
+    into->SetField( "ownerID",    new PyInt( m_ownerID ) );
+    into->SetField( "locationID", new PyLong( m_locationID ) );
+    into->SetField( "flagID",     new PyInt( m_flag ) );
+    into->SetField( "quantity",   new PyInt( m_singleton ? -1 : quantity()) );
+    into->SetField( "groupID",    new PyInt( type().groupID() ) );
+    into->SetField( "categoryID", new PyInt( type().categoryID() ) );
+    into->SetField( "customInfo", new PyString( m_customInfo ) );
 }
 
 bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
@@ -636,23 +636,23 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     //result.activeEffects = new PyDict;
     if (groupID() == EVEDB::invCategories::Charge) {
         PyTuple* tuple = new PyTuple(3);
-            tuple->SetItem(0, new PyInt(itemID()));
-            tuple->SetItem(1, new PyInt(flag()));
+            tuple->SetItem(0, new PyInt(m_itemID));
+            tuple->SetItem(1, new PyInt(m_flag));
             tuple->SetItem(2, new PyInt(typeID()));
         result.itemID = tuple;
         result.invItem = new PyNone;
     } else {
-        result.itemID = new PyInt(itemID());
+        result.itemID = new PyInt(m_itemID);
         result.invItem = GetItemRow();
         if (IsOnline()) {
             //there is an effect that goes along with this. We should
             //probably be properly tracking the effect due to some
             // timer things, but for now, were hacking it.
             EntityEffectState es;
-                es.env_itemID = itemID();
-                es.env_charID = ownerID();  //may not be quite right...
-                es.env_shipID = locationID();
-                es.env_target = locationID();   //this is what they do.
+                es.env_itemID = m_itemID;
+                es.env_charID = m_ownerID;  //may not be quite right...
+                es.env_shipID = m_locationID;
+                es.env_target = m_locationID;   //this is what they do.
                 es.env_other = new PyNone;
                 es.env_area = new PyNone;
                 es.env_effectID = effectOnline;

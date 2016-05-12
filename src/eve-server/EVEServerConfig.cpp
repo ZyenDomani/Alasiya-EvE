@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    6.2
+    Version:    6.3
 */
 
 
@@ -87,6 +87,7 @@ EVEServerConfig::EVEServerConfig()
     character.startSecRating = 0.0;
     character.startCorporation = 0;
     character.terminationDelay = 180 /*s*/;
+    character.statMultiplier = 1;
 
     // npc
     npc.ThreatRadius = 1.0;//N
@@ -123,6 +124,7 @@ EVEServerConfig::EVEServerConfig()
     // cosmic
     cosmic.AnomalyEnabled = false;
     cosmic.DungeonEnabled = false;
+    cosmic.RoidBeltEnabled = false;
     cosmic.WormHoleEnabled = false;
 
     // crime
@@ -276,6 +278,7 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
     AddValueParser( "startSecRating",   character.startSecRating );
     AddValueParser( "startCorporation", character.startCorporation );
     AddValueParser( "terminationDelay", character.terminationDelay );
+    AddValueParser( "statMultiplier",   character.statMultiplier );
 
     const bool result = ParseElementChildren( ele );
 
@@ -285,6 +288,7 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
     RemoveParser( "startSecRating" );
     RemoveParser( "startCorporation" );
     RemoveParser( "terminationDelay" );
+    RemoveParser( "statMultiplier" );
 
     return result;
 }
@@ -382,12 +386,14 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
 {
     AddValueParser( "AnomalyEnabled",    cosmic.AnomalyEnabled );
     AddValueParser( "DungeonEnabled",    cosmic.DungeonEnabled );
+    AddValueParser( "RoidBeltEnabled",   cosmic.RoidBeltEnabled );
     AddValueParser( "WormHoleEnabled",   cosmic.WormHoleEnabled );
 
     const bool result = ParseElementChildren( ele );
 
     RemoveParser( "AnomalyEnabled" );
     RemoveParser( "DungeonEnabled" );
+    RemoveParser( "RoidBeltEnabled" );
     RemoveParser( "WormHoleEnabled" );
 
     return result;

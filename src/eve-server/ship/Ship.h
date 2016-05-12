@@ -277,8 +277,8 @@ public:
     double GetShipShieldHP() { return GetAttribute(AttrShieldCharge).get_float(); }
     double GetShipCapacitorLevel() { return GetAttribute(AttrCapacitorCharge).get_float(); }
     EvilNumber GetShipHullPercent() { return 1 -(GetAttribute(AttrDamage) / GetAttribute(AttrHP)); }
-    EvilNumber GetShipCPUPercent() { return (GetAttribute(AttrCpuLoad) / GetAttribute(AttrCpuOutput)); }
-    EvilNumber GetShipPGPercent() { return (GetAttribute(AttrPowerLoad) / GetAttribute(AttrPowerOutput)); }
+    EvilNumber GetShipCPUPercent() { return 1 -(GetAttribute(AttrCpuLoad) / GetAttribute(AttrCpuOutput)); }
+    EvilNumber GetShipPGPercent() { return 1 -(GetAttribute(AttrPowerLoad) / GetAttribute(AttrPowerOutput)); }
     EvilNumber GetShipArmorPercent() { return 1 -(GetAttribute(AttrArmorDamage) / GetAttribute(AttrArmorHP)); }
     EvilNumber GetShipShieldPercent() { return (GetAttribute(AttrShieldCharge) / GetAttribute(AttrShieldCapacity)); }
     EvilNumber GetShipCapacitorPercent() { return (GetAttribute(AttrCapacitorCharge) / GetAttribute(AttrCapacitorCapacity)); }

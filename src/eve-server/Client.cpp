@@ -260,7 +260,7 @@ void Client::Process() {
         m_killedTimer.Disable();
         if (!pShipSE->SysBubble())
             ResetDestiny();     /** @todo  this needs more work */
-        pShipSE->DestinyMgr()->SendSetState(pShipSE->SysBubble(), m_shipId);
+        pShipSE->DestinyMgr()->SendSetState();
     }
 
     if (pShipSE->DestinyMgr()->IsCloaked() && m_cloakTimer.Check(false)) {
@@ -273,9 +273,8 @@ void Client::Process() {
         _log(CLIENT__TRACE, "Client::Process():  SetUndock to false for %s(%u)", m_char->itemName().c_str(), GetCharacterID());
         m_undockTimer.Disable();
         SetUndock(false);
-        if (!IsSetStateSent())
+        if (!m_setStateSent)
             HasUndocked();
-
     }
 
     if (IsInvul() && m_invulTimer.Check(false)) {
@@ -301,7 +300,7 @@ void Client::Process() {
     if (IsJump() && m_jumpTimer.Check(false)) {
         m_jumpTimer.Disable();
         //SetBubbleWait(false);
-        pShipSE->DestinyMgr()->SendSetState(pShipSE->SysBubble(), m_shipId);
+        pShipSE->DestinyMgr()->SendSetState();
         m_moveState = msIdle;
         char ci[25];
         snprintf(ci, sizeof(ci), "InSpace:%u", GetLocationID());
@@ -336,17 +335,24 @@ void Client::SetDestiny(bool count) {
     m_system->AddClient(this, IsDocked(), count);
     //need to set players position before adding to bubble (if in space)
     if (IsInSpace()) {
+        SetStateSent(false);
         if (m_ship->position().isZero())
             MoveToPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()));
         else
             pShipSE->DestinyMgr()->SetPosition(m_ship->position());
+        pShipSE->DestinyMgr()->SendSetState();
         m_system->AddEntity(pShipSE);
         pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
     }
-    SetStateSent(false);
 }
 
 void Client::WarpIn() {
+    sLog.Blue("Client::WarpIn()", "Client called WarpIn().  Finish code here.");
+    char ci[1];
+    snprintf(ci, sizeof(ci), "");
+    m_ship->SetCustomInfo(ci);
+    m_ship->SetFlag(flagAutoFit);
+    return;
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
     GPoint warpToPoint(m_ship->position());
     GPoint warpFromPoint(m_ship->position());
@@ -357,9 +363,11 @@ void Client::WarpIn() {
 
 void Client::WarpOut() {
     sLog.Blue("Client::WarpOut()", "Client Destructor called WarpOut().  Finish code here.");
-    char ci[8];
-    snprintf(ci, sizeof(ci), "Logout");
+    char ci[30];
+    snprintf(ci, sizeof(ci), "Logout (%s)", GetName());
     m_ship->SetCustomInfo(ci);
+    if (!InPod())
+        m_ship->SetFlag(flagShipOffline);
     m_system->RemoveEntity(pShipSE);
     return;
     // We are logging out, so we need to warp to a random spot 1Mm away:
@@ -382,8 +390,7 @@ void Client::LoginToSystem(uint32 systemID, ShipItemRef ship) {
         UpdateSessionInt("shipid", m_shipId);
         CreateShipSE();
         SetDestiny(true);
-        //SetBubbleWait(false);
-        //WarpIn();
+        WarpIn();
         m_char->AddPilotToDynamicData(systemID, true, false, true);
         m_invulTimer.Start(20000);
     } else {
@@ -394,7 +401,6 @@ void Client::LoginToSystem(uint32 systemID, ShipItemRef ship) {
         m_services.item_factory->GetStation(stationID)->GetInventory()->AddItem(m_char);
         m_services.item_factory->GetStation(stationID)->GetInventory()->AddItem(m_ship);
         m_ship->SetFlag(flagHangar);
-        m_ship->SetAttribute(AttrIsOnline, false);
         if (!IsHangarLoaded(stationID))
             LoadStationHangar(stationID);
         SetDockPoint(dockPosition);
@@ -458,7 +464,6 @@ void Client::UpdateLocation(uint32 locationID) {
         sLog.Success("Client::UpdateLocation()", "Character %s (%u) Docked.", m_char->itemName().c_str(), GetCharacterID());
         m_ship->Relocate(NULL_ORIGIN);
         m_ship->Move(locationID, flagHangar);
-        m_ship->SetAttribute(AttrIsOnline, false);
         m_char->Move(locationID, flagAutoFit);
         m_ship->Dock();
         if (!IsHangarLoaded(locationID))
@@ -468,7 +473,6 @@ void Client::UpdateLocation(uint32 locationID) {
     } else if (IsSolarSystem(locationID)) {
         sLog.Success("Client::UpdateLocation()", "Character %s(%u) InSpace.", m_char->itemName().c_str(), GetCharacterID());
         m_ship->Move(locationID, flagAutoFit);
-        m_ship->SetAttribute(AttrIsOnline, true);
         m_char->Move(m_shipId, flagPilot);
     }
 }
@@ -567,9 +571,10 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     SetInvul(true);
     SetUndock(true);  // bool for movement and invul and SendState checks (maybe more later)
     SetStateSent(false);
-    SetBubbleWait(true);
+    SetBubbleWait(false);
 
     //  Undock Request -> OnCharNoLongerInStation -> GetCriminalTimeStamps -> Undock -> OnItemsChanged (Undocking:xxxxxxxx) ->
+    //  9sec from hitting undock to space view on live.
     //set position of docking ramp for later position checks/setting (to remove ship at origin)
     SetDockPoint(dockPosition);
     //update client and set session change
@@ -608,7 +613,7 @@ void Client::HasUndocked() {
     }
     SetLogin(false);
 
-    pShipSE->DestinyMgr()->SendSetState(pShipSE->SysBubble(), m_shipId);
+    pShipSE->DestinyMgr()->SendSetState();
     pShipSE->DestinyMgr()->SetUndockSpeed();
 }
 
@@ -622,8 +627,8 @@ void Client::DockToStation(uint32 stationID) {
     /** @todo  maybe we should check for recent ship loss to determine if player should get new ship.  ??? */
     if (m_ship->typeID() == itemTypeCapsule)
         SpawnNewRookieShip();
-    else
-        m_ship->SetFlag(flagHangar);
+
+    m_ship->SetFlag(flagHangar);
 
     SetSessionTimer();
     //SetBubbleWait(true);
@@ -648,7 +653,6 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         snprintf(co, sizeof(co), "");
         m_ship->SetCustomInfo(co);
         m_ship->SaveShip();
-        m_ship->SetAttribute(AttrIsOnline, false);
         if (IsInSpace())
             m_ship->SetFlag(flagShipOffline);
     }
@@ -663,21 +667,20 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     if (IsInSpace()) {
         /* if ejecting into pod, setup and create new pod object */
         if (m_ship->typeID() == itemTypeCapsule) {
+            m_ship->Move(GetLocationID(), flagCapsule);
             pShipSE = new Ship(m_ship, m_services, SystemMgr());
             pShipSE->GetShipSE()->SetPodShipID(m_shipId);
         } else {
+            m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSEFromInventory(m_shipId);
         }
         pShipSE->SetPilot(this);
         m_char->Move(m_shipId, flagPilot);
-        m_ship->SetAttribute(AttrIsOnline, true);
-        m_ship->SetFlag(flagAutoFit);
-
         SetDestiny();
 
         DestinyManager* pdMgr = pShipSE->DestinyMgr();
         pdMgr->UpdateNewShip(m_ship);
-        pdMgr->SendSetState(pShipSE->SysBubble(), m_shipId);
+        pdMgr->SendSetState();  //reset ego in destiny setstate
         snprintf(ci, sizeof(ci), "InSpace:%u", GetLocationID());
     } else {
         m_ship->SetPlayer(this);
@@ -688,18 +691,14 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     m_ship->UpdateModules();
     m_ship->SaveShip();
 
-    /* if player is in space, we need to reset ego in destiny setstate. */
-    //if (IsInSpace())
-      //  pShipSE->DestinyMgr()->SendSetState(pShipSE->SysBubble(), m_shipId);
-
     SetSessionTimer();
 }
 
 void Client::CreateShipSE() {
-    m_ship->SetFlag(flagAutoFit);
-    m_ship->SetAttribute(AttrIsOnline, true);
+    if (pShipSE) DestroyShipSE();
     pShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system);
     _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->itemName().c_str(), GetCharacterID());
+    m_ship->SetFlag(flagAutoFit);
     m_char->Move(m_shipId, flagPilot);
     pShipSE->SetPilot(this);
 }

@@ -33,9 +33,10 @@ class PaperDollDB: public ServiceDB
 {
 public:
     PyRep* GetPaperDollAvatar(uint32 charID) const;
-	PyRep* GetPaperDollAvatarColors(uint32 charID) const;
+    PyRep* GetPaperDollAvatarColors(uint32 charID) const;
+    PyRep* GetPaperDollPortraitData(uint32 charID) const;
+    PyRep* GetPaperDollAvatarSculpts(uint32 charID) const;
 	PyRep* GetPaperDollAvatarModifiers(uint32 charID) const;
-	PyRep* GetPaperDollAvatarSculpts(uint32 charID) const;
 };
 
 #endif

@@ -168,22 +168,15 @@ PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
 
     ch->ClearSkillQueue();
     SkillQueue_Element el;
-    std::vector<PyRep*>::const_iterator cur, end;
-    cur = args.queue->begin();
-    end = args.queue->end();
-    for (; cur != end; cur++)
-    {
-        if( !el.Decode( *cur ) )
-        {
+    std::vector<PyRep*>::const_iterator cur = args.queue->begin();
+    for (; cur != args.queue->end(); cur++) {
+        if (!el.Decode(*cur))         {
             _log(CLIENT__ERROR, "%s: Failed to decode element of SkillQueue (%u). Skipping.", call.client->GetName(), *cur);
             continue;
         }
-
         ch->AddToSkillQueue( el.typeID, el.level );
     }
-
     ch->UpdateSkillQueue();
-
     return NULL;
  }
 
@@ -208,24 +201,24 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
     call.Dump(SERVICE__CALL_DUMP);
     /** @todo check this and see if we can update to higher base attribs for faster train times */
     Call_RespecCharacter spec;
-    if (!spec.Decode(call.tuple))
-    {
+    if (!spec.Decode(call.tuple)) {
         codelog(CLIENT__ERROR, "Failed to decode RespecCharacter arguments");
         return NULL;
     }
 
 	CharacterRef cref = call.client->GetChar();
-	if(cref->GetSkillInTraining())
+	if (cref->GetSkillInTraining())
 		throw(PyException(MakeUserError("RespecSkillInTraining")));
 
     // return early if this is an illegal call
     if (!m_db.ReportRespec(call.client->GetCharacterID()))
         return NULL;
-    cref->SetAttribute(AttrCharisma, spec.charisma);
-    cref->SetAttribute(AttrIntelligence, spec.intelligence);
-    cref->SetAttribute(AttrMemory, spec.memory);
-    cref->SetAttribute(AttrPerception, spec.perception);
-    cref->SetAttribute(AttrWillpower, spec.willpower);
+    uint8 multiplier = sConfig.character.statMultiplier;
+    cref->SetAttribute(AttrCharisma, spec.charisma * multiplier);
+    cref->SetAttribute(AttrIntelligence, spec.intelligence * multiplier);
+    cref->SetAttribute(AttrMemory, spec.memory * multiplier);
+    cref->SetAttribute(AttrPerception, spec.perception * multiplier);
+    cref->SetAttribute(AttrWillpower, spec.willpower * multiplier);
     cref->SaveAttributes();
 
     // no return value
@@ -261,27 +254,22 @@ PyResult SkillMgrBound::Handle_CharStartTrainingSkillByTypeID( PyCallArgs& call 
 PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
 {
     Call_InjectSkillIntoBrain args;
-    if( !args.Decode( &call.tuple ) ) {
+    if (!args.Decode(&call.tuple)) {
         codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
         return NULL;
     }
 
     CharacterRef ch = call.client->GetChar();
 
-    std::vector<int32>::iterator cur, end;
-    cur = args.skills.begin();
-    end = args.skills.end();
-    for(; cur != end; cur++)
-    {
+    std::vector<int32>::iterator cur = args.skills.begin();
+    for (; cur != args.skills.end(); cur++) {
         SkillRef skill = m_manager->item_factory->GetSkill( *cur );
-        if( !skill )
-        {
+        if (!skill) {
             codelog( ITEM__ERROR, "%s: failed to load skill item %u for injection.", call.client->GetName(), *cur );
             continue;
         }
 
-        if( !ch->InjectSkillIntoBrain( (SkillRef)skill ) )
-        {
+        if (!ch->InjectSkillIntoBrain((SkillRef)skill)) {
             /** @todo build and send UserError about injection failure. */
             codelog(ITEM__ERROR, "%s: Injection of skill %u failed", call.client->GetName(), skill->itemID() );
         }

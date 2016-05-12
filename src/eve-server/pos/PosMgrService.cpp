@@ -195,8 +195,8 @@ PyResult PosMgrBound::Handle_SetTowerPassword( PyCallArgs &call ) {
 13:10:09 L PosMgrBound::Handle_SetTowerPassword(): size= 2
 13:10:09 [SvcCall]   Call Arguments:
 13:10:09 [SvcCall]       Tuple: 2 elements
-13:10:09 [SvcCall]         [ 0] Integer field: 140001260
-13:10:09 [SvcCall]         [ 1] WString: 'test'
+13:10:09 [SvcCall]         [ 0] Integer field: 140001260    << shipID
+13:10:09 [SvcCall]         [ 1] WString: 'test'             << password
 
   sLog.Log( "PosMgrBound::Handle_SetTowerPassword()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
@@ -211,7 +211,7 @@ PyResult PosMgrBound::Handle_SetShipPassword( PyCallArgs &call ) {
 13:16:17 L PosMgrBound::Handle_SetShipPassword(): size= 1
 13:16:17 [SvcCall]   Call Arguments:
 13:16:17 [SvcCall]       Tuple: 1 elements
-13:16:17 [SvcCall]         [ 0] WString: 'test'
+13:16:17 [SvcCall]         [ 0] WString: 'test'             << password
 
   sLog.Log( "PosMgrBound::Handle_SetShipPassword()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);

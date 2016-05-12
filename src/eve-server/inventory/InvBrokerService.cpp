@@ -104,21 +104,18 @@ PyResult InvBrokerService::Handle_GetItemDescriptor(PyCallArgs &call) {
             */
 
     PyList *keywords = new PyList();
-    keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
-    keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
-
+        keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
+        keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
     DBRowDescriptor* header = new DBRowDescriptor(keywords);
-    header->AddColumn( "itemID",     DBTYPE_I8 );
-    header->AddColumn( "typeID",     DBTYPE_I4 );
-    header->AddColumn( "ownerID",    DBTYPE_I4 );
-    header->AddColumn( "locationID", DBTYPE_I8 );
-    header->AddColumn( "flagID",     DBTYPE_I2 );
-    header->AddColumn( "quantity",   DBTYPE_I4 );
-    header->AddColumn( "groupID",    DBTYPE_I2 );
-    header->AddColumn( "categoryID", DBTYPE_I4 );
-    header->AddColumn( "customInfo", DBTYPE_STR );
-
-    //header->AddColumn( "singleton",  DBTYPE_BOOL );
+        header->AddColumn( "itemID",     DBTYPE_I8 );
+        header->AddColumn( "typeID",     DBTYPE_I4 );
+        header->AddColumn( "ownerID",    DBTYPE_I4 );
+        header->AddColumn( "locationID", DBTYPE_I8 );
+        header->AddColumn( "flagID",     DBTYPE_I2 );
+        header->AddColumn( "quantity",   DBTYPE_I4 );
+        header->AddColumn( "groupID",    DBTYPE_I2 );
+        header->AddColumn( "categoryID", DBTYPE_I4 );
+        header->AddColumn( "customInfo", DBTYPE_STR );
     return header;
 }
 
@@ -137,19 +134,6 @@ PyBoundObject *InvBrokerService::_CreateBoundObject(Client *c, const PyRep *bind
     }
     _log(INV__BIND, "InvBrokerService bind request:");
     args.Dump(INV__BIND, "    ");
-    /*
-    18:20:13 [ClientMessage] InvBrokerService bind request for:
-    18:20:13 [ClientMessage]     InvBroker_BindArgs
-    18:20:13 [ClientMessage]     entityID=60014749
-    18:20:13 [ClientMessage]     unknown1:
-    18:20:13 [ClientMessage]         Integer field: 15
-    18:26:28 [ClientMessage] InvBrokerService bind request for:
-    18:26:28 [ClientMessage]     InvBroker_BindArgs
-    18:26:28 [ClientMessage]     entityID=30002547
-    18:26:28 [ClientMessage]     unknown1:
-    18:26:28 [ClientMessage]         Integer field: 5
-
-    */
 
     return new InvBrokerBound(m_manager, args.locationID, args.groupID);
 }
@@ -225,7 +209,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
 
 //this is a view into an inventory item using a specific flag.
 PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
-    /** @note  i *think* this means "Get the Inventory containing this itemID */
+    /** @note  this means "Get the Inventory containing this itemID */
     _log(INV__DUMP, "InvBrokerBound::Handle_GetInventory() size=%u", call.tuple->size());
     call.Dump(INV__DUMP);
     Inventory_GetInventory args;
@@ -272,16 +256,17 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
         case containerFactory:/*10006*/
             flag = flagFactory;
             break;
-        case containerGlobal:/*10002*/
-        case containerSolarSystem:/*10003*/
-        case containerScrapHeap:/*10005*/
-        case containerBank:/*10007*/
-        case containerRecycler:/*10008*/
-        case containerStationCharacters:/*10010*/
-            flag = flagNone;
-            break;
+
+        //case containerGlobal:/*10002*/
+        //case containerSolarSystem:/*10003*/
+        //case containerScrapHeap:/*10005*/
+        //case containerBank:/*10007*/
+        //case containerRecycler:/*10008*/
+        //case containerStationCharacters:/*10010*/
+            //flag = flagNone;
+            //break;
         default:
-            _log(INV__ERROR, "Unhandled container type %u", args.container);
+            _log(INV__ERROR, "Unhandled container type %u for locationID %u", args.container, m_locationID);
             return nullptr;
     }
 

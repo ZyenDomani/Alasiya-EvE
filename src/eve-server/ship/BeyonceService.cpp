@@ -69,9 +69,12 @@ public:
             pClient->HasUndocked();
         } else if (pClient->IsJump()) {
             pClient->IsJumping();
-        } else if (pClient->IsInSpace() && pClient->GetShipSE()->SysBubble() && pClient->IsLogin()) {
-            pClient->GetShipSE()->DestinyMgr()->SendSetState(pClient->GetShipSE()->SysBubble(), pClient->GetShipID());
-            pClient->SetLogin(false);
+        } else if (pClient->IsInSpace()) {
+            if (!pClient->IsSetStateSent()) {
+                pClient->SetBubbleWait(false);
+                pClient->GetShipSE()->DestinyMgr()->SendSetState();
+                pClient->SetLogin(false);
+            }
         }
         pClient->SetBeyonce(true);
     }
@@ -873,7 +876,7 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
         return NULL;
     }
 
-    pDestiny->SendSetState(call.client->GetShipSE()->SysBubble(), call.client->GetShipID());
+    pDestiny->SendSetState();
 
     return NULL;
 }

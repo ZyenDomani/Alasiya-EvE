@@ -244,11 +244,11 @@ DST_WARPEXIT = 11
             <!-- 0 -->
             <tupleInline>
               <!-- 0 -->
-              <buffer name="destiny_binary" />
+              <buffer name="state" />
               <!-- 1: slims (list of DoDestiny_SlimItem) -->
               <list name="slims" />
               <!-- 2 -->
-              <dictInt name="damages" />
+              <dictInt name="damageDict" />
             </tupleInline>
         </tupleInline>
       </tupleInline>
@@ -264,6 +264,26 @@ DST_WARPEXIT = 11
                 slimItemDict = data
                 damageState = None
         -->
+
+        <!--
+                          [PyTuple 2 items]
+                            [PyInt 66521]
+                            [PyTuple 2 items]
+                              [PyString "AddBalls2"]
+                              [PyTuple 1 items]
+                                [PyTuple 2 items]
+                                  [PyString "*NAME*"]
+                                  [PyList 1 items]
+                                    [PyTuple 2 items]
+                                      [PyDict 12 kvp]
+                                      [PyList 3 items]
+                                        [PyTuple 3 items]
+                                          [PyFloat 1]
+                                          [PyFloat 100000]
+                                          [PyIntegerVar 129773015555915424]
+                                        [PyFloat 1]
+                                        [PyFloat 1]
+                                        -->
   <elementDef name="DoDestiny_AddBalls2">
     <tupleInline>
       <!-- 0 -->
@@ -276,9 +296,9 @@ DST_WARPEXIT = 11
             <!-- 0 -->
             <tupleInline>
               <!-- 0 -->
-              <buffer name="destiny_binary" />
+              <buffer name="state" />
               <!-- 1: slims (list of DoDestiny_SlimItem dicts) -->
-              <list name="slims" />
+              <list name="extraBallData" />
             </tupleInline>
         </tupleInline>
       </tupleInline>

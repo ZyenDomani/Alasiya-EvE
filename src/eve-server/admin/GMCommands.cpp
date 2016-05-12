@@ -315,13 +315,13 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
     //    solarSystemID - destination solar system ID
     //    destinationPoint - destination coordinates (GPoint)
 
-    if (!p_targetClient->GetShipSE())
-        p_targetClient->CreateShipSE();
-    if (p_targetClient->GetShipSE()->DestinyMgr())
+    //if (!p_targetClient->GetShipSE())
+    //    p_targetClient->CreateShipSE();
+    if (p_targetClient->GetShipSE() and p_targetClient->GetShipSE()->DestinyMgr())
         p_targetClient->GetShipSE()->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", solarSystemID);
 
     p_targetClient->MoveToLocation(solarSystemID, destinationPoint);
-    if (p_targetClient->GetShipSE()->DestinyMgr())
+    if (p_targetClient->GetShipSE() and p_targetClient->GetShipSE()->DestinyMgr())
         p_targetClient->GetShipSE()->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
 
     return new PyString("Translocation successful.");
@@ -724,8 +724,8 @@ PyResult Command_state(Client *who, CommandDB *db, PyServiceMgr *services, const
     if (!who->GetShipSE()->DestinyMgr())
         who->ResetDestiny();
 
-    who->GetShipSE()->DestinyMgr()->SendSetState(who->GetShipSE()->SysBubble(), who->GetShipID());
-    return(new PyString("Update sent."));
+    who->GetShipSE()->DestinyMgr()->SendSetState();
+    return new PyString("Update sent.");;
 }
 
 PyResult Command_update(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
@@ -736,13 +736,10 @@ PyResult Command_update(Client *who, CommandDB *db, PyServiceMgr *services, cons
     if (!who->GetShipSE()->DestinyMgr())
         who->ResetDestiny();
 
-    who->GetShipSE()->DestinyMgr()->SendSetState(who->GetShipSE()->SysBubble(), who->GetShipID());
-    /*
-     *    SystemEntity *pCharRef = who->SystemMgr()->get(who->GetCharacterID());
-     *    SystemBubble *m_bubble = who->Bubble();
-     *    m_bubble->_SendAddBalls(pCharRef);
-     */
-    return(new PyString("Update sent."));
+    SystemBubble *m_bubble = who->GetShipSE()->SysBubble();
+    m_bubble->SendAddBalls(who->GetShipSE());
+
+    return new PyString("Update sent.");
 }
 
 PyResult Command_getattr(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)

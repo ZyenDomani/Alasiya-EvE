@@ -809,7 +809,6 @@ bool CharacterDB::GetCorporationBySchool(uint32 schoolID, uint32 &corporationID)
 /**
   * @todo Here should come a call to Corp??::CharacterJoinToCorp or what the heck... for now we only put it there
   */
-//FIXME  get the allianceID OUT of CharacterData.  alliance shit goes in corpdata
 bool CharacterDB::GetLocationCorporationByCareer(CharacterData &cdata) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -848,34 +847,32 @@ bool CharacterDB::GetLocationCorporationByCareer(CharacterData &cdata) {
     return (true);
 }
 
-bool CharacterDB::GetLocationByStation(uint32 staID, CharacterData &cdata) {
+bool CharacterDB::GetLocationByStation(uint32 stationID, CharacterData &cdata) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
      "SELECT "
-     "  stationID, "
      "  solarSystemID, "
      "  constellationID, "
      "  regionID "
      " FROM staStations"
-     " WHERE stationID = %u", staID))
+     " WHERE stationID = %u", stationID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return (false);
+        return false;
     }
 
     DBResultRow row;
     if(!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Failed to find station %u", staID);
+        codelog(DATABASE__ERROR, "Failed to find station %u", stationID);
         return false;
     }
 
-    cdata.stationID = staID;
-    cdata.solarSystemID = row.GetUInt(1);
-    cdata.constellationID = row.GetUInt(2);
-    cdata.regionID = row.GetUInt(3);
+    cdata.stationID = stationID;
+    cdata.solarSystemID = row.GetUInt(0);
+    cdata.constellationID = row.GetUInt(1);
+    cdata.regionID = row.GetUInt(2);
 
-    return (true);
-
+    return true;
 }
 
 bool CharacterDB::GetCareerStationByCorporation(uint32 corporationID, uint32 &stationID)

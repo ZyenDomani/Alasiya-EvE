@@ -51,4 +51,7 @@ double GetTimeMSeconds();
 // returns time in microseconds
 double GetTimeUSeconds();
 
+// Get current date/time, format is YYYY-MM-DD.HH:mm:ss
+const std::string currentDateTime();
+
 #endif /* !__UTILS_TIME_H__INCL__ */

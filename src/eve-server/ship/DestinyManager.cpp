@@ -2164,7 +2164,7 @@ void DestinyManager::SendBallInteractive(const ShipItemRef shipRef, bool set) co
     SendSingleDestinyUpdate(&up);
 }
 
-void DestinyManager::SendSetState(const SystemBubble* b, uint32 shipID) const {
+void DestinyManager::SendSetState() const {
     if (!mySE->HasPilot()) return;
 
     _log(DESTINY__MESSAGE, "Destiny::SendSetState() Called for Ship:%s(%u) Pilot:%s(%u)", \
@@ -2172,9 +2172,9 @@ void DestinyManager::SendSetState(const SystemBubble* b, uint32 shipID) const {
 
     DoDestiny_SetState ss;
     ss.stamp = sEntityList.GetStamp();
-    ss.ego = shipID;
+    ss.ego = mySE->GetID();
 
-    m_system->MakeSetState(b, ss);
+    m_system->MakeSetState(mySE->SysBubble(), ss);
     PyTuple* tmp = ss.Encode();
     SendSingleDestinyUpdate(&tmp, true);    //consumed
     mySE->GetPilot()->SetStateSent(true);

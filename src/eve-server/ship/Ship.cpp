@@ -97,7 +97,7 @@ ShipItemRef ShipItem::Spawn(ItemFactory &factory, ItemData &data) {
     ShipItemRef sShipRef = ShipItem::Load( factory, shipID );
 
     // Create default dynamic attributes in the AttributeMap:
-    sShipRef->SetAttribute(AttrIsOnline,                            false, false);
+    //sShipRef->SetAttribute(AttrIsOnline,                            false, false);
     sShipRef->SetAttribute(AttrArmorDamage,                         0.0, false);
     sShipRef->SetAttribute(AttrInertia,                             1, false);
     sShipRef->SetAttribute(AttrMass,                                sShipRef->type().mass(), false);
@@ -266,9 +266,10 @@ void ShipItem::Init()
         m_ModuleManager = new ModuleManager(this);
 
     m_ModuleManager->Initialize();
-    //set everything to full AFTER modules possibably update ship stats
+
     /** @todo need to check for ship damage status BEFORE or INSTEAD of calling this.
      */
+    //set everything to full AFTER modules possibably update ship stats
     if (sConfig.server.testServer)
         Heal();
 }
@@ -288,15 +289,10 @@ void ShipItem::SetPlayer(Client* pClient) {
         if (m_ModuleManager)
             m_ModuleManager->CharacterLeavingShip();
     m_pilot = pClient;
-    if (m_pilot) {
-        if (typeID() == itemTypeCapsule)
-            InitPod();
-        else
-            Init();
-        m_ModuleManager->CharacterBoardingShip();
-    } else {
-        ;//SafeDelete(m_ModuleManager);
-    }
+    if (!m_pilot)
+        return;
+    Init();
+    m_ModuleManager->CharacterBoardingShip();
 }
 
 void ShipItem::UpdateHoldsUsedVolume()    /** @todo (allan)  look into this....not working right. */
@@ -1171,11 +1167,10 @@ void ShipItem::StripFitting()
 
 std::string ShipItem::GetShipDNA()
 {
-    /* ship dna is shorthand notation to describe a ship and it's fittings
-     *  purely thru the use of typeIDs and quantities
+    /* ship dna is shorthand notation to describe a ship and it's fittings purely thru the use of typeIDs and quantities
      *
      * the format is as follows:
-     * <shipID>:
+     * <shipTypeID>:
      *      <subsystemID>:
      *      <moduleType-Highslot>;<quantity>:
      *      <moduleType-Midslot>;<quantity>:
@@ -1188,7 +1183,7 @@ std::string ShipItem::GetShipDNA()
      *  Ship:Subsystem:Highs:Mids:Lows:Rigs:Charges:Drones
      *
      */
-    if (typeID() == EVEDB::invTypes::typeCapsule) {
+    if (type().id() == EVEDB::invTypes::typeCapsule) {
         std::stringstream dna;
         dna << type().id() << ":";
         _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), itemName().c_str(), itemID());
@@ -1258,17 +1253,9 @@ void Ship::PayInsurance() {
     m_db.DeleteInsuranceByShipID(GetSelf()->itemID());
 }
 
-void Ship::SetPilot ( Client* pClient )
-{
+void Ship::SetPilot(Client* pClient) {
     m_player = pClient;
     m_self->SetPlayer(pClient);
-    if (!pClient) return;
-    ShipItemRef sShipRef = pClient->GetShip();
-    if (m_player && sShipRef->GetPilot())
-        if (sShipRef->typeID() == itemTypeCapsule)
-            sShipRef->InitPod();
-        else
-            sShipRef->Init();
 }
 
 void Ship::EncodeDestiny( Buffer& into ) {

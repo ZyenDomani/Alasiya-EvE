@@ -77,6 +77,7 @@ public:
     void PrintEntityList();
     void Add(SystemEntity* pEntity, bool isPostWarp=false);
     void Remove(SystemEntity* pEntity);
+    void SendAddBalls(SystemEntity* to_who);
     void AddExclusive(SystemEntity* pEntity);
     void RemoveExclusive(SystemEntity* pEntity);
     void AppendBalls(SystemEntity* about_who) const;
@@ -100,7 +101,6 @@ protected:
     const double m_radius;
     const double m_radius_hysteresis;
 
-    void _SendAddBalls(SystemEntity* to_who);
     void _SendRemoveBalls(SystemEntity* to_who);
     void _BubblecastAddBall(SystemEntity* about_who);
     void _BubblecastAddBallExclusive(SystemEntity* about_who);

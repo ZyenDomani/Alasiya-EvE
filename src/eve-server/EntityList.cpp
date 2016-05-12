@@ -36,8 +36,8 @@
 
 EntityList::EntityList()
 : m_services( nullptr ),
-m_stamp(1000),    /* start at 1k.  in ms.  used for destiny and client counters */
-m_stampTimer(1000, true)
+m_stamp(1000),    /* start at 1k.  in seconds.  used for destiny and client counters */
+m_stampTimer(1000, true)    /* in ms */
 {
     m_systems.clear();
     m_clients.clear();

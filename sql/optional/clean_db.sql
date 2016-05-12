@@ -5,8 +5,13 @@
  */
 
 -- DELETE FROM `account` WHERE 1;
+DELETE FROM `avatars` WHERE 1;
+DELETE FROM `avatar_colors` WHERE 1;
+DELETE FROM `avatar_modifiers` WHERE 1;
+DELETE FROM `avatar_sculpts` WHERE 1;
 DELETE FROM `cacheOwners` WHERE 1;
 DELETE FROM `character_` WHERE 1;
+DELETE FROM `chrEmployment` WHERE 1;
 DELETE FROM `chrMissionState` WHERE 1;
 DELETE FROM `chrNotes` WHERE 1;
 DELETE FROM `chrOffers` WHERE 1;

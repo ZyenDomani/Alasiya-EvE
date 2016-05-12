@@ -179,7 +179,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         charID = sm.RemoteSvc('charUnboundMgr').CreateCharacterWithDoll(charactername, bloodlineID, genderID, ancestryID, charInfo, portraitInfo, schoolID)
         */
     CallCreateCharacterWithDoll arg;
-
     if (!arg.Decode(call.tuple)) {
         codelog(CLIENT__ERROR, "Failed to decode args for CreateCharacterWithDoll call");
         return nullptr;
@@ -195,22 +194,22 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         return nullptr;
 
     // we need to fill these to successfully create character item
-    ItemData idata;
     CharacterData cdata;
-    CharacterAppearance capp;
-    CorpMemberInfo corpData;
+        cdata.accountID = call.client->GetUserID();
+        cdata.gender = arg.genderID;
+        cdata.ancestryID = arg.ancestryID;
+        cdata.bloodlineID = arg.bloodlineID;
+        cdata.schoolID = arg.schoolID;
+        cdata.description = "Character Created on %s", currentDateTime().c_str();
+        cdata.bounty = 0;
+        cdata.balance = sConfig.character.startBalance;
+        cdata.aurBalance = sConfig.character.startAurBalance; // Added aurBalance    -allan 01/07/14
+        cdata.securityRating = sConfig.character.startSecRating;
+        cdata.logonMinutes = 0;
+        cdata.title = "No Title";
+        cdata.createDateTime = Win32TimeNow();
+        cdata.startDateTime = cdata.createDateTime;
 
-    idata.typeID = char_type->id();
-    idata.name = arg.name;
-    idata.ownerID = 1; // EVE System
-    idata.quantity = 1;
-    idata.singleton = true;
-
-    cdata.accountID = call.client->GetUserID();
-    cdata.gender = arg.genderID;
-    cdata.ancestryID = arg.ancestryID;
-    cdata.bloodlineID = arg.bloodlineID;
-    cdata.schoolID = arg.schoolID;
 
     //Set the character's career and race based on the school they picked.
     if (m_db.GetCareerBySchool(cdata.schoolID, cdata.raceID, cdata.careerID)) {
@@ -223,12 +222,13 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.careerSpecialityID = 11;
     }
 
-    corpData.corpRole = 0;
-    corpData.corpAccountKey = accountingKeyCash;
-    corpData.rolesAtAll = 0;
-    corpData.rolesAtBase = 0;
-    corpData.rolesAtHQ = 0;
-    corpData.rolesAtOther = 0;
+    CorpMemberInfo corpData;
+        corpData.corpRole = 0;
+        corpData.corpAccountKey = accountingKeyCash;
+        corpData.rolesAtAll = 0;
+        corpData.rolesAtBase = 0;
+        corpData.rolesAtHQ = 0;
+        corpData.rolesAtOther = 0;
 
     // Variables for storing attribute bonuses
     uint8 intelligence = char_type->intelligence();
@@ -237,20 +237,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     uint8 memory = char_type->memory();
     uint8 willpower = char_type->willpower();
 
-    // Setting character's starting position, and getting the location...
-    // Also query attribute bonuses from ancestry
-    if (!m_db.GetLocationCorporationByCareer(cdata)
-        || !m_db.GetAttributesFromAncestry(cdata.ancestryID, intelligence, charisma, perception, memory, willpower)
-    ) {
-        _log(CLIENT__ERROR, "Failed to load char create details. Bloodline %u, ancestry %u.",
-            char_type->bloodlineID(), cdata.ancestryID);
-        return nullptr;
-    }
-
-    idata.locationID = cdata.stationID; // Just so our starting items end up in the same place.
-
     bool defCorp = true;
-    // Change starting corporation based on value in XML file.
     if (sConfig.character.startCorporation) { // Skip if 0
         if( m_db.DoesCorporationExist( sConfig.character.startCorporation ) ) {
             cdata.corporationID = sConfig.character.startCorporation;
@@ -263,35 +250,24 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
             _log(CLIENT__MESSAGE, "Could not place character in default corporation for school.");
     }
 
-    bool defStation = true;
-    // Added ability to set starting station in xml config by Pyrii
+    // Setting character's default starting position, and getting the location...
+    // this also sets schoolID, corporationID and allianceID based on career
+    m_db.GetLocationCorporationByCareer(cdata);
+
     if (sConfig.character.startStation) { // Skip if 0
-        if (!m_db.GetLocationByStation(sConfig.character.startStation, cdata))
-            _log(CLIENT__MESSAGE, "Could not find default station ID %u. Using Career Defaults instead.", sConfig.character.startStation);
-        else
-            defStation = false;
-    }
-    if (defStation) {
-        uint32 stationID;
-        if (m_db.GetCareerStationByCorporation(cdata.corporationID, stationID)) {
-            if (!m_db.GetLocationByStation(stationID, cdata))
-                _log(CLIENT__MESSAGE, "Could not find default station ID %u.", stationID);
-        } else {
-            _log(CLIENT__ERROR, "Could not place character in default station for school.");
-        }
+        uint32 stationID = sConfig.character.startStation;
+        if (!m_db.GetLocationByStation(stationID, cdata))
+            _log(CLIENT__MESSAGE, "Could not find data for stationID %u.  Using Corp Default.", stationID);
     }
 
-    cdata.bounty = 0;
-    cdata.balance = sConfig.character.startBalance;
-    cdata.aurBalance = sConfig.character.startAurBalance; // Added aurBalance    -allan 01/07/14
-    cdata.securityRating = sConfig.character.startSecRating;
-    cdata.logonMinutes = 0;
-    cdata.title = "No Title";
-
-    cdata.createDateTime = Win32TimeNow();
-    cdata.startDateTime = cdata.createDateTime;
-
-    //now we have (almost) all the data we need, stick it in the DB
+    //now we have (almost) all the data we need, so spawn the char item
+    ItemData idata;
+        idata.typeID = char_type->id();
+        idata.name = arg.name;
+        idata.ownerID = 1; // EVE System
+        idata.quantity = 1;
+        idata.singleton = true;
+        idata.locationID = cdata.stationID;
     //create char item
     CharacterRef char_item = m_manager->item_factory->SpawnCharacter(idata, cdata, corpData);
     if (!char_item) {
@@ -302,14 +278,21 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     call.client->SetChar(char_item);
 
     //this builds appearance data from strdict
-    capp.Build(char_item->itemID(), arg.avatarInfo);
+    CharacterAppearance capp;
+        capp.Build(char_item->itemID(), arg.avatarInfo);
 
-    // add attribute bonuses
-    char_item->SetAttribute(AttrIntelligence, intelligence *2);
-    char_item->SetAttribute(AttrCharisma, charisma *2);
-    char_item->SetAttribute(AttrPerception, perception *2);
-    char_item->SetAttribute(AttrMemory, memory *2);
-    char_item->SetAttribute(AttrWillpower, willpower *2);
+    // query attribute bonuses from ancestry
+    if (!m_db.GetAttributesFromAncestry(cdata.ancestryID, intelligence, charisma, perception, memory, willpower)) {
+        _log(CLIENT__ERROR, "Failed to load char create details. Bloodline %u, ancestry %u.", char_type->bloodlineID(), cdata.ancestryID);
+        return nullptr;
+    }
+    // triple attributes and save
+    uint8 multiplier = sConfig.character.statMultiplier;
+    char_item->SetAttribute(AttrIntelligence, intelligence * multiplier, false);
+    char_item->SetAttribute(AttrCharisma, charisma * multiplier, false);
+    char_item->SetAttribute(AttrPerception, perception * multiplier, false);
+    char_item->SetAttribute(AttrMemory, memory * multiplier, false);
+    char_item->SetAttribute(AttrWillpower, willpower * multiplier, false);
 
     // register name
     m_db.add_name_validation_set(char_item->itemName().c_str(), char_item->itemID());
@@ -347,11 +330,10 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
             continue;
         }
 
-        skill->ChangeSingleton(true);
         skillLevel = cur.second;
-        skill->SetAttribute(AttrSkillLevel, skillLevel );
+        skill->SetAttribute(AttrSkillLevel, skillLevel, false);
         skillPoints = skill->GetSPForLevel( (EvilNumber)skillLevel );
-        skill->SetAttribute(AttrSkillPoints, skillPoints );
+        skill->SetAttribute(AttrSkillPoints, skillPoints, false);
         skill->SaveItem();
         char_item->SaveSkillHistory(skillEventCharCreation,
                                     EvilTimeNow().get_float(),
@@ -390,28 +372,27 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     ItemData shipItem( char_type->shipTypeID(), char_item->itemID(), char_item->locationID(), flagHangar, ship_name.c_str() );
     ShipItemRef ship_item = m_manager->item_factory->SpawnShip( shipItem );
+    ship_item->SaveItem();
     ItemData podItem( itemTypeCapsule, char_item->itemID(), char_item->locationID(), flagCapsule, pod_name.c_str() );
     ShipItemRef pod_item = m_manager->item_factory->SpawnShip( podItem );
-
-    ship_item->SetAttribute(AttrIsOnline, false);
-    ship_item->SaveItem();
-    pod_item->SetAttribute(AttrIsOnline, false);
     pod_item->SaveItem();
 
     call.client->SetShip(ship_item);
-    char_item->SetActivePod( pod_item->itemID() );
+    char_item->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
     char_item->SaveFullCharacter();
 
     // we need to report the charID to the ImageServer so it can correctly assign a previously received image
     sImageServer.ReportNewCharacter(call.client->GetUserID(), char_item->itemID());
-
-    char_item->SetLoaded(false);
 
     // Release the item factory now that the character is finished being accessed:
     m_manager->item_factory->UnsetUsingClient();
 
     //  add charID to staticOwners
     m_db.addOwnerCache(char_item->itemID(), char_item->itemName(), char_type->id() );
+
+    /* at this point, everything is created and saved, but client will call SelectCharacter(charID) as on login screen
+     * so tell char object it has NOT been loaded.  this will enable char to load completely  */
+    char_item->SetLoaded(false);
 
     _log( CLIENT__MESSAGE, "Created New Character  - Sending ID %u as reply", char_item->itemID() );
     return new PyInt(char_item->itemID());
