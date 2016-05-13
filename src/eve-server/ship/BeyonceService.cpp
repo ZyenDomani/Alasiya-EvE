@@ -486,11 +486,10 @@ bookmark, bmid
         double distanceFromBodyOrigin = 0.0, distanceFromSystemOrigin = 0.0;
         GPoint warpToPoint(pSE->GetPosition());
         float warpPointAdj = 1.0f;
-        if (pSE->IsPlanetSE()) {
+        if (pSE->IsStaticEntity()) {
             switch(pSE->GetGroupID() ) {
                 case EVEDB::invGroups::Sun:
-				case EVEDB::invGroups::Planet:
-                {
+				case EVEDB::invGroups::Planet: {
                     // Calculate final distance out from origin of celestial body along common warp-to vector:
                     distanceFromBodyOrigin = pSE->GetRadius();            // Add celestial body's radius
                     distanceFromBodyOrigin += 1000000;                    // Add 1,000Km along common vector from celestial body origin to ensure

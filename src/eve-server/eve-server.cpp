@@ -226,6 +226,7 @@ int main( int argc, char* argv[] )
     }
 
     /* start dogma type attrib mgr  */
+    sLog.Success("       ServerInit", "Initializing Dogma Attribute Cache");
     _sDgmTypeAttrMgr = new dgmtypeattributemgr();
 
     /* Start up the TCP server */
@@ -510,7 +511,7 @@ int main( int argc, char* argv[] )
     /* Stop Console Command Interperter */
     //sConsole.Stop();
     /* delete the dogma attrib object */
-    sLog.Warning("   ServerShutdown", "Cleanup Dogma Attribute cache" );
+    sLog.Warning("   ServerShutdown", "Deleting Dogma Attribute Cache" );
     SafeDelete(_sDgmTypeAttrMgr);
 	/* Shut down the Item system */
 	sLog.Warning("   ServerShutdown", "Saving Items and Shutting down Item Factory." );

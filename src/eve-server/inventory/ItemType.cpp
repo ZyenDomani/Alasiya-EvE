@@ -232,19 +232,17 @@ ItemType::ItemType(
   m_basePrice(_data.basePrice),
   m_published(_data.published),
   m_marketGroupID(_data.marketGroupID),
-  m_chanceOfDuplicating(_data.chanceOfDuplicating)
+  m_chanceOfDuplicating(_data.chanceOfDuplicating),
+  // set some attributes
+  m_radius(_data.radius),
+  m_mass(_data.mass),
+  m_volume(_data.volume),
+  m_capacity(_data.capacity),
+  m_raceID(_data.race)
 {
     // assert for data consistency
     assert(_data.groupID == _group.id());
-
-    // set some attributes
-    attributes.Set_radius(_data.radius);
-    attributes.Set_mass(_data.mass);
-    attributes.Set_volume(_data.volume);
-    attributes.Set_capacity(_data.capacity);
-    attributes.Set_raceID(_data.race);
-
-    _log(ITEM__TRACE, "Created object %p for type %s (%u).", this, name().c_str(), id());
+    _log(ITEM__TRACE, "Created ItemType object %p for type %s (%u).", this, name().c_str(), id());
 }
 
 ItemType *ItemType::Load(ItemFactory &factory, uint32 typeID)
@@ -259,7 +257,7 @@ _Ty *ItemType::_LoadType(ItemFactory &factory, uint32 typeID,
 {
     // See what to do next:
     switch( group.categoryID() ) {
-        /* TODO not handled...make info msg about missing types
+        /** @todo  really need planets and moons here to load true radius' (from mapDenormalize)
         case EVEDB::invCategories::Celestial:
         case EVEDB::invCategories::Skill:
         case EVEDB::invCategories::_System:

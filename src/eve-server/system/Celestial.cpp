@@ -61,13 +61,11 @@ CelestialObject::CelestialObject(
       _log(ITEM__TRACE, "Created Default CelestialObject for item %s (%u).", itemName().c_str(), itemID());
 }
 
-CelestialObject::CelestialObject(   //called for system, star, planet, moon, belt, stargate, station
+CelestialObject::CelestialObject(
     ItemFactory &_factory,
     uint32 _celestialID,
-    // InventoryItem stuff:
     const ItemType &_type,
     const ItemData &_data,
-    // CelestialObject stuff:
     const CelestialObjectData &_cData)
 : InventoryItem(_factory, _celestialID, _type, _data),
   m_radius(_cData.radius),
@@ -94,6 +92,13 @@ RefPtr<_Ty> CelestialObject::_LoadCelestialObject(ItemFactory &factory, uint32 c
         case EVEDB::invGroups::Station: {
             return StationItem::_LoadCelestialObject<StationItem>( factory, celestialID, type, data, cData );
         }
+        /** @todo  finish these later....
+        case EVEDB::invGroups::Planet: {
+            return PlanetItem::_LoadCelestialObject<PlanetItem>( factory, celestialID, type, data, cData );
+        }
+        case EVEDB::invGroups::Moon: {
+            return MoonItem::_LoadCelestialObject<MoonItem>( factory, celestialID, type, data, cData );
+        }*/
     }
 
     return CelestialObjectRef( new CelestialObject( factory, celestialID, type, data, cData ) );

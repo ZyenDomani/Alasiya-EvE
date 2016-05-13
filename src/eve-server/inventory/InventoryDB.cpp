@@ -451,18 +451,6 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             _log(DATABASE__ERROR, "Error in query for solar system %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if(IsUniverseCelestial(itemID)) {
-        //use mapDenormalize
-        if(!sDatabase.RunQuery(res,
-            "SELECT"
-            "  itemName, typeID, 1 AS ownerID, solarSystemID, 0 AS flag, 0 AS contraband,"
-            "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
-            " FROM mapDenormalize"
-            " WHERE itemID=%u", itemID))
-        {
-            _log(DATABASE__ERROR, "Error in query for universe celestial %u: %s", itemID, res.error.c_str());
-            return false;
-        }
     } else if(IsStargate(itemID)) {
         //use mapDenormalize LEFT-JOIN-ing mapSolarSystems to get factionID
         if(!sDatabase.RunQuery(res,
@@ -486,6 +474,18 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             " WHERE stationID=%u", itemID))
         {
             _log(DATABASE__ERROR, "Error in query for station %u: %s", itemID, res.error.c_str());
+            return false;
+        }
+    } else if(IsUniverseCelestial(itemID)) {
+        //use mapDenormalize
+        if(!sDatabase.RunQuery(res,
+            "SELECT"
+            "  itemName, typeID, 1 AS ownerID, solarSystemID, 0 AS flag, 0 AS contraband,"
+            "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
+            " FROM mapDenormalize"
+            " WHERE itemID=%u", itemID))
+        {
+            _log(DATABASE__ERROR, "Error in query for universe celestial %u: %s", itemID, res.error.c_str());
             return false;
         }
     } else {

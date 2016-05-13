@@ -121,22 +121,22 @@ public:
     uint32                  GetSaveTimerExpiry()        { return m_saveTimerExpiryTime; }
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Delete();  //remove the item from the DB.
+    virtual void            Delete();  //remove the item from the DB.
     virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true);
-    virtual bool Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
+    virtual bool            Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
 
     /* specific functions handled here */
     /* returns uID for new item.  saves item data to db */
-    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
+    static uint32           CreateItemID(ItemFactory &factory, ItemData &data);
     /* returns uID for temp item, without saving to db */
-    static uint32 CreateTempItemID(ItemFactory &factory, ItemData &data);
+    static uint32           CreateTempItemID(ItemFactory &factory, ItemData &data);
     /* loads attributes for this item */
     //bool LoadAttributes();
 
     /* specific funtions for ShipItem, virtual here to allow generic class access */
-    virtual void SetPlayer(Client* pClient)                      { /* do nothing here */ }
-    virtual bool HasPilot()                                     { return false; }
-    virtual Client* GetPilot()                                  { return nullptr; }
+    virtual void            SetPlayer(Client* pClient)  { /* do nothing here */ }
+    virtual bool            HasPilot()                  { return false; }
+    virtual Client*         GetPilot()                  { return nullptr; }
 
     /**********************************************************************************************
      * TEMPLATED LOADING INVOKATION EXPLANATION:
@@ -209,26 +209,22 @@ protected:
 
 public:
     /* Primary public packet builders  */
-    PyRep* GetItem() const                      { return GetItemRow(); }
+    PyRep*                  GetItem() const             { return GetItemRow(); }
 
-    bool Populate(Rsp_CommonGetInfo_Entry &into);
+    void                    GetItemRow( PyPackedRow* into ) const;
+    void                    GetItemStatusRow( PyPackedRow* into ) const;
+    void                    GetModuleStatusRow( PyPackedRow* into ) const;
+    void                    GetChargeStatusRow( uint32 shipID, PyPackedRow* into ) const;
 
-    //PyTuple* GetItemRow() const;
-    PyPackedRow* GetItemRow() const;
-    void GetItemRow( PyPackedRow* into ) const;
+    bool                    Populate(Rsp_CommonGetInfo_Entry &into);
 
-    PyPackedRow* GetItemStatusRow() const;
-    void GetItemStatusRow( PyPackedRow* into ) const;
-
-    PyPackedRow* GetModuleStatusRow() const;
-    void GetModuleStatusRow( PyPackedRow* into ) const;
-
-    PyPackedRow* GetChargeStatusRow(uint32 shipID) const;
-    void GetChargeStatusRow( uint32 shipID, PyPackedRow* into ) const;
-
-    PyList* GetItemInfo() const;
-    PyObject* ItemGetInfo();
-
+    PyList*                 GetItemInfo() const;
+    PyObject*               ItemGetInfo();
+    //PyTuple*              GetItemRow() const;
+    PyPackedRow*            GetItemRow() const;
+    PyPackedRow*            GetItemStatusRow() const;
+    PyPackedRow*            GetModuleStatusRow() const;
+    PyPackedRow*            GetChargeStatusRow(uint32 shipID) const;
 
 protected:
     Inventory* m_inventory = nullptr;
@@ -241,20 +237,20 @@ protected:
 
     std::map<EVEItemFlags, double> m_cargoHoldsUsedVolumeByFlag;
 
-    const uint32        m_itemID;
-    std::string         m_itemName;
+    const uint32            m_itemID;
+    std::string             m_itemName;
 
 private:
     // our item data:
-    bool                m_contraband;
-    bool                m_singleton;
-    int32               m_quantity;
-    uint32              m_locationID;
-    uint32              m_ownerID;
-    std::string         m_customInfo;
-    const ItemType &    m_type;
-    EVEItemFlags        m_flag;
-    GPoint              m_position;
+    bool                    m_contraband;
+    bool                    m_singleton;
+    int32                   m_quantity;
+    uint32                  m_locationID;
+    uint32                  m_ownerID;
+    std::string             m_customInfo;
+    const ItemType &        m_type;
+    EVEItemFlags            m_flag;
+    GPoint                  m_position;
 
 
 /* end rewrite...originals follow */

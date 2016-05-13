@@ -32,22 +32,18 @@ dgmtypeattributemgr::dgmtypeattributemgr()
     // load shit from db
     DBQueryResult res;
 
-    if( !sDatabase.RunQuery( res,
-        "SELECT * FROM dgmTypeAttributes ORDER BY typeID" ) )
-    {
+    if( !sDatabase.RunQuery(res, "SELECT * FROM dgmTypeAttributes ORDER BY typeID")) {
         sLog.Error("DgmTypeAttrMgr", "Error in db load query: %s", res.error.c_str());
         return;
     }
 
-    uint32 currentID = 0;
-    DgmTypeAttributeSet * entry = NULL;
+    uint32 currentID = 0, typeID = 0;
+    DgmTypeAttributeSet* entry(nullptr);
     DBResultRow row;
-
     size_t amount = res.GetRowCount();
-    for (int i = 0; i < amount; i++)
-    {
-        res.GetRow(row);
-        uint32 typeID = row.GetUInt(0);
+    //for (int i = 0; i < amount; i++) {
+    while (res.GetRow(row)) {
+        typeID = row.GetUInt(0);
 
         if (currentID != typeID) {
             currentID = typeID;
@@ -57,14 +53,14 @@ dgmtypeattributemgr::dgmtypeattributemgr()
 
         DmgTypeAttribute * attr_entry = new DmgTypeAttribute();
         attr_entry->attributeID = row.GetUInt(1);
-        if (row.IsNull(2) == true) {
+        if (row.IsNull(2))
             attr_entry->number = EvilNumber(row.GetFloat(3));
-        } else {
+        else
             attr_entry->number = EvilNumber(row.GetInt(2));
-        }
 
         entry->attributeset.push_back(attr_entry);
     }
+    sLog.Success("       ServerInit", "Loaded %u Attributes in the  Dogma Attribute Cache", amount);
 }
 
 dgmtypeattributemgr::~dgmtypeattributemgr() {

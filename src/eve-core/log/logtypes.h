@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 5.1
+    Log Version: 5.3
 */
  /*  see log.ini for matching versions */
 
@@ -207,6 +207,8 @@ LOG_TYPE( DESTINY, WARNING, DISABLED, "DestinyWarning" )
 LOG_TYPE( DESTINY, MESSAGE, DISABLED, "DestinyMsg" )
 LOG_TYPE( DESTINY, DEBUG, DISABLED, "DestinyDebug" )
 LOG_TYPE( DESTINY, TRACE, DISABLED, "DestinyTrace" )
+LOG_TYPE( DESTINY, BALL_DUMP, DISABLED, "DestinyDump" )
+LOG_TYPE( DESTINY, BALL_DECODE, DISABLED, "DestinyDecode" )
 LOG_TYPE( DESTINY, SETSTATE, DISABLED, "DestinySetState" )
 LOG_TYPE( DESTINY, BUBBLE_DEBUG, DISABLED, "DestinyBubbleDebug" )
 LOG_TYPE( DESTINY, BUBBLE_TRACE, DISABLED, "DestinyBubbleTrace" )

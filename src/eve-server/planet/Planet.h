@@ -15,7 +15,18 @@
 #include "system/SystemEntity.h"
 
 
-class Planet;
+class Planet
+{
+public:
+    Planet();
+    ~Planet()       { /* do nothing here */ }
+
+protected:
+private:
+
+};
+
+
 class PyServiceMgr;
 class SystemManager;
 
@@ -33,17 +44,6 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual bool LoadExtras(SystemDB *db);
-};
-
-class Planet
-{
-public:
-    Planet();
-    ~Planet()       { /* do nothing here */ }
-
-protected:
-private:
-
 };
 
 #endif  // EVEMU_PLANET_PLANET_H_

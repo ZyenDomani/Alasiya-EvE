@@ -744,6 +744,7 @@ PyResult Command_update(Client *who, CommandDB *db, PyServiceMgr *services, cons
 
 PyResult Command_getattr(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
+    /** @todo update to new attrib system
     if (args.argCount() < 3) {
         throw PyException(MakeCustomError("Correct Usage: /getattr [itemID] [attributeID]"));
     }
@@ -758,9 +759,10 @@ PyResult Command_getattr(Client* who, CommandDB* db, PyServiceMgr* services, con
     InventoryItemRef item = services->item_factory->GetItem(itemID);
     if (!item)
         throw PyException(MakeCustomError("Failed to load item %u.", itemID));
-
+    */
     //return item->attributes.PyGet(attribute);
-    return item->GetAttribute(attribute).GetPyObject();
+    //return item->GetAttribute(attribute).GetPyObject();
+    return nullptr;
 }
 
 PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
@@ -795,7 +797,7 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
     const double value = atof(args.arg(3).c_str());
 
     if (itemID < EVEMU_MINIMUM_ID)
-        throw PyException(MakeCustomError("1st argument must be a valid 'entity' table itemID (got %s) that MUST be larger >= 140000000.", args.arg(1).c_str()));
+        throw PyException(MakeCustomError("1st argument must be a valid 'entity' table itemID that MUST be larger >= 140000000. (got %s)", args.arg(1).c_str()));
 
     InventoryItemRef item = services->item_factory->GetItem(itemID);
     if (!item)

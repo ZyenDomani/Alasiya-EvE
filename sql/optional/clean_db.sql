@@ -20,6 +20,7 @@ DELETE FROM `chrPausedSkillQueue` WHERE 1;
 DELETE FROM `chrPlanetLaunches` WHERE 1;
 DELETE FROM `chrPlanets` WHERE 1;
 DELETE FROM `chrSkillHistory` WHERE 1;
+ALTER TABLE `chrSkillHistory` auto_increment = 1;
 DELETE FROM `chrSkillQueue` WHERE 1;
 DELETE FROM `chrVisitedSystems` WHERE 1;
 DELETE FROM `corporation` WHERE `corporationID` > 1000999;

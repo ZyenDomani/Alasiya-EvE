@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (complete rewrite)
 */
 
 #ifndef __SYSTEMENTITY_H_INCL__
@@ -77,7 +77,7 @@ public:
     /* Base */
     virtual SystemEntity*       GetSE()                 { return this; }
     /* Static */
-    virtual StaticSystemEntity* GetSSE()                { return nullptr; }
+    virtual StaticSystemEntity* GetStaticSE()           { return nullptr; }
     virtual StationSE*          GetStationSE()          { return nullptr; }
     virtual PlanetSE*           GetPlanetSE()           { return nullptr; }
     virtual MoonSE*             GetMoonSE()             { return nullptr; }
@@ -85,13 +85,13 @@ public:
     virtual BeltSE*             GetBeltSE()             { return nullptr; }
     /* Item */
     /** @todo  these will have to be adjusted when the classes are finished */
-    virtual ItemSystemEntity*   GetISE()                { return nullptr; }
+    virtual ItemSystemEntity*   GetItemSE()             { return nullptr; }
     virtual ContainerSE*        GetContSE()             { return nullptr; }
     virtual WreckSE*            GetWreckSE()            { return nullptr; }
     virtual DungeonSE*          GetDungeonSE()          { return nullptr; }
     /* Object */
     /** @todo  these will have to be adjusted when the classes are finished */
-    virtual ObjectSystemEntity* GetOSE()                { return nullptr; }
+    virtual ObjectSystemEntity* GetObjectSE()           { return nullptr; }
     virtual AsteroidSE*         GetAsteroidSE()         { return nullptr; }
     virtual StructureSE*        GetJumpBridgeSE()       { return nullptr; }
     virtual StructureSE*        GetOutpostSE()          { return nullptr; }
@@ -100,7 +100,7 @@ public:
     virtual StructureSE*        GetSBUSE()              { return nullptr; }
     virtual DeployableSE*       GetDeployableSE()       { return nullptr; }
     /* Dynamic */
-    virtual DynamicSystemEntity* GetDSE()               { return nullptr; }
+    virtual DynamicSystemEntity* GetDynamicSE()         { return nullptr; }
     virtual NPC*                GetNPCSE()              { return nullptr; }
     virtual Drone*              GetDroneSE()            { return nullptr; }
     virtual Missile*            GetMissileSE()          { return nullptr; }
@@ -109,7 +109,7 @@ public:
 
     /* class type tests, grouped by base class.  public for anyone to access. */
     /* Base */
-    virtual bool                IsCelestialEntity()     { return false; }
+    virtual bool                IsSystemEntity()        { return true; }
     virtual bool                IsInanimateSE()         { return false; }
     /* Static */
     virtual bool                IsStaticEntity()        { return false; }
@@ -155,7 +155,7 @@ public:
     /* public data queries  */
     virtual InventoryItemRef    GetSelf()               { return m_self; }
     virtual uint32              GetID()                 { return m_self->itemID(); }
-    virtual float               GetRadius();            /* too long to put here */
+    virtual double              GetRadius();            /* too long to put here */
     virtual uint32              GetLocationID()         { return m_self->locationID(); }
     virtual const char*         GetName() const         { return m_self->itemName().c_str(); }
     virtual const GPoint&       GetPosition() const     { return m_self->position(); }
@@ -191,17 +191,12 @@ public:
     virtual bool                LoadExtras(SystemDB *db){ return true; }
 
     /* virtual functions in base to allow common interface calls */
-    /** @todo these need to be move to target manager. */
+    /** @todo these need to be moved to target manager. */
     virtual void TargetLost(SystemEntity *who)          { /* Do nothing here */ }
     virtual void TargetAdded(SystemEntity *who)         { /* Do nothing here */ }
     virtual void TargetedAdd(SystemEntity *who)         { /* Do nothing here */ }
     virtual void TargetedLost(SystemEntity *who)        { /* Do nothing here */ }
     virtual void TargetsCleared()                       { /* Do nothing here */ }
-
-    /* virtual functions in base to allow common interface calls specific to ship entities */
-    virtual void                SetPilot(Client* pClient){ /* Do nothing here */ }
-    virtual bool                HasPilot()              { return false; }
-    virtual Client*             GetPilot()              { return nullptr; }
 
     virtual uint32              GetTypeID()             { return m_self->typeID(); }
     virtual uint32              GetGroupID()            { return m_self->groupID(); }
@@ -212,6 +207,11 @@ public:
     virtual uint32              GetCorporationID()      { return m_corpID; };
     virtual uint32              GetAllianceID()         { return m_allyID; };
     virtual uint32              GetWarFactionID()       { return m_warID; }
+
+    /* virtual functions in base to allow common interface calls specific to ship entities */
+    virtual void                SetPilot(Client* pClient){ /* Do nothing here */ }
+    virtual bool                HasPilot()              { return false; }
+    virtual Client*             GetPilot()              { return nullptr; }
 
     /* specific functions handled in this class. */
 
@@ -239,23 +239,30 @@ public:
     virtual ~StaticSystemEntity()                       { /* Do nothing here */ }
 
     /* class type pointer querys. */
-    virtual StaticSystemEntity* GetSSE()                { return this; }
+    virtual StaticSystemEntity* GetStaticSE()           { return this; }
     /* class type tests. */
     /* Base */
-    virtual bool IsCelestialEntity()                    { return true; }
-    virtual bool IsInanimateSE()                        { return true; }
+    virtual bool                IsInanimateSE()         { return true; }
     /* Static */
-    virtual bool IsStaticEntity()                       { return true; }
-    virtual bool IsVisibleSystemWide()                  { return true; }
+    virtual bool                IsStaticEntity()        { return true; }
+    virtual bool                IsVisibleSystemWide()   { return true; }
+
+    /* SystemEntity interface */
+    virtual void                EncodeDestiny( Buffer& into );
+    virtual PyDict*             MakeSlimItem();
 
     /** @todo (allan)  finish these ... not sure how yet.  */
     //virtual uint32 GetCorporationID()                   { return m_data.corporationID; };
     //virtual uint32 GetAllianceID()                      { return m_data.allianceID; };
 
-    /* virtual functions default to base class and overridden as needed */
-    virtual bool LoadExtras(SystemDB *db);
+    /* virtual functions to be overridden in derived classes */
+    virtual bool                LoadExtras(SystemDB *db);
 
     /* specific functions handled in this class. */
+    virtual double              GetRadius()             { return m_radius; }
+
+private:
+    double                      m_radius;
 
 };
 
@@ -264,21 +271,21 @@ class BeltSE
 {
 public:
     BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~BeltSE();
+    virtual ~BeltSE()                                   { /* Do nothing here */ }
 
     /* class type pointer querys. */
-    virtual BeltSE* GetBeltSE()                         { return this; }
+    virtual BeltSE*             GetBeltSE()             { return this; }
     /* class type tests. */
-    virtual bool IsBeltSE()                             { return true; }
+    virtual bool                IsBeltSE()              { return true; }
 
     /* virtual functions to be overridden in derived classes */
-    virtual bool LoadExtras(SystemDB *db);
+    virtual bool                LoadExtras(SystemDB *db);
 
     /* generic access functions handled here */
-    AsteroidBeltManager* BeltMgr()                      { return m_beltMgr; }
+    AsteroidBeltManager*        BeltMgr()               { return m_beltMgr; }
 
 protected:
-    AsteroidBeltManager* m_beltMgr;
+    AsteroidBeltManager*        m_beltMgr;
 };
 
 class StargateSE
@@ -286,18 +293,18 @@ class StargateSE
 {
 public:
     StargateSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~StargateSE()                           { /* Do nothing here */ }
+    virtual ~StargateSE()                               { /* Do nothing here */ }
 
     /* class type pointer querys. */
-    virtual StargateSE* GetGateSE()                     { return this; }
+    virtual StargateSE*         GetGateSE()             { return this; }
     /* class type tests. */
-    virtual bool IsGateSE()                             { return true; }
+    virtual bool                IsGateSE()              { return true; }
 
     /* SystemEntity interface */
-    virtual PyDict *MakeSlimItem();
+    virtual PyDict*             MakeSlimItem();
 
     /* virtual functions to be overridden in derived classes */
-    virtual bool LoadExtras(SystemDB *db);
+    virtual bool                LoadExtras(SystemDB *db);
 
 protected:
     PyRep* m_jumps;
@@ -311,10 +318,9 @@ public:
     virtual ~ItemSystemEntity()                         { /* Do nothing here */ }
 
     /* class type pointer querys. */
-    virtual ItemSystemEntity* GetISE()                  { return this; }
+    virtual ItemSystemEntity* GetItemSE()               { return this; }
     /* class type tests. */
     /* Base */
-    virtual bool IsCelestialEntity()                    { return true; }
     virtual bool IsInanimateSE()                        { return true; }
     /* Item */
     virtual bool IsItemEntity()                         { return true; }
@@ -348,10 +354,9 @@ public:
     virtual ~ObjectSystemEntity()                       { /* Do nothing here */ }
 
     /* class type pointer querys. */
-    virtual ObjectSystemEntity* GetOSE()                { return this; }
+    virtual ObjectSystemEntity* GetObjectSE()           { return this; }
     /* class type tests. */
     /* Base */
-    virtual bool IsCelestialEntity()                    { return true; }
     virtual bool IsInanimateSE()                        { return true; }
     /* Object */
     virtual bool IsObjectEntity()                       { return true; }
@@ -395,7 +400,7 @@ public:
     virtual ~DynamicSystemEntity();
 
     /* class type pointer querys. */
-    virtual DynamicSystemEntity* GetDSE()               { return this; }
+    virtual DynamicSystemEntity* GetDynamicSE()         { return this; }
     /* class type tests. */
     /* Dynamic */
     virtual bool IsDynamicEntity()                      { return true; }

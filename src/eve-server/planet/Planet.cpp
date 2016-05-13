@@ -12,6 +12,19 @@
 #include "Planet.h"
 
 
+/** @note  general design notes
+ * planetse will have a Planet class to hold data and call other functions/methods as needed
+ * the PlanetMgr class will manage all aspects of planet data, init'd as a single instance (no reason for multiples)
+ *
+ *
+ */
+
+Planet::Planet()
+{
+
+}
+
+
 PlanetSE::PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : StaticSystemEntity(self, services, system)
 {
@@ -26,18 +39,3 @@ bool PlanetSE::LoadExtras(SystemDB *db) {
      */
     return true;
 }
-
-/** @note  general design notes
- * planetse will have a Planet class to hold data and call other functions/methods as needed
- * the PlanetMgr class will manage all aspects of planet data, init'd as a single instance (no reason for multiples)
- * 
- *
- *
- *
- */
-
-Planet::Planet()
-{
-
-}
-

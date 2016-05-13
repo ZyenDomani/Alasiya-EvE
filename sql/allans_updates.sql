@@ -404,8 +404,9 @@ UPDATE `dgmTypeAttributes` SET `valueFloat` = '3' WHERE `typeID` = 587 AND `attr
 UPDATE `dgmTypeAttributes` SET `valueFloat` = '4' WHERE `typeID` = 11371 AND `attributeID` = 600;
 UPDATE `dgmTypeAttributes` SET `valueFloat` = '3' WHERE `typeID` = 11371 AND `attributeID` = 1281;
 
-/* fix radius in mapDenormalize */
-UPDATE mapDenormalize AS md INNER JOIN invTypes AS it USING (typeID) SET md.radius = it.radius WHERE md.groupID = 10;
+/* fix radius' in mapDenormalize */
+UPDATE `mapDenormalize` SET `radius`=1 WHERE `groupID`=9;
+UPDATE `mapDenormalize` AS md INNER JOIN `invTypes` AS it USING (typeID) SET md.radius = it.radius WHERE md.groupID = 10;
 
 /* add rat factions to mapRegions table for belt rat spawns */
 ALTER TABLE `mapRegions` ADD `ratFactionID` INT(8) NOT NULL DEFAULT '0' AFTER `factionID`;
@@ -416,5 +417,4 @@ UPDATE `invTypes` SET `radius` = '1000' WHERE `typeID` = 12356;
 
 /*  change charge size to interger from float */
 UPDATE `dgmTypeAttributes` SET `valueInt`=`valueFloat`, `valueFloat`= NULL WHERE `attributeID`=128 AND `valueFloat` IS NOT NULL;
-
 

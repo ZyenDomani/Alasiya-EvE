@@ -28,7 +28,9 @@
 
 /*
  * This file contains EVE-specific derivations of attribute managers.
+ * it is also incomplete.  revisit and update as needed.
  */
+/** @todo finish these classes */
 
 #include "inventory/AttributeMgr.h"
 #include "ship/dgmtypeattributeinfo.h"

@@ -177,7 +177,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
     found_wandering.clear();
 	DynamicSystemEntity* pDSE(nullptr);
     for (auto cur : m_dynamicEntities) {
-        pDSE = cur->GetDSE();
+        pDSE = cur->GetDynamicSE();
 		if (!pDSE) continue;
         if (pDSE->DestinyMgr() and pDSE->DestinyMgr()->IsWarping()) continue;
 		if (!InBubble(pDSE->GetPosition())) {
@@ -396,8 +396,8 @@ void SystemBubble::PrintEntityList() {
             sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Global.", cur->GetName(), cur->GetID() );
         if (cur->IsStaticEntity())
             sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Static.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsCelestialSE())
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Celestial.", cur->GetName(), cur->GetID() ); found = true;
+        if (cur->IsObjectEntity())
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Object.", cur->GetName(), cur->GetID() ); found = true;
         if (cur->IsNPCSE())
             sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is NPC.", cur->GetName(), cur->GetID() ); found = true;
         if (cur->IsShipSE())
@@ -447,13 +447,9 @@ void SystemBubble::SendAddBalls( SystemEntity* to_who ) {
         addballs.slims = new PyList;
 
     for (auto cur : m_dynamicEntities) {
-        //if (cur == to_who)
-        //  continue;
-        //damageState
         if (!cur->IsMissileSE())
             addballs.damageDict[ cur->GetID() ] = cur->MakeDamageState();
         addballs.slims->AddItem( new PyObject( "foo.SlimItem", cur->MakeSlimItem() ) );
-        //append the destiny binary data...
         cur->EncodeDestiny( *destinyBuffer );
     }
 
@@ -465,17 +461,17 @@ void SystemBubble::SendAddBalls( SystemEntity* to_who ) {
     addballs.state = new PyBuffer( &destinyBuffer );
     SafeDelete( destinyBuffer );
 
-    _log( DESTINY__DEBUG, "SystemBubble::SendAddBalls():" );
-    addballs.Dump( DESTINY__DEBUG, "    " );
-    _log( DESTINY__TRACE, "    Ball Binary:" );
-    _hex( DESTINY__TRACE, &( addballs.state->content() )[0], (uint32)addballs.state->content().size() );
+    _log( DESTINY__BALL_DUMP, "SystemBubble::SendAddBalls():" );
+    addballs.Dump( DESTINY__BALL_DUMP, "    " );
+    //_log( DESTINY__TRACE, "    Ball Binary:" );
+    //_hex( DESTINY__TRACE, &( addballs.state->content() )[0], (uint32)addballs.state->content().size() );
     /*  note:  this shows up in valgrind as an uninitialized value   -allan 24Mar16
      * Conditional jump or move depends on uninitialised value(s)  SystemBubble.cpp:484 (uncorrected line#)
      * Uninitialised value was created by a heap allocation  SystemBubble.cpp:472
      *
      */
-    _log( DESTINY__TRACE, "    Ball Decoded:" );
-    Destiny::DumpUpdate( DESTINY__TRACE, &( addballs.state->content() )[0], (uint32)addballs.state->content().size() );
+    _log( DESTINY__BALL_DECODE, "    Ball Decoded:" );
+    Destiny::DumpUpdate( DESTINY__BALL_DECODE, &( addballs.state->content() )[0], (uint32)addballs.state->content().size() );
     PyTuple* t = addballs.Encode();
     pClient->QueueDestinyUpdate( &t );    //may consume, but may not.
     PySafeDecRef( t );
@@ -500,8 +496,8 @@ void SystemBubble::_SendRemoveBalls( SystemEntity* to_who ) {
 	if (remove_balls.balls.empty())
 		return;
 
-	_log( DESTINY__DEBUG, "SystemBubble::_SendRemoveBalls():" );
-	remove_balls.Dump( DESTINY__DEBUG, "    " );
+    _log( DESTINY__BALL_DUMP, "SystemBubble::_SendRemoveBalls():" );
+    remove_balls.Dump( DESTINY__BALL_DUMP, "    " );
 
 	PyTuple* tmp = remove_balls.Encode();
     pClient->QueueDestinyUpdate( &tmp );    //may consume, but may not.
@@ -638,8 +634,8 @@ void SystemBubble::_BubblecastRemoveBall(SystemEntity *about_who) {
     PackagedAction pa;
         pa.substream = new PySubStream(paTuple);
 */
-	_log(DESTINY__DEBUG, "SystemBubble::_BubblecastRemoveBall():");
-    //paTuple->Dump(DESTINY__DEBUG, "    ");
+_log(DESTINY__BALL_DUMP, "SystemBubble::_BubblecastRemoveBall():");
+//paTuple->Dump(DESTINY__BALL_DUMP, "    ");
 
     PyTuple *tmp = removeball.Encode();
     //PyTuple *tmp = pa.Encode();
@@ -662,8 +658,8 @@ void SystemBubble::_BubblecastRemoveBallExclusive(SystemEntity *about_who) {
     PackagedAction pa;
         pa.substream = new PySubStream(paTuple);
 */
-    _log(DESTINY__DEBUG, "SystemBubble::_BubblecastRemoveBallExclusive():");
-    //paTuple->Dump(DESTINY__DEBUG, "    ");
+_log(DESTINY__BALL_DUMP, "SystemBubble::_BubblecastRemoveBallExclusive():");
+//paTuple->Dump(DESTINY__BALL_DUMP, "    ");
 
     PyTuple *tmp = removeball.Encode();
     //PyTuple *tmp = pa.Encode();

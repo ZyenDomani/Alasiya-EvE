@@ -10,6 +10,19 @@
 
 #include "Moon.h"
 
+/** @note  general design notes
+ * moonse will have a Moon class to hold data and call other functions/methods as needed
+ * the PlanetMgr class will manage all aspects of moon data, init'd as a single instance (no reason for multiples)
+ *
+ *
+ */
+
+
+Moon::Moon()
+{
+
+}
+
 
 MoonSE::MoonSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : StaticSystemEntity(self, services, system)
@@ -25,16 +38,3 @@ bool MoonSE::LoadExtras(SystemDB *db) {
      */
     return true;
 }
-
-/** @note  general design notes
- * moonse will have a Moon class to hold data and call other functions/methods as needed
- * the PlanetMgr class will manage all aspects of moon data, init'd as a single instance (no reason for multiples)
- *
- *
- */
-
-Moon::Moon()
-{
-
-}
-

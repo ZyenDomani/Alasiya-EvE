@@ -98,7 +98,8 @@ public:
     static void GetLootGroupTypes(DBQueryResult& res);
     static void GetSalvageGroups(DBQueryResult& res);
     static uint32 GetObjectLocationID( uint32 itemID );
-    double GetObjectRadius( uint32 typeID );
+    double GetItemTypeRadius( uint32 typeID );
+    double GetCelestialRadius(uint32 itemID);
 
     PyObject* ListFactions();
     PyObject* ListJumps(uint32);

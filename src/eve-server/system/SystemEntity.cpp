@@ -45,9 +45,10 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
   m_services(services),
   m_system(system)
 {
+    /** @todo  figure out how to get corp/faction/ally IDs here, if possible, and add to our variables */
 }
 
-float SystemEntity::GetRadius() {
+double SystemEntity::GetRadius() {
     return (m_self->HasAttribute(AttrRadius) ? m_self->GetAttribute(AttrRadius).get_float() : 1.0);
 }
 
@@ -97,8 +98,7 @@ void SystemEntity::EncodeDestiny( Buffer& into )
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
-    _log(COMMON__WARNING, "SystemEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", \
-                    GetName(), head.entityID, head.mode, head.flags);
+    _log(COMMON__WARNING, "SystemEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 double SystemEntity::DistanceTo2(const SystemEntity* other) {
@@ -172,20 +172,45 @@ StaticSystemEntity::StaticSystemEntity(InventoryItemRef self, PyServiceMgr &serv
 }
 
 bool StaticSystemEntity::LoadExtras(SystemDB *db) {
-    /** @todo (allan)  finish this as needed */
+    /* set radius on static entities, where type().radius() is incorrect or not set */
+    m_radius = db->GetCelestialRadius(m_self->itemID());
     return true;
+}
+
+PyDict* StaticSystemEntity::MakeSlimItem() {
+    _log(COMMON__WARNING, "MakeSlimItem for StaticSystemEntity %s(%u)", GetName(), m_self->itemID());
+    PyDict *slim = new PyDict();
+        slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
+        slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
+        slim->SetItemString("name",         new PyString(m_self->itemName()));
+        slim->SetItemString("nameID",       new PyNone);
+        slim->SetItemString("ownerID",      new PyInt(1));
+    return slim;
+}
+
+void StaticSystemEntity::EncodeDestiny( Buffer& into ) {
+    using namespace Destiny;
+    BallHeader head;
+        head.entityID = m_self->itemID();
+        head.mode = DSTBALL_RIGID;
+        head.x = x();
+        head.y = y();
+        head.z = z();
+        head.radius = m_radius;
+    if (m_self->groupID() == EVEDB::invGroups::Sun)
+        head.flags = IsGlobal | IsMassive;
+    else
+        head.flags = IsGlobal;
+    into.Append( head );
+    DSTBALL_RIGID_Struct main;
+        main.formationID = 0xFF;
+    into.Append( main );
+    _log(COMMON__WARNING, "StaticSystemEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : StaticSystemEntity(self, services, system)
 {
-    /** @todo: fire up the belt manager. */
-    //m_beltMgr = new AsteroidBeltManager(GetID());
-}
-
-BeltSE::~BeltSE()
-{
-    //SafeDelete(m_beltMgr);
 }
 
 bool BeltSE::LoadExtras(SystemDB *db) {
@@ -214,46 +239,24 @@ bool StargateSE::LoadExtras(SystemDB *db) {
 
     return false;
 }
-/*
-                              [PyObjectData Name: foo.SlimItem]
-                                [PyDict 7 kvp]
-                                  [PyString "itemID"]
-                                  [PyIntegerVar 50001982]
-                                  [PyString "typeID"]
-                                  [PyInt 16]
-                                  [PyString "dunRotation"]
-                                  [PyTuple 3 items]
-                                    [PyFloat 181.978806434157]
-                                    [PyFloat -55.9226041313971]
-                                    [PyFloat 0]
-                                  [PyString "name"]
-                                  [PyString "Stargate (Konola)"]
-                                  [PyString "jumps"]
-                                  [PyObjectEx Type2]
-                                    [PyTuple 2 items]
-                                      [PyTuple 1 items]
-                                        [PyToken dbutil.CRowset]
-                                      [PyDict 1 kvp]
-                                        [PyString "header"]
-                                        [PyToken blue.DBRowDescriptor]
-                                    [PyPackedRow 9 bytes]
-                                      ["toCelestialID" => <50001093> [I4]]
-                                      ["locationID" => <30002737> [I4]]
-                                  [PyString "ownerID"]
-                                  [PyInt 1000035]
-                                  [PyString "nameID"]
-                                  [PyNone]
-                            */
+
 PyDict* StargateSE::MakeSlimItem() {
     _log(COMMON__WARNING, "MakeSlimItem for StargateSE %s(%u)", GetName(), GetID());
+    /** @todo  finish gate rotation data
+    PyTuple* rotation = new PyTuple(3);
+        rotation->SetItem(0, new PyFloat(0));
+        rotation->SetItem(1, new PyFloat(0));
+        rotation->SetItem(2, new PyFloat(0));*/
     PyDict *slim = new PyDict();
-        slim->SetItemString("typeID",   new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",  new PyInt(1));       /** @todo (allan) make function to lookup controlling faction id for this */
-        slim->SetItemString("itemID",   new PyLong(GetID()));
-        slim->SetItemString("name",     new PyString(GetName()));
+        //slim->SetItemString("dunRotation", rotation);
+        slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
+        slim->SetItemString("ownerID",      new PyInt(1));       /** @todo (allan) make function to lookup controlling faction id for this */
+        slim->SetItemString("itemID",       new PyLong(GetID()));
+        slim->SetItemString("name",         new PyString(m_self->itemName()));
+        slim->SetItemString("nameID",       new PyNone);
     if (m_jumps)
         slim->SetItemString("jumps", m_jumps->Clone());
-    return(slim);
+    return slim;
 }
 
 /* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace */
@@ -437,7 +440,7 @@ void ObjectSystemEntity::Killed(Damage &fatal_blow)
     m_targMgr->ClearTargets(false);
     if (m_destiny && m_bubble) {
         m_destiny->Stop();
-        if (IsStaticEntity())
+        if (IsStaticEntity())   /* never true - OSE are non-static entities */
             m_destiny->SendTerminalExplosion(GetID(), SysBubble()->GetID(), true);
         else
             m_destiny->SendTerminalExplosion(GetID(), SysBubble()->GetID());
@@ -498,8 +501,8 @@ PyDict *DynamicSystemEntity::MakeSlimItem() {
         slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
         slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",       new PyInt(0));
-        slim->SetItemString("allianceID",   new PyInt(0));
+        slim->SetItemString("corpID",       new PyInt(GetCorporationID()));
+        slim->SetItemString("allianceID",   new PyInt(GetAllianceID()));
     return (slim);
 }
 
@@ -558,7 +561,7 @@ void DynamicSystemEntity::Killed(Damage &fatal_blow)
     m_targMgr->ClearTargets(false);
     if (m_destiny && SysBubble()) {
         m_destiny->Stop();
-        if (IsStaticEntity() || IsCelestialEntity())    /* these will never be true here */
+        if (IsStaticEntity() || IsObjectEntity())    /* these will never be true here */
             m_destiny->SendTerminalExplosion(GetID(), SysBubble()->GetID(), true);
         else
             m_destiny->SendTerminalExplosion(GetID(), SysBubble()->GetID());
@@ -597,27 +600,6 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
         codelog(CLIENT__ERROR, "%s: Failed to record bounty of %f from death of %u (type %u)",
                     pClient->GetName(), bounty, GetID(), m_self->typeID());
         //well.. this isnt a huge deal, so we will get over it.
-    }
-
-    Character* pChar = pClient->GetChar().get();
-    if (pChar->GetSecurityRating() > 5) return;     // npc's dont give secAward above +5.0
-    if (m_self->GetAttribute(AttrEntitySecurityStatusKillBonus) == 0) return;
-    if (MakeRandomInt(0,5) > 2) return;
-
-    double killBonus = m_self->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
-    killBonus /= 100;
-    double secAward = pChar->GetSecurityRating() *killBonus;
-    if (secAward < 0) secAward = -secAward;
-    secAward *=  (1 + ( 0.05 * (pChar->GetSkillLevel(skillFastTalk, true))));      // 5% increase
-    if (secAward) {
-        if (sConfig.rates.secRate != 1.0) secAward *= sConfig.rates.secRate;
-        sLog.Magenta("SystemEntity::AwardSecurityStatus()"," %s(%u): killBonus: %f. secAward: %f.",
-                     GetName(), GetID(), killBonus, secAward);
-        pChar->secStatusChange( secAward );
-        /** @todo (Allan) this needs more work */
-        //std::string msg = "Status Change for killing pirates in ";
-        //msg += SystemMgr()->GetName();
-        //pChar->SaveStandingChanges( GetID(),  pChar->itemID(), 1,  eventID,  eventType, secAward, msg);
     }
 }
 

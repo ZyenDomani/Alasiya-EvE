@@ -108,7 +108,10 @@ bool TypeAttributeMgr::Load(InventoryDB &db) {
  * ItemAttributeMgr
  */
 ItemAttributeMgr::ItemAttributeMgr( ItemFactory &factory, const InventoryItem &item, bool save, bool notify) :
-    m_factory(factory), m_item(item), m_save(save), m_notify(notify) {}
+    m_factory(factory), m_item(item), m_save(save), m_notify(notify)
+    {
+        sLog.Blue("ItemAttributeMgr", "Calling Constructor.");
+    }
 
 ItemAttributeMgr::real_t ItemAttributeMgr::GetReal(Attr attr) const {
     real_t v;

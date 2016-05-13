@@ -341,9 +341,10 @@ void Client::SetDestiny(bool count) {
         else
             pShipSE->DestinyMgr()->SetPosition(m_ship->position());
         pShipSE->DestinyMgr()->SendSetState();
-        m_system->AddEntity(pShipSE);
         pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
-    }
+        m_system->AddEntity(pShipSE);
+    } else
+        _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
 }
 
 void Client::WarpIn() {
@@ -351,7 +352,6 @@ void Client::WarpIn() {
     char ci[1];
     snprintf(ci, sizeof(ci), "");
     m_ship->SetCustomInfo(ci);
-    m_ship->SetFlag(flagAutoFit);
     return;
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
     GPoint warpToPoint(m_ship->position());
@@ -416,7 +416,6 @@ void Client::LoginToSystem(uint32 systemID, ShipItemRef ship) {
 }
 
 bool Client::EnterSystem(uint32 systemID) {
-    // called when entering new system or verifying correct/current system.  sets session data for current system
     if (IsStation(systemID)) return true;
 
     /** @todo this will need more work once i figure out what the damn client wants
@@ -428,6 +427,7 @@ bool Client::EnterSystem(uint32 systemID) {
             systemID = GetLocationID();
     } */
 
+    // called when entering new system or verifying correct/current system.  sets session data for current system
     if (m_system && (m_system->GetID() != systemID)) {
         sLog.Warning("Client::EnterSystem()", "m_system = %p, m_system->GetCharacterID(%u) != GetSystemID(%u)", m_system, m_system->GetID(), systemID);
         //we have different m_system
@@ -472,7 +472,7 @@ void Client::UpdateLocation(uint32 locationID) {
         DestroyShipSE();
     } else if (IsSolarSystem(locationID)) {
         sLog.Success("Client::UpdateLocation()", "Character %s(%u) InSpace.", m_char->itemName().c_str(), GetCharacterID());
-        m_ship->Move(locationID, flagAutoFit);
+        m_ship->Move(locationID, (InPod() ? flagCapsule : flagAutoFit));
         m_char->Move(m_shipId, flagPilot);
     }
 }
@@ -513,9 +513,9 @@ void Client::MoveToLocation(uint32 location, const GPoint& pt)
         SendErrorMsg("Move requested to unsupported location %u", location);
         return;
     }
+    m_ship->SetCustomInfo(ci);
 
     m_char->SetLocation(stationID, solarSystemID, constellationID, regionID);
-    m_ship->SetCustomInfo(ci);
     EnterSystem(solarSystemID);
     UpdateLocation(location);
     if (stationID)
@@ -579,7 +579,6 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     SetDockPoint(dockPosition);
     //update client and set session change
     OnCharNoLongerInStation();
-    UpdateSessionInt("shipid", m_shipId);
     MoveToLocation(systemID, dockPosition);
     CreateShipSE();
     DestinyUndock(direction);
@@ -660,7 +659,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     /* set internal vars for new ship */
     m_ship = newShipItemRef;
     m_shipId = m_ship->itemID();
-    //UpdateSessionInt("shipid", m_shipId);
+    UpdateSessionInt("shipid", m_shipId);
     m_char->SetActiveShip(m_shipId);    // this also saves shipID for char in db. (error fix)
 
     char ci[25];
@@ -698,8 +697,7 @@ void Client::CreateShipSE() {
     if (pShipSE) DestroyShipSE();
     pShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system);
     _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->itemName().c_str(), GetCharacterID());
-    m_ship->SetFlag(flagAutoFit);
-    m_char->Move(m_shipId, flagPilot);
+    m_ship->SetFlag((InPod() ? flagCapsule : flagAutoFit));
     pShipSE->SetPilot(this);
 }
 
@@ -1085,8 +1083,6 @@ void Client::_SendQueuedUpdates() {
 
         // attempted fix for trying to update when (bubble == NULL)
         //  seems to work correctly  -allan 18Apr15
-        /* need more info to implement this properly  -allan 23Mar16*/
-        /*  causes client error when docked  "No BallPark for Update"  */
         dum.waitForBubble = m_bubbleWait; /*false*/
 
         //now send it
@@ -1337,21 +1333,19 @@ void Client::SpawnNewRookieShip() {
 
     //create data for new rookie ship
     ItemData idata(
-        typeID,
-        GetCharacterID(),
-        0, //temp location
-        flagHangar,
-        name.c_str(),
-        NULL_ORIGIN
-    );
+                typeID,
+                GetCharacterID(),
+                GetStationID(),
+                flagHangar,
+                name.c_str(),
+                NULL_ORIGIN
+                );
     //spawn rookie ship
     ShipItemRef i = m_services.item_factory->SpawnShip(idata);
 
     if (!i)
         throw PyException(MakeCustomError("Unable to generate rookie ship"));
 
-    //move the new rookie ship into the players hanger in station
-    i->Move(GetStationID(), flagHangar, true);
     SetShip(i);
 }
 

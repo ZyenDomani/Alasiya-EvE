@@ -124,11 +124,9 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 ownerID, uint32 systemID, std::v
     return true;
 }
 
-uint32 SystemDB::GetObjectLocationID( uint32 itemID ) {
+uint32 SystemDB::GetObjectLocationID(uint32 itemID) {
     DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT locationID FROM entity WHERE itemID=%u", itemID )) {
+    if(!sDatabase.RunQuery(res, "SELECT locationID FROM entity WHERE itemID=%u", itemID )) {
         _log(DATABASE__ERROR, "Error in GetObjectLocationID query: %s", res.error.c_str());
         return 0;
     }
@@ -139,18 +137,30 @@ uint32 SystemDB::GetObjectLocationID( uint32 itemID ) {
     return 0;
 }
 
-double SystemDB::GetObjectRadius( uint32 typeID ) {
+double SystemDB::GetItemTypeRadius(uint32 typeID) {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
-        "SELECT radius FROM invTypes WHERE typeID=%u", typeID )) {
-        _log(DATABASE__ERROR, "Error in GetObjectRadius query: %s", res.error.c_str());
-        return 0;
+    if(!sDatabase.RunQuery(res, "SELECT radius FROM invTypes WHERE typeID=%u", typeID )) {
+        _log(DATABASE__ERROR, "Error in GetItemTypeRadius query: %s", res.error.c_str());
+        return 0.0;
     }
 
     DBResultRow row;
     if (res.GetRow(row))
-        return (row.GetUInt(0));
-    return 0;
+        return (row.GetDouble(0));
+    return 0.0;
+}
+
+double SystemDB::GetCelestialRadius(uint32 itemID) {
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res, "SELECT radius FROM mapDenormalize WHERE itemID=%u", itemID )) {
+        _log(DATABASE__ERROR, "Error in GetItemTypeRadius query: %s", res.error.c_str());
+        return 0.0;
+    }
+
+    DBResultRow row;
+    if (res.GetRow(row))
+        return (row.GetDouble(0));
+    return 0.0;
 }
 
 bool SystemDB::GetWrecksToTypes(DBQueryResult& res) {
@@ -230,7 +240,7 @@ void SystemDB::GetPlanets(uint32 systemID, std::vector<DBGPointEntity>* planetID
         );
         entry.radius = row.GetInt(4);
         planetIDs->push_back(entry);
-		itr ++;
+		++itr;
     }
     *total = itr;
 }
@@ -254,7 +264,7 @@ void SystemDB::GetMoons(uint32 systemID, std::vector<DBGPointEntity>* moonIDs, u
         entry.radius = row.GetInt(4);
 
         moonIDs->push_back(entry);
-		itr ++;
+		++itr;
     }
     *total = itr;
 }
@@ -279,7 +289,7 @@ void SystemDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity >* beltIDs,
         entry.radius = row.GetInt(4);
 
         beltIDs->push_back(entry);
-        itr ++;
+        ++itr;
     }
     *total = itr;
 
@@ -305,7 +315,7 @@ void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity >* gateIDs,
         entry.radius = row.GetInt(4);
 
         gateIDs->push_back(entry);
-        itr ++;
+        ++itr;
     }
     *total = itr;
 

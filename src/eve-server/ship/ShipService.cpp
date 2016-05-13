@@ -113,10 +113,10 @@ PyBoundObject *ShipService::_CreateBoundObject(Client *c, const PyRep *bind_args
 
     /* only called in space */
 PyResult ShipBound::Handle_Board(PyCallArgs &call) {
-    if (call.client->IsSessionChange()) {
+    /*if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
         return new PyNone;
-    }
+    }*/
     sLog.Log("ShipBound::Handle_Board()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
@@ -188,17 +188,17 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     /* only called in space */
 PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
-    if (call.client->IsSessionChange()) {
+    /*if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
-    }
+    }*/
     sLog.Log("ShipBound::Handle_Eject()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     //no arguments.
 
     Client* pClient = call.client;
     /** @todo create and implement "Weapon Flag"....
-     *      Weapon Flag --  the 60-sec timer activated upon any offensive weapon fire
+     *      Weapon Flag --  the 60-sec timer started upon any offensive weapon activation
      *   this will be in client's criminaltimer object
      *
      * if (pClient->CrimMgr()->IsWeaponFlagActive())
@@ -250,10 +250,10 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 // NOTE  LeaveShip and ActivateShip are working.  dont fuck with them
     /* only called when docked. */
 PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call){
-    if (call.client->IsSessionChange()) {
+    /*if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
-    }
+    }*/
     sLog.Log("ShipBound::Handle_LeaveShip()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     Call_SingleIntegerArg arg;
@@ -282,10 +282,10 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call){
 
 /* only called when docked. */
 PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
-    if (call.client->IsSessionChange()) {
+    /*if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
-    }
+    }*/
     Call_BoardShip args;
     //     .arg1 (newShipID) -  itemID of the ship to be boarded
     //     .arg2 (oldShipID) -  itemID of the current ship

@@ -57,16 +57,17 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)//, ItemData ida
   m_anomMgr(new AnomalyMgr(this, m_services)),
   m_beltMgr(new BeltMgr(this, m_services)),
   m_dunMgr(new DungeonMgr(this, m_services)),
-  m_spawnMgr(new SpawnMgr(this, m_services)),
-  m_entityChanged(false)
+  m_spawnMgr(new SpawnMgr(this, m_services))
 {
+    m_clients.clear();
+    m_entityChanged = false;
     m_db.GetSystemInfo(m_systemID, NULL, &m_regionID, &m_systemName, &m_securityClass, &m_securityRating);
     m_activityTime = 0;
-    _log(COMMON__MESSAGE, "Create SystemManager %p for System %s(%u)", this, m_systemName.c_str(), m_systemID);
+    _log(COMMON__MESSAGE, "Created SystemManager %p for System %s(%u)", this, m_systemName.c_str(), m_systemID);
 }
 
 SystemManager::~SystemManager() {
-    if (m_players || !m_clients.empty()) {
+    if (m_players or !m_clients.empty()) {
         _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %u clients in mmaps", m_systemID, m_players, m_clients.size());
         for (auto cur : m_clients)
             sEntityList.Remove(cur.second);
@@ -95,7 +96,7 @@ SystemManager::~SystemManager() {
 
     SafeDelete(m_anomMgr);
     SafeDelete(m_beltMgr);
-    //SafeDelete(m_dunMgr);
+    SafeDelete(m_dunMgr);
     SafeDelete(m_spawnMgr);
 }
 
@@ -121,6 +122,7 @@ void SystemManager::LoadCosmicMgrs()
 bool SystemManager::LoadSystemStatics() {
     std::vector<DBSystemEntity> entities;
     entities.clear();
+    m_entities.clear();
     if (!m_db.LoadSystemStaticEntities(m_systemID, entities)) {
         _log(INV__ERROR, "Unable to load celestial entities during boot of system %u.", m_systemID);
         return false;
@@ -128,36 +130,43 @@ bool SystemManager::LoadSystemStatics() {
 
     SystemEntity* pSE;
     for (auto cur : entities) {
-        if ( cur.groupID == EVEDB::invGroups::Station ) {
-            /** @todo (Allan) outposts are group::station - may need to hack this */
-            /*  types 12242 - 22298 in group 15 are outposts */
-            /*  types 29323 - 29390 in group 15 are wrecked stations */
-            StationItemRef station = itemFactory()->GetStation(cur.itemID);
-            StationSE *se = new StationSE(station, *(GetServiceMgr()), this);
-            sEntityList.AddStation(cur.itemID, station);
-            pSE = se;
-        } else if ( cur.groupID == EVEDB::invGroups::Asteroid_Belt ) {
-            InventoryItemRef belt = itemFactory()->GetItem(cur.itemID);
-            BeltSE *se = new BeltSE(belt, *(GetServiceMgr()), this);
-            ++m_beltCount;
-            pSE = se;
-        }  else if ( cur.groupID == EVEDB::invGroups::Stargate ) {
-            InventoryItemRef itemRef = itemFactory()->GetItem(cur.itemID);
-            StargateSE *se = new StargateSE(itemRef, *(GetServiceMgr()), this);
-            ++m_gateCount;
-            pSE = se;
-        }  else if ( cur.groupID == EVEDB::invGroups::Planet ) {
-            InventoryItemRef itemRef = itemFactory()->GetItem(cur.itemID);
-            PlanetSE *se = new PlanetSE(itemRef, *(GetServiceMgr()), this);
-            pSE = se;
-        }  else if ( cur.groupID == EVEDB::invGroups::Moon ) {
-            InventoryItemRef itemRef = itemFactory()->GetItem(cur.itemID);
-            MoonSE *se = new MoonSE(itemRef, *(GetServiceMgr()), this);
-            pSE = se;
-        } else {    // suns dont have anything special, so they are generic StaticSystemEntitys
-            InventoryItemRef itemRef = itemFactory()->GetItem(cur.itemID);
-            StaticSystemEntity *se = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
-            pSE = se;
+        switch (cur.groupID) {
+            case EVEDB::invGroups::Station: {
+                /** @todo (Allan) outposts are group::station - may need to hack this */
+                /*  types 12242 - 22298 in group 15 are outposts */
+                /*  types 29323 - 29390 in group 15 are wrecked stations */
+                StationItemRef station = itemFactory()->GetStation(cur.itemID);
+                StationSE *se = new StationSE(station, *(GetServiceMgr()), this);
+                sEntityList.AddStation(cur.itemID, station);
+                pSE = se;
+            } break;
+            case EVEDB::invGroups::Asteroid_Belt: {
+                CelestialObjectRef belt = itemFactory()->GetCelestialObject(cur.itemID);
+                BeltSE *se = new BeltSE(belt, *(GetServiceMgr()), this);
+                ++m_beltCount;
+                pSE = se;
+            } break;
+            case EVEDB::invGroups::Stargate: {
+                CelestialObjectRef itemRef = itemFactory()->GetCelestialObject(cur.itemID);
+                StargateSE *se = new StargateSE(itemRef, *(GetServiceMgr()), this);
+                ++m_gateCount;
+                pSE = se;
+            } break;
+            case EVEDB::invGroups::Planet: {
+                CelestialObjectRef itemRef = itemFactory()->GetCelestialObject(cur.itemID);
+                PlanetSE *se = new PlanetSE(itemRef, *(GetServiceMgr()), this);
+                pSE = se;
+            } break;
+            case EVEDB::invGroups::Moon: {
+                CelestialObjectRef itemRef = itemFactory()->GetCelestialObject(cur.itemID);
+                MoonSE *se = new MoonSE(itemRef, *(GetServiceMgr()), this);
+                pSE = se;
+            } break;
+            default: /*sun*/ {    // suns dont have anything special, so they are generic StaticSystemEntitys
+                CelestialObjectRef itemRef = itemFactory()->GetCelestialObject(cur.itemID);
+                StaticSystemEntity *se = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
+                pSE = se;
+            } break;
         }
         if (!pSE) {
             _log(INV__WARNING, "Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
@@ -166,11 +175,12 @@ bool SystemManager::LoadSystemStatics() {
         bubbles.Add(pSE, false);
         m_entities[cur.itemID] = pSE;
         AddItemToInventory(pSE->GetSelf());
-        if (!pSE->LoadExtras(&m_db)) {
+        if (!pSE->LoadExtras(&m_db))
             _log(INV__WARNING, "Failed to load additional data for entity %u. Continuing.", cur.itemID);
-        }
-        m_entityChanged = true;
     }
+
+    if (m_entities.size())
+        m_entityChanged = true;
 
     _log(SERVER__INIT, "%u Static System entities loaded for system %u", entities.size(), m_systemID);
     entities.clear();
@@ -502,7 +512,7 @@ bool SystemManager::ProcessTic() {
         if (cur->second) {
             if (cur->second->IsDynamicEntity()) /* SE rewrite - ship process is not being called....fix this! */
                 cur->second->ProcessDestiny(); /* call movement on dynamics here */
-            else if (cur->second->IsCelestialEntity())
+            else if (cur->second->IsObjectEntity())
                 cur->second->ProcessOther();   /* call various other functions on celestials here */
         } else {
             sLog.Error("SystemManager::Process()", "SystemEntity* for %u was deleted from m_entities map...removing from my list.", cur->first);
@@ -596,8 +606,10 @@ void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
 
     if (count) {
         --m_players;
-        if (!m_players)
+        if (!m_players) {
+            m_clients.clear();
             m_activityTime = sEntityList.GetStamp();
+        }
         _log(PLAYER__INFO, "Player %s(%u): Removed from player count for %s(%u)", who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID);
     }
 }
@@ -691,8 +703,8 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
             visibleEntities.push_back(cur.second);
     }
 
-    //if (bubble)
-    //   bubble->GetEntities(visibleEntities);
+    if (bubble)
+       bubble->GetEntities(visibleEntities);
 
     ss.slims = new PyList;
     ss.effectStates = new PyList;

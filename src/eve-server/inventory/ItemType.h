@@ -257,7 +257,7 @@ public:
      * @param[in] typeID ID of type to load.
      * @return Pointer to new ItemType object; NULL if failed.
      */
-    static ItemType *Load(ItemFactory &factory, uint32 typeID);
+    static ItemType* Load(ItemFactory &factory, uint32 typeID);
 
     /*
      * Attributes:
@@ -283,11 +283,12 @@ public:
     uint32 marketGroupID() const                        { return m_marketGroupID; }
     double chanceOfDuplicating() const                  { return m_chanceOfDuplicating; }
 
-    double radius() const                               { return attributes.radius(); }
-    double mass() const                                 { return attributes.mass(); }
-    double volume() const                               { return attributes.volume(); }
-    double capacity() const                             { return attributes.capacity(); }
-    EVERace race() const                                { return static_cast<EVERace>(attributes.raceID()); }
+    double radius() const                               { return m_radius; }
+    double mass() const                                 { return m_mass; }
+    double volume() const                               { return m_volume; }
+    double capacity() const                             { return m_capacity; }
+    EVERace race() const                                { return m_raceID; }
+    
 	bool HasEffect(uint32 effectID) const
 	{
 		if(std::find(m_effects.begin(), m_effects.end(), effectID)!=m_effects.end())
@@ -354,13 +355,12 @@ protected:
 
     virtual bool _Load(ItemFactory &factory);
 
+private:
     /*
      * Data members
      */
     const uint32 m_id;
-
     const ItemGroup *m_group;
-
     std::string m_name;
     std::string m_description;
     uint32 m_portionSize;
@@ -368,6 +368,11 @@ protected:
     bool m_published;
     uint32 m_marketGroupID;
     double m_chanceOfDuplicating;
+    double m_radius;
+    double m_mass;
+    double m_volume;
+    double m_capacity;
+    EVERace m_raceID;
 };
 
 /*
