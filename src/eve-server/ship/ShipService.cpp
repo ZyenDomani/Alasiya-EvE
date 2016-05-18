@@ -182,7 +182,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     }
     /* missing something here.  blank space after boarding ship from pod.  */
 
-    //response should be node data and timestamp
+    //response should be nodeid and timestamp
     return new PyLong(Win32TimeNow());
 }
 
@@ -243,7 +243,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     oldShipRef->ChangeOwner(1);
     oldShipRef->SetCustomInfo(ci);
     oldShipRef->SetFlag(flagShipOffline);
-    //response should be node data and timestamp
+    //response should be nodeid and timestamp
     return new PyLong(Win32TimeNow());
 }
 
@@ -310,29 +310,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
 
     if (oldShipRef->typeID() == itemTypeCapsule) {
         // take pod out of station hangar and relocate to system origin
-        oldShipRef->Move(pClient->GetSystemID(), flagCapsule, true);
-        oldShipRef->Relocate(NULL_ORIGIN);
-        /* Create and Call 'macho.Notification::OnItemsChanged' here,
-              [PyTuple 2 items]
-                [PyList 1 items]
-                  [PyPackedRow 40 bytes]
-                    ["itemID" => <1005993655970> [I8]]
-                    ["typeID" => <670> [I4]]
-                    ["ownerID" => <2> [I4]]
-                    ["locationID" => <10> [I8]]
-                    ["flagID" => <0> [I2]]
-                    ["quantity" => <-1> [I4]]
-                    ["groupID" => <29> [I4]]
-                    ["categoryID" => <6> [I4]]
-                    ["customInfo" => <None> [Str]]
-                [PyDict 3 kvp]      <<  no clue what these are yet.
-                  [PyInt 2]
-                  [PyInt 1661059544]
-                  [PyInt 3]
-                  [PyIntegerVar 61000064]
-                  [PyInt 4]
-                  [PyInt 4]
-                  */
+        oldShipRef->SetFlag(flagCapsule);
     }
 
     pClient->BoardShip(newShipRef);
@@ -397,41 +375,8 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     //do session change...
     pClient->UndockFromStation(stationID, systemID, constellationID, regionID, dockPosition, direction);
 
-    /* returns timestamp and nodeid */
-    return nullptr;
-    /** @todo  set online modules based on call.byname(onlineModules) */
-    /* 00:42:18 [SvcCall]   Call Arguments:
-     * 00:42:18 [SvcCall]       Tuple: 2 elements
-     * 00:42:18 [SvcCall]         [ 0] Integer field: 140000697
-     * 00:42:18 [SvcCall]         [ 1] Boolean field: false
-     * 00:42:18 [SvcCall]   Call Named Arguments:
-     * 00:42:18 [SvcCall]     Argument 'onlineModules':
-     * 00:42:18 [SvcCall]         Dictionary: 12 entries
-     * 00:42:18 [SvcCall]           [ 0] Key: Integer field: 27
-     * 00:42:18 [SvcCall]           [ 0] Value: Integer field: 140000694
-     * 00:42:18 [SvcCall]           [ 1] Key: Integer field: 28
-     * 00:42:18 [SvcCall]           [ 1] Value: Integer field: 140000693
-     * 00:42:18 [SvcCall]           [ 2] Key: Integer field: 29
-     * 00:42:18 [SvcCall]           [ 2] Value: Integer field: 140000695
-     * 00:42:18 [SvcCall]           [ 3] Key: Integer field: 30
-     * 00:42:18 [SvcCall]           [ 3] Value: Integer field: 140000698
-     * 00:42:18 [SvcCall]           [ 4] Key: Integer field: 31
-     * 00:42:18 [SvcCall]           [ 4] Value: Integer field: 140000867
-     * 00:42:18 [SvcCall]           [ 5] Key: Integer field: 11
-     * 00:42:18 [SvcCall]           [ 5] Value: Integer field: 140000703
-     * 00:42:18 [SvcCall]           [ 6] Key: Integer field: 12
-     * 00:42:18 [SvcCall]           [ 6] Value: Integer field: 140000699
-     * 00:42:18 [SvcCall]           [ 7] Key: Integer field: 13
-     * 00:42:18 [SvcCall]           [ 7] Value: Integer field: 140000701
-     * 00:42:18 [SvcCall]           [ 8] Key: Integer field: 14
-     * 00:42:18 [SvcCall]           [ 8] Value: Integer field: 140000700
-     * 00:42:18 [SvcCall]           [ 9] Key: Integer field: 15
-     * 00:42:18 [SvcCall]           [ 9] Value: Integer field: 140000706
-     * 00:42:18 [SvcCall]           [10] Key: Integer field: 19
-     * 00:42:18 [SvcCall]           [10] Value: Integer field: 140000705
-     * 00:42:18 [SvcCall]           [11] Key: Integer field: 20
-     * 00:42:18 [SvcCall]           [11] Value: Integer field: 140000868
-     */
+    //response should be nodeid and timestamp
+    return new PyLong(Win32TimeNow());
 }
 
 PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {

@@ -76,6 +76,17 @@ NPCAIMgr::NPCAIMgr(NPC* who)
 
     if (m_entityAttackRange < 10000)   // most of these are low...under 6k  that sux for targeting
         m_entityAttackRange *= 3;
+    /*
+     AttrAI_ShouldUseTargetSwitching =    1648,
+     AttrAI_ShouldUseSecondaryTarget =    1649,
+     AttrAI_ShouldUseSignatureRadius =    1650,
+     AttrAI_ChanceToNotTargetSwitch = 1651,
+     AttrAI_ShouldUseEffectMultiplier =   1652,
+     AttrAI_ImmuneToSuperWeapon = 1654,
+     AttrAI_PreferredSignatureRadius =    1655,
+     AttrAI_TankingModifierDrone =    1656,
+     AttrAI_TankingModifier = 1657,
+     */
 }
 
 void NPCAIMgr::Process() {

@@ -64,6 +64,7 @@ PyRep *StandingDB::GetFactionStandings() {
 PyRep *StandingDB::GetCharStandings(Client *pClient) {
     /*  get faction, corp, agent for this char
      *      will need more work to get char corps/alliances/factions in the db.
+     * need to look at how to push_back to a &res 
      */
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT fromID, standing FROM repFactions WHERE toID = " // should this be warfactionID ??
@@ -72,6 +73,7 @@ PyRep *StandingDB::GetCharStandings(Client *pClient) {
     sDatabase.RunQuery(res, "SELECT fromID, standing FROM repNPCCorp WHERE toID = %u", pClient->GetCorporationID());
     sDatabase.RunQuery(res, "SELECT fromID, standing FROM repAgent WHERE toID = %u", pClient->GetCharacterID());
     */
+
     return DBResultToCRowset(res);
 }
 

@@ -486,6 +486,10 @@ void ServiceDB::SetServerOnlineStatus(bool online) {
         "UPDATE character_, account"
         " SET character_.online = 0,"
         "     account.online = 0");
+    
+    sDatabase.RunQuery( err,
+        "DELETE FROM chrPausedSkillQueue"
+        " WHERE 1");
 }
 
 void ServiceDB::SetAccountOnlineStatus(uint32 accountID, bool online) {

@@ -6,6 +6,17 @@
  * @date:   09 March 2016
  */
 
+/*  concord response time
+ * sysSec - no Spawn : existing Spawns
+ * 1.0 - 06:12
+ * 0.9 - 07:13
+ * 0.7 - 08:14
+ * 0.6 - 10:16
+ * 0.5 - 13:19
+ * 0.3 - 15:20
+ * 0.1 - 20:30
+ */
+
 /*  note.....this taken straight from NPC */
 
 #include "Concord.h"
@@ -149,7 +160,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
-            warp.effectStamp = -1;   //unknown value  seen many -1, few other random 4-5 digits
+            warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
             warp.unknown_x = target.x;
             warp.unknown_y = target.y;
             warp.unknown_z = target.z;

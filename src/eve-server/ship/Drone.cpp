@@ -232,7 +232,7 @@ void Drone::EncodeDestiny( Buffer& into )
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
-            warp.effectStamp = -1;   //unknown value  seen many -1, few other random 4-5 digits
+            warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
             warp.unknown_x = target.x;
             warp.unknown_y = target.y;
             warp.unknown_z = target.z;

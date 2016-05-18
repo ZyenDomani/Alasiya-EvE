@@ -124,13 +124,12 @@ void EntityList::Process() {
 
         std::map<uint32, SystemManager*>::iterator cur = m_systems.begin();
         while (cur != m_systems.end()) {
-            if (!cur->second) {
-                /* this shouldnt happen.  log error to make note */
+            if (!cur->second) { /* this shouldnt happen.  log error to make note */
                 sLog.Error(" EntityList::Proc", "Deleting System %u", cur->first);
                 SafeDelete(cur->second);
                 cur = m_systems.erase(cur);
                 continue;
-            } else if (!cur->second->ProcessTic()) {
+            } else if (!cur->second->ProcessTic()) {    /* Process each loaded system */
                 cur->second->UnloadSystem();
                 SafeDelete(cur->second);
                 cur = m_systems.erase(cur);
@@ -237,7 +236,8 @@ void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple**
 
 void EntityList::Broadcast(const PyAddress &dest, EVENotificationStream &noti) const {
     for (auto cur : m_clients)
-        cur->SendNotification(dest, noti);
+        if (cur->IsDocked())
+            cur->SendNotification(dest, noti);
 }
 
 void EntityList::Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const {

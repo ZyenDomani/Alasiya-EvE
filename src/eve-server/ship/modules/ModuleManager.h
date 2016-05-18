@@ -155,6 +155,8 @@ public:
     GenericModule* GetModule(EVEItemFlags flag);
     GenericModule* GetModule(uint32 itemID);
 
+    void StripModules();
+
 	uint32 GetAvailableSlotInBank(EveEffectEnum slotBank);
 
     //batch processes handlers
@@ -354,6 +356,7 @@ public:
     void LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag);
     void UnloadCharge(EVEItemFlags flag);
     void UnloadAllModules();
+    void StripModules();
     void UpdateModules();
     void UpdateModules(EVEItemFlags flag);
     bool VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2);

@@ -119,6 +119,7 @@ PlanetMgrService::~PlanetMgrService() {
 }
 
 PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+    /* sends planetID */
     _log(PLANET__INFO, "PlanetMgrService bind request for:");
     bind_args->Dump(PLANET__INFO, "    ");
     if(!bind_args->IsInt()) {
@@ -202,9 +203,19 @@ PyResult PlanetMgrBound::Handle_GetCommandPinsForPlanet(PyCallArgs &call) {
     return nullptr;
 }
 
+//17:39:33 L PlanetMgrBound: Handle_GetExtractorsForPlanet() size=1
 PyResult PlanetMgrBound::Handle_GetExtractorsForPlanet(PyCallArgs &call) {
+    /*
+     * 17:39:33 [PlanetCallDump]   Call Arguments:
+     * 17:39:33 [PlanetCallDump]       Tuple: 1 elements
+     * 17:39:33 [PlanetCallDump]         [ 0] Integer field: 40216272
+     */
+
+    // NOTE this gets ALL extractors on this planet
     sLog.Log("PlanetMgrBound", "Handle_GetExtractorsForPlanet() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
+
+    return nullptr;
 }
 
 PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
@@ -213,7 +224,34 @@ PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
 
     return nullptr;
 }
-
+/*
+23:38:37 [ClientCallRep] GetResourceData call made to
+23:38:37 [BindDump] NodeID: 888444 BindID: 109 calling GetResourceData in service manager 'PlanetMgrBound'
+23:38:37 [BindDump]   Call Arguments:
+23:38:37 [BindDump]       Tuple: 1 elements
+23:38:37 [BindDump]         [ 0] Object:
+23:38:37 [BindDump]         [ 0]   Type: String: 'util.KeyVal'
+23:38:37 [BindDump]         [ 0]   Args: Dictionary: 8 entries
+23:38:37 [BindDump]         [ 0]   Args:   [ 0] Key: String: 'proximity'
+23:38:37 [BindDump]         [ 0]   Args:   [ 0] Value: Integer field: 4
+23:38:37 [BindDump]         [ 0]   Args:   [ 1] Key: String: 'updateTime'
+23:38:37 [BindDump]         [ 0]   Args:   [ 1] Value: Integer field: 0
+23:38:37 [BindDump]         [ 0]   Args:   [ 2] Key: String: 'advancedPlanetology'
+23:38:37 [BindDump]         [ 0]   Args:   [ 2] Value: Integer field: 0
+23:38:37 [BindDump]         [ 0]   Args:   [ 3] Key: String: 'remoteSensing'
+23:38:37 [BindDump]         [ 0]   Args:   [ 3] Value: Integer field: 2
+23:38:37 [BindDump]         [ 0]   Args:   [ 4] Key: String: 'newBand'
+23:38:37 [BindDump]         [ 0]   Args:   [ 4] Value: Integer field: 15
+23:38:37 [BindDump]         [ 0]   Args:   [ 5] Key: String: 'planetology'
+23:38:37 [BindDump]         [ 0]   Args:   [ 5] Value: Integer field: 0
+23:38:37 [BindDump]         [ 0]   Args:   [ 6] Key: String: 'oldBand'
+23:38:37 [BindDump]         [ 0]   Args:   [ 6] Value: Integer field: 0
+23:38:37 [BindDump]         [ 0]   Args:   [ 7] Key: String: 'resourceTypeID'
+23:38:37 [BindDump]         [ 0]   Args:   [ 7] Value: Integer field: 2268
+23:38:37 [BindDump]   Call Named Arguments:
+23:38:37 [BindDump]     Argument 'machoVersion':
+23:38:37 [BindDump]         Integer field: 1
+*/
 PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
     /* TODO, Figure out how to populate PyBuffer with more than char.
      *         and figure out the client buffer structure, etc.
@@ -508,9 +546,21 @@ PyResult PlanetMgrBound::Handle_GMForceInstallProgram(PyCallArgs &call) {
     return nullptr;
 }
 
+//15:15:02[00m L [37;01mPlanetMgrBound: [00mHandle_GMGetLocalDistributionReport() size=2
 PyResult PlanetMgrBound::Handle_GMGetLocalDistributionReport(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GMGetLocalDistributionReport() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
+    /*
+     *      return self.remoteHandler.GMGetLocalDistributionReport(self.planetID, (surfacePoint.theta, surfacePoint.phi))
+     */
+    /*
+     1 5*:15:02 [PlanetCallDump]   Call Arguments:
+     15:15:02 [PlanetCallDump]       Tuple: 2 elements
+     15:15:02 [PlanetCallDump]         [ 0] Integer field: 40216265      << planetID
+     15:15:02 [PlanetCallDump]         [ 1] Tuple: 2 elements
+     15:15:02 [PlanetCallDump]         [ 1]   [ 0] Real field: 0.359286  << theta
+     15:15:02 [PlanetCallDump]         [ 1]   [ 1] Real field: 1.014020  << phi
+     sLog.Log("PlanetMgrBound", "Handle_GMGetLocalDistributionReport() size=%u", call.tuple->size() );
+     call.Dump(PLANET__DUMP);
+     */
 
     return nullptr;
 }

@@ -41,14 +41,16 @@ PyResult PyCallable::Call(const std::string &method, PyCallArgs &args) {
     try {
         PyResult res = m_serviceDispatch->Dispatch(method, args);
 
-        _log(SERVICE__CALL_TRACE, "Call %s returned:", method.c_str());
-        res.ssResult->Dump(SERVICE__CALL_TRACE, "      ");
-
+        if (is_log_enabled(SERVICE__CALL_TRACE)) {
+            _log(SERVICE__CALL_TRACE, "Call %s returned:", method.c_str());
+            res.ssResult->Dump(SERVICE__CALL_TRACE, "      ");
+        }
         return res;
     } catch(PyException &e) {
-        _log(SERVICE__CALL_TRACE, "Call %s threw exception:", method.c_str());
-        e.ssException->Dump(SERVICE__CALL_TRACE, "      ");
-
+        if (is_log_enabled(SERVICE__CALL_TRACE)) {
+            _log(SERVICE__CALL_TRACE, "Call %s threw exception:", method.c_str());
+            e.ssException->Dump(SERVICE__CALL_TRACE, "      ");
+        }
         throw;
     }
 }

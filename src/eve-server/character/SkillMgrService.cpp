@@ -91,15 +91,18 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call) 
     // expected data: for (itemID, typeID, operation, value,) in modifiers:
     /*
      * client sends attrib# of stat in question...
+            [PyString "GetCharacterAttributeModifiers"]
+            [PyTuple 1 items]
+              [PyInt 165]
      * we return this...
         [PyList 1 items]
           [PyTuple 4 items]
             [PyIntegerVar 1866309449]   << implantID
             [PyInt 9943]                << implantTypeID
-            [PyInt 2]                   << dunno
-            [PyFloat 3]                 << dunno
+            [PyInt 2]                   << operation
+            [PyFloat 3]                 << value
             */
-    return new PyTuple(0);
+    return new PyList;
 }
 
 PyResult SkillMgrBound::Handle_CharStopTrainingSkill(PyCallArgs &call) {
@@ -261,15 +264,14 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
 
     CharacterRef ch = call.client->GetChar();
 
-    std::vector<int32>::iterator cur = args.skills.begin();
-    for (; cur != args.skills.end(); cur++) {
-        SkillRef skill = m_manager->item_factory->GetSkill( *cur );
+    for (auto cur : args.skills)  {
+        SkillRef skill = m_manager->item_factory->GetSkill(cur);
         if (!skill) {
-            codelog( ITEM__ERROR, "%s: failed to load skill item %u for injection.", call.client->GetName(), *cur );
+            codelog( ITEM__ERROR, "%s: failed to load skill item %u for injection.", call.client->GetName(), cur );
             continue;
         }
 
-        if (!ch->InjectSkillIntoBrain((SkillRef)skill)) {
+        if (!ch->InjectSkillIntoBrain(skill)) {
             /** @todo build and send UserError about injection failure. */
             codelog(ITEM__ERROR, "%s: Injection of skill %u failed", call.client->GetName(), skill->itemID() );
         }

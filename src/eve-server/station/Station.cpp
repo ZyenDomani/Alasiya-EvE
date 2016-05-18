@@ -202,7 +202,7 @@ StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManag
     station->SetAttribute(AttrMass,             station->type().mass());
     station->SetAttribute(AttrRadius,           station->type().radius());
     station->SetAttribute(AttrVolume,           station->type().volume());
-    //station->SaveAttributes();
+    station->SaveAttributes();
 }
 
 void StationSE::EncodeDestiny( Buffer& into )
@@ -237,7 +237,7 @@ if (0) {
 }
 
 PyDict *StationSE::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for StationEntity %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(DESTINY__MESSAGE, "MakeSlimItem for StationEntity %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));

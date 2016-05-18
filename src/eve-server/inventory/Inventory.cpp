@@ -62,7 +62,6 @@ bool Inventory::LoadContents(ItemFactory* factory) {
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     /* rewrote logic, optimized, and fixed "empty inventory" for new chars in existing systems  -allan 22.2.16 */
-    /** @todo this still needs work.  */
     if (IsStation(m_inventoryID)) {
         if (factory->GetUsingClient()) {
             if (factory->GetUsingClient()->IsHangarLoaded(m_inventoryID))
@@ -144,7 +143,6 @@ void Inventory::DeleteContents(ItemFactory &factory)
 {
     if (!mContentsLoaded) return;
 
-    //LoadContents(factory);
     std::map<uint32, InventoryItemRef>::iterator cur = mContents.begin();
     while (cur != mContents.end()) {
         InventoryItemRef i = cur->second;
@@ -159,20 +157,18 @@ void Inventory::DeleteContents(ItemFactory &factory)
 CRowSet* Inventory::List(EVEItemFlags _flag, uint32 forOwner) const
 {
     PyList *keywords = new PyList();
-    keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
-    keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
-
+        keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
+        keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
     DBRowDescriptor* header = new DBRowDescriptor(keywords);
-    header->AddColumn("itemID",     DBTYPE_I8);
-    header->AddColumn("typeID",     DBTYPE_I4);
-    header->AddColumn("ownerID",    DBTYPE_I4);
-    header->AddColumn("locationID", DBTYPE_I8);
-    header->AddColumn("flagID",     DBTYPE_I2);
-    header->AddColumn("quantity",   DBTYPE_I4);
-    header->AddColumn("groupID",    DBTYPE_I2);
-    header->AddColumn("categoryID", DBTYPE_I2);
-    header->AddColumn("customInfo", DBTYPE_STR);
-
+        header->AddColumn("itemID",     DBTYPE_I8);
+        header->AddColumn("typeID",     DBTYPE_I4);
+        header->AddColumn("ownerID",    DBTYPE_I4);
+        header->AddColumn("locationID", DBTYPE_I8);
+        header->AddColumn("flagID",     DBTYPE_I2);
+        header->AddColumn("quantity",   DBTYPE_I4);
+        header->AddColumn("groupID",    DBTYPE_I2);
+        header->AddColumn("categoryID", DBTYPE_I2);
+        header->AddColumn("customInfo", DBTYPE_STR);
     CRowSet* rowset = new CRowSet(&header);
     List(rowset, _flag, forOwner);
     return rowset;

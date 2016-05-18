@@ -33,7 +33,7 @@ const EvilNumber EvilTime_Minute = EvilTime_Second * 60;
 const EvilNumber EvilTime_Hour = EvilTime_Minute * 60;
 const EvilNumber EvilTime_Day = EvilTime_Hour * 24;
 const EvilNumber EvilTime_Month = EvilTime_Day * 30;
-const EvilNumber EvilTime_Year = EvilTime_Month * 12;
+const EvilNumber EvilTime_Year = EvilTime_Month * 12 + 5;
 
 const EvilNumber EvilPI = 3.14159265358979323846;
 const EvilNumber EvilE = 2.71828182845904523536;
@@ -343,17 +343,15 @@ bool EvilNumber::isFloat()
 
 int64 EvilNumber::get_int()
 {
-    if( mType != evil_number_int )
+    if (mType == evil_number_float)
         return (int64)mValue.fVal;
-
     return mValue.iVal;
 }
 
 double EvilNumber::get_float()
 {
-    if( mType != evil_number_float )
+    if (mType == evil_number_int)
         return (double)mValue.iVal;
-
     return mValue.fVal;
 }
 

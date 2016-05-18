@@ -152,9 +152,10 @@ typedef long LibError;
  * Ref: ServerError 25520. << Ship::InsureShip() - fraction is 0
  * Ref: ServerError 25521. << Ship::InsureShip() - fraction is < 0.05 -- ship is insured @ 30%
  * Ref: ServerError 25610. << MSAC::_calculateNewValue() - effectiveness is 0
+ * Ref: ServerError 25620. << MMAC::_calculateNewValue() - effectiveness is 0
  * Ref: ServerError 31110. << commandDispatcher::Execute()
  */
-//  throw PyException( MakeCustomError("Internal Server Error.  Ref: ServerError 15610"));
+//  client->SendErrorMsg("Internal Server Error.  Ref: ServerError 15610"));
 
 //-----------------------------------------------------------------------------
 //  this is example used in the system i borrowed this code from...

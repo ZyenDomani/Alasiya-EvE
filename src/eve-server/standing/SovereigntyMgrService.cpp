@@ -46,6 +46,29 @@ SovereigntyMgrService::~SovereigntyMgrService() {
 }
 
 PyResult SovereigntyMgrService::Handle_GetSystemSovereigntyInfo(PyCallArgs &call) {
+    /*
+            [PyString "GetSystemSovereigntyInfo"]
+            [PyTuple 1 items]
+              [PyInt 30000302]      << systemID
+    {returns}
+      [PySubStream 116 bytes]
+        [PyObjectData Name: util.KeyVal]
+          [PyDict 7 kvp]
+            [PyString "contested"]
+            [PyInt 0]
+            [PyString "corporationID"]
+            [PyInt 98049918]
+            [PyString "claimTime"]
+            [PyIntegerVar 129743663400000000]
+            [PyString "claimStructureID"]
+            [PyIntegerVar 1005712174146]
+            [PyString "hubID"]
+            [PyIntegerVar 1005900797500]
+            [PyString "allianceID"]
+            [PyInt 99000289]
+            [PyString "solarSystemID"]
+            [PyInt 30000302]
+              */
     Call_SingleIntegerArg args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode arguments");

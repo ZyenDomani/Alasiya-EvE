@@ -32,6 +32,15 @@
 #include "ship/modules/mining_modules/MiningLaser.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
+/*
+    AttrIceHarvestCycleBonus = 780,
+    AttrSpecialisationAsteroidGroup = 781,
+    AttrSpecialisationAsteroidYieldMultiplier = 782,
+    AttrCrystalVolatilityChance = 783,
+    AttrCrystalVolatilityDamage = 784,
+    AttrCrystalsGetDamaged = 786,
+    AttrSpecialtyMiningAmount = 789,
+    */
 
 MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)

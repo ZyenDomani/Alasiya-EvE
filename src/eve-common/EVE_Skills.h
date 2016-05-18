@@ -9,16 +9,16 @@
 #define EVE_SKILLS_H
 
 typedef enum {
-    skillEventGift                          = 24,
-    skillEventCharCreation                  = 33,
-    skillEventClonePenalty                  = 34,
-    skillEventTaskMaster                    = 35,
-    skillEventTrainingStarted               = 36,
-    skillEventTrainingComplete              = 37,
-    skillEventTrainingCancelled             = 38,
-    skillEventGMGive                        = 39,
-    skillEventQueueTrainingCompleted        = 53,
-    skillEventSkillInjected                 = 56,
+    skillEventGift                          = 24,   //Unknown
+    skillEventCharCreation                  = 33,   //Unknown
+    skillEventClonePenalty                  = 34,   //Skill Clone Penalty
+    skillEventTaskMaster                    = 35,   //Unknown
+    skillEventTrainingStarted               = 36,   //Skill Training Started
+    skillEventTrainingComplete              = 37,   //Skill Training Complete
+    skillEventTrainingCancelled             = 38,   //Skill Training Cancelled
+    skillEventGMGive                        = 39,   //GM Skill Gift
+    skillEventQueueTrainingCompleted        = 53,   //Skill Training Complete
+    skillEventSkillInjected                 = 56,   //
     skillEventRemoval                       = 177,
     /** @todo cant use these below, as current eventID is uint8 */
     skillEventHaltedAccountLapsed           = 260,

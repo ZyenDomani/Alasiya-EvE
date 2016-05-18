@@ -317,6 +317,7 @@ public:
 	void ForceChanged() { ; }//mChanged = true; }
 
     bool Delete();
+    bool DeleteAttribute(uint32 attributeID);
 
     // load the default attributes that come with the itemID
 

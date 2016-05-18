@@ -26,9 +26,14 @@ UPDATE `market_orders` SET `price`=1000 WHERE `price`=0
 set @stationid=60014809; --Ryddinjorn VI - Moon 2 - Pator Tech School
 set @solarSystemID=30003410; --Ryddinjorn  - minmatar noob system for pator tech
 set @regionid=10000042;  --metropolis
+-----------------
+set @stationid=60014137;    --Ibaria III - Thukker Mix Warehouse(60014137)
+set @solarSystemID=30000053 --Ibaria
+set @regionid=10000001;     --Derelik
+
 create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int);
 truncate table tStations;
-insert into tStations values (60014809, 30003410, 10000042);
+insert into tStations values (60014137, 30000053, 10000001);
 
 -- actual seeding
 INSERT INTO market_orders (typeID, charID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState, minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)

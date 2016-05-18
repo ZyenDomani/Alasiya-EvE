@@ -113,18 +113,19 @@ enum SESSION_TYPE
 };
 
 //these came from the 'constants' object:
+// updated for change in crucible.  -allan 16May16
 enum EVEItemChangeType {
     ixItemID        = 0,    //also ixLauncherCapacity?
     ixTypeID        = 1,    //also ixLauncherUsed = 1,
     ixOwnerID       = 2,    //also ixLauncherChargeItem?
     ixLocationID    = 3,
     ixFlag          = 4,
-    ixContraband    = 5,
-    ixSingleton     = 6,
-    ixGroupID       = 8,
-    ixQuantity      = 7,
-    ixCategoryID    = 9,
-    ixCustomInfo    = 10,
+    ixQuantity      = 5,
+    ixGroupID       = 6,
+    ixCategoryID    = 7,
+    ixCustomInfo    = 8,
+    ixStackSize     = 9,
+    ixSingleton     = 10,
     ixSubitems      = 11
 };
 
@@ -277,7 +278,44 @@ enum EVETutorialTypes {
  * mailinglistMaxMembersUpdated = 1000
  * mailingListMaxNameSize = 60
  */
-
+/*
+bloodline11Type = 1383
+bloodline5Type = 1373
+bloodline4Type = 1380
+bloodline2Type = 1375
+bloodline1Type = 1376
+bloodline7Type = 1377
+bloodline8Type = 1378
+bloodline12Type = 1384
+bloodline13Type = 1385
+bloodline10Type = 1382
+bloodline6Type = 1374
+bloodline3Type = 1379
+bloodline9Type = 1381
+bloodline14Type = 1386
+bloodlineAchura = 11
+bloodlineAmarr = 5
+bloodlineBrutor = 4
+bloodlineCivire = 2
+bloodlineDeteis = 1
+bloodlineGallente = 7
+bloodlineIntaki = 8
+bloodlineJinMei = 12
+bloodlineKhanid = 13
+bloodlineModifier = 10
+bloodlineNiKunni = 6
+bloodlineSebiestor = 3
+bloodlineStatic = 9
+bloodlineVherokior = 14
+raceAmarr = 4
+raceCaldari = 1
+raceGallente = 8
+raceJove = 16
+raceMinmatar = 2
+racePirates = 32
+raceSleepers = 64
+raceORE = 128
+*/
 
 /*
  * typedef enum {

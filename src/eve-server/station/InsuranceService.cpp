@@ -169,10 +169,10 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     else if (paymentFraction == 0.3) fraction = 1.0f;
 
     if (fraction == 0){
-        call.client->SendInfoModalMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 25520.");
+        call.client->SendErrorMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 25520.");
         return new PyNone;
     } else if (fraction == 0.3)
-        call.client->SendInfoModalMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 25521.");
+        call.client->SendErrorMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 25521.");
 
     // delete old insurance, if any
     // TODO  verify they want to cancel old insurance before deleting

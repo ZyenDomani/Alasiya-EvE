@@ -351,19 +351,6 @@ CREATE TABLE `chrKillTable` (
   KEY `finalCharacterID` (`finalCharacterID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
-
--- Table structure for table `crtCategories`
---
-DROP TABLE IF EXISTS `crtCategories`;
-CREATE TABLE `crtCategories` (
-  `categoryID` tinyint(3) unsigned NOT NULL,
-  `description` varchar(500) DEFAULT NULL,
-  `categoryName` varchar(256) DEFAULT NULL,
-  `categoryNameID` int(10) unsigned DEFAULT '0',
-  `dataID` int(10) unsigned DEFAULT '0',
-  PRIMARY KEY (`categoryID`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 -- Table structure for table `chrShipFittings`
 --
 CREATE TABLE `chrShipFittings` (
@@ -385,6 +372,12 @@ ALTER TABLE `staOperations` ADD `descriptionID` INT(3) NOT NULL DEFAULT '0' AFTE
 UPDATE `dgmTypeAttributes` SET `valueInt`=0,`valueFloat`=NULL WHERE `attributeID`=280 AND `valueFloat`=0;
 /* set skill time constanant to int from float */
 UPDATE `dgmTypeAttributes` SET `valueInt`=`valueFloat`, `valueFloat`=NULL WHERE `attributeID`=275 AND `valueFloat` IS NOT NULL;
+
+/* update `crtCategories` to add categoryNameID and dataID found in cache */
+ALTER TABLE `crtCategories` ADD `categoryNameID` int(10) unsigned DEFAULT '0';
+ALTER TABLE `crtCategories` ADD `dataID` int(10) unsigned DEFAULT '0';
+
+ALTER TABLE `crtClasses` ADD `dataID` int(10) unsigned DEFAULT '0';
 
 /* update beacon type 10124 IsGlobal attribute to true */
 INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES ('10124', '1207', '1', NULL);

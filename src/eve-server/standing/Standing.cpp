@@ -114,7 +114,7 @@ PyResult Standing::Handle_GetCharStandings(PyCallArgs &call) {
         m_manager->cache_service->GiveCache(method_id, &t);
     }
 
-    return(m_manager->cache_service->MakeObjectCachedSessionMethodCallResult(method_id, "charID"));
+    return m_manager->cache_service->MakeObjectCachedSessionMethodCallResult(method_id, "charID");
 }
 
 PyResult Standing::Handle_GetCorpStandings(PyCallArgs &call) {
@@ -129,7 +129,7 @@ PyResult Standing::Handle_GetCorpStandings(PyCallArgs &call) {
         m_manager->cache_service->GiveCache(method_id, &t);
     }
 
-    return (m_manager->cache_service->MakeObjectCachedSessionMethodCallResult(method_id, "corpID"));
+    return m_manager->cache_service->MakeObjectCachedSessionMethodCallResult(method_id, "corpID");
 }
 
 PyResult Standing::Handle_GetNPCNPCStandings(PyCallArgs &call) {

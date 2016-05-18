@@ -130,7 +130,7 @@ class CelestialSE
 {
 public:
     CelestialSE(CelestialObjectRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~CelestialSE()                          { /* Do nothing here */ }
+    virtual ~CelestialSE()                              { /* Do nothing here */ }
 
     /* class type pointer querys. */
     virtual const CelestialSE* GetCelestialSE()         { return this; }

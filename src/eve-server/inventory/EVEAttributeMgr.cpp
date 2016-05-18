@@ -630,6 +630,16 @@ bool AttributeMap::Delete() {
     return true;
 }
 
+bool AttributeMap::DeleteAttribute(uint32 attributeID) {
+    DBerror err;
+    if (!sDatabase.RunQuery(err, "DELETE FROM entity_default_attributes WHERE itemID = %u AND attributeID = %u", mItem.itemID(), attributeID)) {
+        _log(DATABASE__ERROR, "AttributeMap - unable to delete attributeID %u for itemID %u", attributeID, mItem.itemID());
+        return false;
+    }
+    mChanged = false; // just synced with database, no need to save
+    return true;
+}
+
 AttributeMap::AttrMapItr AttributeMap::begin() {
     return mAttributes.begin();
 }

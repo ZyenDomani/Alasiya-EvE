@@ -266,13 +266,14 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_GetCharacterBaseAttributes(PyCallArgs& call)
 {
     CharacterRef cref = call.client->GetChar();
+    uint8 mod = sConfig.character.statMultiplier;
 
     PyDict* result = new PyDict();
-        result->SetItem(new PyInt(AttrIntelligence), new PyInt(static_cast<int32>(cref->GetAttribute(AttrIntelligence).get_int())));
-        result->SetItem(new PyInt(AttrPerception), new PyInt(static_cast<int32>(cref->GetAttribute(AttrPerception).get_int())));
-        result->SetItem(new PyInt(AttrCharisma), new PyInt(static_cast<int32>(cref->GetAttribute(AttrCharisma).get_int())));
-        result->SetItem(new PyInt(AttrWillpower), new PyInt(static_cast<int32>(cref->GetAttribute(AttrWillpower).get_int())));
-        result->SetItem(new PyInt(AttrMemory), new PyInt(static_cast<int32>(cref->GetAttribute(AttrMemory).get_int())));
+        result->SetItem(new PyInt(AttrIntelligence), new PyInt(static_cast<int32>(cref->GetAttribute(AttrIntelligence).get_int() * mod)));
+        result->SetItem(new PyInt(AttrPerception), new PyInt(static_cast<int32>(cref->GetAttribute(AttrPerception).get_int() * mod)));
+        result->SetItem(new PyInt(AttrCharisma), new PyInt(static_cast<int32>(cref->GetAttribute(AttrCharisma).get_int() * mod)));
+        result->SetItem(new PyInt(AttrWillpower), new PyInt(static_cast<int32>(cref->GetAttribute(AttrWillpower).get_int() * mod)));
+        result->SetItem(new PyInt(AttrMemory), new PyInt(static_cast<int32>(cref->GetAttribute(AttrMemory).get_int() * mod)));
     return result;
 }
 
@@ -558,6 +559,12 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
     uint32 callTupleSize = (uint32)call.tuple->size(), itemID = 0, effect = 0;
 
     if (callTupleSize == 2) {
+        /*
+          [PyString "Activate"]     << onlining a pos module
+          [PyTuple 2 items]
+            [PyIntegerVar 1002332856217]
+            [PyInt 901]             << effectOnlineForStructures
+        */
         // This call is for Anchor/Unanchor a POS structure or Cargo Container,
         //   get the new flag value and change the item referenced:
         if (call.tuple->items.at(0)->IsInt()) {
@@ -575,11 +582,13 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
                  * 2) effectAnchorDropForStructures = 1022
                  * 3) effectAnchorLift = 650
                  * 4) effectAnchorLiftForStructures = 1023
+                 *
+                 ** @todo  many more effects to send for.....look into later.
+                 * effectOnlineForStructures = 901
                  */
 
-                // Send notification SFX appropriate effect for the value effect value supplied:
                 switch(effect) {
-                    case 649:
+                    case 649: //effectAnchorDrop;
                         //pClient->GetShipSE()->DestinyMgr()->SendContainerAnchor( pClient->services().item_factory->GetCargoContainer( itemID ) );
                         break;
                     case 650:
@@ -813,7 +822,12 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     PyDict* rsp = new PyDict;
     rsp->SetItemString("activeShipID", new PyInt(pClient->GetShipID()));
     /* Setting "locationInfo" in the Dictionary */
-    /** @todo  havent found a populated item in packet logs */
+    /** @todo  havent found a populated item in packet logs
+     *
+        def ProcessLocationInfo(self, cData):
+            for locationID, datas in cData.iteritems():
+        --still dont know what 'datas' are
+     */
     rsp->SetItemString("locationInfo", new PyNone);
 
     /* Setting "shipModifiedCharAttribs" in the Dictionary */

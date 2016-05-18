@@ -51,7 +51,47 @@ NotificationMgrService::~NotificationMgrService() {
 }
 
 PyResult NotificationMgrService::Handle_GetByGroupID(PyCallArgs &call)
-{
+{ /*
+            [PyString "GetByGroupID"]
+            [PyTuple 1 items]
+              [PyInt 9]
+        {returns}
+        [PyObjectEx Type2]
+          [PyTuple 2 items]
+            [PyTuple 1 items]
+              [PyToken dbutil.CRowset]
+            [PyDict 1 kvp]
+              [PyString "header"]
+              [PyObjectEx Normal]
+                [PyTuple 2 items]
+                  [PyToken blue.DBRowDescriptor]
+                  [PyTuple 1 items]
+                    [PyTuple 8 items]
+                      [PyTuple 2 items]
+                        [PyString "notificationID"]
+                        [PyInt 3]
+                      [PyTuple 2 items]
+                        [PyString "typeID"]
+                        [PyInt 3]
+                      [PyTuple 2 items]
+                        [PyString "senderID"]
+                        [PyInt 3]
+                      [PyTuple 2 items]
+                        [PyString "receiverID"]
+                        [PyInt 3]
+                      [PyTuple 2 items]
+                        [PyString "processed"]
+                        [PyInt 11]
+                      [PyTuple 2 items]
+                        [PyString "created"]
+                        [PyInt 64]
+                      [PyTuple 2 items]
+                        [PyString "data"]
+                        [PyInt 130]
+                      [PyTuple 2 items]
+                        [PyString "deleted"]
+                        [PyInt 11]
+              */
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {

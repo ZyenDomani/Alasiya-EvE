@@ -167,7 +167,7 @@
     <tupleInline>
       <stringInline value="OnSkillStartTraining" />
       <int name="itemID" />
-      <int name="endOfTraining" />
+      <real name="endOfTraining" />
     </tupleInline>
   </elementDef>
 

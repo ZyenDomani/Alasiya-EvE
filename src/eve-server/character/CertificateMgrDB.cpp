@@ -86,7 +86,7 @@ PyRep *CertificateMgrDB::GetCertificateClasses() {
         " className,"
         " classNameID,"
         " description,"
-        " 0 AS dataID"
+        " dataID"
         " FROM crtClasses"))
     {
         _log(DATABASE__ERROR, "Failed to query certificate classes: %s.", res.error.c_str());

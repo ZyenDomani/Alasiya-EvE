@@ -26,6 +26,7 @@
 
 #include "ship/modules/components/ModifyShipAttributesComponent.h"
 
+#include "Client.h"
 #include "ship/modules/GenericModule.h"
 
 
@@ -101,7 +102,7 @@ EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef
     }
     if (effectiveness <= 0) {   /* this should never happen */
         codelog(SHIP__MODULE_ERROR, "MSAC::_calculateNewValue() -  effectiveness <= 0");
-        throw PyException( MakeCustomError("Internal Server Error.  Ref: ServerError 25610"));
+        mod->GetShipRef()->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 25610");
     }
     modVal *= effectiveness;
     EvilNumber newVal = CalculateNewAttributeValue(startVal, modVal, type);

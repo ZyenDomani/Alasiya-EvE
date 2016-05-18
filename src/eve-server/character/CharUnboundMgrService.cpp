@@ -200,7 +200,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.ancestryID = arg.ancestryID;
         cdata.bloodlineID = arg.bloodlineID;
         cdata.schoolID = arg.schoolID;
-        cdata.description = "Character Created on %s", currentDateTime().c_str();
+        cdata.description = "Character Created on ";
+        cdata.description += currentDateTime();
         cdata.bounty = 0;
         cdata.balance = sConfig.character.startBalance;
         cdata.aurBalance = sConfig.character.startAurBalance; // Added aurBalance    -allan 01/07/14
@@ -319,8 +320,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     }
 
     //spawn all the skills
-    uint8 skillLevel;
-    EvilNumber skillPoints;
+    uint8 skillLevel = 0;
+    EvilNumber skillPoints = 0, totalPoints = 0;
     for (auto cur : startingSkills) {
         ItemData skillItem( cur.first, char_item->itemID(), char_item->itemID(), flagSkill );
         SkillRef skill = m_manager->item_factory->SpawnSkill( skillItem );
@@ -335,34 +336,23 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         skillPoints = skill->GetSPForLevel( (EvilNumber)skillLevel );
         skill->SetAttribute(AttrSkillPoints, skillPoints, false);
         skill->SaveItem();
-        char_item->SaveSkillHistory(skillEventCharCreation,
-                                    EvilTimeNow().get_float(),
+        totalPoints += skillPoints;
+        char_item->SaveSkillHistory(skillEventSkillInjected, //skillEventCharCreation,  <<<  this shows as "Unknown" in PD>Skill>History
+                                    Win32TimeNow(),
                                     char_item->itemID(),
                                     cur.first,
                                     skillLevel,
                                     skillPoints.get_float(),
-                                    char_item->GetTotalSP().get_float());
+                                    totalPoints.get_float());
     }
 
     //now set up some initial inventory:
-    InventoryItemRef initInvItem;
-
-    // add "Damage Control I"
-    ItemData itemDamageControl( 2046, char_item->itemID(), char_item->locationID(), flagHangar, 1 );
-    initInvItem = m_manager->item_factory->SpawnItem( itemDamageControl );
-    if (!initInvItem)
-        codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
-
-    // add 1000 units of "Tritanium"    -allan 01/10/14
-    ItemData itemTritanium( 34, char_item->itemID(), char_item->locationID(), flagHangar, 1000 );
-    initInvItem = m_manager->item_factory->SpawnItem( itemTritanium );
-    if (!initInvItem)
-        codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
+    /** @todo update this to reflect char career */
 
     // add 1 unit of "Clone Grade Alpha"
     ItemData itemCloneAlpha( 164, char_item->itemID(), char_item->locationID(), flagClone, 1 );
     itemCloneAlpha.customInfo="active";
-    initInvItem = m_manager->item_factory->SpawnItem( itemCloneAlpha );
+    InventoryItemRef initInvItem = m_manager->item_factory->SpawnItem( itemCloneAlpha );
     if (!initInvItem)
         codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
 

@@ -308,7 +308,7 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
         else type = 1;
     }
 
-    // write code to spawn smaller groups on gates
+    /** @todo write code to spawn smaller groups on gates */
 
     RatSpawnClassVec spawnEntry;
     RatSpawnClass spawnClass;

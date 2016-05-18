@@ -823,7 +823,7 @@ bool InventoryItem::SetFlag(EVEItemFlags new_flag, bool notify) {
         std::map<int32, PyRep *> changes;
 
 	//send the notify to the new owner.
-	changes[ixFlag] = new PyInt(new_flag);
+	changes[ixFlag] = new PyInt(old_flag);
 	SendItemChange(m_ownerID, changes); //changes is consumed
     }
     return true;
@@ -1136,4 +1136,8 @@ bool InventoryItem::SaveAttributes() {
 
 bool InventoryItem::ResetAttribute(uint32 attrID, bool notify) {
     return mAttributeMap.ResetAttribute(attrID, notify);
+}
+
+bool InventoryItem::DeleteAttribute(uint32 attrID) {
+    return mAttributeMap.DeleteAttribute(attrID);
 }

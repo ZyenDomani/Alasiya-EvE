@@ -84,6 +84,22 @@ void ActiveModule::Load(InventoryItemRef charge)
 	m_chargeRef = charge;
     m_chargeLoaded = true;
     m_ChargeState = MOD_LOADED;
+    /*
+     * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
+     *  {returns}
+     *        [PyTuple 3 items]
+     *          [PyTuple 1 items]
+     *            [PyIntegerVar 1005885547063]  << moduleID
+     *          [PyInt 203]                     << chargeTypeID
+     *          [PyFloat 10000]                 << reloadTime (ms)
+     */
+    PyTuple* module = new PyTuple(1);
+        module->SetItem(0, new PyInt(m_Item->itemID()));
+    PyTuple* tmp = new PyTuple(3);
+        tmp->SetItem(0, module);
+        tmp->SetItem(1, new PyInt(charge->typeID()));
+        tmp->SetItem(2, new PyInt(m_Item->GetAttribute(AttrReloadTime).get_int()));
+    m_Ship->GetPilot()->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
 }
 
 void ActiveModule::Unload()

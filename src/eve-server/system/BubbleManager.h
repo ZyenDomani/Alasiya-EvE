@@ -27,7 +27,7 @@
 
 #include "system/SystemEntity.h"
 
-static const float BUBBLE_RADIUS_METERS = 350000.0f;       // EVE retail uses 250km and allows grid manipulation  NOTE:  this is based on testing for best results.  -allan
+static const float BUBBLE_RADIUS_METERS = 250000.0f;       // EVE retail uses 250km and allows grid manipulation  NOTE:  this is based on testing for best results.  -allan
 static const float BUBBLE_HYSTERESIS_METERS = 5000.0f;     // How far out of the existing bubble a ship needs to fly before being placed into a new or different bubble
 
 class SystemBubble;
@@ -51,7 +51,7 @@ public:
     //call whenever an entity may have left its bubble.
     void CheckBubble(SystemEntity *ent, bool isWarping=false, bool isPostWarp=false);
     //call when an entity is added to the system.
-    void Add(SystemEntity *ent, bool isPostWarp=false);
+    void Add(SystemEntity* pSE, bool isPostWarp = false);
     //call to find the bubble containing the SystemEntity specified, if no bubble does, return NULL
     SystemBubble* FindBubble(SystemEntity *ent) const;
     //call to find the bubble containing the GPoint specified, if no bubble does, return NULL

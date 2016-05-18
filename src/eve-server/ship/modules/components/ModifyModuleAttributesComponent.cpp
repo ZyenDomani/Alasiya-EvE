@@ -25,6 +25,7 @@
 
 #include "ship/modules/components/ModifyModuleAttributesComponent.h"
 
+#include "Client.h"
 #include "ship/modules/GenericModule.h"
 
 /** @todo  this whole class will need verification */
@@ -80,7 +81,7 @@ void ModifyModuleAttributesComponent::_modifyModuleAttributes(GenericModule* tar
     }
     if (effectiveness <= 0) {   /* this should never happen */
         codelog(SHIP__MODULE_ERROR, "MMAC::_modifyModuleAttributes() -  effectiveness <= 0");
-        throw PyException( MakeCustomError("Internal Server Error.  Ref: ServerError 25610"));
+        targetMod->GetShipRef()->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 25620");
     }
     modVal *= effectiveness;
     EvilNumber newVal = CalculateNewAttributeValue(startVal, modVal, type);

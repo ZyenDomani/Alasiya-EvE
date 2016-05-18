@@ -47,8 +47,6 @@ public:
     void CancelTrade(Client* pClient);
     void TransferContainerContents(SystemManager* pSysMgr, InventoryItemRef itemRef, uint32 newOwnerID);
 
-    DBRowDescriptor* CreateHeader();
-
     struct ActiveSession {
         uint32 myID;
         uint32 herID;

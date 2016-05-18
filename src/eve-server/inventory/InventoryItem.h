@@ -331,6 +331,8 @@ public:
      */
     bool ResetAttribute(uint32 attrID, bool notify=false);
 
+    bool DeleteAttribute(uint32 attrID);
+
 /************************************************************************/
 /* end experimental new attribute system                                */
 /************************************************************************/

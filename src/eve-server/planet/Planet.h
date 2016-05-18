@@ -19,7 +19,7 @@ class Planet
 {
 public:
     Planet();
-    ~Planet()       { /* do nothing here */ }
+    ~Planet()                                           { /* do nothing here */ }
 
 protected:
 private:
@@ -35,7 +35,7 @@ class PlanetSE
 {
 public:
     PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~PlanetSE()                             { /* Do nothing here */ }
+    virtual ~PlanetSE()                                 { /* Do nothing here */ }
 
     /* class type pointer querys. */
     virtual PlanetSE* GetPlanetSE()                     { return this; }

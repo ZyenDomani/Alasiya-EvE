@@ -180,20 +180,47 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* mod)
 
 bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
     GenericModule* mod = GetModule(flag);
-    if (!mod) return false;
+    if (!mod)
+        return false;
 
     _deleteModuleRef(mod->flag(), mod);
-    SafeDelete(mod);
+    //SafeDelete(mod);
 	return true;
 }
 
 bool ModuleContainer::RemoveModule(uint32 itemID) {
     GenericModule* mod = GetModule(itemID);
-    if (!mod) return false;
+    if (!mod)
+        return false;
 
     _deleteModuleRef(mod->flag(), mod);
-    SafeDelete(mod);
-	return true;
+    mod->getItem()->SetFlag(flagHangar);
+    //SafeDelete(mod);
+    return true;
+}
+
+void ModuleContainer::StripModules()
+{
+    /* may not need this */
+    uint8 i = 0;
+    for (i = 0; i < m_HighSlots; ++i)
+        m_HighSlotModules[i] = nullptr;
+
+    for (i = 0; i < m_MediumSlots; ++i)
+        m_MediumSlotModules[i] = nullptr;
+
+    for (i = 0; i < m_LowSlots; ++i)
+        m_LowSlotModules[i] = nullptr;
+
+    for (i = 0; i < m_RigSlots; ++i)
+        m_RigModules[i] = nullptr;
+
+    for (i = 0; i < m_SubSystemSlots; ++i)
+        m_SubSystemModules[i] = nullptr;
+
+    for (uint8 flag = 11; flag < 35; ++flag) {
+        m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
+    }
 }
 
 GenericModule* ModuleContainer::GetModule(EVEItemFlags flag)
@@ -758,27 +785,19 @@ bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
 void ModuleManager::UnfitModule(uint32 itemID)
 {
     GenericModule* mod = m_Modules->GetModule(itemID);
+    m_Modules->RemoveModule(itemID);
     if (mod) {
+        EVEItemFlags flag = flagCargoHold;
+        if (!IsStation(m_Ship->locationID()))
+            flag = flagHangar;
         if (mod->isLoaded()) {
             InventoryItemRef loadedChargeRef = mod->GetLoadedChargeRef();
-            if (IsStation(m_Ship->locationID()))
-                loadedChargeRef->Move(m_Ship->locationID(), flagHangar);
-            else {
-                //m_Ship->ValidateAddItem(flagCargoHold,loadedChargeRef);
-                if (m_Ship->ValidateAddItem(flagCargoHold,loadedChargeRef)) {
-                    loadedChargeRef->Move(m_Ship->itemID(), flagCargoHold);
-                    mod->Unload();
-                } else {
-                    throw PyException( MakeCustomError( "Not enough cargo space!") );
-                    return;
-                }
-            }
+            loadedChargeRef->Move(m_Ship->locationID(), flag);
         }
         if (mod->isOnline())
             mod->Offline();
-        mod->getItem()->SetFlag(flagCargoHold);
+        mod->getItem()->Move(m_Ship->locationID(), flag);
     }
-    m_Modules->RemoveModule(itemID);
 }
 
 bool ModuleManager::_fitModule(InventoryItemRef item, EVEItemFlags flag)
@@ -1081,7 +1100,6 @@ void ModuleManager::RepairModule(uint32 itemID)
         mod->Repair();
 }
 
-/** @todo  fix this!!  */
 void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 {
     GenericModule* mod = m_Modules->GetModule(flag);
@@ -1277,16 +1295,15 @@ void ModuleManager::CharacterBoardingShip()
 void ModuleManager::ShipWarping()
 {
     sLog.Magenta("ModuleManager::ShipWarping()","Needs to be implemented");
-    //need to remove targets and such
+    /** @todo  figure out how to check modules for warpsafe-ness and Deactivate accordingly
+     *  there is an attribute for it (AttrDisallowActivateOnWarp), so we could test for that and adjust as needed
+     */
 }
 
 void ModuleManager::ShipJumping()
 {
-    //disable non-warpsafe modules
-
-    //probably should to send a message to the client
-    //TODO  figure out what needs to be done here, and implement it.
     sLog.Magenta("ModuleManager::ShipJumping()","Needs to be implemented");
+    /** @todo figure out what needs to be done here and implement it  */
 }
 
 
@@ -1311,6 +1328,10 @@ void ModuleManager::ProcessExternalEffect(Effect* e)
 void ModuleManager::GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList)
 {
 	m_Modules->GetModuleListOfRefs(pModuleList);
+}
+
+void ModuleManager::StripModules() {
+    m_Modules->StripModules();
 }
 
 void ModuleManager::SaveModules()

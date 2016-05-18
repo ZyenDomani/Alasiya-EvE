@@ -45,8 +45,11 @@ CharFittingMgrService::~CharFittingMgrService() {
     delete m_dispatch;
 }
 
+//11:37:43 L CharFittingMgrService::Handle_GetFittings(): size= 1 from 'allan'
 PyResult CharFittingMgrService::Handle_GetFittings(PyCallArgs &call) {
-
+    /*
+        /client/script/environment/fittingsvc.py(112) PersistFitting
+        */
     sLog.Log( "CharFittingMgrService::Handle_GetFittings()", "size= %u from '%s'", call.tuple->size(), call.client->GetName() );
     call.Dump(SERVICE__CALL_DUMP);
 

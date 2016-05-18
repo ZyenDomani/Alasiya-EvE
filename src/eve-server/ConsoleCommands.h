@@ -56,6 +56,7 @@ class ConsoleCommand
     void HaltServer()           { m_haltServer = true; }
 
     bool Process();
+    bool IsShutdown()           { return m_haltServer; }
 
   private:
 	  // we do NOT own any of these...

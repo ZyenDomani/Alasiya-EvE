@@ -82,16 +82,16 @@ PyResult FactionWarMgrService::Handle_GetWarFactions(PyCallArgs &call) {
         m_manager->cache_service->GiveCache(method_id, &res);
     }
 
-    return(m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id));
+    return m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
 }
 
 PyResult FactionWarMgrService::Handle_GetFWSystems( PyCallArgs& call )
-{
+{ 
     ObjectCachedMethodID method_id( GetName(), "GetFacWarSystems" );
 
     if( !m_manager->cache_service->IsCacheLoaded( method_id ) )
     {
-        PyRep* res = m_db.GetWarFactions();
+        PyRep* res = m_db.GetFacWarSystems();
         if( res == NULL )
             return NULL;
 

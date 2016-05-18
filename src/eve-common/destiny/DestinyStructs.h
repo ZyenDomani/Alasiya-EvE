@@ -33,7 +33,7 @@ namespace Destiny {
 
 struct AddBall_header {
     uint8 packet_type;  /* 0 = full state, 1 = balls */
-    uint32 sequence;
+    uint32 eventStamp;  /* entityList stamp */
 };
 
 typedef enum {

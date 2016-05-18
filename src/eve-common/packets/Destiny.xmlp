@@ -254,91 +254,6 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-<!--
-    def AddBalls2(self, chunk):
-        state, extraBallData = chunk
-        for data in extraBallData:
-            if type(data) is tuple:
-                slimItemDict, damageState = data
-            else:
-                slimItemDict = data
-                damageState = None
-        -->
-
-        <!--
-                          [PyTuple 2 items]
-                            [PyInt 66521]
-                            [PyTuple 2 items]
-                              [PyString "AddBalls2"]
-                              [PyTuple 1 items]
-                                [PyTuple 2 items]
-                                  [PyString "*NAME*"]
-                                  [PyList 1 items]
-                                    [PyTuple 2 items]
-                                      [PyDict 12 kvp]
-                                      [PyList 3 items]
-                                        [PyTuple 3 items]
-                                          [PyFloat 1]
-                                          [PyFloat 100000]
-                                          [PyIntegerVar 129773015555915424]
-                                        [PyFloat 1]
-                                        [PyFloat 1]
-                                        -->
-  <elementDef name="DoDestiny_AddBalls2">
-    <tupleInline>
-      <!-- 0 -->
-      <int name="stateStamp" />
-      <tupleInline>
-        <!-- 0 -->
-        <stringInline value="AddBalls2" />
-        <!-- 1 -->
-        <tupleInline>
-            <!-- 0 -->
-            <tupleInline>
-              <!-- 0 -->
-              <buffer name="state" />
-              <!-- 1: slims (list of DoDestiny_SlimItem dicts) -->
-              <list name="extraBallData" />
-            </tupleInline>
-        </tupleInline>
-      </tupleInline>
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_RemoveBall">
-    <tupleInline>
-      <!-- 0: call -->
-      <stringInline value="RemoveBall" />
-      <!-- 1: arguments -->
-      <tupleInline>
-        <int name="entityID" />
-      </tupleInline>
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_RemoveBalls">
-    <tupleInline>
-      <!-- 0: call -->
-      <stringInline value="RemoveBalls" />
-      <!-- 1: arguments -->
-      <tupleInline>
-        <listInt name="balls" />
-      </tupleInline>
-      </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_DamageDetails">
-    <listInline>
-      <tupleInline>
-          <real name="shield" />
-          <real name="recharge" />
-          <long name="timestamp" />
-        </tupleInline>
-        <real name="armor" />
-        <real name="structure" />
-    </listInline>
-  </elementDef>
-
   <elementDef name="DoDestinyDamageState">
     <tupleInline>
       <tupleInline>
@@ -361,6 +276,98 @@ DST_WARPEXIT = 11
         <real name="armor" default="0" />
         <real name="structure" default="1" />
     </tupleInline>
+  </elementDef>
+
+<!--
+    def AddBalls2(self, chunk):
+        state, extraBallData = chunk
+        for data in extraBallData:
+            if type(data) is tuple:
+                slimItemDict, damageState = data
+            else:
+                slimItemDict = data
+                damageState = None
+        -->
+
+        <!--
+                      [PySubStream 357 bytes]
+                        [PyList 1 items]
+                          [PyTuple 2 items]
+                            [PyInt 7945]
+                            [PyTuple 2 items]
+                              [PyString "AddBalls2"]
+                              [PyTuple 1 items]
+                                [PyTuple 2 items]
+                                  [Destiny Header]
+                                    [PacketType: 1]
+                                    [Stamp: 7945]
+                                  [Ball]
+
+                                  [PyList 1 items]
+                                    [PyTuple 2 items]
+                                      [PyDict 10 kvp]
+                                        {ship data}
+                                      [PyList 3 items]
+                                        [PyTuple 3 items]
+                                          [PyFloat 1]
+                                          [PyFloat 106250]
+                                          [PyIntegerVar 129516973343733241]
+                                        [PyFloat 1]
+                                        [PyFloat 1]
+                                        -->
+  <elementDef name="DoDestiny_AddBalls2">
+    <tupleInline>
+      <!-- 0-->
+      <int name="stateStamp" />
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="AddBalls2" />
+        <!-- 1 -->
+        <tupleInline>
+            <!-- 0 -->
+            <tupleInline>
+              <!-- 0 state buffer for AddBalls-->
+              <buffer name="state" />
+              <!-- 1: balls (list of ball dicts to add) -->
+              <list name="extraBallData" />
+            </tupleInline>
+        </tupleInline>
+      </tupleInline>
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestiny_DamageDetails">
+    <listInline>
+      <tupleInline>
+          <real name="shield" />
+          <real name="recharge" />
+          <long name="timestamp" />
+        </tupleInline>
+        <real name="armor" />
+        <real name="structure" />
+    </listInline>
+  </elementDef>
+
+  <elementDef name="DoDestiny_RemoveBall">
+    <tupleInline>
+      <!-- 0: call -->
+      <stringInline value="RemoveBall" />
+      <!-- 1: arguments -->
+      <tupleInline>
+        <int name="entityID" />
+      </tupleInline>
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestiny_RemoveBalls">
+    <tupleInline>
+      <!-- 0: call -->
+      <stringInline value="RemoveBalls" />
+      <!-- 1: arguments -->
+      <tupleInline>
+        <listInt name="balls" />
+      </tupleInline>
+      </tupleInline>
   </elementDef>
 
   <elementDef name="DoDestiny_OnSpecialFX10">

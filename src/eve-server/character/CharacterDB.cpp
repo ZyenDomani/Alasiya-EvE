@@ -521,13 +521,12 @@ bool CharacterDB::LoadCertificates( uint32 characterID, Certificates &into )
     }
 
     DBResultRow row;
-    while( res.GetRow( row ) )
-    {
-        CharCerts i;
-        i.certificateID     = row.GetUInt( 0 );
-        i.grantDate         = row.GetUInt64( 1 );
-        i.visibilityFlags   = row.GetUInt( 2 );
-        into.push_back( i );
+    while(res.GetRow(row)) {
+        CharCerts cert;
+            cert.certificateID     = row.GetUInt( 0 );
+            cert.grantDate         = row.GetUInt64( 1 );
+            cert.visibilityFlags   = row.GetUInt( 2 );
+        into.push_back( cert );
     }
 
     return true;
@@ -584,7 +583,7 @@ void CharacterDB::AddCertificate(uint32 charID, CharCerts cert) {
         "INSERT"
         " INTO chrCertificates (characterID, certificateID, grantDate, visibilityFlags)"
         " VALUES (%u, %u, %" PRIu64 ", %u)",
-                             charID, cert.certificateID, cert.grantDate, (cert.visibilityFlags?1:0) ))
+        charID, cert.certificateID, cert.grantDate, (cert.visibilityFlags ? 1 : 0) ))
     {
         _log(DATABASE__ERROR, "Failed to insert certificates of character %u: %s", charID, err.c_str() );
         return;
@@ -593,10 +592,9 @@ void CharacterDB::AddCertificate(uint32 charID, CharCerts cert) {
 
 void CharacterDB::UpdateCertificate ( uint32 charID, uint32 certificateID, bool pub ) {
     DBerror err;
-
     if (!sDatabase.RunQuery( err,
         "UPDATE chrCertificates SET visibilityFlags = %u WHERE characterID = %u AND certificateID = %u",
-        (pub?1:0), charID, certificateID))
+        (pub ? 1 : 0), charID, certificateID))
     {
         _log(DATABASE__ERROR, "Failed to insert certificates of character %u: %s", charID, err.c_str() );
         return;
@@ -1410,7 +1408,7 @@ bool CharacterDB::SavePausedSkillQueue(uint32 characterID, SkillQueue &queue) {
         const QueuedSkill &qs = queue[ i ];
 
         char buf[ 64 ];
-        snprintf( buf, 64, "(%u, %lu, %u, %u)", characterID, (unsigned long)i, qs.typeID, qs.level );
+        snprintf( buf, 64, "(%u, %u, %u, %u)", characterID, (uint8)i, qs.typeID, qs.level );
 
         if (i) query << ',';
         query << buf;
@@ -1442,7 +1440,7 @@ PyRep* CharacterDB::GetSkillHistory(uint32 characterID) {
     if(!sDatabase.RunQuery(res,
         "SELECT logDate, eventTypeID, skillTypeID, relativePoints AS absolutePoints"
         " FROM chrSkillHistory"
-        " WHERE characterID = %d"
+        " WHERE characterID = %u"
         " ORDER BY logDate DESC"
         " LIMIT 100",
         characterID )) {

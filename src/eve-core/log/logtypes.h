@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 5.3
+    Log Version: 5.5
 */
  /*  see log.ini for matching versions */
 
@@ -210,9 +210,14 @@ LOG_TYPE( DESTINY, TRACE, DISABLED, "DestinyTrace" )
 LOG_TYPE( DESTINY, BALL_DUMP, DISABLED, "DestinyDump" )
 LOG_TYPE( DESTINY, BALL_DECODE, DISABLED, "DestinyDecode" )
 LOG_TYPE( DESTINY, SETSTATE, DISABLED, "DestinySetState" )
-LOG_TYPE( DESTINY, BUBBLE_DEBUG, DISABLED, "DestinyBubbleDebug" )
-LOG_TYPE( DESTINY, BUBBLE_TRACE, DISABLED, "DestinyBubbleTrace" )
 LOG_TYPE( DESTINY, UPDATES, DISABLED, "DestinyUpdate" )
+LOG_TYPE( DESTINY, BUBBLE_DEBUG, DISABLED, "BubbleDebug" )
+LOG_TYPE( DESTINY, BUBBLE_TRACE, DISABLED, "BubbleTrace" )
+LOG_TYPE( DESTINY, BUBBLECAST, DISABLED, "BubbleCast" )
+LOG_TYPE( DESTINY, MOVE_TRACE, DISABLED, "MoveTrace" )
+LOG_TYPE( DESTINY, TURN_TRACE, DISABLED, "TurnTrace" )
+LOG_TYPE( DESTINY, WARP_TRACE, DISABLED, "WarpTrace" )
+LOG_TYPE( DESTINY, ORBIT_TRACE, DISABLED, "OrbitTrace" )
 
 LOG_CATEGORY( PHYSICS )
 LOG_TYPE( PHYSICS, ERROR, ENABLED, "PhysicsError" )
@@ -295,7 +300,7 @@ LOG_TYPE( CLIENT, CALL_DUMP, DISABLED, "ClientCallDump" )
 LOG_TYPE( CLIENT, IN_ALL, DISABLED, "ClientInAll" )
 LOG_TYPE( CLIENT, OUT_ALL, DISABLED, "ClientOutAll" )
 LOG_TYPE( CLIENT, NOTIFY_REP, DISABLED, "ClientNotifyRep" )
-LOG_TYPE( CLIENT, NOTIFY_DUMP, DISABLED, "ClientNotifyDump" )
+LOG_TYPE( CLIENT, NOTIFY_DUMP, DISABLED, "ClientNotifyDmp" )
 LOG_TYPE( CLIENT, QUEUE_DUMP, DISABLED, "ClientQueueDump" )
 LOG_TYPE( CLIENT, SESSION, DISABLED, "ClientSession" )
 LOG_TYPE( CLIENT, TRACE, DISABLED, "ClientTrace" )

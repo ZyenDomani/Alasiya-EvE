@@ -433,6 +433,8 @@ public:
     typedef CharacterDB::QueuedSkill QueuedSkill;   // structure of <uint32 typeID, uint8 level>
     typedef CharacterDB::SkillQueue SkillQueue;     // vector of QueuedSkill
 
+    void AddItem(InventoryItemRef item);
+
     /**
      * Checks whether character has the skill.
      *
@@ -546,6 +548,7 @@ public:
 	EvilNumber      GetTotalSP();
 
     // Certificates:
+    /** @todo  this whole certificate thing needs to be updated */
     /*
     struct CharCerts {
         uint32 certificateID;
@@ -674,13 +677,7 @@ public:
     void                    SaveFullCharacter();
     void                    SaveSkillQueue();
     void                    SaveCertificates();
-    void                    SaveSkillHistory(uint8 eventID,
-                                             double logDate,
-                                             uint32 characterID,
-                                             uint32 skillTypeID,
-                                             uint8 skillLevel,
-                                             double relativePoints,
-                                             double absolutePoints);
+    void                    SaveSkillHistory(uint8 eventID, uint64 logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints);
 
     bool                    isOffline(uint32 online);
     void                    SetLoaded(bool set=false)   { m_loaded = set; }
@@ -768,8 +765,6 @@ protected:
         const CharacterData& charData, const CorpMemberInfo& corpData
     );
 
-    void AddItem(InventoryItemRef item);
-
     void _CalculateTotalSPTrained();
 
     void _GetLogonMinutes();
@@ -831,6 +826,7 @@ private:
     // Skill queue:
     SkillQueue m_skillQueue;
     EvilNumber m_totalSPtrained;
+    uint32 m_freePoints;
 
     Certificates m_certificates;
 

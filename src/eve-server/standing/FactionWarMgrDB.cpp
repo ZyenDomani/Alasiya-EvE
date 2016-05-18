@@ -43,18 +43,24 @@ PyRep *FactionWarMgrDB::GetWarFactions() {
 }
 
 PyRep* FactionWarMgrDB::GetFacWarSystems()
-{
-    sLog.Debug( "FactionWarMgrDB", "Called GetFacWarSystems stub." );
+{   /* done  -allan 03May16 */
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT systemID, occupierID, factionID FROM factionWarSystems"))
+    {
+        _log(DATABASE__ERROR, "Failed to query war factions: %s.", res.error.c_str());
+        return NULL;
+    }
 
-    //fill some crap
     PyDict* result = new PyDict;
     PyDict* dict;
-
-    dict = new PyDict;
-    dict->SetItemString( "occupierID", new PyInt( 500002 ) );
-    dict->SetItemString( "factionID", new PyInt( 500002 ) );
-    result->SetItem( new PyInt( 30002097 ), dict );
-
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        dict = new PyDict;
+        dict->SetItemString("occupierID", new PyInt(row.GetInt(1)));
+        dict->SetItemString("factionID", new PyInt(row.GetInt(2)));
+        result->SetItem(new PyInt(row.GetInt(0)), dict );
+    }
     return result;
 }
 
