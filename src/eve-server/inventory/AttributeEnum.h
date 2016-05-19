@@ -56,8 +56,8 @@ enum EveAttrEnum {
     AttrSpeed = 51,
     AttrDamageResistance = 52,
     AttrMaxRange = 54,
-    AttrRechargeRate = 55,
-    AttrChargeRate = 56,
+    AttrRechargeRate = 55,      //Amount of time taken to fully recharge the capacitor.
+    AttrChargeRate = 56,        //Number of charges consumed per activation
     AttrTargetModule = 61,
     AttrAccuracyBonus = 63,
     AttrDamageMultiplier = 64,

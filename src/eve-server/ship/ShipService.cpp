@@ -111,7 +111,7 @@ PyBoundObject *ShipService::_CreateBoundObject(Client *c, const PyRep *bind_args
     return(new ShipBound(m_manager, m_db));
 }
 
-    /* only called in space */
+/* only called in space */
 PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     /*if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
@@ -179,6 +179,8 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         snprintf(ci, sizeof(ci), "");
         oldShipRef->SetCustomInfo(ci);
         oldShipRef->SetFlag(flagShipOffline);
+    } else {
+        oldShipRef->Move(0, flagCapsule, false);
     }
     /* missing something here.  blank space after boarding ship from pod.  */
 
@@ -186,7 +188,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     return new PyLong(Win32TimeNow());
 }
 
-    /* only called in space */
+/* only called in space */
 PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     /*if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
@@ -248,8 +250,8 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 }
 
 // NOTE  LeaveShip and ActivateShip are working.  dont fuck with them
-    /* only called when docked. */
-PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call){
+/* only called when docked. */
+PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call) {
     /*if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
@@ -276,7 +278,7 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call){
     sLog.Log("ShipBound::Handle_LeaveShip()", "moving pod %u to station %u", podID, pClient->GetStationID());
     podRef->Move(pClient->GetStationID(), flagHangar);
 
-    // this return is sent as first arg in subsequent ActivateShip() call
+    // capsuleID = shipsvc.LeaveShip(shipid)
     return new PyInt(podID);
 }
 

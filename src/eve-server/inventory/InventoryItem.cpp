@@ -741,8 +741,8 @@ void InventoryItem::MoveInto(Inventory &new_home, EVEItemFlags _flag, bool notif
 }
 
 void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify) {
-    uint32 old_location = locationID();
-    EVEItemFlags old_flag = flag();
+    uint32 old_location = m_locationID;
+    EVEItemFlags old_flag = m_flag;
 
     if ((new_location == old_location) && (new_flag == old_flag))
         return; //nothing to do...
@@ -769,7 +769,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
             changes[ixLocationID] = new PyInt(old_location);
         if ( new_flag != old_flag )
             changes[ixFlag] = new PyInt(old_flag);
-        SendItemChange( ownerID(), changes );   //changes is consumed
+        SendItemChange( m_ownerID, changes );   //changes is consumed
     }
 }
 
@@ -840,16 +840,16 @@ InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify) {
     }
 
     ItemData idata(
-        typeID(),
-        ownerID(),
-        (notify ? 1 : locationID()), //temp location to cause the spawn via update
-        flag(),
+        m_type.id(),
+        m_ownerID,
+        0,
+        m_flag,
         qty_to_take
     );
 
     InventoryItemRef res = m_factory.SpawnItem(idata);
     if (notify)
-        res->Move( locationID(), flag() );
+        res->Move( m_locationID, m_flag );
 
     return( res );
 }
