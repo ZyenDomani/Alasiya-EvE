@@ -390,12 +390,6 @@ AND published = 1 );
 
 /* reset rifter cap recharge rate  - there are more wrong i havent found yet.*/
 UPDATE `dgmTypeAttributes` SET `valueFloat` = '125000' WHERE `typeID` = 587 AND `attributeID` = 55;
-/* reset rifter warp speed - there are alot more of these wrong, too.... */
-UPDATE `dgmTypeAttributes` SET `valueFloat` = '2' WHERE `typeID` = 587 AND `attributeID` = 600;
-UPDATE `dgmTypeAttributes` SET `valueFloat` = '3' WHERE `typeID` = 587 AND `attributeID` = 1281;
-/*  wolf warp speed */
-UPDATE `dgmTypeAttributes` SET `valueFloat` = '4' WHERE `typeID` = 11371 AND `attributeID` = 600;
-UPDATE `dgmTypeAttributes` SET `valueFloat` = '3' WHERE `typeID` = 11371 AND `attributeID` = 1281;
 
 /* fix radius' in mapDenormalize */
 UPDATE `mapDenormalize` SET `radius`=1 WHERE `groupID`=9;
