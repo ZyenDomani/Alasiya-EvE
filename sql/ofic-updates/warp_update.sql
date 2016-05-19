@@ -19,25 +19,25 @@ UPDATE dgmTypeAttributes SET valueFloat = 3 WHERE attributeID = 1281;
 UPDATE dgmTypeAttributes
 SET valueFloat = 0.25
 WHERE attributeID = 600
-AND typeID = (SELECT typeID FROM invTypes WHERE groupID IN (28,380,902));
+AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (28,380,902));
 
 -- warp speed update for groupID 30,485,659,941 (Capital)
 UPDATE dgmTypeAttributes
 SET valueFloat = 0.5
 WHERE attributeID = 600
-AND typeID = (SELECT typeID FROM invTypes WHERE groupID IN (30,485,659,941));
+AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (30,485,659,941));
 
 -- warp speed update for groupID 26,27,381,419,420,463,540,543,963 (C/BC/BS/D/MB)
 UPDATE dgmTypeAttributes
 SET valueFloat = 1.0
 WHERE attributeID = 600
-AND typeID = (SELECT typeID FROM invTypes WHERE groupID IN (26,27,381,419,420,463,540,543,963));
+AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (26,27,381,419,420,463,540,543,963));
 
 -- warp speed update for groupID 29,358 (T2 Cruiser)
 UPDATE dgmTypeAttributes
 SET valueFloat = 1.25
 WHERE attributeID = 600
-AND typeID = (SELECT typeID FROM invTypes WHERE groupID IN (29,358));
+AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (29,358));
 
 -- warp speed update for groupID 25 (frigate)
 UPDATE dgmTypeAttributes
@@ -49,13 +49,13 @@ AND typeID IN (SELECT typeID FROM invTypes WHERE groupID = 25);
 UPDATE dgmTypeAttributes
 SET valueFloat = 3.0
 WHERE attributeID = 600
-AND typeID = (SELECT typeID FROM invTypes WHERE groupID IN (31,541,832,894));
+AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (31,541,832,894));
 
 -- warp speed update for groupID 324,830,831,900 (Inty #2/CovOps)
 UPDATE dgmTypeAttributes
 SET valueFloat = 4.5
 WHERE attributeID = 600
-AND typeID = (SELECT typeID FROM invTypes WHERE groupID IN (324,830,831,900));
+AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (324,830,831,900));
 
 -- warp speed correction for Sigil
 UPDATE dgmTypeAttributes
@@ -63,3 +63,8 @@ SET valueFloat = 1.5
 WHERE attributeID = 600
 AND typeID = 19744;
 
+-- warp speed correction for Orca
+UPDATE dgmTypeAttributes
+SET valueFloat = 0.75
+WHERE attributeID = 600
+AND typeID = 28606;
