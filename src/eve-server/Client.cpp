@@ -96,6 +96,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_setStateSent = false;
     m_sessionChangeActive = false;
 
+    m_toGate = 0;
     m_locationID = 0;
     m_moveSystemID = 0;
     m_timeEndTrain = 0;
@@ -314,23 +315,21 @@ void Client::ProcessClient() {
 }
 
 void Client::SetDestiny(bool count) {
-    if (!pShipSE->DestinyMgr()) {
+    if (!pShipSE or !pShipSE->DestinyMgr()) {
        _log(CLIENT__ERROR, "Ship's DestinyMgr is null. bad things may happen now");
        return;
     }
     m_system->AddClient(this, IsDocked(), count);
     //need to set players position before adding to bubble (if in space)
-    if (IsInSpace()) {
+    if (IsSolarSystem(m_locationID)) {
         m_bubbleWait = false;
         m_setStateSent = false;
         if (m_ship->position().isZero())
             MoveToPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()));
-        else
-            pShipSE->DestinyMgr()->SetPosition(m_ship->position());
-        if (m_login)
-            pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         if (count and !m_login)
             pShipSE->GetShipSE()->ResetShipSystemMgr(m_system);
+        if (m_login)
+            pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         m_system->AddEntity(pShipSE);
     } else
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
@@ -341,6 +340,7 @@ void Client::WarpIn() {
     char ci[1];
     snprintf(ci, sizeof(ci), "");
     m_ship->SetCustomInfo(ci);
+    m_invulTimer.Start(/*InvulTimer::*/WarpingInInvul);
     return;
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
     GPoint warpToPoint(m_ship->position());
@@ -359,6 +359,7 @@ void Client::WarpOut() {
         m_ship->SetFlag(flagShipOffline);
     m_system->RemoveEntity(pShipSE);
     return;
+    m_invulTimer.Start(/*InvulTimer::*/WarpingOutInvul);
     // We are logging out, so we need to warp to a random spot 1Mm away:
     GPoint warpToPoint(m_ship->position());
     warpToPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
@@ -423,6 +424,8 @@ bool Client::EnterSystem(uint32 systemID) {
         //we have different m_system
         m_char->AddPilotToDynamicData(systemID);
         m_system->RemoveClient(this, false, true);
+        if (pShipSE)
+            m_system->RemoveEntity(pShipSE);
         m_system = nullptr;
     }
 
@@ -438,7 +441,6 @@ bool Client::EnterSystem(uint32 systemID) {
             return false;
         }
         m_systemName = m_system->GetName();
-        SetDestiny(true);
 
         m_char->chkDynamicSystemID(systemID);
         m_char->AddPilotToDynamicData(systemID, true, true);
@@ -470,7 +472,8 @@ void Client::UpdateLocation(uint32 locationID) {
             m_pod->Move(locationID, flagCapsule, false);
             m_ship->Move(locationID, flagAutoFit, false);
         }
-        m_char->Move(m_shipId, flagPilot);
+        if (m_char->flag() != flagPilot)
+            m_char->Move(m_shipId, flagPilot);
     }
 }
 
@@ -517,8 +520,10 @@ void Client::MoveToLocation(uint32 location, const GPoint& pt) {
     if (stationID) {
         if (!IsHangarLoaded(stationID))
             LoadStationHangar(stationID);
-    } else
+    } else {
         MoveToPosition(pt);
+        SetDestiny(true);
+    }
 }
 
 void Client::MoveToPosition(const GPoint &pt) {
@@ -550,9 +555,9 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     OnCharNoLongerInStation();
     CreateShipSE();
     MoveToLocation(systemID, dockPosition);
-    SetDestiny();
+    //SetDestiny();
     m_ship->Undock();
-    m_invulTimer.Start(10000);
+    m_invulTimer.Start(/*InvulTimer::*/UndockingInvul);
     SetSessionTimer();
 }
 
@@ -736,7 +741,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
         sLog.Error("Client","%s: Failed to query information for stargate %u", m_char->itemName().c_str(), toGate);
         return;
     }
-
+    m_toGate = toGate;
     m_moveSystemID = solarSystemID;
     m_movePoint = position;
     m_movePoint.MakeRandomPointOnSphereLayer(7500, 9500);   // Make Jump-In point a random spot on ~10km radius sphere about the stargate
@@ -763,9 +768,9 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
 
     // call Stop() per packet sniff
     pShipSE->DestinyMgr()->Stop();
-    //  show gate animation in both to and from gate.   -working -allan 15Nov15
     pShipSE->DestinyMgr()->SendJumpOut(fromGate);
-    pShipSE->DestinyMgr()->SendJumpOut(toGate);
+    //  show gate animation in from gate.   -working -allan 15Nov15
+    pShipSE->DestinyMgr()->SendGateActivity(fromGate);
 
     //delay the move 5sec so they can see the JumpOut animation
     _postMove(msJump, 5000);
@@ -783,8 +788,10 @@ void Client::_ExecuteJump() {
     m_setStateSent = false;
 
     MoveToLocation(m_moveSystemID, m_movePoint);
+    pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
     pShipSE->DestinyMgr()->Cloak();
 
+    m_toGate = 0;
     m_movePoint = NULL_ORIGIN;
 }
 
@@ -984,7 +991,7 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
         du.droneTypeID = drone->typeID();
         du.controllerID = m_shipId;
         du.controllerOwnerID = m_char->itemID();
-        du.activityState = entityIdle;
+        du.activityState = droneIdle;
         du.targetID = m_shipId;  // use ship as initial target for launch and orbit command
     PyTuple* up = du.Encode();
     pShipSE->DestinyMgr()->SendSingleDestinyUpdate(&up);

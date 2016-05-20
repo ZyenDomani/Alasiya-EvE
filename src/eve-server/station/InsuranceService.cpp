@@ -139,9 +139,11 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
         return NULL;
     }
 
-    /* added check for groupID 237 (rookie ship - items 588, 596, 601, 606) as they cannot be insured. */
+    /* added check for groupID 237 (rookie ship - items 588, 596, 601, 606) as they cannot be insured.
+     *   may not need this, as client will not try to insure rookie ships
+     */
     InventoryItemRef shipRef = call.client->services().item_factory->GetItem(args.shipID) ;
-    if(shipRef->groupID() == EVEDB::invGroups::Rookie_ship) {
+    if(shipRef->groupID() == EVEDB::invGroups::Rookieship) {
         call.client->SendInfoModalMsg("You cannot insure Rookie ships.");
         return new PyNone;
     } // end rookie ship check

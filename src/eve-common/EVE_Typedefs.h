@@ -296,7 +296,7 @@ typedef enum {
     JumpingInvul     = 5000,
     WarpingOutInvul  = 5000,
     WarpingInInvul   = 10000,
-    UndockingInvul   = 30000,
+    UndockingInvul   = 15000,
     RestoringInvul   = 60000
 } InvulTimer;
 
@@ -455,17 +455,17 @@ typedef enum {
 
 // only for drones
 typedef enum {
-    entityIdle              = 0,
-    entityCombat            = 1,
-    entityMining            = 2,
-    entityApproaching       = 3,
-    entityDeparting         = 4,
-    entityDeparting2        = 5,
-    entityPursuit           = 6,
-    entityFleeing           = 7,
-    entityUnknown           = 8,
-    entityOperating         = 9,
-    entityEngage            = 10
+    droneIdle              = 0,
+    droneCombat            = 1,
+    droneMining            = 2,
+    droneApproaching       = 3,
+    droneDeparting         = 4,
+    droneDeparting2        = 5,
+    dronePursuit           = 6,
+    droneFleeing           = 7,
+    droneUnknown           = 8,
+    droneOperating         = 9,
+    droneEngage            = 10
 } aiState;
 
 // not sure what these are used for...stateFlags??

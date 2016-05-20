@@ -228,17 +228,8 @@ public:
     void Undock();
     void AddModuleToOnlineVec(uint32 moduleID);
 
-    /**
-     * CalculateRechargeRate
-     * Calculate the recharge rate of capacitor or shields.
-     * @param Capacity The maximum capacity of the item.
-     * @param RechargeTimeMS The time in ms that it takes to fully recharge the item.
-     * @param Current The current charge of the item.
-     * @return The rate of charge for the item.
-     */
-    double CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current);
-
     /* begin new module manager interface */
+    void ProcessModules();
     InventoryItemRef GetModule(EVEItemFlags flag);
     InventoryItemRef GetModule(uint32 itemID);
     EVEItemFlags FindAvailableModuleSlot( InventoryItemRef item );
@@ -261,7 +252,6 @@ public:
     void CancelOverloading();
     void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);
     void RemoveRig(InventoryItemRef item);
-    void Process();
     void DeactivateAllModules();
     void OnlineAll();
     void OfflineAll();
@@ -322,11 +312,7 @@ protected:
     void _IncreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToConsume);  // To release cargo space, make 'volumeToConsume' negative
     void _DecreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToConsume);  // To release cargo space, make 'volumeToConsume' negative
 
-    const uint32 m_processTimerTick;
-
 private:
-    Timer m_processTimer;
-
     Client* m_pilot;
 
     //the ship's module manager.  We own this
@@ -362,25 +348,33 @@ public:
     virtual void MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict *MakeSlimItem();
 
-    /* specific functions handled here. */
-    void PayInsurance();
-    void ResetShipSystemMgr(SystemManager* pSystem)     { m_system = pSystem; }
-    void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
-    uint32 GetPodShipID()                               { return m_podShipID; }
-
     /* virtual functions default to base class and overridden as needed */
     virtual void Killed(Damage &fatal_blow);    /* This method is defined in Damage.cpp */
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void SetPilot(Client* pClient);
-    virtual bool HasPilot()                             { return (m_player ? true : false); }
-    virtual Client* GetPilot()                          { return m_player; }
+    virtual bool HasPilot()                             { return (m_pilot ? true : false); }
+    virtual Client* GetPilot()                          { return m_pilot; }
+
+    /* specific functions handled here. */
+    void PayInsurance();
+    void ResetShipSystemMgr(SystemManager* pSystem);
+    void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
+
+    uint32 GetPodShipID()                               { return m_podShipID; }
+
+    double CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current);
 
 protected:
-    Client* m_player;
+    Client* m_pilot;
+    ShipItemRef m_shipRef;
+
+    const uint32 m_processTimerTick;
 
 private:
     ShipDB m_db;
+
+    Timer m_processTimer;
 
     uint32 m_podShipID;
 

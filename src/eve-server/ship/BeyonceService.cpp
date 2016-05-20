@@ -770,16 +770,14 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return nullptr;
+        return new PyNone;
     } else if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't do this while warping");
-        return nullptr;
+        return new PyNone;
     }
 
-  /**CmdStargateJump(destID, theJump.toCelestialID, session.shipid)
-  */
     sLog.Warning( "BeyonceBound", "Handle_CmdStargateJump" );
-    // sends 3 args....fromGateID, toGateID, and shipID
+    // sends fromGateID, toGateID, and shipID
     Call_StargateJump args;
     if (!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
@@ -789,9 +787,8 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
     /** @todo  check distance from ship to gate */
 
     if (call.client->IsUndock()) call.client->SetUndock(false);
-    //if (call.client->IsInvul()) call.client->SetInvul(false);
     call.client->StargateJump(args.fromStargateID, args.toStargateID);
-    return nullptr;
+    return new PyNone;
 }
 
 PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {

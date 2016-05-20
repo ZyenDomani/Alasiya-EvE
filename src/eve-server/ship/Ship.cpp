@@ -61,13 +61,10 @@ _Ty *ShipType::_LoadShipType(ItemFactory &factory, uint32 shipTypeID,
  */
 ShipItem::ShipItem(ItemFactory &_factory, uint32 _shipID, const ShipType &_shipType, const ItemData &_data)
 : InventoryItem(_factory, _shipID, _shipType, _data),
-m_processTimerTick(SHIP_PROCESS_TICK_MS),   //5s
-m_processTimer(m_processTimerTick),
 m_pilot(nullptr),
 m_ModuleManager(nullptr)
 {
     m_IsLoaded = false;
-    m_processTimer.Start(m_processTimerTick);
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created ShipItem for %s(%u).", itemName().c_str(), itemID());
 }
@@ -751,6 +748,10 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef equip) {
             return true;
 }
 
+void ShipItem::ProcessModules() {
+    m_ModuleManager->Process();
+}
+
 void ShipItem::Dock() {
     DeactivateAllModules();
 }
@@ -1074,75 +1075,6 @@ void ShipItem::RemoveRig(InventoryItemRef item) {
     item->Move(itemID(), flagCargoHold);
 }
 
-double ShipItem::CalculateRechargeRate(double Capacity, double Current, double RechargeTimeMS)
-{
-    // C = Cmax * [ 1 + ( SQRT(C0/Cmax) - 1 ) * EXP((t0-t1)/tau) ] ^ 2
-    // dC/dt = (SQRT(C/Cmax) - C/Cmax) * 2 * Cmax / tau
-    // tau = "Cap Recharge Time" / 5.0
-
-    // prevent divide by zero.
-    RechargeTimeMS = (RechargeTimeMS < 1 ? 1 : RechargeTimeMS);
-    Current = (Current < 1 ? 1 : Current);
-    double Cmax = (Capacity < 1 ? 1 : Capacity);
-
-    // tau = "cap recharge time" / 5.0
-    double tau = (RechargeTimeMS / 5000.0);
-    // (2*Cmax) / tau
-    double Cmax2_tau = ((Cmax * 2) / tau);
-    double C = Current;
-    // C / Cmax
-    double C_Cmax = (C / Cmax);
-    // sqrt( C / Cmax )
-    double sC_Cmax = sqrt(C_Cmax);
-    // charge rate in Gj / sec
-    return (Cmax2_tau * (sC_Cmax - C_Cmax));
-}
-
-void ShipItem::Process() {
-    double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
-    // Do Automatic Shield and Capacitor Recharge:
-    if (m_processTimer.Check()) {
-        // shield
-        double Charge = GetAttribute(AttrShieldCharge).get_float();
-        double Capacity = GetAttribute(AttrShieldCapacity).get_float();
-        if (Charge < Capacity) {
-            double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, GetAttribute(AttrShieldRechargeRate).get_float()));
-            if (newCharge > Capacity)
-                newCharge = Capacity;
-            else if ((Capacity - newCharge) < 0.15)
-                newCharge = Capacity;
-            SetAttribute(AttrShieldCharge, newCharge);
-            _log(SHIP__MESSAGE, "ShipItem::Process(): %s(%u) - New Shield Charge: %f",\
-                    m_pilot->GetName(), m_pilot->GetShip().get()->itemID(), newCharge );
-        }
-
-        // capacitor
-        Charge = GetAttribute(AttrCapacitorCharge).get_float();
-        Capacity = GetAttribute(AttrCapacitorCapacity).get_float();
-        if (Charge < Capacity) {
-            double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, GetAttribute(AttrRechargeRate).get_float()));
-            if (newCharge > Capacity)
-                newCharge = Capacity;
-            else if ((Capacity - newCharge) < 0.15)
-                newCharge = Capacity;
-            SetAttribute(AttrCapacitorCharge, newCharge);
-            _log(SHIP__MESSAGE, "ShipItem::Process(): %s(%u) - New Cap Charge: %f",\
-                        m_pilot->GetName(), m_pilot->GetShip().get()->itemID(), newCharge );
-        }
-    }
-
-    // profile timer for JUST the ship recharge shit
-    if (sConfig.server.UseProfiling)
-        sProfile.AddTime(_shipProfile, GetTimeUSeconds() - profileStartTime);
-
-    // now, process the modules.
-    // Do this last so repair modules don't degrade shield recharge rate.
-    // Although, cap recharge would benefit from the power use by modules.
-    m_ModuleManager->Process();
-}
-
 void ShipItem::OnlineAll()
 {
     m_ModuleManager->OnlineAll();
@@ -1240,11 +1172,15 @@ std::string ShipItem::GetShipDNA()
 
 /* DynamicSystemEntity representing ship object in space */
 Ship::Ship(InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem)
-: DynamicSystemEntity(self, services, pSystem)
+: DynamicSystemEntity(self, services, pSystem),
+m_shipRef(ShipItemRef::StaticCast(self)),
+m_processTimerTick(SHIP_PROCESS_TICK_MS),   //5s
+m_processTimer(m_processTimerTick)
 {
     m_destiny = new DestinyManager(this);
     m_podShipID = 0;
-    m_player = nullptr;
+    m_pilot = nullptr;
+    m_processTimer.Start(m_processTimerTick);
     _log(SHIP__INFO, "Created ShipSE %p for item %u", this, self->itemID());
 }
 
@@ -1253,17 +1189,85 @@ Ship::~Ship() {
     SafeDelete(m_destiny);
 }
 
+double Ship::CalculateRechargeRate(double Capacity, double Current, double RechargeTimeMS)
+{
+    // C = Cmax * [ 1 + ( SQRT(C0/Cmax) - 1 ) * EXP((t0-t1)/tau) ] ^ 2
+    // dC/dt = (SQRT(C/Cmax) - C/Cmax) * 2 * Cmax / tau
+    // tau = "Cap Recharge Time" / 5.0
+
+    // prevent divide by zero.
+    RechargeTimeMS = (RechargeTimeMS < 1 ? 1 : RechargeTimeMS);
+    Current = (Current < 1 ? 1 : Current);
+    double Cmax = (Capacity < 1 ? 1 : Capacity);
+
+    // tau = "cap recharge time" / 5.0
+    double tau = (RechargeTimeMS / 5000.0);
+    // (2*Cmax) / tau
+    double Cmax2_tau = ((Cmax * 2) / tau);
+    double C = Current;
+    // C / Cmax
+    double C_Cmax = (C / Cmax);
+    // sqrt( C / Cmax )
+    double sC_Cmax = sqrt(C_Cmax);
+    // charge rate in Gj / sec
+    return (Cmax2_tau * (sC_Cmax - C_Cmax));
+}
+
 void Ship::Process() {
     SystemEntity::Process();
+
+    if (m_processTimer.Check()) {
+        double profileStartTime = 0.0;
+        if (sConfig.server.UseProfiling)
+            profileStartTime = GetTimeUSeconds();
+        // shield
+        double Charge = m_self->GetAttribute(AttrShieldCharge).get_float();
+        double Capacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
+        if (Charge < Capacity) {
+            double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrShieldRechargeRate).get_float()));
+            if (newCharge > Capacity)
+                newCharge = Capacity;
+            else if ((Capacity - newCharge) < 0.15)
+                newCharge = Capacity;
+            m_self->SetAttribute(AttrShieldCharge, newCharge);
+            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Shield Charge: %f", m_pilot->GetName(), m_self->itemID(), newCharge );
+        }
+
+        // cap
+        Charge = m_self->GetAttribute(AttrCapacitorCharge).get_float();
+        Capacity = m_self->GetAttribute(AttrCapacitorCapacity).get_float();
+        if (Charge < Capacity) {
+            double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrRechargeRate).get_float()));
+            if (newCharge > Capacity)
+                newCharge = Capacity;
+            else if ((Capacity - newCharge) < 0.15)
+                newCharge = Capacity;
+            m_self->SetAttribute(AttrCapacitorCharge, newCharge);
+            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Cap Charge: %f", m_pilot->GetName(), m_self->itemID(), newCharge );
+        }
+        // profile timer for the ship recharge shit
+        if (sConfig.server.UseProfiling)
+            sProfile.AddTime(_shipProfile, GetTimeUSeconds() - profileStartTime);
+    }
+
+    // now, process the modules.
+    m_shipRef->ProcessModules();
 }
 
 void Ship::PayInsurance() {
-    m_player->GetChar()->AlterBalance(m_db.GetShipInsurancePayout(GetSelf()->itemID()));
+    m_pilot->GetChar()->AlterBalance(m_db.GetShipInsurancePayout(GetSelf()->itemID()));
     m_db.DeleteInsuranceByShipID(GetSelf()->itemID());
 }
 
+void Ship::ResetShipSystemMgr(SystemManager* pSystem)
+{
+    m_system = pSystem;
+    //SafeDelete(m_destiny);
+    //m_destiny = new DestinyManager(this);
+}
+
 void Ship::SetPilot(Client* pClient) {
-    m_player = pClient;
+    m_pilot = pClient;
     m_self->SetPlayer(pClient);
 }
 
@@ -1378,12 +1382,12 @@ PyDict* Ship::MakeSlimItem() {
         slim->SetItemString("typeID",               new PyInt(m_self->typeID()));
         slim->SetItemString("name",                 new PyString(m_self->itemName()));
         slim->SetItemString("ownerID",              new PyInt(m_self->ownerID()));
-        slim->SetItemString("charID",               new PyInt(m_player ? m_player->GetCharacterID() : 0));
-        slim->SetItemString("corpID",               new PyInt(m_player ? m_player->GetCorporationID() : GetCorporationID()));
-        slim->SetItemString("allianceID",           new PyInt(m_player ? m_player->GetAllianceID() : GetAllianceID()));
-        slim->SetItemString("warFactionID",         new PyInt(m_player ? m_player->GetWarFactionID() : GetWarFactionID()));
-        slim->SetItemString("bounty",               new PyFloat(m_player ? m_player->GetBounty() : 0));
-        slim->SetItemString("securityStatus",       new PyFloat(m_player ? m_player->GetSecurityRating() : 0.0));
+        slim->SetItemString("charID",               new PyInt(m_pilot ? m_pilot->GetCharacterID() : 0));
+        slim->SetItemString("corpID",               new PyInt(m_pilot ? m_pilot->GetCorporationID() : GetCorporationID()));
+        slim->SetItemString("allianceID",           new PyInt(m_pilot ? m_pilot->GetAllianceID() : GetAllianceID()));
+        slim->SetItemString("warFactionID",         new PyInt(m_pilot ? m_pilot->GetWarFactionID() : GetWarFactionID()));
+        slim->SetItemString("bounty",               new PyFloat(m_pilot ? m_pilot->GetBounty() : 0));
+        slim->SetItemString("securityStatus",       new PyFloat(m_pilot ? m_pilot->GetSecurityRating() : 0.0));
     if (m_self->typeID() == itemTypeCapsule) {
         slim->SetItemString("launcherID",       new PyInt(GetPodShipID()));
         return slim;

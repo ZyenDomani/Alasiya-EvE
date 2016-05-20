@@ -312,6 +312,7 @@ protected:
     GPoint m_movePoint;
     GPoint m_dockPoint;
     uint32 m_shipId;
+    uint32 m_toGate;
     uint32 m_locationID;
     uint32 m_moveSystemID;
     uint32 m_dockStationID;

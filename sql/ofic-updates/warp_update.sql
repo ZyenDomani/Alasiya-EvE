@@ -22,17 +22,17 @@ SET valueFloat = 0.25
 WHERE attributeID = 600
 AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (28,380,902));
 
--- warp speed update for groupID 30,485,547,659,941 (Capital)
+-- warp speed update for groupID 30,485,547,659,883,941 (Capital)
 UPDATE dgmTypeAttributes
 SET valueFloat = 0.5
 WHERE attributeID = 600
-AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (30,485,547,659,941));
+AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (30,485,547,659,883,941));
 
--- warp speed update for groupID 26,27,381,419,420,463,540,543,963 (C/BC/BS/D/MB)
+-- warp speed update for groupID 26,27,237,381,419,420,463,540,543,963 (C/BC/BS/D/MB)
 UPDATE dgmTypeAttributes
 SET valueFloat = 1.0
 WHERE attributeID = 600
-AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (26,27,381,419,420,463,540,543,963));
+AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (26,27,237,381,419,420,463,540,543,963));
 
 -- warp speed update for groupID 29,358 (T2 Cruiser)
 UPDATE dgmTypeAttributes

@@ -573,9 +573,7 @@ void DestinyManager::_Move(bool orbit) {
      */
 
     GVector moveVector(m_shipHeading);
-    if (orbit)  //special checks for orbiting ship
-        moveVector = m_shipHeading;
-    else if (m_userSpeedFraction)   // if usf==0 then ship is stopping.  continue movement along current ship heading (no turn)
+    if (!orbit and m_userSpeedFraction)   // if usf==0 then ship is stopping.  continue movement along current ship heading (no turn)
         moveVector = _Turn();
 
     double timeStamp = GetTimeMSeconds() - m_moveTimer;
@@ -691,8 +689,8 @@ void DestinyManager::_Move(bool orbit) {
  */
 // much of the following turn code is from "Ship Motion in Eve Online" by Scheulagh Santorine, Ph.D
 bool DestinyManager::_IsTurn() {    //is working.  dont change
-    if ((m_shipHeading.isZero()) or (m_targetPoint.isZero())) {
-        _log(PHYSICS__ERROR, "Destiny::_IsTurn() - Entity %s(%u): Heading or Target is null.", mySE->GetName(), mySE->GetID());
+    if (m_targetPoint.isZero()) {
+        _log(PHYSICS__ERROR, "Destiny::_IsTurn() - Entity %s(%u): Target is null.", mySE->GetName(), mySE->GetID());
         m_radians = 0;
         Halt();
         return false;
@@ -951,6 +949,9 @@ void DestinyManager::_InitWarp() {
      *
      * the client seems to accept and agree with the math here.
      */
+
+    _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp(): Entity %s(%u) has initialized warp.", mySE->GetName(), mySE->GetID());
+
     bool cruise = false;
     double warpSpeedInMeters = (m_shipWarpSpeed * ONE_AU_IN_METERS);
     /** @todo  ALL of these will need checks for ship speed and distance.  current categories are not enough play. */
@@ -1063,8 +1064,6 @@ void DestinyManager::_InitWarp() {
 
     //clear targets
     mySE->TargetMgr()->ClearTargets();
-
-    _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp(): Entity %s(%u) has initialized warp.", mySE->GetName(), mySE->GetID());
     _WarpAccel(0);
 }
 
@@ -1998,30 +1997,34 @@ void DestinyManager::SendSpecialEffect(const ShipItemRef shipRef, uint32 moduleI
     SendSingleDestinyUpdate(&up);
 }
 
-void DestinyManager::SendJumpOut(uint32 stargateID) const {
+void DestinyManager::SendJumpOut(uint32 gateID) const {
     DoDestiny_OnSpecialFX10 effect;
-    effect.entityID = mySE->GetID();
-    effect.targetID = stargateID;
-    effect.effect_type = "effects.JumpOut";
-    effect.isOffensive = 0;
-    effect.start = 1;
-    effect.active = 0;
+        effect.entityID = mySE->GetID();
+        effect.targetID = gateID;
+        effect.effect_type = "effects.JumpOut";
+        effect.isOffensive = 0;
+        effect.start = 1;
+        effect.active = 0;
     PyTuple *up = effect.Encode();
     SendSingleDestinyUpdate(&up);
 }
 
-void DestinyManager::SendJumpIn(uint32 stargateID) const {
-    //hacked for simplicity... I dont like jumping in until we have
-    //jumping in general much better quantified.
+void DestinyManager::SendGateActivity(uint32 gateID) const {
+    DoDestiny_OnSpecialFX10 du;
+        du.entityID = gateID;
+        du.effect_type = "effects.GateActivity";
+        du.isOffensive = 0;
+        du.start = 1;
+        du.active = 0;
+    PyTuple* up = du.Encode();
+    SendSingleDestinyUpdate(&up);    //consumed
+}
 
-    DoDestiny_OnSpecialFX10 effect;
-    effect.entityID = mySE->GetID();
-    effect.targetID = stargateID;
-    effect.effect_type = "effects.JumpOut";
-    effect.isOffensive = 0;
-    effect.start = 1;
-    effect.active = 0;
-    PyTuple *up = effect.Encode();
+void DestinyManager::SendBallInteractive(const ShipItemRef shipRef, bool set) const {
+    DoDestiny_SetBallInteractive sbi;
+    sbi.entityID = shipRef->itemID();
+    sbi.interactive = set;
+    PyTuple* up = sbi.Encode();
     SendSingleDestinyUpdate(&up);
 }
 
@@ -2032,7 +2035,6 @@ void DestinyManager::SendJumpOutEffect(std::string JumpEffect, uint32 locationID
     du.entityID = mySE->GetID();
     updates.push_back(du.Encode());
 
-    //send a warping special effects update...
     DoDestiny_OnSpecialFX10 effect;
     effect.entityID = mySE->GetID();
     effect.targetID = locationID;
@@ -2046,9 +2048,6 @@ void DestinyManager::SendJumpOutEffect(std::string JumpEffect, uint32 locationID
 }
 
 void DestinyManager::SendJumpInEffect(std::string JumpEffect) const {
-    //hacked for simplicity... I dont like jumping in until we have
-    //jumping in general much better quantified.
-
     std::vector<PyTuple*> updates;
 
     DoDestiny_OnSpecialFX10 effect;
@@ -2092,28 +2091,6 @@ void DestinyManager::SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool 
         du.bubbleID = bubbleID;
         du.ballIsGlobal = isGlobal;
     PyTuple* up = du.Encode();
-    SendSingleDestinyUpdate(&up);
-}
-
-//this should only be available on gates.
-//   not working correctly for gateActivate   -allan 6Aug14
-void DestinyManager::SendGateActivity(uint32 stargateID) const {
-
-    DoDestiny_OnSpecialFX10 du;
-    du.entityID = stargateID;
-    du.effect_type = "effects.GateActivity";
-    du.isOffensive = 0;
-    du.start = 1;
-    du.active = 1;
-    PyTuple* up = du.Encode();
-    SendSingleDestinyUpdate(&up);    //consumed
-}
-
-void DestinyManager::SendBallInteractive(const ShipItemRef shipRef, bool set) const {
-    DoDestiny_SetBallInteractive sbi;
-    sbi.entityID = shipRef->itemID();
-    sbi.interactive = set;
-    PyTuple* up = sbi.Encode();
     SendSingleDestinyUpdate(&up);
 }
 
