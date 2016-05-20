@@ -35,16 +35,12 @@
 
 using namespace Destiny;
 
-Drone::Drone(
-    InventoryItemRef drone,
-    PyServiceMgr &services,
-    SystemManager *system,
-    const GPoint &position)
-: DynamicSystemEntity(drone, services, system)
+Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSystem, const GPoint &position)
+: DynamicSystemEntity(drone, services, pSystem)
 {
     _droneRef = drone;
     m_AI = new DroneAIMgr(this);
-    m_destiny = new DestinyManager(this, system);
+    m_destiny = new DestinyManager(this);
     m_owner = nullptr;
 
     drone->SetAttribute(AttrIsOnline,            1, false);                                          // Is Online
@@ -96,11 +92,12 @@ Drone::~Drone() {
     SafeDelete(m_AI);
 }
 
-void Drone::SetOwner(Client* pPC) {
-    m_owner = pPC;
-    m_corpID = pPC->GetCorporationID();
-    m_allyID = pPC->GetAllianceID();
-    m_warID = pPC->GetWarFactionID();
+void Drone::SetOwner(Client* pClient) {
+    m_self->ChangeOwner(pClient->GetCharacterID());
+    m_owner = pClient;
+    m_corpID = pClient->GetCorporationID();
+    m_allyID = pClient->GetAllianceID();
+    m_warID = pClient->GetWarFactionID();
 }
 
 void Drone::Process() {
@@ -233,12 +230,12 @@ void Drone::EncodeDestiny( Buffer& into )
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
             warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
-            warp.unknown_x = target.x;
-            warp.unknown_y = target.y;
-            warp.unknown_z = target.z;
+            warp.x = target.x;
+            warp.y = target.y;
+            warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.unk_1 = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
-            warp.unk_2 = 0;         //unknown 64bit number
+            warp.followRange = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
+            warp.followID = 0;         //unknown 64bit number
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;

@@ -33,7 +33,7 @@ namespace Destiny {
 
 struct AddBall_header {
     uint8 packet_type;  /* 0 = full state, 1 = balls */
-    uint32 eventStamp;  /* entityList stamp */
+    uint32 eventStamp;  /* statestamp */
 };
 
 typedef enum {
@@ -134,12 +134,12 @@ struct DSTBALL_STOP_Struct {
 
 struct DSTBALL_WARP_Struct {
     uint8  formationID;
-    double unknown_x;    //object+0xD0 (as a set of 3)
-    double unknown_y;
-    double unknown_z;
-    uint32 effectStamp;    //might be a destiny sequence number (back)
-    double unk_1;       //followRange
-    uint64 unk_2;       //followID
+    double x;             //object+0xD0 (as a set of 3)
+    double y;
+    double z;
+    uint32 effectStamp;   //statestamp of when warp started
+    double followRange;   //followRange
+    uint64 followID;      //followID
     uint64 ownerID;
 };
 

@@ -161,12 +161,12 @@ void Concord::EncodeDestiny( Buffer& into ) const
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
             warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
-            warp.unknown_x = target.x;
-            warp.unknown_y = target.y;
-            warp.unknown_z = target.z;
+            warp.x = target.x;
+            warp.y = target.y;
+            warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.unk_1 = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
-            warp.unk_2 = 0;         //unknown 64bit number
+            warp.followRange = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
+            warp.followID = 0;         //unknown 64bit number
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;

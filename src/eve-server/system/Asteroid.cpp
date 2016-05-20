@@ -43,10 +43,10 @@ void AsteroidSE::Process() {
     SystemEntity::Process();
 }
 
-void AsteroidSE::ProcessOther() {
+void AsteroidSE::ProcessObject() {
     /* called by EntityList::Process on each tic */
     /* this is empty default call */
-    ObjectSystemEntity::ProcessOther();
+    ObjectSystemEntity::ProcessObject();
 
     /*  set/check timers for grow/respawn, etc */
     if (m_growTimer.Check())

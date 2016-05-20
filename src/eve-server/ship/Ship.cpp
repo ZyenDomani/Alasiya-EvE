@@ -151,7 +151,7 @@ uint32 ShipItem::CreateItemID(ItemFactory &factory, ItemData &data) {
 
 bool ShipItem::_Load()
 {
-    if (typeID() == EVEDB::invTypes::typeCapsule) return true;
+    if (type().id() == EVEDB::invTypes::typeCapsule) return true;
     if (m_IsLoaded && m_ModuleManager) return true;
     // load attributes
     if (!InventoryItem::_Load()) return false;
@@ -285,12 +285,13 @@ void ShipItem::InitPod() {
 }
 
 void ShipItem::SetPlayer(Client* pClient) {
-    if (!pClient)
+    if (m_pilot == pClient) return;
+    m_pilot = pClient;
+    if (!m_pilot) {
         if (m_ModuleManager)
             m_ModuleManager->CharacterLeavingShip();
-    m_pilot = pClient;
-    if (!m_pilot)
         return;
+    }
     Init();
     m_ModuleManager->CharacterBoardingShip();
 }
@@ -764,10 +765,18 @@ void ShipItem::Undock() {
         SetShipCapacitorLevel(1.0);
     }
     //get list of modules to activate from ShipBound::Handle_Undock()
-    if (m_onlineModuleVec.size() < 1) return;
     for (auto cur : m_onlineModuleVec) {
         m_ModuleManager->Online(cur);
     }
+    Move(locationID(), (type().id() == EVEDB::invTypes::typeCapsule ? flagCapsule : flagAutoFit));
+}
+
+void ShipItem::Warp() {
+    m_ModuleManager->ShipWarping();
+}
+
+void ShipItem::Jump() {
+    m_ModuleManager->ShipJumping();
 }
 
 void ShipItem::Heal()
@@ -1230,10 +1239,10 @@ std::string ShipItem::GetShipDNA()
 
 
 /* DynamicSystemEntity representing ship object in space */
-Ship::Ship(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-: DynamicSystemEntity(self, services, system)
+Ship::Ship(InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem)
+: DynamicSystemEntity(self, services, pSystem)
 {
-    m_destiny = new DestinyManager(this, system);
+    m_destiny = new DestinyManager(this);
     m_podShipID = 0;
     m_player = nullptr;
     _log(SHIP__INFO, "Created ShipSE %p for item %u", this, self->itemID());
@@ -1270,7 +1279,11 @@ void Ship::EncodeDestiny( Buffer& into ) {
         mode = DSTBALL_ORBIT;
     else if (m_destiny->IsMoving())
         mode = DSTBALL_GOTO;
-
+/*
+    NameStruct name;
+        name.name = GetName();
+        name.name_len = sizeof(name.name);
+  */
     BallHeader head;
         head.entityID = GetID();
         head.mode = mode;
@@ -1298,13 +1311,13 @@ void Ship::EncodeDestiny( Buffer& into ) {
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
-            warp.effectStamp = -1;   //unknown value  seen many -1, few other random 4-5 digits
-            warp.unknown_x = target.x;
-            warp.unknown_y = target.y;
-            warp.unknown_z = target.z;
+            warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
+            warp.x = target.x;
+            warp.y = target.y;
+            warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.unk_1 = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
-            warp.unk_2 = 0;         //unknown 64bit number
+            warp.followRange = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
+            warp.followID = 0;         //unknown 64bit number
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
@@ -1331,7 +1344,23 @@ void Ship::EncodeDestiny( Buffer& into ) {
         into.Append( main );
     }
 
-    _log(COMMON__WARNING, "Ship::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    std::string modeStr = "Goto";
+    switch (head.mode) {
+        case 1: modeStr = "Follow"; break;
+        case 2: modeStr = "Stop"; break;
+        case 3: modeStr = "Warp"; break;
+        case 4: modeStr = "Orbit"; break;
+        case 5: modeStr = "Missile"; break;
+        case 6: modeStr = "Mushroom"; break;
+        case 7: modeStr = "Boid"; break;
+        case 8: modeStr = "Troll"; break;
+        case 9: modeStr = "Miniball"; break;
+        case 10: modeStr = "Field"; break;
+        case 11: modeStr = "Rigid"; break;
+        case 12: modeStr = "Formation"; break;
+    }
+
+    _log(SHIP__INFO, "Ship::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X", GetName(), head.entityID, modeStr.c_str(), head.flags);
 }
 
 void Ship::MakeDamageState(DoDestinyDamageState &into) {

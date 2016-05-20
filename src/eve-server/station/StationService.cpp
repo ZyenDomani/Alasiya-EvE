@@ -47,24 +47,22 @@ StationService::~StationService() {
 
 PyResult StationService::Handle_GetSolarSystem(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
-    if (!arg.Decode(&call.tuple))
-    {
+    if (!arg.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "%s: Failed to decode GetSolarSystem arguments.", call.client->GetName());
         return NULL;
     }
 
-    int system = arg.arg;
-
     // this needs to return some cache status?
-    return new PyObject("util.CachedObject", new PyInt(system));
+    return new PyObject("util.CachedObject", new PyInt(arg.arg));
 }
 
 PyResult StationService::Handle_GetGuests(PyCallArgs &call) {		// this returns ALL docked clients....
     PyList* res = new PyList();
 
     std::vector<Client*> clients;
+    clients.clear();
     sEntityList.FindClientByStationID(call.client->GetStationID(), clients);
-    for(auto cur : clients) {
+    for (auto cur : clients) {
         PyTuple* t = new PyTuple(4);
 			t->items[0] = new PyInt(cur->GetCharacterID());
 			t->items[1] = new PyInt(cur->GetCorporationID());
@@ -72,7 +70,6 @@ PyResult StationService::Handle_GetGuests(PyCallArgs &call) {		// this returns A
 			t->items[3] = new PyInt(cur->GetWarFactionID());
         res->AddItem(t);
     }
-    clients.clear();
 
 	return res;
 }

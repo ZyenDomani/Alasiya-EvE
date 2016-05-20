@@ -453,6 +453,21 @@ typedef enum {
     corpSerpentis           = 1000135
 } corpDef;
 
+// only for drones
+typedef enum {
+    entityIdle              = 0,
+    entityCombat            = 1,
+    entityMining            = 2,
+    entityApproaching       = 3,
+    entityDeparting         = 4,
+    entityDeparting2        = 5,
+    entityPursuit           = 6,
+    entityFleeing           = 7,
+    entityUnknown           = 8,
+    entityOperating         = 9,
+    entityEngage            = 10
+} aiState;
+
 // not sure what these are used for...stateFlags??
 typedef enum {
     mouseOver = 1,

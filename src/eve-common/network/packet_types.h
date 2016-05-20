@@ -34,7 +34,8 @@
 #include "../EVE_Defines.h"
 #include "../EVE_Effects.h"
 #include "../EVE_Flags.h"
-#include "../EVE_POS_enums.h"
+#include "../EVE_Inventory.h"
+#include "../EVE_POS.h"
 #include "../EVE_Roles.h"
 #include "../EVE_Scanning.h"
 #include "../EVE_Skills.h"
@@ -112,38 +113,6 @@ enum SESSION_TYPE
     SESSION_TYPE_GAME = 5
 };
 
-//these came from the 'constants' object:
-// updated for change in crucible.  -allan 16May16
-enum EVEItemChangeType {
-    ixItemID        = 0,    //also ixLauncherCapacity?
-    ixTypeID        = 1,    //also ixLauncherUsed = 1,
-    ixOwnerID       = 2,    //also ixLauncherChargeItem?
-    ixLocationID    = 3,
-    ixFlag          = 4,
-    ixQuantity      = 5,
-    ixGroupID       = 6,
-    ixCategoryID    = 7,
-    ixCustomInfo    = 8,
-    ixStackSize     = 9,
-    ixSingleton     = 10,
-    ixSubitems      = 11
-};
-
-enum EVEContainerTypes {
-    containerWallet            = 10001,
-    containerGlobal            = 10002,
-    containerSolarSystem       = 10003,
-    containerHangar            = 10004,
-    containerScrapHeap         = 10005,
-    containerFactory           = 10006,
-    containerBank              = 10007,
-    containerRecycler          = 10008,
-    containerOffices           = 10009,
-    containerStationCharacters = 10010,
-    containerCharacter         = 10011,
-    containerCorpMarket        = 10012
-};
-
 enum EVERookieShipTypes {
     amarrRookie                = 596,
     caldariRookie              = 601,
@@ -152,7 +121,7 @@ enum EVERookieShipTypes {
 };
 
 //  -allan 5Aug14
-typedef enum {
+enum SearchTypes {
     searchResultAgent           = 1,
     searchResultCharacter       = 2,
     searchResultCorporation     = 3,
@@ -167,7 +136,7 @@ typedef enum {
     //searchResultAllLocations = [6, 7, 8, 9],
     searchMaxResults            = 500,
     searchMinWildcardLength     = 3
-} SearchTypes;
+};
 
 enum EVETutorialTypes {
     advchannelsTutorial = 50,
@@ -525,14 +494,6 @@ facwarStatTypeLoss = 1
 //
 // First letter of `Name` field if capitalized when prefixed.
 // see InsertConstantsFromRowset
-
-/*
- * typedef enum {
- *    posShieldStartLevel = 0.505f,
- *    posMaxShieldPercentageForWatch = 0.95f,
- *    posMinDamageDiffToPersist = 0.05f
- * };
- */
 
 /*
  * cacheSystemIntervals = 2000109999

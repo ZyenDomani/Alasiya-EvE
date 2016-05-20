@@ -333,11 +333,11 @@ void MiningLaser::_ProcessOreCycle(bool partial)
     // Mining barge bonuses are distributed typically, while exhumers will have a 2-step approach.
     // As barges do not have any hardpoints, i will not hardcode the bonuses to strip miners only.
     // First off - barges.
-    if (m_Ship->type().groupID() == EVEDB::invGroups::Mining_Barge)
+    if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge)
     	oreVolumeToPull *= (1 + (0.03 * (pChar->GetSkillLevel(skillMiningBarge, true))));
 
     // Now exhumers - first off we add the Mining Barge yield bonus.
-    if (m_Ship->type().groupID() == EVEDB::invGroups::Elite_Mining_Barge)
+    if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer)
     	oreVolumeToPull *= (1 + (0.03 * (pChar->GetSkillLevel(skillMiningBarge, true))));
     // Now second layer - Skiff and Hulk specialization points. Mackinaw is not added here as it is the Ice mining vessel.
     // Skiff - Mercoxit mining vessel: +60% to Mercoxit mining yield per level.
@@ -608,9 +608,9 @@ double MiningLaser::_GetDuration()
     //FIXME - For now server cycle end and client cycle indicator are not synchronized, so for now time modification is disabled.
     /*
     duration *= (1 - ( 0.01 * (pChar->GetSkillLevel(skillMining, true))));               //  1% decrease in duration
-    if (m_Ship->type().groupID() == EVEDB::invGroups::Mining_Barge)
+    if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge)
         duration *= (1 - (0.01 * (pChar->GetSkillLevel(skillMiningBarge, true))));       //  1% decrease in duration
-    else if (m_Ship->type().groupID() == EVEDB::invGroups::Elite_Mining_Barge)
+    else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer)
         duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true))));          //  2% decrease in duration
     if (pChar->fleetID()) {   //FIXME  always returns 0 for now.  fix once fleets are implemented.
         duration *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningForeman, true))));    //  2% decrease in duration

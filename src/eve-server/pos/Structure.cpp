@@ -94,12 +94,27 @@ void StructureItem::Delete()
 }
 
 void StructureItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const {
+    /** @todo update this to new inventory system  */
     EvilNumber capacityUsed(0);
     std::vector<InventoryItemRef> items;
     m_inventory->FindByFlag(flag, items);
     for (auto cur : items)
         capacityUsed += cur->GetAttribute(AttrVolume);
     capacityUsed += item->GetAttribute(AttrVolume);
+
+    /*
+    AttrSpecialFuelBayCapacity = 1549,
+    AttrSpecialOreHoldCapacity = 1556,
+    AttrSpecialGasHoldCapacity = 1557,
+    AttrSpecialMineralHoldCapacity = 1558,
+    AttrSpecialSalvageHoldCapacity = 1559,
+    AttrSpecialShipHoldCapacity = 1560,
+    AttrSpecialSmallShipHoldCapacity = 1561,
+    AttrSpecialMediumShipHoldCapacity = 1562,
+    AttrSpecialLargeShipHoldCapacity = 1563,
+    AttrSpecialIndustrialShipHoldCapacity = 1564,
+    AttrSpecialAmmoHoldCapacity = 1573,
+    */
 
     switch (flag) {
         case flagCargoHold: {
@@ -111,7 +126,7 @@ void StructureItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) co
                 throw PyException( MakeCustomError( "Not enough Secondary Storage space!") );
         }
         case flagSpecializedAmmoHold: {
-            if( capacityUsed > GetAttribute(AttrAmmoCapacity) )
+            if( capacityUsed > GetAttribute(AttrSpecialAmmoHoldCapacity) )
                 throw PyException( MakeCustomError( "Not enough Ammo Storage space!") );
         }
         case flagSpecializedFuelBay: {
@@ -148,7 +163,7 @@ void StructureItem::AddItem( InventoryItemRef item )
 
 
 /** @todo (Allan) this class needs more research to finish
- *
+ * see pics in ::GamePC/G/games/EvE/misc/POS
     flagStructureActive             = 144,
     flagStructureInactive           = 145,
 
@@ -171,6 +186,57 @@ void StructureItem::AddItem( InventoryItemRef item )
     AttrResourceOnline4Type = 708,
 
     ***  many other attributes for towers and their modules.....
+
+    AttrControlTowerMissileVelocityBonus = 792,
+    AttrControlTowerSize = 1031,
+    AttrAnchoringSecurityLevelMax = 1032,
+    AttrAnchoringRequiresSovereignty = 1033,
+    AttrControlTowerMinimumDistance = 1165,
+    AttrPosPlayerControlStructure = 1167,
+    AttrIsIncapacitated = 1168,
+    AttrPosStructureControlAmount = 1174,
+    AttrOnliningRequiresSovereigntyLevel = 1185,
+    AttrPosAnchoredPerSolarSystemAmount = 1195,
+    AttrPosStructureControlDistanceMax = 1214,
+    AttrAnchoringRequiresSovereigntyLevel = 1215,
+    AttrHarvesterType = 709,
+    AttrHarvesterQuality = 710,
+    AttrMoonAnchorDistance = 711,
+    AttrUsageDamagePercent = 712,
+    AttrConsumptionType = 713,
+    AttrConsumptionQuantity = 714,
+    AttrMaxOperationalDistance = 715,
+    AttrMaxOperationalUsers = 716,
+    AttrRefiningYieldMultiplier = 717,
+    AttrOperationalDuration = 719,
+    AttrRefineryCapacity = 720,
+    AttrRefiningDelayMultiplier = 721,
+    AttrPosControlTowerPeriod = 722,
+    AttrMoonMiningAmount = 726,
+    AttrControlTowerLaserDamageBonus = 728,
+    AttrControlTowerLaserOptimalBonus = 750,
+    AttrControlTowerHybridOptimalBonus = 751,
+    AttrControlTowerProjectileOptimalBonus = 752,
+    AttrControlTowerProjectileFallOffBonus = 753,
+    AttrControlTowerProjectileROFBonus = 754,
+    AttrControlTowerMissileROFBonus = 755,
+    AttrControlTowerMoonHarvesterCPUBonus = 756,
+    AttrControlTowerSiloCapacityBonus = 757,
+    AttrControlTowerLaserProximityRangeBonus = 760,
+    AttrControlTowerProjectileProximityRangeBonus = 761,
+    AttrControlTowerHybridProximityRangeBonus = 762,
+    AttrMaxGroupActive = 763,
+    AttrControlTowerEwRofBonus = 764,
+    AttrScanRange = 765,
+    AttrControlTowerHybridDamageBonus = 766,
+    AttrTrackingSpeedBonus = 767,
+    AttrMaxRangeBonus2 = 769,
+    AttrControlTowerEwTargetSwitchDelayBonus = 770,
+    AttrAmmoCapacity = 771,
+    AttrActivationBlocked = 1349,
+    AttrActivationBlockedStrenght = 1350,
+    AttrPosCargobayAcceptType = 1351,
+    AttrPosCargobayAcceptGroup = 1352,
     */
 StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system)
 : ObjectSystemEntity(structure, services, system)
@@ -245,6 +311,10 @@ void StructureSE::Init(StructureItemRef structure)
     m_towerID = 0;
 }
 
+/*
+ * fuel bay = flag 0
+ * strot bay = flag 122 (2nd storage)
+ */
 void StructureSE::Process() {
     /* called by EntityList::Process on every loop */
     /* this is empty default call */
@@ -252,12 +322,11 @@ void StructureSE::Process() {
     /** @todo (Allan)  will need some form of AI to engage defensive modules if/when any structure is attacked */
 }
 
-void StructureSE::ProcessOther() {
+void StructureSE::ProcessObject() {
     /* called by EntityList::Process on each tic */
     /* this is empty default call */
-    //ObjectSystemEntity::ProcessOther();
+    ObjectSystemEntity::ProcessObject();
 }
-
 
 void StructureSE::EncodeDestiny( Buffer& into )
 {
@@ -325,7 +394,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
 }
 
 PyDict *StructureSE::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for StructureSE %u", m_self->itemID());
+    _log(DESTINY__MESSAGE, "MakeSlimItem for StructureSE %u", m_self->itemID());
     /** @todo (Allan) *Timestamp will need to be set to time current state is started. */
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
@@ -392,7 +461,7 @@ uint8 StructureSE::GetStructureState() const {
 
 PyTuple *StructureSE::GetEffectState() {
     /** @todo (Allan) fix this when POS system is more operational */
-    /* see file:///home/allan/Desktop/cruc/entities/pos_packets/control_tower_packets for more info */
+    /* see file:///home/allan/Desktop/cruc/entities/pos_packets/control_tower_packets and cruc/entities/structures for more info */
     std::vector<int32, std::allocator<int32> > area;
     DoDestiny_OnSpecialFX13 effect;
         if (m_module)
@@ -414,31 +483,128 @@ PyTuple *StructureSE::GetEffectState() {
     PyTuple *update = effect.Encode();
     return update;
 }
-    /*
-                          [PyTuple 2 items]                         <<<< in AddBalls
-                            [PyInt 14492]
-                            [PyTuple 2 items]
-                              [PyString "OnSpecialFX"]
-                              [PyTuple 14 items]
-                                [PyIntegerVar 1006353458454]        <<<< 365    Gallente Control Tower Small
-                                [PyIntegerVar 1006353458454]
-                                [PyInt 20064]
-                                [PyNone]
-                                [PyNone]
-                                [PyList 0 items]
-                                [PyString "effects.StructureOnline"]
-                                [PyBool False]
-                                [PyInt 1]
-                                [PyInt 1]
-                                [PyInt -1]
-                                [PyInt 0]
-                                [PyIntegerVar 129813018310933856]
-                                [PyNone]
+/*
+ *    [PyTuple 1 items]
+ *      [PyTuple 2 items]
+ *        [PyInt 0]
+ *        [PySubStream 160 bytes]
+ *          [PyTuple 2 items]
+ *            [PyInt 0]
+ *            [PyTuple 2 items]
+ *              [PyInt 1]
+ *              [PyTuple 3 items]
+ *                [PyList 1 items]
+ *                  [PyTuple 2 items]
+ *                    [PyInt 12193]
+ *                    [PyTuple 2 items]
+ *                      [PyString "PackagedAction"]
+ *                      [PySubStream 123 bytes]
+ *                        [PyList 1 items]
+ *                          [PyTuple 2 items]
+ *                            [PyInt 12193]
+ *                            [PyTuple 2 items]
+ *                              [PyString "AddBalls2"]
+ *                              [PyTuple 1 items]
+ *                                [PyTuple 2 items]
+ *                                  [Destiny Header]
+ *                                    [PacketType: 1]
+ *                                    [Stamp: 12193]
+ *                                  [Ball]
+ *                                    [Name: ]
+ *                                    [FormationId: 255]
+ *                                    [Header]
+ *                                      [ItemId: 9000000000000038313]
+ *                                      [Mode: Stop (2)]
+ *                                      [Flags: 0 (0)]
+ *                                      [Radius: 30000]
+ *                                      [Location: (-29259571200, -487710720, 55060439040)]
+ *                                    [ExtraHeader]
+ *                                      [AllianceId: -1]
+ *                                      [CorporationId: 98038978]
+ *                                      [CloakMode: 0]
+ *                                      [Harmonic: NaN]
+ *                                      [Mass: 10000000000]
+ *
+ *                                  [PyList 1 items]
+ *                                    [PyDict 3 kvp]
+ *                                      [PyString "itemID"]
+ *                                      [PyIntegerVar 9000000000000038313]
+ *                                      [PyString "typeID"] (groupID 411)
+ *                                      [PyInt 16103]                       <<<  POS tower force field?
+ *                                      [PyString "ownerID"]
+ *                                      [PyInt 98038978]
+ *                [PyBool True]
+ *                [PyList 0 items]
+ *    [PyDict 1 kvp]
+ *      [PyString "sn"]
+ *      [PyIntegerVar 85]
+ *
+ *    [PyTuple 1 items]
+ *      [PyTuple 2 items]
+ *        [PyInt 0]
+ *        [PySubStream 127 bytes]
+ *          [PyTuple 2 items]
+ *            [PyInt 0]
+ *            [PyTuple 2 items]
+ *              [PyInt 1]
+ *              [PyTuple 2 items]
+ *                [PyList 3 items]
+ *                  [PyTuple 2 items]
+ *                    [PyInt 12193]
+ *                    [PyTuple 2 items]
+ *                      [PyString "SetBallHarmonic"]
+ *                      [PyTuple 5 items]
+ *                        [PyIntegerVar 1002330621081]
+ *                        [PyIntegerVar 8039077077960405911]
+ *                        [PyInt 98038978]
+ *                        [PyInt -1]
+ *                        [PyInt 0]
+ *                  [PyTuple 2 items]
+ *                    [PyInt 12193]
+ *                    [PyTuple 2 items]
+ *                      [PyString "SetBallMassive"]
+ *                      [PyTuple 2 items]
+ *                        [PyIntegerVar 9000000000000038313]
+ *                        [PyInt 1]
+ *                  [PyTuple 2 items]
+ *                    [PyInt 12193]
+ *                    [PyTuple 2 items]
+ *                      [PyString "SetBallHarmonic"]
+ *                      [PyTuple 5 items]
+ *                        [PyIntegerVar 9000000000000038313]
+ *                        [PyIntegerVar 8039077077960405911]
+ *                        [PyInt 98038978]
+ *                        [PyInt -1]
+ *                        [PyInt 1]
+ *                [PyBool False]
+ *    [PyDict 1 kvp]
+ *      [PyString "sn"]
+ *      [PyIntegerVar 86]
+ *
+ *
+ *
 
-                            [PyString "effectStates"]               <<<< in SetState
+
+                      [PyString "SetState"]
+                      [PyTuple 1 items]
+                        [PyObjectData Name: util.KeyVal]
+                          [PyDict 10 kvp]
+                            [PyString "stamp"]
+                            [PyInt 4480]
+                            [PyString "damageState"]
+                            [PyDict 110 kvp]
+                              [PyIntegerVar 1002330708702]
+                              [PyList 3 items]
+                                [PyTuple 3 items]
+                                  [PyFloat 0.995216219742903]
+                                  [PyFloat 40000000]
+                                  [PyIntegerVar 129527416407184682]
+                                [PyFloat 1]
+                                [PyFloat 1]
+                            [PyString "effectStates"]
                             [PyList 1 items]
                               [PyTuple 14 items]
-                                [PyIntegerVar 1002330708702]        <<<< Territorial Claim Unit
+                                [PyIntegerVar 1002330708702]
                                 [PyIntegerVar 1002330708702]
                                 [PyInt 32226]
                                 [PyNone]
@@ -450,7 +616,7 @@ PyTuple *StructureSE::GetEffectState() {
                                 [PyInt 1]
                                 [PyInt -1]
                                 [PyInt 0]
-                                [PyIntegerVar 129514900819404614]
+                                [PyIntegerVar 129527371609182416]
                                 [PyNone]
                         */
 

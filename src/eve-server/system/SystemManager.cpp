@@ -504,18 +504,18 @@ void SystemManager::Process() {
     }
 }
 
-//called once per second. (1Hz)
+//called once per second from EntityList. (1Hz Tic)
 bool SystemManager::ProcessTic() {
-    if (!m_players) return SystemActivity();
     std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
     while (cur != m_entities.end()) {
         if (cur->second) {
-            if (cur->second->IsDynamicEntity()) /* SE rewrite - ship process is not being called....fix this! */
-                cur->second->ProcessDestiny(); /* call movement on dynamics here */
+            /** @todo will need to add a process call to TargetMgr here for all SEs that require it */
+            if (cur->second->IsDynamicEntity())
+                cur->second->ProcessDestiny(); /* call movement functions on dynamics here */
             else if (cur->second->IsObjectEntity())
-                cur->second->ProcessOther();   /* call various other functions on celestials here */
+                cur->second->ProcessObject();   /* call non-movement functions on objects here */
         } else {
-            sLog.Error("SystemManager::Process()", "SystemEntity* for %u was deleted from m_entities map...removing from my list.", cur->first);
+            sLog.Error("SystemManager::ProcessTic()", "SystemEntity* for %u was deleted from m_entities map...removing from my list.", cur->first);
             m_entities.erase(cur->first);
             m_entityChanged = true;
         }
@@ -529,9 +529,6 @@ bool SystemManager::ProcessTic() {
     /** @todo implement a gate timer (5s) and process for jump queue to remove timer from client */
 
     /* the following are coded for single-tic calls */
-    for (auto cur : m_clients)  /* clients are no longer in the m_entities map */
-        cur.second->Process();
-
     bubbles.Process();
     m_anomMgr->Process();
     m_beltMgr->Process();
@@ -658,7 +655,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
 {
     _log(SPAWN__MESSAGE, "Spawn called for bubble %u in system %u(%.4f), region %u.",
          pSysBubble->GetID(), m_systemID, m_securityRating, m_regionID);
-    uint8 count = BeltCount();
+    uint8 count = m_beltCount;
     if (count > 5) count -= 2;
     if (m_activeRatSpawns < count ) {
         m_spawnMgr->DoSpawnForBubble(pSysBubble, m_regionID, m_securityRating);
@@ -687,13 +684,13 @@ SystemEntity* SystemManager::get(uint32 entityID) const {
     return (res->second);
 }
 
-void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState& ss) const {
+void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState& into, bool login) const {
     using namespace Destiny;
     Buffer* stateBuffer = new Buffer;
 
     AddBall_header head;
-    head.packet_type = 0;   // 0 = full state   1 = balls
-    head.sequence = ss.stamp;
+        head.packet_type = 0;   // 0 = full state   1 = balls
+        head.eventStamp = into.stamp;
     stateBuffer->Append( head );
 
     std::vector<SystemEntity*> visibleEntities;
@@ -703,19 +700,19 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
             visibleEntities.push_back(cur.second);
     }
 
-    if (bubble)
-       bubble->GetEntities(visibleEntities);
+    if (bubble and !login)
+       ;// bubble->GetEntities(visibleEntities);
 
-    ss.slims = new PyList;
-    ss.effectStates = new PyList;
-    ss.allianceBridges = new PyList;
+    into.slims = new PyList;
+    into.effectStates = new PyList;
+    into.allianceBridges = new PyList;
 
     //go through all entities in bubble and gather the info we need...
     for (auto cur : visibleEntities) {
         if (!cur->IsMissileSE())
-            ss.damageState[ cur->GetID() ] = cur->MakeDamageState();
+            into.damageState[ cur->GetID() ] = cur->MakeDamageState();
 
-        ss.slims->AddItem( new PyObject( "foo.SlimItem", cur->MakeSlimItem() ) );
+        into.slims->AddItem( new PyObject( "foo.SlimItem", cur->MakeSlimItem() ) );
 
         //append the destiny binary data...
         cur->EncodeDestiny( *stateBuffer );
@@ -734,10 +731,10 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
         //  [for shipID, toSolarsystemID, toBeaconID in bag.allianceBridges:]
     }
 
-    ss.destiny_state = new PyBuffer( &stateBuffer );
+    into.destiny_state = new PyBuffer( &stateBuffer );
     SafeDelete( stateBuffer );
 
-    ss.droneState = m_db.GetSolDroneState( m_systemID );
+    into.droneState = m_db.GetSolDroneState( m_systemID );
 
     /** @todo  create  a PyPackedRow here where we have all the solItem info,
      * instead of hitting the db for every call. (each client in each system)
@@ -745,7 +742,7 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
      *    DBRowDescriptor *header = new DBRowDescriptor( result );
      *    PyPackedRow* res = new PyPackedRow( header );
      */
-    ss.solItem = m_db.GetSolItem( m_systemID );
+    into.solItem = m_db.GetSolItem( m_systemID );
 
     /*
      *        [PyString "solItem"]
@@ -763,12 +760,10 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
 
 
     _log( DESTINY__SETSTATE, "Current State of %s", GetName().c_str() );
-    ss.Dump( DESTINY__SETSTATE, "    " );
+    into.Dump( DESTINY__SETSTATE, "    " );
 
-    /*  this doesnt work right.  not sure why/
-     _ log( DESTINY__SETSTATE, "    Decoded:" );
-     Destiny::DumpUpdate( DESTINY__SETSTATE, &( ss.destiny_state->content() )[0], (uint32)ss.destiny_state->content().size() );
-     */
+    _log( DESTINY__SETSTATE_DECODE, "    Decoded:" );
+    Destiny::DumpUpdate( DESTINY__SETSTATE_DECODE, &( into.destiny_state->content() )[0], (uint32)into.destiny_state->content().size() );
 }
 
 ItemFactory* SystemManager::itemFactory() const
@@ -799,9 +794,9 @@ ShipItemRef SystemManager::GetShipFromInventory(uint32 shipID)
     return RefPtr<ShipItem>::StaticCast( m_solarSystemRef->GetInventory()->GetByID( shipID ) );
 }
 
-CargoContainerRef SystemManager::GetContainerFromInventory(uint32 contD)
+CargoContainerRef SystemManager::GetContainerFromInventory(uint32 contID)
 {
-    return RefPtr<CargoContainer>::StaticCast( m_solarSystemRef->GetInventory()->GetByID( contD ) );
+    return RefPtr<CargoContainer>::StaticCast( m_solarSystemRef->GetInventory()->GetByID( contID ) );
 }
 
 StationItemRef SystemManager::GetStationFromInventory(uint32 stationID)

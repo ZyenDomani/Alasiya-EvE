@@ -634,7 +634,7 @@ PyResult Command_location(Client* who, CommandDB* db, PyServiceMgr* services, co
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
     if (!who->GetShipSE()->DestinyMgr())
-        who->ResetDestiny();
+        who->SetDestiny();
 
     DestinyManager *dm = who->GetShipSE()->DestinyMgr();
     SystemBubble *b = who->GetShipSE()->SysBubble();
@@ -665,7 +665,7 @@ PyResult Command_syncloc(Client* who, CommandDB* db, PyServiceMgr* services, con
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
     if (!who->GetShipSE()->DestinyMgr())
-        who->ResetDestiny();
+        who->SetDestiny();
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
 
@@ -716,28 +716,43 @@ PyResult Command_setbpattr(Client* who, CommandDB* db, PyServiceMgr* services, c
     return new PyString("Properties modified.");
 }
 
-PyResult Command_state(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
+PyResult Command_sendstate(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
     if (!who->GetShipSE()->DestinyMgr())
-        who->ResetDestiny();
+        who->SetDestiny();
 
+    who->SetStateSent(false);
     who->GetShipSE()->DestinyMgr()->SendSetState();
-    return new PyString("Update sent.");;
+    return new PyString("Update sent.");
 }
 
-PyResult Command_update(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
+PyResult Command_addball(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
     if (!who->GetShipSE()->DestinyMgr())
-        who->ResetDestiny();
+        who->SetDestiny();
 
     SystemBubble *m_bubble = who->GetShipSE()->SysBubble();
     m_bubble->SendAddBalls(who->GetShipSE());
+
+    return new PyString("Update sent.");
+}
+
+PyResult Command_addball2(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
+    if (!who->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->SysBubble())
+        who->EnterSystem(who->GetSystemID());
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny();
+
+    SystemBubble *m_bubble = who->GetShipSE()->SysBubble();
+    m_bubble->SendAddBalls2(who->GetShipSE());
 
     return new PyString("Update sent.");
 }
@@ -962,8 +977,7 @@ PyResult Command_giveskills(Client* who, CommandDB* db, PyServiceMgr* services, 
 PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     uint8 level = 0, oldLevel = 0;
     uint32 ownerID = 0, skillID = 0;
-    EvilNumber oldPoints = 0;
-    int64 newPoints = 0;
+    EvilNumber oldPoints = 0, newPoints = 0;
     CharacterRef character;
     Client *pTarget = nullptr;
 
@@ -1001,7 +1015,6 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
 
     if (pTarget && character.get()) {       // Make sure references are not NULL before trying to use them:
         SkillRef skill;
-        InventoryItemRef item;
 
         if (character->HasSkillTrainedToLevel(skillID, level))
             return new PyNone();
@@ -1009,43 +1022,36 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
             skill = character->GetSkill(skillID);
             oldLevel = skill->GetAttribute(AttrSkillLevel).get_int();
             oldPoints = skill->GetAttribute(AttrSkillPoints);
-            EvilNumber tmp = EVIL_SKILL_BASE_POINTS * skill->GetAttribute(AttrSkillTimeConstant) * EvilNumber::pow(2, (2.5*(level -1)));
-            newPoints = tmp.get_int();
+            //EvilNumber tmp = EVIL_SKILL_BASE_POINTS * skill->GetAttribute(AttrSkillTimeConstant) * EvilNumber::pow(2, (2.5*(level - 1)));
+            newPoints = skill->GetSPForLevel((EvilNumber)level);
             skill->SetAttribute(AttrSkillLevel, level);
-            skill->SetAttribute(AttrSkillPoints, tmp);
+            skill->SetAttribute(AttrSkillPoints, newPoints);
 
             if (skill->flag() == flagSkillInTraining) {
-                skill->SetFlag(flagSkill, false);
-                skill->SetAttribute(AttrExpiryTime, 0, false);
+                skill->SetFlag(flagSkill);
+                skill->SetAttribute(AttrExpiryTime, 0);
             }
-
-            item = services->item_factory->GetItem(skill.get()->itemID());
         } else {    // Character DOES NOT have this skill
             ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
-            item = services->item_factory->SpawnItem(idata);
+            skill = services->item_factory->SpawnSkill(idata);
 
-            if (!item) {
+            character->AddItem(skill);
+            if (!skill) {
                 throw PyException(MakeCustomError("Unable to create item for skillID %u.", skillID));
                 return new PyString ("Skill Gifting Failure - Unable to create item for skillID %u.", skillID);
             } else {
-                skill = SkillRef::StaticCast(item);
-                EvilNumber tmp = EVIL_SKILL_BASE_POINTS * skill->GetAttribute(AttrSkillTimeConstant) * EvilNumber::pow(2, (2.5*(level - 1)));
-                newPoints = tmp.get_int();
+                newPoints = skill->GetSPForLevel((EvilNumber)level);
                 skill->SetAttribute(AttrSkillLevel, level);
-                skill->SetAttribute(AttrSkillPoints, tmp);
+                skill->SetAttribute(AttrSkillPoints, newPoints);
             }
         }
-
-        item->SaveAttributes();
-
-        // Either way, this character now has this skill trained to the specified level, so inform client:
-        character->SendSkillComplete(skill.get(), oldLevel, level, oldPoints, newPoints);
+        skill->SaveItem();
 
         //  save gm skill gift in history  -allan
-        character->SaveSkillHistory(skillEventGMGive, EvilTimeNow().get_float(), ownerID, skillID, level,
-                                    skill->GetAttribute(AttrSkillPoints).get_float(), character->GetTotalSP().get_float());
+        character->SaveSkillHistory(skillEventGMGive, EvilTimeNow().get_float(), ownerID, skillID, level, \
+                                    newPoints.get_float(), character->GetTotalSP().get_float());
 
-        sLog.Log("Command::GiveSkill", "skill %u upped to level %u.", skillID, level);
+        sLog.Log("Command::GiveSkill", "skill %u set to level %u.", skillID, level);
 
         return new PyString ("Skill Gifting Complete");
     } else
@@ -1448,7 +1454,7 @@ PyResult Command_status(Client* who, CommandDB* db, PyServiceMgr* services, cons
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
     if (!who->GetShipSE()->DestinyMgr())
-        who->ResetDestiny();
+        who->SetDestiny();
 
     ShipItem* pShip = who->GetShip().get();
 
@@ -1550,7 +1556,7 @@ PyResult Command_destinyvars(Client* who, CommandDB* db, PyServiceMgr* services,
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
     if (!who->GetShipSE()->DestinyMgr())
-        who->ResetDestiny();
+        who->SetDestiny();
 
     DestinyManager* dm = who->GetShipSE()->DestinyMgr();
 
@@ -1584,7 +1590,7 @@ PyResult Command_halt(Client* who, CommandDB* db, PyServiceMgr* services, const 
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
     if (!who->GetShipSE()->DestinyMgr())
-        who->ResetDestiny();
+        who->SetDestiny();
 
     who->GetShipSE()->DestinyMgr()->Halt();
 

@@ -38,7 +38,7 @@ ClassDecodeGenerator::ClassDecodeGenerator( FILE* outputFile )
 bool ClassDecodeGenerator::ProcessElementDef( const TiXmlElement* field )
 {
     mName = field->Attribute( "name" );
-    if( mName == nullptr )
+    if (mName == nullptr )
     {
         _log( COMMON__ERROR, "<element> at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -47,23 +47,21 @@ bool ClassDecodeGenerator::ProcessElementDef( const TiXmlElement* field )
     const TiXmlElement* main = field->FirstChildElement();
 
     fprintf( mOutputFile,
-        "bool %s::Decode( PyRep* packet )\n"
-        "{\n",
+        "bool %s::Decode( PyRep* packet ) {\n",
         mName
     );
 
     mItemNumber = 0;
 
     push( "packet" );
-    if( !ParseElement( main ) )
+    if (!ParseElement( main ) )
         return false;
 
     fprintf( mOutputFile,
         "    return true;\n"
         "}\n"
         "\n"
-        "bool %s::Decode( PyRep** packet )\n"
-        "{\n"
+        "bool %s::Decode( PyRep** packet ) {\n"
         "    bool res = Decode( *packet );\n"
         "\n"
         "    PyDecRef( *packet );\n"
@@ -72,8 +70,7 @@ bool ClassDecodeGenerator::ProcessElementDef( const TiXmlElement* field )
         "    return res;\n"
         "}\n"
         "\n"
-        "bool %s::Decode( %s** packet )\n"
-        "{\n"
+        "bool %s::Decode( %s** packet ) {\n"
         "    //quick forwarder to avoid making the user cast it if they have a properly typed object\n"
         "    return Decode( (PyRep**)packet );\n"
         "}\n"
@@ -88,7 +85,7 @@ bool ClassDecodeGenerator::ProcessElementDef( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessElement( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log(COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row());
         return false;
@@ -96,8 +93,7 @@ bool ClassDecodeGenerator::ProcessElement( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if( !%s.Decode( %s ) )\n"
-        "    {\n"
+        "    if (!%s.Decode(%s)) {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: unable to decode element %s\" );\n"
         "\n"
         "        return false;\n"
@@ -114,14 +110,14 @@ bool ClassDecodeGenerator::ProcessElement( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessElementPtr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
 
     const char* type = field->Attribute( "type" );
-    if( type == nullptr )
+    if (type == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the type attribute, skipping.", field->Row() );
         return false;
@@ -132,8 +128,7 @@ bool ClassDecodeGenerator::ProcessElementPtr( const TiXmlElement* field )
         "    SafeDelete( %s );\n"
         "    %s = new %s;\n"
         "\n"
-        "    if( !%s->Decode( %s ) )\n"
-        "    {\n"
+        "    if (!%s->Decode(%s)) {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: unable to decode element %s\" );\n"
         "\n"
         "        return false;\n"
@@ -153,7 +148,7 @@ bool ClassDecodeGenerator::ProcessElementPtr( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessRaw( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -177,7 +172,7 @@ bool ClassDecodeGenerator::ProcessRaw( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -187,9 +182,9 @@ bool ClassDecodeGenerator::ProcessInt( const TiXmlElement* field )
     const char* none_marker = field->Attribute( "none_marker" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = %s;\n"
             "    else\n",
             v,
@@ -197,10 +192,9 @@ bool ClassDecodeGenerator::ProcessInt( const TiXmlElement* field )
         );
 
     fprintf( mOutputFile,
-        "    if( %s->IsInt() )\n"
+        "    if (%s->IsInt() )\n"
         "        %s = %s->AsInt()->value();\n"
-        "    else\n"
-        "    {\n"
+        "    else {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not an int: %%s\", %s->TypeString() );\n"
         "\n"
         "        return false;\n"
@@ -219,7 +213,7 @@ bool ClassDecodeGenerator::ProcessInt( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -229,9 +223,9 @@ bool ClassDecodeGenerator::ProcessLong( const TiXmlElement* field )
     const char* none_marker = field->Attribute( "none_marker" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = %s;\n"
             "    else\n",
             v,
@@ -239,12 +233,11 @@ bool ClassDecodeGenerator::ProcessLong( const TiXmlElement* field )
         );
 
     fprintf( mOutputFile,
-        "    if( %s->IsLong() )\n"
+        "    if (%s->IsLong() )\n"
         "        %s = %s->AsLong()->value();\n"
-        "    else if( %s->IsInt() )\n"
+        "    else if (%s->IsInt() )\n"
         "        %s = %s->AsInt()->value();\n"
-        "    else\n"
-        "    {\n"
+        "    else {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a long int: %%s\", %s->TypeString() );\n"
         "\n"
         "        return false;\n"
@@ -265,7 +258,7 @@ bool ClassDecodeGenerator::ProcessLong( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessReal( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -275,9 +268,9 @@ bool ClassDecodeGenerator::ProcessReal( const TiXmlElement* field )
     const char* none_marker = field->Attribute( "none_marker" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = %s;\n"
             "    else\n",
             v,
@@ -285,10 +278,9 @@ bool ClassDecodeGenerator::ProcessReal( const TiXmlElement* field )
         );
 
     fprintf( mOutputFile,
-        "    if( %s->IsFloat())\n"
+        "    if (%s->IsFloat())\n"
         "        %s = %s->AsFloat()->value();\n"
-        "    else\n"
-        "    {\n"
+        "    else {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a real: %%s\", %s->TypeString() );\n"
         "\n"
         "        return false;\n"
@@ -307,7 +299,7 @@ bool ClassDecodeGenerator::ProcessReal( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessBool( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -315,15 +307,15 @@ bool ClassDecodeGenerator::ProcessBool( const TiXmlElement* field )
 
     bool soft = false;
     const char* soft_str = field->Attribute( "soft" );
-    if( soft_str != nullptr )
+    if (soft_str != nullptr )
         soft = str2<bool>( soft_str );
 
     const char* none_marker = field->Attribute( "none_marker" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = %s;\n"
             "    else\n",
             v,
@@ -331,16 +323,16 @@ bool ClassDecodeGenerator::ProcessBool( const TiXmlElement* field )
         );
 
     fprintf( mOutputFile,
-        "    if( %s->IsBool() )\n"
+        "    if (%s->IsBool() )\n"
         "        %s = %s->AsBool()->value();\n"
         "    else\n",
         v,
             name, v
     );
 
-    if( soft )
+    if (soft )
         fprintf(mOutputFile,
-            "    if( %s->IsInt() )\n"
+            "    if (%s->IsInt() )\n"
             "        %s = ( %s->AsInt()->value() != 0 );\n"
             "    else\n",
             v,
@@ -365,8 +357,7 @@ bool ClassDecodeGenerator::ProcessNone( const TiXmlElement* field )
 {
     const char* v = top();
     fprintf( mOutputFile,
-        "    if( !%s->IsNone() )\n"
-        "    {\n"
+        "    if (!%s->IsNone()) {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: expecting a None but got a %%s\", %s->TypeString() );\n"
         "\n"
         "        return false;\n"
@@ -383,7 +374,7 @@ bool ClassDecodeGenerator::ProcessNone( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessBuffer( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log(COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row());
         return false;
@@ -391,16 +382,13 @@ bool ClassDecodeGenerator::ProcessBuffer( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    PySafeDecRef( %s );\n"
-        "    if( %s->IsBuffer() )\n"
-        "    {\n"
+        "    PySafeDecRef(%s);\n"
+        "    if (%s->IsBuffer()) {\n"
         "        %s = %s->AsBuffer();\n"
         "        PyIncRef( %s );\n"
-        "    }\n"
-        "    else if( %s->IsString() )\n"
+        "    } else if (%s->IsString()) {\n"
         "        %s = new PyBuffer( *%s->AsString() );\n"
-        "    else\n"
-        "    {\n"
+        "    } else {\n"
         "        _log(NET__PACKET_ERROR, \"Decode %s failed: %s is not a buffer: %%s\", %s->TypeString());\n"
         "\n"
         "        return false;\n"
@@ -423,7 +411,7 @@ bool ClassDecodeGenerator::ProcessBuffer( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessString( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -433,9 +421,9 @@ bool ClassDecodeGenerator::ProcessString( const TiXmlElement* field )
     const char* none_marker = field->Attribute( "none_marker" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = \"%s\";\n"
             "    else\n",
             v,
@@ -443,10 +431,9 @@ bool ClassDecodeGenerator::ProcessString( const TiXmlElement* field )
         );
 
     fprintf( mOutputFile,
-        "    if( %s->IsString() )\n"
+        "    if (%s->IsString() )\n"
         "        %s = %s->AsString()->content();\n"
-        "    else\n"
-        "    {\n"
+        "    else {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a string: %%s\", %s->TypeString() );\n"
         "\n"
         "        return false;\n"
@@ -465,7 +452,7 @@ bool ClassDecodeGenerator::ProcessString( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessStringInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if( nullptr == value )
+    if (nullptr == value )
     {
         _log( COMMON__ERROR, "String element at line %d has no value attribute.", field->Row() );
         return false;
@@ -476,16 +463,14 @@ bool ClassDecodeGenerator::ProcessStringInline( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if( !%s->IsString() )\n"
-        "    {\n"
+        "    if (!%s->IsString()) {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a string: %%s\", %s->TypeString() );\n"
         "\n"
         "        return false;\n"
         "    }\n"
         "    PyString* %s = %s->AsString();\n"
         "\n"
-        "    if( \"%s\" != %s->content() )\n"
-        "    {\n"
+        "    if (\"%s\" != %s->content()) {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: expected %s to be '%s', but it's '%%s'\", %s->content().c_str() );\n"
         "\n"
         "        return false;\n"
@@ -506,7 +491,7 @@ bool ClassDecodeGenerator::ProcessStringInline( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessWString( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -514,15 +499,15 @@ bool ClassDecodeGenerator::ProcessWString( const TiXmlElement* field )
 
     bool soft = false;
     const char* soft_str = field->Attribute( "soft" );
-    if( soft_str != nullptr )
+    if (soft_str != nullptr )
         soft = str2<bool>( soft_str );
 
     const char* none_marker = field->Attribute( "none_marker" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = \"%s\";\n"
             "    else\n",
             v,
@@ -530,16 +515,16 @@ bool ClassDecodeGenerator::ProcessWString( const TiXmlElement* field )
         );
 
     fprintf( mOutputFile,
-        "    if( %s->IsWString() )\n"
+        "    if (%s->IsWString() )\n"
         "        %s = %s->AsWString()->content();\n"
         "    else\n",
         v,
             name, v
     );
 
-    if( soft )
+    if (soft )
         fprintf( mOutputFile,
-            "    if( %s->IsString() )\n"
+            "    if (%s->IsString() )\n"
             "        %s = %s->AsString()->content();\n"
             "    else\n",
             v,
@@ -563,7 +548,7 @@ bool ClassDecodeGenerator::ProcessWString( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessWStringInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if( nullptr == value )
+    if (nullptr == value )
     {
         _log( COMMON__ERROR, "WString element at line %d has no value attribute.", field->Row() );
         return false;
@@ -574,7 +559,7 @@ bool ClassDecodeGenerator::ProcessWStringInline( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if( !%s->IsWString() )\n"
+        "    if (!%s->IsWString() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a wstring: %%s\", %s->TypeString() );\n"
         "\n"
@@ -582,7 +567,7 @@ bool ClassDecodeGenerator::ProcessWStringInline( const TiXmlElement* field )
         "    }\n"
         "    PyWString* %s = %s->AsWString();\n"
         "\n"
-        "    if( \"%s\" != %s->content() )\n"
+        "    if (\"%s\" != %s->content() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: expected %s to be '%s', but it's '%%s'\", %s->content().c_str() );\n"
         "\n"
@@ -604,7 +589,7 @@ bool ClassDecodeGenerator::ProcessWStringInline( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessToken( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -612,7 +597,7 @@ bool ClassDecodeGenerator::ProcessToken( const TiXmlElement* field )
 
     bool optional = false;
     const char* optional_str = field->Attribute( "optional" );
-    if( optional_str != nullptr )
+    if (optional_str != nullptr )
         optional = str2<bool>( optional_str );
 
     fprintf( mOutputFile,
@@ -621,9 +606,9 @@ bool ClassDecodeGenerator::ProcessToken( const TiXmlElement* field )
     );
 
     const char* v = top();
-    if( optional )
+    if (optional )
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = nullptr;\n"
             "    else\n",
             v,
@@ -631,7 +616,7 @@ bool ClassDecodeGenerator::ProcessToken( const TiXmlElement* field )
         );
 
     fprintf( mOutputFile,
-        "    if( %s->IsToken() )\n"
+        "    if (%s->IsToken() )\n"
         "    {\n"
         "        %s = %s->AsToken();\n"
         "        PyIncRef( %s );\n"
@@ -657,7 +642,7 @@ bool ClassDecodeGenerator::ProcessToken( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessTokenInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if( nullptr == value )
+    if (nullptr == value )
     {
         _log( COMMON__ERROR, "Token element at line %d has no value attribute.", field->Row() );
         return false;
@@ -668,7 +653,7 @@ bool ClassDecodeGenerator::ProcessTokenInline( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if( !%s->IsToken() )\n"
+        "    if (!%s->IsToken() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a token: %%s\", %s->TypeString() );\n"
         "\n"
@@ -676,7 +661,7 @@ bool ClassDecodeGenerator::ProcessTokenInline( const TiXmlElement* field )
         "    }\n"
         "    PyToken* %s = %s->AsToken();\n"
         "\n"
-        "    if( %s->content() != \"%s\" )\n"
+        "    if (%s->content() != \"%s\" )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: expected %s to be '%s', but it's '%%s'\", %s->content().c_str() );\n"
         "\n"
@@ -698,7 +683,7 @@ bool ClassDecodeGenerator::ProcessTokenInline( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessObject( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -706,7 +691,7 @@ bool ClassDecodeGenerator::ProcessObject( const TiXmlElement* field )
 
     bool optional = false;
     const char* optional_str = field->Attribute( "optional" );
-    if( nullptr != optional_str )
+    if (nullptr != optional_str )
         optional = str2<bool>( optional_str );
 
     fprintf( mOutputFile,
@@ -715,10 +700,10 @@ bool ClassDecodeGenerator::ProcessObject( const TiXmlElement* field )
     );
 
     const char* v = top();
-    if( optional )
+    if (optional )
     {
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = nullptr;\n"
             "    else\n",
             v,
@@ -728,7 +713,7 @@ bool ClassDecodeGenerator::ProcessObject( const TiXmlElement* field )
 
     //make sure its an object
     fprintf( mOutputFile,
-        "    if( %s->IsObject() )\n"
+        "    if (%s->IsObject() )\n"
         "    {\n"
         "        %s = %s->AsObject();\n"
         "        PyIncRef( %s );\n"
@@ -759,7 +744,7 @@ bool ClassDecodeGenerator::ProcessObjectInline( const TiXmlElement* field )
     //make sure its an object
     const char* v = top();
     fprintf( mOutputFile,
-        "    if( !%s->IsObject() )\n"
+        "    if (!%s->IsObject() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString() );\n"
         "\n"
@@ -780,7 +765,7 @@ bool ClassDecodeGenerator::ProcessObjectInline( const TiXmlElement* field )
     snprintf( tname, sizeof( tname ), "%s->type()", iname );
     push( tname );
 
-    if( !ParseElementChildren( field, 2 ) )
+    if (!ParseElementChildren( field, 2 ) )
         return false;
 
     pop();
@@ -790,13 +775,13 @@ bool ClassDecodeGenerator::ProcessObjectInline( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessObjectEx( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
     const char* type = field->Attribute( "type" );
-    if( type == nullptr )
+    if (type == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the type attribute.", field->Row() );
         return false;
@@ -804,7 +789,7 @@ bool ClassDecodeGenerator::ProcessObjectEx( const TiXmlElement* field )
 
     bool optional = false;
     const char* optional_str = field->Attribute( "optional" );
-    if( optional_str != nullptr )
+    if (optional_str != nullptr )
         optional = str2<bool>( optional_str );
 
     fprintf( mOutputFile,
@@ -813,10 +798,10 @@ bool ClassDecodeGenerator::ProcessObjectEx( const TiXmlElement* field )
     );
 
     const char* v = top();
-    if( optional )
+    if (optional )
     {
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = nullptr;\n"
             "    else\n",
             v,
@@ -825,13 +810,10 @@ bool ClassDecodeGenerator::ProcessObjectEx( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    if( %s->IsObjectEx() )\n"
-        "    {\n"
+        "    if (%s->IsObjectEx()) {\n"
         "        %s = (%s*)%s->AsObjectEx();\n"
         "        PyIncRef( %s );\n"
-        "    }\n"
-        "    else\n"
-        "    {\n"
+        "    } else {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString() );\n"
         "\n"
         "        return false;\n"
@@ -851,7 +833,7 @@ bool ClassDecodeGenerator::ProcessObjectEx( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessTuple( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -859,7 +841,7 @@ bool ClassDecodeGenerator::ProcessTuple( const TiXmlElement* field )
 
     bool optional = false;
     const char* optional_str = field->Attribute( "optional" );
-    if( optional_str != nullptr )
+    if (optional_str != nullptr )
         optional = str2<bool>( optional_str );
 
     fprintf( mOutputFile,
@@ -868,9 +850,9 @@ bool ClassDecodeGenerator::ProcessTuple( const TiXmlElement* field )
     );
 
     const char* v = top();
-    if( optional )
+    if (optional )
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = nullptr;\n"
             "    else\n",
             v,
@@ -878,13 +860,11 @@ bool ClassDecodeGenerator::ProcessTuple( const TiXmlElement* field )
         );
 
     fprintf( mOutputFile,
-        "    if( %s->IsTuple() )\n"
+        "    if (%s->IsTuple() )\n"
         "    {\n"
         "        %s = %s->AsTuple();\n"
         "        PyIncRef( %s );\n"
-        "    }\n"
-        "    else\n"
-        "    {\n"
+        "    } else {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a tuple: %%s\", %s->TypeString() );\n"
         "\n"
         "        return false;\n"
@@ -909,7 +889,7 @@ bool ClassDecodeGenerator::ProcessTupleInline( const TiXmlElement* field )
     uint32 count = 0;
     while( ( i = field->IterateChildren( i ) ) )
     {
-        if( i->Type() == TiXmlNode::TINYXML_ELEMENT )
+        if (i->Type() == TiXmlNode::TINYXML_ELEMENT )
             count++;
     }
 
@@ -919,16 +899,14 @@ bool ClassDecodeGenerator::ProcessTupleInline( const TiXmlElement* field )
     const char* v = top();
     //now we can generate the tuple decl
     fprintf( mOutputFile,
-        "    if( !%s->IsTuple() )\n"
-        "    {\n"
+        "    if (!%s->IsTuple()) {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString() );\n"
         "\n"
         "        return false;\n"
         "    }\n"
         "    PyTuple* %s = %s->AsTuple();\n"
         "\n"
-        "    if( %s->size() != %u )\n"
-        "    {\n"
+        "    if (%s->size() != %u) {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is the wrong size: expected %d, but got %%lu\", %s->size() );\n"
         "\n"
         "        return false;\n"
@@ -950,7 +928,7 @@ bool ClassDecodeGenerator::ProcessTupleInline( const TiXmlElement* field )
         push( varname );
     }
 
-    if( !ParseElementChildren( field ) )
+    if (!ParseElementChildren( field ) )
         return false;
 
     pop();
@@ -960,7 +938,7 @@ bool ClassDecodeGenerator::ProcessTupleInline( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessList( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -969,7 +947,7 @@ bool ClassDecodeGenerator::ProcessList( const TiXmlElement* field )
     //this should be done better:
     bool optional = false;
     const char* optional_str = field->Attribute("optional");
-    if( optional_str != nullptr )
+    if (optional_str != nullptr )
         optional = str2<bool>( optional_str );
 
     fprintf( mOutputFile,
@@ -978,9 +956,9 @@ bool ClassDecodeGenerator::ProcessList( const TiXmlElement* field )
     );
 
     const char* v = top();
-    if( optional )
+    if (optional )
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = nullptr;\n"
             "    else\n",
             v,
@@ -988,13 +966,11 @@ bool ClassDecodeGenerator::ProcessList( const TiXmlElement* field )
         );
 
     fprintf( mOutputFile,
-        "    if( %s->IsList() )\n"
+        "    if (%s->IsList() )\n"
         "    {\n"
         "        %s = %s->AsList();\n"
         "        PyIncRef( %s );\n"
-        "    }\n"
-        "    else\n"
-        "    {\n"
+        "    } else {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString() );\n"
         "\n"
         "        return false;\n"
@@ -1019,7 +995,7 @@ bool ClassDecodeGenerator::ProcessListInline( const TiXmlElement* field )
     uint32 count = 0;
     while( ( i = field->IterateChildren( i ) ) )
     {
-        if( i->Type() == TiXmlNode::TINYXML_ELEMENT )
+        if (i->Type() == TiXmlNode::TINYXML_ELEMENT )
             count++;
     }
 
@@ -1029,7 +1005,7 @@ bool ClassDecodeGenerator::ProcessListInline( const TiXmlElement* field )
     const char* v = top();
     //now we can generate the tuple decl
     fprintf( mOutputFile,
-        "    if( !%s->IsList() )\n"
+        "    if (!%s->IsList() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString() );\n"
         "\n"
@@ -1037,7 +1013,7 @@ bool ClassDecodeGenerator::ProcessListInline( const TiXmlElement* field )
         "    }\n"
         "    PyList* %s = %s->AsList();\n"
         "\n"
-        "    if( %s->size() != %u )\n"
+        "    if (%s->size() != %u )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is the wrong size: expected %d, but got %%lu\", %s->size() );\n"
         "\n"
@@ -1060,7 +1036,7 @@ bool ClassDecodeGenerator::ProcessListInline( const TiXmlElement* field )
         push( varname );
     }
 
-    if( !ParseElementChildren( field ) )
+    if (!ParseElementChildren( field ) )
         return false;
 
     pop();
@@ -1070,7 +1046,7 @@ bool ClassDecodeGenerator::ProcessListInline( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessListInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -1082,7 +1058,7 @@ bool ClassDecodeGenerator::ProcessListInt( const TiXmlElement* field )
     const char* v = top();
     //make sure its a list
     fprintf( mOutputFile,
-        "    if( !%s->IsList() )\n"
+        "    if (!%s->IsList() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString() );\n"
         "\n"
@@ -1096,7 +1072,7 @@ bool ClassDecodeGenerator::ProcessListInt( const TiXmlElement* field )
         "    %s_end = %s->end();\n"
         "    for( uint32 %s_index = 0; %s_cur != %s_end; %s_cur++, %s_index++ )\n"
         "    {\n"
-        "        if( !(*%s_cur)->IsInt() )\n"
+        "        if (!(*%s_cur)->IsInt() )\n"
         "        {\n"
         "            _log(NET__PACKET_ERROR, \"Decode %s failed: Element %%u in list %s is not an integer: %%s\", %s_index, (*%s_cur)->TypeString());\n"
         "\n"
@@ -1128,7 +1104,7 @@ bool ClassDecodeGenerator::ProcessListInt( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessListLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log(COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row());
         return false;
@@ -1140,7 +1116,7 @@ bool ClassDecodeGenerator::ProcessListLong( const TiXmlElement* field )
     const char* v = top();
     //make sure its a list
     fprintf( mOutputFile,
-        "    if( !%s->IsList() )\n"
+        "    if (!%s->IsList() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString() );\n"
         "\n"
@@ -1154,13 +1130,13 @@ bool ClassDecodeGenerator::ProcessListLong( const TiXmlElement* field )
         "    %s_end = %s->end();\n"
         "    for( uint32 %s_index = 0; %s_cur != %s_end; %s_cur++, %s_index++ )\n"
         "    {\n"
-        "        if( (*%s_cur)->IsLong() )\n"
+        "        if ((*%s_cur)->IsLong() )\n"
         "        {\n"
         "            PyLong* t = (*%s_cur)->AsLong();\n"
         "\n"
         "            %s.push_back( t->value() );\n"
         "        }\n"
-        "        else if( (*%s_cur)->IsInt() )\n"
+        "        else if ((*%s_cur)->IsInt() )\n"
         "        {\n"
         "            PyInt* t = (*%s_cur)->AsInt();\n"
         "\n"
@@ -1199,7 +1175,7 @@ bool ClassDecodeGenerator::ProcessListLong( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessListStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log(COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row());
         return false;
@@ -1211,7 +1187,7 @@ bool ClassDecodeGenerator::ProcessListStr( const TiXmlElement* field )
     const char* v = top();
     //make sure its a list
     fprintf( mOutputFile,
-        "    if( !%s->IsList() )\n"
+        "    if (!%s->IsList() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString() );\n"
         "\n"
@@ -1225,7 +1201,7 @@ bool ClassDecodeGenerator::ProcessListStr( const TiXmlElement* field )
         "    %s_end = %s->end();\n"
         "    for( uint32 %s_index = 0; %s_cur != %s_end; %s_cur++, %s_index++ )\n"
         "    {\n"
-        "        if( !(*%s_cur)->IsString() )\n"
+        "        if (!(*%s_cur)->IsString() )\n"
         "        {\n"
         "            _log( NET__PACKET_ERROR, \"Decode %s failed: Element %%u in list %s is not a string: %%s\", %s_index, (*%s_cur)->TypeString() );\n"
         "\n"
@@ -1257,7 +1233,7 @@ bool ClassDecodeGenerator::ProcessListStr( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessDict( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -1266,7 +1242,7 @@ bool ClassDecodeGenerator::ProcessDict( const TiXmlElement* field )
     //this should be done better:
     bool optional = false;
     const char* optional_str = field->Attribute( "optional" );
-    if( optional_str != nullptr )
+    if (optional_str != nullptr )
         optional = str2<bool>( optional_str );
 
     fprintf( mOutputFile,
@@ -1275,9 +1251,9 @@ bool ClassDecodeGenerator::ProcessDict( const TiXmlElement* field )
     );
 
     const char* v = top();
-    if( optional )
+    if (optional )
         fprintf( mOutputFile,
-            "    if( %s->IsNone() )\n"
+            "    if (%s->IsNone() )\n"
             "        %s = nullptr;\n"
             "    else\n",
             v,
@@ -1285,7 +1261,7 @@ bool ClassDecodeGenerator::ProcessDict( const TiXmlElement* field )
         );
 
     fprintf( mOutputFile,
-        "    if( %s->IsDict() )\n"
+        "    if (%s->IsDict() )\n"
         "    {\n"
         "        %s = %s->AsDict();\n"
         "        PyIncRef( %s );\n"
@@ -1319,13 +1295,13 @@ bool ClassDecodeGenerator::ProcessDictInline( const TiXmlElement* field )
 
     bool soft = false;
     const char* soft_str = field->Attribute( "soft" );
-    if( soft_str != nullptr )
+    if (soft_str != nullptr )
         soft = str2<bool>( soft_str );
 
     const char* v = top();
     //make sure its a dict
     fprintf( mOutputFile,
-        "    if( !%s->IsDict() )\n"
+        "    if (!%s->IsDict() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString() );\n"
         "\n"
@@ -1345,12 +1321,12 @@ bool ClassDecodeGenerator::ProcessDictInline( const TiXmlElement* field )
     uint32 count = 0;
     while( ( i = field->IterateChildren( i ) ) )
     {
-        if( i->Type() == TiXmlNode::TINYXML_ELEMENT )
+        if (i->Type() == TiXmlNode::TINYXML_ELEMENT )
         {
             const TiXmlElement* ele = i->ToElement();
 
             //we only handle dictInlineEntry elements
-            if( strcmp( ele->Value(), "dictInlineEntry" ) != 0 )
+            if (strcmp( ele->Value(), "dictInlineEntry" ) != 0 )
             {
                 _log(COMMON__ERROR, "non-dictInlineEntry in <dictInline> at line %d, ignoring.", ele->Row());
                 continue;
@@ -1370,7 +1346,7 @@ bool ClassDecodeGenerator::ProcessDictInline( const TiXmlElement* field )
         "\n"
     );
 
-    if( empty )
+    if (empty )
         fprintf( mOutputFile,
             "    // %s is empty from our perspective, not enforcing though.\n",
             iname
@@ -1384,7 +1360,7 @@ bool ClassDecodeGenerator::ProcessDictInline( const TiXmlElement* field )
             "    %s_end = %s->end();\n"
             "    for(; %s_cur != %s_end; %s_cur++)\n"
             "    {\n"
-            "        if( !%s_cur->first->IsString() )\n"
+            "        if (!%s_cur->first->IsString() )\n"
             "        {\n"
             "            _log( NET__PACKET_ERROR, \"Decode %s failed: a key in %s is the wrong type: %%s\", %s_cur->first->TypeString() );\n"
             "\n"
@@ -1404,18 +1380,18 @@ bool ClassDecodeGenerator::ProcessDictInline( const TiXmlElement* field )
         count = 0;
         while( ( i = field->IterateChildren( i ) ) )
         {
-            if( i->Type() == TiXmlNode::TINYXML_ELEMENT )
+            if (i->Type() == TiXmlNode::TINYXML_ELEMENT )
             {
                 const TiXmlElement* ele = i->ToElement();
 
                 //we only handle dictInlineEntry elements
-                if( strcmp( ele->Value(), "dictInlineEntry" ) != 0 )
+                if (strcmp( ele->Value(), "dictInlineEntry" ) != 0 )
                 {
                     _log( COMMON__ERROR, "non-dictInlineEntry in <dictInline> at line %d, ignoring.", ele->Row() );
                     continue;
                 }
                 const char* key = ele->Attribute( "key" );
-                if( key == nullptr )
+                if (key == nullptr )
                 {
                     _log( COMMON__ERROR, "<dictInlineEntry> at line %d lacks a key attribute", ele->Row() );
                     return false;
@@ -1423,7 +1399,7 @@ bool ClassDecodeGenerator::ProcessDictInline( const TiXmlElement* field )
 
                 //conditional prefix...
                 fprintf( mOutputFile,
-                    "        if( key_string__->content() == \"%s\" )\n"
+                    "        if (key_string__->content() == \"%s\" )\n"
                     "        {\n"
                     "            %s_%u = true;\n"
                     "\n",
@@ -1438,7 +1414,7 @@ bool ClassDecodeGenerator::ProcessDictInline( const TiXmlElement* field )
                 snprintf( vname, sizeof( vname ), "%s_cur->second", iname );
                 push( vname );
 
-                if( !ParseElementChildren( ele, 1 ) )
+                if (!ParseElementChildren( ele, 1 ) )
                     return false;
 
                 //fixed suffix...
@@ -1449,7 +1425,7 @@ bool ClassDecodeGenerator::ProcessDictInline( const TiXmlElement* field )
             }
         }
 
-        if( soft )
+        if (soft )
             fprintf( mOutputFile,
                 "        {\n"
                 "            /* do nothing, soft dict */\n"
@@ -1478,20 +1454,20 @@ bool ClassDecodeGenerator::ProcessDictInline( const TiXmlElement* field )
                 const TiXmlElement* ele = i->ToElement();
 
                 //we only handle dictInlineEntry elements
-                if( strcmp( ele->Value(), "dictInlineEntry" ) != 0 )
+                if (strcmp( ele->Value(), "dictInlineEntry" ) != 0 )
                 {
                     _log( COMMON__ERROR, "non-dictInlineEntry in <dictInline> at line %d, ignoring.", ele->Row() );
                     continue;
                 }
                 const char* key = ele->Attribute( "key" );
-                if( key == nullptr )
+                if (key == nullptr )
                 {
                     _log( COMMON__ERROR, "<dictInlineEntry> at line %d lacks a key attribute", ele->Row() );
                     return false;
                 }
 
                 fprintf( mOutputFile,
-                    "    if( !%s_%u )\n"
+                    "    if (!%s_%u )\n"
                     "    {\n"
                     "        _log( NET__PACKET_ERROR, \"Decode %s failed: Missing dict entry '%s' in %s\" );\n"
                     "\n"
@@ -1513,32 +1489,32 @@ bool ClassDecodeGenerator::ProcessDictInline( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessDictRaw( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
 
     const char* key = field->Attribute( "key" );
-    if( key == nullptr )
+    if (key == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the key attribute, skipping.", field->Row() );
         return false;
     }
     const char* pykey = field->Attribute( "pykey" );
-    if( pykey == nullptr )
+    if (pykey == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the pykey attribute, skipping.", field->Row() );
         return false;
     }
     const char* value = field->Attribute( "value" );
-    if( value == nullptr )
+    if (value == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the value attribute, skipping.", field->Row() );
         return false;
     }
     const char* pyvalue = field->Attribute( "pyvalue" );
-    if( pyvalue == nullptr )
+    if (pyvalue == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the pyvalue attribute, skipping.", field->Row() );
         return false;
@@ -1549,7 +1525,7 @@ bool ClassDecodeGenerator::ProcessDictRaw( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if( !%s->IsDict() )\n"
+        "    if (!%s->IsDict() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a dict: %%s\", %s->TypeString() );\n"
         "\n"
@@ -1563,7 +1539,7 @@ bool ClassDecodeGenerator::ProcessDictRaw( const TiXmlElement* field )
         "    %s_end = %s->end();\n"
         "    for( uint32 %s_index = 0; %s_cur != %s_end; %s_cur++, %s_index++ )\n"
         "    {\n"
-        "        if( !%s_cur->first->Is%s() )\n"
+        "        if (!%s_cur->first->Is%s() )\n"
         "        {\n"
         "            _log( NET__PACKET_ERROR, \"Decode %s failed: Key %%u in dict %s is not %s: %%s\", %s_index, %s_cur->first->TypeString() );\n"
         "\n"
@@ -1571,7 +1547,7 @@ bool ClassDecodeGenerator::ProcessDictRaw( const TiXmlElement* field )
         "        }\n"
         "        const Py%s* k = %s_cur->first->As%s();\n"
         "\n"
-        "        if( !%s_cur->second->Is%s() )\n"
+        "        if (!%s_cur->second->Is%s() )\n"
         "        {\n"
         "            _log( NET__PACKET_ERROR, \"Decode %s failed: Value %%d in dict %s is not %s: %%s\", %s_index, %s_cur->second->TypeString() );\n"
         "\n"
@@ -1606,7 +1582,7 @@ bool ClassDecodeGenerator::ProcessDictRaw( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessDictInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -1617,7 +1593,7 @@ bool ClassDecodeGenerator::ProcessDictInt( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if( !%s->IsDict() )\n"
+        "    if (!%s->IsDict() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a dict: %%s\", %s->TypeString() );\n"
         "\n"
@@ -1631,7 +1607,7 @@ bool ClassDecodeGenerator::ProcessDictInt( const TiXmlElement* field )
         "    %s_end = %s->end();\n"
         "    for( uint32 %s_index = 0; %s_cur != %s_end; %s_cur++, %s_index++ )\n"
         "    {\n"
-        "        if( !%s_cur->first->IsInt() )\n"
+        "        if (!%s_cur->first->IsInt() )\n"
         "        {\n"
         "            _log( NET__PACKET_ERROR, \"Decode %s failed: Key %%u in dict %s is not an integer: %%s\", %s_index, %s_cur->first->TypeString() );\n"
         "\n"
@@ -1663,7 +1639,7 @@ bool ClassDecodeGenerator::ProcessDictInt( const TiXmlElement* field )
 bool ClassDecodeGenerator::ProcessDictStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if( name == nullptr )
+    if (name == nullptr )
     {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
@@ -1674,7 +1650,7 @@ bool ClassDecodeGenerator::ProcessDictStr( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if( !%s->IsDict() )\n"
+        "    if (!%s->IsDict() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a dict: %%s\", %s->TypeString() );\n"
         "\n"
@@ -1688,7 +1664,7 @@ bool ClassDecodeGenerator::ProcessDictStr( const TiXmlElement* field )
         "    %s_end = %s->end();\n"
         "    for( uint32 %s_index = 0; %s_cur != %s_end; %s_cur++, %s_index++ )\n"
         "    {\n"
-        "        if( !%s_cur->first->IsString() )\n"
+        "        if (!%s_cur->first->IsString() )\n"
         "        {\n"
         "            _log( NET__PACKET_ERROR, \"Decode %s failed: Key %%u in dict %s is not a string: %%s\", %s_index, %s_cur->first->TypeString() );\n"
         "\n"
@@ -1726,7 +1702,7 @@ bool ClassDecodeGenerator::ProcessSubStreamInline( const TiXmlElement* field )
     //make sure its a substream
     const char* v = top();
     fprintf( mOutputFile,
-        "    if( !%s->IsSubStream() )\n"
+        "    if (!%s->IsSubStream() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a substream: %%s\", %s->TypeString() );\n"
         "\n"
@@ -1736,7 +1712,7 @@ bool ClassDecodeGenerator::ProcessSubStreamInline( const TiXmlElement* field )
         "\n"
         "    //make sure its decoded\n"
         "    %s->DecodeData();\n"
-        "    if( %s->decoded() == nullptr )\n"
+        "    if (%s->decoded() == nullptr )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: Unable to decode %s\" );\n"
         "\n"
@@ -1756,7 +1732,7 @@ bool ClassDecodeGenerator::ProcessSubStreamInline( const TiXmlElement* field )
     push( ssname );
 
     //Decode the sub-element
-    if( !ParseElementChildren( field, 1 ) )
+    if (!ParseElementChildren( field, 1 ) )
         return false;
 
     pop();
@@ -1771,7 +1747,7 @@ bool ClassDecodeGenerator::ProcessSubStructInline( const TiXmlElement* field )
     //make sure its a substruct
     const char* v = top();
     fprintf( mOutputFile,
-        "    if( !%s->IsSubStruct() )\n"
+        "    if (!%s->IsSubStruct() )\n"
         "    {\n"
         "        _log( NET__PACKET_ERROR, \"Decode %s failed: %s is not a substruct: %%s\", %s->TypeString() );\n"
         "\n"
@@ -1789,7 +1765,7 @@ bool ClassDecodeGenerator::ProcessSubStructInline( const TiXmlElement* field )
     push( ssname );
 
     //Decode the sub-element
-    if( !ParseElementChildren( field, 1 ) )
+    if (!ParseElementChildren( field, 1 ) )
         return false;
 
     pop();

@@ -36,18 +36,13 @@
 #include "system/SystemManager.h"
 
 
-NPC::NPC(InventoryItemRef self,
-         PyServiceMgr &services,
-         SystemManager* system,
-         uint32 corpID,
-         uint32 allyID,
-         SpawnMgr* spawnMgr)
-: DynamicSystemEntity(self, services, system),
+NPC::NPC(InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem, uint32 corpID, uint32 allyID, SpawnMgr* spawnMgr)
+: DynamicSystemEntity(self, services, pSystem),
   m_spawnMgr(spawnMgr)
 {
     m_corpID = corpID;
     m_allyID = allyID;
-    m_destiny = new DestinyManager(this, system);
+    m_destiny = new DestinyManager(this);
     m_AI = new NPCAIMgr(this);
 
     Init();
@@ -176,12 +171,12 @@ void NPC::EncodeDestiny( Buffer& into )
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
             warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
-            warp.unknown_x = target.x;
-            warp.unknown_y = target.y;
-            warp.unknown_z = target.z;
+            warp.x = target.x;
+            warp.y = target.y;
+            warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.unk_1 = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
-            warp.unk_2 = 0;         //unknown 64bit number
+            warp.followRange = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
+            warp.followID = 0;         //unknown 64bit number
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;

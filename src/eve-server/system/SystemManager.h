@@ -92,22 +92,22 @@ public:
     void AddEntity(SystemEntity* who);
     void RemoveEntity(SystemEntity* who);
 
-    void MakeSetState(const SystemBubble *bubble, DoDestiny_SetState &into) const;
+    void MakeSetState(const SystemBubble *bubble, DoDestiny_SetState &into, bool login=false) const;
 
     void AddItemToInventory(InventoryItemRef item);
     void RemoveItemFromInventory(InventoryItemRef item);
-    ShipItemRef GetShipFromInventory(uint32 shipID);
     SystemEntity* GetSEFromInventory(uint32 itemID);
+    ShipItemRef GetShipFromInventory(uint32 shipID);
     StationItemRef GetStationFromInventory(uint32 stationID);
     CargoContainerRef GetContainerFromInventory(uint32 contID);
 
     void DoSpawnForBubble(SystemBubble* pSysBubble);
 
-    // mgr interface
+    // CosmicMgr interface
     BeltMgr* GetBeltMgr()                   { return m_beltMgr; }
+    SpawnMgr* GetSpawnMgr()                 { return m_spawnMgr; }
     AnomalyMgr* GetAnomMgr()                { return m_anomMgr; }
     DungeonMgr* GetDungMgr()                { return m_dunMgr; }
-    SpawnMgr* GetSpawnMgr()                 { return m_spawnMgr; }
 
 
 protected:

@@ -1,4 +1,5 @@
 /* ship warp speed update sql file
+ *   -allan 19may16
  *   this file contains the correct warp attributes for (i think) all ships ingame
  *
  *    for the crucible expansion, warp speed multipliers (attributeID 600)
@@ -21,11 +22,11 @@ SET valueFloat = 0.25
 WHERE attributeID = 600
 AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (28,380,902));
 
--- warp speed update for groupID 30,485,659,941 (Capital)
+-- warp speed update for groupID 30,485,547,659,941 (Capital)
 UPDATE dgmTypeAttributes
 SET valueFloat = 0.5
 WHERE attributeID = 600
-AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (30,485,659,941));
+AND typeID IN (SELECT typeID FROM invTypes WHERE groupID IN (30,485,547,659,941));
 
 -- warp speed update for groupID 26,27,381,419,420,463,540,543,963 (C/BC/BS/D/MB)
 UPDATE dgmTypeAttributes

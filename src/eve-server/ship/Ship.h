@@ -219,11 +219,13 @@ public:
     void SaveShip();
 
     /*
-     * Inform Ship that it is docking or undocking
+     * Inform Ship that a state change is taking place
      */
     void Dock();
-    void Undock();
     void Heal();
+    void Jump();
+    void Warp();
+    void Undock();
     void AddModuleToOnlineVec(uint32 moduleID);
 
     /**
@@ -346,7 +348,7 @@ class Ship
 : public DynamicSystemEntity
 {
 public:
-    Ship(InventoryItemRef self, PyServiceMgr& services, SystemManager* system);
+    Ship(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem);
     virtual ~Ship();
 
     /* class type pointer querys. */
@@ -362,6 +364,7 @@ public:
 
     /* specific functions handled here. */
     void PayInsurance();
+    void ResetShipSystemMgr(SystemManager* pSystem)     { m_system = pSystem; }
     void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
     uint32 GetPodShipID()                               { return m_podShipID; }
 

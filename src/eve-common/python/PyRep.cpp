@@ -65,7 +65,7 @@ PyRep::~PyRep() {}
 
 const char* PyRep::TypeString() const
 {
-    if( mType >= 0 && mType < PyTypeMax )
+    if (mType >= 0 && mType < PyTypeMax )
         return s_mTypeString[ mType ];
 
     return s_mTypeString[ PyTypeError ];
@@ -112,7 +112,7 @@ int32 PyInt::hash() const
     /* XXX If this is changed, you also need to change the way
     Python's long, float and complex types are hashed. */
     int32 x = mValue;
-    if( x == -1 )
+    if (x == -1 )
         x = -2;
     return x;
 }
@@ -151,7 +151,7 @@ int32 PyLong::hash() const
     i = 8;
     sign = 1;
     x = 0;
-    if( i < 0 ) {
+    if (i < 0 ) {
         sign = -1;
         i = -(i);
     }
@@ -165,11 +165,11 @@ int32 PyLong::hash() const
         /* If the addition above overflowed (thinking of x as
         unsigned), we compensate by incrementing.  This preserves
         the value modulo ULONG_MAX. */
-        if( (unsigned long)x < ((uint8*)&mValue)[i] )//v->ob_digit[i])
+        if ((unsigned long)x < ((uint8*)&mValue)[i] )//v->ob_digit[i])
             x++;
     }
     x = x * sign;
-    if( x == -1 )
+    if (x == -1 )
         x = -2;
     return x;
 
@@ -214,7 +214,7 @@ int32 PyULong::hash() const
     i = 8;
     sign = 1;
     x = 0;
-    if( i < 0 ) {
+    if (i < 0 ) {
         sign = -1;
         i = -(i);
     }
@@ -228,11 +228,11 @@ int32 PyULong::hash() const
         /* If the addition above overflowed (thinking of x as
          *        unsigned), we compensate by incrementing.  This preserves
          *        the value modulo ULONG_MAX. */
-        if( (unsigned long)x < ((uint8*)&mValue)[i] )//v->ob_digit[i])
+        if ((unsigned long)x < ((uint8*)&mValue)[i] )//v->ob_digit[i])
             x++;
     }
     x = x * sign;
-    if( x == -1 )
+    if (x == -1 )
         x = -2;
     return x;
 
@@ -390,7 +390,7 @@ bool PyBuffer::visit( PyVisitor& v ) const
 
 int32 PyBuffer::hash() const
 {
-    if( mHashCache != -1 )
+    if (mHashCache != -1 )
         return mHashCache;
 
     register int32 len;
@@ -419,7 +419,7 @@ int32 PyBuffer::hash() const
     while( --len >= 0 )
         x = (1000003*x) ^ *p++;
     x ^= content().size();
-    if( x == -1 )
+    if (x == -1 )
         x = -2;
     mHashCache = x;
     return x;
@@ -453,7 +453,7 @@ bool PyString::visit( PyVisitor& v ) const
 
 int32 PyString::hash() const
 {
-    if( mHashCache != -1 )
+    if (mHashCache != -1 )
         return mHashCache;
 
     register int32 len;
@@ -499,7 +499,7 @@ size_t PyWString::size() const
 
 int32 PyWString::hash() const
 {
-    if( mHashCache != -1 )
+    if (mHashCache != -1 )
         return mHashCache;
 
     register int32 len;
@@ -568,7 +568,7 @@ void PyTuple::clear()
 {
     iterator cur;
     cur = items.begin();
-    for(; cur != items.end(); cur++)
+    for (; cur != items.end(); cur++)
         PySafeDecRef( *cur );
 
     items.clear();
@@ -580,9 +580,9 @@ PyTuple& PyTuple::operator=( const PyTuple& oth )
     items.resize( oth.size() );
     iterator cur = items.begin();
     const_iterator cur_oth = oth.begin();
-    for(; cur != items.end() && cur_oth != oth.end(); cur++, cur_oth++)
+    for (; cur != items.end() && cur_oth != oth.end(); cur++, cur_oth++)
     {
-        if( *cur_oth == NULL )
+        if (*cur_oth == NULL )
             *cur = NULL;
         else
             *cur = (*cur_oth)->Clone();
@@ -639,10 +639,8 @@ bool PyList::visit( PyVisitor& v ) const
 
 void PyList::clear()
 {
-    iterator cur, end;
-    cur = items.begin();
-    end = items.end();
-    for(; cur != end; cur++)
+    iterator cur = items.begin();
+    for (; cur != items.end(); ++cur)
         PySafeDecRef( *cur );
 
     items.clear();
@@ -654,9 +652,9 @@ PyList& PyList::operator=( const PyList& oth )
     items.resize( oth.size() );
     iterator cur = items.begin();
     const_iterator cur_oth = oth.begin();
-    for(; cur != items.end() && cur_oth != oth.end(); cur++, cur_oth++)
+    for (; cur != items.end() && cur_oth != oth.end(); cur++, cur_oth++)
     {
-        if( *cur_oth == NULL )
+        if (*cur_oth == NULL )
             *cur = NULL;
         else
             *cur = (*cur_oth)->Clone();
@@ -692,11 +690,8 @@ bool PyDict::visit( PyVisitor& v ) const
 
 void PyDict::clear()
 {
-    iterator cur, end;
-    cur = items.begin();
-    end = items.end();
-    for(; cur != end; cur++)
-    {
+    iterator cur = items.begin();
+    for (; cur != items.end(); ++cur) {
         PyDecRef( cur->first );
         PySafeDecRef( cur->second );
     }
@@ -710,7 +705,7 @@ PyRep* PyDict::GetItem( PyRep* key ) const
     assert( key );
 
     const_iterator res = items.find( key );
-    if( res == items.end() )
+    if (res == items.end() )
         return NULL;
 
     return res->second;
@@ -744,7 +739,7 @@ void PyDict::SetItem( PyRep* key, PyRep* value )
 
     /* check if we need to replace a dictionary entry */
     iterator itr = items.find( key );
-    if( itr == items.end() )
+    if (itr == items.end() )
     {
         // Keep both key & value
         items.insert( std::make_pair( key, value ) );
@@ -776,9 +771,9 @@ PyDict& PyDict::operator=( const PyDict& oth )
 {
     clear();
     const_iterator cur = oth.begin();
-    for(; cur != oth.end(); cur++)
+    for (; cur != oth.end(); cur++)
     {
-        if( cur->second == NULL )
+        if (cur->second == NULL )
             SetItem( cur->first->Clone(), NULL );
         else
             SetItem( cur->first->Clone(), cur->second->Clone() );
@@ -880,7 +875,7 @@ PyDict* PyObjectEx_Type1::GetKeywords() const
     assert( header() );
     PyTuple* t = header()->AsTuple();
 
-    if( t->size() < 3 )
+    if (t->size() < 3 )
         t->items.push_back( new PyDict );
 
     return t->GetItem( 2 )->AsDict();
@@ -890,22 +885,19 @@ PyRep* PyObjectEx_Type1::FindKeyword( const char* keyword ) const
 {
     PyDict* kw = GetKeywords();
 
-    PyDict::const_iterator cur, end;
-    cur = kw->begin();
-    end = kw->end();
-    for(; cur != end; cur++)
-    {
-        if( cur->first->IsString() )
-            if( cur->first->AsString()->content() == keyword )
+    PyDict::const_iterator cur = kw->begin();
+    for (; cur != kw->end(); cur++) {
+        if (cur->first->IsString() )
+            if (cur->first->AsString()->content() == keyword )
                 return cur->second;
     }
 
     return NULL;
 }
 
-PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, bool enclosed )
+PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, bool enclosed /*false*/ )
 {
-    if( args == NULL )
+    if (args == NULL )
         args = new PyTuple( 0 );
 
     PyTuple* body = new PyTuple( 2 );
@@ -923,9 +915,9 @@ PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, bool enc
     return body;
 }
 
-PyTuple* PyObjectEx_Type1::_CreateHeader( PyObjectEx_Type1* args1, PyTuple* args2, bool enclosed )
+PyTuple* PyObjectEx_Type1::_CreateHeader( PyObjectEx_Type1* args1, PyTuple* args2, bool enclosed /*false*/ )
 {
-    if( args2 == NULL )
+    if (args2 == NULL )
         args2 = new PyTuple( 0 );
 
     PyTuple* body = new PyTuple( 2 );
@@ -943,15 +935,15 @@ PyTuple* PyObjectEx_Type1::_CreateHeader( PyObjectEx_Type1* args1, PyTuple* args
     return body;
 }
 
-PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, PyDict* keywords, bool enclosed )
+PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, PyDict* keywords, bool enclosed /*false*/ )
 {
-    if( args == NULL )
+    if (args == NULL )
         args = new PyTuple( 0 );
 
     PyTuple* body = new PyTuple( keywords == NULL ? 2 : 3 );
         body->SetItem( 0, type );
         body->SetItem( 1, args );
-        if( body->size() > 2 )
+        if (body->size() > 2 )
             body->SetItem( 2, keywords );
     if (enclosed) {
         codelog(COMMON__ERROR, "This constructor is used.  please finish code.");
@@ -959,15 +951,15 @@ PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, PyDict* 
     return body;
 }
 
-PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, PyList* keywords, bool enclosed )
+PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, PyList* keywords, bool enclosed /*false*/ )
 {
-    if( args == NULL )
+    if (args == NULL )
         args = new PyTuple( 0 );
 
     PyTuple* body = new PyTuple( keywords == NULL ? 2 : 3 );
         body->SetItem( 0, type );
         body->SetItem( 1, args );
-    if( body->size() > 2 )
+    if (body->size() > 2 )
         body->SetItem( 2, keywords );
     if (enclosed) {
         codelog(COMMON__ERROR, "This constructor is used.  please finish code.");
@@ -996,13 +988,10 @@ PyRep* PyObjectEx_Type2::FindKeyword( const char* keyword ) const
 {
     PyDict* kw = GetKeywords();
 
-    PyDict::const_iterator cur, end;
-    cur = kw->begin();
-    end = kw->end();
-    for(; cur != end; cur++)
-    {
-        if( cur->first->IsString() )
-            if( cur->first->AsString()->content() == keyword )
+    PyDict::const_iterator cur = kw->begin();
+    for (; cur != kw->end(); cur++) {
+        if ( cur->first->IsString() )
+            if ( cur->first->AsString()->content() == keyword )
                 return cur->second;
     }
 
@@ -1012,7 +1001,7 @@ PyRep* PyObjectEx_Type2::FindKeyword( const char* keyword ) const
 PyTuple* PyObjectEx_Type2::_CreateHeader( PyTuple* args, PyDict* keywords )
 {
     assert( args );
-    if( keywords == NULL )
+    if (keywords == NULL )
         keywords = new PyDict;
 
     PyTuple* body = new PyTuple( 2 );
@@ -1055,7 +1044,7 @@ bool PyPackedRow::visit( PyVisitor& v ) const
 
 bool PyPackedRow::SetField( uint32 index, PyRep* value )
 {
-    if( !header()->VerifyValue( index, value ) )
+    if (!header()->VerifyValue( index, value ) )
     {
         PyDecRef( value );
         return false;
@@ -1129,11 +1118,11 @@ bool PySubStream::visit( PyVisitor& v ) const
 
 void PySubStream::EncodeData() const
 {
-    if( decoded() == NULL || data() != NULL )
+    if (decoded() == NULL || data() != NULL )
         return;
 
     Buffer* buf = new Buffer;
-    if( !Marshal( decoded(), *buf ) )
+    if (!Marshal( decoded(), *buf ) )
     {
         sLog.Error( "Marshal", "Failed to marshal rep %p.", decoded() );
 
@@ -1147,7 +1136,7 @@ void PySubStream::EncodeData() const
 
 void PySubStream::DecodeData() const
 {
-    if( data() == NULL || decoded() != NULL )
+    if (data() == NULL || decoded() != NULL )
         return;
 
     mDecoded = Unmarshal( data()->content() );

@@ -42,15 +42,15 @@ class SystemEntity;
 class SystemManager;
 
 // common variables to denote accpetable alignment deviations
-static const float TURN_ALIGNMENT = 8.0f;
-static const float WARP_ALIGNMENT = 10.0f;
+static const float TURN_ALIGNMENT = 5.0f;
+static const float WARP_ALIGNMENT = 8.0f;
 static const uint16 BUMP_DISTANCE = 30;     //in meters.  < this = hit.
 
 //this object manages an entity's position and movement in a system.
 
 class DestinyManager {
 public:
-    DestinyManager(SystemEntity* self, SystemManager* system);
+    DestinyManager(SystemEntity* self);
     ~DestinyManager();
 
     void Process();
@@ -63,7 +63,6 @@ public:
     const GPoint &GetPosition() const                   { return m_position; }
     const GVector &GetVelocity() const                  { return m_velocity; }
     double GetSpeedFraction()                           { return m_currentSpeedFraction; }
-	SystemManager* GetSystemManager()                   { return m_system; }
     Destiny::BallMode GetState()                        { return State; }
 
     void EntityRemoved(SystemEntity* who);
@@ -111,10 +110,9 @@ public:
     void UnCloak();
 
     PyResult AttemptDockOperation();
-    void Undock(GPoint direction);
+    void Undock(GPoint dir);
     void SetUndockSpeed();
     void SendSetState() const;
-    void SendBallInfoOnUndock() const;
     void SendJumpIn(uint32 stargateID) const;
     void SendJumpOut(uint32 stargateID) const;
 	void SendJumpInEffect(std::string JumpEffect) const;
@@ -143,6 +141,7 @@ public:
     double GetFollowDistance()                          { return m_targetDistance; }
     double GetMass()                                    { return m_mass; }
     double GetAgility()                                 { return m_shipAgility; }
+    uint32 GetStateStamp()                              { return m_stateStamp; }
 
     void MakeMissile(Missile* missile);
 
@@ -150,7 +149,6 @@ protected:
     void ProcessState();
 
     SystemEntity* const mySE;			//we do not own this.
-    SystemManager* const m_system;		//we do not own this.
 
     //things dictated by our entity's configuration/equipment:
     double m_radius;                    //in m
@@ -159,6 +157,7 @@ protected:
     double m_maxShipSpeed;              //in m/s
     double m_shipAgility;               //in s/kg
     float m_shipWarpSpeed;              //in au/s
+    float m_alignTime;                  //in s   - align and enter warp are same times.
     float m_timeToEnterWarp;            //in s
     float m_speedToLeaveWarp;           //in m/s
     uint8 m_warpAccelTime;              //in s
@@ -169,15 +168,15 @@ protected:
     double m_capNeeded;                 //capacitor charged needed to initiate warp
 
     //derrived from other params:
-    GPoint m_position;                 //in m
-    GVector m_velocity;                //in m/s
-    double m_radians;                  //radians in a turn
-    float m_maxSpeed;                  //in m/s
-    float m_shipMaxAccelTime;          //in s  this is used to determine accel rate, and total accel time
+    GPoint m_position;                  //in m
+    GVector m_velocity;                 //in m/s
+    double m_radians;                   //radians in a turn
+    float m_maxSpeed;                   //in m/s
+    float m_shipMaxAccelTime;           //in s  this is used to determine accel rate, and total accel time
 
     //User controlled information used by a state to determine what to do.
     Destiny::BallMode State;
-    float m_userSpeedFraction;			//fuzzy logic - speed % - set by user command
+    float m_userSpeedFraction;          //fuzzy logic - speed % - set by user command
     float m_currentSpeedFraction;       //fuzzy logic - speed % - current ship speed
     float m_activeSpeedFraction;        //fuzzy logic - speed % - set by USF and CSF
     GPoint m_targetPoint;
@@ -189,7 +188,7 @@ protected:
     int32 m_stopDistance;               //from destination, in m
     double m_moveTimer;
     bool m_inBubble;                    //used to tell if client is in bubble or not.
-    uint32 m_stateStamp;				//some states need to know when they were entered.
+    uint32 m_stateStamp;                //states need to know when they started.
     bool m_cloaked;
     bool m_stop;                        //used to denote Stop() has been called to avoid multiple stops (and associated decel)
     bool m_turning;                     //used to denote ship turning for associated checks
@@ -198,7 +197,7 @@ protected:
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
     // movement methods
-    void _Move(bool orbit=false);		//apply velocity to our position for for this round of movement
+    void _Move(bool orbit=false);       //apply velocity to our position for for this round of movement
     void _Orbit();
     void _Follow();                     //follow or approach object in space
     void _BeginMovement();

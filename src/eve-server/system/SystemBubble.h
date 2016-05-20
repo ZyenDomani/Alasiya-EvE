@@ -75,9 +75,10 @@ public:
 
     void clear();
     void PrintEntityList();
-    void Add(SystemEntity* pEntity, bool isPostWarp=false);
+    void Add(SystemEntity* pEntity);
     void Remove(SystemEntity* pEntity);
     void SendAddBalls(SystemEntity* to_who);
+    void SendAddBalls2(SystemEntity* to_who);
     void AddExclusive(SystemEntity* pEntity);
     void RemoveExclusive(SystemEntity* pEntity);
     void AppendBalls(SystemEntity* about_who) const;

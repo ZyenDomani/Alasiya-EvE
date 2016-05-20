@@ -79,7 +79,7 @@ public:
     virtual void MakeDamageState(DoDestinyDamageState &into);
 
     /* ObjectSystemEntity interface */
-    virtual void ProcessOther();
+    virtual void ProcessObject();
 
     /* specific functions handled in this class. */
     void Grow();

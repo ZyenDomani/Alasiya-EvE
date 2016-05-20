@@ -35,20 +35,15 @@
 #include "ship/Ship.h"
 #include "system/Damage.h"
 
-Missile::Missile( InventoryItemRef self,
-                  PyServiceMgr &services,
-                  SystemManager* system,
-                  InventoryItemRef module,
-                  SystemEntity* target,
-                  ShipItem* ship)
-: DynamicSystemEntity(self, services, system),
+Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem, InventoryItemRef module, SystemEntity* target, ShipItem* ship)
+: DynamicSystemEntity(self, services, pSystem),
   m_module(module),
   m_target(target),
   m_ship(ship),
   m_hitTimer(0),
   m_lifeTimer(0)
 {
-    m_destiny = new DestinyManager(this, system);
+    m_destiny = new DestinyManager(this);
     m_kinDamage = self->GetAttribute(AttrKineticDamage).get_float(),
     m_therDamage = self->GetAttribute(AttrThermalDamage).get_float(),
     m_emDamage = self->GetAttribute(AttrEmDamage).get_float(),

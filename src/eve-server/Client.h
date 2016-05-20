@@ -69,7 +69,7 @@ public:
     virtual ~Client();
 
     bool ProcessNet();
-    void Process();
+    void ProcessClient();
 
     PyServiceMgr& services() const                  { return m_services; }
 
@@ -89,7 +89,7 @@ public:
     std::string GetCharacterName() const            { return mSession.GetCurrentString( "charname" ); }
     uint32 GetShipID() const                        { return m_shipId; /* mSession.GetCurrentInt( "shipid" );*/ }
     uint32 GetCorporationID() const                 { return mSession.GetCurrentInt( "corpid" ); }
-    uint32 GetLocationID() const                    { return mSession.GetCurrentInt( "locationid" ); }
+    uint32 GetLocationID() const                    { return m_locationID; /*mSession.GetCurrentInt( "locationid" );*/ }
     uint32 GetStationID() const                     { return mSession.GetCurrentInt( "stationid" ); }
     uint32 GetSystemID() const                      { return mSession.GetCurrentInt( "solarsystemid2" ); }
     uint32 GetConstellationID() const               { return mSession.GetCurrentInt( "constellationid" ); }
@@ -117,6 +117,7 @@ public:
     CharacterRef GetChar() const                    { return m_char; }
     ShipItemRef GetShip() const                     { return m_ship; }
     SystemEntity* GetShipSE()                       { return pShipSE; }
+    ShipItemRef GetPod() const                      { return m_pod; }
     uint32 GetPodID() const                         { return m_char->capsuleID(); }
     uint32 GetAllianceID() const                    { return m_char->allianceID(); }
     uint32 GetWarFactionID() const                  { return m_char->warFactionID(); }
@@ -127,8 +128,9 @@ public:
 
     std::string GetSystemName() const               { return m_systemName; }
 
-    bool AddBalance(double amount);
+    void SetPodItem();
     void CreateShipSE();
+    bool AddBalance(double amount);
 
     // misc char functions
     void SetShip(ShipItemRef shipRef);
@@ -137,15 +139,11 @@ public:
     void ResetAfterPodded();
     void BoardShip(ShipItemRef newShipRef);
     void UndockFromStation(uint32 stationID, uint32 systemID, uint32 constellationID, uint32 regionID, GPoint dockPosition, GPoint direction);
-    void DockToStation(uint32 stationID);
+    void DockToStation();
     void MoveToLocation(uint32 location, const GPoint &pt);
     void MoveToPosition(const GPoint &pt);
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
     void SetDestiny(bool count=false);
-    void ResetDestiny(bool count=false);
-    //void CheckSelf();
-    void DestinyUndock(GPoint direction);
-    void HasUndocked();
     void WarpIn();
     void WarpOut();
     void IsJumping();
@@ -180,8 +178,8 @@ public:
     bool GetPendingDockOperation()                  { return m_needToDock; };
     void SetPendingDockOperation(bool needToDock)   { m_needToDock = needToDock; }
     bool InPod()                                    { return (m_ship->groupID() == EVEDB::invGroups::Capsule ? true : false); }
-    bool IsInSpace()                                { return (GetStationID() ? false : true); }
-    bool IsDocked()                                 { return (GetStationID() ? true : false); }
+    bool IsInSpace()                                { return (IsSolarSystem(m_locationID) ? true : false); }
+    bool IsDocked()                                 { return (IsStation(m_locationID) ? true : false); }
     bool IsJump()                                   { return (m_moveState == msJump ? true : false); }
     bool IsInvul()                                  { return m_invul; }
     bool IsLogin()                                  { return m_login; }
@@ -199,6 +197,7 @@ public:
     void SetStateSent(bool set=false)               { m_setStateSent = set; }
     void SetSessionTimer(uint32 time=10000)         { SetSessionChange(true); m_sessionTimer.Start(time); }
     void SetSessionChange(bool set=false)           { m_sessionChangeActive = set; }
+    void SetBallPark();
     void SetAutoPilot(bool=false);
     void StargateJump(uint32 fromGate, uint32 toGate);
     void StartKilledTimer();
@@ -231,7 +230,7 @@ public:
     PyDict *MakeSlimItem() const;
     void EncodeDestiny( Buffer& into ) const;
     PyRep *GetAggressors() const;
-    void QueueDestinyUpdate(PyTuple** update);
+    void QueueDestinyUpdate(PyTuple** update, bool DoPackage=false, bool IsSetState=false);
     void QueueDestinyEvent(PyTuple** multiEvent);
     void FlushQueue();
 
@@ -285,6 +284,7 @@ protected:
     Scan* m_scan;
     TradeSession* m_TS;
     ShipItemRef m_ship;
+    ShipItemRef m_pod;
     SystemEntity* pShipSE;
 
 	SystemGPoint m_SGP;     // interface to my variable 3-d point generating system  (which isnt finished yet... -allan)
@@ -300,7 +300,6 @@ protected:
     _MoveState m_moveState;
 
     Timer m_moveTimer;
-    Timer m_undockTimer;    // used to check for multiple calls to serices that should be ignored during this time
     Timer m_clientTimer;    // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
     Timer m_cloakTimer;
     Timer m_invulTimer;
@@ -310,9 +309,11 @@ protected:
     Timer m_scanTimer;       // used to delay scan results based on skills, items, and other shit
     Timer m_sessionTimer;    // used to prevent multiple session changes from occuring too fast
     Timer m_logoutTimer;     // used to hold client object until WarpOut finishes
-    uint32 m_moveSystemID;
     GPoint m_movePoint;
     GPoint m_dockPoint;
+    uint32 m_shipId;
+    uint32 m_locationID;
+    uint32 m_moveSystemID;
     uint32 m_dockStationID;
     void _ExecuteJump();
     bool m_needToDock;
@@ -331,7 +332,6 @@ protected:
     // set true for using autopilot.
     bool m_autoPilot = false;
 
-    uint32 m_shipId;
 
     EvilNumber m_timeEndTrain;
 

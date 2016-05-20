@@ -369,6 +369,16 @@ void DungeonSE::EncodeDestiny( Buffer& into )
 ObjectSystemEntity::ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
+    m_targMgr = new TargetManager(this);
+}
+
+ObjectSystemEntity::~ObjectSystemEntity() {
+    SafeDelete(m_targMgr);
+}
+
+void ObjectSystemEntity::Process() {
+    /*  Process Targetting  */
+    m_targMgr->Process();
 }
 
 void ObjectSystemEntity::EncodeDestiny( Buffer& into )
@@ -430,11 +440,6 @@ void ObjectSystemEntity::UpdateDamage()
     //source->QueueDestinyUpdate(&up);
 }
 
-void ObjectSystemEntity::Process() {
-    //for now we're just processing incomming targeting.
-    m_targMgr->Process();
-}
-
 void ObjectSystemEntity::Killed(Damage &fatal_blow)
 {
     m_targMgr->ClearTargets(false);
@@ -467,7 +472,7 @@ DynamicSystemEntity::~DynamicSystemEntity() {
 }
 
 void DynamicSystemEntity::Process() {
-    //for now we're just processing incomming targeting.
+    /*  Process Targetting  */
     m_targMgr->Process();
 }
 

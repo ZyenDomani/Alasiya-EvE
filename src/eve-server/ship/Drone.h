@@ -66,6 +66,7 @@ public:
 
     /* specific functions handled here. */
     Client* GetOwner()                                  { return (m_owner ? m_owner : nullptr); }
+    DroneAIMgr* GetAI()                                 { return m_AI; }
 
     void SaveDrone();
     void RemoveDrone();

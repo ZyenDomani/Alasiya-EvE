@@ -179,9 +179,8 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         snprintf(ci, sizeof(ci), "");
         oldShipRef->SetCustomInfo(ci);
         oldShipRef->SetFlag(flagShipOffline);
-    } else {
-        oldShipRef->Move(0, flagCapsule, false);
     }
+    
     /* missing something here.  blank space after boarding ship from pod.  */
 
     //response should be nodeid and timestamp

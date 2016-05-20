@@ -5,7 +5,6 @@
  */
 
 
-
 #ifndef EVE_POS_ENUMS_H
 #define EVE_POS_ENUMS_H
 
@@ -67,5 +66,13 @@ typedef enum {
     STATE_WARPAWAYANDCOMEBACK   = 16,
     STATE_WARPTOPOSITION        = 17
 } StructureState;
+
+/*
+ * typedef enum {
+ *    posShieldStartLevel = 0.505f,
+ *    posMaxShieldPercentageForWatch = 0.95f,
+ *    posMinDamageDiffToPersist = 0.05f
+ * };
+ */
 
 #endif  //EVE_POS_ENUMS_H

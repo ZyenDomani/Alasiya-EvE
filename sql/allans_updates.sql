@@ -383,8 +383,8 @@ ALTER TABLE `crtClasses` ADD `dataID` int(10) unsigned DEFAULT '0';
 INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES ('10124', '1207', '1', NULL);
 
 /* update dgmTypeAttributes to add ore volume to asteroid invTypes */
-INSERT INTO `dgmTypeAttributes` (`typeID`, `valueFloat`, `attributeID`, `valueInt`)
-(SELECT typeID, volume, 161, NULL FROM invTypes
+INSERT INTO `dgmTypeAttributes` (`typeID`, `valueFloat`, `attributeID`)
+(SELECT typeID, volume, 161 FROM invTypes
 WHERE groupID IN (450,451,452,453,454,455,456,457,458,459,460,461,462,467,468,469)
 AND published = 1 );
 

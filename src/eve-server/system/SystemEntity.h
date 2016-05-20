@@ -72,6 +72,11 @@ public:
     SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     virtual ~SystemEntity()                             { /* Do nothing here */ }
 
+    /* Process Calls - Overridden as needed in derived classes */
+    virtual void                Process()               { /* Do nothing here */ }
+    virtual void                ProcessObject()         { /* Do nothing here */ }
+    virtual void                ProcessDestiny()        { /* Do nothing here */ }
+
     /* (Allan) the next two sections eliminate the overhead of RTTI static casting.  */
     /* class type pointer querys, grouped by base class.  public for anyone to access. */
     /* Base */
@@ -176,7 +181,6 @@ public:
     virtual const GVector&      GetVelocity()           { return (m_destiny ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void                Process()               { /* Do nothing here */ }
     virtual void                Killed(Damage &fatal_blow) { /* Do nothing here */ }
     virtual void                EncodeDestiny(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
@@ -184,8 +188,6 @@ public:
 
     /* virtual functions to be overridden in derived classes */
     virtual void                UpdateDamage()          { /* Do nothing here */ }
-    virtual void                ProcessDestiny()        { /* Do nothing here */ }
-    virtual void                ProcessOther()          { /* Do nothing here */ }
     virtual void                QueueDestinyUpdate(PyTuple **du) { /* Do nothing here */ }
     virtual void                QueueDestinyEvent(PyTuple **de)  { /* Do nothing here */ }
     virtual bool                LoadExtras(SystemDB *db){ return true; }
@@ -237,6 +239,9 @@ class StaticSystemEntity : public SystemEntity {
 public:
     StaticSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     virtual ~StaticSystemEntity()                       { /* Do nothing here */ }
+
+    /* Process Calls - Overridden as needed in derived classes */
+    virtual void                ProcessObject()         { /* Do nothing here yet - will use gate::ProcessObject() and timer to make jumps*/ }
 
     /* class type pointer querys. */
     virtual StaticSystemEntity* GetStaticSE()           { return this; }
@@ -351,7 +356,10 @@ public:
 class ObjectSystemEntity : public SystemEntity {
 public:
     ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~ObjectSystemEntity()                       { /* Do nothing here */ }
+    virtual ~ObjectSystemEntity();
+
+    /* Process Calls - Overridden as needed in derived classes */
+    virtual void                Process();
 
     /* class type pointer querys. */
     virtual ObjectSystemEntity* GetObjectSE()           { return this; }
@@ -369,8 +377,6 @@ public:
     virtual PyDict *MakeSlimItem();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Process();
-    virtual void ProcessOther()                         { /* Do nothing here */ }
     virtual void Killed(Damage &fatal_blow);
 
 };
@@ -399,6 +405,10 @@ public:
     DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     virtual ~DynamicSystemEntity();
 
+    /* Process Calls - Overridden as needed in derived classes */
+    virtual void                Process();
+    virtual void                ProcessDestiny();
+
     /* class type pointer querys. */
     virtual DynamicSystemEntity* GetDynamicSE()         { return this; }
     /* class type tests. */
@@ -407,7 +417,6 @@ public:
 
     /* SystemEntity interface */
     virtual void UpdateDamage();
-    virtual void ProcessDestiny();
     virtual void EncodeDestiny( Buffer& into );
     virtual void MakeDamageState(DoDestinyDamageState &into);
 
@@ -419,8 +428,6 @@ public:
     virtual double GetAgility();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Process();
-    virtual void ProcessOther()                         { /* Do nothing here */ }
     virtual void Killed(Damage &fatal_blow);
 
     /* specific functions handled here. */

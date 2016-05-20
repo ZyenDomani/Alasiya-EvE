@@ -216,23 +216,23 @@ void StationSE::EncodeDestiny( Buffer& into )
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = HasMiniBalls | IsGlobal;
+        head.flags = /*HasMiniBalls |*/ IsGlobal;
     into.Append( head );
 
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
-if (0) {
-    const uint16 miniballsCount = 1;
-    into.Append( miniballsCount );
 
+/** @todo miniballs is broken and needs work...
+ *  dont know what's wrong at this point, but client freaks out and ignores ANY ball data (in SetState) after this.
+ * this causes BallNotInPark error with multiple stations, or ANY data sent AFTER first StationBall
     MiniBall miniball;
         miniball.x = -7701.181;
         miniball.y = 8060.06;
         miniball.z = 27878.900;
         miniball.radius = 1639.241;
     into.Append( miniball );
-    }
+ */
     _log(COMMON__WARNING, "StationEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 

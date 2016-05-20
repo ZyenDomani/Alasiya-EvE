@@ -122,20 +122,23 @@ void EntityList::Process() {
         ++m_stamp;
         sWHMgr.Process();
 
-        std::map<uint32, SystemManager*>::iterator cur = m_systems.begin();
-        while (cur != m_systems.end()) {
-            if (!cur->second) { /* this shouldnt happen.  log error to make note */
-                sLog.Error(" EntityList::Proc", "Deleting System %u", cur->first);
-                SafeDelete(cur->second);
-                cur = m_systems.erase(cur);
+        for (auto cur : m_clients)
+            cur->ProcessClient();
+
+        std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
+        while (itr != m_systems.end()) {
+            if (!itr->second) { /* this shouldnt happen.  log error to make note */
+                sLog.Error(" EntityList::Proc", "Deleting System %u", itr->first);
+                SafeDelete(itr->second);
+                itr = m_systems.erase(itr);
                 continue;
-            } else if (!cur->second->ProcessTic()) {    /* Process each loaded system */
-                cur->second->UnloadSystem();
-                SafeDelete(cur->second);
-                cur = m_systems.erase(cur);
+            } else if (!itr->second->ProcessTic()) {    /* Process each loaded system */
+                itr->second->UnloadSystem();
+                SafeDelete(itr->second);
+                itr = m_systems.erase(itr);
                 continue;
             }
-            ++cur;
+            ++itr;
         }
         if (sConfig.server.UseProfiling)
             sProfile.AddTime(_entitySProfile, GetTimeUSeconds() - profileStartTime);
@@ -236,8 +239,7 @@ void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple**
 
 void EntityList::Broadcast(const PyAddress &dest, EVENotificationStream &noti) const {
     for (auto cur : m_clients)
-        if (cur->IsDocked())
-            cur->SendNotification(dest, noti);
+        cur->SendNotification(dest, noti);
 }
 
 void EntityList::Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const {

@@ -29,10 +29,12 @@ COMMAND( syncloc, ROLE_PLAYER,
          "- Synchonizes your location in client with location on server." )
 COMMAND( setbpattr, ROLE_CONTENT,
          "(itemID) (copy) (materialLevel) (productivityLevel) (licensedProductionRunsRemaining) - Change blueprint's attributes." )
-COMMAND( state, ROLE_GML,
+COMMAND( sendstate, ROLE_GML,
          "- Sends DoDestinyUpdate SetState." )
-COMMAND( update, ROLE_PLAYER,
-         "- Sends DoDestinyUpdate SetState, and BubbleManager _AddBalls.")
+COMMAND( addball, ROLE_PLAYER,
+         "- Sends BubbleManager AddBalls.")
+COMMAND( addball2, ROLE_PLAYER,
+         "- Sends BubbleManager AddBalls2.")
 COMMAND( getattr, ROLE_GML,
          "(itemID) (attributeID) - Retrieves attribute value." )
 COMMAND( setattr, ROLE_CONTENT,

@@ -172,7 +172,7 @@ public:
     virtual PyDict *MakeSlimItem();
 
     /* ObjectSystemEntity interface */
-    virtual void ProcessOther();
+    virtual void ProcessObject();
 
     /* specific functions handled in this class. */
     inline void SetPOSState(uint8 state)                       { m_state = state; }
