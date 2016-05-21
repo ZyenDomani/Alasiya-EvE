@@ -445,7 +445,6 @@ bool Client::EnterSystem(uint32 systemID) {
 
 void Client::UpdateLocation(uint32 locationID) {
     m_locationID = locationID;
-    UpdateSessionInt("locationid", locationID);
     _UpdateSession(m_char);
     SendSessionChange();
     if (IsStation(locationID)) {
@@ -459,7 +458,6 @@ void Client::UpdateLocation(uint32 locationID) {
         OnCharNowInStation();
         DestroyShipSE();
     } else if (IsSolarSystem(locationID)) {
-        //UpdateSessionInt("solarsystemid", locationID);
         sLog.Success("Client::UpdateLocation()", "Character %s(%u) InSpace.", m_char->itemName().c_str(), m_char->itemID());
         if (InPod())
             m_ship->Move(locationID, flagCapsule, false);

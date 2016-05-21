@@ -354,6 +354,8 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_CheckSendLocationInfo(PyCallArgs& call)
 {
+    sLog.Log("ShipBound::Handle_CheckSendLocationInfo()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
     //no arguments
     Client* pClient = call.client;
     return nullptr;
@@ -559,6 +561,11 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
     uint32 callTupleSize = (uint32)call.tuple->size(), itemID = 0, effect = 0;
 
     if (callTupleSize == 2) {
+        Call_TwoIntegerArgs args;
+        if (!args.Decode(&call.tuple)) {
+            _log( SERVICE__ERROR, "Unable to decode arguments from '%s'", pClient->GetName() );
+            return new PyNone;
+        }
         /*
           [PyString "Activate"]     << onlining a pos module
           [PyTuple 2 items]
@@ -603,16 +610,10 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
                     default:
                         break;
                 }
-
-                return new PyNone;
-            } else {
+            } else
                 sLog.Error("DogmaIMBound::Handle_Activate()", "call.tuple->items.at( 1 ) was not PyInt expected type." );
-                return new PyNone;
-            }
-        } else {
+        } else
             sLog.Error("DogmaIMBound::Handle_Activate()", "call.tuple->items.at( 0 ) was not PyInt expected type." );
-            return new PyNone;
-        }
     } else if (callTupleSize == 4) {
         Call_Dogma_Activate args;
         if (!args.Decode(&call.tuple)) {
@@ -624,7 +625,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         pClient->GetShip()->Activate(args.itemID, args.effectName, args.target, args.repeat);
     }
 
-    return nullptr;
+    return new PyNone;
 }
 
 PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
@@ -717,14 +718,15 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if (!pClient->GetShipSE()->TargetMgr())
         return rsp.Encode();
 
-    Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Unable to decode arguments from '%s'", pClient->GetName());
-        return rsp.Encode();
-    }
     SystemManager* smgr = pClient->SystemMgr();
     if (!smgr) {
         _log(PLAYER__WARNING, "Unable to find system manager from '%s'", pClient->GetName());
+        return rsp.Encode();
+    }
+
+    Call_SingleIntegerArg args;
+    if (!args.Decode(&call.tuple)) {
+        _log(SERVICE__ERROR, "Unable to decode arguments from '%s'", pClient->GetName());
         return rsp.Encode();
     }
     SystemEntity* target = smgr->get(args.arg);
@@ -736,7 +738,6 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         _log(DESTINY__ERROR, "Client %u or Target %u does not have a bubble.", pClient->GetName(), target->GetName());
         return rsp.Encode();
     }
-
     ShipItemRef ship = pClient->GetShip();
 
     if (!pClient->GetShipSE()->TargetMgr()->StartTargeting(target, ship)) {

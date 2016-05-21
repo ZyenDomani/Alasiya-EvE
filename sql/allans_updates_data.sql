@@ -68,9 +68,8 @@ INSERT INTO `mapOreBySystemSecurityClass` (`systemSecurityClass`, `Veldspar`, `S
 
 /* Dumping data for table `sklBaseSkills` */
 
-INSERT INTO `sklBaseSkills` (`skillTypeID`, `level`) VALUES
-(3300, 2),(3327, 2),(3, 3386, 1),(4, 3392, 2),(5, 3402, 1),(6, 3413, 2),(7, 3416, 1),(8, 3426, 2),(9, 3449, 2);
-
+INSERT INTO `sklBaseSkills` (`ID`, `skillTypeID`, `level`) VALUES
+(1, 3300, 2),(2, 3327, 2),(3, 3386, 1),(4, 3392, 2),(5, 3402, 1),(6, 3413, 2),(7, 3416, 1),(8, 3426, 2),(9, 3449, 2);
 
 /* Dumping data for table `sklRaceSkills`  */
 
