@@ -64,60 +64,51 @@ void BubbleManager::Process() {
     if (m_wanderTimer.Check()) {
         m_wanderers.clear();
         std::vector<SystemBubble *>::iterator itr = m_bubbles.begin();
-        for (; itr != m_bubbles.end(); itr++) {
-            if ((*itr)->HasPlayers() || (*itr)->HasDynamics()) {
+        while (itr != m_bubbles.end()) {
+            if ((*itr)->HasPlayers() or (*itr)->HasDynamics()) {
                 (*itr)->ProcessWander(m_wanderers);
             } else if ((*itr)->HasStatics()) {
-                continue;
+                ; /* do nothing for now ... do we need to do anything with statics here?? */
             } else if ((*itr)->IsEmpty()) {
                 // Remove this bubble now that it is empty of ALL dynamic entities
                 _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
-                m_bubbles.erase(itr);
-                itr = m_bubbles.begin();
+                itr = m_bubbles.erase(itr);
+                continue;
             } else  /* this should never happen */
                 _log(DESTINY__ERROR, "BubbleManager::Process() - Bubble %u has reached the end.", (*itr)->GetID());
+            ++itr;
         }
 
         if (!m_wanderers.empty()) {
             for (auto cur : m_wanderers) {
                 _log(DESTINY__WARNING, "BubbleManager::Process() - Wanderer '%s' being added to a bubble.", cur->GetName() );
-                Add(cur);
+                CheckBubble(cur);
             }
         }
+        m_wanderers.clear();
     }
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_bubblesProfile, GetTimeUSeconds() - profileStartTime);
 }
 
-// no longer used...
-void BubbleManager::CheckBubble(SystemEntity *ent, bool isWarping, bool isPostWarp) {
-    SystemBubble *b = ent->SysBubble();
+void BubbleManager::CheckBubble(SystemEntity *pSE) {
+    SystemBubble *b = pSE->SysBubble();
     if (b) {
-        if ((b->InBubble(ent->GetPosition())) && (!isWarping)) {
+        if (b->InBubble(pSE->GetPosition())) {
             _log(DESTINY__BUBBLE_TRACE, "BubbleManager::CheckBubble() - Entity '%s'(%u) at (%.2f,%.2f,%.2f) is still located in bubble %u at %.2f,%.2f,%.2f.",
-                 ent->GetName(), ent->GetID(), ent->GetPosition().x, ent->GetPosition().y, ent->GetPosition().z,
+                 pSE->GetName(), pSE->GetID(), pSE->GetPosition().x, pSE->GetPosition().y, pSE->GetPosition().z,
                  b->GetID(), b->x(), b->y(), b->z());
-            //still in bubble...
-            sLog.Debug( "BubbleManager::CheckBubble()", "SystemEntity '%s' is still located in Bubble %u",
-                        ent->GetName(), b->GetID() );
-            return;
-        } else if (isWarping) {
-            //entity is in warp, therefore, no bubble needed.
-            _log(DESTINY__BUBBLE_TRACE, "BubbleManager::CheckBubble() - Warping Entity '%s'(%u) is no longer located in bubble %u.  Removing...",
-                 ent->GetName(), ent->GetID(), b->GetID());
-            b->Remove(ent);
             return;
         }
 
         _log(DESTINY__BUBBLE_TRACE, "BubbleManager::CheckBubble() - Entity '%s'(%u) at (%.2f,%.2f,%.2f) is no longer located in bubble %u at %.2f,%.2f,%.2f.  Removing...",
-             ent->GetName(), ent->GetID(), ent->GetPosition().x, ent->GetPosition().y, ent->GetPosition().z,
+             pSE->GetName(), pSE->GetID(), pSE->GetPosition().x, pSE->GetPosition().y, pSE->GetPosition().z,
              b->GetID(), b->x(), b->y(), b->z());
-        b->Remove(ent);
+        b->Remove(pSE);
     }
 
-    _log(DESTINY__BUBBLE_TRACE, "BubbleManager::CheckBubble() - SystemEntity '%s'(%u) not currently in any Bubble...adding",
-         ent->GetName(), ent->GetID() );
-    Add(ent, isPostWarp);
+    _log(DESTINY__BUBBLE_TRACE, "BubbleManager::CheckBubble() - SystemEntity '%s'(%u) not currently in any Bubble...adding", pSE->GetName(), pSE->GetID() );
+    Add(pSE);
 }
 
 void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {

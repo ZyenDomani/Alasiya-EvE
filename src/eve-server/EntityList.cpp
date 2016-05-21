@@ -123,7 +123,8 @@ void EntityList::Process() {
         sWHMgr.Process();
 
         for (auto cur : m_clients)
-            cur->ProcessClient();
+            if (cur->GetLocationID())
+                cur->ProcessClient();
 
         std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
         while (itr != m_systems.end()) {
@@ -203,23 +204,15 @@ Client* EntityList::FindClientByAccount(uint32 account_id) const {
 }
 
 void EntityList::FindClientByStationID(uint32 stationID, std::vector<Client*> &result) const {
-    for (auto cur : m_clients) {
-        if (cur->GetStationID() == stationID) {
-            sLog.Warning( "EntityList::FindByStationID()", "Client %s (%u) added to GuestList for station %u",
-						  cur->GetName(), cur->GetCharacterID(), stationID );
+    for (auto cur : m_clients)
+        if (cur->GetStationID() == stationID)
             result.push_back(cur);
-		}
-    }
 }
 
 void EntityList::FindByRegionID(uint32 regionID, std::vector<Client*> &result) const {
-    for (auto cur : m_clients) {
-        if (cur->GetRegionID() == regionID) {
-            sLog.Warning( "EntityList::FindByStationID()", "Client %s (%u) added to GuestList for region %u",
-						  cur->GetName(), cur->GetCharacterID(), regionID );
+    for (auto cur : m_clients)
+        if (cur->GetRegionID() == regionID)
             result.push_back(cur);
-		}
-    }
 }
 
 void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const {

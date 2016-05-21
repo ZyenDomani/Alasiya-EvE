@@ -172,7 +172,8 @@ bool SystemManager::LoadSystemStatics() {
             _log(INV__WARNING, "Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
             continue;
         }
-        bubbles.Add(pSE, false);
+        if (pSE->IsBeltSE() or pSE->IsGateSE() or pSE->IsStationSE())
+            bubbles.Add(pSE);  /* testing....no need to put planets and moons in a bubble.  */
         m_entities[cur.itemID] = pSE;
         AddItemToInventory(pSE->GetSelf());
         if (!pSE->LoadExtras(&m_db))
@@ -509,7 +510,7 @@ bool SystemManager::ProcessTic() {
     std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
     while (cur != m_entities.end()) {
         if (cur->second) {
-            /** @todo will need to add a process call to TargetMgr here for all SEs that require it */
+            cur->second->Process(); /* main process call. */
             if (cur->second->IsDynamicEntity())
                 cur->second->ProcessDestiny(); /* call movement functions on dynamics here */
             else if (cur->second->IsObjectEntity())
@@ -526,7 +527,6 @@ bool SystemManager::ProcessTic() {
         } else
             ++cur;
     }
-    /** @todo implement a gate timer (5s) and process for jump queue to remove timer from client */
 
     /* the following are coded for single-tic calls */
     bubbles.Process();
@@ -569,7 +569,7 @@ bool SystemManager::IsNull(std::map<uint32, SystemEntity*>::iterator& i)
     return *buffer == 0;
     /* I found that the size of any iterator is 12 bytes long.
      * I also found that if the first byte of the iterator that
-     * I copy to the buffer is zero, then the iterator is invalid.
+     * if copy to the buffer is zero, then the iterator is invalid.
      * Otherwise it is valid. I like to call invalid iterators also as "null iterators".
      */
 }
@@ -580,7 +580,8 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
     auto itr = m_clients.find(who->GetCharacterID());
     if (itr == m_clients.end()) {
         m_clients[who->GetCharacterID()] = who;
-        _log(CLIENT__TRACE, "Client %s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID);
+        _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %u clients now in system.", \
+                    who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID, m_clients.size());
     }
 
     m_activityTime = 0;
@@ -588,7 +589,8 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
         ++m_players;
         if (!m_spawnMgr->IsTimerStarted())
             m_spawnMgr->StartMainTimer();
-        _log(PLAYER__INFO, "Player %s(%u): Added to player count for %s(%u)", who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID);
+        _log(PLAYER__INFO, "%s(%u): Added to player count for %s(%u) - new count: %u", \
+                    who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID, m_players);
     }
 }
 
@@ -598,7 +600,8 @@ void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
     auto itr = m_clients.find(who->GetCharacterID());
     if (itr != m_clients.end()) {
         m_clients.erase(itr);
-        _log(CLIENT__TRACE, "Client %s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID);
+        _log(PLAYER__TRACE, "%s(%u): Removed from system manager for %s(%u) - %u clients still in system.", \
+                    who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID, m_clients.size());
     }
 
     if (count) {
@@ -607,20 +610,21 @@ void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
             m_clients.clear();
             m_activityTime = sEntityList.GetStamp();
         }
-        _log(PLAYER__INFO, "Player %s(%u): Removed from player count for %s(%u)", who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID);
+        _log(PLAYER__INFO, "%s(%u): Removed from player count for %s(%u) - new count: %u", \
+                who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID, m_players);
     }
 }
 
 void SystemManager::AddNPC(NPC* who) {
     if (!who) return;
-    _log(NPC__TRACE, "NPC %s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
+    _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
     AddEntity(who);
     sEntityList.AddNPC();
 }
 
 void SystemManager::RemoveNPC(NPC* who) {
     if (!who) return;
-    _log(NPC__TRACE, "NPC %s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
+    _log(NPC__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
     RemoveEntity(who);
     sEntityList.RemoveNPC();    // this is for loaded npc count.
     who->RemoveNPC();   // this deletes NPC from DB.  NPC's dont jump, so no reason to remove from system unless killed
@@ -628,7 +632,7 @@ void SystemManager::RemoveNPC(NPC* who) {
 
 void SystemManager::AddEntity(SystemEntity* who) {
     if (!who) return;
-    _log(ITEM__TRACE, "Entity %s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
+    _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
     m_entities[who->GetID()] = who;
     m_entityChanged = true;
     bubbles.Add(who);
@@ -638,7 +642,7 @@ void SystemManager::AddEntity(SystemEntity* who) {
 
 void SystemManager::RemoveEntity(SystemEntity* who) {
     if (!who) return;
-    _log(ITEM__TRACE, "Entity %s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
+    _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
     auto itr = m_entities.find(who->GetID());
     if (itr != m_entities.end()) {
         who->TargetMgr()->DoDestruction();
@@ -700,8 +704,8 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
             visibleEntities.push_back(cur.second);
     }
 
-    if (bubble and !login)
-       ;// bubble->GetEntities(visibleEntities);
+    if (bubble)
+       bubble->GetEntities(visibleEntities);
 
     into.slims = new PyList;
     into.effectStates = new PyList;

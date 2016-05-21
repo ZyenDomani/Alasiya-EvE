@@ -91,6 +91,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_undock = false;
     m_beyonce = false;
     m_packaged = false;
+    m_autoPilot = false;
     m_bubbleWait = false;
     m_needToDock = false;
     m_setStateSent = false;
@@ -328,8 +329,6 @@ void Client::SetDestiny(bool count) {
             MoveToPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()));
         if (count and !m_login)
             pShipSE->GetShipSE()->ResetShipSystemMgr(m_system);
-        if (m_login)
-            pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         m_system->AddEntity(pShipSE);
     } else
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
@@ -409,14 +408,9 @@ void Client::LoginToSystem(uint32 systemID, ShipItemRef ship) {
 bool Client::EnterSystem(uint32 systemID) {
     if (IsStation(systemID)) return true;
 
-    /** @todo this will need more work once i figure out what the damn client wants
-    if (m_autoPilot) {
-        sLog.Warning("Client::EnterSystem", "m_autoPilot = 1");
-        if (IsStation(m_locationID)
-            m_services.serviceDB().GetStationInfo(m_locationID, &systemID, nullptr, nullptr, nullptr, nullptr, nullptr);
-        else
-            systemID = m_locationID;
-    } */
+    /** @todo this will need more work once i figure out what the damn client wants */
+    if (m_autoPilot)
+        sLog.Warning("Client::EnterSystem", "m_autoPilot = true");
 
     // called when entering new system or verifying correct/current system.  sets session data for current system
     if (m_system and (m_system->GetID() != systemID)) {
@@ -451,7 +445,7 @@ bool Client::EnterSystem(uint32 systemID) {
 
 void Client::UpdateLocation(uint32 locationID) {
     m_locationID = locationID;
-    mSession.SetInt("locationid", locationID);
+    UpdateSessionInt("locationid", locationID);
     _UpdateSession(m_char);
     SendSessionChange();
     if (IsStation(locationID)) {
@@ -465,6 +459,7 @@ void Client::UpdateLocation(uint32 locationID) {
         OnCharNowInStation();
         DestroyShipSE();
     } else if (IsSolarSystem(locationID)) {
+        //UpdateSessionInt("solarsystemid", locationID);
         sLog.Success("Client::UpdateLocation()", "Character %s(%u) InSpace.", m_char->itemName().c_str(), m_char->itemID());
         if (InPod())
             m_ship->Move(locationID, flagCapsule, false);
@@ -522,7 +517,7 @@ void Client::MoveToLocation(uint32 location, const GPoint& pt) {
             LoadStationHangar(stationID);
     } else {
         MoveToPosition(pt);
-        SetDestiny(true);
+        SetDestiny(!m_undock);
     }
 }
 
@@ -546,16 +541,15 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
 
     m_invul = m_undock = true;
     m_bubbleWait = m_setStateSent = false;
+    //set position and direction of docking ramp for later use
+    m_dockPoint = dockPosition;
+    m_movePoint = direction;
 
     //  Undock Request -> OnCharNoLongerInStation -> GetCriminalTimeStamps -> Undock -> OnItemsChanged (Undocking:xxxxxxxx) ->
     //  9sec from hitting undock to space view on live.
-    //set position of docking ramp for later position checks/setting
-    m_dockPoint = dockPosition;
-    m_movePoint = direction;
     OnCharNoLongerInStation();
     CreateShipSE();
     MoveToLocation(systemID, dockPosition);
-    //SetDestiny();
     m_ship->Undock();
     m_invulTimer.Start(/*InvulTimer::*/UndockingInvul);
     SetSessionTimer();
@@ -576,7 +570,7 @@ void Client::SetBallPark() {
 }
 
 void Client::DockToStation() {
-    m_autoPilot = false;
+    SetAutoPilot(false);
     //m_bubbleWait = true;  //do we need this?  there is no ballpark after next call returns.
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
 
@@ -657,6 +651,7 @@ void Client::CreateShipSE() {
     _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->itemName().c_str(), m_char->itemID());
     m_ship->Move(m_locationID, InPod() ? flagCapsule : flagAutoFit);
     pShipSE->SetPilot(this);
+    pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
 }
 
 void Client::DestroyShipSE() {
@@ -717,16 +712,14 @@ PyRep *Client::GetAggressors() const {
     return dict;
 }
 
-void Client::SetAutoPilot(bool autoPilot) {
-    //FIXME  this needs more info and lots more work
+void Client::SetAutoPilot(bool autoPilot /*false*/) {
     m_autoPilot = autoPilot;
-    if (autoPilot) {
-        if (m_autoPilot)
-            mSession.SetInt("solarsystemid", GetSystemID());   //this is currrent system.
-            else
-                mSession.SetInt("solarsystemid", GetSystemID());   //this is currrent system.
-    } else
-        mSession.SetInt("solarsystemid", GetSystemID());   //this is currrent system.
+    if (autoPilot)
+        UpdateSessionInt("solarsystemid2", 0);
+    else {
+        if (IsInSpace())
+            UpdateSessionInt("solarsystemid2", m_locationID);   //this is currrent system.
+    }
 }
 
 void Client::StargateJump(uint32 fromGate, uint32 toGate) {
@@ -872,8 +865,8 @@ void Client::ResetAfterPodded() {
      */
 
     //clear AutoPilot
-    m_autoPilot = false;
     m_bubbleWait = false;
+    SetAutoPilot(false);
 
     MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
     SpawnNewRookieShip();
@@ -1021,7 +1014,6 @@ void Client::OnCharNoLongerInStation() {
         n.allianceID = GetAllianceID();
         n.factionID = GetWarFactionID();
     PyTuple* tmp = n.Encode();
-    sEntityList.Broadcast("OnCharNoLongerInStation", "stationid", &tmp);
     std::vector<Client*> clients;
     clients.clear();
     sEntityList.FindClientByStationID(m_locationID, clients);
@@ -1094,9 +1086,9 @@ void Client::_UpdateSession(const CharacterConstRef& character)
         mSession.Clear("stationid");
         mSession.Clear("stationid2");
         mSession.Clear("worldspaceid");
-   /** @todo  will have to look into AP shit more to understand what it uses to work.  ssid is only part of it. */
-        //if (!m_autoPilot)
-        mSession.SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
+        /** @todo  will have to look into AP shit more to understand what it uses to work.  ssid is only part of it. */
+        if (!m_autoPilot)
+            mSession.SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
         mSession.SetInt("locationid", solarsystemID);
         mSession.SetInt("shipid", m_shipId);
     }
@@ -1105,7 +1097,7 @@ void Client::_UpdateSession(const CharacterConstRef& character)
     mSession.SetString("charname", character->itemName().c_str());
     mSession.SetInt("corpid", character->corporationID());
     // solarsystemid2 is used by client to determine current system.  NOTE:  *MUST* be set to current system.
-	mSession.SetInt("solarsystemid2", solarsystemID);
+    mSession.SetInt("solarsystemid2", solarsystemID);
     mSession.SetInt("constellationid", character->constellationID());
     mSession.SetInt("regionid", character->regionID());
 }

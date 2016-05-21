@@ -468,6 +468,9 @@ void Ship::Killed(Damage &fatal_blow) {
             return;
         }
 
+        _log(PHYSICS__TRACE, "ShipEntity::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
+                    GetName(), GetID(), x(), y(), z(), m_destiny->GetPosition().x, m_destiny->GetPosition().y, m_destiny->GetPosition().z);
+
         DropLoot(m_self->groupID(), killerID, wreckItemRef->itemID());
 
         //  log faction kill in dynamic data   -allan

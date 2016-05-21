@@ -277,12 +277,11 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
 
 void DestinyManager::_UpdateVelocity(bool isMoving) {
     //if (isMoving and (m_currentSpeedFraction < 0.1)) return;
-    m_accel = false;
-    m_decel = false;
+    m_accel = m_decel = false;
     m_moveTimer = GetTimeMSeconds();
     m_shipMaxAccelTime = m_shipAgility * -log(0.0001);
     uint8 logType = 0;
-    if ((State == DSTBALL_WARP) and (m_warpState != nullptr)) {
+    if ((State == DSTBALL_WARP) and m_warpState) {
         /*  _Warp() finished, and ship dropped out of warp at m_speedToLeaveWarp,
          *  reset m_shipMaxAccelTime as a fraction of m_speedToLeaveWarp/m_maxShipSpeed
          *  to set decel correctly, as m_speedToLeaveWarp varies with ship and warp distance.
@@ -412,9 +411,9 @@ void DestinyManager::Halt() {
     m_stopDistance = 0;
     m_targetDistance = 0.0;
     m_followDistance = 0.0;
-    m_userSpeedFraction = 0.0;
-    m_activeSpeedFraction = 0.0;
-    m_currentSpeedFraction = 0.0;
+    m_userSpeedFraction = 0.0f;
+    m_activeSpeedFraction = 0.0f;
+    m_currentSpeedFraction = 0.0f;
 
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
@@ -422,8 +421,7 @@ void DestinyManager::Halt() {
     _ClearTurn();
 
     _log(DESTINY__MOVE_TRACE, "Destiny::Halt() - Entity %s(%u): m_shipHeading: %.3f,%.3f,%.3f", \
-        mySE->GetName(), mySE->GetID(), \
-        m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+        mySE->GetName(), mySE->GetID(), m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 }
 
 // Global collision methods
@@ -587,8 +585,7 @@ void DestinyManager::_Move(bool orbit) {
         speed = m_maxSpeed * m_currentSpeedFraction;
         csf = m_currentSpeedFraction;
     } else if ((timeStamp > m_shipMaxAccelTime) and (m_currentSpeedFraction > 0.995f)) {
-        m_accel = false;
-        m_decel = false;
+        m_accel = m_decel = false;
         if (m_userSpeedFraction) {
             // ship has reached full speed (whatever the fraction was set to)
             m_currentSpeedFraction = 1.0f;
@@ -658,11 +655,11 @@ void DestinyManager::_Move(bool orbit) {
     m_velocity = moveVector * speed;
     SetPosition(m_position + m_velocity);
 
-    if (orbit)
+    if (orbit) {
         _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - Entity %s(%u) is orbiting %s(%u) at %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
             mySE->GetName(), mySE->GetID(), GetTargetEntity()->GetName(), GetTargetID(), \
             speed, csf, m_activeSpeedFraction, timeStamp);
-    else
+    } else {
         _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - Entity %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
             mySE->GetName(), mySE->GetID(), move.c_str(), \
             speed, csf, m_activeSpeedFraction, timeStamp);
@@ -673,6 +670,7 @@ void DestinyManager::_Move(bool orbit) {
     //_log(DESTINY__MOVE_TRACE, "Destiny::_Move() - Before update - moveVector: %.3f,%.3f,%.3f  m_shipHeading: %.3f,%.3f,%.3f", \
             moveVector.x, moveVector.y, moveVector.z, \
             m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+    }
 
     m_shipHeading = moveVector;
 
@@ -714,9 +712,9 @@ bool DestinyManager::_IsTurn() {    //is working.  dont change
         m_shipHeading = toVec;
         return false;
     }
+    _log(DESTINY__TURN_TRACE, "Destiny::_IsTurn() dot: %.5f, radians:%.5f, degrees:%.3f", dot, m_radians, degrees);
     //_log(DESTINY__TURN_TRACE, "Destiny::_IsTurn() shipHeading: %.3f,%.3f,%.3f.  targetHeading: %.3f,%.3f,%.3f", \
          m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, m_targetHeading.x, m_targetHeading.y, m_targetHeading.z);
-         _log(DESTINY__TURN_TRACE, "Destiny::_IsTurn() dot: %.5f, radians:%.5f, degrees:%.3f", dot, m_radians, degrees);
     return true;
 }
 
@@ -758,7 +756,7 @@ GVector DestinyManager::_Turn() {
                 turnPercent = 0.25f;
             // alignTime = (align time for full 180* turn) * (% of 180* turn being performed)
             m_alignTime = m_timeToEnterWarp * (EvE_RadiansToDegrees(m_radians) /180);
-            _log(DESTINY__TURN_TRACE, "Destiny::_Turn() - %.3fs Align Time for %s", m_alignTime, mySE->GetName());
+            _log(DESTINY__TURN_TRACE, "Destiny::_Turn()   %.3fs Align Time for %s", m_alignTime, mySE->GetName());
         } else {
             ++m_turnTic;
         }

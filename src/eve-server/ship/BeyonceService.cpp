@@ -701,8 +701,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
 	  codelog(CLIENT__ERROR, "%s: unable to find destination Entity for ID %u", call.client->GetName(), arg.destID);
         return nullptr;
     }
-    // autopilot check      --this has adverse effects at this time.  -allan 27Dec14
-	//call.client->SetAutoPilot(true);
+    // autopilot check
+    //call.client->SetAutoPilot(true);
 
 	if (call.client->IsUndock()) call.client->SetUndock(false);
     //if (call.client->IsInvul()) call.client->SetInvul(false);

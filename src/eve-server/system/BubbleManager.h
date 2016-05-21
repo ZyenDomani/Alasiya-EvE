@@ -49,7 +49,7 @@ public:
     void Process();
 
     //call whenever an entity may have left its bubble.
-    void CheckBubble(SystemEntity *ent, bool isWarping=false, bool isPostWarp=false);
+    void CheckBubble(SystemEntity* ent);
     //call when an entity is added to the system.
     void Add(SystemEntity* pSE, bool isPostWarp = false);
     //call to find the bubble containing the SystemEntity specified, if no bubble does, return NULL

@@ -42,8 +42,8 @@ class SystemEntity;
 class SystemManager;
 
 // common variables to denote accpetable alignment deviations
-static const float TURN_ALIGNMENT = 5.0f;
-static const float WARP_ALIGNMENT = 8.0f;
+static const float TURN_ALIGNMENT = 8.0f;
+static const float WARP_ALIGNMENT = 10.0f;
 static const uint16 BUMP_DISTANCE = 30;     //in meters.  < this = hit.
 
 //this object manages an entity's position and movement in a system.
@@ -179,7 +179,7 @@ protected:
     float m_currentSpeedFraction;       //fuzzy logic - speed % - current ship speed
     float m_activeSpeedFraction;        //fuzzy logic - speed % - set by USF and CSF
     GPoint m_targetPoint;
-    double m_targetDistance;            //in m
+    uint64 m_targetDistance;            //in m
     double m_followDistance;            //in m
     GVector m_shipHeading;              //direction ship is facing
     GVector m_targetHeading;            //direction to target from current heading

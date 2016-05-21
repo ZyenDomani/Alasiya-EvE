@@ -162,29 +162,15 @@ void SystemBubble::Process()
 //if any entity is no longer in the bubble, they are removed
 //from the bubble and stuck into the vector for re-classification.
 void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
-	//the wanderers array may have other stuff in it, so use a local first.
-	std::vector<SystemEntity*> found_wandering;
-    found_wandering.clear();
 	DynamicSystemEntity* pDSE(nullptr);
     for (auto cur : m_dynamicEntities) {
         pDSE = cur->GetDynamicSE();
 		if (!pDSE) continue;
         if (pDSE->DestinyMgr() and pDSE->DestinyMgr()->IsWarping()) continue;
-		if (!InBubble(pDSE->GetPosition())) {
-			//we cannot use Remove directly here because it will invalidate
-			//our iterator, so store them away for now.
-			found_wandering.push_back(cur);
+		if (!InBubble(pDSE->GetPosition()))
 			wanderers.push_back(cur);
-		}
 	}
     pDSE = nullptr;
-
-	if (found_wandering.size() > 0)
-		for (auto curw : found_wandering) {
-			_log( DESTINY__BUBBLE_TRACE, "SystemBubble::ProcessWander() - entity %s(%u) found wandering. removing from bubble %u.",
-			      curw->GetName(), curw->GetID(), GetID() );
-			Remove(curw);
-        }
 }
 
 void SystemBubble::Add(SystemEntity* pEntity) {
@@ -218,7 +204,6 @@ void SystemBubble::Add(SystemEntity* pEntity) {
 		m_entities.insert(std::pair<uint32, SystemEntity*>(pEntity->GetID(), pEntity));
 		return;
 	}
-
     if (pEntity->HasPilot()) {
         Client* pClient = pEntity->GetPilot();
         if (pClient->IsUndock())
@@ -242,6 +227,7 @@ void SystemBubble::Add(SystemEntity* pEntity) {
     // all non-global entities (players, npcs, roids, containers, etc) are put into bubble's dynamicEntity map
     m_dynamicEntities.push_back(pEntity);
     _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is dynamic.", pEntity->GetName(), pEntity->GetID() );
+
 }
 
 void SystemBubble::Remove(SystemEntity *pEntity) {
