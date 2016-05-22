@@ -1814,3 +1814,12 @@ PyResult Command_showsession(Client* who, CommandDB* db, PyServiceMgr* services,
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
+
+PyResult Command_shipdna(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    char reply[200];
+    snprintf(reply, 200, "%s", who->GetShip()->GetShipDNA());
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}

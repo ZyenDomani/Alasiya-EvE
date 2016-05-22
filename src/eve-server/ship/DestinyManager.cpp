@@ -688,7 +688,7 @@ void DestinyManager::_Move(bool orbit) {
 // much of the following turn code is from "Ship Motion in Eve Online" by Scheulagh Santorine, Ph.D
 bool DestinyManager::_IsTurn() {    //is working.  dont change
     if (m_targetPoint.isZero()) {
-        _log(PHYSICS__ERROR, "Destiny::_IsTurn() - Entity %s(%u): Target is null.", mySE->GetName(), mySE->GetID());
+        _log(DESTINY__ERROR, "Destiny::_IsTurn() - Entity %s(%u): Target is null.", mySE->GetName(), mySE->GetID());
         m_radians = 0;
         Halt();
         return false;

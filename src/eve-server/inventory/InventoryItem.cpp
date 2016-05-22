@@ -632,8 +632,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     //invItem:
     PySafeDecRef( result.itemID );
     PySafeDecRef( result.invItem );
-    //PySafeDecRef( result.activeEffects );
-    //result.activeEffects = new PyDict;
+
     if (groupID() == EVEDB::invCategories::Charge) {
         PyTuple* tuple = new PyTuple(3);
             tuple->SetItem(0, new PyInt(m_itemID));
@@ -660,17 +659,10 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
                 es.duration = -1;
                 es.repeat = 1;
                 es.randomSeed = new PyNone;
-                /*
-            PyDict* dict = new PyDict;
-                dict->SetItem(new PyInt(es.env_effectID), es.Encode());
-            result.activeEffects = dict; */
             result.activeEffects[es.env_effectID] = es.Encode();
         }
     }
 
-    //PySafeDecRef( result.attributes );
-    //result.attributes = new PyDict;
-    //PyDict* dict = new PyDict;
     if (categoryID() == EVEDB::invCategories::Skill) {
         result.attributes[AttrSkillTimeConstant] = new PyInt(mAttributeMap.GetAttribute(AttrSkillTimeConstant).get_int());
         result.attributes[AttrSkillPoints] = new PyInt(mAttributeMap.GetAttribute(AttrSkillPoints).get_int());
@@ -679,10 +671,9 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
         AttributeMap::AttrMapItr itr = mAttributeMap.begin();
         for (; itr != mAttributeMap.end(); itr++) {
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
-            //dict->SetItem(new PyInt((*itr).first), (*itr).second.GetPyObject());
         }
     }
-    //result.attributes = dict;
+
     result.time = Win32TimeNow();
     return true;
 }
@@ -696,32 +687,7 @@ PyList* InventoryItem::GetItemInfo() const
 }
 
 PyObject* InventoryItem::ItemGetInfo()
-{/*
-    [PyTuple 1 items]
-      [PySubStream 556 bytes]
-        [PyObjectData Name: util.KeyVal]
-          [PyDict 5 kvp]
-            [PyString "itemID"]
-            [PyIntegerVar 1002331327445]
-            [PyString "attributes"]
-            [PyDict 33 kvp]
-            [PyString "invItem"]
-            [PyPackedRow 33 bytes]
-              ["itemID" => <1002331327445> [I8]]
-              ["typeID" => <453> [I4]]
-              ["ownerID" => <1661059544> [I4]]
-              ["locationID" => <1002331681462> [I8]]
-              ["flagID" => <27> [I2]]
-              ["quantity" => <-1> [I4]]
-              ["groupID" => <53> [I2]]
-              ["categoryID" => <7> [I2]]
-              ["customInfo" => <empty string> [Str]]
-            [PyString "time"]
-            [PyIntegerVar 129515452804044553]
-            [PyString "activeEffects"]
-            [PyDict 0 kvp]
-    [PyNone]
-    */
+{
     Rsp_ItemGetInfo result;
 
     if (!Populate(result.entry))
@@ -993,6 +959,7 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
     dgmEffOverload = 5,
 } EffectCategories;*/
 
+/** @todo set a notify boolean here? */
 void InventoryItem::SetOnline(bool online) {
     /** @note  this is only used by modules
      ** check for pos structures also!! **

@@ -40,7 +40,7 @@ TargetManager::TargetManager(SystemEntity *self)
   m_self(self)
 {
     m_canAttack = false;
-    _log(TARGET__INFO, "Created TargMgr %p for %s(%u)", this, self->GetID(), self->GetName());
+    _log(TARGET__INFO, "Created TargMgr %p for %s(%u)", this, self->GetName(), self->GetID());
 }
 
 TargetManager::~TargetManager() {

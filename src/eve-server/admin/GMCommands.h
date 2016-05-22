@@ -103,6 +103,8 @@ COMMAND( showsession, ROLE_PROGRAMMER,
          " - list current session values." )
 COMMAND( skilllist, ROLE_PROGRAMMER,
          " - list all skills loaded for character." )
+COMMAND( shipdna, ROLE_PROGRAMMER,
+         " - show current ship DNA." )
 
 /*
 COMMAND( entity, ROLE_ADMIN,
