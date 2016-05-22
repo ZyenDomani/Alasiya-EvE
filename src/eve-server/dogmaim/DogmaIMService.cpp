@@ -734,7 +734,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         _log(INV__WARNING, "Unable to find entity %u in system %u from '%s'", args.arg, smgr->GetID(), pClient->GetName());
         return rsp.Encode();
     }
-    if ((!pClient->GetShipSE()->SysBubble()) || (!target->GetShipSE()->SysBubble())) {
+    if ((!pClient->GetShipSE()->SysBubble()) || (!target->SysBubble())) {
         _log(DESTINY__ERROR, "Client %u or Target %u does not have a bubble.", pClient->GetName(), target->GetName());
         return rsp.Encode();
     }
