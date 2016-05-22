@@ -978,7 +978,9 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
         change.changes = changes;
     changes.clear();    //reset change map for next update.
     PyTuple *tmp = change.Encode();  //this is consumed below
-    c->SendNotification("OnItemChange", "charid", &tmp, false); //unsequenced.
+    // not sure what the difference is on the types below...
+    c->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.
+    //c->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.
 }
 
 

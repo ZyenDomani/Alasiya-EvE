@@ -444,9 +444,6 @@ bool Client::EnterSystem(uint32 systemID) {
 }
 
 void Client::UpdateLocation(uint32 locationID) {
-    m_locationID = locationID;
-    _UpdateSession(m_char);
-    SendSessionChange();
     if (IsStation(locationID)) {
         sLog.Success("Client::UpdateLocation()", "Character %s (%u) Docked.", m_char->itemName().c_str(), m_char->itemID());
         m_ship->Relocate(NULL_ORIGIN);  // hack to set coords to 0,0,0 in db.
@@ -468,6 +465,9 @@ void Client::UpdateLocation(uint32 locationID) {
         if (m_char->flag() != flagPilot)
             m_char->Move(m_shipId, flagPilot);
     }
+    m_locationID = locationID;
+    _UpdateSession(m_char);
+    SendSessionChange();
 }
 
 void Client::MoveToLocation(uint32 location, const GPoint& pt) {
@@ -506,14 +506,11 @@ void Client::MoveToLocation(uint32 location, const GPoint& pt) {
         return;
     }
     m_ship->SetCustomInfo(ci);
-
     m_char->SetLocation(stationID, solarSystemID, constellationID, regionID);
+
     EnterSystem(solarSystemID);
     UpdateLocation(location);
-    if (stationID) {
-        if (!IsHangarLoaded(stationID))
-            LoadStationHangar(stationID);
-    } else {
+    if (!stationID) {
         MoveToPosition(pt);
         SetDestiny(!m_undock);
     }
@@ -535,7 +532,7 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
         mts->CancelTrade(this);
     }
     sLog.Log("Client::UndockFromStation()", "Character %s(%u) undocking from stationID() %u", \
-                m_char->itemName().c_str(), m_char->itemID(), m_char->stationID());
+                m_char->itemName().c_str(), m_char->itemID(), stationID);
 
     m_invul = m_undock = true;
     m_bubbleWait = m_setStateSent = false;
@@ -543,12 +540,16 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     m_dockPoint = dockPosition;
     m_movePoint = direction;
 
-    //  Undock Request -> OnCharNoLongerInStation -> GetCriminalTimeStamps -> Undock -> OnItemsChanged (Undocking:xxxxxxxx) ->
-    //  9sec from hitting undock to space view on live.
-    OnCharNoLongerInStation();
+    /** @todo  this needs a bit of work to match live....
+     *  Undock Request -> GetCriminalTimeStamps -> Undock -> OnItemsChanged (Undocking:xxxxxxxx) -> OnCharNoLongerInStation ->
+     *  GetAllInfo -> GetNPCStandings -> GetFormations -> AddBalls2 (slim, not ball, wait=true)
+     * -> GotoDirection(etc, etc) -> SetState (dmg, ego, ball, slim)
+     *  ***** 9sec from hitting undock to space view on live. *****
+     */
     CreateShipSE();
     MoveToLocation(systemID, dockPosition);
     m_ship->Undock();
+    OnCharNoLongerInStation();
     m_invulTimer.Start(/*InvulTimer::*/UndockingInvul);
     SetSessionTimer();
 }
@@ -1085,7 +1086,7 @@ void Client::_UpdateSession(const CharacterConstRef& character)
         mSession.Clear("stationid2");
         mSession.Clear("worldspaceid");
         /** @todo  will have to look into AP shit more to understand what it uses to work.  ssid is only part of it. */
-        if (!m_autoPilot)
+        //if (!m_autoPilot)
             mSession.SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
         mSession.SetInt("locationid", solarsystemID);
         mSession.SetInt("shipid", m_shipId);

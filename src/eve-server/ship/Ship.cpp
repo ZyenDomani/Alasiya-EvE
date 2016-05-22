@@ -713,39 +713,37 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef equip) {
         equip->HasAttribute(AttrCanFitShipGroup2, canFitShipGroup2) ||
         equip->HasAttribute(AttrCanFitShipGroup3, canFitShipGroup3) ||
         equip->HasAttribute(AttrCanFitShipGroup4, canFitShipGroup4)){
-        _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Beginning the validation:");
-    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipGroup1 = %s", equip->HasAttribute(AttrCanFitShipGroup1, canFitShipGroup1) ? "True":"False");
-    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipGroup2 = %s", equip->HasAttribute(AttrCanFitShipGroup2, canFitShipGroup2) ? "True":"False");
-    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipGroup3 = %s", equip->HasAttribute(AttrCanFitShipGroup3, canFitShipGroup3) ? "True":"False");
-    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipGroup4 = %s", equip->HasAttribute(AttrCanFitShipGroup4, canFitShipGroup4) ? "True":"False");
-    if ( (canFitShipGroup1 != groupID) && (canFitShipGroup2 != groupID) && (canFitShipGroup3 != groupID) && (canFitShipGroup4 != groupID)){
-        _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - No attribute found. groupID = %i", groupID);
-        return false;
-    }
-    else
-        _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the module");
-        }
-
-        // If a ship type restriction is specified the item
-        // must be able to fit to at least one ship type.
-        if (equip->HasAttribute(AttrCanFitShipType1, canFitShipType1) ||
-            equip->HasAttribute(AttrCanFitShipType2, canFitShipType2) ||
-            equip->HasAttribute(AttrCanFitShipType3, canFitShipType3) ||
-            equip->HasAttribute(AttrCanFitShipType4, canFitShipType4)){
             _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Beginning the validation:");
-        _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipType1 = %s", equip->HasAttribute(AttrCanFitShipType1, canFitShipType1) ? "True":"False");
-        _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipType2 = %s", equip->HasAttribute(AttrCanFitShipType2, canFitShipType2) ? "True":"False");
-        _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipType3 = %s", equip->HasAttribute(AttrCanFitShipType3, canFitShipType3) ? "True":"False");
-        _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipType4 = %s", equip->HasAttribute(AttrCanFitShipType4, canFitShipType4) ? "True":"False");
-        if ( (canFitShipType1 != typeID) && (canFitShipType2 != typeID) && (canFitShipType3 != typeID) && (canFitShipType4 != typeID)){
-            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - No attribute found. typeID = %i", typeID);
-            return false;
-        }
-        else
-            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the module");
-            }
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipGroup1 = %s", equip->HasAttribute(AttrCanFitShipGroup1, canFitShipGroup1) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipGroup2 = %s", equip->HasAttribute(AttrCanFitShipGroup2, canFitShipGroup2) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipGroup3 = %s", equip->HasAttribute(AttrCanFitShipGroup3, canFitShipGroup3) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipGroup4 = %s", equip->HasAttribute(AttrCanFitShipGroup4, canFitShipGroup4) ? "True":"False");
+            if ( (canFitShipGroup1 != groupID) && (canFitShipGroup2 != groupID) && (canFitShipGroup3 != groupID) && (canFitShipGroup4 != groupID)){
+                _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - No attribute found. groupID = %i", groupID);
+                return false;
+            } else
+                _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the module");
+    }
 
-            return true;
+    // If a ship type restriction is specified the item
+    // must be able to fit to at least one ship type.
+    if (equip->HasAttribute(AttrCanFitShipType1, canFitShipType1) ||
+        equip->HasAttribute(AttrCanFitShipType2, canFitShipType2) ||
+        equip->HasAttribute(AttrCanFitShipType3, canFitShipType3) ||
+        equip->HasAttribute(AttrCanFitShipType4, canFitShipType4)){
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Beginning the validation:");
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipType1 = %s", equip->HasAttribute(AttrCanFitShipType1, canFitShipType1) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipType2 = %s", equip->HasAttribute(AttrCanFitShipType2, canFitShipType2) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipType3 = %s", equip->HasAttribute(AttrCanFitShipType3, canFitShipType3) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - AttrCanFitShipType4 = %s", equip->HasAttribute(AttrCanFitShipType4, canFitShipType4) ? "True":"False");
+            if ( (canFitShipType1 != typeID) && (canFitShipType2 != typeID) && (canFitShipType3 != typeID) && (canFitShipType4 != typeID)){
+                _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - No attribute found. typeID = %i", typeID);
+                return false;
+            } else
+                _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the module");
+    }
+
+    return true;
 }
 
 void ShipItem::ProcessModules() {
@@ -769,7 +767,6 @@ void ShipItem::Undock() {
     for (auto cur : m_onlineModuleVec) {
         m_ModuleManager->Online(cur);
     }
-    Move(locationID(), (type().id() == EVEDB::invTypes::typeCapsule ? flagCapsule : flagAutoFit));
 }
 
 void ShipItem::Warp() {

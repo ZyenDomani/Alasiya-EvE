@@ -180,7 +180,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         oldShipRef->SetCustomInfo(ci);
         oldShipRef->SetFlag(flagShipOffline);
     }
-    
+
     /* missing something here.  blank space after boarding ship from pod.  */
 
     //response should be nodeid and timestamp
@@ -354,7 +354,6 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
         return nullptr;
     }
 
-    GPoint direction = dockOrientation;
     ShipItem* pShip = pClient->GetShip().get();
 
     char ci[35];
@@ -374,7 +373,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     }
 
     //do session change...
-    pClient->UndockFromStation(stationID, systemID, constellationID, regionID, dockPosition, direction);
+    pClient->UndockFromStation(stationID, systemID, constellationID, regionID, dockPosition, (GPoint)dockOrientation);
 
     //response should be nodeid and timestamp
     return new PyLong(Win32TimeNow());
