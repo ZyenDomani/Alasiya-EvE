@@ -342,6 +342,7 @@ void Client::WarpIn() {
     m_invulTimer.Start(/*InvulTimer::*/WarpingInInvul);
     return;
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
+    /** @todo  when implemented, make sure we move the ship item, if needed....check this  */
     GPoint warpToPoint(m_ship->position());
     GPoint warpFromPoint(m_ship->position());
     warpFromPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
@@ -381,6 +382,7 @@ void Client::LoginToSystem(uint32 systemID, ShipItemRef ship) {
         m_ship->AddItem(m_char);
         UpdateSessionInt("shipid", m_shipId);
         CreateShipSE();
+        MoveToLocation(systemID, NULL_ORIGIN);  // this may not be needed...check later....doesnt do anything if not needed.
         SetDestiny(true);
         WarpIn();
         m_char->AddPilotToDynamicData(systemID, true, false, true);
@@ -460,7 +462,7 @@ void Client::UpdateLocation(uint32 locationID) {
             m_ship->Move(locationID, flagCapsule, false);
         else {
             m_pod->Move(locationID, flagCapsule, false);
-            m_ship->Move(locationID, flagAutoFit, false);
+            m_ship->Move(locationID, flagAutoFit);
         }
         if (m_char->flag() != flagPilot)
             m_char->Move(m_shipId, flagPilot);
@@ -648,7 +650,7 @@ void Client::CreateShipSE() {
     if (pShipSE) DestroyShipSE();
     pShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system);
     _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->itemName().c_str(), m_char->itemID());
-    m_ship->Move(m_locationID, InPod() ? flagCapsule : flagAutoFit);
+    //m_ship->Move(m_locationID, InPod() ? flagCapsule : flagAutoFit);
     pShipSE->SetPilot(this);
     pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
 }

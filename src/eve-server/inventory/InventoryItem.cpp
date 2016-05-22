@@ -1048,7 +1048,7 @@ void InventoryItem::SetCustomInfo(const char *ci) {
         m_customInfo = ci;
     else
         m_customInfo = "";
-    SaveItem();
+    //SaveItem();
 }
 
 void InventoryItem::Relocate(const GPoint &pos) {
