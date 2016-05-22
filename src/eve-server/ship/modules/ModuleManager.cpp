@@ -1280,8 +1280,7 @@ void ModuleManager::CharacterLeavingShip()
     //this is complicated and im gonna leave it alone for now until
     //a few things become more clear
 
-    if (m_Ship->GetPilot()->IsInSpace())
-        OfflineAll();
+    OfflineAll();
 }
 
 void ModuleManager::CharacterBoardingShip()
