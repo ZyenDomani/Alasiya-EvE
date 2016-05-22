@@ -1538,7 +1538,7 @@ PyResult DestinyManager::AttemptDockOperation() {
     rangeToStationPerimiter -= station->GetRadius();
 
     // Verify range to station is within docking perimeter of 2500 meters:
-    _log(DESTINY__TRACE, "DestinyManager::AttemptDockOperation()", "rangeToStationPerimiter is %.2fm", rangeToStationPerimiter);
+    _log(DESTINY__TRACE, "DestinyManager::AttemptDockOperation() rangeToStationPerimiter is %.2fm", rangeToStationPerimiter);
     if (rangeToStationPerimiter > 2500.0) {
         AlignTo( station );   // Turn ship and move toward docking point - client will call Dock() automatically when close enough...sometimes
         throw PyException(MakeUserError("DockingApproach"));

@@ -652,13 +652,13 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
                 es.env_itemID = m_itemID;
                 es.env_charID = m_ownerID;  //may not be quite right...
                 es.env_shipID = m_locationID;
-                es.env_target = m_locationID;   //this is what they do.
+                es.env_target = 0;
                 es.env_other = new PyNone;
                 es.env_area = new PyNone;
                 es.env_effectID = effectOnline;
-                es.startTime = Win32TimeNow() - Win32Time_Hour; /** @todo fix this once we start tracking effects */
+                es.startTime = Win32TimeNow() - Win32Time_Minute; /** @todo fix this once we start tracking effects */
                 es.duration = -1;
-                es.repeat = 0;
+                es.repeat = 1;
                 es.randomSeed = new PyNone;
                 /*
             PyDict* dict = new PyDict;

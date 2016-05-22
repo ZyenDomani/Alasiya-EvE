@@ -321,15 +321,15 @@ void Client::SetDestiny(bool count) {
        return;
     }
     m_system->AddClient(this, IsDocked(), count);
-    //need to set players position before adding to bubble (if in space)
     if (IsSolarSystem(m_locationID)) {
-        m_bubbleWait = false;
+        m_bubbleWait = /*true*/false;
         m_setStateSent = false;
         if (m_ship->position().isZero())
             MoveToPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()));
         if (count and !m_login)
             pShipSE->GetShipSE()->ResetShipSystemMgr(m_system);
         m_system->AddEntity(pShipSE);
+        //m_bubbleWait = false;
     } else
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
 }
@@ -558,6 +558,8 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
 
 void Client::SetBallPark() {
     // called when beyonce is created (only when in space(undock, jump, login InSpace))
+    m_bubbleWait = true;
+    pShipSE->SysBubble()->SendAddBalls(pShipSE);
     m_login = m_bubbleWait = false;
     if (!pShipSE->SysBubble())
         m_system->AddEntity(pShipSE);
@@ -567,7 +569,6 @@ void Client::SetBallPark() {
         pShipSE->DestinyMgr()->Undock(m_movePoint);
         m_undock = false;
     }
-    pShipSE->SysBubble()->SendAddBalls2(pShipSE);
 }
 
 void Client::DockToStation() {

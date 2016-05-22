@@ -220,7 +220,6 @@ public:
 
     PyList*                 GetItemInfo() const;
     PyObject*               ItemGetInfo();
-    //PyTuple*              GetItemRow() const;
     PyPackedRow*            GetItemRow() const;
     PyPackedRow*            GetItemStatusRow() const;
     PyPackedRow*            GetModuleStatusRow() const;

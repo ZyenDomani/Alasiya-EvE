@@ -645,7 +645,7 @@ PyResult Command_location(Client* who, CommandDB* db, PyServiceMgr* services, co
 
     char reply[135];
     snprintf(reply, 135,
-        "SystemID: %li (%li)<br>"
+        "SystemID: %u (%u)<br>"
         "x: %lf<br>"
         "y: %lf<br>"
         "z: %lf<br>"

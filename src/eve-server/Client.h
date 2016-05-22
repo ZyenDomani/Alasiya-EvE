@@ -91,6 +91,7 @@ public:
     uint32 GetCorporationID() const                 { return mSession.GetCurrentInt( "corpid" ); }
     uint32 GetLocationID() const                    { return m_locationID; /*mSession.GetCurrentInt( "locationid" );*/ }
     uint32 GetStationID() const                     { return mSession.GetCurrentInt( "stationid" ); }
+    uint32 GetStationID2() const                    { return mSession.GetCurrentInt( "stationid2" ); }
     uint32 GetSystemID() const                      { return mSession.GetCurrentInt( "solarsystemid2" ); }
     uint32 GetConstellationID() const               { return mSession.GetCurrentInt( "constellationid" ); }
     uint32 GetRegionID() const                      { return mSession.GetCurrentInt( "regionid" ); }

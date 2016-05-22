@@ -207,7 +207,7 @@ void SystemBubble::Add(SystemEntity* pEntity) {
     if (pEntity->HasPilot()) {
         Client* pClient = pEntity->GetPilot();
         if (pClient->IsUndock())
-            SendAddBalls2( pEntity );
+            SendAddBalls( pEntity );
         if (!pClient->GetShipSE()->DestinyMgr()->IsCloaked()) {
             if (HasPlayers())
                 _BubblecastAddBallExclusive(pEntity);  // adds new player to all players in bubble, if any
@@ -428,6 +428,8 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
         addballs.slims->AddItem( new PyObject( "foo.SlimItem", cur->MakeSlimItem() ) );
         cur->EncodeDestiny( *destinyBuffer );
     }
+
+    addballs.slims->AddItem( new PyObject( "foo.SlimItem", to_who->MakeSlimItem() ) );
 
     if (addballs.slims->size() < 1) {
         SafeDelete( destinyBuffer );
