@@ -1783,6 +1783,7 @@ PyResult Command_showsession(Client* who, CommandDB* db, PyServiceMgr* services,
 
     str << "locationid: %i <br>"; //18+10
     str << "stationid: %i <br>"; //17+10
+    str << "stationid2: %i <br>"; //17+10
     str << "solarsystemid2: %i <br>"; //22+10
     str << "constellationid: %i <br>"; //23+10
     str << "regionid: %i <br>";
@@ -1800,15 +1801,15 @@ PyResult Command_showsession(Client* who, CommandDB* db, PyServiceMgr* services,
     str << "fleetrole: %i <br>"; //17+10
 
     int size = 32;  // header
-    size += 370;    // text
-    size += 150;    // %i
+    size += 400;    // text
+    size += 160;    // %i
     size += 120;    // %lu
     char reply[size];
     snprintf(reply, size, str.str().c_str(),
              who->GetCharacterID(), who->GetName(), who->GetShipID(), who->GetCloneStationID(), who->GetClientID(), who->GetUserID(),
-             who->GetSessionID(), who->GetLocationID(), who->GetStationID(), who->GetSystemID(), who->GetConstellationID(), who->GetRegionID(),
-             who->GetCorporationID(), who->GetCorpHQ(), who->GetCorpAccountKey(), who->GetCorpRole(), who->GetRolesAtAll(), who->GetRolesAtBase(),
-             who->GetRolesAtHQ(), who->GetRolesAtOther(), who->GetGangRole(),who->GetFleetRole() );
+             who->GetSessionID(), who->GetLocationID(), who->GetStationID(), who->GetStationID2(), who->GetSystemID(), who->GetConstellationID(),
+             who->GetRegionID(), who->GetCorporationID(), who->GetCorpHQ(), who->GetCorpAccountKey(), who->GetCorpRole(), who->GetRolesAtAll(),
+             who->GetRolesAtBase(), who->GetRolesAtHQ(), who->GetRolesAtOther(), who->GetGangRole(),who->GetFleetRole() );
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
