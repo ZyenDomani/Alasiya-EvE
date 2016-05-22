@@ -2105,7 +2105,6 @@ void DestinyManager::SendSetState() const {
 
     mySE->SystemMgr()->MakeSetState(mySE->SysBubble(), ss, mySE->GetPilot()->IsLogin());
     PyTuple* tmp = ss.Encode();
-    //SendSingleDestinyUpdate(&tmp, true);    //consumed
     mySE->GetPilot()->QueueDestinyUpdate(&tmp, true, true);    //setstate should be alone and immediate.  send directly
     mySE->GetPilot()->SetStateSent(true);
 }

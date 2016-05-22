@@ -1213,7 +1213,12 @@ double Ship::CalculateRechargeRate(double Capacity, double Current, double Recha
 }
 
 void Ship::Process() {
+    // process targeting (thru DSE)
     SystemEntity::Process();
+
+    // check to see if this is an empty ship, and exit if so.
+    //  we're not worried about recharge and modules for empty ships (segfaults)
+    if (!m_pilot) return;
 
     if (m_processTimer.Check()) {
         double profileStartTime = 0.0;

@@ -537,7 +537,6 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
                 m_char->itemName().c_str(), m_char->itemID(), stationID);
 
     m_invul = m_undock = true;
-    m_bubbleWait = m_setStateSent = false;
     //set position and direction of docking ramp for later use
     m_dockPoint = dockPosition;
     m_movePoint = direction;
@@ -651,7 +650,6 @@ void Client::CreateShipSE() {
     if (pShipSE) DestroyShipSE();
     pShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system);
     _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->itemName().c_str(), m_char->itemID());
-    //m_ship->Move(m_locationID, InPod() ? flagCapsule : flagAutoFit);
     pShipSE->SetPilot(this);
     pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
 }

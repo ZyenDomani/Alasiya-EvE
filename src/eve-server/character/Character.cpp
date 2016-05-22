@@ -675,8 +675,9 @@ bool Character::InjectSkillIntoBrain(SkillRef skill) {
         return false;
     }
 
-    /** @todo based on config options (maybe later), check to see if another character owned by this characters account, */
-    // is training a skill.  If so, return. (flagID=61).
+    /** @todo config option (later) to check if another character on this account is training a skill.
+     *  If so, send error, cancel inject and return. (flagID=61).
+     */
 
     if ( !skill->SkillPrereqsComplete( *this ) ) {
         /** @todo need to send back a response to the client.  need packet specs. */
@@ -686,7 +687,7 @@ bool Character::InjectSkillIntoBrain(SkillRef skill) {
     }
 
     // are we injecting from a stack of skills?
-    if( skill->quantity() > 1 ) {
+    if ( skill->quantity() > 1 ) {
         // split the stack to obtain single item
         InventoryItemRef single_skill = skill->Split( 1 );
         if( !single_skill ) {
@@ -694,13 +695,15 @@ bool Character::InjectSkillIntoBrain(SkillRef skill) {
             return false;
         }
         // use single_skill ...
-        single_skill->SetAttribute(AttrSkillPoints, 0);
-        single_skill->SetAttribute(AttrSkillLevel, 0);
-        single_skill->Move(itemID(), flagSkill );
+        single_skill->SetAttribute(AttrSkillPoints, 0, false);
+        single_skill->SetAttribute(AttrSkillLevel, 0, false);
+        single_skill->ChangeSingleton(true);
+        single_skill->Move(itemID(), flagSkill);
     } else {  // use original skill
-        skill->SetAttribute(AttrSkillPoints, 0);
-        skill->SetAttribute(AttrSkillLevel, 0);
-        skill->Move(itemID(), flagSkill );
+        skill->SetAttribute(AttrSkillPoints, 0, false);
+        skill->SetAttribute(AttrSkillLevel, 0, false);
+        skill->ChangeSingleton(true);
+        skill->Move(itemID(), flagSkill);
     }
     SaveSkillHistory(skillEventSkillInjected, Win32TimeNow(), itemID(), skill->typeID(), 0, 0, GetTotalSP().get_float() );
     _log(CHARACTER__SKILL_TRACE, "%s(%u) Skill Injected: %u", itemName().c_str(), itemID(), skill->itemID());

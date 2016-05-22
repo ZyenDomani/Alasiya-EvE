@@ -751,6 +751,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
             _log(TARGET__MESSAGE, "Handle_AddTarget() - %s(%u) -> %s(%u) at range of %.2f meters.", \
                         pClient->GetName(), pClient->GetCharacterID(), target->GetName(),target->GetID(), vectorToTarget.length() );
         }
+
     rsp.flag = true;
     rsp.targetList.push_back(target->GetID());
     return rsp.Encode();

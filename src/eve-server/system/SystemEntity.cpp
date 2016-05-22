@@ -472,7 +472,7 @@ DynamicSystemEntity::~DynamicSystemEntity() {
 }
 
 void DynamicSystemEntity::Process() {
-    /*  Process Targetting  */
+    /*  Process Targeting  */
     m_targMgr->Process();
 }
 
