@@ -55,7 +55,7 @@ Damage::Damage(
     SystemEntity *_source,
     bool fatal_blow): source(_source), effect(effectTargetAttack)
 {
-	assert(fatal_blow && "Damage() constructor meant for fatal_blow called without 2nd param being true!");
+	assert(fatal_blow and "Damage() constructor meant for fatal_blow called without 2nd param being true!");
 
 	// No specific damage dealt here, just killed
     em = 0.0;
@@ -304,7 +304,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
 }
 
 void NPC::Killed(Damage &fatal_blow) {
-    if (!m_bubble || !m_destiny) return;
+    if (!m_bubble or !m_destiny) return;
 
     m_destiny->Halt();
 
@@ -393,7 +393,7 @@ void NPC::Killed(Damage &fatal_blow) {
 }
 
 void Ship::Killed(Damage &fatal_blow) {
-    if (!m_bubble || !m_destiny) return;
+    if (!m_bubble or !m_destiny) return;
 
     SystemEntity *killer = fatal_blow.source;
     Client* pClient = nullptr;
@@ -411,21 +411,7 @@ void Ship::Killed(Damage &fatal_blow) {
     } else
         killerID = killer->GetID();
 
-    if ( pClient && (m_system->GetSystemSecurityRating() > 0)) {
-        /* http://www.eveinfo.net/wiki/ind~4067.htm
-         *  relative_sec_status_penalty = base_penalty * system_truesec * (1 + (victim_sec_status - agressor_sec_status) / 90)
-         *  The actual drop in security status seen by the attacker is a function of their current security status and the relative penalty:
-         *  security status loss = relative_penalty * (agressor_sec_status + 10)
-         */
-        /** @todo (allan) check for faction/corp status modifiers here. */
-        double modifier = (1 + ((m_pilot->GetSecurityRating() - pClient->GetSecurityRating()) /90));
-        double penalty = 6.0f * m_system->GetSystemSecurityRating() * modifier;
-        double loss = penalty * ( pClient->GetSecurityRating() + 10);
-        if (sConfig.rates.secRate != 1.0) loss *= sConfig.rates.secRate;
-          pClient->GetChar()->secStatusChange( loss );
-    }
-
-    if (!HasPilot()) {
+    if (!m_pilot) {
         m_destiny->Stop();
 
         // Spawn a wreck for the Ship that was destroyed:
@@ -662,7 +648,7 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckEntity.itemID = wreckItemRef->itemID();
             wreckEntity.itemName = wreck_name;
             wreckEntity.locationID = GetLocationID();
-            if ((killer->HasPilot()) || (killer->IsDroneSE()))
+            if ((killer->HasPilot()) or (killer->IsDroneSE()))
                 wreckEntity.ownerID = killerID;
             else
                 wreckEntity.ownerID = m_pilot->GetCharacterID();
@@ -691,4 +677,19 @@ void Ship::Killed(Damage &fatal_blow) {
         deadShipRef->Delete();
         m_pilot->StartKilledTimer();
     }
+    
+    if ( pClient and (m_system->GetSystemSecurityRating() > 0)) {
+        /* http://www.eveinfo.net/wiki/ind~4067.htm
+         *  relative_sec_status_penalty = base_penalty * system_truesec * (1 + (victim_sec_status - agressor_sec_status) / 90)
+         *  The actual drop in security status seen by the attacker is a function of their current security status and the relative penalty:
+         *  security status loss = relative_penalty * (agressor_sec_status + 10)
+         */
+        /** @todo (allan) check for faction/corp status modifiers here. */
+        double modifier = (1 + ((m_pilot->GetSecurityRating() - pClient->GetSecurityRating()) /90));
+        double penalty = 6.0f * m_system->GetSystemSecurityRating() * modifier;
+        double loss = penalty * ( pClient->GetSecurityRating() + 10);
+        if (sConfig.rates.secRate != 1.0) loss *= sConfig.rates.secRate;
+        pClient->GetChar()->secStatusChange( loss );
+    }
+
 }
