@@ -380,8 +380,18 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
 }
 
 PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
-    /** @todo Return correct values */
-    /*
+    /** @todo handle multiple-ship list and Return correct values */
+
+    /* 13:05:41 [BindDump] NodeID: 888444 BindID: 129 calling AssembleShip in service manager 'ShipBound'
+     * 13:05:41 [BindDump]   Call Arguments:
+     * 13:05:41 [BindDump]       Tuple: 1 elements
+     * 13:05:41 [BindDump]         [ 0] List: 5 elements
+     * 13:05:41 [BindDump]         [ 0]   [ 0] Integer field: 140000073
+     * 13:05:41 [BindDump]         [ 0]   [ 1] Integer field: 140000074
+     * 13:05:41 [BindDump]         [ 0]   [ 2] Integer field: 140000075
+     * 13:05:41 [BindDump]         [ 0]   [ 3] Integer field: 140000076
+     * 13:05:41 [BindDump]         [ 0]   [ 4] Integer field: 140000077
+     *
               [PyTuple 2 items]     << response to AssembleShip call
                 [PyList 1 items]
                   [PyPackedRow 33 bytes]

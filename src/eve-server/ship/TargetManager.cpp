@@ -23,7 +23,9 @@
     Author:        Zhur
     Updates:        Allan
 */
-/** @todo (Allan)  update this class */
+/** @todo (Allan)  add target lost and target fail reasons.
+ * maybe make common function, and pass "add", "clear", "otheradd", reason, etc ??
+ */
 
 #include "eve-server.h"
 
@@ -110,7 +112,7 @@ void TargetManager::ClearTarget(SystemEntity *who) {
 }
 
 void TargetManager::ClearAllTargets(bool notify_self) {
-    //if ((!mySE->IsNPCSE()) || (!mySE->HasPilot())) return;
+    _log(TARGET__TRACE, "ClearTargets:  %s(%u) is clearing all targeting information.", mySE->GetName(), mySE->GetID());
     ClearTargets(notify_self);
     ClearFromTargets();
     _log(TARGET__TRACE, "ClearAllTargets:  %s(%u) has cleared all targeting information.", mySE->GetName(), mySE->GetID());
@@ -121,7 +123,6 @@ void TargetManager::ClearTargets(bool notify_self) {
         m_canAttack = false;
         return;
     }
-    _log(TARGET__TRACE, "ClearTargets:  %s(%u) is clearing all targeting information.", mySE->GetName(), mySE->GetID());
     std::map<SystemEntity*, TargetEntry*>::iterator cur = m_targets.begin();
     for(; cur != m_targets.end(); cur++) {
         _log(TARGET__INFO, "%s(%u) has cleared target %s(%u) during clear all.",
@@ -161,7 +162,7 @@ void TargetManager::ClearFromTargets() {
 bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
 {       // NOTE this is for players
     if (!mySE->HasPilot()) {
-        codelog(TARGET__ERROR, "StartTargeting() called by pilot-less %s to target %s", mySE->GetName(), who->GetName());
+        codelog(TARGET__ERROR, "StartTargeting() called by pilot-less ship %s(%u) to target %s", mySE->GetName(), mySE->GetID(), who->GetName());
         return false;
     }
 
@@ -303,6 +304,7 @@ void TargetManager::TargetLost(SystemEntity *who) {
     Notify_OnTarget te;
         te.mode = "lost";
         te.targetID = who->GetID();
+        //te.reason = "Docking";
     Notify_OnMultiEvent multi;
         multi.events = new PyList;
         multi.events->AddItem(te.Encode());
@@ -458,13 +460,16 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
     OnTarget.mode
         try - starting to target?
         add - targeting successful
+        fail - targeting unsuccessful
         clear - clear all targets
         lost - target lost
+            - Docking
         otheradd - somebody else has targeted you
         otherlost - somebody else has stopped targeting you
             - WarpingOut
             - StoppedTargeting
         otherfail - problem with somebody else targeting you
+            - StoppedTargeting
 */
 void TargetManager::TargetTry(SystemEntity *who) {
     if (!mySE->HasPilot()) return;
@@ -513,6 +518,8 @@ void TargetManager::TargetedLost(SystemEntity *who) {
     Notify_OnTarget te;
         te.mode = "otherlost";
         te.targetID = who->GetID();
+       // te.reason = "WarpingOut";
+       // te.reason = "StoppedTargeting";
     Notify_OnMultiEvent multi;
         multi.events = new PyList;
         multi.events->AddItem(te.Encode());
@@ -531,37 +538,6 @@ void TargetManager::TargetsCleared() {
     PyTuple* tmp = multi.Encode();   //this is consumed below
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
-
-void TargetManager::Dump() const {
-    _log(TARGET__DUMP, "Target Dump for %s(%u):", mySE->GetName(), mySE->GetID());
-    for (auto cur : m_targets)
-        cur.second->Dump();
-    for (auto cur : m_targetedBy)
-        cur.second->Dump();
-}
-
-void TargetManager::TargetEntry::Dump() const {
-    const char *sname = "Unknown State";
-    switch(state) {
-        case Idle:              sname = "Idle";    break;
-        case PassiveLocking:    sname = "Passive"; break;
-        case Locking:           sname = "Locking"; break;
-        case Locked:            sname = "Locked";  break;
-    }
-    _log(TARGET__DUMP, "    Targeted %s(%u): %s (Timer %s with %ums remaining)", \
-                who->GetName(), who->GetID(), sname, timer.Enabled() ? "Running" : "Disabled", timer.GetRemainingTime());
-}
-
-void TargetManager::TargetedByEntry::Dump() const {
-    const char *sname = "Unknown State";
-    switch(state) {
-        case Idle:      sname = "Idle";     break;
-        case Locking:   sname = "Locking";  break;
-        case Locked:    sname = "Locked";   break;
-    }
-    _log(TARGET__DUMP, "    Targeted By %s(%u): %s", who->GetName(), who->GetID(), sname);
-}
-
 
 void TargetManager::QueueTBDestinyEvent( PyTuple** up_in ) const
 {
@@ -602,3 +578,42 @@ void TargetManager::QueueTBDestinyUpdate( PyTuple** up_in ) const
     PySafeDecRef( up_dup );
     PyDecRef( up );
 }
+
+/* debugging methods */
+void TargetManager::TargetList(std::string* into, uint16* length, uint16* count) {
+    for (auto cur : m_targets)
+        ++count;
+    for (auto cur : m_targetedBy)
+        ++count;
+}
+
+void TargetManager::Dump() const {
+    _log(TARGET__DUMP, "Target Dump for %s(%u):", mySE->GetName(), mySE->GetID());
+    for (auto cur : m_targets)
+        cur.second->Dump();
+    for (auto cur : m_targetedBy)
+        cur.second->Dump();
+}
+
+void TargetManager::TargetEntry::Dump() const {
+    const char *sname = "Unknown State";
+    switch(state) {
+        case Idle:              sname = "Idle";    break;
+        case PassiveLocking:    sname = "Passive"; break;
+        case Locking:           sname = "Locking"; break;
+        case Locked:            sname = "Locked";  break;
+    }
+    _log(TARGET__DUMP, "    Targeted %s(%u): %s (Timer %s with %ums remaining)", \
+                who->GetName(), who->GetID(), sname, timer.Enabled() ? "Running" : "Disabled", timer.GetRemainingTime());
+}
+
+void TargetManager::TargetedByEntry::Dump() const {
+    const char *sname = "Unknown State";
+    switch(state) {
+        case Idle:      sname = "Idle";     break;
+        case Locking:   sname = "Locking";  break;
+        case Locked:    sname = "Locked";   break;
+    }
+    _log(TARGET__DUMP, "    Targeted By %s(%u): %s", who->GetName(), who->GetID(), sname);
+}
+

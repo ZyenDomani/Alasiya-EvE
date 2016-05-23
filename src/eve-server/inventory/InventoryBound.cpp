@@ -189,7 +189,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 
         uint32 flag = flagAutoFit;
         if (call.byname.find("flag") == call.byname.end()) {
-            if (IsStation(call.client->GetLocationID()))
+            if (IsStation(args.inventoryID))
                flag = flagHangar;
             else
                flag = flagCargoHold;    // hard-code the ship cargo to cargo container move flag since key 'flag' in client.byname does not exist

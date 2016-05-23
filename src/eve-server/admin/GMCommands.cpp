@@ -1826,15 +1826,21 @@ PyResult Command_shipdna(Client* who, CommandDB* db, PyServiceMgr* services, con
 
 PyResult Command_targlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    std::ostringstream str;
-    str << "Current Targets<br>"; //20
-    str << "<br><br>WIP";   //10
+    std::string into = "";
+    uint16 length = 1, count = 0;
+    who->GetShipSE()->TargetMgr()->TargetList(&into, &length, &count);
 
-    int size = 20;  // header
-    size += 10;    // text
-    
+    std::ostringstream str;
+    str << "Target List for %s( in ship %u)<br>"; //30+30
+    str << "    %u entries in list<br>";   //30
+    str << "%s"; //length
+
+    int size = 60;  // header
+    size += 30;    // text
+    size += length;
+
     char reply[size];
-    snprintf(reply, size, str.str().c_str());
+    snprintf(reply, size, str.str().c_str(), who->GetName(), who->GetShipID(), count, into.c_str());
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);

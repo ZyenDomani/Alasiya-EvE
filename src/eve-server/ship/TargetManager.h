@@ -74,6 +74,7 @@ public:
 
     /* debugging methods */
     void                Dump() const;
+    void                TargetList(std::string* into, uint16* length, uint16* count);
 
     /* Packet builders: */
     PyList*             GetTargets() const;
