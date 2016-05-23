@@ -331,7 +331,7 @@ void ShipItem::_IncreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToC
     if ( m_cargoHoldsUsedVolumeByFlag.find(flag) != m_cargoHoldsUsedVolumeByFlag.end())
         m_cargoHoldsUsedVolumeByFlag.find(flag)->second += volumeToConsume;
     else {
-        _log(SHIP__ERROR, "HoldsUsedVolume(+) given flag not found in current map - %u", flag);
+        _log(SHIP__ERROR, "CargoUsedVolume(+) given flag not found in current map - %u", flag);
         throw PyException( MakeCustomError( "ERROR!  Illegal flag '%u' specified!", flag ));
     }
 }
@@ -341,7 +341,7 @@ void ShipItem::_DecreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToC
     if ( m_cargoHoldsUsedVolumeByFlag.find(flag) != m_cargoHoldsUsedVolumeByFlag.end())
         m_cargoHoldsUsedVolumeByFlag.find(flag)->second -= volumeToConsume;
     else {
-        _log(SHIP__ERROR, "HoldsUsedVolume(-) given flag not found in current map - %u", flag);
+        _log(SHIP__ERROR, "CargoUsedVolume(-) given flag not found in current map - %u", flag);
         throw PyException( MakeCustomError( "ERROR!  Illegal flag '%u' specified!", flag ));
     }
 }
@@ -1121,6 +1121,9 @@ std::string ShipItem::GetShipDNA()
      *
      * Condensed version:
      *  Ship:Subsystem:Highs:Mids:Lows:Rigs:Charges:Drones
+     *
+     * [PyString "<url=fitting:24698:3841;2:2531;1:19812;1:23527;1:2410;7:1422;4:2547;1:31802;3:2301;1:2454;5::>Anchor</url>"]
+     *
      *
      */
     if (type().id() == EVEDB::invTypes::typeCapsule) {

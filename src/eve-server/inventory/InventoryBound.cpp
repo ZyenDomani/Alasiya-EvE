@@ -153,7 +153,26 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         sLog.Log( "InventoryBound::Handle_Add()", "size= %u", call.tuple->size());
         call.Dump(SERVICE__CALL_DUMP);
     }
-
+    /*13:36:49 [ClientCallRep] Add call made to
+     * 13:36:49 [BindDump] NodeID: 888444 BindID: 143 calling Add in service manager 'InventoryBound'
+     * 13:36:49 [BindDump]   Call Arguments:
+     * 13:36:49 [BindDump]       Tuple: 2 elements
+     * 13:36:49 [BindDump]         [ 0] Integer field: 140000083
+     * 13:36:49 [BindDump]         [ 1] Integer field: 60014137
+     * 13:36:49 [BindDump]   Call Named Arguments:
+     * 13:36:49 [BindDump]     Argument 'capacity':
+     * 13:36:49 [BindDump]         Real field: 6375.000000
+     * 13:36:49 [BindDump]     Argument 'flag':
+     * 13:36:49 [BindDump]         Integer field: 5
+     * 13:36:49 [BindDump]     Argument 'machoVersion':
+     * 13:36:49 [BindDump]         Integer field: 1
+     * 13:36:49 [BindDump]     Argument 'qty':
+     * 13:36:49 [BindDump]         Integer field: 1
+     * 13:36:49 [InvMsg] Calling InventoryBound::Add() for Hoarder(140000068)
+     * 13:36:49 L InventoryBound::Handle_Add(): size= 2
+     * 13:39:41 [ShipError] HoldsUsedVolume(+) given flag not found in current map - 5
+     *
+     */
     if (call.tuple->items.size() == 2) {
         // TODO: Add comments here to describe what kind of client action results in having
         // to use the 'Call_Add_2' packet structure     --ALL add calls.
@@ -161,9 +180,8 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         // * Moving items from hangar to cargo bay or cargo bay to hangar
         // * Removing Module/Charges from ship (using 'remove' button on item slot)
         // * Adding Modules in a particular slot
-        // * Qty missing, so query it from the itemRef
+
         Call_Add_2 args;
-        //chances are its trying to transfer into a cargo container
         if (!args.Decode(&call.tuple)) {
             codelog(INV__ERROR, "Unable to decode arguments");
             return nullptr;
@@ -179,26 +197,24 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
             flag = call.byname.find("flag")->second->AsInt()->value();
 
         uint32 quantity = 1;
-        if (call.byname.find("qty") != call.byname.end()) {
+        if (call.byname.find("qty") != call.byname.end())
             if (!call.byname.find("qty")->second->IsNone())
                 quantity = call.byname.find("qty")->second->AsInt()->value();
-        }
 
-        /** @todo  this is module's charge capacity
-         *  also used for cargohold capacity
+        /*  this is module's charge capacity
+         *  also used for moved-to container's capacity
          *  also used for slot capacity (??? got capacity=0 from moving rigs.)
          */
         float capacity = 0.0f;
-        if (call.byname.find("capacity") != call.byname.end()) {
+        if (call.byname.find("capacity") != call.byname.end())
             if (!call.byname.find("capacity")->second->IsNone()) {
                 if (call.byname.find("capacity")->second->IsFloat())
                     capacity = call.byname.find("capacity")->second->AsFloat()->value();
                 else if(call.byname.find("capacity")->second->IsInt())
                     capacity = call.byname.find("capacity")->second->AsInt()->value();
             }
-        }
 
-        // TODO  check for 'dividing' byname bool.
+        // TODO  check for 'dividing' byname bool..dont know what this does
         if (call.byname.find("dividing") != call.byname.end())
             _log(INV__ERROR, "[Add] byname.dividing found when adding itemID %u (flag %u)", args.itemID, flag);
         std::vector<int32> items;

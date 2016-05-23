@@ -773,7 +773,8 @@ bool InventoryItem::SetQuantity(uint32 qty_new, bool notify) {
         std::map<int32, PyRep *> changes;
 
         //send the notify to the new owner.
-        changes[ixQuantity] = new PyInt(old_qty);
+        // this informs client of a stack change
+        changes[/*ixQuantity*/ixStackSize] = new PyInt(old_qty);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
 
