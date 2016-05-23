@@ -78,21 +78,20 @@ void SystemBubble::BubblecastDestinyEvent(std::vector<PyTuple *> &events, const 
 }
 
 //send a destiny update to every client in the bubble.
-//assume that static entities are not interested in destiny updates.
 void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc ) const
 {
 	PyTuple* up = *payload;
 	*payload = nullptr;    //could optimize out one of the Clones in here...
 
-	PyTuple* up_dup = nullptr;
+	PyTuple* up_dup(nullptr);
 
 	for (auto cur : m_players) {
 		if (!up_dup)
 			up_dup = new PyTuple( *up );
 
-        _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur->GetName(), cur->GetCharacterID() );
-        if (!up_dup) continue;
+        //if (!up_dup) continue;
 		cur->QueueDestinyUpdate( &up_dup );
+        _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur->GetName(), cur->GetCharacterID() );
 	}
 
 	PySafeDecRef( up_dup );
@@ -100,13 +99,12 @@ void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc 
 }
 
 //send a destiny update to every client in the bubble EXCLUDING the given SystemEntity 'pEntity':
-//assume that static entities are also not interested in destiny updates.
 void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const char* desc, SystemEntity* pEntity ) const
 {
 	PyTuple* up = *payload;
 	*payload = nullptr;    //could optimize out one of the Clones in here...
 
-	PyTuple* up_dup = nullptr;
+	PyTuple* up_dup(nullptr);
 
 	for (auto cur : m_players) {
 		// Only queue a Destiny update for this bubble if the current SystemEntity is not 'pEntity':
@@ -115,7 +113,7 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
 			if (!up_dup)
 				up_dup = new PyTuple( *up );
 
-            if (!up_dup) continue;
+            //if (!up_dup) continue;
 			cur->QueueDestinyUpdate( &up_dup );
             _log( DESTINY__BUBBLECAST, "Exclusive Bubblecast %s update to %s(%u)", desc, cur->GetName(), cur->GetCharacterID() );
 		}
@@ -126,13 +124,12 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
 }
 
 //send a destiny event to every client in the bubble.
-//assume that static entities are also not interested in destiny updates.
 void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc ) const
 {
 	PyTuple* ev = *payload;
 	*payload = nullptr;    //could optimize out one of the Clones in here...
 
-	PyTuple* ev_dup = nullptr;
+	PyTuple* ev_dup(nullptr);
 
 	for (auto cur : m_players) {
 		if (!ev_dup)
@@ -144,6 +141,22 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
 
 	PySafeDecRef( ev_dup );
 	PyDecRef( ev );
+}
+
+void SystemBubble::BubblecastSendNotification(const char* notifyType, const char* idType, PyTuple** payload, bool seq)
+{
+    PyTuple* ev = *payload;
+    *payload = nullptr;    //could optimize out one of the Clones in here...
+
+    PyTuple* ev_dup(nullptr);
+
+    for (auto cur : m_players) {
+        if (!ev_dup)
+            ev_dup = new PyTuple( *ev );
+
+        cur->SendNotification( notifyType, idType, &ev_dup, seq );
+        _log( DESTINY__BUBBLECAST, "BubblecastNotify %s to %s(%u)", notifyType, cur->GetName(), cur->GetCharacterID() );
+    }
 }
 
 void SystemBubble::Process()
@@ -206,7 +219,7 @@ void SystemBubble::Add(SystemEntity* pEntity) {
 	}
     if (pEntity->HasPilot()) {
         Client* pClient = pEntity->GetPilot();
-        if (pClient->IsUndock())
+        //if (pClient->IsUndock())
             SendAddBalls( pEntity );
         if (!pClient->GetShipSE()->DestinyMgr()->IsCloaked()) {
             if (HasPlayers())
@@ -227,7 +240,6 @@ void SystemBubble::Add(SystemEntity* pEntity) {
     // all non-global entities (players, npcs, roids, containers, etc) are put into bubble's dynamicEntity map
     m_dynamicEntities.push_back(pEntity);
     _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is dynamic.", pEntity->GetName(), pEntity->GetID() );
-
 }
 
 void SystemBubble::Remove(SystemEntity *pEntity) {
@@ -429,7 +441,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
         cur->EncodeDestiny( *destinyBuffer );
     }
 
-    addballs.slims->AddItem( new PyObject( "foo.SlimItem", to_who->MakeSlimItem() ) );
+    //addballs.slims->AddItem( new PyObject( "foo.SlimItem", to_who->MakeSlimItem() ) );
 
     if (addballs.slims->size() < 1) {
         SafeDelete( destinyBuffer );

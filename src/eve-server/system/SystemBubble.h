@@ -89,7 +89,8 @@ public:
 	void BubblecastDestinyEvent(std::vector<PyTuple*> &events, const char* desc) const;
 	void BubblecastDestinyUpdate(PyTuple** payload, const char* desc) const;
 	void BubblecastDestinyEvent(PyTuple** payload, const char* desc) const;
-	void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pEntity) const;
+    void BubblecastSendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
+    void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pEntity) const;
 
     bool InBubble(const GPoint &pt) const;
 

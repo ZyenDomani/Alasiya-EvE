@@ -329,7 +329,8 @@ void Client::SetDestiny(bool count) {
         if (count and !m_login)
             pShipSE->GetShipSE()->ResetShipSystemMgr(m_system);
         m_system->AddEntity(pShipSE);
-        //m_bubbleWait = false;
+        m_bubbleWait = false;
+        SetBallPark();
     } else
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
 }
@@ -382,7 +383,7 @@ void Client::LoginToSystem(uint32 systemID, ShipItemRef ship) {
         m_ship->AddItem(m_char);
         UpdateSessionInt("shipid", m_shipId);
         CreateShipSE();
-        MoveToLocation(systemID, NULL_ORIGIN);  // this may not be needed...check later....doesnt do anything if not needed.
+        MoveToLocation(systemID, m_ship->position());  // this may not be needed...check later....doesnt do anything if not needed.
         SetDestiny(true);
         WarpIn();
         m_char->AddPilotToDynamicData(systemID, true, false, true);
@@ -553,13 +554,14 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     OnCharNoLongerInStation();
     m_invulTimer.Start(/*InvulTimer::*/UndockingInvul);
     SetSessionTimer();
+    SetBallPark();
 }
 
 void Client::SetBallPark() {
     // called when beyonce is created (only when in space(undock, jump, login InSpace))
-    m_bubbleWait = true;
-    pShipSE->SysBubble()->SendAddBalls(pShipSE);
+    //m_bubbleWait = true;
     m_login = m_bubbleWait = false;
+    //pShipSE->SysBubble()->SendAddBalls(pShipSE);
     if (!pShipSE->SysBubble())
         m_system->AddEntity(pShipSE);
     if (!m_setStateSent)
@@ -1349,74 +1351,6 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
     }
 
     FastQueuePacket(&p);
-}
-
-/** @todo these target methods should move into target code */
-void Client::TargetAdded(SystemEntity* who)
-{
-    PyTuple* up(nullptr);
-    DoDestiny_OnDamageStateChange odsc;
-        odsc.entityID = who->GetSelf()->itemID();
-        odsc.state = who->MakeDamageState();
-    up = odsc.Encode();
-    QueueDestinyUpdate(&up);
-    Notify_OnTarget te;
-        te.mode = "add";
-        te.targetID = who->GetSelf()->itemID();
-    up = te.Encode();
-    QueueDestinyEvent(&up);
-    PySafeDecRef(up);
-}
-
-void Client::TargetLost(SystemEntity *who)
-{
-    //OnMultiEvent: OnTarget lost
-    Notify_OnTarget te;
-        te.mode = "lost";
-        te.targetID = who->GetSelf()->itemID();
-    Notify_OnMultiEvent multi;
-        multi.events = new PyList;
-        multi.events->AddItem(te.Encode());
-    PyTuple* tmp = multi.Encode();   //this is consumed below
-    SendNotification("OnMultiEvent", "clientID", &tmp);
-}
-
-void Client::TargetedAdd(SystemEntity *who) {
-    //OnMultiEvent: OnTarget otheradd
-    Notify_OnTarget te;
-        te.mode = "otheradd";
-        te.targetID = who->GetSelf()->itemID();
-    Notify_OnMultiEvent multi;
-        multi.events = new PyList;
-        multi.events->AddItem(te.Encode());
-    PyTuple* tmp = multi.Encode();   //this is consumed below
-    SendNotification("OnMultiEvent", "clientID", &tmp);
-}
-
-void Client::TargetedLost(SystemEntity *who)
-{
-    //OnMultiEvent: OnTarget otherlost
-    Notify_OnTarget te;
-        te.mode = "otherlost";
-        te.targetID = who->GetSelf()->itemID();
-    Notify_OnMultiEvent multi;
-        multi.events = new PyList;
-        multi.events->AddItem(te.Encode());
-    PyTuple* tmp = multi.Encode();   //this is consumed below
-    SendNotification("OnMultiEvent", "clientID", &tmp);
-}
-
-void Client::TargetsCleared()
-{
-    //OnMultiEvent: OnTarget clear
-    Notify_OnTarget te;
-        te.mode = "clear";
-        te.targetID = 0;
-    Notify_OnMultiEvent multi;
-        multi.events = new PyList;
-        multi.events->AddItem(te.Encode());
-    PyTuple* tmp = multi.Encode();   //this is consumed below
-    SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
 /************************************************************************/

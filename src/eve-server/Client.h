@@ -235,12 +235,6 @@ public:
     void QueueDestinyEvent(PyTuple** multiEvent);
     void FlushQueue();
 
-    void TargetAdded(SystemEntity *who);
-    void TargetLost(SystemEntity *who);
-    void TargetedAdd(SystemEntity *who);
-    void TargetedLost(SystemEntity *who);
-    void TargetsCleared();
-
     bool ApplyDamage(Damage &d);
     void Killed(Damage &fatal_blow);
 

@@ -241,7 +241,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 noeh.targetID = GetID();
                 noeh.damage = total_damage;
             up = noeh.Encode();
-            QueueDestinyEvent(&up);
+            GetPilot()->QueueDestinyEvent(&up);
         }
 
         //  notify player of damage done by other
@@ -251,7 +251,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             ondam.splash = "";
             ondam.damage = total_damage;
         up = ondam.Encode();
-        QueueDestinyEvent(&up);
+        GetPilot()->QueueDestinyEvent(&up);
     }
 
     if (d.source->HasPilot()) {     //not working
@@ -264,7 +264,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 noeh.targetID = GetID();
                 noeh.damage = total_damage;
             up = noeh.Encode();
-            d.source->QueueDestinyEvent(&up);
+            d.source->GetPilot()->QueueDestinyEvent(&up);
         }
 /*
         //  notify player of damage done to other
@@ -275,7 +275,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             ondam.target = GetID();
             ondam.damage = total_damage;
         up = ondam.Encode();
-        d.source->QueueDestinyEvent(&up);
+        d.source->GetPilot()->QueueDestinyEvent(&up);
 */
         //Notifications to others:
         // this displays msg, but text is missing.
@@ -287,7 +287,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             ondamo.target = GetID();
             ondamo.splash = "";
         up = ondamo.Encode();
-        d.source->QueueDestinyEvent(&up);
+        d.source->GetPilot()->QueueDestinyEvent(&up);
     }
 
     if (killed) {

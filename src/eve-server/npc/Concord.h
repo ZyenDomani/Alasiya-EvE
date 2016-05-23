@@ -55,9 +55,9 @@ public:
     void MakeDamageState(DoDestinyDamageState& into) const;
     void Killed(Damage& fatal_blow);
 
-    void TargetAdded(SystemEntity* who) {}
     void TargetLost(SystemEntity* who);
     void TargetedAdd(SystemEntity* who);
+    void TargetAdded(SystemEntity* who) {}
     void TargetedLost(SystemEntity* who) {}
     void TargetsCleared() {}
 

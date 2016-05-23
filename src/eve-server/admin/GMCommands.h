@@ -105,6 +105,8 @@ COMMAND( skilllist, ROLE_PROGRAMMER,
          " - list all skills loaded for character." )
 COMMAND( shipdna, ROLE_PROGRAMMER,
          " - show current ship DNA." )
+COMMAND( targlist, ROLE_PROGRAMMER,
+         " - show current ship target list." )
 
 /*
 COMMAND( entity, ROLE_ADMIN,

@@ -1823,3 +1823,19 @@ PyResult Command_shipdna(Client* who, CommandDB* db, PyServiceMgr* services, con
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
+
+PyResult Command_targlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    std::ostringstream str;
+    str << "Current Targets<br>"; //20
+    str << "<br><br>WIP";   //10
+
+    int size = 20;  // header
+    size += 10;    // text
+    
+    char reply[size];
+    snprintf(reply, size, str.str().c_str());
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}

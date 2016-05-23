@@ -48,6 +48,12 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
     /** @todo  figure out how to get corp/faction/ally IDs here, if possible, and add to our variables */
 }
 
+void SystemEntity::Process() {
+    /*  Enable base call to Process Targeting  */
+    if (m_targMgr)
+        m_targMgr->Process();
+}
+
 double SystemEntity::GetRadius() {
     return (m_self->HasAttribute(AttrRadius) ? m_self->GetAttribute(AttrRadius).get_float() : 1.0);
 }
@@ -118,8 +124,8 @@ void SystemEntity::SendDamageStateChanged(SystemEntity* source) {  //working 24A
         dmgChange.entityID = GetID();
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
-    source->QueueDestinyUpdate(&up);
-    //_log(TARGET__TRACE, "%s(%u): DamageUpdate - S:%f A:%f H:%f.", \
+    TargetMgr()->QueueTBDestinyUpdate(&up);
+    _log(TARGET__TRACE, "%s(%u): DamageUpdate - S:%f A:%f H:%f.", \
             GetName(), GetID(), dmgState.shield, dmgState.armor, dmgState.structure);
 }
 
@@ -346,21 +352,10 @@ void DungeonSE::EncodeDestiny( Buffer& into )
         head.z = z();
         head.flags = IsInteractive;
     into.Append( head );
-
     DSTBALL_STOP_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
-/*
-    const uint16 miniballCount = 1;
-    into.Append( miniballCount );
 
-    MiniBall miniball;
-    miniball.x = -7701.181;
-    miniball.y = 8060.06;
-    miniball.z = 27878.900;
-    miniball.radius = 1639.241;
-    into.Append( miniball );
-    */
     _log(COMMON__WARNING, "DungeonSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
@@ -376,11 +371,6 @@ ObjectSystemEntity::~ObjectSystemEntity() {
     SafeDelete(m_targMgr);
 }
 
-void ObjectSystemEntity::Process() {
-    /*  Process Targetting  */
-    m_targMgr->Process();
-}
-
 void ObjectSystemEntity::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
@@ -394,7 +384,6 @@ void ObjectSystemEntity::EncodeDestiny( Buffer& into )
         head.z = z();
         head.flags = IsMassive | IsInteractive;
     into.Append( head );
-
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
@@ -471,11 +460,6 @@ DynamicSystemEntity::~DynamicSystemEntity() {
     SafeDelete(m_targMgr);
 }
 
-void DynamicSystemEntity::Process() {
-    /*  Process Targeting  */
-    m_targMgr->Process();
-}
-
 void DynamicSystemEntity::ProcessDestiny() {
     if (m_destiny)
         m_destiny->Process();
@@ -524,7 +508,6 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
         head.z = z();
         head.flags = IsFree;
     into.Append( head );
-
     MassSector mass;
         mass.mass = GetMass();
         mass.cloak = 0;
@@ -591,17 +574,16 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
     reason += pClient->GetSystemName();
 
     if (!m_services.serviceDB().GiveCash(
-                                        pClient->GetCharacterID(),
-                                        refBounty,
-                                        ownerCONCORD,
-                                        pClient->GetCharacterID(),
-                                        "",    //unknown const char *argID1,
-                                        pClient->GetUserID(),
-                                        accountingKeyCash,
-                                        bounty,
-                                        pClient->GetBalance(),
-                                        reason.c_str()
-    )) {
+                    pClient->GetCharacterID(),
+                    refBounty,
+                    ownerCONCORD,
+                    pClient->GetCharacterID(),
+                    "",    //unknown const char *argID1,
+                    pClient->GetUserID(),
+                    accountingKeyCash,
+                    bounty,
+                    pClient->GetBalance(),
+                    reason.c_str() )) {
         codelog(CLIENT__ERROR, "%s: Failed to record bounty of %f from death of %u (type %u)",
                     pClient->GetName(), bounty, GetID(), m_self->typeID());
         //well.. this isnt a huge deal, so we will get over it.

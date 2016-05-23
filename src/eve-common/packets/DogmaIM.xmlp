@@ -9,6 +9,42 @@
     </tupleInline>
   </elementDef>
 
+  <elementDef name="Notify_OnTarget">
+    <tupleInline>
+      <!-- setup to go into an OnMultiEvent (notify_type) -->
+      <stringInline value="OnTarget" />
+      <!--
+          One of:
+          try - starting to target?
+          add - targeting successful
+          clear - clear all targets
+          lost - target lost
+          otheradd - somebody else has targeted you
+          otherlost - somebody else has stopped targeting you
+      -->
+      <string name="mode" />
+      <int name="targetID" />
+      <!-- only seen on `target lost` events, but doesn't seem to do anything -->
+      <string name="reason" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Notify_OnTargets">
+    <tupleInline>
+      <!-- setup to go into an OnMultiEvent (notify_type) -->
+      <stringInline value="OnTargets" />
+      <!-- this is a list of Notify_OnTarget messages -->
+      <list name="messages" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Rsp_Dogma_AddTarget">
+    <tupleInline>
+      <bool name="flag" />
+      <listInt name="targetList" />
+    </tupleInline>
+  </elementDef>
+
   <elementDef name="Call_Dogma_Activate">
     <tupleInline>
       <int name="itemID" />
@@ -56,12 +92,6 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Rsp_Dogma_AddTarget">
-    <tupleInline>
-      <bool name="flag" />
-      <listInt name="targetList" />
-    </tupleInline>
-  </elementDef>
   <!--
                   [PyTuple 12 items]
                     [PyString "OnGodmaShipEffect"]
@@ -284,35 +314,6 @@
       <!-- messageID: from eveMessages  -->
       <string name="messageID" />
       <dict name="arguments" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="Notify_OnTarget">
-    <tupleInline>
-      <!-- setup to go into an OnMultiEvent (notify_type) -->
-      <stringInline value="OnTarget" />
-      <!--
-          One of:
-          try - starting to target?
-          add - targeting successful
-          clear - clear all targets
-          lost - target lost
-          otheradd - somebody else has targeted you
-          otherlost - somebody else has stopped targeting you
-      -->
-      <string name="mode" />
-      <int name="targetID" />
-      <!-- only seen on `target lost` events, but doesn't seem to do anything -->
-      <string name="reason" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="Notify_OnTargets">
-    <tupleInline>
-      <!-- setup to go into an OnMultiEvent (notify_type) -->
-      <stringInline value="OnTargets" />
-      <!-- this is a list of Notify_OnTarget messages -->
-      <list name="messages" />
     </tupleInline>
   </elementDef>
 

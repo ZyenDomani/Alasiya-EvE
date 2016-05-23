@@ -60,8 +60,6 @@ public:
         PyCallable_REG_CALL(DogmaIMBound, ItemGetInfo);
 		PyCallable_REG_CALL(DogmaIMBound, GetAllInfo);
 		PyCallable_REG_CALL(DogmaIMBound, GetLocationInfo);
-        PyCallable_REG_CALL(DogmaIMBound, GetTargets);
-        PyCallable_REG_CALL(DogmaIMBound, GetTargeters);
 		PyCallable_REG_CALL(DogmaIMBound, GetWeaponBankInfoForShip);
         PyCallable_REG_CALL(DogmaIMBound, GetCharacterBaseAttributes);
 		PyCallable_REG_CALL(DogmaIMBound, CheckSendLocationInfo);
@@ -73,6 +71,8 @@ public:
         PyCallable_REG_CALL(DogmaIMBound, TakeModuleOffline);
         PyCallable_REG_CALL(DogmaIMBound, LoadAmmoToBank);
         PyCallable_REG_CALL(DogmaIMBound, LoadAmmoToModules);
+        PyCallable_REG_CALL(DogmaIMBound, GetTargets);
+        PyCallable_REG_CALL(DogmaIMBound, GetTargeters);
         PyCallable_REG_CALL(DogmaIMBound, AddTarget);       //AddTargetOBO
         PyCallable_REG_CALL(DogmaIMBound, RemoveTarget);
         PyCallable_REG_CALL(DogmaIMBound, ClearTargets);
@@ -97,8 +97,6 @@ public:
 	PyCallable_DECL_CALL(GetWeaponBankInfoForShip);
     PyCallable_DECL_CALL(GetLocationInfo);
     PyCallable_DECL_CALL(GetCharacterBaseAttributes);
-    PyCallable_DECL_CALL(GetTargets);
-    PyCallable_DECL_CALL(GetTargeters);
 	PyCallable_DECL_CALL(CheckSendLocationInfo);
     PyCallable_DECL_CALL(Activate);
     PyCallable_DECL_CALL(Deactivate);
@@ -108,6 +106,8 @@ public:
     PyCallable_DECL_CALL(TakeModuleOffline);
     PyCallable_DECL_CALL(LoadAmmoToBank);
     PyCallable_DECL_CALL(LoadAmmoToModules);
+    PyCallable_DECL_CALL(GetTargets);
+    PyCallable_DECL_CALL(GetTargeters);
     PyCallable_DECL_CALL(AddTarget);
     PyCallable_DECL_CALL(RemoveTarget);
     PyCallable_DECL_CALL(ClearTargets);
@@ -753,6 +753,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         }
 
     rsp.flag = true;
+    rsp.targetList.clear();
     rsp.targetList.push_back(target->GetID());
     return rsp.Encode();
 }

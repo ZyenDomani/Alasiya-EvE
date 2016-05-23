@@ -73,7 +73,7 @@ public:
     virtual ~SystemEntity()                             { /* Do nothing here */ }
 
     /* Process Calls - Overridden as needed in derived classes */
-    virtual void                Process()               { /* Do nothing here */ }
+    virtual void                Process();
     virtual void                ProcessObject()         { /* Do nothing here */ }
     virtual void                ProcessDestiny()        { /* Do nothing here */ }
 
@@ -188,18 +188,9 @@ public:
 
     /* virtual functions to be overridden in derived classes */
     virtual void                UpdateDamage()          { /* Do nothing here */ }
-    virtual void                QueueDestinyUpdate(PyTuple **du) { /* Do nothing here */ }
-    virtual void                QueueDestinyEvent(PyTuple **de)  { /* Do nothing here */ }
     virtual bool                LoadExtras(SystemDB *db){ return true; }
 
     /* virtual functions in base to allow common interface calls */
-    /** @todo these need to be moved to target manager. */
-    virtual void TargetLost(SystemEntity *who)          { /* Do nothing here */ }
-    virtual void TargetAdded(SystemEntity *who)         { /* Do nothing here */ }
-    virtual void TargetedAdd(SystemEntity *who)         { /* Do nothing here */ }
-    virtual void TargetedLost(SystemEntity *who)        { /* Do nothing here */ }
-    virtual void TargetsCleared()                       { /* Do nothing here */ }
-
     virtual uint32              GetTypeID()             { return m_self->typeID(); }
     virtual uint32              GetGroupID()            { return m_self->groupID(); }
     virtual EVEItemCategories   GetCategoryID()         { return m_self->categoryID(); }
@@ -359,7 +350,8 @@ public:
     virtual ~ObjectSystemEntity();
 
     /* Process Calls - Overridden as needed in derived classes */
-    virtual void                Process();
+    virtual void                ProcessObject()         { /* Do nothing here yet */ }
+
 
     /* class type pointer querys. */
     virtual ObjectSystemEntity* GetObjectSE()           { return this; }
@@ -406,7 +398,6 @@ public:
     virtual ~DynamicSystemEntity();
 
     /* Process Calls - Overridden as needed in derived classes */
-    virtual void                Process();
     virtual void                ProcessDestiny();
 
     /* class type pointer querys. */

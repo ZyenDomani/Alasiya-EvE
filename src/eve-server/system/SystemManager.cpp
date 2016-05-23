@@ -512,7 +512,7 @@ bool SystemManager::ProcessTic() {
         if (cur->second) {
             cur->second->Process(); /* main process call. */
             if (cur->second->IsDynamicEntity())
-                cur->second->ProcessDestiny(); /* call movement functions on dynamics here */
+                cur->second->ProcessDestiny(); /* call movement functions on DSE's here */
             else if (cur->second->IsObjectEntity())
                 cur->second->ProcessObject();   /* call non-movement functions on objects here */
         } else {
