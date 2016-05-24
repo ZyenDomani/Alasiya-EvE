@@ -303,8 +303,8 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
         if (!IsSolarSystem(solarSystemID))
             throw PyException(MakeCustomError(std::string(usageString+"<br><br>YOU MUST BE IN SPACE!").c_str()));
 
-        if (args.isNumber(2) && args.isNumber(3) && args.isNumber(4))
-            destinationPoint = GPoint(atoi(args.arg(2).c_str()), atoi(args.arg(3).c_str()), atoi(args.arg(4).c_str()));
+        if (args.isNumber(1) && args.isNumber(2) && args.isNumber(3))
+            destinationPoint = GPoint(atoi(args.arg(1).c_str()), atoi(args.arg(2).c_str()), atoi(args.arg(3).c_str()));
     }
 
     //  in case ap is set, unset it, as it will do odd things when undocking or loging in
