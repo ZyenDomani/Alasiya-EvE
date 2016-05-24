@@ -338,6 +338,7 @@ uint32 Inventory::FindByFlagSet(std::set<EVEItemFlags> flags, std::vector<Invent
 
 void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner)
 {
+    InventoryItemRef i;
     std::map<uint32, InventoryItemRef> types;
 
     std::map<uint32, InventoryItemRef>::const_iterator cur = mContents.begin();
@@ -345,9 +346,10 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner)
         // Iterator becomes invalid when the item
         // is moved out; we have to increment before
         // calling Merge().
-        InventoryItemRef i = cur->second;
-        cur++;
-    /** @todo  check this.....currently removes and stacks loaded charges when called in space on ship hangar */
+        i = cur->second;
+        ++cur;
+        if (IsModuleSlot(i->flag()))
+            continue;
         if ((!i->singleton()) && (forOwner == 0 || forOwner == i->ownerID())) {
             std::map<uint32, InventoryItemRef>::iterator res = types.find(i->typeID());
             if (res == types.end())
