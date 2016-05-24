@@ -938,12 +938,11 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
 	return item->itemID();
 }
 
-void ShipItem::RemoveItem(InventoryItemRef item/*, uint32 inventoryID, EVEItemFlags flag*/)
+void ShipItem::RemoveItem(InventoryItemRef item)
 {
     // check to see if item is currently in a module slot.  going by category is NOT working after _ExecAdd() updates.
     if (IsModuleSlot(item->flag())) {
-        // if item being removed IS a charge, it needs to be removed via Module Manager so modules know charge is removed,
-        // BUT, only if it is loaded into a module in one of the 3 slot banks, so we also check its flag value:
+        // if item being removed is in a module slot, remove it via Module Manager here, and let invBound take care of the rest.
         if ((item->categoryID() == EVEDB::invCategories::Charge)
                 && ((item->flag() >= flagLowSlot0) && (item->flag() <= flagHiSlot7))) {
             m_ModuleManager->UnloadCharge(item->flag());
@@ -952,11 +951,9 @@ void ShipItem::RemoveItem(InventoryItemRef item/*, uint32 inventoryID, EVEItemFl
             Deactivate( item->itemID(), "offline" );
             if (((item->flag() >= flagLowSlot0) && (item->flag() <= flagHiSlot7))
                 || ((item->flag() >= flagSubSystem0) && (item->flag() <= flagSubSystem7))) {
-                // item is a module and it's being removed from a slot:
                 m_ModuleManager->UnfitModule(item->itemID());
                 return;
             } else if ((item->flag() >= flagRigSlot0) && (item->flag() <= flagRigSlot7)) {
-                // item is a rig and it's being removed from a slot:
                 m_ModuleManager->UninstallRig(item->itemID());
                 return;
             }
@@ -1099,8 +1096,10 @@ void ShipItem::StripFitting()
 {
     std::vector<InventoryItemRef> modList;
     m_ModuleManager->GetModuleListOfRefs(&modList);
-    for (auto cur : modList)
+    for (auto cur : modList) {
         m_ModuleManager->UnfitModule(cur->itemID());
+        cur->Move(m_pilot->GetLocationID(), flagHangar);
+    }
 }
 
 /* End new Module Manager Interface */

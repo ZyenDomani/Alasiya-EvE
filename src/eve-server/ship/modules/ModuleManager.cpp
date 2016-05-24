@@ -194,8 +194,6 @@ bool ModuleContainer::RemoveModule(uint32 itemID) {
         return false;
 
     _deleteModuleRef(mod->flag(), mod);
-    mod->getItem()->SetFlag(flagHangar);
-    //SafeDelete(mod);
     return true;
 }
 
@@ -767,6 +765,26 @@ bool ModuleManager::InstallSubSystem(InventoryItemRef item, EVEItemFlags flag)
     return false;
 }
 
+void ModuleManager::UnfitModule(uint32 itemID)
+{
+    GenericModule* mod = m_Modules->GetModule(itemID);
+    m_Modules->RemoveModule(itemID);
+    if (mod) {
+        EVEItemFlags flag = flagCargoHold;
+        bool inSpace = (IsStation(m_Ship->locationID()) ? false : true);
+        if (inSpace)
+            flag = flagHangar;
+        if (mod->isLoaded()) {
+            mod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
+            mod->Unload();
+        }
+        if (mod->isOnline())
+            mod->Offline();
+        // dont actually move the module here....let the caller do that in it's specific code
+        //mod->getItem()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
+    }
+}
+
 bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
 {
     if (item->categoryID() == EVEDB::invCategories::Module) {
@@ -780,24 +798,6 @@ bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
         sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a module", m_Ship->GetPilot()->GetName(), item->itemID());
 
     return false;
-}
-
-void ModuleManager::UnfitModule(uint32 itemID)
-{
-    GenericModule* mod = m_Modules->GetModule(itemID);
-    m_Modules->RemoveModule(itemID);
-    if (mod) {
-        EVEItemFlags flag = flagCargoHold;
-        if (!IsStation(m_Ship->locationID()))
-            flag = flagHangar;
-        if (mod->isLoaded()) {
-            InventoryItemRef loadedChargeRef = mod->GetLoadedChargeRef();
-            loadedChargeRef->Move(m_Ship->locationID(), flag);
-        }
-        if (mod->isOnline())
-            mod->Offline();
-        mod->getItem()->Move(m_Ship->locationID(), flag);
-    }
 }
 
 bool ModuleManager::_fitModule(InventoryItemRef item, EVEItemFlags flag)

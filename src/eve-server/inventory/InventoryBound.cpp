@@ -147,123 +147,85 @@ PyResult InventoryBound::Handle_ListStations( PyCallArgs& call )
     return rowset.Encode();
 }
 
-PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::Add() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    if (sConfig.server.testServer) {
-        sLog.Log( "InventoryBound::Handle_Add()", "size= %u", call.tuple->size());
-        call.Dump(SERVICE__CALL_DUMP);
-    }
-    /*13:36:49 [ClientCallRep] Add call made to
-     * 13:36:49 [BindDump] NodeID: 888444 BindID: 143 calling Add in service manager 'InventoryBound'
-     * 13:36:49 [BindDump]   Call Arguments:
-     * 13:36:49 [BindDump]       Tuple: 2 elements
-     * 13:36:49 [BindDump]         [ 0] Integer field: 140000083
-     * 13:36:49 [BindDump]         [ 1] Integer field: 60014137
-     * 13:36:49 [BindDump]   Call Named Arguments:
-     * 13:36:49 [BindDump]     Argument 'capacity':
-     * 13:36:49 [BindDump]         Real field: 6375.000000
-     * 13:36:49 [BindDump]     Argument 'flag':
-     * 13:36:49 [BindDump]         Integer field: 5
-     * 13:36:49 [BindDump]     Argument 'machoVersion':
-     * 13:36:49 [BindDump]         Integer field: 1
-     * 13:36:49 [BindDump]     Argument 'qty':
-     * 13:36:49 [BindDump]         Integer field: 1
-     * 13:36:49 [InvMsg] Calling InventoryBound::Add() for Hoarder(140000068)
-     * 13:36:49 L InventoryBound::Handle_Add(): size= 2
-     * 13:39:41 [ShipError] HoldsUsedVolume(+) given flag not found in current map - 5
+//01:10:27 L InventoryBound::Handle_CreateBookmarkVouchers(): size= 3, 0 = List, 1 = Integer, 2 = Boolean
+// size,       bmID,     flag,        ismove
+PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
+    _log(INV__MESSAGE, "Calling InventoryBound::CreateBookmarkVouchers() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    /**
+     * 00:39:12 [SvcCall]   Call Arguments:
+     * 00:39:12 [SvcCall]       Tuple: 3 elements
+     * 00:39:12 [SvcCall]         [ 0] List: 1 elements
+     * 00:39:12 [SvcCall]         [ 0]   [ 0] Integer field: 10    -this is bookmarkID(s)
+     * 00:39:12 [SvcCall]         [ 1] Integer field: 4            -flag  (?)
+     * 00:39:12 [SvcCall]         [ 2] Boolean field: true         -IsMove
+     * 00:39:12 [SvcCall]   Call Named Arguments:
+     * 00:39:12 [SvcCall]     Argument 'machoVersion':
+     * 00:39:12 [SvcCall]         Integer field: 1
+     * 00:39:13 L InventoryBound::Handle_CreateBookmarkVouchers(): 1 Vouchers created
      *
-     */
-    if (call.tuple->items.size() == 2) {
-        // TODO: Add comments here to describe what kind of client action results in having
-        // to use the 'Call_Add_2' packet structure     --ALL add calls.
-        // * Moving cargo items from ship cargo bay to a container in space goes here
-        // * Moving items from hangar to cargo bay or cargo bay to hangar
-        // * Removing Module/Charges from ship (using 'remove' button on item slot)
-        // * Adding Modules in a particular slot
-
-        Call_Add_2 args;
-        if (!args.Decode(&call.tuple)) {
-            codelog(INV__ERROR, "Unable to decode arguments");
-            return nullptr;
-        }
-
-        uint32 flag = flagAutoFit;
-        if (call.byname.find("flag") == call.byname.end()) {
-            if (IsStation(args.inventoryID))
-               flag = flagHangar;
-            else
-               flag = flagCargoHold;    // hard-code the ship cargo to cargo container move flag since key 'flag' in client.byname does not exist
-        } else
-            flag = call.byname.find("flag")->second->AsInt()->value();
-
-        uint32 quantity = 1;
-        if (call.byname.find("qty") != call.byname.end())
-            if (!call.byname.find("qty")->second->IsNone())
-                quantity = call.byname.find("qty")->second->AsInt()->value();
-
-        /*  this is module's charge capacity
-         *  also used for moved-to container's capacity
-         *  also used for slot capacity (??? got capacity=0 from moving rigs.)
-         */
-        float capacity = 0.0f;
-        if (call.byname.find("capacity") != call.byname.end())
-            if (!call.byname.find("capacity")->second->IsNone()) {
-                if (call.byname.find("capacity")->second->IsFloat())
-                    capacity = call.byname.find("capacity")->second->AsFloat()->value();
-                else if(call.byname.find("capacity")->second->IsInt())
-                    capacity = call.byname.find("capacity")->second->AsInt()->value();
-            }
-
-        // TODO  check for 'dividing' byname bool..dont know what this does
-        if (call.byname.find("dividing") != call.byname.end())
-            _log(INV__ERROR, "[Add] byname.dividing found when adding itemID %u (flag %u)", args.itemID, flag);
-        std::vector<int32> items;
-        items.push_back(args.itemID);
-        return _ExecAdd( call.client, items, quantity, (EVEItemFlags)flag );
-    } else {
-        _log(INV__ERROR, "[Add] Unknown number of elements in a tuple: %u.", call.tuple->items.size() );
-        return nullptr;
-    }
+     * 00:43:37 [SvcCall]   Call Arguments:
+     * 00:43:37 [SvcCall]       Tuple: 3 elements
+     * 00:43:37 [SvcCall]         [ 0] List: 5 elements
+     * 00:43:37 [SvcCall]         [ 0]   [ 0] Integer field: 4
+     * 00:43:37 [SvcCall]         [ 0]   [ 1] Integer field: 6
+     * 00:43:37 [SvcCall]         [ 0]   [ 2] Integer field: 7
+     * 00:43:37 [SvcCall]         [ 0]   [ 3] Integer field: 11
+     * 00:43:37 [SvcCall]         [ 0]   [ 4] Integer field: 2
+     * 00:43:37 [SvcCall]         [ 1] Integer field: 4
+     * 00:43:37 [SvcCall]         [ 2] Boolean field: true
+     * 00:43:37 [SvcCall]   Call Named Arguments:
+     * 00:43:37 [SvcCall]     Argument 'machoVersion':
+     * 00:43:37 [SvcCall]         Integer field: 1
+     * 00:43:37 L InventoryBound::Handle_CreateBookmarkVouchers(): 5 Vouchers created
+     *
+     *  sLog.Log( "InventoryBound::Handle_CreateBookmarkVouchers()", "size= %u", call.tuple->size() );
+     *  call.Dump(SERVICE__CALL_DUMP);
+     *
+     *      PyList *list = call.tuple->GetItem( 0 )->AsList();
+     *      uint32 bookmarkID;
+     *      char ci[3];
+     *
+     *      DBQueryResult res;
+     *      DBResultRow row;
+     *
+     * /** @todo this needs work......vouchers in hangar will not show contents of hangar, but item count works. */
+     /*
+      *      if ( list->size() > 0 ) {
+      *          for (uint8 i = 0; i < (list->size()); i++) {
+      *              bookmarkID = call.tuple->GetItem( 0 )->AsList()->GetItem(i)->AsInt()->value();
+      *                              //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
+      *              ItemData itemBookmarkVoucher( 51, call.client->GetCharacterID(), call.client->GetLocationID(), flagHangar, 1 );
+      *              InventoryItemRef i = m_manager->item_factory->SpawnItem( itemBookmarkVoucher );
+      *
+      *              if ( !i ) {
+      *                  codelog(CLIENT__ERROR, "%s: Failed to spawn bookmark voucher for %u", call.client->GetName(), bookmarkID);
+      *                  break;
+}
+sDatabase.RunQuery(res, "SELECT memo FROM bookmarks WHERE bookmarkID = %u", bookmarkID);
+res.GetRow(row);
+i->Rename(row.GetText(0));
+snprintf(ci, sizeof(ci), "%u", bookmarkID);
+i->SetCustomInfo(ci);  //<- use this to set bookmarkID to DB.entity.customInfo
+}
+sLog.Log( "InventoryBound::Handle_CreateBookmarkVouchers()", "%u Vouchers created", list->size() );
+//  when bm is copied to another players places tab, copy data from db using bookmarkID stored in ItemData.customInfo
+} else {
+    sLog.Error( "InventoryBound::Handle_CreateBookmarkVouchers()", "%s: call.tuple->GetItem( 0 )->AsList()->size() == 0.  Expected size > 0.", call.client->GetName() );
+    return nullptr;
 }
 
-PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::MultiAdd() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    if (sConfig.server.testServer) {
-        sLog.Log( "InventoryBound::Handle_MultiAdd()", "size= %u", call.tuple->size());
-        call.Dump(SERVICE__CALL_DUMP);
-    }
+/** @todo (allan) need to put check in here for isMove bool.  true=remove from PnP->bookmarks tab....false = leave
+ *
+ *      /** @todo (allan) need to reload hangar to show newly created BM item.
+ */
+ return new PyInt( 0 );
+}
 
-    if ( call.tuple->items.size() == 2 ) {
-        // TODO: Add comments here to describe what kind of client action results in having
-        // to use the 'Call_MultiAdd_2' packet structure    --    --ALL MultiAdd() calls.
-        Call_MultiAdd_2 args;
-        if (!args.Decode(&call.tuple)) {
-            codelog(INV__ERROR, "Unable to decode arguments");
-            return nullptr;
-        }
-
-        uint32 flag = flagAutoFit;
-        if ( call.byname.find("flag") == call.byname.end() ) {
-            if (IsStation(call.client->GetLocationID()))
-                flag = flagHangar;
-            else
-                flag = flagCargoHold;
-        } else
-            flag = call.byname.find("flag")->second->AsInt()->value();
-
-        //bool byname(fromManyFlags):true == unload ALL charges from module (from all modules?? - test this)
-
-        uint32 quantity = 1;
-        if (call.byname.find("qty") != call.byname.end()) {
-            if (!call.byname.find("qty")->second->IsNone())
-                quantity = call.byname.find("qty")->second->AsInt()->value();
-        }
-
-        return _ExecAdd( call.client, args.itemIDs, quantity, (EVEItemFlags)flag );
-    } else {
-        _log(INV__ERROR, "[MultiAdd] Unknown number of elements in a tuple: %u.", call.tuple->items.size() );
-        return nullptr;
-    }
+PyResult InventoryBound::Handle_Voucher(PyCallArgs &call){
+    _log(INV__MESSAGE, "Calling InventoryBound::Voucher() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    sLog.Log( "InventoryBound::Handle_Voucher()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    return nullptr;
 }
 
 PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
@@ -360,93 +322,133 @@ PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
     return nullptr;
 }
 
-//01:10:27 L InventoryBound::Handle_CreateBookmarkVouchers(): size= 3, 0 = List, 1 = Integer, 2 = Boolean
-                                                            // size,       bmID,     flag,        ismove
-PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::CreateBookmarkVouchers() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-  /**
-00:39:12 [SvcCall]   Call Arguments:
-00:39:12 [SvcCall]       Tuple: 3 elements
-00:39:12 [SvcCall]         [ 0] List: 1 elements
-00:39:12 [SvcCall]         [ 0]   [ 0] Integer field: 10    -this is bookmarkID(s)
-00:39:12 [SvcCall]         [ 1] Integer field: 4            -flag  (?)
-00:39:12 [SvcCall]         [ 2] Boolean field: true         -IsMove
-00:39:12 [SvcCall]   Call Named Arguments:
-00:39:12 [SvcCall]     Argument 'machoVersion':
-00:39:12 [SvcCall]         Integer field: 1
-00:39:13 L InventoryBound::Handle_CreateBookmarkVouchers(): 1 Vouchers created
+PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
+    _log(INV__MESSAGE, "Calling InventoryBound::Add() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    if (sConfig.server.testServer) {
+        sLog.Log( "InventoryBound::Handle_Add()", "size= %u", call.tuple->size());
+        call.Dump(SERVICE__CALL_DUMP);
+    }
 
-00:43:37 [SvcCall]   Call Arguments:
-00:43:37 [SvcCall]       Tuple: 3 elements
-00:43:37 [SvcCall]         [ 0] List: 5 elements
-00:43:37 [SvcCall]         [ 0]   [ 0] Integer field: 4
-00:43:37 [SvcCall]         [ 0]   [ 1] Integer field: 6
-00:43:37 [SvcCall]         [ 0]   [ 2] Integer field: 7
-00:43:37 [SvcCall]         [ 0]   [ 3] Integer field: 11
-00:43:37 [SvcCall]         [ 0]   [ 4] Integer field: 2
-00:43:37 [SvcCall]         [ 1] Integer field: 4
-00:43:37 [SvcCall]         [ 2] Boolean field: true
-00:43:37 [SvcCall]   Call Named Arguments:
-00:43:37 [SvcCall]     Argument 'machoVersion':
-00:43:37 [SvcCall]         Integer field: 1
-00:43:37 L InventoryBound::Handle_CreateBookmarkVouchers(): 5 Vouchers created
+    if (call.tuple->items.size() == 2) {
+        /* this call is used for:
+         * Moving cargo items from ship cargo bay to a container in space
+         * Moving items from hangar to cargo bay or cargo bay to hangar
+         * Removing Module/Charges from ship (using 'remove' button on item slot)
+         * Adding Modules in a particular slot
+         */
 
-  sLog.Log( "InventoryBound::Handle_CreateBookmarkVouchers()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
+        Call_Add_2 args;
+        if (!args.Decode(&call.tuple)) {
+            codelog(INV__ERROR, "Unable to decode arguments");
+            return nullptr;
+        }
 
-      PyList *list = call.tuple->GetItem( 0 )->AsList();
-      uint32 bookmarkID;
-      char ci[3];
+        uint32 flag = flagAutoFit;
+        if (call.byname.find("flag") == call.byname.end()) {
+            if (IsStation(call.client->GetLocationID()))
+                flag = flagHangar;
+            else
+                flag = flagCargoHold;    // hard-code the ship cargo to cargo container move flag since key 'flag' in client.byname does not exist
+        } else
+            flag = call.byname.find("flag")->second->AsInt()->value();
 
-      DBQueryResult res;
-      DBResultRow row;
+        int32 quantity = 0;
+        if (call.byname.find("qty") != call.byname.end())
+            if (!call.byname.find("qty")->second->IsNone())
+                quantity = call.byname.find("qty")->second->AsInt()->value();
 
-/** @todo this needs work......vouchers in hangar will not show contents of hangar, but item count works. */
-/*
-      if ( list->size() > 0 ) {
-          for (uint8 i = 0; i < (list->size()); i++) {
-              bookmarkID = call.tuple->GetItem( 0 )->AsList()->GetItem(i)->AsInt()->value();
-                              //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
-              ItemData itemBookmarkVoucher( 51, call.client->GetCharacterID(), call.client->GetLocationID(), flagHangar, 1 );
-              InventoryItemRef i = m_manager->item_factory->SpawnItem( itemBookmarkVoucher );
+        /*  this is module's charge capacity
+         *  also used for moved-to container's capacity
+         *  also used for slot capacity (??? got capacity=0 from moving rigs.)
+         */
+        float capacity = 0.0f;
+        if (call.byname.find("capacity") != call.byname.end())
+            if (!call.byname.find("capacity")->second->IsNone()) {
+                if (call.byname.find("capacity")->second->IsFloat())
+                    capacity = call.byname.find("capacity")->second->AsFloat()->value();
+                else if(call.byname.find("capacity")->second->IsInt())
+                    capacity = call.byname.find("capacity")->second->AsInt()->value();
+            }
 
-              if ( !i ) {
-                  codelog(CLIENT__ERROR, "%s: Failed to spawn bookmark voucher for %u", call.client->GetName(), bookmarkID);
-                  break;
-              }
-              sDatabase.RunQuery(res, "SELECT memo FROM bookmarks WHERE bookmarkID = %u", bookmarkID);
-              res.GetRow(row);
-              i->Rename(row.GetText(0));
-              snprintf(ci, sizeof(ci), "%u", bookmarkID);
-              i->SetCustomInfo(ci);  //<- use this to set bookmarkID to DB.entity.customInfo
-          }
-          sLog.Log( "InventoryBound::Handle_CreateBookmarkVouchers()", "%u Vouchers created", list->size() );
-          //  when bm is copied to another players places tab, copy data from db using bookmarkID stored in ItemData.customInfo
-      } else {
-          sLog.Error( "InventoryBound::Handle_CreateBookmarkVouchers()", "%s: call.tuple->GetItem( 0 )->AsList()->size() == 0.  Expected size > 0.", call.client->GetName() );
-          return nullptr;
-      }
+        // TODO  check for 'dividing' byname bool..dont know what this does
+        if (call.byname.find("dividing") != call.byname.end())
+            _log(INV__ERROR, "[Add] byname.dividing found when adding itemID %u (flag %u)", args.itemID, flag);
 
-      /** @todo (allan) need to put check in here for isMove bool.  true=remove from PnP->bookmarks tab....false = leave
-
-      /** @todo (allan) need to reload hangar to show newly created BM item.
-*/
-    return new PyInt( 0 );
+        std::vector<int32> items;
+        items.push_back(args.itemID);
+        return _ExecAdd( call.client, items, quantity, (EVEItemFlags)flag );
+    } else {
+        _log(INV__ERROR, "[Add] Unknown number of elements in a tuple: %u.", call.tuple->items.size() );
+        return nullptr;
+    }
 }
 
-PyResult InventoryBound::Handle_Voucher(PyCallArgs &call){
-    _log(INV__MESSAGE, "Calling InventoryBound::Voucher() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-  sLog.Log( "InventoryBound::Handle_Voucher()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
-    return nullptr;
+PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
+    _log(INV__MESSAGE, "Calling InventoryBound::MultiAdd() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    if (sConfig.server.testServer) {
+        sLog.Log( "InventoryBound::Handle_MultiAdd()", "size= %u", call.tuple->size());
+        call.Dump(SERVICE__CALL_DUMP);
+    }
+    /*  called like this when dragging loaded charges from module in fit window to cargohold on ship
+     * 23:57:53 [BindDump] NodeID: 888444 BindID: 147 calling MultiAdd in service manager 'InventoryBound'
+     * 23:57:53 [BindDump]   Call Arguments:
+     * 23:57:53 [BindDump]       Tuple: 2 elements
+     * 23:57:53 [BindDump]         [ 0] List: 1 elements
+     * 23:57:53 [BindDump]         [ 0]   [ 0] Integer field: 140000161    << chargeID
+     * 23:57:53 [BindDump]         [ 1] Integer field: 140000075           << shipID
+     * 23:57:53 [BindDump]   Call Named Arguments:
+     * 23:57:53 [BindDump]     Argument 'capacity':
+     * 23:57:53 [BindDump]         Real field: 130.000000                  << cargohold capacity
+     * 23:57:53 [BindDump]     Argument 'flag':
+     * 23:57:53 [BindDump]         Integer field: 5                        << flagCargoHold
+     * 23:57:53 [BindDump]     Argument 'fromManyFlags':
+     * 23:57:53 [BindDump]         Boolean field: true
+     * 23:57:53 [BindDump]     Argument 'machoVersion':
+     * 23:57:53 [BindDump]         Integer field: 1
+     * 23:57:53 [BindDump]     Argument 'qty':
+     * 23:57:53 [BindDump]         (None)                                  << means "all"
+     */
+    if ( call.tuple->items.size() == 2 ) {
+        Call_MultiAdd_2 args;
+        if (!args.Decode(&call.tuple)) {
+            codelog(INV__ERROR, "Unable to decode arguments");
+            return nullptr;
+        }
+
+        uint32 flag = flagAutoFit;
+        if ( call.byname.find("flag") == call.byname.end() ) {
+            if (IsStation(call.client->GetLocationID()))
+                flag = flagHangar;
+            else
+                flag = flagCargoHold;
+        } else
+            flag = call.byname.find("flag")->second->AsInt()->value();
+
+        int32 quantity = 0;
+        if (call.byname.find("qty") != call.byname.end())
+            if (!call.byname.find("qty")->second->IsNone())
+                quantity = call.byname.find("qty")->second->AsInt()->value();
+
+            //bool byname(fromManyFlags):true == unload charges from module referenced
+            if (call.byname.find("fromManyFlags") != call.byname.end()) {
+                if (!call.byname.find("fromManyFlags")->second->IsNone())
+                    quantity = -1; //special value here to hit tests in _ExecAdd
+            }
+
+
+            return _ExecAdd( call.client, args.itemIDs, quantity, (EVEItemFlags)flag );
+    } else {
+        _log(INV__ERROR, "[MultiAdd] Unknown number of elements in a tuple: %u.", call.tuple->items.size() );
+        return nullptr;
+    }
 }
 
-PyRep* InventoryBound::_ExecAdd(Client *pClient, const std::vector<int32> &items, uint32 quantity, EVEItemFlags flag) {
-    // method logic rewrite to handle all types and send a proper return, and added some error returns.   -allan 2Jan16
-    /** @todo (allan)  handle droping items and modules on ship for cargohold, and removing items from slots to cargo */
+PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, int32 quantity, EVEItemFlags flag) {
+    // method logic rewrite to handle all types and send a proper return, and added some error returns.   -allan 2Jan16 (UD 24May16)
+
     InventoryItemRef itemRef;
     EVEItemFlags old_flag;
-    ShipItem* pShip = pClient->GetShip().get();
+    ShipItem* pShip = c->GetShip().get();
     std::vector<int32>::const_iterator cur = items.begin();
     for (; cur != items.end(); cur++) {
         itemRef = m_manager->item_factory->GetItem(*cur);
@@ -454,11 +456,10 @@ PyRep* InventoryBound::_ExecAdd(Client *pClient, const std::vector<int32> &items
 
         if (old_flag >= flagRigSlot0 && old_flag <= flagRigSlot7) {
             //  cant remove rigs like this.  send error.
-            pClient->SendNotifyMsg("You cannot remove ship upgrades manually.");
+            c->SendNotifyMsg("You cannot remove ship upgrades manually.");
             /** @todo (allan)  not all macho.ErrorResponse packet keys are complete.  this is one. */
             throw PyException( MakeUserError("CannotRemoveUpgradeManually"));
             return nullptr;
-
         }
 
         if (IsModuleSlot(old_flag)) {
@@ -469,12 +470,23 @@ PyRep* InventoryBound::_ExecAdd(Client *pClient, const std::vector<int32> &items
                 Call_SingleIntegerArg result;
                     result.arg = itemRef->itemID();
                 return result.Encode();
-            } else
+            } else {
                 pShip->RemoveItem(itemRef);
+                if (itemRef->categoryID() == EVEDB::invCategories::Charge)
+                    quantity = -1;
+            }
         }
 
-        // check quantities.  correct as needed
-        if (quantity != itemRef->quantity()) {
+        /* check quantities.
+         * special value of -1 means "remove all charges from this module"
+         * special value of 0 means " "
+         *  at this point, pShip->RemoveItem() has already unloaded module.
+         */
+        if (quantity == -1) {
+            quantity = itemRef->quantity();
+        } else if (quantity == 0) {
+            quantity = itemRef->quantity();
+        } else if (quantity != itemRef->quantity()) {
             // item is in stack
             InventoryItemRef newItem = itemRef->Split(quantity);
             if (!newItem) {
@@ -490,11 +502,11 @@ PyRep* InventoryBound::_ExecAdd(Client *pClient, const std::vector<int32> &items
 
         // check where to put item to be added.  use flags to find a spot for this item
         if (flag == flagAutoFit) {
-            // 'flagAutoFit' means "put this module into which ever slot makes sense"
+            // 'flagAutoFit' means "put this module into first slot that makes sense"
             EVEItemFlags openSlotFlag = pShip->FindAvailableModuleSlot(itemRef);
             if (openSlotFlag == flagIllegal) {
                 sLog.Error( "InventoryBound::_ExecAdd()", "'flagIllegal' returned from FindAvailableModuleSlot()" );
-                pClient->SendNotifyMsg("Your ship has no avalible slots to fit this module.");
+                c->SendNotifyMsg("Your ship has no avalible slots to fit this module.");
                 return nullptr;
             }
             flag = openSlotFlag;
@@ -503,14 +515,15 @@ PyRep* InventoryBound::_ExecAdd(Client *pClient, const std::vector<int32> &items
         if (IsModuleSlot(flag) || IsCargoHoldFlag(flag)) {
             // verify ship has room for this item.
             if (!pShip->AddItem(flag, itemRef)) {
-                // cannot add item.  error sent from AddItem()
-                return nullptr;
+                // if not, and in station, move item to hangar
+                if (IsStation(pShip->locationID()))
+                    itemRef->Move(pShip->locationID(), flagHangar);
             }
         } else {
             // what else do we need to check for here?
             if (mInventory->ValidateAddItem(flag, itemRef)) {
                 // all checks have passed.  move the item
-                pClient->MoveItem(itemRef->itemID(), m_self->itemID(), flag);
+                c->MoveItem(itemRef->itemID(), m_self->itemID(), flag);
             } else
                 return nullptr;
         }
