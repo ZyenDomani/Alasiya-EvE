@@ -42,9 +42,9 @@ class SystemEntity;
 class SystemManager;
 
 // common variables to denote accpetable alignment deviations
-static const float TURN_ALIGNMENT = 8.0f;
-static const float WARP_ALIGNMENT = 10.0f;
-static const uint16 BUMP_DISTANCE = 30;     //in meters.  < this = hit.
+static const float TURN_ALIGNMENT = 4.0f;
+static const float WARP_ALIGNMENT = 6.0f;
+static const uint16 BUMP_DISTANCE = 50;     //in meters.  < this = hit.
 
 //this object manages an entity's position and movement in a system.
 

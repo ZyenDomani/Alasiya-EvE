@@ -529,7 +529,7 @@ bookmark, bmid
         } else
             warpPointAdj = pSE->GetRadius();
 
-        distance += call.client->GetShipSE()->GetRadius();
+        distance += (call.client->GetShipSE()->GetRadius() *2);
 
         /* client stops warp at (targetpoint - stopdistance) along common line between the two.
          *  the server will need to be told what and how to match the client.
