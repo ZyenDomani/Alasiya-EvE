@@ -352,7 +352,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         } else
             flag = call.byname.find("flag")->second->AsInt()->value();
 
-        int32 quantity = 0;
+        int32 quantity = 1;
         if (call.byname.find("qty") != call.byname.end())
             if (!call.byname.find("qty")->second->IsNone())
                 quantity = call.byname.find("qty")->second->AsInt()->value();
@@ -424,7 +424,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         } else
             flag = call.byname.find("flag")->second->AsInt()->value();
 
-        int32 quantity = 0;
+        int32 quantity = 1;
         if (call.byname.find("qty") != call.byname.end())
             if (!call.byname.find("qty")->second->IsNone())
                 quantity = call.byname.find("qty")->second->AsInt()->value();
@@ -479,12 +479,9 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
 
         /* check quantities.
          * special value of -1 means "remove all charges from this module"
-         * special value of 0 means " "
          *  at this point, pShip->RemoveItem() has already unloaded module.
          */
         if (quantity == -1) {
-            quantity = itemRef->quantity();
-        } else if (quantity == 0) {
             quantity = itemRef->quantity();
         } else if (quantity != itemRef->quantity()) {
             // item is in stack

@@ -754,11 +754,9 @@ bool InventoryItem::AlterQuantity(int32 qty_change, bool notify) {
 }
 
 bool InventoryItem::SetQuantity(uint32 qty_new, bool notify) {
-    //if an object has its singleton set then it shouldn't be able to add/remove qty
+    //if an object is singleton, it shouldn't be able to add/remove qty
     if (m_singleton) {
-        //Print error
-        codelog(ITEM__ERROR, "%s (%u): Failed to set quantity %u , the items singleton bit is set", m_itemName.c_str(), m_itemID, qty_new);
-        //return false
+        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %u , the items singleton bit is set", m_itemName.c_str(), m_itemID, qty_new);
         return false;
     }
 
