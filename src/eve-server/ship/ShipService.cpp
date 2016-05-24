@@ -514,7 +514,42 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
         //TODO: throw exception
         return nullptr;
     }
-
+/*
+20:06:51 [BindDump] NodeID: 888444 BindID: 124 calling Drop in service manager 'ShipBound'
+20:06:51 [BindDump]   Call Arguments:
+20:06:51 [BindDump]       Tuple: 3 elements
+20:06:51 [BindDump]         [ 0] List: 1 elements
+20:06:51 [BindDump]         [ 0]   [ 0] Tuple: 2 elements
+20:06:51 [BindDump]         [ 0]   [ 0]   [ 0] Integer field: 140000078
+20:06:51 [BindDump]         [ 0]   [ 0]   [ 1] Integer field: 1
+20:06:51 [BindDump]         [ 1] Integer field: 1000172
+20:06:51 [BindDump]         [ 2] Boolean field: false
+20:06:51[00m L [37;01mShipBound::Handle_Drop(): [00msize=3
+[00m20:06:51 [TargetInfo] Created TargMgr 0x39f0500 for Minmatar Control Tower Small(140000078)
+20:06:51 [DestinyMsg] MakeSlimItem for StructureSE 140000078
+20:06:51[36;01m W [37;01mClient::BeanCount: [36;01m(BeanCount/alert) BeanCount error reporting and handling is not implemented yet.
+[00m20:06:51 [ClientCallRep] SendClientStackTraceAlert call made to alert
+EXCEPTION #10 logged at  05/23/2016 20:06:51 Unhandled exception in <TaskletExt object at 35ff1df0, abps=1001, ctxt=None>
+Caught at:
+/common/lib/bluepy.py(98) CallWrapper
+Thrown at:
+/common/lib/bluepy.py(86) CallWrapper
+/../carbon/client/script/ui/control/menu.py(517) <lambda>
+/client/script/ui/services/menusvc.py(6235) CheckLocked
+/client/script/ui/services/menusvc.py(6332) LaunchForCorp
+/client/script/util/evemisc.py(119) LaunchFromShip
+        errors = set()
+        newIDs = {}
+        ignoreWarning = False
+        items = [<DBRow object [140000078L, 20066, 140000000, 140000068L, 5, 1, 365, 23, '', 1, 0]>]
+        PackError = <function PackError at 0x0B392AB0>
+        item = <DBRow object [140000078L, 20066, 140000000, 140000068L, 5, 1, 365, 23, '', 1, 0]>
+        UnpackError = <function UnpackError at 0x38A355F0>
+        ret = ([...],)
+        whoseBehalfID = 1000172
+        oldItems = [(...)]
+AttributeError: 'tuple' object has no attribute 'iteritems'
+*/
     PyList* PyToDropList = drop3args.toDrop;
     uint32 ownerID = drop3args.ownerID;
     //used for LaunchUpgradePlatformWarning
