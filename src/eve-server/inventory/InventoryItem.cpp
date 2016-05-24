@@ -1016,7 +1016,7 @@ void InventoryItem::SetCustomInfo(const char *ci) {
         m_customInfo = ci;
     else
         m_customInfo = "";
-    //SaveItem();
+    SaveItem();
 }
 
 void InventoryItem::Relocate(const GPoint &pos) {
@@ -1024,7 +1024,7 @@ void InventoryItem::Relocate(const GPoint &pos) {
         return;
 
     m_position = pos;
-    //SaveItem();
+    SaveItem();
 }
 
 bool InventoryItem::SetAttribute( uint32 attributeID, int64 num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )

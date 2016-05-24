@@ -190,12 +190,9 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     }
 
     uint8 targetSkills = 1; //AttrMaxLockedTargets is for characters too!!
-    float targetRangeModifier = 1.0f;
     Character* pChar = mySE->GetPilot()->GetChar().get();
     targetSkills += pChar->GetSkillLevel(skillTargeting);    // +1 target/level
     targetSkills += pChar->GetSkillLevel(skillMultitasking);    // +1 target/level
-    targetRangeModifier += (0.05 * pChar->GetSkillLevel(skillLongRangeTargeting)); // +5% level
-
 	uint32 maxLockedTargets = ship->GetAttribute(AttrMaxLockedTargets).get_int();
     if (!maxLockedTargets) maxLockedTargets = 1;
     // add module updates to target capacity of ship here.
@@ -210,6 +207,8 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     }
     // Check against max locked target range
 	double maxTargetLockRange = ship->GetAttribute(AttrMaxTargetRange).get_float();
+    float targetRangeModifier = 1.0f;
+    targetRangeModifier += (0.05 * pChar->GetSkillLevel(skillLongRangeTargeting)); // +5% level
     maxTargetLockRange *= targetRangeModifier;
     GVector rangeToTarget( mySE->GetPosition(), who->GetPosition() );
     if (rangeToTarget.length() > maxTargetLockRange) {

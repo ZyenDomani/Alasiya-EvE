@@ -67,8 +67,8 @@ public:
         // these functions are only called when beyonce is created. (fix for BlackScreen Bug)
         if (pClient->IsJump())
             pClient->IsJumping();
-       // else if (pClient->IsInSpace() and (!pClient->IsUndock()))
-       //     pClient->SetBallPark();
+        else if (pClient->IsLogin())
+            pClient->SetBallPark();
 
         pClient->SetBeyonce(true);
     }
@@ -639,8 +639,22 @@ bookmark, bmid
 	}
 	// none of the systems below are implemented.  hold on coding till systems are working.
 	else if ( args.type == "launch" )
-	{ // launchpickup - launch, launchid
-		call.client->SendErrorMsg("WarpToLaunch is not implemented at this time.  See Allan for updates.");
+    { // launchpickup - launch, launchid
+        DBQueryResult res;
+        if(!sDatabase.RunQuery(res, "SELECT `x`, `y`, `z` FROM `planetlaunches` WHERE `launchID` = %u", args.ID)) {
+            _log(DATABASE__ERROR, "BeyonceService::CmdWarpToStuff:launch Query: %s", res.error.c_str());
+                return NULL;
+        }
+        DBResultRow row;
+        if(!res.GetRow(row)) {
+            _log(DATABASE__MESSAGE, "BeyonceService::CmdWarpToStuff:launch Query returned no rows");
+            return NULL;
+        }
+        GPoint warpToPoint;
+        warpToPoint.x = row.GetDouble(0);
+        warpToPoint.y = row.GetDouble(1);
+        warpToPoint.z = row.GetDouble(2);
+        call.client->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint, 0.0);
 	}
 	else if ( args.type == "scan" )
 	{//  scan, resultid, minrange, fleet(bool)

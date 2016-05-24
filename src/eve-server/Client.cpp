@@ -92,7 +92,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_beyonce = false;
     m_packaged = false;
     m_autoPilot = false;
-    m_bubbleWait = false;
+    m_bubbleWait = true;
     m_needToDock = false;
     m_setStateSent = false;
     m_sessionChangeActive = false;
@@ -322,7 +322,7 @@ void Client::SetDestiny(bool count) {
     }
     m_system->AddClient(this, IsDocked(), count);
     if (IsSolarSystem(m_locationID)) {
-        m_bubbleWait = /*true*/false;
+        //m_bubbleWait = /*true*/false;
         m_setStateSent = false;
         if (m_ship->position().isZero())
             MoveToPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()));
@@ -330,7 +330,8 @@ void Client::SetDestiny(bool count) {
             pShipSE->GetShipSE()->ResetShipSystemMgr(m_system);
         m_system->AddEntity(pShipSE);
         m_bubbleWait = false;
-        SetBallPark();
+        if (!m_login)
+            SetBallPark();
     } else
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
 }
@@ -559,9 +560,7 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
 
 void Client::SetBallPark() {
     // called when beyonce is created (only when in space(undock, jump, login InSpace))
-    //m_bubbleWait = true;
     m_login = m_bubbleWait = false;
-    //pShipSE->SysBubble()->SendAddBalls(pShipSE);
     if (!pShipSE->SysBubble())
         m_system->AddEntity(pShipSE);
     if (!m_setStateSent)
@@ -574,7 +573,7 @@ void Client::SetBallPark() {
 
 void Client::DockToStation() {
     SetAutoPilot(false);
-    //m_bubbleWait = true;  //do we need this?  there is no ballpark after next call returns.
+    m_bubbleWait = true;  //do we need this?  there is no ballpark after next call returns.  -yes, we still get random _bp calls
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
 
     //Check if player is in pod, in which case they get a rookie ship for free
@@ -867,7 +866,7 @@ void Client::ResetAfterPodded() {
      */
 
     //clear AutoPilot
-    m_bubbleWait = false;
+    m_bubbleWait = true;
     SetAutoPilot(false);
 
     MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
