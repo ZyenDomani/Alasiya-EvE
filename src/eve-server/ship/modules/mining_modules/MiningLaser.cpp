@@ -189,9 +189,9 @@ double MiningLaser::DoCycle() {
 
 		//FIXME - For now ore processing starts in the end of 2 cycle. First cycle returns nothing.
 
-		if (m_IsInitialCycle)
-			m_IsInitialCycle = false;
-		else {
+		//if (m_IsInitialCycle)
+		//	m_IsInitialCycle = false;
+		//else {
 			// Actually pull in the ore
 			if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)
 				_ProcessIceCycle();
@@ -199,7 +199,7 @@ double MiningLaser::DoCycle() {
 				_ProcessCloudCycle();
 			else
 				_ProcessOreCycle();
-        	}
+        	//}
 
         return _GetDuration();
 	}

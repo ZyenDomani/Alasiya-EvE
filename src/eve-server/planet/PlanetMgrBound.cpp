@@ -43,7 +43,8 @@ public:
 
     PlanetMgrBound(PyServiceMgr *mgr, uint32 planetID, uint32 charID)
     : PyBoundObject(mgr),
-    m_dispatch(new Dispatcher(this)), m_planetID(planetID)
+    m_dispatch(new Dispatcher(this)),
+    m_planetID(planetID)
     {
         _SetCallDispatcher(m_dispatch);
         m_colony = new Colony(charID, m_planetID);
@@ -129,11 +130,10 @@ PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *c, const PyRep *bind
     return new PlanetMgrBound(m_manager, bind_args->AsInt()->value(), c->GetCharacterID());
 }
 
-//05:44:57 PlanetMgrBound: Handle_GetPlanetsForChar() size=0
 PyResult PlanetMgrService::Handle_GetPlanetsForChar(PyCallArgs &call) {
   /**
             self.colonizationData = sm.RemoteSvc('planetMgr').GetPlanetsForChar()
-            returns  solarSystemIDm planetID, typeID, numberOfPins
+            returns  solarSystemID, planetID, typeID, numberOfPins
             */
 
   /* Used by the client to populate the industry:planets tab
@@ -146,7 +146,6 @@ PyResult PlanetMgrService::Handle_GetMyLaunchesDetails(PyCallArgs &call) {
     return m_db->GetMyLaunchesDetails(call.client->GetCharacterID());
 }
 
-//02:49:10 PlanetMgrBound: Handle_GetPlanetInfo() size=0
 PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
     sLog.Log("PlanetMgrBound", "Handle_GetPlanetInfo() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
@@ -154,6 +153,7 @@ PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
     /* Incomplete, needs to check if planet is colonised by char, if so, return full colony + planet data.
      * Right now every planet is un-colonised.
      */
+    /* this will be part of Planet class, and resources will be calculated there */
     return m_db->GetPlanetInfo(m_planetID);
 }
 
@@ -165,57 +165,24 @@ PyResult PlanetMgrBound::Handle_GetPlanetResourceInfo(PyCallArgs &call) {
      * returns: {typeID:quality, typeID:quality, typeID:quality, typeID:quality, typeID:quality}
      * quality: (min=1.0, max=154.275)
      */
+    /* this will be part of Planet class, and resources will be calculated there */
     return m_db->GetPlanetResourceInfo(m_planetID);
 }
 
-/*
- * /common/lib/bluepy.py(86) CallWrapper
- * /client/script/ui/shared/planet/planetnavigation.py(301) OnMouseMove
- *        self = uicls.PlanetLayer object at 0xdca8330, name=l_planet, destroyed=False>
- *        args = ()
- * AttributeError: 'NoneType' object has no attribute 'ManualRotate'
- *
- * /client/script/ui/shared/planet/planetnavigation.py(394) OnMouseUp
- *        self = uicls.PlanetLayer object at 0xdca8330, name=l_planet, destroyed=False>
- *        btnNum = 0
- * AttributeError: 'PlanetLayer' object has no attribute 'eventManager'
- *
- * /../carbon/client/script/ui/services/registry.py(277) SetFocus
- * /client/script/ui/shared/planet/planetnavigation.py(292) OnKillFocus
- *        self = uicls.PlanetLayer object at 0xdca8330, name=l_planet, destroyed=False>
- *        args = ()
- * AttributeError: 'PlanetLayer' object has no attribute 'eventManager'
- *
- * /client/script/ui/shared/planet/planetuisvc.py(1162) LogPlanetAccess
- *        planetAccessed = 1
- *        myPlanets = None
- *        self = <svc.PlanetUISvc instance at 0x30838800>
- *        colonized = 0
- * TypeError: 'NoneType' object is not iterable
- *
- */
+PyResult PlanetMgrBound::Handle_GetExtractorsForPlanet(PyCallArgs &call) {
+    // NOTE this gets ALL extractors on this planet
+    sLog.Log("PlanetMgrBound", "Handle_GetExtractorsForPlanet() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
 
+    return m_db->GetExtractorsForPlanet(m_planetID);
+}
 
 PyResult PlanetMgrBound::Handle_GetCommandPinsForPlanet(PyCallArgs &call) {
     sLog.Log("PlanetMgrBound", "Handle_GetCommandPinsForPlanet() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
-    return nullptr;
-}
-
-//17:39:33 L PlanetMgrBound: Handle_GetExtractorsForPlanet() size=1
-PyResult PlanetMgrBound::Handle_GetExtractorsForPlanet(PyCallArgs &call) {
-    /*
-     * 17:39:33 [PlanetCallDump]   Call Arguments:
-     * 17:39:33 [PlanetCallDump]       Tuple: 1 elements
-     * 17:39:33 [PlanetCallDump]         [ 0] Integer field: 40216272
-     */
-
-    // NOTE this gets ALL extractors on this planet
-    sLog.Log("PlanetMgrBound", "Handle_GetExtractorsForPlanet() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
+    // returns empty dict if none
+    return new PyDict;
 }
 
 PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
@@ -224,39 +191,37 @@ PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
 
     return nullptr;
 }
-/*
-23:38:37 [ClientCallRep] GetResourceData call made to
-23:38:37 [BindDump] NodeID: 888444 BindID: 109 calling GetResourceData in service manager 'PlanetMgrBound'
-23:38:37 [BindDump]   Call Arguments:
-23:38:37 [BindDump]       Tuple: 1 elements
-23:38:37 [BindDump]         [ 0] Object:
-23:38:37 [BindDump]         [ 0]   Type: String: 'util.KeyVal'
-23:38:37 [BindDump]         [ 0]   Args: Dictionary: 8 entries
-23:38:37 [BindDump]         [ 0]   Args:   [ 0] Key: String: 'proximity'
-23:38:37 [BindDump]         [ 0]   Args:   [ 0] Value: Integer field: 4
-23:38:37 [BindDump]         [ 0]   Args:   [ 1] Key: String: 'updateTime'
-23:38:37 [BindDump]         [ 0]   Args:   [ 1] Value: Integer field: 0
-23:38:37 [BindDump]         [ 0]   Args:   [ 2] Key: String: 'advancedPlanetology'
-23:38:37 [BindDump]         [ 0]   Args:   [ 2] Value: Integer field: 0
-23:38:37 [BindDump]         [ 0]   Args:   [ 3] Key: String: 'remoteSensing'
-23:38:37 [BindDump]         [ 0]   Args:   [ 3] Value: Integer field: 2
-23:38:37 [BindDump]         [ 0]   Args:   [ 4] Key: String: 'newBand'
-23:38:37 [BindDump]         [ 0]   Args:   [ 4] Value: Integer field: 15
-23:38:37 [BindDump]         [ 0]   Args:   [ 5] Key: String: 'planetology'
-23:38:37 [BindDump]         [ 0]   Args:   [ 5] Value: Integer field: 0
-23:38:37 [BindDump]         [ 0]   Args:   [ 6] Key: String: 'oldBand'
-23:38:37 [BindDump]         [ 0]   Args:   [ 6] Value: Integer field: 0
-23:38:37 [BindDump]         [ 0]   Args:   [ 7] Key: String: 'resourceTypeID'
-23:38:37 [BindDump]         [ 0]   Args:   [ 7] Value: Integer field: 2268
-23:38:37 [BindDump]   Call Named Arguments:
-23:38:37 [BindDump]     Argument 'machoVersion':
-23:38:37 [BindDump]         Integer field: 1
-*/
+
 PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
     /* TODO, Figure out how to populate PyBuffer with more than char.
      *         and figure out the client buffer structure, etc.
      * TODO, optimise this function maybe?
      */
+
+    /*  this is called by planet view page, by "resource filter" for given typeID
+20:03:42 [BindDump] NodeID: 888444 BindID: 122 calling GetResourceData in service manager 'PlanetMgrBound'
+20:03:42 [BindDump]   Call Arguments:
+20:03:42 [BindDump]       Tuple: 1 elements
+20:03:42 [BindDump]         [ 0] Object:
+20:03:42 [BindDump]         [ 0]   Type: String: 'util.KeyVal'
+20:03:42 [BindDump]         [ 0]   Args: Dictionary: 8 entries
+20:03:42 [BindDump]         [ 0]   Args:   [ 0] Key: String: 'proximity'
+20:03:42 [BindDump]         [ 0]   Args:   [ 0] Value: Integer field: 4
+20:03:42 [BindDump]         [ 0]   Args:   [ 1] Key: String: 'updateTime'
+20:03:42 [BindDump]         [ 0]   Args:   [ 1] Value: Integer field: 0
+20:03:42 [BindDump]         [ 0]   Args:   [ 2] Key: String: 'advancedPlanetology'
+20:03:42 [BindDump]         [ 0]   Args:   [ 2] Value: Integer field: 0
+20:03:42 [BindDump]         [ 0]   Args:   [ 3] Key: String: 'remoteSensing'
+20:03:42 [BindDump]         [ 0]   Args:   [ 3] Value: Integer field: 3
+20:03:42 [BindDump]         [ 0]   Args:   [ 4] Key: String: 'newBand'
+20:03:42 [BindDump]         [ 0]   Args:   [ 4] Value: Integer field: 15
+20:03:42 [BindDump]         [ 0]   Args:   [ 5] Key: String: 'planetology'
+20:03:42 [BindDump]         [ 0]   Args:   [ 5] Value: Integer field: 0
+20:03:42 [BindDump]         [ 0]   Args:   [ 6] Key: String: 'oldBand'
+20:03:42 [BindDump]         [ 0]   Args:   [ 6] Value: Integer field: 0
+20:03:42 [BindDump]         [ 0]   Args:   [ 7] Key: String: 'resourceTypeID'
+20:03:42 [BindDump]         [ 0]   Args:   [ 7] Value: Integer field: 2267
+*/
     PyDict* input = call.tuple->AsTuple()->GetItem(0)->AsObject()->arguments()->AsDict();
     int proximity = input->GetItemString("proximity")->AsInt()->value();
     int resourceTypeID = input->GetItemString("resourceTypeID")->AsInt()->value();

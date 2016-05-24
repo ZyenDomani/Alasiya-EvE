@@ -43,7 +43,7 @@ public:
 
         m_strBoundObjectName = "PlanetORBBound";
 
-        //PyCallable_REG_CALL(PlanetORBBound, GetPlanetInfo);
+        PyCallable_REG_CALL(PlanetORBBound, GMChangeSpaceObjectOwner);
     }
     virtual ~PlanetORBBound() { delete m_dispatch; }
     virtual void Release() {
@@ -51,7 +51,7 @@ public:
         delete this;
     }
 
-    //PyCallable_DECL_CALL(GetPlanetInfo);
+    PyCallable_DECL_CALL(GMChangeSpaceObjectOwner);
 
 protected:
     Dispatcher* const m_dispatch;
@@ -85,23 +85,26 @@ PyBoundObject* planetORB::_CreateBoundObject(Client *c, const PyRep *bind_args) 
     return new PlanetORBBound(m_manager);
 }
 
-/*
-PyResult planetORB::Handle_( PyCallArgs& call )
+
+PyResult PlanetORBBound::Handle_GMChangeSpaceObjectOwner( PyCallArgs& call )
 {
-    sLog.Log( "planetORB", "Handle_" );
+    /*
+    def TakeOrbitalOwnership(self, itemID, planetID):
+        registry = moniker.GetPlanetOrbitalRegistry(session.solarsystemid)
+        registry.GMChangeSpaceObjectOwner(itemID, session.corpid)
+    */
+    // this is called when taking ownership of control tower
+    // sends planetID, corpID
+    sLog.Log( "PlanetORBBound", "Handle_GMChangeSpaceObjectOwner" );
     call.Dump(SERVICE__CALL_DUMP);
 
     return new PyNone;
 }
-*/
+
 
 
 /**
     def ConfigureOrbital(self, item):
         sm.GetService('planetUI').OpenConfigureWindow(item)
-
-    def TakeOrbitalOwnership(self, itemID, planetID):
-        registry = moniker.GetPlanetOrbitalRegistry(session.solarsystemid)
-        registry.GMChangeSpaceObjectOwner(itemID, session.corpid)
 
         */

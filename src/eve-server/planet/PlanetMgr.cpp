@@ -18,6 +18,26 @@ PlanetMgr::PlanetMgr()
 
 }
 
+    /* these are for PI */
+/*
+    AttrHarvesterType = 709,
+    AttrHarvesterQuality = 710,
+    AttrLogisticalCapacity = 1631,
+    AttrPlanetRestriction = 1632,
+    AttrPowerLoadPerKm = 1633,
+    AttrCPULoadPerKm = 1634,
+    AttrCPULoadLevelModifier = 1635,
+    AttrPowerLoadLevelModifier = 1636,
+    AttrImportTax = 1638,
+    AttrExportTax = 1639,
+    AttrImportTaxMultiplier = 1640,
+    AttrExportTaxMultiplier = 1641,
+    AttrPinExtractionQuantity = 1642,
+    AttrPinCycleTime = 1643,
+    AttrExtractorDepletionRange = 1644,
+    AttrExtractorDepletionRate = 1645,
+    AttrSpecialCommandCenterHoldCapacity = 1646,
+    */
 
 /*
 piLaunchOrbitDecayTime = DAY * 5

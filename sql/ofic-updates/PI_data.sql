@@ -1,36 +1,35 @@
 
 
-CREATE TABLE IF NOT EXISTS `chrPlanetLaunches` (
-  `characterID` int(11) NOT NULL,
-  `launchID` int(11) NOT NULL,
-  `launchTime` bigint(20) NOT NULL,
+CREATE TABLE `chrPlanetLaunches` (
+  `launchID` int(11) NOT NULL AUTO_INCREMENT,
+  `charID` int(11) NOT NULL,
+  `itemID` int(11) NOT NULL,
   `solarSystemID` int(11) NOT NULL,
   `planetID` int(11) NOT NULL,
+  `status` varchar(17) CHARACTER SET utf8 NOT NULL,
+  `launchTime` bigint(20) NOT NULL,
   `x` double NOT NULL,
   `y` double NOT NULL,
   `z` double NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 ALTER TABLE `chrPlanetLaunches`
   ADD UNIQUE KEY `launchID` (`launchID`);
 
-ALTER TABLE `chrPlanetLaunches`
-  MODIFY `launchID` int(11) NOT NULL AUTO_INCREMENT;
 
-
-CREATE TABLE IF NOT EXISTS `chrPlanets` (
+CREATE TABLE `chrPlanets` (
   `characterID` int(11) NOT NULL,
   `planetID` int(11) NOT NULL,
   `solarSystemID` int(11) NOT NULL,
   `typeID` int(11) NOT NULL,
   `numberOfPins` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE `chrPlanets`
   ADD PRIMARY KEY (`characterID`,`planetID`);
 
 
-CREATE TABLE IF NOT EXISTS `planetResourceInfo` (
+CREATE TABLE `planetResourceInfo` (
   `planetID` int(11) NOT NULL,
   `itemID1` int(11) NOT NULL,
   `itemID2` int(11) NOT NULL,
@@ -52,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `planetResourceInfo` (
   `numBands3` int(11) NOT NULL,
   `numBands4` int(11) NOT NULL,
   `numBands5` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE `planetResourceInfo`
   ADD UNIQUE KEY `planetID` (`planetID`);
