@@ -165,7 +165,7 @@ void SystemBubble::Process()
     if (m_spawnTimer.Enabled())
         if (m_spawnTimer.Check(false)) {
             if (HasPlayers())
-                ; //m_system->DoSpawnForBubble(this);
+                m_system->DoSpawnForBubble(this);
             m_spawnTimer.Disable();
         }
 }

@@ -239,7 +239,7 @@ void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
-    //if (!m_enabled) return;
+    if (!m_enabled) return;
     if (!_FindSpawnForBubble(pSysBubble->GetID())) {
         sLog.Success("SpawnMgr", "DoSpawnForBubble called for bubble %u in %s(%u)(%.4f). Main Timer enabled.",
                      pSysBubble->GetID(), m_system->GetName().c_str(), m_system->GetID(), secRating);

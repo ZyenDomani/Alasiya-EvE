@@ -110,7 +110,7 @@ public:
 };
 
 /**
- * Attribute manager for type attributes.
+ * Attribute manager for type attributes. (still used)
  */
 class TypeAttributeMgr : public EVEAttributeMgr
 {
@@ -138,6 +138,7 @@ protected:
 /**
  * Attribute manager for InventoryItem.
  */
+#ifdef (0)
 class ItemAttributeMgr : public EVEAdvancedAttributeMgr
 {
 public:
@@ -249,6 +250,7 @@ protected:
     bool m_save;
     bool m_notify;
 };
+#endif //0
 
 // small map that does the magic of item attributes..
 //class EvilNumber;

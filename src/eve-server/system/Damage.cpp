@@ -266,7 +266,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             up = noeh.Encode();
             d.source->GetPilot()->QueueDestinyEvent(&up);
         }
-/*
+
         //  notify player of damage done to other
         Notify_OnDamageMessage ondam;
             ondam.messageID = DamageMessageIDs_Other[damageID];
@@ -276,7 +276,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             ondam.damage = total_damage;
         up = ondam.Encode();
         d.source->GetPilot()->QueueDestinyEvent(&up);
-*/
+/*
         //Notifications to others:
         // this displays msg, but text is missing.
         Notify_OnDamageMessage_Other ondamo;
@@ -288,6 +288,8 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             ondamo.splash = "";
         up = ondamo.Encode();
         d.source->GetPilot()->QueueDestinyEvent(&up);
+*/
+        
     }
 
     if (killed) {
@@ -677,7 +679,7 @@ void Ship::Killed(Damage &fatal_blow) {
         deadShipRef->Delete();
         m_pilot->StartKilledTimer();
     }
-    
+
     if ( pClient and (m_system->GetSystemSecurityRating() > 0)) {
         /* http://www.eveinfo.net/wiki/ind~4067.htm
          *  relative_sec_status_penalty = base_penalty * system_truesec * (1 + (victim_sec_status - agressor_sec_status) / 90)

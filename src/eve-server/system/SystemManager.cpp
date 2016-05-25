@@ -509,7 +509,12 @@ void SystemManager::Process() {
 bool SystemManager::ProcessTic() {
     std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
     while (cur != m_entities.end()) {
-        if (cur->second) {
+        if (m_entityChanged) {
+            m_entityChanged = false;
+            cur = m_entities.begin();
+            continue;
+        }
+        if (cur->second and cur->second->GetSelf().get()) { /* i am still having problems with trash data in the m_entities map... */
             cur->second->Process(); /* main process call. */
             if (cur->second->IsDynamicEntity())
                 cur->second->ProcessDestiny(); /* call movement functions on DSE's here */
@@ -519,13 +524,9 @@ bool SystemManager::ProcessTic() {
             sLog.Error("SystemManager::ProcessTic()", "SystemEntity* for %u was deleted from m_entities map...removing from my list.", cur->first);
             m_entities.erase(cur->first);
             m_entityChanged = true;
+            continue;
         }
-
-        if (m_entityChanged) {
-            m_entityChanged = false;
-            cur = m_entities.begin();
-        } else
-            ++cur;
+        ++cur;
     }
 
     /* the following are coded for single-tic calls */

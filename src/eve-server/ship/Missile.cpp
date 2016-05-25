@@ -208,11 +208,11 @@ void Missile::EncodeDestiny( Buffer& into )
         ship.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( ship );
 
-    _log(COMMON__WARNING, "Missile::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(DESTINY__MESSAGE, "Missile::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict* Missile::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for MissileID %u", m_self->itemID());
+    _log(DESTINY__MESSAGE, "MakeSlimItem for MissileID %u", m_self->itemID());
     Character* pChar = m_ship->GetPilot()->GetChar().get();
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));

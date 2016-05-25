@@ -105,8 +105,9 @@ bool TypeAttributeMgr::Load(InventoryDB &db) {
 }
 
 /*
- * ItemAttributeMgr
+ * ItemAttributeMgr (no longer used)
  */
+#ifdef (0)
 ItemAttributeMgr::ItemAttributeMgr( ItemFactory &factory, const InventoryItem &item, bool save, bool notify) :
     m_factory(factory), m_item(item), m_save(save), m_notify(notify)
     {
@@ -296,6 +297,7 @@ void ItemAttributeMgr::_SendAttributeChange(Attr attr, PyRep *oldValue, PyRep *n
         PyDecRef( newValue );
     }
 }
+#endif // 0
 
 /************************************************************************/
 /* Start of new attribute system                                        */

@@ -121,20 +121,12 @@ void MissileLauncher::StopCycle(bool abort)
         shipEff.start = 0;
         shipEff.active = 0;
         shipEff.environment = ge.Encode();
-        shipEff.startTime = shipEff.timeNow;
+        shipEff.startTime = (shipEff.timeNow - (timeLeft * Win32Time_Second));
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
         shipEff.error = new PyNone;
-
-    PyList* events = new PyList;
-        events->AddItem(shipEff.Encode());
-
-    Notify_OnMultiEvent multi;
-        multi.events = events;
-
-    PyTuple* tmp = multi.Encode();
-
-    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
+    PyTuple* ev = shipEff.Encode();
+    m_Ship->GetPilot()->GetShipSE()->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &ev);
 }
 
 double MissileLauncher::DoCycle() {
@@ -174,6 +166,7 @@ void MissileLauncher::_LaunchMissile()
     double missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
     missileSpeed *=  (1 + ( 0.1 * (pChar->GetSkillLevel(skillMissileProjection, true))));        // 10% increase in velocity
     double travelTime = (distance/missileSpeed);
+    if (travelTime < 1) travelTime = 1;
     pMissile->SetSpeed(missileSpeed);
     pMissile->DestinyMgr()->MakeMissile(pMissile);
     pMissile->SetHitTimer(travelTime *1000);
@@ -185,7 +178,7 @@ void MissileLauncher::_LaunchMissile()
 void MissileLauncher::_ShowCycle()
 {
     // Create Special Effect:
-    pMissile->DestinyMgr()->SendSpecialEffect
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -197,7 +190,7 @@ void MissileLauncher::_ShowCycle()
         1,
         1,
         _GetROF(),
-        1
+        1000
     );
 
     // Create Destiny Updates:
@@ -222,15 +215,10 @@ void MissileLauncher::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetROF();
-        shipEff.repeat = 1; //m_chargeRef->quantity();  /* boolean of repeatable cycles without pilot activation */
+        shipEff.repeat = 1000;
         shipEff.error = new PyNone;
-
-    std::vector<PyTuple*> events;
-        events.push_back(shipEff.Encode());
-
-    std::vector<PyTuple*> updates;
-
-    pMissile->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    PyTuple* ev = shipEff.Encode();
+    m_Ship->GetPilot()->GetShipSE()->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &ev);
 }
 
 double MissileLauncher::_GetROF() {

@@ -61,6 +61,8 @@ void ActiveModule::Deactivate()
 
     m_ModuleState = MOD_DEACTIVATING;
     m_AMPC->StopCycle();
+
+    //DoEffect();
 }
 
     /** @todo  Overload and DeOverload will need to check for running module,
@@ -113,6 +115,7 @@ double ActiveModule::DoCycle()
 {
     if (m_Ship->GetPilot()->GetShipSE()->SysBubble()) {
         _ShowCycle();
+        //DoEffect();
         return _GetDuration();
     }
     Deactivate();
@@ -127,23 +130,29 @@ bool ActiveModule::RequiresTarget()
         return false;
 }
 
-void ActiveModule::DoEffect(std::string effect, bool active)
+void ActiveModule::DoEffect(bool active /*false*/)
 {
-    // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
-    (
-        m_Ship,
-     m_Item->itemID(),
-     m_Item->typeID(),
-     0,
-     0,
-     "effects.ModifyArmorResonance",
-     0,
-     1,
-     1,
-     _GetDuration(),
-     1
-    );
+    /** @todo  finish this when time permits.... */
+
+    if (active) {
+        // Create Special Effect:
+        m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
+                m_Ship,
+                m_Item->itemID(),
+                m_Item->typeID(),
+                0,
+                0,
+                "effects.useMissiles",
+                0,
+                1,
+                1,
+                _GetDuration(),
+                1
+            );
+    }
+
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    timeLeft /= 100;
 
     // Create Destiny Updates:
     //  there are slight variations on this.  look into and fix as required.
@@ -151,7 +160,6 @@ void ActiveModule::DoEffect(std::string effect, bool active)
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
         go.chargeTypeID = 0;
-
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
@@ -159,24 +167,18 @@ void ActiveModule::DoEffect(std::string effect, bool active)
         ge.targetID = 0;
         ge.other = go.Encode();
         ge.area = new PyList;
-        ge.effectID = effectModifyActiveArmorResonanceAndNullifyPassiveResonance;
-
+        ge.effectID = effectUseMissiles;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
         shipEff.timeNow = Win32TimeNow();
-        shipEff.start = 1;
-        shipEff.active = 1;
+        shipEff.start = (active ? 1 : 0);
+        shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
-        shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
-        shipEff.repeat = 1;  /* boolean of repeatable cycles without pilot activation */
-        shipEff.error = new PyNone;
-
-    std::vector<PyTuple*> events;
-    events.push_back(shipEff.Encode());
-
-    std::vector<PyTuple*> updates;
-
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+        shipEff.startTime = (active ? shipEff.timeNow : (shipEff.timeNow - (timeLeft * Win32Time_Second)));
+        shipEff.duration = (active ? _GetDuration() : timeLeft);
+        shipEff.repeat = 1;
+        shipEff.error = new PyNone; /* look into setting this */
+    PyTuple* ev = shipEff.Encode();
+    m_Ship->GetPilot()->GetShipSE()->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &ev);
 }
