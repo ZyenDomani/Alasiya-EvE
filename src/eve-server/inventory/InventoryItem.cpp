@@ -621,7 +621,11 @@ void InventoryItem::GetItemRow( PyPackedRow* into ) const
     into->SetField( "ownerID",    new PyInt( m_ownerID ) );
     into->SetField( "locationID", new PyLong( m_locationID ) );
     into->SetField( "flagID",     new PyInt( m_flag ) );
-    into->SetField( "quantity",   new PyInt( m_singleton ? -1 : quantity()) );
+    int16 qty = (m_singleton ? -1 : quantity());
+    if (m_type.categoryID() == EVEDB::invCategories::Blueprint)
+        if (m_factory.GetBlueprint(m_itemID)->copy())
+            qty = -2;
+    into->SetField( "quantity",   new PyInt( qty ) );
     into->SetField( "groupID",    new PyInt( type().groupID() ) );
     into->SetField( "categoryID", new PyInt( type().categoryID() ) );
     into->SetField( "customInfo", new PyString( m_customInfo ) );
