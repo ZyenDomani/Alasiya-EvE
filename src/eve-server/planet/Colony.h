@@ -31,75 +31,80 @@
 class Colony {
 
 public:
-    Colony(uint32 charID, uint32 planetID);
+    Colony(PyServiceMgr* mgr, uint32 charID, uint32 planetID);
 
-    bool CreateCommandPin(uint32 pinID, uint32 typeID, float latitude, float longitude);
-    bool CreateProcessPin(uint32 pinID, uint32 typeID, float latitude, float longitude);
-    bool CreateExtractorPin(uint32 pinID, uint32 typeID, float latitude, float longitude);
-    bool CreateSpaceportPin(uint32 pinID, uint32 typeID, float latitude, float longitude);
+    void Init();
+    void Load();
+    void Save();
 
-    bool CreateLink(uint32 src, uint32 dest, uint32 level, bool ccConnected);
-
-    bool UpgradeLink(uint32 src, uint32 dest, uint32 level, bool ccConnected);
     void UpgradeCommandCenter(uint32 pinID, uint32 level);
 
+    bool CreatePin(uint32 pinID, uint32 typeID, float latitude, float longitude);
     bool RemovePin(uint32 pinID);
+    bool CreateLink(uint32 src, uint32 dest, uint32 level, bool ccConnected);
     bool RemoveLink(uint32 src, uint32 dest, bool ccConnected);
+    bool UpgradeLink(uint32 src, uint32 dest, uint32 level, bool ccConnected);
+    bool CreateCommandPin(uint32 pinID, uint32 typeID, float latitude, float longitude);
 
     PyResult GetColony();
 
 protected:
     struct Pin {
+        int8 state = 0;
+
         uint32 id = 0;
         uint32 typeID = 0;
         uint32 ownerID = 0;
-        float latitude = 0.0;
-        float longitude = 0.0;
-        long lastRunTime = 0L;
-        uint32 state = 0;
-        PyDict *contents = NULL;
+
+        float latitude = 0.0f;
+        float longitude = 0.0f;
+
+        uint64 lastRunTime = 0;
+
         bool isCommandCenter = false;
-
         bool isLaunchable = false;
-        // Command/Spaceport
-        long lastLaunchTime = 0L;
-
         bool isProcess = false;
+        bool isExtractor = false;
+
+        // Command/Spaceport
+        uint64 lastLaunchTime = 0;
+
         // Process
         uint32 schematicID = 0;
-        uint32 hasRecievedInputs = 0;
-        uint32 recievedInputsLastCycle = 0;
+        bool hasRecievedInputs = false;
+        bool recievedInputsLastCycle = false;
 
-        bool isExtractor = false;
         //Extractor
-        uint32 heads = 0;
-        uint32 programType = 0;
+        uint8 heads = 0;
+        float headRadius = 0.0f;
+        // -program data
         uint32 cycleTime = 0;
-        long expiryTime = 0L;
+        uint32 programType = 0;
         uint32 qtyPerCycle = 0;
-        float headRadius = 0.0;
-        long installTime = 0;
+        uint64 expiryTime = 0;
+        uint64 installTime = 0;
     };
 
     struct Link {
+        bool commandCenterConnected;
+        uint32 level;
         uint32 typeID;
         uint32 endpoint1;
         uint32 endpoint2;
-        uint32 level;
-        bool commandCenterConnected;
     };
 
     struct Route {
+        bool destIsCommandCenter;
+
         uint32 destID;
-        PyList *path;
         uint32 comodityTypeID;
         uint32 commodityQuantity;
-        bool destIsCommandCenter;
     };
 
     struct CommandCenterPin {
         uint32 level;
-        long currentSimTime;
+        uint64 currentSimTime;
+
         std::list<Pin> pins;
         std::list<Link> links;
         std::list<Route> routes;
@@ -107,8 +112,11 @@ protected:
 
 
 private:
+    PyServiceMgr* svcMgr;
     PyDict* testContainer;
+
     uint32 charID;
+    uint32 colonyID;
     uint32 planetID;
 
     CommandCenterPin ccPin;
@@ -118,6 +126,16 @@ private:
     const int STATE_IDLE = 0;
     const int STATE_ACTIVE = 1;
 
+    /* event
+     * STATE_NORMAL = 0
+     * STATE_BUILDPIN = 1
+     * STATE_CREATELINKSTART = 2
+     * STATE_CREATELINKEND = 3
+     * STATE_CREATEROUTE = 4
+     * STATE_SURVEY = 5
+     * SUBSTATE_NORMAL = 0
+     * SUBSTATE_MOVEEXTRACTIONHEAD = 1
+     */
 };
 
 

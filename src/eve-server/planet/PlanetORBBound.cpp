@@ -88,13 +88,13 @@ PyBoundObject* planetORB::_CreateBoundObject(Client *c, const PyRep *bind_args) 
 
 PyResult PlanetORBBound::Handle_GMChangeSpaceObjectOwner( PyCallArgs& call )
 {
+    // this is called when taking ownership of control tower
+    // sends itemID, corpID
     /*
     def TakeOrbitalOwnership(self, itemID, planetID):
         registry = moniker.GetPlanetOrbitalRegistry(session.solarsystemid)
         registry.GMChangeSpaceObjectOwner(itemID, session.corpid)
     */
-    // this is called when taking ownership of control tower
-    // sends planetID, corpID
     sLog.Log( "PlanetORBBound", "Handle_GMChangeSpaceObjectOwner" );
     call.Dump(SERVICE__CALL_DUMP);
 

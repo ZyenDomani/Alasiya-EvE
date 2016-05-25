@@ -35,6 +35,7 @@
 #include "../EVE_Effects.h"
 #include "../EVE_Flags.h"
 #include "../EVE_Inventory.h"
+#include "../EVE_Planet.h"
 #include "../EVE_POS.h"
 #include "../EVE_Roles.h"
 #include "../EVE_Scanning.h"
@@ -188,27 +189,6 @@ enum EVETutorialTypes {
     tutorialCertificates = 134
 };
 
-
-/*
- * planetResourceScanDistance = 1000000000
- * planetResourceProximityDistant = 0
- * planetResourceProximityRegion = 1
- * planetResourceProximityConstellation = 2
- * planetResourceProximitySystem = 3
- * planetResourceProximityPlanet = 4
- * planetResourceProximityLimits = [(2, 6),
- * (4, 10),
- * (6, 15),
- * (10, 20),
- * (15, 30)]
- * planetResourceScanningRanges = [9.0,
- * 7.0,
- * 5.0,
- * 3.0,
- * 1.0]
- * planetResourceUpdateTime = 1 * HOUR
- * planetResourceMaxValue = 1.21
- */
 
 /*
  * mailingListBlocked = 0

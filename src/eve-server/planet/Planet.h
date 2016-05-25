@@ -12,7 +12,34 @@
 #ifndef EVEMU_PLANET_PLANET_H_
 #define EVEMU_PLANET_PLANET_H_
 
+#include <unordered_map>
 #include "system/SystemEntity.h"
+
+class PlanetDB;
+
+// this class is a singleton object to have a common place for all planet data
+class PlanetDataMgr
+: public Singleton< PlanetDataMgr >
+{
+public:
+    PlanetDataMgr();
+    virtual ~PlanetDataMgr() { /* nothing do to yet */ }
+
+    // Initializes the Table:
+    int Initialize();
+
+protected:
+    void _Populate();
+
+
+private:
+    PlanetDB* m_db;
+
+    std::unordered_multimap<uint32, uint16> m_planetData;
+};
+
+#define sPlanetDataMgr \
+( PlanetDataMgr::get() )
 
 
 class Planet

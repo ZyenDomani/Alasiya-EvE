@@ -1,5 +1,15 @@
 
 
+CREATE TABLE `chrPlanetColonies` (
+  `charID` int(11) NOT NULL,
+  `planetID` int(11) NOT NULL,
+  `status` varchar(17) CHARACTER SET utf8 NOT NULL,
+  `launchTime` bigint(20) NOT NULL,
+  `x` double NOT NULL,
+  `y` double NOT NULL,
+  `z` double NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
 CREATE TABLE `chrPlanetLaunches` (
   `launchID` int(11) NOT NULL AUTO_INCREMENT,
   `charID` int(11) NOT NULL,
@@ -16,6 +26,30 @@ CREATE TABLE `chrPlanetLaunches` (
 ALTER TABLE `chrPlanetLaunches`
   ADD UNIQUE KEY `launchID` (`launchID`);
 
+CREATE TABLE `chrPlanetPins` (
+  `id` int(11) NOT NULL DEFAULT '0',
+  `typeID` int(11) NOT NULL,
+  `ownerID` int(11) NOT NULL,
+  `state` tinyint(2) NOT NULL,
+  `latitude` double NOT NULL,
+  `longitude` double NOT NULL,
+  `isCommandCenter` tinyint(2) NOT NULL DEFAULT '0',
+  `isLaunchable` tinyint(2) NOT NULL DEFAULT '0',
+  `isProcess` tinyint(2) NOT NULL DEFAULT '0',
+  `isExtractor` tinyint(2) NOT NULL DEFAULT '0',
+  `heads` int(4) DEFAULT NULL,
+  `schematicID` int(11) DEFAULT NULL,
+  `hasRecievedInputs` tinyint(1) DEFAULT NULL,
+  `recievedInputsLastCycle` tinyint(1) DEFAULT NULL,
+  `cycleTime` int(11) DEFAULT NULL,
+  `programType` int(11) DEFAULT NULL,
+  `qtyPerCycle` int(11) DEFAULT NULL,
+  `launchTime` bigint(20) DEFAULT NULL,
+  `expiryTime` bigint(20) DEFAULT NULL,
+  `installTime` bigint(20) DEFAULT NULL,
+  `lastRunTime` bigint(20) DEFAULT NULL,
+  `headRadius` float DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `chrPlanets` (
   `characterID` int(11) NOT NULL,

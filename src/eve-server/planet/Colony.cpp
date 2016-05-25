@@ -25,12 +25,21 @@
 
 #include "eve-server.h"
 #include "Colony.h"
+#include "PyServiceMgr.h"
+#include "inventory/ItemType.h"
 
-Colony::Colony(uint32 cID, uint32 pID) {
+Colony::Colony(PyServiceMgr* mgr, uint32 cID, uint32 pID)
+{
+    svcMgr = mgr;
     charID = cID;
     planetID = pID;
     testContainer = new PyDict();
     testContainer->SetItem(new PyInt(2268), new PyInt(1));
+}
+
+void Colony::Init()
+{
+
 }
 
 bool Colony::CreateCommandPin(uint32 pinID, uint32 typeID, float latitude, float longitude) {
@@ -41,60 +50,55 @@ bool Colony::CreateCommandPin(uint32 pinID, uint32 typeID, float latitude, float
         cc.longitude = longitude;
         cc.ownerID = charID;
         cc.state = STATE_IDLE; // ?
-        cc.lastRunTime = 0L;
-        cc.lastLaunchTime = 0L;
+        cc.lastRunTime = 0;
+        cc.lastLaunchTime = 0;
         cc.isLaunchable = true;
         cc.isCommandCenter = true;
     ccPin.level = 0;
-    ccPin.currentSimTime = /*CurrentBlueTime()*/0;
+    ccPin.currentSimTime = Win32TimeNow();
     ccPin.pins.push_back(cc);
-    return true;    // if we get this far, assume it worked
+    return true;
 }
 
-bool Colony::CreateSpaceportPin(uint32 pinID, uint32 typeID, float latitude, float longitude) {
-    Pin sp;
-        sp.id = pinID;
-        sp.typeID = typeID;
-        sp.latitude = latitude;
-        sp.longitude = longitude;
-        sp.ownerID = charID;
-        sp.state = STATE_IDLE; // ?
-        sp.lastRunTime = 0L;
-        sp.lastLaunchTime = 0L;
-        sp.isLaunchable = true;
-    ccPin.pins.push_back(sp);
-    return true;    // if we get this far, assume it worked
-}
+bool Colony::CreatePin(uint32 pinID, uint32 typeID, float latitude, float longitude) {
+    uint32 groupID = svcMgr->item_factory->GetType(typeID)->groupID();
+    Pin pin;
+        pin.id = pinID;
+        pin.typeID = typeID;
+        pin.latitude = latitude;
+        pin.longitude = longitude;
+        pin.ownerID = charID;
+        pin.state = STATE_ACTIVE; // ?
+        pin.lastRunTime = 0;
 
-bool Colony::CreateProcessPin(uint32 pinID, uint32 typeID, float latitude, float longitude) {
-    Pin pp;
-        pp.id = pinID;
-        pp.typeID = typeID;
-        pp.latitude = latitude;
-        pp.longitude = longitude;
-        pp.ownerID = charID;
-        pp.state = STATE_IDLE; // ?
-        pp.lastRunTime = 0L;
-        pp.schematicID = 0;
-        pp.hasRecievedInputs = 0;
-        pp.recievedInputsLastCycle = 0;
-        pp.isProcess = true;
-    ccPin.pins.push_back(pp);
-    return true;    // if we get this far, assume it worked
-}
+    switch(groupID) {
+        case  EVEDB::invGroups::Processors: {
+            pin.isProcess = true;
+            pin.schematicID = 0;
+            pin.hasRecievedInputs = 0;
+            pin.recievedInputsLastCycle = 0;
+        } break;
+        case EVEDB::invGroups::Extractor_Control_Units: {
+            pin.isExtractor = true;
+            pin.heads = 0;
+            pin.programType = 0;
+            pin.cycleTime = 0;
+            pin.expiryTime = 0;
+            pin.qtyPerCycle = 0;
+            pin.headRadius = 0.0;
+            pin.installTime = 0;
+        } break;
+        case EVEDB::invGroups::Storage_Facilities: {
+            /* nothing to do yet */
+        } break;
+        case EVEDB::invGroups::Spaceports: {
+            pin.isLaunchable = true;
+            pin.lastLaunchTime = 0;
+        } break;
+    }
 
-bool Colony::CreateExtractorPin(uint32 pinID, uint32 typeID, float latitude, float longitude) {
-    Pin ep;
-        ep.id = pinID;
-        ep.typeID = typeID;
-        ep.latitude = latitude;
-        ep.longitude = longitude;
-        ep.ownerID = charID;
-        ep.state = STATE_IDLE; // ?
-        ep.lastRunTime = 0L;
-        ep.isExtractor = true;
-    ccPin.pins.push_back(ep);
-    return true;    // if we get this far, assume it worked
+    ccPin.pins.push_back(pin);
+    return true;
 }
 
 bool Colony::CreateLink(uint32 src, uint32 dest, uint32 level, bool ccConnected) {
@@ -159,7 +163,6 @@ PyResult Colony::GetColony() {
     PyTuple *routes = new PyTuple(ccPin.routes.size());
     int index = 0; // used by each for loop.
 
-    index = 0;
     for(auto i : ccPin.pins) {
         PyDict *dict = new PyDict();
         if(i.isCommandCenter) {
@@ -171,22 +174,22 @@ PyResult Colony::GetColony() {
         dict->SetItem("ownerID", new PyInt(i.ownerID));
         dict->SetItem("latitude", new PyFloat(i.latitude));
         dict->SetItem("longitude", new PyFloat(i.longitude));
-        dict->SetItem("lastRunTime", new PyLong(i.lastRunTime));
+        dict->SetItem("lastRunTime", new PyULong(i.lastRunTime));
         dict->SetItem("state", new PyInt(i.state));
         dict->SetItem("contents", testContainer);
 
         if(i.isLaunchable) {
-            dict->SetItem("lastLaunchTime", new PyLong(i.lastLaunchTime));
+            dict->SetItem("lastLaunchTime", new PyULong(i.lastLaunchTime));
         }else if(i.isProcess) {
             dict->SetItem("schematicID", i.schematicID ? new PyInt(i.schematicID) : (PyRep*)new PyNone());
             dict->SetItem("hasRecievedInputs", new PyBool(i.hasRecievedInputs));
             dict->SetItem("recievedInputsLastCycle", new PyBool(i.recievedInputsLastCycle));
         }else if(i.isExtractor) {
-            dict->SetItem("installTime", new PyLong(i.installTime));
+            dict->SetItem("installTime", new PyULong(i.installTime));
             dict->SetItem("programType", new PyInt(i.programType));
             dict->SetItem("qtyPerCycle", new PyInt(i.qtyPerCycle));
             dict->SetItem("headRadius", new PyFloat(i.headRadius));
-            dict->SetItem("expiryTime", new PyLong(i.expiryTime));
+            dict->SetItem("expiryTime", new PyULong(i.expiryTime));
             dict->SetItem("cycleTime", new PyInt(i.cycleTime));
             dict->SetItem("heads", i.heads ? new PyInt(i.heads) : (PyRep*)new PyNone());
         }
@@ -214,12 +217,12 @@ PyResult Colony::GetColony() {
 
     PyDict *args = new PyDict();
         args->SetItem("level", new PyInt(ccPin.level));
-        args->SetItem("currentSimTime", new PyLong(ccPin.currentSimTime));
+        args->SetItem("currentSimTime", new PyULong(ccPin.currentSimTime));
         args->SetItem("pins", pins);
         args->SetItem("links", links);
         args->SetItem("routes", routes);
     PyObject *rtn = new PyObject("util.KeyVal", args);
 
-    rtn->Dump(PLANET__DUMP, "  GC:  ");
+    rtn->Dump(PLANET__GC_DUMP, "    ");
     return rtn;
 }

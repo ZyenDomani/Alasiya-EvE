@@ -10,6 +10,7 @@
 
 
 #include "Planet.h"
+#include "PlanetDB.h"
 
 
 /** @note  general design notes
@@ -18,6 +19,33 @@
  *
  *
  */
+
+PlanetDataMgr::PlanetDataMgr()
+{
+}
+
+int PlanetDataMgr::Initialize()
+{
+    _Populate();
+    return 1;
+}
+
+void PlanetDataMgr::_Populate()
+{
+    double start = GetTimeUSeconds();
+    DBQueryResult* res = new DBQueryResult();
+    DBResultRow row;
+
+    m_db->GetPlanetData(*res);
+    while (res->GetRow(row)) {
+        m_planetData.insert(std::pair<uint32, uint16>(row.GetInt(0), row.GetInt(1)));
+    }
+
+    //cleanup
+    SafeDelete(res);
+    sLog.Log("     PlanetDataMgr", "%u planet data groups in %u buckets loaded in %.3fms.",
+             m_planetData.size(), m_planetData.bucket_count(), (GetTimeUSeconds() - start));
+}
 
 Planet::Planet()
 {

@@ -1,17 +1,19 @@
- <!--  Python Code by Comet0
-        need to verify python -->
+ <!--  Python Code by Comet0  -->
 <elements>
+
     <elementDef name="UUNCommandList">
         <tupleInline>
             <list name="commandList" />
         </tupleInline>
     </elementDef>
+
     <elementDef name="UUNCommand">
         <tupleInline>
             <int name="command" />
             <tuple name="command_data" />
         </tupleInline>
     </elementDef>
+
     <elementDef name="UUNCCommandCenter">
         <tupleInline>
             <int name="pinID" />
@@ -20,10 +22,11 @@
             <real name="longitude" />
         </tupleInline>
     </elementDef>
+
     <elementDef name="UUNCStandardPin">
         <tupleInline>
             <tupleInline>
-                <int name="pinID1" /> // Always appears to be 1, (hardcoded in client)
+                <int name="pinID1" /> <!-- this is controlling pinID (command center) -->
                 <int name="pinID2" />
             </tupleInline>
             <int name="typeID" />
@@ -31,6 +34,7 @@
             <real name="longitude" />
         </tupleInline>
     </elementDef>
+
     <elementDef name="UUNCLinkCommand">
         <tupleInline>
             <int name="src" />
@@ -41,6 +45,7 @@
             <int name="level" />
         </tupleInline>
     </elementDef>
+
     <elementDef name="UUNCLinkStandard">
         <tupleInline>
             <tupleInline>
@@ -54,4 +59,5 @@
             <int name="level" />
         </tupleInline>
     </elementDef>
+
 </elements>

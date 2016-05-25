@@ -47,7 +47,7 @@ public:
     m_planetID(planetID)
     {
         _SetCallDispatcher(m_dispatch);
-        m_colony = new Colony(charID, m_planetID);
+        m_colony = new Colony(mgr, charID, m_planetID);
 
         m_strBoundObjectName = "PlanetMgrBound";
 
@@ -123,8 +123,8 @@ PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *c, const PyRep *bind
     /* sends planetID */
     _log(PLANET__INFO, "PlanetMgrService bind request for:");
     bind_args->Dump(PLANET__INFO, "    ");
-    if(!bind_args->IsInt()) {
-        codelog(PLANET__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
+    if (!bind_args->IsInt()) {
+        _log(PLANET__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
         return nullptr;
     }
     return new PlanetMgrBound(m_manager, bind_args->AsInt()->value(), c->GetCharacterID());
@@ -144,6 +144,72 @@ PyResult PlanetMgrService::Handle_GetPlanetsForChar(PyCallArgs &call) {
 
 PyResult PlanetMgrService::Handle_GetMyLaunchesDetails(PyCallArgs &call) {
     return m_db->GetMyLaunchesDetails(call.client->GetCharacterID());
+}
+
+PyResult PlanetMgrBound::Handle_GMAddCommodity(PyCallArgs &call) {
+    sLog.Log("PlanetMgrBound", "Handle_GMAddCommodity() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
+}
+
+PyResult PlanetMgrBound::Handle_GMConvertCommandCenter(PyCallArgs &call) {
+    sLog.Log("PlanetMgrBound", "Handle_GMConvertCommandCenter() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
+}
+
+PyResult PlanetMgrBound::Handle_GMForceInstallProgram(PyCallArgs &call) {
+    sLog.Log("PlanetMgrBound", "Handle_GMForceInstallProgram() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+/*
+16:40:57 L PlanetMgrBound: Handle_GMForceInstallProgram() size=6
+16:40:57 [PlanetCallDump]   Call Arguments:
+16:40:57 [PlanetCallDump]       Tuple: 6 elements
+16:40:57 [PlanetCallDump]         [ 0] Tuple: 2 elements
+16:40:57 [PlanetCallDump]         [ 0]   [ 0] Integer field: 1
+16:40:57 [PlanetCallDump]         [ 0]   [ 1] Integer field: 1
+16:40:57 [PlanetCallDump]         [ 1] Integer field: 2272
+16:40:57 [PlanetCallDump]         [ 2] Integer field: 600000000
+16:40:57 [PlanetCallDump]         [ 3] Integer field: 24
+16:40:57 [PlanetCallDump]         [ 4] Integer field: 100
+16:40:57 [PlanetCallDump]         [ 5] Real field: 1.000000
+*/
+    return nullptr;
+}
+
+//15:15:02[00m L [37;01mPlanetMgrBound: [00mHandle_GMGetLocalDistributionReport() size=2
+PyResult PlanetMgrBound::Handle_GMGetLocalDistributionReport(PyCallArgs &call) {
+    /*
+     *      return self.remoteHandler.GMGetLocalDistributionReport(self.planetID, (surfacePoint.theta, surfacePoint.phi))
+     */
+    /*
+     *     1 5*:15:02 [PlanetCallDump]   Call Arguments:
+     *     15:15:02 [PlanetCallDump]       Tuple: 2 elements
+     *     15:15:02 [PlanetCallDump]         [ 0] Integer field: 40216265      << planetID
+     *     15:15:02 [PlanetCallDump]         [ 1] Tuple: 2 elements
+     *     15:15:02 [PlanetCallDump]         [ 1]   [ 0] Real field: 0.359286  << theta
+     *     15:15:02 [PlanetCallDump]         [ 1]   [ 1] Real field: 1.014020  << phi
+     *     sLog.Log("PlanetMgrBound", "Handle_GMGetLocalDistributionReport() size=%u", call.tuple->size() );
+     *     call.Dump(PLANET__DUMP);
+     */
+
+    return nullptr;
+}
+
+PyResult PlanetMgrBound::Handle_GMGetSynchedServerState(PyCallArgs &call) {
+    sLog.Log("PlanetMgrBound", "Handle_GMGetSynchedServerState() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
+}
+
+PyResult PlanetMgrBound::Handle_GMRunDepletionSim(PyCallArgs &call) {
+    sLog.Log("PlanetMgrBound", "Handle_GMRunDepletionSim() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
 }
 
 PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
@@ -229,19 +295,19 @@ PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
 
     DBResultRow row;
     if (!m_db->GetResourceData(m_planetID, row)) {
-        codelog(PLANET__ERROR, "Error in GetResourceData Query failed to get row.");
+        _log(PLANET__ERROR, "Error in GetResourceData Query failed to get row.");
         return nullptr;
     }
 
     if (row.GetInt(0) == resourceTypeID)
         offset = 0;
-    else if(row.GetInt(1) == resourceTypeID)
+    else if (row.GetInt(1) == resourceTypeID)
         offset = 1;
-    else if(row.GetInt(2) == resourceTypeID)
+    else if (row.GetInt(2) == resourceTypeID)
         offset = 2;
-    else if(row.GetInt(3) == resourceTypeID)
+    else if (row.GetInt(3) == resourceTypeID)
         offset = 3;
-    else if(row.GetInt(4) == resourceTypeID)
+    else if (row.GetInt(4) == resourceTypeID)
         offset = 4;
 
     const char bufferData = *row.GetText(5+offset);
@@ -265,6 +331,17 @@ PyResult PlanetMgrBound::Handle_UserAbandonPlanet(PyCallArgs &call) {
 PyResult PlanetMgrBound::Handle_UserLaunchCommodities(PyCallArgs &call) {
     sLog.Log("PlanetMgrBound", "Handle_UserLaunchCommodities() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
+    /* 20:00:35 L PlanetMgrBound: Handle_UserLaunchCommodities() size=2
+     * 20:00:35 [PlanetCallDump]   Call Arguments:
+     * 20:00:35 [PlanetCallDump]       Tuple: 2 elements
+     * 20:00:35 [PlanetCallDump]         [ 0] Integer field: 140000083
+     * 20:00:35 [PlanetCallDump]         [ 1] Dictionary: 1 entries
+     * 20:00:35 [PlanetCallDump]         [ 1]   [ 0] Key: Integer field: 2268
+     * 20:00:35 [PlanetCallDump]         [ 1]   [ 0] Value: Integer field: 1
+     * 20:00:35 [PlanetCallDump]   Call Named Arguments:
+     * 20:00:35 [PlanetCallDump]     Argument 'machoVersion':
+     * 20:00:35 [PlanetCallDump]         Integer field: 1
+     */
 
     return nullptr;
 }
@@ -275,271 +352,183 @@ PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
 
     return nullptr;
 }
-
+/*
+            Orbital_Infrastructure = 1025,
+            Extractors = 1026,
+            Command_Centers = 1027,
+            Processors = 1028,
+            Storage_Facilities = 1029,
+            Spaceports = 1030,
+            Planetary_Resources = 1031,
+            Planet_Solid = 1032,
+            Planet_Liquid_Gas = 1033,
+            Refined_Commodities = 1034,
+            Planet_Organic = 1035,
+            Planetary_Links = 1036,
+            Specialized_Commodities = 1040,
+            Advanced_Commodities = 1041,
+            Basic_Commodities = 1042,
+            Planet_Management = 1044,
+            Extractor_Control_Units = 1063,
+        */
 PyResult PlanetMgrBound::Handle_UserUpdateNetwork(PyCallArgs &call) {
     sLog.Log("PlanetMgrBound", "Handle_UserUpdateNetwork() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
     UUNCommandList uuncl;
-    if(!uuncl.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode args for UUNCommandList");
+    if (!uuncl.Decode(&call.tuple)) {
+        _log(SERVICE__ERROR, "Failed to decode args for UUNCommandList");
         return nullptr;
     }
 
     for(int i = 0; i < uuncl.commandList->size(); i++) {
         UUNCommand uunc;
-        if(!uunc.Decode(uuncl.commandList->GetItem(i)->AsTuple())) {
-            codelog(SERVICE__ERROR, "Failed to decode args for UUNCommand");
+        if (!uunc.Decode(uuncl.commandList->GetItem(i)->AsTuple())) {
+            _log(SERVICE__ERROR, "Failed to decode args for UUNCommand");
             return nullptr;
         }
-        sLog.Debug("PlanetMgrBound", "UserUpdateNetwork: loop: %u, command: %u", i, uunc.command);
+        _log(PLANET__TRACE, "  UserUpdateNetwork: loop: %u, command: %u", i, uunc.command);
+        uunc.Dump(PLANET__DUMP, "    ");
         switch(uunc.command) {
-            case 1: //COMMAND_CREATEPIN
-            {
+            case CreatePin: {
                 uint32 typeID = uunc.command_data->GetItem(1)->AsInt()->value();
                 uint32 groupID = m_manager->item_factory->GetType(typeID)->groupID();
-                if(groupID == 1027) {
-                    /* Command Pin
-                     */
+                if (groupID == EVEDB::invGroups::Command_Centers) {
                     UUNCCommandCenter uunccc;
-                    if(!uunccc.Decode(uunc.command_data)) {
-                        codelog(PLANET__ERROR, "Failed to decode args for UUNCCommandCenter!");
+                    if (!uunccc.Decode(uunc.command_data)) {
+                        _log(SERVICE__ERROR, "Failed to decode args for UUNCCommandCenter!");
                     }
+                    uunccc.Dump(PLANET__DUMP, "      ");
 
-                    if(!m_colony->CreateCommandPin(uunccc.pinID, uunccc.typeID, uunccc.latitude, uunccc.longitude)) {
-                        sLog.Error("PlanetMgrBound", "UserUpdateNetwork: Failed to create command center");
-                    }else {
-                        sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success creating command center");
+                    if (!m_colony->CreateCommandPin(uunccc.pinID, uunccc.typeID, uunccc.latitude, uunccc.longitude)) {
+                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to create command center");
+                    } else {
+                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success creating command center");
                     }
-                } else if(groupID == 1029 || groupID == 1030) {
-                    /* Storage / Spaceport Pin
-                     */
+                } else if (groupID == EVEDB::invGroups::Storage_Facilities
+                        or groupID == EVEDB::invGroups::Spaceports
+                        or groupID == EVEDB::invGroups::Processors
+                        or groupID == EVEDB::invGroups::Extractor_Control_Units
+                        or groupID == EVEDB::invGroups::Storage_Facilities
+                        or groupID == EVEDB::invGroups::Spaceports) {
                     UUNCStandardPin uuncsp;
-                    if(!uuncsp.Decode(uunc.command_data)) {
-                        codelog(PLANET__ERROR, "Failed to decode args for UUNCStandardPin!");
+                    if (!uuncsp.Decode(uunc.command_data)) {
+                        _log(SERVICE__ERROR, "Failed to decode args for UUNCStandardPin!");
                     }
+                    uuncsp.Dump(PLANET__DUMP, "      ");
 
-                    if(!m_colony->CreateSpaceportPin(uuncsp.pinID2, uuncsp.typeID, uuncsp.latitude, uuncsp.longitude)) {
-                        sLog.Error("PlanetMgrBound", "UserUpdateNetwork: Failed to create storage/spaceport");
-                    }else {
-                        sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success creating storage/spaceport");
+                    if (!m_colony->CreatePin(uuncsp.pinID2, uuncsp.typeID, uuncsp.latitude, uuncsp.longitude)) {
+                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to create new pin");
+                    } else {
+                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success creating new pin");
                     }
-                } else if(groupID == 1028) {
-                    /* Process Pin
-                     */
-                    UUNCStandardPin uuncsp;
-                    if(!uuncsp.Decode(uunc.command_data)) {
-                        codelog(PLANET__ERROR, "Failed to decode args for UUNCStandardPin!");
-                    }
-
-                    if(!m_colony->CreateProcessPin(uuncsp.pinID2, uuncsp.typeID, uuncsp.latitude, uuncsp.longitude)) {
-                        sLog.Error("PlanetMgrBound", "UserUpdateNetwork: Failed to create process");
-                    }else {
-                        sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success creating process");
-                    }
-                } else if(groupID == 1063) {
-                    /* Extractor Pin */
-                     /** @todo, Still broken, client complains that extractor is not built. */
-                    UUNCStandardPin uuncsp;
-                    if(!uuncsp.Decode(uunc.command_data)) {
-                        codelog(PLANET__ERROR, "Failed to decode args for UUNCStandardPin!");
-                    }
-
-                    if(!m_colony->CreateExtractorPin(uuncsp.pinID2, uuncsp.typeID, uuncsp.latitude, uuncsp.longitude)) {
-                        sLog.Error("PlanetMgrBound", "UserUpdateNetwork: Failed to create extractor");
-                    }else {
-                        sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success creating extractor");
-                    }
-                }else {
+                } else {
                     // Invalid...
-                    sLog.Debug("PlanetMgrBound", "UserUpdateNetwork: INVALID CREATEPIN groupID");
+                    _log(PLANET__ERROR, "  UserUpdateNetwork: INVALID CREATEPIN groupID %u", groupID);
                 }
-                break;
-            }
-            case 2: //COMMAND_REMOVEPIN
-            {
-                //                                command_data           pinID2
+            }  break;
+            case RemovePin: {
                 uint32 pinID = uunc.command_data->GetItem(0)->AsTuple()->GetItem(1)->AsInt()->value();
-                if(!m_colony->RemovePin(pinID)){
-                    sLog.Error("PlanetMgrBound", "UserUpdateNetwork: Failed to remove pin");
-                }else {
-                    sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success removing pin");
+                if (!m_colony->RemovePin(pinID)) {
+                    _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to remove pin");
+                } else {
+                    _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success removing pin");
                 }
-                break;
-            }
-            case 3: //COMMAND_CREATELINK
-            {
-                if(uunc.command_data->GetItem(0)->IsInt()) {
+            }  break;
+            case CreateLink: {
+                if (uunc.command_data->GetItem(0)->IsInt()) {
                     UUNCLinkCommand uunclc;
-                    if(!uunclc.Decode(uunc.command_data)) {
-                        codelog(PLANET__ERROR, "Failed to decode args for UUNCLinkCommand!");
+                    if (!uunclc.Decode(uunc.command_data)) {
+                        _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkCommand!");
                     }
+                    uunclc.Dump(PLANET__DUMP, "      ");
 
-                    if(!m_colony->CreateLink(uunclc.src, uunclc.dest2, uunclc.level, true)) {
-                        sLog.Error("PlanetMgrBound", "UserUpdateNetwork: Failed to create link");
-                    }else {
-                        sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success creating link");
+                    if (!m_colony->CreateLink(uunclc.src, uunclc.dest2, uunclc.level, true)) {
+                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to create link");
+                    } else {
+                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success creating link");
                     }
-                }else if(uunc.command_data->GetItem(0)->IsTuple()) {
-                    UUNCLinkStandard uuncls;
-                    if(!uuncls.Decode(uunc.command_data)) {
-                        codelog(PLANET__ERROR, "Failed to decode args for UUNCLinkStandard!");
-                    }
-
-                    if(!m_colony->CreateLink(uuncls.src2, uuncls.dest2, uuncls.level, false)) {
-                        sLog.Error("PlanetMgrBound", "UserUpdateNetwork: Failed to create link");
-                    }else {
-                        sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success creating link");
-                    }
-                }else {
-                    //Invalid...
-                    sLog.Debug("PlanetMgrBound", "UserUpdateNetwork: INVALID CREATELINK");
-                }
-                break;
-            }
-            case 4: //COMMAND_REMOVELINK
-            {
-                if(uunc.command_data->GetItem(0)->IsInt()) {
-                    uint32 src = uunc.command_data->GetItem(0)->AsInt()->value();
-                    uint32 dest2 = uunc.command_data->GetItem(1)->AsTuple()->GetItem(1)->AsInt()->value();
-                    if(!m_colony->RemoveLink(src, dest2, true)) {
-                        sLog.Error("PlanetMgrBound", "UserUpdateNetwork: Failed to remove link");
-                    }else {
-                        sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success removing link");
-                    }
-                }else if(uunc.command_data->GetItem(0)->IsTuple()) {
-                    uint32 src = uunc.command_data->GetItem(0)->AsTuple()->GetItem(1)->AsInt()->value();
-                    uint32 dest2 = uunc.command_data->GetItem(1)->AsTuple()->GetItem(1)->AsInt()->value();
-                    if(!m_colony->RemoveLink(src, dest2, false)) {
-                        sLog.Error("PlanetMgrBound", "UserUpdateNetwork: Failed to remove link");
-                    }else {
-                        sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success removing link");
-                    }
-                }
-                break;
-            }
-            case 5: //COMMAND_SETLINKLEVEL
-            {
-                if(uunc.command_data->GetItem(0)->IsInt()) {
-                    UUNCLinkCommand uunclc;
-                    if(!uunclc.Decode(uunc.command_data)) {
-                        codelog(PLANET__ERROR, "Failed to decode args for UUNCLinkCommand!");
-                    }
-
-                    if(!m_colony->UpgradeLink(uunclc.src, uunclc.dest2, uunclc.level, true)) {
-                        sLog.Error("PlanetMgrBound", "UserUpdateNetwork: Failed to upgrade link");
-                    }else {
-                        sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success upgrading link");
-                    }
-                }else if(uunc.command_data->GetItem(0)->IsTuple()) {
+                } else if (uunc.command_data->GetItem(0)->IsTuple()) {
                     UUNCLinkStandard uuncls;
                     if (!uuncls.Decode(uunc.command_data)) {
-                        codelog(PLANET__ERROR, "Failed to decode args for UUNCLinkStandard!");
+                        _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkStandard!");
                     }
+                    uuncls.Dump(PLANET__DUMP, "      ");
 
-                    if (!m_colony->UpgradeLink(uuncls.src2, uuncls.dest2, uuncls.level, false)) {
-                        sLog.Error("PlanetMgrBound", "UserUpdateNetwork: Failed to upgrade link");
+                    if (!m_colony->CreateLink(uuncls.src2, uuncls.dest2, uuncls.level, false)) {
+                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to create link");
                     } else {
-                        sLog.Success("PlanetMgrBound", "UserUpdateNetwork: Success upgrading link");
+                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success creating link");
+                    }
+                } else {
+                    //Invalid...
+                    _log(PLANET__TRACE, "  UserUpdateNetwork: INVALID CREATELINK");
+                }
+            } break;
+            case RemoveLink: {
+                if (uunc.command_data->GetItem(0)->IsInt()) {
+                    uint32 src = uunc.command_data->GetItem(0)->AsInt()->value();
+                    uint32 dest2 = uunc.command_data->GetItem(1)->AsTuple()->GetItem(1)->AsInt()->value();
+                    if (!m_colony->RemoveLink(src, dest2, true)) {
+                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to remove link");
+                    } else {
+                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success removing link");
+                    }
+                } else if (uunc.command_data->GetItem(0)->IsTuple()) {
+                    uint32 src = uunc.command_data->GetItem(0)->AsTuple()->GetItem(1)->AsInt()->value();
+                    uint32 dest2 = uunc.command_data->GetItem(1)->AsTuple()->GetItem(1)->AsInt()->value();
+                    if (!m_colony->RemoveLink(src, dest2, false)) {
+                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to remove link");
+                    } else {
+                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success removing link");
                     }
                 }
-                break;
-            }
-            case 6: //COMMAND_CREATEROUTE
-            {
-                break;
-            }
-            case 7: //COMMAND_REMOVEROUTE
-            {
-                break;
-            }
-            case 8: //COMMAND_SETSCHEMATIC
-            {
-                break;
-            }
-            case 9: //COMMAND_UPGRADECOMMANDCENTER
-            {
+            } break;
+            case SetLinkLevel: {
+                if (uunc.command_data->GetItem(0)->IsInt()) {
+                    UUNCLinkCommand uunclc;
+                    if (!uunclc.Decode(uunc.command_data)) {
+                        _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkCommand!");
+                    }
+                    uunclc.Dump(PLANET__DUMP, "      ");
+
+                    if (!m_colony->UpgradeLink(uunclc.src, uunclc.dest2, uunclc.level, true)) {
+                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to upgrade link");
+                    } else {
+                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success upgrading link");
+                    }
+                } else if (uunc.command_data->GetItem(0)->IsTuple()) {
+                    UUNCLinkStandard uuncls;
+                    if (!uuncls.Decode(uunc.command_data)) {
+                        _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkStandard!");
+                    }
+                    uuncls.Dump(PLANET__DUMP, "      ");
+
+                    if (!m_colony->UpgradeLink(uuncls.src2, uuncls.dest2, uuncls.level, false)) {
+                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to upgrade link");
+                    } else {
+                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success upgrading link");
+                    }
+                }
+            } break;
+            case UpgradeCommandCenter: {
                 uint32 pinID = uunc.command_data->GetItem(0)->AsInt()->value();
                 uint32 level = uunc.command_data->GetItem(1)->AsInt()->value();
                 m_colony->UpgradeCommandCenter(pinID, level);
-                break;
-            }
-            case 10: //COMMAND_ADDEXTRACTORHEAD
-            {
-                break;
-            }
-            case 11: //COMMAND_KILLEXTRACTORHEAD
-            {
-                break;
-            }
-            case 12: //COMMAND_MOVEEXTRACTORHEAD
-            {
-                break;
-            }
-            case 13: //COMMAND_INSTALLPROGRAM
-            {
-                break;
-            }
+
+            } break;
+            /** @todo not handled yet... */
+            case CreateRoute:
+            case RemoveRoute:
+            case SetSchematic:
+            case AddExtractorHead:
+            case KillExtractorHead:
+            case MoveExtractorHead:
+            case InstallProgram:
             default:
-            {
                 break;
-            }
         }
     }
 
     return m_colony->GetColony();
-}
-
-PyResult PlanetMgrBound::Handle_GMAddCommodity(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GMAddCommodity() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
-PyResult PlanetMgrBound::Handle_GMConvertCommandCenter(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GMConvertCommandCenter() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
-PyResult PlanetMgrBound::Handle_GMForceInstallProgram(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GMForceInstallProgram() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
-//15:15:02[00m L [37;01mPlanetMgrBound: [00mHandle_GMGetLocalDistributionReport() size=2
-PyResult PlanetMgrBound::Handle_GMGetLocalDistributionReport(PyCallArgs &call) {
-    /*
-     *      return self.remoteHandler.GMGetLocalDistributionReport(self.planetID, (surfacePoint.theta, surfacePoint.phi))
-     */
-    /*
-     1 5*:15:02 [PlanetCallDump]   Call Arguments:
-     15:15:02 [PlanetCallDump]       Tuple: 2 elements
-     15:15:02 [PlanetCallDump]         [ 0] Integer field: 40216265      << planetID
-     15:15:02 [PlanetCallDump]         [ 1] Tuple: 2 elements
-     15:15:02 [PlanetCallDump]         [ 1]   [ 0] Real field: 0.359286  << theta
-     15:15:02 [PlanetCallDump]         [ 1]   [ 1] Real field: 1.014020  << phi
-     sLog.Log("PlanetMgrBound", "Handle_GMGetLocalDistributionReport() size=%u", call.tuple->size() );
-     call.Dump(PLANET__DUMP);
-     */
-
-    return nullptr;
-}
-
-PyResult PlanetMgrBound::Handle_GMGetSynchedServerState(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GMGetSynchedServerState() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
-PyResult PlanetMgrBound::Handle_GMRunDepletionSim(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GMRunDepletionSim() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
 }

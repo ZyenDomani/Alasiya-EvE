@@ -116,6 +116,7 @@
 // spawn manager
 #include "npc/SpawnMgr.h"
 // planet services
+#include "planet/Planet.h"
 #include "planet/PlanetMgrBound.h"
 #include "planet/PlanetORBBound.h"
 // pos services
@@ -386,6 +387,8 @@ int main( int argc, char* argv[] )
     sDGM_Salvage_Table.Initialize();
     sLog.Log("       ServerInit", "Spawn Table");
     sSpawnDataMgr.Initialize();
+    sLog.Log("       ServerInit", "Planet Data");
+    sPlanetDataMgr.Initialize();
 
     /* Custom config file options
      * current settings displayed on console at start-up

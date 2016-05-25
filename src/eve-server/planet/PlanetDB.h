@@ -38,7 +38,13 @@ public:
     PyRep* GetPlanetsForChar(uint32 charID);
     PyRep* GetMyLaunchesDetails(uint32 charID);
     PyRep* GetExtractorsForPlanet(uint32 planetID);
+
     bool GetResourceData(uint32 planetID, DBResultRow &row);
+
+    void GetPlanetData(DBQueryResult& row);
+
+    void LoadColony();
+    void SaveColony();
 };
 
 #endif  // EVEMU_PLANET_PLANETDB_H_
