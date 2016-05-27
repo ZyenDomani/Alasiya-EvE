@@ -135,123 +135,6 @@ protected:
     const ItemType &m_type;
 };
 
-/**
- * Attribute manager for InventoryItem.
- */
-#ifdef (0)
-class ItemAttributeMgr : public EVEAdvancedAttributeMgr
-{
-public:
-    /**
-     * @param[in] factory ItemFactory to use.
-     * @param[in] item Item which attributes are managed.
-     * @param[in] save Should attribute changes be immediately saved into DB?
-     * @param[in] notify Should attribute changes be sent to owner?
-     */
-    ItemAttributeMgr(ItemFactory &factory, const InventoryItem &item, bool save=true, bool notify=true);
-
-    /**
-     * @return InventoryItem which attributes are managed.
-     */
-    const InventoryItem &item() const { return(m_item); }
-    /**
-     * @return State of save order - whether all attribute changes should be immediately saved into DB.
-     */
-    bool GetSave() const { return m_save; }
-    /**
-     * @return State of notify order - whether all attribute changes should be sent to owner.
-     */
-    bool GetNotify() const { return m_notify; }
-
-    // Falls to type attributes and then to default if not found
-    real_t GetReal(Attr attr) const;
-
-    // Redirection to SetIntEx
-    void SetInt(Attr attr, const int_t &v) { SetIntEx(attr, v); }
-    /**
-     * Changes value of attribute.
-     *
-     * @param[in] attr Attribute which value is changed.
-     * @param[in] v New value of attribute.
-     * @param[in] persist Whether new attribute value should be immediately stored to DB.
-     */
-    void SetIntEx(Attr attr, const int_t &v, bool persist=false);
-
-    // Redirection to SetRealEx
-    void SetReal(Attr attr, const real_t &v) { SetRealEx(attr, v); }
-    /**
-     * Changes value of attribute.
-     *
-     * @param[in] attr Attribute which value is changed.
-     * @param[in] v New value of attribute.
-     * @param[in] persist Whether new attribute value should be immediately stored to DB.
-     */
-    void SetRealEx(Attr attr, const real_t &v, bool persist=false);
-
-    // Clears attribute.
-    void Clear(Attr attr);
-
-    // Redirection to DeleteEx
-    void Delete() { DeleteEx(); }
-    /**
-     * Deletes all attributes.
-     *
-     * @param[in] notify Whether owner should be notified about all changes.
-     */
-    void DeleteEx(bool notify=false);
-
-    /**
-     * Loads attribute values from DB.
-     *
-     * @param[in] Whether owner should be notified about new values.
-     */
-    bool Load(bool notify=false);
-    /**
-     * Saves all attributes to DB.
-     */
-    void Save() const;
-
-    /**
-     * Changes save order - whether all attribute changes should be immediately saved into DB.
-     *
-     * @param[in] save New status of order.
-     */
-    void SetSave(bool save) { m_save = save; }
-    /**
-     * Changes notify order - whether all attribute changes should be sent to owner.
-     *
-     * @param[in] notify New status of order.
-     */
-    void SetNotify(bool notify) { m_notify = notify; }
-
-    // Includes type attributes.
-    void EncodeAttributes(std::map<int32, PyRep *> &into) const;
-
-    // Additional by-name access
-    #define ATTRI(ID, name, default_value, persistent) \
-        void Set_##name##_persist(const int_t &v) { \
-            SetIntEx(Attr_##name, v, true); \
-        }
-    #define ATTRD(ID, name, default_value, persistent) \
-        void Set_##name##_persist(const real_t &v) { \
-            SetRealEx(Attr_##name, v, true); \
-        }
-    #include "EVEAttributes.h"
-
-protected:
-    // Creates & sends attribute change notification.
-    void _SendAttributeChange(Attr attr, PyRep *oldValue, PyRep *newValue);
-
-    // Member variables:
-    ItemFactory &m_factory;
-
-    const InventoryItem &m_item;
-
-    bool m_save;
-    bool m_notify;
-};
-#endif //0
-
 // small map that does the magic of item attributes..
 //class EvilNumber;
 
@@ -269,21 +152,10 @@ class AttributeMap
 public:
     /**
      * we store our keeper so we can use it in the various functions.
-     * @note capt: the way I see it this isn't really needed... ( design thingy )
-     *
-     * @param[in] item reference to the InventoryItem for which attributes will be managed
-     */
-    AttributeMap(InventoryItem & item);
-
-    /**
-     * we store our keeper so we can use it in the various functions.
-     * @note capt: the way I see it this isn't really needed... ( design thingy )
-	 * @note aknor: this is a secondary constructor that allows the parent object to specify whether this class instance will make use of the 'entity_default_attributes' table or the 'entity_attributes' table
-     *
      * @param[in] item reference to the InventoryItem for which attributes will be managed
      * @param[in] bDefaultMap boolean indicating whether this attribute map uses 'entity_default_attributes' table or 'entity_attributes' table
      */
-    AttributeMap(InventoryItem & item, bool bDefaultMap);
+    AttributeMap(InventoryItem &item, bool bDefaultMap=false);
 
 	/**
      * @brief set the attribute with @num

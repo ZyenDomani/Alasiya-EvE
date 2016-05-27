@@ -60,9 +60,7 @@ public:
     ItemFactory* itemFactory() const;
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
     SystemDB* GetSystemDB()                             { return &m_db; }
-    BubbleManager bubbles;
 
-    void Process();             // called between 40-60Hz on my system
     bool ProcessTic();          // called at 1Hz.
 
     uint32 GetID() const                                { return m_systemID; }
@@ -136,8 +134,10 @@ protected:
 
     //overall system entity lists:
     bool m_entityChanged = false;
+    std::map<uint32, NPC*> m_npcs;
     std::map<uint32, Client*> m_clients;
     std::map<uint32, SystemEntity*> m_entities;    //we own these, but they are also referenced in m_bubbles
+    std::map<uint32, SystemEntity*> m_ticEntities;  // this list is for entities that need process tics (objects, npc, client ships)
 
 private:
     // for spawn systems     -allan 15July15

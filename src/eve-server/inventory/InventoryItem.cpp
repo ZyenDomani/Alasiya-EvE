@@ -773,7 +773,6 @@ bool InventoryItem::SetQuantity(uint32 qty_new, bool notify) {
     //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;
-
         //send the notify to the new owner.
         // this informs client of a stack change
         changes[/*ixQuantity*/ixStackSize] = new PyInt(old_qty);
@@ -790,10 +789,9 @@ bool InventoryItem::SetFlag(EVEItemFlags new_flag, bool notify) {
 
     if (notify) {
         std::map<int32, PyRep *> changes;
-
-	//send the notify to the new owner.
-	changes[ixFlag] = new PyInt(old_flag);
-	SendItemChange(m_ownerID, changes); //changes is consumed
+        //send the notify to the new owner.
+        changes[ixFlag] = new PyInt(old_flag);
+        SendItemChange(m_ownerID, changes); //changes is consumed
     }
     return true;
 }

@@ -137,14 +137,14 @@ To summarize: +/-1SHHCC (S=subsystem, HH=header, CC=code number)
 // Lint's 'strong type' checking can be used to find errors.
 typedef long LibError;
 
-//  eve error code defs
-/*  Error Code layout
+//  Alasiya EvE error code defs
+/*  Error Code layout  (wip)
  *    code # ABCDE
- *      A = category (0-server, 1-player, 2-ship, 3-command, 4-, 5-, 6-, 7-, 8-, 9-,)
- *      B = system (5-ship)
- *      C = subsystem (5-insurance, 6-modules)
- *      D =
- *      E =
+ *      A = category (0-server, 1-player, 2-command, 3-destiny, 4-, 5-, 6-, 7-, 8-, 9-other,)
+ *      B = system (0-character, 1-location, 2-, 3-item, 4-, 5-ship)
+ *      C = subsystem (0-create, 1-destroy, 2-move, 3-change, 4-, 5-insurance, 6-modules)
+ *      D = type (0-, 1-, 2-, 3-, 4-,5-, 6-, 7-, 8-, 9-)
+ *      E = error (0-, 1-, 2-, 3-, 4-,5-, 6-, 7-, 8-, 9-)
  *
  *
  * Ref: ServerError 12321. << Client::BoardShip()

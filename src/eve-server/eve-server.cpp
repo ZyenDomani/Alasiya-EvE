@@ -146,6 +146,7 @@
 #include "station/TradeService.h"
 // system services
 #include "system/BookmarkService.h"
+#include "system/BubbleManager.h"
 #include "system/KeeperService.h"
 #include "system/LootSystem.h"
 #include "system/Modifiers.h"
@@ -162,7 +163,6 @@ static const char* const CONFIG_FILE = EVEMU_ROOT "/etc/eve-server.xml";
 uint8 MAIN_LOOP_DELAY = sConfig.server.ServerSleepTime; // delay 10 ms.
 
 static volatile bool RunLoops = true;
-dgmtypeattributemgr* _sDgmTypeAttrMgr;
 
 int main( int argc, char* argv[] )
 {
@@ -226,9 +226,9 @@ int main( int argc, char* argv[] )
         return EXIT_FAILURE;
     }
 
-    /* start dogma type attrib mgr  */
+    /* start dogma type attrib mgr singleton */
     sLog.Success("       ServerInit", "Initializing Dogma Attribute Cache");
-    _sDgmTypeAttrMgr = new dgmtypeattributemgr();
+    sDgmTypeAttrMgr.Init();
 
     /* Start up the TCP server */
     EVETCPServer tcps;
@@ -253,6 +253,10 @@ int main( int argc, char* argv[] )
     /* create the WormholeMgr singleton */
     sLog.Success("       ServerInit", "Starting Wormhole Manager");
     sWHMgr.Init(&services);
+
+    /* create the BubbleManager singleton */
+    sLog.Success("       ServerInit", "Starting Bubble Manager");
+    sBubbleMgr.Init();
 
     /* create a command dispatcher */
     sLog.Success("       ServerInit", "Starting Command Dispatch Manager");
@@ -515,7 +519,7 @@ int main( int argc, char* argv[] )
     //sConsole.Stop();
     /* delete the dogma attrib object */
     sLog.Warning("   ServerShutdown", "Deleting Dogma Attribute Cache" );
-    SafeDelete(_sDgmTypeAttrMgr);
+    sDgmTypeAttrMgr.Close();
 	/* Shut down the Item system */
 	sLog.Warning("   ServerShutdown", "Saving Items and Shutting down Item Factory." );
     SafeDelete(item_factory);

@@ -39,19 +39,12 @@ m_growTimer(360000) /* arbitrary for 1 hour */
 
 void AsteroidSE::Process() {
     /* called by EntityList::Process on every loop */
-    /* this is empty default call */
+    /* this is target process call */
     SystemEntity::Process();
-}
-
-void AsteroidSE::ProcessObject() {
-    /* called by EntityList::Process on each tic */
-    /* this is empty default call */
-    ObjectSystemEntity::ProcessObject();
 
     /*  set/check timers for grow/respawn, etc */
     if (m_growTimer.Check())
         Grow();
-
 }
 
 void AsteroidSE::EncodeDestiny( Buffer& into )

@@ -43,6 +43,15 @@ class CargoContainer
 {
     friend class InventoryItem;    // to let it construct us
 public:
+    CargoContainer(
+        ItemFactory &_factory,
+        uint32 _containerID,
+        // InventoryItem stuff:
+        const ItemType &_containerType,
+        const ItemData &_data
+    );
+    virtual ~CargoContainer()                           { /* Do nothing here */ }
+    
     /**
      * Loads CargoContainer from DB.
      *
@@ -86,15 +95,6 @@ public:
     bool IsEmpty()                                      { return GetInventory()->IsEmpty(); }
 
 protected:
-    CargoContainer(
-        ItemFactory &_factory,
-        uint32 _containerID,
-        // InventoryItem stuff:
-        const ItemType &_containerType,
-        const ItemData &_data
-    );
-    virtual ~CargoContainer()                           { /* Do nothing here */ }
-
     /*
      * Member functions:
      */
@@ -114,7 +114,7 @@ protected:
             && (type.groupID() != EVEDB::invGroups::Secure_Cargo_Container)
             && (type.groupID() != EVEDB::invGroups::Spawn_Container) )
         {
-            _log( ITEM__ERROR, "Trying to load category=%s, group=%s as CargoContainer.", type.category().name().c_str(), type.group().name().c_str() );
+            _log( ITEM__ERROR, "CargoContainer::_LoadItem()  Trying to load category=%s, group=%s as CargoContainer.", type.category().name().c_str(), type.group().name().c_str() );
             return RefPtr<_Ty>();
         }
         //// cast the type
@@ -191,6 +191,15 @@ class WreckContainer
 {
     friend class InventoryItem;    // to let it construct us
 public:
+    WreckContainer(
+        ItemFactory &_factory,
+        uint32 _containerID,
+        // InventoryItem stuff:
+        const ItemType &_containerType,
+        const ItemData &_data
+    );
+    virtual ~WreckContainer()                           { /* Do nothing here */ }
+
     /**
      * Loads WreckContainer from DB.
      *
@@ -233,15 +242,6 @@ public:
     void MakeSlimItemChange();
 
 protected:
-    WreckContainer(
-        ItemFactory &_factory,
-        uint32 _containerID,
-        // InventoryItem stuff:
-        const ItemType &_containerType,
-        const ItemData &_data
-    );
-    virtual ~WreckContainer()                           { /* Do nothing here */ }
-
     /*
      * Member functions:
      */
@@ -257,7 +257,7 @@ protected:
         // check if it's a Wreck
         if (type.groupID() != EVEDB::invGroups::Wreck)
         {
-            _log( ITEM__ERROR, "Trying to load category=%s, group=%s as Wreck.", type.category().name().c_str(), type.group().name().c_str() );
+            _log( ITEM__ERROR, "WreckContainer::_LoadItem()  Trying to load category=%s, group=%s as Wreck.", type.category().name().c_str(), type.group().name().c_str() );
             return RefPtr<_Ty>();
         }
         //// cast the type

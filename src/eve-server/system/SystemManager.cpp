@@ -173,7 +173,7 @@ bool SystemManager::LoadSystemStatics() {
             continue;
         }
         if (pSE->IsBeltSE() or pSE->IsGateSE() or pSE->IsStationSE())
-            bubbles.Add(pSE);  /* testing....no need to put planets and moons in a bubble.  */
+            sBubbleMgr.Add(pSE);  /* testing....no need to put planets and moons in a bubble.  */
         m_entities[cur.itemID] = pSE;
         AddItemToInventory(pSE->GetSelf());
         if (!pSE->LoadExtras(&m_db))
@@ -195,7 +195,7 @@ public:
             case EVEDB::invCategories::Asteroid: {
                 InventoryItemRef asteroid = factory->GetItem( entity.itemID );
                 if (!asteroid)
-                    throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                    ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 AsteroidSE* aSE = new AsteroidSE(asteroid, *(system.GetServiceMgr()), &system);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making AsteroidSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return aSE;
@@ -203,7 +203,7 @@ public:
             case EVEDB::invCategories::Ship: {
                 ShipItemRef ship = factory->GetShip( entity.itemID );
                 if (!ship)
-                    throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                    ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 /* if this ship has a pilot (not an abandonded ship in space), then cancel and return nothing.
                  *                if (!ship->GetInventory()->IsEmptyByFlag(flagPilot)) {
                  *                    factory.RemoveItem(entity.itemID);
@@ -216,7 +216,7 @@ public:
             case EVEDB::invCategories::Deployable: {
                 InventoryItemRef deployable = factory->GetItem( entity.itemID );
                 if (!deployable)
-                    throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                    ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 deployable->SetAttribute(AttrRadius, deployable->type().radius());     // Can you set this somehow from the type class ?
                 DeployableSE* dSE = new DeployableSE(deployable, *(system.GetServiceMgr()), &system);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making DeployableSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -225,7 +225,7 @@ public:
             case EVEDB::invCategories::Structure: {         // POS Structures of all kinds
                 StructureItemRef structure = factory->GetStructure( entity.itemID );
                 if (!structure)
-                    throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                    ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 StructureSE* sSE = new StructureSE(structure, *(system.GetServiceMgr()), &system);
                 structure->GetInventory()->LoadContents(factory);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -250,7 +250,7 @@ public:
                 if (entity.groupID == EVEDB::invGroups::Wreck) {
                     WreckContainerRef wreck = factory->GetWreckContainer( entity.itemID );
                     if (!wreck)
-                        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                        ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                     WreckSE* wSE = new WreckSE(wreck, *(system.GetServiceMgr()), &system);
                     wreck->GetInventory()->LoadContents(factory);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WreckSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -262,7 +262,7 @@ public:
                 {
                     CargoContainerRef container = factory->GetCargoContainer( entity.itemID );
                     if (!container)
-                        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                        ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                     ContainerSE* cSE = new ContainerSE(container, *(system.GetServiceMgr()), &system);
                     container->GetInventory()->LoadContents(factory);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -273,14 +273,14 @@ public:
                 {
                     CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
                     if (!celestial)
-                        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                        ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                     PlanetSE* pSE = new PlanetSE(celestial, *(system.GetServiceMgr()), &system);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making PlanetSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return pSE;
                 } else if (entity.groupID == EVEDB::invGroups::Stargate) {
                     CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
                     if (!celestial)
-                        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                        ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                     StargateSE* sSE = new StargateSE(celestial, *(system.GetServiceMgr()), &system);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making StargateSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return sSE;
@@ -304,7 +304,7 @@ public:
                 {
                     CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
                     if (!celestial)
-                        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                        ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                     CelestialSE* cSE = new CelestialSE(celestial, *(system.GetServiceMgr()), &system);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making CelestialSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return cSE;
@@ -316,7 +316,7 @@ public:
                     // For category=Entity, group=Spawn Container, create a CargoContainer object:
                     CargoContainerRef container = factory->GetCargoContainer( entity.itemID );
                     if (!container)
-                        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                        ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                     ContainerSE* cSE = new ContainerSE(container, *(system.GetServiceMgr()), &system);
                     container->GetInventory()->LoadContents(factory);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerEntity item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -380,7 +380,7 @@ public:
                 {
                     InventoryItemRef npcRef = factory->GetItem( entity.itemID );
                     if (!npcRef)
-                        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                        ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                     /** @todo (allan)  corporationID and allianceID are both wrong here and for all entities. */
                     NPC* npcObj = new NPC(npcRef, *(system.GetServiceMgr()), &system, entity.corporationID, entity.allianceID);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making NPC item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -388,7 +388,7 @@ public:
                 } else {
                     CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
                     if (!celestial)
-                        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                        ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                     CelestialSE* cSE = new CelestialSE(celestial, *(system.GetServiceMgr()), &system);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making CelestialSE-2 item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return cSE;
@@ -397,7 +397,7 @@ public:
             case EVEDB::invCategories::Drone: {             // Player Drones
                 InventoryItemRef drone = factory->GetItem( entity.itemID );
                 if (!drone)
-                    throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                    ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 GPoint location(entity.x, entity.y, entity.z);
                 Drone* dSE = new Drone(drone, *(system.GetServiceMgr()), &system, location);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making Drone item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -487,50 +487,25 @@ bool SystemManager::BootSystem() {
     return true;
 }
 
-// (no longer) called many times a second (~40x/sec)
-void SystemManager::Process() {
-    std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
-    while (cur != m_entities.end()) {
-        if (cur->second)
-            cur->second->Process(); /* i dont see a reason to call Process() on static entities */
-        else {
-            cur = m_entities.erase(cur);
-            continue;
-        }
-        if (m_entityChanged) {
-            m_entityChanged = false;
-            cur = m_entities.begin();
-        } else
-            ++cur;
-    }
-}
-
 //called once per second from EntityList. (1Hz Tic)
 bool SystemManager::ProcessTic() {
+    /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid when SE->Process() returns
+     * because Process() will add/remove from the map as needed
+     * still unsure how to prevent crashes when dereferencing an invalid SE in the current iterator
+     * without starting over when the list has changed...which will run all previous entities thru Process() again.
+     */
     std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
     while (cur != m_entities.end()) {
+        cur->second->Process(); /* main process call. */
         if (m_entityChanged) {
             m_entityChanged = false;
             cur = m_entities.begin();
-            continue;
-        }
-        if (cur->second and cur->second->GetSelf().get()) { /* i am still having problems with trash data in the m_entities map... */
-            cur->second->Process(); /* main process call. */
-            if (cur->second->IsDynamicEntity())
-                cur->second->ProcessDestiny(); /* call movement functions on DSE's here */
-            else if (cur->second->IsObjectEntity())
-                cur->second->ProcessObject();   /* call non-movement functions on objects here */
-        } else {
-            sLog.Error("SystemManager::ProcessTic()", "SystemEntity* for %u was deleted from m_entities map...removing from my list.", cur->first);
-            m_entities.erase(cur->first);
-            m_entityChanged = true;
             continue;
         }
         ++cur;
     }
 
     /* the following are coded for single-tic calls */
-    bubbles.Process();
     m_anomMgr->Process();
     m_beltMgr->Process();
     m_spawnMgr->Process();
@@ -636,24 +611,25 @@ void SystemManager::AddEntity(SystemEntity* who) {
     _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
     m_entities[who->GetID()] = who;
     m_entityChanged = true;
-    bubbles.Add(who);
+    sBubbleMgr.Add(who);
     // Add Entity's Item Ref to Solar System Dynamic Inventory:
     AddItemToInventory( who->GetSelf() );
 }
 
 void SystemManager::RemoveEntity(SystemEntity* who) {
     if (!who) return;
-    _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
+    sBubbleMgr.Remove(who);
     auto itr = m_entities.find(who->GetID());
     if (itr != m_entities.end()) {
+        _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
         who->TargetMgr()->DoDestruction();
         m_entities.erase(itr);
         m_entityChanged = true;
-        bubbles.Remove(who);
         // Remove Entity's Item Ref from Solar System Dynamic Inventory:
         RemoveItemFromInventory( who->GetSelf() );
         /* should we delete the entity pointer here?? */
-    }
+    } else
+        _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
 }
 
 void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
@@ -712,7 +688,7 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
     into.effectStates = new PyList;
     into.allianceBridges = new PyList;
 
-    //go through all entities in bubble and gather the info we need...
+    //go through all visible entities and gather the info we need...
     for (auto cur : visibleEntities) {
         if (!cur->IsMissileSE())
             into.damageState[ cur->GetID() ] = cur->MakeDamageState();

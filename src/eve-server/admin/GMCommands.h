@@ -29,6 +29,8 @@ COMMAND( syncloc, ROLE_PLAYER,
          "- Synchonizes your location in client with location on server." )
 COMMAND( setbpattr, ROLE_CONTENT,
          "(itemID) (copy) (materialLevel) (productivityLevel) (licensedProductionRunsRemaining) - Change blueprint's attributes." )
+COMMAND( update, ROLE_GML,
+         "- Sets Current Position according to Server's DestinyManager, then Sends Bubble AddBalls and Destiny SetState. (resets spaceview with current server data)" )
 COMMAND( sendstate, ROLE_GML,
          "- Sends DoDestinyUpdate SetState." )
 COMMAND( addball, ROLE_PLAYER,

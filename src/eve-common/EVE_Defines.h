@@ -61,12 +61,12 @@ minFakeClientItem = 17000000000000000000L
 */
 
 //  allan's static defines to ease code checks
+#define EVEMU_ASTEROID_ID              70000000
 #define EVEMU_MINIMUM_ID          minPlayerItem
 #define EVEMU_TEMP_ENTITY_ID          100000000
 #define EVEMU_MINIMUM_ENTITY_ID       140000000
-#define EVEMU_ASTEROID_ID              70000000
-#define EVEMU_NPC_ID                  500000000
-#define EVEMU_DRONE_ID                750000000
+#define EVEMU_DRONE_ID                500000000
+#define EVEMU_NPC_ID                  750000000
 #define EVEMU_MISSILE_ID             1000000000
 #define EVEMU_MAX_SHORT_ID           2147483647
 #define EVEMU_MAX_LONG_ID   9223372036854775807     //this is max for a SIGNED int64.

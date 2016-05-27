@@ -27,7 +27,7 @@
 
 #include "ship/dgmtypeattributeinfo.h"
 
-dgmtypeattributemgr::dgmtypeattributemgr()
+void dgmtypeattributemgr::Init()
 {
     // load shit from db
     DBQueryResult res;
@@ -63,12 +63,13 @@ dgmtypeattributemgr::dgmtypeattributemgr()
     sLog.Success("       ServerInit", "Loaded %u Attributes in the  Dogma Attribute Cache", amount);
 }
 
-dgmtypeattributemgr::~dgmtypeattributemgr() {
+void dgmtypeattributemgr::Close()
+{
     for (auto cur : mDgmTypeAttrInfo)
         SafeDelete(cur.second);
 }
 
-DgmTypeAttributeSet* dgmtypeattributemgr::GetDmgTypeAttributeSet( uint32 typeID )
+DgmTypeAttributeSet* dgmtypeattributemgr::GetDgmTypeAttributeSet( uint32 typeID )
 {
     DgmTypeAttributeMapItr itr;
     itr = mDgmTypeAttrInfo.find(typeID);

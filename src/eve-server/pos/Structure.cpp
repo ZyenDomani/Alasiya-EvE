@@ -322,12 +322,6 @@ void StructureSE::Process() {
     /** @todo (Allan)  will need some form of AI to engage defensive modules if/when any structure is attacked */
 }
 
-void StructureSE::ProcessObject() {
-    /* called by EntityList::Process on each tic */
-    /* this is empty default call */
-    ObjectSystemEntity::ProcessObject();
-}
-
 void StructureSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;

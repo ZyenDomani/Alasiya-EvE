@@ -201,13 +201,14 @@ void SystemBubble::Add(SystemEntity* pEntity) {
 		return;
 	}
 
-	GPoint startPoint( pEntity->GetPosition() );
-	GVector direction(startPoint, NULL_ORIGIN);
-	double rangeToStar = direction.length();
-	rangeToStar /= ONE_AU_IN_METERS;
-
-    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Adding entity %u to bubble %u. Distance to Star %.2f AU.  %u/%u Entities in bubble",
-	     pEntity->GetID(), GetID(), rangeToStar, m_entities.size(), m_dynamicEntities.size());
+	if (is_log_enabled(DESTINY__BUBBLE_TRACE)) {
+        GPoint startPoint( pEntity->GetPosition() );
+        GVector direction(startPoint, NULL_ORIGIN);
+        double rangeToStar = direction.length();
+        rangeToStar /= ONE_AU_IN_METERS;
+        _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Adding entity %u to bubble %u. Distance to Star %.2f AU.  %u/%u Entities in bubble",
+                pEntity->GetID(), GetID(), rangeToStar, m_entities.size(), m_dynamicEntities.size());
+    }
 
 	pEntity->m_bubble = this;
 
@@ -217,29 +218,30 @@ void SystemBubble::Add(SystemEntity* pEntity) {
 		m_entities.insert(std::pair<uint32, SystemEntity*>(pEntity->GetID(), pEntity));
 		return;
 	}
+
     if (pEntity->HasPilot()) {
         Client* pClient = pEntity->GetPilot();
-        //if (pClient->IsUndock())
-            SendAddBalls( pEntity );
+        SendAddBalls( pEntity );
         if (!pClient->GetShipSE()->DestinyMgr()->IsCloaked()) {
             if (HasPlayers())
                 _BubblecastAddBallExclusive(pEntity);  // adds new player to all players in bubble, if any
-            // Trigger SpawnManager for this bubble to generate NPC Spawn, if needed
-            if (IsBelt() && (!IsSpawned()) && sConfig.npc.RoamingSpawns /*&& !pClient->IsLogin()*/)
-                if (!m_spawnTimer.Enabled())
-                    SetSpawnTimer(true);
-            if (IsGate() && (!IsSpawned()) && sConfig.npc.StaticSpawns) /* IsGate returns false.  will fix when gate spawns are finished */
-                if (!m_spawnTimer.Enabled())
-                    SetSpawnTimer(false);
         }
+        // Set spawn timer for this bubble, if needed
+        if (IsBelt() && (!IsSpawned()) && sConfig.npc.RoamingSpawns)
+            if (!m_spawnTimer.Enabled())
+                SetSpawnTimer(true);
+        if (IsGate() && (!IsSpawned()) && sConfig.npc.StaticSpawns) /* IsGate returns false.  will fix when gate spawns are finished */
+            if (!m_spawnTimer.Enabled())
+                SetSpawnTimer(false);
         m_players.push_back( pClient );   //add to bubble's player list
-    } else
+    } else {
         if (HasPlayers())
             _BubblecastAddBallExclusive(pEntity);
+    }
 
+    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is dynamic.", pEntity->GetName(), pEntity->GetID() );
     // all non-global entities (players, npcs, roids, containers, etc) are put into bubble's dynamicEntity map
     m_dynamicEntities.push_back(pEntity);
-    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is dynamic.", pEntity->GetName(), pEntity->GetID() );
 }
 
 void SystemBubble::Remove(SystemEntity *pEntity) {
@@ -299,19 +301,19 @@ void SystemBubble::SetSpawnTimer(bool isBelt /*false*/)
 /* i dont really need this here.... */
 uint32 SystemBubble::GetSpawnID(uint16 bubbleID)
 {
-    return m_system->bubbles.GetSpawnID(bubbleID);
+    return sBubbleMgr.GetSpawnID(bubbleID);
 }
 
 void SystemBubble::SetBelt(uint32 beltID)
 {
     m_belt = true;
-    m_system->bubbles.AddSpawnID(GetID(), beltID);
+    sBubbleMgr.AddSpawnID(GetID(), beltID);
 }
 
 void SystemBubble::SetGate(uint32 gateID)
 {
     m_gate = true;
-    m_system->bubbles.AddSpawnID(GetID(), gateID);
+    sBubbleMgr.AddSpawnID(GetID(), gateID);
 }
 
 
@@ -449,17 +451,15 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     }
 
     addballs.state = new PyBuffer( &destinyBuffer );
-    SafeDelete( destinyBuffer );
 
     _log(DESTINY__BALL_DUMP, "SystemBubble::SendAddBalls() to %s", pClient->GetName());
     addballs.Dump( DESTINY__BALL_DUMP, "    " );
     _log( DESTINY__BALL_DECODE, "    Ball Decoded:" );
     Destiny::DumpUpdate( DESTINY__BALL_DECODE, &( addballs.state->content() )[0], (uint32)addballs.state->content().size() );
     PyTuple* t = addballs.Encode();
-    if (!t) return;
-    pClient->QueueDestinyUpdate( &t );    //may consume, but may not.
+    pClient->QueueDestinyUpdate( &t );    //may consume, may not.
+    SafeDelete( destinyBuffer );
     PySafeDecRef( t );
-
 }
 
 void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {

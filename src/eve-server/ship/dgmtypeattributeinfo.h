@@ -82,18 +82,24 @@ typedef DgmTypeAttributeMap::iterator           DgmTypeAttributeMapItr;
  * @date Juni 2010
  */
 class dgmtypeattributemgr
+: public Singleton<dgmtypeattributemgr>
 {
 public:
-    dgmtypeattributemgr(); // also do init stuff, db loading
-    ~dgmtypeattributemgr();
+    dgmtypeattributemgr() {}
+    ~dgmtypeattributemgr() {}
 
-    DgmTypeAttributeSet* GetDmgTypeAttributeSet(uint32 typeID);
+    void Init();
+    void Close();
+
+    DgmTypeAttributeSet* GetDgmTypeAttributeSet(uint32 typeID);
 private:
     DgmTypeAttributeMap mDgmTypeAttrInfo;
 };
 
-extern dgmtypeattributemgr * _sDgmTypeAttrMgr;
-#define sDgmTypeAttrMgr (*_sDgmTypeAttrMgr)
+//Singleton
+#define sDgmTypeAttrMgr \
+( dgmtypeattributemgr::get() )
+
 
 static EvilNumber e_sqrt(EvilNumber num)
 {

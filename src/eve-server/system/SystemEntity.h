@@ -74,8 +74,6 @@ public:
 
     /* Process Calls - Overridden as needed in derived classes */
     virtual void                Process();
-    virtual void                ProcessObject()         { /* Do nothing here */ }
-    virtual void                ProcessDestiny()        { /* Do nothing here */ }
 
     /* (Allan) the next two sections eliminate the overhead of RTTI static casting.  */
     /* class type pointer querys, grouped by base class.  public for anyone to access. */
@@ -231,9 +229,6 @@ public:
     StaticSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     virtual ~StaticSystemEntity()                       { /* Do nothing here */ }
 
-    /* Process Calls - Overridden as needed in derived classes */
-    virtual void                ProcessObject()         { /* Do nothing here yet - will use gate::ProcessObject() and timer to make jumps*/ }
-
     /* class type pointer querys. */
     virtual StaticSystemEntity* GetStaticSE()           { return this; }
     /* class type tests. */
@@ -349,10 +344,6 @@ public:
     ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     virtual ~ObjectSystemEntity();
 
-    /* Process Calls - Overridden as needed in derived classes */
-    virtual void                ProcessObject()         { /* Do nothing here yet */ }
-
-
     /* class type pointer querys. */
     virtual ObjectSystemEntity* GetObjectSE()           { return this; }
     /* class type tests. */
@@ -396,9 +387,6 @@ class DynamicSystemEntity : public SystemEntity {
 public:
     DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     virtual ~DynamicSystemEntity();
-
-    /* Process Calls - Overridden as needed in derived classes */
-    virtual void                ProcessDestiny();
 
     /* class type pointer querys. */
     virtual DynamicSystemEntity* GetDynamicSE()         { return this; }

@@ -807,7 +807,7 @@ bool ModuleManager::_fitModule(InventoryItemRef item, EVEItemFlags flag)
 	if (existingMod) {
 		if (m_Modules->isSlotOccupied(flag))
 			throw PyException( MakeUserError("SlotAlreadyOccupied"));
-        /* change this to use movemodule */
+        /** @todo change this to use movemodule */
 		return false;
 	} else {
         // create new module object

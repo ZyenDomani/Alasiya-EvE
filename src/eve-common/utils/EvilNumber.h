@@ -146,7 +146,7 @@ public:
         bool operator a ( b val) \
         { \
             if (this->mType == evil_number_int) \
-                return this->mValue.iVal a static_cast<int64>(val); \
+                return this->mValue.iVal a static_cast<uint64>(val); \
             else \
                 return this->mValue.fVal a static_cast<double>(val); \
         }
@@ -230,9 +230,9 @@ public:
         else if (this->mType == evil_number_float && val.mType == evil_number_float)
             return this->mValue.fVal < val.mValue.fVal;
         else if (this->mType == evil_number_float)
-            return this->mValue.fVal < float(val.mValue.iVal);
+            return this->mValue.fVal < double(val.mValue.iVal);
         else
-            return float(this->mValue.iVal) < val.mValue.fVal;
+            return double(this->mValue.iVal) < val.mValue.fVal;
     }
 
     bool operator>(const EvilNumber& val)
@@ -242,9 +242,9 @@ public:
         else if (this->mType == evil_number_float && val.mType == evil_number_float)
             return this->mValue.fVal > val.mValue.fVal;
         else if (this->mType == evil_number_float)
-            return this->mValue.fVal > float(val.mValue.iVal);
+            return this->mValue.fVal > double(val.mValue.iVal);
         else
-            return float(this->mValue.iVal) > val.mValue.fVal;
+            return double(this->mValue.iVal) > val.mValue.fVal;
     }
 
     bool operator<=(const EvilNumber& val)
@@ -254,9 +254,9 @@ public:
         else if (this->mType == evil_number_float && val.mType == evil_number_float)
             return this->mValue.fVal <= val.mValue.fVal;
         else if (this->mType == evil_number_float)
-            return this->mValue.fVal <= float(val.mValue.iVal);
+            return this->mValue.fVal <= double(val.mValue.iVal);
         else
-            return float(this->mValue.iVal) <= val.mValue.fVal;
+            return double(this->mValue.iVal) <= val.mValue.fVal;
     }
 
     bool operator>=(const EvilNumber& val)
@@ -266,9 +266,9 @@ public:
         else if (this->mType == evil_number_float && val.mType == evil_number_float)
             return this->mValue.fVal >= val.mValue.fVal;
         else if (this->mType == evil_number_float)
-            return this->mValue.fVal >= float(val.mValue.iVal);
+            return this->mValue.fVal >= double(val.mValue.iVal);
         else
-            return float(this->mValue.iVal) >= val.mValue.fVal;
+            return double(this->mValue.iVal) >= val.mValue.fVal;
     }
 
     /************************************************************************/
@@ -314,7 +314,7 @@ public:
         bool operator a ( b val) \
         { \
             if (this->mType == evil_number_int) \
-                return this->mValue.iVal a static_cast<int64>(val); \
+                return this->mValue.iVal a static_cast<uint64>(val); \
             else \
                 return this->mValue.fVal a static_cast<double>(val); \
         }
@@ -357,7 +357,7 @@ public:
     {
         char buff[32]; // max uint32 will result in a 10 char string, a float will result in a ? char string.
         if (mType == evil_number_int)
-            snprintf(buff, 32, "%" PRId64, mValue.iVal);
+            snprintf(buff, 32, "%" PRIu64, mValue.iVal);
         else if (mType == evil_number_float)
             snprintf(buff, 32, "%f", mValue.fVal);
         else

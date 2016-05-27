@@ -31,6 +31,7 @@
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
 #include "ship/Ship.h"
+#include "system/Container.h"
 #include "system/SystemBubble.h"
 #include "system/LootSystem.h"
 
@@ -267,16 +268,6 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             d.source->GetPilot()->QueueDestinyEvent(&up);
         }
 
-        //  notify player of damage done to other
-        Notify_OnDamageMessage ondam;
-            ondam.messageID = DamageMessageIDs_Other[damageID];
-            ondam.weapon = d.weapon->itemID();
-            ondam.splash = "";
-            ondam.target = GetID();
-            ondam.damage = total_damage;
-        up = ondam.Encode();
-        d.source->GetPilot()->QueueDestinyEvent(&up);
-/*
         //Notifications to others:
         // this displays msg, but text is missing.
         Notify_OnDamageMessage_Other ondamo;
@@ -288,8 +279,6 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             ondamo.splash = "";
         up = ondamo.Encode();
         d.source->GetPilot()->QueueDestinyEvent(&up);
-*/
-        
     }
 
     if (killed) {
@@ -347,9 +336,11 @@ void NPC::Killed(Damage &fatal_blow) {
         deadNPCPosition
     );
 
-    InventoryItemRef wreckItemRef = m_self->GetItemFactory()->SpawnItem( wreckItemData );
-    if (!wreckItemRef)
-        throw PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
+    WreckContainerRef wreckItemRef = m_self->GetItemFactory()->SpawnWreckContainer( wreckItemData );
+    if (!wreckItemRef) {
+        sLog.Error("NPC::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
+        return;
+    }
 
     DBSystemDynamicEntity wreckEntity;
         wreckEntity.allianceID = GetAllianceID(); /** @todo (allan) fix this after alliances are implemented */
@@ -368,7 +359,6 @@ void NPC::Killed(Damage &fatal_blow) {
 
     if (!m_system->BuildDynamicEntity(wreckEntity)) {
         sLog.Error("NPC::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
-        throw PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
         return;
     }
 
@@ -420,7 +410,6 @@ void Ship::Killed(Damage &fatal_blow) {
         uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
         std::string wreck_name = m_self->itemName();
         GPoint wreckPosition = m_destiny->GetPosition();
-        InventoryItemRef wreckItemRef;
         ItemData wreckItemData(
                 wreckTypeID,
                 killerID,
@@ -430,9 +419,9 @@ void Ship::Killed(Damage &fatal_blow) {
                 wreckPosition
         );
 
-        wreckItemRef = m_system->GetServiceMgr()->item_factory->SpawnItem( wreckItemData );
+        WreckContainerRef wreckItemRef = m_system->GetServiceMgr()->item_factory->SpawnWreckContainer( wreckItemData );
         if (!wreckItemRef )
-            throw PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
+            ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
 
         DBSystemDynamicEntity wreckEntity;
             wreckEntity.allianceID = 0;
@@ -451,12 +440,12 @@ void Ship::Killed(Damage &fatal_blow) {
 
         if (!m_system->BuildDynamicEntity(wreckEntity))
         {
-            sLog.Error("ShipEntity::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
-            throw PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
+            sLog.Error("Ship::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
+            ; /** @todo make error msg here */  //  PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
             return;
         }
 
-        _log(PHYSICS__TRACE, "ShipEntity::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
+        _log(PHYSICS__TRACE, "Ship::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
                     GetName(), GetID(), x(), y(), z(), m_destiny->GetPosition().x, m_destiny->GetPosition().y, m_destiny->GetPosition().z);
 
         DropLoot(m_self->groupID(), killerID, wreckItemRef->itemID());
@@ -531,7 +520,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
         InventoryItemRef corpseItemRef = m_services.item_factory->SpawnItem( corpseItemData );
         if (!corpseItemRef )
-            throw PyException( MakeCustomError( "Unable to spawn item of type %u.", corpseTypeID ) );
+            ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item of type %u.", corpseTypeID ) );
 
         DBSystemDynamicEntity corpseEntity;
             corpseEntity.allianceID = 0;
@@ -549,9 +538,13 @@ void Ship::Killed(Damage &fatal_blow) {
             corpseEntity.z = deadPodPosition.z;
 
         if (!m_system->BuildDynamicEntity( corpseEntity)) {
-            sLog.Error("Client::Killed()", "Spawning Corpse Failed: typeID or typeName not supported: '%u'", corpseTypeID);
-            throw PyException( MakeCustomError ( "Spawning Corpse Failed: typeID or typeName not supported." ) );
+            sLog.Error("Ship::Killed()", "Spawning Corpse Failed: typeID or typeName not supported: '%u'", corpseTypeID);
+            ; /** @todo make error msg here */  //  PyException( MakeCustomError ( "Spawning Corpse Failed: typeID or typeName not supported." ) );
         }
+
+        _log(PHYSICS__TRACE, "Ship::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
+        GetName(), GetID(), x(), y(), z(), m_destiny->GetPosition().x, m_destiny->GetPosition().y, m_destiny->GetPosition().z);
+
 
         // this method will reset char variables to last clone state after being podded.
         //  NOTE  *** NOT TESTED YET ***
@@ -622,6 +615,7 @@ void Ship::Killed(Damage &fatal_blow) {
         m_bubble->Add(pPodEntity);
 
         m_pilot->BoardShip(podRef);
+        m_services.item_factory->UnsetUsingClient();
 
 		uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(deadShipRef->typeID());
         std::string wreck_name = GetName();
@@ -636,10 +630,9 @@ void Ship::Killed(Damage &fatal_blow) {
 			deadShipPosition
 		);
 
-		InventoryItemRef wreckItemRef = m_services.item_factory->SpawnItem( wreckItemData );
-        m_services.item_factory->UnsetUsingClient();
+        WreckContainerRef wreckItemRef = m_services.item_factory->SpawnWreckContainer( wreckItemData );
 		if (!wreckItemRef )
-			throw PyException( MakeCustomError( "Unable to spawn wreck of type %u.", wreckTypeID ) );
+			; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn wreck of type %u.", wreckTypeID ) );
 
 		DBSystemDynamicEntity wreckEntity;
             wreckEntity.allianceID = 0;
@@ -661,9 +654,13 @@ void Ship::Killed(Damage &fatal_blow) {
 
 		if (!m_system->BuildDynamicEntity(wreckEntity)) {
             sLog.Error("Client::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
-            //throw PyException( MakeCustomError("Unable to spawn wreck of type %u.", wreckTypeID));
+            //; /** @todo make error msg here */  //  PyException( MakeCustomError("Unable to spawn wreck of type %u.", wreckTypeID));
 			return;
-		}
+        }
+
+        _log(PHYSICS__TRACE, "Ship::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
+        GetName(), GetID(), x(), y(), z(), m_destiny->GetPosition().x, m_destiny->GetPosition().y, m_destiny->GetPosition().z);
+
 
 		/** @todo Place random selection of Ship's inventory into container of wreck */
 		// For now, just transfer everything in the Ship's inventory to the wreck
@@ -693,5 +690,4 @@ void Ship::Killed(Damage &fatal_blow) {
         if (sConfig.rates.secRate != 1.0) loss *= sConfig.rates.secRate;
         pClient->GetChar()->secStatusChange( loss );
     }
-
 }

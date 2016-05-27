@@ -709,7 +709,7 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
 }
 
 bool InventoryDB::LoadTypeAttributes(uint32 typeID, EVEAttributeMgr &into) {
-    DgmTypeAttributeSet *attrset = sDgmTypeAttrMgr.GetDmgTypeAttributeSet(typeID);
+    DgmTypeAttributeSet *attrset = sDgmTypeAttrMgr.GetDgmTypeAttributeSet(typeID);
 
     // if not found return true because there can be items without attributes I guess
     if (attrset == NULL)
@@ -1551,7 +1551,7 @@ bool InventoryDB::GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into)
         into = 2;
         return true;
     } else
-        throw PyException( MakeCustomError( "Item of type: %u is not fittable (could be a rig, as they haven't been implemented)", typeID ) );
+        return false;
 }
 
 bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &into)
@@ -1564,7 +1564,6 @@ bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &i
 
     if( slotType == 0 )
     {
-        //TODO: Implement Rigs
         attributeID = 1137;
         firstFlag = 92; //rigslot0
         //slotsOnShip = ship->rigSlots();

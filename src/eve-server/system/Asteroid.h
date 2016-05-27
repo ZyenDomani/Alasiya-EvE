@@ -78,9 +78,6 @@ public:
     virtual void EncodeDestiny( Buffer& into );
     virtual void MakeDamageState(DoDestinyDamageState &into);
 
-    /* ObjectSystemEntity interface */
-    virtual void ProcessObject();
-
     /* specific functions handled in this class. */
     void Grow();
 

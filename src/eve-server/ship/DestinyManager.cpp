@@ -646,7 +646,7 @@ void DestinyManager::_Move(bool orbit) {
     }
     // hack for some fucked up movement shit where npc's have a move-type state, but have no speedFraction.
     if (mySE->IsNPCSE() and (!csf)) {
-        SetPosition(m_position);
+        SetPosition(m_position, true);
         Halt();
         return;
     }
@@ -1137,14 +1137,16 @@ void DestinyManager::_WarpUpdate(double currentShipSpeed) {
     if (m_inBubble) {
         if (m_warpState->accel)
             if (!mySE->SysBubble()->InBubble(m_position)) {
-                mySE->SystemMgr()->bubbles.Remove(mySE);
+                sBubbleMgr.Remove(mySE);
                 SetBubble(false);
             }
     } else if (!m_inBubble and m_warpState->decel) {
         if (m_targetDistance < BUBBLE_RADIUS_METERS) {    //this assumes target is center of bubble.  will have to fix one day.
             _log(DESTINY__WARP_TRACE, "DestinyManager::_WarpUpdate(): Entity %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() .", \
                     mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
-            mySE->SystemMgr()->bubbles.Add(mySE, true);
+            sBubbleMgr.Add(mySE, true);
+            SetPosition(m_position, true);
+            /*
             DoDestiny_SetBallVelocity bv;
                 bv.entityID = mySE->GetID();
                 bv.x = m_velocity.x;
@@ -1152,6 +1154,7 @@ void DestinyManager::_WarpUpdate(double currentShipSpeed) {
                 bv.z = m_velocity.z;
             PyTuple *up = bv.Encode();
             SendSingleDestinyUpdate(&up);
+            */
             SetBubble(true);
         }
     }
@@ -1164,10 +1167,7 @@ void DestinyManager::_WarpStop(double currentShipSpeed) {
             mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
 
     m_targetPoint += (m_warpState->warp_vector *10000);
-    // this should be a self-only update (do NOT bubblecast it).  server is tracking movement correctly, so entities in bubble
-    //  have the correct position of entering client, but client <-> server math is a lil bit off....
-    // so client will neeed to be updated to where server says the ship position is.  (no desync on existing clients)
-    //SetPosition(m_position, false, true);
+    //SetPosition(m_position, false);
     // SetSpeedFraction() checks for State = Warp and warpstate != null to set decel variables correctly with warp decel.
     //   have to call this BEFORE deleting or reseting State or WarpState.
     m_speedToLeaveWarp = m_maxShipSpeed *0.75f;
@@ -1575,13 +1575,13 @@ PyResult DestinyManager::AttemptDockOperation() {
     return nullptr;
 }
 
-void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/, bool selfOnly /*false*/) {
+void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
     m_position = pt;
 
-    //Relocate() needed to set InventoryItemRef.m_position correctly. (for other position references)
+    //Relocate() needed to set InventoryItemRef.m_position correctly. (for all position references)
     mySE->GetSelf()->Relocate(pt);
 
-    if (selfOnly) {         //according to packet sniffs, this is only used for 'Structure' items
+    if (mySE->IsPOSSE()) {         //according to packet sniffs, this is only used for 'Structure' items
         DoDestiny_SetBallPosition du;
             du.entityID = mySE->GetID();
             du.x = m_position.x;

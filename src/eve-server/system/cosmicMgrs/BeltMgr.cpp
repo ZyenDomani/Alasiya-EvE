@@ -90,7 +90,7 @@ bool BeltMgr::CheckSpawn(uint16 bubbleID)
 
 bool BeltMgr::IsSpawned(uint16 bubbleID)
 {
-    uint32 beltID = m_system->bubbles.GetSpawnID(bubbleID);
+    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
     std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
     if (itr != m_spawned.end())
         return itr->second;
@@ -111,7 +111,7 @@ void BeltMgr::TriggerGrowth() {
 bool BeltMgr::Load(uint16 bubbleID) {
     std::vector<DBAsteroidSE> entities;
     entities.clear();
-    uint32 beltID = m_system->bubbles.GetSpawnID(bubbleID);
+    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
     m_db.LoadSystemRoids(m_systemID, beltID, entities);
     if (entities.empty()) return false;
 
@@ -127,7 +127,7 @@ bool BeltMgr::Load(uint16 bubbleID) {
             continue;
         }
         _log(COSMIC_MGR__TRACE, "BeltMgr::Load() - Loaded asteroid %u, type %u for %s(%u)", entity.itemID, entity.typeID, m_system->GetName().c_str(), m_systemID );
-        m_system->bubbles.Add( asteroidObj );
+        sBubbleMgr.Add( asteroidObj );
         m_asteroids.emplace(std::pair<uint32, AsteroidSE*>(beltID, asteroidObj));
     }
     std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
@@ -217,7 +217,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID)
     GPoint mposition = NULL_ORIGIN;
     double roidradius = 0, theta = 0;
     double degreeSeperation = (180/pcs);
-    uint32 beltID = m_system->bubbles.GetSpawnID(bubbleID);
+    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
     SystemEntity *se = m_system->GetSEFromInventory(beltID);
     GPoint center = se->SysBubble()->GetCenter();
 
@@ -267,7 +267,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
     i->SaveAttributes();
 
     AsteroidSE* new_roid = new AsteroidSE( i, *(m_system->GetServiceMgr()), m_system );
-    m_system->bubbles.Add( new_roid );
+    sBubbleMgr.Add( new_roid );
     m_asteroids.emplace(std::pair<uint32, AsteroidSE*>(beltID, new_roid));
 }
 

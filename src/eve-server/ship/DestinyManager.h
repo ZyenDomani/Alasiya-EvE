@@ -69,7 +69,7 @@ public:
 
     /* Configuration methods */
     void SetBubble(bool set = false)                    { m_inBubble = set; }
-    void SetPosition(const GPoint &pt, bool update=false, bool selfOnly=false);
+    void SetPosition(const GPoint& pt, bool update = false);
     void SetMaxVelocity(double maxVelocity);
     void SetShipVariables(InventoryItemRef ship);
     void SetShipCapabilities(InventoryItemRef ship, bool undock = false);

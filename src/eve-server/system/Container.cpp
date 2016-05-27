@@ -130,7 +130,7 @@ void CargoContainer::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) c
             capacityUsed += cur->GetAttribute(AttrVolume);
         capacityUsed += item->GetAttribute(AttrVolume);
         if (capacityUsed > GetAttribute(AttrCapacity) )
-            throw PyException( MakeCustomError( "Not enough cargo space!") );
+            ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Not enough cargo space!") );
     }
 }
 

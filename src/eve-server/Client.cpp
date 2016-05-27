@@ -129,7 +129,7 @@ Client::~Client() {
 	 *		5)  _warp to random point, but DONT make/update new bubble with entering ship
 	 *		6)  remove client from sysmgr/destiny/server
      */
-        m_ship->OfflineAll();
+        //m_ship->OfflineAll();
         SaveAllToDatabase();
 
         if (IsDocked()) {
@@ -317,12 +317,11 @@ void Client::ProcessClient() {
 
 void Client::SetDestiny(bool count) {
     if (!pShipSE or !pShipSE->DestinyMgr()) {
-       _log(CLIENT__ERROR, "Ship's DestinyMgr is null. bad things may happen now");
+       _log(CLIENT__ERROR, "Ship's DestinyMgr is null. Bad Things may happen now");
        return;
     }
-    m_system->AddClient(this, IsDocked(), count);
+    m_system->AddClient(this, false, count);
     if (IsSolarSystem(m_locationID)) {
-        //m_bubbleWait = /*true*/false;
         m_setStateSent = false;
         if (m_ship->position().isZero())
             MoveToPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()));
@@ -348,7 +347,7 @@ void Client::WarpIn() {
     GPoint warpToPoint(m_ship->position());
     GPoint warpFromPoint(m_ship->position());
     warpFromPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
-    pShipSE->DestinyMgr()->SetPosition(warpFromPoint, false, true);
+    pShipSE->DestinyMgr()->SetPosition(warpFromPoint, false);
     pShipSE->DestinyMgr()->WarpTo(warpToPoint);        // Warp ship from the random login point to the position saved on last disconnect
 }
 
@@ -358,7 +357,7 @@ void Client::WarpOut() {
     snprintf(ci, sizeof(ci), "Logout (%s)", GetName());
     m_ship->SetCustomInfo(ci);
     if (!InPod())
-        m_ship->SetFlag(flagShipOffline);
+        m_ship->SetFlag(flagShipOffline, false);
     m_system->RemoveEntity(pShipSE);
     return;
     m_invulTimer.Start(/*InvulTimer::*/WarpingOutInvul);
@@ -538,6 +537,7 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     sLog.Log("Client::UndockFromStation()", "Character %s(%u) undocking from stationID() %u", \
                 m_char->itemName().c_str(), m_char->itemID(), stationID);
 
+    m_setStateSent = false;
     m_invul = m_undock = true;
     //set position and direction of docking ramp for later use
     m_dockPoint = dockPosition;
@@ -560,10 +560,10 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
 
 void Client::SetBallPark() {
     // called when beyonce is created (only when in space(undock, jump, login InSpace))
-    m_login = m_bubbleWait = false;
     if (!pShipSE->SysBubble())
         m_system->AddEntity(pShipSE);
-    if (!m_setStateSent)
+    m_login = m_bubbleWait = false;
+    if (!m_setStateSent and !m_undock)
         pShipSE->DestinyMgr()->SendSetState();
     if (m_undock) {
         pShipSE->DestinyMgr()->Undock(m_movePoint);
@@ -1233,7 +1233,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
     if (!update or !(*update)) return;
     DoDestinyAction act;
         act.stamp = sEntityList.GetStamp();
-    if (DoPackage/* or m_packaged*/) {
+    if (0 and DoPackage/* or m_packaged*/) {
         if (IsSetState) {
             // send the setstate buffer alone
             act.update = *update;

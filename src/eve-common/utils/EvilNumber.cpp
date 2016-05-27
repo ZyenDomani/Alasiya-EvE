@@ -278,8 +278,7 @@ PyRep* EvilNumber::GetPyObject()
             return (PyRep*)new PyLong(mValue.iVal);
         else
             return (PyRep*)new PyInt((int32)(mValue.iVal));
-    }
-    else if (mType == evil_number_float)
+    } else if (mType == evil_number_float)
         return (PyRep*)new PyFloat(mValue.fVal);
     else {
         assert(false);

@@ -61,7 +61,7 @@ TargetManager::~TargetManager() {
 // this from their destructor.
 void TargetManager::DoDestruction() {
     if (!m_destroyed && mySE) {
-        ClearTargets(false);
+        ClearTargets();
     }
 }
 

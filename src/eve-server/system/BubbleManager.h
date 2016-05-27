@@ -41,11 +41,14 @@ class GPoint;
 // linear search. obviously a much better spacial partitioning
 // scheme could be written later (octtree or quadtree maybe?)
 // and this would be the place to put it.
-class BubbleManager {
+class BubbleManager
+: public Singleton<BubbleManager>
+{
 public:
     BubbleManager();
     ~BubbleManager();
 
+    void Init();
     void Process();
 
     //call whenever an entity may have left its bubble.
@@ -77,5 +80,10 @@ protected:
     std::vector<SystemBubble*> m_bubbles;    //we own these. Dynamic only because I am afraid of copy activities.
     std::vector<SystemEntity *> m_wanderers;    //create space for them here, so they're not created upon every call.
 };
+
+//Singleton
+#define sBubbleMgr \
+( BubbleManager::get() )
+
 
 #endif

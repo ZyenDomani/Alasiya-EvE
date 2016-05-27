@@ -48,7 +48,7 @@ namespace Destiny {
 
 void DumpUpdate(LogType into, const uint8 *data, uint32 len) {
     const AddBall_header *global_head = (const AddBall_header *) data;
-    _log(into, "AddBall: packet_type=%d, sequence=%d (len %d)", global_head->packet_type, global_head->eventStamp, len);
+    _log(into, "Ball: packet_type=%d, sequence=%d (len %d)", global_head->packet_type, global_head->eventStamp, len);
     data += sizeof(AddBall_header);
     len -= sizeof(AddBall_header);
 
@@ -73,7 +73,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         return 0;
     }
 
-    _log(into, "AddBall: entity=%d, mode=%s (%d) flags=0x%X",
+    _log(into, "Ball: entity=%d, mode=%s (%d) flags=0x%X",
         ballhead->entityID, DSTBALL_modeNames[ballhead->mode], ballhead->mode, ballhead->flags);
     _log(into, "   x=%.3f, y=%.3f, z=%.3f, radius=%.2f",
         ballhead->x, ballhead->y, ballhead->z, ballhead->radius);

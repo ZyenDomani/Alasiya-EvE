@@ -124,7 +124,7 @@ void SpawnMgr::Process() {
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
-    // called in SystemManager::ProcessDestiny() for each system.  this will need to be fast.
+    // called by SystemManager::Process() for each system.  this will need to be fast.
     //  check timers and call approprate functions as needed.
 
     // this will be initial spawn timer for system.

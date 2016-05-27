@@ -121,6 +121,7 @@ void EntityList::Process() {
     if (m_stampTimer.Check()) {
         ++m_stamp;
         sWHMgr.Process();
+        sBubbleMgr.Process();
 
         for (auto cur : m_clients)
             if (cur->GetLocationID())
@@ -135,8 +136,8 @@ void EntityList::Process() {
                 continue;
             } else if (!itr->second->ProcessTic()) {    /* Process each loaded system */
                 itr->second->UnloadSystem();
-                SafeDelete(itr->second);
-                itr = m_systems.erase(itr);
+                //SafeDelete(itr->second);      /* comment this until system unloading is finished...this is working as intended */
+                //itr = m_systems.erase(itr);
                 continue;
             }
             ++itr;

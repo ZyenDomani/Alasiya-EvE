@@ -44,6 +44,11 @@ BubbleManager::~BubbleManager() {
     clear();
 }
 
+void BubbleManager::Init() {
+    /* just to create the singleton here */
+    sLog.Success("   Bubble Manager", "Bubble Manager Initialized.");
+}
+
 void BubbleManager::clear() {
     for (auto cur : m_bubbles)
         SafeDelete(cur);
@@ -158,6 +163,10 @@ void BubbleManager::Remove(SystemEntity *ent) {
 /** @todo  the following 2 methods can be optimized by using a stl container (multimap?)
  * with bubbles entered by <systemID, bubbleID> to search only bubbles in desired system,
  * greatly reducing the search time for many loaded systems, which average 70 bubbles each
+ *
+ *  NOTE:  testing idea of having only non-static items in bubbles.
+ * the idea is to NOT have sun, planet, moon in bubbles. (bubble is smaller than object anyway)
+ * this cuts number of bubbles drastically, dropping average to 10bbl/system
  */
 SystemBubble* BubbleManager::FindBubble(SystemEntity *ent) const {
     GPoint pos = ent->GetPosition();

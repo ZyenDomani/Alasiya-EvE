@@ -564,9 +564,9 @@ PyDict* ShipItem::GetShipInfo()
         if (cur->Populate(entry)) {
             if (cur->groupID() == EVEDB::invCategories::Charge) {
                 PyTuple* tuple = new PyTuple(3);
-                tuple->SetItem(0, new PyInt(cur->itemID()));
-                tuple->SetItem(1, new PyInt(cur->flag()));
-                tuple->SetItem(2, new PyInt(cur->typeID()));
+                    tuple->SetItem(0, new PyInt(cur->itemID()));
+                    tuple->SetItem(1, new PyInt(cur->flag()));
+                    tuple->SetItem(2, new PyInt(cur->typeID()));
                 result->SetItem(tuple, new PyObject("util.KeyVal", entry.Encode()));
             } else {
                 result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry.Encode()));

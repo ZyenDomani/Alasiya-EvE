@@ -716,6 +716,23 @@ PyResult Command_setbpattr(Client* who, CommandDB* db, PyServiceMgr* services, c
     return new PyString("Properties modified.");
 }
 
+PyResult Command_update(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
+    if (!who->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->SysBubble())
+        who->EnterSystem(who->GetSystemID());
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny();
+
+    who->GetShipSE()->DestinyMgr()->SetPosition(who->GetShipSE()->GetPosition(), true);
+
+    SystemBubble *m_bubble = who->GetShipSE()->SysBubble();
+    m_bubble->SendAddBalls(who->GetShipSE());
+    
+    who->SetStateSent(false);
+    who->GetShipSE()->DestinyMgr()->SendSetState();
+    return new PyString("Update sent.");
+}
 PyResult Command_sendstate(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
@@ -782,6 +799,8 @@ PyResult Command_getattr(Client* who, CommandDB* db, PyServiceMgr* services, con
 
 PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
+    throw PyException(MakeCustomError("disabled"));
+    if (0) {
     if (args.argCount() < 4) {
         throw PyException(MakeCustomError("Correct Usage: /setattr [itemID] [attributeID] [value]"));
     }
@@ -805,7 +824,7 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
 
     if (!args.isNumber(2))
         throw PyException(MakeCustomError("2nd argument must be attributeID (got %s).", args.arg(2).c_str()));
-    const ItemAttributeMgr::Attr attribute = (ItemAttributeMgr::Attr)atoi(args.arg(2).c_str());
+    //const ItemAttributeMgr::Attr attribute = (ItemAttributeMgr::Attr)atoi(args.arg(2).c_str());
 
     if (!args.isNumber(3))
         throw PyException(MakeCustomError("3rd argument must be value (got %s).", args.arg(3).c_str()));
@@ -820,9 +839,10 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
 
     //item->attributes.SetReal(attribute, value);
     sLog.Warning("GMCommands: Command_setattr()", "This command will modify attribute and send change to client, but change does not take effect in client for some reason.");
-    item->SetAttribute(attribute, (float)value);
+   // item->SetAttribute(attribute, (float)value);
 
     return new PyString("Operation successful.");
+    }
 }
 
 PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)

@@ -49,9 +49,11 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
 }
 
 void SystemEntity::Process() {
-    /*  Enable base call to Process Targeting  */
+    /*  Enable base call to Process Targeting and Movement  */
     if (m_targMgr)
         m_targMgr->Process();
+    if (m_destiny)
+        m_destiny->Process();
 }
 
 double SystemEntity::GetRadius() {
@@ -458,11 +460,6 @@ DynamicSystemEntity::DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &se
 
 DynamicSystemEntity::~DynamicSystemEntity() {
     SafeDelete(m_targMgr);
-}
-
-void DynamicSystemEntity::ProcessDestiny() {
-    if (m_destiny)
-        m_destiny->Process();
 }
 
 bool DynamicSystemEntity::Load(ServiceDB &from) {
