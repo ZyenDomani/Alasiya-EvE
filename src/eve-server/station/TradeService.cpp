@@ -320,6 +320,7 @@ PyResult TradeBound::Handle_GetItemID(PyCallArgs &call) {
     return new PyNone;
 }
 
+/** @todo  refresh other window when item added */
 PyResult TradeBound::Handle_Add(PyCallArgs &call) {
     _log(CLIENT__CALL_DUMP, "TradeBound::Handle_Add() size=%u", call.tuple->size() );
     call.Dump(CLIENT__CALL_DUMP);
