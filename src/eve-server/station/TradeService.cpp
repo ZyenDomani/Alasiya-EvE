@@ -511,8 +511,9 @@ PyResult TradeBound::Handle_List(PyCallArgs &call) {
         header->AddColumn( "ownerID",    DBTYPE_I4 );
         header->AddColumn( "locationID", DBTYPE_I8 );
         header->AddColumn( "flagID",     DBTYPE_I2 );
-        header->AddColumn( "quantity",   DBTYPE_I4 );
+        header->AddColumn( "stacksize",  DBTYPE_I4 );
         header->AddColumn( "groupID",    DBTYPE_I2 );
+        header->AddColumn( "singleton",  DBTYPE_BOOL );
         header->AddColumn( "categoryID", DBTYPE_I4 );
         header->AddColumn( "customInfo", DBTYPE_STR );
     for (auto itr : pTSes->m_tradelist) {
@@ -524,6 +525,7 @@ PyResult TradeBound::Handle_List(PyCallArgs &call) {
             row->SetField( "flagID",        new PyInt(itr.flagID));
             row->SetField( "stacksize",     new PyInt(itr.quantity));
             row->SetField( "groupID",       new PyInt(itr.groupID));
+            row->SetField( "singleton",     new PyBool(itr.singleton));
             row->SetField( "categoryID",    new PyInt(itr.categoryID));
             row->SetField( "customInfo",    new PyString(itr.customInfo));
         list->AddItem(row);
