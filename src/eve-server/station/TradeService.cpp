@@ -20,8 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Luck
-    Updates:    Allan
+    Author:        Luck (outline only)
+    Updates:    Allan   (coded working system)
 */
 
 #include "eve-server.h"
@@ -338,7 +338,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
     if (!itemRef)  {
         _log(SERVICE__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
         //  should i abort trade, or just return null here?  single add, so not a big deal.
-        //     return null, let them try again if they want.
+        //     return null, let them try again if they want.  maybe later add config option?
         //Handle_Abort(call);   << this will cancel and nullify the trade session
         return new PyNone;
     }
@@ -474,7 +474,7 @@ PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
         header->AddColumn( "categoryID", DBTYPE_I4 );
         header->AddColumn( "customInfo", DBTYPE_STR );
     PyPackedRow* row = new PyPackedRow( header );
-    row->SetField( "itemID",        new PyLong(pTSes->m_tradeSession.containerID));
+        row->SetField( "itemID",        new PyLong(pTSes->m_tradeSession.containerID));
         row->SetField( "typeID",        new PyInt(53));     // type Trade Window
         row->SetField( "ownerID",       new PyInt(1));      // EvE_System
         row->SetField( "locationID",    new PyLong(pTSes->m_tradeSession.stationID));
@@ -524,7 +524,6 @@ PyResult TradeBound::Handle_List(PyCallArgs &call) {
             row->SetField( "flagID",        new PyInt(itr.flagID));
             row->SetField( "stacksize",     new PyInt(itr.quantity));
             row->SetField( "groupID",       new PyInt(itr.groupID));
-            row->SetField( "singleton",     new PyBool(itr.singleton));
             row->SetField( "categoryID",    new PyInt(itr.categoryID));
             row->SetField( "customInfo",    new PyString(itr.customInfo));
         list->AddItem(row);
