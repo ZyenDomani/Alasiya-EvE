@@ -22,9 +22,9 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 5.5
+    Log Version: 5.7
 */
- /*  see log.ini for matching versions */
+ /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
 #ifndef LOG_CATEGORY
 #define LOG_CATEGORY(name)
@@ -216,6 +216,7 @@ LOG_TYPE( DESTINY, UPDATES, DISABLED, "DestinyUpdate" )
 LOG_TYPE( DESTINY, BUBBLE_DEBUG, DISABLED, "BubbleDebug" )
 LOG_TYPE( DESTINY, BUBBLE_TRACE, DISABLED, "BubbleTrace" )
 LOG_TYPE( DESTINY, BUBBLECAST, DISABLED, "BubbleCast" )
+LOG_TYPE( DESTINY, BUBBLECAST_DUMP, DISABLED, "BubbleCastDump" )
 LOG_TYPE( DESTINY, MOVE_TRACE, DISABLED, "MoveTrace" )
 LOG_TYPE( DESTINY, TURN_TRACE, DISABLED, "TurnTrace" )
 LOG_TYPE( DESTINY, WARP_TRACE, DISABLED, "WarpTrace" )

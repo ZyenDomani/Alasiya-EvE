@@ -490,12 +490,19 @@ bool SystemManager::BootSystem() {
 //called once per second from EntityList. (1Hz Tic)
 bool SystemManager::ProcessTic() {
     /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid when SE->Process() returns
-     * because Process() will add/remove from the map as needed
+     * because Process() will add/remove from the map as needed (new objects, destroyed objects, moved objects, etc)
      * still unsure how to prevent crashes when dereferencing an invalid SE in the current iterator
      * without starting over when the list has changed...which will run all previous entities thru Process() again.
+     *
+     * this current incarnation is working very well, with the exception of starting over and making multiple calls in single tic.
      */
     std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
     while (cur != m_entities.end()) {
+        if (m_entityChanged) {
+            m_entityChanged = false;
+            cur = m_entities.begin();
+            continue;
+        }
         cur->second->Process(); /* main process call. */
         if (m_entityChanged) {
             m_entityChanged = false;
@@ -724,7 +731,34 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
      *    PyPackedRow* res = new PyPackedRow( header );
      */
     into.solItem = m_db.GetSolItem( m_systemID );
-
+    /*
+     *    PyList* list = new PyList();
+     *
+     *    DBRowDescriptor* header = new DBRowDescriptor;
+     *        header->AddColumn( "itemID",     DBTYPE_I8 );
+     *        header->AddColumn( "typeID",     DBTYPE_I4 );
+     *        header->AddColumn( "ownerID",    DBTYPE_I4 );
+     *        header->AddColumn( "locationID", DBTYPE_I8 );
+     *        header->AddColumn( "flagID",     DBTYPE_I2 );
+     *        header->AddColumn( "quantity",   DBTYPE_I4 );
+     *        header->AddColumn( "groupID",    DBTYPE_I2 );
+     *        header->AddColumn( "categoryID", DBTYPE_I4 );
+     *        header->AddColumn( "customInfo", DBTYPE_STR );
+     *    for (auto itr : pTSes->m_tradelist) {
+     *        PyPackedRow* row = new PyPackedRow( header );
+     *            row->SetField( "itemID",        new PyLong(itr.itemID));
+     *            row->SetField( "typeID",        new PyInt(itr.typeID));
+     *            row->SetField( "ownerID",       new PyInt(itr.ownerID));
+     *            row->SetField( "locationID",    new PyLong(itr.locationID));
+     *            row->SetField( "flagID",        new PyInt(itr.flagID));
+     *            row->SetField( "stacksize",     new PyInt(itr.quantity));
+     *            row->SetField( "groupID",       new PyInt(itr.groupID));
+     *            row->SetField( "singleton",     new PyBool(itr.singleton));
+     *            row->SetField( "categoryID",    new PyInt(itr.categoryID));
+     *            row->SetField( "customInfo",    new PyString(itr.customInfo));
+     *        list->AddItem(row);
+}
+*/
     /*
      *        [PyString "solItem"]
      *        [PyPackedRow 40 bytes]

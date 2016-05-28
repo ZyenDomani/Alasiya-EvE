@@ -931,12 +931,13 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
             else
                 m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->Cloak();
             targetNotNeeded =true;
+            /** @todo  not working right....check for attrib '10' being added and error msgs with ServerError 25610
         } else if (effectName == "speedBoostMassAddition") {    // AB
             mod->Activate(nullptr);
             targetNotNeeded =true;
         } else if (effectName == "speedBoostMassSigRad") {  //MicroWarpdrive
             mod->Activate(nullptr);
-            targetNotNeeded =true;
+            targetNotNeeded =true;*/
         } else if (effectName == "damageControl") { //DCM
             mod->Activate(nullptr);
             targetNotNeeded =true;

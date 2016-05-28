@@ -747,6 +747,8 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef equip) {
 }
 
 void ShipItem::ProcessModules() {
+    if (m_pilot->IsDocked())
+        return;
     m_ModuleManager->Process();
 }
 

@@ -1308,7 +1308,8 @@ void DestinyManager::Orbit(SystemEntity *who, double distance, bool update) {
 }
 
 void DestinyManager::AlignTo(SystemEntity* ent) {
-    GotoPoint(ent->GetPosition());
+    //GotoPoint(ent->GetPosition());
+    Follow(ent, 0);
 }
 
 void DestinyManager::GotoDirection(const GPoint& direction) {
@@ -1555,7 +1556,7 @@ PyResult DestinyManager::AttemptDockOperation() {
         oda.stationID = stationID;
     PyTuple* ev = oda.Encode();
     // now send it, bypassing the extra shit and wrong dest name added in Client::SendNotification
-    ev->Dump(DESTINY__UPDATES, "");
+    //ev->Dump(DESTINY__UPDATES, "");
     pClient->SendNotification("OnDockingAccepted", "charid", &ev);
 
     // per client packet sniff
@@ -2124,11 +2125,11 @@ void DestinyManager::SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self
 }
 
 void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vector<PyTuple*>& events, bool self_only ) const {
+    _log(DESTINY__UPDATES, "[%u] Sending destiny update (u:%lu, e:%lu) to Pilot %u for Ship %u", \
+                sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetPilot()->GetCharacterID(), mySE->GetID() );
     if (self_only) {
         _log(PLAYER__MESSAGE, "DestinyManager::SendDestinyUpdate() called as 'self_only' for %s(%u)", \
                     mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
-        _log(DESTINY__UPDATES, "[%u] Sending destiny update (u:%lu, e:%lu) to Pilot %u. for Ship %u", \
-                    sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetPilot()->GetCharacterID(), mySE->GetID() );
 
         std::vector<PyTuple*>::iterator cur = updates.begin();
         for(; cur != updates.end(); cur++) {

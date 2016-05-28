@@ -67,7 +67,7 @@ public:
         // these functions are only called when beyonce is created. (fix for BlackScreen Bug)
         if (pClient->IsJump())
             pClient->IsJumping();
-        else if (pClient->IsInSpace())
+        else if (pClient->IsLogin())
             pClient->SetBallPark();
 
         pClient->SetBeyonce(true);

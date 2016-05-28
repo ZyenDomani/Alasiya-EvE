@@ -176,8 +176,6 @@ public:
     void SetDockPoint(GPoint &pt)                   { m_dockPoint = pt; }
     uint32 GetDockStationID()                       { return m_dockStationID; };
     GPoint GetDockPoint()                           { return m_dockPoint; }
-    bool GetPendingDockOperation()                  { return m_needToDock; };
-    void SetPendingDockOperation(bool needToDock)   { m_needToDock = needToDock; }
     bool InPod()                                    { return (m_ship->groupID() == EVEDB::invGroups::Capsule ? true : false); }
     bool IsInSpace()                                { return (IsSolarSystem(m_locationID) ? true : false); }
     bool IsDocked()                                 { return (IsStation(m_locationID) ? true : false); }
@@ -255,19 +253,19 @@ public:
     TradeSession* GetTradeSession()                     { return m_TS; }
 
 protected:
-    //void _AwardBounty(SystemEntity *who);
-    void _DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
-
-    void _UpdateSession( const CharacterConstRef& character );
-    void InitSession( uint32 characterID  );
-    void DestroyShipSE();
-
     // Packet stuff
     void _SendCallReturn( const PyAddress& source, uint64 callID, uint32 clientID, PyRep** return_value, const char* channel = NULL );
     void _SendException( const PyAddress& source, uint64 callID, MACHONETMSG_TYPE in_response_to, MACHONETERR_TYPE exception_type, PyRep** payload );
     void SendSessionChange();
     void _SendPingRequest();
     void _SendPingResponse( const PyAddress& source, uint64 callID );
+
+    //void _AwardBounty(SystemEntity *who);
+    void _DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
+
+    void _UpdateSession( const CharacterConstRef& character );
+    void InitSession( uint32 characterID  );
+    void DestroyShipSE();
 
     PyServiceMgr& m_services;
     Timer m_pingTimer;
@@ -286,10 +284,10 @@ protected:
 
     std::set<LSCChannel*> m_channels;    //we do not own these.
 
-    //this whole move system is a piece of crap:
     typedef enum {
         msIdle,
-        msJump
+        msJump,
+        msUndock
     } _MoveState;
     void _postMove(_MoveState type, uint32 wait_ms=500);
     _MoveState m_moveState;
@@ -312,7 +310,6 @@ protected:
     uint32 m_moveSystemID;
     uint32 m_dockStationID;
     void _ExecuteJump();
-    bool m_needToDock;
     bool m_login;
     bool m_undock;
     bool m_bubbleWait;
@@ -320,14 +317,12 @@ protected:
     bool m_beyonce;
     bool m_setStateSent;
     bool m_sessionChangeActive; // used to delay actions requiring destiny updates
-
     bool m_packaged;        // used to correctly package updates into a PackagedAction list
 
     std::map<uint32, bool> m_hangarLoaded;
 
     // set true for using autopilot.
     bool m_autoPilot = false;
-
 
     EvilNumber m_timeEndTrain;
 

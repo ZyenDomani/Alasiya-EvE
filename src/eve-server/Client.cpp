@@ -93,7 +93,6 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_packaged = false;
     m_autoPilot = false;
     m_bubbleWait = true;
-    m_needToDock = false;
     m_setStateSent = false;
     m_sessionChangeActive = false;
 
@@ -286,7 +285,11 @@ void Client::ProcessClient() {
             case msIdle: {
                 sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
             } break;
-            case msJump: {//used to delay stargate animation
+            case msUndock: {
+                SetBallPark();
+                m_moveState = msIdle;
+            } break;
+            case msJump: {
                 _log(CLIENT__TRACE, "Client::ProcessClient():  case: msJump");
                 _ExecuteJump();
             } break;
@@ -322,13 +325,14 @@ void Client::SetDestiny(bool count) {
     }
     m_system->AddClient(this, false, count);
     if (IsSolarSystem(m_locationID)) {
-        m_setStateSent = false;
         if (m_ship->position().isZero())
             MoveToPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()));
         if (count and !m_login)
             pShipSE->GetShipSE()->ResetShipSystemMgr(m_system);
         m_system->AddEntity(pShipSE);
         m_bubbleWait = false;
+        m_setStateSent = false;
+        //if (m_beyonce) return;
         if (!m_login)
             SetBallPark();
     } else
@@ -383,8 +387,7 @@ void Client::LoginToSystem(uint32 systemID, ShipItemRef ship) {
         m_ship->AddItem(m_char);
         UpdateSessionInt("shipid", m_shipId);
         CreateShipSE();
-        MoveToLocation(systemID, m_ship->position());  // this may not be needed...check later....doesnt do anything if not needed.
-        SetDestiny(true);
+        MoveToLocation(systemID, m_ship->position());
         WarpIn();
         m_char->AddPilotToDynamicData(systemID, true, false, true);
         m_invulTimer.Start(20000);
@@ -406,6 +409,8 @@ void Client::LoginToSystem(uint32 systemID, ShipItemRef ship) {
     }
 
     m_ship->SetCustomInfo(ci);
+    _UpdateSession(m_char);
+    SendSessionChange();
 }
 
 bool Client::EnterSystem(uint32 systemID) {
@@ -537,7 +542,6 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     sLog.Log("Client::UndockFromStation()", "Character %s(%u) undocking from stationID() %u", \
                 m_char->itemName().c_str(), m_char->itemID(), stationID);
 
-    m_setStateSent = false;
     m_invul = m_undock = true;
     //set position and direction of docking ramp for later use
     m_dockPoint = dockPosition;
@@ -553,17 +557,17 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     MoveToLocation(systemID, dockPosition);
     m_ship->Undock();
     OnCharNoLongerInStation();
+    _postMove(msUndock, 1000);
     m_invulTimer.Start(/*InvulTimer::*/UndockingInvul);
     SetSessionTimer();
     SetBallPark();
 }
 
 void Client::SetBallPark() {
-    // called when beyonce is created (only when in space(undock, jump, login InSpace))
+    m_login = m_bubbleWait = false;
     if (!pShipSE->SysBubble())
         m_system->AddEntity(pShipSE);
-    m_login = m_bubbleWait = false;
-    if (!m_setStateSent and !m_undock)
+    if (!m_setStateSent)
         pShipSE->DestinyMgr()->SendSetState();
     if (m_undock) {
         pShipSE->DestinyMgr()->Undock(m_movePoint);
@@ -582,7 +586,6 @@ void Client::DockToStation() {
     if (m_ship->typeID() == itemTypeCapsule)
         SpawnNewRookieShip();
 
-    m_ship->SetFlag(flagHangar);
     SetSessionTimer();
 }
 
@@ -652,6 +655,7 @@ void Client::CreateShipSE() {
     pShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system);
     _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->itemName().c_str(), m_char->itemID());
     pShipSE->SetPilot(this);
+    //SetDestiny(!m_undock);
     pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
 }
 
@@ -1015,11 +1019,15 @@ void Client::OnCharNoLongerInStation() {
         n.allianceID = GetAllianceID();
         n.factionID = GetWarFactionID();
     PyTuple* tmp = n.Encode();
+    PyTuple* up = tmp;
     std::vector<Client*> clients;
     clients.clear();
     sEntityList.FindClientByStationID(m_locationID, clients);
-    for (auto cur : clients)
-        cur->SendNotification("OnCharNoLongerInStation", "stationid", &tmp);
+    for (auto cur : clients) {
+        if (!up)
+            up = new PyTuple( *tmp );
+        cur->SendNotification("OnCharNoLongerInStation", "stationid", &up); //consumed
+    }
 }
 
 void Client::OnCharNowInStation() {
@@ -1029,11 +1037,15 @@ void Client::OnCharNowInStation() {
         n.allianceID = GetAllianceID();
         n.warFactionID = GetWarFactionID();
     PyTuple* tmp = n.Encode();
+    PyTuple* up = tmp;
     std::vector<Client*> clients;
     clients.clear();
     sEntityList.FindClientByStationID(m_locationID, clients);
-    for (auto cur : clients)
-        cur->SendNotification("OnCharNowInStation", "stationid", &tmp);
+    for (auto cur : clients) {
+        if (!up)
+            up = new PyTuple( *tmp );
+        cur->SendNotification("OnCharNowInStation", "stationid", &up);
+    }
 }
 
 void Client::UpdateSessionInt(const char *sessionType, int value)
@@ -1233,7 +1245,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
     if (!update or !(*update)) return;
     DoDestinyAction act;
         act.stamp = sEntityList.GetStamp();
-    if (0 and DoPackage/* or m_packaged*/) {
+    if (DoPackage/* or m_packaged*/) {
         if (IsSetState) {
             // send the setstate buffer alone
             act.update = *update;
@@ -1343,7 +1355,7 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
         p->named_payload->SetItemString("sn", new PyInt(m_nextNotifySequence++));
     }
 
-    _log(CLIENT__NOTIFY_REP, "Sending notify of type %s with ID type %s", dest.service.c_str(), dest.bcast_idtype.c_str());
+    _log(CLIENT__NOTIFY_REP, "Sending notify of type %s with ID type %s to %s", dest.service.c_str(), dest.bcast_idtype.c_str(), GetName());
     if (is_log_enabled(CLIENT__NOTIFY_DUMP)) {
         PyLogDumpVisitor dumper(CLIENT__NOTIFY_REP, CLIENT__NOTIFY_DUMP, "", true, true);
         p->Dump(CLIENT__NOTIFY_DUMP, dumper);

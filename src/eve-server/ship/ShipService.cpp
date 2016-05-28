@@ -327,10 +327,11 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
 }
 
 PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
+    /*
     if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
-    }
+    }*/
   /**
        shipsvc.Undock(shipID, ignoreContraband, onlineModules=onlineModules)
        */

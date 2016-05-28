@@ -76,7 +76,7 @@ void BubbleManager::Process() {
                 ; /* do nothing for now ... do we need to do anything with statics here?? */
             } else if ((*itr)->IsEmpty()) {
                 // Remove this bubble now that it is empty of ALL dynamic entities
-                _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
+                _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
                 itr = m_bubbles.erase(itr);
                 continue;
             } else  /* this should never happen */
