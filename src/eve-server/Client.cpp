@@ -332,7 +332,7 @@ void Client::SetDestiny(bool count) {
         m_system->AddEntity(pShipSE);
         m_bubbleWait = false;
         m_setStateSent = false;
-        //if (m_beyonce) return;
+        if (m_beyonce) return;
         if (!m_login)
             SetBallPark();
     } else
@@ -452,6 +452,9 @@ bool Client::EnterSystem(uint32 systemID) {
 }
 
 void Client::UpdateLocation(uint32 locationID) {
+    m_locationID = locationID;
+    _UpdateSession(m_char);
+    SendSessionChange();
     if (IsStation(locationID)) {
         sLog.Success("Client::UpdateLocation()", "Character %s (%u) Docked.", m_char->itemName().c_str(), m_char->itemID());
         m_ship->Relocate(NULL_ORIGIN);  // hack to set coords to 0,0,0 in db.
@@ -473,9 +476,6 @@ void Client::UpdateLocation(uint32 locationID) {
         if (m_char->flag() != flagPilot)
             m_char->Move(m_shipId, flagPilot);
     }
-    m_locationID = locationID;
-    _UpdateSession(m_char);
-    SendSessionChange();
 }
 
 void Client::MoveToLocation(uint32 location, const GPoint& pt) {
@@ -560,7 +560,7 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
     _postMove(msUndock, 1000);
     m_invulTimer.Start(/*InvulTimer::*/UndockingInvul);
     SetSessionTimer();
-    SetBallPark();
+    //SetBallPark();
 }
 
 void Client::SetBallPark() {

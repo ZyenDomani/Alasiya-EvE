@@ -1312,24 +1312,24 @@ void Ship::EncodeDestiny( Buffer& into ) {
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
         into.Append( mass );
-    ShipSector ship;
-        ship.maxVelocity = GetMaxVelocity();
-        ship.velocity_x = GetVelocity().x;
-        ship.velocity_y = GetVelocity().y;
-        ship.velocity_z = GetVelocity().z;
-        ship.agility = GetAgility();
-        ship.speedfraction = m_destiny->GetSpeedFraction();
-        into.Append( ship );
+    DataSector data;
+        data.maxVelocity = GetMaxVelocity();
+        data.velocity_x = GetVelocity().x;
+        data.velocity_y = GetVelocity().y;
+        data.velocity_z = GetVelocity().z;
+        data.agility = GetAgility();
+        data.speedfraction = m_destiny->GetSpeedFraction();
+        into.Append( data );
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
-            warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
+            warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
             warp.x = target.x;
             warp.y = target.y;
             warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.followRange = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
-            warp.followID = 0;         //unknown 64bit number
+            warp.followRange = 0;
+            warp.followID = 0;
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;

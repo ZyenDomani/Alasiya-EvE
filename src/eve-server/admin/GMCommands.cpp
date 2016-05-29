@@ -728,7 +728,7 @@ PyResult Command_update(Client *who, CommandDB *db, PyServiceMgr *services, cons
 
     SystemBubble *m_bubble = who->GetShipSE()->SysBubble();
     m_bubble->SendAddBalls(who->GetShipSE());
-    
+
     who->SetStateSent(false);
     who->GetShipSE()->DestinyMgr()->SendSetState();
     return new PyString("Update sent.");
@@ -1668,7 +1668,7 @@ PyResult Command_beltlist(Client* who, CommandDB* db, PyServiceMgr* services, co
 
     std::vector<AsteroidSE*> invMap;
     invMap.clear();
-    uint32 beltID = who->GetShipSE()->SysBubble()->GetSpawnID(who->GetShipSE()->SysBubble()->GetID());
+    uint32 beltID = sBubbleMgr.GetSpawnID(who->GetShipSE()->SysBubble()->GetID());
     BeltMgr* belt = who->GetShipSE()->SystemMgr()->GetBeltMgr();
     belt->GetList(beltID, invMap);
 

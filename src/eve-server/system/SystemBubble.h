@@ -54,7 +54,6 @@ public:
     bool IsGate()                                       { return m_gate; }
     bool IsSpawned()                                    { return m_spawned; }
     void SetSpawnTimer(bool isBelt = false);
-    uint32 GetSpawnID(uint16 bubbleID);
 
     /* various count queries */
     uint32 Count()                                      { return m_bubbleIncrementer; }
@@ -75,14 +74,15 @@ public:
 
     void clear();
     void PrintEntityList();
+
     void Add(SystemEntity* pEntity);
     void Remove(SystemEntity* pEntity);
+    void ProcessWander(std::vector< SystemEntity* >& wanderers);
+
     void SendAddBalls(SystemEntity* to_who);
     void SendAddBalls2(SystemEntity* to_who);
-    void AddExclusive(SystemEntity* pEntity);
     void RemoveExclusive(SystemEntity* pEntity);
-    void AppendBalls(SystemEntity* about_who) const;
-    void ProcessWander(std::vector< SystemEntity* >& wanderers);
+    void AddBallExclusive(SystemEntity* about_who);
 
 	void BubblecastDestiny(std::vector<PyTuple*> &updates, std::vector<PyTuple*> &events, const char* desc) const;
 	void BubblecastDestinyUpdate(std::vector<PyTuple*> &updates, const char* desc) const;
@@ -103,11 +103,9 @@ protected:
     const double m_radius;
     const double m_radius_hysteresis;
 
-    void _SendRemoveBalls(SystemEntity* to_who);
-    void _BubblecastAddBall(SystemEntity* about_who);
-    void _BubblecastAddBallExclusive(SystemEntity* about_who);
-    void _BubblecastRemoveBall(SystemEntity* about_who);
-    void _BubblecastRemoveBallExclusive(SystemEntity* about_who);
+    void RemoveBall(SystemEntity* about_who);
+    void RemoveBalls(SystemEntity* to_who);
+    void RemoveBallExclusive(SystemEntity* about_who);
 
 private:
     SystemManager* m_system = nullptr;

@@ -1859,7 +1859,7 @@ void DestinyManager::Cloak() {
 void DestinyManager::UnCloak() {
     m_cloaked = false;
     SendUncloakShip();
-    mySE->SysBubble()->AddExclusive(mySE);
+    mySE->SysBubble()->AddBallExclusive(mySE);
 }
 
 void DestinyManager::SendJettisonPacket(const InventoryItemRef fromItemRef) const {

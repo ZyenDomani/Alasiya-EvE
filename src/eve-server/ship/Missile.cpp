@@ -199,14 +199,22 @@ void Missile::EncodeDestiny( Buffer& into )
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
     into.Append( mass );
-    ShipSector ship;
-        ship.maxVelocity = GetMaxVelocity();
-        ship.velocity_x = GetVelocity().x;
-        ship.velocity_y = GetVelocity().y;
-        ship.velocity_z = GetVelocity().z;
-        ship.agility = GetAgility();
-        ship.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append( ship );
+    DataSector data;
+        data.maxVelocity = GetMaxVelocity();
+        data.velocity_x = GetVelocity().x;
+        data.velocity_y = GetVelocity().y;
+        data.velocity_z = GetVelocity().z;
+        data.agility = GetAgility();
+        data.speedfraction = m_destiny->GetSpeedFraction();
+    into.Append( data );
+    DSTBALL_MISSILE_Struct miss;
+        miss.effectStamp = m_destiny->GetStateStamp();
+        miss.followID = m_destiny->GetTargetID();
+        miss.followRange = (uint32)m_destiny->GetFollowDistance();
+        miss.x = x();
+        miss.y = y();
+        miss.z = z();
+    into.Append(miss);
 
     _log(DESTINY__MESSAGE, "Missile::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }

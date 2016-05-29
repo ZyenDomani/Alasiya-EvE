@@ -148,7 +148,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
         mass.allianceID = GetAllianceID();
     into.Append( mass );
 
-    ShipSector ship;
+    DataSector ship;
         ship.maxVelocity = GetMaxVelocity();
         ship.velocity_x = GetVelocity().x;
         ship.velocity_y = GetVelocity().y;
@@ -165,8 +165,8 @@ void Concord::EncodeDestiny( Buffer& into ) const
             warp.y = target.y;
             warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.followRange = 0;      //unknown 64bit number.  seen 4666723172467343360 once....others are 0
-            warp.followID = 0;         //unknown 64bit number
+            warp.followRange = 0;  
+            warp.followID = 0; 
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;

@@ -89,9 +89,9 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
 
     //this seems a little strange, but this is how it works...
     if (ballhead->flags & IsFree) {
-        const ShipSector *shipchunk = (const ShipSector *) data;
-        data += sizeof(ShipSector);
-        len -= sizeof(ShipSector);
+        const DataSector *shipchunk = (const DataSector *) data;
+        data += sizeof(DataSector);
+        len -= sizeof(DataSector);
 
         _log(into, "   maxSpeed=%.2f, V=(%.3f, %.3f, %.3f) PS=%.4f, SF=%.3f",
             shipchunk->maxVelocity,

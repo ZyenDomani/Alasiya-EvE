@@ -222,9 +222,10 @@ void SystemBubble::Add(SystemEntity* pEntity) {
         SendAddBalls( pEntity );
         if (!pClient->GetShipSE()->DestinyMgr()->IsCloaked()) {
             if (HasPlayers())
-                _BubblecastAddBallExclusive(pEntity);  // adds new player to all players in bubble, if any
+                AddBallExclusive(pEntity);  // adds new player to all players in bubble, if any
         }
         m_players.push_back( pClient );   //add to bubble's player list
+        
         // Set spawn timer for this bubble, if needed
         if (IsBelt() && (!IsSpawned()) && sConfig.npc.RoamingSpawns)
             if (!m_spawnTimer.Enabled())
@@ -234,7 +235,7 @@ void SystemBubble::Add(SystemEntity* pEntity) {
                 SetSpawnTimer(false);
     } else {
         if (HasPlayers())
-            _BubblecastAddBallExclusive(pEntity);
+            AddBallExclusive(pEntity);
     }
 
     _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Entity %s(%u) is dynamic.", pEntity->GetName(), pEntity->GetID() );
@@ -254,19 +255,14 @@ void SystemBubble::Remove(SystemEntity *pEntity) {
 
     if (pEntity->HasPilot()) {
         m_players.erase(std::remove(m_players.begin(), m_players.end(), pEntity->GetPilot()), m_players.end());
-        _SendRemoveBalls(pEntity);
+        RemoveBalls(pEntity);
     }
 
     //regardless, notify everybody else in the bubble of the removal.
     if (!m_players.empty())
-        _BubblecastRemoveBall(pEntity);
-    pEntity->m_bubble = nullptr;
+        RemoveBall(pEntity);
     pEntity->TargetMgr()->ClearTargets();
-}
-
-void SystemBubble::AddExclusive(SystemEntity *pEntity) {
-    _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::AddExclusive() - Adding entity %u to bubble %u", pEntity->GetID(), GetID());
-	_BubblecastAddBallExclusive(pEntity);
+    pEntity->m_bubble = nullptr;
 }
 
 void SystemBubble::RemoveExclusive(SystemEntity *pEntity) {
@@ -274,7 +270,7 @@ void SystemBubble::RemoveExclusive(SystemEntity *pEntity) {
 		return;
 
     _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::RemoveExclusive() - Removing entity %u from bubble %u", pEntity->GetID(), GetID());
-	_BubblecastRemoveBallExclusive(pEntity);
+	RemoveBallExclusive(pEntity);
 	pEntity->TargetMgr()->ClearTargets();
 }
 
@@ -294,12 +290,6 @@ void SystemBubble::SetSpawnTimer(bool isBelt /*false*/)
             m_spawnTimer.Start(sConfig.npc.RoamingTimer *1000);
         else
             m_spawnTimer.Start(sConfig.npc.StaticTimer *1000);
-}
-
-/* i dont really need this here.... */
-uint32 SystemBubble::GetSpawnID(uint16 bubbleID)
-{
-    return sBubbleMgr.GetSpawnID(bubbleID);
 }
 
 void SystemBubble::SetBelt(uint32 beltID)
@@ -368,12 +358,6 @@ bool SystemBubble::InBubble(const GPoint& pt) const
 		return true;
 	return false;
 }
-
-void SystemBubble::AppendBalls(SystemEntity* about_who) const
-{
-
-}
-
 
 void SystemBubble::PrintEntityList() {
     bool found = false;
@@ -520,64 +504,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
     pClient->QueueDestinyUpdate(&t, true);    //consumed
 }
 
-void SystemBubble::_SendRemoveBalls( SystemEntity* to_who ) {
-    if (!to_who->HasPilot())
-        return;
-    if (m_dynamicEntities.empty())
-        return;
-    Client* pClient = to_who->GetPilot();
-    if (!pClient)
-        return;
-	if (m_dynamicEntities.empty()) return;
-
-	DoDestiny_RemoveBalls remove_balls;
-
-	for (auto cur : m_dynamicEntities) {
-		remove_balls.balls.push_back(cur->GetID());
-	}
-
-	if (remove_balls.balls.empty())
-		return;
-
-    _log( DESTINY__MESSAGE, "SystemBubble::_SendRemoveBalls() to %s", pClient->GetName());
-    remove_balls.Dump( DESTINY__BALL_DUMP, "    " );
-
-	PyTuple* tmp = remove_balls.Encode();
-    pClient->QueueDestinyUpdate( &tmp );    //may consume, but may not.
-	PySafeDecRef( tmp );
-}
-
-void SystemBubble::_BubblecastAddBall( SystemEntity* about_who ) {
-	if (m_players.empty()) return;
-
-	Buffer* destinyBuffer = new Buffer;
-
-	//create AddBalls header
-	Destiny::AddBall_header head;
-        head.packet_type = 1;   // 0 = full state   1 = balls
-        head.eventStamp = sEntityList.GetStamp();
-	destinyBuffer->Append( head );
-
-	DoDestiny_AddBalls addballs;
-        addballs.slims = new PyList;
-
-	//encode destiny binary
-	about_who->EncodeDestiny( *destinyBuffer );
-	addballs.state = new PyBuffer( &destinyBuffer );
-	SafeDelete( destinyBuffer );
-
-	//encode damage state
-	addballs.damageDict[ about_who->GetID() ] = about_who->MakeDamageState();
-	//encode SlimItem
-	addballs.slims->AddItem( new PyObject( "foo.SlimItem", about_who->MakeSlimItem() ) );
-
-	//bubblecast the update
-	PyTuple* t = addballs.Encode();
-	BubblecastDestinyUpdate( &t, "AddBall" );
-	PySafeDecRef( t );
-}
-
-void SystemBubble::_BubblecastAddBallExclusive( SystemEntity* about_who ) {
+void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
 	Buffer* destinyBuffer = new Buffer;
 
 	//create AddBalls header
@@ -599,6 +526,8 @@ void SystemBubble::_BubblecastAddBallExclusive( SystemEntity* about_who ) {
 	//encode SlimItem
         addballs.slims->AddItem( new PyObject( "foo.SlimItem", about_who->MakeSlimItem() ) );
 
+    _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::AddBallExclusive() - Adding entity %u to bubble %u", about_who->GetID(), GetID());
+    addballs.Dump( DESTINY__BALL_DUMP, "    " );
 	//bubblecast the update
 	PyTuple* t = addballs.Encode();
 	BubblecastDestinyUpdateExclusive( &t, "AddBall", about_who );
@@ -620,7 +549,7 @@ void SystemBubble::_BubblecastAddBallExclusive( SystemEntity* about_who ) {
  *      NOTE  RemoveBall doesnt not work as i thought it should....doesnt trigger explosion.
  */
 //TODO  update these based on above notes
-void SystemBubble::_BubblecastRemoveBall(SystemEntity *about_who) {
+void SystemBubble::RemoveBall(SystemEntity *about_who) {
 	//DoDestiny_RemoveBall removeball;
     //    removeball.entityID = about_who->GetID();
     // using RemoveBalls instead of RemoveBall because client
@@ -628,7 +557,7 @@ void SystemBubble::_BubblecastRemoveBall(SystemEntity *about_who) {
     DoDestiny_RemoveBalls removeball;
     removeball.balls.push_back(about_who->GetID());
 
-    _log(DESTINY__MESSAGE, "SystemBubble::_BubblecastRemoveBall()");
+    _log(DESTINY__MESSAGE, "SystemBubble::RemoveBall()");
     removeball.Dump( DESTINY__BALL_DUMP, "    " );
 
     PyTuple *tmp = removeball.Encode();
@@ -637,7 +566,7 @@ void SystemBubble::_BubblecastRemoveBall(SystemEntity *about_who) {
 }
 
 
-void SystemBubble::_BubblecastRemoveBallExclusive(SystemEntity *about_who) {
+void SystemBubble::RemoveBallExclusive(SystemEntity *about_who) {
     //DoDestiny_RemoveBall removeball;
     //    removeball.entityID = about_who->GetID();
     // using RemoveBalls instead of RemoveBall because client
@@ -645,10 +574,37 @@ void SystemBubble::_BubblecastRemoveBallExclusive(SystemEntity *about_who) {
     DoDestiny_RemoveBalls removeball;
     removeball.balls.push_back(about_who->GetID());
 
-    _log(DESTINY__MESSAGE, "SystemBubble::_BubblecastRemoveBallExclusive()");
+    _log(DESTINY__MESSAGE, "SystemBubble::RemoveBallExclusive()");
     removeball.Dump( DESTINY__BALL_DUMP, "    " );
 
     PyTuple *tmp = removeball.Encode();
 	BubblecastDestinyUpdateExclusive(&tmp, "RemoveBall", about_who);    //consumed
 	PySafeDecRef( tmp );
+}
+
+void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
+    if (!to_who->HasPilot())
+        return;
+    if (m_dynamicEntities.empty())
+        return;
+    Client* pClient = to_who->GetPilot();
+    if (!pClient)
+        return;
+    if (m_dynamicEntities.empty()) return;
+
+    DoDestiny_RemoveBalls remove_balls;
+
+    for (auto cur : m_dynamicEntities) {
+        remove_balls.balls.push_back(cur->GetID());
+    }
+
+    if (remove_balls.balls.empty())
+        return;
+
+    _log( DESTINY__MESSAGE, "SystemBubble::RemoveBalls() to %s", pClient->GetName());
+    remove_balls.Dump( DESTINY__BALL_DUMP, "    " );
+
+    PyTuple* tmp = remove_balls.Encode();
+    pClient->QueueDestinyUpdate( &tmp );    //may consume, but may not.
+    PySafeDecRef( tmp );
 }

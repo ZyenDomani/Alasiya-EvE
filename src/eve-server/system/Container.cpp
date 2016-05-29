@@ -413,7 +413,7 @@ void WreckSE::EncodeDestiny( Buffer& into )
         mass.allianceID = GetAllianceID();
     into.Append( mass );
 
-    ShipSector ship;
+    DataSector ship;
         ship.maxVelocity = 1;
         ship.velocity_x = 0;
         ship.velocity_y = 0;

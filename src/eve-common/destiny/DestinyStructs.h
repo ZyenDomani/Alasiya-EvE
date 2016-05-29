@@ -89,7 +89,7 @@ struct MassSector {
 };
 
 //only included if the thing can move...
-struct ShipSector {
+struct DataSector {
     float maxVelocity;
     double velocity_x;
     double velocity_y;
@@ -207,7 +207,7 @@ union SpecificSectors {
 struct TotalStruct {
     struct BallHeader head;
     struct MassSector mass;
-    struct ShipSector ship;
+    struct DataSector ship;
     union SpecificSectors specific;
 };
 
