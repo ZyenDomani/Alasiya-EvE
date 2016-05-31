@@ -57,10 +57,9 @@ public:
     void SetSpawnTimer(bool isBelt = false);
 
     /* various count queries */
-    uint32 Count()                                      { return m_bubbleIncrementer; }
-    uint32 CountDynamics()                              { return m_dynamicEntities.size(); }
-    uint32 CountPlayers()                               { return m_players.size(); }
     uint32 CountNPCs();
+    uint32 CountPlayers()                               { return m_players.size(); }
+    uint32 CountDynamics()                              { return m_dynamicEntities.size(); }
 
     /* used for bubble management */
     bool IsEmpty() const                                { return m_entities.empty(); }

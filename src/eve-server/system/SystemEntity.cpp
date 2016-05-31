@@ -139,7 +139,7 @@ void SystemEntity::SendDamageStateChanged(SystemEntity* source) {  //working 24A
             GetName(), GetID(), dmgState.shield, dmgState.armor, dmgState.structure);
 }
 
-void SystemEntity::DropLoot(uint32 groupID, uint32 owner, uint32 locationID) {
+void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner) {
     /*   allan 27Nov14    */
     std::vector<LootList> lootList;
     sDGM_Loot_Groups_Table.GetLoot(groupID, lootList);
@@ -153,8 +153,8 @@ void SystemEntity::DropLoot(uint32 groupID, uint32 owner, uint32 locationID) {
             else
                 quantity = (uint32)(MakeRandomInt(cur->minDrop, cur->maxDrop));
             if (quantity < 1) quantity = 1;
-            ItemData iLoot(cur->itemID, owner, locationID, flagAutoFit, quantity);
-            m_system->itemFactory()->SpawnItem(iLoot);
+            ItemData iLoot(cur->itemID, owner, 0, flagAutoFit, quantity);
+            wreckRef->AddItem(m_system->itemFactory()->SpawnItem(iLoot));
             ++cur;
         }
     }

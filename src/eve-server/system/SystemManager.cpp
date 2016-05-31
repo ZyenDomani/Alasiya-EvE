@@ -649,6 +649,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
     if (m_activeRatSpawns < count ) {
         m_spawnMgr->DoSpawnForBubble(pSysBubble, m_regionID, m_securityRating);
         m_ratBubbles.push_back(pSysBubble->GetID());
+        _log(SPAWN__TRACE, "DoSpawnForBubble() completed for bubble %u.  %u entries in m_ratBubbles", pSysBubble->GetID(), m_ratBubbles.size());
     }
     //check for and spawn roids if needed in this bubble.
 }

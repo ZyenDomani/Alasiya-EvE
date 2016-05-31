@@ -209,8 +209,8 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_char->SetClient(this);
     SetPodItem();
 
-    /* may not need this.... verify */
-    //m_system->LoadPlayerDynamics(char_id);
+    /* right now, this is only used to load wrecks (if this char has any) */
+    m_system->LoadPlayerDynamics(char_id);
 
     m_ship = m_services.item_factory->GetShip(m_shipId);
     if (!m_ship) {
@@ -436,12 +436,15 @@ bool Client::EnterSystem(uint32 systemID) {
         //m_system is NULL, so find our new system's manager and register ourself with it.
         m_services.item_factory->SetUsingClient(this);
         m_system = sEntityList.FindOrBootSystem(systemID);
-        m_services.item_factory->UnsetUsingClient();
         if (!m_system) {
             sLog.Error("Client", "Failed to boot system %u for char %s (%u)", systemID, m_char->itemName().c_str(), m_char->itemID());
             SendErrorMsg("Unable to boot system");
+            m_services.item_factory->UnsetUsingClient();
             return false;
         }
+        /* right now, this is only used to load wrecks (if this char has any) */
+        m_system->LoadPlayerDynamics(m_char->itemID());
+        m_services.item_factory->UnsetUsingClient();
         m_systemName = m_system->GetName();
 
         m_char->chkDynamicSystemID(systemID);

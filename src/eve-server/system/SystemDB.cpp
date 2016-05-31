@@ -121,6 +121,51 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
 
 bool SystemDB::LoadPlayerDynamicEntities(uint32 ownerID, uint32 systemID, std::vector<DBSystemDynamicEntity>& into)
 {
+    DBQueryResult res;
+
+    if(!sDatabase.RunQuery(res,
+        "SELECT"
+        "   e.itemID,"
+        "   e.itemName,"
+        "   e.typeID,"
+        "   e.ownerID,"
+        "   e.locationID,"  //5
+        "   e.flag,"
+        "   t.groupID,"
+        "   g.categoryID,"
+        "   IFNULL(c.corporationID, 0),"
+        "   IFNULL(co.allianceID, 0),"  //10
+        "   e.x, e.y, e.z"
+        " FROM entity AS e"
+        "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
+        "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
+        "  LEFT JOIN character_ AS c ON c.characterID = e.ownerID"
+        "  LEFT JOIN corporation AS co ON co.corporationID = c.corporationID"
+        " WHERE e.locationID = %u"
+        "  AND e.ownerID = %u", systemID, ownerID )) {
+        _log(DATABASE__ERROR, "Error in LoadPlayerDynamicEntities query: %s", res.error.c_str());
+        return false;
+    }
+
+    _log(DATABASE__RESULTS, "LoadPlayerDynamicEntities returned %u items", res.GetRowCount());
+    DBResultRow row;
+    DBSystemDynamicEntity entry;
+    while(res.GetRow(row)) {
+        entry.itemID = row.GetInt(0);
+        entry.itemName = row.GetText(1);
+        entry.typeID = row.GetInt(2);
+        entry.ownerID = row.GetInt(3);
+        entry.locationID = row.GetInt(4);
+        entry.flag = row.GetInt(5);
+        entry.groupID = row.GetInt(6);
+        entry.categoryID = row.GetInt(7);
+        entry.corporationID = row.GetInt(8);
+        entry.allianceID = row.GetInt(9);
+        entry.x = row.GetDouble(10);
+        entry.y = row.GetDouble(11);
+        entry.z = row.GetDouble(12);
+        into.push_back(entry);
+    }
     return true;
 }
 

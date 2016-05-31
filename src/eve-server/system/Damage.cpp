@@ -373,7 +373,7 @@ void NPC::Killed(Damage &fatal_blow) {
             GetName(), GetID(), x(), y(), z(), m_destiny->GetPosition().x, m_destiny->GetPosition().y, m_destiny->GetPosition().z);
 
     if ( pClient ) {
-        DropLoot(m_self->groupID(), pClient->GetCharacterID(), wreckItemRef->itemID());
+        DropLoot(wreckItemRef, m_self->groupID(), pClient->GetCharacterID());
         //award kill bounty.
         AwardBounty( pClient );
         //  log faction kill in dynamic data   -allan
@@ -384,7 +384,7 @@ void NPC::Killed(Damage &fatal_blow) {
         if (m_system->GetSystemSecurityRating() > 0)
             AwardSecurityStatus(m_self, pChar);
     } else
-        DropLoot(m_self->groupID(), killerID, wreckItemRef->itemID());
+        DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     // cleanup and removal of dead npc
     //AI()->ClearAllTargets();
@@ -455,7 +455,7 @@ void Ship::Killed(Damage &fatal_blow) {
         _log(PHYSICS__TRACE, "Ship::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
                     GetName(), GetID(), x(), y(), z(), m_destiny->GetPosition().x, m_destiny->GetPosition().y, m_destiny->GetPosition().z);
 
-        DropLoot(m_self->groupID(), killerID, wreckItemRef->itemID());
+        DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
         //  log faction kill in dynamic data   -allan
         //  client logs faction kills in total kills.  return is value1(total kills) - value2(faction kills) > 0:

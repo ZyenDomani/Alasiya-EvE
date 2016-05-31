@@ -285,6 +285,7 @@ void SystemBubble::ResetBubbleSpawn()
      *  this enables creating a new spawn after previous group was killed off
      */
 
+    m_spawned = false;
     if (IsBelt() && (!IsSpawned()) && sConfig.npc.RoamingSpawns)
         if (!m_spawnTimer.Enabled())
             SetSpawnTimer(true);

@@ -65,6 +65,7 @@ public:
     void Remove(SystemEntity* ent);
     void clear();
 
+    uint32 Count()                        { return m_bubbles.size(); }
 
     // for spawn system     -allan 15April16
     void AddSpawnID(uint16 bubbleID, uint32 spawnID);

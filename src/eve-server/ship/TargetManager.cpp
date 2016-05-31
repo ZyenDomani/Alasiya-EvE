@@ -232,7 +232,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     _log(TARGET__INFO, "Pilot %s(%u) started targeting %s(%u) (%.2fs lock time)", \
                 mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID(), lockTime);
 
-    if (sConfig.server.testServer)
+    if (sConfig.server.testServer or is_log_enabled(TARGET__DUMP))
         Dump();
 
     return true;
@@ -281,10 +281,14 @@ bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 max
         te->timer.Start(lockTime);
     m_targets[who] = te;
     TargetTry(who);
+    who->TargetMgr()->TargetedAdd(mySE);
 
     _log(TARGET__INFO, "NPC %s(%u) started targeting %s(%u) (%.2fs lock time)",
          mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID(), (lockTime /1000));
-    who->TargetMgr()->TargetedAdd(mySE);
+
+    if (sConfig.server.testServer or is_log_enabled(TARGET__DUMP))
+        Dump();
+
     return true;
 }
 

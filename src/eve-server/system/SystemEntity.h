@@ -168,7 +168,7 @@ public:
     inline virtual double       z()                     { return m_self->position().z; }
 
     /* public-access generic functions handled in base class. */
-    void                        DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
+    void                        DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner);
     void                        AwardSecurityStatus(InventoryItemRef m_self, Character* pChar);
     void                        SendDamageStateChanged(SystemEntity* source);
     bool                        ApplyDamage(Damage &d); /* This method is defined in Damage.cpp */

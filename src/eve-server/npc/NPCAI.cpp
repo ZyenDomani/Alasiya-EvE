@@ -90,14 +90,18 @@ NPCAIMgr::NPCAIMgr(NPC* who)
 }
 
 void NPCAIMgr::Process() {
-    if ((!m_processTimer.Check()) or (!m_npc->SysBubble()->HasPlayers()) or m_npc->DestinyMgr()->IsWarping())
+    if ((!m_processTimer.Check())
+        or (!m_npc->SysBubble()->HasPlayers())
+        or m_npc->DestinyMgr()->IsWarping())
         return;
 
-    if (m_shieldBoosterTimer.Enabled() && m_shieldBoosterTimer.Check())
+    if (m_shieldBoosterTimer.Enabled()
+        and m_shieldBoosterTimer.Check())
         if (MakeRandomFloat() < m_shieldBoosterChance)
             m_npc->UseShieldRecharge();
 
-    if (m_armorRepairTimer.Enabled() && m_armorRepairTimer.Check())
+    if (m_armorRepairTimer.Enabled()
+        and m_armorRepairTimer.Check())
         if (MakeRandomFloat() < m_armorRepairChance)
             m_npc->UseArmorRepairer();
 
@@ -118,12 +122,16 @@ void NPCAIMgr::Process() {
                 DestinyManager* pDestiny(nullptr);
                 m_npc->SysBubble()->GetPlayers(clientVec); // what about player drones?
                 for (auto cur : clientVec) {
-                    if ((!cur->GetShipSE()->DestinyMgr()) or (!cur->GetShipSE()->SysBubble()))    // this shouldnt be needed, but whatever...
+                    if ((!cur->GetShipSE()->DestinyMgr())
+                        or (!cur->GetShipSE()->SysBubble()))    // this shouldnt be needed, but whatever...
                         continue;
                     pDestiny = cur->GetShipSE()->DestinyMgr();
-                    if (pDestiny->IsCloaked() or pDestiny->IsWarping())
+                    if (pDestiny->IsCloaked()
+                        or pDestiny->IsWarping())
                         continue;
-                    if (cur->IsLogin() or cur->IsInvul() or cur->InPod())
+                    if (cur->IsLogin()
+                        or cur->IsInvul()
+                        or cur->InPod())
                         continue;
                     if (m_npc->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_entityAttackRange)
                         continue;

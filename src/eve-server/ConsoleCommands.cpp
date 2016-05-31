@@ -199,7 +199,7 @@ bool ConsoleCommand::Process() {
                 //  loaded stations
                 sLog.Warning("  Active Stations", " %u", sEntityList.GetStationCount());
                 //  loaded bubbles
-                sLog.Warning("   Active Bubbles", " %u", pBubbles->Count());
+                sLog.Warning("   Active Bubbles", " %u", sBubbleMgr.Count());
                 //  current clients
                 sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
@@ -394,6 +394,6 @@ void ConsoleCommand::UpdateStatus() {
 	Status(&state, &threads, &vm, &rss, &user, &kernel);
     if (sConfig.server.testServer)
         _log(SERVER__INFO, "Current Mem usage - RSS: %f, VM: %f", rss, vm);
-	m_db.SaveServerStats(threads + sThread.Count(), rss, vm, user, kernel, pFactory->Count(), pBubbles->Count());
+	m_db.SaveServerStats(threads + sThread.Count(), rss, vm, user, kernel, pFactory->Count(), sBubbleMgr.Count());
 }
 

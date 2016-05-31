@@ -32,9 +32,6 @@
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
 
-// TODO: We may need to create CargoContainerTypeData and CargoContainerType classes just as Ship.h/Ship.cpp
-// has in order to load up type data specific to cargo containers.  For now, the generic ItemType class is used.
-
 /**
  * InventoryItem which represents cargo container.
  */
@@ -51,7 +48,7 @@ public:
         const ItemData &_data
     );
     virtual ~CargoContainer()                           { /* Do nothing here */ }
-    
+
     /**
      * Loads CargoContainer from DB.
      *
@@ -80,6 +77,9 @@ public:
      */
     void ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
 
+    void AddItem(InventoryItemRef item);
+    void RemoveItem(InventoryItemRef item);
+
     /*
      * Public fields:
      */
@@ -103,11 +103,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 containerID,
-        // InventoryItem stuff:
-        const ItemType &type, const ItemData &data)
-    {
-        // check if it's a cargo container
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 containerID, const ItemType &type, const ItemData &data) {
         if( (type.groupID() != EVEDB::invGroups::Cargo_Container)
             && (type.groupID() != EVEDB::invGroups::Audit_Log_Secure_Container)
             && (type.groupID() != EVEDB::invGroups::Freight_Container)
@@ -117,27 +113,16 @@ protected:
             _log( ITEM__ERROR, "CargoContainer::_LoadItem()  Trying to load category=%s, group=%s as CargoContainer.", type.category().name().c_str(), type.group().name().c_str() );
             return RefPtr<_Ty>();
         }
-        //// cast the type
-        //const ItemType &itemType = static_cast<const ItemType &>( type );
-
-        // no additional stuff
-
         return _Ty::template _LoadCargoContainer<_Ty>( factory, containerID, type, data );
     }
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadCargoContainer(ItemFactory &factory, uint32 containerID,
-        // InventoryItem stuff:
-        const ItemType &itemType, const ItemData &data
-    );
+    static RefPtr<_Ty> _LoadCargoContainer(ItemFactory &factory, uint32 containerID, const ItemType &itemType, const ItemData &data);
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
 
     virtual PyRep* GetItem() const                      { return GetItemRow(); }
-
-    void AddItem(InventoryItemRef item);
-    void RemoveItem(InventoryItemRef item);
 
 };
 
@@ -228,6 +213,8 @@ public:
      */
     void ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
 
+    void AddItem(InventoryItemRef item);
+    void RemoveItem(InventoryItemRef item);
     /*
      * Public fields:
      */
@@ -250,39 +237,19 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 containerID,
-                                 // InventoryItem stuff:
-                                 const ItemType &type, const ItemData &data)
-    {
-        // check if it's a Wreck
-        if (type.groupID() != EVEDB::invGroups::Wreck)
-        {
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 containerID, const ItemType &type, const ItemData &data) {
+        if (type.groupID() != EVEDB::invGroups::Wreck) {
             _log( ITEM__ERROR, "WreckContainer::_LoadItem()  Trying to load category=%s, group=%s as Wreck.", type.category().name().c_str(), type.group().name().c_str() );
             return RefPtr<_Ty>();
         }
-        //// cast the type
-        //const ItemType &itemType = static_cast<const ItemType &>( type );
-
-        // no additional stuff
-
         return _Ty::template _LoadWreck<_Ty>( factory, containerID, type, data );
     }
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadWreck(ItemFactory &factory, uint32 containerID,
-                                           // InventoryItem stuff:
-                                           const ItemType &itemType, const ItemData &data
-    );
+    static RefPtr<_Ty> _LoadWreck(ItemFactory &factory, uint32 containerID, const ItemType &itemType, const ItemData &data );
 
-    static uint32 CreateItemID(ItemFactory &factory,
-                         // InventoryItem stuff:
-                         ItemData &data
-    );
-
-
-    virtual void AddItem(InventoryItemRef item);
-    virtual void RemoveItem(InventoryItemRef item);
+    static uint32 CreateItemID(ItemFactory &factory, ItemData &data );
 
 };
 

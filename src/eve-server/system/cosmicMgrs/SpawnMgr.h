@@ -135,7 +135,7 @@ protected:
     bool _FindSpawnForBubble(uint32 itemID);
     void PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRating);
     void MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type, uint8 subtype);
-    void ReSpawn(SystemBubble* pSysBubble, SpawnEntry* spawnEntry);
+    void ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry);
     void RemoveSpawn(uint32 bubbleID, uint32 itemID);
     void MoveSpawn();
 
@@ -148,7 +148,7 @@ protected:
     typedef std::vector<RatSpawnClass> RatSpawnClassVec;
     typedef std::vector<RatFactionGroups> RatFactionGroupsVec;
     typedef std::map<uint8, uint32> RatFactionGroupsMap;    //map to enable 'find'  shipClass is key
-    typedef std::unordered_multimap<uint32, SpawnEntry*> SpawnEntryDef;    //bubbleID is key
+    typedef std::unordered_multimap<uint32, SpawnEntry> SpawnEntryDef;    //bubbleID is key
     //typedef std::vector<uint32, SystemSpawnGroup> SystemSpawnGroupVec;  //systemID is key  *unused at this time*
 
 private:

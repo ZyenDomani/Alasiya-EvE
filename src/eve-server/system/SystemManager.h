@@ -82,6 +82,7 @@ public:
     void UnloadSystem();
 
     bool BuildDynamicEntity(const DBSystemDynamicEntity& entity);
+    bool LoadPlayerDynamics(uint32 ownerID);
 
     void AddClient(Client* who, bool docked=false, bool count=false);
     void RemoveClient(Client* who, bool docked=false, bool count=false);
@@ -116,7 +117,6 @@ protected:
 
     bool LoadSystemStatics();
     bool LoadSystemDynamics();
-    bool LoadPlayerDynamics(uint32 ownerID);
 
     const uint32 m_systemID;
     double m_securityRating;
