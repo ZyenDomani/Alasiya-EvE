@@ -46,6 +46,14 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
   m_system(system)
 {
     /** @todo  figure out how to get corp/faction/ally IDs here, if possible, and add to our variables */
+    m_targMgr = new TargetManager(this);
+}
+
+SystemEntity::~SystemEntity()
+{
+    if (m_targMgr)
+        m_targMgr->DoDestruction();
+    SafeDelete(m_targMgr);
 }
 
 void SystemEntity::Process() {
@@ -167,9 +175,9 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar
         std::string msg = "Status Change for killing pirates in ";
         msg += m_system->GetName();
         if (m_self->HasPilot())
-            pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), 1, standingCombatShipKill, secAward, msg);
+            pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), standingCombatShipKill, secAward, msg);
         else
-            pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), 1, standingPirateKillSecurityStatus, secAward, msg);
+            pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), standingPirateKillSecurityStatus, secAward, msg);
     }
 }
 
@@ -366,11 +374,6 @@ void DungeonSE::EncodeDestiny( Buffer& into )
 ObjectSystemEntity::ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
-    m_targMgr = new TargetManager(this);
-}
-
-ObjectSystemEntity::~ObjectSystemEntity() {
-    SafeDelete(m_targMgr);
 }
 
 void ObjectSystemEntity::EncodeDestiny( Buffer& into )
@@ -455,27 +458,10 @@ DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, System
 DynamicSystemEntity::DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
-  m_targMgr = new TargetManager(this);
-}
-
-DynamicSystemEntity::~DynamicSystemEntity() {
-    SafeDelete(m_targMgr);
 }
 
 bool DynamicSystemEntity::Load(ServiceDB &from) {
     return true;
-}
-
-double DynamicSystemEntity::GetMass() {
-    return m_self->GetAttribute(AttrMass).get_float();
-}
-
-double DynamicSystemEntity::GetMaxVelocity() {
-    return m_self->GetAttribute(AttrMaxVelocity).get_float();
-}
-
-double DynamicSystemEntity::GetAgility() {
-    return m_self->GetAttribute(AttrAgility).get_float();
 }
 
 PyDict *DynamicSystemEntity::MakeSlimItem() {
@@ -506,7 +492,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
         head.flags = IsFree;
     into.Append( head );
     MassSector mass;
-        mass.mass = GetMass();
+        mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
         mass.Harmonic = 1.0f;
         mass.corporationID = GetCorporationID();

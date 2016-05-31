@@ -70,7 +70,7 @@ class SystemEntity {
     friend class SystemBubble;    /* only to update m_bubble */
 public:
     SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~SystemEntity()                             { /* Do nothing here */ }
+    virtual ~SystemEntity();
 
     /* Process Calls - Overridden as needed in derived classes */
     virtual void                Process();
@@ -342,7 +342,7 @@ public:
 class ObjectSystemEntity : public SystemEntity {
 public:
     ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~ObjectSystemEntity();
+    virtual ~ObjectSystemEntity()                       { /* Do nothing here */ }
 
     /* class type pointer querys. */
     virtual ObjectSystemEntity* GetObjectSE()           { return this; }
@@ -386,7 +386,7 @@ public:
 class DynamicSystemEntity : public SystemEntity {
 public:
     DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~DynamicSystemEntity();
+    virtual ~DynamicSystemEntity()                      { /* Do nothing here */ }
 
     /* class type pointer querys. */
     virtual DynamicSystemEntity* GetDynamicSE()         { return this; }
@@ -400,11 +400,6 @@ public:
     virtual void MakeDamageState(DoDestinyDamageState &into);
 
     virtual PyDict *MakeSlimItem();
-
-    /* DynamicSystemEntity interface */
-    virtual double GetMass();
-    virtual double GetMaxVelocity();
-    virtual double GetAgility();
 
     /* virtual functions default to base class and overridden as needed */
     virtual void Killed(Damage &fatal_blow);

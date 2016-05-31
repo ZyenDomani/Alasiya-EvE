@@ -64,7 +64,7 @@ PyRep *StandingDB::GetFactionStandings() {
 PyRep *StandingDB::GetCharStandings(Client *pClient) {
     /*  get faction, corp, agent for this char
      *      will need more work to get char corps/alliances/factions in the db.
-     * need to look at how to push_back to a &res 
+     * need to look at how to push_back to a &res
      */
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT fromID, standing FROM repFactions WHERE toID = " // should this be warfactionID ??
@@ -324,19 +324,19 @@ void StandingDB::SetNPCCorpStanding(uint32 toID, uint32 fromID, double standing)
                        "VALUES (%u,%u,%f)", toID, fromID, standing );
 }
 
-void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint32 direction, uint32 eventType, double amount, std::string msg) {
-    DBQueryResult res;
-    sDatabase.RunQuery(res,
+void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint32 eventType, double amount, std::string msg) {
+    /* eventTypeID,eventDateTime,fromID,toID,modification,originalFromID,originalToID,int_1,int_2,int_3,msg */
+    DBerror err;
+    sDatabase.RunQuery(err,
         "INSERT INTO repStandingChanges"
-        "  ( eventType,"
+        "  ( eventTypeID,"
         "  eventDateTime,"
         "  fromID,"
         "  toID,"
         "  modification,"
-        "  direction,"
         "  msg )"
-        " VALUES (%u, %" PRIu64 ", %u, %u, %f, %u, '%s' )",
-                eventType, Win32TimeNow(), fromID, toID, amount, direction, msg.c_str() );
+        " VALUES (%u, %" PRIu64 ", %u, %u, %f, '%s' )",
+                eventType, Win32TimeNow(), fromID, toID, amount, msg.c_str() );
 }
 
 //FIXME TODO  implement repStandingChanges after standing system is working....

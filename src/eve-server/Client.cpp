@@ -485,6 +485,7 @@ void Client::MoveToLocation(uint32 location, const GPoint& pt) {
         if (IsStation(location)) return;
         // This is a simple movement
         MoveToPosition(pt);
+        SetDestiny(m_login);
         return;
     }
 

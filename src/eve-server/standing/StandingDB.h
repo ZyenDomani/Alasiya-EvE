@@ -59,7 +59,7 @@ public:
     void SetCharStanding(uint32 toID, uint32 fromID, double standing);
     void SetCorpStanding(uint32 toID, uint32 fromID, double standing);
     void SetNPCCorpStanding(uint32 toID, uint32 fromID, double standing);
-    void SaveStandingChanges(uint32 fromID, uint32 toID, uint32 direction, uint32 eventType, double amount, std::string msg);
+    void SaveStandingChanges(uint32 fromID, uint32 toID, uint32 eventType, double amount, std::string msg);
 
 };
 

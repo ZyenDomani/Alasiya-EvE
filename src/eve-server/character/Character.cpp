@@ -1210,8 +1210,8 @@ void Character::SetNPCCorpStanding(uint32 fromID, uint32 toID, double standing) 
 	s_db.SetNPCCorpStanding(fromID, toID, standing);
 }
 
-void Character::SaveStandingChanges(uint32 fromID, uint32 toID, uint32 direction, uint32 eventType, double amount, std::string msg) {
-	s_db.SaveStandingChanges(fromID, toID, direction, eventType, amount, msg);
+void Character::SaveStandingChanges(uint32 fromID, uint32 toID, uint32 eventType, double amount, std::string msg) {
+	s_db.SaveStandingChanges(fromID, toID, eventType, amount, msg);
 }
 
 // functions and methods for map system
