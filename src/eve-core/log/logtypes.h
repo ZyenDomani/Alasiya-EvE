@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 5.7
+    Log Version: 5.8
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -131,6 +131,7 @@ LOG_TYPE( SPAWN, WARNING, DISABLED, "SpawnWarning" )
 LOG_TYPE( SPAWN, MESSAGE, DISABLED, "SpawnMsg" )
 LOG_TYPE( SPAWN, POP, DISABLED, "SpawnPop" )
 LOG_TYPE( SPAWN, DEPOP, DISABLED, "SpawnDepop" )
+LOG_TYPE( SPAWN, TRACE, DISABLED, "SpawnTrace" )
 
 LOG_CATEGORY( MAIL )
 LOG_TYPE( MAIL, ERROR,   ENABLED, "MailError" )

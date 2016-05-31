@@ -109,6 +109,7 @@ void SpawnDataMgr::_Populate()
  SPAWN__MESSAGE
  SPAWN__POP
  SPAWN__DEPOP
+ SPAWN__TRACE
  */
 /** @todo  adjust this class to manage anomaly spawns, too */
 SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
@@ -164,6 +165,7 @@ void SpawnMgr::Process() {
                 auto curSpawnItr = m_spawns.equal_range((*curBubbleItr)->GetID());
                 for (auto it = curSpawnItr.first; it != curSpawnItr.second; it++) {
                     if (it->second->enabled) {
+                        _log(SPAWN__TRACE, "Process() called, groupTimer hit, bubbleItr != end and spawnItr enabled.  it->second is 0x%X", it->second);
                         // this means check SpawnEntry for 'missing' SpawnGroup members and respawn as needed.
                         ReSpawn((*curBubbleItr), it->second);
                         killTimer = false;
@@ -187,6 +189,7 @@ void SpawnMgr::Process() {
 void SpawnMgr::MoveSpawn()
 {
     /* this will be to move a spawn from one location to another (change bubbles) */
+    _log(SPAWN__TRACE, "MoveSpawn() called.");
 }
 
 void SpawnMgr::StartMainTimer()
@@ -491,11 +494,11 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry* spawnEntry)
     //npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(0, 5) *1000)); //simulate a formation, until i actually write them.
 
     spawnEntry->enabled = false;
+    _log(SPAWN__TRACE, "ReSpawn() completed for spawnEntry 0x%X in bubble %u.", spawnEntry, pSysBubble->GetID());
 }
 
 void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type, uint8 subtype)
 {
-    SpawnEntry se;
     NPC* npc;
 
     /*  the point here is to have all belt rats spawn outside their belt's bubble.
@@ -546,6 +549,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
             m_system->AddNPC(npc);
             //npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(0, 5) *1000)); //simulate a formation, until i actually write them.
 
+            SpawnEntry se;
             se.enabled = 0;
             se.groupID = i->type().groupID();
             se.itemID = i->itemID();
@@ -559,6 +563,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
             se.sub = subtype;
 
             m_spawns.insert(std::pair<uint32, SpawnEntry*>(pSysBubble->GetID(), &se));
+            _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry 0x%X to m_spawns.", se);
         }
         ++cur;
     }
@@ -567,6 +572,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
     m_bubbles.push_back(pSysBubble);
     //cleanup
     m_ratSpawns.clear();
+    _log(SPAWN__TRACE, "MakeSpawn() completed. %u bubbles in m_bubbles. %u spawns in %u buckets now in m_spawns.", \
+            m_bubbles.size(), m_spawns.size(), m_spawns.bucket_count());
 }
 
 void SpawnMgr::RemoveSpawn(uint32 bubbleID, uint32 itemID)
@@ -574,9 +581,13 @@ void SpawnMgr::RemoveSpawn(uint32 bubbleID, uint32 itemID)
     auto itr = m_spawns.equal_range(bubbleID);
     for (auto cur = itr.first; cur != itr.second; cur++)
         if ((*cur).second)
-            if ((*cur).second->itemID == itemID)
+            if ((*cur).second->itemID == itemID) {
                 m_spawns.erase(cur);
+                _log(SPAWN__TRACE, "RemoveSpawn() found item %u in bubble %u and removed it.", itemID, bubbleID);
+                return;
+            }
 
+    _log(SPAWN__TRACE, "RemoveSpawn() did not find item %u in bubble %u.", itemID, bubbleID);
     return;
 }
 
