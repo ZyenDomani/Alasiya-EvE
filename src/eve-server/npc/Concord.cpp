@@ -40,11 +40,14 @@ Concord::Concord(
  m_spawnMgr(spawnMgr),
  m_orbitingID(0)
  {
+     m_corpID = corpCONCORD;
+     m_allyID = 0;
+     m_warID = factionCONCORD;
+     m_destiny = new DestinyManager(this);
      m_AI = new ConcordAI(this);
 
      // SET ALL ATTRIBUTES MISSING FROM DATABASE BEFORE USING THEM FOR ANYTHING:
      // Create default dynamic attributes in the AttributeMap:
-     self->SetAttribute(AttrIsOnline,            1, false);                                          // Is Online
      self->SetAttribute(AttrShieldCharge,        self->GetAttribute(AttrShieldCapacity), false);     // Shield Charge
      self->SetAttribute(AttrArmorDamage,         0.0, false);                                            // Armor Damage
      self->SetAttribute(AttrMass,                self->type().mass(), false);                // Mass     --check these functions.
@@ -66,6 +69,8 @@ Concord::Concord(
      if (!self->HasAttribute(AttrDamage))
          self->SetAttribute(AttrDamage, 0, true );
 
+     SetResists();
+
      m_emDamage = self->GetAttribute(AttrEmDamage).get_float(),
      m_kinDamage = self->GetAttribute(AttrKineticDamage).get_float(),
      m_therDamage = self->GetAttribute(AttrThermalDamage).get_float(),
@@ -84,7 +89,10 @@ Concord::Concord(
 }
 
 Concord::~Concord() {
-    TargetMgr()->DoDestruction();
+    //if (m_spawner)
+    //m_spawner->SpawnDepoped(m_self->itemID());
+
+    SafeDelete(m_destiny);
     SafeDelete(m_AI);
 }
 
@@ -98,7 +106,7 @@ void Concord::Process() {
     m_AI->Process();
 
     if (sConfig.server.UseProfiling)
-        sProfile.AddTime(concord, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(_concordProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void Concord::Orbit(SystemEntity *who) {
@@ -121,75 +129,74 @@ void Concord::EncodeDestiny( Buffer& into ) const
     using namespace Destiny;
 
     uint8 mode = DSTBALL_STOP;
-    if (DestinyMgr()->IsWarping())
+    if (m_destiny->IsWarping())
         mode = DSTBALL_WARP;
-    else if (DestinyMgr()->IsFollowing())
+    else if (m_destiny->IsFollowing())
         mode = DSTBALL_FOLLOW;
-    else if (DestinyMgr()->IsOrbiting())
+    else if (m_destiny->IsOrbiting())
         mode = DSTBALL_ORBIT;
-    else if (DestinyMgr()->IsMoving())
+    else if (m_destiny->IsMoving())
         mode = DSTBALL_GOTO;
 
     BallHeader head;
-        head.entityID = GetID();
-        head.mode = mode;
-        head.radius = GetRadius();
-        head.x = x();
-        head.y = y();
-        head.z = z();
-        head.flags = IsMassive | IsFree;
+    head.entityID = GetID();
+    head.mode = mode;
+    head.radius = GetRadius();
+    head.x = x();
+    head.y = y();
+    head.z = z();
+    head.flags = IsMassive | IsFree;
     into.Append( head );
-
     MassSector mass;
-        mass.mass = GetMass();
-        mass.cloak = 0;
-        mass.Harmonic = -1.0f;
-        mass.corporationID = GetCorporationID();
-        mass.allianceID = GetAllianceID();
+    mass.mass = m_destiny->GetMass();
+    mass.cloak = 0;
+    mass.Harmonic = -1.0f;
+    mass.corporationID = GetCorporationID();
+    mass.allianceID = GetAllianceID();
     into.Append( mass );
-
-    DataSector ship;
-        ship.maxVelocity = GetMaxVelocity();
-        ship.velocity_x = GetVelocity().x;
-        ship.velocity_y = GetVelocity().y;
-        ship.velocity_z = GetVelocity().z;
-        ship.agility = GetAgility();
-        ship.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append( ship );
-
+    DataSector data;
+    data.maxVelocity = m_destiny->GetMaxVelocity();
+    data.velocity_x = m_destiny->GetVelocity().x;
+    data.velocity_y = m_destiny->GetVelocity().y;
+    data.velocity_z = m_destiny->GetVelocity().z;
+    data.agility = m_destiny->GetAgility();
+    data.speedfraction = m_destiny->GetSpeedFraction();
+    into.Append( data );
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
-            warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
-            warp.x = target.x;
-            warp.y = target.y;
-            warp.z = target.z;
-            warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.followRange = 0;  
-            warp.followID = 0; 
+        warp.formationID = 0xFF;
+        warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
+        warp.x = target.x;
+        warp.y = target.y;
+        warp.z = target.z;
+        warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
+        warp.followRange = 0;
+        warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
-            follow.followID = m_destiny->GetTargetID();
-            follow.followRange = m_destiny->GetFollowDistance();
-            follow.formationID = 0xFF;
+        follow.followID = m_destiny->GetTargetID();
+        follow.followRange = m_destiny->GetFollowDistance();
+        follow.formationID = 0xFF;
         into.Append( follow );
     } else if (mode == DSTBALL_ORBIT) {
         DSTBALL_ORBIT_Struct orbit;
-            orbit.followID = m_destiny->GetTargetID();
-            orbit.followRange = m_destiny->GetFollowDistance();
-            orbit.formationID = 0xFF;
+        orbit.followID = m_destiny->GetTargetID();
+        orbit.followRange = m_destiny->GetFollowDistance();
+        orbit.formationID = 0xFF;
         into.Append( orbit );
     } else if (mode == DSTBALL_GOTO) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_GOTO_Struct go;
-            go.x = target.x;
-            go.y = target.y;
-            go.z = target.z;
+        go.formationID = 0xFF;
+        go.x = target.x;
+        go.y = target.y;
+        go.z = target.z;
         into.Append( go );
     } else {
         DSTBALL_STOP_Struct main;
-            main.formationID = 0xFF;
+        main.formationID = 0xFF;
         into.Append( main );
     }
 
@@ -270,6 +277,22 @@ double Concord::GetOrbitRange() {
         */
     }
     return orbitRange;
+}
+
+void Concord::SetResists() {
+    /* fix for missing resist attribs -allan 18April16  */
+    if (!m_self->HasAttribute(AttrShieldEmDamageResonance)) m_self->SetAttribute(AttrShieldEmDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrShieldExplosiveDamageResonance)) m_self->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrShieldKineticDamageResonance)) m_self->SetAttribute(AttrShieldKineticDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrShieldThermalDamageResonance)) m_self->SetAttribute(AttrShieldThermalDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrArmorEmDamageResonance)) m_self->SetAttribute(AttrArmorEmDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrArmorExplosiveDamageResonance)) m_self->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrArmorKineticDamageResonance)) m_self->SetAttribute(AttrArmorKineticDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrArmorThermalDamageResonance)) m_self->SetAttribute(AttrArmorThermalDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrEmDamageResonance)) m_self->SetAttribute(AttrEmDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrExplosiveDamageResonance)) m_self->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrKineticDamageResonance)) m_self->SetAttribute(AttrKineticDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrThermalDamageResonance)) m_self->SetAttribute(AttrThermalDamageResonance, 1.0, false);
 }
 
 
