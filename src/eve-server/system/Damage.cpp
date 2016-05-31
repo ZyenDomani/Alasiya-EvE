@@ -101,9 +101,21 @@ Damage::Damage(
 
 
 bool SystemEntity::ApplyDamage(Damage &d) {
-    _log(TARGET__TRACE, "%s(%u): Initalizing %.2f damage from %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
-        GetName(), GetID(), d.GetTotal(), d.source->GetName(), d.source->GetID(),\
-        d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
+    if (d.source->IsNPCSE()) {
+        _log(TARGET__TRACE, "%s(%u): Initalizing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+                    GetName(), GetID(), d.GetTotal(), d.source->GetName(), d.source->GetID(), \
+                    d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
+    } else if (d.source->IsDroneSE()){
+        _log(TARGET__TRACE, "%s(%u): Initalizing %.2f damage from Drone %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+                    GetName(), GetID(), d.GetTotal(), d.source->GetName(), d.source->GetID(), \
+                    d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
+    } else if (d.source->HasPilot()) {
+        _log(TARGET__TRACE, "%s(%u): Initalizing %.2f damage from %s/'s %s(%u) using %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+                    GetName(), GetID(), d.GetTotal(), d.source->GetPilot()->GetName(), d.source->GetName(), d.source->GetID(), \
+                    d.weapon->itemName().c_str(), d.weapon->itemID(), d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
+    } else {
+        _log(TARGET__TRACE, "%s(%u): Initalizing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
+    }
 
     bool killed = false;
     int8 damageID = 0;
@@ -255,25 +267,20 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         GetPilot()->QueueDestinyEvent(&up);
     }
 
-    if (d.source->HasPilot()) {     //not working
-        //if (d.weapon->categoryID() != EVEDB::invCategories::Charge) {
-        if (1) {
-            //Notifications to ourself:
-            Notify_OnEffectHit noeh;
-                noeh.itemID = d.source->GetID();
-                noeh.effectID = d.effect;
-                noeh.targetID = GetID();
-                noeh.damage = total_damage;
-            up = noeh.Encode();
-            d.source->GetPilot()->QueueDestinyEvent(&up);
-        }
+    if (d.source->HasPilot()) {
+        //Notifications to ourself:
+        Notify_OnEffectHit noeh;
+            noeh.itemID = d.weapon->itemID();
+            noeh.effectID = d.effect;
+            noeh.targetID = GetID();
+            noeh.damage = total_damage;
+        up = noeh.Encode();
+        d.source->GetPilot()->QueueDestinyEvent(&up);
 
         //Notifications to others:
-        // this displays msg, but text is missing.
-        Notify_OnDamageMessage_Other ondamo;
+        Notify_OnDamageMessage ondamo;
             ondamo.messageID = DamageMessageIDs_Other[damageID];
-            ondamo.format_type = fmtMapping_itemTypeName;
-            ondamo.weaponType = d.weapon->typeID();
+            ondamo.weapon = d.weapon->typeID();
             ondamo.damage = total_damage;
             ondamo.target = GetID();
             ondamo.splash = "";
