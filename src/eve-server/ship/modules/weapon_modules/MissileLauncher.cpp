@@ -35,6 +35,8 @@ MissileLauncher::MissileLauncher( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
     Character* pChar = m_Ship->GetPilot()->GetChar().get();
+
+    m_ROF = m_Item->GetAttribute(AttrSpeed).get_float();
     m_ROF *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMissileLauncherOperation, true)))); //  2% decrease in rof
     m_ROF *= (1 - ( 0.03 * (pChar->GetSkillLevel(skillRapidLaunch, true))));              //  3% decrease in rof
 
@@ -101,7 +103,6 @@ void MissileLauncher::StopCycle(bool abort)
             go.chargeTypeID = m_chargeRef->typeID();
         else
             go.chargeTypeID = 0;
-
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
@@ -110,10 +111,8 @@ void MissileLauncher::StopCycle(bool abort)
         ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectUseMissiles;
-
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -125,8 +124,10 @@ void MissileLauncher::StopCycle(bool abort)
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
         shipEff.error = new PyNone;
-    PyTuple* ev = shipEff.Encode();
-    m_Ship->GetPilot()->GetShipSE()->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &ev);
+    std::vector<PyTuple*> events;
+        events.push_back(shipEff.Encode());
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double MissileLauncher::DoCycle() {
@@ -168,8 +169,8 @@ void MissileLauncher::_LaunchMissile()
     double travelTime = (distance/missileSpeed);
     if (travelTime < 1) travelTime = 1;
     pMissile->SetSpeed(missileSpeed);
-    pMissile->DestinyMgr()->MakeMissile(pMissile);
     pMissile->SetHitTimer(travelTime *1000);
+    pMissile->DestinyMgr()->MakeMissile(pMissile);
 
     // Reduce ammo charge by 1 unit:
     m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1);
@@ -215,10 +216,12 @@ void MissileLauncher::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetROF();
-        shipEff.repeat = 1000;
+        shipEff.repeat = m_chargeRef->quantity();
         shipEff.error = new PyNone;
-    PyTuple* ev = shipEff.Encode();
-    m_Ship->GetPilot()->GetShipSE()->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &ev);
+    std::vector<PyTuple*> events;
+        events.push_back(shipEff.Encode());
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double MissileLauncher::_GetROF() {

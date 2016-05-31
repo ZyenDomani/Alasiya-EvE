@@ -74,7 +74,7 @@ Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSys
     m_therDamage = drone->GetAttribute(AttrThermalDamage).get_float(),
     m_expDamage = drone->GetAttribute(AttrExplosiveDamage).get_float(),
 
-    m_destiny->SetPosition(position);
+    m_destiny->SetPosition(position, false);
     m_destiny->SetShipCapabilities(drone);
 
     /* Gets the value from the NPC and put on our own vars */
@@ -210,32 +210,33 @@ void Drone::EncodeDestiny( Buffer& into )
     into.Append( head );
 
     MassSector mass;
-        mass.mass = GetMass();
+        mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
         mass.Harmonic = 1.0f;
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
     into.Append( mass );
 
-    DataSector ship;
-        ship.maxVelocity = GetMaxVelocity();
-        ship.velocity_x = GetVelocity().x;
-        ship.velocity_y = GetVelocity().y;
-        ship.velocity_z = GetVelocity().z;
-        ship.agility = GetAgility();
-        ship.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append( ship );
+    DataSector data;
+        data.maxVelocity = m_destiny->GetMaxVelocity();
+        data.velocity_x = m_destiny->GetVelocity().x;
+        data.velocity_y = m_destiny->GetVelocity().y;
+        data.velocity_z = m_destiny->GetVelocity().z;
+        data.agility = m_destiny->GetAgility();
+        data.speedfraction = m_destiny->GetSpeedFraction();
+        into.Append( data );
 
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
+            warp.formationID = 0xFF;
             warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
             warp.x = target.x;
             warp.y = target.y;
             warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.followRange = 0;  
-            warp.followID = 0; 
+            warp.followRange = 0;
+            warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;

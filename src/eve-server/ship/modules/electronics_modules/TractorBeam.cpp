@@ -97,7 +97,6 @@ void TractorBeam::StopCycle(bool abort)
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
         go.chargeTypeID = 0;
-
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
@@ -106,7 +105,6 @@ void TractorBeam::StopCycle(bool abort)
         ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectTractorBeam;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -118,16 +116,10 @@ void TractorBeam::StopCycle(bool abort)
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
         shipEff.error = new PyNone;
-
-    PyList* events = new PyList;
-        events->AddItem(shipEff.Encode());
-
-    Notify_OnMultiEvent multi;
-        multi.events = events;
-
-    PyTuple* tmp2 = multi.Encode();
-
-    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp2);
+    std::vector<PyTuple*> events;
+        events.push_back(shipEff.Encode());
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double TractorBeam::DoCycle() {
@@ -181,7 +173,6 @@ void TractorBeam::_ShowCycle()
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
         go.chargeTypeID = 0;
-
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
@@ -190,7 +181,6 @@ void TractorBeam::_ShowCycle()
         ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectTractorBeam;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -200,14 +190,11 @@ void TractorBeam::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1;
+        shipEff.repeat = 1000;
         shipEff.error = new PyNone;
-
     std::vector<PyTuple*> events;
-    events.push_back(shipEff.Encode());
-
+        events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 

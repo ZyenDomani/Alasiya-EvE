@@ -179,7 +179,7 @@ protected:
     float m_currentSpeedFraction;       //fuzzy logic - speed % - current ship speed
     float m_activeSpeedFraction;        //fuzzy logic - speed % - set by USF and CSF
     GPoint m_targetPoint;
-    uint64 m_targetDistance;            //in m
+    double m_targetDistance;            //in m
     double m_followDistance;            //in m
     GVector m_shipHeading;              //direction ship is facing
     GVector m_targetHeading;            //direction to target from current heading

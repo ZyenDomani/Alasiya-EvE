@@ -2,16 +2,16 @@
 <elements>
 
   <elementDef name="Rsp_LaunchMissile">
-    <tupleInline>
-      <stringInline value="LaunchMissile" />
       <tupleInline>
-        <int name="missileID" />
-        <int name="targetID" />
-        <int name="shipID" />
-        <int name="unk1" />
-        <int name="unk2" />
+        <stringInline value="LaunchMissile" />
+        <tupleInline>
+          <int name="missileID" />
+          <int name="targetID" />
+          <int name="shipID" />
+          <int name="unk1" />
+          <int name="unk2" />
+        </tupleInline>
       </tupleInline>
-    </tupleInline>
   </elementDef>
 
 </elements>

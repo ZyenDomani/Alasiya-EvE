@@ -1235,7 +1235,7 @@ void Ship::Process() {
             double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrShieldRechargeRate).get_float()));
             if (newCharge > Capacity)
                 newCharge = Capacity;
-            else if ((Capacity - newCharge) < 0.15)
+            else if ((Capacity - newCharge) < 0.3)
                 newCharge = Capacity;
             m_self->SetAttribute(AttrShieldCharge, newCharge);
             _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Shield Charge: %f", m_pilot->GetName(), m_self->itemID(), newCharge );
@@ -1248,7 +1248,7 @@ void Ship::Process() {
             double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrRechargeRate).get_float()));
             if (newCharge > Capacity)
                 newCharge = Capacity;
-            else if ((Capacity - newCharge) < 0.15)
+            else if ((Capacity - newCharge) < 0.3)
                 newCharge = Capacity;
             m_self->SetAttribute(AttrCapacitorCharge, newCharge);
             _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Cap Charge: %f", m_pilot->GetName(), m_self->itemID(), newCharge );
@@ -1306,30 +1306,31 @@ void Ship::EncodeDestiny( Buffer& into ) {
         head.flags = IsMassive | IsFree;
         into.Append( head );
     MassSector mass;
-        mass.mass = GetMass();
+        mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
         mass.Harmonic = -1.0f;
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
         into.Append( mass );
     DataSector data;
-        data.maxVelocity = GetMaxVelocity();
-        data.velocity_x = GetVelocity().x;
-        data.velocity_y = GetVelocity().y;
-        data.velocity_z = GetVelocity().z;
-        data.agility = GetAgility();
+        data.maxVelocity = m_destiny->GetMaxVelocity();
+        data.velocity_x = m_destiny->GetVelocity().x;
+        data.velocity_y = m_destiny->GetVelocity().y;
+        data.velocity_z = m_destiny->GetVelocity().z;
+        data.agility = m_destiny->GetAgility();
         data.speedfraction = m_destiny->GetSpeedFraction();
         into.Append( data );
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
-            warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
+            warp.formationID = 0xFF;
+            warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
             warp.x = target.x;
             warp.y = target.y;
             warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
             warp.followRange = 0;
-            warp.followID = 0;
+            warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;

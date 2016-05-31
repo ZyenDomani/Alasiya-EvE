@@ -43,12 +43,12 @@ public:
     /* class type pointer querys. */
     virtual Missile* GetMissileSE()                     { return this; }
     /* Dynamic */
-    virtual bool IsMissile()                            { return true; }
+    virtual bool IsMissileSE()                          { return true; }
 
     /* SystemEntity interface */
-    //virtual float GetRadius()                           { return 5.0f; }
     virtual void Process();
     virtual void EncodeDestiny( Buffer& into );
+    virtual void MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict *MakeSlimItem();
 
     /* specific functions handled here. */

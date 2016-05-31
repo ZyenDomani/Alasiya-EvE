@@ -170,7 +170,7 @@ struct DSTBALL_MUSHROOM_Struct {
 
 struct DSTBALL_TROLL_Struct {
     uint8  formationID;
-    uint32 effectStamp;    //is a destiny sequence number (forward)
+    uint32 effectStamp;   //statestamp of when effect started
 };
 
 struct DSTBALL_FIELD_Struct {
@@ -187,7 +187,7 @@ struct DSTBALL_FORMATION_Struct {
     uint8  formationID;
     uint64 followID;
     float followRange;
-    uint32 effectStamp;    //is a destiny sequence number (forward?)
+    uint32 effectStamp;  //statestamp of when warp started
 };
 
 union SpecificSectors {

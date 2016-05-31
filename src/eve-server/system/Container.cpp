@@ -220,10 +220,17 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         head.z = z();
         head.flags = IsMassive | IsInteractive;
     into.Append( head );
+    MassSector mass;
+        mass.mass = m_self->type().mass();
+        mass.cloak = 0;
+        mass.Harmonic = -1.0f;
+        mass.corporationID = GetCorporationID();
+        mass.allianceID = GetAllianceID();
+    into.Append( mass );
 
-    DSTBALL_RIGID_Struct main;
-        main.formationID = 0xFF;
-    into.Append( main );
+    DSTBALL_RIGID_Struct rigid;
+        rigid.formationID = 0xFF;
+    into.Append( rigid );
     _log(COMMON__WARNING, "ContainerEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
@@ -402,9 +409,8 @@ void WreckSE::EncodeDestiny( Buffer& into )
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsFree | IsInteractive;
+        head.flags = IsInteractive;
     into.Append( head );
-
     MassSector mass;
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
@@ -413,18 +419,10 @@ void WreckSE::EncodeDestiny( Buffer& into )
         mass.allianceID = GetAllianceID();
     into.Append( mass );
 
-    DataSector ship;
-        ship.maxVelocity = 1;
-        ship.velocity_x = 0;
-        ship.velocity_y = 0;
-        ship.velocity_z = 0;
-        ship.agility = 0.0f;
-        ship.speedfraction = 1;
-    into.Append( ship );
-
-    DSTBALL_RIGID_Struct main;
-        main.formationID = 0xFF;
-    into.Append( main );
+    DSTBALL_TROLL_Struct troll;
+        troll.formationID = 0xFF;
+        troll.effectStamp = sEntityList.GetStamp();
+    into.Append( troll );
     _log(COMMON__WARNING, "WreckEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 

@@ -259,7 +259,6 @@ void MiningLaser::StopCycle(bool abort)
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
         go.chargeTypeID = chargeTypeID;
-
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
@@ -268,7 +267,6 @@ void MiningLaser::StopCycle(bool abort)
         ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectID;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -280,12 +278,9 @@ void MiningLaser::StopCycle(bool abort)
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
         shipEff.error = new PyNone;
-
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
-
     std::vector<PyTuple*> updates;
-
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
@@ -570,7 +565,6 @@ void MiningLaser::_ShowCycle()
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
         go.chargeTypeID = chargeTypeID;
-
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
@@ -579,7 +573,6 @@ void MiningLaser::_ShowCycle()
         ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectID;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -589,14 +582,11 @@ void MiningLaser::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1;  /* boolean of repeatable cycles without pilot activation */
+        shipEff.repeat = 1000;
         shipEff.error = new PyNone;
-
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
-
     std::vector<PyTuple*> updates;
-
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 

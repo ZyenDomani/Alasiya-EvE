@@ -1492,7 +1492,8 @@ void DestinyManager::Undock(GPoint dir) {
 void DestinyManager::SetUndockSpeed() {
     //start ship movement @ max velocity for undocking.
     // this simulates being forcefully "ejected" from station
-    State = DSTBALL_GOTO;
+    if (!mySE->IsMissileSE())
+        State = DSTBALL_GOTO;
     m_stop = false;
     m_stateStamp = sEntityList.GetStamp();
     m_moveTimer = GetTimeMSeconds();
@@ -1502,23 +1503,22 @@ void DestinyManager::SetUndockSpeed() {
     m_maxSpeed = m_maxShipSpeed;
     m_velocity = m_shipHeading * m_maxSpeed;
 
-    std::vector<PyTuple*> updates;
-
-    DoDestiny_SetBallVelocity bv;
-        bv.entityID = mySE->GetID();
-        bv.x = m_velocity.x;
-        bv.y = m_velocity.y;
-        bv.z = m_velocity.z;
-    updates.push_back(bv.Encode());
-
-    DoDestiny_CmdGotoDirection du;
-        du.entityID = mySE->GetID();
-        du.x = m_shipHeading.x;
-        du.y = m_shipHeading.y;
-        du.z = m_shipHeading.z;
-    updates.push_back(du.Encode());
-
-    SendDestinyUpdate(updates);
+    if (!mySE->IsMissileSE()) {
+        std::vector<PyTuple*> updates;
+        DoDestiny_SetBallVelocity bv;
+            bv.entityID = mySE->GetID();
+            bv.x = m_velocity.x;
+            bv.y = m_velocity.y;
+            bv.z = m_velocity.z;
+        updates.push_back(bv.Encode());
+        DoDestiny_CmdGotoDirection du;
+            du.entityID = mySE->GetID();
+            du.x = m_shipHeading.x;
+            du.y = m_shipHeading.y;
+            du.z = m_shipHeading.z;
+        updates.push_back(du.Encode());
+        SendDestinyUpdate(updates);
+    }
 }
 
 PyResult DestinyManager::AttemptDockOperation() {
@@ -1602,10 +1602,16 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
     }
 }
 
-// settings for ship attributes
+// settings for ship, npc and missile max speeds
 void DestinyManager::SetMaxVelocity(double maxVelocity)
 {
-    double maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float();
+    double maxSpeed = 0;
+    if (mySE->IsMissileSE() or mySE->IsNPCSE())
+        maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
+    else if (mySE->IsShipSE())
+        maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float();
+    else
+        ; // make error here?
     if (maxVelocity > maxSpeed)
         m_maxShipSpeed = maxSpeed;
     else
@@ -1632,7 +1638,7 @@ void DestinyManager::SetShipVariables(InventoryItemRef ship)
     m_warpStrength = 1;
 }
 
-//  called from Client::BoardShip(), Undock(), NPC::NPC()
+//  called from Client::BoardShip(), Undock(), NPC::NPC(), Concord::Concord()
 void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
 {
     /* this now sets variables needed for correct warp math.
@@ -1671,7 +1677,7 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
         warpCapNeed *=  (1 - (0.1 * ( pChar->GetSkillLevel(skillWarpDriveOperation, true))));
         /** @todo check for implants  AttrWarpCapacitorNeedBonus(319) */
     } else {
-        warpCapNeed = 0.0001f;
+        warpCapNeed = 0.00001f;
         adjInertiaModifier = 1.0f;
     }
 
@@ -1720,7 +1726,6 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
 
     if (!mySE->HasPilot())
         return;
-    //if (mySE->GetPilot()->IsLogin()) return;
     if (mySE->GetPilot()->IsInSpace()) {
         std::vector<PyTuple*> updates;
         DoDestiny_SetBallAgility sbagility;
@@ -1744,7 +1749,12 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
 
 void DestinyManager::MakeMissile(Missile* pMissile) {
     SetMaxVelocity(pMissile->GetSpeed());
-    mySE->SystemMgr()->AddEntity(pMissile);
+    SetPosition(pMissile->GetSelf()->position());
+    m_mass = pMissile->GetSelf()->type().mass();
+    m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
+    m_radius = pMissile->GetSelf()->type().radius();
+    m_shipInertiaModifier = pMissile->GetSelf()->GetAttribute(AttrAgility).get_float();
+    m_shipAgility = m_massMKg * m_shipInertiaModifier;
 
     SystemEntity* pTarget = pMissile->GetTarget();
     State = DSTBALL_MISSILE;
@@ -1754,19 +1764,19 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
     m_targetEntity.first = pTarget->GetID();
     m_targetEntity.second = pTarget;
     m_targetDistance = m_position.distance(m_targetPoint);
-    m_shipInertiaModifier = 1;
 
     GVector moveVector(m_position, m_targetPoint);
     moveVector.normalize();     //change vector to direction
     m_shipHeading = moveVector;
 
-    std::vector<PyTuple*> updates;
+    SetUndockSpeed();   /* sets all needed variables for max velocity */
+    mySE->SystemMgr()->AddEntity(pMissile);
 
+    std::vector<PyTuple*> updates;
     DoDestiny_SetMaxSpeed maxspeed;
         maxspeed.entityID = pMissile->GetID();
         maxspeed.speedValue = m_maxShipSpeed;
     updates.push_back(maxspeed.Encode());
-
     Rsp_LaunchMissile miss;
         miss.shipID = pMissile->GetShip()->itemID();
         miss.targetID = pTarget->GetID();
@@ -2125,11 +2135,9 @@ void DestinyManager::SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self
 }
 
 void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vector<PyTuple*>& events, bool self_only ) const {
-    _log(DESTINY__UPDATES, "[%u] Sending destiny update (u:%lu, e:%lu) to Pilot %u for Ship %u", \
-                sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetPilot()->GetCharacterID(), mySE->GetID() );
     if (self_only) {
-        _log(PLAYER__MESSAGE, "DestinyManager::SendDestinyUpdate() called as 'self_only' for %s(%u)", \
-                    mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+        _log(PLAYER__MESSAGE, "[%u] DestinyManager::SendDestinyUpdate() (u:%lu, e:%lu) called as 'self_only' for %s(%u)", \
+                    sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         std::vector<PyTuple*>::iterator cur = updates.begin();
         for(; cur != updates.end(); cur++) {

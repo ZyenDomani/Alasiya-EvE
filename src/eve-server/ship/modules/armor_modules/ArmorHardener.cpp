@@ -37,7 +37,6 @@ void ArmorHardener::StopCycle(bool abort)
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
         go.chargeTypeID = 0;
-
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
@@ -46,10 +45,8 @@ void ArmorHardener::StopCycle(bool abort)
         ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectModifyActiveArmorResonanceAndNullifyPassiveResonance;
-
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -61,16 +58,10 @@ void ArmorHardener::StopCycle(bool abort)
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
         shipEff.error = new PyNone;
-
-    PyList* events = new PyList;
-        events->AddItem(shipEff.Encode());
-
-    Notify_OnMultiEvent multi;
-        multi.events = events;
-
-    PyTuple* tmp = multi.Encode();
-
-    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
+    std::vector<PyTuple*> events;
+    events.push_back(shipEff.Encode());
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void ArmorHardener::_ShowCycle()
@@ -96,7 +87,6 @@ void ArmorHardener::_ShowCycle()
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
         go.chargeTypeID = 0;
-
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
@@ -105,7 +95,6 @@ void ArmorHardener::_ShowCycle()
         ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectModifyActiveArmorResonanceAndNullifyPassiveResonance;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -115,14 +104,11 @@ void ArmorHardener::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1;  /* boolean of repeatable cycles without pilot activation */
+        shipEff.repeat = 1000;
         shipEff.error = new PyNone;
-
     std::vector<PyTuple*> events;
     events.push_back(shipEff.Encode());
-
     std::vector<PyTuple*> updates;
-
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 

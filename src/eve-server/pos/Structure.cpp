@@ -456,7 +456,9 @@ uint8 StructureSE::GetStructureState() const {
 PyTuple *StructureSE::GetEffectState() {
     /** @todo (Allan) fix this when POS system is more operational */
     /* see file:///home/allan/Desktop/cruc/entities/pos_packets/control_tower_packets and cruc/entities/structures for more info */
+
     std::vector<int32, std::allocator<int32> > area;
+    
     DoDestiny_OnSpecialFX13 effect;
         if (m_module)
             effect.entityID = m_towerID;            /* control tower id */

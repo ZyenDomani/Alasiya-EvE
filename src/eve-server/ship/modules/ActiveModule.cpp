@@ -177,8 +177,10 @@ void ActiveModule::DoEffect(bool active /*false*/)
         shipEff.environment = ge.Encode();
         shipEff.startTime = (active ? shipEff.timeNow : (shipEff.timeNow - (timeLeft * Win32Time_Second)));
         shipEff.duration = (active ? _GetDuration() : timeLeft);
-        shipEff.repeat = 1;
+        shipEff.repeat = 1000;
         shipEff.error = new PyNone; /* look into setting this */
-    PyTuple* ev = shipEff.Encode();
-    m_Ship->GetPilot()->GetShipSE()->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &ev);
+    std::vector<PyTuple*> events;
+    events.push_back(shipEff.Encode());
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }

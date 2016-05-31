@@ -289,32 +289,6 @@ DST_WARPEXIT = 11
                 damageState = None
         -->
 
-        <!--
-                      [PySubStream 357 bytes]
-                        [PyList 1 items]
-                          [PyTuple 2 items]
-                            [PyInt 7945]
-                            [PyTuple 2 items]
-                              [PyString "AddBalls2"]
-                              [PyTuple 1 items]
-                                [PyTuple 2 items]
-                                  [Destiny Header]
-                                    [PacketType: 1]
-                                    [Stamp: 7945]
-                                  [Ball]
-
-                                  [PyList 1 items]
-                                    [PyTuple 2 items]
-                                      [PyDict 10 kvp]
-                                        {ship data}
-                                      [PyList 3 items]
-                                        [PyTuple 3 items]
-                                          [PyFloat 1]
-                                          [PyFloat 106250]
-                                          [PyIntegerVar 129516973343733241]
-                                        [PyFloat 1]
-                                        [PyFloat 1]
-                                        -->
   <elementDef name="DoDestiny_AddBalls2">
     <tupleInline>
       <!-- 0-->
@@ -466,6 +440,118 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
+  <elementDef name="DoDestiny_CmdFollowBall">
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="FollowBall" />
+        <!-- 1 -->
+        <tupleInline>
+            <!-- 0 -->
+            <int name="entityID" />
+            <int name="ballID" />
+            <int name="range" />
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestiny_CmdStop">
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="Stop" />
+        <!-- 1 -->
+        <tupleInline>
+            <!-- 0 -->
+            <int name="entityID" />
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestiny_CmdWarpTo">
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="WarpTo" />
+        <!-- 1 -->
+        <tupleInline>
+            <!-- 0 -->
+            <int name="entityID" />
+            <!-- 1 -->
+            <real name="dest_x" />
+            <!-- 2 -->
+            <real name="dest_y" />
+            <!-- 3 -->
+            <real name="dest_z" />
+            <!-- 4: distance from target to stop -->
+            <int name="distance" />
+            <!-- 5: warp speed in AU/s times 10 -->
+            <int name="warpSpeed" />
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestiny_CmdGotoDirection">
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="GotoDirection" />
+        <!-- 1 -->
+        <tupleInline>
+            <int name="entityID" />
+            <real name="x" />
+            <real name="y" />
+            <real name="z" />
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestiny_CmdAlignTo">
+    <tupleInline>
+      <!-- 0 -->
+      <stringInline value="AlignTo" />
+      <!-- 1 -->
+      <tupleInline>
+        <int name="entityID" />
+      </tupleInline>
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestiny_GotoPoint">
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="GotoPoint" />
+        <!-- 1 -->
+        <tupleInline>
+            <int name="entityID" />
+            <real name="x" />
+            <real name="y" />
+            <real name="z" />
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestiny_CmdOrbit">
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="Orbit" />
+        <!-- 1 -->
+        <tupleInline>
+            <int name="entityID" />
+            <int name="orbitEntityID" />
+            <int name="distance" />
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestiny_CmdSetMaxSpeed">
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="SetMaxSpeed" />
+        <!-- 1 -->
+        <tupleInline>
+            <int name="entityID" />
+            <real name="speed" />
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
   <elementDef name="DoDestiny_SetNotificationRange">
       <tupleInline>
         <!-- 0 -->
@@ -508,71 +594,6 @@ DST_WARPEXIT = 11
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallVelocity" />
-        <!-- 1 -->
-        <tupleInline>
-            <int name="entityID" />
-            <real name="x" />
-            <real name="y" />
-            <real name="z" />
-        </tupleInline>
-      </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_CmdFollowBall">
-      <tupleInline>
-        <!-- 0 -->
-        <stringInline value="FollowBall" />
-        <!-- 1 -->
-        <tupleInline>
-            <!-- 0 -->
-            <int name="entityID" />
-            <int name="ballID" />
-            <int name="range" />
-        </tupleInline>
-      </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_CmdStop">
-      <tupleInline>
-        <!-- 0 -->
-        <stringInline value="Stop" />
-        <!-- 1 -->
-        <tupleInline>
-            <!-- 0 -->
-            <int name="entityID" />
-        </tupleInline>
-      </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_CmdGotoDirection">
-      <tupleInline>
-        <!-- 0 -->
-        <stringInline value="GotoDirection" />
-        <!-- 1 -->
-        <tupleInline>
-            <int name="entityID" />
-            <real name="x" />
-            <real name="y" />
-            <real name="z" />
-        </tupleInline>
-      </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_CmdAlignTo">
-    <tupleInline>
-      <!-- 0 -->
-      <stringInline value="AlignTo" />
-      <!-- 1 -->
-      <tupleInline>
-        <int name="entityID" />
-      </tupleInline>
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_GotoPoint">
-      <tupleInline>
-        <!-- 0 -->
-        <stringInline value="GotoPoint" />
         <!-- 1 -->
         <tupleInline>
             <int name="entityID" />
@@ -646,40 +667,6 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_CmdSetMaxSpeed">
-      <tupleInline>
-        <!-- 0 -->
-        <stringInline value="SetMaxSpeed" />
-        <!-- 1 -->
-        <tupleInline>
-            <int name="entityID" />
-            <real name="speed" />
-        </tupleInline>
-      </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_CmdWarpTo">
-      <tupleInline>
-        <!-- 0 -->
-        <stringInline value="WarpTo" />
-        <!-- 1 -->
-        <tupleInline>
-            <!-- 0 -->
-            <int name="entityID" />
-            <!-- 1 -->
-            <real name="dest_x" />
-            <!-- 2 -->
-            <real name="dest_y" />
-            <!-- 3 -->
-            <real name="dest_z" />
-            <!-- 4: distance from target to stop -->
-            <int name="distance" />
-            <!-- 5: warp speed in AU/s times 10 -->
-            <int name="warpSpeed" />
-        </tupleInline>
-      </tupleInline>
-  </elementDef>
-
   <elementDef name="DoDestiny_SetBallTroll">
       <tupleInline>
         <!-- 0 -->
@@ -704,15 +691,26 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_CmdOrbit">
+  <elementDef name="DoDestiny_SetMaxSpeed">
+    <tupleInline>
+      <stringInline value="SetMaxSpeed" />
+      <tupleInline>
+        <int name="entityID" />
+        <real name="speedValue" />
+      </tupleInline>
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestiny_SetBallInteractive">
       <tupleInline>
         <!-- 0 -->
-        <stringInline value="Orbit" />
+        <stringInline value="SetBallInteractive" />
         <!-- 1 -->
         <tupleInline>
+            <!-- 0: entityID -->
             <int name="entityID" />
-            <int name="orbitEntityID" />
-            <int name="distance" />
+            <!-- 1: interactive: on/off -->
+            <int name="interactive" />
         </tupleInline>
       </tupleInline>
   </elementDef>
@@ -764,6 +762,19 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
+  <elementDef name="DoDestiny_TerminalExplosion">
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="TerminalExplosion" />
+        <!-- 1 -->
+        <tupleInline>
+            <int name="shipID" />
+            <int name="bubbleID" />
+            <bool name="ballIsGlobal" />
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
   <elementDef name="DoDestiny_OnDroneStateChange">
       <tupleInline>
         <!-- 0 -->
@@ -786,43 +797,6 @@ DST_WARPEXIT = 11
             <int name="targetID" />
         </tupleInline>
       </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_SetBallInteractive">
-      <tupleInline>
-        <!-- 0 -->
-        <stringInline value="SetBallInteractive" />
-        <!-- 1 -->
-        <tupleInline>
-            <!-- 0: entityID -->
-            <int name="entityID" />
-            <!-- 1: interactive: on/off -->
-            <int name="interactive" />
-        </tupleInline>
-      </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_TerminalExplosion">
-      <tupleInline>
-        <!-- 0 -->
-        <stringInline value="TerminalExplosion" />
-        <!-- 1 -->
-        <tupleInline>
-            <int name="shipID" />
-            <int name="bubbleID" />
-            <bool name="ballIsGlobal" />
-        </tupleInline>
-      </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_SetMaxSpeed">
-    <tupleInline>
-      <stringInline value="SetMaxSpeed" />
-      <tupleInline>
-        <int name="entityID" />
-        <real name="speedValue" />
-      </tupleInline>
-    </tupleInline>
   </elementDef>
 
 </elements>

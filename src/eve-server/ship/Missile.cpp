@@ -44,6 +44,7 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
   m_lifeTimer(0)
 {
     m_destiny = new DestinyManager(this);
+    m_ownerID = (ship->HasPilot() ? ship->GetPilot()->GetCharacterID() : ship->itemID());
     m_kinDamage = self->GetAttribute(AttrKineticDamage).get_float(),
     m_therDamage = self->GetAttribute(AttrThermalDamage).get_float(),
     m_emDamage = self->GetAttribute(AttrEmDamage).get_float(),
@@ -193,30 +194,32 @@ void Missile::EncodeDestiny( Buffer& into )
         head.flags = IsFree;
     into.Append( head );
     MassSector mass;
-        mass.mass = GetMass();
+        mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
         mass.Harmonic = -1.0f;
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
     into.Append( mass );
     DataSector data;
-        data.maxVelocity = GetMaxVelocity();
-        data.velocity_x = GetVelocity().x;
-        data.velocity_y = GetVelocity().y;
-        data.velocity_z = GetVelocity().z;
-        data.agility = GetAgility();
+        data.maxVelocity = m_speed;
+        data.velocity_x = m_destiny->GetVelocity().x;
+        data.velocity_y = m_destiny->GetVelocity().y;
+        data.velocity_z = m_destiny->GetVelocity().z;
+        data.agility = m_destiny->GetAgility();
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
     DSTBALL_MISSILE_Struct miss;
+        miss.ownerID = m_ownerID;
+        miss.formationID = 0xFF;
         miss.effectStamp = m_destiny->GetStateStamp();
         miss.followID = m_destiny->GetTargetID();
-        miss.followRange = (uint32)m_destiny->GetFollowDistance();
+        miss.followRange = (float)m_destiny->GetFollowDistance();
         miss.x = x();
         miss.y = y();
         miss.z = z();
     into.Append(miss);
 
-    _log(DESTINY__MESSAGE, "Missile::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(DESTINY__MESSAGE, "Missile::EncodeDestiny(): %s id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict* Missile::MakeSlimItem() {
@@ -237,6 +240,14 @@ PyDict* Missile::MakeSlimItem() {
         slim->SetItemString("numLaunchers",     new PyInt(1));  /** @todo (allan) fix this */
         slim->SetItemString("nameID",           new PyInt(0));  /** @todo (allan) fix this */
     return(slim);
+}
+
+void Missile::MakeDamageState(DoDestinyDamageState &into) {
+    into.shield = 1;
+    into.recharge = 10000;
+    into.timestamp = Win32TimeNow();
+    into.armor = 1;
+    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
 }
 
 void Missile::_HitTarget() {
