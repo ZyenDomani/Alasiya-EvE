@@ -521,6 +521,7 @@ bool SystemManager::ProcessTic() {
 }
 
 bool SystemManager::SystemActivity() {
+    return true;
     // system destruction needs work for bubbles and items (but this works as intended)
     if (!m_activityTime) return true;
     if (sConfig.world.gridUnload)

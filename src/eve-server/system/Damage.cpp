@@ -475,7 +475,7 @@ void Ship::Killed(Damage &fatal_blow) {
         if ( pClient )
                pClient->GetChar()->PayBounty(m_pilot->GetChar());
 
-        /** populate kill data for podKill and save to db  - need to verify this*/
+        /** populate kill data for podKill and save to db  - need to verify this.  works.  need to get player corp/ally data in SE */
         CharKillData data;
             data.solarSystemID = m_system->GetID();
             data.victimCharacterID = m_pilot->GetCharacterID();
@@ -504,7 +504,8 @@ void Ship::Killed(Damage &fatal_blow) {
 
             data.moonID = 0;    /* dunno wtf this is... */
 
-        pClient->GetChar()->LogKill(data);
+        m_pilot->GetChar()->LogKill(data);
+        /** @todo  log kill data for killer, if player or player's drone  */
 
 		GPoint deadPodPosition = GetPosition();
 		uint32 oldPodItemID = m_pilot->GetShipID();

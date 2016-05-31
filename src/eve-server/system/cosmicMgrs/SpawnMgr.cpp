@@ -521,7 +521,6 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
 
     _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %s(%u)", i->itemName().c_str(), i->itemID());
 
-    i->Relocate(startPos);
     NPC* npc = new NPC(i, m_services, m_system, spawnEntry.corpID, spawnEntry.factionID, this);
 
     // NPC::Load() no longer does anything.  it is still here in case we find a new use for it.
@@ -532,6 +531,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
     }
 
     //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
+    npc->DestinyMgr()->SetPosition(startPos);
     m_system->AddNPC(npc);
     //npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(0, 5) *1000)); //simulate a formation, until i actually write them.
 
@@ -579,7 +579,6 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
             _log(SPAWN__POP, "SpawnMgr::MakeSpawn - Spawning NPC %u", i->itemID());
 
             startPos.MakeRandomPointOnSphere(8000); // put them at random spot 8k off center
-            i->Relocate(startPos);
             npc = new NPC(i, m_services, m_system, corpID, factionID, this);
 
             // NPC::Load() no longer does anything.  it is still here in case we find a new use for it.

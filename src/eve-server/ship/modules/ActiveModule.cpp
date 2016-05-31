@@ -36,6 +36,42 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
     m_chargeRef = InventoryItemRef();
     m_overLoaded = false;
     m_chargeLoaded = false;
+
+    /*
+     * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
+     *  {returns}
+     *        [PyTuple 3 items]
+     *          [PyTuple 1 items]
+     *            [PyIntegerVar 1005885547063]  << moduleID
+     *          [PyInt 203]                     << chargeTypeID
+     *          [PyFloat 10000]                 << reloadTime (ms)
+     */
+    m_reloadTime = m_Item->GetAttribute(AttrReloadTime).get_int();
+    /* our db doesnt have reload times for launchers or projectile turrents.
+     * set default of 4s for turrents, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
+     * maybe make config option later to avoid hard-coding
+     */
+    if (!m_reloadTime) {
+        if (m_Item->groupID() == EVEDB::invGroups::Projectile_Weapon)
+            m_reloadTime = 4000;
+        else if (m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Snowball
+            or m_Item->groupID() == EVEDB::invGroups::Scan_Probe_Launcher)
+            m_reloadTime = 5000;
+        else if (m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Cruise
+            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Rocket
+            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Siege
+            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Standard
+            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Heavy
+            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Assault
+            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Defender
+            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Citadel
+            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Heavy_Assault
+            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Bomb)
+            m_reloadTime = 7000;
+        else
+            m_reloadTime = 10000;
+    }
+    _log(SHIP__MODULE_TRACE, "Set reload time for %s(%u) to %ums", m_Item->itemName().c_str(), m_Item->itemID(), m_reloadTime);
 }
 
 ActiveModule::~ActiveModule()
@@ -86,21 +122,12 @@ void ActiveModule::Load(InventoryItemRef charge)
 	m_chargeRef = charge;
     m_chargeLoaded = true;
     m_ChargeState = MOD_LOADED;
-    /*
-     * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
-     *  {returns}
-     *        [PyTuple 3 items]
-     *          [PyTuple 1 items]
-     *            [PyIntegerVar 1005885547063]  << moduleID
-     *          [PyInt 203]                     << chargeTypeID
-     *          [PyFloat 10000]                 << reloadTime (ms)
-     */
     PyTuple* module = new PyTuple(1);
         module->SetItem(0, new PyInt(m_Item->itemID()));
     PyTuple* tmp = new PyTuple(3);
         tmp->SetItem(0, module);
         tmp->SetItem(1, new PyInt(charge->typeID()));
-        tmp->SetItem(2, new PyInt(m_Item->GetAttribute(AttrReloadTime).get_int()));
+        tmp->SetItem(2, new PyInt(m_reloadTime));
     m_Ship->GetPilot()->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
 }
 

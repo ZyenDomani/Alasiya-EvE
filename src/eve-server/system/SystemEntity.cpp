@@ -153,7 +153,7 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
             else
                 quantity = (uint32)(MakeRandomInt(cur->minDrop, cur->maxDrop));
             if (quantity < 1) quantity = 1;
-            ItemData iLoot(cur->itemID, owner, 0, flagAutoFit, quantity);
+            ItemData iLoot(cur->itemID, owner, wreckRef->itemID(), flagAutoFit, quantity);
             wreckRef->AddItem(m_system->itemFactory()->SpawnItem(iLoot));
             ++cur;
         }

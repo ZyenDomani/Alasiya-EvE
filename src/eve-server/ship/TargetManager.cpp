@@ -171,7 +171,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     if (res != m_targets.end()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return true;
+        return false;
     }
     //Check that they aren't targeting themselves (which may not be possible)
     if (who == mySE)
@@ -199,8 +199,8 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     if (targetSkills < maxLockedTargets)
         maxLockedTargets = targetSkills;
     if (GetTotalTargets() >= maxLockedTargets) {
-        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only handle %u targe%s at a time.", \
-            maxLockedTargets, (maxLockedTargets == 1) ? "t":"ts");
+        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only handle %u targets at a time.", \
+            maxLockedTargets);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
         return false;

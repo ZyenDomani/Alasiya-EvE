@@ -70,6 +70,7 @@ public:
 
 protected:
     uint32 m_targetID;                                      //passed to us by activate
+    uint16 m_reloadTime;
 	SystemEntity* m_targetEntity;	                        // we do not own this
 	ActiveModuleProcessingComponent* m_AMPC;    // we do not own this
 
