@@ -31,7 +31,6 @@
 #include "Profile.h"
 #include "chat/LSCService.h"
 #include "npc/NPC.h"
-#include "npc/SpawnMgr.h"
 #include "planet/Planet.h"
 #include "planet/Moon.h"
 #include "pos/Structure.h"
@@ -48,6 +47,7 @@
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
+#include "system/cosmicMgrs/SpawnMgr.h"
 
 
 SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)//, ItemData idata)
@@ -629,7 +629,8 @@ void SystemManager::RemoveEntity(SystemEntity* who) {
     auto itr = m_entities.find(who->GetID());
     if (itr != m_entities.end()) {
         _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
-        who->TargetMgr()->DoDestruction();
+        if (who->TargetMgr())
+            who->TargetMgr()->DoDestruction();
         m_entities.erase(itr);
         m_entityChanged = true;
         // Remove Entity's Item Ref from Solar System Dynamic Inventory:

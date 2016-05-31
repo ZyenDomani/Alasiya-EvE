@@ -27,7 +27,7 @@
 #define _EVE_NPC_SPAWNMGR_H__
 
 #include <unordered_map>
-#include "npc/SpawnDB.h"
+#include "system/cosmicMgrs/ManagerDB.h"
 
 struct SystemSpawnGroup { //reference to this bubble's data for spawn groups.  may need later.
     //SystemBubble* pSysBubble;   //cant use reference or pointer here...
@@ -44,9 +44,9 @@ struct SpawnEntry {     // notes for me while creating/writing/testing
     uint8 number;       // this rats number in group (to match up with above total)
     uint8 sub;          // spawn data subtype
     uint8 type;         // spawn data class id (in case we have to look it up again)
-    uint16 groupID;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
     uint16 typeID;      // rat type id
     uint32 itemID;      // rat entity id
+    uint32 groupID;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
     uint32 corpID;      // rat corp id
     uint32 factionID;   // rat faction id
     uint32 spawnID;     // spawn id (if needed to match up with other spawns of this group (multiple spawn types in this group))
@@ -60,7 +60,7 @@ struct SpawnGroup {
 
 struct RatFactionGroups {  // notes for me while creating/writing/testing
     uint8 shipClass;      // shipclass - arbitrary
-    uint16 groupID;     // item groupID
+    uint32 groupID;     // item groupID
 };
 
 struct RatSpawnClass { // notes for me while creating/writing/testing
@@ -106,7 +106,7 @@ public:
     RatFactionGroupsDef m_groups;   // this unordered_multimap holds the groupIDs for each faction, keyed by factionID
 
 private:
-    SpawnDB m_db;
+    ManagerDB m_db;
 };
 
 #define sSpawnDataMgr \
@@ -147,7 +147,7 @@ protected:
     typedef std::vector<SpawnGroup> RatSpawnGroupVec;
     typedef std::vector<RatSpawnClass> RatSpawnClassVec;
     typedef std::vector<RatFactionGroups> RatFactionGroupsVec;
-    typedef std::map<uint8, uint16> RatFactionGroupsMap;    //map to enable 'find'  shipClass is key
+    typedef std::map<uint8, uint32> RatFactionGroupsMap;    //map to enable 'find'  shipClass is key
     typedef std::unordered_multimap<uint32, SpawnEntry*> SpawnEntryDef;    //bubbleID is key
     //typedef std::vector<uint32, SystemSpawnGroup> SystemSpawnGroupVec;  //systemID is key  *unused at this time*
 

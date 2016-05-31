@@ -225,7 +225,7 @@ void SystemBubble::Add(SystemEntity* pEntity) {
                 AddBallExclusive(pEntity);  // adds new player to all players in bubble, if any
         }
         m_players.push_back( pClient );   //add to bubble's player list
-        
+
         // Set spawn timer for this bubble, if needed
         if (IsBelt() && (!IsSpawned()) && sConfig.npc.RoamingSpawns)
             if (!m_spawnTimer.Enabled())
@@ -261,7 +261,6 @@ void SystemBubble::Remove(SystemEntity *pEntity) {
     //regardless, notify everybody else in the bubble of the removal.
     if (!m_players.empty())
         RemoveBall(pEntity);
-    pEntity->TargetMgr()->ClearTargets();
     pEntity->m_bubble = nullptr;
 }
 
@@ -271,7 +270,6 @@ void SystemBubble::RemoveExclusive(SystemEntity *pEntity) {
 
     _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::RemoveExclusive() - Removing entity %u from bubble %u", pEntity->GetID(), GetID());
 	RemoveBallExclusive(pEntity);
-	pEntity->TargetMgr()->ClearTargets();
 }
 
 void SystemBubble::clear() {
@@ -280,16 +278,32 @@ void SystemBubble::clear() {
 	m_players.clear();
 }
 
+void SystemBubble::ResetBubbleSpawn()
+{
+    /* the current spawn in this bubble was killed off, so reset timers accordingly
+     *   once the timer hits, it will do all needed checks for players and respawn as needed.
+     *  this enables creating a new spawn after previous group was killed off
+     */
+
+    if (IsBelt() && (!IsSpawned()) && sConfig.npc.RoamingSpawns)
+        if (!m_spawnTimer.Enabled())
+            SetSpawnTimer(true);
+        if (IsGate() && (!IsSpawned()) && sConfig.npc.StaticSpawns) /* IsGate returns false.  will fix when gate spawns are finished */
+            if (!m_spawnTimer.Enabled())
+                SetSpawnTimer(false);
+}
+
 void SystemBubble::SetSpawnTimer(bool isBelt /*false*/)
 {
     if (m_system->GetSystemSecurityRating() > 0.90) return;
     if (sConfig.server.testServer)
         m_spawnTimer.Start(5000); /* 5s for testing */
-    else
+    else {
         if (isBelt)
             m_spawnTimer.Start(sConfig.npc.RoamingTimer *1000);
         else
             m_spawnTimer.Start(sConfig.npc.StaticTimer *1000);
+    }
 }
 
 void SystemBubble::SetBelt(uint32 beltID)
@@ -456,8 +470,8 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
     Client* pClient = to_who->GetPilot();
     if (!pClient)
         return;
-
-	PrintEntityList();
+    if (is_log_enabled(DESTINY__TRACE))
+        PrintEntityList();
 
 	Buffer* destinyBuffer = new Buffer;
 
@@ -528,6 +542,8 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
 
     _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::AddBallExclusive() - Adding entity %u to bubble %u", about_who->GetID(), GetID());
     addballs.Dump( DESTINY__BALL_DUMP, "    " );
+    _log( DESTINY__BALL_DECODE, "    Ball Decoded:" );
+    Destiny::DumpUpdate( DESTINY__BALL_DECODE, &( addballs.state->content() )[0], (uint32)addballs.state->content().size() );
 	//bubblecast the update
 	PyTuple* t = addballs.Encode();
 	BubblecastDestinyUpdateExclusive( &t, "AddBall", about_who );

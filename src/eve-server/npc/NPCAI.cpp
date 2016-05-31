@@ -455,7 +455,7 @@ void NPCAIMgr::_SendWeaponEffect( const char* effect, SystemEntity* pTarget ) {
     DoDestiny_OnSpecialFX13 sfx;
         sfx.entityID = m_npc->GetSelf()->itemID();
         sfx.moduleID = m_npc->GetSelf()->itemID();
-        sfx.moduleTypeID = m_npc->GetSelf()->typeID();
+        sfx.moduleTypeID = m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int();
         sfx.targetID = pTarget->GetID();
         sfx.otherTypeID = pTarget->GetSelf()->typeID();
         sfx.effect_type = effect;

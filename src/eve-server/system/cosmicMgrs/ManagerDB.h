@@ -45,13 +45,28 @@ public:
 
 class ManagerDB {
 public:
+    /* these are for belt manager */
     bool GetRoidDist(const char * sec, std::map<float, uint32> &roids);
-    bool LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAsteroidSE>& into);
     void SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidSE> roids);
+    bool LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAsteroidSE>& into);
+
+    /*  these are for spawn manager */
+    void DeleteSpawnedRats();
+    void GetSpawnClasses(DBQueryResult& res);
+    void GetGroupTypeIDs(uint32 groupID, DBQueryResult& res);
+    void GetFactionGroups(DBQueryResult& res);
+    void GetRegionFactionInfo(DBQueryResult& res);
+
+    /* these are for anomaly manager */
+
+    /* these are for dungeon manager */
+
+    /* these are for wormhole manager */
 
 protected:
 
 private:
+
 
 };
 

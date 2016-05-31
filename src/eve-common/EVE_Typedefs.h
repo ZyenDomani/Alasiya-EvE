@@ -409,7 +409,7 @@ typedef enum {
     ownerUnknown            = 3006,
     ownerCONCORD            = 1000125,
     ownerSCC                = 1000132,
-    ownerDED                = 1000137   //part of concord
+    ownerDED                = 1000137   //division of concord
 } ownerDefs;
 
 typedef enum {

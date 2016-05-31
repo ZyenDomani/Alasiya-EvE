@@ -49,6 +49,7 @@ public:
     void Process();
     void SetBelt(uint32 beltID);
     void SetGate(uint32 gateID);
+    void ResetBubbleSpawn();
     void SetSpawned(bool set)                           { m_spawned = set; }
     bool IsBelt()                                       { return m_belt; }
     bool IsGate()                                       { return m_gate; }

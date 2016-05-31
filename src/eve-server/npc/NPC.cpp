@@ -97,7 +97,6 @@ NPC::~NPC() {
     //if (m_spawner)
         //m_spawner->SpawnDepoped(m_self->itemID());
 
-    m_targMgr->DoDestruction();
     SafeDelete(m_destiny);
     SafeDelete(m_AI);
 }
@@ -153,30 +152,31 @@ void NPC::EncodeDestiny( Buffer& into )
         head.flags = IsMassive | IsFree;
     into.Append( head );
     MassSector mass;
-        mass.mass = GetMass();
+        mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
         mass.Harmonic = -1.0f;
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
     into.Append( mass );
-    DataSector ship;
-        ship.maxVelocity = GetMaxVelocity();
-        ship.velocity_x = GetVelocity().x;
-        ship.velocity_y = GetVelocity().y;
-        ship.velocity_z = GetVelocity().z;
-        ship.agility = GetAgility();
-        ship.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append( ship );
+    DataSector data;
+        data.maxVelocity = m_destiny->GetMaxVelocity();
+        data.velocity_x = m_destiny->GetVelocity().x;
+        data.velocity_y = m_destiny->GetVelocity().y;
+        data.velocity_z = m_destiny->GetVelocity().z;
+        data.agility = m_destiny->GetAgility();
+        data.speedfraction = m_destiny->GetSpeedFraction();
+        into.Append( data );
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
+            warp.formationID = 0xFF;
             warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
             warp.x = target.x;
             warp.y = target.y;
             warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.followRange = 0;  
-            warp.followID = 0; 
+            warp.followRange = 0;
+            warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
@@ -193,6 +193,7 @@ void NPC::EncodeDestiny( Buffer& into )
     } else if (mode == DSTBALL_GOTO) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_GOTO_Struct go;
+            go.formationID = 0xFF;
             go.x = target.x;
             go.y = target.y;
             go.z = target.z;

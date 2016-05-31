@@ -26,10 +26,10 @@
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
 #include "npc/NPC.h"
-#include "npc/SpawnMgr.h"
 #include "ship/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
+#include "system/cosmicMgrs/SpawnMgr.h"
 
 
 SpawnDataMgr::SpawnDataMgr()
@@ -110,6 +110,7 @@ void SpawnDataMgr::_Populate()
  SPAWN__POP
  SPAWN__DEPOP
  */
+/** @todo  adjust this class to manage anomaly spawns, too */
 SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
 : m_system(mgr),
   m_services(svc),
@@ -168,7 +169,7 @@ void SpawnMgr::Process() {
                         killTimer = false;
                     }
                 }
-                curBubbleItr++;
+                ++curBubbleItr;
             }
 
             if (killTimer) {
@@ -182,23 +183,10 @@ void SpawnMgr::Process() {
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
 }
-/*
-struct SpawnEntry { // notes for me while creating/writing/testing
-    uint8 spawnType;// spawn type.  1 = roaming, 2 = static
-    uint8 total;    // total number of this group spawned
-    uint8 number;   // spawn number in this group
-    uint8 sub;      // spawn data subtype
-    uint8 type;     // spawn data class id (in case we have to look it up again)
-    uint16 groupID; // rat group id (may look into changing typeID within group later on respawn (for chaining))
-    uint16 typeID;  // rat type id
-    uint32 itemID;  // rat entity id
-    uint32 spawnID; // spawn id (if needed to match up with other spawns of this group for warp or w/e (multiple spawn types in this group))
-    uint32 time;    // spawn group timer run time
-};
-*/
+
 void SpawnMgr::MoveSpawn()
 {
-
+    /* this will be to move a spawn from one location to another (change bubbles) */
 }
 
 void SpawnMgr::StartMainTimer()
@@ -212,19 +200,19 @@ void SpawnMgr::SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID)
 {   // NOTE this DOES NOT remove entity from system or bubble.  user must do this BEFORE calling.
 	if (!pSysBubble) return;	//hack for null sys bubble.
     _log(SPAWN__DEPOP, "SpawnMgr::SpawnDepoped - NPC %u removed from system.  DePop requested", itemID);
-    // delete this spawn from SpawnEntry for this bubble.
+    // delete this spawn item from SpawnEntry in this bubble.
     RemoveSpawn(pSysBubble->GetID(), itemID);
-    // if any SpawnEntry still exists for this bubble, reset group timer.  (this *should* enable chain ratting)
+    // if any SpawnEntry still exists for this bubble, reset group timer.
+    // this enables chain ratting or creating a new spawn
     SpawnEntryDef::iterator itr = m_spawns.find(pSysBubble->GetID());
     if (itr != m_spawns.end()) {
         if (!m_groupTimer.Enabled())
             m_groupTimer.Start(itr->second->time);
         itr->second->enabled = true;
     } else {
-        //there is no SpawnEntry for this bubble.  delete the bubbleID from the list of spawned bubbles,
-        // and reset bubble checks.
+        //there is no SpawnEntry for this bubble (no spawns left here).  delete from the spawned list and reset bubble checks.
         m_bubbles.erase(std::find(m_bubbles.begin(), m_bubbles.end(), pSysBubble));
-        pSysBubble->SetSpawned(false);
+        pSysBubble->ResetBubbleSpawn();
     }
 }
 
@@ -236,10 +224,10 @@ void SpawnMgr::SpawnPopped(uint32 itemID)
 
 void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
+    if (!m_enabled) return;
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
-    if (!m_enabled) return;
     if (!_FindSpawnForBubble(pSysBubble->GetID())) {
         sLog.Success("SpawnMgr", "DoSpawnForBubble called for bubble %u in %s(%u)(%.4f). Main Timer enabled.",
                      pSysBubble->GetID(), m_system->GetName().c_str(), m_system->GetID(), secRating);
@@ -261,6 +249,20 @@ bool SpawnMgr::_FindSpawnForBubble(uint32 bubbleID) {
     return false;
 }
 
+/*
+struct SpawnEntry { // notes for me while creating/writing/testing
+    uint8 spawnType;// spawn type.  1 = roaming, 2 = static
+    uint8 total;    // total number of this group spawned
+    uint8 number;   // spawn number in this group
+    uint8 sub;      // spawn data subtype
+    uint8 type;     // spawn data class id (in case we have to look it up again)
+    uint16 typeID;  // rat type id
+    uint32 itemID;  // rat entity id
+    uint32 groupID; // rat group id (may look into changing typeID within group later on respawn (for chaining))
+    uint32 spawnID; // spawn id (if needed to match up with other spawns of this group for warp or w/e (multiple spawn types in this group))
+    uint32 time;    // spawn group timer run time
+};
+*/
 void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
     // get faction for this region
@@ -276,9 +278,17 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
     // get faction's ship typeclass and groupID map
     auto groupRange = sSpawnDataMgr.m_groups.equal_range(factionID);
     for (auto it = groupRange.first; it != groupRange.second; it++) {
-        m_factionGroups.insert(std::pair<uint8, uint16>(it->second.shipClass, it->second.groupID));
+        m_factionGroups.insert(std::pair<uint8, uint32>(it->second.shipClass, it->second.groupID));
     }
     _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_factionGroups size is %u.", m_factionGroups.size());    //should be 12
+
+    /*spawn class is type of spawn based on system security rating
+     * 1-7 are 'normal' roid rat spawns
+     * 8 is hauler spawns (convoy, carrier, trailer, transporter, bulker, trucker, loader)
+     * 9 is commander spawns
+     * 10 is officer spawns
+     *sub is the type subgroup number.  nothing special here.
+     */
 
     // get possible spawn groups for this secRating.
     uint8 type = 0;
@@ -431,15 +441,16 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
 uint32 SpawnMgr::GetRandTypeID(uint32 shipClass)
 {
     // get rat faction's groupID based on previously selected shipClass
-    uint16 groupID = 0;
+    uint32 groupID = 0;
     RatFactionGroupsMap::iterator itr = m_factionGroups.find(shipClass);
-    if (itr != m_factionGroups.end())
+    if (itr != m_factionGroups.end()) {
         groupID = itr->second;
-    else {
+    } else {
         _log(SPAWN__ERROR, "SpawnMgr::GetRandTypeID() - Failed to find groupID for shipClass %u.", shipClass);
         return 0;
     }
    //get typeIDs for this groupID from m_types and return only one for spawning
+   /** @todo  will need to check typeIDs here for higher-level ships in hi-sec systems */
     std::vector<uint32> typeVec;
     auto typeRange = sSpawnDataMgr.m_types.equal_range(groupID); //groupID is key, typeID is value
     for (auto it = typeRange.first; it != typeRange.second; it++) {
@@ -452,6 +463,7 @@ uint32 SpawnMgr::GetRandTypeID(uint32 shipClass)
 void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry* spawnEntry)
 {
     GPoint startPos(pSysBubble->GetCenter());
+    startPos.MakeRandomPointOnSphere(8000); // put them at random spot 8k off center
     //startPos.MakeRandomPointOnSphere(500000); //500km from bubble center
     //const GPoint warpToPoint = (pSysBubble->GetCenter() - (MakeRandomInt(-5, 15) *1000));
     ItemData idata(
@@ -459,7 +471,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry* spawnEntry)
         spawnEntry->corpID,
         m_system->GetID(),
         flagAutoFit,
-        1,
+        spawnEntry->factionID,  // set ownerID to factionID for rats
         "BeltRat"
     );
 
@@ -471,7 +483,6 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry* spawnEntry)
 
     _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %u", i->itemID());
 
-    startPos.MakeRandomPointOnSphere(8000);
     i->Relocate(startPos);
     NPC* npc = new NPC(i, m_services, m_system, spawnEntry->corpID, spawnEntry->factionID, this);
 
@@ -508,11 +519,11 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
             corpID,
             m_system->GetID(),
             flagAutoFit,
-            1,
+            factionID,  // set ownerID to factionID for rats
             "BeltRat"
         );
 
-        for (uint32 x=0; x!=cur->quantity; x++) {
+        for (uint8 x=0; x!=cur->quantity; x++) {
             InventoryItemRef i = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db....or save ALL the spawn shit
             if (!i) {
                 _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur->typeID);
@@ -521,6 +532,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
 
             _log(SPAWN__POP, "SpawnMgr::MakeSpawn - Spawning NPC %u", i->itemID());
 
+            startPos.MakeRandomPointOnSphere(8000); // put them at random spot 8k off center
             i->Relocate(startPos);
             npc = new NPC(i, m_services, m_system, corpID, factionID, this);
 
@@ -548,10 +560,10 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
 
             m_spawns.insert(std::pair<uint32, SpawnEntry*>(pSysBubble->GetID(), &se));
         }
-        cur++;
+        ++cur;
     }
 
-    m_spawnID++;
+    ++m_spawnID;
     m_bubbles.push_back(pSysBubble);
     //cleanup
     m_ratSpawns.clear();

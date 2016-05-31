@@ -27,6 +27,37 @@
 
 #include "system/cosmicMgrs/ManagerDB.h"
 
+void ManagerDB::GetRegionFactionInfo(DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res, "SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0")) {
+        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetFactionGroups(DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res, "SELECT shipClass, groupID, factionID FROM roidRatClassGroup")) {
+        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetSpawnClasses(DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res, "SELECT type, sub, f, d, c, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass")) {
+        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetGroupTypeIDs(uint32 groupID, DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u", groupID)) {
+        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::DeleteSpawnedRats()
+{
+    DBerror err;
+    std::string query = "'beltrat'";
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE %s", query.c_str());
+}
+
 
 bool ManagerDB::GetRoidDist(const char * sec, std::map<float, uint32> &roids) {
     DBQueryResult res;

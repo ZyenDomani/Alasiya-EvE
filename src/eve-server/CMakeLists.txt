@@ -312,15 +312,11 @@ SET( missions_SOURCE
 SET( npc_INCLUDE
      #"${TARGET_INCLUDE_DIR}/npc/Concord.h"
      "${TARGET_INCLUDE_DIR}/npc/NPC.h"
-     "${TARGET_INCLUDE_DIR}/npc/NPCAI.h"
-     "${TARGET_INCLUDE_DIR}/npc/SpawnDB.h"
-     "${TARGET_INCLUDE_DIR}/npc/SpawnMgr.h" )
+     "${TARGET_INCLUDE_DIR}/npc/NPCAI.h")
 SET( npc_SOURCE
      #"${TARGET_SOURCE_DIR}/npc/Concord.cpp"
      "${TARGET_SOURCE_DIR}/npc/NPC.cpp"
-     "${TARGET_SOURCE_DIR}/npc/NPCAI.cpp"
-     "${TARGET_SOURCE_DIR}/npc/SpawnDB.cpp"
-     "${TARGET_SOURCE_DIR}/npc/SpawnMgr.cpp" )
+     "${TARGET_SOURCE_DIR}/npc/NPCAI.cpp" )
 
 SET( planet_INCLUDE
      "${TARGET_INCLUDE_DIR}/planet/Colony.h"
@@ -558,12 +554,14 @@ SET( system_managers_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/BeltMgr.h"
      "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/DungeonMgr.h"
      "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/ManagerDB.h"
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/SpawnMgr.h"
      "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/WormholeMgr.h")
 SET( system_managers_SOURCE
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/AnomalyMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/BeltMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/DungeonMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/ManagerDB.cpp"
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/SpawnMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/WormholeMgr.cpp")
 
 ########################

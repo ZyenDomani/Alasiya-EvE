@@ -28,7 +28,7 @@
 #ifndef __NPC_H_INCL__
 #define __NPC_H_INCL__
 
-#include "npc/SpawnMgr.h"
+#include "system/cosmicMgrs/SpawnMgr.h"
 #include "system/SystemEntity.h"
 
 class PyServiceMgr;

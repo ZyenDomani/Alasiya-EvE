@@ -113,8 +113,6 @@
 #include "market/MarketProxyService.h"
 // missions services
 #include "missions/MissionMgrService.h"
-// spawn manager
-#include "npc/SpawnMgr.h"
 // planet services
 #include "planet/Planet.h"
 #include "planet/PlanetMgrBound.h"
@@ -153,6 +151,7 @@
 #include "system/ScenarioService.h"
 #include "system/WormholeSvc.h"
 // cosmic managers
+#include "system/cosmicMgrs/SpawnMgr.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
 //console commands
 #include "ConsoleCommands.h"

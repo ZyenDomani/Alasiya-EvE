@@ -1,3 +1,10 @@
+/*  todo:
+        create groups for gate spawns
+        create groups for anomaly spawns
+        create groups for w-space spawns
+        rework existing classes for better groups (smaller groups for hi-sec and empire systems)
+        rework existing groups to remove higher-class ships (may need to do in spawnMgr.cpp)
+        */
 
 CREATE TABLE `roidRatSpawnClass` (
   `type` tinyint(3) NOT NULL,
