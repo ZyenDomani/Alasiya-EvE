@@ -178,6 +178,28 @@
     </tupleInline>
   </elementDef>
 
+  <elementDef name="Notify_OnGodmaFlushLocation">
+    <tupleInline>
+      <!-- setup to go into an OnMultiEvent (notify_type) -->
+      <stringInline value="OnGodmaFlushLocation" />
+      <!-- not sure yet -->
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Notify_OnGodmaFlushLocationProfile">
+    <tupleInline>
+      <!-- setup to go into an OnMultiEvent (notify_type) -->
+      <stringInline value="OnGodmaFlushLocationProfile" />
+      <!-- not sure yet -->
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Notify_OnMultiEvent">
+    <tupleInline>
+      <list name="events" />
+    </tupleInline>
+  </elementDef>
+
   <elementDef name="Notify_OnModuleAttributeChange">
     <tupleInline>
       <!-- setup to go into an OnMultiEvent (notify_type) -->
@@ -189,6 +211,16 @@
       <raw name="newValue" />
       <raw name="oldValue" />
       <!-- <raw name="scatterAttr" /> -->
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Notify_OnEffectMessage">
+    <tupleInline>
+      <!-- setup to go into an OnMultiEvent (notify_type) -->
+      <stringInline value="OnEffectMessage" />
+      <!-- messageID: from eveMessages  -->
+      <string name="messageID" />
+      <dict name="arguments" />
     </tupleInline>
   </elementDef>
 
@@ -215,7 +247,6 @@
       <!-- messageID: from eveMessages  -->
       <string name="messageID" />
       <dictInline>
-        <!-- can also have target here... -->
         <dictInlineEntry key="damage">
               <real name="damage" />
         </dictInlineEntry>
@@ -224,62 +255,6 @@
         </dictInlineEntry>
         <dictInlineEntry key="splash">
               <string name="splash" />
-        </dictInlineEntry>
-      </dictInline>
-    </tupleInline>
-  </elementDef>
-
-  <!-- this notify represents damage done by us to something else -->
-  <elementDef name="Notify_OnDamageMessage_Other">
-    <tupleInline>
-      <!-- setup to go into an OnMultiEvent (notify_type) -->
-      <stringInline value="OnDamageMessage" />
-      <!-- messageID: from eveMessages  -->
-      <string name="messageID" />
-      <dictInline>
-        <dictInlineEntry key="weapon">
-            <tupleInline name="_weapon">
-                <!-- this should be set to fmtMapping_itemTypeName -->
-                <int name="format_type" />
-                <int name="weaponType" />
-            </tupleInline>
-        </dictInlineEntry>
-        <dictInlineEntry key="splash">
-            <string name="splash" />
-        </dictInlineEntry>
-        <dictInlineEntry key="target">
-            <int name="target" />
-        </dictInlineEntry>
-        <dictInlineEntry key="damage">
-            <real name="damage" />
-        </dictInlineEntry>
-      </dictInline>
-    </tupleInline>
-  </elementDef>
-
-  <!-- this notify represents damage done by us to something else -->
-  <elementDef name="Notify_OnDamageMessage_Fleet">
-    <tupleInline>
-      <!-- setup to go into an OnMultiEvent (notify_type) -->
-      <stringInline value="OnDamageMessage" />
-      <!-- messageID: from eveMessages  -->
-      <string name="messageID" />
-      <dictInline>
-        <dictInlineEntry key="owner">
-            <tupleInline name="_owner">
-                <!-- this should be set to fmtMapping_OWNERID -->
-                <int name="format_type" />
-                <int name="ownerID" />
-            </tupleInline>
-        </dictInlineEntry>
-        <dictInlineEntry key="weapon">
-            <int name="weapon" />
-        </dictInlineEntry>
-        <dictInlineEntry key="splash">
-            <string name="splash" />
-        </dictInlineEntry>
-        <dictInlineEntry key="damage">
-            <real name="damage" />
         </dictInlineEntry>
       </dictInline>
     </tupleInline>
@@ -307,35 +282,59 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Notify_OnEffectMessage">
+  <!-- this notify represents damage done by something else to something else -->
+  <elementDef name="Notify_OnDamageMessage_Fleet">
     <tupleInline>
       <!-- setup to go into an OnMultiEvent (notify_type) -->
-      <stringInline value="OnEffectMessage" />
+      <stringInline value="OnDamageMessage" />
       <!-- messageID: from eveMessages  -->
       <string name="messageID" />
-      <dict name="arguments" />
+      <dictInline>
+        <dictInlineEntry key="owner">
+            <tupleInline name="_owner">
+                <!-- this should be set to fmtMapping_OWNERID -->
+                <int name="format_type" />
+                <int name="ownerID" />
+            </tupleInline>
+        </dictInlineEntry>
+        <dictInlineEntry key="weapon">
+            <int name="weapon" />
+        </dictInlineEntry>
+        <dictInlineEntry key="splash">
+            <string name="splash" />
+        </dictInlineEntry>
+        <dictInlineEntry key="damage">
+            <real name="damage" />
+        </dictInlineEntry>
+      </dictInline>
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Notify_OnGodmaFlushLocation">
+  <!-- this notify represents damage done by ?? to ?? -->
+  <elementDef name="Notify_OnDamageMessage_Other">
     <tupleInline>
       <!-- setup to go into an OnMultiEvent (notify_type) -->
-      <stringInline value="OnGodmaFlushLocation" />
-      <!-- not sure yet -->
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="Notify_OnGodmaFlushLocationProfile">
-    <tupleInline>
-      <!-- setup to go into an OnMultiEvent (notify_type) -->
-      <stringInline value="OnGodmaFlushLocationProfile" />
-      <!-- not sure yet -->
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="Notify_OnMultiEvent">
-    <tupleInline>
-      <list name="events" />
+      <stringInline value="OnDamageMessage" />
+      <!-- messageID: from eveMessages  -->
+      <string name="messageID" />
+      <dictInline>
+        <dictInlineEntry key="weapon">
+            <tupleInline name="_weapon">
+                <!-- this should be set to fmtMapping_itemTypeName -->
+                <int name="format_type" />
+                <int name="weaponType" />
+            </tupleInline>
+        </dictInlineEntry>
+        <dictInlineEntry key="splash">
+            <string name="splash" />
+        </dictInlineEntry>
+        <dictInlineEntry key="target">
+            <int name="target" />
+        </dictInlineEntry>
+        <dictInlineEntry key="damage">
+            <real name="damage" />
+        </dictInlineEntry>
+      </dictInline>
     </tupleInline>
   </elementDef>
 
