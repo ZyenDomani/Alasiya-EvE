@@ -353,7 +353,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         } else
             flag = call.byname.find("flag")->second->AsInt()->value();
 
-        int32 quantity = 1;
+        int32 quantity = 0;
         if (call.byname.find("qty") != call.byname.end())
             if (!call.byname.find("qty")->second->IsNone())
                 quantity = call.byname.find("qty")->second->AsInt()->value();
@@ -425,7 +425,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         } else
             flag = call.byname.find("flag")->second->AsInt()->value();
 
-        int32 quantity = 1;
+        int32 quantity = 0;
         if (call.byname.find("qty") != call.byname.end())
             if (!call.byname.find("qty")->second->IsNone())
                 quantity = call.byname.find("qty")->second->AsInt()->value();
@@ -447,6 +447,8 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
 PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, int32 quantity, EVEItemFlags flag) {
     // method logic rewrite to handle all types and send a proper return, and added some error returns.   -allan 2Jan16 (UD 24May16)
 
+    //quantity is used in logic for spitting stacks
+    int32 origQty = quantity;
     InventoryItemRef itemRef;
     EVEItemFlags old_flag;
     ShipItem* pShip = c->GetShip().get();
@@ -454,6 +456,7 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
     for (; cur != items.end(); cur++) {
         itemRef = m_manager->item_factory->GetItem(*cur);
         old_flag = itemRef->flag();
+        quantity = origQty;
 
         if (old_flag >= flagRigSlot0 && old_flag <= flagRigSlot7) {
             //  cant remove rigs like this.  send error.
@@ -466,7 +469,6 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
         if (IsModuleSlot(old_flag)) {
             if (IsModuleSlot(flag)) {
                 // we are wanting to change slots on a fitted module.
-                // check for existance of module in new slot, switch modules, then return.
                 pShip->MoveModuleSlot(old_flag, flag);
                 Call_SingleIntegerArg result;
                     result.arg = itemRef->itemID();
@@ -474,24 +476,30 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
             } else {
                 pShip->RemoveItem(itemRef);
                 if (itemRef->categoryID() == EVEDB::invCategories::Charge)
-                    quantity = -1;
+                    quantity = -1;  // remove all loaded charges from this module
             }
         }
 
-        /* check quantities.
-         * special value of -1 means "remove all charges from this module"
-         *  at this point, pShip->RemoveItem() has already unloaded module.
-         */
-        if (quantity == -1) {
-            quantity = itemRef->quantity();
+        // trying to fit a module from a stack.  make it check qty and split if needed.
+        if (flag == flagAutoFit)
+            quantity = 1;
+
+        // this is just logic for splitting stacks
+        if (itemRef->singleton()) {
+            // there is no stack to split.
+            ;
+        } else if (quantity < 1) {
+            // -1 is special quantity meaning "take full stack" used when removing loaded charges
+            // 0 is special quantity meaning "take full stack" used when moving complete stacks, usually to/from hangar and hold.
+            ;
         } else if (quantity != itemRef->quantity()) {
-            // item is in stack
+            // at this point, item is in stack, so split off quantity and create new item to move.
             InventoryItemRef newItem = itemRef->Split(quantity);
             if (!newItem) {
                 sLog.Error("_ExecAdd", "Error splitting item %u. Skipping.", itemRef->itemID());
                 return nullptr;
             }
-            // set itemRef to newly created item from splitting.  this will allow common code later.
+            // set itemRef to newly created single item.  this will allow common move code later and avoid complications (that were in original code)
             itemRef = newItem;
         }
 
