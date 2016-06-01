@@ -581,8 +581,8 @@ void DestinyManager::_Move(bool orbit) {
     float speed = 0.0f, csf = 0.0f;
     std::string move = "";
     // check to make sure we dont overrun usf/asf
-    if (m_activeSpeedFraction == m_userSpeedFraction) m_currentSpeedFraction = 1.0f;
-
+    if (m_activeSpeedFraction == m_userSpeedFraction)
+        m_currentSpeedFraction = 1.0f;
     if (orbit) {    //orbiting ship does NOT conform to standard move methods.
         speed = m_maxSpeed * m_currentSpeedFraction;
         csf = m_currentSpeedFraction;
@@ -1519,8 +1519,6 @@ void DestinyManager::Undock(GPoint dir) {
 void DestinyManager::SetUndockSpeed() {
     //start ship movement @ max velocity for undocking.
     // this simulates being forcefully "ejected" from station
-    if (!mySE->IsMissileSE())
-        State = DSTBALL_GOTO;
     m_stop = false;
     m_stateStamp = sEntityList.GetStamp();
     m_moveTimer = GetTimeMSeconds();
@@ -1531,6 +1529,7 @@ void DestinyManager::SetUndockSpeed() {
     m_velocity = m_shipHeading * m_maxSpeed;
 
     if (!mySE->IsMissileSE()) {
+        State = DSTBALL_GOTO;
         std::vector<PyTuple*> updates;
         DoDestiny_SetBallVelocity bv;
             bv.entityID = mySE->GetID();

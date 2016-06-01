@@ -33,16 +33,12 @@ ShieldHardener::ShieldHardener( InventoryItemRef item, ShipItemRef ship )
 void ShieldHardener::StopCycle(bool abort)
 {
     // Create Destiny Updates:
-    GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
-        go.chargeTypeID = 0;
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
-        ge.shipID = go.shipID;
+        ge.shipID = m_Ship->itemID();
         ge.targetID = 0;
-        ge.other = go.Encode();
+        ge.other = new PyNone;
         ge.area = new PyList;
         ge.effectID = effectModifyActiveShieldResonanceAndNullifyPassiveResonance;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();

@@ -33,6 +33,10 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
 : GenericModule(item, ship)
 {
     m_AMPC = new ActiveModuleProcessingComponent(item, this, ship);
+    /** @todo  bubble isnt ready yet.  will have to update everytime we change bubble */
+    //m_bubble = ship->GetPilot()->GetShipSE()->SysBubble();
+    /** @todo  destiny isnt ready yet.  will have to update when undocking, as this is created before ShipSE is */
+    //m_destiny = ship->GetPilot()->GetShipSE()->DestinyMgr();
     m_chargeRef = InventoryItemRef();
     m_overLoaded = false;
     m_chargeLoaded = false;

@@ -190,7 +190,6 @@ static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
             /************************************/
             /*              Rigs                */
             /************************************/
-
             case EVEDB::invGroups::Rig_Armor:                               return (new RigModule(item, ship)); break;
             case EVEDB::invGroups::Rig_Shield:                              return (new RigModule(item, ship)); break;
             case EVEDB::invGroups::Rig_Energy_Weapon:                       return (new RigModule(item, ship)); break;
