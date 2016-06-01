@@ -120,7 +120,7 @@ PosMgrService::~PosMgrService() {
 
 PyBoundObject* PosMgrService::_CreateBoundObject( Client* c, const PyRep* bind_args ) {
     _log( CLIENT__MESSAGE, "PosMgrService bind request for:" );
-    bind_args->Dump( CLIENT__MESSAGE, "    " );
+    bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
 
     return new PosMgrBound( m_manager );
 }

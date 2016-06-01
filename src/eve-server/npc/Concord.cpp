@@ -166,7 +166,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
         warp.formationID = 0xFF;
-        warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
+        warp.effectStamp = -1; // m_destiny->GetStateStamp();   //timestamp when warp started
         warp.x = target.x;
         warp.y = target.y;
         warp.z = target.z;

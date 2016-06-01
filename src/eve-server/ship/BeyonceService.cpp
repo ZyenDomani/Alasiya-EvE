@@ -121,7 +121,7 @@ BeyonceService::~BeyonceService() {
 PyBoundObject* BeyonceService::_CreateBoundObject( Client* c, const PyRep* bind_args )
 {
     _log( CLIENT__MESSAGE, "BeyonceService bind request for:" );
-    bind_args->Dump( CLIENT__MESSAGE, "    " );
+    bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
     /*
      * 18:26:29 [ClientMessage] BeyonceService bind request for:
      * 18:26:29 [ClientMessage]     Integer field: 30002547
