@@ -96,7 +96,7 @@ FleetObject::~FleetObject()
 PyBoundObject* FleetObject::_CreateBoundObject( Client* c, const PyRep* bind_args )
 {
     _log( CLIENT__MESSAGE, "FleetObjectHandler bind request for:" );
-    bind_args->Dump( CLIENT__MESSAGE, "    " );
+    bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
 
     return new FleetBound( m_manager);
 }

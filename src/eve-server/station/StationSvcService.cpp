@@ -88,7 +88,7 @@ StationSvcService::~StationSvcService() {
 PyBoundObject* StationSvcService::_CreateBoundObject( Client* c, const PyRep* bind_args )
 {
     _log( CLIENT__MESSAGE, "StationSvcService bind request for:" );
-    bind_args->Dump( CLIENT__MESSAGE, "    " );
+    bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
 
     return new StationSvcBound( m_manager, &m_db );
 }*/

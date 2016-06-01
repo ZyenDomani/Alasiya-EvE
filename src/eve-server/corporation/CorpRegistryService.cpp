@@ -176,7 +176,7 @@ CorpRegistryService::~CorpRegistryService() {
 PyBoundObject* CorpRegistryService::_CreateBoundObject( Client* c, const PyRep* bind_args )
 {
     _log( CLIENT__MESSAGE, "CorpRegistryService bind request for:" );
-    bind_args->Dump( CLIENT__MESSAGE, "    " );
+    bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
     /*
      * 18:20:14 [ClientMessage] CorpRegistryService bind request for:
      * 18:20:14 [ClientMessage]     Tuple: 2 elements
