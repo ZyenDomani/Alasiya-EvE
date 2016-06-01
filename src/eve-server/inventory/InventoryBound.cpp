@@ -30,6 +30,7 @@
 #include "EVEServerConfig.h"
 #include "inventory/InventoryBound.h"
 #include "system/SystemManager.h"
+#include <system/Container.h>
 
 PyCallable_Make_InnerDispatcher(InventoryBound)
 
@@ -496,6 +497,26 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
 
         if (IsCargoHoldFlag(old_flag))
             pShip->RemoveItem(itemRef);
+
+        /* check for and remove item from container inventory */
+        if (old_flag == flagAutoFit) {
+            if (c->IsDocked()) {
+                CargoContainerRef contRef = m_manager->item_factory->GetCargoContainer(itemRef->locationID());
+                contRef->RemoveItem(contRef);
+            } else {
+                SystemEntity* pSE = c->SystemMgr()->GetSEFromInventory(itemRef->locationID());
+                if (pSE->IsWreckSE()) {
+                    WreckContainerRef wreckRef = m_manager->item_factory->GetWreckContainer(itemRef->locationID());
+                    wreckRef->RemoveItem(itemRef);
+                } else if (pSE->IsContainerSE()) {
+                    CargoContainerRef contRef = m_manager->item_factory->GetCargoContainer(itemRef->locationID());
+                    contRef->RemoveItem(contRef);
+                } else {
+                    _log(INV__WARNING, "old_flag == flagAutoFit and IsInSpace, but container is not cargo or wreck for item %s(%u) in locationID %u.", \
+                        itemRef->itemName().c_str(), itemRef->itemID(), itemRef->locationID());
+                }
+            }
+        }
 
         // check where to put item to be added.  use flags to find a spot for this item
         if (flag == flagAutoFit) {

@@ -40,9 +40,10 @@ public:
     Inventory(InventoryItemRef item);
     virtual ~Inventory()                                { /* do nothing here*/ }
 
+    void Reset(ItemFactory* factory);
     void AddItem(InventoryItemRef item);
     void RemoveItem(InventoryItemRef item);
-    void DeleteContents(ItemFactory &factory);
+    void DeleteContents();
     void GetInventoryList(std::map<uint32, InventoryItemRef> &inventory);
     void GetInventoryVec(std::vector<InventoryItemRef> &itemVec);
     void StackAll(EVEItemFlags flag, uint32 forOwner = 0);

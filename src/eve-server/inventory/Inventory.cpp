@@ -52,6 +52,12 @@ Inventory* Inventory::Cast(InventoryItemRef item) {
     return this;
 }
 
+void Inventory::Reset(ItemFactory* factory)
+{
+    mContentsLoaded = false;
+    LoadContents(factory);
+}
+
 bool Inventory::GetItems(OwnerData od, std::vector< uint32 >& into ) const {
     return m_db->GetItemContents(od, into);
 }
@@ -139,7 +145,7 @@ void Inventory::RemoveItem(InventoryItemRef item) {
         _log(INV__TRACE,"Inventory::RemoveItem()  location %u does not contain item %u.", m_inventoryID, item->itemID());
 }
 
-void Inventory::DeleteContents(ItemFactory &factory)
+void Inventory::DeleteContents()
 {
     if (!mContentsLoaded) return;
 

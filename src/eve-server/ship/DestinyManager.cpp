@@ -176,9 +176,11 @@ void DestinyManager::ProcessState() {
                     _WarpCruise(sec_into_warp);
                 else if (m_warpState->decel)
                     _WarpDecel(sec_into_warp);
-                else // houston, we have a problem...
-                    _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) Has WarpState but checks are false.",  \
+                else {// houston, we have a problem...
+                    if (mySE->HasPilot())
+                        _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) Has WarpState but checks are false.",  \
                                         mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+                }
                 break;
             }
 
@@ -1355,6 +1357,31 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
     GVector warp_distance(m_position, where);
     m_targetDistance = warp_distance.length();
 
+    if (mySE->IsNPCSE()) {
+        GotoPoint(where);
+
+        State = DSTBALL_WARP;
+
+        // send client updates
+        std::vector<PyTuple*> updates;
+        DoDestiny_CmdWarpTo wt;
+            wt.entityID = mySE->GetID();
+            wt.dest_x = m_targetPoint.x;
+            wt.dest_y = m_targetPoint.y;
+            wt.dest_z = m_targetPoint.z;
+            wt.distance = m_stopDistance;
+            wt.warpSpeed = GetWarpSpeed();
+        updates.push_back(wt.Encode());
+        DoDestiny_OnSpecialFX10 sfx;
+            sfx.effect_type = "effects.Warping";
+            sfx.entityID = mySE->GetID();
+            sfx.isOffensive = false;
+            sfx.start = true;
+            sfx.active = true;
+        updates.push_back(sfx.Encode());
+        SendDestinyUpdate(updates);
+        return;
+    }
     /*supercap warp modifiers
      * these will go here, and modify distance, target, and range accordingly
      *

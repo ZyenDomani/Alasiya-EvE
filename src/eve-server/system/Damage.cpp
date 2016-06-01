@@ -330,6 +330,10 @@ void NPC::Killed(Damage &fatal_blow) {
 
     GPoint deadNPCPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
+    if (!wreckTypeID) {
+        sLog.Error("NPC::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
+        return;
+    }
 
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
@@ -415,6 +419,10 @@ void Ship::Killed(Damage &fatal_blow) {
 
         // Spawn a wreck for the Ship that was destroyed:
         uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
+        if (!wreckTypeID) {
+            sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
+            return;
+        }
         std::string wreck_name = m_self->itemName();
         GPoint wreckPosition = m_destiny->GetPosition();
         ItemData wreckItemData(
@@ -445,8 +453,7 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckEntity.y = wreckPosition.y;
             wreckEntity.z = wreckPosition.z;
 
-        if (!m_system->BuildDynamicEntity(wreckEntity))
-        {
+        if (!m_system->BuildDynamicEntity(wreckEntity)) {
             sLog.Error("Ship::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
             ; /** @todo make error msg here */  //  PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
             return;
@@ -625,7 +632,11 @@ void Ship::Killed(Damage &fatal_blow) {
         m_pilot->BoardShip(podRef);
         m_services.item_factory->UnsetUsingClient();
 
-		uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(deadShipRef->typeID());
+        uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(deadShipRef->typeID());
+        if (!wreckTypeID) {
+            sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
+            return;
+        }
         std::string wreck_name = GetName();
         wreck_name += "'s " + deadShipRef->itemName() + " Wreck";
 

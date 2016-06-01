@@ -144,7 +144,7 @@ public:
     virtual ~ContainerSE()                              { /* Do nothing here */ }
 
     /* class type pointer querys. */
-    virtual const ContainerSE* GetContainerSE()         { return this; }
+    virtual ContainerSE* GetContSE()                    { return this; }
     /* class type tests. */
     virtual bool IsContainerSE()                        { return true; }
 
@@ -155,12 +155,17 @@ public:
     virtual void MakeDamageState(DoDestinyDamageState &into);
 
     /* specific functions handled in this class. */
+    void AnchorContainer();
     bool IsEmpty()                                      { return _containerRef->IsEmpty(); }
+    bool IsAnchored()                                   { return m_isAnchored; }
+
 
 protected:
     CargoContainerRef _containerRef;
 
     Timer m_deleteTimer;
+
+    bool m_isAnchored;
 
     double m_shieldCharge;
     double m_armorDamage;
@@ -227,6 +232,7 @@ public:
 
     bool IsEmpty()                                      { return GetInventory()->IsEmpty(); }
     void MakeSlimItemChange();
+    void SetMySE(SystemEntity* pSE)                     { mySE = pSE;}
 
 protected:
     /*
@@ -251,6 +257,8 @@ protected:
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data );
 
+private:
+    SystemEntity* mySE;
 };
 
 /**
@@ -266,9 +274,9 @@ public:
     virtual ~WreckSE()                                  { /* Do nothing here */ }
 
     /* class type pointer querys. */
-    virtual const WreckSE* GetWreckSE() const           { return this; }
+    virtual WreckSE* GetWreckSE()                       { return this; }
     /* class type tests. */
-    virtual bool IsWreckSE() const                      { return true; }
+    virtual bool IsWreckSE()                            { return true; }
 
     /* SystemEntity interface */
     virtual void Process();

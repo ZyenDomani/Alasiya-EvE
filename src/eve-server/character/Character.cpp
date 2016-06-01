@@ -488,7 +488,7 @@ CharacterRef Character::Spawn(ItemFactory &factory, ItemData &data, CharacterDat
 
 void Character::Delete() {
     // delete contents
-    m_inventory->DeleteContents( m_factory );
+    m_inventory->DeleteContents();
     // delete character record
     m_factory.db().DeleteCharacter(itemID());
     // let the parent care about the rest

@@ -204,7 +204,7 @@ void NPC::EncodeDestiny( Buffer& into )
         into.Append( main );
     }
 
-    _log(COMMON__WARNING, "NPC::Encodem_destiny: %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(COMMON__WARNING, "NPC::EncodeDestiny: %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void NPC::UseShieldRecharge()

@@ -253,6 +253,7 @@ public:
                         ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                     WreckSE* wSE = new WreckSE(wreck, *(system.GetServiceMgr()), &system);
                     wreck->GetInventory()->LoadContents(factory);
+                    wreck->SetMySE(wSE);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WreckSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return wSE;
                 } else if ( (entity.groupID == EVEDB::invGroups::Audit_Log_Secure_Container)
@@ -454,7 +455,6 @@ bool SystemManager::LoadPlayerDynamics(uint32 ownerID) {
 }
 
 bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity) {
-    /* only called by .spawn */
     SystemEntity* se = DynamicEntityFactory::BuildEntity(*this, m_services.item_factory, entity );
     if (!se) {
         sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (type %u)", entity.itemID, entity.typeID );

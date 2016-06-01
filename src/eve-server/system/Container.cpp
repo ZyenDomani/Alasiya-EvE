@@ -31,6 +31,7 @@
 #include "ship/DestinyManager.h"
 #include "system/Container.h"
 #include "SystemManager.h"
+#include "SystemBubble.h"
 
 /*
  * CargoContainer
@@ -106,7 +107,7 @@ void CargoContainer::Delete()
 {
     sLog.Magenta( "CargoContainer::Delete()", "Garbage Collection is removing Cargo Container %u.", itemID() );
     // delete contents first
-    m_inventory->DeleteContents( m_factory );
+    m_inventory->DeleteContents();
     InventoryItem::Delete();
 }
 
@@ -171,7 +172,7 @@ void CargoContainer::RemoveItem(InventoryItemRef item)
     client->GetChar()->secStatusChange( loss );
     */
     m_inventory->RemoveItem( item );
-    if ((groupID() == EVEDB::invGroups::Cargo_Container) && (IsEmpty())) {
+    if ((typeID() == EVEDB::invTypes::typeCargoContainer) && (IsEmpty())) {
         sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", itemID() );
         Delete();
     }
@@ -193,18 +194,25 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemM
   m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
 {
     _containerRef = self;
+    m_isAnchored = false;
     if (!IsStation(m_self->locationID()))
         m_deleteTimer.Start();
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity(), false);
 }
 
 void ContainerSE::Process() {
-    //SystemEntity::Process();
+    SystemEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
         m_system->RemoveEntity(this);
         _containerRef->Delete();
     }
+}
+
+void ContainerSE::AnchorContainer()
+{
+    m_deleteTimer.Disable();
+    m_isAnchored = true;
 }
 
 void ContainerSE::EncodeDestiny( Buffer& into )
@@ -322,8 +330,9 @@ uint32 WreckContainer::CreateItemID(ItemFactory &factory, ItemData &data) {
 void WreckContainer::Delete()
 {
     sLog.Magenta( "WreckContainer::Delete()", "Garbage Collection is removing Wreck %u.", itemID() );
+    m_inventory->LoadContents(&m_factory);
     // delete contents first
-    m_inventory->DeleteContents( m_factory );
+    m_inventory->DeleteContents();
     InventoryItem::Delete();
 }
 
@@ -334,8 +343,7 @@ double WreckContainer::GetCapacity(EVEItemFlags flag) const
 
 PyObject *WreckContainer::WreckContainerGetInfo()
 {
-    if (!m_inventory->LoadContents( &m_factory ) )
-    {
+    if (!m_inventory->LoadContents(&m_factory)) {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for WreckContainerGetInfo", itemName().c_str(), itemID() );
         return NULL;
     }
@@ -365,18 +373,24 @@ void WreckContainer::AddItem( InventoryItemRef item )
 void WreckContainer::RemoveItem(InventoryItemRef item)
 {
     m_inventory->RemoveItem( item );
-    double curCapy = GetAttribute(AttrCapacity).get_float();
-    double defCapy = GetDefaultAttribute(AttrCapacity).get_float();
-    _log(COMMON__WARNING, "WreckContainer::IsEmpty(): %s(%u) - attrib capy: %d, default capy: %d", itemName().c_str(), itemID(), curCapy, defCapy );
-    if (IsEmpty())
+    if (IsEmpty()) {
         MakeSlimItemChange();
+        _log(INV__INFO, "WreckContainer::IsEmpty() for %s(%u)", itemName().c_str(), itemID());
+        //Delete();
+    }
 }
 
 void WreckContainer::MakeSlimItemChange()
 {
-    /** @todo (Allan)  finish this  */
-    //  this is used to update all clients in bubble for container empty status (the filled/open icon in overview)
-    //new PyObject( "foo.SlimItem", MakeSlimItem() );
+    PyDict* slimPod = mySE->MakeSlimItem();
+    PyTuple* shipData = new PyTuple(2);
+        shipData->SetItem(0, new PyLong(itemID()));
+        shipData->SetItem(1, new PyObject( "foo.SlimItem", slimPod));
+    PyTuple* updates = new PyTuple(2);
+        updates->SetItem(0, new PyString("OnSlimItemChange"));
+        updates->SetItem(1, shipData);
+    //consumes updates
+    mySE->SysBubble()->BubblecastDestinyUpdate(&updates, "destiny" );
 }
 
 
@@ -390,7 +404,7 @@ WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* 
 }
 
 void WreckSE::Process() {
-    //SystemEntity::Process();
+    SystemEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
         m_system->RemoveEntity(this);
@@ -464,30 +478,42 @@ PyDict *WreckSE::MakeSlimItem() {
     return slim;
 }
 /*
+                                    [PyTuple 2 items]
+                                      [PyDict 12 kvp]
                                         [PyString "itemID"]
-                                        [PyIntegerVar 9000000000001190976]
+                                        [PyIntegerVar 9000000000000191669]
                                         [PyString "typeID"]
-                                        [PyInt 26574]
+                                        [PyInt 26593]
                                         [PyString "name"]
-                                        [PyString "Guristas Inferno Wreck"]
+                                        [PyString "Matriarch Alvus Wreck"]
+                                        [PyString "lootRights"]
+                                        [PyTuple 4 items]
+                                          [PyInt 90752035]
+                                          [PyInt 506478887]
+                                          [PyIntegerVar 1306510806464]
+                                          [PyBool False]
                                         [PyString "corpID"]
-                                        [PyInt 1630077495]
+                                        [PyInt 506478887]
                                         [PyString "allianceID"]
                                         [PyInt 99001691]
                                         [PyString "isEmpty"]
-                                        [PyBool False]
+                                        [PyBool True]
                                         [PyString "launcherID"]
-                                        [PyIntegerVar 9000000000001190095]
+                                        [PyIntegerVar 9000000000000163208]
                                         [PyString "securityStatus"]
-                                        [PyFloat 2.65811580082965]
+                                        [PyFloat 1.30297432546709]
                                         [PyString "ownerID"]
-                                        [PyInt 649670823]
+                                        [PyInt 90752035]
                                         [PyString "nameID"]
                                         [PyTuple 2 items]
                                           [PyString "UI/Inflight/WreckNameTypeID"]
                                           [PyDict 1 kvp]
                                             [PyString "WreckTypeID"]
-                                            [PyInt 11931]
+                                            [PyInt 23504]
                                         [PyString "warFactionID"]
                                         [PyNone]
+                                      [PyList 3 items]
+                                        [PyFloat 0]
+                                        [PyFloat 0]
+                                        [PyFloat 1]
                             */

@@ -88,7 +88,7 @@ uint32 StructureItem::CreateItemID(ItemFactory &factory, ItemData &data) {
 void StructureItem::Delete()
 {
     // delete contents first
-    m_inventory->DeleteContents( m_factory );
+    m_inventory->DeleteContents();
 
     InventoryItem::Delete();
 }

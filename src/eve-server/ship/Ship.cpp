@@ -349,7 +349,7 @@ void ShipItem::_DecreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToC
 void ShipItem::Delete()
 {
     // delete contents first
-    m_inventory->DeleteContents( m_factory );
+    m_inventory->DeleteContents();
 
     InventoryItem::Delete();
 }
@@ -1166,7 +1166,7 @@ std::string ShipItem::GetShipDNA()
     /* build the dna stream */
     std::stringstream dna;
     dna << type().id() << ":";
-    dna << subSys << modHi << modMid << modLow << modRig << charges << drones;
+    dna << subSys.str() << modHi.str() << modMid.str() << modLow.str() << modRig.str() << charges.str() << drones.str();
 
     _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), itemName().c_str(), itemID());
     return dna.str();
