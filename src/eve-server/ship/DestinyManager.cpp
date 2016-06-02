@@ -1898,6 +1898,51 @@ void DestinyManager::UnCloak() {
     mySE->SysBubble()->AddBallExclusive(mySE);
 }
 
+void DestinyManager::TractorBeamStart(SystemEntity* pTargSE)
+{
+    std::vector<PyTuple*> updates;
+    DoDestiny_SetMaxSpeed ms;
+        ms.entityID = pTargSE->GetSelf()->itemID();
+        ms.speedValue = 500;
+    updates.push_back(ms.Encode());
+    DoDestiny_SetBallFree bf;
+        bf.entityID = pTargSE->GetSelf()->itemID();
+        bf.is_free = 1;
+    updates.push_back(bf.Encode());
+    DoDestiny_SetBallMass sbmass;
+        sbmass.entityID = pTargSE->GetSelf()->itemID();
+        sbmass.mass = 10;
+    updates.push_back(sbmass.Encode());
+    DoDestiny_CmdSetSpeedFraction ssf;
+        ssf.entityID = pTargSE->GetID();
+        ssf.fraction = 1;
+    updates.push_back(ssf.Encode());
+    DoDestiny_CmdFollowBall fb;
+        fb.entityID = pTargSE->GetID();
+        fb.ballID = mySE->GetID();
+        fb.range = 500;
+    updates.push_back(fb.Encode());
+    SendDestinyUpdate(updates);
+}
+
+void DestinyManager::TractorBeamStop(SystemEntity* pTargSE)
+{
+    std::vector<PyTuple*> updates;
+    DoDestiny_SetMaxSpeed ms;
+        ms.entityID = pTargSE->GetSelf()->itemID();
+        ms.speedValue = 0;
+    updates.push_back(ms.Encode());
+    DoDestiny_SetBallFree bf;
+        bf.entityID = pTargSE->GetSelf()->itemID();
+        bf.is_free = 0;
+    updates.push_back(bf.Encode());
+    DoDestiny_SetBallMass sbmass;
+        sbmass.entityID = pTargSE->GetSelf()->itemID();
+        sbmass.mass = 10000000000;
+    updates.push_back(sbmass.Encode());
+    SendDestinyUpdate(updates);
+}
+
 void DestinyManager::SendJettisonPacket(const InventoryItemRef fromItemRef) const {
     DoDestiny_OnSpecialFX10 effect;
         effect.entityID = fromItemRef->itemID();

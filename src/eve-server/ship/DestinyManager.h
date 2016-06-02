@@ -63,6 +63,7 @@ public:
     const GPoint &GetPosition() const                   { return m_position; }
     const GVector &GetVelocity() const                  { return m_velocity; }
     double GetSpeedFraction()                           { return m_currentSpeedFraction; }
+    float GetSpeed()                                    { return (m_maxShipSpeed * m_currentSpeedFraction); }
     Destiny::BallMode GetState()                        { return State; }
 
     void EntityRemoved(SystemEntity* who);
@@ -77,9 +78,10 @@ public:
     /* Global Actions */
     void Stop();
     void Halt();     // puts entity at 0 velocity
-    /** @todo (Allan) fix this shit */
-	void TractorBeamHalt()                              { Stop(); }
-	void TractorBeamFollow(SystemEntity* who, double distance) { Follow(who, distance); }
+
+    /* TractorBeam */
+	void TractorBeamStop(SystemEntity* pTargSE);
+	void TractorBeamStart(SystemEntity* who);
 
     /* Local Movement */
     void Orbit(SystemEntity* who, double distance, bool update=true);
