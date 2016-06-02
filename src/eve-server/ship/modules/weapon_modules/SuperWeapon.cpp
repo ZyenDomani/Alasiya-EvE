@@ -108,7 +108,6 @@ void SuperWeapon::StopCycle(bool abort)
         ge.other = new PyNone;
         ge.area = new PyList;
         ge.effectID = effectID;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -120,16 +119,10 @@ void SuperWeapon::StopCycle(bool abort)
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
         shipEff.error = new PyNone;
-
-    PyList* events = new PyList;
-        events->AddItem(shipEff.Encode());
-
-    Notify_OnMultiEvent multi;
-        multi.events = events;
-
-    PyTuple* tmp = multi.Encode();
-
-    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
+    std::vector<PyTuple*> events;
+        events.push_back(shipEff.Encode());
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double SuperWeapon::DoCycle()
@@ -226,33 +219,28 @@ void SuperWeapon::_ShowCycle()
     );
 
     // Create Destiny Updates:
-
     GodmaEnvironment ge;
-    ge.selfID = m_Item->itemID();
-    ge.charID = m_Ship->ownerID();
-    ge.shipID = m_Ship->itemID();;
-    ge.targetID = 0;
-    ge.other = new PyNone;
-    ge.area = new PyList;
-    ge.effectID = effectID;
-
+        ge.selfID = m_Item->itemID();
+        ge.charID = m_Ship->ownerID();
+        ge.shipID = m_Ship->itemID();;
+        ge.targetID = 0;
+        ge.other = new PyNone;
+        ge.area = new PyList;
+        ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
-    shipEff.itemID = ge.selfID;
-    shipEff.effectID = ge.effectID;
-    shipEff.timeNow = Win32TimeNow();
-    shipEff.start = 1;
-    shipEff.active = 1;
-    shipEff.environment = ge.Encode();
-    shipEff.startTime = shipEff.timeNow;
-    shipEff.duration = _GetDuration();
-    shipEff.repeat = 1;  /* boolean of repeatable cycles without pilot activation */
-    shipEff.error = new PyNone;
-
+        shipEff.itemID = ge.selfID;
+        shipEff.effectID = ge.effectID;
+        shipEff.timeNow = Win32TimeNow();
+        shipEff.start = 1;
+        shipEff.active = 1;
+        shipEff.environment = ge.Encode();
+        shipEff.startTime = shipEff.timeNow;
+        shipEff.duration = _GetDuration();
+        shipEff.repeat = 1000;
+        shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
-    events.push_back(shipEff.Encode());
-
+        events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 

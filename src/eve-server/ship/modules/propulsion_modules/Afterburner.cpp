@@ -35,6 +35,7 @@ Afterburner::Afterburner( InventoryItemRef item, ShipItemRef ship )
 void Afterburner::Activate(SystemEntity * targetEntity)
 {
     m_AMPC->ActivateCycle();
+    m_shipSpeed = m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->GetMaxVelocity();
     double maxSpeed = m_Ship->GetAttribute(AttrMaxVelocity).get_float();
 
     // Tell Destiny Manager about our updated speed so it properly tracks ship movement:
@@ -51,6 +52,10 @@ void Afterburner::Activate(SystemEntity * targetEntity)
 void Afterburner::Deactivate()
 {
     ActiveModule::Deactivate();
+    // check to see if module is being removed while docked.  (segfault fix)
+    if (m_Ship->GetPilot()->IsDocked())
+        return;
+
     double maxSpeed = m_Ship->GetAttribute(AttrMaxVelocity).get_float();
 
     // Tell Destiny Manager about our updated speed so it properly tracks ship movement:
@@ -111,15 +116,18 @@ void Afterburner::StopCycle(bool abort)
         0
      );
 
+    GodmaOther go;
+        go.shipID = m_Ship->itemID();
+        go.slotID = m_Item->flag();
+        go.chargeTypeID = 0;
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
-        ge.targetID = 0;
-        ge.other = new PyNone;
+        ge.shipID = go.shipID;
+        ge.targetID = m_targetID;
+        ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectID;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -131,16 +139,10 @@ void Afterburner::StopCycle(bool abort)
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
         shipEff.error = new PyNone;
-
-    PyList* events = new PyList;
-    events->AddItem(shipEff.Encode());
-
-    Notify_OnMultiEvent multi;
-    multi.events = events;
-
-    PyTuple* tmp2 = multi.Encode();
-
-    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp2);
+    std::vector<PyTuple*> events;
+        events.push_back(shipEff.Encode());
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 
@@ -178,15 +180,18 @@ void Afterburner::_ShowCycle()
      );
 
     // Create Destiny Updates:
+    GodmaOther go;
+        go.shipID = m_Ship->itemID();
+        go.slotID = m_Item->flag();
+        go.chargeTypeID = 0;
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
-        ge.targetID = 0;
-        ge.other = new PyNone;
+        ge.shipID = go.shipID;
+        ge.targetID = m_targetID;
+        ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectID;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -196,14 +201,11 @@ void Afterburner::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1;  /* boolean of repeatable cycles without pilot activation */
+        shipEff.repeat = 1000;
         shipEff.error = new PyNone;
-
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
-
     std::vector<PyTuple*> updates;
-
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 

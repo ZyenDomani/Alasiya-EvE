@@ -186,9 +186,9 @@ void MissileLauncher::_ShowCycle()
         m_targetID,
         m_chargeRef->typeID(),
         "effects.MissileDeployment",
-        1,
-        1,
-        1,
+        true,
+        true,
+        true,
         _GetROF(),
         1000
     );

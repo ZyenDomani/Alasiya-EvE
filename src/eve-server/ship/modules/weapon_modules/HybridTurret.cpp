@@ -180,9 +180,9 @@ void HybridTurret::_ShowCycle()
         m_targetID,
         m_chargeRef->typeID(),
         "effects.HybridFired",
-        1,
-        1,
-        1,
+        true,
+        true,
+        true,
         _GetROF(),
         0
     );

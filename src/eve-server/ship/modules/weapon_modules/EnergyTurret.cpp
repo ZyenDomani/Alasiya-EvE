@@ -93,6 +93,23 @@ void EnergyTurret::Activate(SystemEntity* targetEntity)
 
 void EnergyTurret::StopCycle()
 {
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    timeLeft /= 100;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    (
+        m_Ship,
+        m_Item->itemID(),
+        m_Item->typeID(),
+        m_targetID,
+        m_chargeRef->typeID(),
+        "effects.Laser",
+        true,
+        false,
+        false,
+        timeLeft,
+        0
+    );
+
     // Create Destiny Updates:
     GodmaOther go;
         go.shipID = m_Ship->itemID();
@@ -109,8 +126,6 @@ void EnergyTurret::StopCycle()
         ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectTargetAttack;
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;

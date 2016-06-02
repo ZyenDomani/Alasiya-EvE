@@ -869,6 +869,8 @@ void ModuleManager::Online(EVEItemFlags flag)
 {
     GenericModule* mod = m_Modules->GetModule(flag);
     if (mod) {
+        if (mod->isOnline())
+            return;
         if (OnlineCheck(mod)) {
             _log(SHIP__MODULE_TRACE, "ModuleManager::Online() -  %s going Online", mod->getItem()->itemName().c_str());
             mod->Online();
@@ -882,6 +884,8 @@ void ModuleManager::Offline(uint32 itemID)
 {
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
+        if (!mod->isOnline())
+            return;
         _log(SHIP__MODULE_TRACE, "ModuleManager::Offline() -  %s going Offline", mod->getItem()->itemName().c_str());
         mod->Offline();
     } else
@@ -933,10 +937,10 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
             targetNotNeeded =true;
             /** @todo  not working right....check for attrib '10' being added and error msgs with ServerError 25610 */
         } else if (effectName == "speedBoostMassAddition") {    // AB
-            ; //mod->Activate(nullptr);
+            mod->Activate(nullptr);
             targetNotNeeded =true;
         } else if (effectName == "speedBoostMassSigRad") {  //MicroWarpdrive
-            ; //mod->Activate(nullptr);
+            mod->Activate(nullptr);
             targetNotNeeded =true;
         } else if (effectName == "damageControl") { //DCM
             mod->Activate(nullptr);
