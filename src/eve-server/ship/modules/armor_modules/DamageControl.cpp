@@ -42,10 +42,8 @@ void DamageControl::StopCycle(bool abort)
         ge.other = new PyNone;
         ge.area = new PyList;
         ge.effectID = effectDamageControl;
-
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
-
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -57,16 +55,10 @@ void DamageControl::StopCycle(bool abort)
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
         shipEff.error = new PyNone;
-
-    PyList* events = new PyList;
-        events->AddItem(shipEff.Encode());
-
-    Notify_OnMultiEvent multi;
-        multi.events = events;
-
-    PyTuple* tmp = multi.Encode();
-
-    m_Ship->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
+    std::vector<PyTuple*> events;
+        events.push_back(shipEff.Encode());
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void DamageControl::_ShowCycle()
@@ -92,10 +84,8 @@ void DamageControl::_ShowCycle()
         shipEff.repeat = 1;  /* boolean of repeatable cycles without pilot activation */
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
-    events.push_back(shipEff.Encode());
-
+        events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 

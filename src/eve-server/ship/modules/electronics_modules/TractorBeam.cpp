@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        AknorJaden
+    Updates:    Allan
 */
 
 #include "ship/modules/electronics_modules/TractorBeam.h"
@@ -32,47 +33,55 @@ TractorBeam::TractorBeam( InventoryItemRef item, ShipItemRef ship )
 {
 
 }
-
-void TractorBeam::Activate(SystemEntity* targetEntity)
+/*
+        [PySubStream 156 bytes]
+          [PyObjectEx Normal]
+            [PyTuple 3 items]
+              [PyToken ccp_exceptions.UserError]
+              [PyTuple 2 items]
+                [PyString "TargetTooFar"]
+                [PyDict 3 kvp]
+                  [PyString "distance"]
+                  [PyString "20,000"]
+                  [PyString "modulename"]
+                  [PyTuple 2 items]
+                    [PyInt 4]
+                    [PyInt 24348]
+                  [PyString "targetname"]
+                  [PyString "Aknor Jaden's Myrmidon Wreck"]
+              [PyDict 2 kvp]
+                [PyString "msg"]
+                [PyString "TargetTooFar"]
+                [PyString "dict"]
+                [PyDict 3 kvp]
+                  [PyString "distance"]
+                  [PyString "20,000"]
+                  [PyString "modulename"]
+                  [PyTuple 2 items]
+                    [PyInt 4]
+                    [PyInt 24348]
+                  [PyString "targetname"]
+                  [PyString "Aknor Jaden's Myrmidon Wreck"]
+                  */
+void TractorBeam::Activate(SystemEntity* pSE)
 {
-	// Check to make sure target is NOT a static entity:
-	// TODO: Check for target = asteroid, ice, or gas cloud then only allow tractoring if ship = Orca
-	// TODO: DO NOT allow tractoring of Client-connected player ships
-	if (!(targetEntity->IsStaticEntity()))
-	{
-		if (
-		     (
-				(m_Ship->typeID() == 28606)		// Orca is the only ship allowed to tractor asteroids and ice chunks
-				&&
-				(
-				((getItem()->typeID() == 16278 || getItem()->typeID() == 22229) && (targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice))
-				||
-				(targetEntity->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid)
-				||
-				((targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud) && (getItem()->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester))
-				)
-				)
-				||
-				(targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Cargo_Container)
-				||
-				(targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Secure_Cargo_Container)
-				||
-				(targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Wreck)
-			)
-		{
-			m_targetEntity = targetEntity;
-			m_targetID = targetEntity->GetID();
+    /** @todo allow orca-specific tractoring */
+    /** @todo allow tractoring if not anchored */
+    if (pSE->IsContainerSE() or pSE->IsWreckSE()) {
+        m_targetEntity = pSE;
+        m_targetID = pSE->GetID();
 
-			// Activate active processing component timer:
-			m_AMPC->ActivateCycle();
-			//_ShowCycle();
-			//m_ActiveModuleProc->ProcessActiveCycle();
-		}
-	}
+        // Activate active processing component timer:
+        m_AMPC->ActivateCycle();
+        //_ShowCycle();
+        //m_ActiveModuleProc->ProcessActiveCycle();
+    }
 }
 
 void TractorBeam::StopCycle(bool abort)
 {
+    m_targetEntity->DestinyMgr()->TractorBeamStop(m_targetEntity);
+
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
 
@@ -84,25 +93,21 @@ void TractorBeam::StopCycle(bool abort)
         m_Item->typeID(),
         m_targetID,
         0,
-        "effect.TractorBeam",
+        "effects.TractorBeam",
         0,
         0,
         0,
-        timeLeft,
+        0,
         0
     );
 
     // Create Destiny Updates:
-    GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
-        go.chargeTypeID = 0;
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
-        ge.shipID = go.shipID;
+        ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
-        ge.other = go.Encode();
+        ge.other = new PyNone;
         ge.area = new PyList;
         ge.effectID = effectTractorBeam;
     Notify_OnGodmaShipEffect shipEff;
@@ -113,7 +118,7 @@ void TractorBeam::StopCycle(bool abort)
         shipEff.active = 0;
         shipEff.environment = ge.Encode();
         shipEff.startTime = (shipEff.timeNow - (timeLeft * Win32Time_Second));
-        shipEff.duration = timeLeft;
+        shipEff.duration = _GetDuration();
         shipEff.repeat = 0;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
@@ -124,7 +129,7 @@ void TractorBeam::StopCycle(bool abort)
 
 double TractorBeam::DoCycle() {
         if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
-            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
+            or (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
         {
             Deactivate();
             return 0;
@@ -133,19 +138,12 @@ double TractorBeam::DoCycle() {
 		_ShowCycle();
 
 		// Initiate continued Destiny Action to move tractored object toward ship
-		DynamicSystemEntity * targetEntity = static_cast<DynamicSystemEntity *>(m_targetEntity);
-		// Check for distance to target > 2000m + ship radius
-		GVector distanceToTarget(m_Ship->position(), targetEntity->GetPosition());
-		if (distanceToTarget.length() > (2000.0 + m_Ship->GetAttribute(AttrRadius).get_float())) {
-			// Range higher?  Then start it moving toward ship @ 200m/s
-			targetEntity->DestinyMgr()->SetMaxVelocity(500.0);
-			// Tractor objects at 500m/s:
-			targetEntity->DestinyMgr()->TractorBeamFollow(m_Ship->GetPilot()->GetShipSE(),
-                                                       (2000.0 + m_Ship->GetAttribute(AttrRadius).get_float())
-                                                      );
+		// Check for distance to target > 20000m + ship radius
+		GVector distanceToTarget(m_Ship->position(), m_targetEntity->GetPosition());
+        if (distanceToTarget.length() < (m_Item->GetAttribute(AttrMaxRange).get_float())) {
+            m_targetEntity->DestinyMgr()->TractorBeamStart(m_targetEntity);
             return _GetDuration();
 		} else {
-			targetEntity->DestinyMgr()->TractorBeamHalt();
 			Deactivate();
 		}
 }
@@ -160,7 +158,7 @@ void TractorBeam::_ShowCycle()
         m_Item->typeID(),
         m_targetID,
         0,
-        "effect.TractorBeam",
+        "effects.TractorBeam",
         1,
         1,
         1,
@@ -169,16 +167,12 @@ void TractorBeam::_ShowCycle()
     );
 
     // Create Destiny Updates:
-    GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
-        go.chargeTypeID = 0;
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
-        ge.shipID = go.shipID;
+        ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
-        ge.other = go.Encode();
+        ge.other = new PyNone;
         ge.area = new PyList;
         ge.effectID = effectTractorBeam;
     Notify_OnGodmaShipEffect shipEff;
@@ -202,5 +196,4 @@ void TractorBeam::_SetCapNeed()
 {
     // this will be needed for modules and rigs that affect cap need for mining modules
     //double need = GetAttribute(AttrCapacitorNeed);
-
 }

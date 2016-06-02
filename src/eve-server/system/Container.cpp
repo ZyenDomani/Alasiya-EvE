@@ -193,11 +193,18 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemM
 : ItemSystemEntity(self, services, system),
   m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
 {
+    m_destiny = new DestinyManager(this);
+
     _containerRef = self;
     m_isAnchored = false;
     if (!IsStation(m_self->locationID()))
         m_deleteTimer.Start();
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity(), false);
+}
+
+ContainerSE::~ContainerSE()
+{
+    SafeDelete(m_destiny);
 }
 
 void ContainerSE::Process() {
@@ -398,9 +405,16 @@ WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* 
 : ItemSystemEntity(self, services, system),
  m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
 {
+     m_destiny = new DestinyManager(this);
+
     _containerRef = self;
     m_deleteTimer.Start();
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity());
+}
+
+WreckSE::~WreckSE()
+{
+    SafeDelete(m_destiny);
 }
 
 void WreckSE::Process() {

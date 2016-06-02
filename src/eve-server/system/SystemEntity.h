@@ -372,7 +372,7 @@ public:
         InventoryItemRef structure,
         PyServiceMgr &services,
         SystemManager *system);
-    virtual ~DeployableSE()                             { /* Do nothing here */ }
+    virtual ~DeployableSE();
 
     /* class type pointer querys. */
     virtual DeployableSE* GetDeployableSE()             { return nullptr; }

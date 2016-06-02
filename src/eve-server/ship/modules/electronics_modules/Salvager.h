@@ -36,7 +36,9 @@ public:
     virtual ~Salvager() { }
 
     // GenericModule Methods:
-	void StopCycle(bool abort=false);
+    void Activate(SystemEntity* targetEntity);
+    double DoCycle();
+    void StopCycle(bool abort=false);
 
 protected:
 	void _ProcessCycle() {}

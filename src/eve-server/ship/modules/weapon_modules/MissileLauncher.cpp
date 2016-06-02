@@ -72,7 +72,6 @@ void MissileLauncher::Activate(SystemEntity * targetEntity)
     if (m_chargeRef) {
 		m_targetEntity = targetEntity;
 		m_targetID = targetEntity->GetID();
-
 		// Activate active processing component timer:
 		m_AMPC->ActivateCycle();
 	} else {
@@ -143,8 +142,8 @@ double MissileLauncher::DoCycle() {
             return 0;
         }
 
-        _LaunchMissile();
         _ShowCycle();
+        _LaunchMissile();
 
         return _GetROF();
 }

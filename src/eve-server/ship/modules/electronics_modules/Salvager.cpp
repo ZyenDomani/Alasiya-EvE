@@ -31,6 +31,41 @@ Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
 {
 }
 
+void Salvager::Activate(SystemEntity* pSE)
+{
+    /** @todo allow orca-specific tractoring */
+    /** @todo allow tractoring if not anchored */
+    if (pSE->IsContainerSE() or pSE->IsWreckSE()) {
+        m_targetEntity = pSE;
+        m_targetID = pSE->GetID();
+
+        // Activate active processing component timer:
+        m_AMPC->ActivateCycle();
+        //_ShowCycle();
+        //m_ActiveModuleProc->ProcessActiveCycle();
+    }
+}
+
+/*  accessDifficultyBonus       << salvage tackle(10), salvage tackleII(15)
+ *  accessDifficulty (30,20,10,-10)           << in the wreck item for salvage
+ *
+ *  accessDifficultyBonus       << civilian analyzer(2), implant(5), analyzerII(7)
+ *  accessDifficulty (0.000001)    << for analyzing structures ()
+ */
+
+double Salvager::DoCycle() {
+    if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+        or (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
+    {
+        Deactivate();
+        return 0;
+    }
+
+    _ShowCycle();
+
+    return _GetDuration();
+}
+
 void Salvager::StopCycle(bool abort)
 {
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
@@ -44,7 +79,7 @@ void Salvager::StopCycle(bool abort)
         m_Item->typeID(),
         m_targetID,
         0,
-        "effect.Salvaging",
+        "effects.Salvaging",
         0,
         0,
         0,
@@ -53,16 +88,12 @@ void Salvager::StopCycle(bool abort)
     );
 
     // Create Destiny Updates:
-    GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
-        go.chargeTypeID = 0;
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
-        ge.shipID = go.shipID;
+        ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
-        ge.other = go.Encode();
+        ge.other = new PyNone;
         ge.area = new PyList;
         ge.effectID = effectSalvaging;
     Notify_OnGodmaShipEffect shipEff;
@@ -97,20 +128,16 @@ void Salvager::_ShowCycle()
         1,
         1,
         _GetDuration(),
-        1
+        1000
     );
 
     // Create Destiny Updates:
-    GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
-        go.chargeTypeID = 0;
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
-        ge.shipID = go.shipID;
+        ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
-        ge.other = go.Encode();
+        ge.other = new PyNone;
         ge.area = new PyList;
         ge.effectID = effectSalvaging;
     Notify_OnGodmaShipEffect shipEff;

@@ -141,7 +141,7 @@ class ContainerSE
 {
 public:
     ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemManager *system);
-    virtual ~ContainerSE()                              { /* Do nothing here */ }
+    virtual ~ContainerSE();
 
     /* class type pointer querys. */
     virtual ContainerSE* GetContSE()                    { return this; }
@@ -271,7 +271,7 @@ class WreckSE
 {
 public:
     WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager *system/*, uint32 launcherID*/);
-    virtual ~WreckSE()                                  { /* Do nothing here */ }
+    virtual ~WreckSE();
 
     /* class type pointer querys. */
     virtual WreckSE* GetWreckSE()                       { return this; }

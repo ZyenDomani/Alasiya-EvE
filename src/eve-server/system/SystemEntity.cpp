@@ -164,8 +164,12 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
 /** @todo (allan)  this doesnt need to be here */
 void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar) {
     //New Status = ((10 - Old Status) * Sec Incr) + Old Status
-    double killBonus = m_self->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
     double oldSec = pChar->GetSecurityRating();
+    EvilNumber maxGain = 0;
+    if (m_self->HasAttribute(AttrEntitySecurityStatusKillBonus, maxGain))
+        if (oldSec > maxGain.get_float())
+            return;
+    double killBonus = m_self->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
     double secAward = (((10 -oldSec) *killBonus) +oldSec) /100;
     secAward *=  (1 + ( 0.05 * (pChar->GetSkillLevel(skillFastTalk, true))));      // 5% increase
     if (killBonus and secAward) {
@@ -452,6 +456,12 @@ void ObjectSystemEntity::Killed(Damage &fatal_blow)
 DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system)
 : ObjectSystemEntity(self, services, system)
 {
+    m_destiny = new DestinyManager(this);
+}
+
+DeployableSE::~DeployableSE()
+{
+    SafeDelete(m_destiny);
 }
 
 

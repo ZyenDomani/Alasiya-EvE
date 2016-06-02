@@ -29,6 +29,7 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, InventoryItemRef ItemRef, S
         return ChanceToHit;
 
     //TODO no fukin clue how to get module modifiers to falloff and range and implement here....
+    // once loaded charges are finished, they will modifiy the weapon module attrib itself
 
     GPoint vel = pTarget->GetVelocity();
     double speed = vel.length();
@@ -62,15 +63,13 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, InventoryItemRef ItemRef, S
 
 float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
 {
-    double range = pNPC->GetSelf()->GetAttribute(AttrMaxRange).get_float();
-    range += pNPC->GetSelf()->GetAttribute(AttrEntityFlyRange).get_float();
-    float ChanceToHit = 1.0f;
-
+    double range = pNPC->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float();
     double distance = pNPC->GetSelf()->position().distance(pTarget->GetSelf()->position());
 
     if (distance <= range)
-        return ChanceToHit;
+        return 1.0;
 
+    float ChanceToHit = 1.0f;
     double trackingSpeed = pNPC->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float();
     double falloff = pNPC->GetSelf()->GetAttribute(AttrFalloff).get_float();
 
@@ -98,14 +97,13 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
 
 float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
 {
-    double range = pDrone->GetSelf()->GetAttribute(AttrMaxRange).get_float();
-    range += pDrone->GetSelf()->GetAttribute(AttrEntityFlyRange).get_float();
-    float ChanceToHit = 1.0f;
-
+    double range = pDrone->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float();
     double distance = pDrone->GetSelf()->position().distance(pTarget->GetSelf()->position());
 
     if (distance <= range)
-        return ChanceToHit;
+        return 1.0;
+
+    float ChanceToHit = 1.0f;
 
     double trackingSpeed = pDrone->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float();
     double falloff = pDrone->GetSelf()->GetAttribute(AttrFalloff).get_float();
