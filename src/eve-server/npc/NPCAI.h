@@ -76,21 +76,24 @@ protected:
 
 private:
     //cached to reduce access times. (faster but uses more memory)
-    double m_radius;
-    double m_attackSpeed;
-    double m_entityFlyRange;
-    double m_entityOrbitRange;
-    double m_entityChaseRange;
-    double m_entityAttackRange;
-    double m_armorRepairChance;
-    double m_shieldBoosterChance;
+    uint16 m_falloff;
+    uint16 m_maxSpeed;
+    uint16 m_ROF;
+    uint16 m_orbitSpeed;
+    uint16 m_targetRange;
+    uint16 m_damageMultiplier;
+    uint16 m_optimalRange;
+    uint16 m_boostRange;
+    uint16 m_armorRepairDuration;
+    uint16 m_shieldBoosterDuration;
 
-    uint32 m_chaseSpeed;
-    uint32 m_cruiseSpeed;
-    uint32 m_targetRange;
-    uint32 m_armorRepairDuration;
-    uint32 m_shieldBoosterDuration;
+    uint32 m_radius;
+    uint32 m_flyRange;
+    uint32 m_maxAttackRange;
 
+    float m_armorRepairChance;
+    float m_shieldBoosterChance;
+    
     NPC* m_npc;
 
     TurrentFormulas m_formula;

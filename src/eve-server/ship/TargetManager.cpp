@@ -37,6 +37,7 @@
 #include "ship/TargetManager.h"
 #include "system/SystemEntity.h"
 #include <system/SystemBubble.h>
+#include <npc/NPC.h>
 
 TargetManager::TargetManager(SystemEntity *self)
 : m_destroyed(false),
@@ -293,6 +294,8 @@ bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 max
 }
 
 void TargetManager::TargetLost(SystemEntity *who) {
+    if (mySE->IsNPCSE())
+        mySE->GetNPCSE()->TargetLost(who);
     std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(who);
     if (res == m_targets.end())
         return;
@@ -483,8 +486,6 @@ void TargetManager::TargetTry(SystemEntity *who) {
         multi.events = new PyList;
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();   //this is consumed below
-    //mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
-    /** @todo this should be a bubble cast to all players....needs testing */
     mySE->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &tmp, false);
 }
 
@@ -505,6 +506,8 @@ void TargetManager::TargetAdded(SystemEntity* who) {
 }
 
 void TargetManager::TargetedAdd(SystemEntity *who) {
+    if (mySE->IsNPCSE())
+        mySE->GetNPCSE()->TargetedAdd(who);
     if (!mySE->HasPilot()) return;
     Notify_OnTarget te;
         te.mode = "otheradd";

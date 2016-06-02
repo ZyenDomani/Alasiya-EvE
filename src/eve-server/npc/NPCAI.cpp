@@ -44,38 +44,58 @@ NPCAIMgr::NPCAIMgr(NPC* who)
   m_beginFindTarget(5000),      //arbitrary.
   m_warpScramblerTimer(5000),   //arbitrary.
   m_webifierTimer(5000),        //arbitrary.
-  m_radius(who->GetSelf()->GetAttribute(AttrSignatureRadius).get_float()),
-  m_attackSpeed(who->GetSelf()->GetAttribute(AttrSpeed).get_float()),
-  m_cruiseSpeed(who->GetSelf()->GetAttribute(AttrEntityCruiseSpeed).get_int()),
-  m_chaseSpeed(who->GetSelf()->GetAttribute(AttrMaxVelocity).get_int()),
-  m_entityFlyRange(who->GetSelf()->GetAttribute(AttrEntityFlyRange).get_float() + who->GetSelf()->GetAttribute(AttrMaxRange).get_float()),
-  m_entityChaseRange(who->GetSelf()->GetAttribute(AttrEntityChaseMaxDistance).get_float() *2),
-  m_entityOrbitRange(who->GetSelf()->GetAttribute(AttrMaxRange).get_float()),
-  m_entityAttackRange(who->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float() *2),
+  m_radius(who->GetSelf()->GetAttribute(AttrSignatureRadius).get_int()),
+  m_damageMultiplier(who->GetSelf()->GetAttribute(AttrDamageMultiplier).get_int()),
   m_shieldBoosterDuration(who->GetSelf()->GetAttribute(AttrEntityShieldBoostDuration).get_int()),
   m_armorRepairDuration(who->GetSelf()->GetAttribute(AttrEntityArmorRepairDuration).get_int())
 {
-    m_processTimer.Start(5000);     //arbitrary.
-
     m_webifierTimer.Disable();      //not implemented yet
     m_beginFindTarget.Disable();    //arbitrary.
-    m_mainAttackTimer.Disable();    // dont start timer until we have a target
+    m_mainAttackTimer.Disable();    //dont start timer until we have a target
     m_armorRepairTimer.Disable();   //waiting till engaged
-    m_warpScramblerTimer.Disable();    //not implemented yet
+    m_warpScramblerTimer.Disable(); //not implemented yet
     m_shieldBoosterTimer.Disable(); //waiting till engaged
 
-    if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float())
-        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float();
-    else if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float())
-        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float();
+    /* set npc ship speeds and distances */
+    // Rate of fire
+    m_ROF = who->GetSelf()->GetAttribute(AttrSpeed).get_int();
+    m_processTimer.Start(m_ROF);
 
-    if (who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float())
+    // absolute Max Ship Speed
+    m_maxSpeed = who->GetSelf()->GetAttribute(AttrMaxVelocity).get_int();
+    // Optimal Range
+    m_optimalRange = who->GetSelf()->GetAttribute(AttrMaxRange).get_int();
+    // Accuracy falloff  (distance past maximum range at which accuracy has fallen by half)
+    m_falloff = who->GetSelf()->GetAttribute(AttrFalloff).get_int();
+    // Orbit Velocity
+    m_orbitSpeed = who->GetSelf()->GetAttribute(AttrEntityCruiseSpeed).get_int();
+    // Orbit Range, Follow Range  - npc tries to stay at this distance from active target    default:500
+    m_flyRange = who->GetSelf()->GetAttribute(AttrEntityFlyRange).get_int();
+    if (!m_flyRange)
+        m_flyRange = 500;
+    // distance for Speed Boost activation   default:2500
+    m_boostRange = who->GetSelf()->GetAttribute(AttrEntityChaseMaxDistance).get_int();
+    if (!m_boostRange)
+        m_boostRange = 2500;
+    // max firing range   default:15000
+    m_maxAttackRange = who->GetSelf()->GetAttribute(AttrEntityAttackRange).get_int();
+    if (!m_maxAttackRange)
+        m_maxAttackRange = 15000;
+
+    if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int())
+        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int();
+    else if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_int())
+        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_int();
+    else
+        m_armorRepairChance = 0;
+
+    if (who->GetSelf()->HasAttribute(AttrEntityShieldBoostDelayChanceSmall))
         m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float();
-    else if (who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float())
+    else if (who->GetSelf()->HasAttribute(AttrEntityShieldBoostDelayChanceLarge))
         m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float();
+    else
+        m_shieldBoosterChance = 0;
 
-    if (m_entityAttackRange < 10000)   // most of these are low...under 6k  that sux for targeting
-        m_entityAttackRange *= 3;
     /*
      AttrAI_ShouldUseTargetSwitching =    1648,
      AttrAI_ShouldUseSecondaryTarget =    1649,
@@ -97,7 +117,7 @@ void NPCAIMgr::Process() {
 
     if (m_shieldBoosterTimer.Enabled()
         and m_shieldBoosterTimer.Check())
-        if (MakeRandomFloat() < m_shieldBoosterChance)
+        if (MakeRandomInt() < m_shieldBoosterChance)
             m_npc->UseShieldRecharge();
 
     if (m_armorRepairTimer.Enabled()
@@ -105,13 +125,13 @@ void NPCAIMgr::Process() {
         if (MakeRandomFloat() < m_armorRepairChance)
             m_npc->UseArmorRepairer();
 
-    /* NPC::State definitions   -allan 25July15
+    /* NPC::State definitions   -allan 25July15  (UD 1June16)
      *   Idle,       // not doing anything, nothing in sight....idle.
-     *   Chasing,    // target out of range to attack or follow, but within npc sight range....use mwd/ab if equipped
-     *   Following,  // too close to chase, but to far to engage...use half of max speed
-     *   Engaged,    // actively fighting (in orbit)...use full cruise to quarter max speed.
-	 *   Fleeing,    // running away....use mwd/ab (if equipped) then warp away when out of range	(does this make sense??)
-	 *   Signaling   // calling for help..use full cruise to half of max speed to speed tank while calling for reinforcements
+     *   Chasing,    // target within npc sight range.  attacking begins here.  use m_maxSpeed to get within falloff
+     *   Following,  // between optimal and falloff.  try to get closer, but still orbiting and attacking
+     *   Engaged,    // actively fighting (in orbit).  use m_orbitSpeed.
+     *   Fleeing,    // running away....use m_maxSpeed then warp away when out of range	(does this make sense??)
+     *   Signaling   // calling for help..use m_orbitSpeed *2 to speed tank while calling for reinforcements
      */
     switch(m_state) {
         case Idle: {
@@ -133,7 +153,7 @@ void NPCAIMgr::Process() {
                         or cur->IsInvul()
                         or cur->InPod())
                         continue;
-                    if (m_npc->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_entityAttackRange)
+                    if (m_npc->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_maxAttackRange)
                         continue;
 
                     Target(cur->GetShipSE());
@@ -141,7 +161,7 @@ void NPCAIMgr::Process() {
                 }
             } else {
                 if (!m_beginFindTarget.Enabled())
-                    m_beginFindTarget.Start(m_attackSpeed);  //find target is based on npc attack speed.  trying this instead of hard-coded time.
+                    m_beginFindTarget.Start(m_ROF);  //find target is based on npc attack speed.  trying this instead of hard-coded time.
             }
         } break;
 
@@ -212,7 +232,7 @@ void NPCAIMgr::_EnterIdle() {
          m_npc->GetName(), m_npc->GetID());
     m_state = Idle;
     m_npc->DestinyMgr()->Stop();
-    m_npc->DestinyMgr()->SetMaxVelocity(m_cruiseSpeed);
+    m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
 
     m_webifierTimer.Disable();
     m_beginFindTarget.Disable();
@@ -226,85 +246,90 @@ void NPCAIMgr::_EnterIdle() {
 }
 
 void NPCAIMgr::_EnterChasing(SystemEntity* pTarget) {
-    if (m_state == Chasing) return;
+    if (m_state == Chasing)
+        return;
     _log(NPC__AI_TRACE, "%s(%u): _EnterChasing: %s(%u) begin chasing.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
-    m_npc->DestinyMgr()->SetMaxVelocity(m_chaseSpeed);
-    m_npc->DestinyMgr()->Follow(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->SetMaxVelocity(m_maxSpeed);
+    m_npc->DestinyMgr()->Follow(pTarget, m_optimalRange);  //try to get inside orbit range
     m_state = Chasing;
 }
 
 void NPCAIMgr::_EnterFollowing(SystemEntity* pTarget) {
-    if (m_state == Following) return;
+    if (m_state == Following)
+        return;
     _log(NPC__AI_TRACE, "%s(%u): _EnterFollowing: %s(%u) begin following.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // too close to chase, but to far to engage
-    m_npc->DestinyMgr()->SetMaxVelocity(m_chaseSpeed /2);
-    m_npc->DestinyMgr()->Follow(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
+    m_npc->DestinyMgr()->Follow(pTarget, m_optimalRange);  //try to get inside orbit range
     m_state = Following;
 }
 
 void NPCAIMgr::_EnterEngaged(SystemEntity* pTarget) {
-    if (m_state == Engaged) return;
+    if (m_state == Engaged)
+        return;
     _log(NPC__AI_TRACE, "%s(%u): _EnterEngaged: %s(%u) begin engaging.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively fighting
     //   not sure of the actual orbit speed of npc's, but their 'cruise speed' seems a bit slow.
     //   this sets orbit speed between cruise speed and quarter of max speed (whether mwb or ab)
     //   this will also enable this npc to have a variable speed, instead of fixed upon creation.
-    m_npc->DestinyMgr()->SetMaxVelocity(m_cruiseSpeed/*MakeRandomFloat(m_cruiseSpeed, (m_chaseSpeed /4))*/);
-    m_npc->DestinyMgr()->Orbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
+    m_npc->DestinyMgr()->Orbit(pTarget, m_optimalRange);  //try to get inside orbit range
     m_state = Engaged;
 }
 
 void NPCAIMgr::_EnterFleeing(SystemEntity* pTarget) {
-    if (m_state == Fleeing) return;
+    if (m_state == Fleeing)
+        return;
     _log(NPC__AI_TRACE, "%s(%u): _EnterFleeing: %s(%u) begin fleeing.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively fleeing
     //  use superspeed to disengage, then warp.  << both these will need to be written.
     //  this state is only usable by higher-class npcs.
-    m_npc->DestinyMgr()->SetMaxVelocity(m_chaseSpeed);
+    m_npc->DestinyMgr()->SetMaxVelocity(m_maxSpeed);
     m_state = Fleeing;
 }
 
 void NPCAIMgr::_EnterSignaling(SystemEntity* pTarget) {
-    if (m_state == Signaling) return;
+    if (m_state == Signaling)
+        return;
     _log(NPC__AI_TRACE, "%s(%u): _EnterSignaling: %s(%u) begin signaling.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively signaling
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
     //  this state is only usable by higher-class npcs.
-    m_npc->DestinyMgr()->SetMaxVelocity(MakeRandomFloat(m_cruiseSpeed, (m_chaseSpeed /2)));
-    m_npc->DestinyMgr()->Orbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed * 2);
+    m_npc->DestinyMgr()->Orbit(pTarget, m_falloff);  //try to get outside orbit range
     m_state = Signaling;
 }
 
 void NPCAIMgr::_CheckDistance(SystemEntity* pSE)
 {
-    //rewrote distance checks for correct logic this time
     GVector usToThem(m_npc->GetPosition(), pSE->GetPosition());
     double dist = usToThem.length();
-    if (dist > m_entityAttackRange) {
+    if (dist > m_maxAttackRange) {
         _log(NPC__AI_TRACE, "%s(%u): _CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
              m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist);
         if (m_state != Idle) {
             // target is no longer in npc's "sight range".  unlock target and return to idle.
-            //   should we do anything else here?  search for another target?  wander around?
+            //   should we do anything else here?  search for another target?  wander around?  yes..later
+            // if npc is targeted greater than this distance, it will chase
             m_npc->TargetMgr()->ClearTarget(pSE);
             if (m_npc->TargetMgr()->HasNoTargets())
                 _EnterIdle();
         }
         return;
-    } else if (dist < m_entityFlyRange) { //within weapon max (and within falloff)
-        _EnterEngaged(pSE); //engage and orbit
-    } else if (dist < m_entityChaseRange) { //within follow
-        _EnterFollowing(pSE);
-    } else if (dist < m_entityAttackRange) { //within sight
-        _EnterChasing(pSE);
-        return;
     }
+
+    if (dist < m_flyRange)
+        _EnterEngaged(pSE);
+    else if (dist < m_boostRange)
+        _EnterFollowing(pSE);
+    else
+        _EnterChasing(pSE);
 
     if (m_shieldBoosterDuration && (!m_shieldBoosterTimer.Enabled()))
         m_shieldBoosterTimer.Start(m_shieldBoosterDuration);
@@ -312,7 +337,7 @@ void NPCAIMgr::_CheckDistance(SystemEntity* pSE)
         m_armorRepairTimer.Start(m_armorRepairDuration);
 
     if (!m_mainAttackTimer.Enabled())
-        m_mainAttackTimer.Start(m_attackSpeed);
+        m_mainAttackTimer.Start(m_ROF);
 
     Attack(pSE);
 }
@@ -328,7 +353,7 @@ void NPCAIMgr::ClearAllTargets() {
 void NPCAIMgr::Target(SystemEntity* pTarget) {
     double targetTime = GetTargetTime();
 
-    if (!m_npc->TargetMgr()->StartTargeting(pTarget, targetTime, m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange )) {
+    if (!m_npc->TargetMgr()->StartTargeting(pTarget, targetTime, m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_maxAttackRange )) {
         _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.", \
              m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
         //ClearAllTargets();
@@ -348,7 +373,7 @@ void NPCAIMgr::Targeted(SystemEntity* pAgressor) {
                  m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
             _EnterChasing(pAgressor);
 
-            if (!m_npc->TargetMgr()->StartTargeting( pAgressor, targetTime, m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange)) {
+            if (!m_npc->TargetMgr()->StartTargeting( pAgressor, targetTime, m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_maxAttackRange)) {
                 _EnterIdle();
                 return;
             }
@@ -398,9 +423,6 @@ void NPCAIMgr::TargetLost(SystemEntity* pTarget) {
             }
 
         } break;
-
-        default:
-            break;
     }
 }
 
@@ -438,7 +460,6 @@ void NPCAIMgr::Attack(SystemEntity* pTarget)
 //also check for special effects and write code to implement them
 //modifyTargetSpeedRange, modifyTargetSpeedChance
 //entityWarpScrambleChance
-
 void NPCAIMgr::AttackTarget(SystemEntity* pTarget) {
     // some npcs use missiles.
     //  write code for using missiles   -- entityMissileTypeID
@@ -454,7 +475,7 @@ void NPCAIMgr::AttackTarget(SystemEntity* pTarget) {
              effectTargetAttack
             );
 
-    d *= m_npc->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
+    d *= m_damageMultiplier;
     pTarget->ApplyDamage(d);
 }
 
@@ -470,7 +491,7 @@ void NPCAIMgr::_SendWeaponEffect( const char* effect, SystemEntity* pTarget ) {
         sfx.isOffensive = 1;
         sfx.start = 1;
         sfx.active = 1;
-        sfx.duration_ms = m_attackSpeed;
+        sfx.duration_ms = m_ROF;
         sfx.repeat = 1;
         sfx.startTime = Win32TimeNow();
     PyTuple* up = sfx.Encode();
