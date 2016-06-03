@@ -46,6 +46,10 @@ protected:
     //double _GetDuration();
     //double _GetCapNeed();
     void _SetCapNeed();
+    void SendFailure();
+
+    bool m_success;
+    bool m_firstRun;
 };
 
 #endif  //_EVE_SHIP_MOD_SALVAGER_H_

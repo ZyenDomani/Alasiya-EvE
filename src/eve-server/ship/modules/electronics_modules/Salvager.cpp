@@ -29,6 +29,8 @@
 Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
+    m_success = false;
+    m_firstRun = true;
 }
 
 void Salvager::Activate(SystemEntity* pSE)
@@ -63,9 +65,31 @@ double Salvager::DoCycle() {
 
     _ShowCycle();
 
+    if (m_firstRun)
+        m_firstRun = false;
+    else if (!m_success)
+        SendFailure();
+
     return _GetDuration();
 }
+/*
+<!--              [PyTuple 3 items]
+                    [PyString "OnRemoteMessage"]
+                    [PyString "SalvagingFailure"]
+                    [PyDict 1 kvp]
+                      [PyString "type"]
+                      [PyTuple 2 items]
+                        [PyInt 4]           << cacheSolarSystemObjects???  cant find another reference for this.  always 4 so far.
+                        [PyInt 26513]       << wreck type id
 
+                    [PyTuple 2 items]       << this goes into effect.error
+                      [PyString "SalvagingSuccess"]
+                      [PyDict 1 kvp]
+                        [PyString "type"]
+                        [PyTuple 2 items]
+                          [PyInt 4]         << cacheSolarSystemObjects???
+                          [PyInt 26513]
+                        */
 void Salvager::StopCycle(bool abort)
 {
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
@@ -161,5 +185,21 @@ void Salvager::_SetCapNeed()
 {
     // this will be needed for modules and rigs that affect cap need for mining modules
     //double need = GetAttribute(AttrCapacitorNeed);
+}
 
+void Salvager::SendFailure()
+{
+    PyTuple* type = new PyTuple(2);
+        type->SetItem(0, new PyInt(cacheSolarSystemObjects));
+        type->SetItem(1, new PyInt(m_targetEntity->GetTypeID()));
+    PyDict* dict = new PyDict;
+        dict->SetItemString("type", type);
+    PyTuple* tup = new PyTuple(3);
+        tup->SetItem(0, new PyString("OnRemoteMessage"));
+        tup->SetItem(1, new PyString("SalvagingFailure"));
+        tup->SetItem(2, dict);
+    std::vector<PyTuple*> events;
+        events.push_back(tup);
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }

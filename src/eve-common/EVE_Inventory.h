@@ -41,6 +41,22 @@ enum EVEContainerTypes {
     containerCorpMarket        = 10012
 };
 
+/*
+ALSCActionAdd = 6
+ALSCActionAssemble = 1
+ALSCActionConfigure = 10
+ALSCActionEnterPassword = 9
+ALSCActionLock = 7
+ALSCActionMove = 4
+ALSCActionRepackage = 2
+ALSCActionSetName = 3
+ALSCActionSetPassword = 5
+ALSCActionUnlock = 8
+ALSCPasswordNeededToLock = 2
+ALSCPasswordNeededToOpen = 1
+ALSCPasswordNeededToUnlock = 4
+ALSCPasswordNeededToViewAuditLog = 8
+*/
 
 
 #endif  // EVE_INVENTORY_H

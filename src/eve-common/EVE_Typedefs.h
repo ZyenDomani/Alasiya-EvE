@@ -520,4 +520,14 @@ typedef enum {
     flagNoStanding = 48
 } stateFlags;
 
+typedef enum {
+    cacheEspCorporations = 1,
+    cacheEspAlliances = 2,
+    cacheEspSolarSystems = 3,
+    cacheSolarSystemObjects = 4,
+    cacheCargoContainers = 5,
+    cachePriceHistory = 6,
+    cacheTutorialVersions = 7,
+    cacheSolarSystemOffices = 8
+} cacheFlags;
 #endif  // EVE_TYPEDEFS_H

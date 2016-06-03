@@ -80,8 +80,8 @@ public:
     void Halt();     // puts entity at 0 velocity
 
     /* TractorBeam */
-	void TractorBeamStop(SystemEntity* pTargSE);
-	void TractorBeamStart(SystemEntity* who);
+	void TractorBeamStop();
+    void TractorBeamStart(SystemEntity* pShipSE);
 
     /* Local Movement */
     void Orbit(SystemEntity* who, double distance, bool update=true);

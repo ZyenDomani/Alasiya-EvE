@@ -267,7 +267,7 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
         du.fraction = fraction;
     updates.push_back(du.Encode());
 
-    if (mySE->IsNPCSE() or mySE->IsMissileSE()) {
+    if (mySE->IsNPCSE() or mySE->IsMissileSE() or mySE->IsContainerSE() or mySE->IsWreckSE()) {
         DoDestiny_SetMaxSpeed ms;   //NPCs and Missiles only.
             ms.entityID = mySE->GetID();
             ms.speedValue = m_maxSpeed;
@@ -1271,7 +1271,7 @@ void DestinyManager::Follow(SystemEntity *who, double distance) {
 
     DoDestiny_CmdFollowBall du;
         du.entityID = mySE->GetID();
-        du.ballID = who->GetID();
+        du.targetID = who->GetID();
         du.range = int32(distance);
     PyTuple *up = du.Encode();
     SendSingleDestinyUpdate(&up);    //consumed
@@ -1494,8 +1494,6 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
 bool DestinyManager::IsAligned(GPoint& targetPoint)
 {
     if (m_shipHeading.isZero()) {
-        GVector point(m_position);
-        point.normalize();
         GVector moveVector(m_position, targetPoint);
         moveVector.normalize();
         m_shipHeading = moveVector;
@@ -1898,46 +1896,74 @@ void DestinyManager::UnCloak() {
     mySE->SysBubble()->AddBallExclusive(mySE);
 }
 
-void DestinyManager::TractorBeamStart(SystemEntity* pTargSE)
+void DestinyManager::TractorBeamStart(SystemEntity* pShipSE)
 {
+    State = DSTBALL_FOLLOW;
+
+    m_stop = false;
+    m_accel = false;
+    m_decel = false;
+    m_turning = false;
+    m_moveTimer = GetTimeMSeconds();
+    m_stateStamp = sEntityList.GetStamp();
+
+    m_targetPoint = pShipSE->GetPosition();
+    GVector moveVector(m_position, m_targetPoint);
+    m_targetDistance = moveVector.length();
+    moveVector.normalize();
+    m_shipHeading = moveVector;
+
+    m_maxShipSpeed = 500;
+    m_maxSpeed = m_maxShipSpeed;
+    m_velocity = m_shipHeading * m_maxSpeed;
+
+    m_followDistance = 500;
+    m_shipMaxAccelTime = 0.1f;
+
+    m_activeSpeedFraction = m_userSpeedFraction = m_currentSpeedFraction = 1.0f;
+
+    m_targetEntity.first = pShipSE->GetID();
+    m_targetEntity.second = pShipSE;
+
     std::vector<PyTuple*> updates;
     DoDestiny_SetMaxSpeed ms;
-        ms.entityID = pTargSE->GetSelf()->itemID();
-        ms.speedValue = 500;
+        ms.entityID = mySE->GetID();
+        ms.speedValue = m_maxShipSpeed;
     updates.push_back(ms.Encode());
     DoDestiny_SetBallFree bf;
-        bf.entityID = pTargSE->GetSelf()->itemID();
+        bf.entityID = mySE->GetID();
         bf.is_free = 1;
     updates.push_back(bf.Encode());
     DoDestiny_SetBallMass sbmass;
-        sbmass.entityID = pTargSE->GetSelf()->itemID();
+        sbmass.entityID = mySE->GetID();
         sbmass.mass = 10;
     updates.push_back(sbmass.Encode());
     DoDestiny_CmdSetSpeedFraction ssf;
-        ssf.entityID = pTargSE->GetID();
+        ssf.entityID = mySE->GetID();
         ssf.fraction = 1;
     updates.push_back(ssf.Encode());
     DoDestiny_CmdFollowBall fb;
-        fb.entityID = pTargSE->GetID();
-        fb.ballID = mySE->GetID();
-        fb.range = 500;
+        fb.entityID = mySE->GetID();
+        fb.targetID = pShipSE->GetID();
+        fb.range = m_followDistance;
     updates.push_back(fb.Encode());
     SendDestinyUpdate(updates);
 }
 
-void DestinyManager::TractorBeamStop(SystemEntity* pTargSE)
+void DestinyManager::TractorBeamStop()
 {
+    Halt();
     std::vector<PyTuple*> updates;
     DoDestiny_SetMaxSpeed ms;
-        ms.entityID = pTargSE->GetSelf()->itemID();
+        ms.entityID = mySE->GetID();
         ms.speedValue = 0;
     updates.push_back(ms.Encode());
     DoDestiny_SetBallFree bf;
-        bf.entityID = pTargSE->GetSelf()->itemID();
+        bf.entityID = mySE->GetID();
         bf.is_free = 0;
     updates.push_back(bf.Encode());
     DoDestiny_SetBallMass sbmass;
-        sbmass.entityID = pTargSE->GetSelf()->itemID();
+        sbmass.entityID = mySE->GetID();
         sbmass.mass = 10000000000;
     updates.push_back(sbmass.Encode());
     SendDestinyUpdate(updates);

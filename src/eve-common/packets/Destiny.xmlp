@@ -448,7 +448,7 @@ DST_WARPEXIT = 11
         <tupleInline>
             <!-- 0 -->
             <int name="entityID" />
-            <int name="ballID" />
+            <int name="targetID" />
             <int name="range" />
         </tupleInline>
       </tupleInline>

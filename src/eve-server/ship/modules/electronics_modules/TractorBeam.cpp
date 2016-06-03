@@ -80,7 +80,7 @@ void TractorBeam::Activate(SystemEntity* pSE)
 
 void TractorBeam::StopCycle(bool abort)
 {
-    m_targetEntity->DestinyMgr()->TractorBeamStop(m_targetEntity);
+    m_targetEntity->DestinyMgr()->TractorBeamStop();
 
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
@@ -137,11 +137,9 @@ double TractorBeam::DoCycle() {
 
 		_ShowCycle();
 
-		// Initiate continued Destiny Action to move tractored object toward ship
-		// Check for distance to target > 20000m + ship radius
 		GVector distanceToTarget(m_Ship->position(), m_targetEntity->GetPosition());
         if (distanceToTarget.length() < (m_Item->GetAttribute(AttrMaxRange).get_float())) {
-            m_targetEntity->DestinyMgr()->TractorBeamStart(m_targetEntity);
+            m_targetEntity->DestinyMgr()->TractorBeamStart(m_Ship->GetPilot()->GetShipSE());
             return _GetDuration();
 		} else {
 			Deactivate();
