@@ -55,6 +55,7 @@ public:
     void                ClearTargets(bool notify_self=true);
     void                ClearAllTargets(bool notify_self=true);
 
+    bool                TargetFail(SystemEntity* who);
     bool                StartTargeting(SystemEntity *who, ShipItemRef ship);
 
     bool                IsTargetedBySomething() const   { return (!m_targetedBy.empty()); }

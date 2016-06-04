@@ -24,6 +24,9 @@
 */
 
 #include "ship/modules/electronics_modules/Salvager.h"
+#include "system/Container.h"
+#include "system/LootSystem.h"
+#include "system/SystemManager.h"
 
 
 Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
@@ -31,6 +34,8 @@ Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
 {
     m_success = false;
     m_firstRun = true;
+
+    m_accessChance = 0;
 
     pChar = m_Ship->GetPilot()->GetChar().get();
 }
@@ -211,22 +216,51 @@ void Salvager::SendFailure()
 
 void Salvager::CheckSuccess()
 { // same forumla used in analyzing and data salvage
-    int8 chance = m_targetEntity->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
+    m_accessChance = m_targetEntity->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
     int8 bonus = (m_Item->GetAttribute(AttrAccessDifficultyBonus).get_int() * pChar->GetSkillLevel(skillSalvaging));
 
     /** @todo need to check for salvage tackle and add to chance here */
 
     uint8 roll = MakeRandomInt(0,100);
-    if (roll < (chance += bonus))
+    if (roll < (m_accessChance + bonus))
         m_success = true;
 
     _log(SHIP__MODULE_DEBUG, "Salvager::CheckSuccess - chance: %i, bonus: %i, roll: %u, success: %s", \
-                            chance, bonus, roll, (m_success ? "true" : "false"));
+                            m_accessChance, bonus, roll, (m_success ? "true" : "false"));
 }
 
 void Salvager::DropSalvage()
 {
-    /** @todo make salvage choices, with amounts, and move to players cargohold */
+    std::vector<uint32> list;
+    // catch-all for lack of faction info since they dont work yet.  this has ALL t1 salvage
+    uint32 factionID = factionUnknown;
+    if (m_targetEntity->IsNPCSE())
+        factionID = m_targetEntity->GetSelf()->ownerID();   // npcs have factionID in ownerID
+
+    sDGM_Salvage_Table.GetSalvage(factionID, list);
+    uint8 drop = 1;
+    switch (m_accessChance) {
+        case 20: drop = 2; break;
+        case 10: drop = 3; break;
+        case 0: drop = 4; break;
+        case -10: drop = 5; break;
+    }
+
+    if (!list.empty()) {
+        InventoryItemRef itemRef;
+        uint32 quantity = 0, minDrop = drop, maxDrop = drop * 2;
+        for (auto cur : list) {
+            quantity = (MakeRandomInt(minDrop, maxDrop));
+            ItemData iLoot(cur, pChar->itemID(), m_Ship->itemID(), flagCargoHold, quantity);
+            itemRef = pChar->GetItemFactory()->SpawnItem(iLoot);
+            if (!itemRef) // we'll get over it...continue
+                continue;
+            itemRef->Move(m_Ship->itemID());
+            m_Ship->AddItem(itemRef);
+        }
+    }
+
+    m_accessChance = 0;
 
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
@@ -263,14 +297,33 @@ void Salvager::DropSalvage()
     std::vector<PyTuple*> updates;
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 
-    /** @todo finish wreck handling
-     * if (wreck hasLoot)
-     *    [make jetcan]
-     *    [move loot to jetcan]
-     *    [delete wreck]
-     */
-}
+    if (!m_targetEntity->GetSelf()->GetInventory()->IsEmpty()) {
+        std::map<uint32, InventoryItemRef> shipLoot;
+        shipLoot.clear();
+        m_targetEntity->GetSelf()->GetInventory()->GetInventoryList(shipLoot);
 
+        ItemData p_idata(23,   // 23 = cargo container
+                        m_targetEntity->GetSelf()->ownerID(),
+                        m_targetEntity->GetLocationID(),
+                        flagAutoFit,
+                        "Jettisoned Loot Container",
+                        m_targetEntity->GetPosition());
+
+        CargoContainerRef jetCanRef = pChar->GetItemFactory()->SpawnCargoContainer(p_idata);
+        if (!jetCanRef)
+            throw PyException(MakeCustomError("Unable to spawn item of type %u.", 23));
+
+        for (auto cur : shipLoot)
+            cur.second->Move(jetCanRef->itemID(),flagAutoFit);
+
+        // create new container
+        ContainerSE* containerObj = new ContainerSE(jetCanRef, m_targetEntity->GetServices(), m_targetEntity->SystemMgr());
+        m_targetEntity->SystemMgr()->AddEntity(containerObj);
+        m_targetEntity->DestinyMgr()->SendJettisonPacket(m_targetEntity->GetSelf());
+    }
+    m_targetEntity->SystemMgr()->RemoveEntity(m_targetEntity);
+    m_targetEntity->GetSelf()->Delete();
+}
 
 /*
  *  accessDifficultyBonus       << salvage tackle(10), salvage tackleII(15),  salvage skill : salvagerI +5 per level, salvagerII +7 per level

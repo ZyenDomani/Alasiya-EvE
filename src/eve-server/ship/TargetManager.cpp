@@ -62,7 +62,7 @@ TargetManager::~TargetManager() {
 // this from their destructor.
 void TargetManager::DoDestruction() {
     if (!m_destroyed && mySE) {
-        ClearTargets();
+        ClearAllTargets();
     }
 }
 
@@ -162,9 +162,10 @@ void TargetManager::ClearFromTargets() {
 
 bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
 {       // NOTE this is for players
+    TargetTry(who);
     if (!mySE->HasPilot()) {
         codelog(TARGET__ERROR, "StartTargeting() called by pilot-less ship %s(%u) to target %s", mySE->GetName(), mySE->GetID(), who->GetName());
-        return false;
+        return TargetFail(who);
     }
 
     //first make sure they are not already in the list
@@ -172,29 +173,29 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     if (res != m_targets.end()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return false;
+        return TargetFail(who);
     }
     //Check that they aren't targeting themselves (which may not be possible)
     if (who == mySE)
-        return false;
+        return TargetFail(who);
     // Check invulnerability (undock and jump invul states)
     if (who->IsInvul()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are Invul.  Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return false;
+        return TargetFail(who);
     }
     // Check login for client just logging into game.
     if (who->IsLogin()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are just Logging In.  Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return false;
+        return TargetFail(who);
     }
 
     uint8 targetSkills = 1; //AttrMaxLockedTargets is for characters too!!
     Character* pChar = mySE->GetPilot()->GetChar().get();
     targetSkills += pChar->GetSkillLevel(skillTargeting);    // +1 target/level
     targetSkills += pChar->GetSkillLevel(skillMultitasking);    // +1 target/level
-	uint32 maxLockedTargets = ship->GetAttribute(AttrMaxLockedTargets).get_int();
+	uint32 maxLockedTargets = (uint32)ship->GetAttribute(AttrMaxLockedTargets).get_int();
     if (!maxLockedTargets) maxLockedTargets = 1;
     // add module updates to target capacity of ship here.
     if (targetSkills < maxLockedTargets)
@@ -204,7 +205,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
             maxLockedTargets);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return false;
+        return TargetFail(who);
     }
     // Check against max locked target range
 	double maxTargetLockRange = ship->GetAttribute(AttrMaxTargetRange).get_float();
@@ -217,7 +218,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
             maxTargetLockRange, who->GetName(), rangeToTarget.length());
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are too far away.  Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return false;
+        return TargetFail(who);
     }
 
     // Calculate Time to Lock target:
@@ -227,7 +228,6 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
         te->state = TargetEntry::Locking;
         te->timer.Start(lockTime *1000);      //timer has ms resolution
 	m_targets[who] = te;
-    TargetTry(who);
     who->TargetMgr()->TargetedAdd(mySE);
 
     _log(TARGET__INFO, "Pilot %s(%u) started targeting %s(%u) (%.2fs lock time)", \
@@ -249,39 +249,39 @@ bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 max
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
         return true;
     }
+    TargetTry(who);
     //Check that they aren't targeting themselves (which may not be possible)
     if (who == mySE)
-        return false;
+        return TargetFail(who);
     // Check against max locked target count
     if (m_targets.size() >= maxLockedTargets){
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.",
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return false;
+        return TargetFail(who);
     }
     // Check against max locked target range
     if (mySE->GetPosition().distance(who->GetPosition()) > maxTargetLockRange){
         _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are too far away.  Begin Approaching.",
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return false;
+        return TargetFail(who);
     }
     // Check invulnerability (undock and jump invul states)
     if (who->IsInvul()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are Invul.  Ignoring request.",
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return false;
+        return TargetFail(who);
     }
     // Check login for client just logging into game.
     if (who->IsLogin()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are just Logging In.  Ignoring request.",
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return false;
+        return TargetFail(who);
     }
 
     TargetEntry *te = new TargetEntry(who);
         te->state = TargetEntry::Locking;
         te->timer.Start(lockTime);
     m_targets[who] = te;
-    TargetTry(who);
     who->TargetMgr()->TargetedAdd(mySE);
 
     _log(TARGET__INFO, "NPC %s(%u) started targeting %s(%u) (%.2fs lock time)",
@@ -487,6 +487,19 @@ void TargetManager::TargetTry(SystemEntity *who) {
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();   //this is consumed below
     mySE->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &tmp, false);
+}
+
+bool TargetManager::TargetFail(SystemEntity* who) {
+    if (!mySE->HasPilot()) return false;
+    Notify_OnTarget te;
+        te.mode = "fail";
+        te.targetID = who->GetID();
+    Notify_OnMultiEvent multi;
+        multi.events = new PyList;
+        multi.events->AddItem(te.Encode());
+    PyTuple* tmp = multi.Encode();   //this is consumed below
+    mySE->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &tmp, false);
+    return false;
 }
 
 void TargetManager::TargetAdded(SystemEntity* who) {

@@ -235,7 +235,8 @@ void SystemDB::GetLootGroupTypes(DBQueryResult& res) {
 }
 
 void SystemDB::GetSalvageGroups(DBQueryResult& res) {
-    if(!sDatabase.RunQuery(res, "SELECT wreckTypeID, salvageItemID, groupID, dropChance, minDrop, maxDrop FROM invWrecksToSalvage")) {
+    //`factionSalvage` (`factionID`,`itemID`,`itemName`)
+    if(!sDatabase.RunQuery(res, "SELECT factionID, itemID FROM factionSalvage")) {
         _log(DATABASE__ERROR, "Error in GetSalvageGroups query: %s", res.error.c_str());
         return;
     }

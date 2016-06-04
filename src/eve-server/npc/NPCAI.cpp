@@ -81,6 +81,10 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_maxAttackRange = who->GetSelf()->GetAttribute(AttrEntityAttackRange).get_int();
     if (!m_maxAttackRange)
         m_maxAttackRange = 15000;
+    // 'sight' range
+    m_sightRange = 15000;
+    if (m_maxAttackRange > m_sightRange)
+        m_sightRange = m_maxAttackRange *2;
 
     if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int())
         m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int();
@@ -126,7 +130,7 @@ void NPCAIMgr::Process() {
             m_npc->UseArmorRepairer();
 
     /* NPC::State definitions   -allan 25July15  (UD 1June16)
-     *   Idle,       // not doing anything, nothing in sight....idle.
+     *   Idle,       // not doing anything, nothing in sight....idle.  call Wander() to loosely orbit bubble center ~25-30k at 1/2 orbit speed
      *   Chasing,    // target within npc sight range.  attacking begins here.  use m_maxSpeed to get within falloff
      *   Following,  // between optimal and falloff.  try to get closer, but still orbiting and attacking
      *   Engaged,    // actively fighting (in orbit).  use m_orbitSpeed.
@@ -153,12 +157,14 @@ void NPCAIMgr::Process() {
                         or cur->IsInvul()
                         or cur->InPod())
                         continue;
-                    if (m_npc->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_maxAttackRange)
+                    if (m_npc->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_sightRange) {
                         continue;
+                    }
 
                     Target(cur->GetShipSE());
 					return;
                 }
+                Wander();
             } else {
                 if (!m_beginFindTarget.Enabled())
                     m_beginFindTarget.Start(m_ROF);  //find target is based on npc attack speed.  trying this instead of hard-coded time.
@@ -225,6 +231,26 @@ void NPCAIMgr::Process() {
     }
 }
 
+void NPCAIMgr::Wander()
+{
+    _log(NPC__AI_TRACE, "%s(%u): Wandering.  No Targets within my range of %um", \
+         m_npc->GetName(), m_npc->GetID(), m_sightRange);
+    // wandering.  nothing to do.
+    if (m_npc->SysBubble()->HasDynamics()) {
+        SystemEntity* pTarget = m_npc->SysBubble()->GetRandomEntity();
+        if (!pTarget)
+            pTarget = m_npc->SysBubble()->GetRandomEntity();
+        if (!pTarget)
+            return;
+        // pick random entity and loosely orbit it.
+        m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
+        uint16 orbitDistance = MakeRandomInt(10000, 20000);
+        m_npc->DestinyMgr()->Orbit(pTarget, orbitDistance);
+        _log(NPC__AI_TRACE, "%s(%u):  Just for shits-n-giggles, I\'m gonna orbit %s(%u) at %um.", \
+            m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID(), orbitDistance);
+    }
+}
+
 void NPCAIMgr::_EnterIdle() {
     if (m_state == Idle) return;
     // not doing anything....idle.
@@ -273,9 +299,6 @@ void NPCAIMgr::_EnterEngaged(SystemEntity* pTarget) {
     _log(NPC__AI_TRACE, "%s(%u): _EnterEngaged: %s(%u) begin engaging.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively fighting
-    //   not sure of the actual orbit speed of npc's, but their 'cruise speed' seems a bit slow.
-    //   this sets orbit speed between cruise speed and quarter of max speed (whether mwb or ab)
-    //   this will also enable this npc to have a variable speed, instead of fixed upon creation.
     m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
     m_npc->DestinyMgr()->Orbit(pTarget, m_optimalRange);  //try to get inside orbit range
     m_state = Engaged;
@@ -310,7 +333,7 @@ void NPCAIMgr::_CheckDistance(SystemEntity* pSE)
 {
     GVector usToThem(m_npc->GetPosition(), pSE->GetPosition());
     double dist = usToThem.length();
-    if (dist > m_maxAttackRange) {
+    if (dist > m_sightRange) {
         _log(NPC__AI_TRACE, "%s(%u): _CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
              m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist);
         if (m_state != Idle) {
@@ -381,7 +404,7 @@ void NPCAIMgr::Targeted(SystemEntity* pAgressor) {
             _CheckDistance(pAgressor);
         } break;
 
-        /** @todo  determine if new targetedby entity is weaker than current target. */
+        /** @todo  determine if new targetedby entity is weaker than current target. use optimalSigRadius to test for 'optimal' target */
         case Chasing: {
             _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while chasing.", \
                  m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());

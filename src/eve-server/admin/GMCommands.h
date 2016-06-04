@@ -109,6 +109,8 @@ COMMAND( shipdna, ROLE_PROGRAMMER,
          " - show current ship DNA." )
 COMMAND( targlist, ROLE_PROGRAMMER,
          " - show current ship target list." )
+COMMAND( bubblelist, ROLE_PROGRAMMER,
+         " - show current objects in bubble, their destiny state, and movement speed." )
 
 /*
 COMMAND( entity, ROLE_ADMIN,

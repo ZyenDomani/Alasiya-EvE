@@ -120,7 +120,7 @@ class SpawnMgr
 {
 public:
     SpawnMgr(SystemManager* mgr, PyServiceMgr& svc);
-    virtual ~SpawnMgr() { /* nothing do to yet */ }
+    virtual ~SpawnMgr()                                 { /* nothing do to yet */ }
 
     void Process();
     void DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating);
@@ -129,7 +129,9 @@ public:
     void SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID);
 
     void StartMainTimer();
-    bool IsTimerStarted() { return (m_mainTimer.Enabled()); }
+
+    bool IsEnabled()                                    { return m_enabled; }
+    bool IsTimerStarted()                               { return (m_mainTimer.Enabled()); }
 
 protected:
     bool _FindSpawnForBubble(uint32 itemID);
@@ -159,7 +161,7 @@ private:
     Timer m_groupTimer;
 
     uint32 m_spawnID = 1;   //in case i need to track a specific spawn group.
-    bool m_enabled = false;     //allow spawning?
+    bool m_enabled;          //allow spawning?
 
     RatBubbleVec m_bubbles;
     SpawnEntryDef m_spawns;

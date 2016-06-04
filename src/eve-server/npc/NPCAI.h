@@ -53,6 +53,7 @@ public:
 protected:
     void Attack(SystemEntity* pTarget);
     void AttackTarget(SystemEntity* pTarget);
+    void Wander();
     void _EnterIdle();
     void _EnterChasing(SystemEntity* pTarget);
     void _EnterFollowing(SystemEntity* pTarget);
@@ -89,11 +90,12 @@ private:
 
     uint32 m_radius;
     uint32 m_flyRange;
+    uint32 m_sightRange;
     uint32 m_maxAttackRange;
 
     float m_armorRepairChance;
     float m_shieldBoosterChance;
-    
+
     NPC* m_npc;
 
     TurrentFormulas m_formula;

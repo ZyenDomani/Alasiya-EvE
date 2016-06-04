@@ -295,6 +295,8 @@ void DestinyManager::_UpdateVelocity(bool isMoving) {
         m_shipMaxAccelTime *= (m_speedToLeaveWarp / m_maxShipSpeed);
         m_velocity = m_shipHeading * m_speedToLeaveWarp;
         m_maxSpeed = m_speedToLeaveWarp;
+        if (mySE->IsNPCSE())
+            m_userSpeedFraction = 0.2;
     } else if (m_userSpeedFraction) {   //moving
         if (isMoving) { //change speed
             if (m_activeSpeedFraction == m_userSpeedFraction) return;
@@ -816,7 +818,7 @@ void DestinyManager::_Follow() {
             SetSpeedFraction(0);
         }
     }
-    
+
     heading.normalize();
     m_targetPoint = target_point + (heading * m_targetDistance);
 
@@ -1739,6 +1741,7 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
         /** @todo check for implants  AttrWarpCapacitorNeedBonus(319) */
     } else {
         warpCapNeed = 0.00001f;
+        adjShipMaxVelocity = ship->GetAttribute(AttrEntityCruiseSpeed).get_float();
         adjInertiaModifier = 1.0f;
     }
 

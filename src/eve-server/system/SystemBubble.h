@@ -97,6 +97,7 @@ public:
     /* for targeting purposes */
     void GetEntities(std::vector<SystemEntity*> &into) const;
     void GetPlayers(std::vector<Client*> &into) const;
+    SystemEntity* GetRandomEntity();
 
 protected:
     const GPoint m_center;

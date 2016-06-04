@@ -344,6 +344,8 @@ void Client::WarpIn() {
     char ci[1];
     snprintf(ci, sizeof(ci), "");
     m_ship->SetCustomInfo(ci);
+    if (!InPod())
+        m_ship->SetFlag(flagAutoFit, false);
     m_invulTimer.Start(/*InvulTimer::*/WarpingInInvul);
     return;
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
@@ -442,7 +444,7 @@ bool Client::EnterSystem(uint32 systemID) {
             SendErrorMsg("Unable to boot system");
             return false;
         }
-        
+
         m_systemName = m_system->GetName();
 
         m_char->chkDynamicSystemID(systemID);

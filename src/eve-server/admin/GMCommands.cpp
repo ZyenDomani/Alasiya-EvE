@@ -1539,6 +1539,46 @@ PyResult Command_list(Client* who, CommandDB* db, PyServiceMgr* services, const 
     return new PyString(reply);
 }
 
+PyResult Command_bubblelist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    /* this command is used to debug bubble entities
+     * wip.   -allan 2June16
+     */
+
+    if (!who->GetShipSE()->SysBubble())
+        if (who->IsInSpace())
+            who->EnterSystem(who->GetSystemID());
+        else
+            throw PyException(MakeCustomError("You must be in space to list space inventory."));
+
+    SystemBubble *b = who->GetShipSE()->SysBubble();
+    uint32 bubble = b->GetID();
+    uint32 dynamics = b->CountDynamics();
+    uint32 npcs = b->CountNPCs();
+    uint32 players = b->CountPlayers();
+
+    std::vector<SystemEntity*> into;
+    b->GetEntities(into);
+
+    std::ostringstream str;
+    str << "Bubble: %u<br>"; //22
+    str << "Dynamics: %u<br>"; //19
+    str << "NPCs: %u<br>"; //18
+    str << "Players: %u<br>"; //23
+    str << "<br>"; //5
+
+    for (auto cur : into)
+        str << cur->GetID() << ", " << cur->GetName() << "<br>"; // 13 + 27 for name (40)
+
+    int count = into.size();
+    int size = count * 40;
+    size += 90;
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(), bubble, dynamics, npcs, players);
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
 PyResult Command_commandlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /*
      * this command will send the client a list of loaded game commands, role required, and description.  -allan 23May15

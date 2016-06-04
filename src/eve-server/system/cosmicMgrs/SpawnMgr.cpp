@@ -122,6 +122,8 @@ SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
     m_mainTimer.Disable();
     m_groupTimer.Disable();
 
+    m_enabled = false;
+
     m_spawns.clear();
     m_bubbles.clear();
     m_toSpawn.clear();
@@ -146,8 +148,13 @@ void SpawnMgr::Process() {
             _log(SPAWN__MESSAGE, "SpawnMgr::Process() - Main Timer called.  Spawn functions enabled for %s(%u).",
                  m_system->GetName().c_str(), m_system->GetID());
         }
+        if (sConfig.server.UseProfiling)
+            sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
         return;
     }
+
+    if (!m_enabled)
+        return;
 
     // will have to think about this one a bit to implement properly (and quickly)
     /*  current implentation uses a single timer for entire system
@@ -499,7 +506,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
 {
     GPoint startPos(pSysBubble->GetCenter());
     //startPos.MakeRandomPointOnSphere(8000); // put them at random spot 8k off center
-    startPos.MakeRandomPointOnSphere(500000); //500km from bubble center
+    startPos.MakeRandomPointOnSphere(200000); //500km from bubble center
     const GPoint warpToPoint = (pSysBubble->GetCenter() - (MakeRandomInt(-5, 15) *1000));
     _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
                 spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
@@ -552,8 +559,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
      * however, warping in dont seem to be working.  will look into later.
      */
     GPoint startPos(pSysBubble->GetCenter());
-    startPos.MakeRandomPointOnSphere(500000); //500km from bubble center
-    const GPoint warpToPoint = (pSysBubble->GetCenter() - (MakeRandomInt(-5, 15) *1000));
+    startPos.MakeRandomPointOnSphere(200000); //200km from bubble center...in current bubble
+    const GPoint warpToPoint = (pSysBubble->GetCenter() - (MakeRandomInt(-5, 10) *1000));
 
     uint32 corpID = GetCorpID(factionID);
 

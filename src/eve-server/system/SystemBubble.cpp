@@ -43,6 +43,8 @@ m_radius(radius),
 m_radius_hysteresis(radius+BUBBLE_HYSTERESIS_METERS),
 m_spawnTimer(sConfig.npc.RoamingTimer)
 {
+    m_belt = false;
+    m_gate = false;
     m_spawned= false;
     m_spawnTimer.Disable();
     m_systemID = pSystem->GetID();
@@ -354,6 +356,21 @@ void SystemBubble::GetPlayers(std::vector<Client*> &into) const {
 	for (auto cur : m_players)
 		into.push_back(cur);
 }
+
+SystemEntity* SystemBubble::GetRandomEntity()
+{
+    if (m_dynamicEntities.empty())
+        return nullptr;
+
+    for (auto cur : m_dynamicEntities) {
+        if (cur->IsWreckSE())
+            return cur;
+        if (cur->IsObjectEntity())
+            return cur;
+        return nullptr;
+    }
+}
+
 
 uint32 SystemBubble::CountNPCs() {
     uint32 count = 0;

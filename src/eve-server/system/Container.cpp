@@ -329,7 +329,6 @@ uint32 WreckContainer::CreateItemID(ItemFactory &factory, ItemData &data) {
 
 void WreckContainer::Delete()
 {
-    sLog.Magenta( "WreckContainer::Delete()", "Garbage Collection is removing Wreck %u.", itemID() );
     m_inventory->LoadContents(&m_factory);
     // delete contents first
     m_inventory->DeleteContents();
@@ -414,6 +413,7 @@ void WreckSE::Process() {
     SystemEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
+        sLog.Magenta( "WreckSE::Process()", "Garbage Collection is removing Wreck %u.", _containerRef->itemID() );
         m_system->RemoveEntity(this);
         _containerRef->Delete();
     }

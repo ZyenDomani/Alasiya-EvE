@@ -225,15 +225,8 @@ void DGM_Salvage_Table::_Populate()
     //get all groups from salvage table
     m_db.GetSalvageGroups(*res);
     DBResultRow row;
-    DBSalvageGroup salvage;
     while( res->GetRow(row) ) {
-        //salvage.wreckTypeID = row.GetInt(0);
-        salvage.salvageItemID = row.GetInt(1);
-        salvage.groupID = row.GetInt(2);
-        salvage.dropChance = row.GetDouble(3);
-        salvage.minDrop = row.GetInt(4);
-        salvage.maxDrop = row.GetInt(5);
-        m_SalvageMap.emplace(row.GetInt(0), salvage);
+        m_SalvageMap.emplace(row.GetInt(0), row.GetInt(1));
     }
 
     //cleanup
@@ -243,36 +236,20 @@ void DGM_Salvage_Table::_Populate()
              m_SalvageMap.size(), (GetTimeUSeconds() - start));
 }
 
-void DGM_Salvage_Table::GetSalvage(uint32 wreckTypeID, LootListDef &salvageList) {
-    // currently disabled as no salvage module is working yet.
-    //TODO  finish later.
+void DGM_Salvage_Table::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {
     double start = GetTimeUSeconds();
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     double randChance = 0.0;
 
-    LootList loot_list1;
-/*
-    //SalvageItr curGroupItr = m_SalvageMap.begin();
-
-    while (curGroupItr != m_SalvageMap.end()) {
-        if (curGroupItr->wreckTypeID == wreckTypeID) {
-            randChance = gen_random_float(0.00, 0.30);      // FIXME adjust this later...use a config var maybe?  -used to determine initial loot groups
-            if (randChance < curGroupItr->dropChance) {
-                loot_list1.itemID = curGroupItr->salvageItemID;
-                loot_list1.minDrop = curGroupItr->minDrop;
-                loot_list1.maxDrop = curGroupItr->maxDrop;
-                salvageList.push_back(loot_list1);
-            }
-        }
-        ++curGroupItr;
+    auto itr = m_SalvageMap.equal_range(factionID);
+    for (auto it = itr.first; it != itr.second; it++) {
+        itemList.push_back(it->second);
     }
-    */
 
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_salvageProfile, GetTimeUSeconds() - profileStartTime);
-    sLog.Log("     GetSalvage()", "Took %fus to iterate thru %u loops, with %u items returned",
-             (GetTimeUSeconds() - start), m_SalvageMap.size(), salvageList.size());
-
+    sLog.Log("     GetSalvage()", "Took %fus to iterate thru %u loops, with %u items returned for factionID %u",
+             (GetTimeUSeconds() - start), m_SalvageMap.size(), itemList.size(), factionID);
 }

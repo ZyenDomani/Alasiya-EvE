@@ -76,15 +76,6 @@ struct DBLootGroupType {
     uint32 maxQuantity;
 };
 
-struct DBSalvageGroup {
-    //uint32 wreckTypeID;
-    uint32 salvageItemID;
-    uint8 groupID;
-    double dropChance;
-    uint8 minDrop;
-    uint8 maxDrop;
-};
-
 struct LootList {
     uint32 itemID;
     uint8 minDrop;
@@ -138,8 +129,7 @@ class DGM_Salvage_Table
 protected:
     void _Populate();
 
-    typedef std::vector<LootList> LootListDef;
-    typedef std::unordered_multimap<uint32, DBSalvageGroup> SalvageDef;     /* wreckTypeID is key */
+    typedef std::unordered_multimap<uint32, uint32> SalvageDef;     /* factionID is key, itemID is value */
 
     SalvageDef m_SalvageMap;
 
@@ -150,9 +140,9 @@ public:
     // Initializes the Table:
     int Initialize();
 
-    // Returns vector of SalvageIDs
+    // Returns vector of itemIDs
     //  0 if no match
-    void GetSalvage(uint32 wreckTypeID, LootListDef &salvageList);
+    void GetSalvage(uint32 factionID, std::vector<uint32> &itemList);
 
 private:
     SystemDB m_db;

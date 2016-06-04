@@ -60,6 +60,7 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)//, ItemData ida
   m_spawnMgr(new SpawnMgr(this, m_services))
 {
     m_clients.clear();
+    m_ratBubbles.clear();
     m_entityChanged = false;
     m_db.GetSystemInfo(m_systemID, NULL, &m_regionID, &m_systemName, &m_securityClass, &m_securityRating);
     m_activityTime = 0;
@@ -630,19 +631,24 @@ void SystemManager::RemoveEntity(SystemEntity* who) {
     auto itr = m_entities.find(who->GetID());
     if (itr != m_entities.end()) {
         _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
-        if (who->TargetMgr())
-            who->TargetMgr()->DoDestruction();
+        who->TargetMgr()->DoDestruction();
         m_entities.erase(itr);
         m_entityChanged = true;
         // Remove Entity's Item Ref from Solar System Dynamic Inventory:
         RemoveItemFromInventory( who->GetSelf() );
-        /* should we delete the entity pointer here?? */
+        /* should we delete the entity pointer here??  no, it gets deleted in EntityList */
     } else
         _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
 }
 
 void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
 {
+    if (!m_spawnMgr->IsEnabled()) {
+        if (!m_spawnMgr->IsTimerStarted())
+            m_spawnMgr->StartMainTimer();
+        return;
+    }
+
     _log(SPAWN__MESSAGE, "Spawn called for bubble %u in system %u(%.4f), region %u.",
          pSysBubble->GetID(), m_systemID, m_securityRating, m_regionID);
     uint8 count = m_beltCount;

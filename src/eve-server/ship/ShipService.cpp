@@ -901,16 +901,15 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             }
             // Spawn jetcan then continue loop
             location.MakeRandomPointOnSphere(500.0);
-            ItemData* p_idata = new ItemData(
-                                23,                         // 23 = cargo container
-                                pClient->GetCharacterID(),  //owner is Character
-                                pClient->GetLocationID(),
-                                flagAutoFit,
-                                "Jettisoned Cargo Container",
-                                location
-                                );
+            ItemData p_idata(
+                            23,                         // 23 = cargo container
+                            pClient->GetCharacterID(),  //owner is Character
+                            pClient->GetLocationID(),
+                            flagAutoFit,
+                            "Jettisoned Cargo Container",
+                            location);
 
-            newJetcanItem = m_manager->item_factory->SpawnCargoContainer(*p_idata);
+            newJetcanItem = m_manager->item_factory->SpawnCargoContainer(p_idata);
             if (!newJetcanItem)
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", 23));
 

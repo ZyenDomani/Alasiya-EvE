@@ -53,6 +53,8 @@ protected:
     bool m_success;
     bool m_firstRun;
 
+    int8 m_accessChance;
+
     Character* pChar;
 };
 
