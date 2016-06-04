@@ -8,7 +8,7 @@ CREATE TABLE `chrPlanetColonies` (
   `x` double NOT NULL,
   `y` double NOT NULL,
   `z` double NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `chrPlanetLaunches` (
   `launchID` int(11) NOT NULL AUTO_INCREMENT,
@@ -20,11 +20,10 @@ CREATE TABLE `chrPlanetLaunches` (
   `launchTime` bigint(20) NOT NULL,
   `x` double NOT NULL,
   `y` double NOT NULL,
-  `z` double NOT NULL
+  `z` double NOT NULL,
+  UNIQUE KEY `launchID` (`launchID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
-ALTER TABLE `chrPlanetLaunches`
-  ADD UNIQUE KEY `launchID` (`launchID`);
 
 CREATE TABLE `chrPlanetPins` (
   `id` int(11) NOT NULL DEFAULT '0',
@@ -56,11 +55,9 @@ CREATE TABLE `chrPlanets` (
   `planetID` int(11) NOT NULL,
   `solarSystemID` int(11) NOT NULL,
   `typeID` int(11) NOT NULL,
-  `numberOfPins` int(11) NOT NULL
+  `numberOfPins` int(11) NOT NULL,
+  PRIMARY KEY (`characterID`,`planetID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-ALTER TABLE `chrPlanets`
-  ADD PRIMARY KEY (`characterID`,`planetID`);
 
 
 CREATE TABLE `planetResourceInfo` (
@@ -84,11 +81,10 @@ CREATE TABLE `planetResourceInfo` (
   `numBands2` int(11) NOT NULL,
   `numBands3` int(11) NOT NULL,
   `numBands4` int(11) NOT NULL,
-  `numBands5` int(11) NOT NULL
+  `numBands5` int(11) NOT NULL,
+  UNIQUE KEY `planetID` (`planetID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-ALTER TABLE `planetResourceInfo`
-  ADD UNIQUE KEY `planetID` (`planetID`);
 
 INSERT INTO `planetResourceInfo` SELECT `itemID` AS `planetID`, 2073 AS `itemID1`, 2268 AS `itemID2`, 2287 AS `itemID3`, 2288 AS `itemID4`, 2305 AS `itemID5`, 154.275 AS `quality1`, 154.275 AS `quality2`, 154.275 AS `quality3`, 154.275 AS `quality4`, 154.275 AS `quality5`, '~' AS `data1`, '~' AS `data2`, '~' AS `data3`, '~' AS `data4`, '~' AS `data5`, 1 AS `numBands1`, 1 AS `numBands2`, 1 AS `numBands3`, 1 AS `numBands4`, 1 AS `numBands5` FROM `mapDenormalize` WHERE `typeID` = 11 AND `groupID` = 7;
 INSERT INTO `planetResourceInfo` SELECT `itemID` AS `planetID`, 2268 AS `itemID1`, 2272 AS `itemID2`, 2073 AS `itemID3`, 2286 AS `itemID4`, 2310 AS `itemID5`, 154.275 AS `quality1`, 154.275 AS `quality2`, 154.275 AS `quality3`, 154.275 AS `quality4`, 154.275 AS `quality5`, '~' AS `data1`, '~' AS `data2`, '~' AS `data3`, '~' AS `data4`, '~' AS `data5`, 1 AS `numBands1`, 1 AS `numBands2`, 1 AS `numBands3`, 1 AS `numBands4`, 1 AS `numBands5` FROM `mapDenormalize` WHERE `typeID` = 12 AND `groupID` = 7;

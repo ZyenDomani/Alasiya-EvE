@@ -82,7 +82,28 @@ INSERT INTO `factionSalvage` (`factionID`, `itemID`, `itemName`)
 (500021,25594,'Tangled Power Conduit'),
 (500021,25602,'Thruster Console'),
 (500021,25598,'Tripped Power Circuit'),
-(500021,25606,'Ward Console');
+(500021,25606,'Ward Console'),
+
+-- default 'unknown' faction catch-all
+(500022,25595,'Alloyed Tritanium Bar'),
+(500022,25605,'Armor Plates'),
+(500022,25596,'Broken Drone Transceiver'),
+(500022,25600,'Burned Logic Circuit'),
+(500022,25599,'Charred Micro Circuit'),
+(500022,25604,'Conductive Polymer'),
+(500022,25591,'Contaminated Lorentz Fluid'),
+(500022,25590,'Contaminated Nanite Compound'),
+(500022,25597,'Damaged Artificial Neural Network'),
+(500022,25592,'Defective Current Pump'),
+(500022,25601,'Fried Interface Circuit'),
+(500022,25589,'Malfunctioning Shield Emitter'),
+(500022,25603,'Melted Capacitor Console'),
+(500022,25588,'Scorched Telemetry Processor'),
+(500022,25593,'Smashed Trigger Unit'),
+(500022,25594,'Tangled Power Conduit'),
+(500022,25602,'Thruster Console'),
+(500022,25598,'Tripped Power Circuit'),
+(500022,25606,'Ward Console');
 
 -- factions todo
 /*
