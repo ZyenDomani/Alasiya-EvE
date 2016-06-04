@@ -1125,7 +1125,9 @@ std::string ShipItem::GetShipDNA()
      *
      * [PyString "<url=fitting:24698:3841;2:2531;1:19812;1:23527;1:2410;7:1422;4:2547;1:31802;3:2301;1:2454;5::>Anchor</url>"]
      *
-     *
+     *  current code returns this:
+     * "587:8863;1:8863;1:8863;1:499;1:578;1:1798;1:6485;1:2046;1:8325;1:31788;1:31800;1:31788;1::"
+     *  need to figure out how to group modules for correct condensed counts
      */
     if (type().id() == EVEDB::invTypes::typeCapsule) {
         std::stringstream dna;

@@ -231,12 +231,12 @@ void Salvager::CheckSuccess()
 
 void Salvager::DropSalvage()
 {
-    std::vector<uint32> list;
     // catch-all for lack of faction info since they dont work yet.  this has ALL t1 salvage
     uint32 factionID = factionUnknown;
-    if (m_targetEntity->IsNPCSE())
+    if (m_targetEntity->IsWreckSE())
         factionID = m_targetEntity->GetSelf()->ownerID();   // npcs have factionID in ownerID
 
+    std::vector<uint32> list;
     sDGM_Salvage_Table.GetSalvage(factionID, list);
     uint8 drop = 1;
     switch (m_accessChance) {

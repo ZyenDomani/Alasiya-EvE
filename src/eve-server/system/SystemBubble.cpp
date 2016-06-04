@@ -476,7 +476,6 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     Destiny::DumpUpdate( DESTINY__BALL_DECODE, &( addballs.state->content() )[0], (uint32)addballs.state->content().size() );
     PyTuple* t = addballs.Encode();
     pClient->QueueDestinyUpdate( &t );    //may consume, may not.
-    SafeDelete( destinyBuffer );
     PySafeDecRef( t );
 }
 

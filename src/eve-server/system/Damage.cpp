@@ -602,7 +602,8 @@ void Ship::Killed(Damage &fatal_blow) {
 
             data.moonID = 0;    /* dunno wtf this is... */
 
-        pClient->GetChar()->LogKill(data);
+        m_pilot->GetChar()->LogKill(data);
+        /** @todo check for killer has pilot and record kill data for them, too */
 
         PayInsurance();
 

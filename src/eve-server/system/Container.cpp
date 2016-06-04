@@ -228,12 +228,12 @@ void ContainerSE::EncodeDestiny( Buffer& into )
 
     BallHeader head;
     head.entityID = GetID();
-        head.mode = DSTBALL_RIGID;
+        head.mode = DSTBALL_TROLL;
         head.radius = GetRadius();
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsMassive | IsInteractive;
+        head.flags = IsInteractive;
     into.Append( head );
     MassSector mass;
         mass.mass = m_self->type().mass();
@@ -242,10 +242,11 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
     into.Append( mass );
+    DSTBALL_TROLL_Struct troll;
+        troll.formationID = 0xFF;
+        troll.effectStamp = sEntityList.GetStamp();
+    into.Append( troll );
 
-    DSTBALL_RIGID_Struct rigid;
-        rigid.formationID = 0xFF;
-    into.Append( rigid );
     _log(COMMON__WARNING, "ContainerEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
