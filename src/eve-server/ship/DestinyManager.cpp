@@ -82,6 +82,8 @@ m_warpState(nullptr)
     m_cloaked = false;
     m_turning = false;
     m_inBubble = true;
+    m_tractored = false;
+    m_tractorPause = false;
     m_capNeeded = 0;
     m_stateStamp = 0;
     m_dockTimer.Disable();
@@ -251,7 +253,8 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
 
     m_userSpeedFraction = fraction;
     bool isMoving = false;
-    if ((m_currentSpeedFraction > 0.05) or (m_activeSpeedFraction > 0.05)) isMoving = true;
+    if ((m_currentSpeedFraction > 0.05) or (m_activeSpeedFraction > 0.05))
+        isMoving = true;
     _UpdateVelocity(isMoving);
 
     if (State == DSTBALL_WARP) {
@@ -787,18 +790,52 @@ void DestinyManager::_ClearTurn() {
 
 void DestinyManager::_Follow() {
     //  Follow is also used by client as AlignTo.
-
-    double distance = m_targetEntity.second->GetRadius();
-    if (m_targetEntity.second->IsStaticEntity())
-        distance = 0;
-    distance += (m_radius + m_followDistance);
-
     const GPoint& target_point = m_targetEntity.second->GetPosition();
 
     GVector heading(m_position, target_point);
-    m_targetDistance = heading.length();
+    m_targetDistance = (heading.length() - m_radius);
+
+    if (m_targetDistance < m_followDistance) {
+    // this will allow following entites to keep their follow state, yet stop movement if within their follow distance.
+    //  by keeping their follow state, once the distance is greater than their follow distance, they will begin movement again.
+        if (m_tractored) {
+            // specific to tractored entities.  sudden halt to mimic tractor stopping
+            m_velocity = NULL_ORIGIN_V;
+            m_tractorPause = true;
+            m_activeSpeedFraction = m_userSpeedFraction = m_currentSpeedFraction = 0;
+            std::vector<PyTuple*> updates;
+            DoDestiny_CmdSetSpeedFraction ssf;
+                ssf.entityID = mySE->GetID();
+                ssf.fraction = 0;
+            updates.push_back(ssf.Encode());
+            SendDestinyUpdate(updates);
+            return;
+        } else {
+            // this will mimic real movement, where ship will decel instead of a sudden halt
+            //  still need to call _Move() here
+            SetSpeedFraction(0);
+        }
+    }
+    
     heading.normalize();
-    m_targetPoint = target_point + (heading * distance);
+    m_targetPoint = target_point + (heading * m_targetDistance);
+
+    if (m_tractored and m_tractorPause) {
+        // tractored object is outside follow distance.  begin movement again
+        m_tractorPause = false;
+        m_velocity = m_shipHeading * m_maxSpeed;
+        m_moveTimer = GetTimeMSeconds();
+        m_stateStamp = sEntityList.GetStamp();
+        m_activeSpeedFraction = m_userSpeedFraction = m_currentSpeedFraction = 1;
+        std::vector<PyTuple*> updates;
+        DoDestiny_CmdSetSpeedFraction ssf;
+            ssf.entityID = mySE->GetID();
+            ssf.fraction = 1;
+        updates.push_back(ssf.Encode());
+        SendDestinyUpdate(updates);
+    } else if (!m_userSpeedFraction) {
+        SetSpeedFraction(1.0f);
+    }
 
     _Move();
 }
@@ -1904,6 +1941,7 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE)
     m_accel = false;
     m_decel = false;
     m_turning = false;
+    m_tractored = true;
     m_moveTimer = GetTimeMSeconds();
     m_stateStamp = sEntityList.GetStamp();
 
@@ -1917,7 +1955,7 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE)
     m_maxSpeed = m_maxShipSpeed;
     m_velocity = m_shipHeading * m_maxSpeed;
 
-    m_followDistance = 500;
+    m_followDistance = 500 + pShipSE->GetRadius();
     m_shipMaxAccelTime = 0.1f;
 
     m_activeSpeedFraction = m_userSpeedFraction = m_currentSpeedFraction = 1.0f;
@@ -1953,6 +1991,7 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE)
 void DestinyManager::TractorBeamStop()
 {
     Halt();
+    m_tractored = false;
     std::vector<PyTuple*> updates;
     DoDestiny_SetMaxSpeed ms;
         ms.entityID = mySE->GetID();

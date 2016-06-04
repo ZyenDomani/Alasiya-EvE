@@ -32,6 +32,23 @@ ShieldHardener::ShieldHardener( InventoryItemRef item, ShipItemRef ship )
 
 void ShieldHardener::StopCycle(bool abort)
 {
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    timeLeft /= 100;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    (
+        m_Ship,
+     m_Item->itemID(),
+     m_Item->typeID(),
+     0,
+     0,
+     "effects.ModifyShieldResonance",
+     false,
+     false,
+     false,
+     timeLeft,
+     0
+    );
+
     // Create Destiny Updates:
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
@@ -41,8 +58,6 @@ void ShieldHardener::StopCycle(bool abort)
         ge.other = new PyNone;
         ge.area = new PyList;
         ge.effectID = effectModifyActiveShieldResonanceAndNullifyPassiveResonance;
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -71,11 +86,11 @@ void ShieldHardener::_ShowCycle()
      0,
      0,
      "effects.ModifyShieldResonance",
-     0,
+     false,
      1,
      1,
      _GetDuration(),
-     1
+     1000
     );
 
     // Create Destiny Updates:

@@ -323,6 +323,10 @@ PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
     return nullptr;
 }
 
+/** @todo  need to check bound ship vs current ship.
+ * when adding items to ANOTHER ship's cargohold (in station),
+ * this does not check for other ship, instead adding items to CURRENT ship
+ */
 PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::Add() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     if (sConfig.server.testServer) {

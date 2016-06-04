@@ -31,6 +31,8 @@ Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
 {
     m_success = false;
     m_firstRun = true;
+
+    pChar = m_Ship->GetPilot()->GetChar().get();
 }
 
 void Salvager::Activate(SystemEntity* pSE)
@@ -48,13 +50,6 @@ void Salvager::Activate(SystemEntity* pSE)
     }
 }
 
-/*  accessDifficultyBonus       << salvage tackle(10), salvage tackleII(15)
- *  accessDifficulty (30,20,10,-10)           << in the wreck item for salvage
- *
- *  accessDifficultyBonus       << civilian analyzer(2), implant(5), analyzerII(7)
- *  accessDifficulty (0.000001)    << for analyzing structures ()
- */
-
 double Salvager::DoCycle() {
     if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
         or (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
@@ -63,33 +58,25 @@ double Salvager::DoCycle() {
         return 0;
     }
 
-    _ShowCycle();
-
-    if (m_firstRun)
+    if (m_firstRun) {
+        _ShowCycle();
         m_firstRun = false;
-    else if (!m_success)
+    } else if (!m_success) {
+        _ShowCycle();
         SendFailure();
+        CheckSuccess();
+    } else if (m_success) {
+        Deactivate();
+        DropSalvage();
+        return 0;
+    } else {
+        _log(SHIP__MODULE_ERROR, "Salvage DoCycle hit end of conditional.");
+    }
+
 
     return _GetDuration();
 }
-/*
-<!--              [PyTuple 3 items]
-                    [PyString "OnRemoteMessage"]
-                    [PyString "SalvagingFailure"]
-                    [PyDict 1 kvp]
-                      [PyString "type"]
-                      [PyTuple 2 items]
-                        [PyInt 4]           << cacheSolarSystemObjects???  cant find another reference for this.  always 4 so far.
-                        [PyInt 26513]       << wreck type id
 
-                    [PyTuple 2 items]       << this goes into effect.error
-                      [PyString "SalvagingSuccess"]
-                      [PyDict 1 kvp]
-                        [PyString "type"]
-                        [PyTuple 2 items]
-                          [PyInt 4]         << cacheSolarSystemObjects???
-                          [PyInt 26513]
-                        */
 void Salvager::StopCycle(bool abort)
 {
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
@@ -187,6 +174,24 @@ void Salvager::_SetCapNeed()
     //double need = GetAttribute(AttrCapacitorNeed);
 }
 
+/*
+                  [PyTuple 3 items]
+                    [PyString "OnRemoteMessage"]
+                    [PyString "SalvagingFailure"]
+                    [PyDict 1 kvp]
+                      [PyString "type"]
+                      [PyTuple 2 items]
+                        [PyInt 4]           << cacheSolarSystemObjects???  cant find another reference for this.  always 4 so far.
+                        [PyInt 26513]       << wreck type id
+
+                    [PyTuple 2 items]       << this goes into effect.error
+                      [PyString "SalvagingSuccess"]
+                      [PyDict 1 kvp]
+                        [PyString "type"]
+                        [PyTuple 2 items]
+                          [PyInt 4]         << cacheSolarSystemObjects???
+                          [PyInt 26513]
+                        */
 void Salvager::SendFailure()
 {
     PyTuple* type = new PyTuple(2);
@@ -203,3 +208,77 @@ void Salvager::SendFailure()
     std::vector<PyTuple*> updates;
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
+
+void Salvager::CheckSuccess()
+{ // same forumla used in analyzing and data salvage
+    int8 chance = m_targetEntity->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
+    int8 bonus = (m_Item->GetAttribute(AttrAccessDifficultyBonus).get_int() * pChar->GetSkillLevel(skillSalvaging));
+
+    /** @todo need to check for salvage tackle and add to chance here */
+
+    uint8 roll = MakeRandomInt(0,100);
+    if (roll < (chance += bonus))
+        m_success = true;
+
+    _log(SHIP__MODULE_DEBUG, "Salvager::CheckSuccess - chance: %i, bonus: %i, roll: %u, success: %s", \
+                            chance, bonus, roll, (m_success ? "true" : "false"));
+}
+
+void Salvager::DropSalvage()
+{
+    /** @todo make salvage choices, with amounts, and move to players cargohold */
+
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    timeLeft /= 100;
+    // Create Destiny Updates:
+    PyTuple* type = new PyTuple(2);
+        type->SetItem(0, new PyInt(cacheSolarSystemObjects));
+        type->SetItem(1, new PyInt(m_targetEntity->GetTypeID()));
+    PyDict* dict = new PyDict;
+        dict->SetItemString("type", type);
+    PyTuple* tup = new PyTuple(2);
+        tup->SetItem(0, new PyString("SalvagingSuccess"));
+        tup->SetItem(1, dict);
+    GodmaEnvironment ge;
+        ge.selfID = m_Item->itemID();
+        ge.charID = m_Ship->ownerID();
+        ge.shipID = m_Ship->itemID();
+        ge.targetID = m_targetID;
+        ge.other = new PyNone;
+        ge.area = new PyList;
+        ge.effectID = effectSalvaging;
+    Notify_OnGodmaShipEffect shipEff;
+        shipEff.itemID = ge.selfID;
+        shipEff.effectID = ge.effectID;
+        shipEff.timeNow = Win32TimeNow();
+        shipEff.start = 0;
+        shipEff.active = 0;
+        shipEff.environment = ge.Encode();
+        shipEff.startTime = (shipEff.timeNow - (timeLeft * Win32Time_Second));
+        shipEff.duration = timeLeft;
+        shipEff.repeat = 0;
+        shipEff.error = tup;
+    std::vector<PyTuple*> events;
+        events.push_back(shipEff.Encode());
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+
+    /** @todo finish wreck handling
+     * if (wreck hasLoot)
+     *    [make jetcan]
+     *    [move loot to jetcan]
+     *    [delete wreck]
+     */
+}
+
+
+/*
+ *  accessDifficultyBonus       << salvage tackle(10), salvage tackleII(15),  salvage skill : salvagerI +5 per level, salvagerII +7 per level
+ *  accessDifficulty (s:30,m:20,l:10,f:0,o:-10,s:-20)           << in the wreck item for salvage
+ *
+ *
+ *  accessDifficultyBonus       << civilian analyzer(2), implant(5), analyzerII(7)
+ *  accessDifficulty (0.000001)    << for analyzing structures ()
+ *
+ *
+ */

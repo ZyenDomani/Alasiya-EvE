@@ -90,7 +90,7 @@ CargoContainerRef CargoContainer::Spawn(ItemFactory &factory, ItemData &data) {
 uint32 CargoContainer::CreateItemID(ItemFactory &factory, ItemData &data) {
     // make sure it's a cargo container
     const ItemType *st = factory.GetType(data.typeID);
-    if(st == NULL)
+    if (!st)
         return 0;
 
     // store item data
@@ -321,17 +321,10 @@ WreckContainerRef WreckContainer::Spawn(ItemFactory &factory, ItemData &data) {
 uint32 WreckContainer::CreateItemID(ItemFactory &factory, ItemData &data) {
     // make sure it's a wreck
     const ItemType *st = factory.GetType(data.typeID);
-    if(st == NULL)
+    if (!st)
         return 0;
 
-    // store item data
-    uint32 containerID = InventoryItem::CreateItemID(factory, data);
-    if(containerID == 0)
-        return 0;
-
-    // nothing additional
-
-    return containerID;
+    return InventoryItem::CreateItemID(factory, data);
 }
 
 void WreckContainer::Delete()

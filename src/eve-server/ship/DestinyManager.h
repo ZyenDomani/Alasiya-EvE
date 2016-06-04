@@ -195,6 +195,8 @@ protected:
     bool m_turning;                     //used to denote ship turning for associated checks
     bool m_accel;                       //used for raising ship speed via speedo
     bool m_decel;                       //used for lowering ship speed via speedo
+    bool m_tractored;
+    bool m_tractorPause;
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
     // movement methods
