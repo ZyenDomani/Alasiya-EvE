@@ -49,7 +49,8 @@ void ModifyModuleAttributesComponent::ModifyModuleAttribute(GenericModule* targe
 /* rewrote attrib calculations and implemented true stacking penality, with checks for exceptions.  -allan 13April16  */
 void ModifyModuleAttributesComponent::_modifyModuleAttributes(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type)
 {
-    uint8 stackSize = 1;
+    uint8 stackSize = 1;   // default.  changed later if necessary
+    double effectiveness = 1;   // default.  changed later if necessary
     EvilNumber modVal = m_Mod->GetAttribute(sourceAttrID), startVal = targetMod->GetAttribute(targetAttrID);
     /* check for attribs that are NOT penalized here, and bypass stacking method. */
     /* note:  DCU, rigs and subsystems do not use this method */
@@ -57,31 +58,33 @@ void ModifyModuleAttributesComponent::_modifyModuleAttributes(GenericModule* tar
         std::map<uint16, uint8>::iterator itr = m_attribMap.find(targetAttrID);
         if (itr != m_attribMap.end()) {
             /** @todo   verify these module states  */
-            if (m_Mod->GetModuleState() == MOD_ONLINE)
+            if (m_Mod->GetModuleState() == MOD_ONLINE) {
                 stackSize = ++itr->second;
-            else if ((m_Mod->GetModuleState() == MOD_OFFLINE)
-                or (m_Mod->GetModuleState() == MOD_DEACTIVATING))
-                /** @todo  implement the difference between MOD_OFFLINE and MOD_DEACTIVATING */
-                {
-                    if (itr->second == 1)
-                        m_attribMap.erase(itr);
-                    else
-                        stackSize = --itr->second;
-                }
+            } else if ((m_Mod->GetModuleState() == MOD_OFFLINE)
+                        or (m_Mod->GetModuleState() == MOD_DEACTIVATING))
+                /** @todo  implement the difference between MOD_OFFLINE (not enabled) and MOD_DEACTIVATING (was online/active, told to shutdown) */
+            {
+                effectiveness = itr->second;
+                if (itr->second == 1)
+                    m_attribMap.erase(itr);
+                else
+                    stackSize = --itr->second;
+            } else {
+                ; // make error here for invalid module state?
+            }
         } else
             m_attribMap.emplace(targetAttrID, 1);
     }
 
-    double effectiveness = 1;
-    if (m_Mod->GetModuleState() == MOD_ONLINE) {
+    if (m_Mod->GetModuleState() == MOD_ONLINE) { // set stacking penality here for reference when going offline (in above check).
         effectiveness = exp(-pow(((stackSize - 1)/2.67),2));  //stacking calculation fixed  -allan  20Dec15
         m_Mod->SetEffectiveness(targetAttrID, effectiveness);
-    } else if ((m_Mod->GetModuleState() == MOD_OFFLINE) or (m_Mod->GetModuleState() == MOD_DEACTIVATING)) {
-        effectiveness = m_Mod->GetEffectiveness(targetAttrID);
+    } else if (m_Mod->GetModuleState() == MOD_OFFLINE) {
+        ; // not sure what to do here yet...maybe nothing, as above 'find' should get stacking penality saved when module went online
     }
     if (effectiveness <= 0) {   /* this should never happen */
         codelog(SHIP__MODULE_ERROR, "MMAC::_modifyModuleAttributes() -  effectiveness <= 0");
-        targetMod->GetShipRef()->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 25620");
+        //targetMod->GetShipRef()->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 25620");
     }
     modVal *= effectiveness;
     EvilNumber newVal = CalculateNewAttributeValue(startVal, modVal, type);
@@ -106,7 +109,7 @@ void ModifyModuleAttributesComponent::SetAttribute(GenericModule* targetMod, uin
         sLog.Warning("MMAC::SetAttribute()","attribute %u 'newVal' was corrected", targetAttrID);
     }
 
-    //set the attribute for the ship with the new modifier
+    //set the modified attribute for the target module
     if (!targetMod->getItem()->SetAttribute(targetAttrID, newVal))
         sLog.Error("MMAC::SetAttribute()","Failed to set attribute %u to %f on module %u", targetAttrID, newVal, targetMod->itemID());
 }

@@ -209,9 +209,6 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_char->SetClient(this);
     SetPodItem();
 
-    /* this is not used or needed */
-    //m_system->LoadPlayerDynamics(char_id);
-
     m_ship = m_services.item_factory->GetShip(m_shipId);
     if (!m_ship) {
         sLog.Error("Client::SelectCharacter()", "shipID %u invalid for %u.  Picking new ship...", m_shipId, char_id);
@@ -460,10 +457,11 @@ void Client::UpdateLocation(uint32 locationID) {
     SendSessionChange();
     if (IsStation(locationID)) {
         sLog.Success("Client::UpdateLocation()", "Character %s (%u) Docked.", m_char->itemName().c_str(), m_char->itemID());
-        m_ship->Relocate(NULL_ORIGIN);  // hack to set coords to 0,0,0 in db.
+        pShipSE->SetPosition(NULL_ORIGIN);  // set coords to 0,0,0 in db.
         m_ship->Move(locationID, flagHangar);
         m_char->Move(locationID, flagAutoFit);
         m_ship->Dock();
+        m_ship->SaveShip();
         if (!IsHangarLoaded(locationID))
             LoadStationHangar(locationID);
         OnCharNowInStation();
@@ -557,6 +555,7 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
      * -> GotoDirection(etc, etc) -> SetState (dmg, ego, ball, slim)
      *  ***** 9sec from hitting undock to space view on live. *****
      */
+    m_ship->Relocate(dockPosition);
     CreateShipSE();
     MoveToLocation(systemID, dockPosition);
     m_ship->Undock();
@@ -659,7 +658,6 @@ void Client::CreateShipSE() {
     pShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system);
     _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->itemName().c_str(), m_char->itemID());
     pShipSE->SetPilot(this);
-    //SetDestiny(!m_undock);
     pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
 }
 
@@ -954,12 +952,14 @@ void Client::SavePosition() {
         _log(CLIENT__MESSAGE, "%s: Unable to save position. We are probably not in space.",  m_char->itemName().c_str());
         return;
     }
-    m_ship->Relocate(pShipSE->DestinyMgr()->GetPosition());
+    pShipSE->SetPosition(pShipSE->DestinyMgr()->GetPosition());
+    m_ship->SaveShip();
 }
 
 void Client::SaveAllToDatabase() {
     SavePosition();
-    if (m_ship) m_ship->SaveShip();  // Save Ship and Modules' attributes and info to DB
+    if (m_ship)
+        m_ship->SaveShip();  // Save Ship and Modules' attributes and info to DB
 
     m_char->SaveFullCharacter();         // Save Character info to DB
 }

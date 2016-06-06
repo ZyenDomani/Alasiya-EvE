@@ -103,9 +103,9 @@ public:
     bool                    SetQuantity(uint32 qty_new, bool notify=true);
     bool                    SetFlag(EVEItemFlags new_flag, bool notify=true);
 
-    void                    SetOnline(bool online);
-    void                    PutOnline()                 { SetOnline(true); }
-    void                    PutOffline()                { SetOnline(false); }
+    void                    SetOnline(bool online, bool isRig);
+    void                    PutOnline(bool isRig=false) { SetOnline(true, isRig); }
+    void                    PutOffline(bool isRig=false){ SetOnline(false, isRig); }
     bool                    IsOnline()                  { return (GetAttribute(AttrIsOnline).get_int() ? true : false); }
 
     /* public-access data functions handled in base class. */

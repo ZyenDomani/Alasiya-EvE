@@ -165,7 +165,7 @@ protected:
     uint8 m_warpDecelTime;              //in s
     double m_warpCapacitorNeed;         //in GJ
     double m_shipInertiaModifier;
-    uint8 m_warpStrength;               //interger
+    int8 m_warpStrength;                // >0 means ship cannot warp
     double m_capNeeded;                 //capacitor charged needed to initiate warp
 
     //derrived from other params:

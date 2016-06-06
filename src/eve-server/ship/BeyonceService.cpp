@@ -441,6 +441,7 @@ bookmark, bmid
         return nullptr;
     }
     sLog.Warning( "BeyonceBound", "Handle_CmdWarpToStuff" );
+    /** @todo this packet is NOT valid for all warp calls.  correct when other systems become operational */
     CallWarpToStuff args;
     if (!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
@@ -658,6 +659,21 @@ bookmark, bmid
 	}
 	else if ( args.type == "scan" )
 	{//  scan, resultid, minrange, fleet(bool)
+        /*
+          [PyTuple 4 items]
+            [PyString "N=806383:4845"]
+            [PyString "CmdWarpToStuff"]
+            [PyTuple 2 items]
+              [PyString "scan"]
+              [PyString "MPK-328"]
+            [PyDict 3 kvp]
+              [PyString "fleet"]
+              [PyBool False]
+              [PyString "minRange"]
+              [PyFloat 50000]
+              [PyString "machoVersion"]
+              [PyInt 1]
+              */
 		call.client->SendErrorMsg("WarpToScan is not implemented at this time.  See Allan for updates.");
 	}
 	else if ( args.type == "epinstance" )

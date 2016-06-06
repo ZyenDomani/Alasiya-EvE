@@ -80,6 +80,9 @@ public:
     void AddItem(InventoryItemRef item);
     void RemoveItem(InventoryItemRef item);
 
+    bool IsAnchored()                                   { return m_isAnchored; }
+    void SetAnchor(bool set=false)                      { m_isAnchored = set; }
+
     /*
      * Public fields:
      */
@@ -95,6 +98,8 @@ public:
     bool IsEmpty()                                      { return GetInventory()->IsEmpty(); }
 
 protected:
+    bool m_isAnchored;
+
     /*
      * Member functions:
      */
@@ -157,15 +162,12 @@ public:
     /* specific functions handled in this class. */
     void AnchorContainer();
     bool IsEmpty()                                      { return _containerRef->IsEmpty(); }
-    bool IsAnchored()                                   { return m_isAnchored; }
 
 
 protected:
     CargoContainerRef _containerRef;
 
     Timer m_deleteTimer;
-
-    bool m_isAnchored;
 
     double m_shieldCharge;
     double m_armorDamage;

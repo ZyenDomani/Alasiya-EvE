@@ -238,18 +238,22 @@ void Salvager::DropSalvage()
 
     std::vector<uint32> list;
     sDGM_Salvage_Table.GetSalvage(factionID, list);
-    uint8 drop = 1;
-    switch (m_accessChance) {
-        case 20: drop = 2; break;
-        case 10: drop = 3; break;
-        case 0: drop = 4; break;
-        case -10: drop = 5; break;
+    uint8 drop = 0;
+    switch (m_accessChance) {       // drop qty
+        case  30: drop = 1; break;  //  1 to 2
+        case  20: drop = 2; break;  //  2 to 4
+        case  10: drop = 3; break;  //  3 to 6
+        case   0: drop = 4; break;  //  4 to 8
+        case -10: drop = 5; break;  //  5 to 10
     }
 
     if (!list.empty()) {
         InventoryItemRef itemRef;
         uint32 quantity = 0, minDrop = drop, maxDrop = drop * 2;
         for (auto cur : list) {
+            // each drop has 50/50 chance.  may need to change this later.
+            if (IsEven(MakeRandomInt(0,10)))
+                continue;
             quantity = (MakeRandomInt(minDrop, maxDrop));
             ItemData iLoot(cur, pChar->itemID(), m_Ship->itemID(), flagCargoHold, quantity);
             itemRef = pChar->GetItemFactory()->SpawnItem(iLoot);

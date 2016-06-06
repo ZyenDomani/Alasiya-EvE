@@ -573,6 +573,9 @@ void Ship::Killed(Damage &fatal_blow) {
             will have to look into this more later
          */
 
+        AbortCycle();  /* this will cancel all active modules ...hopefully */
+        m_targMgr->DoDestruction();
+
         /** populate kill data for shipKill and save to db  -- need to verify this*/
         CharKillData data;
             data.solarSystemID = m_system->GetID();
@@ -621,7 +624,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
         m_services.item_factory->SetUsingClient(m_pilot);
         ShipItemRef podRef = m_services.item_factory->GetShip(m_pilot->GetPodID());
-        podRef->Move(m_pilot->GetSystemID(), flagCapsule);
+        //podRef->Move(m_pilot->GetSystemID(), flagCapsule);
         podRef->Relocate(capsulePosition);
 
         SystemEntity* pPodEntity = m_system->get(m_pilot->GetPodID());

@@ -244,6 +244,9 @@ public:
     void UnloadAllModules();
     void MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2);
     void RepairModules();
+
+    void AbortCycle()                                        { m_ModuleManager->AbortCycle(); }
+
     void Online(uint32 moduleID);
     void Offline(uint32 moduleID);
     void Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat);
@@ -357,6 +360,7 @@ public:
     virtual Client* GetPilot()                          { return m_pilot; }
 
     /* specific functions handled here. */
+    void AbortCycle()                                        { m_shipRef->AbortCycle(); }
     void PayInsurance();
     void ResetShipSystemMgr(SystemManager* pSystem);
     void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }

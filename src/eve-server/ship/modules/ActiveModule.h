@@ -43,6 +43,7 @@ public:
 
 	virtual void Process();
     virtual void Load(InventoryItemRef charge);
+    virtual void AbortCycle();
     virtual void Unload();
     virtual void Overload();
     virtual void DeOverload();

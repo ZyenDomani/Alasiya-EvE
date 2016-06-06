@@ -26,6 +26,7 @@
 
 /** @todo  there is much more to be done here.  this is just the beginning.
  * many, many effects missing from dgmEffectsInfo table (aknor was hand-writing them)
+ * module states incomplete.  only coded for online, deactivating, offline and unfitted right now.
  */
 
 #ifndef MODULE_DEFS_H
@@ -85,17 +86,15 @@ enum ModuleStates
     /* 'Online' is used for:
      * ACTIVE modules fitted and online, but not activated (PASSIVE effects only)
      * PASSSIVE modules fitted and online
-     * RIG modules fitted
+     * RIG modules fitted (always online)
      */
-    MOD_ONLINE                  = 2,
-    // used only for ACTIVE modules operating in non-Overloaded mode
-    MOD_ACTIVATED               = 4,
-    // used only for ACTIVE modules operating in Overloaded mode
-    MOD_OVERLOADED              = 8,
+    MOD_ONLINE                  = 2, // module fitted and online
+    MOD_ACTIVATED               = 4, // used only for ACTIVE modules operating in non-Overloaded mode
+    MOD_OVERLOADED              = 8, // used only for ACTIVE modules operating in Overloaded mode
     MOD_GANG                    = 16,
     MOD_FLEET                   = 32,
     // used for internal module status checking
-    MOD_DEACTIVATING            = 64,
+    MOD_DEACTIVATING            = 64,       // module transistioning from online/active state to offline state
     MOD_OFFLINE                 = 128
 };
 

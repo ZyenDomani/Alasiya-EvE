@@ -61,9 +61,17 @@ GenericModule::~GenericModule()
  */
 void GenericModule::Online()
 {
-    /** @todo fixme....  rigs DO NOT get AttrIsOnline set! */
-    m_Item->PutOnline();
-    m_ModuleState = MOD_ONLINE;
+    if (m_ModuleState == MOD_UNFITTED)
+        return;  // make error here for online called for unfitted module?  isnt this error printed elsewhere?
+
+    if (m_ModuleState != MOD_OFFLINE)
+        return;     // already online
+
+    if (IsRigModule() or isRig())   // IsRigModule returns false in base class, isRig uses attribs
+        m_Item->PutOnline(true);
+    else
+        m_Item->PutOnline(false);
+    m_ModuleState = MOD_ONLINE; // this must be set to online before calling msac or mmac.
 
     EVECalculationType ecType = CALC_NONE;
     typeTargetGroupIDlist targetIDs;
@@ -102,7 +110,14 @@ void GenericModule::Online()
 
 void GenericModule::Offline()
 {
-    m_ModuleState = MOD_OFFLINE;
+    if (m_ModuleState == MOD_UNFITTED)
+        return;  // make error here for offline called for unfitted module?  isnt this error printed elsewhere?
+
+    if ((m_ModuleState == MOD_OFFLINE)
+        or (m_ModuleState == MOD_DEACTIVATING))
+        return;     // already offline or deactivating
+
+    m_ModuleState = MOD_DEACTIVATING;
     EVECalculationType ecType = CALC_NONE;
     typeTargetGroupIDlist targetIDs;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
@@ -138,6 +153,7 @@ void GenericModule::Offline()
         }
     }
 
+    m_ModuleState = MOD_OFFLINE;
     m_Item->PutOffline();
 }
 

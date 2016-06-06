@@ -263,6 +263,10 @@ GenericModule* ModuleContainer::GetModule(uint32 itemID)
 }
 
 
+void ModuleContainer::AbortCycle() {
+    _process(typeAbort);
+}
+
 void ModuleContainer::Process() {
     _process(typeProcessAll);
 }
@@ -561,6 +565,13 @@ void ModuleContainer::_processEx(processType p, slotType t)
             if (*cur == nullptr)
                 continue;
             (*cur)->Process();
+        } break;
+
+    case typeAbort:
+        for (r = 0; r < COUNT; r++, cur++) {
+            if (*cur == nullptr)
+                continue;
+            (*cur)->AbortCycle();
         } break;
     }
 }
@@ -902,6 +913,11 @@ void ModuleManager::Offline(EVEItemFlags flag)
         _log(SHIP__MODULE_ERROR, "ModuleManager::Online() -  Module at location %u not found", flag);
 }
 
+void ModuleManager::AbortCycle()
+{
+    m_Modules->AbortCycle();
+}
+
 void ModuleManager::OnlineAll()
 {
     m_Modules->OnlineAll();
@@ -961,7 +977,8 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
             mod->Activate(nullptr);
             targetNotNeeded =true;
         }
-        if (targetNotNeeded) return;
+        if (targetNotNeeded)
+            return;
 		if (!targetID) {
 			sLog.Error("ModuleManager::Activate()", "targetID == 0");
 			m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
@@ -1033,13 +1050,13 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
             ; //mod->Activate(targetEntity);
         } else if (effectName == "remoteEcmBurst") {    //Remote ECM Burst
             ; //mod->Activate(targetEntity);
-        } else if (effectName == "sensorBoosterActivePercentage") { //Sensor Booster
+        } else if (effectName == "sensorBoosterActivePercentage") { //Sensor Booster "effects.ElectronicAttributeModifyActivate"
             ; //mod->Activate(targetEntity);
         } else if (effectName == "industrialCoreEffect2") {  //Industrial Core
             ; //mod->Activate(targetEntity);
         } else if (effectName == "cynosuralGeneration") {  //Cynosural Field Generator
             ; //mod->Activate(targetEntity);
-        } else if (effectName == "gunneryMaxRangeFalloffTrackingSpeedBonus") {  //not sure
+        } else if (effectName == "gunneryMaxRangeFalloffTrackingSpeedBonus") {  //Tracking Computer "effects.TurretWeaponRangeTrackingSpeedMultiplyActivate"
             ; //mod->Activate(targetEntity);
             */
 	} else {

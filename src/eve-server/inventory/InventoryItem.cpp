@@ -961,14 +961,16 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
 } EffectCategories;*/
 
 /** @todo set a notify boolean here? */
-void InventoryItem::SetOnline(bool online) {
+void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
     /** @note  this is only used by modules
      ** check for pos structures also!! **
      */
-    if (!SetAttribute(AttrIsOnline, int(online))) {
-        _log(ITEM__TRACE, "InventoryItem::SetOnline()", "module %s(%u) could not be set %s", \
+    if (!isRig) {   // rigs DO NOT get isOnline attrib set.
+        if (!SetAttribute(AttrIsOnline, int(online))) {
+            _log(ITEM__TRACE, "InventoryItem::SetOnline()", "module %s(%u) could not be set %s", \
                             m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
-        return;
+            return;
+        }
     }
 
     Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
@@ -1024,7 +1026,7 @@ void InventoryItem::Relocate(const GPoint &pos) {
         return;
 
     m_position = pos;
-    SaveItem();
+    //SaveItem();
 }
 
 bool InventoryItem::SetAttribute( uint32 attributeID, int64 num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )

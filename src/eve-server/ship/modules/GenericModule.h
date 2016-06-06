@@ -84,6 +84,7 @@ public:
 
     /* functions to be handled in derived classes (must override) */
     virtual bool isLoaded()                             { return false; }
+    virtual void AbortCycle()                                { /* Do nothing here */ }
     virtual void Process()                              { /* Do nothing here */ }
     virtual void Activate(SystemEntity* targetEntity)   { /* Do nothing here */ }
     virtual void Deactivate()                           { /* Do nothing here */ }
@@ -128,11 +129,11 @@ public:
     ModifyModuleAttributesComponent*  m_MMAC;           /* we own this */
     ModifyShipAttributesComponent*  m_MSAC;             /* we own this */
 
-    ShipItemRef GetShipRef()                                { return m_Ship; }
+    ShipItemRef GetShipRef()                            { return m_Ship; }
 
 protected:
     InventoryItemRef                m_Item;
-    ShipItemRef                         m_Ship;
+    ShipItemRef                     m_Ship;
 
     ModuleStates                    m_ModuleState;
     ChargeStates                    m_ChargeState;
@@ -142,8 +143,8 @@ protected:
      * not used in ActiveModule or PassiveModule.
      * put here to access using GenericModule.
      */
-    virtual void _UpdateModifiers(InventoryItemRef item)        { /* Do nothing here */ }
-    virtual void _RemoveModifier(InventoryItemRef item)         { /* Do nothing here */ }
+    virtual void _UpdateModifiers(InventoryItemRef item){ /* Do nothing here */ }
+    virtual void _RemoveModifier(InventoryItemRef item) { /* Do nothing here */ }
 
     /* stacking penality system   -allan
      * each module will have a map of the attribs it affects and it's effectiveness on that attrib

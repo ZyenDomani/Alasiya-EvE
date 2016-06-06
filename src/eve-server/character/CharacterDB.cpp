@@ -1524,7 +1524,7 @@ void CharacterDB::SaveKillOrLoss(CharKillData &data) {
         "%u,%u,%u,%u,"
         "%u,%u,%u,%u,"
         "%u,%u,%f,%u,"
-        "%s,%" PRIu64 ",%u,)",
+        "'%s',%" PRIu64 ",%u)",
         data.killID, data.solarSystemID, data.victimCharacterID, data.victimCorporationID,
         data.victimAllianceID, data.victimFactionID, data.victimShipTypeID, data.victimDamageTaken,
         data.finalCharacterID, data.finalCorporationID, data.finalAllianceID, data.finalFactionID,

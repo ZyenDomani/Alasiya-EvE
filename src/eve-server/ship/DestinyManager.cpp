@@ -46,7 +46,6 @@ using namespace Destiny;
 
 DestinyManager::DestinyManager(SystemEntity *self)
 : mySE(self),
-m_position( NULL_ORIGIN ),    // right in the middle of the star
 m_maxSpeed(1.0f),
 m_shipMaxAccelTime(0.0f),
 State(DSTBALL_STOP),
@@ -94,6 +93,8 @@ m_warpState(nullptr)
     m_targetPoint = GPoint( NULL_ORIGIN );
     m_shipHeading = GVector( NULL_ORIGIN );
     m_targetHeading = GVector( NULL_ORIGIN );
+
+    m_position = mySE->GetPosition();
 }
 
 DestinyManager::~DestinyManager() {
@@ -490,7 +491,7 @@ void DestinyManager::_Bump(SystemEntity* who)
      *   bump drones??  prolly not, for simplicity
      */
     std::string msg1 = "You have bumped ";
-    msg1 += who->GetName();
+    msg1 += who->GetPilot()->GetName();
     mySE->GetPilot()->SendNotifyMsg(msg1.c_str());
     // this test isnt needed right now, as it's ONLY checking against players and will always return true.
     //  will keep it in here for later expansion.
@@ -1187,15 +1188,6 @@ void DestinyManager::_WarpUpdate(double currentShipSpeed) {
                     mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
             sBubbleMgr.Add(mySE, true);
             SetPosition(m_position, true);
-            /*
-            DoDestiny_SetBallVelocity bv;
-                bv.entityID = mySE->GetID();
-                bv.x = m_velocity.x;
-                bv.y = m_velocity.y;
-                bv.z = m_velocity.z;
-            PyTuple *up = bv.Encode();
-            SendSingleDestinyUpdate(&up);
-            */
             SetBubble(true);
         }
     }
@@ -1393,12 +1385,14 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
         throw PyException(MakeUserError("WarpScrambled"));
     }
 
+    m_stopDistance = distance;
     GVector warp_distance(m_position, where);
     m_targetDistance = warp_distance.length();
 
-    if (mySE->IsNPCSE()) {
-        GotoPoint(where);
+    m_targetEntity.first = 0;
+    m_targetEntity.second = nullptr;
 
+    if (mySE->IsNPCSE()) {
         State = DSTBALL_WARP;
 
         // send client updates
@@ -1419,6 +1413,8 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
             sfx.active = true;
         updates.push_back(sfx.Encode());
         SendDestinyUpdate(updates);
+        _log(DESTINY__WARP_TRACE, "DestinyManager::WarpTo() NPC  m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.4f",
+             m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
         return;
     }
     /*supercap warp modifiers
@@ -1481,10 +1477,6 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
         m_capNeeded = capNeeded;
     }
 
-    m_targetEntity.first = 0;
-    m_targetEntity.second = nullptr;
-    m_stopDistance = distance;
-
     /*  TODO PUT CHECK HERE FOR WARP BUBBLES
      *     and other things that affect warp-in point.....when we get to there.
      * AttrWarpBubbleImmune = 1538,
@@ -1492,9 +1484,6 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
      *   NOTE:  warp bubble in path (or within 100km of m_targetPoint) will change m_targetDistance and m_targetPoint
      * not sure how to check for bubble yet...maybe keep them in vector based on system.
      */
-
-    // start moving ship for alignment.
-    GotoPoint(where);
 
     State = DSTBALL_WARP;
 
@@ -1642,8 +1631,8 @@ PyResult DestinyManager::AttemptDockOperation() {
 void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
     m_position = pt;
 
-    //Relocate() needed to set InventoryItemRef.m_position correctly. (for all position references)
-    mySE->GetSelf()->Relocate(pt);
+    // sets InventoryItemRef.m_position correctly. (for all position references)
+    mySE->SetPosition(m_position);
 
     if (mySE->IsPOSSE()) {         //according to packet sniffs, this is only used for 'Structure' items
         DoDestiny_SetBallPosition du;
@@ -1698,7 +1687,7 @@ void DestinyManager::SetShipVariables(InventoryItemRef ship)
     m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
 
     //  check for (and set) warp strength modifiers
-    m_warpStrength = 1;
+    m_warpStrength = (int8)ship->GetAttribute(AttrWarpScrambleStatus).get_int();    // >0 == cannot warp
 }
 
 //  called from Client::BoardShip(), Undock(), NPC::NPC(), Concord::Concord()
@@ -1712,8 +1701,14 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
     SetShipVariables(ship);
 
     double warpCapNeed = ship->GetDefaultAttribute(AttrWarpCapacitorNeed).get_float();
+    if (!warpCapNeed)
+        warpCapNeed = ship->GetAttribute(AttrWarpCapacitorNeed).get_float();
     double adjInertiaModifier = ship->GetDefaultAttribute(AttrAgility).get_float();
+    if (!adjInertiaModifier)
+        adjInertiaModifier = ship->GetAttribute(AttrAgility).get_float();
     float adjShipMaxVelocity = ship->GetDefaultAttribute(AttrMaxVelocity).get_float();
+    if (!adjShipMaxVelocity)
+        adjShipMaxVelocity = ship->GetAttribute(AttrMaxVelocity).get_float();
     float warpSpeedMultiplier = 1.0f;
     float shipBaseWarpSpeed = 3.0f;
 
@@ -1735,8 +1730,12 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
         }
         adjInertiaModifier *= pChar->GetAgilitySkills(ship->HasAttribute(AttrIsCapitalSize));
         adjShipMaxVelocity *= (1 + (0.05 * ( pChar->GetSkillLevel(skillNavigation, true))));
-        shipBaseWarpSpeed = ship->GetAttribute(AttrBaseWarpSpeed).get_float();
-        warpSpeedMultiplier = ship->GetAttribute(AttrWarpSpeedMultiplier).get_float();
+        shipBaseWarpSpeed = ship->GetDefaultAttribute(AttrBaseWarpSpeed).get_float();
+        if (!shipBaseWarpSpeed)
+            shipBaseWarpSpeed = ship->GetAttribute(AttrBaseWarpSpeed).get_float();
+        warpSpeedMultiplier = ship->GetDefaultAttribute(AttrWarpSpeedMultiplier).get_float();
+        if (!warpSpeedMultiplier)
+            warpSpeedMultiplier = ship->GetAttribute(AttrWarpSpeedMultiplier).get_float();
         warpCapNeed *=  (1 - (0.1 * ( pChar->GetSkillLevel(skillWarpDriveOperation, true))));
         /** @todo check for implants  AttrWarpCapacitorNeedBonus(319) */
     } else {

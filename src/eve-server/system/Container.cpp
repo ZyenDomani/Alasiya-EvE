@@ -44,6 +44,7 @@ CargoContainer::CargoContainer(
     const ItemData &_data)
 : InventoryItem(_factory, _containerID, _containerType, _data)
 {
+    m_isAnchored = false;
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created CargoContainer object for item %s (%u).", itemName().c_str(), itemID());
 }
@@ -172,10 +173,13 @@ void CargoContainer::RemoveItem(InventoryItemRef item)
     client->GetChar()->secStatusChange( loss );
     */
     m_inventory->RemoveItem( item );
-    if ((typeID() == EVEDB::invTypes::typeCargoContainer) && (IsEmpty())) {
-        sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", itemID() );
-        Delete();
-    }
+    if (m_isAnchored)
+        return;
+    if (typeID() == EVEDB::invTypes::typeCargoContainer)
+        if (m_inventory->IsEmpty()) {
+            sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", itemID() );
+            Delete();
+        }
 }
 
 void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
@@ -196,7 +200,6 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemM
     m_destiny = new DestinyManager(this);
 
     _containerRef = self;
-    m_isAnchored = false;
     if (!IsStation(m_self->locationID()))
         m_deleteTimer.Start();
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity(), false);
@@ -219,7 +222,7 @@ void ContainerSE::Process() {
 void ContainerSE::AnchorContainer()
 {
     m_deleteTimer.Disable();
-    m_isAnchored = true;
+    _containerRef->SetAnchor(true);
 }
 
 void ContainerSE::EncodeDestiny( Buffer& into )

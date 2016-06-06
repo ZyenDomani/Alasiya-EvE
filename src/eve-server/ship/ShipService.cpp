@@ -606,9 +606,10 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", cargoContainerRef->typeID()));
 
             // Move item from cargo bay to space:
-            cargoContainerRef->Relocate(location);
             cargoContainerRef->Move(pClient->GetLocationID(), flagAutoFit, true);
             ContainerSE* containerObj = new ContainerSE(cargoContainerRef, *m_manager, pSysMgr);
+            containerObj->SetPosition(location);
+            cargoContainerRef->SaveItem();
             pSysMgr->AddEntity(containerObj);
 
             // Send notification SFX effects.jettison for the jettisoned Container object:
@@ -626,9 +627,10 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
                 throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", structureRef->typeID()));
 
             // Move item from cargo bay to space:
-            structureRef->Relocate(location);
             structureRef->Move(pClient->GetLocationID(), flagAutoFit, true);
             StructureSE* structureEnt = new StructureSE(structureRef, *m_manager, pSysMgr);
+            structureEnt->SetPosition(location);
+            structureRef->SaveItem();
             pSysMgr->AddEntity(structureEnt);
 
             // Send notification SFX effects.jettison for the jettisoned Structure object:
@@ -643,11 +645,12 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
                 throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cargoItemRef->typeID()));
 
             // Move item from cargo bay to space:
-            cargoItemRef->Relocate(location);
             cargoItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
             //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
             // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
             DeployableSE* deployableObj = new DeployableSE(cargoItemRef, *m_manager, pSysMgr);
+            deployableObj->SetPosition(location);
+            cargoItemRef->SaveItem();
             pSysMgr->AddEntity(deployableObj);
 
             // Send notification SFX effects.jettison for the jettisoned Deployable object:
@@ -813,13 +816,13 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", cargoContainerItem->typeID()));
 
             // Move item from cargo bay to space:
-            location.MakeRandomPointOnSphere(500.0);
-            cargoContainerItem->Relocate(location);
             cargoContainerItem->Move(pClient->GetLocationID(), flagAutoFit, true);
-
             // and add to the system manager
             //ContainerEntity* containerObj = new ContainerEntity(cargoContainerItem, pSysMgr, *m_manager, location);
             pSysEntity = pSysMgr->get(cargoContainerItem->itemID());
+            location.MakeRandomPointOnSphere(500.0);
+            pSysEntity->SetPosition(location);
+            cargoContainerItem->SaveItem();
             pSysMgr->AddEntity(pSysEntity);
             pSysEntity = nullptr;
 
@@ -850,10 +853,11 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             if (!structureItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", structureItemRef->typeID()));
 
-            location.MakeRandomPointOnSphere(1500.0 + structureItemRef->type().radius());
-            structureItemRef->Relocate(location);
             structureItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
             pSysEntity = pSysMgr->get(structureItemRef->itemID());
+            location.MakeRandomPointOnSphere(1500.0 + structureItemRef->type().radius());
+            pSysEntity->SetPosition(location);
+            structureItemRef->SaveItem();
             pSysMgr->AddEntity(pSysEntity);
             pSysEntity = nullptr;
             pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(structureItemRef);
@@ -865,12 +869,13 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             if (!cargoItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cargoItemRef->typeID()));
 
-            location.MakeRandomPointOnSphere(1500.0 + cargoItemRef->type().radius());
-            cargoItemRef->Relocate(location);
             cargoItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
             //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
             // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
             pSysEntity = pSysMgr->get(cargoItemRef->itemID());
+            location.MakeRandomPointOnSphere(1500.0 + cargoItemRef->type().radius());
+            pSysEntity->SetPosition(location);
+            cargoItemRef->SaveItem();
             pSysMgr->AddEntity(pSysEntity);
             pSysEntity = nullptr;
             pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(cargoItemRef);

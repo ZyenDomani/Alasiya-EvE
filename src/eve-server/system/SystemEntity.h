@@ -162,7 +162,7 @@ public:
     virtual uint32              GetLocationID()         { return m_self->locationID(); }
     virtual const char*         GetName() const         { return m_self->itemName().c_str(); }
     virtual const GPoint&       GetPosition() const     { return m_self->position(); }
-    virtual void                SetPosition(GPoint &pos){ m_self->Relocate(pos); }
+    virtual void          SetPosition(const GPoint &pos){ m_self->Relocate(pos); }
     inline virtual double       x()                     { return m_self->position().x; }
     inline virtual double       y()                     { return m_self->position().y; }
     inline virtual double       z()                     { return m_self->position().z; }

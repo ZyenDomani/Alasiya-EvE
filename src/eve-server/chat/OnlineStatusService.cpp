@@ -54,6 +54,38 @@ PyResult OnlineStatusService::Handle_GetInitialState(PyCallArgs &call) {
 21:35:16 [SvcCall]         Integer field: 1
   sLog.Log( "OnlineStatusService::Handle_GetInitialState()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
+
+
+      [PySubStream 1861 bytes]
+        [PyObjectEx Type2]
+          [PyTuple 2 items]
+            [PyTuple 1 items]
+              [PyToken dbutil.CRowset]
+            [PyDict 1 kvp]
+              [PyString "header"]
+              [PyObjectEx Normal]
+                [PyTuple 2 items]
+                  [PyToken blue.DBRowDescriptor]
+                  [PyTuple 1 items]
+                    [PyTuple 2 items]
+                      [PyTuple 2 items]
+                        [PyString "contactID"]
+                        [PyInt 3]
+                      [PyTuple 2 items]
+                        [PyString "online"]
+                        [PyInt 3]
+          [PyPackedRow 9 bytes]
+            ["contactID" => <108985089> [I4]]
+            ["online" => <0> [I4]]
+          [PyPackedRow 9 bytes]
+            ["contactID" => <116081192> [I4]]
+            ["online" => <0> [I4]]
+          [PyPackedRow 9 bytes]
+            ["contactID" => <116844755> [I4]]
+            ["online" => <0> [I4]]
+          [PyPackedRow 9 bytes]
+            ["contactID" => <118879785> [I4]]
+            ["online" => <1> [I4]]
   */
     // this is used to query the initial online state of all contacts.
 
@@ -77,3 +109,35 @@ PyResult OnlineStatusService::Handle_GetOnlineStatus(PyCallArgs &call) {
     return rowset;
 }
 
+/*
+==================== Sent from Server 81 bytes
+
+[PyObjectData Name: macho.Notification]
+  [PyTuple 7 items]
+    [PyInt 12]
+    [PyObjectData Name: macho.MachoAddress]
+      [PyTuple 4 items]
+        [PyInt 1]
+        [PyInt 806438]
+        [PyNone]
+        [PyNone]
+    [PyObjectData Name: macho.MachoAddress]
+      [PyTuple 4 items]
+        [PyInt 4]
+        [PyString "OnContactLoggedOn"]
+        [PyList 0 items]
+        [PyString "clientID"]
+    [PyInt 5654387]
+    [PyTuple 1 items]
+      [PyTuple 2 items]
+        [PyInt 0]
+        [PySubStream 15 bytes]
+          [PyTuple 2 items]
+            [PyInt 0]
+            [PyTuple 2 items]
+              [PyInt 1]
+              [PyTuple 1 items]
+                [PyInt 649670823]
+    [PyNone]
+    [PyNone]
+*/

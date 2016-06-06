@@ -105,6 +105,12 @@ void ActiveModule::Deactivate()
     //DoEffect();
 }
 
+void ActiveModule::AbortCycle()
+{
+    m_AMPC->AbortCycle();
+    GenericModule::AbortCycle();     // nothing here yet....maybe later.
+}
+
     /** @todo  Overload and DeOverload will need to check for running module,
      * and if so, cancel that run, then restart with overloaded settings.
      * if not running, start with overloaded settings.

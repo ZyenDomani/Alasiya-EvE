@@ -160,6 +160,7 @@ public:
 	uint32 GetAvailableSlotInBank(EveEffectEnum slotBank);
 
     //batch processes handlers
+    void AbortCycle();
     void Process();
     void OfflineAll();
     void OnlineAll();
@@ -191,7 +192,8 @@ private:
         typeOfflineAll,
         typeDeactivateAll,
         typeUnloadAll,
-        typeProcessAll
+        typeProcessAll,
+        typeAbort
     };
 
     enum slotType
@@ -366,6 +368,7 @@ public:
     void ShipJumping();
     void Process();
     void ProcessExternalEffect(Effect* e);
+    void AbortCycle();
 
 
     GenericModule* GetModule(EVEItemFlags flag)         { return m_Modules->GetModule(flag); }

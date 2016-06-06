@@ -63,7 +63,8 @@ void ModifyShipAttributesComponent::_modifyShipAttributes(ShipItemRef shipRef, u
 
 EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, GenericModule* mod)
 {
-    uint8 stackSize = 1;
+    uint8 stackSize = 1;   // default.  changed later if necessary 
+    double effectiveness = 1;   // default.  changed later if necessary
     EvilNumber modVal = mod->GetAttribute(sourceAttrID), startVal = shipRef->GetAttribute(targetAttrID);
     /* check for attribs that are NOT penalized here, and bypass stacking method. */
     /* note:  DCU, rigs and subsystems do not use this method */
@@ -77,32 +78,34 @@ EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef
     ) {
         std::map<uint16, uint8>::iterator itr = m_attribMap.find(targetAttrID);
         if (itr != m_attribMap.end()) {
-            /** @todo   verify these module states  */
-            if (mod->GetModuleState() == MOD_ONLINE)
+            /** @todo   verify these module states  -enable/code passive, gang, fleet and deactivating states*/
+            if (mod->GetModuleState() == MOD_ONLINE) {
                 stackSize = ++itr->second;
-            else if ((mod->GetModuleState() == MOD_OFFLINE)
-                or (mod->GetModuleState() == MOD_DEACTIVATING))
-                /** @todo  implement the difference between MOD_OFFLINE and MOD_DEACTIVATING */
+            } else if ((mod->GetModuleState() == MOD_OFFLINE)
+                        or (mod->GetModuleState() == MOD_DEACTIVATING))
+                /** @todo  implement the difference between MOD_OFFLINE (not enabled) and MOD_DEACTIVATING (was online/active, told to shutdown) */
             {
+                effectiveness = itr->second;
                 if (itr->second == 1)
                     m_attribMap.erase(itr);
                 else
                     stackSize = --itr->second;
+            } else {
+                ; // make error here for invalid module state?
             }
         } else
             m_attribMap.emplace(targetAttrID, 1);
     }
 
-    double effectiveness = 1;
-    if (mod->GetModuleState() == MOD_ONLINE) {
+    if (mod->GetModuleState() == MOD_ONLINE) { // set stacking penality here for reference when going offline (in above check).
         effectiveness = exp(-pow(((stackSize - 1)/2.67),2));  //stacking calculation fixed  -allan  20Dec15
         mod->SetEffectiveness(targetAttrID, effectiveness);
-    } else if ((mod->GetModuleState() == MOD_OFFLINE) or (mod->GetModuleState() == MOD_DEACTIVATING)) {
-        effectiveness = mod->GetEffectiveness(targetAttrID);
+    } else if (mod->GetModuleState() == MOD_OFFLINE) {
+        ; // not sure what to do here yet...maybe nothing, as above 'find' should get stacking penality saved when module went online
     }
     if (effectiveness <= 0) {   /* this should never happen */
         codelog(SHIP__MODULE_ERROR, "MSAC::_calculateNewValue() -  effectiveness <= 0");
-        mod->GetShipRef()->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 25610");
+        //mod->GetShipRef()->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 25610");
     }
     modVal *= effectiveness;
     EvilNumber newVal = CalculateNewAttributeValue(startVal, modVal, type);

@@ -240,7 +240,6 @@ void SystemBubble::Add(SystemEntity* pEntity) {
             AddBallExclusive(pEntity);
     }
 
-    _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Entity %s(%u) is dynamic.", pEntity->GetName(), pEntity->GetID() );
     // all non-global entities (players, npcs, roids, containers, etc) are put into bubble's dynamicEntity map
     m_dynamicEntities.push_back(pEntity);
 }
@@ -550,8 +549,6 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
 	//encode destiny binary
 	about_who->EncodeDestiny( *destinyBuffer );
         addballs.state = new PyBuffer( &destinyBuffer );
-	SafeDelete( destinyBuffer );
-
 	//encode damage state
         addballs.damageDict[ about_who->GetID() ] = about_who->MakeDamageState();
 	//encode SlimItem
