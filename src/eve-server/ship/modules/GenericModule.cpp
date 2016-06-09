@@ -61,12 +61,13 @@ GenericModule::~GenericModule()
  */
 void GenericModule::Online()
 {
+    /*  these arent right....fix later
     if (m_ModuleState == MOD_UNFITTED)
         return;  // make error here for online called for unfitted module?  isnt this error printed elsewhere?
 
     if (m_ModuleState != MOD_OFFLINE)
         return;     // already online
-
+    */
     if (IsRigModule() or isRig())   // IsRigModule returns false in base class, isRig uses attribs
         m_Item->PutOnline(true);
     else

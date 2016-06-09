@@ -1504,6 +1504,9 @@ PyResult Command_list(Client* who, CommandDB* db, PyServiceMgr* services, const 
      * wip.   -allan 25Apr15
      */
 
+    if (!who->IsInSpace())
+        return nullptr;
+
     if (!who->GetShipSE()->SysBubble())
         if (who->IsInSpace())
             who->EnterSystem(who->GetSystemID());
@@ -1526,11 +1529,31 @@ PyResult Command_list(Client* who, CommandDB* db, PyServiceMgr* services, const 
     str << "Players: %u<br>"; //23
     str << "<br>"; //5
 
-    for (auto cur : into)
-        str << cur->GetID() << ", " << cur->GetName() << "<br>"; // 13 + 27 for name (40)
+    for (auto cur : into) {
+        std::string modeStr = "Rigid";
+        if (cur->IsDynamicEntity()) {
+            switch (cur->DestinyMgr()->GetState()) {
+                case 0: modeStr = "Goto"; break;
+                case 1: modeStr = "Follow"; break;
+                case 2: modeStr = "Stop"; break;
+                case 3: modeStr = "Warp"; break;
+                case 4: modeStr = "Orbit"; break;
+                case 5: modeStr = "Missile"; break;
+                case 6: modeStr = "Mushroom"; break;
+                case 7: modeStr = "Boid"; break;
+                case 8: modeStr = "Troll"; break;
+                case 9: modeStr = "Miniball"; break;
+                case 10: modeStr = "Field"; break;
+                case 11: modeStr = "Rigid"; break;
+                case 12: modeStr = "Formation"; break;
+            }
+        }
+        str << cur->GetID() << ": " << modeStr.c_str() << " (csf: " << cur->DestinyMgr()->GetSpeedFraction() << ") speed: ";
+        str << cur->DestinyMgr()->GetSpeed() << " [" << cur->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
+    }
 
-        int count = into.size();
-    int size = count * 40;
+    int count = into.size();
+    int size = count * 80;
     size += 90;
     char reply[size];
     snprintf(reply, size, str.str().c_str(), bubble, dynamics, npcs, players);

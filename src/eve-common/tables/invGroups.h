@@ -678,6 +678,7 @@ namespace EVEDB {
             JumpFreighter = 902,
             Rig_Mining = 904,
             Covert_Cynosural_Field_Generator = 905,
+            Warp_Disrupt_Field_Script = 908,
             Effect_Beacon = 920,
             Capture_Point = 922,
             Mission_Faction_Battleship = 924,

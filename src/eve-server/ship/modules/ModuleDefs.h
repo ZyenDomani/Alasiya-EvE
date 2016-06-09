@@ -216,14 +216,14 @@ enum EVECalculationType
 
     CALC_REVERSE_PERCENTAGE     = 40,
 
-    // for shields
+    // for resists
     CALC_ADD_PERCENT            = 50,
     CALC_REV_ADD_PERCENT        = 51,
 
     CALC_ADD_AS_PERCENT         = 54,
     CALC_SUBTRACT_AS_PERCENT    = 55,
 
-    //  added these but not sure if we'll use them.
+    //  added these but not sure if we'll use them....yes, in incursion effect beacons (ie 3069)
     CALC_SUBTRACT_PERCENT       = 52,
     CALC_REV_SUBTRACT_PERCENT   = 53,
     CALC_MODIFY_PERCENT_W_PERCENT       = 56,
@@ -246,12 +246,12 @@ static EvilNumber ReversePercentage(EvilNumber &attrVal, EvilNumber &modVal)
 }
 
 static EvilNumber Addition(EvilNumber &attrVal, EvilNumber &modVal)
-{
+{// 1
     return (attrVal + modVal);
 }
 
 static EvilNumber Subtraction(EvilNumber &attrVal, EvilNumber &modVal)
-{
+{// 8
     return (attrVal - modVal);
 }
 
@@ -270,13 +270,13 @@ static EvilNumber Velocity(EvilNumber &attrVal, EvilNumber &modVal)
 }
 
 static EvilNumber Multiplier(EvilNumber &attrVal, EvilNumber &modVal)
-{
+{// 5
     return (attrVal * modVal);
 }
 
 static EvilNumber Divider(EvilNumber &val1, EvilNumber &val2)
-{
-    if (val2 > 0)
+{// 25
+    if (val2 != 0)
         return ( val1 / val2 );
     return val1;
 }
@@ -380,13 +380,13 @@ static EvilNumber ReverseSubtractPercent(EvilNumber &val1, EvilNumber &val2)
 }
 
 static EvilNumber AddAsPercent(EvilNumber &val1, EvilNumber &val2)
-{
+{// 54
     EvilNumber val3 = 100;
     return val1 + ( val1 * (val2 / val3) );
 }
 
 static EvilNumber SubtractAsPercent(EvilNumber &val1, EvilNumber &val2)
-{
+{//55
     EvilNumber val3 = 1;
     EvilNumber val4 = 100;
 
@@ -394,7 +394,7 @@ static EvilNumber SubtractAsPercent(EvilNumber &val1, EvilNumber &val2)
 }
 
 static EvilNumber ModifyPercentWithPercent(EvilNumber &val1, EvilNumber &val2)
-{
+{//56
     EvilNumber val3 = 1;
     EvilNumber val4 = 100;
 
@@ -402,7 +402,7 @@ static EvilNumber ModifyPercentWithPercent(EvilNumber &val1, EvilNumber &val2)
 }
 
 static EvilNumber ReverseModifyPercentWithPercent(EvilNumber &val1, EvilNumber &val2)
-{
+{//57
     EvilNumber val3 = 1;
     EvilNumber val4 = 100;
 

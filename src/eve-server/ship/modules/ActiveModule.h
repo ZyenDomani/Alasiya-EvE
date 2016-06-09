@@ -72,6 +72,7 @@ public:
 protected:
     uint32 m_targetID;                                      //passed to us by activate
     uint16 m_reloadTime;
+    Timer m_reloadTimer;
     SystemBubble* m_bubble;                                 // we do not own this
 	SystemEntity* m_targetEntity;                           // we do not own this
 	DestinyManager* m_destiny;                              // we do not own this

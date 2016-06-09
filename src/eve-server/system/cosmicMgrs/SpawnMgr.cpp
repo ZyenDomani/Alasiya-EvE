@@ -560,8 +560,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
      * however, warping in dont seem to be working.  will look into later.
      */
     GPoint startPos(pSysBubble->GetCenter());
-    startPos.MakeRandomPointOnSphere(220000); //200km from bubble center...in current bubble
-    const GPoint warpToPoint = (pSysBubble->GetCenter() - (MakeRandomInt(-5, 10) *1000));
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(-5, 10) *1000); //200km from bubble center...in current bubble
+    //const GPoint warpToPoint(pSysBubble->GetCenter());
 
     uint32 corpID = GetCorpID(factionID);
 
@@ -597,7 +597,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
             }
             //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
             npc->DestinyMgr()->SetPosition(startPos);
-            npc->DestinyMgr()->WarpTo(warpToPoint);
+            //npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
             m_system->AddNPC(npc);
 
             se.enabled = false;

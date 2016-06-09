@@ -29,9 +29,13 @@
 Afterburner::Afterburner( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
-
 }
 
+/* speed modifier ....
+ * base speed * (1 + ( base boost of AB/MWD * ( thrust / (ship mass + module mass))))
+ * thrust is defined in module attrib 567 and listed in effectID 710
+ * module mass is the mass of any plate and/or ab/mwd modules fitted to ship
+ */
 void Afterburner::Activate(SystemEntity * targetEntity)
 {
     m_AMPC->ActivateCycle();

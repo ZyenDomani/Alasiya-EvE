@@ -464,8 +464,6 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
 
         if (old_flag >= flagRigSlot0 && old_flag <= flagRigSlot7) {
             //  cant remove rigs like this.  send error.
-            c->SendNotifyMsg("You cannot remove ship upgrades manually.");
-            /** @todo (allan)  not all macho.ErrorResponse packet keys are complete.  this is one. */
             throw PyException( MakeUserError("CannotRemoveUpgradeManually"));
             return nullptr;
         }

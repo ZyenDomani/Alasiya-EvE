@@ -30,7 +30,8 @@
 #include "ship/modules/ActiveModule.h"
 
 ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
-: GenericModule(item, ship)
+: GenericModule(item, ship),
+    m_reloadTimer(10000)
 {
     m_AMPC = new ActiveModuleProcessingComponent(item, this, ship);
     /** @todo  bubble isnt ready yet.  will have to update everytime we change bubble */
@@ -75,6 +76,7 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
         else
             m_reloadTime = 10000;
     }
+    m_reloadTimer.Disable();
     _log(SHIP__MODULE_TRACE, "Set reload time for %s(%u) to %ums", m_Item->itemName().c_str(), m_Item->itemID(), m_reloadTime);
 }
 
@@ -86,6 +88,14 @@ ActiveModule::~ActiveModule()
 void ActiveModule::Process()
 {
     m_AMPC->Process();
+
+    if (m_reloadTimer.Enabled()) {
+        if (m_reloadTimer.Check(false)){
+            m_reloadTimer.Disable();
+            // charge loading complete
+            m_ChargeState = MOD_LOADED;
+        }
+    }
 }
 
 void ActiveModule::Activate(SystemEntity* targetEntity)
@@ -93,6 +103,7 @@ void ActiveModule::Activate(SystemEntity* targetEntity)
     m_targetEntity = targetEntity;
     m_AMPC->ActivateCycle();
 
+    //DoEffect(true);
 }
 
 void ActiveModule::Deactivate()
@@ -102,7 +113,7 @@ void ActiveModule::Deactivate()
     m_ModuleState = MOD_DEACTIVATING;
     m_AMPC->StopCycle();
 
-    //DoEffect();
+    //DoEffect(false);
 }
 
 void ActiveModule::AbortCycle()
@@ -124,14 +135,14 @@ void ActiveModule::Overload()
 void ActiveModule::DeOverload()
 {
     GenericModule::DeOverload();
-    m_ModuleState = MOD_ACTIVATED;
+    m_ModuleState = MOD_ONLINE;
 }
 
 void ActiveModule::Load(InventoryItemRef charge)
 {
 	m_chargeRef = charge;
     m_chargeLoaded = true;
-    m_ChargeState = MOD_LOADED;
+    m_ChargeState = MOD_RELOADING;
     PyTuple* module = new PyTuple(1);
         module->SetItem(0, new PyInt(m_Item->itemID()));
     PyTuple* tmp = new PyTuple(3);
@@ -139,6 +150,7 @@ void ActiveModule::Load(InventoryItemRef charge)
         tmp->SetItem(1, new PyInt(charge->typeID()));
         tmp->SetItem(2, new PyInt(m_reloadTime));
     m_Ship->GetPilot()->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
+    m_reloadTimer.Start(m_reloadTime);
 }
 
 void ActiveModule::Unload()
@@ -215,7 +227,7 @@ void ActiveModule::DoEffect(bool active /*false*/)
         shipEff.startTime = (active ? shipEff.timeNow : (shipEff.timeNow - (timeLeft * Win32Time_Second)));
         shipEff.duration = (active ? _GetDuration() : timeLeft);
         shipEff.repeat = 1000;
-        shipEff.error = new PyNone; /* look into setting this */
+        shipEff.error = new PyNone; /* look into setting this ... only used for salvaging? */
     std::vector<PyTuple*> events;
     events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;

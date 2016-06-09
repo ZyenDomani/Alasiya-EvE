@@ -191,8 +191,11 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     }
 
     sLog.Warning( "BeyonceBound", "Handle_CmdFollowBall - entity:%s(%u), distance:%f", pEntity->GetName(), pEntity->GetID(), distance);
-    if (call.client->IsUndock()) call.client->SetUndock(false);
-    //if (call.client->IsInvul()) call.client->SetInvul(false);
+    if (call.client->IsUndock()) {
+        call.client->SetUndock(false);
+        if (call.client->IsInvul())
+            call.client->SetInvul(false);
+    }
     pDestiny->Follow(pEntity, distance);
 
     return nullptr;
@@ -255,7 +258,11 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
     }
 
     sLog.Warning( "BeyonceBound", "Handle_CmdAlignTo - entity:%s(%u)", pEntity->GetName(), pEntity->GetID() );
-    if (call.client->IsUndock()) call.client->SetUndock(false);
+    if (call.client->IsUndock()) {
+        call.client->SetUndock(false);
+        if (call.client->IsInvul())
+            call.client->SetInvul(false);
+    }
     pDestiny->AlignTo( pEntity );
 
     return nullptr;
@@ -287,8 +294,11 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
         return nullptr;
     }
 
-    if (call.client->IsUndock()) call.client->SetUndock(false);
-    //if (call.client->IsInvul()) call.client->SetInvul(false);
+    if (call.client->IsUndock()) {
+        call.client->SetUndock(false);
+        if (call.client->IsInvul())
+            call.client->SetInvul(false);
+    }
     sLog.Log( "BeyonceBound", "Handle_CmdGotoDirection %.3f, %.3f, %.3f", arg.x, arg.y, arg.z);
     const GPoint dir = GPoint(arg.x, arg.y, arg.z);
     pDestiny->GotoDirection(dir);
@@ -356,8 +366,11 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
                 return nullptr;
             }
 
-            if (call.client->IsUndock()) call.client->SetUndock(false);
-            //if (call.client->IsInvul()) call.client->SetInvul(false);
+            if (call.client->IsUndock()) {
+                call.client->SetUndock(false);
+                if (call.client->IsInvul())
+                    call.client->SetInvul(false);
+            }
             pDestiny->GotoPoint( pSE->GetPosition() );
         }
     }
@@ -403,8 +416,11 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
     }
 
     sLog.Log( "BeyonceBound", "Handle_CmdOrbit - entity:%s(%u), range:%f", pEntity->GetName(), pEntity->GetID(), range);
-    if (call.client->IsUndock()) call.client->SetUndock(false);
-    //if (call.client->IsInvul()) call.client->SetInvul(false);
+    if (call.client->IsUndock()) {
+        call.client->SetUndock(false);
+        if (call.client->IsInvul())
+            call.client->SetInvul(false);
+    }
     pDestiny->Orbit(pEntity, range);
     return nullptr;
 }
@@ -542,8 +558,11 @@ bookmark, bmid
         GPoint stopPoint = vectorFromOrigin * -warpPointAdj;
         warpToPoint -= stopPoint;
 
-        if (call.client->IsUndock()) call.client->SetUndock(false);
-        if (call.client->IsInvul()) call.client->SetInvul(false);
+        if (call.client->IsUndock()) {
+            call.client->SetUndock(false);
+            if (call.client->IsInvul())
+                call.client->SetInvul(false);
+        }
         pDestiny->WarpTo(warpToPoint, distance);
     } else if ( args.type == "bookmark" ) {
         //  bookmark, bmid, minrange, fleet(bool)
@@ -632,8 +651,11 @@ bookmark, bmid
                  * call.client->FleetWarp( pSE->GetPosition(), distance );
 				 */
 
-                if (call.client->IsUndock()) call.client->SetUndock(false);
-                if (call.client->IsInvul()) call.client->SetInvul(false);
+                if (call.client->IsUndock()) {
+                    call.client->SetUndock(false);
+                    if (call.client->IsInvul())
+                        call.client->SetInvul(false);
+                }
                 pDestiny->WarpTo(bookmarkPosition, distance);
             }
 		}
@@ -734,8 +756,11 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     // autopilot check
     //call.client->SetAutoPilot(true);
 
-	if (call.client->IsUndock()) call.client->SetUndock(false);
-    //if (call.client->IsInvul()) call.client->SetInvul(false);
+    if (call.client->IsUndock()) {
+        call.client->SetUndock(false);
+        if (call.client->IsInvul())
+            call.client->SetInvul(false);
+    }
 	//Adding in ship and target object radius'
     distance += call.client->GetShipSE()->GetRadius() + pSE->GetRadius();
     pDestiny->WarpTo(pSE->GetPosition(), distance);
@@ -754,6 +779,9 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
         call.client->SendNotifyMsg( "You can't do this while warping");
         return nullptr;
     }
+
+    if (call.client->IsUndock())
+        call.client->SetUndock(false);
 
     sLog.Warning( "BeyonceBound", "Handle_CmdStop" );
     pDestiny->Stop();
@@ -816,7 +844,11 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
 
     /** @todo  check distance from ship to gate */
 
-    if (call.client->IsUndock()) call.client->SetUndock(false);
+    if (call.client->IsUndock()) {
+        call.client->SetUndock(false);
+        if (call.client->IsInvul())
+            call.client->SetInvul(false);
+    }
     call.client->StargateJump(args.fromStargateID, args.toStargateID);
     return new PyNone;
 }

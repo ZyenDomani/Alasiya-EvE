@@ -570,12 +570,10 @@ void Client::SetBallPark() {
     m_login = m_bubbleWait = false;
     if (!pShipSE->SysBubble())
         m_system->AddEntity(pShipSE);
+    if (m_undock)
+        pShipSE->DestinyMgr()->Undock(m_movePoint);
     if (!m_setStateSent)
         pShipSE->DestinyMgr()->SendSetState();
-    if (m_undock) {
-        pShipSE->DestinyMgr()->Undock(m_movePoint);
-        m_undock = false;
-    }
 }
 
 void Client::DockToStation() {
