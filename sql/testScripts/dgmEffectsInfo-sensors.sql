@@ -70,7 +70,4 @@ VALUES
 (3659, 309, 76, 0, 'Signal Amplifier - Max Targeting Range', 40, '6', 1, 14, 210, 2, 3),
 (3657, 566, 564, 0, 'Signal Amplifier - Scan Resolution', 0, '6', 1, 14, 210, 2, 3),
 
-(4877, 565, 564, 5, 'Scan Resolution Penalty', 25, '6', 0, 4, 515, 1, 3),
-(4893, 565, 564, 5, 'Scan Resolution Bonus', 25, '6', 0, 4, 515, 1, 3),
-
 (2492, 317, 6, 0, 'Signal Disruption Amplifier', 0, '201;80', 0, 15, 780, 2, 2);

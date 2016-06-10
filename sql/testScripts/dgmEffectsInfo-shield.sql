@@ -1,5 +1,5 @@
 
--- shield effects data
+-- shield effects data (incomplete)
 
 INSERT INTO `dgmEffectsInfo` (`effectID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `stackingPenaltyApplied`, `effectAppliedInState`, `affectingID`, `affectingType`, `affectedType`)
 VALUES
@@ -40,23 +40,16 @@ VALUES
 (3201, 1231, 68, 56, 'Booster - Amount', 57, '6', 0, 8, 40, 2, 6),
 
 -- rigs (and implants)
-(486, 338, 479, 56, 'Recharge Rate Bonus', 57, '6', 0, 3, 774, 2, 3),
-(2795, 984, 271, 50, 'Modify Shield Resonance - EM', 51, '6', 1, 3, 774, 2, 3),
-(2795, 985, 272, 50, 'Modify Shield Resonance - Exp', 51, '6', 1, 3, 774, 2, 3),
-(2795, 986, 273, 50, 'Modify Shield Resonance - Kin', 51, '6', 1, 3, 774, 2, 3),
-(2795, 987, 274, 50, 'Modify Shield Resonance - Therm', 51, '6', 1, 3, 774, 2, 3),
+(486, 338, 479, 56, 'Shield Rig - Shield Recharge Bonus', 57, '6', 0, 3, 774, 2, 3),
+(2795, 984, 271, 50, 'Shield Rig - EM Resist', 51, '6', 1, 3, 774, 2, 3),
+(2795, 985, 272, 50, 'Shield Rig - Exp Resist', 51, '6', 1, 3, 774, 2, 3),
+(2795, 986, 273, 50, 'Shield Rig - Kin Resist', 51, '6', 1, 3, 774, 2, 3),
+(2795, 987, 274, 50, 'Shield Rig - Therm Resist', 51, '6', 1, 3, 774, 2, 3),
 
-
--- unsorted (and untested and unchecked)
-(3002, 1206, 73, 0, 'Transporter Duration', 40, '0', 0, 8, 41, 2, 6),
-
--- affecting modules
+-- effects below affect other modules or objects and are NOT implemented yet...
 (1720, 548, 68, 0, 'Boost Bonus', 0, '40;1156', 1, 14, 338, 2, 2),
 (1720, 548, 68, 0, 'Boost Bonus', 0, '40', 1, 14, 767, 2, 2),
-(4877, 548, 68, 0, 'Boost Bonus', 0, '40', 1, 4, 515, 1, 2),
-(4893, 548, 68, 0, 'Boost Bonus', 0, '40', 1, 4, 515, 1, 2),
-(4877, 897, 73, 0, 'Booster Duration', 0, '40', 0, 4, 515, 1, 2),
-(4893, 897, 73, 0, 'Booster Duration', 0, '40', 0, 4, 515, 1, 2),
-(4893, 1189, 68, 0, 'Transporter Amount Bonus', 0, '41', 0, 4, 515, 1, 2),
-(4893, 1188, 73, 0, 'Transporter Duration Bonus', 0, '41', 0, 4, 515, 1, 2),
-(2832, 312, 73, 0, 'Booster Duration Bonus', 40, '40', 0, 15, 774, 2, 2);
+(2832, 312, 73, 0, 'Booster Duration Bonus', 40, '40', 0, 15, 774, 2, 2),
+
+-- unsorted (and untested and unchecked)
+(3002, 1206, 73, 0, 'Transporter Duration', 40, '0', 0, 8, 41, 2, 6);

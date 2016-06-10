@@ -1,5 +1,5 @@
 
--- armor effects data
+-- armor effects data (incomplete)
 
 INSERT INTO `dgmEffectsInfo` (`effectID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `stackingPenaltyApplied`, `effectAppliedInState`, `affectingID`, `affectingType`, `affectedType`)
 VALUES
@@ -40,22 +40,16 @@ VALUES
 (4039, 1208, 109, 56, 'Hardener - Kin', 57, '0', 0, 8, 328, 2, 6),
 (4039, 1208, 110, 56, 'Hardener - Therm', 57, '0', 0, 8, 328, 2, 6),
 
-
 -- rigs (and implants)
-(2792, 984, 267, 50, 'Modify Resonance - EM', 51, '6', 1, 15, 773, 2, 3),
-(2792, 985, 268, 50, 'Modify Resonance - Exp', 51, '6', 1, 15, 773, 2, 3),
-(2792, 986, 269, 50, 'Modify Resonance - Kin', 51, '6', 1, 15, 773, 2, 3),
-(2792, 987, 270, 50, 'Modify Resonance - Therm', 51, '6', 1, 15, 773, 2, 3),
+(271, 335, 265, 0, 'Armor Rig - Hp Bonus', 40, '6', 0, 3, 773, 2, 3),
+(2792, 984, 267, 50, 'Armor Rig - EM Resist', 51, '6', 1, 15, 773, 2, 3),
+(2792, 985, 268, 50, 'Armor Rig - Exp Resist', 51, '6', 1, 15, 773, 2, 3),
+(2792, 986, 269, 50, 'Armor Rig - Kin Resist', 51, '6', 1, 15, 773, 2, 3),
+(2792, 987, 270, 50, 'Armor Rig - Therm Resist', 51, '6', 1, 15, 773, 2, 3),
 
 -- unsorted (and untested and unchecked)
 (3002, 1206, 73, 56, 'Overload Rep Duration Bonus', 57, '0', 0, 8, 325, 2, 6),
 (3200, 84, 84, 5, 'Rep Amount', 25, '6', 0, 10, 62, 2, 6),
 (3200, 1230, 84, 56, 'Rep Overload Amount', 57, '0', 0, 8, 62, 2, 6),
-(3200, 1206, 73, 56, 'Overload Rep Duration', 57, '0', 0, 8, 62, 2, 6),
+(3200, 1206, 73, 56, 'Overload Rep Duration', 57, '0', 0, 8, 62, 2, 6);
 
-(4877, 895, 84, 0, 'Repair Amount', 0, '62', 0, 4, 515, 1, 2),
-(4893, 895, 84, 0, 'Repair Amount', 0, '62', 0, 4, 515, 1, 2),
-(4877, 896, 73, 0, 'Repair Duration', 0, '62', 0, 4, 515, 1, 2),
-(4893, 896, 73, 0, 'Repair Duration', 0, '62', 0, 4, 515, 1, 2),
-(4893, 1186, 84, 0, 'Remote Repair Bonus', 0, '325', 0, 4, 515, 1, 2),
-(4893, 1187, 73, 0, 'Remote Repair Duration Bonus', 0, '325', 0, 4, 515, 1, 2);
