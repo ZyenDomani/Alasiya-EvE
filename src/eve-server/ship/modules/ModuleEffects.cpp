@@ -512,7 +512,7 @@ void ModuleEffects::_populate()
                         m_GangEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
                     if (state & MOD_FLEET)
                         m_FleetEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
-                    if (state & MOD_PASSIVE)
+                    if (state & MOD_FITTED)
                         m_PassiveEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
                     if (state & MOD_DEACTIVATING)
                         ;   // nothing - not used

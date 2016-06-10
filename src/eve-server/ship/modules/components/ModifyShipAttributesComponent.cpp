@@ -20,8 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Luck
-    Updates:    Allan
+    Author:        Luck   (original code)
+    Updates:    Allan     (reworked and implemented)
 */
 
 #include "ship/modules/components/ModifyShipAttributesComponent.h"
@@ -63,11 +63,12 @@ void ModifyShipAttributesComponent::_modifyShipAttributes(ShipItemRef shipRef, u
 
 EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, GenericModule* mod)
 {
-    uint8 stackSize = 1;   // default.  changed later if necessary 
+    uint8 stackSize = 1;   // default.  changed later if necessary
     double effectiveness = 1;   // default.  changed later if necessary
     EvilNumber modVal = mod->GetAttribute(sourceAttrID), startVal = shipRef->GetAttribute(targetAttrID);
     /* check for attribs that are NOT penalized here, and bypass stacking method. */
     /* note:  DCU, rigs and subsystems do not use this method */
+    /** @todo use module effect "stackingPenaltyApplied" to check here, instead of this switch hack */
     if ((targetAttrID != AttrWarpFactor) or (sourceAttrID != AttrCargoCapacityMultiplier)
         or (targetAttrID != AttrMiningAmount) or (targetAttrID != AttrCpuOutput)
         or (targetAttrID != AttrPowerOutput) or (targetAttrID != AttrRechargeRate)

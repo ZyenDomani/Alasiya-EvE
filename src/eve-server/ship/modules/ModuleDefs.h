@@ -20,8 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Aknor Jaden, Luck
-    Updates:    Allan
+    Author:        Aknor Jaden, Luck    (original code)
+    Updates:    Allan   (reworked and implemented)
 */
 
 /** @todo  there is much more to be done here.  this is just the beginning.
@@ -88,14 +88,14 @@ enum ModuleStates
      * PASSSIVE modules fitted and online
      * RIG modules fitted (always online)
      */
-    MOD_ONLINE                  = 2, // module fitted and online
-    MOD_ACTIVATED               = 4, // used only for ACTIVE modules operating in non-Overloaded mode
-    MOD_OVERLOADED              = 8, // used only for ACTIVE modules operating in Overloaded mode
-    MOD_GANG                    = 16,
-    MOD_FLEET                   = 32,
+    MOD_ONLINE                  = 2,    // module fitted and online
+    MOD_ACTIVATED               = 4,    // used only for ACTIVE modules operating in non-Overloaded mode
+    MOD_OVERLOADED              = 8,    // used only for ACTIVE modules operating in Overloaded mode
+    MOD_GANG                    = 16,   // not used yet
+    MOD_FLEET                   = 32,   // not used yet
     // used for internal module status checking
-    MOD_DEACTIVATING            = 64,       // module transistioning from online/active state to offline state
-    MOD_OFFLINE                 = 128
+    MOD_DEACTIVATING            = 64,   // module transistioning from online/active state to offline state
+    MOD_OFFLINE                 = 128   // module fitted, but NOT put online yet
 };
 
 // *** use these values to decode the 'effectID' field of the 'dgmEffectsInfo' database table
@@ -358,13 +358,14 @@ static EvilNumber SubtractResist(EvilNumber &val1, EvilNumber &val2)
     return res;
 }
 
+// used for shields
 static EvilNumber AddPercent(EvilNumber &val1, EvilNumber &val2)
-{
+{// 50
     return val1 + ( val2 /100 );
 }
 
 static EvilNumber ReverseAddPercent(EvilNumber &val1, EvilNumber &val2)
-{
+{// 51
     return val1 - ( val2 /100 );
 }
 
