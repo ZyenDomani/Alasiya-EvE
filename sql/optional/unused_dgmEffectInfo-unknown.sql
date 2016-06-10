@@ -4,8 +4,6 @@
 (0, 434, 782, 0, 'Mercoxit Mining Crystal Optimization', 0, '663', 0, 15, 780, 2, 2),
 (0, 780, 73, 0, 'Ice Harvester Accelerator', 0, '1038', 0, 15, 780, 2, 4),
 
-(0, 144, 55, 6, 'Cap rate (+ve)', 26, '6', 0, 28, 0, 0, 0),
-(0, 144, 55, 7, 'Cap rate (+ve)', 27, '6', 0, 28, 0, 0, 0),
 (0, 67, 6, 14, 'Cap Booster Charges', 0, '0', 0, 15, 87, 2, 6),
 (0, 1255, 64, 0, 'Drone Damage Amplifier', 0, '18', 1, 15, 645, 2, 3),
 (0, 90, 6, 8, 'Energy Vampire Drone', 1, '0', 0, 16, 544, 2, 6),
@@ -16,6 +14,7 @@
 (0, 237, 76, 0, 'SD Drone - Max Targeting Range', 0, '6', 1, 16, 639, 2, 3),
 (0, 565, 564, 5, 'SD Drone - Scan Resolution', 25, '6', 1, 16, 639, 2, 3),
 (0, 20, 37, 0, 'SW Drone - Max Velocity', 0, '6', 0, 16, 641, 2, 3),
+
 (0, 267, 267, 30, 'Armor Resistance Shift Hardeners - Active EM Resist', 31, '6', 2, 12, 1150, 2, 3),
 (0, 268, 268, 30, 'Armor Resistance Shift Hardeners - Active Exp Resist', 31, '6', 2, 12, 1150, 2, 3),
 (0, 269, 269, 30, 'Armor Resistance Shift Hardeners - Active Kin Resist', 31, '6', 2, 12, 1150, 2, 3),

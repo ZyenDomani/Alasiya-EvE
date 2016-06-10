@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS `dgmEffectsInfo` (
 
 INSERT INTO `dgmEffectsInfo` (`effectID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `stackingPenaltyApplied`, `effectAppliedInState`, `affectingID`, `affectingType`, `affectedType`)
 VALUES
--- the following effects are sorted and working (these also include overload effects that need to be removed due to separate sourceAttributeID)
+-- the following effects are sorted and working  (124)
+-- (these also include overload effects that need to be removed due to separate sourceAttributeID)
 (16, 30, 15, 1, 'PG -> PG_Used', 8, '6', 0, 2, 0, 0, 3),
 (16, 50, 49, 1, 'CPU -> CPU_Used', 8, '6', 0, 2, 0, 0, 3),
 
@@ -35,9 +36,9 @@ VALUES
 -- cpu output
 (536, 202, 48, 5, 'Co-Processor - CPU Output Bonus', 25, '6', 0, 14, 285, 2, 3),
 -- pg
-(627, 549, 11, 1, 'Auxiliary Power Core - PG', 8, '6', 0, 14, 339, 2, 3),
 (56, 145, 11, 5, 'Power Diagnostic - PG', 25, '6', 0, 14, 766, 2, 3),
 (56, 145, 11, 5, 'Reactor Control - PG', 25, '6', 0, 14, 769, 2, 3),
+(627, 549, 11, 1, 'Auxiliary Power Core - PG', 8, '6', 0, 14, 339, 2, 3),
 -- cap capacity
 (25, 67, 482, 1, 'Capacitor Battery - Cap Capacity', 8, '6', 0, 14, 61, 2, 3),
 (58, 147, 482, 5, 'AB/MWD Cap Penalty', 25, '6', 0, 14, 46, 2, 3),
@@ -48,15 +49,18 @@ VALUES
 (51, 144, 55, 5, 'Cap Power Relay - Cap Recharge Rate', 25, '6', 0, 14, 767, 2, 3),
 (51, 144, 55, 5, 'Cap Recharger - Cap Recharge Rate', 25, '6', 0, 14, 43, 2, 3),
 (51, 144, 55, 5, 'Power Diagnostic - Cap Recharge Rate', 25, '6', 0, 14, 766, 2, 3),
+(51, 144, 55, 5, 'Power Relay - Cap Recharge Rate', 25, '6', 0, 14, 57, 2, 3),
 -- inertia mods
 (657, 169, 70, 56, 'Inertia Bonus', 57, '6', 1, 14, 763, 2, 3),
 (657, 169, 70, 56, 'Inertia Penalty', 57, '6', 1, 14, 78, 2, 3),
 (657, 169, 70, 56, 'Inertia Modifier', 57, '6', 1, 14, 762, 2, 3),
 -- sig radius mods
-(1254, 554, 552, 54, 'AB/MWD Sig Radius Penalty', 55, '6', 1, 12, 46, 2, 3),
-(2644, 554, 552, 54, 'Sig Radius Penalty', 55, '6', 1, 14, 762, 2, 3),
+(1254, 554, 552, 54, 'MWD Sig Radius Penalty', 55, '6', 1, 12, 46, 2, 3),
+(2029, 983, 552, 1, 'Shield Extenders - Sig Radius Penality', 8, '6', 0, 14, 38, 2, 3),
+(2644, 554, 552, 54, 'IStab - Sig Radius Penalty', 55, '6', 1, 14, 762, 2, 3),
 -- mass mods
 (1254, 796, 4, 1, 'AB/MWD Mass addition', 8, '6', 0, 12, 46, 2, 3),
+(1959, 796, 4, 1, 'Armor Plates - Mass Addition', 8, '6', 0, 14, 329, 2, 3),
 -- cargo cap
 (59, 149, 38, 5, 'Cargo Capacity Bonus', 25, '6', 0, 14, 765, 2, 3),
 (59, 149, 38, 5, 'Cargo Capacity Penalty', 25, '6', 0, 14, 764, 2, 3),
@@ -88,16 +92,14 @@ VALUES
 (2302, 976, 109, 30, 'Hull Kin Resistance Bonus', 31, '6', 0, 12, 60, 2, 3),
 (2302, 977, 110, 30, 'Hull Therm Resistance Bonus', 31, '6', 0, 12, 60, 2, 3),
 
--- unsorted
+-- unsorted (and untested and unchecked)
 (118, 235, 192, 1, 'Auto Targeter - Max Locked Targets', 8, '6', 0, 14, 96, 2, 3),
 (854, 565, 564, 5, 'Cloaking Device - Scan Resolution', 25, '6', 0, 15, 330, 2, 3),
-(2303, 97, 6, 8, 'Energy Neutralized', 1, '0', 0, 16, 71, 2, 6),
 (31, 90, 6, 8, 'Energy Transferred', 1, '0', 0, 16, 67, 2, 6),
+(2303, 97, 6, 8, 'Energy Transferred', 1, '0', 0, 16, 71, 2, 6),
 (3250, 90, 6, 8, 'Energy Transferred', 1, '0', 0, 12, 68, 2, 6),
-(1720, 548, 68, 0, 'Shield Boost Bonus', 40, '40', 1, 14, 767, 2, 2),
 (2646, 309, 76, 0, 'Targeting Range Penalty', 0, '6', 1, 14, 315, 2, 3),
 (2645, 565, 564, 5, 'Scan Resolution Penalty', 25, '6', 1, 14, 315, 2, 3),
-(4162, 846, 1371, 0, 'Scan Probe Strength Bonus', 0, '479', 0, 4, 481, 2, 2),
 
 -- these below are not correct and/or not working (or not working right, or not implemented)
 -- strictly overload effects (not completely implemented)
@@ -136,6 +138,7 @@ VALUES
 -- module range
 (3174, 1222, 54, 0, 'Stasis Web Range Bonus', 0, '0', 0, 8, 65, 2, 6),
 (3725, 1222, 54, 0, 'Warp Scrambler Range Bonus', 0, '0', 0, 8, 52, 2, 6),
+(4162, 846, 1371, 0, 'Scan Probe Strength Bonus', 0, '479', 0, 4, 481, 2, 2),
 -- module duration
 (2850, 66, 73, 54, 'AB/MWD Duration Bonus', 55, '46', 0, 15, 782, 2, 2),
 (3380, 1164, 20, 56, 'AB/MWD Max Velocity Penalty', 57, '46', 1, 12, 899, 2, 2),
@@ -172,6 +175,11 @@ VALUES
 (2445, 1082, 50, 0, 'CPU Penalty', 0, '1038', 0, 14, 546, 2, 4),
 (212, 310, 50, 0, 'CPU Need Bonus', 0, '3432', 0, 15, 780, 2, 5),
 (1500, 851, 6, 0, 'Capacitor Need Bonus', 40, '3416', 0, 15, 774, 2, 5),
+(4893, 1802, 6, 0, 'Transporter Cap Use', 0, '41', 0, 4, 515, 1, 2),
 (273, 323, 30, 0, 'Upgrade Power Need Bonus', 40, '3425', 0, 15, 774, 2, 5),
 (4162, 846, 1371, 0, 'Sensor Strength Modifier', 0, '479', 0, 15, 780, 2, 2),
-(2252, 1034, 669, 4, 'Cloak Reactivation Delay', 24, '330', 0, 15, 830, 3, 2);
+(2252, 1034, 669, 4, 'Cloak Reactivation Delay', 24, '330', 0, 15, 830, 3, 2),
+-- mining upgrades (module-affecting)
+(1882, 434, 77, 54, 'Mining Amount Bonus', 55, '54;483', 0, 3, 546, 2, 4),
+(2445, 1082, 50, 56, 'Module CPU Usage Penality', 57, '54;483', 0, 3, 546, 2, 3),
+(2479, 780, 73, 56, 'Module Cycle Time Bonus', 57, '54;483', 0, 3, 546, 2, 3);

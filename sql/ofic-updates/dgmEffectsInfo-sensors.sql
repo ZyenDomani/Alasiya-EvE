@@ -1,9 +1,11 @@
 
 -- sensor and scanning effects data
+-- not used yet
 
 INSERT INTO `dgmEffectsInfo` (`effectID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `stackingPenaltyApplied`, `effectAppliedInState`, `affectingID`, `affectingType`, `affectedType`)
 VALUES
 
+-- these are not sorted yet  (63)
 (3189, 1226, 1027, 0, 'ECCM Strength Bonus - Grav', 40, '0', 1, 8, 202, 2, 6),
 (3189, 1226, 1028, 0, 'ECCM Strength Bonus - Ladar', 40, '0', 1, 8, 202, 2, 6),
 (3189, 1226, 1029, 0, 'ECCM Strength Bonus - Mag', 40, '0', 1, 8, 202, 2, 6),
