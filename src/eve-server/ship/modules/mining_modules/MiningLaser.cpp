@@ -120,54 +120,19 @@ void MiningLaser::Deactivate()
     if ((m_ModuleState != MOD_ACTIVATED) || (m_ModuleState == MOD_OFFLINE)) return;
 
 
-    if ((((m_Item->typeID() == 17482 ||
-           m_Item->typeID() == 28754 ||
-           m_Item->typeID() == 17912 ||
-           m_Item->groupID() == 54)
-           &&
-           (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Arkonor ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Bistot ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Crokite ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Dark_Ochre ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Hedbergite ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Hemorphite ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Jaspet ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Kernite ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Plagioclase ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Pyroxeres ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Scordite ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Spodumain ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Veldspar ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Gneiss ||
-         	m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Omber)) ||
-
-     	 ((m_Item->typeID() == 12108 ||
-     	   m_Item->typeID() == 18068 ||
-     	   m_Item->typeID() == 24305 ||
-     	   m_Item->typeID() == 28748)
-     	   && (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit)) ||
-
-          ((m_Item->typeID() == 16278 ||
-            m_Item->typeID() == 22229 ||
-            m_Item->typeID() == 28752)
-            && (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)) ||
-
-          ((m_Item->groupID() == 737)
-            && (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud))
-         )){
-    	double timeLeft = (m_cycleStartTime + (_GetDuration() / 1000)) - GetTimeMSeconds();
-    	double fraction = 1 - (timeLeft / (_GetDuration() / 1000));
-    	if (fraction < 1)
-    		StopCycle(true);
-    	else{
-    		while (fraction > 2)
-    			fraction -= 1;
-    		if(fraction >= 1.0001)	// Very hacky, but seems to work so far
-    			StopCycle(true);
-    	}
+    double timeLeft = (m_cycleStartTime + (_GetDuration() / 1000)) - GetTimeMSeconds();
+    double fraction = 1 - (timeLeft / (_GetDuration() / 1000));
+    if (fraction < 1)
+        StopCycle(true);
+    else {
+        while (fraction > 2)
+            fraction -= 1;
+        if(fraction >= 1.0001)	// Very hacky, but seems to work so far
+            StopCycle(true);
+        return;
     }
-    else
-        m_AMPC->DeactivateCycle();
+
+    m_AMPC->DeactivateCycle();
 }
 
 double MiningLaser::DoCycle() {
@@ -357,7 +322,7 @@ void MiningLaser::_ProcessOreCycle(bool partial)
     }
      */
 
-    //FIXME - For now, aborted cycle returns the ore volume of 1 full cycle. Most likely timeLeft returns 0 here.
+    //FIXME - For now, aborted cycle returns the ore volume of 1 full cycle. Most likely timeLeft returns 0 here. (but shouldn't)
     if (partial) {
         double timeLeft = (m_cycleStartTime + (_GetDuration() / 1000)) - GetTimeMSeconds();
         double fraction = 1 - (timeLeft / (_GetDuration() / 1000));

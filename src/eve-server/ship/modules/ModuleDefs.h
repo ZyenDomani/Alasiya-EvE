@@ -82,7 +82,7 @@ enum ModuleStates
 {
     MOD_UNFITTED                = 0,
     // means the effect is active AT ALL TIMES; used ONLY for skill, ship, rig, subsystem, and beacon effects
-    MOD_PASSIVE                 = 1,
+    MOD_FITTED                  = 1,   // module fitted, but NOT put online yet     -- not used yet (needs code rewrite)
     /* 'Online' is used for:
      * ACTIVE modules fitted and online, but not activated (PASSIVE effects only)
      * PASSSIVE modules fitted and online
@@ -94,8 +94,8 @@ enum ModuleStates
     MOD_GANG                    = 16,   // not used yet
     MOD_FLEET                   = 32,   // not used yet
     // used for internal module status checking
-    MOD_DEACTIVATING            = 64,   // module transistioning from online/active state to offline state
-    MOD_OFFLINE                 = 128   // module fitted, but NOT put online yet
+    MOD_DEACTIVATING            = 64,   // module transistioning from MOD_ACTIVATED to MOD_OFFLINE
+    MOD_OFFLINE                 = 128   // module transistioning from MOD_OFFLINE to MOD_FITTED  -not used
 };
 
 // *** use these values to decode the 'effectID' field of the 'dgmEffectsInfo' database table
