@@ -52,6 +52,8 @@ static const float TIC_DURATION_IN_SECONDS(1000);
 
 static const uint32 minWarpDistance(100000);    // 100km
 
+static const float onlineModInSpace = 0.75;     // onling modules while NOT docked or using fitting services will take 75% of current capacitor.
+
 //   based on client code...
 static const uint64 ONE_LIGHTYEAR = 9460000000000000UL;  // in meters
 static const uint64 ONE_AU_IN_METERS = 149597870700L;     // 1 astronomical unit in meters, per EVElopedia: http://wiki.eveonline.com/en/wiki/Astronomical_Unit

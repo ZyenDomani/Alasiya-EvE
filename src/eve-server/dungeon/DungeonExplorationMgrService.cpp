@@ -66,6 +66,7 @@ PyResult DungeonExplorationMgrService::Handle_GetMyEscalatingPathDetails(PyCallA
 /**
   dungeonTracking.GetEscalatingPathDungeonsEntered()
   dungeonTracking.GetDistributionDungeonsEntered()
+        (OnDistributionDungeonEntered)
 
 
 

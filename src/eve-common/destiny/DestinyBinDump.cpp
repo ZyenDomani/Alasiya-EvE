@@ -105,10 +105,10 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         data += sizeof(DataSector);
         len -= sizeof(DataSector);
 
-        _log(into, "   maxSpeed=%.2f, Vel=(%.3f, %.3f, %.3f) AG=%.4f, SF=%.3f",
+        _log(into, "   maxSpeed=%.2f, Vel=(%.3f, %.3f, %.3f) IM=%.4f, SF=%.3f",
             shipchunk->maxVelocity,
             shipchunk->velocity_x, shipchunk->velocity_y, shipchunk->velocity_z,
-            shipchunk->agility,
+            shipchunk->intertia,
             shipchunk->speedfraction);
     }
 

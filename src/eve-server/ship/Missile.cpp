@@ -205,7 +205,7 @@ void Missile::EncodeDestiny( Buffer& into )
         data.velocity_x = m_destiny->GetVelocity().x;
         data.velocity_y = m_destiny->GetVelocity().y;
         data.velocity_z = m_destiny->GetVelocity().z;
-        data.agility = m_destiny->GetAgility();
+        data.intertia = m_destiny->GetInertia();
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
     DSTBALL_MISSILE_Struct miss;

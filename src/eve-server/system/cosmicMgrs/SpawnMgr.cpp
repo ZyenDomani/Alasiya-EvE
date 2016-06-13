@@ -505,9 +505,8 @@ struct SpawnEntry { // notes for me while creating/writing/testing
 void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
 {
     GPoint startPos(pSysBubble->GetCenter());
-    //startPos.MakeRandomPointOnSphere(8000); // put them at random spot 8k off center
-    startPos.MakeRandomPointOnSphere(220000); //220km from bubble center
-    const GPoint warpToPoint = (pSysBubble->GetCenter() - (MakeRandomInt(-5, 15) *1000));
+    //startPos.MakeRandomPointOnSphere(220000); //220km from bubble center
+    //const GPoint warpToPoint = (pSysBubble->GetCenter() - (MakeRandomInt(-5, 15) *1000));
     _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
                 spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
                 spawnEntry.factionID, spawnEntry.number, spawnEntry.total);
@@ -538,9 +537,9 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
     }
 
     //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
-    //startPos.MakeRandomPointOnSphere(8000); //200km from bubble center...in current bubble
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(-5, 10) *1000);
     npc->DestinyMgr()->SetPosition(startPos);
-    npc->DestinyMgr()->WarpTo(warpToPoint);
+    //npc->DestinyMgr()->WarpTo(warpToPoint);
     m_system->AddNPC(npc);
 
     spawnEntry.enabled = false;
@@ -560,7 +559,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
      * however, warping in dont seem to be working.  will look into later.
      */
     GPoint startPos(pSysBubble->GetCenter());
-    startPos.MakeRandomPointOnSphere(MakeRandomInt(-5, 10) *1000); //200km from bubble center...in current bubble
+    //startPos.MakeRandomPointOnSphere(MakeRandomInt(-5, 10) *1000); //200km from bubble center...in current bubble
     //const GPoint warpToPoint(pSysBubble->GetCenter());
 
     uint32 corpID = GetCorpID(factionID);
@@ -586,7 +585,6 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
 
             _log(SPAWN__POP, "SpawnMgr::MakeSpawn - Spawning NPC %u", i->itemID());
 
-            //startPos.MakeRandomPointOnSphere(8000); // put them at random spot 8k off center
             npc = new NPC(i, m_services, m_system, corpID, factionID, this);
 
             // NPC::Load() no longer does anything.  it is still here in case we find a new use for it.
@@ -596,6 +594,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
                 continue;
             }
             //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
+            startPos.MakeRandomPointOnSphere(MakeRandomInt(-5, 10) *1000);
             npc->DestinyMgr()->SetPosition(startPos);
             //npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
             m_system->AddNPC(npc);

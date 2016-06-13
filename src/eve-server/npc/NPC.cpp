@@ -66,8 +66,8 @@ void NPC::Init()
     m_self->SetAttribute(AttrOrbitRange,          GetOrbitRange(), false);
 
     // Agility
-    if (!m_self->HasAttribute(AttrAgility))
-        m_self->SetAttribute(AttrAgility, 1, false);
+    if (!m_self->HasAttribute(AttrInetiaMod))
+        m_self->SetAttribute(AttrInetiaMod, 1, false);
 
     SetResists();
 
@@ -163,14 +163,14 @@ void NPC::EncodeDestiny( Buffer& into )
         data.velocity_x = m_destiny->GetVelocity().x;
         data.velocity_y = m_destiny->GetVelocity().y;
         data.velocity_z = m_destiny->GetVelocity().z;
-        data.agility = m_destiny->GetAgility();
+        data.intertia = m_destiny->GetInertia();
         data.speedfraction = m_destiny->GetSpeedFraction();
         into.Append( data );
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
             warp.formationID = 0xFF;
-            warp.effectStamp = -1; // m_destiny->GetStateStamp();   //timestamp when warp started
+            warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
             warp.x = target.x;
             warp.y = target.y;
             warp.z = target.z;

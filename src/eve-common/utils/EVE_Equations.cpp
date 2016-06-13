@@ -152,9 +152,9 @@
 	 return (40000.0 / (YourEffectiveScanResolution.get_float() * pow(asinh(TargetEffectiveSignatureRadius.get_float()),2)));
  }
  
- EvilNumber AlignTimeInSeconds( EvilNumber InertiaModifier, EvilNumber Mass )
+ EvilNumber AlignTimeInSeconds( EvilNumber InertiaFactor, EvilNumber Mass )
  {
-	 return ((log(2.0) * InertiaModifier * Mass) / 500000);
+	 return ((log(2.0) * InertiaFactor * Mass) / 500000);
  }
  
  EvilNumber TradeBrokerFee( EvilNumber BrokerRelationsSkillLevel, EvilNumber FactionStanding, EvilNumber CorporationStanding )

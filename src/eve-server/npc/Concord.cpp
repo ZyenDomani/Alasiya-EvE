@@ -59,8 +59,8 @@ Concord::Concord(
      self->SetAttribute(AttrWarpCapacitorNeed,   self->GetAttribute(AttrWarpCapacitorNeed), false);      // Shield Charge
 
      // Agility
-     if (!self->HasAttribute(AttrAgility))
-         self->SetAttribute(AttrAgility, 1, false);
+     if (!self->HasAttribute(AttrInetia))
+         self->SetAttribute(AttrInetia, 1, false);
 
      // AttrOrbitRange
      self->SetAttribute(AttrOrbitRange, GetOrbitRange(), false);
@@ -159,14 +159,14 @@ void Concord::EncodeDestiny( Buffer& into ) const
     data.velocity_x = m_destiny->GetVelocity().x;
     data.velocity_y = m_destiny->GetVelocity().y;
     data.velocity_z = m_destiny->GetVelocity().z;
-    data.agility = m_destiny->GetAgility();
+    data.intertia = m_destiny->GetInertia();
     data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
         warp.formationID = 0xFF;
-        warp.effectStamp = -1; // m_destiny->GetStateStamp();   //timestamp when warp started
+        warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
         warp.x = target.x;
         warp.y = target.y;
         warp.z = target.z;

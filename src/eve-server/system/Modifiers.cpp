@@ -40,7 +40,7 @@ SkillBonusModifier::SkillBonusModifier(uint32 skillID)
     m_ReverseCalculationTypeIDs = nullptr;
     m_TargetChargeSizes = nullptr;
     m_AppliedPerLevelList = nullptr;
-    m_AffectingTypes = nullptr;
+    m_targetType = nullptr;
     m_AffectedTypes = nullptr;
 
     m_ModifierLoaded = false;
@@ -57,7 +57,7 @@ SkillBonusModifier::~SkillBonusModifier()
         SafeDelete(m_ReverseCalculationTypeIDs);
         SafeDelete(m_TargetChargeSizes);
         SafeDelete(m_AppliedPerLevelList);
-        SafeDelete(m_AffectingTypes);
+        SafeDelete(m_targetType);
         SafeDelete(m_AffectedTypes);
     }
 }
@@ -82,7 +82,7 @@ void SkillBonusModifier::_Populate(uint32 skillID)
         m_ReverseCalculationTypeIDs = new uint32[res->GetRowCount()];
         m_TargetChargeSizes = new uint32[res->GetRowCount()];
         m_AppliedPerLevelList = new uint32[res->GetRowCount()];
-        m_AffectingTypes = new uint32[res->GetRowCount()];
+        m_targetType = new uint32[res->GetRowCount()];
         m_AffectedTypes = new uint32[res->GetRowCount()];
 
         int count = 0;
@@ -100,7 +100,7 @@ void SkillBonusModifier::_Populate(uint32 skillID)
             targetGroupIDs = row1.GetText(6);
             m_TargetChargeSizes[count] = row1.GetUInt(7);
             m_AppliedPerLevelList[count] = row1.GetUInt(8);
-            m_AffectingTypes[count] = row1.GetUInt(9);
+            m_targetType[count] = row1.GetUInt(9);
             m_AffectedTypes[count] = row1.GetUInt(10);
 
             TargetGroupIDs = new typeTargetGroupIDlist;
@@ -156,7 +156,7 @@ ShipBonusModifier::ShipBonusModifier(uint32 shipID)
     m_numOfIDs = 0;
     m_EffectIDs = nullptr;
     m_AffectedTypes = nullptr;
-    m_AffectingTypes = nullptr;
+    m_targetType = nullptr;
     m_AttributeSkillIDs = nullptr;
     m_SourceAttributeIDs = nullptr;
     m_TargetAttributeIDs = nullptr;
@@ -177,7 +177,7 @@ ShipBonusModifier::~ShipBonusModifier() {
         SafeDelete(m_CalculationTypeIDs);
         SafeDelete(m_ReverseCalculationTypeIDs);
         SafeDelete(m_AppliedPerLevelList);
-        SafeDelete(m_AffectingTypes);
+        SafeDelete(m_targetType);
         SafeDelete(m_AffectedTypes);
     }
 }
@@ -202,7 +202,7 @@ void ShipBonusModifier::_Populate(uint32 shipID)
         m_CalculationTypeIDs = new uint32[res->GetRowCount()];
         m_ReverseCalculationTypeIDs = new uint32[res->GetRowCount()];
         m_AppliedPerLevelList = new uint32[res->GetRowCount()];
-        m_AffectingTypes = new uint32[res->GetRowCount()];
+        m_targetType = new uint32[res->GetRowCount()];
         m_AffectedTypes = new uint32[res->GetRowCount()];
 
         int count = 0;
@@ -220,7 +220,7 @@ void ShipBonusModifier::_Populate(uint32 shipID)
             m_ReverseCalculationTypeIDs[count] = row1.GetUInt(6);
             targetGroupIDs = row1.GetText(7);
             m_AppliedPerLevelList[count] = row1.GetUInt(8);
-            m_AffectingTypes[count] = row1.GetUInt(9);
+            m_targetType[count] = row1.GetUInt(9);
             m_AffectedTypes[count] = row1.GetUInt(10);
 
             TargetGroupIDs = new typeTargetGroupIDlist;
@@ -272,7 +272,7 @@ ImplantModifier::ImplantModifier(uint32 implantID)
     m_numOfIDs = 0;
     m_EffectIDs = nullptr;
     m_AffectedTypes = nullptr;
-    m_AffectingTypes = nullptr;
+    m_targetType = nullptr;
     m_AttributeSkillIDs = nullptr;
     m_SourceAttributeIDs = nullptr;
     m_TargetAttributeIDs = nullptr;
@@ -293,7 +293,7 @@ ImplantModifier::~ImplantModifier() {
         SafeDelete(m_CalculationTypeIDs);
         SafeDelete(m_ReverseCalculationTypeIDs);
         SafeDelete(m_AppliedPerLevelList);
-        SafeDelete(m_AffectingTypes);
+        SafeDelete(m_targetType);
         SafeDelete(m_AffectedTypes);
     }
 }
@@ -318,7 +318,7 @@ void ImplantModifier::_Populate(uint32 implantID)
         m_CalculationTypeIDs = new uint32[res->GetRowCount()];
         m_ReverseCalculationTypeIDs = new uint32[res->GetRowCount()];
         m_AppliedPerLevelList = new uint32[res->GetRowCount()];
-        m_AffectingTypes = new uint32[res->GetRowCount()];
+        m_targetType = new uint32[res->GetRowCount()];
         m_AffectedTypes = new uint32[res->GetRowCount()];
 
         int count = 0;
@@ -336,7 +336,7 @@ void ImplantModifier::_Populate(uint32 implantID)
             m_ReverseCalculationTypeIDs[count] = row1.GetUInt(6);
             targetGroupIDs = row1.GetText(7);
             m_AppliedPerLevelList[count] = row1.GetUInt(8);
-            m_AffectingTypes[count] = row1.GetUInt(9);
+            m_targetType[count] = row1.GetUInt(9);
             m_AffectedTypes[count] = row1.GetUInt(10);
 
             TargetGroupIDs = new typeTargetGroupIDlist;

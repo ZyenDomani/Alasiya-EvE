@@ -194,7 +194,7 @@
   * @param[in] ?
   * @return ?
   */
- EvilNumber AlignTimeInSeconds( EvilNumber InertiaModifier, EvilNumber Mass );
+ EvilNumber AlignTimeInSeconds( EvilNumber intertia, EvilNumber Mass );
  
  /**
   * ?

@@ -561,15 +561,16 @@ PyDict* ShipItem::GetShipInfo()
     uint8 rig = m_inventory->FindByFlagRange( flagRigSlot0, flagRigSlot7, equipped );
     //encode an entry for each one.
     for (auto cur : equipped) {
-        if (cur->Populate(entry)) {
+        Rsp_CommonGetInfo_Entry entry2;
+        if (cur->Populate(entry2)) {
             if (cur->groupID() == EVEDB::invCategories::Charge) {
                 PyTuple* tuple = new PyTuple(3);
                     tuple->SetItem(0, new PyInt(cur->itemID()));
                     tuple->SetItem(1, new PyInt(cur->flag()));
                     tuple->SetItem(2, new PyInt(cur->typeID()));
-                result->SetItem(tuple, new PyObject("util.KeyVal", entry.Encode()));
+                result->SetItem(tuple, new PyObject("util.KeyVal", entry2.Encode()));
             } else {
-                result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry.Encode()));
+                result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry2.Encode()));
             }
         } else
             _log( SHIP__ERROR, "%s(%u): Failed to load item %u for ShipGetInfo", itemName().c_str(), itemID(), cur->itemID());
@@ -1069,7 +1070,8 @@ void ShipItem::CancelOverloading()
 }
 
 void ShipItem::RemoveRig(InventoryItemRef item) {
-    //may not look like it, but just moving this item will call ModuleManager::UninstallRig().
+    //may not look like it, but just moving this item will call ModuleManager::UninstallRig().  not anymore.  fix this shit.
+    m_ModuleManager->UninstallRig(item->itemID());
     item->Move(itemID(), flagCargoHold);
 }
 
@@ -1319,7 +1321,7 @@ void Ship::EncodeDestiny( Buffer& into ) {
         data.velocity_x = m_destiny->GetVelocity().x;
         data.velocity_y = m_destiny->GetVelocity().y;
         data.velocity_z = m_destiny->GetVelocity().z;
-        data.agility = m_destiny->GetAgility();
+        data.intertia = m_destiny->GetInertia();
         data.speedfraction = m_destiny->GetSpeedFraction();
         into.Append( data );
     if (mode == DSTBALL_WARP) {

@@ -374,8 +374,6 @@ int main( int argc, char* argv[] )
     // Create In-Memory Database Objects for Critical and HighUse Systems, such as Module Effects and Wrecks:
     sLog.Log("       ServerInit", "Module Effects Table");
     sDGM_Effects_Table.Initialize();
-    //sLog.Log("       ServerInit", "Type Effects");
-    //sDGM_Type_Effects_Table.Initialize();
     sLog.Log("       ServerInit", "Skill Modifiers");
     sDGM_Skill_Bonus_Modifiers_Table.Initialize();
     sLog.Log("       ServerInit", "Ship Modifiers");

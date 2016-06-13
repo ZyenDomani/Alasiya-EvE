@@ -19,6 +19,7 @@ SET( INCLUDE
      "${TARGET_INCLUDE_DIR}/eve-common.h"
      "${TARGET_INCLUDE_DIR}/EVE_Consts.h"
      "${TARGET_INCLUDE_DIR}/EVE_Defines.h"
+     "${TARGET_INCLUDE_DIR}/EVE_Dungeon.h"
      "${TARGET_INCLUDE_DIR}/EVE_Effects.h"
      "${TARGET_INCLUDE_DIR}/EVE_Flags.h"
      "${TARGET_INCLUDE_DIR}/EVE_Inventory.h"

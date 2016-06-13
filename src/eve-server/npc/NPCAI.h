@@ -50,16 +50,18 @@ public:
 
     void DisableRepTimers();
 
+    // public methods to enable calls from other classes
+
 protected:
     void Attack(SystemEntity* pTarget);
     void AttackTarget(SystemEntity* pTarget);
     void Wander();
-    void _EnterIdle();
-    void _EnterChasing(SystemEntity* pTarget);
-    void _EnterFollowing(SystemEntity* pTarget);
-    void _EnterEngaged(SystemEntity* pTarget);
-    void _EnterFleeing(SystemEntity* pTarget);
-    void _EnterSignaling(SystemEntity* pTarget);
+    void EnterIdle();
+    void EnterChasing(SystemEntity* pTarget);
+    void EnterFollowing(SystemEntity* pTarget);
+    void EnterEngaged(SystemEntity* pTarget);
+    void EnterFleeing(SystemEntity* pTarget);
+    void EnterSignaling(SystemEntity* pTarget);
     void _CheckDistance(SystemEntity* pTarget);
     void _SendWeaponEffect(const char *effect, SystemEntity* pTarget);
 
@@ -76,6 +78,7 @@ protected:
     State m_state;
 
 private:
+    bool m_isWandering;
     //cached to reduce access times. (faster but uses more memory)
     uint16 m_falloff;
     uint16 m_maxSpeed;

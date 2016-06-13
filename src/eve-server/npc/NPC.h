@@ -79,6 +79,8 @@ public:
 
     double GetOrbitRange()                              { return m_orbitRange; }
 
+    NPCAIMgr* GetAIMgr()                                { return m_AI; }
+
 protected:
     NPCAIMgr* m_AI;
     SpawnMgr* m_spawnMgr;

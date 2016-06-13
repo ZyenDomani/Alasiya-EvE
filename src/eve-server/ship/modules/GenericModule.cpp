@@ -84,7 +84,7 @@ void GenericModule::Online()
         _log(SHIP__MODULE_TRACE, "GenericModule::Online() -  there are %u attributes in effect %u", ids, itr->first );
         while (cur < ids) {
             if (itr->first != Effect_online) {  // effect Online.  this sets CPU and PG usage
-                testID = itr->second->GetAffectingID(cur);
+                testID = itr->second->GetTargetGroup(cur);
                 _log(SHIP__MODULE_DEBUG, "GenericModule::Online() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
                 if ((testID != 0) && (groupID != testID)) {
                     ++cur;
@@ -129,7 +129,7 @@ void GenericModule::Offline()
         _log(SHIP__MODULE_TRACE, "GenericModule::Offline() -  there are %u attributes in effect %u", ids, itr->first );
         while (cur < ids) {
             if (itr->first != Effect_online) {  // effect Online.  this sets CPU and PG usage
-                testID = itr->second->GetAffectingID(cur);
+                testID = itr->second->GetTargetGroup(cur);
                 _log(SHIP__MODULE_DEBUG, "GenericModule::Offline() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
                 if ((testID != 0) && (groupID != testID)) {
                     ++cur;

@@ -143,7 +143,7 @@ void ModuleDB::GetDgmEffects(uint32 effectID, DBQueryResult &res)
         " npcActivationChanceAttributeID, "
         " fittingUsageChanceAttributeID "
         " FROM dgmEffects "
-        " WHERE effectID = '%u' ",
+        " WHERE effectID = %u ",
         effectID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -157,16 +157,14 @@ void ModuleDB::GetDgmEffectsInfo(uint32 effectID, DBQueryResult &res)
         " sourceAttributeID, "
         " targetAttributeID, "
         " calculationTypeID, "
-		" description, "
         " reverseCalculationTypeID, "
-        " targetGroupIDs, "         //5
-        " stackingPenaltyApplied, "
-        " effectAppliedInState, "
-        " affectingID, "
-        " affectingType, "
-        " affectedType "            //10
+        " targetGroupIDs, "
+        " stackingPenalty, " //5
+        " effectState, "
+        " targetType, "
+        " targetGroup "
         " FROM dgmEffectsInfo "
-        " WHERE effectID = '%u' ",
+        " WHERE effectID = %u ",
         effectID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -180,7 +178,7 @@ void ModuleDB::GetDgmTypeEffects(uint32 typeID, DBQueryResult &res)
         " effectID, "
 		" isDefault "
         " FROM dgmTypeEffects "
-        " WHERE typeID = '%u' ", typeID))
+        " WHERE typeID = %u ", typeID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
@@ -202,7 +200,7 @@ void ModuleDB::GetDgmSkillBonusModifiers(uint32 skillID, DBQueryResult &res)
         " affectingType, "
         " affectedType "
         " FROM dgmSkillBonusModifiers "
-        " WHERE skillID = '%u' ",
+        " WHERE skillID = %u ",
         skillID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -225,7 +223,7 @@ void ModuleDB::GetDgmShipBonusModifiers(uint32 shipID, DBQueryResult &res)
         " affectingType, "
         " affectedType "
         " FROM dgmShipBonusModifiers "
-        " WHERE shipID = '%u' ",
+        " WHERE shipID = %u ",
         shipID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -240,7 +238,7 @@ void ModuleDB::GetDgmImplantModifiers(uint32 implantID, DBQueryResult &res)
         " effectID, "
         " isDefault "
         " FROM dgmTypeEffects "
-        " WHERE typeID = '%u' ", implantID))
+        " WHERE typeID = %u ", implantID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     } */

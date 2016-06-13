@@ -20,9 +20,10 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Aknor Jaden, Luck
-    Updates:    Allan
+    Author:        Aknor Jaden, Luck    (original code)
+    Updates:    Allan   (reworked and implemented)
 */
+
 /* major updates to clean up code and implement basic memory management (remove naked 'new')  -allan 9Mar16 */
 
 #ifndef MODULE_EFFECTS_H
@@ -33,7 +34,6 @@
 #include "utils/Singleton.h"
 
 
-// ////////////////////// Effects Class ////////////////////////////
 typedef std::vector<uint32> typeTargetGroupIDlist;
 
 class MEffect
@@ -73,18 +73,16 @@ public:
     std::string GetGuid()                                       { return (m_EffectID == 0) ? std::string("") : m_Guid; }
     std::string GetSfxName()                                    { return (m_EffectID == 0) ? std::string("") : m_DisplayName; }
     std::string GetEffectName()                                 { return (m_EffectID == 0) ? std::string("") : m_EffectName; }
-    std::string GetDescription()                                { return (m_EffectID == 0) ? std::string("") : m_Description; }
     std::string GetDisplayName()                                { return (m_EffectID == 0) ? std::string("") : m_DisplayName; }
 
     //accessors for the data loaded, if any, from the dgmEffectsInfo table:
     uint32 GetSizeOfAttributeList()                             { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_numOfIDs; }
     uint32 GetSourceAttributeID(uint32 index)                   { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_SourceAttributeIDs.at(index); }
     uint32 GetTargetAttributeID(uint32 index)                   { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_TargetAttributeIDs.at(index); }
-    uint32 GetStackingPenaltyApplied(uint32 index)              { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_StackingPenaltyAppliedIDs.at(index); }
-    uint32 GetModuleStateWhenEffectApplied()                    { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_EffectAppliedInStateIDs.at(0); }
-    uint32 GetAffectingID(uint32 index)                         { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_AffectingIDs.at(index); }
-	uint32 GetTargetTypeToWhichEffectApplied(uint32 index)      { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_AffectedTypes.at(index); }
-    uint32 GetEffectApplicationType(uint32 index)               { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_AffectingTypes.at(index); }
+    uint32 GetStackingPenalty(uint32 index)                     { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_StackingPenalty.at(index); }
+    uint32 GetEffectState()                                     { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_EffectState.at(0); }
+    uint32 GetTargetGroup(uint32 index)                         { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_targetGroup.at(index); }
+	uint32 GetTargetType(uint32 index)                          { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? 0 : m_targetType.at(index); }
     EVECalculationType GetCalculationType(uint32 index)         { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? (EVECalculationType)0 : (EVECalculationType)m_CalculationTypeIDs.at(index);}
     EVECalculationType GetReverseCalculationType(uint32 index)  { return ((m_EffectID == 0) || (!m_EffectsInfoLoaded)) ? (EVECalculationType)0 : (EVECalculationType)m_ReverseCalculationTypeIDs.at(index);}
 
@@ -120,29 +118,24 @@ private:
     uint32 m_NpcActivationChanceAttributeID;
     uint32 m_FittingUsageChanceAttributeID;
 
-    std::vector<uint32> m_AffectingIDs;
-    std::vector<uint32> m_AffectedTypes;
-    std::vector<uint32> m_AffectingTypes;
+    std::vector<uint32> m_targetGroup;
+    std::vector<uint32> m_targetType;
+    std::vector<uint32> m_StackingPenalty;
     std::vector<uint32> m_SourceAttributeIDs;
     std::vector<uint32> m_TargetAttributeIDs;
     std::vector<uint32> m_CalculationTypeIDs;
-    std::vector<uint32> m_EffectAppliedInStateIDs;
+    std::vector<uint32> m_EffectState;
     std::vector<uint32> m_ReverseCalculationTypeIDs;
-    std::vector<uint32> m_StackingPenaltyAppliedIDs;
 
     std::string m_Guid;
     std::string m_SfxName;
     std::string m_EffectName;
-    std::string m_Description;
     std::string m_DisplayName;
 
     std::map<uint32, std::string> m_Descriptions;
     std::map<uint32, typeTargetGroupIDlist> m_TargetGroupIDlists;
 };
-//////////////////////////////////////////////////////////////////////////
 
-
-// //////////////// Permanent Memory Object Classes //////////////////////
 
 class TypeEffectsList
 {
@@ -180,40 +173,12 @@ protected:
 
 #define sDGM_Effects_Table \
     ( DGM_Effects_Table::get() )
-// -----------------------------------------------------------------------
-
-
-// This class is a singleton object, containing all effectIDs loaded from dgmTypeEffects table as a memory object:
-class DGM_Type_Effects_Table
-: public Singleton< DGM_Type_Effects_Table >
-{
-public:
-    DGM_Type_Effects_Table();
-    ~DGM_Type_Effects_Table();
-
-    // Initializes the Table:
-    int Initialize();
-
-    // Returns list of effectIDs for the given typeID:
-    TypeEffectsList* GetTypeEffectsList(uint32 typeID);
-
-protected:
-    void _Populate();
-
-    std::map<uint32, std::shared_ptr<TypeEffectsList>> m_TypeEffectsMap;
-};
-
-#define sDGM_Type_Effects_Table \
-    ( DGM_Type_Effects_Table::get() )
-// -----------------------------------------------------------------------
 
 
 
-// ////////////////////// ModuleEffects Class ////////////////////////////
-
-class InventoryItem;
 //class contained by all modules that is populated on construction of the module
 //this will contain all information about the effects of the module
+class InventoryItem;
 class ModuleEffects
 {
 public:
@@ -269,7 +234,6 @@ private:
     std::map<uint32, std::shared_ptr<MEffect>> m_FleetEffects;
     std::map<uint32, std::shared_ptr<MEffect>> m_OnlineEffects;
     std::map<uint32, std::shared_ptr<MEffect>> m_ActiveEffects;
-    std::map<uint32, std::shared_ptr<MEffect>> m_PassiveEffects;
     std::map<uint32, std::shared_ptr<MEffect>> m_OverloadEffects;
 
     //cached stuff

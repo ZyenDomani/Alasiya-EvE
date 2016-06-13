@@ -32,6 +32,7 @@
 
 #include "../EVE_Consts.h"
 #include "../EVE_Defines.h"
+#include "../EVE_Dungeon.h"
 #include "../EVE_Effects.h"
 #include "../EVE_Flags.h"
 #include "../EVE_Inventory.h"
@@ -113,6 +114,8 @@ enum SESSION_TYPE
     SESSION_TYPE_ESP = 4,
     SESSION_TYPE_GAME = 5
 };
+
+//  packet_types *should* end here...at the end of the....wait for it...PACKET TYPES!!
 
 enum EVERookieShipTypes {
     amarrRookie                = 596,

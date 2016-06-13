@@ -52,7 +52,7 @@ public:
     uint32 GetTargetChargeSize(uint32 index)                    { return ((m_SkillID == 0) || (!m_ModifierLoaded)) ? 0 : m_TargetChargeSizes[index]; }
     uint32 GetAppliedPerLevel(uint32 index)                    { return ((m_SkillID == 0) || (!m_ModifierLoaded)) ? 0 : m_AppliedPerLevelList[index]; }
     uint32 GetTargetTypeToWhichEffectApplied(uint32 index)        { return ((m_SkillID == 0) || (!m_ModifierLoaded)) ? 0 : m_AffectedTypes[index]; }
-    uint32 GetEffectApplicationType(uint32 index)               { return ((m_SkillID == 0) || (!m_ModifierLoaded)) ? 0 : m_AffectingTypes[index]; }
+    uint32 GetEffectApplicationType(uint32 index)               { return ((m_SkillID == 0) || (!m_ModifierLoaded)) ? 0 : m_targetType[index]; }
 
     bool IsModifierLoaded() { return m_ModifierLoaded; }
 
@@ -71,7 +71,7 @@ private:
     uint32* m_ReverseCalculationTypeIDs;
     uint32* m_TargetChargeSizes;
     uint32* m_AppliedPerLevelList;
-    uint32* m_AffectingTypes;
+    uint32* m_targetType;
     uint32* m_AffectedTypes;
 
     std::map<uint32, std::string> m_Descriptions;
@@ -99,7 +99,7 @@ public:
     typeTargetGroupIDlist * GetTargetGroupIDlist(uint32 index)    { return ((m_ShipID == 0) || (!m_ModifierLoaded)) ? 0 : m_TargetGroupIDlists.find(index)->second; }
     uint32 GetAppliedPerLevel(uint32 index)                    { return ((m_ShipID == 0) || (!m_ModifierLoaded)) ? 0 : m_AppliedPerLevelList[index]; }
     uint32 GetTargetTypeToWhichEffectApplied(uint32 index)        { return ((m_ShipID == 0) || (!m_ModifierLoaded)) ? 0 : m_AffectedTypes[index]; }
-    uint32 GetEffectApplicationType(uint32 index)               { return ((m_ShipID == 0) || (!m_ModifierLoaded)) ? 0 : m_AffectingTypes[index]; }
+    uint32 GetEffectApplicationType(uint32 index)               { return ((m_ShipID == 0) || (!m_ModifierLoaded)) ? 0 : m_targetType[index]; }
 
     bool IsModifierLoaded() { return m_ModifierLoaded; }
 
@@ -118,7 +118,7 @@ private:
     uint32* m_CalculationTypeIDs;
     uint32* m_ReverseCalculationTypeIDs;
     uint32* m_AppliedPerLevelList;
-    uint32* m_AffectingTypes;
+    uint32* m_targetType;
     uint32* m_AffectedTypes;
 
     std::map<uint32, std::string> m_Descriptions;
@@ -145,7 +145,7 @@ public:
     typeTargetGroupIDlist * GetTargetGroupIDlist(uint32 index)    { return ((m_implantID == 0) || (!m_ModifierLoaded)) ? 0 : m_TargetGroupIDlists.find(index)->second; }
     uint32 GetAppliedPerLevel(uint32 index)                    { return ((m_implantID == 0) || (!m_ModifierLoaded)) ? 0 : m_AppliedPerLevelList[index]; }
     uint32 GetTargetTypeToWhichEffectApplied(uint32 index)        { return ((m_implantID == 0) || (!m_ModifierLoaded)) ? 0 : m_AffectedTypes[index]; }
-    uint32 GetEffectApplicationType(uint32 index)               { return ((m_implantID == 0) || (!m_ModifierLoaded)) ? 0 : m_AffectingTypes[index]; }
+    uint32 GetEffectApplicationType(uint32 index)               { return ((m_implantID == 0) || (!m_ModifierLoaded)) ? 0 : m_targetType[index]; }
 
     bool IsModifierLoaded() { return m_ModifierLoaded; }
 
@@ -164,7 +164,7 @@ private:
     uint32* m_CalculationTypeIDs;
     uint32* m_ReverseCalculationTypeIDs;
     uint32* m_AppliedPerLevelList;
-    uint32* m_AffectingTypes;
+    uint32* m_targetType;
     uint32* m_AffectedTypes;
 
     std::map<uint32, std::string> m_Descriptions;

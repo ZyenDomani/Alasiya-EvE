@@ -950,16 +950,6 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
     //c->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.
 }
 
-
-/*typedef enum {
-    dgmEffPassive = 0,
-    dgmEffActivation = 1,
-    dgmEffTarget = 2,
-    dgmEffArea = 3,
-    dgmEffOnline = 4,
-    dgmEffOverload = 5,
-} EffectCategories;*/
-
 /** @todo set a notify boolean here? */
 void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
     /** @note  this is only used by modules

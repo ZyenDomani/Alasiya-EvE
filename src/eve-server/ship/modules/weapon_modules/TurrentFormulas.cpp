@@ -10,16 +10,16 @@
 #include "ship/modules/weapon_modules/TurrentFormulas.h"
 
 
-float TurrentFormulas::GetToHit(ShipItemRef shipRef, InventoryItemRef ItemRef, SystemEntity* pTarget)
+float TurrentFormulas::GetToHit(ShipItemRef shipRef, InventoryItemRef weaponRef, SystemEntity* pTarget)
 {
     float ChanceToHit = 1.0f;
 
     SystemEntity* pSE = shipRef->GetPilot()->GetShipSE();
-    double range = ItemRef->GetAttribute(AttrMaxRange).get_float();
-    double distance = shipRef->position().distance(pTarget->GetSelf()->position());
+    double range = weaponRef->GetAttribute(AttrMaxRange).get_float();
+    double distance = shipRef->position().distance(pTarget->DestinyMgr()->GetPosition());
 
-    double trackingSpeed = ItemRef->GetAttribute(AttrTrackingSpeed).get_float();
-    double falloff = ItemRef->GetAttribute(AttrFalloff).get_float();
+    double trackingSpeed = weaponRef->GetAttribute(AttrTrackingSpeed).get_float();
+    double falloff = weaponRef->GetAttribute(AttrFalloff).get_float();
 
     Character* pChar = shipRef->GetPilot()->GetChar().get();
     range *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillSharpshooter, true))));      //  5% increase in optimal range
@@ -44,7 +44,7 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, InventoryItemRef ItemRef, S
      * tohit =  0.5 ^ (c + e)
      */
     double a = (angVelocity / (distance * trackingSpeed));
-    double b = (ItemRef->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
+    double b = (weaponRef->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
     double c = pow((a * b), 2);
 
     double d = _max(distance - range);
@@ -64,7 +64,7 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, InventoryItemRef ItemRef, S
 float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
 {
     double range = pNPC->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float();
-    double distance = pNPC->GetSelf()->position().distance(pTarget->GetSelf()->position());
+    double distance = pNPC->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
 
     if (distance <= range)
         return 1.0;
@@ -98,7 +98,7 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
 float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
 {
     double range = pDrone->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float();
-    double distance = pDrone->GetSelf()->position().distance(pTarget->GetSelf()->position());
+    double distance = pDrone->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
 
     if (distance <= range)
         return 1.0;

@@ -54,8 +54,8 @@ Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSys
     drone->SetAttribute(AttrCapacitorCharge,     drone->GetAttribute(AttrCapacitorCapacity), false);  // Set Capacitor Charge to the Capacitor Capacity
     drone->SetAttribute(AttrWarpCapacitorNeed,   drone->GetAttribute(AttrWarpCapacitorNeed), false);      // Shield Charge
 
-    if (!drone->HasAttribute(AttrAgility))
-        drone->SetAttribute(AttrAgility, 1, false);
+    if (!drone->HasAttribute(AttrInetia))
+        drone->SetAttribute(AttrInetia, 1, false);
 
     if (!drone->HasAttribute(AttrDamage))
         drone->SetAttribute(AttrDamage, 0, true );
@@ -222,7 +222,7 @@ void Drone::EncodeDestiny( Buffer& into )
         data.velocity_x = m_destiny->GetVelocity().x;
         data.velocity_y = m_destiny->GetVelocity().y;
         data.velocity_z = m_destiny->GetVelocity().z;
-        data.agility = m_destiny->GetAgility();
+        data.intertia = m_destiny->GetInertia();
         data.speedfraction = m_destiny->GetSpeedFraction();
         into.Append( data );
 

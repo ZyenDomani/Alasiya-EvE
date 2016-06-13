@@ -142,6 +142,7 @@ public:
     double GetFollowDistance()                          { return m_targetDistance; }
     double GetMass()                                    { return m_mass; }
     double GetAgility()                                 { return m_shipAgility; }
+    double GetInertia()                                 { return m_shipInertia; }
     uint32 GetStateStamp()                              { return m_stateStamp; }
 
     void MakeMissile(Missile* missile);
@@ -151,52 +152,65 @@ protected:
 
     SystemEntity* const mySE;			//we do not own this.
 
-    //things dictated by our entity's configuration/equipment:
-    double m_radius;                    //in m
+    //things dictated by our entity's configuration:
+    int8 m_warpStrength;                //signed    - >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
+
+    uint8 m_warpAccelTime;              //in s      - calculated internally for warp stages
+    uint8 m_warpDecelTime;              //in s      - calculated internally for warp stages
+
     float m_mass;                       //in kg
     float m_massMKg;                    //in Millions of kg
-    double m_maxShipSpeed;              //in m/s
-    double m_shipAgility;               //in s/kg
+    float m_alignTime;                  //in s      - align and enter warp are same (for our purposes)
     float m_shipWarpSpeed;              //in au/s
-    float m_alignTime;                  //in s   - align and enter warp are same times.
     float m_timeToEnterWarp;            //in s
-    float m_speedToLeaveWarp;           //in m/s
-    uint8 m_warpAccelTime;              //in s
-    uint8 m_warpDecelTime;              //in s
-    double m_warpCapacitorNeed;         //in GJ
-    double m_shipInertiaModifier;
-    int8 m_warpStrength;                // >0 means ship cannot warp
-    double m_capNeeded;                 //capacitor charged needed to initiate warp
+    float m_speedToLeaveWarp;           //in m/s    - this is set to 75% of m_maxShipSpeed
 
-    //derrived from other params:
+    double m_radius;                    //in m
+    double m_capNeeded;                 //in GJ     - capacitor charged needed to initiate warp
+    double m_maxShipSpeed;              //in m/s
+    double m_warpCapacitorNeed;         //in GJ     - capacitor charged needed to initiate warp
+    // ship motion factors for complicated maths
+    double m_shipAgility;               //in s/Mkg  - time-constant of movement for objects in eve physics (and 'T' in Dr. SS's calculations)
+                                        //          - characteristic of time that governs the rate of change in motion of an object
+    double m_shipInertia;               //in s/Mkg  - reciprocal of drag constant in EvE
+                                        //          - the drag coefficient is 1/I and in Mkg/s
+
+    //derrived from above params:
+    float m_maxSpeed;                   //in m/s
+    float m_shipMaxAccelTime;           //in s      - used to determine accel rate, and total accel time
+
+    double m_radians;                   //in rad    - radians left in a(n) (ongoing) turn
+
     GPoint m_position;                  //in m
     GVector m_velocity;                 //in m/s
-    double m_radians;                   //radians in a turn
-    float m_maxSpeed;                   //in m/s
-    float m_shipMaxAccelTime;           //in s  this is used to determine accel rate, and total accel time
 
     //User controlled information used by a state to determine what to do.
-    Destiny::BallMode State;
+    bool m_stop;                        //used to denote Stop() has been called to avoid multiple stops (and associated decel)
+    bool m_accel;                       //used for raising ship speed via speedo
+    bool m_decel;                       //used for lowering ship speed via speedo
+    bool m_cloaked;
+    bool m_turning;                     //used to denote ship turning for associated checks
+    bool m_inBubble;                    //used to tell if client is in bubble or not.
+    bool m_tractored;
+    bool m_tractorPause;
+
+    int32 m_stopDistance;               //from destination, in m
+
+    uint8 m_turnTic;                    //time into turn
+    uint32 m_stateStamp;                //timestamp of when current state began
+
     float m_userSpeedFraction;          //fuzzy logic - speed % - set by user command
     float m_currentSpeedFraction;       //fuzzy logic - speed % - current ship speed
     float m_activeSpeedFraction;        //fuzzy logic - speed % - set by USF and CSF
-    GPoint m_targetPoint;
+
     double m_targetDistance;            //in m
     double m_followDistance;            //in m
+    double m_moveTimer;
+
+    GPoint m_targetPoint;
     GVector m_shipHeading;              //direction ship is facing
     GVector m_targetHeading;            //direction to target from current heading
-    uint8 m_turnTic;                    //time into turn
-    int32 m_stopDistance;               //from destination, in m
-    double m_moveTimer;
-    bool m_inBubble;                    //used to tell if client is in bubble or not.
-    uint32 m_stateStamp;                //states need to know when they started.
-    bool m_cloaked;
-    bool m_stop;                        //used to denote Stop() has been called to avoid multiple stops (and associated decel)
-    bool m_turning;                     //used to denote ship turning for associated checks
-    bool m_accel;                       //used for raising ship speed via speedo
-    bool m_decel;                       //used for lowering ship speed via speedo
-    bool m_tractored;
-    bool m_tractorPause;
+    Destiny::BallMode State;
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
     // movement methods
@@ -212,10 +226,10 @@ private:
     Timer m_dockTimer;
 
     // Internal Collision Methods   -allan Nov 2015
+    bool m_bump;
     void _CheckBump();                              //iterate thru objects in current bubble to check for collisions
     void _Bump(SystemEntity* who);                  //math methods for determining direction and speed of bumped ships
     void _Bounce(GVector direction, float speed);   //packet sending for ships after bounce
-    bool m_bump;
 
     // Internal Turn Methods    -allan  Aug - Oct, 2015
     bool _IsTurn();                     //check for current heading vs target direction. return true if degrees > 2 for warp align and > 0.8 for normal movement

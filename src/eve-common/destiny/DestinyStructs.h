@@ -94,7 +94,7 @@ struct DataSector {
     double velocity_x;
     double velocity_y;
     double velocity_z;
-    float agility;
+    float intertia;
     float speedfraction;
 };
 

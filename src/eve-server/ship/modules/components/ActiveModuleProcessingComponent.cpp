@@ -81,7 +81,7 @@ void ActiveModuleProcessingComponent::ActivateCycle()
         uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
         _log(SHIP__MODULE_INFO, "AMPC::ActivateCycle() -  there are %u attributes in effect %u", ids, itr->first );
         while (cur < ids) {
-            testID = itr->second->GetAffectingID(cur);
+            testID = itr->second->GetTargetGroup(cur);
             if (groupID != testID) { ++cur; continue; }
             targetAttrID = itr->second->GetTargetAttributeID(cur);
             sourceAttrID = itr->second->GetSourceAttributeID(cur);
@@ -123,7 +123,7 @@ void ActiveModuleProcessingComponent::DeactivateCycle()
         uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
         _log(SHIP__MODULE_INFO, "AMPC::DeactivateCycle() -  there are %u attributes in effect %u", ids, itr->first );
         while (cur < ids) {
-            testID = itr->second->GetAffectingID(cur);
+            testID = itr->second->GetTargetGroup(cur);
             if (groupID != testID) { ++cur; continue; }
             targetAttrID = itr->second->GetTargetAttributeID(cur);
             sourceAttrID = itr->second->GetSourceAttributeID(cur);

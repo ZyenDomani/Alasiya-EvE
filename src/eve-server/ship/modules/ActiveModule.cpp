@@ -108,7 +108,7 @@ void ActiveModule::Activate(SystemEntity* targetEntity)
 
 void ActiveModule::Deactivate()
 {
-    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState != MOD_FITTED) or (m_ModuleState == MOD_UNFITTED)) return;
+    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_UNFITTED)) return;
 
     m_ModuleState = MOD_DEACTIVATING;
     m_AMPC->StopCycle();

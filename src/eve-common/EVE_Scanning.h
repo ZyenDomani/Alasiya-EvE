@@ -34,22 +34,6 @@ typedef enum {
 } ProbeState;
 
 /*
- probeStateInactive = 0
- probeStateIdle = 1
- probeStateMoving = 2
- probeStateWarping = 3
- probeStateScanning = 4
- probeStateReturning = 5
- probeResultPerfect = 1.0
- probeResultInformative = 0.75
- probeResultGood = 0.25
- probeResultUnusable = 0.001
-
- probeResultPerfect = 1.0
- probeResultInformative = 0.75
- probeResultGood = 0.25
- probeResultUnusable = 0.001
-
 
  probeScanGroupScrap = 1
  probeScanGroupSignatures = 4

@@ -27,6 +27,8 @@
 /** @todo  there is much more to be done here.  this is just the beginning.
  * many, many effects missing from dgmEffectsInfo table (aknor was hand-writing them)
  * module states incomplete.  only coded for online, deactivating, offline and unfitted right now.
+ *
+ *      this file is to decode the fields in the 'dgmEffectsInfo' table.
  */
 
 #ifndef MODULE_DEFS_H
@@ -35,12 +37,6 @@
 #include "utils/EvilNumber.h"
 
 
-// Important constants pertaining to modules and their operation:
-// 75% of your capacitor will be drained when you online a module while in space, if you have it
-#define ONLINE_MODULE_IN_SPACE_CAP_PENALTY					0.75
-
-
-//more will go here
 //this is to avoid include complications and multiple dependancies etc..
 enum ModuleCommand
 {
@@ -65,7 +61,7 @@ enum ChargeStates
 };
 
 
-enum EffectCategories
+enum EffectCategories   // not sure what this is, or if it's used.
 {
     dgmEffPassive               = 0,
     dgmEffActivation            = 1,
@@ -75,105 +71,51 @@ enum EffectCategories
     dgmEffOverload              = 5
 };
 
-// These are the module states when an effect will take affect:
-// *** use these values to decode the 'effectAppliedInState' field of the 'dgmEffectsInfo' database table
-/* these are used in ModuleEffects to seperate effects into state containers  */
+// These are the module states when an effect will take affect:  still needs a bit of work and thought.
+// *** these values are the 'effectAppliedInState' bitfield (as integer)
+/* these are used in ModuleEffects.cpp to seperate effects into state containers  */
+    // also used for internal module status checking
 enum ModuleStates
 {
     MOD_UNFITTED                = 0,
     // means the effect is active AT ALL TIMES; used ONLY for skill, ship, rig, subsystem, and beacon effects
-    MOD_FITTED                  = 1,   // module fitted, but NOT put online yet     -- not used yet (needs code rewrite)
+    MOD_OFFLINE                  = 1,   // module fitted, but NOT put online yet - NOT used for rigs    -- not used yet (needs code rewrite)
     /* 'Online' is used for:
      * ACTIVE modules fitted and online, but not activated (PASSIVE effects only)
      * PASSSIVE modules fitted and online
      * RIG modules fitted (always online)
      */
-    MOD_ONLINE                  = 2,    // module fitted and online
+    MOD_ONLINE                  = 2,    // module online  - rigs are either online or offline.
     MOD_ACTIVATED               = 4,    // used only for ACTIVE modules operating in non-Overloaded mode
     MOD_OVERLOADED              = 8,    // used only for ACTIVE modules operating in Overloaded mode
     MOD_GANG                    = 16,   // not used yet
     MOD_FLEET                   = 32,   // not used yet
-    // used for internal module status checking
     MOD_DEACTIVATING            = 64,   // module transistioning from MOD_ACTIVATED to MOD_OFFLINE
-    MOD_OFFLINE                 = 128   // module transistioning from MOD_OFFLINE to MOD_FITTED  -not used
 };
 
-// *** use these values to decode the 'effectID' field of the 'dgmEffectsInfo' database table
-/**  depreciated.  use EffectsEnum.h for these
-enum ModuleEffectAppliedBehaviors
-{
-    EFFECT_PERSISTENT           = 1,
-    EFFECT_PASSIVE              = 2,
-    EFFECT_OVERLOAD             = 8,
-    EFFECT_LOPOWER              = 11,
-    EFFECT_HIPOWER              = 12,
-    EFFECT_MEDPOWER             = 13,
-    EFFECT_ONLINE               = 16,
-    EFFECT_MINING               = 17,
-    EFFECT_RIG                  = 2663,
-    EFFECT_SUBSYSTEM            = 3772
-};
-*/
-
-/** @todo  these next two are way off.  they need updating and implementation....eventually  */
-// These are the target types to which module and other types' effects are applied when activated:
-// *** use these values to decode the 'effectingType' field of the 'dgmEffectsInfo' database table
-enum EffectTargetEquipmentTypes
-{
-    EQUIP_MODULE                = 0,
-    EQUIP_CHARGE                = 1,
-    EQUIP_THIS_SHIP             = 2,
-    EQUIP_DRONE                 = 3,
-    EQUIP_EXTERNAL_SHIP         = 4,
-    EQUIP_EXTERNAL_SHIP_MODULE  = 5,
-    EQUIP_EXTERNAL_SHIP_CHARGE  = 6
-};
-
+/** @todo  this needs updating and implementation....eventually  */
 // These are the target types to which module effects are applied when activated:
-// *** use these values to decode the 'effectedType' field of the 'dgmEffectsInfo' database table
-enum ModuleEffectAppliedToTargetTypes
-{
-    // 0: the target of the effect is the module's own attribute(s)
-    EFFECT_TARGET_SELF          = 0,
-    // 1: the target of the effect is the attribute(s) of the ship to which the module is fitted
-    EFFECT_TARGET_SHIP          = 1,
-    // 2: the target of the effect is the attribute(s) of the current target of the ship to which the module is fitted
-    EFFECT_TARGET_EXTERNAL      = 2,
-    // 3: module or modules that are fitted to the current ship, this special case will indicate when the effect is
-    // applied to other modules applied to the same ship - the dgmEffectsActions table fields of targetEquipmentType and
-    // targetGroupIDs will have additional information for the Module Manager to make use of this effect
-    EFFECT_MODULE_ON_SHIP       = 3,
-    // 4: the effect is from a loaded charge, which will affect the weapon module the charge is loaded into
-    EFFECT_LOADED_CHARGE        = 4,
-    // 5: the effect acts upon a charge loaded into a weapon module.  this will affect loaded charges of the specified groupID
+// *** these values are the 'targetType' field
+enum EffectTargetTypes
+{   // 0: zero value.  undefined
+    EFFECT_UNDEFINED            = 0,
+    // 1: the target is the ship to which the module is fitted
+    EFFECT_SHIP                 = 1,
+    // 2: the target is a module fit to same ship. use 'targetGroupIDs' to decode affected groups
+    EFFECT_MODULE               = 2,
+    // 3: the target is a loaded charge.  use 'targetGroupIDs' to decode affected groups of loaded charges
+    EFFECT_LOADED_CHARGE        = 3,
+    // 4: the target is the current target of the ship to which the module is fitted
+    EFFECT_TARGET               = 4,
+    // 5: the target is a loaded module  - this could use EFFECT_MODULE
     EFFECT_CHARGE               = 5,
-    // 6: the effect acts upon the character's attribute specific to the effect
-    EFFECT_CHARACTER            = 6
+    // 6: the target of the effect is the module's own attribute(s)  - maybe unused
+    EFFECT_TARGET_SELF          = 6,
+    // 7: the effect acts upon the character's attribute specific to the effect  - maybe unused.
+    EFFECT_CHARACTER            = 7
 };
 
-// These are the methods by which module effects are applied to the designated target:
-// *** use these values to decode the 'effectApplicationType' field of the 'dgmEffectsInfo' database table
-enum ModuleApplicationTypes
-{
-    // applied by PASSIVE or ACTIVE modules where an effect is maintained; means the effect takes effect on the
-    // target (see below) upon entering the ONLINE state, then reversed when going out of ONLINE state
-    EFFECT_ONLINE_MAINTAIN      = 1600,
-    // applied by ACTIVE modules where an effect is maintained; means the effect takes effect on the
-    // target (see below) upon entering the ACTIVATE state, then reversed when going out of ACTIVATE state
-    EFFECT_ACTIVE_MAINTAIN      = 1601,
-    // applied by ACTIVE modules where an effect is applied cumulatively on each cycle; means the effect takes
-    // effect on the target (see below) one extra time when in ACTIVATE state after each CYCLE duration expires
-    EFFECT_ACTIVE_ACCUMULATE    = 1602
-};
-
-// These are the methods by which module effects are applied to the designated target:
-// *** use these values to decode the 'stackingPenaltyApplied' field of the 'dgmEffectsInfo' database table
-enum ModuleStackingPenaltyState
-{
-    NO_STACKING_PENALTY         = 0,
-    STACKING_PENALTY_APPLIES    = 1
-};
-
+// this is used in generic module class
 enum ModulePowerLevel
 {
     MODULE_BANK_UNDEFINED       = 0,
@@ -184,8 +126,8 @@ enum ModulePowerLevel
     MODULE_BANK_SUBSYSTEM       = 5
 };
 
-//calculation types
-// *** use these values to decode the 'calculationTypeID' and the 'reverseCalculationTypeID' fields of the 'dgmEffectsInfo' database table
+//calculation types    updated Dec2015    -allan
+// *** these values are the 'calculationTypeID' and the 'reverseCalculationTypeID' fields
 enum EVECalculationType
 {
     CALC_NONE                   = -1,
@@ -205,7 +147,6 @@ enum EVECalculationType
     CALC_ABSOLUTE_MIN           = 13,
     CALC_CAP_BOOSTERS           = 14,
 
-    //  mod'd db for these calculations     -allan Dec2015
     CALC_REV_ABSOLUTE           = 24,
     CALC_DIVIDER                = 25,
     CALC_SUBTRACT_POSITIVE      = 26,
@@ -230,8 +171,6 @@ enum EVECalculationType
     CALC_REV_MODIFY_PERCENT_W_PERCENT   = 57,
     CALC_REDUCE_BY_PERCENT      = 58,
     CALC_REV_REDUCE_BY_PERCENT  = 59
-
-    //more will show up, im sure
 };
 
 

@@ -38,6 +38,7 @@
 #include "system/SystemEntity.h"
 #include <system/SystemBubble.h>
 #include <npc/NPC.h>
+#include <npc/NPCAI.h>
 
 TargetManager::TargetManager(SystemEntity *self)
 : m_destroyed(false),
@@ -239,7 +240,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     return true;
 }
 
-bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 maxLockedTargets, double maxTargetLockRange)
+bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 maxLockedTargets, double maxTargetLockRange, bool &chase)
 {       // NOTE  this is for npcs
     //first make sure they are not already in the list
     std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(who);
@@ -263,6 +264,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 max
     if (mySE->GetPosition().distance(who->GetPosition()) > maxTargetLockRange){
         _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are too far away.  Begin Approaching.",
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
+        chase = true;
         return TargetFail(who);
     }
     // Check invulnerability (undock and jump invul states)
@@ -294,8 +296,6 @@ bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 max
 }
 
 void TargetManager::TargetLost(SystemEntity *who) {
-    if (mySE->IsNPCSE())
-        mySE->GetNPCSE()->TargetLost(who);
     std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(who);
     if (res == m_targets.end())
         return;
@@ -306,6 +306,9 @@ void TargetManager::TargetLost(SystemEntity *who) {
     _log(TARGET__INFO, "%s(%u) has lost lock on %s(%u)",
          mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
 
+    if (mySE->IsNPCSE())
+        mySE->GetNPCSE()->TargetLost(who);
+    
     if (!mySE->HasPilot()) return;
     Notify_OnTarget te;
         te.mode = "lost";
