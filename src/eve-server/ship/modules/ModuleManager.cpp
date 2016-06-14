@@ -945,6 +945,9 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
         if (effectName == "online") {
             mod->Online();
             targetNotNeeded =true;
+        } else if (!mod->isOnline()) {
+            m_Ship->GetPilot()->SendErrorMsg("Your %s is offline. You cannot activate an offline module.", mod->getItem()->itemName().c_str());
+            return;
         } else if (effectName == "cloaking") {//FIXME  set this to use module code, drain cap, etc.
             if (m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->IsCloaked())
                 m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->UnCloak();
