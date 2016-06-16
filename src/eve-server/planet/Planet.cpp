@@ -38,7 +38,8 @@ void PlanetDataMgr::_Populate()
 
     m_db->GetPlanetData(*res);
     while (res->GetRow(row)) {
-        m_planetData.insert(std::pair<uint32, uint16>(row.GetInt(0), row.GetInt(1)));
+        // SELECT planet.typeID, resource.typeID
+        m_planetData.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
     }
 
     //cleanup

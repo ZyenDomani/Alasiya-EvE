@@ -43,6 +43,19 @@ public:
     double z;
 };
 
+/* POD entry for active dungeon */
+class DBActiveDungeon {
+public:
+    uint32 systemID;
+    uint32 dungeonID;
+    uint8 dunTemplateID;
+    uint64 dunExpiryTime;
+    uint8 state;
+    double x;
+    double y;
+    double z;
+};
+
 class ManagerDB {
 public:
     /* these are for belt manager */
@@ -57,9 +70,16 @@ public:
     void GetFactionGroups(DBQueryResult& res);
     void GetRegionFactionInfo(DBQueryResult& res);
 
-    /* these are for anomaly manager */
-
     /* these are for dungeon manager */
+    void GetDunTemplates(DBQueryResult& res);
+    void GetDunRoomInfo(DBQueryResult& res);
+    void GetDunRoomData(DBQueryResult& res);
+    void GetDunGroupData(DBQueryResult& res);
+    void GetDunSpawnInfo(DBQueryResult& res);
+    bool GetActiveDungeons(uint32 systemID, std::vector< DBActiveDungeon >& into);
+    void SaveActiveDungeon(DBActiveDungeon& dun);
+
+    /* these are for anomaly manager */
 
     /* these are for wormhole manager */
 

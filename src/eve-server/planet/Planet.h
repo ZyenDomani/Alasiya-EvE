@@ -35,7 +35,7 @@ protected:
 private:
     PlanetDB* m_db;
 
-    std::unordered_multimap<uint32, uint16> m_planetData;
+    std::unordered_multimap<uint32, uint32> m_planetData;
 };
 
 #define sPlanetDataMgr \

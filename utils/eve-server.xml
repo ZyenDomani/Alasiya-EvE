@@ -93,8 +93,8 @@
         <!-- Spawn Checks and RoamingSpawns are implemented but StaticSpawns are not-->
         <RoamingSpawns>0</RoamingSpawns><!-- bool -->
         <StaticSpawns>0</StaticSpawns><!-- bool -->
-        <RoamingTimer>15</RoamingTimer><!-- time between spawn checks, in minutes (initial spawn is this x3) -->
-        <StaticTimer>10</StaticTimer><!-- time between spawn checks, in minutes (initial spawn is this x3) -->
+        <RoamingTimer>15</RoamingTimer><!-- time between spawn checks, in minutes -->
+        <StaticTimer>10</StaticTimer><!-- time between spawn checks, in minutes -->
     </npc>
 
     <database>

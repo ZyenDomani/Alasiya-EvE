@@ -149,3 +149,88 @@ void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidSE> roids
             _log(DATABASE__ERROR, "SaveSystemRoids - unable to save roids");
     }
 }
+
+
+void ManagerDB::GetDunGroupData(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT d.itemTypeID, t.groupID, g.categoryID, d.xpos, d.ypos, d.zpos"
+        " FROM dunGroupData AS d"
+        "  LEFT JOIN invTypes AS t ON d.itemTypeID = t.typeID"
+        "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID" )) {
+        _log(DATABASE__ERROR, "Error in GetDunGroupData query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetDunRoomData(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT dunRoomID, dunGroupID, xpos, ypos, zpos FROM dunRoomData"))
+        _log(DATABASE__ERROR, "Error in GetDunRoomData query: %s", res.error.c_str());
+}
+
+void ManagerDB::GetDunRoomInfo(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT dunRoomID, dunRoomType, dunRoomCategory, dunRoomSpawnID, dunRoomSpawnType FROM dunRoomInfo"))
+        _log(DATABASE__ERROR, "Error in GetDunRoomInfo query: %s", res.error.c_str());
+}
+
+void ManagerDB::GetDunSpawnInfo(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT dunRoomSpawnID, dunRoomSpawnType, xpos, ypos, zpos FROM dunRoomSpawnInfo"))
+        _log(DATABASE__ERROR, "Error in GetDunSpawnInfo query: %s", res.error.c_str());
+}
+
+void ManagerDB::GetDunTemplates(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+        "SELECT dunTemplateID, dunRoomID, dunEntryID, dunTypeID, dunSpawnType, dunRooms, dunRoomTypeID, dunRoomCategoryID FROM dunTemplates"))
+        _log(DATABASE__ERROR, "Error in GetDunTemplates query: %s", res.error.c_str());
+}
+
+bool ManagerDB::GetActiveDungeons(uint32 systemID, std::vector<DBActiveDungeon>& into)
+{
+    DBQueryResult res;
+
+    if(!sDatabase.RunQuery(res,
+        "SELECT"
+        "   systemID,"
+        "   state,"
+        "   dungeonID,"
+        "   dunTemplateID,"
+        "   dunExpiryTime,"
+        "   xpos, ypos, zpos"
+        " FROM dunActive"   //Active Dungeons
+        " WHERE systemID = %u", systemID)) {
+        _log(DATABASE__ERROR, "Error in GetActiveDungeons query: %s", res.error.c_str());
+        return false;
+    }
+
+    _log(DATABASE__RESULTS, "GetActiveDungeons returned %u items", res.GetRowCount());
+    DBResultRow row;
+    DBActiveDungeon entry;
+    while(res.GetRow(row)) {
+        entry.systemID = row.GetInt(0);
+        entry.state = row.GetInt(1);
+        entry.dungeonID = row.GetInt(2);
+        entry.dunTemplateID = row.GetInt(3);
+        entry.dunExpiryTime = row.GetInt64(4);
+        entry.x = row.GetInt(5);
+        entry.y = row.GetInt(6);
+        entry.z = row.GetInt(7);
+        into.push_back(entry);
+    }
+
+    return !into.empty();
+}
+
+void ManagerDB::SaveActiveDungeon(DBActiveDungeon& dun)
+{
+    DBerror err;
+    if (!sDatabase.RunQuery(err,
+        "INSERT INTO dunActive" //Active Dungeons
+        " (systemID, state, dungeonID, dunTemplateID, dunExpiryTime, xpos, ypos, zpos)"
+        " VALUES "
+        "(%u, %u, %u, %u, " PRIu64 ", %f, %f, %f)",
+        dun.systemID, dun.state, dun.dungeonID, dun.dunTemplateID, dun.dunExpiryTime, dun.x, dun.y, dun.z )) {
+        _log(DATABASE__ERROR, "SaveActiveDungeon - unable to save dungeonID %u", dun.dungeonID);
+    }
+}

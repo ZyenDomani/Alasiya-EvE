@@ -377,8 +377,6 @@ UPDATE `dgmTypeAttributes` SET `valueInt`=`valueFloat`, `valueFloat`=NULL WHERE 
 ALTER TABLE `crtCategories` ADD `categoryNameID` int(10) unsigned DEFAULT '0';
 ALTER TABLE `crtCategories` ADD `dataID` int(10) unsigned DEFAULT '0';
 
-ALTER TABLE `crtClasses` ADD `dataID` int(10) unsigned DEFAULT '0';
-
 /* update beacon type 10124 IsGlobal attribute to true */
 INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES ('10124', '1207', '1', NULL);
 

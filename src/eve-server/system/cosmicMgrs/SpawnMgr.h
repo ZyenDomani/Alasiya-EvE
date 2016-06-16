@@ -94,7 +94,7 @@ public:
 protected:
     void _Populate();
 
-    typedef std::map<uint32, uint32> RegionFactionsDef;  // simple (k,v pair of regionID and factionID
+    typedef std::map<uint32, uint32> RegionFactionsDef;  //regionID is key, factionID is value
     typedef std::unordered_multimap<uint32, uint32> RatGroupTypesDef;    //groupID is key, typeID is value
     typedef std::unordered_multimap<uint8, RatSpawnClass> RatSpawnClassDef;  // type is key
     typedef std::unordered_multimap<uint32, RatFactionGroups> RatFactionGroupsDef;    //factionID is key

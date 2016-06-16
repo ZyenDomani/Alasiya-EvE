@@ -66,8 +66,8 @@ void NPC::Init()
     m_self->SetAttribute(AttrOrbitRange,          GetOrbitRange(), false);
 
     // Agility
-    if (!m_self->HasAttribute(AttrInetiaMod))
-        m_self->SetAttribute(AttrInetiaMod, 1, false);
+    if (!m_self->HasAttribute(AttrInetia))
+        m_self->SetAttribute(AttrInetia, 1, false);
 
     SetResists();
 

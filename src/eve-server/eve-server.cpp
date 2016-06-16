@@ -151,6 +151,7 @@
 #include "system/ScenarioService.h"
 #include "system/WormholeSvc.h"
 // cosmic managers
+#include "system/cosmicMgrs/DungeonMgr.h"
 #include "system/cosmicMgrs/SpawnMgr.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
 //console commands
@@ -371,7 +372,7 @@ int main( int argc, char* argv[] )
 
     sLog.Success("       ServerInit", "Loading Static Database Table Objects...");
 
-    // Create In-Memory Database Objects for Critical and HighUse Systems, such as Module Effects and Wrecks:
+    // Create In-Memory Database Objects for Critical and HighUse Systems:
     sLog.Log("       ServerInit", "Module Effects Table");
     sDGM_Effects_Table.Initialize();
     sLog.Log("       ServerInit", "Skill Modifiers");
@@ -386,7 +387,9 @@ int main( int argc, char* argv[] )
     sDGM_Loot_Groups_Table.Initialize();
     sLog.Log("       ServerInit", "Salvage Table");
     sDGM_Salvage_Table.Initialize();
-    sLog.Log("       ServerInit", "Spawn Table");
+    sLog.Log("       ServerInit", "Dungeon Data");
+    sDunDataMgr.Initialize();
+    sLog.Log("       ServerInit", "Spawn Data");
     sSpawnDataMgr.Initialize();
     sLog.Log("       ServerInit", "Planet Data");
     sPlanetDataMgr.Initialize();

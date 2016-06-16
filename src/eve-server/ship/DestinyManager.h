@@ -84,7 +84,7 @@ public:
     void TractorBeamStart(SystemEntity* pShipSE);
 
     /* Local Movement */
-    void Orbit(SystemEntity* who, double distance, bool update=true);
+    void Orbit(SystemEntity* who, double distance=0);
     void Follow(SystemEntity* who, double distance);
     void AlignTo(SystemEntity* ent);
     void GotoPoint(const GPoint &point);
@@ -152,6 +152,8 @@ protected:
 
     SystemEntity* const mySE;			//we do not own this.
 
+    bool _IsTargetInvalid();              //performs common target checks
+
     //things dictated by our entity's configuration:
     int8 m_warpStrength;                //signed    - >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
 
@@ -179,7 +181,7 @@ protected:
     float m_maxSpeed;                   //in m/s
     float m_shipMaxAccelTime;           //in s      - used to determine accel rate, and total accel time
 
-    double m_radians;                   //in rad    - radians left in a(n) (ongoing) turn
+    double m_radians;                   //in rad    - radians left in an ongoing turn
 
     GPoint m_position;                  //in m
     GVector m_velocity;                 //in m/s
@@ -202,6 +204,7 @@ protected:
     float m_userSpeedFraction;          //fuzzy logic - speed % - set by user command
     float m_currentSpeedFraction;       //fuzzy logic - speed % - current ship speed
     float m_activeSpeedFraction;        //fuzzy logic - speed % - set by USF and CSF
+    float m_maxOrbitSpeedFraction;      //fuzzy logic - speed % - set by Orbit()
 
     double m_targetDistance;            //in m
     double m_followDistance;            //in m
@@ -219,7 +222,6 @@ protected:
     void _Follow();                     //follow or approach object in space
     void _BeginMovement();
     void _UpdateVelocity(bool isMoving=false);
-    bool _IsTargetInvalid();              //performs common target checks
 
 private:
     // Timer to delay docking (as on live)
@@ -272,7 +274,7 @@ private:
         decel(decel_),
         warp_vector(warp_vector_)
         {}
-        uint32 start_time;          //from Destiny::GetStamp()
+        uint32 start_time;          //from sEntityList::GetStamp()
         double total_distance;      //in m
         double warpSpeed;           //in m/s
         double accelDist;           //in m

@@ -26,15 +26,109 @@
 #ifndef _EVEMU_SYSTEM_DUNGEONMGR_H
 #define _EVEMU_SYSTEM_DUNGEONMGR_H
 
+#include <unordered_map>
+#include "system/SystemManager.h"
+#include "system/cosmicMgrs/ManagerDB.h"
+
+
+struct DunTemplate {
+    uint8 dunRoomID = 0;
+    uint8 dunEntryID = 0;
+    uint8 dunTypeID = 0;
+    uint8 dunSpawnType = 0;
+    uint8 dunRooms = 0;
+    uint8 dunRoomTypeID = 0;
+    uint8 dunRoomCategoryID = 0;
+};
+
+struct DunRoomInfo {
+    uint8 dunRoomID = 0;
+    uint8 dunRoomType = 0;
+    uint8 dunRoomCategory = 0;
+    uint8 dunRoomSpawnID = 0;
+    uint8 dunRoomSpawnType = 0;
+};
+
+struct DunRoomData {
+    uint8 dunGroupID;
+    uint16 x;
+    uint16 y;
+    uint16 z;
+};
+
+struct DunGroupData {
+    uint32 typeID;
+    uint32 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
+    uint8 typeCatID;    // this is categoryID of the itemType, and needed to simplify create/spawn code
+    uint16 x;
+    uint16 y;
+    uint16 z;
+};
+
+struct DunRoomSpawnInfo {
+    uint8 dunRoomSpawnID = 0;
+    uint8 dunRoomSpawnType = 0;
+    uint16 x;
+    uint16 y;
+    uint16 z;
+};
+
+/*
+ * class DBActiveDungeon {
+ * public:
+ *    uint32 systemID;
+ *    uint32 dungeonID;
+ *    uint8 dunTemplateID;
+ *    uint64 dunExpiryTime;
+ *    uint8 state;
+ *    double x;
+ *    double y;
+ *    double z;
+ * };
+ */
+
+// this class is a singleton object to have a common place for all dungeon template data
+class DungeonDataMgr
+: public Singleton< DungeonDataMgr >
+{
+public:
+    DungeonDataMgr();
+    virtual ~DungeonDataMgr() { /* nothing do to yet */ }
+
+    // Initializes the Table:
+    int Initialize();
+
+    void AddDungeon(uint32 systemID, DBActiveDungeon& dungeon);
+
+protected:
+    void _Populate();
+
+    typedef std::unordered_multimap<uint32, DBActiveDungeon> ActiveDungeonDef;    //systemID is key (defined in ManagerDB)
+    typedef std::unordered_multimap<uint8, DunTemplate> DunTemplateDef;    //templateID is key
+    typedef std::unordered_multimap<uint8, DunRoomInfo> DunRoomInfoDef;       //roomID is key
+    typedef std::unordered_multimap<uint8, DunRoomData> DunRoomsDef;       //roomID is key
+    typedef std::unordered_multimap<uint8, DunGroupData> DunGroupsDef;     //groupID is key
+
+public:
+    ActiveDungeonDef m_activeDungeons;  // systemID is key.  holds active dungeon data
+    DunTemplateDef m_templates;         // templateID is key.  holds all template data
+    DunRoomInfoDef m_roomInfo;          // roomID is key.  holds all room info
+    DunRoomsDef m_rooms;             // roomID is key.  holds all room data
+    DunGroupsDef m_groups;              // groupID is key. holds all group data
+
+private:
+    ManagerDB m_db;
+};
+
+#define sDunDataMgr \
+( DungeonDataMgr::get() )
+
 /*  this class is in charge of creating/destroying and maintaining
  * dungeons in a system.
  *
  *  a new iteration of this class is created for each system as that system
  * is booted.
  */
-
-#include "system/SystemManager.h"
-#include "system/cosmicMgrs/ManagerDB.h"
 
 class SpawnMgr;
 class PyServiceMgr;
@@ -47,6 +141,7 @@ public:
 
     void Init();
     void Process();
+    void Load();
 
     /* we do not own any of these */
 protected:

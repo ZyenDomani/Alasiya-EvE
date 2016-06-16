@@ -43,9 +43,6 @@ INSERT INTO market_orders (typeID, charID, regionID, stationID, bid, price, volE
 UPDATE `market_orders` SET `price`=1000 WHERE `price`=0
 
 
-groupid 450 - 462  catid    ores
-groupid 34 - 40  catid   minerals
-
 categoryID  categoryName
 4   Material
 5   Accessories
@@ -59,6 +56,7 @@ categoryID  categoryName
 22  Deployable
 23  Structure
 24  Reaction
+25  Ores
 32  Subsystem
 34  Ancient Relics
 35  Decryptors
