@@ -115,9 +115,9 @@ GPoint hack_sentry_locs[num_hack_sentry_locs] = {
 
 void SystemManager::LoadCosmicMgrs()
 {
-    m_anomMgr->Init();
     m_beltMgr->Init();
-    m_dunMgr->Init();
+    m_dunMgr->Init(m_anomMgr, m_spawnMgr);
+    m_anomMgr->Init(m_beltMgr, m_dunMgr, m_spawnMgr);
 }
 
 bool SystemManager::LoadSystemStatics() {
@@ -233,17 +233,6 @@ public:
                 return sSE;
             } break;
             case EVEDB::invCategories::Celestial: {
-                // Test groupID to selectively spawn either a generic celestial or some kind of cargo container or POS structure
-                // groupIDs to test for:
-                // * ContainerEntity <-- Audit_Log_Secure_Container "OR" Secure_Cargo_Container "OR" Cargo_Container "OR" Freight_Container
-                // * CelestialEntity <-- Biomass "OR" Large_Collidable_Object "OR" Cloud "OR" Comet "OR"
-                //                       Construction_Platform "OR" Beacon "OR" Planetary_Cloud "OR" Landmark "OR"
-                //                       Global_Warp_Disruptor "OR" Shipping_Crates "OR" Force_Field "OR"
-                //                       Cosmic_Signature "OR" Harvestable_Cloud "OR" Station_Upgrade_Platform "OR"
-                //                       Station_Improvement_Platform "OR" Destructable_Station_Services "OR"
-                //                       Cosmic_Anomaly "OR" Covert_Beacon "OR" Effect_Beacon
-                // * WreckEntity     <-- Wreck
-
                 // TODO: (just use CelestialEntity class for these until their own classes are written)
                 // * WarpGateEntity  <-- Warp_Gate
                 // * WormholeEntity  <-- Wormhole
@@ -462,7 +451,7 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity) {
         return false;
     }
 
-    _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Loaded dynamic entity %u of type %u for system %u", entity.itemID, entity.typeID, m_systemID );
+    _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Created dynamic entity %u of type %u for system %u", entity.itemID, entity.typeID, m_systemID );
     AddEntity(se);
     return true;
 }

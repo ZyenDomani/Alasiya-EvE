@@ -5,7 +5,7 @@ CREATE TABLE `roidRatClassGroup` (
   `factionID` int(11) NOT NULL,
   `groupName` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`groupID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
 INSERT INTO `roidRatClassGroup` (`shipClass`, `groupID`, `factionID`, `groupName`)

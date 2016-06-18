@@ -108,10 +108,7 @@ PyResult ScanMgrService::Handle_GetSystemScanMgr( PyCallArgs& call ) {
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return NULL;
-    } else if (pDestiny->IsWarping()) {
-        call.client->SendNotifyMsg( "You can't do this while warping");
-        return NULL;
-    }
+    } 
 
     ScanBound* pSB = new ScanBound(m_manager, pClient);
     PyRep* result = m_manager->BindObject(call.client, pSB);

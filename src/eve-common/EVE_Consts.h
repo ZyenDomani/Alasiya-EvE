@@ -2,6 +2,9 @@
  *  misc static consts
  */
 
+static const char alphaList[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const char numList[] = "0123456789";
+
 /*  these are based on client settings of damage notification.
  * msg packets are
  *   " "  - to others

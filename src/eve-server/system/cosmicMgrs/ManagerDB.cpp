@@ -27,27 +27,82 @@
 
 #include "system/cosmicMgrs/ManagerDB.h"
 
+void ManagerDB::SaveAnomaly(DBCosmicSignature& sig)
+{// sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
+    DBerror err;
+    if (!sDatabase.RunQuery(err,
+        "INSERT INTO sysSignatures"
+        " (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)"
+        " VALUES "
+        "('%s', %u, '%s', %u, %u, %u, %u, %u, %f, %f, %f)", \
+            sig.sigID.c_str(), sig.sigItemID, sig.dungeonName.c_str(), sig.systemID, sig.typeID, sig.groupID, \
+            sig.scanGroupID, sig.strengthAttributeID, sig.x, sig.y, sig.z )) {
+        _log(DATABASE__ERROR, "SaveActiveDungeon - unable to save dungeon");
+        }
+}
+
+void ManagerDB::GetAnomalyList(DBQueryResult& res)
+{// sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
+    if(!sDatabase.RunQuery(res,
+        "SELECT sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z"
+        " FROM sysSignatures"
+        " ORDER BY systemid")) {
+        _log(DATABASE__ERROR, "Error in GetAnomalyList query: %s", res.error.c_str());
+        }
+}
+
+GPoint ManagerDB::GetAnomalyPos(std::string& string)
+{
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res, "SELECT x,y,z FROM sysSignatures WHERE sigID = '%s'", string.c_str())) {
+        _log(DATABASE__ERROR, "Error in GetAnomalyPos query: %s", res.error.c_str());
+    }
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        _log(DATABASE__ERROR, "Error in GetAnomalyPos query: %s", res.error.c_str());
+        return NULL_ORIGIN;
+    }
+    GPoint pos(row.GetFloat(0), row.GetFloat(1), row.GetFloat(2));
+    return pos;
+}
+
+void ManagerDB::GetSystemAnomalies(uint32 systemID, DBQueryResult& res)
+{// sysSignatures (typeID,scanGroupID,groupID,strengthAttributeID,dungeonName,sigID,x,y,z)
+    if(!sDatabase.RunQuery(res,
+        "SELECT typeID, scanGroupID, groupID, strengthAttributeID, dungeonName, sigID, x, y, z"
+        " FROM sysSignatures"
+        " WHERE systemID = %u", systemID)) {
+        _log(DATABASE__ERROR, "Error in GetSystemAnomalies query: %s", res.error.c_str());
+        }
+}
+
+void ManagerDB::GetSystemAnomalies(uint32 systemID, std::vector< DBCosmicSignature >& sigs)
+{// sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
+
+}
+
+
 void ManagerDB::GetRegionFactionInfo(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res, "SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0")) {
-        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetRegionFactionInfo query: %s", res.error.c_str());
     }
 }
 
 void ManagerDB::GetFactionGroups(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res, "SELECT shipClass, groupID, factionID FROM roidRatClassGroup")) {
-        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetFactionGroups query: %s", res.error.c_str());
     }
 }
 
 void ManagerDB::GetSpawnClasses(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res, "SELECT type, sub, f, d, c, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass")) {
-        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetSpawnClasses query: %s", res.error.c_str());
     }
 }
 
 void ManagerDB::GetGroupTypeIDs(uint32 groupID, DBQueryResult& res) {
     if (!sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u", groupID)) {
-        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetGroupTypeIDs query: %s", res.error.c_str());
     }
 }
 
@@ -153,7 +208,7 @@ void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidSE> roids
 
 void ManagerDB::GetDunGroupData(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT d.itemTypeID, t.groupID, g.categoryID, d.xpos, d.ypos, d.zpos"
+    if (!sDatabase.RunQuery(res, "SELECT d.dunGroupID, d.itemTypeID, t.typeName, t.groupID, g.categoryID, d.xpos, d.ypos, d.zpos"
         " FROM dunGroupData AS d"
         "  LEFT JOIN invTypes AS t ON d.itemTypeID = t.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID" )) {
@@ -182,11 +237,11 @@ void ManagerDB::GetDunSpawnInfo(DBQueryResult& res)
 void ManagerDB::GetDunTemplates(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT dunTemplateID, dunRoomID, dunEntryID, dunTypeID, dunSpawnType, dunRooms, dunRoomTypeID, dunRoomCategoryID FROM dunTemplates"))
+        "SELECT dunTemplateID, dunTemplateName, dunRoomID, dunEntryID, dunTypeID, dunSpawnType, dunRooms, dunRoomTypeID, dunRoomCategoryID FROM dunTemplates"))
         _log(DATABASE__ERROR, "Error in GetDunTemplates query: %s", res.error.c_str());
 }
 
-bool ManagerDB::GetActiveDungeons(uint32 systemID, std::vector<DBActiveDungeon>& into)
+bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector<DBActiveDungeon>& into)
 {
     DBQueryResult res;
 
@@ -194,28 +249,27 @@ bool ManagerDB::GetActiveDungeons(uint32 systemID, std::vector<DBActiveDungeon>&
         "SELECT"
         "   systemID,"
         "   state,"
-        "   dungeonID,"
         "   dunTemplateID,"
         "   dunExpiryTime,"
         "   xpos, ypos, zpos"
         " FROM dunActive"   //Active Dungeons
         " WHERE systemID = %u", systemID)) {
-        _log(DATABASE__ERROR, "Error in GetActiveDungeons query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetSavedDungeons query: %s", res.error.c_str());
         return false;
     }
 
-    _log(DATABASE__RESULTS, "GetActiveDungeons returned %u items", res.GetRowCount());
+    _log(DATABASE__RESULTS, "GetSavedDungeons returned %u items", res.GetRowCount());
     DBResultRow row;
     DBActiveDungeon entry;
     while(res.GetRow(row)) {
         entry.systemID = row.GetInt(0);
         entry.state = row.GetInt(1);
-        entry.dungeonID = row.GetInt(2);
-        entry.dunTemplateID = row.GetInt(3);
-        entry.dunExpiryTime = row.GetInt64(4);
-        entry.x = row.GetInt(5);
-        entry.y = row.GetInt(6);
-        entry.z = row.GetInt(7);
+        entry.dunItemID = 0;
+        entry.dunTemplateID = row.GetInt(2);
+        entry.dunExpiryTime = row.GetInt64(3);
+        entry.x = row.GetInt(4);
+        entry.y = row.GetInt(5);
+        entry.z = row.GetInt(6);
         into.push_back(entry);
     }
 
@@ -227,10 +281,18 @@ void ManagerDB::SaveActiveDungeon(DBActiveDungeon& dun)
     DBerror err;
     if (!sDatabase.RunQuery(err,
         "INSERT INTO dunActive" //Active Dungeons
-        " (systemID, state, dungeonID, dunTemplateID, dunExpiryTime, xpos, ypos, zpos)"
+        " (systemID, dungeonID, state, dunTemplateID, dunExpiryTime, xpos, ypos, zpos)"
         " VALUES "
-        "(%u, %u, %u, %u, " PRIu64 ", %f, %f, %f)",
-        dun.systemID, dun.state, dun.dungeonID, dun.dunTemplateID, dun.dunExpiryTime, dun.x, dun.y, dun.z )) {
-        _log(DATABASE__ERROR, "SaveActiveDungeon - unable to save dungeonID %u", dun.dungeonID);
+        "(%u, %u, %u, %u, %" PRIu64 ", %f, %f, %f)",
+        dun.systemID, dun.dunItemID, dun.state, dun.dunTemplateID, dun.dunExpiryTime, dun.x, dun.y, dun.z )) {
+        _log(DATABASE__ERROR, "SaveActiveDungeon - unable to save dungeon");
     }
 }
+
+void ManagerDB::ClearDungeons()
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "DELETE FROM dunActive WHERE 1");
+    sDatabase.RunQuery(err, "DELETE FROM sysSignatures WHERE 1");
+}
+

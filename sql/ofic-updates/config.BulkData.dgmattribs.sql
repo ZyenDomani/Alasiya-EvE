@@ -26,7 +26,7 @@ CREATE TABLE dgmattribs (
     INDEX unitID (unitID),
     INDEX iconID (iconID),
     INDEX dataID (dataID)
-);
+) ENGINE=MyISAM;
 
 INSERT INTO dgmattribs (attributeID, attributeName, attributeCategory, description, maxAttributeID, attributeIdx, graphicID, chargeRechargeTimeID, defaultValue, published, unitID, displayName, stackable, highIsGood, iconID, dataID) VALUES (2, 'isOnline', 0, 'Boolean to store status of online effect', 0, 1, 0, 0, 0, 0, 0, 'isOnline', 1, 1, 0, 2582954);
 INSERT INTO dgmattribs (attributeID, attributeName, attributeCategory, description, maxAttributeID, attributeIdx, graphicID, chargeRechargeTimeID, defaultValue, published, unitID, displayName, stackable, highIsGood, iconID, dataID) VALUES (3, 'damage', 1, 'current damage dealt to module', 9, 2, 0, 0, 0, 1, 0, 'Damage', 1, 1, 0, 2581346);

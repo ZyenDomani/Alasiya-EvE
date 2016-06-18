@@ -404,7 +404,7 @@ int main( int argc, char* argv[] )
         sLog.Magenta("  Loop Sleep Time","Changed from default 10ms to %ums.", MAIN_LOOP_DELAY);
     } else
         sLog.Success("  Loop Sleep Time","Default at 10ms.");
-    int idle = sConfig.world.idleSleepTime;
+    int idle = sConfig.server.idleSleepTime;
     if (idle == 1000)
         sLog.Success("  Idle Sleep Time","Default at 1000ms.");
     else

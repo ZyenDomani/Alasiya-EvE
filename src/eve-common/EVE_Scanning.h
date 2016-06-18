@@ -14,23 +14,23 @@ static float probeResultUnusable    = 0.001f;
 
 //  -allan 7Jul14
 typedef enum {
-    ProbeGroup_Scrap                = 1,
-    ProbeGroup_Signatures           = 4,
-    ProbeGroup_Ships                = 8,
-    ProbeGroup_Structures           = 16,
-    ProbeGroup_DronesAndProbes      = 32,
-    ProbeGroup_Celestials           = 64,
-    ProbeGroup_Anomalies            = 128
-} ProbeScanGroup;
+    ScanGroupScrap                  = 1,
+    ScanGroupSignature              = 4,
+    ScanGroupShip                   = 8,
+    ScanGroupStructure              = 16,
+    ScanGroupDroneOrProbe           = 32,
+    ScanGroupCelestial              = 64,
+    ScanGroupAnomaly                = 128
+} ScanGroup;
 
 
 typedef enum {
-    Probe_Inactive                  = 0,
-    Probe_Idle                      = 1,
-    Probe_Moving                    = 2,
-    Probe_Warping                   = 3,
-    Probe_Scanning                  = 4,
-    Probe_Returning                 = 5
+    ProbeStateInactive              = 0,
+    ProbeStateIdle                  = 1,
+    ProbeStateMoving                = 2,
+    ProbeStateWarping               = 3,
+    ProbeStateScanning              = 4,
+    ProbeStateReturning             = 5
 } ProbeState;
 
 /*

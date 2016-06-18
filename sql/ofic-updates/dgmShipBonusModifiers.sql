@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS `dgmShipBonusModifiers` (
   `appliedPerLevel` int(4) NOT NULL,
   `affectingType` int(11) NOT NULL,
   `affectedType` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `dgmShipBonusModifiers`

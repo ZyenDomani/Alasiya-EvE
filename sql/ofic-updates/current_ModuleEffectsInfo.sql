@@ -19,7 +19,7 @@ CREATE TABLE `dgmEffectsInfo` (
   `effectState` int(11) NOT NULL,
   `targetType` int(11) NOT NULL,
   `targetGroup` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `dgmEffectsInfo`

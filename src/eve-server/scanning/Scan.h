@@ -27,7 +27,7 @@
 #define EVEMU_SCANING_SCAN_H_
 
 #include "packets/Scan.h"
-#include "scanning/ScanningDB.h"
+#include "system/cosmicMgrs/ManagerDB.h"
 
 class PyRep;
 class Client;
@@ -49,8 +49,7 @@ protected:
     void SurveyScan();
 
 private:
-
-    ScanningDB* m_db;
+    ManagerDB* m_db;
     Client* m_client;
 };
 

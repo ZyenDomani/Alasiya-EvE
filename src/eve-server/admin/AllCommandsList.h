@@ -4,6 +4,8 @@
 #include "admin/GMCommands.h"
 #include "admin/MiningCommands.h"
 
+#include "admin/allans_commands.h"
+
 //clean up macros
 #undef COMMAND
 

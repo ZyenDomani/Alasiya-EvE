@@ -47,8 +47,8 @@ public:
 class DBActiveDungeon {
 public:
     uint32 systemID;
-    uint32 dungeonID;
-    uint8 dunTemplateID;
+    uint32 dunItemID;
+    uint16 dunTemplateID;
     uint64 dunExpiryTime;
     uint8 state;
     double x;
@@ -56,8 +56,54 @@ public:
     double z;
 };
 
+/* POD entry for cosmic signatures/anomalies */
+class DBCosmicSignature {
+public:
+    std::string sigID;  // this is unique xxx-nnn id displayed in scanner
+    std::string dungeonName;
+    uint32 systemID;
+    uint32 sigItemID;   // itemID of this entry
+    uint16 typeID;
+    uint16 groupID;
+    uint16 scanGroupID; // see below
+    uint16 strengthAttributeID; // see below
+    double x;
+    double y;
+    double z;
+};
+/* more data for signatures...
+ * this will have to be checked and set in the code.
+ * this is def for scanGroupID:
+ *
+typedef enum {
+    ScanGroupScrap                = 1,
+    ScanGroupSignature            = 4,
+    ScanGroupShip                 = 8,
+    ScanGroupStructure            = 16,
+    ScanGroupDroneOrProbe         = 32,
+    ScanGroupCelestial            = 64,
+    ScanGroupAnomaly              = 128
+} ScanGroup;
+ *
+ *  for strengthAttributeID, use these attributes to indicate site type:
+
+ AttrScanRadarStrength = 208,
+ AttrScanLadarStrength = 209,
+ AttrScanMagnetometricStrength = 210,
+ AttrScanGravimetricStrength = 211,
+ AttrScanAllStrength = 1136     - unknown
+
+    */
+
 class ManagerDB {
 public:
+    /* db methods for all managers */
+    void SaveAnomaly(DBCosmicSignature& sig);
+    void GetAnomalyList(DBQueryResult& res);
+    GPoint GetAnomalyPos(std::string& string);
+    void GetSystemAnomalies(uint32 systemID, DBQueryResult &res);
+    void GetSystemAnomalies(uint32 systemID, std::vector<DBCosmicSignature>& sigs);
+
     /* these are for belt manager */
     bool GetRoidDist(const char * sec, std::map<float, uint32> &roids);
     void SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidSE> roids);
@@ -76,8 +122,9 @@ public:
     void GetDunRoomData(DBQueryResult& res);
     void GetDunGroupData(DBQueryResult& res);
     void GetDunSpawnInfo(DBQueryResult& res);
-    bool GetActiveDungeons(uint32 systemID, std::vector< DBActiveDungeon >& into);
+    bool GetSavedDungeons(uint32 systemID, std::vector< DBActiveDungeon >& into);
     void SaveActiveDungeon(DBActiveDungeon& dun);
+    void ClearDungeons();
 
     /* these are for anomaly manager */
 

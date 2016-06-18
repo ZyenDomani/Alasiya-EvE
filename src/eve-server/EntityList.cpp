@@ -394,4 +394,19 @@ void EntityList::RemoveSID ( int64 sessionID ) {
     m_sessions.erase(sessionID);
 }
 
+std::string EntityList::GetAnomalyID()
+{
+    std::string str1 = "", str2 = "";
+    for (uint8 i = 0; i < 3; ++i) {
+        str1 += alphaList[MakeRandomInt(0,25)];    //rand() % sizeof(alphaList) - 1
+        str2 += itoa(MakeRandomInt(0,8));
+    }
+
+    std::string res = str1;
+    res += "-";
+    res += str2;
+    // not sure if we need to keep track of these IDs...
+    //m_anomIDs.push_back(res);
+    return res;
+}
 

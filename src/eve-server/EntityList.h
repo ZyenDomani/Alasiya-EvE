@@ -114,6 +114,8 @@ public:
     void RegisterSID(int64& sessionID);
     void RemoveSID(int64 sessionID);
 
+    std::string GetAnomalyID();
+
 protected:
     ServiceDB* m_db;
     PyServiceMgr* m_services;    //we do not own this, only used for booting systems.
@@ -127,6 +129,7 @@ private:
     std::set<int64> m_sessions;
     std::map<uint32, SystemManager*> m_systems;
     std::map<uint32, InventoryItemRef> m_stations;
+    std::vector<std::string> m_anomIDs;
 
     uint32 m_npcs = 0;
     uint32 m_stamp = 0;

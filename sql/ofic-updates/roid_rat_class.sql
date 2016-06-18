@@ -23,7 +23,7 @@ CREATE TABLE `roidRatSpawnClass` (
   `cbs` tinyint(3) NOT NULL DEFAULT '0',
   `className` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `notes` varchar(70) COLLATE utf8_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `roidRatSpawnClass` (`type`,`sub`,`f`,`d`,`c`,`bc`,`bs`,`h`,`o`,`cf`,`cd`,`cc`,`cbc`,`cbs`,`className`,`notes`)
 VALUES

@@ -27,13 +27,15 @@
 #define _EVEMU_SYSTEM_DUNGEONMGR_H
 
 #include <unordered_map>
+#include "system/SystemGPoint.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 
 struct DunTemplate {
-    uint8 dunRoomID = 0;
-    uint8 dunEntryID = 0;
+    std::string dunName = "";
+    uint16 dunRoomID = 0;
+    uint16 dunEntryID = 0;
     uint8 dunTypeID = 0;
     uint8 dunSpawnType = 0;
     uint8 dunRooms = 0;
@@ -42,7 +44,7 @@ struct DunTemplate {
 };
 
 struct DunRoomInfo {
-    uint8 dunRoomID = 0;
+    uint16 dunRoomID = 0;
     uint8 dunRoomType = 0;
     uint8 dunRoomCategory = 0;
     uint8 dunRoomSpawnID = 0;
@@ -50,27 +52,28 @@ struct DunRoomInfo {
 };
 
 struct DunRoomData {
-    uint8 dunGroupID;
-    uint16 x;
-    uint16 y;
-    uint16 z;
+    uint32 dunGroupID = 0;
+    uint16 x = 0;
+    uint16 y = 0;
+    uint16 z = 0;
 };
 
 struct DunGroupData {
-    uint32 typeID;
-    uint32 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
-    uint8 typeCatID;    // this is categoryID of the itemType, and needed to simplify create/spawn code
-    uint16 x;
-    uint16 y;
-    uint16 z;
+    uint32 typeID = 0;
+    std::string typeName = "";
+    uint32 typeGrpID = 0;   // this is groupID of the itemType, and needed to simplify create/spawn code
+    uint8 typeCatID = 0;    // this is categoryID of the itemType, and needed to simplify create/spawn code
+    uint16 x = 0;
+    uint16 y = 0;
+    uint16 z = 0;
 };
 
 struct DunRoomSpawnInfo {
-    uint8 dunRoomSpawnID = 0;
-    uint8 dunRoomSpawnType = 0;
-    uint16 x;
-    uint16 y;
-    uint16 z;
+    uint16 dunRoomSpawnID = 0;
+    uint16 dunRoomSpawnType = 0;
+    uint16 x = 0;
+    uint16 y = 0;
+    uint16 z = 0;
 };
 
 /*
@@ -98,26 +101,32 @@ public:
     // Initializes the Table:
     int Initialize();
 
-    void AddDungeon(uint32 systemID, DBActiveDungeon& dungeon);
+    void AddDungeon(DBActiveDungeon& dungeon);
+
+    void GetDungeons(std::vector<DBActiveDungeon>& dunList);
+
+    uint32 GetDungeonID();
 
 protected:
     void _Populate();
 
     typedef std::unordered_multimap<uint32, DBActiveDungeon> ActiveDungeonDef;    //systemID is key (defined in ManagerDB)
-    typedef std::unordered_multimap<uint8, DunTemplate> DunTemplateDef;    //templateID is key
-    typedef std::unordered_multimap<uint8, DunRoomInfo> DunRoomInfoDef;       //roomID is key
-    typedef std::unordered_multimap<uint8, DunRoomData> DunRoomsDef;       //roomID is key
-    typedef std::unordered_multimap<uint8, DunGroupData> DunGroupsDef;     //groupID is key
+    typedef std::unordered_multimap<uint16, DunTemplate> DunTemplateDef;    //templateID is key
+    typedef std::unordered_multimap<uint16, DunRoomInfo> DunRoomInfoDef;       //roomID is key
+    typedef std::unordered_multimap<uint16, DunRoomData> DunRoomsDef;       //roomID is key
+    typedef std::unordered_multimap<uint16, DunGroupData> DunGroupsDef;     //groupID is key
 
 public:
     ActiveDungeonDef m_activeDungeons;  // systemID is key.  holds active dungeon data
     DunTemplateDef m_templates;         // templateID is key.  holds all template data
     DunRoomInfoDef m_roomInfo;          // roomID is key.  holds all room info
-    DunRoomsDef m_rooms;             // roomID is key.  holds all room data
+    DunRoomsDef m_rooms;                // roomID is key.  holds all room data
     DunGroupsDef m_groups;              // groupID is key. holds all group data
 
 private:
     ManagerDB m_db;
+
+    uint32 m_dungeonID;
 };
 
 #define sDunDataMgr \
@@ -130,6 +139,7 @@ private:
  * is booted.
  */
 
+class AnomalyMgr;
 class SpawnMgr;
 class PyServiceMgr;
 
@@ -139,21 +149,29 @@ public:
     ~DungeonMgr()     { /* do nothing here */ }
 
 
-    void Init();
+    void Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr);
     void Process();
     void Load();
+
+    void Create(uint16 templateID);
 
     /* we do not own any of these */
 protected:
     ManagerDB m_db;
+    SystemGPoint m_gp;
 
     /* we do not own any of these */
 private:
+    AnomalyMgr* m_anomMgr;
     SpawnMgr* m_spawnMgr;
     SystemManager* m_system;
     PyServiceMgr& m_services;
 
     bool m_initalized;
+
+    std::vector<DunGroupData> m_anomalyItems;
+
+    std::map<uint32, std::vector<uint32>> m_dungeonList;  // this holds all items associated with the key 'dungeonID' in this system
 
 };
 

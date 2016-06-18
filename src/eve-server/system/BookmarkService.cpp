@@ -159,7 +159,21 @@ PyResult BookmarkService::Handle_GetBookmarks(PyCallArgs &call) {
 PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
     sLog.Log("BookmarkService", "Handle_BookmarkScanResult() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
-
+    /* 22:24:39 [SvcCall] Service bookmark: calling BookmarkScanResult
+     * 22:25:58 L BookmarkService: Handle_BookmarkScanResult() size=5
+     * 22:25:58 [SvcCallDump]   Call Arguments:
+     * 22:25:58 [SvcCallDump]       Tuple: 5 elements
+     * 22:25:58 [SvcCallDump]         [ 0] Integer field: 30000053
+     * 22:25:58 [SvcCallDump]         [ 1] String: 'test dungeon 2 '
+     * 22:25:58 [SvcCallDump]         [ 2] WString: 'dungeon notes here'
+     * 22:25:58 [SvcCallDump]         [ 3] String: 'XIG-040'
+     * 22:25:58 [SvcCallDump]         [ 4] Integer field: 140000000
+     * 22:25:58 [SvcCallDump]   Call Named Arguments:
+     * 22:25:58 [SvcCallDump]     Argument 'folderID':
+     * 22:25:58 [SvcCallDump]         (None)
+     * 22:25:58 [SvcCallDump]     Argument 'machoVersion':
+     * 22:25:58 [SvcCallDump]         Integer field: 1
+     */
     return NULL;
 }
 
@@ -224,7 +238,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
 	//
 	////////////////////////////////////////
 
-	// Check for presence of non-zero folderID in the packet
+	// Check for presence of folderID in the packet
 	if (call.byname.find("folderID") != call.byname.cend()) {
         if ( !(call.byname.find("folderID")->second->IsNone()) ) {
             folderID = call.byname.find("folderID")->second->AsInt()->value();
@@ -265,10 +279,8 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         return NULL;
     }
 
-      sLog.Debug( "BookmarkService::Handle_BookmarkLocation()", "itemID = %u, typeID = %u", itemID, typeID );
-    ////////////////////////////////////////
-    // Save bookmark info to database:
-    ////////////////////////////////////////
+    sLog.Debug( "BookmarkService::Handle_BookmarkLocation()", "itemID = %u, typeID = %u", itemID, typeID );
+
     flag = 0;   // Don't know what to do with this value
     m_db.SaveNewBookmarkToDatabase (
         bookmarkID,
@@ -286,20 +298,15 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         creatorID,
         folderID );
 
-    ////////////////////////////////////////
-    // Build return packet:
-    //
     // (bookmarkID, itemID, typeID, x, y, z, locationID)
-    ////////////////////////////////////////
-
     PyTuple* res = new PyTuple( 7 );
-        res->items[ 0 ] = new PyInt( bookmarkID );           // Bookmark ID from Database 'bookmarks' table
-        res->items[ 1 ] = new PyInt( itemID );               // itemID
-        res->items[ 2 ] = new PyInt( typeID );               // typeID
-        res->items[ 3 ] = new PyFloat( point.x );    // X coordinate
-        res->items[ 4 ] = new PyFloat( point.y );    // Y coordinate
-        res->items[ 5 ] = new PyFloat( point.z );    // Z coordinate
-        res->items[ 6 ] = new PyInt( locationID );           // systemID if inspace, stationID if docked
+        res->items[0] = new PyInt( bookmarkID );   // Bookmark ID from Database 'bookmarks' table
+        res->items[1] = new PyInt( itemID );       // itemID
+        res->items[2] = new PyInt( typeID );       // typeID
+        res->items[3] = new PyFloat( point.x );    // X coordinate
+        res->items[4] = new PyFloat( point.y );    // Y coordinate
+        res->items[5] = new PyFloat( point.z );    // Z coordinate
+        res->items[6] = new PyInt( locationID );   // systemID if inspace, stationID if docked
 
     return res;
 }

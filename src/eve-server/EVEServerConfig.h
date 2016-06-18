@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    6.4
+    Version:    6.5
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -56,6 +56,7 @@ public:
         bool UseStackTrace;
         bool testServer;    // to distuinguish between live production server or experimental testing server
         uint8 ServerSleepTime;
+        uint16 idleSleepTime;
         uint16 maxPlayers;
     } server;
 
@@ -69,7 +70,6 @@ public:
         bool loginInfo;
         bool loginMsg;
         uint8 mailDelay;
-        uint16 idleSleepTime;
     } world;
 
     // From <rates/>

@@ -12,6 +12,7 @@
 #include "eve-server.h"
 
 #include "system/SystemGPoint.h"
+#include "system/SystemManager.h"
 
 /**
  *   the pupose of this class is to have a common location with methods used to define
@@ -32,7 +33,7 @@
  *   class DBGPointEntity has index, itemID, radius, and position, and is found in SystemDB.
  *      see copy of class decelaration below
  *
- *  NOTE i remember reading *somewhere* that ALL COSMIC SPAWNS are within *some distance* (4au?) from planets.
+ *  NOTE i seem to remember that ALL COSMIC SPAWNS are within 6au from planets.
  *       ....cant find that info now.  -allan 31Jul14
  */
 
@@ -131,3 +132,21 @@ const GPoint SystemGPoint::GetRandPointInSystem(uint32 systemID, uint64 distance
     // get system max diameter, verify distance is within system.
 
 }
+
+const GPoint SystemGPoint::GetAnomalyPoint(SystemManager* pSys)
+{
+    uint8 total;
+    std::vector<DBGPointEntity> planetIDs;
+
+    m_db.GetPlanets(pSys->GetID(), &planetIDs, &total);
+
+    SystemEntity* pSE = pSys->GetSEFromInventory(planetIDs[MakeRandomInt(1, total)].itemID);
+
+    GPoint pos = pSE->GetPosition();
+    pos.MakeRandomPointOnSphereLayer(ONE_AU_IN_METERS /2, ONE_AU_IN_METERS * 2);
+    return pos;
+}
+
+
+
+

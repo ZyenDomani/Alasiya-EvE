@@ -20,7 +20,7 @@ CREATE TABLE `invTypesToWrecks` (
   `wreckTypeID` int(11) NOT NULL,
   `typeName` text,
   PRIMARY KEY (`typeID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `invTypesToWrecks`

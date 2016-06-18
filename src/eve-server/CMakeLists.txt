@@ -71,6 +71,7 @@ SET( account_SOURCE
 
 SET( admin_INCLUDE
      "${TARGET_INCLUDE_DIR}/admin/AlertService.h"
+     "${TARGET_INCLUDE_DIR}/admin/allans_commands.h"
      "${TARGET_INCLUDE_DIR}/admin/AllCommands.h"
      "${TARGET_INCLUDE_DIR}/admin/AllCommandsList.h"
      "${TARGET_INCLUDE_DIR}/admin/ClientStatLogger.h"
@@ -83,6 +84,7 @@ SET( admin_INCLUDE
      "${TARGET_INCLUDE_DIR}/admin/SlashService.h" )
 SET( admin_SOURCE
      "${TARGET_SOURCE_DIR}/admin/AlertService.cpp"
+     "${TARGET_SOURCE_DIR}/admin/allans_commands.cpp"
      "${TARGET_SOURCE_DIR}/admin/AllCommands.cpp"
      "${TARGET_SOURCE_DIR}/admin/ClientStatLogger.cpp"
      "${TARGET_SOURCE_DIR}/admin/CommandDB.cpp"

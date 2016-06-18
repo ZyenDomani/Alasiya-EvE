@@ -172,3 +172,18 @@ void PlanetDB::GetPlanetData(DBQueryResult& row)
         _log(DATABASE__ERROR, "Error in GetPlanetData Query: %s", res.error.c_str());
     }
 }
+
+GPoint PlanetDB::GetLaunchPos(uint32 launchID)
+{
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res, "SELECT x,y,z FROM `planetlaunches` WHERE `launchID` = %u", launchID)) {
+        _log(DATABASE__ERROR, "Error in GetLaunchPos query: %s", res.error.c_str());
+    }
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        _log(DATABASE__ERROR, "Error in GetLaunchPos query: %s", res.error.c_str());
+        return NULL_ORIGIN;
+    }
+    GPoint pos(row.GetFloat(0), row.GetFloat(1), row.GetFloat(2));
+    return pos;
+}

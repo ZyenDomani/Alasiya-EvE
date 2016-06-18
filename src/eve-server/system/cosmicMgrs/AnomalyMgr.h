@@ -37,8 +37,9 @@
 
 
 class DungeonMgr;
-class WormholeMgr;
+class BeltMgr;
 class PyServiceMgr;
+class SpawnMgr;
 class SystemManager;
 
 class AnomalyMgr
@@ -47,17 +48,20 @@ class AnomalyMgr
       AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
       virtual ~AnomalyMgr()                             { /* do nothing here */ }
 
-      void Init();
+      void Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
       void Process();
 
-    /* we do not own any of these */
+      void SaveAnomaly();
+
 protected:
+    /* we do not own any of these */
     ManagerDB m_db;
 
 private:
     /* we do not own any of these */
+    BeltMgr* m_beltMgr;
     DungeonMgr* m_dungMgr;
-    WormholeMgr* m_whMgr;
+    SpawnMgr* m_spawnMgr;
     SystemManager* m_system;
     PyServiceMgr& m_services;
 

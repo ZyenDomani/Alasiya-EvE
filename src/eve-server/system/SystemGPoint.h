@@ -12,6 +12,7 @@
 
 #include "system/SystemDB.h"
 
+class SystemManager;
 
 class SystemGPoint {
   public:
@@ -19,6 +20,7 @@ class SystemGPoint {
       void GetPlanets(uint32 systemID);
       uint32 GetRandMoon(uint32 systemID);
       uint32 GetRandPlanet(uint32 systemID);
+      const GPoint GetAnomalyPoint(SystemManager* pSys);
       const GPoint Get2RandPlanets(uint32 systemID);
       const GPoint Get3RandPlanets(uint32 systemID);
       const GPoint GetRandPointOnPlanet(uint32 systemID);

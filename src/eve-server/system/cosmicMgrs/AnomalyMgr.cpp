@@ -31,6 +31,7 @@
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
+#include "system/cosmicMgrs/SpawnMgr.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
 
 /*
@@ -47,12 +48,18 @@ AnomalyMgr::AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc)
   m_services(svc)
 {
     m_initalized = false;
-
 }
 
-void AnomalyMgr::Init()
+void AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
 {
-    if (!sConfig.cosmic.AnomalyEnabled) return;
+    m_beltMgr = beltMgr;
+    m_dungMgr = dungMgr;
+    m_spawnMgr = spawnMgr;
+
+    if (!sConfig.cosmic.AnomalyEnabled) {
+        _log(COSMIC_MGR__MESSAGE, "Anomaly System Disabled.  Not Initalizing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        return;
+    }
 
     m_initalized = true;
 
@@ -60,6 +67,26 @@ void AnomalyMgr::Init()
 }
 
 void AnomalyMgr::Process() {
-    if (!m_initalized) return;
+    if (!m_initalized)
+        return;
+
+}
+
+/* eventually,this will be the ONLY save routine for Anomalies/Signatures.
+ * for now, dungeon anoms are saved in DungeonMgr
+ */
+void AnomalyMgr::SaveAnomaly()
+{
+    uint8 scanGroupID = ScanGroupAnomaly;
+    uint16 groupID = EVEDB::invGroups::Cosmic_Anomaly; //885
+    uint16 groupID2 = EVEDB::invGroups::Cosmic_Signature; //502
+    uint16 typeID = 28356; // Cosmic_Anomaly - dont need probes or sklls
+    uint16 typeID2 = 25880; // Cosmic_Signature - need probes and skills (exploring)
+
+    uint16 strengthAttributeID = AttrScanAllStrength;
+
+    DBCosmicSignature sig;
+    /* will need a bit of code here to check and set all items correctly for saving -- see below*/
+    m_db.SaveAnomaly(sig);
 
 }

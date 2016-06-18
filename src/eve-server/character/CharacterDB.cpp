@@ -1517,8 +1517,8 @@ uint32 CharacterDB::PayBounty(CharacterRef cRef)
 }
 
 void CharacterDB::SaveKillOrLoss(CharKillData &data) {
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
+    DBerror err;
+    sDatabase.RunQuery(err,
         " INSERT INTO chrKillTable"
         " VALUES (%u,%u,%u,%u,"
         "%u,%u,%u,%u,"
@@ -1529,10 +1529,7 @@ void CharacterDB::SaveKillOrLoss(CharKillData &data) {
         data.victimAllianceID, data.victimFactionID, data.victimShipTypeID, data.victimDamageTaken,
         data.finalCharacterID, data.finalCorporationID, data.finalAllianceID, data.finalFactionID,
         data.finalShipTypeID, data.finalWeaponTypeID, data.finalSecurityStatus, data.finalDamageDone,
-        data.killBlob.c_str(), data.killTime, data.moonID))
-    {
-        codelog(DATABASE__ERROR, "Error on query: %s", res.error.c_str());
-    }
+        data.killBlob.c_str(), data.killTime, data.moonID);
 }
 
 PyRep* CharacterDB::GetKillOrLoss(uint32 charID) {

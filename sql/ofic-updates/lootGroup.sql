@@ -32,7 +32,7 @@ CREATE TABLE `lootGroup` (
   `groupDropChance` float(6,4) NOT NULL,
   `itemGroupID` int(11) DEFAULT NULL,
   `itemGroupName` text COLLATE utf8_bin
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
 -- Dumping data for table `lootGroup`

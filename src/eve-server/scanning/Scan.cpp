@@ -28,6 +28,7 @@
 #include "Client.h"
 #include "scanning/Scan.h"
 #include "system/SystemBubble.h"
+#include "system/SystemManager.h"
 
 Scan::Scan(Client* pClient)
 {
@@ -108,36 +109,36 @@ void Scan::ScanStart()
 
 void Scan::ScanResult() {
     //  WORKING CODE...DONT FUCK WITH THIS!!  -allan 11Dec15
+    /** @todo basic code works.  will need updates and calc's for various things once system matures.  see notes */
     DBQueryResult* res = new DBQueryResult();
-    m_db->GetScanResults(*res);
+    m_db->GetSystemAnomalies(m_client->GetSystemID(), *res);
     PyList* resultList = new PyList;
 
     DBResultRow row;
-    //(`typeID`, `scanGroupID`, `groupID`, `strengthAttributeID`, `dungeonName`, `id`, `x`, `y`, `z`)
+    //(`typeID`, `scanGroupID`, `groupID`, `strengthAttributeID`, `dungeonName`, `sigID`, `x`, `y`, `z`)
     while (res->GetRow(row)) {
+        SystemScanResultPositive ssrp;
+            ssrp.typeID = row.GetInt(0);
+            ssrp.scanGroupID = row.GetInt(1);   // see notes in CosmicMgrs/ManagerDB.h
+            ssrp.groupID = row.GetInt(2);
+            ssrp.strengthAttributeID = row.GetInt(3);  // see notes in CosmicMgrs/ManagerDB.h
+            ssrp.dungeonName = row.GetText(4);
+            ssrp.id = row.GetText(5);
+            ssrp.deviation = 0;     /* for scan probes */
+            ssrp.degraded = false;  /* will need to be set in *some* kind of test/conditional */
+            ssrp.probeID = m_client->GetShipID();   /* will need to be corrected after implementing probes */
+            ssrp.certainty = 1;     /* will need to be fixed. */
+            ssrp.pos = new PyNone;  /* this is for probe positions (where applicable).  it uses the 'foo.Vector3' token, and coded in scan.xmlp */
         SSR_ObjectEx_Pos ssr_oed;
             ssr_oed.x = row.GetDouble(6);
             ssr_oed.y = row.GetDouble(7);
             ssr_oed.z = row.GetDouble(8);
+        PyToken* token = new PyToken("foo.Vector3");
+        PyTuple* oed_tuple = new PyTuple(2);
+            oed_tuple->SetItem(0, token);
+            oed_tuple->SetItem(1, ssr_oed.Encode());
 
-        SystemScanResultPositive ssrp;
-            ssrp.typeID = row.GetInt(0);
-            ssrp.scanGroupID = row.GetInt(1);
-            ssrp.groupID = row.GetInt(2);
-            ssrp.strengthAttributeID = row.GetInt(3);
-            ssrp.dungeonName = row.GetText(4);
-            ssrp.id = row.GetText(5);
-            ssrp.deviation = 0;
-            ssrp.degraded = false;
-            ssrp.probeID = m_client->GetShipID();
-            ssrp.certainty = 1;
-            ssrp.pos = new PyNone;
-
-            PyToken* token = new PyToken("foo.Vector3");
-            PyTuple* oed_tuple = new PyTuple(2);
-                oed_tuple->SetItem(0, token);
-                oed_tuple->SetItem(1, ssr_oed.Encode());
-            ssrp.data = new PyObjectEx(false, oed_tuple);  // oed goes here
+        ssrp.data = new PyObjectEx(false, oed_tuple);  // oed goes here
 
         resultList->AddItem(ssrp.Encode());
     }
@@ -178,6 +179,47 @@ void Scan::SurveyScan() {
      */
 }
 
+/*
+ * class DBCosmicSignature {
+ * public:
+ *    std::string sigID;  // this is unique xxx-nnn id displayed in scanner
+ *    std::string dungeonName;
+ *    uint32 systemID;
+ *    uint32 sigItemID;   // itemID of this entry
+ *    uint16 typeID;
+ *    uint16 groupID;
+ *    uint16 scanGroupID; // see below
+ *    uint16 strengthAttributeID; // see below
+ *    double x;
+ *    double y;
+ *    double z;
+ * };
+ */
+/* more data for signatures...
+ *    uint16 groupID = EVEDB::invGroups::Cosmic_Anomaly; //885
+ *    uint16 groupID2 = EVEDB::invGroups::Cosmic_Signature; //502
+ *    uint16 typeID = 28356; // Cosmic_Anomaly - dont need probes or sklls
+ *    uint16 typeID2 = 25880; // Cosmic_Signature - need probes and skills (exploring)
+ *
+ * this is def for scanGroupID:
+ *    typedef enum {
+ *        ScanGroupScrap                = 1,
+ *        ScanGroupSignature            = 4,
+ *        ScanGroupShip                 = 8,
+ *        ScanGroupStructure            = 16,
+ *        ScanGroupDroneOrProbe         = 32,
+ *        ScanGroupCelestial            = 64,
+ *        ScanGroupAnomaly              = 128
+ *    } ScanGroup;
+ *
+ *  for strengthAttributeID, these show as 'Group' in system scan results
+ * AttrScanRadarStrength = 208,
+ * AttrScanLadarStrength = 209,
+ * AttrScanMagnetometricStrength = 210,
+ * AttrScanGravimetricStrength = 211,
+ * AttrScanAllStrength = 1136  -- shows 'Unknown' for 'Group' in system scan results
+ */
+
 
 /*
 AttrScanGravimetricStrengthBonus = 238,
@@ -199,7 +241,7 @@ AttrScanSpeedMultiplier = 242,
     PyTuple* tuple1 = new PyTuple(2);
         tuple1->SetItem(0, tuple2);
         tuple1->SetItem(1, new PyDict);
-    
+
     PyDict *result = new PyDict;
         result->SetItem(new PyInt(itemID()), new PyObjectEx_Type2(tuple1, chargeDict));
 */

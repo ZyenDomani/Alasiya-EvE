@@ -43,6 +43,8 @@ public:
 
     void GetPlanetData(DBQueryResult& row);
 
+    GPoint GetLaunchPos(uint32 launchID);
+
     void LoadColony();
     void SaveColony();
 };

@@ -306,8 +306,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             if (!itemRef)
                 return InventoryItemRef();
             // THESE SHOULD BE MOVED INTO A _type::Spawn() function that does not exist yet
-            //itemRef->SetAttribute(AttrIsOnline,       1);                                             // Is Online
-            //itemRef->SetAttribute(AttrDamage,         0.0);                                             // Structure Damage
             itemRef->SetAttribute(AttrMass,           itemRef->type().mass());           // Mass
             itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
             itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
@@ -329,9 +327,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                     if (!itemRef)
                         return InventoryItemRef();
                     // THESE SHOULD BE MOVED INTO A Charge::Spawn() function that does not exist yet
-                    // Create default dynamic attributes in the AttributeMap:
-                    //itemRef->SetAttribute(AttrIsOnline,   1);                             // Is Online
-                    //itemRef->SetAttribute(AttrDamage,     0.0);                           // Structure Damage
                     itemRef->SetAttribute(AttrMass,       itemRef->type().mass());           // Mass
                     itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
                     itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
@@ -350,9 +345,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                     if (!itemRef)
                         return InventoryItemRef();
                     // THESE SHOULD BE MOVED INTO A Charge::Spawn() function that does not exist yet
-                    // Create default dynamic attributes in the AttributeMap:
-                    //itemRef->SetAttribute(AttrIsOnline,   1);                             // Is Online
-                    //itemRef->SetAttribute(AttrDamage,     0.0);                           // Structure Damage
                     itemRef->SetAttribute(AttrMass,       itemRef->type().mass());           // Mass
                     itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
                     itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
@@ -395,7 +387,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             //InventoryItemRef itemRef = InventoryItem::LoadEntity( factory, itemID, data );        // Use this to prevent Asteroids from being stored in DB
             // THESE SHOULD BE MOVED INTO AN Asteroid::Spawn() function that does not exist yet
             // Create default dynamic attributes in the AttributeMap:
-            //itemRef->SetAttribute(AttrMass,           itemRef->type().mass());           // Mass
             itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
             itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
             itemRef->SaveAttributes();
@@ -410,9 +401,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             if (!itemRef)
                 return InventoryItemRef();
             // THESE SHOULD BE MOVED INTO A Structure::Spawn() function that does not exist yet
-            // Create default dynamic attributes in the AttributeMap:
-            //itemRef->SetAttribute(AttrIsOnline,       1);                                             // Is Online
-            //itemRef->SetAttribute(AttrDamage,         0.0);                                             // Structure Damage
             itemRef->SetAttribute(AttrShieldCharge,   itemRef->GetAttribute(AttrShieldCapacity));       // Shield Charge
             itemRef->SetAttribute(AttrArmorDamage,    0.0);                                       // Armor Damage
             itemRef->SetAttribute(AttrMass,           itemRef->type().mass());           // Mass
@@ -430,9 +418,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             if (!stationRef)
                 return StationItemRef();
             // THESE SHOULD BE MOVED INTO A Station::Spawn() function that does not exist yet
-            // Create default dynamic attributes in the AttributeMap:
-            //stationRef->SetAttribute(AttrIsOnline,      1);                                              // Is Online
-            //stationRef->SetAttribute(AttrDamage,        0.0);                                              // Structure Damage
             stationRef->SetAttribute(AttrShieldCharge,  stationRef->GetAttribute(AttrShieldCapacity));     // Shield Charge
             stationRef->SetAttribute(AttrArmorDamage,   0.0);                                         // Armor Damage
             stationRef->SetAttribute(AttrMass,           stationRef->type().mass());           // Mass
@@ -447,8 +432,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 || (t->groupID() == EVEDB::invGroups::Cargo_Container)
                 || (t->groupID() == EVEDB::invGroups::Freight_Container)
                 || (t->groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
-                || (t->groupID() == EVEDB::invGroups::Spawn_Container)
-                || (t->groupID() == EVEDB::invGroups::Wreck) )  /** @todo  wrecks should now use new Wreck:DynamicSystemEntitry class */
+                || (t->groupID() == EVEDB::invGroups::Spawn_Container))
             {
                 // Spawn new Cargo Container
                 uint32 itemID = CargoContainer::CreateItemID( factory, data );
@@ -458,9 +442,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 if (!cargoRef)
                     return CargoContainerRef();
                 // THESE SHOULD BE MOVED INTO A CargoContainer::Spawn() function that does not exist yet
-                // Create default dynamic attributes in the AttributeMap:
-                //cargoRef->SetAttribute(AttrIsOnline,      1);                                                 // Is Online
-                //cargoRef->SetAttribute(AttrDamage,        0.0);                                               // Structure Damage
                 cargoRef->SetAttribute(AttrShieldCharge,  cargoRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
                 cargoRef->SetAttribute(AttrArmorDamage,   0.0);                                               // Armor Damage
                 cargoRef->SetAttribute(AttrMass,          cargoRef->type().mass());          // Mass
@@ -469,6 +450,23 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 cargoRef->SetAttribute(AttrCapacity,      cargoRef->type().capacity());      // Capacity
                 cargoRef->SaveAttributes();
                 return cargoRef;
+            } else if (t->groupID() == EVEDB::invGroups::Wreck) {
+                // Spawn new Wreck Container
+                uint32 itemID = WreckContainer::CreateItemID( factory, data );
+                if ( itemID == 0 )
+                    return WreckContainerRef();
+                WreckContainerRef wreckRef = WreckContainer::Load( factory, itemID );
+                if (!wreckRef)
+                    return WreckContainerRef();
+                // THESE SHOULD BE MOVED INTO A WreckContainer::Spawn() function that does not exist yet
+                wreckRef->SetAttribute(AttrShieldCharge,  wreckRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
+                wreckRef->SetAttribute(AttrArmorDamage,   0.0);                                               // Armor Damage
+                wreckRef->SetAttribute(AttrMass,          wreckRef->type().mass());          // Mass
+                wreckRef->SetAttribute(AttrRadius,        wreckRef->type().radius());        // Radius
+                wreckRef->SetAttribute(AttrVolume,        wreckRef->type().volume());        // Volume
+                wreckRef->SetAttribute(AttrCapacity,      wreckRef->type().capacity());      // Capacity
+                wreckRef->SaveAttributes();
+                return wreckRef;
             }
             /*  put a check in here for beacons,
 			 * groupid 310::typeid
@@ -500,9 +498,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
     InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
     if (!itemRef)
         return InventoryItemRef();
-	// Create some basic attributes that are NOT found in dgmTypeAttributes for most items, yet most items DO need:
-    //itemRef->SetAttribute(AttrIsOnline,    1);                                              // Is Online
-    //itemRef->SetAttribute(AttrDamage,      0.0);                                              // Structure Damage
     itemRef->SetAttribute(AttrMass,           itemRef->type().mass());           // Mass
     itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
     itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
