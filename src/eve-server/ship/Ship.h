@@ -356,11 +356,11 @@ public:
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void SetPilot(Client* pClient);
-    virtual bool HasPilot()                             { return (m_pilot ? true : false); }
-    virtual Client* GetPilot()                          { return m_pilot; }
+    virtual bool HasPilot()                             { return (m_shipRef ? m_shipRef->HasPilot() : false); }
+    virtual Client* GetPilot()                          { return (m_shipRef ? m_shipRef->GetPilot() : nullptr); }
 
     /* specific functions handled here. */
-    void AbortCycle()                                        { m_shipRef->AbortCycle(); }
+    void AbortCycle()                                   { m_shipRef->AbortCycle(); }
     void PayInsurance();
     void ResetShipSystemMgr(SystemManager* pSystem);
     void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
@@ -370,7 +370,6 @@ public:
     double CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current);
 
 protected:
-    Client* m_pilot;
     ShipItemRef m_shipRef;
 
     const uint32 m_processTimerTick;

@@ -899,7 +899,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             if (!pClient->IsJetcanAvalible()) {
                 std::string msg = "A Jettison Container is being loaded into your cargo hold. \n";
                 msg += "Your estimated wait time is ";
-                msg += pClient->JetcanTime();
+                msg += itoa(pClient->JetcanTime());
                 msg += " seconds.";
                 pClient->SendNotifyMsg(msg.c_str());
                 return nullptr;

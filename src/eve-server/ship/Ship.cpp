@@ -1186,7 +1186,6 @@ m_processTimer(m_processTimerTick)
 {
     m_destiny = new DestinyManager(this);
     m_podShipID = 0;
-    m_pilot = nullptr;
     m_processTimer.Start(m_processTimerTick);
     _log(SHIP__INFO, "Created ShipSE %p for item %u", this, self->itemID());
 }
@@ -1226,7 +1225,8 @@ void Ship::Process() {
 
     // check to see if this is an empty ship, and exit if so.
     //  we're not worried about recharge and modules for empty ships (segfaults)
-    if (!m_pilot) return;
+    if (!m_self->HasPilot())
+        return;
 
     if (m_processTimer.Check()) {
         double profileStartTime = 0.0;
@@ -1242,7 +1242,7 @@ void Ship::Process() {
             else if ((Capacity - newCharge) < 0.3)
                 newCharge = Capacity;
             m_self->SetAttribute(AttrShieldCharge, newCharge);
-            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Shield Charge: %f", m_pilot->GetName(), m_self->itemID(), newCharge );
+            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Shield Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge );
         }
 
         // cap
@@ -1255,7 +1255,7 @@ void Ship::Process() {
             else if ((Capacity - newCharge) < 0.3)
                 newCharge = Capacity;
             m_self->SetAttribute(AttrCapacitorCharge, newCharge);
-            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Cap Charge: %f", m_pilot->GetName(), m_self->itemID(), newCharge );
+            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Cap Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge );
         }
         // profile timer for the ship recharge shit
         if (sConfig.server.UseProfiling)
@@ -1267,7 +1267,7 @@ void Ship::Process() {
 }
 
 void Ship::PayInsurance() {
-    m_pilot->GetChar()->AlterBalance(m_db.GetShipInsurancePayout(GetSelf()->itemID()));
+    m_self->GetPilot()->GetChar()->AlterBalance(m_db.GetShipInsurancePayout(GetSelf()->itemID()));
     m_db.DeleteInsuranceByShipID(GetSelf()->itemID());
 }
 
@@ -1279,7 +1279,6 @@ void Ship::ResetShipSystemMgr(SystemManager* pSystem)
 }
 
 void Ship::SetPilot(Client* pClient) {
-    m_pilot = pClient;
     m_self->SetPlayer(pClient);
 }
 
@@ -1395,12 +1394,12 @@ PyDict* Ship::MakeSlimItem() {
         slim->SetItemString("typeID",               new PyInt(m_self->typeID()));
         slim->SetItemString("name",                 new PyString(m_self->itemName()));
         slim->SetItemString("ownerID",              new PyInt(m_self->ownerID()));
-        slim->SetItemString("charID",               new PyInt(m_pilot ? m_pilot->GetCharacterID() : 0));
-        slim->SetItemString("corpID",               new PyInt(m_pilot ? m_pilot->GetCorporationID() : GetCorporationID()));
-        slim->SetItemString("allianceID",           new PyInt(m_pilot ? m_pilot->GetAllianceID() : GetAllianceID()));
-        slim->SetItemString("warFactionID",         new PyInt(m_pilot ? m_pilot->GetWarFactionID() : GetWarFactionID()));
-        slim->SetItemString("bounty",               new PyFloat(m_pilot ? m_pilot->GetBounty() : 0));
-        slim->SetItemString("securityStatus",       new PyFloat(m_pilot ? m_pilot->GetSecurityRating() : 0.0));
+        slim->SetItemString("charID",               new PyInt(m_self->GetPilot() ? m_self->GetPilot()->GetCharacterID() : 0));
+        slim->SetItemString("corpID",               new PyInt(m_self->GetPilot() ? m_self->GetPilot()->GetCorporationID() : GetCorporationID()));
+        slim->SetItemString("allianceID",           new PyInt(m_self->GetPilot() ? m_self->GetPilot()->GetAllianceID() : GetAllianceID()));
+        slim->SetItemString("warFactionID",         new PyInt(m_self->GetPilot() ? m_self->GetPilot()->GetWarFactionID() : GetWarFactionID()));
+        slim->SetItemString("bounty",               new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetBounty() : 0));
+        slim->SetItemString("securityStatus",       new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetSecurityRating() : 0.0));
     if (m_self->typeID() == itemTypeCapsule) {
         slim->SetItemString("launcherID",           new PyInt(GetPodShipID()));
         return slim;

@@ -414,7 +414,7 @@ void Ship::Killed(Damage &fatal_blow) {
     } else
         killerID = killer->GetID();
 
-    if (!m_pilot) {
+    if (!m_self->GetPilot()) {
         m_destiny->Stop();
 
         // Spawn a wreck for the Ship that was destroyed:
@@ -477,15 +477,15 @@ void Ship::Killed(Damage &fatal_blow) {
 
         m_system->RemoveEntity(this);
         return;
-    } else if (m_pilot->InPod()) {
+    } else if (m_self->GetPilot()->InPod()) {
         if (!m_bubble) return;
         if ( pClient )
-               pClient->GetChar()->PayBounty(m_pilot->GetChar());
+            pClient->GetChar()->PayBounty(m_self->GetPilot()->GetChar());
 
         /** populate kill data for podKill and save to db  - need to verify this.  works.  need to get player corp/ally data in SE */
         CharKillData data;
             data.solarSystemID = m_system->GetID();
-            data.victimCharacterID = m_pilot->GetCharacterID();
+            data.victimCharacterID = m_self->GetPilot()->GetCharacterID();
             data.victimCorporationID = m_corpID;
             data.victimAllianceID = m_allyID;
             data.victimFactionID = m_warID;
@@ -506,16 +506,16 @@ void Ship::Killed(Damage &fatal_blow) {
 
             data.victimDamageTaken = totalHP;
             /* killBlob is ship dna, and contains destroyed/dropped items. dna works, but i dont know how to do the rest yet.  -allan 1May16  */
-            data.killBlob = m_pilot->GetShip()->GetShipDNA();
+            data.killBlob = m_self->GetPilot()->GetShip()->GetShipDNA();
             data.killTime = Win32TimeNow();
 
             data.moonID = 0;    /* dunno wtf this is... */
 
-        m_pilot->GetChar()->LogKill(data);
+        m_self->GetPilot()->GetChar()->LogKill(data);
         /** @todo  log kill data for killer, if player or player's drone  */
 
 		GPoint deadPodPosition = GetPosition();
-		uint32 oldPodItemID = m_pilot->GetShipID();
+        uint32 oldPodItemID = m_self->GetPilot()->GetShipID();
 
         m_destiny->SendTerminalExplosion(oldPodItemID, m_bubble->GetID());
 
@@ -563,7 +563,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
         // this method will reset char variables to last clone state after being podded.
         //  NOTE  *** NOT TESTED YET ***
-        m_pilot->ResetAfterPodded();
+        m_self->GetPilot()->ResetAfterPodded();
 	} else {
         /** @todo (allan)  when killed while in dock queue, this DOES NOT set client variables correctly,
                 meaning, it does not...
@@ -579,7 +579,7 @@ void Ship::Killed(Damage &fatal_blow) {
         /** populate kill data for shipKill and save to db  -- need to verify this*/
         CharKillData data;
             data.solarSystemID = m_system->GetID();
-            data.victimCharacterID = m_pilot->GetCharacterID();
+            data.victimCharacterID = m_self->GetPilot()->GetCharacterID();
             data.victimCorporationID = m_corpID;
             data.victimAllianceID = m_allyID;
             data.victimFactionID = m_warID;
@@ -600,21 +600,21 @@ void Ship::Killed(Damage &fatal_blow) {
 
             data.victimDamageTaken = totalHP;
             /* killBlob is ship dna, and contains destroyed/dropped items. dna works, but i dont know how to do the rest yet.  -allan 1May16  */
-            data.killBlob = m_pilot->GetShip()->GetShipDNA();
+            data.killBlob = m_self->GetPilot()->GetShip()->GetShipDNA();
             data.killTime = Win32TimeNow();
 
             data.moonID = 0;    /* dunno wtf this is... */
 
-        m_pilot->GetChar()->LogKill(data);
+        m_self->GetPilot()->GetChar()->LogKill(data);
         /** @todo check for killer has pilot and record kill data for them, too */
 
         PayInsurance();
 
         GPoint capsulePosition = GetPosition();
         GPoint deadShipPosition = GetPosition();
-        uint32 oldShipItemID = m_pilot->GetShipID();
+        uint32 oldShipItemID = m_self->GetPilot()->GetShipID();
         /** @todo: figure out anybody else which may be referencing this ship */
-        ShipItemRef deadShipRef = m_pilot->GetShip();
+        ShipItemRef deadShipRef = m_self->GetPilot()->GetShip();
         m_destiny->SendJettisonPacket(deadShipRef);
         m_destiny->SendTerminalExplosion(oldShipItemID, m_bubble->GetID());
 
@@ -622,18 +622,18 @@ void Ship::Killed(Damage &fatal_blow) {
         float radius = m_self->GetAttribute(AttrRadius).get_float();
         capsulePosition.MakeRandomPointOnSphere(radius + (MakeRandomFloat(200, 400)));
 
-        m_services.item_factory->SetUsingClient(m_pilot);
-        ShipItemRef podRef = m_services.item_factory->GetShip(m_pilot->GetPodID());
-        //podRef->Move(m_pilot->GetSystemID(), flagCapsule);
+        m_services.item_factory->SetUsingClient(m_self->GetPilot());
+        ShipItemRef podRef = m_services.item_factory->GetShip(m_self->GetPilot()->GetPodID());
+        //podRef->Move(m_self->GetPilot()->GetSystemID(), flagCapsule);
         podRef->Relocate(capsulePosition);
 
-        SystemEntity* pPodEntity = m_system->get(m_pilot->GetPodID());
+        SystemEntity* pPodEntity = m_system->get(m_self->GetPilot()->GetPodID());
         if (!pPodEntity)
             pPodEntity = new Ship(podRef, m_services, m_system);
 
         m_bubble->Add(pPodEntity);
 
-        m_pilot->BoardShip(podRef);
+        m_self->GetPilot()->BoardShip(podRef);
         m_services.item_factory->UnsetUsingClient();
 
         uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(deadShipRef->typeID());
@@ -669,7 +669,7 @@ void Ship::Killed(Damage &fatal_blow) {
             if ((killer->HasPilot()) or (killer->IsDroneSE()))
                 wreckEntity.ownerID = killerID;
             else
-                wreckEntity.ownerID = m_pilot->GetCharacterID();
+                wreckEntity.ownerID = m_self->GetPilot()->GetCharacterID();
             wreckEntity.typeID = wreckTypeID;
             wreckEntity.x = deadShipPosition.x;
             wreckEntity.y = deadShipPosition.y;
@@ -697,7 +697,7 @@ void Ship::Killed(Damage &fatal_blow) {
         SystemEntity* pEntity = m_system->get(oldShipItemID);
         m_system->RemoveEntity(pEntity);
         deadShipRef->Delete();
-        m_pilot->StartKilledTimer();
+        m_self->GetPilot()->StartKilledTimer();
     }
 
     if ( pClient and (m_system->GetSystemSecurityRating() > 0)) {
@@ -707,7 +707,7 @@ void Ship::Killed(Damage &fatal_blow) {
          *  security status loss = relative_penalty * (agressor_sec_status + 10)
          */
         /** @todo (allan) check for faction/corp status modifiers here. */
-        double modifier = (1 + ((m_pilot->GetSecurityRating() - pClient->GetSecurityRating()) /90));
+        double modifier = (1 + ((m_self->GetPilot()->GetSecurityRating() - pClient->GetSecurityRating()) /90));
         double penalty = 6.0f * m_system->GetSystemSecurityRating() * modifier;
         double loss = penalty * ( pClient->GetSecurityRating() + 10);
         if (sConfig.rates.secRate != 1.0) loss *= sConfig.rates.secRate;
