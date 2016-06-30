@@ -65,3 +65,20 @@ static const double MAX_MARKET_PRICE = 9223372036854;  //max int64/1000000  (922
 
 // Cosmic Managers constants here
 static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;  /* this is grow check in ms (1d) */
+
+//Newtons gravitational constant
+static const double Gc = 6.674e-11;        // in Nm2/kg2
+
+/*  misc data
+ * radius constants
+ * moon    =  1737km
+ * mars    =  3390km
+ * earth   =  6371km
+ * jupiter = 69911km
+ *
+ * gravity constants
+ * moon    =  1.622 m/s^2
+ * mars    =  3.711 m/s^2
+ * earth   =  9.807 m/s^2
+ * jupiter = 24.790 m/s^2
+ */

@@ -132,7 +132,7 @@ public:
 	void SendSpecialEffect(const ShipItemRef shipRef, uint32 moduleID, uint32 moduleTypeID,
     uint32 targetID, uint32 chargeTypeID, std::string effectString, bool isOffensive, bool start, bool isActive, double duration, uint32 repeat) const;
 
-    //  functions to return protected variables for SystemBubble exclusive WarpTo updates
+    //  functions to return protected variables for SystemBubble exclusive WarpTo updates and other methods that need Destiny Variables
     int32 GetDistance()                                 { return m_stopDistance; }
     int32 GetWarpSpeed()                                { return static_cast<int32>(m_shipWarpSpeed * 10); }
     uint32 GetTargetID()                                { return m_targetEntity.first; }
@@ -144,6 +144,7 @@ public:
     double GetAgility()                                 { return m_shipAgility; }
     double GetInertia()                                 { return m_shipInertia; }
     uint32 GetStateStamp()                              { return m_stateStamp; }
+    GVector GetHeading()                                { return m_shipHeading; }
 
     void MakeMissile(Missile* missile);
 
@@ -172,7 +173,7 @@ protected:
     double m_maxShipSpeed;              //in m/s
     double m_warpCapacitorNeed;         //in GJ     - capacitor charged needed to initiate warp
     // ship motion factors for complicated maths
-    double m_shipAgility;               //in s/Mkg  - time-constant of movement for objects in eve physics (and 'T' in Dr. SS's calculations)
+    double m_shipAgility;               //in s/Mkg  - time-constant of movement for objects in eve physics (and 't' in Dr. SS's calculations)
                                         //          - characteristic of time that governs the rate of change in motion of an object
     double m_shipInertia;               //in s/Mkg  - reciprocal of drag constant in EvE
                                         //          - the drag coefficient is 1/I and in Mkg/s
@@ -201,6 +202,7 @@ protected:
     uint8 m_turnTic;                    //time into turn
     uint32 m_stateStamp;                //timestamp of when current state began
 
+    float m_orbitRadTic;                //in rad/sec  - for orbiting
     float m_userSpeedFraction;          //fuzzy logic - speed % - set by user command
     float m_currentSpeedFraction;       //fuzzy logic - speed % - current ship speed
     float m_activeSpeedFraction;        //fuzzy logic - speed % - set by USF and CSF
