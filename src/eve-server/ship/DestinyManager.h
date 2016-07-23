@@ -194,13 +194,14 @@ protected:
     bool m_cloaked;
     bool m_turning;                     //used to denote ship turning for associated checks
     bool m_inBubble;                    //used to tell if client is in bubble or not.
+    bool m_orbiting;
     bool m_tractored;
     bool m_tractorPause;
 
     int32 m_stopDistance;               //from destination, in m
 
     uint8 m_turnTic;                    //time into turn
-    uint32 m_stateStamp;                //timestamp of when current state began
+    uint32 m_stateStamp;                //timestamp of when current state began, in seconds
 
     float m_orbitRadTic;                //in rad/sec  - for orbiting
     float m_userSpeedFraction;          //fuzzy logic - speed % - set by user command
@@ -210,11 +211,12 @@ protected:
 
     double m_targetDistance;            //in m
     double m_followDistance;            //in m
-    double m_moveTimer;
+    double m_moveTimer;                 //in ms
+    double m_orbitTimer;                //in ms
 
     GPoint m_targetPoint;
     GVector m_shipHeading;              //direction ship is facing
-    GVector m_targetHeading;            //direction to target from current heading
+    GVector m_targetHeading;            //direction to target from current heading  -- should this be the *actual* heading of our current target??
     Destiny::BallMode State;
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
@@ -222,7 +224,7 @@ protected:
     void _Move(bool orbit=false);       //apply velocity to our position for for this round of movement
     void _Orbit();
     void _Follow();                     //follow or approach object in space
-    void _BeginMovement();
+    void _BeginMovement();              //set initial variables for all movement (common code)
     void _UpdateVelocity(bool isMoving=false);
 
 private:

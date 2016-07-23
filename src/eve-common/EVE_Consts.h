@@ -66,8 +66,8 @@ static const double MAX_MARKET_PRICE = 9223372036854;  //max int64/1000000  (922
 // Cosmic Managers constants here
 static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;  /* this is grow check in ms (1d) */
 
-//Newtons gravitational constant
-static const double Gc = 6.674e-11;        // in Nm2/kg2
+// gravitational constant
+static const double Gc = 6.6725985e-11;
 
 /*  misc data
  * radius constants

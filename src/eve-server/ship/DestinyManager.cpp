@@ -55,21 +55,21 @@ m_moveTimer(0.0),
 m_targetDistance(0.0),
 m_followDistance(0.0),
 m_stopDistance(0),
-m_radius(1.0),
+m_radius(1.0f),
 m_mass(1.0f),
 m_turnTic(1),
 m_massMKg(1.0f),
 m_alignTime(1.0f),
 m_timeToEnterWarp(0.0f),
 m_shipWarpSpeed(0.0f),
-m_maxShipSpeed(1.0),
-m_shipAgility(1.0),
-m_shipInertia(1.0),
+m_maxShipSpeed(1.0f),
+m_shipAgility(1.0f),
+m_shipInertia(1.0f),
 m_warpStrength(1),
-m_warpCapacitorNeed(1.0),
 m_warpAccelTime(1),
 m_warpDecelTime(1),
-m_warpState(nullptr)
+m_warpState(nullptr),
+m_warpCapacitorNeed(1.0f)
 {
     m_bump = false;
     m_stop = false;
@@ -78,16 +78,17 @@ m_warpState(nullptr)
     m_cloaked = false;
     m_turning = false;
     m_inBubble = true;
+    m_orbiting = false;
     m_tractored = false;
     m_tractorPause = false;
-    m_capNeeded = 0;
+    m_capNeeded = 0.0f;
     m_stateStamp = 0;
 
     m_orbitRadTic = 0.0f;
-    m_userSpeedFraction = 0;
-    m_activeSpeedFraction = 0;
-    m_currentSpeedFraction = 0;
-    m_maxOrbitSpeedFraction = 0;
+    m_userSpeedFraction = 0.0f;
+    m_activeSpeedFraction = 0.0f;
+    m_currentSpeedFraction = 0.0f;
+    m_maxOrbitSpeedFraction = 0.0f;
 
     m_dockTimer.Disable();
     m_warpTimer.Disable();
@@ -264,6 +265,8 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
      *  m_velocity is current ship velocity.  set in _Move()
      *   m_velocity = m_shipHeading * m_currentSpeedFraction * m_maxShipSpeed
      */
+    if ((m_shipMaxAccelTime < 1.0) and (mySE->IsDynamicEntity()))
+        m_shipMaxAccelTime = (m_shipAgility * -log(0.0001));
 
     m_userSpeedFraction = fraction;
     bool isMoving = false;
@@ -427,6 +430,7 @@ void DestinyManager::Halt() {
     m_turning = false;
     m_velocity = GVector(NULL_ORIGIN);
     m_moveTimer = 0.0;
+    m_orbitTimer = 0.0;
     m_stateStamp = 0;
     m_targetPoint = GPoint(NULL_ORIGIN);
     m_stopDistance = 0;
@@ -440,6 +444,9 @@ void DestinyManager::Halt() {
     m_targetEntity.second = nullptr;
 
     _ClearTurn();
+
+    if ((m_shipMaxAccelTime < 1.0) and (mySE->IsDynamicEntity()))
+        m_shipMaxAccelTime = (m_shipAgility * -log(0.0001));
 
     _log(DESTINY__MOVE_TRACE, "Destiny::Halt() - %s(%u): m_shipHeading: %.3f,%.3f,%.3f", \
         mySE->GetName(), mySE->GetID(), m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
@@ -537,31 +544,27 @@ void DestinyManager::_Bounce(GVector direction, float speed)
     m_velocity = m_shipHeading * m_maxSpeed;
 
     std::vector<PyTuple*> updates;
-
     DoDestiny_SetBallVelocity bv;
         bv.entityID = mySE->GetID();
         bv.x = m_velocity.x;
         bv.y = m_velocity.y;
         bv.z = m_velocity.z;
     updates.push_back(bv.Encode());
-
     DoDestiny_CmdGotoDirection du;
         du.entityID = mySE->GetID();
         du.x = m_shipHeading.x;
         du.y = m_shipHeading.y;
         du.z = m_shipHeading.z;
     updates.push_back(du.Encode());
-
     SendDestinyUpdate(updates);
-
     Stop();
 }
 
-
 // main movement method
-void DestinyManager::_Move(bool orbit) {
+void DestinyManager::_Move(bool orbit/*false*/) {
     if (!mySE->SysBubble())
         mySE->SystemMgr()->AddEntity(mySE);
+
     //apply our velocity to our position for 1 unit of time (a second)
 
     /* acceleration and deceleration are both logarithmic, and the server needs to keep up with client position.
@@ -593,23 +596,21 @@ void DestinyManager::_Move(bool orbit) {
      */
 
     /* **UPDATE**  this now uses time AND (m_currentSpeedFraction > 0.999f) for min/max speeds.  -allan 6Aug14
-     * **UPDATE**  this is now tracking ALL speed changes correctly.  - allan 21Nov15
+     * **UPDATE**  this is now tracking ALL speed changes correctly.  -allan 21Nov15
+     * **UPDATE**  initial orbit implementation.  -allan 13July16
      */
 
-    if (!orbit and m_userSpeedFraction)   // if usf==0 then ship is stopping.  continue movement along current ship heading (no turn)
+    if (!orbit and m_userSpeedFraction)   // if usf==0 then ship is stopping, so continue movement along current ship heading (cancel turn)
         m_shipHeading = _Turn();
 
     double timeStamp = GetTimeMSeconds() - m_moveTimer;
-    //float timeStamp = sEntityList.GetStamp() - m_stateStamp;
+    //float stateTime = sEntityList.GetStamp() - m_stateStamp;
     float speed = 0.0f, csf = 0.0f;
     std::string move = "";
     // check to make sure we dont overrun usf/asf
     if (m_activeSpeedFraction == m_userSpeedFraction)
         m_currentSpeedFraction = 1.0f;
-    if (orbit) {    //orbiting ship does NOT conform to standard move methods.
-        speed = m_maxSpeed * m_currentSpeedFraction;
-        csf = m_currentSpeedFraction;
-    } else if ((timeStamp > m_shipMaxAccelTime) and (m_currentSpeedFraction > 0.995f)) {
+    if ((timeStamp > m_shipMaxAccelTime) and (m_currentSpeedFraction > 0.995f)) {
         m_accel = m_decel = false;
         if (m_userSpeedFraction) {
             // ship has reached full speed (whatever the fraction was set to)
@@ -642,6 +643,7 @@ void DestinyManager::_Move(bool orbit) {
         if ((!m_turning) or (m_turnTic))  //normal accel
             m_currentSpeedFraction = (1 - exp(-timeStamp * 1000000 / (m_shipInertia * m_mass)));
 
+        csf = m_currentSpeedFraction;
         if (m_accel or m_decel) {
             float delta = 0.0f;
             if (m_activeSpeedFraction > m_userSpeedFraction) {
@@ -658,31 +660,26 @@ void DestinyManager::_Move(bool orbit) {
             speed = m_maxSpeed * m_activeSpeedFraction;
         }
 
-        csf = m_currentSpeedFraction;
         if ((!m_userSpeedFraction) or (m_decel)) {
             //just decelerating
             move = "decelerating";
             m_activeSpeedFraction = m_currentSpeedFraction;
             speed = m_maxSpeed * m_activeSpeedFraction;
-            if (m_decel) speed = m_maxShipSpeed - speed;
-            else speed = m_maxSpeed - speed;
+            if (m_decel)
+                speed = m_maxShipSpeed - speed;
+            else
+                speed = m_maxSpeed - speed;
             csf = 1 - m_currentSpeedFraction;
         }
     }
-
     if (orbit) {
-        _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) is orbiting %s(%u) at %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
-            mySE->GetName(), mySE->GetID(), GetTargetEntity()->GetName(), GetTargetID(), \
-            speed, csf, m_activeSpeedFraction, timeStamp);
-    } else {
-        _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
-            mySE->GetName(), mySE->GetID(), move.c_str(), \
-            speed, csf, m_activeSpeedFraction, timeStamp);
-        //_log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) Position: %.2f,%.2f,%.2f  velocity: %.3f,%.3f,%.3f", \
-            mySE->GetName(), mySE->GetID(), \
-            m_position.x, m_position.y, m_position.z, \
-            m_velocity.x, m_velocity.y, m_velocity.z);
+        speed *= m_maxOrbitSpeedFraction;
+        move = "orbiting";
     }
+
+    _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
+        mySE->GetName(), mySE->GetID(), move.c_str(), \
+        speed, csf, m_activeSpeedFraction, timeStamp);
 
     // hack for some fucked up movement shit where npc's have a move-type state, but have no speedFraction.
     if (mySE->IsNPCSE() and (!csf)) {
@@ -693,9 +690,17 @@ void DestinyManager::_Move(bool orbit) {
         return;
     }
 
-    //set postion and direction for this round of movement
     m_velocity = m_shipHeading * speed;
-    SetPosition(m_position + m_velocity);
+
+    _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) Position: %.2f,%.2f,%.2f  velocity: %.3f,%.3f,%.3f", \
+        mySE->GetName(), mySE->GetID(), \
+        m_position.x, m_position.y, m_position.z, \
+        m_velocity.x, m_velocity.y, m_velocity.z);
+
+    if (!orbit) {
+        //set postion and direction for this round of movement
+        SetPosition(m_position + m_velocity);
+    }
 
     if (mySE->HasPilot() and mySE->SysBubble()->HasPlayers()) // no players in bubble = nothing to check against (for now)
         _CheckBump();
@@ -707,7 +712,6 @@ void DestinyManager::_Move(bool orbit) {
  * t = time
  * A = ship agility
  */
-// much of the following turn code is from "Ship Motion in Eve Online" by Scheulagh Santorine, Ph.D
 bool DestinyManager::_IsTurn() {    //is working.  dont change
     if (m_targetPoint.isZero()) {
         _log(DESTINY__ERROR, "Destiny::_IsTurn() - %s(%u): Target is null.", mySE->GetName(), mySE->GetID());
@@ -730,7 +734,7 @@ bool DestinyManager::_IsTurn() {    //is working.  dont change
     }
     m_radians = acos(dot);
     float degrees = EvE_RadiansToDegrees(m_radians);
-    if ((degrees < TURN_ALIGNMENT) or (m_turnTic > m_alignTime)) {
+    if (((degrees < TURN_ALIGNMENT) or (m_turnTic > m_alignTime)) and (State != DSTBALL_ORBIT)) {
         m_shipHeading = toVec;
         return false;
     }
@@ -772,8 +776,12 @@ GVector DestinyManager::_Turn() {
             // turn angle is computed from original turn angle and speed.
             m_turnTic = 1;
             m_currentSpeedFraction = sqrt((cos(m_radians) + 1) /2);  //m_radians is set in _IsTurn() function
-            _UpdateVelocity(true);   // reset movement variables for speed change
-            turnPercent = 1.0f - m_currentSpeedFraction;    // set this to be percentage of turn based on alignTime
+            if (State == DSTBALL_ORBIT) {
+                turnPercent = 1.0f;
+            } else {
+                _UpdateVelocity(true);   // reset movement variables for speed change
+                turnPercent = 1.0f - m_currentSpeedFraction;    // set this to be percentage of turn based on alignTime
+            }
             //  quarter-turn is minimum for all turns....greater angles have sharper initial turns ***HACK***  fix this
             if (turnPercent < 0.25f)
                 turnPercent = 0.25f;
@@ -860,10 +868,12 @@ void DestinyManager::_Follow() {
 }
 
 void DestinyManager::_Orbit() {
-    // see notes in Orbit() concerning setting orbit speed, radius and using std _Move() method.
+    // see notes in Orbit() concerning setting orbit speed, radius and using _Move() method.
     // this should ONLY set position of ship based on period of orbit.
 
-    // if needed (dont know why it should be yet), this can get velocity of orbiting ship that is NOT at full speed yet.
+    #define LogMacro(v) _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - " #v ": (%.3f, %.3f, %.3f)   len=%.3f", v.x, v.y, v.z, v.length())
+
+    // for starting orbit within orbit distance, we get velocity of orbiting ship that is NOT at full speed yet.
 
     // for velocity of orbiting ship at time 't', we solve for velocity 'v'
     /* v = Vm*[1-e^(-t/(mMkg*I))]
@@ -925,6 +935,22 @@ void DestinyManager::_Orbit() {
 
     //_log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  Beginning Orbit Math.", mySE->GetName(), mySE->GetID());
 
+    /* destiny variables used here
+     * m_position - probably the most important calculated value.
+     * m_velocity - tied for above title
+     * m_followDistance - commanded orbit distance
+     * m_targetDistance - calculated orbit distance, including target gravity and ship variables
+     * m_targetHeading - direction to target from current heading
+     * m_targetPoint
+     * m_shipHeading
+     * m_stateStamp
+     * m_moveTimer
+     * m_orbitTimer
+     * m_orbitRadTic - rad/sec in current orbit.  set by Orbit()
+     * m_maxOrbitSpeedFraction
+     *
+     */
+
     /*  defining orbit variables used here
      * Tr = target radius
      * Tp = target position
@@ -936,22 +962,118 @@ void DestinyManager::_Orbit() {
      */
 
     float Tr =  m_targetEntity.second->GetRadius();
-    //float Tv = (m_targetEntity.second->DestinyMgr() ? m_targetEntity.second->DestinyMgr()->GetSpeed() : 0);
     GPoint Tp(m_targetEntity.second->GetPosition());
-    //GVector Th(m_targetEntity.second->DestinyMgr() ? m_targetEntity.second->DestinyMgr()->GetHeading() : NULL_ORIGIN_V);
+    m_targetPoint = Tp;
+    // todo...most entites DO NOT have destiny managers yet, so these will return 0.  (wip)
+    float Tv = (m_targetEntity.second->DestinyMgr() ? m_targetEntity.second->DestinyMgr()->GetSpeed() : 0);
+    GVector Th(m_targetEntity.second->DestinyMgr() ? m_targetEntity.second->DestinyMgr()->GetHeading() : NULL_ORIGIN_V);
 
-    #define LogMacro(v) _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - " #v ": (%.3f, %.3f, %.3f)   len=%.3f", v.x, v.y, v.z, v.length())
+    double distance = (m_position.distance(Tp) - m_radius - Tr);
+    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - distance:%.2f, target:%.2f, (follow:%.2f - actual:%.2f)", \
+            distance, m_targetDistance, m_followDistance, m_position.distance(Tp));
 
-    GVector delta(m_position, Tp);
-    double distance = delta.length();
-    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - distance:%.2f, targetDistance:%.2f", distance, m_targetDistance);
+    if (distance < m_targetDistance) {
+        m_orbiting = false;
+        // we are too close to our target; move to increase distance to target.
+        // check heading and adjust accordingly
+        GVector toVec(m_position, m_targetPoint);
+        toVec.normalize();
+        float dot = toVec.dotProduct(m_shipHeading);
+        m_radians = acos(dot);
+        float degrees = EvE_RadiansToDegrees(m_radians);
+        if (dot > 0.8) //~15 degrees
+            m_shipHeading *= -0.5f;
 
-    if (m_targetDistance <= (m_radius * 2 + Tr + distance)) {
-        // if we are too far from our target to orbit, then begin heading in their direction.
-        _Move();
-        return;
+        m_targetPoint = m_position + (m_shipHeading * 1.0e16);  // continue in straight line to increase distance
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - too close.  Dot = %.3f, degrees: %.3f", dot, degrees);
+    } else if ((distance + (m_radius * 2)) > m_followDistance) {
+    // may need a bit of fudging here on distance.
+        m_orbiting = false;
+        // we are too far to orbit; set heading to side/behind target to avoid 'straight' heading and near-zero radial velocity (mimic manual orbit)
+        /** @todo  determine points needed to set heading correctly to avoid near-zero radial velocity */
+        GVector delta(m_position, Tp);
+        delta.normalize();
+        m_shipHeading = delta;
+        m_targetPoint = m_position + (m_shipHeading * 1.0e16 + m_followDistance);
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - too far.");
+    } else {
+        // our position is close enough to continue orbit this round.
+
+        // get current times
+        double timeStamp = GetTimeMSeconds() - m_moveTimer;
+
+        // check for currently orbiting or altering distance, and set timers accordingly
+        // set movement timer here...
+        if (!m_orbiting or (timeStamp < 1)) {
+            // check timer for new or continued orbit.
+            /** @todo  check current speed here, then set timer as needed to correctly set speed in subsequent calculations */
+            timeStamp = 1;
+            m_moveTimer = GetTimeMSeconds();
+        }
+
+        // set current postion (this is where we are this tic)
+        double radiusX = m_position.x - Tp.x, radiusY = m_position.y - Tp.y, radiusZ = m_position.z - Tp.z;
+        double newX = 0, newY = 0, newZ = 0;
+        double curRad = m_orbitRadTic * timeStamp;
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting.  radius:%.2f, curRad:%.5f, timestamp:%.3f", m_position.distance(Tp), curRad, timeStamp);
+        /** @note  remember, eve coords for y and z are backwards.... y is elevation */
+        GPoint mposition = NULL_ORIGIN;
+        newX = radiusX * cos(curRad) + radiusZ * sin(curRad);
+        newZ = radiusZ * cos(curRad) - radiusX * sin(curRad);
+        newY = radiusY * cos(curRad) - newZ * sin(curRad);
+        mposition.x = newX;
+        mposition.y = newY;
+        mposition.z = newZ * cos(curRad) + radiusZ * sin(curRad);
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting.  mposition: %.3f, %.3f, %.3f", mposition.x, mposition.y, mposition.z);
+        SetPosition(Tp + mposition);
+
+        // create jetcan to visualize orbit
+        if (sConfig.server.UseShipTracking) {
+            ItemData idata(
+                23,                         // 23 = cargo container
+                0,  //owner is EvE System
+                mySE->GetLocationID(),
+                flagAutoFit,
+                "Postion Test",
+                m_position);
+
+            CargoContainerRef newJetcanItem = mySE->GetServices().item_factory->SpawnCargoContainer(idata);
+            if (newJetcanItem) {
+                // create new container
+                ContainerSE* containerObj = new ContainerSE(newJetcanItem, mySE->GetServices(), mySE->SystemMgr());
+                mySE->SystemMgr()->AddEntity(containerObj);
+            }
+        }
+
+        // set new heading (target point is where we will be next tic)
+        // this does NOT account for target movement yet.
+        // set heading for velocity calc's in _Move() and if/when pilot changes velocity
+        curRad += m_orbitRadTic;
+        /* @todo  need to determine if target is moving, and adjust Tp accordingly for correct prediction of next tic */
+        newX = radiusX * cos(curRad) + radiusZ * sin(curRad);
+        newZ = radiusZ * cos(curRad) - radiusX * sin(curRad);
+        newY = radiusY * cos(curRad) - newZ * sin(curRad);
+        mposition.x = newX;
+        mposition.y = newY;
+        mposition.z = newZ * cos(curRad) + radiusZ * sin(curRad);
+        GVector newHeading(m_position, Tp + mposition);
+        newHeading.normalize();
+        m_shipHeading = newHeading;
+        m_targetPoint = m_position + (m_shipHeading * 1.0e16);
+
+        uint32 stateTime = sEntityList.GetStamp() - m_stateStamp;
+        // set csf for velocity calc's in _Move()
+        if (stateTime < m_shipMaxAccelTime)
+            m_currentSpeedFraction = (1 - exp(-stateTime * 1000000 / (m_shipInertia * m_mass)));
+        else
+            m_currentSpeedFraction = m_userSpeedFraction;
+        m_orbiting = true;
     }
 
+    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - heading: %.3f, %.3f, %.3f", m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+    _Move(m_orbiting);
+
+    // if ship is NOT orbiting due to distance checks, we will have to reset timer for proper accel/speed/movement.
     /* reset orbit timer..this will get complicated, as we'll need to check if ship is actually orbiting
      * and determine current position relative to target, then get quadrant for current position and determine position in
      * current orbit from that data, then calculate new position using m_moveTimer.
@@ -959,39 +1081,6 @@ void DestinyManager::_Orbit() {
      */
 
     //m_moveTimer = GetTimeMSeconds();
-
-    // test and adjust actual distance between objects here, before setting new position and heading  (this will be a hack)
-    //GPoint tempPos(m_position - Tp);
-
-    /* for position setting during orbit, i am currently using 2d math.
-     * will correct for 3d later.
-     * so, based on 2d math,
-     * y=0 will be horizontal orbit
-     * z=0 will be vertial orbit
-     */
-    double timeStamp = GetTimeMSeconds() - m_moveTimer;
-    GPoint mposition = NULL_ORIGIN;
-    // set current postion (this is where we are this tic)
-    double curRad = m_orbitRadTic * timeStamp;
-    mposition.x = distance * cos(curRad);
-    mposition.z = 0;
-    mposition.y = distance * sin(curRad);
-    SetPosition(Tp + mposition);
-
-    // set new heading (this is where we will be next tic)
-    curRad += m_orbitRadTic;
-    mposition.x = distance * cos(curRad);
-    mposition.y = distance * sin(curRad);
-
-    GVector newHeading(m_position, mposition);
-    newHeading.normalize();
-    m_shipHeading = newHeading;
-
-    //set direction for this round of movement
-    m_velocity = m_shipHeading * m_maxOrbitSpeedFraction;
-
-    if (mySE->HasPilot() and mySE->SysBubble()->HasPlayers()) // no players in bubble = nothing to check against (for now)
-        _CheckBump();
 }
 
 void DestinyManager::_InitWarp() {
@@ -1349,6 +1438,8 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
     /* we're gonna cheat here, and make the orbit on either the horizontal plane or the vertical plane,
      *  whichever the player is closer to.  this will avoid the complication of skewed orbits, and the
      *  crazy math we'd need to create them.
+     *
+     * .....however, to match client, we may need to do that crazy math later.
      */
 
     /* this inital Orbit() call will, based on position delta, determine the orbit plane, rotation (cw/ccw)
@@ -1368,7 +1459,11 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
     m_targetEntity.first = who->GetID();
     m_targetEntity.second = who;
     m_targetPoint = who->GetPosition();
-    m_followDistance = distance;
+
+    // Target Radius (orbited object)
+    double Tr = who->GetRadius();
+    m_targetDistance = distance;
+
     _BeginMovement();
 
     _log(DESTINY__ORBIT_TRACE, "DestinyManager::Orbit() - Ship Data - agility:%.3f, inertia:%.3f, massMkg:%.3f, maxSpeed:%.2f, radius:%.2f", \
@@ -1379,58 +1474,56 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
     if (!Tm)
         Tm = who->GetSelf()->type().mass();
 
-    // Target Radius (orbited object)
-    double Tr = who->GetRadius();
-
     _log(DESTINY__ORBIT_TRACE, "DestinyManager::Orbit() - Target Data - mass:%.3f, speed:%.2f, radius:%.2f", \
                 Tm, (who->DestinyMgr() ? who->DestinyMgr()->GetSpeed() : 0 ), Tr);
 
-    double Rc = (distance + 300 + m_radius - Tr/11) * 1.2; // 'fudge factor'
+    double Rc = distance;// + 300 + m_radius - Tr/11) * 1.2; // 'fudge factor'
     double Rc2 = pow(Rc,2);
     double Vm2 = pow(m_maxShipSpeed,2);
     double t2 = pow(m_shipAgility,2);
-    // Dr. SS equation for orbit radius
+
+    // much of the following code is from "Ship Motion in Eve Online" by Scheulagh Santorine, Ph.D
     /* r = sqrt(6 * cbrt(108t^2*Vm^2 * Rc^2 + 8Rc^6 + 12sqrt(81t^4 *Vm^4 + 12t^2 * Vm^2 * Rc^10))
      * + (24Rc^4 / (108t^2 * Vm^2 * Rc^2 + 8Rc^2 + 12sqrt(81t^4 * Vm^4 * Rc^8 + 12t^2 * Vm^2 * Rc^10)^1/3)) + 12Rc^2) /6
      */
+    /*
     double one = (108 * t2 * Vm2 * Rc2);
     double two = (12 * t2 * Vm2 * pow(Rc,10));
     double three = (12 * sqrt(81 * pow(m_shipAgility,4) * pow(m_maxShipSpeed,4) + two));
     double four = (6 * cbrt(one + 8 * pow(Rc,6) + three));
     double five = cbrt(sqrt(three * pow(Rc,8) + two));
     double six = (one + (8 * Rc2) + (12 * five));
-    m_targetDistance = sqrt(four + (24 * pow(Rc, 4) / six) + 12 * Rc2) / 6;
+    m_followDistance = sqrt(four + (24 * pow(Rc, 4) / six) + 12 * Rc2) / 6;
+    */
+    m_followDistance = Rc * sqrt(1 + (2 * Gc * (Tm + m_mass) * 1e10 / Rc) / pow(m_maxShipSpeed * 2,2));
 
     // NOTE:  this delta needs to go opposite of radius...see notes
-    // Dr. SS equation for orbit velocity
+    // orbit velocity
     /* v = sqrt(( 6Vm/t * cbrt(108Rc^2 * Vm * t + 12Rc^2 * sqrt(81t^2 * Vm^2 + 12Rc^2))
      * - 6Vm/t * (Rc^2 * 12^2/3 / cbrt(9Rc^2 * Vm * t + Rc^2 * sqrt(81t^2 * Vm^2 + 12Rc^2))))) /6
      */
     //Rc = (distance + m_radius) * 1.2 + (who->GetRadius() /10); // 'fudge factor' for speed.  this is close...
-    one = (6 * m_maxShipSpeed / m_shipAgility);
-    two = Rc2 * m_maxShipSpeed * m_shipAgility;
-    three = sqrt(81 * t2 * Vm2 + 12 * Rc2);
-    four = cbrt(108 * two + 12 * Rc2 * three);
-    five = cbrt(9 * two + Rc2 * three);
-    six = (Rc2 * pow(12,2/3) / five);
+
+    double one = (6 * m_maxShipSpeed / m_shipAgility);
+    double two = Rc2 * m_maxShipSpeed * m_shipAgility;
+    double three = sqrt(81 * t2 * Vm2 + 12 * Rc2);
+    double four = cbrt(108 * two + 12 * Rc2 * three);
+    double five = cbrt(9 * two + Rc2 * three);
+    double six = (Rc2 * pow(12,2/3) / five);
     double velocity = sqrt(one * four - one * six) / 6;
+
+    //double velocity = sqrt(Gc * (Tm + m_mass) *1e10 / m_followDistance);
     m_maxOrbitSpeedFraction = velocity / m_maxShipSpeed;
 
-    double circ = EvE_Pi * m_targetDistance * 2;
+    /*
+    double circ = EvE_Pi * m_followDistance * 2;
     double orbitTime = circ / velocity;
     m_orbitRadTic = EvE_Pi * 2 / orbitTime;
+    */
+    m_orbitRadTic = sqrt(pow(m_followDistance,3) / Gc * (Tm + m_mass) * 1e10);
 
-    _log(DESTINY__ORBIT_TRACE, "DestinyManager::Orbit() - Orbit Data - velocity:%.2f, osf:%.2f, radius:%.2f, ccRadius:%3f circ:%.1f, orbitTime:%.1f, radTic:%.5f", \
-                velocity, m_maxOrbitSpeedFraction, m_targetDistance, (distance + m_radius + Tr), circ, orbitTime, m_orbitRadTic);
-
-    if (m_targetDistance <= (m_radius * 2 + who->GetRadius() + distance)) {
-        GVector point(m_targetPoint);
-        point.normalize();
-        GVector moveVector(m_position, (point * -1.0e6));
-        moveVector.normalize();
-        m_shipHeading = moveVector;
-        _log(DESTINY__ORBIT_TRACE, "DestinyManager::Orbit() - Too close...backing out.");
-    }
+    _log(DESTINY__ORBIT_TRACE, "DestinyManager::Orbit() - Orbit Data - velocity:%.2f, osf:%.2f, targetDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
+                velocity, m_maxOrbitSpeedFraction, m_followDistance, (2 * EvE_Pi / m_orbitRadTic), m_orbitRadTic);
 
     DoDestiny_CmdOrbit du;
         du.entityID = mySE->GetID();
@@ -1787,7 +1880,7 @@ void DestinyManager::SetShipVariables(InventoryItemRef ship)
 
     m_shipInertia = ship->GetDefaultAttribute(AttrInetia).get_float();
     if (!m_shipInertia)
-        m_shipInertia = 1.0;
+        m_shipInertia = 1.0f;
 
     //  check for (and set) warp strength modifiers
     m_warpStrength = (int8)ship->GetAttribute(AttrWarpScrambleStatus).get_int();    // >0 == cannot warp
