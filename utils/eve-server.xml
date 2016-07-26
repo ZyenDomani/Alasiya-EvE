@@ -1,9 +1,10 @@
 
-<!-- Server XML Config Version: 6.5 -->
+<!-- Alasiya EvEmu Server Config
+     Version: 6.5 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
-    boolean can use either 0/1 or true/false.
+    boolean can use either 0/1 OR true/false.
 -->
 
 
@@ -13,39 +14,39 @@
         <UseBeanCount>true</UseBeanCount>  <!-- bool  -client python error reporting -->
         <testServer>true</testServer>  <!--  bool   -some functions disabled for live server -->
         <UseProfiling>false</UseProfiling><!-- bool -->
-        <UseShipTracking>false</UseShipTracking><!-- bool -->
+        <UseShipTracking>false</UseShipTracking><!-- bool  !BE CAREFUL WITH THIS SETTING!-->
         <UseStackTrace>true</UseStackTrace><!-- bool -->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
-        <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
         <maxPlayers>2500</maxPlayers>
     </server>
 
     <world>
     <!-- not implemented yet -->
         <chatLogs>false</chatLogs><!-- bool -->
-        <globalChat>false</globalChat><!-- bool -->
+        <globalChat>true</globalChat><!-- bool -->
         <!-- grid Unloading is implemented -->
         <gridUnload>true</gridUnload><!-- bool -->
         <gridUnloadTime>300</gridUnloadTime><!-- in seconds (5 min default)-->
         <loginInfo>true</loginInfo><!-- bool -->
         <loginMsg>true</loginMsg><!-- bool -->
-        <mailDeliveryDelay>5</mailDeliveryDelay>
+        <mailDelay>5</mailDelay>
+        <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
     </world>
 
     <rates>
-        <secRate>1.0</secRate><!--  only used if != 1.0 -->
-        <damageRate>1.0</damageRate><!--  ALL damage. only used if != 1.0 -->
-        <missileRate>1.0</missileRate><!--  ALL missiles. only used if != 1.0 -->
+        <secRate>1.0</secRate><!-- only used if != 1.0 -->
+        <damageRate>1.0</damageRate><!-- ALL damage. only used if != 1.0 -->
+        <missileRate>1.0</missileRate><!-- ALL missiles. only used if != 1.0 -->
         <missileTime>1.0</missileTime><!--  ALL missiles. only used if != 1.0 -->
-        <turrentRate>1.0</turrentRate><!--  PC turrents. only used if != 1.0 -->
-        <missileRoF>1.1</missileRoF><!-- ALL missiles. only used if != 1.0 -->
-        <turrentRoF>1.1</turrentRoF><!-- PC turrents. only used if != 1.0 -->
-        <npcBountyMultiply>1.0</npcBountyMultiply><!--  only used if != 1.0 -->
+        <turrentRate>1.0</turrentRate><!-- PC turrents. only used if != 1.0 -->
+        <missileRoF>1.0</missileRoF><!-- ALL missiles. only used if != 1.0 -->
+        <turrentRoF>1.0</turrentRoF><!-- PC turrents. only used if != 1.0 -->
+        <npcBountyMultiply>1.0</npcBountyMultiply><!-- only used if != 1.0 -->
         <corpCost>20000000</corpCost>
         <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
         <!-- Decay is implemented -->
         <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default) -->
-        <NPCDecay>90</NPCDecay><!-- in minutes (90 min default) -->
+        <NPCDecay>30</NPCDecay><!-- in minutes (30 min default) -->
         <!-- WebUpdate is implemented -->
         <WebUpdate>15</WebUpdate><!-- save current server status in db.  in minutes  15m default -->
         <!-- these rates are not implemented yet -->
@@ -53,16 +54,16 @@
         <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
         <RepairCost>1.0</RepairCost><!--  only used if != 1.0 -->
     </rates>
-
-    <account><!-- 0  disable AutoAccount,
+    <account><!--         0  disable AutoAccount
+ 6917529027641081856  ???  in packet logs = ROLE_LOGIN | ROLE_PLAYER
  6917529029788565504 (0x6000000080000000)  ROLE_STD     = ROLE_LOGIN | ROLE_PLAYER | ROLE_IGB
  7061644217868615680 (0x6200000080400000)  ROLE_VIP     = ROLE_STD | ROLE_VIPLOGIN | ROLE_HEALSELF
- 7079658624976683008 (0x6240000280c40000)  ROLE_SLASH   = ROLE_GML | ROLE_LEGIONEER | ROLE_SPAWN | ROLE_VIP | ROLE_HEALOTHERS
+ 7079658624976683008 (0x6240000280c40000)  ROLE_SLASH   = ROLE_LEGIONEER | ROLE_GML | ROLE_SPAWN | ROLE_VIP | ROLE_HEALOTHERS
  7124694621250387968 (0x62e0000280c40000)  ROLE_CREATOR = ROLE_SLASH | ROLE_GMH | ROLE_CONTENT
  7131450020691443712 (0x62f8000280c40000)  ROLE_DEV     = ROLE_CREATOR | ROLE_QA | ROLE_PROGRAMMER
  7203507614729371648 (0x63f8000280c40000)  ROLE_BOSS    = ROLE_ADMIN | ROLE_DEV
         -->
-        <autoAccountRole>7079658624976683008</autoAccountRole>
+        <autoAccountRole>7131450020691443712</autoAccountRole>
         <!--
         <loginMessage>
             &lt;html&gt;
@@ -80,27 +81,31 @@
     <character>
         <startBalance>600000000.0</startBalance>
         <startAurBalance>600.0</startAurBalance>
-        <startStation>0</startStation>
+        <startStation>60014137</startStation>
         <startSecRating>1.0</startSecRating>
         <startCorporation>0</startCorporation>
         <terminationDelay>180</terminationDelay> <!-- seconds -->
+        <statMultiplier>3</statMultiplier><!-- stats are multiplied by this -->
     </character>
 
     <npc>
+        <!-- npc podkilling not implemented yet -->
+        <TargetPod>false</TargetPod><!-- bool   npc target/attack pod -->
+        <TargetPodSec>0</TargetPodSec><!-- npc target/attack pod in truSec of this and lower -->
         <!-- Threat not implemented yet -->
         <ThreatRadius>1.0</ThreatRadius> <!-- percent of default 0.0 to 1.0 -->
         <!-- Spawn Checks and RoamingSpawns are implemented but StaticSpawns are not-->
-        <RoamingSpawns>false</RoamingSpawns><!-- bool -->
+        <RoamingSpawns>true</RoamingSpawns><!-- bool -->
         <StaticSpawns>false</StaticSpawns><!-- bool -->
-        <RoamingTimer>15</RoamingTimer><!-- time between spawn checks, in minutes -->
-        <StaticTimer>10</StaticTimer><!-- time between spawn checks, in minutes -->
+        <RoamingTimer>5</RoamingTimer><!-- time between spawn checks, in minutes -->
+        <StaticTimer>5</StaticTimer><!-- time between spawn checks, in minutes -->
     </npc>
 
     <database>
         <host>localhost</host>
         <username>allan</username>
         <password>none</password>
-        <db>squirrel</db>
+        <db>Alasiya-EvE</db>
         <port>3306</port>
     </database>
 

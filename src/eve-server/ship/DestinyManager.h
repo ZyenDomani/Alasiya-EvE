@@ -194,12 +194,12 @@ protected:
     bool m_cloaked;
     bool m_turning;                     //used to denote ship turning for associated checks
     bool m_inBubble;                    //used to tell if client is in bubble or not.
-    bool m_orbiting;
     bool m_tractored;
     bool m_tractorPause;
 
     int32 m_stopDistance;               //from destination, in m
 
+    int8 m_orbiting;                    //specific to orbiting (only)
     uint8 m_turnTic;                    //time into turn
     uint32 m_stateStamp;                //timestamp of when current state began, in seconds
 
@@ -221,7 +221,7 @@ protected:
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
     // movement methods
-    void _Move(bool orbit=false);       //apply velocity to our position for for this round of movement
+    void _Move();                       //apply velocity to our position for for this round of movement
     void _Orbit();
     void _Follow();                     //follow or approach object in space
     void _BeginMovement();              //set initial variables for all movement (common code)

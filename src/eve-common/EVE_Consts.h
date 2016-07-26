@@ -67,7 +67,7 @@ static const double MAX_MARKET_PRICE = 9223372036854;  //max int64/1000000  (922
 static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;  /* this is grow check in ms (1d) */
 
 // gravitational constant
-static const double Gc = 6.6725985e-11;
+static const double Gc = 6.6725985e-11;     //per client (changed from original 6.673e-11)
 
 /*  misc data
  * radius constants
