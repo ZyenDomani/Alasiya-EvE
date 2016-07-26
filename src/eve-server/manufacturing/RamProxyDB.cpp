@@ -564,7 +564,7 @@ uint32 RamProxyDB::GetTech2Blueprint(const uint32 blueprintTypeID) {
 uint64 RamProxyDB::GetNextFreeTime(const uint32 assemblyLineID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " nextFreeTime"
         " FROM ramAssemblyLines"
@@ -576,11 +576,11 @@ uint64 RamProxyDB::GetNextFreeTime(const uint32 assemblyLineID) {
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__ERROR, "Assembly line %u not found.", assemblyLineID);
         return 0;
     } else
-        return(row.GetUInt64(0));
+        return (row.IsNull(0) ? 0 : row.GetUInt64(0));
 }
 
 uint32 RamProxyDB::GetRegionOfContainer(const uint32 containerID) {
