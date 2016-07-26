@@ -364,8 +364,8 @@ CREATE TABLE `chrShipFittings` (
 
 /* set initial client seed in db */
 UPDATE `srvStatus` SET `ClientSeed` = '10101' WHERE `AI` = 1;
-/* fix for db type error (datetime not handled in evemu) */
-ALTER TABLE `ramAssemblyLines` CHANGE `nextFreeTime` `nextFreeTime` BIGINT(20) NULL DEFAULT NULL;
+/* fix for db type error (datetime not handled in evemu) and add default '0' NOT NULL */
+ALTER TABLE `ramAssemblyLines` CHANGE `nextFreeTime` `nextFreeTime` BIGINT(20) NOT NULL DEFAULT 0;
   /*  hack for minor client error...we dont have the real data for this yet  */
 ALTER TABLE `staOperations` ADD `descriptionID` INT(3) NOT NULL DEFAULT '0' AFTER `description`;
 /* set skill level from float to int */
