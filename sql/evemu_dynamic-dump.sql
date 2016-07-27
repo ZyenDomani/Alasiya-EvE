@@ -603,7 +603,7 @@ CREATE TABLE IF NOT EXISTS `entity` (
   `x` double NOT NULL DEFAULT '0',
   `y` double NOT NULL DEFAULT '0',
   `z` double NOT NULL DEFAULT '0',
-  `customInfo` text
+  `customInfo` text,
   PRIMARY KEY  (`itemID`),
   KEY `typeID` (`typeID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
