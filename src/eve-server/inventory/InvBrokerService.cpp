@@ -323,14 +323,17 @@ PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
     std::vector<int32>::const_iterator cur = args.items.begin();
     for(; cur != args.items.end(); cur++) {
         InventoryItemRef item = m_manager->item_factory->GetItem( *cur );
-        if (!item)
+        if (!item) {
             _log(INV__ERROR, "%s: Unable to load item %u to delete it. Skipping.", call.client->GetName(), *cur);
-        else if (call.client->GetCharacterID() != item->ownerID())
+        } else if (call.client->GetCharacterID() != item->ownerID()) {
             _log(INV__ERROR, "%s: Tried to trash item %u which is not yours. Skipping.", call.client->GetName(), *cur);
-        else if (item->locationID() != (uint32)args.locationID)
+        } else if (item->locationID() != args.locationID) {
             _log(INV__ERROR, "%s: Item %u is not in location %u. Skipping.", call.client->GetName(), *cur, args.locationID);
-        else
-            item->Delete();
+        } else {
+            //item->Delete();
+            item->SetFlag(flagJunkyardTrashed);
+            item->ChangeOwner(call.client->GetStationID(), false);
+        }
     }
 
     return nullptr;
