@@ -705,6 +705,7 @@ bool Character::InjectSkillIntoBrain(SkillRef skill) {
         skill->ChangeSingleton(true);
         skill->Move(itemID(), flagSkill);
     }
+    // 'skillEventSkillInjected' shows as "Unknown" in PD>Skill>History
     SaveSkillHistory(skillEventSkillInjected, Win32TimeNow(), itemID(), skill->typeID(), 0, 0, GetTotalSP().get_float() );
     _log(CHARACTER__SKILL_TRACE, "%s(%u) Skill Injected: %u", itemName().c_str(), itemID(), skill->itemID());
 

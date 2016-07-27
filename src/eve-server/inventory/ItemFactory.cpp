@@ -315,8 +315,9 @@ CharacterRef ItemFactory::SpawnCharacter(ItemData &data, CharacterData &charData
     if ( !c )
         return CharacterRef();
 
-    m_items.insert( std::make_pair( c->itemID(), c ) );
-    ++m_itemCount;
+    //  do NOT add new char to item list to allow char to be selected and loaded normally after creation.
+    //m_items.insert( std::make_pair( c->itemID(), c ) );
+    //++m_itemCount;
     return c;
 }
 

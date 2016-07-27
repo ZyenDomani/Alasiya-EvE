@@ -87,7 +87,6 @@ void SkillMgrBound::Release()
 PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call) {
     sLog.Log( "SkillMgrBound::Handle_GetCharacterAttributeModifiers()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
-    // since we don't currently support implants (I think), just a dummy
     // expected data: for (itemID, typeID, operation, value,) in modifiers:
     /*
      * client sends attrib# of stat in question...
@@ -202,7 +201,6 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 {
     sLog.Log( "SkillMgrBound::Handle_RespecCharacter()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
-    /** @todo check this and see if we can update to higher base attribs for faster train times */
     Call_RespecCharacter spec;
     if (!spec.Decode(call.tuple)) {
         codelog(CLIENT__ERROR, "Failed to decode RespecCharacter arguments");

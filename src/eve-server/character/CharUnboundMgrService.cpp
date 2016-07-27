@@ -276,7 +276,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         _log(CLIENT__ERROR, "Failed to create character '%s'", idata.name.c_str());
         return nullptr;
     }
-    call.client->SetChar(char_item);
 
     //this builds appearance data from strdict
     CharacterAppearance capp;
@@ -337,7 +336,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         skill->SetAttribute(AttrSkillPoints, skillPoints, false);
         skill->SaveItem();
         totalPoints += skillPoints;
-        char_item->SaveSkillHistory(skillEventSkillInjected, //skillEventCharCreation,  <<<  this shows as "Unknown" in PD>Skill>History
+        char_item->SaveSkillHistory(skillEventCharCreation, // this shows as "Unknown" in PD>Skill>History
                                     Win32TimeNow(),
                                     char_item->itemID(),
                                     cur.first,
@@ -379,10 +378,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     //  add charID to staticOwners
     m_db.addOwnerCache(char_item->itemID(), char_item->itemName(), char_type->id() );
-
-    /* at this point, everything is created and saved, but client will call SelectCharacter(charID) as on login screen
-     * so tell char object it has NOT been loaded.  this will enable char to load completely  */
-    char_item->SetLoaded(false);
 
     _log( CLIENT__MESSAGE, "Created New Character  - Sending ID %u as reply", char_item->itemID() );
     return new PyInt(char_item->itemID());
