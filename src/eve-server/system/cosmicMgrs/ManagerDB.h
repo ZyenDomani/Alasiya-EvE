@@ -104,19 +104,19 @@ public:
     void GetSystemAnomalies(uint32 systemID, DBQueryResult &res);
     void GetSystemAnomalies(uint32 systemID, std::vector<DBCosmicSignature>& sigs);
 
-    /* these are for belt manager */
+    /* belt manager */
     bool GetRoidDist(const char * sec, std::map<float, uint32> &roids);
     void SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidSE> roids);
     bool LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAsteroidSE>& into);
 
-    /*  these are for spawn manager */
+    /* spawn manager */
     void DeleteSpawnedRats();
     void GetSpawnClasses(DBQueryResult& res);
     void GetGroupTypeIDs(uint32 groupID, DBQueryResult& res);
     void GetFactionGroups(DBQueryResult& res);
     void GetRegionFactionInfo(DBQueryResult& res);
 
-    /* these are for dungeon manager */
+    /* dungeon manager */
     void GetDunTemplates(DBQueryResult& res);
     void GetDunRoomInfo(DBQueryResult& res);
     void GetDunRoomData(DBQueryResult& res);
@@ -126,9 +126,9 @@ public:
     void SaveActiveDungeon(DBActiveDungeon& dun);
     void ClearDungeons();
 
-    /* these are for anomaly manager */
+    /* anomaly manager */
 
-    /* these are for wormhole manager */
+    /* wormhole manager */
 
 protected:
 

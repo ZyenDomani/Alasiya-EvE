@@ -984,9 +984,14 @@ void DestinyManager::_Orbit() {
     mPos.z = intmZ * cos(curRad) + radY * sin(curRad);
     mPos.y = radY * cos(curRad) - intmZ * sin(curRad);
     _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit()  mposition: %.3f, %.3f, %.3f", mPos.x, mPos.y, mPos.z);
-
     SetPosition(Tp + mPos);
-    GVector heading(m_position, m_position + m_velocity);
+
+    curRad += m_orbitRadTic;
+    mPos.x = radX * cos(curRad) + radZ * sin(curRad);
+    intmZ = radZ * cos(curRad) - radX * sin(curRad);
+    mPos.z = intmZ * cos(curRad) + radY * sin(curRad);
+    mPos.y = radY * cos(curRad) - intmZ * sin(curRad);
+    GVector heading(m_position, Tp + mPos);
     heading.normalize();
     m_shipHeading = heading;    // this sets object velocity in _Move() (using speed)
     m_targetPoint = m_position + (m_shipHeading * 1.0e16);

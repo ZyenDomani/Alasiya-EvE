@@ -312,8 +312,7 @@ protected:
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
 
-    void _IncreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToConsume);  // To release cargo space, make 'volumeToConsume' negative
-    void _DecreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToConsume);  // To release cargo space, make 'volumeToConsume' negative
+    void ModifyHoldVolumeByFlag(EVEItemFlags flag, double amount);
 
 private:
     Client* m_pilot;

@@ -68,11 +68,12 @@ bool Inventory::LoadContents(ItemFactory* factory) {
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     /* rewrote logic, optimized, and fixed "empty inventory" for new chars in existing systems  -allan 22.2.16 */
+    Client* pClient = factory->GetUsingClient();
     if (IsStation(m_inventoryID)) {
-        if (factory->GetUsingClient()) {
-            if (factory->GetUsingClient()->IsHangarLoaded(m_inventoryID))
+        if (pClient) {
+            if (pClient->IsHangarLoaded(m_inventoryID))
                 return true;
-            factory->GetUsingClient()->AddStationHangar(m_inventoryID);
+            pClient->AddStationHangar(m_inventoryID);
             mContentsLoaded = false;
         }
     }
@@ -87,27 +88,28 @@ bool Inventory::LoadContents(ItemFactory* factory) {
         od.locID = m_inventoryID;
 
     std::vector<uint32> items;
-    if (factory->GetUsingClient()) {
+    if (pClient) {
         if (IsStation(m_inventoryID)) {
-            if (IsPlayerCorp(factory->GetUsingClient()->GetCorporationID())){
+            if (IsPlayerCorp(pClient->GetCorporationID())){
                 /* this will load all non-NPC corp items in this station */
-                od.ownerID = factory->GetUsingClient()->GetCorporationID();
+                od.ownerID = pClient->GetCorporationID();
+                _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory %u(%p) with owner %u", m_inventoryID, this , od.ownerID);
                 GetItems(od, items);
             }
         }
-        od.ownerID = factory->GetUsingClient()->GetCharacterID();
+        od.ownerID = pClient->GetCharacterID();
     }
 
     _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory %u(%p) with owner %u", m_inventoryID, this , od.ownerID);
     if (!GetItems(od, items)) {
         _log(INV__ERROR, "Inventory::LoadContents() - Failed to get items of inventory %u", m_inventoryID);
-        if (factory->GetUsingClient() && IsStation(m_inventoryID))
-            factory->GetUsingClient()->RemoveStationHangar(m_inventoryID);
+        if (pClient and IsStation(m_inventoryID))
+            pClient->RemoveStationHangar(m_inventoryID);
         return false;
     }
 
     for (auto cur : items) {
-        if ((cur == od.ownerID) || (cur == od.locID) || (cur == m_inventoryID)) continue;
+        if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_inventoryID)) continue;
         InventoryItemRef i = factory->GetItem(cur);
         if (!i) {
             _log(INV__WARNING, "Inventory::LoadContents() - Failed to load item %u contained in %u. Skipping.", cur, m_inventoryID);

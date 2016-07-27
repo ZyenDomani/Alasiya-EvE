@@ -131,118 +131,26 @@ To summarize: +/-1SHHCC (S=subsystem, HH=header, CC=code number)
 #ifndef EVE_CORE_ERROR_DEFS_H_
 #define EVE_CORE_ERROR_DEFS_H_
 
-// note: this loses compiler type safety (being able to prevent
-// return 1 when a LibError is the return value), but allows splitting
-// up the error namespace into separate headers.
-// Lint's 'strong type' checking can be used to find errors.
-typedef long LibError;
-
 //  Alasiya EvE error code defs
 /*  Error Code layout  (wip)
  *    code # ABCDE
- *      A = category (0-server, 1-player, 2-command, 3-destiny, 4-cosmic mgr, 5-market, 6-, 7-, 8-, 9-other,)
+ *      A = category (0-server, 1-player, 2-command, 3-destiny, 4-cosmic mgr, 5-market, 6-inventory, 7-service, 8-, 9-other,)
  *      B = system (0-character, 1-location, 2-system, 3-item, 4-, 5-ship, 6-, 7-, 8-, 9-)
  *      C = subsystem (0-create, 1-destroy, 2-move, 3-change, 4-, 5-insurance, 6-modules, 7-pilot, 8-, 9-)
- *      D = type (0-null, 1-calculate, 2-, 3-, 4-,5-, 6-, 7-, 8-, 9-)
- *      E = error (0-undef, 1-not init, 2-oob, 3-, 4-,5-, 6-, 7-, 8-, 9-)
+ *      D = type (0-null, 1-calculate, 2-, 3-, 4-, 5-, 6-, 7-, 8-self, 9-target)
+ *      E = error (0-undef, 1-not init, 2-oob, 3-, 4-, 5-, 6-, 7-, 8-, 9-not implemented)
  *
  *
  * Ref: ServerError 12321. << Client::BoardShip()
- * Ref: ServerError 15610. <<  
- * Ref: ServerError 25520. << Ship::InsureShip() - fraction is 0
- * Ref: ServerError 25521. << Ship::InsureShip() - fraction is < 0.05 -- ship is insured @ 30% (which gives error in client)
  * Ref: ServerError 25610. << MSAC::_calculateNewValue() - effectiveness is 0
  * Ref: ServerError 25620. << MMAC::_calculateNewValue() - effectiveness is 0
  * Ref: ServerError 31110. << commandDispatcher::Execute()
  * Ref: ServerError 35412. << DestinyManager::_Orbit() - distance checks oob
+ * Ref: ServerError 65282. << ShipItem::ModifyHoldVolumeByFlag() - flag not in map
+ * Ref: ServerError 75520. << Ship::InsureShip() - fraction is 0
+ * Ref: ServerError 75521. << Ship::InsureShip() - fraction is < 0.05 -- ship is insured @ 30% (which gives error in client)
  */
-//  client->SendErrorMsg("Internal Server Error.  Ref: ServerError 15610"));
+//  client->SendErrorMsg("Internal Server Error.  Ref: ServerError 65202"));
 
-//-----------------------------------------------------------------------------
-//  this is example used in the system i borrowed this code from...
-
-namespace INFO
-{
-    const LibError OK = 0;
-
-    // note: these values are > 100 to allow multiplexing them with
-    // coroutine return values, which return completion percentage.
-
-    // function is a callback and indicates that it can (but need not
-    // necessarily) be called again.
-    const LibError CB_CONTINUE    = +100000;
-    // notify caller that nothing was done.
-    const LibError SKIPPED        = +100001;
-    // function is incapable of doing the requested task with the given inputs.
-    // this implies SKIPPED, but also conveys a bit more information.
-    const LibError CANNOT_HANDLE  = +100002;
-    // function is meant to be called repeatedly, and now indicates that
-    // all jobs are complete.
-    const LibError ALL_COMPLETE   = +100003;
-    // (returned e.g. when inserting into container)
-    const LibError ALREADY_EXISTS = +100004;
-}
-
-namespace ERR
-{
-    const LibError FAIL = -1;
-
-    // general
-    const LibError LOGIC     = -100010;
-    const LibError TIMED_OUT = -100011;
-    const LibError REENTERED = -100012;
-    const LibError CORRUPTED = -100013;
-
-    // function arguments
-    const LibError INVALID_PARAM  = -100020;
-    const LibError INVALID_HANDLE = -100021;
-    const LibError BUF_SIZE       = -100022;
-
-    // system limitations
-    const LibError AGAIN           = -100030;
-    const LibError LIMIT           = -100031;
-    const LibError NO_SYS          = -100032;
-    const LibError NOT_IMPLEMENTED = -100033;
-    const LibError NOT_SUPPORTED   = -100034;
-    const LibError NO_MEM          = -100035;
-
-    // these are for cases where we just want a distinct value to display and
-    // a symbolic name + string would be overkill (e.g. the various
-    // test cases in a validate() call). they are shared between multiple
-    // functions; when something fails, the stack trace will show in which
-    // one it was => these errors are unambiguous.
-    // there are 3 tiers - 1..9 are used in most functions, 11..19 are
-    // used in a function that calls another validator and 21..29 are
-    // for for functions that call 2 other validators (this avoids
-    // ambiguity as to which error actually happened where)
-    const LibError _1  = -100101;
-    const LibError _2  = -100102;
-    const LibError _3  = -100103;
-    const LibError _4  = -100104;
-    const LibError _5  = -100105;
-    const LibError _6  = -100106;
-    const LibError _7  = -100107;
-    const LibError _8  = -100108;
-    const LibError _9  = -100109;
-    const LibError _11 = -100111;
-    const LibError _12 = -100112;
-    const LibError _13 = -100113;
-    const LibError _14 = -100114;
-    const LibError _15 = -100115;
-    const LibError _16 = -100116;
-    const LibError _17 = -100117;
-    const LibError _18 = -100118;
-    const LibError _19 = -100119;
-    const LibError _21 = -100121;
-    const LibError _22 = -100122;
-    const LibError _23 = -100123;
-    const LibError _24 = -100124;
-    const LibError _25 = -100125;
-    const LibError _26 = -100126;
-    const LibError _27 = -100127;
-    const LibError _28 = -100128;
-    const LibError _29 = -100129;
-
-}   // namespace ERR
 
 #endif  //EVE_CORE_ERROR_DEFS_H_

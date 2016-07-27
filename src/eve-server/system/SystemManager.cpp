@@ -485,6 +485,9 @@ bool SystemManager::ProcessTic() {
      * without starting over when the list has changed...which will run all previous entities thru Process() again.
      *
      * this current incarnation is working very well, with the exception of starting over and making multiple calls in single tic.
+     * this is how [server.UseShipTracking] runs an endless loop...list changes so it repeats previous operation.
+     *
+     * will eventually need to create a check for 'cur' running Process() this tic, and skipping if so
      */
     std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
     while (cur != m_entities.end()) {

@@ -149,7 +149,7 @@ uint32 ShipItem::CreateItemID(ItemFactory &factory, ItemData &data) {
 bool ShipItem::_Load()
 {
     if (type().id() == EVEDB::invTypes::typeCapsule) return true;
-    if (m_IsLoaded && m_ModuleManager) return true;
+    if (m_IsLoaded and m_ModuleManager) return true;
     // load attributes
     if (!InventoryItem::_Load()) return false;
     // load contents
@@ -158,29 +158,29 @@ bool ShipItem::_Load()
     /** @todo  apply ship and skill bonuses to hold capacities here */
 
 	// fill cargo holds data here:
-	if ( HasAttribute(AttrCapacity))
+	if (HasAttribute(AttrCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagCargoHold,mAttributeMap.GetAttribute(AttrCapacity).get_float()));
-	if ( HasAttribute(AttrDroneCapacity))
+	if (HasAttribute(AttrDroneCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagDroneBay,mAttributeMap.GetAttribute(AttrDroneCapacity).get_float()));
-	if ( HasAttribute(AttrSpecialFuelBayCapacity))
+	if (HasAttribute(AttrSpecialFuelBayCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagSpecializedFuelBay,mAttributeMap.GetAttribute(AttrSpecialFuelBayCapacity).get_float()));
-	if ( HasAttribute(AttrSpecialOreHoldCapacity))
+	if (HasAttribute(AttrSpecialOreHoldCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagSpecializedOreHold,mAttributeMap.GetAttribute(AttrSpecialOreHoldCapacity).get_float()));
-	if ( HasAttribute(AttrSpecialGasHoldCapacity))
+	if (HasAttribute(AttrSpecialGasHoldCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagSpecializedGasHold,mAttributeMap.GetAttribute(AttrSpecialGasHoldCapacity).get_float()));
-	if ( HasAttribute(AttrSpecialMineralHoldCapacity))
+	if (HasAttribute(AttrSpecialMineralHoldCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagSpecializedMineralHold,mAttributeMap.GetAttribute(AttrSpecialMineralHoldCapacity).get_float()));
-	if ( HasAttribute(AttrSpecialSalvageHoldCapacity))
+	if (HasAttribute(AttrSpecialSalvageHoldCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagSpecializedSalvageHold,mAttributeMap.GetAttribute(AttrSpecialSalvageHoldCapacity).get_float()));
-	if ( HasAttribute(AttrSpecialShipHoldCapacity))
+	if (HasAttribute(AttrSpecialShipHoldCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagSpecializedShipHold,mAttributeMap.GetAttribute(AttrSpecialShipHoldCapacity).get_float()));
-	if ( HasAttribute(AttrSpecialSmallShipHoldCapacity))
+	if (HasAttribute(AttrSpecialSmallShipHoldCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagSpecializedSmallShipHold,mAttributeMap.GetAttribute(AttrSpecialSmallShipHoldCapacity).get_float()));
-	if ( HasAttribute(AttrSpecialLargeShipHoldCapacity))
+	if (HasAttribute(AttrSpecialLargeShipHoldCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagSpecializedLargeShipHold,mAttributeMap.GetAttribute(AttrSpecialLargeShipHoldCapacity).get_float()));
-	if ( HasAttribute(AttrSpecialIndustrialShipHoldCapacity))
+	if (HasAttribute(AttrSpecialIndustrialShipHoldCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagSpecializedIndustrialShipHold,mAttributeMap.GetAttribute(AttrSpecialIndustrialShipHoldCapacity).get_float()));
-	if ( HasAttribute(AttrSpecialAmmoHoldCapacity))
+	if (HasAttribute(AttrSpecialAmmoHoldCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagSpecializedAmmoHold,mAttributeMap.GetAttribute(AttrSpecialAmmoHoldCapacity).get_float()));
 
 	UpdateHoldsUsedVolume();
@@ -198,6 +198,7 @@ void ShipItem::Init()
 
     /** @todo These all still need to have ship bonuses applied */
     /** @todo this will need to be changed to use skill modifiers when i get them working.... */
+
     double pg = GetDefaultAttribute(AttrPowerOutput).get_int();
     double cpu = GetDefaultAttribute(AttrCpuOutput).get_float();
     double hullHP = GetDefaultAttribute(AttrHP).get_int();
@@ -227,9 +228,6 @@ void ShipItem::Init()
      * online all modules
      * save current attribs
      */
-    /* this should probably be done in CharacterLeavingShip()
-    if (m_ModuleManager)
-        m_ModuleManager->OfflineAll(); */
 
     // reset basic ship attribs before updating modules   this is catchall incase of server crash (and subsequent data corruption)
     ResetAttribute(AttrCpuLoad);
@@ -267,8 +265,12 @@ void ShipItem::Init()
     /** @todo need to check for ship damage status BEFORE or INSTEAD of calling this.
      */
     //set everything to full AFTER modules possibably update ship stats
-    if (sConfig.server.testServer)
+    if (sConfig.server.testServer) {
         Heal();
+    } else {
+        SetShipShield(1.0);
+        SetShipCapacitorLevel(1.0);
+    }
 }
 
 void ShipItem::InitPod() {
@@ -277,8 +279,12 @@ void ShipItem::InitPod() {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
-    if (sConfig.server.testServer)
+    if (sConfig.server.testServer) {
         Heal();
+    } else {
+        SetShipShield(1.0);
+        SetShipCapacitorLevel(1.0);
+    }
 }
 
 void ShipItem::SetPlayer(Client* pClient) {
@@ -326,94 +332,33 @@ void ShipItem::UpdateHoldsUsedVolume()    /** @todo (allan)  look into this....n
         m_cargoHoldsUsedVolumeByFlag.find(flagSpecializedAmmoHold)->second = m_inventory->GetStoredVolume(flagSpecializedAmmoHold);
 }
 
-void ShipItem::_IncreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToConsume)
-{
-    if ( m_cargoHoldsUsedVolumeByFlag.find(flag) != m_cargoHoldsUsedVolumeByFlag.end())
-        m_cargoHoldsUsedVolumeByFlag.find(flag)->second += volumeToConsume;
-    else {
-        _log(SHIP__ERROR, "CargoUsedVolume(+) given flag not found in current map - %u", flag);
-        throw PyException( MakeCustomError( "ERROR!  Illegal flag '%u' specified!", flag ));
+void ShipItem::ModifyHoldVolumeByFlag(EVEItemFlags flag, double amount) {
+    if ( m_cargoHoldsUsedVolumeByFlag.find(flag) != m_cargoHoldsUsedVolumeByFlag.end()) {
+        m_cargoHoldsUsedVolumeByFlag.find(flag)->second += amount;
+    } else {
+        _log(SHIP__ERROR, "ModifyContVolumeByFlag() - given flag not found in current map: %u", flag);
+        if (m_pilot)
+            m_pilot->SendErrorMsg("Item not moved.  Ref: ServerError 65282");
     }
 }
 
-void ShipItem::_DecreaseCargoHoldsUsedVolume(EVEItemFlags flag, double volumeToConsume)
-{
-    if ( m_cargoHoldsUsedVolumeByFlag.find(flag) != m_cargoHoldsUsedVolumeByFlag.end())
-        m_cargoHoldsUsedVolumeByFlag.find(flag)->second -= volumeToConsume;
-    else {
-        _log(SHIP__ERROR, "CargoUsedVolume(-) given flag not found in current map - %u", flag);
-        throw PyException( MakeCustomError( "ERROR!  Illegal flag '%u' specified!", flag ));
-    }
-}
-
-void ShipItem::Delete()
-{
-    // delete contents first
+void ShipItem::Delete() {
     m_inventory->DeleteContents();
-
     InventoryItem::Delete();
 }
 
-double ShipItem::GetRemainingVolumeByFlag(EVEItemFlags flag) const
-{   /** @todo should this be run thru inventory?   -- yes!  put on list todo later...*/
-    switch( flag ) {
-        case flagAutoFit:
-        case flagCargoHold:
-            return (GetAttribute(AttrCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagCargoHold)->second);
-            break;
-
-        case flagDroneBay:
-            return (GetAttribute(AttrDroneCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagDroneBay)->second);
-            break;
-
-        case flagSpecializedFuelBay:
-            return (GetAttribute(AttrSpecialFuelBayCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagSpecializedFuelBay)->second);
-            break;
-
-        case flagSpecializedOreHold:
-            return (GetAttribute(AttrSpecialOreHoldCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagSpecializedOreHold)->second);
-            break;
-
-        case flagSpecializedGasHold:
-            return (GetAttribute(AttrSpecialGasHoldCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagSpecializedGasHold)->second);
-            break;
-
-        case flagSpecializedMineralHold:
-            return (GetAttribute(AttrSpecialMineralHoldCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagSpecializedMineralHold)->second);
-            break;
-
-        case flagSpecializedSalvageHold:
-            return (GetAttribute(AttrSpecialSalvageHoldCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagSpecializedSalvageHold)->second);
-            break;
-
-        case flagSpecializedShipHold:
-            return (GetAttribute(AttrSpecialShipHoldCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagSpecializedShipHold)->second);
-            break;
-
-        case flagSpecializedSmallShipHold:
-            return (GetAttribute(AttrSpecialSmallShipHoldCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagSpecializedSmallShipHold)->second);
-            break;
-
-        case flagSpecializedLargeShipHold:
-            return (GetAttribute(AttrSpecialLargeShipHoldCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagSpecializedLargeShipHold)->second);
-            break;
-
-        case flagSpecializedIndustrialShipHold:
-            return (GetAttribute(AttrSpecialIndustrialShipHoldCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagSpecializedIndustrialShipHold)->second);
-            break;
-
-        case flagSpecializedAmmoHold:
-            return (GetAttribute(AttrSpecialAmmoHoldCapacity).get_float() - m_cargoHoldsUsedVolumeByFlag.find(flagSpecializedAmmoHold)->second);
-            break;
-
-        default:
-            return 0.0;
-            break;
-    }
+double ShipItem::GetRemainingVolumeByFlag(EVEItemFlags flag) const {
+    // updated to use inventory  -allan 26Jul16
+    if (flag == flagAutoFit)
+        return (m_inventory->GetCapacity(flag) - m_cargoHoldsUsedVolumeByFlag.find(flagCargoHold)->second);
+    return (m_inventory->GetCapacity(flag) - m_cargoHoldsUsedVolumeByFlag.find(flag)->second);
 }
 
 bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
 {
+    if (!m_pilot and (flag==flagCargoHold))
+        return true;
+
     CharacterRef character = m_pilot->GetChar();
 
     if (flag == flagDroneBay) {
@@ -903,7 +848,8 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef item) {
 
 uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
 {
-    if (!ValidateAddItem(flag, item)) return 0;
+    if (!ValidateAddItem(flag, item))
+        return 0;
     if (IsModuleSlot(flag)) {
         if (item->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->LoadCharge(item, flag);
@@ -928,7 +874,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
                 return 0;
         }
     } else {
-        _IncreaseCargoHoldsUsedVolume( flag, (item->GetAttribute(AttrVolume).get_float() * item->quantity()));
+        ModifyHoldVolumeByFlag( flag, (item->GetAttribute(AttrVolume).get_float() * item->quantity()));
 	}
 
     item->Move(itemID(), flag);
@@ -943,6 +889,9 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
 
 void ShipItem::RemoveItem(InventoryItemRef item)
 {
+    if (!m_pilot)
+        return;
+
     // check to see if item is currently in a module slot.  going by category is NOT working after _ExecAdd() updates.
     if (IsModuleSlot(item->flag())) {
         // if item being removed is in a module slot, remove it via Module Manager here, and let invBound take care of the rest.
@@ -962,7 +911,7 @@ void ShipItem::RemoveItem(InventoryItemRef item)
             }
         }
     } else
-        _DecreaseCargoHoldsUsedVolume( item->flag(), (item->GetAttribute(AttrVolume).get_float() * item->quantity()));
+        ModifyHoldVolumeByFlag( item->flag(), -(item->GetAttribute(AttrVolume).get_float() * item->quantity()));
 }
 
 void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {

@@ -593,7 +593,7 @@ void Client::DockToStation() {
 void Client::BoardShip(ShipItemRef newShipItemRef) {
     if (!newShipItemRef) {
         _log(PLAYER__ERROR, "BoardShip() - %s: newShipItemRef == NULL.", m_char->itemName().c_str());
-        SendErrorMsg("Internal Server Error.  Ref: ServerError 12321.");
+        SendErrorMsg("Could not find ItemRef for ship.  Cannot Board.   Ref: ServerError 12321.");
         return;
     } else if (!newShipItemRef->singleton()) {
         _log(PLAYER__MESSAGE, "%s tried to board ship %u, which is not assembled.", m_char->itemName().c_str(), newShipItemRef->itemID());

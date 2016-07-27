@@ -357,6 +357,9 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         } else
             flag = call.byname.find("flag")->second->AsInt()->value();
 
+        if (flag = flagLocked)
+            flag = flagCargoHold;
+
         int32 quantity = 0;
         if (call.byname.find("qty") != call.byname.end())
             if (!call.byname.find("qty")->second->IsNone())
@@ -429,6 +432,9 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         } else
             flag = call.byname.find("flag")->second->AsInt()->value();
 
+        if (flag = flagLocked)
+            flag = flagCargoHold;
+
         int32 quantity = 0;
         if (call.byname.find("qty") != call.byname.end())
             if (!call.byname.find("qty")->second->IsNone())
@@ -455,7 +461,11 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
     int32 origQty = quantity;
     InventoryItemRef itemRef;
     EVEItemFlags old_flag;
-    ShipItem* pShip = c->GetShip().get();
+    ShipItem* pShip = nullptr;
+    // set ship to owner of this inventory object.  this will fix adding items to inactive ships in hangar.
+    if (m_self->categoryID() == EVEDB::invCategories::Ship)
+        pShip = m_manager->item_factory->GetShip(m_self->itemID()).get();
+
     std::vector<int32>::const_iterator cur = items.begin();
     for (; cur != items.end(); cur++) {
         itemRef = m_manager->item_factory->GetItem(*cur);
@@ -467,6 +477,12 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
             throw PyException( MakeUserError("CannotRemoveUpgradeManually"));
             return nullptr;
         }
+
+        if (IsModuleSlot(old_flag) or IsModuleSlot(flag))
+            if (!pShip) {
+                throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", itemRef->itemName().c_str()));
+                return nullptr;
+            }
 
         if (IsModuleSlot(old_flag)) {
             if (IsModuleSlot(flag)) {
@@ -486,7 +502,7 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
         if (flag == flagAutoFit)
             quantity = 1;
 
-        // this is just logic for splitting stacks
+        // the following conditionals are logic for splitting stacks
         if (itemRef->singleton()) {
             // there is no stack to split.
             ;
@@ -505,6 +521,7 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
             itemRef = newItem;
         }
 
+        /** @todo  will have to test for and code for removing items from entities other than ships (pos) here */
         if (IsCargoHoldFlag(old_flag))
             pShip->RemoveItem(itemRef);
 
@@ -522,18 +539,17 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
                     CargoContainerRef contRef = m_manager->item_factory->GetCargoContainer(itemRef->locationID());
                     contRef->RemoveItem(contRef);
                 } else {
+                    /** @todo will have to test and add code for moving items from other entities (pos) */
                     _log(INV__WARNING, "old_flag == flagAutoFit and IsInSpace, but container is not cargo or wreck for item %s(%u) in locationID %u.", \
                         itemRef->itemName().c_str(), itemRef->itemID(), itemRef->locationID());
                 }
             }
         }
 
-        // check where to put item to be added.  use flags to find a spot for this item
+        // check where to put item to be added.  use flags to find an open spot
         if (flag == flagAutoFit) {
-            // 'flagAutoFit' means "put this module into first slot that makes sense"
             EVEItemFlags openSlotFlag = pShip->FindAvailableModuleSlot(itemRef);
             if (openSlotFlag == flagIllegal) {
-                sLog.Error( "InventoryBound::_ExecAdd()", "'flagIllegal' returned from FindAvailableModuleSlot()" );
                 c->SendNotifyMsg("Your ship has no avalible slots to fit this module.");
                 return nullptr;
             }
@@ -563,5 +579,6 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
             result.arg = itemRef->itemID();
         return result.Encode();
     }
+
     return nullptr;
 }
