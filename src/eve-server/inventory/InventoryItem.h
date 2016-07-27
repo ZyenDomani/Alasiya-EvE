@@ -100,7 +100,7 @@ public:
 
     bool                    ChangeSingleton(bool singleton, bool notify=true);
     bool                    AlterQuantity(int32 qty_change, bool notify=true);
-    bool                    SetQuantity(uint32 qty_new, bool notify=true);
+    bool                    SetQuantity(int32 qty_new, bool notify=true);
     bool                    SetFlag(EVEItemFlags new_flag, bool notify=true);
 
     void                    SetOnline(bool online, bool isRig);
@@ -123,7 +123,7 @@ public:
     /* virtual functions default to base class and overridden as needed */
     virtual void            Delete();  //remove the item from the DB.
     virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true);
-    virtual bool            Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
+    virtual bool            Merge(InventoryItemRef to_merge, uint32 qty=0, bool notify=true);
 
     /* specific functions handled here */
     /* returns uID for new item.  saves item data to db */

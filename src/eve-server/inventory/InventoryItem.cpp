@@ -616,7 +616,7 @@ void InventoryItem::GetItemRow( PyPackedRow* into ) const
     into->SetField( "ownerID",    new PyInt( m_ownerID ) );
     into->SetField( "locationID", new PyLong( m_locationID ) );
     into->SetField( "flagID",     new PyInt( m_flag ) );
-    int16 qty = (m_singleton ? -1 : quantity());
+    int32 qty = (m_singleton ? -1 : quantity());
     if (m_type.categoryID() == EVEDB::invCategories::Blueprint)
         if (m_factory.GetBlueprint(m_itemID)->copy())
             qty = -2;
@@ -745,21 +745,21 @@ bool InventoryItem::AlterQuantity(int32 qty_change, bool notify) {
     int32 new_qty = m_quantity + qty_change;
 
     if (new_qty < 0) {
-        codelog(ITEM__ERROR, "%s (%u): Tried to remove %d quantity from stack of %u", m_itemName.c_str(), m_itemID, -qty_change, m_quantity);
+        codelog(ITEM__ERROR, "%s (%u): Tried to remove %i quantity from stack of %i", m_itemName.c_str(), m_itemID, -qty_change, m_quantity);
         return false;
     }
 
-    return(SetQuantity(new_qty, notify));
+    return SetQuantity(new_qty, notify);
 }
 
-bool InventoryItem::SetQuantity(uint32 qty_new, bool notify) {
+bool InventoryItem::SetQuantity(int32 qty_new, bool notify) {
     //if an object is singleton, it shouldn't be able to add/remove qty
     if (m_singleton) {
-        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %u , the items singleton bit is set", m_itemName.c_str(), m_itemID, qty_new);
+        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i, the items singleton bit is set", m_itemName.c_str(), m_itemID, qty_new);
         return false;
     }
 
-    uint32 old_qty = m_quantity;
+    int32 old_qty = m_quantity;
 
     m_quantity = qty_new;
 
@@ -816,7 +816,7 @@ InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify) {
     return( res );
 }
 
-bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty, bool notify) {
+bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notify/*true*/) {
     /*[00m14:51:55 [Error] Metal Scraps (140000072) in location 60014809, flag 4: Asked to merge with item 140000087 in location 60014809, flag 4.
      * 14:51:55 [Error] EMP S (140000108) in location 60014809, flag 4: Asked to merge with item 140000109 in location 60014809, flag 4.
      * 14:51:55 [Error] EMP S (140000108) in location 60014809, flag 4: Asked to merge with item 140000129 in location 60014809, flag 4.

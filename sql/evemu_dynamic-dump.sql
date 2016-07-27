@@ -590,20 +590,20 @@ CREATE TABLE `droneState` (
 
 /*Table structure for table `entity` */
 
-CREATE TABLE `entity` (
+CREATE TABLE IF NOT EXISTS `entity` (
   `itemID` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `itemName` varchar(85) NOT NULL default '',
-  `typeID` int(10) unsigned NOT NULL default '0',
-  `ownerID` int(10) unsigned NOT NULL default '0',
-  `locationID` int(10) unsigned NOT NULL default '0',
-  `flag` int(10) unsigned NOT NULL default '0',
-  `contraband` int(10) unsigned NOT NULL default '0',
-  `singleton` int(10) unsigned NOT NULL default '0',
-  `quantity` int(10) unsigned NOT NULL default '0',
-  `x` double NOT NULL default '0',
-  `y` double NOT NULL default '0',
-  `z` double NOT NULL default '0',
-  `customInfo` text,
+  `itemName` varchar(85) NOT NULL DEFAULT '',
+  `typeID` int(10) unsigned NOT NULL DEFAULT '0',
+  `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
+  `locationID` int(10) unsigned NOT NULL DEFAULT '0',
+  `flag` int(4) unsigned NOT NULL DEFAULT '0',
+  `contraband` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `singleton` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `quantity` int(10) unsigned NOT NULL DEFAULT '0',
+  `x` double NOT NULL DEFAULT '0',
+  `y` double NOT NULL DEFAULT '0',
+  `z` double NOT NULL DEFAULT '0',
+  `customInfo` text
   PRIMARY KEY  (`itemID`),
   KEY `typeID` (`typeID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

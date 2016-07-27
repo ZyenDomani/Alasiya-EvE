@@ -415,9 +415,9 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
     DBQueryResult res;
 
     // For certain ranges of itemID-s we use specialized tables:
-    if(IsRegion(itemID)) {
+    if (IsRegion(itemID)) {
         //region
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             "  regionName, 3 AS typeID, factionID, 1 AS locationID, 0 AS flag, 0 AS contraband,"
             "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
@@ -427,9 +427,9 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             _log(DATABASE__ERROR, "Error in query for region %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if(IsConstellation(itemID)) {
+    } else if (IsConstellation(itemID)) {
         //contellation
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             "  constellationName, 4 AS typeID, factionID, regionID, 0 AS flag, 0 AS contraband,"
             "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
@@ -439,9 +439,9 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             _log(DATABASE__ERROR, "Error in query for contellation %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if(IsSolarSystem(itemID)) {
+    } else if (IsSolarSystem(itemID)) {
         //solar system
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             "  solarSystemName, 5 AS typeID, factionID, constellationID, 0 AS flag, 0 AS contraband,"
             "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
@@ -451,9 +451,9 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             _log(DATABASE__ERROR, "Error in query for solar system %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if(IsStargate(itemID)) {
+    } else if (IsStargate(itemID)) {
         //use mapDenormalize LEFT-JOIN-ing mapSolarSystems to get factionID
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             "  itemName, typeID, factionID, solarSystemID, 0 AS flag, 0 AS contraband,"
             "  1 AS singleton, 1 AS quantity, mapDenormalize.x, mapDenormalize.y, mapDenormalize.z, '' AS customInfo"
@@ -464,9 +464,9 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             _log(DATABASE__ERROR, "Error in query for stargate %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if(IsStation(itemID)) {
+    } else if (IsStation(itemID)) {
         //station
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             "  stationName, stationTypeID, corporationID, solarSystemID, 0 AS flag, 0 AS contraband,"
             "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
@@ -476,9 +476,9 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             _log(DATABASE__ERROR, "Error in query for station %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if(IsUniverseCelestial(itemID)) {
+    } else if (IsUniverseCelestial(itemID)) {
         //use mapDenormalize
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             "  itemName, typeID, 1 AS ownerID, solarSystemID, 0 AS flag, 0 AS contraband,"
             "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
@@ -490,7 +490,7 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
         }
     } else {
         //fallback to entity
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             "  itemName, typeID, ownerID, locationID, flag, contraband,"
             "  singleton, quantity, x, y, z, customInfo"
@@ -584,8 +584,8 @@ bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
         data.ownerID,
         data.locationID,
         uint32(data.flag),
-        uint32(data.contraband),
-        uint32(data.singleton),
+        (data.contraband?1:0),
+        (data.singleton?1:0),
         data.quantity,
         data.position.x, data.position.y, data.position.z,
         customInfoEsc.c_str(),

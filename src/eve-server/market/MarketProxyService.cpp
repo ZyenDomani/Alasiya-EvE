@@ -372,10 +372,10 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 
         //verify that they specified a valid station ID to sell from.
         if(
-           (item->locationID() != (uint32)args.stationID)   //item in station hanger
+           (item->locationID() != args.stationID)   //item in station hanger
            && !(
                 call.client->GetShip()->GetInventory()->Contains( item->itemID() )  //item is in our ship
-                && call.client->GetStationID() == (uint32)args.stationID    //and our ship is in the station
+                && call.client->GetStationID() == args.stationID    //and our ship is in the station
                 )
         ) {
             codelog(MARKET__ERROR, "%s: Tried to sell item %d which is in location %d through station %d while in station %d", call.client->GetName(), item->itemID(), item->locationID(), args.stationID, call.client->GetStationID());
@@ -384,13 +384,13 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         }
 
         if((item->singleton() && args.quantity != 1)
-           || item->quantity() < (uint32)args.quantity ) {
+           || item->quantity() < args.quantity ) {
             codelog(MARKET__ERROR, "%s: Tried to sell %d of item %d which has qty %d singleton %d", call.client->GetName(), args.quantity, item->itemID(), item->quantity(), item->singleton());
             call.client->SendErrorMsg("You cannot sell more than you have.");
             return NULL;
         }
 
-        if(item->typeID() != (uint32)args.typeID) {
+        if(item->typeID() != args.typeID) {
             codelog(MARKET__ERROR, "%s: Tried to sell item %d of type %d using type ID %d", call.client->GetName(), item->itemID(), item->typeID(), args.typeID);
             call.client->SendErrorMsg("Invalid sell order item type.");
             return NULL;
@@ -425,7 +425,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         //TODO: take broker cost.
 
         //take item from seller
-        if(item->quantity() == (uint32)args.quantity) {
+        if(item->quantity() == args.quantity) {
             call.client->SystemMgr()->RemoveItemFromInventory(item);
             item->Delete();
         } else {
