@@ -446,7 +446,6 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
                     quantity = -1; //special value here to hit tests in _ExecAdd
             }
 
-
             return _ExecAdd( call.client, args.itemIDs, quantity, (EVEItemFlags)flag );
     } else {
         _log(INV__ERROR, "[MultiAdd] Unknown number of elements in a tuple: %u.", call.tuple->items.size() );
@@ -461,7 +460,7 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
     int32 origQty = quantity;
     InventoryItemRef itemRef;
     EVEItemFlags old_flag;
-    ShipItem* pShip = nullptr;
+    ShipItem* pShip = c->GetShip().get();
     // set ship to owner of this inventory object.  this will fix adding items to inactive ships in hangar.
     if (m_self->categoryID() == EVEDB::invCategories::Ship)
         pShip = m_manager->item_factory->GetShip(m_self->itemID()).get();
@@ -478,7 +477,7 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
             return nullptr;
         }
 
-        if (IsModuleSlot(old_flag) or IsModuleSlot(flag))
+        if (IsModuleSlot(old_flag) or IsModuleSlot(flag) or IsCargoHoldFlag(old_flag))
             if (!pShip) {
                 throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", itemRef->itemName().c_str()));
                 return nullptr;
