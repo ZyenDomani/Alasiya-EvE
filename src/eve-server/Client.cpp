@@ -457,7 +457,6 @@ void Client::UpdateLocation(uint32 locationID) {
     SendSessionChange();
     if (IsStation(locationID)) {
         sLog.Success("Client::UpdateLocation()", "Character %s (%u) Docked.", m_char->itemName().c_str(), m_char->itemID());
-        pShipSE->SetPosition(NULL_ORIGIN);  // set coords to 0,0,0 in db.
         m_ship->Move(locationID, flagHangar);
         m_char->Move(locationID, flagAutoFit);
         m_ship->Dock();
