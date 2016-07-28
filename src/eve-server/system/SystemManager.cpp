@@ -488,16 +488,30 @@ bool SystemManager::ProcessTic() {
      * this is how [server.UseShipTracking] runs an endless loop...list changes so it repeats previous operation.
      *
      * will eventually need to create a check for 'cur' running Process() this tic, and skipping if so
+     * idea...std::map internally orders items by key(itemID here).
+     * add an int var to hold last-processed itemID (mLast).
+     *  when iteration starts over, loop thru until cur > mLast and continue from there to end of list.
+     *  this will possibly avoid duplicate iteration in same cycle, but will have to test for loop times.
      */
     std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
+    uint32 mLast = 0;
     while (cur != m_entities.end()) {
+        if (mLast) {
+            if (mLast >= cur->first) {
+                ++cur;
+                continue;
+            }
+            mLast = 0;
+        }
         if (m_entityChanged) {
+            mLast = cur->first;
             m_entityChanged = false;
             cur = m_entities.begin();
             continue;
         }
         cur->second->Process(); /* main process call. */
         if (m_entityChanged) {
+            mLast = cur->first;
             m_entityChanged = false;
             cur = m_entities.begin();
             continue;
