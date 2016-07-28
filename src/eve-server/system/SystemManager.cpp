@@ -481,17 +481,8 @@ bool SystemManager::BootSystem() {
 bool SystemManager::ProcessTic() {
     /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid when SE->Process() returns
      * because Process() will add/remove from the map as needed (new objects, destroyed objects, moved objects, etc)
-     * still unsure how to prevent crashes when dereferencing an invalid SE in the current iterator
-     * without starting over when the list has changed...which will run all previous entities thru Process() again.
-     *
-     * this current incarnation is working very well, with the exception of starting over and making multiple calls in single tic.
-     * this is how [server.UseShipTracking] runs an endless loop...list changes so it repeats previous operation.
-     *
-     * will eventually need to create a check for 'cur' running Process() this tic, and skipping if so
-     * idea...std::map internally orders items by key(itemID here).
-     * add an int var to hold last-processed itemID (mLast).
-     *  when iteration starts over, loop thru until cur > mLast and continue from there to end of list.
-     *  this will possibly avoid duplicate iteration in same cycle, but will have to test for loop times.
+     * std::map internally orders items by key(itemID here), so use an int var to hold last-processed itemID (mLast).
+     *  when iteration starts over, increment until cur > mLast and continue from there to end of list.
      */
     std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
     uint32 mLast = 0;

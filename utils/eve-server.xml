@@ -14,7 +14,7 @@
         <UseBeanCount>true</UseBeanCount>  <!-- bool  -client python error reporting -->
         <testServer>true</testServer>  <!--  bool   -some functions disabled for live server -->
         <UseProfiling>false</UseProfiling><!-- bool -->
-        <UseShipTracking>false</UseShipTracking><!-- bool  !BE CAREFUL WITH THIS SETTING!-->
+        <UseShipTracking>false</UseShipTracking><!-- bool -->
         <UseStackTrace>true</UseStackTrace><!-- bool -->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
         <maxPlayers>2500</maxPlayers>
