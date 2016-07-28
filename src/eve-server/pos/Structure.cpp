@@ -161,6 +161,11 @@ void StructureItem::AddItem( InventoryItemRef item )
     m_inventory->AddItem( item );
 }
 
+void StructureItem::RemoveItem(InventoryItemRef item)
+{
+    m_inventory->RemoveItem( item );
+
+}
 
 /** @todo (Allan) this class needs more research to finish
  * see pics in ::GamePC/G/games/EvE/misc/POS
@@ -458,7 +463,7 @@ PyTuple *StructureSE::GetEffectState() {
     /* see file:///home/allan/Desktop/cruc/entities/pos_packets/control_tower_packets and cruc/entities/structures for more info */
 
     std::vector<int32, std::allocator<int32> > area;
-    
+
     DoDestiny_OnSpecialFX13 effect;
         if (m_module)
             effect.entityID = m_towerID;            /* control tower id */

@@ -93,6 +93,9 @@ public:
     PyObject *StructureGetInfo();
 
 
+    void AddItem(InventoryItemRef item);
+    void RemoveItem(InventoryItemRef item);
+
 protected:
     /*
      * Member functions:
@@ -133,8 +136,6 @@ protected:
         ItemData &data
     );
 
-
-    void AddItem(InventoryItemRef item);
 
 };
 

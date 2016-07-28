@@ -29,8 +29,9 @@
 #include "PyServiceCD.h"
 #include "EVEServerConfig.h"
 #include "inventory/InventoryBound.h"
+#include "pos/Structure.h"
+#include "system/Container.h"
 #include "system/SystemManager.h"
-#include <system/Container.h>
 
 PyCallable_Make_InnerDispatcher(InventoryBound)
 
@@ -357,7 +358,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         } else
             flag = call.byname.find("flag")->second->AsInt()->value();
 
-        if (flag = flagLocked)
+        if (flag == flagLocked)
             flag = flagCargoHold;
 
         int32 quantity = 0;
@@ -432,7 +433,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         } else
             flag = call.byname.find("flag")->second->AsInt()->value();
 
-        if (flag = flagLocked)
+        if (flag == flagLocked)
             flag = flagCargoHold;
 
         int32 quantity = 0;
@@ -536,7 +537,13 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
                     wreckRef->RemoveItem(itemRef);
                 } else if (pSE->IsContainerSE()) {
                     CargoContainerRef contRef = m_manager->item_factory->GetCargoContainer(itemRef->locationID());
-                    contRef->RemoveItem(contRef);
+                    contRef->RemoveItem(itemRef);
+                } else if (pSE->IsShipSE()) {
+                    ShipItemRef shipRef = m_manager->item_factory->GetShip(itemRef->locationID());
+                    shipRef->RemoveItem(itemRef);
+                } else if (pSE->IsPOSSE()) {
+                    StructureItemRef posRef = m_manager->item_factory->GetStructure(itemRef->locationID());
+                    posRef->RemoveItem(itemRef);
                 } else {
                     /** @todo will have to test and add code for moving items from other entities (pos) */
                     _log(INV__WARNING, "old_flag == flagAutoFit and IsInSpace, but container is not cargo or wreck for item %s(%u) in locationID %u.", \
