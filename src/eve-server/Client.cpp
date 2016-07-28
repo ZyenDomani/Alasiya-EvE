@@ -316,10 +316,8 @@ void Client::ProcessClient() {
 }
 
 void Client::SetDestiny(bool count) {
-    if (!pShipSE or !pShipSE->DestinyMgr()) {
-       _log(CLIENT__ERROR, "Ship's DestinyMgr is null. Bad Things may happen now");
-       return;
-    }
+    if (!pShipSE or !pShipSE->DestinyMgr())
+        CreateShipSE();
     m_system->AddClient(this, false, count);
     if (IsSolarSystem(m_locationID)) {
         if (m_ship->position().isZero())
@@ -443,6 +441,7 @@ bool Client::EnterSystem(uint32 systemID) {
         }
 
         m_systemName = m_system->GetName();
+        m_beyonce = false;
 
         m_char->chkDynamicSystemID(systemID);
         m_char->AddPilotToDynamicData(systemID, true, true);
