@@ -233,6 +233,17 @@ void Blueprint::SetMaterialLevel(uint32 materialLevel) {
     SaveBlueprint();
 }
 
+/*
+ * # Manufacturing Logging:
+ * MANUF=1
+ * MANUF__ERROR=1
+ * MANUF__WARNING=1
+ * MANUF__MESSAGE=1
+ * MANUF__INFO=1
+ * MANUF__DEBUG=1
+ * MANUF__TRACE=1
+ */
+
 bool Blueprint::AlterMaterialLevel(int32 materialLevelChange) {
     int32 new_material_level = m_materialLevel + materialLevelChange;
     sLog.Log("Blueprint::AlterMaterialLevel", "ML Change of %u points for BP: %s(%u), from %u to %u", materialLevelChange, m_itemName.c_str(), m_itemID, m_materialLevel, new_material_level );
@@ -298,7 +309,7 @@ PyDict *Blueprint::GetBlueprintAttributes() {
     rsp.researchProductivityTime = type().researchProductivityTime();
     rsp.researchCopyTime = type().researchCopyTime();
 
-    return(rsp.Encode());
+    return rsp.Encode();
 }
 
 void Blueprint::SaveBlueprint() {

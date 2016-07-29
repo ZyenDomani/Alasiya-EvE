@@ -53,6 +53,16 @@ RamProxyService::RamProxyService(PyServiceMgr *mgr)
 RamProxyService::~RamProxyService() {
     delete m_dispatch;
 }
+/*
+# Manufacturing Logging:
+MANUF=1
+MANUF__ERROR=1
+MANUF__WARNING=1
+MANUF__MESSAGE=1
+MANUF__INFO=1
+MANUF__DEBUG=1
+MANUF__TRACE=1
+*/
 
 PyResult RamProxyService::Handle_AssemblyLinesGet(PyCallArgs &call) {
     Call_SingleIntegerArg arg;  // containerID (stationID)

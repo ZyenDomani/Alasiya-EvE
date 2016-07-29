@@ -29,20 +29,42 @@
 
 PyRep *FactoryDB::GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) const {
     DBQueryResult res;
-/*
-"Row(requiredTypeID:35,quantity:8030,damagePerJob:1.0,activity:1)",
-*/
+
     if(!sDatabase.RunQuery(res,
                 "SELECT requiredTypeID, quantity, damagePerJob, activityID AS activity"
 				" FROM ramTypeRequirements"
-                " WHERE typeID = %u",
-                blueprintTypeID))
+                " WHERE typeID IN (%u, (SELECT productTypeID FROM bpTypes WHERE blueprintTypeID = %u))",
+                blueprintTypeID, blueprintTypeID))
     {
-        _log(DATABASE__ERROR, "Could not retrieve materials for type with activity %u : %s", blueprintTypeID, res.error.c_str());
+        _log(DATABASE__ERROR, "Could not retrieve materials for type %u : %s", blueprintTypeID, res.error.c_str());
         return NULL;
     }
 
     return DBResultToRowset(res);
+    /*
+                indexedExtras = copy.deepcopy(bomByActivity[activity].extras).Index('requiredTypeID')
+                for skill in bomByActivity[activity].skills:
+                    propertyInfo = cfg.invtypes.Get(skill.requiredTypeID)
+                    propertyName = propertyInfo.typeName
+                    propertyValue = localization.GetByLabel('UI/InfoWindow/SkillAndLevel', skill=skill.requiredTypeID, skillLevel=skill.quantity)
+                    skills.append((propertyName,
+                     propertyValue,
+                     skill.requiredTypeID,
+                     skill.quantity))
+
+                for material in bomByActivity[activity].rawMaterials:
+                    if material.quantity <= 0:
+                        continue
+                    propertyInfo = cfg.invtypes.Get(material.requiredTypeID)
+                    propertyName = propertyInfo.typeName
+                    amountRequired = amountRequiredByPlayer = material.quantity
+                    blueprintWaste = characterWaste = 0.0
+                    extraAmount = 0
+                    if activity in (const.activityManufacturing, const.activityDuplicating):
+                        if material.requiredTypeID in indexedExtras and indexedExtras[material.requiredTypeID].quantity > 0:
+                            extraAmount = indexedExtras[material.requiredTypeID].quantity
+                            indexedExtras[material.requiredTypeID].quantity = 0
+                            */
 }
 
 PyRep *FactoryDB::GetMaterialCompositionOfItemType(const uint32 typeID) const {
@@ -56,7 +78,7 @@ PyRep *FactoryDB::GetMaterialCompositionOfItemType(const uint32 typeID) const {
                 " AND damagePerJob = 1",
                 typeID))
     {
-        _log(DATABASE__ERROR, "Could not retrieve materials for type with activity %u : %s", typeID, res.error.c_str());
+        _log(DATABASE__ERROR, "Could not retrieve material composition for type %u : %s", typeID, res.error.c_str());
         return NULL;
     }
 
