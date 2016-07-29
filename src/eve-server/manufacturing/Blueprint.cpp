@@ -118,7 +118,6 @@ BlueprintData::BlueprintData(
 : copy(_copy),
   materialLevel(_materialLevel),
   productivityLevel(_productivityLevel),
-  //licensedProductionRunsRemaining(_licensedProductionRunsRemaining)
   licensedProductionRunsRemaining(_copy ? _licensedProductionRunsRemaining : -1)
 {
 }
@@ -275,10 +274,9 @@ void Blueprint::SetLicensedProductionRunsRemaining(int32 licensedProductionRunsR
         //_log(DATABASE__ERROR, "Error in query: %s.", err.c_str());
 }
 
-void Blueprint::AlterLicensedProductionRunsRemaining(int32 licensedProductionRunsRemainingChange) {
-    int32 new_licensed_production_runs_remaining = m_licensedProductionRunsRemaining + licensedProductionRunsRemainingChange;
-
-    SetLicensedProductionRunsRemaining(new_licensed_production_runs_remaining);
+void Blueprint::AlterLicensedProductionRunsRemaining(int32 licensedProductionRunsRemainingChange)
+{
+    SetLicensedProductionRunsRemaining(m_licensedProductionRunsRemaining + licensedProductionRunsRemainingChange);
 }
 
 PyDict *Blueprint::GetBlueprintAttributes() {

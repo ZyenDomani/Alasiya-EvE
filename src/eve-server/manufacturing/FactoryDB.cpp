@@ -42,9 +42,7 @@ PyRep *FactoryDB::GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) 
         return NULL;
     }
 
-    DBResultRow row;
-    res.GetRow(row);
-    return DBRowToRow(row);
+    return DBResultToRowset(res);
 }
 
 PyRep *FactoryDB::GetMaterialCompositionOfItemType(const uint32 typeID) const {
