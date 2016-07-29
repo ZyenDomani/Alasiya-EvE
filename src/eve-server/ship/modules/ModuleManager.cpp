@@ -290,44 +290,14 @@ void ModuleContainer::UnloadAll() {
 bool ModuleContainer::isSlotOccupied(EVEItemFlags flag) {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.find((uint8)flag);
     return (itr == m_modules.end() ? false : true);
-    /*
-    switch(_checkBounds(flag)) {
-        case slotTypeLowPower:
-            if ( m_LowSlotModules[flag-flagLowSlot0] )
-                return true;
-            break;
-        case slotTypeMedPower:
-            if ( m_MediumSlotModules[flag-flagMedSlot0] )
-                return true;
-            break;
-        case slotTypeHiPower:
-            if ( m_HighSlotModules[flag-flagHiSlot0] )
-                return true;
-            break;
-        case slotTypeSubSystem:
-            if ( m_SubSystemModules[flag-flagSubSystem0] )
-                return true;
-            break;
-        case slotTypeRig:
-            if ( m_RigModules[flag-flagRigSlot0] )
-                return true;
-            break;
-        case NaT:
-            sLog.Error("ModuleContainer::isSlotOccupied()","Flag Out of bounds");
-            break;
-    }
-    return false;
-    */
 }
 
-uint32 ModuleContainer::GetAvailableSlotInBank(EveEffectEnum slotBank)
+uint32 ModuleContainer::GetAvailableSlotInBank(EVEEffectID slotBank)
 {
-	uint32 slot = 0;
-	uint32 slotFound = flagIllegal;
-
+	uint32 slot = 0, slotFound = flagIllegal;
 	switch (slotBank)
 	{
-		case Effect_loPower:
+        case effectLoPower:
 			for ( slot=0; slot < m_LowSlots; slot++)
 				if ( m_LowSlotModules[slot] == NULL )
 				{
@@ -335,7 +305,7 @@ uint32 ModuleContainer::GetAvailableSlotInBank(EveEffectEnum slotBank)
 					break;
 				}
 			break;
-		case Effect_medPower:
+		case effectMedPower:
 			for ( slot=0; slot < m_MediumSlots; slot++)
 				if ( m_MediumSlotModules[slot] == NULL )
 				{
@@ -343,7 +313,7 @@ uint32 ModuleContainer::GetAvailableSlotInBank(EveEffectEnum slotBank)
 					break;
 				}
 			break;
-		case Effect_hiPower:
+		case effectHiPower:
 			for ( slot=0; slot < m_HighSlots; slot++)
 				if ( m_HighSlotModules[slot] == NULL )
 				{
@@ -351,7 +321,7 @@ uint32 ModuleContainer::GetAvailableSlotInBank(EveEffectEnum slotBank)
 					break;
 				}
 			break;
-		case Effect_rigSlot:
+		case effectRigSlot:
 			for ( slot=0; slot < m_RigSlots; slot++)
 				if ( m_RigModules[slot] == NULL )
 				{
@@ -359,7 +329,7 @@ uint32 ModuleContainer::GetAvailableSlotInBank(EveEffectEnum slotBank)
 					break;
 				}
 			break;
-		case Effect_subSystem:
+		case effectSubSystem:
 			for ( slot=0; slot < m_SubSystemSlots; slot++)
 				if ( m_SubSystemModules[slot] == NULL )
 				{
@@ -702,7 +672,7 @@ bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
     return false;
 }
 
-uint32 ModuleManager::GetAvailableSlotInBank(EveEffectEnum slotBank)
+uint32 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
 {
 	// Call into ModuleContainer class with slotBank effectID to have it check for and return any available slot flag in
 	// in the specified slot bank:

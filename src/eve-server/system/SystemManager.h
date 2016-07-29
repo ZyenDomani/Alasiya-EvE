@@ -56,7 +56,7 @@ public:
     SystemManager(uint32 systemID, PyServiceMgr &svc);//, ItemData idata);
     virtual ~SystemManager();
 
-    SystemEntity* get(uint32 entityID) const;
+    SystemEntity* GetSE(uint32 entityID) const;
     ItemFactory* itemFactory() const;
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
     SystemDB* GetSystemDB()                             { return &m_db; }

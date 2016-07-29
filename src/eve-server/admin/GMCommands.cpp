@@ -1204,7 +1204,7 @@ PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, con
 
     // Search for the itemRef for itemID:
     InventoryItemRef itemRef = who->services().item_factory->GetItem(itemID);
-    SystemEntity* entityRef = who->SystemMgr()->get(itemID);
+    SystemEntity* entityRef = who->SystemMgr()->GetSE(itemID);
 
     // Actually do the unspawn using SystemManager's RemoveEntity:
     if (!entityRef) {
@@ -1368,7 +1368,7 @@ PyResult Command_kill(Client* who, CommandDB* db, PyServiceMgr* services, const 
         if (itemRef.get() == NULL)
             throw PyException(MakeCustomError("/kill NOT supported on non-ship types at this time"));
 
-        SystemEntity* shipEntity = who->SystemMgr()->get(entity);
+        SystemEntity* shipEntity = who->SystemMgr()->GetSE(entity);
         if (!shipEntity) {
             throw PyException(MakeCustomError("/kill cannot process this object"));
             sLog.Error("GMCommands - Command_kill()", "Cannot process this object, aborting kill: %s [%u]", itemRef->itemName().c_str(), itemRef->itemID());

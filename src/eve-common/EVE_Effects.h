@@ -32,6 +32,8 @@ typedef enum {
     effectEnergyDestabilization         = 36,   //effects.EnergyDestabilization
     effectEMPWave                       = 38,   //effects.EMPWave
     effectWarpScramble                  = 39,   //effects.WarpScramble
+    effectLauncherFitted                = 40,
+    effectTurretFitted                  = 42,
     effectCargoScan                     = 47,   //effects.CargoScan
     effectECMBurst                      = 53,   //effects.ECMBurst
     effectCapacitorCapacityMultiply     = 58,
@@ -116,6 +118,7 @@ typedef enum {
     effectWarpScrambleForStructure      = 2481, //effects.WarpScramble
     effectTorpedoLaunchingIsOffensive   = 2576, //effects.TorpedoDeployment
     effectEntityEnvironmentalEffectDamageTest   = 2662, //effects.EMPWave
+    effectRigSlot                       = 2663,
     effectSensorBoosterActivePercentage = 2670, //effects.ElectronicAttributeModifyActivate
     effectMiningClouds                  = 2726, //effects.CloudMining
     effectSalvaging                     = 2757, //effects.Salvaging
@@ -135,7 +138,7 @@ typedef enum {
     effectLeechNpc                      = 3332, //effects.EnergyVampire
     effectWarpDisruptSphere             = 3380, //effects.WarpDisruptFieldGenerating
     effectIndustrialCoreEffect          = 3492, //effects.SiegeMode
-    //3530  //effects.eliteBonusBlackOpsAgiliy1
+    effectBonusBlackOpsAgiliy1          = 3530, //effects.eliteBonusBlackOpsAgiliy1
     effectTargetTurretWeaponMaxRangeAndTrackingSpeedBonusHostile    = 3552, //effects.ElectronicAttributeModifyTarget
     effectTargetGunneryMaxRangeAndTrackingSpeedBonusHostile         = 3555, //effects.ElectronicAttributeModifyTarget
     effectTargetGunneryMaxRangeAndTrackingSpeedBonusAssistance      = 3556, //effects.TurretWeaponRangeTrackingSpeedMultiplyTarg...
@@ -149,6 +152,7 @@ typedef enum {
     effectConcordWarpScramble           = 3713, //effects.WarpScramble
     effectConcordModifyTargetSpeed      = 3714, //effects.ModifyTargetSpeed
     effectWarpScrambleTargetMWDBlockActivation                      = 3725, //effects.WarpScramble
+    effectSubSystem                     = 3772,
     effectProbeLaunching                = 3793, //effects.MissileDeployment
     effectNPCRemoteArmorRepair          = 3852, //effects.RemoteArmourRepair
     effectNPCRemoteShieldBoost          = 3855, //effects.ShieldTransfer

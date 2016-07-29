@@ -188,7 +188,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
                         ? args.distance->AsInt()->value()
                         : args.distance->AsFloat()->value();
 
-    SystemEntity* pEntity = pSystem->get(args.ballID);
+    SystemEntity* pEntity = pSystem->GetSE(args.ballID);
     if (!pEntity) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %u to Orbit.", call.client->GetName(), args.ballID);
         return nullptr;
@@ -255,7 +255,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
         return nullptr;
     }
 
-    SystemEntity* pEntity = pSystem->get(arg.entityID);
+    SystemEntity* pEntity = pSystem->GetSE(arg.entityID);
     if (!pEntity) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %u to AlignTo.", call.client->GetName(), arg.entityID);
         return nullptr;
@@ -364,7 +364,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
                 sLog.Error( "BeyonceService::Handle_GotoBookmark()", "%s: no system manager found", call.client->GetName() );
                 return nullptr;
             }
-            SystemEntity* pSE = pSM->get( itemID );
+            SystemEntity* pSE = pSM->GetSE( itemID );
             if (!pSE) {
                 sLog.Error( "BeyonceService::Handle_GotoBookmark()", "%s: unable to find location %d", call.client->GetName(), itemID );
                 return nullptr;
@@ -413,7 +413,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         ? args.range->AsInt()->value()
         : args.range->AsFloat()->value();
 
-    SystemEntity* pEntity = pSystem->get(args.entityID);
+    SystemEntity* pEntity = pSystem->GetSE(args.entityID);
     if (!pEntity) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %u to Orbit.", call.client->GetName(), args.entityID);
         return nullptr;
@@ -476,7 +476,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         uint32 toID = call.tuple->GetItem(1)->AsInt()->value();
 
 		// This section handles Warping to any object in the Overview
-		SystemEntity* pSE = pSM->get(toID);
+		SystemEntity* pSE = pSM->GetSE(toID);
         if (!pSE) {
             codelog(CLIENT__ERROR, "%s: unable to find location %d", call.client->GetName(), toID);
 			return nullptr;
@@ -579,7 +579,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint.z = z;     // From bookmark z
         } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
-            SystemEntity* pSE = pSM->get( itemID );
+            SystemEntity* pSE = pSM->GetSE( itemID );
             if (!pSE) {
                 sLog.Error( "BeyonceService::Handle_WarpToStuff()", "%s: unable to find location %d", call.client->GetName(), itemID );
                 return nullptr;
@@ -726,7 +726,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     /** @todo make and set config var for default AP warpTo distance to use here */
     int32 distance = 5000; //15000
 
-    SystemEntity* pSE = pSM->get(arg.destID);
+    SystemEntity* pSE = pSM->GetSE(arg.destID);
     if (!pSE) {
 	  codelog(CLIENT__ERROR, "%s: unable to find destination Entity for ID %u", call.client->GetName(), arg.destID);
         return nullptr;

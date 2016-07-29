@@ -155,6 +155,9 @@ bool ShipItem::_Load()
     // load contents
     if (!m_inventory->LoadContents(&m_factory))  return false;
 
+    // reset ship default capacity due to errors seen while testing.
+    SetAttribute(AttrCapacity, type().capacity(), false);
+    
     /** @todo  apply ship and skill bonuses to hold capacities here */
 
 	// fill cargo holds data here:
@@ -829,16 +832,16 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef item) {
     //    it should return a slot flag number for the next available slot starting at the lowest number
     //    for that bank
     // 3) return that slot flag number
-    if (item->type().HasEffect(Effect_loPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(Effect_loPower);
-    } else if (item->type().HasEffect(Effect_medPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(Effect_medPower);
-    } else if (item->type().HasEffect(Effect_hiPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(Effect_hiPower);
-    } else if (item->type().HasEffect(Effect_subSystem)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(Effect_subSystem);
-    } else if (item->type().HasEffect(Effect_rigSlot)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(Effect_rigSlot);
+    if (item->type().HasEffect(effectLoPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectLoPower);
+    } else if (item->type().HasEffect(effectMedPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectMedPower);
+    } else if (item->type().HasEffect(effectHiPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectHiPower);
+    } else if (item->type().HasEffect(effectSubSystem)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectSubSystem);
+    } else if (item->type().HasEffect(effectRigSlot)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectRigSlot);
     } else {
         // ERROR: This is not a module that fits in any of the slot banks
     }

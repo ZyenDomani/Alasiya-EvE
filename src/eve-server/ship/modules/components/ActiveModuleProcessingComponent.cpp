@@ -88,7 +88,7 @@ void ActiveModuleProcessingComponent::ActivateCycle()
             ecType = itr->second->GetCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            if (itr->first == Effect_damageControl)
+            if (itr->first == effectDamageControl)
                 m_Mod->m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
             else if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
                 m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
@@ -104,7 +104,7 @@ void ActiveModuleProcessingComponent::ActivateCycle()
     SetTimer((uint32)m_Mod->DoCycle()); // Do initial cycle immediately while we start timer
 }
 
-void ActiveModuleProcessingComponent::DeactivateCycle()
+void ActiveModuleProcessingComponent::DeactivateCycle(bool abort/*false*/)
 {
     m_Mod->SetModuleState(MOD_DEACTIVATING);
     EVECalculationType ecType = CALC_NONE;
@@ -130,7 +130,7 @@ void ActiveModuleProcessingComponent::DeactivateCycle()
             ecType = itr->second->GetReverseCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            if (itr->first == Effect_damageControl)
+            if (itr->first == effectDamageControl)
                 m_Mod->m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
             else if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
                 m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
@@ -139,7 +139,7 @@ void ActiveModuleProcessingComponent::DeactivateCycle()
             ++cur;
         }
     }
-    m_Mod->StopCycle();
+    m_Mod->StopCycle(abort);
 }
 
 void ActiveModuleProcessingComponent::StopCycle()
@@ -151,7 +151,7 @@ void ActiveModuleProcessingComponent::AbortCycle()
 {
 	// Immediately stop active cycle for things such as target destroyed or left bubble, or miner deactivated by player:
     m_Stop = true;
-    m_Mod->StopCycle(true);
+    DeactivateCycle(true);
     m_Mod->SetModuleState(MOD_ONLINE);
 	m_timer.Disable();
 }

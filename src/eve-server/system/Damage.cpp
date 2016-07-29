@@ -627,7 +627,7 @@ void Ship::Killed(Damage &fatal_blow) {
         //podRef->Move(m_self->GetPilot()->GetSystemID(), flagCapsule);
         podRef->Relocate(capsulePosition);
 
-        SystemEntity* pPodEntity = m_system->get(m_self->GetPilot()->GetPodID());
+        SystemEntity* pPodEntity = m_system->GetSE(m_self->GetPilot()->GetPodID());
         if (!pPodEntity)
             pPodEntity = new Ship(podRef, m_services, m_system);
 
@@ -694,7 +694,7 @@ void Ship::Killed(Damage &fatal_blow) {
 	    for (auto cur : deadShipInventory)
 			cur.second->Move(wreckItemRef->itemID(),flagAutoFit);
 
-        SystemEntity* pEntity = m_system->get(oldShipItemID);
+        SystemEntity* pEntity = m_system->GetSE(oldShipItemID);
         m_system->RemoveEntity(pEntity);
         deadShipRef->Delete();
         m_self->GetPilot()->StartKilledTimer();

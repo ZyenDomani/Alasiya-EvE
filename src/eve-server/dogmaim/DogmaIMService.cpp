@@ -553,12 +553,15 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
             pClient->SendNotifyMsg("You can't do this while warping");
             return new PyNone;
         }
+    } else {
+        pClient->SendNotifyMsg("You can't do this while docked");
+        return new PyNone;
     }
 
     sLog.Log("DogmaIMBound::Handle_Activate()", "size= %u from '%s'", call.tuple->size(), pClient->GetName() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    uint32 callTupleSize = (uint32)call.tuple->size(), itemID = 0, effect = 0;
+    uint32 callTupleSize = (uint32)call.tuple->size(), itemID = 0, effectID = 0;
 
     if (callTupleSize == 2) {
         Call_TwoIntegerArgs args;
@@ -569,7 +572,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         /*
           [PyString "Activate"]     << onlining a pos module
           [PyTuple 2 items]
-            [PyIntegerVar 1002332856217]
+            [PyIntegerVar 1002332856217]    << module itemID
             [PyInt 901]             << effectOnlineForStructures
         */
         // This call is for Anchor/Unanchor a POS structure or Cargo Container,
@@ -577,10 +580,10 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         if (call.tuple->items.at(0)->IsInt()) {
             itemID = call.tuple->items.at(0)->AsInt()->value();
             if (call.tuple->items.at(1)->IsInt()) {
-                effect = call.tuple->items.at(1)->AsInt()->value();
-                SystemEntity* se = pClient->SystemMgr()->get(itemID);
+                effectID = call.tuple->items.at(1)->AsInt()->value();
+                SystemEntity* se = pClient->SystemMgr()->GetSE(itemID);
                 if (!se) {
-                    sLog.Error("DogmaIMBound::Handle_Activate()", "Item ID = %u is not a valid SystemEntity found in this system.", itemID);
+                    sLog.Error("DogmaIMBound::Handle_Activate()", "%u is not a valid EntityID in this system.", itemID);
                     return new PyNone;
                 }
 
@@ -594,7 +597,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
                  * effectOnlineForStructures = 901
                  */
 
-                switch(effect) {
+                switch(effectID) {
                     case 649: //effectAnchorDrop;
                         //pClient->GetShipSE()->DestinyMgr()->SendContainerAnchor( pClient->services().item_factory->GetCargoContainer( itemID ) );
                         break;
@@ -643,8 +646,8 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
         }
     }
 
-    //sLog.Log("DogmaIMBound::Handle_Deactivate()", "size= %u", call.tuple->size() );
-    //call.Dump(SERVICE__CALL_DUMP);
+    sLog.Log("DogmaIMBound::Handle_Deactivate()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
     //18:50:24 [PacketError] Decode Call_Dogma_Deactivate failed: effectName is not a wide string: Integer
     //  this is also used on POS items, so adjust as needed.  (will have to construct it like Activate())
 
@@ -729,7 +732,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         _log(SERVICE__ERROR, "Unable to decode arguments from '%s'", pClient->GetName());
         return rsp.Encode();
     }
-    SystemEntity* target = smgr->get(args.arg);
+    SystemEntity* target = smgr->GetSE(args.arg);
     if (!target) {
         _log(INV__WARNING, "Unable to find entity %u in system %u from '%s'", args.arg, smgr->GetID(), pClient->GetName());
         return rsp.Encode();
@@ -772,7 +775,7 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
         _log(SERVICE__ERROR, "Unable to find system manager for '%s'", pClient->GetName());
         return new PyNone;
     }
-    SystemEntity* target = smgr->get(args.arg);
+    SystemEntity* target = smgr->GetSE(args.arg);
     if (!target) {
         _log(SERVICE__ERROR, "Unable to find entity %u in system %u for '%s'", args.arg, smgr->GetID(), pClient->GetName());
         return new PyNone;

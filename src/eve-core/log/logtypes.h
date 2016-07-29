@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 5.8
+    Log Version: 6.0
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -202,6 +202,14 @@ LOG_TYPE( MINING, MESSAGE, DISABLED, "MiningMsg" )
 LOG_TYPE( MINING, INFO, DISABLED, "MiningInfo" )
 LOG_TYPE( MINING, DEBUG, DISABLED, "MiningDebug" )
 LOG_TYPE( MINING, TRACE, DISABLED, "MiningTrace" )
+
+LOG_CATEGORY( MANUF )
+LOG_TYPE( MANUF, ERROR,   ENABLED, "ManufError" )
+LOG_TYPE( MANUF, WARNING, DISABLED, "ManufWarning" )
+LOG_TYPE( MANUF, MESSAGE, DISABLED, "ManufMsg" )
+LOG_TYPE( MANUF, INFO, DISABLED, "ManufInfo" )
+LOG_TYPE( MANUF, DEBUG, DISABLED, "ManufDebug" )
+LOG_TYPE( MANUF, TRACE, DISABLED, "ManufTrace" )
 
 LOG_CATEGORY( DESTINY )
 LOG_TYPE( DESTINY, ERROR,   ENABLED, "DestinyError" )

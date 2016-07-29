@@ -28,7 +28,6 @@
 #define __EVESERVER_SHIPMODULES_GENERICMODULE_H_
 
 #include "EVEServerConfig.h"
-#include "inventory/EffectsEnum.h"
 #include "inventory/InventoryItem.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
@@ -97,13 +96,13 @@ public:
     /* functions to be overridden in derived classes as needed */
     virtual InventoryItemRef GetLoadedChargeRef()       { return InventoryItemRef(); }
     virtual bool isTurretFitted() {
-        if( m_Effects->HasEffect(Effect_turretFitted) )
+        if( m_Effects->HasEffect(effectTurretFitted) )
             return true;
         return false;
     }
 
     virtual bool isLauncherFitted() {
-        if( m_Effects->HasEffect(Effect_launcherFitted) )
+        if( m_Effects->HasEffect(effectLauncherFitted) )
             return true;
         return false;
     }

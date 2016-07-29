@@ -157,7 +157,7 @@ public:
 
     void StripModules();
 
-	uint32 GetAvailableSlotInBank(EveEffectEnum slotBank);
+	uint32 GetAvailableSlotInBank(EVEEffectID slotBank);
 
     //batch processes handlers
     void AbortCycle();
@@ -334,7 +334,7 @@ public:
 
     bool Initialize();
     bool IsSlotOccupied(EVEItemFlags flag);
-	uint32 GetAvailableSlotInBank(EveEffectEnum slotBank);
+    uint32 GetAvailableSlotInBank(EVEEffectID slotBank);
 
     bool InstallRig(InventoryItemRef item, EVEItemFlags flag);
     void UninstallRig(uint32 itemID);

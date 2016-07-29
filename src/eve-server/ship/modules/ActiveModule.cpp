@@ -42,15 +42,6 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
     m_overLoaded = false;
     m_chargeLoaded = false;
 
-    /*
-     * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
-     *  {returns}
-     *        [PyTuple 3 items]
-     *          [PyTuple 1 items]
-     *            [PyIntegerVar 1005885547063]  << moduleID
-     *          [PyInt 203]                     << chargeTypeID
-     *          [PyFloat 10000]                 << reloadTime (ms)
-     */
     m_reloadTime = m_Item->GetAttribute(AttrReloadTime).get_int();
     /* our db doesnt have reload times for launchers or projectile turrents.
      * set default of 4s for turrents, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
@@ -143,6 +134,15 @@ void ActiveModule::Load(InventoryItemRef charge)
 	m_chargeRef = charge;
     m_chargeLoaded = true;
     m_ChargeState = MOD_RELOADING;
+    /*
+     * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
+     *  {returns}
+     *        [PyTuple 3 items]
+     *          [PyTuple 1 items]
+     *            [PyIntegerVar 1005885547063]  << moduleID
+     *          [PyInt 203]                     << chargeTypeID
+     *          [PyFloat 10000]                 << reloadTime (ms)
+     */
     PyTuple* module = new PyTuple(1);
         module->SetItem(0, new PyInt(m_Item->itemID()));
     PyTuple* tmp = new PyTuple(3);
@@ -179,44 +179,45 @@ bool ActiveModule::RequiresTarget()
         return false;
 }
 
-void ActiveModule::DoEffect(bool active /*false*/)
+void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
 {
     /** @todo  finish this when time permits.... */
+    /** @todo will have to ensure default effect is coded (correctly) for ALL modules */
 
-    if (active) {
-        // Create Special Effect:
-        m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
-                m_Ship,
-                m_Item->itemID(),
-                m_Item->typeID(),
-                0,
-                0,
-                "effects.useMissiles",
-                0,
-                1,
-                1,
-                _GetDuration(),
-                1
-            );
-    }
-
+    std::string effectStr = "effects.";
+    effectStr += effect;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 100;
+
+    // Create Special Effect:
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
+        m_Ship,
+        m_Item->itemID(),
+        m_Item->typeID(),
+        m_targetID,
+        (m_chargeLoaded?m_chargeRef->typeID():0),
+        effectStr,
+        m_Effects->GetDefaultEffect()->GetIsOffensive(),
+        (active ? 1 : 0),
+        (active ? 1 : 0),
+        (active ? (Win32TimeNow() + (timeLeft * Win32Time_Second)) : Win32TimeNow()),
+        0
+    );
 
     // Create Destiny Updates:
     //  there are slight variations on this.  look into and fix as required.
     GodmaOther go;
         go.shipID = m_Ship->itemID();
         go.slotID = m_Item->flag();
-        go.chargeTypeID = 0;
+        go.chargeTypeID = m_Item->typeID();
     GodmaEnvironment ge;
         ge.selfID = m_Item->itemID();
         ge.charID = m_Ship->ownerID();
         ge.shipID = go.shipID;
-        ge.targetID = 0;
+        ge.targetID = m_targetID;
         ge.other = go.Encode();
-        ge.area = new PyList;
-        ge.effectID = effectUseMissiles;
+        ge.area = new PyList;   // still dont know what this is.
+        ge.effectID = m_Effects->GetDefaultEffect()->GetEffectID();
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -224,7 +225,7 @@ void ActiveModule::DoEffect(bool active /*false*/)
         shipEff.start = (active ? 1 : 0);
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
-        shipEff.startTime = (active ? shipEff.timeNow : (shipEff.timeNow - (timeLeft * Win32Time_Second)));
+        shipEff.startTime = (active ? shipEff.timeNow : (shipEff.timeNow + (timeLeft * Win32Time_Second)));
         shipEff.duration = (active ? _GetDuration() : timeLeft);
         shipEff.repeat = 1000;
         shipEff.error = new PyNone; /* look into setting this ... only used for salvaging? */

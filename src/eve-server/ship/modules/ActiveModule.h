@@ -67,7 +67,7 @@ public:
     bool isLoaded()                                         { return m_chargeLoaded; }
 
 	/* common method for all modules that have a visual effect when active */
-    void DoEffect(bool active = false);
+    void DoEffect(bool active=false, std::string effect="");
 
 protected:
     uint32 m_targetID;                                      //passed to us by activate

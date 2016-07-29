@@ -72,7 +72,7 @@ void HullRepairer::StopCycle(bool abort)
         shipEff.start = 0;
         shipEff.active = 0;
         shipEff.environment = ge.Encode();
-        shipEff.startTime = (shipEff.timeNow - (timeLeft * Win32Time_Second));
+        shipEff.startTime = (shipEff.timeNow + (timeLeft * Win32Time_Second));
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
         shipEff.error = new PyNone;

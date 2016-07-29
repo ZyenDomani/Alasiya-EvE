@@ -683,7 +683,7 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
 
     Client* pClient = call.client;
     SystemManager *pSysMgr = pClient->SystemMgr();
-    SystemEntity *object = pSysMgr->get(objectItemID);
+    SystemEntity *object = pSysMgr->GetSE(objectItemID);
     if (object == NULL) {
         _log(SERVICE__ERROR, "%s: Unable to find object %u to scoop.", pClient->GetName(), objectItemID);
         return nullptr;
@@ -734,7 +734,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     SystemManager* pSysMgr = pClient->SystemMgr();
     std::vector<int32>::const_iterator cur = args.ints.begin();
     for(; cur != args.ints.end(); cur++) {
-        SystemEntity* pDroneSE = pSysMgr->get(*cur);
+        SystemEntity* pDroneSE = pSysMgr->GetSE(*cur);
         if (!pDroneSE) {
             _log(SERVICE__ERROR, "%s: Unable to find drone %u to scoop.", pClient->GetName(), *cur);
             continue;
@@ -819,7 +819,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             cargoContainerItem->Move(pClient->GetLocationID(), flagAutoFit, true);
             // and add to the system manager
             //ContainerEntity* containerObj = new ContainerEntity(cargoContainerItem, pSysMgr, *m_manager, location);
-            pSysEntity = pSysMgr->get(cargoContainerItem->itemID());
+            pSysEntity = pSysMgr->GetSE(cargoContainerItem->itemID());
             location.MakeRandomPointOnSphere(500.0);
             pSysEntity->SetPosition(location);
             cargoContainerItem->SaveItem();
@@ -854,7 +854,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", structureItemRef->typeID()));
 
             structureItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            pSysEntity = pSysMgr->get(structureItemRef->itemID());
+            pSysEntity = pSysMgr->GetSE(structureItemRef->itemID());
             location.MakeRandomPointOnSphere(1500.0 + structureItemRef->type().radius());
             pSysEntity->SetPosition(location);
             structureItemRef->SaveItem();
@@ -872,7 +872,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             cargoItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
             //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
             // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
-            pSysEntity = pSysMgr->get(cargoItemRef->itemID());
+            pSysEntity = pSysMgr->GetSE(cargoItemRef->itemID());
             location.MakeRandomPointOnSphere(1500.0 + cargoItemRef->type().radius());
             pSysEntity->SetPosition(location);
             cargoItemRef->SaveItem();

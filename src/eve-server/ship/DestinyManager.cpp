@@ -1271,7 +1271,7 @@ void DestinyManager::EntityRemoved(SystemEntity *who) {
 
 bool DestinyManager::_IsTargetInvalid()
 {
-    if ( !mySE->SystemMgr()->get( m_targetEntity.first ) ) {
+    if ( !mySE->SystemMgr()->GetSE( m_targetEntity.first ) ) {
         // Our target was removed
         Stop();
         return true;
@@ -1687,7 +1687,7 @@ void DestinyManager::SetUndockSpeed() {
 PyResult DestinyManager::AttemptDockOperation() {
     Client *pClient = mySE->GetPilot();
     uint32 stationID = pClient->GetDockStationID();
-    SystemEntity *station = mySE->SystemMgr()->get(stationID);
+    SystemEntity *station = mySE->SystemMgr()->GetSE(stationID);
 
     if (!station) {
         codelog(CLIENT__ERROR, "%s: Station %u not found.", pClient->GetName(), stationID);

@@ -40,7 +40,7 @@ public:
 
 	void Process();
 	void ActivateCycle();
-    void DeactivateCycle();
+    void DeactivateCycle(bool abort=false);
 	void AbortCycle();
     void StopCycle();
     void ShouldProcessActiveCycle();

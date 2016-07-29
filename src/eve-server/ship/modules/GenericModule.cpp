@@ -83,7 +83,7 @@ void GenericModule::Online()
         uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
         _log(SHIP__MODULE_TRACE, "GenericModule::Online() -  there are %u attributes in effect %u", ids, itr->first );
         while (cur < ids) {
-            if (itr->first != Effect_online) {  // effect Online.  this sets CPU and PG usage
+            if (itr->first != effectOnline) {  // effect Online.  this sets CPU and PG usage
                 testID = itr->second->GetTargetGroup(cur);
                 _log(SHIP__MODULE_DEBUG, "GenericModule::Online() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
                 if ((testID != 0) && (groupID != testID)) {
@@ -99,7 +99,7 @@ void GenericModule::Online()
             _log(SHIP__MODULE_TRACE, "GenericModule::Online() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
             // check for online and passive effects to set CPU and PG usage without stacking penalities.
-            if ((itr->first == Effect_online) or (isRig()) or (isSubSystem()) or (itr->first == Effect_damageControl))
+            if ((itr->first == effectOnline) or (isRig()) or (isSubSystem()) or (itr->first == effectDamageControl))
                 m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
             else
                 m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
@@ -128,7 +128,7 @@ void GenericModule::Offline()
         uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
         _log(SHIP__MODULE_TRACE, "GenericModule::Offline() -  there are %u attributes in effect %u", ids, itr->first );
         while (cur < ids) {
-            if (itr->first != Effect_online) {  // effect Online.  this sets CPU and PG usage
+            if (itr->first != effectOnline) {  // effect Online.  this sets CPU and PG usage
                 testID = itr->second->GetTargetGroup(cur);
                 _log(SHIP__MODULE_DEBUG, "GenericModule::Offline() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
                 if ((testID != 0) && (groupID != testID)) {
@@ -145,7 +145,7 @@ void GenericModule::Offline()
             _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
             // check for online and passive effects to set CPU and PG usage without stacking penalities.
-            if ((itr->first == Effect_online) or (isRig()) or (isSubSystem()) or (itr->first == Effect_damageControl))
+            if ((itr->first == effectOnline) or (isRig()) or (isSubSystem()) or (itr->first == effectDamageControl))
                 m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
             else
                 m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);

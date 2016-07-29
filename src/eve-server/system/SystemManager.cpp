@@ -671,7 +671,7 @@ void SystemManager::RemoveSpawnBubble()
     _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for %s(%u), but needs to be written.", GetName().c_str(), m_systemID);
 }
 
-SystemEntity* SystemManager::get(uint32 entityID) const {
+SystemEntity* SystemManager::GetSE(uint32 entityID) const {
     std::map<uint32, SystemEntity*>::const_iterator res = m_entities.find(entityID);
     if (res == m_entities.end())
         return nullptr;
