@@ -37,12 +37,12 @@ public:
     MissileLauncher( InventoryItemRef item, ShipItemRef ship );
     virtual ~MissileLauncher() { }
 
-    // GenericModule Methods:
+    /* ActiveModule overrides */
     void Overload();
     void DeOverload();
-	void Activate(SystemEntity * targetEntity);
-	double DoCycle();
-	void StopCycle(bool abort=false);
+    virtual void Activate(SystemEntity* pSE);
+    virtual double DoCycle();
+    virtual void StopCycle(bool abort=false);
 
 protected:
     Missile* pMissile;  // we own this

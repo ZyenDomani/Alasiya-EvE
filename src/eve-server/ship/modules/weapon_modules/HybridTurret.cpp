@@ -83,15 +83,17 @@ HybridTurret::HybridTurret( InventoryItemRef item, ShipItemRef ship )
     }
 }
 
-void HybridTurret::Activate(SystemEntity * targetEntity)
+void HybridTurret::Activate(SystemEntity* pSE)
 {
 	if( this->m_chargeRef )	{
-		m_targetEntity = targetEntity;
-		m_targetID = targetEntity->GetID();
+        m_targetEntity = pSE;
+        m_targetID = pSE->GetID();
 		m_AMPC->ActivateCycle();
-	} else {
-		sLog.Error( "HybridTurret::Activate()", "ERROR: Cannot find charge that is supposed to be loaded into this module!" );
-		throw PyException( MakeCustomError( "ERROR!  Cannot find charge that is supposed to be loaded into this module!" ) );
+    } else {
+        _log(SHIP__MODULE_WARNING, "HybridTurret::Activate() - Cannot find loaded charge for this module");
+        if (m_Ship->HasPilot())
+            if (m_Ship->GetPilot()->CanThrow())
+                throw PyException( MakeCustomError( "Cannot find loaded charge for this module  - Ref: ServerError 15693"));
     }
 }
 
@@ -209,7 +211,7 @@ void HybridTurret::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetROF();
-        shipEff.repeat = 1000;
+        shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());

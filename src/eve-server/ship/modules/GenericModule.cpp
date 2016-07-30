@@ -39,7 +39,7 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_ModuleState = MOD_UNFITTED;
     m_ChargeState = MOD_UNLOADED;
 
-    m_attribStacking.clear();
+    m_repeat = 0;
 }
 
 GenericModule::~GenericModule()
@@ -68,13 +68,11 @@ void GenericModule::Online()
     if (m_ModuleState != MOD_OFFLINE)
         return;     // already online
     */
-    if (IsRigModule() or isRig())   // IsRigModule returns false in base class, isRig uses attribs
-        m_Item->PutOnline(true);
-    else
-        m_Item->PutOnline(false);
+    m_Item->PutOnline(isRig());
     m_ModuleState = MOD_ONLINE; // this must be set to online before calling msac or mmac.
 
     EVECalculationType ecType = CALC_NONE;
+    bool stacking = false;
     typeTargetGroupIDlist targetIDs;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
     std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Effects->GetOnlineEffectsBegin();
@@ -92,17 +90,15 @@ void GenericModule::Online()
                 }
             }
             // vector<uint32> of targetgroups (or targetCategorys if id < 50)
+            /* this isnt right yet....targetIDsList is vector, but i need size for it to iterate */
+            stacking = itr->second->GetStackingPenalty(cur);
             targetIDs = itr->second->GetTargetIDList(cur);
             targetAttrID = itr->second->GetTargetAttributeID(cur);
             sourceAttrID = itr->second->GetSourceAttributeID(cur);
             ecType = itr->second->GetCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "GenericModule::Online() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
-            // check for online and passive effects to set CPU and PG usage without stacking penalities.
-            if ((itr->first == effectOnline) or (isRig()) or (isSubSystem()) or (itr->first == effectDamageControl))
-                m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
-            else
-                m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+            m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
             ++cur;
             targetIDs.clear();
         }
@@ -120,6 +116,7 @@ void GenericModule::Offline()
 
     m_ModuleState = MOD_DEACTIVATING;
     EVECalculationType ecType = CALC_NONE;
+    bool stacking = false;
     typeTargetGroupIDlist targetIDs;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
     std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Effects->GetOnlineEffectsBegin();
@@ -138,17 +135,14 @@ void GenericModule::Offline()
             }
             // vector<uint32> of targetgroups (or targetCategorys if id < 50)
             /* this isnt right yet....targetIDsList is vector, but i need size for it to iterate */
+            stacking = itr->second->GetStackingPenalty(cur);
             targetIDs = itr->second->GetTargetIDList(cur);
             targetAttrID = itr->second->GetTargetAttributeID(cur);
             sourceAttrID = itr->second->GetSourceAttributeID(cur);
             ecType = itr->second->GetReverseCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
-            // check for online and passive effects to set CPU and PG usage without stacking penalities.
-            if ((itr->first == effectOnline) or (isRig()) or (isSubSystem()) or (itr->first == effectDamageControl))
-                m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
-            else
-                m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+            m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
             ++cur;
             targetIDs.clear();
         }
@@ -156,22 +150,5 @@ void GenericModule::Offline()
 
     m_ModuleState = MOD_OFFLINE;
     m_Item->PutOffline();
-}
-
-double GenericModule::GetEffectiveness(uint16 attrib)
-{
-    std::map<uint16, double>::iterator itr = m_attribStacking.find(attrib);
-    if (itr != m_attribStacking.end())
-        return itr->second;
-    return 0.0;
-}
-
-void GenericModule::SetEffectiveness(uint16 attrib, double effectiveness)
-{
-    std::map<uint16, double>::iterator itr = m_attribStacking.find(attrib);
-    if (itr != m_attribStacking.end())
-        itr->second = effectiveness;
-    else
-        m_attribStacking.emplace(attrib, effectiveness);
 }
 

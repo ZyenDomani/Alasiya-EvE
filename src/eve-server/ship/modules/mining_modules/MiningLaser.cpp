@@ -58,36 +58,36 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
     MINING__DEBUG=1
     MINING__TRACE=1
 */
-void MiningLaser::Activate(SystemEntity * targetEntity)
+void MiningLaser::Activate(SystemEntity* pSE)
 {
 	// Test if respective moduleID's and moduleGroups are activated on valid target group/category.
 	// Regular Miners, Deep Core Miners, Ice Harvesters and Gas Havresters are having their target groups set strictly
     if (((m_Item->typeID() == 17482 or m_Item->typeID() == 28754 or m_Item->typeID() == 17912 or m_Item->groupID() == 54)
-            and (targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Arkonor or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Bistot or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Crokite or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Dark_Ochre or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Hedbergite or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Hemorphite or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Jaspet or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Kernite or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Plagioclase or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Pyroxeres or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Scordite or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Spodumain or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Veldspar or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Gneiss or
-                targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Omber)
+            and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Arkonor or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Bistot or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Crokite or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Dark_Ochre or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Hedbergite or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Hemorphite or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Jaspet or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Kernite or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Plagioclase or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Pyroxeres or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Scordite or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Spodumain or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Veldspar or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Gneiss or
+                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Omber)
         ) or ((m_Item->typeID() == 12108 or m_Item->typeID() == 18068 or m_Item->typeID() == 24305 or m_Item->typeID() == 28748)
-    	    and (targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit)
+    	    and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit)
         ) or ((m_Item->typeID() == 16278 or m_Item->typeID() == 22229 or m_Item->typeID() == 28752)
-            and (targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)
+            and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Ice)
         ) or ((m_Item->groupID() == 737)
-            and (targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud))
+            and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud))
         )
     {
-        m_targetEntity = targetEntity;
-        m_targetID = targetEntity->GetID();
+        m_targetEntity = pSE;
+        m_targetID = pSE->GetID();
 
         m_IsInitialCycle = true;
         // Activate active processing component timer:
@@ -97,29 +97,16 @@ void MiningLaser::Activate(SystemEntity * targetEntity)
         //# _ShowCycle();
         _SetCapNeed();
     } else {
-        _log(MINING__WARNING, "Activate() - ERROR: Invalid target!");
-        throw PyException( MakeCustomError( "ERROR: Invalid target" ) );
+        _log(MINING__WARNING, "Activate() - Invalid target");
+        if (m_Ship->HasPilot())
+            if (m_Ship->GetPilot()->CanThrow())
+                throw PyException( MakeCustomError( "Invalid Target - Ref: ServerError 15628" ) );
     }
 }
 
 void MiningLaser::Deactivate()
 {
-    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_OFFLINE)) return;
-
-    double timeLeft = (m_cycleStartTime + (_GetDuration() / 1000)) - GetTimeMSeconds();
-    double fraction = 1 - (timeLeft / (_GetDuration() / 1000));
-    _log(MINING__DEBUG, "Deactivate() - timeLeft:%.3f, fraction:%.3f, startTime:%.3f, duration:%.4f", timeLeft, fraction, m_cycleStartTime, _GetDuration());
-    if (fraction < 1)
-        StopCycle(true);
-    else {
-        while (fraction > 2)
-            fraction -= 1;
-        if (fraction >= 1.0001)	// Very hacky, but seems to work so far
-            StopCycle(true);
-        return;
-    }
-
-    m_AMPC->DeactivateCycle();
+    ActiveModule::AbortCycle();
 }
 
 double MiningLaser::DoCycle() {
@@ -153,82 +140,6 @@ double MiningLaser::DoCycle() {
     return _GetDuration();
 }
 
-void MiningLaser::StopCycle(bool abort)
-{
-    if (m_ModuleState != MOD_ACTIVATED) return;
-
-    m_ModuleState = MOD_DEACTIVATING;
-    double timeLeft = 2000;
-	if (!abort)
-        timeLeft = GetTimeMSeconds() - m_cycleStartTime;
-
-	if (abort) {
-		if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)
-			_ProcessIceCycle(abort);
-		else if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)
-			_ProcessCloudCycle(abort);
-		else
-			_ProcessOreCycle(abort);
-	}
-
-	_log(MINING__DEBUG, "StopCycle() - abort:%s, timeLeft:%.3f", (abort?"true":"false"), timeLeft);
-
-	uint32 chargeTypeID = 0;
-    if (m_chargeLoaded)
-        if (m_chargeRef)
-            chargeTypeID = m_chargeRef->typeID();
-
-    uint32 effectID = effectMiningLaser;
-    std::string effectsString = "effects.Mining";
-    if (m_Item->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester) {
-        effectID = effectMiningClouds;
-        effectsString = "effects.CloudMining";
-    }
-
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
-        m_targetID,
-        chargeTypeID,
-        effectsString,
-        0,
-        0,
-        0,
-        timeLeft,
-        0
-    );
-
-	// Create Destiny Updates:
-	GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
-        go.chargeTypeID = chargeTypeID;
-    GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = go.shipID;
-        ge.targetID = m_targetID;
-        ge.other = go.Encode();
-        ge.area = new PyList;
-        ge.effectID = effectID;
-    Notify_OnGodmaShipEffect shipEff;
-        shipEff.itemID = ge.selfID;
-        shipEff.effectID = ge.effectID;
-        shipEff.timeNow = Win32TimeNow();
-        shipEff.start = 0;
-        shipEff.active = 0;
-        shipEff.environment = ge.Encode();
-        shipEff.startTime = (shipEff.timeNow + (timeLeft * Win32Time_Second));
-        shipEff.duration = timeLeft;
-        shipEff.repeat = 0;
-        shipEff.error = new PyNone;
-    std::vector<PyTuple*> events;
-        events.push_back(shipEff.Encode());
-    std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
-}
-
 /** @todo rework this */
 void MiningLaser::_ProcessOreCycle(bool partial)
 {
@@ -250,9 +161,11 @@ void MiningLaser::_ProcessOreCycle(bool partial)
 
     //FIXME - For now, aborted cycle returns the ore volume of 1 full cycle. Most likely timeLeft returns 0 here. (but shouldn't)
     if (partial) {
-        double timeLeft = (m_cycleStartTime + (_GetDuration() / 1000)) - GetTimeMSeconds();
-        double fraction = (1 - (timeLeft / (_GetDuration() / 1000)));
-        if (fraction < 1){
+        double timeLeft = GetTimeMSeconds() - (m_cycleStartTime + (_GetDuration() / 1000));
+        double fraction = 1 - (timeLeft / (_GetDuration() / 1000));
+        _log(MINING__DEBUG, "_ProcessOreCycle(partial=true) - timeLeft:%.3f(%u), fraction:%.3f, startTime:%.3f, duration:%.4f", \
+            timeLeft, m_AMPC->GetRemainingCycleTimeMS(), fraction, m_cycleStartTime, _GetDuration());
+        if (fraction < 1) {
         	oreVolumeToPull *= fraction;
         } else {
         	while (fraction > 2)
@@ -279,15 +192,15 @@ void MiningLaser::_ProcessOreCycle(bool partial)
         oreVolumeToPull = roidQuantity;
     double remainingCargoVolume = m_Ship->GetRemainingVolumeByFlag(flagCargoHold);
     double oreAmount = oreVolumeToPull /oreVolume;
-    _log(MINING__TRACE, "Processing the ore: oreVolumeToPull:%.3f, roidVolume:%.3f, remainingCargoVolume:%.3f, oreAmount:%.3f", \
+    _log(MINING__TRACE, "Processing the ore: oreVolumeToPull:%.1f, roidQuantity:%.1f, remainingCargoVolume:%.1f, oreAmount:%.1f", \
             oreVolumeToPull, roidQuantity, remainingCargoVolume, oreAmount);
 
     oreVolumeToPull = oreVolume;
     if (remainingCargoVolume < oreVolumeToPull) {
         oreAmount = remainingCargoVolume /oreVolume;
+        oreVolumeToPull = remainingCargoVolume;
         // Not enough cargo space, so module should deactivate and not pull anymore ore from the asteroid
-        m_ModuleState = MOD_DEACTIVATING;
-        m_AMPC->DeactivateCycle();
+        Deactivate();
     }
 
     if (oreAmount < 1)
@@ -308,16 +221,18 @@ void MiningLaser::_ProcessOreCycle(bool partial)
         return;
     }
     /** @todo change these to new format and stack items after addition */
-    m_Ship->AddItem(flagCargoHold, ore);
+    if (!m_Ship->AddItem(flagCargoHold, ore))
+        return;
+
     roidQuantity -= oreVolumeToPull;
-    asteroidRef->SetAttribute(AttrQuantity, roidQuantity);
-    // need to update ship hold after adding ore...
+    _log(MINING__TRACE, "new roidQuantity:%.3f", roidQuantity);
 
     if (!roidQuantity) {
         Deactivate();
         m_targetEntity->SystemMgr()->RemoveEntity(m_targetEntity);
         m_targetEntity->GetSelf()->Delete();
-    }
+    } else
+        asteroidRef->SetAttribute(AttrQuantity, roidQuantity);
 }
 
 void MiningLaser::_ProcessCloudCycle(bool partial)
@@ -355,7 +270,7 @@ void MiningLaser::_ShowCycle()
         1,
         1,
         _GetDuration(),
-        1
+        m_repeat
     );
 
     // Create Destiny Updates:
@@ -380,7 +295,80 @@ void MiningLaser::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1000;
+        shipEff.repeat = m_repeat;
+        shipEff.error = new PyNone;
+    std::vector<PyTuple*> events;
+        events.push_back(shipEff.Encode());
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+}
+
+void MiningLaser::StopCycle(bool abort)
+{
+    double timeLeft = 2000;
+    if (!abort)
+        timeLeft = GetTimeMSeconds() - m_cycleStartTime;
+
+    _log(MINING__DEBUG, "StopCycle() - abort:%s, timeLeft:%.3f", (abort?"true":"false"), timeLeft);
+
+    if (abort) {
+        if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)
+            _ProcessIceCycle(abort);
+        else if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)
+            _ProcessCloudCycle(abort);
+        else
+            _ProcessOreCycle(abort);
+    }
+
+    uint32 chargeTypeID = 0;
+    if (m_chargeLoaded)
+        if (m_chargeRef)
+            chargeTypeID = m_chargeRef->typeID();
+
+    uint32 effectID = effectMiningLaser;
+    std::string effectsString = "effects.Mining";
+    if (m_Item->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester) {
+        effectID = effectMiningClouds;
+        effectsString = "effects.CloudMining";
+    }
+
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
+        m_Ship,
+        m_Item->itemID(),
+        m_Item->typeID(),
+        m_targetID,
+        chargeTypeID,
+        effectsString,
+        false,
+        false,
+        false,
+        timeLeft,
+        0
+    );
+
+    // Create Destiny Updates:
+    GodmaOther go;
+        go.shipID = m_Ship->itemID();
+        go.slotID = m_Item->flag();
+        go.chargeTypeID = chargeTypeID;
+    GodmaEnvironment ge;
+        ge.selfID = m_Item->itemID();
+        ge.charID = m_Ship->ownerID();
+        ge.shipID = go.shipID;
+        ge.targetID = m_targetID;
+        ge.other = go.Encode();
+        ge.area = new PyList;
+        ge.effectID = effectID;
+    Notify_OnGodmaShipEffect shipEff;
+        shipEff.itemID = ge.selfID;
+        shipEff.effectID = ge.effectID;
+        shipEff.timeNow = Win32TimeNow();
+        shipEff.start = 0;
+        shipEff.active = 0;
+        shipEff.environment = ge.Encode();
+        shipEff.startTime = shipEff.timeNow;
+        shipEff.duration = timeLeft;
+        shipEff.repeat = 0;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());

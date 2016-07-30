@@ -35,90 +35,54 @@ ModifyShipAttributesComponent::ModifyShipAttributesComponent(GenericModule* mod,
 {
 }
 
-// set attributes that are not stackable here...calibration, PG, CPU, etc.
-void ModifyShipAttributesComponent::ModifyNonStackingShipAttributes(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type) {
-    EvilNumber newVal = CalculateNewAttributeValue(m_Ship->GetAttribute(targetAttrID), m_Mod->GetAttribute(sourceAttrID), type);
-    if (!m_Ship->SetAttribute(targetAttrID, newVal))
-        sLog.Error("MSAC::SetOnlineAttributes()","Failed to set attribute %u to %f on ship %u", targetAttrID, newVal.get_float(), m_Ship->itemID());
+void ModifyShipAttributesComponent::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking) {
+    _modifyShipAttributes(m_Ship, targetAttrID, sourceAttrID, type, stacking);
 }
 
-void ModifyShipAttributesComponent::ModifyShipAttribute(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type) {
-    _modifyShipAttributes(m_Ship, targetAttrID, sourceAttrID, type);
-}
-
-void ModifyShipAttributesComponent::ModifyTargetShipAttribute(uint32 targetItemID, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type ) {
+void ModifyShipAttributesComponent::ModifyTargetShipAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking) {
     ShipItemRef target = m_Ship->GetItemFactory()->GetShip(targetItemID);
     if (target)
-        _modifyShipAttributes(target, targetAttrID, sourceAttrID, type);
-    else
-        sLog.Error("MSAC","Failed to find target ship %u", targetItemID);
+        _modifyShipAttributes(target, targetAttrID, sourceAttrID, type, stacking);
+    else {
+        _log(SHIP__ERROR, "MSAC::ModifyTargetShipAttribute() - %s(%u): Failed to find target ship %u", \
+                m_Ship->itemName().c_str(), m_Ship->itemID(), targetItemID);
+        if (m_Ship->HasPilot())
+            m_Ship->GetPilot()->SendErrorMsg("Internal Server Error - Cannot find target.  Ref: ServerError 15623");
+    }
 }
 
 /* rewrote attrib calculations and implemented true stacking penality, with checks for exceptions.  -allan 13April16  */
-void ModifyShipAttributesComponent::_modifyShipAttributes(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type)
+void ModifyShipAttributesComponent::_modifyShipAttributes(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking)
 {
-    EvilNumber newVal = _calculateNewValue(shipRef, targetAttrID, sourceAttrID, type, m_Mod);
+    EvilNumber newVal = _calculateNewValue(shipRef, targetAttrID, sourceAttrID, type, m_Mod, stacking);
     SetAttribute(shipRef, targetAttrID, newVal);
 }
 
-EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, GenericModule* mod)
+EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, GenericModule* mod, bool stacking)
 {
-    uint8 stackSize = 1;   // default.  changed later if necessary
-    double effectiveness = 1;   // default.  changed later if necessary
     EvilNumber modVal = mod->GetAttribute(sourceAttrID), startVal = shipRef->GetAttribute(targetAttrID);
+
+    double effectiveness = 1;
     /* check for attribs that are NOT penalized here, and bypass stacking method. */
-    /* note:  DCU, rigs and subsystems do not use this method */
-    /** @todo use module effect "stackingPenaltyApplied" to check here, instead of this switch hack */
-    if ((targetAttrID != AttrWarpFactor) or (sourceAttrID != AttrCargoCapacityMultiplier)
+    if ((stacking) or (targetAttrID != AttrWarpFactor) or (sourceAttrID != AttrCargoCapacityMultiplier)
         or (targetAttrID != AttrMiningAmount) or (targetAttrID != AttrCpuOutput)
         or (targetAttrID != AttrPowerOutput) or (targetAttrID != AttrRechargeRate)
         or (targetAttrID != AttrCapacitorCapacity) or (targetAttrID != AttrHP)
         or (targetAttrID != AttrShieldCapacity) or (targetAttrID != AttrArmorHP)
         or (targetAttrID != AttrAccessDifficulty)
-        or (targetAttrID != AttrDuration)   // weapons use attrSpeed, which IS penalized.
-    ) {
-        std::map<uint16, uint8>::iterator itr = m_attribMap.find(targetAttrID);
-        if (itr != m_attribMap.end()) {
-            /** @todo   verify these module states  -enable/code passive, gang, fleet and deactivating states*/
-            if (mod->GetModuleState() == MOD_ONLINE) {
-                stackSize = ++itr->second;
-            } else if ((mod->GetModuleState() == MOD_OFFLINE)
-                        or (mod->GetModuleState() == MOD_DEACTIVATING))
-                /** @todo  implement the difference between MOD_OFFLINE (not enabled) and MOD_DEACTIVATING (was online/active, told to shutdown) */
-            {
-                effectiveness = itr->second;
-                if (itr->second == 1)
-                    m_attribMap.erase(itr);
-                else
-                    stackSize = --itr->second;
-            } else {
-                ; // make error here for invalid module state?
-            }
-        } else
-            m_attribMap.emplace(targetAttrID, 1);
+        or (targetAttrID != AttrDuration)) {  // weapons use attrSpeed, which IS penalized.
+            effectiveness = m_Ship->GetEffectiveness(targetAttrID, mod->GetModuleState());
     }
 
-    if (mod->GetModuleState() == MOD_ONLINE) { // set stacking penality here for reference when going offline (in above check).
-        effectiveness = exp(-pow(((stackSize - 1)/2.67),2));  //stacking calculation fixed  -allan  20Dec15
-        mod->SetEffectiveness(targetAttrID, effectiveness);
-    } else if (mod->GetModuleState() == MOD_OFFLINE) {
-        ; // not sure what to do here yet...maybe nothing, as above 'find' should get stacking penality saved when module went online
-    }
-    if (effectiveness <= 0) {   /* this should never happen */
-        codelog(SHIP__MODULE_ERROR, "MSAC::_calculateNewValue() -  effectiveness <= 0");
-        //mod->GetShipRef()->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 25610");
-    }
     modVal *= effectiveness;
     EvilNumber newVal = CalculateNewAttributeValue(startVal, modVal, type);
-    _log(SHIP__MODULE_TRACE, "MSAC::_calculateNewValue() -  origVal:%f, Mod:%f, newVal:%f, stackSize:%u, effective:%f, type:%i", \
-                startVal.get_float(), modVal.get_float(), newVal.get_float(), stackSize, effectiveness, (int)type);
-
+    _log(SHIP__MODULE_TRACE, "MSAC::_calculateNewValue() -  origVal:%f, Mod:%f, newVal:%f, effective:%f, type:%i", \
+                startVal.get_float(), modVal.get_float(), newVal.get_float(), effectiveness, (int)type);
     return newVal;
 }
 
-
 // this method will check resist values for fuzzy logic and correct if needed.
-void ModifyShipAttributesComponent::SetAttribute(ShipItemRef shipRef, uint32 targetAttrID, EvilNumber newVal)
+void ModifyShipAttributesComponent::SetAttribute(ShipItemRef shipRef, uint16 targetAttrID, EvilNumber newVal)
 {
     // basic check for ship resistance attrubutes (fuzzy logic range check)
     if ((targetAttrID >= AttrKineticDamageResonance) and (targetAttrID <= AttrExplosiveDamageResonance)
@@ -133,6 +97,4 @@ void ModifyShipAttributesComponent::SetAttribute(ShipItemRef shipRef, uint32 tar
     if (!shipRef->SetAttribute(targetAttrID, newVal))
         sLog.Error("MSAC::SetOnlineAttributes()","Failed to set attribute %u to %f on ship %u", targetAttrID, newVal, m_Ship->itemID());
 }
-
-
 

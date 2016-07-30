@@ -267,7 +267,7 @@ m_pItem(pItem)
 {
     m_defaultEffect = nullptr;
 
-    m_hiPower = m_medPower = m_loPower = m_rigSlot = m_subSystem = false;
+    m_hiPower = m_medPower = m_loPower = m_rigSlot = m_subSystem = m_warpSafe = false;
 
     m_GangEffects.clear();
     m_FleetEffects.clear();
@@ -372,7 +372,7 @@ void ModuleEffects::_populate()
 
                     _log(SHIP__MODULE_DEBUG, "ModuleEffects::_populate() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
 
-                    // verify this effect is for current module's groupID (avoid previous clusterfuck)
+                    // verify this effect is for current module's groupID (avoid previous clusterfuck...well, one of the many.)
                     //  or check for "all groups"
                     if ((testID != 0) and (groupID != testID))
                         continue;

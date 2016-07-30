@@ -116,6 +116,7 @@ void StructureItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) co
     AttrSpecialAmmoHoldCapacity = 1573,
     */
 
+    /** @todo  check for throwable status here */
     switch (flag) {
         case flagCargoHold: {
             if( capacityUsed > GetAttribute(AttrCapacity) )

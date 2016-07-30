@@ -41,7 +41,12 @@ PyRep *FactoryDB::GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) 
     }
 
     return DBResultToRowset(res);
+
+    // should be indexed rowset, but may have to build the packet here, as we are missing a lot of info in this return.
+    //return DBResultToIndexRowset(res, "activity");
     /*
+     *      bomByActivity = sm.RemoteSvc('factory').GetMaterialsForTypeWithActivity(typeID)
+     *      for activity in activities:
                 indexedExtras = copy.deepcopy(bomByActivity[activity].extras).Index('requiredTypeID')
                 for skill in bomByActivity[activity].skills:
                     propertyInfo = cfg.invtypes.Get(skill.requiredTypeID)

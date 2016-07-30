@@ -36,11 +36,11 @@ public:
     MiningLaser( InventoryItemRef item, ShipItemRef ship );
     virtual ~MiningLaser() { }
 
-    // GenericModule Methods:
-	void Activate(SystemEntity * targetEntity);
-	void Deactivate();
-    double DoCycle();
-    void StopCycle(bool abort=false);
+    /* ActiveModule overrides */
+    virtual void Activate(SystemEntity * pSE);
+    virtual void Deactivate();
+    virtual double DoCycle();
+    virtual void StopCycle(bool abort=false);
 
 protected:
 	void _ProcessOreCycle(bool partial = false);

@@ -1271,30 +1271,22 @@ void DestinyManager::EntityRemoved(SystemEntity *who) {
 
 bool DestinyManager::_IsTargetInvalid()
 {
-    if ( !mySE->SystemMgr()->GetSE( m_targetEntity.first ) ) {
+    if (!mySE->SystemMgr()->GetSE(m_targetEntity.first)) {
         // Our target was removed
         Stop();
         return true;
     }
     if (m_targetEntity.second->HasPilot()) {
-        // our target is a player
-        DynamicSystemEntity* targetClient = static_cast<DynamicSystemEntity *>(m_targetEntity.second);
-        if ((!targetClient->GetPilot()->IsInSpace())   // Our target docked, so STOP
-            or (m_targetEntity.first != targetClient->GetPilot()->GetShipID()) // The player is no longer in the ship we were targeting
-            or (targetClient->DestinyMgr()->IsWarping())) {  // The target is warping
-                mySE->TargetMgr()->ClearTarget(targetClient);
-                Stop();
-                return true;
-            }
-    } else if (m_targetEntity.second->IsNPCSE()) {
-        // our target is a npc
-        NPC* targetClient = m_targetEntity.second->GetNPCSE();
-        if ((m_targetEntity.first != targetClient->GetID()) // The npc is no longer in the ship we were targeting
-            or (targetClient->DestinyMgr()->IsWarping())) { // The target is warping
-                mySE->TargetMgr()->ClearTarget(targetClient);
-                Stop();
-                return true;
-            }
+        if (m_targetEntity.second->GetPilot()->IsDocked()) {  // Our target docked, so STOP
+            mySE->TargetMgr()->ClearTarget(m_targetEntity.second);
+            Stop();
+            return true;
+        }
+    }
+    if (m_targetEntity.second->DestinyMgr()->IsWarping()) { // The target is warping
+        mySE->TargetMgr()->ClearTarget(m_targetEntity.second);
+        Stop();
+        return true;
     }
     return false;
 }

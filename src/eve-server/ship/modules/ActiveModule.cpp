@@ -89,9 +89,9 @@ void ActiveModule::Process()
     }
 }
 
-void ActiveModule::Activate(SystemEntity* targetEntity)
+void ActiveModule::Activate(SystemEntity* pSE)
 {
-    m_targetEntity = targetEntity;
+    m_targetEntity = pSE;
     m_AMPC->ActivateCycle();
 
     //DoEffect(true);
@@ -105,12 +105,6 @@ void ActiveModule::Deactivate()
     m_AMPC->StopCycle();
 
     //DoEffect(false);
-}
-
-void ActiveModule::AbortCycle()
-{
-    m_AMPC->AbortCycle();
-    GenericModule::AbortCycle();     // nothing here yet....maybe later.
 }
 
     /** @todo  Overload and DeOverload will need to check for running module,
@@ -171,6 +165,11 @@ double ActiveModule::DoCycle()
     return 0;
 }
 
+void ActiveModule::AbortCycle()
+{
+    m_AMPC->AbortCycle();
+}
+
 bool ActiveModule::RequiresTarget()
 {
     if (m_Effects->HasDefaultEffect())
@@ -227,7 +226,7 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
         shipEff.environment = ge.Encode();
         shipEff.startTime = (active ? shipEff.timeNow : (shipEff.timeNow + (timeLeft * Win32Time_Second)));
         shipEff.duration = (active ? _GetDuration() : timeLeft);
-        shipEff.repeat = 1000;
+        shipEff.repeat = m_repeat;
         shipEff.error = new PyNone; /* look into setting this ... only used for salvaging? */
     std::vector<PyTuple*> events;
     events.push_back(shipEff.Encode());

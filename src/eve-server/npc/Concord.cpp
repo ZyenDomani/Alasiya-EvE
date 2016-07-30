@@ -504,29 +504,29 @@ void ConcordAI::_EnterSignaling(SystemEntity* pTarget) {
     m_state = Signaling;
 }
 
-void ConcordAI::_CheckDistance(SystemEntity* pTarget)
-{//rewrote distance checks for correct logic this time
-    DynamicSystemEntity* pDSE = static_cast<DynamicSystemEntity *>(pTarget);
-    GVector usToThem(m_npc->GetPosition(), pDSE->GetPosition());
-    //double dist = m_npc->GetPosition().distance(pDSE->GetPosition());     // this throws occasional errors (segfault)
+void ConcordAI::_CheckDistance(SystemEntity* pSE)
+{
+    //rewrote distance checks for correct logic this time
+    GVector usToThem(m_npc->GetPosition(), pSE->GetPosition());
+    //double dist = m_npc->GetPosition().distance(pSE->GetPosition());     // this throws occasional errors (segfault)
     double dist = usToThem.length();
     if (dist > m_entityAttackRange) {
-        //_log(CONCORD__AI_TRACE, "%s(%u): _CheckDistance: %s(%u) is too far away (%u).  Return to Idle.",
-             m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID(), dist);
+        _log(CONCORD__AI_TRACE, "%s(%u): _CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
+             m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist);
         if (m_state != Idle) {
             // target is no longer in npc's "sight range".  unlock target and return to idle.
             //   should we do anything else here?  search for another target?  wander around?
-            m_npc->TargetMgr()->ClearTarget(pTarget);
+            m_npc->TargetMgr()->ClearTarget(pSE);
             if (m_npc->TargetMgr()->HasNoTargets())
                 _EnterIdle();
         }
         return;
     } else if (dist < m_entityFlyRange) { //within weapon max (and within falloff)
-        _EnterEngaged(pTarget); //engage and orbit
+        _EnterEngaged(pSE); //engage and orbit
     } else if (dist < m_entityChaseRange) { //within follow
-        _EnterFollowing(pTarget);
+        _EnterFollowing(pSE);
     } else if (dist < m_entityAttackRange) { //within sight
-        _EnterChasing(pTarget);
+        _EnterChasing(pSE);
         return;
     }
 
@@ -538,7 +538,7 @@ void ConcordAI::_CheckDistance(SystemEntity* pTarget)
     if (!m_mainAttackTimer.Enabled())
         m_mainAttackTimer.Start(m_attackSpeed);
 
-    Attack(pTarget);
+    Attack(pSE);
 }
 
 void ConcordAI::ClearTargets() {
@@ -625,36 +625,34 @@ void ConcordAI::TargetLost(SystemEntity* pTarget) {
     }
 }
 
-void ConcordAI::Attack(SystemEntity* pTarget)
+void ConcordAI::Attack(SystemEntity* pSE)
 {
     if (m_mainAttackTimer.Check()) {
-        if (!pTarget) return;
+        if (!pSE) return;
         // Check to see if the target still in the bubble (Client warped out)
-        if (!m_npc->SysBubble()->InBubble(pTarget->GetPosition())) {
+        if (!m_npc->SysBubble()->InBubble(pSE->GetPosition())) {
             _log(CONCORD__AI_TRACE, "%s(%u): Target %s(%u) no longer in bubble.  Clear target and move on",
-                 m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-            m_npc->TargetMgr()->ClearTarget(pTarget);
+                 m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
+            m_npc->TargetMgr()->ClearTarget(pSE);
             return;
         }
-        // only check i can think of right now to verify target is client, npc, or drone
-        DynamicSystemEntity* pDSE = static_cast<DynamicSystemEntity *>(pTarget);
-        DestinyManager* pDestiny = pDSE->DestinyMgr();
+        DestinyManager* pDestiny = pSE->DestinyMgr();
         if (!pDestiny) {
             _log(CONCORD__AI_TRACE, "%s(%u): Target %s(%u) has no destiny manager.  Clear target and move on",
-                 m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-            m_npc->TargetMgr()->ClearTarget(pTarget);
+                 m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
+            m_npc->TargetMgr()->ClearTarget(pSE);
             return;
         }
         // Check to see if the target is not cloaked:
         if (pDestiny->IsCloaked()) {
             _log(CONCORD__AI_TRACE, "%s(%u): Target %s(%u) is cloaked.  Clear target and move on",
-                 m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-            m_npc->TargetMgr()->ClearTarget(pTarget);
+                 m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
+            m_npc->TargetMgr()->ClearTarget(pSE);
             return;
         }
 
         if (m_npc->TargetMgr()->CanAttack())
-            AttackTarget(pTarget);
+            AttackTarget(pSE);
     }
 }
 

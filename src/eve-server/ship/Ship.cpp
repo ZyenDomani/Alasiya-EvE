@@ -157,7 +157,7 @@ bool ShipItem::_Load()
 
     // reset ship default capacity due to errors seen while testing.
     SetAttribute(AttrCapacity, type().capacity(), false);
-    
+
     /** @todo  apply ship and skill bonuses to hold capacities here */
 
 	// fill cargo holds data here:
@@ -359,38 +359,39 @@ double ShipItem::GetRemainingVolumeByFlag(EVEItemFlags flag) const {
 
 bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
 {
-    if (!m_pilot and (flag==flagCargoHold))
+    /** @todo this will need more work to correctly check hold capacity for offline ships */
+    if (!m_pilot)
         return true;
 
     CharacterRef character = m_pilot->GetChar();
 
     if (flag == flagDroneBay) {
         if ( item->categoryID() != EVEDB::invCategories::Drone ) {
-            throw PyException( MakeCustomError( "Item Cannot be stowed in the Drone Bay" ));
+            m_pilot->SendErrorMsg("Item Cannot be stowed in the Drone Bay");
             return false;
         }
     } else if (flag == flagShipHangar) {
         if (GetAttribute(AttrHasShipMaintenanceBay) != 0) {
-            throw PyException( MakeCustomError( "%s has no ship maintenance bay.", item->itemName().c_str()) );
+            m_pilot->SendErrorMsg("%s has no ship maintenance bay.", item->itemName().c_str());
             return false;
         }
         if (item->categoryID() != EVEDB::invCategories::Ship) {
-            throw PyException( MakeCustomError( "Only ships may be placed into ship maintenance bay." ));
+            m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
             return false;
         }
     } else if (flag == flagHangar) {
         if (GetAttribute(AttrHasCorporateHangars) != 0) {
-            throw PyException( MakeCustomError( "%s has no corporate hangars.", item->itemName().c_str()) );
+            m_pilot->SendErrorMsg("%s has no corporate hangars.", item->itemName().c_str());
             return false;
         }
     } else if ((flag >= flagLowSlot0) && (flag <= flagHiSlot7)) {
         if (m_pilot->IsClient())
             if (!Skill::FitModuleSkillCheck(item, character)) {
-                throw PyException( MakeCustomError( "You do not have the required skills to fit this \n%s", item->itemName().c_str()) );
+                m_pilot->SendErrorMsg("You do not have the required skills to fit this \n%s", item->itemName().c_str());
                 return false;
             }
             if (!ValidateItemSpecifics(item)) {
-                throw PyException( MakeCustomError( "Your ship cannot equip this module" ));
+                m_pilot->SendErrorMsg("Your ship cannot equip this module");
                 return false;
             }
             if (item->categoryID() == EVEDB::invCategories::Charge) {
@@ -401,7 +402,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
                                    item->GetAttribute(AttrChargeSize).get_int(), item->itemName().c_str(),
                                    module->GetAttribute(AttrChargeSize).get_int(), module->itemName().c_str()
                         );
-                        throw PyException( MakeCustomError( "The charge is not the correct size for this module." ));
+                        m_pilot->SendErrorMsg("The charge is not the correct size for this module.");
                         return false;
                     }
                     if (module->GetAttribute(AttrChargeGroup1) != item->groupID() &&
@@ -409,46 +410,47 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
                         module->GetAttribute(AttrChargeGroup3) != item->groupID() &&
                         module->GetAttribute(AttrChargeGroup4) != item->groupID() &&
                         module->GetAttribute(AttrChargeGroup5) != item->groupID()) {
-                        throw PyException( MakeCustomError( "Incorrect charge type for this module."));
+                        m_pilot->SendErrorMsg("Incorrect charge type for this module.");
                     return false;
                         }
                         // NOTE: Module Manager will check for actual room to load charges and make stack splits, or reject loading altogether
                 } else {
-                    throw PyException( MakeCustomError( "Module at flag '%u' does not exist!", flag ));
+                    m_pilot->SendErrorMsg("Module at flag '%u' does not exist!", flag);
                     return false;
                 }
             } else {
                 if (m_ModuleManager->IsSlotOccupied(flag)) {
-                    throw PyException( MakeUserError( "SlotAlreadyOccupied" ));
+                    if (m_pilot->CanThrow())
+                        throw PyException( MakeUserError( "SlotAlreadyOccupied" ));
                     return false;
                 }
             }
     } else if ((flag >= flagRigSlot0) && (flag <= flagRigSlot7)) {
         if (m_pilot->IsClient()) {
             if (!Skill::FitModuleSkillCheck(item, character)) {
-                throw PyException( MakeCustomError( "You do not have the required skills to fit this \n%s", item->itemName().c_str()) );
+                m_pilot->SendErrorMsg("You do not have the required skills to fit this \n%s", item->itemName().c_str());
                 return false;
             }
             if (GetAttribute(AttrRigSize) != item->GetAttribute(AttrRigSize)) {
-                throw PyException( MakeCustomError( "Your ship cannot fit this size module" ));
+                m_pilot->SendErrorMsg("Your ship cannot fit this size module");
                 return false;
             }
             if (GetAttribute(AttrUpgradeLoad) + item->GetAttribute(AttrUpgradeCost) > GetAttribute(AttrUpgradeCapacity)) {
-                throw PyException( MakeCustomError( "Your ship cannot handle the extra calibration" ));
+                m_pilot->SendErrorMsg("Your ship cannot handle the extra calibration");
                 return false;
             }
         }
     } else if ((flag >= flagSubSystem0) && (flag <= flagSubSystem7)) {
         if (m_pilot->IsClient())
             if (!Skill::FitModuleSkillCheck(item, character)) {
-                throw PyException( MakeCustomError( "You do not have the required skills to fit this \n%s", item->itemName().c_str()) );
+                m_pilot->SendErrorMsg("You do not have the required skills to fit this \n%s", item->itemName().c_str());
                 return false;
             }
     } else {
         // Handle any other flag, legal or not by virtue of GetRemainingVolumeByFlag() and GetCapacity() that handle supported capacity types:
         // (unsupported or illegal flags report capacity of 0.0, so are automatically rejected)
         if ((GetRemainingVolumeByFlag(flag) < (item->GetAttribute(AttrVolume).get_float() * item->quantity()))) {
-            throw PyException( MakeCustomError( "Not enough cargo space!<br><br>flag = %u", (uint32)flag));
+            m_pilot->SendErrorMsg("Not enough cargo space");
             return false;
         }
     }
@@ -1047,6 +1049,7 @@ void ShipItem::DeactivateAllModules()
 {
     m_ModuleManager->DeactivateAllModules();
 }
+/* End new Module Manager Interface */
 
 void ShipItem::StripFitting()
 {
@@ -1058,7 +1061,44 @@ void ShipItem::StripFitting()
     }
 }
 
-/* End new Module Manager Interface */
+// stacking penality system   -allan   (UD 29Jul16)
+double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
+{
+    uint8 count = 1;
+    std::map<uint16, uint8>::iterator itr = m_stackMap.find(attrib);
+    if (itr != m_stackMap.end()) {
+        /** @todo   verify these module states  -enable/code passive, gang, fleet and deactivating states*/
+        if (state == MOD_ONLINE) {
+            count = ++itr->second;
+            /** @todo  implement the difference between MOD_OFFLINE (not enabled) and MOD_DEACTIVATING (was online/active, told to shutdown) */
+        } else if ((state == MOD_OFFLINE) or (state == MOD_DEACTIVATING)) {
+            count = itr->second;
+            if (itr->second == 1)
+                m_stackMap.erase(itr);
+            else
+                count = --itr->second;
+        } else {
+            codelog(SHIP__MODULE_ERROR, "ShipItem::GetEffectiveness() -  module has invalid state %u", state);
+            if (m_pilot)
+                m_pilot->SendErrorMsg("Internal Server Error - module has invalid state.  Ref: ServerError 15611");
+        }
+    } else {
+        m_stackMap.emplace(attrib, 1);
+    }
+
+    //stacking calculation fixed  -allan  20Dec15
+    double effectiveness = exp(-pow(((count - 1)/2.67),2));
+
+    if (effectiveness <= 0) {   /* this should never happen */
+        codelog(SHIP__MODULE_ERROR, "ShipItem::GetEffectiveness() -  effectiveness <= 0");
+        if (m_pilot)
+            m_pilot->SendErrorMsg("Internal Server Error - module has 0 effectiveness.  Hacking to 1.  Ref: ServerError 15610");
+        effectiveness = 1;
+    }
+
+    return effectiveness;
+}
+
 
 std::string ShipItem::GetShipDNA()
 {

@@ -137,13 +137,17 @@ To summarize: +/-1SHHCC (S=subsystem, HH=header, CC=code number)
  *      A = category (0-server, 1-player, 2-command, 3-destiny, 4-cosmic mgr, 5-market, 6-inventory, 7-service, 8-, 9-other,)
  *      B = system (0-character, 1-location, 2-system, 3-item, 4-, 5-ship, 6-, 7-, 8-, 9-)
  *      C = subsystem (0-create, 1-destroy, 2-move, 3-change, 4-, 5-insurance, 6-modules, 7-pilot, 8-, 9-)
- *      D = type (0-null, 1-calculate, 2-, 3-, 4-, 5-, 6-, 7-, 8-self, 9-target)
- *      E = error (0-undef, 1-not init, 2-oob, 3-, 4-, 5-, 6-, 7-, 8-, 9-not implemented)
+ *      D = type (0-null, 1-calculate, 2-target, 3-, 4-, 5-, 6-, 7-, 8-self, 9-charge)
+ *      E = error (0-undef, 1-not init, 2-oob, 3-not found, 4-, 5-, 6-, 7-, 8-invalid, 9-not implemented)
  *
  *
- * Ref: ServerError 12321. << Client::BoardShip()
- * Ref: ServerError 25610. << MSAC::_calculateNewValue() - effectiveness is 0
- * Ref: ServerError 25620. << MMAC::_calculateNewValue() - effectiveness is 0
+ *   NOTE:  all defs will need to be redefined in code due to updates to defs above
+ *
+ * Ref: ServerError 10781. << Client::BoardShip()
+ * Ref: ServerError 15610. << ShipItem::GetEffectiveness() - effectiveness <= 0
+ * Ref: ServerError 15611. << ShipItem::GetEffectiveness() - module has invalid state
+ * Ref: ServerError 15623. << MSAC::ModifyTargetShipAttribute() - no target
+ * Ref: ServerError 15693. << EnergyTurret::Activate() - Cannot find loaded charge for this module
  * Ref: ServerError 31110. << commandDispatcher::Execute()
  * Ref: ServerError 35412. << DestinyManager::_Orbit() - distance checks oob
  * Ref: ServerError 65282. << ShipItem::ModifyHoldVolumeByFlag() - flag not in map

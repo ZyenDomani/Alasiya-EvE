@@ -35,9 +35,9 @@ public:
     HullRepairer( InventoryItemRef item, ShipItemRef ship );
     virtual ~HullRepairer() { }
 
-    // GenericModule Methods:
-	double DoCycle();
-	void StopCycle(bool abort = false);
+    /* ActiveModule overrides */
+    virtual double DoCycle();
+    virtual void StopCycle(bool abort=false);
 
 protected:
 	void _ProcessCycle() {}

@@ -35,10 +35,10 @@ public:
     Salvager( InventoryItemRef item, ShipItemRef ship );
     virtual ~Salvager() { }
 
-    // GenericModule Methods:
-    void Activate(SystemEntity* targetEntity);
-    double DoCycle();
-    void StopCycle(bool abort=false);
+    /* ActiveModule overrides */
+    virtual void Activate(SystemEntity* pSE);
+    virtual double DoCycle();
+    virtual void StopCycle(bool abort=false);
 
 protected:
 	void _ProcessCycle() {}

@@ -42,8 +42,12 @@ protected:
     Dispatcher *const m_dispatch;
 
     CorporationDB m_db;
-
-    //PyCallable_DECL_CALL()
+    
+    PyCallable_DECL_CALL(GetSuggestedAllianceShortNames);
+    PyCallable_DECL_CALL(CreateAlliance);
+    PyCallable_DECL_CALL(ApplyToJoinAlliance);
+    PyCallable_DECL_CALL(GetAllianceApplications);
+    PyCallable_DECL_CALL(DeleteAllianceApplication);
 
     //overloaded in order to support bound objects:
     virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);

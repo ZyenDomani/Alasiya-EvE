@@ -39,34 +39,37 @@ public:
     ActiveModule(InventoryItemRef item, ShipItemRef ship);
     virtual ~ActiveModule();
 
+    /* class type helpers.  public for anyone to access. */
     virtual bool IsActiveModule() const                     { return true; }
 
+    /* GenericModule overrides */
 	virtual void Process();
     virtual void Load(InventoryItemRef charge);
-    virtual void AbortCycle();
     virtual void Unload();
     virtual void Overload();
+    virtual void AbortCycle();
     virtual void DeOverload();
     virtual void Deactivate();
-    virtual void Activate(SystemEntity* targetEntity);
+    virtual void Activate(SystemEntity* pSE);
+
+    /* GenericModule access function overriders */
+    virtual bool IsLoaded()                                 { return m_chargeLoaded; }
     virtual bool IsOverloaded()                             { return m_overLoaded; }
     virtual InventoryItemRef GetLoadedChargeRef()           { return m_chargeRef; }
 
-    // generic DoCycle() here is for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
-    //  for those modules that perform action on DoCycle(), they will override this call in their class implementation
+    // generic *Cycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
+    //  for modules that perform action on each DoCycle(), they will override this call in their class implementation
     virtual double DoCycle();
     virtual void StopCycle(bool abort=false)                { /* Do nothing here */ }
 
-    // GenericModule access function overriders
-    bool ShipHasCapCharge()                                 { return (_GetCapNeed() <  m_Ship->GetAttribute(AttrCapacitorCharge).get_float()); }
+    /* ActiveModule methods */
     bool RequiresTarget();
+    bool ShipHasCapCharge()                                 { return (_GetCapNeed() <  m_Ship->GetAttribute(AttrCapacitorCharge).get_float()); }
     uint32 GetTargetID()                                    { return m_targetID; }
     SystemEntity* GetTarget()                               { return m_targetEntity; }
 
-    // for modules that have charges
-    bool isLoaded()                                         { return m_chargeLoaded; }
 
-	/* common method for all modules that have a visual effect when active */
+	/* common method for all modules that have a visual effect when active (wip) */
     void DoEffect(bool active=false, std::string effect="");
 
 protected:

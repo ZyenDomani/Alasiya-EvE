@@ -36,10 +36,10 @@ public:
     EnergyTurret( InventoryItemRef item, ShipItemRef ship );
     virtual ~EnergyTurret() { }
 
-    // GenericModule Methods:
-	void Activate(SystemEntity * targetEntity);
-	double DoCycle();
-	void StopCycle();
+    /* ActiveModule overrides */
+    virtual void Activate(SystemEntity* pSE);
+    virtual double DoCycle();
+    virtual void StopCycle(bool abort=false);
 
 protected:
     TurrentFormulas m_formula;

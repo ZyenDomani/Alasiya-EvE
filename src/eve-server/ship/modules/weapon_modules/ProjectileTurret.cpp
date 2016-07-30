@@ -80,15 +80,17 @@ ProjectileTurret::ProjectileTurret( InventoryItemRef item, ShipItemRef shipRef )
     }
 }
 
-void ProjectileTurret::Activate(SystemEntity * targetEntity)
+void ProjectileTurret::Activate(SystemEntity* pSE)
 {
 	if (m_chargeRef) {
-		m_targetEntity = targetEntity;
-		m_targetID = targetEntity->GetID();
+        m_targetEntity = pSE;
+        m_targetID = pSE->GetID();
 		m_AMPC->ActivateCycle();
-	} else {
-		sLog.Error( "ProjectileTurret::Activate()", "ERROR: Cannot find charge that is supposed to be loaded into this module!" );
-		throw PyException( MakeCustomError( "ERROR!  Cannot find charge that is supposed to be loaded into this module!" ) );
+    } else {
+        _log(SHIP__MODULE_WARNING, "ProjectileTurret::Activate() - Cannot find loaded charge for this module");
+        if (m_Ship->HasPilot())
+            if (m_Ship->GetPilot()->CanThrow())
+                throw PyException( MakeCustomError( "Cannot find loaded charge for this module  - Ref: ServerError 15693"));
     }
 }
 

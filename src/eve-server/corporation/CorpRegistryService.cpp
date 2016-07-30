@@ -167,6 +167,11 @@ CorpRegistryService::CorpRegistryService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     //PyCallable_REG_CALL(CorpRegistryService, GetEveOwners)
+    PyCallable_REG_CALL(CorpRegistryService, GetSuggestedAllianceShortNames);
+    PyCallable_REG_CALL(CorpRegistryService, CreateAlliance);
+    PyCallable_REG_CALL(CorpRegistryService, ApplyToJoinAlliance);
+    PyCallable_REG_CALL(CorpRegistryService, GetAllianceApplications);
+    PyCallable_REG_CALL(CorpRegistryService, DeleteAllianceApplication);
 }
 
 CorpRegistryService::~CorpRegistryService() {
@@ -185,6 +190,26 @@ PyBoundObject* CorpRegistryService::_CreateBoundObject( Client* c, const PyRep* 
      */
 
     return new CorpRegistryBound( m_manager, m_db );
+}
+
+PyResult CorpRegistryService::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
+    return nullptr;
+}
+
+PyResult CorpRegistryService::Handle_CreateAlliance(PyCallArgs &call) {
+    return nullptr;
+}
+
+PyResult CorpRegistryService::Handle_ApplyToJoinAlliance(PyCallArgs &call) {
+    return nullptr;
+}
+
+PyResult CorpRegistryService::Handle_GetAllianceApplications(PyCallArgs &call) {
+    return nullptr;
+}
+
+PyResult CorpRegistryService::Handle_DeleteAllianceApplication(PyCallArgs &call) {
+    return nullptr;
 }
 
 

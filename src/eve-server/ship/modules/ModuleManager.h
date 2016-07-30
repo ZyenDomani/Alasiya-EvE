@@ -348,7 +348,7 @@ public:
     void Offline(EVEItemFlags flag);
     void OnlineAll();
     void OfflineAll();
-    void Activate(uint32 itemID, std::string effectName, uint32 targetID, uint32 repeat);
+    void Activate(uint32 itemID, std::string effectName, uint32 targetID, int32 repeat);
     void Deactivate(uint32 itemID, std::string effectName);
     void DeactivateAllModules();
     void Overload(EVEItemFlags flag);

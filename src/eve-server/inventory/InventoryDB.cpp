@@ -1600,6 +1600,8 @@ bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &i
     }
 
     //Only time it should make it this far...
+
+    /** @todo  check for throwable status here */
     throw PyException( MakeCustomError( "There are no available slots" ));
 
     return false;

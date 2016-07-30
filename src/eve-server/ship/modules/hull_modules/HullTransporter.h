@@ -35,9 +35,9 @@ public:
 	HullTransporter( InventoryItemRef item, ShipItemRef ship );
     virtual ~HullTransporter() { }
 
-    // GenericModule Methods:
-	double DoCycle();
-	void StopCycle(bool abort = false);
+    /* ActiveModule overrides */
+    virtual double DoCycle();
+    virtual void StopCycle(bool abort=false);
 
 protected:
 	void _ProcessCycle() {}

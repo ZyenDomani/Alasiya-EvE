@@ -856,7 +856,8 @@ void Client::SpawnNewRookieShip() {
     ShipItemRef i = m_services.item_factory->SpawnShip(idata);
 
     if (!i)
-        throw PyException(MakeCustomError("Unable to generate rookie ship"));
+        if (m_canThrow)
+            throw PyException(MakeCustomError("Unable to generate rookie ship"));
 
     SetShip(i);
 }
@@ -1812,8 +1813,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
             sLog.Error("Client","Unable to find service to handle call to: %s", packet->dest.service.c_str());
             packet->dest.Dump(CLIENT__CALL_DUMP, "    ");
 
-//#pragma message("TODO: throw proper exception to client (exceptions.ServiceNotFound).")
-            throw PyException(new PyNone);
+            throw PyException(MakeUserError("ServiceNotFound"));
         }
     }
 
@@ -1828,7 +1828,9 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     PyCallArgs args(this, req.arg_tuple, req.arg_dict);
 
     //parts of call may be consumed here
+    m_canThrow = true;      // test for throwable.  -allan 29Jul16
     PyResult result = dest->Call(req.method, args);
+    m_canThrow = false;
 
     SendSessionChange();  //send out the session change before the return.
     result.ssResult->Dump(CLIENT__OUT_ALL, "    ");

@@ -474,7 +474,8 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
 
         if (old_flag >= flagRigSlot0 && old_flag <= flagRigSlot7) {
             //  cant remove rigs like this.  send error.
-            throw PyException( MakeUserError("CannotRemoveUpgradeManually"));
+            if (c->CanThrow())
+                throw PyException( MakeUserError("CannotRemoveUpgradeManually"));
             return nullptr;
         }
 

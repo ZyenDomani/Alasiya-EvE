@@ -34,10 +34,10 @@ public:
     Afterburner( InventoryItemRef item, ShipItemRef ship );
     virtual ~Afterburner() { }
 
-    // GenericModule Methods:
-    void Deactivate();
-	void Activate(SystemEntity * targetEntity);
-	void StopCycle(bool abort = false);
+    /* ActiveModule overrides */
+    virtual void Activate(SystemEntity* pSE);
+    virtual void Deactivate();
+    virtual void StopCycle(bool abort=false);
 
 protected:
 	void _ProcessCycle() {}

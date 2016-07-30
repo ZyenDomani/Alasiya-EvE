@@ -36,9 +36,9 @@ public:
 	ArmorTransporter( InventoryItemRef item, ShipItemRef ship );
     virtual ~ArmorTransporter() { }
 
-    // GenericModule Methods:
-	double DoCycle();
-	void StopCycle(bool abort = false);
+    /* ActiveModule overrides */
+    virtual double DoCycle();
+    virtual void StopCycle(bool abort=false);
 
 protected:
     void _ProcessCycle()       { /* Do nothing here */ }

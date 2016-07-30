@@ -33,22 +33,20 @@ Webifier::Webifier( InventoryItemRef item, ShipItemRef ship )
 
 }
 
-void Webifier::Activate(SystemEntity * targetEntity)
-{   // only check i can think of right now to verify target is client, npc, or drone
-    DynamicSystemEntity* pTarget = static_cast<DynamicSystemEntity *>(m_targetEntity);
-    DestinyManager* pDestiny = pTarget->DestinyMgr();
+void Webifier::Activate(SystemEntity* pSE)
+{
+    DestinyManager* pDestiny = m_targetEntity->DestinyMgr();
     if (!pDestiny) return;
 
-    m_targetEntity = targetEntity;
-    m_targetID = targetEntity->GetID();
+    m_targetEntity = pSE;
+    m_targetID = pSE->GetID();
 
 	// Activate active processing component timer:
 	m_AMPC->ActivateCycle();
 	//_ShowCycle();
-    //m_ActiveModuleProc->ProcessActiveCycle();
 
-    double multiplier = ((100 + m_Item->GetAttribute(AttrSpeedFactor).get_float()) /100);
     m_originalSpeed = pDestiny->GetMaxVelocity();
+    double multiplier = ((100 + m_Item->GetAttribute(AttrSpeedFactor).get_float()) /100);
     double newSpeed = m_originalSpeed * multiplier;
     pDestiny->SetMaxVelocity(newSpeed);
     pDestiny->SetSpeedFraction();
@@ -56,13 +54,9 @@ void Webifier::Activate(SystemEntity * targetEntity)
 
 void Webifier::Deactivate()
 {
-    if ((m_ModuleState != MOD_ACTIVATED) || (m_ModuleState == MOD_OFFLINE)) return;
+    ActiveModule::Deactivate();
 
-	m_ModuleState = MOD_DEACTIVATING;
-    m_AMPC->DeactivateCycle();
-
-    DynamicSystemEntity* pTarget = static_cast<DynamicSystemEntity *>(m_targetEntity);
-    DestinyManager* pDestiny = pTarget->DestinyMgr();
+    DestinyManager* pDestiny = m_targetEntity->DestinyMgr();
     pDestiny->SetMaxVelocity(m_originalSpeed);
     pDestiny->SetSpeedFraction();
 }
@@ -195,7 +189,7 @@ void Webifier::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1000;
+        shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());

@@ -391,6 +391,7 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
             args["available"] = new PyFloat(capacity);
             args["volume"] = volume.GetPyObject();
 
+        /** @todo  check for throwable status here */
         throw PyException(MakeUserError("NotEnoughCargoSpace", args));
         return false;
     }

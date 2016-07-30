@@ -36,8 +36,8 @@ public:
     DamageControl( InventoryItemRef item, ShipItemRef ship );
     virtual ~DamageControl() { }
 
-    // GenericModule Methods:
-	void StopCycle(bool abort = false);
+    /* ActiveModule overrides */
+	virtual void StopCycle(bool abort=false);
 
 protected:
     // these should be virtual if used by GenericModule or ActiveModule pointer

@@ -55,7 +55,12 @@ public:
     void SetAttribute(uint32 attrID, EvilNumber val)    { m_Item->SetAttribute(attrID, val); }
     EvilNumber GetAttribute(uint32 attrID)              { return m_Item->GetAttribute(attrID); }
 
+    void SetRepeat(int32 repeat)                        { m_repeat = repeat; }
+
+    ShipItemRef GetShipRef()                            { return m_Ship; }
+
     /* class type helpers.  public for anyone to access. */
+    virtual bool IsLoaded()                             { return false; }
     virtual bool IsGenericModule() const                { return true; }
     virtual bool IsPassiveModule() const                { return false; }
     virtual bool IsActiveModule() const                 { return false; }
@@ -82,11 +87,10 @@ public:
 	ChargeStates GetChargeState()                       { return m_ChargeState; }
 
     /* functions to be handled in derived classes (must override) */
-    virtual bool isLoaded()                             { return false; }
-    virtual void AbortCycle()                                { /* Do nothing here */ }
     virtual void Process()                              { /* Do nothing here */ }
     virtual void Activate(SystemEntity* targetEntity)   { /* Do nothing here */ }
     virtual void Deactivate()                           { /* Do nothing here */ }
+    virtual void AbortCycle()                           { /* Do nothing here */ }
     virtual void Load(InventoryItemRef charge)          { /* Do nothing here */ }
     virtual void Unload()                               { /* Do nothing here */ }
     virtual void Overload()                             { /* Do nothing here */ }
@@ -123,12 +127,10 @@ public:
                                     : MODULE_BANK_UNDEFINED ))));
     }
 
-	/*  these have to be public for ampc to access it's methods */
+	/*  these have to be public for ampc/msac/mmac to access it's methods */
     ModuleEffects*                  m_Effects;          /* we own this */
     ModifyModuleAttributesComponent*  m_MMAC;           /* we own this */
     ModifyShipAttributesComponent*  m_MSAC;             /* we own this */
-
-    ShipItemRef GetShipRef()                            { return m_Ship; }
 
 protected:
     InventoryItemRef                m_Item;
@@ -136,6 +138,8 @@ protected:
 
     ModuleStates                    m_ModuleState;
     ChargeStates                    m_ChargeState;
+
+    int32                           m_repeat;
 
     /*  this is for pre-calculated values, to eliminate previous code calculating on EVERY CALL.
      * defined in WeaponModule code.
@@ -145,16 +149,6 @@ protected:
     virtual void _UpdateModifiers(InventoryItemRef item){ /* Do nothing here */ }
     virtual void _RemoveModifier(InventoryItemRef item) { /* Do nothing here */ }
 
-    /* stacking penality system   -allan
-     * each module will have a map of the attribs it affects and it's effectiveness on that attrib
-     * this is set and used in MSAC, but needs to be kept here, as it's specific to *this module
-     * the other component, attrib stack counting, is in MSAC
-     */
-public:
-    void SetEffectiveness(uint16 attrib, double effectiveness);
-    double GetEffectiveness(uint16 attrib);
-private:
-    std::map<uint16, double> m_attribStacking;
 
 };
 

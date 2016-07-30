@@ -345,6 +345,12 @@ protected:
     /********************************************************************/
     /* EVEPacketDispatcher interface                                    */
     /********************************************************************/
+public:
+    // this is to check/enable Python Throw keyword, to avoid throws/segfault when not applicable
+    bool CanThrow()                                     { return m_canThrow; }
+private:
+    bool m_canThrow = false;
+protected:
     bool Handle_CallReq( PyPacket* packet, PyCallStream& req );
     bool Handle_Notify( PyPacket* packet );
     bool Handle_PingReq( PyPacket* packet ) { _SendPingResponse( packet->dest, packet->source.callID ); return true; }

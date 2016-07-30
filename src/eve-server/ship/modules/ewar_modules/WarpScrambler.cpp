@@ -36,44 +36,26 @@ WarpScrambler::WarpScrambler( InventoryItemRef item, ShipItemRef ship )
 
 }
 
-void WarpScrambler::Activate(SystemEntity * targetEntity)
-{   // only check i can think of right now to verify target is client, npc, or drone
-    DynamicSystemEntity* pTarget = static_cast<DynamicSystemEntity *>(m_targetEntity);
-    DestinyManager* pDestiny = pTarget->DestinyMgr();
+void WarpScrambler::Activate(SystemEntity* pSE)
+{
+    DestinyManager* pDestiny = pSE->DestinyMgr();
     if (!pDestiny) return;
 
-    m_targetEntity = targetEntity;
-    m_targetID = targetEntity->GetID();
+    m_targetEntity = pSE;
+    m_targetID = pSE->GetID();
 
 	// Activate active processing component timer:
 	m_AMPC->ActivateCycle();
 	//_ShowCycle();
-    //m_ActiveModuleProc->ProcessActiveCycle();
-/*
+
     EvilNumber scramStr = m_Item->GetAttribute(AttrWarpScrambleStrength);
-    if (targetEntity->IsNPCSE()) {
-        NPC* pTarget = static_cast<NPC*>(targetEntity);
-        scramStr += pTarget->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
-        pTarget->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
-    } else if (targetEntity->IsClient()) {
-        Client* pTarget = static_cast<Client*>(targetEntity);
-        scramStr += pTarget->GetShip()->GetAttribute(AttrWarpScrambleStatus);
-        pTarget->GetShip()->SetAttribute(AttrWarpScrambleStatus, scramStr);
-    }if (targetEntity->IsDroneSE()) {
-        Drone* pTarget = static_cast<Drone*>(targetEntity);
-        scramStr += pTarget->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
-        pTarget->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
-    }*/
+    scramStr += pSE->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
+    pSE->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
 }
 
 void WarpScrambler::Deactivate()
 {
-    if ((m_ModuleState != MOD_ACTIVATED) || (m_ModuleState == MOD_OFFLINE)) return;
-
-	m_ModuleState = MOD_DEACTIVATING;
-    m_AMPC->DeactivateCycle();
-
-    m_Ship->GetAttribute(AttrWarpScrambleStatus) ;
+    ActiveModule::Deactivate();
 
     EvilNumber scramStr = m_Item->GetAttribute(AttrWarpScrambleStrength);
     scramStr -= m_targetEntity->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
@@ -207,7 +189,7 @@ void WarpScrambler::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1000;
+        shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());

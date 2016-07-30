@@ -36,14 +36,14 @@ SuperWeapon::SuperWeapon( InventoryItemRef item, ShipItemRef ship )
 {
 }
 
-void SuperWeapon::Activate(SystemEntity * targetEntity)
+void SuperWeapon::Activate(SystemEntity* pSE)
 {
 	// TODO:
 	// 1. Prevent activation on certain targets: asteroids, NPC stations, ice, clouds...  Perhaps restrict to ships and structures.
 	// 2. Check for minimum qty of consumable materials needed according to the 'consumptionType' attribute value in appropriate cargo bay on board the ship
 
-	m_targetEntity = targetEntity;
-	m_targetID = targetEntity->GetID();
+    m_targetEntity = pSE;
+    m_targetID = pSE->GetID();
 
 	// Activate active processing component timer:
 	m_AMPC->ActivateCycle();
@@ -236,7 +236,7 @@ void SuperWeapon::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1000;
+        shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());

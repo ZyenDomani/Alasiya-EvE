@@ -78,7 +78,7 @@ void ModifyModuleAttributesComponent::_modifyModuleAttributes(GenericModule* tar
 
     if (m_Mod->GetModuleState() == MOD_ONLINE) { // set stacking penality here for reference when going offline (in above check).
         effectiveness = exp(-pow(((stackSize - 1)/2.67),2));  //stacking calculation fixed  -allan  20Dec15
-        m_Mod->SetEffectiveness(targetAttrID, effectiveness);
+        //m_Mod->SetEffectiveness(targetAttrID, effectiveness);
     } else if (m_Mod->GetModuleState() == MOD_OFFLINE) {
         ; // not sure what to do here yet...maybe nothing, as above 'find' should get stacking penality saved when module went online
     }

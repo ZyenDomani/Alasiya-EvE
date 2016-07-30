@@ -66,6 +66,7 @@ void ActiveModuleProcessingComponent::ActivateCycle()
     /** @todo   these need to check for targetable actions, and apply changes accordingly */
     /** @todo  this needs to be updated to check for/use targetGroupIDs */
     EVECalculationType ecType = CALC_NONE;
+    bool stacking = false;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
     std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr, end;
     if (m_Mod->IsOverloaded()) {
@@ -83,17 +84,16 @@ void ActiveModuleProcessingComponent::ActivateCycle()
         while (cur < ids) {
             testID = itr->second->GetTargetGroup(cur);
             if (groupID != testID) { ++cur; continue; }
+            stacking = itr->second->GetStackingPenalty(cur);
             targetAttrID = itr->second->GetTargetAttributeID(cur);
             sourceAttrID = itr->second->GetSourceAttributeID(cur);
             ecType = itr->second->GetCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            if (itr->first == effectDamageControl)
-                m_Mod->m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
-            else if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
-                m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
+            if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
+                m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType, stacking);
             else
-                m_Mod->m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+                m_Mod->m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
             ++cur;
         }
     }
@@ -108,6 +108,7 @@ void ActiveModuleProcessingComponent::DeactivateCycle(bool abort/*false*/)
 {
     m_Mod->SetModuleState(MOD_DEACTIVATING);
     EVECalculationType ecType = CALC_NONE;
+    bool stacking = false;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
     std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr, end;
     if (m_Mod->IsOverloaded()) {
@@ -125,17 +126,16 @@ void ActiveModuleProcessingComponent::DeactivateCycle(bool abort/*false*/)
         while (cur < ids) {
             testID = itr->second->GetTargetGroup(cur);
             if (groupID != testID) { ++cur; continue; }
+            stacking = itr->second->GetStackingPenalty(cur);
             targetAttrID = itr->second->GetTargetAttributeID(cur);
             sourceAttrID = itr->second->GetSourceAttributeID(cur);
             ecType = itr->second->GetReverseCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            if (itr->first == effectDamageControl)
-                m_Mod->m_MSAC->ModifyNonStackingShipAttributes(targetAttrID, sourceAttrID, ecType);
-            else if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
-                m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType);
+            if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
+                m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType, stacking);
             else
-                m_Mod->m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType);
+                m_Mod->m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
             ++cur;
         }
     }
@@ -190,7 +190,6 @@ void ActiveModuleProcessingComponent::ProcessDeactivateCycle()
 {
     //  catch-all incase these werent set correctly in module code.
     m_Stop = true;
-    m_Mod->SetModuleState(MOD_DEACTIVATING);
     m_timer.Disable();
 
     DeactivateCycle();

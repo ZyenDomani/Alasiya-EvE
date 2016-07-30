@@ -405,7 +405,7 @@ void AttributeMap::SaveShipState()
     if (shield or armor or hull) {
         DBerror err;
         if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
-            _log(DATABASE__ERROR, "SaveShipState - unable to save attributes");
+            _log(DATABASE__ERROR, "SaveShipState - unable to save attributes for %u - %s", mItem.itemID(), err.c_str());
         }
     }
 }

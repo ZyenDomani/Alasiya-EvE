@@ -35,8 +35,8 @@ public:
     ShieldHardener( InventoryItemRef item, ShipItemRef ship );
     virtual ~ShieldHardener() { }
 
-    // GenericModule Methods:
-	void StopCycle(bool abort = false);
+    /* ActiveModule overrides */
+    virtual void StopCycle(bool abort=false);
 
 protected:
 	void _ProcessCycle() {}

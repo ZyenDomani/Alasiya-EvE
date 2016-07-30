@@ -321,6 +321,17 @@ private:
     ModuleManager* m_ModuleManager;
 
     std::vector<uint32> m_onlineModuleVec;
+
+    /* stacking penality system   -allan
+     * each ship will have a map of the attribs affected and the current effectiveness on that attrib
+     * this is set and used in MSAC, but needs to be kept here, as it's specific to *this ship
+     * the other component, attrib stack counting, is a std::map and holds a k,v pair of (attribID, module count)
+     */
+public:
+    double GetEffectiveness(uint16 attrib, ModuleStates state);
+private:
+    std::map<uint16, uint8> m_stackMap;
+
 };
 
 /**

@@ -36,9 +36,9 @@ public:
 	CapTransfer( InventoryItemRef item, ShipItemRef ship );
     virtual ~CapTransfer() { }
 
-    // GenericModule Methods:
-	double DoCycle();
-	void StopCycle(bool abort = false);
+    /* ActiveModule overrides */
+    virtual double DoCycle();
+    virtual void StopCycle(bool abort=false);
 
 	//double m_capNeed;		// This variable is to be used in ActiveModuleProcessingComponent
 

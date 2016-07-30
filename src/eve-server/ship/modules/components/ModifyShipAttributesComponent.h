@@ -40,9 +40,9 @@ public:
     ModifyShipAttributesComponent(GenericModule* mod, ShipItemRef shipRef);
     ~ModifyShipAttributesComponent()                    { /* do nothing here */ }
 
-    void ModifyShipAttribute(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
-    void ModifyTargetShipAttribute(uint32 targetItemID, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type );
-    void ModifyNonStackingShipAttributes(uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
+    void ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
+    void ModifyTargetShipAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
+    void ModifyNonStackingShipAttributes(uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type);
 
 private:
 
@@ -50,17 +50,9 @@ private:
     GenericModule* m_Mod;
     ShipItemRef m_Ship;
 
-    void _modifyShipAttributes(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
-    EvilNumber _calculateNewValue(ShipItemRef shipRef, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type, GenericModule* mod);
-    void SetAttribute(ShipItemRef shipRef, uint32 targetAttrID, EvilNumber newVal);
-
-    /* stacking penality (effectiveness) system   -allan
-     * each module will have a map of the attribs it affects and it's effectiveness on that attrib
-     * this is set and used here, but needs to be kept in GenericModule, as it's specific to each module
-     * this is the other component, attrib stack counting.
-     * it holds a k,v pair where k:attrib and v:count of modules affecting that attrib
-     */
-    std::map<uint16, uint8> m_attribMap;
+    void _modifyShipAttributes(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
+    EvilNumber _calculateNewValue(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, GenericModule* mod, bool stacking);
+    void SetAttribute(ShipItemRef shipRef, uint16 targetAttrID, EvilNumber newVal);
 };
 
 #endif

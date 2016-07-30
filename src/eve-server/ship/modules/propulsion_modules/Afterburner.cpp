@@ -36,55 +36,60 @@ Afterburner::Afterburner( InventoryItemRef item, ShipItemRef ship )
  * thrust is defined in module attrib 567 and listed in effectID 710
  * module mass is the mass of any plate and/or ab/mwd modules fitted to ship
  */
-void Afterburner::Activate(SystemEntity * targetEntity)
+void Afterburner::Activate(SystemEntity* pSE)
 {
     m_AMPC->ActivateCycle();
-    m_shipSpeed = m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->GetMaxVelocity();
+    DestinyManager* pDestiny = m_Ship->GetPilot()->GetShipSE()->DestinyMgr();
+    if (!pDestiny) return;  // make error msg here?
+
+    m_shipSpeed = pDestiny->GetMaxVelocity();
     double maxSpeed = m_Ship->GetAttribute(AttrMaxVelocity).get_float();
 
     // Tell Destiny Manager about our updated speed so it properly tracks ship movement:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetMaxVelocity(maxSpeed);
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetSpeedFraction(1.0);
+    pDestiny->SetMaxVelocity(maxSpeed);
+    pDestiny->SetSpeedFraction(1.0);
 
     DoDestiny_SetMaxSpeed ms;
         ms.entityID = m_Ship->itemID();
         ms.speedValue = maxSpeed;
     PyTuple *tmp = ms.Encode();
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&tmp);    //consumed
+    pDestiny->SendSingleDestinyUpdate(&tmp);    //consumed
 }
 
 void Afterburner::Deactivate()
 {
     ActiveModule::Deactivate();
-    // check to see if module is being removed while docked.  (segfault fix)
-    if (m_Ship->GetPilot()->IsDocked())
-        return;
 
     double maxSpeed = m_Ship->GetAttribute(AttrMaxVelocity).get_float();
 
+    DestinyManager* pDestiny = m_Ship->GetPilot()->GetShipSE()->DestinyMgr();
+    if (!pDestiny) return;  // make error msg here?
+
     // Tell Destiny Manager about our updated speed so it properly tracks ship movement:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetMaxVelocity(maxSpeed);
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetSpeedFraction(1.0);
+    pDestiny->SetMaxVelocity(maxSpeed);
+    pDestiny->SetSpeedFraction(1.0);
 
     DoDestiny_SetMaxSpeed ms;
         ms.entityID = m_Ship->itemID();
         ms.speedValue = maxSpeed;
     PyTuple *tmp = ms.Encode();
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&tmp);    //consumed
+    pDestiny->SendSingleDestinyUpdate(&tmp);    //consumed
 }
 
 void Afterburner::StopCycle(bool abort)
 {
+    DestinyManager* pDestiny = m_Ship->GetPilot()->GetShipSE()->DestinyMgr();
+    if (!pDestiny) return;  // make error msg here?
 	// Tell Destiny Manager about our new speed so it properly tracks ship movement:
     //TODO  get ship speed from destiny, using skill updates.
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetMaxVelocity(m_shipSpeed);
-	m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SetSpeedFraction();    //reset speed variables, update destiny, update client
+    pDestiny->SetMaxVelocity(m_shipSpeed);
+    pDestiny->SetSpeedFraction();    //reset speed variables, update destiny, update client
 
     DoDestiny_SetMaxSpeed ms;
         ms.entityID = m_Ship->itemID();
         ms.speedValue = m_shipSpeed;
     PyTuple *tmp = ms.Encode();
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&tmp);    //consumed
+    pDestiny->SendSingleDestinyUpdate(&tmp);    //consumed
 
     std::string effectString = " ";
     uint32 effectID = 0;
@@ -105,7 +110,7 @@ void Afterburner::StopCycle(bool abort)
     timeLeft /= 100;
 
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    pDestiny->SendSpecialEffect
     (
         m_Ship,
         m_Item->itemID(),
@@ -146,7 +151,7 @@ void Afterburner::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    pDestiny->SendDestinyUpdate(updates, events, false);
 }
 
 
@@ -205,7 +210,7 @@ void Afterburner::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1000;
+        shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());

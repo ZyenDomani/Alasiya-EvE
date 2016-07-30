@@ -78,55 +78,6 @@ void TractorBeam::Activate(SystemEntity* pSE)
     }
 }
 
-void TractorBeam::StopCycle(bool abort)
-{
-    m_targetEntity->DestinyMgr()->TractorBeamStop();
-
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
-
-    // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
-    (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
-        m_targetID,
-        0,
-        "effects.TractorBeam",
-        0,
-        0,
-        0,
-        0,
-        0
-    );
-
-    // Create Destiny Updates:
-    GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
-        ge.targetID = m_targetID;
-        ge.other = new PyNone;
-        ge.area = new PyList;
-        ge.effectID = effectTractorBeam;
-    Notify_OnGodmaShipEffect shipEff;
-        shipEff.itemID = ge.selfID;
-        shipEff.effectID = ge.effectID;
-        shipEff.timeNow = Win32TimeNow();
-        shipEff.start = 0;
-        shipEff.active = 0;
-        shipEff.environment = ge.Encode();
-        shipEff.startTime = (shipEff.timeNow + (timeLeft * Win32Time_Second));
-        shipEff.duration = _GetDuration();
-        shipEff.repeat = 0;
-        shipEff.error = new PyNone;
-    std::vector<PyTuple*> events;
-        events.push_back(shipEff.Encode());
-    std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
-}
-
 double TractorBeam::DoCycle() {
         if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
             or (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
@@ -161,7 +112,7 @@ void TractorBeam::_ShowCycle()
         1,
         1,
         _GetDuration(),
-        1
+        m_repeat
     );
 
     // Create Destiny Updates:
@@ -182,12 +133,62 @@ void TractorBeam::_ShowCycle()
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = _GetDuration();
-        shipEff.repeat = 1000;
+        shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+}
+
+void TractorBeam::StopCycle(bool abort)
+{
+    m_targetEntity->DestinyMgr()->TractorBeamStop();
+
+    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    timeLeft /= 100;
+
+    // Create Special Effect:
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    (
+        m_Ship,
+        m_Item->itemID(),
+        m_Item->typeID(),
+        m_targetID,
+        0,
+        "effects.TractorBeam",
+        false,
+        false,
+        false,
+        _GetDuration(),
+        m_repeat
+    );
+/*
+    // Create Destiny Updates:
+    GodmaEnvironment ge;
+        ge.selfID = m_Item->itemID();
+        ge.charID = m_Ship->ownerID();
+        ge.shipID = m_Ship->itemID();
+        ge.targetID = m_targetID;
+        ge.other = new PyNone;
+        ge.area = new PyList;
+        ge.effectID = effectTractorBeam;
+    Notify_OnGodmaShipEffect shipEff;
+        shipEff.itemID = ge.selfID;
+        shipEff.effectID = ge.effectID;
+        shipEff.timeNow = Win32TimeNow();
+        shipEff.start = 0;
+        shipEff.active = 0;
+        shipEff.environment = ge.Encode();
+        shipEff.startTime = (shipEff.timeNow + (timeLeft * Win32Time_Second));
+        shipEff.duration = _GetDuration();
+        shipEff.repeat = m_repeat;
+        shipEff.error = new PyNone;
+    std::vector<PyTuple*> events;
+        events.push_back(shipEff.Encode());
+    std::vector<PyTuple*> updates;
+    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    */
 }
 
 void TractorBeam::_SetCapNeed()

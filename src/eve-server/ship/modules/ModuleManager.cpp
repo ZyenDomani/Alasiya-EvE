@@ -755,7 +755,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
         bool inSpace = (IsStation(m_Ship->locationID()) ? false : true);
         if (inSpace)
             flag = flagHangar;
-        if (mod->isLoaded()) {
+        if (mod->IsLoaded()) {
             mod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
             mod->Unload();
         }
@@ -898,7 +898,7 @@ void ModuleManager::OfflineAll()
     m_Modules->OfflineAll();
 }
 
-void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targetID, uint32 repeat)
+void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targetID, int32 repeat)
 {
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (!mod) {
@@ -910,6 +910,7 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
          * modules that do things other than affect attributes will still need their own class.
         mod->Activate(effectName);
         */
+        mod->SetRepeat(repeat);
         bool targetNotNeeded = false;
         // these calls DO NOT need a target...
         if (effectName == "online") {
@@ -949,18 +950,23 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
         } else if (effectName == "modifyActiveArmorResonanceAndNullifyPassiveResonance") {  //Armor Hardener
             mod->Activate(nullptr);
             targetNotNeeded =true;
+        } else if (effectName == "surveyScan") {
+            mod->Activate(targetEntity);
+            targetNotNeeded =true;
         }
         if (targetNotNeeded)
             return;
 		if (!targetID) {
 			sLog.Error("ModuleManager::Activate()", "targetID == 0");
-			m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
+            if (m_Ship->HasPilot())
+                m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
 			return;
 		}
 		 SystemEntity* targetEntity = m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(targetID);
         if (!targetEntity) {
             sLog.Error("ModuleManager::Activate()", "targetEntity == NULL");
-            m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
+            if (m_Ship->HasPilot())
+                m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
             return;
         }
 
@@ -991,8 +997,6 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
         } else if (effectName == "remoteHullRepair") {  // Remote Hull Repair System (Altahir, 14.11.2015)
             mod->Activate(targetEntity);
     /** @todo these below are not wrote, not tested, in testing, or otherwise unknown.
-        } else if (effectName == "surveyScan") {
-            ; //mod->Activate(targetEntity);
         } else if (effectName == "superWeaponAmarr") {  //Judgement
             ; //mod->Activate(targetEntity);
         } else if (effectName == "superWeaponCaldari") {  //Oblivion
@@ -1046,13 +1050,9 @@ void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
         _log(SHIP__MODULE_TRACE, "ModuleManager::Deactivate() - %s Deactivating - '%s'", mod->getItem()->itemName().c_str(), effectName.c_str());
         if (effectName == "online") {
 			mod->Offline();
-
-			// We should check for "online" here or something else, then either call the mod->Offline() or mod->Deactivate()
-			//if (cmd == OFFLINE)
-			//    mod->Offline();     // this currently fails since m_selectedEffect and m_defaultEffect in the ModuleEffect class are undefined
-			//there needs to be more cases here i just don't know what they're called yet
-		} else
+        } else {
 			mod->Deactivate();
+        }
     }
 }
 
@@ -1123,7 +1123,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 
 		//m_Ship->GetPilot()->MoveItem(chargeRef->itemID(), m_Ship->itemID(), flag);
 
-		if ( mod->isLoaded() )
+		if ( mod->IsLoaded() )
 		{
 			// Module is loaded, let's check available capacity:
 			InventoryItemRef loadedChargeRef = mod->GetLoadedChargeRef();
@@ -1186,7 +1186,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 		modCapacity = mod->getItem()->GetAttribute(AttrCapacity);
 
 		// Load charge supplied if this module was either never loaded, or just unloaded from a different type right above:
-		if ( !(mod->isLoaded()) )
+		if ( !(mod->IsLoaded()) )
 		{
 			// Module is not loaded at all, let's check total volume of charge to load against available capacity:
 			if ( modCapacity >= (chargeToLoadVolume * chargeToLoadQty) )
@@ -1221,7 +1221,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 
 void ModuleManager::UnloadCharge(EVEItemFlags flag) {
     GenericModule* mod = m_Modules->GetModule(flag);
-    if (mod and mod->isLoaded() ) {
+    if (mod and mod->IsLoaded() ) {
         _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s",
              mod->getItem()->itemName().c_str(), mod->GetLoadedChargeRef()->itemName().c_str());
         mod->Unload();
@@ -1234,7 +1234,7 @@ void ModuleManager::GetLoadedCharges(std::map< EVEItemFlags, InventoryItemRef >&
 
 InventoryItemRef ModuleManager::GetLoadedChargeOnModule(EVEItemFlags flag) {
     GenericModule* mod = m_Modules->GetModule(flag);
-    if (mod and mod->isLoaded() )
+    if (mod and mod->IsLoaded() )
     	return mod->GetLoadedChargeRef();
 	return InventoryItemRef();
 }

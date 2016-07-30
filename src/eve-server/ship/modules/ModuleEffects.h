@@ -237,7 +237,7 @@ private:
     std::map<uint32, std::shared_ptr<MEffect>> m_OverloadEffects;
 
     //cached stuff
-    bool m_hiPower, m_medPower, m_loPower, m_rigSlot, m_subSystem;
+    bool m_hiPower, m_medPower, m_loPower, m_rigSlot, m_subSystem, m_warpSafe;
 
 };
 
