@@ -78,7 +78,6 @@ double Salvager::DoCycle() {
         _log(SHIP__MODULE_ERROR, "Salvage DoCycle hit end of conditional.");
     }
 
-
     return _GetDuration();
 }
 

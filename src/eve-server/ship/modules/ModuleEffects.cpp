@@ -267,7 +267,7 @@ m_pItem(pItem)
 {
     m_defaultEffect = nullptr;
 
-    m_hiPower = m_medPower = m_loPower = m_rigSlot = m_subSystem = m_warpSafe = false;
+    m_hiPower = m_medPower = m_loPower = m_rigSlot = m_subSystem = m_warpSafe = m_targReq = false;
 
     m_GangEffects.clear();
     m_FleetEffects.clear();
@@ -339,7 +339,10 @@ void ModuleEffects::_populate()
     //go through and find each effect, then add pointer to effect to our own map
     for (auto cur : effectsList) {
         switch (cur.first) {
-                // We do not need MEffect objects for these effectIDs, but do need slot type.
+            // We do not need MEffect objects for these effectIDs, but do need slot type.
+            case 10:    // combat
+                m_targReq = true;
+                continue;
             case 11:    // loPower
                 m_loPower = true;
                 continue;
@@ -361,6 +364,8 @@ void ModuleEffects::_populate()
                     continue;
                 if (!mEffectPtr->IsEffectLoaded())
                     continue;
+                if (!m_warpSafe)
+                    m_warpSafe = mEffectPtr->GetIsWarpSafe();
 
                 uint32 size = mEffectPtr->GetSizeOfAttributeList();
                 _log(SHIP__MODULE_TRACE, "ModuleEffects::_populate() - effectID: %u size: %u", effectID, size);

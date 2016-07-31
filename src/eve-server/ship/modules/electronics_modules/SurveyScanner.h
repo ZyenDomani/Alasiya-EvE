@@ -20,23 +20,41 @@
  *    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
  *    http://www.gnu.org/copyleft/lesser.txt.
  *    ------------------------------------------------------------------------------------
- *    Author:        eve-moo
+ *    Author:        Allan
  */
 
-#ifndef __SURVEYSCANNER_H__
-#define __SURVEYSCANNER_H__
+#ifndef _EVE_SHIP_MOD_SCANNER_H_
+#define _EVE_SHIP_MOD_SCANNER_H_
 
 #include "ship/modules/ActiveModule.h"
+
+class AsteroidBeltMgr;
 
 class SurveyScanner : public ActiveModule
 {
 public:
     SurveyScanner(InventoryItemRef item, ShipItemRef ship);
-    
-    virtual void startCycle(bool continuing);
-    virtual bool endCycle(bool continuing);
+    virtual ~SurveyScanner() { }
+
+    /* ActiveModule overrides */
+    virtual void Activate(SystemEntity* pSE);
+    virtual void Deactivate();
+    virtual double DoCycle();
+    virtual void StopCycle(bool abort=false);
 
 protected:
+    void _ProcessCycle() {}
+    void _ShowCycle();
+    //double _GetDuration();
+    //double _GetCapNeed();
+    void _SetCapNeed();
+
+private:
+    bool m_firstRun;
+
+    AsteroidBeltMgr* pBeltMgr;
+    Character* pChar;
+
 };
 
-#endif
+#endif  //_EVE_SHIP_MOD_SCANNER_H_

@@ -192,6 +192,8 @@ public:
     bool isHighSlot()                                           { return m_hiPower; }
     bool isRig()                                                { return m_rigSlot; }
     bool isSubSystem()                                          { return m_subSystem; }
+    bool needsTarget()                                          { return m_targReq; }
+    bool isWarpSafe()                                           { return m_warpSafe; }
 
     bool HasEffect(uint32 effectID);
     bool HasDefaultEffect()                                     { return (m_defaultEffect ? true : false); }
@@ -237,7 +239,7 @@ private:
     std::map<uint32, std::shared_ptr<MEffect>> m_OverloadEffects;
 
     //cached stuff
-    bool m_hiPower, m_medPower, m_loPower, m_rigSlot, m_subSystem, m_warpSafe;
+    bool m_hiPower, m_medPower, m_loPower, m_rigSlot, m_subSystem, m_warpSafe, m_targReq;
 
 };
 

@@ -90,7 +90,7 @@ void ActiveModuleProcessingComponent::ActivateCycle()
             ecType = itr->second->GetCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
+            if (m_Mod->needsTarget() and m_Mod->GetTarget())
                 m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType, stacking);
             else
                 m_Mod->m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
@@ -132,7 +132,7 @@ void ActiveModuleProcessingComponent::DeactivateCycle(bool abort/*false*/)
             ecType = itr->second->GetReverseCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            if (m_Mod->RequiresTarget() && m_Mod->GetTarget())
+            if (m_Mod->needsTarget() and m_Mod->GetTarget())
                 m_Mod->m_MSAC->ModifyTargetShipAttribute(m_Mod->GetTargetID(), targetAttrID, sourceAttrID, ecType, stacking);
             else
                 m_Mod->m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);

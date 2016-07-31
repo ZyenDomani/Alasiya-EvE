@@ -58,6 +58,8 @@ void Afterburner::Activate(SystemEntity* pSE)
 
 void Afterburner::Deactivate()
 {
+    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_UNFITTED))
+        return;
     ActiveModule::Deactivate();
 
     double maxSpeed = m_Ship->GetAttribute(AttrMaxVelocity).get_float();

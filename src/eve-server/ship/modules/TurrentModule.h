@@ -45,9 +45,6 @@ public:
     virtual void Overload();
     virtual void DeOverload();
 
-    // GenericModule access function overriders
-    bool RequiresTarget();
-
 protected:
     //  these are for pre-calculated values, to eliminate previous code calculating on EVERY CALL
     //  ship modifiers are not implemented yet.  skill modifiers are hacked here until i get skillModifierTables working

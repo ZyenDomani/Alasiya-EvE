@@ -33,7 +33,7 @@
 #include "system/cosmicMgrs/BeltMgr.h"
 
 
-BeltMgr::BeltMgr(SystemManager* mgr, PyServiceMgr& svc)
+AsteroidBeltMgr::AsteroidBeltMgr(SystemManager* mgr, PyServiceMgr& svc)
 : m_system(mgr),
   m_services(svc),
   m_growthTimer(15000)  // arbitrary for now
@@ -43,19 +43,19 @@ BeltMgr::BeltMgr(SystemManager* mgr, PyServiceMgr& svc)
     m_systemID = m_system->GetID();
 }
 
-BeltMgr::~BeltMgr()
+AsteroidBeltMgr::~AsteroidBeltMgr()
 {
     Save();
     ClearAll();
 }
 
-void BeltMgr::Init()
+void AsteroidBeltMgr::Init()
 {
     m_initialized = true;
     _log(COSMIC_MGR__MESSAGE, "BeltMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_systemID);
 }
 
-void BeltMgr::RegisterBelt(InventoryItemRef itemRef)
+void AsteroidBeltMgr::RegisterBelt(InventoryItemRef itemRef)
 {
     uint32 beltID = itemRef->itemID();
     m_belts.insert(std::pair<uint32, InventoryItemRef>(beltID, itemRef));
@@ -65,19 +65,19 @@ void BeltMgr::RegisterBelt(InventoryItemRef itemRef)
     /** @todo it looks like i havent finished this yet.....guess i should eventually */
 }
 
-void BeltMgr::ClearBelt(uint16 bubbleID)
+void AsteroidBeltMgr::ClearBelt(uint16 bubbleID)
 {
     ClearAll();
 }
 
-void BeltMgr::ClearAll() {
+void AsteroidBeltMgr::ClearAll() {
     for(auto cur : m_asteroids)
         SafeDelete(cur.second);
     m_asteroids.clear();
     m_belts.clear();
 }
 
-bool BeltMgr::CheckSpawn(uint16 bubbleID)
+bool AsteroidBeltMgr::CheckSpawn(uint16 bubbleID)
 {
     if (IsSpawned(bubbleID)) return true;
     /*  if there are already roids created for this belt, they will be loaded in Load()
@@ -88,7 +88,7 @@ bool BeltMgr::CheckSpawn(uint16 bubbleID)
         SpawnBelt(bubbleID);
 }
 
-bool BeltMgr::IsSpawned(uint16 bubbleID)
+bool AsteroidBeltMgr::IsSpawned(uint16 bubbleID)
 {
     uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
     std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
@@ -97,18 +97,18 @@ bool BeltMgr::IsSpawned(uint16 bubbleID)
     return false;
 }
 
-void BeltMgr::Process() {
+void AsteroidBeltMgr::Process() {
     if (m_growthTimer.Check()) {
         TriggerGrowth();
     }
 }
 
-void BeltMgr::TriggerGrowth() {
+void AsteroidBeltMgr::TriggerGrowth() {
     for(auto cur : m_asteroids)
         cur.second->Grow();
 }
 
-bool BeltMgr::Load(uint16 bubbleID) {
+bool AsteroidBeltMgr::Load(uint16 bubbleID) {
     std::vector<DBAsteroidSE> entities;
     entities.clear();
     uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
@@ -139,7 +139,7 @@ bool BeltMgr::Load(uint16 bubbleID) {
     return true;
 }
 
-void BeltMgr::Save() {
+void AsteroidBeltMgr::Save() {
     DBAsteroidSE entry;
     std::vector<DBAsteroidSE> roids;
     roids.clear();
@@ -161,7 +161,7 @@ void BeltMgr::Save() {
     m_db.SaveSystemRoids(m_systemID, roids);
 }
 
-void BeltMgr::ForceGrowth() {
+void AsteroidBeltMgr::ForceGrowth() {
     for (auto cur : m_asteroids) {
         /** @todo (allan) do something useful here */
     }
@@ -169,14 +169,14 @@ void BeltMgr::ForceGrowth() {
     m_growthTimer.Start(ASTEROID_GROWTH_INTERVAL_MS);
 }
 
-void BeltMgr::GetList(uint32 beltID, std::vector< AsteroidSE* >& list)
+void AsteroidBeltMgr::GetList(uint32 beltID, std::vector< AsteroidSE* >& list)
 {
     auto range = m_asteroids.equal_range(beltID);
     for (auto itr = range.first; itr != range.second; ++itr)
         list.push_back(itr->second);
 }
 
-void BeltMgr::SpawnBelt(uint16 bubbleID)
+void AsteroidBeltMgr::SpawnBelt(uint16 bubbleID)
 {
     if (IsSpawned(bubbleID)) return;
 
@@ -239,7 +239,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID)
     _log(COSMIC_MGR__TRACE, "BeltMgr::SpawnBelt - Belt spawned with %u roids in beltID %u for %s(%u)", pcs, beltID, m_system->GetName().c_str(), m_systemID );
 }
 
-uint32 BeltMgr::GetAsteroidType(double p, const std::map<float, uint32>& roids) {
+uint32 AsteroidBeltMgr::GetAsteroidType(double p, const std::map<float, uint32>& roids) {
     std::map<float, uint32>::const_iterator cur = roids.begin();
     float chance = 0.0;
     for(; cur != roids.end(); ++cur ) {
@@ -252,7 +252,7 @@ uint32 BeltMgr::GetAsteroidType(double p, const std::map<float, uint32>& roids) 
     return cur->second;
 }
 
-void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position) {
+void AsteroidBeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position) {
     ItemData idata( typeID, 1, m_systemID, flagAutoFit, "", position );
     InventoryItemRef i = m_system->itemFactory()->SpawnItem( idata );
     if (!i)

@@ -37,7 +37,7 @@ public:
     virtual ~MiningLaser() { }
 
     /* ActiveModule overrides */
-    virtual void Activate(SystemEntity * pSE);
+    virtual void Activate(SystemEntity* pSE);
     virtual void Deactivate();
     virtual double DoCycle();
     virtual void StopCycle(bool abort=false);
@@ -53,8 +53,6 @@ protected:
     void _SetCapNeed();
 
 	bool m_IsInitialCycle;
-    double m_cycleStartTime;
-    bool m_Stop_signal;
 };
 
 #endif

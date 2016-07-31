@@ -55,7 +55,7 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)//, ItemData ida
   m_systemName(""),
   m_services(svc),
   m_anomMgr(new AnomalyMgr(this, m_services)),
-  m_beltMgr(new BeltMgr(this, m_services)),
+  m_beltMgr(new AsteroidBeltMgr(this, m_services)),
   m_dunMgr(new DungeonMgr(this, m_services)),
   m_spawnMgr(new SpawnMgr(this, m_services))
 {

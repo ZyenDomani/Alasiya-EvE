@@ -46,7 +46,6 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 	m_IsInitialCycle = true;
-    m_cycleStartTime = 0;
 }
 
 /*
@@ -62,29 +61,13 @@ void MiningLaser::Activate(SystemEntity* pSE)
 {
 	// Test if respective moduleID's and moduleGroups are activated on valid target group/category.
 	// Regular Miners, Deep Core Miners, Ice Harvesters and Gas Havresters are having their target groups set strictly
-    if (((m_Item->typeID() == 17482 or m_Item->typeID() == 28754 or m_Item->typeID() == 17912 or m_Item->groupID() == 54)
-            and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Arkonor or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Bistot or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Crokite or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Dark_Ochre or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Hedbergite or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Hemorphite or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Jaspet or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Kernite or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Plagioclase or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Pyroxeres or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Scordite or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Spodumain or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Veldspar or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Gneiss or
-                 pSE->GetSelf()->groupID() == EVEDB::invGroups::Omber)
-        ) or ((m_Item->typeID() == 12108 or m_Item->typeID() == 18068 or m_Item->typeID() == 24305 or m_Item->typeID() == 28748)
-    	    and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit)
-        ) or ((m_Item->typeID() == 16278 or m_Item->typeID() == 22229 or m_Item->typeID() == 28752)
+    if ((((m_Item->typeID() == 17482) or (m_Item->typeID() == 28754) or (m_Item->typeID() == 17912) or (m_Item->groupID() == 54))
+            and ((pSE->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid) and (pSE->GetSelf()->groupID() != EVEDB::invGroups::Mercoxit)
+        ) or ((m_Item->typeID() == 12108) or (m_Item->typeID() == 18068) or (m_Item->typeID() == 24305) or (m_Item->typeID() == 28748))
+            and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit)
+        ) or (((m_Item->typeID() == 16278) or (m_Item->typeID() == 22229) or (m_Item->typeID() == 28752))
             and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Ice)
-        ) or ((m_Item->groupID() == 737)
-            and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud))
-        )
+        ) or ((m_Item->groupID() == 737) and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)))
     {
         m_targetEntity = pSE;
         m_targetID = pSE->GetID();
@@ -92,7 +75,6 @@ void MiningLaser::Activate(SystemEntity* pSE)
         m_IsInitialCycle = true;
         // Activate active processing component timer:
         m_AMPC->ActivateCycle();
-        m_cycleStartTime = GetTimeMSeconds();
 
         //# _ShowCycle();
         _SetCapNeed();
@@ -106,6 +88,8 @@ void MiningLaser::Activate(SystemEntity* pSE)
 
 void MiningLaser::Deactivate()
 {
+    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_UNFITTED))
+        return;
     ActiveModule::AbortCycle();
 }
 
@@ -159,26 +143,16 @@ void MiningLaser::_ProcessOreCycle(bool partial)
     oreVolumeToPull *= (1 + (0.05 * (pChar->GetSkillLevel(skillMining, true))));        //  5% increase in yield
     oreVolumeToPull *= (1 + (0.05 * (pChar->GetSkillLevel(skillAstrogeology, true))));   //  5% increase in yield
 
-    //FIXME - For now, aborted cycle returns the ore volume of 1 full cycle. Most likely timeLeft returns 0 here. (but shouldn't)
     if (partial) {
-        double timeLeft = GetTimeMSeconds() - (m_cycleStartTime + (_GetDuration() / 1000));
-        double fraction = 1 - (timeLeft / (_GetDuration() / 1000));
-        _log(MINING__DEBUG, "_ProcessOreCycle(partial=true) - timeLeft:%.3f(%u), fraction:%.3f, startTime:%.3f, duration:%.4f", \
-            timeLeft, m_AMPC->GetRemainingCycleTimeMS(), fraction, m_cycleStartTime, _GetDuration());
-        if (fraction < 1) {
-        	oreVolumeToPull *= fraction;
-        } else {
-        	while (fraction > 2)
-        		fraction -= 1;
-        	oreVolumeToPull *= fraction;
-        }
-        _log(MINING__TRACE, "Cycle aborted. m_cycleStartTime:%.3f, _GetDuration():%.3f, GetTimeMSeconds():%.3f, timeLeft:%.3f, fraction:%.3f, oreVolumeToPull:%.3f", \
-        	 m_cycleStartTime, _GetDuration(), GetTimeMSeconds(), timeLeft, fraction, oreVolumeToPull);
+        double fraction = (m_AMPC->GetRemainingCycleTimeMS() / _GetDuration());
+        oreVolumeToPull *= fraction;
+        _log(MINING__DEBUG, "_ProcessOreCycle(partial=true) - timeLeft:%u, fraction:%.3f, duration:%.4f, oreVolumeToPull:%.3f", \
+                m_AMPC->GetRemainingCycleTimeMS(), fraction, _GetDuration(), oreVolumeToPull);
     } else {
     	_log(MINING__MESSAGE, "cycle ended. Adding %.2fm3 of ore to cargo", oreVolumeToPull);
     }
 
-    if (oreVolumeToPull< oreVolume) {
+    if (oreVolumeToPull < oreVolume) {
         _log(MINING__ERROR, "%s(%u) - Laser could not extract ore from %s(%u)", \
               m_Item->itemName().c_str(), m_Item->itemID(), m_targetEntity->GetSelf()->itemName().c_str(), m_targetEntity->GetID() );
         return;
@@ -305,11 +279,11 @@ void MiningLaser::_ShowCycle()
 
 void MiningLaser::StopCycle(bool abort)
 {
-    double timeLeft = 2000;
+    double timeTillStop = 2000;
     if (!abort)
-        timeLeft = GetTimeMSeconds() - m_cycleStartTime;
+        timeTillStop = m_AMPC->GetRemainingCycleTimeMS();
 
-    _log(MINING__DEBUG, "StopCycle() - abort:%s, timeLeft:%.3f", (abort?"true":"false"), timeLeft);
+    _log(MINING__DEBUG, "StopCycle() - abort:%s, timeTillStop:%.3fms", (abort?"true":"false"), timeTillStop);
 
     if (abort) {
         if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)
@@ -342,7 +316,7 @@ void MiningLaser::StopCycle(bool abort)
         false,
         false,
         false,
-        timeLeft,
+        timeTillStop,
         0
     );
 
@@ -367,7 +341,7 @@ void MiningLaser::StopCycle(bool abort)
         shipEff.active = 0;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = timeLeft;
+        shipEff.duration = timeTillStop;
         shipEff.repeat = 0;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;

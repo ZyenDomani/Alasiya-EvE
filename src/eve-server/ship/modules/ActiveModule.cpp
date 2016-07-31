@@ -170,14 +170,6 @@ void ActiveModule::AbortCycle()
     m_AMPC->AbortCycle();
 }
 
-bool ActiveModule::RequiresTarget()
-{
-    if (m_Effects->HasDefaultEffect())
-        return (m_Effects->GetDefaultEffect()->GetIsAssistance() or m_Effects->GetDefaultEffect()->GetIsOffensive());
-    else
-        return false;
-}
-
 void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
 {
     /** @todo  finish this when time permits.... */

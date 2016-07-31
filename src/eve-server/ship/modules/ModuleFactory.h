@@ -38,8 +38,9 @@
 #include "armor_modules/DamageControl.h"
 #include "ewar_modules/Webifier.h"
 #include "ewar_modules/WarpScrambler.h"
-#include "electronics_modules/TractorBeam.h"
 #include "electronics_modules/Salvager.h"
+#include "electronics_modules/SurveyScanner.h"
+#include "electronics_modules/TractorBeam.h"
 #include "engineering_modules/CapTransfer.h"
 #include "hull_modules/HullRepairer.h"
 #include "hull_modules/HullTransporter.h"
@@ -118,7 +119,7 @@ static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
             // Electronics Modules Subgroup:
             case EVEDB::invGroups::Cargo_Scanner:                           return (new ActiveModule(item, ship)); break;    // Active - external
             case EVEDB::invGroups::Ship_Scanner:                            return (new ActiveModule(item, ship)); break;    // Active - external
-            case EVEDB::invGroups::Survey_Scanner:                          return (new ActiveModule(item, ship)); break;    // Active - external
+            case EVEDB::invGroups::Survey_Scanner:                          return (new SurveyScanner(item, ship)); break;    // Active - external
             case EVEDB::invGroups::Cloaking_Device:                         return (new ActiveModule(item, ship)); break;    // Active  -  SELF
             case EVEDB::invGroups::Target_Painter:                          return (new ActiveModule(item, ship)); break;    // Active - external
             case EVEDB::invGroups::Drone_Control_Unit:                      return (new PassiveModule(item, ship)); break;

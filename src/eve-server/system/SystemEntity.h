@@ -28,12 +28,11 @@
 #define __SYSTEMENTITY_H_INCL__
 
 #include "inventory/InventoryItem.h"
-//#include "inventory/ItemRef.h"
 #include "ship/DestinyManager.h"
 #include "ship/TargetManager.h"
 #include "SystemDB.h"
 
-class AsteroidBeltManager;
+class AsteroidBeltMgr;
 class Character;
 class Client;
 class Concord;
@@ -273,10 +272,10 @@ public:
     virtual bool                LoadExtras(SystemDB *db);
 
     /* generic access functions handled here */
-    AsteroidBeltManager*        BeltMgr()               { return m_beltMgr; }
+    AsteroidBeltMgr*            BeltMgr()               { return m_beltMgr; }
 
 protected:
-    AsteroidBeltManager*        m_beltMgr;
+    AsteroidBeltMgr*            m_beltMgr;
 };
 
 class StargateSE

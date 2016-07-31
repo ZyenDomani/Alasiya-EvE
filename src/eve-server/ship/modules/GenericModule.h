@@ -75,6 +75,7 @@ public:
     bool isMediumPower()                                { return m_Effects->isMediumSlot(); }
     bool isRig()                                        { return m_Effects->isRig(); }
     bool isSubSystem()                                  { return m_Effects->isSubSystem(); }
+    bool needsTarget()                                  { return m_Effects->needsTarget(); }
 
     uint32 itemID()                                     { return m_Item->itemID(); }
     uint32 typeID()                                     { return m_Item->typeID(); }
@@ -88,7 +89,7 @@ public:
 
     /* functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }
-    virtual void Activate(SystemEntity* targetEntity)   { /* Do nothing here */ }
+    virtual void Activate(SystemEntity* pSE)            { /* Do nothing here */ }
     virtual void Deactivate()                           { /* Do nothing here */ }
     virtual void AbortCycle()                           { /* Do nothing here */ }
     virtual void Load(InventoryItemRef charge)          { /* Do nothing here */ }

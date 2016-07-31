@@ -50,7 +50,7 @@ AnomalyMgr::AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc)
     m_initalized = false;
 }
 
-void AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
+void AnomalyMgr::Init(AsteroidBeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
 {
     m_beltMgr = beltMgr;
     m_dungMgr = dungMgr;

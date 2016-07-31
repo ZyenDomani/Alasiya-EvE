@@ -45,11 +45,11 @@
 class PyServiceMgr;
 class SystemManager;
 
-class BeltMgr
+class AsteroidBeltMgr
 {
 public:
-    BeltMgr(SystemManager* mgr, PyServiceMgr& svc);
-    virtual ~BeltMgr();
+    AsteroidBeltMgr(SystemManager* mgr, PyServiceMgr& svc);
+    virtual ~AsteroidBeltMgr();
 
     void Init();
     void Save();

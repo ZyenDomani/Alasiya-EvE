@@ -60,10 +60,9 @@ public:
     // generic *Cycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
     //  for modules that perform action on each DoCycle(), they will override this call in their class implementation
     virtual double DoCycle();
-    virtual void StopCycle(bool abort=false)                { /* Do nothing here */ }
+    virtual void StopCycle(bool abort=false)                        { /* Do nothing here */ }
 
     /* ActiveModule methods */
-    bool RequiresTarget();
     bool ShipHasCapCharge()                                 { return (_GetCapNeed() <  m_Ship->GetAttribute(AttrCapacitorCharge).get_float()); }
     uint32 GetTargetID()                                    { return m_targetID; }
     SystemEntity* GetTarget()                               { return m_targetEntity; }

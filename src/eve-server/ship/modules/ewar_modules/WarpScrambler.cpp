@@ -55,6 +55,8 @@ void WarpScrambler::Activate(SystemEntity* pSE)
 
 void WarpScrambler::Deactivate()
 {
+    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_UNFITTED))
+        return;
     ActiveModule::Deactivate();
 
     EvilNumber scramStr = m_Item->GetAttribute(AttrWarpScrambleStrength);
