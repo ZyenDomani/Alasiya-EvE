@@ -200,6 +200,8 @@ uint32 ActiveModuleProcessingComponent::GetRemainingCycleTimeMS() {
 }
 
 void ActiveModuleProcessingComponent::SetTimer(uint32 time) {
+    if (!time)
+        return;
     _log(SHIP__MODULE_TRACE, "AMPC::SetTimer() - Started with %u ms.", time);
     m_timer.Start(time);
 }

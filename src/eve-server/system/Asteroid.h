@@ -29,33 +29,60 @@
 
 #include "system/SystemEntity.h"
 
-#if 0
 
-CREATE TABLE sysAsteroidBelts (
-    beltID INTEGER NOT NULL,
-    nextGrowTime INTEGER UNSIGNED NOT NULL,
-    CONSTRAINT FOREIGN KEY (beltID)
-        REFERENCES mapDenormalize (`itemID`),
-    PRIMARY KEY(beltID)
-);
+/** @todo  need to finish an item object for asteroids  */
 
-CREATE TABLE sysAsteroids
-    (
-    asteroidID INTEGER UNSIGNED NOT NULL auto_increment,
-    locationID INTEGER NOT NULL,
-    typeID INTEGER NOT NULL,
-    oreVolume REAL NOT NULL,
-    x REAL NOT NULL,
-    y REAL NOT NULL,
-    z REAL NOT NULL,
-    CONSTRAINT FOREIGN KEY (locationID)
-     REFERENCES `sysAsteroidBelts` (`beltID`),
-    CONSTRAINT FOREIGN KEY (itemID)
-     REFERENCES `entity` (`itemID`),
-    PRIMARY KEY(asteroidID)
-);
+#if (0)
+/**
+ * InventoryItem for asteroid item.
+ */
+class AsteroidItem
+: public InventoryItem
+{
+    friend class InventoryItem; // to let it construct us
+public:
+    AsteroidItem(ItemFactory &_factory, uint32 _celestialID, const ItemType &_type, const ItemData &_data, const AsteroidItemData &_cData);
+    virtual ~AsteroidItem()                          { /* Do nothing here */ }
+
+    static AsteroidItemRef Load(ItemFactory &factory, uint32 celestialID);
+    static AsteroidItemRef Spawn(ItemFactory &factory, ItemData &data);
+
+    void Delete();
+
+    double      radius() const { return m_radius; }
+    double      security() const { return m_security; }
+    uint8       celestialIndex() const { return m_celestialIndex; }
+    uint8       orbitIndex() const { return m_orbitIndex; }
+
+protected:
+    using InventoryItem::_Load;
+    //virtual bool _Load();
+
+    // Template loader:
+    template<class _Ty>
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 celestialID, const ItemType &type, const ItemData &data) {
+        AsteroidItemData cData;
+        if( !factory.db().GetAsteroid( celestialID, cData ) )
+            return RefPtr<_Ty>();
+
+        return _Ty::template _LoadAsteroidItem<_Ty>( factory, celestialID, type, data, cData );
+    }
+
+    // Actual loading stuff:
+    template<class _Ty>
+    static RefPtr<_Ty> _LoadAsteroidItem(ItemFactory &factory, uint32 celestialID, const ItemType &type, const ItemData &data, const AsteroidItemData &cData
+    );
+
+    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
+
+    /* these have to be public for inventorydb to load into them. */
+    double m_radius;
+    double m_security;
+    uint8 m_celestialIndex;
+    uint8 m_orbitIndex;
+};
+
 #endif
-
 
 /**
  * ObjectSystemEntity which represents asteroid object in space
@@ -74,17 +101,21 @@ public:
     virtual bool IsAsteroidSE()                         { return true; }
 
     /* SystemEntity interface */
+    virtual void Delete();
     virtual void Process();
     virtual void EncodeDestiny( Buffer& into );
     virtual void MakeDamageState(DoDestinyDamageState &into);
 
     /* specific functions handled in this class. */
     void Grow();
+    void SetMgr(AsteroidBeltMgr* beltMgr, uint32 beltID) { m_beltMgr = beltMgr; m_beltID = beltID; }
 
 protected:
 
 private:
+    AsteroidBeltMgr* m_beltMgr;
     Timer m_growTimer;
+    uint32 m_beltID;
 
 };
 

@@ -32,6 +32,7 @@
 #include "system/SystemBubble.h"
 #include "system/SystemEntity.h"
 #include "system/SystemManager.h"
+#include "system/cosmicMgrs/BeltMgr.h"
 #include "Client.h"
 
 uint32 SystemBubble::m_bubbleIncrementer = 0;
@@ -48,7 +49,7 @@ m_spawnTimer(sConfig.npc.RoamingTimer)
     m_spawned= false;
     m_spawnTimer.Disable();
     m_systemID = pSystem->GetID();
-	m_bubbleID = m_bubbleIncrementer++;
+	m_bubbleID = sBubbleMgr.GetBubbleID();
 	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f).",
 	     m_bubbleID, this, m_center.x, m_center.y, m_center.z, m_radius);
 }
@@ -229,10 +230,14 @@ void SystemBubble::Add(SystemEntity* pEntity) {
         m_players.push_back( pClient );   //add to bubble's player list
 
         // Set spawn timer for this bubble, if needed
-        if (IsBelt() && (!IsSpawned()) && sConfig.npc.RoamingSpawns)
-            if (!m_spawnTimer.Enabled())
-                SetSpawnTimer(true);
-        if (IsGate() && (!IsSpawned()) && sConfig.npc.StaticSpawns) /* IsGate returns false.  will fix when gate spawns are finished */
+        if (m_belt) {
+            // check for roids and load/spawn as needed.
+            m_system->GetBeltMgr()->CheckSpawn(m_bubbleID);
+            if (sConfig.npc.RoamingSpawns)
+                if (!m_spawnTimer.Enabled())
+                    SetSpawnTimer(true);
+        }
+        if (m_gate and sConfig.npc.StaticSpawns) /* m_gate = false.  will fix when gate spawns are finished */
             if (!m_spawnTimer.Enabled())
                 SetSpawnTimer(false);
     } else {
@@ -279,23 +284,22 @@ void SystemBubble::clear() {
 	m_players.clear();
 }
 
-void SystemBubble::ResetBubbleSpawn()
+void SystemBubble::ResetBubbleRatSpawn()
 {
     /* the current spawn in this bubble was killed off, so reset timers accordingly
      *   once the timer hits, it will do all needed checks for players and respawn as needed.
      *  this enables creating a new spawn after previous group was killed off
      */
-
     m_spawned = false;
-    if (IsBelt() && (!IsSpawned()) && sConfig.npc.RoamingSpawns)
+    if (m_belt and sConfig.npc.RoamingSpawns)
         if (!m_spawnTimer.Enabled())
             SetSpawnTimer(true);
-        if (IsGate() && (!IsSpawned()) && sConfig.npc.StaticSpawns) /* IsGate returns false.  will fix when gate spawns are finished */
-            if (!m_spawnTimer.Enabled())
-                SetSpawnTimer(false);
+    if (m_gate and sConfig.npc.StaticSpawns) /* m_gate = false.  will fix when gate spawns are finished */
+        if (!m_spawnTimer.Enabled())
+            SetSpawnTimer(false);
 }
 
-void SystemBubble::SetSpawnTimer(bool isBelt /*false*/)
+void SystemBubble::SetSpawnTimer(bool isBelt/*false*/)
 {
     if (m_system->GetSystemSecurityRating() > 0.90) return;
     if (sConfig.server.testServer)
@@ -308,18 +312,18 @@ void SystemBubble::SetSpawnTimer(bool isBelt /*false*/)
     }
 }
 
-void SystemBubble::SetBelt(uint32 beltID)
+void SystemBubble::SetBelt(InventoryItemRef itemRef)
 {
     m_belt = true;
-    sBubbleMgr.AddSpawnID(GetID(), beltID);
+    sBubbleMgr.AddSpawnID(m_bubbleID, itemRef->itemID());
+    m_system->GetBeltMgr()->RegisterBelt(itemRef);
 }
 
 void SystemBubble::SetGate(uint32 gateID)
 {
     m_gate = true;
-    sBubbleMgr.AddSpawnID(GetID(), gateID);
+    sBubbleMgr.AddSpawnID(m_bubbleID, gateID);
 }
-
 
 SystemEntity* const SystemBubble::GetEntity(uint32 entityID) const {
 	/* updated to send ONLY dynamic entities to the following:          -allan 17Apr15
@@ -369,7 +373,6 @@ SystemEntity* SystemBubble::GetRandomEntity()
         return nullptr;
     }
 }
-
 
 uint32 SystemBubble::CountNPCs() {
     uint32 count = 0;

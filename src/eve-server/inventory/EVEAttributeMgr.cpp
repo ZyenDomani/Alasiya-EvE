@@ -267,7 +267,7 @@ bool AttributeMap::SaveIntAttribute(uint32 attributeID, int64 value)
 
     DBerror err;
     if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
-        _log(DATABASE__ERROR, "AttributeMap - unable to save float attributes");
+        _log(DATABASE__ERROR, "AttributeMap - unable to save int attributes - %s", err.c_str());
         return false;
     }
 
@@ -292,7 +292,7 @@ bool AttributeMap::SaveFloatAttribute(uint32 attributeID, double value)
 
     DBerror err;
     if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
-        _log(DATABASE__ERROR, "AttributeMap - unable to save float attributes");
+        _log(DATABASE__ERROR, "AttributeMap - unable to save float attributes - %s", err.c_str());
         return false;
     }
 
@@ -334,8 +334,16 @@ bool AttributeMap::Save() {
         Inserts << "(" << mItem.itemID() << ", " << itr->first << ", ";
         // the value to set.
         if ( itr->second.get_type() == evil_number_int ) {
+            if (IsNaN(itr->second.get_int())) {
+                _log(INV__ERROR, "AttributeMap::Save() - int == NaN for itemID:%u", mItem.itemID());
+                return false;
+            }
             Inserts << itr->second.get_int() << ", NULL)";
         } else {
+            if (IsNaN(itr->second.get_float())) {
+                _log(INV__ERROR, "AttributeMap::Save() - float == NaN for itemID:%u", mItem.itemID());
+                return false;
+            }
             Inserts << " NULL, " << itr->second.get_float() << ")";
         }
     }
@@ -348,7 +356,7 @@ bool AttributeMap::Save() {
         // execute the command.
         DBerror err;
         if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
-            _log(DATABASE__ERROR, "AttributeMap - unable to save attributes");
+            _log(DATABASE__ERROR, "AttributeMap - unable to save attributes - %s", err.c_str());
             return false;
         }
     }
@@ -425,7 +433,7 @@ bool AttributeMap::Delete() {
     // execute the command.
     DBerror err;
     if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
-        _log(DATABASE__ERROR, "AttributeMap - unable to delete attributes");
+        _log(DATABASE__ERROR, "AttributeMap - unable to delete attributes - %s", err.c_str());
         return false;
     }
 
@@ -449,7 +457,7 @@ bool AttributeMap::DeleteAttribute(uint32 attributeID) {
     // execute the command.
     DBerror err;
     if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
-        _log(DATABASE__ERROR, "AttributeMap - unable to delete attributeID %u for itemID %u", attributeID, mItem.itemID());
+        _log(DATABASE__ERROR, "AttributeMap - unable to delete attributeID %u for itemID %u - %s", attributeID, mItem.itemID(), err.c_str());
         return false;
     }
     mChanged = false; // just synced with database, no need to save

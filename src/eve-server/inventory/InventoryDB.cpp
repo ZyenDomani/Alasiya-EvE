@@ -525,6 +525,48 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
     return true;
 }
 
+bool InventoryDB::GetAsteroid(uint32 itemID, ItemData& into)
+{
+    /** @todo this needs testing to verify i can change the default loading scheme.
+     * this will enable seperate tables for roids, anomalies, npcs
+     */
+    DBQueryResult res;
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "   itemName,"
+        "   typeID,"
+        "   systemID,"
+        "   quantity,"
+        "   x, y, z"
+        " FROM sysAsteroids"
+        " WHERE itemID = %u", itemID)) {
+            _log(DATABASE__ERROR, "Error in LoadSystemRoids query: %s", res.error.c_str());
+            return false;
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        _log(DATABASE__MESSAGE, "Item %u not found.", itemID);
+        return false;
+    }
+
+    into.name = row.GetText(0);
+    into.typeID = row.GetUInt(1);
+    into.ownerID = 1;
+    into.locationID = row.GetUInt(2);
+    into.flag = flagAutoFit;
+    into.contraband = false;
+    into.singleton = false;
+    into.quantity = row.GetUInt(3);
+    into.position.x = row.GetDouble(4);
+    into.position.y = row.GetDouble(5);
+    into.position.z = row.GetDouble(6);
+    into.customInfo = "";
+
+    return true;
+}
+
 uint32 InventoryDB::NewItem(const ItemData &data) {
     DBerror err;
     uint32 eid = 0;

@@ -323,7 +323,7 @@ void StructureSE::Init(StructureItemRef structure)
  */
 void StructureSE::Process() {
     /* called by EntityList::Process on every loop */
-    /* this is empty default call */
+    /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
     /** @todo (Allan)  will need some form of AI to engage defensive modules if/when any structure is attacked */
 }

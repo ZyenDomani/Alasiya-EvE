@@ -42,7 +42,7 @@ INSERT INTO `dgmEffectsInfo` (`effectID`, `sourceAttributeID`, `targetAttributeI
 VALUES
 -- ID, src, targ, calc, des, rcalc, tgrpID, stack, state, targetType, targetGroup
 -- common for all modules
-(16, 30, 2, 1, 'PG -> PG_Used', 8, '6', 0, 2, 1, 0),
+(16, 30, 15, 1, 'PG -> PG_Used', 8, '6', 0, 2, 1, 0),
 (16, 50, 49, 1, 'CPU -> CPU_Used', 8, '6', 0, 2, 1, 0),
 (2663, 1153, 1152, 1, 'Cal -> Cal-Used', 8, '6', 0, 2, 1, 0),
 -- hp

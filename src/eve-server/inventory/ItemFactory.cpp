@@ -42,6 +42,7 @@
 uint32 ItemFactory::m_nextEntityID = EVEMU_TEMP_ENTITY_ID;
 uint32 ItemFactory::m_nextAsteroidID = EVEMU_ASTEROID_ID;
 uint32 ItemFactory::m_nextMissileID = EVEMU_MISSILE_ID;
+uint32 ItemFactory::m_nextNPCID = EVEMU_NPC_ID;
 
 ItemFactory::ItemFactory(EntityList& el)
 : entity_list(el)
@@ -396,3 +397,9 @@ uint32 ItemFactory::GetNextMissileID()
 {
     return ++m_nextMissileID;
 }
+
+uint32 ItemFactory::GetNextNPCID()
+{
+    return ++m_nextNPCID;
+}
+

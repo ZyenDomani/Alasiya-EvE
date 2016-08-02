@@ -190,7 +190,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
 
     SystemEntity* pEntity = pSystem->GetSE(args.ballID);
     if (!pEntity) {
-        _log(CLIENT__ERROR, "%s: Unable to find entity %u to Orbit.", call.client->GetName(), args.ballID);
+        _log(CLIENT__ERROR, "%s: Unable to find entity %u to Follow/Approach.", call.client->GetName(), args.ballID);
         return nullptr;
     }
 
@@ -220,6 +220,7 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
         return nullptr;
     }
+    /** @todo  rework this...this is to set speed ONLY...NOT to begin moving.  */
     // client should not legally send anything < 0.1 (except on rare occasion a 0.0 instead of Stop.)
     if ((arg.arg != 0) && (arg.arg < 0.1)) return nullptr;
 

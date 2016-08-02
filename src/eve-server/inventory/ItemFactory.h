@@ -27,7 +27,7 @@
 
 //#include "eve-compat.h"
 
-/** @todo look into making this a singleton to avoid multiple redirection calls when factory is needed */
+/** @todo look into making this a singleton to avoid multiple redirection calls when factory is needed (and it's single-instance code) */
 
 #include "inventory/InventoryDB.h"
 
@@ -125,6 +125,7 @@ public:
     uint32                  GetNextEntityID();
     uint32                  GetNextAsteroidID();
     uint32                  GetNextMissileID();
+    uint32                  GetNextNPCID();
 
 
 protected:
@@ -145,12 +146,11 @@ protected:
 
 private:
     // ID Authority:
-    // holds the next valid ID for in-memory only objects of EVEDB::invCategories::Entity
+    // these hold the next valid ID for in-memory only objects
     static uint32 m_nextEntityID;
-    // holds the next valid ID for in-memory only objects of EVEDB::invGroup::Asteroid
     static uint32 m_nextAsteroidID;
-    // holds the next valid ID for in-memory only objects of EVEDB::invCategories::Charge
     static uint32 m_nextMissileID;
+    static uint32 m_nextNPCID;
 
     //item to hold current number of currently loaded items
     uint32 m_itemCount;

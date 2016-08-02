@@ -389,6 +389,8 @@ int main( int argc, char* argv[] )
     sDGM_Salvage_Table.Initialize();
     sLog.Log("       ServerInit", "Dungeon Data");
     sDunDataMgr.Initialize();
+    sLog.Log("       ServerInit", "Asteroid Data");
+    sMgrData.Initialize();
     sLog.Log("       ServerInit", "Spawn Data");
     sSpawnDataMgr.Initialize();
     sLog.Log("       ServerInit", "Planet Data");

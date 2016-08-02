@@ -211,6 +211,7 @@ ContainerSE::~ContainerSE()
 }
 
 void ContainerSE::Process() {
+    /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
@@ -414,6 +415,7 @@ WreckSE::~WreckSE()
 }
 
 void WreckSE::Process() {
+    /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();

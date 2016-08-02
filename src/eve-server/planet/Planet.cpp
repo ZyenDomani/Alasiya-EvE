@@ -59,7 +59,7 @@ PlanetSE::PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager*
 {
 }
 
-bool PlanetSE::LoadExtras(SystemDB *db) {
+bool PlanetSE::LoadExtras(SystemDB* db) {
     if (!StaticSystemEntity::LoadExtras(db))
         return false;
     /** @todo use this to initialize planet data, create planet manager, or whatever else

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    6.5
+    Version:    6.6
 */
 
 
@@ -124,7 +124,10 @@ EVEServerConfig::EVEServerConfig()
     // cosmic
     cosmic.AnomalyEnabled = false;
     cosmic.DungeonEnabled = false;
-    cosmic.RoidBeltEnabled = false;
+    cosmic.BeltEnabled = false;
+    cosmic.BeltRespawn = 8 /*h*/;
+    cosmic.BeltGrowth = 6 /*h*/;
+    cosmic.roidRadiusMultiplier = 1.0;
     cosmic.WormHoleEnabled = false;
 
     // crime
@@ -384,16 +387,22 @@ bool EVEServerConfig::ProcessThreads( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
 {
-    AddValueParser( "AnomalyEnabled",    cosmic.AnomalyEnabled );
-    AddValueParser( "DungeonEnabled",    cosmic.DungeonEnabled );
-    AddValueParser( "RoidBeltEnabled",   cosmic.RoidBeltEnabled );
-    AddValueParser( "WormHoleEnabled",   cosmic.WormHoleEnabled );
+    AddValueParser( "AnomalyEnabled",       cosmic.AnomalyEnabled );
+    AddValueParser( "DungeonEnabled",       cosmic.DungeonEnabled );
+    AddValueParser( "BeltEnabled",          cosmic.BeltEnabled );
+    AddValueParser( "BeltRespawn",          cosmic.BeltRespawn );
+    AddValueParser( "BeltGrowth",           cosmic.BeltGrowth );
+    AddValueParser( "roidRadiusMultiplier", cosmic.roidRadiusMultiplier );
+    AddValueParser( "WormHoleEnabled",      cosmic.WormHoleEnabled );
 
     const bool result = ParseElementChildren( ele );
 
     RemoveParser( "AnomalyEnabled" );
     RemoveParser( "DungeonEnabled" );
-    RemoveParser( "RoidBeltEnabled" );
+    RemoveParser( "BeltEnabled" );
+    RemoveParser( "BeltRespawn" );
+    RemoveParser( "BeltGrowth" );
+    RemoveParser( "roidRadiusMultiplier" );
     RemoveParser( "WormHoleEnabled" );
 
     return result;

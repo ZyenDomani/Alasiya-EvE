@@ -44,7 +44,7 @@
 #define maxUniverseAsteroid     79999999
 #define minAlliance             99000000
 #define maxAlliance             99900000
-#define minPlayerItem           140000000
+#define minPlayerItem           100000000
 #define maxEveItem              2147483647      // max short int32
 /*
 DSTLOCALBALLS = 0x0C0000000h  (3,221,225,472 decimal)      unknown where this is from
@@ -61,10 +61,12 @@ minFakeClientItem = 17000000000000000000L
 */
 
 //  allan's static defines to ease code checks
-#define EVEMU_ASTEROID_ID              70000000
+#define EVEMU_OUTPOST_ID               61000000
+#define EVEMU_SCENERIO_ID              90000000
 #define EVEMU_MINIMUM_ID          minPlayerItem
-#define EVEMU_TEMP_ENTITY_ID          100000000
+#define EVEMU_TEMP_ENTITY_ID   EVEMU_MINIMUM_ID
 #define EVEMU_MINIMUM_ENTITY_ID       140000000
+#define EVEMU_ASTEROID_ID             450000000     // room to grow. with 50m roids, each belt would have ~110 roids in it.
 #define EVEMU_DRONE_ID                500000000
 #define EVEMU_NPC_ID                  750000000
 #define EVEMU_MISSILE_ID             1000000000
@@ -142,6 +144,9 @@ minFakeClientItem = 17000000000000000000L
 
 #define IsNotStaticItem(itemID) \
 (itemID >= EVEMU_MINIMUM_ID)
+
+#define IsAsteroid(itemID) \
+((itemID >= 450000000) && (itemID < 500000000))
 
 #define IsModuleSlot(flag) \
 (((flag >= flagLowSlot0) && (flag <= flagHiSlot7)) \

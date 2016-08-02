@@ -82,12 +82,12 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
         "  LEFT JOIN corporation AS co ON co.corporationID = e.ownerID"
         " WHERE e.locationID = %u"
-        "  AND ((g.categoryID NOT IN (%d, %d, %d) AND (e.ownerID = 1))"  // get dynamics owned by the system -include abandonded ships
+        "  AND ((g.categoryID NOT IN (%d, %d, %d, %d) AND (e.ownerID = 1))"  // get dynamics owned by the system -include abandonded ships
         "     OR (g.categoryID IN (%d, %d, %d, %d, %d, %d, %d, %d) AND (e.ownerID != 1)))"  // get dynamics not owned by the system (not abandonded)
         "  ORDER BY e.itemID",
         systemID,
         //exclude categories not applicable for in-space system entities or owned by player/corp :
-        _System/*0*/, /*Character*/1, /*Station*/3, /*Asteroid, 25*/ //asteroids are now owned/controlled by BeltMgr - DO NOT load here.
+        _System/*0*/, /*Character*/1, /*Station*/3, Asteroid/*25*/, //asteroids are now owned/controlled by BeltMgr - DO NOT load here.
         // include deployed items owned by players or corps
         Deployable/*22*/, Orbitals/*46*/, Drone/*18*/, Entity/*11*/,    // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
         /*Structure*/23, StructureUpgrade/*39*/, SovereigntyStructure/*40*/, Celestial/*2*/     // Celestial is for containers (wrecks, jetcans, lsc)

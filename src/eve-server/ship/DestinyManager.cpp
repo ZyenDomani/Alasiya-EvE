@@ -1276,6 +1276,8 @@ bool DestinyManager::_IsTargetInvalid()
         Stop();
         return true;
     }
+    if (!m_targetEntity.second->IsDynamicEntity())
+        return false;
     if (m_targetEntity.second->HasPilot()) {
         if (m_targetEntity.second->GetPilot()->IsDocked()) {  // Our target docked, so STOP
             mySE->TargetMgr()->ClearTarget(m_targetEntity.second);

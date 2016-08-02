@@ -26,25 +26,29 @@
 
 #include "eve-server.h"
 
-#include "system/Asteroid.h"
+#include "EVEServerConfig.h"
 #include "ship/DestinyManager.h"
+#include "system/Asteroid.h"
+#include "system/SystemManager.h"
+#include "system/cosmicMgrs/BeltMgr.h"
+#include "system/SystemBubble.h"
 
 
 AsteroidSE::AsteroidSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)
 : ObjectSystemEntity(self, services, system),
-m_growTimer(360000) /* arbitrary for 1 hour */
+m_growTimer(sConfig.cosmic.BeltGrowth *60 *60 *1000)  // hours->ms
 {
     m_growTimer.Disable();
 }
 
 void AsteroidSE::Process() {
     /* called by EntityList::Process on every loop */
-    /* this is target process call */
+    /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 
-    /*  set/check timers for grow/respawn, etc */
     if (m_growTimer.Check())
-        Grow();
+        if (!m_system->GetBeltMgr()->IsActive(m_bubble->GetID()))
+            Grow();
 }
 
 void AsteroidSE::EncodeDestiny( Buffer& into )
@@ -60,7 +64,6 @@ void AsteroidSE::EncodeDestiny( Buffer& into )
         head.z = z();
         head.flags = IsMassive;
     into.Append( head );
-
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
@@ -80,5 +83,21 @@ void AsteroidSE::Grow() {
     /*  not real sure how to implement this
      * maybe use internal data structure to hold sizes (current, possible) and time interval
      * use this to check/update current sizes (radius and mass)
+     *
+     * currently sets quantity back to full and disables m_growTimer
      */
+
+    double quantity = ((25000 * log(GetRadius())) - 112404.8);
+    m_self->SetAttribute(AttrQuantity,  quantity);   // quantity in m^3
+
+    m_growTimer.Disable();
+}
+
+void AsteroidSE::Delete()
+{
+    _log(SPAWN__DEPOP, "AsteroidSE::Delete() - Removing asteroid %s(%u) from beltID %u", \
+            m_self->itemName().c_str(), m_self->itemID(), m_beltID);
+    m_beltMgr->RemoveAsteroid(m_beltID, this);
+    m_system->RemoveEntity(this);
+    m_self->Delete();
 }

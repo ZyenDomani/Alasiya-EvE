@@ -158,25 +158,37 @@ CREATE TABLE IF NOT EXISTS `mapConnections` (
 /* Table structure for table `roidDistribution`  */
 
 CREATE TABLE IF NOT EXISTS `roidDistribution` (
-  `AI` int(11) NOT NULL AUTO_INCREMENT,
+  `AI` int(5) NOT NULL AUTO_INCREMENT,
   `systemSec` varchar(2) NOT NULL,
   `roidID` int(10) unsigned NOT NULL,
   `roidName` varchar(20) NOT NULL,
   `percent` float NOT NULL,
   PRIMARY KEY (`AI`),
   KEY `systemSec` (`systemSec`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS `roidDistributionCmb` (
+  `AI` int(5) NOT NULL AUTO_INCREMENT,
+  `systemSec` varchar(2) NOT NULL,
+  `roidID` int(10) unsigned NOT NULL,
+  `roidName` varchar(20) NOT NULL,
+  `percent` float NOT NULL,
+  PRIMARY KEY (`AI`),
+  KEY `systemSec` (`systemSec`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 --
 -- Table structure for table `roidDistributionExtra`
 --
 
 CREATE TABLE IF NOT EXISTS `roidDistributionExtra` (
+  `AI` int(5) NOT NULL AUTO_INCREMENT,
   `systemSec` varchar(2) NOT NULL,
   `roidID` int(10) unsigned NOT NULL,
   `percent` float NOT NULL,
+  PRIMARY KEY (`AI`),
   KEY `systemSec` (`systemSec`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 --
 

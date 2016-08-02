@@ -190,15 +190,15 @@ SystemBubble* BubbleManager::FindBubble(const GPoint &pos) const {
 }
 
 /* for beltmgr */
+void BubbleManager::AddSpawnID(uint16 bubbleID, uint32 spawnID)
+{
+    m_spawnIDs.emplace(std::pair<uint16, uint32>(bubbleID, spawnID));
+}
+
 uint32 BubbleManager::GetSpawnID(uint16 bubbleID)
 {
     std::map<uint16, uint32>::iterator itr = m_spawnIDs.find(bubbleID);
     if (itr == m_spawnIDs.end())
         return 0;
     return itr->second;
-}
-
-void BubbleManager::AddSpawnID(uint16 bubbleID, uint32 spawnID)
-{
-    m_spawnIDs.emplace(std::pair<uint16, uint32>(bubbleID, spawnID));
 }

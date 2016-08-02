@@ -47,14 +47,14 @@ public:
 
     /* for spawn system     -allan 15July15 */
     void Process();
-    void SetBelt(uint32 beltID);
+    void SetBelt(InventoryItemRef itemRef);
     void SetGate(uint32 gateID);
-    void ResetBubbleSpawn();
-    void SetSpawned(bool set)                           { m_spawned = set; }
+    void ResetBubbleRatSpawn();
     bool IsBelt()                                       { return m_belt; }
     bool IsGate()                                       { return m_gate; }
     bool IsSpawned()                                    { return m_spawned; }
-    void SetSpawnTimer(bool isBelt = false);
+    void SetSpawned(bool set)                           { m_spawned = set; }
+    void SetSpawnTimer(bool isBelt=false);
 
     /* various count queries */
     uint32 CountNPCs();
@@ -112,7 +112,7 @@ private:
     SystemManager* m_system = nullptr;
 
 	uint32 m_systemID = 0;
-    uint32 m_bubbleID = 0;
+    uint32 m_bubbleID = 1;
 
     static uint32 m_bubbleIncrementer;
 

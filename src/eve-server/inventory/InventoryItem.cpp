@@ -130,6 +130,8 @@ uint32 InventoryItem::CreateTempItemID(ItemFactory &factory, ItemData &data) {
     // Get a new Entity ID from ItemFactory's ID Authority:
     if (t->categoryID() == EVEDB::invCategories::Asteroid)  //cant use, as mined ore is of category:asteroid
         return factory.GetNextAsteroidID();
+    else if (t->categoryID() == EVEDB::invCategories::Ship) // may need more testing to verify that ONLY NPC's use this method
+        return factory.GetNextNPCID();
     else if (data.flag == EVEItemFlags::flagMissile)
         return factory.GetNextMissileID();
     else
@@ -183,7 +185,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
             case EVEDB::invCategories::Skill: {
                 return Skill::_LoadItem<Skill>( factory, itemID, type, data );
             }
-            case EVEDB::invCategories::Character: {
+            case EVEDB::invCategories::Owner: {
                 return Character::_LoadItem<Character>( factory, itemID, type, data );
             }
             case EVEDB::invCategories::Celestial: {
@@ -284,10 +286,9 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Skill: {
             return Skill::Spawn( factory, data );
         }
-        case EVEDB::invCategories::Character: {
+        case EVEDB::invCategories::Owner: {
             return Character::Spawn( factory, data );
         }
-
         case EVEDB::invCategories::Ship: {
             return ShipItem::Spawn( factory, data );
         }
@@ -310,7 +311,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
             itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
             itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
-            itemRef->SaveAttributes();
+            //itemRef->SaveAttributes();
 
             return itemRef;
         }
@@ -331,7 +332,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                     itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
                     itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
                     itemRef->SetAttribute(AttrCapacity,   itemRef->type().capacity());   // Capacity
-                    itemRef->SaveAttributes();
+                    //itemRef->SaveAttributes();
                     return itemRef;
 
                 }
@@ -349,7 +350,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                     itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
                     itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
                     itemRef->SetAttribute(AttrCapacity,   itemRef->type().capacity());   // Capacity
-                    itemRef->SaveAttributes();
+                    //itemRef->SaveAttributes();
                     return itemRef;
                 }
             }
@@ -357,26 +358,16 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         }
         case EVEDB::invCategories::Entity: {
 			// Spawn generic item for Entities at this time:
-            // (commented lines for CreateTempItemID and LoadEntity can be used alternatively to prevent Entities from being created and saved to the DB,
-			//  however, this may be causing weird and bad targetting of NPC ships when they enter the bubble and your ship is already in it)
+            uint32 itemID = InventoryItem::CreateItemID( factory, data );
             //uint32 itemID = InventoryItem::CreateTempItemID( factory, data );		// Use this to prevent entity from being stored in DB
-			uint32 itemID = InventoryItem::CreateItemID( factory, data );
 			if ( itemID == 0 )
 				return InventoryItemRef();
-			//InventoryItemRef itemRef = InventoryItem::LoadEntity( factory, itemID, data );		// Use this to prevent entity from being stored in DB
-            InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
+			 InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
             if (!itemRef)
                 return InventoryItemRef();
 			return itemRef;
 		}
         case EVEDB::invCategories::Asteroid: {
-            //TODO  run checks here for asteroids (id in 70m range), and outposts (id in 61m range) and add to correct table, and retrieve correct id range.
-            //  see ~/Desktop/cruc/misc_shit/classes_by_itemID      -done, but see note below.
-            // Spawn generic item:
-            // (commented lines for CreateTempItemID and LoadEntity can be used alternatively to prevent asteroids from being created and saved to the DB,
-            //  however, initial testing of this throws a client exception when attempting to show brackets for these asteroid space objects when using
-            //  these alternative functions.  more investigation into that is required before they can be used with Asteroids)
-            //NOTE  roidID range fixed, but ore is spawned as invCategories::Asteroid, also.  must be saved in db, so continue with this.  -allan 31May15
             uint32 itemID = InventoryItem::CreateItemID( factory, data );
             //uint32 itemID = InventoryItem::CreateTempItemID( factory, data ); // Use this to prevent Asteroids from being stored in DB
             if ( itemID == 0 )
@@ -384,12 +375,11 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
             if (!itemRef)
                 return InventoryItemRef();
-            //InventoryItemRef itemRef = InventoryItem::LoadEntity( factory, itemID, data );        // Use this to prevent Asteroids from being stored in DB
             // THESE SHOULD BE MOVED INTO AN Asteroid::Spawn() function that does not exist yet
             // Create default dynamic attributes in the AttributeMap:
             itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
             itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
-            itemRef->SaveAttributes();
+            //itemRef->SaveAttributes();
             return itemRef;
         }
         case EVEDB::invCategories::Structure: {     /*  this is for all POS items */
@@ -407,7 +397,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
             itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
             itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
-            itemRef->SaveAttributes();
+            //itemRef->SaveAttributes();
             return itemRef;
         }
         case EVEDB::invCategories::Station: {
@@ -424,7 +414,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             stationRef->SetAttribute(AttrRadius,         stationRef->type().radius());       // Radius
             stationRef->SetAttribute(AttrVolume,         stationRef->type().volume());       // Volume
             stationRef->SetAttribute(AttrCapacity,       stationRef->type().capacity());   // Capacity
-            stationRef->SaveAttributes();
+            //stationRef->SaveAttributes();
             return stationRef;
         }
         case EVEDB::invCategories::Celestial: {
@@ -448,7 +438,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 cargoRef->SetAttribute(AttrRadius,        cargoRef->type().radius());        // Radius
                 cargoRef->SetAttribute(AttrVolume,        cargoRef->type().volume());        // Volume
                 cargoRef->SetAttribute(AttrCapacity,      cargoRef->type().capacity());      // Capacity
-                cargoRef->SaveAttributes();
+                //cargoRef->SaveAttributes();
                 return cargoRef;
             } else if (t->groupID() == EVEDB::invGroups::Wreck) {
                 // Spawn new Wreck Container
@@ -465,7 +455,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 wreckRef->SetAttribute(AttrRadius,        wreckRef->type().radius());        // Radius
                 wreckRef->SetAttribute(AttrVolume,        wreckRef->type().volume());        // Volume
                 wreckRef->SetAttribute(AttrCapacity,      wreckRef->type().capacity());      // Capacity
-                wreckRef->SaveAttributes();
+                //wreckRef->SaveAttributes();
                 return wreckRef;
             }
             /*  put a check in here for beacons,
@@ -502,7 +492,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
     itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
     itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
     itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
-	itemRef->SaveAttributes();
+	//itemRef->SaveAttributes();
     return itemRef;
 }
 

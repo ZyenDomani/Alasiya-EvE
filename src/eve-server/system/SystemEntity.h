@@ -202,6 +202,7 @@ public:
     virtual void                SetPilot(Client* pClient){ /* Do nothing here */ }
     virtual bool                HasPilot()              { return false; }
     virtual Client*             GetPilot()              { return nullptr; }
+    virtual void                Delete()                { /* Do nothing here */ }  // this is only for asteroids and missiles (so far...)
 
     /* specific functions handled in this class. */
 

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    6.5
+    Version:    6.6
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -192,7 +192,10 @@ public:
     {
         bool AnomalyEnabled;
         bool DungeonEnabled;
-        bool RoidBeltEnabled;
+        bool BeltEnabled;
+        uint8 BeltRespawn;
+        uint8 BeltGrowth;
+        float roidRadiusMultiplier;
         bool WormHoleEnabled;
     } cosmic;
 

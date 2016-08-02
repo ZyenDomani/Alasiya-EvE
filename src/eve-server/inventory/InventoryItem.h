@@ -191,8 +191,13 @@ protected:
     {
         // pull the item info
         ItemData data;
-        if( !factory.db().GetItem( itemID, data ) )
-            return RefPtr<_Ty>();
+        if (IsAsteroid(itemID)) {
+            if( !factory.db().GetItem( itemID, data ) )
+                return RefPtr<_Ty>();
+        } else {
+            if( !factory.db().GetItem( itemID, data ) )
+                return RefPtr<_Ty>();
+        }
 
         // obtain type
         const ItemType *type = factory.GetType( data.typeID );

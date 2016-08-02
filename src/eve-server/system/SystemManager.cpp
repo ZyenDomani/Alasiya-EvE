@@ -115,7 +115,7 @@ GPoint hack_sentry_locs[num_hack_sentry_locs] = {
 
 void SystemManager::LoadCosmicMgrs()
 {
-    m_beltMgr->Init();
+    m_beltMgr->Init(m_regionID);
     m_dunMgr->Init(m_anomMgr, m_spawnMgr);
     m_anomMgr->Init(m_beltMgr, m_dunMgr, m_spawnMgr);
 }
@@ -136,14 +136,14 @@ bool SystemManager::LoadSystemStatics() {
                 /** @todo (Allan) outposts are group::station - may need to hack this */
                 /*  types 12242 - 22298 in group 15 are outposts */
                 /*  types 29323 - 29390 in group 15 are wrecked stations */
-                StationItemRef station = itemFactory()->GetStation(cur.itemID);
-                StationSE *se = new StationSE(station, *(GetServiceMgr()), this);
-                sEntityList.AddStation(cur.itemID, station);
+                StationItemRef itemRef = itemFactory()->GetStation(cur.itemID);
+                StationSE *se = new StationSE(itemRef, *(GetServiceMgr()), this);
+                sEntityList.AddStation(cur.itemID, itemRef);
                 pSE = se;
             } break;
             case EVEDB::invGroups::Asteroid_Belt: {
-                CelestialObjectRef belt = itemFactory()->GetCelestialObject(cur.itemID);
-                BeltSE *se = new BeltSE(belt, *(GetServiceMgr()), this);
+                CelestialObjectRef itemRef = itemFactory()->GetCelestialObject(cur.itemID);
+                BeltSE *se = new BeltSE(itemRef, *(GetServiceMgr()), this);
                 ++m_beltCount;
                 pSE = se;
             } break;

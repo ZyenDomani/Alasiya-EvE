@@ -32,6 +32,7 @@
 #include "ship/modules/mining_modules/MiningLaser.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
+#include <system/cosmicMgrs/BeltMgr.h>
 /*
     AttrIceHarvestCycleBonus = 780,
     AttrSpecialisationAsteroidGroup = 781,
@@ -78,6 +79,8 @@ void MiningLaser::Activate(SystemEntity* pSE)
 
         //# _ShowCycle();
         _SetCapNeed();
+        /** @todo fix THIS bullshit!!! */
+        m_Ship->GetPilot()->GetShipSE()->SystemMgr()->GetBeltMgr()->SetActive(m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetID());
     } else {
         _log(MINING__WARNING, "Activate() - Invalid target");
         if (m_Ship->HasPilot())
@@ -203,10 +206,11 @@ void MiningLaser::_ProcessOreCycle(bool partial)
 
     if (!roidQuantity) {
         Deactivate();
-        m_targetEntity->SystemMgr()->RemoveEntity(m_targetEntity);
-        m_targetEntity->GetSelf()->Delete();
-    } else
+        m_targetEntity->Delete();
+    } else {
         asteroidRef->SetAttribute(AttrQuantity, roidQuantity);
+        /** @todo figure out how to set radius based on updated quantity */
+    }
 }
 
 void MiningLaser::_ProcessCloudCycle(bool partial)

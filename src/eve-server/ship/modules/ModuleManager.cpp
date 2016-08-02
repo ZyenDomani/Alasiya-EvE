@@ -660,8 +660,8 @@ bool ModuleManager::Initialize() {
         } else
             return false;
     }
-    m_initalized = true;
-    return true;
+
+    return (m_initalized = true);
 }
 
 bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
@@ -837,6 +837,8 @@ void ModuleManager::Online(uint32 itemID)
 {
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
+        if (mod->isOnline())
+            return;
         if (OnlineCheck(mod)) {
             _log(SHIP__MODULE_TRACE, "ModuleManager::Online() -  %s going Online", mod->getItem()->itemName().c_str());
             mod->Online();

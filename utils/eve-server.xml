@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 6.5 -->
+     Version: 6.6 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -133,7 +133,8 @@
     <cosmic>
         <AnomalyEnabled>true</AnomalyEnabled><!-- bool -->
         <DungeonEnabled>true</DungeonEnabled><!-- bool -->
-        <RoidBeltEnabled>true</RoidBeltEnabled><!-- bool -->
+        <BeltEnabled>true</BeltEnabled><!-- bool -->
+        <BeltRespawn>6</BeltRespawn><!-- hours  (6h default) -->
         <WormHoleEnabled>true</WormHoleEnabled><!-- bool -->
     </cosmic>
 

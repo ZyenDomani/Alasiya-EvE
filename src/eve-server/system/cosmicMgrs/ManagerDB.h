@@ -43,6 +43,28 @@ public:
     double z;
 };
 
+/* POD entry for asteroid distrubtion methods */
+struct DBOreBySSC { // notes for me while creating/writing/testing
+    std::string secClass;
+    uint8 V;
+    uint8 S;
+    uint8 Py;
+    uint8 Pl;
+    uint8 O;
+    uint8 K;
+    uint8 J;
+    uint8 Hem;
+    uint8 Hed;
+    uint8 G;
+    uint8 DO;
+    uint8 Sp;
+    uint8 C;
+    uint8 B;
+    uint8 A;
+    uint8 M;
+};
+
+
 /* POD entry for active dungeon */
 class DBActiveDungeon {
 public:
@@ -95,26 +117,55 @@ typedef enum {
 
     */
 
+// this class is a singleton object to have a common place for all manager data
+class MgrData
+: public Singleton< MgrData >
+{
+public:
+    MgrData();
+    virtual ~MgrData() { /* nothing do to yet */ }
+
+    // Initializes the Table:
+    int Initialize();
+
+    uint8 GetRegionQuarter(uint32 regionID);
+    bool GetRoidDist(uint8& quarter, const char* sec, std::map<float, uint32>& roids);
+
+protected:
+    void _Populate();
+
+private:
+    std::map<uint32, uint32> m_regions;   // this simple map holds k,v of regionID/factionID
+    std::map<std::string, DBOreBySSC> m_oreBySSC;
+};
+
+#define sMgrData \
+    ( MgrData::get() )
+
+
 class ManagerDB {
 public:
     /* db methods for all managers */
     void SaveAnomaly(DBCosmicSignature& sig);
     void GetAnomalyList(DBQueryResult& res);
     GPoint GetAnomalyPos(std::string& string);
-    void GetSystemAnomalies(uint32 systemID, DBQueryResult &res);
-    void GetSystemAnomalies(uint32 systemID, std::vector<DBCosmicSignature>& sigs);
+    void GetSystemAnomalies(uint32 systemID, DBQueryResult& res);
+    void GetSystemAnomalies(uint32 systemID, std::vector< DBCosmicSignature >& sigs);
+
+    /* data manager */
+    void GetOreBySSC(DBQueryResult& res);
 
     /* belt manager */
-    bool GetRoidDist(const char * sec, std::map<float, uint32> &roids);
-    void SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidSE> roids);
-    bool LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAsteroidSE>& into);
+    void SaveSystemRoids(uint32 systemID, std::vector< DBAsteroidSE >& roids);
+    bool LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< DBAsteroidSE >& into);
+    void GetRegionFaction(DBQueryResult& res);
 
     /* spawn manager */
     void DeleteSpawnedRats();
     void GetSpawnClasses(DBQueryResult& res);
     void GetGroupTypeIDs(uint32 groupID, DBQueryResult& res);
     void GetFactionGroups(DBQueryResult& res);
-    void GetRegionFactionInfo(DBQueryResult& res);
+    void GetRegionRatFaction(DBQueryResult& res);
 
     /* dungeon manager */
     void GetDunTemplates(DBQueryResult& res);

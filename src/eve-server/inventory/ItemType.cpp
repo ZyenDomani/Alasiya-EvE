@@ -56,7 +56,7 @@ ItemCategory::ItemCategory(
   m_description(_data.description),
   m_published(_data.published)
 {
-    _log(ITEM__TRACE, "Created object %p for category %s (%u).", this, name().c_str(), (uint32)id());
+    _log(ITEM__TRACE, "Created object %p for category %s (%u).", this, m_name.c_str(), (uint32)m_id);
 }
 
 ItemCategory *ItemCategory::Load(ItemFactory &factory, EVEItemCategories category) {
@@ -277,7 +277,7 @@ _Ty *ItemType::_LoadType(ItemFactory &factory, uint32 typeID,
         case EVEDB::invCategories::Asteroid:
         case EVEDB::invCategories::Orbitals:
             */
-        case EVEDB::invCategories::Character: {
+        case EVEDB::invCategories::Owner: {
             return CharacterType::_LoadType<CharacterType>( factory, typeID, group, data );
         }
         case EVEDB::invCategories::Station: {

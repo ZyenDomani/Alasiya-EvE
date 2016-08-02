@@ -46,6 +46,7 @@ public:
     virtual bool IsMissileSE()                          { return true; }
 
     /* SystemEntity interface */
+    virtual void Delete();
     virtual void Process();
     virtual void EncodeDestiny( Buffer& into );
     virtual void MakeDamageState(DoDestinyDamageState &into);
@@ -57,7 +58,6 @@ public:
 
     void SetHitTimer(uint32 setTime)                    { m_hitTimer.Start(setTime); }
     void SetSpeed(double speed)                         { m_speed = speed; }
-    void Delete();
 
     bool IsAlive()                                      { return m_alive; }
     bool IsOverloaded()                                 { return false; }

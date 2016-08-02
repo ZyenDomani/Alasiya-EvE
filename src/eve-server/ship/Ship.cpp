@@ -141,19 +141,24 @@ ShipItemRef ShipItem::Spawn(ItemFactory &factory, ItemData &data) {
 uint32 ShipItem::CreateItemID(ItemFactory &factory, ItemData &data) {
     // make sure it's a ship
     const ShipType *st = factory.GetShipType(data.typeID);
-    if (!st) return 0;
+    if (!st)
+        return 0;
 
     return InventoryItem::CreateItemID(factory, data);
 }
 
 bool ShipItem::_Load()
 {
-    if (type().id() == EVEDB::invTypes::typeCapsule) return true;
-    if (m_IsLoaded and m_ModuleManager) return true;
     // load attributes
-    if (!InventoryItem::_Load()) return false;
+    if (!InventoryItem::_Load())
+        return false;
+    if (type().id() == EVEDB::invTypes::typeCapsule)
+        return (m_IsLoaded = true);
+    if (m_IsLoaded and m_ModuleManager)
+        return true;
     // load contents
-    if (!m_inventory->LoadContents(&m_factory))  return false;
+    if (!m_inventory->LoadContents(&m_factory))
+        return false;
 
     // reset ship default capacity due to errors seen while testing.
     SetAttribute(AttrCapacity, type().capacity(), false);
@@ -291,7 +296,8 @@ void ShipItem::InitPod() {
 }
 
 void ShipItem::SetPlayer(Client* pClient) {
-    if (m_pilot == pClient) return;
+    if (m_pilot == pClient)
+        return;
     m_pilot = pClient;
     if (!m_pilot) {
         if (m_ModuleManager)
@@ -395,7 +401,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
                 return false;
             }
             if (item->categoryID() == EVEDB::invCategories::Charge) {
-                if (m_ModuleManager->GetModule(flag)) {
+                if (m_ModuleManager and m_ModuleManager->GetModule(flag)) {
                     InventoryItemRef module = m_ModuleManager->GetModule(flag)->getItem();
                     if (module->GetAttribute(AttrChargeSize) != item->GetAttribute(AttrChargeSize)) {
                         sLog.Error("Ship::ValidateAddItem", "Charge size %u for %s does not match Module size %u for %s.",
@@ -419,7 +425,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
                     return false;
                 }
             } else {
-                if (m_ModuleManager->IsSlotOccupied(flag)) {
+                if (m_ModuleManager and m_ModuleManager->IsSlotOccupied(flag)) {
                     if (m_pilot->CanThrow())
                         throw PyException( MakeUserError( "SlotAlreadyOccupied" ));
                     return false;
@@ -646,7 +652,8 @@ void ShipItem::SaveShip()
 {
     SaveItem();                         // Save ship info
     mAttributeMap.SaveShipState();      // save ship damage
-    m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
+    if (m_ModuleManager)
+        m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
 }
 
 bool ShipItem::ValidateItemSpecifics(InventoryItemRef equip) {
@@ -700,7 +707,8 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef equip) {
 void ShipItem::ProcessModules() {
     if (m_pilot->IsDocked())
         return;
-    m_ModuleManager->Process();
+    if (m_ModuleManager)
+        m_ModuleManager->Process();
 }
 
 void ShipItem::Dock() {
@@ -718,16 +726,19 @@ void ShipItem::Undock() {
     }
     //get list of modules to activate from ShipBound::Handle_Undock()
     for (auto cur : m_onlineModuleVec) {
-        m_ModuleManager->Online(cur);
+        if (m_ModuleManager)
+            m_ModuleManager->Online(cur);
     }
 }
 
 void ShipItem::Warp() {
-    m_ModuleManager->ShipWarping();
+    if (m_ModuleManager)
+        m_ModuleManager->ShipWarping();
 }
 
 void ShipItem::Jump() {
-    m_ModuleManager->ShipJumping();
+    if (m_ModuleManager)
+        m_ModuleManager->ShipJumping();
 }
 
 void ShipItem::Heal()
@@ -813,7 +824,7 @@ void ShipItem::SetShipHull(double fraction)
 /* Begin new Module Manager Interface */
 InventoryItemRef ShipItem::GetModule(EVEItemFlags flag)
 {
-	if ( m_ModuleManager->GetModule(flag) != NULL )
+    if (m_ModuleManager and m_ModuleManager->GetModule(flag) != NULL )
 		return (m_ModuleManager->GetModule(flag))->getItem();
 	else
 		return InventoryItemRef();
@@ -821,7 +832,7 @@ InventoryItemRef ShipItem::GetModule(EVEItemFlags flag)
 
 InventoryItemRef ShipItem::GetModule(uint32 itemID)
 {
-	if ( m_ModuleManager->GetModule(itemID) != NULL )
+    if (m_ModuleManager and m_ModuleManager->GetModule(itemID) != NULL )
 		return (m_ModuleManager->GetModule(itemID))->getItem();
 	else
 		return InventoryItemRef();
@@ -856,6 +867,8 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
     if (!ValidateAddItem(flag, item))
         return 0;
     if (IsModuleSlot(flag)) {
+        if (!m_ModuleManager)
+            return 0;
         if (item->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->LoadCharge(item, flag);
             InventoryItemRef loadedChargeOnModule = m_ModuleManager->GetLoadedChargeOnModule(flag);
@@ -899,6 +912,8 @@ void ShipItem::RemoveItem(InventoryItemRef item)
 
     // check to see if item is currently in a module slot.  going by category is NOT working after _ExecAdd() updates.
     if (IsModuleSlot(item->flag())) {
+        if (!m_ModuleManager)
+            return;
         // if item being removed is in a module slot, remove it via Module Manager here, and let invBound take care of the rest.
         if ((item->categoryID() == EVEDB::invCategories::Charge)
                 && ((item->flag() >= flagLowSlot0) && (item->flag() <= flagHiSlot7))) {
@@ -1212,7 +1227,7 @@ double Ship::CalculateRechargeRate(double Capacity, double Current, double Recha
 }
 
 void Ship::Process() {
-    // process targeting (thru SE base)
+    /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 
     // check to see if this is an empty ship, and exit if so.

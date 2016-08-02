@@ -84,8 +84,8 @@ int64 MakeRandomInt( int64 low = 0, int64 high = RAND_MAX );
  */
 double MakeRandomFloat( double low = 0, double high = 1 );
 
-inline bool IsEven(int64 number)       { return ((number %2) == 0); }
-
+inline bool IsEven(int64 number) { return ((number %2) == 0); }
+inline bool IsNaN(double x)      { return x!= x; }
 
 uint32 CreatePIDFile(const std::string& filename);
 

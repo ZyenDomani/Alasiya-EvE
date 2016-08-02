@@ -105,6 +105,7 @@ void Drone::Process() {
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
+    /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
     /** @todo (allan) finish drone AI and processing */
     m_AI->Process();

@@ -102,6 +102,7 @@ void Concord::Process() {
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
+    /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
     m_AI->Process();
 

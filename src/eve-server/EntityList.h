@@ -130,7 +130,7 @@ private:
     std::map<uint32, SystemManager*> m_systems;
     std::map<uint32, InventoryItemRef> m_stations;
     std::vector<std::string> m_anomIDs;
-
+    
     uint32 m_npcs = 0;
     uint32 m_stamp = 0;
     uint32 m_connections = 0;

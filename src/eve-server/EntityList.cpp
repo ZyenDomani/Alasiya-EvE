@@ -33,6 +33,7 @@
 #include "ship/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
+#include "system/cosmicMgrs/ManagerDB.h"
 
 EntityList::EntityList()
 : m_services( nullptr ),

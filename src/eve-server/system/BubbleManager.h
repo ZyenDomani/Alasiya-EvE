@@ -65,7 +65,9 @@ public:
     void Remove(SystemEntity* ent);
     void clear();
 
-    uint32 Count()                        { return m_bubbles.size(); }
+    uint32 Count()                                      { return m_bubbles.size(); }
+
+    uint32 GetBubbleID()                                { return ++m_bubbleID; }
 
     // for spawn system     -allan 15April16
     void AddSpawnID(uint16 bubbleID, uint32 spawnID);
@@ -73,6 +75,8 @@ public:
 
 protected:
     Timer m_wanderTimer;
+
+    uint32 m_bubbleID=0;
 
     /* map of bubbleID, spawnID */
     std::map<uint16, uint32> m_spawnIDs;

@@ -161,9 +161,8 @@ void PlanetDB::SaveColony()
 
 }
 
-void PlanetDB::GetPlanetData(DBQueryResult& row)
+void PlanetDB::GetPlanetData(DBQueryResult& res)
 {
-    DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT planet.typeID AS planetTypeID,"
         " resource.typeID AS resourceID"

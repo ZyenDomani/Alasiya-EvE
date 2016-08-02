@@ -20,7 +20,7 @@
  *    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
  *    http://www.gnu.org/copyleft/lesser.txt.
  *    ------------------------------------------------------------------------------------
- *    Author:        eve-moo
+ *    Author:   Allan
  */
 
 #include "eve-server.h"
@@ -63,33 +63,36 @@ double SurveyScanner::DoCycle() {
         _ShowCycle();
         m_firstRun = false;
     } else {
-        SystemBubble *pBubble = m_Ship->GetPilot()->GetShipSE()->SysBubble();
-        // Construct response packet.
-        PyTuple *result = new PyTuple(2);
-            result->SetItem(0, new PyString("OnSurveyScanComplete"));
-        PyList *roids = new PyList();
-            result->SetItem(1, roids);
+        SystemEntity* pShipSE = m_Ship->GetPilot()->GetShipSE();
+        SystemBubble* pBubble = pShipSE->SysBubble();
+        PyTuple* tuple = new PyTuple(2);
+            tuple->SetItem(0, new PyString("OnSurveyScanComplete"));
+        PyList* list = new PyList();
+            tuple->SetItem(1, list);
         if (pBubble->IsBelt()) {
             std::vector<AsteroidSE*> vList;
-            pBeltMgr->GetList(sBubbleMgr.GetSpawnID(pBubble->GetID()), vList);
+            pShipSE->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetSpawnID(pBubble->GetID()), vList);
             double maxDist = m_Item->GetAttribute(AttrSurveyScanRange).get_float();
             for (auto pASE : vList) {
-                PyTuple *roid = new PyTuple(3);
-                    roid->SetItem(0, new PyInt(pASE->GetID()));
-                    roid->SetItem(1, new PyInt(pASE->GetTypeID()));
-                    roid->SetItem(2, new PyInt(pASE->GetSelf()->GetAttribute(AttrQuantity).get_int()));
-                roids->AddItem(roid);
+                if (m_Ship->position().distance(pASE->GetPosition()) <= maxDist) {
+                    PyTuple* tuple2 = new PyTuple(3);
+                        tuple2->SetItem(0, new PyInt(pASE->GetID()));
+                        tuple2->SetItem(1, new PyInt(pASE->GetTypeID()));
+                        tuple2->SetItem(2, new PyInt(pASE->GetSelf()->GetAttribute(AttrQuantity).get_int()));
+                    list->AddItem(tuple2);
+                }
             }
         }
         // Send results.
         std::vector<PyTuple*> events;
-            events.push_back(result);
+            events.push_back(tuple);
         std::vector<PyTuple*> updates;
-        m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+        pShipSE->DestinyMgr()->SendDestinyUpdate(updates, events, false);
         Deactivate();
+        return 0;
     }
 
-    return 0;
+    return _GetDuration();
 }
 
 void SurveyScanner::StopCycle(bool abort)

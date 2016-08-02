@@ -720,20 +720,6 @@ CREATE TABLE `ramInstallationTypeDefaultContents` (
 
 /*Data for the table `ramInstallationTypeDefaultContents` */
 
---
--- Table structure for table `roidDistribution`
---
-
-CREATE TABLE `roidDistribution` (
-  `AI` int(11) NOT NULL AUTO_INCREMENT,
-  `systemSec` varchar(2) NOT NULL,
-  `roidID` int(10) unsigned NOT NULL,
-  `roidName` varchar(20) NOT NULL,
-  `percent` float NOT NULL,
-  PRIMARY KEY (`AI`),
-  KEY `systemSec` (`systemSec`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=461 ;
-
 /*Table structure for table `tutorial_categories` */
 
 CREATE TABLE `tutorial_categories` (

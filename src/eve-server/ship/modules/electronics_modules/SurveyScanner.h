@@ -28,7 +28,6 @@
 
 #include "ship/modules/ActiveModule.h"
 
-class AsteroidBeltMgr;
 
 class SurveyScanner : public ActiveModule
 {
@@ -50,11 +49,9 @@ protected:
     void _SetCapNeed();
 
 private:
-    bool m_firstRun;
-
-    AsteroidBeltMgr* pBeltMgr;
     Character* pChar;
 
+    bool m_firstRun;
 };
 
 #endif  //_EVE_SHIP_MOD_SCANNER_H_

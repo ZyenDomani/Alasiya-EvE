@@ -51,27 +51,30 @@ public:
     AsteroidBeltMgr(SystemManager* mgr, PyServiceMgr& svc);
     virtual ~AsteroidBeltMgr();
 
-    void Init();
+    void Init(uint32 regionID);
     void Save();
     void Process();
-    void ForceGrowth();
-    void RegisterBelt(InventoryItemRef itemRef);
     void ClearBelt(uint16 bubbleID);
+    void SetActive(uint16 bubbleID, bool active=true);
+    void RegisterBelt(InventoryItemRef itemRef);
 
     bool Load(uint16 bubbleID);
+    bool IsActive(uint16 bubbleID);
     bool IsSpawned(uint16 bubbleID);
     bool CheckSpawn(uint16 bubbleID);
 
     void GetList(uint32 beltID, std::vector< AsteroidSE* >& list);
 
+    void RemoveAsteroid(uint32 beltID, AsteroidSE* pASE);
+
 protected:
     ManagerDB m_db;
-    Timer m_growthTimer;
+    Timer m_respawnTimer;
 
-    void TriggerGrowth();
     void ClearAll();
     void SpawnBelt(uint16 bubbleID);
     void SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position);
+    void GetIceDist(uint8 quarter, float secStatus, std::map< float, uint32 >& roidDist);
 
     uint32 GetAsteroidType(double p, const std::map<float, uint32>& roids);
 
@@ -81,14 +84,16 @@ private:
 
     bool m_initialized;
     uint32 m_systemID;
+    uint32 m_regionID;
 
     /* map contains beltID, boolean for IsSpawned() */
     std::map<uint32, bool> m_spawned;
+    /* map contains beltID, boolean for IsActive() */
+    std::map<uint32, bool> m_active;
     /* vector contains belt's itemID, itemRef */
     std::map<uint32, InventoryItemRef> m_belts;
     /*  this map contains beltID, asteroidSE for entire system */
     std::unordered_multimap<uint32, AsteroidSE*> m_asteroids;
-
 
 };
 

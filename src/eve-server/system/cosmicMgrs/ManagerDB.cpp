@@ -27,6 +27,131 @@
 
 #include "system/cosmicMgrs/ManagerDB.h"
 
+MgrData::MgrData()
+{
+}
+
+int MgrData::Initialize()
+{
+    _Populate();
+    return 1;
+}
+
+void MgrData::_Populate()
+{
+    double start = GetTimeUSeconds();
+    DBQueryResult* res = new DBQueryResult();
+    DBResultRow row;
+
+    ManagerDB m_db;
+    m_db.GetOreBySSC(*res);
+    DBOreBySSC oreBySSC;
+    while (res->GetRow(row)) {
+    // SELECT systemSecurityClass, V, S, Py, Pl, O, K, J, Hem, Hed, G, DO, Sp, C, B, A, M FROM mapOreBySystemSecurityClass
+        oreBySSC.secClass = row.GetText(0);
+        oreBySSC.V = row.GetInt(1);
+        oreBySSC.S = row.GetInt(2);
+        oreBySSC.Py = row.GetInt(3);
+        oreBySSC.Pl = row.GetInt(4);
+        oreBySSC.O = row.GetInt(5);
+        oreBySSC.K = row.GetInt(6);
+        oreBySSC.J = row.GetInt(7);
+        oreBySSC.Hem = row.GetInt(8);
+        oreBySSC.Hed = row.GetInt(9);
+        oreBySSC.G = row.GetInt(10);
+        oreBySSC.DO = row.GetInt(11);
+        oreBySSC.Sp = row.GetInt(12);
+        oreBySSC.C = row.GetInt(13);
+        oreBySSC.B = row.GetInt(14);
+        oreBySSC.A = row.GetInt(15);
+        oreBySSC.M = row.GetInt(16);
+        m_oreBySSC.emplace(row.GetText(0), oreBySSC);
+    }
+
+    res->Reset();
+    m_db.GetRegionFaction(*res);
+    while (res->GetRow(row)) {
+        //SELECT regionID, factionID FROM mapRegions WHERE factionID != 0
+        m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
+    }
+
+    //cleanup
+    SafeDelete(res);
+
+    sLog.Log("          MgrData", "%u ore data sets and %u region factions loaded in %.3fms.", m_oreBySSC.size(), m_regions.size(), (GetTimeUSeconds() - start));
+}
+
+
+uint8 MgrData::GetRegionQuarter(uint32 regionID)
+{
+    uint32 factionID = 0;
+    std::map<uint32, uint32>::iterator itr = m_regions.find(regionID);
+    if (itr != m_regions.end())
+        factionID = (*itr).second;
+
+    // caldari=1, minmatar=2, amarr=3, gallente=4, none=5
+    switch (factionID) {
+        case 500001:    //Caldari State
+        case 500010:    //Guristas Pirates
+            return 1; break;
+        case 500002:    //Minmatar Republic
+        case 500011:    //Angel Cartel
+            return 2; break;
+        case 500003:    //Amarr Empire
+        case 500007:    //Ammatar Mandate
+        case 500008:    //Khanid Kingdom
+        case 500012:    //Blood Raider Covenant
+        case 500019:    //Sansha's Nation
+            return 3; break;
+        case 500004:    //Gallente Federation
+        case 500020:    //Serpentis
+            return 4; break;
+        case 500005:    //Jove Empire
+        case 500006:    //CONCORD Assembly
+        case 500009:    //The Syndicate
+        case 500013:    //The InterBus
+        case 500014:    //ORE
+        case 500015:    //Thukker Tribe
+        case 500016:    //Servant Sisters of EVE
+        case 500017:    //The Society of Conscious Thought
+        case 500018:    //Mordu's Legion Command
+            return 5; break;
+    }
+}
+
+bool MgrData::GetRoidDist(uint8& quarter, const char* sec, std::map< float, uint32 >& roids) {
+    DBQueryResult res;
+
+    if (!sDatabase.RunQuery(res,
+        " SELECT roidID, percent FROM roidDistributionCmb WHERE systemSec = '%s' ORDER BY roidID", sec))
+    {
+        codelog(DATABASE__ERROR, "Error in GetRoidDist query: %s", res.error.c_str());
+        return false;
+    }
+
+    DBResultRow row;
+    float tot = 0.0;
+    while (res.GetRow(row)) {
+        tot += row.GetFloat(1);
+        roids[tot] = row.GetUInt(0);
+    }
+
+    return !roids.empty();
+}
+
+
+void ManagerDB::GetOreBySSC(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+        "SELECT systemSecurityClass, Veldspar, Scordite, Pyroxeres, Plagioclase, Omber, Kernite, Jaspet, "
+        " Hemorphite, Hedbergite, Gneiss, DarkOchre, Spodumain, Crokite, Bistot, Arkanor, Mercoxit"
+        " FROM mapOreBySystemSecurityClass")) {
+        _log(DATABASE__ERROR, "Error in GetOreBySSC query: %s", res.error.c_str());
+    }
+}
+
+
+
 void ManagerDB::SaveAnomaly(DBCosmicSignature& sig)
 {// sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
     DBerror err;
@@ -81,8 +206,13 @@ void ManagerDB::GetSystemAnomalies(uint32 systemID, std::vector< DBCosmicSignatu
 
 }
 
+void ManagerDB::GetRegionFaction(DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res, "SELECT regionID, factionID FROM mapRegions WHERE factionID != 0")) {
+        _log(DATABASE__ERROR, "Error in GetRegionFactionInfo query: %s", res.error.c_str());
+    }
+}
 
-void ManagerDB::GetRegionFactionInfo(DBQueryResult& res) {
+void ManagerDB::GetRegionRatFaction(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res, "SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0")) {
         _log(DATABASE__ERROR, "Error in GetRegionFactionInfo query: %s", res.error.c_str());
     }
@@ -114,27 +244,7 @@ void ManagerDB::DeleteSpawnedRats()
 }
 
 
-bool ManagerDB::GetRoidDist(const char * sec, std::map<float, uint32> &roids) {
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        " SELECT roidID, percent FROM roidDistribution WHERE systemSec = '%s' ", sec))
-    {
-        codelog(DATABASE__ERROR, "Error in GetRoidDist query: %s", res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    float tot = 0.0;
-    while (res.GetRow(row)) {
-        tot += row.GetFloat(1);
-        roids[tot] = row.GetUInt(0);
-    }
-
-    return !roids.empty();
-}
-
-bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAsteroidSE>& into)
+bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< DBAsteroidSE >& into)
 {
     DBQueryResult res;
 
@@ -148,7 +258,7 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAs
         "   quantity,"
         "   radius,"
         "   x, y, z"
-        " FROM roidItems" //sysAsteroids
+        " FROM sysAsteroids"
         " WHERE systemID = %u"
         "  AND beltID = %u", systemID, beltID)) {
         _log(DATABASE__ERROR, "Error in LoadSystemRoids query: %s", res.error.c_str());
@@ -175,11 +285,11 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32 beltID, std::vector<DBAs
     return !into.empty();
 }
 
-void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidSE> roids)
+void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector< DBAsteroidSE >& roids)
 {
     std::ostringstream Inserts;
     // start the insert into command.
-    Inserts << "INSERT INTO roidItems"; //sysAsteroids
+    Inserts << "INSERT INTO sysAsteroids";
     Inserts << " (itemID,itemName,typeID,systemID,beltID,quantity,radius,x, y, z)";
     bool first = true;
     for (auto cur : roids) {
@@ -201,7 +311,7 @@ void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector<DBAsteroidSE> roids
         // execute the command.
         DBerror err;
         if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
-            _log(DATABASE__ERROR, "SaveSystemRoids - unable to save roids");
+            _log(DATABASE__ERROR, "SaveSystemRoids - unable to save roids - %s", err.c_str());
     }
 }
 
@@ -241,7 +351,7 @@ void ManagerDB::GetDunTemplates(DBQueryResult& res)
         _log(DATABASE__ERROR, "Error in GetDunTemplates query: %s", res.error.c_str());
 }
 
-bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector<DBActiveDungeon>& into)
+bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< DBActiveDungeon >& into)
 {
     DBQueryResult res;
 

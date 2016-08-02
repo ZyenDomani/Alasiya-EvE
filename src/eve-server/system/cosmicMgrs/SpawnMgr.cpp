@@ -50,7 +50,7 @@ void SpawnDataMgr::_Populate()
     DBQueryResult* res2 = new DBQueryResult();
     DBResultRow row, row2;
 
-    m_db.GetRegionFactionInfo(*res);
+    m_db.GetRegionRatFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0
         m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
@@ -237,7 +237,7 @@ void SpawnMgr::SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID)
     } else {
         //there is no SpawnEntry for this bubble (no spawns left here).  delete from the spawned list and reset bubble checks.
         m_bubbles.erase(std::find(m_bubbles.begin(), m_bubbles.end(), pSysBubble));
-        pSysBubble->ResetBubbleSpawn();
+        pSysBubble->ResetBubbleRatSpawn();
     }
 }
 

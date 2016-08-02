@@ -158,6 +158,7 @@ public:
      * (entity)
      */
     bool GetItem(uint32 itemID, ItemData &into);
+    bool GetAsteroid(uint32 itemID, ItemData &into);
 
     uint32 NewItem(const ItemData &data);
     bool SaveItem(uint32 itemID, const ItemData &data);

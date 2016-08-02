@@ -167,8 +167,9 @@ void Missile::Process() {
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
+    /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
-    if (!IsAlive()) {
+    if (!m_alive) {
         Delete();
     } else if (m_lifeTimer.Check(false)) {
         _EndOfLife();
@@ -278,7 +279,7 @@ void Missile::_EndOfLife() {
 
 void Missile::Delete() {
     //  cleanup here
-    if (IsAlive()) return;
+    if (m_alive) return;
     m_targMgr->DoDestruction();
     m_system->RemoveEntity(this);
     m_self->Delete();
