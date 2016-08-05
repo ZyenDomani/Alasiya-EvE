@@ -86,7 +86,7 @@ void BubbleManager::Process() {
 
         if (!m_wanderers.empty()) {
             for (auto cur : m_wanderers) {
-                _log(DESTINY__WARNING, "BubbleManager::Process() - Wanderer '%s' being added to a bubble.", cur->GetName() );
+                _log(DESTINY__WARNING, "BubbleManager::Process() - Wanderer %s(%u) being added to a bubble.", cur->GetName(), cur->GetID() );
                 CheckBubble(cur);
             }
         }

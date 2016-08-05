@@ -440,7 +440,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (!IsHangarLoaded(locationID))
             LoadStationHangar(locationID);
         OnCharNowInStation();
-        //DestroyShipSE();
+        DestroyShipSE();
     } else {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
         snprintf(ci, sizeof(ci), "InSpace:%u", locationID);

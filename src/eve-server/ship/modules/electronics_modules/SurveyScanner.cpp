@@ -37,6 +37,39 @@ SurveyScanner::SurveyScanner(InventoryItemRef item, ShipItemRef ship)
     m_firstRun = true;
 
     pChar = m_Ship->GetPilot()->GetChar().get();
+
+    m_Item->ResetAttribute(AttrDuration);
+    m_Item->ResetAttribute(AttrSurveyScanRange);
+
+    // get module range
+    m_range = m_Item->GetAttribute(AttrSurveyScanRange).get_float();
+    // get module duration
+    m_duration = m_Item->GetAttribute(AttrDuration).get_float();
+
+    m_range *= (1 + (0.03 * (pChar->GetSkillLevel(skillLongRangeTargeting, true)))); // 3% increase in range (here)
+    m_duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillSignatureAnalysis, true)))); // 2% decrease in duration (here)
+
+    if (m_Ship->type().id() == 28606) { /* orca */
+        m_range *= 500;               // 500% increase in range
+    } else if (m_Ship->type().id() == 28352) {  /* rorqual */
+        m_range *= 900;               // 900% increase in range
+    } else if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge) {
+        m_range *= (1 + (0.05 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 5% increase in range (here)
+        m_duration *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% decrease in duration (here)
+    } else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer) {
+        m_range *= (1 + (0.05 * (pChar->GetSkillLevel(skillExhumers, true))));    // 5% increase in range (here)
+        m_duration *= (1 + (0.02 * (pChar->GetSkillLevel(skillExhumers, true)))); // 2% decrease in duration (here)
+    }
+
+    // save adjusted attributes
+    m_Item->SetAttribute(AttrDuration, m_duration);
+    m_Item->SetAttribute(AttrSurveyScanRange, m_range);
+}
+
+SurveyScanner::~SurveyScanner()
+{
+    m_Item->ResetAttribute(AttrDuration);
+    m_Item->ResetAttribute(AttrSurveyScanRange);
 }
 
 void SurveyScanner::Activate(SystemEntity* pSE)
@@ -44,13 +77,6 @@ void SurveyScanner::Activate(SystemEntity* pSE)
     m_firstRun = true;
     m_AMPC->ActivateCycle();
     //_ShowCycle();
-}
-
-void SurveyScanner::Deactivate()
-{
-    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_UNFITTED))
-        return;
-    ActiveModule::AbortCycle();
 }
 
 double SurveyScanner::DoCycle() {
@@ -72,9 +98,8 @@ double SurveyScanner::DoCycle() {
         if (pBubble->IsBelt()) {
             std::vector<AsteroidSE*> vList;
             pShipSE->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetSpawnID(pBubble->GetID()), vList);
-            double maxDist = m_Item->GetAttribute(AttrSurveyScanRange).get_float();
             for (auto pASE : vList) {
-                if (m_Ship->position().distance(pASE->GetPosition()) <= maxDist) {
+                if (m_Ship->position().distance(pASE->GetPosition()) < m_range) {
                     PyTuple* tuple2 = new PyTuple(3);
                         tuple2->SetItem(0, new PyInt(pASE->GetID()));
                         tuple2->SetItem(1, new PyInt(pASE->GetTypeID()));
@@ -92,7 +117,7 @@ double SurveyScanner::DoCycle() {
         return 0;
     }
 
-    return _GetDuration();
+    return m_duration;
 }
 
 void SurveyScanner::StopCycle(bool abort)
@@ -156,7 +181,7 @@ void SurveyScanner::_ShowCycle()
         0,
         1,
         1,
-        _GetDuration(),
+        m_duration,
         m_repeat
     );
 
@@ -177,7 +202,7 @@ void SurveyScanner::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_duration;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;

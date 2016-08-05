@@ -30,10 +30,14 @@ set @regionid=10000042;  --metropolis
 set @stationid=60014137;    --Ibaria III - Thukker Mix Warehouse(60014137)
 set @solarSystemID=30000053 --Ibaria
 set @regionid=10000001;     --Derelik
+-----------------
+set @stationid=60004519;    --Abudban IX - Brutor Tribe Bureau
+set @solarSystemID=30002507 --Abudban
+set @regionid=10000030;     --Heimatar
 
 create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int);
 truncate table tStations;
-insert into tStations values (60014137, 30000053, 10000001);
+insert into tStations values (60004519, 30002507, 10000030);
 
 -- actual seeding
 INSERT INTO market_orders (typeID, charID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState, minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)

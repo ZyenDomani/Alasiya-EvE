@@ -136,7 +136,7 @@ void DestinyManager::ProcessState() {
             //set current direction based on position and targetPoint.  this will keep missile aligned properly
             GVector moveVector(m_position, m_targetPoint);
             moveVector.normalize();
-            //set postion and direction for this round of movement
+            //set position and direction for this round of movement
             m_shipHeading = moveVector;
             m_velocity = (moveVector * m_maxSpeed);
             SetPosition(m_position + m_velocity);
@@ -691,7 +691,7 @@ void DestinyManager::_Move() {
         m_velocity.x, m_velocity.y, m_velocity.z);
 
     if (m_orbiting != 1) {
-        //set postion and direction for this round of movement
+        //set position and direction for this round of movement
         SetPosition(m_position + m_velocity);
     }
 
@@ -701,7 +701,7 @@ void DestinyManager::_Move() {
     if (sConfig.server.UseShipTracking) {
         // create jetcan to visualize movement during orbit
         std::ostringstream str;
-        str << "Postion Test " << timeStamp;
+        str << "Position Test " << timeStamp;
         ItemData idata(23, 0, mySE->GetLocationID(), flagAutoFit, str.str().c_str(), m_position);
         CargoContainerRef newJetcanItem = mySE->GetServices().item_factory->SpawnCargoContainer(idata);
         if (newJetcanItem) {
@@ -964,7 +964,7 @@ void DestinyManager::_Orbit() {
     // get current times
     double timeStamp = GetTimeMSeconds() - m_moveTimer;
 
-    // set current postion (this is where we are this tic)
+    // set current position (this is where we are this tic)
     double curRad = m_orbitRadTic * timeStamp;  // this isnt right.
     _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%.3f", curRad, timeStamp);
     /** @note  remember, eve coords for y and z are backwards.... y is elevation */
@@ -1163,7 +1163,7 @@ void DestinyManager::_WarpAccel(uint16 sec_into_warp) {
 }
 
 void DestinyManager::_WarpCruise(uint16 sec_into_warp) {
-    /* in cruise....calculate distance only to update internal postion data. */
+    /* in cruise....calculate distance only to update internal position data. */
     m_targetDistance -= m_warpState->warpSpeed;
 
     if ((m_targetDistance - m_warpState->warpSpeed) < m_warpState->decelDist) {
@@ -1314,6 +1314,8 @@ void DestinyManager::_BeginMovement() {
 
     if (IsCloaked())
         UnCloak();
+
+    _Move();
 }
 
 void DestinyManager::Follow(SystemEntity *who, double distance) {

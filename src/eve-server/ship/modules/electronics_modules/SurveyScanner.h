@@ -33,11 +33,10 @@ class SurveyScanner : public ActiveModule
 {
 public:
     SurveyScanner(InventoryItemRef item, ShipItemRef ship);
-    virtual ~SurveyScanner() { }
+    virtual ~SurveyScanner();
 
     /* ActiveModule overrides */
     virtual void Activate(SystemEntity* pSE);
-    virtual void Deactivate();
     virtual double DoCycle();
     virtual void StopCycle(bool abort=false);
 
@@ -52,6 +51,8 @@ private:
     Character* pChar;
 
     bool m_firstRun;
+    double m_range;
+    double m_duration;
 };
 
 #endif  //_EVE_SHIP_MOD_SCANNER_H_

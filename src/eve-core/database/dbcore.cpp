@@ -154,6 +154,11 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, boo
 {
     if (pStatus != Connected)
         Open_locked();
+    if (!mysql) {
+        pStatus = Error;
+        _log(DATABASE__ERROR, "DBCore Query - mysql = null");
+        return false;
+    }
 
     if (mysql_real_query(mysql, query, querylen)) {
         int num = mysql_errno(mysql);
