@@ -166,7 +166,7 @@ public:
     static InventoryItemRef Load(ItemFactory &factory, uint32 itemID);
     /* creates new Item and calls item::_Load() */
     static InventoryItemRef SpawnItem(ItemFactory &factory, uint32 itemID, const ItemData &data);
-    /* Spawns new Item. */
+    /* Spawns new Item.  whats difference here?? */
     static InventoryItemRef Spawn(ItemFactory &factory, ItemData &data);
 
     virtual bool _Load();

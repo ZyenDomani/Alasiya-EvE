@@ -102,7 +102,7 @@ void AsteroidSE::EncodeDestiny( Buffer& into )
     BallHeader head;
         head.entityID = GetID();
         head.mode = DSTBALL_RIGID;
-        head.radius = m_self->radius();
+        head.radius = GetRadius();
         head.x = x();
         head.y = y();
         head.z = z();
@@ -129,10 +129,11 @@ void AsteroidSE::Grow() {
      * use this to check/update current sizes (radius and mass)
      *
      * currently sets quantity back to full and disables m_growTimer
+     *   - not gonna work...radius is set to quantity AFTER being mined...
      */
 
-    double quantity = ((25000 * log(m_self->radius())) - 112404.8);
-    m_self->SetAttribute(AttrQuantity,  quantity);   // quantity in m^3
+    //double quantity = ((25000 * log(GetRadius())) - 112404.8);
+    //m_self->SetAttribute(AttrQuantity,  quantity);   // quantity in m^3
 
     m_growTimer.Disable();
 }

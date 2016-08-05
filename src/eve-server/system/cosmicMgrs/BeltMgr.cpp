@@ -41,14 +41,12 @@ AsteroidBeltMgr::AsteroidBeltMgr(SystemManager* mgr, PyServiceMgr& svc)
 {
     m_initialized = false;
     m_respawnTimer.Disable();
-    m_systemID = m_system->GetID();
 }
 
 AsteroidBeltMgr::~AsteroidBeltMgr()
 {
     // save needs work when deleting object during shutdown.
-    //  not needed yet, as InventoryItem saves items to entity table...
-    //Save();
+    Save();
     ClearAll();
 }
 
@@ -60,6 +58,7 @@ void AsteroidBeltMgr::Init(uint32 regionID)
     }
 
     m_regionID = regionID;
+    m_systemID = m_system->GetID();
     m_respawnTimer.Start(sConfig.cosmic.BeltRespawn *60 *60 *1000);  // hours->ms
 
     m_initialized = true;
@@ -142,12 +141,18 @@ bool AsteroidBeltMgr::Load(uint16 bubbleID) {
         return false;
 
     for (auto entity : entities) {
-        InventoryItemRef asteroid = m_system->itemFactory()->GetItem(entity.itemID);
-        if (!asteroid ) {
+        InventoryItemRef itemRef = m_system->itemFactory()->GetItem(entity.itemID);
+        if (!itemRef ) {
             _log(COSMIC_MGR__WARNING, "BeltMgr::Load() -  Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID);
             continue;
         }
-        AsteroidSE* pASE = new AsteroidSE(asteroid, *(m_system->GetServiceMgr()), m_system );
+        // set attribs using loaded values from asteroid table.
+        itemRef->SetAttribute(AttrRadius,    itemRef->type().radius() * entity.radius); // Radius
+        itemRef->SetAttribute(AttrQuantity,  entity.quantity);                          // Quantity
+        itemRef->SetAttribute(AttrVolume,    itemRef->type().volume());                 // Volume
+        itemRef->SetAttribute(AttrMass,      itemRef->type().mass() * entity.quantity); // Mass
+
+        AsteroidSE* pASE = new AsteroidSE(itemRef, *(m_system->GetServiceMgr()), m_system );
         if (!pASE ) {
             _log(COSMIC_MGR__WARNING, "BeltMgr::Load() -  Unable to spawn entity #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID);
             continue;
@@ -279,15 +284,31 @@ uint32 AsteroidBeltMgr::GetAsteroidType(double p, const std::map<float, uint32>&
 }
 
 void AsteroidBeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position) {
+    ItemData idata(typeID, 1, m_systemID, flagAutoFit, "", position);
+    InventoryItemRef itemRef = m_system->itemFactory()->SpawnItem(idata);
+    if (!itemRef)
+        return;
+
     radius *= sConfig.cosmic.roidRadiusMultiplier;
 
     //Amount of Ore = (25000*ln(Radius))-112404.8   V = 25000Ln(r) - 112407
     double quantity = ((25000 * log(radius)) - 112404.8);
 
+    itemRef->SetAttribute(AttrRadius,    itemRef->type().radius() * radius); // Radius
+    itemRef->SetAttribute(AttrQuantity,  quantity);                          // Quantity
+    itemRef->SetAttribute(AttrVolume,    itemRef->type().volume());          // Volume
+    itemRef->SetAttribute(AttrMass,      itemRef->type().mass() * quantity); // Mass
+    //itemRef->SaveAttributes();
+
+    AsteroidSE* pASE = new AsteroidSE(itemRef, *(m_system->GetServiceMgr()), m_system );
+    m_system->AddEntity(pASE);
+    m_asteroids.emplace(std::pair<uint32, AsteroidSE*>(beltID, pASE));
+    pASE->SetMgr(this, beltID);
+
     AsteroidData adata;
         adata.beltID = beltID;
-        adata.itemName = "";
-        adata.itemID = 0;
+        adata.itemName = itemRef->itemName();
+        adata.itemID = itemRef->itemID();
         adata.systemID = m_systemID;
         adata.typeID = typeID;
         adata.quantity = quantity;
@@ -295,16 +316,7 @@ void AsteroidBeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius,
         adata.x = position.x;
         adata.y = position.y;
         adata.z = position.z;
-
-    ItemData idata(typeID, 1, m_systemID, flagAutoFit, "", position);
-    AsteroidItemRef i = m_system->itemFactory()->SpawnAsteroid(idata, adata);
-    if (!i)
-        return;
-
-    AsteroidSE* pASE = new AsteroidSE(i, *(m_system->GetServiceMgr()), m_system );
-    m_system->AddEntity(pASE);
-    m_asteroids.emplace(std::pair<uint32, AsteroidSE*>(beltID, pASE));
-    pASE->SetMgr(this, beltID);
+    m_db.SaveRoid(adata);
 }
 
 void AsteroidBeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)

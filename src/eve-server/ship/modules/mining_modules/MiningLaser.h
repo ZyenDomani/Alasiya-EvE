@@ -34,7 +34,7 @@ class MiningLaser: public ActiveModule
 {
 public:
     MiningLaser( InventoryItemRef item, ShipItemRef ship );
-    virtual ~MiningLaser() { }
+    virtual ~MiningLaser();
 
     /* ActiveModule overrides */
     virtual void Activate(SystemEntity* pSE);
@@ -61,6 +61,7 @@ private:
 
     double m_duration;
     double m_cycleVol;
+    double m_range;
 
     std::string m_effectStr;
 

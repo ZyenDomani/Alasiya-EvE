@@ -72,29 +72,93 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
      * the hack is setting attributes here from ship and skill bonuses, instead of using the
      * (not-yet-implemented) shipEffects and skillEffects classes (which will be based on moduleEffects class) (eta u/k - tbdl)
      * this enables correct information displayed in module "show info" window while in space.
+     *   NOTE:  some bonuses are for Alasiya (here), and not found on live, or use different bonus amounts
      */
-    // set module duration
-    Character* pChar = m_Ship->GetPilot()->GetChar().get();
-    m_duration = m_Item->GetAttribute(AttrDuration).get_float();
-    m_duration *= (1 - ( 0.01 * (pChar->GetSkillLevel(skillMining, true))));               //  1% decrease in duration
-    if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge)
-        m_duration *= (1 - (0.01 * (pChar->GetSkillLevel(skillMiningBarge, true))));       //  1% decrease in duration
-    else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer)
-        m_duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true))));          //  2% decrease in duration
-    //FIXME  always returns 0 for now.  fix once fleets are implemented.
-    if (pChar->fleetID()) {
-        m_duration *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningForeman, true))));    //  2% decrease in duration
-        m_duration *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningDirector, true))));   //  2% decrease in duration
-    }
-    m_Item->SetAttribute(AttrDuration, m_duration);
+    // as we hard-set attributes here, we need to make sure they are DEFAULT before adding bonuses.  (error fix)
+    m_Item->ResetAttribute(AttrDuration);
+    m_Item->ResetAttribute(AttrMaxRange);
+    m_Item->ResetAttribute(AttrMiningAmount);
 
-    // set mined volume per cycle
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
+    // get module range
+    /** @todo  check range */
+    m_range = m_Item->GetAttribute(AttrMaxRange).get_float();
+    // get module duration
+    m_duration = m_Item->GetAttribute(AttrDuration).get_float();
+    // get module volume per cycle
     m_cycleVol = m_Item->GetAttribute(AttrMiningAmount).get_int();
-    m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillMining, true))));        //  5% increase in yield
-    m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillAstrogeology, true))));   //  5% increase in yield
+
+    // calculate bonuses
+    m_duration *= (1 - ( 0.01 * (pChar->GetSkillLevel(skillMining, true))));         // 1% decrease in duration
+    m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillMining, true))));          // 5% increase in yield
+    m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillAstrogeology, true))));    // 5% increase in yield
+    m_range *= (1 + (0.03 * (pChar->GetSkillLevel(skillAstrometrics, true))));       // 3% increase in range (here)
+    m_range *= (1 + (0.03 * (pChar->GetSkillLevel(skillLongRangeTargeting, true)))); // 3% increase in range (here)
+
+    if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge) {
+        m_duration *= (1 - (0.01 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 1% decrease in duration (here)
+        m_cycleVol *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% increase in yield (here)
+    } else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer) {
+        m_cycleVol *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% increase in yield (here)
+        m_duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true))));    // 2% decrease in duration
+    }
+
+    switch (m_Ship->typeID()) {
+        case 591: { /* Tormentor */
+            m_cycleVol *= (1 + (0.2 * (pChar->GetSkillLevel(skillAmarrFrigate, true)))); // 20% increase in yield
+        } break;
+        case 582: { /* Bantam */
+            m_cycleVol *= (1 + (0.2 * (pChar->GetSkillLevel(skillCaldariFrigate, true)))); // 20% increase in yield
+        } break;
+        case 592: { /* Navitas */
+            m_cycleVol *= (1 + (0.2 * (pChar->GetSkillLevel(skillGallenteFrigate, true)))); // 20% increase in yield
+        } break;
+        case 599: { /* Burst */
+            m_cycleVol *= (1 + (0.2 * (pChar->GetSkillLevel(skillMinmatarFrigate, true)))); // 20% increase in yield
+        } break;
+        case 620: { /* Osprey */
+            m_cycleVol *= (1 + (0.2 * (pChar->GetSkillLevel(skillCaldariCruiser, true)))); // 20% increase in yield
+        } break;
+        case 631: { /* Scythe */
+            m_cycleVol *= (1 + (0.2 * (pChar->GetSkillLevel(skillMinmatarCruiser, true)))); // 20% increase in yield
+        } break;
+        case 22546: { /* Skiff */
+            if (m_dcMiner)
+                m_cycleVol *= (1 + (0.6 * (pChar->GetSkillLevel(skillExhumers)))); // 60% increase in yield
+        } break;
+        case 22548: { /* Mackinaw */
+            if (m_iMiner)
+                m_cycleVol *= 2;     // 100% increase in yield
+        } break;
+        case 17476:   /* Covetor */
+        case 22544: { /* Hulk */
+            m_range *= (1 + (0.03 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 3% increase in range  (here)
+        } break;
+    }
+
+    /** @todo  fleetID() returns 0 until fleets are implemented. (eta u/k - tbdl) */
+    // for shits-n-giggles, we allow these bonuses without fleets until they are implemented
+    if (true/*pChar->fleetID()*/) {
+        m_cycleVol *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningForeman, true))));    //  2% decrease in yield
+        m_duration *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningDirector, true))));   //  2% decrease in duration
+        m_range *= (1 - ( 0.03 * (pChar->GetSkillLevel(skillInformationWarfare, true))));   //  3% decrease in range
+    }
+
+    // save adjusted attributes
+    m_Item->SetAttribute(AttrDuration, m_duration);
+    m_Item->SetAttribute(AttrMaxRange, m_range);
     m_Item->SetAttribute(AttrMiningAmount, m_cycleVol);
 
-    _log(MINING__TRACE, "Module Created for %s.  Module Duration:%.3f, CycleVolume:%.3f", item->itemName().c_str(), m_duration, m_cycleVol);
+    _log(MINING__TRACE, "Module Created for %s.  Duration:%.3f, CycleVolume:%.3f, Range:%.3f", item->itemName().c_str(), m_duration, m_cycleVol, m_range);
+}
+
+MiningLaser::~MiningLaser()
+{
+    //reset attribs on this item before deletion
+    //  note this does NOT work on crash.
+    m_Item->ResetAttribute(AttrDuration);
+    m_Item->ResetAttribute(AttrMaxRange);
+    m_Item->ResetAttribute(AttrMiningAmount);
 }
 
 void MiningLaser::LoadCharge(InventoryItemRef charge)

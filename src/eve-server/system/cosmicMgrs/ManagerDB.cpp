@@ -248,15 +248,7 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< As
 {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "   itemID,"
-        "   itemName,"
-        "   typeID,"
-        "   systemID,"
-        "   beltID,"
-        "   quantity,"
-        "   radius,"
-        "   x, y, z"
+        "SELECT itemID, itemName, typeID, systemID, beltID, quantity, radius, x, y, z"
         " FROM sysAsteroids"
         " WHERE systemID = %u"
         "  AND beltID = %u", systemID, beltID)) {
@@ -282,6 +274,20 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< As
     }
 
     return !into.empty();
+}
+
+void ManagerDB::SaveRoid(AsteroidData& data)
+{
+    DBerror err;
+    if (!sDatabase.RunQuery(err,
+        "INSERT INTO sysAsteroids"
+        " (itemID,itemName,typeID,systemID,beltID,quantity,radius,x, y, z)"
+        " VALUES "
+        "(%u, '%s', %u, %u, %u, %f, %f, %f, %f, %f)",
+        data.itemID, data.itemName.c_str(), data.typeID, data.systemID, data.beltID, data.quantity, data.radius, data.x, data.y, data.z))
+    {
+        _log(DATABASE__ERROR, "SaveSystemRoids - unable to save roids - %s", err.c_str());
+    }
 }
 
 void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& roids)
@@ -355,12 +361,7 @@ bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& 
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "   systemID,"
-        "   state,"
-        "   dunTemplateID,"
-        "   dunExpiryTime,"
-        "   xpos, ypos, zpos"
+        "SELECT systemID, state, dunTemplateID, dunExpiryTime, xpos, ypos, zpos"
         " FROM dunActive"   //Active Dungeons
         " WHERE systemID = %u", systemID)) {
         _log(DATABASE__ERROR, "Error in GetSavedDungeons query: %s", res.error.c_str());

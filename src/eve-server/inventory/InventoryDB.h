@@ -258,7 +258,7 @@ public:
      * @return True if load succeeds, false if fails.
      */
     bool GetAsteroidData(uint32 itemID, AsteroidData &into);
-    bool SaveAsteroidData(uint32 itemID, AsteroidData &data);
+    bool SaveAsteroidData(uint32 itemID, const AsteroidData& data);
 
     /* /Fit command helper function
      *

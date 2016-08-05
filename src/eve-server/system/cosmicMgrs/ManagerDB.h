@@ -95,6 +95,7 @@ public:
     void GetOreBySSC(DBQueryResult& res);
 
     /* belt manager */
+    void SaveRoid(AsteroidData& data);
     void SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& roids);
     bool LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< AsteroidData >& into);
     void GetRegionFaction(DBQueryResult& res);
