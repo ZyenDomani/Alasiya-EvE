@@ -536,9 +536,11 @@ PyDict* ShipItem::GetShipInfo()
 }
 
 PyDict* ShipItem::GetShipState() {
-    if (!m_inventory->LoadContents(&m_factory)) {
-        _log(INV__ERROR, "%s(%u): Failed to load contents for GetShipState", itemName().c_str(), itemID());
-        return nullptr;
+    if (!m_inventory->ContentsLoaded()) {
+        if (!m_inventory->LoadContents(&m_factory)) {
+            _log(INV__ERROR, "%s(%u): Failed to load contents for GetShipState", itemName().c_str(), itemID());
+            return nullptr;
+        }
     }
     // Create new dictionary for shipState:
     PyDict *result = new PyDict;
@@ -587,9 +589,11 @@ PyList* ShipItem::ShipGetModuleList() {
 
 PyDict* ShipItem::GetChargeState() {
     /*  this is correct */
-    if (!m_inventory->LoadContents(&m_factory)) {
-        _log(INV__ERROR, "%s(%u): Failed to load contents for GetChargeState", itemName().c_str(), itemID());
-        return nullptr;
+    if (!m_inventory->ContentsLoaded()) {
+        if (!m_inventory->LoadContents(&m_factory)) {
+            _log(INV__ERROR, "%s(%u): Failed to load contents for GetShipState", itemName().c_str(), itemID());
+            return nullptr;
+        }
     }
     if (!m_ModuleManager) {
         _log(SHIP__MODULE_ERROR, "GetChargeState() - %s(%u) has no module manager.", itemName().c_str(), itemID());
@@ -866,6 +870,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
 {
     if (!ValidateAddItem(flag, item))
         return 0;
+    
     if (IsModuleSlot(flag)) {
         if (!m_ModuleManager)
             return 0;
@@ -897,7 +902,6 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
 
     item->Move(itemID(), flag);
 	if (IsModuleSlot(flag)) {
-        item->PutOnline();
         m_ModuleManager->Online(item->itemID());
         UpdateModules(flag);
     }
@@ -1079,6 +1083,15 @@ void ShipItem::StripFitting()
 // stacking penality system   -allan   (UD 29Jul16)
 double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
 {
+    if ((attrib == AttrWarpFactor) or (attrib == AttrCargoCapacityMultiplier)
+        or (attrib == AttrMiningAmount) or (attrib == AttrCpuLoad)
+        or (attrib == AttrPowerLoad) or (attrib == AttrRechargeRate)
+        or (attrib == AttrCapacitorCapacity) or (attrib == AttrHP)
+        or (attrib == AttrShieldCapacity) or (attrib == AttrArmorHP)
+        or (attrib == AttrAccessDifficulty)
+        or (attrib = AttrDuration))
+        return 1.0f;
+
     uint8 count = 1;
     std::map<uint16, uint8>::iterator itr = m_stackMap.find(attrib);
     if (itr != m_stackMap.end()) {

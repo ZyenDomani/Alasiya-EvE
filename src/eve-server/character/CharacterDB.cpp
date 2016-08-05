@@ -322,7 +322,7 @@ PyRep *CharacterDB::GetCharPublicInfo(uint32 characterID) {
 
     DBResultRow row;
     if(!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "Error in GetCharPublicInfo query: no data for char %d", characterID);
+        codelog(DATABASE__ERROR, "Error in GetCharPublicInfo query: no data for char %d", characterID);
         return nullptr;
     }
     return(DBRowToKeyVal(row));
@@ -977,7 +977,7 @@ bool CharacterDB::GetBaseSkills(std::map<uint32, uint32> &into) {
         "  skillTypeID, level"
         " FROM sklBaseSkills "))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -997,7 +997,7 @@ bool CharacterDB::GetSkillsByRace(uint32 raceID, std::map<uint32, uint32> &into)
         " FROM sklRaceSkills "
         " WHERE raceID = %u ", raceID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -1024,7 +1024,7 @@ bool CharacterDB::GetSkillsByCareer(uint32 careerID, std::map<uint32, uint32> &i
         " FROM sklCareerSkills"
         " WHERE careerID = %u", careerID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 

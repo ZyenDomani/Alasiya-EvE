@@ -36,7 +36,7 @@ PyRep *TutorialDB::GetPageCriterias(uint32 tutorialID) {
         " JOIN tutorial_page_criteria USING (pageID)"
         " WHERE tutorialID=%u", tutorialID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -52,7 +52,7 @@ PyRep *TutorialDB::GetPages(uint32 tutorialID) {
         " WHERE tutorialID=%u"
         " ORDER BY pageNumber", tutorialID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -67,7 +67,7 @@ PyRep *TutorialDB::GetTutorial(uint32 tutorialID) {
         " FROM tutorials"
         " WHERE tutorialID=%u", tutorialID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -82,7 +82,7 @@ PyRep *TutorialDB::GetTutorialCriterias(uint32 tutorialID) {
         " FROM tutorials_criterias"
         " WHERE tutorialID=%u", tutorialID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -97,7 +97,7 @@ PyRep *TutorialDB::GetAllTutorials() {
         "SELECT tutorialID, tutorialName, nextTutorialID, categoryID, 0 AS dataID"
         " FROM tutorials"))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -111,7 +111,7 @@ PyRep *TutorialDB::GetAllCriterias() {
         "SELECT criteriaID, criteriaName, messageText, audioPath, 0 AS dataID"
         " FROM tutorial_criteria"))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -126,7 +126,7 @@ PyRep *TutorialDB::GetCategories() {
         " categoryID, categoryName, description, 0 AS dataID"
         " FROM tutorial_categories"))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 

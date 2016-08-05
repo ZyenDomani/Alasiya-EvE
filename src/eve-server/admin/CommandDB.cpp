@@ -141,12 +141,12 @@ int CommandDB::GetAttributeID(const char *attributeName) {
         " WHERE attributeName = '%s' ",
         escape.c_str() ) )
     {
-        _log(DATABASE__ERROR, "Error retrieving attributeID for attributeName = '%s' ", escape.c_str() );
+        codelog(DATABASE__ERROR, "Error retrieving attributeID for attributeName = '%s' ", escape.c_str() );
         return 0;
     }
 
     if( !res.GetRow(row) ){
-        _log(DATABASE__ERROR, "Null result finding attributeID for attributeName = '%s' ", escape.c_str() );
+        codelog(DATABASE__ERROR, "Null result finding attributeID for attributeName = '%s' ", escape.c_str() );
         return 0;
     }
 

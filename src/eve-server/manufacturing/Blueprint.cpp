@@ -282,7 +282,7 @@ void Blueprint::SetLicensedProductionRunsRemaining(int32 licensedProductionRunsR
 
     //if(!sDatabase.RunQuery(err,
         //"UPDATE invBlueprints SET licensedProductionRunsRemaining = %d WHERE blueprintID = %u",licensedProductionRunsRemaining, m_itemID ))
-        //_log(DATABASE__ERROR, "Error in query: %s.", err.c_str());
+        //codelog(DATABASE__ERROR, "Error in query: %s.", err.c_str());
 }
 
 void Blueprint::AlterLicensedProductionRunsRemaining(int32 licensedProductionRunsRemainingChange)

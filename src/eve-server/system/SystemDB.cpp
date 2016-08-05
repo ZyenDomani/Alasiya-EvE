@@ -35,7 +35,7 @@ bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEnt
 
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, query.str().c_str(), systemID )) {
-        _log(DATABASE__ERROR, "Error in LoadSystemStaticEntities query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in LoadSystemStaticEntities query: %s", res.error.c_str());
         return false;
     }
 
@@ -92,7 +92,7 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         Deployable/*22*/, Orbitals/*46*/, Drone/*18*/, Entity/*11*/,    // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
         /*Structure*/23, StructureUpgrade/*39*/, SovereigntyStructure/*40*/, Celestial/*2*/     // Celestial is for containers (wrecks, jetcans, lsc)
         )) {
-            _log(DATABASE__ERROR, "Error in LoadSystemDynamicEntities query: %s", res.error.c_str());
+            codelog(DATABASE__ERROR, "Error in LoadSystemDynamicEntities query: %s", res.error.c_str());
             return false;
         }
 
@@ -145,7 +145,7 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 ownerID, uint32 systemID, std::v
         " WHERE e.locationID = %u"
         "  AND e.ownerID = %u"
         "  AND e.itemID NOT IN (c.shipID,c.capsuleID)", systemID, ownerID )) {
-        _log(DATABASE__ERROR, "Error in LoadPlayerDynamicEntities query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in LoadPlayerDynamicEntities query: %s", res.error.c_str());
         return false;
     }
 
@@ -174,7 +174,7 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 ownerID, uint32 systemID, std::v
 uint32 SystemDB::GetObjectLocationID(uint32 itemID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT locationID FROM entity WHERE itemID=%u", itemID )) {
-        _log(DATABASE__ERROR, "Error in GetObjectLocationID query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetObjectLocationID query: %s", res.error.c_str());
         return 0;
     }
 
@@ -187,7 +187,7 @@ uint32 SystemDB::GetObjectLocationID(uint32 itemID) {
 double SystemDB::GetItemTypeRadius(uint32 typeID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT radius FROM invTypes WHERE typeID=%u", typeID )) {
-        _log(DATABASE__ERROR, "Error in GetItemTypeRadius query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetItemTypeRadius query: %s", res.error.c_str());
         return 0.0;
     }
 
@@ -200,7 +200,7 @@ double SystemDB::GetItemTypeRadius(uint32 typeID) {
 double SystemDB::GetCelestialRadius(uint32 itemID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT radius FROM mapDenormalize WHERE itemID=%u", itemID )) {
-        _log(DATABASE__ERROR, "Error in GetItemTypeRadius query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetItemTypeRadius query: %s", res.error.c_str());
         return 0.0;
     }
 
@@ -212,7 +212,7 @@ double SystemDB::GetCelestialRadius(uint32 itemID) {
 
 bool SystemDB::GetWrecksToTypes(DBQueryResult& res) {
     if(!sDatabase.RunQuery(res, "SELECT * FROM invTypesToWrecks")) {
-        _log(DATABASE__ERROR, "Error in GetWrecksToTypes query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetWrecksToTypes query: %s", res.error.c_str());
         return false;
     }
     return true;
@@ -221,7 +221,7 @@ bool SystemDB::GetWrecksToTypes(DBQueryResult& res) {
 void SystemDB::GetLootGroups(DBQueryResult& res) {
     //if(!sDatabase.RunQuery(res, "SELECT groupID, lootGroupID, dropChance FROM npcLootGroup")) {
     if(!sDatabase.RunQuery(res, "SELECT npcGroupID, itemGroupID, groupDropChance FROM lootGroup")) {
-        _log(DATABASE__ERROR, "Error in GetLootGroups query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetLootGroups query: %s", res.error.c_str());
         return;
     }
 }
@@ -229,7 +229,7 @@ void SystemDB::GetLootGroups(DBQueryResult& res) {
 void SystemDB::GetLootGroupTypes(DBQueryResult& res) {
     //if(!sDatabase.RunQuery(res, "SELECT lootGroupID, typeID, chance, minQuantity, maxQuantity FROM npcLootGroupType")) {
     if(!sDatabase.RunQuery(res, "SELECT itemGroupID, itemID, itemMetaLevel, minAmount, maxAmount FROM lootItemGroup")) {
-        _log(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
         return;
     }
 }
@@ -237,7 +237,7 @@ void SystemDB::GetLootGroupTypes(DBQueryResult& res) {
 void SystemDB::GetSalvageGroups(DBQueryResult& res) {
     //`factionSalvage` (`factionID`,`itemID`,`itemName`)
     if(!sDatabase.RunQuery(res, "SELECT factionID, itemID FROM factionSalvage")) {
-        _log(DATABASE__ERROR, "Error in GetSalvageGroups query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetSalvageGroups query: %s", res.error.c_str());
         return;
     }
 }
@@ -246,7 +246,7 @@ PyObject* SystemDB::ListFactions() {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res, "SELECT factionID FROM chrFactions")) {
-        _log(DATABASE__ERROR, "Error in ListFactions query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in ListFactions query: %s", res.error.c_str());
         return nullptr;
     }
 
@@ -263,7 +263,7 @@ PyObject* SystemDB::ListJumps(uint32 stargateID) {
         " FROM mapJumps "
         "  LEFT JOIN mapDenormalize ON celestialID=itemID"
         " WHERE stargateID=%u", stargateID)) {
-        _log(DATABASE__ERROR, "Error in ListJumps query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in ListJumps query: %s", res.error.c_str());
         return nullptr;
     }
 

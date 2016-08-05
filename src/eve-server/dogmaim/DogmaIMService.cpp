@@ -872,7 +872,8 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         rspShipState->items[1] = pClient->GetShip()->GetChargeState();
         rspShipState->items[2] = new BuiltinSet();
     rsp->SetItemString("shipState", rspShipState);
-    rsp->Dump(CLIENT__INFO, "     ");
+    if (is_log_enabled(CLIENT__INFO))
+        rsp->Dump(CLIENT__INFO, "     ");
 	return new PyObject("util.KeyVal", rsp );
 }
 

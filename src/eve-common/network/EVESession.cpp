@@ -151,8 +151,10 @@ PyPacket* EVEClientSession::_HandleCommand( PyRep* rep ) {
                 mPacketHandler = &EVEClientSession::_HandleCrypto;
         }
     } else {
-        _log(NET__PRES_ERROR, "%s: Received invalid command packet:", GetAddress().c_str());
-        rep->Dump(NET__PRES_ERROR, "  ");
+        if (is_log_enabled(NET__PRES_ERROR)) {
+            _log(NET__PRES_ERROR, "%s: Received invalid command packet:", GetAddress().c_str());
+            rep->Dump(NET__PRES_ERROR, "  ");
+        }
     }
 
     // recurse

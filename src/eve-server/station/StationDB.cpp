@@ -55,13 +55,13 @@ PyPackedRow *StationDB::GetSolarSystem(uint32 solarSystemID) {
         " LEFT JOIN mapLocationWormholeClasses AS mlwc ON mlwc.locationID = mss.regionID"
         " WHERE solarSystemID=%u", solarSystemID ))
     {
-        _log(DATABASE__ERROR, "Error in GetSolarSystem query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: %s", res.error.c_str());
         return NULL;
     }
 
     DBResultRow row;
     if(!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "Error in GetSolarSystem query: no solarsystem for id %d", solarSystemID);
+        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: no solarsystem for id %d", solarSystemID);
         return NULL;
     }
 
@@ -436,7 +436,7 @@ TypeError: must be integer<K>, not unicode
     "   staStations.operationID=staOperationServices.operationID "
     " WHERE staStations.stationID = %u GROUP BY staStations.stationID", sid ))
     {
-        //_log(DATABASE__ERROR, "Error in DoGetStation query: %s", res.error.c_str());
+        //codelog(DATABASE__ERROR, "Error in DoGetStation query: %s", res.error.c_str());
         sLog.Error("StationDB", "Error in DoGetStation query: %s", res.error.c_str());
         return NULL;
     }
@@ -457,13 +457,13 @@ TypeError: must be integer<K>, not unicode
     ))
 
     {
-        _log(DATABASE__ERROR, "Error in DoGetStation query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in DoGetStation query: %s", res.error.c_str());
         return NULL;
     }*/
 
     DBResultRow row;
     if(!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "Error in DoGetStation query: no station for id %d", sid);
+        codelog(DATABASE__ERROR, "Error in DoGetStation query: no station for id %d", sid);
         return NULL;
     }
 
@@ -494,13 +494,13 @@ PyRep *StationDB::GetStationItemBits(uint32 sid) {
         " GROUP BY staStations.stationID ", sid
     ))
     {
-        _log(DATABASE__ERROR, "Error in GetStationItemBits query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetStationItemBits query: %s", res.error.c_str());
         return NULL;
     }
 
     DBResultRow row;
     if(!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "Error in GetStationItemBits query: no station for id %d", sid);
+        codelog(DATABASE__ERROR, "Error in GetStationItemBits query: no station for id %d", sid);
         return NULL;
     }
 

@@ -305,7 +305,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
         newShipRef = pClient->services().item_factory->GetShip(args.newShipID);
     if (!newShipRef) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
-        throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship."));
+        throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173"));
         return nullptr;
     }
 
@@ -344,17 +344,6 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     }
 
     Client* pClient = call.client;
-    uint32 stationID = pClient->GetLocationID();
-
-    GPoint dockPosition;
-    GVector dockOrientation;
-	uint32 systemID, constellationID, regionID;
-    if (!m_db.GetStationInfo(stationID, &systemID, &constellationID, &regionID, NULL, &dockPosition, &dockOrientation)) {
-        _log(SERVICE__ERROR, "%s: Failed to query location of station %u for undock.", pClient->GetName(), stationID);
-        /** @todo throw exception */
-        return nullptr;
-    }
-
     ShipItem* pShip = pClient->GetShip().get();
 
     char ci[35];
@@ -366,7 +355,10 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     //  get vector of online modules as (k,v) pair,
     //    where key is slotID, value is moduleID
     if (call.byname.find("onlineModules") != call.byname.end()) {
-        call.byname["onlineModules"]->Dump(SHIP__MODULE_INFO, "   ");
+        if (is_log_enabled(SHIP__MODULE_INFO)) {
+            _log(SHIP__MODULE_INFO, "Dumping 'onlineModules' List");
+            call.byname["onlineModules"]->Dump(SHIP__MODULE_INFO, "   ");
+        }
         PyDict* onlineModules = call.byname["onlineModules"]->AsDict();
         PyDict::const_iterator cur = onlineModules->begin();
         for (; cur != onlineModules->end(); cur++)
@@ -374,7 +366,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     }
 
     //do session change...
-    pClient->UndockFromStation(stationID, systemID, constellationID, regionID, dockPosition, (GPoint)dockOrientation);
+    pClient->UndockFromStation();
 
     //response should be nodeid and timestamp
     return new PyLong(Win32TimeNow());

@@ -92,7 +92,8 @@ void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc 
 		if (!up_dup)
             up_dup = new PyTuple( *up );
         _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur->GetName(), cur->GetCharacterID() );
-        up_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
+        if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
+            up_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
 		cur->QueueDestinyUpdate( &up_dup );
 	}
 
@@ -115,7 +116,8 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
 			if (!up_dup)
                 up_dup = new PyTuple( *up );
             _log( DESTINY__BUBBLECAST, "Exclusive Bubblecast %s update to %s(%u)", desc, cur->GetName(), cur->GetCharacterID() );
-            up_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
+            if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
+                up_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
 			cur->QueueDestinyUpdate( &up_dup );
 		}
 	}
@@ -136,7 +138,8 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
 		if (!ev_dup)
             ev_dup = new PyTuple( *ev );
         _log( DESTINY__BUBBLECAST, "Bubblecast %s event to %s(%u)", desc, cur->GetName(), cur->GetCharacterID() );
-        ev_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
+        if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
+            ev_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
 		cur->QueueDestinyEvent( &ev_dup );
 	}
 
@@ -155,19 +158,28 @@ void SystemBubble::BubblecastSendNotification(const char* notifyType, const char
         if (!ev_dup)
             ev_dup = new PyTuple( *ev );
         _log( DESTINY__BUBBLECAST, "BubblecastNotify %s to %s(%u)", notifyType, cur->GetName(), cur->GetCharacterID() );
-        ev_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
+        if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
+            ev_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
         cur->SendNotification( notifyType, idType, &ev_dup, seq );
     }
 }
 
 void SystemBubble::Process()
 {
-    if (m_system->GetSystemSecurityRating() > 0.90) return;
+    if (m_system->GetSystemSecurityRating() > 0.90)
+        return;
+    if (m_spawned){
+        m_spawnTimer.Disable();
+        return;
+    }
+
     if (m_spawnTimer.Enabled())
-        if (m_spawnTimer.Check(false)) {
-            if (HasPlayers())
+        if (m_spawnTimer.Check()) {
+            if (HasPlayers()) {
                 m_system->DoSpawnForBubble(this);
-            m_spawnTimer.Disable();
+            } else {
+                m_spawnTimer.Disable();
+            }
         }
 }
 
@@ -306,9 +318,9 @@ void SystemBubble::SetSpawnTimer(bool isBelt/*false*/)
         m_spawnTimer.Start(5000); /* 5s for testing */
     else {
         if (isBelt)
-            m_spawnTimer.Start(sConfig.npc.RoamingTimer *1000);
+            m_spawnTimer.Start(sConfig.npc.RoamingTimer *60 *1000);
         else
-            m_spawnTimer.Start(sConfig.npc.StaticTimer *1000);
+            m_spawnTimer.Start(sConfig.npc.StaticTimer *60 *1000);
     }
 }
 

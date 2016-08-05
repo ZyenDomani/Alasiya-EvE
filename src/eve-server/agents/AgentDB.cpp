@@ -47,7 +47,7 @@ PyObjectEx *AgentDB::GetAgents() {
         " LEFT JOIN bloodlineTypes AS bl ON bl.bloodlineID = agt.agentTypeID"
     ))
     {
-        _log(DATABASE__ERROR, "Error in GetAgents query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetAgents query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -68,7 +68,7 @@ bool AgentDB::LoadAgentLocation(uint32 agentID, uint32 &locationID, uint32 &loca
         " WHERE agt.agentID=%d", agentID
     ))
     {
-        _log(DATABASE__ERROR, "Error in LoadAgentLocation query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in LoadAgentLocation query: %s", res.error.c_str());
         return false;
     }
 
@@ -88,7 +88,7 @@ PyRep *AgentDB::GetAgentSolarSystem(uint32 AgentID){
         " FROM agtAgents AS a"
         "  LEFT JOIN staStations AS s ON s.stationID = a.locationID"
         " WHERE a.agentID = %u",AgentID)) {
-        _log(DATABASE__ERROR, "Error in GetAgentSolarSystem query for Agent = %u", AgentID);
+        codelog(DATABASE__ERROR, "Error in GetAgentSolarSystem query for Agent = %u", AgentID);
     }
 
     DBResultRow row;
@@ -121,7 +121,7 @@ AgentLevel *AgentDB::LoadAgentLevel(uint8 level)
         " WHERE missionLevel=%d",
         level ))
     {
-        _log(DATABASE__ERROR, "Error in LoadAgentLevel query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in LoadAgentLevel query: %s", res.error.c_str());
         delete result;
         return nullptr;
     }

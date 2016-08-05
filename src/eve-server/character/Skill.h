@@ -97,18 +97,13 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 skillID,
-        // InventoryItem stuff:
-        const ItemType &type, const ItemData &data)
-    {
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 skillID, const ItemType &type, const ItemData &data) {
         // check it's a skill
         if( type.categoryID() != EVEDB::invCategories::Skill )
         {
             sLog.Error("Skill", "Trying to load %s as Skill.", type.category().name().c_str() );
             return RefPtr<_Ty>();
         }
-
-        // no additional stuff
 
         return _Ty::template _LoadSkill<_Ty>( factory, skillID, type, data );
     }

@@ -52,7 +52,7 @@ PyRep *CertificateMgrDB::GetCertificateCategories() {
 	" categoryNameID "
         " FROM crtCategories"))
     {
-        _log(DATABASE__ERROR, "Failed to query certificate categories: %s.", res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query certificate categories: %s.", res.error.c_str());
         return(NULL);
     }
 
@@ -70,7 +70,7 @@ PyRep *CertificateMgrDB::GetAllShipCertificateRecommendations() {
         " recommendationID"
         " FROM crtRecommendations"))
     {
-        _log(DATABASE__ERROR, "Failed to query certificate categories: %s.", res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query certificate categories: %s.", res.error.c_str());
         return(NULL);
     }
 
@@ -89,7 +89,7 @@ PyRep *CertificateMgrDB::GetCertificateClasses() {
         " dataID"
         " FROM crtClasses"))
     {
-        _log(DATABASE__ERROR, "Failed to query certificate classes: %s.", res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query certificate classes: %s.", res.error.c_str());
         return(NULL);
     }
 
