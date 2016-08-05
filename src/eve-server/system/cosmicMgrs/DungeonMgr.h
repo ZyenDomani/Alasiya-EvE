@@ -77,7 +77,7 @@ struct DunRoomSpawnInfo {
 };
 
 /*
- * class DBActiveDungeon {
+ * class ActiveDungeon {
  * public:
  *    uint32 systemID;
  *    uint32 dungeonID;
@@ -101,16 +101,16 @@ public:
     // Initializes the Table:
     int Initialize();
 
-    void AddDungeon(DBActiveDungeon& dungeon);
+    void AddDungeon(ActiveDungeon& dungeon);
 
-    void GetDungeons(std::vector<DBActiveDungeon>& dunList);
+    void GetDungeons(std::vector<ActiveDungeon>& dunList);
 
     uint32 GetDungeonID();
 
 protected:
     void _Populate();
 
-    typedef std::unordered_multimap<uint32, DBActiveDungeon> ActiveDungeonDef;    //systemID is key (defined in ManagerDB)
+    typedef std::unordered_multimap<uint32, ActiveDungeon> ActiveDungeonDef;    //systemID is key (defined in ManagerDB)
     typedef std::unordered_multimap<uint16, DunTemplate> DunTemplateDef;    //templateID is key
     typedef std::unordered_multimap<uint16, DunRoomInfo> DunRoomInfoDef;       //roomID is key
     typedef std::unordered_multimap<uint16, DunRoomData> DunRoomsDef;       //roomID is key

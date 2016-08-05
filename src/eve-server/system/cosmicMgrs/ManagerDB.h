@@ -26,73 +26,10 @@
 #ifndef _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
 #define _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
 
+
+#include "POD_containers.h"
 #include "system/SystemDB.h"
 
-/* POD entry for asteroid */
-class DBAsteroidSE {
-public:
-    uint32 itemID;
-    std::string itemName;
-    uint32 typeID;
-    uint32 systemID;
-    uint32 beltID;
-    double quantity;
-    double radius;
-    double x;
-    double y;
-    double z;
-};
-
-/* POD entry for asteroid distrubtion methods */
-struct DBOreBySSC { // notes for me while creating/writing/testing
-    std::string secClass;
-    uint8 V;
-    uint8 S;
-    uint8 Py;
-    uint8 Pl;
-    uint8 O;
-    uint8 K;
-    uint8 J;
-    uint8 Hem;
-    uint8 Hed;
-    uint8 G;
-    uint8 DO;
-    uint8 Sp;
-    uint8 C;
-    uint8 B;
-    uint8 A;
-    uint8 M;
-};
-
-
-/* POD entry for active dungeon */
-class DBActiveDungeon {
-public:
-    uint32 systemID;
-    uint32 dunItemID;
-    uint16 dunTemplateID;
-    uint64 dunExpiryTime;
-    uint8 state;
-    double x;
-    double y;
-    double z;
-};
-
-/* POD entry for cosmic signatures/anomalies */
-class DBCosmicSignature {
-public:
-    std::string sigID;  // this is unique xxx-nnn id displayed in scanner
-    std::string dungeonName;
-    uint32 systemID;
-    uint32 sigItemID;   // itemID of this entry
-    uint16 typeID;
-    uint16 groupID;
-    uint16 scanGroupID; // see below
-    uint16 strengthAttributeID; // see below
-    double x;
-    double y;
-    double z;
-};
 /* more data for signatures...
  * this will have to be checked and set in the code.
  * this is def for scanGroupID:
@@ -136,28 +73,30 @@ protected:
 
 private:
     std::map<uint32, uint32> m_regions;   // this simple map holds k,v of regionID/factionID
-    std::map<std::string, DBOreBySSC> m_oreBySSC;
+    std::map<std::string, OreBySSC> m_oreBySSC;
 };
 
 #define sMgrData \
     ( MgrData::get() )
 
 
+class AsteroidData;
 class ManagerDB {
 public:
+
     /* db methods for all managers */
-    void SaveAnomaly(DBCosmicSignature& sig);
+    void SaveAnomaly(CosmicSignature& sig);
     void GetAnomalyList(DBQueryResult& res);
     GPoint GetAnomalyPos(std::string& string);
     void GetSystemAnomalies(uint32 systemID, DBQueryResult& res);
-    void GetSystemAnomalies(uint32 systemID, std::vector< DBCosmicSignature >& sigs);
+    void GetSystemAnomalies(uint32 systemID, std::vector< CosmicSignature >& sigs);
 
     /* data manager */
     void GetOreBySSC(DBQueryResult& res);
 
     /* belt manager */
-    void SaveSystemRoids(uint32 systemID, std::vector< DBAsteroidSE >& roids);
-    bool LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< DBAsteroidSE >& into);
+    void SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& roids);
+    bool LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< AsteroidData >& into);
     void GetRegionFaction(DBQueryResult& res);
 
     /* spawn manager */
@@ -173,8 +112,8 @@ public:
     void GetDunRoomData(DBQueryResult& res);
     void GetDunGroupData(DBQueryResult& res);
     void GetDunSpawnInfo(DBQueryResult& res);
-    bool GetSavedDungeons(uint32 systemID, std::vector< DBActiveDungeon >& into);
-    void SaveActiveDungeon(DBActiveDungeon& dun);
+    bool GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& into);
+    void SaveActiveDungeon(ActiveDungeon& dun);
     void ClearDungeons();
 
     /* anomaly manager */

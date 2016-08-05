@@ -85,7 +85,7 @@ void AnomalyMgr::SaveAnomaly()
 
     uint16 strengthAttributeID = AttrScanAllStrength;
 
-    DBCosmicSignature sig;
+    CosmicSignature sig;
     /* will need a bit of code here to check and set all items correctly for saving -- see below*/
     m_db.SaveAnomaly(sig);
 

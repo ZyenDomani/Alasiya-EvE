@@ -1,27 +1,12 @@
-/*
- *    ------------------------------------------------------------------------------------
- *    LICENSE:
- *    ------------------------------------------------------------------------------------
- *    This file is part of EVEmu: EVE Online Server Emulator
- *    Copyright 2006 - 2011 The EVEmu Team
- *    For the latest information visit http://evemu.org
- *    ------------------------------------------------------------------------------------
- *    This program is free software; you can redistribute it and/or modify it under
- *    the terms of the GNU Lesser General Public License as published by the Free Software
- *    Foundation; either version 2 of the License, or (at your option) any later
- *    version.
- *
- *    This program is distributed in the hope that it will be useful, but WITHOUT
- *    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- *    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
- *
- *    You should have received a copy of the GNU Lesser General Public License along with
- *    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
- *    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
- *    http://www.gnu.org/copyleft/lesser.txt.
- *    ------------------------------------------------------------------------------------
- *    Author:   Allan
- */
+
+ /**
+  * @name SpawnMgr.cpp
+  *     NPC Spawn managment system for Alasiya EvEmu
+  *
+  * @Author:         Allan
+  * @date:
+  *
+  */
 
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
@@ -223,7 +208,8 @@ void SpawnMgr::StartMainTimer()
 
 void SpawnMgr::SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID)
 {   // NOTE this DOES NOT remove entity from system or bubble.  user must do this BEFORE calling.
-	if (!pSysBubble) return;	//hack for null sys bubble.
+	if (!pSysBubble) //hack for null sys bubble.
+        return;
     _log(SPAWN__DEPOP, "SpawnMgr::SpawnDepoped - NPC %u removed from system.  DePop requested", itemID);
     // delete this spawn item from SpawnEntry in this bubble.
     RemoveSpawn(pSysBubble->GetID(), itemID);
@@ -244,12 +230,12 @@ void SpawnMgr::SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID)
 void SpawnMgr::SpawnPopped(uint32 itemID)
 {
     _log(SPAWN__POP, "SpawnMgr::SpawnPopped - Pop called for NPC %u", itemID);
-
 }
 
 void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
-    if (!m_enabled) return;
+    if (!m_enabled)
+        return;
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
@@ -257,7 +243,6 @@ void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
         sLog.Success("SpawnMgr", "DoSpawnForBubble called for bubble %u in %s(%u)(%.4f). Main Timer enabled.",
                      pSysBubble->GetID(), m_system->GetName().c_str(), m_system->GetID(), secRating);
         PrepSpawn(pSysBubble, regionID, secRating);
-
         pSysBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
     }
 
@@ -610,6 +595,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
             se.factionID = factionID;
             se.type = type;
             se.sub = subtype;
+            se.time = (sConfig.npc.RoamingTimer *60 *1000);
             m_spawns.insert(std::pair<uint32, SpawnEntry>(pSysBubble->GetID(), se));
             _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry with ID %u to m_spawns.", se.spawnID);
         }

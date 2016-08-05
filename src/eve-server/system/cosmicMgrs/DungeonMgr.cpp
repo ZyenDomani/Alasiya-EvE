@@ -127,14 +127,14 @@ void DungeonDataMgr::_Populate()
              m_rooms.size(), m_rooms.bucket_count(), m_groups.size(), m_groups.bucket_count(), m_templates.size(), (GetTimeUSeconds() - start));
 }
 
-void DungeonDataMgr::AddDungeon(DBActiveDungeon& dungeon)
+void DungeonDataMgr::AddDungeon(ActiveDungeon& dungeon)
 {
     m_activeDungeons.emplace(dungeon.systemID, dungeon);
     _log(COSMIC_MGR__MESSAGE, "Added Dungeon %u (%u) in systemID %u to active dungeon list.", dungeon.dunItemID, dungeon.dunTemplateID, dungeon.systemID);
     m_db.SaveActiveDungeon(dungeon);
 }
 
-void DungeonDataMgr::GetDungeons(std::vector< DBActiveDungeon >& dunList)
+void DungeonDataMgr::GetDungeons(std::vector< ActiveDungeon >& dunList)
 {
     for (auto cur : m_activeDungeons)
         dunList.push_back(cur.second);
@@ -177,7 +177,7 @@ void DungeonMgr::Process() {
 
 void DungeonMgr::Load()
 {
-    std::vector<DBActiveDungeon> dungeons;
+    std::vector<ActiveDungeon> dungeons;
     m_db.GetSavedDungeons(m_system->GetID(), dungeons);
     /** @todo this will need more work as the system matures...
     for(auto dungeon : dungeons) {
@@ -193,7 +193,7 @@ void DungeonMgr::Load()
         }
         _log(COSMIC_MGR__TRACE, "DungeonMgr::Load() - Loaded dungeon %u, type %u for %s(%u)", dungeon.dungeonID, dungeon.typeID, m_system->GetName().c_str(), m_systemID );
         sBubbleMgr.Add( asteroidObj );
-        sDunDataMgr.AddDungeon(std::pair<uint32, DBActiveDungeon*>(m_system->GetID(), dungeon));
+        sDunDataMgr.AddDungeon(std::pair<uint32, ActiveDungeon*>(m_system->GetID(), dungeon));
     } */
 }
 
@@ -215,7 +215,7 @@ void DungeonMgr::Create(uint16 templateID)
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - templateID %u, roomID %u, typeID %u", templateID, roomID, typeID);
 
     // begin compiling data for saving in system signatures table.
-    DBCosmicSignature sig;
+    CosmicSignature sig;
         sig.dungeonName = itr->second.dunName;
         sig.sigID = sEntityList.GetAnomalyID();
         sig.sigItemID = sDunDataMgr.GetDungeonID();
@@ -288,7 +288,7 @@ void DungeonMgr::Create(uint16 templateID)
 
     if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
         // setup data to save active dungeon
-        DBActiveDungeon dungeon;
+        ActiveDungeon dungeon;
             dungeon.dunExpiryTime = Win32TimeNow() + (Win32Time_Day * 3);       // 3 days - i know this isnt right. just for testing.
             dungeon.dunTemplateID = templateID;
             dungeon.dunItemID = sig.sigItemID;

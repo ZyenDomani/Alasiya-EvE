@@ -25,6 +25,7 @@
 
 #include "eve-server.h"
 
+#include "system/Asteroid.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 MgrData::MgrData()
@@ -45,7 +46,7 @@ void MgrData::_Populate()
 
     ManagerDB m_db;
     m_db.GetOreBySSC(*res);
-    DBOreBySSC oreBySSC;
+    OreBySSC oreBySSC;
     while (res->GetRow(row)) {
     // SELECT systemSecurityClass, V, S, Py, Pl, O, K, J, Hem, Hed, G, DO, Sp, C, B, A, M FROM mapOreBySystemSecurityClass
         oreBySSC.secClass = row.GetText(0);
@@ -71,7 +72,7 @@ void MgrData::_Populate()
     res->Reset();
     m_db.GetRegionFaction(*res);
     while (res->GetRow(row)) {
-        //SELECT regionID, factionID FROM mapRegions WHERE factionID != 0
+        //SELECT regionID, factionID FROM mapRegions
         m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
     }
 
@@ -152,7 +153,7 @@ void ManagerDB::GetOreBySSC(DBQueryResult& res)
 
 
 
-void ManagerDB::SaveAnomaly(DBCosmicSignature& sig)
+void ManagerDB::SaveAnomaly(CosmicSignature& sig)
 {// sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
     DBerror err;
     if (!sDatabase.RunQuery(err,
@@ -201,7 +202,7 @@ void ManagerDB::GetSystemAnomalies(uint32 systemID, DBQueryResult& res)
         }
 }
 
-void ManagerDB::GetSystemAnomalies(uint32 systemID, std::vector< DBCosmicSignature >& sigs)
+void ManagerDB::GetSystemAnomalies(uint32 systemID, std::vector< CosmicSignature >& sigs)
 {// sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
 
 }
@@ -243,11 +244,9 @@ void ManagerDB::DeleteSpawnedRats()
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE %s", query.c_str());
 }
 
-
-bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< DBAsteroidSE >& into)
+bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< AsteroidData >& into)
 {
     DBQueryResult res;
-
     if(!sDatabase.RunQuery(res,
         "SELECT"
         "   itemID,"
@@ -267,7 +266,7 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< DB
 
     _log(DATABASE__RESULTS, "LoadSystemRoids returned %u items", res.GetRowCount());
     DBResultRow row;
-    DBAsteroidSE entry;
+    AsteroidData entry;
     while(res.GetRow(row)) {
         entry.itemID = row.GetInt(0);
         entry.itemName = row.GetText(1);
@@ -285,7 +284,7 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< DB
     return !into.empty();
 }
 
-void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector< DBAsteroidSE >& roids)
+void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& roids)
 {
     std::ostringstream Inserts;
     // start the insert into command.
@@ -351,7 +350,7 @@ void ManagerDB::GetDunTemplates(DBQueryResult& res)
         _log(DATABASE__ERROR, "Error in GetDunTemplates query: %s", res.error.c_str());
 }
 
-bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< DBActiveDungeon >& into)
+bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& into)
 {
     DBQueryResult res;
 
@@ -370,7 +369,7 @@ bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< DBActiveDungeon >
 
     _log(DATABASE__RESULTS, "GetSavedDungeons returned %u items", res.GetRowCount());
     DBResultRow row;
-    DBActiveDungeon entry;
+    ActiveDungeon entry;
     while(res.GetRow(row)) {
         entry.systemID = row.GetInt(0);
         entry.state = row.GetInt(1);
@@ -386,7 +385,7 @@ bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< DBActiveDungeon >
     return !into.empty();
 }
 
-void ManagerDB::SaveActiveDungeon(DBActiveDungeon& dun)
+void ManagerDB::SaveActiveDungeon(ActiveDungeon& dun)
 {
     DBerror err;
     if (!sDatabase.RunQuery(err,

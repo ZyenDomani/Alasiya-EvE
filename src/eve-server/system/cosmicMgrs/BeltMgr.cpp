@@ -134,7 +134,7 @@ void AsteroidBeltMgr::Process() {
 }
 
 bool AsteroidBeltMgr::Load(uint16 bubbleID) {
-    std::vector<DBAsteroidSE> entities;
+    std::vector<AsteroidData> entities;
     entities.clear();
     uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
     m_db.LoadSystemRoids(m_systemID, beltID, entities);
@@ -142,7 +142,7 @@ bool AsteroidBeltMgr::Load(uint16 bubbleID) {
         return false;
 
     for (auto entity : entities) {
-        InventoryItemRef asteroid = m_system->itemFactory()->GetItem(entity.itemID );
+        InventoryItemRef asteroid = m_system->itemFactory()->GetItem(entity.itemID);
         if (!asteroid ) {
             _log(COSMIC_MGR__WARNING, "BeltMgr::Load() -  Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID);
             continue;
@@ -173,8 +173,8 @@ bool AsteroidBeltMgr::Load(uint16 bubbleID) {
 }
 
 void AsteroidBeltMgr::Save() {
-    DBAsteroidSE entry;
-    std::vector<DBAsteroidSE> roids;
+    AsteroidData entry;
+    std::vector<AsteroidData> roids;
     roids.clear();
     for (auto cur : m_asteroids) {
         entry.itemID = cur.second->GetID();
@@ -279,21 +279,27 @@ uint32 AsteroidBeltMgr::GetAsteroidType(double p, const std::map<float, uint32>&
 }
 
 void AsteroidBeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position) {
-    /** @todo this will need to be updated if/when i can get new _LoadItem() method working right */
-    ItemData idata(typeID, 1, m_systemID, flagAutoFit, "", position);
-    InventoryItemRef i = m_system->itemFactory()->SpawnItem(idata);
-    if (!i)
-        return;
-
     radius *= sConfig.cosmic.roidRadiusMultiplier;
 
     //Amount of Ore = (25000*ln(Radius))-112404.8   V = 25000Ln(r) - 112407
     double quantity = ((25000 * log(radius)) - 112404.8);
 
-    i->SetAttribute(AttrQuantity,  quantity);   // quantity in m^3
-    i->SetAttribute(AttrRadius, (i->type().radius() * radius));  // Radius
-    i->SetAttribute(AttrMass, (i->type().mass() * quantity));      // Mass
-    i->SaveAttributes();
+    AsteroidData adata;
+        adata.beltID = beltID;
+        adata.itemName = "";
+        adata.itemID = 0;
+        adata.systemID = m_systemID;
+        adata.typeID = typeID;
+        adata.quantity = quantity;
+        adata.radius = radius;
+        adata.x = position.x;
+        adata.y = position.y;
+        adata.z = position.z;
+
+    ItemData idata(typeID, 1, m_systemID, flagAutoFit, "", position);
+    AsteroidItemRef i = m_system->itemFactory()->SpawnAsteroid(idata, adata);
+    if (!i)
+        return;
 
     AsteroidSE* pASE = new AsteroidSE(i, *(m_system->GetServiceMgr()), m_system );
     m_system->AddEntity(pASE);
