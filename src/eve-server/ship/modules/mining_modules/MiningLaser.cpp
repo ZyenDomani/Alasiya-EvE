@@ -258,7 +258,7 @@ double MiningLaser::DoCycle() {
     return m_duration;
 }
 
-/** @todo rework this */
+/** @todo verify for ice and gas */
 void MiningLaser::ProcessCycle(bool partial)
 {
 	// Retrieve ore from target Asteroid and put into Cargo Hold
@@ -283,7 +283,7 @@ void MiningLaser::ProcessCycle(bool partial)
 
     if (remainingCargoVolume < m_cycleVol) {
         oreAmount = remainingCargoVolume /oreVolume;
-        Deactivate();
+        ActiveModule::Deactivate();
     }
 
     if (oreAmount > roidQuantity)
