@@ -58,6 +58,7 @@ public:
         uint8 ServerSleepTime;
         uint16 idleSleepTime;
         uint16 maxPlayers;
+        uint8 StationDockDelay;
     } server;
 
     // From <world/>

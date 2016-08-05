@@ -28,8 +28,9 @@
 #define __SERVICEDB_H_INCL__
 
 #include "eve-server.h"
-#include "ServiceStruct.h"
 #include "EntityList.h"
+#include "StaticDataMgr.h"
+#include "POD_containers.h"
 
 /**
  * This object is the home for common DB operations which may be needed by many
@@ -42,39 +43,17 @@ class PyPackedRow;
 class PyObject;
 class ItemFactory;
 
-class CharacterData;
-class CorpMemberInfo;
-
-struct AccountInfo
-{
-    int32 id;
-    uint64 role;
-    int32 visits;
-    int32 clientID;
-    std::string name;
-    std::string hash;
-    std::string password;
-    std::string last_login;
-    bool online;
-    bool banned;
-};
-
 class ServiceDB
 {
 public:
 
-    bool GetAccountInformation( const char* username, const char* password, AccountInfo &account_info );
+    bool GetAccountInformation( const char* username, const char* password, AccountData &account_info );
     bool UpdateAccountHash( const char* username, std::string &hash );
     bool UpdateAccountInformation( const char* username, bool isOnline );
 
     //destiny setstate stuff:
-    PyPackedRow *GetSolItem(uint32 systemID) const;
     PyObject *GetSolDroneState(uint32 systemID) const;
 
-    bool GetSystemInfo(uint32 systemID, uint32 *constellationID, uint32 *regionID, std::string *name, std::string *securityClass, double *securityRating);    // mapSolarSystems
-    bool GetStaticItemInfo(uint32 itemID, uint32 *systemID, uint32 *constellationID, uint32 *regionID, GPoint *position);    // mapDenormalize
-    bool GetStationInfo(uint32 stationID, uint32 *systemID, uint32 *constellationID, uint32 *regionID, GPoint *position,
-                        GPoint *dockPosition, GVector *dockOrientation);    // staStations
     uint32 GetStationOwner(uint32 stationID);
 
     uint32 GetDestinationStargateID(uint32 fromSystem, uint32 toSystem);
@@ -115,8 +94,6 @@ protected:
      */
     uint32 CreateNewAccount( const char* login, const char* pass, uint64 role );
 
-private:
-    //sServiceStruct sSDB;
 };
 
 #endif

@@ -91,6 +91,7 @@ public:
     BlueprintRef            GetBlueprint(uint32 blueprintID);
     CharacterRef            GetCharacter(uint32 characterID);
     SolarSystemRef          GetSolarSystem(uint32 solarSystemID);
+    //AsteroidItemRef         GetAsteroid(uint32 asteroidID);
     StructureItemRef        GetStructure(uint32 structureID);
     InventoryItemRef        GetItem(uint32 itemID);
     InventoryItemRef        GetItemContainer(uint32 itemID, bool load=true);
@@ -111,9 +112,10 @@ public:
      */
     SkillRef                SpawnSkill(ItemData &data);
     ShipItemRef             SpawnShip(ItemData &data);
-    CharacterRef            SpawnCharacter(ItemData &data, CharacterData &charData, CorpMemberInfo &corpData);
+    CharacterRef            SpawnCharacter(ItemData &data, CharacterData &charData, CorpData &corpData);
     BlueprintRef            SpawnBlueprint(ItemData &data, BlueprintData &bpData);
     InventoryItemRef        SpawnItem(ItemData &data);
+    //AsteroidItemRef         SpawnAsteroid(ItemData &idata, AsteroidData& aData);
     StructureItemRef        SpawnStructure(ItemData &data);
     CargoContainerRef       SpawnCargoContainer(ItemData &data);
     WreckContainerRef       SpawnWreckContainer(ItemData &data);

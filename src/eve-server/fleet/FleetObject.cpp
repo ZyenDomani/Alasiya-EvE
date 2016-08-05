@@ -278,7 +278,7 @@ PyResult FleetObject::Handle_LeaveFleet(PyCallArgs &call) {
     sLog.Log("FleetObjectHandler", "Handle_LeaveFleet() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    FleetMemberInfo fleet;
+    FleetData fleet;
         fleet.fleetID = 0;
         fleet.wingID = 0;
         fleet.squadID = 0;

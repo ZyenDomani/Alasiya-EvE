@@ -383,7 +383,7 @@ PyObject *MarketDB::GetRefTypes() {
         " description"
         " FROM billTypes"
     )) {
-        _log(DATABASE__ERROR, "Failed to query bill types: %s.", res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query bill types: %s.", res.error.c_str());
         return NULL;
     }
 
@@ -705,7 +705,7 @@ bool MarketDB::AddCharacterBalance(uint32 char_id, double delta)
     if(!sDatabase.RunQuery(err,
         "UPDATE character_ SET balance=balance+%f WHERE characterID=%u",delta,char_id))
     {
-        _log(DATABASE__ERROR, "Error in query : %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query : %s", err.c_str());
         return false;
     }
 
@@ -758,8 +758,10 @@ uint32 MarketDB::_StoreOrder(
     bool isBuy
 ) {
 
-    uint32 solarSystemID, regionID;
-    if(!GetStationInfo(stationID, &solarSystemID, NULL, &regionID, NULL, NULL, NULL)) {
+    // get the solar system and region IDs.
+    // note:  GetSystemInfo can use either stationID OR solarSystemID.  -allan 3Aug16
+    SystemData data;
+    if (!sDataMgr.GetSystemInfo(stationID, data)) {
         codelog(MARKET__ERROR, "Char %u: Failed to find parents for station %u", clientID, stationID);
         return(0);
     }
@@ -781,10 +783,10 @@ uint32 MarketDB::_StoreOrder(
         "    1, %u, 0, %u, %u, "
         "    %u, %u, 0, 1"
         " )",
-            typeID, clientID, regionID, stationID,
+            typeID, clientID, data.regionID, stationID,
             orderRange, isBuy?1:0, price, quantity, quantity, Win32TimeNow(),
             minVolume, accountID, duration,
-            isCorp?1:0, solarSystemID
+            isCorp?1:0, data.systemID
         ))
 
     {

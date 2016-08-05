@@ -120,67 +120,6 @@ _Ty *CharacterType::_LoadCharacterType(ItemFactory &factory, uint32 typeID, uint
 }
 
 /*
- * CharacterData
- */
-CharacterData::CharacterData(   //uses v6
-    uint32 _accountID,
-    const char *_title,
-    const char *_desc,
-    bool _gender,
-    double _bounty,
-    double _balance,
-    double _aurBalance,
-    double _securityRating,
-    uint32 _logonMinutes,
-    double _skillPoints,
-    uint32 _corporationID,
-    uint32 _allianceID,
-    uint32 _warFactionID,
-    uint32 _stationID,
-    uint32 _solarSystemID,
-    uint32 _constellationID,
-    uint32 _regionID,
-    uint32 _ancestryID,
-    uint8 _bloodlineID,
-    uint8 _raceID,
-    uint32 _careerID,
-    uint32 _schoolID,
-    uint32 _careerSpecialityID,
-    uint64 _startDateTime,
-    uint64 _createDateTime,
-    uint32 _shipID,
-    uint32 _capsuleID)
-: accountID(_accountID),
-  title(_title),
-  description(_desc),
-  gender(_gender),
-  bounty(_bounty),
-  balance(_balance),
-  aurBalance(_aurBalance),
-  securityRating(_securityRating),
-  logonMinutes(_logonMinutes),
-  skillPoints(_skillPoints),
-  corporationID(_corporationID),
-  allianceID(_allianceID),
-  warFactionID(_warFactionID),
-  stationID(_stationID),
-  solarSystemID(_solarSystemID),
-  constellationID(_constellationID),
-  regionID(_regionID),
-  ancestryID(_ancestryID),
-  bloodlineID(_bloodlineID),
-  raceID(_raceID),
-  careerID(_careerID),
-  schoolID(_schoolID),
-  careerSpecialityID(_careerSpecialityID),
-  startDateTime(_startDateTime),
-  createDateTime(_createDateTime),
-  shipID(_shipID),
-  capsuleID(_capsuleID)
-{
-}
-
-/*
  * CharacterAppearance
  */
 
@@ -266,9 +205,70 @@ void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 
 
 /*
- * CorpMemberInfo
+ * CharacterData
  */
-CorpMemberInfo::CorpMemberInfo(
+CharacterData::CharacterData(   //uses v6
+    uint32 _accountID,
+    const char *_title,
+    const char *_desc,
+    bool _gender,
+    double _bounty,
+    double _balance,
+    double _aurBalance,
+    double _securityRating,
+    uint32 _logonMinutes,
+    double _skillPoints,
+    uint32 _corporationID,
+    uint32 _allianceID,
+    uint32 _warFactionID,
+    uint32 _stationID,
+    uint32 _solarSystemID,
+    uint32 _constellationID,
+    uint32 _regionID,
+    uint32 _ancestryID,
+    uint8 _bloodlineID,
+    uint8 _raceID,
+    uint32 _careerID,
+    uint32 _schoolID,
+    uint32 _careerSpecialityID,
+    uint64 _startDateTime,
+    uint64 _createDateTime,
+    uint32 _shipID,
+    uint32 _capsuleID)
+: accountID(_accountID),
+  title(_title),
+  description(_desc),
+  gender(_gender),
+  bounty(_bounty),
+  balance(_balance),
+  aurBalance(_aurBalance),
+  securityRating(_securityRating),
+  logonMinutes(_logonMinutes),
+  skillPoints(_skillPoints),
+  corporationID(_corporationID),
+  allianceID(_allianceID),
+  warFactionID(_warFactionID),
+  stationID(_stationID),
+  solarSystemID(_solarSystemID),
+  constellationID(_constellationID),
+  regionID(_regionID),
+  ancestryID(_ancestryID),
+  bloodlineID(_bloodlineID),
+  raceID(_raceID),
+  careerID(_careerID),
+  schoolID(_schoolID),
+  careerSpecialityID(_careerSpecialityID),
+  startDateTime(_startDateTime),
+  createDateTime(_createDateTime),
+  shipID(_shipID),
+  capsuleID(_capsuleID)
+{
+}
+
+/*
+ * * CorpMemberInfo
+ */
+CorpData::CorpData(
     uint32 _corpHQ,
     int32 _corpAccountKey,
     uint64 _corpRole,
@@ -287,69 +287,6 @@ CorpMemberInfo::CorpMemberInfo(
 }
 
 /*
- * FleetMember Info (needs work)
- */
-FleetMemberInfo::FleetMemberInfo(
-    uint32 _fleetID,
-    uint32 _wingID,
-    uint32 _squadID,
-	uint8 _fleetRole,
-	uint8 _fleetBooster,
-    uint8 _fleetJob)
-: fleetID(_fleetID),
-  wingID(_wingID),
-  squadID(_squadID),
-  fleetRole(_fleetRole),
-  fleetBooster(_fleetBooster),
-  fleetJob(_fleetJob)
-{
-}
-
-CharKillData::CharKillData(
-    uint32 _killID,
-    uint32 _solarSystemID,
-    uint32 _victimCharacterID,
-    uint32 _victimCorporationID,
-    uint32 _victimAllianceID,
-    uint32 _victimFactionID,
-    uint16 _victimShipTypeID,
-    uint32 _victimDamageTaken,
-    uint32 _finalCharacterID,
-    uint32 _finalCorporationID,
-    uint32 _finalAllianceID,
-    uint32 _finalFactionID,
-    uint16 _finalShipTypeID,
-    uint16 _finalWeaponTypeID,
-    double _finalSecurityStatus,
-    uint32 _finalDamageDone,
-    std::string _killBlob,          /* incomplete.  see notes in Ship::GetShipDNA() (ship/Ship.cpp:1172) */
-    uint64 _killTime,
-    uint32 _moonID)
-:
-  killID(_killID),
-  solarSystemID(_solarSystemID),
-  victimCharacterID(_victimCharacterID),
-  victimCorporationID(_victimCorporationID),
-  victimAllianceID(_victimAllianceID),
-  victimFactionID(_victimFactionID),
-  victimShipTypeID(_victimShipTypeID),
-  victimDamageTaken(_victimDamageTaken),
-  finalCharacterID(_finalCharacterID),
-  finalCorporationID(_finalCorporationID),
-  finalAllianceID(_finalAllianceID),
-  finalFactionID(_finalFactionID),
-  finalShipTypeID(_finalShipTypeID),
-  finalWeaponTypeID(_finalWeaponTypeID),
-  finalSecurityStatus(_finalSecurityStatus),
-  finalDamageDone(_finalDamageDone),
-  killBlob(_killBlob),
-  killTime(_killTime),
-  moonID(_moonID)
-{
-
-}
-
-/*
  * Character
  */
 Character::Character(
@@ -360,7 +297,7 @@ Character::Character(
     const ItemData &_data,
     // Character stuff:
     const CharacterData &_charData,
-    const CorpMemberInfo &_corpData)
+    const CorpData &_corpData)
 : InventoryItem(_factory, _characterID, _charType, _data),
   m_accountID(_charData.accountID),
   m_title(_charData.title),
@@ -450,13 +387,13 @@ bool Character::_Load() {
 template<class _Ty>
 RefPtr<_Ty> Character::CreateCharacter(ItemFactory &factory, uint32 characterID,
                                        const CharacterType &charType, const ItemData &data,
-                                       const CharacterData &charData, const CorpMemberInfo &corpData)
+                                       const CharacterData &charData, const CorpData &corpData)
 {
     // construct the character item
     return CharacterRef( new Character( factory, characterID, charType, data, charData, corpData ) );
 }
 
-CharacterRef Character::Spawn(ItemFactory &factory, ItemData &data, CharacterData &charData, CorpMemberInfo &corpData) {
+CharacterRef Character::Spawn(ItemFactory &factory, ItemData &data, CharacterData &charData, CorpData &corpData) {
     // make sure it's a character
     const CharacterType *ct = factory.GetCharacterType(data.typeID);
     if (!ct) return CharacterRef();
@@ -518,7 +455,7 @@ void Character::SetLocation(uint32 stationID, uint32 solarSystemID, uint32 const
     SaveCharacter();
 }
 
-void Character::JoinCorporation(uint32 corporationID, const CorpMemberInfo &roles) {
+void Character::JoinCorporation(uint32 corporationID, const CorpData &roles) {
 	m_corporationID = corporationID;
 	m_corpRole = roles.corpRole;
     m_corpAccountKey = roles.corpAccountKey;
@@ -550,7 +487,7 @@ uint32 Character::PickAlternateShip(uint32 locationID)
     return m_db.PickAlternateShip(itemID(), locationID);
 }
 
-void Character::SetFleetData(FleetMemberInfo &fleet)
+void Character::SetFleetData(FleetData &fleet)
 {
     m_fleetID = fleet.fleetID;
     m_wingID = fleet.wingID;
@@ -903,9 +840,11 @@ void Character::UpdateSkillQueueEndTime(const SkillQueue &queue) {
 
 PyDict *Character::GetCharInfo() {
     // this is char, skills, implants, boosters.
-    if (!m_inventory->LoadContents( &m_factory ) ) {
-        codelog(CHARACTER__ERROR, "%s (%u): Failed to load contents for GetCharInfo", m_itemName.c_str(), m_itemID);
-        return nullptr;
+    if (!m_inventory->ContentsLoaded()) {
+        if (!m_inventory->LoadContents(&m_factory)) {
+            codelog(CHARACTER__ERROR, "%s (%u): Failed to load contents for GetCharInfo", m_itemName.c_str(), m_itemID);
+            return nullptr;
+        }
     }
 
     PyDict *result = new PyDict;
@@ -1042,9 +981,9 @@ void Character::SaveCharacter() {
     );
 
     // corporation data
-    m_factory.db().SaveCorpMemberInfo(
+    m_factory.db().SaveCorpData(
         itemID(),
-        CorpMemberInfo(
+        CorpData(
             m_corpHQ,
             m_corpAccountKey,
             m_corpRole,

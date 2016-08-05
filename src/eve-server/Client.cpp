@@ -30,6 +30,7 @@
 #include "ConsoleCommands.h"
 #include "LiveUpdateDB.h"
 #include "PyBoundObject.h"
+#include "StaticDataMgr.h"
 #include "chat/LSCService.h"
 #include "character/CharUnboundMgrService.h"
 #include "corporation/CorporationDB.h"
@@ -56,6 +57,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_services(services),
   m_movePoint(NULL_ORIGIN),
   m_moveState(msIdle),
+  m_dockTimer(1000),  // dock acceptance timer at 1sec
   m_jumpTimer(2000),
   m_moveTimer(1000),
   m_pingTimer(PING_INTERVAL_US),
@@ -75,6 +77,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_ship = ShipItemRef();
 
     m_pingTimer.Start();
+    m_dockTimer.Disable();
     m_jumpTimer.Disable();
     m_moveTimer.Disable();
     m_scanTimer.Disable();
@@ -101,8 +104,6 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_moveSystemID = 0;
     m_timeEndTrain = 0;
     m_dockStationID = 0;
-
-	m_systemName = "";
 
     m_hangarLoaded.clear();
     mDogmaMessages.clear();
@@ -164,10 +165,11 @@ bool Client::ProcessNet()
 
     PyPacket *p(nullptr);
     while (p = PopPacket()) {
-        _log(CLIENT__IN_ALL, "Received packet:");
-        PyLogDumpVisitor dumper(CLIENT__IN_ALL, CLIENT__IN_ALL);
-        p->Dump(CLIENT__IN_ALL, dumper);
-
+        if (is_log_enabled(CLIENT__IN_ALL)) {
+            _log(CLIENT__IN_ALL, "Received packet:");
+            PyLogDumpVisitor dumper(CLIENT__IN_ALL, CLIENT__IN_ALL);
+            p->Dump(CLIENT__IN_ALL, dumper);
+        }
         try {
             if (!DispatchPacket(p))
                 sLog.Error("Client", "%s: Failed to dispatch packet of type %s (%d).", m_char->itemName().c_str(), MACHONETMSG_TYPE_NAMES[ p->type ], (int)p->type);
@@ -187,10 +189,10 @@ bool Client::ProcessNet()
 
 bool Client::SelectCharacter(uint32 char_id) {
     InitSession(char_id);
-    SetLogin(true);
 
-    uint32 systemID = GetSystemID();
-    m_system = sEntityList.FindOrBootSystem(systemID);
+    sDataMgr.GetSystemInfo(m_locationID, m_SystemData);
+
+    m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
 
     m_services.item_factory->SetUsingClient(this);
     m_char = m_services.item_factory->GetCharacter(char_id);
@@ -201,8 +203,8 @@ bool Client::SelectCharacter(uint32 char_id) {
     }
 
     if (!m_system) {
-        sLog.Error("Client::LoginToSystem()", "Failed to boot system %u for char %s (%u)", systemID, m_char->itemName().c_str(), m_char->itemID());
-        SendErrorMsg("Unable to boot system %u", systemID);
+        sLog.Error("Client::LoginToSystem()", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->itemName().c_str(), m_char->itemID());
+        SendErrorMsg("Unable to boot system %u", m_SystemData.systemID);
         return false;
     }
 
@@ -222,7 +224,12 @@ bool Client::SelectCharacter(uint32 char_id) {
     }
 
     m_char->SetActiveShip(m_shipId);    // this also saves shipID for char in db. (error fix)
-    LoginToSystem(systemID, m_ship);
+    m_ship->SetPlayer(this);
+
+    GPoint pos(NULL_ORIGIN);
+    if (IsSolarSystem(m_locationID))
+        pos = m_ship->position();
+    MoveToLocation(m_locationID, pos);
     SendSessionChange();
 
     //johnsus - characterOnline mod
@@ -230,7 +237,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_services.item_factory->UnsetUsingClient();
     m_char->SetLoginTime();
     UpdateSkillTraining();
-    sLog.Success("Client::SelectCharacter()", "SelectCharacter for %u completed", char_id);
+    sLog.Success("Client::SelectCharacter()", "SelectCharacter completed for %u", char_id);
     return true;
 }
 
@@ -250,7 +257,7 @@ void Client::ProcessClient() {
         SetSessionChange();
     }
 
-    if (IsDocked()) {
+    if (IsStation(m_locationID)) {
         if (m_killedTimer.Enabled())
             m_killedTimer.Disable();
         if (sConfig.server.UseProfiling)
@@ -309,6 +316,11 @@ void Client::ProcessClient() {
         _log(CLIENT__TRACE, "Client::ProcessClient():  SaveTimer for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
         m_char->SaveCharacter();
         m_ship->SaveShip();
+    }
+
+    if (m_dockTimer.Enabled() and m_dockTimer.Check(false)) {
+        m_dockTimer.Disable();
+        DockToStation();
     }
 
     if (sConfig.server.UseProfiling)
@@ -371,91 +383,56 @@ void Client::WarpOut() {
         pShipSE->DestinyMgr()->WarpTo(warpToPoint);
 }
 
-void Client::LoginToSystem(uint32 systemID, ShipItemRef ship) {
-    // called upon initial login
-    char ci[25];
-    m_systemName = m_system->GetName();
-    sLog.Warning("Client::LoginToSystem()", "Client %s(%u) Login %s in %s", \
-                m_char->itemName().c_str(), m_char->itemID(), (IsInSpace() ? "InSpace" : "InStation"), m_systemName.c_str());
-    m_char->chkDynamicSystemID(systemID);
-    m_ship->SetPlayer(this);
-    if (IsInSpace()) {
-        snprintf(ci, sizeof(ci), "InSpace:%u", systemID);
-        m_ship->AddItem(m_char);
-        UpdateSessionInt("shipid", m_shipId);
-        CreateShipSE();
-        MoveToLocation(systemID, m_ship->position());
-        WarpIn();
-        m_char->AddPilotToDynamicData(systemID, true, false, true);
-        m_invulTimer.Start(20000);
-    } else {
-        snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
-        GPoint dockPosition(NULL_ORIGIN);
-        m_sDB.GetStationInfo(m_locationID, nullptr, nullptr, nullptr, nullptr, &dockPosition, nullptr);
-        m_services.item_factory->GetStation(m_locationID)->GetInventory()->AddItem(m_char);
-        m_services.item_factory->GetStation(m_locationID)->GetInventory()->AddItem(m_ship);
-        m_ship->SetFlag(flagHangar);
-        if (!IsHangarLoaded(m_locationID))
-            LoadStationHangar(m_locationID);
-        m_dockPoint = dockPosition;
-        m_system->AddClient(this, true, true);
-        OnCharNowInStation();
-        m_char->AddPilotToDynamicData(systemID, true, true, true);
-        if (pShipSE)
-            SafeDelete(pShipSE);
-    }
-
-    m_ship->SetCustomInfo(ci);
-    _UpdateSession(m_char);
-    SendSessionChange();
+void Client::EnterSystem(uint32 systemID)
+{
+    MoveToLocation(systemID, m_ship->position());
 }
 
-bool Client::EnterSystem(uint32 systemID) {
-    if (IsStation(systemID)) return true;
+void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
+    // process ALL location changes here.
+    if (!IsStation(locationID) and !IsSolarSystem(locationID)) {
+        SendErrorMsg("Move requested to unsupported location %u", locationID);
+        return;
+    }
 
-    /** @todo this will need more work once i figure out what the damn client wants */
     if (m_autoPilot)
-        sLog.Warning("Client::EnterSystem", "m_autoPilot = true");
+        _log(PLAYER__AP_TRACE, "MoveToLocation() - m_autoPilot = true");
 
-    // called when entering new system or verifying correct/current system.  sets session data for current system
-    if (m_system and (m_system->GetID() != systemID)) {
-        sLog.Warning("Client::EnterSystem()", "m_system = %p, m_system->GetID(%u) != GetSystemID(%u)", m_system, m_system->GetID(), systemID);
+    if (!m_login and (m_locationID == locationID)) {
+        _log(PLAYER__WARNING, "MoveToLocation() - m_locationID == location");
+        if (IsStation(locationID))
+            return;
+        // This is a simple movement
+        MoveToPosition(pt);
+        SetDestiny();
+        return;
+    }
+
+    m_locationID = locationID;
+    uint32 stationID = 0;
+    if (IsStation(locationID))
+        stationID = locationID;
+
+    // location changed...verify current system and set session data for current system.
+    if (m_system and (m_system->GetID() != m_SystemData.systemID)) {
         //we have different m_system
-        m_char->AddPilotToDynamicData(systemID);
+        _log(PLAYER__WARNING, "MoveToLocation() - m_system = %p, m_system->GetID(%u) != locationID(%u)", m_system, m_SystemData.systemID, m_locationID);
+        // remove from 'current' system
+        m_char->AddPilotToDynamicData(m_SystemData.systemID);
         m_system->RemoveClient(this, false, true);
         if (pShipSE)
             m_system->RemoveEntity(pShipSE);
         m_system = nullptr;
+        // get data for new system.  this checks for stationID sent as locationID, so is safe here.
+        sDataMgr.GetSystemInfo(locationID, m_SystemData);
     }
 
-    if (!m_system) {
-        sLog.Warning("Client::EnterSystem()", "m_system == NULL, systemID = %u, m_locationID = %u", systemID, m_locationID);
-        //m_system is NULL, so find our new system's manager and register ourself with it.
-        m_services.item_factory->SetUsingClient(this);
-        m_system = sEntityList.FindOrBootSystem(systemID);
-        m_services.item_factory->UnsetUsingClient();
-        if (!m_system) {
-            sLog.Error("Client", "Failed to boot system %u for char %s (%u)", systemID, m_char->itemName().c_str(), m_char->itemID());
-            SendErrorMsg("Unable to boot system");
-            return false;
-        }
-
-        m_systemName = m_system->GetName();
-        m_beyonce = false;
-
-        m_char->chkDynamicSystemID(systemID);
-        m_char->AddPilotToDynamicData(systemID, true, true);
-    }
-
-    return true;
-}
-
-void Client::UpdateLocation(uint32 locationID) {
-    m_locationID = locationID;
-    _UpdateSession(m_char);
-    SendSessionChange();
-    if (IsStation(locationID)) {
-        sLog.Success("Client::UpdateLocation()", "Character %s (%u) Docked.", m_char->itemName().c_str(), m_char->itemID());
+    // test for system/station here, and set client variables
+    char ci[25];
+    if (stationID) {
+        _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
+        sDataMgr.GetStationInfo(locationID, m_StationData);
+        snprintf(ci, sizeof(ci), "Docked:%u", locationID);
         m_ship->Move(locationID, flagHangar);
         m_char->Move(locationID, flagAutoFit);
         m_ship->Dock();
@@ -463,64 +440,52 @@ void Client::UpdateLocation(uint32 locationID) {
         if (!IsHangarLoaded(locationID))
             LoadStationHangar(locationID);
         OnCharNowInStation();
-        DestroyShipSE();
-    } else if (IsSolarSystem(locationID)) {
-        sLog.Success("Client::UpdateLocation()", "Character %s(%u) InSpace.", m_char->itemName().c_str(), m_char->itemID());
-        if (InPod())
+        //DestroyShipSE();
+    } else {
+        _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
+        snprintf(ci, sizeof(ci), "InSpace:%u", locationID);
+        if (InPod()) {
             m_ship->Move(locationID, flagCapsule, false);
-        else {
+        } else {
             m_pod->Move(locationID, flagCapsule, false);
-            m_ship->Move(locationID, flagAutoFit);
+            m_ship->Move(locationID, flagAutoFit, false);
         }
         if (m_char->flag() != flagPilot)
-            m_char->Move(m_shipId, flagPilot);
-    }
-}
-
-void Client::MoveToLocation(uint32 location, const GPoint& pt) {
-    char ci[25];
-    if (m_locationID == location) {
-        sLog.Warning("Client::MoveToLocation()", "m_locationID == location");
-        if (IsStation(location)) return;
-        // This is a simple movement
-        MoveToPosition(pt);
-        SetDestiny(m_login);
-        return;
+            m_char->Move(m_shipId, flagPilot, false);
     }
 
-    uint32 stationID = 0, solarSystemID = 0, constellationID = 0, regionID = 0;
-    if (IsStation(location)) {
-        sLog.Warning("Client::MoveToLocation()", "IsStation()");
-        snprintf(ci, sizeof(ci), "Docked:%u", location);
-        stationID = location;
-        m_services.serviceDB().GetStationInfo(
-            stationID,
-            &solarSystemID, &constellationID, &regionID,
-            nullptr, nullptr, nullptr
-        );
-    } else if (IsSolarSystem(location)) {
-        sLog.Warning("Client::MoveToLocation()", "IsSolarSystem()");
-        snprintf(ci, sizeof(ci), "InSpace:%u", location);
-        // Entering a solarsystem   origin is GetLocation()    destination is location
-        stationID = 0;
-        solarSystemID = location;
-        m_services.serviceDB().GetSystemInfo(
-            solarSystemID,
-            &constellationID, &regionID,
-            nullptr, nullptr, nullptr
-        );
-    } else {
-        SendErrorMsg("Move requested to unsupported location %u", location);
-        return;
+    if (!m_system) {
+        _log(PLAYER__WARNING, "MoveToLocation() - m_system == NULL, m_locationID = %u", m_locationID);
+        // find our new system's manager and register ourself with it.
+        m_services.item_factory->SetUsingClient(this);
+        m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
+        m_services.item_factory->UnsetUsingClient();
+        if (!m_system) {
+            sLog.Error("Client", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->itemName().c_str(), m_char->itemID());
+            SendErrorMsg("Unable to boot system.  Relog and try again.");
+            return;
+        }
+
+        if ((pShipSE) and (IsSolarSystem(locationID)))
+            m_system->AddEntity(pShipSE);
+
+        m_beyonce = false;
+
+        m_char->chkDynamicSystemID(m_SystemData.systemID);
+        m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(locationID));
     }
+
     m_ship->SetCustomInfo(ci);
-    m_char->SetLocation(stationID, solarSystemID, constellationID, regionID);
+    m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
 
-    EnterSystem(solarSystemID);
-    UpdateLocation(location);
+    _UpdateSession(m_char);
+    SendSessionChange();
+
     if (!stationID) {
         MoveToPosition(pt);
         SetDestiny(!m_undock);
+        if (m_login)
+            WarpIn();
     }
 }
 
@@ -533,19 +498,18 @@ void Client::MoveToPosition(const GPoint &pt) {
         pShipSE->DestinyMgr()->Halt();
 }
 
-void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constellationID, uint32 regionID, GPoint dockPosition, GPoint direction)
-{
+void Client::UndockFromStation() {
     if (m_TS) {
         TradeService* mts = (TradeService*)(m_services.LookupService("trademgr"));
         mts->CancelTrade(this);
     }
     sLog.Log("Client::UndockFromStation()", "Character %s(%u) undocking from stationID() %u", \
-                m_char->itemName().c_str(), m_char->itemID(), stationID);
+    m_char->itemName().c_str(), m_char->itemID(), m_StationData.stationID);
 
     m_invul = m_undock = true;
     //set position and direction of docking ramp for later use
-    m_dockPoint = dockPosition;
-    m_movePoint = direction;
+    m_dockPoint = m_StationData.dockPosition;
+    m_movePoint = m_StationData.dockOrientation;
 
     /** @todo  this needs a bit of work to match live....
      *  Undock Request -> GetCriminalTimeStamps -> Undock -> OnItemsChanged (Undocking:xxxxxxxx) -> OnCharNoLongerInStation ->
@@ -553,9 +517,9 @@ void Client::UndockFromStation(uint32 stationID, uint32 systemID, uint32 constel
      * -> GotoDirection(etc, etc) -> SetState (dmg, ego, ball, slim)
      *  ***** 9sec from hitting undock to space view on live. *****
      */
-    m_ship->Relocate(dockPosition);
+    m_ship->Relocate(m_StationData.dockPosition);
     CreateShipSE();
-    MoveToLocation(systemID, dockPosition);
+    MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     m_ship->Undock();
     OnCharNoLongerInStation();
     _postMove(msUndock, 1000);
@@ -576,8 +540,8 @@ void Client::SetBallPark() {
 
 void Client::DockToStation() {
     SetAutoPilot(false);
-    m_bubbleWait = true;  //do we need this?  there is no ballpark after next call returns.  -yes, we still get random _bp calls
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
+    m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls
 
     //Check if player is in pod, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a new, fully-fitted ship as replacement.  we dont....yet
@@ -597,6 +561,11 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         _log(PLAYER__MESSAGE, "%s tried to board ship %u, which is not assembled.", m_char->itemName().c_str(), newShipItemRef->itemID());
         SendErrorMsg("You cannot board a ship which is not assembled!");
         return;
+    } else if (m_ship == newShipItemRef) {
+        // not sure if this is possible...trying to board currently-active ship.
+        _log(PLAYER__MESSAGE, "%s tried to board active ship %u.", m_char->itemName().c_str(), newShipItemRef->itemID());
+        SendErrorMsg("You are already aboard this ship.");
+        return;
     }
     /* check for and delete pod entity if boarding new ship */
     if (m_ship->typeID() == itemTypeCapsule)
@@ -615,6 +584,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     m_ship = newShipItemRef;
     m_shipId = m_ship->itemID();
     m_char->SetActiveShip(m_shipId);    // this also saves shipID for char in db. (error fix)
+    m_ship->SetPlayer(this);
 
     char ci[25];
     if (IsInSpace()) {
@@ -628,7 +598,6 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             pShipSE = m_system->GetSEFromInventory(m_shipId);
         }
         UpdateSessionInt("shipid", m_shipId);
-        pShipSE->SetPilot(this);
         m_char->Move(m_shipId, flagPilot);
         SetDestiny();
 
@@ -638,7 +607,6 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         pdMgr->SendSetState();  //reset ego in destiny setstate
         FlushQueue();
     } else {
-        m_ship->SetPlayer(this);
         snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
     }
 
@@ -671,16 +639,6 @@ void Client::SetPodItem() {
         CreateNewPod();
     else
         m_pod = m_services.item_factory->GetShip(m_char->capsuleID());
-}
-
-
-PyDict* Client::MakeSlimItem() const {
-    _log(PLAYER__ERROR, "Client::MakeSlimItem() called for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
-    return nullptr;
-}
-
-void Client::EncodeDestiny(Buffer& into) const {
-    _log(PLAYER__ERROR, "Client::EncodeDestiny() called for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
 }
 
 void Client::StartKilledTimer() {
@@ -731,15 +689,14 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
         return;
     }
 
-    uint32 solarSystemID = 0;
-    GPoint position(NULL_ORIGIN);
-    if (!m_services.serviceDB().GetStaticItemInfo(toGate, &solarSystemID, nullptr, nullptr, &position)) {
+    m_toGate = toGate;
+    StaticData toData;
+    if (!sDataMgr.GetStaticInfo(m_toGate, toData)) {
         sLog.Error("Client","%s: Failed to query information for stargate %u", m_char->itemName().c_str(), toGate);
         return;
     }
-    m_toGate = toGate;
-    m_moveSystemID = solarSystemID;
-    m_movePoint = position;
+    m_moveSystemID = toData.systemID;
+    m_movePoint = toData.position;
     m_movePoint.MakeRandomPointOnSphereLayer(7500, 9500);   // Make Jump-In point a random spot on ~10km radius sphere about the stargate
 
     char ci[25];
@@ -748,19 +705,19 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
 
     // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
     // this is the code for removing pilot from previous system
-    uint32 fromSystem = 0;
-    if (!m_services.serviceDB().GetStaticItemInfo(fromGate, &fromSystem, nullptr, nullptr, nullptr )) {
+    StaticData fromData;
+    if (!sDataMgr.GetStaticInfo(m_toGate, fromData)) {
             sLog.Error("Client","%s: Failed to query information for stargate %u", m_char->itemName().c_str(), fromGate);
             return;
         }
     //add jump in previous system
-    m_char->chkDynamicSystemID(fromSystem);
-    m_char->AddJumpToDynamicData(fromSystem);
+    m_char->chkDynamicSystemID(fromData.systemID);
+    m_char->AddJumpToDynamicData(fromData.systemID);
     //add jump in this system
-    m_char->chkDynamicSystemID(solarSystemID);
-    m_char->AddJumpToDynamicData(solarSystemID);
+    m_char->chkDynamicSystemID(toData.systemID);
+    m_char->AddJumpToDynamicData(toData.systemID);
     // used for showing Visited Systems in StarMap(F10)  -allan 30Jan14
-    m_char->VisitSystem(solarSystemID);
+    m_char->VisitSystem(toData.systemID);
 
     // call Stop() per packet sniff
     pShipSE->DestinyMgr()->Stop();
@@ -1178,6 +1135,7 @@ void Client::SendSessionChange()
     if (!mSession.isDirty())
         return;
     if (GetCharacterID() and (!m_locationID)) {
+        // this should never happen now.  -allan 3Aug16
         codelog(CLIENT__ERROR, "Session::LocationID == NULL for %s(%u)", GetCharacterName().c_str(), GetCharacterID());
         m_locationID = GetSystemID();
         if (IsDocked())
@@ -1193,8 +1151,10 @@ void Client::SendSessionChange()
     if (scn.changes->empty())
         return;
 
-    _log(CLIENT__SESSION, "Session updated.  Sending session change");
-    scn.changes->Dump(CLIENT__SESSION, "   Changes: ");
+    if (is_log_enabled(CLIENT__SESSION)) {
+        _log(CLIENT__SESSION, "Session updated.  Sending session change");
+        scn.changes->Dump(CLIENT__SESSION, "   Changes: ");
+    }
 
     //scn.sessionID = GetSessionID();       /* this isnt right....client creates sessionID.  i dont know how to retrieve it yet. */
     scn.clueless = 0;
@@ -1224,9 +1184,11 @@ void Client::SendSessionChange()
     //p->named_payload = new PyDict();
     //p->named_payload->SetItemString("channel", new PyString("sessionchange"));
 
-    _log(CLIENT__OUT_ALL, "Sending Session packet:");
-    PyLogDumpVisitor dumper(CLIENT__OUT_ALL, CLIENT__OUT_ALL);
-    p->Dump(CLIENT__OUT_ALL, dumper);
+    if (is_log_enabled(CLIENT__OUT_ALL)) {
+        _log(CLIENT__OUT_ALL, "Sending Session packet:");
+        PyLogDumpVisitor dumper(CLIENT__OUT_ALL, CLIENT__OUT_ALL);
+        p->Dump(CLIENT__OUT_ALL, dumper);
+    }
 
     FastQueuePacket(&p);
 }
@@ -1454,7 +1416,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     std::string transport_closed_msg = "LoginAuthFailed";
     int32 isOnline;
 
-    AccountInfo account_info;
+    AccountData account_info;
     CryptoServerHandshake server_shake;
 
     /* send passwordVersion required: 1=plain, 2=hashed */
@@ -1833,7 +1795,8 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     m_canThrow = false;
 
     SendSessionChange();  //send out the session change before the return.
-    result.ssResult->Dump(CLIENT__OUT_ALL, "    ");
+    if (is_log_enabled(CLIENT__OUT_ALL))
+        result.ssResult->Dump(CLIENT__OUT_ALL, "    ");
     _SendCallReturn(packet->dest, packet->source.callID, GetClientID(), &result.ssResult);
 
     return true;

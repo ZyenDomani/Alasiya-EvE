@@ -34,6 +34,7 @@
 #include "ship/Missile.h"
 #include "ship/Ship.h"
 #include "station/Station.h"
+#include "system/Asteroid.h"
 #include "system/Container.h"
 #include "system/SolarSystem.h"
 #include "system/SystemManager.h"
@@ -274,7 +275,12 @@ SkillRef ItemFactory::GetSkill(uint32 skillID)
 {
     return _GetItem<Skill>( skillID );
 }
-
+/*
+AsteroidItemRef ItemFactory::GetAsteroid(uint32 asteroidID)
+{
+    return _GetItem<AsteroidItem>( asteroidID );
+}
+*/
 StructureItemRef ItemFactory::GetStructure(uint32 structureID)
 {
     return _GetItem<StructureItem>( structureID );
@@ -311,7 +317,7 @@ BlueprintRef ItemFactory::SpawnBlueprint(ItemData &data, BlueprintData &bpData) 
     return bi;
 }
 
-CharacterRef ItemFactory::SpawnCharacter(ItemData &data, CharacterData &charData, CorpMemberInfo &corpData) {
+CharacterRef ItemFactory::SpawnCharacter(ItemData &data, CharacterData &charData, CorpData &corpData) {
     CharacterRef c = Character::Spawn(*this, data, charData, corpData);
     if ( !c )
         return CharacterRef();
@@ -353,7 +359,18 @@ StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
     ++m_itemCount;
     return o;
 }
+/*
+AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
+{
+    AsteroidItemRef o = AsteroidItem::Spawn( *this, idata, adata );
+    if ( !o )
+        return AsteroidItemRef();
 
+    m_items.insert( std::make_pair( o->itemID(), o ) );
+    ++m_itemCount;
+    return o;
+}
+*/
 CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
 {
     CargoContainerRef o = CargoContainer::Spawn( *this, data );

@@ -1,7 +1,7 @@
-/* 
+/*
  * File:   NPCMarket.cpp
  * Author: RobR
- * 
+ *
  * Created on June 10, 2014, 5:13 AM
  */
 
@@ -83,10 +83,8 @@ bool NPCMarket::ProcessStation(const TiXmlElement* ele)
     DBerror err;
 
     // get the solar system and region IDs.
-    uint32 solarSystemID;
-    uint32 regionID;
-    if (!m_db.GetStationInfo(StationID, &solarSystemID, NULL, &regionID, NULL, NULL, NULL))
-    {
+    StationData data;
+    if (!sDataMgr.GetStationInfo(StationID, data)) {
         newOrders.clear();
         codelog(MARKET__ERROR, "NPCMarket: Failed to find parents for station %u", StationID);
         // adding these market orders failed but that does not mean the xml is at fault.
@@ -108,7 +106,7 @@ bool NPCMarket::ProcessStation(const TiXmlElement* ele)
         values << "(";
         values << (*itr).TypeID;
         values << ", 0"; // clientID
-        values << ", " << regionID;
+        values << ", " << data.regionID;
         values << ", " << StationID;
         values << ", 0"; // orderRange
         values << ", " << (*itr).Bid;
@@ -122,7 +120,7 @@ bool NPCMarket::ProcessStation(const TiXmlElement* ele)
         values << ", 0"; // accountID
         values << ", 365"; // duration
         values << ", 0"; // isCorp
-        values << ", " << solarSystemID;
+        values << ", " << data.systemID;
         values << ", 0"; // escrow
         values << ", 1"; // jumps
         values << ")";

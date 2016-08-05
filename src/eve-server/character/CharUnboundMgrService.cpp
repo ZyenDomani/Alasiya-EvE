@@ -223,7 +223,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.careerSpecialityID = 11;
     }
 
-    CorpMemberInfo corpData;
+    CorpData corpData;
         corpData.corpRole = 0;
         corpData.corpAccountKey = accountingKeyCash;
         corpData.rolesAtAll = 0;

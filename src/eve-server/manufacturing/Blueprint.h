@@ -246,7 +246,7 @@ public:
     /*
      * Primary public interface:
      */
-    void Delete();
+    virtual void Delete();
 
     // Copy:
     void SetCopy(bool copy);

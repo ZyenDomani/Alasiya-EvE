@@ -69,7 +69,7 @@ private:
     std::list<uint32> m_fleets;
 
     //vector containing fleetID, Character* for all members of particular fleet.
-    // CharacterRef will contain FleetMemberInfo with fleet data for that member.
+    // CharacterRef will contain FleetData with fleet data for that member.
     std::unordered_multimap<uint32, Character*> m_fleetMembers;
     std::map<uint32, avalibleFleets*> m_avalibleFleetsMap;
 

@@ -32,6 +32,7 @@
 class PyObject;
 class PyString;
 class PyObjectEx;
+class CharacterData;
 class CharacterAppearance;
 class CharKillData;
 class ItemFactory;

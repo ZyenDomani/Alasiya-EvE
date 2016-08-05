@@ -69,7 +69,7 @@ public:
     /*
      * Primary public interface:
      */
-    void Delete();
+    virtual void Delete();
 
     double GetCapacity(EVEItemFlags flag) const;
     /*
@@ -212,7 +212,7 @@ public:
     /*
      * Primary public interface:
      */
-    void Delete();
+    virtual void Delete();
 
     double GetCapacity(EVEItemFlags flag) const;
     /*

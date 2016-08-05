@@ -31,7 +31,9 @@
 #include "manufacturing/Blueprint.h"
 #include "ship/Ship.h"
 #include "station/Station.h"
+#include "system/Asteroid.h"
 #include "system/SolarSystem.h"
+#include <Client.h>
 
 bool InventoryDB::GetCategory(EVEItemCategories category, CategoryData &into) {
     DBQueryResult res;
@@ -45,7 +47,7 @@ bool InventoryDB::GetCategory(EVEItemCategories category, CategoryData &into) {
         " WHERE categoryID=%u",
         uint32(category)))
     {
-        _log(DATABASE__ERROR, "Error in GetCategory query: %s.", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetCategory query: %s.", res.error.c_str());
         return false;
     }
 
@@ -81,7 +83,7 @@ bool InventoryDB::GetGroup(uint32 groupID, GroupData &into) {
         " WHERE groupID=%u",
         groupID))
     {
-        _log(DATABASE__ERROR, "Failed to query group %u: %s.", groupID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query group %u: %s.", groupID, res.error.c_str());
         return false;
     }
 
@@ -127,7 +129,7 @@ bool InventoryDB::GetType(uint32 typeID, TypeData &into) {
         " WHERE typeID=%u",
         typeID))
     {
-        _log(DATABASE__ERROR, "Failed to query type %u: %s.", typeID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query type %u: %s.", typeID, res.error.c_str());
         return false;
     }
 
@@ -164,7 +166,7 @@ bool InventoryDB::GetTypeEffectsList(uint32 typeID, std::vector<uint32> &into) {
         " WHERE typeID=%u",
         typeID))
     {
-        _log(DATABASE__ERROR, "Failed to query type %u: %s.", typeID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query type %u: %s.", typeID, res.error.c_str());
         return false;
     }
 
@@ -205,7 +207,7 @@ bool InventoryDB::GetBlueprintType(uint32 blueprintTypeID, BlueprintTypeData &in
         " WHERE blueprintTypeID=%u",
         blueprintTypeID))
     {
-        _log(DATABASE__ERROR, "Error in GetBlueprintType query: %s.", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetBlueprintType query: %s.", res.error.c_str());
         return false;
     }
 
@@ -255,7 +257,7 @@ bool InventoryDB::GetCharacterType(uint32 bloodlineID, CharacterTypeData &into) 
         " WHERE bloodlineID = %u",
         bloodlineID))
     {
-        _log(DATABASE__ERROR, "Failed to query bloodline %u: %s.", bloodlineID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query bloodline %u: %s.", bloodlineID, res.error.c_str());
         return false;
     }
 
@@ -294,7 +296,7 @@ bool InventoryDB::GetCharacterTypeByBloodline(uint32 bloodlineID, uint32 &charac
         " WHERE bloodlineID = %u",
         bloodlineID))
     {
-        _log(DATABASE__ERROR, "Failed to query bloodline %u: %s.", bloodlineID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query bloodline %u: %s.", bloodlineID, res.error.c_str());
         return false;
     }
 
@@ -319,7 +321,7 @@ bool InventoryDB::GetBloodlineByCharacterType(uint32 characterTypeID, uint32 &bl
         " WHERE typeID = %u",
         characterTypeID))
     {
-        _log(DATABASE__ERROR, "Failed to query character type %u: %s.", characterTypeID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query character type %u: %s.", characterTypeID, res.error.c_str());
         return false;
     }
 
@@ -356,7 +358,7 @@ bool InventoryDB::GetShipType(uint32 shipTypeID, ShipTypeData &into) {
         " WHERE shipTypeID = %u",
         shipTypeID))
     {
-        _log(DATABASE__ERROR, "Failed to query ship type %u: %s.", shipTypeID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query ship type %u: %s.", shipTypeID, res.error.c_str());
         return false;
     }
 
@@ -386,7 +388,7 @@ bool InventoryDB::GetStationType(uint32 stationTypeID, StationTypeData &into) {
         " WHERE stationTypeID = %u",
         stationTypeID))
     {
-        _log(DATABASE__ERROR, "Failed to query station type %u: %s.", stationTypeID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query station type %u: %s.", stationTypeID, res.error.c_str());
         return false;
     }
 
@@ -424,7 +426,7 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             " FROM mapRegions"
             " WHERE regionID=%u", itemID))
         {
-            _log(DATABASE__ERROR, "Error in query for region %u: %s", itemID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Error in query for region %u: %s", itemID, res.error.c_str());
             return false;
         }
     } else if (IsConstellation(itemID)) {
@@ -436,7 +438,7 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             " FROM mapConstellations"
             " WHERE constellationID=%u", itemID))
         {
-            _log(DATABASE__ERROR, "Error in query for contellation %u: %s", itemID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Error in query for contellation %u: %s", itemID, res.error.c_str());
             return false;
         }
     } else if (IsSolarSystem(itemID)) {
@@ -448,7 +450,7 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             " FROM mapSolarSystems"
             " WHERE solarSystemID=%u", itemID))
         {
-            _log(DATABASE__ERROR, "Error in query for solar system %u: %s", itemID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Error in query for solar system %u: %s", itemID, res.error.c_str());
             return false;
         }
     } else if (IsStargate(itemID)) {
@@ -461,7 +463,7 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             " LEFT JOIN mapSolarSystems USING (solarSystemID)"
             " WHERE itemID=%u", itemID))
         {
-            _log(DATABASE__ERROR, "Error in query for stargate %u: %s", itemID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Error in query for stargate %u: %s", itemID, res.error.c_str());
             return false;
         }
     } else if (IsStation(itemID)) {
@@ -473,7 +475,7 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             " FROM staStations"
             " WHERE stationID=%u", itemID))
         {
-            _log(DATABASE__ERROR, "Error in query for station %u: %s", itemID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Error in query for station %u: %s", itemID, res.error.c_str());
             return false;
         }
     } else if (IsUniverseCelestial(itemID)) {
@@ -485,7 +487,7 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             " FROM mapDenormalize"
             " WHERE itemID=%u", itemID))
         {
-            _log(DATABASE__ERROR, "Error in query for universe celestial %u: %s", itemID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Error in query for universe celestial %u: %s", itemID, res.error.c_str());
             return false;
         }
     } else {
@@ -496,7 +498,7 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             "  singleton, quantity, x, y, z, customInfo"
             " FROM entity WHERE itemID=%u", itemID))
         {
-            _log(DATABASE__ERROR, "Error in query for item %u: %s", itemID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Error in query for item %u: %s", itemID, res.error.c_str());
             return false;
         }
     }
@@ -525,57 +527,15 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
     return true;
 }
 
-bool InventoryDB::GetAsteroid(uint32 itemID, ItemData& into)
-{
-    /** @todo this needs testing to verify i can change the default loading scheme.
-     * this will enable seperate tables for roids, anomalies, npcs
-     */
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "   itemName,"
-        "   typeID,"
-        "   systemID,"
-        "   quantity,"
-        "   x, y, z"
-        " FROM sysAsteroids"
-        " WHERE itemID = %u", itemID)) {
-            _log(DATABASE__ERROR, "Error in LoadSystemRoids query: %s", res.error.c_str());
-            return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Item %u not found.", itemID);
-        return false;
-    }
-
-    into.name = row.GetText(0);
-    into.typeID = row.GetUInt(1);
-    into.ownerID = 1;
-    into.locationID = row.GetUInt(2);
-    into.flag = flagAutoFit;
-    into.contraband = false;
-    into.singleton = false;
-    into.quantity = row.GetUInt(3);
-    into.position.x = row.GetDouble(4);
-    into.position.y = row.GetDouble(5);
-    into.position.z = row.GetDouble(6);
-    into.customInfo = "";
-
-    return true;
-}
-
 uint32 InventoryDB::NewItem(const ItemData &data) {
     DBerror err;
-    uint32 eid = 0;
+    uint32 uid = 0;
 
     std::string nameEsc, customInfoEsc;
     sDatabase.DoEscapeString(nameEsc, data.name);
     sDatabase.DoEscapeString(customInfoEsc, data.customInfo);
 
-    if(!sDatabase.RunQueryLID(err, eid,
+    if(!sDatabase.RunQueryLID(err, uid,
         "INSERT INTO entity ("
         "   itemName, typeID, ownerID, locationID, flag,"
         "   contraband, singleton, quantity, x, y, z,"
@@ -587,11 +547,11 @@ uint32 InventoryDB::NewItem(const ItemData &data) {
         data.contraband?1:0, data.singleton?1:0, data.quantity, data.position.x, data.position.y, data.position.z,
         customInfoEsc.c_str()
         )) {
-        _log(DATABASE__ERROR, "Failed to insert new entity: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Failed to insert new entity: %s", err.c_str());
         return 0;
     }
 
-    return eid;
+    return uid;
 }
 
 bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
@@ -633,7 +593,7 @@ bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
         customInfoEsc.c_str(),
         itemID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s.", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s.", err.c_str());
         return false;
     }
 
@@ -649,7 +609,26 @@ bool InventoryDB::DeleteItem(uint32 itemID) {
     DBerror err;
     if (!sDatabase.RunQuery(err,
         "DELETE"
-        " FROM entity" //, entity_attributes, entity_default_attributes"
+        " FROM entity"
+        " WHERE itemID=%u",
+        itemID))
+    {
+        codelog(DATABASE__ERROR, "Failed to delete item %u: %s", itemID, err.c_str());
+        return false;
+    }
+
+    if (!sDatabase.RunQuery(err,
+        "DELETE"
+        " FROM entity_attributes"
+        " WHERE itemID=%u",
+        itemID))
+    {
+        codelog(DATABASE__ERROR, "Failed to delete item %u: %s", itemID, err.c_str());
+        return false;
+    }
+    if (!sDatabase.RunQuery(err,
+        "DELETE"
+        " FROM entity_default_attributes"
         " WHERE itemID=%u",
         itemID))
     {
@@ -687,7 +666,7 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
 
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,query.str().c_str() )) {
-        _log(DATABASE__ERROR, "Error in GetItemContents query for locationID %u: %s", od.locID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetItemContents query for locationID %u: %s", od.locID, res.error.c_str());
         return false;
     }
 
@@ -712,7 +691,7 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<
         "  AND flag=%d",
         itemID, (int)flag ) )
     {
-        _log(DATABASE__ERROR, "Error in GetItemContents query for item %u: %s", itemID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetItemContents query for item %u: %s", itemID, res.error.c_str());
         return false;
     }
 
@@ -738,7 +717,7 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
         "  AND ownerID=%u",
         itemID, (int)flag, ownerID ) )
     {
-        _log(DATABASE__ERROR, "Error in GetItemContents query for item %u with flag %u: %s", itemID, (int)flag, res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetItemContents query for item %u with flag %u: %s", itemID, (int)flag, res.error.c_str());
         return false;
     }
 
@@ -781,7 +760,7 @@ bool InventoryDB::LoadItemAttributes(uint32 itemID, EVEAttributeMgr &into) {
         " WHERE itemID=%u",
         itemID))
     {
-        _log(DATABASE__ERROR, "Failed to query item attributes for item %u: %s.", itemID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query item attributes for item %u: %s.", itemID, res.error.c_str());
         return false;
     }
 
@@ -878,7 +857,7 @@ bool InventoryDB::GetBlueprint(uint32 blueprintID, BlueprintData &into) {
         " WHERE blueprintID=%u",
         blueprintID))
     {
-        _log(DATABASE__ERROR, "Error in GetBlueprint query: %s.", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetBlueprint query: %s.", res.error.c_str());
         return false;
     }
 
@@ -907,7 +886,7 @@ bool InventoryDB::NewBlueprint(uint32 blueprintID, BlueprintData &data) {
         "  (%u, %u, %u, %u, %d)",
         blueprintID, data.copy, data.materialLevel, data.productivityLevel, data.licensedProductionRunsRemaining))
     {
-        _log(DATABASE__ERROR, "Unable to create new blueprint entry for blueprint %u: %s.", blueprintID, err.c_str());
+        codelog(DATABASE__ERROR, "Unable to create new blueprint entry for blueprint %u: %s.", blueprintID, err.c_str());
         return false;
     }
 
@@ -930,7 +909,7 @@ bool InventoryDB::SaveBlueprint(uint32 blueprintID, BlueprintData data) {
         data.productivityLevel,
         data.licensedProductionRunsRemaining))
     {
-        _log(DATABASE__ERROR, "Error in SaveBlueprint query: %s.", err.c_str());
+        codelog(DATABASE__ERROR, "Error in SaveBlueprint query: %s.", err.c_str());
         return false;
     }
 
@@ -945,7 +924,7 @@ bool InventoryDB::DeleteBlueprint(uint32 blueprintID) {
         " WHERE blueprintID=%u",
         blueprintID))
     {
-        _log(DATABASE__ERROR, "Failed to delete blueprint %u: %s.", blueprintID, err.c_str());
+        codelog(DATABASE__ERROR, "Failed to delete blueprint %u: %s.", blueprintID, err.c_str());
         return false;
     }
     return true;
@@ -986,7 +965,7 @@ bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
 			"  LEFT JOIN staStations AS sta ON sta.stationID = chr.stationID"
 			"  LEFT JOIN corporation AS crp ON crp.corporationID = sta.corporationID"
             " WHERE chr.characterID = %u", characterID)) {
-            _log(DATABASE__ERROR, "Error in GetCharacter query: %s", res.error.c_str());
+            codelog(DATABASE__ERROR, "Error in GetCharacter query: %s", res.error.c_str());
             return NULL;
             }
     } else {
@@ -1021,7 +1000,7 @@ bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
             "  LEFT JOIN corporation AS crp USING (corporationID)"
             " WHERE chr.characterID = %u", characterID))
         {
-            _log(DATABASE__ERROR, "Error in GetCharacter query: %s", res.error.c_str());
+            codelog(DATABASE__ERROR, "Error in GetCharacter query: %s", res.error.c_str());
             return NULL;
         }
     }
@@ -1061,7 +1040,7 @@ bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
     return true;
 }
 
-bool InventoryDB::GetCorpMemberInfo(uint32 characterID, CorpMemberInfo &into) {
+bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
     DBQueryResult res;
     DBResultRow row;
 
@@ -1085,7 +1064,7 @@ bool InventoryDB::GetCorpMemberInfo(uint32 characterID, CorpMemberInfo &into) {
             " WHERE characterID = %u",
             characterID))
         {
-            _log(DATABASE__ERROR, "Failed to query corp member info of character %u: %s.", characterID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Failed to query corp member info of character %u: %s.", characterID, res.error.c_str());
             return false;
         }
         if(!res.GetRow(row)) {
@@ -1111,7 +1090,7 @@ bool InventoryDB::GetCorpMemberInfo(uint32 characterID, CorpMemberInfo &into) {
             " WHERE characterID = %u",
             characterID))
         {
-            _log(DATABASE__ERROR, "Failed to query HQ of character's %u corporation: %s.", characterID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Failed to query HQ of character's %u corporation: %s.", characterID, res.error.c_str());
             return false;
         }
     } else {
@@ -1123,7 +1102,7 @@ bool InventoryDB::GetCorpMemberInfo(uint32 characterID, CorpMemberInfo &into) {
             " WHERE characterID = %u",
             characterID))
         {
-            _log(DATABASE__ERROR, "Failed to query HQ of character's %u corporation: %s.", characterID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Failed to query HQ of character's %u corporation: %s.", characterID, res.error.c_str());
             return false;
         }
     }
@@ -1165,7 +1144,7 @@ static std::string _ToStr(double v) {
     return(buf);
 }
 
-bool InventoryDB::NewCharacter(uint32 characterID, const CharacterData &data, const CorpMemberInfo &corpData) {
+bool InventoryDB::NewCharacter(uint32 characterID, const CharacterData &data, const CorpData &corpData) {
     DBerror err;
 
     std::string titleEsc, descriptionEsc;
@@ -1195,7 +1174,7 @@ bool InventoryDB::NewCharacter(uint32 characterID, const CharacterData &data, co
         data.ancestryID, data.bloodlineID, data.raceID, data.careerID, data.schoolID, data.careerSpecialityID, data.gender,
         data.stationID, data.solarSystemID, data.constellationID, data.regionID, 2, 0, 0
     )) {
-        _log(DATABASE__ERROR, "Failed to insert character %u: %s.", characterID, err.c_str());
+        codelog(DATABASE__ERROR, "Failed to insert character %u: %s.", characterID, err.c_str());
         return false;
     }
 
@@ -1208,7 +1187,7 @@ bool InventoryDB::NewCharacter(uint32 characterID, const CharacterData &data, co
         "  (%u, %u, %" PRIu64 ", 0)",
         characterID, data.corporationID, Win32TimeNow()))
     {
-        _log(DATABASE__ERROR, "Failed to insert employment info of character %u: %s.", characterID, err.c_str());
+        codelog(DATABASE__ERROR, "Failed to insert employment info of character %u: %s.", characterID, err.c_str());
         //just let it go... its a lot easier this way
     }
 
@@ -1287,14 +1266,14 @@ bool InventoryDB::SaveCharacter(uint32 characterID, const CharacterData &data) {
         data.capsuleID,
         characterID))
     {
-        _log(DATABASE__ERROR, "Failed to save character %u: %s.", characterID, err.c_str());
+        codelog(DATABASE__ERROR, "Failed to save character %u: %s.", characterID, err.c_str());
         return false;
     }
 
     return true;
 }
 
-bool InventoryDB::SaveCorpMemberInfo(uint32 characterID, const CorpMemberInfo &data) {
+bool InventoryDB::SaveCorpData(uint32 characterID, const CorpData &data) {
     DBerror err;
 
     if(!sDatabase.RunQuery(err,
@@ -1315,7 +1294,7 @@ bool InventoryDB::SaveCorpMemberInfo(uint32 characterID, const CorpMemberInfo &d
         data.rolesAtOther,
         characterID))
     {
-        _log(DATABASE__ERROR, "Failed to update corp member info of character %u: %s.", characterID, err.c_str());
+        codelog(DATABASE__ERROR, "Failed to update corp member info of character %u: %s.", characterID, err.c_str());
         return false;
     }
 
@@ -1372,7 +1351,7 @@ bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &in
             " WHERE itemID = %u",
             celestialID))
         {
-            _log(DATABASE__ERROR, "Failed to query celestial object %u: %s.", celestialID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Failed to query celestial object %u: %s.", celestialID, res.error.c_str());
             return false;
         }
 
@@ -1401,7 +1380,7 @@ bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &in
             " WHERE entity.itemID = %u",
             celestialID))
         {
-            _log(DATABASE__ERROR, "Failed to query celestial object %u: %s.", celestialID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Failed to query celestial object %u: %s.", celestialID, res.error.c_str());
             return false;
         }
 
@@ -1434,7 +1413,7 @@ bool InventoryDB::GetSolarSystem(uint32 solarSystemID, SolarSystemData &into) {
         " FROM mapSolarSystems"
         " WHERE solarSystemID=%u", solarSystemID))
     {
-        _log(DATABASE__ERROR, "Error in GetSolarSystem query for system %u: %s.", solarSystemID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetSolarSystem query for system %u: %s.", solarSystemID, res.error.c_str());
         return false;
     }
 
@@ -1465,7 +1444,7 @@ bool InventoryDB::GetSolarSystem(uint32 solarSystemID, SolarSystemData &into) {
     return true;
 }
 
-bool InventoryDB::GetStation(uint32 stationID, StationData &into) {
+bool InventoryDB::GetStation(uint32 stationID, StationInfo &into) {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
@@ -1476,7 +1455,7 @@ bool InventoryDB::GetStation(uint32 stationID, StationData &into) {
         " WHERE stationID = %u",
         stationID))
     {
-        _log(DATABASE__ERROR, "Failed to query data for station %u: %s.", stationID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query data for station %u: %s.", stationID, res.error.c_str());
         return false;
     }
 
@@ -1499,6 +1478,72 @@ bool InventoryDB::GetStation(uint32 stationID, StationData &into) {
     return true;
 }
 
+bool InventoryDB::SaveAsteroidData(uint32 itemID, const AsteroidData& data)
+{
+    DBerror err;
+    if(!sDatabase.RunQuery(err,
+        "INSERT"
+        " INTO sysAsteroids"
+        " (itemID, itemName, typeID, systemID, beltID, quantity, radius, x, y, z)"
+        " VALUES"
+        "  (%u, '%s', %u, %u, %u, %d, %d, %d, %d, %d)"
+        "ON DUPLICATE KEY UPDATE "
+        "quantity=VALUES(quantity), "
+        "radius=VALUES(radius)",
+        data.itemID,
+        data.itemName.c_str(),
+        data.typeID,
+        data.systemID,
+        data.beltID,
+        data.quantity,
+        data.radius,
+        data.x, data.y, data.z))
+    {
+        codelog(DATABASE__ERROR, "Error in query: %s.", err.c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool InventoryDB::GetAsteroidData(uint32 itemID, AsteroidData& data)
+{
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT"
+        "   itemID,"
+        "   itemName,"
+        "   typeID,"
+        "   systemID,"
+        "   beltID,"
+        "   quantity,"
+        "   radius,"
+        "   x, y, z"
+        " FROM sysAsteroids"
+        " WHERE itemID = %u", itemID))
+    {
+        codelog(DATABASE__ERROR, "Error in GetAsteroidData query: %s", res.error.c_str());
+        return false;
+    }
+
+    _log(DATABASE__RESULTS, "GetAsteroidData returned %u items", res.GetRowCount());
+    DBResultRow row;
+    res.GetRow(row);
+    data.itemID = row.GetInt(0);
+    data.itemName = row.GetText(1);
+    data.typeID = row.GetInt(2);
+    data.systemID = row.GetInt(3);
+    data.beltID = row.GetInt(4);
+    data.quantity = row.GetDouble(5);
+    data.radius = row.GetDouble(6);
+    data.x = row.GetDouble(7);
+    data.y = row.GetDouble(8);
+    data.z = row.GetDouble(9);
+
+    return true;
+}
+
+
 bool InventoryDB::GetTypeID(uint32 itemID, uint32 &typeID)
 {
     DBQueryResult res;
@@ -1510,7 +1555,7 @@ bool InventoryDB::GetTypeID(uint32 itemID, uint32 &typeID)
         " FROM entity "
         " WHERE itemID = %u ",itemID))
     {
-        _log(DATABASE__ERROR, "Failed to query typeID for itemID = %u", itemID);
+        codelog(DATABASE__ERROR, "Failed to query typeID for itemID = %u", itemID);
     }
 
     if(!res.GetRow(row)) {
@@ -1535,7 +1580,7 @@ bool InventoryDB::GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into)
         " WHERE typeID = '%u' ",
         typeID))
     {
-        _log(DATABASE__ERROR, "Failed to get groupID for typeID = %u", typeID);
+        codelog(DATABASE__ERROR, "Failed to get groupID for typeID = %u", typeID);
     }
 
     if(!res.GetRow(row)) {
@@ -1572,7 +1617,7 @@ bool InventoryDB::GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into)
         " WHERE typeID = '%u' AND ( effectID = 11 OR effectID = 12 OR effectID = 13 ) ",
         typeID))
     {
-        _log(DATABASE__ERROR, "Failed to get slot for typeID = %u", typeID);
+        codelog(DATABASE__ERROR, "Failed to get slot for typeID = %u", typeID);
     }
 
     if(!res.GetRow(row)) {
@@ -1643,8 +1688,9 @@ bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &i
 
     //Only time it should make it this far...
 
-    /** @todo  check for throwable status here */
-    throw PyException( MakeCustomError( "There are no available slots" ));
+    if (ship->HasPilot())
+        if (ship->GetPilot()->CanThrow())
+            throw PyException( MakeCustomError( "There are no available slots" ));
 
     return false;
 

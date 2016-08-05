@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #ifndef __SYSTEMMANAGER_H_INCL__
@@ -58,17 +58,23 @@ public:
 
     SystemEntity* GetSE(uint32 entityID) const;
     ItemFactory* itemFactory() const;
+    SystemEntity* GetSEFromInventory(uint32 itemID);
+    ShipItemRef GetShipFromInventory(uint32 shipID);
+    StationItemRef GetStationFromInventory(uint32 stationID);
+    CargoContainerRef GetContainerFromInventory(uint32 contID);
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
     SystemDB* GetSystemDB()                             { return &m_db; }
+    Inventory* GetSystemInv()                           { return m_solarSystemRef->GetInventory(); }
 
     bool ProcessTic();          // called at 1Hz.
+    bool BootSystem();
+    void UnloadSystem();
 
-    uint32 GetID() const                                { return m_systemID; }
-    uint32 GetRegionID()                                { return m_regionID; }
-    const std::string& GetName() const                  { return m_systemName; }
-    const char* GetSystemSecurityClass()                { return m_securityClass.c_str(); }
-    const double GetSystemSecurityRating()              { return m_securityRating; }
-    Inventory* GetSystemInv()                           { return m_solarSystemRef->GetInventory(); }
+    uint32 GetID() const                                { return m_data.systemID; }
+    uint32 GetRegionID()                                { return m_data.regionID; }
+    const std::string& GetName() const                  { return m_data.name; }
+    const char* GetSystemSecurityClass()                { return m_data.securityClass.c_str(); }
+    const double GetSystemSecurityRating()              { return m_data.securityRating; }
 
     // for spawn system     -allan 15July15
     typedef std::vector<uint32> SpawnBubbleVec;
@@ -77,9 +83,6 @@ public:
     uint8 GetRoidSpawnCount()                           { return m_activeRoidSpawns; }
     void GetSpawnBubbles(SpawnBubbleVec* bubbleMap);
     void RemoveSpawnBubble();
-
-    bool BootSystem();
-    void UnloadSystem();
 
     bool BuildDynamicEntity(const DBSystemDynamicEntity& entity);
     bool LoadPlayerDynamics(uint32 ownerID);
@@ -91,48 +94,35 @@ public:
     void AddEntity(SystemEntity* who);
     void RemoveEntity(SystemEntity* who);
 
-    void MakeSetState(const SystemBubble *bubble, DoDestiny_SetState &into, bool login=false) const;
-
     void AddItemToInventory(InventoryItemRef item);
     void RemoveItemFromInventory(InventoryItemRef item);
-    SystemEntity* GetSEFromInventory(uint32 itemID);
-    ShipItemRef GetShipFromInventory(uint32 shipID);
-    StationItemRef GetStationFromInventory(uint32 stationID);
-    CargoContainerRef GetContainerFromInventory(uint32 contID);
-
     void DoSpawnForBubble(SystemBubble* pSysBubble);
 
-    // CosmicMgr interface
-    AsteroidBeltMgr* GetBeltMgr()                   { return m_beltMgr; }
-    SpawnMgr* GetSpawnMgr()                 { return m_spawnMgr; }
-    AnomalyMgr* GetAnomMgr()                { return m_anomMgr; }
-    DungeonMgr* GetDungMgr()                { return m_dunMgr; }
+    void MakeSetState(const SystemBubble *bubble, DoDestiny_SetState &into, bool login=false) const;
 
+    // CosmicMgr interface
+    AsteroidBeltMgr* GetBeltMgr()                       { return m_beltMgr; }
+    SpawnMgr* GetSpawnMgr()                             { return m_spawnMgr; }
+    AnomalyMgr* GetAnomMgr()                            { return m_anomMgr; }
+    DungeonMgr* GetDungMgr()                            { return m_dunMgr; }
 
 protected:
-    // Solar System Dynamic Inventory manager:
-    SolarSystemRef m_solarSystemRef;    // we do not own this
+    AnomalyMgr* m_anomMgr;      //we own this, never NULL.
+    AsteroidBeltMgr* m_beltMgr; //we own this, never NULL.
+    DungeonMgr* m_dunMgr;       //we own this, never NULL.
+    SpawnMgr* m_spawnMgr;       //we own this, never NULL.
+
+    SystemDB m_db;
+    SystemData m_data;
+    PyServiceMgr& m_services;
+    SolarSystemRef m_solarSystemRef;
 
     void LoadCosmicMgrs();
 
     bool LoadSystemStatics();
     bool LoadSystemDynamics();
 
-    const uint32 m_systemID;
-    double m_securityRating;
-    std::string m_systemName;
-    std::string m_securityClass;
-    uint32 m_regionID = 0;
-
-    SystemDB m_db;
-    PyServiceMgr& m_services;    //we do not own this
-
-    AnomalyMgr* m_anomMgr;   //we own this, never NULL.
-    AsteroidBeltMgr* m_beltMgr;      //we own this, never NULL.
-    DungeonMgr* m_dunMgr;    //we own this, never NULL.
-    SpawnMgr* m_spawnMgr;    //we own this, never NULL.
-
-    //overall system entity lists:
+    // system entity lists:
     bool m_entityChanged = false;
     std::map<uint32, NPC*> m_npcs;
     std::map<uint32, Client*> m_clients;
@@ -148,8 +138,7 @@ private:
     SpawnBubbleVec m_ratBubbles;  // map of ids of bubbles with rat spawns
     SpawnBubbleVec m_roidBubbles;  // map of ids of bubbles with roid spawns
 
-
-    //check for deleting inactive systems using gridUnloading  -allan  27June2015
+    // for grid Unloading system  -allan  27June2015
     bool SystemActivity();
     uint32 m_players = 0;
     uint32 m_activityTime = 0;

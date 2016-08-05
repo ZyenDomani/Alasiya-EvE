@@ -180,7 +180,7 @@ void Scan::SurveyScan() {
 }
 
 /*
- * class DBCosmicSignature {
+ * class CosmicSignature {
  * public:
  *    std::string sigID;  // this is unique xxx-nnn id displayed in scanner
  *    std::string dungeonName;

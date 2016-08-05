@@ -41,15 +41,15 @@ class BlueprintTypeData;
 class CharacterTypeData;
 class ShipTypeData;
 class StationTypeData;
-
+class AsteroidData;
 class ItemData;
 class BlueprintData;
 class CharacterData;
 class CharacterAppearance;
-class CorpMemberInfo;
+class CorpData;
 class CelestialObjectData;
 class SolarSystemData;
-class StationData;
+class StationInfo;
 class OwnerData;
 
 class InventoryDB
@@ -158,14 +158,12 @@ public:
      * (entity)
      */
     bool GetItem(uint32 itemID, ItemData &into);
-    bool GetAsteroid(uint32 itemID, ItemData &into);
+    bool DeleteItem(uint32 itemID);
 
     uint32 NewItem(const ItemData &data);
     bool SaveItem(uint32 itemID, const ItemData &data);
-    bool DeleteItem(uint32 itemID);
 
     bool GetItemContents(OwnerData &od, std::vector<uint32> &into);
-    //bool GetItemContents(uint32 itemID, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 ownerID, std::vector<uint32> &into);
 
@@ -202,11 +200,11 @@ public:
      * (character_, chrSkillQueue)
      */
     bool GetCharacter(uint32 characterID, CharacterData &into);
-    bool GetCorpMemberInfo(uint32 characterID, CorpMemberInfo &into);
+    bool GetCorpData(uint32 characterID, CorpData &into);
 
-    bool NewCharacter(uint32 characterID, const CharacterData &data, const CorpMemberInfo &corpData);
+    bool NewCharacter(uint32 characterID, const CharacterData &data, const CorpData &corpData);
     bool SaveCharacter(uint32 characterID, const CharacterData &data);
-    bool SaveCorpMemberInfo(uint32 characterID, const CorpMemberInfo &data);
+    bool SaveCorpData(uint32 characterID, const CorpData &data);
     bool DeleteCharacter(uint32 characterID);
 
     /*
@@ -246,7 +244,21 @@ public:
      * @param[in] into Container where data should be stored.
      * @return True if load succeeds, false if fails.
      */
-    bool GetStation(uint32 stationID, StationData &into);
+    bool GetStation(uint32 stationID, StationInfo &into);
+
+    /*
+     * Asteroid stuff
+     * (staStations)
+     */
+    /**
+     * Loads asteroid data.
+     *
+     * @param[in] itemID ID of asteroid which data should be loaded.
+     * @param[in] into Container where data should be stored.
+     * @return True if load succeeds, false if fails.
+     */
+    bool GetAsteroidData(uint32 itemID, AsteroidData &into);
+    bool SaveAsteroidData(uint32 itemID, AsteroidData &data);
 
     /* /Fit command helper function
      *

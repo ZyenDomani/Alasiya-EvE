@@ -93,9 +93,9 @@ _Ty *StationType::_LoadStationType(ItemFactory &factory, uint32 stationTypeID,
 }
 
 /*
- * StationData
+ * StationInfo
  */
-StationData::StationData(
+StationInfo::StationInfo(
     uint32 _security,
     double _dockingCostPerVolume,
     double _maxShipVolumeDockable,
@@ -127,7 +127,7 @@ StationItem::StationItem(
     // CelestialObject stuff:
     const CelestialObjectData &_cData,
     // Station stuff:
-    const StationData &_stData)
+    const StationInfo &_stData)
 : CelestialObject(_factory, _stationID, _type, _data, _cData),
 m_stationType(_type),
 m_security(_stData.security),
@@ -162,29 +162,14 @@ RefPtr<_Ty> StationItem::_LoadStation(ItemFactory &factory, uint32 stationID,
     // CelestialObject stuff:
     const CelestialObjectData &cData,
     // Station stuff:
-    const StationData &stData)
+    const StationInfo &stData)
 {
     // ready to create
     return StationItemRef( new StationItem( factory, stationID, type, data, cData, stData ) );
 }
 
-uint32 StationItem::CreateItemID(ItemFactory &factory,
-    // InventoryItem stuff:
-    ItemData &data
-) {
-    // make sure it's a Station
-    const ItemType *item = factory.GetType(data.typeID);
-    if( !(item->categoryID() == EVEDB::invCategories::Station) )
-        return 0;
-
-    // store item data
-    uint32 stationID = InventoryItem::CreateItemID(factory, data);
-    if( stationID == 0 )
-        return 0;
-
-    // nothing additional
-
-    return stationID;
+uint32 StationItem::CreateItemID(ItemFactory &factory, ItemData &data) {
+    return InventoryItem::CreateItemID(factory, data);
 }
 
 

@@ -36,7 +36,7 @@ uint32 FleetService::m_fleetID = 10;
 uint32 FleetService::CreateFleet(Client *pClient)
 {
     uint32 fleetID = m_fleetID, wingID = fleetID + 1, squadID = wingID + 1;
-    FleetMemberInfo fleet;
+    FleetData fleet;
         fleet.fleetID = fleetID;        //this is also lsc channel #
         fleet.wingID = wingID;
         fleet.squadID = squadID;

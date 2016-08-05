@@ -228,9 +228,6 @@ protected:
     void _UpdateVelocity(bool isMoving=false);
 
 private:
-    // Timer to delay docking (as on live)
-    Timer m_dockTimer;
-
     // Internal Collision Methods   -allan Nov 2015
     bool m_bump;
     void _CheckBump();                              //iterate thru objects in current bubble to check for collisions

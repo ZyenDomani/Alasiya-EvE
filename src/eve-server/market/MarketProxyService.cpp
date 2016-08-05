@@ -148,19 +148,10 @@ PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
 
     /*PyRep *result = NULL;
 
-    uint32 locid = call.client->GetSystemID();
-    if(!IsSolarSystem(locid)) {
-        codelog(SERVICE__ERROR, "%s: GetSystemID() returned a non-system %u!", call.client->GetName(), locid);
-        return NULL;
-    }
-
-    uint32 regionID;
-    if(!m_db.GetSystemInfo(locid, NULL, &regionID, NULL, NULL, NULL)) {
-        codelog(SERVICE__ERROR, "%s: Failed to find parents of system %u!", call.client->GetName(), locid);
-        return NULL;
-    }
-
-    result = m_db.GetOrders(regionID, args.arg);
+    // note:  GetSystemInfo can use either stationID OR solarSystemID.  -allan 3Aug16
+    SystemData data;
+    sDataMgr.GetSystemInfo(stationID, data);
+    result = m_db.GetOrders(data.regionID, args.arg);
     if(result == NULL) {
         _log(SERVICE__ERROR, "%s: Failed to load GetOrders for item %u of region %u", call.client->GetName(), args.arg, call.client->GetRegionID());
         return NULL;

@@ -51,6 +51,7 @@ EVEServerConfig::EVEServerConfig()
     server.UseStackTrace = false;//N
     server.ServerSleepTime = 10 /*ms*/;
     server.idleSleepTime = 1000;
+    server.StationDockDelay = 2 /*s*/;
 
     // world
     world.chatLogs = false;//N
@@ -185,6 +186,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "UseStackTrace",        server.UseStackTrace );
     AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
     AddValueParser( "idleSleepTime",        server.idleSleepTime );
+    AddValueParser( "StationDockDelay",        server.StationDockDelay );
 
     const bool result = ParseElementChildren( ele );
 
@@ -196,6 +198,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "UseStackTrace" );
     RemoveParser( "ServerSleepTime" );
     RemoveParser( "idleSleepTime" );
+    RemoveParser( "StationDockDelay" );
 
     return result;
 }

@@ -24,6 +24,7 @@ SET( INCLUDE
      "${TARGET_INCLUDE_DIR}/EVEServerConfig.h"
      "${TARGET_INCLUDE_DIR}/LiveUpdateDB.h"
      "${TARGET_INCLUDE_DIR}/NetService.h"
+     "${TARGET_INCLUDE_DIR}/POD_containers.h"
      "${TARGET_INCLUDE_DIR}/Profile.h"
      "${TARGET_INCLUDE_DIR}/PyBoundObject.h"
      "${TARGET_INCLUDE_DIR}/PyCallable.h"
@@ -31,7 +32,7 @@ SET( INCLUDE
      "${TARGET_INCLUDE_DIR}/PyServiceCD.h"
      "${TARGET_INCLUDE_DIR}/PyServiceMgr.h"
      "${TARGET_INCLUDE_DIR}/ServiceDB.h"
-     "${TARGET_INCLUDE_DIR}/ServiceStruct.h" )
+     "${TARGET_INCLUDE_DIR}/StaticDataMgr.h" )
 SET( SOURCE
      "${TARGET_SOURCE_DIR}/eve-server.cpp"
      "${TARGET_SOURCE_DIR}/Client.cpp"
@@ -46,7 +47,8 @@ SET( SOURCE
      "${TARGET_SOURCE_DIR}/PyCallable.cpp"
      "${TARGET_SOURCE_DIR}/PyService.cpp"
      "${TARGET_SOURCE_DIR}/PyServiceMgr.cpp"
-     "${TARGET_SOURCE_DIR}/ServiceDB.cpp" )
+     "${TARGET_SOURCE_DIR}/ServiceDB.cpp"
+     "${TARGET_SOURCE_DIR}/StaticDataMgr.cpp" )
 
 SET( account_INCLUDE
      "${TARGET_INCLUDE_DIR}/account/AccountDB.h"

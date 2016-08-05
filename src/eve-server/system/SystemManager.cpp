@@ -50,10 +50,8 @@
 #include "system/cosmicMgrs/SpawnMgr.h"
 
 
-SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)//, ItemData idata)
-: m_systemID(systemID),
-  m_systemName(""),
-  m_services(svc),
+SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)
+:  m_services(svc),
   m_anomMgr(new AnomalyMgr(this, m_services)),
   m_beltMgr(new AsteroidBeltMgr(this, m_services)),
   m_dunMgr(new DungeonMgr(this, m_services)),
@@ -62,14 +60,14 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)//, ItemData ida
     m_clients.clear();
     m_ratBubbles.clear();
     m_entityChanged = false;
-    m_db.GetSystemInfo(m_systemID, NULL, &m_regionID, &m_systemName, &m_securityClass, &m_securityRating);
+    sDataMgr.GetSystemInfo(systemID, m_data);
     m_activityTime = 0;
-    _log(COMMON__MESSAGE, "Created SystemManager %p for System %s(%u)", this, m_systemName.c_str(), m_systemID);
+    _log(COMMON__MESSAGE, "Created SystemManager %p for System %s(%u)", this, m_data.name.c_str(), m_data.systemID);
 }
 
 SystemManager::~SystemManager() {
     if (m_players or !m_clients.empty()) {
-        _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %u clients in mmaps", m_systemID, m_players, m_clients.size());
+        _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %u clients in mmaps", m_data.systemID, m_players, m_clients.size());
         for (auto cur : m_clients)
             sEntityList.Remove(cur.second);
     }
@@ -115,7 +113,7 @@ GPoint hack_sentry_locs[num_hack_sentry_locs] = {
 
 void SystemManager::LoadCosmicMgrs()
 {
-    m_beltMgr->Init(m_regionID);
+    m_beltMgr->Init(m_data.regionID);
     m_dunMgr->Init(m_anomMgr, m_spawnMgr);
     m_anomMgr->Init(m_beltMgr, m_dunMgr, m_spawnMgr);
 }
@@ -124,8 +122,8 @@ bool SystemManager::LoadSystemStatics() {
     std::vector<DBSystemEntity> entities;
     entities.clear();
     m_entities.clear();
-    if (!m_db.LoadSystemStaticEntities(m_systemID, entities)) {
-        _log(INV__ERROR, "Unable to load celestial entities during boot of system %u.", m_systemID);
+    if (!m_db.LoadSystemStaticEntities(m_data.systemID, entities)) {
+        _log(INV__ERROR, "Unable to load celestial entities during boot of system %u.", m_data.systemID);
         return false;
     }
 
@@ -184,7 +182,7 @@ bool SystemManager::LoadSystemStatics() {
     if (m_entities.size())
         m_entityChanged = true;
 
-    _log(SERVER__INIT, "%u Static System entities loaded for system %u", entities.size(), m_systemID);
+    _log(SERVER__INIT, "%u Static System entities loaded for system %u", entities.size(), m_data.systemID);
     entities.clear();
     return m_entityChanged;
 }
@@ -404,8 +402,8 @@ public:
 
 bool SystemManager::LoadSystemDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
-    if (!m_db.LoadSystemDynamicEntities(m_systemID, entities)) {
-        _log(SERVICE__ERROR, "Unable to load dynamic entities during boot of system %u.", m_systemID);
+    if (!m_db.LoadSystemDynamicEntities(m_data.systemID, entities)) {
+        _log(SERVICE__ERROR, "Unable to load dynamic entities during boot of system %u.", m_data.systemID);
         return false;
     }
 
@@ -416,7 +414,7 @@ bool SystemManager::LoadSystemDynamics() {
             _log(ITEM__WARNING, "LoadSystemDynamics() Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
             continue;
         }
-        _log(ITEM__TRACE, "SystemManager::LoadSystemDynamics() - Loaded dynamic entity %u of type %u for system %u", cur.itemID, cur.typeID, m_systemID);
+        _log(ITEM__TRACE, "SystemManager::LoadSystemDynamics() - Loaded dynamic entity %u of type %u for system %u", cur.itemID, cur.typeID, m_data.systemID);
         AddEntity(pSE);
     }
 
@@ -425,8 +423,8 @@ bool SystemManager::LoadSystemDynamics() {
 
 bool SystemManager::LoadPlayerDynamics(uint32 ownerID) {
     std::vector<DBSystemDynamicEntity> entities;
-    if (!m_db.LoadPlayerDynamicEntities(ownerID, m_systemID, entities)) {
-        _log(SERVICE__ERROR, "Unable to load player dynamic entities in system %u.", m_systemID);
+    if (!m_db.LoadPlayerDynamicEntities(ownerID, m_data.systemID, entities)) {
+        _log(SERVICE__ERROR, "Unable to load player dynamic entities in system %u.", m_data.systemID);
         return false;
     }
 
@@ -437,7 +435,7 @@ bool SystemManager::LoadPlayerDynamics(uint32 ownerID) {
             _log(ITEM__WARNING, "LoadSystemDynamics() Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
             continue;
         }
-        _log(ITEM__TRACE, "SystemManager::LoadPlayerDynamics() - Loaded dynamic entity %u of type %u for system %u", cur.itemID, cur.typeID, m_systemID);
+        _log(ITEM__TRACE, "SystemManager::LoadPlayerDynamics() - Loaded dynamic entity %u of type %u for system %u", cur.itemID, cur.typeID, m_data.systemID);
         AddEntity(pSE);
     }
 
@@ -451,29 +449,29 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity) {
         return false;
     }
 
-    _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Created dynamic entity %u of type %u for system %u", entity.itemID, entity.typeID, m_systemID );
+    _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Created dynamic entity %u of type %u for system %u", entity.itemID, entity.typeID, m_data.systemID );
     AddEntity(se);
     return true;
 }
 
 bool SystemManager::BootSystem() {
-    m_solarSystemRef = m_services.item_factory->GetSolarSystem(m_systemID);
+    m_solarSystemRef = m_services.item_factory->GetSolarSystem(m_data.systemID);
     assert(m_solarSystemRef);
 
     LoadCosmicMgrs();
 
     if (!LoadSystemStatics()) {
-        _log(SERVICE__ERROR, "Unable to load Statics during boot of system %u.", m_systemID);
+        _log(SERVICE__ERROR, "Unable to load Statics during boot of system %u.", m_data.systemID);
         return false;
     }
     /* this only loads items owned by eve system (ownerID = 1) */
     if (!LoadSystemDynamics()) {
-        _log(SERVICE__ERROR, "Unable to load Dynamics during boot of system %u.", m_systemID);
+        _log(SERVICE__ERROR, "Unable to load Dynamics during boot of system %u.", m_data.systemID);
         return false;
     }
 
     //create our chat channel
-    m_services.lsc_service->CreateSystemChannel(m_systemID);
+    m_services.lsc_service->CreateSystemChannel(m_data.systemID);
     return true;
 }
 
@@ -531,10 +529,12 @@ bool SystemManager::SystemActivity() {
 }
 
 void SystemManager::UnloadSystem() {
+    // save any roids before unloading the system
+    m_beltMgr->Save();
     // use Inventory::DeleteContents(ItemFactory &factory) to remove system contents from memory.
     //Inventory::DeleteContents(m_services.item_factory);
     sLog.Success("SystemManager::UnloadSystem()", "UnloadSystem() called for empty system %s(%u).", \
-        GetName().c_str(), m_systemID);
+        GetName().c_str(), m_data.systemID);
 }
 
 
@@ -563,7 +563,7 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
     if (itr == m_clients.end()) {
         m_clients[who->GetCharacterID()] = who;
         _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %u clients now in system.", \
-                    who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID, m_clients.size());
+                    who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
     }
 
     m_activityTime = 0;
@@ -572,7 +572,7 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
         if (!m_spawnMgr->IsTimerStarted())
             m_spawnMgr->StartMainTimer();
         _log(PLAYER__INFO, "%s(%u): Added to player count for %s(%u) - new count: %u", \
-                    who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID, m_players);
+                    who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
 }
 
@@ -583,7 +583,7 @@ void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
     if (itr != m_clients.end()) {
         m_clients.erase(itr);
         _log(PLAYER__TRACE, "%s(%u): Removed from system manager for %s(%u) - %u clients still in system.", \
-                    who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID, m_clients.size());
+                    who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
     }
 
     if (count) {
@@ -593,20 +593,20 @@ void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
             m_activityTime = sEntityList.GetStamp();
         }
         _log(PLAYER__INFO, "%s(%u): Removed from player count for %s(%u) - new count: %u", \
-                who->GetName(), who->GetCharacterID(), m_systemName.c_str(), m_systemID, m_players);
+                who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
 }
 
 void SystemManager::AddNPC(NPC* who) {
     if (!who) return;
-    _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
+    _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
     AddEntity(who);
     sEntityList.AddNPC();
 }
 
 void SystemManager::RemoveNPC(NPC* who) {
     if (!who) return;
-    _log(NPC__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
+    _log(NPC__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
     RemoveEntity(who);
     sEntityList.RemoveNPC();    // this is for loaded npc count.
     who->RemoveNPC();   // this deletes NPC from DB.  NPC's dont jump, so no reason to remove from system unless killed
@@ -614,7 +614,7 @@ void SystemManager::RemoveNPC(NPC* who) {
 
 void SystemManager::AddEntity(SystemEntity* who) {
     if (!who) return;
-    _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
+    _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
     m_entities[who->GetID()] = who;
     m_entityChanged = true;
     sBubbleMgr.Add(who);
@@ -627,7 +627,7 @@ void SystemManager::RemoveEntity(SystemEntity* who) {
     sBubbleMgr.Remove(who);
     auto itr = m_entities.find(who->GetID());
     if (itr != m_entities.end()) {
-        _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
+        _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
         who->TargetMgr()->DoDestruction();
         m_entities.erase(itr);
         m_entityChanged = true;
@@ -635,7 +635,7 @@ void SystemManager::RemoveEntity(SystemEntity* who) {
         RemoveItemFromInventory( who->GetSelf() );
         /* should we delete the entity pointer here??  no, it gets deleted in EntityList */
     } else
-        _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", who->GetName(), who->GetID(), m_systemName.c_str(), m_systemID);
+        _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
 }
 
 void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
@@ -647,20 +647,19 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
     }
 
     _log(SPAWN__MESSAGE, "Spawn called for bubble %u in system %u(%.4f), region %u.",
-         pSysBubble->GetID(), m_systemID, m_securityRating, m_regionID);
+         pSysBubble->GetID(), m_data.systemID, m_data.securityRating, m_data.regionID);
     uint8 count = m_beltCount;
     if (count > 5) count -= 2;
     if (m_activeRatSpawns < count ) {
-        m_spawnMgr->DoSpawnForBubble(pSysBubble, m_regionID, m_securityRating);
+        m_spawnMgr->DoSpawnForBubble(pSysBubble, m_data.regionID, m_data.securityRating);
         m_ratBubbles.push_back(pSysBubble->GetID());
         _log(SPAWN__TRACE, "DoSpawnForBubble() completed for bubble %u.  %u entries in m_ratBubbles", pSysBubble->GetID(), m_ratBubbles.size());
     }
-    //check for and spawn roids if needed in this bubble.
 }
 
 void SystemManager::GetSpawnBubbles(SpawnBubbleVec* bubbleMap)
 {
-    _log(SPAWN__MESSAGE, "SystemManager::GetSpawnBubbles() - called for %s(%u)", GetName().c_str(), m_systemID);
+    _log(SPAWN__MESSAGE, "SystemManager::GetSpawnBubbles() - called for %s(%u)", GetName().c_str(), m_data.systemID);
     SpawnBubbleVec::iterator itr = m_ratBubbles.begin();
     while (itr != m_ratBubbles.end())
         bubbleMap->push_back(*itr);
@@ -668,7 +667,7 @@ void SystemManager::GetSpawnBubbles(SpawnBubbleVec* bubbleMap)
 
 void SystemManager::RemoveSpawnBubble()
 {
-    _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for %s(%u), but needs to be written.", GetName().c_str(), m_systemID);
+    _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for %s(%u), but needs to be written.", GetName().c_str(), m_data.systemID);
 }
 
 SystemEntity* SystemManager::GetSE(uint32 entityID) const {
@@ -728,63 +727,40 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
     into.destiny_state = new PyBuffer( &stateBuffer );
     SafeDelete( stateBuffer );
 
-    into.droneState = m_db.GetSolDroneState( m_systemID );
+    into.droneState = m_db.GetSolDroneState( m_data.systemID );
 
-    /** @todo  create  a PyPackedRow here where we have all the solItem info,
-     * instead of hitting the db for every call. (each client in each system)
-     *
-     *    DBRowDescriptor *header = new DBRowDescriptor( result );
-     *    PyPackedRow* res = new PyPackedRow( header );
-     */
-    into.solItem = m_db.GetSolItem( m_systemID );
-    /*
-     *    PyList* list = new PyList();
-     *
-     *    DBRowDescriptor* header = new DBRowDescriptor;
-     *        header->AddColumn( "itemID",     DBTYPE_I8 );
-     *        header->AddColumn( "typeID",     DBTYPE_I4 );
-     *        header->AddColumn( "ownerID",    DBTYPE_I4 );
-     *        header->AddColumn( "locationID", DBTYPE_I8 );
-     *        header->AddColumn( "flagID",     DBTYPE_I2 );
-     *        header->AddColumn( "quantity",   DBTYPE_I4 );
-     *        header->AddColumn( "groupID",    DBTYPE_I2 );
-     *        header->AddColumn( "categoryID", DBTYPE_I4 );
-     *        header->AddColumn( "customInfo", DBTYPE_STR );
-     *    for (auto itr : pTSes->m_tradelist) {
-     *        PyPackedRow* row = new PyPackedRow( header );
-     *            row->SetField( "itemID",        new PyLong(itr.itemID));
-     *            row->SetField( "typeID",        new PyInt(itr.typeID));
-     *            row->SetField( "ownerID",       new PyInt(itr.ownerID));
-     *            row->SetField( "locationID",    new PyLong(itr.locationID));
-     *            row->SetField( "flagID",        new PyInt(itr.flagID));
-     *            row->SetField( "stacksize",     new PyInt(itr.quantity));
-     *            row->SetField( "groupID",       new PyInt(itr.groupID));
-     *            row->SetField( "singleton",     new PyBool(itr.singleton));
-     *            row->SetField( "categoryID",    new PyInt(itr.categoryID));
-     *            row->SetField( "customInfo",    new PyString(itr.customInfo));
-     *        list->AddItem(row);
-}
-*/
-    /*
-     *        [PyString "solItem"]
-     *        [PyPackedRow 40 bytes]
-     *            ["itemID" => <30004168> [I8]]
-     *            ["typeID" => <5> [I4]]
-     *            ["ownerID" => <1> [I4]]
-     *            ["locationID" => <20000610> [I8]]
-     *            ["flagID" => <0> [I2]]
-     *            ["quantity" => <-1> [I4]]
-     *            ["groupID" => <5> [I4]]
-     *            ["categoryID" => <2> [I4]]
-     *            ["customInfo" => <empty string> [Str]]
-     */
+    /* SolarSystem info.  this avoids the old way of a DB hit for every call.  */
+    DBRowDescriptor* header = new DBRowDescriptor;
+        header->AddColumn( "itemID",     DBTYPE_I8 );
+        header->AddColumn( "typeID",     DBTYPE_I4 );
+        header->AddColumn( "ownerID",    DBTYPE_I4 );
+        header->AddColumn( "locationID", DBTYPE_I8 );
+        header->AddColumn( "flagID",     DBTYPE_I2 );
+        header->AddColumn( "quantity",   DBTYPE_I4 );
+        header->AddColumn( "groupID",    DBTYPE_I2 );
+        header->AddColumn( "categoryID", DBTYPE_I4 );
+        header->AddColumn( "customInfo", DBTYPE_STR );
+    PyPackedRow* row = new PyPackedRow( header );
+        row->SetField( "itemID",        new PyLong(m_data.systemID));
+        row->SetField( "typeID",        new PyInt(5));
+        row->SetField( "ownerID",       new PyInt(1));  // should this be owning factionID?
+        row->SetField( "locationID",    new PyLong(m_data.constellationID));
+        row->SetField( "flagID",        new PyInt(0));
+        row->SetField( "quantity",     new PyInt(-1));
+        row->SetField( "groupID",       new PyInt(5));
+        row->SetField( "categoryID",    new PyInt(2));
+        row->SetField( "customInfo",    new PyString(""));
+    into.solItem = row;
 
+    if (is_log_enabled(DESTINY__SETSTATE)) {
+        _log( DESTINY__SETSTATE, "Current State of %s", GetName().c_str() );
+        into.Dump( DESTINY__SETSTATE, "    " );
+    }
 
-    _log( DESTINY__SETSTATE, "Current State of %s", GetName().c_str() );
-    into.Dump( DESTINY__SETSTATE, "    " );
-
-    _log( DESTINY__SETSTATE_DECODE, "    Decoded:" );
-    Destiny::DumpUpdate( DESTINY__SETSTATE_DECODE, &( into.destiny_state->content() )[0], (uint32)into.destiny_state->content().size() );
+    if (is_log_enabled(DESTINY__SETSTATE_DECODE)) {
+        _log( DESTINY__SETSTATE_DECODE, "    Decoded:" );
+        Destiny::DumpUpdate( DESTINY__SETSTATE_DECODE, &( into.destiny_state->content() )[0], (uint32)into.destiny_state->content().size() );
+    }
 }
 
 ItemFactory* SystemManager::itemFactory() const
@@ -799,7 +775,7 @@ void SystemManager::AddItemToInventory(InventoryItemRef item)
 
 void SystemManager::RemoveItemFromInventory(InventoryItemRef item)
 {
-    _log(ITEM__TRACE, "SystemManager::RemoveItemFromInventory() - removing item %s(%u) from inventory of %s(%u)", item->itemName().c_str(), item->itemID(), m_systemName.c_str(), m_systemID);
+    _log(ITEM__TRACE, "SystemManager::RemoveItemFromInventory() - removing item %s(%u) from inventory of %s(%u)", item->itemName().c_str(), item->itemID(), m_data.name.c_str(), m_data.systemID);
     m_solarSystemRef->RemoveItemFromInventory( item );
 }
 

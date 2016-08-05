@@ -75,7 +75,7 @@ public:
     /*
      * Primary public interface:
      */
-    void Delete();
+    virtual void Delete();
 
     /*
      * _ExecAdd validation interface:

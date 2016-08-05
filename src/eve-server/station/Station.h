@@ -153,9 +153,9 @@ protected:
 /**
  * Data container for station.
  */
-class StationData {
+class StationInfo {
 public:
-    StationData(
+    StationInfo(
         uint32 _security = 0,
         double _dockingCostPerVolume = 0.0,
         double _maxShipVolumeDockable = 0.0,
@@ -196,7 +196,7 @@ protected:
         // CelestialObject stuff:
         const CelestialObjectData &_cData,
         // Station stuff:
-        const StationData &_stData
+        const StationInfo &_stData
     );
     virtual ~StationItem()                              { /* do nothing here */ }
 
@@ -250,7 +250,7 @@ protected:
         const StationType &stType = static_cast<const StationType &>( type );
 
         // load station data
-        StationData stData;
+        StationInfo stData;
         if( !factory.db().GetStation( stationID, stData ) )
             return RefPtr<_Ty>();
 
@@ -265,7 +265,7 @@ protected:
         // CelestialObject stuff:
         const CelestialObjectData &cData,
         // Station stuff:
-        const StationData &stData
+        const StationInfo &stData
     );
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data);

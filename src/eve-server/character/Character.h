@@ -194,7 +194,33 @@ protected:
 };
 
 /**
- * Container for raw character data.
+ * Container for character appearance stuff.
+ */
+class CharacterAppearance {
+public:
+   uint32 colorID;
+   uint32 colorNameA;
+   uint32 colorNameBC;
+   double weight;
+   double gloss;
+
+   uint32 modifierLocationID;
+   uint32 paperdollResourceID;
+   uint32 paperdollResourceVariation;
+
+   uint32 sculptID;
+   double weightUpDown;
+   double weightLeftRight;
+   double weightForwardBack;
+
+   void Build(uint32 ownerID, PyDict* data);
+
+private:
+	CharacterDB m_db;
+};
+
+/**
+ * * Container for raw character data.
  * v6
  */
 class CharacterData {
@@ -227,7 +253,6 @@ public:
         uint64 _createDateTime = 0,
         uint32 _shipID = 0,
         uint32 _capsuleID = 0 );
-
     bool gender;
 
     uint8 bloodlineID;
@@ -262,37 +287,11 @@ public:
 };
 
 /**
- * Container for character appearance stuff.
- */
-class CharacterAppearance {
-public:
-   uint32 colorID;
-   uint32 colorNameA;
-   uint32 colorNameBC;
-   double weight;
-   double gloss;
-
-   uint32 modifierLocationID;
-   uint32 paperdollResourceID;
-   uint32 paperdollResourceVariation;
-
-   uint32 sculptID;
-   double weightUpDown;
-   double weightLeftRight;
-   double weightForwardBack;
-
-   void Build(uint32 ownerID, PyDict* data);
-
-private:
-	CharacterDB m_db;
-};
-
-/**
  * Container for some corporation-membership related stuff.
  */
-class CorpMemberInfo {
+class CorpData {
 public:
-    CorpMemberInfo(
+    CorpData(
         uint32 _corpHQ = 0,
         int32 _corpAccountKey = 0,
         uint64 _corpRole = 0,
@@ -309,77 +308,6 @@ public:
     uint64 rolesAtBase;
     uint64 rolesAtHQ;
     uint64 rolesAtOther;
-};
-
-/**
- * Class representing fleet data	-allan 31Jul14
- */
-class FleetMemberInfo {
-public:
-	FleetMemberInfo(
-	    uint32 _fleetID = 0,
-        uint32 _wingID = 0,
-        uint32 _squadID = 0,
-	    uint8 _fleetRole = 0,
-	    uint8 _fleetBooster = 0,
-	    uint8 _fleetJob = 0
-	);
-
-    uint32 fleetID;
-    uint32 wingID;
-    uint32 squadID;
-	uint8 fleetRole;
-	uint8 fleetBooster;
-    uint8 fleetJob;
-};
-
-/**
- * Class representing character kill data  -allan 01May16
- */
-class CharKillData {
-public:
-    CharKillData(
-        uint32 _killID = 0,
-        uint32 _solarSystemID = 0,
-        uint32 _victimCharacterID = 0,
-        uint32 _victimCorporationID = 0,
-        uint32 _victimAllianceID = 0,
-        uint32 _victimFactionID = 0,
-        uint16 _victimShipTypeID = 0,
-        uint32 _victimDamageTaken = 0,
-        uint32 _finalCharacterID = 0,
-        uint32 _finalCorporationID = 0,
-        uint32 _finalAllianceID = 0,
-        uint32 _finalFactionID = 0,
-        uint16 _finalShipTypeID = 0,
-        uint16 _finalWeaponTypeID = 0,
-        double _finalSecurityStatus = 0.0,
-        uint32 _finalDamageDone = 0,
-        std::string _killBlob = "",
-        uint64 _killTime = 0,
-        uint32 _moonID = 0
-    );
-
-    uint32 killID;
-    uint32 solarSystemID;
-    uint32 victimCharacterID;
-    uint32 victimCorporationID;
-    uint32 victimAllianceID;
-    uint32 victimFactionID;
-    uint16 victimShipTypeID;
-    uint32 victimDamageTaken;
-    uint32 finalCharacterID;
-    uint32 finalCorporationID;
-    uint32 finalAllianceID;
-    uint32 finalFactionID;
-    uint16 finalShipTypeID;
-    uint16 finalWeaponTypeID;
-    double finalSecurityStatus;
-    uint32 finalDamageDone;
-    std::string killBlob;
-    uint64 killTime;
-    uint32 moonID;
-
 };
 
 /**
@@ -408,7 +336,7 @@ public:
      * @param[in] corpData Corporation membership data for new character.
      * @return Pointer to new Character object; NULL if failed.
      */
-    static CharacterRef Spawn(ItemFactory& factory, ItemData& data, CharacterData& charData, CorpMemberInfo& corpData);
+    static CharacterRef Spawn(ItemFactory& factory, ItemData& data, CharacterData& charData, CorpData& corpData);
 
     static CharacterRef Spawn(ItemFactory& factory, ItemData& data) {
         uint32 charID = InventoryItem::CreateItemID( factory, data );
@@ -420,13 +348,13 @@ public:
      */
     bool AlterBalance(double balanceChange);
     void SetLocation(uint32 stationID, uint32 solarSystemID, uint32 constellationID, uint32 regionID);
-	void JoinCorporation(uint32 corporationID, const CorpMemberInfo& roles);
+	void JoinCorporation(uint32 corporationID, const CorpData& roles);
     void SetDescription(const char *newDescription);
     void SetAccountKey(int32 accountKey);
-    void SetFleetData(FleetMemberInfo& fleet);
+    void SetFleetData(FleetData& fleet);
     uint32 PickAlternateShip(uint32 locationID);
 
-    void Delete();
+    virtual void Delete();
     void SetClient(Client* pClient)                     { m_pClient = pClient; }
     Client* GetClient()                                 { return m_pClient; }
 
@@ -725,7 +653,7 @@ protected:
         const ItemData& _data,
         // Character stuff:
         const CharacterData& _charData,
-        const CorpMemberInfo& _corpData
+        const CorpData& _corpData
     );
     virtual ~Character();
 
@@ -733,7 +661,7 @@ protected:
      * Member functions:
      */
     using InventoryItem::_Load;
-    static uint32 _Spawn(ItemFactory& factory, ItemData& data, CharacterData& charData, CorpMemberInfo& corpData)  { }
+    static uint32 _Spawn(ItemFactory& factory, ItemData& data, CharacterData& charData, CorpData& corpData)  { }
 
 
     // Template loader:
@@ -747,8 +675,8 @@ protected:
         if( !factory.db().GetCharacter( characterID, charData ) )
             return RefPtr<_Ty>();
 
-        CorpMemberInfo corpData;
-        if( !factory.db().GetCorpMemberInfo( characterID, corpData ) )
+        CorpData corpData;
+        if( !factory.db().GetCorpData( characterID, corpData ) )
             return RefPtr<_Ty>();
 
         // cast the type
@@ -761,7 +689,7 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> CreateCharacter(ItemFactory& factory, uint32 characterID,
         const CharacterType& charType, const ItemData& data,
-        const CharacterData& charData, const CorpMemberInfo& corpData
+        const CharacterData& charData, const CorpData& corpData
     );
 
     void _CalculateTotalSPTrained();

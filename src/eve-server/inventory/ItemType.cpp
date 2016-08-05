@@ -306,7 +306,6 @@ bool ItemType::_Load(ItemFactory &factory) {
     return (attributes.Load( factory.db() ));
 }
 
-
 /*
  * ItemData
  */

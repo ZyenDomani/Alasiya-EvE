@@ -39,7 +39,7 @@ uint32 ServiceDB::SetClientSeed()
     return row.GetInt(0);
 }
 
-bool ServiceDB::GetAccountInformation( const char* username, const char* password, AccountInfo &account_info )
+bool ServiceDB::GetAccountInformation( const char* username, const char* password, AccountData &account_info )
 {			//added auto account    -allan 18Jan14
     std::string _username = username;
     std::string _escaped_username;
@@ -144,44 +144,6 @@ uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, uint64 
     return accountID;
 }
 
-PyPackedRow *ServiceDB::GetSolItem(uint32 systemID) const {
-    //  corrected query and return   -allan 3Dec14
-    DBQueryResult res;
-    /*SQL query: SELECT * FROM `mapSolarSystems` WHERE `solarSystemID` = 30002547 LIMIT 0, 50 ;
-     * Rows: 1
-     * regionID    constellationID     solarSystemID   solarSystemName     x   y   z   xMin    xMax    yMin    yMax    zMin    zMax    luminosity  border  fringe  corridor    hub     international   regional    constellation   security    factionID   radius  sunTypeID   securityClass
-     * 10000030    20000373    30002547    Ammold  -8.53486657983356e16    1.87491150576755e16     4.54301567684968e16     -8.53533686627141e16    -8.53482509358487e16    1.87490989021921e16     1.87492981572294e16     -4.54312976692392e16    -4.54291257312205e16    0.06023     0   0   0   1   0   0   0   1   500002  2558863432728   7   A
-     *
-     */
-    std::string info = "";
-    if (!sDatabase.RunQuery(res,
-        "SELECT "
-        " solarSystemID AS itemID,"
-        " 5 AS typeID,"
-        " 1 AS ownerID,"
-        " constellationID AS locationID,"
-        " 0 AS flagID,"
-        " -1 AS quantity,"
-        " 5 AS groupID,"
-        " 2 AS categoryID,"
-        " '%s' AS customInfo"
-        " FROM mapSolarSystems"
-        " WHERE solarSystemID=%u",
-        info.c_str(), systemID ))
-    {
-        _log(DATABASE__ERROR, "Error in GetSolItem query: %s", res.error.c_str());
-        return(0);
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Data for SolItem %u not found.", systemID);
-        return nullptr;
-    }
-
-    return DBRowToPackedRow(row);
-}
-
 //this function is temporary, I dont plan to keep this crap in the DB.
 //   will make mem object for droneState later...   test with this.
 PyObject *ServiceDB::GetSolDroneState(uint32 systemID) const {
@@ -195,148 +157,11 @@ PyObject *ServiceDB::GetSolDroneState(uint32 systemID) const {
         " FROM droneState "
         " WHERE solarSystemID=%u",
         systemID)) {
-        _log(DATABASE__ERROR, "Error in GetSolDroneState query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetSolDroneState query: %s", res.error.c_str());
         return NULL;
     }
 
     return DBResultToRowset(res);
-}
-
-bool ServiceDB::GetSystemInfo(uint32 systemID, uint32* constellationID, uint32* regionID, std::string* name, std::string* securityClass, double* securityRating) {
-    if ( !constellationID && !regionID && !name && !securityClass && !securityRating ) return true;
-
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        " constellationID,"
-        " regionID,"
-        " solarSystemName,"
-        " securityClass,"
-        " security"
-        " FROM mapSolarSystems"
-        " WHERE solarSystemID = %u",
-        systemID))
-    {
-        _log(DATABASE__ERROR, "Failed to query info for system %u: %s.", systemID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", systemID);
-        return false;
-    }
-
-    if ( constellationID )
-        *constellationID = row.GetUInt(0);
-    if ( regionID )
-        *regionID = row.GetUInt(1);
-    if ( name )
-        *name = row.GetText(2);
-    if ( securityClass )
-        *securityClass = (row.IsNull(3) ? "" : row.GetText(3));
-    if ( securityRating )
-        *securityRating = (row.IsNull(4) ? 0 : row.GetDouble(4));
-
-    return true;
-}
-
-bool ServiceDB::GetStaticItemInfo(uint32 itemID, uint32 *systemID, uint32 *constellationID, uint32 *regionID, GPoint *position)
-{
-    if ( systemID == NULL && constellationID == NULL && regionID == NULL && position == NULL ) return true;
-
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        " solarSystemID,"
-        " constellationID,"
-        " regionID,"
-        " x, y, z"
-        " FROM mapDenormalize"
-        " WHERE itemID = %u",
-        itemID))
-    {
-        _log(DATABASE__ERROR, "Failed to query info for static item %u: %s.", itemID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Failed to query info for static item %u: Item not found.", itemID);
-        return false;
-    }
-
-    if ( systemID )
-        *systemID = row.GetUInt(0);
-    if ( constellationID )
-        *constellationID = row.GetUInt(1);
-    if ( regionID )
-        *regionID = row.GetUInt(2);
-    if ( position )
-        *position = GPoint(
-            row.GetDouble(3),
-            row.GetDouble(4),
-            row.GetDouble(5)
-        );
-
-    return true;
-}
-
-bool ServiceDB::GetStationInfo(uint32 stationID, uint32 *systemID, uint32 *constellationID, uint32 *regionID, GPoint *position, GPoint *dockPosition, GVector *dockOrientation) {
-    if ( !systemID && !constellationID && !regionID && !position && !dockPosition && !dockOrientation )
-        return true;
-
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        " s.solarSystemID,"
-        " s.constellationID,"
-        " s.regionID,"
-        " s.x, s.y, s.z,"
-        " st.dockEntryX, st.dockEntryY, st.dockEntryZ,"
-        " st.dockOrientationX, st.dockOrientationY, st.dockOrientationZ"
-        " FROM staStations AS s"
-        " LEFT JOIN staStationTypes AS st USING (stationTypeID)"
-        " WHERE s.stationID = %u",
-        stationID))
-    {
-        _log(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", stationID);
-        return false;
-    }
-
-    if ( systemID )
-        *systemID = row.GetUInt(0);
-    if ( constellationID )
-        *constellationID = row.GetUInt(1);
-    if ( regionID )
-        *regionID = row.GetUInt(2);
-    if ( position )
-        *position = GPoint(
-            row.GetDouble(3),
-            row.GetDouble(4),
-            row.GetDouble(5)
-        );
-    if ( dockPosition )
-        *dockPosition = GPoint(
-            row.GetDouble(3) + row.GetDouble(6),
-            row.GetDouble(4) + row.GetDouble(7),
-            row.GetDouble(5) + row.GetDouble(8)
-        );
-    if ( dockOrientation ) {
-        *dockOrientation = GVector(
-            row.GetDouble(9),
-            row.GetDouble(10),
-            row.GetDouble(11)
-        );
-    }
-
-    return true;
 }
 
 uint32 ServiceDB::GetStationOwner(uint32 stationID)
@@ -344,7 +169,7 @@ uint32 ServiceDB::GetStationOwner(uint32 stationID)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT corporationID FROM staStations WHERE stationID = %u", stationID))
     {
-        _log(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
         return false;
     }
 
@@ -375,7 +200,7 @@ uint32 ServiceDB::GetDestinationStargateID(uint32 fromSystem, uint32 toSystem)
         fromSystem, toSystem
     ))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return(0);
     }
 
@@ -397,7 +222,7 @@ bool ServiceDB::GetConstant(const char *name, uint32 &into)
 
     if (!sDatabase.RunQuery(res, "SELECT constantValue FROM eveConstants WHERE constantID='%s'", escaped.c_str() ))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -486,7 +311,7 @@ void ServiceDB::SetServerOnlineStatus(bool online) {
         "UPDATE character_, account"
         " SET character_.online = 0,"
         "     account.online = 0");
-    
+
     sDatabase.RunQuery( err,
         "DELETE FROM chrPausedSkillQueue"
         " WHERE 1");
@@ -500,7 +325,7 @@ void ServiceDB::SetAccountOnlineStatus(uint32 accountID, bool online) {
         " WHERE accountID= %u ",
         online, accountID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
     }
 }
 
@@ -512,7 +337,7 @@ void ServiceDB::SetAccountBanStatus(uint32 accountID, bool banned) {
         " WHERE accountID = %u",
         banned, accountID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
     }
 }
 

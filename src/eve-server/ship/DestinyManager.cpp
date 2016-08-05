@@ -49,7 +49,6 @@ DestinyManager::DestinyManager(SystemEntity *self)
 m_maxSpeed(1.0f),
 m_shipMaxAccelTime(0.0f),
 State(DSTBALL_STOP),
-m_dockTimer(1000),  // dock acceptance timer at 1sec
 m_warpTimer(5000),  //completely arbitrary.
 m_moveTimer(0.0),
 m_targetDistance(0.0),
@@ -90,7 +89,6 @@ m_warpCapacitorNeed(1.0f)
     m_currentSpeedFraction = 0.0f;
     m_maxOrbitSpeedFraction = 0.0f;
 
-    m_dockTimer.Disable();
     m_warpTimer.Disable();
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
@@ -115,14 +113,6 @@ void DestinyManager::Process() {
         profileStartTime = GetTimeUSeconds();
     //check for and process Destiny State changes.
     ProcessState();
-
-    if (m_dockTimer.Enabled() and m_dockTimer.Check(false)) {
-        m_dockTimer.Disable();
-        if (mySE->IsShipSE() and mySE->HasPilot()) {
-            Client* pClient = mySE->GetPilot();
-            pClient->DockToStation();
-        }
-    }
 
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_destinyProfile, GetTimeUSeconds() - profileStartTime);
@@ -975,7 +965,7 @@ void DestinyManager::_Orbit() {
     double timeStamp = GetTimeMSeconds() - m_moveTimer;
 
     // set current postion (this is where we are this tic)
-    double curRad = m_orbitRadTic * timeStamp;
+    double curRad = m_orbitRadTic * timeStamp;  // this isnt right.
     _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%.3f", curRad, timeStamp);
     /** @note  remember, eve coords for y and z are backwards.... y is elevation */
     double radX = m_position.x - Tp.x + mPosAdj.x, radY = m_position.y - Tp.y + mPosAdj.y, radZ = m_position.z - Tp.z + mPosAdj.z;
@@ -1414,7 +1404,7 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
 
     double circ = 2 * EvE_Pi * m_followDistance;
     double orbitTime = circ / velocity;
-    m_orbitRadTic = 2 * EvE_Pi / orbitTime;
+    m_orbitRadTic = (2 * EvE_Pi) / orbitTime;
 
     _log(DESTINY__ORBIT_TRACE, "DestinyManager::Orbit() - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%.2f, followDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
                 Rc, velocity, m_maxOrbitSpeedFraction, m_targetDistance, m_followDistance, orbitTime, m_orbitRadTic);
@@ -1728,7 +1718,7 @@ PyResult DestinyManager::AttemptDockOperation() {
     SendDestinyUpdate(updates, true);
 
     Stop();
-    m_dockTimer.Start(2000);  // start docking timer @ 2sec
+    pClient->StartDockTimer();
 
     return nullptr;
 }

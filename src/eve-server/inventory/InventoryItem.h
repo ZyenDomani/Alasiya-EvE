@@ -26,9 +26,11 @@
 #ifndef EVE_INVENTORY_ITEM_H
 #define EVE_INVENTORY_ITEM_H
 
-#include "inventory/EVEAttributeMgr.h"
-#include "inventory/ItemFactory.h"
+
+#include "POD_containers.h"
 #include "inventory/ItemType.h"
+#include "inventory/ItemFactory.h"
+#include "inventory/EVEAttributeMgr.h"
 
 class PyRep;
 class PyDict;
@@ -53,7 +55,7 @@ class Inventory;
  */
 
 /*
- * Class which maintains generic item.
+ * Class which maintains generic Inventory item.
  */
 class InventoryItem
 : public RefObject
@@ -85,6 +87,7 @@ public:
     /* public type queries  */
     uint32                  typeID() const              { return type().id(); }
     uint32                  groupID() const             { return type().groupID(); }
+    double                  radius() const              { return (HasAttribute(AttrRadius) ? GetAttribute(AttrRadius).get_float() : 1.0); }
     const ItemGroup &       group() const               { return type().group(); }
     const ItemCategory &    category() const            { return type().category(); }
     EVEItemCategories       categoryID() const          { return type().categoryID(); }
@@ -191,13 +194,8 @@ protected:
     {
         // pull the item info
         ItemData data;
-        if (IsAsteroid(itemID)) {
-            if( !factory.db().GetItem( itemID, data ) )
-                return RefPtr<_Ty>();
-        } else {
-            if( !factory.db().GetItem( itemID, data ) )
-                return RefPtr<_Ty>();
-        }
+        if( !factory.db().GetItem( itemID, data ) )
+            return RefPtr<_Ty>();
 
         // obtain type
         const ItemType *type = factory.GetType( data.typeID );
@@ -255,6 +253,10 @@ private:
     const ItemType &        m_type;
     EVEItemFlags            m_flag;
     GPoint                  m_position;
+
+    // for asteroid item:
+    AsteroidData m_roidData;
+
 
 
 /* end rewrite...originals follow */

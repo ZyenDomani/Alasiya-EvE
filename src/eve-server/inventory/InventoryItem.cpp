@@ -32,6 +32,7 @@
 #include "pos/Structure.h"
 #include "ship/Ship.h"
 #include "station/Station.h"
+#include "system/Asteroid.h"
 #include "system/Celestial.h"
 #include "system/Container.h"
 
@@ -44,10 +45,9 @@ InventoryItem::InventoryItem(
     const ItemType &_type,
     const ItemData &_data)
 : RefObject( 0 ),
-  //attributes(_factory, *this, true, true),
   mAttributeMap(*this),
   mDefaultAttributeMap(*this,true),
-  m_saveTimer(0,true),
+  m_saveTimer(0),
   m_factory(_factory),
   m_itemID(_itemID),
   m_itemName(_data.name),
@@ -110,7 +110,6 @@ uint32 InventoryItem::CreateItemID(ItemFactory &factory, ItemData &data) {
 /* This Spawn function is meant for in-memory only items created from the following categorys...
  *  EVEDB::invCategories::Entity
  *  EVEDB::invCategories::Charge (for launched missiles only)
- *  EVEDB::invCategories::Asteroid
  *
  * these items meant to never be saved to database
  * and be thrown away on server shutdown.
@@ -128,9 +127,7 @@ uint32 InventoryItem::CreateTempItemID(ItemFactory &factory, ItemData &data) {
         data.name = t->name();
 
     // Get a new Entity ID from ItemFactory's ID Authority:
-    if (t->categoryID() == EVEDB::invCategories::Asteroid)  //cant use, as mined ore is of category:asteroid
-        return factory.GetNextAsteroidID();
-    else if (t->categoryID() == EVEDB::invCategories::Ship) // may need more testing to verify that ONLY NPC's use this method
+    if (t->categoryID() == EVEDB::invCategories::Ship) // may need more testing to verify that ONLY NPC's use this method
         return factory.GetNextNPCID();
     else if (data.flag == EVEItemFlags::flagMissile)
         return factory.GetNextMissileID();
@@ -282,7 +279,22 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Implant:
         case EVEDB::invCategories::Reaction:
-             break;
+            break;
+        case EVEDB::invCategories::Asteroid: {
+            uint32 itemID = InventoryItem::CreateItemID( factory, data );
+            //uint32 itemID = InventoryItem::CreateTempItemID( factory, data ); // Use this to prevent Asteroids from being stored in DB
+            if ( itemID == 0 )
+                return InventoryItemRef();
+            InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
+            if (!itemRef)
+                return InventoryItemRef();
+            // THESE SHOULD BE MOVED INTO AN Asteroid::Spawn() function that does not exist yet
+            // Create default dynamic attributes in the AttributeMap:
+            itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
+            itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
+            //itemRef->SaveAttributes();
+            return itemRef;
+        }
         case EVEDB::invCategories::Skill: {
             return Skill::Spawn( factory, data );
         }
@@ -367,21 +379,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 return InventoryItemRef();
 			return itemRef;
 		}
-        case EVEDB::invCategories::Asteroid: {
-            uint32 itemID = InventoryItem::CreateItemID( factory, data );
-            //uint32 itemID = InventoryItem::CreateTempItemID( factory, data ); // Use this to prevent Asteroids from being stored in DB
-            if ( itemID == 0 )
-                return InventoryItemRef();
-            InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
-            if (!itemRef)
-                return InventoryItemRef();
-            // THESE SHOULD BE MOVED INTO AN Asteroid::Spawn() function that does not exist yet
-            // Create default dynamic attributes in the AttributeMap:
-            itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
-            itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
-            //itemRef->SaveAttributes();
-            return itemRef;
-        }
         case EVEDB::invCategories::Structure: {     /*  this is for all POS items */
             /** @todo structure class is not complete.  */
             uint32 itemID = StructureItem::CreateItemID( factory, data );
@@ -503,7 +500,6 @@ void InventoryItem::Delete() {
     ChangeOwner( 2 );
 
     //take ourself out of the DB
-    //attributes.Delete();
     m_factory.db().DeleteItem( itemID() );
 
     mAttributeMap.Delete();
@@ -901,7 +897,7 @@ void InventoryItem::ChangeOwner(uint32 new_owner, bool notify) {
 
 void InventoryItem::SaveItem() {
     m_factory.db().SaveItem(
-        itemID(),
+        m_itemID,
         ItemData(
             itemName().c_str(),
             typeID(),
@@ -915,6 +911,7 @@ void InventoryItem::SaveItem() {
             customInfo().c_str()
         )
     );
+
     /* do we really want to save attributes?  they may (most likely) have been modified by skills/modules/items/etc  */
     SaveAttributes();
 }

@@ -187,7 +187,7 @@ public:
     bool HasModuleManager()                                     { return (m_ModuleManager ? true : false); }
     ModuleManager* GetModuleManager()                           { return m_ModuleManager; }
 
-    void Delete();
+    virtual void Delete();
 
     double GetRemainingVolumeByFlag(EVEItemFlags flag) const;
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item);

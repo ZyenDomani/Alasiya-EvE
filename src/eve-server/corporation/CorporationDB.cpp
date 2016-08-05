@@ -656,7 +656,7 @@ bool CorporationDB::CreateCorporationChangePacket(Notify_OnCorporationChanged & 
 }
 
 
-bool CorporationDB::JoinCorporation(uint32 charID, uint32 corpID, uint32 oldCorpID, const CorpMemberInfo &roles) {
+bool CorporationDB::JoinCorporation(uint32 charID, uint32 corpID, uint32 oldCorpID, const CorpData &roles) {
     // TODO: check for free member place
 
     DBerror err;
@@ -1070,7 +1070,7 @@ uint32 CorporationDB::GetStationCorporationCEO(uint32 stationID) {
     }
     DBResultRow row;
     if (!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "There's either no such station or the station has no corp owner or the corporation has no ceo. Probably there's no such corporation.");
+        codelog(DATABASE__ERROR, "There's either no such station or the station has no corp owner or the corporation has no ceo. Probably there's no such corporation.");
         return 0;
     }
     return row.GetUInt(0);
@@ -1088,7 +1088,7 @@ uint32 CorporationDB::GetCorporationCEO(uint32 corpID) {
     }
     DBResultRow row;
     if (!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "There's either no such corp owner or the corporation has no ceo. Probably a buggy db.");
+        codelog(DATABASE__ERROR, "There's either no such corp owner or the corporation has no ceo. Probably a buggy db.");
         return 0;
     }
     return row.GetUInt(0);
@@ -1127,7 +1127,7 @@ bool CorporationDB::GetCurrentApplicationInfo(uint32 charID, uint32 corpID, Appl
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "There's no previous application.");
+        codelog(DATABASE__ERROR, "There's no previous application.");
         aInfo.valid = false;
         return false;
     }
@@ -1255,7 +1255,7 @@ bool CorporationDB::UpdateDivisionNames(uint32 corpID, const Call_UpdateDivision
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "Corporation %u doesn't exist.", corpID);
+        codelog(DATABASE__ERROR, "Corporation %u doesn't exist.", corpID);
         return false;
     }
 
@@ -1308,7 +1308,7 @@ bool CorporationDB::UpdateCorporation(uint32 corpID, const Call_UpdateCorporatio
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "Corporation %u doesn't exists.", corpID);
+        codelog(DATABASE__ERROR, "Corporation %u doesn't exists.", corpID);
         return false;
     }
 
@@ -1351,7 +1351,7 @@ bool CorporationDB::UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDic
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "Corporation %u doesn't exists.", corpID);
+        codelog(DATABASE__ERROR, "Corporation %u doesn't exists.", corpID);
         return false;
     }
 

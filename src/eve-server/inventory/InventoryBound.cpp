@@ -441,18 +441,18 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
             if (!call.byname.find("qty")->second->IsNone())
                 quantity = call.byname.find("qty")->second->AsInt()->value();
 
-            //bool byname(fromManyFlags):true == unload charges from module referenced
-            if (call.byname.find("fromManyFlags") != call.byname.end()) {
-                if (!call.byname.find("fromManyFlags")->second->IsNone())
-                    quantity = -1; //special value here to hit tests in _ExecAdd
-            }
+        //bool byname(fromManyFlags):true == unload charges from module referenced
+        if (call.byname.find("fromManyFlags") != call.byname.end())
+            if (!call.byname.find("fromManyFlags")->second->IsNone())
+                quantity = -1; //special value here to hit tests in _ExecAdd
 
-            return _ExecAdd( call.client, args.itemIDs, quantity, (EVEItemFlags)flag );
+        return _ExecAdd( call.client, args.itemIDs, quantity, (EVEItemFlags)flag );
     } else {
         _log(INV__ERROR, "[MultiAdd] Unknown number of elements in a tuple: %u.", call.tuple->items.size() );
         return nullptr;
     }
 }
+
 
 PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, int32 quantity, EVEItemFlags flag) {
     // method logic rewrite to handle all types and send a proper return, and added some error returns.   -allan 2Jan16 (UD 24May16)

@@ -116,7 +116,7 @@ public:
 
 
 protected:
-    bool JoinCorporation(Client *who, uint32 newCorpID, const CorpMemberInfo &roles);
+    bool JoinCorporation(Client *who, uint32 newCorpID, const CorpData &roles);
     static void FillOCApplicationChange(Notify_OnCorporationApplicationChanged & OCAC, const ApplicationInfo & Old, const ApplicationInfo & New);
 
     CorporationDB& m_db;
@@ -315,7 +315,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     sEntityList.Multicast("OnCorporationChanged", "stationid", &a2, NOTIF_DEST__LOCATION, location);
 
     // Set char's roles in corp
-    CorpMemberInfo roles;
+    CorpData roles;
     roles.corpAccountKey = accountingKeyCash;
     roles.corpRole = corpRoleAll;
     roles.rolesAtAll = corpRoleAll;
@@ -332,7 +332,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     return (new PyInt(corpID));
 }
 
-bool CorpRegistryBound::JoinCorporation(Client *who, uint32 newCorpID, const CorpMemberInfo &roles) {
+bool CorpRegistryBound::JoinCorporation(Client *who, uint32 newCorpID, const CorpData &roles) {
 
 	who->GetChar()->JoinCorporation(newCorpID, roles);
 
@@ -816,7 +816,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             &answer, both_corps);
 
         //NOTE: this really should happen sooner, in case it fails.
-        if(!m_db.JoinCorporation(args.charID, ocmc.newCorpID, ocmc.oldCorpID, CorpMemberInfo())) {
+        if(!m_db.JoinCorporation(args.charID, ocmc.newCorpID, ocmc.oldCorpID, CorpData())) {
             codelog(SERVICE__ERROR, "%s: Failed to record corp join for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
             return NULL;
         }
