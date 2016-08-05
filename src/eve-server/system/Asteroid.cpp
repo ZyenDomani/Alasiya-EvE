@@ -33,6 +33,50 @@
 #include "system/cosmicMgrs/BeltMgr.h"
 #include "system/SystemBubble.h"
 
+/*
+ * AsteroidItem
+ */
+/*
+AsteroidItem::AsteroidItem(ItemFactory& _factory, uint32 _asteroidID, const ItemType& _type, const ItemData& _idata, const AsteroidData& _adata)
+: InventoryItem(_factory, _asteroidID, _type, _idata, _adata),
+m_dbData(_adata)
+{
+    _log(ITEM__TRACE, "Created AsteroidItem for %s(%u).", _idata.name.c_str(), _asteroidID);
+}
+
+AsteroidItemRef AsteroidItem::Load(ItemFactory &factory, uint32 asteroidID)
+{
+    return InventoryItem::Load<AsteroidItem>( factory, asteroidID );
+}
+
+AsteroidItemRef AsteroidItem::Spawn(ItemFactory& factory, ItemData& idata, AsteroidData& adata) {
+    const ItemType *type = factory.GetType(adata.typeID);
+    if (!type)
+        return AsteroidItemRef();
+
+    // fix the name (if empty)
+    if (adata.itemName.empty())
+        adata.itemName = type->name();
+
+    uint32 asteroidID = InventoryItem::CreateAsteroidID(factory, adata);
+    if (asteroidID == 0)
+        return AsteroidItemRef();
+
+    AsteroidItemRef roidRef = AsteroidItemRef(new AsteroidItem( factory, asteroidID, *type, idata, adata));
+    roidRef->SetAttribute(AttrQuantity,  adata.quantity);   // quantity in m^3
+    roidRef->SetAttribute(AttrRadius, (adata.radius));  // Radius
+    roidRef->SetAttribute(AttrMass, (roidRef->type().mass() * adata.quantity));      // Mass
+
+    return roidRef;
+}
+
+template<class _Ty>
+RefPtr<_Ty>  AsteroidItem::_LoadAsteroid(ItemFactory& factory, uint32 asteroidID, const ItemType& type, const ItemData& data, const AsteroidData& dbData)
+{
+    // ready to create
+    return AsteroidItemRef( new AsteroidItem( factory, asteroidID, type, data, dbData ) );
+}
+*/
 
 AsteroidSE::AsteroidSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)
 : ObjectSystemEntity(self, services, system),
@@ -58,7 +102,7 @@ void AsteroidSE::EncodeDestiny( Buffer& into )
     BallHeader head;
         head.entityID = GetID();
         head.mode = DSTBALL_RIGID;
-        head.radius = GetRadius();
+        head.radius = m_self->radius();
         head.x = x();
         head.y = y();
         head.z = z();
@@ -87,7 +131,7 @@ void AsteroidSE::Grow() {
      * currently sets quantity back to full and disables m_growTimer
      */
 
-    double quantity = ((25000 * log(GetRadius())) - 112404.8);
+    double quantity = ((25000 * log(m_self->radius())) - 112404.8);
     m_self->SetAttribute(AttrQuantity,  quantity);   // quantity in m^3
 
     m_growTimer.Disable();

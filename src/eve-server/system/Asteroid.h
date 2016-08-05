@@ -29,30 +29,21 @@
 
 #include "system/SystemEntity.h"
 
-
-/** @todo  need to finish an item object for asteroids  */
-
-#if (0)
 /**
- * InventoryItem for asteroid item.
+ * InventoryItem for asteroid item....didnt work.  revert to default item
  */
+#if (0)
 class AsteroidItem
 : public InventoryItem
 {
     friend class InventoryItem; // to let it construct us
 public:
-    AsteroidItem(ItemFactory &_factory, uint32 _celestialID, const ItemType &_type, const ItemData &_data, const AsteroidItemData &_cData);
-    virtual ~AsteroidItem()                          { /* Do nothing here */ }
+    AsteroidItem(ItemFactory &_factory, uint32 _asteroidID, const ItemType &_type, const ItemData &_data, const AsteroidData &_cData);
+    virtual ~AsteroidItem()                             { /* Do nothing here */ }
 
-    static AsteroidItemRef Load(ItemFactory &factory, uint32 celestialID);
-    static AsteroidItemRef Spawn(ItemFactory &factory, ItemData &data);
+    static AsteroidItemRef Load(ItemFactory &factory, uint32 asteroidID);
+    static AsteroidItemRef Spawn(ItemFactory& factory, ItemData &idata, AsteroidData& adata);
 
-    void Delete();
-
-    double      radius() const { return m_radius; }
-    double      security() const { return m_security; }
-    uint8       celestialIndex() const { return m_celestialIndex; }
-    uint8       orbitIndex() const { return m_orbitIndex; }
 
 protected:
     using InventoryItem::_Load;
@@ -60,26 +51,20 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 celestialID, const ItemType &type, const ItemData &data) {
-        AsteroidItemData cData;
-        if( !factory.db().GetAsteroid( celestialID, cData ) )
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 asteroidID, const ItemType &type, const ItemData &data) {
+        AsteroidData dbData;
+        if ( !factory.db().GetAsteroid( asteroidID, dbData ) )
             return RefPtr<_Ty>();
 
-        return _Ty::template _LoadAsteroidItem<_Ty>( factory, celestialID, type, data, cData );
+        return _Ty::template _LoadAsteroid<_Ty>( factory, asteroidID, type, data, dbData );
     }
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadAsteroidItem(ItemFactory &factory, uint32 celestialID, const ItemType &type, const ItemData &data, const AsteroidItemData &cData
-    );
+    static RefPtr<_Ty> _LoadAsteroid(ItemFactory& factory, uint32 asteroidID, const ItemType& type, const ItemData& data, const AsteroidData& dbData);
 
-    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
-
-    /* these have to be public for inventorydb to load into them. */
-    double m_radius;
-    double m_security;
-    uint8 m_celestialIndex;
-    uint8 m_orbitIndex;
+private:
+    AsteroidData m_dbData;
 };
 
 #endif
