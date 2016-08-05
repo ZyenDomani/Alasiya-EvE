@@ -266,7 +266,8 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
         //TODO
         p_targetClient = who;
         solarSystemID = atoi(args.arg(1).c_str());
-        destinationPoint = GPoint(12457894200.0f, 17254864800.0f, 14851254800.0f);
+        SystemGPoint m_gp;
+        destinationPoint = m_gp.GetRandPointOnMoon(solarSystemID);//GPoint(12457894200.0f, 17254864800.0f, 14851254800.0f);
         trMode = 1;
     }
 
@@ -320,6 +321,7 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
     if (p_targetClient->GetShipSE() and p_targetClient->GetShipSE()->DestinyMgr())
         p_targetClient->GetShipSE()->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", solarSystemID);
 
+    p_targetClient->IsJumping();
     p_targetClient->MoveToLocation(solarSystemID, destinationPoint);
     if (p_targetClient->GetShipSE() and p_targetClient->GetShipSE()->DestinyMgr())
         p_targetClient->GetShipSE()->DestinyMgr()->SendJumpInEffect("effects.JumpIn");

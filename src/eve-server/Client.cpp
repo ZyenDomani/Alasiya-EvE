@@ -409,12 +409,14 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     }
 
     m_locationID = locationID;
+    // get data for new system.  this checks for stationID sent as locationID, so is safe here.
+    sDataMgr.GetSystemInfo(locationID, m_SystemData);
     uint32 stationID = 0;
     if (IsStation(locationID))
         stationID = locationID;
 
     // location changed...verify current system and set session data for current system.
-    if (m_system and (m_system->GetID() != m_SystemData.systemID)) {
+    if (IsJump() or (m_system and (m_system->GetID() != m_SystemData.systemID))) {
         //we have different m_system
         _log(PLAYER__WARNING, "MoveToLocation() - m_system = %p, m_system->GetID(%u) != locationID(%u)", m_system, m_SystemData.systemID, m_locationID);
         // remove from 'current' system
@@ -423,8 +425,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (pShipSE)
             m_system->RemoveEntity(pShipSE);
         m_system = nullptr;
-        // get data for new system.  this checks for stationID sent as locationID, so is safe here.
-        sDataMgr.GetSystemInfo(locationID, m_SystemData);
     }
 
     // test for system/station here, and set client variables
@@ -706,7 +706,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
     // this is the code for removing pilot from previous system
     StaticData fromData;
-    if (!sDataMgr.GetStaticInfo(m_toGate, fromData)) {
+    if (!sDataMgr.GetStaticInfo(fromGate, fromData)) {
             sLog.Error("Client","%s: Failed to query information for stargate %u", m_char->itemName().c_str(), fromGate);
             return;
         }
