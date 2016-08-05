@@ -527,7 +527,7 @@ void ModuleContainer::_processEx(processType p, slotType t)
         for (r = 0; r < COUNT; r++, cur++) {
             if (*cur == nullptr)
                 continue;
-            (*cur)->Unload();
+            (*cur)->UnloadCharge();
         } break;
 
     case typeProcessAll:
@@ -642,7 +642,7 @@ bool ModuleManager::Initialize() {
             continue;
         } else if (cur->categoryID() == EVEDB::invCategories::Charge) {
             if (GetModule(cur->flag())) {
-                GetModule(cur->flag())->Load(cur);
+                GetModule(cur->flag())->LoadCharge(cur);
             } else {
                 _log(SHIP__ERROR, "ModuleManager::Initialize() - Cannot find module to load %s(%u) at flag %u",
                      cur->itemName().c_str(), cur->itemID(), cur->flag() );
@@ -757,7 +757,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
             flag = flagHangar;
         if (mod->IsLoaded()) {
             mod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
-            mod->Unload();
+            mod->UnloadCharge();
         }
         if (mod->isOnline())
             mod->Offline();
@@ -1131,7 +1131,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 					m_Ship->ValidateAddItem(flagCargoHold,loadedChargeRef);
 					loadedChargeRef->Move(m_Ship->itemID(), flagCargoHold);
 				}
-				mod->Unload();
+				mod->UnloadCharge();
 
 				// Loading of charge will be performed below
 			}
@@ -1151,7 +1151,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 							InventoryItemRef loadableChargeQtyRef = chargeRef->Split( quantityWeCanLoad );
 							loadableChargeQtyRef->ChangeOwner( chargeRef->ownerID() );
 							loadedChargeRef->Merge( loadableChargeQtyRef );
-							mod->Load( loadedChargeRef );
+							mod->LoadCharge( loadedChargeRef );
 							loadedChargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
 						}
 						else
@@ -1159,7 +1159,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 							// Merge chargeRef with loadedChargeRef
 							// Load this merged charge Ref into module
 							loadedChargeRef->Merge( chargeRef );
-							mod->Load( loadedChargeRef );
+							mod->LoadCharge( loadedChargeRef );
 							loadedChargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
 						}
 					}
@@ -1184,7 +1184,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 			{
 				// We can insert entire stack of chargeRef into module
 				// Load chargeRef as-is into module
-				mod->Load( chargeRef );
+				mod->LoadCharge( chargeRef );
 				chargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
 			}
 			else
@@ -1199,7 +1199,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 					// Load this merged charge Ref into module
 					InventoryItemRef loadableChargeQtyRef = chargeRef->Split( quantityWeCanLoad );
 					loadableChargeQtyRef->ChangeOwner( chargeRef->ownerID() );
-					mod->Load( loadableChargeQtyRef );
+					mod->LoadCharge( loadableChargeQtyRef );
 					loadableChargeQtyRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
 				}
 				else
@@ -1215,7 +1215,7 @@ void ModuleManager::UnloadCharge(EVEItemFlags flag) {
     if (mod and mod->IsLoaded() ) {
         _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s",
              mod->getItem()->itemName().c_str(), mod->GetLoadedChargeRef()->itemName().c_str());
-        mod->Unload();
+        mod->UnloadCharge();
 	}
 }
 void ModuleManager::GetLoadedCharges(std::map< EVEItemFlags, InventoryItemRef >& charges)

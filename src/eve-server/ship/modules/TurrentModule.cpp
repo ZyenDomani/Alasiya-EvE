@@ -58,11 +58,11 @@ void TurrentModule::DeOverload()
     GenericModule::DeOverload();
 }
 
-void TurrentModule::Load(InventoryItemRef charge)
+void TurrentModule::LoadCharge(InventoryItemRef charge)
 {
     //if (m_chargeRef) assert(m_chargeRef != charge);
 
-    ActiveModule::Load(charge);
+    ActiveModule::LoadCharge(charge);
     _UpdateModifiers(charge);
     m_kinetic       = m_chargeRef->GetAttribute(AttrKineticDamage).get_float();
     m_thermal       = m_chargeRef->GetAttribute(AttrThermalDamage).get_float();
@@ -70,11 +70,11 @@ void TurrentModule::Load(InventoryItemRef charge)
     m_explosive     = m_chargeRef->GetAttribute(AttrExplosiveDamage).get_float();
 }
 
-void TurrentModule::Unload()
+void TurrentModule::UnloadCharge()
 {
     if (m_chargeRef)
         _RemoveModifier(m_chargeRef);
-    ActiveModule::Unload();
+    ActiveModule::UnloadCharge();
     m_kinetic       = 0;
     m_thermal       = 0;
     m_em            = 0;

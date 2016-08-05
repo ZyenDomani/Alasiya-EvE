@@ -42,17 +42,31 @@ public:
     virtual double DoCycle();
     virtual void StopCycle(bool abort=false);
 
+    //  functions to be handled in derived classes as needed
+    virtual void LoadCharge(InventoryItemRef charge);
+    virtual void UnloadCharge();
+
 protected:
-	void _ProcessOreCycle(bool partial = false);
-    void _ProcessIceCycle(bool partial = false);
-    void _ProcessCloudCycle(bool partial = false);
+	void ProcessCycle(bool partial=false);
 
     void _ShowCycle();
     double _GetDuration();
     //double _GetCapNeed();
     void _SetCapNeed();
 
-	bool m_IsInitialCycle;
+private:
+    bool m_IsInitialCycle;
+
+    uint32 m_effectID;
+
+    double m_duration;
+    double m_cycleVol;
+
+    std::string m_effectStr;
+
+    //cached item-type stuff
+    bool m_rMiner, m_dcMiner, m_iMiner, m_gMiner;
+
 };
 
 #endif

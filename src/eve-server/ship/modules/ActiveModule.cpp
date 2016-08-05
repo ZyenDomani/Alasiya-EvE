@@ -123,7 +123,7 @@ void ActiveModule::DeOverload()
     m_ModuleState = MOD_ONLINE;
 }
 
-void ActiveModule::Load(InventoryItemRef charge)
+void ActiveModule::LoadCharge(InventoryItemRef charge)
 {
 	m_chargeRef = charge;
     m_chargeLoaded = true;
@@ -147,7 +147,7 @@ void ActiveModule::Load(InventoryItemRef charge)
     m_reloadTimer.Start(m_reloadTime);
 }
 
-void ActiveModule::Unload()
+void ActiveModule::UnloadCharge()
 {
 	m_chargeRef = InventoryItemRef();		// Ensure ref is NULL
     m_chargeLoaded = false;

@@ -39,9 +39,9 @@ public:
     //  class type helpers.  public for anyone to access.
     virtual bool IsTurrentModule()                           { return true; }
 
-    //  functions to be handled in derived classes
-    virtual void Load(InventoryItemRef charge);
-    virtual void Unload();
+    //  functions to be handled in derived classes as needed
+    virtual void LoadCharge(InventoryItemRef charge);
+    virtual void UnloadCharge();
     virtual void Overload();
     virtual void DeOverload();
 

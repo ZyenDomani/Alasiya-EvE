@@ -44,8 +44,8 @@ public:
 
     /* GenericModule overrides */
 	virtual void Process();
-    virtual void Load(InventoryItemRef charge);
-    virtual void Unload();
+    virtual void LoadCharge(InventoryItemRef charge);
+    virtual void UnloadCharge();
     virtual void Overload();
     virtual void AbortCycle();
     virtual void DeOverload();

@@ -143,7 +143,7 @@ double HybridTurret::DoCycle() {
             return 0;
         }
         if (!m_chargeRef->quantity()) {
-            Unload();
+            UnloadCharge();
             Deactivate();
             return 0;
         }

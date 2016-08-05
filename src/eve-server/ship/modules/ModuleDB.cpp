@@ -35,7 +35,7 @@ void ModuleDB::GetAllTypeIDs(DBQueryResult &res)
         " FROM invTypes "
         " WHERE 1 "))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -47,7 +47,7 @@ void ModuleDB::GetAllDgmEffects(DBQueryResult &res)
         " FROM dgmEffects "
         " WHERE 1 "))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -59,7 +59,7 @@ void ModuleDB::GetAllDgmEffectsInfo(DBQueryResult &res)
         " FROM dgmEffectsInfo "
         " WHERE 1 "))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -71,7 +71,7 @@ void ModuleDB::GetAllDgmTypeEffects(DBQueryResult &res)
         " FROM dgmTypeEffects "
         " WHERE 1 "))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -83,7 +83,7 @@ void ModuleDB::GetAllDgmSkillBonusModifiers(DBQueryResult &res)
         " FROM dgmSkillBonusModifiers "
         " WHERE 1 "))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -95,7 +95,7 @@ void ModuleDB::GetAllDgmShipBonusModifiers(DBQueryResult &res)
         " FROM dgmShipBonusModifiers "
         " WHERE 1 "))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -108,7 +108,7 @@ void ModuleDB::GetAllDgmImplantModifiers(DBQueryResult &res)
         " FROM dgmShipBonusModifiers "
         " WHERE 1 "))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     } */
 }
 
@@ -146,7 +146,7 @@ void ModuleDB::GetDgmEffects(uint32 effectID, DBQueryResult &res)
         " WHERE effectID = %u ",
         effectID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -167,7 +167,7 @@ void ModuleDB::GetDgmEffectsInfo(uint32 effectID, DBQueryResult &res)
         " WHERE effectID = %u ",
         effectID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -180,7 +180,7 @@ void ModuleDB::GetDgmTypeEffects(uint32 typeID, DBQueryResult &res)
         " FROM dgmTypeEffects "
         " WHERE typeID = %u ", typeID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -203,7 +203,7 @@ void ModuleDB::GetDgmSkillBonusModifiers(uint32 skillID, DBQueryResult &res)
         " WHERE skillID = %u ",
         skillID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -226,7 +226,7 @@ void ModuleDB::GetDgmShipBonusModifiers(uint32 shipID, DBQueryResult &res)
         " WHERE shipID = %u ",
         shipID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -240,6 +240,6 @@ void ModuleDB::GetDgmImplantModifiers(uint32 implantID, DBQueryResult &res)
         " FROM dgmTypeEffects "
         " WHERE typeID = %u ", implantID))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     } */
 }

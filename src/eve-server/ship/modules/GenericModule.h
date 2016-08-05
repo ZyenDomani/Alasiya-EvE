@@ -92,8 +92,8 @@ public:
     virtual void Activate(SystemEntity* pSE)            { /* Do nothing here */ }
     virtual void Deactivate()                           { /* Do nothing here */ }
     virtual void AbortCycle()                           { /* Do nothing here */ }
-    virtual void Load(InventoryItemRef charge)          { /* Do nothing here */ }
-    virtual void Unload()                               { /* Do nothing here */ }
+    virtual void LoadCharge(InventoryItemRef charge)    { /* Do nothing here */ }
+    virtual void UnloadCharge()                         { /* Do nothing here */ }
     virtual void Overload()                             { /* Do nothing here */ }
     virtual void DeOverload()                           { /* Do nothing here */ }
     virtual void DestroyRig()                           { /* Do nothing here */ }
@@ -143,13 +143,12 @@ protected:
     int32                           m_repeat;
 
     /*  this is for pre-calculated values, to eliminate previous code calculating on EVERY CALL.
-     * defined in WeaponModule code.
+     * defined in (and only used in) WeaponModule code.
      * not used in ActiveModule or PassiveModule.
      * put here to access using GenericModule.
      */
     virtual void _UpdateModifiers(InventoryItemRef item){ /* Do nothing here */ }
     virtual void _RemoveModifier(InventoryItemRef item) { /* Do nothing here */ }
-
 
 };
 

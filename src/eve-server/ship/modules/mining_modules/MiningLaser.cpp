@@ -47,6 +47,72 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
 	m_IsInitialCycle = true;
+    m_rMiner = m_dcMiner = m_iMiner = m_gMiner = false;
+
+    m_effectID = effectMiningLaser;
+    m_effectStr = "effects.Mining";
+    if (m_Item->groupID() == EVEDB::invGroups::Mining_Laser) {
+        m_rMiner = true;
+    } else if ((m_Item->typeID() == 12108) or (m_Item->typeID() == 18068) or (m_Item->typeID() == 24305) or (m_Item->typeID() == 28748)) {
+        m_dcMiner = true;
+    } else if (m_Item->groupID() == EVEDB::invGroups::Frequency_Mining_Laser) {
+        m_rMiner = true;
+    } else if ((m_Item->typeID() == 16278) or (m_Item->typeID() == 22229) or (m_Item->typeID() == 22589) or (m_Item->typeID() == 22591)
+        or (m_Item->typeID() == 22597) or (m_Item->typeID() == 22599) or (m_Item->typeID() == 28752)) {
+        /* this includes 'dev testing modules', also  */
+        m_iMiner = true;
+    } else if (m_Item->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester) {
+        m_gMiner = true;
+        m_effectID = effectMiningClouds;
+        m_effectStr = "effects.CloudMining";
+    }
+
+    /** @hack:  set mining attribs here, based on module item, ship bonuses, and char skills
+     * this eliminates extraenous calculations on every activation/cycle.
+     * the hack is setting attributes here from ship and skill bonuses, instead of using the
+     * (not-yet-implemented) shipEffects and skillEffects classes (which will be based on moduleEffects class) (eta u/k - tbdl)
+     * this enables correct information displayed in module "show info" window while in space.
+     */
+    // set module duration
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
+    m_duration = m_Item->GetAttribute(AttrDuration).get_float();
+    m_duration *= (1 - ( 0.01 * (pChar->GetSkillLevel(skillMining, true))));               //  1% decrease in duration
+    if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge)
+        m_duration *= (1 - (0.01 * (pChar->GetSkillLevel(skillMiningBarge, true))));       //  1% decrease in duration
+    else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer)
+        m_duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true))));          //  2% decrease in duration
+    //FIXME  always returns 0 for now.  fix once fleets are implemented.
+    if (pChar->fleetID()) {
+        m_duration *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningForeman, true))));    //  2% decrease in duration
+        m_duration *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningDirector, true))));   //  2% decrease in duration
+    }
+    m_Item->SetAttribute(AttrDuration, m_duration);
+
+    // set mined volume per cycle
+    m_cycleVol = m_Item->GetAttribute(AttrMiningAmount).get_int();
+    m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillMining, true))));        //  5% increase in yield
+    m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillAstrogeology, true))));   //  5% increase in yield
+    m_Item->SetAttribute(AttrMiningAmount, m_cycleVol);
+
+    _log(MINING__TRACE, "Module Created for %s.  Module Duration:%.3f, CycleVolume:%.3f", item->itemName().c_str(), m_duration, m_cycleVol);
+}
+
+void MiningLaser::LoadCharge(InventoryItemRef charge)
+{
+    //if (m_chargeRef) assert(m_chargeRef != charge);
+
+    ActiveModule::LoadCharge(charge);
+    m_cycleVol *= m_chargeRef->GetAttribute(AttrSpecialisationAsteroidYieldMultiplier).get_float();
+    m_Item->SetAttribute(AttrMiningAmount, m_cycleVol);
+    _log(MINING__TRACE, "Charge %s loaded for %s.  CycleVolume updated to %.3f", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str(), m_cycleVol);
+}
+
+void MiningLaser::UnloadCharge()
+{
+    m_cycleVol /= m_chargeRef->GetAttribute(AttrSpecialisationAsteroidYieldMultiplier).get_float();
+    m_Item->SetAttribute(AttrMiningAmount, m_cycleVol);
+    _log(MINING__TRACE, "Charge %s unloaded for %s.  CycleVolume updated to %.3f", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str(), m_cycleVol);
+    ActiveModule::UnloadCharge();
 }
 
 /*
@@ -60,15 +126,18 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
 */
 void MiningLaser::Activate(SystemEntity* pSE)
 {
-	// Test if respective moduleID's and moduleGroups are activated on valid target group/category.
-	// Regular Miners, Deep Core Miners, Ice Harvesters and Gas Havresters are having their target groups set strictly
-    if ((((m_Item->typeID() == 17482) or (m_Item->typeID() == 28754) or (m_Item->typeID() == 17912) or (m_Item->groupID() == 54))
-            and ((pSE->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid) and (pSE->GetSelf()->groupID() != EVEDB::invGroups::Mercoxit)
-        ) or ((m_Item->typeID() == 12108) or (m_Item->typeID() == 18068) or (m_Item->typeID() == 24305) or (m_Item->typeID() == 28748))
-            and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit)
-        ) or (((m_Item->typeID() == 16278) or (m_Item->typeID() == 22229) or (m_Item->typeID() == 28752))
-            and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Ice)
-        ) or ((m_Item->groupID() == 737) and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)))
+    if (!m_cycleVol) {
+        _log(MINING__ERROR, "Mining Module %s(%u) has 0 CycleVolume", m_Item->itemName().c_str(), m_Item->itemID());
+        if (m_Ship->HasPilot())
+            if (m_Ship->GetPilot()->CanThrow())
+                throw PyException( MakeCustomError( "Module Activate: Invalid Attribute - Ref: ServerError 15168" ) );
+    }
+
+	// verify module vs target for activation.  disallow if not compatible.
+    if ((m_rMiner and (pSE->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid) and (pSE->GetSelf()->groupID() != EVEDB::invGroups::Mercoxit))
+        or (m_dcMiner and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit))
+        or (m_iMiner and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Ice))
+        or (m_gMiner and (pSE->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)))
     {
         m_targetEntity = pSE;
         m_targetID = pSE->GetID();
@@ -85,7 +154,7 @@ void MiningLaser::Activate(SystemEntity* pSE)
         _log(MINING__WARNING, "Activate() - Invalid target");
         if (m_Ship->HasPilot())
             if (m_Ship->GetPilot()->CanThrow())
-                throw PyException( MakeCustomError( "Invalid Target - Ref: ServerError 15628" ) );
+                throw PyException( MakeCustomError( "Module Activate: Invalid Target - Ref: ServerError 15628" ) );
     }
 }
 
@@ -110,83 +179,60 @@ double MiningLaser::DoCycle() {
 
     _ShowCycle();
 
-    //FIXME - For now ore processing starts in the end of 2 cycle. First cycle returns nothing.
+    /* ore is dumped into hold at end of module's cycle.
+     * however, code processing runs at beginning of cycle, so this needs to 'fake' the ore aquisition to the end of cycle
+     * we accomplish this by doing nothing on first cycle, and call the processing component at beginning of each cycle after that.
+     */
 
     if (m_IsInitialCycle) {
     	m_IsInitialCycle = false;
     } else {
-        // Actually pull in the ore
-        if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)
-            _ProcessIceCycle();
-        else if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)
-            _ProcessCloudCycle();
-        else
-            _ProcessOreCycle();
+        // resources gathered using ship modules are classified the same, so a single process is common for all.
+        ProcessCycle();
     }
 
-    return _GetDuration();
+    return m_duration;
 }
 
 /** @todo rework this */
-void MiningLaser::_ProcessOreCycle(bool partial)
+void MiningLaser::ProcessCycle(bool partial)
 {
 	// Retrieve ore from target Asteroid and put into Cargo Hold
-	InventoryItemRef asteroidRef = m_targetEntity->GetSelf();
-    double roidQuantity = asteroidRef->GetAttribute(AttrQuantity).get_float();   //    AttrQuantity = 805  -float
-    double oreVolume = asteroidRef->GetAttribute(AttrVolume).get_float();       //    AttrVolume = 161  -float
+	InventoryItemRef roidRef = m_targetEntity->GetSelf();
+    double oreVolume = roidRef->GetAttribute(AttrVolume).get_float();
 
-    // Calculate how many m3 of ore to pull from the asteroid on this cycle.
-    // This is initial variable assignment and filter, that defines if module have any mining crystals loaded.
-    double oreVolumeToPull = m_Item->GetAttribute(AttrMiningAmount).get_int();  // AttrMiningAmount = 77 -int,
-	if (m_chargeLoaded)  // Use mining crystal (if loaded) to multiply ore amount taken:
-        oreVolumeToPull *= m_chargeRef->GetAttribute(AttrSpecialisationAsteroidYieldMultiplier).get_float();   //YieldMultiplier = 782 -float,
-
-	// Calculate the ore volume based on the character's core skills - mining and astrogeology
-    Character* pChar = m_Ship->GetPilot()->GetChar().get();
-    oreVolumeToPull *= (1 + (0.05 * (pChar->GetSkillLevel(skillMining, true))));        //  5% increase in yield
-    oreVolumeToPull *= (1 + (0.05 * (pChar->GetSkillLevel(skillAstrogeology, true))));   //  5% increase in yield
-
-    if (partial) {
-        double fraction = (m_AMPC->GetRemainingCycleTimeMS() / _GetDuration());
-        oreVolumeToPull *= fraction;
-        _log(MINING__DEBUG, "_ProcessOreCycle(partial=true) - timeLeft:%u, fraction:%.3f, duration:%.4f, oreVolumeToPull:%.3f", \
-                m_AMPC->GetRemainingCycleTimeMS(), fraction, _GetDuration(), oreVolumeToPull);
-    } else {
-    	_log(MINING__MESSAGE, "cycle ended. Adding %.2fm3 of ore to cargo", oreVolumeToPull);
-    }
-
-    if (oreVolumeToPull < oreVolume) {
+    if (m_cycleVol < oreVolume) {
         _log(MINING__ERROR, "%s(%u) - Laser could not extract ore from %s(%u)", \
               m_Item->itemName().c_str(), m_Item->itemID(), m_targetEntity->GetSelf()->itemName().c_str(), m_targetEntity->GetID() );
         return;
     }
-    if (!oreVolumeToPull) {
-        _log(MINING__WARNING, "%s(%u) - Laser could not extract ore from %s(%u)", \
-              m_Item->itemName().c_str(), m_Item->itemID(), m_targetEntity->GetSelf()->itemName().c_str(), m_targetEntity->GetID() );
-        return;
-    }
-    if (oreVolumeToPull > roidQuantity)
-        oreVolumeToPull = roidQuantity;
-    double remainingCargoVolume = m_Ship->GetRemainingVolumeByFlag(flagCargoHold);
-    double oreAmount = oreVolumeToPull /oreVolume;
-    _log(MINING__TRACE, "Processing the ore: oreVolumeToPull:%.1f, roidQuantity:%.1f, remainingCargoVolume:%.1f, oreAmount:%.1f", \
-            oreVolumeToPull, roidQuantity, remainingCargoVolume, oreAmount);
 
-    oreVolumeToPull = oreVolume;
-    if (remainingCargoVolume < oreVolumeToPull) {
+    double oreAmount = m_cycleVol /oreVolume;
+
+    if (partial)
+        oreAmount *= (m_AMPC->GetRemainingCycleTimeMS() / m_duration);
+
+    double remainingCargoVolume = m_Ship->GetRemainingVolumeByFlag(flagCargoHold);
+    double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_float();
+    _log(MINING__DEBUG, "ProcessCycle(%s) -  m_cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f, oreAmount:%.2f", \
+            (partial?"true":"false"), m_cycleVol, roidQuantity, remainingCargoVolume, oreAmount);
+
+    if (remainingCargoVolume < m_cycleVol) {
         oreAmount = remainingCargoVolume /oreVolume;
-        oreVolumeToPull = remainingCargoVolume;
-        // Not enough cargo space, so module should deactivate and not pull anymore ore from the asteroid
         Deactivate();
     }
 
+    if (oreAmount > roidQuantity)
+        oreAmount = roidQuantity;
     if (oreAmount < 1)
         return;
 
+    _log(MINING__MESSAGE, "Adding %.2fm3 of ore to cargo", oreAmount);
+
     ItemData idata(
-        asteroidRef->typeID(),
+        roidRef->typeID(),
         m_Ship->ownerID(),
-        0, //temp location
+        m_Ship->itemID(),
         flagCargoHold,
         oreAmount
     );
@@ -197,29 +243,22 @@ void MiningLaser::_ProcessOreCycle(bool partial)
                     m_Ship->itemName().c_str(), m_Ship->itemID() );
         return;
     }
-    /** @todo change these to new format and stack items after addition */
+
     if (!m_Ship->AddItem(flagCargoHold, ore))
         return;
 
-    roidQuantity -= oreVolumeToPull;
+    roidQuantity -= oreAmount;
     _log(MINING__TRACE, "new roidQuantity:%.3f", roidQuantity);
 
     if (!roidQuantity) {
         Deactivate();
         m_targetEntity->Delete();
     } else {
-        asteroidRef->SetAttribute(AttrQuantity, roidQuantity);
-        /** @todo figure out how to set radius based on updated quantity */
+        roidRef->SetAttribute(AttrQuantity, roidQuantity);
+        /* reversing the radius-to-quantity formula, we get radius = exp((quantity + 112404.8) /25000)  */
+        double radius = exp((roidQuantity +112404.8) /25000);
+        roidRef->SetAttribute(AttrRadius, radius);
     }
-}
-
-void MiningLaser::_ProcessCloudCycle(bool partial)
-{
-
-}
-
-void MiningLaser::_ProcessIceCycle(bool partial)
-{
 }
 
 void MiningLaser::_ShowCycle()
@@ -229,13 +268,6 @@ void MiningLaser::_ShowCycle()
     if (m_chargeLoaded)
         chargeTypeID = m_chargeRef->typeID();
 
-    uint32 effectID = effectMiningLaser;
-    std::string effectsString = "effects.Mining";
-    if (m_Item->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester) {
-        effectID = effectMiningClouds;
-        effectsString = "effects.CloudMining";
-    }
-
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
@@ -243,11 +275,11 @@ void MiningLaser::_ShowCycle()
         m_Item->typeID(),
         m_targetID,
         chargeTypeID,
-        effectsString,
-        0,
-        1,
-        1,
-        _GetDuration(),
+        m_effectStr.c_str(),
+        false,
+        true,
+        true,
+        m_duration,
         m_repeat
     );
 
@@ -263,7 +295,7 @@ void MiningLaser::_ShowCycle()
         ge.targetID = m_targetID;
         ge.other = go.Encode();
         ge.area = new PyList;
-        ge.effectID = effectID;
+        ge.effectID = m_effectID;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -272,7 +304,7 @@ void MiningLaser::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_duration;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
@@ -290,12 +322,7 @@ void MiningLaser::StopCycle(bool abort)
     _log(MINING__DEBUG, "StopCycle() - abort:%s, timeTillStop:%.3fms", (abort?"true":"false"), timeTillStop);
 
     if (abort) {
-        if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice)
-            _ProcessIceCycle(abort);
-        else if (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)
-            _ProcessCloudCycle(abort);
-        else
-            _ProcessOreCycle(abort);
+            ProcessCycle(abort);
     }
 
     uint32 chargeTypeID = 0;
@@ -303,20 +330,13 @@ void MiningLaser::StopCycle(bool abort)
         if (m_chargeRef)
             chargeTypeID = m_chargeRef->typeID();
 
-    uint32 effectID = effectMiningLaser;
-    std::string effectsString = "effects.Mining";
-    if (m_Item->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester) {
-        effectID = effectMiningClouds;
-        effectsString = "effects.CloudMining";
-    }
-
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
         m_Ship,
         m_Item->itemID(),
         m_Item->typeID(),
         m_targetID,
         chargeTypeID,
-        effectsString,
+        m_effectStr.c_str(),
         false,
         false,
         false,
@@ -336,7 +356,7 @@ void MiningLaser::StopCycle(bool abort)
         ge.targetID = m_targetID;
         ge.other = go.Encode();
         ge.area = new PyList;
-        ge.effectID = effectID;
+        ge.effectID = m_effectID;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -356,22 +376,7 @@ void MiningLaser::StopCycle(bool abort)
 
 double MiningLaser::_GetDuration()
 {
-    Character* pChar = m_Ship->GetPilot()->GetChar().get();
-    double duration = m_Item->GetAttribute(AttrDuration).get_float();
-
-    //FIXME - For now server cycle end and client cycle indicator are not synchronized, so for now time modification is disabled.
-    /*
-    duration *= (1 - ( 0.01 * (pChar->GetSkillLevel(skillMining, true))));               //  1% decrease in duration
-    if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge)
-        duration *= (1 - (0.01 * (pChar->GetSkillLevel(skillMiningBarge, true))));       //  1% decrease in duration
-    else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer)
-        duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true))));          //  2% decrease in duration
-    if (pChar->fleetID()) {   //FIXME  always returns 0 for now.  fix once fleets are implemented.
-        duration *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningForeman, true))));    //  2% decrease in duration
-        duration *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningDirector, true))));   //  2% decrease in duration
-    }
-	*/
-    return duration;
+    return m_duration;
 }
 
 void MiningLaser::_SetCapNeed()

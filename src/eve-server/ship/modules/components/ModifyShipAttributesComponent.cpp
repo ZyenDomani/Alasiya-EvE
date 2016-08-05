@@ -63,16 +63,9 @@ EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef
     EvilNumber modVal = mod->GetAttribute(sourceAttrID), startVal = shipRef->GetAttribute(targetAttrID);
 
     double effectiveness = 1;
-    /* check for attribs that are NOT penalized here, and bypass stacking method. */
-    if ((stacking) or (targetAttrID != AttrWarpFactor) or (sourceAttrID != AttrCargoCapacityMultiplier)
-        or (targetAttrID != AttrMiningAmount) or (targetAttrID != AttrCpuOutput)
-        or (targetAttrID != AttrPowerOutput) or (targetAttrID != AttrRechargeRate)
-        or (targetAttrID != AttrCapacitorCapacity) or (targetAttrID != AttrHP)
-        or (targetAttrID != AttrShieldCapacity) or (targetAttrID != AttrArmorHP)
-        or (targetAttrID != AttrAccessDifficulty)
-        or (targetAttrID != AttrDuration)) {  // weapons use attrSpeed, which IS penalized.
-            effectiveness = m_Ship->GetEffectiveness(targetAttrID, mod->GetModuleState());
-    }
+    /* check for stacking attributes here, and get stacked (cached) effectiveness. */
+    if (stacking)
+        effectiveness = m_Ship->GetEffectiveness(targetAttrID, mod->GetModuleState());
 
     modVal *= effectiveness;
     EvilNumber newVal = CalculateNewAttributeValue(startVal, modVal, type);
@@ -85,7 +78,7 @@ EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef
 void ModifyShipAttributesComponent::SetAttribute(ShipItemRef shipRef, uint16 targetAttrID, EvilNumber newVal)
 {
     // basic check for ship resistance attrubutes (fuzzy logic range check)
-    if ((targetAttrID >= AttrKineticDamageResonance) and (targetAttrID <= AttrExplosiveDamageResonance)
+    if (((targetAttrID >= AttrKineticDamageResonance) and (targetAttrID <= AttrExplosiveDamageResonance))
         or (targetAttrID == AttrEmDamageResonance)
         or ((targetAttrID >= AttrArmorEmDamageResonance) and (targetAttrID <= AttrShieldThermalDamageResonance)))
     {
