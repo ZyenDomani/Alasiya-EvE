@@ -240,18 +240,18 @@ void AsteroidBeltMgr::SpawnBelt(uint16 bubbleID)
     if (ice) {  //880 total systems with ice. 293 in hisec
         if (security > 0.7) {
             pcs = 2;
-            roidradius = MakeRandomFloat(20, 40) *1000; // (20k,40k)
+            roidradius = MakeRandomInt(5, 10) *1000; // (20k,40k)
         } else if (security > 0.3) {
             pcs = 4;
-            roidradius = MakeRandomFloat(40, 50) *1000; // (40k,50k)
+            roidradius = MakeRandomInt(20, 30) *1000; // (40k,50k)
         } else if (security > -0.4) {
             pcs = 6;
-            roidradius = MakeRandomFloat(60, 80) *1000; // (60k,80k)
+            roidradius = MakeRandomInt(25, 40) *1000; // (60k,80k)
         } else {
             pcs = 10;
-            roidradius = MakeRandomFloat(75, 100) *1000; // (75k,100k)
+            roidradius = MakeRandomInt(50, 70) *1000; // (75k,100k)
         }
-        radius + roidradius /5;
+        radius + roidradius /2;
         elevation = radius + (roidradius /2);
     } else {
         pcs += MakeRandomInt(5, 30);
@@ -264,8 +264,10 @@ void AsteroidBeltMgr::SpawnBelt(uint16 bubbleID)
     GPoint mposition = NULL_ORIGIN;
     for (uint32 i = 0; i < (pcs+1); ++i) {
         if (!ice) {
-            roidradius = MakeRandomFloat(3000, 8000) *security;
+            roidradius = MakeRandomInt(3000, 8000) *security;
             radius += roidradius /10;
+        } else {
+            roidradius *= MakeRandomFloat(1, 2);
         }
         theta = EvE_DegreesToRadians(degreeSeperation *i);
         mposition.x = (radius + roidradius /10) * cos(theta);

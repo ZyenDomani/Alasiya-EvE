@@ -870,7 +870,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
 {
     if (!ValidateAddItem(flag, item))
         return 0;
-    
+
     if (IsModuleSlot(flag)) {
         if (!m_ModuleManager)
             return 0;
@@ -1327,7 +1327,7 @@ void Ship::EncodeDestiny( Buffer& into ) {
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsMassive | IsFree;
+        head.flags = IsInteractive | IsFree;
         into.Append( head );
     MassSector mass;
         mass.mass = m_destiny->GetMass();
@@ -1348,12 +1348,12 @@ void Ship::EncodeDestiny( Buffer& into ) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
             warp.formationID = 0xFF;
-            warp.effectStamp = -1; // m_destiny->GetStateStamp();   //timestamp when warp started
+            warp.effectStamp = -1; // m_destiny->GetStateStamp();   //timestamp when warp started...not working right yet.
             warp.x = target.x;
             warp.y = target.y;
             warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.followRange = 0;
+            warp.followRange = 0; //m_destiny->GetDistance();
             warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {

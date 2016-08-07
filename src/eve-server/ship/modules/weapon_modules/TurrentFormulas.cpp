@@ -12,8 +12,6 @@
 
 float TurrentFormulas::GetToHit(ShipItemRef shipRef, InventoryItemRef weaponRef, SystemEntity* pTarget)
 {
-    float ChanceToHit = 1.0f;
-
     SystemEntity* pSE = shipRef->GetPilot()->GetShipSE();
     double range = weaponRef->GetAttribute(AttrMaxRange).get_float();
     double distance = shipRef->position().distance(pTarget->DestinyMgr()->GetPosition());
@@ -25,15 +23,19 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, InventoryItemRef weaponRef,
     range *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillSharpshooter, true))));      //  5% increase in optimal range
     falloff *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillTrajectoryAnalysis, true))));  //  5% increase in falloff
 
+        _log(TARGET__MESSAGE, "Turrent::GetToHit - distance:%.2f, range:%.2f", distance, range);
     if (distance <= range)
-        return ChanceToHit;
+        return 1.0f;
 
     //TODO no fukin clue how to get module modifiers to falloff and range and implement here....
     // once loaded charges are finished, they will modifiy the weapon module attrib itself
 
+    float ChanceToHit = 1.0f;
+
     GPoint vel = pTarget->GetVelocity();
     double speed = vel.length();
     double angVelocity = (speed /distance);
+    _log(TARGET__MESSAGE, "Turrent::GetToHit - angVelocity:%.2f", angVelocity);
 
     //  calculations for chance to hit
     /*     a =  angVelocity/(distance * tracking)
@@ -51,6 +53,7 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, InventoryItemRef weaponRef,
     double e = pow((d / falloff), 2);
 
     ChanceToHit = (pow(0.5, c) + pow(0.5, e));
+    _log(TARGET__MESSAGE, "Turrent::GetToHit - ChanceToHit:%.4f", ChanceToHit);
 
     double rnd_number = MakeRandomFloat(0.0, 1.0);
     if (rnd_number <= 0.015)
@@ -66,8 +69,10 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     double range = pNPC->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float();
     double distance = pNPC->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
 
+    _log(TARGET__MESSAGE, "NPC::GetToHit - distance:%.2f, range:%.2f", distance, range);
     if (distance <= range)
-        return 1.0;
+        return 1.0f;
+
 
     float ChanceToHit = 1.0f;
     double trackingSpeed = pNPC->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float();
@@ -76,6 +81,7 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     GPoint vel = pTarget->GetVelocity();
     double speed = vel.length();
     double angVelocity = (speed /distance);
+    _log(TARGET__MESSAGE, "NPC::GetToHit - angVelocity:%.2f", angVelocity);
 
     double a = (angVelocity / (distance * trackingSpeed));
     double b = (pNPC->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
@@ -85,6 +91,7 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     double e = pow((d / falloff), 2);
 
     ChanceToHit = (pow(0.5, c) + pow(0.5, e));
+    _log(TARGET__MESSAGE, "NPC::GetToHit - ChanceToHit:%.4f", ChanceToHit);
 
     double rnd_number = MakeRandomFloat(0.0, 1.0);
     if (rnd_number <= 0.015)

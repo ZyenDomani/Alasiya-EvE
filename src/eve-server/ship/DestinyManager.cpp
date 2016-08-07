@@ -1484,6 +1484,7 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
     m_stopDistance = distance;
     GVector warp_distance(m_position, where);
     m_targetDistance = warp_distance.length();
+    m_targetDistance -= m_stopDistance;
 
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
@@ -1582,6 +1583,13 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
      */
 
     State = DSTBALL_WARP;
+
+    // calculate actual target point after adjusting for stop distance.
+    //  error fix for all ships appearing to "warp to 0" from outside POV.
+    GVector revTrajectory(where, m_position);
+    revTrajectory.normalize();
+    revTrajectory *= m_stopDistance;
+    m_targetPoint -= revTrajectory;
 
     // send client updates
     std::vector<PyTuple*> updates;
