@@ -79,8 +79,9 @@ void BubbleManager::Process() {
                 _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
                 itr = m_bubbles.erase(itr);
                 continue;
-            } else  /* this should never happen */
+            } else { /* this should never happen */
                 _log(DESTINY__ERROR, "BubbleManager::Process() - Bubble %u has reached the end.", (*itr)->GetID());
+            }
             ++itr;
         }
 
@@ -89,8 +90,8 @@ void BubbleManager::Process() {
                 _log(DESTINY__WARNING, "BubbleManager::Process() - Wanderer %s(%u) being added to a bubble.", cur->GetName(), cur->GetID() );
                 CheckBubble(cur);
             }
+            m_wanderers.clear();
         }
-        m_wanderers.clear();
     }
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_bubblesProfile, GetTimeUSeconds() - profileStartTime);
