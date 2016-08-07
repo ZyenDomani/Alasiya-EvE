@@ -89,7 +89,11 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
     m_cycleVol = m_Item->GetAttribute(AttrMiningAmount).get_int();
 
     // calculate bonuses
-    m_duration *= (1 - ( 0.01 * (pChar->GetSkillLevel(skillMining, true))));         // 1% decrease in duration
+    if (m_iMiner) {
+        m_duration *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillIceHarvesting, true))));// 5% decrease in duration
+    } else {
+        m_duration *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMining, true))));     // 2% decrease in duration
+    }
     m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillMining, true))));          // 5% increase in yield
     m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillAstrogeology, true))));    // 5% increase in yield
     m_range *= (1 + (0.03 * (pChar->GetSkillLevel(skillAstrometrics, true))));       // 3% increase in range (here)
@@ -99,8 +103,8 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
         m_duration *= (1 - (0.01 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 1% decrease in duration (here)
         m_cycleVol *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% increase in yield (here)
     } else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer) {
-        m_cycleVol *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% increase in yield (here)
         m_duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true))));    // 2% decrease in duration
+        m_cycleVol *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% increase in yield (here)
     }
 
     switch (m_Ship->typeID()) {
@@ -139,9 +143,9 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
     /** @todo  fleetID() returns 0 until fleets are implemented. (eta u/k - tbdl) */
     // for shits-n-giggles, we allow these bonuses without fleets until they are implemented
     if (true/*pChar->fleetID()*/) {
-        m_cycleVol *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningForeman, true))));    //  2% decrease in yield
+        m_cycleVol *= (1 + ( 0.02 * (pChar->GetSkillLevel(skillMiningForeman, true))));    //  2% increase in yield
         m_duration *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningDirector, true))));   //  2% decrease in duration
-        m_range *= (1 - ( 0.03 * (pChar->GetSkillLevel(skillInformationWarfare, true))));   //  3% decrease in range
+        m_range *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillInformationWarfare, true))));   //  3% increase in range
     }
 
     // save adjusted attributes
@@ -261,6 +265,8 @@ double MiningLaser::DoCycle() {
 /** @todo verify for ice and gas */
 void MiningLaser::ProcessCycle(bool partial)
 {
+    // note:  gas cloud contains radius/10 units of gas.
+    
 	// Retrieve ore from target Asteroid and put into Cargo Hold
 	InventoryItemRef roidRef = m_targetEntity->GetSelf();
     double oreVolume = roidRef->GetAttribute(AttrVolume).get_float();

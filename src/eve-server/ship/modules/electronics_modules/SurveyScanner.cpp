@@ -55,10 +55,38 @@ SurveyScanner::SurveyScanner(InventoryItemRef item, ShipItemRef ship)
         m_range *= 900;               // 900% increase in range
     } else if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge) {
         m_range *= (1 + (0.05 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 5% increase in range (here)
-        m_duration *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% decrease in duration (here)
+        m_duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% decrease in duration (here)
     } else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer) {
         m_range *= (1 + (0.05 * (pChar->GetSkillLevel(skillExhumers, true))));    // 5% increase in range (here)
-        m_duration *= (1 + (0.02 * (pChar->GetSkillLevel(skillExhumers, true)))); // 2% decrease in duration (here)
+        m_duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true)))); // 2% decrease in duration (here)
+    } else {
+        // lets modify range by 20% and duration by 5% for small mining ships.
+        switch (m_Ship->typeID()) {
+            case 591: { /* Tormentor */
+                m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillAmarrFrigate, true))));
+                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillAmarrFrigate, true))));
+            } break;
+            case 582: { /* Bantam */
+                m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillCaldariFrigate, true))));
+                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillCaldariFrigate, true))));
+            } break;
+            case 592: { /* Navitas */
+                m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillGallenteFrigate, true))));
+                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillGallenteFrigate, true))));
+            } break;
+            case 599: { /* Burst */
+                m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillMinmatarFrigate, true))));
+                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillMinmatarFrigate, true))));
+            } break;
+            case 620: { /* Osprey */
+                m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillCaldariCruiser, true))));
+                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillCaldariCruiser, true))));
+            } break;
+            case 631: { /* Scythe */
+                m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillMinmatarCruiser, true))));
+                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillMinmatarCruiser, true))));
+            } break;
+        }
     }
 
     // save adjusted attributes
@@ -99,7 +127,8 @@ double SurveyScanner::DoCycle() {
             std::vector<AsteroidSE*> vList;
             pShipSE->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetSpawnID(pBubble->GetID()), vList);
             for (auto pASE : vList) {
-                if (m_Ship->position().distance(pASE->GetPosition()) < m_range) {
+                if (!pShipSE->SysBubble()->IsIce() and (m_Ship->position().distance(pASE->GetPosition()) < m_range)) {
+                    // allow ice scanning without a radius check....may change later.
                     PyTuple* tuple2 = new PyTuple(3);
                         tuple2->SetItem(0, new PyInt(pASE->GetID()));
                         tuple2->SetItem(1, new PyInt(pASE->GetTypeID()));
