@@ -64,28 +64,6 @@ CREATE TABLE IF NOT EXISTS `webBounties` (
   KEY `characterID` (`characterID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-/* Table structure for table `mapOreBySystemSecurityClass` */
-
-CREATE TABLE IF NOT EXISTS `mapOreBySystemSecurityClass` (
-  `systemSecurityClass` char(2) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `Veldspar` bit(1) DEFAULT NULL,
-  `Scordite` bit(1) DEFAULT NULL,
-  `Pyroxeres` bit(1) DEFAULT NULL,
-  `Plagioclase` bit(1) DEFAULT NULL,
-  `Omber` bit(1) DEFAULT NULL,
-  `Kernite` bit(1) DEFAULT NULL,
-  `Jaspet` bit(1) DEFAULT NULL,
-  `Hemorphite` bit(1) DEFAULT NULL,
-  `Hedbergite` bit(1) DEFAULT NULL,
-  `Gneiss` bit(1) DEFAULT NULL,
-  `DarkOchre` bit(1) DEFAULT NULL,
-  `Spodumain` bit(1) DEFAULT NULL,
-  `Crokite` bit(1) DEFAULT NULL,
-  `Bistot` bit(1) DEFAULT NULL,
-  `Arkanor` bit(1) DEFAULT NULL,
-  `Mercoxit` bit(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
 /* Table structure for table `mapDynamicData`  */
 
 CREATE TABLE IF NOT EXISTS `mapDynamicData` (
@@ -157,16 +135,6 @@ CREATE TABLE IF NOT EXISTS `mapConnections` (
 
 /* Table structure for table `roidDistribution`  */
 
-CREATE TABLE IF NOT EXISTS `roidDistribution` (
-  `AI` int(5) NOT NULL AUTO_INCREMENT,
-  `systemSec` varchar(2) NOT NULL,
-  `roidID` int(10) unsigned NOT NULL,
-  `roidName` varchar(20) NOT NULL,
-  `percent` float NOT NULL,
-  PRIMARY KEY (`AI`),
-  KEY `systemSec` (`systemSec`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
-
 CREATE TABLE IF NOT EXISTS `roidDistributionCmb` (
   `AI` int(5) NOT NULL AUTO_INCREMENT,
   `systemSec` varchar(2) NOT NULL,
@@ -177,20 +145,6 @@ CREATE TABLE IF NOT EXISTS `roidDistributionCmb` (
   KEY `systemSec` (`systemSec`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
---
--- Table structure for table `roidDistributionExtra`
---
-
-CREATE TABLE IF NOT EXISTS `roidDistributionExtra` (
-  `AI` int(5) NOT NULL AUTO_INCREMENT,
-  `systemSec` varchar(2) NOT NULL,
-  `roidID` int(10) unsigned NOT NULL,
-  `percent` float NOT NULL,
-  PRIMARY KEY (`AI`),
-  KEY `systemSec` (`systemSec`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
-
---
 
 DROP TABLE IF EXISTS `srvStatus`;
 
