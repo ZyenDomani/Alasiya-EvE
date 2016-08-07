@@ -418,7 +418,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     // location changed...verify current system and set session data for current system.
     if (IsJump() or (m_system and (m_system->GetID() != m_SystemData.systemID))) {
         //we have different m_system
-        _log(PLAYER__WARNING, "MoveToLocation() - m_system = %p, m_system->GetID(%u) != locationID(%u)", m_system, m_SystemData.systemID, m_locationID);
+        _log(PLAYER__WARNING, "MoveToLocation() - m_system = %p, m_system->GetID(%u) != locationID(%u)", m_system, m_system->GetID(), m_locationID);
         // remove from 'current' system
         m_char->AddPilotToDynamicData(m_SystemData.systemID);
         m_system->RemoveClient(this, false, true);

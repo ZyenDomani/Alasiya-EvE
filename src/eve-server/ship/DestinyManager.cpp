@@ -733,7 +733,7 @@ bool DestinyManager::_IsTurn() {    //is working.  dont change
     m_targetHeading = toVec;
     float dot = toVec.dotProduct(m_shipHeading);
     if ((dot > 1.0f) or (dot < -1.0f)) {
-        sLog.Error("DestinyManager::_IsTurn()", "%s(%u) - shipHeading has screwed up.  dot is %.5f", \
+        sLog.Error("Destiny::_IsTurn()", "%s(%u) - shipHeading has screwed up.  dot is %.5f", \
                     mySE->GetName(), mySE->GetID(), dot);
         Stop();
         return false;
@@ -1099,14 +1099,14 @@ void DestinyManager::_InitWarp() {
     GVector warp_vector(m_position, m_targetPoint);
     warp_vector.normalize();
 
-    _log(DESTINY__WARP_TRACE, "DestinyManager::_InitWarp():Calculate - %s(%u): Warp will accelerate for %us, cruise for %.3f, then decelerate for %us, with total time of %.3fs, and warp speed of %.4f m/s.", \
+    _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): Warp will accelerate for %us, cruise for %.3f, then decelerate for %us, with total time of %.3fs, and warp speed of %.4f m/s.", \
             mySE->GetName(), mySE->GetID(), m_warpAccelTime, cruiseTime, m_warpDecelTime, warpTime, warpSpeedInMeters);
-    _log(DESTINY__WARP_TRACE, "DestinyManager::_InitWarp():Calculate - %s(%u): Accel distance is %.4f. Cruise distance is %.4f.  Decel distance is %.4f.  Direction is %.3f,%.3f,%.3f.", \
+    _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): Accel distance is %.4f. Cruise distance is %.4f.  Decel distance is %.4f.  Direction is %.3f,%.3f,%.3f.", \
             mySE->GetName(), mySE->GetID(), accelDistance, cruiseDistance, decelDistance, warp_vector.x, warp_vector.y, warp_vector.z);
-    _log(DESTINY__WARP_TRACE, "DestinyManager::_InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %.4f AU (%.4fm).", \
+    _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %.4f AU (%.4fm).", \
             mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance/ONE_AU_IN_METERS, m_targetDistance);
     GPoint destination = m_position + (warp_vector * m_targetDistance);
-    _log(DESTINY__WARP_TRACE, "DestinyManager::_InitWarp():Calculate - %s(%u): calculated exit is %.2f,%.2f,%.2f and vector is %.4f,%.4f,%.4f.", \
+    _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): calculated exit is %.2f,%.2f,%.2f and vector is %.4f,%.4f,%.4f.", \
             mySE->GetName(), mySE->GetID(), destination.x, destination.y, destination.z, warp_vector.x, warp_vector.y, warp_vector.z);
 
     //  reset deceltime for time check in _WarpDecel()
@@ -1158,7 +1158,7 @@ void DestinyManager::_WarpAccel(uint16 sec_into_warp) {
 
     _WarpUpdate(currentShipSpeed);
 
-    _log(DESTINY__WARP_TRACE, "DestinyManager::_WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %.4f m/s with %.4f m left to go.  Current distance %.4f.", \
+    _log(DESTINY__WARP_TRACE, "Destiny::_WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %.4f m/s with %.4f m left to go.  Current distance %.4f.", \
             mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance, currentDistance);
 }
 
@@ -1173,7 +1173,7 @@ void DestinyManager::_WarpCruise(uint16 sec_into_warp) {
 
     _WarpUpdate(m_warpState->warpSpeed);
 
-    _log(DESTINY__WARP_TRACE, "DestinyManager::_WarpCruise(): %s(%u) - Warp Crusing(%us): velocity %.4f m/s. with %.4f m left to go.", \
+    _log(DESTINY__WARP_TRACE, "Destiny::_WarpCruise(): %s(%u) - Warp Crusing(%us): velocity %.4f m/s. with %.4f m left to go.", \
              mySE->GetName(), mySE->GetID(), sec_into_warp, m_warpState->warpSpeed, m_targetDistance);
 }
 
@@ -1195,7 +1195,7 @@ void DestinyManager::_WarpDecel(uint16 sec_into_warp) {
     }
     _WarpUpdate(currentShipSpeed);
 
-    _log(DESTINY__WARP_TRACE, "DestinyManager::_WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %.4f m/s with %.4f m left to go.", \
+    _log(DESTINY__WARP_TRACE, "Destiny::_WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %.4f m/s with %.4f m left to go.", \
              mySE->GetName(), mySE->GetID(), decelTime, sec_into_warp, currentShipSpeed, m_targetDistance);
 }
 
@@ -1215,7 +1215,7 @@ void DestinyManager::_WarpUpdate(double currentShipSpeed) {
             }
     } else if (!m_inBubble and m_warpState->decel) {
         if (m_targetDistance < BUBBLE_RADIUS_METERS) {    //this assumes target is center of bubble.  will have to fix one day.
-            _log(DESTINY__WARP_TRACE, "DestinyManager::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() .", \
+            _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() .", \
                     mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
             sBubbleMgr.Add(mySE, true);
             SetPosition(m_position, true);
@@ -1225,9 +1225,9 @@ void DestinyManager::_WarpUpdate(double currentShipSpeed) {
 }
 
 void DestinyManager::_WarpStop(double currentShipSpeed) {
-    _log(DESTINY__WARP_TRACE, "DestinyManager::_WarpStop(): %s(%u) - Warp complete. Exit velocity %.4f m/s with %.4f m left to go.", \
+    _log(DESTINY__WARP_TRACE, "Destiny::_WarpStop(): %s(%u) - Warp complete. Exit velocity %.4f m/s with %.4f m left to go.", \
             mySE->GetName(), mySE->GetID(), currentShipSpeed, m_targetDistance);
-    _log(DESTINY__WARP_TRACE, "DestinyManager::_WarpStop(): %s(%u): Ship currently at %.2f,%.2f,%.2f.", \
+    _log(DESTINY__WARP_TRACE, "Destiny::_WarpStop(): %s(%u): Ship currently at %.2f,%.2f,%.2f.", \
             mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
 
     m_targetPoint += (m_warpState->warp_vector *10000);
@@ -1369,7 +1369,7 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
     m_targetDistance = distance;
     _BeginMovement();
 
-    _log(DESTINY__ORBIT_TRACE, "DestinyManager::Orbit() - Ship Data - agility:%.3f, inertia:%.3f, massMkg:%.3f, maxSpeed:%.2f, radius:%.2f", \
+    _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Ship Data - agility:%.3f, inertia:%.3f, massMkg:%.3f, maxSpeed:%.2f, radius:%.2f", \
                 m_shipAgility, m_shipInertia, m_massMKg, m_maxShipSpeed, m_radius);
 
     // Target (orbited object)
@@ -1378,7 +1378,7 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
     if (!Tm)
         Tm = who->GetSelf()->type().mass();
 
-    _log(DESTINY__ORBIT_TRACE, "DestinyManager::Orbit() - Target Data - mass:%.3f, speed:%.2f, radius:%.2f", \
+    _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Target Data - mass:%.3f, speed:%.2f, radius:%.2f", \
                 Tm, (who->DestinyMgr() ? who->DestinyMgr()->GetSpeed() : 0 ), Tr);
 
     // fudge distance to work 'close enough' with all targets
@@ -1408,7 +1408,7 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
     double orbitTime = circ / velocity;
     m_orbitRadTic = (2 * EvE_Pi) / orbitTime;
 
-    _log(DESTINY__ORBIT_TRACE, "DestinyManager::Orbit() - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%.2f, followDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
+    _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%.2f, followDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
                 Rc, velocity, m_maxOrbitSpeedFraction, m_targetDistance, m_followDistance, orbitTime, m_orbitRadTic);
 
     if ((m_position.distance(who->GetPosition()) - m_radius - Tr) > (m_followDistance *2)) {
@@ -1509,7 +1509,7 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
             sfx.active = true;
         updates.push_back(sfx.Encode());
         SendDestinyUpdate(updates);
-        _log(NPC__MESSAGE, "DestinyManager::WarpTo() NPC  m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.4f",
+        _log(NPC__MESSAGE, "Destiny::WarpTo() NPC  m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.4f",
              m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
         return;
     }
@@ -1559,7 +1559,7 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
              *            capNeeded = currentShipCap;
         } else {*/
             pClient->SendErrorMsg("You don't have enough capacitor charge to warp.");
-            _log(DESTINY__WARNING, "DestinyManager::WarpTo() - %s(%u): Capacitor needed vs current  %.3f / %.3f",
+            _log(DESTINY__WARNING, "Destiny::WarpTo() - %s(%u): Capacitor needed vs current  %.3f / %.3f",
                  mySE->GetName(), mySE->GetID(), capNeeded, currentShipCap);
 
             State = DSTBALL_STOP;
@@ -1611,7 +1611,7 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
     PyTuple *up = bm.Encode();
     SendSingleDestinyUpdate(&up, true);
 
-    _log(DESTINY__WARP_TRACE, "DestinyManager::WarpTo() m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.4f",
+    _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.4f",
          m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
 }
 
@@ -1688,7 +1688,7 @@ PyResult DestinyManager::AttemptDockOperation() {
     rangeToStationPerimiter -= station->GetRadius();
 
     // Verify range to station is within docking perimeter of 2500 meters:
-    _log(DESTINY__TRACE, "DestinyManager::AttemptDockOperation() rangeToStationPerimiter is %.2fm", rangeToStationPerimiter);
+    _log(DESTINY__TRACE, "Destiny::AttemptDockOperation() rangeToStationPerimiter is %.2fm", rangeToStationPerimiter);
     if (rangeToStationPerimiter > 2500.0) {
         AlignTo( station );   // Turn ship and move toward docking point - client will call Dock() automatically when close enough...sometimes
         throw PyException(MakeUserError("DockingApproach"));
