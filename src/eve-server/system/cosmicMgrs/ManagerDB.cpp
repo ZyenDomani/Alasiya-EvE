@@ -32,6 +32,12 @@ MgrData::MgrData()
 {
 }
 
+MgrData::~MgrData()
+{
+    m_oreBySecClass.clear();
+    m_regions.clear();
+}
+
 int MgrData::Initialize()
 {
     _Populate();
@@ -43,30 +49,17 @@ void MgrData::_Populate()
     double start = GetTimeUSeconds();
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
-
     ManagerDB m_db;
+
     m_db.GetOreBySSC(*res);
-    OreBySSC oreBySSC;
+    OreTypeChance oreChance;
+    oreChance.typeID  = 0;
+    oreChance.chance  = 0;
     while (res->GetRow(row)) {
-    // SELECT systemSecurityClass, V, S, Py, Pl, O, K, J, Hem, Hed, G, DO, Sp, C, B, A, M FROM mapOreBySystemSecurityClass
-        oreBySSC.secClass = row.GetText(0);
-        oreBySSC.V = row.GetInt(1);
-        oreBySSC.S = row.GetInt(2);
-        oreBySSC.Py = row.GetInt(3);
-        oreBySSC.Pl = row.GetInt(4);
-        oreBySSC.O = row.GetInt(5);
-        oreBySSC.K = row.GetInt(6);
-        oreBySSC.J = row.GetInt(7);
-        oreBySSC.Hem = row.GetInt(8);
-        oreBySSC.Hed = row.GetInt(9);
-        oreBySSC.G = row.GetInt(10);
-        oreBySSC.DO = row.GetInt(11);
-        oreBySSC.Sp = row.GetInt(12);
-        oreBySSC.C = row.GetInt(13);
-        oreBySSC.B = row.GetInt(14);
-        oreBySSC.A = row.GetInt(15);
-        oreBySSC.M = row.GetInt(16);
-        m_oreBySSC.emplace(row.GetText(0), oreBySSC);
+        //SELECT systemSec, roidID, percent FROM roidDistributionCmb
+        oreChance.typeID  = row.GetInt(1);
+        oreChance.chance  = row.GetFloat(2);
+        m_oreBySecClass.insert(std::pair<std::string, OreTypeChance>(row.GetText(0), oreChance));
     }
 
     res->Reset();
@@ -78,10 +71,8 @@ void MgrData::_Populate()
 
     //cleanup
     SafeDelete(res);
-
-    sLog.Log("          MgrData", "%u ore data sets and %u region factions loaded in %.3fms.", m_oreBySSC.size(), m_regions.size(), (GetTimeUSeconds() - start));
+    sLog.Log("          MgrData", "%u ore data sets and %u region factions loaded in %.3fms.", m_oreBySecClass.size(), m_regions.size(), (GetTimeUSeconds() - start));
 }
-
 
 uint8 MgrData::GetRegionQuarter(uint32 regionID)
 {
@@ -120,38 +111,22 @@ uint8 MgrData::GetRegionQuarter(uint32 regionID)
     }
 }
 
-bool MgrData::GetRoidDist(uint8& quarter, const char* sec, std::map< float, uint32 >& roids) {
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        " SELECT roidID, percent FROM roidDistributionCmb WHERE systemSec = '%s' ORDER BY roidID", sec))
-    {
-        codelog(DATABASE__ERROR, "Error in GetRoidDist query: %s", res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    float tot = 0.0;
-    while (res.GetRow(row)) {
-        tot += row.GetFloat(1);
-        roids[tot] = row.GetUInt(0);
+bool MgrData::GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids) {
+    auto groupRange = m_oreBySecClass.equal_range(secClass);
+    for (auto it = groupRange.first; it != groupRange.second; ++it) {
+        _log(COSMIC_MGR__MESSAGE, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);
+        roids.insert(std::pair<float, uint32>(it->second.chance, it->second.typeID));
     }
 
     return !roids.empty();
 }
 
-
 void ManagerDB::GetOreBySSC(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res,
-        "SELECT systemSecurityClass, Veldspar, Scordite, Pyroxeres, Plagioclase, Omber, Kernite, Jaspet, "
-        " Hemorphite, Hedbergite, Gneiss, DarkOchre, Spodumain, Crokite, Bistot, Arkanor, Mercoxit"
-        " FROM mapOreBySystemSecurityClass")) {
-        _log(DATABASE__ERROR, "Error in GetOreBySSC query: %s", res.error.c_str());
+    if (!sDatabase.RunQuery(res, "SELECT systemSec, roidID, percent FROM roidDistribution")) {
+        codelog(DATABASE__ERROR, "Error in GetRoidDist query: %s", res.error.c_str());
     }
 }
-
-
 
 void ManagerDB::SaveAnomaly(CosmicSignature& sig)
 {// sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)

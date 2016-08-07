@@ -27,6 +27,7 @@
 #define _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
 
 
+#include <unordered_map>
 #include "POD_containers.h"
 #include "system/SystemDB.h"
 
@@ -60,36 +61,30 @@ class MgrData
 {
 public:
     MgrData();
-    virtual ~MgrData() { /* nothing do to yet */ }
+    virtual ~MgrData();
 
     // Initializes the Table:
     int Initialize();
 
+    bool GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids);
     uint8 GetRegionQuarter(uint32 regionID);
-    bool GetRoidDist(uint8& quarter, const char* sec, std::map<float, uint32>& roids);
 
 protected:
     void _Populate();
 
 private:
     std::map<uint32, uint32> m_regions;   // this simple map holds k,v of regionID/factionID
-    std::map<std::string, OreBySSC> m_oreBySSC;
+    std::unordered_multimap<std::string, OreTypeChance> m_oreBySecClass;
 };
 
 #define sMgrData \
     ( MgrData::get() )
 
 
-class AsteroidData;
 class ManagerDB {
 public:
 
     /* db methods for all managers */
-    void SaveAnomaly(CosmicSignature& sig);
-    void GetAnomalyList(DBQueryResult& res);
-    GPoint GetAnomalyPos(std::string& string);
-    void GetSystemAnomalies(uint32 systemID, DBQueryResult& res);
-    void GetSystemAnomalies(uint32 systemID, std::vector< CosmicSignature >& sigs);
 
     /* data manager */
     void GetOreBySSC(DBQueryResult& res);
@@ -97,8 +92,8 @@ public:
     /* belt manager */
     void SaveRoid(AsteroidData& data);
     void SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& roids);
-    bool LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< AsteroidData >& into);
     void GetRegionFaction(DBQueryResult& res);
+    bool LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< AsteroidData >& into);
 
     /* spawn manager */
     void DeleteSpawnedRats();
@@ -113,11 +108,16 @@ public:
     void GetDunRoomData(DBQueryResult& res);
     void GetDunGroupData(DBQueryResult& res);
     void GetDunSpawnInfo(DBQueryResult& res);
-    bool GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& into);
     void SaveActiveDungeon(ActiveDungeon& dun);
     void ClearDungeons();
+    bool GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& into);
 
     /* anomaly manager */
+    void SaveAnomaly(CosmicSignature& sig);
+    void GetAnomalyList(DBQueryResult& res);
+    void GetSystemAnomalies(uint32 systemID, DBQueryResult& res);
+    void GetSystemAnomalies(uint32 systemID, std::vector< CosmicSignature >& sigs);
+    GPoint GetAnomalyPos(std::string& string);
 
     /* wormhole manager */
 

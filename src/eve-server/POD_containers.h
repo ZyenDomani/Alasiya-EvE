@@ -73,25 +73,10 @@ struct AsteroidData {
     double z;
 };
 
-/* POD entry for asteroid distrubtion methods */
-struct OreBySSC {
-    std::string secClass;
-    uint8 V;
-    uint8 S;
-    uint8 Py;
-    uint8 Pl;
-    uint8 O;
-    uint8 K;
-    uint8 J;
-    uint8 Hem;
-    uint8 Hed;
-    uint8 G;
-    uint8 DO;
-    uint8 Sp;
-    uint8 C;
-    uint8 B;
-    uint8 A;
-    uint8 M;
+/* POD entry for asteroid distrubtion methods by group */
+struct OreTypeChance {
+    uint16 typeID;
+    float chance;
 };
 
 /* POD entry for active dungeon */
