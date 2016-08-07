@@ -533,8 +533,6 @@ int main( int argc, char* argv[] )
     command_dispatcher.Close();
     /* close the db handler */
     sDatabase.Close();
-    /* close server config singleton */
-    sConfig.~EVEServerConfig();
     /** @todo  the thread system is only implemented for tcp connections at this time. */
     /* join open threads */
     sThread.EndThreads();

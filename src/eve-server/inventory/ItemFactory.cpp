@@ -70,9 +70,6 @@ ItemFactory::~ItemFactory() {
 
     // Set Client pointer to NULL
     m_pClient = nullptr;
-
-    /* close db service */
-    sDatabase.Close();
 }
 
 void ItemFactory::SaveItems() {

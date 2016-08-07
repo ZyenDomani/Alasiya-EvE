@@ -21,7 +21,7 @@ class SpawnDataMgr
 {
 public:
     SpawnDataMgr();
-    virtual ~SpawnDataMgr() { /* nothing do to yet */ }
+    virtual ~SpawnDataMgr();
 
     // Initializes the Table:
     int Initialize();

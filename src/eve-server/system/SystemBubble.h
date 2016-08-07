@@ -50,6 +50,7 @@ public:
     void SetBelt(InventoryItemRef itemRef);
     void SetGate(uint32 gateID);
     void ResetBubbleRatSpawn();
+    bool IsIce()                                        { return m_ice; }
     bool IsBelt()                                       { return m_belt; }
     bool IsGate()                                       { return m_gate; }
     bool IsSpawned()                                    { return m_spawned; }
@@ -75,13 +76,13 @@ public:
     void clear();
     void PrintEntityList();
 
-    void Add(SystemEntity* pEntity);
-    void Remove(SystemEntity* pEntity);
+    void Add(SystemEntity* pSE);
+    void Remove(SystemEntity* pSE);
     void ProcessWander(std::vector< SystemEntity* >& wanderers);
 
     void SendAddBalls(SystemEntity* to_who);
     void SendAddBalls2(SystemEntity* to_who);
-    void RemoveExclusive(SystemEntity* pEntity);
+    void RemoveExclusive(SystemEntity* pSE);
     void AddBallExclusive(SystemEntity* about_who);
 
 	void BubblecastDestiny(std::vector<PyTuple*> &updates, std::vector<PyTuple*> &events, const char* desc) const;
@@ -90,7 +91,7 @@ public:
 	void BubblecastDestinyUpdate(PyTuple** payload, const char* desc) const;
 	void BubblecastDestinyEvent(PyTuple** payload, const char* desc) const;
     void BubblecastSendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
-    void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pEntity) const;
+    void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pSE) const;
 
     bool InBubble(const GPoint &pt) const;
 
@@ -122,6 +123,7 @@ private:
 
     // for spawn system     -allan 15July15
     Timer m_spawnTimer;
+    bool m_ice = false;
     bool m_belt = false;
     bool m_gate = false;
     bool m_spawned = false;

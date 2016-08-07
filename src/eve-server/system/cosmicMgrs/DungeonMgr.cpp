@@ -336,7 +336,7 @@ void DungeonMgr::Create(uint16 templateID)
         items.push_back(item->itemID());
         ++cur;
     }
-    
+
     m_anomalyItems.clear();
     m_dungeonList.insert(std::make_pair(sig.sigItemID, items));
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created in system %u.", sig.sigItemID, sig.systemID);

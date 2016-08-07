@@ -21,6 +21,14 @@ SpawnDataMgr::SpawnDataMgr()
 {
 }
 
+SpawnDataMgr::~SpawnDataMgr()
+{
+    m_groups.clear();
+    m_classes.clear();
+    m_types.clear();
+    m_regions.clear();
+}
+
 int SpawnDataMgr::Initialize()
 {
     m_db.DeleteSpawnedRats();

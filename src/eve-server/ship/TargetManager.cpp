@@ -114,7 +114,6 @@ void TargetManager::ClearTarget(SystemEntity *who) {
 }
 
 void TargetManager::ClearAllTargets(bool notify_self) {
-    _log(TARGET__TRACE, "ClearTargets:  %s(%u) is clearing all targeting information.", mySE->GetName(), mySE->GetID());
     ClearTargets(notify_self);
     ClearFromTargets();
     _log(TARGET__TRACE, "ClearAllTargets:  %s(%u) has cleared all targeting information.", mySE->GetName(), mySE->GetID());
@@ -308,7 +307,7 @@ void TargetManager::TargetLost(SystemEntity *who) {
 
     if (mySE->IsNPCSE())
         mySE->GetNPCSE()->TargetLost(who);
-    
+
     if (!mySE->HasPilot()) return;
     Notify_OnTarget te;
         te.mode = "lost";
