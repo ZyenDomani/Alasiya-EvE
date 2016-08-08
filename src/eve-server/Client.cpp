@@ -682,6 +682,7 @@ PyRep *Client::GetAggressors() const {
 }
 
 void Client::SetAutoPilot(bool autoPilot /*false*/) {
+    // itemID=10644  flag=
     m_autoPilot = autoPilot;
     if (autoPilot)
         UpdateSessionInt("solarsystemid2", 0);
