@@ -148,6 +148,9 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
         m_range *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillInformationWarfare, true))));   //  3% increase in range
     }
 
+    if (m_iMiner)
+        m_cycleVol = floor(m_cycleVol /1000) *1000;
+
     // save adjusted attributes
     m_Item->SetAttribute(AttrDuration, m_duration);
     m_Item->SetAttribute(AttrMaxRange, m_range);
