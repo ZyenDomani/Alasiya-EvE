@@ -75,10 +75,12 @@ void BubbleManager::Process() {
             } else if ((*itr)->HasStatics()) {
                 ; /* do nothing for now ... do we need to do anything with statics here?? */
             } else if ((*itr)->IsEmpty()) {
-                // Remove this bubble now that it is empty of ALL dynamic entities
+                // Delete and Remove this bubble now that it is empty of ALL dynamic entities
+                //  we also need to clear wanderer map in case they were in removed bubble to avoid trash data segfaults
                 _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
+                SafeDelete(*itr);
                 itr = m_bubbles.erase(itr);
-                continue;
+                m_wanderers.clear();
             } else { /* this should never happen */
                 _log(DESTINY__ERROR, "BubbleManager::Process() - Bubble %u has reached the end.", (*itr)->GetID());
             }
