@@ -906,33 +906,35 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
     if (!mod) {
         _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called on a module that is NOT loaded!" );
         return;
+    } else if (!mod->isOnline()) {
+        if (effectName == "online") {
+            mod->Online();
+        } else {
+            if (m_Ship->HasPilot())
+                m_Ship->GetPilot()->SendErrorMsg("Your %s is offline. You cannot activate an offline module.", mod->getItem()->itemName().c_str());
+        }
+        return;
     } else {
         _log(SHIP__MODULE_TRACE, "ModuleManager::Activate() - %s (%s).", mod->getItem()->itemName().c_str(), effectName.c_str());
         mod->SetRepeat(repeat);
-        SystemEntity* pSE = nullptr;
+        SystemEntity* pSE(nullptr);
         if (mod->needsTarget()) {
             if (!targetID) {
                 sLog.Error("ModuleManager::Activate()", "targetID == 0");
                 if (m_Ship->HasPilot())
-                    m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
+                    m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.  Ref: ServerError 15268", mod->getItem()->itemName().c_str());
                 return;
             }
             pSE = m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(targetID);
             if (!pSE) {
                 sLog.Error("ModuleManager::Activate()", "pSE == NULL");
                 if (m_Ship->HasPilot())
-                    m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.", mod->getItem()->itemName().c_str());
+                    m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.  Ref: ServerError 15263", mod->getItem()->itemName().c_str());
                 return;
             }
         }
 
-        if (effectName == "online") {
-            mod->Online();
-        } else if (!mod->isOnline()) {
-            if (m_Ship->HasPilot())
-                m_Ship->GetPilot()->SendErrorMsg("Your %s is offline. You cannot activate an offline module.", mod->getItem()->itemName().c_str());
-            return;
-        } else if (effectName == "cloaking") {//FIXME  set this to use module code, drain cap, etc.
+        if (effectName == "cloaking") {//FIXME  set this to use module code, drain cap, etc.
             if (m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->IsCloaked())
                 m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->UnCloak();
             else    //MakeUserError("CantCloakProximity");
@@ -941,96 +943,6 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
         } else {
             mod->Activate(pSE);
         }
-        /**  @todo  verify the above code works, and then we can delete the individual calls below
-        if (effectName == "speedBoostMassAddition") {    // AB
-            mod->Activate(pSE);
-        } else if (effectName == "speedBoostMassSigRad") {  //MicroWarpdrive
-            mod->Activate(pSE);
-        } else if (effectName == "damageControl") { //DCM
-            mod->Activate(pSE);
-        } else if (effectName == "armorRepair") {
-            mod->Activate(pSE);
-        } else if (effectName == "shieldBoosting") {
-            mod->Activate(pSE);
-        } else if (effectName == "structureRepair") {   //Hull Repairer
-            mod->Activate(pSE);
-        } else if (effectName == "modifyActiveShieldResonanceAndNullifyPassiveResonance") { //Shield Hardener
-            mod->Activate(pSE);
-        } else if (effectName == "modifyActiveArmorResonanceAndNullifyPassiveResonance") {  //Armor Hardener
-            mod->Activate(pSE);
-        } else if (effectName == "surveyScan") {
-            mod->Activate(pSE);
-        } else if (effectName == "superWeaponAmarr") {  //Judgement
-            ; //mod->Activate(pSE);
-        } else if (effectName == "superWeaponCaldari") {  //Oblivion
-            ; //mod->Activate(pSE);
-        } else if (effectName == "superWeaponMinmatar") {  //Gjallarhorn
-            ; //mod->Activate(pSE);
-        } else if (effectName == "superWeaponGallente") {  //Aurora Ominae
-            ; //mod->Activate(pSE);
-        } else if (effectName == "triageModeEffect3") { //Triage Module
-            ; //mod->Activate(pSE);
-        } else if (effectName == "scanStrengthBonusPercentActivate") {  //ECCM - Gravimetric    ECCM - Magnetometric
-            ; //mod->Activate(pSE);
-        } else if (effectName == "sensorBoosterActivePercentage") { //Sensor Booster "effects.ElectronicAttributeModifyActivate"
-            ; //mod->Activate(pSE);
-        } else if (effectName == "industrialCoreEffect2") {  //Industrial Core
-            ; //mod->Activate(pSE);
-        } else if (effectName == "cynosuralGeneration") {  //Cynosural Field Generator
-            ; //mod->Activate(pSE);
-        } else if (effectName == "empWave") {   //EMP Smartbomb
-            ; //mod->Activate(pSE);
-        }
-        if (effectName == "tractorBeamCan") {
-            mod->Activate(pSE);
-        } else if (effectName == "miningLaser") {   // mining of all types...cloud, ore, strip, etc.
-            mod->Activate(pSE);
-        } else if (effectName == "miningClouds") {   // Gas Harvesters (12November15) - AlTahir
-            mod->Activate(pSE);
-        } else if (effectName == "targetAttack") {   // ship lasers.....all sizes, all types
-            mod->Activate(pSE);
-        } else if (effectName == "projectileFired") {   //ship projectile guns...all sizes, all types
-            mod->Activate(pSE);
-        } else if (effectName == "shieldTransfer"){		// Shield transporters. All sizes (12November15) - AlTahir
-            mod->Activate(pSE);
-        } else if (effectName == "energyTransfer"){		// Energy Transfer. All sizes (11.16.2015) - AlTahir
-        	mod->Activate(pSE);
-        } else if (effectName == "useMissiles") {   //implemented Missiles    18May15  -allan
-            mod->Activate(pSE);
-        } else if (effectName == "decreaseTargetSpeed") {   //Stasis Webifier	-crashing server -allan 20June15
-            ;//mod->Activate(targetEntity);
-        } else if (effectName == "salvaging") {
-            mod->Activate(pSE);
-        } else if (effectName == "warpScrambleTargetMWDBlockActivation") {  //Warp Scrambler
-            mod->Activate(pSE);
-        } else if (effectName == "targetArmorRepair") { //Remote Armor Repair System (AlTahir, 14.11.2015)
-            mod->Activate(pSE);
-        } else if (effectName == "remoteHullRepair") {  // Remote Hull Repair System (Altahir, 14.11.2015)
-            mod->Activate(pSE);
-    /** @todo these below are not wrote, not tested, in testing, or otherwise unknown.
-        } else if (effectName == "siegeModeEffect6") {  //Siege Module
-            ; //mod->Activate(targetEntity);
-        } else if (effectName == "openSpawnContainer") {   //Analyzer I
-            ; //mod->Activate(targetEntity);
-        } else if (effectName == "ewTargetPaint") { //Target Painter
-            ; //mod->Activate(targetEntity);
-        } else if (effectName == "gangMiningLaserAndIceHarvesterAndGasCloudHarvesterMaxRangeBonus") {   //Mining Foreman Link - Mining Laser Field Enhancement
-            ; //mod->Activate(targetEntity);
-        } else if (effectName == "gangGasHarvesterAndIceHarvesterAndMiningLaserCapNeedBonus") { //Mining Foreman Link - Harvester Capacitor Efficiency
-            ; //mod->Activate(targetEntity);
-        } else if (effectName == "gangArmorRepairCapReducerSelfAndProjected") { //Armored Warfare Link - Damage Control
-            ; //mod->Activate(targetEntity);
-        } else if (effectName == "ewTestEffectJam") {   //ECM - White Noise Generator
-            ; //mod->Activate(targetEntity);
-        } else if (effectName == "remoteEcmBurst") {    //Remote ECM Burst
-            ; //mod->Activate(targetEntity);
-        } else if (effectName == "gunneryMaxRangeFalloffTrackingSpeedBonus") {  //Tracking Computer "effects.TurretWeaponRangeTrackingSpeedMultiplyActivate"
-            ; //mod->Activate(targetEntity);
-
-	} else {
-            sLog.Warning("ModuleManager::Activate()", "Module '%s' effectName '%s' not found.",
-                     mod->getItem()->itemName().c_str(), effectName.c_str());
-        } */
     }
 }
 
