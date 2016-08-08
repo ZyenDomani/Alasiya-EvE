@@ -951,7 +951,7 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     InventoryItemRef chargeItemRef1 = m_ModuleManager->GetLoadedChargeOnModule(slot1);
     if (chargeItemRef1)
         m_ModuleManager->UnloadCharge(slot1);
-    modItemRef1->Move(itemID(), flagCargoHold);
+    RemoveItem(modItemRef1);
 
     if (m_ModuleManager->IsSlotOccupied(slot2)) {
         // dropped-on slot is occupied.  procede with moving the module currently in this slot.
@@ -959,7 +959,7 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
         InventoryItemRef chargeItemRef2 = m_ModuleManager->GetLoadedChargeOnModule(slot2);
         if (chargeItemRef2)
             m_ModuleManager->UnloadCharge(slot2);
-        modItemRef2->Move(itemID(), flagCargoHold);
+        RemoveItem(modItemRef2);
 
         AddItem(slot1, modItemRef2);
         if (chargeItemRef2)
