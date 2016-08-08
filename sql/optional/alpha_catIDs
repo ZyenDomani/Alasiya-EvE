@@ -1,0 +1,206 @@
+
+
+groupID     categoryID  groupName   description     published
+18  4   Mineral         1
+423     4   Ice Product         1
+754     4   Salvaged Materials      1
+
+25  6   Frigate         1
+26  6   Cruiser         1
+27  6   Battleship      1
+28  6   Industrial      1
+31  6   Shuttle         1
+380     6   Transport Ship      1
+419     6   Battlecruiser       1
+420     6   Destroyer       1
+463     6   Mining Barge    Mining Barges   1
+513     6   Freighter       1
+541     6   Interdictor         1
+831     6   Interceptor         1
+832     6   Logistics       1
+893     6   Electronic Attack Ship      1
+894     6   Heavy Interdictor       1
+
+38  7   Shield Extender         1
+39  7   Shield Recharger        1
+40  7   Shield Booster      1
+43  7   Capacitor Recharger         1
+46  7   Propulsion Module       1
+49  7   Survey Scanner      1
+52  7   Warp Scrambler      1
+53  7   Energy Weapon       1
+54  7   Mining Laser    Mining Laser    1
+55  7   Projectile Weapon       1
+60  7   Damage Control  Reinforcement are modules that increase the "armorHP" of some module group or specific module type. It typically only defines a passive effect.     1
+61  7   Capacitor Battery   Supplement the ships builtin power battery.     1
+62  7   Armor Repair Unit       1
+63  7   Hull Repair Unit        1
+65  7   Stasis Web  Reduces max speed of a target ship.     1
+74  7   Hybrid Weapon   Hybrid  1
+77  7   Shield Hardener     Increases the resistance of the shield to damages of specified types.   1
+78  7   Reinforced Bulkhead         1
+98  7   Armor Coating       1
+285     7   CPU Enhancer        1
+295     7   Shield Amplifier        1
+325     7   Armor Repair Projector      1
+326     7   Armor Plating Energized         1
+328     7   Armor Hardener      1
+329     7   Armor Reinforcer        1
+330     7   Cloaking Device         1
+339     7   Auxiliary Power Core        1
+464     7   Strip Miner         1
+481     7   Scan Probe Launcher         1
+483     7   Frequency Mining Laser      1
+506     7   Missile Launcher Cruise         1
+507     7   Missile Launcher Rocket         1
+508     7   Missile Launcher Torpedo        1
+509     7   Missile Launcher Light      1
+510     7   Missile Launcher Heavy      1
+511     7   Missile Launcher Rapid Light        1
+512     7   Missile Launcher Defender       1
+650     7   Tractor Beam        1
+762     7   Inertia Stabilizer      1
+763     7   Nanofiber Internal Structure        1
+764     7   Overdrive Injector System       1
+765     7   Expanded Cargohold      1
+766     7   Power Diagnostic System         1
+767     7   Capacitor Power Relay       1
+768     7   Capacitor Flux Coil         1
+769     7   Reactor Control Unit        1
+770     7   Shield Flux Coil        1
+771     7   Missile Launcher Heavy Assault      1
+773     7   Rig Armor       1
+774     7   Rig Shield      1
+775     7   Rig Energy Weapon       1
+776     7   Rig Hybrid Weapon       1
+777     7   Rig Projectile Weapon       1
+779     7   Rig Launcher        1
+780     7   Rig Electronics         1
+781     7   Rig Energy Grid         1
+782     7   Rig Astronautic         1
+786     7   Rig Electronics Superiority         1
+1122    7   Salvager        1
+
+83  8   Projectile Ammo     Projectile Ammo     1
+84  8   Missile         1
+85  8   Hybrid Ammo     Raw minerals    1
+86  8   Frequency Crystal   the frequency of Laser weapon   1
+89  8   Torpedo     Torrpedo    1
+384     8   Light Missile   Light Missile Charges   1
+385     8   Heavy Missile   Heavy Missile Charges   1
+386     8   Cruise Missile      1
+387     8   Rocket      1
+482     8   Mining Crystal      1
+663     8   Mercoxit Mining Crystal         1
+772     8   Assault Missile         1
+916     8   Nanite Repair Paste         1
+
+105     9   Frigate Blueprint       1
+106     9   Cruiser Blueprint       1
+107     9   Battleship Blueprint        1
+108     9   Industrial Blueprint        1
+111     9   Shuttle Blueprint       1
+118     9   Shield Extender Blueprint       1
+119     9   Shield Recharger Blueprint      1
+120     9   Shield Booster Blueprint        1
+121     9   Shield Transporter Blueprint        1
+123     9   Capacitor Recharger Blueprint       1
+126     9   Propulsion Module Blueprint         1
+129     9   Survey Scanner Blueprint        1
+130     9   ECM Blueprint       1
+131     9   ECCM Blueprint      1
+132     9   Warp Scrambler Blueprint        1
+133     9   Energy Weapon Blueprint         1
+134     9   Mining Laser Blueprint      1
+135     9   Projectile Weapon Blueprint         1
+136     9   Missile Launcher Blueprint      1
+137     9   Power Manager Blueprint         1
+140     9   Damage Control Blueprint        1
+141     9   Capacitor Battery Blueprint         1
+142     9   Armor Repair Unit Blueprint         1
+143     9   Hull Repair Unit Blueprint      1
+145     9   Stasis Web Blueprint        1
+154     9   Hybrid Weapon Blueprint         1
+156     9   Capacitor Booster Blueprint         1
+157     9   Shield Hardener Blueprint       1
+158     9   Hull Mods Blueprint         1
+163     9   Armor Coating Blueprint         1
+165     9   Projectile Ammo Blueprint       1
+166     9   Missile Blueprint       1
+167     9   Hybrid Ammo Blueprint       1
+168     9   Frequency Crystal Blueprint         1
+169     9   Capacitor Booster Charge Blueprint      1
+176     9   Combat Drone Blueprint      1
+177     9   Mining Drone Blueprint      1
+296     9   Shield Amplifier Blueprint      1
+346     9   Co-Processor Blueprint      1
+347     9   Signal Amplifier Blueprint      1
+348     9   Armor Hardener Blueprint        1
+349     9   Armor Reinforcer Blueprint      1
+350     9   Armor Repair Projector Blueprint        1
+352     9   Auxiliary Power Core Blueprint      1
+360     9   Shield Boost Amplifier Blueprint
+400     9   Ballistic Control System Blueprint      1
+401     9   Cloaking Device Blueprint       1
+477     9   Mining Barge Blueprint      1
+478     9   System Scanner Blueprint        1
+487     9   Destroyer Blueprint         1
+489     9   Battlecruiser Blueprint         1
+490     9   Strip Miner Blueprint       1
+504     9   Target Painter Blueprint        1
+516     9   Siege Module Blueprint      1
+525     9   Freighter Blueprint         1
+723     9   Tractor Beam Blueprint      1
+727     9   Mining Crystal Blueprint        1
+787     9   Rig Blueprint       1
+870     9   Remote Hull Repairer Blueprint      1
+912     9   Script Blueprint        1
+917     9   Data Miner Blueprint        1
+918     9   Scan Probe Launcher Blueprint       1
+1046    9   Nanite Repair Paste Blueprint       1
+1048    9   Structure Blueprint         1
+
+255     16  Gunnery         1
+256     16  Missile Launcher Operation      1
+257     16  Spaceship Command       1
+258     16  Leadership      1
+266     16  Corporation Management      1
+268     16  Industry        1
+269     16  Mechanics       1
+270     16  Science         1
+271     16  Engineering         1
+272     16  Electronics         1
+273     16  Drones      1
+274     16  Trade       1
+275     16  Navigation      1
+278     16  Social      1
+1044    16  Planet Management       1
+
+280     17  General         1
+281     17  Frozen      1
+282     17  Radioactive         1
+283     17  Livestock       1
+284     17  Biohazard       1
+333     17  Datacores       1
+355     17  Refinables  Group for mineral compounds and alloys that can be refined into valuable minerals.  1
+369     17  Ship Logs       1
+521     17  Identification      1
+526     17  Commodities         1
+
+450     25  Arkonor         1
+451     25  Bistot      1
+452     25  Crokite         1
+453     25  Dark Ochre      1
+454     25  Hedbergite      1
+455     25  Hemorphite      1
+456     25  Jaspet      1
+457     25  Kernite         1
+458     25  Plagioclase         1
+459     25  Pyroxeres       1
+460     25  Scordite        1
+461     25  Spodumain       1
+462     25  Veldspar        1
+465     25  Ice         1
+467     25  Gneiss      1
+468     25  Mercoxit        1
+469     25  Omber       1
