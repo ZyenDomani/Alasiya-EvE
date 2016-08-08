@@ -73,7 +73,7 @@ protected:
 
     void ClearAll();
     void SpawnBelt(uint16 bubbleID);
-    void SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position);
+    void SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position, bool ice);
     void GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap< float, uint32 >& roidDist);
 
     uint32 GetAsteroidType(double p, const std::unordered_multimap<float, uint32>& roids);

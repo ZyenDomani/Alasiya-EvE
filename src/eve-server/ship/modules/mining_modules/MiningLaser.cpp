@@ -266,7 +266,7 @@ double MiningLaser::DoCycle() {
 void MiningLaser::ProcessCycle(bool partial)
 {
     // note:  gas cloud contains radius/10 units of gas.
-    
+
 	// Retrieve ore from target Asteroid and put into Cargo Hold
 	InventoryItemRef roidRef = m_targetEntity->GetSelf();
     double oreVolume = roidRef->GetAttribute(AttrVolume).get_float();
@@ -323,12 +323,13 @@ void MiningLaser::ProcessCycle(bool partial)
     if (!roidQuantity) {
         Deactivate();
         m_targetEntity->Delete();
-    } else {
-        roidRef->SetAttribute(AttrQuantity, roidQuantity);
+    } else if (!m_iMiner) {
+        // do not reset ice radius
         /* reversing the radius-to-quantity formula, we get radius = exp((quantity + 112404.8) /25000)  */
         double radius = exp((roidQuantity +112404.8) /25000);
         roidRef->SetAttribute(AttrRadius, radius);
     }
+    roidRef->SetAttribute(AttrQuantity, roidQuantity);
 }
 
 void MiningLaser::_ShowCycle()

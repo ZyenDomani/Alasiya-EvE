@@ -217,16 +217,14 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
     }
 
     // Argument Discovery
-    Client * p_targetClient = NULL;
-    SystemEntity * destinationEntity = NULL;
-    uint32 solarSystemID = 0;
-    GPoint destinationPoint(0,0,0);
+    Client * p_targetClient = nullptr;
+    SystemEntity * destinationEntity = nullptr;
+    uint32 solarSystemID = 0, trMode = 0;
+    GPoint destinationPoint(NULL_ORIGIN);
     uint32 argsCount = args.argCount();
     std::string name1 = args.arg(1);
     std::string name2 = "";
-    bool isFirstArgName = false;
-    bool isSecondArgName = false;
-    uint32 trMode = 0;
+    bool isFirstArgName = false, isSecondArgName = false;
     enum TR_MODE
     {
         TR_MODE_ME_TO_ENTITY = 1,
@@ -267,7 +265,8 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
         p_targetClient = who;
         solarSystemID = atoi(args.arg(1).c_str());
         SystemGPoint m_gp;
-        destinationPoint = m_gp.GetRandPointOnMoon(solarSystemID);//GPoint(12457894200.0f, 17254864800.0f, 14851254800.0f);
+        if (IsSolarSystem(solarSystemID))
+            destinationPoint = m_gp.GetRandPointOnMoon(solarSystemID);//GPoint(12457894200.0f, 17254864800.0f, 14851254800.0f);
         trMode = 1;
     }
 

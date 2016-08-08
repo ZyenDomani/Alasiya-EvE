@@ -459,8 +459,8 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
 
     //quantity is used in logic for spitting stacks
     int32 origQty = quantity;
-    InventoryItemRef itemRef;
-    EVEItemFlags old_flag;
+    InventoryItemRef itemRef(nullptr);
+    EVEItemFlags old_flag(flagAutoFit);
     ShipItem* pShip = c->GetShip().get();
     // set ship to owner of this inventory object.  this will fix adding items to inactive ships in hangar.
     if (m_self->categoryID() == EVEDB::invCategories::Ship)

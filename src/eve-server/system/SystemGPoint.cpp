@@ -76,9 +76,11 @@ const GPoint SystemGPoint::GetRandPointOnPlanet(uint32 systemID) {
 
     m_db.GetPlanets(systemID, &planetIDs, &total);
 
+    if (planetIDs.empty())
+        return NULL_ORIGIN;
+
     uint16 i = MakeRandomInt(1, total);
     return (planetIDs[i].position +planetIDs[i].radius +50000);
-
 }
 
 const GPoint SystemGPoint::GetRandPointOnMoon(uint32 systemID) {
@@ -87,9 +89,11 @@ const GPoint SystemGPoint::GetRandPointOnMoon(uint32 systemID) {
 
     m_db.GetMoons(systemID, &moonIDs, &total);
 
+    if (moonIDs.empty())
+        return NULL_ORIGIN;
+
     uint16 i = MakeRandomInt(1, total);
     return (moonIDs[i].position +moonIDs[i].radius +10000);
-
 }
 
 uint32 SystemGPoint::GetRandPlanet(uint32 systemID) {
@@ -97,6 +101,9 @@ uint32 SystemGPoint::GetRandPlanet(uint32 systemID) {
     std::vector<DBGPointEntity> planetIDs;
 
     m_db.GetPlanets(systemID, &planetIDs, &total);
+
+    if (planetIDs.empty())
+        return 0;
 
     uint16 i = MakeRandomInt(1, total);
     return (planetIDs[i].itemID);
@@ -107,7 +114,6 @@ const GPoint SystemGPoint::Get2RandPlanets(uint32 systemID) {
     std::vector<DBGPointEntity> planetIDs;
 
     m_db.GetPlanets(systemID, &planetIDs, &total);
-
 }
 
 const GPoint SystemGPoint::Get3RandPlanets(uint32 systemID) {
@@ -115,7 +121,6 @@ const GPoint SystemGPoint::Get3RandPlanets(uint32 systemID) {
     std::vector<DBGPointEntity> planetIDs;
 
     m_db.GetPlanets(systemID, &planetIDs, &total);
-
 }
 
 uint32 SystemGPoint::GetRandMoon(uint32 systemID) {
@@ -123,6 +128,9 @@ uint32 SystemGPoint::GetRandMoon(uint32 systemID) {
     std::vector<DBGPointEntity> moonIDs;
 
     m_db.GetMoons(systemID, &moonIDs, &total);
+
+    if (moonIDs.empty())
+        return 0;
 
     uint16 i = MakeRandomInt(1, total);
     return (moonIDs[i].itemID);
@@ -146,7 +154,4 @@ const GPoint SystemGPoint::GetAnomalyPoint(SystemManager* pSys)
     pos.MakeRandomPointOnSphereLayer(ONE_AU_IN_METERS /2, ONE_AU_IN_METERS * 2);
     return pos;
 }
-
-
-
 

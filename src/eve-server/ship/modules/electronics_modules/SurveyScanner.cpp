@@ -127,8 +127,8 @@ double SurveyScanner::DoCycle() {
             std::vector<AsteroidSE*> vList;
             pShipSE->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetSpawnID(pBubble->GetID()), vList);
             for (auto pASE : vList) {
+                // allow ice scanning without a radius check....may change later.
                 if (pShipSE->SysBubble()->IsIce() or (m_Ship->position().distance(pASE->GetPosition()) < m_range)) {
-                    // allow ice scanning without a radius check....may change later.
                     PyTuple* tuple2 = new PyTuple(3);
                         tuple2->SetItem(0, new PyInt(pASE->GetID()));
                         tuple2->SetItem(1, new PyInt(pASE->GetTypeID()));

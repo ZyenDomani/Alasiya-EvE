@@ -371,7 +371,6 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner)
 double Inventory::GetStoredVolume(EVEItemFlags locationFlag) const
 {
     EvilNumber totalVolume(0.0f);
-    /** @todo implement Sizes for packaged ships */
 
     for (auto cur : mContents)
         if (cur.second->flag() == locationFlag)

@@ -437,10 +437,12 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_char->Move(locationID, flagAutoFit);
         m_ship->Dock();
         m_ship->SaveShip();
-        if (!IsHangarLoaded(locationID))
-            LoadStationHangar(locationID);
-        OnCharNowInStation();
-        DestroyShipSE();
+        if (!IsJump()){
+            if (!IsHangarLoaded(locationID))
+                LoadStationHangar(locationID);
+            OnCharNowInStation();
+            DestroyShipSE();
+        }
     } else {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
         snprintf(ci, sizeof(ci), "InSpace:%u", locationID);
@@ -466,8 +468,14 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             return;
         }
 
-        if ((pShipSE) and (IsSolarSystem(locationID)))
+        if ((pShipSE) and (IsSolarSystem(locationID))) {
             m_system->AddEntity(pShipSE);
+        } else if (IsJump() and stationID) {
+            if (!IsHangarLoaded(locationID))
+                LoadStationHangar(locationID);
+            OnCharNowInStation();
+            DestroyShipSE();
+        }
 
         m_beyonce = false;
 
@@ -887,17 +895,12 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
 
     bool was_module = (item->flag() >= flagSlotFirst and item->flag() <= flagSlotLast);
 
-    //do the move. This will update the DB and send the notification.
     item->Move(location, flag);
-    //For now - this check is hacked, as i want to make sure holds do get updated and this method works.
     m_ship->UpdateHoldsUsedVolume();
 
-    if (was_module || (item->flag() >= flagSlotFirst and item->flag() <= flagSlotLast)) {
-        //it was equipped, or is now. so ModuleMgr needs to know.
+    if (was_module || (item->flag() >= flagSlotFirst and item->flag() <= flagSlotLast))
         m_ship->UpdateModules();
-    }
 
-    // Release the item factory now that the ItemFactory is finished being used:
     m_services.item_factory->UnsetUsingClient();
 }
 

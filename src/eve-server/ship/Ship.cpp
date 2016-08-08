@@ -97,7 +97,7 @@ ShipItemRef ShipItem::Spawn(ItemFactory &factory, ItemData &data) {
     //sShipRef->SetAttribute(AttrIsOnline,                            false, false);
     sShipRef->SetAttribute(AttrArmorDamage,                         0.0, false);
     sShipRef->SetAttribute(AttrInertia,                             1, false);
-    sShipRef->SetAttribute(AttrMass,                                sShipRef->type().mass(), false);
+    sShipRef->SetAttribute(AttrMass,                                sShipRef->GetPackagedVolume(), false);
     sShipRef->SetAttribute(AttrRadius,                              sShipRef->type().radius(), false);
     sShipRef->SetAttribute(AttrVolume,                              sShipRef->type().volume(), false);
     sShipRef->SetAttribute(AttrCapacity,                            sShipRef->type().capacity(), false);
@@ -455,7 +455,9 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
     } else {
         // Handle any other flag, legal or not by virtue of GetRemainingVolumeByFlag() and GetCapacity() that handle supported capacity types:
         // (unsupported or illegal flags report capacity of 0.0, so are automatically rejected)
-        if ((GetRemainingVolumeByFlag(flag) < (item->GetAttribute(AttrVolume).get_float() * item->quantity()))) {
+        // check for adding unpackaged ships to cargo of active ship...
+        double volume = item->GetPackagedVolume();
+        if ((GetRemainingVolumeByFlag(flag) < (volume * item->quantity()))) {
             m_pilot->SendErrorMsg("Not enough cargo space");
             return false;
         }

@@ -823,6 +823,9 @@ void MarketProxyService::_ExecuteSellOrder(uint32 sell_order_id, uint32 stationI
 
     //use the owner change packet to alert the buyer of the new item
     new_item->ChangeOwner(buyer->GetCharacterID(), true);
+    if (buyer->IsDocked())
+        new_item->Move(buyer->GetStationID(), flagHangar);
+    /** @todo deal with player buying things in space.....  */
 
     //give the money to the seller...
     //TODO: take off market overhead fees...

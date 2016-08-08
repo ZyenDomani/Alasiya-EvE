@@ -80,6 +80,7 @@ public:
     /********************************************************************/
     /* Session values                                                   */
     /********************************************************************/
+    /** @todo  update these to use m_SystemData, as it it ALWAYS populated and accurate AFTER character logs in  */
     std::string GetAddress() const                      { return mSession.GetCurrentString( "address" ); }
     std::string GetLanguageID() const                   { return mSession.GetCurrentString( "languageID" ); }
 

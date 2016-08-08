@@ -189,9 +189,9 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
                 if (type.groupID() == EVEDB::invGroups::Wreck)
                     return WreckContainer::_LoadItem<WreckContainer>( factory, itemID, type, data );
                 else if ((type.groupID() == EVEDB::invGroups::Secure_Cargo_Container)
-                    || (type.groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
-                    || (type.groupID() == EVEDB::invGroups::Freight_Container)
-                    || (type.groupID() == EVEDB::invGroups::Cargo_Container) )
+                    or (type.groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
+                    or (type.groupID() == EVEDB::invGroups::Freight_Container)
+                    or (type.groupID() == EVEDB::invGroups::Cargo_Container) )
                     return CargoContainer::_LoadItem<CargoContainer>( factory, itemID, type, data );
                 else
                     return CelestialObject::_LoadItem<CelestialObject>( factory, itemID, type, data );
@@ -199,57 +199,57 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
             case EVEDB::invCategories::Entity: {
                 //  added checks for all npc's   -allan 26Dec14
                 if ((type.groupID() == EVEDB::invGroups::Sentry_Gun)
-                    ||  (type.groupID() == EVEDB::invGroups::Protective_Sentry_Gun)
-                    ||  (type.groupID() == EVEDB::invGroups::Police_Drone)
-                    ||  (type.groupID() == EVEDB::invGroups::Pirate_Drone)
-                    ||  (type.groupID() == EVEDB::invGroups::LCO_Drone)
-                    ||  (type.groupID() == EVEDB::invGroups::Tutorial_Drone)
-                    ||  (type.groupID() == EVEDB::invGroups::Rogue_Drone)
-                    ||  (type.groupID() == EVEDB::invGroups::Faction_Drone)
-                    ||  (type.groupID() == EVEDB::invGroups::Convoy)
-                    ||  (type.groupID() == EVEDB::invGroups::Convoy_Drone)
-                    ||  (type.groupID() == EVEDB::invGroups::Concord_Drone)
-                    ||  (type.groupID() == EVEDB::invGroups::Mission_Drone)
-                    ||  (type.groupID() == EVEDB::invGroups::Destructible_Sentry_Gun)
-                    ||  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer)
-                    ||  (type.groupID() == EVEDB::invGroups::Customs_Official)
-                    ||  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Structure)
-                    ||  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Sentry)
-                    ||  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Belongings)
-                    ||  (type.groupID() == EVEDB::invGroups::Storyline_Frigate)
-                    ||  (type.groupID() == EVEDB::invGroups::Storyline_Cruiser)
-                    ||  (type.groupID() == EVEDB::invGroups::Storyline_Battleship)
-                    ||  (type.groupID() == EVEDB::invGroups::Storyline_Mission_Frigate)
-                    ||  (type.groupID() == EVEDB::invGroups::Storyline_Mission_Cruiser)
-                    ||  (type.groupID() == EVEDB::invGroups::Storyline_Mission_Battleship)
-                    ||  ((type.groupID() >= EVEDB::invGroups::Asteroid_Angel_Cartel_Frigate) && (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_BattleCruiser))
-                    ||  ((type.groupID() >= EVEDB::invGroups::Deadspace_Angel_Cartel_BattleCruiser) && (type.groupID() <= EVEDB::invGroups::Deadspace_Angel_Cartel_Frigate))
-                    ||  ((type.groupID() >= EVEDB::invGroups::Deadspace_Blood_Raiders_BattleCruiser) && (type.groupID() <= EVEDB::invGroups::Deadspace_Blood_Raiders_Frigate))
-                    ||  ((type.groupID() >= EVEDB::invGroups::Deadspace_Guristas_BattleCruiser) && (type.groupID() <= EVEDB::invGroups::Deadspace_Guristas_Frigate))
-                    ||  ((type.groupID() >= EVEDB::invGroups::Deadspace_Sanshas_Nation_BattleCruiser) && (type.groupID() <= EVEDB::invGroups::Deadspace_Sanshas_Nation_Frigate))
-                    ||  ((type.groupID() >= EVEDB::invGroups::Deadspace_Serpentis_BattleCruiser) && (type.groupID() <= EVEDB::invGroups::Deadspace_Serpentis_Frigate))
-                    ||  ((type.groupID() >= EVEDB::invGroups::Mission_Amarr_Empire_Frigate) && (type.groupID() <= EVEDB::invGroups::Mission_Minmatar_Republic_Battleship))
-                    ||  (type.groupID() == EVEDB::invGroups::Destructible_Agents_In_Space)
-                    ||  ((type.groupID() >= EVEDB::invGroups::Asteroid_Rogue_Drone_Battlecruiser) && (type.groupID() <= EVEDB::invGroups::Asteroid_Rogue_Drone_Swarm))
-                    ||  (type.groupID() == EVEDB::invGroups::Large_Collidable_Ship)
-                    ||  ((type.groupID() >= EVEDB::invGroups::Asteroid_Angel_Cartel_Commander_Frigate) && (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Frigate))
-                    ||  ((type.groupID() >= EVEDB::invGroups::Mission_Generic_Battleships) && (type.groupID() <= EVEDB::invGroups::Mission_Generic_Destroyers))
-                    ||  ((type.groupID() >= EVEDB::invGroups::Asteroid_Rogue_Drone_Commander_Battlecruiser) && (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Battleship))
-                    ||  (type.groupID() == EVEDB::invGroups::Mission_Fighter_Drone)
-                    ||  ((type.groupID() >= EVEDB::invGroups::Mission_Amarr_Empire_Carrier) && (type.groupID() <= EVEDB::invGroups::Mission_Minmatar_Republic_Carrier))
-                    ||  (type.groupID() == EVEDB::invGroups::Mission_Faction_Transports)
-                    ||  (type.groupID() == EVEDB::invGroups::Mission_Faction_Industrials)
-                    ||  (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Sleepless_Sentinel)
-                    ||  (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Awakened_Sentinel)
-                    ||  (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Emergent_Sentinel)
-                    ||  ((type.groupID() >= EVEDB::invGroups::Deadspace_Sleeper_Sleepless_Defender) && (type.groupID() <= EVEDB::invGroups::Deadspace_Sleeper_Emergent_Patroller))
-                    ||  (type.groupID() == EVEDB::invGroups::Mission_Faction_Cruiser)
-                    ||  (type.groupID() == EVEDB::invGroups::Mission_Faction_Frigate)
-                    ||  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Industrial)
-                    ||  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Capital)
-                    ||  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Frigate)
-                    ||  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Cruiser)
-                    ||  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship))
+                    or  (type.groupID() == EVEDB::invGroups::Protective_Sentry_Gun)
+                    or  (type.groupID() == EVEDB::invGroups::Police_Drone)
+                    or  (type.groupID() == EVEDB::invGroups::Pirate_Drone)
+                    or  (type.groupID() == EVEDB::invGroups::LCO_Drone)
+                    or  (type.groupID() == EVEDB::invGroups::Tutorial_Drone)
+                    or  (type.groupID() == EVEDB::invGroups::Rogue_Drone)
+                    or  (type.groupID() == EVEDB::invGroups::Faction_Drone)
+                    or  (type.groupID() == EVEDB::invGroups::Convoy)
+                    or  (type.groupID() == EVEDB::invGroups::Convoy_Drone)
+                    or  (type.groupID() == EVEDB::invGroups::Concord_Drone)
+                    or  (type.groupID() == EVEDB::invGroups::Mission_Drone)
+                    or  (type.groupID() == EVEDB::invGroups::Destructible_Sentry_Gun)
+                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer)
+                    or  (type.groupID() == EVEDB::invGroups::Customs_Official)
+                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Structure)
+                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Sentry)
+                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Belongings)
+                    or  (type.groupID() == EVEDB::invGroups::Storyline_Frigate)
+                    or  (type.groupID() == EVEDB::invGroups::Storyline_Cruiser)
+                    or  (type.groupID() == EVEDB::invGroups::Storyline_Battleship)
+                    or  (type.groupID() == EVEDB::invGroups::Storyline_Mission_Frigate)
+                    or  (type.groupID() == EVEDB::invGroups::Storyline_Mission_Cruiser)
+                    or  (type.groupID() == EVEDB::invGroups::Storyline_Mission_Battleship)
+                    or  ((type.groupID() >= EVEDB::invGroups::Asteroid_Angel_Cartel_Frigate) and (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_BattleCruiser))
+                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Angel_Cartel_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Angel_Cartel_Frigate))
+                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Blood_Raiders_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Blood_Raiders_Frigate))
+                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Guristas_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Guristas_Frigate))
+                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Sanshas_Nation_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Sanshas_Nation_Frigate))
+                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Serpentis_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Serpentis_Frigate))
+                    or  ((type.groupID() >= EVEDB::invGroups::Mission_Amarr_Empire_Frigate) and (type.groupID() <= EVEDB::invGroups::Mission_Minmatar_Republic_Battleship))
+                    or  (type.groupID() == EVEDB::invGroups::Destructible_Agents_In_Space)
+                    or  ((type.groupID() >= EVEDB::invGroups::Asteroid_Rogue_Drone_Battlecruiser) and (type.groupID() <= EVEDB::invGroups::Asteroid_Rogue_Drone_Swarm))
+                    or  (type.groupID() == EVEDB::invGroups::Large_Collidable_Ship)
+                    or  ((type.groupID() >= EVEDB::invGroups::Asteroid_Angel_Cartel_Commander_Frigate) and (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Frigate))
+                    or  ((type.groupID() >= EVEDB::invGroups::Mission_Generic_Battleships) and (type.groupID() <= EVEDB::invGroups::Mission_Generic_Destroyers))
+                    or  ((type.groupID() >= EVEDB::invGroups::Asteroid_Rogue_Drone_Commander_Battlecruiser) and (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Battleship))
+                    or  (type.groupID() == EVEDB::invGroups::Mission_Fighter_Drone)
+                    or  ((type.groupID() >= EVEDB::invGroups::Mission_Amarr_Empire_Carrier) and (type.groupID() <= EVEDB::invGroups::Mission_Minmatar_Republic_Carrier))
+                    or  (type.groupID() == EVEDB::invGroups::Mission_Faction_Transports)
+                    or  (type.groupID() == EVEDB::invGroups::Mission_Faction_Industrials)
+                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Sleepless_Sentinel)
+                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Awakened_Sentinel)
+                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Emergent_Sentinel)
+                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Sleeper_Sleepless_Defender) and (type.groupID() <= EVEDB::invGroups::Deadspace_Sleeper_Emergent_Patroller))
+                    or  (type.groupID() == EVEDB::invGroups::Mission_Faction_Cruiser)
+                    or  (type.groupID() == EVEDB::invGroups::Mission_Faction_Frigate)
+                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Industrial)
+                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Capital)
+                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Frigate)
+                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Cruiser)
+                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship))
                     /*  these should probably get an NPCItem ItemType eventually */
                     return InventoryItemRef( new InventoryItem( factory, itemID, type, data ) );
                     else
@@ -416,10 +416,11 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         }
         case EVEDB::invCategories::Celestial: {
             if ( (t->groupID() == EVEDB::invGroups::Secure_Cargo_Container)
-                || (t->groupID() == EVEDB::invGroups::Cargo_Container)
-                || (t->groupID() == EVEDB::invGroups::Freight_Container)
-                || (t->groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
-                || (t->groupID() == EVEDB::invGroups::Spawn_Container))
+                or (t->groupID() == EVEDB::invGroups::Cargo_Container)
+                or (t->groupID() == EVEDB::invGroups::Freight_Container)
+                or (t->groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
+                or (t->groupID() == EVEDB::invGroups::Spawn_Container)
+                or (t->groupID() == EVEDB::invGroups::Mission_Container))
             {
                 // Spawn new Cargo Container
                 uint32 itemID = CargoContainer::CreateItemID( factory, data );
@@ -433,7 +434,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 cargoRef->SetAttribute(AttrArmorDamage,   0.0);                                               // Armor Damage
                 cargoRef->SetAttribute(AttrMass,          cargoRef->type().mass());          // Mass
                 cargoRef->SetAttribute(AttrRadius,        cargoRef->type().radius());        // Radius
-                cargoRef->SetAttribute(AttrVolume,        cargoRef->type().volume());        // Volume
+                cargoRef->SetAttribute(AttrVolume,        cargoRef->GetPackagedVolume());        // Volume
                 cargoRef->SetAttribute(AttrCapacity,      cargoRef->type().capacity());      // Capacity
                 //cargoRef->SaveAttributes();
                 return cargoRef;
@@ -487,10 +488,97 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         return InventoryItemRef();
     itemRef->SetAttribute(AttrMass,           itemRef->type().mass());           // Mass
     itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
-    itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
+    itemRef->SetAttribute(AttrVolume,         itemRef->GetPackagedVolume());       // Volume
     itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
 	//itemRef->SaveAttributes();
     return itemRef;
+}
+
+uint32 InventoryItem::GetPackagedVolume()
+{
+    if (m_singleton)
+        return type().volume();
+
+    if ((categoryID() == EVEDB::invCategories::Ship)
+    or (groupID() == EVEDB::invGroups::Cargo_Container)
+    or (groupID() == EVEDB::invGroups::Spawn_Container)
+    or (groupID() == EVEDB::invGroups::Secure_Cargo_Container)
+    or (groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
+    or (groupID() == EVEDB::invGroups::Freight_Container)
+    or (groupID() == EVEDB::invGroups::Mission_Container)) {
+        // these are hard-coded in client.
+        switch (type().groupID()) {
+            case 29:  //   Capsule
+            case 31:  //   Shuttle
+            case 1022: {  //     Prototype Exploration Ship
+                return 500;
+            }
+            case 12:    //Cargo Container
+            case 306:   //Spawn Container
+            case 340:   //Secure Cargo Container
+            case 448:   //Audit Log Secure Container
+            case 649:   //Freight Container
+            case 952: {  //Mission Container
+                return 1000;
+            }
+            case 324: //    Assault Ship
+            case 830: //      Covert Ops
+            case 893: //      Electronic Attack Ship
+            case 25:  //   Frigate
+            case 831: //      Interceptor
+            case 237: //      Rookie ship
+            case 834: { //      Stealth Bomber
+                return 2500;
+            }
+            case 543: //      Exhumer
+            case 463: { //      Mining Barge
+                return 3750;
+            }
+            case 541:  //      Interdictor
+            case 420:  //      Destroyer
+            case 963: { //      Strategic Cruiser
+                return 5000;
+            }
+            case 906: //      Combat Recon Ship
+            case 26:  //   Cruiser
+            case 833: //      Force Recon Ship
+            case 358: //      Heavy Assault Ship
+            case 894: //      Heavy Interdictor
+            case 832: { //      Logistics
+                return 10000;
+            }
+            case 419: //      Battlecruiser
+            case 540: { //      Command Ship
+                return 15000;
+            }
+            case 28:  //   Industrial
+            case 380: {  //      Transport Ship
+                return 20000;
+            }
+            case 27:  //   Battleship
+            case 900: //      Marauder
+            case 898: //      Black Ops
+            case 381: { //      Elite Battleship
+                return 50000;
+            }
+            case 941: {  //      Industrial Command Ship
+                return 500000;
+            }
+            case 883: //      Capital Industrial Ship
+            case 547: //      Carrier
+            case 485: //      Dreadnought
+            case 513: //      Freighter
+            case 902: //      Jump Freighter
+            case 659: { //      Supercarrier
+                return 1000000;
+            }
+            case 30: {  //   Titan
+                return 10000000;
+            }
+        }
+    }
+    // catchall
+    return type().volume();
 }
 
 void InventoryItem::Delete() {
@@ -695,7 +783,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
     uint32 old_location = m_locationID;
     EVEItemFlags old_flag = m_flag;
 
-    if ((new_location == old_location) && (new_flag == old_flag))
+    if ((new_location == old_location) and (new_flag == old_flag))
         return; //nothing to do...
 
     //first, take myself out of my old inventory, if its loaded.
@@ -810,15 +898,15 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
      */
     /*
     if (locationID() != to_merge->locationID()) {
-        if (! (flag() == flagHangar) && ( (to_merge->flag() >= flagHiSlot0) || (to_merge->flag() <= flagHiSlot7) )) {
+        if (! (flag() == flagHangar) and ( (to_merge->flag() >= flagHiSlot0) or (to_merge->flag() <= flagHiSlot7) )) {
             _log(ITEM__ERROR, "%s (%u) in locatio
             // remove item from SystemManagern %u asked to merge with item %u in location %u.", itemName().c_str(), itemID(), locationID(), to_merge->itemID(), to_merge->locationID());
             return false;
         }
     }
     if (locationID() == to_merge->locationID()) {
-        if ((!( (flag() == flagCargoHold) && ( (to_merge->flag() >= flagHiSlot0) || (to_merge->flag() <= flagHiSlot7) ))) || \
-            (!( (flag() == flagHangar) && (to_merge->flag() == flagHangar) ))) {
+        if ((!( (flag() == flagCargoHold) and ( (to_merge->flag() >= flagHiSlot0) or (to_merge->flag() <= flagHiSlot7) ))) or \
+            (!( (flag() == flagHangar) and (to_merge->flag() == flagHangar) ))) {
             _log(ITEM__ERROR, "%s (%u) in location %u, flag %u: Asked to merge with item %u in location %u, flag %u.", itemName().c_str(), itemID(), locationID(), flag(), to_merge->itemID(), to_merge->locationID(), to_merge->flag());
             return false;
         }
@@ -858,6 +946,8 @@ bool InventoryItem::ChangeSingleton(bool new_singleton, bool notify) {
         return true;    //nothing to do...
 
     m_singleton = new_singleton;
+
+    SetAttribute(AttrVolume, GetPackagedVolume(), false);
 
     SaveItem();
 
@@ -1006,7 +1096,7 @@ bool InventoryItem::SetAttribute( uint32 attributeID, int64 num, bool notify /* 
     EvilNumber devil_number(num);
 	bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
 	if (shadow_copy_to_default_set)
-		status = (status && mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
+		status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
 	return status;
 }
 
@@ -1015,7 +1105,7 @@ bool InventoryItem::SetAttribute( uint32 attributeID, double num, bool notify /*
     EvilNumber devil_number(num);
     bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
 	if (shadow_copy_to_default_set)
-        status = (status && mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
+        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
 	return status;
 }
 
@@ -1023,7 +1113,7 @@ bool InventoryItem::SetAttribute( uint32 attributeID, EvilNumber num, bool notif
 {
     bool status = mAttributeMap.SetAttribute(attributeID, num, notify);
 	if (shadow_copy_to_default_set)
-		status = (status && mDefaultAttributeMap.SetAttribute(attributeID, num, notify));
+		status = (status and mDefaultAttributeMap.SetAttribute(attributeID, num, notify));
 	return status;
 }
 
@@ -1032,7 +1122,7 @@ bool InventoryItem::SetAttribute( uint32 attributeID, int num, bool notify /* tr
     EvilNumber devil_number(num);
     bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
     if (shadow_copy_to_default_set)
-        status = (status && mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
+        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
 	return status;
 }
 
@@ -1041,7 +1131,7 @@ bool InventoryItem::SetAttribute( uint32 attributeID, uint64 num, bool notify /*
     EvilNumber devil_number(*((int64*)&num));
     bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
     if (shadow_copy_to_default_set)
-        status = (status && mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
+        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
 	return status;
 }
 
@@ -1050,7 +1140,7 @@ bool InventoryItem::SetAttribute( uint32 attributeID, uint32 num, bool notify /*
     EvilNumber devil_number(num);
     bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
     if (shadow_copy_to_default_set)
-        status = (status && mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
+        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
 	return status;
 }
 
@@ -1075,7 +1165,7 @@ bool InventoryItem::HasAttribute(const uint32 attributeID, EvilNumber &value) co
 }
 
 bool InventoryItem::SaveAttributes() {
-	return (mAttributeMap.SaveAttributes() && mDefaultAttributeMap.SaveAttributes());
+	return (mAttributeMap.SaveAttributes() and mDefaultAttributeMap.SaveAttributes());
 }
 
 bool InventoryItem::ResetAttribute(uint32 attrID, bool notify) {

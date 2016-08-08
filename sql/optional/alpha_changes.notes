@@ -1,0 +1,32 @@
+jump gate info...this will need to be removed from db to close off constellation
+oerse sg - 50009622
+
+SQL query: SELECT * FROM `mapDenormalize` WHERE `itemID` = 50009622 LIMIT 0, 50 ;
+Rows: 1
+itemID  typeID  groupID     solarSystemID   constellationID     regionID    orbitID     x   y   z   radius  itemName    security    celestialIndex  orbitIndex
+50009622    3874    10  30003579    20000522    10000044    NULL    -278661242880   -295766384640   2079297085440   4706    Stargate (Oerse)    0.596159170347266   NULL    NULL
+
+ SELECT * FROM `mapJumps` WHERE `stargateID` = 50009622
+ stargateID  celestialID
+  50009622    50009466
+
+
+
+
+
+-----------------
+set @regionid=10000044;     --Solitude
+set @constellationID=20000522 --Orvanne
+set @solarSystemID=30003579 --Larryn
+set @stationid=60011065;    --Larryn II - FedMart Warehouse
+set @stationid=60006904;    --Larryn V  - Ducia Foundry Mineral Reserve
+set @stationid=60001059;    --Larryn IX - FedMart Warehouse
+set @solarSystemID=30003580 --Niballe1-ice
+set @stationid=60011065;    --Niballe
+set @solarSystemID=30003581 --Postouvin*
+set @solarSystemID=30003582 --Odinesyn1
+set @solarSystemID=30003583 --Weraroix*
+set @solarSystemID=30003584 --Sarline8
+set @solarSystemID=30003585 --Aeter2
+set @solarSystemID=30003586 --Gererique6
+set @solarSystemID=30003587 --Harner*
