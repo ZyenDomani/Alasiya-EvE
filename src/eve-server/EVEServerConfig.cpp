@@ -51,7 +51,7 @@ EVEServerConfig::EVEServerConfig()
     server.UseStackTrace = false;//N
     server.ServerSleepTime = 10 /*ms*/;
     server.idleSleepTime = 1000;
-    server.StationDockDelay = 2 /*s*/;
+    server.StationDockDelay = 3 /*s*/;
 
     // world
     world.chatLogs = false;//N

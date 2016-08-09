@@ -762,7 +762,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     return nullptr;
 }
 
-/** @todo  check this.....*/
+/** @todo  check this.....item requested is NOT put in jetcan*/
 PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {

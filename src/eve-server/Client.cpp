@@ -190,8 +190,6 @@ bool Client::ProcessNet()
 bool Client::SelectCharacter(uint32 char_id) {
     InitSession(char_id);
 
-    sDataMgr.GetSystemInfo(m_locationID, m_SystemData);
-
     m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
 
     m_services.item_factory->SetUsingClient(this);
@@ -1132,6 +1130,8 @@ void Client::InitSession(uint32 characterID)
         mSession.SetInt("solarsystemid", solarSystemID);
         mSession.SetInt("locationid", solarSystemID);
     }
+
+    sDataMgr.GetSystemInfo(m_locationID, m_SystemData);
 }
 
 void Client::SendSessionChange()

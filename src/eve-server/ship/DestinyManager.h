@@ -148,6 +148,9 @@ public:
 
     void MakeMissile(Missile* missile);
 
+    bool GetTracking()                                  { return m_shipTracking; }
+    void SetTracking(bool set=false)                    { m_shipTracking = set; }
+
 protected:
     void ProcessState();
 
@@ -288,6 +291,8 @@ private:
         GVector warp_vector;        //target direction based on ship's initial position
     };
     WarpState* m_warpState;		    //we own this.
+
+    bool m_shipTracking;
 };
 
 #endif

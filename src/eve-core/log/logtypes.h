@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 6.0
+    Log Version: 6.1
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -326,6 +326,7 @@ LOG_TYPE( PLAYER, MESSAGE, DISABLED, "PlayerMsg" )
 LOG_TYPE( PLAYER, INFO, DISABLED, "PlayerInfo" )
 LOG_TYPE( PLAYER, TRACE, DISABLED, "PlayerTrace" )
 LOG_TYPE( PLAYER, AP_TRACE, DISABLED, "AP_Trace" )
+LOG_TYPE( PLAYER, TRADE_MESSAGE, DISABLED, "Trade" )
 
 LOG_CATEGORY( TCP_SERVER )
 LOG_TYPE( TCP_SERVER, ERROR, ENABLED, "TCP_S_Error" )

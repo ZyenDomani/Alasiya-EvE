@@ -213,9 +213,13 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     targetRangeModifier += (0.05 * pChar->GetSkillLevel(skillLongRangeTargeting)); // +5% level
     maxTargetLockRange *= targetRangeModifier;
     GVector rangeToTarget( mySE->GetPosition(), who->GetPosition() );
-    if (rangeToTarget.length() > maxTargetLockRange) {
+    // adjust for target radius, in case of ice or other large objects..
+    double targetDistance = rangeToTarget.length();
+    if (who->IsAsteroidSE())
+        targetDistance -= who->GetRadius();
+    if (targetDistance > maxTargetLockRange) {
         mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only target to %f meters.  %s is %f meters away.", \
-            maxTargetLockRange, who->GetName(), rangeToTarget.length());
+            maxTargetLockRange, who->GetName(), targetDistance);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are too far away.  Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
         return TargetFail(who);

@@ -99,6 +99,7 @@ m_warpCapacitorNeed(1.0f)
 
     m_position = mySE->GetPosition();
     _ClearTurn();
+    m_shipTracking = sConfig.server.UseShipTracking;
 }
 
 DestinyManager::~DestinyManager() {
@@ -221,6 +222,10 @@ void DestinyManager::ProcessState() {
  */
  //Velocity setting methods
 void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
+    /** @todo  this does NOT start movement or anything like that.
+     * it ONLY SETS speed fraction for object.
+     * need to update this based on this new data
+     */
     if ((fraction == m_userSpeedFraction) and (!startMovement)) return;
     _log(DESTINY__MOVE_TRACE, "Destiny::SetSpeedFraction() - %s(%u):  fraction: %.2f, start: %i, stop: %i",
                  mySE->GetName(), mySE->GetID(), fraction, startMovement, m_stop );
@@ -698,8 +703,8 @@ void DestinyManager::_Move() {
     if (mySE->HasPilot() and mySE->SysBubble()->HasPlayers()) // no players in bubble = nothing to check against (for now)
         _CheckBump();
 
-    if (sConfig.server.UseShipTracking) {
-        // create jetcan to visualize movement during orbit
+    if (m_shipTracking) {
+        // create jetcan to visualize object movement
         std::ostringstream str;
         str << "Position Test " << timeStamp;
         ItemData idata(23, 0, mySE->GetLocationID(), flagAutoFit, str.str().c_str(), m_position);
@@ -955,6 +960,8 @@ void DestinyManager::_Orbit() {
         _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - too close");
     } else {
         _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - within tolerance");
+        if (m_orbiting != 1)
+            m_moveTimer = GetTimeMSeconds();
     }
 
     m_orbiting = 1;
@@ -967,20 +974,29 @@ void DestinyManager::_Orbit() {
     // set current position (this is where we are this tic)
     double curRad = m_orbitRadTic * timeStamp;  // this isnt right.
     _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%.3f", curRad, timeStamp);
-    /** @note  remember, eve coords for y and z are backwards.... y is elevation */
+    /** @todo need more info before i can get this working correctly.  use flat orbit for now
     double radX = m_position.x - Tp.x + mPosAdj.x, radY = m_position.y - Tp.y + mPosAdj.y, radZ = m_position.z - Tp.z + mPosAdj.z;
     mPos.x = radX * cos(curRad) + radZ * sin(curRad);
     double intmZ = radZ * cos(curRad) - radX * sin(curRad);
     mPos.z = intmZ * cos(curRad) + radY * sin(curRad);
     mPos.y = radY * cos(curRad) - intmZ * sin(curRad);
-    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit()  mposition: %.3f, %.3f, %.3f", mPos.x, mPos.y, mPos.z);
+    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit()  rad: %.3f, %.3f, %.3f  intmZ:%.3f  mposition: %.3f, %.3f, %.3f",radX, radY, radZ, intmZ, mPos.x, mPos.y, mPos.z);
+    */
+    mPos.x = m_targetDistance * cos(curRad);
+    mPos.z = m_targetDistance * sin(curRad);
+    mPos.y = 0; // flat horizontal orbit
     SetPosition(Tp + mPos);
 
     curRad += m_orbitRadTic;
+    /*
     mPos.x = radX * cos(curRad) + radZ * sin(curRad);
     intmZ = radZ * cos(curRad) - radX * sin(curRad);
     mPos.z = intmZ * cos(curRad) + radY * sin(curRad);
     mPos.y = radY * cos(curRad) - intmZ * sin(curRad);
+    */
+    mPos.x = m_targetDistance * cos(curRad);
+    mPos.z = m_targetDistance * sin(curRad);
+    mPos.y = 0;
     GVector heading(m_position, Tp + mPos);
     heading.normalize();
     m_shipHeading = heading;    // this sets object velocity in _Move() (using speed)
@@ -1617,7 +1633,7 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
     GVector revTrajectory(where, m_position);
     revTrajectory.normalize();
     revTrajectory *= m_stopDistance;
-    m_targetPoint -= revTrajectory;
+    m_targetPoint += revTrajectory;
 
     _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.4f",
          m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
@@ -1698,7 +1714,7 @@ PyResult DestinyManager::AttemptDockOperation() {
     // Verify range to station is within docking perimeter of 2500 meters:
     _log(DESTINY__TRACE, "Destiny::AttemptDockOperation() rangeToStationPerimiter is %.2fm", rangeToStationPerimiter);
     if (rangeToStationPerimiter > 2500.0) {
-        AlignTo( station );   // Turn ship and move toward docking point - client will call Dock() automatically when close enough...sometimes
+        AlignTo( station );   // Turn ship and move toward docking point - client will usually call Dock() automatically...sometimes
         throw PyException(MakeUserError("DockingApproach"));
     }
 
@@ -1712,8 +1728,6 @@ PyResult DestinyManager::AttemptDockOperation() {
         oda.station_z = stationPos.z;
         oda.stationID = stationID;
     PyTuple* ev = oda.Encode();
-    // now send it, bypassing the extra shit and wrong dest name added in Client::SendNotification
-    //ev->Dump(DESTINY__UPDATES, "");
     pClient->SendNotification("OnDockingAccepted", "charid", &ev);
 
     // per client packet sniff

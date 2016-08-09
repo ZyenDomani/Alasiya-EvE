@@ -36,10 +36,11 @@ class TradeBound;
 class TradeService : public PyService
 {
 public:
-    TradeService(PyServiceMgr *mgr);
+    TradeService(PyServiceMgr* mgr);
     virtual ~TradeService();
 
-    uint32 GetTradeSessionID() { return m_SessionID++; }
+    uint32 GetTradeSessionID()      { return ++m_SessionID; }
+    DBRowDescriptor* CreateHeader();
 
     void InitiateTrade(Client* pClient, PyRep* resp);
     void RemoveActiveSession(uint32 myID);
@@ -57,10 +58,10 @@ public:
 
 protected:
     class Dispatcher;
-    Dispatcher *const m_dispatch;
+    Dispatcher* const m_dispatch;
     PyServiceMgr* m_SvcMgr;
 
-    virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
+    virtual PyBoundObject* _CreateBoundObject(Client* c, const PyRep* bind_args);
 
     PyCallable_DECL_CALL(InitiateTrade);
 

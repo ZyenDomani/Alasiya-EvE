@@ -119,6 +119,7 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
         } break;
         case 599: { /* Burst */
             m_cycleVol *= (1 + (0.2 * (pChar->GetSkillLevel(skillMinmatarFrigate, true)))); // 20% increase in yield
+            /** @todo  -60% cap use for mining lasers */
         } break;
         case 620: { /* Osprey */
             m_cycleVol *= (1 + (0.2 * (pChar->GetSkillLevel(skillCaldariCruiser, true)))); // 20% increase in yield
@@ -239,12 +240,14 @@ void MiningLaser::Deactivate()
 double MiningLaser::DoCycle() {
     if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
         or (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))) {
-            Deactivate();
+            StopCycle();
+            m_AMPC->StopTimer();
             return 0;
         }
     if (m_chargeLoaded)
         if (!m_chargeRef->quantity()) {
-            Deactivate();
+            StopCycle();
+            m_AMPC->StopTimer();
             return 0;
         }
 
@@ -282,7 +285,7 @@ void MiningLaser::ProcessCycle(bool partial)
 
     double oreAmount = m_cycleVol /oreVolume;
 
-    if (partial)
+    if (partial) /** @todo  fix this for ice */
         oreAmount *= (m_AMPC->GetRemainingCycleTimeMS() / m_duration);
 
     double remainingCargoVolume = m_Ship->GetRemainingVolumeByFlag(flagCargoHold);
@@ -292,7 +295,8 @@ void MiningLaser::ProcessCycle(bool partial)
 
     if (remainingCargoVolume < m_cycleVol) {
         oreAmount = remainingCargoVolume /oreVolume;
-        ActiveModule::Deactivate();
+        StopCycle();
+        m_AMPC->StopTimer();
     }
 
     if (oreAmount > roidQuantity)
@@ -300,13 +304,11 @@ void MiningLaser::ProcessCycle(bool partial)
     if (oreAmount < 1)
         return;
 
-    _log(MINING__MESSAGE, "Adding %.2fm3 of ore to cargo", oreAmount);
-
     ItemData idata(
         roidRef->typeID(),
         m_Ship->ownerID(),
-        m_Ship->itemID(),
-        flagCargoHold,
+        0,
+        flagAutoFit,
         oreAmount
     );
 
@@ -324,7 +326,8 @@ void MiningLaser::ProcessCycle(bool partial)
     _log(MINING__TRACE, "new roidQuantity:%.3f", roidQuantity);
 
     if (!roidQuantity) {
-        Deactivate();
+        StopCycle();
+        m_AMPC->StopTimer();
         m_targetEntity->Delete();
     } else if (!m_iMiner) {
         // do not reset ice radius

@@ -38,3 +38,5 @@
           " - show current ship target list." )
  COMMAND( bubblelist, ROLE_PROGRAMMER,
           " - show current objects in bubble, their destiny state, and movement speed." )
+ COMMAND( track, ROLE_PROGRAMMER,
+          " - toggles current object movement tracking state." )

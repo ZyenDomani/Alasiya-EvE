@@ -60,7 +60,7 @@ void SpawnDataMgr::_Populate()
 
         m_db.GetGroupTypeIDs(row.GetInt(1), *res2);
         while (res2->GetRow(row2)) {
-            //SELECT typeID FROM invTypes WHERE groupID = %u
+            //SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID LIMIT 10
             m_types.emplace(row.GetInt(1), row2.GetInt(0));
         }
     }

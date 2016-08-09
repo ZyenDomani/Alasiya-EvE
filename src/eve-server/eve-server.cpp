@@ -403,27 +403,27 @@ int main( int argc, char* argv[] )
     if (sConfig.server.ServerSleepTime != 10) {
         MAIN_LOOP_DELAY = sConfig.server.ServerSleepTime;
         sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
-        sLog.Magenta("  Loop Sleep Time","Changed from default 10ms to %ums.", MAIN_LOOP_DELAY);
+        sLog.Warning("  Loop Sleep Time","Changed from default 10ms to %ums.", MAIN_LOOP_DELAY);
     } else
         sLog.Success("  Loop Sleep Time","Default at 10ms.");
     int idle = sConfig.server.idleSleepTime;
     if (idle == 1000)
         sLog.Success("  Idle Sleep Time","Default at 1000ms.");
     else
-        sLog.Magenta("  Idle Sleep Time","Changed from default 1000ms to %ums.", idle);
+        sLog.Warning("  Idle Sleep Time","Changed from default 1000ms to %ums.", idle);
     if (sConfig.server.UseShipTracking)
-        sLog.Error("    Ship Tracking","Enabled. **Be Careful With This Setting!**");
+        sLog.Warning("    Ship Tracking","Enabled.");
     else
-        sLog.Warning("    Ship Tracking","Disabled.");
+        sLog.Magenta("    Ship Tracking","Disabled.");
     if (sConfig.server.UseBeanCount)
         sLog.Success("     BeanCounting","Enabled.");
     else
-        sLog.Warning("     BeanCounting","Disabled.");
+        sLog.Magenta("     BeanCounting","Disabled.");
     if (sConfig.server.UseProfiling) {
         sLog.Success(" Server Profiling","Enabled.");
         sProfile.Init();
     } else
-        sLog.Warning(" Server Profiling","Disabled.");
+        sLog.Magenta(" Server Profiling","Disabled.");
     if (sConfig.npc.StaticSpawns)
         sLog.Success("    Static Spawns","Enabled.  Checks every %u minutes", sConfig.npc.StaticTimer);
     else
@@ -433,29 +433,29 @@ int main( int argc, char* argv[] )
     else
         sLog.Warning("   Roaming Spawns","Disabled.");
     if (sConfig.rates.secRate != 1.0)
-        sLog.Success("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
+        sLog.Warning("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
     else
-        sLog.Warning("        SecStatus","Normal.");
+        sLog.Blue("        SecStatus","Normal.");
     if (sConfig.rates.npcBountyMultiply != 1.0)
-        sLog.Success("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
+        sLog.Warning("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
     else
-        sLog.Warning("          Bountys","Normal.");
+        sLog.Blue("          Bountys","Normal.");
     if (sConfig.rates.damageRate != 1.0)
-        sLog.Success("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
+        sLog.Warning("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
     else
-		sLog.Warning("      All Damages","Normal.");
+        sLog.Blue("      All Damages","Normal.");
 	if (sConfig.rates.missileRate != 1.0)
-		sLog.Success("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileRate *100) );
+        sLog.Warning("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileRate *100) );
 	else
-		sLog.Warning("      Missile Dmg","Normal.");
+        sLog.Blue("      Missile Dmg","Normal.");
 	if (sConfig.rates.missileTime != 1.0)
-		sLog.Success("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
+        sLog.Warning("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
 	else
-		sLog.Warning("     Missile Time","Normal.");
+        sLog.Blue("     Missile Time","Normal.");
     if (sConfig.rates.turrentRate != 1.0)
-        sLog.Success("      Turrent Dmg","Modified at %.0f%%.", (sConfig.rates.turrentRate *100) );
+        sLog.Warning("      Turrent Dmg","Modified at %.0f%%.", (sConfig.rates.turrentRate *100) );
     else
-        sLog.Warning("      Turrent Dmg","Normal.");
+        sLog.Blue("      Turrent Dmg","Normal.");
     sLog.Success("      Decay Timer","Runs every %u minutes", sConfig.rates.WorldDecay);
     sLog.Log("","");
 
@@ -493,6 +493,7 @@ int main( int argc, char* argv[] )
         if (tcpc = tcps.PopConnection())
             sEntityList.Add(new Client(services, &tcpc));
 
+        /** @todo test for adding OpenMP here, or at other Process() points in code */
         sEntityList.Process();
 
         /*  process console commands, if any, and check for 'exit' command */

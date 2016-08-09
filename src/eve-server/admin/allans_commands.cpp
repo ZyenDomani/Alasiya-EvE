@@ -546,3 +546,28 @@ PyResult Command_targlist(Client* who, CommandDB* db, PyServiceMgr* services, co
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
+
+PyResult Command_track(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!who->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->SysBubble())
+        who->EnterSystem(who->GetSystemID());
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny();
+
+    bool tracking = who->GetShipSE()->DestinyMgr()->GetTracking();
+    std::string track = "enabled";
+    if (tracking) {
+        who->GetShipSE()->DestinyMgr()->SetTracking(false);
+        track = "disabled";
+    } else
+        who->GetShipSE()->DestinyMgr()->SetTracking(true);
+
+    char reply[25];
+    snprintf(reply, 25,
+             "Tracking %s.", track.c_str());
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}

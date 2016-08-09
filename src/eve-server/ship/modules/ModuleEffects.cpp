@@ -246,7 +246,7 @@ void DGM_Effects_Table::_Populate()
 
     //cleanup
     SafeDelete(res);
-    sLog.Log("    Effects Table", "%u effects objects loaded in %.3fs", m_EffectsMap.size(), (GetTimeMSeconds() - start));
+    sLog.Log("    Effects Table", "%u effects objects loaded in %.3fms", m_EffectsMap.size(), (GetTimeMSeconds() - start));
 }
 
 std::shared_ptr<MEffect> DGM_Effects_Table::GetEffect(uint32 effectID)

@@ -74,7 +74,7 @@ void ArmorHardener::_ShowCycle()
      m_Item->typeID(),
      0,
      0,
-     "effects.ModifyArmorResonance",
+     "effects.ArmorHardening",
      0,
      1,
      1,

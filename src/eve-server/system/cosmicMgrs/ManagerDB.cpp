@@ -207,7 +207,7 @@ void ManagerDB::GetSpawnClasses(DBQueryResult& res) {
 }
 
 void ManagerDB::GetGroupTypeIDs(uint32 groupID, DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u", groupID)) {
+    if (!sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID LIMIT 10", groupID)) {
         _log(DATABASE__ERROR, "Error in GetGroupTypeIDs query: %s", res.error.c_str());
     }
 }

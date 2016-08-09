@@ -922,14 +922,14 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
             if (!targetID) {
                 sLog.Error("ModuleManager::Activate()", "targetID == 0");
                 if (m_Ship->HasPilot())
-                    m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.  Ref: ServerError 15268", mod->getItem()->itemName().c_str());
+                    m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.  Ref: ServerError 25268", mod->getItem()->itemName().c_str());
                 return;
             }
             pSE = m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(targetID);
             if (!pSE) {
                 sLog.Error("ModuleManager::Activate()", "pSE == NULL");
                 if (m_Ship->HasPilot())
-                    m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.  Ref: ServerError 15263", mod->getItem()->itemName().c_str());
+                    m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate your %s.  Ref: ServerError 25263", mod->getItem()->itemName().c_str());
                 return;
             }
         }

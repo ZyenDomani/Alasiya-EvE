@@ -18,7 +18,7 @@
         <UseStackTrace>true</UseStackTrace><!-- bool -->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
         <maxPlayers>2500</maxPlayers>
-        <StationDockDelay>2</StationDockDelay><!-- in seconds (2 sec default) -->
+        <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
     </server>
 
     <world>

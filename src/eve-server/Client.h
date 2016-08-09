@@ -80,7 +80,6 @@ public:
     /********************************************************************/
     /* Session values                                                   */
     /********************************************************************/
-    /** @todo  update these to use m_SystemData, as it it ALWAYS populated and accurate AFTER character logs in  */
     std::string GetAddress() const                      { return mSession.GetCurrentString( "address" ); }
     std::string GetLanguageID() const                   { return mSession.GetCurrentString( "languageID" ); }
 
@@ -97,9 +96,9 @@ public:
     uint32 GetLocationID() const                        { return m_locationID; }
     uint32 GetStationID() const                         { return mSession.GetCurrentInt( "stationid" ); }
     uint32 GetStationID2() const                        { return mSession.GetCurrentInt( "stationid2" ); }
-    uint32 GetSystemID() const                          { return mSession.GetCurrentInt( "solarsystemid2" ); }
-    uint32 GetConstellationID() const                   { return mSession.GetCurrentInt( "constellationid" ); }
-    uint32 GetRegionID() const                          { return mSession.GetCurrentInt( "regionid" ); }
+    uint32 GetSystemID() const                          { return m_SystemData.systemID; }
+    uint32 GetConstellationID() const                   { return m_SystemData.constellationID; }
+    uint32 GetRegionID() const                          { return m_SystemData.regionID; }
     uint32 GetCloneStationID() const                    { return mSession.GetCurrentInt( "cloneStationID" ); }
 
     uint32 GetCorpHQ() const                            { return mSession.GetCurrentInt( "hqID" ); }
@@ -175,7 +174,7 @@ public:
     //destiny stuff...
     void SetDockStationID(uint32 stationID)             { m_dockStationID = stationID; };
     void SetDockPoint(GPoint &pt)                       { m_dockPoint = pt; }
-    void StartDockTimer()                               { m_dockTimer.Start(sConfig.server.StationDockDelay); } // default @ 2sec
+    void StartDockTimer()                               { m_dockTimer.Start(sConfig.server.StationDockDelay); } // default @ 3sec
     uint32 GetDockStationID()                           { return m_dockStationID; };
     GPoint GetDockPoint()                               { return m_dockPoint; }
     bool InPod()                                        { return (m_ship->groupID() == EVEDB::invGroups::Capsule ? true : false); }

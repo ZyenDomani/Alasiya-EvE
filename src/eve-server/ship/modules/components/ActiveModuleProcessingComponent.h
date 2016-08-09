@@ -50,6 +50,7 @@ public:
     uint32 GetRemainingCycleTimeMS();
 
     void SetTimer(uint32 time);
+    void StopTimer()                                    { m_timer.Disable(); }
 
 private:
     //internal storage and record keeping
