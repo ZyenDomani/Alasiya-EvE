@@ -60,8 +60,8 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)
     m_clients.clear();
     m_ratBubbles.clear();
     m_entityChanged = false;
-    sDataMgr.GetSystemInfo(systemID, m_data);
     m_activityTime = 0;
+    sDataMgr.GetSystemInfo(systemID, m_data);
     _log(COMMON__MESSAGE, "Created SystemManager %p for System %s(%u)", this, m_data.name.c_str(), m_data.systemID);
 }
 
@@ -113,6 +113,7 @@ GPoint hack_sentry_locs[num_hack_sentry_locs] = {
 
 void SystemManager::LoadCosmicMgrs()
 {
+    m_spawnMgr->Init();
     m_beltMgr->Init(m_data.regionID);
     m_dunMgr->Init(m_anomMgr, m_spawnMgr);
     m_anomMgr->Init(m_beltMgr, m_dunMgr, m_spawnMgr);
@@ -569,7 +570,7 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
     m_activityTime = 0;
     if (count) {
         ++m_players;
-        if (!m_spawnMgr->IsTimerStarted())
+        if (m_spawnMgr->IsInitialized() and !m_spawnMgr->IsTimerStarted())
             m_spawnMgr->StartMainTimer();
         _log(PLAYER__INFO, "%s(%u): Added to player count for %s(%u) - new count: %u", \
                     who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
@@ -640,6 +641,9 @@ void SystemManager::RemoveEntity(SystemEntity* who) {
 
 void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
 {
+    if (!m_spawnMgr->IsInitialized())
+        return;
+
     if (!m_spawnMgr->IsEnabled()) {
         if (!m_spawnMgr->IsTimerStarted())
             m_spawnMgr->StartMainTimer();

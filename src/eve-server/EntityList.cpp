@@ -51,7 +51,8 @@ EntityList::~EntityList() {
     sLog.Success("   ServerShutdown", " Complete.");
 }
 
-void EntityList::Init() {
+void EntityList::Init(PyServiceMgr* svc) {
+    m_services = svc;
     /* start the timer */
     m_stampTimer.Start(1000);
     m_clientSeedID = m_db->SetClientSeed();

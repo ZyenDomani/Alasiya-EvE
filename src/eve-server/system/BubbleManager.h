@@ -73,7 +73,7 @@ public:
     void AddSpawnID(uint16 bubbleID, uint32 spawnID);
     uint32 GetSpawnID(uint16 bubbleID);
 
-protected:
+private:
     Timer m_wanderTimer;
 
     uint32 m_bubbleID=0;

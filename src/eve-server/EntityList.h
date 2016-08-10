@@ -66,7 +66,7 @@ public:
 
     typedef std::set<uint32> character_set;
 
-    void Init();
+    void Init(PyServiceMgr* svc);
     void Close();
     void Shutdown();
     void Process();
@@ -74,7 +74,6 @@ public:
     void Remove(Client* client);
     void AddNPC()                                       { ++m_npcs; }
     void RemoveNPC()                                    { --m_npcs; }
-    void SetServices(PyServiceMgr* svc)                 { m_services = svc; }
     void FindByRegionID(uint32 regionID, std::vector<Client* > &result) const;
     void FindClientByStationID(uint32 stationID, std::vector<Client* > &result) const;
 
@@ -130,7 +129,7 @@ private:
     std::map<uint32, SystemManager*> m_systems;
     std::map<uint32, InventoryItemRef> m_stations;
     std::vector<std::string> m_anomIDs;
-    
+
     uint32 m_npcs = 0;
     uint32 m_stamp = 0;
     uint32 m_connections = 0;

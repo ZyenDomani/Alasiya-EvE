@@ -115,8 +115,6 @@ SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
     m_mainTimer.Disable();
     m_groupTimer.Disable();
 
-    m_enabled = false;
-
     m_spawns.clear();
     m_bubbles.clear();
     m_toSpawn.clear();
@@ -125,7 +123,23 @@ SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
     m_factionGroups.clear();
 }
 
+void SpawnMgr::Init()
+{
+    if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
+        _log(COSMIC_MGR__MESSAGE, "Spawn System Disabled.  Not Initalizing Spawn Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        return;
+    }
+
+    m_initalized = true;
+
+    _log(COSMIC_MGR__MESSAGE, "SpawnMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+
+}
+
 void SpawnMgr::Process() {
+    if (!m_initalized)
+        return;
+
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();

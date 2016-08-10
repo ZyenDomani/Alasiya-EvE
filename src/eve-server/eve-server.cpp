@@ -250,6 +250,9 @@ int main( int argc, char* argv[] )
     sLog.Success("       ServerInit", "Starting Service Manager");
     PyServiceMgr services( 888444, sEntityList, item_factory );
 
+    /* initialize clientID seed and start tic timer */
+    sEntityList.Init(&services);
+
     /* create the WormholeMgr singleton */
     sLog.Success("       ServerInit", "Starting Wormhole Manager");
     sWHMgr.Init(&services);
@@ -266,9 +269,6 @@ int main( int argc, char* argv[] )
     /* create console command interperter singleton */
     sLog.Success("       ServerInit", "Starting Console Manager");
     sConsole.Init(&command_dispatcher, item_factory);
-
-    /* initialize clientID seed and start tic timer */
-    sEntityList.Init();
 
     /* Service creation and registration. */
     sLog.Warning("       ServerInit", "Creating services.");

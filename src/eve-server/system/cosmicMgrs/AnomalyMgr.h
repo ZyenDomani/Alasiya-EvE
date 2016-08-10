@@ -29,8 +29,7 @@
 /*  this class is in charge of creating/destroying and maintaining
  * anomalies in a system.
  *
- *  a new iteration of this class is created for each system as that system
- * is booted.
+ *  a new iteration of this class is created for each system as that system is booted.
  */
 
 #include "system/cosmicMgrs/ManagerDB.h"

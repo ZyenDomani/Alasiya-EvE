@@ -1,4 +1,4 @@
-/*
+﻿/*
     ------------------------------------------------------------------------------------
     LICENSE:
     ------------------------------------------------------------------------------------
@@ -24,6 +24,8 @@
     Updates:    Allan
 */
 
+#include <algorithm>
+#include <functional>
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
@@ -33,11 +35,20 @@
 #include "system/SystemManager.h"
 #include "Client.h"
 
+struct bubbleDeleter {
+    void operator()(SystemBubble*& bRef) { // take pointer by reference
+        if (bRef->IsEmpty()) {
+            _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", bRef->GetID() );
+            SafeDelete(bRef);
+        }
+    }
+};
+
 BubbleManager::BubbleManager()
 : m_wanderTimer(30000)
 {
-    m_wanderTimer.Start();
     m_wanderers.clear();
+    m_wanderTimer.Start();
 }
 
 BubbleManager::~BubbleManager() {
@@ -67,22 +78,16 @@ void BubbleManager::Process() {
     }
     // run wander check every 30 sec for all active bubbles
     if (m_wanderTimer.Check()) {
+        // STL-friendly pointer delteter and remover
+        std::for_each(m_bubbles.begin(), m_bubbles.end(), bubbleDeleter());
+        std::vector<SystemBubble*>::iterator new_end = remove(m_bubbles.begin(), m_bubbles.end(), static_cast<SystemBubble*>(nullptr));
+        m_bubbles.erase(new_end, m_bubbles.end());
+
         m_wanderers.clear();
-        std::vector<SystemBubble *>::iterator itr = m_bubbles.begin();
+        std::vector<SystemBubble*>::iterator itr = m_bubbles.begin();
         while (itr != m_bubbles.end()) {
-            if ((*itr)->HasPlayers() or (*itr)->HasDynamics()) {
+            if ((*itr)->HasDynamics()) {
                 (*itr)->ProcessWander(m_wanderers);
-            } else if ((*itr)->HasStatics()) {
-                ; /* do nothing for now ... do we need to do anything with statics here?? */
-            } else if ((*itr)->IsEmpty()) {
-                // Delete and Remove this bubble now that it is empty of ALL dynamic entities
-                //  we also need to clear wanderer map in case they were in removed bubble to avoid trash data segfaults
-                _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
-                SafeDelete(*itr);
-                itr = m_bubbles.erase(itr);
-                m_wanderers.clear();
-            } else { /* this should never happen */
-                _log(DESTINY__ERROR, "BubbleManager::Process() - Bubble %u has reached the end.", (*itr)->GetID());
             }
             ++itr;
         }

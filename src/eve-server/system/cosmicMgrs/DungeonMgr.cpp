@@ -140,11 +140,6 @@ void DungeonDataMgr::GetDungeons(std::vector< ActiveDungeon >& dunList)
         dunList.push_back(cur.second);
 }
 
-uint32 DungeonDataMgr::GetDungeonID()
-{
-    return m_dungeonID++;
-}
-
 
 
 DungeonMgr::DungeonMgr(SystemManager* mgr, PyServiceMgr& svc)
@@ -279,7 +274,7 @@ void DungeonMgr::Create(uint16 templateID)
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - there are %u items to be created for '%s' (%u:%u) .", \
             m_anomalyItems.size(), sig.dungeonName.c_str(), sig.sigItemID, templateID);
 
-    // get rand pos >1au but <6au from random planet.
+    // get rand pos >0.5au but <4au from random planet.
     GPoint pos = m_gp.GetAnomalyPoint(m_system);
     sig.x = pos.x;
     sig.y = pos.y;

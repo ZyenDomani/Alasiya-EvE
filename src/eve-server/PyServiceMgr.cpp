@@ -41,7 +41,6 @@ PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityList& elist, ItemFactory* ifact
   m_nodeID(nodeID),
   m_svcDB()
 {
-    elist.SetServices(this);
 }
 
 PyServiceMgr::~PyServiceMgr() {
@@ -61,7 +60,6 @@ void PyServiceMgr::Close() {
         SafeDelete(bo);
     }
     m_boundObjects.clear();
-
 }
 
 void PyServiceMgr::Process() {

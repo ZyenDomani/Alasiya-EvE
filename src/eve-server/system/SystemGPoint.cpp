@@ -151,7 +151,7 @@ const GPoint SystemGPoint::GetAnomalyPoint(SystemManager* pSys)
     SystemEntity* pSE = pSys->GetSEFromInventory(planetIDs[MakeRandomInt(1, total)].itemID);
 
     GPoint pos = pSE->GetPosition();
-    pos.MakeRandomPointOnSphereLayer(ONE_AU_IN_METERS /2, ONE_AU_IN_METERS * 2);
+    pos.MakeRandomPointOnSphereLayer(ONE_AU_IN_METERS /2, ONE_AU_IN_METERS * 4);
     return pos;
 }
 

@@ -27,58 +27,14 @@
 #define _EVEMU_SYSTEM_DUNGEONMGR_H
 
 #include <unordered_map>
+#include "POD_containers.h"
 #include "system/SystemGPoint.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 
-struct DunTemplate {
-    std::string dunName = "";
-    uint16 dunRoomID = 0;
-    uint16 dunEntryID = 0;
-    uint8 dunTypeID = 0;
-    uint8 dunSpawnType = 0;
-    uint8 dunRooms = 0;
-    uint8 dunRoomTypeID = 0;
-    uint8 dunRoomCategoryID = 0;
-};
-
-struct DunRoomInfo {
-    uint16 dunRoomID = 0;
-    uint8 dunRoomType = 0;
-    uint8 dunRoomCategory = 0;
-    uint8 dunRoomSpawnID = 0;
-    uint8 dunRoomSpawnType = 0;
-};
-
-struct DunRoomData {
-    uint32 dunGroupID = 0;
-    uint16 x = 0;
-    uint16 y = 0;
-    uint16 z = 0;
-};
-
-struct DunGroupData {
-    uint32 typeID = 0;
-    std::string typeName = "";
-    uint32 typeGrpID = 0;   // this is groupID of the itemType, and needed to simplify create/spawn code
-    uint8 typeCatID = 0;    // this is categoryID of the itemType, and needed to simplify create/spawn code
-    uint16 x = 0;
-    uint16 y = 0;
-    uint16 z = 0;
-};
-
-struct DunRoomSpawnInfo {
-    uint16 dunRoomSpawnID = 0;
-    uint16 dunRoomSpawnType = 0;
-    uint16 x = 0;
-    uint16 y = 0;
-    uint16 z = 0;
-};
-
 /*
- * class ActiveDungeon {
- * public:
+ * struct ActiveDungeon {
  *    uint32 systemID;
  *    uint32 dungeonID;
  *    uint8 dunTemplateID;
@@ -102,10 +58,9 @@ public:
     int Initialize();
 
     void AddDungeon(ActiveDungeon& dungeon);
-
     void GetDungeons(std::vector<ActiveDungeon>& dunList);
 
-    uint32 GetDungeonID();
+    uint32 GetDungeonID()                               { return ++m_dungeonID; }
 
 protected:
     void _Populate();
@@ -135,8 +90,7 @@ private:
 /*  this class is in charge of creating/destroying and maintaining
  * dungeons in a system.
  *
- *  a new iteration of this class is created for each system as that system
- * is booted.
+ *  a new iteration of this class is created for each system as that system is booted.
  */
 
 class AnomalyMgr;

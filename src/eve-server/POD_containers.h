@@ -190,5 +190,50 @@ struct StationData {
     GVector dockOrientation;
 };
 
+/* POD entries for dungeon data */
+struct DunTemplate {
+    std::string dunName = "";
+    uint16 dunRoomID = 0;
+    uint16 dunEntryID = 0;
+    uint8 dunTypeID = 0;
+    uint8 dunSpawnType = 0;
+    uint8 dunRooms = 0;
+    uint8 dunRoomTypeID = 0;
+    uint8 dunRoomCategoryID = 0;
+};
+
+struct DunRoomInfo {
+    uint16 dunRoomID = 0;
+    uint8 dunRoomType = 0;
+    uint8 dunRoomCategory = 0;
+    uint8 dunRoomSpawnID = 0;
+    uint8 dunRoomSpawnType = 0;
+};
+
+struct DunRoomData {
+    uint32 dunGroupID = 0;
+    uint16 x = 0;
+    uint16 y = 0;
+    uint16 z = 0;
+};
+
+struct DunGroupData {
+    uint32 typeID = 0;
+    std::string typeName = "";
+    uint32 typeGrpID = 0;   // this is groupID of the itemType, and needed to simplify create/spawn code
+    uint8 typeCatID = 0;    // this is categoryID of the itemType, and needed to simplify create/spawn code
+    uint16 x = 0;
+    uint16 y = 0;
+    uint16 z = 0;
+};
+
+struct DunRoomSpawnInfo {
+    uint16 dunRoomSpawnID = 0;
+    uint16 dunRoomSpawnType = 0;
+    uint16 x = 0;
+    uint16 y = 0;
+    uint16 z = 0;
+};
+
 
 #endif  // _EVEMU_POD_CONTAINERS_H_

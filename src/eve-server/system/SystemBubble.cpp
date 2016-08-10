@@ -89,6 +89,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
                 _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u(sys:%u) not in bubble %u for systemID %u.", \
                         pDSE->GetID(), pDSE->SystemMgr()->GetID(), m_bubbleID, m_systemID);
                 m_dynamicEntities.erase(std::remove(m_dynamicEntities.begin(), m_dynamicEntities.end(), pDSE), m_dynamicEntities.end());
+                pDSE = nullptr;
                 return; // i know....this screws up the check and subsquent process, but easier this way for now....will fix later.
             }
 			wanderers.push_back(cur);

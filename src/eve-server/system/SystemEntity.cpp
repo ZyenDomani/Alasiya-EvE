@@ -556,9 +556,11 @@ void DynamicSystemEntity::Killed(Damage &fatal_blow)
 void DynamicSystemEntity::AwardBounty(Client* pClient)
 {
     double bounty = m_self->GetAttribute(AttrEntityKillBounty).get_float();
-    if (bounty <= 0) return;    //no bounty to award...
+    if (bounty <= 0)
+        return;    //no bounty to award...
 
-    if (sConfig.rates.npcBountyMultiply != 1.0) bounty *= sConfig.rates.npcBountyMultiply;
+    if (sConfig.rates.npcBountyMultiply != 1.0)
+        bounty *= sConfig.rates.npcBountyMultiply;
 
     /** @todo handle distribution to gangs. */
     /** @todo handle corp tax */
@@ -578,7 +580,8 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
                     accountingKeyCash,
                     bounty,
                     pClient->GetBalance(),
-                    reason.c_str() )) {
+                    reason.c_str() ))
+    {
         codelog(CLIENT__ERROR, "%s: Failed to record bounty of %f from death of %u (type %u)",
                     pClient->GetName(), bounty, m_self->itemID(), m_self->typeID());
         //well.. this isnt a huge deal, so we will get over it.
