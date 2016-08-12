@@ -115,10 +115,11 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
 
 Client::~Client() {
     if (m_char) {   // we have valid character
+        ServiceDB m_sdb;
+        m_sdb.SetAccountOnlineStatus(GetUserID(), false);
+        m_sdb.SetCharacterOnlineStatus(m_char->itemID(), false);
         // LSC logout
         m_services.lsc_service->CharacterLogout(m_char->itemID(), LSCChannel::_MakeSenderInfo(this));
-        m_services.serviceDB().SetAccountOnlineStatus(GetUserID(), false);
-        m_services.serviceDB().SetCharacterOnlineStatus(m_char->itemID(), false);
         m_services.ClearBoundObjects(this);
 
 	/** @todo  - for warping to random point when client logs out in space...
@@ -231,7 +232,8 @@ bool Client::SelectCharacter(uint32 char_id) {
     SendSessionChange();
 
     //johnsus - characterOnline mod
-    m_services.serviceDB().SetCharacterOnlineStatus(m_char->itemID(), true);
+    ServiceDB m_sdb;
+    m_sdb.SetCharacterOnlineStatus(m_char->itemID(), true);
     m_services.item_factory->UnsetUsingClient();
     m_char->SetLoginTime();
     UpdateSkillTraining();
@@ -1281,8 +1283,8 @@ void Client::_SendQueuedUpdates() {
     } //else nothing to be sent ...
 
     // clear the queues now, after the packets have been sent
-    m_destinyEventQueue->clear();
     m_destinyUpdateQueue->clear();
+    m_destinyEventQueue->clear();
     m_packaged = false;
 }
 
@@ -1341,11 +1343,12 @@ void Client::DisconnectClient()
 }
 void Client::BanClient()
 {
+    ServiceDB m_sdb;
     //send message to client
     SendNotifyMsg("You have been banned from this server and will be disconnected shortly.  You will no longer be able to log in");
 
     //ban the client
-    m_services.serviceDB().SetAccountBanStatus(GetUserID(), true);
+    m_sdb.SetAccountBanStatus(GetUserID(), true);
 }
 
 /************************************************************************/
@@ -1430,7 +1433,8 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     //sLog.Debug("Client","%s: Received Client Challenge.", GetAddress().c_str());
     //sLog.Debug("Client","Login with %s:", ccp.user_name.c_str());
 
-    if (!m_services.serviceDB().GetAccountInformation(
+    ServiceDB m_sdb;
+    if (!m_sdb.GetAccountInformation(
 				ccp.user_name.c_str(),
 				ccp.user_password_hash.c_str(),
 				account_info))
@@ -1460,7 +1464,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
             goto error_login_auth_failed;
         }
 
-        if (!m_services.serviceDB().UpdateAccountHash(
+        if (!m_sdb.UpdateAccountHash(
                 ccp.user_name.c_str(),
                 password_hash))
         {
@@ -1516,7 +1520,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     PyDecRef(rsp);
 
     /* update account information, increase login count, last login timestamp and mark account as online */
-    m_services.serviceDB().UpdateAccountInformation(account_info.name.c_str(), true);
+    m_sdb.UpdateAccountInformation(account_info.name.c_str(), true);
 
     /* marshaled Python string "None" */
     static const uint8 handshakeFunc[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65 };

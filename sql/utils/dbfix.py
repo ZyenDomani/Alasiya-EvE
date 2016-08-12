@@ -220,6 +220,10 @@ cursor.execute("\
    `typeID`, `typeName`, `basePrice`\
  FROM `invTypes`\
  WHERE\
+ `basePrice` = 0\
+ AND\
+ `published` = 1\
+ AND\
    `groupID` IN\
      (SELECT `groupID` FROM `invGroups` WHERE `categoryID` IN\
        (4,5,6,7,8,9,16,17,18,20,22,23,24,25,32,34,35,39,40,41,42,43,46))")

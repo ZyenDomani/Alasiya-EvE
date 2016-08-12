@@ -78,13 +78,13 @@ double Salvager::DoCycle() {
         _log(SHIP__MODULE_ERROR, "Salvage DoCycle hit end of conditional.");
     }
 
-    return _GetDuration();
+    return m_cycleTime;
 }
 
 void Salvager::StopCycle(bool abort)
 {
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
 
     // Create Special Effect:
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
@@ -142,7 +142,7 @@ void Salvager::_ShowCycle()
         0,
         1,
         1,
-        _GetDuration(),
+        m_cycleTime,
         1000
     );
 
@@ -163,7 +163,7 @@ void Salvager::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
@@ -216,7 +216,7 @@ void Salvager::SendFailure()
 void Salvager::CheckSuccess()
 { // same forumla used in analyzing and data salvage
     m_accessChance = m_targetEntity->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
-    int8 bonus = (m_Item->GetAttribute(AttrAccessDifficultyBonus).get_int() * pChar->GetSkillLevel(skillSalvaging));
+    int8 bonus = (GetAttribute(AttrAccessDifficultyBonus).get_int() * pChar->GetSkillLevel(skillSalvaging));
 
     /** @todo need to check for salvage tackle and add to chance here */
 
@@ -266,7 +266,7 @@ void Salvager::DropSalvage()
     m_accessChance = 0;
 
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
     // Create Destiny Updates:
     PyTuple* type = new PyTuple(2);
         type->SetItem(0, new PyInt(cacheSolarSystemObjects));

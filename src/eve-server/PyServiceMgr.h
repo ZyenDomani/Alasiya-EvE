@@ -56,16 +56,13 @@ public:
     void RegisterService( PyService* d );
     PyService* LookupService( const std::string& name );
 
-    uint32 GetNodeID() const { return(m_nodeID); }
+    uint32 GetNodeID() const                            { return m_nodeID; }
 
     //object binding, not fully understood yet.
-    PySubStruct *BindObject(Client *who, PyBoundObject *obj, PyDict **dict = NULL);
+    PySubStruct *BindObject(Client *who, PyBoundObject *obj, PyDict **dict = nullptr);
     PyBoundObject *FindBoundObject(uint32 bindID);
     void ClearBoundObject(uint32 bindID);
     void ClearBoundObjects(Client *who);
-
-    //this is a hack and needs to die:
-    ServiceDB &serviceDB() { return(m_svcDB); }
 
     ItemFactory* item_factory;    //here for anybody to use. we do not own this.
 
@@ -79,7 +76,7 @@ protected:
     std::set<PyService*> m_services;    //we own these pointers.
 
     uint32 m_nextBindID;
-    uint32 _GetBindID() { return(m_nextBindID++); }
+    uint32 _GetBindID()                                 { return ++m_nextBindID; }
 
     struct BoundObject
     {
@@ -92,7 +89,6 @@ protected:
     ObjectsBoundMap m_boundObjects;
 
     uint32 m_nodeID;
-    ServiceDB m_svcDB;    //this is crap, get rid of this
 };
 
 #endif

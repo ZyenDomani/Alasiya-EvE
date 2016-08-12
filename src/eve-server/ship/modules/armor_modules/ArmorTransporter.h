@@ -43,7 +43,6 @@ public:
 protected:
     void _ProcessCycle()       { /* Do nothing here */ }
     void _ShowCycle();
-    //double _GetDuration()       { /* Do nothing here */ }
     double _GetCapNeed();
     void _SetCapNeed();
 };

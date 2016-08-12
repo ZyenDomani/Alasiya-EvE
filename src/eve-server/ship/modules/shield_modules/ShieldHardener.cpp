@@ -33,7 +33,7 @@ ShieldHardener::ShieldHardener( InventoryItemRef item, ShipItemRef ship )
 void ShieldHardener::StopCycle(bool abort)
 {
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
@@ -89,7 +89,7 @@ void ShieldHardener::_ShowCycle()
      false,
      1,
      1,
-     _GetDuration(),
+     m_cycleTime,
      1000
     );
 
@@ -114,7 +114,7 @@ void ShieldHardener::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;

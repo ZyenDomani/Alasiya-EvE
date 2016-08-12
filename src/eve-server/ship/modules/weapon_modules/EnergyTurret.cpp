@@ -77,11 +77,13 @@ EnergyTurret::EnergyTurret( InventoryItemRef item, ShipItemRef ship )
             m_damageModifier *= (1 + ( 0.02 * (pChar->GetSkillLevel(skillLargeBeamLaserSpecialization, true)))); // 2% increase in damage
             break;
     }
+
+    m_Item->SetAttribute(AttrDamageMultiplier, m_damageModifier);
 }
 
 void EnergyTurret::Activate(SystemEntity* pSE)
 {
-	if (this->m_chargeRef) {
+	if (m_chargeRef) {
 		m_targetEntity = pSE;
 		m_targetID = pSE->GetID();
 		m_AMPC->ActivateCycle();
@@ -96,7 +98,7 @@ void EnergyTurret::Activate(SystemEntity* pSE)
 void EnergyTurret::StopCycle(bool abort)
 {
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
         m_Ship,
@@ -167,7 +169,7 @@ double EnergyTurret::DoCycle() {
                  m_thermal,
                  m_em,
                  m_explosive,
-                 m_formula.GetToHit(m_Ship, m_Item, m_targetEntity),
+                 m_formula.GetToHit(m_Ship, this, m_targetEntity),
                  effectTargetAttack       // from EVEEffectID::
                 );
 
@@ -177,7 +179,7 @@ double EnergyTurret::DoCycle() {
 		m_targetEntity->ApplyDamage(d);
         // doesnt the crystals have heat damage?
 
-        return _GetROF();
+        return m_cycleTime;
 }
 
 void EnergyTurret::_ShowCycle()
@@ -194,7 +196,7 @@ void EnergyTurret::_ShowCycle()
         1,
         1,
         1,
-        _GetROF(),
+        m_cycleTime,
         0
     );
 
@@ -219,17 +221,13 @@ void EnergyTurret::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetROF();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
-}
-
-double EnergyTurret::_GetROF() {
-    return m_ROF;
 }
 
 void EnergyTurret::_SetCapNeed()

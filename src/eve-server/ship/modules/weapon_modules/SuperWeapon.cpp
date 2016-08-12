@@ -82,7 +82,7 @@ void SuperWeapon::StopCycle(bool abort)
 	}
 
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
 
 	// Create Special Effect:
 	m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
@@ -172,7 +172,7 @@ double SuperWeapon::DoCycle()
 
 		// Reduce consumable in cargo:
 		// TODO
-        return _GetDuration();
+        return m_cycleTime;
 }
 
 void SuperWeapon::_ShowCycle()
@@ -214,7 +214,7 @@ void SuperWeapon::_ShowCycle()
         1,
         1,
         1,
-        _GetDuration(),
+        m_cycleTime,
         1
     );
 
@@ -235,7 +235,7 @@ void SuperWeapon::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;

@@ -35,7 +35,7 @@ ShieldBooster::ShieldBooster( InventoryItemRef item, ShipItemRef ship )
 void ShieldBooster::StopCycle(bool abort)
 {
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
 
     // Create Special Effect:
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
@@ -90,14 +90,14 @@ double ShieldBooster::DoCycle()
 
         // Apply boost amount:
         EvilNumber newShieldCharge = m_Ship->GetAttribute(AttrShieldCharge);
-        newShieldCharge += m_Item->GetAttribute(AttrShieldBonus);
+        newShieldCharge += GetAttribute(AttrShieldBonus);
         if (newShieldCharge > m_Ship->GetAttribute(AttrShieldCapacity)) {
             newShieldCharge = m_Ship->GetAttribute(AttrShieldCapacity);
             Deactivate();
         }
 
         m_Ship->SetAttribute(AttrShieldCharge, newShieldCharge);
-        return _GetDuration();
+        return m_cycleTime;
 }
 
 void ShieldBooster::_ShowCycle()
@@ -114,7 +114,7 @@ void ShieldBooster::_ShowCycle()
      0,
      1,
      1,
-     _GetDuration(),
+     m_cycleTime,
      1
     );
 
@@ -135,7 +135,7 @@ void ShieldBooster::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;

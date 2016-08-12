@@ -42,7 +42,6 @@ public:
 protected:
 	void _ProcessCycle() {}
 	void _ShowCycle();
-    double _GetDuration();
     //double _GetCapNeed();
     void _SetCapNeed();
 };

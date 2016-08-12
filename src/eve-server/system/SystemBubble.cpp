@@ -60,16 +60,15 @@ void SystemBubble::Process()
         return;
     }
 
+    // this must run a second time for spawn to actually hit.  first time only sets main system spawn timer.
+    // may be nuts, but will remain enabled as long as player in bubble and bubble has no rats.
     if (m_spawnTimer.Enabled())
-        if (m_spawnTimer.Check()) {
+        if (m_spawnTimer.Check())
             if (HasPlayers()) {
-                // this must run a second time for spawn to actually hit.  first time only sets main system spawn timer.
-                // may be nuts, but will remain enabled as long as player in bubble and bubble has no rats.
                 m_system->DoSpawnForBubble(this);
             } else {
                 m_spawnTimer.Disable();
             }
-        }
 }
 
 //called every 30s from the bubble manager.

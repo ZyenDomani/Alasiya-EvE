@@ -32,72 +32,93 @@
 TurrentModule::TurrentModule(InventoryItemRef item, ShipItemRef shipRef)
 : ActiveModule(item, shipRef)
 {
-    m_ROF = m_Item->GetAttribute(AttrSpeed).get_float();
-    m_capNeed = m_Item->GetAttribute(AttrCapacitorNeed).get_float();
-    m_damageModifier = m_Item->GetAttribute(AttrDamageMultiplier).get_float();
+    m_cycleTime = GetAttribute(AttrSpeed).get_float();
+    m_falloff = GetAttribute(AttrFalloff).get_int();
+    m_maxRange = GetAttribute(AttrMaxRange).get_int();
+    m_capNeed = GetAttribute(AttrCapacitorNeed).get_float();
+    m_trackingSpeed = GetAttribute(AttrTrackingSpeed).get_float();
+    m_damageModifier = GetAttribute(AttrDamageMultiplier).get_float();
+    m_optimalSigRadius = GetAttribute(AttrOptimalSigRadius).get_int();
 
     Character* pChar = m_Ship->GetPilot()->GetChar().get();
-    m_ROF *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillGunnery, true))));      //  2% decrease in rof
-    m_ROF *= (1 - ( 0.04 * (pChar->GetSkillLevel(skillRapidFiring, true))));  //  4% decrease in rof
+    m_cycleTime *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillGunnery, true))));      //  2% increase in rof (lower cycle times)
+    m_cycleTime *= (1 - ( 0.04 * (pChar->GetSkillLevel(skillRapidFiring, true))));  //  4% increase in rof
     m_capNeed *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillControlledBursts, true))));  //  5% decrease in cap need
     m_damageModifier *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillSurgicalStrike, true)))); // 5% increase in damage (upped from 3%)
     m_damageModifier *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillWeaponUpgrades, true)))); // 3% increase in damage
+
+    // Turrent Tracking data   - these may/may not be modified by loaded charge
+    m_falloff *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillTrajectoryAnalysis, true))));  //  5% increase in falloff
+    m_maxRange *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillSharpshooter, true))));      //  5% increase in optimal range
+    m_trackingSpeed *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillMotionPrediction, true)))); // 5% increase in tracking speed
+
+    // add ship bonuses here
+
+    // save adjusted attributes
+    m_Item->SetAttribute(AttrSpeed, m_cycleTime);
+    m_Item->SetAttribute(AttrCapacitorNeed, m_capNeed);
+    m_Item->SetAttribute(AttrFalloff, m_falloff);
+    m_Item->SetAttribute(AttrMaxRange, m_maxRange);
+    m_Item->SetAttribute(AttrTrackingSpeed, m_trackingSpeed);
+    m_Item->SetAttribute(AttrOptimalSigRadius, m_optimalSigRadius);
+    //m_Item->SetAttribute(AttrDamageMultiplier, m_damageModifier);  set in individual module code
 }
 
 void TurrentModule::Overload()
 {
     GenericModule::Overload();
-    m_damageModifier *= (1 + (m_Item->GetAttribute(AttrOverloadDamageModifier).get_float() /100));
-    m_ROF *= (1 + m_Item->GetAttribute(AttrOverloadRofBonus).get_float());
+    m_damageModifier *= (1 + (GetAttribute(AttrOverloadDamageModifier).get_float() /100));
+    m_cycleTime *= (1 + GetAttribute(AttrOverloadRofBonus).get_float());
+    m_Item->SetAttribute(AttrSpeed, m_cycleTime);
+    m_Item->SetAttribute(AttrDamageMultiplier, m_damageModifier);
 }
 
 void TurrentModule::DeOverload()
 {
-    m_damageModifier /= (1 + (m_Item->GetAttribute(AttrOverloadDamageModifier).get_float() /100));
-    m_ROF /= (1 + m_Item->GetAttribute(AttrOverloadRofBonus).get_float());
+    m_damageModifier /= (1 + (GetAttribute(AttrOverloadDamageModifier).get_float() /100));
+    m_cycleTime /= (1 + GetAttribute(AttrOverloadRofBonus).get_float());
     GenericModule::DeOverload();
+    m_Item->SetAttribute(AttrSpeed, m_cycleTime);
+    m_Item->SetAttribute(AttrDamageMultiplier, m_damageModifier);
 }
 
 void TurrentModule::LoadCharge(InventoryItemRef charge)
 {
-    //if (m_chargeRef) assert(m_chargeRef != charge);
-
     ActiveModule::LoadCharge(charge);
-    _UpdateModifiers(charge);
     m_kinetic       = m_chargeRef->GetAttribute(AttrKineticDamage).get_float();
     m_thermal       = m_chargeRef->GetAttribute(AttrThermalDamage).get_float();
     m_em            = m_chargeRef->GetAttribute(AttrEmDamage).get_float();
     m_explosive     = m_chargeRef->GetAttribute(AttrExplosiveDamage).get_float();
+
+    if (m_chargeRef->HasAttribute(AttrWeaponRangeMultiplier)) {
+        m_falloff *= m_chargeRef->GetAttribute(AttrWeaponRangeMultiplier).get_float();
+        m_maxRange *= m_chargeRef->GetAttribute(AttrWeaponRangeMultiplier).get_float();
+    }
+    if (m_chargeRef->HasAttribute(AttrDamageMultiplier))
+        m_damageModifier = m_chargeRef->GetAttribute(AttrDamageMultiplier).get_float();
+    if (m_chargeRef->HasAttribute(AttrMaxRangeBonus))
+        m_maxRange *= m_chargeRef->GetAttribute(AttrMaxRangeBonus).get_float();
+    if (m_chargeRef->HasAttribute(AttrTrackingSpeedBonus))
+        m_trackingSpeed *= m_chargeRef->GetAttribute(AttrTrackingSpeedBonus).get_float();
+    if (m_chargeRef->HasAttribute(AttrFalloffBonus))
+        m_falloff *= m_chargeRef->GetAttribute(AttrFalloffBonus).get_float();
+
+    /*  these are tracking scripts used with weapon upgrades modules 209,213, etc
+    if (m_chargeRef->HasAttribute(AttrMaxRangeBonusBonus))
+        m_maxRange *= m_chargeRef->GetAttribute(AttrMaxRangeBonusBonus).get_float();
+    if (m_chargeRef->HasAttribute(AttrTrackingSpeedBonusBonus))
+        m_trackingSpeed *= m_chargeRef->GetAttribute(AttrTrackingSpeedBonusBonus).get_float();
+    if (m_chargeRef->HasAttribute(AttrFalloffBonusBonus))
+        m_falloff *= m_chargeRef->GetAttribute(AttrFalloffBonusBonus).get_float();
+    */
 }
 
 void TurrentModule::UnloadCharge()
 {
-    if (m_chargeRef)
-        _RemoveModifier(m_chargeRef);
     ActiveModule::UnloadCharge();
     m_kinetic       = 0;
     m_thermal       = 0;
     m_em            = 0;
     m_explosive     = 0;
-}
-
-void TurrentModule::_UpdateModifiers(InventoryItemRef item)
-{
-    //  this part will get damage modifier from the module itself.  this is a hack.
-    // the method/function to get skill damage modifiers is in the specific weapon constructor.
-    if (!m_damageModifier) m_damageModifier = 1.0;
-    if (item->HasAttribute(AttrDamageMultiplier))
-        m_damageModifier *= item->GetAttribute(AttrDamageMultiplier).get_float();
-
-
-    //  this will be the place to put ship and skill and implant modifiers
-}
-
-void TurrentModule::_RemoveModifier(InventoryItemRef item)
-{
-    if (!m_damageModifier) m_damageModifier = 1.0;
-    if (item->HasAttribute(AttrDamageMultiplier))
-        m_damageModifier /= item->GetAttribute(AttrDamageMultiplier).get_float();
-
 }
 

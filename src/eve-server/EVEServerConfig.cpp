@@ -96,6 +96,7 @@ EVEServerConfig::EVEServerConfig()
     npc.StaticSpawns = false;//N
     npc.RoamingTimer = 15 /*m*/;
     npc.StaticTimer = 10 /*m*/;//P
+    npc.RatFaction = 0;
 
     // database
     database.host = "localhost";
@@ -306,6 +307,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     AddValueParser( "StaticSpawns",  npc.StaticSpawns );
     AddValueParser( "RoamingTimer",  npc.RoamingTimer );
     AddValueParser( "StaticTimer",   npc.StaticTimer );
+    AddValueParser( "RatFaction",   npc.RatFaction );
 
     const bool result = ParseElementChildren( ele );
 
@@ -314,6 +316,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "StaticSpawns" );
     RemoveParser( "RoamingTimer" );
     RemoveParser( "StaticTimer" );
+    RemoveParser( "RatFaction" );
 
     return result;
 }

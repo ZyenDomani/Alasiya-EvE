@@ -66,14 +66,15 @@ public:
 
     typedef std::set<uint32> character_set;
 
-    void Init(PyServiceMgr* svc);
+    void Init();
     void Close();
-    void Shutdown();
     void Process();
+    void Shutdown();
     void Add(Client* client);
     void Remove(Client* client);
     void AddNPC()                                       { ++m_npcs; }
     void RemoveNPC()                                    { --m_npcs; }
+    void SetService(PyServiceMgr* svc)                  { m_services = svc; }
     void FindByRegionID(uint32 regionID, std::vector<Client* > &result) const;
     void FindClientByStationID(uint32 stationID, std::vector<Client* > &result) const;
 
@@ -115,8 +116,10 @@ public:
 
     std::string GetAnomalyID();
 
+    bool GetTracking()                                  { return m_shipTracking; }
+    void SetTracking(bool set=false)                    { m_shipTracking = set; }
+
 protected:
-    ServiceDB* m_db;
     PyServiceMgr* m_services;    //we do not own this, only used for booting systems.
 
     Mutex mMutex;
@@ -134,6 +137,8 @@ private:
     uint32 m_stamp = 0;
     uint32 m_connections = 0;
     uint32 m_clientSeedID = 0;
+
+    bool m_shipTracking = false;
 };
 
 //Singleton

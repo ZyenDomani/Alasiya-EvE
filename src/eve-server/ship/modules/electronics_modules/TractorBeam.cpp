@@ -89,9 +89,9 @@ double TractorBeam::DoCycle() {
 		_ShowCycle();
 
 		GVector distanceToTarget(m_Ship->position(), m_targetEntity->GetPosition());
-        if (distanceToTarget.length() < (m_Item->GetAttribute(AttrMaxRange).get_float())) {
+        if (distanceToTarget.length() < (GetAttribute(AttrMaxRange).get_float())) {
             m_targetEntity->DestinyMgr()->TractorBeamStart(m_Ship->GetPilot()->GetShipSE());
-            return _GetDuration();
+            return m_cycleTime;
 		} else {
 			Deactivate();
 		}
@@ -111,7 +111,7 @@ void TractorBeam::_ShowCycle()
         1,
         1,
         1,
-        _GetDuration(),
+        m_cycleTime,
         m_repeat
     );
 
@@ -132,7 +132,7 @@ void TractorBeam::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
@@ -146,7 +146,7 @@ void TractorBeam::StopCycle(bool abort)
     m_targetEntity->DestinyMgr()->TractorBeamStop();
 
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
 
     // Create Special Effect:
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
@@ -160,7 +160,7 @@ void TractorBeam::StopCycle(bool abort)
         false,
         false,
         false,
-        _GetDuration(),
+        m_cycleTime,
         m_repeat
     );
 /*
@@ -181,7 +181,7 @@ void TractorBeam::StopCycle(bool abort)
         shipEff.active = 0;
         shipEff.environment = ge.Encode();
         shipEff.startTime = (shipEff.timeNow + (timeLeft * Win32Time_Second));
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;

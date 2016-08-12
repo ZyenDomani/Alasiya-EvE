@@ -50,7 +50,13 @@ public:
 
     void DisableRepTimers();
 
-    // public methods to enable calls from other classes
+    // public methods to enable calls from other classes (namely, TurrentFormulas.cpp)
+    bool IsIdle()                                       { return (m_state == Idle); }
+    bool IsFighting()                                   { return (m_state != Idle); }
+    uint16 GetMaxRange()                                { return m_optimalRange; }
+    uint32 GetFalloff()                                 { return m_falloff; }
+    uint32 GetAttackRange()                             { return m_maxAttackRange; }
+    double GetTrackingSpeed()                           { return m_trackingSpeed; }
 
 protected:
     void Attack(SystemEntity* pTarget);
@@ -79,25 +85,27 @@ protected:
 
 private:
     bool m_isWandering;
-    //cached to reduce access times. (faster but uses more memory)
-    uint16 m_falloff;
+    //these attributes are cached to reduce access times. (much faster but uses more memory)
     uint16 m_maxSpeed;
     uint16 m_ROF;
     uint16 m_orbitSpeed;
-    uint16 m_targetRange;
+    uint16 m_targetRange;   // max targeting range  default: m_maxAttackRange (unused)
     uint16 m_damageMultiplier;
     uint16 m_optimalRange;
-    uint16 m_boostRange;
+    uint16 m_boostRange;    // distance for Speed Boost activation   default:2500
     uint16 m_armorRepairDuration;
     uint16 m_shieldBoosterDuration;
 
     uint32 m_radius;
-    uint32 m_flyRange;
+    uint32 m_falloff;// distance past maximum range at which accuracy has fallen by half
+    uint32 m_flyRange;  // npc tries to stay at this distance from active target    default:500
     uint32 m_sightRange;
-    uint32 m_maxAttackRange;
+    uint32 m_maxAttackRange;// max firing range   default:15000
 
     float m_armorRepairChance;
     float m_shieldBoosterChance;
+
+    double m_trackingSpeed;
 
     NPC* m_npc;
 

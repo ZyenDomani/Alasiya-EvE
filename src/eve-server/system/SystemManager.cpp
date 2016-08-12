@@ -52,10 +52,10 @@
 
 SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)
 :  m_services(svc),
-  m_anomMgr(new AnomalyMgr(this, m_services)),
-  m_beltMgr(new AsteroidBeltMgr(this, m_services)),
-  m_dunMgr(new DungeonMgr(this, m_services)),
-  m_spawnMgr(new SpawnMgr(this, m_services))
+  m_anomMgr(new AnomalyMgr(this, svc)),
+  m_beltMgr(new AsteroidBeltMgr(this, svc)),
+  m_dunMgr(new DungeonMgr(this, svc)),
+  m_spawnMgr(new SpawnMgr(this, svc))
 {
     m_clients.clear();
     m_ratBubbles.clear();
@@ -123,6 +123,7 @@ bool SystemManager::LoadSystemStatics() {
     std::vector<DBSystemEntity> entities;
     entities.clear();
     m_entities.clear();
+    SystemDB m_db;
     if (!m_db.LoadSystemStaticEntities(m_data.systemID, entities)) {
         _log(INV__ERROR, "Unable to load celestial entities during boot of system %u.", m_data.systemID);
         return false;
@@ -173,9 +174,10 @@ bool SystemManager::LoadSystemStatics() {
             continue;
         }
         if (pSE->IsBeltSE() or pSE->IsGateSE() or pSE->IsStationSE())
-            sBubbleMgr.Add(pSE);  /* testing....no need to put planets and moons in a bubble.  */
+            sBubbleMgr.Add(pSE);
         m_entities[cur.itemID] = pSE;
         AddItemToInventory(pSE->GetSelf());
+        SystemDB m_db;
         if (!pSE->LoadExtras(&m_db))
             _log(INV__WARNING, "Failed to load additional data for entity %u. Continuing.", cur.itemID);
     }
@@ -403,6 +405,7 @@ public:
 
 bool SystemManager::LoadSystemDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
+    SystemDB m_db;
     if (!m_db.LoadSystemDynamicEntities(m_data.systemID, entities)) {
         _log(SERVICE__ERROR, "Unable to load dynamic entities during boot of system %u.", m_data.systemID);
         return false;
@@ -424,6 +427,7 @@ bool SystemManager::LoadSystemDynamics() {
 
 bool SystemManager::LoadPlayerDynamics(uint32 ownerID) {
     std::vector<DBSystemDynamicEntity> entities;
+    SystemDB m_db;
     if (!m_db.LoadPlayerDynamicEntities(ownerID, m_data.systemID, entities)) {
         _log(SERVICE__ERROR, "Unable to load player dynamic entities in system %u.", m_data.systemID);
         return false;
@@ -532,6 +536,7 @@ bool SystemManager::SystemActivity() {
 void SystemManager::UnloadSystem() {
     // save any roids before unloading the system
     m_beltMgr->Save();
+    /** @todo finish this */
     // use Inventory::DeleteContents(ItemFactory &factory) to remove system contents from memory.
     //Inventory::DeleteContents(m_services.item_factory);
     sLog.Success("SystemManager::UnloadSystem()", "UnloadSystem() called for empty system %s(%u).", \
@@ -731,6 +736,7 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
     into.destiny_state = new PyBuffer( &stateBuffer );
     SafeDelete( stateBuffer );
 
+    SystemDB m_db;
     into.droneState = m_db.GetSolDroneState( m_data.systemID );
 
     /* SolarSystem info.  this avoids the old way of a DB hit for every call.  */

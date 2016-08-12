@@ -34,10 +34,10 @@ class TurrentModule : public ActiveModule
 {
 public:
     TurrentModule(InventoryItemRef item, ShipItemRef shipRef);
-    virtual ~TurrentModule()                                 { /* Do nothing here */ }
+    virtual ~TurrentModule()                                { /* do nothing here */ }
 
     //  class type helpers.  public for anyone to access.
-    virtual bool IsTurrentModule()                           { return true; }
+    virtual bool IsTurrentModule()                          { return true; }
 
     //  functions to be handled in derived classes as needed
     virtual void LoadCharge(InventoryItemRef charge);
@@ -46,7 +46,7 @@ public:
     virtual void DeOverload();
 
 protected:
-    //  these are for pre-calculated values, to eliminate previous code calculating on EVERY CALL
+    //  these are  pre-calculated values to eliminate previous code calculating on EVERY CALL
     //  ship modifiers are not implemented yet.  skill modifiers are hacked here until i get skillModifierTables working
     float m_timerTime;
 
@@ -54,15 +54,6 @@ protected:
     double m_thermal                                        = 0;
     double m_em                                             = 0;
     double m_explosive                                      = 0;
-
-    // skill, charge, and module combined modifiers to avoid constant calculations.
-    double m_ROF;
-    double m_capNeed;
-    double m_rangeModifier;
-    double m_damageModifier;
-
-    void _UpdateModifiers(InventoryItemRef item);
-    void _RemoveModifier(InventoryItemRef item);
 };
 
 

@@ -152,8 +152,8 @@ public:
     bool AddModule(EVEItemFlags flag, GenericModule * mod);
     bool RemoveModule(EVEItemFlags flag);
     bool RemoveModule(uint32 itemID);
-    GenericModule* GetModule(EVEItemFlags flag);
-    GenericModule* GetModule(uint32 itemID);
+    GenericModule* GetModule(EVEItemFlags flag); //faster than GetModule(itemID)
+    GenericModule* GetModule(uint32 itemID); //slower than GetModule(flag)
 
     void StripModules();
 

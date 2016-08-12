@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 #ifndef EVE_ITEM_FACTORY_H
 #define EVE_ITEM_FACTORY_H
@@ -47,7 +48,7 @@ class ItemFactory
 {
     friend class InventoryItem;    //only for access to _DeleteItem
 public:
-    ItemFactory(EntityList& el);
+    ItemFactory();
     ~ItemFactory();
 
     void SaveItems();
@@ -57,7 +58,7 @@ public:
 
     uint32 Count()                                      { return m_itemCount; }
 
-    InventoryDB& db()                                   { return(m_db); }
+    InventoryDB& db()                                   { return m_db; }
 
     Client* GetUsingClient()                            { return m_pClient; }
     Inventory* GetInventoryFromId(uint32 inventoryID, bool load=true);
@@ -68,15 +69,14 @@ public:
      * @param[in] typeID  type to be returned.
      * @return Pointer to type data container; NULL if fails.
      */
+    const ItemCategory*     GetCategory(EVEItemCategories category);
+    const ItemGroup*        GetGroup(uint32 groupID);
     const ItemType*         GetType(uint32 typeID);
-    const BlueprintType*    GetBlueprintType(uint32 blueprintTypeID);
     const ShipType*         GetShipType(uint32 shipTypeID);
     const StationType*      GetStationType(uint32 stationTypeID);
     const CharacterType*    GetCharacterType(uint32 characterTypeID);
+    const BlueprintType*    GetBlueprintType(uint32 blueprintTypeID);
     const CharacterType*    GetCharacterTypeByBloodline(uint32 bloodlineID);
-
-    const ItemCategory*     GetCategory(EVEItemCategories category);
-    const ItemGroup*        GetGroup(uint32 groupID);
 
 
     /**
@@ -132,7 +132,6 @@ public:
 
 protected:
     InventoryDB m_db;
-    EntityList& entity_list;    //we do not own this.
     Client* m_pClient;     // pointer to client currently using the ItemFactory, we do not own this
 
     std::map<EVEItemCategories, ItemCategory*> m_categories;

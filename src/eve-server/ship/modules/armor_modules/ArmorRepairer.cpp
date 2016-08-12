@@ -33,7 +33,9 @@
 ArmorRepairer::ArmorRepairer( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
-
+    Character* pChar = m_Ship->GetPilot()->GetChar().get();
+    m_cycleTime *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillRepairSystems, true))));      //  5% decrease in cycle time
+    m_Item->SetAttribute(AttrDuration, m_cycleTime);
 }
 
 void ArmorRepairer::StopCycle(bool abort)
@@ -52,7 +54,7 @@ void ArmorRepairer::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectArmorRepair;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -81,14 +83,14 @@ double ArmorRepairer::DoCycle()
 
 		// Apply repair amount:
         EvilNumber newDamageAmount = m_Ship->GetAttribute(AttrArmorDamage);
-        newDamageAmount -= m_Item->GetAttribute(AttrArmorDamageAmount);
+        newDamageAmount -= GetAttribute(AttrArmorDamageAmount);
         if (newDamageAmount < 0) {
             m_Ship->SetAttribute(AttrArmorDamage, 0);
             Deactivate();
         } else
             m_Ship->SetAttribute(AttrArmorDamage, newDamageAmount);
 
-        return _GetDuration();
+        return m_cycleTime;
 }
 
 void ArmorRepairer::_ShowCycle()
@@ -105,7 +107,7 @@ void ArmorRepairer::_ShowCycle()
      0,
      1,
      1,
-     _GetDuration(),
+     m_cycleTime,
      1
     );
 
@@ -130,25 +132,13 @@ void ArmorRepairer::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
-}
-
-double ArmorRepairer::_GetDuration()
-{
-    Character* pChar = m_Ship->GetPilot()->GetChar().get();
-    double duration = m_Item->GetAttribute(AttrDuration).get_float();
-    duration *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillRepairSystems, true))));      //  5% decrease in cycle time
-
-    if (IsOverloaded())
-        duration *= (1 + m_Item->GetAttribute(AttrOverloadDurationBonus).get_float());
-
-    return duration;
 }
 
 void ArmorRepairer::_SetCapNeed()

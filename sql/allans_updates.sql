@@ -131,11 +131,11 @@ CREATE TABLE IF NOT EXISTS `mapConnections` (
   UNIQUE KEY `celestialID` (`celestialID`),
   KEY `stargateID_2` (`stargateID`),
   KEY `celestialID_2` (`celestialID`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ;
 
 /* Table structure for table `roidDistribution`  */
 
-CREATE TABLE IF NOT EXISTS `roidDistributionCmb` (
+CREATE TABLE IF NOT EXISTS `roidDistribution` (
   `AI` int(5) NOT NULL AUTO_INCREMENT,
   `systemSec` varchar(2) NOT NULL,
   `roidID` int(10) unsigned NOT NULL,
@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS `sklBaseSkills` (
   `skillTypeID` smallint(6) NOT NULL,
   `level` tinyint(4) NOT NULL,
   PRIMARY KEY (`ID`)
-  ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Basic Skills for All Races' AUTO_INCREMENT=10 ;
+  ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Basic Skills for All Races' AUTO_INCREMENT=10 ;
 
 /* Table structure for table `sklCareerSkills` */
 
@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS `sklCareerSkills` (
   `skillTypeID` int(11) NOT NULL DEFAULT '0',
   `level` tinyint(3) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (`careerID`,`skillTypeID`)
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='skill and level list by careerID';
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='skill and level list by careerID';
 
 /* Table structure for table `sklRaceSkills` */
 
@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS `sklRaceSkills` (
   `level` tinyint(3) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `skillTypeID` (`skillTypeID`)
-  ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='skill and level list by raceID' AUTO_INCREMENT=33 ;
+  ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='skill and level list by raceID' AUTO_INCREMENT=33 ;
 
 CREATE TABLE IF NOT EXISTS `mapSystemSovInfo` (
   `solarSystemID` int(11) NOT NULL,
@@ -208,7 +208,7 @@ CREATE TABLE IF NOT EXISTS `mapSystemSovInfo` (
   `claimTime` int(20) NOT NULL,
   `hubID` int(11) NOT NULL,
   `contested` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='SystemSovereigntyInfo';
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='SystemSovereigntyInfo';
 
 /* Table structure for table `crpAlliance` */
 

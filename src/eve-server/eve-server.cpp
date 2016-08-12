@@ -242,16 +242,17 @@ int main( int argc, char* argv[] )
     }
     Sleep(250);
 
-    /* create a single item factory and the entity list singleton */
-    sLog.Success("       ServerInit", "Starting Item Factory and Entity List");
-    ItemFactory* item_factory = new ItemFactory( sEntityList );
+    /* create a single item factory */
+    sLog.Success("       ServerInit", "Starting Item Factory");
+    ItemFactory* item_factory = new ItemFactory();
+
+    /* initialize EntityList singleton, clientID seed and start tic timer */
+    sLog.Success("       ServerInit", "Starting Entity List");
+    sEntityList.Init();
 
     /* create a service manager */
     sLog.Success("       ServerInit", "Starting Service Manager");
     PyServiceMgr services( 888444, sEntityList, item_factory );
-
-    /* initialize clientID seed and start tic timer */
-    sEntityList.Init(&services);
 
     /* create the WormholeMgr singleton */
     sLog.Success("       ServerInit", "Starting Wormhole Manager");
@@ -467,7 +468,8 @@ int main( int argc, char* argv[] )
     /* program events system */
     SetupSignals();
 
-    services.serviceDB().SetServerOnlineStatus(true);
+    ServiceDB m_sdb;
+    m_sdb.SetServerOnlineStatus(true);
     sLog.Success("       ServerInit", "Alasiya EvEmu Server is Online.");
 
     sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime));
@@ -510,7 +512,7 @@ int main( int argc, char* argv[] )
     }
 
     sLog.Warning("   ServerShutdown", "Main loop stopped" );
-    services.serviceDB().SetServerOnlineStatus(false);
+    m_sdb.SetServerOnlineStatus(false);
 
     /* stop TCP listener */
     tcps.Close();

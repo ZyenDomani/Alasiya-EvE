@@ -43,7 +43,6 @@ protected:
     // these should be virtual if used by GenericModule or ActiveModule pointer
     void _ProcessCycle()        { /* Do nothing here */ }
 	void _ShowCycle();
-    //double _GetDuration();
     //double _GetCapNeed()       { /* Do nothing here */ }
     void _SetCapNeed();
 

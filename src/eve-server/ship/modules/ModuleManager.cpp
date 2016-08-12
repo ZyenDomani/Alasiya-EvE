@@ -1191,16 +1191,22 @@ void ModuleManager::CharacterBoardingShip()
 
 void ModuleManager::ShipWarping()
 {
-    sLog.Magenta("ModuleManager::ShipWarping()","Needs to be implemented");
+    sLog.Magenta("ModuleManager::ShipWarping()","Deactivating all modules.");
     /** @todo  figure out how to check modules for warpsafe-ness and Deactivate accordingly
-     *  there is an attribute for it (AttrDisallowActivateOnWarp), so we could test for that and adjust as needed
+     *  there is an attribute for it (AttrDisallowActivateOnWarp), so we could test for that and adjust as needed started...(mod->IsWarpSafe())
+     * for now, abort all modules.  yes, this is harsh, but will have to fix later.
      */
+    AbortCycle();
 }
 
 void ModuleManager::ShipJumping()
 {
-    sLog.Magenta("ModuleManager::ShipJumping()","Needs to be implemented");
-    /** @todo figure out what needs to be done here and implement it  */
+    sLog.Magenta("ModuleManager::ShipJumping()","Deactivating all modules.");
+    /** @todo figure out what needs to be done here and implement it
+     * same as warping...check attribute and deactivate module.  this should be ALL modules
+     */
+    AbortCycle();
+    //DeactivateAllModules();
 }
 
 

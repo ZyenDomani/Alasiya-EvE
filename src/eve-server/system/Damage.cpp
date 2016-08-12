@@ -131,13 +131,13 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     } else {
         double modifier = d.GetModifier();
         d *= modifier;
-        if (modifier == 3.0)       damageID = 6;
-        else if (modifier > 1.24)  damageID = 5;
-        else if (modifier > 0.99)  damageID = 4;
-        else if (modifier > 0.74)  damageID = 3;
-        else if (modifier > 0.624) damageID = 2;
-        else if (modifier > 0.50)  damageID = 1;
-        else                       damageID = 0;
+        if (modifier == 3.0)        damageID = 6;
+        else if (modifier > 1.2501) damageID = 5;
+        else if (modifier > 1.0001) damageID = 4;
+        else if (modifier > 0.7501) damageID = 3;
+        else if (modifier > 0.6251) damageID = 2;
+        else if (modifier > 0.5001) damageID = 1;
+        else                        damageID = 0;
     }
 
     if (sConfig.rates.damageRate != 1.0)
@@ -568,7 +568,7 @@ void Ship::Killed(Damage &fatal_blow) {
             will have to look into this more later
          */
 
-        AbortCycle();  /* this will cancel all active modules ...hopefully */
+        AbortCycle();  /* this will cancel all active modules ...works */
         m_targMgr->DoDestruction();
 
         /** populate kill data for shipKill and save to db  -- need to verify this*/

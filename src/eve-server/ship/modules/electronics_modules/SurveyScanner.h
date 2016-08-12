@@ -43,7 +43,6 @@ public:
 protected:
     void _ProcessCycle() {}
     void _ShowCycle();
-    //double _GetDuration();
     //double _GetCapNeed();
     void _SetCapNeed();
 
@@ -52,7 +51,6 @@ private:
 
     bool m_firstRun;
     double m_range;
-    double m_duration;
 };
 
 #endif  //_EVE_SHIP_MOD_SCANNER_H_

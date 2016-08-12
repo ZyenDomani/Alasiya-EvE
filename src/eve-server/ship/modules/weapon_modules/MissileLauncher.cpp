@@ -36,35 +36,46 @@ MissileLauncher::MissileLauncher( InventoryItemRef item, ShipItemRef ship )
 {
     Character* pChar = m_Ship->GetPilot()->GetChar().get();
 
-    m_ROF = m_Item->GetAttribute(AttrSpeed).get_float();
-    m_ROF *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMissileLauncherOperation, true)))); //  2% decrease in rof
-    m_ROF *= (1 - ( 0.03 * (pChar->GetSkillLevel(skillRapidLaunch, true))));              //  3% decrease in rof
+    // as we hard-set attributes here, we need to make sure they are DEFAULT before adding bonuses.  (error fix)
+    m_Item->ResetAttribute(AttrSpeed);
+
+    m_cycleTime = GetAttribute(AttrSpeed).get_float();
+    m_cycleTime *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMissileLauncherOperation, true)))); //  2% decrease in rof
+    m_cycleTime *= (1 - ( 0.03 * (pChar->GetSkillLevel(skillRapidLaunch, true))));              //  3% decrease in rof
 
     switch (m_Item->typeID()) {
         case 2404:  //Standard Missile Launcher II
-            m_ROF *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillLightMissileSpecialization, true)))); //  2% decrease in rof
+            m_cycleTime *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillLightMissileSpecialization, true)))); //  2% decrease in rof
             break;
         case 27805: //Standard Missile Launcher III
-            m_ROF *=  (1 - ( 0.04 * (pChar->GetSkillLevel(skillLightMissileSpecialization, true)))); //  4% decrease in rof
+            m_cycleTime *=  (1 - ( 0.04 * (pChar->GetSkillLevel(skillLightMissileSpecialization, true)))); //  4% decrease in rof
             break;
         case 2410:  //Heavy Missile Launcher II
-            m_ROF *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillHeavyMissileSpecialization, true)))); //  2% decrease in rof
+            m_cycleTime *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillHeavyMissileSpecialization, true)))); //  2% decrease in rof
             break;
         case 1877:  //Assault Missile Launcher II
-            m_ROF *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillHeavyAssaultMissileSpecialization, true)))); //  2% decrease in rof
+            m_cycleTime *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillHeavyAssaultMissileSpecialization, true)))); //  2% decrease in rof
             break;
         case 19739: //Cruise Missile Launcher II
-            m_ROF *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillCruiseMissileSpecialization, true)))); //  2% decrease in rof
+            m_cycleTime *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillCruiseMissileSpecialization, true)))); //  2% decrease in rof
             break;
         case 10631: //Rocket Launcher II
-            m_ROF *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillRocketSpecialization, true)))); //  2% decrease in rof
+            m_cycleTime *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillRocketSpecialization, true)))); //  2% decrease in rof
             break;
         case 2420:  //Siege Missile Launcher II
-            m_ROF *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillTorpedoSpecialization, true)))); //  2% decrease in rof
+            m_cycleTime *=  (1 - ( 0.02 * (pChar->GetSkillLevel(skillTorpedoSpecialization, true)))); //  2% decrease in rof
             break;
     }
 
     // need to put ship mods for rof here.
+
+    // save adjusted attributes
+    m_Item->SetAttribute(AttrSpeed, m_cycleTime);
+}
+
+MissileLauncher::~MissileLauncher()
+{
+    m_Item->ResetAttribute(AttrSpeed);
 }
 
 void MissileLauncher::Activate(SystemEntity* pSE)
@@ -84,14 +95,18 @@ void MissileLauncher::Activate(SystemEntity* pSE)
 
 void MissileLauncher::Overload()
 {
-    //ActiveModule::Overload();
-    m_ROF *= (1 + m_Item->GetAttribute(AttrOverloadRofBonus).get_float());
+    ActiveModule::Overload();
+    m_cycleTime *= (1 + GetAttribute(AttrOverloadRofBonus).get_float());
+    // save adjusted attributes
+    m_Item->SetAttribute(AttrSpeed, m_cycleTime);
 }
 
 void MissileLauncher::DeOverload()
 {
-    //ActiveModule::DeOverload();
-    m_ROF /= (1 + m_Item->GetAttribute(AttrOverloadRofBonus).get_float());
+    ActiveModule::DeOverload();
+    m_cycleTime /= (1 + GetAttribute(AttrOverloadRofBonus).get_float());
+    // save adjusted attributes
+    m_Item->SetAttribute(AttrSpeed, m_cycleTime);
 }
 
 void MissileLauncher::StopCycle(bool abort)
@@ -113,7 +128,7 @@ void MissileLauncher::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectUseMissiles;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -147,7 +162,7 @@ double MissileLauncher::DoCycle() {
         _ShowCycle();
         _LaunchMissile();
 
-        return _GetROF();
+        return m_cycleTime;
 }
 
 void MissileLauncher::_LaunchMissile()
@@ -191,7 +206,7 @@ void MissileLauncher::_ShowCycle()
         true,
         true,
         true,
-        _GetROF(),
+        m_cycleTime,
         1000
     );
 
@@ -216,7 +231,7 @@ void MissileLauncher::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetROF();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_chargeRef->quantity();
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
@@ -225,13 +240,3 @@ void MissileLauncher::_ShowCycle()
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
-double MissileLauncher::_GetROF() {
-    return m_ROF;
-}
-
-void MissileLauncher::_SetCapNeed()
-{
-    // this will be needed for modules and rigs that affect cap need for mining modules
-    //double need = GetAttribute(AttrCapacitorNeed);
-
-}

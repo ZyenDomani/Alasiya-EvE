@@ -36,7 +36,7 @@ ShieldTransporter::ShieldTransporter( InventoryItemRef item, ShipItemRef ship )
 void ShieldTransporter::StopCycle(bool abort)
 {
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
 
     // Create Special Effect:
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
@@ -91,13 +91,13 @@ double ShieldTransporter::DoCycle()
 
         // Apply boost amount:
         EvilNumber shieldCharge = m_targetEntity->GetSelf()->GetAttribute(AttrShieldCharge);
-        shieldCharge += m_Item->GetAttribute(AttrShieldBonus);
+        shieldCharge += GetAttribute(AttrShieldBonus);
         if (shieldCharge > m_targetEntity->GetSelf()->GetAttribute(AttrShieldCapacity)) {
             shieldCharge = m_targetEntity->GetSelf()->GetAttribute(AttrShieldCapacity);
         }
         m_targetEntity->GetSelf()->SetAttribute(AttrShieldCharge, shieldCharge);
 
-        return _GetDuration();
+        return m_cycleTime;
 }
 
 void ShieldTransporter::_ShowCycle()
@@ -114,7 +114,7 @@ void ShieldTransporter::_ShowCycle()
      0,
      1,
      1,
-     _GetDuration(),
+     m_cycleTime,
      1
     );
 
@@ -135,7 +135,7 @@ void ShieldTransporter::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
@@ -148,7 +148,7 @@ double ShieldTransporter::_GetCapNeed()
 {
 	// This layout does not count the possible fleet bonuses, so it helps to set the cap need just once - when module's being fitted.
 	// First off - pulling up the primary data - module's cap need and primary skill level, that will affect the cap need.
-	double moduleCapNeed = m_Item->GetAttribute(AttrCapacitorNeed).get_float();
+	double moduleCapNeed = GetAttribute(AttrCapacitorNeed).get_float();
 
 	// Now we do the initial cap need calculations
 	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillShieldEmissionSystems)));

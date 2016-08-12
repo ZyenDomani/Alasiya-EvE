@@ -40,10 +40,13 @@ truncate table tStations;
 insert into tStations values (60004591, 30002507, 10000030);
 
 -- actual seeding
-INSERT INTO market_orders (typeID, charID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState, minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)
-  SELECT typeID,1 as charID, regionID, stationID, 0 as bid, IF(basePrice>100000, 1000, basePrice/100) as price, 550 as volEntered, 550 as volRemaining, 130565976636875000 as issued,1 as orderState, 1 as minVolume,0 as contraband, 0 as accountID, 18250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 15 as jumps
+INSERT INTO market_orders (typeID, charID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState,
+minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)
+  SELECT typeID,1 as charID, regionID, stationID, 0 as bid, IF(basePrice>100000, 1000, basePrice/100) as price,
+  550 as volEntered, 550 as volRemaining, 130565976636875000 as issued,1 as orderState, 1 as minVolume,0 as contraband,
+  0 as accountID, 18250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 15 as jumps
   FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
-  WHERE invTypes.published = 1 and categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
+  WHERE invTypes.published = 1 and categoryID IN (4,5,6,7,8,9,16,17,18,20,22,23,24,25,32,34,35,39,40,41,42,43,46);
 UPDATE `market_orders` SET `price`=100 WHERE `price`=0
 
 
@@ -57,6 +60,7 @@ categoryID  categoryName
 16  Skill
 17  Commodity
 18  Drone
+20  Implant
 22  Deployable
 23  Structure
 24  Reaction

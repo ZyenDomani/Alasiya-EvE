@@ -46,7 +46,7 @@ void ArmorHardener::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectModifyActiveArmorResonanceAndNullifyPassiveResonance;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -78,7 +78,7 @@ void ArmorHardener::_ShowCycle()
      0,
      1,
      1,
-     _GetDuration(),
+     m_cycleTime,
      1
     );
 
@@ -103,7 +103,7 @@ void ArmorHardener::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;

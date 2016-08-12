@@ -405,7 +405,7 @@ public:
     virtual void Killed(Damage &fatal_blow);
 
     /* specific functions handled here. */
-    bool Load(ServiceDB& from);
+    bool Load();
     void AwardBounty(Client* pClient);
 
 };

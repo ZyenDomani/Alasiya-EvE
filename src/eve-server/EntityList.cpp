@@ -45,30 +45,18 @@ m_stampTimer(1000, true)    /* in ms */
     m_stations.clear();
 
     m_connections = 0;
+    m_shipTracking = sConfig.server.UseShipTracking;
 }
 
 EntityList::~EntityList() {
     sLog.Success("   ServerShutdown", " Complete.");
 }
 
-void EntityList::Init(PyServiceMgr* svc) {
-    m_services = svc;
+void EntityList::Init() {
     /* start the timer */
     m_stampTimer.Start(1000);
-    m_clientSeedID = m_db->SetClientSeed();
-}
-
-void EntityList::Close()
-{
-    sLog.Log(" EntityList::Close()", "Cleaning up %u clients, %u systems, and %u stations", \
-                m_clients.size(), m_systems.size(), m_stations.size());
-
-    for(auto cur : m_systems)
-        SafeDelete(cur.second);
-
-    m_systems.clear();
-    m_clients.clear();
-    m_stations.clear();
+    ServiceDB m_db;
+    m_clientSeedID = m_db.SetClientSeed();
 }
 
 void EntityList::Shutdown() {
@@ -77,10 +65,26 @@ void EntityList::Shutdown() {
      * call d'tor on all connected clients
      * server run loop will exit after control is returned from this function, which will clean up remaining items.
      */
-    for (auto cur : m_clients) {
+    for (auto cur : m_clients)
         SafeDelete(cur);
-    }
+
     m_clients.clear();
+}
+
+void EntityList::Close()
+{
+    sLog.Log(" EntityList::Close()", "Cleaning up %u clients, %u systems, and %u stations", \
+                m_clients.size(), m_systems.size(), m_stations.size());
+
+    for (auto cur : m_clients)
+        SafeDelete(cur);
+
+    for (auto cur : m_systems)
+        SafeDelete(cur.second);
+
+    m_systems.clear();
+    m_clients.clear();
+    m_stations.clear();
 }
 
 void EntityList::Add( Client* client ) {
@@ -159,7 +163,7 @@ SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
     if (res != m_systems.end())
         return res->second;
 
-    SystemManager* mgr = new SystemManager(systemID,* m_services);
+    SystemManager* mgr = new SystemManager(systemID, *m_services);
     if ((!mgr) || (!mgr->BootSystem())) {
         _log(SERVER__INIT_ERR, "BootSystem() - Booting system %u failed", systemID);
         SafeDelete(mgr);

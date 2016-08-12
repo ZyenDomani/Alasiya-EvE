@@ -99,10 +99,11 @@ public:
 
     /* Movement checks */
     bool IsAligned(GPoint &targetPoint);
-    bool IsStopped()                                    { return ((State == Destiny::DSTBALL_STOP) ? true : false); }
-    bool IsOrbiting()                                   { return ((State == Destiny::DSTBALL_ORBIT) ? true : false); }
-    bool IsFollowing()                                  { return ((State == Destiny::DSTBALL_FOLLOW) ? true : false); }
-    //bool IsJumping()                                  { return ((State == Destiny::DSTBALL_STOP) ? true : false); }
+    bool IsGoto()                                       { return (State == Destiny::DSTBALL_GOTO); }
+    bool IsStopped()                                    { return (State == Destiny::DSTBALL_STOP); }
+    bool IsOrbiting()                                   { return (State == Destiny::DSTBALL_ORBIT); }
+    bool IsFollowing()                                  { return (State == Destiny::DSTBALL_FOLLOW); }
+    //bool IsJumping()                                  { return (State == Destiny::DSTBALL_STOP) ? true : false); }
     bool IsWarping()                                    { return (m_warpState ? true : false); }
 	bool IsCloaked()                                    { return m_cloaked; }
 	bool IsTurning()                                    { return m_turning; }
@@ -147,9 +148,6 @@ public:
     GVector GetHeading()                                { return m_shipHeading; }
 
     void MakeMissile(Missile* missile);
-
-    bool GetTracking()                                  { return m_shipTracking; }
-    void SetTracking(bool set=false)                    { m_shipTracking = set; }
 
 protected:
     void ProcessState();
@@ -291,8 +289,6 @@ private:
         GVector warp_vector;        //target direction based on ship's initial position
     };
     WarpState* m_warpState;		    //we own this.
-
-    bool m_shipTracking;
 };
 
 #endif

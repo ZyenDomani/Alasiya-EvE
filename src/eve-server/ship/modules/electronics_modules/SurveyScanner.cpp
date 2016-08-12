@@ -42,12 +42,12 @@ SurveyScanner::SurveyScanner(InventoryItemRef item, ShipItemRef ship)
     m_Item->ResetAttribute(AttrSurveyScanRange);
 
     // get module range
-    m_range = m_Item->GetAttribute(AttrSurveyScanRange).get_float();
+    m_range = GetAttribute(AttrSurveyScanRange).get_float();
     // get module duration
-    m_duration = m_Item->GetAttribute(AttrDuration).get_float();
+    m_cycleTime = GetAttribute(AttrDuration).get_float();
 
     m_range *= (1 + (0.03 * (pChar->GetSkillLevel(skillLongRangeTargeting, true)))); // 3% increase in range (here)
-    m_duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillSignatureAnalysis, true)))); // 2% decrease in duration (here)
+    m_cycleTime *= (1 - (0.02 * (pChar->GetSkillLevel(skillSignatureAnalysis, true)))); // 2% decrease in duration (here)
 
     if (m_Ship->type().id() == 28606) { /* orca */
         m_range *= 500;               // 500% increase in range
@@ -55,42 +55,42 @@ SurveyScanner::SurveyScanner(InventoryItemRef item, ShipItemRef ship)
         m_range *= 900;               // 900% increase in range
     } else if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge) {
         m_range *= (1 + (0.05 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 5% increase in range (here)
-        m_duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% decrease in duration (here)
+        m_cycleTime *= (1 - (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% decrease in duration (here)
     } else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer) {
         m_range *= (1 + (0.05 * (pChar->GetSkillLevel(skillExhumers, true))));    // 5% increase in range (here)
-        m_duration *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true)))); // 2% decrease in duration (here)
+        m_cycleTime *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true)))); // 2% decrease in duration (here)
     } else {
         // lets modify range by 20% and duration by 5% for small mining ships.
         switch (m_Ship->typeID()) {
             case 591: { /* Tormentor */
                 m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillAmarrFrigate, true))));
-                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillAmarrFrigate, true))));
+                m_cycleTime *= (1 - (0.05 * (pChar->GetSkillLevel(skillAmarrFrigate, true))));
             } break;
             case 582: { /* Bantam */
                 m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillCaldariFrigate, true))));
-                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillCaldariFrigate, true))));
+                m_cycleTime *= (1 - (0.05 * (pChar->GetSkillLevel(skillCaldariFrigate, true))));
             } break;
             case 592: { /* Navitas */
                 m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillGallenteFrigate, true))));
-                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillGallenteFrigate, true))));
+                m_cycleTime *= (1 - (0.05 * (pChar->GetSkillLevel(skillGallenteFrigate, true))));
             } break;
             case 599: { /* Burst */
                 m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillMinmatarFrigate, true))));
-                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillMinmatarFrigate, true))));
+                m_cycleTime *= (1 - (0.05 * (pChar->GetSkillLevel(skillMinmatarFrigate, true))));
             } break;
             case 620: { /* Osprey */
                 m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillCaldariCruiser, true))));
-                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillCaldariCruiser, true))));
+                m_cycleTime *= (1 - (0.05 * (pChar->GetSkillLevel(skillCaldariCruiser, true))));
             } break;
             case 631: { /* Scythe */
                 m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillMinmatarCruiser, true))));
-                m_duration *= (1 - (0.05 * (pChar->GetSkillLevel(skillMinmatarCruiser, true))));
+                m_cycleTime *= (1 - (0.05 * (pChar->GetSkillLevel(skillMinmatarCruiser, true))));
             } break;
         }
     }
 
     // save adjusted attributes
-    m_Item->SetAttribute(AttrDuration, m_duration);
+    m_Item->SetAttribute(AttrDuration, m_cycleTime);
     m_Item->SetAttribute(AttrSurveyScanRange, m_range);
 }
 
@@ -146,13 +146,13 @@ double SurveyScanner::DoCycle() {
         return 0;
     }
 
-    return m_duration;
+    return m_cycleTime;
 }
 
 void SurveyScanner::StopCycle(bool abort)
 {
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
 
     // Create Special Effect:
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
@@ -210,7 +210,7 @@ void SurveyScanner::_ShowCycle()
         0,
         1,
         1,
-        m_duration,
+        m_cycleTime,
         m_repeat
     );
 
@@ -231,7 +231,7 @@ void SurveyScanner::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = m_duration;
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;

@@ -98,9 +98,8 @@ void ActiveModuleProcessingComponent::ActivateCycle()
         }
     }
 
-    //each module has a _GetROF() or _GetDuration() method that returns a cycle time,
-    // based on character skills and specific module attributes.
-    //  specific module classes may override the default in ActiveModule()   -allan 19Dec15
+    //active module class has a m_cycleTime variable that holds cycle time,
+    // based on character skills and specific module attributes.  -allan 19Dec15
     SetTimer((uint32)m_Mod->DoCycle()); // Do initial cycle immediately while we start timer
 }
 
@@ -157,10 +156,8 @@ void ActiveModuleProcessingComponent::AbortCycle()
 }
 
 void ActiveModuleProcessingComponent::ShouldProcessActiveCycle() {
-    //first, check if we have been told to deactivate
 	if (m_Stop)
         return;
-	//check that we have enough capacitor avaiable
     if (m_Mod->ShipHasCapCharge())
         ProcessActiveCycle();
 	else
@@ -169,7 +166,6 @@ void ActiveModuleProcessingComponent::ShouldProcessActiveCycle() {
 
 void ActiveModuleProcessingComponent::ProcessActiveCycle()
 {
-    //check for stop signal
     if (m_Stop)
         return;
 
@@ -182,7 +178,7 @@ void ActiveModuleProcessingComponent::ProcessActiveCycle()
     capCapacity -= m_Mod->GetAttribute(AttrCapacitorNeed);  // this is reset by modules that need it to be.
     m_Ship->SetAttribute(AttrCapacitorCharge, capCapacity);
 
-    // reset timer here, in the case of cycle time changing (mostly for fleet bonuses)
+    // reset timer here, in the case of cycle time changing for fleet bonuses
     SetTimer((uint32)m_Mod->DoCycle());
 }
 

@@ -35,7 +35,7 @@ Webifier::Webifier( InventoryItemRef item, ShipItemRef ship )
 
 void Webifier::Activate(SystemEntity* pSE)
 {
-    DestinyManager* pDestiny = m_targetEntity->DestinyMgr();
+    DestinyManager* pDestiny = pSE->DestinyMgr();
     if (!pDestiny) return;
 
     m_targetEntity = pSE;
@@ -46,7 +46,7 @@ void Webifier::Activate(SystemEntity* pSE)
 	//_ShowCycle();
 
     m_originalSpeed = pDestiny->GetMaxVelocity();
-    double multiplier = ((100 + m_Item->GetAttribute(AttrSpeedFactor).get_float()) /100);
+    double multiplier = ((100 + GetAttribute(AttrSpeedFactor).get_float()) /100);
     double newSpeed = m_originalSpeed * multiplier;
     pDestiny->SetMaxVelocity(newSpeed);
     pDestiny->SetSpeedFraction();
@@ -66,7 +66,7 @@ void Webifier::Deactivate()
 void Webifier::StopCycle(bool abort)
 {
     double timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
 
     // Create Special Effect:
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
@@ -127,7 +127,7 @@ double Webifier::DoCycle()
         //check for range here..
         //  maxRange, overloadRangeBonus
 
-        return _GetDuration();
+        return m_cycleTime;
 }
 
 void Webifier::_ShowCycle()
@@ -165,7 +165,7 @@ void Webifier::_ShowCycle()
         1,
         1,
         1,
-        _GetDuration(),
+        m_cycleTime,
         1
      );
 
@@ -190,7 +190,7 @@ void Webifier::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;

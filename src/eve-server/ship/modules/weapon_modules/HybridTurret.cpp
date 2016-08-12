@@ -81,6 +81,8 @@ HybridTurret::HybridTurret( InventoryItemRef item, ShipItemRef ship )
             m_damageModifier *= (1 + ( 0.02 * (pChar->GetSkillLevel(skillLargeBlasterSpecialization, true)))); // 2% increase in damage
             break;
     }
+
+    m_Item->SetAttribute(AttrDamageMultiplier, m_damageModifier);
 }
 
 void HybridTurret::Activate(SystemEntity* pSE)
@@ -116,7 +118,7 @@ void HybridTurret::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectProjectileFired;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -156,7 +158,7 @@ double HybridTurret::DoCycle() {
                  m_thermal,
                  m_em,
                  m_explosive,
-                 m_formula.GetToHit(m_Ship, m_Item, m_targetEntity),
+                 m_formula.GetToHit(m_Ship, this, m_targetEntity),
                  effectProjectileFired       // from EVEEffectID::
                 );
 
@@ -168,7 +170,7 @@ double HybridTurret::DoCycle() {
 		// Reduce ammo charge by 1 unit:
 		m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1);
 
-        return _GetROF();
+        return m_cycleTime;
 }
 
 void HybridTurret::_ShowCycle()
@@ -185,7 +187,7 @@ void HybridTurret::_ShowCycle()
         true,
         true,
         true,
-        _GetROF(),
+        m_cycleTime,
         0
     );
 
@@ -210,17 +212,13 @@ void HybridTurret::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetROF();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
-}
-
-double HybridTurret::_GetROF() {
-    return m_ROF;
 }
 
 void HybridTurret::_SetCapNeed()

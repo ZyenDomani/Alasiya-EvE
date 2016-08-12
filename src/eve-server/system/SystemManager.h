@@ -63,7 +63,6 @@ public:
     StationItemRef GetStationFromInventory(uint32 stationID);
     CargoContainerRef GetContainerFromInventory(uint32 contID);
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
-    SystemDB* GetSystemDB()                             { return &m_db; }
     Inventory* GetSystemInv()                           { return m_solarSystemRef->GetInventory(); }
 
     bool ProcessTic();          // called at 1Hz.
@@ -112,7 +111,6 @@ protected:
     DungeonMgr* m_dunMgr;       //we own this, never NULL.
     SpawnMgr* m_spawnMgr;       //we own this, never NULL.
 
-    SystemDB m_db;
     SystemData m_data;
     PyServiceMgr& m_services;
     SolarSystemRef m_solarSystemRef;

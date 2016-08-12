@@ -35,7 +35,7 @@ class MissileLauncher: public ActiveModule
 {
 public:
     MissileLauncher( InventoryItemRef item, ShipItemRef ship );
-    virtual ~MissileLauncher() { }
+    virtual ~MissileLauncher();
 
     /* ActiveModule overrides */
     void Overload();
@@ -47,12 +47,8 @@ public:
 protected:
     Missile* pMissile;  // we own this
 
-    double m_ROF;
-
 	void _ShowCycle();
     void _LaunchMissile();
-    double _GetROF();
-    void _SetCapNeed();
 };
 
 #endif

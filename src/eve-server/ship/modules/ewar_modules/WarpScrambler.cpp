@@ -40,7 +40,6 @@ void WarpScrambler::Activate(SystemEntity* pSE)
 {
     DestinyManager* pDestiny = pSE->DestinyMgr();
     if (!pDestiny) return;
-
     m_targetEntity = pSE;
     m_targetID = pSE->GetID();
 
@@ -48,7 +47,7 @@ void WarpScrambler::Activate(SystemEntity* pSE)
 	m_AMPC->ActivateCycle();
 	//_ShowCycle();
 
-    EvilNumber scramStr = m_Item->GetAttribute(AttrWarpScrambleStrength);
+    EvilNumber scramStr = GetAttribute(AttrWarpScrambleStrength);
     scramStr += pSE->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
     pSE->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
 }
@@ -59,7 +58,7 @@ void WarpScrambler::Deactivate()
         return;
     ActiveModule::Deactivate();
 
-    EvilNumber scramStr = m_Item->GetAttribute(AttrWarpScrambleStrength);
+    EvilNumber scramStr = GetAttribute(AttrWarpScrambleStrength);
     scramStr -= m_targetEntity->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
     m_targetEntity->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
 }
@@ -67,7 +66,7 @@ void WarpScrambler::Deactivate()
 void WarpScrambler::StopCycle(bool abort)
 {
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
 
     // Create Special Effect:
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
@@ -128,7 +127,7 @@ double WarpScrambler::DoCycle()
         //check for range here..
         //  maxRange, overloadRangeBonus
 
-        return _GetDuration();
+        return m_cycleTime;
 }
 
 void WarpScrambler::_ShowCycle()
@@ -165,7 +164,7 @@ void WarpScrambler::_ShowCycle()
         1,
         1,
         1,
-        _GetDuration(),
+        m_cycleTime,
         1
      );
 
@@ -190,7 +189,7 @@ void WarpScrambler::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;

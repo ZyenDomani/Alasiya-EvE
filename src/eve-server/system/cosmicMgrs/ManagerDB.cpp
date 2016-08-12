@@ -56,7 +56,7 @@ void MgrData::_Populate()
     oreChance.typeID  = 0;
     oreChance.chance  = 0;
     while (res->GetRow(row)) {
-        //SELECT systemSec, roidID, percent FROM roidDistributionCmb
+        //SELECT systemSec, roidID, percent FROM roidDistribution
         oreChance.typeID  = row.GetInt(1);
         oreChance.chance  = row.GetFloat(2);
         m_oreBySecClass.insert(std::pair<std::string, OreTypeChance>(row.GetText(0), oreChance));

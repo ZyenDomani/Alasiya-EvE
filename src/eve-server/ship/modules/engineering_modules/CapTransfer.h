@@ -40,12 +40,9 @@ public:
     virtual double DoCycle();
     virtual void StopCycle(bool abort=false);
 
-	//double m_capNeed;		// This variable is to be used in ActiveModuleProcessingComponent
-
 protected:
 	void _ProcessCycle() {}
 	void _ShowCycle();
-    //double _GetDuration();
     double _GetCapNeed();
     void _SetCapNeed();
 };

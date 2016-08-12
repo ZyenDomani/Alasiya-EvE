@@ -50,24 +50,16 @@ protected:
 	void ProcessCycle(bool partial=false);
 
     void _ShowCycle();
-    double _GetDuration();
     //double _GetCapNeed();
     void _SetCapNeed();
 
 private:
     bool m_IsInitialCycle;
 
-    uint32 m_effectID;
-
-    double m_duration;
     double m_cycleVol;
-    double m_range;
-
-    std::string m_effectStr;
 
     //cached item-type stuff
     bool m_rMiner, m_dcMiner, m_iMiner, m_gMiner;
-
 };
 
 #endif

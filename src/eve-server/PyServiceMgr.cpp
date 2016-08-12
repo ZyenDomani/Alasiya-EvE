@@ -38,9 +38,9 @@ PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityList& elist, ItemFactory* ifact
   lsc_service(nullptr),
   cache_service(nullptr),
   m_nextBindID(100),
-  m_nodeID(nodeID),
-  m_svcDB()
+  m_nodeID(nodeID)
 {
+    elist.SetService(this);
 }
 
 PyServiceMgr::~PyServiceMgr() {
@@ -78,23 +78,23 @@ PyService *PyServiceMgr::LookupService(const std::string &name) {
     return nullptr;
 }
 
-PySubStruct *PyServiceMgr::BindObject(Client *c, PyBoundObject *cb, PyDict **dict) {
-    if (cb == NULL) {
+PySubStruct *PyServiceMgr::BindObject(Client* who, PyBoundObject* pObj, PyDict** dict) {
+    if (!pObj) {
         sLog.Error("Service Mgr", "Tried to bind a NULL object!");
         return new PySubStruct(new PyNone());
     }
 
-    cb->_SetNodeBindID(GetNodeID(), _GetBindID());    //tell the object what its bind ID is.
+    pObj->_SetNodeBindID(GetNodeID(), _GetBindID());    //tell the object what its bind ID is.
 
     BoundObject obj;
-    obj.client = c;
-    obj.destination = cb;
+    obj.client = who;
+    obj.destination = pObj;
 
-    m_boundObjects[cb->bindID()] = obj;
+    m_boundObjects[pObj->bindID()] = obj;
 
-    std::string bind_str = cb->GetBindStr();
+    std::string bind_str = pObj->GetBindStr();
     _log(SERVICE__MESSAGE, "Service Mgr Binding %s to node %u:%u for %s", \
-                cb->GetBoundObjectClassStr().c_str(), cb->m_nodeID, cb->m_bindID, c->GetName());
+                pObj->GetBoundObjectClassStr().c_str(), pObj->m_nodeID, pObj->m_bindID, who->GetName());
 
     //not sure what this really is...
     uint64 expiration = Win32TimeNow() + Win32Time_Hour;

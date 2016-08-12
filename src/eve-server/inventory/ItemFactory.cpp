@@ -45,8 +45,7 @@ uint32 ItemFactory::m_nextAsteroidID = EVEMU_ASTEROID_ID;
 uint32 ItemFactory::m_nextMissileID = EVEMU_MISSILE_ID;
 uint32 ItemFactory::m_nextNPCID = EVEMU_NPC_ID;
 
-ItemFactory::ItemFactory(EntityList& el)
-: entity_list(el)
+ItemFactory::ItemFactory()
 {
     m_itemCount = 0;
     m_pClient = nullptr;
@@ -76,6 +75,7 @@ void ItemFactory::SaveItems() {
     double startTime = GetTimeMSeconds();
     float total_item_count = (float)m_items.size(), items_saved = 0.0f;
     float current_percent_items_saved = 0.0f;
+    /** @todo  fix this to save faster....use single query, like saving roids */
     for (auto cur : m_items) {
         // save attributes of item
         if (cur.second->itemID() >= EVEMU_MINIMUM_ENTITY_ID)
@@ -124,7 +124,8 @@ InventoryItemRef ItemFactory::GetInventoryItemFromID( uint32 itemID, bool load /
 
 }
 
-InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load /*true*/) {
+InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load /*true*/)
+{
 
 }
 

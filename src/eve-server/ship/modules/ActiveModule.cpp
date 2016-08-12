@@ -31,10 +31,11 @@
 
 ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
 : GenericModule(item, ship),
-    m_reloadTimer(10000)
+  m_reloadTimer(10000)
 {
     m_AMPC = new ActiveModuleProcessingComponent(item, this, ship);
-    /** @todo  bubble isnt ready yet.  will have to update everytime we change bubble */
+    m_targetEntity = nullptr;
+    /** @todo  bubble isnt ready yet.  will have to update every time we change bubble */
     //m_bubble = ship->GetPilot()->GetShipSE()->SysBubble();
     /** @todo  destiny isnt ready yet.  will have to update when undocking, as this is created before ShipSE is */
     //m_destiny = ship->GetPilot()->GetShipSE()->DestinyMgr();
@@ -42,7 +43,29 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
     m_overLoaded = false;
     m_chargeLoaded = false;
 
-    m_reloadTime = m_Item->GetAttribute(AttrReloadTime).get_int();
+    // as we hard-set attributes here, we need to make sure they are DEFAULT before adding bonuses.  (error fix)
+    m_Item->ResetAttribute(AttrSpeed);
+    m_Item->ResetAttribute(AttrFalloff);
+    m_Item->ResetAttribute(AttrDuration);
+    m_Item->ResetAttribute(AttrMaxRange);
+    m_Item->ResetAttribute(AttrCapacitorNeed);
+    m_Item->ResetAttribute(AttrTrackingSpeed);
+    m_Item->ResetAttribute(AttrDamageMultiplier);
+    m_Item->ResetAttribute(AttrOptimalSigRadius);
+
+    if (m_Item->HasAttribute(AttrMaxRange))
+        m_maxRange = GetAttribute(AttrMaxRange).get_float();
+
+    if (m_Item->HasAttribute(AttrDuration))
+        m_cycleTime = GetAttribute(AttrDuration).get_float();
+
+    if (m_Item->HasAttribute(AttrCapacitorNeed))
+        m_capNeed = GetAttribute(AttrCapacitorNeed).get_float();
+
+    m_warpSafe = (GetAttribute(AttrDisallowActivateOnWarp).get_int() ? false : true );
+
+    // this is internal variable only.
+    m_reloadTime = GetAttribute(AttrReloadTime).get_int();
     /* our db doesnt have reload times for launchers or projectile turrents.
      * set default of 4s for turrents, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
      * maybe make config option later to avoid hard-coding
@@ -68,12 +91,21 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
             m_reloadTime = 10000;
     }
     m_reloadTimer.Disable();
+
     _log(SHIP__MODULE_TRACE, "Set reload time for %s(%u) to %ums", m_Item->itemName().c_str(), m_Item->itemID(), m_reloadTime);
 }
 
 ActiveModule::~ActiveModule()
 {
     SafeDelete(m_AMPC);
+    m_Item->ResetAttribute(AttrSpeed);
+    m_Item->ResetAttribute(AttrFalloff);
+    m_Item->ResetAttribute(AttrDuration);
+    m_Item->ResetAttribute(AttrMaxRange);
+    m_Item->ResetAttribute(AttrCapacitorNeed);
+    m_Item->ResetAttribute(AttrTrackingSpeed);
+    m_Item->ResetAttribute(AttrDamageMultiplier);
+    m_Item->ResetAttribute(AttrOptimalSigRadius);
 }
 
 void ActiveModule::Process()
@@ -81,9 +113,9 @@ void ActiveModule::Process()
     m_AMPC->Process();
 
     if (m_reloadTimer.Enabled()) {
-        if (m_reloadTimer.Check(false)){
-            m_reloadTimer.Disable();
+        if (m_reloadTimer.Check(false)) {
             // charge loading complete
+            m_reloadTimer.Disable();
             m_ChargeState = MOD_LOADED;
         }
     }
@@ -115,12 +147,21 @@ void ActiveModule::Overload()
 {
     GenericModule::Overload();
     m_ModuleState = MOD_OVERLOADED;
+
+    if (m_Item->HasAttribute(AttrOverloadDurationBonus)) {
+        m_cycleTime *= (1 + GetAttribute(AttrOverloadDurationBonus).get_float());
+        m_Item->SetAttribute(AttrDuration, m_cycleTime);
+    }
 }
 
 void ActiveModule::DeOverload()
 {
     GenericModule::DeOverload();
     m_ModuleState = MOD_ONLINE;
+    if (m_Item->HasAttribute(AttrOverloadDurationBonus)) {
+        m_cycleTime /= (1 + GetAttribute(AttrOverloadDurationBonus).get_float());
+        m_Item->SetAttribute(AttrDuration, m_cycleTime);
+    }
 }
 
 void ActiveModule::LoadCharge(InventoryItemRef charge)
@@ -159,7 +200,7 @@ double ActiveModule::DoCycle()
     if (m_Ship->GetPilot()->GetShipSE()->SysBubble()) {
         _ShowCycle();
         //DoEffect();
-        return _GetDuration();
+        return m_cycleTime;
     }
     Deactivate();
     return 0;
@@ -178,7 +219,7 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
     std::string effectStr = "effects.";
     effectStr += effect;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
 
     // Create Special Effect:
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
@@ -217,7 +258,7 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
         shipEff.startTime = (active ? shipEff.timeNow : (shipEff.timeNow + (timeLeft * Win32Time_Second)));
-        shipEff.duration = (active ? _GetDuration() : timeLeft);
+        shipEff.duration = (active ? m_cycleTime : timeLeft);
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone; /* look into setting this ... only used for salvaging? */
     std::vector<PyTuple*> events;

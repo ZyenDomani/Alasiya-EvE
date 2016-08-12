@@ -46,7 +46,6 @@ protected:
 
 	void _ProcessCycle() {}
 	void _ShowCycle();
-    double _GetROF();
     //double _GetCapNeed();
     void _SetCapNeed();
 };

@@ -37,7 +37,7 @@ HullTransporter::HullTransporter( InventoryItemRef item, ShipItemRef ship )
 void HullTransporter::StopCycle(bool abort)
 {
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
 
     // Create Special Effect:
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
@@ -92,13 +92,13 @@ double HullTransporter::DoCycle()
 
         // Apply repair amount:
         EvilNumber hullDamage = m_targetEntity->GetSelf()->GetAttribute(AttrDamage);
-        hullDamage -= m_Item->GetAttribute(AttrStructureDamageAmount);
+        hullDamage -= GetAttribute(AttrStructureDamageAmount);
         if (hullDamage <= 0) {
             hullDamage = 0;
         }
         m_targetEntity->GetSelf()->SetAttribute(AttrDamage, hullDamage);
 
-        return _GetDuration();
+        return m_cycleTime;
 }
 
 void HullTransporter::_ShowCycle()
@@ -115,7 +115,7 @@ void HullTransporter::_ShowCycle()
      0,
      1,
      1,
-     _GetDuration(),
+     m_cycleTime,
      1
     );
 
@@ -137,7 +137,7 @@ void HullTransporter::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
@@ -150,7 +150,7 @@ double HullTransporter::_GetCapNeed()
 {
 	// This layout does not count the possible fleet bonuses, so it helps to set the cap need just once - when module's being fitted.
 	// First off - pulling up the primary data - module's cap need and primary skill level, that will affect the cap need.
-	double moduleCapNeed = m_Item->GetAttribute(AttrCapacitorNeed).get_float();
+	double moduleCapNeed = GetAttribute(AttrCapacitorNeed).get_float();
 
 	// Now we do the initial cap need calculations
 	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillRemoteHullRepairSystems)));

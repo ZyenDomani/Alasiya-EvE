@@ -69,6 +69,7 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_optimalRange = who->GetSelf()->GetAttribute(AttrMaxRange).get_int();
     // Accuracy falloff  (distance past maximum range at which accuracy has fallen by half)
     m_falloff = who->GetSelf()->GetAttribute(AttrFalloff).get_int();
+    m_trackingSpeed = who->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float();
     // Orbit Velocity
     m_orbitSpeed = who->GetSelf()->GetAttribute(AttrEntityCruiseSpeed).get_int();
     // Orbit Range, Follow Range  - npc tries to stay at this distance from active target    default:500
@@ -148,29 +149,24 @@ void NPCAIMgr::Process() {
                 DestinyManager* pDestiny(nullptr);
                 m_npc->SysBubble()->GetPlayers(clientVec); // what about player drones?
                 for (auto cur : clientVec) {
-                    if ((!cur->GetShipSE()->DestinyMgr())
-                        or (!cur->GetShipSE()->SysBubble()))    // this shouldnt be needed, but whatever...
+                    if (cur->IsLogin() or cur->IsInvul() or cur->InPod())
+                        continue;
+                    if ((!cur->GetShipSE()->DestinyMgr()) or (!cur->GetShipSE()->SysBubble()))    // this shouldnt be needed, but whatever...
                         continue;
                     pDestiny = cur->GetShipSE()->DestinyMgr();
-                    if (pDestiny->IsCloaked()
-                        or pDestiny->IsWarping())
+                    if (pDestiny->IsCloaked() or pDestiny->IsWarping())
                         continue;
-                    if (cur->IsLogin()
-                        or cur->IsInvul()
-                        or cur->InPod())
+                    if (m_npc->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_sightRange)
                         continue;
-                    if (m_npc->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_sightRange) {
-                        continue;
-                    }
 
                     Target(cur->GetShipSE());
-					return;
+                    return;
                 }
                 if (!m_isWandering)
                     Wander();
             } else {
                 if (!m_beginFindTarget.Enabled())
-                    m_beginFindTarget.Start(m_ROF);  //find target is based on npc attack speed.  trying this instead of hard-coded time.
+                    m_beginFindTarget.Start(m_ROF);  //find target is based on npc attack speed.
             }
         } break;
 
@@ -238,7 +234,7 @@ void NPCAIMgr::Wander()
 {
     _log(NPC__AI_TRACE, "%s(%u): Wandering.  No Targets within my sight range of %um", \
          m_npc->GetName(), m_npc->GetID(), m_sightRange);
-    // wandering.  nothing to do.
+    // wandering.  nothing to shoot.  look for target.
     if (m_npc->SysBubble()->HasDynamics()) {
         SystemEntity* pTarget = m_npc->SysBubble()->GetRandomEntity();
         if (!pTarget)
@@ -247,7 +243,7 @@ void NPCAIMgr::Wander()
             return;
         // pick random entity and loosely orbit it.
         m_isWandering = true;
-        m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed /2);
+        m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
         uint16 orbitDistance = MakeRandomInt(10000, 20000);
         m_npc->DestinyMgr()->Orbit(pTarget, orbitDistance);
         _log(NPC__AI_TRACE, "%s(%u):  Just for shits-n-giggles, I\'m gonna orbit %s(%u) at %um.", \
@@ -279,29 +275,29 @@ void NPCAIMgr::EnterIdle() {
 
 void NPCAIMgr::EnterChasing(SystemEntity* pTarget) {
     /** @todo implement chase timer using entityChaseMaxDuration to limit chase time. */
-    if (m_state == Chasing)
+    if ((m_state == Chasing) and (m_npc->DestinyMgr()->IsGoto() or m_npc->DestinyMgr()->IsFollowing()))
         return;
     _log(NPC__AI_TRACE, "%s(%u): _EnterChasing: Begin chasing.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
     m_npc->DestinyMgr()->SetMaxVelocity(m_maxSpeed);
-    m_npc->DestinyMgr()->Follow(pTarget, m_optimalRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->GotoPoint(pTarget->GetPosition());  //head towards target
     m_state = Chasing;
 }
 
 void NPCAIMgr::EnterFollowing(SystemEntity* pTarget) {
-    if (m_state == Following)
+    if ((m_state == Following) and (m_npc->DestinyMgr()->IsGoto() or m_npc->DestinyMgr()->IsFollowing()))
         return;
     _log(NPC__AI_TRACE, "%s(%u): _EnterFollowing: Begin following.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // too close to chase, but to far to engage
     m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed *2);
-    m_npc->DestinyMgr()->Follow(pTarget, m_optimalRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->Follow(pTarget, m_falloff);  //try to get inside falloff range
     m_state = Following;
 }
 
 void NPCAIMgr::EnterEngaged(SystemEntity* pTarget) {
-    if (m_state == Engaged)
+    if ((m_state == Engaged) and m_npc->DestinyMgr()->IsOrbiting())
         return;
     _log(NPC__AI_TRACE, "%s(%u): _EnterEngaged: Begin engaging.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -312,7 +308,7 @@ void NPCAIMgr::EnterEngaged(SystemEntity* pTarget) {
 }
 
 void NPCAIMgr::EnterFleeing(SystemEntity* pTarget) {
-    if (m_state == Fleeing)
+    if ((m_state == Fleeing) and m_npc->DestinyMgr()->IsMoving())
         return;
     _log(NPC__AI_TRACE, "%s(%u): _EnterFleeing: Begin fleeing.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -324,7 +320,7 @@ void NPCAIMgr::EnterFleeing(SystemEntity* pTarget) {
 }
 
 void NPCAIMgr::EnterSignaling(SystemEntity* pTarget) {
-    if (m_state == Signaling)
+    if ((m_state == Signaling) and m_npc->DestinyMgr()->IsOrbiting())
         return;
     _log(NPC__AI_TRACE, "%s(%u): _EnterSignaling: Begin signaling.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -338,8 +334,7 @@ void NPCAIMgr::EnterSignaling(SystemEntity* pTarget) {
 
 void NPCAIMgr::_CheckDistance(SystemEntity* pSE)
 {
-    GVector usToThem(m_npc->GetPosition(), pSE->GetPosition());
-    double dist = usToThem.length();
+    double dist = m_npc->GetPosition().distance(pSE->GetPosition());
     if (dist > m_sightRange) {
         _log(NPC__AI_TRACE, "%s(%u): _CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
              m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist);

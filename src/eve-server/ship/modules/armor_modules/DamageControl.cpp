@@ -43,7 +43,7 @@ void DamageControl::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectDamageControl;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -80,7 +80,7 @@ void DamageControl::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetDuration();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = 1;  /* boolean of repeatable cycles without pilot activation */
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;

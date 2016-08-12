@@ -472,7 +472,7 @@ DynamicSystemEntity::DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &se
 {
 }
 
-bool DynamicSystemEntity::Load(ServiceDB &from) {
+bool DynamicSystemEntity::Load() {
     return true;
 }
 
@@ -570,7 +570,8 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
     std::string reason = "Bounty for killing pirates in ";
     reason += pClient->GetSystemName();
 
-    if (!m_services.serviceDB().GiveCash(
+    ServiceDB m_sdb;
+    if (!m_sdb.GiveCash(
                     pClient->GetCharacterID(),
                     refBounty,
                     ownerCONCORD,

@@ -78,6 +78,8 @@ ProjectileTurret::ProjectileTurret( InventoryItemRef item, ShipItemRef shipRef )
             m_damageModifier *= (1 + ( 0.02 * (pChar->GetSkillLevel(skillLargeArtillerySpecialization, true)))); // 2% increase in damage
             break;
     }
+
+    m_Item->SetAttribute(AttrDamageMultiplier, m_damageModifier);
 }
 
 void ProjectileTurret::Activate(SystemEntity* pSE)
@@ -113,7 +115,7 @@ void ProjectileTurret::StopCycle(bool abort)
         ge.area = new PyList;
         ge.effectID = effectProjectileFired;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
-    timeLeft /= 100;
+    timeLeft /= 1000;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -153,7 +155,7 @@ double ProjectileTurret::DoCycle() {
                  m_thermal,
                  m_em,
                  m_explosive,
-                 m_formula.GetToHit(m_Ship, m_Item, m_targetEntity),
+                 m_formula.GetToHit(m_Ship, this, m_targetEntity),
                  effectProjectileFired       // from EVEEffectID::
                  );
 
@@ -165,7 +167,7 @@ double ProjectileTurret::DoCycle() {
         // Reduce ammo charge by 1 unit:
         m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1);
 
-        return _GetROF();
+        return m_cycleTime;
 }
 
 void ProjectileTurret::_ShowCycle()
@@ -182,7 +184,7 @@ void ProjectileTurret::_ShowCycle()
         true,
         true,
         true,
-        _GetROF(),
+        m_cycleTime,
         1
     );
 
@@ -207,17 +209,13 @@ void ProjectileTurret::_ShowCycle()
         shipEff.active = 1;
         shipEff.environment = ge.Encode();
         shipEff.startTime = shipEff.timeNow;
-        shipEff.duration = _GetROF();
+        shipEff.duration = m_cycleTime;
         shipEff.repeat = m_chargeRef->quantity();
         shipEff.error = new PyNone;
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
     m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
-}
-
-double ProjectileTurret::_GetROF() {
-    return m_ROF;
 }
 
 void ProjectileTurret::_SetCapNeed()

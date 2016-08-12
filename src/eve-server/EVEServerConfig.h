@@ -137,6 +137,7 @@ public:
         uint8 RoamingTimer;
         uint8 StaticTimer;
         float ThreatRadius;
+        uint32 RatFaction;
     } npc;
 
     // From <database/>

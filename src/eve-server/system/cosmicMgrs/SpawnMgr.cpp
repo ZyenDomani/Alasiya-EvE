@@ -133,7 +133,6 @@ void SpawnMgr::Init()
     m_initalized = true;
 
     _log(COSMIC_MGR__MESSAGE, "SpawnMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
-
 }
 
 void SpawnMgr::Process() {
@@ -223,9 +222,13 @@ void SpawnMgr::MoveSpawn()
 
 void SpawnMgr::StartMainTimer()
 {
-    m_mainTimer.Start(sConfig.npc.RoamingTimer *60 *1000);
+    if (sConfig.server.testServer) {
+        m_mainTimer.Start(5000); /* 5s for testing */
+    } else {
+        m_mainTimer.Start(sConfig.npc.RoamingTimer *60 *1000);
+    }
     _log(SPAWN__MESSAGE, "SpawnMgr::StartMainTimer() - Main Spawn Timer started for %s(%u) at %u mins.",
-         m_system->GetName().c_str(), m_system->GetID(), sConfig.npc.RoamingTimer);
+         m_system->GetName().c_str(), m_system->GetID(), (sConfig.server.testServer? 1 : sConfig.npc.RoamingTimer));
 }
 
 void SpawnMgr::SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID)
@@ -304,8 +307,10 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
         if (itr != sSpawnDataMgr.m_regions.end())
             factionID = (*itr).second;
     }
+    if (sConfig.npc.RatFaction)
+        factionID = sConfig.npc.RatFaction;
 
-    _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - factionID is %u for region %u.", factionID, regionID);
+    _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - factionID is %u for region %u. (config set %s)", factionID, regionID, (sConfig.npc.RatFaction?"true":"false"));
 
     // get faction's ship typeclass and groupID map
     auto groupRange = sSpawnDataMgr.m_groups.equal_range(factionID);
@@ -325,7 +330,7 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
     // get possible spawn groups for this secRating.
     uint8 type = 0;
     if ((secRating < 0) && pSysBubble->IsBelt()) {   // check for hauler, commander, officer spawn, but ONLY in a belt
-        //NOTE  random checks here are for TESTING only....all rates are high.
+        //NOTE  random checks here are for TESTING only....all rates are high.  make config option later
         double rand = MakeRandomFloat();
         if (rand < 0.1)  //check for officer spawn
             if (factionID == factionRogueDrones)   //but not for drones.  they dont have officers..make this the rare drone hauler spawn
@@ -334,7 +339,7 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
                 type = 10;
         else if (rand < 0.15) //check for commander spawn
             type = 9;
-        else if (rand < 0.2) //check for hauler spawn   TODO this needs work.  haulers are subclassed by size in db under same groupID.
+        else if (rand < 0.25) //check for hauler spawn   TODO this needs work.  haulers are subclassed by size in db under same groupID.
             if (factionID == factionRogueDrones)    // hauler spawn for drones already set above...negate this one.
                 type = 0;
             else
@@ -372,9 +377,9 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
         spawnClass.cbs = it->second.cbs;
         spawnEntry.push_back(spawnClass);
     }
-    if (spawnEntry.size() > 0)
+    if (spawnEntry.size() > 0) {
         _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry size is %u.", spawnEntry.size());    //variable
-    else {
+    } else {
         _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry size is 0.");
         return;
     }
@@ -537,14 +542,14 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
     NPC* npc = new NPC(i, m_services, m_system, spawnEntry.corpID, spawnEntry.factionID, this);
 
     // NPC::Load() no longer does anything.  it is still here in case we find a new use for it.
-    if (!npc->Load(m_services.serviceDB())) {
+    if (!npc->Load()) {
         _log(SPAWN__ERROR, "Failed to load NPC data for NPC %u with type %u, depoping.", npc->GetID(), npc->GetSelf()->typeID());
         SafeDelete(npc);
         return;
     }
 
     //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
-    startPos.MakeRandomPointOnSphere(MakeRandomInt(-5, 10) *1000);
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 30) *1000);
     npc->DestinyMgr()->SetPosition(startPos);
     //npc->DestinyMgr()->WarpTo(warpToPoint);
     m_system->AddNPC(npc);
@@ -595,13 +600,13 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
             npc = new NPC(i, m_services, m_system, corpID, factionID, this);
 
             // NPC::Load() no longer does anything.  it is still here in case we find a new use for it.
-            if (!npc->Load(m_services.serviceDB())) {
+            if (!npc->Load()) {
                 _log(SPAWN__ERROR, "Failed to load NPC data for NPC %u with type %u, depoping.", npc->GetID(), npc->GetSelf()->typeID());
                 SafeDelete(npc);
                 continue;
             }
             //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
-            startPos.MakeRandomPointOnSphere(MakeRandomInt(-5, 10) *1000);
+            startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 30) *1000);
             npc->DestinyMgr()->SetPosition(startPos);
             //npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
             m_system->AddNPC(npc);

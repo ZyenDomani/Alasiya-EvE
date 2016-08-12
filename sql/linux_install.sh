@@ -8,7 +8,7 @@ host="localhost"	#Database Host
 port="3306"		#Database Port
 user="allan"		#Database Username
 pass="none"		#Database Password
-database="Alasiya-EvE"	#Database name
+database="alasiya"	#Database name
 
 #######################
 # Dont Edit Past Here #

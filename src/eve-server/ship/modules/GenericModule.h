@@ -60,6 +60,7 @@ public:
     ShipItemRef GetShipRef()                            { return m_Ship; }
 
     /* class type helpers.  public for anyone to access. */
+    virtual bool IsWarpSafe() const                     { return true; }
     virtual bool IsLoaded()                             { return false; }
     virtual bool IsGenericModule() const                { return true; }
     virtual bool IsPassiveModule() const                { return false; }
@@ -141,14 +142,6 @@ protected:
     ChargeStates                    m_ChargeState;
 
     int32                           m_repeat;
-
-    /*  this is for pre-calculated values, to eliminate previous code calculating on EVERY CALL.
-     * defined in (and only used in) WeaponModule code.
-     * not used in ActiveModule or PassiveModule.
-     * put here to access using GenericModule.
-     */
-    virtual void _UpdateModifiers(InventoryItemRef item){ /* Do nothing here */ }
-    virtual void _RemoveModifier(InventoryItemRef item) { /* Do nothing here */ }
 
 };
 

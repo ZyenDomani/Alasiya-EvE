@@ -33,6 +33,7 @@
 #include "Client.h"
 #include "PyServiceMgr.h"
 #include "npc/NPC.h"
+#include <npc/NPCAI.h>
 #include "packets/Missile.h"
 #include "ship/DestinyManager.h"
 #include "ship/Missile.h"
@@ -99,7 +100,6 @@ m_warpCapacitorNeed(1.0f)
 
     m_position = mySE->GetPosition();
     _ClearTurn();
-    m_shipTracking = sConfig.server.UseShipTracking;
 }
 
 DestinyManager::~DestinyManager() {
@@ -296,7 +296,6 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
 
 void DestinyManager::_UpdateVelocity(bool isMoving) {
     m_accel = m_decel = false;
-    m_moveTimer = GetTimeMSeconds();
     uint8 logType = 0;
     if ((State == DSTBALL_WARP) and m_warpState) {
         /*  _Warp() finished, and ship dropped out of warp at m_speedToLeaveWarp,
@@ -597,10 +596,18 @@ void DestinyManager::_Move() {
      * **UPDATE**  initial orbit implementation.  -allan 13July16
      */
 
-    if ((m_orbiting != 1) and m_userSpeedFraction)   // if usf==0 then ship is stopping, so continue movement along current ship heading (cancel turn)
+    double timeStamp = 0; //GetTimeMSeconds() - m_moveTimer;
+    if ((m_orbiting != 1) and m_userSpeedFraction) {  // if usf==0 then ship is stopping, so continue movement along current ship heading (cancel turn)
         m_shipHeading = _Turn();
+        timeStamp = GetTimeMSeconds() - m_moveTimer;
+    } else if (m_orbiting == 1) {
+        timeStamp = sEntityList.GetStamp() - m_stateStamp;
+        //float stateTime = sEntityList.GetStamp() - m_stateStamp;
+    } else {
+        timeStamp = GetTimeMSeconds() - m_moveTimer;
+    }
 
-    double timeStamp = GetTimeMSeconds() - m_moveTimer;
+    //double timeStamp = GetTimeMSeconds() - m_moveTimer;
     //float stateTime = sEntityList.GetStamp() - m_stateStamp;
     float speed = 0.0f, csf = 0.0f;
     std::string move = "";
@@ -684,8 +691,8 @@ void DestinyManager::_Move() {
         _log(DESTINY__ERROR, "Destiny::_Move() - %s(%u) **NPC ERROR** %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
             mySE->GetName(), mySE->GetID(), speed, csf, m_activeSpeedFraction, timeStamp);
         SetPosition(m_position, true);
-        Halt();
-        return;
+        //Halt();
+        //return;
     }
 
     m_velocity = m_shipHeading * speed;
@@ -703,7 +710,7 @@ void DestinyManager::_Move() {
     if (mySE->HasPilot() and mySE->SysBubble()->HasPlayers()) // no players in bubble = nothing to check against (for now)
         _CheckBump();
 
-    if (m_shipTracking) {
+    if (sEntityList.GetTracking()) {
         // create jetcan to visualize object movement
         std::ostringstream str;
         str << "Position Test " << timeStamp;
@@ -1307,7 +1314,10 @@ void DestinyManager::_BeginMovement() {
     m_accel = false;
     m_decel = false;
     m_turning = false;
-    m_stateStamp = sEntityList.GetStamp();
+    if (!mySE->IsNPCSE() or (mySE->IsNPCSE() and mySE->GetNPCSE()->GetAIMgr()->IsIdle())) {
+        m_moveTimer = GetTimeMSeconds();
+        m_stateStamp = sEntityList.GetStamp();
+    }
     if (m_shipHeading.isZero()) {
         GVector point(m_position);
         point.normalize();
@@ -1354,7 +1364,7 @@ void DestinyManager::Follow(SystemEntity *who, double distance) {
     DoDestiny_CmdFollowBall du;
         du.entityID = mySE->GetID();
         du.targetID = who->GetID();
-        du.range = int32(distance);
+        du.range = (int32)distance;
     PyTuple *up = du.Encode();
     SendSingleDestinyUpdate(&up);    //consumed
 }
@@ -1436,7 +1446,7 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
     DoDestiny_CmdOrbit du;
         du.entityID = mySE->GetID();
         du.orbitEntityID = who->GetID();
-        du.distance = int32(distance);
+        du.distance = (int32)distance;
     PyTuple *up = du.Encode();
     SendSingleDestinyUpdate(&up);    //consumed
 }
