@@ -95,6 +95,7 @@ void EntityList::Add( Client* client ) {
 
 void EntityList::Remove(Client* client) {
     /*  this has to use a 'real' iterator for erase() to work. */
+	/* note:  will get expensive for many clients  */
     for (std::vector<Client*>::iterator cur; cur != m_clients.end(); ++cur)
         if ((*cur) == client)
             m_clients.erase(cur);
