@@ -87,12 +87,15 @@ bool StaticDataMgr::GetSystemInfo(uint32 systemID, SystemData& data)
             return false;
         }
 
-        data.systemID         = systemID;
-        data.name             = row.GetText(0);
-        data.constellationID  = row.GetUInt(1);
-        data.regionID         = row.GetUInt(2);
-        data.securityClass    = row.GetText(3);
-        data.securityRating   = row.GetFloat(4);
+        data.systemID          = systemID;
+        data.name              = row.GetText(0);
+        data.constellationID   = row.GetUInt(1);
+        data.regionID          = row.GetUInt(2);
+		if (row.IsNull(3))
+			data.securityClass = "0";
+		else
+			data.securityClass = row.GetText(3);
+        data.securityRating    = row.GetFloat(4);
         m_systemData.insert(std::pair<uint32, SystemData>(systemID, data));
     }
     return true;

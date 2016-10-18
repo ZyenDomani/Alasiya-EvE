@@ -54,12 +54,12 @@ Page Status: <font color="yellow">Slightly Inaccurate</font><BR><BR></table>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Final test phase <BR>27July15</td></tr>
+<td>In Final test phase <BR>27July16</td></tr>
 <tr><td> - COMPLETE Module Class rewrite</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Final test phase <BR>21Nov15</td></tr>
+<td>In Final test phase <BR>10Aug16</td></tr>
 <tr><td> - COMPLETE SystemEntity rewrite</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -74,7 +74,7 @@ Page Status: <font color="yellow">Slightly Inaccurate</font><BR><BR></table>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Progress<BR>7Sep14</td></tr>
+<td>In Progress<BR>10Aug16</td></tr>
 <tr><td> - Proper spawning and item creating(Item class rewrite)</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
@@ -89,7 +89,7 @@ Page Status: <font color="yellow">Slightly Inaccurate</font><BR><BR></table>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Complete rewrite of user roles for commands.<BR>27July15</td></tr></table>
+<td>Complete rewrite of user roles for commands.<BR>10Aug16</td></tr></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="General_Interface_Features"> General Interface Features </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">

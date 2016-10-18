@@ -148,6 +148,8 @@ void ActiveModuleProcessingComponent::StopCycle()
 
 void ActiveModuleProcessingComponent::AbortCycle()
 {
+	if ((m_Mod->GetModuleState() != MOD_ACTIVATED) or m_Stop)
+		return;
 	// Immediately stop active cycle for things such as target destroyed or left bubble, or miner deactivated by player:
     m_Stop = true;
     DeactivateCycle(true);
