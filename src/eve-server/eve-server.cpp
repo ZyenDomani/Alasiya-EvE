@@ -470,12 +470,13 @@ int main( int argc, char* argv[] )
 
     ServiceDB m_sdb;
     m_sdb.SetServerOnlineStatus(true);
-    sLog.Success("       ServerInit", "Alasiya EvEmu Server is Online.");
-
-    sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime));
-
+	
     uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
+	
+    sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime));
+    sLog.Success("       ServerInit", "Alasiya EvEmu Server is Online.");
+
     /////////////////////////////////////////////////////////////////////////////////////
     //     !!!  DO NOT PUT ANY INITIALIZATION CODE OR CALLS BELOW THIS LINE   !!!
     /////////////////////////////////////////////////////////////////////////////////////
@@ -484,7 +485,6 @@ int main( int argc, char* argv[] )
      * THE MAIN LOOP
      * Everything except IO should happen in this loop, in this thread context.
      */
-
     while (RunLoops) {
         Timer::SetCurrentTime();
         start = GetTimeMSeconds();
@@ -508,7 +508,6 @@ int main( int argc, char* argv[] )
                 Sleep(start);
         } else /* if no clients, let server idle longer*/
             Sleep(idle);
-
     }
 
     sLog.Warning("   ServerShutdown", "Main loop stopped" );

@@ -380,7 +380,7 @@ void NPCAIMgr::Target(SystemEntity* pTarget) {
     double targetTime = GetTargetTime();
     bool chase = false;
 
-    if (!m_npc->TargetMgr()->StartTargeting(pTarget, targetTime, m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
+	if (!m_npc->TargetMgr()->StartTargeting(pTarget, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
         if (chase) {
             _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
                         m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -406,7 +406,7 @@ void NPCAIMgr::Targeted(SystemEntity* pAgressor) {
             EnterChasing(pAgressor);
 
             bool chase = false;
-            if (!m_npc->TargetMgr()->StartTargeting( pAgressor, targetTime, m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
+			if (!m_npc->TargetMgr()->StartTargeting( pAgressor, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
                 if (chase) {
                     _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
                     m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());

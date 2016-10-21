@@ -553,7 +553,7 @@ void ConcordAI::ClearAllTargets() {
 void ConcordAI::Target(SystemEntity* pTarget) {
     double targetTime = GetTargetTime();
 
-    if (!m_npc->TargetMgr()->StartTargeting(pTarget, targetTime, m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange )) {
+	if (!m_npc->TargetMgr()->StartTargeting(pTarget, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange )) {
         //_log(CONCORD__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.",
              m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
         //ClearAllTargets();
@@ -573,7 +573,7 @@ void ConcordAI::Targeted(SystemEntity* pAgressor) {
                  m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
             _EnterChasing(pAgressor);
 
-            if (!m_npc->TargetMgr()->StartTargeting( pAgressor, targetTime, m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange)) {
+			if (!m_npc->TargetMgr()->StartTargeting( pAgressor, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange)) {
                 _EnterIdle();
                 return;
             }

@@ -68,7 +68,7 @@ public:
     SystemEntity*       GetFirstTarget(bool need_locked);
     SystemEntity*       GetTarget(uint32 targetID, bool need_locked=true) const;
 
-    bool                StartTargeting(SystemEntity *who, float lockTime, uint32 maxLockedTargets, double maxTargetLockRange, bool &chase);
+    bool                StartTargeting(SystemEntity* who, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool& chase);
 
     bool                CanAttack()                     { return m_canAttack; }
     bool                HasNoTargets() const            { return m_targets.empty(); }

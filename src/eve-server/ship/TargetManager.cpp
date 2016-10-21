@@ -195,8 +195,8 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     Character* pChar = mySE->GetPilot()->GetChar().get();
     targetSkills += pChar->GetSkillLevel(skillTargeting);    // +1 target/level
     targetSkills += pChar->GetSkillLevel(skillMultitasking);    // +1 target/level
-	uint32 maxLockedTargets = (uint32)ship->GetAttribute(AttrMaxLockedTargets).get_int();
-    if (!maxLockedTargets or (maxLockedTargets < 0)) maxLockedTargets = 1;
+	uint8 maxLockedTargets = (uint8)ship->GetAttribute(AttrMaxLockedTargets).get_int();
+    if (!maxLockedTargets) maxLockedTargets = 1;
     // add module updates to target capacity of ship here.
     if (targetSkills < maxLockedTargets)
         maxLockedTargets = targetSkills;
@@ -243,7 +243,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     return true;
 }
 
-bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint32 maxLockedTargets, double maxTargetLockRange, bool &chase)
+bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
 {       // NOTE  this is for npcs
     //first make sure they are not already in the list
     std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(who);

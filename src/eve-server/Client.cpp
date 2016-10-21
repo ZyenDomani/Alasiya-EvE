@@ -347,7 +347,7 @@ void Client::SetDestiny(bool count) {
 }
 
 void Client::WarpIn() {
-    sLog.Blue("Client::WarpIn()", "Client called WarpIn().  Finish code here.");
+	sLog.Blue("Client::WarpIn()", "%s(%u) called WarpIn().  Finish code here.", GetName(), m_char->itemID());
     char ci[1];
     snprintf(ci, sizeof(ci), "");
     m_ship->SetCustomInfo(ci);
@@ -365,7 +365,7 @@ void Client::WarpIn() {
 }
 
 void Client::WarpOut() {
-    sLog.Blue("Client::WarpOut()", "Client Destructor called WarpOut().  Finish code here.");
+	sLog.Blue("Client::WarpOut()", "Client Destructor for %s(%u) called WarpOut().  Finish code here.", GetName(), m_char->itemID());
     char ci[30];
     snprintf(ci, sizeof(ci), "Logout (%s)", GetName());
     m_ship->SetCustomInfo(ci);

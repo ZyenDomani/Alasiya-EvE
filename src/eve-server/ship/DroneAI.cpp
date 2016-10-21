@@ -307,7 +307,7 @@ void DroneAIMgr::ClearAllTargets() {
 void DroneAIMgr::Target(SystemEntity* pTarget) {
     double targetTime = GetTargetTime();
     bool chase = false;
-    if (!m_drone->TargetMgr()->StartTargeting(pTarget, targetTime, m_drone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange, chase)) {
+	if (!m_drone->TargetMgr()->StartTargeting(pTarget, targetTime, (uint8)m_drone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange, chase)) {
         _log(NPC__AI_TRACE, "Drone %s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.",
              m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
         //ClearAllTargets();
@@ -328,7 +328,7 @@ void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
             _EnterChasing(pAgressor);
 
             bool chase = false;
-            if (!m_drone->TargetMgr()->StartTargeting( pAgressor, targetTime, m_drone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange, chase)) {
+			if (!m_drone->TargetMgr()->StartTargeting( pAgressor, targetTime, (uint8)m_drone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange, chase)) {
                 _EnterIdle();
                 return;
             }

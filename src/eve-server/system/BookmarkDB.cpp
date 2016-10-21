@@ -212,7 +212,7 @@ bool BookmarkDB::SaveNewBookmarkToDatabase(uint32 &bookmarkID, uint32 ownerID, u
                                uint32 creatorID, uint32 folderID)
 {
     DBerror err;
-
+/** @todo  need to escape the memo field here...   */
     if (!sDatabase.RunQuery(err,
         " INSERT INTO bookmarks "
         " (bookmarkID, ownerID, itemID, typeID, flag, memo, created, x, y, z, locationID, note, creatorID, folderID)"

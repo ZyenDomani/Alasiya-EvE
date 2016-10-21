@@ -620,7 +620,7 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
     for (auto cur : m_players) {
         // Only queue a Destiny update for this bubble if the current SystemEntity is not 'pSE':
         // (this is an update to all client objects in the bubble EXCLUDING 'pSE')
-        if( cur->GetShipSE()->GetID() != pSE->GetID() ) {
+        if (cur->GetShipSE() != pSE) {
             if (!up_dup)
                 up_dup = new PyTuple( *up );
             _log( DESTINY__BUBBLECAST, "Exclusive Bubblecast %s update to %s(%u)", desc, cur->GetName(), cur->GetCharacterID() );
