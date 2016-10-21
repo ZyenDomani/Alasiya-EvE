@@ -89,11 +89,20 @@ PyBoundObject* RepairService::_CreateBoundObject(Client* c, const PyRep* bind_ar
 }
 
 PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
-    /**
+    /** @todo needs more work....
             damageReports = self.repairSvc.GetDamageReports(itemIDs)
         currIndex = 1
         for item in items:
             for each in damageReports[item.itemID].quote:
+                if each.itemID in [ entryData['itemID'] for entryData in listEntryData ]:
+                    continue
+                    damage = math.ceil(each.damage)
+                    dmg = localization.GetByLabel('UI/Station/Repair/CurrentDamage', curHealth=max(0, int(each.maxHealth - damage)), maxHealth=each.maxHealth, percentHealth=damage / float(each.maxHealth or 1) * 100.0)
+                    cst = localization.GetByLabel('UI/Station/Repair/RepairCostNumberOnly', isk=int(math.ceil(damage * each.costToRepairOneUnitOfDamage)))
+                    totalitems = totalitems + 1
+                    totaldamage = totaldamage + damage / float(each.maxHealth or 1) * 100.0
+                    totalcost = totalcost + damage * each.costToRepairOneUnitOfDamage
+                    label = cfg.invtypes.Get(each.typeID).name + '<t>' + dmg + '<t>' + cst
                 */
 
     //sLog.Warning("RepairSvcBound::Handle_GetDamageReports", "Called GetDamageReports stub.");

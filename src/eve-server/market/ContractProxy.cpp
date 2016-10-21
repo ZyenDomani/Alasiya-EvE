@@ -38,14 +38,33 @@ ContractProxyService::ContractProxyService( PyServiceMgr *mgr )
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(ContractProxyService, GetLoginInfo);
+    PyCallable_REG_CALL(ContractProxyService, SearchContracts);
     PyCallable_REG_CALL(ContractProxyService, CollectMyPageInfo);
     PyCallable_REG_CALL(ContractProxyService, GetMyExpiredContractList);
-    /*SearchContracts*/
 }
 
 ContractProxyService::~ContractProxyService()
 {
     delete m_dispatch;
+}
+
+PyResult ContractProxyService::Handle_SearchContracts(PyCallArgs &call) {
+    /*
+ret = sm.ProxySvc('contractProxy').SearchContracts(itemTypes=itemTypes, itemTypeName=itemTypeName, itemCategoryID=itemCategoryID, itemGroupID=itemGroupID, contractType=contractType, securityClasses=securityClasses, locationID=locationID, endLocationID=endLocationID, issuerID=issuerID, minPrice=minPrice, maxPrice=maxPrice, minReward=minReward, maxReward=maxReward, minCollateral=minCollateral, maxCollateral=maxCollateral, minVolume=minVolume, maxVolume=maxVolume, excludeTrade=excludeTrade, excludeMultiple=excludeMultiple, excludeNoBuyout=excludeNoBuyout, availability=availability, description=description, searchHint=searchHint, sortBy=sortBy, sortDir=sortDir, startNum=startNum)
+contracts = ret.contracts
+numFound = ret.numFound
+searchTime = ret.searchTime
+maxResults = ret.maxResults
+
+
+AttributeError: 'NoneType' object has no attribute 'contracts'
+     */
+
+
+    sLog.Log( "ContractProxyService::Handle_SearchContracts()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return NULL;
 }
 
 PyResult ContractProxyService::Handle_GetMyExpiredContractList(PyCallArgs &call) {

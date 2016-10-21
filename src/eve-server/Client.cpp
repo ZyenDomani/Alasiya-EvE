@@ -639,7 +639,7 @@ void Client::DestroyShipSE() {
         m_system->RemoveEntity(pShipSE);
         SafeDelete(pShipSE);
     } else
-        _log(PLAYER__ERROR, "DestroyShipSE() - pShipSE = null for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+        _log(PLAYER__WARNING, "DestroyShipSE() - pShipSE = null for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
 }
 
 void Client::SetPodItem() {

@@ -44,6 +44,7 @@ FactionWarMgrService::FactionWarMgrService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(FactionWarMgrService, GetFactionMilitiaCorporation);
     PyCallable_REG_CALL(FactionWarMgrService, GetCharacterRankInfo);
     PyCallable_REG_CALL(FactionWarMgrService, GetFactionalWarStatus);
+    PyCallable_REG_CALL(FactionWarMgrService, GetSystemStatus);
     PyCallable_REG_CALL(FactionWarMgrService, IsEnemyFaction);
     PyCallable_REG_CALL(FactionWarMgrService, JoinFactionAsCharacter);
 
@@ -63,7 +64,6 @@ FactionWarMgrService::FactionWarMgrService(PyServiceMgr *mgr)
         for k, v in self.facWarMgr.GetStats_Alliance().items():
         return self.facWarMgr.GetStats_Militia()
         return self.facWarMgr.GetStats_CorpPilots()
-        status = self.facWarMgr.GetSystemStatus(session.solarsystemid2, session.warfactionid)
             */
 }
 
@@ -86,7 +86,7 @@ PyResult FactionWarMgrService::Handle_GetWarFactions(PyCallArgs &call) {
 }
 
 PyResult FactionWarMgrService::Handle_GetFWSystems( PyCallArgs& call )
-{ 
+{
     ObjectCachedMethodID method_id( GetName(), "GetFacWarSystems" );
 
     if( !m_manager->cache_service->IsCacheLoaded( method_id ) )
@@ -148,7 +148,7 @@ PyResult FactionWarMgrService::Handle_GetFactionMilitiaCorporation(PyCallArgs &c
         _log(SERVICE__ERROR, "Failed to decode args.");
         return NULL;
     }
-    return(new PyInt(m_db.GetFactionMilitiaCorporation(arg.arg)));
+    return (new PyInt(m_db.GetFactionMilitiaCorporation(arg.arg)));
 }
 
 PyResult FactionWarMgrService::Handle_GetCharacterRankInfo(PyCallArgs &call) {
@@ -164,6 +164,33 @@ PyResult FactionWarMgrService::Handle_GetFactionalWarStatus(PyCallArgs &call) {
   call.Dump(SERVICE__CALL_DUMP);
 
   return NULL;
+}
+
+PyResult FactionWarMgrService::Handle_GetSystemStatus(PyCallArgs &call) {
+    /*
+contestionStateNone = 0
+contestionStateContested = 1
+contestionStateVulnerable = 2
+contestionStateCaptured = 3
+*/
+    /*
+status = self.facWarMgr.GetSystemStatus(session.solarsystemid2, session.warfactionid)
+systemStatus = sm.StartService('facwar').GetSystemStatus()
+xtra = ''
+if systemStatus == const.contestionStateCaptured:
+    xtra = localization.GetByLabel('UI/Neocom/SystemLost')
+    elif systemStatus == const.contestionStateVulnerable:
+    xtra = localization.GetByLabel('UI/Neocom/Vulnerable')
+    elif systemStatus == const.contestionStateContested:
+    xtra = localization.GetByLabel('UI/Neocom/Contested')
+    elif systemStatus == const.contestionStateNone and returnNone:
+    xtra = localization.GetByLabel('UI/Neocom/Uncontested')
+    return xtra
+    */
+
+    sLog.Log( "FactionWarMgrService::Handle_GetSystemStatus()", "size=%u ", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    return (new PyInt(0));
 }
 
 //22:48:28 L FactionWarMgrService::Handle_IsEnemyFaction(): size= 2

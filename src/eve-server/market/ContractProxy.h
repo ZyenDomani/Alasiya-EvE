@@ -40,6 +40,7 @@ protected:
     Dispatcher *const m_dispatch;
 
     PyCallable_DECL_CALL(GetLoginInfo);
+    PyCallable_DECL_CALL(SearchContracts);
     PyCallable_DECL_CALL(CollectMyPageInfo);
     PyCallable_DECL_CALL(GetMyExpiredContractList);
 };

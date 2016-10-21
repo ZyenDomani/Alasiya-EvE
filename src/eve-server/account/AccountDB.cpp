@@ -89,6 +89,12 @@ PyRep *AccountDB::GetWalletDivisionsInfo(uint32 corpID) {
 
     DBResultRow row;
     res.GetRow(row);
+    /** @todo  fix this.....
+        data = <Anonymous KeyVal: {}>
+        d = u'1st wallet division'
+AttributeError: 'unicode' object has no attribute 'key'
+*/
+
 /*
     PyDict *dict = new PyDict();
     for (uint8 i=0; i<7; i++)

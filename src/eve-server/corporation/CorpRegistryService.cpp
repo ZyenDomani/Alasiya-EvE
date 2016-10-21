@@ -444,6 +444,11 @@ PyResult CorpRegistryBound::Handle_GetMembers(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_GetSuggestedTickerNames(PyCallArgs &call) {
+    /** TODO  fix this..
+     *
+16:48:30 [PacketError] Decode Call_SingleStringArg failed: arg is not a string: WString
+16:48:30 [SvcError] Handle_GetSuggestedTickerNames(/usr/local/src/eve/Alasiya-EvE/src/eve-server/corporation/CorpRegistryService.cpp:449): Houaha: Bad arguments
+*/
     Call_SingleStringArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
