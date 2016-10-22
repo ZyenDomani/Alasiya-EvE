@@ -79,6 +79,13 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
 	DynamicSystemEntity* pDSE(nullptr);
     for (auto cur : m_dynamicEntities) {
         pDSE = cur->GetDynamicSE();
+        /** @todo segfault here...
+         *
+Program received signal SIGSEGV, Segmentation fault.
+0x0000000000bae8ef in SystemBubble::ProcessWander (this=0x37f3020, wanderers=std::vector of length 0, capacity 0)
+    at /usr/local/src/eve/Alasiya-EvE/src/eve-server/system/SystemBubble.cpp:81
+81              pDSE = cur->GetDynamicSE();
+    */
 		if (!pDSE)
             continue;
         if (pDSE->DestinyMgr() and pDSE->DestinyMgr()->IsWarping())

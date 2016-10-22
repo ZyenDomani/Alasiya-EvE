@@ -17,6 +17,8 @@
 
 float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, SystemEntity* pTarget)
 {
+    if (!pTarget)
+        return 0;
     double range = pMod->GetMaxRange();
     double distance = shipRef->position().distance(pTarget->DestinyMgr()->GetPosition());
 
@@ -56,6 +58,8 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, System
 
 float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
 {
+    if (!pTarget)
+        return 0;
     uint16 range = pNPC->GetAIMgr()->GetMaxRange();
     double distance = pNPC->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
     _log(TARGET__MESSAGE, "NPC::GetToHit - distance:%.2f, range:%.u", distance, range);
@@ -87,6 +91,8 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
 
 float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
 {
+    if (!pTarget)
+        return 0;
     double range = pDrone->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float();
     double distance = pDrone->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
     _log(TARGET__MESSAGE, "Drone::GetToHit - distance:%.2f, range:%.2f", distance, range);

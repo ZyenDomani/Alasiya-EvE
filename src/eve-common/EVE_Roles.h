@@ -48,6 +48,9 @@ enum:uint64 {
     ROLE_PROGRAMMER         = 2251799813685248L,
     ROLE_QA                 = 4503599627370496L,
     ROLE_GMH                = 9007199254740992L,
+    // the client requires a module named "dna" for many menu items for the "gml" role
+    //  we do not have this module, which leads to an error, and an inoperable rclick menu
+    //  when ROLE_GML is part of a client's roles
     ROLE_GML                = 18014398509481984L,
     ROLE_CONTENT            = 36028797018963968L,
     ROLE_ADMIN              = 72057594037927936L,
@@ -63,7 +66,7 @@ enum:uint64 {
     ROLE_STD                = ROLE_LOGIN | ROLE_PLAYER | ROLE_IGB,
     ROLE_VIP                = ROLE_STD | ROLE_VIPLOGIN | ROLE_HEALSELF,
     ROLE_TRANSAM            = ROLE_VIP | ROLE_TRANSLATION | ROLE_TRANSLATIONADMIN | ROLE_TRANSLATIONEDITOR,
-    ROLE_SLASH              = ROLE_VIP | ROLE_GML | ROLE_LEGIONEER | ROLE_SPAWN | ROLE_HEALOTHERS,
+    ROLE_SLASH              = ROLE_VIP /*| ROLE_GML*/ | ROLE_LEGIONEER | ROLE_SPAWN | ROLE_HEALOTHERS,
     ROLE_CREATOR            = ROLE_SLASH | ROLE_GMH /*| ROLE_WORLDMOD*/ | ROLE_CONTENT,
     ROLE_DEV                = ROLE_CREATOR | ROLE_QA | ROLE_PROGRAMMER,
     ROLE_BOSS               = ROLE_DEV | ROLE_ADMIN,

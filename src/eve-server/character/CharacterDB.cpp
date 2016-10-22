@@ -1520,12 +1520,12 @@ void CharacterDB::SaveKillOrLoss(CharKillData &data) {
     DBerror err;
     sDatabase.RunQuery(err,
         " INSERT INTO chrKillTable"
-        " VALUES (%u,%u,%u,%u,"
+        " VALUES (%u,%u,%u,"
         "%u,%u,%u,%u,"
         "%u,%u,%u,%u,"
         "%u,%u,%f,%u,"
         "'%s',%" PRIu64 ",%u)",
-        data.killID, data.solarSystemID, data.victimCharacterID, data.victimCorporationID,
+        data.solarSystemID, data.victimCharacterID, data.victimCorporationID,
         data.victimAllianceID, data.victimFactionID, data.victimShipTypeID, data.victimDamageTaken,
         data.finalCharacterID, data.finalCorporationID, data.finalAllianceID, data.finalFactionID,
         data.finalShipTypeID, data.finalWeaponTypeID, data.finalSecurityStatus, data.finalDamageDone,

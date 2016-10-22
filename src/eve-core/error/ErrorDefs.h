@@ -138,7 +138,7 @@ To summarize: +/-1SHHCC (S=subsystem, HH=header, CC=code number)
  *      B = system (0-character, 1-location, 2-system, 3-item, 4-, 5-ship, 6-, 7-, 8-, 9-)
  *      C = subsystem (0-other, 1-self, 2-target, 3-charge, 4-calculate, 5-, 6-, 7-, 8-, 9-)
  *      D = type (0-create, 1-destroy, 2-move, 3-change, 4-, 5-insurance, 6-modules, 7-pilot, 8-, 9-)
- *      E = error (0-undef, 1-not init, 2-oob, 3-not found, 4-, 5-, 6-, 7-, 8-invalid, 9-not implemented)
+ *      E = error (0-undef, 1-not init, 2-oob, 3-not found, 4-offline, 5-, 6-, 7-, 8-invalid, 9-not implemented)
  *
  *
  *   NOTE:  all defs will need to be redefined in code due to updates to defs above
@@ -148,6 +148,9 @@ To summarize: +/-1SHHCC (S=subsystem, HH=header, CC=code number)
  * Ref: ServerError 15611. << ShipItem::GetEffectiveness() - module has invalid state
  * Ref: ServerError 15623. << MSAC::ModifyTargetShipAttribute() - no target
  * Ref: ServerError 15693. << EnergyTurret::Activate() - Cannot find loaded charge for this module
+ * Ref: ServerError 25164. << ModuleManager::Activate() - module offline
+ * Ref: ServerError 25263. << ModuleManager::Activate() - pSE == NULL
+ * Ref: ServerError 25268. << ModuleManager::Activate() - targetID == 0
  * Ref: ServerError 31110. << commandDispatcher::Execute()
  * Ref: ServerError 35412. << DestinyManager::_Orbit() - distance checks oob
  * Ref: ServerError 65282. << ShipItem::ModifyHoldVolumeByFlag() - flag not in map
