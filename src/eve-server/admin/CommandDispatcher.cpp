@@ -119,5 +119,4 @@ void CommandDispatcher::Close() {
     for (auto cur : m_commands)
         SafeDelete(cur.second);
     m_commands.clear();
-
 }

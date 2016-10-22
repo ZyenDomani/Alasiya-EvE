@@ -24,7 +24,6 @@
 */
 
 
-//note, using /slashes from LSC requires ROLE_SLASH
 
 #include "eve-server.h"
 
@@ -99,7 +98,9 @@ PyResult SlashService::Handle_SlashCmd( PyCallArgs& call )
         return NULL;
     }
 
-    return SlashCommand( call.client, arg.arg );
+    sLog.Debug( "SlashService::Handle_SlashCmd()", "Slash command called: '%s'", arg.arg.c_str() );
+
+    return m_commandDispatch->Execute( call.client, arg.arg.c_str() );
 }
 
 PyResult SlashService::SlashCommand(Client * client, std::string command)
@@ -110,7 +111,4 @@ PyResult SlashService::SlashCommand(Client * client, std::string command)
         throw PyException( MakeCustomError( "You need to have ROLE_SLASH to execute commands." ) );
     }
 
-    sLog.Debug( "SlashService::Handle_SlashCmd()", "Slash command called: '%s'", command.c_str() );
-
-    return m_commandDispatch->Execute( client, command.c_str() );
 }
