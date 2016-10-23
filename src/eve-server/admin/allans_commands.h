@@ -4,7 +4,7 @@
           " - spawns dungeon <dungeonID> in your system, with BM to location")
  COMMAND( removedungeon, ROLE_CONTENT,
           " - removes identified dungeon")
- COMMAND( siglist, ROLE_PROGRAMMER,
+ COMMAND( siglist, ROLE_CONTENT,
           " - lists all active signatures, with location, name, and type." )
  COMMAND( heal, ROLE_HEALSELF,
          "(entityID) - heal the character with the entityID" )
