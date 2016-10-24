@@ -225,7 +225,6 @@ void Missile::EncodeDestiny( Buffer& into )
 
 PyDict* Missile::MakeSlimItem() {
     _log(DESTINY__MESSAGE, "MakeSlimItem for MissileID %u", m_self->itemID());
-    Character* pChar = m_ship->GetPilot()->GetChar().get();
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
@@ -233,11 +232,11 @@ PyDict* Missile::MakeSlimItem() {
         slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
         slim->SetItemString("sourceModuleID",   new PyInt(m_module->itemID()));
-        slim->SetItemString("corpID",           new PyInt(pChar->corporationID()));
-        slim->SetItemString("allianceID",       new PyInt(pChar->allianceID()));
-        slim->SetItemString("warFactionID",     new PyInt(pChar->warFactionID()));
-        slim->SetItemString("securityStatus",   new PyFloat(pChar->GetSecurityRating()));
-        slim->SetItemString("ownerID",          new PyInt(pChar->itemID())); // this is corp ID??
+        slim->SetItemString("corpID",           new PyInt(m_corpID));
+        slim->SetItemString("allianceID",       new PyInt(m_allyID));
+        slim->SetItemString("warFactionID",     new PyInt(m_warFactionID));
+        slim->SetItemString("securityStatus",   new PyFloat(0/*pChar->GetSecurityRating()*/)); /** @todo (allan) fix this */
+        slim->SetItemString("ownerID",          new PyInt(m_ownerID)); // this is corp ID??
         slim->SetItemString("numLaunchers",     new PyInt(1));  /** @todo (allan) fix this */
         slim->SetItemString("nameID",           new PyInt(0));  /** @todo (allan) fix this */
     return(slim);

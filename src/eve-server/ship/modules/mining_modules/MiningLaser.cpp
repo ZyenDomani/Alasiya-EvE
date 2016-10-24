@@ -387,7 +387,7 @@ void MiningLaser::StopCycle(bool abort)
     _log(MINING__DEBUG, "StopCycle() - abort:%s, timeTillStop:%.3fms", (abort?"true":"false"), timeTillStop);
 
     if (abort) {
-            ProcessCycle(abort);
+        ProcessCycle(abort);
     }
 
     uint32 chargeTypeID = 0;
