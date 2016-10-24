@@ -29,7 +29,7 @@
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "scanning/ScanMgrService.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 
 class ScanBound
 : public PyBoundObject

@@ -22,7 +22,7 @@
 #include "Concord.h"
 #include "EVEServerConfig.h"
 #include "inventory/AttributeEnum.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "system/Damage.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"

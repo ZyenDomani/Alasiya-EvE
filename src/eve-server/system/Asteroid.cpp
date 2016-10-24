@@ -27,7 +27,7 @@
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "system/Asteroid.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"

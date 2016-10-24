@@ -35,7 +35,7 @@
 #include "npc/NPC.h"
 #include <npc/NPCAI.h>
 #include "packets/Missile.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "ship/Missile.h"
 #include "station/Station.h"
 #include "system/BubbleManager.h"

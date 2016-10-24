@@ -28,8 +28,8 @@
 #define __SYSTEMENTITY_H_INCL__
 
 #include "inventory/InventoryItem.h"
-#include "ship/DestinyManager.h"
-#include "ship/TargetManager.h"
+#include "system/DestinyManager.h"
+#include "system/TargetManager.h"
 #include "SystemDB.h"
 
 class AsteroidBeltMgr;

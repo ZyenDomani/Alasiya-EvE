@@ -25,15 +25,17 @@
  */
 
 #include <algorithm>
+
 #include "eve-server.h"
 #include "EVEServerConfig.h"
-#include "ship/DestinyManager.h"
+
+#include "Client.h"
 #include "system/BubbleManager.h"
+#include "system/DestinyManager.h"
 #include "system/SystemBubble.h"
 #include "system/SystemEntity.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"
-#include "Client.h"
 
 uint32 SystemBubble::m_bubbleIncrementer = 0;
 
@@ -78,14 +80,9 @@ void SystemBubble::Process()
 void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
 	DynamicSystemEntity* pDSE(nullptr);
     for (auto cur : m_dynamicEntities) {
+        if (!cur)
+            continue;
         pDSE = cur->GetDynamicSE();
-        /** @todo segfault here...
-         *
-Program received signal SIGSEGV, Segmentation fault.
-0x0000000000bae8ef in SystemBubble::ProcessWander (this=0x37f3020, wanderers=std::vector of length 0, capacity 0)
-    at /usr/local/src/eve/Alasiya-EvE/src/eve-server/system/SystemBubble.cpp:81
-81              pDSE = cur->GetDynamicSE();
-    */
 		if (!pDSE)
             continue;
         if (pDSE->DestinyMgr() and pDSE->DestinyMgr()->IsWarping())

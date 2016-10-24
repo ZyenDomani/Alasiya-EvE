@@ -26,7 +26,7 @@
 #include "ship/modules/ewar_modules/WarpScrambler.h"
 #include "Client.h"
 #include "npc/NPC.h"
-#include "ship/Drone.h"
+#include "npc/Drone.h"
 #include "system/SystemBubble.h"
 
 

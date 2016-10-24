@@ -30,7 +30,7 @@
 #include "Profile.h"
 #include "character/Character.h"
 #include "inventory/AttributeEnum.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "ship/Missile.h"
 #include "ship/Ship.h"
 #include "system/Damage.h"

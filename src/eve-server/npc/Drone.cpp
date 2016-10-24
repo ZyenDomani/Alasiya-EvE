@@ -28,9 +28,9 @@
 
 #include "EVEServerConfig.h"
 #include "inventory/AttributeEnum.h"
-#include "ship/DestinyManager.h"
-#include "ship/Drone.h"
-#include "ship/DroneAI.h"
+#include "system/DestinyManager.h"
+#include "npc/Drone.h"
+#include "npc/DroneAI.h"
 #include "system/SystemManager.h"
 
 using namespace Destiny;

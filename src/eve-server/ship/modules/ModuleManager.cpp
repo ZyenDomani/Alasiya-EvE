@@ -31,11 +31,11 @@
 #include "PyCallable.h"
 #include "EVEServerConfig.h"
 #include "Client.h"
-#include "ship/DestinyManager.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleManager.h"
 #include "ship/modules/ModuleFactory.h"
 #include "ship/modules/ActiveModule.h"
+#include "system/DestinyManager.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 

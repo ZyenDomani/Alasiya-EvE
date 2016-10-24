@@ -13,6 +13,7 @@
 //  -allan 18Aug14
 //  incomplete  3jan15
 typedef enum {
+    effectNeedsTarget                   = 2,    // added for target checking
     effectShieldBoosting                = 4,    //effects.ShieldBoosting
     effectSpeedBoost                    = 7,    //effects.SpeedBoost
     effectMissileLaunching              = 9,    //effects.MissileDeployment

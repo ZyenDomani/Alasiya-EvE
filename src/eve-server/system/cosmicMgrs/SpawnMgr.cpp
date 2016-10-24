@@ -11,7 +11,7 @@
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
 #include "npc/NPC.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/SpawnMgr.h"

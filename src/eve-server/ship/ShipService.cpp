@@ -31,7 +31,7 @@
 
 #include "EVEServerConfig.h"
 #include "pos/Structure.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "ship/ShipService.h"
 #include "system/Container.h"
 #include "system/SystemBubble.h"

@@ -36,9 +36,9 @@
 #include "corporation/CorporationDB.h"
 #include "imageserver/ImageServer.h"
 #include "npc/NPC.h"
-#include "ship/DestinyManager.h"
-#include "ship/Drone.h"
-#include "ship/DroneAI.h"
+#include "npc/Drone.h"
+#include "npc/DroneAI.h"
+#include "system/DestinyManager.h"
 #include "system/SystemGPoint.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
@@ -757,7 +757,7 @@ void Client::_ExecuteJump() {
     m_movePoint = NULL_ORIGIN;
 }
 
-void Client::IsJumping() {
+void Client::SetJumpTimers() {
     m_cloakTimer.Start(10000);
     m_invulTimer.Start(/*InvulTimer::*/JumpingInvul);
     m_jumpTimer.Start(500);
@@ -2025,3 +2025,5 @@ void Client::ChannelJoined(LSCChannel *chan) {
 void Client::ChannelLeft(LSCChannel *chan) {
     m_channels.erase(chan);
 }
+
+

@@ -38,7 +38,7 @@
 #include "admin/CommandDispatcher.h"
 #include "chat/LSCChannel.h"
 #include "inventory/ItemFactory.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 

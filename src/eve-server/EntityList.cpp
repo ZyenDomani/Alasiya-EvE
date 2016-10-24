@@ -30,7 +30,7 @@
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
 #include "system/cosmicMgrs/ManagerDB.h"

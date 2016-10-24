@@ -27,9 +27,9 @@
 
 #include "Client.h"
 #include "inventory/AttributeEnum.h"
-#include "ship/DestinyManager.h"
-#include "ship/Drone.h"
-#include "ship/DroneAI.h"
+#include "system/DestinyManager.h"
+#include "npc/Drone.h"
+#include "npc/DroneAI.h"
 #include "system/Damage.h"
 #include "system/SystemBubble.h"
 
@@ -78,7 +78,7 @@ DroneAIMgr::DroneAIMgr(Drone* who)
 }
 
 void DroneAIMgr::Process() {
-    if ((!m_processTimer.Check()) || (!m_drone->SysBubble()->HasPlayers()) || m_drone->DestinyMgr()->IsWarping())
+    if ((!m_processTimer.Check()) or (!m_drone->SysBubble()->HasPlayers()) or m_drone->DestinyMgr()->IsWarping())
         return;
 
     if (m_shieldBoosterTimer.Enabled() && m_shieldBoosterTimer.Check())
@@ -106,12 +106,16 @@ void DroneAIMgr::Process() {
                 DestinyManager* pDestiny(nullptr);
                 m_drone->SysBubble()->GetPlayers(clientVec); // what about player drones?
                 for (auto cur : clientVec) {
-                    if ((!cur->GetShipSE()->DestinyMgr()) || (!cur->GetShipSE()->SysBubble()))    // this shouldnt be needed, but whatever...
+                    if (cur->IsLogin() or cur->IsInvul() or cur->InPod())
+                        continue;
+                    if (!cur->GetShipSE())
+                        continue;
+                    if ((!cur->GetShipSE()->DestinyMgr()) or (!cur->GetShipSE()->SysBubble()))    // this shouldnt be needed, but whatever...
                         continue;
                     pDestiny = cur->GetShipSE()->DestinyMgr();
-                    if (pDestiny->IsCloaked() || pDestiny->IsWarping())
+                    if (pDestiny->IsCloaked() or pDestiny->IsWarping())
                         continue;
-                    if (cur->IsLogin() || cur->IsInvul() || cur->InPod())
+                    if (cur->IsLogin() or cur->IsInvul() or cur->InPod())
                         continue;
                     if (m_drone->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_entityAttackRange)
                         continue;

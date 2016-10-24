@@ -40,9 +40,9 @@
 #include "inventory/InventoryItem.h"
 #include "manufacturing/Blueprint.h"
 #include "map/MapConnections.h"
-#include "ship/DestinyManager.h"
-#include "ship/Drone.h"
+#include "npc/Drone.h"
 #include "system/Damage.h"
+#include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/BeltMgr.h"
@@ -205,9 +205,9 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
         + 'me' string is allowed for [character name] to indicate YOU being teleported<br><br>\
         .tr [entityID #1] - teleport YOU to 'entityID'<br>\
         .tr [character name] - teleport YOU to 'character name'<br>\
-        .tr [solarSystemID] - teleport YOU into 'solarSystemID' system<br>\
+        .tr [locationID] - teleport YOU into 'locationID'<br>\
         .tr [solar system name] - teleport YOU into 'solar system name' system<br>\
-        .tr [entityID #1|character name] [entityID #2|character name|solarSystemID|solar system name] - teleport 'entityID #1' or 'character name' to 'entityID #2', 'character name' or solar system<br>\
+        .tr [entityID #1|character name] [entityID #2|character name|locationID|solar system name] - teleport 'entityID #1' or 'character name' to 'entityID #2', 'character name' or solar system<br>\
         .tr x y z - teleport YOU to a specific (x,y,z) coordinate in the current solar system<br>\
         ";
 
@@ -219,7 +219,7 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
     // Argument Discovery
     Client * p_targetClient = nullptr;
     SystemEntity * destinationEntity = nullptr;
-    uint32 solarSystemID = 0, trMode = 0;
+    uint32 locationID = 0, trMode = 0;
     GPoint destinationPoint(NULL_ORIGIN);
     uint32 argsCount = args.argCount();
     std::string name1 = args.arg(1);
@@ -263,10 +263,10 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
         // First argument is a number, find out if it's a character, ship, NPC, station, belt, stargate, or solar system:
         //TODO
         p_targetClient = who;
-        solarSystemID = atoi(args.arg(1).c_str());
+        locationID = atoi(args.arg(1).c_str());
         SystemGPoint m_gp;
-        if (IsSolarSystem(solarSystemID))
-            destinationPoint = m_gp.GetRandPointOnMoon(solarSystemID);//GPoint(12457894200.0f, 17254864800.0f, 14851254800.0f);
+        if (IsSolarSystem(locationID))
+            destinationPoint = m_gp.GetRandPointOnMoon(locationID);//GPoint(12457894200.0f, 17254864800.0f, 14851254800.0f);
         trMode = 1;
     }
 
@@ -299,8 +299,8 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
     {
         // SPECIAL CASE:  We are transporting ourselves to a specific (x,y,z) coordinate in the current solar system:
         p_targetClient = who;
-        solarSystemID = who->GetLocationID();
-        if (!IsSolarSystem(solarSystemID))
+        locationID = who->GetLocationID();
+        if (!IsSolarSystem(locationID))
             throw PyException(MakeCustomError(std::string(usageString+"<br><br>YOU MUST BE IN SPACE!").c_str()));
 
         if (args.isNumber(1) && args.isNumber(2) && args.isNumber(3))
@@ -312,16 +312,17 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
 
     // We're still going, so we know now we have a target to translocate AND a destination solar system AND destination coordinates, so let's do the translocate:
     //    p_targetClient - target character in a ship to translocate (Client *)
-    //    solarSystemID - destination solar system ID
+    //    locationID - destination solar system ID
     //    destinationPoint - destination coordinates (GPoint)
 
     //if (!p_targetClient->GetShipSE())
     //    p_targetClient->CreateShipSE();
-    if (p_targetClient->GetShipSE() and p_targetClient->GetShipSE()->DestinyMgr())
-        p_targetClient->GetShipSE()->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", solarSystemID);
+    if (IsSolarSystem(locationID) and p_targetClient->GetShipSE() and p_targetClient->GetShipSE()->DestinyMgr())
+        p_targetClient->GetShipSE()->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", locationID);
 
-    p_targetClient->IsJumping();
-    p_targetClient->MoveToLocation(solarSystemID, destinationPoint);
+    p_targetClient->SetJump(Client::msJump);
+    p_targetClient->SetJumpTimers();
+    p_targetClient->MoveToLocation(locationID, destinationPoint);
     if (p_targetClient->GetShipSE() and p_targetClient->GetShipSE()->DestinyMgr())
         p_targetClient->GetShipSE()->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
 

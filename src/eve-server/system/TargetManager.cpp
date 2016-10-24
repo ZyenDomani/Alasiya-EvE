@@ -34,7 +34,7 @@
 #include "Client.h"
 #include "inventory/AttributeEnum.h"
 #include "ship/Ship.h"
-#include "ship/TargetManager.h"
+#include "system/TargetManager.h"
 #include "system/SystemEntity.h"
 #include <system/SystemBubble.h>
 #include <npc/NPC.h>

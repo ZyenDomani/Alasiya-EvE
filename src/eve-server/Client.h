@@ -65,6 +65,12 @@ class Client
   protected EVEPacketDispatcher
 {
 public:
+    typedef enum {
+        msIdle,
+        msJump,
+        msUndock
+    } _MoveState;
+    
     Client(PyServiceMgr &services, EVETCPConnection** con);
     virtual ~Client();
 
@@ -139,7 +145,7 @@ public:
     // misc char functions
     void WarpIn();
     void WarpOut();
-    void IsJumping();
+    void SetJumpTimers();
     void SetShip(ShipItemRef shipRef);
     void CreateNewPod();
     void PickAlternateShip();
@@ -189,6 +195,7 @@ public:
     bool IsSetStateSent()                               { return m_setStateSent; }
     bool IsSessionChange()                              { return m_sessionChangeActive; }
 
+    void SetJump(_MoveState state = msIdle)             { m_moveState = state; }
     void SetInvul(bool invul=false)                     { m_invul = invul; }
     void SetUndock(bool undock=false)                   { m_undock = undock; }
     void SetBeyonce(bool beyonce=false)                 { m_beyonce = beyonce; }
@@ -305,11 +312,6 @@ protected:
 
     EvilNumber              m_timeEndTrain;
 
-    typedef enum {
-        msIdle,
-        msJump,
-        msUndock
-    } _MoveState;
     void                    _postMove(_MoveState type, uint32 wait_ms=500);
     _MoveState              m_moveState;
 

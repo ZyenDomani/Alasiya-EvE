@@ -29,7 +29,7 @@
 #include "Client.h"
 #include "PyCallable.h"
 #include "admin/CommandDispatcher.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 
 CommandDispatcher::CommandDispatcher( PyServiceMgr& services )
 : m_services( services )

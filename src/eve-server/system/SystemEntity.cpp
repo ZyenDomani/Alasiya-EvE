@@ -32,7 +32,7 @@
 #include "PyServiceMgr.h"
 #include "character/Character.h"
 #include "inventory/AttributeEnum.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "station/Station.h"
 #include "system/LootSystem.h"
 #include "system/SystemBubble.h"

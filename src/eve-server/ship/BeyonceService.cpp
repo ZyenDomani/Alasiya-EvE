@@ -31,7 +31,7 @@
 #include "cache/ObjCacheService.h"
 #include "planet/PlanetDB.h"
 #include "ship/BeyonceService.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "system/BookmarkService.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
@@ -68,7 +68,7 @@ public:
         // beyonce is constructed when player first enters system and not removed until sys change or logout.
         // these functions are only called when beyonce is created. (fix for BlackScreen Bug)
         if (pClient->IsJump())
-            pClient->IsJumping();
+            pClient->SetJumpTimers();
         else if (pClient->IsLogin())
             pClient->SetBallPark();
 

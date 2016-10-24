@@ -3,7 +3,7 @@
 #include "EVEServerConfig.h"
 #include "Profile.h"
 #include "character/Character.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "ship/modules/ModuleManager.h"
 #include "ship/Ship.h"
 #include "system/BubbleManager.h"

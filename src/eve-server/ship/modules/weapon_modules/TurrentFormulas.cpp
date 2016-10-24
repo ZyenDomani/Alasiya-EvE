@@ -10,7 +10,7 @@
 #include "character/Character.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
-#include "ship/Drone.h"
+#include "npc/Drone.h"
 #include "ship/modules/weapon_modules/TurrentFormulas.h"
 #include "ship/modules/TurrentModule.h"
 

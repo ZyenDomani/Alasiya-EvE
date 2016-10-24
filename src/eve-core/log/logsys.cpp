@@ -74,7 +74,6 @@ void log_message(LogType type, const char *fmt, ...) {
 }
 
 void log_messageVA(LogType type, const char *fmt, va_list args) {
-
     log_messageVA(type, 0, fmt, args);
 }
 

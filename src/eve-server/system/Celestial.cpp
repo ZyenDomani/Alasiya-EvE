@@ -25,7 +25,7 @@
 
 #include "eve-server.h"
 
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "station/Station.h"
 #include "system/SolarSystem.h"
 

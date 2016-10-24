@@ -28,7 +28,7 @@
 
 #include "Client.h"
 #include "EVEServerConfig.h"
-#include "ship/DestinyManager.h"
+#include "system/DestinyManager.h"
 #include "system/Container.h"
 #include "SystemManager.h"
 #include "SystemBubble.h"

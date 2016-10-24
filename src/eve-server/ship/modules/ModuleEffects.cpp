@@ -339,10 +339,15 @@ void ModuleEffects::_populate()
     //go through and find each effect, then add pointer to effect to our own map
     for (auto cur : effectsList) {
         switch (cur.first) {
-            // We do not need MEffect objects for these effectIDs, but do need slot type.
-            case 10:    // combat
+            // will have to look into more modules that need a target and add as needed.
+            case 2:     // need target
+            case 40:    // launcher
+            case 42:    // turrent
+            case 47:    // cargo scanner
+            case 2255:  // tractor beam
                 m_targReq = true;
                 continue;
+            // We do not need MEffect objects for these effectIDs, but do need slot type.
             case 11:    // loPower
                 m_loPower = true;
                 continue;

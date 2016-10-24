@@ -64,6 +64,8 @@
         */
         #define DISABLE_LOGSYS
     #endif
+#else
+    #include <execinfo.h>
 #endif
 
 
