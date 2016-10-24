@@ -1520,7 +1520,7 @@ void CharacterDB::SaveKillOrLoss(CharKillData &data) {
     DBerror err;
     sDatabase.RunQuery(err,
         " INSERT INTO chrKillTable"
-        " VALUES (%u,%u,%u,"
+        " VALUES (0,%u,%u,%u,"
         "%u,%u,%u,%u,"
         "%u,%u,%u,%u,"
         "%u,%u,%f,%u,"

@@ -213,11 +213,13 @@ bool BookmarkDB::SaveNewBookmarkToDatabase(uint32 &bookmarkID, uint32 ownerID, u
 {
     DBerror err;
 /** @todo  need to escape the memo field here...   */
+    std::string memo_fixed = "";
+    sDatabase.DoEscapeString(memo_fixed, memo.c_str());
     if (!sDatabase.RunQuery(err,
         " INSERT INTO bookmarks "
         " (bookmarkID, ownerID, itemID, typeID, flag, memo, created, x, y, z, locationID, note, creatorID, folderID)"
         " VALUES (%u, %u, %u, %u, %u, '%s', %" PRIu64 ", %f, %f, %f, %u, '%s', %u, %u) ",
-        bookmarkID, ownerID, itemID, typeID, flag, memo.c_str(), created, x, y, z, locationID, note.c_str(), creatorID, folderID
+        bookmarkID, ownerID, itemID, typeID, flag, memo_fixed.c_str(), created, x, y, z, locationID, note.c_str(), creatorID, folderID
         ))
     {
         sLog.Error( "BookmarkDB::SaveNewBookmarkToDatabase()", "Error in query, Bookmark content couldn't be saved: %s", err.c_str() );
