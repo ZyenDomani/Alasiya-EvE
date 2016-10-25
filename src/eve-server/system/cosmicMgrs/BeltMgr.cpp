@@ -216,14 +216,17 @@ void AsteroidBeltMgr::SpawnBelt(uint16 bubbleID)
     if (IsSpawned(bubbleID))
         return;
 
-    float secStatus = m_system->GetSystemSecurityRating();
     uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
+    if (!IsUniverseCelestial(beltID))
+        return;
+
     SystemEntity* pSE = m_system->GetSEFromInventory(beltID);
 
     bool ice = false;
     if (pSE->GetTypeID() == 17774)
         ice = true;
 
+    float secStatus = m_system->GetSystemSecurityRating();
     float security = 1.1 - secStatus;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
     std::unordered_multimap<float, uint32> roidDist;
     if (ice) {
