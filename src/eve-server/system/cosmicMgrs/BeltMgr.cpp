@@ -57,6 +57,10 @@ void AsteroidBeltMgr::Init(uint32 regionID)
         return;
     }
 
+    m_belts.clear();
+    m_active.clear();
+    m_spawned.clear();
+
     m_regionID = regionID;
     m_systemID = m_system->GetID();
     m_respawnTimer.Start(sConfig.cosmic.BeltRespawn *60 *60 *1000);  // hours->ms
