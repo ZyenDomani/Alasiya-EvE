@@ -79,6 +79,11 @@ class ModuleManager;
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+/** @todo
+ * update these notes with my corrections
+ * -allan
+ */
+
 
 //////////////////////////////////////////////////////////////////////////////////
 // Modifier classes containing all data to modify an attribute
@@ -145,8 +150,7 @@ class ModuleContainer
 {
 friend class ModuleManager;
 public:
-    ModuleContainer(uint32 lowSlots, uint32 medSlots, uint32 highSlots, uint32 rigSlots, uint32 subSystemSlots,
-        uint32 turretSlots, uint32 launcherSlots, ModuleManager * myManager);
+    ModuleContainer(uint8 lowSlots, uint8 medSlots, uint8 highSlots, uint8 rigSlots, uint8 subSystemSlots, uint8 turretSlots, uint8 launcherSlots, ModuleManager *myManager);
     ~ModuleContainer();
 
     bool AddModule(EVEItemFlags flag, GenericModule * mod);

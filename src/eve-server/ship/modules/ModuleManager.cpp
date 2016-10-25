@@ -53,8 +53,8 @@
 //////////////////////////////////////////////////////////////////////////////////
 // ModuleContainer class definitions
 #pragma region ModuleContainerClass
-ModuleContainer::ModuleContainer(uint32 lowSlots, uint32 medSlots, uint32 highSlots, uint32 rigSlots, uint32 subSystemSlots,
-    uint32 turretSlots, uint32 launcherSlots, ModuleManager * myManager)
+ModuleContainer::ModuleContainer(uint8 lowSlots, uint8 medSlots, uint8 highSlots, uint8 rigSlots, uint8 subSystemSlots,
+    uint8 turretSlots, uint8 launcherSlots, ModuleManager *myManager)
 {
     m_LowSlots = lowSlots;
     m_MediumSlots = medSlots;
@@ -577,13 +577,13 @@ EVEItemSlotType ModuleContainer::_checkBounds(EVEItemFlags flag)
 ModuleManager::ModuleManager(ShipItem *const ship)
 {
     // Create ModuleContainer object and initialize with sizes for avalible slot banks for this ship:
-    m_Modules = new ModuleContainer((uint32)ship->GetAttribute(AttrLowSlots).get_int(),
-                                    (uint32)ship->GetAttribute(AttrMedSlots).get_int(),
-                                    (uint32)ship->GetAttribute(AttrHiSlots).get_int(),
-                                    (uint32)ship->GetAttribute(AttrRigSlots).get_int(),
-                                    (uint32)ship->GetAttribute(AttrSubSystemSlot).get_int(),
-                                    (uint32)ship->GetAttribute(AttrTurretSlotsLeft).get_int(),
-                                    (uint32)ship->GetAttribute(AttrLauncherSlotsLeft).get_int(),
+    m_Modules = new ModuleContainer((uint8)ship->GetAttribute(AttrLowSlots).get_int(),
+                                    (uint8)ship->GetAttribute(AttrMedSlots).get_int(),
+                                    (uint8)ship->GetAttribute(AttrHiSlots).get_int(),
+                                    (uint8)ship->GetAttribute(AttrRigSlots).get_int(),
+                                    (uint8)ship->GetAttribute(AttrSubSystemSlot).get_int(),
+                                    (uint8)ship->GetAttribute(AttrTurretSlotsLeft).get_int(),
+                                    (uint8)ship->GetAttribute(AttrLauncherSlotsLeft).get_int(),
                                     this);
 
     m_initalized = false;
