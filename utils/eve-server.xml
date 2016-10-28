@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 6.6 -->
+     Version: 6.7 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -19,6 +19,7 @@
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
         <maxPlayers>2500</maxPlayers>
         <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
+        <UseMarketBot>true</UseMarketBot>
     </server>
 
     <world>

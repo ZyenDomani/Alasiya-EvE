@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 6.1
+    Log Version: 6.2
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -132,6 +132,15 @@ LOG_TYPE( SPAWN, MESSAGE, DISABLED, "SpawnMsg" )
 LOG_TYPE( SPAWN, POP, DISABLED, "SpawnPop" )
 LOG_TYPE( SPAWN, DEPOP, DISABLED, "SpawnDepop" )
 LOG_TYPE( SPAWN, TRACE, DISABLED, "SpawnTrace" )
+
+LOG_CATEGORY( CACHE )
+LOG_TYPE( CACHE, ERROR,   ENABLED, "CacheError" )
+LOG_TYPE( CACHE, WARNING, DISABLED, "CacheWarning" )
+LOG_TYPE( CACHE, MESSAGE, DISABLED, "CacheMsg" )
+LOG_TYPE( CACHE, DEBUG, DISABLED, "CacheDebug" )
+LOG_TYPE( CACHE, INFO, DISABLED, "CacheInfo" )
+LOG_TYPE( CACHE, TRACE, DISABLED, "CacheTrace" )
+LOG_TYPE( CACHE, DUMP, DISABLED, "CacheDump" )
 
 LOG_CATEGORY( MAIL )
 LOG_TYPE( MAIL, ERROR,   ENABLED, "MailError" )

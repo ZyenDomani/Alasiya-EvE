@@ -55,6 +55,12 @@ PyResult AllianceRegistry::Handle_CreateAlliance(PyCallArgs &call) {
     sLog.Log("AllianceRegistry", "Handle_CreateAlliance() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
+    /** @todo add for corp owner
+     * this needs more work once factions and alliances are implemented
+     * non-static corp, faction, and alliance
+     *
+     *  INSERT INTO cacheOwners(ownerID, ownerName, typeID, ownerNameID) VALUES   corporationID, corporationName, 2, 0
+     */
     return NULL;
 }
 

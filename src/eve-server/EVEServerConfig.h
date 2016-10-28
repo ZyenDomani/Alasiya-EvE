@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    6.6
+    Version:    6.7
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -51,6 +51,7 @@ public:
     struct
     {
         bool UseBeanCount;
+        bool UseMarketBot;
         bool UseProfiling;
         bool UseShipTracking;
         bool UseStackTrace;

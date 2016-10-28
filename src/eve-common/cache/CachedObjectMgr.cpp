@@ -23,6 +23,10 @@
     Author:     Zhur
 */
 
+/** @todo this whole system needs updating....
+ *
+ */
+
 #include "eve-common.h"
 
 #include "cache/CachedObjectMgr.h"
@@ -71,7 +75,17 @@ PyObject *CachedObjectMgr::CacheRecord::EncodeHint() const
 }
 
 
-
+/*
+ * # Cache Logging:
+ * CACHE=1
+ * CACHE__ERROR=1
+ * CACHE__WARNING=0
+ * CACHE__MESSAGE=0
+ * CACHE__DEBUG=0
+ * CACHE__INFO=0
+ * CACHE__TRACE=0
+ * CACHE__DUMP=0
+ */
 //extract out the string contents of the object ID... if its a single string,
 // then this visit will be boring, but if its a nested structure of strings,
 // its more interesting, either way we should come out with some string...
@@ -109,8 +123,8 @@ void CachedObjectMgr::InvalidateCache(const PyRep *objectID)
     CachedObjMapItr res = m_cachedObjects.find(str);
 
     if(res != m_cachedObjects.end()) {
-        SafeDelete( res->second );
         m_cachedObjects.erase(res);
+        SafeDelete( res->second );
     }
 }
 
@@ -146,8 +160,8 @@ void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
     PyRep *cached_data = *in_cached_data;
     *in_cached_data = NULL;
 
-    //if(is_log_enabled(SERVICE__CACHE_DUMP)) {
-      //  PyLogsysDump dumper(SERVICE__CACHE_DUMP, SERVICE__CACHE_DUMP, false, true);
+    //if(is_log_enabled(CACHE__DUMP)) {
+    //  PyLogsysDump dumper(CACHE__DUMP, CACHE__DUMP, false, true);
         //cached_data->visit(&dumper, 0);
     //}
 

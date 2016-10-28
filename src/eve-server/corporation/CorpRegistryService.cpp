@@ -328,7 +328,12 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "Failed to force char '%s' to join new corporation %u. This will be interesting.", call.client->GetName(), corpID);
         return (new PyInt(0));
     }
-
+    /** @todo add for corp owner
+     * this needs more work once factions and alliances are implemented
+     * non-static corp, faction, and alliance
+     *
+     *  INSERT INTO cacheOwners(ownerID, ownerName, typeID, ownerNameID) VALUES   corporationID, corporationName, 2, 0
+     */
     return (new PyInt(corpID));
 }
 

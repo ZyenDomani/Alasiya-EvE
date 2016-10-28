@@ -237,9 +237,8 @@ void AsteroidBeltMgr::SpawnBelt(uint16 bubbleID)
         sMgrData.GetRoidDist(m_system->GetSystemSecurityClass(), roidDist);
     }
 
-    double radius = 16000;
-
     int8 pcs = 5;
+    double radius = 16000;
     radius *= sConfig.cosmic.roidRadiusMultiplier;
 
     double roidradius = 0, theta = 0, elevation = 0;

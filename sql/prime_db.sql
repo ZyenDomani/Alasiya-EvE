@@ -82,10 +82,3 @@ INSERT INTO eveStaticOwners (ownerID, ownerName, typeID)
 -- INSERT INTO cacheLocations(locationID, locationName, x, y, z, locationNameID)
 
 
-/* this needs more work once factions and alliances are implemented */
-/* non-static corp, faction, and alliance*/
-INSERT INTO cacheOwners(ownerID, ownerName, typeID, ownerNameID)
- SELECT corporationID, corporationName, 2, 0
- FROM corporation
- WHERE corporationID > 1000999;
-

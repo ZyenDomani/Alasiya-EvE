@@ -295,6 +295,8 @@ SET( market_INCLUDE
      "${TARGET_INCLUDE_DIR}/market/BillMgrService.h"
      "${TARGET_INCLUDE_DIR}/market/ContractMgrService.h"
      "${TARGET_INCLUDE_DIR}/market/ContractProxy.h"
+     "${TARGET_INCLUDE_DIR}/market/MarketBotConf.h"
+     "${TARGET_INCLUDE_DIR}/market/MarketBotMgr.h"
      "${TARGET_INCLUDE_DIR}/market/MarketDB.h"
      "${TARGET_INCLUDE_DIR}/market/MarketProxyService.h" )
      #"${TARGET_INCLUDE_DIR}/market/NPCMarket.h")
@@ -302,6 +304,8 @@ SET( market_SOURCE
      "${TARGET_SOURCE_DIR}/market/BillMgrService.cpp"
      "${TARGET_SOURCE_DIR}/market/ContractMgrService.cpp"
      "${TARGET_SOURCE_DIR}/market/ContractProxy.cpp"
+     "${TARGET_SOURCE_DIR}/market/MarketBotConf.cpp"
+     "${TARGET_SOURCE_DIR}/market/MarketBotMgr.cpp"
      "${TARGET_SOURCE_DIR}/market/MarketDB.cpp"
      "${TARGET_SOURCE_DIR}/market/MarketProxyService.cpp" )
      #"${TARGET_SOURCE_DIR}/market/NPCMarket.cpp")

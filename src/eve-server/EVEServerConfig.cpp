@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    6.6
+    Version:    6.7
 */
 
 
@@ -44,6 +44,7 @@ EVEServerConfig::EVEServerConfig()
 
     // server
     server.UseBeanCount = false;
+    server.UseMarketBot = false;
     server.testServer = true;
     server.maxPlayers = 500;//N
     server.UseProfiling = false;
@@ -181,6 +182,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
 {
     AddValueParser( "testServer",           server.testServer );
     AddValueParser( "UseBeanCount",         server.UseBeanCount );
+    AddValueParser( "UseMarketBot",         server.UseMarketBot );
     AddValueParser( "maxPlayers",           server.maxPlayers );
     AddValueParser( "UseProfiling",         server.UseProfiling );
     AddValueParser( "UseShipTracking",      server.UseShipTracking );

@@ -30,6 +30,7 @@
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"
+#include "market/MarketBotMgr.h"
 #include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
@@ -129,6 +130,7 @@ void EntityList::Process() {
         ++m_stamp;
         sWHMgr.Process();
         sBubbleMgr.Process();
+        sMarketBotMgr.Process();
 
         for (auto cur : m_clients)
             if (cur->GetLocationID())

@@ -1,7 +1,7 @@
 
  /**
-  * @name MarketBot.h
-  *   system for automating/emulating NPC corps' buying and selling on the market.
+  * @name MarketBotMgr.h
+  *   system for automating/emulating buy and sell orders on the market.
   * idea and some code taken from AuctionHouseBot - Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
   * @Author:         Allan
   * @date:   10 August 2016
@@ -16,23 +16,27 @@
 #include "eve-common.h"
 #include "utils/Singleton.h"
 
-class MarketBot
-: public Singleton<MarketBot>
+class MarketBotMgr
+: public Singleton<MarketBotMgr>
 {
 public:
-    MarketBot();
-    ~MarketBot();
+    MarketBotMgr();
+    ~MarketBotMgr();
+
+    void Init();
+    void Process();
+
+private:
+    Timer m_updateTimer;
+    
+    bool m_initalized;
 
 };
 
+
 //Singleton
-#define sMarketBot \
-( MarketBot::get() )
-
-
-
-
-
+#define sMarketBotMgr \
+( MarketBotMgr::get() )
 
 
 #endif  // EVEMU_MARKET_MARKETBOT_H_

@@ -111,6 +111,7 @@
 #include "market/ContractMgrService.h"
 #include "market/ContractProxy.h"
 #include "market/MarketProxyService.h"
+#include "market/MarketBotMgr.h"
 // missions services
 #include "missions/MissionMgrService.h"
 // planet services
@@ -160,7 +161,6 @@
 static void SetupSignals();
 static void CatchSignal( int sig_num );
 static const char* const CONFIG_FILE = EVEMU_ROOT "/etc/eve-server.xml";
-uint8 MAIN_LOOP_DELAY = sConfig.server.ServerSleepTime; // delay 10 ms.
 
 static volatile bool RunLoops = true;
 
@@ -208,6 +208,7 @@ int main( int argc, char* argv[] )
     sLog.Log("     Server Build", " %.2f", EVE_Build );
     sLog.Log("  Server Revision", " %s", EVEMU_REVISION );
     sLog.Log("       Build Date", " %s", EVEMU_BUILD_DATE );
+    sLog.Log("MarketBot Version", " %.1f", Bot_Version );
     sLog.Log("   Config Version", " %.1f", Config_Version );
     sLog.Log("      Log Version", " %.1f", Log_Version );
     sLog.Log("", "");
@@ -261,6 +262,10 @@ int main( int argc, char* argv[] )
     /* create the BubbleManager singleton */
     sLog.Success("       ServerInit", "Starting Bubble Manager");
     sBubbleMgr.Init();
+
+    /* create the MarketBot singleton */
+    sLog.Success("       ServerInit", "Starting Market Bot Manager");
+    sMarketBotMgr.Init();
 
     /* create a command dispatcher */
     sLog.Success("       ServerInit", "Starting Command Dispatch Manager");
@@ -401,6 +406,7 @@ int main( int argc, char* argv[] )
      * current settings displayed on console at start-up
      *   -allan 7June2015
      */
+    uint8 MAIN_LOOP_DELAY = sConfig.server.ServerSleepTime; // delay 10 ms.
     if (sConfig.server.ServerSleepTime != 10) {
         MAIN_LOOP_DELAY = sConfig.server.ServerSleepTime;
         sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
@@ -470,10 +476,10 @@ int main( int argc, char* argv[] )
 
     ServiceDB m_sdb;
     m_sdb.SetServerOnlineStatus(true);
-	
+
     uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
-	
+
     sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime));
     sLog.Success("       ServerInit", "Alasiya EvEmu Server is Online.");
 

@@ -1,0 +1,57 @@
+
+ /**
+  * @name MarketBotMgr.h
+  *   system for automating/emulating buy and sell orders on the market.
+  * idea and some code taken from AuctionHouseBot - Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+  * @Author:         Allan
+  * @date:   10 August 2016
+  * @version:  0.3 (config version)
+  */
+
+#include "eve-server.h"
+#include "EVEServerConfig.h"
+#include "market/MarketBotConf.h"
+#include "market/MarketBotMgr.h"
+#include "market/MarketDB.h"
+#include "market/MarketProxyService.h"
+
+static const char* const BOT_CONFIG_FILE = EVEMU_ROOT "/etc/MarketBot.xml";
+
+MarketBotMgr::MarketBotMgr()
+:  m_updateTimer(120000)    // arbitrary 2m default
+{
+    m_updateTimer.Disable();
+    m_initalized = false;
+}
+
+MarketBotMgr::~MarketBotMgr()
+{
+
+}
+
+void MarketBotMgr::Init()
+{
+    if (!sConfig.server.UseMarketBot) {
+        sLog.Warning("   Market Bot Mgr", "Market Bot Disabled.");
+        return;
+    }
+
+    if (!sMBotConf.ParseFile(BOT_CONFIG_FILE)) {
+        sLog.Error("       ServerInit", "Loading Market Bot Config file '%s' failed.", BOT_CONFIG_FILE);
+        return;
+    }
+
+    m_initalized = true;
+    sLog.Success("   Market Bot Mgr", "Market Bot Manager Initialized.");
+    /* load current data, start timers, process current data, and create new orders, if needed */
+
+}
+
+void MarketBotMgr::Process()
+{
+    if (!m_initalized) return;
+    if (m_updateTimer.Check(false)) {
+    /* process current data, process orders, xfer funds, reset timers, create new orders */
+    }
+}
+
