@@ -158,9 +158,11 @@
 //console commands
 #include "ConsoleCommands.h"
 
+
+static const char* const SRV_CONFIG_FILE = EVEMU_ROOT "/etc/eve-server.xml";
+
 static void SetupSignals();
 static void CatchSignal( int sig_num );
-static const char* const CONFIG_FILE = EVEMU_ROOT "/etc/eve-server.xml";
 
 static volatile bool RunLoops = true;
 
@@ -169,8 +171,8 @@ int main( int argc, char* argv[] )
     double profileStartTime = GetTimeMSeconds();
 
     /* Load server configuration */
-    if (!sConfig.ParseFile(CONFIG_FILE)) {
-        printf("ERROR: Loading server configuration '%s' failed.", CONFIG_FILE );
+    if (!sConfig.ParseFile(SRV_CONFIG_FILE)) {
+        printf("ERROR: Loading server configuration '%s' failed.", SRV_CONFIG_FILE );
         std::cout << std::endl << "press any key to exit...";  std::cin.get();
         sConfig.~EVEServerConfig();
         return EXIT_FAILURE;
@@ -265,7 +267,7 @@ int main( int argc, char* argv[] )
 
     /* create the MarketBot singleton */
     sLog.Success("       ServerInit", "Starting Market Bot Manager");
-    sMarketBotMgr.Init();
+    sMktBotMgr.Init();
 
     /* create a command dispatcher */
     sLog.Success("       ServerInit", "Starting Command Dispatch Manager");

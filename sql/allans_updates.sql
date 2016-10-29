@@ -327,6 +327,31 @@ CREATE TABLE `chrShipFittings` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 COMMENT='Ship Stored Fittings, saved as ShipDNA';
 
+DROP TABLE IF EXISTS `chrRaces`;
+CREATE TABLE `chrRaces` (
+  `raceID` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `raceName` varchar(100) DEFAULT NULL,
+  `description` varchar(1000) DEFAULT NULL,
+  `iconID` smallint(6) NOT NULL DEFAULT '0',
+  `shortDescription` varchar(500) DEFAULT NULL,
+  `raceNameID` int(11) NOT NULL DEFAULT '0',
+  `descriptionID` int(11) NOT NULL DEFAULT '0',
+  `dataID` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`raceID`),
+  KEY `iconID` (`iconID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `invCategories`;
+CREATE TABLE `invCategories` (
+  `categoryID` int(11) NOT NULL,
+  `categoryName` varchar(100) DEFAULT NULL,
+  `description` varchar(3000) DEFAULT NULL,
+  `published` tinyint(1) NOT NULL DEFAULT '0',
+  `iconID` smallint(6) NOT NULL DEFAULT '0',
+  `categoryNameID` int(8) NOT NULL DEFAULT '0',
+  `dataID` int(8) NOT NULL DEFAULT '0'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
 
 /* set initial client seed in db */
 UPDATE `srvStatus` SET `ClientSeed` = '10101' WHERE `AI` = 1;

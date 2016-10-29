@@ -16,6 +16,26 @@
 #include "eve-common.h"
 #include "utils/Singleton.h"
 
+class MarketBotDataMgr
+: public Singleton<MarketBotDataMgr>
+{
+public:
+    MarketBotDataMgr();
+    ~MarketBotDataMgr();
+
+    void Init();
+
+private:
+    bool m_initalized;
+
+};
+
+//Singleton
+#define sMktBotDataMgr \
+( MarketBotDataMgr::get() )
+
+
+
 class MarketBotMgr
 : public Singleton<MarketBotMgr>
 {
@@ -28,14 +48,13 @@ public:
 
 private:
     Timer m_updateTimer;
-    
+
     bool m_initalized;
 
 };
 
-
 //Singleton
-#define sMarketBotMgr \
+#define sMktBotMgr \
 ( MarketBotMgr::get() )
 
 

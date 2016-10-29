@@ -15,7 +15,30 @@
 #include "market/MarketDB.h"
 #include "market/MarketProxyService.h"
 
+
 static const char* const BOT_CONFIG_FILE = EVEMU_ROOT "/etc/MarketBot.xml";
+
+
+MarketBotDataMgr::MarketBotDataMgr()
+{
+    m_initalized = false;
+}
+
+MarketBotDataMgr::~MarketBotDataMgr()
+{
+
+}
+
+void MarketBotDataMgr::Init()
+{
+    m_initalized = true;
+
+    sLog.Success("   Market Bot Mgr", "Market Bot Data Manager Initialized.");
+    /* load current data */
+
+}
+
+
 
 MarketBotMgr::MarketBotMgr()
 :  m_updateTimer(120000)    // arbitrary 2m default
@@ -42,8 +65,10 @@ void MarketBotMgr::Init()
     }
 
     m_initalized = true;
+    sMktBotDataMgr.Init();
+
     sLog.Success("   Market Bot Mgr", "Market Bot Manager Initialized.");
-    /* load current data, start timers, process current data, and create new orders, if needed */
+    /* start timers, process current data, and create new orders, if needed */
 
 }
 

@@ -56,10 +56,12 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)
   m_beltMgr(new AsteroidBeltMgr(this, svc)),
   m_dunMgr(new DungeonMgr(this, svc)),
   m_spawnMgr(new SpawnMgr(this, svc))
-{
+  {
     m_clients.clear();
+    m_entities.clear();
     m_ratBubbles.clear();
     m_entityChanged = false;
+    m_players = 0;
     m_activityTime = 0;
     sDataMgr.GetSystemInfo(systemID, m_data);
     _log(COMMON__MESSAGE, "Created SystemManager %p for System %s(%u)", this, m_data.name.c_str(), m_data.systemID);

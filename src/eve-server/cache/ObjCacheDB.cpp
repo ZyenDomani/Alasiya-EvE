@@ -435,7 +435,7 @@ PyRep *ObjCacheDB::Generate_AllianceShortnames()
 PyRep *ObjCacheDB::Generate_invCategories()
 {
     DBQueryResult res;
-    const char *q = "SELECT categoryID, categoryName, description, 0 as graphicID, iconID, published, 0 as dataID FROM invCategories";
+    const char *q = "SELECT categoryID, categoryName, description, published, iconID, categoryNameID, dataID FROM invCategories";
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.categories': %s",res.error.c_str());
@@ -667,11 +667,13 @@ PyRep *ObjCacheDB::Generate_invShipTypes()
 PyRep *ObjCacheDB::Generate_cacheLocations()
 {
     DBQueryResult res;
-    //const char *q = "SELECT locationID, locationName, locationNameID, x, y, z FROM cacheLocations";
+    const char *q = "SELECT locationID, locationName, locationNameID, x, y, z FROM cacheLocations";
+    /*
     const char *q = "SELECT e.itemID AS locationID, e.itemName AS locationName, e.x, e.y, e.z, 0 AS locationNameID FROM entity AS e"
         "  LEFT JOIN invTypes USING (typeID)"
         "  LEFT JOIN invGroups AS g USING (groupID)"
         " WHERE g.categoryID IN (0, 2, 3)"; //, 6, 22, 23)";  // #System, Celestial, Station, Ship, Deployable, Structure
+        */
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.locations': %s", res.error.c_str());
@@ -684,11 +686,13 @@ PyRep *ObjCacheDB::Generate_cacheOwners()  //  FIXME   add gender checks  -allan
 {
     DBQueryResult res;
     //const char *q = "SELECT ownerID, ownerName, typeID, gender, ownerNameID FROM cacheOwners";
-    //const char *q = "SELECT ownerID, ownerName, typeID FROM cacheOwners";
+    const char *q = "SELECT ownerID, ownerName, typeID FROM cacheOwners";
+    /*
     const char *q = "SELECT e.itemID AS ownerID, e.itemName AS ownerName, e.typeID, 0 AS gender, 0 AS locationNameID"
     "  FROM entity AS e"
     "  LEFT JOIN invTypes USING (typeID)"
     " WHERE invTypes.groupID IN ( 1, 2, 19, 32 )";      //char, corp, faction, alliance
+    */
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.owners': %s", res.error.c_str());

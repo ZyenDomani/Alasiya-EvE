@@ -1,4 +1,59 @@
 
+/* Dumping data for table `chrRaces` */
+
+INSERT INTO `chrRaces` (`raceID`, `raceName`, `description`, `iconID`, `shortDescription`, `raceNameID`, `descriptionID`, `dataID`) VALUES
+(1, 'Caldari', 'Founded on the tenets of patriotism and hard work that carried its ancestors through hardships on an inhospitable homeworld, the Caldari State is today a corporate dictatorship, led by rulers who are determined to see it return to the meritocratic ideals of old. Ruthless and efficient in the boardroom as well as on the battlefield, the Caldari are living emblems of strength, persistence, and dignity.', 1439, 'The Caldari State is the epitome of civic duty and ruthless efficiency.', 59592, 59586, 16544347),
+(2, 'Minmatar', 'Once a thriving tribal civilization, the Minmatar were enslaved by the Amarr Empire for more than 700 years until a massive rebellion freed most, but not all, of those held in servitude. The Minmatar people today are resilient, ingenious, and hard-working. Many of them believe that democracy, though it has served them well for a long time, can never restore what was taken from them so long ago. For this reason they have formed a government truly reflective of their tribal roots. They will forever resent the Amarrians, and yearn for the days before the Empire’s accursed ships ever reached their home skies.', 1440, 'Breaking free of Amarrian subjugation, the Minmatar Republic is a nation of resilient, ingenious, hard-working people who thrive in a tribal culture.', 59593, 59587, 16544348),
+(4, 'Amarr', 'The Amarr Empire is the largest and oldest of the four empires. Ruled by a mighty God-Emperor, this vast theocratic society is supported by a broad foundation of slave labor. Amarrian citizens tend to be highly educated and fervent individuals, and as a culture Amarr adheres to the basic tenet that what others call slavery is in fact one step on a indentured person’s spiritual path toward fully embracing their faith. Despite several setbacks in recent history, the Empire remains arguably the most stable and militarily powerful nation-state in New Eden', 1442, 'Amarr is the largest empire in New Eden, solely devoted to God, Emperor, and the spread of their faith.', 59594, 59588, 16544349),
+(8, 'Gallente', 'Champions of liberty and defenders of the downtrodden, the Gallente play host to the only true democracy in New Eden. Some of the most progressive leaders, scientists, and businessmen of the era have emerged from its diverse peoples. A pioneer of artificial intelligence, the Federation relies heavily on drones and other automated systems. This is not to detract from the skill of their pilots, though: the Gallente Federation is known for producing some of the best and bravest the universe has to offer.', 1441, 'Championing freedom and liberty across the universe, the Gallente Federation is the only true democracy of New Eden.', 59595, 59589, 16544350),
+(16, 'Jove', 'The most mysterious and elusive of all the universe''s peoples, the Jovians number only a fraction of any of their neighbors, but their technological superiority makes them powerful beyond all proportion.', 0, '', 59590, 59585, 16544345),
+(32, 'Pirate', '', 0, '', 59591, 0, 16544346),
+(64, 'Sleepers', '', 0, '', 234419, 0, 16544351),
+(128, 'ORE', '', 0, 'ORE', 277200, 277201, 52615708);
+
+/* Dumping data for table `invCategories` */
+
+INSERT INTO `invCategories` (`categoryID`, `categoryName`, `description`, `published`, `iconID`, `categoryNameID`, `dataID`) VALUES
+(0, '#System', '', 0, 0, 63539, 16545519),
+(1, 'Owner', '', 0, 0, 63540, 16545520),
+(2, 'Celestial', '', 1, 0, 63541, 16545521),
+(3, 'Station', '', 0, 0, 63542, 16545522),
+(4, 'Material', '', 1, 22, 63543, 16545523),
+(5, 'Accessories', '', 1, 33, 63560, 16545540),
+(6, 'Ship', '', 1, 0, 63544, 16545524),
+(7, 'Module', '', 1, 67, 63545, 16545525),
+(8, 'Charge', '', 1, 0, 63546, 16545526),
+(9, 'Blueprint', '', 1, 21, 63547, 16545527),
+(10, 'Trading', '', 0, 0, 63548, 16545528),
+(11, 'Entity', '', 0, 0, 63549, 16545529),
+(14, 'Bonus', 'Character creation bonuses. Like innate skills but genetic rather than learned.', 0, 0, 63550, 16545530),
+(16, 'Skill', 'Where all the skills go under.', 1, 33, 63551, 16545531),
+(17, 'Commodity', '', 1, 0, 63552, 16545532),
+(18, 'Drone', 'Player owned and controlled drones.', 1, 0, 63553, 16545533),
+(20, 'Implant', 'Implant', 1, 0, 63554, 16545534),
+(22, 'Deployable', '', 1, 0, 63555, 16545535),
+(23, 'Structure', 'Player owned structure related objects', 1, 0, 63556, 16545536),
+(24, 'Reaction', '', 1, 0, 63557, 16545537),
+(25, 'Asteroid', '', 1, 0, 63558, 16545538),
+(26, 'WorldSpace', 'Worldspaces and related stuff', 0, 0, 63568, 16545548),
+(29, 'Abstract', 'Abstract grouping, global types and groups for the UI, such as Ranks, Ribbons and Medals.', 0, 0, 63559, 16545539),
+(30, 'Apparel', '1. clothing, especially outerwear; garments; attire; raiment.\n2. anything that decorates or covers.\n3. superficial appearance; aspect; guise. ', 1, 0, 63572, 16545551),
+(32, 'Subsystem', 'Subsystems for tech 3 ships', 1, 0, 63562, 16545542),
+(34, 'Ancient Relics', '', 1, 0, 63561, 16545541),
+(35, 'Decryptors', '', 1, 0, 63563, 16545543),
+(39, 'Infrastructure Upgrades', '', 1, 0, 63565, 16545545),
+(40, 'Sovereignty Structures', '', 1, 0, 63564, 16545544),
+(41, 'Planetary Interaction', 'Stuff for planetary interaction', 1, 0, 63569, 16545549),
+(42, 'Planetary Resources', 'These are Items that can be extracted from a planet. ', 1, 0, 63566, 16545546),
+(43, 'Planetary Commodities', '', 1, 0, 63567, 16545547),
+(46, 'Orbitals', 'Anchorable/Onlinable objects that operate similar to POS/SOV structures, but do not link to towers or sovereignty. Each class of orbital defines its own valid anchoring locations via Python code.', 1, 0, 63570, 16545555),
+(49, 'Placeables', 'Placeables are things you can put into rooms. ', 0, 0, 63571, 16545550),
+(53, 'Effects', '', 0, 0, 63573, 16545552),
+(54, 'Lights', '', 0, 0, 63574, 22244434),
+(59, 'Cells', '', 0, 0, 235965, 16545554),
+(350001, 'Catma', '', 0, 0, 267649, 60304602);
+
+
 /* Dumping data for table `sklBaseSkills` */
 
 INSERT INTO `sklBaseSkills` (`ID`, `skillTypeID`, `level`) VALUES

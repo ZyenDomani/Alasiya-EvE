@@ -222,12 +222,12 @@ void SpawnMgr::MoveSpawn()
 
 void SpawnMgr::StartMainTimer()
 {
-    if (sConfig.server.testServer) {
-        m_mainTimer.Start(5000); /* 5s for testing */
-    } else {
+    if (sConfig.server.testServer and is_log_enabled(NPC__TRACE))
+        m_mainTimer.Start(5000); /* 5s for npc spawn testing */
+    else
         m_mainTimer.Start(sConfig.npc.RoamingTimer *60 *1000);
-    }
-    _log(SPAWN__MESSAGE, "SpawnMgr::StartMainTimer() - Main Spawn Timer started for %s(%u) at %u mins.",
+
+    _log(SPAWN__MESSAGE, "SpawnMgr::StartMainTimer() - Main Spawn Timer started for %s(%u) at %u mins.", \
          m_system->GetName().c_str(), m_system->GetID(), (sConfig.server.testServer? 1 : sConfig.npc.RoamingTimer));
 }
 

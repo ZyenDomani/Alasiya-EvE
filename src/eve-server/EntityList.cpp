@@ -130,7 +130,7 @@ void EntityList::Process() {
         ++m_stamp;
         sWHMgr.Process();
         sBubbleMgr.Process();
-        sMarketBotMgr.Process();
+        sMktBotMgr.Process();
 
         for (auto cur : m_clients)
             if (cur->GetLocationID())
