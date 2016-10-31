@@ -8,7 +8,7 @@
  #ifndef EVE_ROLES_H
  #define EVE_ROLES_H
 
-enum:uint64 {
+enum:uint64_t {
     ROLE_DUST               = 1L,                      // 0x01                0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001
     ROLE_BANNING            = 2L,                      // 0x02                0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0010
     ROLE_MARKET             = 4L,                      // 0x04                0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0100
@@ -36,32 +36,32 @@ enum:uint64 {
     ROLE_SPAWN              = 8589934592L,             // 0x0200000000
     ROLE_IGB                = 2147483648L,
     ROLE_TRANSLATIONEDITOR  = 4294967296L,
-    ROLE_BATTLESERVER       = 17179869184L,
-    ROLE_TRANSLATIONTESTER  = 34359738368L,
-    ROLE_WIKIEDITOR         = 68719476736L,
-    ROLE_TRANSFER           = 137438953472L,
-    ROLE_GMS                = 274877906944L,
-    ROLE_CL                 = 549755813888L,
-    ROLE_CR                 = 1099511627776L,
-    ROLE_CM                 = 2199023255552L,
-    ROLE_BSDADMIN           = 35184372088832L,
-    ROLE_PROGRAMMER         = 2251799813685248L,
-    ROLE_QA                 = 4503599627370496L,
-    ROLE_GMH                = 9007199254740992L,
+    ROLE_BATTLESERVER       = 17179869184LL,
+    ROLE_TRANSLATIONTESTER  = 34359738368LL,
+    ROLE_WIKIEDITOR         = 68719476736LL,
+    ROLE_TRANSFER           = 137438953472LL,
+    ROLE_GMS                = 274877906944LL,
+    ROLE_CL                 = 549755813888LL,
+    ROLE_CR                 = 1099511627776LL,
+    ROLE_CM                 = 2199023255552LL,
+    ROLE_BSDADMIN           = 35184372088832LL,
+    ROLE_PROGRAMMER         = 2251799813685248LL,
+    ROLE_QA                 = 4503599627370496LL,
+    ROLE_GMH                = 9007199254740992LL,
     // the client requires a module named "dna" for many menu items for the "gml" role
     //  we do not have this module, which leads to an error, and an inoperable rclick menu
     //  when ROLE_GML is part of a client's roles
-    ROLE_GML                = 18014398509481984L,
-    ROLE_CONTENT            = 36028797018963968L,
-    ROLE_ADMIN              = 72057594037927936L,
-    ROLE_VIPLOGIN           = 144115188075855872L,
-    ROLE_ROLEADMIN          = 288230376151711744L,
-    ROLE_NEWBIE             = 576460752303423488L,
-    ROLE_SERVICE            = 1152921504606846976L,        // can use station services without being docked.
-    ROLE_PLAYER             = 2305843009213693952L, // 0x02
-    ROLE_LOGIN              = 4611686018427387904L, // 0x04000000000000000  0b100 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+    ROLE_GML                = 18014398509481984LL,
+    ROLE_CONTENT            = 36028797018963968LL,
+    ROLE_ADMIN              = 72057594037927936LL,
+    ROLE_VIPLOGIN           = 144115188075855872LL,
+    ROLE_ROLEADMIN          = 288230376151711744LL,
+    ROLE_NEWBIE             = 576460752303423488LL,
+    ROLE_SERVICE            = 1152921504606846976LL,        // can use station services without being docked.
+    ROLE_PLAYER             = 2305843009213693952LL, // 0x02
+    ROLE_LOGIN              = 4611686018427387904ULL, // 0x04000000000000000  0b100 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
 
-    ROLE_ANY                = 18446744073709551615UL & ~ROLE_IGB,
+    ROLE_ANY                = 18446744073709551615ULL & ~ROLE_IGB,
 
     ROLE_STD                = ROLE_LOGIN | ROLE_PLAYER | ROLE_IGB,
     ROLE_VIP                = ROLE_STD | ROLE_VIPLOGIN | ROLE_HEALSELF,
@@ -80,7 +80,7 @@ enum {
     corpRoleLocationTypeOther = 3
 };
 
-typedef enum:uint64 {
+typedef enum:uint64_t {
     corpRoleDirector                        = 1L,
     corpRolePersonnelManager                = 128L,
     corpRoleAccountant                      = 256L,
@@ -107,29 +107,29 @@ typedef enum:uint64 {
     corpRoleAccountCanTake3                 = 536870912L,
     corpRoleAccountCanTake4                 = 1073741824L,
     corpRoleAccountCanTake5                 = 2147483648L,
-    corpRoleAccountCanTake6                 = 4294967296L,
-    corpRoleAccountCanTake7                 = 8589934592L,
-    corpRoleDiplomat                        = 17179869184L,
-    corpRoleEquipmentConfig                 = 2199023255552L,
-    corpRoleContainerCanTake1               = 4398046511104L,
-    corpRoleContainerCanTake2               = 8796093022208L,
-    corpRoleContainerCanTake3               = 17592186044416L,
-    corpRoleContainerCanTake4               = 35184372088832L,
-    corpRoleContainerCanTake5               = 70368744177664L,
-    corpRoleContainerCanTake6               = 140737488355328L,
-    corpRoleContainerCanTake7               = 281474976710656L,
-    corpRoleCanRentOffice                   = 562949953421312L,
-    corpRoleCanRentFactorySlot              = 1125899906842624L,
-    corpRoleCanRentResearchSlot             = 2251799813685248L,
-    corpRoleJuniorAccountant                = 4503599627370496L,
-    corpRoleStarbaseConfig                  = 9007199254740992L,
-    corpRoleTrader                          = 18014398509481984L,
-    corpRoleChatManager                     = 36028797018963968L,
-    corpRoleContractManager                 = 72057594037927936L,
-    corpRoleInfrastructureTacticalOfficer   = 144115188075855872L,
-    corpRoleStarbaseCaretaker               = 288230376151711744L,
-    corpRoleFittingManager                  = 576460752303423488L,
-    corpRoleAll                             = 1152921504606846975L,
+    corpRoleAccountCanTake6                 = 4294967296LL,
+    corpRoleAccountCanTake7                 = 8589934592LL,
+    corpRoleDiplomat                        = 17179869184LL,
+    corpRoleEquipmentConfig                 = 2199023255552LL,
+    corpRoleContainerCanTake1               = 4398046511104LL,
+    corpRoleContainerCanTake2               = 8796093022208LL,
+    corpRoleContainerCanTake3               = 17592186044416LL,
+    corpRoleContainerCanTake4               = 35184372088832LL,
+    corpRoleContainerCanTake5               = 70368744177664LL,
+    corpRoleContainerCanTake6               = 140737488355328LL,
+    corpRoleContainerCanTake7               = 281474976710656LL,
+    corpRoleCanRentOffice                   = 562949953421312LL,
+    corpRoleCanRentFactorySlot              = 1125899906842624LL,
+    corpRoleCanRentResearchSlot             = 2251799813685248LL,
+    corpRoleJuniorAccountant                = 4503599627370496LL,
+    corpRoleStarbaseConfig                  = 9007199254740992LL,
+    corpRoleTrader                          = 18014398509481984LL,
+    corpRoleChatManager                     = 36028797018963968LL,
+    corpRoleContractManager                 = 72057594037927936LL,
+    corpRoleInfrastructureTacticalOfficer   = 144115188075855872LL,
+    corpRoleStarbaseCaretaker               = 288230376151711744ULL,
+    corpRoleFittingManager                  = 576460752303423488ULL,
+    corpRoleAll                             = 1152919339943329665ULL,
 
     //Some Combos
     corpRoleAllHangar   = corpRoleHangarCanTake1|corpRoleHangarCanTake2|corpRoleHangarCanTake3|corpRoleHangarCanTake4|corpRoleHangarCanTake5|corpRoleHangarCanTake6|corpRoleHangarCanTake7|corpRoleHangarCanQuery1|corpRoleHangarCanQuery2|corpRoleHangarCanQuery3|corpRoleHangarCanQuery4|corpRoleHangarCanQuery5|corpRoleHangarCanQuery6|corpRoleHangarCanQuery7,

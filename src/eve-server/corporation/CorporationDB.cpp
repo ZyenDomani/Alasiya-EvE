@@ -28,10 +28,17 @@
 #include "character/Character.h"
 #include "corporation/CorporationDB.h"
 
+/*
+DATABASE__ERROR=1
+CORP__DB_WARNING=0
+CORP__DB_INFO=0
+CORP__DB_MESSAGE=0
+*/
+
 PyObject *CorporationDB::ListCorpStations(uint32 corp_id) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   stationID, stationTypeID AS typeID"
         " FROM staStations"
@@ -39,7 +46,7 @@ PyObject *CorporationDB::ListCorpStations(uint32 corp_id) {
             corp_id
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -49,7 +56,7 @@ PyObject *CorporationDB::ListCorpStations(uint32 corp_id) {
 PyObject *CorporationDB::ListStationOffices(uint32 station_id) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   corporationID, itemID, officeFolderID"
         " FROM crpOffices"
@@ -58,7 +65,7 @@ PyObject *CorporationDB::ListStationOffices(uint32 station_id) {
             station_id + 6000000
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -69,7 +76,7 @@ PyObject *CorporationDB::ListStationCorps(uint32 station_id) {
 
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   corporationID,corporationName,description,shares,graphicID,"
         "   memberCount,ceoID,stationID,raceID,corporationType,creatorID,"
@@ -84,7 +91,7 @@ PyObject *CorporationDB::ListStationCorps(uint32 station_id) {
             station_id
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -92,9 +99,10 @@ PyObject *CorporationDB::ListStationCorps(uint32 station_id) {
 }
 
 PyObject *CorporationDB::ListStationOwners(uint32 stationID) {
+    /** @todo  this needs work.... */
     DBQueryResult res;
-  if(stationID < 140000000) {
-    if(!sDatabase.RunQuery(res,
+  if (stationID < 140000000) {
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         "  s.corporationID AS ownerID,"
         "  c.corporationName AS ownerName,"
@@ -106,11 +114,11 @@ PyObject *CorporationDB::ListStationOwners(uint32 stationID) {
         "  LEFT JOIN characterStatic AS cs ON cs.characterID = c.ceoID"
         " WHERE s.stationID = %u", stationID ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
   } else {
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         "  c.corporationID AS ownerID,"
         "  c.corporationName AS ownerName,"
@@ -122,7 +130,7 @@ PyObject *CorporationDB::ListStationOwners(uint32 stationID) {
         "  LEFT JOIN character_ AS cs ON cs.characterID = c.ceoID"
         " WHERE e.itemID = %u", stationID ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -138,7 +146,7 @@ PyRep *CorporationDB::GetCorpInfo(uint32 corpID) {
             */
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   corporationName,"
         "   corporationID,"
@@ -154,13 +162,13 @@ PyRep *CorporationDB::GetCorpInfo(uint32 corpID) {
         "   LEFT JOIN entity ON ceoID=entity.itemID"
         " WHERE corporationID = %u", corpID))
     {
-        codelog(SERVICE__ERROR, "Error in retrieving corporation's data (%u)", corpID);
+        codelog(DATABASE__ERROR, "Error in retrieving corporation's data (%u)", corpID);
         return NULL;
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Unable to find corporation's data (%u)", corpID);
+    if (!res.GetRow(row)) {
+        codelog(CORP__DB_WARNING, "Unable to find corporation's data (%u)", corpID);
         return NULL;
     }
 
@@ -184,13 +192,13 @@ PyObject *CorporationDB::GetCorporation(uint32 corpID) {
         " FROM corporation "
         " WHERE corporationID = %u", corpID))
     {
-        codelog(SERVICE__ERROR, "Error in retrieving corporation's data (%u)", corpID);
+        codelog(DATABASE__ERROR, "Error in retrieving corporation's data (%u)", corpID);
         return NULL;
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Unable to find corporation's data (%u)", corpID);
+    if (!res.GetRow(row)) {
+        codelog(CORP__DB_WARNING, "Unable to find corporation's data (%u)", corpID);
         return NULL;
     }
 
@@ -198,7 +206,7 @@ PyObject *CorporationDB::GetCorporation(uint32 corpID) {
     //return DBResultToRowset(res);
 }
 
-PyObject *CorporationDB::GetCorporations(uint32 corpID) {
+PyRep *CorporationDB::GetCorporations(uint32 corpID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"
@@ -212,23 +220,23 @@ PyObject *CorporationDB::GetCorporations(uint32 corpID) {
         " FROM corporation"
         " WHERE corporationID = %u", corpID))
     {
-        codelog(SERVICE__ERROR, "Error in retrieving corporation's data (%u)", corpID);
+        codelog(DATABASE__ERROR, "Error in retrieving corporation's data (%u)", corpID);
         return NULL;
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Unable to find corporation's data (%u)", corpID);
+    if (!res.GetRow(row)) {
+        codelog(CORP__DB_WARNING, "Unable to find corporation's data (%u)", corpID);
         return NULL;
     }
 
-    return (DBRowToRow(row));
+    return DBRowToPackedRow(row);
 }
 
 PyDict *CorporationDB::ListAllCorpInfo() {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   corporationName,"
         "   corporationID,"
@@ -244,7 +252,7 @@ PyDict *CorporationDB::ListAllCorpInfo() {
         "   LEFT JOIN entity ON ceoID=entity.itemID"
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -254,13 +262,13 @@ PyDict *CorporationDB::ListAllCorpInfo() {
 bool CorporationDB::ListAllCorpFactions(std::map<uint32, uint32> &into) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   corporationID,factionID"
         " FROM crpNPCCorporations"
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -271,7 +279,7 @@ bool CorporationDB::ListAllCorpFactions(std::map<uint32, uint32> &into) {
 bool CorporationDB::ListAllFactionStationCounts(std::map<uint32, uint32> &into) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   factionID, COUNT(DISTINCT staStations.stationID) "
         " FROM crpNPCCorporations"
@@ -279,7 +287,7 @@ bool CorporationDB::ListAllFactionStationCounts(std::map<uint32, uint32> &into) 
         " GROUP BY factionID"
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -291,14 +299,14 @@ bool CorporationDB::ListAllFactionSystemCounts(std::map<uint32, uint32> &into) {
     DBQueryResult res;
 
     //this is not quite right, but its good enough.
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   factionID, COUNT(solarSystemID) "
         " FROM mapSolarSystems"
         " GROUP BY factionID"
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -310,14 +318,14 @@ bool CorporationDB::ListAllFactionRegions(std::map<int32, PyRep *> &into) {
     DBQueryResult res;
 
     //this is not quite right, but its good enough.
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   factionID,regionID "
         " FROM mapRegions"
         " WHERE factionID IS NOT NULL"
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -329,14 +337,14 @@ bool CorporationDB::ListAllFactionConstellations(std::map<int32, PyRep *> &into)
     DBQueryResult res;
 
     //this is not quite right, but its good enough.
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   factionID,constellationID "
         " FROM mapConstellations"
         " WHERE factionID IS NOT NULL"
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -348,14 +356,14 @@ bool CorporationDB::ListAllFactionSolarSystems(std::map<int32, PyRep *> &into) {
     DBQueryResult res;
 
     //this is not quite right, but its good enough.
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   factionID,solarSystemID "
         " FROM mapSolarSystems"
         " WHERE factionID IS NOT NULL"
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -367,14 +375,14 @@ bool CorporationDB::ListAllFactionRaces(std::map<int32, PyRep *> &into) {
     DBQueryResult res;
 
     //this is not quite right, but its good enough.
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         "   factionID,raceID "
         " FROM factionRaces"
         " WHERE factionID IS NOT NULL"
     ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -389,11 +397,11 @@ PyObject *CorporationDB::ListNPCDivisions() {
                 row.leaderType = localization.GetByMessageID(row.leaderTypeID)
 	  */
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT "
         " divisionID, divisionName, description, leaderType"
         " FROM crpNPCDivisions" )) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -411,7 +419,7 @@ PyObject *CorporationDB::GetEmploymentRecord(uint32 charID) {
         "   ORDER BY startDate DESC", charID
         ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -437,9 +445,28 @@ PyObject* CorporationDB::GetMedalsReceived( uint32 charID )
     return rs.Encode();
 }
 
+PyObject* CorporationDB::GetMedalDetails(uint32 medalID)
+{
+    sLog.Debug( "CorporationDB", "Called GetMedalDetails stub." );
+
+    util_Rowset rs;
+
+    rs.header.push_back( "medalID" );
+    rs.header.push_back( "title" );
+    rs.header.push_back( "description" );
+    rs.header.push_back( "ownerID" );
+    rs.header.push_back( "" );    //wtf??
+    rs.header.push_back( "issuerID" );
+    rs.header.push_back( "date" );
+    rs.header.push_back( "reason" );
+    rs.header.push_back( "status" );
+
+    return rs.Encode();
+}
+
 static std::string _IoN( PyRep* r )
 {
-    if( !r->IsInt() )
+    if ( !r->IsInt() )
         return "NULL";
     return itoa( r->AsInt()->value() );
 }
@@ -486,7 +513,7 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, uint32 charID
 	corpInfo.applicationEnabled,
         charID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
         return false;
     }
 
@@ -499,7 +526,7 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, uint32 charID
         "   VALUES (%u, '%s', 2)",
         corpID, cName.c_str()))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
         return false;
     }
 
@@ -517,14 +544,14 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, uint32 charID
         corpID, corpID, cName.c_str(), cName.c_str(), cTick.c_str()
         ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
         // This is not a serious problem either, but would be good if the channel
         // were working...
     }
 
     // update character join corp date
     if (!sDatabase.RunQuery(err, " UPDATE character_ SET startDateTime = %" PRIu64 " WHERE characterID = %u", Win32TimeNow(), charID )) {
-        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
     }
 
     return true;
@@ -549,12 +576,12 @@ bool CorporationDB::CreateCorporationChangePacket(Notify_OnCorporationChanged & 
         " WHERE corporationID = %u ", newCorpID
         ))
     {
-        codelog(SERVICE__ERROR, "Error in retrieving new corporation's data (%u)", newCorpID);
+        codelog(DATABASE__ERROR, "Error in retrieving new corporation's data (%u)", newCorpID);
         return false;
     }
 
-    if(!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Unable to find new corporation's data (%u)", newCorpID);
+    if (!res.GetRow(row)) {
+        codelog(CORP__DB_WARNING, "Unable to find new corporation's data (%u)", newCorpID);
         return false;
     }
 
@@ -607,12 +634,12 @@ bool CorporationDB::CreateCorporationChangePacket(Notify_OnCorporationChanged & 
         " WHERE corporationID = %u ", oldCorpID
         ))
     {
-        codelog(SERVICE__ERROR, "Error in retrieving old corporation's data (%u)", oldCorpID);
+        codelog(DATABASE__ERROR, "Error in retrieving old corporation's data (%u)", oldCorpID);
         return false;
     }
 
-    if(!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Unable to find old corporation's data (%u)", oldCorpID);
+    if (!res.GetRow(row)) {
+        codelog(CORP__DB_WARNING, "Unable to find old corporation's data (%u)", oldCorpID);
         return false;
     }
 
@@ -668,7 +695,7 @@ bool CorporationDB::JoinCorporation(uint32 charID, uint32 corpID, uint32 oldCorp
             oldCorpID
         ))
     {
-        codelog(SERVICE__ERROR, "Error in prev corp member decrease query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in prev corp member decrease query: %s", err.c_str());
         return false;
     }
 
@@ -682,7 +709,7 @@ bool CorporationDB::JoinCorporation(uint32 charID, uint32 corpID, uint32 oldCorp
             charID
         ))
     {
-        codelog(SERVICE__ERROR, "Error in char update query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in char update query: %s", err.c_str());
         //TODO: undo previous member count decrement.
         return false;
     }
@@ -695,7 +722,7 @@ bool CorporationDB::JoinCorporation(uint32 charID, uint32 corpID, uint32 oldCorp
             corpID
         ))
     {
-        codelog(SERVICE__ERROR, "Error in new corp member decrease query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in new corp member decrease query: %s", err.c_str());
         //dont stop now, we are already moved... else we need to undo everything we just did.
     }
 
@@ -708,7 +735,7 @@ bool CorporationDB::JoinCorporation(uint32 charID, uint32 corpID, uint32 oldCorp
         charID, corpID, Win32TimeNow()
         ))
     {
-        codelog(SERVICE__ERROR, "Error in employment insert query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in employment insert query: %s", err.c_str());
         //dont stop now, we are already moved... else we need to undo everything we just did.
     }
 
@@ -732,12 +759,12 @@ bool CorporationDB::CreateCorporationCreatePacket(Notify_OnCorporationChanged & 
         " WHERE corporationID = %u ", newCorpID
         ))
     {
-        codelog(SERVICE__ERROR, "Error in retrieving new corporation's data (%u)", newCorpID);
+        codelog(DATABASE__ERROR, "Error in retrieving new corporation's data (%u)", newCorpID);
         return false;
     }
 
-    if(!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Unable to find corporation's data (%u)", newCorpID);
+    if (!res.GetRow(row)) {
+        codelog(CORP__DB_WARNING, "Unable to find corporation's data (%u)", newCorpID);
         return false;
     }
 
@@ -816,31 +843,28 @@ bool CorporationDB::CreateCorporationCreatePacket(Notify_OnCorporationChanged & 
     return true;
 }
 
-PyObject *CorporationDB::GetEveOwners() {
+// should this be cached?
+PyObject *CorporationDB::GetEveOwners(uint32 corpID) {
     DBQueryResult res;
+/*
+            [PyPackedRow 9 bytes]
+              ["ownerID" => <90046865> [I4]]
+              ["ownerName" => <Septure> [WStr]]
+              ["typeID" => <1375> [I4]]
+              ["gender" => <1> [Bool]]
+              */
 
-    /*if (!sDatabase.RunQuery(res,
-        " SELECT * FROM eveStaticOwners "))
-    {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
-    }*/
-    if( !sDatabase.RunQuery( res,
+    if ( !sDatabase.RunQuery( res,
         "(SELECT"
-        " itemID AS ownerID,"
-        " itemName AS ownerName,"
-		//" 0 AS ownerNameID,"
-        " typeID"
-        " FROM entity"
-        " WHERE itemID < %u"
-        " AND itemID NOT IN ( SELECT ownerID from eveStaticOwners ) )"
-        " UNION ALL "
-        "(SELECT"
-        " ownerID, ownerName, typeID"
-        " FROM eveStaticOwners)"
-        " ORDER BY ownerID", EVEMU_MINIMUM_ID ) )
+        " c.characterID AS ownerID,"
+        " e.itemName AS ownerName,"
+        " e.typeID,"
+        " c.gender"
+        " FROM character_ AS c"
+        "  LEFT JOIN entity AS e ON e.itemID = c.characterID"
+        " WHERE c.corporationID = %u" ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -857,7 +881,7 @@ PyObject *CorporationDB::GetStations(uint32 corpID) {
         " WHERE corporationID = %u ", corpID
         ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
     return DBResultToRowset(res);
@@ -873,13 +897,13 @@ uint32 CorporationDB::GetOffices(uint32 corpID) {
         " WHERE corporationID = %u ", corpID
         ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return(0);
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Unable to find corporation's data (%u)", corpID);
+        codelog(CORP__DB_WARNING, "Unable to find corporation's data (%u)", corpID);
         return 0;
     }
     return row.GetUInt(0);
@@ -887,7 +911,7 @@ uint32 CorporationDB::GetOffices(uint32 corpID) {
 
 PyRep *CorporationDB::Fetch(uint32 corpID, uint32 from, uint32 count) {
     DBQueryResult res;
-    DBResultRow rr;
+    DBResultRow row;
 
     if (!sDatabase.RunQuery(res,
         " SELECT stationID, typeID, itemID, officeFolderID "
@@ -896,42 +920,42 @@ PyRep *CorporationDB::Fetch(uint32 corpID, uint32 from, uint32 count) {
         " LIMIT %u, %u ", corpID, from, count
         ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
-    res.GetRow(rr);
+    res.GetRow(row);
 
     // Have to send back a list that contains a tuple that contains an int and a list...
     // params probably needs the following stuff: stationID, typeID, officeID, officeFolderID
     Reply_FetchOffice reply;
     reply.params = new PyList;
 
-    reply.params->AddItemInt( rr.GetInt(0) );
-    reply.params->AddItemInt( rr.GetInt(1) );
-    reply.officeID = rr.GetInt(2);
+    reply.params->AddItemInt( row.GetInt(0) );
+    reply.params->AddItemInt( row.GetInt(1) );
+    reply.officeID = row.GetInt(2);
     reply.params->AddItemInt( reply.officeID );
-    reply.params->AddItemInt( rr.GetInt(3) );
+    reply.params->AddItemInt( row.GetInt(3) );
 
     return reply.Encode();
 }
 uint32 CorporationDB::GetQuoteForRentingAnOffice(uint32 stationID) {
     DBQueryResult res;
-    DBResultRow row;
 
     if (!sDatabase.RunQuery(res,
         " SELECT "
         " officeRentalCost "
         " FROM staStations "
-        " WHERE staStations.stationID = %u ", stationID))
+        " WHERE stationID = %u ", stationID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         // Try to look more clever than we actually are...
         return 10000;
     }
 
+    DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Unable to find station data, stationID: %u", stationID);
+        codelog(CORP__DB_WARNING, "Unable to find station data, stationID: %u", stationID);
         // Try to look more clever than we actually are...
         return 10000;
     }
@@ -960,7 +984,7 @@ uint32 CorporationDB::ReserveOffice(const OfficeInfo & oInfo) {
         " 'office', 27, %u, %u, 0, 0, 1, 1, 0, 0, 0, '' "
         " ); ", oInfo.corporationID, oInfo.stationID ))
     {
-        codelog(SERVICE__ERROR, "Error in query at ReserveOffice: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query at ReserveOffice: %s", err.c_str());
         return(0);
     }
 
@@ -972,7 +996,7 @@ uint32 CorporationDB::ReserveOffice(const OfficeInfo & oInfo) {
         " (%u, %u, %u, %u, %u) ",
         oInfo.corporationID, oInfo.stationID, officeID, oInfo.typeID, oInfo.officeFolderID))
     {
-        codelog(SERVICE__ERROR, "Error in query at ReserveOffice: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query at ReserveOffice: %s", err.c_str());
         // Ensure that officeID stays 0, whatever the RunQueryLID done...
         return(0);
     }
@@ -990,13 +1014,13 @@ uint32 CorporationDB::GetStationOwner(uint32 stationID) {
         " FROM staStations "
         " WHERE stationID = %u ", stationID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return 0;
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Missing stationID: %u", stationID);
+        codelog(CORP__DB_WARNING, "Missing stationID: %u", stationID);
         return 0;
     }
     return row.GetUInt(0);
@@ -1010,14 +1034,14 @@ PyRep *CorporationDB::GetMyApplications(uint32 charID) {
         " FROM chrApplications "
         " WHERE characterID = %u ", charID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
     return DBResultToRowset(res);
 }
 bool CorporationDB::InsertApplication(const ApplicationInfo & aInfo) {
     if (!aInfo.valid) {
-        codelog(SERVICE__ERROR, "aInfo contains invalid data");
+        codelog(DATABASE__ERROR, "aInfo contains invalid data");
         return false;
     }
 
@@ -1033,7 +1057,7 @@ bool CorporationDB::InsertApplication(const ApplicationInfo & aInfo) {
         " ) ", aInfo.corpID, aInfo.charID, safeMessage.c_str(), aInfo.role,
                aInfo.grantRole, aInfo.status, aInfo.appTime, aInfo.deleted, aInfo.lastCID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
         return false;
     }
 
@@ -1049,7 +1073,7 @@ PyRep *CorporationDB::GetApplications(uint32 corpID) {
         " FROM chrApplications "
         " WHERE corporationID = %u ", corpID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -1065,12 +1089,12 @@ uint32 CorporationDB::GetStationCorporationCEO(uint32 stationID) {
         " ON staStations.corporationID = corporation.corporationID "
         " WHERE staStations.stationID = %u ", stationID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return 0;
     }
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "There's either no such station or the station has no corp owner or the corporation has no ceo. Probably there's no such corporation.");
+        codelog(CORP__DB_WARNING, "There's either no such station or the station has no corp owner or the corporation has no ceo. Probably there's no such corporation.");
         return 0;
     }
     return row.GetUInt(0);
@@ -1083,12 +1107,12 @@ uint32 CorporationDB::GetCorporationCEO(uint32 corpID) {
         " FROM corporation "
         " WHERE corporation.corporationID = %u ", corpID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return 0;
     }
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "There's either no such corp owner or the corporation has no ceo. Probably a buggy db.");
+        codelog(CORP__DB_WARNING, "There's either no such corp owner or the corporation has no ceo. Probably a buggy db.");
         return 0;
     }
     return row.GetUInt(0);
@@ -1101,11 +1125,11 @@ uint32 CorporationDB::GetCloneTypeCostByID(uint32 cloneTypeID) {
         " FROM invTypes "
         " WHERE typeID = %u ", cloneTypeID))
     {
-        sLog.Error("CorporationDB","Failed to retrieve basePrice of typeID = %u",cloneTypeID);
+        codelog(DATABASE__ERROR, "Failed to retrieve basePrice of typeID = %u",cloneTypeID);
     }
     DBResultRow row;
     if (!res.GetRow(row)) {
-        sLog.Error("CorporationDB","Query returned no results");
+        codelog(CORP__DB_WARNING, "GetCloneTypeCostByID returned no results");
         return 0;
     }
     return row.GetUInt(0);
@@ -1120,14 +1144,14 @@ bool CorporationDB::GetCurrentApplicationInfo(uint32 charID, uint32 corpID, Appl
         " WHERE characterID = %u AND corporationID = %u ",
         charID, corpID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         aInfo.valid = false;
         return false;
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "There's no previous application.");
+        codelog(CORP__DB_WARNING, "There's no previous application.");
         aInfo.valid = false;
         return false;
     }
@@ -1147,7 +1171,7 @@ bool CorporationDB::GetCurrentApplicationInfo(uint32 charID, uint32 corpID, Appl
 
 bool CorporationDB::UpdateApplication(const ApplicationInfo & info) {
     if (!info.valid) {
-        codelog(SERVICE__ERROR, "info contains invalid data");
+        codelog(DATABASE__ERROR, "info contains invalid data");
         return false;
     }
 
@@ -1159,7 +1183,7 @@ bool CorporationDB::UpdateApplication(const ApplicationInfo & info) {
         " SET status = %u, lastCorpUpdaterID = %u, applicationText = '%s' "
         " WHERE corporationID = %u AND characterID = %u ", info.status, info.lastCID, clear.c_str(), info.corpID, info.charID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
         return false;
     }
     return true;
@@ -1171,7 +1195,7 @@ bool CorporationDB::DeleteApplication(const ApplicationInfo & info) {
         " DELETE FROM chrApplications "
         " WHERE corporationID = %u AND characterID = %u ", info.corpID, info.charID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
         return false;
     }
     return true;
@@ -1192,12 +1216,12 @@ bool CorporationDB::CreateMemberAttributeUpdate(MemberAttributeUpdate & attrib, 
         " FROM character_ "
         " WHERE characterID = %u ", charID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
     if (!res.GetRow(row)) {
-        codelog(SERVICE__ERROR, "Cannot find character in database");
+        codelog(CORP__DB_WARNING, "Cannot find character in database");
         return false;
     }
 
@@ -1249,13 +1273,13 @@ bool CorporationDB::UpdateDivisionNames(uint32 corpID, const Call_UpdateDivision
         " FROM corporation"
         " WHERE corporationID = %u", corpID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Corporation %u doesn't exist.", corpID);
+        codelog(CORP__DB_WARNING, "Corporation %u doesn't exist.", corpID);
         return false;
     }
 
@@ -1287,7 +1311,7 @@ bool CorporationDB::UpdateDivisionNames(uint32 corpID, const Call_UpdateDivision
     query += " WHERE corporationID = %u";
 
     if ((N > 0) && (!sDatabase.RunQuery(res.error, query.c_str(), corpID))) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -1302,13 +1326,13 @@ bool CorporationDB::UpdateCorporation(uint32 corpID, const Call_UpdateCorporatio
         " FROM corporation "
         " WHERE corporationID = %u ", corpID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Corporation %u doesn't exists.", corpID);
+        codelog(CORP__DB_WARNING, "Corporation %u doesn't exists.", corpID);
         return false;
     }
 
@@ -1329,7 +1353,7 @@ bool CorporationDB::UpdateCorporation(uint32 corpID, const Call_UpdateCorporatio
 
     // only update if there is anything to update
     if ((N > 0) && (!sDatabase.RunQuery(res.error, query.c_str(), corpID))) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -1345,13 +1369,13 @@ bool CorporationDB::UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDic
         " FROM corporation "
         " WHERE corporationID = %u ", corpID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Corporation %u doesn't exists.", corpID);
+        codelog(CORP__DB_WARNING, "Corporation %u doesn't exists.", corpID);
         return false;
     }
 
@@ -1374,7 +1398,7 @@ bool CorporationDB::UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDic
 
     query += " WHERE corporationID = %u ";
     if ((N > 0) && (!sDatabase.RunQuery(res.error, query.c_str(), corpID))) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -1382,35 +1406,6 @@ bool CorporationDB::UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDic
 }
 #undef NI
 
-PyDict* CorporationDB::GetBookmarks(uint32 corporationID)
-{
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT "
-        " bookmarkID,"
-        " ownerID,"
-        " itemID,"
-        " typeID,"
-        " memo,"
-        " created,"
-        " x,"
-        " y,"
-        " z,"
-        " locationID,"
-        " note,"
-        " creatorID,"
-        " folderID"
-        " FROM bookmarks"
-        " WHERE ownerID = %u",
-        corporationID))
-    {
-        sLog.Error("CorporationDB::GetBookmarks()", "Failed to query corporation bookmarks for corporation %u: %s", corporationID, res.error.c_str());
-        return NULL;
-    }
-    return DBResultToPackedRowDict(res, "bookmarkID");
-    //return DBResultToCRowset(res);
-}
 PyRep *CorporationDB::GetMyShares(uint32 charID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -1418,7 +1413,7 @@ PyRep *CorporationDB::GetMyShares(uint32 charID) {
         " FROM crpcharshares "
         " WHERE characterID = %u ", charID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
     return DBResultToRowset(res);

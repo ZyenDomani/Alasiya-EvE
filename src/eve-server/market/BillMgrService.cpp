@@ -84,5 +84,20 @@ PyResult BillMgrService::Handle_GetCorporationBillsReceivable(PyCallArgs &call) 
 
 //00:29:03 L BillMgrService::Handle_GetAutomaticPaySettings(): size= 0
 PyResult BillMgrService::Handle_GetAutomaticPaySettings(PyCallArgs &call) {
+    /*
+        [PyDict 1 kvp]
+          [PyInt 98038978]
+          [PyDict 5 kvp]
+            [PyInt 1]
+            [PyBool False]
+            [PyInt 2]
+            [PyBool False]
+            [PyInt 3]
+            [PyBool False]
+            [PyInt 4]
+            [PyBool False]
+            [PyInt 6]
+            [PyBool False]
+            */
     return NULL;
 }

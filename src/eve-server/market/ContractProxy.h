@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Captnoord
+    Updates:    Allan
 */
 
 #ifndef __MARKET__CONTRACT_PROXY_H__INCL__
@@ -39,10 +40,17 @@ protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
+    PyCallable_DECL_CALL(CreateContract);
+    PyCallable_DECL_CALL(GetContract);
+    PyCallable_DECL_CALL(AcceptContract);
+    PyCallable_DECL_CALL(DeleteContract);
+    PyCallable_DECL_CALL(NumOutstandingContracts);
+    PyCallable_DECL_CALL(GetItemsInStation);
     PyCallable_DECL_CALL(GetLoginInfo);
     PyCallable_DECL_CALL(SearchContracts);
     PyCallable_DECL_CALL(CollectMyPageInfo);
     PyCallable_DECL_CALL(GetMyExpiredContractList);
+    PyCallable_DECL_CALL(GetContractListForOwner);
 };
 
 #endif /* !__MARKET__CONTRACT_PROXY_H__INCL__ */

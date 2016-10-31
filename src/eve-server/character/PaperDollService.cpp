@@ -54,7 +54,7 @@ PyResult PaperDollService::Handle_GetPaperDollData(PyCallArgs &call) {
     call.Dump(SERVICE__CALL_DUMP);
     // this is called when viewing full body of a character.
 
-    return m_db.GetPaperDollAvatarColors(call.client->GetCharacterID());
+    return m_db.GetPaperDollAvatarColors(call.tuple->GetItem(0)->AsInt()->value());
 }
 
 PyResult PaperDollService::Handle_ConvertAndSavePaperDoll(PyCallArgs &call) {

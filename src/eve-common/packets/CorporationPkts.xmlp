@@ -349,6 +349,53 @@
   </elementDef>
 
   <elementDef name="Notify_OnObjectPublicAttributesUpdated">
+  <!--
+        [PyString "OnObjectPublicAttributesUpdated"]
+        [PyList 0 items]
+        [PyString "objectID"]
+    [PyInt 5654387]
+    [PyTuple 1 items]
+      [PyTuple 2 items]
+        [PyInt 0]
+        [PySubStream 178 bytes]
+          [PyTuple 2 items]
+            [PyInt 0]
+            [PyTuple 2 items]
+              [PyInt 1]
+              [PyTuple 4 items]
+                [PyString "N=698477:223415"]
+                [PyDict 1 kvp]
+                  [PyString "realRowCount"]
+                  [PyInt 1]
+                [PyTuple 0 items]
+                [PyDict 4 kvp]
+                  [PyString "partial"]
+                  [PyList 1 items]
+                    [PyString "realRowCount"]
+                  [PyString "notificationParams"]
+                  [PyDict 0 kvp]
+                  [PyString "change"]
+                  [PyDict 4 kvp]
+                    [PyString "typeID"]
+                    [PyTuple 2 items]
+                      [PyNone]
+                      [PyInt 1529]
+                    [PyString "stationID"]
+                    [PyTuple 2 items]
+                      [PyNone]
+                      [PyInt 60014683]
+                    [PyString "officeFolderID"]
+                    [PyTuple 2 items]
+                      [PyNone]
+                      [PyInt 66014684]
+                    [PyString "officeID"]
+                    [PyTuple 2 items]
+                      [PyNone]
+                      [PyIntegerVar 176312294]
+                  [PyString "changePKIndexValue"]
+                  [PyInt 60014683]
+    [PyNone]
+-->
     <tupleInline>
       <string name="bindID" />
       <dictInline>
@@ -418,7 +465,38 @@
 
   <elementDef name="Notify_OnBillReceived">
     <tupleInline>
-      <!-- Empty tuple, very funny :S. Then what is it good for? -->
+      <!--
+    [PyTuple 1 items]
+      [PyTuple 2 items]
+        [PyInt 0]
+        [PySubStream 168 bytes]
+          [PyTuple 2 items]
+            [PyInt 0]
+            [PyTuple 2 items]
+              [PyInt 1]
+              [PyTuple 5 items]
+                [PyInt 342402174]
+                [PyInt 10]
+                [PyInt 1000167]
+                [PyIntegerVar 129492968400000000]
+                [PyDict 8 kvp]
+                  [PyString "debtorID"]
+                  [PyInt 98038978]
+                  [PyString "creditorID"]
+                  [PyInt 1000167]
+                  [PyString "billTypeID"]
+                  [PyInt 2]
+                  [PyString "amount"]
+                  [PyInt 981907]
+                  [PyString "externalID2"]
+                  [PyInt 60014683]
+                  [PyString "externalID"]
+                  [PyInt 27]
+                  [PyString "currentDate"]
+                  [PyIntegerVar 129492968683459696]
+                  [PyString "dueDate"]
+                  [PyIntegerVar 129518888683422295]
+                  -->
     </tupleInline>
   </elementDef>
 

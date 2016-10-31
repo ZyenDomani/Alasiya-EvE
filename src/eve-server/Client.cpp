@@ -966,9 +966,9 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
 //assumes that the backend DB stuff was already done.
 void Client::JoinCorporationUpdate(uint32 corp_id) {
     //m_char->JoinCorporation(corp_id);
-    _UpdateSession(m_char);
+    //_UpdateSession(m_char);
     //logs indicate that we need to push this update out asap.
-    SendSessionChange();
+    //SendSessionChange();
 }
 
 /************************************************************************/

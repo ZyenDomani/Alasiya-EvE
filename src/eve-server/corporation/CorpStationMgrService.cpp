@@ -46,17 +46,17 @@ public:
 
         m_strBoundObjectName = "CorpStationMgrIMBound";
 
-        PyCallable_REG_CALL(CorpStationMgrIMBound, GetEveOwners);
+        //PyCallable_REG_CALL(CorpStationMgrIMBound, GetEveOwners);
         PyCallable_REG_CALL(CorpStationMgrIMBound, GetCorporateStationInfo);
         PyCallable_REG_CALL(CorpStationMgrIMBound, DoStandingCheckForStationService);
         PyCallable_REG_CALL(CorpStationMgrIMBound, GetPotentialHomeStations);
         PyCallable_REG_CALL(CorpStationMgrIMBound, SetHomeStation);
         PyCallable_REG_CALL(CorpStationMgrIMBound, SetCloneTypeID);
         PyCallable_REG_CALL(CorpStationMgrIMBound, GetQuoteForRentingAnOffice);
-        PyCallable_REG_CALL(CorpStationMgrIMBound, RentOffice);
-        PyCallable_REG_CALL(CorpStationMgrIMBound, GetStationOffices);
         PyCallable_REG_CALL(CorpStationMgrIMBound, GetNumberOfUnrentedOffices);
         //testing
+        PyCallable_REG_CALL(CorpStationMgrIMBound, RentOffice);
+        PyCallable_REG_CALL(CorpStationMgrIMBound, GetStationOffices);
         PyCallable_REG_CALL(CorpStationMgrIMBound, GetCorporateStationOffice);
         PyCallable_REG_CALL(CorpStationMgrIMBound, MoveCorpHQHere);
     }
@@ -66,7 +66,7 @@ public:
         delete this;
     }
 
-    PyCallable_DECL_CALL(GetEveOwners);
+    //PyCallable_DECL_CALL(GetEveOwners);
     PyCallable_DECL_CALL(GetCorporateStationInfo);
     PyCallable_DECL_CALL(DoStandingCheckForStationService);
     PyCallable_DECL_CALL(GetPotentialHomeStations);
@@ -107,30 +107,10 @@ CorpStationMgrService::~CorpStationMgrService() {
 PyBoundObject *CorpStationMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
     if(!bind_args->IsInt()) {
         codelog(SERVICE__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
-        return NULL;
+        return nullptr;
     }
     return new CorpStationMgrIMBound( m_manager, m_db, bind_args->AsInt()->value() );
 }
-
-
-PyResult CorpStationMgrIMBound::Handle_GetEveOwners(PyCallArgs &call)
-{
-    util_Rowset rs;
-    rs.lines = new PyList;
-
-    rs.header.push_back( "ownerID" );
-    rs.header.push_back( "ownerName" );
-    rs.header.push_back( "typeID" );
-
-    PyList* chardata = new PyList;
-    chardata->AddItemInt( 3004349 );
-    chardata->AddItemString( "Carbircelle Hatiniestan" );
-    chardata->AddItemInt( 1378 );
-    rs.lines->AddItem( chardata );
-
-    return rs.Encode();
-}
-
 
 PyResult CorpStationMgrIMBound::Handle_GetCorporateStationInfo(PyCallArgs &call) {
     /* returns:
@@ -151,21 +131,21 @@ PyResult CorpStationMgrIMBound::Handle_GetCorporateStationInfo(PyCallArgs &call)
     tmp = m_db.ListStationOwners(m_stationID);
     if(tmp == NULL) {
         codelog(SERVICE__ERROR, "Failed to get owners.");
-        return NULL;
+        return nullptr;
     }
     l->AddItem( tmp );
 
     tmp = m_db.ListStationCorps(m_stationID);
     if(tmp == NULL) {
         codelog(SERVICE__ERROR, "Failed to get corps");
-        return NULL;
+        return nullptr;
     }
     l->AddItem( tmp );
 
     tmp = m_db.ListStationOffices(m_stationID);
     if(tmp == NULL) {
         codelog(SERVICE__ERROR, "Failed to get offices.");
-        return NULL;
+        return nullptr;
     }
     l->AddItem( tmp );
 
@@ -282,35 +262,203 @@ PyResult CorpStationMgrIMBound::Handle_GetQuoteForRentingAnOffice(PyCallArgs &ca
     // the dialog box will be displayed... have to make sure this doesn't fail
     return (new PyInt(m_db.GetQuoteForRentingAnOffice(stationID)));
 }
+
 PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     // 1 param, corp rent price    //TODO: check against what we think it should cost.
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Wrong incoming param in RentOffice");
-        return NULL;
+        return nullptr;
     }
 
     uint32 location = call.client->GetLocationID();
 
     // check if the corp has enough money
-    uint16 accountKey = accountingKeyCash;  //FIXME  get proper corp wallet division
-    double corpBalance = m_db.GetCorpBalance(call.client->GetCorporationID(), accountKey);
+    double corpBalance = m_db.GetCorpBalance(call.client->GetCorporationID(), accountingKeyCash);  //FIXME  get proper corp wallet division
     if (corpBalance < arg.arg) {
         _log(SERVICE__ERROR, "%s: Corp doesn't have enough money to rent an office.", call.client->GetName());
-        return (new PyInt(0));
+        return nullptr;
     }
-
 
     // We should also check if the station has a free office atm...
     OfficeInfo oInfo(call.client->GetCorporationID(), call.client->GetStationID());
-    oInfo.officeID = m_db.ReserveOffice(oInfo);
-    // should we also put this into the entity table?
-
 
     if (!oInfo.officeID) {
         codelog(SERVICE__ERROR, "%s: Error at renting a new office", call.client->GetName());
-        return new PyInt(0);
+        return nullptr;
     }
+    oInfo.officeID = m_db.ReserveOffice(oInfo);
+    // should we also put this into the entity table?
+
+    /*
+     *    Broadcast #1
+     *
+     *        [PyString "OnAccountChange"]
+     *        [PyList 0 items]
+     *        [PyString "*corpid&corpAccountKey"]
+     *    [PyInt 5654387]
+     *    [PyTuple 1 items]
+     *      [PyTuple 2 items]
+     *        [PyInt 0]
+     *        [PySubStream 31 bytes]
+     *          [PyTuple 2 items]
+     *            [PyInt 0]
+     *            [PyTuple 2 items]
+     *              [PyInt 1]
+     *              [PyTuple 3 items]
+     *                [PyString "cash"]
+     *                [PyInt 98038978]
+     *                [PyFloat 9017992.75] */
+    /*
+     *    Broadcast #2
+     *        [PyString "OnNotificationReceived"]
+     *        [PyList 0 items]
+     *        [PyString "clientID"]
+     *    [PyInt 5654387]
+     *    [PyTuple 1 items]
+     *      [PyTuple 2 items]
+     *        [PyInt 0]
+     *        [PySubStream 168 bytes]
+     *          [PyTuple 2 items]
+     *            [PyInt 0]
+     *            [PyTuple 2 items]
+     *              [PyInt 1]
+     *              [PyTuple 5 items]
+     *                [PyInt 342402174]
+     *                [PyInt 10]
+     *                [PyInt 1000167]
+     *                [PyIntegerVar 129492968400000000]
+     *                [PyDict 8 kvp]
+     *                  [PyString "debtorID"]
+     *                  [PyInt 98038978]
+     *                  [PyString "creditorID"]
+     *                  [PyInt 1000167]
+     *                  [PyString "billTypeID"]
+     *                  [PyInt 2]
+     *                  [PyString "amount"]
+     *                  [PyInt 981907]
+     *                  [PyString "externalID2"]
+     *                  [PyInt 60014683]
+     *                  [PyString "externalID"]
+     *                  [PyInt 27]
+     *                  [PyString "currentDate"]
+     *                  [PyIntegerVar 129492968683459696]
+     *                  [PyString "dueDate"]
+     *                  [PyIntegerVar 129518888683422295]
+     *    [PyDict 1 kvp]
+     *      [PyString "sn"]
+     *      [PyIntegerVar 4]
+     */
+    /*
+     *    Broadcast #3
+     *        [PyString "OnItemsChanged"]
+     *        [PyList 0 items]
+     *        [PyString "*stationid&corpid"]
+     *    [PyInt 5654387]
+     *    [PyTuple 1 items]
+     *      [PyTuple 2 items]
+     *        [PyInt 0]
+     *        [PySubStream 177 bytes]
+     *          [PyTuple 2 items]
+     *            [PyInt 0]
+     *            [PyTuple 2 items]
+     *              [PyInt 1]
+     *              [PyTuple 2 items]
+     *                [PyList 1 items]
+     *                  [PyPackedRow 33 bytes]
+     *                    ["itemID" => <176312294> [I8]]
+     *                    ["typeID" => <27> [I4]]
+     *                    ["ownerID" => <98038978> [I4]]
+     *                    ["locationID" => <66014684> [I8]]
+     *                    ["flagID" => <81> [I2]]
+     *                    ["quantity" => <-1> [I4]]
+     *                    ["groupID" => <16> [I2]]
+     *                    ["categoryID" => <3> [I2]]
+     *                    ["customInfo" => <empty string> [Str]]
+     *                [PyDict 1 kvp]
+     *                  [PyInt 2]
+     *                  [PyInt 4]
+     */
+    /*
+     *    Broadcast #4
+     *        [PyString "OnOfficeRentalChanged"]
+     *        [PyList 0 items]
+     *        [PyString "stationid"]
+     *    [PyInt 5654387]
+     *    [PyTuple 1 items]
+     *      [PyTuple 2 items]
+     *        [PyInt 0]
+     *        [PySubStream 27 bytes]
+     *          [PyTuple 2 items]
+     *            [PyInt 0]
+     *            [PyTuple 2 items]
+     *              [PyInt 1]
+     *              [PyTuple 3 items]
+     *                [PyInt 98038978]
+     *                [PyIntegerVar 176312294]
+     *                [PyInt 66014684]
+     *    [PyNone]
+     *
+     */
+    /*
+     *    Broadcast #5
+     *
+     *    -- actual response from call
+     *    [PyTuple 1 items]
+     *      [PySubStream 11 bytes]
+     *        [PyIntegerVar 176312294]    << office item id
+     *    [PyNone]
+     */
+    /*
+     *    Broadcast #6
+     *    -- this should go to all docked players in this station
+     *        [PyString "OnObjectPublicAttributesUpdated"]
+     *        [PyList 0 items]
+     *        [PyString "objectID"]
+     *    [PyInt 5654387]
+     *    [PyTuple 1 items]
+     *      [PyTuple 2 items]
+     *        [PyInt 0]
+     *        [PySubStream 178 bytes]
+     *          [PyTuple 2 items]
+     *            [PyInt 0]
+     *            [PyTuple 2 items]
+     *              [PyInt 1]
+     *              [PyTuple 4 items]
+     *                [PyString "N=698477:223415"]
+     *                [PyDict 1 kvp]
+     *                  [PyString "realRowCount"]
+     *                  [PyInt 1]
+     *                [PyTuple 0 items]
+     *                [PyDict 4 kvp]
+     *                  [PyString "partial"]
+     *                  [PyList 1 items]
+     *                    [PyString "realRowCount"]
+     *                  [PyString "notificationParams"]
+     *                  [PyDict 0 kvp]
+     *                  [PyString "change"]
+     *                  [PyDict 4 kvp]
+     *                    [PyString "typeID"]
+     *                    [PyTuple 2 items]
+     *                      [PyNone]
+     *                      [PyInt 1529]
+     *                    [PyString "stationID"]
+     *                    [PyTuple 2 items]
+     *                      [PyNone]
+     *                      [PyInt 60014683]
+     *                    [PyString "officeFolderID"]
+     *                    [PyTuple 2 items]
+     *                      [PyNone]
+     *                      [PyInt 66014684]
+     *                    [PyString "officeID"]
+     *                    [PyTuple 2 items]
+     *                      [PyNone]
+     *                      [PyIntegerVar 176312294]
+     *                  [PyString "changePKIndexValue"]
+     *                  [PyInt 60014683]
+     *    [PyNone]
+     */
+
     // Now we have the new office, let's update the officelist... if we have to...
 
         Notify_OnObjectPublicAttributesUpdated N_pau;
@@ -333,9 +481,6 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
         // This has to be sent to everyone in the station
         // For now, broadcast it
         sEntityList.Multicast("OnObjectPublicAttributesUpdated", "objectID", &res1, NOTIF_DEST__LOCATION, location, false);
-
-        // This was the first broadcast...
-    //}
 
 
     // remove the money
@@ -439,161 +584,6 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     return (new PyInt(oInfo.officeID));
 }
 
-    /*
-    Broadcast #1
-    bcID: OnObjectPublicAttributesUpdated, idtype: objectID
-
-    Unmarshaled rep:
-    Tuple: 2 elements
-      [ 0] Integer field: 0
-      [ 1] Tuple: 2 elements
-      [ 1]   [ 0] Integer field: 1
-      [ 1]   [ 1] Tuple: 4 elements
-      [ 1]   [ 1]   [ 0] String: 'N=218038:21194'
-      [ 1]   [ 1]   [ 1] Dictionary: 1 entries
-      [ 1]   [ 1]   [ 1]   [ 0] Key: String: 'realRowCount'
-      [ 1]   [ 1]   [ 1]   [ 0] Value: Integer field: 2
-      [ 1]   [ 1]   [ 2] Tuple: Empty
-      [ 1]   [ 1]   [ 3] Dictionary: 4 entries
-      [ 1]   [ 1]   [ 3]   [ 0] Key: String: 'partial'
-      [ 1]   [ 1]   [ 3]   [ 0] Value: List: 1 elements
-      [ 1]   [ 1]   [ 3]   [ 0] Value:   [ 0] String: 'realRowCount'
-      [ 1]   [ 1]   [ 3]   [ 1] Key: String: 'changePKIndexValue'
-      [ 1]   [ 1]   [ 3]   [ 1] Value: Integer field: 60008743
-      [ 1]   [ 1]   [ 3]   [ 2] Key: String: 'notificationParams'
-      [ 1]   [ 1]   [ 3]   [ 2] Value: Dictionary: 0 entries
-      [ 1]   [ 1]   [ 3]   [ 3] Key: String: 'change'
-      [ 1]   [ 1]   [ 3]   [ 3] Value: Dictionary: 4 entries
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 0] Key: String: 'typeID'
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 0] Value: Tuple: 2 elements
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 0] Value:   [ 0] (None)
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 0] Value:   [ 1] Integer field: 1932
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 1] Key: String: 'Invalid String Table Item 155'
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 1] Value: Tuple: 2 elements
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 1] Value:   [ 0] (None)
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 1] Value:   [ 1] Integer field: 60008743
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 2] Key: String: 'officeFolderID'
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 2] Value: Tuple: 2 elements
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 2] Value:   [ 0] (None)
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 2] Value:   [ 1] Integer field: 66008744
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 3] Key: String: 'officeID'
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 3] Value: Tuple: 2 elements
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 3] Value:   [ 0] (None)
-      [ 1]   [ 1]   [ 3]   [ 3] Value:   [ 3] Value:   [ 1] Integer field: 170947028
-
-      ScatterEvent( OnObjectPublicAttributesUpdated ,*args= ('N=218038:21194', {'realRowCount': 2}, (), {'partial': ['realRowCount'], 'notificationParams': {}, 'change': {'typeID': (None, 1932), 'stationID': (None, 60008743), 'officeFolderID': (None, 66008744)
-    */
-    /*
-    Broadcast #2
-    bcid: OnAccountChange, idtype: *corpid&corpAccountKey
-
-    Unmarshaled rep:
-    Tuple: 2 elements
-      [ 0] Integer field: 0
-      [ 1] Tuple: 2 elements
-      [ 1]   [ 0] Integer field: 1
-      [ 1]   [ 1] Tuple: 3 elements
-      [ 1]   [ 1]   [ 0] String: 'cash'
-      [ 1]   [ 1]   [ 1] Integer field: 5555555555
-      [ 1]   [ 1]   [ 2] Real Field: 2990000.000000
-
-        ScatterEvent( OnAccountChange ,*args= ('cash', 5555555555, 2990000.0) ,**kw= {} )
-    */
-    /*
-    Broadcast #3
-    bcID: OnItemChange, idtype: *stationid&corpid
-
-    Unmarshaled rep:
-    Tuple: 2 elements
-      [ 0] Integer field: 0
-      [ 1] Tuple: 2 elements
-      [ 1]   [ 0] Integer field: 1
-      [ 1]   [ 1] Tuple: 2 elements
-      [ 1]   [ 1]   [ 0] Object:
-      [ 1]   [ 1]   [ 0]   Type: util.Row
-      [ 1]   [ 1]   [ 0]   Args: Dictionary: 2 entries
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Key: String: 'header'
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value: List: 11 elements
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value:   [ 0] String: 'itemID'
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value:   [ 1] String: 'typeID'
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value:   [ 2] String: 'ownerID'
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value:   [ 3] String: 'locationID'
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value:   [ 4] String: 'flag'
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value:   [ 5] String: 'contraband'
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value:   [ 6] String: 'singleton'
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value:   [ 7] String: 'quantity'
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value:   [ 8] String: 'groupID'
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value:   [ 9] String: 'categoryID'
-      [ 1]   [ 1]   [ 0]   Args:   [ 0] Value:   [10] String: 'customInfo'
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Key: String: 'line'
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value: List: 11 elements
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value:   [ 0] Integer field: 170947000    <- officeID?
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value:   [ 1] Integer field: 27
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value:   [ 2] Integer field: 5555555555    <- corporation?
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value:   [ 3] Integer field: 66008744    <- officeFolderID
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value:   [ 4] Integer field: 84
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value:   [ 5] Integer field: 0
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value:   [ 6] Integer field: 1
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value:   [ 7] Integer field: 1
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value:   [ 8] Integer field: 16
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value:   [ 9] Integer field: 3
-      [ 1]   [ 1]   [ 0]   Args:   [ 1] Value:   [10] (None)
-      [ 1]   [ 1]   [ 1] Dictionary: 1 entries
-      [ 1]   [ 1]   [ 1]   [ 0] Key: Integer field: 2
-      [ 1]   [ 1]   [ 1]   [ 0] Value: Integer field: 4
-
-        ScatterEvent( OnItemChange ,*args= (Row(itemID: 170947028,typeID: 27,ownerID: 497751594,locationID: 66008744,flag: 84,contraband: 0,singleton: 1,quantity: 1,groupID: 16,categoryID: 3,customInfo: None), {2: 4}) ,**kw= {} )
-    */
-    /*
-    Broadcast #4
-    bcID: OnOfficeRentalChanged, idtype: stationid
-
-    Unmarshaled rep:
-    Tuple: 2 elements
-      [ 0] Integer field: 0
-      [ 1] Tuple: 2 elements
-      [ 1]   [ 0] Integer field: 1
-      [ 1]   [ 1] Tuple: 3 elements
-      [ 1]   [ 1]   [ 0] Integer field: 5555555555
-      [ 1]   [ 1]   [ 1] Integer field: 170947000
-      [ 1]   [ 1]   [ 2] Integer field: 66008744
-
-      ScatterEvent( OnOfficeRentalChanged ,*args= (5555555555, 170947000, 66008744) ,**kw= {} )
-    */
-    /*
-    Broadcast #5
-    bcID: OnBillReceived, idtype: *corpid&corprole
-
-    Unmarshaled rep:
-    Tuple: 2 elements
-      [ 0] Integer field: 0
-      [ 1] Tuple: 2 elements
-      [ 1]   [ 0] Integer field: 1
-      [ 1]   [ 1] Tuple: Empty
-
-      ScatterEvent( OnBillReceived ,*args= () ,**kw= {} )
-    */
-    /*
-    Broadcast #6
-    bcID: OnMessage, idType: multicastID
-
-    Unmarshaled rep:
-    Tuple: 2 elements
-      [ 0] Integer field: 0
-      [ 1] Tuple: 2 elements
-      [ 1]   [ 0] Integer field: 1
-      [ 1]   [ 1] Tuple: 5 elements
-      [ 1]   [ 1]   [ 0] List: 2 elements
-      [ 1]   [ 1]   [ 0]   [ 0] Integer field: 22222222    <- reciever #1, not current char
-      [ 1]   [ 1]   [ 0]   [ 1] Integer field: 33333333    <- reciever #2, not current char
-      [ 1]   [ 1]   [ 1] Integer field: 444444444            <- messageID
-      [ 1]   [ 1]   [ 2] Integer field: 1000090                <- sender, corpID / station owner
-      [ 1]   [ 1]   [ 3] String: 'Bill issued'                <- subject
-      [ 1]   [ 1]   [ 4] Integer field: 128291836200000000    <- current time
-
-      ScatterEvent( OnMessage ,*args= ([22222222, 33333333], 444444444, 1000090, 'Bill issued', 128291836200000000L) ,**kw= {} )
-    */
-
 PyResult CorpStationMgrIMBound::Handle_GetStationOffices( PyCallArgs& call )
 {
     sLog.Log( "CorpStationMgrIMBound::Handle_GetStationOffices()", "size= %u", call.tuple->size() );
@@ -617,6 +607,53 @@ PyResult CorpStationMgrIMBound::Handle_GetStationOffices( PyCallArgs& call )
             [PyList 2 items] //Cache Information
               [PyIntegerVar 129533580031608440] //Timestamp (fileTime)
               [PyInt 52428965] //Hash??
+
+
+      [PySubStream 569 bytes]
+        [PyObjectData Name: objectCaching.CachedMethodCallResult]
+          [PyTuple 3 items]
+            [PyDict 1 kvp]
+              [PyString "versionCheck"]
+              [PyTuple 3 items]
+                [PyString "always"]
+                [PyNone]
+                [PyNone]
+            [PySubStream 472 bytes]
+              [PyObjectEx Type2]
+                [PyTuple 2 items]
+                  [PyTuple 1 items]
+                    [PyToken dbutil.CRowset]
+                  [PyDict 1 kvp]
+                    [PyString "header"]
+                    [PyObjectEx Normal]
+                      [PyTuple 2 items]
+                        [PyToken blue.DBRowDescriptor]
+                        [PyTuple 1 items]
+                          [PyTuple 3 items]
+                            [PyTuple 2 items]
+                              [PyString "corporationID"]
+                              [PyInt 3]
+                            [PyTuple 2 items]
+                              [PyString "itemID"]
+                              [PyInt 20]
+                            [PyTuple 2 items]
+                              [PyString "officeFolderID"]
+                              [PyInt 20]
+                [PyPackedRow 21 bytes]
+                  ["corporationID" => <98035543> [I4]]
+                  ["itemID" => <152212018> [I8]]
+                  ["officeFolderID" => <66014684> [I8]]
+                [PyPackedRow 21 bytes]
+                  ["corporationID" => <1337582783> [I4]]
+                  ["itemID" => <153600468> [I8]]
+                  ["officeFolderID" => <66014684> [I8]]
+                [PyPackedRow 21 bytes]
+                  ["corporationID" => <1238908264> [I4]]
+                  ["itemID" => <164730922> [I8]]
+                  ["officeFolderID" => <66014684> [I8]]
+            [PyList 2 items]
+              [PyIntegerVar 129492958706190905]
+              [PyInt -1622429963]
               */
     PyTuple * arg_tuple = new PyTuple(3);
 
@@ -661,48 +698,179 @@ PyResult CorpStationMgrIMBound::Handle_MoveCorpHQHere(PyCallArgs &call)
     call.Dump(SERVICE__CALL_DUMP);
 
     return new PyTuple(0);
+
+    /* client error CorpHQIsAtThisStation */
 }
 
 PyResult CorpStationMgrService::Handle_GetStationServiceStates(PyCallArgs &call)
 {
     /*   i *THINK* this is only sent for outposts.....stationID is 61m (above static stations)
      * since it has NOT been called yet on evemu, it very well could be outposts only (cause we dont have any)
+     *
+     *  **UPDATE**
      *   i was right.  found this in code...
      * if util.IsOutpost(eve.session.stationid) or sm.GetService('godma').GetType(eve.stationItem.stationTypeID).isPlayerOwnable == 1:
      *     self.serviceItemsState = sm.RemoteSvc('corpStationMgr').GetStationServiceStates()
      *
-        [PyDict 6 kvp]
-          [PyInt 512]
-          [PyObjectData Name: util.Row]
-            [PyDict 2 kvp]
-              [PyString "header"]
-              [PyList 5 items]
-                [PyString "solarSystemID"]
-                [PyString "stationID"]
-                [PyString "serviceID"]
-                [PyString "stationServiceItemID"]
-                [PyString "isEnabled"]
-              [PyString "line"]
-              [PyList 5 items]
-                [PyInt 30001984]
-                [PyInt 61000012]
-                [PyInt 512]
-                [PyIntegerVar 318021030]
-                [PyInt 1]
-                */
+     *
+     * ==================== Sent from Client 98 bytes
+     *
+     * [PyObjectData Name: macho.CallReq]
+     *  [PyTuple 6 items]
+     *    [PyInt 6]
+     *    [PyObjectData Name: macho.MachoAddress]
+     *      [PyTuple 4 items]
+     *        [PyInt 2]
+     *        [PyInt 0]
+     *        [PyIntegerVar 45]
+     *        [PyNone]
+     *    [PyObjectData Name: macho.MachoAddress]
+     *      [PyTuple 3 items]
+     *        [PyInt 8]
+     *        [PyString "corpStationMgr"]
+     *        [PyNone]
+     *    [PyInt 5654387]
+     *    [PyTuple 1 items]
+     *      [PyTuple 2 items]
+     *        [PyInt 0]
+     *        [PySubStream 39 bytes]
+     *          [PyTuple 4 items]
+     *            [PyInt 1]
+     *            [PyString "GetStationServiceStates"]
+     *            [PyTuple 0 items]
+     *            [PyDict 1 kvp]
+     *              [PyString "machoVersion"]
+     *              [PyInt 1]
+     *    [PyNone]
+     *
+     *
+     *
+     * ==================== Sent from Server 347 bytes
+     *
+     * [PyObjectData Name: macho.CallRsp]
+     *  [PyTuple 6 items]
+     *    [PyInt 7]
+     *    [PyObjectData Name: macho.MachoAddress]
+     *      [PyTuple 3 items]
+     *        [PyInt 8]
+     *        [PyString "corpStationMgr"]
+     *        [PyNone]
+     *    [PyObjectData Name: macho.MachoAddress]
+     *      [PyTuple 4 items]
+     *        [PyInt 2]
+     *        [PyIntegerVar 15001000001023]
+     *        [PyIntegerVar 45]
+     *        [PyNone]
+     *    [PyInt 5654387]
+     *    [PyTuple 1 items]
+     *      [PySubStream 279 bytes]
+     *        [PyDict 6 kvp]
+     *          [PyInt 512]
+     *          [PyObjectData Name: util.Row]
+     *            [PyDict 2 kvp]
+     *              [PyString "header"]
+     *              [PyList 5 items]
+     *                [PyString "solarSystemID"]
+     *                [PyString "stationID"]
+     *                [PyString "serviceID"]
+     *                [PyString "stationServiceItemID"]
+     *                [PyString "isEnabled"]
+     *              [PyString "line"]
+     *              [PyList 5 items]
+     *                [PyInt 30001984]
+     *                [PyInt 61000012]              << stationID 61m = outpost
+     *                [PyInt 512]
+     *                [PyIntegerVar 318021030]
+     *                [PyInt 1]
+     *          [PyInt 16384]
+     *          [PyObjectData Name: util.Row]
+     *            [PyDict 2 kvp]
+     *              [PyString "header"]
+     *              [PyList 5 items]
+     *                [PyString "solarSystemID"]
+     *                [PyString "stationID"]
+     *                [PyString "serviceID"]
+     *                [PyString "stationServiceItemID"]
+     *                [PyString "isEnabled"]
+     *              [PyString "line"]
+     *              [PyList 5 items]
+     *                [PyInt 30001984]
+     *                [PyInt 61000012]
+     *                [PyInt 16384]
+     *                [PyIntegerVar 318021027]
+     *                [PyInt 1]
+     *          [PyInt 4096]
+     *          [PyObjectData Name: util.Row]
+     *            [PyDict 2 kvp]
+     *              [PyString "header"]
+     *              [PyList 5 items]
+     *                [PyString "solarSystemID"]
+     *                [PyString "stationID"]
+     *                [PyString "serviceID"]
+     *                [PyString "stationServiceItemID"]
+     *                [PyString "isEnabled"]
+     *              [PyString "line"]
+     *              [PyList 5 items]
+     *                [PyInt 30001984]
+     *                [PyInt 61000012]
+     *                [PyInt 4096]
+     *                [PyIntegerVar 318021029]
+     *                [PyInt 1]
+     *          [PyInt 8192]
+     *          [PyObjectData Name: util.Row]
+     *            [PyDict 2 kvp]
+     *              [PyString "header"]
+     *              [PyList 5 items]
+     *                [PyString "solarSystemID"]
+     *                [PyString "stationID"]
+     *                [PyString "serviceID"]
+     *                [PyString "stationServiceItemID"]
+     *                [PyString "isEnabled"]
+     *              [PyString "line"]
+     *              [PyList 5 items]
+     *                [PyInt 30001984]
+     *                [PyInt 61000012]
+     *                [PyInt 8192]
+     *                [PyIntegerVar 318021028]
+     *                [PyInt 1]
+     *          [PyInt 16]
+     *          [PyObjectData Name: util.Row]
+     *            [PyDict 2 kvp]
+     *              [PyString "header"]
+     *              [PyList 5 items]
+     *                [PyString "solarSystemID"]
+     *                [PyString "stationID"]
+     *                [PyString "serviceID"]
+     *                [PyString "stationServiceItemID"]
+     *                [PyString "isEnabled"]
+     *              [PyString "line"]
+     *              [PyList 5 items]
+     *                [PyInt 30001984]
+     *                [PyInt 61000012]
+     *                [PyInt 16]
+     *                [PyIntegerVar 1002331174723]
+     *                [PyInt 1]
+     *          [PyInt 65536]
+     *          [PyObjectData Name: util.Row]
+     *            [PyDict 2 kvp]
+     *              [PyString "header"]
+     *              [PyList 5 items]
+     *                [PyString "solarSystemID"]
+     *                [PyString "stationID"]
+     *                [PyString "serviceID"]
+     *                [PyString "stationServiceItemID"]
+     *                [PyString "isEnabled"]
+     *              [PyString "line"]
+     *              [PyList 5 items]
+     *                [PyInt 30001984]
+     *                [PyInt 61000012]
+     *                [PyInt 65536]
+     *                [PyIntegerVar 318021026]
+     *                [PyInt 1]
+     *    [PyNone]
+     */
   sLog.Log( "CorpStationMgrService::Handle_GetStationServiceStates()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return new PyTuple(0);
 }
-
-
-
-
-
-
-
-
-
-
-

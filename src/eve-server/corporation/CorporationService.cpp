@@ -41,13 +41,13 @@ CorporationService::CorporationService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(CorporationService, GetNPCDivisions);
     PyCallable_REG_CALL(CorporationService, GetEmploymentRecord);
     PyCallable_REG_CALL(CorporationService, GetMedalsReceived);
+    PyCallable_REG_CALL(CorporationService, GetMedalDetails);
     PyCallable_REG_CALL(CorporationService, GetAllCorpMedals);
     PyCallable_REG_CALL(CorporationService, GetRecruitmentAdTypes);
     PyCallable_REG_CALL(CorporationService, GetRecruitmentAdsByCriteria);
     PyCallable_REG_CALL(CorporationService, GetRecruitmentAdRegistryData);
     PyCallable_REG_CALL(CorporationService, IsEnemyFaction);
     PyCallable_REG_CALL(CorporationService, GetVoteCasesByCorporation);
-    PyCallable_REG_CALL(CorporationService, MoveCorpHQHere);
     PyCallable_REG_CALL(CorporationService, AddCorporateContact);
     PyCallable_REG_CALL(CorporationService, GetRecentKillsAndLosses);
 }
@@ -60,42 +60,42 @@ PyResult CorporationService::Handle_GetFactionInfo(PyCallArgs &call) {
 
     GetFactionInfoRsp rsp;
 
-    if(!m_db.ListAllCorpFactions(rsp.factionIDbyNPCCorpID)) {
+    if (!m_db.ListAllCorpFactions(rsp.factionIDbyNPCCorpID)) {
         codelog(SERVICE__ERROR, "Failed to service request");
-        return NULL;
+        return nullptr;
     }
-    if(!m_db.ListAllFactionStationCounts(rsp.factionStationCount)) {
+    if (!m_db.ListAllFactionStationCounts(rsp.factionStationCount)) {
         codelog(SERVICE__ERROR, "Failed to service request");
-        return NULL;
+        return nullptr;
     }
-    if(!m_db.ListAllFactionSystemCounts(rsp.factionSolarSystemCount)) {
+    if (!m_db.ListAllFactionSystemCounts(rsp.factionSolarSystemCount)) {
         codelog(SERVICE__ERROR, "Failed to service request");
-        return NULL;
+        return nullptr;
     }
-    if(!m_db.ListAllFactionRegions(rsp.factionRegions)) {
+    if (!m_db.ListAllFactionRegions(rsp.factionRegions)) {
         codelog(SERVICE__ERROR, "Failed to service request");
-        return NULL;
+        return nullptr;
     }
-    if(!m_db.ListAllFactionConstellations(rsp.factionConstellations)) {
+    if (!m_db.ListAllFactionConstellations(rsp.factionConstellations)) {
         codelog(SERVICE__ERROR, "Failed to service request");
-        return NULL;
+        return nullptr;
     }
-    if(!m_db.ListAllFactionSolarSystems(rsp.factionSolarSystems)) {
+    if (!m_db.ListAllFactionSolarSystems(rsp.factionSolarSystems)) {
         codelog(SERVICE__ERROR, "Failed to service request");
-        return NULL;
+        return nullptr;
     }
-    if(!m_db.ListAllFactionRaces(rsp.factionRaces)) {
+    if (!m_db.ListAllFactionRaces(rsp.factionRaces)) {
         codelog(SERVICE__ERROR, "Failed to service request");
-        return NULL;
+        return nullptr;
     }
 
     rsp.npcCorpInfo = m_db.ListAllCorpInfo();
-    if(rsp.npcCorpInfo == NULL) {
+    if (!rsp.npcCorpInfo) {
         codelog(SERVICE__ERROR, "Failed to service request");
-        return NULL;
+        return nullptr;
     }
 
-    return(rsp.Encode());
+    return rsp.Encode();
 
 
     /*
@@ -104,7 +104,7 @@ PyResult CorporationService::Handle_GetFactionInfo(PyCallArgs &call) {
 
     PySubStream *ss = new PySubStream();
 
-    if(!call.client->services().GetCache()->LoadCachedFile(abs_fname.c_str(), "GetFactionInfo", ss)) {
+    if (!call.client->services().GetCache()->LoadCachedFile(abs_fname.c_str(), "GetFactionInfo", ss)) {
         _log(CLIENT__ERROR, "GetFactionInfo Failed to load cache file '%s'", abs_fname.c_str());
         ss->decoded = new PyNone();
         return(ss);
@@ -131,8 +131,8 @@ PyResult CorporationService::Handle_GetCorpInfo(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "Bad arguments");
         return (NULL);
     }
-    PyRep * answer = m_db.GetCorpInfo(args.arg);
-    return (answer);
+
+    return m_db.GetCorpInfo(args.arg);
 }
 
 
@@ -146,19 +146,34 @@ PyResult CorporationService::Handle_GetEmploymentRecord(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "Bad arguments");
         return (NULL);
     }
-    PyRep * answer = m_db.GetEmploymentRecord(args.arg);
-    return (answer);
+
+    return m_db.GetEmploymentRecord(args.arg);
 }
 
 PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
 
-    if(!arg.Decode(&call.tuple)) {
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Bad arguments");
         return (NULL);
     }
+    // dont know the details for this return yet.....
     PyTuple *t = new PyTuple(2);
     t->items[0] = m_db.GetMedalsReceived(arg.arg);
+    t->items[1] = new PyList;
+    return t;
+}
+
+PyResult CorporationService::Handle_GetMedalDetails(PyCallArgs &call) {
+    Call_SingleIntegerArg arg;
+
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "Bad arguments");
+        return (NULL);
+    }
+    // dont know the details for this return yet.....
+    PyTuple *t = new PyTuple(2);
+    t->items[0] = m_db.GetMedalDetails(arg.arg);
     t->items[1] = new PyList;
     return t;
 }
@@ -167,10 +182,10 @@ PyResult CorporationService::Handle_GetAllCorpMedals( PyCallArgs& call )
 {
     //arg is corporationID
     Call_SingleIntegerArg arg;
-    if( !arg.Decode( &call.tuple ) )
+    if ( !arg.Decode( &call.tuple ) )
     {
         _log( SERVICE__ERROR, "Failed to decode args." );
-        return NULL;
+        return nullptr;
     }
 
     sLog.Log( "CorporationService", "Called GetAllCorpMedals stub." );
@@ -225,10 +240,10 @@ PyResult CorporationService::Handle_GetRecruitmentAdsByCriteria( PyCallArgs& cal
     //this is cached on live with check "5 minutes"
 
     Call_GetRecruitmentAdsByCriteria args;
-    if( !args.Decode( &call.tuple ) )
+    if ( !args.Decode( &call.tuple ) )
     {
         _log( SERVICE__ERROR, "Failed to decode args." );
-        return NULL;
+        return nullptr;
     }
 
     sLog.Log( "CorporationService", "Called GetRecruitmentAdsByCriteria stub." );
@@ -252,20 +267,9 @@ PyResult CorporationService::Handle_GetRecruitmentAdsByCriteria( PyCallArgs& cal
 }
 
 /** not handled */
+//22:47:33 L CorporationService::Handle_GetRecruitmentAdRegistryData(): size= 0
 PyResult CorporationService::Handle_GetRecruitmentAdRegistryData(PyCallArgs &call) {
-  /*
-22:47:33 L CorporationService::Handle_GetRecruitmentAdRegistryData(): size= 0
-22:47:33 [SvcCall]   Call Arguments:
-22:47:33 [SvcCall]       Tuple: Empty
-22:47:33 [SvcCall]   Call Named Arguments:
-22:47:33 [SvcCall]     Argument 'machoVersion':
-22:47:33 [SvcCall]         Integer field: 1
-AttributeError: 'NoneType' object has no attribute 'types'
-
-      sLog.Log( "CorporationService::Handle_GetRecruitmentAdRegistryData()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
-*/
-  return NULL;
+  return nullptr;
 }
 
 PyResult CorporationService::Handle_IsEnemyFaction(PyCallArgs &call)
@@ -273,7 +277,7 @@ PyResult CorporationService::Handle_IsEnemyFaction(PyCallArgs &call)
       sLog.Log( "CorporationService::Handle_IsEnemyFaction()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult CorporationService::Handle_GetVoteCasesByCorporation(PyCallArgs &call) {
@@ -291,24 +295,15 @@ PyResult CorporationService::Handle_GetVoteCasesByCorporation(PyCallArgs &call) 
       sLog.Log( "CorporationService::Handle_GetVoteCasesByCorporation()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return nullptr;
 }
-
-PyResult CorporationService::Handle_MoveCorpHQHere(PyCallArgs &call)
-{
-      sLog.Log( "CorporationService::Handle_MoveCorpHQHere()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
-
-    return NULL;
-}
-
 
 PyResult CorporationService::Handle_AddCorporateContact(PyCallArgs &call)
 {
       sLog.Log( "CorporationService::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult CorporationService::Handle_GetRecentKillsAndLosses(PyCallArgs &call)
@@ -316,5 +311,5 @@ PyResult CorporationService::Handle_GetRecentKillsAndLosses(PyCallArgs &call)
       sLog.Log( "CorporationService::Handle_GetRecentKillsAndLosses()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return nullptr;
 }

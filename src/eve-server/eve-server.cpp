@@ -436,7 +436,7 @@ int main( int argc, char* argv[] )
     if (sConfig.npc.StaticSpawns)
         sLog.Success("    Static Spawns","Enabled.  Checks every %u minutes", sConfig.npc.StaticTimer);
     else
-        sLog.Warning("    Static Spawns","Disabled.");
+        sLog.Magenta("    Static Spawns","Disabled.");
     if (sConfig.npc.RoamingSpawns)
         sLog.Success("   Roaming Spawns","Enabled.  Checks every %u minutes", sConfig.npc.RoamingTimer);
     else

@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Captnoord
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -28,7 +29,6 @@
 #include "PyServiceCD.h"
 #include "market/ContractProxy.h"
 
-// crap
 PyCallable_Make_InnerDispatcher(ContractProxyService)
 
 ContractProxyService::ContractProxyService( PyServiceMgr *mgr )
@@ -37,10 +37,19 @@ ContractProxyService::ContractProxyService( PyServiceMgr *mgr )
 {
     _SetCallDispatcher(m_dispatch);
 
+    PyCallable_REG_CALL(ContractProxyService, GetContract);
+    PyCallable_REG_CALL(ContractProxyService, CreateContract);
+    PyCallable_REG_CALL(ContractProxyService, DeleteContract);
+    PyCallable_REG_CALL(ContractProxyService, AcceptContract);
     PyCallable_REG_CALL(ContractProxyService, GetLoginInfo);
     PyCallable_REG_CALL(ContractProxyService, SearchContracts);
+    PyCallable_REG_CALL(ContractProxyService, NumOutstandingContracts);
     PyCallable_REG_CALL(ContractProxyService, CollectMyPageInfo);
+    PyCallable_REG_CALL(ContractProxyService, GetItemsInStation);
+    PyCallable_REG_CALL(ContractProxyService, GetContractListForOwner);
     PyCallable_REG_CALL(ContractProxyService, GetMyExpiredContractList);
+    /*
+     */
 }
 
 ContractProxyService::~ContractProxyService()
@@ -48,73 +57,878 @@ ContractProxyService::~ContractProxyService()
     delete m_dispatch;
 }
 
+/** @todo  finally found good packet data for contract system.
+ * now just need to write it....
+ */
+
 PyResult ContractProxyService::Handle_SearchContracts(PyCallArgs &call) {
     /*
-ret = sm.ProxySvc('contractProxy').SearchContracts(itemTypes=itemTypes, itemTypeName=itemTypeName, itemCategoryID=itemCategoryID, itemGroupID=itemGroupID, contractType=contractType, securityClasses=securityClasses, locationID=locationID, endLocationID=endLocationID, issuerID=issuerID, minPrice=minPrice, maxPrice=maxPrice, minReward=minReward, maxReward=maxReward, minCollateral=minCollateral, maxCollateral=maxCollateral, minVolume=minVolume, maxVolume=maxVolume, excludeTrade=excludeTrade, excludeMultiple=excludeMultiple, excludeNoBuyout=excludeNoBuyout, availability=availability, description=description, searchHint=searchHint, sortBy=sortBy, sortDir=sortDir, startNum=startNum)
-contracts = ret.contracts
-numFound = ret.numFound
-searchTime = ret.searchTime
-maxResults = ret.maxResults
-
-
-AttributeError: 'NoneType' object has no attribute 'contracts'
+     * ret = sm.ProxySvc('contractProxy').SearchContracts(itemTypes=itemTypes, itemTypeName=itemTypeName, itemCategoryID=itemCategoryID, itemGroupID=itemGroupID, contractType=contractType, securityClasses=securityClasses, locationID=locationID, endLocationID=endLocationID, issuerID=issuerID, minPrice=minPrice, maxPrice=maxPrice, minReward=minReward, maxReward=maxReward, minCollateral=minCollateral, maxCollateral=maxCollateral, minVolume=minVolume, maxVolume=maxVolume, excludeTrade=excludeTrade, excludeMultiple=excludeMultiple, excludeNoBuyout=excludeNoBuyout, availability=availability, description=description, searchHint=searchHint, sortBy=sortBy, sortDir=sortDir, startNum=startNum)
+     * contracts = ret.contracts
+     * numFound = ret.numFound
+     * searchTime = ret.searchTime
+     * maxResults = ret.maxResults
+     *
+     *
+     * AttributeError: 'NoneType' object has no attribute 'contracts'
      */
 
+    /*  client call....
+     *
+        [PySubStream 359 bytes]
+          [PyTuple 4 items]
+            [PyInt 1]
+            [PyString "SearchContracts"]
+            [PyTuple 0 items]
+            [PyDict 27 kvp]
+              [PyString "itemTypeName"]
+              [PyNone]
+              [PyString "itemCategoryID"]
+              [PyNone]
+              [PyString "description"]
+              [PyNone]
+              [PyString "issuerID"]
+              [PyNone]
+              [PyString "excludeMultiple"]
+              [PyInt 0]
+              [PyString "minCollateral"]
+              [PyNone]
+              [PyString "excludeNoBuyout"]
+              [PyNone]
+              [PyString "securityClasses"]
+              [PyNone]
+              [PyString "maxVolume"]
+              [PyNone]
+              [PyString "endLocationID"]
+              [PyNone]
+              [PyString "maxCollateral"]
+              [PyNone]
+              [PyString "contractType"]
+              [PyInt 10]
+              [PyString "minPrice"]
+              [PyNone]
+              [PyString "availability"]
+              [PyInt 2]
+              [PyString "machoVersion"]
+              [PyInt 1]
+              [PyString "minReward"]
+              [PyNone]
+              [PyString "maxReward"]
+              [PyNone]
+              [PyString "minVolume"]
+              [PyNone]
+              [PyString "sortDir"]
+              [PyInt 0]
+              [PyString "searchHint"]
+              [PyNone]
+              [PyString "startNum"]
+              [PyInt 0]
+              [PyString "maxPrice"]
+              [PyNone]
+              [PyString "itemTypes"]
+              [PyNone]
+              [PyString "itemGroupID"]
+              [PyNone]
+              [PyString "locationID"]
+              [PyNone]
+              [PyString "excludeTrade"]
+              [PyNone]
+              [PyString "sortBy"]
+              [PyInt 0]
+
+    server return...
+        -- for zero results
+      [PySubStream 76 bytes]
+        [PyObjectData Name: util.KeyVal]
+          [PyDict 4 kvp]
+            [PyString "contracts"]
+            [PyList 0 items]
+            [PyString "numFound"]
+            [PyInt 0]
+            [PyString "searchTime"]
+            [PyIntegerVar 583232]
+            [PyString "maxResults"]
+            [PyInt 1000]
+        -- for a hit
+      [PySubStream 1176 bytes]
+        [PyObjectData Name: util.KeyVal]
+          [PyDict 4 kvp]
+            [PyString "contracts"]
+            [PyList 1 items]
+              [PyObjectData Name: util.KeyVal]
+                [PyDict 12 kvp]
+                  [PyString "securityClassEnd"]
+                  [PyNone]
+                  [PyString "startSolarSystemName"]
+                  [PyString "Outuni"]
+                  [PyString "items"]
+                  [PyList 2 items]
+                    [PyPackedRow 52 bytes]
+                      ["contractID" => <41239473> [I4]]
+                      ["itemID" => <1002299726681> [I8]]
+                      ["quantity" => <1> [I4]]
+                      ["itemTypeID" => <3732> [I4]]
+                      ["inCrate" => <1> [Bool]]
+                      ["parentID" => <0> [I8]]
+                      ["productivityLevel" => <0> [I4]]
+                      ["materialLevel" => <0> [I4]]
+                      ["copy" => <0> [Bool]]
+                      ["licensedProductionRunsRemaining" => <0> [I4]]
+                      ["damage" => <0> [R8]]
+                      ["flagID" => <0> [I2]]
+                    [PyPackedRow 52 bytes]
+                      ["contractID" => <41239473> [I4]]
+                      ["itemID" => <1002272878889> [I8]]
+                      ["quantity" => <6> [I4]]
+                      ["itemTypeID" => <3898> [I4]]
+                      ["inCrate" => <1> [Bool]]
+                      ["parentID" => <0> [I8]]
+                      ["productivityLevel" => <0> [I4]]
+                      ["materialLevel" => <0> [I4]]
+                      ["copy" => <0> [Bool]]
+                      ["licensedProductionRunsRemaining" => <0> [I4]]
+                      ["damage" => <0> [R8]]
+                      ["flagID" => <0> [I2]]
+                  [PyString "bids"]
+                  [PyList 0 items]
+                  [PyString "contract"]
+                  [PyPackedRow 142 bytes]
+                    ["contractID" => <41239473> [I4]]
+                    ["type" => <1> [UI1]]
+                    ["issuerID" => <649670823> [I4]]
+                    ["issuerCorpID" => <98038978> [I4]]
+                    ["forCorp" => <0> [Bool]]
+                    ["availability" => <1> [I4]]
+                    ["assigneeID" => <98038978> [I4]]
+                    ["acceptorID" => <0> [I4]]
+                    ["dateIssued" => <129494703690000000> [FileTime]]
+                    ["dateExpired" => <129495567690000000> [FileTime]]
+                    ["dateAccepted" => <129494703690000000> [FileTime]]
+                    ["numDays" => <0> [I4]]
+                    ["dateCompleted" => <129494703690000000> [FileTime]]
+                    ["startStationID" => <60006433> [I4]]
+                    ["startSolarSystemID" => <30000135> [I4]]
+                    ["startRegionID" => <10000002> [I4]]
+                    ["endStationID" => <60006433> [I4]]
+                    ["endSolarSystemID" => <0> [I4]]
+                    ["endRegionID" => <0> [I4]]
+                    ["price" => <150000000> [CY]]
+                    ["reward" => <0> [CY]]
+                    ["collateral" => <0> [CY]]
+                    ["title" => <my contract to Munich Lumberjacks> [WStr]]
+                    ["description" => <empty string> [WStr]]
+                    ["status" => <0> [UI1]]
+                    ["crateID" => <1002309375656> [I8]]
+                    ["volume" => <6.01> [R8]]
+                    ["issuerAllianceID" => <0> [I4]]
+                    ["issuerWalletKey" => <0> [I4]]
+                    ["acceptorWalletKey" => <0> [I4]]
+                  [PyString "itemGroups"]
+                  [PyObjectEx Normal]
+                    [PyTuple 2 items]
+                      [PyToken __builtin__.set]
+                      [PyTuple 1 items]
+                        [PyList 2 items]
+                          [PyInt 266]
+                          [PyInt 303]
+                  [PyString "securityClassStart"]
+                  [PyInt 2]
+                  [PyString "startConstellationID"]
+                  [PyInt 20000019]
+                  [PyString "endConstellationID"]
+                  [PyNone]
+                  [PyString "itemCategories"]
+                  [PyObjectEx Normal]
+                    [PyTuple 2 items]
+                      [PyToken __builtin__.set]
+                      [PyTuple 1 items]
+                        [PyList 2 items]
+                          [PyInt 16]
+                          [PyInt 20]
+                  [PyString "itemTypes"]
+                  [PyObjectEx Normal]
+                    [PyTuple 2 items]
+                      [PyToken __builtin__.set]
+                      [PyTuple 1 items]
+                        [PyList 2 items]
+                          [PyInt 3898]
+                          [PyInt 3732]
+                  [PyString "numBids"]
+                  [PyInt 0]
+            [PyString "numFound"]
+            [PyInt 1]
+            [PyString "searchTime"]
+            [PyIntegerVar 552645]
+            [PyString "maxResults"]
+            [PyInt 1000]
+              */
 
     sLog.Log( "ContractProxyService::Handle_SearchContracts()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return nullptr;
 }
+
+PyResult ContractProxyService::Handle_CreateContract(PyCallArgs &call) {
+    /*
+        [PySubStream 171 bytes]
+          [PyTuple 4 items]
+            [PyInt 1]
+            [PyString "CreateContract"]
+            [PyTuple 12 items]
+              [PyInt 1]
+              [PyBool True]
+              [PyInt 98038978]
+              [PyInt 1440]
+              [PyInt 0]
+              [PyIntegerVar 60006433]
+              [PyNone]
+              [PyInt 15000]
+              [PyInt 0]
+              [PyInt 0]
+              [PyString "my contract to Munich Lumberjacks"]
+              [PyString ""]
+            [PyDict 6 kvp]
+              [PyString "requestItemTypeList"]
+              [PyList 0 items]
+              [PyString "confirm"]
+              [PyNone]
+              [PyString "forCorp"]
+              [PyBool False]
+              [PyString "flag"]
+              [PyInt 4]
+              [PyString "itemList"]
+              [PyList 2 items]
+                [PyList 2 items]
+                  [PyIntegerVar 1002272878889]
+                  [PyInt 6]
+                [PyList 2 items]
+                  [PyIntegerVar 1002299726681]
+                  [PyInt 1]
+              [PyString "machoVersion"]
+              [PyInt 1]
+     */
+
+
+    sLog.Log( "ContractProxyService::Handle_CreateContract()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    // returns new contractID
+    return nullptr;
+}
+
+PyResult ContractProxyService::Handle_DeleteContract(PyCallArgs &call) {
+    //  sends contractID to delete
+    sLog.Log( "ContractProxyService::Handle_DeleteContract()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    /*
+            [PyString "DeleteContract"]
+            [PyTuple 1 items]
+              [PyInt 41239648]
+
+
+      [PySubStream 6 bytes]
+        [PyBool True]
+        */
+    return nullptr;
+}
+
+PyResult ContractProxyService::Handle_GetContract(PyCallArgs &call) {
+    /*
+      [PySubStream 1103 bytes]
+        [PyObjectData Name: util.KeyVal]
+          [PyDict 11 kvp]
+            [PyString "securityClassEnd"]
+            [PyNone]
+            [PyString "startSolarSystemName"]
+            [PyString "Outuni"]
+            [PyString "items"]
+            [PyList 2 items]
+              [PyPackedRow 52 bytes]
+                ["contractID" => <41239407> [I4]]
+                ["itemID" => <1002299726681> [I8]]
+                ["quantity" => <1> [I4]]
+                ["itemTypeID" => <3732> [I4]]
+                ["inCrate" => <1> [Bool]]
+                ["parentID" => <0> [I8]]
+                ["productivityLevel" => <0> [I4]]
+                ["materialLevel" => <0> [I4]]
+                ["copy" => <0> [Bool]]
+                ["licensedProductionRunsRemaining" => <0> [I4]]
+                ["damage" => <0> [R8]]
+                ["flagID" => <0> [I2]]
+              [PyPackedRow 52 bytes]
+                ["contractID" => <41239407> [I4]]
+                ["itemID" => <1002261932864> [I8]]
+                ["quantity" => <6> [I4]]
+                ["itemTypeID" => <3898> [I4]]
+                ["inCrate" => <1> [Bool]]
+                ["parentID" => <0> [I8]]
+                ["productivityLevel" => <0> [I4]]
+                ["materialLevel" => <0> [I4]]
+                ["copy" => <0> [Bool]]
+                ["licensedProductionRunsRemaining" => <0> [I4]]
+                ["damage" => <0> [R8]]
+                ["flagID" => <0> [I2]]
+            [PyString "bids"]
+            [PyList 0 items]
+            [PyString "contract"]
+            [PyPackedRow 142 bytes]
+              ["contractID" => <41239407> [I4]]
+              ["type" => <1> [UI1]]
+              ["issuerID" => <1661059544> [I4]]
+              ["issuerCorpID" => <98038978> [I4]]
+              ["forCorp" => <0> [Bool]]
+              ["availability" => <1> [I4]]
+              ["assigneeID" => <649670823> [I4]]
+              ["acceptorID" => <0> [I4]]
+              ["dateIssued" => <129494701600000000> [FileTime]]
+              ["dateExpired" => <129495565600000000> [FileTime]]
+              ["dateAccepted" => <129494701600000000> [FileTime]]
+              ["numDays" => <0> [I4]]
+              ["dateCompleted" => <129494701600000000> [FileTime]]
+              ["startStationID" => <60006433> [I4]]
+              ["startSolarSystemID" => <30000135> [I4]]
+              ["startRegionID" => <10000002> [I4]]
+              ["endStationID" => <60006433> [I4]]
+              ["endSolarSystemID" => <0> [I4]]
+              ["endRegionID" => <0> [I4]]
+              ["price" => <0> [CY]]
+              ["reward" => <100000000> [CY]]
+              ["collateral" => <0> [CY]]
+              ["title" => <this is a contract to Rhonin Caldera> [WStr]]
+              ["description" => <empty string> [WStr]]
+              ["status" => <0> [UI1]]
+              ["crateID" => <1002309350211> [I8]]
+              ["volume" => <6.01> [R8]]
+              ["issuerAllianceID" => <0> [I4]]
+              ["issuerWalletKey" => <0> [I4]]
+              ["acceptorWalletKey" => <0> [I4]]
+            [PyString "itemGroups"]
+            [PyObjectEx Normal]
+              [PyTuple 2 items]
+                [PyToken __builtin__.set]
+                [PyTuple 1 items]
+                  [PyList 2 items]
+                    [PyInt 266]
+                    [PyInt 303]
+            [PyString "securityClassStart"]
+            [PyInt 2]
+            [PyString "startConstellationID"]
+            [PyInt 20000019]
+            [PyString "endConstellationID"]
+            [PyNone]
+            [PyString "itemCategories"]
+            [PyObjectEx Normal]
+              [PyTuple 2 items]
+                [PyToken __builtin__.set]
+                [PyTuple 1 items]
+                  [PyList 2 items]
+                    [PyInt 16]
+                    [PyInt 20]
+            [PyString "itemTypes"]
+            [PyObjectEx Normal]
+              [PyTuple 2 items]
+                [PyToken __builtin__.set]
+                [PyTuple 1 items]
+                  [PyList 2 items]
+                    [PyInt 3898]
+                    [PyInt 3732]
+    [PyNone]
+    */
+
+    sLog.Log( "ContractProxyService::Handle_GetContract()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult ContractProxyService::Handle_AcceptContract(PyCallArgs &call) {
+    /*
+        [PyPackedRow 142 bytes]
+          ["contractID" => <41239407> [I4]]
+          ["type" => <1> [UI1]]
+          ["issuerID" => <1661059544> [I4]]
+          ["issuerCorpID" => <98038978> [I4]]
+          ["forCorp" => <0> [Bool]]
+          ["availability" => <1> [I4]]
+          ["assigneeID" => <649670823> [I4]]
+          ["acceptorID" => <0> [I4]]
+          ["dateIssued" => <129494701600000000> [FileTime]]
+          ["dateExpired" => <129495565600000000> [FileTime]]
+          ["dateAccepted" => <129494701600000000> [FileTime]]
+          ["numDays" => <0> [I4]]
+          ["dateCompleted" => <129494701600000000> [FileTime]]
+          ["startStationID" => <60006433> [I4]]
+          ["startSolarSystemID" => <30000135> [I4]]
+          ["startRegionID" => <10000002> [I4]]
+          ["endStationID" => <60006433> [I4]]
+          ["endSolarSystemID" => <0> [I4]]
+          ["endRegionID" => <0> [I4]]
+          ["price" => <0> [CY]]
+          ["reward" => <100000000> [CY]]
+          ["collateral" => <0> [CY]]
+          ["title" => <this is a contract to Rhonin Caldera> [WStr]]
+          ["description" => <empty string> [WStr]]
+          ["status" => <0> [UI1]]
+          ["crateID" => <1002309350211> [I8]]
+          ["volume" => <6.01> [R8]]
+          ["issuerAllianceID" => <0> [I4]]
+          ["issuerWalletKey" => <0> [I4]]
+          ["acceptorWalletKey" => <0> [I4]]
+
+
+==================== Sent from Server 81 bytes
+
+[PyObjectData Name: macho.Notification]
+  [PyTuple 6 items]
+    [PyInt 12]
+    [PyObjectData Name: macho.MachoAddress]
+      [PyTuple 4 items]
+        [PyInt 1]
+        [PyInt 699185]
+        [PyNone]
+        [PyNone]
+    [PyObjectData Name: macho.MachoAddress]
+      [PyTuple 4 items]
+        [PyInt 4]
+        [PyString "OnContractAccepted"]
+        [PyList 0 items]
+        [PyString "clientID"]
+    [PyInt 5894042]
+    [PyTuple 1 items]
+      [PyTuple 2 items]
+        [PyInt 0]
+        [PySubStream 15 bytes]
+          [PyTuple 2 items]
+            [PyInt 0]
+            [PyTuple 2 items]
+              [PyInt 1]
+              [PyTuple 1 items]
+                [PyInt 41239473]
+    [PyNone]
+
+
+     */
+
+
+    sLog.Log( "ContractProxyService::Handle_AcceptContract()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
 
 PyResult ContractProxyService::Handle_GetMyExpiredContractList(PyCallArgs &call) {
   sLog.Log( "ContractProxyService::Handle_GetMyExpiredContractList()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
+/*
+      [PySubStream 530 bytes]
+        [PyObjectData Name: util.KeyVal]
+          [PyDict 3 kvp]
+            [PyString "contracts"]
+            [PyObjectEx Type2]
+              [PyTuple 2 items]
+                [PyTuple 1 items]
+                  [PyToken dbutil.CRowset]
+                [PyDict 1 kvp]
+                  [PyString "header"]
+                  [PyObjectEx Normal]
+                    [PyTuple 2 items]
+                      [PyToken blue.DBRowDescriptor]
+                      [PyTuple 1 items]
+                        [PyTuple 28 items]
+                          [PyTuple 2 items]
+                            [PyString "contractID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "type"]
+                            [PyInt 17]
+                          [PyTuple 2 items]
+                            [PyString "issuerID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "issuerCorpID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "forCorp"]
+                            [PyInt 11]
+                          [PyTuple 2 items]
+                            [PyString "availability"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "assigneeID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "acceptorID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "dateIssued"]
+                            [PyInt 64]
+                          [PyTuple 2 items]
+                            [PyString "dateExpired"]
+                            [PyInt 64]
+                          [PyTuple 2 items]
+                            [PyString "dateAccepted"]
+                            [PyInt 64]
+                          [PyTuple 2 items]
+                            [PyString "numDays"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "dateCompleted"]
+                            [PyInt 64]
+                          [PyTuple 2 items]
+                            [PyString "startStationID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "startSolarSystemID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "startRegionID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "endStationID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "endSolarSystemID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "endRegionID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "price"]
+                            [PyInt 6]
+                          [PyTuple 2 items]
+                            [PyString "reward"]
+                            [PyInt 6]
+                          [PyTuple 2 items]
+                            [PyString "collateral"]
+                            [PyInt 6]
+                          [PyTuple 2 items]
+                            [PyString "title"]
+                            [PyInt 130]
+                          [PyTuple 2 items]
+                            [PyString "status"]
+                            [PyInt 17]
+                          [PyTuple 2 items]
+                            [PyString "volume"]
+                            [PyInt 5]
+                          [PyTuple 2 items]
+                            [PyString "issuerAllianceID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "issuerWalletKey"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "acceptorWalletKey"]
+                            [PyInt 3]
+            [PyString "items"]
+            [PyDict 0 kvp]
+            [PyString "bids"]
+            [PyDict 0 kvp]
+            */
+    return nullptr;
+}
 
-//AttributeError: 'NoneType' object has no attribute 'contracts'
-    return NULL;
+PyResult ContractProxyService::Handle_NumOutstandingContracts(PyCallArgs &call) {
+    sLog.Log( "ContractProxyService::Handle_NumOutstandingContracts()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    /*
+      [PySubStream 87 bytes]
+        [PyObjectData Name: util.KeyVal]
+          [PyDict 4 kvp]
+            [PyString "nonCorpForMyChar"]
+            [PyInt 0]
+            [PyString "myCorpTotal"]
+            [PyInt 0]
+            [PyString "nonCorpForMyCorp"]
+            [PyInt 0]
+            [PyString "myCharTotal"]
+            [PyInt 0]
+            */
+    return nullptr;
+}
+
+PyResult ContractProxyService::Handle_GetItemsInStation(PyCallArgs &call) {
+    sLog.Log( "ContractProxyService::Handle_GetItemsInStation()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    /*  client call
+            [PyString "GetItemsInStation"]
+            [PyTuple 2 items]
+              [PyInt 60014683]
+              [PyInt 0]
+
+        server return
+
+      [PySubStream 191 bytes]
+        [PyObjectEx Normal]
+          [PyTuple 2 items]
+            [PyToken __builtin__.set]
+            [PyTuple 1 items]
+              [PyList 1 items]
+                [PyPackedRow 36 bytes]
+                  ["itemID" => <1262502036> [I8]]
+                  ["typeID" => <24702> [I4]]
+                  ["ownerID" => <649670823> [I4]]
+                  ["locationID" => <60014683> [I8]]
+                  ["flagID" => <4> [I2]]
+                  ["quantity" => <-1> [I4]]
+                  ["groupID" => <419> [I2]]
+                  ["categoryID" => <6> [I2]]
+                  ["customInfo" => <None> [Str]]
+                  */
+    return nullptr;
 }
 
 PyResult ContractProxyService::Handle_CollectMyPageInfo(PyCallArgs &call) {
-  sLog.Log( "ContractProxyService::Handle_CollectMyPageInfo()", "size= %u", call.tuple->size() );
+    sLog.Log( "ContractProxyService::Handle_CollectMyPageInfo()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
+    /*
+     *      [PySubStream 279 bytes]
+     *        [PyObjectData Name: util.KeyVal]
+     *          [PyDict 11 kvp]
+     *            [PyString "numInProgressCorp"]
+     *            [PyInt 0]
+     *            [PyString "numRequiresAttention"]
+     *            [PyInt 0]
+     *            [PyString "numBiddingOn"]
+     *            [PyInt 0]
+     *            [PyString "numRequiresAttentionCorp"]
+     *            [PyInt 0]
+     *            [PyString "numInProgress"]
+     *            [PyInt 0]
+     *            [PyString "numBiddingOnCorp"]
+     *            [PyInt 0]
+     *            [PyString "numOutstandingContractsNonCorp"]
+     *            [PyInt 0]
+     *            [PyString "outstandingContracts"]
+     *            [PyList 0 items]
+     *            [PyString "numOutstandingContracts"]
+     *            [PyInt 0]
+     *            [PyString "numOutstandingContractsForCorp"]
+     *            [PyInt 0]
+     *            [PyString "numContractsLeftCorp"]
+     *            [PyInt 0]
+     */
+    return nullptr;
+}
 
-    return NULL;
+PyResult ContractProxyService::Handle_GetContractListForOwner(PyCallArgs &call) {
+    sLog.Log( "ContractProxyService::Handle_GetContractListForOwner()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    /*
+     *  client call....
+      [PyTuple 2 items]
+        [PyInt 0]
+        [PySubStream 73 bytes]
+          [PyTuple 4 items]
+            [PyInt 1]
+            [PyString "GetContractListForOwner"]
+            [PyTuple 4 items]
+              [PyInt 649670823]
+              [PyInt 0]
+              [PyNone]
+              [PyNone]
+            [PyDict 3 kvp]
+              [PyString "num"]
+              [PyInt 100]
+              [PyString "machoVersion"]
+              [PyInt 1]
+              [PyString "startContractID"]
+              [PyNone]
+
+        server reply...
+      [PySubStream 713 bytes]
+        [PyObjectData Name: util.KeyVal]
+          [PyDict 3 kvp]
+            [PyString "contracts"]
+            [PyObjectEx Type2]
+              [PyTuple 2 items]
+                [PyTuple 1 items]
+                  [PyToken dbutil.CRowset]
+                [PyDict 1 kvp]
+                  [PyString "header"]
+                  [PyObjectEx Normal]
+                    [PyTuple 2 items]
+                      [PyToken blue.DBRowDescriptor]
+                      [PyTuple 1 items]
+                        [PyTuple 30 items]
+                          [PyTuple 2 items]
+                            [PyString "contractID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "type"]
+                            [PyInt 17]
+                          [PyTuple 2 items]
+                            [PyString "issuerID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "issuerCorpID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "forCorp"]
+                            [PyInt 11]
+                          [PyTuple 2 items]
+                            [PyString "availability"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "assigneeID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "acceptorID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "dateIssued"]
+                            [PyInt 64]
+                          [PyTuple 2 items]
+                            [PyString "dateExpired"]
+                            [PyInt 64]
+                          [PyTuple 2 items]
+                            [PyString "dateAccepted"]
+                            [PyInt 64]
+                          [PyTuple 2 items]
+                            [PyString "numDays"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "dateCompleted"]
+                            [PyInt 64]
+                          [PyTuple 2 items]
+                            [PyString "startStationID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "startSolarSystemID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "startRegionID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "endStationID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "endSolarSystemID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "endRegionID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "price"]
+                            [PyInt 6]
+                          [PyTuple 2 items]
+                            [PyString "reward"]
+                            [PyInt 6]
+                          [PyTuple 2 items]
+                            [PyString "collateral"]
+                            [PyInt 6]
+                          [PyTuple 2 items]
+                            [PyString "title"]
+                            [PyInt 130]
+                          [PyTuple 2 items]
+                            [PyString "status"]
+                            [PyInt 17]
+                          [PyTuple 2 items]
+                            [PyString "volume"]
+                            [PyInt 5]
+                          [PyTuple 2 items]
+                            [PyString "issuerAllianceID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "issuerWalletKey"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "acceptorWalletKey"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "crateID"]
+                            [PyInt 20]
+                          [PyTuple 2 items]
+                            [PyString "contractID"]
+                            [PyInt 3]
+              [PyPackedRow 146 bytes]
+                ["contractID" => <41239648> [I4]]
+                ["type" => <1> [UI1]]
+                ["issuerID" => <649670823> [I4]]
+                ["issuerCorpID" => <98038978> [I4]]
+                ["forCorp" => <0> [Bool]]
+                ["availability" => <1> [I4]]
+                ["assigneeID" => <1661059544> [I4]]
+                ["acceptorID" => <0> [I4]]
+                ["dateIssued" => <129494707760000000> [FileTime]]
+                ["dateExpired" => <129495571760000000> [FileTime]]
+                ["dateAccepted" => <129494707760000000> [FileTime]]
+                ["numDays" => <0> [I4]]
+                ["dateCompleted" => <129494707760000000> [FileTime]]
+                ["startStationID" => <60006433> [I4]]
+                ["startSolarSystemID" => <30000135> [I4]]
+                ["startRegionID" => <10000002> [I4]]
+                ["endStationID" => <60006433> [I4]]
+                ["endSolarSystemID" => <0> [I4]]
+                ["endRegionID" => <0> [I4]]
+                ["price" => <150000000> [CY]]
+                ["reward" => <0> [CY]]
+                ["collateral" => <0> [CY]]
+                ["title" => <quafe!> [WStr]]
+                ["status" => <0> [UI1]]
+                ["volume" => <6> [R8]]
+                ["issuerAllianceID" => <0> [I4]]
+                ["issuerWalletKey" => <0> [I4]]
+                ["acceptorWalletKey" => <0> [I4]]
+                ["crateID" => <1002309425092> [I8]]
+                ["contractID" => <41239648> [I4]]
+            [PyString "items"]
+            [PyDict 1 kvp]
+              [PyInt 41239648]
+              [PyList 1 items]
+                [PyObjectData Name: util.Row]
+                  [PyDict 2 kvp]
+                    [PyString "header"]
+                    [PyList 3 items]
+                      [PyString "itemTypeID"]
+                      [PyString "quantity"]
+                      [PyString "inCrate"]
+                    [PyString "line"]
+                    [PyList 3 items]
+                      [PyInt 3898]
+                      [PyInt 6]
+                      [PyBool True]
+            [PyString "bids"]
+            [PyDict 0 kvp]
+     */
+    return nullptr;
 }
 
 PyResult ContractProxyService::Handle_GetLoginInfo(PyCallArgs &call)
 {
     // currently a stub as I need to redesign or change some sub systems for this.
 
-    PyDict* args = new PyDict;
-
     /* create needsAttention row descriptor */
     DBRowDescriptor *needsAttentionHeader = new DBRowDescriptor();
-    needsAttentionHeader->AddColumn( "contractID",   DBTYPE_I4);
-    needsAttentionHeader->AddColumn( "",             DBTYPE_I4);
-    CRowSet *needsAttention_rowset = new CRowSet( &needsAttentionHeader );
+        needsAttentionHeader->AddColumn( "contractID",   DBTYPE_I4);
+        needsAttentionHeader->AddColumn( "",             DBTYPE_I4);
 
     /* create inProgress row descriptor */
     DBRowDescriptor *inProgressHeader = new DBRowDescriptor();
-    inProgressHeader->AddColumn( "contractID",      DBTYPE_I4 );
-    inProgressHeader->AddColumn( "startStationID",  DBTYPE_I4 );
-    inProgressHeader->AddColumn( "endStationID",    DBTYPE_I4 );
-    inProgressHeader->AddColumn( "expires",         DBTYPE_FILETIME );
-    CRowSet *inProgress_rowset = new CRowSet( &inProgressHeader );
+        inProgressHeader->AddColumn( "contractID",      DBTYPE_I4 );
+        inProgressHeader->AddColumn( "startStationID",  DBTYPE_I4 );
+        inProgressHeader->AddColumn( "endStationID",    DBTYPE_I4 );
+        inProgressHeader->AddColumn( "expires",         DBTYPE_FILETIME );
 
     /* create assignedToMe row descriptor */
     DBRowDescriptor *assignedToMeHeader = new DBRowDescriptor();
-    assignedToMeHeader->AddColumn( "contractID",    DBTYPE_I4);
-    assignedToMeHeader->AddColumn( "issuerID",      DBTYPE_I4);
+        assignedToMeHeader->AddColumn( "contractID",    DBTYPE_I4);
+        assignedToMeHeader->AddColumn( "issuerID",      DBTYPE_I4);
+
+    CRowSet *needsAttention_rowset = new CRowSet( &needsAttentionHeader );
+    CRowSet *inProgress_rowset = new CRowSet( &inProgressHeader );
     CRowSet *assignedToMe_rowset = new CRowSet( &assignedToMeHeader );
 
-    args->SetItemString( "needsAttention",          needsAttention_rowset );
-    args->SetItemString( "inProgress",              inProgress_rowset );
-    args->SetItemString( "assignedToMe",            assignedToMe_rowset );
+    PyDict* args = new PyDict;
+        args->SetItemString( "needsAttention",          needsAttention_rowset );
+        args->SetItemString( "inProgress",              inProgress_rowset );
+        args->SetItemString( "assignedToMe",            assignedToMe_rowset );
 
-    PyObject* res = new PyObject( "util.KeyVal", args );
-
-    return res;
+    return new PyObject( "util.KeyVal", args );
 }
 
 /* Description
@@ -139,67 +953,67 @@ PyResult ContractProxyService::Handle_GetLoginInfo(PyCallArgs &call)
  * needsAttention contains contracts that need attention, its rather a way to make the journal blink. The
  * contracts off course are highlighted in the journal.
  *
-        PyClass
-          PyString:"util.KeyVal"
-          PyDict:3
-            dict["needsAttention"]=PyClass
-              PyTuple:2
-                itr[0]:PyTuple:1
-                  itr[0]:PyClass
-                    PyString:"dbutil.CRowset"
-                itr[1]:PyDict:1
-                  dict["header"]=PyClass
-                    PyTuple:2
-                      itr[0]:PyClass
-                        PyString:"blue.DBRowDescriptor"
-                      itr[1]:PyTuple:1
-                        itr[0]:PyTuple:2
-                          itr[0]:PyTuple:2
-                            itr[0]:"contractID"
-                            itr[1]:0x3
-                          itr[1]:PyTuple:2
-                            itr[0]:""
-                            itr[1]:0x3
-            dict["inProgress"]=PyClass
-              PyTuple:2
-                itr[0]:PyTuple:1
-                  itr[0]:PyClass
-                    PyString:"dbutil.CRowset"
-                itr[1]:PyDict:1
-                  dict["header"]=PyClass
-                    PyTuple:2
-                      itr[0]:PyClass
-                        PyString:"blue.DBRowDescriptor"
-                      itr[1]:PyTuple:1
-                        itr[0]:PyTuple:4
-                          itr[0]:PyTuple:2
-                            itr[0]:"contractID"
-                            itr[1]:0x3
-                          itr[1]:PyTuple:2
-                            itr[0]:"startStationID"
-                            itr[1]:0x3
-                          itr[2]:PyTuple:2
-                            itr[0]:"endStationID"
-                            itr[1]:0x3
-                          itr[3]:PyTuple:2
-                            itr[0]:"expires"
-                            itr[1]:0x40
-            dict["assignedToMe"]=PyClass
-              PyTuple:2
-                itr[0]:PyTuple:1
-                  itr[0]:PyClass
-                    PyString:"dbutil.CRowset"
-                itr[1]:PyDict:1
-                  dict["header"]=PyClass
-                    PyTuple:2
-                      itr[0]:PyClass
-                        PyString:"blue.DBRowDescriptor"
-                      itr[1]:PyTuple:1
-                        itr[0]:PyTuple:2
-                          itr[0]:PyTuple:2
-                            itr[0]:"contractID"
-                            itr[1]:0x3
-                          itr[1]:PyTuple:2
-                            itr[0]:"issuerID"
-                            itr[1]:0x3
+      [PySubStream 273 bytes]
+        [PyObjectData Name: util.KeyVal]
+          [PyDict 3 kvp]
+            [PyString "inProgress"]
+            [PyObjectEx Type2]
+              [PyTuple 2 items]
+                [PyTuple 1 items]
+                  [PyToken dbutil.CRowset]
+                [PyDict 1 kvp]
+                  [PyString "header"]
+                  [PyObjectEx Normal]
+                    [PyTuple 2 items]
+                      [PyToken blue.DBRowDescriptor]
+                      [PyTuple 1 items]
+                        [PyTuple 4 items]
+                          [PyTuple 2 items]
+                            [PyString "contractID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "startStationID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "endStationID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "expires"]
+                            [PyInt 64]
+            [PyString "needsAttention"]
+            [PyObjectEx Type2]
+              [PyTuple 2 items]
+                [PyTuple 1 items]
+                  [PyToken dbutil.CRowset]
+                [PyDict 1 kvp]
+                  [PyString "header"]
+                  [PyObjectEx Normal]
+                    [PyTuple 2 items]
+                      [PyToken blue.DBRowDescriptor]
+                      [PyTuple 1 items]
+                        [PyTuple 2 items]
+                          [PyTuple 2 items]
+                            [PyString "contractID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString ""]
+                            [PyInt 3]
+            [PyString "assignedToMe"]
+            [PyObjectEx Type2]
+              [PyTuple 2 items]
+                [PyTuple 1 items]
+                  [PyToken dbutil.CRowset]
+                [PyDict 1 kvp]
+                  [PyString "header"]
+                  [PyObjectEx Normal]
+                    [PyTuple 2 items]
+                      [PyToken blue.DBRowDescriptor]
+                      [PyTuple 1 items]
+                        [PyTuple 2 items]
+                          [PyTuple 2 items]
+                            [PyString "contractID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "issuerID"]
+                            [PyInt 3]
 */

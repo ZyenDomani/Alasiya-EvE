@@ -114,7 +114,7 @@
       <raw name="order" />
       <!-- Reason: Add or Expiry (probably a "Change" or something too) -->
       <string name="reason" />
-        <bool name="isCorp" />
+      <bool name="isCorp" />
     </tupleInline>
   </elementDef>
 

@@ -43,6 +43,7 @@ protected:
 
     PyCallable_DECL_CALL(GetPublicInfo);
     PyCallable_DECL_CALL(GetPublicInfo3);
+    PyCallable_DECL_CALL(GetPrivateInfo);
     PyCallable_DECL_CALL(AddToBounty);
     PyCallable_DECL_CALL(GetTopBounties);
     PyCallable_DECL_CALL(AddOwnerNote);

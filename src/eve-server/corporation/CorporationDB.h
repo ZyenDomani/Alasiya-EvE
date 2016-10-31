@@ -39,16 +39,17 @@ class CorporationDB
 : public ServiceDB
 {
 public:
+    PyRep *GetCorporations(uint32 corpID);
     PyObject *GetCorporation(uint32 corpID);
-    PyObject *GetCorporations(uint32 corpID);
     PyObject *GetStations(uint32 corpID);
-    PyObject *GetEveOwners();
+    PyObject *GetEveOwners(uint32 corpID);
 
     PyRep *GetMyApplications(uint32 charID);
     PyRep *GetApplications(uint32 corpID);
     PyRep *GetMyShares(uint32 charID);
     PyObject *GetEmploymentRecord(uint32 charID);
     PyObject *GetMedalsReceived(uint32 charID);
+    PyObject *GetMedalDetails(uint32 medalID);
 
     PyObject *ListCorpStations(uint32 corp_id);
 
@@ -93,9 +94,6 @@ public:
     bool UpdateCorporation(uint32 corpID, const Call_UpdateCorporation & upd, PyDict * notif);
     bool UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDict * notif);
 
-    PyDict* GetBookmarks(uint32 corporationID);
-
-protected:
 };
 
 #endif

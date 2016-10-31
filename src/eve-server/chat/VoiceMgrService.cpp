@@ -49,4 +49,18 @@ PyResult VoiceMgrService::Handle_VoiceEnabled(PyCallArgs &call) {
     return(new PyInt(0));
 }
 
+/*
+        [PySubStream 27 bytes]
+          [PyTuple 4 items]
+            [PyInt 1]
+            [PyString "GetPassword"]
+            [PyTuple 0 items]
+            [PyDict 1 kvp]
+              [PyString "machoVersion"]
+              [PyInt 1]
+
+      [PySubStream 30 bytes]
+        [PyString "5B738A603AE44313A696451"]
+
+*/
 

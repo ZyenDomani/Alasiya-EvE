@@ -71,7 +71,7 @@ PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
 	if(!sDatabase.RunQuery(res, "SELECT locationID AS stationID, COUNT(itemID) as itemCount FROM entity WHERE ownerID=%d AND flag=4 GROUP BY locationID", m_characterID))
 	{
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-		return NULL;
+		return nullptr;
 	}
 	return(DBResultToCRowset(res));
 }
@@ -104,7 +104,7 @@ PyResult CharMgrBound::Handle_ListStationItems( PyCallArgs& call )
 		, m_characterID, locationID))
 	{
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-		return NULL;
+		return nullptr;
 	}
 	return(DBResultToCRowset(res));
 }
@@ -119,6 +119,7 @@ CharMgrService::CharMgrService(PyServiceMgr *mgr)
 
     PyCallable_REG_CALL(CharMgrService, GetPublicInfo);
     PyCallable_REG_CALL(CharMgrService, GetPublicInfo3);
+    PyCallable_REG_CALL(CharMgrService, GetPrivateInfo);
     PyCallable_REG_CALL(CharMgrService, GetTopBounties);
     PyCallable_REG_CALL(CharMgrService, AddToBounty);
     PyCallable_REG_CALL(CharMgrService, GetContactList);
@@ -165,7 +166,7 @@ PyBoundObject *CharMgrService::_CreateBoundObject(Client *c, const PyRep *bind_a
     PyRep *t = bind_args->Clone();
     if(!args.Decode(&t)) {
         _log(SERVICE__ERROR, "%s: Failed to decode bind object params.", GetName());
-        return NULL;
+        return nullptr;
     }
 
 	return(new CharMgrBound(m_manager, args.arg1));
@@ -212,8 +213,8 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
     //takes a single int arg: char id or corp id
     Call_SingleIntegerArg args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
 
     /*if(IsAgent(args.arg)) {
@@ -221,7 +222,7 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
         PyRep *result = m_db.GetAgentPublicInfo(args.arg);
         if(result == NULL) {
             codelog(CLIENT__ERROR, "%s: Failed to find agent %u", call.client->GetName(), args.arg);
-            return NULL;
+            return nullptr;
         }
         return result;
     }*/
@@ -242,12 +243,12 @@ PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
     Call_TwoIntegerArgs args;
     if( !args.Decode( &call.tuple ) )  {
         codelog( SERVICE__ERROR, "Unable to decode arguments for CharMgrService::Handle_AddToBounty from '%s'", call.client->GetName() );
-        return NULL;
+        return nullptr;
     }
 
 	if (call.client->GetCharacterID() == args.arg1){
 	    call.client->SendErrorMsg("You cannot put a bounty on yourself.");
-		return NULL;
+		return nullptr;
 	}
 
     if(call.client->GetChar()->AlterBalance(-args.arg2))
@@ -291,9 +292,16 @@ PyResult CharMgrService::Handle_GetRecentShipKillsAndLosses( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_GetFactions( PyCallArgs& call )
 {
-  sLog.Log( "CharMgrService::Handle_GetFactions()", "size= %u", call.tuple->size() );
+    sLog.Log( "CharMgrService::Handle_GetFactions()", "size= %u", call.tuple->size() );
 
-    return NULL;
+    return nullptr;
+}
+
+PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
+{
+    sLog.Log( "CharMgrService::Handle_GetPrivateInfo()", "size= %u", call.tuple->size() );
+
+    return nullptr;
 }
 
 PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
@@ -312,33 +320,25 @@ PLAYER_STATUS_AFK = 1
 23:48:39 [SvcCall]       Tuple: 2 elements
 23:48:39 [SvcCall]         [ 0] Integer field: 1
 23:48:39 [SvcCall]         [ 1] Integer field: 601  << AFK_SECONDS == 600 (5 mins)
+
 00:32:47 [SvcCall]       Tuple: 2 elements
 00:32:47 [SvcCall]         [ 0] Integer field: 0
 00:32:47 [SvcCall]         [ 1] Integer field: 3249 << seconds away
 
+  */
 
-  sLog.Log( "CharMgrService::Handle_SetActivityStatus()", "size= %u, 0=%s, 1=%s",
-            call.tuple->size(), call.tuple->GetItem(0)->TypeString(), call.tuple->GetItem(1)->TypeString());
+    sLog.Log( "CharMgrService::Handle_SetActivityStatus()", "size= %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     Call_TwoIntegerArgs args;
-  if(!args.Decode(&call.tuple)) {
-      codelog(CLIENT__ERROR, "Invalid arguments");
-      return NULL;
-  }
-*/
-  /** @todo  this shit STILL doesnt work right....
- * 19:35:56[33;01m W [37;01mSetActivityStatus: [33;01mPlayer lee(140000277) AFK:1394629996, time:17556784.
- *   variables here are uninitialilzed...no fuckin clue why....
-    uint8 status = call.tuple->GetItem(0)->AsInt()->value();
-    uint32 seconds = call.tuple->GetItem(1)->AsInt()->value();
+    if(!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "Invalid arguments");
+        return nullptr;
+    }
 
-  sLog.Warning("SetActivityStatus", "Player %s(%u) AFK:%i, time:%i.",
-               call.client->GetName(), call.client->GetID()),
-               status, seconds ;
-*/
+    sLog.Warning("SetActivityStatus", "Player %s(%u) AFK:%i, time:%i.", call.client->GetName(), call.client->GetCharacterID()), args.arg1, args.arg2 ;
 
-    return new PyInt( 0 );
+    return new PyNone();
 }
 
 PyResult CharMgrService::Handle_GetSettingsInfo( PyCallArgs& call ) {
@@ -362,16 +362,100 @@ PyResult CharMgrService::Handle_GetSettingsInfo( PyCallArgs& call ) {
  res->items[ 1 ] = new PyInt( 0 );
  return res;
  */
-  return NULL;
+  return nullptr;
 }
 
 //  this is a return call from client after GetSettingsInfo
 PyResult CharMgrService::Handle_LogSettings( PyCallArgs& call ) {
   /*
+    [PyTuple 1 items]
+      [PyTuple 2 items]
+        [PyInt 0]
+        [PySubStream 734 bytes]
+          [PyTuple 4 items]
+            [PyInt 1]
+            [PyString "LogSettings"]
+            [PyTuple 1 items]
+              [PyDict 36 kvp]
+                [PyString "locale"]
+                [PyString "en_US"]
+                [PyString "shadowquality"]
+                [PyInt 1]
+                [PyString "video_vendorid"]
+                [PyIntegerVar 4318]
+                [PyString "dronemodelsenabled"]
+                [PyInt 1]
+                [PyString "loadstationenv2"]
+                [PyInt 1]
+                [PyString "video_deviceid"]
+                [PyIntegerVar 3619]
+                [PyString "camerashakesenabled"]
+                [PyInt 1]
+                [PyString "interiorshaderquality"]
+                [PyInt 0]
+                [PyString "presentation_interval"]
+                [PyInt 1]
+                [PyString "windowed_resolution"]
+                [PyString "1440x900"]
+                [PyString "explosioneffectssenabled"]
+                [PyInt 1]
+                [PyString "uiscalingfullscreen"]
+                [PyFloat 1]
+                [PyString "lod"]
+                [PyInt 1]
+                [PyString "audioenabled"]
+                [PyInt 1]
+                [PyString "voiceenabled"]
+                [PyInt 1]
+                [PyString "autodepth_stencilformat"]
+                [PyInt 75]
+                [PyString "hdrenabled"]
+                [PyInt 1]
+                [PyString "backbuffer_format"]
+                [PyInt 22]
+                [PyString "effectssenabled"]
+                [PyInt 1]
+                [PyString "breakpadUpload"]
+                [PyInt 1]
+                [PyString "windowed"]
+                [PyBool True]
+                [PyString "transgaming"]
+                [PyBool False]
+                [PyString "missilesenabled"]
+                [PyInt 1]
+                [PyString "sunocclusion"]
+                [PyInt 1]
+                [PyString "optionalupgrade"]
+                [PyInt 0]
+                [PyString "uiscalingwindowed"]
+                [PyFloat 1]
+                [PyString "textureqality"]
+                [PyInt 0]
+                [PyString "interiorgraphicsquality"]
+                [PyInt 0]
+                [PyString "antialiasing"]
+                [PyInt 2]
+                [PyString "defaultDockingView"]
+                [PyString "hangar"]
+                [PyString "turretsenabled"]
+                [PyInt 1]
+                [PyString "advancedcamera"]
+                [PyInt 0]
+                [PyString "postprocessing"]
+                [PyInt 1]
+                [PyString "fixedwindow"]
+                [PyBool False]
+                [PyString "shaderquality"]
+                [PyInt 3]
+                [PyString "fullscreen_resolution"]
+                [PyString "1440x900"]
+            [PyDict 1 kvp]
+              [PyString "machoVersion"]
+              [PyInt 1]
     */
   sLog.Log( "CharMgrService::Handle_GetSettingsInfo()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
- return NULL;
+ return nullptr;
 }
 
 PyResult CharMgrService::Handle_GetCharacterDescription(PyCallArgs &call)
@@ -379,15 +463,15 @@ PyResult CharMgrService::Handle_GetCharacterDescription(PyCallArgs &call)
     //takes characterID
     Call_SingleIntegerArg args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Invalid arguments");
-        return NULL;
+        codelog(SERVICE__ERROR, "Invalid arguments");
+        return nullptr;
     }
 
     m_manager->item_factory->SetUsingClient(call.client);
     CharacterRef c = m_manager->item_factory->GetCharacter(args.arg);
     if( !c ) {
         _log(CLIENT__ERROR, "GetCharacterDescription failed to load character %u.", args.arg);
-        return NULL;
+        return nullptr;
     }
 
     return new PyString(c->description());
@@ -398,18 +482,18 @@ PyResult CharMgrService::Handle_SetCharacterDescription(PyCallArgs &call)
     //takes WString of bio
     Call_SingleWStringSoftArg args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Invalid arguments");
-        return NULL;
+        codelog(SERVICE__ERROR, "Invalid arguments");
+        return nullptr;
     }
 
     CharacterRef c = call.client->GetChar();
     if( !c ) {
         _log(CLIENT__ERROR, "SetCharacterDescription called with no char!");
-        return NULL;
+        return nullptr;
     }
     c->SetDescription(args.arg.c_str());
 
-    return NULL;
+    return nullptr;
 }
 
 //17:09:10 L CharMgrService::Handle_GetNote(): size= 1
@@ -429,8 +513,8 @@ PyResult CharMgrService::Handle_SetNote(PyCallArgs &call)
 {
     Call_SetNote args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Invalid arguments");
-        return NULL;
+        codelog(SERVICE__ERROR, "Invalid arguments");
+        return nullptr;
     }
 
     m_db.SetNote(call.client->GetCharacterID(), args.itemID, args.note.c_str());
@@ -467,7 +551,7 @@ PyResult CharMgrService::Handle_AddOwnerNote( PyCallArgs& call ) {
   sLog.Log( "CharMgrService::Handle_AddOwnerNote()", "size=%u ", call.tuple->size());
   call.Dump(SERVICE__CALL_DUMP);
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -513,7 +597,7 @@ PyResult CharMgrService::Handle_GetOwnerNote(PyCallArgs &call)
 
     sLog.Log( "CharMgrService::Handle_GetOwnerNote()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
-    return NULL;
+    return nullptr;
     //return m_db.GetOwnerNote(call.client->GetCharacterID());
 }
 
@@ -593,7 +677,7 @@ PyResult CharMgrService::Handle_AddContact( PyCallArgs& call )
   call.Dump(SERVICE__CALL_DUMP);
 
   // make db call to save contact.  will have to find the call to get contact list....
-  return NULL;
+  return nullptr;
 }
 
 PyResult CharMgrService::Handle_EditContact( PyCallArgs& call )
@@ -601,7 +685,7 @@ PyResult CharMgrService::Handle_EditContact( PyCallArgs& call )
   sLog.Log( "CharMgrService::Handle_EditContact()", "size=%u ", call.tuple->size());
   call.Dump(SERVICE__CALL_DUMP);
 
-  return NULL;
+  return nullptr;
 }
 
 PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
@@ -612,7 +696,7 @@ PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
 //AttributeError: 'NoneType' object has no attribute 'values'
 //AttributeError: 'NoneType' object has no attribute 'itervalues'
 
-  return NULL;
+  return nullptr;
 }
 
 PyResult CharMgrService::Handle_CreateLabel( PyCallArgs& call )
@@ -620,7 +704,7 @@ PyResult CharMgrService::Handle_CreateLabel( PyCallArgs& call )
   sLog.Log( "CharMgrService::Handle_CreateLabel()", "size=%u ", call.tuple->size());
   call.Dump(SERVICE__CALL_DUMP);
 
-  return NULL;
+  return nullptr;
 }
 
 PyResult CharMgrService::Handle_DeleteContacts( PyCallArgs& call )
@@ -631,7 +715,7 @@ PyResult CharMgrService::Handle_DeleteContacts( PyCallArgs& call )
   sLog.Log( "CharMgrService::Handle_DeleteContacts()", "size=%u ", call.tuple->size());
   call.Dump(SERVICE__CALL_DUMP);
 
-  return NULL;
+  return nullptr;
 }
 
 PyResult CharMgrService::Handle_BlockOwners( PyCallArgs& call )
@@ -642,7 +726,7 @@ PyResult CharMgrService::Handle_BlockOwners( PyCallArgs& call )
   sLog.Log( "CharMgrService::Handle_BlockOwners()", "size=%u ", call.tuple->size());
   call.Dump(SERVICE__CALL_DUMP);
 
-  return NULL;
+  return nullptr;
 }
 
 PyResult CharMgrService::Handle_UnblockOwners( PyCallArgs& call )
@@ -653,7 +737,7 @@ PyResult CharMgrService::Handle_UnblockOwners( PyCallArgs& call )
   sLog.Log( "CharMgrService::Handle_UnblockOwners()", "size=%u ", call.tuple->size());
   call.Dump(SERVICE__CALL_DUMP);
 
-  return NULL;
+  return nullptr;
 }
 
 PyResult CharMgrService::Handle_EditContactsRelationshipID( PyCallArgs& call )
@@ -664,7 +748,7 @@ PyResult CharMgrService::Handle_EditContactsRelationshipID( PyCallArgs& call )
   sLog.Log( "CharMgrService::Handle_EditContactsRelationshipID()", "size=%u ", call.tuple->size());
   call.Dump(SERVICE__CALL_DUMP);
 
-  return NULL;
+  return nullptr;
 }
 
 PyResult CharMgrService::Handle_GetImageServerLink( PyCallArgs& call )
@@ -672,7 +756,7 @@ PyResult CharMgrService::Handle_GetImageServerLink( PyCallArgs& call )
     //  serverLink = sm.RemoteSvc('charMgr').GetImageServerLink()
     sLog.Log( "CharMgrService::Handle_GetImageServerLink()", "size=%u ", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
-  return NULL;
+  return nullptr;
 }
 
 PyResult CharMgrService::Handle_GetPaperdollState( PyCallArgs& call )

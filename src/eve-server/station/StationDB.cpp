@@ -65,7 +65,7 @@ PyPackedRow *StationDB::GetSolarSystem(uint32 solarSystemID) {
         return NULL;
     }
 
-    return(DBRowToPackedRow(row));
+    return DBRowToPackedRow(row);
 }
 
 /*

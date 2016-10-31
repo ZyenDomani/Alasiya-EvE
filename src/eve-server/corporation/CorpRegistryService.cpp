@@ -38,7 +38,7 @@ class CorpRegistryBound
 public:
     PyCallable_Make_Dispatcher(CorpRegistryBound)
 
-    CorpRegistryBound(PyServiceMgr *mgr, CorporationDB& db)
+    CorpRegistryBound(PyServiceMgr *mgr, CorporationDB& db, uint32 corpID)
     : PyBoundObject(mgr),
       m_db(db),
       m_dispatch(new Dispatcher(this))
@@ -77,6 +77,7 @@ public:
         PyCallable_REG_CALL(CorpRegistryBound, PayoutDividend);
         PyCallable_REG_CALL(CorpRegistryBound, GetVoteCasesByCorporation);
 
+        m_corpID = corpID;
 
     }
     virtual ~CorpRegistryBound() { delete m_dispatch; }
@@ -122,6 +123,8 @@ protected:
     CorporationDB& m_db;
 
     Dispatcher *const m_dispatch;
+
+    uint32 m_corpID;
 };
 
 class SparseCorpOfficeListBound
@@ -166,7 +169,6 @@ CorpRegistryService::CorpRegistryService(PyServiceMgr *mgr)
 {
     _SetCallDispatcher(m_dispatch);
 
-    //PyCallable_REG_CALL(CorpRegistryService, GetEveOwners)
     PyCallable_REG_CALL(CorpRegistryService, GetSuggestedAllianceShortNames);
     PyCallable_REG_CALL(CorpRegistryService, CreateAlliance);
     PyCallable_REG_CALL(CorpRegistryService, ApplyToJoinAlliance);
@@ -178,18 +180,24 @@ CorpRegistryService::~CorpRegistryService() {
     delete m_dispatch;
 }
 
-PyBoundObject* CorpRegistryService::_CreateBoundObject( Client* c, const PyRep* bind_args )
+PyBoundObject* CorpRegistryService::_CreateBoundObject( Client* pClient, const PyRep* bind_args )
 {
     _log( CLIENT__MESSAGE, "CorpRegistryService bind request for:" );
     bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
+
     /*
      * 18:20:14 [ClientMessage] CorpRegistryService bind request for:
      * 18:20:14 [ClientMessage]     Tuple: 2 elements
      * 18:20:14 [ClientMessage]       [ 0] Integer field: 1000170
      * 18:20:14 [ClientMessage]       [ 1] Integer field: 1
      */
+    if (!bind_args->IsTuple()){
+        sLog.Error( "CorpRegistryService::_CreateBoundObject", "%s: bind_args is not tuple: '%s'. ", pClient->GetName(), bind_args->TypeString() );
+        pClient->SendErrorMsg("Could not bind object for Corp Registry.  Ref: ServerError 02808.");
+        return nullptr;
+    }
 
-    return new CorpRegistryBound( m_manager, m_db );
+    return new CorpRegistryBound( m_manager, m_db, bind_args->AsTuple()->GetItem(0)->AsInt()->value());
 }
 
 PyResult CorpRegistryService::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
@@ -214,7 +222,13 @@ PyResult CorpRegistryService::Handle_DeleteAllianceApplication(PyCallArgs &call)
 
 
 PyResult CorpRegistryBound::Handle_GetEveOwners(PyCallArgs &call) {
-    return (m_db.GetEveOwners());
+    /* this is a method-chaining call.
+     * it comes with the bind request for a particular corp.
+     *
+     * the client wants a member list for given corp
+     *
+     */
+    return m_db.GetEveOwners(m_corpID);
 }
 
 PyResult CorpRegistryBound::Handle_GetInfoWindowDataForChar( PyCallArgs& call )
@@ -241,7 +255,7 @@ PyResult CorpRegistryBound::Handle_GetCorporations(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "Bad incoming params.");
         return NULL;
     }
-    return(m_db.GetCorporations(arg.arg));
+    return m_db.GetCorporations(arg.arg);
 }
 
 PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
@@ -249,39 +263,39 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
 
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
-        return(new PyInt(0));
+        return nullptr;
     }
 
     //first make sure the char can even afford it.
     int32 corp_cost = sConfig.rates.corpCost;
 
-    if(call.client->GetBalance() < double(corp_cost)) {
+    if (call.client->GetBalance() < corp_cost) {
         _log(SERVICE__ERROR, "%s: Cannot afford corporation startup costs!", call.client->GetName());
-        return(new PyInt(0));
+        return nullptr;
+    }
+
+    //take the money out of their wallet (sends wallet blink event)
+    // The amount has to be double!!!
+    if (!call.client->AddBalance(-corp_cost)) {
+        codelog(SERVICE__ERROR, "%s: Failed to take money for corp startup!", call.client->GetName());
     }
 
     // Register new corp
     uint32 corpID;
     if (!m_db.AddCorporation(args, call.client->GetCharacterID(), call.client->GetStationID(), corpID)) {
         codelog(SERVICE__ERROR, "New corporation creation failed...");
-        return (new PyInt(0));
+        // return monies?
+        return nullptr;
     }
     //adding a corporation might affect eveStaticOwners, so we gotta invalidate the cache...
     PyString* cache_name = new PyString( "config.StaticOwners" );
     m_manager->cache_service->InvalidateCache( cache_name );
     PySafeDecRef( cache_name );
 
-    //take the money out of their wallet (sends wallet blink event)
-    // The amount has to be double!!!
-    if(!call.client->AddBalance(double(-corp_cost))) {
-        codelog(SERVICE__ERROR, "%s: Failed to take money for corp startup!", call.client->GetName());
-        //TODO: do something? I don't wanna deal with deleting the corp right now...
-    }
-
     //record the transaction in their journal.
     std::string reason = "Creating new corporation: ";
     reason += args.corpName;
-    if(!m_db.GiveCash(
+    if (!m_db.GiveCash(
         call.client->GetCharacterID(),
         refCorporationRegistrationFee,
         call.client->GetCharacterID(),  //eve system
@@ -295,7 +309,6 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         )
     ) {
         codelog(CLIENT__ERROR, "Failed to record corp creation transaction.");
-        //no good reason to return... the money has actually been moved.
     }
 
     uint32 location = call.client->GetLocationID();
@@ -307,7 +320,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "Failed to create OnCorpChanged notification stream.");
         // This is a big problem, because this way we won't be able to see the difference...
         call.client->SendErrorMsg("Unable to notify about corp creation. Try logging in again.");
-        return (new PyInt(0));
+        return nullptr;
     }
     PyTuple* a1 = cc.Encode();
     PyTuple* a2 = cc.Encode();
@@ -316,15 +329,15 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
 
     // Set char's roles in corp
     CorpData roles;
-    roles.corpAccountKey = accountingKeyCash;
-    roles.corpRole = corpRoleAll;
-    roles.rolesAtAll = corpRoleAll;
-    roles.rolesAtBase = corpRoleAll;
-    roles.rolesAtHQ = corpRoleAll;
-    roles.rolesAtOther = corpRoleAll;
+        roles.corpAccountKey = accountingKeyCash;
+        roles.corpRole = corpRoleAll;
+        roles.rolesAtAll = corpRoleAll;
+        roles.rolesAtBase = corpRoleAll;
+        roles.rolesAtHQ = corpRoleAll;
+        roles.rolesAtOther = corpRoleAll;
 
     //loads up roles and alters session.
-    if(!JoinCorporation(call.client, corpID, roles)) {
+    if (!JoinCorporation(call.client, corpID, roles)) {
         codelog(CLIENT__ERROR, "Failed to force char '%s' to join new corporation %u. This will be interesting.", call.client->GetName(), corpID);
         return (new PyInt(0));
     }
@@ -334,14 +347,14 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
      *
      *  INSERT INTO cacheOwners(ownerID, ownerName, typeID, ownerNameID) VALUES   corporationID, corporationName, 2, 0
      */
-    return (new PyInt(corpID));
+    return m_db.GetCorporations(corpID);
 }
 
 bool CorpRegistryBound::JoinCorporation(Client *who, uint32 newCorpID, const CorpData &roles) {
 
 	who->GetChar()->JoinCorporation(newCorpID, roles);
 
-    who->JoinCorporationUpdate(newCorpID);
+    //who->JoinCorporationUpdate(newCorpID);
     return true;
 }
 
@@ -490,11 +503,36 @@ PyResult CorpRegistryBound::Handle_GetOffices(PyCallArgs &call) {
 
     PyBoundObject *bObj;
     bObj = new SparseCorpOfficeListBound(m_manager, m_db);
-    if(bObj == NULL) {
+    if (bObj == NULL) {
         _log(SERVICE__ERROR, "%s: Unable to create bound object for:", call.client->GetName()); //errors here
         return NULL;
     }
 
+    /*
+    [PyTuple 1 items]
+      [PySubStream 114 bytes]
+        [PyObjectData Name: util.SparseRowset]
+          [PyTuple 3 items]
+            [PyList 4 items]
+              [PyString "stationID"]
+              [PyString "typeID"]
+              [PyString "officeID"]
+              [PyString "officeFolderID"]
+            [PySubStruct]
+              [PySubStream 50 bytes]
+                [PyTuple 3 items]
+                  [PyString "N=789442:2172"]
+                  [PyDict 1 kvp]
+                    [PyString "realRowCount"]
+                    [PyInt 8]
+                  [PyIntegerVar 129753802088805346]
+            [PyInt 8]
+    [PyDict 1 kvp]
+      [PyString "OID+"]
+      [PyDict 1 kvp]
+        [PyString "N=789442:2172"]
+        [PyIntegerVar 129753802088805346]
+        */
     CorpOfficeSparseRowset ret;
 
     //now we register
@@ -703,7 +741,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
         ApplicationInfo invalidInfo(false);
         OCAC.charID = args.charID;
         OCAC.corpID = call.client->GetCorporationID();
-        if(!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
+        if (!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
             codelog(SERVICE__ERROR, "%s: Failed to query application for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
             return NULL;
         }
@@ -711,7 +749,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
         newInfo.status = crpApplicationRejectedByCorporation;
         newInfo.lastCID = call.client->GetCharacterID();
 
-        if(!m_db.UpdateApplication(newInfo)) {
+        if (!m_db.UpdateApplication(newInfo)) {
             codelog(SERVICE__ERROR, "%s: Failed to update application", call.client->GetName());
             return NULL;
         }
@@ -739,7 +777,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
         ApplicationInfo oldInfo(true);
         OCAC.charID = args.charID;
         OCAC.corpID = call.client->GetCorporationID();
-        if(!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
+        if (!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
             codelog(SERVICE__ERROR, "%s: Failed to query application info for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
             return NULL;
         }
@@ -747,7 +785,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
         newInfo.status = crpApplicationAcceptedByCharacter;
         newInfo.lastCID = call.client->GetCharacterID();
 
-        if(!m_db.UpdateApplication(newInfo)) {
+        if (!m_db.UpdateApplication(newInfo)) {
             codelog(SERVICE__ERROR, "%s: Failed to update application for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
             return NULL;
         }
@@ -826,13 +864,13 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             &answer, both_corps);
 
         //NOTE: this really should happen sooner, in case it fails.
-        if(!m_db.JoinCorporation(args.charID, ocmc.newCorpID, ocmc.oldCorpID, CorpData())) {
+        if (!m_db.JoinCorporation(args.charID, ocmc.newCorpID, ocmc.oldCorpID, CorpData())) {
             codelog(SERVICE__ERROR, "%s: Failed to record corp join for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
             return NULL;
         }
 
         Client *recruit = sEntityList.FindClientByCharID(ocmc.charID);
-        if(recruit != NULL) {
+        if (recruit != NULL) {
             recruit->JoinCorporationUpdate(ocmc.newCorpID);
         }
 
@@ -849,7 +887,7 @@ PyResult CorpRegistryBound::Handle_DeleteApplication(PyCallArgs & call) {
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
-        return(new PyInt(0));
+        return nullptr;
     }
 
     Notify_OnCorporationApplicationChanged OCAC;
@@ -858,16 +896,16 @@ PyResult CorpRegistryBound::Handle_DeleteApplication(PyCallArgs & call) {
     ApplicationInfo oldInfo(true);
     OCAC.corpID = args.arg1;
     OCAC.charID = args.arg2;
-    if(!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
+    if (!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
         codelog(SERVICE__ERROR, "%s: Failed to query application info for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
-        return(new PyInt(0));
+        return nullptr;
     }
 
     FillOCApplicationChange(OCAC, oldInfo, newInfo);
 
-    if(!m_db.DeleteApplication(oldInfo)) {
+    if (!m_db.DeleteApplication(oldInfo)) {
         codelog(SERVICE__ERROR, "%s: Failed to delete application info for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
-        return(new PyInt(0));
+        return nullptr;
     }
 
     PyTuple * answer = OCAC.Encode();
@@ -893,17 +931,17 @@ PyResult CorpRegistryBound::Handle_UpdateApplication(PyCallArgs &call) {
     Notify_OnCorporationApplicationChanged OCAC;
     OCAC.charID = call.client->GetCharacterID();
     OCAC.corpID = args.corpID;
-    if(!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
+    if (!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
         codelog(SERVICE__ERROR, "%s: Failed to query application info for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
-        return(new PyInt(0));
+        return nullptr;
     }
     newInfo = oldInfo;
     newInfo.appText = args.message;
     newInfo.status = args.status;
 
-    if(!m_db.UpdateApplication(newInfo)) {
+    if (!m_db.UpdateApplication(newInfo)) {
         codelog(SERVICE__ERROR, "%s: Failed to update application info for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
-        return(new PyInt(0));
+        return nullptr;
     }
 
     FillOCApplicationChange(OCAC, oldInfo, newInfo);
@@ -991,7 +1029,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call) {
     // Check if we have enough money
     uint32 logo_changeu;
     double logo_change;
-    if(!m_db.GetConstant("corpLogoChangeCost", logo_changeu)) {
+    if (!m_db.GetConstant("corpLogoChangeCost", logo_changeu)) {
         codelog(SERVICE__ERROR, "%s: Failed to determine logo change costs.", call.client->GetName());
         return(new PyNone());
     }
@@ -1005,7 +1043,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call) {
 
     uint16 accountKey = accountingKeyCash;  //FIXME  get proper corp wallet division
     double corp_orig = m_db.GetCorpBalance(notif.key, accountKey);
-    if( corp_orig < logo_change )
+    if ( corp_orig < logo_change )
     {
         _log( SERVICE__ERROR, "%s: Cannot afford corporation logo change costs!", call.client->GetName() );
         call.client->SendErrorMsg( "Your corporation doesn't have enough money (%u ISK) to change it's logo!", logo_changeu );
@@ -1015,7 +1053,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call) {
     }
 
     // Try to do the update. If it fails, we won't take the money.
-    if( !m_db.UpdateLogo( notif.key, upd, (PyDict*)notif.data ) )
+    if ( !m_db.UpdateLogo( notif.key, upd, (PyDict*)notif.data ) )
     {
         codelog( SERVICE__ERROR, "Corporation logo change failed..." );
 
@@ -1025,7 +1063,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call) {
 
     //take the money out of their wallet (sends wallet blink event)
     // The amount has to be double!!!
-    if( !m_db.AddBalanceToCorp( notif.key, -logo_change ) )
+    if ( !m_db.AddBalanceToCorp( notif.key, -logo_change ) )
     {
         codelog( SERVICE__ERROR, "%s: Failed to take money for corp logo change!", call.client->GetName() );
 
@@ -1036,7 +1074,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call) {
     double corp_new = m_db.GetCorpBalance(notif.key, accountKey);
 
     //record the transaction in the journal.
-    if(!m_db.GiveCash(
+    if (!m_db.GiveCash(
         notif.key,
         refCorporationLogoChangeCost,
         notif.key,
@@ -1085,6 +1123,23 @@ PyResult CorpRegistryBound::Handle_GetSharesByShareholder(PyCallArgs &call) {
 
   sLog.Log( "CorpRegistryBound::Handle_GetSharesByShareholder()","size= %u, 0=%s", call.tuple->size(), call.tuple->GetItem( 0 )->TypeString() );
     call.Dump(SERVICE__CALL_DUMP);
+
+        [PyObjectData Name: util.Rowset]
+          [PyDict 3 kvp]
+            [PyString "header"]
+            [PyList 2 items]
+              [PyString "corporationID"]
+              [PyString "shares"]
+            [PyString "RowClass"]
+            [PyToken util.Row]
+            [PyString "lines"]
+            [PyList 2 items]
+              [PyList 2 items]
+                [PyInt 98038978]
+                [PyIntegerVar 250]
+              [PyList 2 items]
+                [PyInt 1630077495]
+                [PyIntegerVar 250]
 */
     return NULL;
 }

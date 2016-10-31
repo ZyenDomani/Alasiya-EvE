@@ -185,7 +185,7 @@ PyResult MapService::Handle_GetStationCount(PyCallArgs &call)
     maxCount = 0
     for solarSystemID, amount in history:
   */
-    return (m_db.GetStationCount());
+    return m_db.GetStationCount();
 }
 
 /** not handled */
@@ -210,7 +210,7 @@ PyResult MapService::Handle_GetStuckSystems(PyCallArgs &call)
 //22:49:23 L MapService::Handle_GetRecentSovActivity(): size= 0
 PyResult MapService::Handle_GetRecentSovActivity(PyCallArgs &call)
 {
-  /**
+    /** no packet data
         data = sm.RemoteSvc('map').GetRecentSovActivity()
         */
   sLog.Log( "MapService::Handle_GetRecentSovActivity()", "size= %u", call.tuple->size() );
@@ -225,7 +225,7 @@ PyResult MapService::Handle_GetRecentSovActivity(PyCallArgs &call)
 
 //   DED Agent Site Report
 PyResult MapService::Handle_GetDeadspaceAgentsMap(PyCallArgs &call)
-{/*
+{/* no packet data
         dungeons = sm.RemoteSvc('map').GetDeadspaceAgentsMap(eve.session.languageID)
         solarSystemID, dungeonID, difficulty, dungeonName = dungeons
   sLog.Log( "MapService::Handle_GetDeadspaceAgentsMap()", "size= %u", call.tuple->size() );
@@ -241,12 +241,12 @@ PyResult MapService::Handle_GetDeadspaceAgentsMap(PyCallArgs &call)
 //  DED Deadspace Report
 //22:37:54 L MapService::Handle_GetDeadspaceComplexMap(): size= 1
 PyResult MapService::Handle_GetDeadspaceComplexMap(PyCallArgs &call)
-{/*
+{/* no packet data
         dungeons = sm.RemoteSvc('map').GetDeadspaceComplexMap(eve.session.languageID)
         solarSystemID, dungeonID, difficulty, dungeonName = dungeons
+*/
   sLog.Log( "MapService::Handle_GetDeadspaceComplexMap()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
-*/
     PyRep *result = NULL;
 
     result = new PyDict();
@@ -276,6 +276,42 @@ PyResult MapService::Handle_GetIncursionGlobalReport(PyCallArgs &call) {
                 data.loyaltyPoints = rewards[0].rewardQuantity if rewards else 0
                 scrolllist.append(listentry.Get('GlobalIncursionReportEntry', data))
 */
+  /*
+      [PySubStream 1128 bytes]
+        [PyObjectData Name: objectCaching.CachedMethodCallResult]
+          [PyTuple 3 items]
+            [PyDict 1 kvp]
+              [PyString "versionCheck"]
+              [PyTuple 3 items]
+                [PyNone]
+                [PyNone]
+                [PyString "15 minutes"]
+            [PySubStream 1027 bytes]
+              [PyList 7 items]
+                [PyObjectData Name: util.KeyVal]
+                  [PyDict 9 kvp]
+                    [PyString "graceTime"]
+                    [PyFloat 30]
+                    [PyString "decayRate"]
+                    [PyFloat 0.00999999977648258]
+                    [PyString "influence"]
+                    [PyFloat 0.0145000005140901]
+                    [PyString "lastUpdated"]
+                    [PyIntegerVar 129492976800000000]
+                    [PyString "state"]
+                    [PyInt 1]
+                    [PyString "hasBoss"]
+                    [PyInt 0]
+                    [PyString "stagingSolarSystemID"]
+                    [PyInt 30004323]
+                    [PyString "rewardGroupID"]
+                    [PyInt 192]
+                    [PyString "taleID"]
+                    [PyInt 192]
+            [PyList 2 items]
+              [PyIntegerVar 129493861959830226]
+              [PyInt -950263469]
+              */
   sLog.Log( "MapService::Handle_GetIncursionGlobalReport()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 

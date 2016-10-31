@@ -465,8 +465,8 @@ void Character::JoinCorporation(uint32 corporationID, const CorpData &roles) {
 	m_rolesAtOther = roles.rolesAtOther;
     // Add new employment history record    -allan  25Mar14   update 20Jan15
     m_db.UpdateCharCorpRecords(itemID(), corporationID);
-	SaveCharacter();
     m_pClient->UpdateCorpSession(this);
+    SaveCharacter();
 }
 
 void Character::SetDescription(const char *newDescription) {
