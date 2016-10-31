@@ -251,7 +251,7 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
 
     uint16 count = 0;
     double start = 0.0;
-    if (sConfig.server.testServer)
+    if (sConfig.server.IsTestServer)
         if (sConfig.server.UseProfiling)
             start = GetTimeUSeconds();
 
@@ -281,7 +281,7 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
         }
     }
 
-    if (sConfig.server.testServer)
+    if (sConfig.server.IsTestServer)
         if (sConfig.server.UseProfiling)
             sLog.Log("Inventory::_sortVector", "%u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
 

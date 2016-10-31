@@ -273,7 +273,7 @@ void ShipItem::Init()
     /** @todo need to check for ship damage status BEFORE or INSTEAD of calling this.
      */
     //set everything to full AFTER modules possibably update ship stats
-    if (sConfig.server.testServer) {
+    if (sConfig.server.IsTestServer) {
         Heal();
     } else {
         SetShipShield(1.0);
@@ -287,7 +287,7 @@ void ShipItem::InitPod() {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
-    if (sConfig.server.testServer) {
+    if (sConfig.server.IsTestServer) {
         Heal();
     } else {
         SetShipShield(1.0);
@@ -478,7 +478,7 @@ PyDict* ShipItem::ShipGetInfo() {
     if ( !Populate( entry ))
         return nullptr;    //print already done.
 
-        PyDict* result = new PyDict;
+    PyDict* result = new PyDict;
     result->SetItem(new PyInt( itemID()), new PyObject("util.KeyVal", entry.Encode()));
     //now encode contents...
     std::vector<InventoryItemRef> equipped;
@@ -722,7 +722,7 @@ void ShipItem::Dock() {
 }
 
 void ShipItem::Undock() {
-    if (sConfig.server.testServer) {
+    if (sConfig.server.IsTestServer) {
         // Heal Ship completely on test server
         Heal();
     } else {

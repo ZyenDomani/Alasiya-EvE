@@ -21,13 +21,14 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Ubiquitatis
+    Updates:    Allan
 */
 
-#ifndef CORPBOOKMARKMGR_SERVICE_H
-#define CORPBOOKMARKMGR_SERVICE_H
+#ifndef __EVEMU_CORP_CORPBM_H
+#define __EVEMU_CORP_CORPBM_H
 
-#include "CorporationDB.h"
 #include "PyService.h"
+#include "system/BookmarkDB.h"
 
 class CorpBookmarkMgrService : public PyService
 {
@@ -39,10 +40,10 @@ protected:
     class Dispatcher;
     Dispatcher* const m_dispatch;
 
-    CorporationDB m_db;
+    BookmarkDB m_db;
 
     PyCallable_DECL_CALL(GetBookmarks);
     PyCallable_DECL_CALL(UpdatePlayerBookmark);
 };
 
-#endif
+#endif  // __EVEMU_CORP_CORPBM_H

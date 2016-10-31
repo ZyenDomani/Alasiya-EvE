@@ -24,11 +24,6 @@ MarketBotDataMgr::MarketBotDataMgr()
     m_initalized = false;
 }
 
-MarketBotDataMgr::~MarketBotDataMgr()
-{
-
-}
-
 void MarketBotDataMgr::Init()
 {
     m_initalized = true;
@@ -47,10 +42,6 @@ MarketBotMgr::MarketBotMgr()
     m_initalized = false;
 }
 
-MarketBotMgr::~MarketBotMgr()
-{
-
-}
 
 void MarketBotMgr::Init()
 {

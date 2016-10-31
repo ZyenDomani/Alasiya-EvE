@@ -324,6 +324,8 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
     sLog.Warning( "BeyonceBound", "Handle_CmdGotoBookmark" );
     call.Dump(SERVICE__CALL_DUMP);
 
+    /** @todo  update this shit....  */
+    
     if ( !(call.tuple->GetItem( 0 )->IsInt()) )
     {
         sLog.Error( "BeyonceService::Handle_GotoBookmark()", "%s: Invalid type %s for bookmarkID received.", call.client->GetName(), call.tuple->GetItem( 0 )->TypeString() );

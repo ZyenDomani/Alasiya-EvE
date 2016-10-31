@@ -728,7 +728,7 @@ void ModuleManager::UninstallRig(uint32 itemID)
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
         mod->Offline();
-        if (!sConfig.server.testServer)
+        if (!sConfig.server.IsTestServer)
             mod->DestroyRig();
     }
     m_Modules->RemoveModule(itemID);

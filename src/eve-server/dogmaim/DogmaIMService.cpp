@@ -748,7 +748,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         return rsp.Encode();
     }
 
-    if (sConfig.server.testServer)
+    if (sConfig.server.IsTestServer)
         if (is_log_enabled(TARGET__MESSAGE)) {
             GVector vectorToTarget(pClient->GetShipSE()->GetPosition(), target->GetPosition());
             _log(TARGET__MESSAGE, "Handle_AddTarget() - %s(%u) -> %s(%u) at range of %.2f meters.", \
@@ -781,7 +781,7 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
         return new PyNone;
     }
 
-    if (sConfig.server.testServer)
+    if (sConfig.server.IsTestServer)
         if (is_log_enabled(TARGET__MESSAGE)) {
             GVector vectorToTarget(pClient->GetShipSE()->GetPosition(), target->GetPosition());
             _log(TARGET__MESSAGE, "Handle_RemoveTarget() - Removed %s(%u) - Range to Target: %.2f meters.", \

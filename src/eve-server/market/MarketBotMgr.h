@@ -8,8 +8,8 @@
   */
 
 
-#ifndef EVEMU_MARKET_MARKETBOT_H_
-#define EVEMU_MARKET_MARKETBOT_H_
+#ifndef EVEMU_MARKET_MARKETBOTMGR_H_
+#define EVEMU_MARKET_MARKETBOTMGR_H_
 
 
 #include "eve-compat.h"
@@ -21,13 +21,12 @@ class MarketBotDataMgr
 {
 public:
     MarketBotDataMgr();
-    ~MarketBotDataMgr();
+    ~MarketBotDataMgr() { /* do nothing here */ }
 
     void Init();
 
 private:
     bool m_initalized;
-
 };
 
 //Singleton
@@ -35,13 +34,12 @@ private:
 ( MarketBotDataMgr::get() )
 
 
-
 class MarketBotMgr
 : public Singleton<MarketBotMgr>
 {
 public:
     MarketBotMgr();
-    ~MarketBotMgr();
+    ~MarketBotMgr() { /* do nothing here */ }
 
     void Init();
     void Process();
@@ -50,12 +48,10 @@ private:
     Timer m_updateTimer;
 
     bool m_initalized;
-
 };
 
 //Singleton
 #define sMktBotMgr \
 ( MarketBotMgr::get() )
 
-
-#endif  // EVEMU_MARKET_MARKETBOT_H_
+#endif  // EVEMU_MARKET_MARKETBOTMGR_H_

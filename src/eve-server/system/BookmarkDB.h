@@ -21,10 +21,11 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Bloody.Rabbit
+    Updates:    Allan
 */
 
-#ifndef __BOOKMARK_DB__H__INCL__
-#define __BOOKMARK_DB__H__INCL__
+#ifndef __EVEMU_SYSTEM_BOOKMARKDB_H_
+#define __EVEMU_SYSTEM_BOOKMARKDB_H_
 
 #include "ServiceDB.h"
 
@@ -32,34 +33,24 @@ class BookmarkDB
 : public ServiceDB
 {
 public:
-    PyObjectEx* GetBookmarks(uint32 ownerID);
-    PyObjectEx* GetFolders(uint32 ownerID);
+    PyRep* GetBookmarks(uint32 ownerID);
+    PyRep* GetFolders(uint32 ownerID);
 
-    uint32 FindBookmarkTypeID(uint32 itemID);
+    bool GetBookmarkInformation(uint32 bookmarkID, uint32& ownerID, uint32& itemID, uint32& typeID, uint32& flag, std::string& memo, uint64& created, double& x, double& y, double& z, uint32& locationID, std::string& note, uint32& creatorID, uint32& folderID);
 
-    bool GetBookmarkInformation(uint32 bookmarkID, uint32 &ownerID, uint32 &itemID, uint32 &typeID,
-                                uint32 &flag, std::string &memo, uint64 &created, double &x, double &y,
-                                double &z, uint32 &locationID, std::string &note, uint32 &creatorID,
-                                uint32 folderID);
-
-    bool SaveNewBookmarkToDatabase(uint32 &bookmarkID, uint32 ownerID, uint32 itemID,
-                                   uint32 typeID, uint32 flag, std::string memo, uint64 created,
-                                   double x, double y, double z, uint32 locationID, std::string note,
-                                   uint32 creatorID, uint32 folderID);
-
+    bool UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note);
     bool DeleteBookmarkFromDatabase(uint32 ownerID, uint32 bookmarkID);
     bool DeleteBookmarksFromDatabase(uint32 ownerID, std::vector<unsigned long> * bookmarkList);
     //bool DeleteBookmarkFromDatabase(uint32 ownerID, PyList bookmarkID);
     //bool DeleteBookmarksFromDatabase(uint32 ownerID, PyList * bookmarkList);
 
-    bool UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note);
-
-    bool SaveNewFolderToDatabase(uint32 &folderID, std::string folderName, uint32 ownerID, uint32 creatorID);
-
     bool UpdateFolderInDatabase(uint32 &folderID, std::string folderName, uint32 ownerID, uint32 creatorID);
-
     bool DeleteFolderFromDatabase(uint32 folderID, uint32 ownerID);
+
+    uint32 SaveNewFolderToDatabase(std::string folderName, uint32 ownerID, uint32 creatorID);
+    uint32 SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint32 typeID, uint32 flag, std::string memo, GPoint point,
+                                    uint32 locationID, std::string note, uint32 creatorID, uint32 folderID);
 };
 
-#endif /* !__BOOKMARK_DB__H__INCL__ */
+#endif  // __EVEMU_SYSTEM_BOOKMARKDB_H_
 

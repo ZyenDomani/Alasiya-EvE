@@ -151,6 +151,5 @@ bool MarketBotConf::ProcessSell(const TiXmlElement* ele)
     RemoveParser( "SellItemMetaLevelMin" );
 
     return result;
-
 }
 

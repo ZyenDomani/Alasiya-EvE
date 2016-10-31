@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    6.7
+    Version:    6.8
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -55,7 +55,8 @@ public:
         bool UseProfiling;
         bool UseShipTracking;
         bool UseStackTrace;
-        bool testServer;    // to distuinguish between live production server or experimental testing server
+        bool IsTestServer;    // to distuinguish between live production server or experimental testing server
+        bool EnableIGB;
         uint8 ServerSleepTime;
         uint16 idleSleepTime;
         uint16 maxPlayers;

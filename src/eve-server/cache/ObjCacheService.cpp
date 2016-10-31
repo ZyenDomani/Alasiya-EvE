@@ -317,7 +317,7 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
     {
         if( m_cache.LoadCachedFromFile( m_cacheDir, objectID ) )
         {
-            _log( SERVICE__CACHE, "Loaded cached object '%s' from file.", objectID_string.c_str() );
+            _log( CACHE__INFO, "Loaded cached object '%s' from file.", objectID_string.c_str() );
             return true;
         }
     }
@@ -334,7 +334,7 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
         PySubStream* ss = m_cache.LoadCachedFile( objectID_string.c_str() );
         if( ss == NULL )
         {
-            _log(SERVICE__ERROR, "Failed to create or load cache file for '%s'", objectID_string.c_str());
+            _log(CACHE__ERROR, "Failed to create or load cache file for '%s'", objectID_string.c_str());
             return false;
         }
 
@@ -360,7 +360,7 @@ PyRep *ObjCacheService::GetCacheHint(const PyRep* objectID) {
 
     PyObject *cache_hint = m_cache.MakeCacheHint(objectID);
     if(cache_hint == NULL) {
-        _log(SERVICE__ERROR, "Unable to build cache hint for object ID '%s' (h), skipping.", CachedObjectMgr::OIDToString(objectID).c_str());
+        _log(CACHE__ERROR, "Unable to build cache hint for object ID '%s' (h), skipping.", CachedObjectMgr::OIDToString(objectID).c_str());
         return NULL;
     }
 
@@ -396,7 +396,7 @@ void ObjCacheService::InsertCacheHints(hintSet hset, PyDict *into) {
         //find the dict key to use for this object
         res = m_cacheKeys.find(objects[r]);
         if(res == m_cacheKeys.end()) {
-            _log(SERVICE__ERROR, "Unable to find cache key for object ID '%s', skipping.", objects[r]);
+            _log(CACHE__ERROR, "Unable to find cache key for object ID '%s', skipping.", objects[r]);
             continue;
         }
 

@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 6.7 -->
+     Version: 6.8 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -12,7 +12,7 @@
 
     <server>
         <UseBeanCount>true</UseBeanCount>  <!-- bool  -client python error reporting -->
-        <testServer>true</testServer>  <!--  bool   -some functions disabled for live server -->
+        <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
         <UseProfiling>false</UseProfiling><!-- bool -->
         <UseShipTracking>false</UseShipTracking><!-- bool -->
         <UseStackTrace>true</UseStackTrace><!-- bool -->
@@ -20,6 +20,7 @@
         <maxPlayers>2500</maxPlayers>
         <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
         <UseMarketBot>true</UseMarketBot>
+        <EnableIGB>false</EnableIGB>
     </server>
 
     <world>

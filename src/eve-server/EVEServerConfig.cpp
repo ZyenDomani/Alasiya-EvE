@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    6.7
+    Version:    6.8
 */
 
 
@@ -45,7 +45,7 @@ EVEServerConfig::EVEServerConfig()
     // server
     server.UseBeanCount = false;
     server.UseMarketBot = false;
-    server.testServer = true;
+    server.IsTestServer = true;
     server.maxPlayers = 500;//N
     server.UseProfiling = false;
     server.UseShipTracking = false;
@@ -53,6 +53,7 @@ EVEServerConfig::EVEServerConfig()
     server.ServerSleepTime = 10 /*ms*/;
     server.idleSleepTime = 1000;
     server.StationDockDelay = 3 /*s*/;
+    server.EnableIGB = false;
 
     // world
     world.chatLogs = false;//N
@@ -180,7 +181,8 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
 {
-    AddValueParser( "testServer",           server.testServer );
+    AddValueParser( "EnableIGB",            server.EnableIGB );
+    AddValueParser( "IsTestServer",         server.IsTestServer );
     AddValueParser( "UseBeanCount",         server.UseBeanCount );
     AddValueParser( "UseMarketBot",         server.UseMarketBot );
     AddValueParser( "maxPlayers",           server.maxPlayers );
@@ -189,11 +191,12 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "UseStackTrace",        server.UseStackTrace );
     AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
     AddValueParser( "idleSleepTime",        server.idleSleepTime );
-    AddValueParser( "StationDockDelay",        server.StationDockDelay );
+    AddValueParser( "StationDockDelay",     server.StationDockDelay );
 
     const bool result = ParseElementChildren( ele );
 
-    RemoveParser( "testServer" );
+    RemoveParser( "EnableIGB" );
+    RemoveParser( "IsTestServer" );
     RemoveParser( "UseBeanCount" );
     RemoveParser( "maxPlayers" );
     RemoveParser( "UseProfiling" );
@@ -218,7 +221,6 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
 
     const bool result = ParseElementChildren( ele );
 
-    RemoveParser( "testServer" );
     RemoveParser( "chatLogs" );
     RemoveParser( "globalChat" );
     RemoveParser( "gridUnload" );
@@ -226,7 +228,6 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     RemoveParser( "loginInfo" );
     RemoveParser( "loginMsg" );
     RemoveParser( "mailDelay" );
-    RemoveParser( "maxPlayers" );
 
     return result;
 }

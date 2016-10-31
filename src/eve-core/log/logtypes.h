@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 6.2
+    Log Version: 6.3
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -104,8 +104,6 @@ LOG_TYPE( SERVICE, WARNING, DISABLED, "SvcWarning" )
 LOG_TYPE( SERVICE, CALLS, DISABLED, "SvcCall" )
 LOG_TYPE( SERVICE, CALL_DUMP, DISABLED, "SvcCallDump" )
 LOG_TYPE( SERVICE, MESSAGE, DISABLED, "SvcMsg" )
-LOG_TYPE( SERVICE, CACHE, DISABLED, "SvcCache" )
-LOG_TYPE( SERVICE, CACHE_DUMP, DISABLED, "SvcCache" )
 LOG_TYPE( SERVICE, CALL_TRACE, DISABLED, "SvcCallTrace" )
 
 LOG_CATEGORY( COSMIC_MGR )
@@ -163,6 +161,10 @@ LOG_TYPE( CORP, WARNING, DISABLED, "CorpWarning" )
 LOG_TYPE( CORP, MESSAGE, DISABLED, "CorpMsg" )
 LOG_TYPE( CORP, INFO, DISABLED, "CorpInfo" )
 LOG_TYPE( CORP, TRACE, DISABLED, "CorpTrace" )
+LOG_TYPE( CORP, DB_ERROR,   ENABLED, "CorpDBError" )
+LOG_TYPE( CORP, DB_WARNING, DISABLED, "CorpDBWarning" )
+LOG_TYPE( CORP, DB_MESSAGE, DISABLED, "CorpDBMsg" )
+LOG_TYPE( CORP, DB_INFO, DISABLED, "CorpDBInfo" )
 
 LOG_CATEGORY( INV )
 LOG_TYPE( INV, ERROR,   ENABLED, "InvError" )

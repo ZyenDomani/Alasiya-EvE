@@ -67,48 +67,44 @@ CREATE TABLE `billsReceivable` (
   PRIMARY KEY  (`billID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-/*Data for the table `billsReceivable` */
-
 /*Table structure for table `bookmarks` */
 
 CREATE TABLE `bookmarks` (
-  `bookmarkID` int(10) unsigned NOT NULL default '0',
-  `ownerID` int(10) unsigned NOT NULL default '0',
-  `itemID` bigint(20) unsigned NOT NULL default '0',
-  `typeID` int(10) unsigned NOT NULL default '0',
-  `flag` int(10) unsigned NOT NULL default '0',
-  `memo` varchar(85) NOT NULL default '',
-  `created` bigint(20) unsigned NOT NULL default '0',
-  `x` double NOT NULL default '0',
-  `y` double NOT NULL default '0',
-  `z` double NOT NULL default '0',
-  `locationID` int(10) unsigned NOT NULL default '0',
-  `note` varchar(85) NOT NULL default '',
-  `creatorID` int(10) unsigned NOT NULL default '0',
-  `folderID` int(10) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`bookmarkID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Data for the table `bookmarks` */
+  `bookmarkID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
+  `itemID` int(10) unsigned NOT NULL DEFAULT '0',
+  `typeID` int(10) unsigned NOT NULL DEFAULT '0',
+  `flag` int(10) unsigned NOT NULL DEFAULT '0',
+  `memo` varchar(85) NOT NULL DEFAULT '',
+  `created` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `x` double NOT NULL DEFAULT '0',
+  `y` double NOT NULL DEFAULT '0',
+  `z` double NOT NULL DEFAULT '0',
+  `locationID` int(10) unsigned NOT NULL DEFAULT '0',
+  `note` varchar(85) NOT NULL DEFAULT '',
+  `creatorID` int(10) unsigned NOT NULL DEFAULT '0',
+  `folderID` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`bookmarkID`)
+) ENGINE=InnoDB AUTO_INCREMENT=600000000 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `bookmarkFolders` (
-  `folderID` int(10) unsigned NOT NULL,
-  `folderName` varchar(255) DEFAULT NULL,
-  `ownerID` int(10) DEFAULT NULL,
-  `creatorID` int(10) DEFAULT NULL,
+  `folderID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `folderName` varchar(255) NOT NULL DEFAULT '',
+  `ownerID` int(10) NOT NULL DEFAULT '0',
+  `creatorID` int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`folderID`),
   KEY `ownerID` (`ownerID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=100000 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `cacheLocations` */
 
 CREATE TABLE `cacheLocations` (
-  `locationID` int(10) unsigned NOT NULL default '0',
-  `locationName` varchar(100) NOT NULL default '',
-  `x` double NOT NULL default '0',
-  `y` double NOT NULL default '0',
-  `z` double NOT NULL default '0',
-  PRIMARY KEY  (`locationID`)
+  `locationID` int(10) unsigned NOT NULL DEFAULT '0',
+  `locationName` varchar(100) NOT NULL DEFAULT '',
+  `locationNameID` tinyint(4) NOT NULL DEFAULT '0',
+  `x` double NOT NULL DEFAULT '0',
+  `y` double NOT NULL DEFAULT '0',
+  `z` double NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `cacheLocations` */
@@ -590,7 +586,7 @@ CREATE TABLE `droneState` (
 
 /*Table structure for table `entity` */
 
-CREATE TABLE IF NOT EXISTS `entity` (
+CREATE TABLE `entity` (
   `itemID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `itemName` varchar(85) NOT NULL DEFAULT '',
   `typeID` int(10) unsigned NOT NULL DEFAULT '0',

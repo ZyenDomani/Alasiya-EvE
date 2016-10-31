@@ -29,7 +29,7 @@
 #include "system/BookmarkDB.h"
 #include "system/BookmarkService.h"
 
-PyObjectEx *BookmarkDB::GetBookmarks(uint32 ownerID) {
+PyRep *BookmarkDB::GetBookmarks(uint32 ownerID) {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
@@ -50,13 +50,16 @@ PyObjectEx *BookmarkDB::GetBookmarks(uint32 ownerID) {
         ownerID))
     {
         sLog.Error( "BookmarkDB::GetBookmarks()", "Failed to query bookmarks for owner %u: %s.", ownerID, res.error.c_str() );
-        return(NULL);
+        return nullptr;
     }
 
-    return DBResultToCRowset(res);
+    if (IsPlayerCorp(ownerID))
+        return DBResultToPackedRowDict(res, "bookmarkID");
+    else
+        return DBResultToCRowset(res);
 }
 
-PyObjectEx *BookmarkDB::GetFolders(uint32 ownerID) {
+PyRep *BookmarkDB::GetFolders(uint32 ownerID) {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
@@ -70,93 +73,19 @@ PyObjectEx *BookmarkDB::GetFolders(uint32 ownerID) {
         ownerID))
     {
         sLog.Error( "BookmarkDB::GetBookmarks()", "Failed to query bookmarks for owner %u: %s.", ownerID, res.error.c_str() );
-        return(NULL);
+        return nullptr;
     }
 
-    return DBResultToCRowset(res);
+    if (IsPlayerCorp(ownerID))
+        return DBResultToPackedRowDict(res, "folderID");
+    else
+        return DBResultToCRowset(res);
 }
-
-uint32 BookmarkDB::FindBookmarkTypeID(uint32 itemID)
-{
-    DBQueryResult res, res2;
-    DBResultRow row, row2;
-
-    // Find the correct TypeID of the item specified by itemID, searching through
-    // several places: entity table, mapDenormalize table, and mapJumps table:
-    /**
-    rewrite this....check for these types..
-    3      region
-    4      constellation
-    5      sol system
-    14     moon
-    15     belt
-    2502   station
-*/
-    // The most common bookmark made is a location in space, so let's check this first and exit
-    // quickly for this high use case:
-    if (!sDatabase.RunQuery(res,
-        " SELECT "
-        "    typeID "
-        " FROM entity "
-        " WHERE itemID = %u ", itemID))
-    {
-        sLog.Error( "BookmarkDB::FindBookmarkTypeID()", "Error in query: %s", res.error.c_str() );
-        return 0;
-    }
-
-    if (res.GetRow(row))
-    {
-        // itemID exists in 'entity' table, now let's check to see what group it is:
-        /**   if (bookmark.typeID == const.typeSolarSystem)
-        3   Region
-        4   Constellation
-        5   Solar System
-        7   Planet
-        8   Moon
-        9   Asteroid Belt
-        10  Stargate
-        15  Station
-        24  Voucher*/
-        if (!sDatabase.RunQuery(res2,
-            " SELECT "
-            "    groupID "
-            " FROM invTypes "
-            " WHERE typeID = %u ", row.GetUInt(0)))
-        {
-            sLog.Error( "BookmarkDB::FindBookmarkTypeID()", "Error in query: %s", res2.error.c_str() );
-            return 0;
-        }
-
-        if (res2.GetRow(row2))
-            if (row2.GetUInt(0) == 15)  //groupID   15=station
-                return ( row.GetUInt(0) );  // Return typeID of "Station" from 'entity'
-
-        return 5;   // else Return typeID of "Solar System" from 'invTypes'
-    }
-
-    // No match yet, so next let's check the 'mapDenormalize' table for a Sun, Planet, Moon, Asteroid Belt, or Stargate:
-    if (!sDatabase.RunQuery(res,
-        " SELECT "
-        "    typeID, groupID "
-        " FROM mapDenormalize "
-        " WHERE itemID = %u ", itemID))
-    {
-        sLog.Error( "BookmarkDB::FindBookmarkTypeID()", "Error in query: %s", res.error.c_str() );
-        return 0;
-    }
-
-    if (res.GetRow(row))
-        return ( row.GetUInt(0) );
-
-    // No matches whatsoever, so this is unknown, return 0:
-    return 0;
-}
-
 
 bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32 &ownerID, uint32 &itemID, uint32 &typeID,
                                         uint32 &flag, std::string &memo, uint64 &created, double &x, double &y,
                                         double &z, uint32 &locationID, std::string &note, uint32 &creatorID,
-                                        uint32 folderID)
+                                        uint32 &folderID)
 {
     DBQueryResult res;
     DBResultRow row;
@@ -206,27 +135,26 @@ bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32 &ownerID, uint
 }
 
 
-bool BookmarkDB::SaveNewBookmarkToDatabase(uint32 &bookmarkID, uint32 ownerID, uint32 itemID,
-                               uint32 typeID, uint32 flag, std::string memo, uint64 created,
-                               double x, double y, double z, uint32 locationID, std::string note,
-                               uint32 creatorID, uint32 folderID)
+uint32 BookmarkDB::SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint32 typeID, uint32 flag, std::string memo,
+                                             GPoint point, uint32 locationID, std::string note, uint32 creatorID, uint32 folderID)
 {
     DBerror err;
 /** @todo  need to escape the memo field here...   */
     std::string memo_fixed = "";
     sDatabase.DoEscapeString(memo_fixed, memo.c_str());
-    if (!sDatabase.RunQuery(err,
+    uint32 bookmarkID = 0;
+    if (!sDatabase.RunQueryLID(err, bookmarkID,
         " INSERT INTO bookmarks "
-        " (bookmarkID, ownerID, itemID, typeID, flag, memo, created, x, y, z, locationID, note, creatorID, folderID)"
-        " VALUES (%u, %u, %u, %u, %u, '%s', %" PRIu64 ", %f, %f, %f, %u, '%s', %u, %u) ",
-        bookmarkID, ownerID, itemID, typeID, flag, memo_fixed.c_str(), created, x, y, z, locationID, note.c_str(), creatorID, folderID
+        " (ownerID, itemID, typeID, flag, memo, created, x, y, z, locationID, note, creatorID, folderID)"
+        " VALUES (%u, %u, %u, %u, '%s', %" PRIu64 ", %f, %f, %f, %u, '%s', %u, %u) ",
+          ownerID, itemID, typeID, flag, memo_fixed.c_str(), Win32TimeNow(), point.x, point.y, point.z, locationID, note.c_str(), creatorID, folderID
         ))
     {
         sLog.Error( "BookmarkDB::SaveNewBookmarkToDatabase()", "Error in query, Bookmark content couldn't be saved: %s", err.c_str() );
         return 0;
     }
-    else
-        return 1;
+
+    return bookmarkID;
 }
 
 bool BookmarkDB::DeleteBookmarkFromDatabase(uint32 ownerID, uint32 bookmarkID)
@@ -298,27 +226,27 @@ bool BookmarkDB::UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std
     return true;
 }
 
-bool BookmarkDB::SaveNewFolderToDatabase(uint32 &folderID, std::string folderName, uint32 ownerID, uint32 creatorID)
-
+uint32 BookmarkDB::SaveNewFolderToDatabase(std::string folderName, uint32 ownerID, uint32 creatorID)
 {
     DBerror err;
-
-    if (!sDatabase.RunQuery(err,
+    std::string folderName_fixed = "";
+    sDatabase.DoEscapeString(folderName_fixed, folderName.c_str());
+    uint32 folderID = 0;
+    if (!sDatabase.RunQueryLID(err, folderID,
         " INSERT INTO bookmarkFolders"
-        " (folderID, folderName, ownerID, creatorID )"
-        " VALUES (%u, '%s', %u, %u) ",
-        folderID, folderName.c_str(), ownerID, creatorID
+        " (folderName, ownerID, creatorID )"
+        " VALUES ('%s', %u, %u) ",
+          folderName_fixed.c_str(), ownerID, creatorID
         ))
     {
         sLog.Error( "BookmarkDB::SaveNewFolderToDatabase()", "Error in query, Folder couldn't be saved: %s", err.c_str() );
         return 0;
     }
-    else
-        return 1;
+
+    return folderID;
 }
 
 bool BookmarkDB::UpdateFolderInDatabase(uint32 &folderID, std::string folderName, uint32 ownerID, uint32 creatorID)
-
 {
     DBerror err;
 

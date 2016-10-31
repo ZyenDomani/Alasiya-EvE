@@ -2,33 +2,27 @@
 CREATE TABLE `sysAsteroids` (
   `itemID` int(10) unsigned NOT NULL,
   `itemName` varchar(25) NOT NULL,
-  `typeID` int(11) NOT NULL,
-  `systemID` int(11) NOT NULL,
-  `beltID` int(11) NOT NULL,
+  `typeID` int(10) NOT NULL,
+  `systemID` int(10) NOT NULL,
+  `beltID` int(10) NOT NULL,
   `quantity` double NOT NULL,
   `radius` double NOT NULL,
   `x` double NOT NULL,
   `y` double NOT NULL,
-  `z` double NOT NULL
+  `z` double NOT NULL,
+  PRIMARY KEY (`itemID`),
+  UNIQUE KEY `itemID` (`itemID`),
+  KEY `systemID` (`systemID`),
+  KEY `beltID` (`beltID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Indexes for table `sysAsteroids`
---
-ALTER TABLE `sysAsteroids`
-  ADD PRIMARY KEY (`itemID`),
-  ADD UNIQUE KEY `itemID` (`itemID`),
-  ADD KEY `systemID` (`systemID`),
-  ADD KEY `beltID` (`beltID`);
 
 
  /* Table structure for table `shipInsurance` */
 
-
 CREATE TABLE IF NOT EXISTS `shipInsurance` (
-  `shipID` int(11) NOT NULL,
+  `shipID` int(10) NOT NULL,
   `shipName` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
-  `ownerID` int(11) NOT NULL,
+  `ownerID` int(10) NOT NULL,
   `startDate` bigint(20) NOT NULL,
   `endDate` bigint(20) NOT NULL,
   `fraction` float(4,3) NOT NULL,
@@ -93,7 +87,7 @@ CREATE TABLE IF NOT EXISTS `mapDynamicData` (
 /*  Table structure for table `chrVisitedSystems` */
 
 CREATE TABLE IF NOT EXISTS `chrVisitedSystems` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
+  `idx` int(10) NOT NULL AUTO_INCREMENT,
   `characterID` int(20) NOT NULL,
   `solarSystemID` int(10) NOT NULL,
   `visits` int(10) NOT NULL DEFAULT '0',
@@ -105,13 +99,13 @@ CREATE TABLE IF NOT EXISTS `chrVisitedSystems` (
 
 CREATE TABLE IF NOT EXISTS `chrSkillHistory` (
   `eventTypeID` smallint(6) NOT NULL,
-  `characterID` int(11) NOT NULL,
+  `characterID` int(10) NOT NULL,
   `logDate` bigint(20) NOT NULL,
   `skillTypeID` int(8) NOT NULL,
   `skillLevel` tinyint(4) NOT NULL,
   `relativePoints` bigint(20) NOT NULL,
   `absolutePoints` bigint(20) NOT NULL,
-  `AI` int(11) NOT NULL AUTO_INCREMENT,
+  `AI` int(10) NOT NULL AUTO_INCREMENT,
   UNIQUE KEY `AI` (`AI`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Char Skill History' AUTO_INCREMENT=1 ;
 
@@ -151,7 +145,7 @@ DROP TABLE IF EXISTS `srvStatus`;
 /* Table structure for table `srvStatus */
 
 CREATE TABLE IF NOT EXISTS `srvStatus` (
-  `AI` int(11) NOT NULL AUTO_INCREMENT,
+  `AI` int(10) NOT NULL AUTO_INCREMENT,
   `srvName` varchar(60) NOT NULL,
   `Online` tinyint(1) NOT NULL,
   `startTime` bigint(20) NOT NULL,
@@ -162,11 +156,11 @@ CREATE TABLE IF NOT EXISTS `srvStatus` (
   `vm` decimal(6,3) NOT NULL,
   `user` decimal(4,2) NOT NULL,
   `kernel` decimal(4,2) NOT NULL,
-  `items` int(11) NOT NULL,
-  `systems` int(11) NOT NULL,
-  `bubbles` int(11) NOT NULL,
-  `updateTime` int(11) NOT NULL,
-  `npcs` int(11) NOT NULL,
+  `items` int(10) NOT NULL,
+  `systems` int(10) NOT NULL,
+  `bubbles` int(10) NOT NULL,
+  `updateTime` int(10) NOT NULL,
+  `npcs` int(10) NOT NULL,
   PRIMARY KEY (`AI`),
   UNIQUE KEY `AI` (`AI`)
   ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
@@ -183,8 +177,8 @@ CREATE TABLE IF NOT EXISTS `sklBaseSkills` (
 /* Table structure for table `sklCareerSkills` */
 
 CREATE TABLE IF NOT EXISTS `sklCareerSkills` (
-  `careerID` int(11) NOT NULL DEFAULT '0',
-  `skillTypeID` int(11) NOT NULL DEFAULT '0',
+  `careerID` int(10) NOT NULL DEFAULT '0',
+  `skillTypeID` int(10) NOT NULL DEFAULT '0',
   `level` tinyint(3) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (`careerID`,`skillTypeID`)
   ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='skill and level list by careerID';
@@ -192,29 +186,29 @@ CREATE TABLE IF NOT EXISTS `sklCareerSkills` (
 /* Table structure for table `sklRaceSkills` */
 
 CREATE TABLE IF NOT EXISTS `sklRaceSkills` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `raceID` int(11) DEFAULT NULL,
-  `skillTypeID` int(11) DEFAULT NULL,
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `raceID` int(10) DEFAULT NULL,
+  `skillTypeID` int(10) DEFAULT NULL,
   `level` tinyint(3) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `skillTypeID` (`skillTypeID`)
   ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='skill and level list by raceID' AUTO_INCREMENT=33 ;
 
 CREATE TABLE IF NOT EXISTS `mapSystemSovInfo` (
-  `solarSystemID` int(11) NOT NULL,
-  `corporationID` int(11) NOT NULL,
-  `allianceID` int(11) NOT NULL,
-  `claimStructureID` int(11) NOT NULL,
+  `solarSystemID` int(10) NOT NULL,
+  `corporationID` int(10) NOT NULL,
+  `allianceID` int(10) NOT NULL,
+  `claimStructureID` int(10) NOT NULL,
   `claimTime` int(20) NOT NULL,
-  `hubID` int(11) NOT NULL,
+  `hubID` int(10) NOT NULL,
   `contested` tinyint(1) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='SystemSovereigntyInfo';
 
 /* Table structure for table `crpAlliance` */
 
 CREATE TABLE IF NOT EXISTS `crpAlliance` (
-  `allianceID` int(11) NOT NULL,
-  `allianceType` int(11) NOT NULL,
+  `allianceID` int(10) NOT NULL,
+  `allianceType` int(10) NOT NULL,
   `allianceShortName` varchar(20) NOT NULL,
   PRIMARY KEY (`allianceID`),
   KEY `allianceID` (`allianceID`)
@@ -334,16 +328,16 @@ CREATE TABLE `chrRaces` (
   `description` varchar(1000) DEFAULT NULL,
   `iconID` smallint(6) NOT NULL DEFAULT '0',
   `shortDescription` varchar(500) DEFAULT NULL,
-  `raceNameID` int(11) NOT NULL DEFAULT '0',
-  `descriptionID` int(11) NOT NULL DEFAULT '0',
-  `dataID` int(11) NOT NULL DEFAULT '0',
+  `raceNameID` int(10) NOT NULL DEFAULT '0',
+  `descriptionID` int(10) NOT NULL DEFAULT '0',
+  `dataID` int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`raceID`),
   KEY `iconID` (`iconID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `invCategories`;
 CREATE TABLE `invCategories` (
-  `categoryID` int(11) NOT NULL,
+  `categoryID` int(10) NOT NULL,
   `categoryName` varchar(100) DEFAULT NULL,
   `description` varchar(3000) DEFAULT NULL,
   `published` tinyint(1) NOT NULL DEFAULT '0',

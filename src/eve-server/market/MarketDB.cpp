@@ -37,7 +37,7 @@ PyRep *MarketDB::GetStationAsks(uint32 stationID) {
         " WHERE stationID=%u"
         " GROUP BY typeID", stationID))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -58,7 +58,7 @@ PyRep *MarketDB::GetSystemAsks(uint32 solarSystemID) {
         " WHERE solarSystemID=%u"
         " GROUP BY typeID", solarSystemID))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -79,7 +79,7 @@ PyRep *MarketDB::GetRegionBest(uint32 regionID) {
         " WHERE regionID=%u AND bid=%d"
         " GROUP BY typeID", regionID, TransactionTypeSell))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -96,41 +96,92 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
 
     PyList* tup = new PyList();
 
-    /*DBColumnTypeMap colmap;
-    colmap["volRemaining"] = DBTYPE_R8;
-    colmap["price"] = DBTYPE_CY;
-    colmap["issued"] = DBTYPE_FILETIME;
-
-    colmap["orderID"] = DBTYPE_I4;
-    colmap["volEntered"] = DBTYPE_I4;
-    colmap["minVolume"] = DBTYPE_I4;
-    colmap["stationID"] = DBTYPE_I4;
-    colmap["regionID"] = DBTYPE_I4;
-    colmap["solarSystemID"] = DBTYPE_I4;
-    colmap["jumps"] = DBTYPE_I4;
-
-    colmap["duration"] = DBTYPE_I2;
-    colmap["typeID"] = DBTYPE_I2;
-    colmap["range"] = DBTYPE_I2;
-
-    colmap["bid"] = DBTYPE_BOOL;
-
-    //ordering: (painstakingly determined from packets)
-    DBColumnOrdering ordering;
-    ordering.push_back("price");
-    ordering.push_back("volRemaining");
-    ordering.push_back("issued");
-    ordering.push_back("orderID");
-    ordering.push_back("volEntered");
-    ordering.push_back("minVolume");
-    ordering.push_back("stationID");
-    ordering.push_back("regionID");
-    ordering.push_back("solarSystemID");
-    ordering.push_back("jumps");    //not working right...
-    ordering.push_back("typeID");
-    ordering.push_back("range");
-    ordering.push_back("duration");
-    ordering.push_back("bid");*/
+    /*
+              [PyList 2 items]
+                [PyObjectEx Type2]
+                  [PyTuple 2 items]
+                    [PyTuple 1 items]
+                      [PyToken dbutil.RowList]
+                    [PyDict 2 kvp]
+                      [PyString "header"]
+                      [PyObjectEx Normal]
+                        [PyTuple 2 items]
+                          [PyToken blue.DBRowDescriptor]
+                          [PyTuple 1 items]
+                            [PyTuple 14 items]
+                              [PyTuple 2 items]
+                                [PyString "price"]
+                                [PyInt 6]
+                              [PyTuple 2 items]
+                                [PyString "volRemaining"]
+                                [PyInt 5]
+                              [PyTuple 2 items]
+                                [PyString "typeID"]
+                                [PyInt 2]
+                              [PyTuple 2 items]
+                                [PyString "range"]
+                                [PyInt 2]
+                              [PyTuple 2 items]
+                                [PyString "orderID"]
+                                [PyInt 3]
+                              [PyTuple 2 items]
+                                [PyString "volEntered"]
+                                [PyInt 3]
+                              [PyTuple 2 items]
+                                [PyString "minVolume"]
+                                [PyInt 3]
+                              [PyTuple 2 items]
+                                [PyString "bid"]
+                                [PyInt 11]
+                              [PyTuple 2 items]
+                                [PyString "issued"]
+                                [PyInt 64]
+                              [PyTuple 2 items]
+                                [PyString "duration"]
+                                [PyInt 2]
+                              [PyTuple 2 items]
+                                [PyString "stationID"]
+                                [PyInt 3]
+                              [PyTuple 2 items]
+                                [PyString "regionID"]
+                                [PyInt 3]
+                              [PyTuple 2 items]
+                                [PyString "solarSystemID"]
+                                [PyInt 3]
+                              [PyTuple 2 items]
+                                [PyString "jumps"]
+                                [PyInt 3]
+                      [PyString "columns"]
+                      [PyList 14 items]
+                        [PyString "price"]
+                        [PyString "volRemaining"]
+                        [PyString "typeID"]
+                        [PyString "range"]
+                        [PyString "orderID"]
+                        [PyString "volEntered"]
+                        [PyString "minVolume"]
+                        [PyString "bid"]
+                        [PyString "issued"]
+                        [PyString "duration"]
+                        [PyString "stationID"]
+                        [PyString "regionID"]
+                        [PyString "solarSystemID"]
+                        [PyString "jumps"]
+                  [PyPackedRow 57 bytes]
+                    ["price" => <11200000000> [CY]]
+                    ["volRemaining" => <1> [R8]]
+                    ["typeID" => <3244> [I2]]
+                    ["range" => <32767> [I2]]
+                    ["orderID" => <2018034541> [I4]]
+                    ["volEntered" => <1> [I4]]
+                    ["minVolume" => <1> [I4]]
+                    ["bid" => <0> [Bool]]
+                    ["issued" => <129492629676100000> [FileTime]]
+                    ["duration" => <90> [I2]]
+                    ["stationID" => <60003910> [I4]]
+                    ["regionID" => <10000033> [I4]]
+                    ["solarSystemID" => <30002738> [I4]]
+                    ["jumps" => <6> [I4]]*/
 
     //query sell orders
     //TODO: consider the `jumps` field... is it actually used? might be a pain in the ass if we need to actually populate it based on each queryier's location
@@ -142,7 +193,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
         " FROM market_orders "
         " WHERE regionID=%u AND typeID=%u AND bid=%d", regionID, typeID, TransactionTypeSell))
     {
-        codelog( MARKET__ERROR, "Error in query: %s", res.error.c_str() );
+        codelog( DATABASE__ERROR, "Error in query: %s", res.error.c_str() );
 
         PyDecRef( tup );
         return NULL;
@@ -161,7 +212,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
         " FROM market_orders "
         " WHERE regionID=%u AND typeID=%u AND bid=%d", regionID, typeID, TransactionTypeBuy))
     {
-        codelog( MARKET__ERROR, "Error in query: %s", res.error.c_str() );
+        codelog( DATABASE__ERROR, "Error in query: %s", res.error.c_str() );
 
         PyDecRef( tup );
         return NULL;
@@ -187,7 +238,7 @@ PyRep *MarketDB::GetCharOrders(uint32 characterID) {
         " FROM market_orders "
         " WHERE charID=%u", characterID))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -205,7 +256,7 @@ PyRep *MarketDB::GetOrderRow(uint32 orderID) {
         " FROM market_orders"
         " WHERE orderID=%u", orderID))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -215,7 +266,7 @@ PyRep *MarketDB::GetOrderRow(uint32 orderID) {
         return NULL;
     }
 
-    return(DBRowToPackedRow(row));
+    return DBRowToPackedRow(row);
 }
 
 PyRep *MarketDB::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
@@ -245,7 +296,7 @@ PyRep *MarketDB::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
         " FROM market_history_old "
         " WHERE regionID=%u AND typeID=%u", regionID, typeID))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -290,7 +341,7 @@ PyRep *MarketDB::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
         " GROUP BY historyDate",
         Win32Time_Day, regionID, typeID, TransactionTypeBuy))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -329,7 +380,7 @@ bool MarketDB::BuildOldPriceHistory() {
             cutoff_time
             ))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
         return false;
     }
 /*
@@ -342,7 +393,7 @@ bool MarketDB::BuildOldPriceHistory() {
         cutoff_time))
 
     {
-        codelog(MARKET__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
         return false;
     }
 */
@@ -366,7 +417,7 @@ PyObject *MarketDB::GetCorporationBills(uint32 corpID, bool payable)
 
     if ( success == false )
     {
-        codelog(MARKET__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -440,7 +491,7 @@ PyRep *MarketDB::GetMarketGroups() {
         "SELECT * "
         " FROM invMarketGroups"))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -548,7 +599,7 @@ uint32 MarketDB::FindBuyOrder(
         quantity,
         price))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -583,7 +634,7 @@ uint32 MarketDB::FindSellOrder(
         quantity,
         price))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
@@ -619,7 +670,7 @@ bool MarketDB::GetOrderInfo(
         " WHERE orderID=%u",
         orderID))
     {
-        _log(MARKET__ERROR, "Error in query: %s.", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in query: %s.", res.error.c_str());
         return false;
     }
 
@@ -658,7 +709,7 @@ bool MarketDB::AlterOrderQuantity(uint32 orderID, uint32 new_qty) {
         " WHERE orderID = %u",
         new_qty, orderID))
     {
-        _log(MARKET__ERROR, "Error in query: %s.", err.c_str());
+        _log(DATABASE__ERROR, "Error in query: %s.", err.c_str());
         return false;
     }
 
@@ -675,7 +726,7 @@ bool MarketDB::AlterOrderPrice(uint32 orderID, double new_price) {
         " WHERE orderID = %u",
         new_price, orderID))
     {
-        _log(MARKET__ERROR, "Error in query: %s.", err.c_str());
+        _log(DATABASE__ERROR, "Error in query: %s.", err.c_str());
         return false;
     }
 
@@ -691,7 +742,7 @@ bool MarketDB::DeleteOrder(uint32 orderID) {
         " WHERE orderID = %u",
         orderID))
     {
-        _log(MARKET__ERROR, "Error in query: %s.", err.c_str());
+        _log(DATABASE__ERROR, "Error in query: %s.", err.c_str());
         return false;
     }
 
@@ -738,7 +789,7 @@ bool MarketDB::RecordTransaction(
             price, transactionType, charID, regionID, stationID
             ))
     {
-        codelog(MARKET__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
         return false;
     }
     return true;
@@ -790,7 +841,7 @@ uint32 MarketDB::_StoreOrder(
         ))
 
     {
-        codelog(MARKET__ERROR, "Error in query: %s", err.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
         return(0);
     }
 
@@ -821,7 +872,7 @@ PyRep *MarketDB::GetTransactions(
         " AND keyID=%u",
         characterID, typeID, typeID, quantity, minPrice, maxPrice, maxPrice, fromDate, buySell, buySell, accountKey))
     {
-        codelog( MARKET__ERROR, "Error in query: %s", res.error.c_str() );
+        codelog( DATABASE__ERROR, "Error in query: %s", res.error.c_str() );
 
         return NULL;
     }

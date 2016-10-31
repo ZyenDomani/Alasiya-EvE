@@ -304,6 +304,14 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call) {
 /*
  *   02:46:06 L AccountService::Handle_GetJournal(): size= 6, 0=Integer, 1=Long, 2=None, 3=Boolean, 4=None, 5=Integer
  *   keyvalues = sm.GetService('account').GetJournal(accountKey, fromDate, entryTypeID, corpAccount, transactionID, rev)
+ *
+            [PyTuple 6 items]
+              [PyInt 1000]
+              [PyIntegerVar 129493728000000000]
+              [PyNone]
+              [PyBool False]
+              [PyNone]
+              [PyInt 1]
  */
 
     Call_GetJournal args;

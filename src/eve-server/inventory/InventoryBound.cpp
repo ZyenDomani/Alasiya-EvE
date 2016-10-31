@@ -290,7 +290,7 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
 
 PyResult InventoryBound::Handle_StripFitting(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::StripFitting() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    if (sConfig.server.testServer) {
+    if (sConfig.server.IsTestServer) {
         sLog.Log( "InventoryBound::Handle_StripFitting()", "size= %u", call.tuple->size());
         call.Dump(SERVICE__CALL_DUMP);
     }
@@ -317,7 +317,7 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
 
 PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::SetPassword() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    if (sConfig.server.testServer) {
+    if (sConfig.server.IsTestServer) {
         sLog.Log( "InventoryBound::Handle_SetPassword()", "size= %u", call.tuple->size());
         call.Dump(SERVICE__CALL_DUMP);
     }
@@ -330,7 +330,7 @@ PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
  */
 PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::Add() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    if (sConfig.server.testServer) {
+    if (sConfig.server.IsTestServer) {
         sLog.Log( "InventoryBound::Handle_Add()", "size= %u", call.tuple->size());
         call.Dump(SERVICE__CALL_DUMP);
     }
@@ -394,7 +394,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 
 PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::MultiAdd() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    if (sConfig.server.testServer) {
+    if (sConfig.server.IsTestServer) {
         sLog.Log( "InventoryBound::Handle_MultiAdd()", "size= %u", call.tuple->size());
         call.Dump(SERVICE__CALL_DUMP);
     }

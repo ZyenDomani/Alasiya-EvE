@@ -35,12 +35,6 @@ class BookmarkService
 : public PyService
 {
 public:
-    static const uint32 MAX_BOOKMARK_ID;
-    static const uint32 MAX_BM_FOLDER_ID;
-
-    uint32 GetNextAvailableBookmarkID();
-    uint32 GetNextAvailableFolderID();
-
     BookmarkService(PyServiceMgr *mgr);
     virtual ~BookmarkService();
 

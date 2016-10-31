@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Ubiquitatis
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -49,28 +50,47 @@ CorpBookmarkMgrService::~CorpBookmarkMgrService()
 
 PyResult CorpBookmarkMgrService::Handle_GetBookmarks(PyCallArgs& call)
 {
+    /*
+              [PyTuple 2 items]
+                [PyDict 238 kvp]        << bookmarks
+                  [PyInt 715518945]
+                  [PyPackedRow 65 bytes]
+                    ["bookmarkID" => <715518945> [I4]]
+                    ["ownerID" => <1630077495> [I4]]
+                    ["itemID" => <0> [I8]]
+                    ["typeID" => <5> [I4]]
+                    ["memo" => <Class 1 - 5/10  > [WStr]]
+                    ["created" => <129811403510000000> [FileTime]]
+                    ["x" => <2537095137040> [R8]]
+                    ["y" => <383826124800> [R8]]
+                    ["z" => <-3172263813120> [R8]]
+                    ["locationID" => <30003263> [I4]]
+                    ["note" => <empty string> [WStr]]
+                    ["creatorID" => <447642544> [I4]]
+                    ["folderID" => <111571> [I4]]
+                [PyDict 9 kvp]          << folders
+                  [PyInt 521456]
+                  [PyPackedRow 13 bytes]
+                    ["folderID" => <521456> [I4]]
+                    ["ownerID" => <1630077495> [I4]]
+                    ["folderName" => <Bomb Spots> [WStr]]
+                    ["creatorID" => <1610990724> [I4]]
+            */
     ObjectCachedMethodID method_id(GetName(), "GetBookmarks");
     if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        PyDict *res = m_db.GetBookmarks(call.client->GetCorporationID());
-        if (!res)
-            return nullptr;
-
-        PyRep* result = nullptr;
-
         PyTuple *tuple = new PyTuple(2);
-        tuple->items[0] = res;
-        tuple->items[1] = new PyDict();
+            tuple->SetItem(0, m_db.GetBookmarks(call.client->GetCorporationID()));
+            tuple->SetItem(1, m_db.GetFolders(call.client->GetCorporationID()));
+        PyRep* rep = tuple;
 
-        result = tuple;
-        m_manager->cache_service->GiveCache(method_id, &result);
+        m_manager->cache_service->GiveCache(method_id, &rep);
     }
 
     return(m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id));
 }
 
 PyResult CorpBookmarkMgrService::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
-  uint8 size = call.tuple->size();
-  sLog.Log( "CorpBookmarkMgrService::Handle_UpdatePlayerBookmark()", "size=%u ", size );
+  sLog.Log( "CorpBookmarkMgrService::Handle_UpdatePlayerBookmark()", "size=%u ", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;

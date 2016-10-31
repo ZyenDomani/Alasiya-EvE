@@ -317,7 +317,7 @@ void ConsoleCommand::Status(std::string* state, int64* threads, float* vm_usage,
         >> ignore >> ignore >> vsize >> rss;
 	ifs.close();
 
-    if (sConfig.server.testServer)
+    if (sConfig.server.IsTestServer)
         _log(SERVER__INFO, "ConsoleCommand::Status() proc/self/stat returns RSS: %i, VM: %u", rss, vsize);
 
 	*state = run_state;
@@ -357,7 +357,6 @@ void ConsoleCommand::MemStatus(float* vm_usage, float* resident_set)
     *vm_usage     = ((vsize / sysconf(_SC_PAGE_SIZE)) /1024.0 /6);
 	//rss (in pages) * page_size(in bytes, converted to k), then convert to Mb.
     *resident_set = (rss * (sysconf(_SC_PAGE_SIZE) /1024.0) /1024.0);
-
 }
 
 void ConsoleCommand::Test()
@@ -392,7 +391,7 @@ void ConsoleCommand::UpdateStatus() {
 	int64 threads = 0;
 	float vm = 0.0f, rss = 0.0f, user = 0.0f, kernel = 0.0f;
 	Status(&state, &threads, &vm, &rss, &user, &kernel);
-    if (sConfig.server.testServer)
+    if (sConfig.server.IsTestServer)
         _log(SERVER__INFO, "Current Mem usage - RSS: %f, VM: %f", rss, vm);
 	m_db.SaveServerStats(threads + sThread.Count(), rss, vm, user, kernel, pFactory->Count(), sBubbleMgr.Count());
 }
