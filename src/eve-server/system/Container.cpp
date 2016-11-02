@@ -473,7 +473,7 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        //slim->SetItemString("lootRights",       new PyNone);
+        //slim->SetItemString("lootRights",       new PyNone());
         slim->SetItemString("corpID",           new PyInt(GetCorporationID()));
         slim->SetItemString("allianceID",       new PyLong(GetAllianceID()));
         slim->SetItemString("isEmpty",          new PyBool(IsEmpty()));

@@ -55,7 +55,7 @@ void log_hex(LogType type, const void *data, unsigned long length, unsigned char
 }
 
 void log_phex(LogType type, const void *data, unsigned long length, unsigned char padding) {
-    if(length <= 1024)
+    if (length <= 1024)
         log_hex(type, data, length, padding);
     else {
         char buffer[80];
@@ -97,9 +97,7 @@ extern void log_messageVA( LogType type, uint32 iden, const char *fmt, va_list a
 
     /* add the required spaces */
     for (uint32 i = 0; i < iden; i++)
-    {
         log_msg[log_msg_index++] = ' ';
-    }
 
     /* make sure the resulting size is corrected */
     log_msg_size-=iden;
@@ -115,7 +113,7 @@ extern void log_messageVA( LogType type, uint32 iden, const char *fmt, va_list a
     fputs(log_msg, stdout);
 
     //print into the logfile (if any)
-    if(logsys_log_file != NULL) {
+    if (logsys_log_file) {
         //fprintf(logsys_log_file, "%s\n", message.c_str());
         fputs(log_msg, logsys_log_file);
         //keep the logfile updated
@@ -142,16 +140,16 @@ void log_toggle( LogType t )
 
 bool log_open_logfile( const char* filename )
 {
-    if( !log_close_logfile() )
+    if (!log_close_logfile())
         return false;
 
-    logsys_log_file = fopen( filename, "w" );
-    return ( NULL != logsys_log_file );
+    logsys_log_file = fopen(filename, "w");
+    return ( nullptr != logsys_log_file );
 }
 
 bool log_close_logfile()
 {
-    if( NULL == logsys_log_file )
+    if (!logsys_log_file)
         return true;
     return ( 0 == fclose( logsys_log_file ) );
 }
@@ -159,11 +157,11 @@ bool log_close_logfile()
 bool load_log_settings(const char *filename) {
     //this is a terrible algorithm, but im lazy today
     FILE *f = fopen(filename, "r");
-    if(f == NULL)
+    if (!f)
         return false;
     char linebuf[512], type_name[256], value[256];
     while(!feof(f)) {
-        if(fgets(linebuf, 512, f) == NULL)
+        if (!fgets(linebuf, 512, f))
             continue;
 #ifdef WIN32
         if (sscanf(linebuf, "%[^=]=%[^\n]\n", type_name, value) != 2)
@@ -173,14 +171,14 @@ bool load_log_settings(const char *filename) {
             continue;
 #endif
 
-        if(type_name[0] == '\0' || type_name[0] == '#')
+        if (type_name[0] == '\0' || type_name[0] == '#')
             continue;
 
         //first make sure we understand the value
         bool enabled;
-        if(!strcasecmp(value, "on") || !strcasecmp(value, "yes") || !strcasecmp(value, "enabled") || !strcmp(value, "1"))
+        if (!strcasecmp(value, "on") || !strcasecmp(value, "yes") || !strcasecmp(value, "enabled") || !strcmp(value, "1"))
             enabled = true;
-        else if(!strcasecmp(value, "off") || !strcasecmp(value, "no") || !strcasecmp(value, "disabled") || !strcmp(value, "0"))
+        else if (!strcasecmp(value, "off") || !strcasecmp(value, "no") || !strcasecmp(value, "disabled") || !strcmp(value, "0"))
             enabled = false;
         else {
             printf("Unable to parse value '%s' from %s. Skipping line.", value, filename);
@@ -189,17 +187,17 @@ bool load_log_settings(const char *filename) {
 
         int r;
         //first see if it is a category name
-        for(r = 0; r < NUMBER_OF_LOG_CATEGORIES; r++) {
-            if(!strcasecmp(log_category_names[r], type_name))
+        for (r = 0; r < NUMBER_OF_LOG_CATEGORIES; r++) {
+            if (!strcasecmp(log_category_names[r], type_name))
                 break;
         }
-        if(r != NUMBER_OF_LOG_CATEGORIES) {
+        if (r != NUMBER_OF_LOG_CATEGORIES) {
             //matched a category.
             int k;
-            for(k = 0; k < NUMBER_OF_LOG_TYPES; k++) {
-                if(log_type_info[k].category != r)
+            for (k = 0; k < NUMBER_OF_LOG_TYPES; k++) {
+                if (log_type_info[k].category != r)
                     continue;   //does not match this category.
-                if(enabled)
+                if (enabled)
                     log_enable(LogType(k));
                 else
                     log_disable(LogType(k));
@@ -208,16 +206,16 @@ bool load_log_settings(const char *filename) {
         }
 
         for(r = 0; r < NUMBER_OF_LOG_TYPES; r++) {
-            if(!strcasecmp(log_type_info[r].name, type_name))
+            if (!strcasecmp(log_type_info[r].name, type_name))
                 break;
         }
-        if(r == NUMBER_OF_LOG_TYPES) {
+        if (r == NUMBER_OF_LOG_TYPES) {
             printf("Unable to locate log type %s from file %s. Skipping line.", type_name, filename);
             continue;
         }
 
         //got it all figured out, do something now...
-        if(enabled)
+        if (enabled)
             log_enable(LogType(r));
         else
             log_disable(LogType(r));

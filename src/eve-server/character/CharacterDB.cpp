@@ -65,7 +65,7 @@ bool CharacterDB::GetRespecInfo(uint32 characterId, uint32& out_freeRespecs, uin
         // you may get another
         out_freeRespecs++;
         if (out_freeRespecs == 1)
-            out_nextRespec = Win32TimeNow() + Win32Time_Year;
+            out_nextRespec = Win32TimeNow() + Win32Time_Month *3;       // im not making players wait a year to respec.
         else
             out_nextRespec = 0;
 
@@ -169,9 +169,9 @@ PyRep *CharacterDB::GetCharacterList(uint32 accountID) {
     return DBResultToCRowset(res);
 }
 
-bool CharacterDB::ValidateCharName(const char *name)
+PyRep* CharacterDB::ValidateCharName(const char *name)
 {
-    /** @todo  this isnt bool....
+    /** @todo
             validStates = {-1: localization.GetByLabel('UI/CharacterCreation/InvalidName/TooShort'),
              -2: localization.GetByLabel('UI/CharacterCreation/InvalidName/TooLong'),
              -5: localization.GetByLabel('UI/CharacterCreation/InvalidName/IllegalCharacter'),
@@ -180,8 +180,8 @@ bool CharacterDB::ValidateCharName(const char *name)
              -101: localization.GetByLabel('UI/CharacterCreation/InvalidName/Unavailable'),
              -102: localization.GetByLabel('UI/CharacterCreation/InvalidName/Unavailable')}
              */
-    if (name == NULL || *name == '\0')
-        return false;
+    if (!name or (*name == '\0'))
+        return new PyInt(-5);
 
     /* hash the name */
     uint32 hash = djb2_hash(name);
@@ -191,10 +191,10 @@ bool CharacterDB::ValidateCharName(const char *name)
 
     /* if itr is not equal to the end of the set it means that the same hash has been found */
     if (itr != mNameValidation.end())
-        return false;
+        return new PyInt(-101);
 
     /* if we got here the name is "new" */
-    return true;
+    return new PyBool(true);
 }
 
 void CharacterDB::UpdateCharCorpRecords(uint32 charID, uint32 corpID) {
@@ -233,7 +233,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
         /** @todo  need to make proper error here. */
         // this causes blanks on char sel screen if there is no ship, or shipID is wrong.
         if (!res.GetRow(row))
-            return new PyNone;
+            return new PyNone();
 
         sDatabase.DoEscapeString(shipName, row.GetText(0));
         shipTypeID = row.GetUInt(1);
@@ -1209,8 +1209,7 @@ void CharacterDB::load_name_validation_set()
     }
 
     DBResultRow row;
-    while(res.GetRow(row) == true)
-    {
+    while (res.GetRow(row)) {
         uint32 characterID = row.GetUInt(0);
         const char* name = row.GetText(1);
 

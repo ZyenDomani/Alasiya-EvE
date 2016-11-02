@@ -115,7 +115,7 @@ PyBoundObject *ShipService::_CreateBoundObject(Client *c, const PyRep *bind_args
 PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     /*if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
-        return new PyNone;
+        return new PyNone();
     }*/
     sLog.Log("ShipBound::Handle_Board()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);

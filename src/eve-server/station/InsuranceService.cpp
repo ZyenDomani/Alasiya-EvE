@@ -102,7 +102,7 @@ PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
     if (type)
         return new PyFloat(type->basePrice()/15);
     else
-        return new PyNone;
+        return new PyNone();
 }
 
 PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
@@ -111,7 +111,7 @@ PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
     if (type)
         return new PyFloat(type->basePrice()/15);
     else
-        return new PyNone;
+        return new PyNone();
 }
 
 PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
@@ -145,7 +145,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     InventoryItemRef shipRef = call.client->services().item_factory->GetItem(args.shipID) ;
     if(shipRef->groupID() == EVEDB::invGroups::Rookieship) {
         call.client->SendInfoModalMsg("You cannot insure Rookie ships.");
-        return new PyNone;
+        return new PyNone();
     } // end rookie ship check
 
     /* INSURANCE FRACTION TABLE:
@@ -172,7 +172,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 
     if (fraction == 0) {
         call.client->SendErrorMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 75520.");
-        return new PyNone;
+        return new PyNone();
     } else if (fraction == 0.3)
         call.client->SendErrorMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 75521.");
 
@@ -190,14 +190,14 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
             call.client->GetName(), args.amount, call.client->GetCharacterID() );
             call.client->SendErrorMsg("Failed to transfer money from your account.");
             m_db->DeleteInsuranceByShipID(args.shipID);
-            return new PyNone;
+            return new PyNone();
 			// at this point, the previous insurance was deleted, and the new insurance
 			//   has been deleted.  should there be a check for keeping the old insurance incase
 			//   the payment fails?
         }
 	} else {
         call.client->SendErrorMsg("Failed to install new insurance contract.");
-        return new PyNone;
+        return new PyNone();
     }
 
     // TODO:  send mail detailing insurance coverage and length of coverage
@@ -222,5 +222,5 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 
 PyResult InsuranceBound::Handle_UnInsureShip( PyCallArgs& call ) {
     m_db->DeleteInsuranceByShipID(call.tuple->GetItem(0)->AsInt()->value());
-    return new PyNone;
+    return new PyNone();
 }

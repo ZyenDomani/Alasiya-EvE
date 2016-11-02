@@ -1053,7 +1053,7 @@ PyResult LSCService::Handle_DestroyChannel( PyCallArgs& call )
     // Now, remove the channel from the database:
     m_db.RemoveChannelFromDatabase( res->second->GetChannelID() );
 
-    return new PyNone;
+    return new PyNone();
 }
 
 

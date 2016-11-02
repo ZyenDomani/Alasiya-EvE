@@ -223,7 +223,7 @@ PyResult CorpStationMgrIMBound::Handle_SetHomeStation(PyCallArgs &call) {
 
     sLog.Debug( "CorpStationMgrIMBound", "Called SetHomeStation stub." );
 
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult CorpStationMgrIMBound::Handle_SetCloneTypeID(PyCallArgs &call) {
@@ -251,7 +251,7 @@ PyResult CorpStationMgrIMBound::Handle_SetCloneTypeID(PyCallArgs &call) {
 
     //sLog.Debug( "CorpStationMgrIMBound", "Called SetCloneTypeID stub." );
 
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult CorpStationMgrIMBound::Handle_GetQuoteForRentingAnOffice(PyCallArgs &call) {
@@ -527,7 +527,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     Noic_row.line->AddItemInt( 1 );
     Noic_row.line->AddItemInt( EVEDB::invGroups::Station_Services );
     Noic_row.line->AddItemInt( EVEDB::invCategories::Station );
-    Noic_row.line->AddItem( new PyNone );
+    Noic_row.line->AddItem( new PyNone() );
 
     NotifyOnItemChange Noic;
     Noic.itemRow = Noic_row.Encode();
@@ -660,7 +660,7 @@ PyResult CorpStationMgrIMBound::Handle_GetStationOffices( PyCallArgs& call )
 
 
     PyDict* itr_1 = new PyDict();
-    itr_1->SetItem("versionCheck", new_tuple("always", new PyNone, new PyNone));
+    itr_1->SetItem("versionCheck", new_tuple("always", new PyNone(), new PyNone()));
 
     arg_tuple->SetItem(0, itr_1);
     arg_tuple->SetItem(1, new PySubStream( new PyList() ) );

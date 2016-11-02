@@ -128,7 +128,7 @@ void Scan::ScanResult() {
             ssrp.degraded = false;  /* will need to be set in *some* kind of test/conditional */
             ssrp.probeID = m_client->GetShipID();   /* will need to be corrected after implementing probes */
             ssrp.certainty = 1;     /* will need to be fixed. */
-            ssrp.pos = new PyNone;  /* this is for probe positions (where applicable).  it uses the 'foo.Vector3' token, and coded in scan.xmlp */
+            ssrp.pos = new PyNone();  /* this is for probe positions (where applicable).  it uses the 'foo.Vector3' token, and coded in scan.xmlp */
         SSR_ObjectEx_Pos ssr_oed;
             ssr_oed.x = row.GetDouble(6);
             ssr_oed.y = row.GetDouble(7);

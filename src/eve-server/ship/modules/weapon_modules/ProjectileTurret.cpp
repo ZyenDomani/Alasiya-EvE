@@ -126,7 +126,7 @@ void ProjectileTurret::StopCycle(bool abort)
         shipEff.startTime = (shipEff.timeNow + (timeLeft * Win32Time_Second));
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
-        shipEff.error = new PyNone;
+        shipEff.error = new PyNone();
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
@@ -211,7 +211,7 @@ void ProjectileTurret::_ShowCycle()
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = m_cycleTime;
         shipEff.repeat = m_chargeRef->quantity();
-        shipEff.error = new PyNone;
+        shipEff.error = new PyNone();
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;

@@ -205,7 +205,7 @@ PyDict* StaticSystemEntity::MakeSlimItem() {
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("nameID",       new PyNone);
+        slim->SetItemString("nameID",       new PyNone());
         slim->SetItemString("ownerID",      new PyInt(1));
     return slim;
 }
@@ -275,7 +275,7 @@ PyDict* StargateSE::MakeSlimItem() {
         slim->SetItemString("ownerID",      new PyInt(1));       /** @todo (allan) make function to lookup controlling faction id for this */
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("nameID",       new PyNone);
+        slim->SetItemString("nameID",       new PyNone());
     if (m_jumps)
         slim->SetItemString("jumps", m_jumps->Clone());
     return slim;
@@ -336,7 +336,7 @@ PyDict *DungeonSE::MakeSlimItem() {
     slim->SetItemString("ownerID", new PyInt(1));
 
     slim->SetItemString("dunSkillLevel", new PyInt(0));
-    slim->SetItemString("dunSkillTypeID", new PyNone);
+    slim->SetItemString("dunSkillTypeID", new PyNone());
     slim->SetItemString("dunObjectID", new PyInt(160449));
     slim->SetItemString("dunWipeNPC", new PyInt(1));
     slim->SetItemString("dunToGateID", new PyInt(160484));

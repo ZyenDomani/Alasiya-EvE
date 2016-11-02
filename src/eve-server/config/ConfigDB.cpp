@@ -133,7 +133,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
             " WHERE itemID in (%s)", table, ids.c_str()))
     {
         codelog(DATABASE__ERROR, "Error in GetMultiLocationsEx query: %s", res.error.c_str());
-        return new PyNone;
+        return new PyNone();
     }
 
     return DBResultToTupleSet(res);

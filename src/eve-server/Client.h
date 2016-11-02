@@ -70,7 +70,7 @@ public:
         msJump,
         msUndock
     } _MoveState;
-    
+
     Client(PyServiceMgr &services, EVETCPConnection** con);
     virtual ~Client();
 
@@ -248,6 +248,10 @@ public:
     void OnCharNowInStation();
     void OnCharNoLongerInStation();
 
+    // portrait stuff....
+    bool RecPic()                                       { return m_portrait; }
+    void SetPicRec(bool set=false)                      { m_portrait = set; }
+
     /********************************************************************/
     /* Server Administration Interface                                  */
     /********************************************************************/
@@ -280,6 +284,7 @@ protected:
     bool m_undock;
     bool m_beyonce;
     bool m_packaged;        // used to correctly package updates into a PackagedAction list
+    bool m_portrait;        // used to verify new char pic received
     bool m_autoPilot;       // set true for using autopilot.
     bool m_bubbleWait;
     bool m_setStateSent;

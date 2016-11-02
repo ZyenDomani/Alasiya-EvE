@@ -423,7 +423,7 @@ PyDict *StructureSE::MakeSlimItem() {
         }
 
         slim->SetItemString("name",                     new PyString(""));
-        slim->SetItemString("nameID",                   new PyNone);
+        slim->SetItemString("nameID",                   new PyNone());
 
     return slim;
 }

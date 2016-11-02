@@ -89,5 +89,5 @@ PyResult ScenarioService::Handle_ResetD( PyCallArgs& call )
 {
     sLog.Debug( "ScenarioService", "Called ResetD stub." );
 
-    return new PyNone;
+    return new PyNone();
 }

@@ -94,6 +94,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_undock = false;
     m_beyonce = false;
     m_packaged = false;
+    m_portrait = false;
     m_autoPilot = false;
     m_bubbleWait = true;
     m_setStateSent = false;
@@ -1581,18 +1582,19 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     CryptoHandshakeAck ack;
         ack.jit = GetLanguageID();
         ack.userid = GetUserID();
-        ack.maxSessionTime = new PyNone;
+        ack.maxSessionTime = new PyNone();
         ack.userType = 1;
         ack.role = ROLE_PLAYER | ROLE_NEWBIE; /* account role is not defined yet.  live returns these */
         ack.address = GetAddress();
-        ack.inDetention = new PyNone;
+        ack.inDetention = new PyNone();
     // no client update available
-        ack.client_hash = new PyNone;
+        ack.client_hash = new PyNone();
         ack.user_clientid = GetClientID();
         ack.live_updates = sLiveUpdateDB.GetUpdates();
         /* the client creates and sends sessionID in the initial packet.  unknown how to get it yet. */
         //ack.sessionID = GetSessionID();
     PyRep* r = ack.Encode();
+    r->Dump(CLIENT__CALL_DUMP, "    ");
     mNet->QueueRep(r);
     PyDecRef(r);
 
@@ -1864,7 +1866,8 @@ void Client::SendErrorMsg(const char* fmt, ...)
     vasprintf(&str, fmt, args);
     assert(str);
 
-    sLog.Error("Client","Sending Error Message to %s:", m_char->itemName().c_str());
+    if (m_char)
+        sLog.Error("Client","Sending Error Message to %s:", m_char->itemName().c_str());
     log_messageVA(CLIENT__ERROR, fmt, args);
     va_end(args);
 
@@ -1886,7 +1889,8 @@ void Client::SendErrorMsg(const char* fmt, va_list args)
     vasprintf(&str, fmt, args);
     assert(str);
 
-    sLog.Error("Client","Sending Error Message to %s:", m_char->itemName().c_str());
+    if (m_char)
+        sLog.Error("Client","Sending Error Message to %s:", m_char->itemName().c_str());
     log_messageVA(CLIENT__ERROR, fmt, args);
 
     //want to send some sort of notify with a "ServerMessage" message ID maybe?
@@ -1912,7 +1916,8 @@ void Client::SendInfoModalMsg(const char* fmt, ...)
     vasprintf(&str, fmt, args);
     assert(str);
 
-    sLog.Log("Client","Info Modal to %s:", m_char->itemName().c_str());
+    if (m_char)
+        sLog.Log("Client","Info Modal to %s:", m_char->itemName().c_str());
     log_messageVA(CLIENT__MESSAGE, fmt, args);
     va_end(args);
 
@@ -1938,7 +1943,8 @@ void Client::SendNotifyMsg(const char* fmt, ...)
     vasprintf(&str, fmt, args);
     assert(str);
 
-    sLog.Log("Client","Notify to %s:", m_char->itemName().c_str());
+    if (m_char)
+        sLog.Log("Client","Notify to %s:", m_char->itemName().c_str());
     log_messageVA(CLIENT__MESSAGE, fmt, args);
     va_end(args);
 
@@ -1960,7 +1966,8 @@ void Client::SendNotifyMsg(const char* fmt, va_list args)
     vasprintf(&str, fmt, args);
     assert(str);
 
-    sLog.Log("Client","Notify to %s:", m_char->itemName().c_str());
+    if (m_char)
+        sLog.Log("Client","Notify to %s:", m_char->itemName().c_str());
     log_messageVA(CLIENT__MESSAGE, fmt, args);
 
     //want to send some sort of notify with a "ServerMessage" message ID maybe?
@@ -1987,19 +1994,19 @@ void Client::SelfChatMessage(const char* fmt, ...)
 
     va_end(args);
 
-    if (m_channels.empty())
-    {
-        sLog.Error("Client", "%s: Tried to send self chat, but we are not joined to any channels: %s", m_char->itemName().c_str(), str);
+    if (m_channels.empty()) {
+        if (m_char)
+            sLog.Error("Client", "%s: Tried to send self chat, but we are not joined to any channels: %s", m_char->itemName().c_str(), str);
         free(str);
         return;
     }
 
-    sLog.Log("Client","%s: Self message on all channels: %s", m_char->itemName().c_str(), str);
+    if (m_char)
+        sLog.Log("Client","%s: Self message on all channels: %s", m_char->itemName().c_str(), str);
 
     //this is such a pile of crap, but im not sure whats better.
     //maybe a private message...
-    std::set<LSCChannel*>::iterator cur;
-    cur = m_channels.begin();
+    std::set<LSCChannel*>::iterator cur = m_channels.begin();
     for (; cur != m_channels.end(); ++cur)
         (*cur)->SendMessage(this, str, true);
 

@@ -122,7 +122,7 @@ PyResult ConfigService::Handle_GetMultiStationEx(PyCallArgs &call) {
         return NULL;
     }
 
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult ConfigService::Handle_GetMultiCorpTickerNamesEx(PyCallArgs &call) {

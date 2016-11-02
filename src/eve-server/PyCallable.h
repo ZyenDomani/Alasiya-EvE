@@ -75,10 +75,6 @@ public:
     PyRep* ssException;
 };
 
-
-
-
-
 class PyCallable
 {
 public:

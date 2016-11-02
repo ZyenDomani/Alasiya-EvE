@@ -68,7 +68,7 @@ public:
     void GetCharacterData(uint32 characterID, std::map<std::string, uint64> &characterDataMap);
 	bool GetCharHomeStation(uint32 characterID, uint32 &stationID);
 
-    bool ValidateCharName(const char *name);
+    PyRep* ValidateCharName(const char* name);
     /**
      * add_name_validation_set
      *

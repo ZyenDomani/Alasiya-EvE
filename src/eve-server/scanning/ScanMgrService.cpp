@@ -173,7 +173,7 @@ PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
     pClient->scan()->RequestScans(dict);
 
     // this call returns a PyNone
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult ScanBound::Handle_ReconnectToLostProbes( PyCallArgs& call ) {

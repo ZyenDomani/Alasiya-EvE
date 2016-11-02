@@ -53,7 +53,7 @@ EVEServerConfig::EVEServerConfig()
     server.ServerSleepTime = 10 /*ms*/;
     server.idleSleepTime = 1000;
     server.StationDockDelay = 3 /*s*/;
-    server.EnableIGB = false;
+    server.DisableIGB = true;
 
     // world
     world.chatLogs = false;//N
@@ -181,7 +181,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
 {
-    AddValueParser( "EnableIGB",            server.EnableIGB );
+    AddValueParser( "DisableIGB",            server.DisableIGB );
     AddValueParser( "IsTestServer",         server.IsTestServer );
     AddValueParser( "UseBeanCount",         server.UseBeanCount );
     AddValueParser( "UseMarketBot",         server.UseMarketBot );
@@ -195,7 +195,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
 
     const bool result = ParseElementChildren( ele );
 
-    RemoveParser( "EnableIGB" );
+    RemoveParser( "DisableIGB" );
     RemoveParser( "IsTestServer" );
     RemoveParser( "UseBeanCount" );
     RemoveParser( "maxPlayers" );

@@ -383,7 +383,7 @@ PyResult AgentMgrBound::Handle_GetInfoServiceDetails( PyCallArgs& call ) {
   sLog.Log( "AgentMgrBound::Handle_GetInfoServiceDetails()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     //takes no arguments
-    return new PyNone;
+    return new PyNone();
 }
 
 //15:46:37 L AgentMgrBound::Handle_GetMissionObjectiveInfo(): size= 0
@@ -422,7 +422,7 @@ PyResult EpicArcService::Handle_AgentHasEpicMissionsForCharacter(PyCallArgs &cal
   sLog.Log( "EpicArcService::Handle_AgentHasEpicMissionsForCharacter()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     //takes no arguments
-    return new PyNone;
+    return new PyNone();
 
 }
 

@@ -98,7 +98,7 @@ PyResult PlanetORBBound::Handle_GMChangeSpaceObjectOwner( PyCallArgs& call )
     sLog.Log( "PlanetORBBound", "Handle_GMChangeSpaceObjectOwner" );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return new PyNone;
+    return new PyNone();
 }
 
 

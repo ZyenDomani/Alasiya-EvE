@@ -96,6 +96,7 @@ bool ConsoleCommand::Process() {
 				sLog.Warning("       c(o)mmands", " Prints a list of currently loaded Commands and their required role. (long list)");
                 sLog.Warning("           (t)est", " Prints the current test object *varies*");
                 sLog.Warning("        threa(d)s", " Prints a list of current threads.");
+                sLog.Warning("    reload (l)ogs", " Reloads log.ini to change values without restarting server.");
 			} else if (strncmp(buf, "e", 1) == 0) {
 				sLog.Success("  Alasiya's EvEMu", "Server Hello:");
 				sLog.Magenta("      Server Says", " Hello World!" );
@@ -272,6 +273,15 @@ bool ConsoleCommand::Process() {
                     sLog.Warning("   Active Threads", "Individual thread IDs are not displayed for more than %u active threads.", maxCount);
                 else
                     sThread.ListThreads();
+            } else if (strncmp(buf, "l", 1) == 0) {
+                /*
+                sLog.~NewLog();
+                sLog.InitializeLogging(sConfig.files.logDir);
+                */
+                if ( load_log_settings( sConfig.files.logSettings.c_str() ) )
+                    sLog.Success("  Alasiya's EvEMu", "Log settings reloaded from %s", sConfig.files.logSettings.c_str() );
+                else
+                    sLog.Warning("  Alasiya's EvEMu", "Unable to reload settings from %s", sConfig.files.logSettings.c_str() );
 			} else {
 				sLog.Error("  Alasiya's EvEMu", "Command not recognized: %s", buf);
 			}

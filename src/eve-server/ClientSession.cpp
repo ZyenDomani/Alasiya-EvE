@@ -36,7 +36,7 @@
 ClientSession::ClientSession() : mSession( new PyDict ), mDirty( false )
 {
     /* default value of attribute */
-    PyTuple* v = new_tuple(new PyNone, new PyLong(0x4000000000000000LL));
+    PyTuple* v = new_tuple(new PyNone(), new PyLong(0x4000000000000000LL));
     mSession->SetItemString( "role", v );
 }
 
@@ -173,7 +173,7 @@ void ClientSession::SetString( const char* name, const char* value )
 
 void ClientSession::Clear( const char* name )
 {
-    _Set( name, new PyNone );
+    _Set( name, new PyNone() );
 }
 
 void ClientSession::EncodeChanges( PyDict* into )
@@ -233,8 +233,8 @@ void ClientSession::_Set( const char* name, PyRep* value )
     if( v == NULL )
     {
         v = new PyTuple( 2 );
-        v->SetItem( 0, new PyNone );
-        v->SetItem( 1, new PyNone );
+        v->SetItem( 0, new PyNone() );
+        v->SetItem( 1, new PyNone() );
         mSession->SetItemString( name, v );
     }
 

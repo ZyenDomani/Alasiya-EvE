@@ -65,23 +65,23 @@ void CharUnboundMgrService::GetCharacterData(uint32 characterID, std::map< std::
 
 PyResult CharUnboundMgrService::Handle_IsUserReceivingCharacter(PyCallArgs &call) {
     _log(CLIENT__ERROR, "Called IsUserReceivingCharacter");
+    /*  this is called when selecting the 3ed slot, when there are 2 chars on account already.
+     * returning true will disable creating a 3ed character.
+     * returning false will allow creating a 3ed character.
+     */
     return new PyBool(false);
 }
 
 PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)
 {
-    /*
-     *      15:18:55 [PacketError] Decode Call_SingleWStringArg failed: arg is not a wide string: String
-     *      15:18:55 [ClientError] Handle_ValidateNameEx(/usr/local/src/eve/Squirrel/src/eve-server/character/CharUnboundMgrService.cpp:74): Failed to decode args for ValidateNameEx call
-     */
     Call_SingleWStringArg arg;
     if (!arg.Decode(&call.tuple))
     {
         codelog(CLIENT__ERROR, "Failed to decode args for ValidateNameEx call");
-        return nullptr;
+        return new PyBool(false);
     }
 
-    return new PyBool(m_db.ValidateCharName(arg.arg.c_str()));  /** @todo see notes in m_db here...NOT boolean */
+    return m_db.ValidateCharName(arg.arg.c_str());
 }
 
 PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call) {
@@ -175,6 +175,7 @@ PyResult CharUnboundMgrService::Handle_GetCharNewExtraCreationInfo(PyCallArgs &c
 }
 
 PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call) {
+    Client* pClient = call.client;
     /*
         charID = sm.RemoteSvc('charUnboundMgr').CreateCharacterWithDoll(charactername, bloodlineID, genderID, ancestryID, charInfo, portraitInfo, schoolID)
         */
@@ -184,18 +185,21 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         return nullptr;
     }
 
+    if (!pClient->RecPic()) {
+        pClient->SendInfoModalMsg("The Portrait for this character was not received.  Your character will still be created, but the server will not have their picture.");
+    }
     _log(CLIENT__MESSAGE, "CreateCharacterWithDoll called for '%s' with schoolID: %u bloodlineID: %u genderID: %u ancestryID: %u", \
                         arg.name.c_str(), arg.schoolID, arg.bloodlineID, arg.genderID, arg.ancestryID);
 
     // obtain character type
-    m_manager->item_factory->SetUsingClient( call.client );
+    m_manager->item_factory->SetUsingClient( pClient );
     const CharacterType *char_type = m_manager->item_factory->GetCharacterTypeByBloodline(arg.bloodlineID);
     if (!char_type)
         return nullptr;
 
     // we need to fill these to successfully create character item
     CharacterData cdata;
-        cdata.accountID = call.client->GetUserID();
+        cdata.accountID = pClient->GetUserID();
         cdata.gender = arg.genderID;
         cdata.ancestryID = arg.ancestryID;
         cdata.bloodlineID = arg.bloodlineID;
@@ -366,12 +370,12 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     ShipItemRef pod_item = m_manager->item_factory->SpawnShip( podItem );
     pod_item->SaveItem();
 
-    call.client->SetShip(ship_item);
+    pClient->SetShip(ship_item);
     char_item->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
     char_item->SaveFullCharacter();
 
     // we need to report the charID to the ImageServer so it can correctly assign a previously received image
-    sImageServer.ReportNewCharacter(call.client->GetUserID(), char_item->itemID());
+    sImageServer.ReportNewCharacter(pClient->GetUserID(), char_item->itemID());
 
     // Release the item factory now that the character is finished being accessed:
     m_manager->item_factory->UnsetUsingClient();

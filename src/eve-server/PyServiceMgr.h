@@ -53,8 +53,8 @@ public:
     void Close();
     void Process();
 
-    void RegisterService( PyService* d );
-    PyService* LookupService( const std::string& name );
+    void RegisterService(const std::string name, PyService* svc);
+    PyService* LookupService(const std::string& name);
 
     uint32 GetNodeID() const                            { return m_nodeID; }
 
@@ -73,7 +73,7 @@ public:
     ObjCacheService *cache_service;
 
 protected:
-    std::set<PyService*> m_services;    //we own these pointers.
+    std::map<std::string, PyService*> m_svcList;    //we own these pointers.
 
     uint32 m_nextBindID;
     uint32 _GetBindID()                                 { return ++m_nextBindID; }

@@ -855,14 +855,15 @@ PyObject *CorporationDB::GetEveOwners(uint32 corpID) {
               */
 
     if ( !sDatabase.RunQuery( res,
-        "(SELECT"
+        "SELECT"
         " c.characterID AS ownerID,"
         " e.itemName AS ownerName,"
         " e.typeID,"
         " c.gender"
         " FROM character_ AS c"
         "  LEFT JOIN entity AS e ON e.itemID = c.characterID"
-        " WHERE c.corporationID = %u" ))
+        " WHERE c.corporationID = %u", corpID
+        ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;

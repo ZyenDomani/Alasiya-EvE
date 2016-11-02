@@ -254,7 +254,7 @@ PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
     if(call.client->GetChar()->AlterBalance(-args.arg2))
 		m_db.AddBounty(args.arg1, call.client->GetCharacterID(), args.arg2);
 
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult CharMgrService::Handle_GetTopBounties( PyCallArgs& call ) {
@@ -280,7 +280,7 @@ PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
 	if( !m_db.GetCharHomeStation(call.client->GetCharacterID(), stationID) )
 	{
 		sLog.Debug( "CharMgrService", "Could't get the home station for Char %u", call.client->GetCharacterID() );
-		return new PyNone;
+		return new PyNone();
 	}
     return new PyInt(stationID);
 }
@@ -333,10 +333,12 @@ PLAYER_STATUS_AFK = 1
     Call_TwoIntegerArgs args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Invalid arguments");
-        return nullptr;
+        return new PyNone();
     }
 
-    sLog.Warning("SetActivityStatus", "Player %s(%u) AFK:%i, time:%i.", call.client->GetName(), call.client->GetCharacterID()), args.arg1, args.arg2 ;
+    sLog.Warning("SetActivityStatus", "Player %s(%u) AFK:%d, time:%d.", call.client->GetName(), call.client->GetCharacterID()), args.arg1, args.arg2 ;
+
+    //00:13:23 W SetActivityStatus: Player emilie(140005646) AFK:52725024, time:-11744.
 
     return new PyNone();
 }
@@ -353,16 +355,36 @@ PyResult CharMgrService::Handle_GetSettingsInfo( PyCallArgs& call ) {
             sm.RemoteSvc('charMgr').LogSettings(ret)
     */
 
-  /*
- PyTuple* res = new PyTuple( 2 );
- // code is a PyString of unicode chars.  not sure what it contains
- res->items[ 0 ] = new PyString( "unknown" );
+    // Called in file "carbon/client/script/ui/services/settingsSvc.py"
+    // This should return a marshaled python function.
+    // It returns a tuple containing a dict that is then sent to
+    // charMgr::LogSettings if the tuple has a length greater than zero.
+    PyTuple* res = new PyTuple( 2 );
+    // This returns an empty tuple
+    unsigned char code[] = {
+            0x63,0x00,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x43,0x00,0x00,
+            0x00,0x73,0x0a,0x00,0x00,0x00,0x64,0x01,0x00,0x7d,0x00,0x00,0x7c,0x00,0x00,0x53,
+            0x28,0x02,0x00,0x00,0x00,0x4e,0x28,0x00,0x00,0x00,0x00,0x28,0x00,0x00,0x00,0x00,
+            0x28,0x01,0x00,0x00,0x00,0x74,0x03,0x00,0x00,0x00,0x74,0x75,0x70,0x28,0x00,0x00,
+            0x00,0x00,0x28,0x00,0x00,0x00,0x00,0x73,0x10,0x00,0x00,0x00,0x2e,0x2f,0x6d,0x61,
+            0x6b,0x65,0x5a,0x65,0x72,0x6f,0x52,0x65,0x74,0x2e,0x70,0x79,0x74,0x08,0x00,0x00,
+            0x00,0x72,0x65,0x74,0x54,0x75,0x70,0x6c,0x65,0x0c,0x00,0x00,0x00,0x73,0x04,0x00,
+            0x00,0x00,0x00,0x01,0x06,0x02
+        };
+    int codeLen = sizeof(code) / sizeof(*code);
+    std::string codeString(code, code + codeLen);
+    res->items[ 0 ] = new PyString(codeString);
 
- // error code? 0 = no error
- res->items[ 1 ] = new PyInt( 0 );
- return res;
- */
-  return nullptr;
+    // error code? 0 = no error
+    // if called with any value other than zero the exception output will show 'Verified = False'
+    // if called with zero 'Verified = True'
+    /*  Just a note
+     * due to the client being in placebo mode, the verification code in evecrypto just checks if the signature is 0.
+     * when the client is in cryptoapi mode it verifies the signature is signed by CCP's rsa key.
+     */
+
+    res->items[ 1 ] = new PyInt( 0 );
+    return res;
 }
 
 //  this is a return call from client after GetSettingsInfo
@@ -453,7 +475,7 @@ PyResult CharMgrService::Handle_LogSettings( PyCallArgs& call ) {
               [PyString "machoVersion"]
               [PyInt 1]
     */
-  sLog.Log( "CharMgrService::Handle_GetSettingsInfo()", "size= %u", call.tuple->size() );
+  sLog.Log( "CharMgrService::Handle_LogSettings()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
  return nullptr;
 }
@@ -519,7 +541,7 @@ PyResult CharMgrService::Handle_SetNote(PyCallArgs &call)
 
     m_db.SetNote(call.client->GetCharacterID(), args.itemID, args.note.c_str());
 
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult CharMgrService::Handle_AddOwnerNote( PyCallArgs& call ) {
@@ -753,10 +775,12 @@ PyResult CharMgrService::Handle_EditContactsRelationshipID( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_GetImageServerLink( PyCallArgs& call )
 {
+    // only called by billboard service for bounties...
     //  serverLink = sm.RemoteSvc('charMgr').GetImageServerLink()
-    sLog.Log( "CharMgrService::Handle_GetImageServerLink()", "size=%u ", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-  return nullptr;
+    std::stringstream urlBuilder;
+    urlBuilder << "http://" << sConfig.net.imageServer << ":" << sConfig.net.imageServerPort << "/";
+
+    return new PyString(urlBuilder.str());
 }
 
 PyResult CharMgrService::Handle_GetPaperdollState( PyCallArgs& call )

@@ -1079,7 +1079,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
     } else
         throw PyException(MakeCustomError("ERROR: Unable to validate character object, it was found to be NULL!"));
 
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult Command_online(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {

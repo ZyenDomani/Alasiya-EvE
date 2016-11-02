@@ -120,7 +120,7 @@ PyResult CertificateMgrService::Handle_GrantCertificate(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         _log(CLIENT__ERROR, "Failed to decode args.");
-        return new PyNone;
+        return new PyNone();
     }
 
     return (new PyBool(call.client->GetChar()->GrantCertificate(arg.arg)));
@@ -130,19 +130,19 @@ PyResult CertificateMgrService::Handle_UpdateCertificateFlags(PyCallArgs &call) 
     Call_TwoIntegerArgs arg;
     if (!arg.Decode(&call.tuple)) {
         _log(CLIENT__ERROR, "Failed to decode args.");
-        return new PyNone;
+        return new PyNone();
     }
 
     CharacterRef ch = call.client->GetChar();
     ch->UpdateCertificate( arg.arg1, arg.arg2 );
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult CertificateMgrService::Handle_BatchCertificateGrant(PyCallArgs &call) {
     Call_SingleIntList arg;
     if (!arg.Decode(&call.tuple)) {
         _log(CLIENT__ERROR, "Failed to decode args.");
-        return new PyNone;
+        return new PyNone();
     }
 
     PyList* res = new PyList;
@@ -159,14 +159,14 @@ PyResult CertificateMgrService::Handle_BatchCertificateUpdate(PyCallArgs &call) 
     Call_BatchCertificateUpdate args;
     if(!args.Decode(&call.tuple)) {
         _log(CLIENT__ERROR, "Failed to decode args.");
-        return new PyNone;
+        return new PyNone();
     }
 
     CharacterRef ch = call.client->GetChar();
     std::map<uint32, uint32>::iterator cur = args.update.begin();
     for(; cur != args.update.end(); cur++)
         ch->UpdateCertificate( cur->first, cur->second );
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& call )
@@ -176,7 +176,7 @@ PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& c
     if( !arg.Decode( &call.tuple ) )
     {
         _log( CLIENT__ERROR, "Bad arguments to function GetCertificatesByCharacter" );
-        return new PyNone;
+        return new PyNone();
     }
 
     Character::Certificates crt;

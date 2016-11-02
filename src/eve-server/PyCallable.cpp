@@ -28,7 +28,7 @@
 #include "PyCallable.h"
 
 PyCallable::PyCallable()
-: m_serviceDispatch(NULL)
+: m_serviceDispatch(nullptr)
 {
 }
 
@@ -62,10 +62,8 @@ PyCallArgs::PyCallArgs(Client *c, PyTuple* tup, PyDict* dict)
 {
     PyIncRef( tup );
 
-    PyDict::const_iterator cur, end;
-    cur = dict->begin();
-    end = dict->end();
-    for(; cur != end; cur++) {
+    PyDict::const_iterator cur = dict->begin();
+    for(; cur != dict->end(); cur++) {
         if(!cur->first->IsString()) {
             _log(SERVICE__ERROR, "Non-string key in call named arguments. Skipping.");
             cur->first->Dump(SERVICE__ERROR, "    ");
@@ -98,8 +96,8 @@ void PyCallArgs::Dump(LogType type) const {
 }
 
 /* PyResult */
-PyResult::PyResult( PyRep* result ) : ssResult( NULL == result ? new PyNone : result ) {}
-PyResult::PyResult( const PyResult& oth ) : ssResult( NULL ) { *this = oth; }
+PyResult::PyResult( PyRep* result ) : ssResult( result ? result : new PyNone() ) {}
+PyResult::PyResult( const PyResult& oth ) : ssResult( nullptr ) { *this = oth; }
 PyResult::~PyResult() { PySafeDecRef( ssResult ); }
 
 PyResult& PyResult::operator=( const PyResult& oth )
@@ -112,8 +110,8 @@ PyResult& PyResult::operator=( const PyResult& oth )
 }
 
 /* PyException */
-PyException::PyException( PyRep* except ) : ssException( NULL == except ? new PyNone : except ) {}
-PyException::PyException( const PyException& oth ) : ssException( NULL ) { *this = oth; }
+PyException::PyException( PyRep* except ) : ssException( except ? except : new PyNone()) {}
+PyException::PyException( const PyException& oth ) : ssException( nullptr ) { *this = oth; }
 PyException::~PyException() { PySafeDecRef( ssException ); }
 
 PyException& PyException::operator=( const PyException& oth )

@@ -51,6 +51,9 @@ BrowserLockdownService::~BrowserLockdownService() {
 //02:40:18 L BrowserLockdownService::Handle_GetFlaggedSitesHash(): size= 0
 PyResult BrowserLockdownService::Handle_GetFlaggedSitesHash(PyCallArgs &call)
 {
+    /* Future updates should be the md5 sum of the cache/browser/flaggedsites.dat file from user/appdata/Local/CCP/EVE
+     * Send md5 sum for an empty set.
+     */
     return new PyString("df98509e1e3f0dd839083e7be1d2b360");
 }
 
@@ -61,60 +64,10 @@ PyResult BrowserLockdownService::Handle_GetFlaggedSitesList(PyCallArgs &call)
 }
 
 PyResult BrowserLockdownService::Handle_GetDefaultHomePage(PyCallArgs &call) {
-    /*
-    [PyTuple 1 items]
-      [PySubStream 134 bytes]
-        [PyObjectData Name: objectCaching.CachedObject]
-          [PyTuple 7 items]
-            [PyTuple 2 items]
-              [PyIntegerVar 129511422600825710]
-              [PyInt 46587]
-            [PyNone]
-            [PyInt 704421]
-            [PyInt 1]
-            [PySubStream 34 bytes]
-              [PyString "https://gate.eveonline.com/"]
-            [PyInt 0]
-            [PyTuple 3 items]
-              [PyString "Method Call"]
-              [PyString "server"]
-              [PyTuple 2 items]
-                [PyString "browserLockdownSvc"]
-                [PyString "GetDefaultHomePage"]
-    [PyNone]
-
-    PyTuple* tuple = new PyTuple(7);
-    tuple->SetItem(0, itr_1);
-    tuple->SetItem(1, GenerateLockdownCachedObject());
-    tuple->SetItem(2, new PyNone());
-
-            */
-    // build the tuple based on above packet...may not need....
-    /*
-    PyTuple* first = new PyTuple(2);
-        first->SetItem(0, new PyLong(Win32TimeNow()));
-        first->SetItem(1, new PyInt(46587)); //unknown
-    PyTuple* second = new PyTuple(3);
-        second->SetItem(0, new PyString("Method Call"));
-        second->SetItem(1, new PyString("server"));
-    PyTuple* third = new PyTuple(2);
-        third->SetItem(0, new PyString("browserLockdownSvc"));
-        third->SetItem(1, new PyString("GetDefaultHomePage"));
-        second->SetItem(2, third);
-    PyTuple* data = new PyTuple(7);
-        data->SetItem(0, first);
-        data->SetItem(1, new PyNone()); //unknown
-        data->SetItem(2, new PyInt(704421)); //unknown
-        data->SetItem(3, new PyInt(1)); //unknown
-        data->SetItem(4, new PySubStream(new PyString("http:://eve.alasiya.net/")));
-        data->SetItem(5, new PyInt(0)); //unknown
-        data->SetItem(6, second);
-    return new PyObject( "objectCaching.CachedMethodCallResult", data );
-    */
     return new PyString("http:://eve.alasiya.net/");
 }
 
 //00:37:03 L BrowserLockdownService::Handle_IsBrowserInLockdown(): size= 0
 PyResult BrowserLockdownService::Handle_IsBrowserInLockdown(PyCallArgs &call) {
-    return new PyBool(sConfig.server.IsTestServer);
+    return new PyBool(sConfig.server.DisableIGB);
 }

@@ -64,7 +64,7 @@ PyResult AuthService::Handle_GetPostAuthenticationMessage(PyCallArgs &call)
         return new PyObject( "util.KeyVal", args );
     }
     else
-        return new PyNone;
+        return new PyNone();
 }
 
 

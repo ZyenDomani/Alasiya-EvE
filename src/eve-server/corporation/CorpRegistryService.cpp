@@ -467,10 +467,10 @@ PyResult CorpRegistryBound::Handle_GetSuggestedTickerNames(PyCallArgs &call) {
 16:48:30 [PacketError] Decode Call_SingleStringArg failed: arg is not a string: WString
 16:48:30 [SvcError] Handle_GetSuggestedTickerNames(/usr/local/src/eve/Alasiya-EvE/src/eve-server/corporation/CorpRegistryService.cpp:449): Houaha: Bad arguments
 */
-    Call_SingleStringArg arg;
+    Call_SingleWStringArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     PyList * result = new PyList;
@@ -1049,7 +1049,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call) {
         call.client->SendErrorMsg( "Your corporation doesn't have enough money (%u ISK) to change it's logo!", logo_changeu );
 
         PyDecRef( notif.data );
-        return new PyNone;
+        return new PyNone();
     }
 
     // Try to do the update. If it fails, we won't take the money.
@@ -1058,7 +1058,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call) {
         codelog( SERVICE__ERROR, "Corporation logo change failed..." );
 
         PyDecRef( notif.data );
-        return new PyNone;
+        return new PyNone();
     }
 
     //take the money out of their wallet (sends wallet blink event)
@@ -1068,7 +1068,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call) {
         codelog( SERVICE__ERROR, "%s: Failed to take money for corp logo change!", call.client->GetName() );
 
         PyDecRef( notif.data );
-        return new PyNone;
+        return new PyNone();
     }
 
     double corp_new = m_db.GetCorpBalance(notif.key, accountKey);

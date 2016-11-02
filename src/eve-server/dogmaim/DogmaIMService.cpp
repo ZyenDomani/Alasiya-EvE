@@ -209,7 +209,7 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Failed to decode arguments");
-        return new PyNone;
+        return new PyNone();
     }
     /* args.shipID
      * args.droppedID
@@ -232,7 +232,7 @@ PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Failed to decode arguments");
-        return new PyNone;
+        return new PyNone();
     }
     uint32 shipID = args.arg;
 
@@ -318,7 +318,7 @@ PyResult DogmaIMBound::Handle_CharGetInfo(PyCallArgs& call) {
     PyDict* result = pClient->GetChar()->GetCharInfo();
     if (!result ) {
         _log(SERVICE__ERROR, "Unable to build char info for char %u", pClient->GetCharacterID());
-        return new PyNone;
+        return new PyNone();
     }
 
     return result;
@@ -330,7 +330,7 @@ PyResult DogmaIMBound::Handle_ShipGetInfo(PyCallArgs& call) {
     PyDict* result = pClient->GetShip()->ShipGetInfo();
     if (!result ) {
         _log(SERVICE__ERROR, "Unable to build ship info for ship %u", pClient->GetShipID());
-        return new PyNone;
+        return new PyNone();
     }
 
     return result;
@@ -340,13 +340,13 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Failed to decode arguments");
-        return new PyNone;
+        return new PyNone();
     }
 
     InventoryItemRef item = m_manager->item_factory->GetItem(args.arg);
     if ( !item ) {
         _log(SERVICE__ERROR, "Unable to load item %u", args.arg);
-        return new PyNone;
+        return new PyNone();
     }
 
     return item->ItemGetInfo();
@@ -368,10 +368,10 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (!pDestiny) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone;
+            return new PyNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone;
+            return new PyNone();
         }
     }
 
@@ -379,7 +379,7 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
 
 	if (!args.Decode(&call.tuple)) {
         _log( SERVICE__ERROR, "Unable to decode arguments from '%s'", pClient->GetName() );
-        return new PyNone;
+        return new PyNone();
     }
 
 	pClient->GetShip()->Online(args.arg2);
@@ -395,10 +395,10 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (!pDestiny) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone;
+            return new PyNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone;
+            return new PyNone();
         }
     }
 
@@ -406,7 +406,7 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
 
 	if (!args.Decode(&call.tuple)) {
         _log( SERVICE__ERROR, "Unable to decode arguments from '%s'", pClient->GetName() );
-        return new PyNone;
+        return new PyNone();
     }
 
 	pClient->GetShip()->Offline(args.arg2);
@@ -422,10 +422,10 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (!pDestiny) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone;
+            return new PyNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone;
+            return new PyNone();
         }
     }
 
@@ -444,11 +444,11 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     Call_Dogma_LoadAmmoToModules args;
     if (!args.Decode(&call.tuple)) {
         _log( SERVICE__ERROR, "Handle_LoadAmmoToModules(): Unable to decode arguments from '%s'", pClient->GetName() );
-        return new PyNone;
+        return new PyNone();
     }
 
     if (args.moduleIDs.empty())
-        return new PyNone;
+        return new PyNone();
 
     // Get Reference to Ship, Module, and Charge
     ShipItemRef shipRef = pClient->GetShip();
@@ -482,10 +482,10 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (!pDestiny) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone;
+            return new PyNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone;
+            return new PyNone();
         }
     }
 
@@ -498,7 +498,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 
 	if (!args.Decode(&call.tuple)) {
         _log( SERVICE__ERROR, "Handle_LoadAmmoToBank(): Unable to decode arguments from '%s'", pClient->GetName() );
-        return new PyNone;
+        return new PyNone();
     }
 
 	// NOTES:
@@ -516,7 +516,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 	InventoryItemRef moduleRef = shipRef->GetModule(args.masterID);
 	if (!moduleRef) {
 		sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "ERROR: cannot find module into which charge should be loaded." );
-		return new PyNone;
+		return new PyNone();
 	}
 
 	if (!args.itemIDs.empty()) {
@@ -548,14 +548,14 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (!pDestiny) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone;
+            return new PyNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone;
+            return new PyNone();
         }
     } else {
         pClient->SendNotifyMsg("You can't do this while docked");
-        return new PyNone;
+        return new PyNone();
     }
 
     sLog.Log("DogmaIMBound::Handle_Activate()", "size= %u from '%s'", call.tuple->size(), pClient->GetName() );
@@ -567,7 +567,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         Call_TwoIntegerArgs args;
         if (!args.Decode(&call.tuple)) {
             _log( SERVICE__ERROR, "Unable to decode arguments from '%s'", pClient->GetName() );
-            return new PyNone;
+            return new PyNone();
         }
         /*
           [PyString "Activate"]     << onlining a pos module
@@ -584,7 +584,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
                 SystemEntity* se = pClient->SystemMgr()->GetSE(itemID);
                 if (!se) {
                     sLog.Error("DogmaIMBound::Handle_Activate()", "%u is not a valid EntityID in this system.", itemID);
-                    return new PyNone;
+                    return new PyNone();
                 }
 
                 /** @todo somehow notify client with one of these effects:
@@ -621,14 +621,14 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         Call_Dogma_Activate args;
         if (!args.Decode(&call.tuple)) {
             _log( SERVICE__ERROR, "Unable to decode arguments from '%s'", pClient->GetName() );
-            return new PyNone;
+            return new PyNone();
         }
 
         //TODO: make sure we are allowed to do this.
         pClient->GetShip()->Activate(args.itemID, args.effectName, args.target, args.repeat);
     }
 
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
@@ -639,10 +639,10 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (!pDestiny) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone;
+            return new PyNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone;
+            return new PyNone();
         }
     }
 
@@ -654,7 +654,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
     Call_Dogma_Deactivate args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Unable to decode arguments from '%s'", pClient->GetName());
-        return new PyNone;
+        return new PyNone();
     }
 
     //TODO: make sure we are allowed to do this.
@@ -670,10 +670,10 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (!pDestiny) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone;
+            return new PyNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone;
+            return new PyNone();
         }
     }
 
@@ -689,10 +689,10 @@ PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (!pDestiny) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone;
+            return new PyNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone;
+            return new PyNone();
         }
     }
 
@@ -767,18 +767,18 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Unable to decode arguments for '%s'", pClient->GetName());
-        return new PyNone;
+        return new PyNone();
     }
 
     SystemManager* smgr = pClient->SystemMgr();
     if (!smgr) {
         _log(SERVICE__ERROR, "Unable to find system manager for '%s'", pClient->GetName());
-        return new PyNone;
+        return new PyNone();
     }
     SystemEntity* target = smgr->GetSE(args.arg);
     if (!target) {
         _log(SERVICE__ERROR, "Unable to find entity %u in system %u for '%s'", args.arg, smgr->GetID(), pClient->GetName());
-        return new PyNone;
+        return new PyNone();
     }
 
     if (sConfig.server.IsTestServer)
@@ -821,7 +821,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     Call_TwoBoolArgs args; /* arg1: getCharInfo, arg2: getShipInfo */
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Unable to decode arguments from '%s'", pClient->GetName());
-        return new PyNone;
+        return new PyNone();
     }
 
 	/* Create the response dictionary */
@@ -834,18 +834,18 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
             for locationID, datas in cData.iteritems():
         --still dont know what 'datas' are
      */
-    rsp->SetItemString("locationInfo", new PyNone);
+    rsp->SetItemString("locationInfo", new PyNone());
 
     /* Setting "shipModifiedCharAttribs" in the Dictionary */
     /** @todo  havent found a populated item in packet logs */
-    rsp->SetItemString("shipModifiedCharAttribs", new PyNone);
+    rsp->SetItemString("shipModifiedCharAttribs", new PyNone());
 
     /* Setting "charInfo" in the Dictionary  -fixed 24Mar16 */
     if (args.arg1) {
         PyDict* charResult = pClient->GetChar()->GetCharInfo();
         if (!charResult ) {
             _log(SERVICE__ERROR, "Unable to build char info for char %u", pClient->GetCharacterID());
-            return new PyNone;
+            return new PyNone();
         }
         rsp->SetItemString("charInfo", charResult);
     } else  // fixed
@@ -856,7 +856,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         PyDict* shipResult = pClient->GetShip()->GetShipInfo();
         if (!shipResult ) {
             _log(SERVICE__ERROR, "Unable to build ship info for ship %u", pClient->GetShipID());
-            return new PyNone;
+            return new PyNone();
         }
         rsp->SetItemString("shipInfo", shipResult);
     } else
@@ -865,7 +865,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     /* Setting "shipState" in the Dictionary  -fixed 26Mar16 */
     if (!pClient->GetShip()) {
         _log(SERVICE__ERROR, "Unable to build shipState for %u", pClient->GetShipID());
-        return new PyNone;
+        return new PyNone();
     }
     PyTuple* rspShipState = new PyTuple(3);
         rspShipState->items[0] = pClient->GetShip()->GetShipState();

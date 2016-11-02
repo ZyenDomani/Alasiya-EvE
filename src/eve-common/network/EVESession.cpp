@@ -96,7 +96,7 @@ void EVEClientSession::FastQueuePacket( PyPacket** p ) {
 PyPacket* EVEClientSession::PopPacket() {
     PyRep* r = mNet->PopRep();
     if (!r)
-        return NULL;
+        return nullptr;
 
     if (is_log_enabled(NET__PRES_REP)) {
         _log(NET__PRES_REP, "%s: Raw Rep Dump:", GetAddress().c_str());
@@ -196,7 +196,7 @@ PyPacket* EVEClientSession::_HandleFuncResult( PyRep* rep ) {
 
 PyPacket* EVEClientSession::_HandlePacket( PyRep* rep ) {
     //take the PyRep and turn it into a PyPacket
-    PyPacket* p = new PyPacket;
+    PyPacket* p = new PyPacket();
     if ( !p->Decode( &rep ) ) { //rep is consumed here
         sLog.Error("Network", "%s: Failed to decode packet rep", GetAddress().c_str());
         SafeDelete( p );

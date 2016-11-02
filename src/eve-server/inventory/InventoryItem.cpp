@@ -712,7 +712,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
             tuple->SetItem(1, new PyInt(m_flag));
             tuple->SetItem(2, new PyInt(typeID()));
         result.itemID = tuple;
-        result.invItem = new PyNone;
+        result.invItem = new PyNone();
     } else {
         result.itemID = new PyInt(m_itemID);
         result.invItem = GetItemRow();
@@ -725,13 +725,13 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
                 es.env_charID = m_ownerID;  //may not be quite right...
                 es.env_shipID = m_locationID;
                 es.env_target = 0;
-                es.env_other = new PyNone;
-                es.env_area = new PyNone;
+                es.env_other = new PyNone();
+                es.env_area = new PyNone();
                 es.env_effectID = effectOnline;
                 es.startTime = Win32TimeNow() - Win32Time_Minute; /** @todo fix this once we start tracking effects */
                 es.duration = -1;
                 es.repeat = 1;
-                es.randomSeed = new PyNone;
+                es.randomSeed = new PyNone();
             result.activeEffects[es.env_effectID] = es.Encode();
         }
     }
@@ -1047,7 +1047,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
         ge.charID = m_ownerID;
         ge.shipID = pClient->GetShipID();
         ge.targetID = 0;
-        ge.other = new PyNone;
+        ge.other = new PyNone();
         ge.area = new PyList;
         ge.effectID = effectOnline;
     Notify_OnGodmaShipEffect shipEff;
@@ -1066,7 +1066,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
         shipEff.duration = 0.0;
     }
         shipEff.repeat = (online ? 1000 : 0);
-        shipEff.error = new PyNone;
+        shipEff.error = new PyNone();
     PyList* events = new PyList;
         events->AddItem(shipEff.Encode());
     Notify_OnMultiEvent multi;

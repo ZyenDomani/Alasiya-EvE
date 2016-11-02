@@ -139,7 +139,7 @@ protected:
 
 private:
     /** Loads none from stream. */
-    PyRep* LoadNone() { return new PyNone; }
+    PyRep* LoadNone() { return new PyNone(); }
 
     /** Loads true boolean from stream. */
     PyRep* LoadBoolTrue() { return new PyBool( true ); }

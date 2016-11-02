@@ -139,7 +139,7 @@ PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
     //  this xml needs work...
     //GetInitStateRSP rsp;
     //response should be GetInitState response (xml)
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
@@ -147,7 +147,7 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
     call.Dump(SERVICE__CALL_DUMP);
 
     // this returns none
-    return new PyNone;
+    return new PyNone();
 }
 
 // FOH::CreateFleet, FOH::

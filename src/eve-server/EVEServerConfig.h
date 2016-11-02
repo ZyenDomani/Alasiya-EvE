@@ -56,7 +56,7 @@ public:
         bool UseShipTracking;
         bool UseStackTrace;
         bool IsTestServer;    // to distuinguish between live production server or experimental testing server
-        bool EnableIGB;
+        bool DisableIGB;
         uint8 ServerSleepTime;
         uint16 idleSleepTime;
         uint16 maxPlayers;

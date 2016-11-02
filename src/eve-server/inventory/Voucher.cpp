@@ -83,7 +83,7 @@ AttributeError: Rowset instance has no attribute 'GetDescription'
 
     return new PyString(row.GetText(0));
     //return DBResultToRowset(res);
-    //return new PyNone;
+    //return new PyNone();
 /*
     PyTuple* tuple = new PyTuple( 2 );
 

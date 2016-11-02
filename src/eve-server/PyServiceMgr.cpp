@@ -48,9 +48,9 @@ PyServiceMgr::~PyServiceMgr() {
 }
 
 void PyServiceMgr::Close() {
-    for (auto cur : m_services)
-        SafeDelete(cur);
-    m_services.clear();
+    for (auto cur : m_svcList)
+        SafeDelete(cur.second);
+    m_svcList.clear();
 
     PyBoundObject* bo = nullptr;
     for ( auto itr : m_boundObjects) {
@@ -66,19 +66,21 @@ void PyServiceMgr::Process() {
     //well... we used to have something to do, but not right now...
 }
 
-void PyServiceMgr::RegisterService(PyService *d) {
-    m_services.insert(d);
+void PyServiceMgr::RegisterService(const std::string name, PyService* svc)
+{
+    m_svcList[name] = svc;
 }
 
-PyService *PyServiceMgr::LookupService(const std::string &name) {
-    for(auto cur : m_services) {
-        if (cur->GetName() == name)
-            return cur;
-    }
+PyService* PyServiceMgr::LookupService(const std::string &name) {
+    std::map<std::string, PyService*>::iterator itr = m_svcList.find(name);
+    if (itr != m_svcList.end())
+        return itr->second;
+
+    sLog.Error("Service Mgr", "Service %s not in list.", name.c_str());
     return nullptr;
 }
 
-PySubStruct *PyServiceMgr::BindObject(Client* who, PyBoundObject* pObj, PyDict** dict) {
+PySubStruct* PyServiceMgr::BindObject(Client* who, PyBoundObject* pObj, PyDict** dict) {
     if (!pObj) {
         sLog.Error("Service Mgr", "Tried to bind a NULL object!");
         return new PySubStruct(new PyNone());
@@ -99,15 +101,15 @@ PySubStruct *PyServiceMgr::BindObject(Client* who, PyBoundObject* pObj, PyDict**
     //not sure what this really is...
     uint64 expiration = Win32TimeNow() + Win32Time_Hour;
 
-    PyTuple *objt;
-    if (dict == NULL || *dict == NULL) {
+    PyTuple *objt(nullptr);
+    if (!dict or !*dict) {
         objt = new PyTuple(2);
         objt->items[0] = new PyString(bind_str);
         objt->items[1] = new PyLong(expiration);    //expiration?
     } else {
         objt = new PyTuple(3);
         objt->items[0] = new PyString(bind_str);
-        objt->items[1] = *dict; *dict = NULL;            //consumed
+        objt->items[1] = *dict; *dict = nullptr;    //consumed
         objt->items[2] = new PyLong(expiration);    //expiration?
     }
 
@@ -130,7 +132,7 @@ void PyServiceMgr::ClearBoundObjects(Client* who) {
     }
 }
 
-PyBoundObject *PyServiceMgr::FindBoundObject(uint32 bindID) {
+PyBoundObject* PyServiceMgr::FindBoundObject(uint32 bindID) {
     std::map<uint32, BoundObject>::iterator res = m_boundObjects.find(bindID);
     if (res != m_boundObjects.end())
         return res->second.destination;

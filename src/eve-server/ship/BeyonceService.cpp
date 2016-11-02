@@ -774,7 +774,7 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
     if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
-        return new PyNone;
+        return new PyNone();
     }
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
@@ -804,15 +804,15 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
     if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
-        return new PyNone;
+        return new PyNone();
     }
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return new PyNone;
+        return new PyNone();
     } else if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't do this while warping");
-        return new PyNone;
+        return new PyNone();
     }
 
     sLog.Warning( "BeyonceBound", "Handle_CmdStargateJump" );
@@ -831,7 +831,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
             call.client->SetInvul(false);
     }
     call.client->StargateJump(args.fromStargateID, args.toStargateID);
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {

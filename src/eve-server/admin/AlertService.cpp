@@ -42,7 +42,7 @@ AlertService::AlertService(PyServiceMgr *mgr)
     m_dispatch->RegisterCall("BeanDelivery", &AlertService::Handle_BeanDelivery);
     m_dispatch->RegisterCall("SendClientStackTraceAlert", &AlertService::Handle_SendClientStackTraceAlert);
 
-    if (sConfig.server.UseStackTrace)
+    if (sConfig.server.UseStackTrace or is_log_enabled(CLIENT__STACK_TRACE))
         traceLogger = new PyTraceLog("evemu_client_stack_trace.txt", true, true);
 }
 
@@ -86,7 +86,7 @@ PyResult AlertService::Handle_BeanDelivery( PyCallArgs& call )
     /* Unhandled for now as we have no interest in receiving batched python stack traces
      * nor official style debugging... Just gimme the info dude (see Handle_SendClientStackTraceAlert).
      */
-    return new PyNone;
+    return new PyNone();
 }
 
 /**
@@ -108,7 +108,7 @@ PyResult AlertService::Handle_SendClientStackTraceAlert(PyCallArgs &call) {
 		  SendClientStackTraceAlert(stackID, stackTrace, mode, nextErrorKeyHash)
   */
 
-  if (sConfig.server.UseStackTrace)
+  if (sConfig.server.UseStackTrace or is_log_enabled(CLIENT__STACK_TRACE))
     traceLogger->logTrace(*call.tuple);
 
     return new PyNone();

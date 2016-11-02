@@ -11,16 +11,16 @@
 <eve-server>
 
     <server>
-        <UseBeanCount>true</UseBeanCount>  <!-- bool  -client python error reporting -->
+        <UseBeanCount>false</UseBeanCount>  <!-- bool  -client python error reporting -->
         <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
         <UseProfiling>false</UseProfiling><!-- bool -->
         <UseShipTracking>false</UseShipTracking><!-- bool -->
-        <UseStackTrace>true</UseStackTrace><!-- bool -->
+        <UseStackTrace>false</UseStackTrace><!-- bool -->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
         <maxPlayers>2500</maxPlayers>
         <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
-        <UseMarketBot>true</UseMarketBot>
-        <EnableIGB>false</EnableIGB>
+        <UseMarketBot>false</UseMarketBot>
+        <DisableIGB>true</DisableIGB>
     </server>
 
     <world>
@@ -134,11 +134,11 @@
     </threads>
 
     <cosmic>
-        <AnomalyEnabled>true</AnomalyEnabled><!-- bool -->
-        <DungeonEnabled>true</DungeonEnabled><!-- bool -->
-        <BeltEnabled>true</BeltEnabled><!-- bool -->
+        <AnomalyEnabled>false</AnomalyEnabled><!-- bool -->
+        <DungeonEnabled>false</DungeonEnabled><!-- bool -->
+        <BeltEnabled>false</BeltEnabled><!-- bool -->
         <BeltRespawn>6</BeltRespawn><!-- hours  (6h default) -->
-        <WormHoleEnabled>true</WormHoleEnabled><!-- bool -->
+        <WormHoleEnabled>false</WormHoleEnabled><!-- bool -->
     </cosmic>
 
     <crime><!-- not implemented yet -->

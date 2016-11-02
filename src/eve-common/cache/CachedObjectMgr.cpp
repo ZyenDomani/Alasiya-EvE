@@ -25,6 +25,53 @@
 
 /** @todo this whole system needs updating....
  *
+    [PyTuple 1 items]
+      [PySubStream 134 bytes]
+        [PyObjectData Name: objectCaching.CachedObject]
+          [PyTuple 7 items]
+            [PyTuple 2 items]
+              [PyIntegerVar 129511422600825710]
+              [PyInt 46587]
+            [PyNone]
+            [PyInt 704421]
+            [PyInt 1]
+            [PySubStream 34 bytes]
+              [PyString "https://gate.eveonline.com/"]
+            [PyInt 0]
+            [PyTuple 3 items]
+              [PyString "Method Call"]
+              [PyString "server"]
+              [PyTuple 2 items]
+                [PyString "browserLockdownSvc"]
+                [PyString "GetDefaultHomePage"]
+    [PyNone]
+
+    PyTuple* tuple = new PyTuple(7);
+    tuple->SetItem(0, itr_1);
+    tuple->SetItem(1, GenerateLockdownCachedObject());
+    tuple->SetItem(2, new PyNone());
+
+    // build the tuple based on above packet...may not need, as that is cached packet....
+    PyTuple* first = new PyTuple(2);
+        first->SetItem(0, new PyLong(Win32TimeNow()));
+        first->SetItem(1, new PyInt(46587)); //unknown
+    PyTuple* second = new PyTuple(3);
+        second->SetItem(0, new PyString("Method Call"));
+        second->SetItem(1, new PyString("server"));
+    PyTuple* third = new PyTuple(2);
+        third->SetItem(0, new PyString("browserLockdownSvc"));
+        third->SetItem(1, new PyString("GetDefaultHomePage"));
+        second->SetItem(2, third);
+    PyTuple* data = new PyTuple(7);
+        data->SetItem(0, first);
+        data->SetItem(1, new PyNone()); //unknown
+        data->SetItem(2, new PyInt(704421)); //unknown
+        data->SetItem(3, new PyInt(1)); //unknown
+        data->SetItem(4, new PySubStream(new PyString("http:://eve.alasiya.net/")));
+        data->SetItem(5, new PyInt(0)); //unknown
+        data->SetItem(6, second);
+    return new PyObject( "objectCaching.CachedMethodCallResult", data );
+
  */
 
 #include "eve-common.h"
@@ -55,7 +102,7 @@ CachedObjectMgr::~CachedObjectMgr()
 /************************************************************************/
 /* CacheRecord                                                          */
 /************************************************************************/
-CachedObjectMgr::CacheRecord::CacheRecord() : objectID(NULL), timestamp(0), version(0), cache(NULL) {}
+CachedObjectMgr::CacheRecord::CacheRecord() : objectID(nullptr), timestamp(0), version(0), cache(nullptr) {}
 CachedObjectMgr::CacheRecord::~CacheRecord()
 {
     PyDecRef( objectID );
@@ -158,7 +205,7 @@ void CachedObjectMgr::UpdateCache(const std::string &objectID, PyRep **in_cached
 void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
 {
     PyRep *cached_data = *in_cached_data;
-    *in_cached_data = NULL;
+    *in_cached_data = nullptr;
 
     //if(is_log_enabled(CACHE__DUMP)) {
     //  PyLogsysDump dumper(CACHE__DUMP, CACHE__DUMP, false, true);
@@ -188,7 +235,7 @@ void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer **buffer)
 
     // retake ownership
     r->cache = *buffer;
-    *buffer = NULL;
+    *buffer = nullptr;
 
     r->version = CRC32::Generate( &r->cache->content()[0], r->cache->content().size() );
 
@@ -223,7 +270,7 @@ PyObject *CachedObjectMgr::MakeCacheHint(const PyRep *objectID)
 
     CachedObjMapItr res = m_cachedObjects.find(str);
     if(res == m_cachedObjects.end())
-        return NULL;
+        return nullptr;
 
     return res->second->EncodeHint();
 }
@@ -243,7 +290,7 @@ PyObject *CachedObjectMgr::GetCachedObject(const PyRep *objectID)
 
     CachedObjMapItr res = m_cachedObjects.find(str);
     if(res == m_cachedObjects.end())
-        return NULL;
+        return nullptr;
 
     PyCachedObject co;
     co.timestamp = res->second->timestamp;
@@ -261,7 +308,7 @@ PyObject *CachedObjectMgr::GetCachedObject(const PyRep *objectID)
     sLog.Debug("CachedObjMgr","Returning cached object '%s' with checksum 0x%x", str.c_str(), co.version);
 
     PyObject *result = co.Encode();
-    co.cache = NULL;    //avoid a copy
+    co.cache = nullptr;    //avoid a copy
 
     return result;
 }
@@ -302,7 +349,7 @@ bool CachedObjectMgr::LoadCachedFromFile(const std::string &cacheDir, const PyRe
 
     FILE *f = fopen(filename.c_str(), "rb");
 
-    if(f == NULL)
+    if(f == nullptr)
         return false;
 
     CacheFileHeader header;
@@ -368,7 +415,7 @@ bool CachedObjectMgr::SaveCachedToFile(const std::string &cacheDir, const PyRep 
 
     FILE *f = fopen(filename.c_str(), "wb");
 
-    if(f == NULL)
+    if(f == nullptr)
         return false;
 
     CacheFileHeader header;
@@ -394,7 +441,7 @@ bool CachedObjectMgr::SaveCachedToFile(const std::string &cacheDir, const PyRep 
 /*
 void CachedObjectMgr::AddCacheHint(const char *oname, const char *key, PyDict *into) {
     PyRep *t = _MakeCacheHint(oname);
-    if(t == NULL)
+    if(t == nullptr)
         return;
     into->add(key, t);
 }
@@ -431,7 +478,7 @@ PySubStream* CachedObjectMgr::LoadCachedFile( const char* abs_fname, const char*
 {
     FILE* f = fopen( abs_fname, "rb" );
 
-    if( f == NULL ) {
+    if( f == nullptr ) {
         sLog.Error("CachedObjMgr","Unable to open cache file '%s' for oname '%s': %s", abs_fname, oname, strerror( errno ) );
         return 0;
     }
@@ -464,13 +511,13 @@ PySubStream* CachedObjectMgr::LoadCachedFile( const char* abs_fname, const char*
 PyCachedObjectDecoder *CachedObjectMgr::LoadCachedObject(const char *filename, const char *oname)
 {
     PySubStream* ss = LoadCachedFile(filename, oname);
-    if( ss == NULL )
-        return NULL;
+    if( ss == nullptr )
+        return nullptr;
 
     PyCachedObjectDecoder *obj = new PyCachedObjectDecoder();
     if(!obj->Decode(&ss)) {   //ss is consumed.
         SafeDelete( obj );
-        return NULL;
+        return nullptr;
     }
 
     return obj;
@@ -479,13 +526,13 @@ PyCachedObjectDecoder *CachedObjectMgr::LoadCachedObject(const char *filename, c
 PyCachedCall *CachedObjectMgr::LoadCachedCall(const char *filename, const char *oname)
 {
     PySubStream* ss = LoadCachedFile(filename, oname);
-    if( ss == NULL )
-        return NULL;
+    if( ss == nullptr )
+        return nullptr;
 
     PyCachedCall *obj = new PyCachedCall();
     if(!obj->Decode(&ss)) {   //ss is consumed.
         SafeDelete( obj );
-        return NULL;
+        return nullptr;
     }
 
     return obj;
@@ -511,9 +558,9 @@ PyRep *CachedObjectMgr::_MakeCacheHint(const char *oname) {
     //theres not really a better way to do it while we are using the on-disk
     //cache files as the data source.
     PyCachedObject *obj = LoadCachedObject(oname);
-    if(obj == NULL) {
+    if(obj == nullptr) {
         _log(CLIENT__ERROR, "Unable to load cache file for '%s' in order to build hint", oname);
-        return NULL;
+        return nullptr;
     }
 
     PyRep *hint = obj->EncodeHint();
@@ -527,9 +574,9 @@ PyCachedObjectDecoder::PyCachedObjectDecoder()
   version(0),
   nodeID(0),
   shared(false),
-  cache(NULL),
+  cache(nullptr),
   compressed(false),
-  objectID(NULL)
+  objectID(nullptr)
 {
 }
 
@@ -544,9 +591,9 @@ PyCachedObject::PyCachedObject()
   version(0),
   nodeID(0),
   shared(false),
-  cache(NULL),
+  cache(nullptr),
   compressed(false),
-  objectID(NULL)
+  objectID(nullptr)
 {
 }
 
@@ -608,13 +655,13 @@ void PyCachedObject::Dump(FILE *into, const char *pfx, bool contents_too)
 bool PyCachedObjectDecoder::Decode(PySubStream **in_ss)
 {
     PySubStream *ss = *in_ss;    //consume
-    *in_ss = NULL;
+    *in_ss = nullptr;
 
     PySafeDecRef( cache );
     PySafeDecRef( objectID );
 
     ss->DecodeData();
-    if(ss->decoded() == NULL) {
+    if(ss->decoded() == nullptr) {
         sLog.Error("PyCachedObjectDecoder","Unable to decode initial stream for PycachedObject");
 
         PyDecRef( ss );
@@ -705,7 +752,7 @@ bool PyCachedObjectDecoder::Decode(PySubStream **in_ss)
     if(args->items[4]->IsSubStream()) {
         cache = (PySubStream *) args->items[4];
         //take it
-        args->items[4] = NULL;
+        args->items[4] = nullptr;
     } else if(args->items[4]->IsBuffer()) {
         //this is a data buffer, likely compressed.
         PyBuffer* buf = args->items[4]->AsBuffer();
@@ -790,7 +837,7 @@ PyObject *PyCachedObjectDecoder::EncodeHint() {
 }
 
 
-PyCachedCall::PyCachedCall() : result(NULL) {}
+PyCachedCall::PyCachedCall() : result(nullptr) {}
 PyCachedCall::~PyCachedCall()
 {
     PySafeDecRef( result );
@@ -816,12 +863,12 @@ void PyCachedCall::Dump(FILE *into, const char *pfx, bool contents_too)
 bool PyCachedCall::Decode(PySubStream **in_ss)
 {
     PySubStream *ss = *in_ss;    //consume
-    *in_ss = NULL;
+    *in_ss = nullptr;
 
     PySafeDecRef( result );
 
     ss->DecodeData();
-    if(ss->decoded() == NULL) {
+    if(ss->decoded() == nullptr) {
         sLog.Error("PyCachedCall","Unable to decode initial stream for PyCachedCall");
         PyDecRef( ss );
         return false;
@@ -846,5 +893,5 @@ bool PyCachedCall::Decode(PySubStream **in_ss)
     }
 
     PyDecRef( ss );
-    return(result != NULL);
+    return(result != nullptr);
 }

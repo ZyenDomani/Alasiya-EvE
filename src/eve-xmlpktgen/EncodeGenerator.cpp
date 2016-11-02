@@ -107,7 +107,7 @@ bool ClassEncodeGenerator::ProcessElementPtr( const TiXmlElement* field )
         "        %s = %s->Encode();\n"
         "    else {\n"
         "        _log(NET__PACKET_ERROR, \"Encode %s: %s is nullptr! hacking in a PyNone\");\n"
-        "        %s = new PyNone;\n"
+        "        %s = new PyNone();\n"
         "    }\n"
         "\n",
         name, v, name,
@@ -133,7 +133,7 @@ bool ClassEncodeGenerator::ProcessRaw( const TiXmlElement* field )
         "        PyIncRef(%s);\n"
         "    } else {\n"
         "        _log(NET__PACKET_ERROR, \"Encode %s: %s is nullptr! hacking in a PyNone\");\n"
-        "        %s = new PyNone;\n"
+        "        %s = new PyNone();\n"
         "    }\n"
         "\n",
         name,
@@ -162,7 +162,7 @@ bool ClassEncodeGenerator::ProcessInt( const TiXmlElement* field )
     if( none_marker != nullptr )
         fprintf( mOutputFile,
             "    if( %s == %s )\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    else\n",
             name, none_marker,
                 v
@@ -193,7 +193,7 @@ bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
     if (none_marker)
         fprintf( mOutputFile,
             "    if( %s == %s )\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    else\n",
             name, none_marker,
                 v
@@ -224,7 +224,7 @@ bool ClassEncodeGenerator::ProcessReal( const TiXmlElement* field )
     if (none_marker)
         fprintf( mOutputFile,
             "    if( %s == %s )\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    else\n",
             name, none_marker,
                 v
@@ -261,7 +261,7 @@ bool ClassEncodeGenerator::ProcessBool( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessNone( const TiXmlElement* field )
 {
     fprintf( mOutputFile,
-        "    %s = new PyNone;\n"
+        "    %s = new PyNone();\n"
         "\n",
         top()
     );
@@ -314,7 +314,7 @@ bool ClassEncodeGenerator::ProcessString( const TiXmlElement* field )
     if (none_marker)
         fprintf( mOutputFile,
             "    if( %s == \"%s\" )\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    else\n",
             name, none_marker,
                 v
@@ -364,7 +364,7 @@ bool ClassEncodeGenerator::ProcessWString( const TiXmlElement* field )
     if (none_marker)
         fprintf( mOutputFile,
             "    if( %s == \"%s\" )\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    else\n",
             name, none_marker,
                 v
@@ -417,7 +417,7 @@ bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
     if (optional)
         fprintf( mOutputFile,
             "    if (!%s)\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    else\n",
             name,
                 v
@@ -426,7 +426,7 @@ bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
         fprintf( mOutputFile,
             "    if (!%s) {\n"
             "        _log( NET__PACKET_ERROR, \"Encode %s: %s is nullptr! hacking in a PyNone\" );\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    } else\n",
             name,
                 mName, name,
@@ -484,7 +484,7 @@ bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
     if (optional)
         fprintf( mOutputFile,
             "    if (!%s)\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    else\n",
             name,
                 v
@@ -493,7 +493,7 @@ bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
         fprintf( mOutputFile,
             "    if (!%s) {\n"
             "        _log( NET__PACKET_ERROR, \"Encode %s: %s is nullptr! hacking in a PyNone\" );\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    } else\n",
             name,
                 mName, name,
@@ -573,7 +573,7 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
     if (optional)
         fprintf( mOutputFile,
             "    if (!%s)\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    else\n",
             name,
                 v
@@ -582,7 +582,7 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
         fprintf( mOutputFile,
             "    if (!%s) {\n"
             "        _log(NET__PACKET_ERROR, \"Encode %s: %s is nullptr! hacking in a PyNone\");\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    } else\n",
             name,
                 mName, name,
@@ -630,7 +630,7 @@ bool ClassEncodeGenerator::ProcessTuple( const TiXmlElement* field )
     if (optional)
         fprintf( mOutputFile,
             "    if (%s->empty())\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    else\n",
             name,
                 v
@@ -722,7 +722,7 @@ bool ClassEncodeGenerator::ProcessList( const TiXmlElement* field )
     if (optional)
         fprintf( mOutputFile,
             "    if (%s->empty())\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    else\n",
             name,
                 v
@@ -890,7 +890,7 @@ bool ClassEncodeGenerator::ProcessDict( const TiXmlElement* field )
     if (optional)
         fprintf( mOutputFile,
             "    if (%s->empty())\n"
-            "        %s = new PyNone;\n"
+            "        %s = new PyNone();\n"
             "    else\n",
             name,
                 v

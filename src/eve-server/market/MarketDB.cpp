@@ -506,7 +506,7 @@ PyRep *MarketDB::GetMarketGroups() {
 
     PyDict *keywords = filterRowset->GetKeywords();
 	keywords->SetItemString("allowDuplicateCompoundKeys", new PyBool(false));
-	keywords->SetItemString("indexName", new PyNone);
+	keywords->SetItemString("indexName", new PyNone());
 	keywords->SetItemString("columnName", new PyString("parentGroupID"));
     std::map< int, PyRep* > tt;
 

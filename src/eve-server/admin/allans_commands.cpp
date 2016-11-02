@@ -332,14 +332,14 @@ PyResult Command_fixconnections(Client* who, CommandDB* db, PyServiceMgr* servic
      */
     //MapCon mc;
     //mc.PopulateConnections();
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult Command_shutdown(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* ingame command to immediatly save loaded items and halt server.
      */
     sConsole.HaltServer();
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult Command_beltlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {

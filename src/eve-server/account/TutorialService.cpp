@@ -747,7 +747,7 @@ PyResult TutorialService::Handle_GetTutorialsAndConnections( PyCallArgs& call ) 
     uint8 raceID = call.client->GetChar()->race();
     return (m_db.GetTutorialsAndConnections(raceID));
     */
-    return new PyNone;
+    return new PyNone();
 }
 
 PyResult TutorialService::Handle_GetCareerAgents( PyCallArgs& call ) {
@@ -767,7 +767,7 @@ PyResult TutorialService::Handle_GetCareerAgents( PyCallArgs& call ) {
                 self.careerAgents[careerType]['station'][agent.agentID] = sm.GetService('map').GetStation(agent.stationID)
 */
 
-    return new PyNone;
+    return new PyNone();
 }
 
 

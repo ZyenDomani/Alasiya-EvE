@@ -108,7 +108,7 @@ void Salvager::StopCycle(bool abort)
         ge.charID = m_Ship->ownerID();
         ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
-        ge.other = new PyNone;
+        ge.other = new PyNone();
         ge.area = new PyList;
         ge.effectID = effectSalvaging;
     Notify_OnGodmaShipEffect shipEff;
@@ -121,7 +121,7 @@ void Salvager::StopCycle(bool abort)
         shipEff.startTime = (shipEff.timeNow + (timeLeft * Win32Time_Second));
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
-        shipEff.error = new PyNone;
+        shipEff.error = new PyNone();
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
@@ -152,7 +152,7 @@ void Salvager::_ShowCycle()
         ge.charID = m_Ship->ownerID();
         ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
-        ge.other = new PyNone;
+        ge.other = new PyNone();
         ge.area = new PyList;
         ge.effectID = effectSalvaging;
     Notify_OnGodmaShipEffect shipEff;
@@ -165,7 +165,7 @@ void Salvager::_ShowCycle()
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
-        shipEff.error = new PyNone;
+        shipEff.error = new PyNone();
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
@@ -281,7 +281,7 @@ void Salvager::DropSalvage()
         ge.charID = m_Ship->ownerID();
         ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
-        ge.other = new PyNone;
+        ge.other = new PyNone();
         ge.area = new PyList;
         ge.effectID = effectSalvaging;
     Notify_OnGodmaShipEffect shipEff;

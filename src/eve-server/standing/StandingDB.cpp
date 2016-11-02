@@ -221,7 +221,7 @@ PyRep *StandingDB::GetSystemSovInfo(uint32 systemID) {
 
     return new PyObject("util.KeyVal", args);
 */
-return new PyNone;
+return new PyNone();
 }
 
 

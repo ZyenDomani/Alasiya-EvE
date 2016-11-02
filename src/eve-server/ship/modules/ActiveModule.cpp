@@ -260,7 +260,7 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
         shipEff.startTime = (active ? shipEff.timeNow : (shipEff.timeNow + (timeLeft * Win32Time_Second)));
         shipEff.duration = (active ? m_cycleTime : timeLeft);
         shipEff.repeat = m_repeat;
-        shipEff.error = new PyNone; /* look into setting this ... only used for salvaging? */
+        shipEff.error = new PyNone(); /* look into setting this ... only used for salvaging? */
     std::vector<PyTuple*> events;
     events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
