@@ -114,8 +114,8 @@ CREATE TABLE `cacheLocations` (
 CREATE TABLE `cacheOwners` (
   `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
   `ownerName` varchar(100) NOT NULL DEFAULT '',
-  `ownerNameID` int(10) unsigned NOT NULL DEFAULT '0',
-  `typeID` int(10) unsigned NOT NULL DEFAULT '0'
+  `typeID` int(10) unsigned NOT NULL DEFAULT '0',
+  `ownerNameID` int(10) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `cacheOwners` */
@@ -302,7 +302,7 @@ CREATE TABLE `chrOwnerNote` (
 /*Table structure for table `corporation` */
 
 CREATE TABLE `corporation` (
-  `corporationID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `corporationID` int(10) unsigned NOT NULL,
   `corporationName` varchar(100) NOT NULL DEFAULT '',
   `description` mediumtext NOT NULL,
   `tickerName` varchar(8) NOT NULL DEFAULT '',
@@ -349,7 +349,7 @@ CREATE TABLE `corporation` (
   `isRecruiting` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `warFactionID` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`corporationID`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1001000;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `corporation`

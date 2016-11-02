@@ -17,6 +17,8 @@
 #define maxEveMarketGroup       350000
 #define minDustMarketGroup      350001
 #define maxDustMarketGroup      999999
+#define minBMFolder             100000
+#define maxBMFolder             300000
 #define minFaction              500000
 #define maxFaction              599999
 #define minNPCCorporation       1000000

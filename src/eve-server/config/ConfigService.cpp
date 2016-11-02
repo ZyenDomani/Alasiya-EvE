@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur, Allan
+    Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -76,7 +77,7 @@ PyResult ConfigService::Handle_GetMultiOwnersEx(PyCallArgs &call) {
         return NULL;
     }
 
-    return(m_db.GetMultiOwnersEx(arg.ints));
+    return m_db.GetMultiOwnersEx(arg.ints);
 }
 
 PyResult ConfigService::Handle_GetMultiAllianceShortNamesEx(PyCallArgs &call) {
@@ -86,7 +87,7 @@ PyResult ConfigService::Handle_GetMultiAllianceShortNamesEx(PyCallArgs &call) {
         return NULL;
     }
 
-    return(m_db.GetMultiAllianceShortNamesEx(arg.ints));
+    return m_db.GetMultiAllianceShortNamesEx(arg.ints);
 }
 
 
@@ -109,7 +110,7 @@ PyResult ConfigService::Handle_GetMultiLocationsEx(PyCallArgs &call) {      // n
         return NULL;
     }
 
-    return (m_db.GetMultiLocationsEx( arg.ints ));
+    return m_db.GetMultiLocationsEx(arg.ints);
 }
 
 PyResult ConfigService::Handle_GetMultiStationEx(PyCallArgs &call) {
@@ -133,7 +134,7 @@ PyResult ConfigService::Handle_GetMultiCorpTickerNamesEx(PyCallArgs &call) {
         return NULL;
     }
 
-    return (m_db.GetMultiCorpTickerNamesEx(arg.ints));
+    return m_db.GetMultiCorpTickerNamesEx(arg.ints);
 }
 
 PyResult ConfigService::Handle_GetMultiGraphicsEx(PyCallArgs &call) {
@@ -144,11 +145,11 @@ PyResult ConfigService::Handle_GetMultiGraphicsEx(PyCallArgs &call) {
         return NULL;
     }
 
-    return(m_db.GetMultiGraphicsEx(arg.ints));
+    return m_db.GetMultiGraphicsEx(arg.ints);
 }
 
 PyResult ConfigService::Handle_GetUnits(PyCallArgs &call) {
-    return(m_db.GetUnits());
+    return m_db.GetUnits();
 }
 
 PyResult ConfigService::Handle_GetMap(PyCallArgs &call) {
@@ -158,7 +159,7 @@ PyResult ConfigService::Handle_GetMap(PyCallArgs &call) {
         return NULL;
     }
 
-    return(m_db.GetMap(args.arg));
+    return m_db.GetMap(args.arg);
 }
 
 PyResult ConfigService::Handle_GetMapOffices(PyCallArgs &call) {
@@ -178,7 +179,7 @@ PyResult ConfigService::Handle_GetMapOffices(PyCallArgs &call) {
         return NULL;
     }
 
-    return(m_db.GetMapOffices(args.arg));
+    return m_db.GetMapOffices(args.arg);
 }
 
 PyResult ConfigService::Handle_GetMapObjects(PyCallArgs &call) {
@@ -202,7 +203,7 @@ PyResult ConfigService::Handle_GetMultiInvTypesEx(PyCallArgs &call) {
         return NULL;
     }
 
-    return(m_db.GetMultiInvTypesEx(arg.ints));
+    return m_db.GetMultiInvTypesEx(arg.ints);
 }
 
 

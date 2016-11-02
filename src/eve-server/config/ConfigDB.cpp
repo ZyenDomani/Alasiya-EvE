@@ -29,63 +29,78 @@
 #include "config/ConfigDB.h"
 
 PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
-    /** @todo needs more work due to better understanding of client code  -allan 24Jan15
-     *  fix this.  should look in tables based on entityID sent.
-     */
-    /*
-23:14:21 L ConfigService: Handle_GetMultiOwnersEx
-23:14:21 [SvcCall]   Call Arguments:
-23:14:21 [SvcCall]       Tuple: 1 elements
-23:14:21 [SvcCall]         [ 0] List: 1 elements
-23:14:21 [SvcCall]         [ 0]   [ 0] Integer field: 140000053     <- character
-
-23:14:21 [SvcCall]         [ 0]   [ 0] Integer field: 2000000       <- corp
-*/
-    std::string ids;
-    ListToINString(entityIDs, ids, "0");
-
-    //sLog.Log( "ConfigDB::GetMultiOwnersEx()", "ids = %s", ids.c_str() );
-    //19:22:36 L ConfigDB::GetMultiOwnersEx(): ids = 140006499,140007566,140008241,140008726
-
-    /** @todo  this needs work...
-     * need to check the ids sent to get approprate table for retrieving data.
-     */
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT "
-        "  c.characterID as ownerID,"
-        "  e.itemName as ownerName,"
-        "  e.typeID,"
-        "  c.gender,"
-        "  0 AS ownerNameID"
-        " FROM character_ AS c"
-        " LEFT JOIN entity AS e ON e.itemID = c.characterID"
-        " WHERE characterID IN (%s)", ids.c_str()))
-    {
-        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return nullptr;
+    // separate list of ids into respective groups
+    std::vector<int32> player, corp, ally;
+    player.clear();
+    corp.clear();
+    ally.clear();
+    
+    for (auto cur : entityIDs) {
+        if (IsCorp(cur))
+            corp.push_back(cur);
+        else if (IsAlliance(cur))
+            ally.push_back(cur);
+        else
+            player.push_back(cur);
     }
-/*
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        res.Reset();
+
+    DBQueryResult res;
+    std::string ids = "";
+
+    if (corp.size()) {
+        ListToINString(corp, ids, "0");
+
         if (!sDatabase.RunQuery(res,
             "SELECT "
-            "  itemID as ownerID,"
-            "  itemName as ownerName,"
-            "  typeID,"
-            "  0 AS gender,"
-            "  0 AS ownerNameID"
-            " FROM entity "
-            " WHERE itemID IN (%s)", ids.c_str()))
+            "  corporationID as ownerID,"
+            "  corporationName as ownerName,"
+            "  2 AS typeID,"                    // corp typeID
+            "  NULL AS gender,"
+            "  NULL AS ownerNameID"
+            " FROM corporation"
+            " WHERE corporationID IN (%s)", ids.c_str()))
         {
             codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-            return new PyInt(0);
         }
-
+        ids = "";
     }
-*/
+
+    if (ally.size()) {
+        ListToINString(ally, ids, "0");
+
+        if (!sDatabase.RunQuery(res,
+            "SELECT "
+            "  allianceID as ownerID,"
+            "  allianceShortName as ownerName,"
+            "  16159 AS typeID,"                 // alliance typeID.
+            "  NULL AS gender,"
+            "  NULL AS ownerNameID"
+            " FROM crpAlliance"
+            " WHERE allianceID IN (%s)", ids.c_str()))
+        {
+            codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        }
+        ids = "";
+    }
+
+    if (player.size()) {
+        ListToINString(player, ids, "0");
+
+        if (!sDatabase.RunQuery(res,
+            "SELECT "
+            "  c.characterID as ownerID,"
+            "  e.itemName as ownerName,"
+            "  e.typeID,"
+            "  c.gender,"
+            "  NULL AS ownerNameID"
+            " FROM character_ AS c"
+            "  LEFT JOIN entity AS e ON e.itemID = c.characterID"
+            " WHERE characterID IN (%s)", ids.c_str()))
+        {
+            codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        }
+    }
+
     return DBResultToTupleSet(res);
 }
 

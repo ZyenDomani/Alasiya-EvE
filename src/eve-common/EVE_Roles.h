@@ -70,8 +70,16 @@ enum:uint64_t {
     ROLE_CREATOR            = ROLE_SLASH | ROLE_GMH /*| ROLE_WORLDMOD*/ | ROLE_CONTENT,
     ROLE_DEV                = ROLE_CREATOR | ROLE_QA | ROLE_PROGRAMMER,
     ROLE_BOSS               = ROLE_DEV | ROLE_ADMIN,
-    ROLEMASK_ELEVATEDPLAYER = ROLE_VIP | ROLE_HEALOTHERS,
-    ROLEMASK_VIEW           = ROLE_ADMIN | ROLE_CONTENT | ROLE_GML | ROLE_GMH | ROLE_QA
+    ROLE_ELEVATEDPLAYER     = ROLE_VIP | ROLE_HEALOTHERS,
+    ROLE_VIEW               = ROLE_ADMIN | ROLE_CONTENT | ROLE_GML | ROLE_GMH | ROLE_QA
+    /*
+     * 02:35:12 W          ROLE_DEV:  7113435622181961728(0x62b8000280c40000)
+     * 02:35:12 W          ROLE_STD:  6917529029788565504(0x6000000080000000)
+     * 02:35:12 W          ROLE_VIP:  7061644217868615680(0x6200000080400000)
+     * 02:35:12 W         ROLE_BOSS:  7185493216219889664(0x63b8000280c40000)
+     * 02:35:12 W        ROLE_SLASH:  7061644226467201024(0x6200000280c40000)
+     * 02:35:12 W      ROLE_CREATOR:  7106680222740905984(0x62a0000280c40000)
+     */
 };
 
 enum {
@@ -133,10 +141,11 @@ typedef enum:uint64_t {
 
     //Some Combos
     corpRoleAllHangar   = corpRoleHangarCanTake1|corpRoleHangarCanTake2|corpRoleHangarCanTake3|corpRoleHangarCanTake4|corpRoleHangarCanTake5|corpRoleHangarCanTake6|corpRoleHangarCanTake7|corpRoleHangarCanQuery1|corpRoleHangarCanQuery2|corpRoleHangarCanQuery3|corpRoleHangarCanQuery4|corpRoleHangarCanQuery5|corpRoleHangarCanQuery6|corpRoleHangarCanQuery7,
-    corpRoleAllAccount  = corpRoleJuniorAccountant|corpRoleAccountCanTake1|corpRoleAccountCanTake2|corpRoleAccountCanTake3|corpRoleAccountCanTake4|corpRoleAccountCanTake5|corpRoleAccountCanTake6|corpRoleAccountCanTake7,
+    corpRoleAllAccount  = corpRoleJuniorAccountant|corpRoleAccountCanTake1|corpRoleAccountCanTake2|corpRoleAccountCanTake3|corpRoleAccountCanTake4|corpRoleAccountCanTake5|corpRoleAccountCanTake6|corpRoleAccountCanTake7|corpRoleAccountant,
     corpRoleAllContainer= corpRoleContainerCanTake1|corpRoleContainerCanTake2|corpRoleContainerCanTake3|corpRoleContainerCanTake4|corpRoleContainerCanTake5|corpRoleContainerCanTake6|corpRoleContainerCanTake7,
     corpRoleAllOffice   = corpRoleCanRentOffice|corpRoleCanRentFactorySlot|corpRoleCanRentResearchSlot,
-    corpRoleAllStarbase = corpRoleStarbaseCaretaker|corpRoleStarbaseConfig
+    corpRoleAllStarbase = corpRoleStarbaseCaretaker|corpRoleStarbaseConfig,
+    corpRoleAdmin       = corpRoleAllHangar|corpRoleAllAccount|corpRoleAllContainer|corpRoleAllOffice|corpRoleAllStarbase|corpRoleDirector|corpRolePersonnelManager|corpRoleSecurityOfficer|corpRoleFactoryManager|corpRoleStationManager|corpRoleAuditor|corpRoleDiplomat|corpRoleTrader|corpRoleChatManager|corpRoleContractManager|corpRoleInfrastructureTacticalOfficer|corpRoleStarbaseCaretaker|corpRoleFittingManager
 } CorpRoleFlags;
 
 //  -allan 5Aug14

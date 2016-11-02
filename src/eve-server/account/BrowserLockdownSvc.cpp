@@ -64,7 +64,8 @@ PyResult BrowserLockdownService::Handle_GetFlaggedSitesList(PyCallArgs &call)
 }
 
 PyResult BrowserLockdownService::Handle_GetDefaultHomePage(PyCallArgs &call) {
-    return new PyString("http:://eve.alasiya.net/");
+    const std::string url = "http:://eve.alasiya.net/";
+    return new PyWString(url);
 }
 
 //00:37:03 L BrowserLockdownService::Handle_IsBrowserInLockdown(): size= 0

@@ -40,12 +40,15 @@ TRUNCATE TABLE ramAssemblyLineStationCostLogs;
 TRUNCATE TABLE ramJobs;
 TRUNCATE TABLE rentalInfo;
 
+ALTER TABLE `corporation` CHANGE `corporationID` `corporationID` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+ALTER TABLE corporation  AUTO_INCREMENT=1001000;
 /*
  * Copy over the static entities:
  * Static record of EVE System
  */
 INSERT INTO entity (itemID, itemName, singleton, quantity)
  VALUES (1, 'EVE System', 1, 1);
+
 ALTER TABLE entity AUTO_INCREMENT=140000000;
 /*
  * Copy over the static owner info.
@@ -81,4 +84,8 @@ INSERT INTO eveStaticOwners (ownerID, ownerName, typeID)
 /* non-static pos, ??  */
 -- INSERT INTO cacheLocations(locationID, locationName, x, y, z, locationNameID)
 
-
+/* this needs more work once factions and alliances are implemented */
+/* non-static corp, faction, and alliance*/
+INSERT INTO cacheOwners(ownerID, ownerName, typeID, ownerNameID)
+ SELECT corporationID, corporationName, 2, 0
+ FROM corporation

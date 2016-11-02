@@ -49,7 +49,6 @@ CorporationService::CorporationService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(CorporationService, IsEnemyFaction);
     PyCallable_REG_CALL(CorporationService, GetVoteCasesByCorporation);
     PyCallable_REG_CALL(CorporationService, AddCorporateContact);
-    PyCallable_REG_CALL(CorporationService, GetRecentKillsAndLosses);
 }
 
 CorporationService::~CorporationService() {
@@ -301,14 +300,6 @@ PyResult CorporationService::Handle_GetVoteCasesByCorporation(PyCallArgs &call) 
 PyResult CorporationService::Handle_AddCorporateContact(PyCallArgs &call)
 {
       sLog.Log( "CorporationService::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult CorporationService::Handle_GetRecentKillsAndLosses(PyCallArgs &call)
-{
-      sLog.Log( "CorporationService::Handle_GetRecentKillsAndLosses()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;

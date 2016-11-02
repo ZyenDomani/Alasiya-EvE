@@ -174,6 +174,7 @@ CorpRegistryService::CorpRegistryService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(CorpRegistryService, ApplyToJoinAlliance);
     PyCallable_REG_CALL(CorpRegistryService, GetAllianceApplications);
     PyCallable_REG_CALL(CorpRegistryService, DeleteAllianceApplication);
+    PyCallable_REG_CALL(CorpRegistryService, GetRecentKillsAndLosses);
 }
 
 CorpRegistryService::~CorpRegistryService() {
@@ -220,6 +221,13 @@ PyResult CorpRegistryService::Handle_DeleteAllianceApplication(PyCallArgs &call)
     return nullptr;
 }
 
+PyResult CorpRegistryService::Handle_GetRecentKillsAndLosses(PyCallArgs &call)
+{
+    sLog.Log( "CorpRegistryService::Handle_GetRecentKillsAndLosses()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
 
 PyResult CorpRegistryBound::Handle_GetEveOwners(PyCallArgs &call) {
     /* this is a method-chaining call.
@@ -330,7 +338,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     // Set char's roles in corp
     CorpData roles;
         roles.corpAccountKey = accountingKeyCash;
-        roles.corpRole = corpRoleAll;
+        roles.corpRole = corpRoleAll;   //1152919339943329665ULL
         roles.rolesAtAll = corpRoleAll;
         roles.rolesAtBase = corpRoleAll;
         roles.rolesAtHQ = corpRoleAll;

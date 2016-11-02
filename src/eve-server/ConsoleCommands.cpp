@@ -254,13 +254,23 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
                 sProfile.PrintProfile();
             } else if (strncmp(buf, "r", 1) == 0) {
-                sLog.Success("  Alasiya's EvEMu", "Server Common Roles:");
+                sLog.Success("  Alasiya's EvEMu", "Common Account Roles:");
                 sLog.Warning("         ROLE_DEV", " %" PRIu64 "(%p)", ROLE_DEV, ROLE_DEV);
                 sLog.Warning("         ROLE_STD", " %" PRIu64 "(%p)", ROLE_STD, ROLE_STD);
                 sLog.Warning("         ROLE_VIP", " %" PRIu64 "(%p)", ROLE_VIP, ROLE_VIP);
+                sLog.Warning("        ROLE_VIP+", " %" PRIu64 "(%p)", ROLE_ELEVATEDPLAYER, ROLE_ELEVATEDPLAYER);
+                sLog.Warning("        ROLE_VIEW", " %" PRIu64 "(%p)", ROLE_VIEW, ROLE_VIEW);
                 sLog.Warning("        ROLE_BOSS", " %" PRIu64 "(%p)", ROLE_BOSS, ROLE_BOSS);
                 sLog.Warning("       ROLE_SLASH", " %" PRIu64 "(%p)", ROLE_SLASH, ROLE_SLASH);
                 sLog.Warning("     ROLE_CREATOR", " %" PRIu64 "(%p)", ROLE_CREATOR, ROLE_CREATOR);
+                sLog.Log("", "");
+                sLog.Success("  Alasiya's EvEMu", "Common Corp Roles:");
+                sLog.Warning("         Role_All", " %" PRIu64 "(%p)", corpRoleAll, corpRoleAll);
+                sLog.Warning("        Role_Cont", " %" PRIu64 "(%p)", corpRoleAllContainer, corpRoleAllContainer);
+                sLog.Warning("       Role_Admin", " %" PRIu64 "(%p)", corpRoleAdmin, corpRoleAdmin);
+                sLog.Warning("      Role_Hangar", " %" PRIu64 "(%p)", corpRoleAllHangar, corpRoleAllHangar);
+                sLog.Warning("     Role_Account", " %" PRIu64 "(%p)", corpRoleAllAccount, corpRoleAllAccount);
+                sLog.Warning("    Role_Starbase", " %" PRIu64 "(%p)", corpRoleAllStarbase, corpRoleAllStarbase);
             } else if (strncmp(buf, "o", 1) == 0) {
                 pCommand->ListCommands();
             } else if (strncmp(buf, "t", 1) == 0) {
