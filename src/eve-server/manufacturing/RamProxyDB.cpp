@@ -295,7 +295,7 @@ bool RamProxyDB::GetAssemblyLineVerifyProperties(const uint32 assemblyLineID, ui
 bool RamProxyDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
         const uint32 assemblyLineID, const uint32 installedItemID,
         const uint64 beginProductionTime, const uint64 endProductionTime,
-        const char *description, const uint32 runs, const EVEItemFlags outputFlag,
+        const char *description, const int32 runs, const EVEItemFlags outputFlag,
         const uint32 installedInSolarSystem, const int32 licensedProductionRuns) {
     DBerror err;
 
@@ -305,7 +305,7 @@ bool RamProxyDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
         " (ownerID, installerID, assemblyLineID, installedItemID, installTime, beginProductionTime, endProductionTime, description, runs, outputFlag,"
         " completedStatusID, installedInSolarSystemID, licensedProductionRuns)"
         " VALUES"
-        " (%u, %u, %u, %u, %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", '%s', %u, %d, 0, %u, %li)",
+        " (%u, %u, %u, %u, %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", '%s', %i, %d, 0, %u, %i)",
         ownerID, installerID, assemblyLineID, installedItemID, Win32TimeNow(), beginProductionTime, endProductionTime, description,
         runs, (int)outputFlag, installedInSolarSystem, licensedProductionRuns))
     {
@@ -443,7 +443,7 @@ bool RamProxyDB::GetRequiredItems(const uint32 typeID, const EVERamActivity acti
     return true;
 }
 
-bool RamProxyDB::GetJobProperties(const uint32 jobID, uint32 &installedItemID, uint32 &ownerID, EVEItemFlags &outputFlag, uint32 &runs, uint32 &licensedProductionRuns, EVERamActivity &activity) {
+bool RamProxyDB::GetJobProperties(const uint32 jobID, uint32 &installedItemID, uint32 &ownerID, EVEItemFlags &outputFlag, int32 &runs, int32 &licensedProductionRuns, EVERamActivity &activity) {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
@@ -466,8 +466,8 @@ bool RamProxyDB::GetJobProperties(const uint32 jobID, uint32 &installedItemID, u
     installedItemID = row.GetUInt(0);
     ownerID = row.GetUInt(1);
     outputFlag = (EVEItemFlags)row.GetUInt(2);
-    runs = row.GetUInt(3);
-    licensedProductionRuns = row.GetUInt(4);
+    runs = row.GetInt(3);
+    licensedProductionRuns = row.GetInt(4);
     activity = (EVERamActivity)row.GetUInt(5);
 
     return true;

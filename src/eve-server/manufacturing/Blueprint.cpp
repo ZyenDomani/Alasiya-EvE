@@ -112,8 +112,8 @@ _Ty *BlueprintType::_LoadBlueprintType(ItemFactory &factory, uint32 typeID,
  */
 BlueprintData::BlueprintData(
     bool _copy,
-    uint32 _materialLevel,
-    uint32 _productivityLevel,
+    int32 _materialLevel,
+    int32 _productivityLevel,
     int32 _licensedProductionRunsRemaining)
 : copy(_copy),
   materialLevel(_materialLevel),
@@ -178,6 +178,7 @@ uint32 Blueprint::CreateItemID(ItemFactory &factory,
         return 0;
 
     // get the blueprintID
+    /** @todo  this needs to be updated */
     uint32 blueprintID = InventoryItem::CreateItemID(factory, data);
     if(blueprintID == 0)
         return 0;
@@ -256,7 +257,7 @@ bool Blueprint::AlterMaterialLevel(int32 materialLevelChange) {
     return true;
 }
 
-void Blueprint::SetProductivityLevel(uint32 productivityLevel) {
+void Blueprint::SetProductivityLevel(int32 productivityLevel) {
     m_productivityLevel = productivityLevel;
     SaveBlueprint();
 }

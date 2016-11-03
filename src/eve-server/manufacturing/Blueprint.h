@@ -93,7 +93,7 @@ public:
     uint32 productTypeID() const { return(productType().id()); }
 
     uint32 productionTime() const { return(m_productionTime); }
-    uint32 techLevel() const { return(m_techLevel); }
+    uint8 techLevel() const { return(m_techLevel); }
     uint32 researchProductivityTime() const { return(m_researchProductivityTime); }
     uint32 researchMaterialTime() const { return(m_researchMaterialTime); }
     uint32 researchCopyTime() const { return(m_researchCopyTime); }
@@ -173,7 +173,7 @@ protected:
     const ItemType &m_productType;
 
     uint32 m_productionTime;
-    uint32 m_techLevel;
+    uint8 m_techLevel;
     uint32 m_researchProductivityTime;
     uint32 m_researchMaterialTime;
     uint32 m_researchCopyTime;
@@ -192,15 +192,15 @@ class BlueprintData {
 public:
     BlueprintData(
         bool _copy = false,
-        uint32 _materialLevel = 0,
-        uint32 _productivityLevel = 0,
+        int32 _materialLevel = 0,
+        int32 _productivityLevel = 0,
         int32 _licensedProductionRunsRemaining = 0
     );
 
     // Content:
     bool copy;
-    uint32 materialLevel;       //set these to mutable to alter the const
-    uint32 productivityLevel;
+    int32 materialLevel;       //set these to mutable to alter the const
+    int32 productivityLevel;
     int32 licensedProductionRunsRemaining;
 };
 
@@ -239,8 +239,8 @@ public:
     const ItemType &        productType() const { return(type().productType()); }
     uint32                  productTypeID() const { return(type().productTypeID()); }
     bool                    copy() { return(m_copy); }
-    uint32                  materialLevel() { return(m_materialLevel); }
-    uint32                  productivityLevel() { return(m_productivityLevel); }
+    int32                   materialLevel() { return(m_materialLevel); }
+    int32                   productivityLevel() { return(m_productivityLevel); }
     int32                   licensedProductionRunsRemaining() { return(m_licensedProductionRunsRemaining); }
 
     /*
@@ -256,7 +256,7 @@ public:
     bool AlterMaterialLevel(int32 materialLevelChange);
 
     // Productivity level:
-    void SetProductivityLevel(uint32 productivityLevel);
+    void SetProductivityLevel(int32 productivityLevel);
     bool AlterProductivityLevel(int32 producitvityLevelChange);
 
     // Licensed production runs:
@@ -347,8 +347,8 @@ protected:
      * Member variables
      */
     bool      m_copy;
-    uint32    m_materialLevel;
-    uint32    m_productivityLevel;
+    int32     m_materialLevel;
+    int32     m_productivityLevel;
     int32     m_licensedProductionRunsRemaining;
 };
 

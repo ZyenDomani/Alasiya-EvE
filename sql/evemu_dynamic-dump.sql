@@ -663,11 +663,11 @@ CREATE TABLE `eveMailDetails` (
 
 CREATE TABLE `invBlueprints` (
   `blueprintID` int(10) unsigned NOT NULL,
-  `copy` tinyint(1) unsigned NOT NULL default '0',
-  `materialLevel` int(10) unsigned NOT NULL default '0',
-  `productivityLevel` int(10) unsigned NOT NULL default '0',
-  `licensedProductionRunsRemaining` int(10) NOT NULL default '-1',
-  PRIMARY KEY  (`blueprintID`)
+  `copy` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `materialLevel` int(10) NOT NULL DEFAULT '-1',
+  `productivityLevel` int(10) NOT NULL DEFAULT '-1',
+  `licensedProductionRunsRemaining` int(10) NOT NULL DEFAULT '-1',
+  PRIMARY KEY (`blueprintID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `invBlueprints` */
@@ -788,7 +788,7 @@ CREATE TABLE `ramJobs` (
   `pauseProductionTime` bigint(20) unsigned default NULL,
   `endProductionTime` bigint(20) unsigned NOT NULL,
   `description` varchar(250) NOT NULL default 'blah',
-  `runs` int(10) unsigned NOT NULL,
+  `runs` int(10) NOT NULL,
   `outputFlag` int(10) unsigned NOT NULL,
   `completedStatusID` int(10) unsigned NOT NULL,
   `installedInSolarSystemID` int(10) unsigned NOT NULL,

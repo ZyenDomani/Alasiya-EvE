@@ -46,7 +46,7 @@ private:
 
     // verifying functions
     void _VerifyInstallJob_Call(const Call_InstallJob &args, InventoryItemRef installedItem, const PathElement &bomLocation, Client *const c);
-    void _VerifyInstallJob_Install(const Rsp_InstallJob &rsp, const PathElement &bomLocation, const std::vector<RequiredItem> &reqItems, const uint32 runs, Client *const c);
+    void _VerifyInstallJob_Install(const Rsp_InstallJob& rsp, const PathElement& pathBomLocation, const std::vector< RequiredItem >& reqItems, const int32 runs, Client*const c);
     void _VerifyCompleteJob(const Call_CompleteJob &args, Client *const c);
 
     bool _Calculate(const Call_InstallJob &args, InventoryItemRef installedItem, Client *const c, Rsp_InstallJob &into);

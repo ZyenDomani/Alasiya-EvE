@@ -867,9 +867,9 @@ bool InventoryDB::GetBlueprint(uint32 blueprintID, BlueprintData &into) {
         return false;
     }
 
-    into.copy = row.GetInt(0) ? true : false;
-    into.materialLevel = row.GetUInt(1);
-    into.productivityLevel = row.GetUInt(2);
+    into.copy = (row.GetInt(0) ? true : false);
+    into.materialLevel = row.GetInt(1);
+    into.productivityLevel = row.GetInt(2);
     into.licensedProductionRunsRemaining = row.GetInt(3);
 
     return true;
@@ -883,7 +883,7 @@ bool InventoryDB::NewBlueprint(uint32 blueprintID, BlueprintData &data) {
         " INTO invBlueprints"
         "  (blueprintID, copy, materialLevel, productivityLevel, licensedProductionRunsRemaining)"
         " VALUES"
-        "  (%u, %u, %u, %u, %d)",
+        "  (%u, %u, %i, %i, %i)",
         blueprintID, data.copy, data.materialLevel, data.productivityLevel, data.licensedProductionRunsRemaining))
     {
         codelog(DATABASE__ERROR, "Unable to create new blueprint entry for blueprint %u: %s.", blueprintID, err.c_str());
@@ -900,9 +900,9 @@ bool InventoryDB::SaveBlueprint(uint32 blueprintID, BlueprintData data) {
         "UPDATE invBlueprints"
         " SET"
         "  copy = %u,"
-        "  materialLevel = %u,"
-        "  productivityLevel = %u,"
-        "  licensedProductionRunsRemaining = %d"
+        "  materialLevel = %i,"
+        "  productivityLevel = %i,"
+        "  licensedProductionRunsRemaining = %i"
         " WHERE blueprintID = %u",
         uint32(data.copy),
         data.materialLevel,
