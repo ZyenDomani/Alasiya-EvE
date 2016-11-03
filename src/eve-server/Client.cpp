@@ -232,6 +232,9 @@ bool Client::SelectCharacter(uint32 char_id) {
     MoveToLocation(m_locationID, pos);
     SendSessionChange();
 
+    // register new pilot in system data
+    m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(m_locationID), m_login);
+
     //johnsus - characterOnline mod
     ServiceDB m_sdb;
     m_sdb.SetCharacterOnlineStatus(m_char->itemID(), true);
@@ -331,7 +334,6 @@ void Client::ProcessClient() {
 void Client::SetDestiny(bool count) {
     if (!pShipSE or !pShipSE->DestinyMgr())
         CreateShipSE();
-    m_system->AddClient(this, false, count);
     if (IsSolarSystem(m_locationID)) {
         if (m_ship->position().isZero())
             MoveToPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()));
@@ -412,6 +414,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     m_locationID = locationID;
     // get data for new system.  this checks for stationID sent as locationID, so is safe here.
     sDataMgr.GetSystemInfo(locationID, m_SystemData);
+    m_char->chkDynamicSystemID(m_SystemData.systemID);   // these calls needs more work...when/where else should it be called from?
     uint32 stationID = 0;
     if (IsStation(locationID))
         stationID = locationID;
@@ -480,8 +483,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
         m_beyonce = false;
 
-        m_char->chkDynamicSystemID(m_SystemData.systemID);
-        m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(locationID));
+        m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(locationID), m_login);
     }
 
     m_ship->SetCustomInfo(ci);
@@ -489,6 +491,8 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
     _UpdateSession(m_char);
     SendSessionChange();
+
+    m_system->AddClient(this, IsStation(locationID), m_login);
 
     if (!stationID) {
         MoveToPosition(pt);
