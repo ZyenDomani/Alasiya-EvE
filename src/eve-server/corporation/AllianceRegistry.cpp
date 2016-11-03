@@ -61,7 +61,7 @@ PyResult AllianceRegistry::Handle_CreateAlliance(PyCallArgs &call) {
      *
      *  INSERT INTO cacheOwners(ownerID, ownerName, typeID, ownerNameID) VALUES   corporationID, corporationName, 2, 0
      */
-    return NULL;
+    return nullptr;
 }
 
 PyResult AllianceRegistry::Handle_GetRankedAlliances(PyCallArgs &call) {
@@ -76,7 +76,7 @@ PyResult AllianceRegistry::Handle_GetRankedAlliances(PyCallArgs &call) {
     sLog.Log("AllianceRegistry", "Handle_GetRankedAlliances() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
@@ -84,7 +84,7 @@ PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
     sLog.Log("AllianceRegistry", "Handle_GetAllianceApplications() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult AllianceRegistry::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
@@ -92,5 +92,5 @@ PyResult AllianceRegistry::Handle_GetSuggestedAllianceShortNames(PyCallArgs &cal
     sLog.Log("AllianceRegistry", "Handle_GetSuggestedAllianceShortNames() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return nullptr;
 }

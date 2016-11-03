@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 6.4
+    Log Version: 6.5
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -161,6 +161,8 @@ LOG_TYPE( CORP, WARNING, DISABLED, "CorpWarning" )
 LOG_TYPE( CORP, MESSAGE, DISABLED, "CorpMsg" )
 LOG_TYPE( CORP, INFO, DISABLED, "CorpInfo" )
 LOG_TYPE( CORP, TRACE, DISABLED, "CorpTrace" )
+LOG_TYPE( CORP, CALL, DISABLED, "CorpCall" )
+LOG_TYPE( CORP, CALL_DUMP, DISABLED, "CorpCallDump" )
 LOG_TYPE( CORP, DB_ERROR,   ENABLED, "CorpDBError" )
 LOG_TYPE( CORP, DB_WARNING, DISABLED, "CorpDBWarning" )
 LOG_TYPE( CORP, DB_MESSAGE, DISABLED, "CorpDBMsg" )

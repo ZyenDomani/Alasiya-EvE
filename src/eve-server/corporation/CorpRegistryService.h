@@ -43,52 +43,28 @@ protected:
 
     CorporationDB m_db;
 
+    /** @note: none of these fully work, and most are skeleton code only */
     PyCallable_DECL_CALL(GetSuggestedAllianceShortNames);
     PyCallable_DECL_CALL(CreateAlliance);
     PyCallable_DECL_CALL(ApplyToJoinAlliance);
     PyCallable_DECL_CALL(GetAllianceApplications);
     PyCallable_DECL_CALL(DeleteAllianceApplication);
     PyCallable_DECL_CALL(GetRecentKillsAndLosses);
+    PyCallable_DECL_CALL(GetCorporateContacts);
+    PyCallable_DECL_CALL(AddCorporateContact);
+    PyCallable_DECL_CALL(EditCorporateContact);
+    PyCallable_DECL_CALL(RemoveCorporateContacts);
+    PyCallable_DECL_CALL(EditContactsRelationshipID);
+    PyCallable_DECL_CALL(GetLabels);
+    PyCallable_DECL_CALL(CreateLabel);
+    PyCallable_DECL_CALL(DeleteLabel);
+    PyCallable_DECL_CALL(EditLabel);
+    PyCallable_DECL_CALL(AssignLabels);
+    PyCallable_DECL_CALL(RemoveLabels);
+    //PyCallable_DECL_CALL();
 
     //overloaded in order to support bound objects:
     virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
 };
 
 #endif
-
-/*
-    def GetContactList(self):
-        if util.IsNPC(session.corpid):
-            return {}
-        return self.GetCorpRegistry().GetCorporateContacts()
-
-    def AddCorporateContact(self, contactID, relationshipID):
-        self.GetCorpRegistry().AddCorporateContact(contactID, relationshipID)
-
-    def EditCorporateContact(self, contactID, relationshipID):
-        self.GetCorpRegistry().EditCorporateContact(contactID, relationshipID)
-
-    def RemoveCorporateContacts(self, contactIDs):
-        self.GetCorpRegistry().RemoveCorporateContacts(contactIDs)
-
-    def EditContactsRelationshipID(self, contactIDs, relationshipID):
-        self.GetCorpRegistry().EditContactsRelationshipID(contactIDs, relationshipID)
-
-    def GetLabels(self):
-        return self.GetCorpRegistry().GetLabels()
-
-    def CreateLabel(self, name, color = 0):
-        return self.GetCorpRegistry().CreateLabel(name, color)
-
-    def DeleteLabel(self, labelID):
-        self.GetCorpRegistry().DeleteLabel(labelID)
-
-    def EditLabel(self, labelID, name = None, color = None):
-        self.GetCorpRegistry().EditLabel(labelID, name, color)
-
-    def AssignLabels(self, contactIDs, labelMask):
-        self.GetCorpRegistry().AssignLabels(contactIDs, labelMask)
-
-    def RemoveLabels(self, contactIDs, labelMask):
-        self.GetCorpRegistry().RemoveLabels(contactIDs, labelMask)
-*/
