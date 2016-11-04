@@ -89,3 +89,8 @@ INSERT INTO eveStaticOwners (ownerID, ownerName, typeID)
 INSERT INTO cacheOwners(ownerID, ownerName, typeID, ownerNameID)
  SELECT corporationID, corporationName, 2, 0
  FROM corporation
+
+
+/* insert null location into mapDenormalize */
+INSERT INTO `mapDenormalize` (`itemID`, `typeID`, `groupID`, `solarSystemID`, `constellationID`, `regionID`, `orbitID`, `x`, `y`, `z`, `radius`, `itemName`, `security`, `celestialIndex`, `orbitIndex`)
+VALUES ('0', NULL, NULL, NULL, NULL, NULL, NULL, '0', '0', '0', NULL, NULL, NULL, NULL, NULL);

@@ -431,7 +431,6 @@ PyList *DBResultToPackedRowList( DBQueryResult &result )
     return res;
 }
 
-/* function not used */
 PyTuple *DBResultToPackedRowListTuple( DBQueryResult &result )
 {
     DBRowDescriptor * header = new DBRowDescriptor( result );

@@ -370,6 +370,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     ShipItemRef pod_item = m_manager->item_factory->SpawnShip( podItem );
     pod_item->SaveItem();
 
+    pClient->SetChar(char_item);        // set new charRef in client to properly set and save ship in next call
     pClient->SetShip(ship_item);
     char_item->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
     char_item->SaveFullCharacter();

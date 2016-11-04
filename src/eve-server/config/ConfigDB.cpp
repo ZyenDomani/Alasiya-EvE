@@ -34,7 +34,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     player.clear();
     corp.clear();
     ally.clear();
-    
+
     for (auto cur : entityIDs) {
         if (IsCorp(cur))
             corp.push_back(cur);
@@ -123,32 +123,50 @@ PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityID
 
 
 PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
-    // now working correctly  -allan  5May14
-    //FIXME needs more work due to better understanding of client code  -allan 24Jan15
-    bool use_map = false;
-    use_map = IsStaticMapItem(entityIDs[0]);
+    // separate list of ids into respective groups
+    std::vector<int32> staticItem, dynamicItem;
+    staticItem.clear();
+    dynamicItem.clear();
 
-    std::string ids;
-    ListToINString(entityIDs, ids, "0");
-
-    //sLog.Log( "ConfigDB::GetMultiLocationsEx()", "use_map = %u.  ids = %s", use_map, ids.c_str() );
+    for (auto cur : entityIDs) {
+        if (IsStaticMapItem(cur) or (cur == 0))
+            staticItem.push_back(cur);
+        else
+            dynamicItem.push_back(cur);
+    }
 
     DBQueryResult res;
-    const char *table = "entity";
+    std::string ids = "";
 
-    if (use_map) table = "mapDenormalize";
-
-    if (!sDatabase.RunQuery(res,
+    if (staticItem.size()) {
+        ListToINString(staticItem, ids, "0");
+        if (!sDatabase.RunQuery(res,
             "SELECT "
             " itemID AS locationID,"
             " itemName AS locationName,"
             " x, y, z,"
-            " 0 AS locationNameID"
-            " FROM %s"
-            " WHERE itemID in (%s)", table, ids.c_str()))
-    {
-        codelog(DATABASE__ERROR, "Error in GetMultiLocationsEx query: %s", res.error.c_str());
-        return new PyNone();
+            " NULL AS locationNameID"
+            " FROM mapDenormalize"
+            " WHERE itemID in (%s)", ids.c_str()))
+        {
+            codelog(DATABASE__ERROR, "Error in GetMultiLocationsEx query: %s", res.error.c_str());
+        }
+        ids = "";
+    }
+
+    if (dynamicItem.size()) {
+        ListToINString(dynamicItem, ids, "0");
+        if (!sDatabase.RunQuery(res,
+                "SELECT "
+                " itemID AS locationID,"
+                " itemName AS locationName,"
+                " x, y, z,"
+                " NULL AS locationNameID"
+                " FROM entity"
+                " WHERE itemID in (%s)", ids.c_str()))
+        {
+            codelog(DATABASE__ERROR, "Error in GetMultiLocationsEx query: %s", res.error.c_str());
+        }
     }
 
     return DBResultToTupleSet(res);
@@ -173,7 +191,9 @@ PyRep *ConfigDB::GetMultiCorpTickerNamesEx(const std::vector<int32> &entityIDs) 
         return new PyInt(0);
     }
 
-    return DBResultToRowList(res);
+    //return DBResultToRowList(res);
+    //return DBResultToPackedRowList(res);
+    return DBResultToPackedRowListTuple(res);
 }
 
 
