@@ -56,7 +56,7 @@ public:
      *
      * @param[in] rep PyRep to be queued.
      */
-    void QueueRep( const PyRep* rep );
+    void QueueRep( const PyRep* rep, bool compress=true );
 
     /**
      * @brief Pops PyRep from receive queue.

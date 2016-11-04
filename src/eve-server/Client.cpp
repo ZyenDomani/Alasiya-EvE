@@ -1599,7 +1599,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         //ack.sessionID = GetSessionID();
     PyRep* r = ack.Encode();
     r->Dump(CLIENT__CALL_DUMP, "    ");
-    mNet->QueueRep(r);
+    mNet->QueueRep(r, false);
     PyDecRef(r);
 
     // Send out the session change
