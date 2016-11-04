@@ -61,33 +61,20 @@ BookmarkService::~BookmarkService() {
     delete m_dispatch;
 }
 
-bool BookmarkService::LookupBookmark(uint32 characterID, uint32 bookmarkID, uint32 &itemID, uint32 &typeID, double &x, double &y, double &z)
-{
-    /** @todo  update this shit....  */
-
-    // Retrieve bookmark information for external use:
-    uint32 ownerID;
-    uint32 flag;
-    std::string memo;
-    uint64 created;
-    uint32 locationID;
-    uint32 creatorID;
-    uint32 folderID;
-    std::string note;
-
-    return m_db.GetBookmarkInformation(bookmarkID,ownerID,itemID,typeID,flag,memo,created,x,y,z,locationID,note,creatorID,folderID);
+bool BookmarkService::LookupBookmark(uint32 bookmarkID, uint32& itemID, uint32& typeID, uint32 locationID, double& x, double& y, double& z) {
+    return m_db.GetBookmarkInformation(bookmarkID, itemID, typeID, locationID, x, y, z);
 }
 
 PyResult BookmarkService::Handle_GetBookmarks(PyCallArgs &call) {
     PyTuple* result = new PyTuple(2);
-        result->items[0] = m_db.GetBookmarks(call.client->GetCharacterID());
-        result->items[1] = m_db.GetFolders(call.client->GetCharacterID());
+        result->SetItem(0, m_db.GetBookmarks(call.client->GetCharacterID()));
+        result->SetItem(1, m_db.GetFolders(call.client->GetCharacterID()));
     return result;
 }
 
 PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
-    sLog.Log("BookmarkService", "Handle_BookmarkScanResult() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    /* bookmarkID, itemID, typeID, x, y, z, locationID = self.bookmarkMgr.BookmarkScanResult(locationID, memo, comment, resultID, ownerID, folderID=folderID)
+     */
     /* 22:24:39 [SvcCall] Service bookmark: calling BookmarkScanResult
      * 22:25:58 L BookmarkService: Handle_BookmarkScanResult() size=5
      * 22:25:58 [SvcCallDump]   Call Arguments:
@@ -103,32 +90,30 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
      * 22:25:58 [SvcCallDump]     Argument 'machoVersion':
      * 22:25:58 [SvcCallDump]         Integer field: 1
      */
-    return NULL;
+    sLog.Log("BookmarkService", "Handle_BookmarkScanResult() size=%u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    Call_BookmarkScanResult args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "Failed to decode args");
+        return nullptr;
+    }
+
+    // (bookmarkID, itemID, typeID, x, y, z, locationID)
+    Rsp_BookmarkLocation ret;
+    ret.bookmarkID  = 0;
+    ret.itemID      = new PyNone();     // unsure if/when this is populated
+    ret.typeID      = 0;
+    ret.x           = 0;
+    ret.y           = 0;
+    ret.z           = 0;
+    ret.locationID  = 0;
+
+    return ret.Encode();
 }
 
 PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
-  /**
-      bookmarkID, itemID, typeID, x, y, z, locationID = sm.RemoteSvc('bookmark').BookmarkLocation(itemID, ownerID, memo, comment, folderID)
-
-    def GetValidBookmarks(self):
-        ret = []
-        for bookmark in self.bookmarkCache.itervalues():
-            typeOb = cfg.invtypes.Get(bookmark.typeID)
-            if typeOb.categoryID not in self.validCategories:
-                continue
-            ret.append(bookmark)
-
-        self.validCategories = (
-         const.categoryCelestial,				categoryCelestial = 2
-         const.categoryStation,     			categoryStation = 3
-         const.categoryShip,        			categoryShip = 6
-         const.categoryStructure,   			categoryStructure = 23
-         const.categoryAsteroid,    			categoryAsteroid = 25
-         const.categoryPlanetaryInteraction		categoryPlanetaryInteraction = 41
-         )
-  */
+  /*  bookmarkID, itemID, typeID, x, y, z, locationID = sm.RemoteSvc('bookmark').BookmarkLocation(itemID, ownerID, memo, comment, folderID)  */
     Call_BookmarkLocation args;
-
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode args");
         return nullptr;
@@ -151,24 +136,6 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
                 sm.StartService('agents').GetAgentMoniker(bookmark.agentID).WarpToLocation(bookmark.locationType, bookmark.locationNumber, warpRange, fleet, referringAgentID)
 
 	 */
-
-    ////////////////////////////////////////
-    // Verify expected packet structure:            updated 20Jan14   -allan
-    //
-    // call.tuple  size=5
-    //       |
-    //       |--> [0] PyInt:      sends id of entity the calling char is in...ship/station/system/pos/etc
-    //       |--> [1] PyInt:       ownerID = charID of char making the bm
-    //       |--> [2] PyWString:  label (called memo in db) for the bookmark
-    //       |--> [3] PyString:  text for the note (comment) field in the bookmark
-	//		 |--> [4] PyInt:		folderID bookmark is being placed into.  default=0
-	//
-	// call.byname size=2
-	//       |
-	//       |--> [0] kvp: <"folderID",PyInt>
-	//       |--> [1] kvp: <"machoVersion",1>
-	//
-	////////////////////////////////////////
 
 	// Check for presence of folderID in the packet
 	if (call.byname.find("folderID") != call.byname.cend()) {
@@ -213,108 +180,54 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
 
 PyResult BookmarkService::Handle_UpdateBookmark(PyCallArgs &call)
 {
-    sLog.Log("BookmarkService", "Handle_UpdateBookmark() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    /*
     Call_UpdateBookmark args;
-
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode args");
         return nullptr;
     }
-    */
 
-    uint32 bookmarkID = 0, ownerID = 0, itemID = 0, typeID = 0, flag = 0, locationID = 0, creatorID = 0, folderID = 0;
-    uint64 created;
-    double x = 0.0, y = 0.0, z = 0.0;
-    std::string memo;
-    std::string newMemo;
-    std::string note;
-    std::string newNote;
+    if (!m_db.UpdateBookmarkInDatabase(args.bookmarkID, args.ownerID, args.memo, args.note, args.folderID))
+        ;   // make client error here to let them know updating failed
 
-    if ( !(call.tuple->GetItem( 0 )->IsInt()) ) {
-        sLog.Error( "BookmarkService::Handle_UpdateBookmark()", "%s: call.tuple->GetItem( 0 ) is of the wrong type: '%s'.  Expected PyInt type.", call.client->GetName(), call.tuple->GetItem( 0 )->TypeString() );
-        return NULL;
-    } else
-        bookmarkID = call.tuple->GetItem( 0 )->AsInt()->value();
-
-    if ( !(call.tuple->GetItem( 3 )->IsWString()) ) {
-        sLog.Error( "BookmarkService::Handle_UpdateBookmark()", "%s: call.tuple->GetItem( 3 ) is of the wrong type: '%s'.  Expected PyWString type.", call.client->GetName(), call.tuple->GetItem( 3 )->TypeString() );
-        return NULL;
-    } else
-        newMemo = call.tuple->GetItem( 3 )->AsWString()->content();
-
-    if ( call.byname.find("note") == call.byname.end() ) {
-        sLog.Error( "BookmarkService::Handle_UpdateBookmark()", "%s: call.byname.find(\"note\") could not be found.", call.client->GetName() );
-        return NULL;
-    } else {
-        if ( call.byname.find("note")->second->IsWString() )
-            newNote = call.byname.find("note")->second->AsWString()->content();
-        else if ( call.byname.find("note")->second->IsString() )
-            newNote = call.byname.find("note")->second->AsString()->content();
-        else {
-            sLog.Error( "BookmarkService::Handle_UpdateBookmark()", "%s: call.byname.find(\"note\")->second is of the wrong type: '%s'.  Expected PyWString or PyString type.", call.client->GetName(), call.byname.find("note")->second->TypeString() );
-            return NULL;
-        }
-    }
-
-    m_db.GetBookmarkInformation(bookmarkID, ownerID, itemID, typeID, flag, memo, created, x, y, z, locationID, note, creatorID, folderID);
-    m_db.UpdateBookmarkInDatabase(bookmarkID, call.client->GetCharacterID(), newMemo, newNote);
-
-    Rsp_BookmarkLocation ret;
-        ret.bookmarkID  = bookmarkID;
-        ret.itemID      = new PyNone();
-        ret.typeID      = typeID;
-        ret.x           = x;
-        ret.y           = y;
-        ret.z           = z;
-        ret.locationID  = locationID;
-
-    return ret.Encode();
+    return new PyNone();
 }
 
 PyResult BookmarkService::Handle_CreateFolder(PyCallArgs &call) {
-    uint32 ownerID = call.client->GetCharacterID();
-    return new PyInt(m_db.SaveNewFolderToDatabase(call.tuple->GetItem( 0 )->AsWString()->content(), ownerID, ownerID) );
+    return new PyInt(m_db.SaveNewFolderToDatabase(call.tuple->GetItem( 0 )->AsWString()->content(), call.client->GetCharacterID()));
 }
 
 PyResult BookmarkService::Handle_UpdateFolder(PyCallArgs &call) {
-    uint32 folderID =  call.tuple->GetItem( 0 )->AsInt()->value();
-    std::string folderName = call.tuple->GetItem( 1 )->AsWString()->content();
-    uint32 ownerID = call.client->GetCharacterID();
+    Call_UpdateFolder args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "Failed to decode args");
+        return nullptr;
+    }
 
-    m_db.UpdateFolderInDatabase(folderID, folderName, ownerID, ownerID);
+    if (!m_db.UpdateFolderInDatabase(args.ownerID, args.folderID, args.name))
+        ; // make client error here to let them know updating failed
 
-    //Rsp_UpdateFolder res;
-    PyTuple* res = new PyTuple( 4 );
-        res->items[ 0 ] = new PyInt( ownerID );
-        res->items[ 1 ] = new PyInt( folderID );
-        res->items[ 2 ] = new PyString( folderName );
-        res->items[ 3 ] = new PyInt( ownerID );
-
-    return res;
+    return new PyNone();
 }
 
 PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
-    uint32 folderID =  call.tuple->GetItem( 0 )->AsInt()->value();
-    uint32 ownerID = call.client->GetCharacterID();
-    m_db.DeleteFolderFromDatabase(folderID,ownerID);
-
+    if (!m_db.DeleteFolderFromDatabase(call.tuple->GetItem( 0 )->AsInt()->value()))
+        ;   // make client error here to let them know deltion failed
     return new PyNone();
 }
 
 PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call)          //not working
 {
+    call.client->SendInfoModalMsg("Deleting Bookmarks is currently broken.");
+    call.Dump(SERVICE__CALL_DUMP);
+
     if (call.tuple->IsList()) {
       sLog.Log( "BookmarkService::Handle_DeleteBookmarks()", "Call is PyList");
       PyList *list = call.tuple->GetItem( 0 )->AsList();
-      uint32 i;
       uint32 bookmarkID;
-      std::vector<unsigned long> bookmarkIDs;
+      std::vector<uint32> bookmarkIDs;
 
       if (list->size()) {
-          for (i=0; i<(list->size()); i++) {
+          for (int8 i=0; i<(list->size()); i++) {
               bookmarkID = call.tuple->GetItem( 0 )->AsList()->GetItem(i)->AsInt()->value();
               bookmarkIDs.push_back( bookmarkID );
           }
@@ -332,8 +245,6 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call)          //no
       //m_db.DeleteBookmarkFromDatabase( call.client->GetCharacterID(), bookmarkID );
     } else {
       sLog.Error( "BookmarkService::Handle_DeleteBookmarks()", "Service is not handled yet.  Returning NULL.");
-      call.client->SendInfoModalMsg("Deleting Bookmarks is currently broken.");
-    call.Dump(SERVICE__CALL_DUMP);
     }
 
     // returns none

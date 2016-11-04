@@ -33,7 +33,7 @@ PyRep *FactoryDB::GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) 
     if(!sDatabase.RunQuery(res,
                 "SELECT requiredTypeID, quantity, damagePerJob, activityID AS activity"
 				" FROM ramTypeRequirements"
-                " WHERE typeID IN (%u, (SELECT productTypeID FROM bpTypes WHERE blueprintTypeID = %u))",
+                " WHERE typeID IN (%u, (SELECT productTypeID FROM invBlueprintTypes WHERE blueprintTypeID = %u))",
                 blueprintTypeID, blueprintTypeID))
     {
         _log(DATABASE__ERROR, "Could not retrieve materials for type %u : %s", blueprintTypeID, res.error.c_str());

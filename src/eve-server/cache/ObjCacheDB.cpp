@@ -716,7 +716,7 @@ PyRep *ObjCacheDB::Generate_locationWormholeClasses()
 PyRep *ObjCacheDB::Generate_invBlueprintTypes()
 {
     DBQueryResult res;
-    const char *q = "SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime, researchTechTime, productivityModifier, materialModifier, wasteFactor, chanceOfReverseEngineering, maxProductionLimit FROM bpTypes";
+    const char *q = "SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime, researchTechTime, productivityModifier, materialModifier, wasteFactor, chanceOfRE, maxProductionLimit FROM invBlueprintTypes";
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.bptypes': %s", res.error.c_str());

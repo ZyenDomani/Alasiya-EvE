@@ -147,8 +147,8 @@ GPoint ManagerDB::GetAnomalyPos(std::string& string)
         _log(DATABASE__ERROR, "Error in GetAnomalyPos query: %s", res.error.c_str());
         return NULL_ORIGIN;
     }
-    GPoint pos(row.GetFloat(0), row.GetFloat(1), row.GetFloat(2));
-    return pos;
+
+    return (GPoint)(row.GetFloat(0), row.GetFloat(1), row.GetFloat(2));
 }
 
 void ManagerDB::GetSystemAnomalies(uint32 systemID, DBQueryResult& res)

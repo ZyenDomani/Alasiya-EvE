@@ -321,53 +321,35 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
         return nullptr;
     }
 
-    sLog.Warning( "BeyonceBound", "Handle_CmdGotoBookmark" );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    /** @todo  update this shit....  */
-    
-    if ( !(call.tuple->GetItem( 0 )->IsInt()) )
-    {
-        sLog.Error( "BeyonceService::Handle_GotoBookmark()", "%s: Invalid type %s for bookmarkID received.", call.client->GetName(), call.tuple->GetItem( 0 )->TypeString() );
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
         return nullptr;
     }
-    uint32 bookmarkID = call.tuple->GetItem( 0 )->AsInt()->value();
 
 	double x = 0.0, y = 0.0, z = 0.0;
-    uint32 itemID = 0, typeID = 0;
-    GPoint bookmarkPosition  = (NULL_ORIGIN);
+    uint32 itemID = 0, typeID = 0, locationID = 0;
 
     BookmarkService* pBMSvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
 
-    if (!pBMSvc)
-    {
+    if (!pBMSvc) {
         sLog.Error( "BeyonceService::Handle_GotoBookmark()", "Attempt to access BookmarkService via (BookmarkService *)(call.client->services().LookupService(\"bookmark\")) returned NULL pointer." );
         return nullptr;
-    }
-    else
-    {
-        pBMSvc->LookupBookmark(call.client->GetCharacterID(), bookmarkID, itemID, typeID, x, y, z);
+    } else {
+        pBMSvc->LookupBookmark(arg.arg, itemID, typeID, locationID, x, y, z);
 
-        if ( typeID == 5 )
-        {
-            // Bookmark type is coordinate, so use these directly from the bookmark system call:
-            bookmarkPosition.x = x;     // From bookmark x
-            bookmarkPosition.y = y;     // From bookmark y
-            bookmarkPosition.z = z;     // From bookmark z
+        if (typeID == 5) {
+            if (call.client->GetSystemID() != locationID) {
+                //  this bm is for different system.  make and send error here.
+                return nullptr;
+            }
 
             if (call.client->IsUndock()) call.client->SetUndock(false);
             //if (call.client->IsInvul()) call.client->SetInvul(false);
-            pDestiny->GotoPoint( bookmarkPosition );
-        }
-        else
-        {
+            pDestiny->GotoPoint((GPoint)(x,y,z));
+        } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
-            SystemManager* pSM = call.client->SystemMgr();
-            if (!pSM) {
-                sLog.Error( "BeyonceService::Handle_GotoBookmark()", "%s: no system manager found", call.client->GetName() );
-                return nullptr;
-            }
-            SystemEntity* pSE = pSM->GetSE( itemID );
+            SystemEntity* pSE = call.client->SystemMgr()->GetSE(itemID);
             if (!pSE) {
                 sLog.Error( "BeyonceService::Handle_GotoBookmark()", "%s: unable to find location %d", call.client->GetName(), itemID );
                 return nullptr;
@@ -486,8 +468,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 		}
 
         double distanceFromBodyOrigin = 0.0, distanceFromSystemOrigin = 0.0;
-        GPoint warpToPoint(pSE->GetPosition());
         float warpPointAdj = 1.0f;
+        GPoint warpToPoint(pSE->GetPosition());
+
         if (pSE->IsStaticEntity()) {
             switch(pSE->GetGroupID() ) {
                 case EVEDB::invGroups::Sun:
@@ -554,32 +537,33 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         vectorFromOrigin.normalize();   //we now have a direction
         GPoint stopPoint = vectorFromOrigin * -warpPointAdj;
         warpToPoint -= stopPoint;
+        pDestiny->WarpTo(warpToPoint, distance);
 
         if (call.client->IsUndock()) {
             call.client->SetUndock(false);
             if (call.client->IsInvul())
                 call.client->SetInvul(false);
         }
-        pDestiny->WarpTo(warpToPoint, distance);
     } else if (type == "bookmark" ) {
         // This section handles Warping to any Bookmark
-        double x = 0.0, y = 0.0, z = 0.0;
-        uint32 itemID = 0, typeID = 0;
-        uint32 bookmarkID = call.tuple->GetItem(1)->AsInt()->value();
         GPoint warpToPoint(NULL_ORIGIN);
+        double x = 0.0, y = 0.0, z = 0.0;
+        uint32 itemID = 0, typeID = 0, locationID = 0;
+        uint32 bookmarkID = call.tuple->GetItem(1)->AsInt()->value();
 
         BookmarkService* bkSrvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
         if (!bkSrvc) {
             sLog.Error( "BeyonceService::Handle_WarpToStuff()", "Attempt to access BookmarkService returned nullptr." );
             return nullptr;
         }
-        bkSrvc->LookupBookmark(call.client->GetCharacterID(), bookmarkID, itemID, typeID, x, y, z);
+        bkSrvc->LookupBookmark(bookmarkID, itemID, typeID, locationID, x, y, z);
 
         if ( typeID == 5 ) {
-            // Bookmark type is coordinate, so use these directly from the bookmark system call:
-            warpToPoint.x = x;     // From bookmark x
-            warpToPoint.y = y;     // From bookmark y
-            warpToPoint.z = z;     // From bookmark z
+            if (call.client->GetSystemID() != locationID) {
+                //  this bm is for different system.  make and send error here.
+                return nullptr;
+            }
+            warpToPoint = (GPoint)(x, y, z);
         } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
             SystemEntity* pSE = pSM->GetSE( itemID );
@@ -588,7 +572,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 return nullptr;
             }
             double distanceFromBodyOrigin = 0.0, distanceFromSystemOrigin = 0.0;
-            warpToPoint = pSE->GetPosition();
+            GPoint warpToPoint(pSE->GetPosition());
             float warpPointAdj = 1.0f;
             if (pSE->IsStaticEntity()) {
                 switch(pSE->GetGroupID() ) {
@@ -657,24 +641,22 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             GPoint stopPoint = vectorFromOrigin * -warpPointAdj;
             warpToPoint -= stopPoint;
         }
+        pDestiny->WarpTo(warpToPoint, distance);
 
         if (call.client->IsUndock()) {
             call.client->SetUndock(false);
             if (call.client->IsInvul())
                 call.client->SetInvul(false);
         }
-        pDestiny->WarpTo(warpToPoint, distance);
     } else if (type == "scan") {
         std::string resultID = call.tuple->GetItem(1)->AsString()->content();
         ManagerDB mDB;
-        GPoint pos = mDB.GetAnomalyPos(resultID);
-        pDestiny->WarpTo(pos, distance);
+        pDestiny->WarpTo(mDB.GetAnomalyPos(resultID), distance);
     } else if (type == "launch") {
         // launchpickup - launch, launchid
         uint32 launchid = call.tuple->GetItem(1)->AsInt()->value();
         PlanetDB mDB;
-        GPoint pos = mDB.GetLaunchPos(launchid);
-        pDestiny->WarpTo(pos, distance);
+        pDestiny->WarpTo(mDB.GetLaunchPos(launchid), distance);
     }
 	// the systems below are not implemented yet.  hold on coding till systems are working.
 	else if (type == "epinstance") {

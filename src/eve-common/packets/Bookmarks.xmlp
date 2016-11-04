@@ -17,16 +17,6 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Call_UpdateBookmark">
-    <tupleInline>
-        <int name="itemID" />
-        <int name="ownerID" />
-        <wstring name="memo" />
-        <string name="comment" />
-        <int name="folderID" />
-    </tupleInline>
-  </elementDef>
-
   <elementDef name="Rsp_BookmarkLocation">
     <tupleInline>
         <int name="bookmarkID" />
@@ -39,12 +29,31 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Rsp_UpdateFolder">
+  <elementDef name="Call_UpdateBookmark">
+    <tupleInline>
+        <int name="bookmarkID" />
+        <int name="ownerID" />
+        <wstring name="memo" />
+        <string name="note" />
+        <int name="folderID" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_UpdateFolder">
     <tupleInline>
         <int name="ownerID" />
         <int name="folderID" />
-        <string name="folderName" />
-        <int name="creatorID" />
+        <string name="name" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_BookmarkScanResult">
+    <tupleInline>
+        <int name="locationID" />
+        <string name="memo" />
+        <wstring name="note" />
+        <string name="scanID" />
+        <int name="ownerID" />
     </tupleInline>
   </elementDef>
 

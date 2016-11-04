@@ -38,7 +38,7 @@ public:
     BookmarkService(PyServiceMgr *mgr);
     virtual ~BookmarkService();
 
-    bool LookupBookmark(uint32 characterID, uint32 bookmarkID, uint32 &itemID, uint32 &typeID, double &x, double &y, double &z);
+    bool LookupBookmark(uint32 bookmarkID, uint32 &itemID, uint32 &typeID, uint32 locationID, double &x, double &y, double &z);
 
 protected:
     class Dispatcher;
