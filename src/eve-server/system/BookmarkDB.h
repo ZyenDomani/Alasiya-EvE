@@ -36,7 +36,8 @@ public:
     PyRep* GetBookmarks(uint32 ownerID);
     PyRep* GetFolders(uint32 ownerID);
 
-    bool GetBookmarkInformation(uint32 bookmarkID, uint32& ownerID, uint32& itemID, uint32& typeID, uint32& flag, std::string& memo, uint64& created, double& x, double& y, double& z, uint32& locationID, std::string& note, uint32& creatorID, uint32& folderID);
+    bool GetBookmarkInformation(uint32 bookmarkID, uint32& ownerID, uint32& itemID, uint32& typeID, std::string& memo,
+                                uint64& created, double& x, double& y, double& z, uint32& locationID, std::string& note, uint32& creatorID, uint32& folderID);
 
     bool UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note);
     bool DeleteBookmarkFromDatabase(uint32 ownerID, uint32 bookmarkID);
@@ -48,8 +49,7 @@ public:
     bool DeleteFolderFromDatabase(uint32 folderID, uint32 ownerID);
 
     uint32 SaveNewFolderToDatabase(std::string folderName, uint32 ownerID, uint32 creatorID);
-    uint32 SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint32 typeID, uint32 flag, std::string memo, GPoint point,
-                                    uint32 locationID, std::string note, uint32 creatorID, uint32 folderID);
+    uint32 SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint32 typeID, std::string memo, GPoint point, uint32 locationID, std::string note, uint32 creatorID, uint32 folderID);
 };
 
 #endif  // __EVEMU_SYSTEM_BOOKMARKDB_H_

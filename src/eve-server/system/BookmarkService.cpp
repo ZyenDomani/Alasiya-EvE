@@ -196,12 +196,12 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         itemID = locationID;      //  locationID = itemID for coord bm.  shows jumps, s/c/r in bm window, green in system
     }
 
-    uint32 bookmarkID = m_db.SaveNewBookmarkToDatabase(args.ownerID, itemID, typeID, 0/*do we need this?*/, args.memo, point, locationID, args.comment, call.client->GetCharacterID(), folderID );
+    uint32 bookmarkID = m_db.SaveNewBookmarkToDatabase(args.ownerID, itemID, typeID, args.memo, point, locationID, args.comment, call.client->GetCharacterID(), folderID );
 
     // (bookmarkID, itemID, typeID, x, y, z, locationID)
     Rsp_BookmarkLocation ret;
         ret.bookmarkID  = bookmarkID;
-        ret.itemID      = new PyNone();
+        ret.itemID      = new PyNone();     // unsure if/when this is populated
         ret.typeID      = typeID;
         ret.x           = point.x;
         ret.y           = point.y;
@@ -336,6 +336,7 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call)          //no
     call.Dump(SERVICE__CALL_DUMP);
     }
 
+    // returns none
     return new PyNone();
 }
 

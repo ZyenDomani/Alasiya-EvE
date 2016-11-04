@@ -74,7 +74,6 @@ CREATE TABLE `bookmarks` (
   `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
   `itemID` int(10) unsigned NOT NULL DEFAULT '0',
   `typeID` int(10) unsigned NOT NULL DEFAULT '0',
-  `flag` int(10) unsigned NOT NULL DEFAULT '0',
   `memo` varchar(85) NOT NULL DEFAULT '',
   `created` bigint(20) unsigned NOT NULL DEFAULT '0',
   `x` double NOT NULL DEFAULT '0',

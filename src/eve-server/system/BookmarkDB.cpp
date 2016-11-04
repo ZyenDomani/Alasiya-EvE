@@ -83,9 +83,8 @@ PyRep *BookmarkDB::GetFolders(uint32 ownerID) {
 }
 
 bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32 &ownerID, uint32 &itemID, uint32 &typeID,
-                                        uint32 &flag, std::string &memo, uint64 &created, double &x, double &y,
-                                        double &z, uint32 &locationID, std::string &note, uint32 &creatorID,
-                                        uint32 &folderID)
+                                        std::string &memo, uint64 &created, double &x, double &y, double &z,
+                                        uint32 &locationID, std::string &note, uint32 &creatorID, uint32 &folderID)
 {
     DBQueryResult res;
     DBResultRow row;
@@ -97,7 +96,6 @@ bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32 &ownerID, uint
         "  ownerID,"
         "  itemID,"
         "  typeID,"
-        "  flag,"
         "  memo,"
         "  created,"
         "  x, y, z,"
@@ -120,23 +118,21 @@ bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32 &ownerID, uint
     ownerID = row.GetUInt(1);
     itemID = row.GetUInt(2);
     typeID = row.GetUInt(3);
-    flag = row.GetUInt(4);
-    memo = row.GetText(5);
-    created = row.GetUInt64(6);
-    x = row.GetDouble(7);
-    y = row.GetDouble(8);
-    z = row.GetDouble(9);
-    locationID = row.GetUInt(10);
-    note = row.GetUInt(11);
-    creatorID = row.GetUInt(12);
-    folderID = row.GetUInt(13);
+    memo = row.GetText(4);
+    created = row.GetUInt64(5);
+    x = row.GetDouble(6);
+    y = row.GetDouble(7);
+    z = row.GetDouble(8);
+    locationID = row.GetUInt(9);
+    note = row.GetUInt(10);
+    creatorID = row.GetUInt(11);
+    folderID = row.GetUInt(12);
 
     return true;
 }
 
 
-uint32 BookmarkDB::SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint32 typeID, uint32 flag, std::string memo,
-                                             GPoint point, uint32 locationID, std::string note, uint32 creatorID, uint32 folderID)
+uint32 BookmarkDB::SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint32 typeID, std::string memo, GPoint point, uint32 locationID, std::string note, uint32 creatorID, uint32 folderID)
 {
     DBerror err;
 /** @todo  need to escape the memo field here...   */
@@ -145,9 +141,9 @@ uint32 BookmarkDB::SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint
     uint32 bookmarkID = 0;
     if (!sDatabase.RunQueryLID(err, bookmarkID,
         " INSERT INTO bookmarks "
-        " (ownerID, itemID, typeID, flag, memo, created, x, y, z, locationID, note, creatorID, folderID)"
+        " (ownerID, itemID, typeID, memo, created, x, y, z, locationID, note, creatorID, folderID)"
         " VALUES (%u, %u, %u, %u, '%s', %" PRIu64 ", %f, %f, %f, %u, '%s', %u, %u) ",
-          ownerID, itemID, typeID, flag, memo_fixed.c_str(), Win32TimeNow(), point.x, point.y, point.z, locationID, note.c_str(), creatorID, folderID
+          ownerID, itemID, typeID, memo_fixed.c_str(), Win32TimeNow(), point.x, point.y, point.z, locationID, note.c_str(), creatorID, folderID
         ))
     {
         sLog.Error( "BookmarkDB::SaveNewBookmarkToDatabase()", "Error in query, Bookmark content couldn't be saved: %s", err.c_str() );
