@@ -74,14 +74,21 @@ PyResult CharUnboundMgrService::Handle_IsUserReceivingCharacter(PyCallArgs &call
 
 PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)
 {
-    Call_SingleWStringArg arg;
-    if (!arg.Decode(&call.tuple))
-    {
-        codelog(CLIENT__ERROR, "Failed to decode args for ValidateNameEx call");
-        return new PyBool(false);
+    if (call.tuple->IsString()) {
+        Call_SingleStringArg arg;
+        if (!arg.Decode(&call.tuple)) {
+            codelog(CLIENT__ERROR, "Failed to decode args for ValidateNameEx call");
+            return new PyBool(false);
+        }
+            return m_db.ValidateCharName(arg.arg.c_str());
+    } else if (call.tuple->IsWString()) {
+        Call_SingleWStringArg arg;
+        if (!arg.Decode(&call.tuple)) {
+            codelog(CLIENT__ERROR, "Failed to decode args for ValidateNameEx call");
+            return new PyBool(false);
+        }
+            return m_db.ValidateCharName(arg.arg.c_str());
     }
-
-    return m_db.ValidateCharName(arg.arg.c_str());
 }
 
 PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call) {
@@ -100,7 +107,7 @@ PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call) {
 }
 
 PyResult CharUnboundMgrService::Handle_GetCharactersToSelect(PyCallArgs &call) {
-    return(m_db.GetCharacterList(call.client->GetUserID()));
+    return m_db.GetCharacterList(call.client->GetUserID());
 }
 
 PyResult CharUnboundMgrService::Handle_GetCharacterToSelect(PyCallArgs &call) {

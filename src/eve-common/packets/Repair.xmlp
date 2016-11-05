@@ -1,5 +1,13 @@
 <elements>
 
+  <elementDef name="Call_UnasembleItems">
+    <tupleInline>
+      <dictRaw name="items" key="uint32" pykey="Int" value="uint32" pyvalue="Int" />
+      <listRaw name="list" />
+    </tupleInline>
+  </elementDef>
+
+
   <elementDef name="RepairListRsp">
     <objectInline>
       <stringInline value="util.Row" />

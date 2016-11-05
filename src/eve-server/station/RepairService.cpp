@@ -178,8 +178,7 @@ repackableGroups = (groupCargoContainer,
                       //PyInt *itemLocation = tuple->GetItem(1)->AsInt();
                       if (itemInt) {
                           // Get the item itself.
-                          uint32 itemID = itemInt->value();
-                          InventoryItemRef item = factory->GetItem(itemID);
+                          InventoryItemRef item = factory->GetItem(itemInt->value());
                           if (item) {
                               // Add type exceptions here.
                               if (item->categoryID() == EVEDB::invCategories::Blueprint
@@ -201,7 +200,8 @@ repackableGroups = (groupCargoContainer,
       if (repackDamaged)
           throw PyException(MakeCustomError("Cannot repackage damaged items."));
   }
-  return nullptr;
+
+  return new PyNone();
 }
 
 PyObject* RepairService::GetDamageReports() {

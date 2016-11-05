@@ -66,8 +66,7 @@ PyRep *BookmarkDB::GetFolders(uint32 ownerID) {
         "SELECT"
         "  ownerID,"
         "  folderID,"
-        "  folderName,"
-        "  creatorID"
+        "  folderName"
         " FROM bookmarkFolders"
         " WHERE ownerID = %u",
         ownerID))
@@ -207,9 +206,9 @@ bool BookmarkDB::UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std
 uint32 BookmarkDB::SaveNewFolderToDatabase(std::string folderName, uint32 ownerID)
 {
     DBerror err;
+    uint32 folderID = 0;
     std::string folderName_fixed = "";
     sDatabase.DoEscapeString(folderName_fixed, folderName.c_str());
-    uint32 folderID = 0;
     if (!sDatabase.RunQueryLID(err, folderID,
         " INSERT INTO bookmarkFolders"
         " (folderName, ownerID)"
@@ -229,7 +228,6 @@ bool BookmarkDB::UpdateFolderInDatabase(uint32 ownerID, uint32 folderID, std::st
     DBerror err;
     std::string folderName_fixed = "";
     sDatabase.DoEscapeString(folderName_fixed, folderName.c_str());
-
     if (!sDatabase.RunQuery(err,
         " UPDATE bookmarkFolders"
         "  SET  folderName = '%s'"
