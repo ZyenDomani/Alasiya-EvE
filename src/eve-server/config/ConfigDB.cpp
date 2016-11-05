@@ -191,9 +191,7 @@ PyRep *ConfigDB::GetMultiCorpTickerNamesEx(const std::vector<int32> &entityIDs) 
         return new PyInt(0);
     }
 
-    //return DBResultToRowList(res);
-    //return DBResultToPackedRowList(res);
-    return DBResultToPackedRowListTuple(res);
+    return DBResultToRowList(res);
 }
 
 
