@@ -179,6 +179,10 @@ PyResult CorpStationMgrIMBound::Handle_GetCorporateStationInfo(PyCallArgs &call)
 PyResult CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(PyCallArgs &call) {
     //   corpStationMgr.DoStandingCheckForStationService(stationServiceID)
     /*
+     * 01:09:09 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
+     * 01:09:09 [SvcCallDump]   Call Arguments:
+     * 01:09:09 [SvcCallDump]       Tuple: 1 elements
+     * 01:09:09 [SvcCallDump]         [ 0] Integer field: 4096  (repair)
      * 23:09:41 L Server: DoStandingCheckForStationService call made to
      * 23:09:41 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
      * 23:09:41 [SvcCall]   Call Arguments:
@@ -192,7 +196,12 @@ PyResult CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(PyCallAr
      * 18:49:22 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
      * 18:49:22 [SvcCall]   Call Arguments:
      * 18:49:22 [SvcCall]       Tuple: 1 elements
-     * 18:49:22 [SvcCall]         [ 0] Integer field: 65536
+     * 18:49:22 [SvcCall]         [ 0] Integer field: 65536  (fitting)
+     * 01:11:32 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
+     * 01:11:32 [SvcCallDump]   Call Arguments:
+     * 01:11:32 [SvcCallDump]       Tuple: 1 elements
+     * 01:11:32 [SvcCallDump]         [ 0] Integer field: 1048576  (insurance)
+     *
      *
      */
     sLog.Log( "CorpStationMgrIMBound::Handle_DoStandingCheckForStationService()", "size= %u", call.tuple->size() );

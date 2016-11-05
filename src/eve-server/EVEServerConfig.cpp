@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    6.8
+    Version:    6.9
 */
 
 
@@ -52,7 +52,6 @@ EVEServerConfig::EVEServerConfig()
     server.UseStackTrace = false;//N
     server.ServerSleepTime = 10 /*ms*/;
     server.idleSleepTime = 1000;
-    server.StationDockDelay = 3 /*s*/;
     server.DisableIGB = true;
 
     // world
@@ -63,6 +62,7 @@ EVEServerConfig::EVEServerConfig()
     world.loginInfo = false;//N
     world.loginMsg = false;//N
     world.mailDelay = 5;//N
+    world.StationDockDelay = 5 /*s*/;
 
     // rates
     rates.npcBountyMultiply = 1.0;
@@ -191,7 +191,6 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "UseStackTrace",        server.UseStackTrace );
     AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
     AddValueParser( "idleSleepTime",        server.idleSleepTime );
-    AddValueParser( "StationDockDelay",     server.StationDockDelay );
 
     const bool result = ParseElementChildren( ele );
 
@@ -204,7 +203,6 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "UseStackTrace" );
     RemoveParser( "ServerSleepTime" );
     RemoveParser( "idleSleepTime" );
-    RemoveParser( "StationDockDelay" );
 
     return result;
 }
@@ -218,6 +216,7 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     AddValueParser( "loginInfo",        world.loginInfo );
     AddValueParser( "loginMsg",         world.loginMsg );
     AddValueParser( "mailDelay",        world.mailDelay );
+    AddValueParser( "StationDockDelay",     world.StationDockDelay );
 
     const bool result = ParseElementChildren( ele );
 
@@ -228,6 +227,7 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     RemoveParser( "loginInfo" );
     RemoveParser( "loginMsg" );
     RemoveParser( "mailDelay" );
+    RemoveParser( "StationDockDelay" );
 
     return result;
 }

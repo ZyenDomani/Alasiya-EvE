@@ -105,8 +105,8 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
                     label = cfg.invtypes.Get(each.typeID).name + '<t>' + dmg + '<t>' + cst
                 */
 
-    //sLog.Warning("RepairSvcBound::Handle_GetDamageReports", "Called GetDamageReports stub.");
-    //call.Dump(SERVICE__CALL_DUMP);
+    sLog.Log( "RepairSvcBound::Handle_GetDamageReports()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
 
     Call_SingleIntList args;
     if(!args.Decode(&call.tuple)) {
@@ -115,7 +115,7 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
     }
 
     /** @todo loop here for each item in repair list */
-    PyDict* dict = new PyDict;
+    PyDict* dict = new PyDict();
     //    dict->SetItem(new PyInt(0), m_rs->GetDamageReports());
     return dict;
 }

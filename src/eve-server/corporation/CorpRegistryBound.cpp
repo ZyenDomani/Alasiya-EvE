@@ -87,7 +87,27 @@ CorpRegistryBound::CorpRegistryBound(PyServiceMgr *mgr, CorporationDB& db, uint3
     PyCallable_REG_CALL(CorpRegistryBound, PayoutDividend);
     PyCallable_REG_CALL(CorpRegistryBound, GetVoteCasesByCorporation);
 
+    PyCallable_REG_CALL(CorpRegistryBound, CreateAlliance);
+    PyCallable_REG_CALL(CorpRegistryBound, GetSuggestedAllianceShortNames);
+
     m_corpID = corpID;
+}
+
+PyResult CorpRegistryBound::Handle_CreateAlliance(PyCallArgs &call) {
+    //self.GetCorpRegistry().CreateAlliance(allianceName, shortName, description, url)
+
+    sLog.Log("CorpRegistryBound", "Handle_CreateAlliance() size=%u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
+
+    sLog.Log("CorpRegistryBound", "Handle_GetSuggestedAllianceShortNames() size=%u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
 }
 
 PyResult CorpRegistryBound::Handle_GetEveOwners(PyCallArgs &call) {
@@ -753,7 +773,7 @@ PyResult CorpRegistryBound::Handle_UpdateDivisionNames(PyCallArgs &call) {
 
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode args.");
-        return nullptr;
+        return new PyNone();
     }
 
     Notify_IntRaw notif;
@@ -762,7 +782,7 @@ PyResult CorpRegistryBound::Handle_UpdateDivisionNames(PyCallArgs &call) {
 
     if (!m_db.UpdateDivisionNames(notif.key, args, (PyDict *)notif.data)) {
         codelog(SERVICE__ERROR, "%s: Failed to update division names for corp %u", call.client->GetName(), notif.key);
-        return(new PyNone());
+        return new PyNone();
     }
 
     MulticastTarget mct;

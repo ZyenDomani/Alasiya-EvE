@@ -180,7 +180,7 @@ public:
     //destiny stuff...
     void SetDockStationID(uint32 stationID)             { m_dockStationID = stationID; };
     void SetDockPoint(GPoint &pt)                       { m_dockPoint = pt; }
-    void StartDockTimer()                               { m_dockTimer.Start(sConfig.server.StationDockDelay); } // default @ 3sec
+    void StartDockTimer()                               { m_dockTimer.Start(sConfig.world.StationDockDelay); } // default @ 5sec
     uint32 GetDockStationID()                           { return m_dockStationID; };
     GPoint GetDockPoint()                               { return m_dockPoint; }
     bool InPod()                                        { return (m_ship->groupID() == EVEDB::invGroups::Capsule ? true : false); }

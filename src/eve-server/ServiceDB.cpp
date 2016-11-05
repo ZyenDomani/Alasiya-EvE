@@ -250,7 +250,7 @@ void ServiceDB::ProcessStringChange(const char * key, const std::string & oldVal
         val->items[1] = new PyString(newValue);
         notif->SetItemString(key, val);
 
-        qValue += " = '" + newEscValue + "'";
+        qValue += " = " + newEscValue;
         dbQ.push_back(qValue);
     }
 }

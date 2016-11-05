@@ -38,30 +38,13 @@ AllianceRegistry::AllianceRegistry(PyServiceMgr *mgr)
 {
     _SetCallDispatcher(m_dispatch);
 
-    PyCallable_REG_CALL(AllianceRegistry, CreateAlliance);
     PyCallable_REG_CALL(AllianceRegistry, GetRankedAlliances);
     PyCallable_REG_CALL(AllianceRegistry, GetAllianceApplications);
-    PyCallable_REG_CALL(AllianceRegistry, GetSuggestedAllianceShortNames);
 }
 
 AllianceRegistry::~AllianceRegistry()
 {
     delete m_dispatch;
-}
-
-PyResult AllianceRegistry::Handle_CreateAlliance(PyCallArgs &call) {
-    //self.GetCorpRegistry().CreateAlliance(allianceName, shortName, description, url)
-
-    sLog.Log("AllianceRegistry", "Handle_CreateAlliance() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    /** @todo add for corp owner
-     * this needs more work once factions and alliances are implemented
-     * non-static corp, faction, and alliance
-     *
-     *  INSERT INTO cacheOwners(ownerID, ownerName, typeID, ownerNameID) VALUES   corporationID, corporationName, 2, 0
-     */
-    return nullptr;
 }
 
 PyResult AllianceRegistry::Handle_GetRankedAlliances(PyCallArgs &call) {
@@ -82,14 +65,6 @@ PyResult AllianceRegistry::Handle_GetRankedAlliances(PyCallArgs &call) {
 PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
 
     sLog.Log("AllianceRegistry", "Handle_GetAllianceApplications() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult AllianceRegistry::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
-
-    sLog.Log("AllianceRegistry", "Handle_GetSuggestedAllianceShortNames() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;

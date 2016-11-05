@@ -50,6 +50,8 @@ public:
     PyCallable_DECL_CALL(PayoutDividend);
     PyCallable_DECL_CALL(GetVoteCasesByCorporation);
 
+    PyCallable_DECL_CALL(CreateAlliance);
+    PyCallable_DECL_CALL(GetSuggestedAllianceShortNames);
 
 protected:
     bool JoinCorporation(Client *who, uint32 newCorpID, const CorpData &roles);

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    6.8
+    Version:    6.9
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -60,7 +60,6 @@ public:
         uint8 ServerSleepTime;
         uint16 idleSleepTime;
         uint16 maxPlayers;
-        uint8 StationDockDelay;
     } server;
 
     // From <world/>
@@ -73,6 +72,7 @@ public:
         bool loginInfo;
         bool loginMsg;
         uint8 mailDelay;
+        uint8 StationDockDelay;
     } world;
 
     // From <rates/>

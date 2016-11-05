@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 6.8 -->
+     Version: 6.9 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -18,7 +18,6 @@
         <UseStackTrace>false</UseStackTrace><!-- bool -->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
         <maxPlayers>2500</maxPlayers>
-        <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
         <UseMarketBot>false</UseMarketBot>
         <DisableIGB>true</DisableIGB>
     </server>
@@ -34,6 +33,7 @@
         <loginMsg>true</loginMsg><!-- bool -->
         <mailDelay>5</mailDelay>
         <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
+        <StationDockDelay>5</StationDockDelay><!-- in seconds (5 sec default) -->
     </world>
 
     <rates>
