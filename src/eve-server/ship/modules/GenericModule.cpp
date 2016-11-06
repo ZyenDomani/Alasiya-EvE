@@ -62,7 +62,7 @@ GenericModule::~GenericModule()
 void GenericModule::Online()
 {
     if (m_ModuleState == MOD_UNFITTED)
-        return;  // make error here for online called for unfitted module?  isnt this error printed elsewhere?
+        return;  // make error here for online called for unfitted module?  isnt this error printed elsewhere? -nope
 
     if (m_ModuleState != MOD_OFFLINE)
         return;     // already online

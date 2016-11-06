@@ -175,6 +175,8 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* mod)
     else
         m_ModulesFittedByGroupID.insert(std::pair<uint32,uint32>(mod->getItem()->groupID(), 1));
 
+    // module is fit so change state from MOD_UNFITTED to MOD_OFFLINE now.
+    mod->SetModuleState(MOD_OFFLINE);
 	return true;
 }
 
@@ -184,6 +186,7 @@ bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
         return false;
 
     _deleteModuleRef(mod->flag(), mod);
+    mod->SetModuleState(MOD_UNFITTED);
     //SafeDelete(mod);
 	return true;
 }
@@ -194,6 +197,7 @@ bool ModuleContainer::RemoveModule(uint32 itemID) {
         return false;
 
     _deleteModuleRef(mod->flag(), mod);
+    mod->SetModuleState(MOD_UNFITTED);
     return true;
 }
 
@@ -619,8 +623,8 @@ ModuleManager::~ModuleManager()
 }
 
 bool ModuleManager::Initialize() {
-    // this ship is already initalized and active (in case of BoardShip() or reactivation)
     if (m_initalized) {
+        // this ship is already initalized and active (in case of BoardShip() or reactivation)
         OnlineAll();
         return true;
     }
@@ -644,7 +648,7 @@ bool ModuleManager::Initialize() {
             if (GetModule(cur->flag())) {
                 GetModule(cur->flag())->LoadCharge(cur);
             } else {
-                _log(SHIP__ERROR, "ModuleManager::Initialize() - Cannot find module to load %s(%u) at flag %u",
+                _log(SHIP__ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",
                      cur->itemName().c_str(), cur->itemID(), cur->flag() );
             }
             continue;
