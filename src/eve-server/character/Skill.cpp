@@ -104,25 +104,25 @@ bool Skill::SkillPrereqsComplete(Character &ch) {
     return true;
 }
 
-bool Skill::FitModuleSkillCheck(InventoryItemRef item, CharacterRef ch) {
+bool Skill::FitModuleSkillCheck(InventoryItemRef item, CharacterRef cRef) {
     EvilNumber skillID;
     if (item->HasAttribute(AttrRequiredSkill1, skillID)) //Primary Skill
-        if ( item->GetAttribute(AttrRequiredSkill1Level) > ch->GetSkillLevel(skillID.get_int()))
+        if ( item->GetAttribute(AttrRequiredSkill1Level) > cRef->GetSkillLevel(skillID.get_int()))
             return false;
     if (item->HasAttribute(AttrRequiredSkill2, skillID)) //Secondary Skill
-        if ( item->GetAttribute(AttrRequiredSkill2Level) > ch->GetSkillLevel(skillID.get_int()))
+        if ( item->GetAttribute(AttrRequiredSkill2Level) > cRef->GetSkillLevel(skillID.get_int()))
             return false;
     if (item->HasAttribute(AttrRequiredSkill3, skillID)) //Tertiary Skill
-        if ( item->GetAttribute(AttrRequiredSkill3Level) > ch->GetSkillLevel(skillID.get_int()))
+        if ( item->GetAttribute(AttrRequiredSkill3Level) > cRef->GetSkillLevel(skillID.get_int()))
             return false;
     if (item->HasAttribute(AttrRequiredSkill4, skillID)) //Quarternary Skill
-        if ( item->GetAttribute(AttrRequiredSkill4Level) > ch->GetSkillLevel(skillID.get_int()))
+        if ( item->GetAttribute(AttrRequiredSkill4Level) > cRef->GetSkillLevel(skillID.get_int()))
             return false;
     if (item->HasAttribute(AttrRequiredSkill5, skillID)) //Quinary Skill
-        if ( item->GetAttribute(AttrRequiredSkill5Level) > ch->GetSkillLevel(skillID.get_int()))
+        if ( item->GetAttribute(AttrRequiredSkill5Level) > cRef->GetSkillLevel(skillID.get_int()))
             return false;
     if (item->HasAttribute(AttrRequiredSkill6, skillID)) //Senary Skill
-        if ( item->GetAttribute(AttrRequiredSkill6Level) > ch->GetSkillLevel(skillID.get_int()))
+        if ( item->GetAttribute(AttrRequiredSkill6Level) > cRef->GetSkillLevel(skillID.get_int()))
             return false;
     return true;
 }
