@@ -679,7 +679,7 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef item) {
         or item->HasAttribute(AttrCanFitShipGroup2, canFitShipGroup2)
         or item->HasAttribute(AttrCanFitShipGroup3, canFitShipGroup3)
         or item->HasAttribute(AttrCanFitShipGroup4, canFitShipGroup4)) {
-            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Beginning the validation:");
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Beginning the group validation for %s(%u):", item->itemName().c_str(), item->itemID());
             _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipGroup1 = %s", item->HasAttribute(AttrCanFitShipGroup1, canFitShipGroup1) ? "True":"False");
             _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipGroup2 = %s", item->HasAttribute(AttrCanFitShipGroup2, canFitShipGroup2) ? "True":"False");
             _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipGroup3 = %s", item->HasAttribute(AttrCanFitShipGroup3, canFitShipGroup3) ? "True":"False");
@@ -701,7 +701,7 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef item) {
         or item->HasAttribute(AttrCanFitShipType2, canFitShipType2)
         or item->HasAttribute(AttrCanFitShipType3, canFitShipType3)
         or item->HasAttribute(AttrCanFitShipType4, canFitShipType4)) {
-            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Beginning the validation:");
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Beginning the type validation for %s(%u):", item->itemName().c_str(), item->itemID());
             _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipType1 = %s", item->HasAttribute(AttrCanFitShipType1, canFitShipType1) ? "True":"False");
             _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipType2 = %s", item->HasAttribute(AttrCanFitShipType2, canFitShipType2) ? "True":"False");
             _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipType3 = %s", item->HasAttribute(AttrCanFitShipType3, canFitShipType3) ? "True":"False");
@@ -911,6 +911,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
 
     item->Move(itemID(), flag);
 	if (IsModuleSlot(flag)) {
+        // may not need this call.  is redundant, but has redundant check built-in...
         m_ModuleManager->Online(item->itemID());
         UpdateModules(flag);
     }
