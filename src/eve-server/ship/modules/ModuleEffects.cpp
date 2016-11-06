@@ -341,9 +341,11 @@ void ModuleEffects::_populate()
         switch (cur.first) {
             // will have to look into more modules that need a target and add as needed.
             case 2:     // need target
+            case 10:    // target attack
             case 40:    // launcher
             case 42:    // turrent
             case 47:    // cargo scanner
+            case 67:    // mining laser
             case 2255:  // tractor beam
                 m_targReq = true;
                 continue;
