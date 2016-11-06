@@ -80,14 +80,14 @@ PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)
             codelog(CLIENT__ERROR, "Failed to decode args for ValidateNameEx call");
             return new PyBool(false);
         }
-            return m_db.ValidateCharName(arg.arg.c_str());
+        return m_db.ValidateCharName(arg.arg.c_str());
     } else if (call.tuple->IsWString()) {
         Call_SingleWStringArg arg;
         if (!arg.Decode(&call.tuple)) {
             codelog(CLIENT__ERROR, "Failed to decode args for ValidateNameEx call");
             return new PyBool(false);
         }
-            return m_db.ValidateCharName(arg.arg.c_str());
+        return m_db.ValidateCharName(arg.arg.c_str());
     }
 }
 

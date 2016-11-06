@@ -60,6 +60,35 @@ enum ChargeStates
     MOD_LOADED                  = 3
 };
 
+// these are used for internal module status checking
+enum ModuleStates
+{
+    MOD_UNFITTED                = 0,
+    MOD_OFFLINE                 = 1,   // module fitted, but NOT put online yet - NOT used for rigs    -- not used yet (needs code rewrite)
+    MOD_ONLINE                  = 2,    // module online  - rigs are either online or offline.
+    /* 'Online' is used for:
+     * ACTIVE modules fitted and online, but not activated (PASSIVE effects only)
+     * PASSSIVE modules fitted and online
+     * RIG modules fitted (always online)
+     */
+    MOD_ACTIVATED               = 3,    // used only for ACTIVE modules operating in non-Overloaded mode
+    MOD_DEACTIVATING            = 4     // module transistioning from MOD_ACTIVATED to MOD_OFFLINE
+};
+
+// These are the module states when an effect will take affect:  still needs a bit of work and thought.
+// *** these values are the 'effectAppliedInState' bitfield (as integer)
+/* these are used in ModuleEffects.cpp to seperate effects into state containers  */
+enum EffectStates
+{
+    EFFECT_UNFITTED             = 0,
+    EFFECT_OFFLINE              = 1,
+    EFFECT_ONLINE               = 2,
+    EFFECT_ACTIVATED            = 4,
+    EFFECT_OVERLOADED           = 8,
+    EFFECT_GANG                 = 16,
+    EFFECT_FLEET                = 32,
+    EFFECT_DEACTIVATING         = 64
+};
 
 enum EffectCategories   // not sure what this is, or if it's used.
 {
@@ -69,28 +98,6 @@ enum EffectCategories   // not sure what this is, or if it's used.
     dgmEffArea                  = 3,
     dgmEffOnline                = 4,
     dgmEffOverload              = 5
-};
-
-// These are the module states when an effect will take affect:  still needs a bit of work and thought.
-// *** these values are the 'effectAppliedInState' bitfield (as integer)
-/* these are used in ModuleEffects.cpp to seperate effects into state containers  */
-    // also used for internal module status checking
-enum ModuleStates
-{
-    MOD_UNFITTED                = 0,
-    // means the effect is active AT ALL TIMES; used ONLY for skill, ship, rig, subsystem, and beacon effects
-    MOD_OFFLINE                  = 1,   // module fitted, but NOT put online yet - NOT used for rigs    -- not used yet (needs code rewrite)
-    /* 'Online' is used for:
-     * ACTIVE modules fitted and online, but not activated (PASSIVE effects only)
-     * PASSSIVE modules fitted and online
-     * RIG modules fitted (always online)
-     */
-    MOD_ONLINE                  = 2,    // module online  - rigs are either online or offline.
-    MOD_ACTIVATED               = 4,    // used only for ACTIVE modules operating in non-Overloaded mode
-    MOD_OVERLOADED              = 8,    // used only for ACTIVE modules operating in Overloaded mode
-    MOD_GANG                    = 16,   // not used yet
-    MOD_FLEET                   = 32,   // not used yet
-    MOD_DEACTIVATING            = 64,   // module transistioning from MOD_ACTIVATED to MOD_OFFLINE
 };
 
 /** @todo  this needs updating and implementation....eventually  */

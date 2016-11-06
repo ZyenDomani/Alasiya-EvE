@@ -29,6 +29,7 @@
 #include "ship/modules/GenericModule.h"
 
 /** @todo  this whole class will need verification */
+/** @todo  update this based on MSAC rewrite/update */
 
 ModifyModuleAttributesComponent::ModifyModuleAttributesComponent(GenericModule* mod)
 : m_Mod(mod)
@@ -51,6 +52,7 @@ void ModifyModuleAttributesComponent::_modifyModuleAttributes(GenericModule* tar
 {
     uint8 stackSize = 1;   // default.  changed later if necessary
     double effectiveness = 1;   // default.  changed later if necessary
+    ModuleStates state = m_Mod->GetModuleState();
     EvilNumber modVal = m_Mod->GetAttribute(sourceAttrID), startVal = targetMod->GetAttribute(targetAttrID);
     /* check for attribs that are NOT penalized here, and bypass stacking method. */
     /* note:  DCU, rigs and subsystems do not use this method */
@@ -58,28 +60,25 @@ void ModifyModuleAttributesComponent::_modifyModuleAttributes(GenericModule* tar
         std::map<uint16, uint8>::iterator itr = m_attribMap.find(targetAttrID);
         if (itr != m_attribMap.end()) {
             /** @todo   verify these module states  */
-            if (m_Mod->GetModuleState() == MOD_ONLINE) {
+            if (state == MOD_ONLINE) {
                 stackSize = ++itr->second;
-            } else if ((m_Mod->GetModuleState() == MOD_OFFLINE)
-                        or (m_Mod->GetModuleState() == MOD_DEACTIVATING))
-                /** @todo  implement the difference between MOD_OFFLINE (not enabled) and MOD_DEACTIVATING (was online/active, told to shutdown) */
-            {
+            } else if ((state == MOD_OFFLINE) or (state == MOD_DEACTIVATING)) {
                 effectiveness = itr->second;
                 if (itr->second == 1)
                     m_attribMap.erase(itr);
                 else
                     stackSize = --itr->second;
             } else {
-                ; // make error here for invalid module state?
+                codelog(SHIP__MODULE_ERROR, "MMAC::_modifyModuleAttributes() -  Invalid module state %u", (uint8)state);
             }
         } else
             m_attribMap.emplace(targetAttrID, 1);
     }
 
-    if (m_Mod->GetModuleState() == MOD_ONLINE) { // set stacking penality here for reference when going offline (in above check).
+    if (state == MOD_ONLINE) { // set stacking penality here for reference when going offline (in above check).
         effectiveness = exp(-pow(((stackSize - 1)/2.67),2));  //stacking calculation fixed  -allan  20Dec15
         //m_Mod->SetEffectiveness(targetAttrID, effectiveness);
-    } else if (m_Mod->GetModuleState() == MOD_OFFLINE) {
+    } else if (state == MOD_OFFLINE) {
         ; // not sure what to do here yet...maybe nothing, as above 'find' should get stacking penality saved when module went online
     }
     if (effectiveness <= 0) {   /* this should never happen */
@@ -93,7 +92,6 @@ void ModifyModuleAttributesComponent::_modifyModuleAttributes(GenericModule* tar
 
     SetAttribute(targetMod, targetAttrID, newVal);
 }
-
 
 // this method will check resist values for fuzzy logic and correct if needed.
 void ModifyModuleAttributesComponent::SetAttribute(GenericModule* targetMod, uint32 targetAttrID, EvilNumber newVal)
@@ -113,6 +111,4 @@ void ModifyModuleAttributesComponent::SetAttribute(GenericModule* targetMod, uin
     if (!targetMod->getItem()->SetAttribute(targetAttrID, newVal))
         sLog.Error("MMAC::SetAttribute()","Failed to set attribute %u to %f on module %u", targetAttrID, newVal, targetMod->itemID());
 }
-
-
 

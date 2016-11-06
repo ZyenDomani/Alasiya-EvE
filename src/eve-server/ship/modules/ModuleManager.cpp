@@ -627,7 +627,7 @@ bool ModuleManager::Initialize() {
 
     // Load modules, rigs and subsystems from Ship's inventory into ModuleContainer:
     std::vector<InventoryItemRef> itemVec;
-    m_Ship->GetInventory()->GetInventoryVec(itemVec);
+    m_Ship->GetInventory()->GetInventoryVec(itemVec);   // this method also sorts in order - cargo, modules, charge, subsystems.
     GenericModule* mod = nullptr;
     for (auto cur : itemVec) {
         if (cur->flag() == flagCargoHold) continue;

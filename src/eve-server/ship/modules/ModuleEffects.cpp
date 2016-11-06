@@ -391,17 +391,17 @@ void ModuleEffects::_populate()
                         m_defaultEffect = mEffectPtr.get();
 
                     state = mEffectPtr->GetEffectState();
-                    if (state & MOD_UNFITTED)
+                    if (state & EFFECT_UNFITTED)
                         _log(SHIP__MODULE_ERROR, "ModuleEffects::_populate() - Illegal value '%u' obtained from the 'effectAppliedInState' field of the 'dgmEffectsInfo' table", mEffectPtr->GetEffectState());
-                    if (state & MOD_ONLINE)
+                    if (state & EFFECT_ONLINE)
                         m_OnlineEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
-                    if (state & MOD_ACTIVATED)
+                    if (state & EFFECT_ACTIVATED)
                         m_ActiveEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
-                    if (state & MOD_OVERLOADED)
+                    if (state & EFFECT_OVERLOADED)
                         m_OverloadEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
-                    if (state & MOD_GANG)
+                    if (state & EFFECT_GANG)
                         m_GangEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
-                    if (state & MOD_FLEET)
+                    if (state & EFFECT_FLEET)
                         m_FleetEffects.insert(std::pair<uint32, std::shared_ptr<MEffect>>(effectID, mEffectPtr));
                 }
             }

@@ -40,8 +40,8 @@ public:
     virtual ~ActiveModule();
 
     /* class type helpers.  public for anyone to access. */
-    virtual bool IsWarpSafe() const                         { return m_warpSafe; }
-    virtual bool IsActiveModule() const                     { return true; }
+    virtual bool IsWarpSafe() const                     { return m_warpSafe; }
+    virtual bool IsActiveModule() const                 { return true; }
 
     /* GenericModule overrides */
 	virtual void Process();
@@ -54,20 +54,20 @@ public:
     virtual void Activate(SystemEntity* pSE);
 
     /* GenericModule access function overriders */
-    virtual bool IsLoaded()                                 { return m_chargeLoaded; }
-    virtual bool IsOverloaded()                             { return m_overLoaded; }
-    virtual InventoryItemRef GetLoadedChargeRef()           { return m_chargeRef; }
+    virtual bool IsLoaded()                             { return m_chargeLoaded; }
+    virtual bool IsOverloaded()                         { return m_overLoaded; }
+    virtual InventoryItemRef GetLoadedChargeRef()       { return m_chargeRef; }
 
     // generic *Cycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
     //  for modules that perform action on each DoCycle(), they will override this call in their class implementation
     virtual double DoCycle();
-    virtual void StopCycle(bool abort=false)                { /* Do nothing here */ }
+    virtual void StopCycle(bool abort=false)            { /* Do nothing here */ }
 
     /* ActiveModule methods */
-    bool ShipHasCapCharge()                                 { return (_GetCapNeed() <  m_Ship->GetAttribute(AttrCapacitorCharge).get_float()); }
-    uint32 GetTargetID()                                    { return m_targetID; }
-    SystemEntity* GetTarget()                               { return m_targetEntity; }
-    double GetCycleTime()                                   { return m_cycleTime; }
+    bool ShipHasCapCharge()                             { return (_GetCapNeed() <  m_Ship->GetAttribute(AttrCapacitorCharge).get_float()); }
+    uint32 GetTargetID()                                { return m_targetID; }
+    SystemEntity* GetTarget()                           { return m_targetEntity; }
+    double GetCycleTime()                               { return m_cycleTime; }
 
     // public methods to enable calls from other classes (namely, TurrentFormulas.cpp)
     uint32 GetFalloff()                                 { return m_falloff; }
@@ -80,23 +80,23 @@ public:
 
 protected:
     uint32 m_effectID = 0;
-    uint32 m_targetID = 0;                                      //passed to us by activate
+    uint32 m_targetID = 0;                              //passed to us by activate
     uint16 m_reloadTime = 0;
     Timer m_reloadTimer;
     std::string m_effectStr = "";
-    //SystemBubble* m_bubble;                                 // we do not own this
-	SystemEntity* m_targetEntity;                           // we do not own this
-	//DestinyManager* m_destiny;                              // we do not own this
-	ActiveModuleProcessingComponent* m_AMPC;                // we do not own this
+    //SystemBubble* m_bubble;                           // we do not own this
+	SystemEntity* m_targetEntity;                       // we do not own this
+	//DestinyManager* m_destiny;                        // we do not own this
+	ActiveModuleProcessingComponent* m_AMPC;            // we do not own this
 
-	InventoryItemRef m_chargeRef;                           // we do not own this
+	InventoryItemRef m_chargeRef;                       // we do not own this
 
-	bool m_warpSafe = false;                                        // can be active during warp (no module is jumpsafe)
+	bool m_warpSafe = false;                            // can be active during warp (no module is jumpsafe)
 	bool m_overLoaded = false;
     bool m_chargeLoaded = false;
 
     /* skill, charge, and module combined modifiers to avoid constant calculations. */
-    uint32 m_falloff = 0;                                       // distance past maximum range at which accuracy has fallen by half
+    uint32 m_falloff = 0;                               // distance past maximum range at which accuracy has fallen by half
     uint32 m_optimalRange = 0;
     uint32 m_maxRange = 0;
     uint32 m_optimalSigRadius = 0;
@@ -107,11 +107,11 @@ protected:
     double m_trackingSpeed = 0;
 
     /** @todo currently reworking these to have common data set and maintained here -wip */
-    virtual void _ProcessCycle()                            { /* Do nothing here */ }
-    virtual void _ShowCycle()                               { /* Do nothing here */ }
-    virtual void _SetCapNeed()                              { /* Do nothing here */ }
+    virtual void _ProcessCycle()                        { /* Do nothing here */ }
+    virtual void _ShowCycle()                           { /* Do nothing here */ }
+    virtual void _SetCapNeed()                          { /* Do nothing here */ }
     //  these should be overridden in derived clases to use skills and other factors as needed as this returns default attribute only.
-    virtual double _GetCapNeed()                            { return GetAttribute(AttrCapacitorNeed).get_float(); }
+    virtual double _GetCapNeed()                        { return GetAttribute(AttrCapacitorNeed).get_float(); }
 };
 
 

@@ -61,13 +61,12 @@ GenericModule::~GenericModule()
  */
 void GenericModule::Online()
 {
-    /*  these arent right....fix later
     if (m_ModuleState == MOD_UNFITTED)
         return;  // make error here for online called for unfitted module?  isnt this error printed elsewhere?
 
     if (m_ModuleState != MOD_OFFLINE)
         return;     // already online
-    */
+
     m_Item->PutOnline(isRig());
     m_ModuleState = MOD_ONLINE; // this must be set to online before calling msac or mmac.
 
@@ -107,12 +106,12 @@ void GenericModule::Online()
 
 void GenericModule::Offline()
 {
+    if (m_ModuleState == MOD_OFFLINE)
+        return; // make console note about offline call to offline module?  code trace, maybe?
     if (m_ModuleState == MOD_UNFITTED)
         return;  // make error here for offline called for unfitted module?  isnt this error printed elsewhere?
-
-    if ((m_ModuleState == MOD_OFFLINE)
-        or (m_ModuleState == MOD_DEACTIVATING))
-        return;     // already offline or deactivating
+    if (m_ModuleState == MOD_DEACTIVATING)
+        return;     // already deactivating
 
     m_ModuleState = MOD_DEACTIVATING;
     EVECalculationType ecType = CALC_NONE;

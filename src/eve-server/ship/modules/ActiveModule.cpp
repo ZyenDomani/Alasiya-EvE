@@ -131,22 +131,24 @@ void ActiveModule::Activate(SystemEntity* pSE)
 
 void ActiveModule::Deactivate()
 {
-    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_UNFITTED)) return;
+    if ((m_ModuleState == MOD_UNFITTED)
+        or (m_ModuleState == MOD_OFFLINE)
+        or (m_ModuleState == MOD_DEACTIVATING))
+        return;
 
-    m_ModuleState = MOD_DEACTIVATING;
     m_AMPC->StopCycle();
 
     //DoEffect(false);
 }
 
-    /** @todo  Overload and DeOverload will need to check for running module,
-     * and if so, cancel that run, then restart with overloaded settings.
-     * if not running, start with overloaded settings.
+    /** @todo  Overload and DeOverload only need to reset/adjust module effects
+     * not sure how to manage this yet, but should only need to call
+     * offline/online/activate/deactivate to change effects.
      */
 void ActiveModule::Overload()
 {
+    m_overLoaded = true;
     GenericModule::Overload();
-    m_ModuleState = MOD_OVERLOADED;
 
     if (m_Item->HasAttribute(AttrOverloadDurationBonus)) {
         m_cycleTime *= (1 + GetAttribute(AttrOverloadDurationBonus).get_float());
@@ -156,8 +158,8 @@ void ActiveModule::Overload()
 
 void ActiveModule::DeOverload()
 {
+    m_overLoaded = false;
     GenericModule::DeOverload();
-    m_ModuleState = MOD_ONLINE;
     if (m_Item->HasAttribute(AttrOverloadDurationBonus)) {
         m_cycleTime /= (1 + GetAttribute(AttrOverloadDurationBonus).get_float());
         m_Item->SetAttribute(AttrDuration, m_cycleTime);

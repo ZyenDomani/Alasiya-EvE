@@ -77,7 +77,7 @@ EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef
 // this method will check resist values for fuzzy logic and correct if needed.
 void ModifyShipAttributesComponent::SetAttribute(ShipItemRef shipRef, uint16 targetAttrID, EvilNumber newVal)
 {
-    // basic check for ship resistance attrubutes (fuzzy logic range check)
+    // basic check for ship resistance attrubutes (fuzzy logic range check *HACK*)
     if (((targetAttrID >= AttrKineticDamageResonance) and (targetAttrID <= AttrExplosiveDamageResonance))
         or (targetAttrID == AttrEmDamageResonance)
         or ((targetAttrID >= AttrArmorEmDamageResonance) and (targetAttrID <= AttrShieldThermalDamageResonance)))

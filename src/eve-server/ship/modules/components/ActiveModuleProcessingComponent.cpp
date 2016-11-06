@@ -61,7 +61,7 @@ void ActiveModuleProcessingComponent::Process() {
 void ActiveModuleProcessingComponent::ActivateCycle()
 {
 	m_Stop = false;
-    m_Mod->SetModuleState(MOD_ACTIVATED);  //this HAS to be called before mod::DoCycle()
+    m_Mod->SetModuleState(MOD_ACTIVATED);  //this HAS to be set before mod::DoCycle()
 
     /** @todo   these need to check for targetable actions, and apply changes accordingly */
     /** @todo  this needs to be updated to check for/use targetGroupIDs */
@@ -148,7 +148,7 @@ void ActiveModuleProcessingComponent::StopCycle()
 
 void ActiveModuleProcessingComponent::AbortCycle()
 {
-	if ((m_Mod->GetModuleState() != MOD_ACTIVATED) or m_Stop)
+    if (m_Stop or (m_Mod->GetModuleState() != MOD_ACTIVATED)  or (m_Mod->GetModuleState() != MOD_DEACTIVATING))
 		return;
 	// Immediately stop active cycle for things such as init warp, target left bubble, or miner deactivated by player:
     m_Stop = true;

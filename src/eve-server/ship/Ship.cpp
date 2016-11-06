@@ -1097,10 +1097,8 @@ double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
     uint8 count = 1;
     std::map<uint16, uint8>::iterator itr = m_stackMap.find(attrib);
     if (itr != m_stackMap.end()) {
-        /** @todo   verify these module states  -enable/code passive, gang, fleet and deactivating states*/
-        if (state == MOD_ONLINE) {
+        if ((state == MOD_ONLINE) or (state == MOD_ACTIVATED)) {
             count = ++itr->second;
-            /** @todo  implement the difference between MOD_OFFLINE (not enabled) and MOD_DEACTIVATING (was online/active, told to shutdown) */
         } else if ((state == MOD_OFFLINE) or (state == MOD_DEACTIVATING)) {
             count = itr->second;
             if (itr->second == 1)
