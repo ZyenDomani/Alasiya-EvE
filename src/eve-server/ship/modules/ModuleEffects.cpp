@@ -340,7 +340,6 @@ void ModuleEffects::_populate()
     for (auto cur : effectsList) {
         switch (cur.first) {
             // will have to look into more modules that need a target and add as needed.
-            case 2:     // need target
             case 10:    // target attack
             case 40:    // launcher
             case 42:    // turrent

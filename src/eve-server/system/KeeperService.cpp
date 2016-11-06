@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -45,10 +46,17 @@ public:
 
         m_strBoundObjectName = "KeeperBound";
 
-//        PyCallable_REG_CALL(KeeperBound, EditDungeon);
-//        PyCallable_REG_CALL(KeeperBound, PlayDungeon);
-//        PyCallable_REG_CALL(KeeperBound, Reset);
-//        PyCallable_REG_CALL(KeeperBound, GotoRoom); //(int room)
+        PyCallable_REG_CALL(KeeperBound, EditDungeon);
+        PyCallable_REG_CALL(KeeperBound, PlayDungeon);
+        PyCallable_REG_CALL(KeeperBound, Reset);
+        PyCallable_REG_CALL(KeeperBound, GotoRoom); //(int room)
+
+        //return sm.RemoteSvc('keeper').GetLevelEditor().GetCurrentlyEditedRoomID()
+        /*
+         * self.ed = sm.RemoteSvc('keeper').GetLevelEditor()
+         * ed.EditDungeon(dungeonID, roomID=roomID)
+         * ed.PlayDungeon(dungeonID, roomID=roomID, godmode=godmode)
+         */
     }
     virtual ~KeeperBound() { delete m_dispatch; }
     virtual void Release() {
@@ -56,8 +64,10 @@ public:
         delete this;
     }
 
-    //PyCallable_DECL_CALL()
-    //PyCallable_DECL_CALL()
+    PyCallable_DECL_CALL(EditDungeon);
+    PyCallable_DECL_CALL(PlayDungeon);
+    PyCallable_DECL_CALL(Reset);
+    PyCallable_DECL_CALL(GotoRoom);
 
 protected:
     SystemDB *const m_db;
@@ -88,9 +98,37 @@ PyBoundObject *KeeperService::_CreateBoundObject(Client *c, const PyRep *bind_ar
     return(new KeeperBound(m_manager, &m_db));
 }
 
+PyResult KeeperBound::Handle_EditDungeon(PyCallArgs &call) {
+    sLog.Log( "KeeperBound", "Handle_EditDungeon  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult KeeperBound::Handle_PlayDungeon(PyCallArgs &call) {
+    sLog.Log( "KeeperBound", "Handle_PlayDungeon  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult KeeperBound::Handle_Reset(PyCallArgs &call) {
+    sLog.Log( "KeeperBound", "Handle_Reset  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult KeeperBound::Handle_GotoRoom(PyCallArgs &call) {
+    sLog.Log( "KeeperBound", "Handle_GotoRoom  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
 
 PyResult KeeperService::Handle_GetLevelEditor(PyCallArgs &call) {
-    sLog.Log( "KeeperService", "Handle_GetLevelEditor" );
+    sLog.Log( "KeeperService", "Handle_GetLevelEditor  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     PyRep *result = NULL;
 
@@ -102,15 +140,18 @@ PyResult KeeperService::Handle_GetLevelEditor(PyCallArgs &call) {
 
 PyResult KeeperService::Handle_CanWarpToPathPlex(PyCallArgs &call) {
 //resp = sm.RemoteSvc('keeper').CanWarpToPathPlex(node.rec.instanceID)
-	sLog.Log( "KeeperService", "Handle_CanWarpToPathPlex" );
+    sLog.Log( "KeeperService", "Handle_CanWarpToPathPlex  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
-	return NULL;
+	return nullptr;
 }
 
 /**  Hard-coded to random location....just to play with right now.
 		will need to edit later to implement in missions/etc  */
 PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
+    sLog.Log( "KeeperService", "Handle_ActivateAccelerationGate  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
     PyRep *result = NULL;
 
         Call_SingleIntegerArg args;
@@ -118,7 +159,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     if( !args.Decode( &call.tuple ) )
     {
                 sLog.Error( "KeeperService::Handle_ActivateAccelerationGate(): failed to decode arguments for character '%s' !", call.client->GetName() );
-        return NULL;
+        return nullptr;
     }
 
     Client *pClient = call.client;

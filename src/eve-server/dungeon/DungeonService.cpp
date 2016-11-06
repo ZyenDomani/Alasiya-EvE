@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -71,7 +72,19 @@ DungeonService::DungeonService(PyServiceMgr *mgr)
 
     PyCallable_REG_CALL(DungeonService, DEGetFactions);
     PyCallable_REG_CALL(DungeonService, DEGetDungeons);
+    PyCallable_REG_CALL(DungeonService, DEGetTemplates);
     PyCallable_REG_CALL(DungeonService, DEGetRooms);
+    PyCallable_REG_CALL(DungeonService, DEGetRoomObjectPaletteData);
+    PyCallable_REG_CALL(DungeonService, TemplateRemove);
+    PyCallable_REG_CALL(DungeonService, GetArchetypes);
+    PyCallable_REG_CALL(DungeonService, RemoveObject);
+    PyCallable_REG_CALL(DungeonService, EditObjectName);
+    PyCallable_REG_CALL(DungeonService, EditObject);
+    PyCallable_REG_CALL(DungeonService, CopyObject);
+    PyCallable_REG_CALL(DungeonService, EditObjectRadius);
+    PyCallable_REG_CALL(DungeonService, EditObjectXYZ);
+    PyCallable_REG_CALL(DungeonService, EditObjectYawPitchRoll);
+    PyCallable_REG_CALL(DungeonService, IsObjectLocked);
 }
 
 DungeonService::~DungeonService() {
@@ -87,14 +100,100 @@ PyBoundObject *DungeonService::_CreateBoundObject(Client *c, const PyRep *bind_a
     return(new DungeonBound(m_manager, &m_db));
 }*/
 
+PyResult DungeonService::Handle_DEGetRoomObjectPaletteData( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_DEGetRoomObjectPaletteData  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DungeonService::Handle_IsObjectLocked( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_IsObjectLocked size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DungeonService::Handle_TemplateRemove( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_TemplateRemove  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DungeonService::Handle_GetArchetypes( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_GetArchetypes  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DungeonService::Handle_RemoveObject( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_RemoveObject  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DungeonService::Handle_EditObjectName( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_EditObjectName  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DungeonService::Handle_CopyObject( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_CopyObject  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DungeonService::Handle_EditObject( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_EditObject  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DungeonService::Handle_EditObjectRadius( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_EditObjectRadius  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DungeonService::Handle_EditObjectXYZ( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_EditObjectXYZ  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DungeonService::Handle_EditObjectYawPitchRoll( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_EditObjectYawPitchRoll size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
 
 PyResult DungeonService::Handle_DEGetFactions( PyCallArgs& call )
 {
-    //PyRep *result = NULL;
+    sLog.Log( "DungeonService", "Handle_DEGetFactions  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
 
-    sLog.Debug( "DungeonService", "Called DEGetFactions stub." );
-
-    return NULL;
+    return nullptr;
 }
 
 
@@ -109,9 +208,20 @@ PyResult DungeonService::Handle_DEGetDungeons( PyCallArgs& call )
     //       dungeonVName
     //       dungeonVID
 
-    sLog.Debug( "DungeonService", "Called DEGetDungeons stub." );
+    sLog.Log( "DungeonService", "Handle_DEGetDungeons  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return nullptr;
+}
+
+
+
+PyResult DungeonService::Handle_DEGetTemplates( PyCallArgs& call )
+{
+    sLog.Log( "DungeonService", "Handle_DEGetTemplates  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
 }
 
 
@@ -122,9 +232,10 @@ PyResult DungeonService::Handle_DEGetRooms( PyCallArgs& call )
 
     //rows: roomName
 
-    sLog.Debug( "DungeonService", "Called DEGetRooms stub." );
+    sLog.Log( "DungeonService", "Handle_DEGetRooms  size: %u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return nullptr;
 }
 /**
         archetypes = sm.RemoteSvc('dungeon').GetArchetypes()
