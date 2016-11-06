@@ -550,11 +550,11 @@ SkillRef Character::GetSkill(uint32 skillTypeID) const
     return SkillRef::StaticCast( skill );
 }
 
-uint8 Character::GetSkillLevel(uint32 skillTypeID, bool zeroForNotInjected /*true*/) const {
+int8 Character::GetSkillLevel(uint32 skillTypeID, bool zeroForNotInjected /*true*/) const {
     SkillRef requiredSkill = GetSkill( skillTypeID );
     // First, check for existence of skill trained or in training:
     if (!requiredSkill) return (zeroForNotInjected ? 0 : -1);
-    return requiredSkill->GetAttribute(AttrSkillLevel).get_int() ;
+    return (int8)requiredSkill->GetAttribute(AttrSkillLevel).get_int() ;
 }
 
 float Character::GetAgilitySkills(bool cap) {

@@ -394,7 +394,7 @@ public:
      * @return value 0..5 - the level of skill trained, or, if it was not injected,
      *  0 if zeroForNotInjected.is true, -1 otherwise
      */
-    uint8             GetSkillLevel(uint32 skillTypeID, bool zeroForNotInjected=true) const;
+    int8             GetSkillLevel(uint32 skillTypeID, bool zeroForNotInjected=true) const;
     /**
      * Get ship agility modifier
      *
