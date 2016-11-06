@@ -39,7 +39,8 @@ PyResult Command_spawndungeon(Client* who, CommandDB* db, PyServiceMgr* services
 
     /** @todo check for valid templateID */
 
-    who->SystemMgr()->GetDungMgr()->Create(atoi(args.arg(1).c_str()));
+    if (!who->SystemMgr()->GetDungMgr()->Create(atoi(args.arg(1).c_str())))
+        who->SendErrorMsg("RoomID = 0 for templateID %u", atoi(args.arg(1).c_str()));
     return nullptr;
 }
 

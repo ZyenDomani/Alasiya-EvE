@@ -192,7 +192,7 @@ void DungeonMgr::Load()
     } */
 }
 
-void DungeonMgr::Create(uint16 templateID)
+bool DungeonMgr::Create(uint16 templateID)
 {
     uint32 roomID = 0, typeID = 0;
 
@@ -204,7 +204,7 @@ void DungeonMgr::Create(uint16 templateID)
     }
     if (!roomID) {
         _log(COSMIC_MGR__ERROR, "DungeonMgr::Create() - roomID is 0 for template %u.", templateID);
-        return;
+        return false;
     }
 
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - templateID %u, roomID %u, typeID %u", templateID, roomID, typeID);
@@ -335,6 +335,8 @@ void DungeonMgr::Create(uint16 templateID)
     m_anomalyItems.clear();
     m_dungeonList.insert(std::make_pair(sig.sigItemID, items));
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created in system %u.", sig.sigItemID, sig.systemID);
+
+    return true;
 }
 
 

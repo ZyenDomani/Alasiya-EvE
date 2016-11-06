@@ -107,7 +107,7 @@ public:
     void Process();
     void Load();
 
-    void Create(uint16 templateID);
+    bool Create(uint16 templateID);
 
     /* we do not own any of these */
 protected:
