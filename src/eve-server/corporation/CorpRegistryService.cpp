@@ -73,7 +73,7 @@ PyBoundObject* CorpRegistryService::_CreateBoundObject( Client* pClient, const P
         return nullptr;
     }
 
-    return new CorpRegistryBound( m_manager, m_db, bind_args->AsTuple()->GetItem(0)->AsInt()->value());
+    return new CorpRegistryBound(m_manager, m_db, bind_args->AsTuple()->GetItem(0)->AsInt()->value());
 }
 
 PyResult CorpRegistryService::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {

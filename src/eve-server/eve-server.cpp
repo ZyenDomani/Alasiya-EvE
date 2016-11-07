@@ -87,6 +87,8 @@
 // dungeon services
 #include "dungeon/DungeonExplorationMgrService.h"
 #include "dungeon/DungeonService.h"
+// entity service (player drones)
+#include "npc/EntityService.h"
 // fleet services
 #include "fleet/FleetObject.h"
 #include "fleet/FleetProxy.h"
@@ -131,7 +133,6 @@
 #include "ship/modules/ModuleEffects.h"
 // standing services
 #include "standing/FactionWarMgrService.h"
-#include "standing/SovereigntyMgrService.h"
 #include "standing/Standing.h"
 #include "standing/WarRegistryService.h"
 // station services
@@ -150,6 +151,7 @@
 #include "system/LootSystem.h"
 #include "system/Modifiers.h"
 #include "system/ScenarioService.h"
+#include "system/SovereigntyMgrService.h"
 #include "system/WormholeSvc.h"
 // cosmic managers
 #include "system/cosmicMgrs/DungeonMgr.h"
@@ -315,6 +317,7 @@ int main( int argc, char* argv[] )
     services.RegisterService("dogma", new DogmaService(&services));
     services.RegisterService("dungeonExplorationMgr", new DungeonExplorationMgrService(&services));
     services.RegisterService("dungeon", new DungeonService(&services));
+    services.RegisterService("entity", new EntityService(&services));
     services.RegisterService("facWarMgr", new FactionWarMgrService(&services));
     services.RegisterService("factory", new FactoryService(&services));
     services.RegisterService("fleetMgr", new FleetManager(&services));

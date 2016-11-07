@@ -325,12 +325,14 @@ SET( npc_INCLUDE
      #"${TARGET_INCLUDE_DIR}/npc/Concord.h"
      "${TARGET_INCLUDE_DIR}/npc/Drone.h"
      "${TARGET_INCLUDE_DIR}/npc/DroneAI.h"
+     "${TARGET_INCLUDE_DIR}/npc/EntityService.h"
      "${TARGET_INCLUDE_DIR}/npc/NPC.h"
      "${TARGET_INCLUDE_DIR}/npc/NPCAI.h")
 SET( npc_SOURCE
      #"${TARGET_SOURCE_DIR}/npc/Concord.cpp"
      "${TARGET_SOURCE_DIR}/npc/Drone.cpp"
      "${TARGET_SOURCE_DIR}/npc/DroneAI.cpp"
+     "${TARGET_SOURCE_DIR}/npc/EntityService.cpp"
      "${TARGET_SOURCE_DIR}/npc/NPC.cpp"
      "${TARGET_SOURCE_DIR}/npc/NPCAI.cpp" )
 
@@ -473,14 +475,12 @@ SET( ship_modules_components_SOURCE
 SET( standing_INCLUDE
      "${TARGET_INCLUDE_DIR}/standing/FactionWarMgrDB.h"
      "${TARGET_INCLUDE_DIR}/standing/FactionWarMgrService.h"
-     "${TARGET_INCLUDE_DIR}/standing/SovereigntyMgrService.h"
      "${TARGET_INCLUDE_DIR}/standing/Standing.h"
      "${TARGET_INCLUDE_DIR}/standing/StandingDB.h"
      "${TARGET_INCLUDE_DIR}/standing/WarRegistryService.h" )
 SET( standing_SOURCE
      "${TARGET_SOURCE_DIR}/standing/FactionWarMgrDB.cpp"
      "${TARGET_SOURCE_DIR}/standing/FactionWarMgrService.cpp"
-     "${TARGET_SOURCE_DIR}/standing/SovereigntyMgrService.cpp"
      "${TARGET_SOURCE_DIR}/standing/Standing.cpp"
      "${TARGET_SOURCE_DIR}/standing/StandingDB.cpp"
      "${TARGET_SOURCE_DIR}/standing/WarRegistryService.cpp" )
@@ -529,6 +529,7 @@ SET( system_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/Modifiers.h"
      "${TARGET_INCLUDE_DIR}/system/ScenarioService.h"
      "${TARGET_INCLUDE_DIR}/system/SolarSystem.h"
+     "${TARGET_INCLUDE_DIR}/system/SovereigntyMgrService.h"
      "${TARGET_INCLUDE_DIR}/system/SystemBubble.h"
      "${TARGET_INCLUDE_DIR}/system/SystemDB.h"
      "${TARGET_INCLUDE_DIR}/system/SystemEntity.h"
@@ -555,6 +556,7 @@ SET( system_SOURCE
      "${TARGET_SOURCE_DIR}/system/Modifiers.cpp"
      "${TARGET_SOURCE_DIR}/system/ScenarioService.cpp"
      "${TARGET_SOURCE_DIR}/system/SolarSystem.cpp"
+     "${TARGET_SOURCE_DIR}/system/SovereigntyMgrService.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemBubble.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemDB.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemEntity.cpp"
