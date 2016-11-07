@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:        Allan
+    Updates:    Allan
 */
 #ifndef __DAMAGE_H_INCL__
 #define __DAMAGE_H_INCL__

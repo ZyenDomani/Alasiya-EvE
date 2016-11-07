@@ -136,7 +136,7 @@ void SystemEntity::SendDamageStateChanged(SystemEntity* source) {  //working 24A
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
     TargetMgr()->QueueTBDestinyUpdate(&up);
-    _log(TARGET__TRACE, "%s(%u): DamageUpdate - S:%f A:%f H:%f.", \
+    _log(DAMAGE__MESSAGE, "%s(%u): DamageUpdate - S:%f A:%f H:%f.", \
             GetName(), m_self->itemID(), dmgState.shield, dmgState.armor, dmgState.structure);
 }
 

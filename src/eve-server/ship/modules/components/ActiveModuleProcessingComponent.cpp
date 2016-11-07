@@ -148,7 +148,7 @@ void ActiveModuleProcessingComponent::StopCycle()
 
 void ActiveModuleProcessingComponent::AbortCycle()
 {
-    if (m_Stop or (m_Mod->GetModuleState() != MOD_ACTIVATED)  or (m_Mod->GetModuleState() != MOD_DEACTIVATING))
+    if (m_Stop or (m_Mod->GetModuleState() != MOD_ACTIVATED))
 		return;
 	// Immediately stop active cycle for things such as init warp, target left bubble, or miner deactivated by player:
     m_Stop = true;

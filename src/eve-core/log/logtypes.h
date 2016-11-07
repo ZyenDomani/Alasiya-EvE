@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 6.5
+    Log Version: 6.6
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -284,13 +284,20 @@ LOG_TYPE( SHIP, MODULE_DEBUG, DISABLED, "ModDebug" )
 
 LOG_CATEGORY( TARGET )
 LOG_TYPE( TARGET, ERROR, ENABLED, "TargetError" )
-LOG_TYPE( TARGET, WARNING, ENABLED, "TargetWarning" )
+LOG_TYPE( TARGET, WARNING, ENABLED, "TargetWarn" )
 LOG_TYPE( TARGET, MESSAGE, DISABLED, "TargetMsg" )
 LOG_TYPE( TARGET, INFO, DISABLED, "TargetInfo" )
 LOG_TYPE( TARGET, DEBUG, DISABLED, "TargetDebug" )
 LOG_TYPE( TARGET, TRACE, DISABLED, "TargetTrace" )
-LOG_TYPE( TARGET, DAMAGE, DISABLED, "TargetDmg" )
 LOG_TYPE( TARGET, DUMP, DISABLED, "TargetDump" )
+
+LOG_CATEGORY( DAMAGE )
+LOG_TYPE( DAMAGE, ERROR, ENABLED, "DmgError" )
+LOG_TYPE( DAMAGE, WARNING, ENABLED, "DmgWarn" )
+LOG_TYPE( DAMAGE, MESSAGE, DISABLED, "DmgMsg" )
+LOG_TYPE( DAMAGE, INFO, DISABLED, "DmgInfo" )
+LOG_TYPE( DAMAGE, DEBUG, DISABLED, "DmgDebug" )
+LOG_TYPE( DAMAGE, TRACE, DISABLED, "DmgTrace" )
 
 LOG_CATEGORY( LSC )
 LOG_TYPE( LSC, ERROR, ENABLED, "LSCError" )

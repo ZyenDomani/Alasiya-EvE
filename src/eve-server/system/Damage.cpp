@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:        Allan
+    Updates:    Allan
 */
 
 #include "system/Damage.h"
@@ -34,6 +34,16 @@
 #include "system/Container.h"
 #include "system/SystemBubble.h"
 #include "system/LootSystem.h"
+
+/*
+DAMAGE
+DAMAGE__ERROR
+DAMAGE__WARNING
+DAMAGE__MESSAGE
+DAMAGE__INFO
+DAMAGE__TRACE
+DAMAGE__DEBUG
+*/
 
 Damage::Damage(
     SystemEntity *_source,
@@ -80,7 +90,7 @@ Damage::Damage(
         explosive = _weapon->GetAttribute(AttrExplosiveDamage).get_float();
 
         charge = InventoryItemRef();
-        _log(TARGET__TRACE, "Damage:Constructor - Called by source %s(%u) with weapon %s(%u).",
+        _log(DAMAGE__WARNING, "Damage:Constructor - Called by source %s(%u) with weapon %s(%u).",
              source->GetName(), source->GetID(), weapon->itemName().c_str(), weapon->itemID() );
     }
 
@@ -95,26 +105,26 @@ Damage::Damage(
         thermal = _weapon->GetAttribute(AttrThermalDamage).get_float();
         explosive = _weapon->GetAttribute(AttrExplosiveDamage).get_float();
 
-        _log(TARGET__TRACE, "Damage:Constructor - Called by source %s(%u) with weapon %s(%u).",
+        _log(DAMAGE__WARNING, "Damage:Constructor - Called by source %s(%u) with weapon %s(%u).",
              source->GetName(), source->GetID(), weapon->itemName().c_str(), weapon->itemID() );
     }
 
 
 bool SystemEntity::ApplyDamage(Damage &d) {
     if (d.source->IsNPCSE()) {
-        _log(TARGET__TRACE, "%s(%u): Initalizing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+        _log(DAMAGE__TRACE, "%s(%u): Initalizing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.source->GetName(), d.source->GetID(), \
                     d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
     } else if (d.source->IsDroneSE()){
-        _log(TARGET__TRACE, "%s(%u): Initalizing %.2f damage from Drone %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+        _log(DAMAGE__TRACE, "%s(%u): Initalizing %.2f damage from Drone %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.source->GetName(), d.source->GetID(), \
                     d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
     } else if (d.source->HasPilot()) {
-        _log(TARGET__TRACE, "%s(%u): Initalizing %.2f damage from %s/'s %s(%u) using %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+        _log(DAMAGE__TRACE, "%s(%u): Initalizing %.2f damage from %s/'s %s(%u) using %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.source->GetPilot()->GetName(), d.source->GetName(), d.source->GetID(), \
                     d.weapon->itemName().c_str(), d.weapon->itemID(), d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
     } else {
-        _log(TARGET__TRACE, "%s(%u): Initalizing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
+        _log(DAMAGE__TRACE, "%s(%u): Initalizing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
     }
 
     bool killed = false;
@@ -138,10 +148,10 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         else if (modifier > 0.6251) damageID = 2;
         else if (modifier > 0.5001) damageID = 1;
         else                        damageID = 0;
+        _log(DAMAGE__TRACE, "%s(%u): Modifier: %.3f, damageID: %u.", GetName(), GetID(), modifier, damageID);
     }
 
-    if (sConfig.rates.damageRate != 1.0)
-        d *= sConfig.rates.damageRate;
+    d *= sConfig.rates.damageRate;
 
     Damage DamageToShield = d.MultiplyDup(
         m_self->GetAttribute(AttrShieldKineticDamageResonance).get_float(),
@@ -166,7 +176,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         double new_charge = available_shield - shield_damage;
         m_self->SetAttribute(AttrShieldCharge, new_charge);
 
-        _log(TARGET__DAMAGE, "%s(%u): Applying %.2f damage to shields. New charge: %.3f.",
+        _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f damage to shields. New charge: %.3f.",
              GetName(), GetID(), shield_damage, new_charge);
     } else {
         // get fraction of damage partial shield absorbs, and lower total damage by that fraction
@@ -174,7 +184,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         total_damage += available_shield;
 
         if (available_shield > 0) {
-            _log(TARGET__TRACE, "%s(%u): Shield depleted with %.2f damage. %.2f damage remains.",
+            _log(DAMAGE__INFO, "%s(%u): Shield depleted with %.2f damage. %.2f damage remains.",
                  GetName(), GetID(), available_shield, d.GetTotal());
             m_self->SetAttribute(AttrShieldCharge, 0);
         }
@@ -199,14 +209,14 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             total_damage += armor_damage;
             EvilNumber new_damage = m_self->GetAttribute(AttrArmorDamage) + EvilNumber(armor_damage);
             m_self->SetAttribute(AttrArmorDamage, new_damage);
-            _log(TARGET__DAMAGE, "%s(%u): Applying %.2f damage to armor. New armor damage: %.2f",
+            _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f damage to armor. New armor damage: %.2f",
                  GetName(), GetID(), armor_damage, new_damage.get_float());
         } else {
             d *= (1 - (available_armor /armor_damage));
             total_damage += available_armor;
 
             if (available_armor > 0) {
-                _log(TARGET__TRACE, "%s(%u): Armor depleated with %.2f damage. %.2f damage remains.",
+                _log(DAMAGE__INFO, "%s(%u): Armor depleated with %.2f damage. %.2f damage remains.",
                      GetName(), GetID(), available_armor, d.GetTotal());
                 m_self->SetAttribute(AttrArmorDamage, m_self->GetAttribute(AttrArmorHP));
             }
@@ -225,12 +235,12 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 total_damage += hull_damage;
                 EvilNumber new_damage = m_self->GetAttribute(AttrDamage) + EvilNumber(hull_damage);
                 m_self->SetAttribute(AttrDamage, new_damage);
-                _log(TARGET__DAMAGE, "%s(%u): Applying %.2f damage to structure. New structure damage: %.2f",
+                _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f damage to structure. New structure damage: %.2f",
                      GetName(), GetID(), hull_damage, new_damage.get_float());
             } else {
                 total_damage += available_hull;
                 //dead....
-                _log(TARGET__TRACE, "%s(%u): %.2f damage has depleated our structure. Time to explode.",
+                _log(DAMAGE__INFO, "%s(%u): %.2f damage has depleated our structure. Time to explode.",
                      GetName(), GetID(), hull_damage);
                 killed = true;
                 m_self->SetAttribute(AttrDamage, m_self->GetAttribute(AttrHP));
@@ -335,16 +345,20 @@ void NPC::Killed(Damage &fatal_blow) {
         return;
     }
 
+    uint32 locationID = GetLocationID();
+
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
+    const char* faction = itoa(m_allyID);
 
     ItemData wreckItemData(
         wreckTypeID,
         killerID,
-        GetLocationID(),
+        locationID,
         flagAutoFit,
         wreck_name.c_str(),
-        deadNPCPosition
+        deadNPCPosition,
+        faction
     );
 
     WreckContainerRef wreckItemRef = m_self->GetItemFactory()->SpawnWreckContainer( wreckItemData );
@@ -354,14 +368,14 @@ void NPC::Killed(Damage &fatal_blow) {
     }
 
     DBSystemDynamicEntity wreckEntity;
-        wreckEntity.allianceID = GetAllianceID(); /** @todo (allan) fix this after alliances are implemented */
+        wreckEntity.allianceID = m_allyID;
         wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-        wreckEntity.corporationID = GetCorporationID();
+        wreckEntity.corporationID = m_corpID;
         wreckEntity.flag = flagAutoFit;
         wreckEntity.groupID = EVEDB::invGroups::Wreck;
         wreckEntity.itemID = wreckItemRef->itemID();
         wreckEntity.itemName = wreck_name;
-        wreckEntity.locationID = GetLocationID();
+        wreckEntity.locationID = locationID;
         wreckEntity.ownerID = killerID;
         wreckEntity.typeID = wreckTypeID;
         wreckEntity.x = deadNPCPosition.x;
@@ -382,9 +396,9 @@ void NPC::Killed(Damage &fatal_blow) {
         AwardBounty( pClient );
         //  log faction kill in dynamic data   -allan
         Character* pChar = pClient->GetChar().get();
-        pChar->chkDynamicSystemID(GetLocationID());
-        pChar->AddKillToDynamicData(GetLocationID());
-        pChar->AddFactionKillToDynamicData(GetLocationID());
+        pChar->chkDynamicSystemID(locationID);
+        pChar->AddKillToDynamicData(locationID);
+        pChar->AddFactionKillToDynamicData(locationID);
         if (m_system->GetSystemSecurityRating() > 0)
             AwardSecurityStatus(m_self, pChar);
     } else
@@ -414,6 +428,7 @@ void Ship::Killed(Damage &fatal_blow) {
     } else
         killerID = killer->GetID();
 
+    uint32 locationID = GetLocationID();
     if (!m_self->GetPilot()) {
         m_destiny->Stop();
 
@@ -428,7 +443,7 @@ void Ship::Killed(Damage &fatal_blow) {
         ItemData wreckItemData(
                 wreckTypeID,
                 killerID,
-                GetLocationID(),
+                locationID,
                 flagAutoFit,
                 wreck_name.c_str(),
                 wreckPosition
@@ -439,14 +454,14 @@ void Ship::Killed(Damage &fatal_blow) {
             ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
 
         DBSystemDynamicEntity wreckEntity;
-            wreckEntity.allianceID = 0;
+            wreckEntity.allianceID = m_allyID;
             wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-            wreckEntity.corporationID = 0;
-            wreckEntity.flag = 0;
+            wreckEntity.corporationID = m_corpID;
+            wreckEntity.flag = flagAutoFit;
             wreckEntity.groupID = EVEDB::invGroups::Wreck;
             wreckEntity.itemID = wreckItemRef->itemID();
             wreckEntity.itemName = wreck_name;
-            wreckEntity.locationID = GetLocationID();
+            wreckEntity.locationID = locationID;
             wreckEntity.ownerID = killerID;
             wreckEntity.typeID = wreckTypeID;
             wreckEntity.x = wreckPosition.x;
@@ -468,9 +483,9 @@ void Ship::Killed(Damage &fatal_blow) {
         //  client logs faction kills in total kills.  return is value1(total kills) - value2(faction kills) > 0:
         if (pClient) {
             Character* pChar = pClient->GetChar().get();
-            pChar->chkDynamicSystemID(GetLocationID());
-            pChar->AddKillToDynamicData(GetLocationID());
-            pChar->AddFactionKillToDynamicData(GetLocationID());
+            pChar->chkDynamicSystemID(locationID);
+            pChar->AddKillToDynamicData(locationID);
+            pChar->AddFactionKillToDynamicData(locationID);
             if (m_system->GetSystemSecurityRating() > 0)
                 AwardSecurityStatus(m_self, pChar);   // this awards secStatusChange for npcs in empire space
         }
@@ -502,7 +517,7 @@ void Ship::Killed(Damage &fatal_blow) {
             data.finalFactionID = killer->GetWarFactionID();
             data.finalShipTypeID = killer->GetTypeID();
             data.finalWeaponTypeID = fatal_blow.weapon->typeID();
-            data.finalSecurityStatus = 0;
+            data.finalSecurityStatus = 0;   /* fix this */
             data.finalDamageDone = fatal_blow.GetTotal();
 
         uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
@@ -517,10 +532,6 @@ void Ship::Killed(Damage &fatal_blow) {
             data.moonID = 0;    /* dunno wtf this is... */
 
         pPilot->GetChar()->LogKill(data);
-        /*  this logs same data...redundant
-        if (pClient)
-            pClient->GetChar()->LogKill(data);
-        */
 
 		GPoint deadPodPosition = GetPosition();
         uint32 oldPodItemID = pPilot->GetShipID();
@@ -535,7 +546,7 @@ void Ship::Killed(Damage &fatal_blow) {
         ItemData corpseItemData(
             corpseTypeID,
             killerID,
-            GetLocationID(),
+            locationID,
             flagAutoFit,
             corpse_name.c_str(),
             deadPodPosition
@@ -544,14 +555,14 @@ void Ship::Killed(Damage &fatal_blow) {
         InventoryItemRef corpseItemRef = m_services.item_factory->SpawnItem( corpseItemData );
         if (corpseItemRef) {
             DBSystemDynamicEntity corpseEntity;
-                corpseEntity.allianceID = 0;
+                corpseEntity.allianceID = m_allyID;
                 corpseEntity.categoryID = EVEDB::invCategories::Celestial;
-                corpseEntity.corporationID = 0;
-                corpseEntity.flag = 0;
+                corpseEntity.corporationID = m_corpID;
+                corpseEntity.flag = flagAutoFit;
                 corpseEntity.groupID = EVEDB::invGroups::Biomass;
                 corpseEntity.itemID = corpseItemRef->itemID();
                 corpseEntity.itemName = corpse_name;
-                corpseEntity.locationID = GetLocationID();
+                corpseEntity.locationID = locationID;
                 corpseEntity.ownerID = 1;
                 corpseEntity.typeID = corpseTypeID;
                 corpseEntity.x = deadPodPosition.x;
@@ -593,7 +604,7 @@ void Ship::Killed(Damage &fatal_blow) {
             data.finalFactionID = killer->GetWarFactionID();
             data.finalShipTypeID = killer->GetTypeID();
             data.finalWeaponTypeID = fatal_blow.weapon->typeID();
-            data.finalSecurityStatus = 0;
+            data.finalSecurityStatus = 0;  /* fix this */
             data.finalDamageDone = fatal_blow.GetTotal();
 
         uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
@@ -608,10 +619,6 @@ void Ship::Killed(Damage &fatal_blow) {
             data.moonID = 0;    /* dunno wtf this is... */
 
         pPilot->GetChar()->LogKill(data);
-        /*  this logs same data...redundant
-        if (pClient)
-            pClient->GetChar()->LogKill(data);
-        */
 
         PayInsurance();
 
@@ -646,7 +653,7 @@ void Ship::Killed(Damage &fatal_blow) {
 		ItemData wreckItemData(
 			wreckTypeID,
 			killerID,
-			GetLocationID(),
+			locationID,
 			flagAutoFit,
 			wreck_name.c_str(),
 			deadShipPosition
@@ -655,14 +662,14 @@ void Ship::Killed(Damage &fatal_blow) {
         WreckContainerRef wreckItemRef = m_services.item_factory->SpawnWreckContainer( wreckItemData );
         if (wreckItemRef) {
             DBSystemDynamicEntity wreckEntity;
-                wreckEntity.allianceID = 0;
+                wreckEntity.allianceID = m_allyID;
                 wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-                wreckEntity.corporationID = 0;
+                wreckEntity.corporationID = m_corpID;
                 wreckEntity.flag = flagAutoFit;
                 wreckEntity.groupID = EVEDB::invGroups::Wreck;
                 wreckEntity.itemID = wreckItemRef->itemID();
                 wreckEntity.itemName = wreck_name;
-                wreckEntity.locationID = GetLocationID();
+                wreckEntity.locationID = locationID;
             if ((killer->HasPilot()) or (killer->IsDroneSE()))
                 wreckEntity.ownerID = killerID;
             else
@@ -707,7 +714,7 @@ void Ship::Killed(Damage &fatal_blow) {
         double modifier = (1 + ((pPilot->GetSecurityRating() - pClient->GetSecurityRating()) /90));
         double penalty = 6.0f * m_system->GetSystemSecurityRating() * modifier;
         double loss = penalty * ( pClient->GetSecurityRating() + 10);
-        if (sConfig.rates.secRate != 1.0) loss *= sConfig.rates.secRate;
+        loss *= sConfig.rates.secRate;
         pClient->GetChar()->secStatusChange( loss );
     }
 }

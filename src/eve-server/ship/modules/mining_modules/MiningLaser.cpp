@@ -220,7 +220,7 @@ void MiningLaser::Activate(SystemEntity* pSE)
 
 void MiningLaser::Deactivate()
 {
-    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_UNFITTED))
+    if (m_ModuleState != MOD_ACTIVATED)
         return;
     ActiveModule::AbortCycle();
 }
@@ -311,7 +311,7 @@ void MiningLaser::ProcessCycle(bool partial)
         return;
 
     roidQuantity -= oreAmount;
-    _log(MINING__TRACE, "new roidQuantity:%.3f", roidQuantity);
+    _log(MINING__TRACE, "new roidQuantity %.3f", roidQuantity);
 
     if (!roidQuantity) {
         StopCycle();

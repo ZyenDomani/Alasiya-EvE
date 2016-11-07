@@ -595,8 +595,9 @@ void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
             m_players = 0;
             _log(PLAYER__ERROR, "%s(%u): player count for %s(%u) is <1  -- new count: %u", \
                     who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
-        } else
+        } else {
             --m_players;
+        }
         if (!m_players) {
             m_clients.clear();
             m_activityTime = sEntityList.GetStamp();

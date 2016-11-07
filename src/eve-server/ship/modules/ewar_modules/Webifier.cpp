@@ -38,6 +38,8 @@ void Webifier::Activate(SystemEntity* pSE)
     DestinyManager* pDestiny = pSE->DestinyMgr();
     if (!pDestiny) return;
 
+    /** @todo  check for distance here  */
+
     m_targetEntity = pSE;
     m_targetID = pSE->GetID();
 
@@ -49,18 +51,18 @@ void Webifier::Activate(SystemEntity* pSE)
     double multiplier = ((100 + GetAttribute(AttrSpeedFactor).get_float()) /100);
     double newSpeed = m_originalSpeed * multiplier;
     pDestiny->SetMaxVelocity(newSpeed);
-    pDestiny->SetSpeedFraction();
+    pDestiny->SetSpeedFraction(0.99, true);
 }
 
 void Webifier::Deactivate()
 {
-    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_UNFITTED))
+    if (m_ModuleState != MOD_ACTIVATED)
         return;
     ActiveModule::Deactivate();
 
     DestinyManager* pDestiny = m_targetEntity->DestinyMgr();
     pDestiny->SetMaxVelocity(m_originalSpeed);
-    pDestiny->SetSpeedFraction();
+    pDestiny->SetSpeedFraction(0.99, true);
 }
 
 void Webifier::StopCycle(bool abort)

@@ -42,6 +42,7 @@ Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
 
 void Salvager::Activate(SystemEntity* pSE)
 {
+    m_success = false;
     /** @todo allow orca-specific tractoring */
     /** @todo allow tractoring if not anchored */
     if (pSE->IsContainerSE() or pSE->IsWreckSE()) {
@@ -71,7 +72,7 @@ double Salvager::DoCycle() {
         SendFailure();
         CheckSuccess();
     } else if (m_success) {
-        Deactivate();
+        AbortCycle();
         DropSalvage();
         return 0;
     } else {
@@ -231,9 +232,7 @@ void Salvager::CheckSuccess()
 void Salvager::DropSalvage()
 {
     // catch-all for lack of faction info since they dont work yet.  this has ALL t1 salvage
-    uint32 factionID = factionUnknown;
-    if (m_targetEntity->IsWreckSE())
-        factionID = m_targetEntity->GetSelf()->ownerID();   // npcs have factionID in ownerID
+    uint32 factionID = m_targetEntity->GetAllianceID();   // npc wrecks have factionID in allianceID, UNLESS they are loaded in dynamicSE on system load
 
     std::vector<uint32> list;
     sDGM_Salvage_Table.GetSalvage(factionID, list);
@@ -326,6 +325,7 @@ void Salvager::DropSalvage()
     }
     m_targetEntity->SystemMgr()->RemoveEntity(m_targetEntity);
     m_targetEntity->GetSelf()->Delete();
+    // somehow, this messes with client....items not removed/added correctly, and subsquent changes are not updated properly
 }
 
 /*

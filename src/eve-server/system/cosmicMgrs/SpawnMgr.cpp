@@ -222,7 +222,7 @@ void SpawnMgr::MoveSpawn()
 
 void SpawnMgr::StartMainTimer()
 {
-    if (sConfig.server.IsTestServer and is_log_enabled(NPC__TRACE))
+    if (sConfig.server.IsTestServer and sConfig.npc.SpawnTest)
         m_mainTimer.Start(5000); /* 5s for npc spawn testing */
     else
         m_mainTimer.Start(sConfig.npc.RoamingTimer *60 *1000);

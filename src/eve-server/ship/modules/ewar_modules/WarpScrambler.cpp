@@ -54,7 +54,7 @@ void WarpScrambler::Activate(SystemEntity* pSE)
 
 void WarpScrambler::Deactivate()
 {
-    if ((m_ModuleState != MOD_ACTIVATED) or (m_ModuleState == MOD_UNFITTED))
+    if (m_ModuleState != MOD_ACTIVATED)
         return;
     ActiveModule::Deactivate();
 

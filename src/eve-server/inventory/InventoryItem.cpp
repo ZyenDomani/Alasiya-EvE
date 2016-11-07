@@ -1027,9 +1027,11 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
     /** @note  this is only used by modules
      ** check for pos structures also!! **
      */
+    _log(SHIP__MODULE_DEBUG, "InventoryItem::SetOnline() - set module %s(%u) to %s", \
+                    m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
     if (!isRig) {   // rigs DO NOT get isOnline attrib set.
         if (!SetAttribute(AttrIsOnline, int(online))) {
-            _log(ITEM__TRACE, "InventoryItem::SetOnline()", "module %s(%u) could not be set %s", \
+            _log(SHIP__MODULE_ERROR, "InventoryItem::SetOnline() - module %s(%u) could not be set %s", \
                             m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
             return;
         }
@@ -1037,7 +1039,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
 
     Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
     if (!pClient) {
-        _log(ITEM__TRACE, "InventoryItem::SetOnline()", "No client object found using m_ownerID (%u) for module %s(%u)", \
+        _log(SHIP__MODULE_ERROR, "InventoryItem::SetOnline() - No client object found using m_ownerID (%u) for module %s(%u)", \
                             m_ownerID, m_itemName.c_str(), m_itemID );
         return;
     }

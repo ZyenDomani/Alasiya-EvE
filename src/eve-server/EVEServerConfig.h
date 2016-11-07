@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    6.9
+    Version:    7.0
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -140,6 +140,7 @@ public:
         uint8 StaticTimer;
         float ThreatRadius;
         uint32 RatFaction;
+        bool SpawnTest;
     } npc;
 
     // From <database/>

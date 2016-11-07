@@ -113,6 +113,7 @@ public:
     void UnCloak();
 
     PyResult AttemptDockOperation();
+    void Dock();
     void Undock(GPoint dir);
     void SetUndockSpeed();
     void SendSetState() const;

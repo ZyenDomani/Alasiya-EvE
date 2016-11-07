@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:        Allan
+    Updates:    Allan
 */
 /** @todo (Allan)  add target lost and target fail reasons.
  * maybe make common function, and pass "add", "clear", "otheradd", reason, etc ??
@@ -395,13 +395,13 @@ SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked) const 
             continue;
         //found it...
         if (need_locked && cur->second->state != TargetEntry::Locked) {
-            _log(TARGET__TRACE, "Found target %u, but it is not locked.", targetID);
+            _log(TARGET__WARNING, "Found target %u, but it is not locked.", targetID);
             continue;
         }
-        _log(TARGET__TRACE, "Found target %u: %s (nl? %s)", targetID, cur->first->GetName(), need_locked?"yes":"no");
+        _log(TARGET__INFO, "Found target %u: %s (nl? %s)", targetID, cur->first->GetName(), need_locked?"yes":"no");
         return(cur->first);
     }
-    _log(TARGET__TRACE, "Unable to find target %u (nl? %s)", targetID, need_locked?"yes":"no");
+    _log(TARGET__WARNING, "Unable to find target %u (nl? %s)", targetID, need_locked?"yes":"no");
     return nullptr;    //not found.
 }
 

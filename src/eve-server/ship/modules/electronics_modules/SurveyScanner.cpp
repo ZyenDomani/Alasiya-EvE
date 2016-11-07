@@ -57,8 +57,8 @@ SurveyScanner::SurveyScanner(InventoryItemRef item, ShipItemRef ship)
         m_range *= (1 + (0.05 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 5% increase in range (here)
         m_cycleTime *= (1 - (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% decrease in duration (here)
     } else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer) {
-        m_range *= (1 + (0.05 * (pChar->GetSkillLevel(skillExhumers, true))));    // 5% increase in range (here)
-        m_cycleTime *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true)))); // 2% decrease in duration (here)
+        m_range *= (1 + (0.1 * (pChar->GetSkillLevel(skillExhumers, true))));    // 10% increase in range (here)
+        m_cycleTime *= (1 - (0.05 * (pChar->GetSkillLevel(skillExhumers, true)))); // 5% decrease in duration (here)
     } else {
         // lets modify range by 20% and duration by 5% for small mining ships.
         switch (m_Ship->typeID()) {
@@ -142,7 +142,7 @@ double SurveyScanner::DoCycle() {
             events.push_back(tuple);
         std::vector<PyTuple*> updates;
         pShipSE->DestinyMgr()->SendDestinyUpdate(updates, events, false);
-        Deactivate();
+        AbortCycle();
         return 0;
     }
 

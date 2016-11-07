@@ -179,6 +179,7 @@ void CargoContainer::RemoveItem(InventoryItemRef item)
         if (m_inventory->IsEmpty()) {
             sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", itemID() );
             Delete();
+            /** @todo  this also needs to delete and remove the SE from system....  */
         }
 }
 

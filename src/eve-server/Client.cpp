@@ -519,6 +519,7 @@ void Client::UndockFromStation() {
     sLog.Log("Client::UndockFromStation()", "Character %s(%u) undocking from stationID() %u", \
     m_char->itemName().c_str(), m_char->itemID(), m_StationData.stationID);
 
+    m_login = false;
     m_invul = m_undock = true;
     //set position and direction of docking ramp for later use
     m_dockPoint = m_StationData.dockPosition;
@@ -552,6 +553,8 @@ void Client::SetBallPark() {
 }
 
 void Client::DockToStation() {
+    pShipSE->DestinyMgr()->Dock();
+    
     SetAutoPilot(false);
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
     m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    6.9
+    Version:    7.0
 */
 
 
@@ -99,6 +99,7 @@ EVEServerConfig::EVEServerConfig()
     npc.RoamingTimer = 15 /*m*/;
     npc.StaticTimer = 10 /*m*/;//P
     npc.RatFaction = 0;
+    npc.SpawnTest = false;
 
     // database
     database.host = "localhost";
@@ -310,7 +311,8 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     AddValueParser( "StaticSpawns",  npc.StaticSpawns );
     AddValueParser( "RoamingTimer",  npc.RoamingTimer );
     AddValueParser( "StaticTimer",   npc.StaticTimer );
-    AddValueParser( "RatFaction",   npc.RatFaction );
+    AddValueParser( "RatFaction",    npc.RatFaction );
+    AddValueParser( "SpawnTest",     npc.SpawnTest );
 
     const bool result = ParseElementChildren( ele );
 
@@ -320,6 +322,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "RoamingTimer" );
     RemoveParser( "StaticTimer" );
     RemoveParser( "RatFaction" );
+    RemoveParser( "SpawnTest" );
 
     return result;
 }

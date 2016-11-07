@@ -761,20 +761,20 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (!pDestiny) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return nullptr;
+        return new PyNone();
     } else if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't do this while warping");
-        return nullptr;
+        return new PyNone();
     }
     SystemManager* pSM = call.client->SystemMgr();
     if (!pSM) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager.", call.client->GetName());
-        return nullptr;
+        return new PyNone();
     }
     Call_TwoIntegerArgs args;  //sends stationID, shipID
     if (!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
-        return nullptr;
+        return new PyNone();
     }
 
     //  this sets m_dockStationID for radius checks and other thigns

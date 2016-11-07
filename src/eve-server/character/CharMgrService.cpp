@@ -336,13 +336,10 @@ PLAYER_STATUS_AFK = 1
         return new PyNone();
     }
 
-    sLog.Warning("SetActivityStatus", "Player %s(%u) AFK:%i, time:%i.", call.client->GetName(), call.client->GetCharacterID(), args.arg1, args.arg2);
-
     bool afk = (args.arg1 ? true : false);
     uint16 time = args.arg2;
-
     sLog.Warning("SetActivityStatus2", "Player %s(%u) AFK:%s, time:%u.", call.client->GetName(), call.client->GetCharacterID(), (afk ? "true" : "false"), time);
-    
+
     return new PyNone();
 }
 

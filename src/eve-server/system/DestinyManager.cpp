@@ -685,7 +685,7 @@ void DestinyManager::_Move() {
     _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
         mySE->GetName(), mySE->GetID(), move.c_str(), \
         speed, csf, m_activeSpeedFraction, timeStamp);
-
+/*
     // hack for some fucked up movement shit where npc's have a move-type state, but have no speedFraction.
     if (mySE->IsNPCSE() and (!csf)) {
         _log(DESTINY__ERROR, "Destiny::_Move() - %s(%u) **NPC ERROR** %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
@@ -694,7 +694,7 @@ void DestinyManager::_Move() {
         //Halt();
         //return;
     }
-
+*/
     m_velocity = m_shipHeading * speed;
 
     _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) Position: %.2f, %.2f, %.2f  velocity: %.3f, %.3f, %.3f", \
@@ -1712,7 +1712,7 @@ PyResult DestinyManager::AttemptDockOperation() {
     if (!station) {
         codelog(CLIENT__ERROR, "%s: Station %u not found.", pClient->GetName(), stationID);
         pClient->SendErrorMsg("Station Not Found, Docking Aborted.");
-        return NULL;
+        return new PyNone();
     }
 
     //get the station Docking Perimiter
@@ -1727,6 +1727,18 @@ PyResult DestinyManager::AttemptDockOperation() {
         AlignTo( station );   // Turn ship and move toward docking point - client will usually call Dock() automatically...sometimes
         throw PyException(MakeUserError("DockingApproach"));
     }
+
+    pClient->StartDockTimer();
+
+    return new PyNone();
+}
+
+void DestinyManager::Dock()
+{
+    Client *pClient = mySE->GetPilot();
+    uint32 stationID = pClient->GetDockStationID();
+    SystemEntity *station = mySE->SystemMgr()->GetSE(stationID);
+    const GPoint stationPos = station->GetPosition();
 
     std::vector<PyTuple*> updates;
     DoDestiny_OnDockingAccepted oda;
@@ -1752,9 +1764,6 @@ PyResult DestinyManager::AttemptDockOperation() {
     SendDestinyUpdate(updates, true);
 
     Stop();
-    pClient->StartDockTimer();
-
-    return nullptr;
 }
 
 void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {

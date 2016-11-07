@@ -40,10 +40,13 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_ChargeState = MOD_UNLOADED;
 
     m_repeat = 0;
+    // incase module item has AttrIsOnline set to true....it shouldn't but this is a catchall.
+    m_Item->PutOffline();
 }
 
 GenericModule::~GenericModule()
 {
+    m_Item->PutOffline();
     //delete members
     SafeDelete(m_Effects);
     SafeDelete(m_MMAC);

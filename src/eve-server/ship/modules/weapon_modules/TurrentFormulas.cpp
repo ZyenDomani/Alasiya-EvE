@@ -19,14 +19,15 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, System
 {
     if (!pTarget)
         return 0;
+    uint32 falloff = pMod->GetFalloff();
     double range = pMod->GetMaxRange();
     double distance = shipRef->position().distance(pTarget->DestinyMgr()->GetPosition());
 
-    _log(TARGET__MESSAGE, "Turrent::GetToHit - distance:%.2f, range:%.2f", distance, range);
+    _log(DAMAGE__TRACE, "Turrent::GetToHit - distance:%.2f, range:%.2f, falloff:%u", distance, range, falloff);
     GPoint vel = pTarget->GetVelocity();
     double speed = vel.length();
     double angVelocity = (speed /distance);
-    _log(TARGET__MESSAGE, "Turrent::GetToHit - speed/dist=angVelocity: %.3f / %.3f = %.3f", speed, distance, angVelocity);
+    _log(DAMAGE__TRACE, "Turrent::GetToHit - speed/dist=angVelocity: %.3f / %.3f = %.3f", speed, distance, angVelocity);
 
     //  calculations for chance to hit
     /*     a =  angVelocity/(distance * tracking)
@@ -42,13 +43,13 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, System
     double e = 0;
     if (distance > range) {
         double d = _max(distance - range);
-        e = pow((d /  pMod->GetFalloff()), 2);
+        e = pow((d / falloff), 2);
     }
 
     float ChanceToHit = pow(0.5, c + e);
     double rNum = MakeRandomFloat(0.0, 1.0);
-    _log(TARGET__MESSAGE, "Turrent::GetToHit - ChanceToHit:%f, Rand:%.3f", ChanceToHit, rNum);
-    if (rNum <= 0.015)
+    _log(DAMAGE__TRACE, "Turrent::GetToHit - ChanceToHit:%f, Rand:%.3f  (c:%.5f + e:%.5f)", ChanceToHit, rNum, c, e);
+    if (rNum <= 0.02)
         return 3.0f;
     else if (rNum < ChanceToHit)
         return (rNum + 0.49);
@@ -61,13 +62,14 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     if (!pTarget)
         return 0;
     uint16 range = pNPC->GetAIMgr()->GetMaxRange();
+    uint32 falloff = pNPC->GetAIMgr()->GetFalloff();
     double distance = pNPC->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
-    _log(TARGET__MESSAGE, "NPC::GetToHit - distance:%.2f, range:%.u", distance, range);
+    _log(DAMAGE__TRACE, "NPC::GetToHit - distance:%.2f, range:%.u, falloff:%u", distance, range, falloff);
 
     GPoint vel = pTarget->GetVelocity();
     double speed = vel.length();
     double angVelocity = (speed /distance);
-    _log(TARGET__MESSAGE, "NPC::GetToHit - speed/dist=angVelocity: %.3f / %.3f = %.3f", speed, distance, angVelocity);
+    _log(DAMAGE__TRACE, "NPC::GetToHit - speed/distance=angVelocity: %.3f / %.3f = %.3f", speed, distance, angVelocity);
 
     double a = (angVelocity / (distance * pNPC->GetAIMgr()->GetTrackingSpeed()));
     double b = (pNPC->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
@@ -75,16 +77,16 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     double e = 0;
     if (distance > range) {
         double d = _max(distance - range);
-        e = pow((d / pNPC->GetAIMgr()->GetFalloff()), 2);
+        e = pow((d / falloff), 2);
     }
 
     float ChanceToHit = pow(0.5, c + e);
     double rNum = MakeRandomFloat(0.0, 1.0);
-    _log(TARGET__MESSAGE, "NPC::GetToHit - ChanceToHit:%f, Rand:%.3f", ChanceToHit, rNum);
+    _log(DAMAGE__TRACE, "NPC::GetToHit - ChanceToHit:%f, Rand:%.3f  (c:%.5f + e:%.5f)", ChanceToHit, rNum, c, e);
     if (rNum <= 0.015)
         return 3.0f;
     else if (rNum < ChanceToHit)
-        return (rNum + 0.49);
+        return rNum;
     else
         return 0;
 }
@@ -94,13 +96,14 @@ float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
     if (!pTarget)
         return 0;
     double range = pDrone->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float();
+    double falloff = pDrone->GetSelf()->GetAttribute(AttrFalloff).get_float();
     double distance = pDrone->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
-    _log(TARGET__MESSAGE, "Drone::GetToHit - distance:%.2f, range:%.2f", distance, range);
+    _log(DAMAGE__TRACE, "Drone::GetToHit - distance:%.2f, range:%.2f, falloff:%.1f", distance, range, falloff);
 
     GPoint vel = pTarget->GetVelocity();
     double speed = vel.length();
     double angVelocity = (speed /distance);
-    _log(TARGET__MESSAGE, "Drone::GetToHit - speed/dist=angVelocity: %.3f / %.3f = %.3f", speed, distance, angVelocity);
+    _log(DAMAGE__TRACE, "Drone::GetToHit - speed/dist=angVelocity: %.3f / %.3f = %.3f", speed, distance, angVelocity);
 
     double a = (angVelocity / (distance * pDrone->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float()));
     double b = (pDrone->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
@@ -108,16 +111,16 @@ float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
     double e = 0;
     if (distance > range) {
         double d = _max(distance - range);
-        e = pow((d /  pDrone->GetSelf()->GetAttribute(AttrFalloff).get_float()), 2);
+        e = pow((d / falloff), 2);
     }
 
     float ChanceToHit = pow(0.5, c + e);
     double rNum = MakeRandomFloat(0.0, 1.0);
-    _log(TARGET__MESSAGE, "Drone::GetToHit - ChanceToHit:%f, Rand:%.3f", ChanceToHit, rNum);
-    if (rNum <= 0.015)
+    _log(DAMAGE__TRACE, "Drone::GetToHit - ChanceToHit:%f, Rand:%.3f", ChanceToHit, rNum);
+    if (rNum <= 0.03)
         return 3.0f;
     else if (rNum < ChanceToHit)
-        return (rNum + 0.49);
+        return rNum;
     else
         return 0;
 }
