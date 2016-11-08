@@ -434,8 +434,9 @@ typedef enum {
     factionMordusLegion  = 500018,
     factionSanshas       = 500019,
     factionSerpentis     = 500020,
-    factionRogueDrones   = 500021,
-    factionUnknown       = 500022
+    factionUnknown       = 500021,
+    factionRogueDrones   = 500022,
+    factionSleepers      = 500023
 } FactionDef;
 
 // mostly pirate corps for now...

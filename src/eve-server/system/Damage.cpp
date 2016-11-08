@@ -342,7 +342,8 @@ void NPC::Killed(Damage &fatal_blow) {
     uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
     if (!wreckTypeID) {
         sLog.Error("NPC::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
-        return;
+        // default to generic frigate wreck till i get better checks and/or complete wreck data
+        wreckTypeID = 26557;
     }
 
     uint32 locationID = GetLocationID();
@@ -368,14 +369,13 @@ void NPC::Killed(Damage &fatal_blow) {
     }
 
     DBSystemDynamicEntity wreckEntity;
-        wreckEntity.allianceID = m_allyID;
+        wreckEntity.allianceID = killer->GetAllianceID();
         wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-        wreckEntity.corporationID = m_corpID;
-        wreckEntity.flag = flagAutoFit;
+        wreckEntity.corporationID = killer->GetCorporationID();
+        wreckEntity.factionID = m_warID;
         wreckEntity.groupID = EVEDB::invGroups::Wreck;
         wreckEntity.itemID = wreckItemRef->itemID();
         wreckEntity.itemName = wreck_name;
-        wreckEntity.locationID = locationID;
         wreckEntity.ownerID = killerID;
         wreckEntity.typeID = wreckTypeID;
         wreckEntity.x = deadNPCPosition.x;
@@ -436,7 +436,8 @@ void Ship::Killed(Damage &fatal_blow) {
         uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
         if (!wreckTypeID) {
             sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
-            return;
+            // default to generic frigate wreck till i get better checks and/or complete wreck data
+            wreckTypeID = 26557;
         }
         std::string wreck_name = m_self->itemName();
         GPoint wreckPosition = m_destiny->GetPosition();
@@ -454,14 +455,13 @@ void Ship::Killed(Damage &fatal_blow) {
             ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
 
         DBSystemDynamicEntity wreckEntity;
-            wreckEntity.allianceID = m_allyID;
+            wreckEntity.allianceID = killer->GetAllianceID();
             wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-            wreckEntity.corporationID = m_corpID;
-            wreckEntity.flag = flagAutoFit;
+            wreckEntity.corporationID = killer->GetCorporationID();
+            wreckEntity.factionID = sEntityList.GetWreckFaction(wreckTypeID);
             wreckEntity.groupID = EVEDB::invGroups::Wreck;
             wreckEntity.itemID = wreckItemRef->itemID();
             wreckEntity.itemName = wreck_name;
-            wreckEntity.locationID = locationID;
             wreckEntity.ownerID = killerID;
             wreckEntity.typeID = wreckTypeID;
             wreckEntity.x = wreckPosition.x;
@@ -558,11 +558,10 @@ void Ship::Killed(Damage &fatal_blow) {
                 corpseEntity.allianceID = m_allyID;
                 corpseEntity.categoryID = EVEDB::invCategories::Celestial;
                 corpseEntity.corporationID = m_corpID;
-                corpseEntity.flag = flagAutoFit;
+                corpseEntity.factionID = m_warID;
                 corpseEntity.groupID = EVEDB::invGroups::Biomass;
                 corpseEntity.itemID = corpseItemRef->itemID();
                 corpseEntity.itemName = corpse_name;
-                corpseEntity.locationID = locationID;
                 corpseEntity.ownerID = 1;
                 corpseEntity.typeID = corpseTypeID;
                 corpseEntity.x = deadPodPosition.x;
@@ -645,7 +644,8 @@ void Ship::Killed(Damage &fatal_blow) {
         uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(deadShipRef->typeID());
         if (!wreckTypeID) {
             sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
-            return;
+            // default to generic frigate wreck till i get better checks and/or complete wreck data
+            wreckTypeID = 26557;
         }
         std::string wreck_name = GetName();
         wreck_name += "'s " + deadShipRef->itemName() + " Wreck";
@@ -662,14 +662,13 @@ void Ship::Killed(Damage &fatal_blow) {
         WreckContainerRef wreckItemRef = m_services.item_factory->SpawnWreckContainer( wreckItemData );
         if (wreckItemRef) {
             DBSystemDynamicEntity wreckEntity;
-                wreckEntity.allianceID = m_allyID;
+                wreckEntity.allianceID = killer->GetAllianceID();
                 wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-                wreckEntity.corporationID = m_corpID;
-                wreckEntity.flag = flagAutoFit;
+                wreckEntity.corporationID = killer->GetCorporationID();
+                wreckEntity.factionID = sEntityList.GetWreckFaction(wreckTypeID);
                 wreckEntity.groupID = EVEDB::invGroups::Wreck;
                 wreckEntity.itemID = wreckItemRef->itemID();
                 wreckEntity.itemName = wreck_name;
-                wreckEntity.locationID = locationID;
             if ((killer->HasPilot()) or (killer->IsDroneSE()))
                 wreckEntity.ownerID = killerID;
             else

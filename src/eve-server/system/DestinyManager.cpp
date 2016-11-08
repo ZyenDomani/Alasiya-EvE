@@ -715,11 +715,13 @@ void DestinyManager::_Move() {
         std::ostringstream str;
         str << "Position Test " << timeStamp;
         ItemData idata(23, 0, mySE->GetLocationID(), flagAutoFit, str.str().c_str(), m_position);
-        CargoContainerRef newJetcanItem = mySE->GetServices().item_factory->SpawnCargoContainer(idata);
-        if (newJetcanItem) {
+        CargoContainerRef jetCanRef = mySE->GetServices().item_factory->SpawnCargoContainer(idata);
+        if (jetCanRef) {
             // create new container
-            ContainerSE* containerObj = new ContainerSE(newJetcanItem, mySE->GetServices(), mySE->SystemMgr());
-            mySE->SystemMgr()->AddEntity(containerObj);
+            ContainerData jetcanData;
+            ContainerSE* cSE = new ContainerSE(jetCanRef, mySE->GetServices(), mySE->SystemMgr(), jetcanData);
+            jetCanRef->SetMySE(cSE);
+            mySE->SystemMgr()->AddEntity(cSE);
         }
     }
 }

@@ -1309,6 +1309,9 @@ void Ship::ResetShipSystemMgr(SystemManager* pSystem)
 
 void Ship::SetPilot(Client* pClient) {
     m_self->SetPlayer(pClient);
+    // set shipSE data 
+    m_allyID = pClient->GetAllianceID();
+    m_corpID = pClient->GetCorporationID();
 }
 
 void Ship::EncodeDestiny( Buffer& into ) {

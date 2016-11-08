@@ -31,59 +31,41 @@
 
 class DBSystemEntity {
 public:
-    uint32 itemID;
-    uint32 typeID;
-    uint32 groupID;
-    uint32 categoryID;  //TODO populate this for simple system entities. (recently added - 1Dec15)
-    uint32 orbitID;
-    GPoint position;
-    double radius;
-    double security;
-    std::string itemName;
+    uint32 itemID = 0;
+    uint32 typeID = 0;
+    uint32 groupID = 0;
+    uint32 categoryID = 0;  //TODO populate this for simple system entities. (recently added - 1Dec15)
+    uint32 orbitID = 0;
+    GPoint position = NULL_ORIGIN;
+    double radius = 0;
+    double security = 0;
+    std::string itemName = "";
 };
 
 class DBSystemDynamicEntity {
 public:
-    uint32 itemID;
-    std::string itemName;
-    uint32 typeID;
-    uint32 groupID;
-    uint32 ownerID;
-    uint32 locationID;
-    uint32 flag;
-    uint32 categoryID;
-    uint32 corporationID;
-    uint32 allianceID;
-    double x;
-    double y;
-    double z;
-};
-
-class DBWreckEntity {
-public:
-    uint32 itemID;
-    std::string itemName;
-    uint32 typeID;
-    uint32 groupID;
-    uint32 ownerID;
-    uint32 locationID;
-    uint32 flag;
-    uint32 categoryID;
-    uint32 corporationID;
-    uint32 allianceID;
-    double x;
-    double y;
-    double z;
+    uint32 itemID = 0;
+    std::string itemName = "";
+    uint32 typeID = 0;
+    uint32 groupID = 0;
+    uint32 categoryID = 0;
+    uint32 ownerID = 0;
+    uint32 corporationID = 0;
+    uint32 allianceID = 0;
+    uint32 factionID = 0;
+    double x = 0;
+    double y = 0;
+    double z = 0;
 };
 
 struct DBGPointEntity {
-	uint8 idx;
-    uint32 itemID;
-    double radius;
-	GPoint position;
-	double x;
-	double y;
-	double z;
+    uint8 idx = 0;
+    uint32 itemID = 0;
+    double radius = 0;
+    GPoint position = NULL_ORIGIN;
+    double x = 0;
+    double y = 0;
+    double z = 0;
 };
 
 class SystemDB

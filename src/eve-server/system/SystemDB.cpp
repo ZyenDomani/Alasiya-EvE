@@ -60,6 +60,7 @@ bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEnt
     return true;
 }
 
+/** @todo  this isnt right.....it doesnt get player's corp/alliance correctly  */
 bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into) {
     using namespace EVEDB::invCategories;
     DBQueryResult res;
@@ -70,13 +71,11 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "   e.itemName,"
         "   e.typeID,"
         "   e.ownerID,"
-        "   e.locationID,"  //5
-        "   e.flag,"
         "   t.groupID,"
-        "   g.categoryID,"
-        "   IFNULL(co.corporationID, e.ownerID),"
-        "   IFNULL(co.allianceID, 0),"  //10
-        "   e.x, e.y, e.z"
+        "   g.categoryID,"  //5
+        "   IFNULL(co.corporationID, 0),"
+        "   IFNULL(co.allianceID, 0),"
+        "   e.x, e.y, e.z" //10
         " FROM entity AS e"
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
@@ -104,15 +103,13 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.itemName = row.GetText(1);
         entry.typeID = row.GetInt(2);
         entry.ownerID = row.GetInt(3);
-        entry.locationID = row.GetInt(4);
-        entry.flag = row.GetInt(5);
-        entry.groupID = row.GetInt(6);
-        entry.categoryID = row.GetInt(7);
-        entry.corporationID = row.GetInt(8);
-        entry.allianceID = row.GetInt(9);
-        entry.x = row.GetDouble(10);
-        entry.y = row.GetDouble(11);
-        entry.z = row.GetDouble(12);
+        entry.groupID = row.GetInt(4);
+        entry.categoryID = row.GetInt(5);
+        entry.corporationID = row.GetInt(6);
+        entry.allianceID = row.GetInt(7);
+        entry.x = row.GetDouble(8);
+        entry.y = row.GetDouble(9);
+        entry.z = row.GetDouble(10);
         into.push_back(entry);
     }
 
@@ -130,13 +127,11 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 ownerID, uint32 systemID, std::v
         "   e.itemName,"
         "   e.typeID,"
         "   e.ownerID,"
-        "   e.locationID,"  //5
-        "   e.flag,"
         "   t.groupID,"
-        "   g.categoryID,"
+        "   g.categoryID,"  //5
         "   IFNULL(c.corporationID, 0),"
-        "   IFNULL(co.allianceID, 0),"  //10
-        "   e.x, e.y, e.z"
+        "   IFNULL(co.allianceID, 0),"
+        "   e.x, e.y, e.z" //10
         " FROM entity AS e"
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
@@ -157,15 +152,13 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 ownerID, uint32 systemID, std::v
         entry.itemName = row.GetText(1);
         entry.typeID = row.GetInt(2);
         entry.ownerID = row.GetInt(3);
-        entry.locationID = row.GetInt(4);
-        entry.flag = row.GetInt(5);
-        entry.groupID = row.GetInt(6);
-        entry.categoryID = row.GetInt(7);
-        entry.corporationID = row.GetInt(8);
-        entry.allianceID = row.GetInt(9);
-        entry.x = row.GetDouble(10);
-        entry.y = row.GetDouble(11);
-        entry.z = row.GetDouble(12);
+        entry.groupID = row.GetInt(4);
+        entry.categoryID = row.GetInt(5);
+        entry.corporationID = row.GetInt(6);
+        entry.allianceID = row.GetInt(7);
+        entry.x = row.GetDouble(8);
+        entry.y = row.GetDouble(9);
+        entry.z = row.GetDouble(10);
         into.push_back(entry);
     }
     return true;

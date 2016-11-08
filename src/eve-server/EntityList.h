@@ -118,6 +118,8 @@ public:
 
     bool GetTracking()                                  { return m_shipTracking; }
     void SetTracking(bool set=false)                    { m_shipTracking = set; }
+    
+    uint32 GetWreckFaction(uint32 typeID);
 
 protected:
     PyServiceMgr* m_services;    //we do not own this, only used for booting systems.

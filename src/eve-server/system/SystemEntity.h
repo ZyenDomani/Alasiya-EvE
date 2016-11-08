@@ -192,17 +192,16 @@ public:
     virtual uint32              GetGroupID()            { return m_self->groupID(); }
     virtual EVEItemCategories   GetCategoryID()         { return m_self->categoryID(); }
     virtual EVEItemFlags        GetFlag()               { return m_self->flag(); }
-
-    /** @todo (allan)  finish these ... not sure how yet.  */
-    virtual uint32              GetCorporationID()      { return m_corpID; };
-    virtual uint32              GetAllianceID()         { return m_allyID; };
+    virtual uint32              GetCorporationID()      { return m_corpID; }
+    virtual uint32              GetAllianceID()         { return m_allyID; }
     virtual uint32              GetWarFactionID()       { return m_warID; }
+    virtual uint32              GetOwnerID()            { return m_ownerID; }
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void                SetPilot(Client* pClient){ /* Do nothing here */ }
     virtual bool                HasPilot()              { return false; }
     virtual Client*             GetPilot()              { return nullptr; }
-    virtual void                Delete()                { /* Do nothing here */ }  // this is only for asteroids and missiles (so far...)
+    virtual void                Delete()                { /* Do nothing here */ }  // this is only for asteroids and missiles and containers/wrecks (so far...)
 
     /* specific functions handled in this class. */
 
@@ -216,9 +215,11 @@ protected:
 
     InventoryItemRef            m_self = InventoryItemRef();
 
+    /* ease of access to specific, common data for container objects */
     uint32                      m_warID = 0;
     uint32                      m_corpID = 0;
     uint32                      m_allyID = 0;
+    uint32                      m_ownerID = 0;
 
 };
 

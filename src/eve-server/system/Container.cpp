@@ -32,6 +32,7 @@
 #include "system/Container.h"
 #include "SystemManager.h"
 #include "SystemBubble.h"
+#include "cosmicMgrs/SpawnMgr.h"
 
 /*
  * CargoContainer
@@ -106,7 +107,8 @@ uint32 CargoContainer::CreateItemID(ItemFactory &factory, ItemData &data) {
 
 void CargoContainer::Delete()
 {
-    sLog.Magenta( "CargoContainer::Delete()", "Garbage Collection is removing Cargo Container %u.", itemID() );
+    mySE->Delete();
+    m_inventory->LoadContents(&m_factory);
     // delete contents first
     m_inventory->DeleteContents();
     InventoryItem::Delete();
@@ -194,13 +196,17 @@ void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
 }
 
 
-ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemManager *system)
+ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemManager* system, const ContainerData& data)
 : ItemSystemEntity(self, services, system),
   m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
 {
+    m_warID = data.factionID;
+    m_allyID = data.allianceID;
+    m_corpID = data.corporationID;
+    m_ownerID = data.ownerID;
     m_destiny = new DestinyManager(this);
 
-    _containerRef = self;
+    m_contRef = self;
     if (!IsStation(m_self->locationID()))
         m_deleteTimer.Start();
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity(), false);
@@ -216,15 +222,22 @@ void ContainerSE::Process() {
     SystemEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
-        m_system->RemoveEntity(this);
-        _containerRef->Delete();
+        sLog.Magenta( "ContainerSE::Process()", "Garbage Collection is removing Cargo Container %u.", m_contRef->itemID() );
+        m_contRef->Delete();
     }
+}
+
+void ContainerSE::Delete()
+{
+    SystemEntity::Delete();
+    m_targMgr->DoDestruction();
+    m_system->RemoveEntity(this);
 }
 
 void ContainerSE::AnchorContainer()
 {
     m_deleteTimer.Disable();
-    _containerRef->SetAnchor(true);
+    m_contRef->SetAnchor(true);
 }
 
 void ContainerSE::EncodeDestiny( Buffer& into )
@@ -244,8 +257,8 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
         mass.Harmonic = -1.0f;
-        mass.corporationID = GetCorporationID();
-        mass.allianceID = GetAllianceID();
+        mass.corporationID = m_corpID;
+        mass.allianceID = m_allyID;
     into.Append( mass );
     DSTBALL_TROLL_Struct troll;
         troll.formationID = 0xFF;
@@ -274,8 +287,8 @@ PyDict *ContainerSE::MakeSlimItem() {
         slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
         slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",       new PyInt(GetCorporationID()));
-        slim->SetItemString("allianceID",   new PyInt(GetAllianceID()));
+        slim->SetItemString("corpID",       new PyInt(m_corpID));
+        slim->SetItemString("allianceID",   new PyInt(m_allyID));
     return slim;
 }
 
@@ -335,6 +348,7 @@ uint32 WreckContainer::CreateItemID(ItemFactory &factory, ItemData &data) {
 
 void WreckContainer::Delete()
 {
+    mySE->Delete();
     m_inventory->LoadContents(&m_factory);
     // delete contents first
     m_inventory->DeleteContents();
@@ -399,13 +413,17 @@ void WreckContainer::MakeSlimItemChange()
 }
 
 
-WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* system)
+WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* system, const ContainerData &data)
 : ItemSystemEntity(self, services, system),
  m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
 {
-     m_destiny = new DestinyManager(this);
+    m_warID = data.factionID;
+    m_allyID = data.allianceID;
+    m_corpID = data.corporationID;
+    m_ownerID = data.ownerID;
+    m_destiny = new DestinyManager(this);
 
-    _containerRef = self;
+    m_contRef = self;
     m_deleteTimer.Start();
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity());
 }
@@ -420,10 +438,16 @@ void WreckSE::Process() {
     SystemEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
-        sLog.Magenta( "WreckSE::Process()", "Garbage Collection is removing Wreck %u.", _containerRef->itemID() );
-        m_system->RemoveEntity(this);
-        _containerRef->Delete();
+        sLog.Magenta( "WreckSE::Process()", "Garbage Collection is removing Wreck %u.", m_contRef->itemID() );
+        m_contRef->Delete();
     }
+}
+
+void WreckSE::Delete()
+{
+    SystemEntity::Delete();
+    m_targMgr->DoDestruction();
+    m_system->RemoveEntity(this);
 }
 
 void WreckSE::EncodeDestiny( Buffer& into )
@@ -443,8 +467,8 @@ void WreckSE::EncodeDestiny( Buffer& into )
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
         mass.Harmonic = -1.0f;
-        mass.corporationID = GetCorporationID();
-        mass.allianceID = GetAllianceID();
+        mass.corporationID = m_corpID;
+        mass.allianceID = m_allyID;
     into.Append( mass );
 
     DSTBALL_TROLL_Struct troll;
@@ -475,8 +499,8 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
         //slim->SetItemString("lootRights",       new PyNone());
-        slim->SetItemString("corpID",           new PyInt(GetCorporationID()));
-        slim->SetItemString("allianceID",       new PyLong(GetAllianceID()));
+        slim->SetItemString("corpID",           new PyInt(m_corpID));
+        slim->SetItemString("allianceID",       new PyLong(m_allyID));
         slim->SetItemString("isEmpty",          new PyBool(IsEmpty()));
         slim->SetItemString("launcherID",       new PyLong(m_launchedByID));
         slim->SetItemString("securityStatus",   new PyInt(0));  //FIXME TODO

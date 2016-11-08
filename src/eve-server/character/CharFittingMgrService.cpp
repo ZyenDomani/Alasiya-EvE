@@ -25,6 +25,8 @@
 
 //work in progress
 
+/** @todo  add 'corpFittingMgr' to this, and move to more approprate file location */
+
 #include "eve-server.h"
 
 #include "PyServiceCD.h"

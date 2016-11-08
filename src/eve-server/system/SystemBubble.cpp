@@ -216,7 +216,7 @@ void SystemBubble::ResetBubbleRatSpawn()
 void SystemBubble::SetSpawnTimer(bool isBelt/*false*/)
 {
     if (m_system->GetSystemSecurityRating() > 0.90) return;
-    if (sConfig.server.IsTestServer) {
+    if (sConfig.server.IsTestServer and sConfig.npc.SpawnTest) {
         m_spawnTimer.Start(5000); /* 5s for testing */
     } else {
         if (isBelt)

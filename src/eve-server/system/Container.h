@@ -32,6 +32,13 @@
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
 
+// POD structure for container faction data
+struct ContainerData {
+    uint32 ownerID = 0;
+    uint32 corporationID = 0;
+    uint32 allianceID = 0;
+    uint32 factionID = 0;
+};
 /**
  * InventoryItem which represents cargo container.
  */
@@ -96,6 +103,7 @@ public:
     virtual void MakeDamageState(DoDestinyDamageState &into) const;
 
     bool IsEmpty()                                      { return GetInventory()->IsEmpty(); }
+    void SetMySE(SystemEntity* pSE)                     { mySE = pSE;}
 
 protected:
     bool m_isAnchored;
@@ -129,6 +137,8 @@ protected:
 
     virtual PyRep* GetItem() const                      { return GetItemRow(); }
 
+private:
+    SystemEntity* mySE;
 };
 
 
@@ -145,7 +155,7 @@ class ContainerSE
 : public ItemSystemEntity
 {
 public:
-    ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemManager *system);
+    ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemManager *system, const ContainerData& data);
     virtual ~ContainerSE();
 
     /* class type pointer querys. */
@@ -158,14 +168,15 @@ public:
     virtual void EncodeDestiny(Buffer& into);
     virtual PyDict* MakeSlimItem();
     virtual void MakeDamageState(DoDestinyDamageState &into);
+    virtual void Delete();
 
     /* specific functions handled in this class. */
     void AnchorContainer();
-    bool IsEmpty()                                      { return _containerRef->IsEmpty(); }
+    bool IsEmpty()                                      { return m_contRef->IsEmpty(); }
 
 
 protected:
-    CargoContainerRef _containerRef;
+    CargoContainerRef m_contRef;
 
     Timer m_deleteTimer;
 
@@ -272,7 +283,7 @@ class WreckSE
 : public ItemSystemEntity
 {
 public:
-    WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager *system/*, uint32 launcherID*/);
+    WreckSE(WreckContainerRef self, PyServiceMgr& services, SystemManager* system, const ContainerData& data);
     virtual ~WreckSE();
 
     /* class type pointer querys. */
@@ -284,17 +295,18 @@ public:
     virtual void Process();
     virtual void EncodeDestiny(Buffer& into);
     virtual PyDict* MakeSlimItem();
+    virtual void Delete();
     void MakeWreckState(DoDestinyDamageState3 &into);
 
     /* specific functions handled in this class. */
     void SetLaunchedByID(uint32 launcherID)             { m_launchedByID = launcherID; }
-    bool IsEmpty()                                      { return _containerRef->IsEmpty(); }
+    bool IsEmpty()                                      { return m_contRef->IsEmpty(); }
 
     /** @todo (allan) finish this */
     double GetOwnerBounty()                             { return 0; }
 
 protected:
-    WreckContainerRef _containerRef;
+    WreckContainerRef m_contRef;
 
     Timer m_deleteTimer;
 

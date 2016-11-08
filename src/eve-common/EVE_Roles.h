@@ -73,12 +73,15 @@ enum:uint64_t {
     ROLE_ELEVATEDPLAYER     = ROLE_VIP | ROLE_HEALOTHERS,
     ROLE_VIEW               = ROLE_ADMIN | ROLE_CONTENT | ROLE_GML | ROLE_GMH | ROLE_QA
     /*
-     * 02:35:12 W          ROLE_DEV:  7113435622181961728(0x62b8000280c40000)
-     * 02:35:12 W          ROLE_STD:  6917529029788565504(0x6000000080000000)
-     * 02:35:12 W          ROLE_VIP:  7061644217868615680(0x6200000080400000)
-     * 02:35:12 W         ROLE_BOSS:  7185493216219889664(0x63b8000280c40000)
-     * 02:35:12 W        ROLE_SLASH:  7061644226467201024(0x6200000280c40000)
-     * 02:35:12 W      ROLE_CREATOR:  7106680222740905984(0x62a0000280c40000)
+     * 23:54:52 W          ROLE_DEV:  7113435622181961728(0x62b8000280c40000)
+     * 23:54:52 W          ROLE_STD:  6917529029788565504(0x6000000080000000)
+     * 23:54:52 W          ROLE_VIP:  7061644217868615680(0x6200000080400000)
+     * 23:54:52 W         ROLE_VIP+:  7061644217877004288(0x6200000080c00000)
+     * 23:54:52 W         ROLE_VIEW:  139611588448485376(0x1f0000000000000)
+     * 23:54:52 W         ROLE_BOSS:  7185493216219889664(0x63b8000280c40000)
+     * 23:54:52 W        ROLE_SLASH:  7061644226467201024(0x6200000280c40000)
+     * 23:54:52 W      ROLE_CREATOR:  7106680222740905984(0x62a0000280c40000)
+     *
      */
 };
 
@@ -89,34 +92,34 @@ enum {
 };
 
 typedef enum:uint64_t {
-    corpRoleDirector                        = 1L,
-    corpRolePersonnelManager                = 128L,
-    corpRoleAccountant                      = 256L,
-    corpRoleSecurityOfficer                 = 512L,
-    corpRoleFactoryManager                  = 1024L,
-    corpRoleStationManager                  = 2048L,
-    corpRoleAuditor                         = 4096L,
-    corpRoleHangarCanTake1                  = 8192L,
-    corpRoleHangarCanTake2                  = 16384L,
-    corpRoleHangarCanTake3                  = 32768L,
-    corpRoleHangarCanTake4                  = 65536L,
-    corpRoleHangarCanTake5                  = 131072L,
-    corpRoleHangarCanTake6                  = 262144L,
-    corpRoleHangarCanTake7                  = 524288L,
-    corpRoleHangarCanQuery1                 = 1048576L,
-    corpRoleHangarCanQuery2                 = 2097152L,
-    corpRoleHangarCanQuery3                 = 4194304L,
-    corpRoleHangarCanQuery4                 = 8388608L,
-    corpRoleHangarCanQuery5                 = 16777216L,
-    corpRoleHangarCanQuery6                 = 33554432L,
-    corpRoleHangarCanQuery7                 = 67108864L,
-    corpRoleAccountCanTake1                 = 134217728L,
-    corpRoleAccountCanTake2                 = 268435456L,
-    corpRoleAccountCanTake3                 = 536870912L,
+    corpRoleDirector                        = 1,
+    corpRolePersonnelManager                = 128,
+    corpRoleAccountant                      = 256,
+    corpRoleSecurityOfficer                 = 512,
+    corpRoleFactoryManager                  = 1024,
+    corpRoleStationManager                  = 2048,
+    corpRoleAuditor                         = 4096,
+    corpRoleHangarCanTake1                  = 8192,
+    corpRoleHangarCanTake2                  = 16384,
+    corpRoleHangarCanTake3                  = 32768,
+    corpRoleHangarCanTake4                  = 65536,
+    corpRoleHangarCanTake5                  = 131072,
+    corpRoleHangarCanTake6                  = 262144,
+    corpRoleHangarCanTake7                  = 524288,
+    corpRoleHangarCanQuery1                 = 1048576,
+    corpRoleHangarCanQuery2                 = 2097152,
+    corpRoleHangarCanQuery3                 = 4194304,
+    corpRoleHangarCanQuery4                 = 8388608,
+    corpRoleHangarCanQuery5                 = 16777216,
+    corpRoleHangarCanQuery6                 = 33554432,
+    corpRoleHangarCanQuery7                 = 67108864,
+    corpRoleAccountCanTake1                 = 134217728,
+    corpRoleAccountCanTake2                 = 268435456,
+    corpRoleAccountCanTake3                 = 536870912,
     corpRoleAccountCanTake4                 = 1073741824L,
     corpRoleAccountCanTake5                 = 2147483648L,
-    corpRoleAccountCanTake6                 = 4294967296LL,
-    corpRoleAccountCanTake7                 = 8589934592LL,
+    corpRoleAccountCanTake6                 = 4294967296L,
+    corpRoleAccountCanTake7                 = 8589934592L,
     corpRoleDiplomat                        = 17179869184LL,
     corpRoleEquipmentConfig                 = 2199023255552LL,
     corpRoleContainerCanTake1               = 4398046511104LL,
@@ -145,7 +148,15 @@ typedef enum:uint64_t {
     corpRoleAllContainer= corpRoleContainerCanTake1|corpRoleContainerCanTake2|corpRoleContainerCanTake3|corpRoleContainerCanTake4|corpRoleContainerCanTake5|corpRoleContainerCanTake6|corpRoleContainerCanTake7,
     corpRoleAllOffice   = corpRoleCanRentOffice|corpRoleCanRentFactorySlot|corpRoleCanRentResearchSlot,
     corpRoleAllStarbase = corpRoleStarbaseCaretaker|corpRoleStarbaseConfig,
-    corpRoleAdmin       = corpRoleAllHangar|corpRoleAllAccount|corpRoleAllContainer|corpRoleAllOffice|corpRoleAllStarbase|corpRoleDirector|corpRolePersonnelManager|corpRoleSecurityOfficer|corpRoleFactoryManager|corpRoleStationManager|corpRoleAuditor|corpRoleDiplomat|corpRoleTrader|corpRoleChatManager|corpRoleContractManager|corpRoleInfrastructureTacticalOfficer|corpRoleStarbaseCaretaker|corpRoleFittingManager
+    corpRoleAdmin       = 0xfffffffffffffff  /* 1152921504606846975 */
+    /*
+     * 23:54:52 W          Role_All:  1152919339943329665(0xffffe07ffffff81)
+     * 23:54:52 W         Role_Cont:  558551906910208(0x1fc0000000000)
+     * 23:54:52 W        Role_Admin:  1152921504606846975(0xfffffffffffffff)
+     * 23:54:52 W       Role_Hangar:  134209536(0x7ffe000)
+     * 23:54:52 W      Role_Account:  4503616673022208(0x100003f8000100)
+     * 23:54:52 W     Role_Starbase:  297237575406452736(0x420000000000000)
+     */
 } CorpRoleFlags;
 
 //  -allan 5Aug14

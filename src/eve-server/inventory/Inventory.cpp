@@ -77,6 +77,7 @@ bool Inventory::LoadContents(ItemFactory* factory) {
             mContentsLoaded = false;
         }
     }
+    
     // check if the contents has already been loaded
     if (mContentsLoaded) {
         _log(INV__INFO, "Inventory::LoadContents() - inventory %u(%p) already loaded.", m_inventoryID, this);

@@ -148,7 +148,7 @@ void SpawnMgr::Process() {
     // this will be initial spawn timer for system.
     //  while this is active, NO spawns will be made.
     if (m_mainTimer.Enabled())  {
-        if (m_mainTimer.Check()) {
+        if (m_mainTimer.Check(false)) {
             m_mainTimer.Disable();
             m_enabled = true;
             _log(SPAWN__MESSAGE, "SpawnMgr::Process() - Main Timer called.  Spawn functions enabled for %s(%u).",
@@ -222,13 +222,13 @@ void SpawnMgr::MoveSpawn()
 
 void SpawnMgr::StartMainTimer()
 {
+    uint32 time = sConfig.npc.RoamingTimer *60 *1000;
     if (sConfig.server.IsTestServer and sConfig.npc.SpawnTest)
-        m_mainTimer.Start(5000); /* 5s for npc spawn testing */
-    else
-        m_mainTimer.Start(sConfig.npc.RoamingTimer *60 *1000);
+        time = 5000; /* 5s for npc spawn testing */
+    m_mainTimer.Start(time);
 
-    _log(SPAWN__MESSAGE, "SpawnMgr::StartMainTimer() - Main Spawn Timer started for %s(%u) at %u mins.", \
-         m_system->GetName().c_str(), m_system->GetID(), (sConfig.server.IsTestServer? 1 : sConfig.npc.RoamingTimer));
+    _log(SPAWN__MESSAGE, "SpawnMgr::StartMainTimer() - Main Spawn Timer started for %s(%u) at %u ms.", \
+         m_system->GetName().c_str(), m_system->GetID(), time);
 }
 
 void SpawnMgr::SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID)

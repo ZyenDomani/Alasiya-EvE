@@ -42,7 +42,9 @@ Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
 
 void Salvager::Activate(SystemEntity* pSE)
 {
+    // reset for each activation
     m_success = false;
+    m_firstRun = true;
     /** @todo allow orca-specific tractoring */
     /** @todo allow tractoring if not anchored */
     if (pSE->IsContainerSE() or pSE->IsWreckSE()) {
@@ -231,33 +233,32 @@ void Salvager::CheckSuccess()
 
 void Salvager::DropSalvage()
 {
-    // catch-all for lack of faction info since they dont work yet.  this has ALL t1 salvage
-    uint32 factionID = m_targetEntity->GetAllianceID();   // npc wrecks have factionID in allianceID, UNLESS they are loaded in dynamicSE on system load
+    uint32 factionID = m_targetEntity->GetWarFactionID();
 
     std::vector<uint32> list;
     sDGM_Salvage_Table.GetSalvage(factionID, list);
     uint8 drop = 0;
-    switch (m_accessChance) {       // drop qty
-        case  30: drop = 1; break;  //  1 to 2
-        case  20: drop = 2; break;  //  2 to 4
-        case  10: drop = 3; break;  //  3 to 6
-        case   0: drop = 4; break;  //  4 to 8
-        case -10: drop = 5; break;  //  5 to 10
+    switch (m_accessChance) {       // drop qty * rate in config
+        case  30: drop = 1; break;  //  1 to 3
+        case  20: drop = 2; break;  //  2 to 6
+        case  10: drop = 3; break;  //  3 to 9
+        case   0: drop = 4; break;  //  4 to 12
+        case -10: drop = 5; break;  //  5 to 15
     }
 
     if (!list.empty()) {
         InventoryItemRef itemRef;
-        uint32 quantity = 0, minDrop = drop, maxDrop = drop * 2;
+        uint32 quantity = 0, minDrop = drop, maxDrop = (drop * 3 * sConfig.rates.RateDropItem);
         for (auto cur : list) {
-            // each drop has 50/50 chance.  may need to change this later.
+            // each drop has 50/50 chance.  may need to change this later.   base on char's salvage skill?
             if (IsEven(MakeRandomInt(0,10)))
                 continue;
             quantity = (MakeRandomInt(minDrop, maxDrop));
-            ItemData iLoot(cur, pChar->itemID(), m_Ship->itemID(), flagCargoHold, quantity);
+            ItemData iLoot(cur, pChar->itemID(), m_targetEntity->GetID(), flagAutoFit, quantity);
             itemRef = pChar->GetItemFactory()->SpawnItem(iLoot);
             if (!itemRef) // we'll get over it...continue
                 continue;
-            itemRef->Move(m_Ship->itemID());
+            itemRef->Move(m_Ship->itemID(), flagCargoHold);
             m_Ship->AddItem(itemRef);
         }
     }
@@ -319,13 +320,18 @@ void Salvager::DropSalvage()
             cur.second->Move(jetCanRef->itemID(),flagAutoFit);
 
         // create new container
-        ContainerSE* containerObj = new ContainerSE(jetCanRef, m_targetEntity->GetServices(), m_targetEntity->SystemMgr());
-        m_targetEntity->SystemMgr()->AddEntity(containerObj);
+        ContainerData contData;
+            contData.allianceID = m_targetEntity->GetAllianceID();
+            contData.corporationID = m_targetEntity->GetCorporationID();
+            contData.factionID = m_targetEntity->GetWarFactionID();
+            contData.ownerID = m_targetEntity->GetSelf()->ownerID();
+        ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetEntity->GetServices(), m_targetEntity->SystemMgr(), contData);
+        jetCanRef->SetMySE(cSE);
+        m_targetEntity->SystemMgr()->AddEntity(cSE);
         m_targetEntity->DestinyMgr()->SendJettisonPacket(m_targetEntity->GetSelf());
     }
     m_targetEntity->SystemMgr()->RemoveEntity(m_targetEntity);
     m_targetEntity->GetSelf()->Delete();
-    // somehow, this messes with client....items not removed/added correctly, and subsquent changes are not updated properly
 }
 
 /*

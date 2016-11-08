@@ -43,7 +43,7 @@ class NPC
 : public DynamicSystemEntity
 {
 public:
-    NPC(InventoryItemRef self, PyServiceMgr &services, SystemManager* system, uint32 corpID, uint32 allyID, SpawnMgr* spawnMgr = nullptr);
+    NPC(InventoryItemRef self, PyServiceMgr &services, SystemManager* system, uint32 corpID, uint32 factionID, SpawnMgr* spawnMgr = nullptr);
     virtual ~NPC();
 
     void Init();

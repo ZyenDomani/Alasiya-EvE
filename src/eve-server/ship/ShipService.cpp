@@ -558,7 +558,7 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
 
     StructureItemRef structureRef;
     InventoryItemRef cargoItemRef;
-    CargoContainerRef cargoContainerRef;
+    CargoContainerRef contRef;
 
     for (uint32 i = 0; i < PyToDropList->size(); i++) {
         itemID = (uint32)(PyToDropList->items.at(i)->AsTuple()->items.at(0)->AsInt()->value());
@@ -592,21 +592,27 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
             || (groupID == EVEDB::invGroups::Cargo_Container))
         {
             // This item is a cargo container, so move it from the ship's cargo into space:
-            cargoContainerRef = m_manager->item_factory->GetCargoContainer(itemID);
+            contRef = m_manager->item_factory->GetCargoContainer(itemID);
 
-            if (!cargoContainerRef)
-                throw PyException(MakeCustomError("Unable to spawn item of type %u.", cargoContainerRef->typeID()));
+            if (!contRef)
+                throw PyException(MakeCustomError("Unable to spawn item of type %u.", contRef->typeID()));
 
             // Move item from cargo bay to space:
-            cargoContainerRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            ContainerSE* containerObj = new ContainerSE(cargoContainerRef, *m_manager, pSysMgr);
-            containerObj->SetPosition(location);
-            cargoContainerRef->SaveItem();
-            pSysMgr->AddEntity(containerObj);
+            contRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+            ContainerData cargoData;
+                cargoData.allianceID = pClient->GetAllianceID();
+                cargoData.corporationID = pClient->GetCorporationID();
+                cargoData.factionID = pClient->GetWarFactionID();
+                cargoData.ownerID = pClient->GetCharacterID();
+            ContainerSE* cSE = new ContainerSE(contRef, *m_manager, pSysMgr, cargoData);
+            cSE->SetPosition(location);
+            contRef->SetMySE(cSE);
+            contRef->SaveItem();
+            pSysMgr->AddEntity(cSE);
 
             // Send notification SFX effects.jettison for the jettisoned Container object:
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(cargoContainerRef);
-            successfully_dropped.ints.push_back(cargoContainerRef->itemID());
+            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(contRef);
+            successfully_dropped.ints.push_back(contRef->itemID());
             continue;
         }
 
@@ -910,14 +916,19 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             if (!newJetcanItem)
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", 23));
 
+            ContainerData jetcanData;
+                jetcanData.allianceID = pClient->GetAllianceID();
+                jetcanData.corporationID = pClient->GetCorporationID();
+                jetcanData.factionID = pClient->GetWarFactionID();
+                jetcanData.ownerID = pClient->GetCharacterID();
             // create new container
-            ContainerSE* containerObj = new ContainerSE(newJetcanItem, *m_manager, pSysMgr);
-            pSysMgr->AddEntity(containerObj);
+            ContainerSE* cSE = new ContainerSE(newJetcanItem, *m_manager, pSysMgr, jetcanData);
+            newJetcanItem->SetMySE(cSE);
+            pSysMgr->AddEntity(cSE);
             pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(newJetcanItem);
             pClient->StartJetcanTimer();
             continue;
         }
-
     }
     return nullptr;
 }

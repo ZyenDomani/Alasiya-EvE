@@ -194,17 +194,18 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
 
+    /** @todo any 'return false' will need to remove client from sysMgr to avoid segfault when sEntityList.ProcessClient() is called on it.  */
+    if (!m_system) {
+        sLog.Error("Client::LoginToSystem()", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->itemName().c_str(), m_char->itemID());
+        SendErrorMsg("Unable to boot system %u", m_SystemData.systemID);
+        return false;
+    }
+
     m_services.item_factory->SetUsingClient(this);
     m_char = m_services.item_factory->GetCharacter(char_id);
     if (!m_char) {
         sLog.Error("Client::SelectCharacter()", "GetChar for %u = nullptr", char_id);
         m_services.item_factory->UnsetUsingClient();
-        return false;
-    }
-
-    if (!m_system) {
-        sLog.Error("Client::LoginToSystem()", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->itemName().c_str(), m_char->itemID());
-        SendErrorMsg("Unable to boot system %u", m_SystemData.systemID);
         return false;
     }
 
@@ -554,7 +555,7 @@ void Client::SetBallPark() {
 
 void Client::DockToStation() {
     pShipSE->DestinyMgr()->Dock();
-    
+
     SetAutoPilot(false);
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
     m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls

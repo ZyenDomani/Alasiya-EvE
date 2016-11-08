@@ -36,12 +36,13 @@
 #include "system/SystemManager.h"
 
 
-NPC::NPC(InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem, uint32 corpID, uint32 allyID, SpawnMgr* spawnMgr)
-: DynamicSystemEntity(self, services, pSystem),
+NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, uint32 corpID, uint32 factionID, SpawnMgr* spawnMgr)
+: DynamicSystemEntity(self, services, system),
   m_spawnMgr(spawnMgr)
 {
+    m_allyID = 0;
     m_corpID = corpID;
-    m_allyID = allyID;
+    m_warID = factionID;
     m_destiny = new DestinyManager(this);
     m_AI = new NPCAIMgr(this);
 

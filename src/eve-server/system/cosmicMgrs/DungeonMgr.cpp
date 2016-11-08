@@ -316,11 +316,9 @@ bool DungeonMgr::Create(uint16 templateID)
             entity.allianceID = 0;
             entity.categoryID = cur->typeCatID;
             entity.corporationID = 0;
-            entity.flag = flagAutoFit;
             entity.groupID = cur->typeGrpID;
             entity.itemID = item->itemID();
             entity.itemName = cur->typeName;
-            entity.locationID = systemID;
             entity.ownerID = 1;
             entity.typeID = cur->typeID;
             entity.x = pos2.x;

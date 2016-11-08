@@ -50,6 +50,11 @@ class DungeonMgr;
 class SpawnMgr;
 class PyServiceMgr;
 
+class DynamicEntityFactory {
+public:
+    static SystemEntity* BuildEntity(SystemManager &system, ItemFactory* factory, const DBSystemDynamicEntity &entity);
+};
+
 class SystemManager
 {
 public:

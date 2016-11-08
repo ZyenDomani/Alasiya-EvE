@@ -474,11 +474,10 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
         entity.allianceID = 0;
         entity.categoryID = actualCategoryID;
         entity.corporationID = 0;
-        entity.flag = 0;
+        entity.factionID = 0;
         entity.groupID = actualGroupID;
         entity.itemID = item->itemID();
         entity.itemName = actualTypeName;
-        entity.locationID = who->GetLocationID();
         entity.ownerID = 1;
         entity.typeID = actualTypeID;
         entity.x = loc.x;
@@ -608,11 +607,10 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
         entity.allianceID = 0;
         entity.categoryID = actualCategoryID;
         entity.corporationID = 0;
-        entity.flag = 0;
+        entity.factionID = 0;
         entity.groupID = actualGroupID;
         entity.itemID = item->itemID();
         entity.itemName = actualTypeName;
-        entity.locationID = who->GetLocationID();
         entity.ownerID = 1;
         entity.typeID = actualTypeID;
         entity.x = loc.x;
