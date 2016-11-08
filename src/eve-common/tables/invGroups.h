@@ -565,6 +565,7 @@ namespace EVEDB {
             Temp = 721,
             Gas_Cloud_Harvester = 737,
             ECM_Enhancer = 753,
+            Salvage_Materials = 754,
             Asteroid_Rogue_Drone_Battlecruiser = 755,
             Asteroid_Rogue_Drone_Battleship = 756,
             Asteroid_Rogue_Drone_Cruiser = 757,

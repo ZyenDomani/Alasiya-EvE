@@ -28,6 +28,7 @@
 #include "system/LootSystem.h"
 #include "system/SystemManager.h"
 
+/* this class is for all salvage and data mining types */
 
 Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
@@ -336,7 +337,7 @@ void Salvager::DropSalvage()
 
 /*
  *  accessDifficultyBonus       << salvage tackle(10), salvage tackleII(15),  salvage skill : salvagerI +5 per level, salvagerII +7 per level
- *  accessDifficulty (s:30,m:20,l:10,f:0,o:-10,s:-20)           << in the wreck item for salvage
+ *  accessDifficulty (s:30,m:20,l:10,f:0,t2:0,o:-10,s:-20)           << in the item to salvage
  *
  *
  *  accessDifficultyBonus       << civilian analyzer(2), implant(5), analyzerII(7)
