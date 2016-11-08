@@ -88,11 +88,11 @@ VALUES
 -- INSERT INTO cacheLocations(locationID, locationName, x, y, z, locationNameID)
 
 /* this needs more work once factions and alliances are implemented */
-/* non-static corp, faction, and alliance*/
+/* non-static corp, faction, and alliance    --not sure if this is used
 INSERT INTO cacheOwners (ownerID, ownerName, typeID, ownerNameID)
 VALUES
  (SELECT corporationID, corporationName, 2, 0
- FROM corporation);
+ FROM corporation);*/
 
 
 /* insert null location into mapDenormalize */
