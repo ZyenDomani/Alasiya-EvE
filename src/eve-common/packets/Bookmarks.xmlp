@@ -3,16 +3,16 @@
 <!--
     //     [0] PyInt:      sends id of entity the calling char is in...ship/station/system/pos/etc
     //     [1] PyInt:       ownerID = charID of char making the bm
-    //     [2] PyWString:  label (called memo in db) for the bookmark
-    //     [3] PyString:  text for the note (comment) field in the bookmark
+    //     [2] Py(W)String:  memo for the bookmark
+    //     [3] Py(W)String:  comment for the bookmark
     //     [4] PyInt:        folderID bookmark is being placed into.  default=0
     -->
   <elementDef name="Call_BookmarkLocation">
     <tupleInline>
         <int name="itemID" />
         <int name="ownerID" />
-        <wstring name="memo" />
-        <string name="comment" />
+        <raw name="memo" />
+        <raw name="comment" />
     </tupleInline>
   </elementDef>
 
@@ -28,32 +28,87 @@
     </tupleInline>
   </elementDef>
 
+  <elementDef name="Call_DeleteBookmarks">
+    <tupleInline>
+        <objectEx name="object" type="PyObjectEx" optional="true" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_MoveBookmarksToFolder">
+    <tupleInline>
+      <int name="folderID" />
+        <objectEx name="object" type="PyObjectEx" optional="true" />
+    </tupleInline>
+  </elementDef>
+
   <elementDef name="Call_UpdateBookmark">
     <tupleInline>
         <int name="bookmarkID" />
         <int name="ownerID" />
-        <wstring name="memo" />
-        <string name="note" />
+        <raw name="memo" />
+        <raw name="comment" />
         <int name="folderID" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_UpdateFolder">
     <tupleInline>
-        <int name="ownerID" />
         <int name="folderID" />
-        <string name="name" />
+        <raw name="folderName" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_BookmarkScanResult">
     <tupleInline>
         <int name="locationID" />
-        <string name="memo" />
-        <wstring name="note" />
+        <raw name="memo" />
+        <raw name="comment" />
         <string name="scanID" />
         <int name="ownerID" />
     </tupleInline>
+  </elementDef>
+
+  <elementDef name="Rsp_CreateFolder">
+    <objectInline>
+      <stringInline value="util.KeyVal" />
+      <dictInline>
+        <dictInlineEntry key="ownerID">
+          <int name="ownerID" />
+        </dictInlineEntry>
+        <dictInlineEntry key="folderID">
+          <int name="folderID" />
+        </dictInlineEntry>
+        <dictInlineEntry key="folderName">
+          <string name="folderName" />
+        </dictInlineEntry>
+        <dictInlineEntry key="creatorID">
+          <int name="creatorID" />
+        </dictInlineEntry>
+      </dictInline>
+    </objectInline>
+  </elementDef>
+
+  <elementDef name="Rsp_BMData">
+    <objectInline>
+      <stringInline value="util.KeyVal" />
+      <dictInline>
+        <dictInlineEntry key="bookmarkID">
+          <int name="bookmarkID" />
+        </dictInlineEntry>
+        <dictInlineEntry key="ownerID">
+          <int name="ownerID" />
+        </dictInlineEntry>
+        <dictInlineEntry key="memo">
+          <wstring name="memo" />
+        </dictInlineEntry>
+        <dictInlineEntry key="comment">
+          <string name="comment" />
+        </dictInlineEntry>
+        <dictInlineEntry key="folderID">
+          <int name="folderID" />
+        </dictInlineEntry>
+      </dictInline>
+    </objectInline>
   </elementDef>
 
 </elements>

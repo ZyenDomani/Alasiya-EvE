@@ -33,6 +33,7 @@ class BookmarkDB
 : public ServiceDB
 {
 public:
+    PyRep* GetBMData(uint32 ownerID);
     PyRep* GetBookmarks(uint32 ownerID);
     PyRep* GetFolders(uint32 ownerID);
 
@@ -40,15 +41,17 @@ public:
 
     bool UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note, uint32 folderID);
     bool DeleteBookmarkFromDatabase(uint32 ownerID, uint32 bookmarkID);
-    bool DeleteBookmarksFromDatabase(uint32 ownerID, std::vector<uint32>* bookmarkList);
-    //bool DeleteBookmarkFromDatabase(uint32 ownerID, PyList bookmarkID);
-    //bool DeleteBookmarksFromDatabase(uint32 ownerID, PyList * bookmarkList);
+    bool DeleteBookmarksFromDatabase(std::vector<int32>* bookmarkList);
 
-    bool UpdateFolderInDatabase(uint32 ownerID, uint32 folderID, std::string& folderName);
-    bool DeleteFolderFromDatabase(uint32 folderID);
+    bool UpdateFolderInDatabase(int32 folderID, std::string& folderName);
+    bool DeleteFolderFromDatabase(int32 folderID);
 
     uint32 SaveNewFolderToDatabase(std::string folderName, uint32 ownerID);
     uint32 SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint32 typeID, std::string memo, GPoint point, uint32 locationID, std::string note, uint32 creatorID, uint32 folderID);
+
+    void MoveBookmarkToFolder(int32 folderID, std::vector< int32 >* bookmarkList);
+
+    void GetBookmarkByFolderID(int32 folderID, std::vector< int32 >& bmIDs);
 };
 
 #endif  // __EVEMU_SYSTEM_BOOKMARKDB_H_

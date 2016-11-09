@@ -28,6 +28,7 @@
 
 #include "Client.h"
 #include "PyServiceCD.h"
+#include "packets/Bookmarks.h"
 #include "cache/ObjCacheService.h"
 #include "corporation/CorpBookmarkMgrService.h"
 
@@ -40,7 +41,9 @@ CorpBookmarkMgrService::CorpBookmarkMgrService(PyServiceMgr* mgr)
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(CorpBookmarkMgrService, GetBookmarks);
+    PyCallable_REG_CALL(CorpBookmarkMgrService, UpdateBookmark);
     PyCallable_REG_CALL(CorpBookmarkMgrService, UpdatePlayerBookmark);
+    PyCallable_REG_CALL(CorpBookmarkMgrService, MoveBookmarksToFolder);
 }
 
 CorpBookmarkMgrService::~CorpBookmarkMgrService()
@@ -89,9 +92,76 @@ PyResult CorpBookmarkMgrService::Handle_GetBookmarks(PyCallArgs& call)
     return(m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id));
 }
 
-PyResult CorpBookmarkMgrService::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
-  sLog.Log( "CorpBookmarkMgrService::Handle_UpdatePlayerBookmark()", "size=%u ", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
+PyResult CorpBookmarkMgrService::Handle_UpdateBookmark(PyCallArgs& call) {
+    sLog.Log( "CorpBookmarkMgrService::Handle_UpdateBookmark()", "size=%u ", call.tuple->size() );
+    call.Dump(COMMON__INFO);
+    Call_UpdateBookmark args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "Failed to decode args");
+        return nullptr;
+    }
 
-    return NULL;
+    std::string memo = "";
+    if ( args.memo->IsString() )
+        memo = args.memo->AsString()->content();
+    else if ( args.memo->IsWString() )
+        memo = args.memo->AsWString()->content();
+    else {
+        sLog.Error( "BookmarkService::Handle_BookmarkLocation()", "args.memo is of the wrong type: '%s'.  Expected PyString or PyWString.", args.memo->TypeString() );
+        return new PyNone();
+    }
+
+    std::string comment = "";
+    if ( args.comment->IsString() )
+        comment = args.comment->AsString()->content();
+    else if ( args.comment->IsWString() )
+        comment = args.comment->AsWString()->content();
+    else {
+        sLog.Error( "BookmarkService::Handle_BookmarkLocation()", "args.comment is of the wrong type: '%s'.  Expected PyString or PyWString.", args.comment->TypeString() );
+        return new PyNone();
+    }
+    
+    if (!m_db.UpdateBookmarkInDatabase(args.bookmarkID, args.ownerID, memo, comment, args.folderID))
+        ;   // make client error here to let them know updating failed
+
+    return new PyNone();
+}
+
+PyResult CorpBookmarkMgrService::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
+    sLog.Log( "CorpBookmarkMgrService::Handle_UpdatePlayerBookmark()", "size=%u ", call.tuple->size() );
+    call.Dump(COMMON__INFO);
+    Call_UpdateBookmark args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "Failed to decode args");
+        return nullptr;
+    }
+
+    std::string memo = "";
+    if ( args.memo->IsString() )
+        memo = args.memo->AsString()->content();
+    else if ( args.memo->IsWString() )
+        memo = args.memo->AsWString()->content();
+    else {
+        sLog.Error( "BookmarkService::Handle_BookmarkLocation()", "args.memo is of the wrong type: '%s'.  Expected PyString or PyWString.", args.memo->TypeString() );
+        return new PyNone();
+    }
+
+    std::string comment = "";
+    if ( args.comment->IsString() )
+        comment = args.comment->AsString()->content();
+    else if ( args.comment->IsWString() )
+        comment = args.comment->AsWString()->content();
+    else {
+        sLog.Error( "BookmarkService::Handle_BookmarkLocation()", "args.comment is of the wrong type: '%s'.  Expected PyString or PyWString.", args.comment->TypeString() );
+        return new PyNone();
+    }
+
+    if (!m_db.UpdateBookmarkInDatabase(args.bookmarkID, args.ownerID, memo, comment, args.folderID))
+        ;   // make client error here to let them know updating failed
+
+        return new PyNone();
+}
+
+PyResult CorpBookmarkMgrService::Handle_MoveBookmarksToFolder(PyCallArgs& call) {
+        return new PyNone();
 }

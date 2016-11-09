@@ -43,7 +43,9 @@ protected:
     BookmarkDB m_db;
 
     PyCallable_DECL_CALL(GetBookmarks);
+    PyCallable_DECL_CALL(UpdateBookmark);
     PyCallable_DECL_CALL(UpdatePlayerBookmark);
+    PyCallable_DECL_CALL(MoveBookmarksToFolder);
 };
 
 #endif  // __EVEMU_CORP_CORPBM_H
