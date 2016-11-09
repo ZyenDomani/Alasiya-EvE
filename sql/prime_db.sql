@@ -65,34 +65,30 @@ INSERT INTO eveStaticOwners (ownerID, ownerName, typeID)
  * Insert agents
  */
 INSERT INTO eveStaticOwners (ownerID, ownerName, typeID)
-VALUES
- (SELECT characterID, characterName, typeID
- FROM chrNPCCharacters);
+ SELECT characterID, characterName, typeID
+ FROM chrNPCCharacters;
 /*
  * Insert factions
  */
 INSERT INTO eveStaticOwners (ownerID, ownerName, typeID)
-VALUES
- (SELECT factionID, factionName, 30 AS typeID
- FROM chrFactions);
+ SELECT factionID, factionName, 30 AS typeID
+ FROM chrFactions;
 /*
  * Insert corporations
  */
 INSERT INTO eveStaticOwners (ownerID, ownerName, typeID)
-VALUES
- (SELECT corporationID, corporationName, 2 AS typeID
- FROM corporation);
+ SELECT corporationID, corporationName, 2 AS typeID
+ FROM corporation;
 
 
 /* non-static pos, ??  */
 -- INSERT INTO cacheLocations(locationID, locationName, x, y, z, locationNameID)
 
 /* this needs more work once factions and alliances are implemented */
-/* non-static corp, faction, and alliance    --not sure if this is used
+/* non-static corp, faction, and alliance */   --not sure if this is used
 INSERT INTO cacheOwners (ownerID, ownerName, typeID, ownerNameID)
-VALUES
- (SELECT corporationID, corporationName, 2, 0
- FROM corporation);*/
+ SELECT corporationID, corporationName, 2, 0
+ FROM corporation;
 
 
 /* insert null location into mapDenormalize */
