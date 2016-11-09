@@ -76,12 +76,12 @@ PyResult MarketProxyService::Handle_GetStationAsks(PyCallArgs &call) {
     uint32 locid = call.client->GetLocationID();
     if(!IsStation(locid)) {
         _log(SERVICE__ERROR, "%s: Requested StationAsks when in non-station location %u", call.client->GetName(), locid);
-        return NULL;
+        return nullptr;
     }
     result = m_db.GetStationAsks(locid);
     if(result == NULL) {
         _log(SERVICE__ERROR, "%s: Failed to load StationAsks for location %u", call.client->GetName(), locid);
-        return NULL;
+        return nullptr;
     }
 
     return result;
@@ -94,12 +94,12 @@ PyResult MarketProxyService::Handle_GetSystemAsks(PyCallArgs &call) {
     uint32 locid = call.client->GetSystemID();
     if(!IsSolarSystem(locid)) {
         codelog(SERVICE__ERROR, "%s: GetSystemID() returned a non-system %u!", call.client->GetName(), locid);
-        return NULL;
+        return nullptr;
     }
     result = m_db.GetSystemAsks(locid);
     if(result == NULL) {
         _log(SERVICE__ERROR, "%s: Failed to load SystemAsks for location %u", call.client->GetName(), locid);
-        return NULL;
+        return nullptr;
     }
 
     return result;
@@ -110,7 +110,7 @@ PyResult MarketProxyService::Handle_GetRegionBest(PyCallArgs &call) {
     PyRep *result = m_db.GetRegionBest(call.client->GetRegionID());
     if(result == NULL) {
         _log(SERVICE__ERROR, "%s: Failed to load GetRegionBest for region %u", call.client->GetName(), call.client->GetRegionID());
-        return NULL;
+        return nullptr;
     }
 
     return result;
@@ -143,7 +143,7 @@ PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
     Call_SingleIntegerArg args; //itemID
     if(!args.Decode(&call.tuple)) {
         codelog(MARKET__ERROR, "Invalid arguments");
-        return NULL;
+        return nullptr;
     }
 
     /*PyRep *result = NULL;
@@ -154,7 +154,7 @@ PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
     result = m_db.GetOrders(data.regionID, args.arg);
     if(result == NULL) {
         _log(SERVICE__ERROR, "%s: Failed to load GetOrders for item %u of region %u", call.client->GetName(), args.arg, call.client->GetRegionID());
-        return NULL;
+        return nullptr;
     }
 
     return result;*/
@@ -177,7 +177,7 @@ PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
         if(!IsSolarSystem(locid))
         {
             codelog(SERVICE__ERROR, "%s: GetSystemID() returned a non-system %u!", call.client->GetName(), locid);
-            return NULL;
+            return nullptr;
         }
         result = m_db.GetOrders(call.client->GetRegionID(), args.arg);
         if(result == NULL) {
@@ -201,7 +201,7 @@ PyResult MarketProxyService::Handle_GetCharOrders(PyCallArgs &call) {
     result = m_db.GetCharOrders(call.client->GetCharacterID());
     if(result == NULL) {
         _log(SERVICE__ERROR, "%s: Failed to load GetCharOrders", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return result;
@@ -211,7 +211,7 @@ PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
     Call_SingleIntegerArg args; //itemID
     if(!args.Decode(&call.tuple)) {
         codelog(MARKET__ERROR, "Invalid arguments");
-        return NULL;
+        return nullptr;
     }
 
     PyRep *result = NULL;
@@ -219,12 +219,12 @@ PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
     uint32 locid = call.client->GetSystemID();
     if(!IsSolarSystem(locid)) {
         codelog(SERVICE__ERROR, "%s: GetSystemID() returned a non-system %u!", call.client->GetName(), locid);
-        return NULL;
+        return nullptr;
     }
     result = m_db.GetOldPriceHistory(call.client->GetRegionID(), args.arg);
     if(result == NULL) {
         _log(SERVICE__ERROR, "%s: Failed to load Old Price History for item %u of region %u", call.client->GetName(), args.arg, call.client->GetRegionID());
-        return NULL;
+        return nullptr;
     }
 
     return result;
@@ -234,7 +234,7 @@ PyResult MarketProxyService::Handle_GetNewPriceHistory(PyCallArgs &call) {
     Call_SingleIntegerArg args; //itemID
     if(!args.Decode(&call.tuple)) {
         codelog(MARKET__ERROR, "Invalid arguments");
-        return NULL;
+        return nullptr;
     }
 
     PyRep *result = NULL;
@@ -242,12 +242,12 @@ PyResult MarketProxyService::Handle_GetNewPriceHistory(PyCallArgs &call) {
     uint32 locid = call.client->GetSystemID();
     if(!IsSolarSystem(locid)) {
         codelog(SERVICE__ERROR, "%s: GetSystemID() returned a non-system %u!", call.client->GetName(), locid);
-        return NULL;
+        return nullptr;
     }
     result = m_db.GetNewPriceHistory(call.client->GetRegionID(), args.arg);
     if(result == NULL) {
         _log(SERVICE__ERROR, "%s: Failed to load New Price History for item %u of region %u", call.client->GetName(), args.arg, call.client->GetRegionID());
-        return NULL;
+        return nullptr;
     }
 
     return result;
@@ -276,7 +276,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
   Call_PlaceCharOrder args;
     if(!args.Decode(&call.tuple)) {
         codelog(MARKET__ERROR, "Invalid arguments");
-        return NULL;
+        return nullptr;
     }
 
     if(args.bid) {
@@ -292,13 +292,13 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             args.quantity,
             args.orderRange);
 
-        sLog.Log("MarketProxyService::Handle_PlaceCharOrder", "%s: Trying buy order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %u)", call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
+        _log(MARKET__TRACE, "MarketProxyService::Handle_PlaceCharOrder - %s: Trying buy order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %u)", call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
 
-        if(order_id != 0) {
+        if (order_id) {
             _log(MARKET__TRACE, "%s: Found sell order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %u)", call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
 
             _ExecuteSellOrder(order_id, args.stationID, args.quantity, call.client, args.useCorp);
-            return NULL;
+            return nullptr;
         }
 
         //unable to satisfy immediately...
@@ -306,7 +306,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         if(args.duration == 0) {
             _log(MARKET__ERROR, "%s: Failed to satisfy buy order for %d of type %d at %.2f ISK.", call.client->GetName(), args.quantity, args.typeID, args.price);
             call.client->SendErrorMsg("No such order found.");
-            return NULL;
+            return nullptr;
         }
 
         //TODO: verify the validity of args.stationID (range vs. skill)
@@ -319,7 +319,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         if(!call.client->AddBalance(-money)) {
             _log(MARKET__ERROR, "%s: Client requested buy order exceeding their balance (%.2f ISK total).", call.client->GetName(), money);
             call.client->SendErrorMsg("Insufficient Funds.  Transaction Cancelled.");
-            return NULL;
+            return nullptr;
         }
 
         //store the order in the DB.
@@ -337,7 +337,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         if(orderID == 0) {
             codelog(MARKET__ERROR, "%s: Failed to record order in the DB.", call.client->GetName());
             call.client->SendErrorMsg("Failed to record the order in the DB!");
-            return NULL;
+            return nullptr;
         }
 
         //send notification of new order...
@@ -351,14 +351,14 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         if( !item ) {
             codelog(MARKET__ERROR, "%s: Failed to find item %d for sell order.", call.client->GetName(), args.itemID);
             call.client->SendErrorMsg("Unable to find items %d to sell!", args.itemID);
-            return NULL;
+            return nullptr;
         }
         //verify right to sell this thing..
         //TODO: this should be a much more complicated check with corp stuff....
         if(item->ownerID() != call.client->GetCharacterID()) {
             codelog(MARKET__ERROR, "%s: Char %d Tried to sell item %d with owner %d.", call.client->GetName(), call.client->GetCharacterID(), item->itemID(), item->ownerID());
             call.client->SendErrorMsg("You cannot sell items you do not own.");
-            return NULL;
+            return nullptr;
         }
 
         //verify that they specified a valid station ID to sell from.
@@ -371,20 +371,20 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         ) {
             codelog(MARKET__ERROR, "%s: Tried to sell item %d which is in location %d through station %d while in station %d", call.client->GetName(), item->itemID(), item->locationID(), args.stationID, call.client->GetStationID());
             call.client->SendErrorMsg("You cannot sell that item in that station.");
-            return NULL;
+            return nullptr;
         }
 
         if((item->singleton() && args.quantity != 1)
            || item->quantity() < args.quantity ) {
             codelog(MARKET__ERROR, "%s: Tried to sell %d of item %d which has qty %d singleton %d", call.client->GetName(), args.quantity, item->itemID(), item->quantity(), item->singleton());
             call.client->SendErrorMsg("You cannot sell more than you have.");
-            return NULL;
+            return nullptr;
         }
 
         if(item->typeID() != args.typeID) {
             codelog(MARKET__ERROR, "%s: Tried to sell item %d of type %d using type ID %d", call.client->GetName(), item->itemID(), item->typeID(), args.typeID);
             call.client->SendErrorMsg("Invalid sell order item type.");
-            return NULL;
+            return nullptr;
         }
 
         //TODO: verify orderRange against their skills.
@@ -402,7 +402,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             _log(MARKET__TRACE, "%s: Found buy order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %u)", call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
 
             _ExecuteBuyOrder(order_id, args.stationID, args.quantity, call.client, (InventoryItemRef)item, args.useCorp);
-            return NULL;
+            return nullptr;
         }
 
         //else, unable to satisfy immediately...
@@ -410,7 +410,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 
         if(args.duration == 0) {
             _log(MARKET__ERROR, "%s: Failed to satisfy sell order for %d of type %d at %.2f ISK.", call.client->GetName(), args.quantity, args.typeID,  args.price);
-            return NULL;
+            return nullptr;
         }
 
         //TODO: take broker cost.
@@ -423,7 +423,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             //update the item.
             if(!item->AlterQuantity(-int32(args.quantity), true)) {
                 codelog(MARKET__ERROR, "%s: Failed to consume %u units from item %u", call.client->GetName(), args.quantity, item->itemID());
-                return NULL;
+                return nullptr;
             }
         }
 
@@ -442,7 +442,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         if(orderID == 0) {
             codelog(MARKET__ERROR, "%s: Failed to record order in the DB.", call.client->GetName());
             call.client->SendErrorMsg("Failed to record the order in the DB!");
-            return NULL;
+            return nullptr;
         }
 
         //notify client about new order.
@@ -451,7 +451,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
     }
 
     //returns nothing.
-    return NULL;
+    return nullptr;
 }
 
 PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
@@ -459,7 +459,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
     if(!args.Decode(&call.tuple))
     {
         codelog(MARKET__ERROR, "Invalid arguments");
-        return NULL;
+        return nullptr;
     }
 
     uint32 typeID = 0;
@@ -470,28 +470,28 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
 
     if(!m_db.GetOrderInfo(args.orderID, NULL, &typeID, NULL, &quantity, &price, &isBuy, &isCorp)) {
         codelog(MARKET__ERROR, "%s: Failed to get info about order %u.", call.client->GetName(), args.orderID);
-        return NULL;
+        return nullptr;
     }
 
     if(price == args.newPrice)
-        return NULL;
+        return nullptr;
 
     if(isBuy)
     {
         double money = (price - args.newPrice) * quantity;
         if(!call.client->AddBalance(money))
-            return NULL;
+            return nullptr;
     }
 
     if(!m_db.AlterOrderPrice(args.orderID, args.newPrice)) {
         codelog(MARKET__ERROR, "%s: Failed to modify price for order %u.", call.client->GetName(), args.orderID);
-        return NULL;
+        return nullptr;
     }
 
     _InvalidateOrdersCache(typeID);
     _BroadcastOnOwnOrderChanged(call.client->GetRegionID(), args.orderID, "Modify", isCorp); //force a refresh of market data.
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
@@ -499,7 +499,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
     if(!args.Decode(&call.tuple))
     {
         codelog(MARKET__ERROR, "Invalid arguments");
-        return NULL;
+        return nullptr;
     }
 
     uint32 ownerID = 0;
@@ -512,7 +512,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
 
     if(!m_db.GetOrderInfo(args.orderID, &ownerID, &typeID, &stationID, &quantity, &price, &isBuy, &isCorp)) {
         codelog(MARKET__ERROR, "%s: Failed to get info about order %u.", call.client->GetName(), args.orderID);
-        return NULL;
+        return nullptr;
     }
 
     ItemData idata(
@@ -527,7 +527,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
     {
         double money = price * quantity;
         if(!call.client->AddBalance(money))
-            return NULL;
+            return nullptr;
     }
     else
     {
@@ -540,13 +540,13 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
     if(!m_db.DeleteOrder(args.orderID))
     {
         codelog(MARKET__ERROR, "Failed to delete order %u.", args.orderID);
-        return NULL;
+        return nullptr;
     }
     _InvalidateOrdersCache(typeID);
     _BroadcastOnOwnOrderChanged(call.client->GetRegionID(), args.orderID, "Expiry", isCorp, order); //force a refresh of market data.
     _BroadcastOnMarketRefresh(call.client->GetRegionID());
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult MarketProxyService::Handle_CharGetNewTransactions(PyCallArgs &call)
@@ -556,7 +556,7 @@ PyResult MarketProxyService::Handle_CharGetNewTransactions(PyCallArgs &call)
     if(!args.Decode(&call.tuple))
     {
         codelog(MARKET__ERROR, "Invalid arguments");
-        return NULL;
+        return nullptr;
     }
 
     double minPrice;
@@ -567,7 +567,7 @@ PyResult MarketProxyService::Handle_CharGetNewTransactions(PyCallArgs &call)
     else
     {
         codelog(CLIENT__ERROR, "%s: Invalid type %s for minPrice argument received.", call.client->GetName(), args.minPrice->TypeString());
-        return NULL;
+        return nullptr;
     }
 
     result = m_db.GetTransactions(args.clientID==0?call.client->GetCharacterID():args.clientID,
@@ -575,7 +575,7 @@ PyResult MarketProxyService::Handle_CharGetNewTransactions(PyCallArgs &call)
     if(result == NULL)
     {
         _log(SERVICE__ERROR, "%s: Failed to load CharGetNewTransactions", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return result;
@@ -588,7 +588,7 @@ PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
     if(!args.Decode(&call.tuple))
     {
         codelog(MARKET__ERROR, "Invalid arguments");
-        return NULL;
+        return nullptr;
     }
 
     double minPrice;
@@ -599,7 +599,7 @@ PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
     else
     {
         codelog(CLIENT__ERROR, "CorpID %u: Invalid type %s for minPrice argument received.", call.client->GetCorporationID(), args.minPrice->TypeString());
-        return NULL;
+        return nullptr;
     }
 
     result = m_db.GetTransactions(call.client->GetCorporationID(), args.typeID, args.quantity, minPrice,
@@ -607,14 +607,14 @@ PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
     if(result == NULL)
     {
         _log(SERVICE__ERROR, "CorpID %u: Failed to load CorpGetNewTransactions", call.client->GetCorporationID());
-        return NULL;
+        return nullptr;
     }
 
     return result;
 }
 PyResult MarketProxyService::Handle_StartupCheck(PyCallArgs &call) {
     m_db.BuildOldPriceHistory();
-    return NULL;
+    return nullptr;
 }
 
 
@@ -628,7 +628,7 @@ PyResult MarketProxyService::Handle_GetCorporationOrders(PyCallArgs &call)
 00:11:38 [SvcCall]     Argument 'machoVersion':
 00:11:38 [SvcCall]         Integer field: 1
   */
-    return NULL;
+    return nullptr;
 }
 
 void MarketProxyService::_SendOnOwnOrderChanged(Client *who, uint32 orderID, const char *action, bool isCorp, PyRep* order) {

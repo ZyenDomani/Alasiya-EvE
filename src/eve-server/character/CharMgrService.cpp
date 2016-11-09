@@ -305,31 +305,6 @@ PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
 }
 
 PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
-  /**
-        if not self.isAFK and diffInSeconds > AFK_SECONDS:
-            self.LogNotice('I am now AFK after being idle for', diffInSeconds, 'seconds.')
-            self.isAFK = True
-            sm.RemoteSvc('charMgr').SetActivityStatus(const.PLAYER_STATUS_AFK, diffInSeconds)
-        elif self.isAFK and diffInSeconds < AFK_SECONDS:
-            self.LogNotice('I am no longer AFK after being idle for', self.numSecondsAway, 'seconds.')
-            self.isAFK = False
-            sm.RemoteSvc('charMgr').SetActivityStatus(const.PLAYER_STATUS_ACTIVE, self.numSecondsAway)
-        self.numSecondsAway = diffInSeconds
-PLAYER_STATUS_ACTIVE = 0
-PLAYER_STATUS_AFK = 1
-23:48:39 [SvcCall]       Tuple: 2 elements
-23:48:39 [SvcCall]         [ 0] Integer field: 1
-23:48:39 [SvcCall]         [ 1] Integer field: 601  << AFK_SECONDS == 600 (5 mins)
-
-00:32:47 [SvcCall]       Tuple: 2 elements
-00:32:47 [SvcCall]         [ 0] Integer field: 0
-00:32:47 [SvcCall]         [ 1] Integer field: 3249 << seconds away
-
-  */
-
-    sLog.Log( "CharMgrService::Handle_SetActivityStatus()", "size= %u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-
     Call_TwoIntegerArgs args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Invalid arguments");

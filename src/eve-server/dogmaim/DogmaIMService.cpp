@@ -555,10 +555,10 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         pClient->SendNotifyMsg("You can't do this while docked");
         return new PyNone();
     }
-
+/*
     sLog.Log("DogmaIMBound::Handle_Activate()", "size= %u from '%s'", call.tuple->size(), pClient->GetName() );
     call.Dump(SERVICE__CALL_DUMP);
-
+*/
     uint32 callTupleSize = (uint32)call.tuple->size(), itemID = 0, effectID = 0;
 
     if (callTupleSize == 2) {
@@ -810,8 +810,8 @@ PyResult DogmaIMBound::Handle_GetWeaponBankInfoForShip(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
 {
-    sLog.Log("DogmaIMBound::Handle_GetAllInfo()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    //sLog.Log("DogmaIMBound::Handle_GetAllInfo()", "size=%u", call.tuple->size());
+    //call.Dump(SERVICE__CALL_DUMP);
     /* added more return data and updated logic (almost complete and mostly accurate) -allan 26Mar16 */
     /* Start the Code */
     Client* pClient = call.client;

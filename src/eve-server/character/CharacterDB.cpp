@@ -1593,18 +1593,16 @@ void CharacterDB::VisitSystem(uint32 solarSystemID, uint32 charID) {
     }
 }
 
+/** @todo  look into updating this to be a mem object, saved to db every 'x' */
 void CharacterDB::chkDynamicSystemID(uint32 solarSystemID) {
 	/**  this ensures mapDynamicData.solarSystemID for `solarSystemID` is in the DB for later calls. -allan 16Mar14 */
     DBQueryResult chk;
 	sDatabase.RunQuery(chk, "SELECT solarSystemID FROM mapDynamicData WHERE solarSystemID = %u", solarSystemID );
 
     DBResultRow row;
-    if(chk.GetRow(row)) {
-		sLog.Success("CharacterDB::chkDynamicSystemID"," System %u already in DB", solarSystemID );
-    } else {
+    if (!chk.GetRow(row)) {
         DBerror err;
 		sDatabase.RunQuery(err, "INSERT INTO mapDynamicData (solarSystemID) VALUES (%u)", solarSystemID );
-		sLog.Warning("CharacterDB::chkDynamicSystemID"," System %u inserted in DB", solarSystemID );
     }
 }
 

@@ -325,7 +325,7 @@ PyResult AgentMgrBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
 
 /** not handled */
 PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
-  sLog.Log( "AgentMgrService::Handle_GetMyJournalDetails()", "size= %u", call.tuple->size() );
+  //sLog.Log( "AgentMgrService::Handle_GetMyJournalDetails()", "size= %u", call.tuple->size() );
   /*
       [PySubStream 59 bytes]
         [PyTuple 2 items]

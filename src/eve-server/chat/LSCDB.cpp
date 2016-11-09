@@ -725,7 +725,7 @@ std::string LSCDB::GetChannelInfo(uint32 channelID, std::string & name, std::str
     DBResultRow row;
 
     if (!res.GetRow(row)) {
-        _log(SERVICE__ERROR, "Couldn't find %u in table channels", channelID);
+       // _log(SERVICE__ERROR, "Couldn't find %u in table channels", channelID);
         char err[20];
         snprintf(err, 20, "Unknown %u", channelID);
         return(err);

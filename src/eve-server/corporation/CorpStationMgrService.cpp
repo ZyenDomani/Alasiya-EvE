@@ -203,10 +203,10 @@ PyResult CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(PyCallAr
      * 01:11:32 [SvcCallDump]         [ 0] Integer field: 1048576  (insurance)
      *
      *
-     */
     sLog.Log( "CorpStationMgrIMBound::Handle_DoStandingCheckForStationService()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
+     */
     // takes an int (seen 512 and 1024 and 2048)
     //seems to return None, or throw an exception
 

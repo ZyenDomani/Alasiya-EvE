@@ -47,9 +47,9 @@ UserService::~UserService() {
 
 PyResult UserService::Handle_GetRedeemTokens( PyCallArgs& call )
 {
+    /*
     sLog.Log( "UserService", "Handle_GetRedeemTokens" );
     call.Dump(SERVICE__CALL_DUMP);
-    /*
      * ==================== Sent from Client 84 bytes
      *
      * [PyObjectData Name: macho.CallReq]
@@ -148,7 +148,7 @@ PyResult UserService::Handle_GetRedeemTokens( PyCallArgs& call )
      *
      */
 
-    return new PyList;
+    return new PyList();
 }
 
 PyResult UserService::Handle_GetCreateDate( PyCallArgs& call )

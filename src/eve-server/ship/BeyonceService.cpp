@@ -194,7 +194,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
         return nullptr;
     }
 
-    sLog.Warning( "BeyonceBound", "Handle_CmdFollowBall - entity:%s(%u), distance:%f", pEntity->GetName(), pEntity->GetID(), distance);
+    //sLog.Warning( "BeyonceBound", "Handle_CmdFollowBall - entity:%s(%u), distance:%f", pEntity->GetName(), pEntity->GetID(), distance);
     if (call.client->IsUndock()) {
         call.client->SetUndock(false);
         if (call.client->IsInvul())
@@ -224,7 +224,7 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
     // client should not legally send anything < 0.1 (except on rare occasion a 0.0 instead of Stop.)
     if ((arg.arg != 0) && (arg.arg < 0.1)) return nullptr;
 
-    sLog.Warning( "BeyonceBound", "Handle_CmdSetSpeedFraction %.2f", arg.arg );
+    //sLog.Warning( "BeyonceBound", "Handle_CmdSetSpeedFraction %.2f", arg.arg );
     if (!call.client->IsUndock()){
         if (pDestiny->IsMoving())
             pDestiny->SetSpeedFraction(arg.arg);
@@ -262,7 +262,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
         return nullptr;
     }
 
-    sLog.Warning( "BeyonceBound", "Handle_CmdAlignTo - entity:%s(%u)", pEntity->GetName(), pEntity->GetID() );
+    //sLog.Warning( "BeyonceBound", "Handle_CmdAlignTo - entity:%s(%u)", pEntity->GetName(), pEntity->GetID() );
     if (call.client->IsUndock()) {
         call.client->SetUndock(false);
         if (call.client->IsInvul())
@@ -304,7 +304,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
         if (call.client->IsInvul())
             call.client->SetInvul(false);
     }
-    sLog.Log( "BeyonceBound", "Handle_CmdGotoDirection %.3f, %.3f, %.3f", arg.x, arg.y, arg.z);
+   //sLog.Log( "BeyonceBound", "Handle_CmdGotoDirection %.3f, %.3f, %.3f", arg.x, arg.y, arg.z);
     const GPoint dir = GPoint(arg.x, arg.y, arg.z);
     pDestiny->GotoDirection(dir);
 
@@ -385,7 +385,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return nullptr;
     }
-  sLog.Log( "BeyonceBound", "Handle_CmdOrbit" );
+  //sLog.Log( "BeyonceBound", "Handle_CmdOrbit" );
   call.Dump(SERVICE__CALL_DUMP);
     Call_Orbit args;
     if (!args.Decode(&call.tuple)) {
@@ -404,7 +404,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         return nullptr;
     }
 
-    sLog.Log( "BeyonceBound", "Handle_CmdOrbit - entity:%s(%u), range:%f", pEntity->GetName(), pEntity->GetID(), range);
+    //sLog.Log( "BeyonceBound", "Handle_CmdOrbit - entity:%s(%u), range:%f", pEntity->GetName(), pEntity->GetID(), range);
     if (call.client->IsUndock()) {
         call.client->SetUndock(false);
         if (call.client->IsInvul())
@@ -700,7 +700,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     }
 
   //  sends targeted celestial itemID as arg.destID
-    sLog.Warning( "BeyonceBound", "Handle_CmdWarpToStuffAutopilot" );
+    //sLog.Warning( "BeyonceBound", "Handle_CmdWarpToStuffAutopilot" );
     CallWarpToStuffAutopilot arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
@@ -746,7 +746,7 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
     if (call.client->IsUndock())
         call.client->SetUndock(false);
 
-    sLog.Warning( "BeyonceBound", "Handle_CmdStop" );
+    //sLog.Warning( "BeyonceBound", "Handle_CmdStop" );
     pDestiny->Stop();
 
     return nullptr;
@@ -797,7 +797,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
         return new PyNone();
     }
 
-    sLog.Warning( "BeyonceBound", "Handle_CmdStargateJump" );
+    //sLog.Warning( "BeyonceBound", "Handle_CmdStargateJump" );
     // sends fromGateID, toGateID, and shipID
     Call_StargateJump args;
     if (!args.Decode(&call.tuple)) {
