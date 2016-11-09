@@ -62,7 +62,7 @@ void Webifier::Deactivate()
 
     DestinyManager* pDestiny = m_targetEntity->DestinyMgr();
     pDestiny->SetMaxVelocity(m_originalSpeed);
-    pDestiny->SetSpeedFraction(0.99, true);
+    pDestiny->SetSpeedFraction(1.0, true);
 }
 
 void Webifier::StopCycle(bool abort)
