@@ -180,7 +180,7 @@
 /* { backtrace, backtrace_symbols, backtrace_symbols_fd } header file.
  *  include this for DEBUG CODE ONLY!!
  */
-//#include "execinfo.h"
+#include "execinfo.h"
 
 /************************************************************************/
 /* Project-specific includes for files using ONLY eve-core.h            */

@@ -89,4 +89,6 @@ inline bool IsNaN(double x)      { return x!= x; }
 
 uint32 CreatePIDFile(const std::string& filename);
 
+void traceStack(void);
+
 #endif /* !__MISC_H__INCL__ */
