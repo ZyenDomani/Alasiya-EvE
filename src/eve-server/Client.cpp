@@ -242,7 +242,6 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_services.item_factory->UnsetUsingClient();
     m_char->SetLoginTime();
     UpdateSkillTraining();
-    sLog.Success("Client::SelectCharacter()", "SelectCharacter completed for %u", char_id);
     return true;
 }
 
@@ -517,8 +516,6 @@ void Client::UndockFromStation() {
         TradeService* mts = (TradeService*)(m_services.LookupService("trademgr"));
         mts->CancelTrade(this);
     }
-    sLog.Log("Client::UndockFromStation()", "Character %s(%u) undocking from stationID() %u", \
-    m_char->itemName().c_str(), m_char->itemID(), m_StationData.stationID);
 
     m_login = false;
     m_invul = m_undock = true;
@@ -670,7 +667,7 @@ bool Client::IsJetcanAvalible() {
 }
 
 PyRep *Client::GetAggressors() const {
-    PyDict *dict = nullptr;
+    PyDict* dict(nullptr);
     /*
      *            for aggressorID, aggressor in aggressors.iteritems():
      *                for aggresseeID, lastAggression in aggressor.iteritems():
@@ -972,13 +969,6 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
     return true;
 }
 
-//assumes that the backend DB stuff was already done.
-void Client::JoinCorporationUpdate(uint32 corp_id) {
-    //m_char->JoinCorporation(corp_id);
-    //_UpdateSession(m_char);
-    //logs indicate that we need to push this update out asap.
-    //SendSessionChange();
-}
 
 /************************************************************************/
 /* character notification messages wrapper                              */
@@ -1055,8 +1045,6 @@ void Client::_UpdateSession(const CharacterConstRef& character)
     uint32 stationID = character->stationID();
     uint32 solarsystemID = character->solarSystemID();
     if (stationID) {
-        sLog.Warning("Client::_UpdateSession()", "Character %s(%u) IsDocked at %u.",
-                     m_char->itemName().c_str(), m_char->itemID(), stationID);
         mSession.Clear("solarsystemid");    //must be 0 in station
         mSession.Clear("shipid");           //must be 0 in station
 
@@ -1065,8 +1053,6 @@ void Client::_UpdateSession(const CharacterConstRef& character)
         mSession.SetInt("worldspaceid", stationID);
         mSession.SetInt("locationid", stationID);
     } else {
-        sLog.Warning("Client::_UpdateSession()", "Character %s(%u) InSpace at %u",
-                     m_char->itemName().c_str(), m_char->itemID(), solarsystemID);
         mSession.Clear("stationid");
         mSession.Clear("stationid2");
         mSession.Clear("worldspaceid");
@@ -1380,7 +1366,6 @@ uint32 Client::_GetUserCount()
 
 bool Client::_VerifyVersion(VersionExchangeClient& version)
 {
-    sLog.Log("Client","%s: Received Low Level Version Exchange:", GetAddress().c_str());
     version.Dump(NET__PRES_REP, "    ");
     if (version.birthday != EVEBirthday)
         sLog.Error("Client","%s: Client's birthday does not match ours!", GetAddress().c_str());
@@ -1569,7 +1554,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     mSession.SetULong("role", account_info.role);
     //mSession.SetLong("sessionID", mSession.CreateSessionID());
 
-    sLog.Success("  Client::Login()","Account \"%s\" logged in from IP %s", account_info.name.c_str() ,EVEClientSession::GetAddress().c_str());
+    //sLog.Success("  Client::Login()","Account \"%s\" logged in from IP %s", account_info.name.c_str() ,EVEClientSession::GetAddress().c_str());
 
     return true;
 
@@ -1760,36 +1745,29 @@ void Client::_SendPingResponse(const PyAddress& source, uint64 callID)
 /************************************************************************/
 bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
 {
-    PyCallable* dest;
-    if (packet->dest.service == "")
-    {
+    PyCallable* dest(nullptr);
+    if (packet->dest.service == "") {
         //bound object
         uint32 nodeID, bindID;
-        if (sscanf(req.remoteObjectStr.c_str(), "N=%u:%u", &nodeID, &bindID) != 2)
-        {
+        if (sscanf(req.remoteObjectStr.c_str(), "N=%u:%u", &nodeID, &bindID) != 2) {
             sLog.Error("Client","Failed to parse bind string '%s'.", req.remoteObjectStr.c_str());
             return false;
         }
 
-        if (nodeID != m_services.GetNodeID())
-        {
+        if (nodeID != m_services.GetNodeID()) {
             sLog.Error("Client","Unknown nodeID %u received (expected %u).", nodeID, m_services.GetNodeID());
             return false;
         }
 
         dest = m_services.FindBoundObject(bindID);
-        if (dest == nullptr)
-        {
+        if (!dest) {
             sLog.Error("Client", "Failed to find bound object %u.", bindID);
             return false;
         }
-    }
-    else
-    {
+    } else {
         //service
         dest = m_services.LookupService(packet->dest.service);
-        if (dest == nullptr)
-        {
+        if (!dest) {
             sLog.Error("Client","Unable to find service to handle call to: %s", packet->dest.service.c_str());
             packet->dest.Dump(CLIENT__CALL_DUMP, "    ");
 
@@ -1798,11 +1776,10 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     }
 
     //Debug code
-    if (req.method == "BeanCount")
-        sLog.Warning("Client::BeanCount","(%s/%s) BeanCount error reporting and handling is not implemented yet.", \
-                     req.method.c_str(),packet->dest.service.c_str());
-    else
+    if (req.method != "BeanCount")
         _log(CLIENT__CALL_REP, "%s call made to %s",req.method.c_str(),packet->dest.service.c_str());
+        //sLog.Warning("Client::BeanCount","(%s/%s) BeanCount error reporting and handling is not implemented yet.", \
+                     req.method.c_str(),packet->dest.service.c_str());
 
     //build arguments
     PyCallArgs args(this, req.arg_tuple, req.arg_dict);

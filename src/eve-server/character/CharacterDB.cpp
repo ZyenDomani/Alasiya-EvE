@@ -194,7 +194,7 @@ PyRep* CharacterDB::ValidateCharName(const char *name)
         return new PyInt(-101);
 
     /* if we got here the name is "new" */
-    return new PyBool(true);
+    return new PyInt(1);
 }
 
 void CharacterDB::UpdateCharCorpRecords(uint32 charID, uint32 corpID) {

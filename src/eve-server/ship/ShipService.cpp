@@ -432,8 +432,8 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
                 PyList * list;
                 if (call.byname.find("subSystems")->second->IsList()) {
                     list = call.byname.find("subSystems")->second->AsList();
-                    for(uint32 index=0; index<list->size(); index++)
-                        subSystemList.push_back(list->GetItem(index)->AsInt()->value());
+                    for(uint32 i=0; i<list->size(); i++)
+                        subSystemList.push_back(list->GetItem(i)->AsInt()->value());
                 } else {
                     sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: !call.byname.find(\"subSystems\")->second->IsList() failed");
                     return nullptr;

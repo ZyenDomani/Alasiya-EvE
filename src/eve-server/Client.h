@@ -158,7 +158,6 @@ public:
     void MoveToPosition(const GPoint &pt);
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
     void SetDestiny(bool count=false);
-    void JoinCorporationUpdate(uint32 corp_id=0);
     void SavePosition();
     void SaveAllToDatabase();
     void UpdateSkillTraining();

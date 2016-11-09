@@ -98,7 +98,7 @@ PyResult CorpRegistryBound::Handle_CreateAlliance(PyCallArgs &call) {
 
     sLog.Log("CorpRegistryBound", "Handle_CreateAlliance() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
-    
+
     return nullptr;
 }
 
@@ -531,7 +531,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
     Call_UpdateApplicationOffer args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode args.");
-        return nullptr;
+        return new PyNone();
     }
 
     // OnCorporationApplicationChanged event, probably be good to make it two (or more) times, independently, depending on update type
@@ -550,7 +550,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             OCAC.corpID = call.client->GetCorporationID();
             if (!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
                 codelog(SERVICE__ERROR, "%s: Failed to query application for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
-                return nullptr;
+                return new PyNone();
             }
             newInfo = oldInfo;
             newInfo.status = crpApplicationRejectedByCorporation;
@@ -558,7 +558,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
 
             if (!m_db.UpdateApplication(newInfo)) {
                 codelog(SERVICE__ERROR, "%s: Failed to update application", call.client->GetName());
-                return nullptr;
+                return new PyNone();
             }
 
             FillOCApplicationChange(OCAC, oldInfo, newInfo);
@@ -574,8 +574,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
                 "OnCorporationApplicationChanged",
                 "*corpid&corprole", &answer,
                 NOTIF_DEST__CORPORATION, OCAC.corpID);
-            break;
-        }
+        } break;
         case crpApplicationAcceptedByCorporation: /// accepted
         {
             // the acceptor corporation MUST have free space!!
@@ -641,31 +640,11 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             ocmc.newDate = OCAC.applicationDateTimeNew->AsInt()->value();
             ocmc.oldDate = OCAC.applicationDateTimeOld->AsInt()->value();
 
-
             // both corporations' members will be notified about the change
             MulticastTarget both_corps;
             both_corps.corporations.insert(ocmc.newCorpID);
             both_corps.corporations.insert(ocmc.oldCorpID);
             answer = ocmc.Encode();
-            sEntityList.Multicast(
-                "OnCorporationMemberChanged", "corpid",
-                &answer, both_corps);
-
-
-            // OnCorporationMemberChanged event again
-            // this is the same as the first one
-            // and goes twice
-            // HAHA: just because they do it doesn't mean we need to...
-            Notify_IntRaw notif;
-            notif.key = args.charID;
-            notif.data = change.Encode();
-
-            answer = notif.Encode();
-            sEntityList.Multicast(
-                "OnCorporationMemberChanged", "corpid",
-                &answer, both_corps);
-
-            answer = notif.Encode();
             sEntityList.Multicast(
                 "OnCorporationMemberChanged", "corpid",
                 &answer, both_corps);
@@ -676,15 +655,14 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
                 return nullptr;
             }
 
-            Client *recruit = sEntityList.FindClientByCharID(ocmc.charID);
-            if (recruit != NULL) {
-                recruit->JoinCorporationUpdate(ocmc.newCorpID);
-            }
+            Client* recruit = sEntityList.FindClientByCharID(ocmc.charID);
+            if (recruit)
+                recruit->UpdateCorpSession(recruit->GetChar().get());
 
-            break;
-        }
+        } break;
     }
-    return new PyInt(1);
+
+    return new PyNone();
 }
 
 PyResult CorpRegistryBound::Handle_DeleteApplication(PyCallArgs & call) {
