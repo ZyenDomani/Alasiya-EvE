@@ -60,7 +60,7 @@ bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEnt
     return true;
 }
 
-/** @todo  this isnt right.....it doesnt get player's corp/alliance correctly  */
+/* load system dynamics owned by the EvE systemID  */
 bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into) {
     using namespace EVEDB::invCategories;
     DBQueryResult res;
@@ -70,26 +70,19 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "   e.itemID,"
         "   e.itemName,"
         "   e.typeID,"
-        "   e.ownerID,"
         "   t.groupID,"
-        "   g.categoryID,"  //5
-        "   IFNULL(co.corporationID, 0),"
-        "   IFNULL(co.allianceID, 0),"
-        "   e.x, e.y, e.z" //10
+        "   g.categoryID,"
+        "   e.x, e.y, e.z"
         " FROM entity AS e"
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
-        "  LEFT JOIN corporation AS co ON co.corporationID = e.ownerID"
         " WHERE e.locationID = %u"
-        "  AND ((g.categoryID NOT IN (%d, %d, %d, %d) AND (e.ownerID = 1))"  // get dynamics owned by the system -include abandonded ships
-        "     OR (g.categoryID IN (%d, %d, %d, %d, %d, %d, %d, %d) AND (e.ownerID != 1)))"  // get dynamics not owned by the system (not abandonded)
+        "  AND g.categoryID NOT IN (%d, %d, %d, %d)"
+        "  AND e.ownerID = 1"  // get dynamics owned by the system -include abandonded ships
         "  ORDER BY e.itemID",
         systemID,
         //exclude categories not applicable for in-space system entities or owned by player/corp :
-        _System/*0*/, /*Character*/1, /*Station*/3, Asteroid/*25*/, //asteroids are now owned/controlled by BeltMgr - DO NOT load here.
-        // include deployed items owned by players or corps
-        Deployable/*22*/, Orbitals/*46*/, Drone/*18*/, Entity/*11*/,    // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
-        /*Structure*/23, StructureUpgrade/*39*/, SovereigntyStructure/*40*/, Celestial/*2*/     // Celestial is for containers (wrecks, jetcans, lsc)
+        _System/*0*/, /*Character*/1, /*Station*/3, Asteroid/*25*/ //asteroids are owned/controlled by BeltMgr.
         )) {
             codelog(DATABASE__ERROR, "Error in LoadSystemDynamicEntities query: %s", res.error.c_str());
             return false;
@@ -102,11 +95,11 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.itemID = row.GetInt(0);
         entry.itemName = row.GetText(1);
         entry.typeID = row.GetInt(2);
-        entry.ownerID = row.GetInt(3);
+        entry.ownerID = 1;
         entry.groupID = row.GetInt(4);
         entry.categoryID = row.GetInt(5);
-        entry.corporationID = row.GetInt(6);
-        entry.allianceID = row.GetInt(7);
+        entry.corporationID = 0;
+        entry.allianceID = 0;
         entry.x = row.GetDouble(8);
         entry.y = row.GetDouble(9);
         entry.z = row.GetDouble(10);
@@ -116,9 +109,10 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
     return true;
 }
 
-/* this is no longer used, as "Celestials" category used above will load these dynamics on system creation */
-bool SystemDB::LoadPlayerDynamicEntities(uint32 ownerID, uint32 systemID, std::vector<DBSystemDynamicEntity>& into)
+/* load system dynamics owned by players  */
+bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into)
 {
+    using namespace EVEDB::invCategories;
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
@@ -138,8 +132,15 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 ownerID, uint32 systemID, std::v
         "  LEFT JOIN character_ AS c ON c.characterID = e.ownerID"
         "  LEFT JOIN corporation AS co ON co.corporationID = c.corporationID"
         " WHERE e.locationID = %u"
-        "  AND e.ownerID = %u"
-        "  AND e.itemID NOT IN (c.shipID,c.capsuleID)", systemID, ownerID )) {
+        "  AND g.categoryID IN (%d, %d, %d, %d, %d, %d, %d, %d)"
+        "  AND e.ownerID > %u"  // get dynamics not owned by the system or NPC corps
+        "  AND e.itemID NOT IN (c.shipID,c.capsuleID)",
+        " ORDER BY e.itemID",
+        systemID, Celestial/*2*/,     // Celestial is for containers (wrecks, jetcans, lsc)
+        // include deployed items owned by players or corps
+        Deployable/*22*/, Orbitals/*46*/, Drone/*18*/, Entity/*11*/,    // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
+        /*Structure*/23, StructureUpgrade/*39*/, SovereigntyStructure/*40*/,
+        maxNPCCorporation )) {
         codelog(DATABASE__ERROR, "Error in LoadPlayerDynamicEntities query: %s", res.error.c_str());
         return false;
     }

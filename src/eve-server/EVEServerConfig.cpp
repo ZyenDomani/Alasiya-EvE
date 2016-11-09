@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    7.0
+    Version:    7.1
 */
 
 
@@ -100,6 +100,7 @@ EVEServerConfig::EVEServerConfig()
     npc.StaticTimer = 10 /*m*/;//P
     npc.RatFaction = 0;
     npc.SpawnTest = false;
+    npc.EnableDrones = false;
 
     // database
     database.host = "localhost";
@@ -313,6 +314,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     AddValueParser( "StaticTimer",   npc.StaticTimer );
     AddValueParser( "RatFaction",    npc.RatFaction );
     AddValueParser( "SpawnTest",     npc.SpawnTest );
+    AddValueParser( "EnableDrones",     npc.EnableDrones );
 
     const bool result = ParseElementChildren( ele );
 
@@ -323,6 +325,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "StaticTimer" );
     RemoveParser( "RatFaction" );
     RemoveParser( "SpawnTest" );
+    RemoveParser( "EnableDrones" );
 
     return result;
 }

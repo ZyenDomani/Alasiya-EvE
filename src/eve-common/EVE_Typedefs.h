@@ -439,6 +439,26 @@ typedef enum {
     factionSleepers      = 500023
 } FactionDef;
 
+typedef enum {
+    /* this is a numeric system to organize salvage data types and is arranged as follows:
+     * ABCDE
+     * A  = tech level of salvage  - 1,2,3
+     * B  = type of salvage: 0-, 1-data, 2-archeology, 3-ancient, 4-wrecks, 5-loot, 6-, 7-, 8-, 9-
+     * C  = size of salvage: 0-tiny, 1-small, 2-med, 3-large, 4-huge, 5-, 6-, 7-, 8-, 9-
+     * DE = last 2 actual faction numbers as defined in FactionDef
+     */
+    salvageSleepers     = 0
+
+} FactionSalvageDef;
+
+typedef enum {
+    salvageWreck = 1,
+    salvageData = 2,
+    salvageArch = 3,
+    salvageAncient = 4,
+    salvageOther = 5
+} SalvageTypes;
+
 // mostly pirate corps for now...
 typedef enum {
     corpRogueDrones         = 1000001,

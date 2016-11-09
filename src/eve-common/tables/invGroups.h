@@ -668,6 +668,7 @@ namespace EVEDB {
             Mission_Faction_Transports = 875,
             Target_Painting_Battery = 877,
             Cloak_Enhancements = 878,
+            Sleeper_Components = 880,
             CapitalIndustrialShip = 883,
             Cosmic_Anomaly = 885,
             HeavyInterdictors = 894,

@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 7.0 -->
+     Version: 7.1 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -104,6 +104,7 @@
         <RoamingTimer>5</RoamingTimer><!-- time between spawn checks, in minutes -->
         <StaticTimer>5</StaticTimer><!-- time between spawn checks, in minutes -->
         <SpawnTest>false</SpawnTest><!-- bool - enables 5s respawn timer -->
+        <EnableDrones>false</EnableDrones><!-- bool -->
     </npc>
 
     <database>

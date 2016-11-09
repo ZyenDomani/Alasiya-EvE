@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    7.0
+    Version:    7.1
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -141,6 +141,7 @@ public:
         float ThreatRadius;
         uint32 RatFaction;
         bool SpawnTest;
+        bool EnableDrones;
     } npc;
 
     // From <database/>

@@ -89,7 +89,7 @@ public:
     void RemoveSpawnBubble();
 
     bool BuildDynamicEntity(const DBSystemDynamicEntity& entity);
-    bool LoadPlayerDynamics(uint32 ownerID);
+    bool LoadPlayerDynamics();
 
     void AddClient(Client* who, bool docked=false, bool count=false);
     void RemoveClient(Client* who, bool docked=false, bool count=false);

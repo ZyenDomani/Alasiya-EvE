@@ -74,7 +74,7 @@ class SystemDB
 public:
     bool LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into);
     bool LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into);
-    bool LoadPlayerDynamicEntities(uint32 ownerID, uint32 systemID, std::vector<DBSystemDynamicEntity>& into);
+    bool LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into);
     static bool GetWrecksToTypes(DBQueryResult& res);
     static void GetLootGroups(DBQueryResult& res);
     static void GetLootGroupTypes(DBQueryResult& res);

@@ -186,8 +186,6 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
      *    call.Dump(SERVICE__CALL_DUMP);
      */
 
-    Client* pClient = call.client;
-
     return nullptr;
 }
 

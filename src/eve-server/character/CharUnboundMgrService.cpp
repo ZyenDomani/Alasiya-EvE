@@ -89,6 +89,7 @@ PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)
         }
         return m_db.ValidateCharName(arg.arg.c_str());
     }
+    return new PyBool(false);
 }
 
 PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call) {

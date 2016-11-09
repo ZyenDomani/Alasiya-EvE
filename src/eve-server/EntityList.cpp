@@ -422,6 +422,8 @@ std::string EntityList::GetAnomalyID()
 
 uint32 EntityList::GetWreckFaction(uint32 typeID)
 {
+    // these will need to be separated and updated after detailed salvage table is completed
+
     switch(typeID) {
         case 26469:  //   Amarr Battlecruiser Wreck
         case 26470:  //   Amarr Battleship Wreck

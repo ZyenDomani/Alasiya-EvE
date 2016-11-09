@@ -656,6 +656,10 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
             successfully_dropped.ints.push_back(cargoItemRef->itemID());
             continue;
         } else if (cargoItemRef->flag() == flagDroneBay && cargoItemRef->categoryID() == EVEDB::invCategories::Drone) {
+            if (!sConfig.npc.EnableDrones) {
+                pClient->SendNotifyMsg("Drones are disabled.");
+                return nullptr;
+            }
             // This item is a drone, so launch it into space:
             if (pClient->LaunchDrone(cargoItemRef))
                 successfully_dropped.ints.push_back(cargoItemRef->itemID());

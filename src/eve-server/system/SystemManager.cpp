@@ -121,12 +121,17 @@ bool SystemManager::BootSystem() {
     LoadCosmicMgrs();
 
     if (!LoadSystemStatics()) {
-        _log(SERVICE__ERROR, "Unable to load Statics during boot of system %u.", m_data.systemID);
+        _log(SERVICE__ERROR, "Unable to load System Statics during boot of system %u.", m_data.systemID);
         return false;
     }
-    /* this loads all dynamic items in current system */
+
     if (!LoadSystemDynamics()) {
-        _log(SERVICE__ERROR, "Unable to load Dynamics during boot of system %u.", m_data.systemID);
+        _log(SERVICE__ERROR, "Unable to load System Dynamics during boot of system %u.", m_data.systemID);
+        return false;
+    }
+
+    if (!LoadPlayerDynamics()) {
+        _log(SERVICE__ERROR, "Unable to load Player Dynamics during boot of system %u.", m_data.systemID);
         return false;
     }
 
@@ -301,10 +306,10 @@ bool SystemManager::LoadSystemDynamics() {
     return true;
 }
 
-bool SystemManager::LoadPlayerDynamics(uint32 ownerID) {
+bool SystemManager::LoadPlayerDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
     SystemDB m_db;
-    if (!m_db.LoadPlayerDynamicEntities(ownerID, m_data.systemID, entities)) {
+    if (!m_db.LoadPlayerDynamicEntities(m_data.systemID, entities)) {
         _log(SERVICE__ERROR, "Unable to load player dynamic entities in system %u.", m_data.systemID);
         return false;
     }
