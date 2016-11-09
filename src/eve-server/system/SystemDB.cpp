@@ -96,13 +96,13 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.itemName = row.GetText(1);
         entry.typeID = row.GetInt(2);
         entry.ownerID = 1;
-        entry.groupID = row.GetInt(4);
-        entry.categoryID = row.GetInt(5);
+        entry.groupID = row.GetInt(3);
+        entry.categoryID = row.GetInt(4);
         entry.corporationID = 0;
         entry.allianceID = 0;
-        entry.x = row.GetDouble(8);
-        entry.y = row.GetDouble(9);
-        entry.z = row.GetDouble(10);
+        entry.x = row.GetDouble(5);
+        entry.y = row.GetDouble(6);
+        entry.z = row.GetDouble(7);
         into.push_back(entry);
     }
 

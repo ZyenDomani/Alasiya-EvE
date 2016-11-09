@@ -65,6 +65,7 @@ void TargetManager::DoDestruction() {
     if (!m_destroyed && mySE) {
         ClearAllTargets();
     }
+    m_destroyed = true;
 }
 
 void TargetManager::Process() {
@@ -240,6 +241,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     if (sConfig.server.IsTestServer or is_log_enabled(TARGET__DUMP))
         Dump();
 
+    m_destroyed = false;
     return true;
 }
 
@@ -295,6 +297,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint8 maxL
     if (sConfig.server.IsTestServer or is_log_enabled(TARGET__DUMP))
         Dump();
 
+    m_destroyed = false;
     return true;
 }
 

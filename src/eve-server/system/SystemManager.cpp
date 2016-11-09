@@ -131,7 +131,7 @@ bool SystemManager::BootSystem() {
     }
 
     if (!LoadPlayerDynamics()) {
-        _log(SERVICE__ERROR, "Unable to load Player Dynamics during boot of system %u.", m_data.systemID);
+        _log(SERVICE__ERROR, "Unable to load System Dynamics during boot of system %u.", m_data.systemID);
         return false;
     }
 
