@@ -300,9 +300,10 @@ void MiningLaser::ProcessCycle(bool partial)
             if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
                 m_crystalDmg += m_crystalDmgAmount;
                 if (m_crystalDmg > 1.0f) {
-                    m_Ship->GetPilot()->SendNotifyMsg("Your %u loaded in %u has been destroyed.", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str());
+                    m_Ship->GetPilot()->SendNotifyMsg("Your %s loaded in %s has been destroyed.", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str());
+                    InventoryItemRef chargeRef = m_chargeRef;   // make a copy of item ref, as m_chargeRef is nulled after next call returns
                     m_Ship->RemoveItem(m_chargeRef);
-                    m_chargeRef->Delete();
+                    chargeRef->Delete();
                     cycleVol = m_cycleVol;  //m_cycleVol2 is reset when charge is removed.
                 } else {
                     m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
