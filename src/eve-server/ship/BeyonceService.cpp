@@ -36,6 +36,7 @@
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
+#include <system/Container.h>
 
 class BeyonceBound
 : public PyBoundObject
@@ -828,7 +829,10 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 		codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
 		return nullptr;
 	}
-	//arg.ints is list sent by client
+
+	// this will set corp/ally/faction/owner to '0'
+	for (auto cur : arg.ints)
+        call.client->SystemMgr()->GetSE(cur)->Abandon();
 
     return nullptr;
 }

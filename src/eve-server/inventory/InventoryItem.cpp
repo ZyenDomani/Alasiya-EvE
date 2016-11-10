@@ -584,8 +584,8 @@ uint32 InventoryItem::GetPackagedVolume()
 void InventoryItem::Delete() {
     //first, get out of client's sight.
     //this also removes us from our inventory.
-    Move( 6 );
-    ChangeOwner( 2 );
+    Move(0);
+    ChangeOwner(2);
 
     //take ourself out of the DB
     m_factory.db().DeleteItem( itemID() );
@@ -790,8 +790,10 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
     Inventory *old_inventory = m_factory.GetInventoryFromId( old_location, false );
     if (old_inventory)
         old_inventory->RemoveItem(InventoryItemRef(this));  //releases its ref
-        else
+    else {
+        if (m_locationID)
             _log(INV__WARNING, "Inventory for %u not found. Item not removed from it's container's inventory.", old_location);
+    }
 
     m_locationID = new_location;
     m_flag = new_flag;
@@ -800,8 +802,10 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
     Inventory *new_inventory = m_factory.GetInventoryFromId( new_location, false );
     if (new_inventory)
         new_inventory->AddItem(InventoryItemRef(this)); //makes a new ref
-    else
-        _log(INV__WARNING, "Inventory for %u not found. Item not added to it's container's inventory.", new_location);
+    else {
+        if (m_locationID)
+            _log(INV__WARNING, "Inventory for %u not found. Item not added to it's container's inventory.", new_location);
+    }
 
     SaveItem();
 

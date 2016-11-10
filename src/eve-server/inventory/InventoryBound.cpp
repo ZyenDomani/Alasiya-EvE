@@ -330,9 +330,9 @@ PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
  */
 PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::Add() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    if (sConfig.server.IsTestServer) {
-        sLog.Log( "InventoryBound::Handle_Add()", "size= %u", call.tuple->size());
-        call.Dump(SERVICE__CALL_DUMP);
+    if (is_log_enabled(INV__DUMP)) {
+        _log(INV__DUMP, "InventoryBound::Handle_Add() size= %u", call.tuple->size());
+        call.Dump(INV__DUMP);
     }
 
     if (call.tuple->items.size() == 2) {
@@ -381,7 +381,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 
         // TODO  check for 'dividing' byname bool..dont know what this does
         if (call.byname.find("dividing") != call.byname.end())
-            _log(INV__ERROR, "[Add] byname.dividing found when adding itemID %u (flag %u)", args.itemID, flag);
+            _log(INV__ERROR, "[Add] byname.dividing found when adding itemID %u(flag %u) to inventoryID %u", args.itemID, flag, args.inventoryID);
 
         std::vector<int32> items;
         items.push_back(args.itemID);

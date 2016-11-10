@@ -54,9 +54,17 @@ protected:
     void _SetCapNeed();
 
 private:
-    bool m_IsInitialCycle;
+    bool m_IsInitialCycle = true;
+    bool m_crystalTakeDmg = false;
 
-    double m_cycleVol;
+    uint16 m_crystalRoidGrp = 0;
+
+    float m_crystalDmg = 0;
+    float m_crystalDmgAmount = 0;
+    float m_crystalDmgChance = 0;
+
+    double m_cycleVol = 0;
+    double m_cycleVol2 = 0;
 
     //cached item-type stuff
     bool m_rMiner, m_dcMiner, m_iMiner, m_gMiner;

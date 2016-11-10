@@ -53,6 +53,7 @@ public:
 
     bool HasAttribute(uint32 attrID)                    { return m_Item->HasAttribute(attrID); }
     void SetAttribute(uint32 attrID, EvilNumber val)    { m_Item->SetAttribute(attrID, val); }
+    void ResetAttribute(uint32 attrID)                  { m_Item->ResetAttribute(attrID); }
     EvilNumber GetAttribute(uint32 attrID)              { return m_Item->GetAttribute(attrID); }
 
     void SetRepeat(int32 repeat)                        { m_repeat = repeat; }

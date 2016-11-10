@@ -772,7 +772,6 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     return nullptr;
 }
 
-/** @todo  check this.....item requested is NOT put in jetcan*/
 PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
@@ -788,22 +787,21 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     }
 
     SystemManager* pSysMgr = pClient->SystemMgr();
-    SystemEntity* pSysEntity = nullptr;
+    SystemEntity* pSysEntity(nullptr);
     //Get location of our ship
     GPoint location(pClient->GetShipSE()->GetPosition());
 
     InventoryItemRef cargoItemRef, invItemRef;
     CargoContainerRef newJetcanItem, cargoContainerItem;
     StructureItemRef structureItemRef;
-    uint32 groupID = 0;
-    uint32 categoryID = 0;
+    uint32 groupID = 0, categoryID = 0;
 
     //args contains id's of items to jettison
     std::vector<int32>::iterator cur = args.ints.begin();
     // loop thru items to see if there is a container in this list.
     for (; cur != args.ints.end(); cur++) {
         invItemRef = m_manager->item_factory->GetItem(*cur);
-        if (!invItemRef) continue;      //null pointer hack to avoid crash when dereferenced below
+        if (!invItemRef) continue;
         groupID = invItemRef->groupID();
 
         if ((groupID == EVEDB::invGroups::Audit_Log_Secure_Container)
@@ -812,7 +810,6 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         {
             /** @todo (allan)  check these for accuracy  */
             /** @todo (allan)  *****  there are stipulations on placement of these items.  *****  */
-            /** @todo (allan)  these types of containers should have an 'is anchored' flag to remove the 2-hour time limit when set. */
             cargoContainerItem = m_manager->item_factory->GetCargoContainer(*cur);
             if (!cargoContainerItem)
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", cargoContainerItem->typeID()));
@@ -838,12 +835,11 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     }
 
     // reset iterator and loop thru list.
-    cur = args.ints.begin();
-    for (; cur != args.ints.end(); cur++) {
-        // loop thru remaining items and determine if *cur is a structure or deployable item
-        invItemRef = m_manager->item_factory->GetItem(*cur);
+    for (auto cur : args.ints) {
+        // loop thru remaining items and determine if cur is a structure or deployable item
+        invItemRef = m_manager->item_factory->GetItem(cur);
         if (!invItemRef)
-            continue;      //null pointer hack to avoid crash when dereferenced below
+            continue;
         categoryID = invItemRef->categoryID();
 
         if (categoryID == EVEDB::invCategories::Structure) {
@@ -851,7 +847,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
             // This item is a POS structure of some kind, so move it from the ship's cargo into space
             // whilst keeping ownership of it to the character not using the corporation the character belongs to:
-            structureItemRef = m_manager->item_factory->GetStructure(*cur);
+            structureItemRef = m_manager->item_factory->GetStructure(cur);
             if (!structureItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", structureItemRef->typeID()));
 
@@ -867,7 +863,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         } else if (categoryID == EVEDB::invCategories::Deployable) {
             // This item is a Deployable item of some kind, so move it from the ship's cargo into space
             // whilst keeping ownership of it to the character not using the corporation the character belongs to:
-            cargoItemRef = m_manager->item_factory->GetItem(*cur);
+            cargoItemRef = m_manager->item_factory->GetItem(cur);
             if (!cargoItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cargoItemRef->typeID()));
 
@@ -891,15 +887,9 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         /** @todo  Handle NON-jettisonable cargo */
 
         // item isnt structure or deployable and can be jettisoned.  check if container was already created
-        if ((cargoContainerItem) || (newJetcanItem)) {
-            /** @todo  check current can for capacity limits. */
-            //if over limit create new can?  reject remainging cargo?  delete?  crash?  run thru station naked?
-            // Move item into cargo Container
-            pClient->MoveItem(*cur, (cargoContainerItem ? cargoContainerItem->itemID() : newJetcanItem->itemID()), flagAutoFit);
-            continue;
-        } else {
+        if ((!cargoContainerItem) or (!newJetcanItem)) {
             if (!pClient->IsJetcanAvalible()) {
-                std::string msg = "A Jettison Container is being loaded into your cargo hold. \n";
+                std::string msg = "A Jettison Container is currently being prepped in your cargo hold. \n";
                 msg += "Your estimated wait time is ";
                 msg += itoa(pClient->JetcanTime());
                 msg += " seconds.";
@@ -931,10 +921,16 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             pSysMgr->AddEntity(cSE);
             pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(newJetcanItem);
             pClient->StartJetcanTimer();
-            continue;
         }
+        /** @todo  check current can for capacity limits. */
+        //if over limit create new can?  reject remainging cargo?  delete?  crash?  run thru station naked?
+        // Move item into cargo Container
+        pClient->MoveItem(cur, (cargoContainerItem ? cargoContainerItem->itemID() : newJetcanItem->itemID()), flagAutoFit);
+        continue;
     }
-    return nullptr;
+
+    //response should be nodeid and timestamp
+    return new PyLong(Win32TimeNow());
 }
 
 

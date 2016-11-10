@@ -75,29 +75,36 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
      *   NOTE:  some bonuses are for Alasiya (here), and not found on live, or use different bonus amounts
      */
     // as we hard-set attributes here, we need to make sure they are DEFAULT before adding bonuses.  (error fix)
-    m_Item->ResetAttribute(AttrMiningAmount);
+    ResetAttribute(AttrMiningAmount);
+    ResetAttribute(AttrSpecialtyMiningAmount);
 
     Character* pChar = m_Ship->GetPilot()->GetChar().get();
     // get module volume per cycle
     m_cycleVol = GetAttribute(AttrMiningAmount).get_int();
+    if (HasAttribute(AttrSpecialtyMiningAmount))
+        m_cycleVol2 = GetAttribute(AttrSpecialtyMiningAmount).get_int();
 
     // calculate bonuses
     if (m_iMiner) {
-        m_cycleTime *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillIceHarvesting, true))));// 5% decrease in duration
+        m_cycleTime *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillIceHarvesting, true))));    // 5% decrease in duration
     } else {
-        m_cycleTime *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMining, true))));     // 2% decrease in duration
+        m_cycleTime *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMining, true))));           // 2% decrease in duration
     }
-    m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillMining, true))));          // 5% increase in yield
-    m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillAstrogeology, true))));    // 5% increase in yield
-    m_maxRange *= (1 + (0.03 * (pChar->GetSkillLevel(skillAstrometrics, true))));       // 3% increase in range (here)
-    m_maxRange *= (1 + (0.03 * (pChar->GetSkillLevel(skillLongRangeTargeting, true)))); // 3% increase in range (here)
+    m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillMining, true))));                 // 5% increase in yield
+    m_cycleVol *= (1 + (0.05 * (pChar->GetSkillLevel(skillAstrogeology, true))));           // 5% increase in yield
+    m_cycleVol2 *= (1 + (0.05 * (pChar->GetSkillLevel(skillMining, true))));                // 5% increase in yield
+    m_cycleVol2 *= (1 + (0.05 * (pChar->GetSkillLevel(skillAstrogeology, true))));          // 5% increase in yield
+    m_maxRange *= (1 + (0.03 * (pChar->GetSkillLevel(skillAstrometrics, true))));           // 3% increase in range (here)
+    m_maxRange *= (1 + (0.03 * (pChar->GetSkillLevel(skillLongRangeTargeting, true))));     // 3% increase in range (here)
 
     if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge) {
-        m_cycleTime *= (1 - (0.01 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 1% decrease in duration (here)
-        m_cycleVol *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% increase in yield (here)
+        m_cycleTime *= (1 - (0.01 * (pChar->GetSkillLevel(skillMiningBarge, true))));       // 1% decrease in duration (here)
+        m_cycleVol *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true))));        // 2% increase in yield (here)
+        m_cycleVol2 *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true))));       // 2% increase in yield (here)
     } else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer) {
-        m_cycleTime *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true))));    // 2% decrease in duration
-        m_cycleVol *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% increase in yield (here)
+        m_cycleTime *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true))));          // 2% decrease in duration
+        m_cycleVol *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true))));        // 2% increase in yield (here)
+        m_cycleVol2 *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true))));       // 2% increase in yield (here)
     }
 
     switch (m_Ship->typeID()) {
@@ -138,6 +145,7 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
     // for shits-n-giggles, we allow these bonuses without fleets until they are implemented
     if (true/*pChar->fleetID()*/) {
         m_cycleVol *= (1 + ( 0.02 * (pChar->GetSkillLevel(skillMiningForeman, true))));    //  2% increase in yield
+        m_cycleVol2 *= (1 + ( 0.02 * (pChar->GetSkillLevel(skillMiningForeman, true))));    //  2% increase in yield
         m_cycleTime *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillMiningDirector, true))));   //  2% decrease in duration
         m_maxRange *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillInformationWarfare, true))));   //  3% increase in range
     }
@@ -146,32 +154,46 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
         m_cycleVol = floor(m_cycleVol /1000) *1000;
 
     // save adjusted attributes
-    m_Item->SetAttribute(AttrDuration, m_cycleTime);
-    m_Item->SetAttribute(AttrMaxRange, m_maxRange);
-    m_Item->SetAttribute(AttrMiningAmount, m_cycleVol);
+    SetAttribute(AttrDuration, m_cycleTime);
+    SetAttribute(AttrMaxRange, m_maxRange);
+    SetAttribute(AttrMiningAmount, m_cycleVol);
+    SetAttribute(AttrSpecialtyMiningAmount, m_cycleVol2);
 
-    _log(MINING__TRACE, "Module Created for %s.  Duration:%.3f, CycleVolume:%.3f, Range:%.3f", item->itemName().c_str(), m_cycleTime, m_cycleVol, m_maxRange);
+    _log(MINING__TRACE, "Module Created for %s.  Duration:%.3f, CycleVolume:%.3f, SpecialityVolume:%.3f, Range:%um", \
+                        item->itemName().c_str(), m_cycleTime, m_cycleVol, m_cycleVol2, m_maxRange);
 }
 
 MiningLaser::~MiningLaser()
 {
     //reset attribs on this item before deletion
-    m_Item->ResetAttribute(AttrMiningAmount);
+    ResetAttribute(AttrMiningAmount);
+    ResetAttribute(AttrSpecialtyMiningAmount);
+
 }
 
 void MiningLaser::LoadCharge(InventoryItemRef charge)
 {
     ActiveModule::LoadCharge(charge);
-    m_cycleVol *= m_chargeRef->GetAttribute(AttrSpecialisationAsteroidYieldMultiplier).get_float();
-    m_Item->SetAttribute(AttrMiningAmount, m_cycleVol);
-    _log(MINING__TRACE, "Charge %s loaded for %s.  CycleVolume updated to %.3f", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str(), m_cycleVol);
+    m_cycleVol2 *= m_chargeRef->GetAttribute(AttrSpecialisationAsteroidYieldMultiplier).get_float();
+    m_crystalDmg = m_chargeRef->GetAttribute(AttrDamage).get_float();
+    m_crystalRoidGrp = m_chargeRef->GetAttribute(AttrSpecialisationAsteroidGroup).get_float();
+    m_crystalTakeDmg = m_chargeRef->GetAttribute(AttrCrystalsGetDamaged).get_bool();
+    m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
+    m_crystalDmgChance = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
+    SetAttribute(AttrSpecialtyMiningAmount, m_cycleVol);
+    _log(MINING__TRACE, "Charge %s loaded for %s.  SpecialityVolume updated to %.3f", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str(), m_cycleVol2);
 }
 
 void MiningLaser::UnloadCharge()
 {
-    m_cycleVol /= m_chargeRef->GetAttribute(AttrSpecialisationAsteroidYieldMultiplier).get_float();
-    m_Item->SetAttribute(AttrMiningAmount, m_cycleVol);
-    _log(MINING__TRACE, "Charge %s unloaded for %s.  CycleVolume updated to %.3f", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str(), m_cycleVol);
+    m_cycleVol2 /= m_chargeRef->GetAttribute(AttrSpecialisationAsteroidYieldMultiplier).get_float();
+    m_crystalDmg = 0;
+    m_crystalRoidGrp = 0;
+    m_crystalTakeDmg = false;
+    m_crystalDmgAmount = 0;
+    m_crystalDmgChance = 0;
+    SetAttribute(AttrSpecialtyMiningAmount, m_cycleVol);
+    _log(MINING__TRACE, "Charge %s unloaded for %s.  SpecialityVolume updated to %.3f", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str(), m_cycleVol2);
     ActiveModule::UnloadCharge();
 }
 
@@ -188,6 +210,12 @@ void MiningLaser::Activate(SystemEntity* pSE)
 {
     if (!m_cycleVol) {
         _log(MINING__ERROR, "Mining Module %s(%u) has 0 CycleVolume", m_Item->itemName().c_str(), m_Item->itemID());
+        if (m_Ship->HasPilot())
+            if (m_Ship->GetPilot()->CanThrow())
+                throw PyException( MakeCustomError( "Module Activate: Invalid Attribute - Ref: ServerError 15168" ) );
+    }
+    if (m_chargeLoaded and !m_cycleVol2) {
+        _log(MINING__ERROR, "Mining Module %s(%u) has loaded crystal and 0 SpecialityVolume", m_Item->itemName().c_str(), m_Item->itemID());
         if (m_Ship->HasPilot())
             if (m_Ship->GetPilot()->CanThrow())
                 throw PyException( MakeCustomError( "Module Activate: Invalid Attribute - Ref: ServerError 15168" ) );
@@ -256,34 +284,55 @@ double MiningLaser::DoCycle() {
     return m_cycleTime;
 }
 
+// note:  gas cloud contains radius/10 units of gas.
 /** @todo verify for ice and gas */
 void MiningLaser::ProcessCycle(bool partial)
 {
-    // note:  gas cloud contains radius/10 units of gas.
+    // update for t2 crystal shit, if applicable
+    double cycleVol = m_cycleVol;
+    if (m_chargeLoaded) {
+        if (m_targetEntity->GetGroupID() == m_crystalRoidGrp) {
+            cycleVol = m_cycleVol2;
+        } else {
+            cycleVol = m_cycleVol;
+        }
+        if (m_crystalTakeDmg) {
+            if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
+                m_crystalDmg += m_crystalDmgAmount;
+                if (m_crystalDmg > 1.0f) {
+                    m_Ship->GetPilot()->SendNotifyMsg("Your %u loaded in %u has been destroyed.", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str());
+                    m_Ship->RemoveItem(m_chargeRef);
+                    m_chargeRef->Delete();
+                    cycleVol = m_cycleVol;  //m_cycleVol2 is reset when charge is removed.
+                } else {
+                    m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
+                }
+            }
+        }
+    }
 
-	// Retrieve ore from target Asteroid and put into Cargo Hold
 	InventoryItemRef roidRef = m_targetEntity->GetSelf();
-    double oreVolume = roidRef->GetAttribute(AttrVolume).get_float();
+    double oreVolume = roidRef->GetAttribute(AttrVolume).get_double();
 
-    if (m_cycleVol < oreVolume) {
+    if (cycleVol < oreVolume) {
         _log(MINING__ERROR, "%s(%u) - Laser could not extract ore from %s(%u)", \
               m_Item->itemName().c_str(), m_Item->itemID(), m_targetEntity->GetSelf()->itemName().c_str(), m_targetEntity->GetID() );
         return;
     }
 
-    double oreAmount = m_cycleVol /oreVolume;
+    double oreAmount = cycleVol /oreVolume;
 
     if (partial) /** @todo  fix this for ice */
         oreAmount *= (m_AMPC->GetRemainingCycleTimeMS() / m_cycleTime);
 
     double remainingCargoVolume = m_Ship->GetRemainingVolumeByFlag(flagCargoHold);
-    double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_float();
-    _log(MINING__DEBUG, "ProcessCycle(%s) -  m_cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f, oreAmount:%.2f", \
-            (partial?"true":"false"), m_cycleVol, roidQuantity, remainingCargoVolume, oreAmount);
+    double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_double();
+    _log(MINING__DEBUG, "ProcessCycle(%s) -  cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f, oreAmount:%.2f", \
+            (partial?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, oreAmount);
 
-    if (remainingCargoVolume < m_cycleVol) {
+    if (remainingCargoVolume < cycleVol) {
         oreAmount = remainingCargoVolume /oreVolume;
-        StopCycle();
+        StopCycle(partial);
         m_AMPC->StopTimer();
     }
 
@@ -292,23 +341,17 @@ void MiningLaser::ProcessCycle(bool partial)
     if (oreAmount < 1)
         return;
 
-    ItemData idata(
-        roidRef->typeID(),
-        m_Ship->ownerID(),
-        0,
-        flagAutoFit,
-        oreAmount
-    );
-
+    ItemData idata(roidRef->typeID(), m_Ship->ownerID(), 0, flagAutoFit, oreAmount);
     InventoryItemRef ore = m_Ship->GetItemFactory()->SpawnItem( idata );
     if (!ore) {
-        sLog.Error( "MiningLaser::DoCycle()", "ERROR: Could not create ore stack for '%s' ship (id %u)!",\
-                    m_Ship->itemName().c_str(), m_Ship->itemID() );
+        _log(MINING__ERROR, "Could not create mined ore for %s(%u)", m_Ship->itemName().c_str(), m_Ship->itemID() );
         return;
     }
 
-    if (!m_Ship->AddItem(flagCargoHold, ore))
+    if (!m_Ship->AddItem(flagCargoHold, ore)) {
+        _log(MINING__ERROR, "Could not add mined ore in cargo for %s(%u)", m_Ship->itemName().c_str(), m_Ship->itemID() );
         return;
+    }
 
     roidQuantity -= oreAmount;
     _log(MINING__TRACE, "new roidQuantity %.3f", roidQuantity);
@@ -322,8 +365,8 @@ void MiningLaser::ProcessCycle(bool partial)
         /* reversing the radius-to-quantity formula, we get radius = exp((quantity + 112404.8) /25000)  */
         double radius = exp((roidQuantity +112404.8) /25000);
         roidRef->SetAttribute(AttrRadius, radius);
+        roidRef->SetAttribute(AttrQuantity, roidQuantity);
     }
-    roidRef->SetAttribute(AttrQuantity, roidQuantity);
 }
 
 void MiningLaser::_ShowCycle()
