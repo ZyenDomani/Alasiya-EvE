@@ -20,7 +20,7 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Allan, Comet0
+    Author:        Allan, based on original design by Comet0
 */
 
 #include "eve-server.h"
@@ -43,8 +43,9 @@ PyRep* PlanetDB::GetPlanetInfo(uint32 planetID) {
               'currentSimTime' and 'pins'  are populated for planets that are colonlized
     */
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT solarSystemID, typeID AS planetTypeID, itemID AS planetID, radius"
-                  " FROM mapDenormalize WHERE itemID = %u", planetID)) {
+    if (!sDatabase.RunQuery(res,
+        "SELECT solarSystemID, typeID AS planetTypeID, itemID AS planetID, radius"
+        " FROM mapDenormalize WHERE itemID = %u", planetID)) {
         _log(DATABASE__ERROR, "Error in GetPlanetInfo query: %s", res.error.c_str());
         return NULL;
     }
@@ -58,8 +59,9 @@ PyRep* PlanetDB::GetPlanetInfo(uint32 planetID) {
 
 PyRep* PlanetDB::GetPlanetsForChar(uint32 charID) {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT solarSystemID, planetID, typeID, numberOfPins"
-         " FROM chrPlanets WHERE characterID = %u", charID)) {
+    if(!sDatabase.RunQuery(res,
+        "SELECT solarSystemID, planetID, typeID, numberOfPins"
+        " FROM chrPlanets WHERE charID = %u", charID)) {
         _log(DATABASE__ERROR, "Error in GetPlanetsForChar query: %s", res.error.c_str());
         return NULL;
          }
@@ -108,7 +110,7 @@ PyRep* PlanetDB::GetPlanetResourceInfo(uint32 planetID) {
 PyRep* PlanetDB::GetMyLaunchesDetails(uint32 charID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT launchID, charID, itemID, solarSystemID, planetID, status, launchTime, x, y, z"
-        " FROM chrPlanetLaunches WHERE characterID = %u", charID)) {
+        " FROM chrPlanetLaunches WHERE charID = %u", charID)) {
         _log(DATABASE__ERROR, "Error in GetMyLaunchesDetails Query: %s", res.error.c_str());
         return NULL;
     }

@@ -1,8 +1,8 @@
 
 
 CREATE TABLE `chrPlanetColonies` (
-  `charID` int(11) NOT NULL,
-  `planetID` int(11) NOT NULL,
+  `charID` int(10) NOT NULL,
+  `planetID` int(10) NOT NULL,
   `status` varchar(17) CHARACTER SET utf8 NOT NULL,
   `launchTime` bigint(20) NOT NULL,
   `x` double NOT NULL,
@@ -11,11 +11,11 @@ CREATE TABLE `chrPlanetColonies` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `chrPlanetLaunches` (
-  `launchID` int(11) NOT NULL AUTO_INCREMENT,
-  `charID` int(11) NOT NULL,
-  `itemID` int(11) NOT NULL,
-  `solarSystemID` int(11) NOT NULL,
-  `planetID` int(11) NOT NULL,
+  `launchID` int(10) NOT NULL AUTO_INCREMENT,
+  `charID` int(10) NOT NULL,
+  `itemID` int(10) NOT NULL,
+  `solarSystemID` int(10) NOT NULL,
+  `planetID` int(10) NOT NULL,
   `status` varchar(17) CHARACTER SET utf8 NOT NULL,
   `launchTime` bigint(20) NOT NULL,
   `x` double NOT NULL,
@@ -26,23 +26,23 @@ CREATE TABLE `chrPlanetLaunches` (
 
 
 CREATE TABLE `chrPlanetPins` (
-  `id` int(11) NOT NULL DEFAULT '0',
-  `typeID` int(11) NOT NULL,
-  `ownerID` int(11) NOT NULL,
-  `state` tinyint(2) NOT NULL,
+  `pinID` int(10) NOT NULL DEFAULT '0',
+  `typeID` int(10) NOT NULL,
+  `ownerID` int(10) NOT NULL,
+  `state` tinyint(1) NOT NULL,
   `latitude` double NOT NULL,
   `longitude` double NOT NULL,
-  `isCommandCenter` tinyint(2) NOT NULL DEFAULT '0',
-  `isLaunchable` tinyint(2) NOT NULL DEFAULT '0',
-  `isProcess` tinyint(2) NOT NULL DEFAULT '0',
-  `isExtractor` tinyint(2) NOT NULL DEFAULT '0',
-  `heads` int(4) DEFAULT NULL,
-  `schematicID` int(11) DEFAULT NULL,
+  `isCommandCenter` tinyint(1) NOT NULL DEFAULT '0',
+  `isLaunchable` tinyint(1) NOT NULL DEFAULT '0',
+  `isProcess` tinyint(1) NOT NULL DEFAULT '0',
+  `isExtractor` tinyint(1) NOT NULL DEFAULT '0',
+  `heads` int(2) DEFAULT NULL,
+  `schematicID` int(10) DEFAULT NULL,
   `hasRecievedInputs` tinyint(1) DEFAULT NULL,
   `recievedInputsLastCycle` tinyint(1) DEFAULT NULL,
-  `cycleTime` int(11) DEFAULT NULL,
-  `programType` int(11) DEFAULT NULL,
-  `qtyPerCycle` int(11) DEFAULT NULL,
+  `cycleTime` int(10) DEFAULT NULL,
+  `programType` int(10) DEFAULT NULL,
+  `qtyPerCycle` int(10) DEFAULT NULL,
   `launchTime` bigint(20) DEFAULT NULL,
   `expiryTime` bigint(20) DEFAULT NULL,
   `installTime` bigint(20) DEFAULT NULL,
@@ -51,22 +51,22 @@ CREATE TABLE `chrPlanetPins` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `chrPlanets` (
-  `characterID` int(11) NOT NULL,
-  `planetID` int(11) NOT NULL,
-  `solarSystemID` int(11) NOT NULL,
-  `typeID` int(11) NOT NULL,
-  `numberOfPins` int(11) NOT NULL,
-  PRIMARY KEY (`characterID`,`planetID`)
+  `charID` int(10) NOT NULL,
+  `planetID` int(10) NOT NULL,
+  `solarSystemID` int(10) NOT NULL,
+  `typeID` int(10) NOT NULL,
+  `numberOfPins` int(10) NOT NULL,
+  PRIMARY KEY (`charID`,`planetID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 CREATE TABLE `planetResourceInfo` (
-  `planetID` int(11) NOT NULL,
-  `itemID1` int(11) NOT NULL,
-  `itemID2` int(11) NOT NULL,
-  `itemID3` int(11) NOT NULL,
-  `itemID4` int(11) NOT NULL,
-  `itemID5` int(11) NOT NULL,
+  `planetID` int(10) NOT NULL,
+  `itemID1` int(10) NOT NULL,
+  `itemID2` int(10) NOT NULL,
+  `itemID3` int(10) NOT NULL,
+  `itemID4` int(10) NOT NULL,
+  `itemID5` int(10) NOT NULL,
   `quality1` float NOT NULL,
   `quality2` float NOT NULL,
   `quality3` float NOT NULL,
@@ -77,11 +77,11 @@ CREATE TABLE `planetResourceInfo` (
   `data3` varchar(255) NOT NULL,
   `data4` varchar(255) NOT NULL,
   `data5` varchar(255) NOT NULL,
-  `numBands1` int(11) NOT NULL,
-  `numBands2` int(11) NOT NULL,
-  `numBands3` int(11) NOT NULL,
-  `numBands4` int(11) NOT NULL,
-  `numBands5` int(11) NOT NULL,
+  `numBands1` int(10) NOT NULL,
+  `numBands2` int(10) NOT NULL,
+  `numBands3` int(10) NOT NULL,
+  `numBands4` int(10) NOT NULL,
+  `numBands5` int(10) NOT NULL,
   UNIQUE KEY `planetID` (`planetID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

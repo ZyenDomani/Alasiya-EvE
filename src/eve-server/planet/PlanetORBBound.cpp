@@ -44,6 +44,14 @@ public:
         m_strBoundObjectName = "PlanetORBBound";
 
         PyCallable_REG_CALL(PlanetORBBound, GMChangeSpaceObjectOwner);
+        /*
+                    taxRate = moniker.GetPlanetOrbitalRegistry(session.solarsystemid).GetTaxRate(itemID)
+                    remoteOrbitalRegistry.UpdateSettings(self.orbitalID, reinforceValue, taxRateValues, standingValue, allowAllianceValue, allowStandingsValue)
+
+                    self.orbitalData = self.remoteOrbitalRegistry.GetSettingsInfo(self.orbitalID)
+                    self.selectedHour, self.taxRateValues, self.standingLevel, self.allowAlliance, self.allowStandings = self.orbitalData
+
+        */
     }
     virtual ~PlanetORBBound() { delete m_dispatch; }
     virtual void Release() {

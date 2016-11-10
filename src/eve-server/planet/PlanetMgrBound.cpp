@@ -95,6 +95,60 @@ public:
     PyCallable_DECL_CALL(UserLaunchCommodities);
     PyCallable_DECL_CALL(UserTransferCommodities);
     PyCallable_DECL_CALL(UserUpdateNetwork);
+    /*
+     *
+    data = planet.remoteHandler.GMGetCompleteResource(resourceTypeID, layer)
+        sh = builder.CreateSHFromBuffer(data.data, data.numBands)
+
+    self.planet.remoteHandler.GMCreateNuggetLayer(self.planetID, typeID)
+        self.GMShowResource(typeID, 'nuggets')      {{ 'nuggets' = layer here }}
+
+     "sm.GetService('planetSvc').GetPlanet(planetID)"  is a bound call.
+        self.pin = sm.GetService('planetSvc').GetPlanet(planetID).GetPin(self.pin.id)
+        self.pin.id
+        self.pin.typeID
+
+        for typeID, amount in self.pin.contents.iteritems():
+        for typeID, amount in self.pin.GetProductMaxOutput().iteritems():
+
+        amount=self.pin.GetCpuUsage())))
+        amount=self.pin.GetCpuOutput())))
+        amount=self.pin.GetPowerUsage())))
+        amount=self.pin.GetPowerOutput())))
+        self.currRouteCycleTime = self.pin.GetCycleTime()
+        if self.pin.IsStorage():
+
+            pin.InstallProgram(typeID, cycleTime, endTime, maxValue, headRadius)
+    pin = currentPlanet.CancelInstallProgram(pinID, pinData)
+
+
+    def LoadDestComboOptions(self):
+    colony = self.planet.GetColony(session.charid)
+    if colony is None:
+        self.sr.spaceportCombo.LoadOptions([(localization.GetByLabel('UI/PI/Common/NoDestinationsFound'), None)])
+        return
+        self.endpoints = colony.GetImportEndpoints()
+        if len(self.endpoints) < 1:
+            self.sr.spaceportCombo.LoadOptions([(localization.GetByLabel('UI/PI/Common/NoDestinationsFound'), None)])
+            return
+            options = []
+            for endpoint in self.endpoints:
+                pin = self.planet.GetPin(endpoint.id)
+                options.append((planetCommon.GetGenericPinName(pin.typeID, pin.id), endpoint.id))
+
+                if self.spaceportPinID is None:
+                    self.spaceportPinID = options[0][1]
+                    self.sr.spaceportCombo.LoadOptions(options, select=self.spaceportPinID)
+
+
+
+    self.remoteHandler = moniker.GetPlanet(self.planetID)
+        self.remoteHandler.UserAbandonPlanet()
+        updatedColony = self.remoteHandler.UserUpdateNetwork(serializedChanges)
+
+        qtyToDistribute, cycleTime, numCycles = self.remoteHandler.GetProgramResultInfo(pinID, typeID, pin.heads, headRadius)
+
+        */
 
 protected:
     Colony* m_colony;
@@ -111,6 +165,8 @@ PlanetMgrService::PlanetMgrService(PyServiceMgr *mgr)
 {
     _SetCallDispatcher(m_dispatch);
 
+    PyCallable_REG_CALL(PlanetMgrService, GetPlanet);
+    PyCallable_REG_CALL(PlanetMgrService, DeleteLaunch);
     PyCallable_REG_CALL(PlanetMgrService, GetPlanetsForChar);
     PyCallable_REG_CALL(PlanetMgrService, GetMyLaunchesDetails);
 }
@@ -128,6 +184,20 @@ PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *c, const PyRep *bind
         return nullptr;
     }
     return new PlanetMgrBound(m_manager, bind_args->AsInt()->value(), c->GetCharacterID());
+}
+
+PyResult PlanetMgrService::Handle_GetPlanet(PyCallArgs &call) {
+    sLog.Log("PlanetMgrService", "Handle_GetPlanet() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
+}
+
+PyResult PlanetMgrService::Handle_DeleteLaunch(PyCallArgs &call) {
+    sLog.Log("PlanetMgrService", "Handle_DeleteLaunch() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
 }
 
 PyResult PlanetMgrService::Handle_GetPlanetsForChar(PyCallArgs &call) {
@@ -154,6 +224,9 @@ PyResult PlanetMgrBound::Handle_GMAddCommodity(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrBound::Handle_GMConvertCommandCenter(PyCallArgs &call) {
+    //self.remoteHandler.GMConvertCommandCenter(pinID)
+    //  this is an option in the GM planet menu.  no clue what it's for or what it does.....
+
     sLog.Log("PlanetMgrBound", "Handle_GMConvertCommandCenter() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
@@ -164,6 +237,10 @@ PyResult PlanetMgrBound::Handle_GMForceInstallProgram(PyCallArgs &call) {
     sLog.Log("PlanetMgrBound", "Handle_GMForceInstallProgram() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 /*
+        if typeID not in resourceInfo or qtyPerCycle < 0 or cycleTime < 10 * SEC or lifetimeHours < 1 or headRadius <= 0.0:
+            return
+        self.remoteHandler.GMForceInstallProgram(pinID, typeID, cycleTime, lifetimeHours, qtyPerCycle, headRadius)
+
 16:40:57 L PlanetMgrBound: Handle_GMForceInstallProgram() size=6
 16:40:57 [PlanetCallDump]   Call Arguments:
 16:40:57 [PlanetCallDump]       Tuple: 6 elements
@@ -199,6 +276,32 @@ PyResult PlanetMgrBound::Handle_GMGetLocalDistributionReport(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrBound::Handle_GMGetSynchedServerState(PyCallArgs &call) {
+    /*
+    def GMVerifySimulation(self):
+        self.LogNotice('VerifySimulation -- starting')
+        simulationDuration, remoteColonyData = self.remoteHandler.GMGetSynchedServerState(session.charid)
+        simEndTime = remoteColonyData.currentSimTime
+        colony = self.GetColony(session.charid)
+        startTime = blue.os.GetWallclockTimeNow()
+        colony.RunSimulation(runSimUntil=simEndTime)
+        clientSimulationRuntime = blue.os.GetWallclockTimeNow() - startTime
+        pins = remoteColonyData.pins
+        self.LogNotice('simulation ran for', clientSimulationRuntime, 'on client, ', simulationDuration, 'on server')
+        for pin in pins:
+            clientPin = colony.GetPin(pin.id)
+            if clientPin is None:
+                self.LogError(pin.id, 'exists on server but not on client')
+                continue
+            for key, value in pin.__dict__.iteritems():
+                if not hasattr(clientPin, key):
+                    self.LogError(pin.id, 'on client does not have attribute ', key)
+                    continue
+                clientValue = getattr(clientPin, key)
+                if clientValue != value:
+                    self.LogError(pin.id, 'does not agree on a value for', key, 'Client says ', clientValue, 'but server', value)
+
+        self.LogNotice('VerifySimulation -- finished')
+        */
     sLog.Log("PlanetMgrBound", "Handle_GMGetSynchedServerState() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
@@ -263,6 +366,8 @@ PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
      *         and figure out the client buffer structure, etc.
      * TODO, optimise this function maybe?
      */
+    /*
+        inRange, sh = planet.GetResourceData(resourceTypeID)        << check packets for this call
 
     /*  this is called by planet view page, by "resource filter" for given typeID
 20:03:42 [BindDump] NodeID: 888444 BindID: 122 calling GetResourceData in service manager 'PlanetMgrBound'
@@ -329,6 +434,10 @@ PyResult PlanetMgrBound::Handle_UserAbandonPlanet(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrBound::Handle_UserLaunchCommodities(PyCallArgs &call) {
+    /*
+            lastLaunchTime = self.remoteHandler.UserLaunchCommodities(commandPinID, commoditiesToLaunch)
+            for typeID, qty in commoditiesToLaunch.iteritems():
+            */
     sLog.Log("PlanetMgrBound", "Handle_UserLaunchCommodities() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
     /* 20:00:35 L PlanetMgrBound: Handle_UserLaunchCommodities() size=2
@@ -349,7 +458,11 @@ PyResult PlanetMgrBound::Handle_UserLaunchCommodities(PyCallArgs &call) {
 PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
     sLog.Log("PlanetMgrBound", "Handle_UserTransferCommodities() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
+/*
 
+        simTime, sourceRunTime = self.remoteHandler.UserTransferCommodities(path, commodities)    {{ simTime = time to stop (complete time), sourceRunTime = previous runtime}}
+
+        */
     return nullptr;
 }
 /*

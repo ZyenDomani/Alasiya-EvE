@@ -896,17 +896,16 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
     m_services.item_factory->SetUsingClient(this);
     InventoryItemRef item = m_services.item_factory->GetItem(itemID);
     if (!item) {
-        sLog.Error("Client","%s: Unable to load item %u", m_char->itemName().c_str(), itemID);
+        _log(INV__ERROR, "Client::MoveItem() - %s Unable to load item %u", m_char->itemName().c_str(), itemID);
         return;
     }
 
-    bool was_module = (item->flag() >= flagSlotFirst and item->flag() <= flagSlotLast);
-
     item->Move(location, flag);
-    m_ship->UpdateHoldsUsedVolume();
 
-    if (was_module || (item->flag() >= flagSlotFirst and item->flag() <= flagSlotLast))
+    if ((item->flag() >= flagSlotFirst) and (item->flag() <= flagSlotLast))
         m_ship->UpdateModules();
+    else
+        m_ship->UpdateHoldsUsedVolume();
 
     m_services.item_factory->UnsetUsingClient();
 }
