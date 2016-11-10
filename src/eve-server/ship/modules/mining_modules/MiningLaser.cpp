@@ -180,7 +180,7 @@ void MiningLaser::LoadCharge(InventoryItemRef charge)
     m_crystalTakeDmg = m_chargeRef->GetAttribute(AttrCrystalsGetDamaged).get_bool();
     m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
     m_crystalDmgChance = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
-    SetAttribute(AttrSpecialtyMiningAmount, m_cycleVol);
+    SetAttribute(AttrSpecialtyMiningAmount, m_cycleVol2);
     _log(MINING__TRACE, "Charge %s loaded for %s.  SpecialityVolume updated to %.3f", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str(), m_cycleVol2);
 }
 
