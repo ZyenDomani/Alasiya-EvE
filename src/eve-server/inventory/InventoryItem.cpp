@@ -500,13 +500,13 @@ uint32 InventoryItem::GetPackagedVolume()
         return type().volume();
 
     if ((categoryID() == EVEDB::invCategories::Ship)
-    or (groupID() == EVEDB::invGroups::Cargo_Container)
-    or (groupID() == EVEDB::invGroups::Spawn_Container)
-    or (groupID() == EVEDB::invGroups::Secure_Cargo_Container)
-    or (groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
-    or (groupID() == EVEDB::invGroups::Freight_Container)
-    or (groupID() == EVEDB::invGroups::Mission_Container)) {
-        // these are hard-coded in client.
+        or (groupID() == EVEDB::invGroups::Cargo_Container)
+        or (groupID() == EVEDB::invGroups::Spawn_Container)
+        or (groupID() == EVEDB::invGroups::Secure_Cargo_Container)
+        or (groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
+        or (groupID() == EVEDB::invGroups::Freight_Container)
+        or (groupID() == EVEDB::invGroups::Mission_Container)) {
+        // these volumes are hard-coded in client.
         switch (type().groupID()) {
             case 29:  //   Capsule
             case 31:  //   Shuttle
@@ -790,6 +790,8 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
     Inventory *old_inventory = m_factory.GetInventoryFromId( old_location, false );
     if (old_inventory)
         old_inventory->RemoveItem(InventoryItemRef(this));  //releases its ref
+        else
+            _log(INV__WARNING, "Inventory for %u not found. Item not removed from it's container's inventory.", old_location);
 
     m_locationID = new_location;
     m_flag = new_flag;
@@ -798,6 +800,8 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
     Inventory *new_inventory = m_factory.GetInventoryFromId( new_location, false );
     if (new_inventory)
         new_inventory->AddItem(InventoryItemRef(this)); //makes a new ref
+    else
+        _log(INV__WARNING, "Inventory for %u not found. Item not added to it's container's inventory.", new_location);
 
     SaveItem();
 

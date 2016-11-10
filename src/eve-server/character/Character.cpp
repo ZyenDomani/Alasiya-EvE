@@ -558,19 +558,22 @@ int8 Character::GetSkillLevel(uint32 skillTypeID, bool zeroForNotInjected /*true
 }
 
 float Character::GetAgilitySkills(bool cap) {
-	/*    Evasive Maneuvering  5% improved ship agility for all ships per skill level.
-	 *    Spaceship Command   2% improved ship agility for all ships per skill level.
-     *    Capital Ships   5% bonus per skill level to the agility of ships requiring Capital Ships
-	 *    Advanced Spaceship Command    5% Bonus per skill level to the agility of ships requiring Advanced Spaceship Command
-	 */
-	float modifier = 1.0;
+    /* Spaceship Command: 2% agility for all ships per level
+     * Evasive Maneuvering: 5% agility bonus for all ships per level
+     * Advanced Spaceship Command: 5% agility bonus per level on ships requiring this skill
+     * Capital Ships: 5% agility bonus per level on ships requiring this skill
+     * **  these 2 will have to be set in fleet, once that system is operational  **
+     * Skirmish Warfare: 2% agility to fleet per skill level
+     * Skirmish warfare Mindlink (implant): 15% agility to fleet, replaces Skirmish warfare skill
+     */
+    float modifier = 1.0;
     modifier *= (1 - (0.02 * GetSkillLevel(skillSpaceshipCommand, true)));  //2%
-	modifier *= (1 - (0.05 * GetSkillLevel(skillEvasiveManeuvering, true)));  //5%
-	if (cap) {
-		modifier *= (1 - (0.05 * GetSkillLevel(skillAdvancedSpaceshipCommand, true)));  //5%
-		modifier *= (1 - (0.05 * GetSkillLevel(skillCapitalShips, true)));    //5%
-	}
-	return modifier;
+    modifier *= (1 - (0.05 * GetSkillLevel(skillEvasiveManeuvering, true)));  //5%
+    if (cap) {
+        modifier *= (1 - (0.05 * GetSkillLevel(skillAdvancedSpaceshipCommand, true)));  //5%
+        modifier *= (1 - (0.05 * GetSkillLevel(skillCapitalShips, true)));    //5%
+    }
+    return modifier;
 }
 
 SkillRef Character::GetSkillInTraining() const {

@@ -135,7 +135,7 @@ public:
     static uint32           CreateTempItemID(ItemFactory &factory, ItemData &data);
     /* loads attributes for this item */
     //bool LoadAttributes();
-    uint32 GetPackagedVolume();
+    uint32                  GetPackagedVolume();
 
     /* specific funtions for ShipItem, virtual here to allow generic class access */
     virtual void            SetPlayer(Client* pClient)  { /* do nothing here */ }
