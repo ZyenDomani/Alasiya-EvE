@@ -435,6 +435,10 @@ int main( int argc, char* argv[] )
         sProfile.Init();
     } else
         sLog.Magenta(" Server Profiling","Disabled.");
+    if (sConfig.npc.EnableDrones)
+        sLog.Success("    Player Drones","Enabled.");
+    else
+        sLog.Magenta("    Player Drones","Disabled.");
     if (sConfig.npc.StaticSpawns)
         sLog.Success("    Static Spawns","Enabled.  Checks every %u minutes", sConfig.npc.StaticTimer);
     else
