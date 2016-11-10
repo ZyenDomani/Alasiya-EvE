@@ -353,8 +353,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
                                     char_item->itemID(),
                                     cur.first,
                                     skillLevel,
-                                    skillPoints.get_float(),
-                                    totalPoints.get_float());
+                                    skillPoints.get_double(),
+                                    totalPoints.get_double());
     }
 
     //now set up some initial inventory:

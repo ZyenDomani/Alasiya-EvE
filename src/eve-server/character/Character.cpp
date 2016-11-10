@@ -646,7 +646,7 @@ bool Character::InjectSkillIntoBrain(SkillRef skill) {
         skill->Move(itemID(), flagSkill);
     }
     // 'skillEventSkillInjected' shows as "Unknown" in PD>Skill>History
-    SaveSkillHistory(skillEventSkillInjected, Win32TimeNow(), itemID(), skill->typeID(), 0, 0, GetTotalSP().get_float() );
+    SaveSkillHistory(skillEventSkillInjected, Win32TimeNow(), itemID(), skill->typeID(), 0, 0, GetTotalSP().get_double() );
     _log(CHARACTER__SKILL_TRACE, "%s(%u) Skill Injected: %u", itemName().c_str(), itemID(), skill->itemID());
 
     m_pClient->SendNotifyMsg( "Injection of skill complete." );
@@ -696,7 +696,7 @@ void Character::UpdateSkillQueue() {
                 PyTuple* tmp = osst.Encode();
             m_pClient->QueueDestinyEvent(&tmp); // consumed
 
-            SaveSkillHistory(skillEventTrainingCancelled, Win32TimeNow(), itemID(), currentTraining->typeID(), oldLevel, skillPointsTrained.get_float(), GetTotalSP().get_float() );
+            SaveSkillHistory(skillEventTrainingCancelled, Win32TimeNow(), itemID(), currentTraining->typeID(), oldLevel, skillPointsTrained.get_double(), GetTotalSP().get_double() );
             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u", itemName().c_str(), itemID(), currentTraining->typeID(), oldLevel);
 
             currentTraining->SetAttribute(AttrSkillPoints, skillPointsTrained);
@@ -729,16 +729,16 @@ void Character::UpdateSkillQueue() {
             SPToNextLevel -= CurrentSP;
             EvilNumber timeTraining = (EvilTimeNow() + (EvilTime_Minute * (SPToNextLevel / GetSPPerMin(currentTraining))));
 
-            SaveSkillHistory(skillEventTrainingStarted, Win32TimeNow(), itemID(), skillID, (uint8)level.get_int(), CurrentSP.get_float(), GetTotalSP().get_float() );
+            SaveSkillHistory(skillEventTrainingStarted, Win32TimeNow(), itemID(), skillID, (uint8)level.get_int(), CurrentSP.get_double(), GetTotalSP().get_double() );
             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining started - skill: %u, level: %u", \
                             itemName().c_str(), itemID(), skillID, level.get_int());
 
-            currentTraining->SetAttribute(AttrExpiryTime, timeTraining.get_float());
+            currentTraining->SetAttribute(AttrExpiryTime, timeTraining.get_double());
             currentTraining->SetFlag(flagSkillInTraining);
 
             OnSkillStartTraining osst;
 				osst.itemID = currentTraining->itemID();
-				osst.endOfTraining = timeTraining.get_float();
+				osst.endOfTraining = timeTraining.get_double();
             PyTuple* tmp = osst.Encode();
             m_pClient->QueueDestinyEvent(&tmp); // consumed
             break;
@@ -754,7 +754,7 @@ void Character::UpdateSkillQueue() {
             uint64 completeTime = currentTraining->GetAttribute(AttrExpiryTime).get_int();
             if ( completeTime < (Win32TimeNow() - Win32Time_Year)) completeTime = Win32TimeNow();
 
-            SaveSkillHistory(skillEventTrainingComplete, completeTime, itemID(), currentTraining->typeID(), level, currentTraining->GetAttribute(AttrSkillPoints).get_float(), GetTotalSP().get_float() );
+            SaveSkillHistory(skillEventTrainingComplete, completeTime, itemID(), currentTraining->typeID(), level, currentTraining->GetAttribute(AttrSkillPoints).get_double(), GetTotalSP().get_double() );
              _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining completed - skill: %u, level: %u", itemName().c_str(), itemID(), currentTraining->typeID(), level);
 
             OnSkillTrained ost;
@@ -788,15 +788,15 @@ void Character::UpdateSkillQueue() {
             SPToNextLevel -= CurrentSP;
             EvilNumber timeTraining = (completeTime + (EvilTime_Minute * (SPToNextLevel / GetSPPerMin(currentTraining))));
 
-            SaveSkillHistory(skillEventTrainingStarted, timeTraining.get_int(), itemID(), skillID, level, CurrentSP.get_float(), GetTotalSP().get_float() );
+            SaveSkillHistory(skillEventTrainingStarted, timeTraining.get_int(), itemID(), skillID, level, CurrentSP.get_double(), GetTotalSP().get_double() );
              _log(CHARACTER__SKILL_TRACE, "%s(%u) Persistant Training started - skill: %u, level: %u", itemName().c_str(), itemID(), skillID, level);
 
-            currentTraining->SetAttribute(AttrExpiryTime, timeTraining.get_float());
+            currentTraining->SetAttribute(AttrExpiryTime, timeTraining.get_double());
             currentTraining->SetFlag(flagSkillInTraining);
 
             OnSkillStartTraining osst;
                 osst.itemID = currentTraining->itemID();
-                osst.endOfTraining = timeTraining.get_float();
+                osst.endOfTraining = timeTraining.get_double();
             PyTuple *tmp2 = osst.Encode();
             m_pClient->QueueDestinyEvent(&tmp2); // consumed
         } else
@@ -962,7 +962,7 @@ void Character::SaveCharacter() {
             m_aurBalance,
             m_securityStatus,
             m_logonMinutes,
-            GetTotalSP().get_float(),
+            GetTotalSP().get_double(),
             m_corporationID,
             m_allianceID,
             m_warFactionID,

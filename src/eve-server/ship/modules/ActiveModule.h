@@ -64,7 +64,7 @@ public:
     virtual void StopCycle(bool abort=false)            { /* Do nothing here */ }
 
     /* ActiveModule methods */
-    bool ShipHasCapCharge()                             { return (_GetCapNeed() <  m_Ship->GetAttribute(AttrCapacitorCharge).get_float()); }
+    bool ShipHasCapCharge()                             { return (_GetCapNeed() <  m_Ship->GetAttribute(AttrCapacitorCharge).get_double()); }
     uint32 GetTargetID()                                { return m_targetID; }
     SystemEntity* GetTarget()                           { return m_targetEntity; }
     double GetCycleTime()                               { return m_cycleTime; }
@@ -111,7 +111,7 @@ protected:
     virtual void _ShowCycle()                           { /* Do nothing here */ }
     virtual void _SetCapNeed()                          { /* Do nothing here */ }
     //  these should be overridden in derived clases to use skills and other factors as needed as this returns default attribute only.
-    virtual double _GetCapNeed()                        { return GetAttribute(AttrCapacitorNeed).get_float(); }
+    virtual double _GetCapNeed()                        { return GetAttribute(AttrCapacitorNeed).get_double(); }
 };
 
 

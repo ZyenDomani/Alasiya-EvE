@@ -47,7 +47,7 @@ protected:
     //double _GetCapNeed();
     void _SetCapNeed();
 
-    double m_originalSpeed;
+    float m_originalSpeed = 0.0f;
 };
 
 #endif  //_EVE_SHIP_MOD_EWAR_WEB_H_

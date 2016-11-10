@@ -104,7 +104,7 @@ private:
 static EvilNumber e_sqrt(EvilNumber num)
 {
     if (num.get_type() == evil_number_float)
-        return EvilNumber(sqrt(num.get_float()));
+        return EvilNumber(sqrt(num.get_double()));
     else
         return EvilNumber(sqrt(double(num.get_int())));
 }
@@ -112,7 +112,7 @@ static EvilNumber e_sqrt(EvilNumber num)
 static EvilNumber e_log(EvilNumber num)
 {
     if (num.get_type() == evil_number_float)
-        return EvilNumber(log(num.get_float()));
+        return EvilNumber(log(num.get_double()));
     else
         return EvilNumber(log(double(num.get_int())));
 }

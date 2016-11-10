@@ -387,8 +387,10 @@ public:
     bool isInt();
     bool isFloat();
 
+    bool get_bool();
     int64 get_int();
-    double get_float();
+    float get_float();
+    double get_double();
     /************************************************************************/
     /* end of old system support                                            */
     /************************************************************************/

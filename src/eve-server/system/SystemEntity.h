@@ -174,6 +174,9 @@ public:
     double                      DistanceTo2(const SystemEntity* other);
     PyTuple*                    MakeDamageState();
 
+    /* public-access specific functions handled in base class. */
+    virtual void                Abandon();
+
     /* generic access functions handled here, but set elsewhere */
     virtual const GVector&      GetVelocity()           { return (m_destiny ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
 
@@ -203,8 +206,6 @@ public:
     virtual Client*             GetPilot()              { return nullptr; }
     virtual void                Delete()                { /* Do nothing here */ }  // this is only for asteroids and missiles and containers/wrecks (so far...)
 
-    /* specific functions handled in this class. */
-
 protected:
     SystemBubble*               m_bubble = nullptr;     /* we do not own this. never NULL in space */
     TargetManager*              m_targMgr = nullptr;    /* we do not own this. never NULL in space */
@@ -215,7 +216,7 @@ protected:
 
     InventoryItemRef            m_self = InventoryItemRef();
 
-    /* ease of access to specific, common data for container objects */
+    /* ease of access to common data for container objects */
     uint32                      m_warID = 0;
     uint32                      m_corpID = 0;
     uint32                      m_allyID = 0;

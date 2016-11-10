@@ -66,7 +66,7 @@ void SystemEntity::Process() {
 }
 
 double SystemEntity::GetRadius() {
-    return (m_self->HasAttribute(AttrRadius) ? m_self->GetAttribute(AttrRadius).get_float() : 1.0);
+    return (m_self->HasAttribute(AttrRadius) ? m_self->GetAttribute(AttrRadius).get_double() : 1.0);
 }
 
 PyTuple* SystemEntity::MakeDamageState() {
@@ -126,11 +126,11 @@ double SystemEntity::DistanceTo2(const SystemEntity* other) {
 
 void SystemEntity::SendDamageStateChanged(SystemEntity* source) {  //working 24Apr15
     DoDestiny_DamageDetails dmgState;
-        dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float();
-        dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
+        dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double();
+        dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
         dmgState.timestamp = Win32TimeNow();
-        dmgState.armor = (1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float()));
-        dmgState.structure = (1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float()));
+        dmgState.armor = (1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double()));
+        dmgState.structure = (1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double()));
     DoDestiny_OnDamageStateChange dmgChange;
         dmgChange.entityID = m_self->itemID();
         dmgChange.state = dmgState.Encode();
@@ -168,9 +168,9 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar
     double oldSec = pChar->GetSecurityRating();
     EvilNumber maxGain = 0;
     if (m_self->HasAttribute(AttrEntitySecurityStatusKillBonus, maxGain))
-        if (oldSec > maxGain.get_float())
+        if (oldSec > maxGain.get_double())
             return;
-    double killBonus = m_self->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
+    double killBonus = m_self->GetAttribute(AttrEntitySecurityStatusKillBonus).get_double();
     double secAward = (((10 -oldSec) *killBonus) +oldSec) /100;
     secAward *=  (1 + ( 0.05 * (pChar->GetSkillLevel(skillFastTalk, true))));      // 5% increase
     if (killBonus and secAward) {
@@ -185,6 +185,14 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar
         else
             pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), standingPirateKillSecurityStatus, secAward, msg);
     }
+}
+
+void SystemEntity::Abandon()
+{
+    m_warID = 0;
+    m_allyID = 0;
+    m_corpID = 0;
+    m_ownerID = 0;
 }
 
 /* Static / Non-Mobile / Non-Destructable / Celestial Objects - Suns, Planets, Moons, Belts, Gates, Stations */
@@ -302,11 +310,11 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
 }
 
 void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
-    into.shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
-    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
+    into.shield = (m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double());
+    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
     into.timestamp = Win32TimeNow();
-    into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
-    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
+    into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double());
+    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double());
 }
 
 DungeonSE::DungeonSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system)
@@ -417,22 +425,22 @@ PyDict* ObjectSystemEntity::MakeSlimItem() {
 }
 
 void ObjectSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
-    into.shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
-    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
+    into.shield = (m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double());
+    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
     into.timestamp = Win32TimeNow();
-    into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
-    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
+    into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double());
+    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double());
 }
 
 void ObjectSystemEntity::UpdateDamage()
 {
     SystemEntity::UpdateDamage();
     DoDestiny_DamageDetails dmgState;
-        dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float();
-        dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
+        dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double();
+        dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
         dmgState.timestamp = Win32TimeNow();
-        dmgState.armor = 1.0 - m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float();
-        dmgState.structure = 1.0 - m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float();
+        dmgState.armor = 1.0 - m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double();
+        dmgState.structure = 1.0 - m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double();
     DoDestiny_OnDamageStateChange dmgChange;
         dmgChange.entityID = m_self->itemID();
         dmgChange.state = dmgState.Encode();
@@ -515,11 +523,11 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
 }
 
 void DynamicSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
-    into.shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
-    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
+    into.shield = (m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double());
+    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
     into.timestamp = Win32TimeNow();
-    into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
-    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
+    into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double());
+    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double());
 }
 
 void DynamicSystemEntity::UpdateDamage()
@@ -527,11 +535,11 @@ void DynamicSystemEntity::UpdateDamage()
     /** @todo (Allan) needs more work */
     SystemEntity::UpdateDamage();
     DoDestiny_DamageDetails dmgState;
-        dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float();
-        dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
+        dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double();
+        dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
         dmgState.timestamp = Win32TimeNow();
-        dmgState.armor = 1.0 - m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float();
-        dmgState.structure = 1.0 - m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float();
+        dmgState.armor = 1.0 - m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double();
+        dmgState.structure = 1.0 - m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double();
     DoDestiny_OnDamageStateChange dmgChange;
         dmgChange.entityID = m_self->itemID();
         dmgChange.state = dmgState.Encode();
@@ -555,7 +563,7 @@ void DynamicSystemEntity::Killed(Damage &fatal_blow)
 
 void DynamicSystemEntity::AwardBounty(Client* pClient)
 {
-    double bounty = m_self->GetAttribute(AttrEntityKillBounty).get_float();
+    double bounty = m_self->GetAttribute(AttrEntityKillBounty).get_double();
     if (bounty <= 0)
         return;    //no bounty to award...
 

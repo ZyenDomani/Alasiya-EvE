@@ -54,7 +54,7 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
     m_Item->ResetAttribute(AttrOptimalSigRadius);
 
     if (m_Item->HasAttribute(AttrMaxRange))
-        m_maxRange = GetAttribute(AttrMaxRange).get_float();
+        m_maxRange = GetAttribute(AttrMaxRange).get_int();
 
     if (m_Item->HasAttribute(AttrDuration))
         m_cycleTime = GetAttribute(AttrDuration).get_float();

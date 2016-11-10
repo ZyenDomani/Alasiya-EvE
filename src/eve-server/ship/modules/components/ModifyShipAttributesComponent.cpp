@@ -70,7 +70,7 @@ EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef
     modVal *= effectiveness;
     EvilNumber newVal = CalculateNewAttributeValue(startVal, modVal, type);
     _log(SHIP__MODULE_TRACE, "MSAC::_calculateNewValue() -  origVal:%f, Mod:%f, newVal:%f, effective:%f, type:%i", \
-                startVal.get_float(), modVal.get_float(), newVal.get_float(), effectiveness, (int)type);
+                startVal.get_double(), modVal.get_double(), newVal.get_double(), effectiveness, (int)type);
     return newVal;
 }
 

@@ -119,7 +119,7 @@ double CargoContainer::GetCapacity(EVEItemFlags flag) const
     switch( flag ) {
         case flagAutoFit:
         case flagCargoHold:
-            return GetAttribute(AttrCapacity).get_float();
+            return GetAttribute(AttrCapacity).get_double();
         default:
             return 0.0;
     }
@@ -188,10 +188,10 @@ void CargoContainer::RemoveItem(InventoryItemRef item)
 void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
 {
     //FIXME  container attributes here are NOT saved in the db....
-    into.shield = 1.0;//(m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
+    into.shield = 1.0;//(m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double());
     into.recharge = 10000;
     into.timestamp = Win32TimeNow();
-    into.armor = 1.0;//1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
+    into.armor = 1.0;//1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double());
     into.structure = 1.0;
 }
 
@@ -357,7 +357,7 @@ void WreckContainer::Delete()
 
 double WreckContainer::GetCapacity(EVEItemFlags flag) const
 {
-    return GetAttribute(AttrCapacity).get_float();
+    return GetAttribute(AttrCapacity).get_double();
 }
 
 PyObject *WreckContainer::WreckContainerGetInfo()

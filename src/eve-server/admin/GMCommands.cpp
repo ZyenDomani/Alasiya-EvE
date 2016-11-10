@@ -976,9 +976,9 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
 
             //  save gm skill gift in history  -allan
             //  maybe not for this....WAAAAYYY  to much DB traffic for this.
-            //character->SaveSkillHistory(skillEventGMGive, EvilTimeNow().get_float(), ownerID, skillID.get_int(), level, \
-            skill->GetAttribute(AttrSkillPoints).get_float(), \
-            character->GetTotalSP().get_float());
+            //character->SaveSkillHistory(skillEventGMGive, EvilTimeNow().get_double(), ownerID, skillID.get_int(), level, \
+            skill->GetAttribute(AttrSkillPoints).get_double(), \
+            character->GetTotalSP().get_double());
         }
         // END LOOP
         pTarget->SendErrorMsg("You need to relog for skills to get saved and show in character sheet.");
@@ -1068,8 +1068,8 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
         skill->SaveItem();
 
         //  save gm skill gift in history  -allan
-        character->SaveSkillHistory(skillEventGMGive, EvilTimeNow().get_float(), ownerID, skillID, level, \
-                                    newPoints.get_float(), character->GetTotalSP().get_float());
+        character->SaveSkillHistory(skillEventGMGive, EvilTimeNow().get_double(), ownerID, skillID, level, \
+                                    newPoints.get_double(), character->GetTotalSP().get_double());
 
         sLog.Log("Command::GiveSkill", "skill %u set to level %u.", skillID, level);
 

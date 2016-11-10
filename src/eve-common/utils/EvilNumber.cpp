@@ -340,6 +340,15 @@ bool EvilNumber::isFloat()
     return true;
 }
 
+bool EvilNumber::get_bool()
+{
+    if (mType == evil_number_float)
+        return (mValue.fVal != 0);
+    if (mType == evil_number_int)
+        return (mValue.iVal != 0);
+    return false;
+}
+
 int64 EvilNumber::get_int()
 {
     if (mType == evil_number_float)
@@ -347,7 +356,14 @@ int64 EvilNumber::get_int()
     return mValue.iVal;
 }
 
-double EvilNumber::get_float()
+float EvilNumber::get_float()
+{
+    if (mType == evil_number_int)
+        return (float)mValue.iVal;
+    return (float)mValue.fVal;
+}
+
+double EvilNumber::get_double()
 {
     if (mType == evil_number_int)
         return (double)mValue.iVal;

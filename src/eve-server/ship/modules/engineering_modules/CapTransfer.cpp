@@ -150,7 +150,7 @@ double CapTransfer::_GetCapNeed()
 {
 	// This layout does not count the possible fleet bonuses, so it helps to set the cap need just once - when module's being fitted.
 	// First off - pulling up the primary data - module's cap need and primary skill level, that will affect the cap need.
-	double moduleCapNeed = GetAttribute(AttrCapacitorNeed).get_float();
+	double moduleCapNeed = GetAttribute(AttrCapacitorNeed).get_double();
 
 	// Now we do the initial cap need calculations
 	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillEnergyEmissionSystems)));

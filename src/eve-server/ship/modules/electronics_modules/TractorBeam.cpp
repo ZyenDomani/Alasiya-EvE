@@ -89,7 +89,7 @@ double TractorBeam::DoCycle() {
 		_ShowCycle();
 
 		GVector distanceToTarget(m_Ship->position(), m_targetEntity->GetPosition());
-        if (distanceToTarget.length() < (GetAttribute(AttrMaxRange).get_float())) {
+        if (distanceToTarget.length() < (GetAttribute(AttrMaxRange).get_double())) {
             m_targetEntity->DestinyMgr()->TractorBeamStart(m_Ship->GetPilot()->GetShipSE());
             return m_cycleTime;
 		} else {

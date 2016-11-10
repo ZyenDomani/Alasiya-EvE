@@ -87,7 +87,7 @@ public:
     /* public type queries  */
     uint32                  typeID() const              { return type().id(); }
     uint32                  groupID() const             { return type().groupID(); }
-    double                  radius() const              { return (HasAttribute(AttrRadius) ? GetAttribute(AttrRadius).get_float() : 1.0); }
+    double                  radius() const              { return (HasAttribute(AttrRadius) ? GetAttribute(AttrRadius).get_double() : 1.0); }
     const ItemGroup &       group() const               { return type().group(); }
     const ItemCategory &    category() const            { return type().category(); }
     EVEItemCategories       categoryID() const          { return type().categoryID(); }

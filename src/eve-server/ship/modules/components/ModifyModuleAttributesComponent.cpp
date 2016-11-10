@@ -40,7 +40,7 @@ ModifyModuleAttributesComponent::ModifyModuleAttributesComponent(GenericModule* 
 void ModifyModuleAttributesComponent::ModifyNonStackingModuleAttributes(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type) {
     EvilNumber newVal = CalculateNewAttributeValue(targetMod->GetAttribute(targetAttrID), m_Mod->GetAttribute(sourceAttrID), type);
     if (!targetMod->getItem()->SetAttribute(targetAttrID, newVal))
-        sLog.Error("MMAC::ModifyNonStackingModuleAttributes()","Failed to set attribute %u to %f on module %u", targetAttrID, newVal.get_float(), targetMod->itemID());
+        sLog.Error("MMAC::ModifyNonStackingModuleAttributes()","Failed to set attribute %u to %f on module %u", targetAttrID, newVal.get_double(), targetMod->itemID());
 }
 
 void ModifyModuleAttributesComponent::ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type) {
@@ -88,7 +88,7 @@ void ModifyModuleAttributesComponent::_modifyModuleAttributes(GenericModule* tar
     modVal *= effectiveness;
     EvilNumber newVal = CalculateNewAttributeValue(startVal, modVal, type);
     _log(SHIP__MODULE_TRACE, "MMAC::_modifyModuleAttributes() -  origVal:%f, Mod:%f, newVal:%f, stackSize:%u, effective:%f, type:%i", \
-    startVal.get_float(), modVal.get_float(), newVal.get_float(), stackSize, effectiveness, (int)type);
+    startVal.get_double(), modVal.get_double(), newVal.get_double(), stackSize, effectiveness, (int)type);
 
     SetAttribute(targetMod, targetAttrID, newVal);
 }

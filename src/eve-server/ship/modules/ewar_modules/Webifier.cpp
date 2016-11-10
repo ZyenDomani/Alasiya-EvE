@@ -48,10 +48,11 @@ void Webifier::Activate(SystemEntity* pSE)
 	//_ShowCycle();
 
     m_originalSpeed = pDestiny->GetMaxVelocity();
-    double multiplier = ((100 + GetAttribute(AttrSpeedFactor).get_float()) /100);
-    double newSpeed = m_originalSpeed * multiplier;
+    float multiplier = ((100 + GetAttribute(AttrSpeedFactor).get_float()) /100);
+    float newSpeed = m_originalSpeed * multiplier;
     pDestiny->SetMaxVelocity(newSpeed);
-    pDestiny->SetSpeedFraction(0.99, true);
+    // MUST change speed fraction to recompute with new variables
+    pDestiny->SetSpeedFraction(pDestiny->GetSpeedFraction() -.001, true);
 }
 
 void Webifier::Deactivate()
@@ -62,7 +63,8 @@ void Webifier::Deactivate()
 
     DestinyManager* pDestiny = m_targetEntity->DestinyMgr();
     pDestiny->SetMaxVelocity(m_originalSpeed);
-    pDestiny->SetSpeedFraction(1.0, true);
+    // MUST change speed fraction to recompute with new variables
+    pDestiny->SetSpeedFraction(pDestiny->GetSpeedFraction() -.001, true);
 }
 
 void Webifier::StopCycle(bool abort)

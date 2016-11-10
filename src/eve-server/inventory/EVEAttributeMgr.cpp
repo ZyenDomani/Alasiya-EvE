@@ -340,11 +340,11 @@ bool AttributeMap::Save() {
             }
             Inserts << itr->second.get_int() << ", NULL)";
         } else {
-            if (IsNaN(itr->second.get_float())) {
+            if (IsNaN(itr->second.get_double())) {
                 _log(INV__ERROR, "AttributeMap::Save() - float == NaN for itemID:%u", mItem.itemID());
                 return false;
             }
-            Inserts << " NULL, " << itr->second.get_float() << ")";
+            Inserts << " NULL, " << itr->second.get_double() << ")";
         }
     }
     // did we get at least 1 insert?
@@ -384,7 +384,7 @@ void AttributeMap::SaveShipState()
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
         } else {
-            Inserts << " NULL, " << cur->second.get_float() << ")";
+            Inserts << " NULL, " << cur->second.get_double() << ")";
         }
     }
     cur = mAttributes.find(AttrArmorDamage);
@@ -395,7 +395,7 @@ void AttributeMap::SaveShipState()
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
         } else {
-            Inserts << " NULL, " << cur->second.get_float() << ")";
+            Inserts << " NULL, " << cur->second.get_double() << ")";
         }
     }
     cur = mAttributes.find(AttrDamage);
@@ -406,7 +406,7 @@ void AttributeMap::SaveShipState()
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
         } else {
-            Inserts << " NULL, " << cur->second.get_float() << ")";
+            Inserts << " NULL, " << cur->second.get_double() << ")";
         }
     }
 

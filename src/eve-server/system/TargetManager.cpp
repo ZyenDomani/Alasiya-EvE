@@ -209,7 +209,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
         return TargetFail(who);
     }
     // Check against max locked target range
-	double maxTargetLockRange = ship->GetAttribute(AttrMaxTargetRange).get_float();
+	double maxTargetLockRange = ship->GetAttribute(AttrMaxTargetRange).get_double();
     float targetRangeModifier = 1.0f;
     targetRangeModifier += (0.05 * pChar->GetSkillLevel(skillLongRangeTargeting)); // +5% level
     maxTargetLockRange *= targetRangeModifier;

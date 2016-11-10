@@ -825,7 +825,7 @@ bool RamProxyService::_Calculate(const Call_InstallJob &args, InventoryItemRef i
             into.productionTime = bp->type().productionTime();
             into.materialMultiplier *= bp->materialMultiplier();
             into.timeMultiplier *= bp->timeMultiplier();
-            into.charTimeMultiplier = ch->GetAttribute(AttrManufactureTimeMultiplier).get_float();
+            into.charTimeMultiplier = ch->GetAttribute(AttrManufactureTimeMultiplier).get_double();
 
             switch(productType->race()) {
                 case raceCaldari:       if(ch->HasAttribute(AttrCaldariTechTimePercent))into.charTimeMultiplier *= double(ch->GetAttribute(AttrCaldariTechTimePercent).get_int()) / 100.0; break;
@@ -842,7 +842,7 @@ bool RamProxyService::_Calculate(const Call_InstallJob &args, InventoryItemRef i
             productType = &installedItem->type();
             //TODO  implement PE_ResearchTime here
             into.productionTime = bp->type().researchProductivityTime();
-            into.charTimeMultiplier = ch->GetAttribute(AttrManufacturingTimeResearchSpeed).get_float();
+            into.charTimeMultiplier = ch->GetAttribute(AttrManufacturingTimeResearchSpeed).get_double();
             break;
         }
         case ramActivityResearchingMaterialProductivity: {
@@ -850,7 +850,7 @@ bool RamProxyService::_Calculate(const Call_InstallJob &args, InventoryItemRef i
             productType = &installedItem->type();
             //TODO  implement ME_ResearchTime here
             into.productionTime = bp->type().researchMaterialTime();
-            into.charTimeMultiplier = ch->GetAttribute(AttrMineralNeedResearchSpeed).get_float();
+            into.charTimeMultiplier = ch->GetAttribute(AttrMineralNeedResearchSpeed).get_double();
             break;
         }
         case ramActivityCopying: {
@@ -858,7 +858,7 @@ bool RamProxyService::_Calculate(const Call_InstallJob &args, InventoryItemRef i
             productType = &installedItem->type();
             // no ceil() here on purpose
             into.productionTime = (bp->type().researchCopyTime() / bp->type().maxProductionLimit()) * args.licensedProductionRuns;
-            into.charTimeMultiplier = ch->GetAttribute(AttrCopySpeedPercent).get_float();
+            into.charTimeMultiplier = ch->GetAttribute(AttrCopySpeedPercent).get_double();
             break;
         }
         case ramActivityDuplicating:

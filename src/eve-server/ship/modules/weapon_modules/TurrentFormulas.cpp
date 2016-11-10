@@ -38,7 +38,7 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, System
      * tohit =  0.5 ^ (c + e)    **NOTE**  e=0 when distance < range
      */
     double a = (angVelocity / (distance * pMod->GetTrackingSpeed()));
-    double b = (pMod->GetSigRadius() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
+    double b = (pMod->GetSigRadius() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_double());
     double c = pow((a * b), 2);
     double e = 0;
     if (distance > range) {
@@ -72,7 +72,7 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     _log(DAMAGE__TRACE, "NPC::GetToHit - speed/distance=angVelocity: %.3f / %.3f = %.3f", speed, distance, angVelocity);
 
     double a = (angVelocity / (distance * pNPC->GetAIMgr()->GetTrackingSpeed()));
-    double b = (pNPC->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
+    double b = (pNPC->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_double() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_double());
     double c = pow((a * b), 2);
     double e = 0;
     if (distance > range) {
@@ -95,8 +95,8 @@ float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
 {
     if (!pTarget)
         return 0;
-    double range = pDrone->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float();
-    double falloff = pDrone->GetSelf()->GetAttribute(AttrFalloff).get_float();
+    double range = pDrone->GetSelf()->GetAttribute(AttrEntityAttackRange).get_double();
+    double falloff = pDrone->GetSelf()->GetAttribute(AttrFalloff).get_double();
     double distance = pDrone->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
     _log(DAMAGE__TRACE, "Drone::GetToHit - distance:%.2f, range:%.2f, falloff:%.1f", distance, range, falloff);
 
@@ -105,8 +105,8 @@ float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
     double angVelocity = (speed /distance);
     _log(DAMAGE__TRACE, "Drone::GetToHit - speed/dist=angVelocity: %.3f / %.3f = %.3f", speed, distance, angVelocity);
 
-    double a = (angVelocity / (distance * pDrone->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float()));
-    double b = (pDrone->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
+    double a = (angVelocity / (distance * pDrone->GetSelf()->GetAttribute(AttrTrackingSpeed).get_double()));
+    double b = (pDrone->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_double() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_double());
     double c = pow((a * b), 2);
     double e = 0;
     if (distance > range) {

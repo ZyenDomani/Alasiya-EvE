@@ -42,9 +42,9 @@ SurveyScanner::SurveyScanner(InventoryItemRef item, ShipItemRef ship)
     m_Item->ResetAttribute(AttrSurveyScanRange);
 
     // get module range
-    m_range = GetAttribute(AttrSurveyScanRange).get_float();
+    m_range = GetAttribute(AttrSurveyScanRange).get_double();
     // get module duration
-    m_cycleTime = GetAttribute(AttrDuration).get_float();
+    m_cycleTime = GetAttribute(AttrDuration).get_double();
 
     m_range *= (1 + (0.03 * (pChar->GetSkillLevel(skillLongRangeTargeting, true)))); // 3% increase in range (here)
     m_cycleTime *= (1 - (0.02 * (pChar->GetSkillLevel(skillSignatureAnalysis, true)))); // 2% decrease in duration (here)
