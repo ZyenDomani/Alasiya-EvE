@@ -344,6 +344,10 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
          */
 
         Call_Add_2 args;
+        /*  args sent from client
+         * args.itemID          - the item to move
+         * args.inventoryID     - the item's current location's itemID
+         */
         if (!args.Decode(&call.tuple)) {
             codelog(INV__ERROR, "Unable to decode arguments");
             return nullptr;
@@ -353,8 +357,24 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         if (call.byname.find("flag") == call.byname.end()) {
             if (IsStation(call.client->GetLocationID()))
                 flag = flagHangar;
-            else
-                flag = flagCargoHold;    // hard-code the ship cargo to cargo container move flag since key 'flag' in client.byname does not exist
+            else {
+                SystemEntity* pSE = call.client->SystemMgr()->GetSE(m_self->itemID());
+                _log(INV__MESSAGE, "Attempting to add itemID %u to inventory of %s(%u).", args.itemID, pSE->GetName(), m_self->itemID());
+                if (pSE->IsWreckSE()) {
+                    // cant move items into wrecks. deny
+                    call.client->SendErrorMsg("You cannot put items into wrecks.");
+                    return nullptr;
+                } else if (pSE->IsContainerSE()) {
+                    // allow items to be added to other containers in space
+                    flag = flagAutoFit;
+                } else if (pSE->IsObjectEntity()) {
+                    //  make checks here for adding objects to POS/SOV structures
+
+                } else if (pSE->IsDynamicEntity()) {
+                    // will need to verify correct flag when moving items between ships (corp holds, command ships, etc)
+                    flag = flagCargoHold;
+                }
+            }
         } else
             flag = call.byname.find("flag")->second->AsInt()->value();
 
@@ -428,8 +448,10 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         if ( call.byname.find("flag") == call.byname.end() ) {
             if (IsStation(call.client->GetLocationID()))
                 flag = flagHangar;
-            else
+            else {
+
                 flag = flagCargoHold;
+            }
         } else
             flag = call.byname.find("flag")->second->AsInt()->value();
 
@@ -454,14 +476,14 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
 }
 
 
-PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, int32 quantity, EVEItemFlags flag) {
+PyRep* InventoryBound::_ExecAdd(Client* pClient, const std::vector< int32 >& items, int32 quantity, EVEItemFlags flag) {
     // method logic rewrite to handle all types and send a proper return, and added some error returns.   -allan 2Jan16 (UD 24May16)
 
     //quantity is used in logic for spitting stacks
     int32 origQty = quantity;
     InventoryItemRef itemRef(nullptr);
     EVEItemFlags old_flag(flagAutoFit);
-    ShipItem* pShip = c->GetShip().get();
+    ShipItem* pShip = pClient->GetShip().get();
     // set ship to owner of this inventory object.  this will fix adding items to inactive ships in hangar.
     if (m_self->categoryID() == EVEDB::invCategories::Ship)
         pShip = m_manager->item_factory->GetShip(m_self->itemID()).get();
@@ -474,7 +496,7 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
 
         if (old_flag >= flagRigSlot0 && old_flag <= flagRigSlot7) {
             //  cant remove rigs like this.  send error.
-            if (c->CanThrow())
+            if (pClient->CanThrow())
                 throw PyException( MakeUserError("CannotRemoveUpgradeManually"));
             return nullptr;
         }
@@ -500,7 +522,7 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
         }
 
         // trying to fit a module from a stack.  make it check qty and split if needed.
-        if (flag == flagAutoFit)
+        if ((flag == flagAutoFit) and (m_self->itemID() == pShip->itemID()))
             quantity = 1;
 
         // the following conditionals are logic for splitting stacks
@@ -530,11 +552,11 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
         if (old_flag == flagAutoFit) {
             _log(INV__WARNING, "old_flag == flagAutoFit for item %s(%u) in locationID %u for inventory of %s(%u).", \
                     itemRef->itemName().c_str(), itemRef->itemID(), itemRef->locationID(), m_self->itemName().c_str(), m_self->itemID());
-            if (c->IsDocked()) {
+            if (pClient->IsDocked()) {
                 CargoContainerRef contRef = m_manager->item_factory->GetCargoContainer(itemRef->locationID());
                 contRef->RemoveItem(contRef);
             } else {
-                SystemEntity* pSE = c->SystemMgr()->GetSEFromInventory(itemRef->locationID());
+                SystemEntity* pSE = pClient->SystemMgr()->GetSEFromInventory(itemRef->locationID());
                 if (pSE->IsWreckSE()) {
                     WreckContainerRef wreckRef = m_manager->item_factory->GetWreckContainer(itemRef->locationID());
                     wreckRef->RemoveItem(itemRef);
@@ -556,10 +578,10 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
         }
 
         // check where to put item to be added.  use flags to find an open spot
-        if (flag == flagAutoFit) {
+        if ((flag == flagAutoFit) and (m_self->itemID() == pShip->itemID())) {
             EVEItemFlags openSlotFlag = pShip->FindAvailableModuleSlot(itemRef);
             if (openSlotFlag == flagIllegal) {
-                c->SendNotifyMsg("Your ship has no avalible slots to fit this module.");
+                pClient->SendNotifyMsg("Your ship has no avalible slots to fit this module.");
                 return nullptr;
             }
             flag = openSlotFlag;
@@ -576,7 +598,7 @@ PyRep* InventoryBound::_ExecAdd(Client* c, const std::vector< int32 >& items, in
             // what else do we need to check for here?
             if (mInventory->ValidateAddItem(flag, itemRef)) {
                 // all checks have passed.  move the item
-                c->MoveItem(itemRef->itemID(), m_self->itemID(), flag);
+                pClient->MoveItem(itemRef->itemID(), m_self->itemID(), flag);
             } else
                 return nullptr;
         }
