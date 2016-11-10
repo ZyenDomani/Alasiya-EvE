@@ -94,12 +94,9 @@ ShipItemRef ShipItem::Spawn(ItemFactory &factory, ItemData &data) {
     ShipItemRef sShipRef = ShipItem::Load( factory, shipID );
 
     // Create default dynamic attributes in the AttributeMap:
-    //sShipRef->SetAttribute(AttrIsOnline,                            false, false);
-    sShipRef->SetAttribute(AttrArmorDamage,                         0.0, false);
-    sShipRef->SetAttribute(AttrInertia,                             1, false);
-    sShipRef->SetAttribute(AttrMass,                                sShipRef->GetPackagedVolume(), false);
+    sShipRef->SetAttribute(AttrMass,                                sShipRef->type().mass(), false);
     sShipRef->SetAttribute(AttrRadius,                              sShipRef->type().radius(), false);
-    sShipRef->SetAttribute(AttrVolume,                              sShipRef->type().volume(), false);
+    sShipRef->SetAttribute(AttrVolume,                              sShipRef->GetPackagedVolume(), false);
     sShipRef->SetAttribute(AttrCapacity,                            sShipRef->type().capacity(), false);
     sShipRef->SetAttribute(AttrShieldCharge,                        sShipRef->GetAttribute(AttrShieldCapacity), false);
     sShipRef->SetAttribute(AttrCapacitorCharge,                     sShipRef->GetAttribute(AttrCapacitorCapacity), false);
@@ -107,6 +104,7 @@ ShipItemRef ShipItem::Spawn(ItemFactory &factory, ItemData &data) {
     // Check for existence of some attributes that may or may not have already been loaded and set them
     // to default values:
     if (!sShipRef->HasAttribute(AttrDamage))                        sShipRef->SetAttribute(AttrDamage, 0.0f, false );
+    if (!sShipRef->HasAttribute(AttrArmorDamage))                   sShipRef->SetAttribute(AttrArmorDamage, 0.0f, false );
     if (!sShipRef->HasAttribute(AttrMaximumRangeCap))               sShipRef->SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS), false);
     if (!sShipRef->HasAttribute(AttrArmorMaxDamageResonance))       sShipRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f, false);
     if (!sShipRef->HasAttribute(AttrShieldMaxDamageResonance))      sShipRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f, false);
@@ -211,9 +209,12 @@ void ShipItem::Init()
     double cpu = GetDefaultAttribute(AttrCpuOutput).get_float();
     double hullHP = GetDefaultAttribute(AttrHP).get_int();
     double armorHP = GetDefaultAttribute(AttrArmorHP).get_float();
-    double capCapacity = GetDefaultAttribute(AttrCapacitorCapacity).get_float();  // default value from db
-    double capChargeRate = GetDefaultAttribute(AttrRechargeRate).get_float(); // default value from db
+    double capCapacity = GetDefaultAttribute(AttrCapacitorCapacity).get_float();
+    double shipInertia = GetDefaultAttribute(AttrInetia).get_float();
+    double warpCapNeed = GetDefaultAttribute(AttrWarpCapacitorNeed).get_float();
+    double capChargeRate = GetDefaultAttribute(AttrRechargeRate).get_float();
     double shieldCapacity = GetDefaultAttribute(AttrShieldCapacity).get_float();
+    double shipMaxVelocity = GetDefaultAttribute(AttrMaxVelocity).get_float();
     double shieldChargeRate = GetDefaultAttribute(AttrShieldRechargeRate).get_float();
 
     pg *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEngineering, true))));                       // 5% increase
@@ -221,8 +222,11 @@ void ShipItem::Init()
     hullHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillMechanics, true))));                     // 5% increase
     armorHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillHullUpgrades, true))));                 // 5% increase
     capCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEnergyManagement, true))));         // 5% increase
+    shipInertia *= pChar->GetAgilitySkills(HasAttribute(AttrIsCapitalSize));                    // multiple skill effects
+    warpCapNeed *=  (1 - (0.1 * ( pChar->GetSkillLevel(skillWarpDriveOperation, true))));       // 10% decrease
     capChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillEnergySystemsOperation, true)))); // 5% decrease
     shieldCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillShieldManagement, true))));      // 5% increase
+    shipMaxVelocity *= (1 + (0.05 * ( pChar->GetSkillLevel(skillNavigation, true))));           // 5% increase
     shieldChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillShieldOperation, true))));     // 5% decrease
 
     // add checks for implants here.
@@ -256,21 +260,38 @@ void ShipItem::Init()
     ResetAttribute(AttrThermalDamageResonance);
 
     SetAttribute(AttrHP, hullHP);
+    SetAttribute(AttrMass, type().mass(), false);   // no default mass in ship item.
+    SetAttribute(AttrInetia, shipInertia);
     SetAttribute(AttrArmorHP, armorHP);
     SetAttribute(AttrCpuOutput, cpu);
     SetAttribute(AttrPowerOutput, pg);
+    SetAttribute(AttrMaxVelocity, shipMaxVelocity);
     SetAttribute(AttrRechargeRate, capChargeRate);
     SetAttribute(AttrShieldCapacity, shieldCapacity);
     SetAttribute(AttrCapacitorCharge, capCapacity);
+    SetAttribute(AttrWarpCapacitorNeed, warpCapNeed);
     SetAttribute(AttrShieldRechargeRate,shieldChargeRate );
+    SetAttribute(AttrWarpScrambleStatus, 0);
 
-    // allocate the module manager, only the first time:
+    /* AttrMass = 4,    (largest mass = Leviathan(3764) @ 2,430,000,000kg)
+     * AttrMassLimit = 622,
+     * AttrMassAddition = 796,
+     * AttrMassMultiplier = 1471,
+     */
+    /*   look into these, too...
+     * AttrWarpSBonus(624) [rigs and implants]
+     * AttrWarpFactor(21) [all are 0]
+     * AttrWarpInhibitor(29) [default is null]
+     */
+
+    // create and initialize the module manager if not already done
     if (!m_ModuleManager)
         m_ModuleManager = new ModuleManager(this);
 
     m_ModuleManager->Initialize();
 
     /** @todo need to check for ship damage status BEFORE or INSTEAD of calling this.
+     * this is being saved in db, but no methods to retrieve it yet.
      */
     //set everything to full AFTER modules possibably update ship stats
     if (sConfig.server.IsTestServer) {
@@ -1309,7 +1330,7 @@ void Ship::ResetShipSystemMgr(SystemManager* pSystem)
 
 void Ship::SetPilot(Client* pClient) {
     m_self->SetPlayer(pClient);
-    // set shipSE data 
+    // set shipSE data
     m_allyID = pClient->GetAllianceID();
     m_corpID = pClient->GetCorporationID();
 }

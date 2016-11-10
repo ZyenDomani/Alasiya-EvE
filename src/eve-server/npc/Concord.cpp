@@ -46,56 +46,48 @@ Concord::Concord(
      m_destiny = new DestinyManager(this);
      m_AI = new ConcordAI(this);
 
-     // SET ALL ATTRIBUTES MISSING FROM DATABASE BEFORE USING THEM FOR ANYTHING:
+     m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
+     if (!m_orbitRange) {
+         if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff))
+             m_orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
+         else
+             m_orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
+     }
+
      // Create default dynamic attributes in the AttributeMap:
-     self->SetAttribute(AttrShieldCharge,        self->GetAttribute(AttrShieldCapacity), false);     // Shield Charge
-     self->SetAttribute(AttrArmorDamage,         0.0, false);                                            // Armor Damage
-     self->SetAttribute(AttrMass,                self->type().mass(), false);                // Mass     --check these functions.
-     self->SetAttribute(AttrRadius,              self->type().radius(), false);          // Radius
-     self->SetAttribute(AttrVolume,              self->type().volume(), false);          // Volume
-     self->SetAttribute(AttrCapacity,            self->type().capacity(), false);            // Capacity
-     self->SetAttribute(AttrInertia,             1, false);  //WARNING!  NO NPC Ships have Inertia, so we're setting it to 1 for ALL NPC ships
-     self->SetAttribute(AttrCapacitorCharge,     self->GetAttribute(AttrCapacitorCapacity), false);  // Set Capacitor Charge to the Capacitor Capacity
-     self->SetAttribute(AttrWarpCapacitorNeed,   self->GetAttribute(AttrWarpCapacitorNeed), false);      // Shield Charge
+     m_self->SetAttribute(AttrDamage,              0, false);
+     m_self->SetAttribute(AttrArmorDamage,         0, false);
+     m_self->SetAttribute(AttrInertia,             1, false);
+     m_self->SetAttribute(AttrWarpCapacitorNeed,   0.00001, false);
+     m_self->SetAttribute(AttrOrbitRange,          m_orbitRange, false);
+     m_self->SetAttribute(AttrMass,                m_self->type().mass(), false);
+     m_self->SetAttribute(AttrRadius,              m_self->type().radius(), false);
+     m_self->SetAttribute(AttrVolume,              m_self->type().volume(), false);
+     m_self->SetAttribute(AttrCapacity,            m_self->type().capacity(), false);
+     m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
+     m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
 
-     // Agility
-     if (!self->HasAttribute(AttrInetia))
-         self->SetAttribute(AttrInetia, 1, false);
-
-     // AttrOrbitRange
-     self->SetAttribute(AttrOrbitRange, GetOrbitRange(), false);
-
-     // Hull Damage
-     if (!self->HasAttribute(AttrDamage))
-         self->SetAttribute(AttrDamage, 0, true );
+     m_destiny->SetShipCapabilities(m_self);
 
      SetResists();
 
-     m_emDamage = self->GetAttribute(AttrEmDamage).get_float(),
-     m_kinDamage = self->GetAttribute(AttrKineticDamage).get_float(),
-     m_therDamage = self->GetAttribute(AttrThermalDamage).get_float(),
-     m_expDamage = self->GetAttribute(AttrExplosiveDamage).get_float(),
-
-     // Set internal and Destiny values FROM these Attributes, now that they are all setup:
-     m_destiny->SetPosition(position, false);
-     m_destiny->SetShipCapabilities(self);
-
      /* Gets the value from the NPC and put on our own vars */
-     m_hullDamage = self->GetAttribute(AttrDamage).get_float();
-     m_armorDamage = self->GetAttribute(AttrArmorDamage).get_float();
-     m_shieldCharge = self->GetAttribute(AttrShieldCharge).get_float();
-     m_shieldCapacity = self->GetAttribute(AttrShieldCapacity).get_float();
-     // //_log(CONCORD__TRACE, "Created Concord Police object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
+     m_emDamage = m_self->GetAttribute(AttrEmDamage).get_float(),
+     m_kinDamage = m_self->GetAttribute(AttrKineticDamage).get_float(),
+     m_therDamage = m_self->GetAttribute(AttrThermalDamage).get_float(),
+     m_expDamage = m_self->GetAttribute(AttrExplosiveDamage).get_float(),
+     m_hullDamage = m_self->GetAttribute(AttrDamage).get_float();
+     m_armorDamage = m_self->GetAttribute(AttrArmorDamage).get_float();
+     m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
+     m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
+
+     //_log(CONCORD__TRACE, "Created Concord Police object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
 }
 
 Concord::~Concord() {
-    //if (m_spawner)
-    //m_spawner->SpawnDepoped(m_self->itemID());
-
     SafeDelete(m_destiny);
     SafeDelete(m_AI);
 }
-
 
 void Concord::Process() {
     double profileStartTime = 0.0;
@@ -253,31 +245,6 @@ void Concord::_UpdateDamage()
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
     //source->QueueDestinyUpdate(&up);
-}
-
-double Concord::GetOrbitRange() {
-    double orbitRange = (GetSelf()->GetAttribute(AttrOrbitRange).get_int());
-    if (!orbitRange) {
-        if (GetSelf()->GetAttribute(AttrMaxRange) < GetSelf()->GetAttribute(AttrFalloff))
-            orbitRange = GetSelf()->GetAttribute(AttrMaxRange).get_float();
-        else
-            orbitRange = GetSelf()->GetAttribute(AttrFalloff).get_float();
-        /*
-        if (GetSelf()->GetAttribute(AttrRadius) < 30)
-            orbitRange = 1500;
-        else if (GetSelf()->GetAttribute(AttrRadius) < 60)
-            orbitRange = 2500;
-        else if (GetSelf()->GetAttribute(AttrRadius) < 150)
-            orbitRange = 4000;
-        else if (GetSelf()->GetAttribute(AttrRadius) < 280)
-            orbitRange = 6000;
-        else if (GetSelf()->GetAttribute(AttrRadius) < 550)
-            orbitRange = 8000;
-        else
-            orbitRange = 13000;
-        */
-    }
-    return orbitRange;
 }
 
 void Concord::SetResists() {
@@ -672,7 +639,7 @@ void ConcordAI::AttackTarget(SystemEntity* pTarget) {
              m_npc->GetThermal(),
              m_npc->GetEM(),
              m_npc->GetExplosive(),
-             m_formula.GetConcordToHit(m_npc, pTarget),
+             m_formula.GetNPCToHit(m_npc, pTarget),
              effectTargetAttack
     );
 

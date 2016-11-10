@@ -62,7 +62,7 @@ public:
     /* Informational query functions: */
     const GPoint &GetPosition() const                   { return m_position; }
     const GVector &GetVelocity() const                  { return m_velocity; }
-    double GetSpeedFraction()                           { return m_currentSpeedFraction; }
+    float GetSpeedFraction()                            { return m_currentSpeedFraction; }
     float GetSpeed()                                    { return (m_maxShipSpeed * m_currentSpeedFraction); }
     Destiny::BallMode GetState()                        { return State; }
 
@@ -71,8 +71,7 @@ public:
     /* Configuration methods */
     void SetBubble(bool set = false)                    { m_inBubble = set; }
     void SetPosition(const GPoint& pt, bool update = false);
-    void SetMaxVelocity(double maxVelocity);
-    void SetShipVariables(InventoryItemRef ship);
+    void SetMaxVelocity(float maxVelocity);
     void SetShipCapabilities(InventoryItemRef ship, bool undock = false);
 
     /* Global Actions */
@@ -85,7 +84,7 @@ public:
 
     /* Local Movement */
     void Orbit(SystemEntity* who, double distance=0);
-    void Follow(SystemEntity* who, double distance);
+    void Follow(SystemEntity* pSE, double distance);
     void AlignTo(SystemEntity* ent);
     void GotoPoint(const GPoint &point);
     void GotoDirection(const GPoint &direction);
@@ -166,13 +165,13 @@ protected:
     float m_mass;                       //in kg
     float m_massMKg;                    //in Millions of kg
     float m_alignTime;                  //in s      - align and enter warp are same (for our purposes)
+    float m_maxShipSpeed;               //in m/s
     float m_shipWarpSpeed;              //in au/s
     float m_timeToEnterWarp;            //in s
     float m_speedToLeaveWarp;           //in m/s    - this is set to 75% of m_maxShipSpeed
 
     double m_radius;                    //in m
     double m_capNeeded;                 //in GJ     - capacitor charged needed to initiate warp
-    double m_maxShipSpeed;              //in m/s
     double m_warpCapacitorNeed;         //in GJ     - capacitor charged needed to initiate warp
     // ship motion factors for complicated maths
     double m_shipAgility;               //in s/Mkg  - time-constant of movement for objects in eve physics (and 't' in Dr. SS's calculations)

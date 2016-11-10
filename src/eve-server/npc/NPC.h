@@ -38,15 +38,12 @@ class NPCAIMgr;
 class SystemManager;
 class ServiceDB;
 
-//Caution: do not inherit this, see constructor.
 class NPC
 : public DynamicSystemEntity
 {
 public:
     NPC(InventoryItemRef self, PyServiceMgr &services, SystemManager* system, uint32 corpID, uint32 factionID, SpawnMgr* spawnMgr = nullptr);
     virtual ~NPC();
-
-    void Init();
 
     /* class type pointer querys. */
     virtual NPC* GetNPCSE()                             { return this; }
@@ -77,7 +74,7 @@ public:
     float GetKinetic()                                  { return m_kinDamage; }
     float GetExplosive()                                { return m_expDamage; }
 
-    double GetOrbitRange()                              { return m_orbitRange; }
+    float GetOrbitRange()                               { return m_orbitRange; }
 
     NPCAIMgr* GetAIMgr()                                { return m_AI; }
 
@@ -88,15 +85,15 @@ protected:
 private:
     uint32 m_orbitingID = 0;
 
-    double m_orbitRange;
-    double m_emDamage = 0;
-    double m_expDamage = 0;
-    double m_kinDamage = 0;
-    double m_therDamage = 0;
-    double m_hullDamage = 0;
-    double m_armorDamage = 0;
-    double m_shieldCharge = 0;
-    double m_shieldCapacity = 0;
+    float m_orbitRange = 0;
+    float m_emDamage = 0;
+    float m_expDamage = 0;
+    float m_kinDamage = 0;
+    float m_therDamage = 0;
+    float m_hullDamage = 0;
+    float m_armorDamage = 0;
+    float m_shieldCharge = 0;
+    float m_shieldCapacity = 0;
 };
 
 #endif

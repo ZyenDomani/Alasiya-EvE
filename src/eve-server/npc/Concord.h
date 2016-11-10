@@ -69,7 +69,7 @@ public:
     float GetKinetic() { return m_kinDamage; }
     float GetExplosive() { return m_expDamage; }
 
-    double GetOrbitRange();
+    double GetOrbitRange()                              { return m_orbitRange; }
 
     SystemManager* SystemMgr() const { return m_system; }
     ConcordAI* AI() const { return m_AI; }
@@ -86,17 +86,17 @@ protected:
     ConcordAI* m_AI;    //never NULL
 
 private:
-    uint32 m_orbitingID;
+    uint32 m_orbitingID = 0;
 
-    double m_hullDamage;
-    double m_armorDamage;
-    double m_shieldCharge;
-    double m_shieldCapacity;
-
-    double m_emDamage;
-    double m_expDamage;
-    double m_kinDamage;
-    double m_therDamage;
+    double m_orbitRange = 0;
+    double m_emDamage = 0;
+    double m_expDamage = 0;
+    double m_kinDamage = 0;
+    double m_therDamage = 0;
+    double m_hullDamage = 0;
+    double m_armorDamage = 0;
+    double m_shieldCharge = 0;
+    double m_shieldCapacity = 0;
 };
 
 class ConcordAI
@@ -151,12 +151,13 @@ private:
     double m_armorRepairChance;
     double m_shieldBoosterChance;
 
-    uint32 m_chaseSpeed;
-    uint32 m_cruiseSpeed;
-    uint32 m_targetRange;
-    uint32 m_armorRepairDuration;
-    uint32 m_shieldBoosterDuration;
+    uint16 m_chaseSpeed;
+    uint16 m_cruiseSpeed;
+    uint16 m_armorRepairDuration;
+    uint16 m_shieldBoosterDuration;
 
+    uint32 m_targetRange;
+    
     Concord* m_npc;
 
     TurrentFormulas m_formula;

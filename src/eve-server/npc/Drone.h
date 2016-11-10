@@ -70,12 +70,13 @@ public:
 
     void SaveDrone();
     void RemoveDrone();
+    void SetResists();
     void UseArmorRepairer();
     void UseShieldRecharge();
     void Orbit(SystemEntity *who);
     void SetOwner(Client* pPC);
 
-    uint32 GetBounty() const                            { return 0; }   /** @todo need to finish this */
+    uint32 GetBounty() const                            { return (m_owner ? m_owner->GetChar()->bounty() : 0); }
     uint32 GetOwnerID() const                           { return (m_owner ? m_owner->GetCharacterID() : 1); }
 
     float GetThermal()                                  { return m_therDamage; }
@@ -90,22 +91,18 @@ protected:
     Client* m_owner;
     DroneAIMgr* m_AI;
 
-    InventoryItemRef _droneRef;
-
 private:
-    uint32 m_orbitingID;
+    uint32 m_orbitingID = 0;
 
-    double m_orbitRange;
-
-    double m_hullDamage;
-    double m_armorDamage;
-    double m_shieldCharge;
-    double m_shieldCapacity;
-
-    double m_emDamage;
-    double m_expDamage;
-    double m_kinDamage;
-    double m_therDamage;
+    double m_orbitRange = 0;
+    double m_emDamage = 0;
+    double m_expDamage = 0;
+    double m_kinDamage = 0;
+    double m_therDamage = 0;
+    double m_hullDamage = 0;
+    double m_armorDamage = 0;
+    double m_shieldCharge = 0;
+    double m_shieldCapacity = 0;
 };
 
 #endif /* !__DRONE__H__INCL__ */

@@ -46,58 +46,45 @@ NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, u
     m_destiny = new DestinyManager(this);
     m_AI = new NPCAIMgr(this);
 
-    Init();
-}
+    m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
+    if (!m_orbitRange) {
+        if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff))
+            m_orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
+        else
+            m_orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
+    }
 
-void NPC::Init()
-{
-	// SET ALL ATTRIBUTES MISSING FROM DATABASE BEFORE USING THEM FOR ANYTHING:
     // Create default dynamic attributes in the AttributeMap:
-    //m_self->SetAttribute(AttrIsOnline,            1, false);											// Is Online
-    m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);		// Shield Charge
     m_self->SetAttribute(AttrDamage,              0, false);
-    m_self->SetAttribute(AttrArmorDamage,         0, false);											// Armor Damage
-    m_self->SetAttribute(AttrMass,                m_self->type().mass(), false);				// Mass		--check these functions.
-    m_self->SetAttribute(AttrRadius,              m_self->type().radius(), false);			// Radius
-    m_self->SetAttribute(AttrVolume,              m_self->type().volume(), false);			// Volume
-    m_self->SetAttribute(AttrCapacity,            m_self->type().capacity(), false);			// Capacity
-    m_self->SetAttribute(AttrInertia,             1, false);	//WARNING!  NO NPC Ships have Inertia, so we're setting it to 1 for ALL NPC ships
-    m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);	// Set Capacitor Charge to the Capacitor Capacity
-    m_self->SetAttribute(AttrWarpCapacitorNeed,   m_self->GetAttribute(AttrWarpCapacitorNeed), false);      // Shield Charge
-    m_self->SetAttribute(AttrOrbitRange,          GetOrbitRange(), false);
+    m_self->SetAttribute(AttrArmorDamage,         0, false);
+    m_self->SetAttribute(AttrInertia,             1, false);
+    m_self->SetAttribute(AttrWarpCapacitorNeed,   0.00001, false);
+    m_self->SetAttribute(AttrOrbitRange,          m_orbitRange, false);
+    m_self->SetAttribute(AttrMass,                m_self->type().mass(), false);
+    m_self->SetAttribute(AttrRadius,              m_self->type().radius(), false);
+    m_self->SetAttribute(AttrVolume,              m_self->type().volume(), false);
+    m_self->SetAttribute(AttrCapacity,            m_self->type().capacity(), false);
+    m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
+    m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
 
-    // Agility
-    if (!m_self->HasAttribute(AttrInetia))
-        m_self->SetAttribute(AttrInetia, 1, false);
+    m_destiny->SetShipCapabilities(m_self);
 
     SetResists();
 
+    /* Gets the value from the NPC and put on our own vars */
     m_emDamage = m_self->GetAttribute(AttrEmDamage).get_float(),
     m_kinDamage = m_self->GetAttribute(AttrKineticDamage).get_float(),
     m_therDamage = m_self->GetAttribute(AttrThermalDamage).get_float(),
     m_expDamage = m_self->GetAttribute(AttrExplosiveDamage).get_float(),
-
-	m_destiny->SetShipCapabilities(m_self);
-
-    /* Gets the value from the NPC and put on our own vars */
     m_hullDamage = m_self->GetAttribute(AttrDamage).get_float();
     m_armorDamage = m_self->GetAttribute(AttrArmorDamage).get_float();
     m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
     m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
+
    // _log(NPC__TRACE, "Created NPC object for %s (%u)", m_self.get()->itemName().c_str(), m_self.get()->itemID());
 }
 
 NPC::~NPC() {
-    //it is so dangerous to do this stuff in a destructor, with the
-    //possibility of any of these things making virtual calls...
-    //
-    // this makes inheriting NPC a bad idea (see constructor)
-
-    //m_system->RemoveNPC(this);
-
-    //if (m_spawner)
-        //m_spawner->SpawnDepoped(m_self->itemID());
-
     SafeDelete(m_destiny);
     SafeDelete(m_AI);
 }

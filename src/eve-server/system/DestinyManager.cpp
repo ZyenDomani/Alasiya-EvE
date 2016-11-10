@@ -62,14 +62,14 @@ m_massMKg(1.0f),
 m_alignTime(1.0f),
 m_timeToEnterWarp(0.0f),
 m_shipWarpSpeed(0.0f),
-m_maxShipSpeed(1.0f),
+m_maxShipSpeed(100.0f),
 m_shipAgility(1.0f),
 m_shipInertia(1.0f),
-m_warpStrength(1),
+m_warpStrength(0),
 m_warpAccelTime(1),
 m_warpDecelTime(1),
 m_warpState(nullptr),
-m_warpCapacitorNeed(1.0f)
+m_warpCapacitorNeed(0.00001f)
 {
     m_bump = false;
     m_stop = false;
@@ -489,7 +489,7 @@ void DestinyManager::_CheckBump()
         sProfile.AddTime(_collisionProfile, GetTimeUSeconds() - profileStartTime);
 }
 
-void DestinyManager::_Bump(SystemEntity* who)
+void DestinyManager::_Bump(SystemEntity* pSE)
 {
     if (m_bump) return;
     // bump code here
@@ -512,14 +512,14 @@ void DestinyManager::_Bump(SystemEntity* who)
      *   bump drones??  prolly not, for simplicity
      */
     std::string msg1 = "You have bumped ";
-    msg1 += who->GetPilot()->GetName();
+    msg1 += pSE->GetPilot()->GetName();
     mySE->GetPilot()->SendNotifyMsg(msg1.c_str());
     // this test isnt needed right now, as it's ONLY checking against players and will always return true.
     //  will keep it in here for later expansion.
-    if (who->HasPilot()) {
+    if (pSE->HasPilot()) {
         std::string msg2 = "You have been bumped by ";
         msg2 += mySE->GetPilot()->GetName();
-        who->GetPilot()->SendNotifyMsg(msg2.c_str());
+        pSE->GetPilot()->SendNotifyMsg(msg2.c_str());
     }
 }
 
@@ -1266,8 +1266,8 @@ void DestinyManager::_WarpStop(double currentShipSpeed) {
 }
 
 //called whenever an entity is going away and can no longer be used as a target
-void DestinyManager::EntityRemoved(SystemEntity *who) {
-    if (m_targetEntity.second == who) {
+void DestinyManager::EntityRemoved(SystemEntity *pSE) {
+    if (m_targetEntity.second == pSE) {
         m_targetEntity.first = 0;
         m_targetEntity.second = nullptr;
 
@@ -1346,10 +1346,10 @@ void DestinyManager::_BeginMovement() {
     _Move();
 }
 
-void DestinyManager::Follow(SystemEntity *who, double distance) {
+void DestinyManager::Follow(SystemEntity* pSE, double distance) {
     //called from client as 'CmdFollowBall'
     //  also used by 'Approach'
-    if ((State == DSTBALL_FOLLOW) and (m_targetEntity.second == who) and (m_followDistance == distance) and (m_userSpeedFraction))
+    if ((State == DSTBALL_FOLLOW) and (m_targetEntity.second == pSE) and (m_followDistance == distance) and (m_userSpeedFraction))
         return;
     if (m_orbiting) {
         m_orbiting = -1;
@@ -1357,22 +1357,28 @@ void DestinyManager::Follow(SystemEntity *who, double distance) {
     }
 
     State = DSTBALL_FOLLOW;
-    m_targetPoint = who->GetPosition();
-    m_targetEntity.first = who->GetID();
-    m_targetEntity.second = who;
+    m_targetPoint = pSE->GetPosition();
+    m_targetEntity.first = pSE->GetID();
+    m_targetEntity.second = pSE;
     m_followDistance = distance;
+    if (pSE->IsStationSE()) {
+        // set target position to dock of station....NOT in the middle of the fucking thing.
+        StationData sData;
+        sDataMgr.GetStationInfo(pSE->GetID(), sData);
+        m_targetPoint = sData.dockPosition;
+    }
     _BeginMovement();
 
     DoDestiny_CmdFollowBall du;
         du.entityID = mySE->GetID();
-        du.targetID = who->GetID();
+        du.targetID = pSE->GetID();
         du.range = (int32)distance;
     PyTuple *up = du.Encode();
     SendSingleDestinyUpdate(&up);    //consumed
 }
 
-void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
-    if ((State == DSTBALL_ORBIT) and (m_targetEntity.second == who) and (m_followDistance == distance))
+void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
+    if ((State == DSTBALL_ORBIT) and (m_targetEntity.second == pSE) and (m_followDistance == distance))
         return;
     if (m_orbiting)
         m_shipHeading = NULL_ORIGIN_V;
@@ -1391,9 +1397,9 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
      */
     State = DSTBALL_ORBIT;
     m_orbiting = 1;
-    m_targetEntity.first = who->GetID();
-    m_targetEntity.second = who;
-    m_targetPoint = who->GetPosition();
+    m_targetEntity.first = pSE->GetID();
+    m_targetEntity.second = pSE;
+    m_targetPoint = pSE->GetPosition();
     m_targetDistance = distance;
     _BeginMovement();
 
@@ -1401,16 +1407,16 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
                 m_shipAgility, m_shipInertia, m_massMKg, m_maxShipSpeed, m_radius);
 
     // Target (orbited object)
-    double Tr = who->GetRadius();
-    double Tm = who->GetSelf()->GetAttribute(AttrMass).get_float();
+    double Tr = pSE->GetRadius();
+    double Tm = pSE->GetSelf()->GetAttribute(AttrMass).get_float();
     if (!Tm)
-        Tm = who->GetSelf()->type().mass();
+        Tm = pSE->GetSelf()->type().mass();
 
     _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Target Data - mass:%.3f, speed:%.2f, radius:%.2f", \
-                Tm, (who->DestinyMgr() ? who->DestinyMgr()->GetSpeed() : 0 ), Tr);
+                Tm, (pSE->DestinyMgr() ? pSE->DestinyMgr()->GetSpeed() : 0 ), Tr);
 
     // fudge distance to work 'close enough' with all targets
-    double Rc = ((distance + 150 + m_radius - (who->GetRadius() /12)) * 1.2);
+    double Rc = ((distance + 150 + m_radius - (pSE->GetRadius() /12)) * 1.2);
     double Rc2 = pow(Rc,2);
     double Vm2 = pow(m_maxShipSpeed,2);
     double t2 = pow(m_shipAgility,2);
@@ -1439,7 +1445,7 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
     _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%.2f, followDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
                 Rc, velocity, m_maxOrbitSpeedFraction, m_targetDistance, m_followDistance, orbitTime, m_orbitRadTic);
 
-    if ((m_position.distance(who->GetPosition()) - m_radius - Tr) > (m_followDistance *2)) {
+    if ((m_position.distance(pSE->GetPosition()) - m_radius - Tr) > (m_followDistance *2)) {
         // way too far to orbit
         m_orbiting = 2;
     } else
@@ -1447,7 +1453,7 @@ void DestinyManager::Orbit(SystemEntity *who, double distance/*0*/) {
 
     DoDestiny_CmdOrbit du;
         du.entityID = mySE->GetID();
-        du.orbitEntityID = who->GetID();
+        du.orbitEntityID = pSE->GetID();
         du.distance = (int32)distance;
     PyTuple *up = du.Encode();
     SendSingleDestinyUpdate(&up);    //consumed
@@ -1795,9 +1801,9 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
 }
 
 // settings for ship, npc and missile max speeds
-void DestinyManager::SetMaxVelocity(double maxVelocity)
+void DestinyManager::SetMaxVelocity(float maxVelocity)
 {
-    double maxSpeed = 0;
+    float maxSpeed = 0;
     if (mySE->IsMissileSE() or mySE->IsNPCSE())
         maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
     else if (mySE->IsShipSE())
@@ -1810,93 +1816,37 @@ void DestinyManager::SetMaxVelocity(double maxVelocity)
         m_maxShipSpeed = maxVelocity;
 }
 
-void DestinyManager::SetShipVariables(InventoryItemRef ship)
-{
-    m_radius = ship->GetAttribute(AttrRadius).get_float();
-    //check for rigs and modules that affect radius here
-
-    /* AttrMass = 4,    (largest mass = Leviathan(3764) @ 2,430,000,000kg)
-     * AttrMassLimit = 622,
-     * AttrMassAddition = 796,
-     * AttrMassMultiplier = 1471,
-     */
-    m_mass = ship->GetAttribute(AttrMass).get_float();
-
-    //  check for rigs and modules that modify mass here
-    m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
-
-    m_shipInertia = ship->GetDefaultAttribute(AttrInetia).get_float();
-    if (!m_shipInertia)
-        m_shipInertia = 1.0f;
-
-    //  check for (and set) warp strength modifiers
-    m_warpStrength = (int8)ship->GetAttribute(AttrWarpScrambleStatus).get_int();    // >0 == cannot warp
-}
-
-//  called from Client::BoardShip(), Undock(), NPC::NPC(), Concord::Concord()
+//  called from Client::CreateShipSE(), Client::ResetAfterPodded(), NPC::NPC(), Concord::Concord(), Drone::Drone()
 void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
 {
-    /* this now sets variables needed for correct warp math.
-     * noted modifiers to look into later, after everything is working
-     * skill bonuses to ship attribs are now implemented, albeit crudely
+    /* this sets variables needed for correct movement math.
+     *  these attribs are set ship item when ship created.  DO NOT modify here
      */
+    m_mass = ship->GetAttribute(AttrMass).get_float();
+    m_radius = ship->GetAttribute(AttrRadius).get_float();
+    m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
 
-    SetShipVariables(ship);
+    //  check for (and set) warp strength modifiers
+    if (ship->HasAttribute(AttrWarpScrambleStatus))
+        m_warpStrength = (int8)ship->GetAttribute(AttrWarpScrambleStatus).get_int();    // >0 == cannot warp
 
-    double warpCapNeed = ship->GetDefaultAttribute(AttrWarpCapacitorNeed).get_float();
-    if (!warpCapNeed)
-        warpCapNeed = ship->GetAttribute(AttrWarpCapacitorNeed).get_float();
-    float adjShipMaxVelocity = ship->GetDefaultAttribute(AttrMaxVelocity).get_float();
-    if (!adjShipMaxVelocity)
-        adjShipMaxVelocity = ship->GetAttribute(AttrMaxVelocity).get_float();
-    float warpSpeedMultiplier = 1.0f;
-    float shipBaseWarpSpeed = 3.0f;
-
-    // skill bonuses to agility and velocity and warpCapacitorNeed
-    /*
-     *    Advanced Spaceship Command: 5% agility bonus per level on ships requiring this skill
-     *    Capital Ships: 5% agility bonus per level on ships requiring this skill
-     *    Spaceship Command: 2% agility for all ships per level
-     *    Evasive Maneuvering: 5% agility bonus for all ships per level
-     *    Skirmish Warfare: 2% agility to fleet per skill level
-     *    Skirmish warfare Mindlink (implant): 15% agility to fleet, replaces Skirmish warfare skill
-     *    Warp Drive Operation (skill) (only listed because it affects how far you can warp) :–)
-     */
-    if (mySE->HasPilot()) {
-        Character* pChar = mySE->GetPilot()->GetChar().get();
-        if (!pChar) {
-            _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot. Destiny Variables will be inaccurate.", mySE->GetName(), mySE->GetID());
-            return;
-        }
-        m_shipInertia *= pChar->GetAgilitySkills(ship->HasAttribute(AttrIsCapitalSize));
-        adjShipMaxVelocity *= (1 + (0.05 * ( pChar->GetSkillLevel(skillNavigation, true))));
-        shipBaseWarpSpeed = ship->GetDefaultAttribute(AttrBaseWarpSpeed).get_float();
-        if (!shipBaseWarpSpeed)
-            shipBaseWarpSpeed = ship->GetAttribute(AttrBaseWarpSpeed).get_float();
-        warpSpeedMultiplier = ship->GetDefaultAttribute(AttrWarpSpeedMultiplier).get_float();
-        if (!warpSpeedMultiplier)
-            warpSpeedMultiplier = ship->GetAttribute(AttrWarpSpeedMultiplier).get_float();
-        warpCapNeed *=  (1 - (0.1 * ( pChar->GetSkillLevel(skillWarpDriveOperation, true))));
-        /** @todo check for implants  AttrWarpCapacitorNeedBonus(319) */
-    } else {
-        warpCapNeed = 0.00001f;
-        adjShipMaxVelocity = ship->GetAttribute(AttrEntityCruiseSpeed).get_float();
-    }
-
-    /*   look into these, too...
-     * AttrWarpSBonus(624) [rigs and implants]
-     * AttrWarpFactor(21) [all are 0]
-     * AttrWarpInhibitor(29) [default is null]
-     */
-
-    //TODO  add module and rig modifiers to warp speed here
+    // this will catch speeds/needs for all ships (player and npc), and is easier to do here.
+    float warpSpeedMultiplier = 1.0f, shipBaseWarpSpeed = 3.0f;  // arbitrary defaults
+    if (ship->HasAttribute(AttrBaseWarpSpeed))
+        shipBaseWarpSpeed = ship->GetAttribute(AttrBaseWarpSpeed).get_float();
+    if (ship->HasAttribute(AttrWarpSpeedMultiplier))
+        warpSpeedMultiplier = ship->GetAttribute(AttrWarpSpeedMultiplier).get_float();
     m_shipWarpSpeed = ( warpSpeedMultiplier * shipBaseWarpSpeed );
 
-    // TODO add module and rig bonuses to inertia, agility, velocity here
+    if (ship->HasAttribute(AttrInetia))
+        m_shipInertia = ship->GetAttribute(AttrInetia).get_float();
+    if (ship->HasAttribute(AttrMaxVelocity))
+        m_maxShipSpeed = ship->GetAttribute(AttrMaxVelocity).get_float();
+    if (ship->HasAttribute(AttrWarpCapacitorNeed))
+        m_warpCapacitorNeed = ship->GetAttribute(AttrWarpCapacitorNeed).get_float();
 
-    m_maxShipSpeed = adjShipMaxVelocity;
-    ship->SetAttribute(AttrInetia, m_shipInertia);
-    ship->SetAttribute(AttrMaxVelocity, adjShipMaxVelocity);
+    if (mySE->IsNPCSE())
+        m_maxShipSpeed = ship->GetAttribute(AttrEntityCruiseSpeed).get_float();
 
     /*  per https://forums.eveonline.com/default.aspx?g=posts&m=3912843   post#103
      *
@@ -1906,11 +1856,6 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
     m_speedToLeaveWarp = m_maxShipSpeed *0.75;
     if (m_speedToLeaveWarp < 100)
         m_speedToLeaveWarp = 100;
-
-    // TODO add module and rig bonuses to warp cap here
-
-    m_warpCapacitorNeed = warpCapNeed;
-    ship->SetAttribute(AttrWarpCapacitorNeed, warpCapNeed);
 
     /* The product of Mass and the Inertia Modifier gives the ship's agility
      * Agility = Mass x Inertia Modifier
