@@ -1,14 +1,19 @@
 
 
-CREATE TABLE `chrPlanetColonies` (
+
+CREATE TABLE `chrPlanetCCPin` (
+  `pinID` int(10) NOT NULL AUTO_INCREMENT,
   `charID` int(10) NOT NULL,
   `planetID` int(10) NOT NULL,
-  `status` varchar(17) CHARACTER SET utf8 NOT NULL,
-  `launchTime` bigint(20) NOT NULL,
-  `x` double NOT NULL,
-  `y` double NOT NULL,
-  `z` double NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `typeID` int(10) NOT NULL,
+  `latitude` float NOT NULL,
+  `longitude` float NOT NULL,
+  `status` tinyint(2) NOT NULL,
+  `level` tinyint(2) NOT NULL,
+  `lastSimTime` bigint(20) NOT NULL,
+  PRIMARY KEY (`pinID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=130000000 COMMENT='Table CommandCenter pin data with AI';
+
 
 CREATE TABLE `chrPlanetLaunches` (
   `launchID` int(10) NOT NULL AUTO_INCREMENT,

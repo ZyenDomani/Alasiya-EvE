@@ -60,4 +60,33 @@
         </tupleInline>
     </elementDef>
 
+  <elementDef name="Call_ResourceDataDict">
+      <dictInline>
+        <dictInlineEntry key="proximity">
+          <int name="proximity" />
+        </dictInlineEntry>
+        <dictInlineEntry key="updateTime">
+          <int name="updateTime" />
+        </dictInlineEntry>
+        <dictInlineEntry key="advancedPlanetology">
+          <int name="advancedPlanetology" />
+        </dictInlineEntry>
+        <dictInlineEntry key="remoteSensing">
+          <int name="remoteSensing" />
+        </dictInlineEntry>
+        <dictInlineEntry key="newBand">
+          <int name="newBand" />
+        </dictInlineEntry>
+        <dictInlineEntry key="planetology">
+          <int name="planetology" />
+        </dictInlineEntry>
+        <dictInlineEntry key="oldBand">
+          <int name="oldBand" />
+        </dictInlineEntry>
+        <dictInlineEntry key="resourceTypeID">
+          <int name="resourceTypeID" />
+        </dictInlineEntry>
+      </dictInline>
+  </elementDef>
+
 </elements>
