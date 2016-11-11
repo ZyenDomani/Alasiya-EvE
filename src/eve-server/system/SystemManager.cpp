@@ -238,6 +238,7 @@ bool SystemManager::LoadSystemStatics() {
             case EVEDB::invGroups::Asteroid_Belt: {
                 CelestialObjectRef itemRef = itemFactory()->GetCelestialObject(cur.itemID);
                 BeltSE *se = new BeltSE(itemRef, *(GetServiceMgr()), this);
+                se->SetBeltMgr(m_beltMgr);
                 ++m_beltCount;
                 pSE = se;
             } break;

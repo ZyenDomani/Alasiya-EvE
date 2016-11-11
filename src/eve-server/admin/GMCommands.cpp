@@ -1248,8 +1248,9 @@ PyResult Command_dogma(Client* who, CommandDB* db, PyServiceMgr* services, const
     //get attributeID
     uint32 attributeID = db->GetAttributeID(attributeName);
 
-    sLog.Warning("GMCommands: Command_dogma()", "This command will modify attribute and send change to client, but change does not take effect in client for some reason.");
     item->SetAttribute(attributeID, attributeValue);
+
+    /** @todo  for modules and ships, this will need to call some kind of 'reload' to reset the attrib mem object before new attrib takes affect.  */
 
     return NULL;
 }

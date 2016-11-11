@@ -55,6 +55,7 @@ public:
         PyCallable_REG_CALL(DogmaIMBound, LinkWeapons);
         PyCallable_REG_CALL(DogmaIMBound, LinkAllWeapons);
         PyCallable_REG_CALL(DogmaIMBound, OverloadRack);
+        PyCallable_REG_CALL(DogmaIMBound, StopOverloadRack);
         PyCallable_REG_CALL(DogmaIMBound, ShipGetInfo);
         PyCallable_REG_CALL(DogmaIMBound, CharGetInfo);
         PyCallable_REG_CALL(DogmaIMBound, ItemGetInfo);
@@ -90,6 +91,7 @@ public:
     PyCallable_DECL_CALL(LinkWeapons);
     PyCallable_DECL_CALL(LinkAllWeapons);
     PyCallable_DECL_CALL(OverloadRack);
+    PyCallable_DECL_CALL(StopOverloadRack);
     PyCallable_DECL_CALL(ShipGetInfo);
     PyCallable_DECL_CALL(CharGetInfo);
     PyCallable_DECL_CALL(ItemGetInfo);
@@ -112,8 +114,15 @@ public:
     PyCallable_DECL_CALL(RemoveTarget);
     PyCallable_DECL_CALL(ClearTargets);
 
-    //flag, targetList = self.GetDogmaLM().AddTargetOBO(sid, tid)
-    //self.GetDogmaLM().RemoveTargetOBO(sid, tid)
+    /*
+     * flag, targetList = self.GetDogmaLM().AddTargetOBO(sid, tid)
+    self.GetDogmaLM().RemoveTargetOBO(sid, tid)
+    UnlinkModule(shipID, moduleID)
+    UnlinkAllModules(shipID)
+    MergeModuleGroups(shipID, masterID, slaveID)
+    PeelAndLink(shipID, masterID, slaveID)
+    DestroyWeaponBank(shipID, itemID)
+    */
 protected:
     Dispatcher* const m_dispatch;
 
@@ -197,13 +206,13 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
      * 12:54:01 [SvcCall]         [ 0] Integer field: 140000069     <- shipID
      * 12:54:01 [SvcCall]         [ 1] Integer field: 140000078     <- weapon 2  *dropped ON*
      * 12:54:01 [SvcCall]         [ 2] Integer field: 140000079     <- weapon 1  *dragged*
-     */
-
-    Client* pClient = call.client;
 
     sLog.Log("DogmaIMBound::Handle_LinkWeapons()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
+     */
+
+    Client* pClient = call.client;
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Failed to decode arguments");
@@ -237,25 +246,82 @@ PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
     return nullptr;
 }
 
+PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
+    /*
+     * 23:52:45 L DogmaIMBound::Handle_Overload(): size=2
+     * 23:52:45 [SvcCallDump]   Call Arguments:
+     * 23:52:45 [SvcCallDump]       Tuple: 2 elements
+     * 23:52:45 [SvcCallDump]         [ 0] Integer field: 140002542
+     * 23:52:45 [SvcCallDump]         [ 1] Integer field: 3035
+     * 23:52:45 [SvcCallDump]   Call Named Arguments:
+     * 23:52:45 [SvcCallDump]     Argument 'machoVersion':
+     * 23:52:45 [SvcCallDump]         Integer field: 1
+     */
+    Client* pClient = call.client;
+    if (pClient->IsInSpace()) {
+        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
+        if (!pDestiny) {
+            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
+            return new PyNone();
+        } else if (pDestiny->IsWarping()) {
+            pClient->SendNotifyMsg("You can't do this while warping");
+            return new PyNone();
+        }
+    }
+
+    sLog.Log("DogmaIMBound::Handle_Overload()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
+    Client* pClient = call.client;
+
+    if (pClient->IsInSpace()) {
+        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
+        if (!pDestiny) {
+            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
+            return new PyNone();
+        } else if (pDestiny->IsWarping()) {
+            pClient->SendNotifyMsg("You can't do this while warping");
+            return new PyNone();
+        }
+    }
+
+    sLog.Log("DogmaIMBound::Handle_CancelOverloading()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+    return nullptr;
+}
+
 PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
     /*
-      called thru rclick menu on module
-    17:20:22 L DogmaIMBound::Handle_OverloadRack(): [00msize=1
-    17:20:22 [SvcCall]   Call Arguments:
-    17:20:22 [SvcCall]       Tuple: 1 elements
-    17:20:22 [SvcCall]         [ 0] Integer field: 140000223    <--  itemID in any slot of location to OL
+     *    c alled thru r*click menu on module
+     *    17:20:22 L DogmaIMBound::Handle_OverloadRack(): [00msize=1
+     *    17:20:22 [SvcCall]   Call Arguments:
+     *    17:20:22 [SvcCall]       Tuple: 1 elements
+     *    17:20:22 [SvcCall]         [ 0] Integer field: 140000223    <--  itemID in any slot of location to OL
+     *
+     *    called thru OL button on ship dashboard
+     *    17:24:00 L DogmaIMBound::Handle_OverloadRack(): [00msize=1
+     *    17:24:00 [SvcCall]   Call Arguments:
+     *    17:24:00 [SvcCall]       Tuple: 1 elements
+     *    17:24:00 [SvcCall]         [ 0] Integer field: 140000213    <--  itemID in first slot of location to OL
+     *
+     *    returns - list of moduleIDs to OL
+     *
+     *    sLog.Log("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
+     *    call.Dump(SERVICE__CALL_DUMP);
+     */
+    Client* pClient = call.client;
 
-      called thru OL button on ship dashboard
-    17:24:00 L DogmaIMBound::Handle_OverloadRack(): [00msize=1
-    17:24:00 [SvcCall]   Call Arguments:
-    17:24:00 [SvcCall]       Tuple: 1 elements
-    17:24:00 [SvcCall]         [ 0] Integer field: 140000213    <--  itemID in first slot of location to OL
+    return nullptr;
+}
 
-    returns - list of moduleIDs to OL
-
+PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
+    /*
+     */
     sLog.Log("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
-    */
     Client* pClient = call.client;
 
     return nullptr;
@@ -298,12 +364,11 @@ PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
         [PyString "N=699771:17106"]
         [PyIntegerVar 129503265956883696]
 
-                */
-    // no arguments
-    Client* pClient = call.client;
 
-    sLog.Log("ShipBound::Handle_GetLocationInfo()", "size=%u", call.tuple->size());
+    sLog.Log("DogmaIMBound::Handle_GetLocationInfo()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+                */
+
     // dummy right now, don't have any meaningful packet logs
     //response should be node data and timestamp
     return new PyLong(Win32TimeNow());
@@ -352,7 +417,7 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_CheckSendLocationInfo(PyCallArgs& call)
 {
-    sLog.Log("ShipBound::Handle_CheckSendLocationInfo()", "size=%u", call.tuple->size());
+    sLog.Log("DogmaIMBound::Handle_CheckSendLocationInfo()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     //no arguments
     Client* pClient = call.client;
@@ -644,7 +709,6 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
         }
     }
 
-    sLog.Log("DogmaIMBound::Handle_Deactivate()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     //18:50:24 [PacketError] Decode Call_Dogma_Deactivate failed: effectName is not a wide string: Integer
     //  this is also used on POS items, so adjust as needed.  (will have to construct it like Activate())
@@ -658,44 +722,6 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
     //TODO: make sure we are allowed to do this.
     pClient->GetShip()->Deactivate(args.itemID, args.effectName);
 
-    return nullptr;
-}
-
-PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
-    Client* pClient = call.client;
-
-    if (pClient->IsInSpace()) {
-        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (!pDestiny) {
-            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone();
-        } else if (pDestiny->IsWarping()) {
-            pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone();
-        }
-    }
-
-    sLog.Log("ShipBound::Handle_Overload()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-    return nullptr;
-}
-
-PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
-    Client* pClient = call.client;
-
-    if (pClient->IsInSpace()) {
-        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (!pDestiny) {
-            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone();
-        } else if (pDestiny->IsWarping()) {
-            pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone();
-        }
-    }
-
-    sLog.Log("ShipBound::Handle_CancelOverloading()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
     return nullptr;
 }
 

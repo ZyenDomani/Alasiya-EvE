@@ -1182,7 +1182,7 @@ void ModuleManager::CharacterLeavingShip()
     //this is complicated and im gonna leave it alone for now until
     //a few things become more clear
 
-    OfflineAll();
+    //OfflineAll();
 }
 
 void ModuleManager::CharacterBoardingShip()

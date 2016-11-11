@@ -940,7 +940,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
 	return item->itemID();
 }
 
-void ShipItem::RemoveItem(InventoryItemRef item)
+void ShipItem::RemoveItem(InventoryItemRef item, uint32 qty/*0*/)
 {
     if (!m_pilot)
         return;
@@ -966,7 +966,7 @@ void ShipItem::RemoveItem(InventoryItemRef item)
             }
         }
     } else
-        ModifyHoldVolumeByFlag( item->flag(), -(item->GetAttribute(AttrVolume).get_float() * item->quantity()));
+        ModifyHoldVolumeByFlag( item->flag(), -(item->GetAttribute(AttrVolume).get_float() * (qty ? qty : item->quantity())));
 }
 
 void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {

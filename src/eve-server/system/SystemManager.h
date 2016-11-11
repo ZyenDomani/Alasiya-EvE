@@ -80,16 +80,7 @@ public:
     const char* GetSystemSecurityClass()                { return m_data.securityClass.c_str(); }
     const double GetSystemSecurityRating()              { return m_data.securityRating; }
 
-    // for spawn system     -allan 15July15
-    typedef std::vector<uint32> SpawnBubbleVec;
-    uint8 BeltCount()                                   { return m_beltCount; }
-    uint8 GetRatSpawnCount()                            { return m_activeRatSpawns; }
-    uint8 GetRoidSpawnCount()                           { return m_activeRoidSpawns; }
-    void GetSpawnBubbles(SpawnBubbleVec* bubbleMap);
-    void RemoveSpawnBubble();
-
     bool BuildDynamicEntity(const DBSystemDynamicEntity& entity);
-    bool LoadPlayerDynamics();
 
     void AddClient(Client* who, bool docked=false, bool count=false);
     void RemoveClient(Client* who, bool docked=false, bool count=false);
@@ -103,6 +94,14 @@ public:
     void DoSpawnForBubble(SystemBubble* pSysBubble);
 
     void MakeSetState(const SystemBubble *bubble, DoDestiny_SetState &into, bool login=false) const;
+
+    // for spawn system     -allan 15July15     (not complete)
+    typedef std::vector<uint32> SpawnBubbleVec;
+    void RemoveSpawnBubble();
+    void GetSpawnBubbles(SpawnBubbleVec* bubbleMap);
+    uint8 BeltCount()                                   { return m_beltCount; }
+    uint8 GetRatSpawnCount()                            { return m_activeRatSpawns; }
+    uint16 GetRoidSpawnCount()                          { return m_activeRoidSpawns; }
 
     // CosmicMgr interface
     AsteroidBeltMgr* GetBeltMgr()                       { return m_beltMgr; }
@@ -124,6 +123,7 @@ protected:
 
     bool LoadSystemStatics();
     bool LoadSystemDynamics();
+    bool LoadPlayerDynamics();
 
     // system entity lists:
     bool m_entityChanged = false;
@@ -137,7 +137,7 @@ private:
     uint8 m_beltCount = 0;
     uint8 m_gateCount = 0;
     uint8 m_activeRatSpawns = 0;
-    uint8 m_activeRoidSpawns = 0;
+    uint16 m_activeRoidSpawns = 0;
     SpawnBubbleVec m_ratBubbles;  // map of ids of bubbles with rat spawns
     SpawnBubbleVec m_roidBubbles;  // map of ids of bubbles with roid spawns
 

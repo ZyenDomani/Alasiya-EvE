@@ -142,7 +142,9 @@ PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
             data.folderID = 0;
         result->SetItem(i, data.Encode());
     }
-    return result;
+    //return result;
+    /** @todo this needs more work */
+    return nullptr;
 }
 
 PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {

@@ -237,7 +237,7 @@ public:
     EvilNumber GetMaxLauncherHardpoints() { return GetAttribute(AttrLauncherSlotsLeft); }
     uint32 AddItem( EVEItemFlags flag, InventoryItemRef item);
     void AddItem(InventoryItemRef item);
-    void RemoveItem( InventoryItemRef item/*, uint32 inventoryID, EVEItemFlags flag*/ );
+    void RemoveItem( InventoryItemRef item, uint32 qty=0/*, uint32 inventoryID, EVEItemFlags flag*/ );
     void UpdateModules();
     void UpdateModules(EVEItemFlags flag);
     void UnloadModule(uint32 itemID);

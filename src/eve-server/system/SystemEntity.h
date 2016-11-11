@@ -86,13 +86,11 @@ public:
     virtual StargateSE*         GetGateSE()             { return nullptr; }
     virtual BeltSE*             GetBeltSE()             { return nullptr; }
     /* Item */
-    /** @todo  these will have to be adjusted when the classes are finished */
     virtual ItemSystemEntity*   GetItemSE()             { return nullptr; }
     virtual ContainerSE*        GetContSE()             { return nullptr; }
     virtual WreckSE*            GetWreckSE()            { return nullptr; }
     virtual DungeonSE*          GetDungeonSE()          { return nullptr; }
     /* Object */
-    /** @todo  these will have to be adjusted when the classes are finished */
     virtual ObjectSystemEntity* GetObjectSE()           { return nullptr; }
     virtual AsteroidSE*         GetAsteroidSE()         { return nullptr; }
     virtual StructureSE*        GetJumpBridgeSE()       { return nullptr; }
@@ -207,9 +205,9 @@ public:
     virtual void                Delete()                { /* Do nothing here */ }  // this is only for asteroids and missiles and containers/wrecks (so far...)
 
 protected:
-    SystemBubble*               m_bubble = nullptr;     /* we do not own this. never NULL in space */
+    SystemBubble*               m_bubble  = nullptr;    /* we do not own this. never NULL in space */
     TargetManager*              m_targMgr = nullptr;    /* we do not own this. never NULL in space */
-    SystemManager*              m_system = nullptr;     /* we do not own this  never NULL in space */
+    SystemManager*              m_system  = nullptr;    /* we do not own this  never NULL in space */
     DestinyManager*             m_destiny = nullptr;    /* we do not own this. never NULL in space */
 
     PyServiceMgr&               m_services;
@@ -244,10 +242,6 @@ public:
     virtual void                EncodeDestiny( Buffer& into );
     virtual PyDict*             MakeSlimItem();
 
-    /** @todo (allan)  finish these ... not sure how yet.  */
-    //virtual uint32 GetCorporationID()                   { return m_data.corporationID; };
-    //virtual uint32 GetAllianceID()                      { return m_data.allianceID; };
-
     /* virtual functions to be overridden in derived classes */
     virtual bool                LoadExtras(SystemDB *db);
 
@@ -277,8 +271,12 @@ public:
     /* generic access functions handled here */
     AsteroidBeltMgr*            BeltMgr()               { return m_beltMgr; }
 
+    /* specific functions handled in this class. */
+    void          SetBeltMgr(AsteroidBeltMgr* beltMgr)  { m_beltMgr = beltMgr; }
+
 protected:
     AsteroidBeltMgr*            m_beltMgr;
+
 };
 
 class StargateSE
@@ -301,6 +299,7 @@ public:
 
 protected:
     PyRep* m_jumps;
+
 };
 
 
@@ -363,7 +362,6 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual void Killed(Damage &fatal_blow);
-
 };
 
 class DeployableSE
@@ -380,7 +378,6 @@ public:
     virtual DeployableSE* GetDeployableSE()             { return nullptr; }
     /* class type tests. */
     virtual bool IsDeployableSE()                       { return true; }
-
 };
 
 
@@ -409,7 +406,6 @@ public:
     /* specific functions handled here. */
     bool Load();
     void AwardBounty(Client* pClient);
-
 };
 
 

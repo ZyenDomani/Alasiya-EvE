@@ -70,7 +70,7 @@ public:
     double x() const                                    { return m_center.x; }
     double y() const                                    { return m_center.y; }
     double z() const                                    { return m_center.z; }
-    uint32 GetID()                                      { return m_bubbleID; }
+    uint16 GetID()                                      { return m_bubbleID; }
     GPoint GetCenter()                                  { return m_center; }
 
     void clear();
@@ -112,8 +112,8 @@ protected:
 private:
     SystemManager* m_system = nullptr;
 
+    uint16 m_bubbleID = 1;
 	uint32 m_systemID = 0;
-    uint32 m_bubbleID = 1;
 
     static uint32 m_bubbleIncrementer;
 

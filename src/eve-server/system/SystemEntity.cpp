@@ -45,7 +45,6 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
   m_services(services),
   m_system(system)
 {
-    /** @todo  figure out how to get corp/faction/ally IDs here, if possible, and add to our variables */
     m_targMgr = new TargetManager(this);
 }
 

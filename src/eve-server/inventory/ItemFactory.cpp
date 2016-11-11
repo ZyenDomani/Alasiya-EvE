@@ -44,6 +44,7 @@ uint32 ItemFactory::m_nextEntityID = EVEMU_TEMP_ENTITY_ID;
 uint32 ItemFactory::m_nextAsteroidID = EVEMU_ASTEROID_ID;
 uint32 ItemFactory::m_nextMissileID = EVEMU_MISSILE_ID;
 uint32 ItemFactory::m_nextNPCID = EVEMU_NPC_ID;
+//uint32 ItemFactory::m_nextPlanetCCID = EVEMU_PLANET_CC_ID;
 
 ItemFactory::ItemFactory()
 {

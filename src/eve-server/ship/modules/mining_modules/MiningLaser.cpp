@@ -80,9 +80,9 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
 
     Character* pChar = m_Ship->GetPilot()->GetChar().get();
     // get module volume per cycle
-    m_cycleVol = GetAttribute(AttrMiningAmount).get_int();
+    m_cycleVol = GetAttribute(AttrMiningAmount).get_float();
     if (HasAttribute(AttrSpecialtyMiningAmount))
-        m_cycleVol2 = GetAttribute(AttrSpecialtyMiningAmount).get_int();
+        m_cycleVol2 = GetAttribute(AttrSpecialtyMiningAmount).get_float();
 
     // calculate bonuses
     if (m_iMiner) {
@@ -237,7 +237,8 @@ void MiningLaser::Activate(SystemEntity* pSE)
         //# _ShowCycle();
         _SetCapNeed();
         /** @todo fix THIS bullshit!!! */
-        m_Ship->GetPilot()->GetShipSE()->SystemMgr()->GetBeltMgr()->SetActive(m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetID());
+        m_targetEntity->SystemMgr()->GetBeltMgr()->SetActive(m_targetEntity->SysBubble()->GetID()); //best i got right now...
+        //m_Ship->GetPilot()->GetShipSE()->SystemMgr()->GetBeltMgr()->SetActive(m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetID());
     } else {
         _log(MINING__WARNING, "Activate() - Invalid target");
         if (m_Ship->HasPilot())
@@ -289,31 +290,15 @@ double MiningLaser::DoCycle() {
 void MiningLaser::ProcessCycle(bool partial)
 {
     // update for t2 crystal shit, if applicable
-    double cycleVol = m_cycleVol;
-    if (m_chargeLoaded) {
-        if (m_targetEntity->GetGroupID() == m_crystalRoidGrp) {
+    float cycleVol = m_cycleVol;
+    if (m_chargeLoaded)
+        if (m_targetEntity->GetGroupID() == m_crystalRoidGrp)
             cycleVol = m_cycleVol2;
-        } else {
+        else
             cycleVol = m_cycleVol;
-        }
-        if (m_crystalTakeDmg) {
-            if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
-                m_crystalDmg += m_crystalDmgAmount;
-                if (m_crystalDmg > 1.0f) {
-                    m_Ship->GetPilot()->SendNotifyMsg("Your %s loaded in %s has been destroyed.", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str());
-                    InventoryItemRef chargeRef = m_chargeRef;   // make a copy of item ref, as m_chargeRef is nulled after next call returns
-                    m_Ship->RemoveItem(m_chargeRef);
-                    chargeRef->Delete();
-                    cycleVol = m_cycleVol;  //m_cycleVol2 is reset when charge is removed.
-                } else {
-                    m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
-                }
-            }
-        }
-    }
 
 	InventoryItemRef roidRef = m_targetEntity->GetSelf();
-    double oreVolume = roidRef->GetAttribute(AttrVolume).get_double();
+    float oreVolume = roidRef->GetAttribute(AttrVolume).get_float();
 
     if (cycleVol < oreVolume) {
         _log(MINING__ERROR, "%s(%u) - Laser could not extract ore from %s(%u)", \
@@ -322,20 +307,31 @@ void MiningLaser::ProcessCycle(bool partial)
     }
 
     double oreAmount = cycleVol /oreVolume;
-
-    if (partial) /** @todo  fix this for ice */
-        oreAmount *= (m_AMPC->GetRemainingCycleTimeMS() / m_cycleTime);
-
     double remainingCargoVolume = m_Ship->GetRemainingVolumeByFlag(flagCargoHold);
     double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_double();
-    _log(MINING__DEBUG, "ProcessCycle(%s) -  cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f, oreAmount:%.2f", \
-            (partial?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, oreAmount);
 
     if (remainingCargoVolume < cycleVol) {
-        oreAmount = remainingCargoVolume /oreVolume;
-        StopCycle(partial);
+        if (remainingCargoVolume > 0)
+            if (remainingCargoVolume > oreVolume)
+                oreAmount = remainingCargoVolume /oreVolume;
+            else
+                oreAmount = 0;
         m_AMPC->StopTimer();
+        if (!partial) {
+            StopCycle();
+            return;
+        }
+    } else if (partial) {
+        if (m_iMiner) {
+            oreAmount *= (m_AMPC->GetRemainingCycleTimeMS() / m_cycleTime);
+            oreAmount = floor(oreAmount);
+        } else {
+            oreAmount *= (m_AMPC->GetRemainingCycleTimeMS() / m_cycleTime);
+        }
     }
+
+    _log(MINING__DEBUG, "ProcessCycle(%s) -  cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f, oreAmount:%.2f", \
+            (partial?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, oreAmount);
 
     if (oreAmount > roidQuantity)
         oreAmount = roidQuantity;
@@ -368,6 +364,21 @@ void MiningLaser::ProcessCycle(bool partial)
         roidRef->SetAttribute(AttrRadius, radius);
         roidRef->SetAttribute(AttrQuantity, roidQuantity);
     }
+    if (m_chargeLoaded)
+        if (m_crystalTakeDmg) {
+            if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
+                m_crystalDmg += m_crystalDmgAmount;
+                if (m_crystalDmg > 1.0f) {
+                    m_Ship->GetPilot()->SendNotifyMsg("Your %s loaded in %s has been destroyed.", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str());
+                    InventoryItemRef chargeRef = m_chargeRef;   // make a copy of item ref, as m_chargeRef is nulled after next call returns
+                    m_Ship->RemoveItem(m_chargeRef);
+                    chargeRef->Delete();
+                    cycleVol = m_cycleVol;  //m_cycleVol2 is reset when charge is removed.
+                } else {
+                    m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
+                }
+            }
+        }
 }
 
 void MiningLaser::_ShowCycle()
