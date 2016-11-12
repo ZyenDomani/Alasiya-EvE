@@ -12,27 +12,42 @@
 
 #include "planet/PlanetDB.h"
 
-class PlanetData
-{
-public:
 
-protected:
-
-private:
-
-};
-
+class Colony;
+class PlanetSE;
+class UUNCommand;
+class PyServiceMgr;
 class PlanetMgr
 {
 public:
-    PlanetMgr();
-    ~PlanetMgr()    { /* do nothing here */ }
+    PlanetMgr(PyServiceMgr *mgr, Client* pClient, PlanetSE* pPlanet, Colony* pColony);
+    virtual ~PlanetMgr()    { /* do nothing here */ }
+
+    PyRep* UpdateNetwork(UUNCommandList& uuncl);
+
 
 protected:
+    void CreatePin(UUNCommand& nc);
+    void RemovePin(UUNCommand& nc);
+    void CreateLink(UUNCommand& nc);
+    void RemoveLink(UUNCommand& nc);
+    void SetLinkLevel(UUNCommand& nc);
+    void CreateRoute(UUNCommand& nc);
+    void RemoveRoute(UUNCommand& nc);
+    void SetSchematic(UUNCommand& nc);
+    void UpgradeCommandCenter(UUNCommand& nc);
+    void AddExtractorHead(UUNCommand& nc);
+    void KillExtractorHead(UUNCommand& nc);
+    void MoveExtractorHead(UUNCommand& nc);
+    void InstallProgram(UUNCommand& nc);
 
 private:
-    PlanetDB* m_db;
-    
+    PyServiceMgr* m_svcMgr;
+    Client* m_client;
+    Colony* m_colony;
+    PlanetSE* m_planet;
+
+    PlanetDB m_db;
 };
 
 

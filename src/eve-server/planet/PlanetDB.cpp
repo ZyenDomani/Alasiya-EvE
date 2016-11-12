@@ -28,83 +28,19 @@
 #include "planet/PlanetDB.h"
 
 
-PyRep* PlanetDB::GetPlanetInfo(uint32 planetID) {
-    /* this will be part of Planet class, and info will be handled there */
-    /*
-              [PyString "planetTypeID"]
-              [PyInt 2016]
-              [PyString "solarSystemID"]
-              [PyInt 30001984]
-              [PyString "radius"]
-              [PyFloat 2170000]
-              [PyString "planetID"]
-              [PyInt 40126699]
-
-              'currentSimTime' and 'pins'  are populated for planets that are colonlized
-    */
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        "SELECT solarSystemID, typeID AS planetTypeID, itemID AS planetID, radius"
-        " FROM mapDenormalize WHERE itemID = %u", planetID)) {
-        _log(DATABASE__ERROR, "Error in GetPlanetInfo query: %s", res.error.c_str());
-        return NULL;
-    }
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "GetPlanetInfo failed to get row");
-        return NULL;
-    }
-    return DBRowToKeyVal(row);
-}
-
 PyRep* PlanetDB::GetPlanetsForChar(uint32 charID) {
+  /** self.colonizationData = sm.RemoteSvc('planetMgr').GetPlanetsForChar()
+        returns  (solarSystemID, planetID, typeID, numberOfPins)
+    */
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT solarSystemID, planetID, typeID, numberOfPins"
         " FROM chrPlanets WHERE charID = %u", charID)) {
         _log(DATABASE__ERROR, "Error in GetPlanetsForChar query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
          }
          _log(DATABASE__RESULTS, "GetPlanetsForChar returned %u items", res.GetRowCount());
     return DBResultToCRowset(res);
-}
-
-PyRep* PlanetDB::GetPlanetResourceInfo(uint32 planetID) {
-    /* this will be part of Planet class, and resources will be calculated there */
-    DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT itemID1, itemID2, itemID3, itemID4, itemID5,"
-        " quality1, quality2, quality3, quality4, quality5"
-        " FROM planetResourceInfo WHERE planetID = %u", planetID)) {
-        _log(DATABASE__ERROR, "Error in GetPlanetResourceInfo query: %s", res.error.c_str());
-        return NULL;
-        }
-        _log(DATABASE__RESULTS, "GetPlanetResourceInfo returned %u items", res.GetRowCount());
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "GetPlanetResourceInfo failed to get row.");
-        return NULL;
-    }
-    /*
-            [PySubStream 67 bytes]
-              [PyDict 5 kvp]
-                [PyInt 2288]
-                [PyFloat 100.11311298535]
-                [PyInt 2073]
-                [PyFloat 93.8896871755585]
-                [PyInt 2267]
-                [PyFloat 88.2820365560074]
-                [PyInt 2268]
-                [PyFloat 50.6448014279542]
-                [PyInt 2270]
-                [PyFloat 66.0059005883846]
-    */
-    PyDict *rtn = new PyDict();
-        rtn->SetItem(new PyInt(row.GetInt(0)), new PyFloat(row.GetFloat(5)));
-        rtn->SetItem(new PyInt(row.GetInt(1)), new PyFloat(row.GetFloat(6)));
-        rtn->SetItem(new PyInt(row.GetInt(2)), new PyFloat(row.GetFloat(7)));
-        rtn->SetItem(new PyInt(row.GetInt(3)), new PyFloat(row.GetFloat(8)));
-        rtn->SetItem(new PyInt(row.GetInt(4)), new PyFloat(row.GetFloat(9)));
-    return rtn;
 }
 
 PyRep* PlanetDB::GetMyLaunchesDetails(uint32 charID) {
@@ -112,29 +48,39 @@ PyRep* PlanetDB::GetMyLaunchesDetails(uint32 charID) {
     if(!sDatabase.RunQuery(res, "SELECT launchID, charID, itemID, solarSystemID, planetID, status, launchTime, x, y, z"
         " FROM chrPlanetLaunches WHERE charID = %u", charID)) {
         _log(DATABASE__ERROR, "Error in GetMyLaunchesDetails Query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToRowset(res);
 }
 
 
-PyRep* PlanetDB::GetExtractorsForPlanet(uint32 planetID) {
-    /** @todo Incomplete, Needs to retrieve data from tables that do not exist yet.
-     * Currently stops the client from throwing errors.
-     */
-    /* this will be part of Planet class, and resources will be calculated there */
-    DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT 2130 AS typeID, 0 as ownerID")) {
-        _log(DATABASE__ERROR, "Error in GetExtractorsForPlanet Query: %s", res.error.c_str());
-        return NULL;
+void PlanetDB::SaveCCLevel(uint32 pinID, uint8 level)
+{
+    DBerror err;
+    if(!sDatabase.RunQuery(err, "UPDATE chrPlanetCCPin SET level = %u WHERE pinID = %u", pinID, level))
+    {
+        _log(DATABASE__ERROR, "Error in SaveCCLevel : %s", err.GetError());
     }
+}
 
-    return DBResultToRowset(res);
+uint32 PlanetDB::MakeCommandCenter(uint32 charID, uint32 planetID, uint32 typeID, float latitude, float longitude)
+{
+    uint32 pinID = 0;
+    DBerror err;
+    if(!sDatabase.RunQueryLID(err, pinID,
+        "INSERT INTO chrPlanetCCPin (charID, planetID, typeID, latitude, longitude, status, level, lastSimTime) "
+        " VALUES (%u, %u, %u, %f, %f, 0, 0, %" PRIu64 " )",
+        charID, planetID, typeID, latitude, longitude, Win32TimeNow()))
+    {
+        _log(DATABASE__ERROR, "Error in MakeCommandCenter query: %s", err.GetError());
+    }
+    return pinID;
 }
 
 bool PlanetDB::GetResourceData(uint32 planetID, DBResultRow &row)
 {
     /* this will be part of Planet class, and resources will be calculated there */
+    // data, numBands, proximity
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT itemID1, itemID2, itemID3, itemID4, itemID5,"
         " data1, data2, data3, data4, data5,"
@@ -163,8 +109,14 @@ void PlanetDB::SaveColony()
 
 }
 
+void PlanetDB::DeleteColony(uint32 pinID)
+{
+
+}
+
 void PlanetDB::GetPlanetData(DBQueryResult& res)
 {
+    // load info into PlanetDataMgr
     if(!sDatabase.RunQuery(res,
         "SELECT planet.typeID AS planetTypeID,"
         " resource.typeID AS resourceID"

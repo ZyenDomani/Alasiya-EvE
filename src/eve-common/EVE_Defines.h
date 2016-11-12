@@ -66,6 +66,7 @@ minFakeClientItem = 17000000000000000000L
 #define EVEMU_OUTPOST_ID               61000000
 #define EVEMU_SCENERIO_ID              90000000
 #define EVEMU_ASTEROID_ID             100000000
+#define EVEMU_PLANET_CC_ID            130000000
 #define EVEMU_MINIMUM_ID          minPlayerItem
 #define EVEMU_TEMP_ENTITY_ID   EVEMU_MINIMUM_ID
 #define EVEMU_MINIMUM_ENTITY_ID       140000000

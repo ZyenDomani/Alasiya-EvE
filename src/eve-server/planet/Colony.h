@@ -21,6 +21,7 @@
  *    http://www.gnu.org/copyleft/lesser.txt.
  *    ------------------------------------------------------------------------------------
  *    Author:        Cometo
+ *    Updates:  Allan
  */
 
 #ifndef __COLONY_H_INCL__
@@ -28,15 +29,18 @@
 
 #include "PyCallable.h"
 
-class Colony {
+#include "planet/PlanetDB.h"
 
+class Colony {
 public:
-    Colony(PyServiceMgr* mgr, uint32 charID, uint32 planetID);
+    Colony(PyServiceMgr* mgr, Client* pclient, uint32 pID);
+    ~Colony();
 
     void Init();
     void Load();
     void Save();
 
+    void AbandonColony();
     void UpgradeCommandCenter(uint32 pinID, uint32 level);
 
     bool CreatePin(uint32 pinID, uint32 typeID, float latitude, float longitude);
@@ -44,9 +48,11 @@ public:
     bool CreateLink(uint32 src, uint32 dest, uint32 level, bool ccConnected);
     bool RemoveLink(uint32 src, uint32 dest, bool ccConnected);
     bool UpgradeLink(uint32 src, uint32 dest, uint32 level, bool ccConnected);
-    bool CreateCommandPin(uint32 pinID, uint32 typeID, float latitude, float longitude);
+    bool CreateCommandPin(uint32 itemID, uint32 typeID, float latitude, float longitude);
 
-    PyResult GetColony();
+    PyRep* GetColony();
+
+    uint64 GetSimTime()                                 { return ccPin->currentSimTime; }
 
 protected:
     struct Pin {
@@ -77,6 +83,7 @@ protected:
         //Extractor
         uint8 heads = 0;
         float headRadius = 0.0f;
+
         // -program data
         uint32 cycleTime = 0;
         uint32 programType = 0;
@@ -86,24 +93,25 @@ protected:
     };
 
     struct Link {
-        bool commandCenterConnected;
-        uint32 level;
-        uint32 typeID;
-        uint32 endpoint1;
-        uint32 endpoint2;
+        bool commandCenterConnected = false;
+        uint32 level = 0;
+        uint32 typeID = 0;
+        uint32 endpoint1 = 0;
+        uint32 endpoint2 = 0;
     };
 
     struct Route {
-        bool destIsCommandCenter;
+        bool destIsCommandCenter = false;
 
-        uint32 destID;
-        uint32 comodityTypeID;
-        uint32 commodityQuantity;
+        uint32 destID = 0;
+        uint32 comodityTypeID = 0;
+        uint32 commodityQuantity = 0;
     };
 
-    struct CommandCenterPin {
-        uint32 level;
-        uint64 currentSimTime;
+    class CommandCenterPin {
+    public:
+        uint32 level = 0;
+        uint64 currentSimTime = 0;
 
         std::list<Pin> pins;
         std::list<Link> links;
@@ -113,29 +121,15 @@ protected:
 
 private:
     PyServiceMgr* svcMgr;
-    PyDict* testContainer;
+    CommandCenterPin* ccPin;
+    Client* m_client;
+    PyDict* ccContents;
+    PyDict* storageContents;
 
-    uint32 charID;
-    uint32 colonyID;
-    uint32 planetID;
+    PlanetDB m_db;
 
-    CommandCenterPin ccPin;
-
-    const int STATE_EDITMODE = -2;
-    const int STATE_DISABLED = -1;
-    const int STATE_IDLE = 0;
-    const int STATE_ACTIVE = 1;
-
-    /* event
-     * STATE_NORMAL = 0
-     * STATE_BUILDPIN = 1
-     * STATE_CREATELINKSTART = 2
-     * STATE_CREATELINKEND = 3
-     * STATE_CREATEROUTE = 4
-     * STATE_SURVEY = 5
-     * SUBSTATE_NORMAL = 0
-     * SUBSTATE_MOVEEXTRACTIONHEAD = 1
-     */
+    uint32 m_colonyID;
+    uint32 m_planetID;
 };
 
 

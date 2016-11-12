@@ -235,5 +235,23 @@ struct DunRoomSpawnInfo {
     uint16 z = 0;
 };
 
+struct PlanetResourceData {
+    float dist_1 = 0;
+    float dist_2 = 0;
+    float dist_3 = 0;
+    float dist_4 = 0;
+    float dist_5 = 0;
+    int32 type_1 = 0;
+    int32 type_2 = 0;
+    int32 type_3 = 0;
+    int32 type_4 = 0;
+    int32 type_5 = 0;
+    uint8 numBands_1 = 0;
+    uint8 numBands_2 = 0;
+    uint8 numBands_3 = 0;
+    uint8 numBands_4 = 0;
+    uint8 numBands_5 = 0;
+    const char* data = "~";
+};
 
 #endif  // _EVEMU_POD_CONTAINERS_H_

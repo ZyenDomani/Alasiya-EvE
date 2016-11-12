@@ -28,6 +28,8 @@ public:
     // Initializes the Table:
     int Initialize();
 
+    void GetPlanetData(uint32 planetID, std::vector<uint32> &typeIDs);
+
 protected:
     void _Populate();
 
@@ -54,15 +56,17 @@ private:
 };
 
 
+class Colony;
 class PyServiceMgr;
 class SystemManager;
+class Call_ResourceDataDict;
 
 class PlanetSE
 : public StaticSystemEntity
 {
 public:
     PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~PlanetSE()                                 { /* Do nothing here */ }
+    virtual ~PlanetSE();
 
     /* class type pointer querys. */
     virtual PlanetSE* GetPlanetSE()                     { return this; }
@@ -71,6 +75,19 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual bool LoadExtras(SystemDB *db);
+
+    /* specific functions for this class */
+    PyRep* GetPlanetInfo(Colony* pColony);
+    PyRep* GetResourceData(Call_ResourceDataDict& dict);
+    PyRep* GetPlanetResourceInfo();
+    PyRep* GetExtractorsForPlanet(int32 planetID);
+
+
+protected:
+    PlanetResourceData m_data;
+
+    bool m_hasColony = false;
+
 };
 
 #endif  // EVEMU_PLANET_PLANET_H_

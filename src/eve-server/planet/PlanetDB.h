@@ -33,20 +33,21 @@ class PlanetDB
 : public ServiceDB
 {
 public:
-    PyRep* GetPlanetInfo(uint32 planetID);
-    PyRep* GetPlanetResourceInfo(uint32 planetID);
     PyRep* GetPlanetsForChar(uint32 charID);
     PyRep* GetMyLaunchesDetails(uint32 charID);
-    PyRep* GetExtractorsForPlanet(uint32 planetID);
-
-    bool GetResourceData(uint32 planetID, DBResultRow &row);
-
-    void GetPlanetData(DBQueryResult& row);
 
     GPoint GetLaunchPos(uint32 launchID);
 
     void LoadColony();
     void SaveColony();
+    void DeleteColony(uint32 pinID);
+    void SaveCCLevel(uint32 pinID, uint8 level);
+    void GetPlanetData(DBQueryResult& row);
+
+    bool GetResourceData(uint32 planetID, DBResultRow &row);
+
+    uint32 MakeCommandCenter(uint32 charID, uint32 planetID, uint32 typeID, float latitude, float longitude);
+
 };
 
 #endif  // EVEMU_PLANET_PLANETDB_H_

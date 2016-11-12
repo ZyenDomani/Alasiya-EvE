@@ -25,6 +25,41 @@ enum PinCommands {
     InstallProgram = 13
 };
 
+enum PinStates {
+    PINSTATE_EDITMODE = -2,
+    PINSTATE_DISABLED = -1,
+    PINSTATE_IDLE = 0,
+    PINSTATE_ACTIVE = 1
+};
+
+/*  these are internal client state events
+enum PlanetEvents {
+    EVENT_NORMAL = 0,
+    EVENT_BUILDPIN = 1,
+    EVENT_CREATELINKSTART = 2,
+    EVENT_CREATELINKEND = 3,
+    EVENT_CREATEROUTE = 4,
+    EVENT_SURVEY = 5,
+    SUBEVENT_NORMAL = 6,
+    SUBEVENT_MOVEEXTRACTIONHEAD = 7
+}; */
+
+                    /*
+            Extractors = 1026,
+            Command_Centers = 1027,
+            Processors = 1028,
+            Storage_Facilities = 1029,
+            Spaceports = 1030,
+            Planetary_Resources = 1031,
+            Planet_Solid = 1032,
+            Planet_Liquid_Gas = 1033,
+            Refined_Commodities = 1034,
+            Planet_Organic = 1035,
+            Planetary_Links = 1036,
+            Specialized_Commodities = 1040,
+            Advanced_Commodities = 1041,
+            Basic_Commodities = 1042,
+            */
 /*
      COMMAND_CREATEPIN: 'CreatePin',
      COMMAND_REMOVEPIN: 'RemovePin',

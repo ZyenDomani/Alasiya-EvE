@@ -31,9 +31,12 @@
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
-#include "packets/PlanetSvc.h"
-#include "planet/PlanetMgrBound.h"
+#include "packets/Planet.h"
 #include "planet/Colony.h"
+#include "planet/Planet.h"
+#include "planet/PlanetMgr.h"
+#include "planet/PlanetMgrBound.h"
+#include "system/SystemManager.h"
 
 class PlanetMgrBound
 : public PyBoundObject
@@ -41,13 +44,16 @@ class PlanetMgrBound
 public:
     PyCallable_Make_Dispatcher(PlanetMgrBound)
 
-    PlanetMgrBound(PyServiceMgr *mgr, uint32 planetID, uint32 charID)
+    PlanetMgrBound(PyServiceMgr *mgr, Client* pClient, PlanetSE* pPlanet)
     : PyBoundObject(mgr),
     m_dispatch(new Dispatcher(this)),
-    m_planetID(planetID)
+    m_planet(pPlanet)
     {
         _SetCallDispatcher(m_dispatch);
-        m_colony = new Colony(mgr, charID, m_planetID);
+        m_colony = new Colony(mgr, pClient, m_planet->GetID());
+        m_colony->Init();
+
+        m_planetMgr = new PlanetMgr(mgr, pClient, pPlanet, m_colony);
 
         m_strBoundObjectName = "PlanetMgrBound";
 
@@ -72,6 +78,7 @@ public:
     virtual ~PlanetMgrBound() {
         delete m_dispatch;
         SafeDelete(m_colony);
+        SafeDelete(m_planetMgr);
     }
 
     virtual void Release() {
@@ -153,8 +160,9 @@ public:
 protected:
     Colony* m_colony;
     PlanetDB* m_db;
+    PlanetSE* m_planet;
+    PlanetMgr* m_planetMgr;
     Dispatcher* const m_dispatch;
-    uint32 m_planetID;
 };
 
 PyCallable_Make_InnerDispatcher(PlanetMgrService)
@@ -183,32 +191,29 @@ PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *c, const PyRep *bind
         _log(PLANET__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
         return nullptr;
     }
-    return new PlanetMgrBound(m_manager, bind_args->AsInt()->value(), c->GetCharacterID());
+    SystemEntity* pSE = c->SystemMgr()->GetSE(bind_args->AsInt()->value());
+    if (!pSE->IsPlanetSE()) {
+        c->SendErrorMsg("itemID is not planetID");
+        return nullptr;
+    }
+    return new PlanetMgrBound(m_manager, c, pSE->GetPlanetSE());
 }
 
 PyResult PlanetMgrService::Handle_GetPlanet(PyCallArgs &call) {
-    sLog.Log("PlanetMgrService", "Handle_GetPlanet() size=%u", call.tuple->size() );
+    _log(PLANET__DEBUG, "PlanetMgrService::Handle_GetPlanet() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
     return nullptr;
 }
 
 PyResult PlanetMgrService::Handle_DeleteLaunch(PyCallArgs &call) {
-    sLog.Log("PlanetMgrService", "Handle_DeleteLaunch() size=%u", call.tuple->size() );
+    _log(PLANET__DEBUG, "PlanetMgrService::Handle_DeleteLaunch() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
     return nullptr;
 }
 
 PyResult PlanetMgrService::Handle_GetPlanetsForChar(PyCallArgs &call) {
-  /**
-            self.colonizationData = sm.RemoteSvc('planetMgr').GetPlanetsForChar()
-            returns  solarSystemID, planetID, typeID, numberOfPins
-            */
-
-  /* Used by the client to populate the industry:planets tab
-   */
-
   return m_db->GetPlanetsForChar(call.client->GetCharacterID());
 }
 
@@ -216,218 +221,100 @@ PyResult PlanetMgrService::Handle_GetMyLaunchesDetails(PyCallArgs &call) {
     return m_db->GetMyLaunchesDetails(call.client->GetCharacterID());
 }
 
-PyResult PlanetMgrBound::Handle_GMAddCommodity(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GMAddCommodity() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
-PyResult PlanetMgrBound::Handle_GMConvertCommandCenter(PyCallArgs &call) {
-    //self.remoteHandler.GMConvertCommandCenter(pinID)
-    //  this is an option in the GM planet menu.  no clue what it's for or what it does.....
-
-    sLog.Log("PlanetMgrBound", "Handle_GMConvertCommandCenter() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
-PyResult PlanetMgrBound::Handle_GMForceInstallProgram(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GMForceInstallProgram() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-/*
-        if typeID not in resourceInfo or qtyPerCycle < 0 or cycleTime < 10 * SEC or lifetimeHours < 1 or headRadius <= 0.0:
-            return
-        self.remoteHandler.GMForceInstallProgram(pinID, typeID, cycleTime, lifetimeHours, qtyPerCycle, headRadius)
-
-16:40:57 L PlanetMgrBound: Handle_GMForceInstallProgram() size=6
-16:40:57 [PlanetCallDump]   Call Arguments:
-16:40:57 [PlanetCallDump]       Tuple: 6 elements
-16:40:57 [PlanetCallDump]         [ 0] Tuple: 2 elements
-16:40:57 [PlanetCallDump]         [ 0]   [ 0] Integer field: 1
-16:40:57 [PlanetCallDump]         [ 0]   [ 1] Integer field: 1
-16:40:57 [PlanetCallDump]         [ 1] Integer field: 2272
-16:40:57 [PlanetCallDump]         [ 2] Integer field: 600000000
-16:40:57 [PlanetCallDump]         [ 3] Integer field: 24
-16:40:57 [PlanetCallDump]         [ 4] Integer field: 100
-16:40:57 [PlanetCallDump]         [ 5] Real field: 1.000000
-*/
-    return nullptr;
-}
-
-//15:15:02[00m L [37;01mPlanetMgrBound: [00mHandle_GMGetLocalDistributionReport() size=2
-PyResult PlanetMgrBound::Handle_GMGetLocalDistributionReport(PyCallArgs &call) {
-    /*
-     *      return self.remoteHandler.GMGetLocalDistributionReport(self.planetID, (surfacePoint.theta, surfacePoint.phi))
-     */
-    /*
-     *     1 5*:15:02 [PlanetCallDump]   Call Arguments:
-     *     15:15:02 [PlanetCallDump]       Tuple: 2 elements
-     *     15:15:02 [PlanetCallDump]         [ 0] Integer field: 40216265      << planetID
-     *     15:15:02 [PlanetCallDump]         [ 1] Tuple: 2 elements
-     *     15:15:02 [PlanetCallDump]         [ 1]   [ 0] Real field: 0.359286  << theta
-     *     15:15:02 [PlanetCallDump]         [ 1]   [ 1] Real field: 1.014020  << phi
-     *     sLog.Log("PlanetMgrBound", "Handle_GMGetLocalDistributionReport() size=%u", call.tuple->size() );
-     *     call.Dump(PLANET__DUMP);
-     */
-
-    return nullptr;
-}
-
-PyResult PlanetMgrBound::Handle_GMGetSynchedServerState(PyCallArgs &call) {
-    /*
-    def GMVerifySimulation(self):
-        self.LogNotice('VerifySimulation -- starting')
-        simulationDuration, remoteColonyData = self.remoteHandler.GMGetSynchedServerState(session.charid)
-        simEndTime = remoteColonyData.currentSimTime
-        colony = self.GetColony(session.charid)
-        startTime = blue.os.GetWallclockTimeNow()
-        colony.RunSimulation(runSimUntil=simEndTime)
-        clientSimulationRuntime = blue.os.GetWallclockTimeNow() - startTime
-        pins = remoteColonyData.pins
-        self.LogNotice('simulation ran for', clientSimulationRuntime, 'on client, ', simulationDuration, 'on server')
-        for pin in pins:
-            clientPin = colony.GetPin(pin.id)
-            if clientPin is None:
-                self.LogError(pin.id, 'exists on server but not on client')
-                continue
-            for key, value in pin.__dict__.iteritems():
-                if not hasattr(clientPin, key):
-                    self.LogError(pin.id, 'on client does not have attribute ', key)
-                    continue
-                clientValue = getattr(clientPin, key)
-                if clientValue != value:
-                    self.LogError(pin.id, 'does not agree on a value for', key, 'Client says ', clientValue, 'but server', value)
-
-        self.LogNotice('VerifySimulation -- finished')
-        */
-    sLog.Log("PlanetMgrBound", "Handle_GMGetSynchedServerState() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
-PyResult PlanetMgrBound::Handle_GMRunDepletionSim(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GMRunDepletionSim() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
 PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GetPlanetInfo() size=%u", call.tuple->size() );
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetPlanetInfo() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
-    sLog.Debug("Server", "GetPlanetInfo Incomplete.");
-    /* Incomplete, needs to check if planet is colonised by char, if so, return full colony + planet data.
-     * Right now every planet is un-colonised.
-     */
-    /* this will be part of Planet class, and resources will be calculated there */
-    return m_db->GetPlanetInfo(m_planetID);
+    return m_planet->GetPlanetInfo(m_colony);
 }
 
 PyResult PlanetMgrBound::Handle_GetPlanetResourceInfo(PyCallArgs &call) {
-    //sLog.Log("PlanetMgrBound", "Handle_GetPlanetResourceInfo() size=%u", call.tuple->size() );
-    //call.Dump(PLANET__DUMP);
-
-    /* Used by the client to draw the planet resource bars.
-     * returns: {typeID:quality, typeID:quality, typeID:quality, typeID:quality, typeID:quality}
-     * quality: (min=1.0, max=154.275)
-     */
-    /* this will be part of Planet class, and resources will be calculated there */
-    return m_db->GetPlanetResourceInfo(m_planetID);
+    return m_planet->GetPlanetResourceInfo();
 }
 
 PyResult PlanetMgrBound::Handle_GetExtractorsForPlanet(PyCallArgs &call) {
-    // NOTE this gets ALL extractors on this planet
-    sLog.Log("PlanetMgrBound", "Handle_GetExtractorsForPlanet() size=%u", call.tuple->size() );
+    /*
+     * 15:25:57 [PlanetDebug] PlanetMgrBound::Handle_GetExtractorsForPlanet() size=1
+     * 15:25:57 [PlanetCallDump]   Call Arguments:
+     * 15:25:57 [PlanetCallDump]       Tuple: 1 elements
+     * 15:25:57 [PlanetCallDump]         [ 0] Integer field: 40159411   <<<  planetID - duh
+     */
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetExtractorsForPlanet() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
-    return m_db->GetExtractorsForPlanet(m_planetID);
+    Call_SingleIntegerArg args;
+    if (!args.Decode(call.tuple)) {
+        _log(SERVICE__ERROR, "Failed to decode args for GetResourceData()");
+        return nullptr;
+    }
+
+    return m_planet->GetExtractorsForPlanet(args.arg);
 }
 
 PyResult PlanetMgrBound::Handle_GetCommandPinsForPlanet(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GetCommandPinsForPlanet() size=%u", call.tuple->size() );
+    /*  called by "get other character's networks" in planet menu
+     * 16:42:42 [PlanetDebug] PlanetMgrBound::Handle_GetCommandPinsForPlanet() size=1
+     * 16:42:42 [PlanetCallDump]   Call Arguments:
+     * 16:42:42 [PlanetCallDump]       Tuple: 1 elements
+     * 16:42:42 [PlanetCallDump]         [ 0] Integer field: 40159411
+     */
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetCommandPinsForPlanet() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
     // returns empty dict if none
-    return new PyDict;
+    return new PyDict();
 }
 
 PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_GetProgramResultInfo() size=%u", call.tuple->size() );
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetProgramResultInfo() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
     return nullptr;
 }
 
 PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
+    //_log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetResourceData() size=%u", call.tuple->size() );
+    //call.Dump(PLANET__DUMP);
     /* TODO, Figure out how to populate PyBuffer with more than char.
      *         and figure out the client buffer structure, etc.
      * TODO, optimise this function maybe?
      */
     /*
-        inRange, sh = planet.GetResourceData(resourceTypeID)        << check packets for this call
+        inRange, sh = planet.GetResourceData(resourceTypeID)        << check packets for this call --- none.  :(
 
-    /*  this is called by planet view page, by "resource filter" for given typeID
-20:03:42 [BindDump] NodeID: 888444 BindID: 122 calling GetResourceData in service manager 'PlanetMgrBound'
-20:03:42 [BindDump]   Call Arguments:
-20:03:42 [BindDump]       Tuple: 1 elements
-20:03:42 [BindDump]         [ 0] Object:
-20:03:42 [BindDump]         [ 0]   Type: String: 'util.KeyVal'
-20:03:42 [BindDump]         [ 0]   Args: Dictionary: 8 entries
-20:03:42 [BindDump]         [ 0]   Args:   [ 0] Key: String: 'proximity'
-20:03:42 [BindDump]         [ 0]   Args:   [ 0] Value: Integer field: 4
-20:03:42 [BindDump]         [ 0]   Args:   [ 1] Key: String: 'updateTime'
-20:03:42 [BindDump]         [ 0]   Args:   [ 1] Value: Integer field: 0
-20:03:42 [BindDump]         [ 0]   Args:   [ 2] Key: String: 'advancedPlanetology'
-20:03:42 [BindDump]         [ 0]   Args:   [ 2] Value: Integer field: 0
-20:03:42 [BindDump]         [ 0]   Args:   [ 3] Key: String: 'remoteSensing'
-20:03:42 [BindDump]         [ 0]   Args:   [ 3] Value: Integer field: 3
-20:03:42 [BindDump]         [ 0]   Args:   [ 4] Key: String: 'newBand'
-20:03:42 [BindDump]         [ 0]   Args:   [ 4] Value: Integer field: 15
-20:03:42 [BindDump]         [ 0]   Args:   [ 5] Key: String: 'planetology'
-20:03:42 [BindDump]         [ 0]   Args:   [ 5] Value: Integer field: 0
-20:03:42 [BindDump]         [ 0]   Args:   [ 6] Key: String: 'oldBand'
-20:03:42 [BindDump]         [ 0]   Args:   [ 6] Value: Integer field: 0
-20:03:42 [BindDump]         [ 0]   Args:   [ 7] Key: String: 'resourceTypeID'
-20:03:42 [BindDump]         [ 0]   Args:   [ 7] Value: Integer field: 2267
+            /*  this is called by planet view page, by "resource filter" for given typeID
+             *     this is dump before dict decoding
+             * 12:23:45 [PlanetCallDump]    Dictionary: 8 entries
+             * 12:23:45 [PlanetCallDump]      [ 0] Key: String: 'proximity'
+             * 12:23:45 [PlanetCallDump]      [ 0] Value: Integer field: 4
+             * 12:23:45 [PlanetCallDump]      [ 1] Key: String: 'updateTime'
+             * 12:23:45 [PlanetCallDump]      [ 1] Value: Integer field: 0
+             * 12:23:45 [PlanetCallDump]      [ 2] Key: String: 'advancedPlanetology'
+             * 12:23:45 [PlanetCallDump]      [ 2] Value: Integer field: 0
+             * 12:23:45 [PlanetCallDump]      [ 3] Key: String: 'remoteSensing'
+             * 12:23:45 [PlanetCallDump]      [ 3] Value: Integer field: 3
+             * 12:23:45 [PlanetCallDump]      [ 4] Key: String: 'newBand'
+             * 12:23:45 [PlanetCallDump]      [ 4] Value: Integer field: 15
+             * 12:23:45 [PlanetCallDump]      [ 5] Key: String: 'planetology'
+             * 12:23:45 [PlanetCallDump]      [ 5] Value: Integer field: 0
+             * 12:23:45 [PlanetCallDump]      [ 6] Key: String: 'oldBand'
+             * 12:23:45 [PlanetCallDump]      [ 6] Value: Integer field: 0
+             * 12:23:45 [PlanetCallDump]      [ 7] Key: String: 'resourceTypeID'
+             * 12:23:45 [PlanetCallDump]      [ 7] Value: Integer field: 2268
+             *
 */
+    Call_ResourceDataDict dict;
     PyDict* input = call.tuple->AsTuple()->GetItem(0)->AsObject()->arguments()->AsDict();
-    int proximity = input->GetItemString("proximity")->AsInt()->value();
-    int resourceTypeID = input->GetItemString("resourceTypeID")->AsInt()->value();
-    int offset = 0;
-
-    DBResultRow row;
-    if (!m_db->GetResourceData(m_planetID, row)) {
-        _log(PLANET__ERROR, "Error in GetResourceData Query failed to get row.");
+    input->Dump(PLANET__DUMP, "   ");
+    if (!dict.Decode(&input)) {
+        _log(SERVICE__ERROR, "Failed to decode args for GetResourceData()");
         return nullptr;
     }
-
-    if (row.GetInt(0) == resourceTypeID)
-        offset = 0;
-    else if (row.GetInt(1) == resourceTypeID)
-        offset = 1;
-    else if (row.GetInt(2) == resourceTypeID)
-        offset = 2;
-    else if (row.GetInt(3) == resourceTypeID)
-        offset = 3;
-    else if (row.GetInt(4) == resourceTypeID)
-        offset = 4;
-
-    const char bufferData = *row.GetText(5+offset);
-    int numBands = row.GetInt(10+offset);
-
-    PyDict* args = new PyDict();
-    PyObject* rtn = new PyObject("util.KeyVal", args);
-    args->SetItemString("data", new PyBuffer(numBands*numBands*4, bufferData));
-    args->SetItemString("numBands", new PyInt(numBands));
-    args->SetItemString("proximity", new PyInt(proximity));
-    return rtn;
+    return m_planet->GetResourceData(dict);
 }
 
+//01:52:23 [PlanetDebug] PlanetMgrBound::Handle_UserAbandonPlanet() size=0
 PyResult PlanetMgrBound::Handle_UserAbandonPlanet(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_UserAbandonPlanet() size=%u", call.tuple->size() );
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_UserAbandonPlanet() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
     return nullptr;
@@ -438,7 +325,7 @@ PyResult PlanetMgrBound::Handle_UserLaunchCommodities(PyCallArgs &call) {
             lastLaunchTime = self.remoteHandler.UserLaunchCommodities(commandPinID, commoditiesToLaunch)
             for typeID, qty in commoditiesToLaunch.iteritems():
             */
-    sLog.Log("PlanetMgrBound", "Handle_UserLaunchCommodities() size=%u", call.tuple->size() );
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_UserLaunchCommodities() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
     /* 20:00:35 L PlanetMgrBound: Handle_UserLaunchCommodities() size=2
      * 20:00:35 [PlanetCallDump]   Call Arguments:
@@ -456,7 +343,7 @@ PyResult PlanetMgrBound::Handle_UserLaunchCommodities(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_UserTransferCommodities() size=%u", call.tuple->size() );
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_UserTransferCommodities() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 /*
 
@@ -485,7 +372,7 @@ PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
             Extractor_Control_Units = 1063,
         */
 PyResult PlanetMgrBound::Handle_UserUpdateNetwork(PyCallArgs &call) {
-    sLog.Log("PlanetMgrBound", "Handle_UserUpdateNetwork() size=%u", call.tuple->size() );
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_UserUpdateNetwork() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
     UUNCommandList uuncl;
@@ -494,154 +381,110 @@ PyResult PlanetMgrBound::Handle_UserUpdateNetwork(PyCallArgs &call) {
         return nullptr;
     }
 
-    for(int i = 0; i < uuncl.commandList->size(); i++) {
-        UUNCommand uunc;
-        if (!uunc.Decode(uuncl.commandList->GetItem(i)->AsTuple())) {
-            _log(SERVICE__ERROR, "Failed to decode args for UUNCommand");
-            return nullptr;
-        }
-        _log(PLANET__TRACE, "  UserUpdateNetwork: loop: %u, command: %u", i, uunc.command);
-        uunc.Dump(PLANET__DUMP, "    ");
-        switch(uunc.command) {
-            case CreatePin: {
-                uint32 typeID = uunc.command_data->GetItem(1)->AsInt()->value();
-                uint32 groupID = m_manager->item_factory->GetType(typeID)->groupID();
-                if (groupID == EVEDB::invGroups::Command_Centers) {
-                    UUNCCommandCenter uunccc;
-                    if (!uunccc.Decode(uunc.command_data)) {
-                        _log(SERVICE__ERROR, "Failed to decode args for UUNCCommandCenter!");
-                    }
-                    uunccc.Dump(PLANET__DUMP, "      ");
+    return m_planetMgr->UpdateNetwork(uuncl);
+}
 
-                    if (!m_colony->CreateCommandPin(uunccc.pinID, uunccc.typeID, uunccc.latitude, uunccc.longitude)) {
-                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to create command center");
-                    } else {
-                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success creating command center");
-                    }
-                } else if (groupID == EVEDB::invGroups::Storage_Facilities
-                        or groupID == EVEDB::invGroups::Spaceports
-                        or groupID == EVEDB::invGroups::Processors
-                        or groupID == EVEDB::invGroups::Extractor_Control_Units
-                        or groupID == EVEDB::invGroups::Storage_Facilities
-                        or groupID == EVEDB::invGroups::Spaceports) {
-                    UUNCStandardPin uuncsp;
-                    if (!uuncsp.Decode(uunc.command_data)) {
-                        _log(SERVICE__ERROR, "Failed to decode args for UUNCStandardPin!");
-                    }
-                    uuncsp.Dump(PLANET__DUMP, "      ");
+PyResult PlanetMgrBound::Handle_GMAddCommodity(PyCallArgs &call) {
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GMAddCommodity() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
 
-                    if (!m_colony->CreatePin(uuncsp.pinID2, uuncsp.typeID, uuncsp.latitude, uuncsp.longitude)) {
-                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to create new pin");
-                    } else {
-                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success creating new pin");
-                    }
-                } else {
-                    // Invalid...
-                    _log(PLANET__ERROR, "  UserUpdateNetwork: INVALID CREATEPIN groupID %u", groupID);
-                }
-            }  break;
-            case RemovePin: {
-                uint32 pinID = uunc.command_data->GetItem(0)->AsTuple()->GetItem(1)->AsInt()->value();
-                if (!m_colony->RemovePin(pinID)) {
-                    _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to remove pin");
-                } else {
-                    _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success removing pin");
-                }
-            }  break;
-            case CreateLink: {
-                if (uunc.command_data->GetItem(0)->IsInt()) {
-                    UUNCLinkCommand uunclc;
-                    if (!uunclc.Decode(uunc.command_data)) {
-                        _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkCommand!");
-                    }
-                    uunclc.Dump(PLANET__DUMP, "      ");
+    return nullptr;
+}
 
-                    if (!m_colony->CreateLink(uunclc.src, uunclc.dest2, uunclc.level, true)) {
-                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to create link");
-                    } else {
-                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success creating link");
-                    }
-                } else if (uunc.command_data->GetItem(0)->IsTuple()) {
-                    UUNCLinkStandard uuncls;
-                    if (!uuncls.Decode(uunc.command_data)) {
-                        _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkStandard!");
-                    }
-                    uuncls.Dump(PLANET__DUMP, "      ");
+PyResult PlanetMgrBound::Handle_GMConvertCommandCenter(PyCallArgs &call) {
+    //self.remoteHandler.GMConvertCommandCenter(pinID)
+    //  this is an option in the GM planet menu.  no clue what it's for or what it does.....
+    /*
+     * 02:48:32 [PlanetDebug] PlanetMgrBound::Handle_GMConvertCommandCenter() size=1
+     * 02:48:32 [PlanetCallDump]   Call Arguments:
+     * 02:48:32 [PlanetCallDump]       Tuple: 1 elements
+     * 02:48:32 [PlanetCallDump]         [ 0] Integer field: 140006224      << CC PinID (currently wrong)
+     */
 
-                    if (!m_colony->CreateLink(uuncls.src2, uuncls.dest2, uuncls.level, false)) {
-                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to create link");
-                    } else {
-                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success creating link");
-                    }
-                } else {
-                    //Invalid...
-                    _log(PLANET__TRACE, "  UserUpdateNetwork: INVALID CREATELINK");
-                }
-            } break;
-            case RemoveLink: {
-                if (uunc.command_data->GetItem(0)->IsInt()) {
-                    uint32 src = uunc.command_data->GetItem(0)->AsInt()->value();
-                    uint32 dest2 = uunc.command_data->GetItem(1)->AsTuple()->GetItem(1)->AsInt()->value();
-                    if (!m_colony->RemoveLink(src, dest2, true)) {
-                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to remove link");
-                    } else {
-                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success removing link");
-                    }
-                } else if (uunc.command_data->GetItem(0)->IsTuple()) {
-                    uint32 src = uunc.command_data->GetItem(0)->AsTuple()->GetItem(1)->AsInt()->value();
-                    uint32 dest2 = uunc.command_data->GetItem(1)->AsTuple()->GetItem(1)->AsInt()->value();
-                    if (!m_colony->RemoveLink(src, dest2, false)) {
-                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to remove link");
-                    } else {
-                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success removing link");
-                    }
-                }
-            } break;
-            case SetLinkLevel: {
-                if (uunc.command_data->GetItem(0)->IsInt()) {
-                    UUNCLinkCommand uunclc;
-                    if (!uunclc.Decode(uunc.command_data)) {
-                        _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkCommand!");
-                    }
-                    uunclc.Dump(PLANET__DUMP, "      ");
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GMConvertCommandCenter() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
 
-                    if (!m_colony->UpgradeLink(uunclc.src, uunclc.dest2, uunclc.level, true)) {
-                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to upgrade link");
-                    } else {
-                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success upgrading link");
-                    }
-                } else if (uunc.command_data->GetItem(0)->IsTuple()) {
-                    UUNCLinkStandard uuncls;
-                    if (!uuncls.Decode(uunc.command_data)) {
-                        _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkStandard!");
-                    }
-                    uuncls.Dump(PLANET__DUMP, "      ");
+    return nullptr;
+}
 
-                    if (!m_colony->UpgradeLink(uuncls.src2, uuncls.dest2, uuncls.level, false)) {
-                        _log(PLANET__ERROR, "  UserUpdateNetwork: Failed to upgrade link");
-                    } else {
-                        _log(PLANET__MESSAGE, "  UserUpdateNetwork: Success upgrading link");
-                    }
-                }
-            } break;
-            case UpgradeCommandCenter: {
-                uint32 pinID = uunc.command_data->GetItem(0)->AsInt()->value();
-                uint32 level = uunc.command_data->GetItem(1)->AsInt()->value();
-                m_colony->UpgradeCommandCenter(pinID, level);
+PyResult PlanetMgrBound::Handle_GMForceInstallProgram(PyCallArgs &call) {
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GMForceInstallProgram() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+    /*
+     *        if typeID not in resourceInfo or qtyPerCycle < 0 or cycleTime < 10 * SEC or lifetimeHours < 1 or headRadius <= 0.0:
+     *            return
+     *        self.remoteHandler.GMForceInstallProgram(pinID, typeID, cycleTime, lifetimeHours, qtyPerCycle, headRadius)
+     *
+     * 16:40:57 L PlanetMgrBound: Handle_GMForceInstallProgram() size=6
+     * 16:40:57 [PlanetCallDump]   Call Arguments:
+     * 16:40:57 [PlanetCallDump]       Tuple: 6 elements
+     * 16:40:57 [PlanetCallDump]         [ 0] Tuple: 2 elements
+     * 16:40:57 [PlanetCallDump]         [ 0]   [ 0] Integer field: 1
+     * 16:40:57 [PlanetCallDump]         [ 0]   [ 1] Integer field: 1
+     * 16:40:57 [PlanetCallDump]         [ 1] Integer field: 2272
+     * 16:40:57 [PlanetCallDump]         [ 2] Integer field: 600000000
+     * 16:40:57 [PlanetCallDump]         [ 3] Integer field: 24
+     * 16:40:57 [PlanetCallDump]         [ 4] Integer field: 100
+     * 16:40:57 [PlanetCallDump]         [ 5] Real field: 1.000000
+     */
+    return nullptr;
+}
 
-            } break;
-            /** @todo not handled yet... */
-            case CreateRoute:
-            case RemoveRoute:
-            case SetSchematic:
-            case AddExtractorHead:
-            case KillExtractorHead:
-            case MoveExtractorHead:
-            case InstallProgram:
-            default:
-                break;
-        }
-    }
+//15:15:02[00m L [37;01mPlanetMgrBound: [00mHandle_GMGetLocalDistributionReport() size=2
+PyResult PlanetMgrBound::Handle_GMGetLocalDistributionReport(PyCallArgs &call) {
+    /*
+     *      return self.remoteHandler.GMGetLocalDistributionReport(self.planetID, (surfacePoint.theta, surfacePoint.phi))
+     */
+    /*
+     *     1 5*:15:02 [PlanetCallDump]   Call Arguments:
+     *     15:15:02 [PlanetCallDump]       Tuple: 2 elements
+     *     15:15:02 [PlanetCallDump]         [ 0] Integer field: 40216265      << planetID
+     *     15:15:02 [PlanetCallDump]         [ 1] Tuple: 2 elements
+     *     15:15:02 [PlanetCallDump]         [ 1]   [ 0] Real field: 0.359286  << theta
+     *     15:15:02 [PlanetCallDump]         [ 1]   [ 1] Real field: 1.014020  << phi
+     *     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GMGetLocalDistributionReport() size=%u", call.tuple->size() );
+     *     call.Dump(PLANET__DUMP);
+     */
 
-    return m_colony->GetColony();
+    return nullptr;
+}
+
+PyResult PlanetMgrBound::Handle_GMGetSynchedServerState(PyCallArgs &call) {
+    /*
+     *    def GMVerifySimulation(self):
+     *        self.LogNotice('VerifySimulation -- starting')
+     *        simulationDuration, remoteColonyData = self.remoteHandler.GMGetSynchedServerState(session.charid)
+     *        simEndTime = remoteColonyData.currentSimTime
+     *        colony = self.GetColony(session.charid)
+     *        startTime = blue.os.GetWallclockTimeNow()
+     *        colony.RunSimulation(runSimUntil=simEndTime)
+     *        clientSimulationRuntime = blue.os.GetWallclockTimeNow() - startTime
+     *        pins = remoteColonyData.pins
+     *        self.LogNotice('simulation ran for', clientSimulationRuntime, 'on client, ', simulationDuration, 'on server')
+     *        for pin in pins:
+     *            clientPin = colony.GetPin(pin.id)
+     *            if clientPin is None:
+     *                self.LogError(pin.id, 'exists on server but not on client')
+     *                continue
+     *            for key, value in pin.__dict__.iteritems():
+     *                if not hasattr(clientPin, key):
+     *                    self.LogError(pin.id, 'on client does not have attribute ', key)
+     *                    continue
+     *                clientValue = getattr(clientPin, key)
+     *                if clientValue != value:
+     *                    self.LogError(pin.id, 'does not agree on a value for', key, 'Client says ', clientValue, 'but server', value)
+     *
+     *        self.LogNotice('VerifySimulation -- finished')
+     */
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GMGetSynchedServerState() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
+}
+
+PyResult PlanetMgrBound::Handle_GMRunDepletionSim(PyCallArgs &call) {
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GMRunDepletionSim() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
 }
