@@ -58,6 +58,7 @@ CelestialObject::CelestialObject(
   m_celestialIndex( 0 ),
   m_orbitIndex( 0 )
   {
+      m_inventory = new Inventory(InventoryItemRef(this));
       _log(ITEM__TRACE, "Created Default CelestialObject for item %s (%u).", itemName().c_str(), itemID());
 }
 
@@ -73,6 +74,7 @@ CelestialObject::CelestialObject(
   m_celestialIndex(_cData.celestialIndex),
   m_orbitIndex(_cData.orbitIndex)
   {
+      m_inventory = new Inventory(InventoryItemRef(this));
       _log(ITEM__TRACE, "Created CelestialObject for item %s (%u).", itemName().c_str(), itemID());
 }
 

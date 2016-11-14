@@ -74,21 +74,23 @@ PyResult CharUnboundMgrService::Handle_IsUserReceivingCharacter(PyCallArgs &call
 
 PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)
 {
-    if (call.tuple->IsString()) {
+    if (call.tuple->GetItem(0)->IsString()) {
         Call_SingleStringArg arg;
         if (!arg.Decode(&call.tuple)) {
             codelog(CLIENT__ERROR, "Failed to decode args for ValidateNameEx call");
             return new PyInt(-1);
         }
         return m_db.ValidateCharName(arg.arg.c_str());
-    } else if (call.tuple->IsWString()) {
+    } else if (call.tuple->GetItem(0)->IsWString()) {
         Call_SingleWStringArg arg;
         if (!arg.Decode(&call.tuple)) {
             codelog(CLIENT__ERROR, "Failed to decode args for ValidateNameEx call");
             return new PyInt(-1);
         }
         return m_db.ValidateCharName(arg.arg.c_str());
-    }
+    } else
+        _log(CLIENT__ERROR, "ValidateName() called with unhandled type %s", call.tuple->GetItem(0)->TypeString());
+
     return new PyInt(-1);
 }
 
