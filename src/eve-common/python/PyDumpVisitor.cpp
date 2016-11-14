@@ -48,6 +48,12 @@ bool PyDumpVisitor::VisitLong( const PyLong* rep )
     return true;
 }
 
+bool PyDumpVisitor::VisitULong( const PyULong* rep )
+{
+    _print( "%sInteger field: %" PRIu64, _pfx(), rep->value() );
+    return true;
+}
+
 bool PyDumpVisitor::VisitReal( const PyFloat* rep )
 {
     _print( "%sReal field: %f", _pfx(), rep->value() );
@@ -113,10 +119,8 @@ bool PyDumpVisitor::VisitTuple( const PyTuple* rep )
     {
         _print( "%sTuple: %lu elements", _pfx(), rep->size() );
 
-        PyTuple::const_iterator cur, _end;
-        cur = rep->begin();
-        _end = rep->end();
-        for( uint32 i = 0; cur != _end; cur++, i++ )
+        PyTuple::const_iterator cur = rep->begin();
+        for( uint32 i = 0; cur != rep->end(); cur++, i++ )
         {
             if( i > 200 && !fullNested() )
             {
@@ -143,10 +147,8 @@ bool PyDumpVisitor::VisitList( const PyList* rep )
     {
         _print( "%sList: %lu elements", _pfx(), rep->size() );
 
-        PyList::const_iterator cur, _end;
-        cur = rep->begin();
-        _end = rep->end();
-        for( uint32 i = 0; cur != _end; cur++, i++ )
+        PyList::const_iterator cur = rep->begin();
+        for( uint32 i = 0; cur != rep->end(); cur++, i++ )
         {
             if( i > 200 && !fullNested() )
             {
@@ -173,10 +175,8 @@ bool PyDumpVisitor::VisitDict( const PyDict* rep )
     {
         _print( "%sDictionary: %lu entries", _pfx(), rep->size() );
 
-        PyDict::const_iterator cur, _end;
-        cur = rep->begin();
-        _end = rep->end();
-        for( uint32 i = 0; cur != _end; cur++, i++ )
+        PyDict::const_iterator cur = rep->begin();
+        for( uint32 i = 0; cur != rep->end(); cur++, i++ )
         {
             if( i > 200 && !fullNested() )
             {
@@ -245,10 +245,8 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
         _print( "%s  Empty", _pfx() );
     else
     {
-        PyObjectEx::const_list_iterator cur, end;
-        cur = rep->list().begin();
-        end = rep->list().end();
-        for( uint32 i = 0; cur != end; cur++, i++ )
+        PyObjectEx::const_list_iterator cur = rep->list().begin();
+        for( uint32 i = 0; cur != rep->list().end(); cur++, i++ )
         {
             if( i > 200 && !fullNested() )
             {
@@ -270,10 +268,8 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
         _print( "%s  Empty", _pfx() );
     else
     {
-        PyObjectEx::const_dict_iterator cur, end;
-        cur = rep->dict().begin();
-        end = rep->dict().end();
-        for( uint32 i = 0; cur != end; cur++, i++ )
+        PyObjectEx::const_dict_iterator cur = rep->dict().begin();
+        for( uint32 i = 0; cur != rep->dict().end(); cur++, i++ )
         {
             if( i > 200 && !fullNested() )
             {
@@ -305,10 +301,8 @@ bool PyDumpVisitor::VisitPackedRow( const PyPackedRow* rep )
     _print( "%sPacked Row:", _pfx() );
     _print( "%s column_count=%u", _pfx(), rep->header()->ColumnCount() );
 
-    PyPackedRow::const_iterator cur, end;
-    cur = rep->begin();
-    end = rep->end();
-    for( uint32 i = 0; cur != end; cur++, i++ )
+    PyPackedRow::const_iterator cur = rep->begin();
+    for( uint32 i = 0; cur != rep->end(); cur++, i++ )
     {
         _pfxExtend( "  [%2u] %s: ", i, rep->header()->GetColumnName( i )->content().c_str() );
 
