@@ -119,7 +119,7 @@ public:
     StructureItemRef        SpawnStructure(ItemData &data);
     CargoContainerRef       SpawnCargoContainer(ItemData &data);
     WreckContainerRef       SpawnWreckContainer(ItemData &data);
-
+    /** @todo  add PI item spawners here */
 
     /*
 	 * ID Authority Functions:

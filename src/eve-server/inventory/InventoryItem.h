@@ -106,7 +106,9 @@ public:
     bool                    SetQuantity(int32 qty_new, bool notify=true);
     bool                    SetFlag(EVEItemFlags new_flag, bool notify=true);
 
+private:
     void                    SetOnline(bool online, bool isRig);
+public:
     void                    PutOnline(bool isRig=false) { SetOnline(true, isRig); }
     void                    PutOffline(bool isRig=false){ SetOnline(false, isRig); }
     bool                    IsOnline()                  { return (GetAttribute(AttrIsOnline).get_int() ? true : false); }
