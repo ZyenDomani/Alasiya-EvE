@@ -54,7 +54,7 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress )
     // make room for length
     const Buffer::iterator<uint32> bufLen = buf->end<uint32>();
     buf->ResizeAt( bufLen, 1 );
-    
+
     if (PACKET_SIZE_LIMIT < buf->size()) {
         sLog.Error( "Network", "Packet length %u exceeds hardcoded packet length limit %lu.", buf->size(), PACKET_SIZE_LIMIT );
         SafeDelete( buf );
@@ -81,11 +81,10 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress )
 
 PyRep* EVETCPConnection::PopRep()
 {
-    Buffer* packet = nullptr;
-    PyRep* res = nullptr;
+    PyRep* res(nullptr);
 
     MutexLock lock( mMInQueue );
-    packet = mInQueue.PopPacket();
+    Buffer* packet = mInQueue.PopPacket();
 
     if (packet) {
         if( PACKET_SIZE_LIMIT < packet->size() )
@@ -155,6 +154,8 @@ void EVETCPConnection::DumpBuffer( Buffer* buf, packet_direction packet_directio
         fputs(packet->Get(index), logpacket);
     }
     */
+    if (!is_log_enabled(DEBUG__DEBUG))
+        return;
 
     FILE *logpacket;
     char timestamp[16];

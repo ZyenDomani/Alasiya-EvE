@@ -351,7 +351,7 @@ PyRep *ReprocessingServiceBound::_GetQuote(uint32 itemID, const Client *c) const
     }
 
     Rsp_GetQuote quote;
-    quote.lines = new PyList;
+    quote.lines = new PyList();
     quote.leftOvers = item->quantity() % item->type().portionSize();
     quote.quantityToProcess = item->quantity() - quote.leftOvers;
     quote.playerStanding = c->GetChar()->GetCorpStanding(c->GetCharacterID(), m_stationCorpID);

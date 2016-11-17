@@ -74,8 +74,7 @@ bool ClassDumpGenerator::ProcessElementDef( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessElement( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -97,8 +96,7 @@ bool ClassDumpGenerator::ProcessElement( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessElementPtr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -111,7 +109,7 @@ bool ClassDumpGenerator::ProcessElementPtr( const TiXmlElement* field )
         "    if (%s)\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
         "    else\n"
-        "        _log( l_type, \"%%sERROR: nullptr OBJECT!\", %s_n.c_str() );\n"
+        "        _log( l_type, \"%%sERROR: ElementPtr = nullptr.\", %s_n.c_str() );\n"
         "\n",
         name, name, name, name,
         name, name, name
@@ -123,8 +121,7 @@ bool ClassDumpGenerator::ProcessElementPtr( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessRaw( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -137,7 +134,7 @@ bool ClassDumpGenerator::ProcessRaw( const TiXmlElement* field )
         "    if (%s)\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
         "    else\n"
-        "        _log( l_type, \"%%sERROR: nullptr REP!\", %s_n.c_str() );\n"
+        "        _log( l_type, \"%%sERROR: raw = nullptr.\", %s_n.c_str() );\n"
         "\n",
         name, name, name, name,
         name, name, name
@@ -149,8 +146,7 @@ bool ClassDumpGenerator::ProcessRaw( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -167,8 +163,7 @@ bool ClassDumpGenerator::ProcessInt( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -185,8 +180,7 @@ bool ClassDumpGenerator::ProcessLong( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessReal( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -203,8 +197,7 @@ bool ClassDumpGenerator::ProcessReal( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessBool( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -226,8 +219,7 @@ bool ClassDumpGenerator::ProcessNone( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessBuffer( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -249,8 +241,7 @@ bool ClassDumpGenerator::ProcessBuffer( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessString( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -267,8 +258,7 @@ bool ClassDumpGenerator::ProcessString( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessStringInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if( nullptr == value )
-    {
+    if (!value) {
         _log( COMMON__ERROR, "String element at line %d has no value attribute.", field->Row() );
         return false;
     }
@@ -285,8 +275,7 @@ bool ClassDumpGenerator::ProcessStringInline( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessWString( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -303,8 +292,7 @@ bool ClassDumpGenerator::ProcessWString( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessWStringInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if( nullptr == value )
-    {
+    if (!value) {
         _log( COMMON__ERROR, "WString element at line %d has no value attribute.", field->Row() );
         return false;
     }
@@ -321,8 +309,7 @@ bool ClassDumpGenerator::ProcessWStringInline( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessToken( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -335,7 +322,7 @@ bool ClassDumpGenerator::ProcessToken( const TiXmlElement* field )
         "    if (%s)\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
         "    else\n"
-        "        _log( l_type, \"%%sERROR: nullptr TOKEN!\", %s_n.c_str() );\n"
+        "        _log( l_type, \"%%sERROR: token = nullptr.\", %s_n.c_str() );\n"
         "\n",
         name, name, name, name,
         name, name, name
@@ -347,8 +334,7 @@ bool ClassDumpGenerator::ProcessToken( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessTokenInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if( nullptr == value )
-    {
+    if (!value) {
         _log( COMMON__ERROR, "Token element at line %d has no type attribute.", field->Row() );
         return false;
     }
@@ -365,8 +351,7 @@ bool ClassDumpGenerator::ProcessTokenInline( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessObject( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -432,8 +417,7 @@ bool ClassDumpGenerator::ProcessObjectEx( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessTuple( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -446,7 +430,7 @@ bool ClassDumpGenerator::ProcessTuple( const TiXmlElement* field )
         "    if (%s)\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
         "    else\n"
-        "        _log( l_type, \"%%sERROR: nullptr TUPLE!\", %s_n.c_str() );\n"
+        "        _log( l_type, \"%%sERROR: tuple = nullptr.\", %s_n.c_str() );\n"
         "\n",
         name, name, name,
         name, name, name, name
@@ -464,8 +448,7 @@ bool ClassDumpGenerator::ProcessTupleInline( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessList( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -478,7 +461,7 @@ bool ClassDumpGenerator::ProcessList( const TiXmlElement* field )
         "    if (%s)\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
         "    else\n"
-        "        _log( l_type, \"%%sERROR: nullptr LIST!\", %s_n.c_str() );\n"
+        "        _log( l_type, \"%%sERROR: list = nullptr.\", %s_n.c_str() );\n"
         "\n",
         name, name, name,
         name, name, name, name
@@ -496,8 +479,7 @@ bool ClassDumpGenerator::ProcessListInline( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessListInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -518,8 +500,7 @@ bool ClassDumpGenerator::ProcessListInt( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessListLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -540,8 +521,7 @@ bool ClassDumpGenerator::ProcessListLong( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessListStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -564,8 +544,7 @@ bool ClassDumpGenerator::ProcessListStr( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessDict( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -578,7 +557,7 @@ bool ClassDumpGenerator::ProcessDict( const TiXmlElement* field )
         "    if (%s)\n"
         "        %s->Dump( l_type, %s_n.c_str() );\n"
         "    else\n"
-        "        _log( l_type, \"%%sERROR: nullptr DICT!\", %s_n.c_str() );\n"
+        "        _log( l_type, \"%%sERROR: dict = nullptr.\", %s_n.c_str() );\n"
         "\n",
         name, name, name,
         name, name, name, name
@@ -597,8 +576,7 @@ bool ClassDumpGenerator::ProcessDictInlineEntry( const TiXmlElement* field )
 {
     //we dont really even care about this...
     const char* key = field->Attribute( "key" );
-    if( key == nullptr )
-    {
+    if (!key) {
         _log( COMMON__ERROR, "<dictInlineEntry> at line %d is missing the key attribute, skipping.", field->Row() );
         return false;
     }
@@ -654,8 +632,7 @@ bool ClassDumpGenerator::ProcessDictRaw( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessDictInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }
@@ -679,8 +656,7 @@ bool ClassDumpGenerator::ProcessDictInt( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessDictStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name)
-    {
+    if (!name) {
         _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
         return false;
     }

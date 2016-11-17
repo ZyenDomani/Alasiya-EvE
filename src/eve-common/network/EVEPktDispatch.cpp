@@ -105,7 +105,7 @@ bool EVEPacketDispatcher::DispatchPacket( PyPacket* packet )
             //TODO: decode substream in tuple
 
             return Handle_CallRsp( packet );
-        } break;
+        }
 
         case NOTIFICATION:
         {

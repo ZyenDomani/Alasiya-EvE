@@ -106,7 +106,7 @@ PyResult JumpCloneBound::Handle_GetCloneState(PyCallArgs &call) {
     //returns (clones, implants, timeLastJump)
     //where jumpClones is a rowset? with at least columns: jumpCloneID, locationID
 
-    PyDict* d = new PyDict;
+    PyDict* d = new PyDict();
     d->SetItemString( "clones", new PyNone() );
     d->SetItemString( "implants", new PyNone() );
     d->SetItemString( "timeLastJump", new PyNone() );

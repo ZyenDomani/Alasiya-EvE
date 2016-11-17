@@ -257,16 +257,18 @@ PyObject* RepairService::GetDamageReports() {
         rld.repairable                  = 0;
         rld.costToRepairOneUnitOfDamage = 0;
 
-    DBRowDescriptor* header = CreateHeader();
+    DBRowDescriptor* header = CreateQuoteHeader();
     PyList* list = new PyList();
 
-        PyPackedRow* row = new PyPackedRow( header );
-            row->SetField( "playerStanding", new PyLong(0));
-            row->SetField( "serviceCharge",  new PyInt(0));
-            row->SetField( "discount",       new PyInt(0));
-            row->SetField( "quote",          new PyInt(0));
-        list->AddItem(row);
-
+    PyPackedRow* row = new PyPackedRow( header );
+        row->SetField( "itemID",                       new PyInt(0));
+        row->SetField( "typeID",                       new PyInt(0));
+        row->SetField( "groupID",                      new PyInt(0));
+        row->SetField( "damage",                       new PyInt(0));
+        row->SetField( "maxHealth",                    new PyInt(0));
+        row->SetField( "repairable",                   new PyInt(0));
+        row->SetField( "costToRepairOneUnitOfDamage",  new PyFloat(0));
+    list->AddItem(row);
 
     PyTuple* tuple2 = new PyTuple(1);
         tuple2->SetItem(0, list);

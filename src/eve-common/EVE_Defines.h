@@ -78,99 +78,102 @@ minFakeClientItem = 17000000000000000000L
 #define EVEMU_MAX_LONG_ID   9223372036854775807     //this is max for a SIGNED int64.
 #define EVEMU_MAXIMUM_ENTITY_ID (EVEMU_MINIMUM_ID-1)
 
+#define IsTempPinID(pinID) \
+ (pinID < 1000)
+
 #define IsCharType(typeID) \
  ((typeID >= minCharType) && (typeID <= maxCharType))
 
 #define IsContainerLocation(itemID) \
-(itemID >= minValidShipLocation)
+ (itemID >= minValidShipLocation)
 
 #define IsCorp(itemID) \
-((itemID >= minNPCCorporation) && (itemID <= maxCorporation))
+ ((itemID >= minNPCCorporation) && (itemID <= maxCorporation))
 
 #define IsNPCCorp(itemID) \
-((itemID >= minNPCCorporation) && (itemID < maxNPCCorporation))
+ ((itemID >= minNPCCorporation) && (itemID < maxNPCCorporation))
 
 #define IsPlayerCorp(itemID) \
-((itemID >= maxNPCCorporation) && (itemID < maxCorporation))
+ ((itemID >= maxNPCCorporation) && (itemID < maxCorporation))
 
 #define IsAlliance(itemID) \
-((itemID >= minAlliance) && (itemID < maxAlliance))
+ ((itemID >= minAlliance) && (itemID < maxAlliance))
 
 #define IsAgent(itemID) \
-((itemID >= minAgent) && (itemID < maxAgent))
+ ((itemID >= minAgent) && (itemID < maxAgent))
 
 #define IsFaction(itemID) \
-((itemID >= minFaction) && (itemID < maxFaction))
+ ((itemID >= minFaction) && (itemID < maxFaction))
 
 // this covers ALL static celestial-type items
 #define IsStaticMapItem(itemID) \
-((itemID >= minRegion) && (itemID < maxStation))
+ ((itemID >= minRegion) && (itemID < maxStation))
 
 #define IsRegion(itemID) \
-((itemID >= 10000000) && (itemID < 20000000))
+ ((itemID >= 10000000) && (itemID < 20000000))
 
 #define IsConstellation(itemID) \
-((itemID >= 20000000) && (itemID < 30000000))
+ ((itemID >= 20000000) && (itemID < 30000000))
 
 #define IsSolarSystem(itemID) \
-((itemID >= 30000000) && (itemID < 40000000))
+ ((itemID >= 30000000) && (itemID < 40000000))
 
 #define IsUniverseCelestial(itemID) \
-((itemID >= 40000000) && (itemID < 50000000))
+ ((itemID >= 40000000) && (itemID < 50000000))
 
 #define IsStargate(itemID) \
-((itemID >= 50000000) && (itemID < 60000000))
+ ((itemID >= 50000000) && (itemID < 60000000))
 
 #define IsStation(itemID) \
-((itemID >= minStation) && (itemID < maxStation))
+ ((itemID >= minStation) && (itemID < maxStation))
 
 #define IsNPCStation(itemID) \
-((itemID >= minStation) && (itemID <= maxNPCStation))
+ ((itemID >= minStation) && (itemID <= maxNPCStation))
 
 //#define IsOutpost(itemID) \
-((itemID > maxNPCStation) && (itemID < maxStation))
+ ((itemID > maxNPCStation) && (itemID < maxStation))
 
 #define IsTrading(itemID) \
-((itemID >= 64000000) && (itemID < 66000000))
+ ((itemID >= 64000000) && (itemID < 66000000))
 
 #define IsOfficeFolder(itemID) \
-((itemID >= 66000000) && (itemID < 68000000))
+ ((itemID >= 66000000) && (itemID < 68000000))
 
 #define IsFactoryFolder(itemID) \
-((itemID >= 68000000) && (itemID < 70000000))
+ ((itemID >= 68000000) && (itemID < 70000000))
 
 #define IsUniverseAsteroid(itemID) \
-((itemID >= 70000000) && (itemID < 80000000))
+ ((itemID >= 70000000) && (itemID < 80000000))
 
 #define IsScenarioItem(itemID) \
-((itemID >= 90000000) && (itemID < EVEMU_MINIMUM_ID))
+ ((itemID >= 90000000) && (itemID < EVEMU_MINIMUM_ID))
 
 #define IsNotStaticItem(itemID) \
-(itemID >= EVEMU_MINIMUM_ID)
+ (itemID >= EVEMU_MINIMUM_ID)
 
 #define IsModuleSlot(flag) \
-(((flag >= flagLowSlot0) && (flag <= flagHiSlot7)) \
+ (((flag >= flagLowSlot0) && (flag <= flagHiSlot7)) \
   || ((flag >= flagRigSlot0) && (flag <= flagRigSlot7)) \
   || ((flag >= flagSubSystem0) && (flag<=flagSubSystem7)))
 
 #define IsCargoHoldFlag(flag) \
-((flag == flagCargoHold) || (flag == flagDroneBay) || (flag == flagSecondaryStorage) || (flag == flagShipHangar) \
+ ((flag == flagCargoHold) || (flag == flagDroneBay) || (flag == flagSecondaryStorage) || (flag == flagShipHangar) \
   || ((flag >= flagSpecializedFuelBay) && (flag <= flagSpecializedAmmoHold)))
 
 #define IsHiSlot(flag) \
-((flag >= flagHiSlot0) && (flag <= flagHiSlot7))
+ ((flag >= flagHiSlot0) && (flag <= flagHiSlot7))
 
 #define IsMidSlot(flag) \
-((flag >= flagMedSlot0) && (flag <= flagMedSlot7))
+ ((flag >= flagMedSlot0) && (flag <= flagMedSlot7))
 
 #define IsLowSlot(flag) \
-((flag >= flagLowSlot0) && (flag <= flagLowSlot7))
+ ((flag >= flagLowSlot0) && (flag <= flagLowSlot7))
 
 #define IsRigSlot(flag) \
-((flag >= flagRigSlot0) && (flag <= flagRigSlot7))
+ ((flag >= flagRigSlot0) && (flag <= flagRigSlot7))
 
 #define IsSubSystem(flag) \
-((flag >= flagSubSystem0) && (flag<=flagSubSystem7))
+ ((flag >= flagSubSystem0) && (flag<=flagSubSystem7))
 
 
 /*

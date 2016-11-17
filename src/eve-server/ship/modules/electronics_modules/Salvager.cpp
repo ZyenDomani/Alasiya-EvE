@@ -113,7 +113,7 @@ void Salvager::StopCycle(bool abort)
         ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectSalvaging;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -157,7 +157,7 @@ void Salvager::_ShowCycle()
         ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectSalvaging;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -205,7 +205,7 @@ void Salvager::SendFailure()
     PyTuple* type = new PyTuple(2);
         type->SetItem(0, new PyInt(cacheSolarSystemObjects));
         type->SetItem(1, new PyInt(m_targetEntity->GetTypeID()));
-    PyDict* dict = new PyDict;
+    PyDict* dict = new PyDict();
         dict->SetItemString("type", type);
     PyTuple* tup = new PyTuple(3);
         tup->SetItem(0, new PyString("OnRemoteMessage"));
@@ -272,7 +272,7 @@ void Salvager::DropSalvage()
     PyTuple* type = new PyTuple(2);
         type->SetItem(0, new PyInt(cacheSolarSystemObjects));
         type->SetItem(1, new PyInt(m_targetEntity->GetTypeID()));
-    PyDict* dict = new PyDict;
+    PyDict* dict = new PyDict();
         dict->SetItemString("type", type);
     PyTuple* tup = new PyTuple(2);
         tup->SetItem(0, new PyString("SalvagingSuccess"));
@@ -283,7 +283,7 @@ void Salvager::DropSalvage()
         ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectSalvaging;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

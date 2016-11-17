@@ -69,8 +69,8 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_logoutTimer(1000),
   m_jetcanTimer(180000),
   m_sessionTimer(10000),
-  m_destinyEventQueue(new PyList),
-  m_destinyUpdateQueue(new PyList),
+  m_destinyEventQueue(new PyList()),
+  m_destinyUpdateQueue(new PyList()),
   m_nextNotifySequence(1)
 {
     m_pod = ShipItemRef();
@@ -1145,7 +1145,7 @@ void Client::SendSessionChange()
     }
 
     SessionChangeNotification scn;
-    scn.changes = new PyDict;
+    scn.changes = new PyDict();
 
     mSession.EncodeChanges(scn.changes);
     if (scn.changes->empty())
@@ -1164,7 +1164,7 @@ void Client::SendSessionChange()
     //scn.nodesOfInterest.push_back(m_services.GetNodeID());
 
     //build the packet:
-    PyPacket* p = new PyPacket;
+    PyPacket* p = new PyPacket();
     p->type_string = "macho.SessionChangeNotification";
     p->type = SESSIONCHANGENOTIFICATION;
 
@@ -1218,8 +1218,8 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             PyList* paList = new PyList();
                 paList->AddItem(*update);
                 if (!m_destinyUpdateQueue->empty()) {
-                    paList->AddItem(m_destinyUpdateQueue);
                     PyIncRef(m_destinyUpdateQueue);
+                    paList->AddItem(m_destinyUpdateQueue);
                 }
             PackagedAction pa;
                 pa.substream = new PySubStream(paList);
@@ -1237,6 +1237,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         SendNotification("DoDestinyUpdate", "clientID", &t, false);
     } else {
         act.update = *update;
+        PyDecRef(*update);
         *update = nullptr;
         m_packaged = true;
         m_destinyUpdateQueue->AddItem(act.Encode());
@@ -1249,8 +1250,7 @@ void Client::_SendQueuedUpdates() {
             DoDestinyUpdateMain_2 dum;
                 dum.updates = m_destinyUpdateQueue;
                 dum.waitForBubble = m_bubbleWait; /*false*/
-                PyIncRef(m_destinyUpdateQueue);
-            PyTuple* t = dum.Encode();
+            PyTuple* t(dum.Encode());
             if (is_log_enabled(CLIENT__QUEUE_DUMP))
                 t->Dump(CLIENT__QUEUE_DUMP, "");
             SendNotification("DoDestinyUpdate", "clientID", &t);
@@ -1259,9 +1259,7 @@ void Client::_SendQueuedUpdates() {
                 dum.updates = m_destinyUpdateQueue;
                 dum.events = m_destinyEventQueue;
                 dum.waitForBubble = m_bubbleWait; /*false*/
-                PyIncRef(m_destinyUpdateQueue);
-                PyIncRef(m_destinyEventQueue);
-            PyTuple* t = dum.Encode();
+            PyTuple* t(dum.Encode());
             if (is_log_enabled(CLIENT__QUEUE_DUMP))
                 t->Dump(CLIENT__QUEUE_DUMP, "");
             SendNotification("DoDestinyUpdate", "clientID", &t);
@@ -1269,20 +1267,19 @@ void Client::_SendQueuedUpdates() {
     } else if (!m_destinyEventQueue->empty()) {
         Notify_OnMultiEvent nom;
             nom.events = m_destinyEventQueue;
-            PyIncRef(m_destinyEventQueue);
-        PyTuple* t = nom.Encode();   //this is consumed below
+        PyTuple* t(nom.Encode());   //this is consumed below
         if (is_log_enabled(CLIENT__QUEUE_DUMP))
             t->Dump(CLIENT__QUEUE_DUMP, "");
         SendNotification("OnMultiEvent", "charid", &t);
     } //else nothing to be sent ...
 
-    // clear the queues now, after the packets have been sent
-    m_destinyUpdateQueue->clear();
-    m_destinyEventQueue->clear();
+    // clear the queues now, after the packets have been sent  -no  they are consumed
+    //m_destinyUpdateQueue->clear();
+    //m_destinyEventQueue->clear();
     m_packaged = false;
 }
 
-void Client::SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq) {
+void Client::SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq /*true*/) {
     //build a little notification out of it.
     EVENotificationStream notify;
         notify.remoteObject = 1;
@@ -1298,7 +1295,7 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
     SendNotification(dest, notify, seq);
 }
 
-void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq) {
+void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq/*true*/) {
     //build the packet:
     PyPacket *p = new PyPacket();
     p->type_string = "macho.Notification";
@@ -1412,57 +1409,44 @@ bool Client::_VerifyCrypto(CryptoRequestPacket& cr)
 
 bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 {
-    std::string account_hash;
-    std::string transport_closed_msg = "LoginAuthFailed";
-    int32 isOnline;
-
-    AccountData account_info;
-    CryptoServerHandshake server_shake;
-
     /* send passwordVersion required: 1=plain, 2=hashed */
     // TODO  look into using plain pass to facilitate forgotten-password retrieval from web.
     PyRep* rsp = new PyInt(2);
 
-    //sLog.Debug("Client","%s: Received Client Challenge.", GetAddress().c_str());
-    //sLog.Debug("Client","Login with %s:", ccp.user_name.c_str());
+    mNet->QueueRep(rsp);
+    //PyDecRef(rsp);
+
+    std::string account_hash;
+    std::string fail_msg = "LoginAuthFailed";
+
+    AccountData account_info;
+
+    sLog.Debug("Client","%s: Received Client Challenge.", GetAddress().c_str());
 
     ServiceDB m_sdb;
-    if (!m_sdb.GetAccountInformation(
-				ccp.user_name.c_str(),
-				ccp.user_password_hash.c_str(),
-				account_info))
-	{
-        goto error_login_auth_failed;
-    }
+    if (!m_sdb.GetAccountInformation(ccp.user_name.c_str(), ccp.user_password_hash.c_str(), account_info))
+        return _LoginFail(fail_msg);
 
     /* check wether the account has been banned and if so send the semi correct message */
     if (account_info.banned) {
-        transport_closed_msg = "Your account is banned. Contact the Game Master for further support";
-        goto error_login_auth_failed;
+        fail_msg = "Your account is banned. Contact the Game Master for further support";
+        return _LoginFail(fail_msg);
     }
 
     /* if we have stored a password we need to create a hash from the username and pass and remove the pass */
     if (account_info.password.empty())
         account_hash = account_info.hash;
-    else
-    {
+    else {
         /* here we generate the password hash ourselves */
         std::string password_hash;
-        if (!PasswordModule::GeneratePassHash(
-                ccp.user_name,
-                account_info.password,
-                password_hash))
-        {
+        if (!PasswordModule::GeneratePassHash(ccp.user_name, account_info.password, password_hash)) {
             sLog.Error("Client", "unable to generate password hash, sending LoginAuthFailed");
-            goto error_login_auth_failed;
+            return _LoginFail(fail_msg);
         }
 
-        if (!m_sdb.UpdateAccountHash(
-                ccp.user_name.c_str(),
-                password_hash))
-        {
+        if (!m_sdb.UpdateAccountHash(ccp.user_name.c_str(), password_hash)) {
             sLog.Error("Client", "unable to update account hash, sending LoginAuthFailed");
-            goto error_login_auth_failed;
+            return _LoginFail(fail_msg);
         }
 
         account_hash = password_hash;
@@ -1472,10 +1456,11 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
      * If the name check runs out correctly, we go to online check (DB call + respective variable definition)
      * This is not the prettiest way to do this, but i didn't wanted to do any new constructs just for temporary online check.
      * TODO: figure out why the heck online status does not get updated in account_info. */
+    bool isOnline = false;
     if (account_hash != ccp.user_password_hash) {
-    	transport_closed_msg = "Your login/password was entered incorrectly.";
-        goto error_login_auth_failed;
-    }else{
+        fail_msg = "Your login/password was entered incorrectly.";
+        return _LoginFail(fail_msg);
+    } else {
         // I am NOT happy with this,but i'll have to put this hack here, as AcountInfo do not get updated properly, so it keeps
         // online status = False at all times. So, to make sure the check's being performed properly, i copy the query runner from
         // ServiceDB.cpp and modifying those parts to only return us the status. This will make sure that we get a valid data every time the function is called
@@ -1489,7 +1474,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 
         DBResultRow row;
         if (online_indicator.GetRow(row))
-        	isOnline = row.GetInt(0);
+        	isOnline = row.GetInt(0) ? true : false;
 
     //	############################################################################################################################
     }
@@ -1498,19 +1483,14 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
      * @note we should send GPSTransportClosed with reason "The user's connection has been usurped on the proxy"
      */
 
-    if (isOnline == 1) {
-        Client* client = sEntityList.FindClientByAccount(account_info.id);
-        if (client){
-        	transport_closed_msg = "This account is being used right now. Try logging in again later.";
+    if (isOnline)
+        if (sEntityList.FindClientByAccount(account_info.id)) {
+        	   fail_msg = "This account is being used right now. Try logging in again later.";
         	// If user logs-out while on the login screen, the online status will stay True until the server gets restarted.
         	// So disconnecting the parent client is a neccessary measure to make sure user can log in after that.
         	//client->DisconnectClient();
-        	goto error_login_auth_failed;
+        	return _LoginFail(fail_msg);
         }
-    }
-
-    mNet->QueueRep(rsp);
-    PyDecRef(rsp);
 
     /* update account information, increase login count, last login timestamp and mark account as online */
     m_sdb.UpdateAccountInformation(account_info.name.c_str(), true);
@@ -1519,7 +1499,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     static const uint8 handshakeFunc[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65 };
 
     /* send our handshake */
-
+    CryptoServerHandshake server_shake;
     server_shake.serverChallenge = "";
     server_shake.func_marshaled_code = new PyBuffer(handshakeFunc, handshakeFunc + sizeof(handshakeFunc));
     server_shake.verification = new PyBool(false);
@@ -1553,16 +1533,16 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     mSession.SetULong("role", account_info.role);
     //mSession.SetLong("sessionID", mSession.CreateSessionID());
 
-    //sLog.Success("  Client::Login()","Account \"%s\" logged in from IP %s", account_info.name.c_str() ,EVEClientSession::GetAddress().c_str());
+    sLog.Success("  Client::Login()","Account \"%s\" logging in from IP %s", account_info.name.c_str() ,EVEClientSession::GetAddress().c_str());
 
     return true;
+}
 
-error_login_auth_failed:
-
-    GPSTransportClosed* except = new GPSTransportClosed(transport_closed_msg);
+bool Client::_LoginFail(std::string fail_msg)
+{
+    GPSTransportClosed* except = new GPSTransportClosed(fail_msg);
     mNet->QueueRep(except);
     PyDecRef(except);
-
     return false;
 }
 
@@ -1599,7 +1579,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
 void Client::_SendCallReturn(const PyAddress& source, uint64 callID, uint32 clientID, PyRep** return_value, const char* channel)
 {
     //build the packet:
-    PyPacket* p = new PyPacket;
+    PyPacket* p = new PyPacket();
     p->type_string = "macho.CallRsp";
     p->type = CALL_RSP;
 
@@ -1628,7 +1608,7 @@ void Client::_SendCallReturn(const PyAddress& source, uint64 callID, uint32 clie
 void Client::_SendException(const PyAddress& source, uint64 callID, MACHONETMSG_TYPE msgType, MACHONETERR_TYPE errCode, PyRep** payload)
 {
     //build the packet:
-    PyPacket* p = new PyPacket;
+    PyPacket* p = new PyPacket();
     p->type_string = "macho.ErrorResponse";
     p->type = ERRORRESPONSE;
 
@@ -1643,8 +1623,8 @@ void Client::_SendException(const PyAddress& source, uint64 callID, MACHONETMSG_
     ErrorResponse e;
     e.MsgType = msgType;
     e.ErrorCode = errCode;
-    e.payload = *payload;
-    *payload = nullptr;    //consumed
+    e.payload = *payload;   //consumed
+    *payload = nullptr;
 
     p->payload = e.Encode();
     FastQueuePacket(&p);
@@ -1676,7 +1656,7 @@ void Client::_SendPingRequest()
 
 void Client::_SendPingResponse(const PyAddress& source, uint64 callID)
 {
-    PyPacket* ret = new PyPacket;
+    PyPacket* ret = new PyPacket();
     ret->type = PING_RSP;
     ret->type_string = "macho.PingRsp";
 
@@ -1692,7 +1672,7 @@ void Client::_SendPingResponse(const PyAddress& source, uint64 callID)
      *        To really simulate/emulate that we need the various packet handlers which in fact we don't have (:P).
      *        So the next piece of code "fake's" it, with a slight delay on the received packet time.
      */
-    PyList* pingList = new PyList;
+    PyList* pingList = new PyList();
     PyTuple* pingTuple;
 
     pingTuple = new PyTuple(3);

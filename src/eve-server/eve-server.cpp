@@ -594,7 +594,7 @@ static void SetupSignals()
 static void CatchSignal( int sig_num )
 {
     sLog.Log( "    Signal System", "Caught signal: %d", sig_num );
-
+    EvE::traceStack();
     RunLoops = false;
 }
 

@@ -367,9 +367,9 @@ class PyBuffer : public PyRep
 public:
     /** Calls Buffer::Buffer( size_t, const uint8& ). */
     PyBuffer( size_t len, const uint8& value );
-    /** Calls Buffer::Buffer( Iter, Iter ). */
-    template<typename Iter>
-    PyBuffer( Iter first, Iter last );
+    /** Calls Buffer::Buffer( T, T ). */
+    template<typename T>
+    PyBuffer( T first, T last );
     /** Calls Buffer::Buffer( const Buffer& ). */
     PyBuffer( const Buffer& buffer );
 
@@ -1025,14 +1025,14 @@ protected:
  * the class definitions up with them, we stick them here instead to have them
  * all together.
  */
-template<typename Iter>
-inline PyBuffer::PyBuffer( Iter first, Iter last ) : PyRep( PyRep::PyTypeBuffer ), mValue( new Buffer( first, last ) ), mHashCache( -1 ) {}
-template<typename Iter>
-inline PyString::PyString( Iter first, Iter last ) : PyRep( PyRep::PyTypeString ), mValue( first, last ), mHashCache( -1 ) {}
-template<typename Iter>
-inline PyWString::PyWString( Iter first, Iter last ) : PyRep( PyRep::PyTypeWString ), mValue( first, last ), mHashCache( -1 ) {}
-template<typename Iter>
-inline PyToken::PyToken( Iter first, Iter last ) : PyRep( PyRep::PyTypeToken ), mValue( first, last ) {}
+template<typename T>
+inline PyBuffer::PyBuffer( T first, T last ) : PyRep( PyRep::PyTypeBuffer ), mValue( new Buffer( first, last ) ), mHashCache( -1 ) {}
+template<typename T>
+inline PyString::PyString( T first, T last ) : PyRep( PyRep::PyTypeString ), mValue( first, last ), mHashCache( -1 ) {}
+template<typename T>
+inline PyWString::PyWString( T first, T last ) : PyRep( PyRep::PyTypeWString ), mValue( first, last ), mHashCache( -1 ) {}
+template<typename T>
+inline PyToken::PyToken( T first, T last ) : PyRep( PyRep::PyTypeToken ), mValue( first, last ) {}
 
 
 /************************************************************************/
@@ -1045,9 +1045,9 @@ PyTuple * new_tuple(const char* arg1, const char* arg2);
 PyTuple * new_tuple(const char* arg1, const char* arg2, const char* arg3);
 PyTuple * new_tuple(const char* arg1, const char* arg2, PyTuple* arg3);
 /* mixed */
-PyTuple * new_tuple(const char* arg1, PyRep* arg2, PyRep* arg3);
 PyTuple * new_tuple(PyRep* arg1);
 PyTuple * new_tuple(PyRep* arg1, PyRep* arg2);
+PyTuple * new_tuple(const char* arg1, PyRep* arg2, PyRep* arg3);
 
 
 class BuiltinSet : public PyObjectEx_Type1

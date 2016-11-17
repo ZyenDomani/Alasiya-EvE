@@ -160,6 +160,7 @@ bool CachedObjectMgr::HaveCached(const std::string &objectID) const
 bool CachedObjectMgr::HaveCached(const PyRep *objectID) const
 {
     const std::string str = OIDToString(objectID);
+    PyIncRef(objectID);
 
     return m_cachedObjects.find(str) != m_cachedObjects.end();
 }
@@ -167,11 +168,12 @@ bool CachedObjectMgr::HaveCached(const PyRep *objectID) const
 void CachedObjectMgr::InvalidateCache(const PyRep *objectID)
 {
     const std::string str = OIDToString(objectID);
+    PyIncRef(objectID);
     CachedObjMapItr res = m_cachedObjects.find(str);
 
     if(res != m_cachedObjects.end()) {
-        m_cachedObjects.erase(res);
         SafeDelete( res->second );
+        m_cachedObjects.erase(res);
     }
 }
 
@@ -204,7 +206,7 @@ void CachedObjectMgr::UpdateCache(const std::string &objectID, PyRep **in_cached
 
 void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
 {
-    PyRep *cached_data = *in_cached_data;
+    PyRep* cached_data(*in_cached_data);
     *in_cached_data = nullptr;
 
     //if(is_log_enabled(CACHE__DUMP)) {
@@ -212,7 +214,7 @@ void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
         //cached_data->visit(&dumper, 0);
     //}
 
-    Buffer* data = new Buffer;
+    Buffer* data = new Buffer();
     bool res = MarshalDeflate( cached_data, *data );
     PyDecRef( cached_data );
 
@@ -229,7 +231,7 @@ void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
 void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer **buffer)
 {
     //this is the hard one..
-    CacheRecord *r = new CacheRecord;
+    CacheRecord *r = new CacheRecord();
     r->timestamp = Win32TimeNow();
     r->objectID = objectID->Clone();
 
@@ -259,7 +261,7 @@ PyObject *CachedObjectMgr::MakeCacheHint(const std::string &objectID)
 {
     //this is sub-optimal, but it keeps things more consistent (in case StringCollapseVisitor ever gets more complicated)
     PyString *str = new PyString( objectID );
-    PyObject * obj = MakeCacheHint(str);
+    PyObject* obj(MakeCacheHint(str));
     PyDecRef(obj);
     return obj;
 }
@@ -279,7 +281,7 @@ PyObject *CachedObjectMgr::GetCachedObject(const std::string &objectID)
 {
     //this is sub-optimal, but it keeps things more consistent (in case StringCollapseVisitor ever gets more complicated)
     PyString *str = new PyString( objectID );
-    PyObject* obj = GetCachedObject(str);
+    PyObject* obj(GetCachedObject(str));
     PyDecRef(str);
     return obj;
 }

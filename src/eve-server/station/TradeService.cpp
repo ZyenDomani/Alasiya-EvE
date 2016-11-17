@@ -223,7 +223,7 @@ PyResult TradeBound::Handle_Abort(PyCallArgs &call) {
 void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSes)
 {
     // trade cancelled.  send items back to owner. (monies not taken at this point)
-    PyDict* dict = new PyDict;
+    PyDict* dict = new PyDict();
     dict->SetItem(new PyInt(ixLocationID), new PyInt(pTSes->m_tradeSession.containerID));
 
     ItemFactory* factory = pClient->services().item_factory;
@@ -371,7 +371,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
 
     itemRef->Move(tradeContainerID, (EVEItemFlags)flag);
 
-    PyDict* dict = new PyDict;
+    PyDict* dict = new PyDict();
         dict->SetItem(new PyInt(ixLocationID), new PyInt(args.arg2));
 
     DBRowDescriptor* header = m_TSvc->CreateHeader();
@@ -420,7 +420,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
         if (!call.byname.find("flag")->second->IsNone())
             flag = call.byname.find("flag")->second->AsInt()->value();
 
-    PyDict* dict = new PyDict;
+    PyDict* dict = new PyDict();
         dict->SetItem(new PyInt(ixLocationID), new PyInt(args.contID));
 
     TradeSession* pTSes = call.client->GetTradeSession();
@@ -599,7 +599,7 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
     pOther->AddBalance(-pTSes->m_tradeSession.herMoney);
     pOther->AddBalance(pTSes->m_tradeSession.myMoney);
 
-    PyDict* dict = new PyDict;
+    PyDict* dict = new PyDict();
         dict->SetItem(new PyInt(ixLocationID), new PyInt(pTSes->m_tradeSession.containerID));
 
     ItemFactory* factory = pClient->services().item_factory;

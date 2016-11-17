@@ -112,7 +112,7 @@ void ProjectileTurret::StopCycle(bool abort)
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectProjectileFired;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 1000;
@@ -199,7 +199,7 @@ void ProjectileTurret::_ShowCycle()
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectProjectileFired;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

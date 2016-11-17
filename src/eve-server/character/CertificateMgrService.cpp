@@ -59,12 +59,12 @@ PyResult CertificateMgrService::Handle_GetMyCertificates(PyCallArgs &call) {
     call.client->GetChar()->GetCertificates( crt );
 
     util_Rowset rs;
-        rs.lines = new PyList;
+        rs.lines = new PyList();
         rs.header.push_back( "certificateID" );
         rs.header.push_back( "grantDate" );
         rs.header.push_back( "visibilityFlags" );
 
-    PyList* fieldData = new PyList;
+    PyList* fieldData = new PyList();
     for(uint32 i = 0; i < crt.size(); ++i ) {
         fieldData->AddItemInt( crt.at( i ).certificateID );
         fieldData->AddItemLong( crt.at( i ).grantDate );
@@ -145,7 +145,7 @@ PyResult CertificateMgrService::Handle_BatchCertificateGrant(PyCallArgs &call) {
         return new PyNone();
     }
 
-    PyList* res = new PyList;
+    PyList* res = new PyList();
     CharacterRef ch = call.client->GetChar();
     std::vector<int32>::iterator cur = arg.ints.begin();
     for (; cur != arg.ints.end(); cur++) {
@@ -183,12 +183,12 @@ PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& c
     m_manager->item_factory->GetCharacter(arg.arg)->GetCertificates(crt);
 
     util_Rowset rs;
-        rs.lines = new PyList;
+        rs.lines = new PyList();
         rs.header.push_back("certificateID");
         rs.header.push_back("grantDate");
         rs.header.push_back("visibilityFlags");
 
-    PyList* fieldData = new PyList;
+    PyList* fieldData = new PyList();
     for(uint32 i = 0; i < crt.size(); i++ ) {
         fieldData->AddItemInt( crt.at( i ).certificateID );
         fieldData->AddItemLong( crt.at( i ).grantDate );

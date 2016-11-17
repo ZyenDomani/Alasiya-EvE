@@ -58,7 +58,7 @@ PyResult AuthService::Handle_GetPostAuthenticationMessage(PyCallArgs &call)
 {
     if( !sConfig.account.loginMessage.empty() )
     {
-        PyDict* args = new PyDict;
+        PyDict* args = new PyDict();
         args->SetItemString( "message", new PyString( sConfig.account.loginMessage ) );
 
         return new PyObject( "util.KeyVal", args );

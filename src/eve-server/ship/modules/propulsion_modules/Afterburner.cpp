@@ -137,7 +137,7 @@ void Afterburner::StopCycle(bool abort)
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -201,7 +201,7 @@ void Afterburner::_ShowCycle()
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

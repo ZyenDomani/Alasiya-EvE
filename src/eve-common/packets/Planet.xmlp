@@ -1,16 +1,16 @@
  <!--  Python Code by Comet0  -->
 <elements>
 
-    <elementDef name="UUNCommandList">
-        <tupleInline>
-            <list name="commandList" />
-        </tupleInline>
-    </elementDef>
-
     <elementDef name="UUNCommand">
         <tupleInline>
             <int name="command" />
             <tuple name="command_data" />
+        </tupleInline>
+    </elementDef>
+
+    <elementDef name="UUNCommandList">
+        <tupleInline>
+            <list name="commandList" />
         </tupleInline>
     </elementDef>
 
@@ -26,7 +26,7 @@
     <elementDef name="UUNCStandardPin">
         <tupleInline>
             <tupleInline>
-                <int name="pinID1" /> <!-- this is controlling pinID (command center) -->
+                <int name="pinID1" />
                 <int name="pinID2" />
             </tupleInline>
             <int name="typeID" />
@@ -57,6 +57,27 @@
                 <int name="dest2" />
             </tupleInline>
             <int name="level" />
+        </tupleInline>
+    </elementDef>
+
+    <elementDef name="Call_CreateRoute">
+        <tupleInline>
+            <tupleInline>
+                <int name="pinType" />
+                <int name="pinID" />
+            </tupleInline>
+            <list name="path" />
+            <int name="typeID" />
+            <int name="qty" />
+        </tupleInline>
+    </elementDef>
+
+    <elementDef name="Call_ProgramResults">
+        <tupleInline>
+            <int name="pinID" />
+            <int name="typeID" />
+            <list name="heads" />
+            <real name="headRadius" />
         </tupleInline>
     </elementDef>
 

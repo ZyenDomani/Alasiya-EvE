@@ -62,7 +62,7 @@ void CapTransfer::StopCycle(bool abort)
         ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectEnergyTransfer;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -127,7 +127,7 @@ void CapTransfer::_ShowCycle()
         ge.shipID = m_Ship->itemID();;
         ge.targetID = m_targetID;
         ge.other = new PyNone();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectEnergyTransfer;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

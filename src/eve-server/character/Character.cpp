@@ -850,7 +850,7 @@ PyDict *Character::GetCharInfo() {
         }
     }
 
-    PyDict *result = new PyDict;
+    PyDict *result = new PyDict();
     Rsp_CommonGetInfo_Entry entry1;
 
     if (!Populate(entry1))
@@ -885,13 +885,13 @@ PyDict *Character::GetCharInfo() {
 PyObject *Character::GetDescription() const {
     util_Row row;
         row.header.push_back("description");
-        row.line = new PyList;
+        row.line = new PyList();
         row.line->AddItemString( description().c_str() );
     return row.Encode();
 }
 
 PyTuple *Character::GetSkillQueue() {
-    PyList *list = new PyList;
+    PyList *list = new PyList();
 
     SkillQueue::iterator cur = m_skillQueue.begin();
     for(; cur != m_skillQueue.end(); cur++) {

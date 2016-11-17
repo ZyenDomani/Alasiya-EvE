@@ -235,6 +235,7 @@ struct DunRoomSpawnInfo {
     uint16 z = 0;
 };
 
+/* POD entries for PI data */
 struct PlanetResourceData {
     float dist_1 = 0;
     float dist_2 = 0;
@@ -251,7 +252,79 @@ struct PlanetResourceData {
     uint8 numBands_3 = 0;
     uint8 numBands_4 = 0;
     uint8 numBands_5 = 0;
-    const char* data = "~";
+    const uint8 data_1 = (int)charList[MakeRandomInt(0, 52)];
+    const uint8 data_2 = (int)charList[MakeRandomInt(0, 52)];
+    const uint8 data_3 = (int)charList[MakeRandomInt(0, 52)];
+    const uint8 data_4 = (int)charList[MakeRandomInt(0, 52)];
+    const uint8 data_5 = (int)charList[MakeRandomInt(0, 52)];
 };
+
+struct PI_Pin {
+    int8 state = 0;
+    uint8 level = 0;
+
+    uint32 typeID = 0;
+    uint32 ownerID = 0;
+
+    double latitude = 0.0f;
+    double longitude = 0.0f;
+
+    uint64 lastRunTime = 0;
+
+    bool isCommandCenter = false;
+    bool isStorage = false;
+    bool isConsumer = false;
+    bool isLaunchable = false;
+    bool isProcess = false;
+    bool isExtractor = false;
+    bool isLink = false;
+    bool isECU = false;
+
+    // Command/Spaceport
+    uint64 lastLaunchTime = 0;
+
+    // Process
+    uint32 schematicID = 0;
+    bool hasRecievedInputs = false;
+    bool recievedInputsLastCycle = false;
+
+    //Extractor
+    uint8 heads = 0;
+    float headRadius = 0.0f;
+
+    // -program data
+    uint32 cycleTime = 0;
+    uint32 programType = 0;
+    uint32 qtyPerCycle = 0;
+    uint64 expiryTime = 0;
+    uint64 installTime = 0;
+};
+
+struct PI_Link {
+    int8 state = 0;
+    uint8 level = 0;
+    uint32 typeID = 0;
+    uint32 endpoint1 = 0;
+    uint32 endpoint2 = 0;
+};
+
+struct PI_Route {
+    int8 state = 0;
+    uint32 commodityTypeID = 0;
+    uint32 commodityQuantity = 0;
+    std::list<uint32> path;
+};
+
+class PI_CCPin {
+public:
+    uint32 level = 0;
+    uint32 ccPinID = 0;
+    uint64 currentSimTime = 0;
+
+    std::map<uint32, PI_Pin> pins;
+    std::map<uint32, PI_Link> links;
+    std::map<uint32, PI_Route> routes;
+};
+
 
 #endif  // _EVEMU_POD_CONTAINERS_H_

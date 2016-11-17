@@ -25,6 +25,7 @@
 
 #ifndef __MISC_H__INCL__
 #define __MISC_H__INCL__
+#include <eve-compat.h>
 
 /**
  * This is functionally equivalent to python's binascii.crc_hqx.
@@ -89,6 +90,11 @@ inline bool IsNaN(double x)      { return x!= x; }
 
 uint32 CreatePIDFile(const std::string& filename);
 
-void traceStack(void);
+namespace EvE {
+    uint64 max(int64 x);
+    double max(double x);
+
+    void traceStack(void);
+}
 
 #endif /* !__MISC_H__INCL__ */

@@ -10,19 +10,20 @@
 #define EVE_PLANET_H
 
 enum PinCommands {
-    CreatePin = 1,
-    RemovePin = 2,
-    CreateLink = 3,
-    RemoveLink = 4,
-    SetLinkLevel = 5,
-    CreateRoute = 6,
-    RemoveRoute = 7,
-    SetSchematic = 8,
-    UpgradeCommandCenter = 9,
-    AddExtractorHead = 10,
-    KillExtractorHead = 11,
-    MoveExtractorHead = 12,
-    InstallProgram = 13
+    CreatePin               = 1,
+    RemovePin               = 2,
+    CreateLink              = 3,
+    RemoveLink              = 4,
+    SetLinkLevel            = 5,
+    CreateRoute             = 6,
+    RemoveRoute             = 7,
+    SetSchematic            = 8,
+    UpgradeCommandCenter    = 9,
+    AddExtractorHead        = 10,
+    KillExtractorHead       = 11,
+    MoveExtractorHead       = 12,
+    InstallProgram          = 13,
+    PrioritizeRoute         = 14
 };
 
 enum PinStates {
@@ -30,6 +31,16 @@ enum PinStates {
     PINSTATE_DISABLED = -1,
     PINSTATE_IDLE = 0,
     PINSTATE_ACTIVE = 1
+};
+
+enum PinLevels {
+    PinLevel0 = 0,
+    PinLevel1 = 1,
+    PinLevel2 = 2,
+    PinLevel3 = 3,
+    PinLevel4 = 4,
+    PinLevel5 = 5,
+    PinLevel6 = 6
 };
 
 /*  these are internal client state events

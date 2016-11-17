@@ -321,7 +321,7 @@ void TargetManager::TargetLost(SystemEntity *who) {
         te.targetID = who->GetID();
         //te.reason = "Docking";
     Notify_OnMultiEvent multi;
-        multi.events = new PyList;
+        multi.events = new PyList();
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();   //this is consumed below
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
@@ -492,7 +492,7 @@ void TargetManager::TargetTry(SystemEntity *who) {
         te.mode = "try";
         te.targetID = who->GetID();
     Notify_OnMultiEvent multi;
-        multi.events = new PyList;
+        multi.events = new PyList();
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();   //this is consumed below
     mySE->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &tmp, false);
@@ -504,7 +504,7 @@ bool TargetManager::TargetFail(SystemEntity* who) {
         te.mode = "fail";
         te.targetID = who->GetID();
     Notify_OnMultiEvent multi;
-        multi.events = new PyList;
+        multi.events = new PyList();
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();   //this is consumed below
     mySE->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &tmp, false);
@@ -524,7 +524,6 @@ void TargetManager::TargetAdded(SystemEntity* who) {
         te.targetID = who->GetID();
     up = te.Encode();
     mySE->GetPilot()->QueueDestinyEvent(&up);
-    PySafeDecRef(up);
 }
 
 void TargetManager::TargetedAdd(SystemEntity *who) {
@@ -535,7 +534,7 @@ void TargetManager::TargetedAdd(SystemEntity *who) {
         te.mode = "otheradd";
         te.targetID = who->GetID();
     Notify_OnMultiEvent multi;
-        multi.events = new PyList;
+        multi.events = new PyList();
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();   //this is consumed below
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
@@ -549,7 +548,7 @@ void TargetManager::TargetedLost(SystemEntity *who) {
        // te.reason = "WarpingOut";
        // te.reason = "StoppedTargeting";
     Notify_OnMultiEvent multi;
-        multi.events = new PyList;
+        multi.events = new PyList();
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();   //this is consumed below
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
@@ -561,16 +560,17 @@ void TargetManager::TargetsCleared() {
         te.mode = "clear";
         te.targetID = 0;
     Notify_OnMultiEvent multi;
-        multi.events = new PyList;
+        multi.events = new PyList();
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();   //this is consumed below
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
-void TargetManager::QueueTBDestinyEvent( PyTuple** up_in ) const
+void TargetManager::QueueTBDestinyEvent( PyTuple** payload ) const
 {
-    PyTuple* up = *up_in;
-    *up_in = nullptr;    //could optimize out one of the Clones in here...
+    PyTuple* up = *payload;
+    *payload = nullptr;    //could optimize out one of the Clones in here...
+    PySafeDecRef(*payload);
 
     PyTuple* up_dup(nullptr);
 
@@ -587,10 +587,11 @@ void TargetManager::QueueTBDestinyEvent( PyTuple** up_in ) const
     PyDecRef( up );
 }
 
-void TargetManager::QueueTBDestinyUpdate( PyTuple** up_in ) const
+void TargetManager::QueueTBDestinyUpdate( PyTuple** payload ) const
 {
-    PyTuple* up = *up_in;
-    *up_in = nullptr;    //could optimize out one of the Clones in here...
+    PyTuple* up = *payload;
+    *payload = nullptr;    //could optimize out one of the Clones in here...
+    PySafeDecRef(*payload);
 
     PyTuple* up_dup(nullptr);
 

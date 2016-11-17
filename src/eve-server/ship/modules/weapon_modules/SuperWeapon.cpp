@@ -106,7 +106,7 @@ void SuperWeapon::StopCycle(bool abort)
         ge.shipID = m_Ship->itemID();
         ge.targetID = 0;
         ge.other = new PyNone();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -225,7 +225,7 @@ void SuperWeapon::_ShowCycle()
         ge.shipID = m_Ship->itemID();;
         ge.targetID = 0;
         ge.other = new PyNone();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

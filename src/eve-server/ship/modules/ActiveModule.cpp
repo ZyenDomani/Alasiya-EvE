@@ -250,7 +250,7 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
-        ge.area = new PyList;   // still dont know what this is.
+        ge.area = new PyList();   // still dont know what this is.
         ge.effectID = m_Effects->GetDefaultEffect()->GetEffectID();
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

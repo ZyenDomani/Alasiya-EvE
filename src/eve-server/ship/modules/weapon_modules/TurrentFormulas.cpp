@@ -42,7 +42,7 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, System
     double c = pow((a * b), 2);
     double e = 0;
     if (distance > range) {
-        double d = _max(distance - range);
+        double d = EvE::max(distance - range);
         e = pow((d / falloff), 2);
     }
 
@@ -76,7 +76,7 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     double c = pow((a * b), 2);
     double e = 0;
     if (distance > range) {
-        double d = _max(distance - range);
+        double d = EvE::max(distance - range);
         e = pow((d / falloff), 2);
     }
 
@@ -110,7 +110,7 @@ float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
     double c = pow((a * b), 2);
     double e = 0;
     if (distance > range) {
-        double d = _max(distance - range);
+        double d = EvE::max(distance - range);
         e = pow((d / falloff), 2);
     }
 
@@ -121,14 +121,6 @@ float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
         return 3.0f;
     else if (rNum < ChanceToHit)
         return rNum;
-    else
-        return 0;
-}
-
-double TurrentFormulas::_max(double x)
-{
-    if (x > 0)
-        return x;
     else
         return 0;
 }

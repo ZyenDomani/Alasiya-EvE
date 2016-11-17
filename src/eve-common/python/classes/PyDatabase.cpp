@@ -177,7 +177,7 @@ PyDict* CRowSet::_CreateKeywords(DBRowDescriptor* rowDesc)
 {
     assert( rowDesc );
 
-    PyDict* keywords = new PyDict;
+    PyDict* keywords = new PyDict();
     keywords->SetItemString( "header", rowDesc );
 
     //uint32 cc = rowDesc->ColumnCount();
@@ -229,7 +229,7 @@ PyDict* CIndexedRowSet::_CreateKeywords(DBRowDescriptor* rowDesc)
 {
     assert( rowDesc );
 
-    PyDict* keywords = new PyDict;
+    PyDict* keywords = new PyDict();
     keywords->SetItemString( "header", rowDesc );
     keywords->SetItemString( "columnName", rowDesc->GetColumnName(0) );
 
@@ -280,7 +280,7 @@ PyDict* CFilterRowSet::_CreateKeywords(DBRowDescriptor* rowDesc)
 {
     assert( rowDesc );
 
-    PyDict* keywords = new PyDict;
+    PyDict* keywords = new PyDict();
     keywords->SetItemString( "header", rowDesc );
     keywords->SetItemString( "columnName", rowDesc->GetColumnName(0) );
 

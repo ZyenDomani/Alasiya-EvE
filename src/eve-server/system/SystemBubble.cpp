@@ -370,7 +370,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     destinyBuffer->Append(head);
 
     DoDestiny_AddBalls addballs;
-    addballs.slims = new PyList;
+    addballs.slims = new PyList();
 
     for (auto cur : m_dynamicEntities) {
         if (!cur->IsMissileSE())
@@ -467,7 +467,7 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
 	destinyBuffer->Append( head );
 
 	DoDestiny_AddBalls addballs;
-        addballs.slims = new PyList;
+        addballs.slims = new PyList();
 
 	//encode destiny binary
 	about_who->EncodeDestiny( *destinyBuffer );
@@ -486,7 +486,6 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
 	//bubblecast the update
 	PyTuple* t = addballs.Encode();
 	BubblecastDestinyUpdateExclusive( &t, "AddBall", about_who );
-	PySafeDecRef( t );
 }
 
 /*  NOTE   lil insight into clients code for RemoveBall
@@ -518,7 +517,6 @@ void SystemBubble::RemoveBall(SystemEntity *about_who) {
 
     PyTuple *tmp = removeball.Encode();
 	BubblecastDestinyUpdate(&tmp, "RemoveBall");    //consumed
-	PySafeDecRef( tmp );
 }
 
 
@@ -536,7 +534,6 @@ void SystemBubble::RemoveBallExclusive(SystemEntity *about_who) {
 
     PyTuple *tmp = removeball.Encode();
 	BubblecastDestinyUpdateExclusive(&tmp, "RemoveBall", about_who);    //consumed
-	PySafeDecRef( tmp );
 }
 
 void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
@@ -597,6 +594,7 @@ void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc 
 {
     PyTuple* up = *payload;
     *payload = nullptr;    //could optimize out one of the Clones in here...
+    PySafeDecRef(*payload);
 
     PyTuple* up_dup(nullptr);
 
@@ -618,6 +616,7 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
 {
     PyTuple* up = *payload;
     *payload = nullptr;    //could optimize out one of the Clones in here...
+    PySafeDecRef(*payload);
 
     PyTuple* up_dup(nullptr);
 
@@ -643,6 +642,7 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
 {
     PyTuple* ev = *payload;
     *payload = nullptr;    //could optimize out one of the Clones in here...
+    PySafeDecRef(*payload);
 
     PyTuple* ev_dup(nullptr);
 
@@ -663,6 +663,7 @@ void SystemBubble::BubblecastSendNotification(const char* notifyType, const char
 {
     PyTuple* ev = *payload;
     *payload = nullptr;    //could optimize out one of the Clones in here...
+    PySafeDecRef(*payload);
 
     PyTuple* ev_dup(nullptr);
 

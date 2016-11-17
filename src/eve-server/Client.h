@@ -329,6 +329,7 @@ protected:
     /********************************************************************/
     /* EVEClientLogin statemachine                                      */
     /********************************************************************/
+    bool _LoginFail(std::string fail_msg);
     bool _VerifyVersion( VersionExchangeClient& version );
     bool _VerifyCrypto( CryptoRequestPacket& cr );
     bool _VerifyLogin( CryptoChallengePacket& ccp );

@@ -6,7 +6,7 @@
 /*
  *  misc static consts
  */
-
+static const char charList[] = "~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 static const char alphaList[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static const char numList[] = "0123456789";
 

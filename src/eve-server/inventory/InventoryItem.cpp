@@ -703,8 +703,8 @@ void InventoryItem::GetItemRow( PyPackedRow* into ) const
 bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
 {/** @todo  this may need to be reworked once POS and Outposts are implemented. */
     //invItem:
-    PySafeDecRef( result.itemID );
-    PySafeDecRef( result.invItem );
+    PySafeIncRef( result.itemID );
+    PySafeIncRef( result.invItem );
 
     if (groupID() == EVEDB::invCategories::Charge) {
         PyTuple* tuple = new PyTuple(3);
@@ -753,7 +753,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
 
 PyList* InventoryItem::GetItemInfo() const
 {
-    PyList* itemInfo = new PyList;
+    PyList* itemInfo = new PyList();
         itemInfo->AddItem(GetItemRow());
 
     return itemInfo;
@@ -1058,7 +1058,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
         ge.shipID = pClient->GetShipID();
         ge.targetID = 0;
         ge.other = new PyNone();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = effectOnline;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -1077,7 +1077,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
     }
         shipEff.repeat = (online ? 1000 : 0);
         shipEff.error = new PyNone();
-    PyList* events = new PyList;
+    PyList* events = new PyList();
         events->AddItem(shipEff.Encode());
     Notify_OnMultiEvent multi;
         multi.events = events;

@@ -414,7 +414,7 @@ void MiningLaser::_ShowCycle()
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = m_effectID;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -475,7 +475,7 @@ void MiningLaser::StopCycle(bool abort)
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
-        ge.area = new PyList;
+        ge.area = new PyList();
         ge.effectID = m_effectID;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

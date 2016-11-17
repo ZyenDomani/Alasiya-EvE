@@ -33,7 +33,7 @@
         * SESSIONCHANGEDELAY = (30 * 10000000L)
 */
 
-ClientSession::ClientSession() : mSession( new PyDict ), mDirty( false )
+ClientSession::ClientSession() : mSession( new PyDict() ), mDirty( false )
 {
     /* default value of attribute */
     PyTuple* v = new_tuple(new PyNone(), new PyLong(0x4000000000000000LL));

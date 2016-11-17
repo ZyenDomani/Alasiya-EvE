@@ -95,7 +95,7 @@ PyResult PaperDollService::Handle_GetMyPaperDollData(PyCallArgs &call)
     sLog.Log("PaperDollService::Handle_GetMyPaperDollData()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
-	PyDict* args = new PyDict;
+	PyDict* args = new PyDict();
 
 	args->SetItemString( "colors", m_db.GetPaperDollAvatarColors(call.client->GetCharacterID()) );
 	args->SetItemString( "modifiers", m_db.GetPaperDollAvatarModifiers(call.client->GetCharacterID()) );

@@ -75,7 +75,7 @@ PyCallArgs::PyCallArgs(Client *c, PyTuple* tup, PyDict* dict)
 }
 
 PyCallArgs::~PyCallArgs() {
-    PySafeDecRef( tuple );
+    //PySafeDecRef( tuple );
     for (auto cur : byname)
         PySafeDecRef( cur.second );
 }

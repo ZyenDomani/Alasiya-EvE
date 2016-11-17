@@ -78,7 +78,7 @@ public:
          * @param[in] buffer The parent Buffer.
          * @param[in] index  The index.
          */
-        const_iterator( const Buffer* buffer = NULL, size_type index = 0 )
+        const_iterator( const Buffer* buffer = nullptr, size_type index = 0 )
         : mIndex( index ),
           mBuffer( buffer )
         {
@@ -257,7 +257,7 @@ public:
          * @param[in] buffer The parent Buffer.
          * @param[in] index  The index.
          */
-        iterator( Buffer* buffer = NULL, size_type index = 0 ) : _Base( buffer, index ) {}
+        iterator( Buffer* buffer = nullptr, size_type index = 0 ) : _Base( buffer, index ) {}
         /// Copy constructor.
         iterator( const iterator& oth ) : _Base( oth ) {}
 
@@ -330,7 +330,7 @@ public:
      * @param[in] fill Value to fill the buffer with.
      */
     Buffer( size_type len = 0, const uint8& fill = 0 )
-    : mBuffer( NULL ),
+    : mBuffer( nullptr ),
       mSize( 0 ),
       mCapacity( 0 )
     {
@@ -348,9 +348,9 @@ public:
      * @param[in] first Iterator pointing to first element.
      * @param[in] last  Iterator pointing to element after the last one.
      */
-    template< typename Iter >
-    Buffer( Iter first, Iter last )
-    : mBuffer( NULL ),
+    template< typename T >
+    Buffer( T first, T last )
+    : mBuffer( nullptr ),
       mSize( 0 ),
       mCapacity( 0 )
     {
@@ -359,7 +359,7 @@ public:
     }
     /// Copy constructor.
     Buffer( const Buffer& oth )
-    : mBuffer( NULL ),
+    : mBuffer( nullptr ),
       mSize( 0 ),
       mCapacity( 0 )
     {

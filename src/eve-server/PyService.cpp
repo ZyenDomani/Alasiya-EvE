@@ -93,7 +93,7 @@ PyResult PyService::Handle_MachoBindObject( PyCallArgs& call )
 
     if ( args.call->IsNone() ) {
         //no call was specified...
-        robjs->SetItem( 1, new PyNone );
+        robjs->SetItem( 1, new PyNone() );
     } else {
         CallMachoBindObject_call boundcall;
         if ( !boundcall.Decode( &args.call ) ) {

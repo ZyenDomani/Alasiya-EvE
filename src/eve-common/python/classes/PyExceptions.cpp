@@ -61,9 +61,9 @@ PyTuple* GPSTransportClosed::_CreateArgs( const char* reason )
 
 PyDict* GPSTransportClosed::_CreateKeywords( const char* reason )
 {
-    PyDict* keywords = new PyDict;
+    PyDict* keywords = new PyDict();
     //keywords->SetItemString( "origin", new PyString( "proxy" ) );
-    keywords->SetItemString( "reasonArgs", new PyDict );
+    keywords->SetItemString( "reasonArgs", new PyDict() );
     keywords->SetItemString( "clock", new PyLong( Win32TimeNow() ) );
     //keywords->SetItemString( "loggedOnUserCount", );
     keywords->SetItemString( "region", new PyString( EVEProjectRegion ) );
@@ -110,16 +110,16 @@ PyTuple* UserError::_CreateArgs( const char* msg )
 {
     PyTuple* args = new PyTuple( 2 );
     args->SetItem( 0, new PyString( msg ) );
-    args->SetItem( 1, new PyDict );
+    args->SetItem( 1, new PyDict() );
 
     return args;
 }
 
 PyDict* UserError::_CreateKeywords( const char* msg )
 {
-    PyDict* keywords = new PyDict;
+    PyDict* keywords = new PyDict();
     keywords->SetItemString( "msg", new PyString( msg ) );
-    keywords->SetItemString( "dict", new PyDict );
+    keywords->SetItemString( "dict", new PyDict() );
 
     return keywords;
 }
