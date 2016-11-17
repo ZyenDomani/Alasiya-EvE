@@ -46,13 +46,13 @@ void EVEAttributeMgr::EncodeAttributes(std::map<int32, PyRep *> &into) const {
     // integers first
     for (auto cur : m_ints) {
         if (into.find(cur.first) != into.end())
-            PyIncRef( into[cur.first] );
+            PyDecRef( into[cur.first] );
         into[cur.first] = _PyGet(cur.second);
     }
     // then reals
     for (auto cur : m_reals) {
         if (into.find(cur.first) != into.end())
-            PyIncRef( into[cur.first] );
+            PyDecRef( into[cur.first] );
         into[cur.first] = _PyGet(cur.second);
     }
 }
@@ -85,13 +85,13 @@ void EVEAdvancedAttributeMgr::EncodeAttributes(std::map<int32, PyRep *> &into) c
     // integers first
     for (auto cur : m_ints) {
         if (into.find(cur.first) != into.end())
-            PyIncRef( into[cur.first] );
+            PyDecRef( into[cur.first] );
         into[cur.first] = _PyGet(cur.second);
     }
     // then reals
     for (auto cur : m_reals) {
         if (into.find(cur.first) != into.end())
-            PyIncRef( into[cur.first] );
+            PyDecRef( into[cur.first] );
         into[cur.first] = _PyGet(cur.second);
     }
 }

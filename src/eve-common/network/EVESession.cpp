@@ -104,7 +104,7 @@ PyPacket* EVEClientSession::PopPacket() {
     }
 
     assert( mPacketHandler );
-    return (this->*mPacketHandler)(r);
+    return ( this->*mPacketHandler )( r );
 }
 
 PyPacket* EVEClientSession::_HandleVersion( PyRep* rep ) {

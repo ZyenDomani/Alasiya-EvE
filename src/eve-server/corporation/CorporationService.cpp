@@ -159,7 +159,7 @@ PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {
     // dont know the details for this return yet.....
     PyTuple *t = new PyTuple(2);
     t->items[0] = m_db.GetMedalsReceived(arg.arg);
-    t->items[1] = new PyList();
+    t->items[1] = new PyList;
     return t;
 }
 
@@ -173,7 +173,7 @@ PyResult CorporationService::Handle_GetMedalDetails(PyCallArgs &call) {
     // dont know the details for this return yet.....
     PyTuple *t = new PyTuple(2);
     t->items[0] = m_db.GetMedalDetails(arg.arg);
-    t->items[1] = new PyList();
+    t->items[1] = new PyList;
     return t;
 }
 
@@ -189,7 +189,7 @@ PyResult CorporationService::Handle_GetAllCorpMedals( PyCallArgs& call )
 
     sLog.Log( "CorporationService", "Called GetAllCorpMedals stub." );
 
-    PyList* res = new PyList();
+    PyList* res = new PyList;
 
     util_Rowset rs;
 

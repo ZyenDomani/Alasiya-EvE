@@ -416,7 +416,7 @@ PyRep* UnmarshalStream::LoadListOne()
 PyRep* UnmarshalStream::LoadDict()
 {
     const uint32 count = ReadSizeEx();
-    PyDict* dict = new PyDict();
+    PyDict* dict = new PyDict;
 
     for( uint32 i = 0; i < count; i++ )
     {

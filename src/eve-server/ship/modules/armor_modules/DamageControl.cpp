@@ -40,7 +40,7 @@ void DamageControl::StopCycle(bool abort)
         ge.shipID = m_Ship->itemID();
         ge.targetID = 0;
         ge.other = new PyNone();
-        ge.area = new PyList();
+        ge.area = new PyList;
         ge.effectID = effectDamageControl;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 1000;
@@ -70,7 +70,7 @@ void DamageControl::_ShowCycle()
         ge.shipID = m_Ship->itemID();
         ge.targetID = 0;
         ge.other = new PyNone();
-        ge.area = new PyList();
+        ge.area = new PyList;
         ge.effectID = effectDamageControl;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

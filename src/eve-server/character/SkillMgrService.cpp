@@ -101,7 +101,7 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call) 
             [PyInt 2]                   << operation
             [PyFloat 3]                 << value
             */
-    return new PyList();
+    return new PyList;
 }
 
 PyResult SkillMgrBound::Handle_CharStopTrainingSkill(PyCallArgs &call) {
@@ -232,7 +232,7 @@ PyResult SkillMgrBound::Handle_GetRespecInfo( PyCallArgs& call )
     uint64 lastRespec = 0, nextRespec = 0;
     m_db.GetRespecInfo(call.client->GetCharacterID(), freeRespecs, lastRespec, nextRespec);
 
-    PyDict* result = new PyDict();
+    PyDict* result = new PyDict;
     result->SetItemString( "lastRespecDate", new PyInt( lastRespec ) );
     result->SetItemString( "freeRespecs", new PyInt( freeRespecs ) );
     result->SetItemString( "nextTimedRespec", new PyLong( nextRespec ) );

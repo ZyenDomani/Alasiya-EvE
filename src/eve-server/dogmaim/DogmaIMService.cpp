@@ -849,7 +849,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     }
 
 	/* Create the response dictionary */
-    PyDict* rsp = new PyDict();
+    PyDict* rsp = new PyDict;
     rsp->SetItemString("activeShipID", new PyInt(pClient->GetShipID()));
     /* Setting "locationInfo" in the Dictionary */
     /** @todo  havent found a populated item in packet logs
@@ -867,26 +867,24 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     /* Setting "charInfo" in the Dictionary  -fixed 24Mar16 */
     if (args.arg1) {
         PyDict* charResult = pClient->GetChar()->GetCharInfo();
-        //PyDecRef( *charResult );
         if (!charResult ) {
             _log(SERVICE__ERROR, "Unable to build char info for char %u", pClient->GetCharacterID());
             return new PyNone();
         }
         rsp->SetItemString("charInfo", charResult);
     } else  // fixed
-        rsp->SetItemString("charInfo", new PyDict());
+        rsp->SetItemString("charInfo", new PyDict);
 
 	/* Setting "shipInfo" in the Dictionary  -fixed 26Mar16 */
 	if (args.arg2) {
         PyDict* shipResult = pClient->GetShip()->GetShipInfo();
-        //PyDecRef( *shipResult );
         if (!shipResult ) {
             _log(SERVICE__ERROR, "Unable to build ship info for ship %u", pClient->GetShipID());
             return new PyNone();
         }
         rsp->SetItemString("shipInfo", shipResult);
     } else
-        rsp->SetItemString("shipInfo", new PyDict());
+        rsp->SetItemString("shipInfo", new PyDict);
 
     /* Setting "shipState" in the Dictionary  -fixed 26Mar16 */
     if (!pClient->GetShip()) {

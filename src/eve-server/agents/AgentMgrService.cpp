@@ -249,7 +249,7 @@ PyResult AgentMgrBound::Handle_DoAction(PyCallArgs &call) {
     //uint32 loyaltyPoints = m_agent->GetLoyaltyPoints(call.client);
 
     DoAction_Result res;
-    res.dialogue = new PyList();
+    res.dialogue = new PyList;
 
     std::map<uint32, std::string> choices;
 //00:20:34 E AgentMgrBound::Handle_DoAction(): args.arg->IsInt() failed.  Expected type Int, got type None
@@ -367,7 +367,7 @@ PyResult AgentMgrService::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
     //no args
   sLog.Log( "AgentMgrBound::Handle_GetMyEpicJournalDetails()", "size= %u", call.tuple->size() );
 
-    return new PyList();
+    return new PyList;
 }
 
 PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)

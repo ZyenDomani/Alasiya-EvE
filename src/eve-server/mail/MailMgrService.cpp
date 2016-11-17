@@ -116,7 +116,7 @@ PyResult MailMgrService::Handle_SyncMail(PyCallArgs &call)
         int firstId = args.arg1, secondId = args.arg2;
     }
 
-    PyDict* dummy = new PyDict();
+    PyDict* dummy = new PyDict;
     dummy->SetItemString("oldMail", new PyNone());
     dummy->SetItemString("newMail", m_db->GetNewMail(call.client->GetCharacterID()));
     dummy->SetItemString("mailStatus", m_db->GetMailStatus(call.client->GetCharacterID()));

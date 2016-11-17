@@ -923,7 +923,7 @@ PyResult ContractProxyService::Handle_GetLoginInfo(PyCallArgs &call)
     CRowSet *inProgress_rowset = new CRowSet( &inProgressHeader );
     CRowSet *assignedToMe_rowset = new CRowSet( &assignedToMeHeader );
 
-    PyDict* args = new PyDict();
+    PyDict* args = new PyDict;
         args->SetItemString( "needsAttention",          needsAttention_rowset );
         args->SetItemString( "inProgress",              inProgress_rowset );
         args->SetItemString( "assignedToMe",            assignedToMe_rowset );

@@ -295,7 +295,6 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
     if (args.object->IsNone())
         return new PyNone();
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
-    PyIncRef(bmList);
 
     std::vector<int32> bmIDs;
     for (size_t i = 0; i < bmList->size(); i++)
@@ -336,7 +335,6 @@ PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
     if (args.object->IsNone())
         return new PyNone();
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
-    PyIncRef(bmList);
 
     std::vector<int32> bmIDs;
     for (size_t i = 0; i < bmList->size(); i++)

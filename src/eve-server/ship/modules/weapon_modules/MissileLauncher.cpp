@@ -125,7 +125,7 @@ void MissileLauncher::StopCycle(bool abort)
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
-        ge.area = new PyList();
+        ge.area = new PyList;
         ge.effectID = effectUseMissiles;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 1000;
@@ -221,7 +221,7 @@ void MissileLauncher::_ShowCycle()
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
-        ge.area = new PyList();
+        ge.area = new PyList;
         ge.effectID = effectUseMissiles;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

@@ -52,12 +52,12 @@ PyResult HoloscreenMgrService::Handle_GetTwoHourCache(PyCallArgs& call)
 {
     sLog.Debug("HoloscreenMgrService", "Called GetTwoHourCache stub.");
 
-    PyDict* agents = new PyDict();
+    PyDict* agents = new PyDict;
 
     agents->SetItemString("Agent_DUMMY", new PyDict);
 
 
-    PyDict* args = new PyDict();
+    PyDict* args = new PyDict;
 
     args->SetItemString("careerAgents", agents);
     args->SetItemString("incursionReport", new PyList);
@@ -78,12 +78,12 @@ PyResult HoloscreenMgrService::Handle_GetRuntimeCache(PyCallArgs& call)
 {
     sLog.Debug("HoloscreenMgrService", "Called GetRuntimeCache stub.");
 
-    PyDict* agents = new PyDict();
+    PyDict* agents = new PyDict;
 
     agents->SetItemString("Agent_DUMMY", new PyDict);
 
 
-    PyDict* args = new PyDict();
+    PyDict* args = new PyDict;
 
     args->SetItemString("careerAgents", agents);
     args->SetItemString("incursionReport", new PyList);

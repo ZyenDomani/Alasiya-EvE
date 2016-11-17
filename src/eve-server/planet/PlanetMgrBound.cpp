@@ -181,11 +181,8 @@ PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
     call.Dump(PLANET__DUMP);
 
     if (sConfig.cosmic.EnablePI)
-        return m_planet->GetPlanetInfo(m_colony);
-    else {
         call.client->SendErrorMsg("The PI system is currently disabled.");
-        return nullptr;
-    }
+    return m_planet->GetPlanetInfo(m_colony);
 }
 
 PyResult PlanetMgrBound::Handle_GetExtractorsForPlanet(PyCallArgs &call) {

@@ -502,7 +502,7 @@ PyDict* ShipItem::ShipGetInfo() {
     if ( !Populate( entry ))
         return nullptr;    //print already done.
 
-    PyDict* result = new PyDict();
+    PyDict* result = new PyDict;
     result->SetItem(new PyInt( itemID()), new PyObject("util.KeyVal", entry.Encode()));
     //now encode contents...
     std::vector<InventoryItemRef> equipped;
@@ -527,7 +527,7 @@ PyDict* ShipItem::GetShipInfo()
         return nullptr;
     }
 
-    PyDict *result = new PyDict();
+    PyDict *result = new PyDict;
     Rsp_CommonGetInfo_Entry entry;
 
     //first populate the ship.
@@ -569,7 +569,7 @@ PyDict* ShipItem::GetShipState() {
         }
     }
     // Create new dictionary for shipState:
-    PyDict *result = new PyDict();
+    PyDict *result = new PyDict;
     // Create entry for ShipItem itself:
     result->SetItem(new PyInt(itemID()), GetItemStatusRow());
     // Check for and Create entry for pilot:
@@ -599,7 +599,7 @@ PyList* ShipItem::ShipGetModuleList() {
         return nullptr;
     }
 
-    PyList* result = new PyList();
+    PyList* result = new PyList;
     PyTuple* module = new PyTuple(2);
     // Create entries in "onslimitemchange" modules list for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
@@ -631,18 +631,18 @@ PyDict* ShipItem::GetChargeState() {
     m_ModuleManager->GetLoadedCharges(charges);
 
     if (charges.empty()) {
-        PyDict *result = new PyDict();
+        PyDict *result = new PyDict;
         //result->SetItem(new PyInt(itemID()), new BuiltinSet());
         return result;
     }
 
     // Create entries in "shipState" dictionary for loaded charges on ship:
     uint32 shipID = itemID();
-    PyDict* chargeDict = new PyDict();
+    PyDict* chargeDict = new PyDict;
     for (auto cur : charges)
         chargeDict->SetItem(new PyInt((uint32)cur.first), cur.second->GetChargeStatusRow(shipID));
 
-    PyDict *result = new PyDict();
+    PyDict *result = new PyDict;
     result->SetItem(new PyInt(itemID()), chargeDict);
     return result;
 }
@@ -1470,8 +1470,8 @@ PyDict* Ship::MakeSlimItem() {
             l->AddItem(new_tuple(cur->itemID(), cur->typeID()));
         }
 
-        PySafeIncRef(l);
         slim->SetItemString("modules", l);
+        PySafeDecRef(l);
     }
 
     if (is_log_enabled(DESTINY__DEBUG)) {

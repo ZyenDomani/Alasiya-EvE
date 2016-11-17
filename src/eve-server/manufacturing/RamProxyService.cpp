@@ -890,15 +890,17 @@ bool RamProxyService::_Calculate(const Call_InstallJob &args, InventoryItemRef i
 
 void RamProxyService::_EncodeBillOfMaterials(const std::vector<RequiredItem> &reqItems, double materialMultiplier, double charMaterialMultiplier, uint32 runs, BillOfMaterials &into)
 {
-    PySafeIncRef( into.extras.lines );
-    into.extras.lines = new PyList();
-    PySafeIncRef( into.wasteMaterials.lines );
-    into.wasteMaterials.lines = new PyList();
-    PySafeIncRef( into.rawMaterials.lines );
-    into.rawMaterials.lines = new PyList();
+    PySafeDecRef( into.extras.lines );
+    into.extras.lines = new PyList;
+    PySafeDecRef( into.wasteMaterials.lines );
+    into.wasteMaterials.lines = new PyList;
+    PySafeDecRef( into.rawMaterials.lines );
+    into.rawMaterials.lines = new PyList;
 
-    std::vector<RequiredItem>::const_iterator cur = reqItems.begin();
-    for(; cur != reqItems.end(); cur++) {
+    std::vector<RequiredItem>::const_iterator cur, end;
+    cur = reqItems.begin();
+    end = reqItems.end();
+    for(; cur != end; cur++) {
         // if it's skill, insert it into special dict for skills
         if(cur->isSkill) {
             into.skills[cur->typeID] = new PyInt(cur->quantity);

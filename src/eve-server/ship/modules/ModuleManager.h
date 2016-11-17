@@ -87,7 +87,6 @@ class ModuleManager;
 
 //////////////////////////////////////////////////////////////////////////////////
 // Modifier classes containing all data to modify an attribute
-/** @note:  this class isnt used right now */
 #pragma region Modifier
 
 class Modifier

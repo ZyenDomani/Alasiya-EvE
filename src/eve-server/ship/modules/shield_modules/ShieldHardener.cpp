@@ -56,7 +56,7 @@ void ShieldHardener::StopCycle(bool abort)
         ge.shipID = m_Ship->itemID();
         ge.targetID = 0;
         ge.other = new PyNone();
-        ge.area = new PyList();
+        ge.area = new PyList;
         ge.effectID = effectModifyActiveShieldResonanceAndNullifyPassiveResonance;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -104,7 +104,7 @@ void ShieldHardener::_ShowCycle()
         ge.shipID = go.shipID;
         ge.targetID = 0;
         ge.other = go.Encode();
-        ge.area = new PyList();
+        ge.area = new PyList;
         ge.effectID = effectModifyActiveShieldResonanceAndNullifyPassiveResonance;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

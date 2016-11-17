@@ -53,12 +53,12 @@ uint32 FleetService::CreateFleet(Client *pClient)
     m_fleetMembers.emplace(fleetID, pClient->GetChar().get());
     return  m_fleetID++;
 /*
-    PyList* list = new PyList();
+    PyList* list = new PyList;
         list->AddItemInt(pClient->GetChar()->GetSkillLevel(skillLeadership, true));     //skill in Leadership
         list->AddItemInt(pClient->GetChar()->GetSkillLevel(skillWingCommand, true));     //skill in Wing Command
         list->AddItemInt(pClient->GetChar()->GetSkillLevel(skillFleetCommand, true));     //skill in Fleet Command
 
-    PyDict* dict = new PyDict();
+    PyDict* dict = new PyDict;
         //dict->SetItemString( "charID", new PyInt(pClient->GetCharacterID()) );
         dict->SetItemString( "solarSystemID", new PyInt(pClient->GetSystemID()) );
         dict->SetItemString( "shipTypeID", new PyInt(pClient->GetShip()->typeID()) );
@@ -99,10 +99,10 @@ PyRep* FleetService::GetAvailableFleets() {
     Client* pClient = nullptr;
     AvalibleFleetsRSP fleetRSP;
 
-    PyDict* fleetDict = new PyDict();
+    PyDict* fleetDict = new PyDict;
     for (auto i : m_avalibleFleetsMap) {
 
-            PyDict* leaderDict = new PyDict();
+            PyDict* leaderDict = new PyDict;
                 leaderDict->SetItemString( "charID", new PyInt(pClient->GetCharacterID()) );
                 leaderDict->SetItemString( "corpID", new PyInt(pClient->GetSystemID()) );
                 leaderDict->SetItemString( "warFactionID", new PyInt(pClient->GetShip()->typeID()) );

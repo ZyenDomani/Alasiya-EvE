@@ -930,7 +930,7 @@ PyRep *CorporationDB::Fetch(uint32 corpID, uint32 from, uint32 count) {
     // Have to send back a list that contains a tuple that contains an int and a list...
     // params probably needs the following stuff: stationID, typeID, officeID, officeFolderID
     Reply_FetchOffice reply;
-    reply.params = new PyList();
+    reply.params = new PyList;
 
     reply.params->AddItemInt( row.GetInt(0) );
     reply.params->AddItemInt( row.GetInt(1) );

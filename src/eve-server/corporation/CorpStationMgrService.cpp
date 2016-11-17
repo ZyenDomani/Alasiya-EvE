@@ -525,7 +525,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     Noic_row.header.push_back( "categoryID" );
     Noic_row.header.push_back( "customInfo" );
 
-    Noic_row.line = new PyList();
+    Noic_row.line = new PyList;
     Noic_row.line->AddItemInt( oInfo.officeID );
     Noic_row.line->AddItemInt( 27 );
     Noic_row.line->AddItemInt( ac.ownerid );

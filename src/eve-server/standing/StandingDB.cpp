@@ -178,7 +178,7 @@ PyRep *StandingDB::GetSystemSovInfo(uint32 systemID) {
     DBQueryResult res;
     DBResultRow row;
 
-    PyDict *args = new PyDict();
+    PyDict *args = new PyDict;
 
     if(!sDatabase.RunQuery(res,
         "SELECT"

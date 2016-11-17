@@ -51,7 +51,7 @@ void ArmorRepairer::StopCycle(bool abort)
         ge.shipID = go.shipID;
         ge.targetID = 0;
         ge.other = go.Encode();
-        ge.area = new PyList();
+        ge.area = new PyList;
         ge.effectID = effectArmorRepair;
     uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
     timeLeft /= 1000;
@@ -122,7 +122,7 @@ void ArmorRepairer::_ShowCycle()
         ge.shipID = go.shipID;
         ge.targetID = 0;
         ge.other = go.Encode();
-        ge.area = new PyList();
+        ge.area = new PyList;
         ge.effectID = effectArmorRepair;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

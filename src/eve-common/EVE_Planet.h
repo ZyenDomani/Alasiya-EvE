@@ -27,31 +27,31 @@ enum PinCommands {
 };
 
 enum PinStates {
-    PINSTATE_EDITMODE = -2,
-    PINSTATE_DISABLED = -1,
-    PINSTATE_IDLE = 0,
-    PINSTATE_ACTIVE = 1
+    PINSTATE_EDITMODE   = -2,
+    PINSTATE_DISABLED   = -1,
+    PINSTATE_IDLE       =  0,
+    PINSTATE_ACTIVE     =  1
 };
 
 enum PinLevels {
-    PinLevel0 = 0,
-    PinLevel1 = 1,
-    PinLevel2 = 2,
-    PinLevel3 = 3,
-    PinLevel4 = 4,
-    PinLevel5 = 5,
+    PinLevel0  = 0,
+    PinLevel1  = 1,
+    PinLevel2  = 2,
+    PinLevel3  = 3,
+    PinLevel4  = 4,
+    PinLevel5  = 5,
     // the following are only used by Planetary_Links
-    PinLevel6 = 6,
-    PinLevel7 = 7,
-    PinLevel8 = 8,
-    PinLevel9 = 9,
+    PinLevel6  = 6,
+    PinLevel7  = 7,
+    PinLevel8  = 8,
+    PinLevel9  = 9,
     PinLevel10 = 10
 };
 
 enum RoutePriority {
-    RoutePriorityLow = -1,
-    RoutePriorityNorm = 0,
-    RoutePriorityHi = 1
+    RoutePriorityLow  = -1,
+    RoutePriorityNorm =  0,
+    RoutePriorityHi   =  1
 };
 
 /*  these are internal client state events

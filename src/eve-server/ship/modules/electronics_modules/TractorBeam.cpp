@@ -122,7 +122,7 @@ void TractorBeam::_ShowCycle()
         ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
-        ge.area = new PyList();
+        ge.area = new PyList;
         ge.effectID = effectTractorBeam;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -171,7 +171,7 @@ void TractorBeam::StopCycle(bool abort)
         ge.shipID = m_Ship->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
-        ge.area = new PyList();
+        ge.area = new PyList;
         ge.effectID = effectTractorBeam;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;

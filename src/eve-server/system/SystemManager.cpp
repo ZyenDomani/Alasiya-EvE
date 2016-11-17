@@ -691,7 +691,7 @@ SystemEntity* SystemManager::GetSE(uint32 entityID) const {
 
 void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState& into, bool login) const {
     using namespace Destiny;
-    Buffer* stateBuffer = new Buffer();
+    Buffer* stateBuffer = new Buffer;
 
     AddBall_header head;
         head.packet_type = 0;   // 0 = full state   1 = balls
@@ -708,9 +708,9 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
     if (bubble)
        bubble->GetEntities(visibleEntities);
 
-    into.slims = new PyList();
-    into.effectStates = new PyList();
-    into.allianceBridges = new PyList();
+    into.slims = new PyList;
+    into.effectStates = new PyList;
+    into.allianceBridges = new PyList;
 
     //go through all visible entities and gather the info we need...
     for (auto cur : visibleEntities) {

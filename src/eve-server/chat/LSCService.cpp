@@ -379,7 +379,7 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
     }
 
     ChannelInfo info;
-    info.lines = new PyList();
+    info.lines = new PyList;
 
     std::map<uint32, LSCChannel*>::iterator cur, end;
     cur = m_channels.begin();

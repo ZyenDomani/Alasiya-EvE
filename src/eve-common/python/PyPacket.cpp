@@ -57,7 +57,7 @@ const char* MACHONETMSG_TYPE_NAMES[MACHONETMSG_TYPE_COUNT] =
     "PING_RSP"
 };
 
-PyPacket::PyPacket() : type_string("none"), type(__Fake_Invalid_Type), userid(0), payload(nullptr), named_payload(nullptr) {}
+PyPacket::PyPacket() : type_string("none"), type(__Fake_Invalid_Type), userid(0), payload(NULL), named_payload(NULL) {}
 PyPacket::~PyPacket()
 {
     PySafeDecRef(payload);
@@ -73,11 +73,14 @@ PyPacket *PyPacket::Clone() const
     res->dest = dest;
     res->userid = userid;
     res->payload = (PyTuple *) payload->Clone();
-    if (!named_payload)
-        res->named_payload = nullptr;
+    if(named_payload == NULL)
+    {
+        res->named_payload = NULL;
+    }
     else
+    {
         res->named_payload = (PyDict *) named_payload->Clone();
-
+    }
     return res;
 }
 
@@ -93,9 +96,9 @@ void PyPacket::Dump(LogType ltype, PyVisitor& dumper)
     _log(ltype, "  User ID: %u", userid);
     _log(ltype, "  Payload:");
     payload->visit( dumper );
-    if (!named_payload)
+    if(named_payload == NULL) {
         _log(ltype, "  Named Payload: None");
-    else {
+    } else {
         _log(ltype, "  Named Payload:");
         named_payload->visit( dumper );
     }
@@ -103,8 +106,8 @@ void PyPacket::Dump(LogType ltype, PyVisitor& dumper)
 
 bool PyPacket::Decode(PyRep **in_packet)
 {
-    PyRep* packet(*in_packet);  //consume
-    *in_packet = nullptr;
+    PyRep *packet = *in_packet;  //consume
+    *in_packet = NULL;
 
     PySafeDecRef(payload);
     PySafeDecRef(named_payload);
@@ -116,7 +119,8 @@ bool PyPacket::Decode(PyRep **in_packet)
         //TODO: check cs->checksum
         packet = cs->stream();
         PyIncRef( packet );
-        PySafeDecRef( cs );
+
+        PyDecRef( cs );
     }
 
     //Dragon nuance... it gets wrapped again
@@ -125,22 +129,23 @@ bool PyPacket::Decode(PyRep **in_packet)
         PySubStream* ss = packet->AsSubStream();
 
         ss->DecodeData();
-        if(ss->decoded() == nullptr)
+        if(ss->decoded() == NULL)
         {
             codelog(NET__PACKET_ERROR, "failed: unable to decode initial packet substream.");
-            PySafeDecRef(packet);
+            PyDecRef(packet);
             return false;
         }
 
         packet = ss->decoded();
         PyIncRef( packet );
-        PySafeDecRef( ss );
+
+        PyDecRef( ss );
     }
 
     if(!packet->IsObject())
     {
         codelog(NET__PACKET_ERROR, "failed: packet body is not an 'Object': %s", packet->TypeString());
-        PySafeDecRef(packet);
+        PyDecRef(packet);
         return false;
     }
 
@@ -150,7 +155,7 @@ bool PyPacket::Decode(PyRep **in_packet)
     if(!packeto->arguments()->IsTuple())
     {
         codelog(NET__PACKET_ERROR, "failed: packet body does not contain a tuple");
-        PySafeDecRef(packet);
+        PyDecRef(packet);
         return false;
     }
 
@@ -159,7 +164,7 @@ bool PyPacket::Decode(PyRep **in_packet)
     if(tuple->items.size() != 7)
     {
         codelog(NET__PACKET_ERROR, "failed: packet body does not contain a tuple of length 7");
-        PySafeDecRef(packet);
+        PyDecRef(packet);
 
         return false;
     }
@@ -167,41 +172,42 @@ bool PyPacket::Decode(PyRep **in_packet)
     if(!tuple->items[0]->IsInt())
     {
         codelog(NET__PACKET_ERROR, "failed: First main tuple element is not an integer");
-        PySafeDecRef(packet);
+        PyDecRef(packet);
 
         return false;
     }
     PyInt *typer = (PyInt *) tuple->items[0];
     switch(typer->value()) {
-        case AUTHENTICATION_REQ:
-        case AUTHENTICATION_RSP:
-        case IDENTIFICATION_REQ:
-        case IDENTIFICATION_RSP:
-        case CALL_REQ:
-        case CALL_RSP:
-        case TRANSPORTCLOSED:
-        case RESOLVE_REQ:
-        case RESOLVE_RSP:
-        case NOTIFICATION:
-        case ERRORRESPONSE:
-        case SESSIONCHANGENOTIFICATION:
-        case SESSIONINITIALSTATENOTIFICATION:
-        case PING_REQ:
-        case PING_RSP: {
-            type = (MACHONETMSG_TYPE) typer->value();
-        } break;
-        default: {
-            codelog(NET__PACKET_ERROR, "failed: Unknown message type %" PRIu64, typer->value());
-            PySafeDecRef(packet);
-            return false;
-        } break;
+    case AUTHENTICATION_REQ:
+    case AUTHENTICATION_RSP:
+    case IDENTIFICATION_REQ:
+    case IDENTIFICATION_RSP:
+    case CALL_REQ:
+    case CALL_RSP:
+    case TRANSPORTCLOSED:
+    case RESOLVE_REQ:
+    case RESOLVE_RSP:
+    case NOTIFICATION:
+    case ERRORRESPONSE:
+    case SESSIONCHANGENOTIFICATION:
+    case SESSIONINITIALSTATENOTIFICATION:
+    case PING_REQ:
+    case PING_RSP:
+        type = (MACHONETMSG_TYPE) typer->value();
+        break;
+    default:
+        codelog(NET__PACKET_ERROR, "failed: Unknown message type %" PRIu64, typer->value());
+        PyDecRef(packet);
+
+        return false;
+        break;
     }
 
     //source address
     if(!source.Decode(tuple->items[1]))
     {
         //error printed in decoder
-        PySafeDecRef(packet);
+        PyDecRef(packet);
 
         return false;
     }
@@ -209,7 +215,7 @@ bool PyPacket::Decode(PyRep **in_packet)
     if(!dest.Decode(tuple->items[2]))
     {
         //error printed in decoder
-        PySafeDecRef(packet);
+        PyDecRef(packet);
 
         return false;
     }
@@ -222,38 +228,38 @@ bool PyPacket::Decode(PyRep **in_packet)
         userid = 0;
     } else {
         codelog(NET__PACKET_ERROR, "failed: User ID has invalid type");
-        PySafeDecRef(packet);
+        PyDecRef(packet);
         return false;
     }
 
     //payload
     if(!(tuple->items[4]->IsBuffer() || tuple->items[4]->IsTuple())) {
         codelog(NET__PACKET_ERROR, "failed: Fifth main tuple element is not a tuple");
-        PySafeDecRef(packet);
+        PyDecRef(packet);
         return false;
     }
     payload = (PyTuple *) tuple->items[4];
-    tuple->items[4] = nullptr; //we keep this one
+    tuple->items[4] = NULL; //we keep this one
 
 
     //options dict
     if(tuple->items[5]->IsNone())
     {
-        named_payload = nullptr;
+        named_payload = NULL;
     }
     else if(tuple->items[5]->IsDict())
     {
         named_payload = (PyDict *) tuple->items[5];
-        tuple->items[5] = nullptr; //we keep this too.
+        tuple->items[5] = NULL; //we keep this too.
     }
     else
     {
         codelog(NET__PACKET_ERROR, "failed: Sixth main tuple element is not a dict");
-        PySafeDecRef(packet);
+        PyDecRef(packet);
         return false;
     }
 
-    PySafeDecRef(packet);
+    PyDecRef(packet);
     return true;
 }
 
@@ -283,7 +289,7 @@ PyRep *PyPacket::Encode() {
     arg_tuple->items[4] = payload->Clone();
 
     //named arguments
-    if(named_payload == nullptr) {
+    if(named_payload == NULL) {
         arg_tuple->items[5] = new PyNone();
     } else {
         arg_tuple->items[5] = named_payload->Clone();
@@ -346,8 +352,8 @@ void PyAddress::operator=(const PyAddress &right) {
 }
 
 bool PyAddress::Decode(PyRep *&in_object) {
-    PyRep* base(in_object);
-    in_object = nullptr;
+    PyRep *base = in_object;
+    in_object = NULL;
 
     if(!base->IsObject()) {
         codelog(NET__PACKET_ERROR, "Invalid element type, expected object");
@@ -592,14 +598,14 @@ bool PyAddress::_DecodeObjectID(PyRep *rep) {
 PyCallStream::PyCallStream()
 : remoteObject(0),
   method(""),
-  arg_tuple(nullptr),
-  arg_dict(nullptr)
+  arg_tuple(NULL),
+  arg_dict(NULL)
 {
 }
 
 PyCallStream::~PyCallStream() {
-    //PySafeDecRef(arg_tuple);
-    //PySafeDecRef(arg_dict);
+    PySafeDecRef(arg_tuple);
+    PySafeDecRef(arg_dict);
 }
 
 PyCallStream *PyCallStream::Clone() const {
@@ -608,8 +614,8 @@ PyCallStream *PyCallStream::Clone() const {
     res->remoteObjectStr = remoteObjectStr;
     res->method = method;
     res->arg_tuple = new PyTuple( *arg_tuple );
-    if(arg_dict == nullptr) {
-        res->arg_dict = nullptr;
+    if(arg_dict == NULL) {
+        res->arg_dict = NULL;
     } else {
         res->arg_dict = new PyDict( *arg_dict );
     }
@@ -626,7 +632,7 @@ void PyCallStream::Dump(LogType type, PyVisitor& dumper)
     _log(type, "  Method: %s", method.c_str());
     _log(type, "  Arguments:");
     arg_tuple->visit( dumper );
-    if(arg_dict == nullptr) {
+    if(arg_dict == NULL) {
         _log(type, "  Named Arguments: None");
     } else {
         _log(type, "  Named Arguments:");
@@ -635,11 +641,13 @@ void PyCallStream::Dump(LogType type, PyVisitor& dumper)
 }
 
 bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
-    PyTuple* payload(in_payload);   //consume
-    in_payload = nullptr;
+    PyTuple *payload = in_payload;   //consume
+    in_payload = NULL;
 
     PySafeDecRef(arg_tuple);
     PySafeDecRef(arg_dict);
+    arg_tuple = NULL;
+    arg_dict = NULL;
 
     if(type != "macho.CallReq") {
         codelog(NET__PACKET_ERROR, "failed: packet payload has unknown string type '%s'", type.c_str());
@@ -675,7 +683,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     PySubStream *ss = (PySubStream *) payload2->items[1];
 
     ss->DecodeData();
-    if(ss->decoded() == nullptr) {
+    if(ss->decoded() == NULL) {
         codelog(NET__PACKET_ERROR, "Unable to decode call stream");
         PyDecRef(payload);
         return false;
@@ -734,14 +742,15 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
         return false;
     }
     arg_tuple = (PyTuple *) maint->items[2];
-    maint->items[2] = nullptr; //we keep this one
+    PySafeIncRef(arg_tuple);
+    maint->items[2] = NULL; //we keep this one
 
     //options dict
     if(maint->items[3]->IsNone()) {
-        arg_dict = nullptr;
+        arg_dict = NULL;
     } else if(maint->items[3]->IsDict()) {
         arg_dict = (PyDict *) maint->items[3];
-        maint->items[3] = nullptr; //we keep this too.
+        maint->items[3] = NULL; //we keep this too.
     } else {
         codelog(NET__PACKET_ERROR, "tuple[3] has non-dict type");
         maint->items[3]->Dump(NET__PACKET_ERROR, " --> ");
@@ -773,7 +782,7 @@ PyTuple *PyCallStream::Encode() {
     res_tuple->items[2] = new PyTuple( *arg_tuple );
 
     //options
-    if(arg_dict == nullptr) {
+    if(arg_dict == NULL) {
         res_tuple->items[3] = new PyNone();
     } else {
         res_tuple->items[3] = new PyDict( *arg_dict );
@@ -796,7 +805,7 @@ PyTuple *PyCallStream::Encode() {
 EVENotificationStream::EVENotificationStream()
 : notifyType("NO TYPE SET"),
   remoteObject(0),
-  args(nullptr)
+  args(NULL)
 {
 }
 
@@ -823,10 +832,11 @@ void EVENotificationStream::Dump(LogType type, PyVisitor& dumper)
 }
 
 bool EVENotificationStream::Decode(const std::string &pkt_type, const std::string &notify_type, PyTuple *&in_payload) {
-    PyTuple* payload(in_payload);   //consume
-    in_payload = nullptr;
+    PyTuple *payload = in_payload;   //consume
+    in_payload = NULL;
 
     PySafeDecRef(args);
+    args = NULL;
 
     if(pkt_type != "macho.Notification") {
         codelog(NET__PACKET_ERROR, "notification payload has unknown string type %s", pkt_type.c_str());
@@ -862,7 +872,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     PySubStream *ss = (PySubStream *) payload2->items[1];
 
     ss->DecodeData();
-    if(ss->decoded() == nullptr) {
+    if(ss->decoded() == NULL) {
         codelog(NET__PACKET_ERROR, "Unable to decode call stream");
         PyDecRef(payload);
         return false;
@@ -938,7 +948,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     }
 
     args = (PyTuple *) subt->items[1];
-    subt->items[1] = nullptr;
+    subt->items[1] = NULL;
 
     notifyType = notify_type;
 

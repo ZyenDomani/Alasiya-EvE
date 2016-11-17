@@ -51,7 +51,7 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
 
     if(!m_manager->cache_service->IsCacheLoaded(str))
     {
-        PyDict *dict = new PyDict();
+        PyDict *dict = new PyDict;
         /* ServiceCallGPCS.py:197
         where = self.machoNet.serviceInfo[service]
         if where:

@@ -491,7 +491,7 @@ PyDict *WreckSE::MakeSlimItem() {
 // NOTE  commented items i havent figured out yet...  -allan 9Dec15
     PyTuple* nameID = new PyTuple(2);
         nameID->SetItem(0,  new PyString("UI/Inflight/WreckNameShipName"));
-    PyDict* shipName = new PyDict();
+    PyDict* shipName = new PyDict;
         shipName->SetItem("shipName", new PyInt(0));
         nameID->SetItem(1, shipName);
     PyDict *slim = new PyDict();
@@ -505,7 +505,7 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("launcherID",       new PyLong(m_launchedByID));
         slim->SetItemString("securityStatus",   new PyInt(0));  //FIXME TODO
         slim->SetItemString("ownerID",          new PyInt(m_self->ownerID()));
-        PyDict* dict = new PyDict();
+        PyDict* dict = new PyDict;
             dict->SetItemString("WreckTypeID",  new PyInt(m_self->typeID()));
         PyTuple* tuple = new PyTuple(2);
             tuple->SetItem(0, new PyString("UI/Inflight/WreckNameTypeID"));

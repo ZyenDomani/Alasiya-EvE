@@ -85,7 +85,7 @@ void Scan::RequestScans(PyDict* dict) {
     OnSystemScanStarted osss;
         osss.timestamp = Win32TimeNow();
         osss.duration = scanTimer;
-        osss.scanProbesDict = new PyDict();
+        osss.scanProbesDict = new PyDict;
     PyTuple* ev = osss.Encode();
     m_client->SendNotification("OnSystemScanStarted", "charid", &ev);
     m_client->SetScanTimer(scanTimer);
@@ -112,7 +112,7 @@ void Scan::ScanResult() {
     /** @todo basic code works.  will need updates and calc's for various things once system matures.  see notes */
     DBQueryResult* res = new DBQueryResult();
     m_db->GetSystemAnomalies(m_client->GetSystemID(), *res);
-    PyList* resultList = new PyList();
+    PyList* resultList = new PyList;
 
     DBResultRow row;
     //(`typeID`, `scanGroupID`, `groupID`, `strengthAttributeID`, `dungeonName`, `sigID`, `x`, `y`, `z`)
@@ -144,7 +144,7 @@ void Scan::ScanResult() {
     }
 
     // dict and list are both empty for now.
-    PyDict* probeDict = new PyDict();
+    PyDict* probeDict = new PyDict;
     PyList* mtList = new PyList(0);
     OnSystemScanStopped osss;
         osss.scanProbesDict = probeDict;
@@ -231,7 +231,7 @@ AttrScanSpeedMultiplier = 242,
 
 /*
     uint32 shipID = itemID();
-    PyDict* chargeDict = new PyDict();
+    PyDict* chargeDict = new PyDict;
     for (auto cur : charges)
         chargeDict->SetItem(new PyInt((uint32)cur.first), cur.second->GetChargeStatusRow(shipID));
 
@@ -240,8 +240,8 @@ AttrScanSpeedMultiplier = 242,
         tuple2->SetItem(0, token);
     PyTuple* tuple1 = new PyTuple(2);
         tuple1->SetItem(0, tuple2);
-        tuple1->SetItem(1, new PyDict());
+        tuple1->SetItem(1, new PyDict);
 
-    PyDict *result = new PyDict();
+    PyDict *result = new PyDict;
         result->SetItem(new PyInt(itemID()), new PyObjectEx_Type2(tuple1, chargeDict));
 */
