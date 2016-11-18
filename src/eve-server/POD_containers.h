@@ -278,6 +278,7 @@ struct PI_Pin {
     bool isProcess = false;
     bool isExtractor = false;
     bool isLink = false;
+    bool isBase = false;
     bool isECU = false;
 
     // Command/Spaceport

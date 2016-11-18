@@ -70,7 +70,6 @@ PyList* LiveUpdateDB::GenerateUpdates()
         PyPackedRow* packedRow = new PyPackedRow(header);
         for (int i = 0; i < 7; i++)
             packedRow->SetField(i, DBColumnToPyRep(row, i));
-        PyIncRef(header);
 
         LiveUpdateInner inner;
         // binary data so we can't expect strlen to get it right

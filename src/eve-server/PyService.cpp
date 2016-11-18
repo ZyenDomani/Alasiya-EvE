@@ -42,13 +42,13 @@ PyService::~PyService()
 //overload this to hack in our special bind routines at the service level
 PyResult PyService::Call(const std::string &method, PyCallArgs &args) {
     if (method == "MachoBindObject") {
-        _log(SERVICE__CALLS, "Service %s: handling MachoBindObject request directly", GetName());
+        _log(SERVICE__CALLS, "Service %s::MachoBindObject()", GetName());
         return Handle_MachoBindObject(args);
     } else if (method == "MachoResolveObject"){
-        _log(SERVICE__CALLS, "Service %s: handling MachoResolveObject request directly", GetName());
+        _log(SERVICE__CALLS, "Service %s::MachoResolveObject()", GetName());
         return Handle_MachoResolveObject(args);
     } else {
-        _log(SERVICE__CALLS, "Service %s: calling %s", GetName(), method.c_str());
+        _log(SERVICE__CALLS, "Service %s::%s()", GetName(), method.c_str());
         args.Dump(SERVICE__CALL_TRACE);
         return PyCallable::Call(method, args);
     }

@@ -1273,9 +1273,9 @@ void Client::_SendQueuedUpdates() {
         SendNotification("OnMultiEvent", "charid", &t);
     } //else nothing to be sent ...
 
-    // clear the queues now, after the packets have been sent  -no  they are consumed
-    //m_destinyUpdateQueue->clear();
-    //m_destinyEventQueue->clear();
+    // clear the queues now, after the packets have been sent
+    m_destinyUpdateQueue->clear();
+    m_destinyEventQueue->clear();
     m_packaged = false;
 }
 

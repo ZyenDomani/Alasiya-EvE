@@ -41,6 +41,9 @@ AllianceRegistry::AllianceRegistry(PyServiceMgr *mgr)
 
     PyCallable_REG_CALL(AllianceRegistry, GetRankedAlliances);
     PyCallable_REG_CALL(AllianceRegistry, GetAllianceApplications);
+    /*
+            alliance = sm.RemoteSvc('allianceRegistry').GetAlliance(allianceID)
+            */
 }
 
 AllianceRegistry::~AllianceRegistry()

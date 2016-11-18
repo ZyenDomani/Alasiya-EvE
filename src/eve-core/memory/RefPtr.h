@@ -37,7 +37,7 @@
  * That way the assert will trigger a crash when the object is still being handled but in
  * reality its already deleted.
  */
-#define ENABLE_REF_TRACE
+//#define ENABLE_REF_TRACE
 #ifdef ENABLE_REF_TRACE
 #  define REF_TRACE_MACRO() do { assert( mDeleted == false ); } while (0)
 #else
