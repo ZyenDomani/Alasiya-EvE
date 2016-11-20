@@ -167,8 +167,22 @@ PyObject *ServiceDB::GetSolDroneState(uint32 systemID) const {
 uint32 ServiceDB::GetStationOwner(uint32 stationID)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT corporationID FROM staStations WHERE stationID = %u", stationID))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT corporationID FROM staStations WHERE stationID = %u", stationID)) {
+        codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
+        return false;
+    }
+
+    DBResultRow row;
+    if (res.GetRow(row))
+        return row.GetInt(0);
+    else
+        return 1;
+}
+
+uint32 ServiceDB::GetStationRegion(uint32 stationID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT regionID FROM staStations WHERE stationID = %u", stationID)) {
         codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
         return false;
     }
