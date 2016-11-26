@@ -481,7 +481,7 @@ const char* DBQueryResult::ColumnName( uint32 index ) const
 {
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "DBCore ColumnName: Column index %d exceeds number of columns in row (%s)\n", index, ColumnCount() );
-        traceStack();
+        EvE::traceStack();
         return "(ERROR)";      //nothing better to do...
     }
 
@@ -492,7 +492,7 @@ DBTYPE DBQueryResult::ColumnType( uint32 index ) const
 {
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "DBCore ColumnType: Column index %d exceeds number of columns in row (%s)\n", index, ColumnCount() );
-        traceStack();
+        EvE::traceStack();
         return DBTYPE_STR;     //nothing better to do...
     }
 
@@ -556,7 +556,7 @@ uint32 DBResultRow::ColumnLength( uint32 index ) const
 {
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore GetColumnLength: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
-        traceStack();
+        EvE::traceStack();
         return 0;       //nothing better to do...
     }
 
@@ -567,7 +567,7 @@ int32 DBResultRow::GetInt( uint32 index ) const
 {
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore GetInt: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
-        traceStack();
+        EvE::traceStack();
         return 0;       //nothing better to do...
     }
 
@@ -579,7 +579,7 @@ bool DBResultRow::GetBool( uint32 index ) const
 {
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore GetInt: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
-        traceStack();
+        EvE::traceStack();
         return 0;       //nothing better to do...
     }
 
@@ -590,7 +590,7 @@ uint32 DBResultRow::GetUInt( uint32 index ) const
 {
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore GetUInt: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
-        traceStack();
+        EvE::traceStack();
         return 0;       //nothing better to do...
     }
 
@@ -602,7 +602,7 @@ int64 DBResultRow::GetInt64( uint32 index ) const
 {
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore GetInt64: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
-        traceStack();
+        EvE::traceStack();
         return 0;       //nothing better to do...
     }
 
@@ -618,7 +618,7 @@ uint64 DBResultRow::GetUInt64( uint32 index ) const
 {
     if (index >= ColumnCount()) {
 		_log(DATABASE__ERROR,  "   DBCore GetUInt64: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
-        traceStack();
+        EvE::traceStack();
         return 0;       //nothing better to do...
     }
 
@@ -630,7 +630,7 @@ float DBResultRow::GetFloat( uint32 index ) const
 {
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore GetFloat: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
-        traceStack();
+        EvE::traceStack();
         return 0;       //nothing better to do...
     }
 
@@ -641,7 +641,7 @@ double DBResultRow::GetDouble( uint32 index ) const
 {
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore GetDouble: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
-        traceStack();
+        EvE::traceStack();
         return 0;       //nothing better to do...
     }
 

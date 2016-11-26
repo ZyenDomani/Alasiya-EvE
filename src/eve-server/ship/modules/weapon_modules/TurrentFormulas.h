@@ -22,8 +22,6 @@ public:
     float GetNPCToHit(NPC* pNPC, SystemEntity* pTarget);
     float GetDroneToHit(Drone* pDrone, SystemEntity* pTarget);
 
-protected:
-    double _max(double x);
 };
 
 

@@ -145,7 +145,9 @@ uint32 CreatePIDFile(const std::string& filename)
     return (uint32)pid;
 }
 
-void traceStack(void)
+
+// EvE namespace
+void EvE::traceStack(void)
 {
     int j, nptrs;
     #define SIZE 100
@@ -168,4 +170,14 @@ void traceStack(void)
         printf("%s\n", strings[j]);
 
     free(strings);
+}
+
+uint64 EvE::max(int64 x)
+{
+    return ((x > 0) ? x : 0);
+}
+
+double EvE::max(double x)
+{
+    return ((x > 0) ? x : 0);
 }
