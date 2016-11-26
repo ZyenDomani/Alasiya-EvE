@@ -48,6 +48,12 @@ bool PyDumpVisitor::VisitLong( const PyLong* rep )
     return true;
 }
 
+bool PyDumpVisitor::VisitULong( const PyULong* rep )
+{
+    _print( "%Long field: %" PRIu64, _pfx(), rep->value() );
+    return true;
+}
+
 bool PyDumpVisitor::VisitReal( const PyFloat* rep )
 {
     _print( "%sReal field: %f", _pfx(), rep->value() );
@@ -113,10 +119,8 @@ bool PyDumpVisitor::VisitTuple( const PyTuple* rep )
     {
         _print( "%sTuple: %lu elements", _pfx(), rep->size() );
 
-        PyTuple::const_iterator cur, _end;
-        cur = rep->begin();
-        _end = rep->end();
-        for( uint32 i = 0; cur != _end; cur++, i++ )
+        PyTuple::const_iterator cur = rep->begin();
+        for( uint32 i = 0; cur != rep->end(); cur++, i++ )
         {
             if( i > 200 && !fullNested() )
             {
@@ -143,10 +147,8 @@ bool PyDumpVisitor::VisitList( const PyList* rep )
     {
         _print( "%sList: %lu elements", _pfx(), rep->size() );
 
-        PyList::const_iterator cur, _end;
-        cur = rep->begin();
-        _end = rep->end();
-        for( uint32 i = 0; cur != _end; cur++, i++ )
+        PyList::const_iterator cur = rep->begin();
+        for( uint32 i = 0; cur != rep->end(); cur++, i++ )
         {
             if( i > 200 && !fullNested() )
             {
@@ -173,10 +175,8 @@ bool PyDumpVisitor::VisitDict( const PyDict* rep )
     {
         _print( "%sDictionary: %lu entries", _pfx(), rep->size() );
 
-        PyDict::const_iterator cur, _end;
-        cur = rep->begin();
-        _end = rep->end();
-        for( uint32 i = 0; cur != _end; cur++, i++ )
+        PyDict::const_iterator cur = rep->begin();
+        for( uint32 i = 0; cur != rep->end(); cur++, i++ )
         {
             if( i > 200 && !fullNested() )
             {

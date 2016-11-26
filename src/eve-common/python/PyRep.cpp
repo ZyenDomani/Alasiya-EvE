@@ -57,7 +57,9 @@ const char* const PyRep::s_mTypeString[] =
     "Object",           //15
     "ObjectEx",         //16
     "PackedRow",        //17
-    "UNKNOWN TYPE",     //18
+    "Error",            //18
+    "ULong",            //19
+    "UNKNOWN TYPE",     //20
 };
 
 PyRep::PyRep( PyType t ) : RefObject( 1 ), mType( t ) {}
