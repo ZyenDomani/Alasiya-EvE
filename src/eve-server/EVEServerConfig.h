@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    7.1
+    Version:    7.2
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -196,6 +196,7 @@ public:
     // From <cosmic/>
     struct
     {
+        bool EnablePI;
         bool AnomalyEnabled;
         bool DungeonEnabled;
         bool BeltEnabled;

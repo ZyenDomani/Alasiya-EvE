@@ -27,10 +27,11 @@
 #ifndef EVEMU_PLANET_PLANETDB_H_
 #define EVEMU_PLANET_PLANETDB_H_
 
-#include "ServiceDB.h"
+#include "../eve-server.h"
+#include "POD_containers.h"
 
+class CommandCenterPin;
 class PlanetDB
-: public ServiceDB
 {
 public:
     PyRep* GetPlanetsForChar(uint32 charID);
@@ -38,15 +39,29 @@ public:
 
     GPoint GetLaunchPos(uint32 launchID);
 
-    void LoadColony();
-    void SaveColony();
-    void DeleteColony(uint32 pinID);
+    void SavePins(PI_CCPin* ccPin);
+    void SaveHeads(std::map< uint32, PI_Heads >& heads);
+    void SaveLinks(PI_CCPin* ccPin);
+    void SaveRoutes(PI_CCPin* ccPin);
+    void RemovePin(uint32 pinID);
+    void RemoveHead(uint32 pinID);
+    void RemoveLink(uint32 linkID);
+    void RemoveRoute(uint8 routeID);
+    void DeleteColony(uint32 ccPinID, uint32 planetID, uint32 charID);
+    void LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins);
+    void LoadLinks(uint32 ccPinID, std::map<uint32, PI_Link>& links);
+    void LoadRoutes(uint32 ccPinID, std::map<uint32, PI_Route>& routes);
     void SaveCCLevel(uint32 pinID, uint8 level);
+    void SavePinLevel(uint32 pinID, uint8 level);
+    void SaveLinkLevel(uint32 linkID, uint8 level);
     void GetPlanetData(DBQueryResult& row);
+    void SaveCommandCenter(uint32 pinID, uint32 charID, uint32 planetID, uint32 typeID, float latitude, float longitude);
+    void GetExtractorsForPlanet(uint32 planetID, DBQueryResult& res);
 
-    bool GetResourceData(uint32 planetID, DBResultRow &row);
+    void SaveLaunch(uint32 charID, uint32 systemID, uint32 planetID, GPoint& pos);
+    void UpdatePlanetsForChar(uint32 solarSystemID, uint32 planetID, uint32 charID, uint16 typeID, uint8 pins=1);
 
-    uint32 MakeCommandCenter(uint32 charID, uint32 planetID, uint32 typeID, float latitude, float longitude);
+    bool LoadColony(uint32 charID, uint32 planetID, PI_CCPin* ccPin);
 
 };
 

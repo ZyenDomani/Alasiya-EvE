@@ -44,6 +44,7 @@ private:
 ( PlanetDataMgr::get() )
 
 
+/** @todo update this to create a planet item instead of the default celestial item */
 class Planet
 {
 public:
@@ -68,6 +69,9 @@ public:
     PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     virtual ~PlanetSE();
 
+    /* Process Calls - Overridden as needed in derived classes */
+    virtual void                Process();
+
     /* class type pointer querys. */
     virtual PlanetSE* GetPlanetSE()                     { return this; }
     /* class type tests. */
@@ -82,8 +86,11 @@ public:
     PyRep* GetPlanetResourceInfo();
     PyRep* GetExtractorsForPlanet(int32 planetID);
 
+    void AbandonColony(Colony* pColony);
+    void CreateCustomsOffice();
 
 protected:
+    SystemEntity* pCO;
     PlanetResourceData m_data;
 
     bool m_hasColony = false;

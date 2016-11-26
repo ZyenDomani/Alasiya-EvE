@@ -435,6 +435,10 @@ int main( int argc, char* argv[] )
         sProfile.Init();
     } else
         sLog.Magenta(" Server Profiling","Disabled.");
+    if (sConfig.cosmic.EnablePI)
+        sLog.Success("        PI System","Enabled.");
+    else
+        sLog.Magenta("        PI System","Disabled.");
     if (sConfig.npc.EnableDrones)
         sLog.Success("    Player Drones","Enabled.");
     else

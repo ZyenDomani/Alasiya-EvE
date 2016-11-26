@@ -252,18 +252,40 @@ struct PlanetResourceData {
     uint8 numBands_3 = 0;
     uint8 numBands_4 = 0;
     uint8 numBands_5 = 0;
-    const uint8 data_1 = (int)charList[MakeRandomInt(0, 52)];
-    const uint8 data_2 = (int)charList[MakeRandomInt(0, 52)];
-    const uint8 data_3 = (int)charList[MakeRandomInt(0, 52)];
-    const uint8 data_4 = (int)charList[MakeRandomInt(0, 52)];
-    const uint8 data_5 = (int)charList[MakeRandomInt(0, 52)];
 };
 
-struct PI_Pin {
+struct PI_Link {
+    int8 state = 0;
+    uint8 level = 0;
+    uint16 typeID = 0;
+    uint32 endpoint1 = 0;
+    uint32 endpoint2 = 0;
+};
+
+struct PI_Route {
+    int8 state = 0;
+    int8 priority = 0;
+    uint8 id = 0;
+    uint16 commodityTypeID = 0;
+    uint16 commodityQuantity = 0;
+    std::list<uint32> path;
+};
+
+struct PI_Heads {
+    uint16 typeID = 0;
+    uint32 ecuPinID = 0;
+    double latitude = 0.0f;
+    double longitude = 0.0f;
+    double qtyPerCycle = 0.0f;
+};
+
+/* optimize this after everything is working!!  */
+class PI_Pin {
+public:
     int8 state = 0;
     uint8 level = 0;
 
-    uint32 typeID = 0;
+    uint16 typeID = 0;
     uint32 ownerID = 0;
 
     double latitude = 0.0f;
@@ -285,45 +307,35 @@ struct PI_Pin {
     uint64 lastLaunchTime = 0;
 
     // Process
-    uint32 schematicID = 0;
-    bool hasRecievedInputs = false;
-    bool recievedInputsLastCycle = false;
+    uint16 schematicID = 0;   // used in ecu as extractor head typeID
+    bool hasReceivedInputs = false;
+    bool receivedInputsLastCycle = false;
 
-    //Extractor
-    uint8 heads = 0;
+    //ExtractorControlUnit
+    std::map<uint32, PI_Heads> heads;
     float headRadius = 0.0f;
 
     // -program data
-    uint32 cycleTime = 0;
-    uint32 programType = 0;
-    uint32 qtyPerCycle = 0;
+    uint16 resTypeID = 0;      // used in extractors as extracted resource typeID
+    uint16 qtyPerCycle = 0;
+    uint64 cycleTime = 0;
     uint64 expiryTime = 0;
     uint64 installTime = 0;
-};
 
-struct PI_Link {
-    int8 state = 0;
-    uint8 level = 0;
-    uint32 typeID = 0;
-    uint32 endpoint1 = 0;
-    uint32 endpoint2 = 0;
-};
-
-struct PI_Route {
-    int8 state = 0;
-    uint32 commodityTypeID = 0;
-    uint32 commodityQuantity = 0;
-    std::list<uint32> path;
+    std::map<uint16, uint32> contents;
 };
 
 class PI_CCPin {
 public:
-    uint32 level = 0;
+    uint8 level = 0;
     uint32 ccPinID = 0;
     uint64 currentSimTime = 0;
 
+    // pinID, pinData
     std::map<uint32, PI_Pin> pins;
+    // linkID, linkData
     std::map<uint32, PI_Link> links;
+    // destID, routeData
     std::map<uint32, PI_Route> routes;
 };
 

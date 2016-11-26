@@ -12,7 +12,7 @@
 
 #include "planet/PlanetDB.h"
 
-
+class Client;
 class Colony;
 class PlanetSE;
 class UUNCommand;
@@ -24,7 +24,7 @@ public:
     virtual ~PlanetMgr()    { /* do nothing here */ }
 
     PyRep* UpdateNetwork(UUNCommandList& uuncl);
-
+    PyRep* GetProgramResultInfo(uint32 pinID, uint32 typeID, PyList* heads, float headRadius);
 
 protected:
     void CreatePin(UUNCommand& nc);
@@ -40,6 +40,7 @@ protected:
     void KillExtractorHead(UUNCommand& nc);
     void MoveExtractorHead(UUNCommand& nc);
     void InstallProgram(UUNCommand& nc);
+    void PrioritizeRoute(UUNCommand& nc);
 
 private:
     PyServiceMgr* m_svcMgr;

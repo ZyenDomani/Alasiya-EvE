@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    7.1
+    Version:    7.2
 */
 
 
@@ -128,6 +128,7 @@ EVEServerConfig::EVEServerConfig()
     threads.WorldThreads = 2;//N
 
     // cosmic
+    cosmic.EnablePI = false;
     cosmic.AnomalyEnabled = false;
     cosmic.DungeonEnabled = false;
     cosmic.BeltEnabled = false;
@@ -402,6 +403,7 @@ bool EVEServerConfig::ProcessThreads( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
 {
+    AddValueParser( "EnablePI",             cosmic.EnablePI );
     AddValueParser( "AnomalyEnabled",       cosmic.AnomalyEnabled );
     AddValueParser( "DungeonEnabled",       cosmic.DungeonEnabled );
     AddValueParser( "BeltEnabled",          cosmic.BeltEnabled );
@@ -412,6 +414,7 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
 
     const bool result = ParseElementChildren( ele );
 
+    RemoveParser( "EnablePI" );
     RemoveParser( "AnomalyEnabled" );
     RemoveParser( "DungeonEnabled" );
     RemoveParser( "BeltEnabled" );

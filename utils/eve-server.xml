@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 7.1 -->
+     Version: 7.2 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -103,6 +103,7 @@
         <StaticSpawns>false</StaticSpawns><!-- bool -->
         <RoamingTimer>5</RoamingTimer><!-- time between spawn checks, in minutes -->
         <StaticTimer>5</StaticTimer><!-- time between spawn checks, in minutes -->
+        <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
         <SpawnTest>false</SpawnTest><!-- bool - enables 5s respawn timer -->
         <EnableDrones>false</EnableDrones><!-- bool -->
     </npc>
@@ -137,6 +138,7 @@
     </threads>
 
     <cosmic>
+        <EnablePI>false</EnablePI><!-- bool -->
         <AnomalyEnabled>false</AnomalyEnabled><!-- bool -->
         <DungeonEnabled>false</DungeonEnabled><!-- bool -->
         <BeltEnabled>false</BeltEnabled><!-- bool -->

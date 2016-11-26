@@ -31,105 +31,76 @@
 
 #include "planet/PlanetDB.h"
 
+class PlanetSE;
+class SystemEntity;
 class Colony {
 public:
-    Colony(PyServiceMgr* mgr, Client* pclient, uint32 pID);
+    Colony(PyServiceMgr* mgr, Client* pclient, SystemEntity* pSE);
     ~Colony();
 
     void Init();
     void Load();
     void Save();
-
+    void Update();
     void AbandonColony();
-    void UpgradeCommandCenter(uint32 pinID, uint32 level);
 
-    bool CreatePin(uint32 pinID, uint32 typeID, float latitude, float longitude);
-    bool RemovePin(uint32 pinID);
-    bool CreateLink(uint32 src, uint32 dest, uint32 level, bool ccConnected);
-    bool RemoveLink(uint32 src, uint32 dest, bool ccConnected);
-    bool UpgradeLink(uint32 src, uint32 dest, uint32 level, bool ccConnected);
-    bool CreateCommandPin(uint32 itemID, uint32 typeID, float latitude, float longitude);
+    void Process();
+    void ProcessECUs(bool& save);
+    void ProcessSilos(bool& save);
+    void ProcessPlants(bool& save);
+
+    void RemovePin(uint32 pinID);
+    void RemoveLink(uint32 linkID);
+    void RemoveRoute(uint32 routeID);
+
+    void UpgradeLink(uint32 linkID, uint8 level);
+    void UpgradeCommandCenter(uint32 pinID, uint8 level);
+
+    void CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latitude, double longitude);
+    void CreateLink(uint32 src, uint32 dest, uint32 level);
+    void CreateRoute(uint8 routeID, uint32 typeID, uint32 qty, PyList* path);
+    void CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, double longitude);
+    void CreateExtractorHead();
+
+    void AddExtractorHead(uint32 ecuID, uint32 pinID, double latitude, double longitude);
+    void MoveExtractorHead(uint32 ecuID, uint32 pinID, double latitude, double longitude);
+
+    void InstallProgram(uint32 ecuID, uint16 typeID, float headRadius);
+    void SetSchematic(uint32 pinID, uint8 schematicID);
+    void SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, float headRadius, float cycleTime);
+
+    void LaunchCommodities(uint32 pinID, std::map<uint16, uint16>& items);
+
+    uint32 GetHeadType(uint16 ecuTypeID, uint16 resTypeID);
 
     PyRep* GetColony();
+    PyTuple* GetPins();
+    PyTuple* GetLinks();
+    PyTuple* GetRoutes();
 
+    bool HasColony()                                    { return (ccPin->ccPinID ? true : false); }
+
+    int8 GetLevel()                                     { return ccPin->level; }
     uint64 GetSimTime()                                 { return ccPin->currentSimTime; }
 
-protected:
-    struct Pin {
-        int8 state = 0;
-
-        uint32 id = 0;
-        uint32 typeID = 0;
-        uint32 ownerID = 0;
-
-        float latitude = 0.0f;
-        float longitude = 0.0f;
-
-        uint64 lastRunTime = 0;
-
-        bool isCommandCenter = false;
-        bool isLaunchable = false;
-        bool isProcess = false;
-        bool isExtractor = false;
-
-        // Command/Spaceport
-        uint64 lastLaunchTime = 0;
-
-        // Process
-        uint32 schematicID = 0;
-        bool hasRecievedInputs = false;
-        bool recievedInputsLastCycle = false;
-
-        //Extractor
-        uint8 heads = 0;
-        float headRadius = 0.0f;
-
-        // -program data
-        uint32 cycleTime = 0;
-        uint32 programType = 0;
-        uint32 qtyPerCycle = 0;
-        uint64 expiryTime = 0;
-        uint64 installTime = 0;
-    };
-
-    struct Link {
-        bool commandCenterConnected = false;
-        uint32 level = 0;
-        uint32 typeID = 0;
-        uint32 endpoint1 = 0;
-        uint32 endpoint2 = 0;
-    };
-
-    struct Route {
-        bool destIsCommandCenter = false;
-
-        uint32 destID = 0;
-        uint32 comodityTypeID = 0;
-        uint32 commodityQuantity = 0;
-    };
-
-    class CommandCenterPin {
-    public:
-        uint32 level = 0;
-        uint64 currentSimTime = 0;
-
-        std::list<Pin> pins;
-        std::list<Link> links;
-        std::list<Route> routes;
-    };
-
-
 private:
-    PyServiceMgr* svcMgr;
-    CommandCenterPin* ccPin;
+    PyServiceMgr* m_svcMgr;
+    PlanetSE* m_pSE;
+    PI_CCPin* ccPin;
     Client* m_client;
-    PyDict* ccContents;
-    PyDict* storageContents;
 
     PlanetDB m_db;
 
-    uint32 m_colonyID;
-    uint32 m_planetID;
+    bool m_active = false;
+    bool m_loaded = false;
+    bool m_newHead = false;
+
+    uint16 m_pg = 0;
+    uint16 m_cpu = 0;
+    uint32 m_colonyID = 0;
+
+    std::map<uint8, uint32> tempPinIDs;
+    std::map<uint8, PI_Heads> tempHeadIDs;
 };
 
 

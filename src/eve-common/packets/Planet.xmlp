@@ -1,4 +1,6 @@
- <!--  Python Code by Comet0  -->
+ <!--  Python Code by Comet0
+    Updates and Additions by Allan
+    -->
 <elements>
 
     <elementDef name="UUNCommand">
@@ -60,11 +62,36 @@
         </tupleInline>
     </elementDef>
 
+    <elementDef name="UUNCLinkExist">
+        <tupleInline>
+            <int name="src" />
+            <int name="dest" />
+            <int name="level" />
+        </tupleInline>
+    </elementDef>
+
+    <elementDef name="Call_AddMoveExtractorHead">
+        <tupleInline>
+            <int name="ecuID" />
+            <int name="pinID" />
+            <real name="latitude" />
+            <real name="longitude" />
+        </tupleInline>
+    </elementDef>
+
+    <elementDef name="Call_InstallProgram">
+        <tupleInline>
+            <int name="ecuID" />
+            <int name="typeID" none_marker="0"/>   <!-- extracted resource typeID - 0 if deleting/stopping program -->
+            <real name="headRadius" />
+        </tupleInline>
+    </elementDef>
+
     <elementDef name="Call_CreateRoute">
         <tupleInline>
             <tupleInline>
                 <int name="pinType" />
-                <int name="pinID" />
+                <int name="routeID" />
             </tupleInline>
             <list name="path" />
             <int name="typeID" />
@@ -74,10 +101,17 @@
 
     <elementDef name="Call_ProgramResults">
         <tupleInline>
-            <int name="pinID" />
+            <int name="ecuID" />
             <int name="typeID" />
             <list name="heads" />
             <real name="headRadius" />
+        </tupleInline>
+    </elementDef>
+
+    <elementDef name="Call_LaunchCommodities">
+        <tupleInline>
+            <int name="pinID" />
+            <raw name="dict" />
         </tupleInline>
     </elementDef>
 

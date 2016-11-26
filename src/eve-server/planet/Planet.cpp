@@ -89,58 +89,61 @@ bool PlanetSE::LoadExtras(SystemDB* db) {
     m_data.type_3 = typeIDs.at(2);
     m_data.type_4 = typeIDs.at(3);
     m_data.type_5 = typeIDs.at(4);
-/*
-    // no clue wtf these are or how they are populated
-    m_data.data_1 = "~";
-    m_data.data_2 = "~";
-    m_data.data_3 = "~";
-    m_data.data_4 = "~";
-    m_data.data_5 = "~";
-*/
+
     /** @todo  make these more realistic, based on system trusec and planet size
      *   quality: (min=1.0, max=154.275)
      */
-    m_data.dist_1 = MakeRandomInt(1, 150);
-    m_data.dist_2 = MakeRandomInt(1, 150);
-    m_data.dist_3 = MakeRandomInt(1, 150);
-    m_data.dist_4 = MakeRandomInt(1, 150);
-    m_data.dist_5 = MakeRandomInt(1, 150);
-    // unknown interger here.  seen "0" and "15"
-    m_data.numBands_1 = MakeRandomInt(1, 15);
-    m_data.numBands_2 = MakeRandomInt(1, 15);
-    m_data.numBands_3 = MakeRandomInt(1, 15);
-    m_data.numBands_4 = MakeRandomInt(1, 15);
-    m_data.numBands_5 = MakeRandomInt(1, 15);
+    double sysSec = (1.1 - m_system->GetSystemSecurityRating());
+    m_data.dist_1 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
+    m_data.dist_2 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
+    m_data.dist_3 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
+    m_data.dist_4 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
+    m_data.dist_5 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
+    // this sets the vein "hot spots" on planet, should be 2 - 30?
+    m_data.numBands_1 = MakeRandomInt(2, 30);
+    m_data.numBands_2 = MakeRandomInt(2, 30);
+    m_data.numBands_3 = MakeRandomInt(2, 30);
+    m_data.numBands_4 = MakeRandomInt(2, 30);
+    m_data.numBands_5 = MakeRandomInt(2, 30);
 
     return true;
 }
 
+void PlanetSE::Process()
+{
+    // no destiny and nothing to target.  no need for this call
+    //SystemEntity::Process();
+    // need colony* to call update
+}
+
+void PlanetSE::CreateCustomsOffice()
+{
+
+}
+
+
 PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
 {
     // will update this to use PI skills (sent in dict) as system grows
-    int numBands = 0;
+    uint8 numBands = 2, bufferData = /*62*/63/*64*/;  // this seems to give the best results
+         if (dict.resourceTypeID == m_data.type_1) { numBands = m_data.numBands_1; }
+    else if (dict.resourceTypeID == m_data.type_2) { numBands = m_data.numBands_2; }
+    else if (dict.resourceTypeID == m_data.type_3) { numBands = m_data.numBands_3; }
+    else if (dict.resourceTypeID == m_data.type_4) { numBands = m_data.numBands_4; }
+    else if (dict.resourceTypeID == m_data.type_5) { numBands = m_data.numBands_5; }
+    else
+        _log(PLANET__ERROR, "PlanetSE::GetResourceData() - Resource TypeID %u not found in list.", dict.resourceTypeID);
 
-    if (dict.resourceTypeID == m_data.type_1)
-        numBands = m_data.numBands_1;
-    else if (dict.resourceTypeID == m_data.type_2)
-        numBands = m_data.numBands_2;
-    else if (dict.resourceTypeID == m_data.type_3)
-        numBands = m_data.numBands_3;
-    else if (dict.resourceTypeID == m_data.type_4)
-        numBands = m_data.numBands_4;
-    else if (dict.resourceTypeID == m_data.type_5)
-        numBands = m_data.numBands_5;
-
-    const char bufferData = *m_data.data;
+    size_t buffer = (uint16)pow(numBands, 2)*4;
+    _log(PLANET__DEBUG, "PlanetSE::GetResourceData() - proximity: %u, newBand: %u, bands: %u, data: %u, bufferSize: %u", dict.proximity, dict.newBand, numBands, bufferData, (uint32)buffer);
     PyDict* args = new PyDict();
-    args->SetItemString("data", new PyBuffer(numBands*numBands*4, bufferData));
+        args->SetItemString("data", new PyBuffer(buffer, bufferData));
         args->SetItemString("numBands", new PyInt(numBands));
         args->SetItemString("proximity", new PyInt(dict.proximity));
+    PyIncRef(args);
     PyObject* rtn = new PyObject("util.KeyVal", args);
-
-    _log(PLANET__DEBUG, "GetResourceData() Dump  - proximity: %u, bands: %u", dict.proximity, numBands);
-    PyIncRef(rtn);
-    //rtn->Dump(PLANET__RES_DUMP, "   ");
+    if (is_log_enabled(PLANET__RES_DUMP))
+        rtn->Dump(PLANET__RES_DUMP, "   ");
     return rtn;
 }
 
@@ -152,50 +155,56 @@ PyRep* PlanetSE::GetPlanetResourceInfo()
         res->SetItem(new PyInt(m_data.type_3), new PyFloat(m_data.dist_3));
         res->SetItem(new PyInt(m_data.type_4), new PyFloat(m_data.dist_4));
         res->SetItem(new PyInt(m_data.type_5), new PyFloat(m_data.dist_5));
-    _log(PLANET__MESSAGE, "PlanetSE::GetPlanetResourceInfo()  Dump");
-    res->Dump(PLANET__RES_DUMP, "   ");
+    if (is_log_enabled(PLANET__RES_DUMP))
+        res->Dump(PLANET__RES_DUMP, "   ");
     return res;
 }
 
 PyRep* PlanetSE::GetPlanetInfo(Colony* pColony) {
-    /*
-          [PyObjectData Name: util.KeyVal]
-            [PyDict 4 kvp]
-              [PyString "planetTypeID"]
-              [PyInt 2016]
-              [PyString "solarSystemID"]
-              [PyInt 30001984]
-              [PyString "radius"]
-              [PyFloat 2170000]
-              [PyString "planetID"]
-              [PyInt 40126699]
-     *
-     *              'currentSimTime' and 'pins'  are populated for planets that are colonlized
-            'pins' = GetColony();
-            */
     PyDict *args = new PyDict();
     args->SetItem("planetTypeID", new PyInt(m_self->typeID()));
     args->SetItem("solarSystemID", new PyInt(m_system->GetID()));
-    args->SetItem("radius", new PyInt(m_self->radius()));
+    args->SetItem("radius", new PyInt(GetRadius()));
     args->SetItem("planetID", new PyInt(m_self->itemID()));
-    if (pColony->GetSimTime()) {
-        args->SetItem("pins", pColony->GetColony());
+    if (pColony->HasColony()) {
+        pColony->Update();
+        args->SetItem("level", new PyInt(pColony->GetLevel()));
+        args->SetItem("pins", pColony->GetPins());
+        args->SetItem("links", pColony->GetLinks());
+        args->SetItem("routes", pColony->GetRoutes());
         args->SetItem("currentSimTime", new PyULong(pColony->GetSimTime()));
     }
+    PyIncRef(args);
     PyObject *rtn = new PyObject("util.KeyVal", args);
+    if (is_log_enabled(PLANET__RES_DUMP))
+        rtn->Dump(PLANET__RES_DUMP, "   ");
+    return rtn;
 }
 
 PyRep* PlanetSE::GetExtractorsForPlanet(int32 planetID) {
     // NOTE this gets ALL extractors on this planet
-    // returns typeID, ownerID
+    // returns typeID, ownerID, latitude?, longitude?
+
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT 2130 AS typeID, 0 as ownerID")) {
-        _log(DATABASE__ERROR, "Error in GetExtractorsForPlanet Query: %s", res.error.c_str());
-        return NULL;
+    PlanetDB m_db;
+    // SELECT typeID, ownerID, latitude, longitude
+    m_db.GetExtractorsForPlanet(planetID, res);
+
+    PyDict* dict(new PyDict());
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        dict->SetItem("typeID", new PyInt(row.GetInt(0)));
+        dict->SetItem("ownerID", new PyInt(row.GetInt(1)));
+        dict->SetItem("latitude", new PyFloat(row.GetFloat(2)));
+        dict->SetItem("longitude", new PyFloat(row.GetFloat(3)));
     }
 
-    // does this return a dict?
-    return DBResultToRowset(res);
+    return dict;
+}
+
+void PlanetSE::AbandonColony(Colony* pColony)
+{
+    pColony->AbandonColony();
 }
 
 
@@ -229,6 +238,13 @@ piCargoDeleted = 3
 */
 
 /*
+        minBand, maxBand = const.planetResourceProximityLimits[info.proximity]
+        info.newBand = min(maxBand, minBand + info.planetology + info.advancedPlanetology * 2)
+        requiredSkill = 5 - info.proximity
+        if info.remoteSensing < requiredSkill:
+            info.requiredSkill = requiredSkill
+
+
 planetResourceScanDistance = 1000000000
 planetResourceProximityDistant = 0
 planetResourceProximityRegion = 1
@@ -246,5 +262,10 @@ planetResourceScanningRanges = [9.0,
  3.0,
  1.0]
 planetResourceUpdateTime = 1 * HOUR
+
 planetResourceMaxValue = 1.21
+MAX_DISPLAY_QUALTY = const.planetResourceMaxValue * 255 * 0.5
+qualityRemapped = quality / MAX_DISPLAY_QUALTY
+self.resourceList.AddItem(typeID, quality=max(0, min(1.0, qualityRemapped)))
+
 */
