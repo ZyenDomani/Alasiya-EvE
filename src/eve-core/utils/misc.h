@@ -93,7 +93,6 @@ uint32 CreatePIDFile(const std::string& filename);
 namespace EvE {
     uint64 max(int64 x);
     double max(double x);
-
     void traceStack(void);
 }
 

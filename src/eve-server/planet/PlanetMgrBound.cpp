@@ -32,6 +32,7 @@
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "packets/Planet.h"
+#include "planet/PlanetMgrBound.h"
 #include "planet/Colony.h"
 #include "planet/Planet.h"
 #include "planet/PlanetMgr.h"

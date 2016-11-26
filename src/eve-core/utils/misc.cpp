@@ -145,6 +145,7 @@ uint32 CreatePIDFile(const std::string& filename)
     return (uint32)pid;
 }
 
+// EvE namespace
 void EvE::traceStack(void)
 {
     int j, nptrs;

@@ -41,24 +41,25 @@ const char* const PyRep::s_mTypeString[] =
 {
     "Integer",          //0
     "Long",             //1
-    "ULong",            //2
-    "Real",             //3
-    "Boolean",          //4
-    "Buffer",           //5
-    "String",           //6
-    "WString",          //7
-    "Token",            //8
-    "Tuple",            //9
-    "List",             //10
-    "Dict",             //11
-    "None",             //12
-    "SubStruct",        //13
-    "SubStream",        //14
-    "ChecksumedStream", //15
-    "Object",           //16
-    "ObjectEx",         //17
-    "PackedRow",        //18
-    "UNKNOWN TYPE",     //19
+    "Real",             //2
+    "Boolean",          //3
+    "Buffer",           //4
+    "String",           //5
+    "WString",          //6
+    "Token",            //7
+    "Tuple",            //8
+    "List",             //9
+    "Dict",             //10
+    "None",             //11
+    "SubStruct",        //12
+    "SubStream",        //13
+    "ChecksumedStream", //14
+    "Object",           //15
+    "ObjectEx",         //16
+    "PackedRow",        //17
+    "Error",            //18
+    "ULong",            //19
+    "UNKNOWN TYPE",     //20
 };
 
 PyRep::PyRep( PyType t ) : RefObject( 1 ), mType( t ) {}

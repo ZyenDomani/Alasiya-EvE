@@ -50,7 +50,7 @@ bool PyDumpVisitor::VisitLong( const PyLong* rep )
 
 bool PyDumpVisitor::VisitULong( const PyULong* rep )
 {
-    _print( "%sInteger field: %" PRIu64, _pfx(), rep->value() );
+    _print( "%Long field: %" PRIu64, _pfx(), rep->value() );
     return true;
 }
 
