@@ -1119,21 +1119,20 @@ double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
         or (attrib == AttrPowerLoad) or (attrib == AttrRechargeRate)
         or (attrib == AttrCapacitorCapacity) or (attrib == AttrHP)
         or (attrib == AttrShieldCapacity) or (attrib == AttrArmorHP)
-        or (attrib == AttrAccessDifficulty)
-        or (attrib = AttrDuration))
+        or (attrib == AttrAccessDifficulty) or (attrib = AttrDuration))
         return 1.0f;
 
     uint8 count = 1;
     std::map<uint16, uint8>::iterator itr = m_stackMap.find(attrib);
     if (itr != m_stackMap.end()) {
         if ((state == MOD_ONLINE) or (state == MOD_ACTIVATED)) {
-            count = ++itr->second;
+            count = ++(itr->second);
         } else if ((state == MOD_OFFLINE) or (state == MOD_DEACTIVATING)) {
             count = itr->second;
             if (itr->second == 1)
                 m_stackMap.erase(itr);
             else
-                count = --itr->second;
+                count = --(itr->second);
         } else {
             codelog(SHIP__MODULE_ERROR, "ShipItem::GetEffectiveness() -  module has invalid state %u", state);
             if (m_pilot)

@@ -680,20 +680,13 @@ bool MarketDB::GetOrderInfo(
         return false;
     }
 
-    if(quantity != NULL)
-        *quantity = row.GetUInt(0);
-    if(price != NULL)
-        *price = row.GetDouble(1);
-    if(typeID != NULL)
-        *typeID = row.GetUInt(2);
-    if(stationID != NULL)
-        *stationID = row.GetUInt(3);
-    if(orderOwnerID != NULL)
-        *orderOwnerID = row.GetUInt(4);
-    if(isBuy != NULL)
-        *isBuy = row.GetInt(5) ? true : false;
-    if(isCorp != NULL)
-        *isCorp = row.GetInt(6) ? true : false;
+    if (quantity)        *quantity = row.GetUInt(0);
+    if (price)           *price = row.GetDouble(1);
+    if (typeID)          *typeID = row.GetUInt(2);
+    if (stationID)       *stationID = row.GetUInt(3);
+    if (orderOwnerID)    *orderOwnerID = row.GetUInt(4);
+    if (isBuy)           *isBuy = row.GetInt(5) ? true : false;
+    if (isCorp)          *isCorp = row.GetInt(6) ? true : false;
 
     return true;
 }
@@ -701,79 +694,43 @@ bool MarketDB::GetOrderInfo(
 //NOTE: this logic needs some work if there are multiple concurrent market services running at once.
 bool MarketDB::AlterOrderQuantity(uint32 orderID, uint32 new_qty) {
     DBerror err;
-
-    if(!sDatabase.RunQuery(err,
-        "UPDATE"
-        " market_orders"
-        " SET volRemaining = %u"
-        " WHERE orderID = %u",
-        new_qty, orderID))
-    {
+    if(!sDatabase.RunQuery(err, "UPDATE market_orders SET volRemaining = %u WHERE orderID = %u",  new_qty, orderID)) {
         _log(DATABASE__ERROR, "Error in query: %s.", err.c_str());
         return false;
     }
-
     return true;
 }
 
 bool MarketDB::AlterOrderPrice(uint32 orderID, double new_price) {
     DBerror err;
-
-    if(!sDatabase.RunQuery(err,
-        "UPDATE"
-        " market_orders"
-        " SET price = %.2f"
-        " WHERE orderID = %u",
-        new_price, orderID))
-    {
+    if(!sDatabase.RunQuery(err, "UPDATE market_orders SET price = %.2f WHERE orderID = %u", new_price, orderID)) {
         _log(DATABASE__ERROR, "Error in query: %s.", err.c_str());
         return false;
     }
-
     return true;
 }
 
 bool MarketDB::DeleteOrder(uint32 orderID) {
     DBerror err;
-
-    if(!sDatabase.RunQuery(err,
-        "DELETE"
-        " FROM market_orders"
-        " WHERE orderID = %u",
-        orderID))
-    {
+    if(!sDatabase.RunQuery(err, "DELETE FROM market_orders WHERE orderID = %u", orderID)) {
         _log(DATABASE__ERROR, "Error in query: %s.", err.c_str());
         return false;
     }
-
     return true;
 }
 
 bool MarketDB::AddCharacterBalance(uint32 char_id, double delta)
 {
     DBerror err;
-
-    if(!sDatabase.RunQuery(err,
-        "UPDATE character_ SET balance=balance+%f WHERE characterID=%u",delta,char_id))
-    {
+    if(!sDatabase.RunQuery(err, "UPDATE character_ SET balance=balance+%f WHERE characterID=%u",delta,char_id)) {
         codelog(DATABASE__ERROR, "Error in query : %s", err.c_str());
         return false;
     }
-
-    return (true);
+    return true;
 }
 
-bool MarketDB::RecordTransaction(
-    uint32 typeID,
-    uint32 quantity,
-    double price,
-    MktTransType transactionType,
-    uint32 charID,
-    uint32 regionID,
-    uint32 stationID
-) {
+bool MarketDB::RecordTransaction( uint32 typeID, uint32 quantity, double price, MktTransType transactionType, uint32 charID, uint32 regionID, uint32 stationID) {
     DBerror err;
-
     //TODO implement the accountKey field here
     if(!sDatabase.RunQuery(err,
         "INSERT INTO"
