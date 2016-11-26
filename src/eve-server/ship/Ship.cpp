@@ -1273,7 +1273,7 @@ void Ship::Process() {
 
     // check to see if this is an empty ship, and exit if so.
     //  we're not worried about recharge and modules for empty ships (segfaults)
-    // for some reason, m_self is NOT being populated for non-piloted ships...check later
+    /** @todo m_self is NOT being populated for non-piloted ships...check later */
     if ((!m_self) or (!m_self->HasPilot()))
         return;
 
