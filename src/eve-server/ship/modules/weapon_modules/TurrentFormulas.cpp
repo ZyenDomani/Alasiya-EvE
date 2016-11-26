@@ -125,10 +125,3 @@ float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
         return 0;
 }
 
-double TurrentFormulas::EvE::max(double x)
-{
-    if (x > 0)
-        return x;
-    else
-        return 0;
-}
