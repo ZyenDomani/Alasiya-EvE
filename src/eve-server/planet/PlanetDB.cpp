@@ -83,7 +83,7 @@ void PlanetDB::GetPlanetData(DBQueryResult& res)
 GPoint PlanetDB::GetLaunchPos(uint32 launchID)
 {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT x,y,z FROM `planetlaunches` WHERE `launchID` = %u", launchID)) {
+    if(!sDatabase.RunQuery(res, "SELECT x,y,z FROM `chrPlanetLaunches` WHERE `launchID` = %u", launchID)) {
         _log(DATABASE__ERROR, "Error in GetLaunchPos query: %s", res.error.c_str());
     }
     DBResultRow row;
@@ -214,8 +214,9 @@ void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
                 pin.heads[cur] = piHead;
             }
         }
+        LoadContents(row.GetInt(0), pin.contents);
 
-        pins.emplace(std::pair<uint32, PI_Pin>(row.GetInt(0), pin));
+        pins[row.GetInt(0)] = pin;
     }
 }
 
@@ -235,15 +236,14 @@ void PlanetDB::LoadLinks(uint32 ccPinID, std::map<uint32, PI_Link >& links)
 
     DBResultRow row;
     PI_Link link;
-    if (res.GetRow(row)) {
+    while (res.GetRow(row)) {
         link.level = row.GetInt(1);
         link.state = row.GetInt(2);
         link.typeID = row.GetInt(3);
         link.endpoint1 = row.GetInt(4);
         link.endpoint2 = row.GetInt(5);
+        links[row.GetInt(0)] = link;
     }
-
-    links.insert(std::pair<uint32, PI_Link>(row.GetInt(0), link));
 }
 
 void PlanetDB::LoadRoutes(uint32 ccPinID, std::map<uint32, PI_Route >& routes)
@@ -286,6 +286,27 @@ void PlanetDB::LoadRoutes(uint32 ccPinID, std::map<uint32, PI_Route >& routes)
             }
         }
         routes.insert(std::pair<uint32, PI_Route>(headList.back(), route));
+    }
+}
+
+void PlanetDB::LoadContents(uint32 pinID, std::map<uint16, uint32>& contents)
+{
+    //SELECT `ccPinID`, `pinID`, `itemID`, `itemQty` FROM `chrPlanetPinContents` WHERE 1
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT `itemID`, `itemQty`"
+        " FROM `chrPlanetPinContents` WHERE `pinID` = %u",
+        pinID ))
+    {
+        _log(DATABASE__ERROR, "Error in LoadContents Query: %s", res.error.c_str());
+        return;
+    }
+
+    _log(DATABASE__RESULTS, "LoadContents returned %u items", res.GetRowCount());
+
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        contents[row.GetInt(0)] = row.GetInt(1);
     }
 }
 
@@ -423,21 +444,21 @@ void PlanetDB::SaveLinks(PI_CCPin* ccPin)
             Inserts << " VALUES ";
             first = false;
         } else
-            Inserts << ":";
+            Inserts << ",";
         Inserts << "(" << ccPinID << ", " << cur.first << ", " << (cur.second.level ? cur.second.level : 0) << ", ";
         Inserts << cur.second.typeID << ", " << cur.second.endpoint1 << ", " << cur.second.endpoint2 << ")";
+    }
 
-        if (!first) {
-            // finish creating the command.
-            Inserts << " ON DUPLICATE KEY UPDATE";
-            Inserts << " level=VALUES(level), ";
-            Inserts << " endpoint1=VALUES(endpoint1), ";
-            Inserts << " endpoint2=VALUES(endpoint2)";
-            // execute the command.
-            DBerror err;
-            if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
-                _log(DATABASE__ERROR, "SaveLinks - unable to save links - %s", err.c_str());
-        }
+    if (!first) {
+        // finish creating the command.
+        Inserts << " ON DUPLICATE KEY UPDATE";
+        Inserts << " level=VALUES(level), ";
+        Inserts << " endpoint1=VALUES(endpoint1), ";
+        Inserts << " endpoint2=VALUES(endpoint2)";
+        // execute the command.
+        DBerror err;
+        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
+            _log(DATABASE__ERROR, "SaveLinks - unable to save links - %s", err.c_str());
     }
 }
 
@@ -467,27 +488,79 @@ void PlanetDB::SaveRoutes(PI_CCPin* ccPin)
             Inserts << " VALUES ";
             first = false;
         } else
-            Inserts << ":";
+            Inserts << ",";
         for (itr = cur.second.path.begin(); itr != cur.second.path.end(); itr++) {
             path += itoa(*itr);
             if ((itr++) != cur.second.path.end())
                 path += ":";
         }
-        Inserts << "(" << ccPinID << ", " << cur.first << ", '" << cur.second.priority << ", '";
-        Inserts << path << "', " << cur.second.commodityTypeID << ", " << cur.second.commodityQuantity << ")";
+        Inserts << "(" << ccPinID << ", " << cur.first << ", " << cur.second.priority << ", '" << path << "', ";
+        Inserts << cur.second.commodityTypeID << ", " << cur.second.commodityQuantity << ")";
+    }
 
-        if (!first) {
-            // finish creating the command.
-            Inserts << " ON DUPLICATE KEY UPDATE";
-            Inserts << " path=VALUES(path),";
-            Inserts << " itemID=VALUES(itemID),";
-            Inserts << " itemQty=VALUES(itemQty);";
-            // execute the command.
-            DBerror err;
-            if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
-                _log(DATABASE__ERROR, "SaveRoutes - unable to save route - %s", err.c_str());
+    if (!first) {
+        // finish creating the command.
+        Inserts << " ON DUPLICATE KEY UPDATE";
+        Inserts << " path=VALUES(path),";
+        Inserts << " itemID=VALUES(itemID),";
+        Inserts << " itemQty=VALUES(itemQty);";
+        // execute the command.
+        DBerror err;
+        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
+            _log(DATABASE__ERROR, "SaveRoutes - unable to save route - %s", err.c_str());
+    }
+}
+
+void PlanetDB::SaveContents(PI_CCPin* ccPin)
+{
+    std::ostringstream Inserts;
+    // start the insert into command.
+    Inserts << "INSERT INTO `chrPlanetPinContents`";
+    Inserts << " (`ccPinID`, `pinID`, `itemID`, `itemQty`)";
+
+    bool first = true;
+    uint32 ccPinID = ccPin->ccPinID;
+    std::map<uint16, uint32>::iterator itr;
+    for (auto cur : ccPin->pins) {
+        for (itr = cur.second.contents.begin(); itr != cur.second.contents.end(); itr++) {
+            if (first) {
+                Inserts << " VALUES ";
+                first = false;
+            } else
+                Inserts << ",";
+            Inserts << "(" << ccPinID << ", " << cur.first << ", ";
+            Inserts << itr->first << ", " << itr->second << ")";
         }
     }
+    if (!first) {
+        // finish creating the command.
+        Inserts << " ON DUPLICATE KEY UPDATE";
+        Inserts << " itemQty=VALUES(itemQty);";
+        // execute the command.
+        DBerror err;
+        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
+            _log(DATABASE__ERROR, "SaveContents - unable to save contents - %s", err.c_str());
+    }
+}
+
+void PlanetDB::AddContents(uint32 ccPinID, uint32 pinID, uint16 typeID, uint32 qty)
+{
+    DBerror err;
+    if (!sDatabase.RunQuery(err,
+        "INSERT INTO `chrPlanetPinContents`"
+        " (`ccPinID`, `pinID`, `itemID`, `itemQty`)"
+        " VALUES (%u, %u, %u, %u) ",
+        ccPinID, pinID, typeID, qty))
+        _log(DATABASE__ERROR, "AddContents - unable to add contents - %s", err.c_str());
+}
+
+void PlanetDB::UpdateContents(uint32 pinID, uint16 typeID, uint32 qty)
+{
+    DBerror err;
+    if (!sDatabase.RunQuery(err,
+        "UPDATE `chrPlanetPinContents` SET `itemQty` = %u WHERE `pinID` = %u AND `itemID` = %u",
+        qty, pinID, typeID))
+        _log(DATABASE__ERROR, "SaveContents - unable to save contents - %s", err.c_str());
 }
 
 void PlanetDB::RemovePin(uint32 pinID)
@@ -514,6 +587,12 @@ void PlanetDB::RemoveRoute(uint8 routeID)
     sDatabase.RunQuery(err, "DELETE FROM `chrPlanetRoutes` WHERE `routeID` = %u", routeID);
 }
 
+void PlanetDB::RemoveContents(uint32 pinID, uint16 typeID)
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "DELETE FROM `chrPlanetPinContents` WHERE `pinID` = %u AND `itemID` = %u", pinID, typeID);
+}
+
 void PlanetDB::DeleteColony(uint32 ccPinID, uint32 planetID, uint32 charID)
 {
     DBerror err;
@@ -523,4 +602,5 @@ void PlanetDB::DeleteColony(uint32 ccPinID, uint32 planetID, uint32 charID)
     sDatabase.RunQuery(err, "DELETE FROM `chrPlanetPins` WHERE `ccPinID` = %u", ccPinID);
     sDatabase.RunQuery(err, "DELETE FROM `chrPlanetLinks` WHERE `ccPinID` = %u", ccPinID);
     sDatabase.RunQuery(err, "DELETE FROM `chrPlanetRoutes` WHERE `ccPinID` = %u", ccPinID);
+    sDatabase.RunQuery(err, "DELETE FROM `chrPlanetPinContents` WHERE `ccPinID` = %u", ccPinID);
 }

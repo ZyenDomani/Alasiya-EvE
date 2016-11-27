@@ -188,6 +188,13 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         } */
     } else {
         iRef = m_svcMgr->item_factory->GetItem(m_colonyID);
+        if (iRef->quantity() > 1) {
+            // check for stack of CC items, and split as needed
+            ItemData data(typeID, m_client->GetCharacterID(), 0, flagAutoFit, iRef->quantity() -1);
+            InventoryItemRef iRef2 = m_svcMgr->item_factory->SpawnItem(data);
+            iRef2->Move(m_client->GetShipID(), flagCargoHold);
+            iRef->SetQuantity(1, false);
+        }
         m_client->GetShip()->RemoveItem(iRef);
     }
 
@@ -249,6 +256,8 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
     }
 
     iRef->Move(m_pSE->GetID(), flagPlanetSurface);
+    iRef->ChangeSingleton(true);
+    // cannot change attributes on PI items.....  :(
     //iRef->SetAttribute(AttrCpuLoad, m_cpu);
     //iRef->SetAttribute(AttrPowerLoad, m_pg);
 
@@ -312,7 +321,7 @@ void Colony::CreateRoute(uint8 routeID, uint32 typeID, uint32 qty, PyList* path)
         list1.clear();
         list1 = list2;
     } else
-        _log(PLANET__INFO, "Colony::CreateRoute() - tempPinIDs is empty.");
+        _log(PLANET__INFO, "Colony::CreateRoute() - tempPinIDs is empty.  This may not be an error.");
 
     PI_Route route;
         route.id = routeID;
@@ -331,7 +340,7 @@ void Colony::UpgradeCommandCenter(uint32 pinID, uint8 level) {
     if (itr != ccPin->pins.end()) {
         itr->second.level = level;
         m_db.SaveCCLevel(pinID, level);
-        _log(PLANET__TRACE, "Colony::UpgradeCommandCenter() - Upgraded Command Center to level:%u", level);
+        _log(PLANET__TRACE, "Colony::UpgradeCommandCenter() - Upgraded Command Center %u to level:%u", pinID, level);
     } else
         _log(PLANET__ERROR, "Colony::UpgradeCommandCenter() - pinID %u not found in ccPin.pins map", pinID);
 }
@@ -570,15 +579,11 @@ PyTuple* Colony::GetPins()
     for (auto cur : ccPin->pins) {
         PyDict* dict(new PyDict());
         dict->SetItem("id", new PyInt(cur.first));
-        PyList* list(new PyList());
-        list->clear();
-        for (auto cur2 : cur.second.contents) {
-            PyTuple* tuple(new PyTuple(2));
-                tuple->SetItem(0, new PyInt(cur2.first));
-                tuple->SetItem(1, new PyInt(cur2.second));
-            list->AddItem(tuple);
-        }
-        dict->SetItem("contents", list);
+        PyDict* contents(new PyDict());
+        contents->clear();
+        for (auto cur2 : cur.second.contents)
+            contents->SetItem(new PyInt(cur2.first), new PyInt(cur2.second));
+        dict->SetItem("contents", contents);
         dict->SetItem("typeID", new PyInt(cur.second.typeID));
         dict->SetItem("ownerID", new PyInt(cur.second.ownerID));
         dict->SetItem("latitude", new PyFloat(cur.second.latitude));
@@ -606,7 +611,7 @@ PyTuple* Colony::GetPins()
             dict->SetItem("headRadius", new PyFloat(cur.second.headRadius));
             dict->SetItem("expiryTime", new PyULong(cur.second.expiryTime));
             dict->SetItem("cycleTime", new PyULong(cur.second.cycleTime));
-            list->clear();
+            PyList* list = new PyList();
             for (auto head : cur.second.heads) {
                 PyTuple* tuple(new PyTuple(3));
                     tuple->SetItem(0, new PyInt(head.first));
@@ -686,7 +691,7 @@ PyRep* Colony::GetColony()
     // reset tempPinID-to-newPinID map after command loop is completed and all new pins have been created.
     tempPinIDs.clear();
 
-    std::map<uint32, PI_Pin>::iterator pin = ccPin->pins.find(ccPin->ccPinID);
+    std::map<uint32, PI_Pin>::iterator pin = ccPin->pins.find(m_colonyID);
     m_db.UpdatePlanetsForChar(m_pSE->SystemMgr()->GetID(), m_pSE->GetID(), m_client->GetCharacterID(), pin->second.typeID, ccPin->pins.size());
 
     return res;
@@ -721,7 +726,7 @@ void Colony::ProcessECUs(bool& save)
             // first - see if this ecu has a route and move contents per route
             //   note:  check for multiple routes/commodities
             for (auto route : ccPin->routes) {
-                // second - update current contents per route movement as noted above
+                // second - update current contents per route movement as noted above -ecu doesnt store mat'l, but might later...
                 // get route destination pin and update qty there for this round
                 std::map<uint32, PI_Pin>::iterator dest = ccPin->pins.find(route.first);
                 if (dest != ccPin->pins.end()) {
@@ -730,10 +735,13 @@ void Colony::ProcessECUs(bool& save)
                     /** @todo  check for available capy and adjust qty accordingly.
                      *       if dest cant hold entire xfer qty, drop remainder in current pin contents
                      */
-                    if (itr != dest->second.contents.end())
+                    if (itr != dest->second.contents.end()) {
                         itr->second += route.second.commodityQuantity;
-                    else
+                        m_db.UpdateContents(dest->first, itr->first, itr->second);
+                    } else {
                         dest->second.contents[route.second.commodityTypeID] = route.second.commodityQuantity;
+                        m_db.AddContents(m_colonyID, dest->first, route.second.commodityTypeID, route.second.commodityQuantity);
+                    }
 
                     if (dest->second.isProcess)
                         dest->second.hasReceivedInputs = true;
@@ -767,21 +775,39 @@ void Colony::ProcessSilos(bool& save)
             // first - see if this silo has a route and move contents per route  - note:  check for multiple routes/commodities
             for (auto route : ccPin->routes) {
                 // second - update current contents per route movement as noted above
-                // get route destination pin and update qty there for this round
                 std::map<uint32, PI_Pin>::iterator dest = ccPin->pins.find(route.first);
                 if (dest != ccPin->pins.end()) {
                     // contents are stored in each pin.  PI_Pin.contents(std::map<uint16, uint32> typeID, qty)
-                    /** @todo  check for available capy and adjust qty accordingly.
+                    /** @todo   verify current qty is enough to xfer entire route qty.
+                     *          check for available capy and adjust qty accordingly.
                      *       if dest cant hold entire xfer qty, drop remainder in current pin contents
                      */
+                    uint32 amount = route.second.commodityQuantity;
+                    std::map<uint16, uint32>::iterator contents = silo.second.contents.find(route.second.commodityTypeID);
+                    if (contents != silo.second.contents.end()) {
+                        if (contents->second <= amount) {
+                            amount = contents->second;
+                            silo.second.contents.erase(contents);
+                            m_db.RemoveContents(silo.first, route.second.commodityTypeID);
+                        } else {
+                            contents->second -= route.second.commodityQuantity;
+                            m_db.UpdateContents(silo.first, route.second.commodityTypeID, contents->second);
+                        }
+                    }
+                    /** @todo  check for available space in dest and adjust accordingly  */
+                // get route destination pin and update qty there for this round
                     std::map<uint16, uint32>::iterator itr = dest->second.contents.find(route.second.commodityTypeID);
-                    if (itr != dest->second.contents.end())
-                        itr->second += route.second.commodityQuantity;
-                    else
-                        dest->second.contents[route.second.commodityTypeID] = route.second.commodityQuantity;
+                    if (itr != dest->second.contents.end()) {
+                        itr->second += amount;
+                        m_db.UpdateContents(dest->first, itr->first, itr->second);
+                    } else {
+                        dest->second.contents[route.second.commodityTypeID] = amount;
+                        m_db.AddContents(m_colonyID, dest->first, route.second.commodityTypeID, amount);
+                    }
 
                     if (dest->second.isProcess)
                         dest->second.hasReceivedInputs = true;
+
                 } else
                     _log(PLANET__ERROR, "Colony::ProcessSilos()::Routes() - Dest pinID %u not found in ccPin.pins map", route.first);
                 // third - reset lastRunTime, and complete this loop.
@@ -812,10 +838,13 @@ void Colony::ProcessPlants(bool& save)
                      * do plants hold raw matls in storage?
                      */
                     std::map<uint16, uint32>::iterator itr = dest->second.contents.find(route.second.commodityTypeID);
-                    if (itr != dest->second.contents.end())
+                    if (itr != dest->second.contents.end()) {
                         itr->second += route.second.commodityQuantity;
-                    else
+                        m_db.UpdateContents(dest->first, itr->first, itr->second);
+                    } else {
                         dest->second.contents[route.second.commodityTypeID] = route.second.commodityQuantity;
+                        m_db.AddContents(m_colonyID, dest->first, route.second.commodityTypeID, route.second.commodityQuantity);
+                    }
 
                     if (dest->second.isProcess)
                         dest->second.hasReceivedInputs = true;

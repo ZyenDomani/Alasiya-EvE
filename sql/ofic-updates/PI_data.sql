@@ -76,6 +76,14 @@ CREATE TABLE `chrPlanetRoutes` (
   PRIMARY KEY (`routeID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `chrPlanetPinContents` (
+  `ccPinID` int(10) NOT NULL DEFAULT '0',
+  `pinID` int(10) NOT NULL DEFAULT '0',
+  `itemID` int(10) NOT NULL DEFAULT '0',
+  `itemQty` int(10) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`pinID`,`itemID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 CREATE TABLE `chrPlanetLaunches` (
   `launchID` int(10) NOT NULL AUTO_INCREMENT,
