@@ -71,7 +71,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_sessionTimer(10000),
   m_destinyEventQueue(new PyList()),
   m_destinyUpdateQueue(new PyList()),
-  m_nextNotifySequence(1)
+  m_nextNotifySequence(0)
 {
     m_pod = ShipItemRef();
     m_ship = ShipItemRef();
@@ -490,7 +490,9 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
 
     _UpdateSession(m_char);
-    SendSessionChange();
+
+    if (!m_login)
+        SendSessionChange();
 
     m_system->AddClient(this, IsStation(locationID), m_login);
 
@@ -1237,11 +1239,10 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         SendNotification("DoDestinyUpdate", "clientID", &t, false);
     } else {
         act.update = *update;
-        PyDecRef(*update);
-        *update = nullptr;
         m_packaged = true;
         m_destinyUpdateQueue->AddItem(act.Encode());
     }
+    update = nullptr;
 }
 
 void Client::_SendQueuedUpdates() {
@@ -1283,8 +1284,9 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
     //build a little notification out of it.
     EVENotificationStream notify;
         notify.remoteObject = 1;
-        notify.args = *payload;    //consumed
-    *payload = nullptr;
+        notify.args = (PyTuple*)(*payload)->Clone();    //consumed
+    PySafeDecRef(*payload);
+    payload = nullptr;
 
     PyAddress dest;
         dest.type = PyAddress::Broadcast;
@@ -1312,7 +1314,7 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
 
     if (seq) {
         p->named_payload = new PyDict();
-        p->named_payload->SetItemString("sn", new PyInt(m_nextNotifySequence++));
+        p->named_payload->SetItemString("sn", new PyInt(++m_nextNotifySequence));
     }
 
     _log(CLIENT__NOTIFY_REP, "Sending notify of type %s with ID type %s to %s", dest.service.c_str(), dest.bcast_idtype.c_str(), GetName());
