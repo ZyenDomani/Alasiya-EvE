@@ -573,7 +573,7 @@ PyTuple* Colony::GetPins()
         PyList* list(new PyList());
         list->clear();
         for (auto cur2 : cur.second.contents) {
-            PyTuple* tuple(new PyTuple(3));
+            PyTuple* tuple(new PyTuple(2));
                 tuple->SetItem(0, new PyInt(cur2.first));
                 tuple->SetItem(1, new PyInt(cur2.second));
             list->AddItem(tuple);
