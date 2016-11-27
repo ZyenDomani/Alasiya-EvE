@@ -50,7 +50,7 @@ bool PyDumpVisitor::VisitLong( const PyLong* rep )
 
 bool PyDumpVisitor::VisitULong( const PyULong* rep )
 {
-    _print( "%Long field: %" PRIu64, _pfx(), rep->value() );
+    _print( "%sLong field: %" PRIu64, _pfx(), rep->value() );
     return true;
 }
 
@@ -122,6 +122,7 @@ bool PyDumpVisitor::VisitTuple( const PyTuple* rep )
         PyTuple::const_iterator cur = rep->begin();
         for( uint32 i = 0; cur != rep->end(); cur++, i++ )
         {
+            if (*cur == nullptr) continue;
             if( i > 200 && !fullNested() )
             {
                 _print( "%s  ... truncated ...", _pfx() );
@@ -150,6 +151,7 @@ bool PyDumpVisitor::VisitList( const PyList* rep )
         PyList::const_iterator cur = rep->begin();
         for( uint32 i = 0; cur != rep->end(); cur++, i++ )
         {
+            if (*cur == nullptr) continue;
             if( i > 200 && !fullNested() )
             {
                 _print( "%s  ... truncated ...", _pfx() );
@@ -248,6 +250,7 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
         PyObjectEx::const_list_iterator cur = rep->list().begin();
         for( uint32 i = 0; cur != rep->list().end(); cur++, i++ )
         {
+            if (*cur == nullptr) continue;
             if( i > 200 && !fullNested() )
             {
                 _print( "%s  ... truncated ...", _pfx() );

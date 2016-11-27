@@ -57,7 +57,7 @@ const char* MACHONETMSG_TYPE_NAMES[MACHONETMSG_TYPE_COUNT] =
     "PING_RSP"
 };
 
-PyPacket::PyPacket() : type_string("none"), type(__Fake_Invalid_Type), userid(0), payload(NULL), named_payload(NULL) {}
+PyPacket::PyPacket() : type_string("none"), type(__Fake_Invalid_Type), userid(0), payload(nullptr), named_payload(nullptr) {}
 PyPacket::~PyPacket()
 {
     PySafeDecRef(payload);
@@ -73,9 +73,9 @@ PyPacket *PyPacket::Clone() const
     res->dest = dest;
     res->userid = userid;
     res->payload = (PyTuple *) payload->Clone();
-    if(named_payload == NULL)
+    if(named_payload == nullptr)
     {
-        res->named_payload = NULL;
+        res->named_payload = nullptr;
     }
     else
     {
@@ -96,7 +96,7 @@ void PyPacket::Dump(LogType ltype, PyVisitor& dumper)
     _log(ltype, "  User ID: %u", userid);
     _log(ltype, "  Payload:");
     payload->visit( dumper );
-    if(named_payload == NULL) {
+    if(named_payload == nullptr) {
         _log(ltype, "  Named Payload: None");
     } else {
         _log(ltype, "  Named Payload:");
@@ -107,7 +107,7 @@ void PyPacket::Dump(LogType ltype, PyVisitor& dumper)
 bool PyPacket::Decode(PyRep **in_packet)
 {
     PyRep *packet = *in_packet;  //consume
-    *in_packet = NULL;
+    *in_packet = nullptr;
 
     PySafeDecRef(payload);
     PySafeDecRef(named_payload);
@@ -129,7 +129,7 @@ bool PyPacket::Decode(PyRep **in_packet)
         PySubStream* ss = packet->AsSubStream();
 
         ss->DecodeData();
-        if(ss->decoded() == NULL)
+        if(ss->decoded() == nullptr)
         {
             codelog(NET__PACKET_ERROR, "failed: unable to decode initial packet substream.");
             PyDecRef(packet);
@@ -239,18 +239,18 @@ bool PyPacket::Decode(PyRep **in_packet)
         return false;
     }
     payload = (PyTuple *) tuple->items[4];
-    tuple->items[4] = NULL; //we keep this one
+    tuple->items[4] = nullptr; //we keep this one
 
 
     //options dict
     if(tuple->items[5]->IsNone())
     {
-        named_payload = NULL;
+        named_payload = nullptr;
     }
     else if(tuple->items[5]->IsDict())
     {
         named_payload = (PyDict *) tuple->items[5];
-        tuple->items[5] = NULL; //we keep this too.
+        tuple->items[5] = nullptr; //we keep this too.
     }
     else
     {
@@ -289,7 +289,7 @@ PyRep *PyPacket::Encode() {
     arg_tuple->items[4] = payload->Clone();
 
     //named arguments
-    if(named_payload == NULL) {
+    if(named_payload == nullptr) {
         arg_tuple->items[5] = new PyNone();
     } else {
         arg_tuple->items[5] = named_payload->Clone();
@@ -353,7 +353,7 @@ void PyAddress::operator=(const PyAddress &right) {
 
 bool PyAddress::Decode(PyRep *&in_object) {
     PyRep *base = in_object;
-    in_object = NULL;
+    in_object = nullptr;
 
     if(!base->IsObject()) {
         codelog(NET__PACKET_ERROR, "Invalid element type, expected object");
@@ -598,8 +598,8 @@ bool PyAddress::_DecodeObjectID(PyRep *rep) {
 PyCallStream::PyCallStream()
 : remoteObject(0),
   method(""),
-  arg_tuple(NULL),
-  arg_dict(NULL)
+  arg_tuple(nullptr),
+  arg_dict(nullptr)
 {
 }
 
@@ -614,8 +614,8 @@ PyCallStream *PyCallStream::Clone() const {
     res->remoteObjectStr = remoteObjectStr;
     res->method = method;
     res->arg_tuple = new PyTuple( *arg_tuple );
-    if(arg_dict == NULL) {
-        res->arg_dict = NULL;
+    if(arg_dict == nullptr) {
+        res->arg_dict = nullptr;
     } else {
         res->arg_dict = new PyDict( *arg_dict );
     }
@@ -632,7 +632,7 @@ void PyCallStream::Dump(LogType type, PyVisitor& dumper)
     _log(type, "  Method: %s", method.c_str());
     _log(type, "  Arguments:");
     arg_tuple->visit( dumper );
-    if(arg_dict == NULL) {
+    if(arg_dict == nullptr) {
         _log(type, "  Named Arguments: None");
     } else {
         _log(type, "  Named Arguments:");
@@ -642,12 +642,12 @@ void PyCallStream::Dump(LogType type, PyVisitor& dumper)
 
 bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     PyTuple *payload = in_payload;   //consume
-    in_payload = NULL;
+    in_payload = nullptr;
 
     PySafeDecRef(arg_tuple);
     PySafeDecRef(arg_dict);
-    arg_tuple = NULL;
-    arg_dict = NULL;
+    arg_tuple = nullptr;
+    arg_dict = nullptr;
 
     if(type != "macho.CallReq") {
         codelog(NET__PACKET_ERROR, "failed: packet payload has unknown string type '%s'", type.c_str());
@@ -683,7 +683,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     PySubStream *ss = (PySubStream *) payload2->items[1];
 
     ss->DecodeData();
-    if(ss->decoded() == NULL) {
+    if(ss->decoded() == nullptr) {
         codelog(NET__PACKET_ERROR, "Unable to decode call stream");
         PyDecRef(payload);
         return false;
@@ -743,14 +743,14 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
     arg_tuple = (PyTuple *) maint->items[2];
     PySafeIncRef(arg_tuple);
-    maint->items[2] = NULL; //we keep this one
+    maint->items[2] = nullptr; //we keep this one
 
     //options dict
     if(maint->items[3]->IsNone()) {
-        arg_dict = NULL;
+        arg_dict = nullptr;
     } else if(maint->items[3]->IsDict()) {
         arg_dict = (PyDict *) maint->items[3];
-        maint->items[3] = NULL; //we keep this too.
+        maint->items[3] = nullptr; //we keep this too.
     } else {
         codelog(NET__PACKET_ERROR, "tuple[3] has non-dict type");
         maint->items[3]->Dump(NET__PACKET_ERROR, " --> ");
@@ -782,7 +782,7 @@ PyTuple *PyCallStream::Encode() {
     res_tuple->items[2] = new PyTuple( *arg_tuple );
 
     //options
-    if(arg_dict == NULL) {
+    if(arg_dict == nullptr) {
         res_tuple->items[3] = new PyNone();
     } else {
         res_tuple->items[3] = new PyDict( *arg_dict );
@@ -805,7 +805,7 @@ PyTuple *PyCallStream::Encode() {
 EVENotificationStream::EVENotificationStream()
 : notifyType("NO TYPE SET"),
   remoteObject(0),
-  args(NULL)
+  args(nullptr)
 {
 }
 
@@ -833,10 +833,10 @@ void EVENotificationStream::Dump(LogType type, PyVisitor& dumper)
 
 bool EVENotificationStream::Decode(const std::string &pkt_type, const std::string &notify_type, PyTuple *&in_payload) {
     PyTuple *payload = in_payload;   //consume
-    in_payload = NULL;
+    in_payload = nullptr;
 
     PySafeDecRef(args);
-    args = NULL;
+    args = nullptr;
 
     if(pkt_type != "macho.Notification") {
         codelog(NET__PACKET_ERROR, "notification payload has unknown string type %s", pkt_type.c_str());
@@ -872,7 +872,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     PySubStream *ss = (PySubStream *) payload2->items[1];
 
     ss->DecodeData();
-    if(ss->decoded() == NULL) {
+    if(ss->decoded() == nullptr) {
         codelog(NET__PACKET_ERROR, "Unable to decode call stream");
         PyDecRef(payload);
         return false;
@@ -916,8 +916,6 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
         return false;
     }
 
-
-
     PyTuple *subt = (PyTuple *) robjt->items[1];
     if(subt->items.size() != 2) {
         codelog(NET__PACKET_ERROR, "packet body has %lu elements, expected %d", subt->items.size(), 2);
@@ -937,8 +935,6 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
         return false;
     }
 
-
-
     if(!subt->items[1]->IsTuple()) {
         codelog(NET__PACKET_ERROR, "subt tuple[1] has non-tuple type %s", robjt->items[0]->TypeString());
         _log(NET__PACKET_ERROR, " it is:");
@@ -948,7 +944,8 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     }
 
     args = (PyTuple *) subt->items[1];
-    subt->items[1] = NULL;
+    PyIncRef(args);
+    subt->items[1] = nullptr;
 
     notifyType = notify_type;
 
@@ -958,16 +955,17 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
 
 PyTuple *EVENotificationStream::Encode() {
     PyTuple *t4 = new PyTuple(2);
-        t4->items[0] = new PyInt(1);
-        t4->items[1] = args->Clone();
+        t4->SetItem(0, new PyInt(1));
+        t4->SetItem(1, args);       // no need to clone here.  set actual rep in item, and it will be cleaned up by d'tor later
+        PyIncRef(args);
     PyTuple *t3 = new PyTuple(2);
-        t3->items[0] = new PyInt(0);
-        t3->items[1] = t4;
+        t3->SetItem(0, new PyInt(0));
+        t3->SetItem(1, t4);
     PyTuple *t2 = new PyTuple(2);
-        t2->items[0] = new PyInt(0);
-        t2->items[1] = new PySubStream(t3);
+        t2->SetItem(0, new PyInt(0));
+        t2->SetItem(1, new PySubStream(t3));
     PyTuple *t1 = new PyTuple(2);
-        t1->items[0] = t2;
-        t1->items[1] = new PyNone();
+        t1->SetItem(0, t2);
+        t1->SetItem(1, new PyNone());
     return(t1);
 }
