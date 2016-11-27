@@ -367,7 +367,7 @@ private:
     PyList* m_destinyUpdateQueue;    //we own these. They are the `update` which go into DoDestinyAction
     void _SendQueuedUpdates();
 
-    uint32 m_nextNotifySequence;
+    uint32 m_nextNotifySequence = 0;
 
     /************************************************************************/
     /* new system for MultiEvents      (fix for docked pilot reporting)     */

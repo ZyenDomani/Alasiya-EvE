@@ -62,7 +62,7 @@ void PlanetDataMgr::GetPlanetData(uint32 planetID, std::vector<uint32> &typeIDs)
 
 Planet::Planet()
 {
-
+    /** @todo  will need to make an InventoryItem class specific for planets here eventually */
 }
 
 
@@ -74,7 +74,6 @@ PlanetSE::PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager*
 PlanetSE::~PlanetSE()
 {
 }
-
 
 bool PlanetSE::LoadExtras(SystemDB* db) {
     if (!StaticSystemEntity::LoadExtras(db))
@@ -100,11 +99,11 @@ bool PlanetSE::LoadExtras(SystemDB* db) {
     m_data.dist_4 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
     m_data.dist_5 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
     // this sets the vein "hot spots" on planet, should be 2 - 30?
-    m_data.numBands_1 = MakeRandomInt(2, 30);
-    m_data.numBands_2 = MakeRandomInt(2, 30);
-    m_data.numBands_3 = MakeRandomInt(2, 30);
-    m_data.numBands_4 = MakeRandomInt(2, 30);
-    m_data.numBands_5 = MakeRandomInt(2, 30);
+    m_data.numBands_1 = MakeRandomInt(15, 30);
+    m_data.numBands_2 = MakeRandomInt(15, 30);
+    m_data.numBands_3 = MakeRandomInt(15, 30);
+    m_data.numBands_4 = MakeRandomInt(15, 30);
+    m_data.numBands_5 = MakeRandomInt(15, 30);
 
     return true;
 }
@@ -120,7 +119,6 @@ void PlanetSE::CreateCustomsOffice()
 {
 
 }
-
 
 PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
 {

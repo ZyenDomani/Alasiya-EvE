@@ -180,7 +180,7 @@ PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetPlanetInfo() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
-    if (sConfig.cosmic.EnablePI)
+    if (!sConfig.cosmic.EnablePI)
         call.client->SendErrorMsg("The PI system is currently disabled.");
     return m_planet->GetPlanetInfo(m_colony);
 }
