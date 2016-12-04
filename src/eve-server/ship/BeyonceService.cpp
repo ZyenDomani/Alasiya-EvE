@@ -524,7 +524,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                     // this makes ship warp to same station elevation (y) as dock, instead of warping to stations "center point" (where icon is)
                     StationData data;
                     sDataMgr.GetStationInfo(toID, data);
-                    warpToPoint = GPoint(pSE->GetPosition().x, data.dockPosition.y, pSE->GetPosition().z);
+                    warpToPoint.y = data.dockPosition.y;
                     warpPointAdj = pSE->GetRadius();
                 } break;
                 default: {

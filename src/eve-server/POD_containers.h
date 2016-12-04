@@ -256,7 +256,7 @@ struct PlanetResourceData {
 
 struct PI_Link {
     int8 state = 0;
-    uint8 level = 0;
+    uint16 level = 0;
     uint16 typeID = 0;
     uint32 endpoint1 = 0;
     uint32 endpoint2 = 0;
@@ -265,7 +265,8 @@ struct PI_Link {
 struct PI_Route {
     int8 state = 0;
     int8 priority = 0;
-    uint8 id = 0;
+    uint32 srcPinID = 0;
+    uint32 destPinID = 0;
     uint16 commodityTypeID = 0;
     uint16 commodityQuantity = 0;
     std::list<uint32> path;
@@ -276,53 +277,77 @@ struct PI_Heads {
     uint32 ecuPinID = 0;
     double latitude = 0.0f;
     double longitude = 0.0f;
-    double qtyPerCycle = 0.0f;
+};
+
+struct PI_Schematic {
+    uint8 outputQty = 0;
+    uint16 outputType = 0;
+    uint32 cycleTime = 0;
+
+    // typeID, qty
+    std::map<uint16, uint16> inputs;
+};
+
+struct PI_Plant {
+    // specifically for processing plants. this is not saved in db
+    PI_Schematic data;
+    int8 state = 0;
+    uint8 order = 0;
+    uint16 schematicID = 0;
+    uint16 qtyPerCycle = 0;
+    uint64 cycleTime = 0;
+    uint64 expiryTime = 0;
+    uint64 installTime = 0;
+    uint64 lastRunTime = 0;
+
+    bool hasReceivedInputs = false;
+    bool receivedInputsLastCycle = false;
 };
 
 /* optimize this after everything is working!!  */
 class PI_Pin {
 public:
-    int8 state = 0;
-    uint8 level = 0;
-
-    uint16 typeID = 0;
-    uint32 ownerID = 0;
-
-    double latitude = 0.0f;
-    double longitude = 0.0f;
-
-    uint64 lastRunTime = 0;
-
     bool isCommandCenter = false;
     bool isStorage = false;
     bool isConsumer = false;
     bool isLaunchable = false;
     bool isProcess = false;
-    bool isExtractor = false;
-    bool isLink = false;
     bool isBase = false;
     bool isECU = false;
+
+    // common for all pins
+    int8 state = 0;
+    uint16 level = 0;
+    uint16 typeID = 0;
+    uint32 ownerID = 0;
+    uint64 lastRunTime = 0;
+
+    double latitude = 0.0f;
+    double longitude = 0.0f;
 
     // Command/Spaceport
     uint64 lastLaunchTime = 0;
 
-    // Process
-    uint16 schematicID = 0;   // used in ecu as extractor head typeID
-    bool hasReceivedInputs = false;
-    bool receivedInputsLastCycle = false;
-
     //ExtractorControlUnit
-    std::map<uint32, PI_Heads> heads;
+    std::map<uint16, PI_Heads> heads;
     float headRadius = 0.0f;
 
-    // -program data
-    uint16 resTypeID = 0;      // used in extractors as extracted resource typeID
+    // Process and ECU
+    bool hasReceivedInputs = false;
+    bool receivedInputsLastCycle = false;
+    uint16 schematicID = 0;   // used in ecu as extractor head typeID
+    uint16 programType = 0;      // used in extractors as extracted resource typeID
     uint16 qtyPerCycle = 0;
     uint64 cycleTime = 0;
     uint64 expiryTime = 0;
     uint64 installTime = 0;
 
+    // Storage    typeID, qty
     std::map<uint16, uint32> contents;
+
+    // specifically for updating contents. this is not saved in db
+    bool update = false;
+    float capacity = 0;  // this is not implemented yet
 };
 
 class PI_CCPin {
@@ -335,9 +360,10 @@ public:
     std::map<uint32, PI_Pin> pins;
     // linkID, linkData
     std::map<uint32, PI_Link> links;
-    // destID, routeData
-    std::map<uint32, PI_Route> routes;
+    // routeID, routeData
+    std::map<uint16, PI_Route> routes;
+    // plantPinID, plantData   - this dynamic data is not saved
+    std::map<uint32, PI_Plant> plants;
 };
-
 
 #endif  // _EVEMU_POD_CONTAINERS_H_

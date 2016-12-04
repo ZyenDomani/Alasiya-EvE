@@ -39,35 +39,41 @@ public:
 
     GPoint GetLaunchPos(uint32 launchID);
 
-    void SavePins(PI_CCPin* ccPin);
-    void SaveHeads(std::map< uint32, PI_Heads >& heads);
+    void GetPlanetData(DBQueryResult& res);
+    void GetSchematicData(DBQueryResult& res);
+    void GetSchematicTimes(DBQueryResult& res);
+
+    void SavePins(PI_CCPin* ccPin); // this does NOT save contents, heads, or schematic data
+    void SaveHeads(uint32 ccPinID, uint32 ownerID, uint32 ecuID, std::map< uint16, PI_Heads >& heads);
     void SaveLinks(PI_CCPin* ccPin);
     void SaveRoutes(PI_CCPin* ccPin);
     void SaveContents(PI_CCPin* ccPin);
-    void AddContents(uint32 ccPinID, uint32 pinID, uint16 typeID, uint32 qty);
-    void UpdateContents(uint32 pinID, uint16 typeID, uint32 qty);
+    void SavePinContents(uint32 ccPinID, uint32 pinID, std::map< uint16, uint32 >& contents);
     void RemovePin(uint32 pinID);
-    void RemoveHead(uint32 pinID);
+    void RemoveHead(uint32 ecuID, uint32 headID);
     void RemoveLink(uint32 linkID);
-    void RemoveRoute(uint8 routeID);
-    void RemoveContents(uint32 pinID, uint16 typeID);
+    void RemoveRoute(uint16 routeID);
+    void RemoveContents(uint32 pinID);
     void DeleteColony(uint32 ccPinID, uint32 planetID, uint32 charID);
     void LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins);
+    void LoadHeads(uint32 ecuID, std::map< uint16, PI_Heads >& heads);
     void LoadLinks(uint32 ccPinID, std::map<uint32, PI_Link>& links);
-    void LoadRoutes(uint32 ccPinID, std::map<uint32, PI_Route>& routes);
+    void LoadRoutes(uint32 ccPinID, std::map< uint16, PI_Route >& routes);
     void LoadContents(uint32 pinID, std::map< uint16, uint32 >& contents);
     void SaveCCLevel(uint32 pinID, uint8 level);
     void SavePinLevel(uint32 pinID, uint8 level);
     void SaveLinkLevel(uint32 linkID, uint8 level);
-    void GetPlanetData(DBQueryResult& row);
-    void SaveCommandCenter(uint32 pinID, uint32 charID, uint32 planetID, uint32 typeID, float latitude, float longitude);
+    void SaveCommandCenter(uint32 pinID, uint32 charID, uint32 planetID, uint32 typeID, double latitude, double longitude);
     void GetExtractorsForPlanet(uint32 planetID, DBQueryResult& res);
 
-    void SaveLaunch(uint32 charID, uint32 systemID, uint32 planetID, GPoint& pos);
+    void SaveLaunch(uint32 contID, uint32 charID, uint32 systemID, uint32 planetID, GPoint& pos);
+    void DeleteLaunch(uint32 contID);
+    void UpdatePinTimes(PI_CCPin* ccPin);
     void UpdatePlanetsForChar(uint32 solarSystemID, uint32 planetID, uint32 charID, uint16 typeID, uint8 pins=1);
 
     bool LoadColony(uint32 charID, uint32 planetID, PI_CCPin* ccPin);
 
+    uint16 SaveRoute(uint32 ccPinID, PI_Route& route);
 };
 
 #endif  // EVEMU_PLANET_PLANETDB_H_

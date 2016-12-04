@@ -10,17 +10,17 @@
   */
 
 
-
 #include "eve-server.h"
 
+#include "Client.h"
 #include "PyService.h"
 #include "inventory/ItemType.h"
 #include "inventory/InventoryItem.h"
 #include "packets/Planet.h"
 #include "planet/Colony.h"
+#include "planet/Planet.h"
 #include "planet/PlanetMgr.h"
-#include "Planet.h"
-#include "Client.h"
+#include "planet/PlanetDataMgr.h"
 
 
 PlanetMgr::PlanetMgr(PyServiceMgr *mgr, Client* pClient, PlanetSE* pPlanet, Colony* pColony)
@@ -29,7 +29,6 @@ PlanetMgr::PlanetMgr(PyServiceMgr *mgr, Client* pClient, PlanetSE* pPlanet, Colo
  m_colony(pColony),
 m_planet(pPlanet)
 {
-
 }
 
 PyRep* PlanetMgr::GetProgramResultInfo(uint32 pinID, uint32 typeID, PyList* heads, float headRadius)
@@ -108,8 +107,8 @@ PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
             case PinCommands::AddExtractorHead:         AddExtractorHead(uunc);         break;
             case PinCommands::MoveExtractorHead:        MoveExtractorHead(uunc);        break;
             case PinCommands::InstallProgram:           InstallProgram(uunc);           break;
-            /** @todo not handled yet... */
             case PinCommands::KillExtractorHead:        KillExtractorHead(uunc);        break;
+            /** @todo not handled yet... */
             case PinCommands::PrioritizeRoute:          PrioritizeRoute(uunc);          break;
             default: {
                 // case not handled yet.
@@ -124,7 +123,19 @@ PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
 
 void PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
 {
-    m_colony->UpgradeCommandCenter(nc.command_data->GetItem(0)->AsInt()->value(), nc.command_data->GetItem(1)->AsInt()->value());
+    uint8 level = nc.command_data->GetItem(1)->AsInt()->value();
+    uint32 cost = 0;
+    switch (level) {
+        case 1: cost = 580000; break;
+        case 2: cost = 1510000; break;
+        case 3: cost = 2710000; break;
+        case 4: cost = 4210000; break;
+        case 5: cost = 6310000; break;
+    }
+    if (m_client->AddBalance(-cost))
+        m_colony->UpgradeCommandCenter(nc.command_data->GetItem(0)->AsInt()->value(), level);
+    else
+        ;  //  make error msg here
 }
 
 void PlanetMgr::CreatePin(UUNCommand& nc)
@@ -157,7 +168,12 @@ void PlanetMgr::CreatePin(UUNCommand& nc)
         case Spaceports: {
             // Not Supported yet
             m_client->SendErrorMsg("PI Spaceports (and their Planet Customs Offices) are not yet supported.");
-            _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::CreatePin() Planet Spaceports (type/group %u/%u) not supported.", typeID, groupID);
+            UUNCStandardPin uuncsp;
+            if (!uuncsp.Decode(nc.command_data)) {
+                _log(SERVICE__ERROR, "Failed to decode args for UUNCStandardPin!");
+                nc.command_data->Dump(PLANET__WARNING, "      ");
+            }
+            m_colony->CreatePin(groupID, uuncsp.pinID2, uuncsp.typeID, uuncsp.latitude, uuncsp.longitude);
         } break;
         case Mercenary_Bases:
         case Capsuleer_Bases:{
@@ -239,17 +255,10 @@ void PlanetMgr::RemovePin(UUNCommand& nc)
 
 void PlanetMgr::RemoveLink(UUNCommand& nc)
 {
-    uint32 linkID = 0;
-    if (nc.command_data->GetItem(0)->IsInt()) {
-        linkID = nc.command_data->GetItem(0)->AsInt()->value();
-    } else if (nc.command_data->GetItem(0)->IsTuple()) {
-        linkID = nc.command_data->GetItem(0)->AsTuple()->GetItem(1)->AsInt()->value();
-    } else {
-        //Invalid...
-        _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork::RemoveLink() command_data type unrecognized: %s", nc.command_data->GetItem(0)->TypeString());
-        nc.command_data->Dump(PLANET__WARNING, "      ");
-    }
-    m_colony->RemoveLink(linkID);
+    _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork::RemoveLink()");
+    nc.Dump(PLANET__WARNING, "      ");
+
+    m_colony->RemoveLink(nc.command_data->GetItem(0)->AsInt()->value(), nc.command_data->GetItem(1)->AsInt()->value());
 }
 
 void PlanetMgr::RemoveRoute(UUNCommand& nc)
@@ -269,27 +278,7 @@ void PlanetMgr::RemoveRoute(UUNCommand& nc)
 
 void PlanetMgr::SetLinkLevel(UUNCommand& nc)
 {
-    uint32 linkID = 0;
-    if (nc.command_data->GetItem(0)->IsInt()) {
-        linkID = nc.command_data->GetItem(0)->AsInt()->value();
-    } else if (nc.command_data->GetItem(0)->IsTuple()) {
-        linkID = nc.command_data->GetItem(0)->AsTuple()->GetItem(1)->AsInt()->value();
-    } else {
-        //Invalid...
-        _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork::SetLinkLevel() command_data(0) type unrecognized: %s", nc.command_data->GetItem(0)->TypeString());
-        nc.command_data->Dump(PLANET__WARNING, "      ");
-    }
-    uint8 level = 0;
-    if (nc.command_data->GetItem(1)->IsInt()) {
-        level = nc.command_data->GetItem(1)->AsInt()->value();
-    } else if (nc.command_data->GetItem(1)->IsTuple()) {
-        level = nc.command_data->GetItem(1)->AsTuple()->GetItem(1)->AsInt()->value();
-    } else {
-        //Invalid...
-        _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork::SetLinkLevel() command_data(1) type unrecognized: %s", nc.command_data->GetItem(0)->TypeString());
-        nc.command_data->Dump(PLANET__WARNING, "      ");
-    }
-    m_colony->UpgradeLink(linkID, level);
+    m_colony->UpgradeLink(nc.command_data->GetItem(0)->AsInt()->value(), nc.command_data->GetItem(1)->AsInt()->value(), nc.command_data->GetItem(2)->AsInt()->value());
 }
 
 void PlanetMgr::SetSchematic(UUNCommand& nc)
@@ -299,7 +288,7 @@ void PlanetMgr::SetSchematic(UUNCommand& nc)
         pinID = nc.command_data->GetItem(0)->AsTuple()->GetItem(1)->AsInt()->value();
     else if (nc.command_data->GetItem(0)->IsInt())
         pinID = nc.command_data->GetItem(0)->AsInt()->value();
-    uint8 schematicID = nc.command_data->GetItem(1)->AsInt()->value();  // 65 - 137
+    uint16 schematicID = nc.command_data->GetItem(1)->AsInt()->value();  // 65 - 137
     m_colony->SetSchematic(pinID, schematicID);
 }
 
@@ -311,7 +300,7 @@ void PlanetMgr::AddExtractorHead(UUNCommand& nc)
         nc.command_data->Dump(PLANET__WARNING, "      ");
     }
 
-    m_colony->AddExtractorHead(args.ecuID, args.pinID, args.latitude, args.longitude);
+    m_colony->AddExtractorHead(args.ecuID, (uint16)args.headID, args.latitude, args.longitude);
 }
 
 void PlanetMgr::MoveExtractorHead(UUNCommand& nc)
@@ -322,7 +311,7 @@ void PlanetMgr::MoveExtractorHead(UUNCommand& nc)
         nc.command_data->Dump(PLANET__WARNING, "      ");
     }
 
-    m_colony->MoveExtractorHead(args.ecuID, args.pinID, args.latitude, args.longitude);
+    m_colony->MoveExtractorHead(args.ecuID, (uint16)args.headID, args.latitude, args.longitude);
 }
 
 void PlanetMgr::InstallProgram(UUNCommand& nc)
@@ -333,23 +322,20 @@ void PlanetMgr::InstallProgram(UUNCommand& nc)
         nc.command_data->Dump(PLANET__WARNING, "      ");
     }
 
-    m_colony->InstallProgram(args.ecuID, args.typeID, args.headRadius);
+    m_colony->InstallProgram(args.ecuID, (uint16)args.typeID, args.headRadius);
 }
 
 void PlanetMgr::KillExtractorHead(UUNCommand& nc)
 {
-    _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork::KillExtractorHead()");
-
-    nc.Dump(PLANET__WARNING, "      ");
-
+    m_colony->KillExtractorHead(nc.command_data->GetItem(0)->AsInt()->value(), nc.command_data->GetItem(1)->AsInt()->value());
 }
 
 void PlanetMgr::PrioritizeRoute(UUNCommand& nc)
 {
     _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork::PrioritizeRoute()");
-
     nc.Dump(PLANET__WARNING, "      ");
 
+    m_colony->PrioritizeRoute();
 }
 
 /*
@@ -398,3 +384,28 @@ piCargoDeployed = 1
 piCargoClaimed = 2
 piCargoDeleted = 3
 */
+
+/** @note   link distance formula from client
+ *
+ *    def GetDistance(self, otherInstallation):
+ *        diffLong = self.longitude - otherInstallation.longitude
+ *        cosDiffLong = math.cos(diffLong)
+ *        cosMyLat = math.cos(self.latitude)
+ *        sinMyLat = math.sin(self.latitude)
+ *        cosOthLat = math.cos(otherInstallation.latitude)
+ *        sinOthLat = math.sin(otherInstallation.latitude)
+ *        nom1 = (cosMyLat + math.sin(diffLong)) ** 2
+ *        nom2 = (cosMyLat * sinOthLat - sinMyLat * cosOthLat * cosDiffLong) ** 2
+ *        denom = sinMyLat * sinOthLat + cosMyLat * cosOthLat * cosDiffLong
+ *        return math.atan2(math.sqrt(nom1 + nom2), denom)
+ */
+
+/** @note CC Info
+ *
+commandCenterInfoPerLevel = {0: util.KeyVal(powerOutput=6000, cpuOutput=1675, upgradeCost=0),
+ 1: util.KeyVal(powerOutput=9000, cpuOutput=7057, upgradeCost=580000),
+ 2: util.KeyVal(powerOutput=12000, cpuOutput=12136, upgradeCost=1510000),
+ 3: util.KeyVal(powerOutput=15000, cpuOutput=17215, upgradeCost=2710000),
+ 4: util.KeyVal(powerOutput=17000, cpuOutput=21315, upgradeCost=4210000),
+ 5: util.KeyVal(powerOutput=19000, cpuOutput=25415, upgradeCost=6310000)}
+ */

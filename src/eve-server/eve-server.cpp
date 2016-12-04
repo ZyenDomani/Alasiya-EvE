@@ -118,6 +118,7 @@
 #include "missions/MissionMgrService.h"
 // planet services
 #include "planet/Planet.h"
+#include "planet/PlanetDataMgr.h"
 #include "planet/PlanetMgrBound.h"
 #include "planet/PlanetORBBound.h"
 // pos services
@@ -403,6 +404,8 @@ int main( int argc, char* argv[] )
     sMgrData.Initialize();
     sLog.Log("       ServerInit", "Spawn Data");
     sSpawnDataMgr.Initialize();
+    sLog.Log("       ServerInit", "PI Data");
+    sPIDataMgr.Initialize();
     sLog.Log("       ServerInit", "Planet Data");
     sPlanetDataMgr.Initialize();
 

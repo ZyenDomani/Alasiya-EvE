@@ -50,7 +50,9 @@ public:
     m_planet(pPlanet)
     {
         _SetCallDispatcher(m_dispatch);
-        m_colony = new Colony(mgr, pClient, pPlanet);
+
+        m_colony = pPlanet->GetColony(pClient);
+
         m_colony->Init();
 
         m_planetMgr = new PlanetMgr(mgr, pClient, pPlanet, m_colony);
@@ -79,7 +81,6 @@ public:
 
     virtual ~PlanetMgrBound() {
         delete m_dispatch;
-        SafeDelete(m_colony);
         SafeDelete(m_planetMgr);
     }
 
@@ -357,6 +358,12 @@ PyResult PlanetMgrBound::Handle_UserLaunchCommodities(PyCallArgs &call) {
      * 20:00:35 [PlanetCallDump]   Call Named Arguments:
      * 20:00:35 [PlanetCallDump]     Argument 'machoVersion':
      * 20:00:35 [PlanetCallDump]         Integer field: 1
+     *
+     *
+21:44:05 [PlanetCallDump]    Dictionary: 1 entries
+21:44:05 [PlanetCallDump]      [ 0] Key: Integer field: 3645
+21:44:05 [PlanetCallDump]      [ 0] Value: Real field: 120.000000   << no clue why this changed to float from int.
+eve-server: /usr/local/src/eve/Alasiya-EvE/src/eve-common/python/PyRep.h:141: PyInt* PyRep::AsInt(): Assertion `IsInt()' failed.
      */
     Call_LaunchCommodities args;
     if (!args.Decode(&call.tuple)) {
@@ -365,10 +372,18 @@ PyResult PlanetMgrBound::Handle_UserLaunchCommodities(PyCallArgs &call) {
     }
     PyDict* dict = args.dict->AsDict();
     dict->Dump(PLANET__DUMP, "   ");
-    std::map<uint16, uint16> items;
+    uint32 amount = 0;
+    std::map<uint16, uint32> items;
     PyDict::const_iterator itr = dict->begin();
-    for (; itr != dict->end(); itr++ )
-        items.insert(std::pair<uint16, uint16>(itr->first->AsInt()->value(), itr->second->AsInt()->value()));
+    for (; itr != dict->end(); itr++ ) {
+        if (itr->second->IsInt())
+            amount = itr->second->AsInt()->value();
+        else if (itr->second->IsFloat())
+            amount = (uint32)itr->second->AsFloat()->value();
+        else
+            ; // make error here
+        items.insert(std::pair<uint16, uint32>(itr->first->AsInt()->value(), amount));
+    }
 
     m_colony->LaunchCommodities(args.pinID, items);
 
@@ -379,11 +394,39 @@ PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_UserTransferCommodities() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 /*
-
         simTime, sourceRunTime = self.remoteHandler.UserTransferCommodities(path, commodities)    {{ simTime = time to stop (complete time), sourceRunTime = previous runtime}}
-
+        15:19:15 [PlanetDebug] PlanetMgrBound::Handle_UserTransferCommodities() size=2
+        15:19:15 [PlanetCallDump]   Call Arguments:
+        15:19:15 [PlanetCallDump]       Tuple: 2 elements
+        15:19:15 [PlanetCallDump]         [ 0] List: 5 elements
+        15:19:15 [PlanetCallDump]         [ 0]   [ 0] Integer field: 140007050
+        15:19:15 [PlanetCallDump]         [ 0]   [ 1] Integer field: 140007049
+        15:19:15 [PlanetCallDump]         [ 0]   [ 2] Integer field: 140006983
+        15:19:15 [PlanetCallDump]         [ 0]   [ 3] Integer field: 140007002
+        15:19:15 [PlanetCallDump]         [ 0]   [ 4] Integer field: 140006971
+        15:19:15 [PlanetCallDump]         [ 1] Dictionary: 2 entries
+        15:19:15 [PlanetCallDump]         [ 1]   [ 0] Key: Integer field: 2390
+        15:19:15 [PlanetCallDump]         [ 1]   [ 0] Value: Integer field: 100
+        15:19:15 [PlanetCallDump]         [ 1]   [ 1] Key: Integer field: 2309
+        15:19:15 [PlanetCallDump]         [ 1]   [ 1] Value: Integer field: 44400
         */
-    return nullptr;
+
+    PyDict* dict = call.tuple->GetItem(1)->AsDict();
+    uint32 amount = 0;
+    std::map<uint16, uint32> items;
+    PyDict::const_iterator itr = dict->begin();
+    for (; itr != dict->end(); itr++ ) {
+        if (itr->second->IsInt())
+            amount = itr->second->AsInt()->value();
+        else if (itr->second->IsFloat())
+            amount = (uint32)itr->second->AsFloat()->value();
+        else
+            ; // make error here
+        items.insert(std::pair<uint16, uint32>(itr->first->AsInt()->value(), amount));
+    }
+
+    PyList* list = call.tuple->GetItem(0)->AsList();
+    return m_colony->TransferCommodities(list->items.front()->AsInt()->value(), list->items.back()->AsInt()->value(), items);
 }
 
 PyResult PlanetMgrBound::Handle_GMAddCommodity(PyCallArgs &call) {

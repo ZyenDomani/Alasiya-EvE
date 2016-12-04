@@ -12,37 +12,7 @@
 #ifndef EVEMU_PLANET_PLANET_H_
 #define EVEMU_PLANET_PLANET_H_
 
-#include <unordered_map>
 #include "system/SystemEntity.h"
-
-class PlanetDB;
-
-// this class is a singleton object to have a common place for all planet data
-class PlanetDataMgr
-: public Singleton< PlanetDataMgr >
-{
-public:
-    PlanetDataMgr();
-    virtual ~PlanetDataMgr() { /* nothing do to yet */ }
-
-    // Initializes the Table:
-    int Initialize();
-
-    void GetPlanetData(uint32 planetID, std::vector<uint32> &typeIDs);
-
-protected:
-    void _Populate();
-
-
-private:
-    PlanetDB* m_db;
-
-    std::unordered_multimap<uint32, uint32> m_planetData;
-};
-
-#define sPlanetDataMgr \
-( PlanetDataMgr::get() )
-
 
 /** @todo update this to create a planet item instead of the default celestial item */
 class Planet
@@ -89,12 +59,22 @@ public:
     void AbandonColony(Colony* pColony);
     void CreateCustomsOffice();
 
+    Colony* GetColony(Client* pClient);
+
 protected:
     SystemEntity* pCO;
     PlanetResourceData m_data;
 
-    bool m_hasColony = false;
+    Timer m_colonyTimer;
 
+    /* map of charID, Colony* for this planet.
+     *   this is a hack, as the client will not reuse planet bound objects,
+     * instead calling for a new object on every call.  this scheme will prevent data races on colony calls
+     *  Colony* is owned by this planetSE
+     */
+    std::map<uint32, Colony*> m_colonies;
+
+    bool m_hasColony = false;
 };
 
 #endif  // EVEMU_PLANET_PLANET_H_

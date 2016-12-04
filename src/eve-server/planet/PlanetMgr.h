@@ -11,11 +11,14 @@
 #define EVEMU_PLANET_PLANETMGR_H_
 
 #include "planet/PlanetDB.h"
+#include "planet/PlanetDataMgr.h"
+
 
 class Client;
 class Colony;
 class PlanetSE;
 class UUNCommand;
+class UUNCommandList;
 class PyServiceMgr;
 class PlanetMgr
 {

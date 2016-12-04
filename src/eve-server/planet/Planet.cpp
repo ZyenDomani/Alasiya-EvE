@@ -9,9 +9,10 @@
   */
 
 
-#include "Colony.h"
-#include "Planet.h"
-#include "PlanetDB.h"
+#include "Client.h"
+#include "planet/Colony.h"
+#include "planet/Planet.h"
+#include "planet/PlanetMgr.h"
 #include "packets/Planet.h"
 #include "system/SystemManager.h"
 
@@ -20,45 +21,7 @@
  * planetse will have a Planet class to hold data and call other functions/methods as needed
  * the PlanetMgr class will manage all aspects of planet data, init'd as a single instance (no reason for multiples)
  *
- *
  */
-
-PlanetDataMgr::PlanetDataMgr()
-{
-}
-
-int PlanetDataMgr::Initialize()
-{
-    _Populate();
-    return 1;
-}
-
-void PlanetDataMgr::_Populate()
-{
-    double start = GetTimeUSeconds();
-    DBQueryResult* res = new DBQueryResult();
-    DBResultRow row;
-
-    m_db->GetPlanetData(*res);
-    while (res->GetRow(row)) {
-        // SELECT planet.typeID, resource.typeID
-        m_planetData.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
-    }
-
-    //cleanup
-    SafeDelete(res);
-    sLog.Log("     PlanetDataMgr", "%u planet data groups in %u buckets loaded in %.3fms.",
-             m_planetData.size(), m_planetData.bucket_count(), (GetTimeUSeconds() - start));
-}
-
-void PlanetDataMgr::GetPlanetData(uint32 planetID, std::vector<uint32> &typeIDs)
-{
-    auto itr = m_planetData.equal_range(planetID);
-    for (auto it = itr.first; it != itr.second; it++)
-        typeIDs.push_back(it->second);
-}
-
-
 
 Planet::Planet()
 {
@@ -67,12 +30,21 @@ Planet::Planet()
 
 
 PlanetSE::PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-: StaticSystemEntity(self, services, system)
+: StaticSystemEntity(self, services, system),
+m_colonyTimer(100000) //arbitrary default
 {
+    m_colonyTimer.Disable();
+    self->SetAttribute(AttrMass,   self->type().mass());
+    self->SetAttribute(AttrRadius, self->type().radius());
+    self->SetAttribute(AttrVolume, self->type().volume());
 }
 
 PlanetSE::~PlanetSE()
 {
+    for (auto cur : m_colonies) {
+        cur.second->Shutdown();
+        SafeDelete(cur.second);
+    }
 }
 
 bool PlanetSE::LoadExtras(SystemDB* db) {
@@ -110,9 +82,14 @@ bool PlanetSE::LoadExtras(SystemDB* db) {
 
 void PlanetSE::Process()
 {
-    // no destiny and nothing to target.  no need for this call
-    //SystemEntity::Process();
-    // need colony* to call update
+    if (m_colonyTimer.Check()) {
+        if (m_colonies.empty()) {
+            m_colonyTimer.Disable();
+            return;
+        }
+        for (auto cur : m_colonies)
+            cur.second->Process();
+    }
 }
 
 void PlanetSE::CreateCustomsOffice()
@@ -185,23 +162,43 @@ PyRep* PlanetSE::GetExtractorsForPlanet(int32 planetID) {
 
     DBQueryResult res;
     PlanetDB m_db;
-    // SELECT typeID, ownerID, latitude, longitude
+    // {for ecu in planetID}  SELECT `headID`, `typeID`, `ownerID`, `latitude`, `longitude` FROM `chrPlanetECUHeads`
     m_db.GetExtractorsForPlanet(planetID, res);
 
-    PyDict* dict(new PyDict());
+    PyList* list(new PyList());
     DBResultRow row;
     while (res.GetRow(row)) {
-        dict->SetItem("typeID", new PyInt(row.GetInt(0)));
-        dict->SetItem("ownerID", new PyInt(row.GetInt(1)));
-        dict->SetItem("latitude", new PyFloat(row.GetFloat(2)));
-        dict->SetItem("longitude", new PyFloat(row.GetFloat(3)));
+        PyDict* dict(new PyDict());
+            dict->SetItem("pinID", new PyInt(row.GetInt(0)));
+            dict->SetItem("typeID", new PyInt(row.GetInt(1)));
+            dict->SetItem("ownerID", new PyInt(row.GetInt(2)));
+            dict->SetItem("latitude", new PyFloat(row.GetFloat(3)));
+            dict->SetItem("longitude", new PyFloat(row.GetFloat(4)));
+        list->AddItem(dict);
     }
 
-    return dict;
+    return list;
+}
+
+Colony* PlanetSE::GetColony(Client* pClient)
+{
+    std::map<uint32, Colony*>::iterator itr = m_colonies.find(pClient->GetCharacterID());
+    if (itr != m_colonies.end())
+        return itr->second;
+    Colony* pColony = new Colony(&m_services, pClient, this);
+    m_colonies[pClient->GetCharacterID()] = pColony;
+    if (!m_colonyTimer.Enabled()) {
+        // start colony timer.  this will process colony data every 30 mins.
+        m_colonyTimer.Start(30*60*1000);   //30m
+    }
+    return pColony;
 }
 
 void PlanetSE::AbandonColony(Colony* pColony)
 {
+    std::map<uint32, Colony*>::iterator itr = m_colonies.find(pColony->GetOwner());
+    if (itr != m_colonies.end())
+        m_colonies.erase(itr);
     pColony->AbandonColony();
 }
 
