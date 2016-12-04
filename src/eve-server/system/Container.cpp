@@ -28,6 +28,7 @@
 
 #include "Client.h"
 #include "EVEServerConfig.h"
+#include "planet/PlanetDB.h"
 #include "system/DestinyManager.h"
 #include "system/Container.h"
 #include "SystemManager.h"
@@ -107,6 +108,11 @@ uint32 CargoContainer::CreateItemID(ItemFactory &factory, ItemData &data) {
 
 void CargoContainer::Delete()
 {
+    if (EVEDB::invTypes::typePlanetaryLaunchContainer){
+        PlanetDB mDB;
+        mDB.DeleteLaunch(itemID());
+    }
+
     mySE->Delete();
     m_inventory->LoadContents(&m_factory);
     // delete contents first
@@ -177,12 +183,11 @@ void CargoContainer::RemoveItem(InventoryItemRef item)
     m_inventory->RemoveItem( item );
     if (m_isAnchored)
         return;
-    if (typeID() == EVEDB::invTypes::typeCargoContainer)
-        if (m_inventory->IsEmpty()) {
-            sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", itemID() );
-            Delete();
-            /** @todo  this also needs to delete and remove the SE from system....  */
-        }
+   // if (typeID() == EVEDB::invTypes::typeCargoContainer)
+    if (m_inventory->IsEmpty()) {
+        sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", itemID() );
+        Delete();
+    }
 }
 
 void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
@@ -207,8 +212,12 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
     m_destiny = new DestinyManager(this);
 
     m_contRef = self;
-    if (!IsStation(m_self->locationID()))
-        m_deleteTimer.Start();
+    if (!IsStation(m_self->locationID())) {
+        if (m_self->typeID() == EVEDB::invTypes::typePlanetaryLaunchContainer)
+            m_deleteTimer.Start(5 *24 *60 *60 *1000);  //5d timer for PI launch.  should probably get this saved value from planet launches
+        else
+            m_deleteTimer.Start();
+    }
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity(), false);
 }
 
@@ -229,9 +238,9 @@ void ContainerSE::Process() {
 
 void ContainerSE::Delete()
 {
-    SystemEntity::Delete();
     m_targMgr->DoDestruction();
     m_system->RemoveEntity(this);
+    SystemEntity::Delete();
 }
 
 void ContainerSE::AnchorContainer()
