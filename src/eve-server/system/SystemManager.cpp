@@ -73,16 +73,10 @@ SystemManager::~SystemManager() {
         for (auto cur : m_clients)
             sEntityList.Remove(cur.second);
     }
-    /*
-    for (auto cur : m_entities) {
-        if (IsStation(cur.first))
-            sEntityList.RemoveStation(cur.first);
-        else if (cur.second->IsNPCSE())
-            cur.second->GetNPCSE()->SaveNPC();
-        else if (cur.second->IsAsteroidSE())
-            cur.second->GetSelf()->SaveItem();
 
-        //itemFactory().RemoveItem(cur.first);
+    for (auto cur : m_entities) {
+        if (cur.second->IsStationSE())
+            sEntityList.RemoveStation(cur.first);
 
         // this is a failsafe, as there should be no piloted ships in this system now
         if (cur.second->HasPilot()) {
@@ -90,7 +84,7 @@ SystemManager::~SystemManager() {
             SafeDelete(pClient);
         }
         SafeDelete(cur.second);
-    } */
+    }
 
     m_clients.clear();
     m_entities.clear();
