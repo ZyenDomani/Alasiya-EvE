@@ -520,6 +520,13 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 case EVEDB::invGroups::Moon: {  //this will put ship at same visual distance for different moon radii
                     warpPointAdj = pSE->GetRadius() + (pSE->GetRadius() *2 /5 /*10*/);
                 } break;
+                case EVEDB::invGroups::Station: {
+                    // this makes ship warp to same station elevation (y) as dock, instead of warping to stations "center point" (where icon is)
+                    StationData data;
+                    sDataMgr.GetStationInfo(toID, data);
+                    warpToPoint = GPoint(pSE->GetPosition().x, data.dockPosition.y, pSE->GetPosition().z);
+                    warpPointAdj = pSE->GetRadius();
+                } break;
                 default: {
                     warpPointAdj = pSE->GetRadius();
                 } break;
