@@ -1,5 +1,5 @@
 
-DROP TABLE IF EXISTS chrPlanets, chrPlanetCCPin, chrPlanetPins, chrPlanetLinks, chrPlanetRoutes, chrPlanetLaunches;
+DROP TABLE IF EXISTS chrPlanets, chrPlanetCCPin, chrPlanetPins, chrPlanetLinks, chrPlanetRoutes, chrPlanetLaunches, chrPlanetECUHeads, chrPlanetPinContents;
 
 CREATE TABLE `chrPlanets` (
   `charID` int(10) NOT NULL DEFAULT '0',
