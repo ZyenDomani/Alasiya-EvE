@@ -45,7 +45,8 @@ typedef enum {          // implemented?  (* = yes)
     _collisionProfile   = 19,   //*
     _droneProfile       = 20,   //*
     _itemloadProfile    = 21,   //*
-    _concordProfile     = 22    //*
+    _concordProfile     = 22,   //*
+    _colonyProfile      = 23    //*
 } profile;
 
 class Profile
@@ -94,6 +95,7 @@ class Profile
       std::vector<double> m_collision;
       std::vector<double> m_drone;
       std::vector<double> m_concord;
+      std::vector<double> m_colony;
 };
 
 #define sProfile \

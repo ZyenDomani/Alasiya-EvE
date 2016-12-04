@@ -81,8 +81,8 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
 
     account_info.name       = _escaped_username;
     account_info.role       = row.GetUInt64(4);
-    account_info.online     = row.GetBool(5);
-    account_info.banned     = row.GetBool(6);
+    account_info.online     = (row.GetBool(5) ? true : false);
+    account_info.banned     = (row.GetBool(6) ? true : false);
     account_info.visits     = row.GetInt(7);
 
     if (!row.IsNull(8))

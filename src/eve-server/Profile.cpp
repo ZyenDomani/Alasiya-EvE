@@ -44,7 +44,8 @@ void Profile::AddTime(uint8 key, double value) {
     _collisionProfile   = 19,   //*
     _droneProfile       = 20,   //*
     _itemloadProfile    = 21,   //*
-    _concordProfile     = 22    //*
+    _concordProfile     = 22,   //*
+    _colonyProfile      = 23    //*
     */
     switch(key) {
         case 1:
@@ -113,6 +114,9 @@ void Profile::AddTime(uint8 key, double value) {
         case 22:
             m_concord.push_back(value);
             break;
+        case 23:
+            m_colony.push_back(value);
+            break;
         default:
             sLog.Error("Profile::AddTime()", "Default reached on key %u.", key );
             break;
@@ -143,6 +147,7 @@ void Profile::ClearAll()
     m_drone.clear();
     m_itemload.clear();
     m_concord.clear();
+    m_colony.clear();
 }
 
 void Profile::PrintProfile()
@@ -191,6 +196,8 @@ void Profile::PrintProfile()
     sLog.Success("   Server Profile", " Drones called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_drone.size(), h, l, a );
     GetRunTimes(m_concord, &h, &l, &a);
     sLog.Success("   Server Profile", " Concord called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_concord.size(), h, l, a );
+    GetRunTimes(m_colony, &h, &l, &a);
+    sLog.Success("   Server Profile", " Colony Updates called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_colony.size(), h, l, a );
     sLog.Success("   Server Profile", " Profile Times Compiled in %fus.", (GetTimeUSeconds() -startTime) );
 }
 

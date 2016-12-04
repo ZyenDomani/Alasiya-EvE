@@ -171,6 +171,11 @@ void EvE::traceStack(void)
     free(strings);
 }
 
+double EvE::min(double x, double y)
+{
+    return ((x < y) ? x : y);
+}
+
 uint64 EvE::max(int64 x)
 {
     return ((x > 0) ? x : 0);

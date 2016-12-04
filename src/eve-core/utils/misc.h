@@ -91,8 +91,12 @@ inline bool IsNaN(double x)      { return x!= x; }
 uint32 CreatePIDFile(const std::string& filename);
 
 namespace EvE {
+    // returns the minimum of x,y
+    double min(double x, double y);
+    // returns the max of x,0
     uint64 max(int64 x);
     double max(double x);
+    // prints the top10 items in stack to stdout
     void traceStack(void);
 }
 

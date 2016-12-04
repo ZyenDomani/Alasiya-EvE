@@ -580,7 +580,7 @@ bool DBResultRow::GetBool( uint32 index ) const
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore GetInt: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
         EvE::traceStack();
-        return 0;       //nothing better to do...
+        return false;       //nothing better to do...
     }
 
     return (GetText(index)[0] == 1);

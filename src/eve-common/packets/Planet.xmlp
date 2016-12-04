@@ -73,7 +73,7 @@
     <elementDef name="Call_AddMoveExtractorHead">
         <tupleInline>
             <int name="ecuID" />
-            <int name="pinID" />
+            <int name="headID" />
             <real name="latitude" />
             <real name="longitude" />
         </tupleInline>

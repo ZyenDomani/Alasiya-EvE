@@ -36,7 +36,7 @@ const uint64 Win32Time_Month = Win32Time_Day*30;
 const uint64 Win32Time_Year = Win32Time_Month*12;
 
 static const uint64 SECS_BETWEEN_EPOCHS = 11644473600LL;
-static const uint64 SECS_TO_100NS = 10000000; // 10^7
+static const uint64 SECS_TO_100NS = 10000000L; // 10^7
 
 uint64 UnixTimeToWin32Time( time_t sec, uint32 nsec ) {
     return(
