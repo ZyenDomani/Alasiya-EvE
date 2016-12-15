@@ -108,7 +108,7 @@ uint32 InventoryItem::CreateItemID(ItemFactory &factory, ItemData &data) {
 }
 
 /* This Spawn function is meant for in-memory only items created from the following categorys...
- *  EVEDB::invCategories::Entity
+ *  EVEDB::invCategories::Entity (for npcs)
  *  EVEDB::invCategories::Charge (for launched missiles only)
  *
  * these items meant to never be saved to database
@@ -582,10 +582,12 @@ uint32 InventoryItem::GetPackagedVolume()
 }
 
 void InventoryItem::Delete() {
-    //first, get out of client's sight.
-    //this also removes us from our inventory.
-    Move(0);
-    ChangeOwner(2);
+    if (!IsNPCCorp(ownerID())) {
+        //first, get out of client's sight.
+        //this also removes us from our inventory.
+        Move(0);
+        ChangeOwner(2);
+    }
 
     //take ourself out of the DB
     m_factory.db().DeleteItem( itemID() );
@@ -772,7 +774,7 @@ PyObject* InventoryItem::ItemGetInfo()
 void InventoryItem::Rename(const char *to) {
 
     m_itemName = to;
-    //SaveItem();
+    SaveItem();
 }
 
 void InventoryItem::MoveInto(Inventory &new_home, EVEItemFlags _flag, bool notify) {
@@ -792,7 +794,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
         old_inventory->RemoveItem(InventoryItemRef(this));  //releases its ref
     else {
         if (m_locationID)
-            _log(INV__WARNING, "Inventory for %u not found. Item not removed from it's container's inventory.", old_location);
+            _log(INV__WARNING, "Inventory for %u not found. %s not removed from it's container's inventory.", itemName().c_str(), old_location);
     }
 
     m_locationID = new_location;
@@ -804,10 +806,12 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
         new_inventory->AddItem(InventoryItemRef(this)); //makes a new ref
     else {
         if (m_locationID)
-            _log(INV__WARNING, "Inventory for %u not found. Item not added to it's container's inventory.", new_location);
+            _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", itemName().c_str(), new_location);
     }
 
     SaveItem();
+    if (IsNPCCorp(m_ownerID))
+        return;
 
     //notify about the changes.
     if (notify) {
@@ -907,8 +911,8 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
     /*
     if (locationID() != to_merge->locationID()) {
         if (! (flag() == flagHangar) and ( (to_merge->flag() >= flagHiSlot0) or (to_merge->flag() <= flagHiSlot7) )) {
-            _log(ITEM__ERROR, "%s (%u) in locatio
-            // remove item from SystemManagern %u asked to merge with item %u in location %u.", itemName().c_str(), itemID(), locationID(), to_merge->itemID(), to_merge->locationID());
+            _log(ITEM__ERROR, "%s (%u) in location %u asked to merge with item %u in location %u.", itemName().c_str(), itemID(), locationID(), to_merge->itemID(), to_merge->locationID());
+            // remove item from SystemManager
             return false;
         }
     }
@@ -1016,6 +1020,8 @@ void InventoryItem::SaveItem() {
 
 //contents of changes are consumed and cleared
 void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const {
+    if (IsNPCCorp(toID))
+        return;
     //TODO: figure out the appropriate list of interested people...
     Client *c = sEntityList.FindClientByCharID(toID);
     if (!c) return; //not found or not online...

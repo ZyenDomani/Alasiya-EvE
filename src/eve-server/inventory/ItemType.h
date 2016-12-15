@@ -288,7 +288,7 @@ public:
     double volume() const                               { return m_volume; }
     double capacity() const                             { return m_capacity; }
     EVERace race() const                                { return m_raceID; }
-    
+
 	bool HasEffect(uint32 effectID) const
 	{
 		if(std::find(m_effects.begin(), m_effects.end(), effectID)!=m_effects.end())
@@ -395,6 +395,19 @@ public:
 
     // Content:
     std::string     name;
+    uint32          typeID;
+    uint32          ownerID;
+    uint32          locationID;
+    EVEItemFlags    flag;
+    bool            contraband;
+    bool            singleton;
+    uint32          quantity;
+    GPoint          position;
+    std::string     customInfo;
+};
+
+struct SaveData {
+    uint32          itemID;
     uint32          typeID;
     uint32          ownerID;
     uint32          locationID;

@@ -63,12 +63,13 @@ minFakeClientItem = 17000000000000000000L
 */
 
 //  allan's static defines to ease code checks
+//  **update these**
 #define EVEMU_OUTPOST_ID               61000000
 #define EVEMU_SCENERIO_ID              90000000
 #define EVEMU_ASTEROID_ID             100000000
-#define EVEMU_PLANET_CC_ID            130000000
+#define EVEMU_TEMP_ENTITY_ID          110000000
+#define EVEMU_PLANET_PIN_ID           130000000
 #define EVEMU_MINIMUM_ID          minPlayerItem
-#define EVEMU_TEMP_ENTITY_ID   EVEMU_MINIMUM_ID
 #define EVEMU_MINIMUM_ENTITY_ID       140000000
 #define EVEMU_DRONE_ID                500000000
 #define EVEMU_NPC_ID                  750000000
@@ -84,8 +85,11 @@ minFakeClientItem = 17000000000000000000L
 #define IsCharType(typeID) \
  ((typeID >= minCharType) && (typeID <= maxCharType))
 
+#define IsCharacterLocation(itemID) \
+ (itemID >= minValidCharLocation)
+
 #define IsContainerLocation(itemID) \
-(itemID >= minValidShipLocation)
+ (itemID >= minValidShipLocation)
 
 #define IsCorp(itemID) \
 ((itemID >= minNPCCorporation) && (itemID <= maxCorporation))
@@ -107,7 +111,7 @@ minFakeClientItem = 17000000000000000000L
 
 // this covers ALL static celestial-type items
 #define IsStaticMapItem(itemID) \
-((itemID >= minRegion) && (itemID < maxStation))
+((itemID >= minRegion) && (itemID < maxUniverseAsteroid))
 
 #define IsRegion(itemID) \
 ((itemID >= 10000000) && (itemID < 20000000))

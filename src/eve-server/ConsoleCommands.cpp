@@ -206,8 +206,8 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
 			} else if (strncmp(buf, "a", 1) == 0) {
                 sLog.Success("  Alasiya's EvEMu", "Server SaveAll:");
-                sLog.Error("      Server Save", " Not Avalible Yet." );
-				//p_factory->SaveItems();
+                //sLog.Error("      Server Save", " Not Avalible Yet." );
+				pFactory->SaveItems();
 			} else if (strncmp(buf, "b", 1) == 0) {
                 sLog.Success("  Alasiya's EvEMu", "Server Broadcast:");
                 sLog.Error(" Server Broadcast", " Not Avalible Yet." );

@@ -28,7 +28,7 @@
 
 //#include "eve-compat.h"
 
-/** @todo look into making this a singleton to avoid multiple redirection calls when factory is needed (and it's single-instance code) */
+/** @todo look into making this a singleton to avoid multiple redirection calls when factory is needed (and it's single-instance code anyway) */
 
 #include "inventory/InventoryDB.h"
 
@@ -61,7 +61,8 @@ public:
     InventoryDB& db()                                   { return m_db; }
 
     Client* GetUsingClient()                            { return m_pClient; }
-    Inventory* GetInventoryFromId(uint32 inventoryID, bool load=true);
+    Inventory* GetInventoryFromId(uint32 itemID, bool load=true);
+    Inventory* GetItemContainerInventory(uint32 itemID, bool load = true);
 
     /**
      * these load type, cache it and return it.
@@ -124,20 +125,23 @@ public:
     /*
 	 * ID Authority Functions:
      */
-    uint32                  GetNextEntityID();
-    uint32                  GetNextAsteroidID();
-    uint32                  GetNextMissileID();
     uint32                  GetNextNPCID();
+    uint32                  GetNextEntityID();
+    uint32                  GetNextMissileID();
+    uint32                  GetNextAsteroidID();
+    uint32                  GetNextPlanetPinID();
 
 
 protected:
     InventoryDB m_db;
-    Client* m_pClient;     // pointer to client currently using the ItemFactory, we do not own this
+    Client* m_pClient;     // client currently using the ItemFactory, we do not own this
 
-    std::map<EVEItemCategories, ItemCategory*> m_categories;
-    std::map<uint32, ItemGroup*> m_groups;
     std::map<uint32, ItemType*> m_types;
+    std::map<uint32, ItemGroup*> m_groups;
     std::map<uint32, InventoryItemRef> m_items;
+    std::map<uint32, InventoryItemRef> m_staticItems;
+    std::map<uint32, InventoryItemRef> m_dynamicItems;
+    std::map<EVEItemCategories, ItemCategory*> m_categories;
 
     template<class _Ty>
     const _Ty *_GetType(uint32 typeID);
@@ -148,10 +152,11 @@ protected:
 private:
     // ID Authority:
     // these hold the next valid ID for in-memory only objects
-    static uint32 m_nextEntityID;
-    static uint32 m_nextAsteroidID;
-    static uint32 m_nextMissileID;
     static uint32 m_nextNPCID;
+    static uint32 m_nextEntityID;
+    static uint32 m_nextMissileID;
+    static uint32 m_nextAsteroidID;
+    static uint32 m_nextPlanetPinID;
 
     //item to hold current number of currently loaded items
     uint32 m_itemCount;

@@ -45,7 +45,7 @@ bool InventoryDB::GetCategory(EVEItemCategories category, CategoryData &into) {
         "  published "
         " FROM invCategories "
         " WHERE categoryID=%u",
-        uint32(category)))
+        (uint32)category))
     {
         codelog(DATABASE__ERROR, "Error in GetCategory query: %s.", res.error.c_str());
         return false;
@@ -53,13 +53,13 @@ bool InventoryDB::GetCategory(EVEItemCategories category, CategoryData &into) {
 
     DBResultRow row;
     if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Category %u not found.", uint32(category));
+        _log(DATABASE__MESSAGE, "Category %u not found.", (uint32)category);
         return false;
     }
 
     into.name = row.GetText(0);
     into.description = row.GetText(1);
-    into.published = row.GetInt(2) ? true : false;
+    into.published = (row.GetInt(2) ? true : false);
 
     return true;
 }
@@ -93,7 +93,7 @@ bool InventoryDB::GetGroup(uint32 groupID, GroupData &into) {
         return false;
     }
 
-    into.category = EVEItemCategories(row.GetUInt(0));
+    into.category = (EVEItemCategories)row.GetUInt(0);
     into.name = row.GetText(1);
     into.description = row.GetText(2);
     into.useBasePrice = (row.GetInt(3) ? true : false);
@@ -150,7 +150,7 @@ bool InventoryDB::GetType(uint32 typeID, TypeData &into) {
     into.race = EVERace(row.IsNull(8) ? 0 : row.GetUInt(8));
 	into.basePrice = row.GetUInt64(9) /1000;
     into.published = (row.GetInt(10) ? true : false);
-    into.marketGroupID = row.IsNull(11) ? 0 : row.GetUInt(11);
+    into.marketGroupID = (row.IsNull(11) ? 0 : row.GetUInt(11));
     into.chanceOfDuplicating = row.GetDouble(12);
 
     return true;
@@ -267,7 +267,7 @@ bool InventoryDB::GetCharacterType(uint32 bloodlineID, CharacterTypeData &into) 
     }
 
     into.bloodlineName = row.GetText(0);
-    into.race = static_cast<EVERace>(row.GetUInt(1));
+    into.race = (EVERace)row.GetUInt(1);
     into.description = row.GetText(2);
     into.maleDescription = row.GetText(3);
     into.femaleDescription = row.GetText(4);
@@ -584,7 +584,7 @@ bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
         data.typeID,
         data.ownerID,
         data.locationID,
-        uint32(data.flag),
+        (uint32)data.flag,
         (data.contraband?1:0),
         (data.singleton?1:0),
         data.quantity,
@@ -598,6 +598,44 @@ bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
 
     return true;
 }
+
+void InventoryDB::SaveItems(std::vector<SaveData>& data)
+{
+    std::ostringstream Inserts;
+    // start the insert into command.
+    Inserts << "INSERT INTO entity";
+    Inserts << " (itemID, typeID, ownerID, locationID, flag, contraband, singleton, quantity, x, y, z, customInfo)";
+    bool first = true;
+    for (auto cur : data) {
+        if (first) {
+            Inserts << " VALUES ";
+            first = false;
+        } else
+            Inserts << ", ";
+        Inserts << "(" << cur.itemID << ", " << cur.typeID << ", " << cur.ownerID << ", " << cur.locationID << ", ";
+        Inserts << cur.flag << ", " << cur.contraband << ", " << cur.singleton << ", ";
+        Inserts << cur.quantity << ", " << cur.position.x << ", " << cur.position.y << ", " << cur.position.z << ", '" << cur.customInfo << "')";
+    }
+
+    if (!first) {
+        Inserts << "ON DUPLICATE KEY UPDATE ";
+        Inserts << "quantity=VALUES(quantity), ";
+        Inserts << "ownerID=VALUES(ownerID), ";
+        Inserts << "locationID=VALUES(locationID), ";
+        Inserts << "flag=VALUES(flag), ";
+        Inserts << "singleton=VALUES(singleton), ";
+        Inserts << "quantity=VALUES(quantity), ";
+        Inserts << "x=VALUES(x), ";
+        Inserts << "y=VALUES(y), ";
+        Inserts << "z=VALUES(z), ";
+        Inserts << "customInfo=VALUES(customInfo) ";
+        DBerror err;
+        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
+            _log(DATABASE__ERROR, "SaveItems - unable to save data - %s", err.c_str());
+    }
+
+}
+
 
 bool InventoryDB::DeleteItem(uint32 itemID) {
     if (IsStaticMapItem(itemID)) {
@@ -653,7 +691,7 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
         if (od.ownerID == 1) {
             /* this will get agents in station */
             query << " AND ownerID < " << EVEMU_MINIMUM_ID;
-            query << " AND itemID <" << EVEMU_MINIMUM_ID;
+            query << " AND itemID < " << EVEMU_MINIMUM_ID;
         } else
             query << " AND ownerID = " << od.ownerID;
     } else if (IsNotStaticItem(od.locID)) {
