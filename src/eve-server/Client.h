@@ -69,7 +69,7 @@ public:
         msIdle,
         msJump,
         msUndock
-    } _MoveState;
+    } MoveState;
 
     Client(PyServiceMgr &services, EVETCPConnection** con);
     virtual ~Client();
@@ -157,6 +157,7 @@ public:
     void MoveToLocation(uint32 location, const GPoint &pt);
     void MoveToPosition(const GPoint &pt);
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
+    void SetMove(MoveState type, uint32 wait_ms=500);
     void SetDestiny(bool count=false);
     void SavePosition();
     void SaveAllToDatabase();
@@ -194,7 +195,7 @@ public:
     bool IsSetStateSent()                               { return m_setStateSent; }
     bool IsSessionChange()                              { return m_sessionChangeActive; }
 
-    void SetJump(_MoveState state = msIdle)             { m_moveState = state; }
+    void SetJump(MoveState state = msIdle)              { m_moveState = state; }
     void SetInvul(bool invul=false)                     { m_invul = invul; }
     void SetUndock(bool undock=false)                   { m_undock = undock; }
     void SetBeyonce(bool beyonce=false)                 { m_beyonce = beyonce; }
@@ -316,8 +317,7 @@ protected:
 
     EvilNumber              m_timeEndTrain;
 
-    void                    _postMove(_MoveState type, uint32 wait_ms=500);
-    _MoveState              m_moveState;
+    MoveState               m_moveState;
 
     /********************************************************************/
     /* EVEClientSession interface                                       */

@@ -68,9 +68,10 @@ public:
 
         // beyonce is constructed when player first enters system and not removed until sys change or logout.
         // these functions are only called when beyonce is created. (fix for BlackScreen Bug)
-        if (pClient->IsJump())
+        /*if (pClient->IsJump())
             pClient->SetJumpTimers();
-        else if (pClient->IsLogin())
+        else */
+        if (pClient->IsLogin())
             pClient->SetBallPark();
 
         pClient->SetBeyonce(true);

@@ -294,6 +294,7 @@ void Client::ProcessClient() {
                 sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
             } break;
             case msUndock: {
+                _log(CLIENT__TRACE, "Client::ProcessClient():  case: msUndock");
                 SetBallPark();
                 m_moveState = msIdle;
             } break;
@@ -304,23 +305,27 @@ void Client::ProcessClient() {
         }
     }
 
+    /*
     if (IsJump() and m_jumpTimer.Check(false)) {
+        // look into removing this and setting it as a _MoveState instead of *ANOTHER* timer check...
         m_jumpTimer.Disable();
         m_moveState = msIdle;
         SetBallPark();
     }
+    */
 
     if (m_scanTimer.Check(false)) {
         m_scanTimer.Disable();
         m_scan->ScanResult();
     }
 
-    // Check Character Save Timer Expiry:  (not currently used  -allan 17May16)
+    /* Check Character Save Timer Expiry:  (not currently used  -allan 17May16)
     if (m_char->CheckSaveTimer()) {
         _log(CLIENT__TRACE, "Client::ProcessClient():  SaveTimer for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
         m_char->SaveCharacter();
         m_ship->SaveShip();
     }
+    */
 
     if (m_dockTimer.Enabled() and m_dockTimer.Check(false)) {
         m_dockTimer.Disable();
@@ -342,7 +347,8 @@ void Client::SetDestiny(bool count) {
         m_system->AddEntity(pShipSE);
         m_bubbleWait = false;
         m_setStateSent = false;
-        if (m_beyonce) return;
+        if (m_beyonce)
+            return;
         if (!m_login)
             SetBallPark();
     } else
@@ -411,6 +417,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         return;
     }
 
+    bool count = m_login;
     m_locationID = locationID;
     // get data for new system.  this checks for stationID sent as locationID, so is safe here.
     sDataMgr.GetSystemInfo(locationID, m_SystemData);
@@ -423,46 +430,17 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     if (IsJump() or (m_system and (m_system->GetID() != m_SystemData.systemID))) {
         //we have different m_system
         _log(PLAYER__WARNING, "MoveToLocation() - m_system = %p, m_system->GetID(%u) != locationID(%u)", m_system, m_system->GetID(), m_locationID);
-        // remove from 'current' system
+        // remove from 'current' system before resetting system vars
         m_char->AddPilotToDynamicData(m_SystemData.systemID);
-        m_system->RemoveClient(this, false, true);
+        m_system->RemoveClient(this, false, (count = true));
         if (pShipSE)
             m_system->RemoveEntity(pShipSE);
         m_system = nullptr;
     }
 
-    // test for system/station here, and set client variables
-    char ci[25];
-    if (stationID) {
-        _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
-        sDataMgr.GetStationInfo(locationID, m_StationData);
-        snprintf(ci, sizeof(ci), "Docked:%u", locationID);
-        m_ship->Move(locationID, flagHangar);
-        m_char->Move(locationID, flagAutoFit);
-        m_ship->Dock();
-        m_ship->SaveShip();
-        if (!IsJump()){
-            if (!IsHangarLoaded(locationID))
-                LoadStationHangar(locationID);
-            OnCharNowInStation();
-            DestroyShipSE();
-        }
-    } else {
-        _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
-        snprintf(ci, sizeof(ci), "InSpace:%u", locationID);
-        if (InPod()) {
-            m_ship->Move(locationID, flagCapsule, false);
-        } else {
-            m_pod->Move(locationID, flagCapsule, false);
-            m_ship->Move(locationID, flagAutoFit, false);
-        }
-        if (m_char->flag() != flagPilot)
-            m_char->Move(m_shipId, flagPilot, false);
-    }
-
     if (!m_system) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_system == NULL, m_locationID = %u", m_locationID);
-        // find our new system's manager and register ourself with it.
+        // find our new system's manager
         m_services.item_factory->SetUsingClient(this);
         m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
         m_services.item_factory->UnsetUsingClient();
@@ -472,36 +450,55 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             return;
         }
 
-        if ((pShipSE) and (IsSolarSystem(locationID))) {
-            m_system->AddEntity(pShipSE);
-        } else if (IsJump() and stationID) {
-            if (!IsHangarLoaded(locationID))
-                LoadStationHangar(locationID);
-            OnCharNowInStation();
-            DestroyShipSE();
-        }
-
         m_beyonce = false;
 
-        m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(locationID), m_login);
+        m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(locationID), count);
+    }
+
+    // register ourself with new system manager.  if system dont change, this will catch it.
+    m_system->AddClient(this, IsStation(locationID), count);
+    m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
+
+    char ci[25];
+    if (stationID) {
+        _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
+        sDataMgr.GetStationInfo(locationID, m_StationData);
+        snprintf(ci, sizeof(ci), "Docked:%u", locationID);
+        m_ship->Move(locationID, flagHangar);
+        m_char->Move(locationID, flagAutoFit);
+        m_ship->Dock();
+        m_ship->SaveShip();
+        if (!IsHangarLoaded(locationID))
+            LoadStationHangar(locationID);
+        OnCharNowInStation();
+        DestroyShipSE();
+    } else {
+        _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
+        snprintf(ci, sizeof(ci), "InSpace:%u", locationID);
+
+        if (InPod()) {
+            m_ship->Move(locationID, flagCapsule, false);
+        } else {
+            m_pod->Move(locationID, flagCapsule, false);
+            m_ship->Move(locationID, flagAutoFit, false);
+        }
+
+        if (m_char->flag() != flagPilot)
+            m_char->Move(m_shipId, flagPilot, false);
+
+        MoveToPosition(pt);
+        SetDestiny(!m_undock);
+
+        if (m_login)
+            WarpIn();
     }
 
     m_ship->SetCustomInfo(ci);
-    m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
 
     _UpdateSession(m_char);
 
     if (!m_login)
         SendSessionChange();
-
-    m_system->AddClient(this, IsStation(locationID), m_login);
-
-    if (!stationID) {
-        MoveToPosition(pt);
-        SetDestiny(!m_undock);
-        if (m_login)
-            WarpIn();
-    }
 }
 
 void Client::MoveToPosition(const GPoint &pt) {
@@ -536,7 +533,7 @@ void Client::UndockFromStation() {
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     m_ship->Undock();
     OnCharNoLongerInStation();
-    _postMove(msUndock, 1000);
+    SetMove(msUndock, 500);
     m_invulTimer.Start(/*InvulTimer::*/UndockingInvul);
     SetSessionTimer();
     //SetBallPark();
@@ -743,10 +740,11 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     pShipSE->DestinyMgr()->SendGateActivity(fromGate);
 
     //delay the move 5sec so they can see the JumpOut animation
-    _postMove(msJump, 5000);
+    SetMove(msJump, 5000);
 }
 
-void Client::_postMove(_MoveState type, uint32 wait_ms) {
+void Client::SetMove(Client::MoveState type, uint32 wait_ms)
+{
     m_moveState = type;
     m_moveTimer.Start(wait_ms);
 }
@@ -754,21 +752,21 @@ void Client::_postMove(_MoveState type, uint32 wait_ms) {
 void Client::_ExecuteJump() {
     m_ship->Jump();
     m_invul = true;
-    m_beyonce = false;
-    m_setStateSent = false;
+    m_beyonce = m_setStateSent = false;
 
     MoveToLocation(m_moveSystemID, m_movePoint);
     pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
     pShipSE->DestinyMgr()->Cloak();
+
+    m_cloakTimer.Start(10000);
+    m_invulTimer.Start(/*InvulTimer::*/JumpingInvul);
+    //m_jumpTimer.Start(500);
 
     m_toGate = 0;
     m_movePoint = NULL_ORIGIN;
 }
 
 void Client::SetJumpTimers() {
-    m_cloakTimer.Start(10000);
-    m_invulTimer.Start(/*InvulTimer::*/JumpingInvul);
-    m_jumpTimer.Start(500);
 }
 
 bool Client::AddBalance(double amount) {
@@ -1087,25 +1085,25 @@ void Client::InitSession(uint32 characterID)
         return;
     }
 
-    uint32 stationID = static_cast<uint32>(characterDataMap["stationID"]);
-    uint32 solarSystemID = static_cast<uint32>(characterDataMap["solarSystemID"]);
+    int32 stationID = (int32)(characterDataMap["stationID"]);
+    int32 solarSystemID = (int32)(characterDataMap["solarSystemID"]);
 
-    mSession.SetInt("genderID", static_cast<uint32>(characterDataMap["gender"]));
-    mSession.SetInt("bloodlineID", static_cast<uint32>(characterDataMap["bloodlineID"]));
-    mSession.SetInt("raceID", static_cast<uint32>(characterDataMap["raceID"]));
+    mSession.SetInt("genderID", (int32)(characterDataMap["gender"]));
+    mSession.SetInt("bloodlineID", (int32)(characterDataMap["bloodlineID"]));
+    mSession.SetInt("raceID", (int32)(characterDataMap["raceID"]));
     mSession.SetInt("charid", characterID);
-    mSession.SetInt("corpid", static_cast<uint32>(characterDataMap["corporationID"]));
-    m_shipId = static_cast<uint32>(characterDataMap["shipID"]);
+    mSession.SetInt("corpid", (int32)(characterDataMap["corporationID"]));
+    m_shipId = (int32)(characterDataMap["shipID"]);
 
-    mSession.SetInt("cloneStationID", static_cast<uint32>(characterDataMap["cloneStationID"]));
+    mSession.SetInt("cloneStationID", (int32)(characterDataMap["cloneStationID"]));
     mSession.SetInt("solarsystemid2", solarSystemID);
-    mSession.SetInt("constellationid", static_cast<uint32>(characterDataMap["constellationID"]));
-    mSession.SetInt("regionid", static_cast<uint32>(characterDataMap["regionID"]));
+    mSession.SetInt("constellationid", (int32)(characterDataMap["constellationID"]));
+    mSession.SetInt("regionid", (int32)(characterDataMap["regionID"]));
 
-    mSession.SetInt("hqID", static_cast<uint32>(characterDataMap["corporationHQ"]));
+    mSession.SetInt("hqID", (int32)(characterDataMap["corporationHQ"]));
     /** @todo  added this, means a corp alternate station, outpost/pos maybe?    -allan  28Jan15*/
     //mSession.SetInt("baseID", 0);
-    mSession.SetInt("corpAccountKey", static_cast<int32>(characterDataMap["corpAccountKey"]));
+    mSession.SetInt("corpAccountKey", (int32)(characterDataMap["corpAccountKey"]));
     mSession.SetULong("corpRole",     characterDataMap["corpRole"]);
     mSession.SetULong("rolesAtAll",   characterDataMap["rolesAtAll"]);
     mSession.SetULong("rolesAtBase",  characterDataMap["rolesAtBase"]);
@@ -1197,7 +1195,7 @@ void Client::SendSessionChange()
 
 void Client::FlushQueue() {
     if ((!m_destinyUpdateQueue->empty())
-        || (!m_destinyEventQueue->empty()))
+        or (!m_destinyEventQueue->empty()))
         _SendQueuedUpdates();
 }
 
