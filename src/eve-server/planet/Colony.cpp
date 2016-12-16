@@ -46,6 +46,21 @@
  *  planet items attribs/effects
  *  item->Move() logistics
  */
+/*10% + % Player Tax - 1% per level of Customs Code Expertise
+ * Export fee = Base cost * tax rate (*1.5 if launched via Command Center)
+Import fee = Base cost * tax rate * 0.5
+
+Example: Exporting a unit of Biomass (P1) using a Launchpad from a low-sec planet with a 10% Player Tax will cost will cost 40 ISK (400 * 10% * 1 )
+Importing that unit of Biomass to a high-sec factory planet will cost at minimum an additional 20 ISK (400 * (10% + % Player Tax) * 0.5 )
+
+Base costs for each tier of products can be found in this table. Base costs are per unit.
+Commodity level     Base Cost
+R0  5 ISK
+P1  400 ISK
+P2  7,200 ISK
+P3  60,000 ISK
+P4  1,200,000 ISK
+*/
 Colony::Colony(PyServiceMgr* mgr, Client* pClient, SystemEntity* pSE)
 :m_svcMgr(mgr),
 m_client(pClient),

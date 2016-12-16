@@ -107,6 +107,7 @@ namespace EVEDB {
             typeHangarContainer = 3298,
             typeIndustry = 3380,
             typeInfrastructureHub = 32458,
+            typeInterbusCustomsOffice = 4318,
             typeInterplanetaryConsolidation = 2495,
             typeLaboratoryOperation = 3406,
             typeLaboratoryService = 28166,

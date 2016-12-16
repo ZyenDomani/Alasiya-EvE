@@ -75,14 +75,7 @@ StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data) {
 }
 
 uint32 StructureItem::CreateItemID(ItemFactory &factory, ItemData &data) {
-    // make sure it's a Structure
-    const ItemType *st = factory.GetType(data.typeID);
-    if (!st) return 0;
-
-    uint32 structureID = InventoryItem::CreateItemID(factory, data);
-    if (!structureID) return 0;
-
-    return structureID;
+    return InventoryItem::CreateItemID( factory, data );
 }
 
 void StructureItem::Delete()
@@ -365,6 +358,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
 
     /** @todo (Allan) fix this when POS system is more operational */
     /* TODO  query and configure miniballs for entity
+     * NOTE  MiniBalls are BROKEN!!!  DO NOT USE!
     into.Append( miniballsCount );
 
     MiniBall miniball;

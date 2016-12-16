@@ -54,6 +54,7 @@ public:
     void Init(uint32 regionID);
     void Save();
     void Process();
+    void ClearAll();
     void ClearBelt(uint16 bubbleID);
     void SetActive(uint16 bubbleID, bool active=true);
     void RegisterBelt(InventoryItemRef itemRef);
@@ -71,7 +72,6 @@ protected:
     ManagerDB m_db;
     Timer m_respawnTimer;
 
-    void ClearAll();
     void SpawnBelt(uint16 bubbleID);
     void SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position, bool ice);
     void GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap< float, uint32 >& roidDist);

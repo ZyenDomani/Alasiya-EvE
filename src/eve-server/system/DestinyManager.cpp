@@ -60,8 +60,8 @@ m_mass(1.0f),
 m_turnTic(1),
 m_massMKg(1.0f),
 m_alignTime(1.0f),
-m_timeToEnterWarp(0.0f),
-m_shipWarpSpeed(0.0f),
+m_timeToEnterWarp(10.0f),
+m_shipWarpSpeed(1.0f),
 m_maxShipSpeed(100.0f),
 m_shipAgility(1.0f),
 m_shipInertia(1.0f),
@@ -1511,9 +1511,9 @@ void DestinyManager::WarpTo(const GPoint where, int32 distance) {
         SafeDelete(m_warpState);
 
     /** @todo (allan) finish warp scramble system */
-    if (m_warpStrength < 0/*m_warpScrambleSrength*/) {
-        throw PyException(MakeUserError("WarpScrambled"));
-    }
+    if (m_warpStrength < 0/*m_warpScrambleSrength*/)
+        if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
+            throw PyException(MakeUserError("WarpScrambled"));
 
     m_stopDistance = distance;
     GVector warp_distance(m_position, where);
@@ -1733,7 +1733,8 @@ PyResult DestinyManager::AttemptDockOperation() {
     _log(DESTINY__TRACE, "Destiny::AttemptDockOperation() rangeToStationPerimiter is %.2fm", rangeToStationPerimiter);
     if (rangeToStationPerimiter > 2500.0) {
         AlignTo( station );   // Turn ship and move toward docking point - client will usually call Dock() automatically...sometimes
-        throw PyException(MakeUserError("DockingApproach"));
+        if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
+            throw PyException(MakeUserError("DockingApproach"));
     }
 
     pClient->StartDockTimer();

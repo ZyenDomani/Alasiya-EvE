@@ -53,6 +53,7 @@ public:
     uint32 corporationID = 0;
     uint32 allianceID = 0;
     uint32 factionID = 0;
+    uint32 planetID = 0;
     double x = 0;
     double y = 0;
     double z = 0;

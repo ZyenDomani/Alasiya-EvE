@@ -88,7 +88,7 @@ void PlanetDB::UpdatePlanetsForChar(uint32 solarSystemID, uint32 planetID, uint3
 
 PyRep* PlanetDB::GetMyLaunchesDetails(uint32 charID) {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT launchID, solarSystemID, planetID, launchTime, x, y, z"
+    if(!sDatabase.RunQuery(res, "SELECT launchID, itemID, solarSystemID, planetID, launchTime, x, y, z"
         " FROM chrPlanetLaunches WHERE charID = %u", charID)) {
         _log(DATABASE__ERROR, "Error in GetMyLaunchesDetails Query: %s", res.error.c_str());
         return nullptr;

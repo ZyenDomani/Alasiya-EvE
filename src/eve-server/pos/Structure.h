@@ -111,7 +111,8 @@ protected:
         const ItemType &type, const ItemData &data)
     {
         // check if it's a structure
-        if( type.categoryID() != EVEDB::invCategories::Structure )
+        if ((type.categoryID() != EVEDB::invCategories::Structure)
+            and (type.categoryID() != EVEDB::invCategories::Orbitals))
         {
             _log( ITEM__ERROR, "Trying to load %s as Structure.", type.category().name().c_str() );
             return RefPtr<_Ty>();

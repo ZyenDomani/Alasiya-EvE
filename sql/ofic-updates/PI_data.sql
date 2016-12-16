@@ -95,7 +95,7 @@ CREATE TABLE `chrPlanetPinContents` (
 
 CREATE TABLE `chrPlanetLaunches` (
   `launchID` int(10) NOT NULL AUTO_INCREMENT,
-  `containerID` INT(10) NOT NULL DEFAULT '0',
+  `itemID` INT(10) NOT NULL DEFAULT '0',
   `charID` int(10) NOT NULL DEFAULT '0',
   `solarSystemID` int(10) NOT NULL DEFAULT '0',
   `planetID` INT(10) NOT NULL DEFAULT '0',

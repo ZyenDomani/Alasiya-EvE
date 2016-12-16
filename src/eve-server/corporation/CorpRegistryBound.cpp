@@ -610,7 +610,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             //places (gm commands at a minimum) where we want to change corp.
             /** TODO: Update employment history object, if present
              */
-            // OnObjectPublicAttributesUpdated event
+            // OnObjectPublicAttributesUpdated event        <<<---  needs to be updated. do search in packet logs
             Notify_OnObjectPublicAttributesUpdated N_pau;
             MemberAttributeUpdate change;
 

@@ -61,10 +61,10 @@ public:
 
         PyCallable_REG_CALL(AgentMgrBound, GetInfoServiceDetails);
         PyCallable_REG_CALL(AgentMgrBound, DoAction);
-        PyCallable_REG_CALL(AgentMgrBound, GetMyJournalDetails);
         PyCallable_REG_CALL(AgentMgrBound, GetAgentLocationWrap);
         PyCallable_REG_CALL(AgentMgrBound, GetMissionBriefingInfo);
         PyCallable_REG_CALL(AgentMgrBound, GetMissionObjectiveInfo);
+
     }
     virtual ~AgentMgrBound() { delete m_dispatch; }
     virtual void Release() {
@@ -74,15 +74,14 @@ public:
 
     PyCallable_DECL_CALL(GetInfoServiceDetails);
     PyCallable_DECL_CALL(DoAction);
-    PyCallable_DECL_CALL(GetMyJournalDetails);
     PyCallable_DECL_CALL(GetAgentLocationWrap);
     PyCallable_DECL_CALL(GetMissionBriefingInfo);
     PyCallable_DECL_CALL(GetMissionObjectiveInfo);
 
 protected:
+    Agent *const m_agent;    //we do not own this.
     AgentDB *const m_db;        //we do not own this
     Dispatcher *const m_dispatch;    //we own this
-    Agent *const m_agent;    //we do not own this.
 };
 
 PyCallable_Make_InnerDispatcher(AgentMgrService)
@@ -255,8 +254,87 @@ PyResult AgentMgrBound::Handle_DoAction(PyCallArgs &call) {
 //00:20:34 E AgentMgrBound::Handle_DoAction(): args.arg->IsInt() failed.  Expected type Int, got type None
     if (args.arg->IsInt())
         m_agent->DoAction( call.client, args.arg->AsInt()->value(), res.agentSays, choices );
-    else   //* EVE client calls DoAction without parameters, let's see where it leads.
+    else   //* EVE client calls DoAction without parameters to initiate convo
         m_agent->DoAction( call.client, 0, res.agentSays, choices );
+    /* server reply to initiate convo
+          [PyTuple 2 items]
+            [PyTuple 2 items]
+              [PyObjectEx Normal]
+                [PyTuple 2 items]
+                  [PyToken __builtin__.unicode]
+                  [PyTuple 1 items]
+                    [PyString "Welcome, Aknor Jaden."]
+              [PyList 2 items]
+                [PyTuple 2 items]
+                  [PyInt 606]
+                  [PyString "[Button]Request Mission"]
+                [PyTuple 2 items]
+                  [PyInt 607]
+                  [PyString "[Button]Locate Character"]
+            [PyDict 4 kvp]
+              [PyString "missionCompleted"]
+              [PyNone]
+              [PyString "missionQuit"]
+              [PyNone]
+              [PyString "loyaltyPoints"]
+              [PyInt 0]
+              [PyString "missionDeclined"]
+              [PyNone]
+    **************************************
+      [PySubStream 230 bytes]
+        [PyTuple 2 items]
+          [PyTuple 2 items]
+            [PyObjectEx Normal]
+              [PyTuple 2 items]
+                [PyToken __builtin__.unicode]
+                [PyTuple 1 items]
+                  [PyString "You do know you haven't finished your current mission for me, right?"]
+            [PyList 2 items]
+              [PyTuple 2 items]
+                [PyInt 592]
+                [PyString "[Button]View Mission"]
+              [PyTuple 2 items]
+                [PyInt 593]
+                [PyString "[Button]Locate Character"]
+          [PyDict 4 kvp]
+            [PyString "missionCompleted"]
+            [PyNone]
+            [PyString "missionQuit"]
+            [PyNone]
+            [PyString "loyaltyPoints"]
+            [PyInt 0]
+            [PyString "missionDeclined"]
+            [PyNone]
+    ***************************************
+            [PyString "DoAction"]
+            [PyTuple 1 items]
+              [PyInt 592]
+    *************************************
+      [PySubStream 185 bytes]
+        [PyTuple 2 items]
+          [PyTuple 2 items]
+            [PyObjectEx Normal]
+              [PyTuple 2 items]
+                [PyToken __builtin__.unicode]
+                [PyTuple 1 items]
+                  [PyString "Good to hear, carry on."]
+            [PyList 2 items]
+              [PyTuple 2 items]
+                [PyInt 594]
+                [PyString "[Button]Complete Mission"]
+              [PyTuple 2 items]
+                [PyInt 595]
+                [PyString "[Button]Quit Mission"]
+          [PyDict 4 kvp]
+            [PyString "missionCompleted"]
+            [PyBool False]
+            [PyString "missionQuit"]
+            [PyBool False]
+            [PyString "loyaltyPoints"]
+            [PyInt 0]
+            [PyString "missionDeclined"]
+            [PyBool False]
+              */
 
     DoAction_Dialogue_Item choice;
 
@@ -271,8 +349,117 @@ PyResult AgentMgrBound::Handle_DoAction(PyCallArgs &call) {
 
     return res.Encode();
 }
+/*
+    [PyTuple 1 items]
+      [PyTuple 2 items]
+        [PyInt 1]
+        [PySubStream 41 bytes]
+          [PyTuple 4 items]
+            [PyString "N=696805:4035"]
+            [PyString "DoAction"]
+            [PyTuple 1 items]
+              [PyInt 594]
+            [PyDict 1 kvp]
+              [PyString "machoVersion"]
+              [PyInt 1]
+
+    [PyTuple 1 items]
+      [PySubStream 206 bytes]
+        [PyTuple 2 items]
+          [PyTuple 2 items]
+            [PyObjectEx Normal]
+              [PyTuple 2 items]
+                [PyToken __builtin__.unicode]
+                [PyTuple 1 items]
+                  [PyString "I knew I could count on you, Aknor Jaden."]
+            [PyList 2 items]
+              [PyTuple 2 items]
+                [PyInt 596]
+                [PyString "[Button]Request Mission"]
+              [PyTuple 2 items]
+                [PyInt 597]
+                [PyString "[Button]Locate Character"]
+          [PyDict 4 kvp]
+            [PyString "missionCompleted"]
+            [PyBool True]
+            [PyString "missionQuit"]
+            [PyBool False]
+            [PyString "loyaltyPoints"]
+            [PyInt 0]
+            [PyString "missionDeclined"]
+            [PyBool False]
+
+    [PyTuple 1 items]
+      [PyTuple 2 items]
+        [PyInt 1]
+        [PySubStream 41 bytes]
+          [PyTuple 4 items]
+            [PyString "N=696805:4035"]
+            [PyString "DoAction"]
+            [PyTuple 1 items]
+              [PyInt 596]
+            [PyDict 1 kvp]
+              [PyString "machoVersion"]
+              [PyInt 1]
+
+      [PySubStream 713 bytes]
+        [PyTuple 2 items]
+          [PyTuple 2 items]
+            [PyObjectEx Normal]
+              [PyTuple 2 items]
+                [PyToken __builtin__.unicode]
+                [PyTuple 1 items]
+                  [PyString "Something just came up that's right up your alley.  Bio-engineers and farmers in nearby settlements, which have been supplying us with foodstuffs, have had good fortune recently.  Their supplies of frozen plant seeds are overflowing, and they would like to sell some of their excess products.  Obviously we took advantage of a good opportunity and bought the goods for silly prices, those people are so gullible.  I'd like you to deliver the goods to Tasabeshi VIII - Moon 13 - CBD Corporation Storage, where we've found a buyer."]
+            [PyList 3 items]
+              [PyTuple 2 items]
+                [PyInt 598]
+                [PyString "[Button]Accept"]
+              [PyTuple 2 items]
+                [PyInt 599]
+                [PyString "[Button]Decline"]
+              [PyTuple 2 items]
+                [PyInt 600]
+                [PyString "[Button][CloseOnClick]Delay"]
+          [PyDict 4 kvp]
+            [PyString "missionCompleted"]
+            [PyBool False]
+            [PyString "missionQuit"]
+            [PyBool False]
+            [PyString "loyaltyPoints"]
+            [PyInt 0]
+            [PyString "missionDeclined"]
+            [PyBool False]
 
 
+            [PyString "DoAction"]
+            [PyTuple 1 items]
+              [PyInt 598]
+    [PyTuple 1 items]
+      [PySubStream 185 bytes]
+        [PyTuple 2 items]
+          [PyTuple 2 items]
+            [PyObjectEx Normal]
+              [PyTuple 2 items]
+                [PyToken __builtin__.unicode]
+                [PyTuple 1 items]
+                  [PyString "Good to hear, carry on."]
+            [PyList 2 items]
+              [PyTuple 2 items]
+                [PyInt 601]
+                [PyString "[Button]Complete Mission"]
+              [PyTuple 2 items]
+                [PyInt 602]
+                [PyString "[Button]Quit Mission"]
+          [PyDict 4 kvp]
+            [PyString "missionCompleted"]
+            [PyBool False]
+            [PyString "missionQuit"]
+            [PyBool False]
+            [PyString "loyaltyPoints"]
+            [PyInt 0]
+            [PyString "missionDeclined"]
+            [PyBool False]
+            */
 //21:13:12 L AgentMgrBound::Handle_GetAgentLocationWrap(): size= 0
 PyResult AgentMgrBound::Handle_GetAgentLocationWrap(PyCallArgs &call)
 {
@@ -290,22 +477,27 @@ PyResult AgentMgrBound::Handle_GetAgentLocationWrap(PyCallArgs &call)
 //21:13:12 L AgentMgrBound::Handle_GetMissionBriefingInfo(): size= 0
 PyResult AgentMgrBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
   /**
-16:53:46 [SvcCallTrace] Call GetMissionBriefingInfo returned:
-16:53:46 [SvcCallTrace]       Dictionary: 7 entries
-16:53:46 [SvcCallTrace]         [ 0] Key: String: 'ContentID'
-16:53:46 [SvcCallTrace]         [ 0] Value: Integer field: 123
-16:53:46 [SvcCallTrace]         [ 1] Key: String: 'Mission Briefing ID'
-16:53:46 [SvcCallTrace]         [ 1] Value: String: 'Mission Briefing ID'
-16:53:46 [SvcCallTrace]         [ 2] Key: String: 'Decline Time'
-16:53:46 [SvcCallTrace]         [ 2] Value: Real field: 130486424260000000.000000
-16:53:46 [SvcCallTrace]         [ 3] Key: String: 'Expiration Time'
-16:53:46 [SvcCallTrace]         [ 3] Value: Real field: 130487252260000000.000000
-16:53:46 [SvcCallTrace]         [ 4] Key: String: 'Mission Title ID'
-16:53:46 [SvcCallTrace]         [ 4] Value: String: 'Mission Title ID'
-16:53:46 [SvcCallTrace]         [ 5] Key: String: 'Mission Image'
-16:53:46 [SvcCallTrace]         [ 5] Value: String: 'MissionImage'
-16:53:46 [SvcCallTrace]         [ 6] Key: String: 'Mission Keywords'
-16:53:46 [SvcCallTrace]         [ 6] Value: String: 'Mission Keywords'
+    [PyTuple 1 items]
+      [PySubStream 845 bytes]
+        [PyDict 6 kvp]
+          [PyString "ContentID"]
+          [PyNone]
+          [PyString "Expiration Message"]
+          [PyString "
+<span id=subheader>Mission Expiration</span><br>
+<div id=basetext>This mission expires at 2011.05.11 02:43:00</div>
+"]
+          [PyString "Decline Warning"]
+          [PyString ""]
+          [PyString "Mission Image"]
+          [PyString "<img src="res:/UI/netres/mission_content/couriermission.png" align=center hspace=4 vspace=4>"]
+          [PyString "Mission Title"]
+          [PyString "Good Harvest"]
+          [PyString "Mission Briefing"]
+          [PyString "
+<div id=basetext>Bio-engineers and farmers in nearby settlements, which have been supplying us with foodstuffs, have had good fortune recently.  Their supplies of frozen plant seeds are overflowing, and they would like to sell some of their excess products.  Obviously we took advantage of a good opportunity and bought the goods for silly prices, those people are so gullible.  I'd like you to deliver the goods to Tasabeshi VIII - Moon 13 - CBD Corporation Storage, where we've found a buyer.</div>
+<br>
+"]
 */
   sLog.Log( "AgentMgrBound::Handle_GetMissionBriefingInfo()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
@@ -325,7 +517,23 @@ PyResult AgentMgrBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
 
 /** not handled */
 PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
-  //sLog.Log( "AgentMgrService::Handle_GetMyJournalDetails()", "size= %u", call.tuple->size() );
+
+    /** @todo  journal details
+     * found in eve/client/script/ui/shared/neocom/journal.py
+     *
+     *  missions = self.GetMyAgentJournalDetails()[0]
+     *    missionState, importantMission, missionType, missionName, agentID, expirationTime, bookmarks, remoteOfferable, remoteCompletable = missions[i]
+     *
+     *    research = sm.GetService('journal').GetMyAgentJournalDetails()[1]
+     *    agentID, typeID, ppd, points, level, quality, stationID = research[i]
+     *
+     *            self.agentjournal = sm.RemoteSvc('agentMgr').GetMyJournalDetails()
+     *            for mission in self.agentjournal[0]:
+     *                if mission[4] == agentID:
+     *            for research in self.agentjournal[1]:
+     *                if research[0] == agentID:
+     */
+
   /*
       [PySubStream 59 bytes]
         [PyTuple 2 items]
@@ -341,25 +549,112 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
               [PyBool False]
               [PyBool False]
           [PyList 0 items]
+
+    [PyTuple 1 items]
+      [PySubStream 53 bytes]
+        [PyTuple 2 items]
+          [PyList 1 items]
+            [PyTuple 9 items]
+              [PyInt 1]
+              [PyInt 0]
+              [PyString "Courier"]
+              [PyString "Good Harvest"]
+              [PyInt 3010819]
+              [PyIntegerVar 129495553039999957]
+              [PyList 0 items]
+              [PyBool False]
+              [PyBool False]
+          [PyList 0 items]
+
+
+      [PySubStream 513 bytes]
+        [PyTuple 2 items]
+          [PyList 1 items]
+            [PyTuple 9 items]
+              [PyInt 2]
+              [PyInt 0]
+              [PyString "Courier"]
+              [PyString "Good Harvest"]
+              [PyInt 3010819]
+              [PyIntegerVar 129495553802043094]
+              [PyList 2 items]
+                [PyObjectData Name: util.KeyVal]
+                  [PyDict 15 kvp]
+                    [PyString "itemID"]
+                    [PyInt 60014683]
+                    [PyString "typeID"]
+                    [PyInt 1529]
+                    [PyString "agentID"]
+                    [PyInt 3010819]
+                    [PyString "hint"]
+                    [PyString "Objective (Pick Up) & Agent Base - Annaro VIII - Moon 4 - State War Academy School"]
+                    [PyString "locationType"]
+                    [PyString "objective.source"]
+                    [PyString "memo"]
+                    [PyString ""]
+                    [PyString "created"]
+                    [PyIntegerVar 129489505802043094]
+                    [PyString "locationNumber"]
+                    [PyInt 0]
+                    [PyString "flag"]
+                    [PyNone]
+                    [PyString "locationID"]
+                    [PyInt 30002776]
+                    [PyString "ownerID"]
+                    [PyInt 1661059544]
+                    [PyString "y"]
+                    [PyInt 0]
+                    [PyString "x"]
+                    [PyInt 0]
+                    [PyString "solarsystemID"]
+                    [PyInt 30002776]
+                    [PyString "z"]
+                    [PyInt 0]
+                [PyObjectData Name: util.KeyVal]
+                  [PyDict 15 kvp]
+                    [PyString "itemID"]
+                    [PyInt 60000016]
+                    [PyString "typeID"]
+                    [PyInt 1531]
+                    [PyString "agentID"]
+                    [PyInt 3010819]
+                    [PyString "hint"]
+                    [PyString "Objective (Drop Off) - Tasabeshi VIII - Moon 13 - CBD Corporation Storage"]
+                    [PyString "locationType"]
+                    [PyString "objective.destination"]
+                    [PyString "memo"]
+                    [PyString ""]
+                    [PyString "created"]
+                    [PyIntegerVar 129489505802043094]
+                    [PyString "locationNumber"]
+                    [PyInt 0]
+                    [PyString "flag"]
+                    [PyNone]
+                    [PyString "locationID"]
+                    [PyInt 30002778]
+                    [PyString "ownerID"]
+                    [PyInt 1661059544]
+                    [PyString "y"]
+                    [PyInt 0]
+                    [PyString "x"]
+                    [PyInt 0]
+                    [PyString "solarsystemID"]
+                    [PyInt 30002778]
+                    [PyString "z"]
+                    [PyInt 0]
+              [PyBool False]
+              [PyBool False]
+          [PyList 0 items]
+  sLog.Log( "AgentMgrService::Handle_GetMyJournalDetails()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     */
-    PyRep *result = NULL;
-    PyTuple *t = new PyTuple(3);
+    PyTuple *tuple = new PyTuple(2);
     //missions:
-    t->items[0] = new PyList();
-    //offers:
-    t->items[1] = new PyList();
+    tuple->items[0] = new PyList();
     //research:
-    t->items[2] = new PyList();
-    // LP here?
-    result = t;
+    tuple->items[1] = new PyList();
 
-    return result;
-}
-
-PyResult AgentMgrBound::Handle_GetMyJournalDetails(PyCallArgs &call) {
-  sLog.Log( "AgentMgrBound::Handle_GetMyJournalDetails()", "size= %u", call.tuple->size() );
-
+    return tuple;
 }
 
 PyResult AgentMgrService::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
@@ -389,12 +684,77 @@ PyResult AgentMgrBound::Handle_GetInfoServiceDetails( PyCallArgs& call ) {
 //15:46:37 L AgentMgrBound::Handle_GetMissionObjectiveInfo(): size= 0
 PyResult AgentMgrBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
 {/*     called when clicking on line item (actionText)
-06:08:55 L AgentMgrBound::Handle_GetMissionObjectiveInfo(): size= 0
-06:08:55 [SvcCall]   Call Arguments:
-06:08:55 [SvcCall]       Tuple: Empty
-06:08:55 [SvcCall]   Call Named Arguments:
-06:08:55 [SvcCall]     Argument 'machoVersion':
-06:08:55 [SvcCall]         Integer field: 1
+      [PySubStream 2792 bytes]
+        [PyObjectData Name: util.KeyVal]
+          [PyDict 2 kvp]
+            [PyString "html"]
+            [PyString "
+<html>
+<head>
+<LINK REL="stylesheet" TYPE="text/css" HREF="res:/ui/css/missionobjectives.css">
+</head>
+<body>
+
+
+<span id=subheader><font>Good Harvest Objectives</font></span><br>
+<div id=basetext>The following objectives must be completed to finish the mission:<br>
+<br>
+<span id=basetext>
+
+                    <span id=caption>Transport Objective</span><br>
+                    <div id=basetext>Transport these goods:<br>
+                    <TABLE>
+                    <TR VALIGN=middle>
+                        <TD><img src=icon:38_193 size=16></TD>
+                        <TD width=32><a href=showinfo:2//1000167><img src="corplogo:1000167" width=32 height=32 hspace=2 vspace=2></a></TD>
+                        <TD>Pickup Location</TD>
+                        <TD> <font color=#00FF7F>0.8</font> <a href=showinfo:1529//60014683>Annaro VIII - Moon 4 - State War Academy School</a></TD>
+                    </TR>
+                    <TR VALIGN=middle>
+                        <TD><img src=icon:38_195 size=16></TD>
+                        <TD width=32><a href=showinfo:2//1000002><img src="corplogo:1000002" width=32 height=32 hspace=2 vspace=2></a></TD>
+                        <TD>Drop-off Location</TD>
+                        <TD> <font color=#00FF7F>0.8</font> <a href=showinfo:1531//60000016>Tasabeshi VIII - Moon 13 - CBD Corporation Storage</a></TD>
+                    </TR>
+                    <TR VALIGN=middle>
+                        <TD><img src=icon:38_195 size=16></TD>
+                        <TD width=32><a href=showinfo:26785><img src="typeicon:26785" width=32 height=32 align=left></a></TD>
+                        <TD>Cargo</TD>
+                        <TD>seven units of Crates of Frozen Plant Seeds (350.0 m&sup3;)</TD>
+                    </TR>
+                    </TABLE></div>
+
+</span><br>
+LOWSECREPLACE <br><br>
+<span id=subheader>Rewards</span>
+<div id=basetext>The following rewards will be yours if you complete this mission:<br>
+<div><TABLE>
+
+<TR VALIGN=middle>
+    <TD width=36><img style:vertical-align:bottom src="icon:06_03" size="32"></TD>
+    <TD width=352>25000 credits</TD>
+</TR>
+
+<TR VALIGN=middle>
+    <TD width=36><a href=showinfo:29247><img src="typeicon:29247" width=32 height=32 align=left></a></TD>
+    <TD width=352>14 Loyalty Points.</TD>
+</TR>
+
+</TABLE></div><br>
+<span id=subheader>Bonus Rewards<BR></span>
+
+<div id=basetext>The following rewards will be awarded to you as a bonus if you complete the mission within 34 minutes.<br>
+<div><TABLE>
+<TR VALIGN=middle>
+    <TD width=36><img style:vertical-align:bottom src="icon:06_03" size="32"></TD>
+    <TD width=352>22000 credits</TD>
+</TR>
+</TABLE></div><br>
+</body></html>"]
+            [PyString "locations"]
+            [PyList 2 items]
+              [PyInt 30002776]
+              [PyInt 30002778]
 */
     return new PyInt( 0 );
 }

@@ -45,9 +45,7 @@ AsteroidBeltMgr::AsteroidBeltMgr(SystemManager* mgr, PyServiceMgr& svc)
 
 AsteroidBeltMgr::~AsteroidBeltMgr()
 {
-    // save needs work when deleting object during shutdown.
-    Save();
-    ClearAll();
+
 }
 
 void AsteroidBeltMgr::Init(uint32 regionID)
@@ -79,12 +77,16 @@ void AsteroidBeltMgr::RegisterBelt(InventoryItemRef itemRef)
 
 void AsteroidBeltMgr::ClearBelt(uint16 bubbleID)
 {
-    ClearAll();
+    //ClearAll();
 }
 
 void AsteroidBeltMgr::ClearAll() {
-    for(auto cur : m_asteroids)
-        SafeDelete(cur.second);
+    Save();
+
+    for (auto cur : m_asteroids) {
+        m_system->RemoveEntity(cur.second);
+        delete cur.second;  // SafeDelete() crashes here...dunno why
+    }
     m_asteroids.clear();
     m_belts.clear();
 }
@@ -201,7 +203,7 @@ void AsteroidBeltMgr::Save() {
     }
 
     m_db.SaveSystemRoids(m_systemID, roids);
-    _log(COSMIC_MGR__TRACE, "BeltMgr::Save - Saving %u Asteroids in %s(%u) took %.3fms", roids.size(), m_system->GetName().c_str(), m_systemID, (GetTimeUSeconds() - start));
+    _log(COSMIC_MGR__TRACE, "BeltMgr::Save - Saving %u Asteroids in %s(%u) took %.3fus", roids.size(), m_system->GetName().c_str(), m_systemID, (GetTimeUSeconds() - start));
 }
 
 void AsteroidBeltMgr::GetList(uint32 beltID, std::vector< AsteroidSE* >& list)

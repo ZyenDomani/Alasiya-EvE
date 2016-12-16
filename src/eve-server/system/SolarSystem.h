@@ -128,7 +128,7 @@ protected:
         const ItemType &_sunType,
         const SolarSystemData &_ssData
     );
-    virtual ~SolarSystem()                              { /* Do nothing here */ }
+    virtual ~SolarSystem();
 
     // Solar System Inventory Functions:
 

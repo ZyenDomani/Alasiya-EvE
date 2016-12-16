@@ -90,25 +90,19 @@ CargoContainerRef CargoContainer::Spawn(ItemFactory &factory, ItemData &data) {
 	return containerRef;
 }
 
-uint32 CargoContainer::CreateItemID(ItemFactory &factory, ItemData &data) {
-    // make sure it's a cargo container
-    const ItemType *st = factory.GetType(data.typeID);
-    if (!st)
-        return 0;
-
-    // store item data
-    uint32 containerID = InventoryItem::CreateItemID(factory, data);
-    if(containerID == 0)
-        return 0;
-
-    // nothing additional
-
-    return containerID;
+uint32 CargoContainer::CreateItemID(ItemFactory &factory, ItemData &data)
+{
+    if ((data.typeID == EVEDB::invTypes::typePlanetaryCustomsOffice)
+        or (data.typeID == EVEDB::invTypes::typeInterbusCustomsOffice)) {
+        return InventoryItem::CreateItemID(factory, data);
+    } else {
+        return InventoryItem::CreateItemID(factory, data);
+    }
 }
 
 void CargoContainer::Delete()
 {
-    if (EVEDB::invTypes::typePlanetaryLaunchContainer){
+    if (typeID() == EVEDB::invTypes::typePlanetaryLaunchContainer) {
         PlanetDB mDB;
         mDB.DeleteLaunch(itemID());
     }
@@ -254,21 +248,28 @@ void ContainerSE::EncodeDestiny( Buffer& into )
     using namespace Destiny;
 
     BallHeader head;
-    head.entityID = GetID();
-        head.mode = DSTBALL_TROLL;
+        head.entityID = GetID();
         head.radius = GetRadius();
         head.x = x();
         head.y = y();
         head.z = z();
+
+    if (m_self->groupID() == EVEDB::invGroups::Orbital_Infrastructure) {
+        head.mode = DSTBALL_RIGID;
+        head.flags = IsGlobal /*| HasMiniBalls*/;
+        into.Append( head );
+    } else {
+        head.mode = DSTBALL_TROLL;
         head.flags = IsInteractive;
-    into.Append( head );
-    MassSector mass;
-        mass.mass = m_self->type().mass();
-        mass.cloak = 0;
-        mass.Harmonic = -1.0f;
-        mass.corporationID = m_corpID;
-        mass.allianceID = m_allyID;
-    into.Append( mass );
+        into.Append( head );
+        MassSector mass;
+            mass.mass = m_self->type().mass();
+            mass.cloak = 0;
+            mass.Harmonic = -1.0f;
+            mass.corporationID = m_corpID;
+            mass.allianceID = m_allyID;
+        into.Append( mass );
+    }
     DSTBALL_TROLL_Struct troll;
         troll.formationID = 0xFF;
         troll.effectStamp = sEntityList.GetStamp();
@@ -279,25 +280,118 @@ void ContainerSE::EncodeDestiny( Buffer& into )
 
 void ContainerSE::MakeDamageState(DoDestinyDamageState &into)
 {
-    //FIXME  container attributes here are NOT saved in the db....
-    into.shield = 1;
-    into.recharge = 20000;
-    into.timestamp = Win32TimeNow();
-    into.armor = 1;
-    into.structure = 1.0;
+    //FIXME  container attributes are NOT saved in the db....
+    if (m_self->groupID() == EVEDB::invGroups::Orbital_Infrastructure)  // these CAN be targetted and destroyed.  NOT CODED YET
+        ItemSystemEntity::MakeDamageState(into);
+    else {
+        into.shield = 1;
+        into.recharge = 2000000;
+        into.timestamp = Win32TimeNow();
+        into.armor = 1;
+        into.structure = 1;
+    }
 }
-
+/*              crucible    - interbus CO
+                              [PyObjectData Name: foo.SlimItem]
+                                [PyDict 15 kvp]
+                                  [PyString "itemID"]
+                                  [PyIntegerVar 1540961888]
+                                  [PyString "typeID"]
+                                  [PyInt 4318]
+                                  [PyString "dunRotation"]
+                                  [PyTuple 3 items]
+                                    [PyFloat 174.715872048077]
+                                    [PyFloat 0.00319328852893268]
+                                    [PyFloat 0]
+                                  [PyString "name"]
+                                  [PyString "Customs Office (MC6-5J VI)"]
+                                  [PyString "orbitalTimestamp"]
+                                  [PyNone]
+                                  [PyString "corpID"]
+                                  [PyInt 1000148]
+                                  [PyString "level"]
+                                  [PyInt 1]
+                                  [PyString "planetID"]
+                                  [PyInt 40083853]
+                                  [PyString "orbitalState"]
+                                  [PyInt 252]
+                                  [PyString "orbitalHackerProgress"]
+                                  [PyNone]
+                                  [PyString "allianceID"]
+                                  [PyNone]
+                                  [PyString "ownerID"]
+                                  [PyInt 1000148]
+                                  [PyString "orbitalHackerID"]
+                                  [PyNone]
+                                  [PyString "nameID"]
+                                  [PyNone]
+                                  [PyString "warFactionID"]
+                                  [PyNone]
+                            - std CO
+                              [PyObjectData Name: foo.SlimItem]
+                                [PyDict 15 kvp]
+                                  [PyString "itemID"]
+                                  [PyIntegerVar 1004746013567]
+                                  [PyString "typeID"]
+                                  [PyInt 2233]
+                                  [PyString "dunRotation"]
+                                  [PyTuple 3 items]
+                                    [PyFloat 129.62741010365]
+                                    [PyFloat -0.0194004340041468]
+                                    [PyFloat 0]
+                                  [PyString "name"]
+                                  [PyString "Customs Office (MC6-5J III)"]
+                                  [PyString "orbitalTimestamp"]
+                                  [PyIntegerVar 129672638500000000]
+                                  [PyString "corpID"]
+                                  [PyInt 673319797]
+                                  [PyString "level"]
+                                  [PyInt 0]
+                                  [PyString "planetID"]
+                                  [PyInt 40083804]
+                                  [PyString "orbitalState"]
+                                  [PyInt 252]
+                                  [PyString "orbitalHackerProgress"]
+                                  [PyNone]
+                                  [PyString "allianceID"]
+                                  [PyInt 386292982]
+                                  [PyString "ownerID"]
+                                  [PyInt 673319797]
+                                  [PyString "orbitalHackerID"]
+                                  [PyNone]
+                                  [PyString "nameID"]
+                                  [PyNone]
+                                  [PyString "warFactionID"]
+                                  [PyNone]
+                                  */
 PyDict *ContainerSE::MakeSlimItem() {
     _log(COMMON__WARNING, "MakeSlimItem for ContainerEntity %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",      new PyInt(m_self->ownerID()));
-        slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
-        slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
+        slim->SetItemString("ownerID",      new PyInt(m_self->ownerID()));  //1000148 for interbus
+        //slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
+        //slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",       new PyInt(m_corpID));
-        slim->SetItemString("allianceID",   new PyInt(m_allyID));
+        slim->SetItemString("nameID",       new PyNone());
+        slim->SetItemString("corpID",       new PyInt(m_corpID));  //1000148 for interbus
+        slim->SetItemString("allianceID",   new PyNone()/*PyInt(m_allyID)*/);
+        slim->SetItemString("warFactionID", new PyNone()/*PyInt(m_warID)*/);
+        if (m_self->groupID() == EVEDB::invGroups::Orbital_Infrastructure) {
+            slim->SetItemString("level",    new PyInt(1)); //{1-CUSTOMSOFFICE_SPACEPORT, 2-CUSTOMSOFFICE_SPACEELEVATOR}   this is for display model
+            slim->SetItemString("orbitalTimestamp", new PyLong(Win32TimeNow()));  // current time?
+            slim->SetItemString("planetID", new PyInt(0));  // planetID for this orbital
+            slim->SetItemString("orbitalState", new PyInt(StructureState::STATE_IDLE));
+            // dunno how im gonna do these yet...
+            PyTuple* tuple = new PyTuple(3);
+                tuple->SetItem(0, new PyFloat(0));
+                tuple->SetItem(1, new PyFloat(0));
+                tuple->SetItem(2, new PyFloat(0));
+            slim->SetItemString("dunRotation", tuple);  // planet/orbital orientation?
+            //  dunno what these are...
+            slim->SetItemString("orbitalHackerProgress", new PyNone());
+            slim->SetItemString("orbitalHackerID", new PyNone());
+        }
     return slim;
 }
 
@@ -346,12 +440,8 @@ WreckContainerRef WreckContainer::Spawn(ItemFactory &factory, ItemData &data) {
     return containerRef;
 }
 
-uint32 WreckContainer::CreateItemID(ItemFactory &factory, ItemData &data) {
-    // make sure it's a wreck
-    const ItemType *st = factory.GetType(data.typeID);
-    if (!st)
-        return 0;
-
+uint32 WreckContainer::CreateItemID(ItemFactory &factory, ItemData &data)
+{
     return InventoryItem::CreateItemID(factory, data);
 }
 
@@ -507,7 +597,7 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        //slim->SetItemString("lootRights",       new PyNone());
+        //slim->SetItemString("lootRights",       new PyNone());    //TODO needs more work here
         slim->SetItemString("corpID",           new PyInt(m_corpID));
         slim->SetItemString("allianceID",       new PyLong(m_allyID));
         slim->SetItemString("isEmpty",          new PyBool(IsEmpty()));

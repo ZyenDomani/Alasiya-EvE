@@ -202,7 +202,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
      *      Weapon Flag --  the 60-sec timer started upon any offensive weapon activation
      *   this will be in client's criminaltimer object
      *
-     * if (pClient->CrimMgr()->IsWeaponFlagActive())
+     * if (pClient->CrimeMgr()->IsWeaponFlagActive())
      *  deny eject
      */
 

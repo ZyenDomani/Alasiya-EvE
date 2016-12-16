@@ -114,10 +114,6 @@ CelestialObjectRef CelestialObject::Spawn(ItemFactory &factory, ItemData &data) 
 }
 
 uint32 CelestialObject::CreateItemID(ItemFactory &factory, ItemData &data) {
-    const ItemType *item = factory.GetType(data.typeID);
-    if (item->categoryID() != EVEDB::invCategories::Celestial)
-        return 0;
-
     return InventoryItem::CreateItemID(factory, data);
 }
 

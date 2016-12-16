@@ -127,7 +127,43 @@ PyResult LPService::Handle_GetAvailableOffersFromCorp( PyCallArgs& call )
 05:42:04 [SvcCall]     Argument 'machoVersion':
 05:42:04 [SvcCall]         Integer field: 1
 */
-
+/*
+        [PyList 326 items]
+          [PyObjectData Name: util.KeyVal]
+            [PyDict 6 kvp]
+              [PyString "typeID"]
+              [PyInt 23047]
+              [PyString "iskCost"]
+              [PyInt 2400000]
+              [PyString "reqItems"]
+              [PyList 1 items]
+                [PyTuple 2 items]
+                  [PyInt 234]
+                  [PyInt 5000]
+              [PyString "offerID"]
+              [PyInt 3584]
+              [PyString "qty"]
+              [PyInt 5000]
+              [PyString "lpCost"]
+              [PyInt 2400]
+          [PyObjectData Name: util.KeyVal]
+            [PyDict 6 kvp]
+              [PyString "typeID"]
+              [PyInt 23033]
+              [PyString "iskCost"]
+              [PyInt 1600000]
+              [PyString "reqItems"]
+              [PyList 1 items]
+                [PyTuple 2 items]
+                  [PyInt 226]
+                  [PyInt 5000]
+              [PyString "offerID"]
+              [PyInt 3585]
+              [PyString "qty"]
+              [PyInt 5000]
+              [PyString "lpCost"]
+              [PyInt 1600]
+              */
     return new PyList;
 }
 

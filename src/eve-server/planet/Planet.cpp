@@ -14,14 +14,9 @@
 #include "planet/Planet.h"
 #include "planet/PlanetMgr.h"
 #include "packets/Planet.h"
+#include "system/Container.h"
 #include "system/SystemManager.h"
 
-
-/** @note  general design notes
- * planetse will have a Planet class to hold data and call other functions/methods as needed
- * the PlanetMgr class will manage all aspects of planet data, init'd as a single instance (no reason for multiples)
- *
- */
 
 Planet::Planet()
 {
@@ -94,7 +89,15 @@ void PlanetSE::Process()
 
 void PlanetSE::CreateCustomsOffice()
 {
-    /** @todo  will need to write this code and make it play nice with everything else.  */
+    /** @todo  will need to write this code and make it play nice with everything else.
+     * a CO will be a special container, linked to the planet it orbits, and the colon(y/ies) on that planet.
+     * there is only one CO per planet, but ALL chars with a colony on that planet can access their items on the same CO
+     * the CO will load all items when it loads, but will need checks on "view items" or "open container" to ONLY send
+     * items owned by calling char, or NONE for chars that dont have a colony on that planet
+     *
+     */
+
+    //pCO = new ContainerSE();
 }
 
 PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)

@@ -33,11 +33,11 @@
 class Agent;
 
 class AgentMgrService : public PyService {
-  public:
+public:
     AgentMgrService(PyServiceMgr *mgr);
     virtual ~AgentMgrService();
 
-  protected:
+protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
@@ -55,6 +55,7 @@ class AgentMgrService : public PyService {
 
     //overloaded in order to support bound objects:
     virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
+
 };
 
 class EpicArcService : public PyService {

@@ -137,11 +137,6 @@ ShipItemRef ShipItem::Spawn(ItemFactory &factory, ItemData &data) {
 }
 
 uint32 ShipItem::CreateItemID(ItemFactory &factory, ItemData &data) {
-    // make sure it's a ship
-    const ShipType *st = factory.GetShipType(data.typeID);
-    if (!st)
-        return 0;
-
     return InventoryItem::CreateItemID(factory, data);
 }
 

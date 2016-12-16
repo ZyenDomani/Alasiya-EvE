@@ -102,6 +102,11 @@ SolarSystem::SolarSystem(
     _log(ITEM__TRACE, "Created SolarSystem Item %p for %s (%u).", this, itemName().c_str(), itemID());
 }
 
+SolarSystem::~SolarSystem()
+{
+    SafeDelete(m_inventory);
+}
+
 SolarSystemRef SolarSystem::Load(ItemFactory &factory, uint32 solarSystemID)
 {
     return InventoryItem::Load<SolarSystem>( factory, solarSystemID );

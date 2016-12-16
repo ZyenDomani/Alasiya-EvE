@@ -166,25 +166,20 @@ BlueprintRef Blueprint::Spawn(ItemFactory &factory, ItemData &data, BlueprintDat
     return Blueprint::Load(factory, blueprintID);
 }
 
-uint32 Blueprint::CreateItemID(ItemFactory &factory,
-    // InventoryItem stuff:
-    ItemData &data,
-    // Blueprint stuff:
-    BlueprintData &bpData
-) {
+uint32 Blueprint::CreateItemID(ItemFactory &factory, ItemData &data, BlueprintData &bpData) {
     // make sure it's a blueprint type
     const BlueprintType *bt = factory.GetBlueprintType(data.typeID);
-    if(bt == NULL)
+    if (!bt)
         return 0;
 
     // get the blueprintID
     /** @todo  this needs to be updated */
     uint32 blueprintID = InventoryItem::CreateItemID(factory, data);
-    if(blueprintID == 0)
+    if (blueprintID == 0)
         return 0;
 
     // insert blueprint entry into DB
-    if(!factory.db().NewBlueprint(blueprintID, bpData)) {
+    if (!factory.db().NewBlueprint(blueprintID, bpData)) {
         // delete item
         factory.db().DeleteItem(blueprintID);
 
@@ -207,6 +202,7 @@ BlueprintRef Blueprint::SplitBlueprint(int32 qty_to_take, bool notify) {
     if( !res )
         return BlueprintRef();
 
+    /** @todo update this.....check for bpo/bpc before split/merge */
     // copy our attributes
     res->SetCopy(m_copy);
     res->SetMaterialLevel(m_materialLevel);

@@ -311,6 +311,7 @@ PyResult PlanetMgrService::Handle_GetPlanet(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrService::Handle_DeleteLaunch(PyCallArgs &call) {
+    //sm.RemoteSvc('planetMgr').DeleteLaunch
     _log(PLANET__DEBUG, "PlanetMgrService::Handle_DeleteLaunch() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 

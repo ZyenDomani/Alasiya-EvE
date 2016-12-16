@@ -72,17 +72,20 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "   e.typeID,"
         "   t.groupID,"
         "   g.categoryID,"
-        "   e.x, e.y, e.z"
+        "   e.x, e.y, e.z,"
+        "   IFNULL(e.customInfo, '0')"
         " FROM entity AS e"
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
         " WHERE e.locationID = %u"
-        "  AND g.categoryID NOT IN (%d, %d, %d, %d)"
-        "  AND e.ownerID = 1"  // get dynamics owned by the system -include abandonded ships
+        "  AND (g.categoryID NOT IN (%d, %d, %d, %d)"
+        "  AND e.ownerID = 1)"  // get dynamics owned by the system -include abandonded ships
+        "  OR g.categoryID = %u"    // - include orbitals (owned by npc corps)
         "  ORDER BY e.itemID",
         systemID,
         //exclude categories not applicable for in-space system entities or owned by player/corp :
-        _System/*0*/, /*Character*/1, /*Station*/3, Asteroid/*25*/ //asteroids are owned/controlled by BeltMgr.
+        _System/*0*/, /*Character*/1, /*Station*/3, Asteroid/*25*/, //asteroids are owned/controlled by BeltMgr.
+        Orbitals/*46*/
         )) {
             codelog(DATABASE__ERROR, "Error in LoadSystemDynamicEntities query: %s", res.error.c_str());
             return false;
@@ -103,6 +106,7 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.x = row.GetDouble(5);
         entry.y = row.GetDouble(6);
         entry.z = row.GetDouble(7);
+        entry.planetID = atoi(row.GetText(8));
         into.push_back(entry);
     }
 
@@ -138,7 +142,7 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         " ORDER BY e.itemID",
         systemID, Celestial/*2*/,     // Celestial is for containers (wrecks, jetcans, lsc)
         // include deployed items owned by players or corps
-        Deployable/*22*/, Orbitals/*46*/, Drone/*18*/, Entity/*11*/,    // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
+        Deployable/*22*/, Drone/*18*/, Entity/*11*/,    // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
         /*Structure*/23, StructureUpgrade/*39*/, SovereigntyStructure/*40*/ )) {
         codelog(DATABASE__ERROR, "Error in LoadPlayerDynamicEntities query: %s", res.error.c_str());
         return false;

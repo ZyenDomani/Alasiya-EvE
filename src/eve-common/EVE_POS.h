@@ -8,7 +8,7 @@
 #ifndef EVE_POS_ENUMS_H
 #define EVE_POS_ENUMS_H
 
-typedef enum {
+typedef enum POSState {
     STRUCTURE_UNANCHORED        = 0,
     STRUCTURE_ANCHORED          = 1,
     STRUCTURE_ONLINING          = 2,
@@ -39,7 +39,7 @@ typedef enum {
      */
 } POSState;
 
-typedef enum {
+typedef enum StructureState {
     STATE_OFFLINING             = -7,
     STATE_ANCHORING             = -6,
     STATE_ONLINING              = -5,

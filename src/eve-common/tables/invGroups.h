@@ -770,6 +770,7 @@ namespace EVEDB {
             Generic = 1079,
             Mercenary_Bases = 1081,
             Capsuleer_Bases = 1082,
+            Orbital_Construction_Platform = 1106,
             Salvager = 1122
         } invGroups;
     }

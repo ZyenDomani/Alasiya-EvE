@@ -67,6 +67,7 @@ static const uint64 ONE_LIGHTYEAR(9460000000000000UL);  // in meters
 static const uint64 ONE_AU_IN_METERS(149597870700L);     // 1 astronomical unit in meters, per EVElopedia: http://wiki.eveonline.com/en/wiki/Astronomical_Unit
 static const uint64 STATION_HANGAR_MAX_CAPACITY(9000000000000000);  //per client
 static const double MAX_MARKET_PRICE(9223372036854);  //max int64/1000000  (9223372036854775807/1000000)
+static const uint32 INCAPACITATION_DISTANCE(250000);
 
 // Cosmic Managers constants here  *not used yet*
 static const uint32 ASTEROID_GROWTH_INTERVAL_MS(3600000);  /* this is grow check in ms (1d) */

@@ -139,7 +139,17 @@ PyResult KeeperService::Handle_GetLevelEditor(PyCallArgs &call) {
 }
 
 PyResult KeeperService::Handle_CanWarpToPathPlex(PyCallArgs &call) {
-//resp = sm.RemoteSvc('keeper').CanWarpToPathPlex(node.rec.instanceID)
+    /*
+                    resp = sm.RemoteSvc('keeper').CanWarpToPathPlex(node.rec.instanceID)
+                if resp:
+                    if resp is True:
+                        m.append((uiutil.MenuLabel('UI/Inflight/WarpToBookmark'), self.WarpToHiddenDungeon, (node.id, node)))
+                    else:
+                        mickey = sm.StartService('michelle')
+                        me = mickey.GetBall(eve.session.shipid)
+                        dist = (foo.Vector3(resp) - foo.Vector3(me.x, me.y, me.z)).Length()
+
+                        */
     sLog.Log( "KeeperService", "Handle_CanWarpToPathPlex  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 

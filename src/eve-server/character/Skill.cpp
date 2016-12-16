@@ -69,17 +69,6 @@ SkillRef Skill::Spawn(ItemFactory &factory, ItemData &data)
 
 uint32 Skill::CreateItemID(ItemFactory &factory, ItemData &data)
 {
-    // check it's a skill
-    const ItemType *type = factory.GetType( data.typeID );
-    if ( type == NULL )
-        return 0;
-
-    if ( type->categoryID() != EVEDB::invCategories::Skill )
-    {
-        _log( ITEM__ERROR, "Trying to spawn %s as Skill.", type->category().name().c_str() );
-        return 0;
-    }
-    // spawn item, nothing else
     return InventoryItem::CreateItemID( factory, data );
 }
 

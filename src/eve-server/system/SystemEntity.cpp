@@ -246,6 +246,9 @@ bool BeltSE::LoadExtras(SystemDB *db) {
     if (!StaticSystemEntity::LoadExtras(db))
         return false;
 
+    if (!m_bubble)
+        sBubbleMgr.Add(this);
+
     m_bubble->SetBelt(m_self);
     _log(DESTINY__BUBBLE_DEBUG, "BeltSE::LoadExtras() - IsBelt set to true for bubble %u.", m_bubble->GetID() );
     return true;
@@ -260,6 +263,9 @@ bool StargateSE::LoadExtras(SystemDB *db) {
     if (!StaticSystemEntity::LoadExtras(db))
         return false;
 
+    if (!m_bubble)
+        sBubbleMgr.Add(this);
+    
     m_bubble->SetGate(true);
     _log(DESTINY__BUBBLE_DEBUG, "StargateSE::LoadExtras() - IsGate set to true for bubble %u.", m_bubble->GetID() );
     m_jumps = db->ListJumps(m_self->itemID());

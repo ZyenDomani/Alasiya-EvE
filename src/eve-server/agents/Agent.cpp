@@ -68,6 +68,33 @@ uint32 Agent::GetLoyaltyPoints(Client *who) {
  * missions out of order by only accepting the actions which were actually
  * "allocated" previously.)
  */
+
+        /*
+              [PyTuple 2 items]
+                [PyInt 592]
+                [PyString "[Button]View Mission"]
+              [PyTuple 2 items]
+                [PyInt 596]
+                [PyString "[Button]Request Mission"]
+              [PyTuple 2 items]
+                [PyInt 597]
+                [PyString "[Button]Locate Character"]
+              [PyTuple 2 items]
+                [PyInt 598]
+                [PyString "[Button]Accept"]
+              [PyTuple 2 items]
+                [PyInt 599]
+                [PyString "[Button]Decline"]
+              [PyTuple 2 items]
+                [PyInt 600]
+                [PyString "[Button][CloseOnClick]Delay"]
+              [PyTuple 2 items]
+                [PyInt 601]
+                [PyString "[Button]Complete Mission"]
+              [PyTuple 2 items]
+                [PyInt 602]
+                [PyString "[Button]Quit Mission"]
+                */
 void Agent::DoAction(
     Client *who, uint32 actionID,
     std::string &say, std::map<uint32, std::string> &choices

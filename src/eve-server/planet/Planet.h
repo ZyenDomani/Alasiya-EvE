@@ -58,11 +58,12 @@ public:
 
     void AbandonColony(Colony* pColony);
     void CreateCustomsOffice();
+    void SetCustomsOffice(SystemEntity* pSE)            { pCO = pSE; }
 
     Colony* GetColony(Client* pClient);
 
 protected:
-    SystemEntity* pCO;
+    SystemEntity* pCO;  // our Customs Office SE  - we dont own this
     PlanetResourceData m_data;
 
     Timer m_colonyTimer;

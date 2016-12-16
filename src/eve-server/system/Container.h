@@ -174,6 +174,7 @@ public:
     void AnchorContainer();
     bool IsEmpty()                                      { return m_contRef->IsEmpty(); }
 
+    void SetPlanet(uint32 planetID)                     { m_planetID = planetID; }
 
 protected:
     CargoContainerRef m_contRef;
@@ -183,6 +184,9 @@ protected:
     double m_shieldCharge;
     double m_armorDamage;
     double m_hullDamage;
+
+    // for orbital containers
+    uint32 m_planetID;
 };
 
 /**
