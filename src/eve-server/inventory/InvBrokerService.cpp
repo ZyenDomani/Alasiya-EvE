@@ -157,10 +157,15 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
     if (item->ownerID() == call.client->GetCharacterID())
         _log(INV__WARNING, "Handle_GetContainerContents() -  %s(%u) is owned by calling character %s(%u) ", \
                     item->itemName().c_str(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
-    else
+    else if ((item->ownerID() != call.client->GetCharacterID()) and IsSolarSystem(args.arg2))
+        _log(INV__WARNING, "Handle_GetContainerContents() -  %s(%u) is in space and not owned by calling character %s(%u) ", \
+                    item->itemName().c_str(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
+    else {
         _log(INV__WARNING, "Handle_GetContainerContents() -  %s(%u) is not owned by calling character %s(%u) ", \
                     item->itemName().c_str(), item->itemID(), call.client->GetName(), call.client->GetCharacterID());
-        // "CantDoThatWithSomeoneElsesStuff"
+        if (call.client->CanThrow())
+            throw PyException(MakeUserError("CantDoThatWithSomeoneElsesStuff"));
+    }
 
 	return item->GetInventory()->List( flagAnywhere );
 }
@@ -176,6 +181,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
      *     folder = sm.GetService('invCache').GetInventoryFromId(each.officeFolderID)
      *     folder = invCache.GetInventoryFromId(office.officeFolderID, locationID=session.stationid2)
      *       return sm.GetService('invCache').GetInventory(const.containerCorpMarket, eve.session.corpid)
+     *   self.customsOffice = sm.GetService('invCache').GetInventoryFromId(self.customsOfficeID)
      *
      * if eve.session.corprole & (const.corpRoleAccountant | const.corpRoleJuniorAccountant) != 0:
      *     office = self.corp.GetOffice()
@@ -331,8 +337,9 @@ PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
             _log(INV__ERROR, "%s: Item %u is not in location %u. Skipping.", call.client->GetName(), *cur, args.locationID);
         } else {
             //item->Delete();
-            item->SetFlag(flagJunkyardTrashed);
+            //item->SetFlag(flagJunkyardTrashed);
             item->ChangeOwner(call.client->GetStationID(), false);
+            item->Move(call.client->GetStationID(), flagJunkyardTrashed);
         }
     }
 
@@ -343,6 +350,13 @@ PyResult InvBrokerBound::Handle_List(PyCallArgs &call) {
 /**
         inv = invCache.GetInventoryFromId(activeShipID, locationID=session.stationid2)
         shipCargo = inv.List()
+
+        inv = sm.GetService('invCache').GetInventoryFromId(self.containerID)
+        for item in inv.List(const.flagSpecializedMaterialBay)
+
+        shipInv = sm.GetService('invCache').GetInventoryFromId(session.shipid)
+        invList = shipInv.List(const.flagSpecializedCommandCenterHold)
+        invList.extend(shipInv.List(const.flagCargo))
             */
 
     sLog.Log( "InvBrokerBound::Handle_List()", "size= %u", call.tuple->size() );
