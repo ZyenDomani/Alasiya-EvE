@@ -604,7 +604,12 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         /* if ejecting into pod, setup and create new pod object */
         if (m_ship->typeID() == itemTypeCapsule) {
             m_ship->Move(m_locationID, flagCapsule);
-            pShipSE = new Ship(m_ship, m_services, SystemMgr());
+            FactionData data;
+                data.allianceID = GetAllianceID();
+                data.corporationID = GetCorporationID();
+                data.factionID = GetWarFactionID();
+                data.ownerID = GetCharacterID();
+            pShipSE = new Ship(m_ship, m_services, SystemMgr(), data);
             pShipSE->GetShipSE()->SetPodShipID(m_shipId);
         } else {
             m_ship->SetFlag(flagAutoFit);
@@ -632,7 +637,12 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
 
 void Client::CreateShipSE() {
     if (pShipSE) DestroyShipSE();
-    pShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system);
+    FactionData data;
+        data.allianceID = GetAllianceID();
+        data.corporationID = GetCorporationID();
+        data.factionID = GetWarFactionID();
+        data.ownerID = GetCharacterID();
+    pShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system, data);
     _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->itemName().c_str(), m_char->itemID());
     pShipSE->SetPilot(this);
     pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
@@ -946,8 +956,13 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
     position.MakeRandomPointOnSphere(500.0);
 
     //now we create an entity to represent it.
-    Drone* pDrone = new Drone(drone, m_services, m_system, position);
-    pDrone->SetOwner(this);
+    FactionData data;
+        data.allianceID = m_char->allianceID();
+        data.corporationID = m_char->corporationID();
+        data.factionID = m_char->warFactionID();
+        data.ownerID = m_char->itemID();
+
+    Drone* pDrone = new Drone(drone, m_services, m_system, position, data);
     // add drone entity to system, set speed, begin orbit around launching ship
     m_system->AddEntity(pDrone);
     DoDestiny_OnDroneStateChange du;

@@ -265,7 +265,7 @@ bool StargateSE::LoadExtras(SystemDB *db) {
 
     if (!m_bubble)
         sBubbleMgr.Add(this);
-    
+
     m_bubble->SetGate(true);
     _log(DESTINY__BUBBLE_DEBUG, "StargateSE::LoadExtras() - IsGate set to true for bubble %u.", m_bubble->GetID() );
     m_jumps = db->ListJumps(m_self->itemID());
@@ -458,18 +458,19 @@ void ObjectSystemEntity::Killed(Damage &fatal_blow)
     m_targMgr->ClearTargets(false);
     if (m_destiny && m_bubble) {
         m_destiny->Stop();
-        if (IsStaticEntity())   /* never true - OSE are non-static entities */
-            m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), true);
-        else
-            m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
+        m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), m_self->global());
     }
 
     m_system->RemoveEntity(this);
 }
 
-DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system)
+DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data)
 : ObjectSystemEntity(self, services, system)
 {
+    m_warID = data.factionID;
+    m_allyID = data.allianceID;
+    m_corpID = data.corporationID;
+    m_ownerID = data.ownerID;
     m_destiny = new DestinyManager(this);
 }
 

@@ -539,7 +539,12 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
 
     _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %s(%u)", i->itemName().c_str(), i->itemID());
 
-    NPC* npc = new NPC(i, m_services, m_system, spawnEntry.corpID, spawnEntry.factionID, this);
+    FactionData data;
+        data.allianceID = 0;
+        data.corporationID = spawnEntry.corpID;
+        data.factionID = spawnEntry.factionID;
+        data.ownerID = spawnEntry.corpID;
+    NPC* npc = new NPC(i, m_services, m_system, data, this);
 
     // NPC::Load() no longer does anything.  it is still here in case we find a new use for it.
     if (!npc->Load()) {
@@ -578,13 +583,19 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
 
     RatSpawnGroupVec::iterator cur = m_toSpawn.begin();
 
+    FactionData data;
+        data.allianceID = 0;
+        data.corporationID = corpID;
+        data.factionID = factionID;
+        data.ownerID = corpID;
+
     while (cur != m_toSpawn.end()) {
         ItemData idata(
             cur->typeID,
             corpID,
             m_system->GetID(),
             flagAutoFit,
-            factionID,  // set ownerID to factionID for rats
+            corpID,  // set ownerID to corpID for rats
             "BeltRat"
         );
 
@@ -597,7 +608,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
 
             _log(SPAWN__POP, "SpawnMgr::MakeSpawn - Spawning NPC %u", i->itemID());
 
-            npc = new NPC(i, m_services, m_system, corpID, factionID, this);
+            npc = new NPC(i, m_services, m_system, data, this);
 
             // NPC::Load() no longer does anything.  it is still here in case we find a new use for it.
             if (!npc->Load()) {

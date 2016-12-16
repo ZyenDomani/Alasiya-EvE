@@ -36,13 +36,14 @@
 #include "system/SystemManager.h"
 
 
-NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, uint32 corpID, uint32 factionID, SpawnMgr* spawnMgr)
+NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data, SpawnMgr* spawnMgr)
 : DynamicSystemEntity(self, services, system),
   m_spawnMgr(spawnMgr)
 {
-    m_allyID = 0;
-    m_corpID = corpID;
-    m_warID = factionID;
+    m_allyID = data.allianceID;
+    m_warID = data.factionID;
+    m_corpID = data.corporationID;
+    m_ownerID = data.ownerID;
     m_destiny = new DestinyManager(this);
     m_AI = new NPCAIMgr(this);
 
@@ -132,7 +133,7 @@ void NPC::EncodeDestiny( Buffer& into )
         mode = DSTBALL_GOTO;
 
     BallHeader head;
-    head.entityID = GetID();
+        head.entityID = GetID();
         head.mode = mode;
         head.radius = GetRadius();
         head.x = x();
@@ -144,8 +145,8 @@ void NPC::EncodeDestiny( Buffer& into )
         mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
         mass.Harmonic = -1.0f;
-        mass.corporationID = GetCorporationID();
-        mass.allianceID = GetAllianceID();
+        mass.corporationID = m_corpID;
+        mass.allianceID = m_allyID;
     into.Append( mass );
     DataSector data;
         data.maxVelocity = m_destiny->GetMaxVelocity();
@@ -199,8 +200,7 @@ void NPC::EncodeDestiny( Buffer& into )
 void NPC::UseShieldRecharge()
 {
     // We recharge our shield until it's reaches the shield capacity.
-    if (m_self->GetAttribute(AttrShieldCapacity) > m_shieldCharge)
-    {
+    if (m_self->GetAttribute(AttrShieldCapacity) > m_shieldCharge) {
         m_shieldCharge += m_self->GetAttribute(AttrEntityShieldBoostAmount).get_float();
         if (m_shieldCharge > m_self->GetAttribute(AttrShieldCapacity).get_float())
             m_shieldCharge = m_self->GetAttribute(AttrShieldCapacity).get_float();
@@ -213,10 +213,9 @@ void NPC::UseShieldRecharge()
 
 void NPC::UseArmorRepairer()
 {
-    if( m_armorDamage > 0 )
-    {
+    if (m_armorDamage > 0) {
         m_armorDamage -= m_self->GetAttribute(AttrEntityArmorRepairAmount).get_float();
-        if( m_armorDamage < 0.0 )
+        if (m_armorDamage < 0.0)
             m_armorDamage = 0.0;
         m_self->SetAttribute(AttrArmorDamage, m_armorDamage, false);
     } else
@@ -227,10 +226,9 @@ void NPC::UseArmorRepairer()
 
 void NPC::UseHullRepairer()
 {
-    if( m_hullDamage > 0 )
-    {
+    if (m_hullDamage > 0) {
         //m_hullDamage -= m_self->GetAttribute(AttrEntityhullRepairAmount).get_float();  << NSA - create later
-        if( m_hullDamage < 0.0 )
+        if (m_hullDamage < 0.0)
             m_hullDamage = 0.0;
         m_self->SetAttribute(AttrDamage, m_hullDamage, false);
     } else

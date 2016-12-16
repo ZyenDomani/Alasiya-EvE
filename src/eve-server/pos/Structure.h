@@ -20,8 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Aknor Jaden
-    Updates:    Allan
+    Author:        Aknor Jaden (original)
+    Updates:    Allan   (rewrite)
 */
 
 /*  NOTE   this is NEW StructureItem and StructureSE code from SE rewrite.  */
@@ -132,11 +132,7 @@ protected:
         const ItemType &itemType, const ItemData &data
     );
 
-    static uint32 CreateItemID(ItemFactory &factory,
-        // InventoryItem stuff:
-        ItemData &data
-    );
-
+    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
 
 };
 
@@ -149,12 +145,13 @@ class StructureSE
 : public ObjectSystemEntity
 {
 public:
-    StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system);
+    StructureSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& data);
     virtual ~StructureSE()                              { /* Do nothing here */ }
 
     void Init(StructureItemRef structure);
 
     /* class type pointer querys. */
+    virtual StructureSE* GetCOSE()                      { return (m_co ? this : nullptr); }
     virtual StructureSE* GetPOSSE()                     { return (m_pos ? this : nullptr); }
     virtual StructureSE* GetTCUSE()                     { return (m_tcu ? this : nullptr); }
     virtual StructureSE* GetSBUSE()                     { return (m_sbu ? this : nullptr); }
@@ -162,6 +159,7 @@ public:
     virtual StructureSE* GetJumpBridgeSE()              { return (m_outpost ? this : nullptr); }
 
     /* class type tests. */
+    virtual bool IsCOSE()                               { return m_co; }
     virtual bool IsPOSSE()                              { return m_pos; }
     virtual bool IsTCUSE()                              { return m_tcu; }
     virtual bool IsSBUSE()                              { return m_sbu; }
@@ -180,7 +178,11 @@ public:
 
     PyTuple *GetEffectState();
 
+    // for orbital infrastructure
+    void SetPlanet(uint32 planetID)                     { m_planetID = planetID; }
+
 private:
+    bool m_co = false;
     bool m_tcu = false;
     bool m_pos = false;
     bool m_sbu = false;
@@ -197,6 +199,9 @@ private:
     uint32 m_towerID;       /* this is the controlling towerID for POS modules */
     uint64 m_timestamp;     /* used to track time on POS states (onlining, reinforced, etc) */
 
+    // for orbital infrastructure (customs office)
+    GPoint m_rotation;
+    uint32 m_planetID = 0;
 };
 
 #endif /* !__STRUCTURE__H__INCL__ */

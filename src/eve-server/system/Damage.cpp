@@ -633,8 +633,14 @@ void Ship::Killed(Damage &fatal_blow) {
         podRef->Relocate(capsulePosition);
 
         SystemEntity* pPodEntity = m_system->GetSE(pPilot->GetPodID());
-        if (!pPodEntity)
-            pPodEntity = new Ship(podRef, m_services, m_system);
+        if (!pPodEntity) {
+            FactionData data;
+                data.allianceID = GetAllianceID();
+                data.corporationID = GetCorporationID();
+                data.factionID = GetWarFactionID();
+                data.ownerID = GetOwnerID();
+            pPodEntity = new Ship(podRef, m_services, m_system, data);
+        }
 
         m_bubble->Add(pPodEntity);
 
@@ -694,7 +700,7 @@ void Ship::Killed(Damage &fatal_blow) {
                 sLog.Error("Client::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
         }
 
-        m_destiny->SendJettisonPacket(deadShipRef);
+        m_destiny->SendJettisonPacket();
         m_destiny->SendTerminalExplosion(oldShipItemID, m_bubble->GetID());
         pPilot->BoardShip(podRef);
         pPilot->StartKilledTimer();

@@ -336,9 +336,7 @@ uint32 SystemBubble::CountNPCs() {
 
 bool SystemBubble::InBubble(const GPoint& pt) const
 {
-	// Return true when System Entity is still within BUBBLE_RADIUS_METERS + BUBBLE_HYSTERESIS_METERS from the center
-	GVector distance(m_center, pt);
-	if (distance.length() <= m_radius_hysteresis)
+	if (m_center.distance(pt) <= m_radius_hysteresis)
 		return true;
 	return false;
 }
@@ -346,7 +344,7 @@ bool SystemBubble::InBubble(const GPoint& pt) const
 void SystemBubble::PrintEntityList() {
     bool found = false;
     for (auto cur : m_dynamicEntities) {
-        if (cur.second->IsVisibleSystemWide())  //this should only hit beacons and cynos as global AND not static
+        if (cur.second->Global())  //this should only hit beacons and cynos as global AND not static
             sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Global.", cur.second->GetName(), cur.second->GetID() );
         if (cur.second->IsShipSE())
             if (cur.second->HasPilot()) {

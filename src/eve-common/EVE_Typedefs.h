@@ -471,7 +471,8 @@ typedef enum {
     corpSociety             = 1000131,
     corpMordusLegion        = 1000128,
     corpSanshas             = 1000161,
-    corpSerpentis           = 1000135
+    corpSerpentis           = 1000135,
+    corpInterbus            = 1000148
 } corpDef;
 
 // only for drones

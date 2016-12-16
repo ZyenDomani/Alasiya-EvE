@@ -127,7 +127,7 @@ uint32 InventoryItem::CreateTempItemID(ItemFactory &factory, ItemData &data) {
         data.name = t->name();
 
     // Get a new Entity ID from ItemFactory's ID Authority:
-    if (t->categoryID() == EVEDB::invCategories::Ship) // may need more testing to verify that ONLY NPC's use this method
+    if (t->categoryID() == EVEDB::invCategories::Entity) // may need more testing to verify that ONLY NPC's use this method
         return factory.GetNextNPCID();
     else if (data.flag == EVEItemFlags::flagMissile)
         return factory.GetNextMissileID();
@@ -167,7 +167,8 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
              *        case EVEDB::invCategories::Drone:
              *            //return DroneItem::_LoadItem<DroneItem>( factory, itemID, type, data );
              */
-            case EVEDB::invCategories::Structure: {  // this is for all POS structure types (tower, arrays, batteries, etc)
+            case EVEDB::invCategories::Orbitals:
+            case EVEDB::invCategories::Structure: {  // this is for all Orbital structure types (POS, customs offices, etc)
                 return StructureItem::_LoadItem<StructureItem>( factory, itemID, type, data );
             }
             case EVEDB::invCategories::Station: {
@@ -249,11 +250,11 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
                     or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Capital)
                     or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Frigate)
                     or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Cruiser)
-                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship))
+                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship)) {
                     /*  these should probably get an NPCItem ItemType eventually */
                     return InventoryItemRef( new InventoryItem( factory, itemID, type, data ) );
-                    else
-                        return CelestialObject::_LoadItem<CelestialObject>( factory, itemID, type, data );
+                } else
+                    return CelestialObject::_LoadItem<CelestialObject>( factory, itemID, type, data );
             }
             default:
                 _log(ITEM__MESSAGE, "item %u (type %u, cat %u) tried _LoadItem, but is not handled.", itemID, type.id(), type.categoryID());
@@ -282,8 +283,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             break;
         case EVEDB::invCategories::Asteroid: {
             uint32 itemID = InventoryItem::CreateItemID( factory, data );
-            //uint32 itemID = InventoryItem::CreateTempItemID( factory, data ); // Use this to prevent Asteroids from being stored in DB
-            if ( itemID == 0 )
+            if (!itemID)
                 return InventoryItemRef();
             InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
             if (!itemRef)
@@ -313,7 +313,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Deployable: {
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID( factory, data );
-            if ( itemID == 0 )
+            if (!itemID)
                 return InventoryItemRef();
             InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
             if (!itemRef)
@@ -333,7 +333,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 case EVEItemFlags::flagMissile: {
                     // Spawn launched missile item in EVEMU_MISSILE_ID range and does NOT save missile to db
                     uint32 itemID = InventoryItem::CreateTempItemID( factory, data );
-                    if ( itemID == 0 )
+                    if (!itemID)
                         return InventoryItemRef();
 
                     InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
@@ -351,7 +351,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 default: {
                     // Spawn generic item:
                     uint32 itemID = InventoryItem::CreateItemID( factory, data );
-                    if ( itemID == 0 )
+                    if (!itemID)
                         return InventoryItemRef();
 
                     InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
@@ -372,17 +372,18 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
 			// Spawn generic item for Entities at this time:
             uint32 itemID = InventoryItem::CreateItemID( factory, data );
             //uint32 itemID = InventoryItem::CreateTempItemID( factory, data );		// Use this to prevent entity from being stored in DB
-			if ( itemID == 0 )
+			if (!itemID)
 				return InventoryItemRef();
 			 InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
             if (!itemRef)
                 return InventoryItemRef();
 			return itemRef;
-		}
-        case EVEDB::invCategories::Structure: {     /*  this is for all POS items */
+        }
+        case EVEDB::invCategories::Orbitals:
+        case EVEDB::invCategories::Structure: {     /*  this is for all Orbital items */
             /** @todo structure class is not complete.  */
             uint32 itemID = StructureItem::CreateItemID( factory, data );
-            if ( itemID == 0 )
+            if (!itemID)
                 return InventoryItemRef();
             StructureItemRef itemRef = StructureItem::Load( factory, itemID );
             if (!itemRef)
@@ -399,7 +400,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         }
         case EVEDB::invCategories::Station: {
             uint32 itemID = StationItem::CreateItemID( factory, data );
-            if ( itemID == 0 )
+            if (!itemID)
                 return StationItemRef();
             StationItemRef stationRef = StationItem::Load( factory, itemID );
             if (!stationRef)
@@ -424,7 +425,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             {
                 // Spawn new Cargo Container
                 uint32 itemID = CargoContainer::CreateItemID( factory, data );
-                if ( itemID == 0 )
+                if (!itemID)
                     return CargoContainerRef();
                 CargoContainerRef cargoRef = CargoContainer::Load( factory, itemID );
                 if (!cargoRef)
@@ -441,7 +442,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             } else if (t->groupID() == EVEDB::invGroups::Wreck) {
                 // Spawn new Wreck Container
                 uint32 itemID = WreckContainer::CreateItemID( factory, data );
-                if ( itemID == 0 )
+                if (!itemID)
                     return WreckContainerRef();
                 WreckContainerRef wreckRef = WreckContainer::Load( factory, itemID );
                 if (!wreckRef)
@@ -456,11 +457,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 //wreckRef->SaveAttributes();
                 return wreckRef;
             }
-            /*  put a check in here for beacons,
-			 * groupid 310::typeid
-			 *   Large_Collidable_Structure::
-			 * groupid 226::typeid 10124
-			 *   Large_Collidable_Object::
+            /*  put a check in here for these,
 			 * groupID 319   Beacon   typeid 29189
 			 * groupID 920    Effect_Beacon
 			 *
@@ -469,7 +466,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             else {
                 // Spawn new Celestial Object
                 uint32 itemID = CelestialObject::CreateItemID( factory, data );
-                if ( itemID == 0 )
+                if (!itemID)
                     return CelestialObjectRef();
                 CelestialObjectRef celestialRef = CelestialObject::Load( factory, itemID );
                 if (!celestialRef)
@@ -481,7 +478,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
 
     // Spawn generic item:
     uint32 itemID = InventoryItem::CreateItemID( factory, data );
-    if ( itemID == 0 )
+    if (!itemID)
         return InventoryItemRef();
     InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
     if (!itemRef)

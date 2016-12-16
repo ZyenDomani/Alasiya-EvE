@@ -124,9 +124,9 @@ public:
     void SendBallInteractive(const ShipItemRef shipRef, bool set = false) const;
     void UpdateNewShip(const ShipItemRef newShipRef) const;
     void UpdateOldShip(const ShipItemRef oldShipRef) const;
-    void SendJettisonPacket(const InventoryItemRef fromItemRef) const;
-    void SendAnchorDrop(const InventoryItemRef fromItemRef) const;
-    void SendAnchorLift(const InventoryItemRef fromItemRef) const;
+    void SendJettisonPacket() const;
+    void SendAnchorDrop() const;
+    void SendAnchorLift() const;
     void SendCloakShip(const bool IsWarpSafe) const;
     void SendUncloakShip() const;
 	void SendSpecialEffect10(uint32 gateID, const ShipItemRef shipRef, uint32 targetID, std::string effectString, bool isOffensive, bool start, bool isActive) const;

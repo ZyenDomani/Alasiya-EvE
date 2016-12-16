@@ -91,6 +91,7 @@ public:
     const ItemGroup &       group() const               { return type().group(); }
     const ItemCategory &    category() const            { return type().category(); }
     EVEItemCategories       categoryID() const          { return type().categoryID(); }
+    bool                    global() const              { return (HasAttribute(AttrIsGlobal) ? true : false); }
 
     /* public-access generic functions handled in base class. */
     void                    Rename(const char *to);
@@ -107,6 +108,7 @@ public:
     bool                    SetFlag(EVEItemFlags new_flag, bool notify=true);
 
 private:
+    /* this should ONLY be called from within InventoryItem */
     void                    SetOnline(bool online, bool isRig);
 public:
     void                    PutOnline(bool isRig=false) { SetOnline(true, isRig); }

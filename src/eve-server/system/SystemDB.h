@@ -29,46 +29,6 @@
 
 #include "ServiceDB.h"
 
-class DBSystemEntity {
-public:
-    uint32 itemID = 0;
-    uint32 typeID = 0;
-    uint32 groupID = 0;
-    uint32 categoryID = 0;  //TODO populate this for simple system entities. (recently added - 1Dec15)
-    uint32 orbitID = 0;
-    GPoint position = NULL_ORIGIN;
-    double radius = 0;
-    double security = 0;
-    std::string itemName = "";
-};
-
-class DBSystemDynamicEntity {
-public:
-    uint32 itemID = 0;
-    std::string itemName = "";
-    uint32 typeID = 0;
-    uint32 groupID = 0;
-    uint32 categoryID = 0;
-    uint32 ownerID = 0;
-    uint32 corporationID = 0;
-    uint32 allianceID = 0;
-    uint32 factionID = 0;
-    uint32 planetID = 0;
-    double x = 0;
-    double y = 0;
-    double z = 0;
-};
-
-struct DBGPointEntity {
-    uint8 idx = 0;
-    uint32 itemID = 0;
-    double radius = 0;
-    GPoint position = NULL_ORIGIN;
-    double x = 0;
-    double y = 0;
-    double z = 0;
-};
-
 class SystemDB
 : public ServiceDB
 {
@@ -91,7 +51,6 @@ public:
 	void GetMoons(uint32 systemID, std::vector<DBGPointEntity>* moonIDs, uint8* total);
     void GetGates(uint32 systemID, std::vector<DBGPointEntity>* gateIDs, uint8* total);
     void GetBelts(uint32 systemID, std::vector<DBGPointEntity>* beltIDs, uint8* total);
-
 };
 
 

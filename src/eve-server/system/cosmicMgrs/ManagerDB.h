@@ -5,12 +5,11 @@
   * @Author:         Allan
   * @date:   17 April 2016
   */
- 
+
 #ifndef _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
 #define _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
 
 
-#include <unordered_map>
 #include "POD_containers.h"
 #include "system/SystemDB.h"
 
@@ -38,36 +37,10 @@ typedef enum {
 
     */
 
-// this class is a singleton object to have a common place for all manager data
-class MgrData
-: public Singleton< MgrData >
-{
-public:
-    MgrData();
-    virtual ~MgrData();
-
-    // Initializes the Table:
-    int Initialize();
-
-    bool GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids);
-    uint8 GetRegionQuarter(uint32 regionID);
-
-protected:
-    void _Populate();
-
-private:
-    std::map<uint32, uint32> m_regions;   // this simple map holds k,v of regionID/factionID
-    std::unordered_multimap<std::string, OreTypeChance> m_oreBySecClass;
-};
-
-#define sMgrData \
-    ( MgrData::get() )
-
-
 class ManagerDB {
 public:
 
-    /* db methods for all managers */
+    /* db methods for all cosmic managers */
 
     /* data manager */
     void GetOreBySSC(DBQueryResult& res);

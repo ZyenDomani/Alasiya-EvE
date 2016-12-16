@@ -45,7 +45,7 @@ class Drone
 : public DynamicSystemEntity
 {
 public:
-    Drone(InventoryItemRef drone, PyServiceMgr& services, SystemManager* system, const GPoint& position);
+    Drone(InventoryItemRef drone, PyServiceMgr& services, SystemManager* pSystem, const GPoint& position, const FactionData& data);
     virtual ~Drone();
 
     /* class type pointer querys. */
@@ -65,7 +65,7 @@ public:
     virtual void TargetedLost(SystemEntity *who);
 
     /* specific functions handled here. */
-    Client* GetOwner()                                  { return (m_owner ? m_owner : nullptr); }
+    Client* GetOwner()                                  { return (m_pClient ? m_pClient : nullptr); }
     DroneAIMgr* GetAI()                                 { return m_AI; }
 
     void SaveDrone();
@@ -74,21 +74,21 @@ public:
     void UseArmorRepairer();
     void UseShieldRecharge();
     void Orbit(SystemEntity *who);
-    void SetOwner(Client* pPC);
+    void SetOwner(Client* pClient);
 
-    uint32 GetBounty() const                            { return (m_owner ? m_owner->GetChar()->bounty() : 0); }
-    uint32 GetOwnerID() const                           { return (m_owner ? m_owner->GetCharacterID() : 1); }
+    uint32 GetBounty() const                            { return (m_pClient ? m_pClient->GetChar()->bounty() : 0); }
+    uint32 GetOwnerID() const                           { return (m_pClient ? m_pClient->GetCharacterID() : 1); }
 
     float GetThermal()                                  { return m_therDamage; }
     float GetEM()                                       { return m_emDamage; }
     float GetKinetic()                                  { return m_kinDamage; }
     float GetExplosive()                                { return m_expDamage; }
-    float GetSecurityRating() const                     { return (m_owner ? m_owner->GetChar()->GetSecurityRating() : 1.0); }
+    float GetSecurityRating() const                     { return (m_pClient ? m_pClient->GetChar()->GetSecurityRating() : 1.0); }
 
     double GetOrbitRange()                              { return m_orbitRange; }
 
 protected:
-    Client* m_owner;
+    Client* m_pClient;
     DroneAIMgr* m_AI;
 
 private:

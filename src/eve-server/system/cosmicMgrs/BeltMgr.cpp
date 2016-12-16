@@ -232,11 +232,11 @@ void AsteroidBeltMgr::SpawnBelt(uint16 bubbleID)
     float security = 1.1 - secStatus;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
     std::unordered_multimap<float, uint32> roidDist;
     if (ice) {
-        uint8 quarter = sMgrData.GetRegionQuarter(m_regionID);
+        uint8 quarter = sDataMgr.GetRegionQuarter(m_regionID);
         // caldari=1, minmatar=2, amarr=3, gallente=4, none=5
         GetIceDist(quarter, secStatus, roidDist);
     } else {
-        sMgrData.GetRoidDist(m_system->GetSystemSecurityClass(), roidDist);
+        sDataMgr.GetRoidDist(m_system->GetSystemSecurityClass(), roidDist);
     }
 
     int8 pcs = 5;

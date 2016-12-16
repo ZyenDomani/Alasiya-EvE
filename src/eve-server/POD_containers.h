@@ -9,6 +9,7 @@
 
 #include "eve-server.h"
 
+/* POD structure for account data */
 struct AccountData {
     int32 id;
     uint64 role;
@@ -22,9 +23,7 @@ struct AccountData {
     bool banned;
 };
 
-/**
- * POD for fleet data    -allan 31Jul14
- */
+/* POD structure for fleet data    -allan 31Jul14 */
 struct FleetData {
     uint32 fleetID;
     uint32 wingID;
@@ -34,9 +33,7 @@ struct FleetData {
     uint8 fleetJob;
 };
 
-/**
- * POD for character kill data  -allan 01May16
- */
+/* POD structure for character kill data  -allan 01May16 */
 struct CharKillData {
     uint32 killID;
     uint32 solarSystemID;
@@ -59,7 +56,7 @@ struct CharKillData {
     uint32 moonID;
 };
 
-/* POD entry for asteroid */
+/* POD structure for asteroid */
 struct AsteroidData {
     uint32 itemID;
     std::string itemName;
@@ -73,13 +70,13 @@ struct AsteroidData {
     double z;
 };
 
-/* POD entry for asteroid distrubtion methods by group */
+/* POD structure for asteroid distrubtion methods by group */
 struct OreTypeChance {
     uint16 typeID;
     float chance;
 };
 
-/* POD entry for active dungeon */
+/* POD structure for active dungeon */
 struct ActiveDungeon {
     uint32 systemID;
     uint32 dunItemID;
@@ -91,7 +88,7 @@ struct ActiveDungeon {
     double z;
 };
 
-/* POD entry for cosmic signatures/anomalies */
+/* POD structure for cosmic signatures/anomalies */
 struct CosmicSignature {
     std::string sigID;  // this is unique xxx-nnn id displayed in scanner
     std::string dungeonName;
@@ -106,7 +103,7 @@ struct CosmicSignature {
     double z;
 };
 
-/* POD entry for spawn groups */
+/* POD structure for spawn groups */
 struct SystemSpawnGroup { //reference to this bubble's data for spawn groups.  may need later.
     //SystemBubble* pSysBubble;   //cant use reference or pointer here...
     uint32 bubbleID;
@@ -115,13 +112,13 @@ struct SystemSpawnGroup { //reference to this bubble's data for spawn groups.  m
     double secRating;
 };
 
-/* POD entry for spawn groups */
+/* POD structure for spawn groups */
 struct SpawnGroup {
     uint32 typeID;  //typeID to spawn
     uint8 quantity; //quantity to spawn for this typeID
 };
 
-/* POD entry for spawn entries */
+/* POD structure for spawn entries */
 struct SpawnEntry {     // notes for me while creating/writing/testing
     bool enabled;       // is group timer enabled for this entry?
     uint8 spawnType;    // spawn type.  1 = roaming, 2 = static
@@ -138,13 +135,13 @@ struct SpawnEntry {     // notes for me while creating/writing/testing
     uint32 time;        // spawn group timer start time
 };
 
-/* POD entry for spawn faction groups */
+/* POD structure for spawn faction groups */
 struct RatFactionGroups {  // notes for me while creating/writing/testing
     uint8 shipClass;      // shipclass - arbitrary
     uint32 groupID;     // item groupID
 };
 
-/* POD entry for spawn classes */
+/* POD structure for spawn classes */
 struct RatSpawnClass { // notes for me while creating/writing/testing
     uint8 type;     // this is spawn type.  see notes in SpawnDB.h
     uint8 sub;      // this is spawn class id.  see notes in SpawnDB.h
@@ -163,7 +160,7 @@ struct RatSpawnClass { // notes for me while creating/writing/testing
 };
 
 
-/* POD entry for systems. */
+/* POD structure for systems. */
 struct SystemData {
     uint32 systemID;
     std::string name;
@@ -173,7 +170,7 @@ struct SystemData {
     std::string securityClass;
 };
 
-/* POD entry for static items. */
+/* POD structure for static items. */
 struct StaticData {
     uint32 itemID;
     uint32 systemID;
@@ -182,7 +179,7 @@ struct StaticData {
     GPoint position;
 };
 
-/* POD entry for stations. */
+/* POD structure for stations. */
 struct StationData {
     uint32 stationID;
     GPoint position;
@@ -190,7 +187,76 @@ struct StationData {
     GVector dockOrientation;
 };
 
-/* POD entries for dungeon data */
+/* POD structure for saving items */
+struct SaveData {
+    uint32          itemID;
+    uint32          typeID;
+    uint32          ownerID;
+    uint32          locationID;
+    EVEItemFlags    flag;
+    bool            contraband;
+    bool            singleton;
+    uint32          quantity;
+    GPoint          position;
+    std::string     customInfo;
+};
+
+/* POD structure for loading dynamic items */
+struct OwnerData {
+    uint32          ownerID = 0;
+    uint32          corpID = 0;
+    uint32          locID = 0;
+};
+
+/* POD structure for container faction data */
+struct FactionData {
+    uint32 ownerID = 0;
+    uint32 corporationID = 0;
+    uint32 allianceID = 0;
+    uint32 factionID = 0;
+};
+
+class DBSystemEntity {
+public:
+    uint32 itemID = 0;
+    uint32 typeID = 0;
+    uint32 groupID = 0;
+    uint32 categoryID = 0;  //TODO populate this for simple system entities. (recently added - 1Dec15)
+    uint32 orbitID = 0;
+    GPoint position = NULL_ORIGIN;
+    double radius = 0;
+    double security = 0;
+    std::string itemName = "";
+};
+
+class DBSystemDynamicEntity {
+public:
+    uint32 itemID = 0;
+    std::string itemName = "";
+    uint32 typeID = 0;
+    uint32 groupID = 0;
+    uint32 categoryID = 0;
+    uint32 ownerID = 0;
+    uint32 corporationID = 0;
+    uint32 allianceID = 0;
+    uint32 factionID = 0;
+    uint32 planetID = 0;
+    double x = 0;
+    double y = 0;
+    double z = 0;
+};
+
+struct DBGPointEntity {
+    uint8 idx = 0;
+    uint32 itemID = 0;
+    double radius = 0;
+    GPoint position = NULL_ORIGIN;
+    double x = 0;
+    double y = 0;
+    double z = 0;
+};
+
+/* POD structure entries for dungeon data */
 struct DunTemplate {
     std::string dunName = "";
     uint16 dunRoomID = 0;
@@ -235,7 +301,7 @@ struct DunRoomSpawnInfo {
     uint16 z = 0;
 };
 
-/* POD entries for PI data */
+/* POD structure entries for PI data */
 struct PlanetResourceData {
     float dist_1 = 0;
     float dist_2 = 0;

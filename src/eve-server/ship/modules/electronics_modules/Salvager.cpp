@@ -321,7 +321,7 @@ void Salvager::DropSalvage()
             cur.second->Move(jetCanRef->itemID(),flagAutoFit);
 
         // create new container
-        ContainerData contData;
+        FactionData contData;
             contData.allianceID = m_targetEntity->GetAllianceID();
             contData.corporationID = m_targetEntity->GetCorporationID();
             contData.factionID = m_targetEntity->GetWarFactionID();
@@ -329,7 +329,7 @@ void Salvager::DropSalvage()
         ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetEntity->GetServices(), m_targetEntity->SystemMgr(), contData);
         jetCanRef->SetMySE(cSE);
         m_targetEntity->SystemMgr()->AddEntity(cSE);
-        m_targetEntity->DestinyMgr()->SendJettisonPacket(m_targetEntity->GetSelf());
+        m_targetEntity->DestinyMgr()->SendJettisonPacket();
     }
     m_targetEntity->SystemMgr()->RemoveEntity(m_targetEntity);
     m_targetEntity->GetSelf()->Delete();

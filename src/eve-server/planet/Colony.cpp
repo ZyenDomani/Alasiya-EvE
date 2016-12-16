@@ -657,7 +657,7 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
             else
                 ; //  make error here?
 
-        ContainerData contData;
+        FactionData contData;
             contData.allianceID = m_client->GetAllianceID();
             contData.corporationID = m_client->GetCorporationID();
             contData.factionID = m_client->GetWarFactionID();

@@ -44,7 +44,19 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
   m_lifeTimer(0)
 {
     m_destiny = new DestinyManager(this);
-    m_ownerID = (ship->HasPilot() ? ship->GetPilot()->GetCharacterID() : ship->itemID());
+    
+    if (ship->HasPilot()) {
+        m_ownerID = ship->GetPilot()->GetCharacterID();
+        m_warID = ship->GetPilot()->GetWarFactionID();
+        m_allyID = ship->GetPilot()->GetAllianceID();
+        m_corpID = ship->GetPilot()->GetCorporationID();
+    } else {
+        m_ownerID = ship->itemID();
+        m_warID = 0;
+        m_allyID = 0;
+        m_corpID = 0;
+    }
+
     m_kinDamage = self->GetAttribute(AttrKineticDamage).get_float(),
     m_therDamage = self->GetAttribute(AttrThermalDamage).get_float(),
     m_emDamage = self->GetAttribute(AttrEmDamage).get_float(),
@@ -234,7 +246,7 @@ PyDict* Missile::MakeSlimItem() {
         slim->SetItemString("sourceModuleID",   new PyInt(m_module->itemID()));
         slim->SetItemString("corpID",           new PyInt(m_corpID));
         slim->SetItemString("allianceID",       new PyInt(m_allyID));
-        slim->SetItemString("warFactionID",     new PyInt(m_warFactionID));
+        slim->SetItemString("warFactionID",     new PyInt(m_warID));
         slim->SetItemString("securityStatus",   new PyFloat(0/*pChar->GetSecurityRating()*/)); /** @todo (allan) fix this */
         slim->SetItemString("ownerID",          new PyInt(m_ownerID)); // this is corp ID??
         slim->SetItemString("numLaunchers",     new PyInt(1));  /** @todo (allan) fix this */

@@ -718,7 +718,7 @@ void DestinyManager::_Move() {
         CargoContainerRef jetCanRef = mySE->GetServices().item_factory->SpawnCargoContainer(idata);
         if (jetCanRef) {
             // create new container
-            ContainerData jetcanData;
+            FactionData jetcanData;
             ContainerSE* cSE = new ContainerSE(jetCanRef, mySE->GetServices(), mySE->SystemMgr(), jetcanData);
             jetCanRef->SetMySE(cSE);
             mySE->SystemMgr()->AddEntity(cSE);
@@ -2091,9 +2091,9 @@ void DestinyManager::TractorBeamStop()
     SendDestinyUpdate(updates);
 }
 
-void DestinyManager::SendJettisonPacket(const InventoryItemRef fromItemRef) const {
+void DestinyManager::SendJettisonPacket() const {
     DoDestiny_OnSpecialFX10 effect;
-        effect.entityID = fromItemRef->itemID();
+        effect.entityID = mySE->GetID();
         effect.effect_type = "effects.Jettison";
         effect.isOffensive = 0;
         effect.start = 1;
@@ -2102,9 +2102,9 @@ void DestinyManager::SendJettisonPacket(const InventoryItemRef fromItemRef) cons
     SendSingleDestinyUpdate(&up);
 }
 
-void DestinyManager::SendAnchorDrop(const InventoryItemRef fromItemRef) const {
+void DestinyManager::SendAnchorDrop() const {
     DoDestiny_OnSpecialFX10 effect;
-        effect.entityID = fromItemRef->itemID();
+        effect.entityID = mySE->GetID();
         effect.effect_type = "effects.AnchorDrop";
         effect.isOffensive = 0;
         effect.start = 1;
@@ -2113,9 +2113,9 @@ void DestinyManager::SendAnchorDrop(const InventoryItemRef fromItemRef) const {
     SendSingleDestinyUpdate(&up);
 }
 
-void DestinyManager::SendAnchorLift(const InventoryItemRef fromItemRef) const {
+void DestinyManager::SendAnchorLift() const {
     DoDestiny_OnSpecialFX10 effect;
-        effect.entityID = fromItemRef->itemID();
+        effect.entityID = mySE->GetID();
         effect.effect_type = "effects.AnchorLift";
         effect.isOffensive = 0;
         effect.start = 1;
@@ -2301,7 +2301,7 @@ void DestinyManager::SendJumpInEffect(std::string JumpEffect) const {
     SendDestinyUpdate(updates);
 }
 
-void DestinyManager::SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool isGlobal) const {
+void DestinyManager::SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool isGlobal/*false*/) const {
     //exploders = [ x[1][1][0] for x in state if x[1][0] == 'TerminalExplosion' ]
     /*
                   [PyTuple 2 items]                         x

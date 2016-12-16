@@ -347,7 +347,7 @@ class Ship
 : public DynamicSystemEntity
 {
 public:
-    Ship(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem);
+    Ship(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, const FactionData& data);
     virtual ~Ship();
 
     /* class type pointer querys. */

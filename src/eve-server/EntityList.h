@@ -35,12 +35,10 @@
 #include "utils/Singleton.h"
 #include "threading/Mutex.h"
 
-class ServiceDB;
 class Client;
 class PyAddress;
 class EVENotificationStream;
 class SystemManager;
-class DBcore;
 class PyTuple;
 class PyServiceMgr;
 
@@ -118,7 +116,7 @@ public:
 
     bool GetTracking()                                  { return m_shipTracking; }
     void SetTracking(bool set=false)                    { m_shipTracking = set; }
-    
+
     uint32 GetWreckFaction(uint32 typeID);
 
 protected:

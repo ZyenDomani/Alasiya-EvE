@@ -28,8 +28,6 @@
 #define __SERVICEDB_H_INCL__
 
 #include "eve-server.h"
-#include "EntityList.h"
-#include "StaticDataMgr.h"
 #include "POD_containers.h"
 
 /**
@@ -39,9 +37,7 @@
  *
  */
 
-class PyPackedRow;
 class PyObject;
-class ItemFactory;
 
 class ServiceDB
 {

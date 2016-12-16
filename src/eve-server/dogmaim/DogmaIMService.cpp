@@ -638,7 +638,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
             [PyIntegerVar 1002332856217]    << module itemID
             [PyInt 901]             << effectOnlineForStructures
         */
-        // This call is for Anchor/Unanchor a POS structure or Cargo Container,
+        // This call is for Anchor/Unanchor an Orbital structure or Cargo Container,
         //   get the new flag value and change the item referenced:
         if (call.tuple->items.at(0)->IsInt()) {
             itemID = call.tuple->items.at(0)->AsInt()->value();

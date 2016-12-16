@@ -32,13 +32,6 @@
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
 
-// POD structure for container faction data
-struct ContainerData {
-    uint32 ownerID = 0;
-    uint32 corporationID = 0;
-    uint32 allianceID = 0;
-    uint32 factionID = 0;
-};
 /**
  * InventoryItem which represents cargo container.
  */
@@ -155,7 +148,7 @@ class ContainerSE
 : public ItemSystemEntity
 {
 public:
-    ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemManager *system, const ContainerData& data);
+    ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data);
     virtual ~ContainerSE();
 
     /* class type pointer querys. */
@@ -174,8 +167,6 @@ public:
     void AnchorContainer();
     bool IsEmpty()                                      { return m_contRef->IsEmpty(); }
 
-    void SetPlanet(uint32 planetID)                     { m_planetID = planetID; }
-
 protected:
     CargoContainerRef m_contRef;
 
@@ -184,9 +175,6 @@ protected:
     double m_shieldCharge;
     double m_armorDamage;
     double m_hullDamage;
-
-    // for orbital containers
-    uint32 m_planetID;
 };
 
 /**
@@ -287,7 +275,7 @@ class WreckSE
 : public ItemSystemEntity
 {
 public:
-    WreckSE(WreckContainerRef self, PyServiceMgr& services, SystemManager* system, const ContainerData& data);
+    WreckSE(WreckContainerRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
     virtual ~WreckSE();
 
     /* class type pointer querys. */

@@ -14,7 +14,7 @@
 #include "planet/Planet.h"
 #include "planet/PlanetMgr.h"
 #include "packets/Planet.h"
-#include "system/Container.h"
+#include "pos/Structure.h"
 #include "system/SystemManager.h"
 
 
@@ -97,7 +97,28 @@ void PlanetSE::CreateCustomsOffice()
      *
      */
 
-    //pCO = new ContainerSE();
+    //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
+    FactionData data;
+        data.allianceID = 0;
+        data.corporationID = corpInterbus;
+        data.ownerID = corpInterbus;
+        data.factionID = factionInterBus;
+    uint16 typeID = 4318;
+
+    if (m_system->GetSystemSecurityRating() > 0.49) {
+        typeID = 2233;
+        // hisec...reset data for system sov holder
+        data.allianceID = 0;
+        data.corporationID = corpInterbus;
+        data.ownerID = corpInterbus;
+        data.factionID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
+    }
+    ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
+    StructureItemRef iRef = m_services.item_factory->SpawnStructure(idata);
+    GPoint pos = GetPosition();
+    pos.MakeRandomPointOnSphere(MakeRandomInt(80000, 100000));
+    iRef->Relocate(pos);   // set position here...needs a bit more research to do properly
+    pCO = new StructureSE(iRef, m_services, m_system, data);
 }
 
 PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)

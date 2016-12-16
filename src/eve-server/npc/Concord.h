@@ -37,12 +37,7 @@ class Concord
 : public DynamicSystemEntity
 {
 public:
-    Concord(
-        SystemManager* system,
-        PyServiceMgr& services,
-        InventoryItemRef self,
-        const GPoint &position,
-        ConcordSpawnMgr* spawnMgr = nullptr);
+    Concord(SystemManager* system, PyServiceMgr& services, InventoryItemRef self, const GPoint& position, ConcordSpawnMgr* spawnMgr);
 
     virtual ~Concord();
 
@@ -157,7 +152,7 @@ private:
     uint16 m_shieldBoosterDuration;
 
     uint32 m_targetRange;
-    
+
     Concord* m_npc;
 
     TurrentFormulas m_formula;

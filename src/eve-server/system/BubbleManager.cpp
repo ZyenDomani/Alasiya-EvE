@@ -35,11 +35,12 @@
 #include "system/SystemManager.h"
 #include "Client.h"
 
-// this will need work for new bubble map
+
 struct bubbleDeleter {
     void operator()(SystemBubble*& bRef) { // take pointer by reference
         if (bRef->IsEmpty()) {
             _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", bRef->GetID() );
+            sBubbleMgr.RemoveBubble(bRef->GetSystem()->GetID(), bRef);
             SafeDelete(bRef);
         }
     }
@@ -51,7 +52,7 @@ BubbleManager::BubbleManager()
     m_bubbles.clear();
     m_bubbleMap.clear();
     m_wanderers.clear();
-    m_wanderTimer.Start();
+    m_wanderTimer.Start(30000);
 }
 
 BubbleManager::~BubbleManager() {
@@ -177,7 +178,7 @@ void BubbleManager::Remove(SystemEntity *ent) {
  * and allowing a much larger amount of bubbles per system without
  * introducing lag from bubble processing.
  *
- * to further reduce bubble-finding-operation process times, testing an unordered multimap
+ * to further reduce bubble-finding process times, testing an unordered multimap
  * with bubbles entered by <systemID, SystemBubble*> to search only bubbles in desired system,
  * greatly reducing the search time for many loaded systems.
  *
@@ -204,10 +205,20 @@ void BubbleManager::ClearSystemBubbles(uint32 systemID)
     m_bubbleMap.erase(systemID);
 }
 
+void BubbleManager::RemoveBubble(uint32 systemID, SystemBubble* pSB)
+{
+    auto range = m_bubbleMap.equal_range(systemID);
+    for ( auto itr = range.first; itr != range.second; itr++ )
+        if (itr->second = pSB) {
+            m_bubbleMap.erase(itr);
+            return;
+        }
+}
+
 /* for beltmgr */
 void BubbleManager::AddSpawnID(uint16 bubbleID, uint32 spawnID)
 {
-    m_spawnIDs.emplace(std::pair<uint16, uint32>(bubbleID, spawnID));
+    m_spawnIDs.emplace(bubbleID, spawnID);
 }
 
 uint32 BubbleManager::GetSpawnID(uint16 bubbleID)

@@ -44,6 +44,7 @@ public:
     ~SystemBubble()                                     { clear(); }
 
     SystemEntity* const GetEntity(uint32 entityID) const;
+    SystemManager* const GetSystem() const              { return m_system; }
 
     /* for spawn system     -allan 15July15 */
     void Process();

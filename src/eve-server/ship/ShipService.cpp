@@ -208,7 +208,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 
     SystemEntity* pShipSE = pClient->GetShipSE();
     /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
-    if (pShipSE->IsVisibleSystemWide()) { /* close enough.  cyno IS IsVisibleSystemWide(), so this will work */
+    if (pShipSE->Global()) { /* close enough.  cyno (Global() = true), so this will work */
         /* find proper error msg for this...im sure there is one  */
         call.client->SendNotifyMsg("You cannot eject with an active Cyno Field.");
         return nullptr;
@@ -235,7 +235,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 
     /* all previous SE and DestinyMgr objects are updated to new ship object here */
     pClient->BoardShip(capsuleRef);
-    pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(oldShipRef);
+    pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
     pClient->GetShipSE()->DestinyMgr()->UpdateOldShip(oldShipRef);
     /* missing something here....capsule has no data. */
 
@@ -551,6 +551,12 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
     Call_SingleIntList successfully_dropped;
     Client* pClient = call.client;
     SystemManager* pSysMgr = pClient->SystemMgr();
+    FactionData data;
+        data.allianceID = pClient->GetAllianceID();
+        data.corporationID = pClient->GetCorporationID();
+        data.factionID = pClient->GetWarFactionID();
+        data.ownerID = pClient->GetCharacterID();
+
     uint32 contID = 0, itemID = 0, itemQuantity = 0;
 
     GPoint location(pClient->GetShipSE()->GetPosition());
@@ -577,15 +583,10 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
             continue;
         }
 
-        // Check drop for char or corp
-        if ((IsPlayerCorp(ownerID)) || (ownerID == pClient->GetCharacterID()))
+        if ((IsPlayerCorp(ownerID)) or (ownerID == pClient->GetCharacterID()))
             cargoItemRef->ChangeOwner(ownerID, true);
-        else
-            cargoItemRef->ChangeOwner(1, true);  //default to eve system
 
-        // Get groupID and categoryID for item 'itemID' to determine if it is a kind of cargo container, structure, or deployable item
         uint32 groupID = m_manager->item_factory->GetItem(itemID)->groupID();
-
         if ((groupID == EVEDB::invGroups::Audit_Log_Secure_Container)
             || (groupID == EVEDB::invGroups::Secure_Cargo_Container)
             || (groupID == EVEDB::invGroups::Freight_Container)
@@ -599,26 +600,20 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
 
             // Move item from cargo bay to space:
             contRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            ContainerData cargoData;
-                cargoData.allianceID = pClient->GetAllianceID();
-                cargoData.corporationID = pClient->GetCorporationID();
-                cargoData.factionID = pClient->GetWarFactionID();
-                cargoData.ownerID = pClient->GetCharacterID();
-            ContainerSE* cSE = new ContainerSE(contRef, *m_manager, pSysMgr, cargoData);
+            ContainerSE* cSE = new ContainerSE(contRef, *m_manager, pSysMgr, data);
             cSE->SetPosition(location);
             contRef->SetMySE(cSE);
             contRef->SaveItem();
             pSysMgr->AddEntity(cSE);
 
-            // Send notification SFX effects.jettison for the jettisoned Container object:
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(contRef);
             successfully_dropped.ints.push_back(contRef->itemID());
             continue;
         }
 
         uint32 categoryID = m_manager->item_factory->GetItem(itemID)->categoryID();
-        if (categoryID == EVEDB::invCategories::Structure) {
-            // This item is a POS structure of some kind, so move it from the ship's cargo into space
+        if ((categoryID == EVEDB::invCategories::Structure)
+            or (categoryID == EVEDB::invCategories::Orbitals)) {
+            // This item is an Orbital structure of some kind, so move it from the ship's cargo into space
             structureRef = m_manager->item_factory->GetStructure(itemID);
 
             if (!structureRef)
@@ -626,36 +621,26 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
 
             // Move item from cargo bay to space:
             structureRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            StructureSE* structureEnt = new StructureSE(structureRef, *m_manager, pSysMgr);
-            structureEnt->SetPosition(location);
+            StructureSE* sSE = new StructureSE(structureRef, *m_manager, pSysMgr, data);
+            sSE->SetPosition(location);
             structureRef->SaveItem();
-            pSysMgr->AddEntity(structureEnt);
+            pSysMgr->AddEntity(sSE);
 
-            // Send notification SFX effects.jettison for the jettisoned Structure object:
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(structureRef);
             successfully_dropped.ints.push_back(structureRef->itemID());
             continue;
         } else if (categoryID == EVEDB::invCategories::Deployable) {
             // This item is a Deployable item of some kind, so move it from the ship's cargo into space
-
-            //cargoItemRef = m_manager->item_factory->GetItem(itemID);
-            if (!cargoItemRef)
-                throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cargoItemRef->typeID()));
-
-            // Move item from cargo bay to space:
             cargoItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
             //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
             // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
-            DeployableSE* deployableObj = new DeployableSE(cargoItemRef, *m_manager, pSysMgr);
+            DeployableSE* deployableObj = new DeployableSE(cargoItemRef, *m_manager, pSysMgr, data);
             deployableObj->SetPosition(location);
             cargoItemRef->SaveItem();
             pSysMgr->AddEntity(deployableObj);
 
-            // Send notification SFX effects.jettison for the jettisoned Deployable object:
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(cargoItemRef);
             successfully_dropped.ints.push_back(cargoItemRef->itemID());
             continue;
-        } else if (cargoItemRef->flag() == flagDroneBay && cargoItemRef->categoryID() == EVEDB::invCategories::Drone) {
+        } else if ((cargoItemRef->flag() == flagDroneBay) and (cargoItemRef->categoryID() == EVEDB::invCategories::Drone)) {
             if (!sConfig.npc.EnableDrones) {
                 pClient->SendNotifyMsg("Drones are disabled.");
                 return nullptr;
@@ -670,28 +655,28 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
             ;// Reject launch for this item
         }
     }
+
+    pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
     return (successfully_dropped.Encode());
 }
 
 PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
-    //change this to call singleintarg
-    if (!(call.tuple->items.at(0)->IsInt())) {
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode arguments");
         //TODO: throw exception
         return nullptr;
     }
 
-    uint32 objectItemID = call.tuple->items.at(0)->AsInt()->value();
-
     Client* pClient = call.client;
-    SystemManager *pSysMgr = pClient->SystemMgr();
-    SystemEntity *object = pSysMgr->GetSE(objectItemID);
-    if (object == NULL) {
-        _log(SERVICE__ERROR, "%s: Unable to find object %u to scoop.", pClient->GetName(), objectItemID);
+    SystemManager* pSysMgr = pClient->SystemMgr();
+    SystemEntity* pSE = pSysMgr->GetSE(arg.arg);
+    if (!pSE) {
+        _log(SERVICE__ERROR, "%s: Unable to find object %u to scoop.", pClient->GetName(), arg.arg);
         return nullptr;
     }
 
-    InventoryItemRef item = object->GetSelf();
+    InventoryItemRef item = pSE->GetSelf();
 
     /** @todo check ownership of this object, ie does this character/corporation own this object? */
     // do we really need to do this for anything except for drones that are under control of another player?
@@ -703,13 +688,13 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     double volume = item->GetAttribute(AttrVolume).get_float();
     if (capacity < volume)
         throw PyException(MakeCustomError("%s is too large to fit in remaining Cargo bay capacity.", item->itemName().c_str()));
-    else
-    {
+    else {
         // We have enough Cargo bay capacity to hold the item being scooped,
         // so take ownership of it and move it into the cargo bay:
         item->ChangeOwner(pClient->GetCharacterID(), true);
 
         pClient->MoveItem(item->itemID(), pClient->GetShipID(), flagCargoHold);
+        pSysMgr->RemoveEntity(pSE);
     }
 
     return nullptr;
@@ -754,18 +739,12 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         double volume = item->GetAttribute(AttrVolume).get_float();
         if (capacity < volume)
             throw PyException(MakeCustomError("%s is too large to fit in remaining Drone bay capacity.", item->itemName().c_str()));
-        else
-        {
+        else {
             // We have enough Drone bay capacity to hold the drone,
             // so take ownership of it and move it into the Drone bay:
             item->ChangeOwner(pClient->GetCharacterID(), true);
-
             pClient->MoveItem(item->itemID(), pClient->GetShipID(), flagDroneBay);
-            pClient->GetShipSE()->SysBubble()->Remove(pDroneSE);
-
-            // Remove drone entity from SystemManager:
             pSysMgr->RemoveEntity(pDroneSE);
-            /** @todo  delete the SE for this drone. */
         }
     }
 
@@ -787,7 +766,6 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     }
 
     SystemManager* pSysMgr = pClient->SystemMgr();
-    SystemEntity* pSysEntity(nullptr);
     //Get location of our ship
     GPoint location(pClient->GetShipSE()->GetPosition());
 
@@ -795,6 +773,13 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     CargoContainerRef newJetcanItem, cargoContainerItem;
     StructureItemRef structureItemRef;
     uint32 groupID = 0, categoryID = 0;
+
+    FactionData data;
+        data.allianceID = pClient->GetAllianceID();
+        data.corporationID = pClient->GetCorporationID();
+        data.factionID = pClient->GetWarFactionID();
+        /** @todo  determine if this is char or corp here */
+        data.ownerID = pClient->GetCharacterID();
 
     //args contains id's of items to jettison
     std::vector<int32>::iterator cur = args.ints.begin();
@@ -814,19 +799,12 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             if (!cargoContainerItem)
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", cargoContainerItem->typeID()));
 
-            // Move item from cargo bay to space:
             cargoContainerItem->Move(pClient->GetLocationID(), flagAutoFit, true);
-            // and add to the system manager
-            //ContainerEntity* containerObj = new ContainerEntity(cargoContainerItem, pSysMgr, *m_manager, location);
-            pSysEntity = pSysMgr->GetSE(cargoContainerItem->itemID());
+            ContainerSE* cSE = new ContainerSE(cargoContainerItem, *m_manager, pSysMgr, data);
             location.MakeRandomPointOnSphere(500.0);
-            pSysEntity->SetPosition(location);
+            cSE->SetPosition(location);
             cargoContainerItem->SaveItem();
-            pSysMgr->AddEntity(pSysEntity);
-            pSysEntity = nullptr;
-
-            // Send notification SFX effects.jettison for the jettisoned Container object:
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(cargoContainerItem);
+            pSysMgr->AddEntity(cSE);
 
             // container found.  remove this item from list, then break out of here and use to contain all other non-pos items
             args.ints.erase(cur);
@@ -836,33 +814,25 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
     // reset iterator and loop thru list.
     for (auto cur : args.ints) {
-        // loop thru remaining items and determine if cur is a structure or deployable item
         invItemRef = m_manager->item_factory->GetItem(cur);
         if (!invItemRef)
             continue;
         categoryID = invItemRef->categoryID();
 
-        if (categoryID == EVEDB::invCategories::Structure) {
-            /** @todo (allan)  these need to be rewrote for correct class constructors  */
-
-            // This item is a POS structure of some kind, so move it from the ship's cargo into space
-            // whilst keeping ownership of it to the character not using the corporation the character belongs to:
+        if ((categoryID == EVEDB::invCategories::Structure)
+            or (categoryID == EVEDB::invCategories::Orbitals)) {
             structureItemRef = m_manager->item_factory->GetStructure(cur);
             if (!structureItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", structureItemRef->typeID()));
 
             structureItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            pSysEntity = pSysMgr->GetSE(structureItemRef->itemID());
+            StructureSE* sSE = new StructureSE(structureItemRef, *m_manager, pSysMgr, data);
             location.MakeRandomPointOnSphere(1500.0 + structureItemRef->type().radius());
-            pSysEntity->SetPosition(location);
+            sSE->SetPosition(location);
             structureItemRef->SaveItem();
-            pSysMgr->AddEntity(pSysEntity);
-            pSysEntity = nullptr;
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(structureItemRef);
+            pSysMgr->AddEntity(sSE);
             continue;
         } else if (categoryID == EVEDB::invCategories::Deployable) {
-            // This item is a Deployable item of some kind, so move it from the ship's cargo into space
-            // whilst keeping ownership of it to the character not using the corporation the character belongs to:
             cargoItemRef = m_manager->item_factory->GetItem(cur);
             if (!cargoItemRef)
                 throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cargoItemRef->typeID()));
@@ -870,21 +840,14 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             cargoItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
             //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
             // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
-            pSysEntity = pSysMgr->GetSE(cargoItemRef->itemID());
+            DeployableSE* dSE = new DeployableSE(cargoItemRef, *m_manager, pSysMgr, data);
             location.MakeRandomPointOnSphere(1500.0 + cargoItemRef->type().radius());
-            pSysEntity->SetPosition(location);
+            dSE->SetPosition(location);
             cargoItemRef->SaveItem();
-            pSysMgr->AddEntity(pSysEntity);
-            pSysEntity = nullptr;
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(cargoItemRef);
+            pSysMgr->AddEntity(dSE);
             continue;
-        } //else if ()    // Handle other types of cargo, such as jettisoning assembled ships?
-
-        // TODO Check to see if this item is allowed to be jettisoned based on categoryID and/or groupID:
-        // IDEAS:
-        // * Modules, Charges, Skillbooks, Ore, Blueprints, Materials, Corpses...
-
-        /** @todo  Handle NON-jettisonable cargo */
+        } //else if ()
+        /** @todo  Handle other cargo */
 
         // item isnt structure or deployable and can be jettisoned.  check if container was already created
         if ((!cargoContainerItem) or (!newJetcanItem)) {
@@ -909,26 +872,19 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             newJetcanItem = m_manager->item_factory->SpawnCargoContainer(p_idata);
             if (!newJetcanItem)
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", 23));
-
-            ContainerData jetcanData;
-                jetcanData.allianceID = pClient->GetAllianceID();
-                jetcanData.corporationID = pClient->GetCorporationID();
-                jetcanData.factionID = pClient->GetWarFactionID();
-                jetcanData.ownerID = pClient->GetCharacterID();
             // create new container
-            ContainerSE* cSE = new ContainerSE(newJetcanItem, *m_manager, pSysMgr, jetcanData);
+            ContainerSE* cSE = new ContainerSE(newJetcanItem, *m_manager, pSysMgr, data);
             newJetcanItem->SetMySE(cSE);
             pSysMgr->AddEntity(cSE);
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket(newJetcanItem);
             pClient->StartJetcanTimer();
         }
         /** @todo  check current can for capacity limits. */
         //if over limit create new can?  reject remainging cargo?  delete?  crash?  run thru station naked?
-        // Move item into cargo Container
         pClient->MoveItem(cur, (cargoContainerItem ? cargoContainerItem->itemID() : newJetcanItem->itemID()), flagAutoFit);
         continue;
     }
 
+    pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
     //response should be nodeid and timestamp
     return new PyLong(Win32TimeNow());
 }

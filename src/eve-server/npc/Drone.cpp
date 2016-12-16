@@ -33,15 +33,14 @@
 #include "npc/DroneAI.h"
 #include "system/SystemManager.h"
 
-using namespace Destiny;
-
-Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSystem, const GPoint &position)
-: DynamicSystemEntity(drone, services, pSystem),
-m_owner(nullptr)
+Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSystem, const GPoint &position, const FactionData& data)
+: DynamicSystemEntity(drone, services, pSystem)
 {
-    m_allyID = 0;
-    m_corpID = 0;
-    m_warID = 0;
+    m_warID = data.factionID;
+    m_allyID = data.allianceID;
+    m_corpID = data.corporationID;
+    m_ownerID = data.ownerID;
+    m_pClient = sEntityList.FindClientByCharID(m_ownerID);
     m_AI = new DroneAIMgr(this);
     m_destiny = new DestinyManager(this);
 
@@ -90,7 +89,8 @@ Drone::~Drone() {
 
 void Drone::SetOwner(Client* pClient) {
     m_self->ChangeOwner(pClient->GetCharacterID());
-    m_owner = pClient;
+    m_pClient = pClient;
+    m_ownerID = pClient->GetCharacterID();
     m_corpID = pClient->GetCorporationID();
     m_allyID = pClient->GetAllianceID();
     m_warID = pClient->GetWarFactionID();

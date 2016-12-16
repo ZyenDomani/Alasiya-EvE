@@ -95,6 +95,7 @@ public:
     virtual AsteroidSE*         GetAsteroidSE()         { return nullptr; }
     virtual StructureSE*        GetJumpBridgeSE()       { return nullptr; }
     virtual StructureSE*        GetOutpostSE()          { return nullptr; }
+    virtual StructureSE*        GetCOSE()               { return nullptr; }
     virtual StructureSE*        GetPOSSE()              { return nullptr; }
     virtual StructureSE*        GetTCUSE()              { return nullptr; }
     virtual StructureSE*        GetSBUSE()              { return nullptr; }
@@ -113,7 +114,6 @@ public:
     virtual bool                IsInanimateSE()         { return false; }
     /* Static */
     virtual bool                IsStaticEntity()        { return false; }
-    virtual bool                IsVisibleSystemWide()   { return false; }
     virtual bool                IsBeltSE()              { return false; }
     virtual bool                IsGateSE()              { return false; }
     virtual bool                IsPlanetSE()            { return false; }
@@ -127,6 +127,7 @@ public:
     virtual bool                IsContainerSE()         { return false; }
     /* Object */
     virtual bool                IsObjectEntity()        { return false; }
+    virtual bool                IsCOSE()                { return false; }
     virtual bool                IsPOSSE()               { return false; }
     virtual bool                IsTCUSE()               { return false; }
     virtual bool                IsSBUSE()               { return false; }
@@ -153,6 +154,7 @@ public:
 
     /* common functions for all entities handled here */
     /* public data queries  */
+    virtual bool                Global()                { return m_self->global(); }
     virtual InventoryItemRef    GetSelf()               { return m_self; }
     virtual uint32              GetID()                 { return m_self->itemID(); }
     virtual double              GetRadius();            /* too long to put here */
@@ -214,7 +216,7 @@ protected:
 
     InventoryItemRef            m_self = InventoryItemRef();
 
-    /* ease of access to common data for container objects */
+    /* ease of access to common data for ownable objects */
     uint32                      m_warID = 0;
     uint32                      m_corpID = 0;
     uint32                      m_allyID = 0;
@@ -235,8 +237,8 @@ public:
     /* Base */
     virtual bool                IsInanimateSE()         { return true; }
     /* Static */
+    virtual bool                Global()                { return true; }    // just in case item->global() fails here
     virtual bool                IsStaticEntity()        { return true; }
-    virtual bool                IsVisibleSystemWide()   { return true; }
 
     /* SystemEntity interface */
     virtual void                EncodeDestiny( Buffer& into );
@@ -368,10 +370,7 @@ class DeployableSE
 : public ObjectSystemEntity
 {
 public:
-    DeployableSE(
-        InventoryItemRef structure,
-        PyServiceMgr &services,
-        SystemManager *system);
+    DeployableSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
     virtual ~DeployableSE();
 
     /* class type pointer querys. */

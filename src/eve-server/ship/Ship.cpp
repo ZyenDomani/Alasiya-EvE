@@ -1221,12 +1221,16 @@ std::string ShipItem::GetShipDNA()
 
 
 /* DynamicSystemEntity representing ship object in space */
-Ship::Ship(InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem)
+Ship::Ship(InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem, const FactionData& data)
 : DynamicSystemEntity(self, services, pSystem),
 m_shipRef(ShipItemRef::StaticCast(self)),
 m_processTimerTick(SHIP_PROCESS_TICK_MS),   //5s
 m_processTimer(m_processTimerTick)
 {
+    m_warID = data.factionID;
+    m_allyID = data.allianceID;
+    m_corpID = data.corporationID;
+    m_ownerID = data.ownerID;
     m_destiny = new DestinyManager(this);
     m_podShipID = 0;
     m_processTimer.Start(m_processTimerTick);

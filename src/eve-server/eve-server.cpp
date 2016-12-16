@@ -28,6 +28,7 @@
 
 #include "EVEServerConfig.h"
 #include "NetService.h"
+#include "StaticDataMgr.h"
 // account services
 #include "account/AccountService.h"
 #include "account/AuthService.h"
@@ -402,7 +403,7 @@ int main( int argc, char* argv[] )
     sLog.Log("       ServerInit", "Dungeon Data");
     sDunDataMgr.Initialize();
     sLog.Log("       ServerInit", "Asteroid Data");
-    sMgrData.Initialize();
+    sDataMgr.Initialize();
     sLog.Log("       ServerInit", "Spawn Data");
     sSpawnDataMgr.Initialize();
     sLog.Log("       ServerInit", "PI Data");

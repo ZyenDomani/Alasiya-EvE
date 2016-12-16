@@ -62,8 +62,8 @@ public:
     bool IsAlive()                                      { return m_alive; }
     bool IsOverloaded()                                 { return false; }
 
-    uint32 GetOwnerID()                                 { return m_ownerID; }
-    uint32 GetWarFactionID()                            { return m_warFactionID; }
+    //uint32 GetOwnerID()                                 { return m_ownerID; }
+    //uint32 GetWarFactionID()                            { return m_warID; }
 
     float GetThermal()                                  { return m_therDamage; }
     float GetEM()                                       { return m_emDamage; }
@@ -86,8 +86,8 @@ protected:
 
     bool m_alive;
 
-    uint32 m_ownerID;
-    uint32 m_warFactionID;
+    //uint32 m_ownerID;
+    //uint32 m_warFactionID;
     uint32 m_orbitingID;
 
     double m_speed;

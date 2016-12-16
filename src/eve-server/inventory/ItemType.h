@@ -406,25 +406,6 @@ public:
     std::string     customInfo;
 };
 
-struct SaveData {
-    uint32          itemID;
-    uint32          typeID;
-    uint32          ownerID;
-    uint32          locationID;
-    EVEItemFlags    flag;
-    bool            contraband;
-    bool            singleton;
-    uint32          quantity;
-    GPoint          position;
-    std::string     customInfo;
-};
-
-struct OwnerData {
-    uint32          ownerID = 0;
-    uint32          corpID = 0;
-    uint32          locID = 0;
-};
-
 #endif /* __ITEM_TYPE__H__INCL__ */
 
 

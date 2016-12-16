@@ -58,9 +58,9 @@
 #include "marshal/EVEMarshalOpcodes.h"
 #include "marshal/EVEMarshalStringTable.h"
 #include "marshal/EVEUnmarshal.h"
-// packets
-// TODO  work on moving these OUT of this file.
 
+// packets
+// TODO  work on moving these OUT of this file
 #include "packets/AccountPkts.h"
 //#include "packets/Bookmarks.h"
 //  #include "packets/CorporationPkts.h"
@@ -103,6 +103,7 @@
 // tables
 #include "tables/invCategories.h"
 #include "tables/invGroups.h"
+#include "tables/invTypes.h"
 // threading
 #include "threading/Mutex.h"
 // utils

@@ -29,6 +29,8 @@
 #include "inventory/AttributeEnum.h"
 #include "pos/Structure.h"
 #include "system/DestinyManager.h"
+#include "system/SystemManager.h"
+#include <PyServiceMgr.h>
 
 /*
  * Structure
@@ -132,8 +134,7 @@ void StructureItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) co
 
 PyObject *StructureItem::StructureGetInfo()
 {
-    if( !m_inventory->LoadContents( &m_factory ) )
-    {
+    if (!m_inventory->LoadContents(&m_factory)) {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for Structure", itemName().c_str(), itemID() );
         return NULL;
     }
@@ -142,7 +143,7 @@ PyObject *StructureItem::StructureGetInfo()
     Rsp_CommonGetInfo_Entry entry;
 
     //first populate the Structure.
-    if( !Populate( entry ) )
+    if (!Populate(entry))
         return NULL;
 
     result.items[ itemID() ] = entry.Encode();
@@ -237,7 +238,7 @@ void StructureItem::RemoveItem(InventoryItemRef item)
     AttrPosCargobayAcceptType = 1351,
     AttrPosCargobayAcceptGroup = 1352,
     */
-StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system)
+StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system, const FactionData& data)
 : ObjectSystemEntity(structure, services, system)
 {
     /** @todo (Allan) fix this later...used for shield passage */
@@ -245,14 +246,26 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_timestamp = Win32TimeNow() - Win32Time_Day;
     m_state = STRUCTURE_ONLINE;
     /** @todo (Allan) fix this */
-    m_corpID = m_self->ownerID();
+    m_warID = data.factionID;
+    m_allyID = data.allianceID;
+    m_corpID = data.corporationID;
+    m_ownerID = data.ownerID;
 
     Init(structure);
 }
 
 void StructureSE::Init(StructureItemRef structure)
 {
-    switch(structure->typeID()) {
+    switch(structure->groupID()) {
+        case EVEDB::invGroups::Orbital_Infrastructure: {
+            m_co = true;
+            m_planetID = atoi(m_self->customInfo().c_str());
+            if (m_planetID) {
+                GVector dir(m_self->position(), m_system->GetSE(m_planetID)->GetPosition());
+                dir.normalize();
+                m_rotation = (GPoint)dir;
+            }
+        } break;
         case EVEDB::invGroups::Sovereignty_Blockade_Units: {
             m_sbu = true;
         } break;
@@ -261,6 +274,15 @@ void StructureSE::Init(StructureItemRef structure)
         } break;
         case EVEDB::invGroups::Control_Tower: {
             m_pos = true;
+            // create and add force field to tower
+            //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
+            ItemData idata(16103, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);
+            InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);
+            if (!iRef)
+                break;  // we'll get over it
+            iRef->Relocate(GetPosition());
+            CelestialSE* cSE = new CelestialSE(iRef, m_services, m_system, idata);
+            m_system->AddEntity(cSE);
         } break;
         case EVEDB::invGroups::Jump_Portal_Array: {
             m_bridge = true;
@@ -307,7 +329,8 @@ void StructureSE::Init(StructureItemRef structure)
     }
 
     /** @todo (Allan) set/get control tower id for modules in/from customInfo field of db */
-    m_towerID = 0;
+    if (m_module)
+        m_towerID = atoi(m_self->customInfo().c_str());
 }
 
 /*
@@ -336,9 +359,12 @@ void StructureSE::EncodeDestiny( Buffer& into )
         if (m_tcu) {
             head.mode = DSTBALL_STOP;
             head.flags = IsGlobal;
+        } else if (m_co) {
+            head.mode = DSTBALL_RIGID;
+            head.flags = IsGlobal /*| HasMiniBalls*/;
         } else {
             head.mode = DSTBALL_RIGID;
-            head.flags = IsMassive | IsInteractive;        //TODO check for miniballs and add here if found.
+            head.flags = IsMassive | IsInteractive /*| HasMiniBalls*/;        //TODO check for miniballs and add here if found.
         }
     into.Append( head );
 
@@ -391,36 +417,48 @@ PyDict *StructureSE::MakeSlimItem() {
     _log(DESTINY__MESSAGE, "MakeSlimItem for StructureSE %u", m_self->itemID());
     /** @todo (Allan) *Timestamp will need to be set to time current state is started. */
     PyDict *slim = new PyDict();
+        slim->SetItemString("name",                     new PyString(""));
+        slim->SetItemString("nameID",                   new PyNone());
         slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",                  new PyInt(m_self->ownerID()));
+        slim->SetItemString("ownerID",                  new PyInt(m_self->ownerID()));  //1000148 for interbus customs office (to be done on creation)
 
+        slim->SetItemString("corpID",                   new PyInt(m_corpID));  //1000148 for interbus customs office (to be done on creation)
+        slim->SetItemString("allianceID",               new PyInt(m_allyID));/** @todo (Allan) fix this later */
+        slim->SetItemString("warFactionID",             new PyInt(m_warID));/** @todo (Allan) fix this later */
+        if (!m_co) {
+            slim->SetItemString("posTimestamp",         new PyLong(m_timestamp));
+            slim->SetItemString("posState",             new PyInt(GetStructureState()));
+            slim->SetItemString("incapacitated",        new PyInt(0)); /** @todo (Allan) fix this later....check for offline/vulnerable states */
+        }
         if (m_outpost) {
             slim->SetItemString("startTimestamp",       new PyLong(m_timestamp));
             slim->SetItemString("structureState",       new PyInt(GetStructureState()));
             slim->SetItemString("delayTime",            new PyInt(0));/** @todo (Allan) fix this later - dont know what it is */
             return slim;
-        }
-
-        slim->SetItemString("corpID",                   new PyInt(m_corpID));
-        slim->SetItemString("allianceID",               new PyInt(0));/** @todo (Allan) fix this later */
-        slim->SetItemString("warFactionID",             new PyInt(0));/** @todo (Allan) fix this later */
-        slim->SetItemString("posTimestamp",             new PyLong(m_timestamp));
-        slim->SetItemString("posState",                 new PyInt(GetStructureState()));
-        slim->SetItemString("incapacitated",            new PyInt(0)); /** @todo (Allan) fix this later....check for offline/vulnerable states */
-
-        if (m_tcu) {
+        } else if (m_co) {
+            slim->SetItemString("level",                new PyInt(1)); //{1-CUSTOMSOFFICE_SPACEPORT, 2-CUSTOMSOFFICE_SPACEELEVATOR}   this is for display model
+            slim->SetItemString("orbitalTimestamp",     new PyLong(m_timestamp));
+            slim->SetItemString("planetID",             new PyInt(m_planetID));  // planetID for this orbital
+            slim->SetItemString("orbitalState",         new PyInt(GetStructureState()));
+            PyTuple* tuple = new PyTuple(3);
+                tuple->SetItem(0,                       new PyFloat(m_rotation.x));
+                tuple->SetItem(1,                       new PyFloat(m_rotation.y));
+                tuple->SetItem(2,                       new PyFloat(m_rotation.z));
+            slim->SetItemString("dunRotation", tuple);  // direction to planet
+            //  dunno what these are...
+            slim->SetItemString("orbitalHackerProgress", new PyNone());
+            slim->SetItemString("orbitalHackerID",      new PyNone());
+        } else if (m_tcu) {
             slim->SetItemString("posDelayTime",         new PyInt(0));/** @todo (Allan) fix this later - dont know what it is */
             return slim;
         } else if (m_module) {
             slim->SetItemString("controlTowerID",       new PyLong(m_towerID));
         }
 
-        slim->SetItemString("name",                     new PyString(""));
-        slim->SetItemString("nameID",                   new PyNone());
-
     return slim;
 }
+
 /*  Log events
 eventTCUExploded = 280
 eventTCUInvulnerable = 283
@@ -550,9 +588,9 @@ PyTuple *StructureSE::GetEffectState() {
  *                    [PyTuple 2 items]
  *                      [PyString "SetBallHarmonic"]
  *                      [PyTuple 5 items]
- *                        [PyIntegerVar 1002330621081]
- *                        [PyIntegerVar 8039077077960405911]
- *                        [PyInt 98038978]
+ *                        [PyIntegerVar 1002330621081]              <<  setting ship ID
+ *                        [PyIntegerVar 8039077077960405911]        <<  allianceID
+ *                        [PyInt 98038978]                          <<  corpID
  *                        [PyInt -1]
  *                        [PyInt 0]
  *                  [PyTuple 2 items]
@@ -560,16 +598,16 @@ PyTuple *StructureSE::GetEffectState() {
  *                    [PyTuple 2 items]
  *                      [PyString "SetBallMassive"]
  *                      [PyTuple 2 items]
- *                        [PyIntegerVar 9000000000000038313]
+ *                        [PyIntegerVar 9000000000000038313]        <<  force field ID
  *                        [PyInt 1]
  *                  [PyTuple 2 items]
  *                    [PyInt 12193]
  *                    [PyTuple 2 items]
  *                      [PyString "SetBallHarmonic"]
  *                      [PyTuple 5 items]
- *                        [PyIntegerVar 9000000000000038313]
- *                        [PyIntegerVar 8039077077960405911]
- *                        [PyInt 98038978]
+ *                        [PyIntegerVar 9000000000000038313]        <<  force field ID
+ *                        [PyIntegerVar 8039077077960405911]        <<  allianceID
+ *                        [PyInt 98038978]                          <<  corpID
  *                        [PyInt -1]
  *                        [PyInt 1]
  *                [PyBool False]

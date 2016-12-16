@@ -60,6 +60,8 @@ public:
     void CreateCustomsOffice();
     void SetCustomsOffice(SystemEntity* pSE)            { pCO = pSE; }
 
+    SystemEntity* GetCustomsOffice()                    { return pCO; }
+
     Colony* GetColony(Client* pClient);
 
 protected:
