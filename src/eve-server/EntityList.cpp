@@ -80,8 +80,10 @@ void EntityList::Close()
     for (auto cur : m_clients)
         SafeDelete(cur);
 
-    for (auto cur : m_systems)
+    for (auto cur : m_systems) {
+        cur.second->UnloadSystem();
         SafeDelete(cur.second);
+    }
 
     m_systems.clear();
     m_clients.clear();
@@ -145,8 +147,8 @@ void EntityList::Process() {
                 continue;
             } else if (!itr->second->ProcessTic()) {    /* Process each loaded system */
                 itr->second->UnloadSystem();
-                //SafeDelete(itr->second);      /* comment this until system unloading is finished...this is working as intended */
-                //itr = m_systems.erase(itr);
+                SafeDelete(itr->second);
+                itr = m_systems.erase(itr);
                 continue;
             }
             ++itr;
@@ -166,16 +168,16 @@ SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
     if (res != m_systems.end())
         return res->second;
 
-    SystemManager* mgr = new SystemManager(systemID, *m_services);
-    if ((!mgr) || (!mgr->BootSystem())) {
+    SystemManager* pSM = new SystemManager(systemID, *m_services);
+    if ((!pSM) || (!pSM->BootSystem())) {
         _log(SERVER__INIT_ERR, "BootSystem() - Booting system %u failed", systemID);
-        SafeDelete(mgr);
+        SafeDelete(pSM);
         return nullptr;
     }
 
     _log(SERVER__INIT, "BootSystem() - Booted system %u", systemID);
-    m_systems[systemID] = mgr;
-    return mgr;
+    m_systems[systemID] = pSM;
+    return pSM;
 }
 
 /* note...all of the Find* methods below can get very expensive for many players */

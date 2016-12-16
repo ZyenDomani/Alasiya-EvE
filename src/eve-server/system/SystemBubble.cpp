@@ -49,7 +49,7 @@ m_spawnTimer(sConfig.npc.RoamingTimer)
     m_spawnTimer.Disable();
     m_systemID = pSystem->GetID();
 	m_bubbleID = sBubbleMgr.GetBubbleID();
-	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f).",
+	_log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f).",\
 	     m_bubbleID, this, m_center.x, m_center.y, m_center.z, m_radius);
 }
 
@@ -79,24 +79,47 @@ void SystemBubble::Process()
 //from the bubble and stuck into the vector for re-classification.
 void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
 	DynamicSystemEntity* pDSE(nullptr);
-    for (auto cur : m_dynamicEntities) {
-        if (!cur)
+    std::map<uint32, SystemEntity*>::iterator itr = m_dynamicEntities.begin();
+    while (itr != m_dynamicEntities.end()) {
+        if (!itr->second) {
+            ++itr;
             continue;
-        pDSE = cur->GetDynamicSE();
-		if (!pDSE)
+        }
+        pDSE = itr->second->GetDynamicSE();
+        if (!pDSE) {
+            ++itr;
             continue;
-        if (pDSE->DestinyMgr() and pDSE->DestinyMgr()->IsWarping())
+        }
+        if (pDSE->DestinyMgr() and pDSE->DestinyMgr()->IsWarping()) {
+            ++itr;
             continue;
+        }
+        if (pDSE->SystemMgr()->GetID() != m_systemID) {
+            // this entity is in a different system!  this shouldnt happen....
+            _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u is in %u but this is %u.", \
+                                pDSE->GetID(), pDSE->SystemMgr()->GetID(), m_systemID);
+            // make sure we're still a valid iterator, then remove this entity, insert into wanderers, and continue
+            if (itr != m_dynamicEntities.end()) {
+                wanderers.push_back(itr->second);
+                itr = m_dynamicEntities.erase(itr);
+            }
+            pDSE = nullptr;
+            continue;
+        }
 		if (!InBubble(pDSE->GetPosition())) {
+            wanderers.push_back(itr->second);
             if (pDSE->m_bubble != this) {
+                //17:38:57 [DestinyWarning] SystemBubble::ProcessWander() - entity 140006173(sys:30002507) not in bubble 1 for systemID 30002510.
                 _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u(sys:%u) not in bubble %u for systemID %u.", \
                         pDSE->GetID(), pDSE->SystemMgr()->GetID(), m_bubbleID, m_systemID);
-                m_dynamicEntities.erase(std::remove(m_dynamicEntities.begin(), m_dynamicEntities.end(), pDSE), m_dynamicEntities.end());
-                pDSE = nullptr;
-                return; // i know....this screws up the check and subsquent process, but easier this way for now....will fix later.
+                if (itr != m_dynamicEntities.end()) {
+                    itr = m_dynamicEntities.erase(itr);
+                    pDSE = nullptr;
+                    continue;
+                }
             }
-			wanderers.push_back(cur);
         }
+        ++itr;
 	}
     pDSE = nullptr;
 }
@@ -104,14 +127,13 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
 void SystemBubble::Add(SystemEntity* pSE) {
 	//if they are already in this bubble, do not continue.
 	if (m_entities.find(pSE->GetID()) != m_entities.end()) {
-        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Tried to add entity %u to bubble %u, but it is already in here.",
+        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Tried to add Static Entity %u to bubble %u, but it is already in here.",\
 		     pSE->GetID(), GetID());
 		return;
 	}
 
-	std::vector<SystemEntity*>::const_iterator cur = std::find(m_dynamicEntities.begin(), m_dynamicEntities.end(), pSE);
-	if (cur != m_dynamicEntities.end()) {
-        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Tried to add entity %u to bubble %u, but it is already in here.",
+	if (m_dynamicEntities.find(pSE->GetID()) != m_dynamicEntities.end()) {
+        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Tried to add Dynamic Entity %u to bubble %u, but it is already in here.",\
 		     pSE->GetID(), GetID());
 		return;
 	}
@@ -121,8 +143,10 @@ void SystemBubble::Add(SystemEntity* pSE) {
         GVector direction(startPoint, NULL_ORIGIN);
         double rangeToStar = direction.length();
         rangeToStar /= ONE_AU_IN_METERS;
-        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Adding entity %u to bubble %u. Distance to Star %.2f AU.  %u/%u Entities in bubble",
+        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Adding entity %u to bubble %u. Distance to Star %.2f AU.  %u/%u Entities in bubble",\
                 pSE->GetID(), GetID(), rangeToStar, m_entities.size(), m_dynamicEntities.size());
+        if (is_log_enabled(DESTINY__BUBBLE_TRACE))
+            EvE::traceStack();
     }
 
 	pSE->m_bubble = this;
@@ -130,7 +154,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
 	//insert the global entitys into their own list
 	if (pSE->IsStaticEntity()) {
         _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Entity %s(%u) is static.", pSE->GetName(), pSE->GetID() );
-		m_entities.insert(std::pair<uint32, SystemEntity*>(pSE->GetID(), pSE));
+		m_entities[pSE->GetID()] = pSE;
 		return;
 	}
 
@@ -141,7 +165,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
             if (HasPlayers())
                 AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
         }
-        m_players.push_back( pClient );   //add to bubble's player list
+        m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
 
         // Set spawn timer for this bubble, if needed
         if (m_belt) {
@@ -160,21 +184,28 @@ void SystemBubble::Add(SystemEntity* pSE) {
     }
 
     // all non-global entities (players, npcs, roids, containers, etc) are put into bubble's dynamicEntity map
-    m_dynamicEntities.push_back(pSE);
+    m_dynamicEntities[pSE->GetID()] = pSE;
 }
 
 void SystemBubble::Remove(SystemEntity *pSE) {
 	//assume that the entity is properly registered for its ID
-	//  also assume static system entities will not be removed.
 	if (!pSE->m_bubble)
 		return;     // Get outta here in case this was called again
 
     _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Remove() - Removing entity %u from bubble %u", pSE->GetID(), GetID());
 
-    m_dynamicEntities.erase(std::remove(m_dynamicEntities.begin(), m_dynamicEntities.end(), pSE), m_dynamicEntities.end());
+    std::map<uint32, SystemEntity*>::iterator itr = m_entities.find(pSE->GetID());
+    if (itr != m_entities.end())
+        m_entities.erase(itr);
+
+    itr = m_dynamicEntities.find(pSE->GetID());
+    if (itr != m_dynamicEntities.end())
+        m_dynamicEntities.erase(itr);
 
     if (pSE->HasPilot()) {
-        m_players.erase(std::remove(m_players.begin(), m_players.end(), pSE->GetPilot()), m_players.end());
+        std::map<uint32, Client*>::iterator itr = m_players.find(pSE->GetPilot()->GetCharacterID());
+        if (itr != m_players.end())
+            m_players.erase(itr);
         RemoveBalls(pSE);
     }
 
@@ -182,6 +213,9 @@ void SystemBubble::Remove(SystemEntity *pSE) {
     if (!m_players.empty())
         RemoveBall(pSE);
     pSE->m_bubble = nullptr;
+
+    if (is_log_enabled(DESTINY__BUBBLE_TRACE))
+        EvE::traceStack();
 }
 
 void SystemBubble::RemoveExclusive(SystemEntity *pSE) {
@@ -245,10 +279,9 @@ SystemEntity* const SystemBubble::GetEntity(uint32 entityID) const {
 	/* updated to send ONLY dynamic entities to the following:          -allan 17Apr15
 	 *     ModuleManager::Activate()       --for module activation (with a target)
 	 */
-	std::vector<SystemEntity*>::const_iterator cur = m_dynamicEntities.begin();
-	for (; cur != m_dynamicEntities.end(); cur++ )
-		if ((*cur)->GetID() == entityID)
-			return (*cur);
+    std::map<uint32, SystemEntity*>::const_iterator itr = m_dynamicEntities.find(entityID);
+	if (itr != m_dynamicEntities.end())
+        return itr->second;
 
     return nullptr;
 }
@@ -258,10 +291,11 @@ void SystemBubble::GetEntities(std::vector<SystemEntity*> &into) const {
      *    SystemManager::MakeSetState()   --for player entering new system
      *    Command_killallnpcs()           --GM command
      */
-    if (m_dynamicEntities.empty()) return;
+    if (m_dynamicEntities.empty())
+        return;
 
     for (auto cur : m_dynamicEntities)
-        into.push_back(cur);
+        into.push_back(cur.second);
 }
 
 void SystemBubble::GetPlayers(std::vector<Client*> &into) const {
@@ -273,7 +307,7 @@ void SystemBubble::GetPlayers(std::vector<Client*> &into) const {
 	if (m_players.empty()) return;
 
 	for (auto cur : m_players)
-		into.push_back(cur);
+		into.push_back(cur.second);
 }
 
 SystemEntity* SystemBubble::GetRandomEntity()
@@ -283,10 +317,10 @@ SystemEntity* SystemBubble::GetRandomEntity()
         return nullptr;
 
     for (auto cur : m_dynamicEntities) {
-        if (cur->IsWreckSE())
-            return cur;
-        if (cur->IsObjectEntity())
-            return cur;
+        if (cur.second->IsWreckSE())
+            return cur.second;
+        if (cur.second->IsObjectEntity())
+            return cur.second;
         return nullptr;
     }
 }
@@ -294,7 +328,7 @@ SystemEntity* SystemBubble::GetRandomEntity()
 uint32 SystemBubble::CountNPCs() {
     uint32 count = 0;
     for (auto cur : m_dynamicEntities)
-        if (cur->IsNPCSE())
+        if (cur.second->IsNPCSE())
             ++count;
 
     return count;
@@ -312,42 +346,42 @@ bool SystemBubble::InBubble(const GPoint& pt) const
 void SystemBubble::PrintEntityList() {
     bool found = false;
     for (auto cur : m_dynamicEntities) {
-        if (cur->IsVisibleSystemWide())  //this is only set on entities NOT in m_dynamicEntities list. (this should only hit beacons and cynos)
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Global.", cur->GetName(), cur->GetID() );
-        if (cur->IsShipSE())
-            if (cur->HasPilot()) {
-                sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Player.", cur->GetName(), cur->GetID() ); found = true;
+        if (cur.second->IsVisibleSystemWide())  //this should only hit beacons and cynos as global AND not static
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Global.", cur.second->GetName(), cur.second->GetID() );
+        if (cur.second->IsShipSE())
+            if (cur.second->HasPilot()) {
+                sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Player.", cur.second->GetName(), cur.second->GetID() ); found = true;
             } else {
-                sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Ship.", cur->GetName(), cur->GetID() ); found = true;
+                sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Ship.", cur.second->GetName(), cur.second->GetID() ); found = true;
             }
-        if (cur->IsNPCSE())
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is NPC.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsPOSSE())
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is POS.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsJumpBridgeSE())
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is JumpBridge.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsTCUSE())
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is TCU.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsContainerSE())
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Container.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsWreckSE())
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Wreck.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsOutpostSE())
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Outpost.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsAsteroidSE())
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Asteroid.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsDeployableSE())
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Deployable.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsStaticEntity() and !found)
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Static.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsItemEntity() and !found)
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Item.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsObjectEntity() and !found)
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Object.", cur->GetName(), cur->GetID() ); found = true;
-        if (cur->IsDynamicEntity() and !found)
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Dynamic.", cur->GetName(), cur->GetID() ); found = true;
+        if (cur.second->IsNPCSE())
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is NPC.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsPOSSE())
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is POS.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsJumpBridgeSE())
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is JumpBridge.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsTCUSE())
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is TCU.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsContainerSE())
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Container.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsWreckSE())
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Wreck.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsOutpostSE())
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Outpost.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsAsteroidSE())
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Asteroid.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsDeployableSE())
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Deployable.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsStaticEntity() and !found)
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Static.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsItemEntity() and !found)
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Item.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsObjectEntity() and !found)
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Object.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        if (cur.second->IsDynamicEntity() and !found)
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is Dynamic.", cur.second->GetName(), cur.second->GetID() ); found = true;
         if (!found)
-            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is None of the Above.", cur->GetName(), cur->GetID() );
+            sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is None of the Above.", cur.second->GetName(), cur.second->GetID() );
     }
 }
 
@@ -373,10 +407,10 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     addballs.slims = new PyList;
 
     for (auto cur : m_dynamicEntities) {
-        if (!cur->IsMissileSE())
-            addballs.damageDict[ cur->GetID() ] = cur->MakeDamageState();
-        addballs.slims->AddItem( new PyObject( "foo.SlimItem", cur->MakeSlimItem() ) );
-        cur->EncodeDestiny( *destinyBuffer );
+        if (!cur.second->IsMissileSE())
+            addballs.damageDict[cur.first] = cur.second->MakeDamageState();
+        addballs.slims->AddItem( new PyObject( "foo.SlimItem", cur.second->MakeSlimItem() ) );
+        cur.second->EncodeDestiny( *destinyBuffer );
     }
 
     //addballs.slims->AddItem( new PyObject( "foo.SlimItem", to_who->MakeSlimItem() ) );
@@ -422,15 +456,15 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
         addballs2.extraBallData = new PyList();
 
     for (auto cur : m_dynamicEntities) {
-        if (cur->IsMissileSE() or cur->IsContainerSE()) {
-            addballs2.extraBallData->AddItem(cur->MakeSlimItem());
+        if (cur.second->IsMissileSE() or cur.second->IsContainerSE()) {
+            addballs2.extraBallData->AddItem(cur.second->MakeSlimItem());
         } else {
             PyTuple* balls = new PyTuple(2);
-                balls->SetItem(0, cur->MakeSlimItem());
-                balls->SetItem(1, cur->MakeDamageState());
+                balls->SetItem(0, cur.second->MakeSlimItem());
+                balls->SetItem(1, cur.second->MakeDamageState());
             addballs2.extraBallData->AddItem(balls);
         }
-        cur->EncodeDestiny(*destinyBuffer);
+        cur.second->EncodeDestiny(*destinyBuffer);
     }
 
     if (addballs2.extraBallData->size() < 1) {
@@ -522,13 +556,12 @@ void SystemBubble::RemoveBall(SystemEntity *about_who) {
 }
 
 
+// this *should* only be called from DestinyManager::Cloak()
 void SystemBubble::RemoveBallExclusive(SystemEntity *about_who) {
-    //DoDestiny_RemoveBall removeball;
-    //    removeball.entityID = about_who->GetID();
-    // using RemoveBalls instead of RemoveBall because client
-    // seems not to trigger explosion on RemoveBall
-    DoDestiny_RemoveBalls removeball;
-    removeball.balls.push_back(about_who->GetID());
+    DoDestiny_RemoveBall removeball;
+        removeball.entityID = about_who->GetID();
+    //DoDestiny_RemoveBalls removeball;
+    //removeball.balls.push_back(about_who->GetID());
 
     _log(DESTINY__MESSAGE, "SystemBubble::RemoveBallExclusive()");
     if (is_log_enabled(DESTINY__BALL_DUMP))
@@ -550,14 +583,13 @@ void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
 
     DoDestiny_RemoveBalls remove_balls;
 
-    for (auto cur : m_dynamicEntities) {
-        remove_balls.balls.push_back(cur->GetID());
-    }
+    for (auto cur : m_dynamicEntities)
+        remove_balls.balls.push_back(cur.first);
 
     if (remove_balls.balls.empty())
         return;
 
-    _log( DESTINY__MESSAGE, "SystemBubble::RemoveBalls() to %s", pClient->GetName());
+    _log( DESTINY__MESSAGE, "SystemBubble::RemoveBalls() - sending to %s", pClient->GetName());
     if (is_log_enabled(DESTINY__BALL_DUMP))
         remove_balls.Dump( DESTINY__BALL_DUMP, "    " );
 
@@ -603,10 +635,10 @@ void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc 
     for (auto cur : m_players) {
         if (!up_dup)
             up_dup = new PyTuple( *up );
-        _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur->GetName(), cur->GetCharacterID() );
+        _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
         if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
             up_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
-        cur->QueueDestinyUpdate( &up_dup );
+        cur.second->QueueDestinyUpdate( &up_dup );
     }
 
     PySafeDecRef( up_dup );
@@ -624,13 +656,13 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
     for (auto cur : m_players) {
         // Only queue a Destiny update for this bubble if the current SystemEntity is not 'pSE':
         // (this is an update to all client objects in the bubble EXCLUDING 'pSE')
-        if (cur->GetShipSE() != pSE) {
+        if (cur.second->GetShipSE() != pSE) {
             if (!up_dup)
                 up_dup = new PyTuple( *up );
-            _log( DESTINY__BUBBLECAST, "Exclusive Bubblecast %s update to %s(%u)", desc, cur->GetName(), cur->GetCharacterID() );
+            _log( DESTINY__BUBBLECAST, "Exclusive Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
             if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
                 up_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
-            cur->QueueDestinyUpdate( &up_dup );
+            cur.second->QueueDestinyUpdate( &up_dup );
         }
     }
 
@@ -649,10 +681,10 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
     for (auto cur : m_players) {
         if (!ev_dup)
             ev_dup = new PyTuple( *ev );
-        _log( DESTINY__BUBBLECAST, "Bubblecast %s event to %s(%u)", desc, cur->GetName(), cur->GetCharacterID() );
+        _log( DESTINY__BUBBLECAST, "Bubblecast %s event to %s(%u)", desc, cur.second->GetName(), cur.first );
         if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
             ev_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
-        cur->QueueDestinyEvent( &ev_dup );
+        cur.second->QueueDestinyEvent( &ev_dup );
     }
 
     PySafeDecRef( ev_dup );
@@ -669,9 +701,9 @@ void SystemBubble::BubblecastSendNotification(const char* notifyType, const char
     for (auto cur : m_players) {
         if (!ev_dup)
             ev_dup = new PyTuple( *ev );
-        _log( DESTINY__BUBBLECAST, "BubblecastNotify %s to %s(%u)", notifyType, cur->GetName(), cur->GetCharacterID() );
+        _log( DESTINY__BUBBLECAST, "BubblecastNotify %s to %s(%u)", notifyType, cur.second->GetName(), cur.first );
         if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
             ev_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
-        cur->SendNotification( notifyType, idType, &ev_dup, seq );
+        cur.second->SendNotification( notifyType, idType, &ev_dup, seq );
     }
 }

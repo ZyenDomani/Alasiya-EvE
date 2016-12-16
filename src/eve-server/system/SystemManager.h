@@ -142,6 +142,7 @@ private:
     SpawnBubbleVec m_roidBubbles;  // map of ids of bubbles with roid spawns
 
     // for grid Unloading system  -allan  27June2015
+    bool m_loaded = false;
     bool SystemActivity();
     uint32 m_players = 0;
     uint32 m_activityTime = 0;

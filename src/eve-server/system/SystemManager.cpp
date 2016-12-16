@@ -74,38 +74,29 @@ SystemManager::~SystemManager() {
             sEntityList.Remove(cur.second);
     }
 
-    for (auto cur : m_entities) {
-        if (cur.second->IsStationSE())
-            sEntityList.RemoveStation(cur.first);
-
-        // this is a failsafe, as there should be no piloted ships in this system now
-        if (cur.second->HasPilot()) {
-            Client* pClient = cur.second->GetPilot();
-            SafeDelete(pClient);
-        }
-        SafeDelete(cur.second);
-    }
+    if (m_loaded)
+        UnloadSystem();
 
     m_clients.clear();
     m_entities.clear();
     m_ratBubbles.clear();
 
+    SafeDelete(m_dunMgr);
     SafeDelete(m_anomMgr);
     SafeDelete(m_beltMgr);
-    SafeDelete(m_dunMgr);
     SafeDelete(m_spawnMgr);
 }
 
 static const int num_hack_sentry_locs = 8;
 GPoint hack_sentry_locs[num_hack_sentry_locs] = {
-    GPoint(-35000.0f, -35000.0f, -35000.0f),
-    GPoint(-35000.0f, -35000.0f, 35000.0f),
-    GPoint(-35000.0f, 35000.0f, -35000.0f),
-    GPoint(-35000.0f, 35000.0f, 35000.0f),
-    GPoint(35000.0f, -35000.0f, -35000.0f),
-    GPoint(35000.0f, -35000.0f, 35000.0f),
+    GPoint(35000.0f, 35000.0f, 35000.0f),
     GPoint(35000.0f, 35000.0f, -35000.0f),
-    GPoint(35000.0f, 35000.0f, 35000.0f)
+    GPoint(35000.0f, -35000.0f, 35000.0f),
+    GPoint(35000.0f, -35000.0f, -35000.0f),
+    GPoint(-35000.0f, 35000.0f, 35000.0f),
+    GPoint(-35000.0f, 35000.0f, -35000.0f),
+    GPoint(-35000.0f, -35000.0f, 35000.0f),
+    GPoint(-35000.0f, -35000.0f, -35000.0f)
 };
 
 bool SystemManager::BootSystem() {
@@ -131,7 +122,7 @@ bool SystemManager::BootSystem() {
 
     //create our chat channel
     m_services.lsc_service->CreateSystemChannel(m_data.systemID);
-    return true;
+    return (m_loaded = true);
 }
 
 //called once per second from EntityList. (1Hz Tic)
@@ -176,7 +167,7 @@ bool SystemManager::ProcessTic() {
 }
 
 bool SystemManager::SystemActivity() {
-    return true;
+    //return true;
     // system destruction needs work for bubbles and items (but this works as intended)
     if (!m_activityTime)
         return true;
@@ -185,18 +176,39 @@ bool SystemManager::SystemActivity() {
             if (sConfig.world.gridUnloadTime < (sEntityList.GetStamp() - m_activityTime))
                 return false;
 
-            return true;
+    return true;
 }
 
+// called from EntityList::Process()
 void SystemManager::UnloadSystem() {
-    // only called from EntityList::Process()
-    // save any roids before unloading the system
-    m_beltMgr->Save();
+    sLog.Magenta("    SystemManager", "UnloadSystem() called for %s(%u).", GetName().c_str(), m_data.systemID);
+
+    m_beltMgr->ClearAll();
+
+    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
+    while (itr != m_entities.end()) {
+        sBubbleMgr.Remove(itr->second);
+
+        if (itr->second->IsStationSE())
+            sEntityList.RemoveStation(itr->first);
+
+        if (itr->second->IsNPCSE()) {
+            itr->second->TargetMgr()->DoDestruction();  // just to be sure here...
+            sEntityList.RemoveNPC();    // this is for loaded npc count.
+            itr->second->GetNPCSE()->RemoveNPC();   // this deletes NPC from DB.
+        }
+
+        SafeDelete(itr->second);
+        itr = m_entities.erase(itr);
+    }
+
+    sBubbleMgr.ClearSystemBubbles(m_data.systemID);
+    // remove item from system inventory, item factory and decrement item count
+    m_solarSystemRef->GetInventory()->Unload();
+
     /** @todo finish this */
-    // use Inventory::DeleteContents(ItemFactory &factory) to remove system contents from memory.
-    //Inventory::DeleteContents(m_services.item_factory);
-    sLog.Success("SystemManager::UnloadSystem()", "UnloadSystem() called for empty system %s(%u).", \
-    GetName().c_str(), m_data.systemID);
+    //m_services.lsc_service->DeleteChannel(m_data.systemID);
+    m_loaded = false;
 }
 
 void SystemManager::LoadCosmicMgrs()
@@ -217,7 +229,7 @@ bool SystemManager::LoadSystemStatics() {
         return false;
     }
 
-    SystemEntity* pSE;
+    SystemEntity* pSE(nullptr);
     for (auto cur : entities) {
         switch (cur.groupID) {
             case EVEDB::invGroups::Station: {
@@ -266,7 +278,6 @@ bool SystemManager::LoadSystemStatics() {
             sBubbleMgr.Add(pSE);
         m_entities[cur.itemID] = pSE;
         AddItemToInventory(pSE->GetSelf());
-        SystemDB m_db;
         if (!pSE->LoadExtras(&m_db))
             _log(INV__WARNING, "Failed to load additional data for entity %u. Continuing.", cur.itemID);
     }
@@ -421,6 +432,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 or (entity.groupID == EVEDB::invGroups::Planet)
                 or (entity.groupID == EVEDB::invGroups::Moon) )
             {
+                /** @todo  this needs to be checked....are these celestials loaded here? they should be loaded in system statics */
                 CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
                 if (!celestial)
                     return nullptr;
@@ -546,6 +558,42 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making Drone item for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return dSE;
         } break;
+        case EVEDB::invCategories::Orbitals: {          // planet orbitals
+            if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure) {  // customs offices
+                CargoContainerRef contRef = factory->GetCargoContainer( entity.itemID );
+                if (!contRef)
+                    return nullptr;
+                /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                ContainerData contData;
+                    contData.allianceID = entity.allianceID;
+                    contData.corporationID = entity.corporationID;
+                    contData.factionID = entity.factionID;
+                    contData.ownerID = entity.ownerID;
+                ContainerSE* cSE = new ContainerSE(contRef, *(system.GetServiceMgr()), &system, contData);
+                contRef->GetInventory()->LoadContents(factory);
+                contRef->SetMySE(cSE);
+                cSE->SetPlanet(entity.planetID);
+                if (entity.planetID) {
+                    SystemEntity* pPE = system.GetSE(entity.planetID);
+                    if ((pPE) and (pPE->IsPlanetSE()))
+                        pPE->GetPlanetSE()->SetCustomsOffice(cSE);
+                }
+                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                return cSE;
+            /** @todo  these classes need to be written */
+            } else if ((entity.groupID == EVEDB::invGroups::Orbital_Construction_Platform) /* { // to build customs office  - this is a structure...needs work!!
+                StructureItemRef structRef = factory->GetStructure( entity.itemID );
+                if (!structRef)
+                    return nullptr;
+                /** @todo make error msg here   //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                StructureSE* sSE = new StructureSE(structRef, *(system.GetServiceMgr()), &system);
+                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                return sSE;
+            } else if */ or (entity.groupID == EVEDB::invGroups::Test_Orbitals)) {   // orbit-to-surface guns (Ion Cannon - typeID 3522)
+                codelog(SERVICE__ERROR, "Unhandled Orbital group %d for item %u of type %u", entity.groupID, entity.itemID, entity.typeID);
+            //17:38:52 [SvcError] BuildEntity(/usr/local/src/eve/Alasiya-EvE/src/eve-server/system/SystemManager.cpp:586): Unhandled Orbital group 1106 for item 140000084 of type 3962
+            }
+        } break;
         default: {
             codelog(SERVICE__ERROR, "Unhandled dynamic entity category %d for item %u of type %u", entity.categoryID, entity.itemID, entity.typeID);
         } break;
@@ -555,7 +603,8 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
 
 void SystemManager::AddClient(Client* who, bool docked, bool count) {
     //called from Client::MoveToLocation()
-    if (!who) return;
+    if (!who)
+        return;
     auto itr = m_clients.find(who->GetCharacterID());
     if (itr == m_clients.end()) {
         m_clients[who->GetCharacterID()] = who;
@@ -575,7 +624,8 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
 
 void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
     //called from Client::~Client() and Client::MoveToLocation()
-    if (!who) return;
+    if (!who)
+        return;
     auto itr = m_clients.find(who->GetCharacterID());
     if (itr != m_clients.end()) {
         m_clients.erase(itr);
@@ -601,14 +651,16 @@ void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
 }
 
 void SystemManager::AddNPC(NPC* who) {
-    if (!who) return;
+    if (!who)
+        return;
     _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
     AddEntity(who);
     sEntityList.AddNPC();
 }
 
 void SystemManager::RemoveNPC(NPC* who) {
-    if (!who) return;
+    if (!who)
+        return;
     _log(NPC__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
     RemoveEntity(who);
     sEntityList.RemoveNPC();    // this is for loaded npc count.
@@ -616,7 +668,8 @@ void SystemManager::RemoveNPC(NPC* who) {
 }
 
 void SystemManager::AddEntity(SystemEntity* who) {
-    if (!who) return;
+    if (!who)
+        return;
     _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
     m_entities[who->GetID()] = who;
     m_entityChanged = true;
@@ -626,7 +679,8 @@ void SystemManager::AddEntity(SystemEntity* who) {
 }
 
 void SystemManager::RemoveEntity(SystemEntity* who) {
-    if (!who) return;
+    if (!who)
+        return;
     sBubbleMgr.Remove(who);
     auto itr = m_entities.find(who->GetID());
     if (itr != m_entities.end()) {
@@ -680,7 +734,7 @@ SystemEntity* SystemManager::GetSE(uint32 entityID) const {
     std::map<uint32, SystemEntity*>::const_iterator res = m_entities.find(entityID);
     if (res == m_entities.end())
         return nullptr;
-    return (res->second);
+    return res->second;
 }
 
 void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState& into, bool login) const {
@@ -694,10 +748,9 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
 
     std::vector<SystemEntity*> visibleEntities;
 
-    for (auto cur : m_entities) {
-        if (cur.second->IsStaticEntity())
+    for (auto cur : m_entities)
+        if (cur.second->IsVisibleSystemWide()) // get only global entities here (StaticSystemEntity)
             visibleEntities.push_back(cur.second);
-    }
 
     if (bubble)
        bubble->GetEntities(visibleEntities);
@@ -717,13 +770,32 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
         cur->EncodeDestiny( *stateBuffer );
 
         /**  @todo (allan)  this needs more work.  should be done same as damageState.  28.2.16
-        //ss.aggressors is for players undocking/jumping with aggression (uses GetCriminalTimeStamps)
+        //ss.aggressors is for players undocking/jumping with aggression (uses GetCriminalTimeStamps)  ** see notes in Client::GetAggressors()
         if (cur->HasPilot() and cur->HasAggression())
             ss.aggressors[ cur->GetID() ] = cur->GetAggressors());
             */
         /** @todo (allan)  to be written (both)   -effectStates is a PyList */
         //  if ((cur->IsPOSSE()) or (cur->IsOutpost()))
         //ss.effectStates  --pos and other structures (using effects.StructureOnline and et.al.)
+        /*
+                            [PyString "effectStates"]
+                            [PyList 1 items]
+                              [PyTuple 14 items]
+                                [PyIntegerVar 1005712174146]
+                                [PyIntegerVar 1005712174146]
+                                [PyInt 32226]
+                                [PyNone]
+                                [PyNone]
+                                [PyList 0 items]
+                                [PyString "effects.StructureOnline"]
+                                [PyBool False]
+                                [PyInt 1]
+                                [PyInt 1]
+                                [PyInt -1]
+                                [PyInt 0]
+                                [PyIntegerVar 129755934520321904]
+                                [PyNone]
+                                */
         /** @todo (allan)  to be written   -jumpbridges is a PyList */
         //  if (cur->IsJumpBridgeSE)
         //ss.allianceBridges -- jumpbridges et al.

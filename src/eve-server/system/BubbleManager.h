@@ -25,6 +25,8 @@
 #ifndef __BUBBLEMANAGER_H_INCL__
 #define __BUBBLEMANAGER_H_INCL__
 
+
+#include <unordered_map>
 #include "system/SystemEntity.h"
 
 static const float BUBBLE_RADIUS_METERS = 250000.0f;       // EVE retail uses 250km and allows grid manipulation  NOTE:  this is based on testing for best results.  -allan
@@ -58,15 +60,15 @@ public:
     //call to find the bubble containing the SystemEntity specified, if no bubble does, return NULL
     SystemBubble* FindBubble(SystemEntity *ent) const;
     //call to find the bubble containing the GPoint specified, if no bubble does, return NULL
-    SystemBubble* FindBubble(const GPoint &pos) const;
+    SystemBubble* FindBubble(uint32 systemID, const GPoint &pos) const;
     //call to calculate new bubble's center from entity's velocity:
     void NewBubbleCenter(GVector shipVelocity, GPoint& newBubbleCenter);
     //call when an entity is removed from the system.
     void Remove(SystemEntity* ent);
     void clear();
+    void ClearSystemBubbles(uint32 systemID);
 
     uint32 Count()                                      { return m_bubbles.size(); }
-
     uint32 GetBubbleID()                                { return ++m_bubbleID; }
 
     // for spawn system     -allan 15April16
@@ -83,7 +85,9 @@ private:
 
     //dumb storage for now:
     std::vector<SystemBubble*> m_bubbles;    //we own these. Dynamic only because I am afraid of copy activities.
-    std::vector<SystemEntity *> m_wanderers;    //create space for them here, so they're not created upon every call.
+    std::vector<SystemEntity*> m_wanderers;    //create space for them here, so they're not created upon every call.
+
+    std::unordered_multimap<uint32, SystemBubble*> m_bubbleMap;  // systemID is key.
 };
 
 //Singleton

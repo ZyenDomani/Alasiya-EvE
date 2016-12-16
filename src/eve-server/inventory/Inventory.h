@@ -41,6 +41,7 @@ public:
     virtual ~Inventory()                                { /* do nothing here*/ }
 
     void Reset(ItemFactory* factory);
+    void Unload();
     void AddItem(InventoryItemRef item);
     void RemoveItem(InventoryItemRef item);
     void DeleteContents();
@@ -68,7 +69,6 @@ public:
     bool IsEmptyByFlag(EVEItemFlags flag) const;
     bool FindSingleByFlag(EVEItemFlags flag, InventoryItemRef &item) const;
     uint32 FindByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
-    uint32 ListByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
     uint32 FindByFlagRange(EVEItemFlags low_flag, EVEItemFlags high_flag, std::vector<InventoryItemRef> &items) const;
     uint32 FindByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const;
     InventoryItemRef FindFirstByFlag(EVEItemFlags flag) const;
@@ -86,6 +86,7 @@ public:
 
 
 protected:
+    ItemFactory* m_factory;
     InventoryDB* m_db;
     InventoryItemRef m_self;
 

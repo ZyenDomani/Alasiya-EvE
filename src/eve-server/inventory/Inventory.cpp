@@ -48,7 +48,8 @@ Inventory::Inventory(InventoryItemRef item)
 }
 
 Inventory* Inventory::Cast(InventoryItemRef item) {
-    if (!item) return nullptr;
+    if (!item)
+        return nullptr;
     return this;
 }
 
@@ -58,12 +59,29 @@ void Inventory::Reset(ItemFactory* factory)
     LoadContents(factory);
 }
 
+void Inventory::Unload()
+{
+    if (!mContentsLoaded)
+        return;
+
+    std::map<uint32, InventoryItemRef>::iterator cur = mContents.begin();
+    while (cur != mContents.end()) {
+        m_factory->RemoveItem(cur->first);
+        cur = mContents.erase(cur);
+    }
+
+    mContents.clear();
+    mContentsLoaded = false;
+}
+
 bool Inventory::GetItems(OwnerData od, std::vector< uint32 >& into ) const {
     return m_db->GetItemContents(od, into);
 }
 
 bool Inventory::LoadContents(ItemFactory* factory) {
-    if (IsAgent(m_inventoryID)) return true;
+    if (IsAgent(m_inventoryID))
+        return true;
+    m_factory = factory;
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
@@ -77,7 +95,7 @@ bool Inventory::LoadContents(ItemFactory* factory) {
             mContentsLoaded = false;
         }
     }
-    
+
     // check if the contents has already been loaded
     if (mContentsLoaded) {
         _log(INV__INFO, "Inventory::LoadContents() - inventory %u(%p) already loaded.", m_inventoryID, this);
@@ -94,7 +112,7 @@ bool Inventory::LoadContents(ItemFactory* factory) {
             if (IsPlayerCorp(pClient->GetCorporationID())){
                 /* this will load all non-NPC corp items in this station */
                 od.ownerID = pClient->GetCorporationID();
-                _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory %u(%p) with owner %u", m_inventoryID, this , od.ownerID);
+                _log(INV__TRACE, "Inventory::LoadContents()::IsPlayerCorp() - Loading inventory %u(%p) with owner %u", m_inventoryID, this , od.ownerID);
                 GetItems(od, items);
             }
         }
@@ -163,7 +181,7 @@ void Inventory::DeleteContents()
     mContentsLoaded = false;
 }
 
-CRowSet* Inventory::List(EVEItemFlags _flag, uint32 forOwner) const
+CRowSet* Inventory::List(EVEItemFlags _flag, uint32 forOwner/*0*/) const
 {
     PyList *keywords = new PyList();
         keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
@@ -278,7 +296,7 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
                 itemVec[i2] = tmp;
                 done = false;  //we weren't sorted, so now go back and check if we are
             }
-            count++;
+            ++count;
         }
     }
 
@@ -286,18 +304,10 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
         if (sConfig.server.UseProfiling)
             sLog.Log("Inventory::_sortVector", "%u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
 
-    return itemVec;  //return sorted list
+    return itemVec;  //returns sorted list
 }
 
 uint32 Inventory::FindByFlag(EVEItemFlags _flag, std::vector<InventoryItemRef> &items) const {
-    for (auto cur : mContents)
-        if (cur.second->flag() == _flag)
-            items.push_back(cur.second);
-
-    return items.size();
-}
-
-uint32 Inventory::ListByFlag(EVEItemFlags _flag, std::vector<InventoryItemRef> &items) const {
     for (auto cur : mContents)
         if (cur.second->flag() == _flag)
             items.push_back(cur.second);
@@ -357,7 +367,7 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner)
         // calling Merge().
         i = cur->second;
         ++cur;
-        if (IsModuleSlot(i->flag()))
+        if (IsModuleSlot(i->flag()))    // check to avoid removing loaded modules from ship
             continue;
         if ((!i->singleton()) && (forOwner == 0 || forOwner == i->ownerID())) {
             std::map<uint32, InventoryItemRef>::iterator res = types.find(i->typeID());
@@ -391,8 +401,9 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
             args["available"] = new PyFloat(capacity);
             args["volume"] = volume.GetPyObject();
 
-        /** @todo  check for throwable status here */
-        throw PyException(MakeUserError("NotEnoughCargoSpace", args));
+        Client* pClient = m_factory->GetUsingClient();
+        if (pClient and pClient->CanThrow())
+            throw PyException(MakeUserError("NotEnoughCargoSpace", args));
         return false;
     }
     return true;

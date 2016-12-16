@@ -117,9 +117,9 @@ private:
 
     static uint32 m_bubbleIncrementer;
 
-    std::vector<Client*> m_players;                  // testing with bubble player list (in std::vector)
-    std::vector<SystemEntity*> m_dynamicEntities;    //entities which may/may not move. we do not own these.
-    std::map<uint32, SystemEntity*> m_entities;      //we do not own these.
+    std::map<uint32, Client*> m_players;                // testing with bubble player list (in std::map)
+    std::map<uint32, SystemEntity*> m_dynamicEntities;  //entities which may/may not move. we do not own these.
+    std::map<uint32, SystemEntity*> m_entities;         //we do not own these.
 
     // for spawn system     -allan 15July15
     Timer m_spawnTimer;
