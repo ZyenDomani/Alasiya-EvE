@@ -196,6 +196,7 @@ int main( int argc, char* argv[] )
         sLog.Success( "       ServerInit", "Log settings loaded from %s", sConfig.files.logSettings.c_str() );
     else
         sLog.Warning( "       ServerInit", "Unable to read %s (this file is optional)", sConfig.files.logSettings.c_str() );
+
     /* open up the log file if specified */
     if (!sConfig.files.logDir.empty()) {
         std::string logFile = sConfig.files.logDir + "eve-server.log";
@@ -204,6 +205,18 @@ int main( int argc, char* argv[] )
         else
             sLog.Warning( "       ServerInit", "Unable to find log directory '%s', only logging to the screen now.", sConfig.files.logDir.c_str() );
     }
+
+    /* Start up the TCP server */
+    EVETCPServer tcps;
+    char errbuf[ TCPCONN_ERRBUF_SIZE ];
+    if (tcps.Open(sConfig.net.port, errbuf)) {
+        sLog.Success( "       ServerInit", "TCP Listener started on port %u.", sConfig.net.port );
+    } else {
+        sLog.Error( "       ServerInit", "Failed to start TCP listener on port %u: %s.", sConfig.net.port, errbuf );
+        std::cout << std::endl << "press any key to exit...";  std::cin.get();
+        return EXIT_FAILURE;
+    }
+    Sleep(250);
 
     sLog.Log("", "");
     sLog.Log(" Supported Client"," %s", EVEProjectVersion);
@@ -235,18 +248,6 @@ int main( int argc, char* argv[] )
     /* start dogma type attrib mgr singleton */
     sLog.Success("       ServerInit", "Initializing Dogma Attribute Cache");
     sDgmTypeAttrMgr.Init();
-
-    /* Start up the TCP server */
-    EVETCPServer tcps;
-    char errbuf[ TCPCONN_ERRBUF_SIZE ];
-    if (tcps.Open(sConfig.net.port, errbuf)) {
-        sLog.Success( "       ServerInit", "TCP Listener started on port %u.", sConfig.net.port );
-    } else {
-        sLog.Error( "       ServerInit", "Failed to start TCP listener on port %u: %s.", sConfig.net.port, errbuf );
-        std::cout << std::endl << "press any key to exit...";  std::cin.get();
-        return EXIT_FAILURE;
-    }
-    Sleep(250);
 
     /* create a single item factory */
     sLog.Success("       ServerInit", "Starting Item Factory");
@@ -540,20 +541,22 @@ int main( int argc, char* argv[] )
     /* stop Image Server */
     sImageServer.Stop();
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
+    /* Close the command dispatcher */
+    command_dispatcher.Close();
     /* Stop Console Command Interperter */
     //sConsole.Stop();
     /* delete the dogma attrib object */
     sLog.Warning("   ServerShutdown", "Deleting Dogma Attribute Cache" );
     sDgmTypeAttrMgr.Close();
-	/* Shut down the Item system */
-	sLog.Warning("   ServerShutdown", "Saving Items and Shutting down Item Factory." );
-    SafeDelete(item_factory);
     /* Close the entity list */
     sEntityList.Close();
+	sLog.Warning("   ServerShutdown", "Saving Items." );
+    /* Shut down the Item system */
+    item_factory->SaveItems();
+    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
+    SafeDelete(item_factory);
     /* Close the service manager */
     services.Close();
-    /* Close the command dispatcher */
-    command_dispatcher.Close();
     /* close the db handler */
     sDatabase.Close();
     /** @todo  the thread system is only implemented for tcp connections at this time. */
