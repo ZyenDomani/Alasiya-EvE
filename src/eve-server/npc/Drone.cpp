@@ -27,6 +27,7 @@
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
+#include "EntityList.h"
 #include "inventory/AttributeEnum.h"
 #include "system/DestinyManager.h"
 #include "npc/Drone.h"

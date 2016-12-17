@@ -28,6 +28,7 @@
 #include "EVEServerConfig.h"
 #include "Profile.h"
 #include "PyServiceMgr.h"
+#include "StaticDataMgr.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"

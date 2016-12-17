@@ -281,8 +281,8 @@ void StructureSE::Init(StructureItemRef structure)
             if (!iRef)
                 break;  // we'll get over it
             iRef->Relocate(GetPosition());
-            CelestialSE* cSE = new CelestialSE(iRef, m_services, m_system, idata);
-            m_system->AddEntity(cSE);
+            ItemSystemEntity* iSE = new ItemSystemEntity(iRef, m_services, m_system);
+            m_system->AddEntity(iSE);
         } break;
         case EVEDB::invGroups::Jump_Portal_Array: {
             m_bridge = true;

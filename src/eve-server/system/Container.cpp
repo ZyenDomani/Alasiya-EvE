@@ -27,6 +27,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
+#include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "planet/PlanetDB.h"
 #include "system/DestinyManager.h"

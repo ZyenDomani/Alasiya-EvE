@@ -28,6 +28,7 @@
 
 #include "eve-server.h"
 
+#include "EntityList.h"
 #include "PyServiceCD.h"
 #include "inventory/InvBrokerService.h"
 #include "inventory/InventoryBound.h"

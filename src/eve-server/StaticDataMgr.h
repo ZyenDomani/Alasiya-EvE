@@ -12,8 +12,8 @@
   */
 
 
-#ifndef EVE_SERVER_SERVICESTRUCT_H__
-#define EVE_SERVER_SERVICESTRUCT_H__
+#ifndef _EVE_SERVER_STATIC_DATAMANAGER_H__
+#define _EVE_SERVER_STATIC_DATAMANAGER_H__
 
 
 #include <unordered_map>
@@ -63,4 +63,4 @@ private:
     ( StaticDataMgr::get() )
 
 
-#endif  // EVE_SERVER_SERVICESTRUCT_H__
+#endif  // _EVE_SERVER_STATIC_DATAMANAGER_H__

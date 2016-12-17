@@ -30,6 +30,7 @@
 #include "EVEServerConfig.h"
 
 #include "Client.h"
+#include "EntityList.h"
 #include "system/BubbleManager.h"
 #include "system/DestinyManager.h"
 #include "system/SystemBubble.h"

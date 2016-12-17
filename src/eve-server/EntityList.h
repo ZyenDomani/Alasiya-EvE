@@ -88,6 +88,7 @@ public:
     uint32 GetSystemCount() const                       { return m_systems.size(); }
     uint32 GetStationCount() const                      { return m_stations.size(); }
     uint32 GetClientSeed()                              { return ++m_clientSeedID; }
+    
     /* stamp shit here */
     uint32 GetStamp()                                   { return m_stamp; }
     bool IsTicActive()                                  { return m_stampTimer.Check(false); }

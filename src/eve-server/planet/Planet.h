@@ -12,6 +12,8 @@
 #ifndef EVEMU_PLANET_PLANET_H_
 #define EVEMU_PLANET_PLANET_H_
 
+#include "EntityList.h"
+#include "StaticDataMgr.h"
 #include "system/SystemEntity.h"
 
 /** @todo update this to create a planet item instead of the default celestial item */

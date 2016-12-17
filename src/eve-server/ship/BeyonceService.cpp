@@ -28,6 +28,7 @@
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
+#include "StaticDataMgr.h"
 #include "cache/ObjCacheService.h"
 #include "planet/PlanetDB.h"
 #include "ship/BeyonceService.h"
@@ -36,7 +37,7 @@
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
-#include <system/Container.h>
+#include "system/Container.h"
 
 class BeyonceBound
 : public PyBoundObject

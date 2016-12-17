@@ -25,6 +25,7 @@
 
 #include "eve-server.h"
 
+#include "StaticDataMgr.h"
 #include "market/MarketDB.h"
 
 PyRep *MarketDB::GetStationAsks(uint32 stationID) {

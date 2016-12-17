@@ -27,6 +27,7 @@
 #include "system/Damage.h"
 
 #include "Client.h"
+#include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"

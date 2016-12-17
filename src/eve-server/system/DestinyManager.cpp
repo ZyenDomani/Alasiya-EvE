@@ -31,9 +31,11 @@
 #include "EVEServerConfig.h"
 
 #include "Client.h"
+#include "EntityList.h"
 #include "PyServiceMgr.h"
+#include "StaticDataMgr.h"
 #include "npc/NPC.h"
-#include <npc/NPCAI.h>
+#include "npc/NPCAI.h"
 #include "packets/Missile.h"
 #include "system/DestinyManager.h"
 #include "ship/Missile.h"
