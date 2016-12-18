@@ -107,17 +107,20 @@ void PlanetSE::CreateCustomsOffice()
 
     if (m_system->GetSystemSecurityRating() > 0.49) {
         typeID = 2233;
-        // hisec...reset data for system sov holder
+        // hisec...reset data for system sov holder...not sure how im gonna do this one.
         data.allianceID = 0;
-        data.corporationID = corpInterbus;
-        data.ownerID = corpInterbus;
+        data.corporationID = 0;
+        data.ownerID = 1;
         data.factionID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
     }
     ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
     StructureItemRef iRef = m_services.item_factory->SpawnStructure(idata);
     GPoint pos = GetPosition();
-    pos.MakeRandomPointOnSphere(MakeRandomInt(80000, 100000));
+    uint32 radius = m_self->radius();
+    radius += 1000000;      // ship warps to planetRadius +1000000...
+    pos.MakeRandomPointOnSphere(radius);
     iRef->Relocate(pos);   // set position here...needs a bit more research to do properly
+    iRef->SetAttribute(AttrIsGlobal, 1, false);
     pCO = new StructureSE(iRef, m_services, m_system, data);
 }
 
