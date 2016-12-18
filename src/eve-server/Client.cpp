@@ -342,7 +342,7 @@ void Client::WarpIn() {
     m_ship->SetCustomInfo(ci);
     if (!InPod())
         m_ship->SetFlag(flagAutoFit, false);
-    m_invulTimer.Start(ClientTimers::WarpingInInvul);
+    m_invulTimer.Start(ClientTimers::WarpInInvul);
     return;
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
     /** @todo  when implemented, make sure we move the ship item, if needed....check this  */
@@ -362,7 +362,7 @@ void Client::WarpOut() {
         m_ship->SetFlag(flagShipOffline, false);
     m_system->RemoveEntity(pShipSE);
     return;
-    m_invulTimer.Start(ClientTimers::WarpingOutInvul);
+    m_invulTimer.Start(ClientTimers::WarpOutInvul);
     // We are logging out, so we need to warp to a random spot 1Mm away:
     GPoint warpToPoint(m_ship->position());
     warpToPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
@@ -514,7 +514,7 @@ void Client::UndockFromStation() {
     m_ship->Undock();
     OnCharNoLongerInStation();
     SetClientTimer(ClientState::csUndock, ClientTimers::DefaultTimer);
-    m_invulTimer.Start(ClientTimers::UndockingInvul);
+    m_invulTimer.Start(ClientTimers::UndockInvul);
     SetSessionTimer();
     //SetBallPark();
 }
@@ -740,8 +740,8 @@ void Client::_ExecuteJump() {
     pShipSE->DestinyMgr()->Cloak();
     pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
 
-    m_cloakTimer.Start(ClientTimers::JumpingCloak);
-    m_invulTimer.Start(ClientTimers::JumpingInvul);
+    m_cloakTimer.Start(ClientTimers::JumpCloak);
+    m_invulTimer.Start(ClientTimers::JumpInvul);
 
     m_toGate = 0;
     m_clientState = ClientState::csIdle;

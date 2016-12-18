@@ -292,13 +292,13 @@ enum ClientTimers {
     JetcanTimer      = 180000,     // used to delay jetcan creation.  3min default
     LogoutTimer      = 1000,    // used to hold client object until WarpOut finishes
     SessionTimer     = 10000,   // used to prevent multiple session changes from occuring too fast
-    DockingInvul     = 3000,
-    JumpingInvul     = 5000,
-    WarpingOutInvul  = 5000,
-    WarpingInInvul   = 10000,
-    UndockingInvul   = 15000,
+    DockInvul        = 3000,
+    JumpInvul        = 5000,
+    WarpOutInvul     = 5000,
+    WarpInInvul      = 10000,
+    UndockInvul      = 15000,
     RestoringInvul   = 60000,
-    JumpingCloak     = 10000,
+    JumpCloak        = 10000,
     LoginCloak       = 15000
 };
 
