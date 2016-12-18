@@ -388,3 +388,5 @@ UPDATE `invTypes` SET `radius` = '1000' WHERE `typeID` = 12356;
 /*  change charge size to interger from float */
 UPDATE `dgmTypeAttributes` SET `valueInt`=`valueFloat`, `valueFloat`= NULL WHERE `attributeID`=128 AND `valueFloat` IS NOT NULL;
 
+/* not sure how many of these are wrong... */
+UPDATE `mapDenormalize` SET `radius` = '343000' WHERE `mapDenormalize`.`itemID` = 40003343;
