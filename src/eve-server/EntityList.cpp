@@ -74,7 +74,11 @@ void EntityList::Shutdown() {
 
 void EntityList::Close()
 {
-    sLog.White(" EntityList::Close()", "Cleaning up %u clients, %u systems, and %u stations", \
+    if (m_clients.size() > 0)
+        sLog.Yellow("       EntityList", "Cleaning up %u clients, %u systems, and %u stations", \
+                m_clients.size(), m_systems.size(), m_stations.size());
+    else
+        sLog.Green("       EntityList", "Cleaning up %u clients, %u systems, and %u stations", \
                 m_clients.size(), m_systems.size(), m_stations.size());
 
     for (auto cur : m_clients)
