@@ -189,21 +189,22 @@ void SystemManager::UnloadSystem() {
     while (itr != m_entities.end()) {
         sBubbleMgr.Remove(itr->second);
 
-        if (itr->second->IsStationSE())
+        if (itr->second->IsStationSE()) {
+            itr->second->UnloadStation();
             sEntityList.RemoveStation(itr->first);
-
-        if (itr->second->IsNPCSE()) {
-            itr->second->TargetMgr()->DoDestruction();  // just to be sure here...
-            sEntityList.RemoveNPC();    // this is for loaded npc count.
-            itr->second->GetNPCSE()->RemoveNPC();   // this deletes NPC from DB.
+        } else if (itr->second->IsNPCSE()) {
+            RemoveNPC(itr->second);
+        } else if (itr->second->IsDynamicEntity()) {
+            RemoveEntity(itr->second);
         }
 
         SafeDelete(itr->second);
         itr = m_entities.erase(itr);
+        m_services.item_factory->RemoveItem(itr->first);
     }
 
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
-    // remove item from system inventory, item factory and decrement item count
+    // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetInventory()->Unload();
 
     /** @todo finish this */
@@ -646,7 +647,6 @@ void SystemManager::RemoveEntity(SystemEntity* who) {
         m_entityChanged = true;
         // Remove Entity's Item Ref from Solar System Dynamic Inventory:
         RemoveItemFromInventory( who->GetSelf() );
-        /* should we delete the entity pointer here??  no, it gets deleted in EntityList */
     } else
         _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
 }

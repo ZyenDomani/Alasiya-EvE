@@ -64,12 +64,30 @@ void Inventory::Unload()
     if (!mContentsLoaded)
         return;
 
-    std::map<uint32, InventoryItemRef>::iterator cur = mContents.begin();
-    while (cur != mContents.end()) {
-        m_factory->RemoveItem(cur->first);
-        cur = mContents.erase(cur);
+    //  save contents on the off-chance they have changed while owner was in this sytems
+    SaveData data;
+    std::vector<SaveData> items;
+    items.clear();
+    std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin();
+    while (itr != mContents.end()) {
+        if (IsNotStaticItem(itr->first)) {   // only save player items
+            data.itemID = itr->first;
+            data.contraband = itr->second->contraband();
+            data.flag = itr->second->flag();
+            data.locationID = itr->second->locationID();
+            data.ownerID = itr->second->ownerID();
+            data.position = itr->second->position();
+            data.quantity = itr->second->quantity();
+            data.singleton = itr->second->singleton();
+            data.typeID = itr->second->typeID();
+            data.customInfo = itr->second->customInfo();
+            items.push_back(data);
+        }
+        m_factory->RemoveItem(itr->first);
+        itr = mContents.erase(itr);
     }
 
+    m_db->SaveItems(items);
     mContents.clear();
     mContentsLoaded = false;
 }

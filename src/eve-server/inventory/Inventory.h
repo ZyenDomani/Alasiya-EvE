@@ -41,7 +41,7 @@ public:
     virtual ~Inventory()                                { /* do nothing here*/ }
 
     void Reset(ItemFactory* factory);
-    void Unload();
+    void Unload();  // used by stations and solar systems for item saving and unloading
     void AddItem(InventoryItemRef item);
     void RemoveItem(InventoryItemRef item);
     void DeleteContents();

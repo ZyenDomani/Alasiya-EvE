@@ -310,6 +310,9 @@ public:
     virtual PyDict* MakeSlimItem();
     virtual void EncodeDestiny( Buffer& into );
 
+    /* specific functions handled here. */
+    void UnloadStation();
+
 };
 
 #endif /* !__STATION__H__INCL__ */

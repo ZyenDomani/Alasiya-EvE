@@ -244,7 +244,7 @@ void NPC::SaveNPC()
 
 void NPC::RemoveNPC()
 {
-    //this is called from SystemManager::RemoveNPC() - no need to RemoveEntity()
+    //this is called from SystemManager::RemoveNPC() which calls other SE* methods as needed
     m_self->Delete();
 }
 
