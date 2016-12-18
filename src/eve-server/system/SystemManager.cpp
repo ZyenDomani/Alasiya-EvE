@@ -190,10 +190,10 @@ void SystemManager::UnloadSystem() {
         sBubbleMgr.Remove(itr->second);
 
         if (itr->second->IsStationSE()) {
-            itr->second->UnloadStation();
+            itr->second->GetStationSE()->UnloadStation();
             sEntityList.RemoveStation(itr->first);
         } else if (itr->second->IsNPCSE()) {
-            RemoveNPC(itr->second);
+            RemoveNPC(itr->second->GetNPCSE());
         } else if (itr->second->IsDynamicEntity()) {
             RemoveEntity(itr->second);
         }
