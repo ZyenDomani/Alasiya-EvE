@@ -50,8 +50,8 @@ ImageServer::ImageServer()
     if (_basePath[_basePath.size() - 1] != '/')
         _basePath += "/";
 
-    sLog.Log("       ServerInit", "Image Server URL: %s", _url.c_str());
-    sLog.Log("       ServerInit", "Image Server path: %s", _basePath.c_str());
+    sLog.Blue("       ServerInit", "Image Server URL: %s", _url.c_str());
+    sLog.Blue("       ServerInit", "Image Server path: %s", _basePath.c_str());
 
     if (CreateDirectory( _basePath.c_str(), NULL ) == 0) {
         for (int i = 0; i < CategoryCount; i++) {

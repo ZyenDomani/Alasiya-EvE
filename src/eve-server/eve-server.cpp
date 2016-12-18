@@ -386,29 +386,29 @@ int main( int argc, char* argv[] )
     sLog.Success("       ServerInit", "Loading Static Database Table Objects...");
 
     // Create In-Memory Database Objects for Critical and HighUse Systems:
-    sLog.Log("       ServerInit", "Module Effects Table");
+    sLog.Success("       ServerInit", "Module Effects Table");
     sDGM_Effects_Table.Initialize();
-    sLog.Log("       ServerInit", "Skill Modifiers");
+    sLog.Success("       ServerInit", "Skill Modifiers");
     sDGM_Skill_Bonus_Modifiers_Table.Initialize();
-    sLog.Log("       ServerInit", "Ship Modifiers");
+    sLog.Success("       ServerInit", "Ship Modifiers");
     sDGM_Ship_Bonus_Modifiers_Table.Initialize();
-    sLog.Log("       ServerInit", "Implant Modifiers");
+    sLog.Success("       ServerInit", "Implant Modifiers");
     sDGM_Implant_Modifiers_Table.Initialize();
-    sLog.Log("       ServerInit", "Wrecks Table");
+    sLog.Success("       ServerInit", "Wrecks Table");
     sDGM_Types_to_Wrecks_Table.Initialize();
-    sLog.Log("       ServerInit", "Loot Table");
+    sLog.Success("       ServerInit", "Loot Table");
     sDGM_Loot_Groups_Table.Initialize();
-    sLog.Log("       ServerInit", "Salvage Table");
+    sLog.Success("       ServerInit", "Salvage Table");
     sDGM_Salvage_Table.Initialize();
-    sLog.Log("       ServerInit", "Dungeon Data");
+    sLog.Success("       ServerInit", "Dungeon Data");
     sDunDataMgr.Initialize();
-    sLog.Log("       ServerInit", "Asteroid Data");
+    sLog.Success("       ServerInit", "Asteroid Data");
     sDataMgr.Initialize();
-    sLog.Log("       ServerInit", "Spawn Data");
+    sLog.Success("       ServerInit", "Spawn Data");
     sSpawnDataMgr.Initialize();
-    sLog.Log("       ServerInit", "PI Data");
+    sLog.Success("       ServerInit", "PI Data");
     sPIDataMgr.Initialize();
-    sLog.Log("       ServerInit", "Planet Data");
+    sLog.Success("       ServerInit", "Planet Data");
     sPlanetDataMgr.Initialize();
 
     /* Custom config file options

@@ -91,7 +91,7 @@ void DungeonDataMgr::_Populate()
         m_groups.emplace(row.GetInt(0), groups);
     }
 
-    /*
+    /* not ready yet
     res->Reset();
     m_db.GetDunRoomInfo(*res);
     DunRoomInfo info;
@@ -123,7 +123,7 @@ void DungeonDataMgr::_Populate()
     //cleanup
     SafeDelete(res);
 
-    sLog.Log("   DungeonDataMgr", "%u rooms in %u buckets and %u groups in %u buckets for %u dungeon templates loaded in %.3fms.",
+    sLog.Yellow("   DungeonDataMgr", "%u rooms in %u buckets and %u groups in %u buckets for %u dungeon templates loaded in %.3fms.",
              m_rooms.size(), m_rooms.bucket_count(), m_groups.size(), m_groups.bucket_count(), m_templates.size(), (GetTimeUSeconds() - start));
 }
 

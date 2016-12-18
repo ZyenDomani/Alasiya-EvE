@@ -91,12 +91,11 @@ void SpawnDataMgr::_Populate()
     SafeDelete(res);
     SafeDelete(res2);
 
-    sLog.Log("     SpawnDataMgr", "%u asteroid rat groups in %u buckets, %u rat spawn classes in %u buckets, and %u rat spawn types for %u regions loaded in %.3fms.",
+    sLog.Yellow("     SpawnDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fms.",
              m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_regions.size(), (GetTimeUSeconds() - start));
 }
 
 /*
- _ log(
  SPAWN__ERROR
  SPAWN__WARNING
  SPAWN__MESSAGE

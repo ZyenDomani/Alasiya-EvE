@@ -67,7 +67,7 @@ void StaticDataMgr::Populate()
 
     //cleanup
     SafeDelete(res);
-    sLog.Log("    StaticDataMgr", "%u ore data sets and %u region factions loaded in %.3fms.", m_oreBySecClass.size(), m_regions.size(), (GetTimeUSeconds() - start));
+    sLog.Yellow("    StaticDataMgr", "%u ore data sets and %u region factions loaded in %.3fms.", m_oreBySecClass.size(), m_regions.size(), (GetTimeUSeconds() - start));
 }
 
 void StaticDataMgr::GetInfo()

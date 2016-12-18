@@ -51,8 +51,8 @@ void ConsoleCommand::Init(CommandDispatcher* cd, ItemFactory* itmf)
 	tv.tv_usec = 0;
 	UpdateStatus();	//initial status setting
     m_haltServer = false;
-    sLog.Log( "       ServerInit", "Console Commands Initialized." );
-    sLog.Warning( "   ConsoleCommand", "Enter 'h' for current list of supported commands." );
+    sLog.Success( "       ServerInit", "Console Commands Initialized." );
+    sLog.Yellow( "   ConsoleCommand", "Enter 'h' for current list of supported commands." );
 }
 
 bool ConsoleCommand::Process() {
