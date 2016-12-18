@@ -68,7 +68,7 @@ public:
             return false;
         }
 
-        sLog.Log("       ServerInit", "Loading Solar systems.");
+        sLog.White("       ServerInit", "Loading Solar systems.");
 
         DBResultRow row;
         for(unsigned int i = 0; res.GetRow(row); i++)

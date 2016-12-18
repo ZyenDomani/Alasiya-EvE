@@ -263,7 +263,7 @@ PyResult ObjCacheService::Handle_GetCachableObject(PyCallArgs &call) {
 20:27:48 [SvcCall]         [ 2]   [ 1] Integer field: 933884788
 20:27:48 [SvcCall]         [ 3] Integer field: 333444
   */
-  //sLog.Log( "ObjCacheService", "Handle_GetCachableObject" );
+  //sLog.White( "ObjCacheService", "Handle_GetCachableObject" );
   //call.Dump(SERVICE__CALL_DUMP);
     CallGetCachableObject args;
     if(!args.Decode(&call.tuple))
@@ -348,7 +348,7 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
         if(!m_cache.SaveCachedToFile(m_cacheDir, objectID))
             sLog.Error( "ObjCacheService", "Failed to save cache file for '%s' in '%s'", objectID_string.c_str(), m_cacheDir.c_str() );
         else
-            sLog.Log( "ObjCacheService", "Saved cached object '%s' to file in '%s'.", objectID_string.c_str(), m_cacheDir.c_str() );
+            sLog.White( "ObjCacheService", "Saved cached object '%s' to file in '%s'.", objectID_string.c_str(), m_cacheDir.c_str() );
     }
 
     return true;

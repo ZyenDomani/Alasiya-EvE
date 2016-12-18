@@ -48,7 +48,7 @@ class ConsoleCommand
 {
   public:
     ConsoleCommand();
-    virtual ~ConsoleCommand();
+    virtual ~ConsoleCommand()   { /* do nothing here */ }
 
     void Init(CommandDispatcher* cd, ItemFactory* itmf);
 

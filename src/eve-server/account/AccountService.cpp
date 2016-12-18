@@ -353,7 +353,7 @@ PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call) {
      * 18:58:35 [ClientError] Handle_GiveCashFromCorpAccount(/usr/local/src/eve/evemu_personal/src/eve-server/account/AccountService.cpp:347): Invalid arguments
      */
 
-    sLog.Log( "AccountService::Handle_GiveCashFromCorpAccount()", "size=%u", call.tuple->size());
+    sLog.White( "AccountService::Handle_GiveCashFromCorpAccount()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     Call_GiveCorpCash args;

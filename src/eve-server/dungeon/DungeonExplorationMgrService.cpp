@@ -56,7 +56,7 @@ PyResult DungeonExplorationMgrService::Handle_GetMyEscalatingPathDetails(PyCallA
      * 00:51:32 [SvcCall]         Integer field: 1
      * /client/script/ui/shared/neocom/journal.py(1502) ShowExpeditions
      */
-    sLog.Log("DungeonExplorationMgrService::Handle_GetMyEscalatingPathDetails()",  "size= %u", call.tuple->size() );
+    sLog.White("DungeonExplorationMgrService::Handle_GetMyEscalatingPathDetails()",  "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return new PyNone();

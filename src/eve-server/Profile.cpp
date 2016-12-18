@@ -17,7 +17,7 @@ Profile::~Profile() {
 
 void Profile::Init() {
     ClearAll();
-    sLog.Success( "       ServerInit", "Profiling initialized." );
+    sLog.Green( "       ServerInit", "Profiling initialized." );
 }
 
 void Profile::AddTime(uint8 key, double value) {
@@ -155,50 +155,50 @@ void Profile::PrintProfile()
     double startTime = GetTimeUSeconds();
     double h = 0, l = 0, a = 0;
     GetRunTimes(m_server, &h, &l, &a);
-    sLog.Success("   Server Profile", " *Main() called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_server.size(), h, l, a );
+    sLog.Green("   Server Profile", " *Main() called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_server.size(), h, l, a );
     GetRunTimes(m_destiny, &h, &l, &a);
-    sLog.Success("   Server Profile", " Destiny called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_destiny.size(),  h, l, a );
+    sLog.Green("   Server Profile", " Destiny called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_destiny.size(),  h, l, a );
     GetRunTimes(m_entityC, &h, &l, &a);
-    sLog.Success("   Server Profile", " EntityClient called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_entityC.size(),  h, l, a );
+    sLog.Green("   Server Profile", " EntityClient called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_entityC.size(),  h, l, a );
     GetRunTimes(m_entityS, &h, &l, &a);
-    sLog.Success("   Server Profile", " EntitySystem called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_entityS.size(),  h, l, a );
+    sLog.Green("   Server Profile", " EntitySystem called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_entityS.size(),  h, l, a );
     GetRunTimes(m_map, &h, &l, &a);
-    sLog.Success("   Server Profile", " *Map called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_map.size(), h, l, a );
+    sLog.Green("   Server Profile", " *Map called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_map.size(), h, l, a );
     GetRunTimes(m_client, &h, &l, &a);
-    sLog.Success("   Server Profile", " Client called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_client.size(),  h, l, a );
+    sLog.Green("   Server Profile", " Client called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_client.size(),  h, l, a );
     GetRunTimes(m_npc, &h, &l, &a);
-    sLog.Success("   Server Profile", " NPC called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_npc.size(),  h, l, a );
+    sLog.Green("   Server Profile", " NPC called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_npc.size(),  h, l, a );
     GetRunTimes(m_bubbles, &h, &l, &a);
-    sLog.Success("   Server Profile", " Bubbles called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_bubbles.size(),  h, l, a );
+    sLog.Green("   Server Profile", " Bubbles called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_bubbles.size(),  h, l, a );
     GetRunTimes(m_items, &h, &l, &a);
-    sLog.Success("   Server Profile", " *Items called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_items.size(),  h, l, a );
+    sLog.Green("   Server Profile", " *Items called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_items.size(),  h, l, a );
     GetRunTimes(m_itemload, &h, &l, &a);
-    sLog.Success("   Server Profile", " Item Loading called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_itemload.size(),  h, l, a );
+    sLog.Green("   Server Profile", " Item Loading called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_itemload.size(),  h, l, a );
     GetRunTimes(m_modules, &h, &l, &a);
-    sLog.Success("   Server Profile", " Modules called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_modules.size(),  h, l, a );
+    sLog.Green("   Server Profile", " Modules called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_modules.size(),  h, l, a );
     GetRunTimes(m_functions, &h, &l, &a);
-    sLog.Success("   Server Profile", " *Functions called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_functions.size(), h, l, a );
+    sLog.Green("   Server Profile", " *Functions called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_functions.size(), h, l, a );
     GetRunTimes(m_db, &h, &l, &a);
-    sLog.Success("   Server Profile", " *DB called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_db.size(),  h, l, a );
+    sLog.Green("   Server Profile", " *DB called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_db.size(),  h, l, a );
     GetRunTimes(m_ship, &h, &l, &a);
-    sLog.Success("   Server Profile", " Ship called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_ship.size(),  h, l, a );
+    sLog.Green("   Server Profile", " Ship called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_ship.size(),  h, l, a );
     GetRunTimes(m_missile, &h, &l, &a);
-    sLog.Success("   Server Profile", " Missile called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_missile.size(), h, l, a );
+    sLog.Green("   Server Profile", " Missile called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_missile.size(), h, l, a );
     GetRunTimes(m_loot, &h, &l, &a);
-    sLog.Success("   Server Profile", " Loot called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_loot.size(), h, l, a );
+    sLog.Green("   Server Profile", " Loot called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_loot.size(), h, l, a );
     GetRunTimes(m_salvage, &h, &l, &a);
-    sLog.Success("   Server Profile", " Salvage called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_salvage.size(), h, l, a );
+    sLog.Green("   Server Profile", " Salvage called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_salvage.size(), h, l, a );
     GetRunTimes(m_spawn, &h, &l, &a);
-    sLog.Success("   Server Profile", " Spawn called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_spawn.size(), h, l, a );
+    sLog.Green("   Server Profile", " Spawn called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_spawn.size(), h, l, a );
     GetRunTimes(m_collision, &h, &l, &a);
-    sLog.Success("   Server Profile", " Collisions called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_collision.size(), h, l, a );
+    sLog.Green("   Server Profile", " Collisions called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_collision.size(), h, l, a );
     GetRunTimes(m_drone, &h, &l, &a);
-    sLog.Success("   Server Profile", " Drones called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_drone.size(), h, l, a );
+    sLog.Green("   Server Profile", " Drones called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_drone.size(), h, l, a );
     GetRunTimes(m_concord, &h, &l, &a);
-    sLog.Success("   Server Profile", " Concord called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_concord.size(), h, l, a );
+    sLog.Green("   Server Profile", " Concord called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_concord.size(), h, l, a );
     GetRunTimes(m_colony, &h, &l, &a);
-    sLog.Success("   Server Profile", " Colony Updates called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_colony.size(), h, l, a );
-    sLog.Success("   Server Profile", " Profile Times Compiled in %fus.", (GetTimeUSeconds() -startTime) );
+    sLog.Green("   Server Profile", " Colony Updates called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_colony.size(), h, l, a );
+    sLog.Green("   Server Profile", " Profile Times Compiled in %fus.", (GetTimeUSeconds() -startTime) );
 }
 
 double Profile::GetAverage(std::vector< double > container)

@@ -320,7 +320,7 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
 
     if (sConfig.server.IsTestServer)
         if (sConfig.server.UseProfiling)
-            sLog.Log("Inventory::_sortVector", "%u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
+            sLog.White("Inventory::_sortVector", "%u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
 
     return itemVec;  //returns sorted list
 }

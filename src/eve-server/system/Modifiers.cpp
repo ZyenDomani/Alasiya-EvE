@@ -429,7 +429,7 @@ void DGM_Skill_Bonus_Modifiers_Table::_Populate()
     if ( error_count > 0 )
         sLog.Error("DGM_Skill_Bonus_Modifiers_Table::_Populate()","ERROR Populating the DGM_Skill_Bonus_Modifiers_Table memory object: %u of %u skill bonus modifiers failed to load!", error_count, total_modifier_count);
 
-    sLog.Yellow("  Skill Modifiers", "%u skill modifier objects loaded in %.3fms", total_modifier_count, (GetTimeMSeconds() - start));
+    sLog.Error("  Skill Modifiers", "%u skill modifier objects loaded in %.3fms", total_modifier_count, (GetTimeMSeconds() - start));
 
     //cleanup
     SafeDelete(res);
@@ -495,7 +495,7 @@ void DGM_Ship_Bonus_Modifiers_Table::_Populate()
     if ( error_count > 0 )
         sLog.Error("DGM_Ship_Bonus_Modifiers_Table::_Populate()","ERROR Populating the DGM_Ship_Bonus_Modifiers_Table memory object: %u of %u ship bonus modifiers failed to load!", error_count, total_modifier_count);
 
-    sLog.Yellow("   Ship Modifiers", "%u ship modifier objects loaded in %.3fms", total_modifier_count, (GetTimeMSeconds() - start));
+    sLog.Error("   Ship Modifiers", "%u ship modifier objects loaded in %.3fms", total_modifier_count, (GetTimeMSeconds() - start));
 
     //cleanup
     SafeDelete(res);
@@ -561,7 +561,7 @@ void DGM_Implant_Modifiers_Table::_Populate()
     if ( error_count > 0 )
         sLog.Error("DGM_Implant_Modifiers_Table::_Populate()","ERROR Populating the DGM_Implant_Modifiers_Table memory object: %u of %u implant bonus modifiers failed to load!", error_count, total_modifier_count);
 
-    sLog.Yellow("Implant Modifiers", "%u implant modifier objects loaded in %.3fms", total_modifier_count, (GetTimeMSeconds() - start));
+    sLog.Error("Implant Modifiers", "%u implant modifier objects loaded in %.3fms", total_modifier_count, (GetTimeMSeconds() - start));
 
     //cleanup
     SafeDelete(res);

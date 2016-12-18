@@ -117,7 +117,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         call.client->SendNotifyMsg("Session Change already active.");
         return new PyNone();
     }*/
-    sLog.Log("ShipBound::Handle_Board()", "size=%u", call.tuple->size());
+    sLog.White("ShipBound::Handle_Board()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     Call_BoardShip args;
@@ -193,7 +193,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
     }*/
-    sLog.Log("ShipBound::Handle_Eject()", "size=%u", call.tuple->size());
+    sLog.White("ShipBound::Handle_Eject()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     //no arguments.
 
@@ -255,7 +255,7 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
     }*/
-    sLog.Log("ShipBound::Handle_LeaveShip()", "size=%u", call.tuple->size());
+    sLog.White("ShipBound::Handle_LeaveShip()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
@@ -274,7 +274,7 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call) {
     //verify owner (not sure why pod doenst have correct owner...)
     podRef->ChangeOwner(pClient->GetCharacterID(), false);
     //move capsule into the players hangar
-    sLog.Log("ShipBound::Handle_LeaveShip()", "moving pod %u to station %u", podID, pClient->GetStationID());
+    sLog.White("ShipBound::Handle_LeaveShip()", "moving pod %u to station %u", podID, pClient->GetStationID());
     podRef->Move(pClient->GetStationID(), flagHangar);
 
     // capsuleID = shipsvc.LeaveShip(shipid)
@@ -492,7 +492,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
         _log(SERVICE__ERROR, "%s: Trying to drop items when not in space!", call.client->GetName());
         return(new PyList());
     }
-    sLog.Log("ShipBound::Handle_Drop()", "size=%u", call.tuple->size());
+    sLog.White("ShipBound::Handle_Drop()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     if (call.tuple->size() != 3) {
@@ -897,7 +897,7 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
      * 22:13:29 [SvcCall]       Tuple: 1 elements
      * 22:13:29 [SvcCall]         [ 0] Integer field: 140000378     <- ship id
      *
-  sLog.Log("ShipBound::Handle_SelfDestruct()", "size=%u", call.tuple->size());
+  sLog.White("ShipBound::Handle_SelfDestruct()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
 
@@ -997,7 +997,7 @@ PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call) {
      13:15:58 [SvcCall]   Call Arguments:
      13:15:58 [SvcCall]       Tuple: Empty
 
-     sLog.Log("ShipBound::Handle_GetShipConfiguration()", "size=%u", call.tuple->size());
+     sLog.White("ShipBound::Handle_GetShipConfiguration()", "size=%u", call.tuple->size());
      call.Dump(SERVICE__CALL_DUMP);
      */
 

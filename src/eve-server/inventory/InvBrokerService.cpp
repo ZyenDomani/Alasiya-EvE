@@ -360,7 +360,7 @@ PyResult InvBrokerBound::Handle_List(PyCallArgs &call) {
         invList.extend(shipInv.List(const.flagCargo))
             */
 
-    sLog.Log( "InvBrokerBound::Handle_List()", "size= %u", call.tuple->size() );
+    sLog.White( "InvBrokerBound::Handle_List()", "size= %u", call.tuple->size() );
     call.Dump(INV__DUMP);
 
     return nullptr;
@@ -383,7 +383,7 @@ PyResult InvBrokerBound::Handle_AssembleCargoContainer(PyCallArgs &call) {
      * 14:37:46 [InvMsg]         [ 2] Real field: 0.000000
      */
 
-    sLog.Log( "InvBrokerBound::Handle_AssembleCargoContainer()", "size= %u", call.tuple->size() );
+    sLog.White( "InvBrokerBound::Handle_AssembleCargoContainer()", "size= %u", call.tuple->size() );
     call.Dump(INV__DUMP);
 
     return nullptr;

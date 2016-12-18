@@ -50,7 +50,7 @@ m_stampTimer(1000, true)    /* in ms */
 }
 
 EntityList::~EntityList() {
-    sLog.Success("   ServerShutdown", " Complete.");
+    sLog.Green("   ServerShutdown", " Complete.");
 }
 
 void EntityList::Init() {
@@ -74,7 +74,7 @@ void EntityList::Shutdown() {
 
 void EntityList::Close()
 {
-    sLog.Log(" EntityList::Close()", "Cleaning up %u clients, %u systems, and %u stations", \
+    sLog.White(" EntityList::Close()", "Cleaning up %u clients, %u systems, and %u stations", \
                 m_clients.size(), m_systems.size(), m_stations.size());
 
     for (auto cur : m_clients)

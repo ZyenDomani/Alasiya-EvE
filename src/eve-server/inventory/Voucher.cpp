@@ -62,7 +62,7 @@ will need to figure out how to save BM with copied original bmID, then get info 
 //not sure what the return is yet.
 AttributeError: Rowset instance has no attribute 'GetDescription'
 
-  sLog.Log( "VoucherService::Handle_GetObject_1", "size= %u", call.tuple->size() );
+  sLog.White( "VoucherService::Handle_GetObject_1", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 */
     DBQueryResult res;
@@ -71,15 +71,15 @@ AttributeError: Rowset instance has no attribute 'GetDescription'
     uint32 voucherID = call.tuple->GetItem( 0 )->AsInt()->value();
     sDatabase.RunQuery(res, "SELECT customInfo FROM entity WHERE itemID = %u", voucherID);
     res.GetRow(row);
-  sLog.Log( "VoucherService::Handle_GetObject_2", "customInfo= %s", row.GetText(0) );
+  sLog.White( "VoucherService::Handle_GetObject_2", "customInfo= %s", row.GetText(0) );
     std::stringstream convert(row.GetText(0));
     uint32 bookmarkID;
     convert >> bookmarkID;
-  sLog.Log( "VoucherService::Handle_GetObject_3", "bookmarkID= %u", bookmarkID );
+  sLog.White( "VoucherService::Handle_GetObject_3", "bookmarkID= %u", bookmarkID );
     res.Reset();
     sDatabase.RunQuery(res, "SELECT memo FROM bookmarks WHERE bookmarkID = %u", bookmarkID);
     res.GetRow(row);
-  sLog.Log( "VoucherService::Handle_GetObject_4", "memo= %s", row.GetText(0) );
+  sLog.White( "VoucherService::Handle_GetObject_4", "memo= %s", row.GetText(0) );
 
     return new PyString(row.GetText(0));
     //return DBResultToRowset(res);

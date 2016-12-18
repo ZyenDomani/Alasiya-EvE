@@ -318,7 +318,7 @@ void Drone::SetResists() {
  * 22:04:44 [SvcCall]         [ 0]   [ 2] Key: Integer field: 1297 <-- AttrDroneFocusFire
  * 22:04:44 [SvcCall]         [ 0]   [ 2] Value: Integer field: 1
  *
- *    sLog.Log("DogmaIMBound::Handle_ChangeDroneSettings()", "size=%u", call.tuple->size());
+ *    sLog.White("DogmaIMBound::Handle_ChangeDroneSettings()", "size=%u", call.tuple->size());
  *    call.Dump(SERVICE__CALLS);
  */
 

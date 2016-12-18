@@ -114,7 +114,7 @@ PyResult Command_createitem(Client* who, CommandDB* db, PyServiceMgr* services, 
             qty = atoi(args.arg(2).c_str());
     }
 
-    sLog.Log("command message", "Create %s %u times", args.arg(1).c_str(), qty);
+    sLog.White("command message", "Create %s %u times", args.arg(1).c_str(), qty);
 
     //create into their cargo hold unless they are docked in a station,
     //then stick it in their hangar instead.
@@ -407,7 +407,7 @@ PyResult Command_goto(Client* who, CommandDB* db, PyServiceMgr* services, const 
               atof(args.arg(2).c_str()),
               atof(args.arg(3).c_str()));
 
-    sLog.Log("Command", "%s: Goto (%.13f, %.13f, %.13f)", who->GetName(), p.x, p.y, p.z);
+    sLog.White("Command", "%s: Goto (%.13f, %.13f, %.13f)", who->GetName(), p.x, p.y, p.z);
 
     who->MoveToPosition(p);
     return new PyString("Goto successful.");
@@ -487,7 +487,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
     if (!who->SystemMgr()->BuildDynamicEntity(entity))
         return new PyString("Spawn Failed: typeID or typeName not supported.");
 
-    sLog.Log("Command", "%s: Spawned %u.", who->GetName(), typeID);
+    sLog.White("Command", "%s: Spawned %u.", who->GetName(), typeID);
 
     return new PyString("Spawn successful.");
 }
@@ -621,7 +621,7 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
             return new PyString("Spawn Failed: typeID or typeName not supported.");
     }
 
-    sLog.Log("Command_spawn", "%s: Spawned %u in space, %u times", who->GetName(), typeID, spawnCount);
+    sLog.White("Command_spawn", "%s: Spawned %u in space, %u times", who->GetName(), typeID, spawnCount);
 
     return new PyString("Spawn successful.");
 }
@@ -1070,7 +1070,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
         character->SaveSkillHistory(skillEventGMGive, EvilTimeNow().get_double(), ownerID, skillID, level, \
                                     newPoints.get_double(), character->GetTotalSP().get_double());
 
-        sLog.Log("Command::GiveSkill", "skill %u set to level %u.", skillID, level);
+        sLog.White("Command::GiveSkill", "skill %u set to level %u.", skillID, level);
 
         return new PyString ("Skill Gifting Complete");
     } else
@@ -1213,7 +1213,7 @@ PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, con
         itemRef->Delete();
     }
 
-    sLog.Log("Command", "%s: Un-Spawned %u.", who->GetName(), itemID);
+    sLog.White("Command", "%s: Un-Spawned %u.", who->GetName(), itemID);
 
     return new PyString("Un-Spawn successful.");
 }

@@ -76,12 +76,19 @@ public:
      */
     void Warning( const char* source, const char* fmt, ... );
     /**
-     * @brief Logs a success message to file.
+     * @brief Logs a message to console in white.
      *
      * @param[in] source is the source from where the message is printed.
      * @param[in] fmt is the message itself.
      */
-    void Success( const char* source, const char* fmt, ... );
+    void White( const char* source, const char* fmt, ... );
+    /**
+     * @brief Logs a message to console in green.
+     *
+     * @param[in] source is the source from where the message is printed.
+     * @param[in] fmt is the message itself.
+     */
+    void Green( const char* source, const char* fmt, ... );
     /**
      * @brief Logs a message to console in blue.
      *
@@ -102,7 +109,14 @@ public:
 	 * @param[in] source is the source from where the message is printed.
 	 * @param[in] fmt is the message itself.
 	 */
-	void Yellow( const char* source, const char* fmt, ... );
+    void Yellow( const char* source, const char* fmt, ... );
+    /**
+     * @brief Logs a message to console in cyan.
+     *
+     * @param[in] source is the source from where the message is printed.
+     * @param[in] fmt is the message itself.
+     */
+    void Cyan( const char* source, const char* fmt, ... );
     /**
      * @brief Logs a debug message to file and console.
      *

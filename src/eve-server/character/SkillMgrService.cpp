@@ -85,7 +85,7 @@ void SkillMgrBound::Release()
 }
 
 PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call) {
-    sLog.Log( "SkillMgrBound::Handle_GetCharacterAttributeModifiers()", "size= %u", call.tuple->size() );
+    sLog.White( "SkillMgrBound::Handle_GetCharacterAttributeModifiers()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     // expected data: for (itemID, typeID, operation, value,) in modifiers:
     /*
@@ -126,7 +126,7 @@ PyResult SkillMgrBound::Handle_GetSkillHistory( PyCallArgs& call ) {
 
 PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 {
-    sLog.Log( "SkillMgrBound::Handle_CharAddImplant()", "size= %u", call.tuple->size() );
+    sLog.White( "SkillMgrBound::Handle_CharAddImplant()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     //takes itemid
     Call_SingleIntegerArg args;
@@ -141,7 +141,7 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
 
 PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
 {
-    sLog.Log( "SkillMgrBound::Handle_RemoveImplantFromCharacter()", "size= %u", call.tuple->size() );
+    sLog.White( "SkillMgrBound::Handle_RemoveImplantFromCharacter()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     //takes itemid
     Call_SingleIntegerArg args;
@@ -199,7 +199,7 @@ PyResult SkillMgrBound::Handle_AddToEndOfSkillQueue(PyCallArgs &call) {
 
 PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 {
-    sLog.Log( "SkillMgrBound::Handle_RespecCharacter()", "size= %u", call.tuple->size() );
+    sLog.White( "SkillMgrBound::Handle_RespecCharacter()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     Call_RespecCharacter spec;
     if (!spec.Decode(call.tuple)) {

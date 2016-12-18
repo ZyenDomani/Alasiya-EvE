@@ -304,7 +304,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
         if (call.client->IsInvul())
             call.client->SetInvul(false);
     }
-   //sLog.Log( "BeyonceBound", "Handle_CmdGotoDirection %.3f, %.3f, %.3f", arg.x, arg.y, arg.z);
+   //sLog.White( "BeyonceBound", "Handle_CmdGotoDirection %.3f, %.3f, %.3f", arg.x, arg.y, arg.z);
     const GPoint dir = GPoint(arg.x, arg.y, arg.z);
     pDestiny->GotoDirection(dir);
 
@@ -385,7 +385,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return nullptr;
     }
-  //sLog.Log( "BeyonceBound", "Handle_CmdOrbit" );
+  //sLog.White( "BeyonceBound", "Handle_CmdOrbit" );
   call.Dump(SERVICE__CALL_DUMP);
     Call_Orbit args;
     if (!args.Decode(&call.tuple)) {
@@ -404,7 +404,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         return nullptr;
     }
 
-    //sLog.Log( "BeyonceBound", "Handle_CmdOrbit - entity:%s(%u), range:%f", pEntity->GetName(), pEntity->GetID(), range);
+    //sLog.White( "BeyonceBound", "Handle_CmdOrbit - entity:%s(%u), range:%f", pEntity->GetName(), pEntity->GetID(), range);
     if (call.client->IsUndock()) {
         call.client->SetUndock(false);
         if (call.client->IsInvul())
@@ -766,7 +766,7 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 	/*  remotePark.CmdAbandonLoot(wrecks)  <- this is pylist from 'abandonAllWrecks'
 	 *  remotePark.CmdAbandonLoot([wreckID]) <- single itemID
 	 */
-  sLog.Log( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %u", call.tuple->size() );
+  sLog.White( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
 	Call_SingleIntList arg;

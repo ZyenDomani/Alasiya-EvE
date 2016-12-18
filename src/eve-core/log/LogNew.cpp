@@ -86,6 +86,16 @@ void NewLog::Log( const char* source, const char* fmt, ... )
     va_end( ap );
 }
 
+void NewLog::White( const char* source, const char* fmt, ... )
+{
+    va_list ap;
+    va_start( ap, fmt );
+
+    PrintMsg( COLOR_WHITE, 'W', source, fmt, ap );
+
+    va_end( ap );
+}
+
 void NewLog::Error( const char* source, const char* fmt, ... )
 {
     va_list ap;
@@ -106,12 +116,12 @@ void NewLog::Warning( const char* source, const char* fmt, ... )
     va_end( ap );
 }
 
-void NewLog::Success( const char* source, const char* fmt, ... )
+void NewLog::Green( const char* source, const char* fmt, ... )
 {
     va_list ap;
     va_start( ap, fmt );
 
-    PrintMsg( COLOR_GREEN, 'S', source, fmt, ap );
+    PrintMsg( COLOR_GREEN, 'G', source, fmt, ap );
 
     va_end( ap );
 }
@@ -141,7 +151,7 @@ void NewLog::Yellow( const char* source, const char* fmt, ... )
 	va_list ap;
 	va_start( ap, fmt );
 
-	PrintMsg( COLOR_YELLOW, 'M', source, fmt, ap );
+	PrintMsg( COLOR_YELLOW, 'Y', source, fmt, ap );
 
 	va_end( ap );
 }

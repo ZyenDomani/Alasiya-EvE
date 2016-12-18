@@ -15,20 +15,20 @@ NPCMarket::NPCMarket()
 
 void NPCMarket::CreateNPCMarketFromFile(std::string filename)
 {
-    sLog.Log("NPCMarket", "Regenerating NPC market from file %s", filename.c_str());
+    sLog.White("NPCMarket", "Regenerating NPC market from file %s", filename.c_str());
     DBerror err;
 
     // delete all old market orders.
     // TO-DO: make this safe for concurrency.
-    sLog.Log("NPCMarket", "Deleting old NPC orders.");
+    sLog.White("NPCMarket", "Deleting old NPC orders.");
     if (!sDatabase.RunQuery(err, "DELETE FROM market_orders WHERE duration > 90"))
     {
         _log(MARKET__ERROR, "Error in query: %s.", err.c_str());
-        sLog.Log("NPCMarket", "Failed to clear old NPC market.");
+        sLog.White("NPCMarket", "Failed to clear old NPC market.");
         return;
     }
 
-    sLog.Log("NPCMarket", "Reading NPC Market xml file %s", filename.c_str());
+    sLog.White("NPCMarket", "Reading NPC Market xml file %s", filename.c_str());
     // Create a NPCMarket object to process the file.
     NPCMarket npcMarket;
     const char *NPC_MARKET_FILE = (std::string(EVEMU_ROOT) + filename).c_str();
@@ -37,7 +37,7 @@ void NPCMarket::CreateNPCMarketFromFile(std::string filename)
     {
         sLog.Warning("Failed to generate NPC market from %s.", NPC_MARKET_FILE);
     }
-    sLog.Log("NPCMarket", "NPC market created from file %s", filename.c_str());
+    sLog.White("NPCMarket", "NPC market created from file %s", filename.c_str());
 }
 
 bool NPCMarket::ProcessNPCOrders(const TiXmlElement* ele)
@@ -78,7 +78,7 @@ bool NPCMarket::ProcessStation(const TiXmlElement* ele)
 
     // count how many stations have been found.
     nStations++;
-    sLog.Log("NPCMarket", "%d: Adding %d orders to stationID= %d", nStations, newOrders.size(), StationID);
+    sLog.White("NPCMarket", "%d: Adding %d orders to stationID= %d", nStations, newOrders.size(), StationID);
 
     DBerror err;
 

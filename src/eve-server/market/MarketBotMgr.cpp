@@ -28,7 +28,7 @@ void MarketBotDataMgr::Init()
 {
     m_initalized = true;
 
-    sLog.Success("   Market Bot Mgr", "Market Bot Data Manager Initialized.");
+    sLog.Green("   Market Bot Mgr", "Market Bot Data Manager Initialized.");
     /* load current data */
 
 }
@@ -58,7 +58,7 @@ void MarketBotMgr::Init()
     m_initalized = true;
     sMktBotDataMgr.Init();
 
-    sLog.Success("   Market Bot Mgr", "Market Bot Manager Initialized.");
+    sLog.Green("   Market Bot Mgr", "Market Bot Manager Initialized.");
     /* start timers, process current data, and create new orders, if needed */
 
 }

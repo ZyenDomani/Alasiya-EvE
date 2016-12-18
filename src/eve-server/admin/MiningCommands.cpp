@@ -52,7 +52,7 @@ PyResult Command_roid( Client* who, CommandDB* db, PyServiceMgr* services, const
     if( !who->IsInSpace() )
         throw PyException( MakeCustomError( "You must be in space to spawn things." ) );
 
-    sLog.Log( "Command", "Roid %u of radius %f", typeID, radius );
+    sLog.White( "Command", "Roid %u of radius %f", typeID, radius );
 
     GPoint position( who->GetShipSE()->GetPosition() );
     position.x += radius + 1 + who->GetShipSE()->GetRadius();    //put it far enough away to not push us around.

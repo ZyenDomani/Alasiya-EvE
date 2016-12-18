@@ -191,7 +191,7 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
      * 22:04:44 [SvcCall]         [ 0]   [ 2] Key: Integer field: 1297 <-- AttrDroneFocusFire
      * 22:04:44 [SvcCall]         [ 0]   [ 2] Value: Integer field: 1
      *
-     *    sLog.Log("DogmaIMBound::Handle_ChangeDroneSettings()", "size=%u", call.tuple->size());
+     *    sLog.White("DogmaIMBound::Handle_ChangeDroneSettings()", "size=%u", call.tuple->size());
      *    call.Dump(SERVICE__CALL_DUMP);
      */
 
@@ -207,7 +207,7 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
      * 12:54:01 [SvcCall]         [ 1] Integer field: 140000078     <- weapon 2  *dropped ON*
      * 12:54:01 [SvcCall]         [ 2] Integer field: 140000079     <- weapon 1  *dragged*
 
-    sLog.Log("DogmaIMBound::Handle_LinkWeapons()", "size=%u", call.tuple->size());
+    sLog.White("DogmaIMBound::Handle_LinkWeapons()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
      */
@@ -269,7 +269,7 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
         }
     }
 
-    sLog.Log("DogmaIMBound::Handle_Overload()", "size=%u", call.tuple->size());
+    sLog.White("DogmaIMBound::Handle_Overload()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     return nullptr;
 }
@@ -288,7 +288,7 @@ PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
         }
     }
 
-    sLog.Log("DogmaIMBound::Handle_CancelOverloading()", "size=%u", call.tuple->size());
+    sLog.White("DogmaIMBound::Handle_CancelOverloading()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     return nullptr;
 }
@@ -309,7 +309,7 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
      *
      *    returns - list of moduleIDs to OL
      *
-     *    sLog.Log("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
+     *    sLog.White("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
      *    call.Dump(SERVICE__CALL_DUMP);
      */
     Client* pClient = call.client;
@@ -320,7 +320,7 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
     /*
      */
-    sLog.Log("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
+    sLog.White("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     Client* pClient = call.client;
 
@@ -365,7 +365,7 @@ PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
         [PyIntegerVar 129503265956883696]
 
 
-    sLog.Log("DogmaIMBound::Handle_GetLocationInfo()", "size=%u", call.tuple->size());
+    sLog.White("DogmaIMBound::Handle_GetLocationInfo()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
                 */
 
@@ -417,7 +417,7 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_CheckSendLocationInfo(PyCallArgs& call)
 {
-    sLog.Log("DogmaIMBound::Handle_CheckSendLocationInfo()", "size=%u", call.tuple->size());
+    sLog.White("DogmaIMBound::Handle_CheckSendLocationInfo()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     //no arguments
     Client* pClient = call.client;
@@ -621,7 +621,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         return new PyNone();
     }
 /*
-    sLog.Log("DogmaIMBound::Handle_Activate()", "size= %u from '%s'", call.tuple->size(), pClient->GetName() );
+    sLog.White("DogmaIMBound::Handle_Activate()", "size= %u from '%s'", call.tuple->size(), pClient->GetName() );
     call.Dump(SERVICE__CALL_DUMP);
 */
     uint32 callTupleSize = (uint32)call.tuple->size(), itemID = 0, effectID = 0;
@@ -836,7 +836,7 @@ PyResult DogmaIMBound::Handle_GetWeaponBankInfoForShip(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
 {
-    //sLog.Log("DogmaIMBound::Handle_GetAllInfo()", "size=%u", call.tuple->size());
+    //sLog.White("DogmaIMBound::Handle_GetAllInfo()", "size=%u", call.tuple->size());
     //call.Dump(SERVICE__CALL_DUMP);
     /* added more return data and updated logic (almost complete and mostly accurate) -allan 26Mar16 */
     /* Start the Code */

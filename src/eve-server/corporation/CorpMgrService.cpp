@@ -108,7 +108,7 @@ PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
      * 21:34:13 [SvcCall]         [ 1] String: 'offices'
      *
      *
-     *  sLog.Log( "CorpMgrService::Handle_GetAssetInventory()", "size= %u", call.tuple->size() );
+     *  sLog.White( "CorpMgrService::Handle_GetAssetInventory()", "size= %u", call.tuple->size() );
      *  call.Dump(SERVICE__CALL_DUMP);
      */
     Call_GetAssetInventory args;
@@ -139,7 +139,7 @@ PyResult CorpMgrService::Handle_GetCorporationStations(PyCallArgs &call) {
             stationListing.append([localization.GetByLabel('UI/PVPTrade/StationInSolarsystem', station=station.itemID, solarsystem=station.locationID), station.itemID, station.typeID])
 */
 
-  sLog.Log( "CorpMgrService::Handle_GetCorporationStations()", "size= %u", call.tuple->size() );
+  sLog.White( "CorpMgrService::Handle_GetCorporationStations()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
@@ -148,7 +148,7 @@ PyResult CorpMgrService::Handle_GetCorporationStations(PyCallArgs &call) {
 PyResult CorpMgrService::Handle_GetCorporationIDForCharacter(PyCallArgs &call) {
 /**        returns corpID for given charID  */
 
-  sLog.Log( "CorpMgrService::Handle_GetCorporationIDForCharacter()", "size= %u", call.tuple->size() );
+  sLog.White( "CorpMgrService::Handle_GetCorporationIDForCharacter()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
@@ -159,7 +159,7 @@ PyResult CorpMgrService::Handle_GetAssetInventoryForLocation(PyCallArgs &call) {
     items = sm.RemoteSvc('corpmgr').GetAssetInventoryForLocation(eve.session.corpid, stationID, which)
     */
 
-sLog.Log( "CorpMgrService::Handle_GetAssetInventoryForLocation()", "size= %u", call.tuple->size() );
+sLog.White( "CorpMgrService::Handle_GetAssetInventoryForLocation()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
@@ -170,7 +170,7 @@ PyResult CorpMgrService::Handle_AuditMember(PyCallArgs &call) {
      * logItemEventRows, crpRoleHistroyRows = sm.RemoteSvc('corpmgr').AuditMember(memberID, fromDate, toDate, rowsPerPage)
      */
 
-    sLog.Log( "CorpMgrService::Handle_AuditMember()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpMgrService::Handle_AuditMember()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;

@@ -312,10 +312,10 @@ bool DBcore::Open_locked(int32* errnum, char* errbuf) {
     if (pHost.empty())
         return false;
 
-    sLog.Log("       ServerInit", "Connecting to");
-	sLog.Log("        DB Server", " %s:%d", pHost.c_str(), pPort);
-	sLog.Log("          DB User", " %s", pUser.c_str());
-	sLog.Log("         DataBase", " %s", pDatabase.c_str());
+    sLog.White("       ServerInit", "Connecting to");
+	sLog.White("        DB Server", " %s:%d", pHost.c_str(), pPort);
+	sLog.White("          DB User", " %s", pUser.c_str());
+	sLog.White("         DataBase", " %s", pDatabase.c_str());
 
     /*
     Quagmire - added CLIENT_FOUND_ROWS flag to the connect

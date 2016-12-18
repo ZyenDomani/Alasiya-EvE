@@ -93,7 +93,7 @@ PyResult CorpBookmarkMgrService::Handle_GetBookmarks(PyCallArgs& call)
 }
 
 PyResult CorpBookmarkMgrService::Handle_UpdateBookmark(PyCallArgs& call) {
-    sLog.Log( "CorpBookmarkMgrService::Handle_UpdateBookmark()", "size=%u ", call.tuple->size() );
+    sLog.White( "CorpBookmarkMgrService::Handle_UpdateBookmark()", "size=%u ", call.tuple->size() );
     call.Dump(COMMON__INFO);
     Call_UpdateBookmark args;
     if (!args.Decode(&call.tuple)) {
@@ -128,7 +128,7 @@ PyResult CorpBookmarkMgrService::Handle_UpdateBookmark(PyCallArgs& call) {
 }
 
 PyResult CorpBookmarkMgrService::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
-    sLog.Log( "CorpBookmarkMgrService::Handle_UpdatePlayerBookmark()", "size=%u ", call.tuple->size() );
+    sLog.White( "CorpBookmarkMgrService::Handle_UpdatePlayerBookmark()", "size=%u ", call.tuple->size() );
     call.Dump(COMMON__INFO);
     Call_UpdateBookmark args;
     if (!args.Decode(&call.tuple)) {

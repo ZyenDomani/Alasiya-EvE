@@ -60,7 +60,7 @@ PyResult AllianceRegistry::Handle_GetRankedAlliances(PyCallArgs &call) {
                 self.rankedAlliances.standings[a.allianceID] = s
          */
 
-    sLog.Log("AllianceRegistry", "Handle_GetRankedAlliances() size=%u", call.tuple->size() );
+    sLog.White("AllianceRegistry", "Handle_GetRankedAlliances() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -68,7 +68,7 @@ PyResult AllianceRegistry::Handle_GetRankedAlliances(PyCallArgs &call) {
 
 PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
 
-    sLog.Log("AllianceRegistry", "Handle_GetAllianceApplications() size=%u", call.tuple->size() );
+    sLog.White("AllianceRegistry", "Handle_GetAllianceApplications() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;

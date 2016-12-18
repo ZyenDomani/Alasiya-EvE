@@ -188,13 +188,13 @@ int main( int argc, char* argv[] )
     /* init logging */
     sLog.InitializeLogging(sConfig.files.logDir);
     sThread.Init();
-    sLog.Log( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
+    sLog.White( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
     //sThread.AddThread(pthread_self());
-    sLog.Log("       ServerInit", "Loading server");
+    sLog.White("       ServerInit", "Loading server");
 
     /* Load server log settings */
     if ( load_log_settings( sConfig.files.logSettings.c_str() ) )
-        sLog.Success( "       ServerInit", "Log settings loaded from %s", sConfig.files.logSettings.c_str() );
+        sLog.Green( "       ServerInit", "Log settings loaded from %s", sConfig.files.logSettings.c_str() );
     else
         sLog.Warning( "       ServerInit", "Unable to read %s (this file is optional)", sConfig.files.logSettings.c_str() );
 
@@ -202,7 +202,7 @@ int main( int argc, char* argv[] )
     if (!sConfig.files.logDir.empty()) {
         std::string logFile = sConfig.files.logDir + "eve-server.log";
         if( log_open_logfile( logFile.c_str() ) )
-            sLog.Success( "       ServerInit", "Found log directory %s", sConfig.files.logDir.c_str() );
+            sLog.Green( "       ServerInit", "Found log directory %s", sConfig.files.logDir.c_str() );
         else
             sLog.Warning( "       ServerInit", "Unable to find log directory '%s', only logging to the screen now.", sConfig.files.logDir.c_str() );
     }
@@ -211,7 +211,7 @@ int main( int argc, char* argv[] )
     EVETCPServer tcps;
     char errbuf[ TCPCONN_ERRBUF_SIZE ];
     if (tcps.Open(sConfig.net.port, errbuf)) {
-        sLog.Success( "       ServerInit", "TCP Listener started on port %u.", sConfig.net.port );
+        sLog.Green( "       ServerInit", "TCP Listener started on port %u.", sConfig.net.port );
     } else {
         sLog.Error( "       ServerInit", "Failed to start TCP listener on port %u: %s.", sConfig.net.port, errbuf );
         std::cout << std::endl << "press any key to exit...";  std::cin.get();
@@ -219,18 +219,18 @@ int main( int argc, char* argv[] )
     }
     Sleep(250);
 
-    sLog.Log("", "");
-    sLog.Log(" Supported Client"," %s", EVEProjectVersion);
-    sLog.Log("   Client Version"," %.2f", EVEVersionNumber);
-    sLog.Log("     Client Build"," %d", EVEBuildVersion);
-    sLog.Log("         MachoNet"," %u", MachoNetVersion);
-    sLog.Log("     Server Build", " %.2f", EVE_Build );
-    sLog.Log("  Server Revision", " %s", EVEMU_REVISION );
-    sLog.Log("       Build Date", " %s", EVEMU_BUILD_DATE );
-    sLog.Log("MarketBot Version", " %.1f", Bot_Version );
-    sLog.Log("   Config Version", " %.1f", Config_Version );
-    sLog.Log("      Log Version", " %.1f", Log_Version );
-    sLog.Log("", "");
+    sLog.White("", "");
+    sLog.White(" Supported Client"," %s", EVEProjectVersion);
+    sLog.White("   Client Version"," %.2f", EVEVersionNumber);
+    sLog.White("     Client Build"," %d", EVEBuildVersion);
+    sLog.White("         MachoNet"," %u", MachoNetVersion);
+    sLog.White("     Server Build", " %.2f", EVE_Build );
+    sLog.White("  Server Revision", " %s", EVEMU_REVISION );
+    sLog.White("       Build Date", " %s", EVEMU_BUILD_DATE );
+    sLog.White("MarketBot Version", " %.1f", Bot_Version );
+    sLog.White("   Config Version", " %.1f", Config_Version );
+    sLog.White("      Log Version", " %.1f", Log_Version );
+    sLog.White("", "");
 
     /* connect to the database */
     DBerror err;
@@ -247,44 +247,44 @@ int main( int argc, char* argv[] )
     }
 
     /* start dogma type attrib mgr singleton */
-    sLog.Success("       ServerInit", "Initializing Dogma Attribute Cache");
+    sLog.Green("       ServerInit", "Initializing Dogma Attribute Cache");
     sDgmTypeAttrMgr.Init();
 
     /* create a single item factory */
-    sLog.Success("       ServerInit", "Starting Item Factory");
+    sLog.Green("       ServerInit", "Starting Item Factory");
     ItemFactory* item_factory = new ItemFactory();
 
     /* initialize EntityList singleton, clientID seed and start tic timer */
-    sLog.Success("       ServerInit", "Starting Entity List");
+    sLog.Green("       ServerInit", "Starting Entity List");
     sEntityList.Init();
 
     /* create a service manager */
-    sLog.Success("       ServerInit", "Starting Service Manager");
+    sLog.Green("       ServerInit", "Starting Service Manager");
     PyServiceMgr services( 888444, sEntityList, item_factory );
 
     /* create the WormholeMgr singleton */
-    sLog.Success("       ServerInit", "Starting Wormhole Manager");
+    sLog.Green("       ServerInit", "Starting Wormhole Manager");
     sWHMgr.Init(&services);
 
     /* create the BubbleManager singleton */
-    sLog.Success("       ServerInit", "Starting Bubble Manager");
+    sLog.Green("       ServerInit", "Starting Bubble Manager");
     sBubbleMgr.Init();
 
     /* create the MarketBot singleton */
-    sLog.Success("       ServerInit", "Starting Market Bot Manager");
+    sLog.Green("       ServerInit", "Starting Market Bot Manager");
     sMktBotMgr.Init();
 
     /* create a command dispatcher */
-    sLog.Success("       ServerInit", "Starting Command Dispatch Manager");
+    sLog.Green("       ServerInit", "Starting Command Dispatch Manager");
     CommandDispatcher command_dispatcher( services );
     RegisterAllCommands( command_dispatcher );
 
     /* create console command interperter singleton */
-    sLog.Success("       ServerInit", "Starting Console Manager");
+    sLog.Green("       ServerInit", "Starting Console Manager");
     sConsole.Init(&command_dispatcher, item_factory);
 
     /* Service creation and registration. */
-    sLog.Warning("       ServerInit", "Creating services.");
+    sLog.Yellow("       ServerInit", "Creating services.");
 
     /* Please keep the services list clean so it's easier to find things */
     /* service here are systems responding to client calls */
@@ -374,41 +374,41 @@ int main( int argc, char* argv[] )
     services.RegisterService("warRegistry", new WarRegistryService(&services));
     services.RegisterService("wormholeMgr", new WormHoleSvc(&services));
 
-    sLog.Success("       ServerInit", "Priming cached objects.");
+    sLog.Green("       ServerInit", "Priming cached objects.");
     services.cache_service->PrimeCache();
 
     // start up the image server
-    sLog.Success("       ServerInit", "Starting Image Server");
+    sLog.Green("       ServerInit", "Starting Image Server");
     sImageServer.Run();
     //  this gives the imageserver server time to load so the dynamic database msgs are in order
     Sleep(250);
 
-    sLog.Success("       ServerInit", "Loading Static Database Table Objects...");
+    sLog.Green("       ServerInit", "Loading Static Database Table Objects...");
 
     // Create In-Memory Database Objects for Critical and HighUse Systems:
-    sLog.Success("       ServerInit", "Module Effects Table");
+    sLog.Green("       ServerInit", "Module Effects Table");
     sDGM_Effects_Table.Initialize();
-    sLog.Success("       ServerInit", "Skill Modifiers");
+    sLog.Green("       ServerInit", "Skill Modifiers");
     sDGM_Skill_Bonus_Modifiers_Table.Initialize();
-    sLog.Success("       ServerInit", "Ship Modifiers");
+    sLog.Green("       ServerInit", "Ship Modifiers");
     sDGM_Ship_Bonus_Modifiers_Table.Initialize();
-    sLog.Success("       ServerInit", "Implant Modifiers");
+    sLog.Green("       ServerInit", "Implant Modifiers");
     sDGM_Implant_Modifiers_Table.Initialize();
-    sLog.Success("       ServerInit", "Wrecks Table");
+    sLog.Green("       ServerInit", "Wrecks Table");
     sDGM_Types_to_Wrecks_Table.Initialize();
-    sLog.Success("       ServerInit", "Loot Table");
+    sLog.Green("       ServerInit", "Loot Table");
     sDGM_Loot_Groups_Table.Initialize();
-    sLog.Success("       ServerInit", "Salvage Table");
+    sLog.Green("       ServerInit", "Salvage Table");
     sDGM_Salvage_Table.Initialize();
-    sLog.Success("       ServerInit", "Dungeon Data");
+    sLog.Green("       ServerInit", "Dungeon Data");
     sDunDataMgr.Initialize();
-    sLog.Success("       ServerInit", "Asteroid Data");
+    sLog.Green("       ServerInit", "Asteroid Data");
     sDataMgr.Initialize();
-    sLog.Success("       ServerInit", "Spawn Data");
+    sLog.Green("       ServerInit", "Spawn Data");
     sSpawnDataMgr.Initialize();
-    sLog.Success("       ServerInit", "PI Data");
+    sLog.Green("       ServerInit", "PI Data");
     sPIDataMgr.Initialize();
-    sLog.Success("       ServerInit", "Planet Data");
+    sLog.Green("       ServerInit", "Planet Data");
     sPlanetDataMgr.Initialize();
 
     /* Custom config file options
@@ -421,67 +421,67 @@ int main( int argc, char* argv[] )
         sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
         sLog.Warning("  Loop Sleep Time","Changed from default 10ms to %ums.", MAIN_LOOP_DELAY);
     } else
-        sLog.Success("  Loop Sleep Time","Default at 10ms.");
+        sLog.Green("  Loop Sleep Time","Default at 10ms.");
     int idle = sConfig.server.idleSleepTime;
     if (idle == 1000)
-        sLog.Success("  Idle Sleep Time","Default at 1000ms.");
+        sLog.Green("  Idle Sleep Time","Default at 1000ms.");
     else
-        sLog.Warning("  Idle Sleep Time","Changed from default 1000ms to %ums.", idle);
+        sLog.Yellow("  Idle Sleep Time","Changed from default 1000ms to %ums.", idle);
     if (sConfig.server.UseShipTracking)
         sLog.Warning("    Ship Tracking","Enabled.");
     else
-        sLog.Magenta("    Ship Tracking","Disabled.");
+        sLog.Warning("    Ship Tracking","Disabled.");
     if (sConfig.server.UseBeanCount)
-        sLog.Success("     BeanCounting","Enabled.");
+        sLog.Green("     BeanCounting","Enabled.");
     else
-        sLog.Magenta("     BeanCounting","Disabled.");
+        sLog.Warning("     BeanCounting","Disabled.");
     if (sConfig.server.UseProfiling) {
-        sLog.Success(" Server Profiling","Enabled.");
+        sLog.Green(" Server Profiling","Enabled.");
         sProfile.Init();
     } else
-        sLog.Magenta(" Server Profiling","Disabled.");
+        sLog.Warning(" Server Profiling","Disabled.");
     if (sConfig.cosmic.EnablePI)
-        sLog.Success("        PI System","Enabled.");
+        sLog.Green("        PI System","Enabled.");
     else
-        sLog.Magenta("        PI System","Disabled.");
+        sLog.Warning("        PI System","Disabled.");
     if (sConfig.npc.EnableDrones)
-        sLog.Success("    Player Drones","Enabled.");
+        sLog.Green("    Player Drones","Enabled.");
     else
-        sLog.Magenta("    Player Drones","Disabled.");
+        sLog.Warning("    Player Drones","Disabled.");
     if (sConfig.npc.StaticSpawns)
-        sLog.Success("    Static Spawns","Enabled.  Checks every %u minutes", sConfig.npc.StaticTimer);
+        sLog.Green("    Static Spawns","Enabled.  Checks every %u minutes", sConfig.npc.StaticTimer);
     else
-        sLog.Magenta("    Static Spawns","Disabled.");
+        sLog.Warning("    Static Spawns","Disabled.");
     if (sConfig.npc.RoamingSpawns)
-        sLog.Success("   Roaming Spawns","Enabled.  Checks every %u minutes", sConfig.npc.RoamingTimer);
+        sLog.Green("   Roaming Spawns","Enabled.  Checks every %u minutes", sConfig.npc.RoamingTimer);
     else
         sLog.Warning("   Roaming Spawns","Disabled.");
     if (sConfig.rates.secRate != 1.0)
-        sLog.Warning("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
+        sLog.Yellow("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
     else
         sLog.Blue("        SecStatus","Normal.");
     if (sConfig.rates.npcBountyMultiply != 1.0)
-        sLog.Warning("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
+        sLog.Yellow("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
     else
         sLog.Blue("          Bountys","Normal.");
     if (sConfig.rates.damageRate != 1.0)
-        sLog.Warning("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
+        sLog.Yellow("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
     else
         sLog.Blue("      All Damages","Normal.");
 	if (sConfig.rates.missileRate != 1.0)
-        sLog.Warning("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileRate *100) );
+        sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileRate *100) );
 	else
         sLog.Blue("      Missile Dmg","Normal.");
 	if (sConfig.rates.missileTime != 1.0)
-        sLog.Warning("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
+        sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
 	else
         sLog.Blue("     Missile Time","Normal.");
     if (sConfig.rates.turrentRate != 1.0)
-        sLog.Warning("      Turrent Dmg","Modified at %.0f%%.", (sConfig.rates.turrentRate *100) );
+        sLog.Yellow("      Turrent Dmg","Modified at %.0f%%.", (sConfig.rates.turrentRate *100) );
     else
         sLog.Blue("      Turrent Dmg","Normal.");
-    sLog.Success("      Decay Timer","Runs every %u minutes", sConfig.rates.WorldDecay);
-    sLog.Log("","");
+    sLog.Green("      Decay Timer","Runs every %u minutes", sConfig.rates.WorldDecay);
+    sLog.White("","");
 
     //sLog.Warning("server init", "Adding NPC Market Orders.");
     //NPCMarket::CreateNPCMarketFromFile("/etc/npcMarket.xml");
@@ -496,7 +496,7 @@ int main( int argc, char* argv[] )
     EVETCPConnection* tcpc(nullptr);
 
     sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime));
-    sLog.Success("       ServerInit", "Alasiya EvEmu Server is Online.");
+    sLog.Green("       ServerInit", "Alasiya EvEmu Server is Online.");
 
     /////////////////////////////////////////////////////////////////////////////////////
     //     !!!  DO NOT PUT ANY INITIALIZATION CODE OR CALLS BELOW THIS LINE   !!!
@@ -602,7 +602,7 @@ static void SetupSignals()
 
 static void CatchSignal( int sig_num )
 {
-    sLog.Log( "    Signal System", "Caught signal: %d", sig_num );
+    sLog.White( "    Signal System", "Caught signal: %d", sig_num );
     EvE::traceStack();
     RunLoops = false;
 }

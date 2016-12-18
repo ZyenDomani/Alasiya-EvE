@@ -96,7 +96,7 @@ CorpRegistryBound::CorpRegistryBound(PyServiceMgr *mgr, CorporationDB& db, uint3
 PyResult CorpRegistryBound::Handle_CreateAlliance(PyCallArgs &call) {
     //self.GetCorpRegistry().CreateAlliance(allianceName, shortName, description, url)
 
-    sLog.Log("CorpRegistryBound", "Handle_CreateAlliance() size=%u", call.tuple->size() );
+    sLog.White("CorpRegistryBound", "Handle_CreateAlliance() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -104,7 +104,7 @@ PyResult CorpRegistryBound::Handle_CreateAlliance(PyCallArgs &call) {
 
 PyResult CorpRegistryBound::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
 
-    sLog.Log("CorpRegistryBound", "Handle_GetSuggestedAllianceShortNames() size=%u", call.tuple->size() );
+    sLog.White("CorpRegistryBound", "Handle_GetSuggestedAllianceShortNames() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -127,7 +127,7 @@ PyResult CorpRegistryBound::Handle_GetInfoWindowDataForChar( PyCallArgs& call )
 
 PyResult CorpRegistryBound::Handle_GetLockedItemLocations( PyCallArgs& call )
 {    //takes characterID
-    sLog.Log( "CorpRegistryService::Handle_GetLockedItemLocations()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_GetLockedItemLocations()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     //this returns an empty list for me on live.
@@ -244,7 +244,7 @@ bool CorpRegistryBound::JoinCorporation(Client *who, uint32 newCorpID, const Cor
 }
 
 PyResult CorpRegistryBound::Handle_GetMember(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_GetMember()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_GetMember()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -285,7 +285,7 @@ PyResult CorpRegistryBound::Handle_GetMembers(PyCallArgs &call) {
             [PyInt 3]
             */
 
-    sLog.Log( "CorpRegistryService::Handle_GetMember()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_GetMember()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -516,7 +516,7 @@ typedef enum {  //from eveConstants
 } CorpApplicationStatus;
 
 PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryBound::Handle_UpdateApplicationOffer()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryBound::Handle_UpdateApplicationOffer()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
     /** Incoming:
      *  Tuple
@@ -904,7 +904,7 @@ PyResult CorpRegistryBound::Handle_GetSharesByShareholder(PyCallArgs &call) {
      16:55:44 [SvcCall]     Argument 'machoVersion':
      16:55:44 [SvcCall]         Integer field: 1
 
-     sLog.Log( "CorpRegistryService::Handle_GetSharesByShareholder()", "size= %u", call.tuple->size() );
+     sLog.White( "CorpRegistryService::Handle_GetSharesByShareholder()", "size= %u", call.tuple->size() );
      call.Dump(CORP__CALL_DUMP);
 
      [PyObjectData Name: util.Rowset]
@@ -929,7 +929,7 @@ PyResult CorpRegistryBound::Handle_GetSharesByShareholder(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_GetShareholders(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_GetShareholders()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_GetShareholders()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -948,7 +948,7 @@ PyResult CorpRegistryBound::Handle_SetAccountKey(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryBound::Handle_PayoutDividend()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryBound::Handle_PayoutDividend()", "size= %u", call.tuple->size() );
 
     call.Dump(CORP__CALL_DUMP);
     return nullptr;
@@ -965,7 +965,7 @@ PyResult CorpRegistryBound::Handle_GetVoteCasesByCorporation(PyCallArgs &call) {
      22:47:43 [SvcCall]         [ 1] Integer field: 2
      22:47:43 [SvcCall]         [ 2] Integer field: 0
      */
-    sLog.Log( "CorpRegistryBound::Handle_GetVoteCasesByCorporation()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryBound::Handle_GetVoteCasesByCorporation()", "size= %u", call.tuple->size() );
 
     call.Dump(CORP__CALL_DUMP);
     return nullptr;

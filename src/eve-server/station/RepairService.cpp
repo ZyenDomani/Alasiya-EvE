@@ -105,7 +105,7 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
                     label = cfg.invtypes.Get(each.typeID).name + '<t>' + dmg + '<t>' + cst
                 */
 
-    sLog.Log( "RepairSvcBound::Handle_GetDamageReports()", "size= %u", call.tuple->size() );
+    sLog.White( "RepairSvcBound::Handle_GetDamageReports()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     Call_SingleIntList args;

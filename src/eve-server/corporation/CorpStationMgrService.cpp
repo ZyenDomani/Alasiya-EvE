@@ -203,7 +203,7 @@ PyResult CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(PyCallAr
      * 01:11:32 [SvcCallDump]         [ 0] Integer field: 1048576  (insurance)
      *
      *
-    sLog.Log( "CorpStationMgrIMBound::Handle_DoStandingCheckForStationService()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpStationMgrIMBound::Handle_DoStandingCheckForStationService()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
      */
@@ -595,7 +595,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
 
 PyResult CorpStationMgrIMBound::Handle_GetStationOffices( PyCallArgs& call )
 {
-    sLog.Log( "CorpStationMgrIMBound::Handle_GetStationOffices()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpStationMgrIMBound::Handle_GetStationOffices()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     //Hack: Just passing the client an empty PyList to stop it throwing an exception.
@@ -679,7 +679,7 @@ PyResult CorpStationMgrIMBound::Handle_GetStationOffices( PyCallArgs& call )
 
 PyResult CorpStationMgrIMBound::Handle_GetNumberOfUnrentedOffices( PyCallArgs &call )
 {
-    sLog.Log( "CorpStationMgrIMBound::Handle_GetNumberOfUnrentedOffices()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpStationMgrIMBound::Handle_GetNumberOfUnrentedOffices()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     //TODO: add handler that queries the data from the StationType struct.  Not exactly sure how to do this,
@@ -695,7 +695,7 @@ PyResult CorpStationMgrIMBound::Handle_GetCorporateStationOffice(PyCallArgs &cal
 14:09:26 [SvcCall]   Call Named Arguments:
 14:09:26 [SvcCall]     Argument 'machoVersion':
 14:09:26 [SvcCall]         Integer field: 1
-  sLog.Log( "CorpStationMgrIMBound::Handle_GetCorporateStationOffice()", "size= %u", call.tuple->size() );
+  sLog.White( "CorpStationMgrIMBound::Handle_GetCorporateStationOffice()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 */
     return new PyTuple(0);
@@ -703,7 +703,7 @@ PyResult CorpStationMgrIMBound::Handle_GetCorporateStationOffice(PyCallArgs &cal
 
 PyResult CorpStationMgrIMBound::Handle_MoveCorpHQHere(PyCallArgs &call)
 {
-  sLog.Log( "CorpStationMgrIMBound::Handle_MoveCorpHQHere()", "size= %u", call.tuple->size() );
+  sLog.White( "CorpStationMgrIMBound::Handle_MoveCorpHQHere()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return new PyTuple(0);
@@ -878,7 +878,7 @@ PyResult CorpStationMgrService::Handle_GetStationServiceStates(PyCallArgs &call)
      *                [PyInt 1]
      *    [PyNone]
      */
-  sLog.Log( "CorpStationMgrService::Handle_GetStationServiceStates()", "size= %u", call.tuple->size() );
+  sLog.White( "CorpStationMgrService::Handle_GetStationServiceStates()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return new PyTuple(0);

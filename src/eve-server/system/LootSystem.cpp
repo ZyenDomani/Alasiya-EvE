@@ -64,7 +64,7 @@ void DGM_Types_to_Wrecks_Table::_Populate()
 		m_WrecksToTypesMap.insert(std::pair<uint32, uint32>(typeID,wreckID));
     }
 
-    sLog.Yellow("     Wrecks Table", "%u wreck objects loaded in %.3fms.", m_WrecksToTypesMap.size(), (GetTimeUSeconds() - start));
+    sLog.Cyan("     Wrecks Table", "%u wreck objects loaded in %.3fms.", m_WrecksToTypesMap.size(), (GetTimeUSeconds() - start));
 
     //cleanup
     SafeDelete(res);
@@ -140,7 +140,7 @@ void DGM_Loot_Groups_Table::_Populate()
     //cleanup
     SafeDelete(res);
 
-    sLog.Yellow("       Loot Table", "%u loot group buckets and %u definitions loaded in %.3fms.",
+    sLog.Cyan("       Loot Table", "%u loot group buckets and %u definitions loaded in %.3fms.",
              (m_LootGroupMap.bucket_count() + m_LootGroupTypeMap.bucket_count()),
              (m_LootGroupMap.size() + m_LootGroupTypeMap.size()),
              (GetTimeUSeconds() - start));
@@ -230,7 +230,7 @@ void DGM_Salvage_Table::_Populate()
     //cleanup
     SafeDelete(res);
 
-    sLog.Yellow("    Salvage Table", "%u salvage definitions loaded in %.3fms.", m_SalvageMap.size(), (GetTimeUSeconds() - start));
+    sLog.Cyan("    Salvage Table", "%u salvage definitions loaded in %.3fms.", m_SalvageMap.size(), (GetTimeUSeconds() - start));
 }
 
 void DGM_Salvage_Table::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {
@@ -247,6 +247,6 @@ void DGM_Salvage_Table::GetSalvage(uint32 factionID, std::vector<uint32> &itemLi
 
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_salvageProfile, GetTimeUSeconds() - profileStartTime);
-    sLog.Log("     GetSalvage()", "Took %fus to iterate thru %u loops, with %u items returned for factionID %u",
+    sLog.White("     GetSalvage()", "Took %fus to iterate thru %u loops, with %u items returned for factionID %u",
              (GetTimeUSeconds() - start), m_SalvageMap.size(), itemList.size(), factionID);
 }

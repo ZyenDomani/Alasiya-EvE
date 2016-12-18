@@ -38,10 +38,6 @@ m_updateTimer(sConfig.rates.WebUpdate * 60000)	//15 mins
     m_updateTimer.Disable();
 }
 
-ConsoleCommand::~ConsoleCommand()
-{
-}
-
 void ConsoleCommand::Init(CommandDispatcher* cd, ItemFactory* itmf)
 {
     pCommand = cd;
@@ -51,8 +47,8 @@ void ConsoleCommand::Init(CommandDispatcher* cd, ItemFactory* itmf)
 	tv.tv_usec = 0;
 	UpdateStatus();	//initial status setting
     m_haltServer = false;
-    sLog.Success( "       ServerInit", "Console Commands Initialized." );
-    sLog.Yellow( "   ConsoleCommand", "Enter 'h' for current list of supported commands." );
+    sLog.Green( "       ServerInit", "Console Commands Initialized." );
+    sLog.Blue( "   ConsoleCommand", "Enter 'h' for current list of supported commands." );
 }
 
 bool ConsoleCommand::Process() {
@@ -78,7 +74,7 @@ bool ConsoleCommand::Process() {
 				free (buf);
 				return false;
 			} else if (strncmp(buf, "h", 1) == 0) {
-                sLog.Success("  Alasiya's EvEMu", "Current Console Commands and Descriptions: ");
+                sLog.Green("  Alasiya's EvEMu", "Current Console Commands and Descriptions: ");
 				sLog.Warning("","");
 				sLog.Warning("           (h)elp", " Displays this dialog.");
 				sLog.Warning("          h(e)llo", " Displays the 'Hello World' message.");
@@ -98,10 +94,10 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("        threa(d)s", " Prints a list of current threads.");
                 sLog.Warning("    reload (l)ogs", " Reloads log.ini to change values without restarting server.");
 			} else if (strncmp(buf, "e", 1) == 0) {
-				sLog.Success("  Alasiya's EvEMu", "Server Hello:");
+				sLog.Green("  Alasiya's EvEMu", "Server Hello:");
 				sLog.Magenta("      Server Says", " Hello World!" );
 			} else if (strncmp(buf, "c", 1) == 0) {
-                sLog.Success("  Alasiya's EvEMu", "Client Connection Information");
+                sLog.Green("  Alasiya's EvEMu", "Client Connection Information");
 				uint8 clients = sEntityList.GetClientCount();
                 sLog.Warning("      Connections", " %u Current Clients Online", clients);
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
@@ -129,44 +125,44 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
                 if (sConfig.server.UseProfiling)
-                    sLog.Success(" Server Profiling","Enabled.");
+                    sLog.Green(" Server Profiling","Enabled.");
                 else
 					sLog.Warning(" Server Profiling","Disabled.");
                 if (sConfig.npc.StaticSpawns)
-                    sLog.Success("    Static Spawns","Enabled.");
+                    sLog.Green("    Static Spawns","Enabled.");
                 else
 					sLog.Warning("    Static Spawns","Disabled.");
                 if (sConfig.npc.RoamingSpawns)
-                    sLog.Success("   Roaming Spawns","Enabled.");
+                    sLog.Green("   Roaming Spawns","Enabled.");
                 else
 					sLog.Warning("   Roaming Spawns","Disabled.");
                 if (sConfig.rates.secRate != 1.0)
-                    sLog.Success("        SecStatus","Enabled at %.0f%%.", (sConfig.rates.secRate *100) );
+                    sLog.Green("        SecStatus","Enabled at %.0f%%.", (sConfig.rates.secRate *100) );
                 else
 					sLog.Warning("        SecStatus","Normal.");
                 if (sConfig.rates.npcBountyMultiply != 1.0)
-                    sLog.Success("          Bountys","Enabled at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
+                    sLog.Green("          Bountys","Enabled at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
                 else
 					sLog.Warning("          Bountys","Normal.");
                 if (sConfig.rates.damageRate != 1.0)
-                    sLog.Success("      All Damages","Enabled at %.0f%%.", (sConfig.rates.damageRate *100) );
+                    sLog.Green("      All Damages","Enabled at %.0f%%.", (sConfig.rates.damageRate *100) );
                 else
 					sLog.Warning("      All Damages","Normal.");
                 if (sConfig.rates.missileRate != 1.0)
-                    sLog.Success("      Missile Dmg","Enabled at %.0f%%.", (sConfig.rates.missileRate *100) );
+                    sLog.Green("      Missile Dmg","Enabled at %.0f%%.", (sConfig.rates.missileRate *100) );
                 else
 					sLog.Warning("      Missile Dmg","Normal.");
                 if (sConfig.rates.turrentRate != 1.0)
-                    sLog.Success("      Turrent Dmg","Enabled at %.0f%%.", (sConfig.rates.turrentRate *100) );
+                    sLog.Green("      Turrent Dmg","Enabled at %.0f%%.", (sConfig.rates.turrentRate *100) );
                 else
                     sLog.Warning("      Turrent Dmg","Normal.");
 			} else if (strncmp(buf, "v", 1) == 0) {
-                sLog.Success("  Alasiya's EvEMu", "Server Version:");
+                sLog.Green("  Alasiya's EvEMu", "Server Version:");
                 sLog.Warning("     Server Build", " %.2f", EVE_Build );
                 sLog.Warning("  Server Revision", " %s", EVEMU_REVISION );
                 sLog.Warning("       Build Date", " %s", EVEMU_BUILD_DATE );
 			} else if (strncmp(buf, "i", 1) == 0) {
-                sLog.Success("  Alasiya's EvEMu", "Server Information:");
+                sLog.Green("  Alasiya's EvEMu", "Server Information:");
                 sLog.Warning("     Server Build", " %.2f", EVE_Build );
                 sLog.Warning("  Server Revision", " %s", EVEMU_REVISION );
                 sLog.Warning("       Build Date", " %s", EVEMU_BUILD_DATE );
@@ -205,16 +201,16 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
 			} else if (strncmp(buf, "a", 1) == 0) {
-                sLog.Success("  Alasiya's EvEMu", "Server SaveAll:");
+                sLog.Green("  Alasiya's EvEMu", "Server SaveAll:");
                 //sLog.Error("      Server Save", " Not Avalible Yet." );
 				pFactory->SaveItems();
 			} else if (strncmp(buf, "b", 1) == 0) {
-                sLog.Success("  Alasiya's EvEMu", "Server Broadcast:");
+                sLog.Green("  Alasiya's EvEMu", "Server Broadcast:");
                 sLog.Error(" Server Broadcast", " Not Avalible Yet." );
                 //const char* buff = buf +2;
 				//SendMessage(buff);
 			} else if (strncmp(buf, "n", 1) == 0) {
-                sLog.Success("  Alasiya's EvEMu", "Server Notify:");
+                sLog.Green("  Alasiya's EvEMu", "Server Notify:");
                 const char* buff = buf +2;
 				std::vector<Client*> list;
 				sEntityList.GetClients(list);
@@ -223,7 +219,7 @@ bool ConsoleCommand::Process() {
 				}
 				sLog.Warning("  Console Command", " Notification sent to all online clients." );
             } else if (strncmp(buf, "m", 1) == 0) {
-                sLog.Success("  Alasiya's EvEMu", "Server Modal Message:");
+                sLog.Green("  Alasiya's EvEMu", "Server Modal Message:");
                 const char* buff = buf +2;
                 std::vector<Client*> list;
                 sEntityList.GetClients(list);
@@ -232,7 +228,7 @@ bool ConsoleCommand::Process() {
                 }
                 sLog.Warning("  Console Command", " Modal Message sent to all online clients." );
             } else if (strncmp(buf, "p", 1) == 0) {
-                sLog.Success("  Alasiya's EvEMu", "Server Profile:");
+                sLog.Green("  Alasiya's EvEMu", "Server Profile:");
                 if (!sConfig.server.UseProfiling) {
                     sLog.Error("   Server Profile", "Profiling is turned off.");
                     return true;
@@ -254,7 +250,7 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
                 sProfile.PrintProfile();
             } else if (strncmp(buf, "r", 1) == 0) {
-                sLog.Success("  Alasiya's EvEMu", "Common Account Roles:");
+                sLog.Green("  Alasiya's EvEMu", "Common Account Roles:");
                 sLog.Warning("         ROLE_DEV", " %" PRIu64 "(%p)", ROLE_DEV, ROLE_DEV);
                 sLog.Warning("         ROLE_STD", " %" PRIu64 "(%p)", ROLE_STD, ROLE_STD);
                 sLog.Warning("         ROLE_VIP", " %" PRIu64 "(%p)", ROLE_VIP, ROLE_VIP);
@@ -263,8 +259,8 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("        ROLE_BOSS", " %" PRIu64 "(%p)", ROLE_BOSS, ROLE_BOSS);
                 sLog.Warning("       ROLE_SLASH", " %" PRIu64 "(%p)", ROLE_SLASH, ROLE_SLASH);
                 sLog.Warning("     ROLE_CREATOR", " %" PRIu64 "(%p)", ROLE_CREATOR, ROLE_CREATOR);
-                sLog.Log("", "");
-                sLog.Success("  Alasiya's EvEMu", "Common Corp Roles:");
+                sLog.White("", "");
+                sLog.Green("  Alasiya's EvEMu", "Common Corp Roles:");
                 sLog.Warning("         Role_All", " %" PRIu64 "(%p)", corpRoleAll, corpRoleAll);
                 sLog.Warning("        Role_Cont", " %" PRIu64 "(%p)", corpRoleAllContainer, corpRoleAllContainer);
                 sLog.Warning("       Role_Admin", " %" PRIu64 "(%p)", corpRoleAdmin, corpRoleAdmin);
@@ -289,7 +285,7 @@ bool ConsoleCommand::Process() {
                 sLog.InitializeLogging(sConfig.files.logDir);
                 */
                 if ( load_log_settings( sConfig.files.logSettings.c_str() ) )
-                    sLog.Success("  Alasiya's EvEMu", "Log settings reloaded from %s", sConfig.files.logSettings.c_str() );
+                    sLog.Green("  Alasiya's EvEMu", "Log settings reloaded from %s", sConfig.files.logSettings.c_str() );
                 else
                     sLog.Warning("  Alasiya's EvEMu", "Unable to reload settings from %s", sConfig.files.logSettings.c_str() );
 			} else {
@@ -381,7 +377,7 @@ void ConsoleCommand::MemStatus(float* vm_usage, float* resident_set)
 
 void ConsoleCommand::Test()
 {
-    sLog.Success("  Alasiya's EvEMu", "Server Test:");
+    sLog.Green("  Alasiya's EvEMu", "Server Test:");
     sLog.Error("     Allan\'s Test", "Not Avalible Yet.");
     /*
     DBQueryResult res;

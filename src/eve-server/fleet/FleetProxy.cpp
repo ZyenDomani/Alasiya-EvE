@@ -62,7 +62,7 @@ PyResult FleetProxyService::Handle_ApplyToJoinFleet(PyCallArgs &call) {
         ret = sm.ProxySvc('fleetProxy').ApplyToJoinFleet(fleetID)
         */
 
-    sLog.Log("FleetProxyService", "Handle_ApplyToJoinFleet() size=%u", call.tuple->size() );
+    sLog.White("FleetProxyService", "Handle_ApplyToJoinFleet() size=%u", call.tuple->size() );
 
     return NULL;
 }
@@ -72,21 +72,21 @@ PyResult FleetProxyService::Handle_AddFleetFinderAdvert(PyCallArgs &call) {
         sm.ProxySvc('fleetProxy').AddFleetFinderAdvert(info)
         */
 
-    sLog.Log("FleetProxyService", "Handle_AddFleetFinderAdvert() size=%u", call.tuple->size() );
+    sLog.White("FleetProxyService", "Handle_AddFleetFinderAdvert() size=%u", call.tuple->size() );
 
     return NULL;
 }
 
 PyResult FleetProxyService::Handle_RemoveFleetFinderAdvert(PyCallArgs &call) {
 
-    sLog.Log("FleetProxyService", "Handle_RemoveFleetFinderAdvert() size=%u", call.tuple->size() );
+    sLog.White("FleetProxyService", "Handle_RemoveFleetFinderAdvert() size=%u", call.tuple->size() );
 
     return NULL;
 }
 
 PyResult FleetProxyService::Handle_GetMyFleetFinderAdvert(PyCallArgs &call) {
 
-    sLog.Log("FleetProxyService", "Handle_GetMyFleetFinderAdvert() size=%u", call.tuple->size() );
+    sLog.White("FleetProxyService", "Handle_GetMyFleetFinderAdvert() size=%u", call.tuple->size() );
 
     return NULL;
 }
@@ -97,7 +97,7 @@ PyResult FleetProxyService::Handle_UpdateAdvertInfo(PyCallArgs &call) {
                 sm.ProxySvc('fleetProxy').UpdateAdvertInfo(numMembers)
                 */
 
-    sLog.Log("FleetProxyService", "Handle_UpdateAdvertInfo() size=%u", call.tuple->size() );
+    sLog.White("FleetProxyService", "Handle_UpdateAdvertInfo() size=%u", call.tuple->size() );
 
     return NULL;
 }

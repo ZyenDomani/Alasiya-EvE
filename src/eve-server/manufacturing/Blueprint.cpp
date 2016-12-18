@@ -243,7 +243,7 @@ void Blueprint::SetMaterialLevel(uint32 materialLevel) {
 
 bool Blueprint::AlterMaterialLevel(int32 materialLevelChange) {
     int32 new_material_level = m_materialLevel + materialLevelChange;
-    sLog.Log("Blueprint::AlterMaterialLevel", "ML Change of %u points for BP: %s(%u), from %u to %u", materialLevelChange, m_itemName.c_str(), m_itemID, m_materialLevel, new_material_level );
+    sLog.White("Blueprint::AlterMaterialLevel", "ML Change of %u points for BP: %s(%u), from %u to %u", materialLevelChange, m_itemName.c_str(), m_itemID, m_materialLevel, new_material_level );
     if(new_material_level < 0) {
         _log(ITEM__ERROR, "%s (%u): Tried to remove %u material levels while having %u levels.", m_itemName.c_str(), m_itemID, materialLevelChange, m_materialLevel);
         return false;
@@ -260,7 +260,7 @@ void Blueprint::SetProductivityLevel(int32 productivityLevel) {
 
 bool Blueprint::AlterProductivityLevel(int32 producitvityLevelChange) {
     int32 new_productivity_level = m_productivityLevel + producitvityLevelChange;
-    sLog.Log("Blueprint::AlterProductivityLevel", "PL Change of %u points for BP: %s(%u), from %u to %u", producitvityLevelChange, m_itemName.c_str(), m_itemID, m_productivityLevel, new_productivity_level );
+    sLog.White("Blueprint::AlterProductivityLevel", "PL Change of %u points for BP: %s(%u), from %u to %u", producitvityLevelChange, m_itemName.c_str(), m_itemID, m_productivityLevel, new_productivity_level );
 
     if(new_productivity_level < 0) {
         _log(ITEM__ERROR, "%s (%u): Tried to remove %u productivity levels while having %u levels.", m_itemName.c_str(), m_itemID, -producitvityLevelChange, m_productivityLevel);

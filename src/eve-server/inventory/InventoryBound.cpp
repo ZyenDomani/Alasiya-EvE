@@ -180,7 +180,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
      * 00:43:37 [SvcCall]         Integer field: 1
      * 00:43:37 L InventoryBound::Handle_CreateBookmarkVouchers(): 5 Vouchers created
      *
-     *  sLog.Log( "InventoryBound::Handle_CreateBookmarkVouchers()", "size= %u", call.tuple->size() );
+     *  sLog.White( "InventoryBound::Handle_CreateBookmarkVouchers()", "size= %u", call.tuple->size() );
      *  call.Dump(SERVICE__CALL_DUMP);
      *
      *      PyList *list = call.tuple->GetItem( 0 )->AsList();
@@ -209,7 +209,7 @@ i->Rename(row.GetText(0));
 snprintf(ci, sizeof(ci), "%u", bookmarkID);
 i->SetCustomInfo(ci);  //<- use this to set bookmarkID to DB.entity.customInfo
 }
-sLog.Log( "InventoryBound::Handle_CreateBookmarkVouchers()", "%u Vouchers created", list->size() );
+sLog.White( "InventoryBound::Handle_CreateBookmarkVouchers()", "%u Vouchers created", list->size() );
 //  when bm is copied to another players places tab, copy data from db using bookmarkID stored in ItemData.customInfo
 } else {
     sLog.Error( "InventoryBound::Handle_CreateBookmarkVouchers()", "%s: call.tuple->GetItem( 0 )->AsList()->size() == 0.  Expected size > 0.", call.client->GetName() );
@@ -225,7 +225,7 @@ sLog.Log( "InventoryBound::Handle_CreateBookmarkVouchers()", "%u Vouchers create
 
 PyResult InventoryBound::Handle_Voucher(PyCallArgs &call){
     _log(INV__MESSAGE, "Calling InventoryBound::Voucher() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    sLog.Log( "InventoryBound::Handle_Voucher()", "size= %u", call.tuple->size() );
+    sLog.White( "InventoryBound::Handle_Voucher()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     return nullptr;
 }
@@ -291,7 +291,7 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
 PyResult InventoryBound::Handle_StripFitting(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::StripFitting() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     if (sConfig.server.IsTestServer) {
-        sLog.Log( "InventoryBound::Handle_StripFitting()", "size= %u", call.tuple->size());
+        sLog.White( "InventoryBound::Handle_StripFitting()", "size= %u", call.tuple->size());
         call.Dump(SERVICE__CALL_DUMP);
     }
 
@@ -318,7 +318,7 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
 PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::SetPassword() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     if (sConfig.server.IsTestServer) {
-        sLog.Log( "InventoryBound::Handle_SetPassword()", "size= %u", call.tuple->size());
+        sLog.White( "InventoryBound::Handle_SetPassword()", "size= %u", call.tuple->size());
         call.Dump(SERVICE__CALL_DUMP);
     }
     return nullptr;
@@ -415,7 +415,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::MultiAdd() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     if (sConfig.server.IsTestServer) {
-        sLog.Log( "InventoryBound::Handle_MultiAdd()", "size= %u", call.tuple->size());
+        sLog.White( "InventoryBound::Handle_MultiAdd()", "size= %u", call.tuple->size());
         call.Dump(SERVICE__CALL_DUMP);
     }
     /*  called like this when dragging loaded charges from module in fit window to cargohold on ship

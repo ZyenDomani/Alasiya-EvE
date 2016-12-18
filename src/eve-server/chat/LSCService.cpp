@@ -1089,7 +1089,7 @@ PyResult LSCService::Handle_SendMessage( PyCallArgs& call )
 
         channel_id = (call.tuple->AsTuple()->items[0]->AsInt())->value();
         message = ((call.tuple->AsTuple()->items[1]->AsWString())->content());
-        sLog.Log( "LSCService", "Handle_SendMessage: call is either User-created chat message or bad packet.");
+        sLog.White( "LSCService", "Handle_SendMessage: call is either User-created chat message or bad packet.");
     }
     else
     {

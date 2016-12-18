@@ -92,7 +92,7 @@ PyBoundObject* PetitionerService::_CreateBoundObject( Client* c, const PyRep* bi
 PyResult PetitionerService::Handle_GetCategories( PyCallArgs& call )
 {
     uint8 size = call.tuple->size();
-    sLog.Log( "PetitionerService::Handle_GetCategories()", "size=%u ", size );
+    sLog.White( "PetitionerService::Handle_GetCategories()", "size=%u ", size );
 
     PyList* result = new PyList;
     result->AddItemString( "Test Cat" );
@@ -104,7 +104,7 @@ PyResult PetitionerService::Handle_GetCategories( PyCallArgs& call )
 PyResult PetitionerService::Handle_GetCategoryHierarchicalInfo( PyCallArgs& call )
 {
     uint8 size = call.tuple->size();
-    sLog.Log( "PetitionerService::Handle_GetCategoryHierarchicalInfo()", "size=%u ", size );
+    sLog.White( "PetitionerService::Handle_GetCategoryHierarchicalInfo()", "size=%u ", size );
 
     return new PyList;
 }

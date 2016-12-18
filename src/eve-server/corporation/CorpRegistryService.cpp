@@ -77,35 +77,35 @@ PyBoundObject* CorpRegistryService::_CreateBoundObject( Client* pClient, const P
 }
 
 PyResult CorpRegistryService::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_GetSuggestedAllianceShortNames()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_GetSuggestedAllianceShortNames()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
 }
 
 PyResult CorpRegistryService::Handle_CreateAlliance(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_CreateAlliance()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_CreateAlliance()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
 }
 
 PyResult CorpRegistryService::Handle_ApplyToJoinAlliance(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_ApplyToJoinAlliance()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_ApplyToJoinAlliance()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
 }
 
 PyResult CorpRegistryService::Handle_GetAllianceApplications(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_GetAllianceApplications()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_GetAllianceApplications()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
 }
 
 PyResult CorpRegistryService::Handle_DeleteAllianceApplication(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_DeleteAllianceApplication()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_DeleteAllianceApplication()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -113,7 +113,7 @@ PyResult CorpRegistryService::Handle_DeleteAllianceApplication(PyCallArgs &call)
 
 PyResult CorpRegistryService::Handle_GetRecentKillsAndLosses(PyCallArgs &call)
 {
-    sLog.Log( "CorpRegistryService::Handle_GetRecentKillsAndLosses()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_GetRecentKillsAndLosses()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -121,14 +121,14 @@ PyResult CorpRegistryService::Handle_GetRecentKillsAndLosses(PyCallArgs &call)
 
 
 PyResult CorpRegistryService::Handle_GetCorporateContacts(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_GetCorporateContacts()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_GetCorporateContacts()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
 }
 
 PyResult CorpRegistryService::Handle_AddCorporateContact(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
  /*    def AddCorporateContact(self, contactID, relationshipID):
@@ -138,7 +138,7 @@ PyResult CorpRegistryService::Handle_AddCorporateContact(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryService::Handle_EditCorporateContact(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_EditCorporateContact)", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_EditCorporateContact)", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
  /*    def EditCorporateContact(self, contactID, relationshipID):
@@ -148,7 +148,7 @@ PyResult CorpRegistryService::Handle_EditCorporateContact(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryService::Handle_RemoveCorporateContacts(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_RemoveCorporateContacts()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_RemoveCorporateContacts()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
  /*    def RemoveCorporateContacts(self, contactIDs):
@@ -158,7 +158,7 @@ PyResult CorpRegistryService::Handle_RemoveCorporateContacts(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryService::Handle_EditContactsRelationshipID(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_EditContactsRelationshipID()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_EditContactsRelationshipID()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
  /*    def EditContactsRelationshipID(self, contactIDs, relationshipID):
@@ -168,14 +168,14 @@ PyResult CorpRegistryService::Handle_EditContactsRelationshipID(PyCallArgs &call
 }
 
 PyResult CorpRegistryService::Handle_GetLabels(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_GetLabels()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_GetLabels()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
 }
 
 PyResult CorpRegistryService::Handle_CreateLabel(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_CreateLabel()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_CreateLabel()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
  /*    def CreateLabel(self, name, color = 0):
@@ -185,7 +185,7 @@ PyResult CorpRegistryService::Handle_CreateLabel(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryService::Handle_DeleteLabel(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_DeleteLabel()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_DeleteLabel()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
  /*    def DeleteLabel(self, labelID):
@@ -195,7 +195,7 @@ PyResult CorpRegistryService::Handle_DeleteLabel(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryService::Handle_EditLabel(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_EditLabel()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_EditLabel()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
  /*    def EditLabel(self, labelID, name = None, color = None):
@@ -205,7 +205,7 @@ PyResult CorpRegistryService::Handle_EditLabel(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryService::Handle_AssignLabels(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_AssignLabels()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_AssignLabels()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
  /*    def AssignLabels(self, contactIDs, labelMask):
@@ -215,7 +215,7 @@ PyResult CorpRegistryService::Handle_AssignLabels(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryService::Handle_RemoveLabels(PyCallArgs &call) {
-    sLog.Log( "CorpRegistryService::Handle_RemoveLabels()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryService::Handle_RemoveLabels()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
 /*

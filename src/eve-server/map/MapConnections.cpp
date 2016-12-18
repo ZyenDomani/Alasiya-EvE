@@ -52,5 +52,5 @@ void MapCon::PopulateConnections() {
         count++;
     }
 
-    sLog.Success("PopulateConnections()", "mapConnections Populated in %.3f s.  Please disable this function.", (GetTimeMSeconds() -starttime));
+    sLog.Green("PopulateConnections()", "mapConnections Populated in %.3f s.  Please disable this function.", (GetTimeMSeconds() -starttime));
 }

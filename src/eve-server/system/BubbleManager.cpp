@@ -1,4 +1,4 @@
-﻿/*
+/*
     ------------------------------------------------------------------------------------
     LICENSE:
     ------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ BubbleManager::~BubbleManager() {
 
 void BubbleManager::Init() {
     /* just to create the singleton here */
-    sLog.Success("   Bubble Manager", "Bubble Manager Initialized.");
+    sLog.Green("   Bubble Manager", "Bubble Manager Initialized.");
 }
 
 void BubbleManager::clear() {

@@ -60,7 +60,7 @@ void dgmtypeattributemgr::Init()
 
         entry->attributeset.push_back(attr_entry);
     }
-    sLog.Success("       ServerInit", "Loaded %u Attributes in the  Dogma Attribute Cache", amount);
+    sLog.Green("       ServerInit", "Loaded %u Attributes in the  Dogma Attribute Cache", amount);
 }
 
 void dgmtypeattributemgr::Close()

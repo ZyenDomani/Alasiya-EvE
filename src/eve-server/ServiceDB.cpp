@@ -35,7 +35,7 @@ uint32 ServiceDB::SetClientSeed()
     sDatabase.RunQuery(res, "SELECT ClientSeed FROM srvStatus WHERE AI = 1");
     DBResultRow row;
     res.GetRow(row);
-    sLog.Success( "       ServerInit", "ClientSeed Initialized." );
+    sLog.Green( "       ServerInit", "ClientSeed Initialized." );
     return row.GetInt(0);
 }
 

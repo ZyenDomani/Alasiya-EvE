@@ -263,7 +263,7 @@ PyResult ContractProxyService::Handle_SearchContracts(PyCallArgs &call) {
             [PyInt 1000]
               */
 
-    sLog.Log( "ContractProxyService::Handle_SearchContracts()", "size= %u", call.tuple->size() );
+    sLog.White( "ContractProxyService::Handle_SearchContracts()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -310,7 +310,7 @@ PyResult ContractProxyService::Handle_CreateContract(PyCallArgs &call) {
      */
 
 
-    sLog.Log( "ContractProxyService::Handle_CreateContract()", "size= %u", call.tuple->size() );
+    sLog.White( "ContractProxyService::Handle_CreateContract()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     // returns new contractID
@@ -319,7 +319,7 @@ PyResult ContractProxyService::Handle_CreateContract(PyCallArgs &call) {
 
 PyResult ContractProxyService::Handle_DeleteContract(PyCallArgs &call) {
     //  sends contractID to delete
-    sLog.Log( "ContractProxyService::Handle_DeleteContract()", "size= %u", call.tuple->size() );
+    sLog.White( "ContractProxyService::Handle_DeleteContract()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     /*
@@ -438,7 +438,7 @@ PyResult ContractProxyService::Handle_GetContract(PyCallArgs &call) {
     [PyNone]
     */
 
-    sLog.Log( "ContractProxyService::Handle_GetContract()", "size= %u", call.tuple->size() );
+    sLog.White( "ContractProxyService::Handle_GetContract()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -513,7 +513,7 @@ PyResult ContractProxyService::Handle_AcceptContract(PyCallArgs &call) {
      */
 
 
-    sLog.Log( "ContractProxyService::Handle_AcceptContract()", "size= %u", call.tuple->size() );
+    sLog.White( "ContractProxyService::Handle_AcceptContract()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -521,7 +521,7 @@ PyResult ContractProxyService::Handle_AcceptContract(PyCallArgs &call) {
 
 
 PyResult ContractProxyService::Handle_GetMyExpiredContractList(PyCallArgs &call) {
-  sLog.Log( "ContractProxyService::Handle_GetMyExpiredContractList()", "size= %u", call.tuple->size() );
+  sLog.White( "ContractProxyService::Handle_GetMyExpiredContractList()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 /*
       [PySubStream 530 bytes]
@@ -632,7 +632,7 @@ PyResult ContractProxyService::Handle_GetMyExpiredContractList(PyCallArgs &call)
 }
 
 PyResult ContractProxyService::Handle_NumOutstandingContracts(PyCallArgs &call) {
-    sLog.Log( "ContractProxyService::Handle_NumOutstandingContracts()", "size= %u", call.tuple->size() );
+    sLog.White( "ContractProxyService::Handle_NumOutstandingContracts()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     /*
       [PySubStream 87 bytes]
@@ -651,7 +651,7 @@ PyResult ContractProxyService::Handle_NumOutstandingContracts(PyCallArgs &call) 
 }
 
 PyResult ContractProxyService::Handle_GetItemsInStation(PyCallArgs &call) {
-    sLog.Log( "ContractProxyService::Handle_GetItemsInStation()", "size= %u", call.tuple->size() );
+    sLog.White( "ContractProxyService::Handle_GetItemsInStation()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     /*  client call
@@ -683,7 +683,7 @@ PyResult ContractProxyService::Handle_GetItemsInStation(PyCallArgs &call) {
 }
 
 PyResult ContractProxyService::Handle_CollectMyPageInfo(PyCallArgs &call) {
-    sLog.Log( "ContractProxyService::Handle_CollectMyPageInfo()", "size= %u", call.tuple->size() );
+    sLog.White( "ContractProxyService::Handle_CollectMyPageInfo()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     /*
      *      [PySubStream 279 bytes]
@@ -716,7 +716,7 @@ PyResult ContractProxyService::Handle_CollectMyPageInfo(PyCallArgs &call) {
 }
 
 PyResult ContractProxyService::Handle_GetContractListForOwner(PyCallArgs &call) {
-    sLog.Log( "ContractProxyService::Handle_GetContractListForOwner()", "size= %u", call.tuple->size() );
+    sLog.White( "ContractProxyService::Handle_GetContractListForOwner()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     /*
      *  client call....

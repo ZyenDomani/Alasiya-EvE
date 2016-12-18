@@ -59,7 +59,7 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
 }
 
 void Scan::RequestScans(PyDict* dict) {
-    sLog.Log( "Scan::RequestScans()", "called by %s in system %u, bubble %u", \
+    sLog.White( "Scan::RequestScans()", "called by %s in system %u, bubble %u", \
         m_client->GetName(), m_client->GetSystemID(), m_client->GetShipSE()->SysBubble()->GetID() );
 
     bool useProbe = false;

@@ -89,7 +89,7 @@ PyBoundObject* JumpCloneService::_CreateBoundObject( Client* c, const PyRep* bin
 }
 
 PyResult JumpCloneBound::Handle_InstallCloneInStation( PyCallArgs &call ) {
-  sLog.Log( "JumpCloneBound::Handle_InstallCloneInStation()", "size= %u", call.tuple->size() );
+  sLog.White( "JumpCloneBound::Handle_InstallCloneInStation()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
     PyRep *result = NULL;
 
@@ -99,7 +99,7 @@ PyResult JumpCloneBound::Handle_InstallCloneInStation( PyCallArgs &call ) {
 //11:46:15 JumpCloneBound::Handle_GetCloneState(): size= 0
 PyResult JumpCloneBound::Handle_GetCloneState(PyCallArgs &call) {
     /*
-  sLog.Log( "JumpCloneBound::Handle_GetCloneState()", "size= %u", call.tuple->size() );
+  sLog.White( "JumpCloneBound::Handle_GetCloneState()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
   */
 
@@ -128,7 +128,7 @@ PyResult JumpCloneBound::Handle_GetShipCloneState(PyCallArgs &call) {
     /* 00:24:21 [SvcCall] Service jumpCloneSvc: handling MachoBindObject request directly
      * 00:24:21 Server: Unknown call to 'GetShipCloneState' by 'Lee'
      */
-  sLog.Log( "JumpCloneService::Handle_GetShipCloneState()", "size=%u", call.tuple->size());
+  sLog.White( "JumpCloneService::Handle_GetShipCloneState()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;

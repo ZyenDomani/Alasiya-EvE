@@ -83,7 +83,7 @@ PyResult Standing::Handle_GetMyKillRights(PyCallArgs &call) {
 
 PyResult Standing::Handle_GetMyStandings(PyCallArgs &call) {
     /* still working on this one (cause i dont completely understand it yet) */
-  sLog.Log( "Standing::Handle_GetMyStandings()", "size= %u", call.tuple->size() );
+  sLog.White( "Standing::Handle_GetMyStandings()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *charstandings = m_db.GetCharStandings(call.client);
@@ -118,7 +118,7 @@ PyResult Standing::Handle_GetCharStandings(PyCallArgs &call) {
 }
 
 PyResult Standing::Handle_GetCorpStandings(PyCallArgs &call) {
-  sLog.Log( "Standing::Handle_GetCorpStandings()", "size= %u", call.tuple->size() );
+  sLog.White( "Standing::Handle_GetCorpStandings()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
     ObjectCachedSessionMethodID method_id(GetName(), "GetCorpStandings", call.client->GetCorporationID());
@@ -158,7 +158,7 @@ PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
     /**
      * data = sm.RemoteSvc('standing2').GetStandingTransactions(fromID, toID, direction, eventID, eventType, eventDateTime)
      */
-    sLog.Log( "Standing::Handle_GetStandingTransactions()", "size= %u", call.tuple->size() );
+    sLog.White( "Standing::Handle_GetStandingTransactions()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     Call_GetStandingTransactions args;
@@ -180,7 +180,7 @@ PyResult Standing::Handle_GetStandingCompositions(PyCallArgs &call) {
                     if each.ownerID == fromID:
                         prior = each.standing
 */
-    sLog.Log( "Standing::Handle_GetStandingCompositions()", "size= %u", call.tuple->size() );
+    sLog.White( "Standing::Handle_GetStandingCompositions()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     Call_GetStandingComposition args;

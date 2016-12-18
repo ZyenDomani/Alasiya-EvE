@@ -59,7 +59,7 @@ ImageServer::ImageServer()
             subdir.append(Categories[i]);
             CreateDirectory( subdir.c_str(), NULL );
         }
-        sLog.Success("      ImageServer", "Image Server Created directorys in %s", _basePath.c_str());
+        sLog.Green("      ImageServer", "Image Server Created directorys in %s", _basePath.c_str());
     } /* else directory probably exists */
 }
 
@@ -105,7 +105,7 @@ void ImageServer::ReportNewCharacter(uint32 creatorAccountID, uint32 characterID
     // and delete it from our limbo map
     _limboImages.erase(creatorAccountID);
 
-    sLog.Success("      ImageServer", "Received image from %u and saved as %s", creatorAccountID, path.c_str());
+    sLog.Green("      ImageServer", "Received image from %u and saved as %s", creatorAccountID, path.c_str());
 }
 
 std::tr1::shared_ptr<std::vector<char> > ImageServer::GetImage(std::string& category, uint32 id, uint32 size)

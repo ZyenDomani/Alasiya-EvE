@@ -91,7 +91,7 @@ void SpawnDataMgr::_Populate()
     SafeDelete(res);
     SafeDelete(res2);
 
-    sLog.Yellow("     SpawnDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fms.",
+    sLog.Cyan("     SpawnDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fms.",
              m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_regions.size(), (GetTimeUSeconds() - start));
 }
 
@@ -264,7 +264,7 @@ void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     if (!_FindSpawnForBubble(pSysBubble->GetID())) {
-        sLog.Success("SpawnMgr", "DoSpawnForBubble called for bubble %u in %s(%u)(%.4f). Main Timer enabled.",
+        sLog.Green("SpawnMgr", "DoSpawnForBubble called for bubble %u in %s(%u)(%.4f). Main Timer enabled.",
                      pSysBubble->GetID(), m_system->GetName().c_str(), m_system->GetID(), secRating);
         PrepSpawn(pSysBubble, regionID, secRating);
         pSysBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.

@@ -919,11 +919,11 @@ PyRep *Client::GetInfoWindowDataForChar(Client *pClient) {
 
 bool Client::LaunchDrone(InventoryItemRef drone) {
     if (!IsSolarSystem(m_locationID)) {
-        sLog.Log("Client::LaunchDrone()","%s: Trying to launch drone when not in space!",  m_char->itemName().c_str());
+        sLog.White("Client::LaunchDrone()","%s: Trying to launch drone when not in space!",  m_char->itemName().c_str());
         return false;
     }
 
-    sLog.Log("Client::LaunchDrone()","%s: Launching drone %u",  m_char->itemName().c_str(), drone->itemID());
+    sLog.White("Client::LaunchDrone()","%s: Launching drone %u",  m_char->itemName().c_str(), drone->itemID());
 
     drone->Move(m_locationID, flagAutoFit);
 
@@ -1523,7 +1523,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     mSession.SetULong("role", account_info.role);
     //mSession.SetLong("sessionID", mSession.CreateSessionID());
 
-    sLog.Success("  Client::Login()","Account \"%s\" logging in from IP %s", account_info.name.c_str() ,EVEClientSession::GetAddress().c_str());
+    sLog.Green("  Client::Login()","Account \"%s\" logging in from IP %s", account_info.name.c_str() ,EVEClientSession::GetAddress().c_str());
 
     return true;
 }
@@ -1871,7 +1871,7 @@ void Client::SendInfoModalMsg(const char* fmt, ...)
     assert(str);
 
     if (m_char)
-        sLog.Log("Client","Info Modal to %s:", m_char->itemName().c_str());
+        sLog.White("Client","Info Modal to %s:", m_char->itemName().c_str());
     log_messageVA(CLIENT__MESSAGE, fmt, args);
     va_end(args);
 
@@ -1898,7 +1898,7 @@ void Client::SendNotifyMsg(const char* fmt, ...)
     assert(str);
 
     if (m_char)
-        sLog.Log("Client","Notify to %s:", m_char->itemName().c_str());
+        sLog.White("Client","Notify to %s:", m_char->itemName().c_str());
     log_messageVA(CLIENT__MESSAGE, fmt, args);
     va_end(args);
 
@@ -1921,7 +1921,7 @@ void Client::SendNotifyMsg(const char* fmt, va_list args)
     assert(str);
 
     if (m_char)
-        sLog.Log("Client","Notify to %s:", m_char->itemName().c_str());
+        sLog.White("Client","Notify to %s:", m_char->itemName().c_str());
     log_messageVA(CLIENT__MESSAGE, fmt, args);
 
     //want to send some sort of notify with a "ServerMessage" message ID maybe?
@@ -1956,7 +1956,7 @@ void Client::SelfChatMessage(const char* fmt, ...)
     }
 
     if (m_char)
-        sLog.Log("Client","%s: Self message on all channels: %s", m_char->itemName().c_str(), str);
+        sLog.White("Client","%s: Self message on all channels: %s", m_char->itemName().c_str(), str);
 
     //this is such a pile of crap, but im not sure whats better.
     //maybe a private message...

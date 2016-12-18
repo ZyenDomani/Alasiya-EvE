@@ -127,7 +127,7 @@ PyBoundObject* PosMgrService::_CreateBoundObject( Client* c, const PyRep* bind_a
 
 PyResult PosMgrService::Handle_GetJumpArrays(PyCallArgs &call) {
     //        jb = sm.RemoteSvc('posMgr').GetJumpArrays()
-    sLog.Log( "PosMgrService::Handle_GetJumpArrays()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrService::Handle_GetJumpArrays()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
@@ -136,7 +136,7 @@ PyResult PosMgrService::Handle_GetJumpArrays(PyCallArgs &call) {
 PyResult PosMgrService::Handle_GetControlTowers(PyCallArgs &call) {
     //    ct = sm.RemoteSvc('posMgr').GetControlTowers()
 
-    sLog.Log( "PosMgrService::Handle_GetControlTowers()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrService::Handle_GetControlTowers()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
@@ -149,7 +149,7 @@ PyResult PosMgrService::Handle_UninstallJumpBridgeLink(PyCallArgs &call) {
      *        posLocation.UninstallJumpBridgeLink(itemID)
      *
      */
-    sLog.Log( "PosMgrService::Handle_UninstallJumpBridgeLink()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrService::Handle_UninstallJumpBridgeLink()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
@@ -162,14 +162,14 @@ PyResult PosMgrService::Handle_InstallJumpBridgeLink(PyCallArgs &call) {
      *        posLocation.InstallJumpBridgeLink(localItemID, remoteSolarSystemID, remoteItemID)
      *
      */
-    sLog.Log( "PosMgrService::Handle_InstallJumpBridgeLink()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrService::Handle_InstallJumpBridgeLink()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return NULL;
 }
 
 PyResult PosMgrService::Handle_GetControlTowerFuelRequirements(PyCallArgs &call) {
-    sLog.Log( "PosMgrService::Handle_GetControlTowerFuelRequirements()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrService::Handle_GetControlTowerFuelRequirements()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return m_db->GetControlTowerFuelRequirements();
@@ -182,7 +182,7 @@ PyResult PosMgrBound::Handle_GetMoonForTower( PyCallArgs &call ) {
 13:13:06 [SvcCall]       Tuple: 1 elements
 13:13:06 [SvcCall]         [ 0] Integer field: 140001260
 
-  sLog.Log( "PosMgrBound::Handle_GetMoonForTower()", "size= %u", call.tuple->size() );
+  sLog.White( "PosMgrBound::Handle_GetMoonForTower()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 */
   PyRep *result = NULL;
@@ -198,7 +198,7 @@ PyResult PosMgrBound::Handle_SetTowerPassword( PyCallArgs &call ) {
 13:10:09 [SvcCall]         [ 0] Integer field: 140001260    << shipID
 13:10:09 [SvcCall]         [ 1] WString: 'test'             << password
 
-  sLog.Log( "PosMgrBound::Handle_SetTowerPassword()", "size= %u", call.tuple->size() );
+  sLog.White( "PosMgrBound::Handle_SetTowerPassword()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 */
   PyRep *result = NULL;
@@ -213,7 +213,7 @@ PyResult PosMgrBound::Handle_SetShipPassword( PyCallArgs &call ) {
 13:16:17 [SvcCall]       Tuple: 1 elements
 13:16:17 [SvcCall]         [ 0] WString: 'test'             << password
 
-  sLog.Log( "PosMgrBound::Handle_SetShipPassword()", "size= %u", call.tuple->size() );
+  sLog.White( "PosMgrBound::Handle_SetShipPassword()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 */
 
@@ -223,7 +223,7 @@ PyResult PosMgrBound::Handle_SetShipPassword( PyCallArgs &call ) {
 }
 
 PyResult PosMgrBound::Handle_GetSiloCapacityByItemID(PyCallArgs &call) {
-  sLog.Log( "PosMgrBound::Handle_GetSiloCapacityByItemID()", "size=%u", call.tuple->size());
+  sLog.White( "PosMgrBound::Handle_GetSiloCapacityByItemID()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     uint32 itemID = 0;
@@ -235,7 +235,7 @@ PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
     /*  structure state is queried by StructureEntity::GetPOSState()
      *    state is saved in StructureEntity::m_state (POSState)
      */
-    sLog.Log( "PosMgrBound::Handle_AnchorStructure()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_AnchorStructure()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -244,7 +244,7 @@ PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
 }
 
 PyResult PosMgrBound::Handle_UnanchorStructure(PyCallArgs &call) {
-    sLog.Log( "PosMgrBound::Handle_UnanchorStructure()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_UnanchorStructure()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -259,7 +259,7 @@ PyResult PosMgrBound::Handle_AnchorOrbital(PyCallArgs &call) {
      *      posMgr.AnchorOrbital(itemID)
      */
 
-    sLog.Log( "PosMgrBound::Handle_()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -273,7 +273,7 @@ PyResult PosMgrBound::Handle_UnanchorOrbital(PyCallArgs &call) {
      *      posMgr = util.Moniker('posMgr', session.solarsystemid)
      *      posMgr.UnanchorOrbital(itemID)
      */
-    sLog.Log( "PosMgrBound::Handle_UnanchorOrbital()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_UnanchorOrbital()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -282,7 +282,7 @@ PyResult PosMgrBound::Handle_UnanchorOrbital(PyCallArgs &call) {
 }
 
 PyResult PosMgrBound::Handle_OnlineOrbital(PyCallArgs &call) {
-    sLog.Log( "PosMgrBound::Handle_OnlineOrbital()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_OnlineOrbital()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -296,7 +296,7 @@ PyResult PosMgrBound::Handle_GMUpgradeOrbital(PyCallArgs &call) {
      *      posMgr = util.Moniker('posMgr', session.solarsystemid)
      *      posMgr.GMUpgradeOrbital(itemID)
      */
-    sLog.Log( "PosMgrBound::Handle_GMUpgradeOrbital()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_GMUpgradeOrbital()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -305,7 +305,7 @@ PyResult PosMgrBound::Handle_GMUpgradeOrbital(PyCallArgs &call) {
 }
 
 PyResult PosMgrBound::Handle_AssumeStructureControl(PyCallArgs &call) {
-    sLog.Log( "PosMgrBound::Handle_AssumeStructureControl()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_AssumeStructureControl()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -314,7 +314,7 @@ PyResult PosMgrBound::Handle_AssumeStructureControl(PyCallArgs &call) {
 }
 
 PyResult PosMgrBound::Handle_ChangeStructureProvisionType(PyCallArgs &call) {
-    sLog.Log( "PosMgrBound::Handle_ChangeStructureProvisionType()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_ChangeStructureProvisionType()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -329,7 +329,7 @@ PyResult PosMgrBound::Handle_CompleteOrbitalStateChange(PyCallArgs &call) {
      *      posMgr.CompleteOrbitalStateChange(itemID)
      *
      */
-    sLog.Log( "PosMgrBound::Handle_CompleteOrbitalStateChange()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_CompleteOrbitalStateChange()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -338,7 +338,7 @@ PyResult PosMgrBound::Handle_CompleteOrbitalStateChange(PyCallArgs &call) {
 }
 
 PyResult PosMgrBound::Handle_SetTowerNotifications(PyCallArgs &call) {
-    sLog.Log( "PosMgrBound::Handle_SetTowerNotifications()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_SetTowerNotifications()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -347,7 +347,7 @@ PyResult PosMgrBound::Handle_SetTowerNotifications(PyCallArgs &call) {
 }
 
 PyResult PosMgrBound::Handle_SetTowerSentrySettings(PyCallArgs &call) {
-    sLog.Log( "PosMgrBound::Handle_SetTowerSentrySettings()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_SetTowerSentrySettings()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -672,7 +672,7 @@ PyResult PosMgrBound::Handle_SetTowerSentrySettings(PyCallArgs &call) {
 */
 
 PyResult PosMgrBound::Handle_GetMoonProcessInfoForTower(PyCallArgs &call) {
-    sLog.Log( "PosMgrBound::Handle_GetMoonProcessInfoForTower()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_GetMoonProcessInfoForTower()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -681,7 +681,7 @@ PyResult PosMgrBound::Handle_GetMoonProcessInfoForTower(PyCallArgs &call) {
 }
 
 PyResult PosMgrBound::Handle_LinkResourcesForTower(PyCallArgs &call) {
-    sLog.Log( "PosMgrBound::Handle_LinkResourcesForTower()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_LinkResourcesForTower()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -690,7 +690,7 @@ PyResult PosMgrBound::Handle_LinkResourcesForTower(PyCallArgs &call) {
 }
 
 PyResult PosMgrBound::Handle_RelinquishStructureControl(PyCallArgs &call) {
-    sLog.Log( "PosMgrBound::Handle_RelinquishStructureControl()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_RelinquishStructureControl()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -699,7 +699,7 @@ PyResult PosMgrBound::Handle_RelinquishStructureControl(PyCallArgs &call) {
 }
 
 PyResult PosMgrBound::Handle_RunMoonProcessCycleforTower(PyCallArgs &call) {
-    sLog.Log( "PosMgrBound::Handle_RunMoonProcessCycleforTower()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_RunMoonProcessCycleforTower()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
@@ -708,7 +708,7 @@ PyResult PosMgrBound::Handle_RunMoonProcessCycleforTower(PyCallArgs &call) {
 }
 
 PyResult PosMgrBound::Handle_SetStarbasePermissions(PyCallArgs &call) {
-    sLog.Log( "PosMgrBound::Handle_SetStarbasePermissions()", "size=%u", call.tuple->size());
+    sLog.White( "PosMgrBound::Handle_SetStarbasePermissions()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;

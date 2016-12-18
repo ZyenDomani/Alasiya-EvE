@@ -187,7 +187,7 @@ PyResult CorporationService::Handle_GetAllCorpMedals( PyCallArgs& call )
         return nullptr;
     }
 
-    sLog.Log( "CorporationService", "Called GetAllCorpMedals stub." );
+    sLog.White( "CorporationService", "Called GetAllCorpMedals stub." );
 
     PyList* res = new PyList;
 
@@ -218,7 +218,7 @@ PyResult CorporationService::Handle_GetRecruitmentAdTypes( PyCallArgs& call )
 {
     //no args
 
-    sLog.Log( "CorporationService", "Called GetRecruitmentAdTypes stub." );
+    sLog.White( "CorporationService", "Called GetRecruitmentAdTypes stub." );
 
     util_Rowset rs;
 
@@ -245,7 +245,7 @@ PyResult CorporationService::Handle_GetRecruitmentAdsByCriteria( PyCallArgs& cal
         return nullptr;
     }
 
-    sLog.Log( "CorporationService", "Called GetRecruitmentAdsByCriteria stub." );
+    sLog.White( "CorporationService", "Called GetRecruitmentAdsByCriteria stub." );
 
     util_Rowset rs;
 
@@ -273,7 +273,7 @@ PyResult CorporationService::Handle_GetRecruitmentAdRegistryData(PyCallArgs &cal
 
 PyResult CorporationService::Handle_IsEnemyFaction(PyCallArgs &call)
 {
-      sLog.Log( "CorporationService::Handle_IsEnemyFaction()", "size= %u", call.tuple->size() );
+      sLog.White( "CorporationService::Handle_IsEnemyFaction()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -291,7 +291,7 @@ PyResult CorporationService::Handle_GetVoteCasesByCorporation(PyCallArgs &call) 
 22:47:43 [SvcCall]     Argument 'machoVersion':
 22:47:43 [SvcCall]         Integer field: 1
 */
-      sLog.Log( "CorporationService::Handle_GetVoteCasesByCorporation()", "size= %u", call.tuple->size() );
+      sLog.White( "CorporationService::Handle_GetVoteCasesByCorporation()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -299,7 +299,7 @@ PyResult CorporationService::Handle_GetVoteCasesByCorporation(PyCallArgs &call) 
 
 PyResult CorporationService::Handle_AddCorporateContact(PyCallArgs &call)
 {
-      sLog.Log( "CorporationService::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
+      sLog.White( "CorporationService::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;

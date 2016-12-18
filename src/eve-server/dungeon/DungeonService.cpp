@@ -102,7 +102,7 @@ PyBoundObject *DungeonService::_CreateBoundObject(Client *c, const PyRep *bind_a
 
 PyResult DungeonService::Handle_DEGetRoomObjectPaletteData( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_DEGetRoomObjectPaletteData  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_DEGetRoomObjectPaletteData  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -110,7 +110,7 @@ PyResult DungeonService::Handle_DEGetRoomObjectPaletteData( PyCallArgs& call )
 
 PyResult DungeonService::Handle_IsObjectLocked( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_IsObjectLocked size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_IsObjectLocked size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -118,7 +118,7 @@ PyResult DungeonService::Handle_IsObjectLocked( PyCallArgs& call )
 
 PyResult DungeonService::Handle_TemplateRemove( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_TemplateRemove  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_TemplateRemove  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -126,7 +126,7 @@ PyResult DungeonService::Handle_TemplateRemove( PyCallArgs& call )
 
 PyResult DungeonService::Handle_GetArchetypes( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_GetArchetypes  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_GetArchetypes  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -134,7 +134,7 @@ PyResult DungeonService::Handle_GetArchetypes( PyCallArgs& call )
 
 PyResult DungeonService::Handle_RemoveObject( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_RemoveObject  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_RemoveObject  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -142,7 +142,7 @@ PyResult DungeonService::Handle_RemoveObject( PyCallArgs& call )
 
 PyResult DungeonService::Handle_EditObjectName( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_EditObjectName  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_EditObjectName  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -150,7 +150,7 @@ PyResult DungeonService::Handle_EditObjectName( PyCallArgs& call )
 
 PyResult DungeonService::Handle_CopyObject( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_CopyObject  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_CopyObject  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -158,7 +158,7 @@ PyResult DungeonService::Handle_CopyObject( PyCallArgs& call )
 
 PyResult DungeonService::Handle_EditObject( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_EditObject  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_EditObject  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -166,7 +166,7 @@ PyResult DungeonService::Handle_EditObject( PyCallArgs& call )
 
 PyResult DungeonService::Handle_EditObjectRadius( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_EditObjectRadius  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_EditObjectRadius  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -174,7 +174,7 @@ PyResult DungeonService::Handle_EditObjectRadius( PyCallArgs& call )
 
 PyResult DungeonService::Handle_EditObjectXYZ( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_EditObjectXYZ  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_EditObjectXYZ  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -182,7 +182,7 @@ PyResult DungeonService::Handle_EditObjectXYZ( PyCallArgs& call )
 
 PyResult DungeonService::Handle_EditObjectYawPitchRoll( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_EditObjectYawPitchRoll size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_EditObjectYawPitchRoll size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -190,7 +190,7 @@ PyResult DungeonService::Handle_EditObjectYawPitchRoll( PyCallArgs& call )
 
 PyResult DungeonService::Handle_DEGetFactions( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_DEGetFactions  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_DEGetFactions  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -208,7 +208,7 @@ PyResult DungeonService::Handle_DEGetDungeons( PyCallArgs& call )
     //       dungeonVName
     //       dungeonVID
 
-    sLog.Log( "DungeonService", "Handle_DEGetDungeons  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_DEGetDungeons  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -218,7 +218,7 @@ PyResult DungeonService::Handle_DEGetDungeons( PyCallArgs& call )
 
 PyResult DungeonService::Handle_DEGetTemplates( PyCallArgs& call )
 {
-    sLog.Log( "DungeonService", "Handle_DEGetTemplates  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_DEGetTemplates  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -232,7 +232,7 @@ PyResult DungeonService::Handle_DEGetRooms( PyCallArgs& call )
 
     //rows: roomName
 
-    sLog.Log( "DungeonService", "Handle_DEGetRooms  size: %u", call.tuple->size());
+    sLog.White( "DungeonService", "Handle_DEGetRooms  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;

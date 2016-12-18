@@ -48,7 +48,7 @@ UserService::~UserService() {
 PyResult UserService::Handle_GetRedeemTokens( PyCallArgs& call )
 {
     /*
-    sLog.Log( "UserService", "Handle_GetRedeemTokens" );
+    sLog.White( "UserService", "Handle_GetRedeemTokens" );
     call.Dump(SERVICE__CALL_DUMP);
      * ==================== Sent from Client 84 bytes
      *
@@ -158,7 +158,7 @@ PyResult UserService::Handle_GetCreateDate( PyCallArgs& call )
 
 PyResult UserService::Handle_ReportISKSpammer( PyCallArgs& call )
 {
-    sLog.Log( "UserService", "Handle_ReportISKSpammer" );
+    sLog.White( "UserService", "Handle_ReportISKSpammer" );
     call.Dump(CHARACTER__DEBUG);
 /**
         sm.RemoteSvc('userSvc').ReportISKSpammer(charID, channelID, spamEntries)

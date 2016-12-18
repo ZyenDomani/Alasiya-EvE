@@ -99,28 +99,28 @@ PyBoundObject *KeeperService::_CreateBoundObject(Client *c, const PyRep *bind_ar
 }
 
 PyResult KeeperBound::Handle_EditDungeon(PyCallArgs &call) {
-    sLog.Log( "KeeperBound", "Handle_EditDungeon  size: %u", call.tuple->size());
+    sLog.White( "KeeperBound", "Handle_EditDungeon  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
 }
 
 PyResult KeeperBound::Handle_PlayDungeon(PyCallArgs &call) {
-    sLog.Log( "KeeperBound", "Handle_PlayDungeon  size: %u", call.tuple->size());
+    sLog.White( "KeeperBound", "Handle_PlayDungeon  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
 }
 
 PyResult KeeperBound::Handle_Reset(PyCallArgs &call) {
-    sLog.Log( "KeeperBound", "Handle_Reset  size: %u", call.tuple->size());
+    sLog.White( "KeeperBound", "Handle_Reset  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
 }
 
 PyResult KeeperBound::Handle_GotoRoom(PyCallArgs &call) {
-    sLog.Log( "KeeperBound", "Handle_GotoRoom  size: %u", call.tuple->size());
+    sLog.White( "KeeperBound", "Handle_GotoRoom  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -128,7 +128,7 @@ PyResult KeeperBound::Handle_GotoRoom(PyCallArgs &call) {
 
 
 PyResult KeeperService::Handle_GetLevelEditor(PyCallArgs &call) {
-    sLog.Log( "KeeperService", "Handle_GetLevelEditor  size: %u", call.tuple->size());
+    sLog.White( "KeeperService", "Handle_GetLevelEditor  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     PyRep *result = NULL;
 
@@ -150,7 +150,7 @@ PyResult KeeperService::Handle_CanWarpToPathPlex(PyCallArgs &call) {
                         dist = (foo.Vector3(resp) - foo.Vector3(me.x, me.y, me.z)).Length()
 
                         */
-    sLog.Log( "KeeperService", "Handle_CanWarpToPathPlex  size: %u", call.tuple->size());
+    sLog.White( "KeeperService", "Handle_CanWarpToPathPlex  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
 	return nullptr;
@@ -159,7 +159,7 @@ PyResult KeeperService::Handle_CanWarpToPathPlex(PyCallArgs &call) {
 /**  Hard-coded to random location....just to play with right now.
 		will need to edit later to implement in missions/etc  */
 PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
-    sLog.Log( "KeeperService", "Handle_ActivateAccelerationGate  size: %u", call.tuple->size());
+    sLog.White( "KeeperService", "Handle_ActivateAccelerationGate  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
     PyRep *result = NULL;
