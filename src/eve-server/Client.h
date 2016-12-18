@@ -28,7 +28,6 @@
 #ifndef EVE_CLIENT_H
 #define EVE_CLIENT_H
 
-//#include "eve-server.h"
 #include "ClientSession.h"
 
 #include "character/Character.h"
@@ -65,12 +64,6 @@ class Client
   protected EVEPacketDispatcher
 {
 public:
-    typedef enum {
-        msIdle,
-        msJump,
-        msUndock
-    } MoveState;
-
     Client(PyServiceMgr &services, EVETCPConnection** con);
     virtual ~Client();
 
@@ -145,7 +138,6 @@ public:
     // misc char functions
     void WarpIn();
     void WarpOut();
-    void SetJumpTimers();
     void SetShip(ShipItemRef shipRef);
     void CreateNewPod();
     void PickAlternateShip();
@@ -157,7 +149,7 @@ public:
     void MoveToLocation(uint32 location, const GPoint &pt);
     void MoveToPosition(const GPoint &pt);
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
-    void SetMove(MoveState type, uint32 wait_ms=500);
+    void SetClientTimer(ClientState type, uint32 wait_ms=ClientTimers::DefaultTimer);
     void SetDestiny(bool count=false);
     void SavePosition();
     void SaveAllToDatabase();
@@ -180,13 +172,13 @@ public:
     //destiny stuff...
     void SetDockStationID(uint32 stationID)             { m_dockStationID = stationID; };
     void SetDockPoint(GPoint &pt)                       { m_dockPoint = pt; }
-    void StartDockTimer()                               { m_dockTimer.Start(sConfig.world.StationDockDelay *1000); } // default @ 5sec
     uint32 GetDockStationID()                           { return m_dockStationID; };
     GPoint GetDockPoint()                               { return m_dockPoint; }
     bool InPod()                                        { return (m_ship->groupID() == EVEDB::invGroups::Capsule ? true : false); }
     bool IsInSpace()                                    { return (IsSolarSystem(m_locationID) ? true : false); }
     bool IsDocked()                                     { return (IsStation(m_locationID) ? true : false); }
-    bool IsJump()                                       { return (m_moveState == msJump ? true : false); }
+    bool IsDock()                                       { return (m_clientState == ClientState::csDock ? true : false); }
+    bool IsJump()                                       { return (m_clientState == ClientState::csJump ? true : false); }
     bool IsInvul()                                      { return m_invul; }
     bool IsLogin()                                      { return m_login; }
     bool IsUndock()                                     { return m_undock; }
@@ -195,7 +187,6 @@ public:
     bool IsSetStateSent()                               { return m_setStateSent; }
     bool IsSessionChange()                              { return m_sessionChangeActive; }
 
-    void SetJump(MoveState state = msIdle)              { m_moveState = state; }
     void SetInvul(bool invul=false)                     { m_invul = invul; }
     void SetUndock(bool undock=false)                   { m_undock = undock; }
     void SetBeyonce(bool beyonce=false)                 { m_beyonce = beyonce; }
@@ -206,12 +197,11 @@ public:
     void SetBallPark();
     void SetAutoPilot(bool=false);
     void StargateJump(uint32 fromGate, uint32 toGate);
-    void StartKilledTimer();
 
     //jetcan timer
     bool IsJetcanAvalible();
     uint32 JetcanTime()                                 { return m_jetcanTimer.GetRemainingTime(); }
-    void StartJetcanTimer()                             { m_jetcanTimer.Start(180000); }
+    void StartJetcanTimer()                             { m_jetcanTimer.Start(ClientTimers::JetcanTimer); }
 
     //messages and LSC
     void SendErrorMsg(const char *fmt, ...);
@@ -296,16 +286,13 @@ protected:
     uint32 m_moveSystemID;  // holder for jumping to 'systemID'.    timer based.
     uint32 m_dockStationID; // holder for docking to 'stationID'.  timer based.
 
-    Timer m_dockTimer;      // Timer to delay docking (as on live)
-    Timer m_jumpTimer;
-    Timer m_moveTimer;
+    Timer m_stateTimer;      // state timer to consolidate timers
     Timer m_pingTimer;
     Timer m_scanTimer;       // used to delay scan results based on skills, items, and other shit
     Timer m_cloakTimer;
     Timer m_invulTimer;
     Timer m_clientTimer;     // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
     Timer m_jetcanTimer;     // used to delay jetcan creation.  3min default
-    Timer m_killedTimer;     // used to reset destiny set state after killed or otherwise changing ships
     Timer m_logoutTimer;     // used to hold client object until WarpOut finishes
     Timer m_sessionTimer;    // used to prevent multiple session changes from occuring too fast
 
@@ -317,7 +304,7 @@ protected:
 
     EvilNumber              m_timeEndTrain;
 
-    MoveState               m_moveState;
+    ClientState             m_clientState;
 
     /********************************************************************/
     /* EVEClientSession interface                                       */

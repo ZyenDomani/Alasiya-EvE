@@ -486,8 +486,6 @@ int main( int argc, char* argv[] )
     //sLog.Warning("server init", "Adding NPC Market Orders.");
     //NPCMarket::CreateNPCMarketFromFile("/etc/npcMarket.xml");
 
-    srand(Win32TimeNow());
-
     /* program events system */
     SetupSignals();
 

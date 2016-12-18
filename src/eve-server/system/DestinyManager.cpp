@@ -1503,7 +1503,7 @@ void DestinyManager::GotoPoint(const GPoint& point) {
     SendSingleDestinyUpdate(&up);    //consumed
 }
 
-void DestinyManager::WarpTo(const GPoint where, int32 distance) {
+void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
     /* warp order..
      * pick destination -> align/accel -> aura "warp drive active" -> cap drain -> accel
      *      -> enter warp -> warp -> decel -> leave warp -> coast -> stop
@@ -1739,7 +1739,7 @@ PyResult DestinyManager::AttemptDockOperation() {
             throw PyException(MakeUserError("DockingApproach"));
     }
 
-    pClient->StartDockTimer();
+    pClient->SetClientTimer(ClientState::csDock, sConfig.world.StationDockDelay *1000); // default @ 5sec();
 
     return new PyNone();
 }
@@ -1871,6 +1871,8 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
 
     //TimeToWarp = -ln(0.25) x Mass Mkg x Inertia Mod
     m_alignTime = (-log(0.25) * m_shipAgility);
+    float alignTime = ((log(2) * m_shipInertia * m_mass) / 500000);
+    _log(DESTINY__ERROR, "Destiny::SetShipCapabilities() - alignTime 1 = %f, alignTime 2 = %f", m_alignTime, alignTime);
     m_timeToEnterWarp = m_alignTime;
 
     if (!mySE->HasPilot())

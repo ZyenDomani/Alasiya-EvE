@@ -176,12 +176,12 @@ double EvE::min(double x, double y)
     return ((x < y) ? x : y);
 }
 
-uint64 EvE::max(int64 x)
+uint64 EvE::max(int64 x, int64 y)
 {
-    return ((x > 0) ? x : 0);
+    return ((x > y) ? x : y);
 }
 
-double EvE::max(double x)
+double EvE::max(double x, double y)
 {
-    return ((x > 0) ? x : 0);
+    return ((x > y) ? x : y);
 }

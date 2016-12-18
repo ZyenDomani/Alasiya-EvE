@@ -56,19 +56,16 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_system(nullptr),
   m_services(services),
   m_movePoint(NULL_ORIGIN),
-  m_moveState(msIdle),
-  m_dockTimer(1000),  // dock acceptance timer at 1sec
-  m_jumpTimer(2000),
-  m_moveTimer(1000),
+  m_clientState(ClientState::csIdle),
+  m_stateTimer(ClientTimers::MovingTimer),
   m_pingTimer(PING_INTERVAL_US),
-  m_scanTimer(10000),
-  m_cloakTimer(10000),
-  m_invulTimer(10000),
-  m_killedTimer(3000),
-  m_clientTimer(1000),
-  m_logoutTimer(1000),
-  m_jetcanTimer(180000),
-  m_sessionTimer(10000),
+  m_scanTimer(ClientTimers::ScanningTimer),
+  m_cloakTimer(ClientTimers::LoginCloak),
+  m_invulTimer(ClientTimers::RestoringInvul),
+  m_clientTimer(ClientTimers::ProcTimer),
+  m_logoutTimer(ClientTimers::LogoutTimer),
+  m_jetcanTimer(ClientTimers::JetcanTimer),
+  m_sessionTimer(ClientTimers::SessionTimer),
   m_destinyEventQueue(new PyList()),
   m_destinyUpdateQueue(new PyList()),
   m_nextNotifySequence(0)
@@ -77,13 +74,10 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_ship = ShipItemRef();
 
     m_pingTimer.Start();
-    m_dockTimer.Disable();
-    m_jumpTimer.Disable();
-    m_moveTimer.Disable();
+    m_stateTimer.Disable();
     m_scanTimer.Disable();
     m_cloakTimer.Disable();
     m_invulTimer.Disable();
-    m_killedTimer.Disable();
     m_clientTimer.Disable();
     m_logoutTimer.Disable();
     m_jetcanTimer.Disable();
@@ -195,6 +189,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
 
     /** @todo any 'return false' will need to remove client from sysMgr to avoid segfault when sEntityList.ProcessClient() is called on it.  */
+
     if (!m_system) {
         sLog.Error("Client::LoginToSystem()", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->itemName().c_str(), m_char->itemID());
         SendErrorMsg("Unable to boot system %u", m_SystemData.systemID);
@@ -262,17 +257,9 @@ void Client::ProcessClient() {
     }
 
     if (IsStation(m_locationID)) {
-        if (m_killedTimer.Enabled())
-            m_killedTimer.Disable();
         if (sConfig.server.UseProfiling)
             sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
         return;
-    }
-
-    if (m_killedTimer.Check(false)) {
-        _log(CLIENT__TRACE, "Client::ProcessClient():  setKilled to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
-        m_killedTimer.Disable();
-        SetBallPark();
     }
 
     if (pShipSE->DestinyMgr()->IsCloaked() and m_cloakTimer.Check(false)) {
@@ -287,32 +274,30 @@ void Client::ProcessClient() {
         SetInvul(false);
     }
 
-    if (m_moveTimer.Check(false)) {
-        m_moveTimer.Disable();
-        switch (m_moveState) {
-            case msIdle: {
+    if (m_stateTimer.Check(false)) {
+        m_stateTimer.Disable();
+        switch (m_clientState) {
+            case csIdle: {
                 sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
             } break;
-            case msUndock: {
-                _log(CLIENT__TRACE, "Client::ProcessClient():  case: msUndock");
+            case csUndock: {
+                _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csUndock");
                 SetBallPark();
-                m_moveState = msIdle;
             } break;
-            case msJump: {
-                _log(CLIENT__TRACE, "Client::ProcessClient():  case: msJump");
+            case csJump: {
+                _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csJump");
                 _ExecuteJump();
+            } break;
+            case csDock: {
+                _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csDock");
+                DockToStation();
+            } break;
+            case csKilled: {
+                _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csKilled");
+                SetBallPark();
             } break;
         }
     }
-
-    /*
-    if (IsJump() and m_jumpTimer.Check(false)) {
-        // look into removing this and setting it as a _MoveState instead of *ANOTHER* timer check...
-        m_jumpTimer.Disable();
-        m_moveState = msIdle;
-        SetBallPark();
-    }
-    */
 
     if (m_scanTimer.Check(false)) {
         m_scanTimer.Disable();
@@ -326,11 +311,6 @@ void Client::ProcessClient() {
         m_ship->SaveShip();
     }
     */
-
-    if (m_dockTimer.Enabled() and m_dockTimer.Check(false)) {
-        m_dockTimer.Disable();
-        DockToStation();
-    }
 
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
@@ -347,8 +327,8 @@ void Client::SetDestiny(bool count) {
         m_system->AddEntity(pShipSE);
         m_bubbleWait = false;
         m_setStateSent = false;
-        if (m_beyonce)
-            return;
+        //if (m_beyonce)
+        //    return;
         if (!m_login)
             SetBallPark();
     } else
@@ -362,7 +342,7 @@ void Client::WarpIn() {
     m_ship->SetCustomInfo(ci);
     if (!InPod())
         m_ship->SetFlag(flagAutoFit, false);
-    m_invulTimer.Start(/*InvulTimer::*/WarpingInInvul);
+    m_invulTimer.Start(ClientTimers::WarpingInInvul);
     return;
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
     /** @todo  when implemented, make sure we move the ship item, if needed....check this  */
@@ -382,7 +362,7 @@ void Client::WarpOut() {
         m_ship->SetFlag(flagShipOffline, false);
     m_system->RemoveEntity(pShipSE);
     return;
-    m_invulTimer.Start(/*InvulTimer::*/WarpingOutInvul);
+    m_invulTimer.Start(ClientTimers::WarpingOutInvul);
     // We are logging out, so we need to warp to a random spot 1Mm away:
     GPoint warpToPoint(m_ship->position());
     warpToPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
@@ -486,8 +466,8 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (m_char->flag() != flagPilot)
             m_char->Move(m_shipId, flagPilot, false);
 
-        MoveToPosition(pt);
         SetDestiny(!m_undock);
+        MoveToPosition(pt);
 
         if (m_login)
             WarpIn();
@@ -533,8 +513,8 @@ void Client::UndockFromStation() {
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     m_ship->Undock();
     OnCharNoLongerInStation();
-    SetMove(msUndock, 500);
-    m_invulTimer.Start(/*InvulTimer::*/UndockingInvul);
+    SetClientTimer(ClientState::csUndock, ClientTimers::DefaultTimer);
+    m_invulTimer.Start(ClientTimers::UndockingInvul);
     SetSessionTimer();
     //SetBallPark();
 }
@@ -547,6 +527,7 @@ void Client::SetBallPark() {
         pShipSE->DestinyMgr()->Undock(m_movePoint);
     if (!m_setStateSent)
         pShipSE->DestinyMgr()->SendSetState();
+    m_clientState = csIdle;
 }
 
 void Client::DockToStation() {
@@ -554,6 +535,7 @@ void Client::DockToStation() {
 
     SetAutoPilot(false);
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
+    m_clientState = csIdle;
     m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls
 
     //Check if player is in pod, in which case they get a rookie ship for free
@@ -664,10 +646,6 @@ void Client::SetPodItem() {
         m_pod = m_services.item_factory->GetShip(m_char->capsuleID());
 }
 
-void Client::StartKilledTimer() {
-    m_killedTimer.Start(1000);
-}
-
 bool Client::IsJetcanAvalible() {
     if (m_jetcanTimer.Enabled())
         return (m_jetcanTimer.Check(false));
@@ -708,7 +686,7 @@ void Client::SetAutoPilot(bool autoPilot /*false*/) {
 }
 
 void Client::StargateJump(uint32 fromGate, uint32 toGate) {
-    if ((m_moveState != msIdle) || m_moveTimer.Enabled()) {
+    if ((m_clientState != csIdle) or m_stateTimer.Enabled()) {
         sLog.Error("Client","%s: StargateJump called when a jump is already pending. Ignoring.", m_char->itemName().c_str());
         return;
     }
@@ -750,13 +728,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     pShipSE->DestinyMgr()->SendGateActivity(fromGate);
 
     //delay the move 5sec so they can see the JumpOut animation
-    SetMove(msJump, 5000);
-}
-
-void Client::SetMove(Client::MoveState type, uint32 wait_ms)
-{
-    m_moveState = type;
-    m_moveTimer.Start(wait_ms);
+    SetClientTimer(ClientState::csJump, ClientTimers::JumpingTimer);
 }
 
 void Client::_ExecuteJump() {
@@ -765,18 +737,15 @@ void Client::_ExecuteJump() {
     m_beyonce = m_setStateSent = false;
 
     MoveToLocation(m_moveSystemID, m_movePoint);
-    pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
     pShipSE->DestinyMgr()->Cloak();
+    pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
 
-    m_cloakTimer.Start(10000);
-    m_invulTimer.Start(/*InvulTimer::*/JumpingInvul);
-    //m_jumpTimer.Start(500);
+    m_cloakTimer.Start(ClientTimers::JumpingCloak);
+    m_invulTimer.Start(ClientTimers::JumpingInvul);
 
     m_toGate = 0;
+    m_clientState = ClientState::csIdle;
     m_movePoint = NULL_ORIGIN;
-}
-
-void Client::SetJumpTimers() {
 }
 
 bool Client::AddBalance(double amount) {
@@ -794,9 +763,10 @@ bool Client::AddBalance(double amount) {
     return true;
 }
 
-void Client::PickAlternateShip() {
-    if (m_char)
-        m_shipId = m_char->PickAlternateShip(m_locationID);
+void Client::SetClientTimer(ClientState type, uint32 wait_ms)
+{
+    m_clientState = type;
+    m_stateTimer.Start(wait_ms);
 }
 
 void Client::SetShip(ShipItemRef shipRef) {
@@ -804,6 +774,11 @@ void Client::SetShip(ShipItemRef shipRef) {
     m_shipId = shipRef->itemID();
     if (m_char)
         m_char->SetActiveShip(m_shipId);
+}
+
+void Client::PickAlternateShip() {
+    if (m_char)
+        m_shipId = m_char->PickAlternateShip(m_locationID);
 }
 
 void Client::CreateNewPod() {

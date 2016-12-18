@@ -7,6 +7,7 @@
 #ifndef EVE_DEFINES_H
 #define EVE_DEFINES_H
 
+
 //  defines based on itemID, per client
 #define maxNonCapitalModuleSize 500
 
@@ -28,10 +29,16 @@
 #define maxAgent                3999999
 #define minRegion               10000000
 #define maxRegion               19999999
+#define minWHRegion             11000000
+#define maxWHRegion             11999999
 #define minConstellation        20000000
 #define maxConstellation        29999999
+#define minWHConstellation      21000000
+#define maxWHConstellation      21999999
 #define minSolarSystem          30000000
 #define maxSolarSystem          39999999
+#define minWHSolarSystem        31000000
+#define maxWHSolarSystem        31999999
 #define minValidLocation        30000000
 #define minValidShipLocation    30000000
 #define minUniverseCelestial    40000000

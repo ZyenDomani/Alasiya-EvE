@@ -704,7 +704,7 @@ void Ship::Killed(Damage &fatal_blow) {
         m_destiny->SendJettisonPacket();
         m_destiny->SendTerminalExplosion(oldShipItemID, m_bubble->GetID());
         pPilot->BoardShip(podRef);
-        pPilot->StartKilledTimer();
+        pPilot->SetClientTimer(ClientState::csKilled, ClientTimers::KilledTimer);
         m_services.item_factory->UnsetUsingClient();
         deadShipRef->Delete();
         m_system->RemoveEntity(this);

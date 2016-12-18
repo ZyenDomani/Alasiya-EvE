@@ -267,16 +267,6 @@ typedef enum {
 
 //  -allan 7Jul14
 typedef enum {
-    WH_RegionMin           = 11000000,
-    WH_RegionMax           = 11999999,
-    WH_ConstellationMin    = 21000000,
-    WH_ConstellationMax    = 21999999,
-    WH_SystemMin           = 31000000,
-    WH_SystemMax           = 31999999
-} mapWormholeValues;
-
-//  -allan 7Jul14
-typedef enum {
     MissionAllocated    = 0,
     MissionOffered      = 1,
     MissionAccepted     = 2,
@@ -290,15 +280,36 @@ typedef enum {
     DungeonFailed       = 2
 } DungeonState;
 
-//  -allan 7Jul14
-typedef enum {
+//  -updated 18Dec16
+enum ClientTimers {
+    DefaultTimer     = 500,
+    DockingTimer     = 1000,     // Timer to delay docking (as on live)
+    JumpingTimer     = 2000,
+    MovingTimer      = 1000,
+    ScanningTimer    = 10000,      // used to delay scan results based on skills, items, and other shit
+    KilledTimer      = 3000,    // used to reset destiny set state after killed or otherwise changing ships
+    ProcTimer        = 1000,     // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
+    JetcanTimer      = 180000,     // used to delay jetcan creation.  3min default
+    LogoutTimer      = 1000,    // used to hold client object until WarpOut finishes
+    SessionTimer     = 10000,   // used to prevent multiple session changes from occuring too fast
     DockingInvul     = 3000,
     JumpingInvul     = 5000,
     WarpingOutInvul  = 5000,
     WarpingInInvul   = 10000,
     UndockingInvul   = 15000,
-    RestoringInvul   = 60000
-} InvulTimer;
+    RestoringInvul   = 60000,
+    JumpingCloak     = 10000,
+    LoginCloak       = 15000
+};
+
+enum ClientState {
+    csIdle = 1,
+    csJump = 2,
+    csDock = 3,
+    csUndock = 4,
+    csKilled = 5,
+    csLogout = 6
+};
 
 //  -allan 7Jul14
 typedef enum {

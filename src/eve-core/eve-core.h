@@ -133,7 +133,6 @@
 #   include <windows.h>
 #else /* !HAVE_WINDOWS_H */
 #   include <dirent.h>
-#   include <execinfo.h>
 #   include <pthread.h>
 #endif /* !HAVE_WINDOWS_H */
 

@@ -321,7 +321,7 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
         p_targetClient->GetShipSE()->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", locationID);
 
     p_targetClient->MoveToLocation(locationID, destinationPoint);
-    p_targetClient->SetMove(Client::msJump, 5000);
+    //p_targetClient->SetClientTimer(ClientState::csJump, ClientTimers::JumpingTimer);
     if (p_targetClient->GetShipSE() and p_targetClient->GetShipSE()->DestinyMgr())
         p_targetClient->GetShipSE()->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
 

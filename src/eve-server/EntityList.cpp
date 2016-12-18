@@ -135,7 +135,7 @@ void EntityList::Process() {
         sMktBotMgr.Process();
 
         for (auto cur : m_clients)
-            if (cur->GetLocationID())
+            if (cur->GetLocationID())   /* hack to verify valid client */
                 cur->ProcessClient();
 
         std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
