@@ -68,10 +68,7 @@ public:
         PyCallable_REG_CALL(BeyonceBound, CmdAbandonLoot);
 
         // beyonce is constructed when player first enters system and not removed until sys change or logout.
-        // these functions are only called when beyonce is created. (fix for BlackScreen Bug)
-        /*if (pClient->IsJump())
-            pClient->SetJumpTimers();
-        else */
+        
         if (pClient->IsLogin())
             pClient->SetBallPark();
 
@@ -437,11 +434,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     }
 
     bool fleet = false;
-    if (call.byname.find("fleet") != call.byname.end()) {
-        if ( !(call.byname.find("fleet")->second->IsNone()) ) {
+    if (call.byname.find("fleet") != call.byname.end())
+        if (!(call.byname.find("fleet")->second->IsNone()))
             fleet = call.byname.find("fleet")->second->AsBool()->value();
-        }
-    }
 
     // get the warp-to distance specified by the client
     int32 distance = 0;
@@ -452,10 +447,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "%s: range of invalid type %s, expected Integer or Real; using 5 km.", call.client->GetName(), res->second->TypeString());
         distance = 5000;
     } else {
-        distance =
-            res->second->IsInt()
-                ? res->second->AsInt()->value()
-                : res->second->AsFloat()->value();
+        distance = (res->second->IsInt() ? res->second->AsInt()->value() : res->second->AsFloat()->value());
     }
 
     std::string type = call.tuple->GetItem(0)->AsString()->content();
@@ -469,96 +461,71 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             codelog(CLIENT__ERROR, "%s: unable to find location %d", call.client->GetName(), toID);
 			return nullptr;
 		}
+		double radius = pSE->GetRadius();
+        GPoint warpToPoint = pSE->GetPosition();
 
-        double distanceFromBodyOrigin = 0.0, distanceFromSystemOrigin = 0.0;
-        float warpPointAdj = 1.0f;
-        GPoint warpToPoint(pSE->GetPosition());
+        /* formulas for warpin points for all objects
+         * x,y,z = object coords.  r = object radius
+         *
+         * for objects <90kr
+         * dest = x,y,z + (vector - r)
+         *
+         * for objects >90kr
+         * (x + (r + 5000000) * cos(r), y + 1.3r -7500, z - (r + 5000000) * sin(r))
+         *
+         * for planets, its a bit different
+         * (x + d*sin(t), y + 0.5*r*sin(j), z - d*cos(t))
+         * where:
+         * j = rand(seed=planetID).rand(0,1) - 1.0/3.0
+         * d = r*(s+1) +1000000
+         * t = sin^-1(x/abs(x) * z / sqrt(x^2 + z^2) +j)
+         * s = 20*((1/40)*(10*log10(r/10^6)-39)^20) +0.5
+         * s = max(0.5, min(s, 10.5))
+         */
 
-        if (pSE->IsStaticEntity()) {
-            switch(pSE->GetGroupID() ) {
-                case EVEDB::invGroups::Sun:
-				case EVEDB::invGroups::Planet: {
-                    // Calculate final distance out from origin of celestial body along common warp-to vector:
-                    distanceFromBodyOrigin = pSE->GetRadius();            // Add celestial body's radius
-                    distanceFromBodyOrigin += 1000000;
-                    // Calculate final warp-to point along common vector from celestial body's origin and add randomized position adjustment for multiple ships coming out of warp to not bump
-                    GPoint celestialOrigin(pSE->GetPosition());                            // Make a celestial body origin point variable
-                    GVector vectorFromOrigin(celestialOrigin, NULL_ORIGIN);                    // Make a celestial body TO system origin origin vector variable
-                    if ( vectorFromOrigin.length() == 0 ) {
-                        // This is the special case where we are warping to the Star, so we have to construct
-                        // a vector from the star's center (0,0,0) to the warp-in point using the distanceFromBodyOrigin
-                        // calculated earlier:
-                        vectorFromOrigin = GVector( celestialOrigin, call.client->GetShipSE()->GetPosition() );
-                        vectorFromOrigin.normalize();
-                        vectorFromOrigin *= distanceFromBodyOrigin;
-                    }
-                    GVector vectorToWarpPoint(vectorFromOrigin);                        // Make a vector to the Warp-In point
-                    distanceFromSystemOrigin = vectorFromOrigin.length();                // Calculate distance from system origin to celestial body origin
-
-                    // Calculate warp-in point to provide different juxtapositioning of celestial body to the solar system origin, i.e, the sun
-                    // This also provides a common warp-in point for the sun itself, which is the first case in this if-else if-else clause:
-                    if (distanceFromSystemOrigin < (5.0 * ONE_AU_IN_METERS)) {
-                        GVector rotationVector( 1.0, 1.0, 0.25 );
-                        vectorToWarpPoint.rotationTo( rotationVector );
-                    } else if (distanceFromSystemOrigin < (15.0 * ONE_AU_IN_METERS)) {
-                        GVector rotationVector( -1.0, -1.0, 0.25 );
-                        vectorToWarpPoint.rotationTo( rotationVector );
-                    } else if (distanceFromSystemOrigin < (25.0 * ONE_AU_IN_METERS)) {
-                        GVector rotationVector( 1.0, -1.0, -0.25 );
-                        vectorToWarpPoint.rotationTo( rotationVector );
-                    } else if (distanceFromSystemOrigin < (35.0 * ONE_AU_IN_METERS)) {
-                        GVector rotationVector( -1.0, -1.0, -0.25 );
-                        vectorToWarpPoint.rotationTo( rotationVector );
-                    } else {
-                        GVector rotationVector( -1.0, 1.0, -0.25 );
-                        vectorToWarpPoint.rotationTo( rotationVector );
-                    }
-                    vectorToWarpPoint.normalize();
-                    warpToPoint += vectorToWarpPoint * distanceFromBodyOrigin;
-
-                    // Randomize warp-in point:
-                    warpToPoint.MakeRandomPointOnSphereLayer(1000.0,(1000.0+call.client->GetShipSE()->GetRadius()));
-                } break;
-                case EVEDB::invGroups::Moon: {  //this will put ship at same visual distance for different moon radii
-                    warpPointAdj = pSE->GetRadius() + (pSE->GetRadius() *2 /5 /*10*/);
-                } break;
-                case EVEDB::invGroups::Station: {
-                    // this makes ship warp to same station elevation (y) as dock, instead of warping to stations "center point" (where icon is)
-                    StationData data;
-                    sDataMgr.GetStationInfo(toID, data);
-                    warpToPoint.y = data.dockPosition.y;
-                    warpPointAdj = pSE->GetRadius();
-                } break;
-                default: {
-                    warpPointAdj = pSE->GetRadius();
-                } break;
-            }
-        } else
-            warpPointAdj = pSE->GetRadius();
+        if (pSE->IsPlanetSE()) {
+            srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
+            int64 rand = random();
+            double j = (((rand / RAND_MAX) -1.0) / 3.0);
+            double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
+            s = EvE::max(0.5, EvE::min(s, 10.5));
+            double a = warpToPoint.x/fabs(warpToPoint.x);
+            double b = pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2);
+            double c = warpToPoint.z / sqrt(b);
+            double t = asin(a * c) +j;
+            uint32 d = radius * (s +1) +100000;
+            warpToPoint.x += d * sin(t);
+            warpToPoint.y += 0.5 * radius * sin(j);
+            warpToPoint.z -= d * cos(t);
+        } else if (pSE->IsStationSE()){
+            // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
+            StationData data;
+            sDataMgr.GetStationInfo(toID, data);
+            warpToPoint.y = data.dockPosition.y;
+        } else if (radius > 90000) {
+            /** @todo  this formula is right, but isnt working correctly....revert to my formula
+            warpToPoint.x += ((radius + 5000000) * cos(radius));
+            warpToPoint.y += ((radius * 1.3) - 7500);
+            warpToPoint.z -= ((radius + 5000000) * sin(radius));
+            */
+            warpToPoint -= (pSE->GetRadius() + (pSE->GetRadius() *2 /8 /*10*/));
+        }
+        if (radius < 90000) {
+            // this will include stations (max station radius 60km)
+            GVector vectorFromOrigin( warpToPoint, call.client->GetShipSE()->GetPosition() );
+            vectorFromOrigin.normalize();   //we now have a direction
+            GPoint stopPoint = (vectorFromOrigin * -radius);
+            warpToPoint -= stopPoint;
+        }
 
         distance += (call.client->GetShipSE()->GetRadius() *2);
 
-        /* client stops warp at (targetpoint - stopdistance) along common line between the two.
-         *  the server will need to be told what and how to match the client.
-         *  i am doing that here.
-         * set targetpoint = point of object minus radius as distance along common vector
-         */
-        GVector vectorFromOrigin( warpToPoint, call.client->GetShipSE()->GetPosition() );
-        vectorFromOrigin.normalize();   //we now have a direction
-        GPoint stopPoint = vectorFromOrigin * -warpPointAdj;
-        warpToPoint -= stopPoint;
         pDestiny->WarpTo(warpToPoint, distance);
-
-        if (call.client->IsUndock()) {
-            call.client->SetUndock(false);
-            if (call.client->IsInvul())
-                call.client->SetInvul(false);
-        }
     } else if (type == "bookmark" ) {
         // This section handles Warping to any Bookmark
         GPoint warpToPoint(NULL_ORIGIN);
         double x = 0.0, y = 0.0, z = 0.0;
-        uint32 itemID = 0, typeID = 0, locationID = 0;
+        uint32 toID = 0, typeID = 0, locationID = 0;
         uint32 bookmarkID = call.tuple->GetItem(1)->AsInt()->value();
 
         BookmarkService* bkSrvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
@@ -566,7 +533,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             sLog.Error( "BeyonceService::Handle_WarpToStuff()", "Attempt to access BookmarkService returned nullptr." );
             return nullptr;
         }
-        bkSrvc->LookupBookmark(bookmarkID, itemID, typeID, locationID, x, y, z);
+        bkSrvc->LookupBookmark(bookmarkID, toID, typeID, locationID, x, y, z);
 
         if ( typeID == 5 ) {
             if (call.client->GetSystemID() != locationID) {
@@ -576,88 +543,52 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint = (GPoint)(x, y, z);
         } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
-            SystemEntity* pSE = pSM->GetSE( itemID );
+            SystemEntity* pSE = pSM->GetSE( toID );
             if (!pSE) {
-                sLog.Error( "BeyonceService::Handle_WarpToStuff()", "%s: unable to find location %d", call.client->GetName(), itemID );
+                sLog.Error( "BeyonceService::Handle_WarpToStuff()", "%s: unable to find location %d", call.client->GetName(), toID );
                 return nullptr;
             }
             double distanceFromBodyOrigin = 0.0, distanceFromSystemOrigin = 0.0;
+            uint32 radius = pSE->GetRadius();
             GPoint warpToPoint(pSE->GetPosition());
-            float warpPointAdj = 1.0f;
-            if (pSE->IsStaticEntity()) {
-                switch(pSE->GetGroupID() ) {
-                    case EVEDB::invGroups::Sun:
-                    case EVEDB::invGroups::Planet: {
-                        // Calculate final distance out from origin of celestial body along common warp-to vector:
-                        distanceFromBodyOrigin = pSE->GetRadius();            // Add celestial body's radius
-                        distanceFromBodyOrigin += 1000000;
-                        // Calculate final warp-to point along common vector from celestial body's origin and add randomized position adjustment for multiple ships coming out of warp to not bump
-                        GPoint celestialOrigin(pSE->GetPosition());                            // Make a celestial body origin point variable
-                        GVector vectorFromOrigin(celestialOrigin, NULL_ORIGIN);                    // Make a celestial body TO system origin origin vector variable
-                        if ( vectorFromOrigin.length() == 0 ) {
-                            // This is the special case where we are warping to the Star, so we have to construct
-                            // a vector from the star's center (0,0,0) to the warp-in point using the distanceFromBodyOrigin
-                            // calculated earlier:
-                            vectorFromOrigin = GVector( celestialOrigin, call.client->GetShipSE()->GetPosition() );
-                            vectorFromOrigin.normalize();
-                            vectorFromOrigin *= distanceFromBodyOrigin;
-                        }
-                        GVector vectorToWarpPoint(vectorFromOrigin);                        // Make a vector to the Warp-In point
-                        distanceFromSystemOrigin = vectorFromOrigin.length();                // Calculate distance from system origin to celestial body origin
-
-                        // Calculate warp-in point to provide different juxtapositioning of celestial body to the solar system origin, i.e, the sun
-                        // This also provides a common warp-in point for the sun itself, which is the first case in this if-else if-else clause:
-                        if (distanceFromSystemOrigin < (5.0 * ONE_AU_IN_METERS)) {
-                            GVector rotationVector( 1.0, 1.0, 0.25 );
-                            vectorToWarpPoint.rotationTo( rotationVector );
-                        } else if (distanceFromSystemOrigin < (15.0 * ONE_AU_IN_METERS)) {
-                            GVector rotationVector( -1.0, -1.0, 0.25 );
-                            vectorToWarpPoint.rotationTo( rotationVector );
-                        } else if (distanceFromSystemOrigin < (25.0 * ONE_AU_IN_METERS)) {
-                            GVector rotationVector( 1.0, -1.0, -0.25 );
-                            vectorToWarpPoint.rotationTo( rotationVector );
-                        } else if (distanceFromSystemOrigin < (35.0 * ONE_AU_IN_METERS)) {
-                            GVector rotationVector( -1.0, -1.0, -0.25 );
-                            vectorToWarpPoint.rotationTo( rotationVector );
-                        } else {
-                            GVector rotationVector( -1.0, 1.0, -0.25 );
-                            vectorToWarpPoint.rotationTo( rotationVector );
-                        }
-                        vectorToWarpPoint.normalize();
-                        warpToPoint += vectorToWarpPoint * distanceFromBodyOrigin;
-
-                        // Randomize warp-in point:
-                        warpToPoint.MakeRandomPointOnSphereLayer(1000.0,(1000.0+call.client->GetShipSE()->GetRadius()));
-                    } break;
-                    case EVEDB::invGroups::Moon: {  //this will put ship at same visual distance for different moon radii
-                        warpPointAdj = pSE->GetRadius() + (pSE->GetRadius() *2 /5 /*10*/);
-                    } break;
-                    default: {
-                        warpPointAdj = pSE->GetRadius();
-                    } break;
-                }
-            } else
-                warpPointAdj = pSE->GetRadius();
+            if (pSE->IsPlanetSE()) {
+                srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
+                int64 rand = random();
+                double j = (((rand / RAND_MAX) -1.0) / 3.0);
+                double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
+                s = EvE::max(0.5, EvE::min(s, 10.5));
+                double a = warpToPoint.x/fabs(warpToPoint.x);
+                double b = pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2);
+                double c = warpToPoint.z / sqrt(b);
+                double t = asin(a * c) +j;
+                uint32 d = radius * (s +1) +100000;
+                warpToPoint.x += d * sin(t);
+                warpToPoint.y += 0.5 * radius * sin(j);
+                warpToPoint.z -= d * cos(t);
+            } else if (pSE->IsStationSE()){
+                // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
+                StationData data;
+                sDataMgr.GetStationInfo(toID, data);
+                warpToPoint.y = data.dockPosition.y;
+            } else if (radius > 90000) {
+                /** @todo  this formula is right, but isnt working correctly....revert to my formula
+                 *   warpToPoint.x += ((radius + 5000000) * cos(radius));
+                 *   warpToPoint.y += ((radius * 1.3) - 7500);
+                 *   warpToPoint.z -= ((radius + 5000000) * sin(radius));
+                 */
+                warpToPoint -= (pSE->GetRadius() + (pSE->GetRadius() *2 /8 /*10*/));
+            }
+            if (radius < 90000) {
+                // this will include stations (max station radius 60km)
+                GVector vectorFromOrigin( warpToPoint, call.client->GetShipSE()->GetPosition() );
+                vectorFromOrigin.normalize();   //we now have a direction
+                GPoint stopPoint = (vectorFromOrigin * -radius);
+                warpToPoint -= stopPoint;
+            }
 
             distance += (call.client->GetShipSE()->GetRadius() *2);
-
-            /* client stops warp at (targetpoint - stopdistance) along common line between the two.
-             *  the server will need to be told what and how to match the client.
-             *  i am doing that here.
-             * set targetpoint = point of object minus radius as distance along common vector
-             */
-            GVector vectorFromOrigin( warpToPoint, call.client->GetShipSE()->GetPosition() );
-            vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint = vectorFromOrigin * -warpPointAdj;
-            warpToPoint -= stopPoint;
         }
         pDestiny->WarpTo(warpToPoint, distance);
-
-        if (call.client->IsUndock()) {
-            call.client->SetUndock(false);
-            if (call.client->IsInvul())
-                call.client->SetInvul(false);
-        }
     } else if (type == "scan") {
         std::string resultID = call.tuple->GetItem(1)->AsString()->content();
         ManagerDB mDB;
@@ -686,6 +617,11 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         sLog.Error( "BeyonceService::Handle_WarpToStuff()", "Unexpected type value: '%s'.", type.c_str() );
     }
 
+    if (call.client->IsUndock()) {
+        call.client->SetUndock(false);
+        if (call.client->IsInvul())
+            call.client->SetInvul(false);
+    }
     return nullptr;
 }
 
