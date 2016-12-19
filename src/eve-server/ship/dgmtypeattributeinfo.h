@@ -88,7 +88,7 @@ public:
     dgmtypeattributemgr() {}
     ~dgmtypeattributemgr() {}
 
-    void Init();
+    void Initialize();
     void Close();
 
     DgmTypeAttributeSet* GetDgmTypeAttributeSet(uint32 typeID);
@@ -100,21 +100,5 @@ private:
 #define sDgmTypeAttrMgr \
 ( dgmtypeattributemgr::get() )
 
-
-static EvilNumber e_sqrt(EvilNumber num)
-{
-    if (num.get_type() == evil_number_float)
-        return EvilNumber(sqrt(num.get_double()));
-    else
-        return EvilNumber(sqrt(double(num.get_int())));
-}
-
-static EvilNumber e_log(EvilNumber num)
-{
-    if (num.get_type() == evil_number_float)
-        return EvilNumber(log(num.get_double()));
-    else
-        return EvilNumber(log(double(num.get_int())));
-}
 
 #endif // dgmtypeattributeinfo_h__

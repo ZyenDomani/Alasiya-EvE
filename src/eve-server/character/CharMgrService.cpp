@@ -313,7 +313,7 @@ PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
 
     bool afk = (args.arg1 ? true : false);
     uint16 time = args.arg2;
-    sLog.Warning("SetActivityStatus2", "Player %s(%u) AFK:%s, time:%u.", call.client->GetName(), call.client->GetCharacterID(), (afk ? "true" : "false"), time);
+    sLog.Cyan("CharMgrService::SetActivityStatus()", "Player %s(%u) AFK:%s, time:%u.", call.client->GetName(), call.client->GetCharacterID(), (afk ? "true" : "false"), time);
 
     return new PyNone();
 }

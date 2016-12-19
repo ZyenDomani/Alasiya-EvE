@@ -1869,10 +1869,10 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
     //   this is no longer correct.  Vmax/T is the correct formula
     m_shipMaxAccelTime = (m_shipAgility * -log(0.0001));
 
+    //  both of these formulas have identical products
     //TimeToWarp = -ln(0.25) x Mass Mkg x Inertia Mod
+    //float alignTime = ((log(2) * m_shipInertia * m_mass) / 500000);
     m_alignTime = (-log(0.25) * m_shipAgility);
-    float alignTime = ((log(2) * m_shipInertia * m_mass) / 500000);
-    _log(DESTINY__ERROR, "Destiny::SetShipCapabilities() - alignTime 1 = %f, alignTime 2 = %f", m_alignTime, alignTime);
     m_timeToEnterWarp = m_alignTime;
 
     if (!mySE->HasPilot())

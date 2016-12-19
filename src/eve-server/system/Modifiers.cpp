@@ -27,6 +27,7 @@
 
 #include "system/Modifiers.h"
 
+/** @todo  this whole file needs to be updated/optimized and implemented */
 
 // ////////////////////// SkillBonusModifier Class ////////////////////////////
 SkillBonusModifier::SkillBonusModifier(uint32 skillID)

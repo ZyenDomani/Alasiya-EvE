@@ -246,10 +246,6 @@ int main( int argc, char* argv[] )
         return EXIT_FAILURE;
     }
 
-    /* start dogma type attrib mgr singleton */
-    sLog.Green("       ServerInit", "Initializing Dogma Attribute Cache");
-    sDgmTypeAttrMgr.Init();
-
     /* create a single item factory */
     sLog.Green("       ServerInit", "Starting Item Factory");
     ItemFactory* item_factory = new ItemFactory();
@@ -374,18 +370,19 @@ int main( int argc, char* argv[] )
     services.RegisterService("warRegistry", new WarRegistryService(&services));
     services.RegisterService("wormholeMgr", new WormHoleSvc(&services));
 
-    sLog.Green("       ServerInit", "Priming cached objects.");
+    sLog.Yellow("       ServerInit", "Priming cached objects.");
     services.cache_service->PrimeCache();
 
     // start up the image server
     sLog.Green("       ServerInit", "Starting Image Server");
     sImageServer.Run();
-    //  this gives the imageserver server time to load so the dynamic database msgs are in order
+    //  this gives the imageserver's server time to load so the dynamic database msgs are in order
     Sleep(250);
 
-    sLog.Green("       ServerInit", "Loading Static Database Table Objects...");
-
     // Create In-Memory Database Objects for Critical and HighUse Systems:
+    sLog.Yellow("       ServerInit", "Loading Static Database Table Objects...");
+    sLog.Green("       ServerInit", "Dogma Attributes");
+    sDgmTypeAttrMgr.Initialize();
     sLog.Green("       ServerInit", "Module Effects Table");
     sDGM_Effects_Table.Initialize();
     sLog.Green("       ServerInit", "Skill Modifiers");

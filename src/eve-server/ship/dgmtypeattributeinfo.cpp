@@ -27,8 +27,11 @@
 
 #include "ship/dgmtypeattributeinfo.h"
 
-void dgmtypeattributemgr::Init()
+/** @todo  this whole system needs to be updated/optimized */
+
+void dgmtypeattributemgr::Initialize()
 {
+    double start = GetTimeMSeconds();
     // load shit from db
     DBQueryResult res;
 
@@ -60,7 +63,7 @@ void dgmtypeattributemgr::Init()
 
         entry->attributeset.push_back(attr_entry);
     }
-    sLog.Green("       ServerInit", "Loaded %u Attributes in the  Dogma Attribute Cache", amount);
+    sLog.Cyan("       ServerInit", "%u attributes loaded in %.3fms", amount, (GetTimeMSeconds() - start));
 }
 
 void dgmtypeattributemgr::Close()

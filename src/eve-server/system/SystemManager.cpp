@@ -198,9 +198,9 @@ void SystemManager::UnloadSystem() {
             RemoveEntity(itr->second);
         }
 
+        m_services.item_factory->RemoveItem(itr->first);
         SafeDelete(itr->second);
         itr = m_entities.erase(itr);
-        m_services.item_factory->RemoveItem(itr->first);
     }
 
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
@@ -237,36 +237,36 @@ bool SystemManager::LoadSystemStatics() {
                 /** @todo (Allan) outposts are group::station - may need to hack this */
                 /*  types 12242 - 22298 in group 15 are outposts */
                 /*  types 29323 - 29390 in group 15 are wrecked stations */
-                StationItemRef itemRef = itemFactory()->GetStation(cur.itemID);
+                StationItemRef itemRef = m_services.item_factory->GetStation(cur.itemID);
                 StationSE *se = new StationSE(itemRef, *(GetServiceMgr()), this);
                 sEntityList.AddStation(cur.itemID, itemRef);
                 pSE = se;
             } break;
             case EVEDB::invGroups::Asteroid_Belt: {
-                CelestialObjectRef itemRef = itemFactory()->GetCelestialObject(cur.itemID);
+                CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
                 BeltSE *se = new BeltSE(itemRef, *(GetServiceMgr()), this);
                 se->SetBeltMgr(m_beltMgr);
                 ++m_beltCount;
                 pSE = se;
             } break;
             case EVEDB::invGroups::Stargate: {
-                CelestialObjectRef itemRef = itemFactory()->GetCelestialObject(cur.itemID);
+                CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
                 StargateSE *se = new StargateSE(itemRef, *(GetServiceMgr()), this);
                 ++m_gateCount;
                 pSE = se;
             } break;
             case EVEDB::invGroups::Planet: {
-                CelestialObjectRef itemRef = itemFactory()->GetCelestialObject(cur.itemID);
+                CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
                 PlanetSE *se = new PlanetSE(itemRef, *(GetServiceMgr()), this);
                 pSE = se;
             } break;
             case EVEDB::invGroups::Moon: {
-                CelestialObjectRef itemRef = itemFactory()->GetCelestialObject(cur.itemID);
+                CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
                 MoonSE *se = new MoonSE(itemRef, *(GetServiceMgr()), this);
                 pSE = se;
             } break;
             default: /*sun*/ {    // suns dont have anything special, so they are generic StaticSystemEntitys
-                CelestialObjectRef itemRef = itemFactory()->GetCelestialObject(cur.itemID);
+                CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
                 StaticSystemEntity *se = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
                 pSE = se;
             } break;

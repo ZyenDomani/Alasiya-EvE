@@ -58,6 +58,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_movePoint(NULL_ORIGIN),
   m_clientState(ClientState::csIdle),
   m_stateTimer(ClientTimers::MovingTimer),
+  m_jumpTimer(ClientTimers::JumpTimer),
   m_pingTimer(PING_INTERVAL_US),
   m_scanTimer(ClientTimers::ScanningTimer),
   m_cloakTimer(ClientTimers::LoginCloak),
@@ -74,6 +75,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_ship = ShipItemRef();
 
     m_pingTimer.Start();
+    m_jumpTimer.Disable();
     m_stateTimer.Disable();
     m_scanTimer.Disable();
     m_cloakTimer.Disable();
@@ -280,17 +282,17 @@ void Client::ProcessClient() {
             case csIdle: {
                 sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
             } break;
+            case csDock: {
+                _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csDock");
+                DockToStation();
+            } break;
             case csUndock: {
                 _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csUndock");
                 SetBallPark();
             } break;
             case csJump: {
                 _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csJump");
-                _ExecuteJump();
-            } break;
-            case csDock: {
-                _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csDock");
-                DockToStation();
+                ExecuteJump();
             } break;
             case csKilled: {
                 _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csKilled");
@@ -304,6 +306,10 @@ void Client::ProcessClient() {
         m_scan->ScanResult();
     }
 
+    if (m_jumpTimer.Check(false)) {
+        m_jumpTimer.Disable();
+        SetBallPark();
+    }
     /* Check Character Save Timer Expiry:  (not currently used  -allan 17May16)
     if (m_char->CheckSaveTimer()) {
         _log(CLIENT__TRACE, "Client::ProcessClient():  SaveTimer for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
@@ -327,9 +333,9 @@ void Client::SetDestiny(bool count) {
         m_system->AddEntity(pShipSE);
         m_bubbleWait = false;
         m_setStateSent = false;
-        //if (m_beyonce)
-        //    return;
-        if (!m_login)
+        if (m_beyonce)
+            return;
+        if ((!m_login) and (!IsJump()))
             SetBallPark();
     } else
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
@@ -516,7 +522,6 @@ void Client::UndockFromStation() {
     SetClientTimer(ClientState::csUndock, ClientTimers::DefaultTimer);
     m_invulTimer.Start(ClientTimers::UndockInvul);
     SetSessionTimer();
-    //SetBallPark();
 }
 
 void Client::SetBallPark() {
@@ -731,7 +736,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     SetClientTimer(ClientState::csJump, ClientTimers::JumpingTimer);
 }
 
-void Client::_ExecuteJump() {
+void Client::ExecuteJump() {
     m_ship->Jump();
     m_invul = true;
     m_beyonce = m_setStateSent = false;
@@ -740,12 +745,14 @@ void Client::_ExecuteJump() {
     pShipSE->DestinyMgr()->Cloak();
     pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
 
+    m_toGate = 0;
+    m_movePoint = NULL_ORIGIN;
+}
+
+void Client::SetJumpTimers() {
+    m_jumpTimer.Start(ClientTimers::JumpTimer);
     m_cloakTimer.Start(ClientTimers::JumpCloak);
     m_invulTimer.Start(ClientTimers::JumpInvul);
-
-    m_toGate = 0;
-    m_clientState = ClientState::csIdle;
-    m_movePoint = NULL_ORIGIN;
 }
 
 bool Client::AddBalance(double amount) {

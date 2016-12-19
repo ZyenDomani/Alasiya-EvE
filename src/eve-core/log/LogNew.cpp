@@ -111,7 +111,17 @@ void NewLog::Warning( const char* source, const char* fmt, ... )
     va_list ap;
     va_start( ap, fmt );
 
-    PrintMsg( COLOR_CYAN, 'W', source, fmt, ap );
+    PrintMsg( COLOR_YELLOW, 'W', source, fmt, ap );
+
+    va_end( ap );
+}
+
+void NewLog::Cyan( const char* source, const char* fmt, ... )
+{
+    va_list ap;
+    va_start( ap, fmt );
+
+    PrintMsg( COLOR_CYAN, 'C', source, fmt, ap );
 
     va_end( ap );
 }

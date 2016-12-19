@@ -68,8 +68,10 @@ public:
         PyCallable_REG_CALL(BeyonceBound, CmdAbandonLoot);
 
         // beyonce is constructed when player first enters system and not removed until sys change or logout.
-        
-        if (pClient->IsLogin())
+        // these functions are only called when beyonce is created. (fix for BlackScreen Bug)
+        if (pClient->IsJump())
+            pClient->SetJumpTimers();
+        else if (pClient->IsLogin())
             pClient->SetBallPark();
 
         pClient->SetBeyonce(true);
@@ -570,6 +572,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 StationData data;
                 sDataMgr.GetStationInfo(toID, data);
                 warpToPoint.y = data.dockPosition.y;
+            } else if (pSE->IsGateSE()) {
+                distance += (pSE->GetRadius() /2);  // fudge the distance a bit for gates... its' a lil close by default
             } else if (radius > 90000) {
                 /** @todo  this formula is right, but isnt working correctly....revert to my formula
                  *   warpToPoint.x += ((radius + 5000000) * cos(radius));

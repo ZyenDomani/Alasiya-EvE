@@ -282,7 +282,7 @@ typedef enum {
 
 //  -updated 18Dec16
 enum ClientTimers {
-    DefaultTimer     = 500,
+    JumpTimer        = 500,
     DockingTimer     = 1000,     // Timer to delay docking (as on live)
     JumpingTimer     = 2000,
     MovingTimer      = 1000,

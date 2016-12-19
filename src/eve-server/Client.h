@@ -195,6 +195,7 @@ public:
     void SetSessionTimer(uint32 time=10000)             { SetSessionChange(true); m_sessionTimer.Start(time); }
     void SetSessionChange(bool set=false)               { m_sessionChangeActive = set; }
     void SetBallPark();
+    void SetJumpTimers();
     void SetAutoPilot(bool=false);
     void StargateJump(uint32 fromGate, uint32 toGate);
 
@@ -266,7 +267,7 @@ protected:
     //void _AwardBounty(SystemEntity *who);
     void _DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
     void InitSession( uint32 characterID  );
-    void _ExecuteJump();
+    void ExecuteJump();
     void DestroyShipSE();
 
     bool m_invul;
@@ -287,6 +288,7 @@ protected:
     uint32 m_dockStationID; // holder for docking to 'stationID'.  timer based.
 
     Timer m_stateTimer;      // state timer to consolidate timers
+    Timer m_jumpTimer;       // this is to properly send SetState data after a delay (cant do it correctly otherwise)
     Timer m_pingTimer;
     Timer m_scanTimer;       // used to delay scan results based on skills, items, and other shit
     Timer m_cloakTimer;
