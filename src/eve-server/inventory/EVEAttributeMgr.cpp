@@ -198,7 +198,8 @@ bool AttributeMap::SendAttributeChanges( PyTuple* attrChange ) {
         client = sEntityList.FindClientByCharID(mItem.ownerID());
 
     if (client) {
-        attrChange->Dump(CLIENT__TRACE, "");
+        if (is_log_enabled(CLIENT__TRACE))
+            attrChange->Dump(CLIENT__TRACE, "");
         client->QueueDestinyEvent(&attrChange);
     } else {
         _log(PLAYER__WARNING, "AttributeMap::SendAttributeChanges() - ownerID for %u not found", mItem.itemID() );
