@@ -125,7 +125,7 @@ PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
 bool PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
 {
     // the return here is used to cancel loop in UpdateNetwork.  return false = continue
-    
+
     int8 oldLevel = m_colony->GetLevel(), newLevel = (int8)nc.command_data->GetItem(1)->AsInt()->value();
     uint32 cost = 0;
     while (oldLevel != newLevel) {
@@ -156,7 +156,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
     switch (groupID) {
         case Command_Centers: {
             if (!m_client->AddBalance(-90000)) {
-                m_client->SendErrorMsg("You cannot afford the construction cost required for a Command Center on this planet.");
+                m_client->SendErrorMsg("You cannot afford the construction cost required to construct a Command Center on this planet.");
                 return true;
             }
 
@@ -182,7 +182,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
     switch (groupID) {
         case Storage_Facilities: {
             cost = 250000;
-            pinString = "a Silo";
+            pinString = "Silo";
         } break;
         case Processors: {
             switch (typeID) {
@@ -195,7 +195,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
                 case 2492:   //   Gas Basic Industry Facility
                 case 2493: { //   Ice Basic Industry Facility
                     cost = 75000;
-                    pinString = "a Basic Plant";
+                    pinString = "Basic Plant";
                 } break;
                 case 2470:   //   Lava Advanced Industry Facility
                 case 2472:   //   Plasma Advanced Industry Facility
@@ -206,33 +206,33 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
                 case 2491:   //   Ice Advanced Industry Facility
                 case 2494: { //   Gas Advanced Industry Facility
                     cost = 250000;
-                    pinString = "an Advanced Plant";
+                    pinString = "Advanced Plant";
                 } break;
                 case 2475:   //   Barren High-Tech Production Plant
                 case 2482: { //    Temperate High-Tech Production Plant
                     cost = 525000;
-                    pinString = "a High-Tech Plant";
+                    pinString = "High-Tech Plant";
                 } break;
             }
         } break;
         case Extractor_Control_Units: {
             cost = 45000;
-            pinString = "an ECU";
+            pinString = "ECU";
         } break;
         case Spaceports: {
             cost = 900000;
-            pinString = "a LaunchPad";
+            pinString = "LaunchPad";
         } break;
         case Planetary_Links: {
             cost = 0;
-            pinString = "a Link";
+            pinString = "Link";
         } break;
         case Extractors: {
             cost = 0;
-            pinString = "an Extractor Head";
+            pinString = "Extractor Head";
         } break;
         if (!m_client->AddBalance(-cost)) {
-            m_client->SendErrorMsg("You cannot afford the construction cost required for %s on this planet.", pinString.c_str());
+            m_client->SendErrorMsg("You cannot afford the construction cost required for this %s.", pinString.c_str());
             return true;
         }
         UUNCStandardPin uuncsp;
