@@ -86,7 +86,10 @@ def GetCycleTimeFromProgramLength(programLength):
 
 PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
 {
+    bool cancel = false;
     for (int i = 0; i < uuncl.commandList->size(); i++) {
+        if (cancel)
+            return m_colony->GetColony();
         UUNCommand uunc;
         if (!uunc.Decode(uuncl.commandList->GetItem(i)->AsTuple())) {
             _log(SERVICE__ERROR, "Failed to decode args for UUNCommand");
@@ -95,13 +98,13 @@ PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
         }
         _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork() - loop: %u, command: %u", i, uunc.command);
         switch (uunc.command) {
-            case PinCommands::CreatePin:                CreatePin(uunc);                break;
+            case PinCommands::CreatePin:                cancel = CreatePin(uunc);                break;
             case PinCommands::RemovePin:                RemovePin(uunc);                break;
             case PinCommands::CreateLink:               CreateLink(uunc);               break;
             case PinCommands::RemoveLink:               RemoveLink(uunc);               break;
             case PinCommands::CreateRoute:              CreateRoute(uunc);              break;
             case PinCommands::SetLinkLevel:             SetLinkLevel(uunc);             break;
-            case PinCommands::UpgradeCommandCenter:     UpgradeCommandCenter(uunc);     break;
+            case PinCommands::UpgradeCommandCenter:     cancel = UpgradeCommandCenter(uunc);     break;
             case PinCommands::SetSchematic:             SetSchematic(uunc);             break;
             case PinCommands::RemoveRoute:              RemoveRoute(uunc);              break;
             case PinCommands::AddExtractorHead:         AddExtractorHead(uunc);         break;
@@ -111,9 +114,7 @@ PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
             /** @todo not handled yet... */
             case PinCommands::PrioritizeRoute:          PrioritizeRoute(uunc);          break;
             default: {
-                // case not handled yet.
                 _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork() Invalid command switch %i", uunc.command);
-                ;
             } break;
         }
     }
@@ -121,70 +122,127 @@ PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
     return m_colony->GetColony();
 }
 
-void PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
+bool PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
 {
-    uint8 level = nc.command_data->GetItem(1)->AsInt()->value();
+    // the return here is used to cancel loop in UpdateNetwork.  return false = continue
+    
+    int8 oldLevel = m_colony->GetLevel(), newLevel = (int8)nc.command_data->GetItem(1)->AsInt()->value();
     uint32 cost = 0;
-    switch (level) {
-        case 1: cost = 580000; break;
-        case 2: cost = 1510000; break;
-        case 3: cost = 2710000; break;
-        case 4: cost = 4210000; break;
-        case 5: cost = 6310000; break;
+    while (oldLevel != newLevel) {
+        //  calculate total upgrade cost in cases where upgrading multiple levels at once
+        switch (oldLevel) {
+            case PinLevel0: cost += 580000; break;
+            case PinLevel1: cost += 930000; break;
+            case PinLevel2: cost += 1200000; break;
+            case PinLevel3: cost += 1500000; break;
+            case PinLevel4: cost += 2100000; break;
+        }
+        ++oldLevel;
     }
-    if (m_client->AddBalance(-cost))
-        m_colony->UpgradeCommandCenter(nc.command_data->GetItem(0)->AsInt()->value(), level);
-    else
-        ;  //  make error msg here
+    if (m_client->AddBalance(-cost)) {
+        m_client->SendErrorMsg("You cannot afford the upgrade cost required for this Command Center.");
+        return true;
+    }
+    m_colony->UpgradeCommandCenter(nc.command_data->GetItem(0)->AsInt()->value(), newLevel);
+    return false;
 }
 
-void PlanetMgr::CreatePin(UUNCommand& nc)
+bool PlanetMgr::CreatePin(UUNCommand& nc)
 {
+    // the return here is used to break out of loop if needed.  return false = continue
     using namespace EVEDB::invGroups;
     uint32 typeID = nc.command_data->GetItem(1)->AsInt()->value();
     uint32 groupID = m_svcMgr->item_factory->GetType(typeID)->groupID();
     switch (groupID) {
         case Command_Centers: {
+            if (!m_client->AddBalance(-90000)) {
+                m_client->SendErrorMsg("You cannot afford the construction cost required for a Command Center on this planet.");
+                return true;
+            }
+
             UUNCCommandCenter uunccc;
             if (!uunccc.Decode(nc.command_data)) {
                 _log(SERVICE__ERROR, "Failed to decode args for UUNCCommandCenter!");
                 nc.command_data->Dump(PLANET__WARNING, "      ");
             }
             m_colony->CreateCommandPin(uunccc.pinID, uunccc.typeID, uunccc.latitude, uunccc.longitude);
-            m_planet->CreateCustomsOffice();
-        } break;
-        case Storage_Facilities:
-        case Processors:
-        case Extractor_Control_Units:
-        case Planetary_Links:
-        case Extractors: {
-            UUNCStandardPin uuncsp;
-            if (!uuncsp.Decode(nc.command_data)) {
-                _log(SERVICE__ERROR, "Failed to decode args for UUNCStandardPin!");
-                nc.command_data->Dump(PLANET__WARNING, "      ");
-            }
-            m_colony->CreatePin(groupID, uuncsp.pinID2, uuncsp.typeID, uuncsp.latitude, uuncsp.longitude);
-        } break;
-        case Spaceports: {
-            // Not Supported yet
-            m_client->SendErrorMsg("PI Spaceports (and their Planet Customs Offices) are not yet supported.");
-            UUNCStandardPin uuncsp;
-            if (!uuncsp.Decode(nc.command_data)) {
-                _log(SERVICE__ERROR, "Failed to decode args for UUNCStandardPin!");
-                nc.command_data->Dump(PLANET__WARNING, "      ");
-            }
-            m_colony->CreatePin(groupID, uuncsp.pinID2, uuncsp.typeID, uuncsp.latitude, uuncsp.longitude);
+            if (!m_planet->GetCustomsOffice())
+                m_planet->CreateCustomsOffice();
+            return false;
         } break;
         case Mercenary_Bases:
         case Capsuleer_Bases:{
             // Not Supported yet
             _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::CreatePin() Planet Bases (type/group %u/%u) not supported.", typeID, groupID);
-        } break;
-        default: {
-            // Invalid...
-            _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::CreatePin() Invalid type/group %u/%u", typeID, groupID);
+            return false;
         } break;
     }
+    uint32 cost = 0;
+    std::string pinString = "";
+    switch (groupID) {
+        case Storage_Facilities: {
+            cost = 250000;
+            pinString = "a Silo";
+        } break;
+        case Processors: {
+            switch (typeID) {
+                case 2469:   //   Lava Basic Industry Facility
+                case 2471:   //    Plasma Basic Industry Facility
+                case 2473:   //    Barren Basic Industry Facility
+                case 2481:   //    Temperate Basic Industry Facility
+                case 2483:   //    Storm Basic Industry Facility
+                case 2490:   //    Oceanic Basic Industry Facility
+                case 2492:   //   Gas Basic Industry Facility
+                case 2493: { //   Ice Basic Industry Facility
+                    cost = 75000;
+                    pinString = "a Basic Plant";
+                } break;
+                case 2470:   //   Lava Advanced Industry Facility
+                case 2472:   //   Plasma Advanced Industry Facility
+                case 2474:   //   Barren Advanced Industry Facility
+                case 2480:   //   Temperate Advanced Industry Facility
+                case 2484:   //   Storm Advanced Industry Facility
+                case 2485:   //   Oceanic Advanced Industry Facility
+                case 2491:   //   Ice Advanced Industry Facility
+                case 2494: { //   Gas Advanced Industry Facility
+                    cost = 250000;
+                    pinString = "an Advanced Plant";
+                } break;
+                case 2475:   //   Barren High-Tech Production Plant
+                case 2482: { //    Temperate High-Tech Production Plant
+                    cost = 525000;
+                    pinString = "a High-Tech Plant";
+                } break;
+            }
+        } break;
+        case Extractor_Control_Units: {
+            cost = 45000;
+            pinString = "an ECU";
+        } break;
+        case Spaceports: {
+            cost = 900000;
+            pinString = "a LaunchPad";
+        } break;
+        case Planetary_Links: {
+            cost = 0;
+            pinString = "a Link";
+        } break;
+        case Extractors: {
+            cost = 0;
+            pinString = "an Extractor Head";
+        } break;
+        if (!m_client->AddBalance(-cost)) {
+            m_client->SendErrorMsg("You cannot afford the construction cost required for %s on this planet.", pinString.c_str());
+            return true;
+        }
+        UUNCStandardPin uuncsp;
+        if (!uuncsp.Decode(nc.command_data)) {
+            _log(SERVICE__ERROR, "Failed to decode args for UUNCStandardPin!");
+            nc.command_data->Dump(PLANET__WARNING, "      ");
+        }
+        m_colony->CreatePin(groupID, uuncsp.pinID2, uuncsp.typeID, uuncsp.latitude, uuncsp.longitude);
+    }
+    return false;
 }
 
 void PlanetMgr::CreateLink(UUNCommand& nc)

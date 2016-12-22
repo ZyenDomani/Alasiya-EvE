@@ -30,7 +30,7 @@ public:
     PyRep* GetProgramResultInfo(uint32 pinID, uint32 typeID, PyList* heads, float headRadius);
 
 protected:
-    void CreatePin(UUNCommand& nc);
+    bool CreatePin(UUNCommand& nc);
     void RemovePin(UUNCommand& nc);
     void CreateLink(UUNCommand& nc);
     void RemoveLink(UUNCommand& nc);
@@ -38,7 +38,7 @@ protected:
     void CreateRoute(UUNCommand& nc);
     void RemoveRoute(UUNCommand& nc);
     void SetSchematic(UUNCommand& nc);
-    void UpgradeCommandCenter(UUNCommand& nc);
+    bool UpgradeCommandCenter(UUNCommand& nc);
     void AddExtractorHead(UUNCommand& nc);
     void KillExtractorHead(UUNCommand& nc);
     void MoveExtractorHead(UUNCommand& nc);

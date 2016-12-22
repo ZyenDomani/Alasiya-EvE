@@ -417,7 +417,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
     }
 }
 
-void Colony::UpgradeCommandCenter(uint32 pinID, uint8 level) {
+void Colony::UpgradeCommandCenter(uint32 pinID, int8 level) {
     ccPin->level = level;
     std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(pinID);
     if (itr != ccPin->pins.end()) {

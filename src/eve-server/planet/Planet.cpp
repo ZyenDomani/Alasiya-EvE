@@ -90,38 +90,41 @@ void PlanetSE::Process()
 void PlanetSE::CreateCustomsOffice()
 {
     /** @todo  will need to write this code and make it play nice with everything else.
-     * a CO will be a special container, linked to the planet it orbits, and the colon(y/ies) on that planet.
+     * a CO will be a special container as a StructureSE, linked to the planet it orbits, and any colony on that planet.
      * there is only one CO per planet, but ALL chars with a colony on that planet can access their items on the same CO
      * the CO will load all items when it loads, but will need checks on "view items" or "open container" to ONLY send
-     * items owned by calling char, or NONE for chars that dont have a colony on that planet
+     * items owned by calling char, or NONE for chars that dont have a colony on that planet.
+     * i dont know where/how to do that yet...will need testing
      *
      */
 
     //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
     FactionData data;
-        data.allianceID = 0;
-        data.corporationID = corpInterbus;
         data.ownerID = corpInterbus;
         data.factionID = factionInterBus;
+        data.allianceID = 0;
+        data.corporationID = corpInterbus;
     uint16 typeID = 4318;
 
     if (m_system->GetSystemSecurityRating() > 0.49) {
         typeID = 2233;
         // hisec...reset data for system sov holder...not sure how im gonna do this one.
-        data.allianceID = 0;
-        data.corporationID = 0;
         data.ownerID = 1;
         data.factionID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
+        data.allianceID = 0;
+        data.corporationID = 0;
     }
     ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
     StructureItemRef iRef = m_services.item_factory->SpawnStructure(idata);
     GPoint pos = GetPosition();
     uint32 radius = m_self->radius();
     radius += 1000000;      // ship warps to planetRadius +1000000...
+    //  use warpTo formula for planet here, and move CO just outside this point, but still in bubble, perferably close to center.
     pos.MakeRandomPointOnSphere(radius);
     iRef->Relocate(pos);   // set position here...needs a bit more research to do properly
     iRef->SetAttribute(AttrIsGlobal, 1, false);
     pCO = new StructureSE(iRef, m_services, m_system, data);
+    m_system->AddEntity(pCO);
 }
 
 PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)

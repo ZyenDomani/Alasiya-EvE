@@ -56,7 +56,7 @@ public:
     void RemoveRoute(uint16 routeID);
 
     void UpgradeLink(uint32 src, uint32 dest, uint8 level);
-    void UpgradeCommandCenter(uint32 pinID, uint8 level);
+    void UpgradeCommandCenter(uint32 pinID, int8 level);
 
     void CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latitude, double longitude);
     void CreateLink(uint32 src, uint32 dest, uint16 level);

@@ -38,6 +38,8 @@
 #include "system/SystemBubble.h"
 #include "system/SystemEntity.h"
 #include "system/SystemManager.h"
+#include <pos/Structure.h>
+#include <planet/Planet.h>
 
 
 SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
@@ -462,6 +464,14 @@ void ObjectSystemEntity::Killed(Damage &fatal_blow)
     }
 
     m_system->RemoveEntity(this);
+
+    /** @todo  test and complete this to null current customs office for this planet ... */
+    if (IsCOSE()) {
+        if (GetCOSE()->GetPlanetID()) {
+            SystemEntity* pSE = m_system->GetSE(GetCOSE()->GetPlanetID());
+            pSE->GetPlanetSE()->SetCustomsOffice(nullptr);
+        }
+    }
 }
 
 DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data)
