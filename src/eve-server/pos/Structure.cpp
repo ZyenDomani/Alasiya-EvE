@@ -275,12 +275,14 @@ void StructureSE::Init(StructureItemRef structure)
         case EVEDB::invGroups::Control_Tower: {
             m_pos = true;
             // create and add force field to tower
+            /** @todo  this will need to be based on structure state */
             //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
-            ItemData idata(16103, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);
+            ItemData idata(EVEDB::invTypes::typeForceField, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);
             InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);
             if (!iRef)
                 break;  // we'll get over it
             iRef->Relocate(GetPosition());
+            iRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius), false);
             ItemSystemEntity* iSE = new ItemSystemEntity(iRef, m_services, m_system);
             m_system->AddEntity(iSE);
         } break;
@@ -502,16 +504,18 @@ PyTuple *StructureSE::GetEffectState() {
             effect.entityID = m_towerID;            /* control tower id */
         else
             effect.entityID = m_self->itemID();     /* control tower id */
-        effect.moduleID = m_self->itemID();         /* structure/module id as part of above tower system */
-        effect.moduleTypeID = m_self->typeID();
-        effect.targetID = m_self->itemID();
-        effect.otherTypeID = 0;
+        if (!m_co) {
+            effect.moduleID = m_self->itemID();         /* structure/module id as part of above tower system */
+            effect.moduleTypeID = m_self->typeID();
+            effect.targetID = m_self->itemID();
+            effect.otherTypeID = 0;
+            effect.duration_ms = -1;
+        }
         effect.area = area;
         effect.effect_type = "effects.StructureOnline";
         effect.isOffensive = 0;                     /** @todo (Allan) this should be boolean */
         effect.start = 1;
         effect.active = 1;
-        effect.duration_ms = -1;
         effect.repeat = 0;
         effect.startTime = m_timestamp;             /* time this effect started */
     PyTuple *update = effect.Encode();

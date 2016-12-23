@@ -126,7 +126,7 @@ public:
 	 * ID Authority Functions:
      */
     uint32                  GetNextNPCID();
-    uint32                  GetNextEntityID();
+    uint32                  GetNextTempID();
     uint32                  GetNextMissileID();
     uint32                  GetNextAsteroidID();
     uint32                  GetNextPlanetPinID();
@@ -153,7 +153,7 @@ private:
     // ID Authority:
     // these hold the next valid ID for in-memory only objects
     static uint32 m_nextNPCID;
-    static uint32 m_nextEntityID;
+    static uint32 m_nextTempID;
     static uint32 m_nextMissileID;
     static uint32 m_nextAsteroidID;
     static uint32 m_nextPlanetPinID;

@@ -132,7 +132,7 @@ uint32 InventoryItem::CreateTempItemID(ItemFactory &factory, ItemData &data) {
     else if (data.flag == EVEItemFlags::flagMissile)
         return factory.GetNextMissileID();
     else
-        return factory.GetNextEntityID();
+        return factory.GetNextTempID();
 }
 
 bool InventoryItem::_Load() {
@@ -194,6 +194,8 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
                     or (type.groupID() == EVEDB::invGroups::Freight_Container)
                     or (type.groupID() == EVEDB::invGroups::Cargo_Container) )
                     return CargoContainer::_LoadItem<CargoContainer>( factory, itemID, type, data );
+                else if (type.groupID() == EVEDB::invGroups::Force_Field)
+                    return InventoryItem( new InventoryItem( factory, itemID, type, data ) );
                 else
                     return CelestialObject::_LoadItem<CelestialObject>( factory, itemID, type, data );
             }
@@ -327,8 +329,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
 
             return itemRef;
         }
-        case EVEDB::invCategories::Charge:
-        {
+        case EVEDB::invCategories::Charge: {
             switch (data.flag) {
                 case EVEItemFlags::flagMissile: {
                     // Spawn launched missile item in EVEMU_MISSILE_ID range and does NOT save missile to db
@@ -346,7 +347,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                     itemRef->SetAttribute(AttrCapacity,   itemRef->type().capacity());   // Capacity
                     //itemRef->SaveAttributes();
                     return itemRef;
-
                 }
                 default: {
                     // Spawn generic item:
@@ -456,6 +456,15 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 wreckRef->SetAttribute(AttrCapacity,      wreckRef->type().capacity());      // Capacity
                 //wreckRef->SaveAttributes();
                 return wreckRef;
+            } else if (t->groupID() == EVEDB::invGroups::Force_Field) {
+                // Spawn force field item in EVEMU_TEMP_ENTITY_ID range and does NOT save Force_Field to db
+                uint32 itemID = InventoryItem::CreateTempItemID( factory, data );
+                if (!itemID)
+                    return InventoryItemRef();
+                InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
+                if (!itemRef)
+                    return InventoryItemRef();
+                return itemRef;
             }
             /*  put a check in here for these,
 			 * groupID 319   Beacon   typeid 29189

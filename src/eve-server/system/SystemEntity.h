@@ -294,6 +294,7 @@ public:
     virtual bool                IsGateSE()              { return true; }
 
     /* SystemEntity interface */
+    virtual void EncodeDestiny( Buffer& into );
     virtual PyDict*             MakeSlimItem();
 
     /* virtual functions to be overridden in derived classes */
@@ -320,8 +321,9 @@ public:
     virtual bool IsItemEntity()                         { return true; }
 
     /* SystemEntity interface */
-    virtual PyDict *MakeSlimItem();
     virtual void MakeDamageState(DoDestinyDamageState &into);
+    
+    virtual PyDict *MakeSlimItem();
 };
 
 class DungeonSE : public ItemSystemEntity {

@@ -308,12 +308,43 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",      new PyInt(m_self->ownerID()));
-        slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
-        slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
-        slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",       new PyInt(m_corpID));
-        slim->SetItemString("allianceID",   new PyInt(m_allyID));
-    return (slim);
+        if (m_self->groupID() != EVEDB::invGroups::Force_Field) {
+            slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
+            slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
+            slim->SetItemString("name",         new PyString(m_self->itemName()));
+            slim->SetItemString("corpID",       new PyInt(m_corpID));
+            slim->SetItemString("allianceID",   new PyInt(m_allyID));
+        }
+    return slim;
+}
+
+void ItemSystemEntity::EncodeDestiny( Buffer& into )
+{
+    if (m_self->groupID() != EVEDB::invGroups::Force_Field)
+        return SystemEntity::EncodeDestiny(into);
+
+    using namespace Destiny;
+    BallHeader head;
+        head.entityID = m_self->itemID();
+        head.mode = DSTBALL_FIELD;
+        head.radius = GetRadius();
+        head.x = x();
+        head.y = y();
+        head.z = z();
+        head.flags = IsMassive;
+    into.Append( head );
+    MassSector mass;
+        mass.mass = 10000000000;    // as seen in packets
+        mass.cloak = 0;
+        mass.Harmonic = 1.0f;   /** @todo  this will need to be added later */
+        mass.corporationID = m_corpID;
+        mass.allianceID = m_allyID;
+    into.Append( mass );
+    DSTBALL_STOP_Struct main;
+        main.formationID = 0xFF;
+    into.Append( main );
+
+    _log(COMMON__WARNING, "ItemSystemEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {

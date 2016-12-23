@@ -40,7 +40,7 @@
 #include "system/SystemManager.h"
 
 // Initialize ID Authority variables:
-uint32 ItemFactory::m_nextEntityID = EVEMU_TEMP_ENTITY_ID;
+uint32 ItemFactory::m_nextTempID = EVEMU_TEMP_ENTITY_ID;
 uint32 ItemFactory::m_nextAsteroidID = EVEMU_ASTEROID_ID;
 uint32 ItemFactory::m_nextMissileID = EVEMU_MISSILE_ID;
 uint32 ItemFactory::m_nextNPCID = EVEMU_NPC_ID;
@@ -439,14 +439,14 @@ WreckContainerRef ItemFactory::SpawnWreckContainer(ItemData &data)
     return itemRef;
 }
 
-uint32 ItemFactory::GetNextEntityID()
+uint32 ItemFactory::GetNextTempID()
 {
-    if ( m_nextEntityID < EVEMU_PLANET_PIN_ID )
-		++m_nextEntityID;
+    if ( m_nextTempID < EVEMU_PLANET_PIN_ID )
+		++m_nextTempID;
 	else
-        m_nextEntityID = EVEMU_TEMP_ENTITY_ID;
+        m_nextTempID = EVEMU_TEMP_ENTITY_ID;
 
-	return m_nextEntityID;
+	return m_nextTempID;
 }
 
 uint32 ItemFactory::GetNextAsteroidID()
