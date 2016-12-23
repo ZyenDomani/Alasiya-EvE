@@ -322,12 +322,17 @@ void Client::ProcessClient() {
         sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
 }
 
-void Client::SetDestiny(bool count) {
+void Client::SetDestiny(const GPoint& pt, bool count) {
     if (!pShipSE or !pShipSE->DestinyMgr())
         CreateShipSE();
     if (IsSolarSystem(m_locationID)) {
-        if (m_ship->position().isZero())
-            MoveToPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()));
+        if (pt.isZero()) {
+            if (pShipSE->GetPosition().isZero())
+                pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()), true);
+            else
+                pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), true);
+        } else
+            pShipSE->DestinyMgr()->SetPosition(pt, true);
         if (count and !m_login)
             pShipSE->GetShipSE()->ResetShipSystemMgr(m_system);
         m_system->AddEntity(pShipSE);
@@ -398,8 +403,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (IsStation(locationID))
             return;
         // This is a simple movement
-        MoveToPosition(pt);
-        SetDestiny();
+        SetDestiny(pt);
         return;
     }
 
@@ -472,8 +476,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (m_char->flag() != flagPilot)
             m_char->Move(m_shipId, flagPilot, false);
 
-        SetDestiny(!m_undock);
-        MoveToPosition(pt);
+        SetDestiny(pt, !m_undock);
 
         if (m_login)
             WarpIn();
@@ -489,7 +492,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
 void Client::MoveToPosition(const GPoint &pt) {
     if (!pShipSE or !pShipSE->DestinyMgr())
-        return;
+        CreateShipSE();
     pShipSE->DestinyMgr()->SetPosition(pt, true);
     if (m_undock) return;
     if (pShipSE->DestinyMgr()->IsMoving())
@@ -514,12 +517,12 @@ void Client::UndockFromStation() {
      * -> GotoDirection(etc, etc) -> SetState (dmg, ego, ball, slim)
      *  ***** 9sec from hitting undock to space view on live. *****
      */
+    OnCharNoLongerInStation();
     m_ship->Relocate(m_StationData.dockPosition);
     CreateShipSE();
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     m_ship->Undock();
-    OnCharNoLongerInStation();
-    SetClientTimer(ClientState::csUndock, ClientTimers::DefaultTimer);
+    SetClientTimer(ClientState::csUndock, ClientTimers::UndockTimer);
     m_invulTimer.Start(ClientTimers::UndockInvul);
     SetSessionTimer();
 }
@@ -604,7 +607,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         }
         UpdateSessionInt("shipid", m_shipId);
         m_char->Move(m_shipId, flagPilot);
-        SetDestiny();
+        SetDestiny(m_ship->position());
 
         DestinyManager* pdMgr = pShipSE->DestinyMgr();
         pdMgr->UpdateNewShip(m_ship);
@@ -741,8 +744,8 @@ void Client::ExecuteJump() {
     m_invul = true;
     m_beyonce = m_setStateSent = false;
 
+    pShipSE->DestinyMgr()->Jump();
     MoveToLocation(m_moveSystemID, m_movePoint);
-    pShipSE->DestinyMgr()->Cloak();
     pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
 
     m_toGate = 0;

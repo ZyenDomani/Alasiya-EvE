@@ -75,7 +75,7 @@ public:
 
     void PrioritizeRoute();
 
-    uint8 GetPlantOrder(uint16 resTypeID);
+    uint8 GetProductLevel(uint16 typeID);
     uint32 GetHeadType(uint16 ecuTypeID, uint16 resTypeID);
 
     uint32 GetOwner();

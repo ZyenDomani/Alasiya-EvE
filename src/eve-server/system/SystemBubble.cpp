@@ -525,7 +525,7 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
 /*  NOTE   lil insight into clients code for RemoveBall
  * RemoveBall is function to remove all data associated with a particular ballID.
  * this call is only effective when a SlimItem for that ball is currently active in clients bubble,
- * and the ballID is > destiny.dstLocalBalls
+ * and the ballID is > destiny.dstLocalBalls (which i dont know exactly what that is yet)
  * RemoveBalls is called when there is an associated TerminalExplosion with that ballID
  * [code]
  *          if funcName == 'RemoveBalls':
@@ -536,7 +536,7 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
  *
  *      NOTE  RemoveBall doesnt not work as i thought it should....doesnt trigger explosion.
  */
-//TODO  update these based on above notes
+//TODO  update these based on above notes   (also look into better (non-ambigious) naming)
 void SystemBubble::RemoveBall(SystemEntity *about_who) {
 	//DoDestiny_RemoveBall removeball;
     //    removeball.entityID = about_who->GetID();

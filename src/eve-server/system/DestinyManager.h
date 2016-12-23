@@ -108,6 +108,7 @@ public:
 	bool IsTurning()                                    { return m_turning; }
 
 	//Destiny Update stuff:
+	void Jump();
 	void Cloak();
     void UnCloak();
 

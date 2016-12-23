@@ -2008,6 +2008,12 @@ void DestinyManager::UpdateOldShip(const ShipItemRef oldShipRef) const
     SendBallInteractive(oldShipRef, false);
 }
 
+void DestinyManager::Jump()
+{
+    m_cloaked = true;
+    SendCloakShip(true);
+}
+
 void DestinyManager::Cloak() {
     m_cloaked = true;
     SendCloakShip(true);

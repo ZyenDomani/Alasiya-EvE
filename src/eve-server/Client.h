@@ -150,7 +150,7 @@ public:
     void MoveToPosition(const GPoint &pt);
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
     void SetClientTimer(ClientState type, uint32 wait_ms=ClientTimers::DefaultTimer);
-    void SetDestiny(bool count=false);
+    void SetDestiny(const GPoint& pt, bool count = false);
     void SavePosition();
     void SaveAllToDatabase();
     void UpdateSkillTraining();

@@ -111,7 +111,7 @@ PyResult Command_status(Client* who, CommandDB* db, PyServiceMgr* services, cons
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
     if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny();
+        who->SetDestiny(NULL_ORIGIN);
 
     ShipItem* pShip = who->GetShip().get();
 
@@ -280,7 +280,7 @@ PyResult Command_destinyvars(Client* who, CommandDB* db, PyServiceMgr* services,
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
     if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny();
+        who->SetDestiny(NULL_ORIGIN);
 
     DestinyManager* dm = who->GetShipSE()->DestinyMgr();
 
@@ -314,7 +314,7 @@ PyResult Command_halt(Client* who, CommandDB* db, PyServiceMgr* services, const 
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
     if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny();
+        who->SetDestiny(NULL_ORIGIN);
 
     who->GetShipSE()->DestinyMgr()->Halt();
 

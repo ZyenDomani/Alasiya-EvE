@@ -125,7 +125,7 @@ void Colony::LoadPlants()
                 plant.receivedInputsLastCycle = cur.second.receivedInputsLastCycle;
                 if (plant.schematicID)
                     sPIDataMgr.GetSchematicData(plant.schematicID, plant.data);
-                plant.order = GetPlantOrder(plant.data.outputType);
+                plant.order = GetProductLevel(plant.data.outputType);   // i am ordering plant processing by output Plevel
                 m_pLevel = (uint8)EvE::min(m_pLevel, plant.order);
             ccPin->plants[cur.first] = plant;
         }
@@ -520,7 +520,7 @@ void Colony::SetSchematic(uint32 pinID, uint16 schematicID)
         if (schematicID) {
             sPIDataMgr.GetSchematicData(schematicID, itr->second.data);
             itr->second.state = PINSTATE_IDLE;
-            itr->second.order = GetPlantOrder(itr->second.data.outputType);
+            itr->second.order = GetProductLevel(itr->second.data.outputType);
             itr->second.cycleTime = itr->second.data.cycleTime * 10000000L;
             itr->second.installTime = Win32TimeNow();
             itr->second.expiryTime = itr->second.data.cycleTime + itr->second.installTime;
@@ -668,7 +668,13 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
         //cSE->AnchorContainer();     // avoid GC checks on this container  -no.  has 5d timer set
         pSysMgr->AddEntity(cSE);
 
-        // second - reduce qtys in source container (CC pin.contents in this case), create actual item (previously only virtual) using same loop, and add to container
+        /* second - reduce qtys in source container (CC pin.contents in this case)
+         * create actual item (previously only virtual)
+         * add to container
+         * calculate taxes on items
+         * charge char taxes upon launch
+         */
+        uint32 cost = 0;
         for (auto cur : items) {
             std::map<uint16, uint32>::iterator cont = pin->second.contents.find(cur.first);
             /** @todo  check for qtys here */
@@ -676,12 +682,20 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
                 cont->second -= cur.second;
                 if (cont->second <= 0)
                     pin->second.contents.erase(cont);   // remove item from pin.contents if launching entire qty.
-            } else
-                ;  // make error if item not found in pin.contents?
+            } // make error if item not found in pin.contents?
+
+            switch (GetProductLevel(cur.first)) {
+                case 0:     cost += (0.15 * cur.second);
+                case 1:     cost += (1.14 * cur.second);
+                case 2:     cost += (9 * cur.second);
+                case 3:     cost += (900 * cur.second);
+                case 4:     cost += (75000 * cur.second);
+            }
             ItemData iData(cur.first, m_client->GetCharacterID(), 0, flagAutoFit, cur.second);
             InventoryItemRef iRef = m_svcMgr->item_factory->SpawnItem(iData);
             iRef->Move(cSE->GetID());
         }
+        m_client->AddBalance(-cost);
         contRef->SaveItem();
         pin->second.lastLaunchTime = Win32TimeNow();
 
@@ -694,6 +708,16 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
         _log(PLANET__ERROR, "Colony::LaunchCommodities() - pinID %u not found in ccPin.pins map", pinID);
 }
 
+/** @todo  add import/export taxes
+ *  GetProductLevel(typeID) will return PLevel of item.
+ *  use that to calculate cost for import/export operations
+Product     Command Center Export Cost  Launchpad Export Cost   Launchpad Import Cost
+    P0         15/m3 or .15/unit           10/m3 or .1/unit        5/m3 or .05/unit
+    P1          3/m3 or 1.14/unit           2/m3 or .76/unit       1/m3 or .38/unit
+    P2          9/m3 or 13.5/unit           6/m3 or 9/unit         3/m3 or 4.5/unit
+    P3        150/m3 or 900/unit          100/m3 or 600/unit      50/m3 or 300/unit
+    P4        750/m3 or 75k/unit          500/m3 or 50k/unit     250/m3 or 25k/unit
+*/
 void Colony::PrioritizeRoute()
 {
 
@@ -1170,9 +1194,27 @@ uint32 Colony::GetHeadType(uint16 ecuTypeID, uint16 programType)
     return 2412; //Temperate Aqueous Liquid Extractor  <<< as good a default as any...
 }
 
-uint8 Colony::GetPlantOrder(uint16 programType)
+uint8 Colony::GetProductLevel(uint16 typeID)
 {
-    switch (programType) {
+    switch (typeID) {
+    // P0 - Raw Materials
+        case  2267: //Base Metals
+        case  2270: //Noble Metals
+        case  2272: //Heavy Metals
+        case  2306: //Non-CS Crystals
+        case  2307: //Felsic Magma
+        case  2268: //Aqueous Liquids
+        case  2308: //Suspended Plasma
+        case  2309: //Ionic Solutions
+        case  2310: //Noble Gas
+        case  2311: //Reactive Gas
+        case  2073: //Microorganisms
+        case  2286: //Planktic Colonies
+        case  2287: //Complex Organisms
+        case  2288: //Carbon Compounds
+        case  2305: //Autotrophs
+            return 0;
+
     // P1 - Basic Commodities
         case  2389: //Plasmoids
         case  2390: //Electrolytes
@@ -1253,6 +1295,6 @@ uint8 Colony::GetPlantOrder(uint16 programType)
         case  2876: //Wetware Mainframe
             return 4;
     }
-    _log(PLANET__ERROR, "Colony::GetPlantOrder() - Commodity product level not found using Resource typeID: %u", programType);
+    _log(PLANET__ERROR, "Colony::GetProductLevel() - Commodity product level not found for typeID: %u", typeID);
     return 0;
 }

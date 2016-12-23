@@ -630,10 +630,10 @@ PyResult Command_location(Client* who, CommandDB* db, PyServiceMgr* services, co
 {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny(NULL_ORIGIN);
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
-    if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny();
 
     DestinyManager *dm = who->GetShipSE()->DestinyMgr();
     SystemBubble *b = who->GetShipSE()->SysBubble();
@@ -664,7 +664,7 @@ PyResult Command_syncloc(Client* who, CommandDB* db, PyServiceMgr* services, con
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
     if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny();
+        who->SetDestiny(NULL_ORIGIN);
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
 
@@ -718,10 +718,10 @@ PyResult Command_setbpattr(Client* who, CommandDB* db, PyServiceMgr* services, c
 PyResult Command_update(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny(NULL_ORIGIN);
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
-    if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny();
 
     who->GetShipSE()->DestinyMgr()->SetPosition(who->GetShipSE()->GetPosition(), true);
 
@@ -735,10 +735,10 @@ PyResult Command_update(Client *who, CommandDB *db, PyServiceMgr *services, cons
 PyResult Command_sendstate(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny(NULL_ORIGIN);
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
-    if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny();
 
     who->SetStateSent(false);
     who->GetShipSE()->DestinyMgr()->SendSetState();
@@ -748,10 +748,10 @@ PyResult Command_sendstate(Client *who, CommandDB *db, PyServiceMgr *services, c
 PyResult Command_addball(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny(NULL_ORIGIN);
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
-    if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny();
 
     SystemBubble *m_bubble = who->GetShipSE()->SysBubble();
     m_bubble->SendAddBalls(who->GetShipSE());
@@ -762,10 +762,10 @@ PyResult Command_addball(Client *who, CommandDB *db, PyServiceMgr *services, con
 PyResult Command_addball2(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny(NULL_ORIGIN);
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
-    if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny();
 
     SystemBubble *m_bubble = who->GetShipSE()->SysBubble();
     m_bubble->SendAddBalls2(who->GetShipSE());
