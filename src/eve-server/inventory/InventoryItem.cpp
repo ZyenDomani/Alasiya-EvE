@@ -195,7 +195,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
                     or (type.groupID() == EVEDB::invGroups::Cargo_Container) )
                     return CargoContainer::_LoadItem<CargoContainer>( factory, itemID, type, data );
                 else if (type.groupID() == EVEDB::invGroups::Force_Field)
-                    return InventoryItem( new InventoryItem( factory, itemID, type, data ) );
+                    return InventoryItemRef( new InventoryItem( factory, itemID, type, data ) );
                 else
                     return CelestialObject::_LoadItem<CelestialObject>( factory, itemID, type, data );
             }

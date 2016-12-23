@@ -104,7 +104,6 @@ public:
 protected:
     Dispatcher *const m_dispatch;
 
-    void WarpToEntity(SystemEntity* pSE);
 };
 
 PyCallable_Make_InnerDispatcher(BeyonceService)
@@ -444,7 +443,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     int32 distance = 0;
     std::map<std::string, PyRep*>::iterator res = call.byname.find("minRange");
     if (res == call.byname.end()) {
-        ;
+        distance = call.client->GetShip()->radius();
     } else if (!res->second->IsInt() && !res->second->IsFloat()) {
         codelog(CLIENT__ERROR, "%s: range of invalid type %s, expected Integer or Real; using 5 km.", call.client->GetName(), res->second->TypeString());
         distance = 5000;
@@ -452,19 +451,78 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         distance = (res->second->IsInt() ? res->second->AsInt()->value() : res->second->AsFloat()->value());
     }
 
+    GPoint warpToPoint(NULL_ORIGIN);
+    SystemEntity* pSE(nullptr);
+    double radius = 0;
+    uint32 toID = 0;
+    std::string stringArg = "";
+
+    if (call.tuple->GetItem(1)->IsString())
+        stringArg = call.tuple->GetItem(1)->AsString()->content();
+    else if (call.tuple->GetItem(1)->IsInt())
+        toID = call.tuple->GetItem(1)->AsInt()->value();
+
     std::string type = call.tuple->GetItem(0)->AsString()->content();
-
     if (type == "item" ) {
-        uint32 toID = call.tuple->GetItem(1)->AsInt()->value();
-
-		// This section handles Warping to any object in the Overview
-		SystemEntity* pSE = pSM->GetSE(toID);
+		pSE = pSM->GetSE(toID);
         if (!pSE) {
             codelog(CLIENT__ERROR, "%s: unable to find location %d", call.client->GetName(), toID);
 			return nullptr;
 		}
-		double radius = pSE->GetRadius();
-        GPoint warpToPoint = pSE->GetPosition();
+    } else if (type == "bookmark" ) {
+        double x = 0.0, y = 0.0, z = 0.0;
+        uint32 typeID = 0, locationID = 0;
+        uint32 bookmarkID = call.tuple->GetItem(1)->AsInt()->value();
+
+        BookmarkService* bkSrvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
+        if (!bkSrvc) {
+            sLog.Error( "BeyonceService::Handle_WarpToStuff()", "Attempt to access BookmarkService returned nullptr." );
+            return nullptr;
+        }
+        bkSrvc->LookupBookmark(bookmarkID, toID, typeID, locationID, x, y, z);
+
+        if ( typeID == 5 ) {
+            if (call.client->GetSystemID() != locationID) {
+                //  this bm is for different system.  make error here.
+                return nullptr;
+            }
+            warpToPoint = (GPoint)(x, y, z);
+        } else {
+            // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
+            pSE = pSM->GetSE( toID );
+            if (!pSE) {
+                sLog.Error( "BeyonceService::Handle_WarpToStuff()", "%s: unable to find location %d", call.client->GetName(), toID );
+                return nullptr;
+            }
+        }
+    } else if (type == "scan") {
+        ManagerDB mDB;
+        warpToPoint = mDB.GetAnomalyPos(stringArg);
+    } else if (type == "launch") {
+        // launchpickup - launch, launchid
+        PlanetDB mDB;
+        warpToPoint = mDB.GetLaunchPos(toID);
+    }
+	// the systems below are not implemented yet.  hold on coding till systems are working and we know what needs to be done here
+	else if (type == "epinstance") {
+        // epinstance, instanceid
+        //stringArg
+        call.client->SendErrorMsg("WarpToInstance is not implemented at this time.  See Allan for updates.");
+        return nullptr;
+    } else if (type == "tutorial") {
+        // tutorial, none
+        call.client->SendErrorMsg("WarpToTutorial is not implemented at this time.  See Allan for updates.");
+        return nullptr;
+    } else if (type == "char") {
+    //  fleet warping
+    // [warptomember] char, charid, minrange
+    // [warpfleettomember] char, charid, minrange, fleet=1
+        call.client->SendErrorMsg("WarpToChar is not implemented at this time.  See Allan for updates.");
+        return nullptr;
+    } else {
+        sLog.Error( "BeyonceService::Handle_WarpToStuff()", "Unexpected type value: '%s'.", type.c_str() );
+        return nullptr;
+    }
 
         /* formulas for warpin points for all objects
          * x,y,z = object coords.  r = object radius
@@ -484,6 +542,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
          * s = 20*((1/40)*(10*log10(r/10^6)-39)^20) +0.5
          * s = max(0.5, min(s, 10.5))
          */
+    if (pSE) {
+        radius = pSE->GetRadius();
+        warpToPoint = pSE->GetPosition();
 
         if (pSE->IsPlanetSE()) {
             srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
@@ -501,12 +562,14 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             StationData data;
             sDataMgr.GetStationInfo(toID, data);
             warpToPoint.y = data.dockPosition.y;
+        } else if (pSE->IsGateSE()) {
+            distance += (pSE->GetRadius() /2);  // fudge the distance a bit for gates... its' a lil close by default
         } else if (radius > 90000) {
             /** @todo  this formula is right, but isnt working correctly....revert to my formula
-            warpToPoint.x += ((radius + 5000000) * cos(radius));
-            warpToPoint.y += ((radius * 1.3) - 7500);
-            warpToPoint.z -= ((radius + 5000000) * sin(radius));
-            */
+             *   warpToPoint.x += ((radius + 5000000) * cos(radius));
+             *   warpToPoint.y += ((radius * 1.3) - 7500);
+             *   warpToPoint.z -= ((radius + 5000000) * sin(radius));
+             */
             warpToPoint -= (pSE->GetRadius() + (pSE->GetRadius() *2 /8 /*10*/));
         }
         if (radius < 90000) {
@@ -516,116 +579,17 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             GPoint stopPoint = (vectorFromOrigin * -radius);
             warpToPoint -= stopPoint;
         }
-
-        distance += (call.client->GetShipSE()->GetRadius() *2);
-
-        pDestiny->WarpTo(warpToPoint, distance);
-    } else if (type == "bookmark" ) {
-        // This section handles Warping to any Bookmark
-        GPoint warpToPoint(NULL_ORIGIN);
-        double x = 0.0, y = 0.0, z = 0.0;
-        uint32 toID = 0, typeID = 0, locationID = 0;
-        uint32 bookmarkID = call.tuple->GetItem(1)->AsInt()->value();
-
-        BookmarkService* bkSrvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
-        if (!bkSrvc) {
-            sLog.Error( "BeyonceService::Handle_WarpToStuff()", "Attempt to access BookmarkService returned nullptr." );
-            return nullptr;
-        }
-        bkSrvc->LookupBookmark(bookmarkID, toID, typeID, locationID, x, y, z);
-
-        if ( typeID == 5 ) {
-            if (call.client->GetSystemID() != locationID) {
-                //  this bm is for different system.  make and send error here.
-                return nullptr;
-            }
-            warpToPoint = (GPoint)(x, y, z);
-        } else {
-            // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
-            SystemEntity* pSE = pSM->GetSE( toID );
-            if (!pSE) {
-                sLog.Error( "BeyonceService::Handle_WarpToStuff()", "%s: unable to find location %d", call.client->GetName(), toID );
-                return nullptr;
-            }
-            double distanceFromBodyOrigin = 0.0, distanceFromSystemOrigin = 0.0;
-            uint32 radius = pSE->GetRadius();
-            GPoint warpToPoint(pSE->GetPosition());
-            if (pSE->IsPlanetSE()) {
-                srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
-                int64 rand = random();
-                double j = (((rand / RAND_MAX) -1.0) / 3.0);
-                double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
-                s = EvE::max(0.5, EvE::min(s, 10.5));
-                double t = asin((warpToPoint.x/fabs(warpToPoint.x)) * (warpToPoint.z / sqrt(pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2)))) +j;
-                uint32 d = radius * (s +1) +100000;
-                warpToPoint.x += d * sin(t);
-                warpToPoint.y += 0.5 * radius * sin(j);
-                warpToPoint.z -= d * cos(t);
-            } else if (pSE->IsStationSE()){
-                // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
-                StationData data;
-                sDataMgr.GetStationInfo(toID, data);
-                warpToPoint.y = data.dockPosition.y;
-            } else if (pSE->IsGateSE()) {
-                distance += (pSE->GetRadius() /2);  // fudge the distance a bit for gates... its' a lil close by default
-            } else if (radius > 90000) {
-                /** @todo  this formula is right, but isnt working correctly....revert to my formula
-                 *   warpToPoint.x += ((radius + 5000000) * cos(radius));
-                 *   warpToPoint.y += ((radius * 1.3) - 7500);
-                 *   warpToPoint.z -= ((radius + 5000000) * sin(radius));
-                 */
-                warpToPoint -= (pSE->GetRadius() + (pSE->GetRadius() *2 /8 /*10*/));
-            }
-            if (radius < 90000) {
-                // this will include stations (max station radius 60km)
-                GVector vectorFromOrigin( warpToPoint, call.client->GetShipSE()->GetPosition() );
-                vectorFromOrigin.normalize();   //we now have a direction
-                GPoint stopPoint = (vectorFromOrigin * -radius);
-                warpToPoint -= stopPoint;
-            }
-
-            distance += (call.client->GetShipSE()->GetRadius() *2);
-        }
-        pDestiny->WarpTo(warpToPoint, distance);
-    } else if (type == "scan") {
-        std::string resultID = call.tuple->GetItem(1)->AsString()->content();
-        ManagerDB mDB;
-        pDestiny->WarpTo(mDB.GetAnomalyPos(resultID), distance);
-    } else if (type == "launch") {
-        // launchpickup - launch, launchid
-        uint32 launchid = call.tuple->GetItem(1)->AsInt()->value();
-        PlanetDB mDB;
-        pDestiny->WarpTo(mDB.GetLaunchPos(launchid), distance);
-    }
-	// the systems below are not implemented yet.  hold on coding till systems are working.
-	else if (type == "epinstance") {
-        // epinstance, instanceid
-        std::string instanceID = call.tuple->GetItem(1)->AsString()->content();
-        call.client->SendErrorMsg("WarpToInstance is not implemented at this time.  See Allan for updates.");
-    } else if (type == "tutorial") {
-        // tutorial, none
-        call.client->SendErrorMsg("WarpToTutorial is not implemented at this time.  See Allan for updates.");
-    } else if (type == "char") {
-    //  fleet warping
-    // [warptomember] char, charid, minrange
-    // [warpfleettomember] char, charid, minrange, fleet=1
-        uint32 toID = call.tuple->GetItem(1)->AsInt()->value();
-        call.client->SendErrorMsg("WarpToChar is not implemented at this time.  See Allan for updates.");
-    } else {
-        sLog.Error( "BeyonceService::Handle_WarpToStuff()", "Unexpected type value: '%s'.", type.c_str() );
     }
 
-    if (call.client->IsUndock()) {
+    distance += (call.client->GetShipSE()->GetRadius() *2); // add ship diameter to distance
+    pDestiny->WarpTo(warpToPoint, distance);
+
+    if (call.client->IsUndock())
         call.client->SetUndock(false);
-        if (call.client->IsInvul())
-            call.client->SetInvul(false);
-    }
+    if (call.client->IsInvul())
+        call.client->SetInvul(false);
+
     return nullptr;
-}
-
-void BeyonceBound::WarpToEntity(SystemEntity* pSE)
-{
-
 }
 
 PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {

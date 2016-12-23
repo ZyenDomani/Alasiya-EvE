@@ -237,7 +237,7 @@ public:
     /* Base */
     virtual bool                IsInanimateSE()         { return true; }
     /* Static */
-    virtual bool                Global()                { return true; }    // just in case item->global() fails here
+    virtual bool                Global()                { return true; }    // just in case item->global() fails here...which it shouldnt
     virtual bool                IsStaticEntity()        { return true; }
 
     /* SystemEntity interface */
@@ -294,14 +294,13 @@ public:
     virtual bool                IsGateSE()              { return true; }
 
     /* SystemEntity interface */
-    virtual void EncodeDestiny( Buffer& into );
     virtual PyDict*             MakeSlimItem();
 
     /* virtual functions to be overridden in derived classes */
     virtual bool                LoadExtras(SystemDB *db);
 
 protected:
-    PyRep* m_jumps;
+    PyRep*                      m_jumps;
 
 };
 
@@ -313,17 +312,18 @@ public:
     virtual ~ItemSystemEntity()                         { /* Do nothing here */ }
 
     /* class type pointer querys. */
-    virtual ItemSystemEntity* GetItemSE()               { return this; }
+    virtual ItemSystemEntity*   GetItemSE()             { return this; }
     /* class type tests. */
     /* Base */
-    virtual bool IsInanimateSE()                        { return true; }
+    virtual bool                IsInanimateSE()         { return true; }
     /* Item */
-    virtual bool IsItemEntity()                         { return true; }
+    virtual bool                IsItemEntity()          { return true; }
 
     /* SystemEntity interface */
-    virtual void MakeDamageState(DoDestinyDamageState &into);
-    
-    virtual PyDict *MakeSlimItem();
+    virtual void                EncodeDestiny( Buffer& into );
+    virtual void                MakeDamageState(DoDestinyDamageState &into);
+
+    virtual PyDict*             MakeSlimItem();
 };
 
 class DungeonSE : public ItemSystemEntity {
@@ -332,15 +332,15 @@ public:
     virtual ~DungeonSE()                                { /* Do nothing here */ }
 
     /* class type pointer querys. */
-    virtual DungeonSE* GetDungeonSE()                   { return this; }
+    virtual DungeonSE*          GetDungeonSE()          { return this; }
     /* class type tests. */
     /* Base */
-    virtual bool IsDungeonSE()                          { return true; }
+    virtual bool                IsDungeonSE()           { return true; }
 
     /* SystemEntity interface */
-    virtual void EncodeDestiny( Buffer& into );
+    virtual void                EncodeDestiny( Buffer& into );
 
-    virtual PyDict *MakeSlimItem();
+    virtual PyDict*             MakeSlimItem();
 };
 
 /* Non-Static / Non-Mobile / Destructable / Celestial Objects - POS Structures, Outposts, Asteroids, Deployables */
@@ -353,19 +353,19 @@ public:
     virtual ObjectSystemEntity* GetObjectSE()           { return this; }
     /* class type tests. */
     /* Base */
-    virtual bool IsInanimateSE()                        { return true; }
+    virtual bool                IsInanimateSE()         { return true; }
     /* Object */
-    virtual bool IsObjectEntity()                       { return true; }
+    virtual bool                IsObjectEntity()        { return true; }
 
     /* SystemEntity interface */
-    virtual void UpdateDamage();
-    virtual void EncodeDestiny( Buffer& into );
-    virtual void MakeDamageState(DoDestinyDamageState &into);
+    virtual void                UpdateDamage();
+    virtual void                EncodeDestiny( Buffer& into );
+    virtual void                MakeDamageState(DoDestinyDamageState &into);
 
-    virtual PyDict *MakeSlimItem();
+    virtual PyDict*             MakeSlimItem();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Killed(Damage &fatal_blow);
+    virtual void                Killed(Damage &fatal_blow);
 };
 
 class DeployableSE
@@ -376,9 +376,9 @@ public:
     virtual ~DeployableSE();
 
     /* class type pointer querys. */
-    virtual DeployableSE* GetDeployableSE()             { return nullptr; }
+    virtual DeployableSE*       GetDeployableSE()       { return nullptr; }
     /* class type tests. */
-    virtual bool IsDeployableSE()                       { return true; }
+    virtual bool                IsDeployableSE()        { return true; }
 };
 
 
@@ -392,21 +392,21 @@ public:
     virtual DynamicSystemEntity* GetDynamicSE()         { return this; }
     /* class type tests. */
     /* Dynamic */
-    virtual bool IsDynamicEntity()                      { return true; }
+    virtual bool                IsDynamicEntity()       { return true; }
 
     /* SystemEntity interface */
-    virtual void UpdateDamage();
-    virtual void EncodeDestiny( Buffer& into );
-    virtual void MakeDamageState(DoDestinyDamageState &into);
+    virtual void                UpdateDamage();
+    virtual void                EncodeDestiny( Buffer& into );
+    virtual void                MakeDamageState(DoDestinyDamageState &into);
 
-    virtual PyDict *MakeSlimItem();
+    virtual PyDict*             MakeSlimItem();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Killed(Damage &fatal_blow);
+    virtual void                Killed(Damage &fatal_blow);
 
     /* specific functions handled here. */
-    bool Load();
-    void AwardBounty(Client* pClient);
+    bool                        Load();
+    void                        AwardBounty(Client* pClient);
 };
 
 
