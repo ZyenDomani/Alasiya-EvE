@@ -614,6 +614,7 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
         if ((categoryID == EVEDB::invCategories::Structure)
             or (categoryID == EVEDB::invCategories::Orbitals)) {
             // This item is an Orbital structure of some kind, so move it from the ship's cargo into space
+            /** @todo  this needs lots of work for correct placement of orbital items */
             structureRef = m_manager->item_factory->GetStructure(itemID);
 
             if (!structureRef)

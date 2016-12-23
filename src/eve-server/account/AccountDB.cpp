@@ -55,6 +55,18 @@ PyObject *AccountDB::GetJournal(uint32 charID, uint32 refTypeID, uint32 accountK
 //'refID', 'transDate', 'refTypeID','ownerID1', 'ownerID2', 'argID1', 'accountID', 'amount', 'balance', 'reason'
   //  rec.entryTypeID, rec.ownerID1, rec.ownerID2, rec.referenceID, rec.amount, rec.balance, rec.currency, rec.transactionDate, rec.sortValue
 
+    /*
+          [PyPackedRow 51 bytes]
+            ["transactionID" => <5572917879> [I8]]
+            ["transactionDate" => <129755653800000000> [FileTime]]
+            ["referenceID" => <61000064> [I8]]
+            ["description" => <None> [WStr]]
+            ["ownerID1" => <1661059544> [I4]]
+            ["ownerID2" => <1557789550> [I4]]
+            ["entryTypeID" => <1> [I2]]
+            ["amount" => <0> [CY]]
+            ["balance" => <6885742154656> [CY]]
+            */
     DBQueryResult res;
     uint64 dT = transDate - Win32Time_Day;
     // 1 sec = 10.000.000
