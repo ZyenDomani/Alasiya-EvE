@@ -491,10 +491,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             double j = (((rand / RAND_MAX) -1.0) / 3.0);
             double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
             s = EvE::max(0.5, EvE::min(s, 10.5));
-            double a = warpToPoint.x/fabs(warpToPoint.x);
-            double b = pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2);
-            double c = warpToPoint.z / sqrt(b);
-            double t = asin(a * c) +j;
+            double t = asin((warpToPoint.x/fabs(warpToPoint.x)) * (warpToPoint.z / sqrt(pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2)))) +j;
             uint32 d = radius * (s +1) +100000;
             warpToPoint.x += d * sin(t);
             warpToPoint.y += 0.5 * radius * sin(j);
@@ -559,10 +556,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 double j = (((rand / RAND_MAX) -1.0) / 3.0);
                 double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
                 s = EvE::max(0.5, EvE::min(s, 10.5));
-                double a = warpToPoint.x/fabs(warpToPoint.x);
-                double b = pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2);
-                double c = warpToPoint.z / sqrt(b);
-                double t = asin(a * c) +j;
+                double t = asin((warpToPoint.x/fabs(warpToPoint.x)) * (warpToPoint.z / sqrt(pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2)))) +j;
                 uint32 d = radius * (s +1) +100000;
                 warpToPoint.x += d * sin(t);
                 warpToPoint.y += 0.5 * radius * sin(j);
