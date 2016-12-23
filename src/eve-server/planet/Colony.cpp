@@ -674,7 +674,7 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
          * calculate taxes on items
          * charge char taxes upon launch
          */
-        uint32 cost = 0;
+        double cost = 0;
         for (auto cur : items) {
             std::map<uint16, uint32>::iterator cont = pin->second.contents.find(cur.first);
             /** @todo  check for qtys here */
@@ -685,11 +685,11 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
             } // make error if item not found in pin.contents?
 
             switch (GetProductLevel(cur.first)) {
-                case 0:     cost += (0.15 * cur.second);
-                case 1:     cost += (1.14 * cur.second);
-                case 2:     cost += (9 * cur.second);
-                case 3:     cost += (900 * cur.second);
-                case 4:     cost += (75000 * cur.second);
+                case 0:     cost += (    0.15 * cur.second);    break;
+                case 1:     cost += (    1.14 * cur.second);    break;
+                case 2:     cost += (    9.00 * cur.second);    break;
+                case 3:     cost += (  900.00 * cur.second);    break;
+                case 4:     cost += (75000.00 * cur.second);    break;
             }
             ItemData iData(cur.first, m_client->GetCharacterID(), 0, flagAutoFit, cur.second);
             InventoryItemRef iRef = m_svcMgr->item_factory->SpawnItem(iData);

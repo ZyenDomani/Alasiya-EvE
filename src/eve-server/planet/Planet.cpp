@@ -95,7 +95,6 @@ void PlanetSE::CreateCustomsOffice()
      * the CO will load all items when it loads, but will need checks on "view items" or "open container" to ONLY send
      * items owned by calling char, or NONE for chars that dont have a colony on that planet.
      * i dont know where/how to do that yet...will need testing
-     *
      */
 
     //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
@@ -114,14 +113,27 @@ void PlanetSE::CreateCustomsOffice()
         data.allianceID = 0;
         data.corporationID = 0;
     }
-    ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
-    StructureItemRef iRef = m_services.item_factory->SpawnStructure(idata);
+
     GPoint pos = GetPosition();
     uint32 radius = m_self->radius();
-    radius += 1000000;      // ship warps to planetRadius +1000000...
-    //  use warpTo formula for planet here, and move CO just outside this point, but still in bubble, perferably close to center.
-    pos.MakeRandomPointOnSphere(radius);
-    iRef->Relocate(pos);   // set position here...needs a bit more research to do properly
+    srandom(m_self->itemID());
+    int64 rand = random();
+    double j = (((rand / RAND_MAX) -1.0) / 3.0);
+    double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
+    s = EvE::max(0.5, EvE::min(s, 10.5));
+    double t = asin((pos.x/fabs(pos.x)) * (pos.z / sqrt(pow(pos.x, 2) + pow(pos.z, 2)))) +j;
+    uint32 d = radius * (s +1) +100000;
+    pos.x += d * sin(t);
+    pos.y += 0.5 * radius * sin(j);
+    pos.z -= d * cos(t);
+
+    GVector dir(pos, m_self->position());
+    dir.normalize();
+    pos -= (dir * 25000);   // put CO 25km closer to planet than warpIn point.
+    
+    ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
+    StructureItemRef iRef = m_services.item_factory->SpawnStructure(idata);
+    iRef->Relocate(pos);
     iRef->SetAttribute(AttrIsGlobal, 1, false);
     pCO = new StructureSE(iRef, m_services, m_system, data);
     m_system->AddEntity(pCO);
