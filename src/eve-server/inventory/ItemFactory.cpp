@@ -75,26 +75,27 @@ ItemFactory::~ItemFactory() {
 void ItemFactory::SaveItems() {
     uint32 count = 0;
     double startTime = GetTimeUSeconds();
-    SaveData data;
     std::vector<SaveData> items;
     items.clear();
     for (auto cur : m_items) {
-        if (IsStaticMapItem(cur.first)) // this is a hack for now.  will eventually move to static/dynamic item maps
-            continue;
-        data.itemID = cur.first;
-        data.contraband = cur.second->contraband();
-        data.flag = cur.second->flag();
-        data.locationID = cur.second->locationID();
-        data.ownerID = cur.second->ownerID();
-        data.position = cur.second->position();
-        data.quantity = cur.second->quantity();
-        data.singleton = cur.second->singleton();
-        data.typeID = cur.second->typeID();
-        data.customInfo = cur.second->customInfo();
-        items.push_back(data);
-        ++count;
-        // not sure if i wanna do this here...maybe so later
-        //cur.second->SaveAttributes();
+        if (IsNotStaticItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
+            SaveData data;
+                data.itemID = cur.first;
+                data.contraband = cur.second->contraband();
+                data.flag = cur.second->flag();
+                data.locationID = cur.second->locationID();
+                data.ownerID = cur.second->ownerID();
+                data.position = cur.second->position();
+                data.quantity = cur.second->quantity();
+                data.singleton = cur.second->singleton();
+                data.typeID = cur.second->typeID();
+                data.customInfo = cur.second->customInfo();
+            items.push_back(data);
+            ++count;
+            // not sure if i wanna do this here...maybe so later
+            if ((cur.second->flag() == flagSkill) or (cur.second->flag() == flagSkillInTraining))
+                cur.second->SaveAttributes();
+        }
     }
     m_db.SaveItems(items);
     sLog.Warning("        SaveItems", "Saved %u Items in %.3fus.", count, (GetTimeUSeconds() -startTime) );

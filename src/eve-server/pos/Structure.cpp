@@ -159,8 +159,8 @@ void StructureItem::AddItem( InventoryItemRef item )
 void StructureItem::RemoveItem(InventoryItemRef item)
 {
     m_inventory->RemoveItem( item );
-
 }
+
 
 /** @todo (Allan) this class needs more research to finish
  * see pics in ::GamePC/G/games/EvE/misc/POS

@@ -40,3 +40,5 @@
           " - show current objects in bubble, their destiny state, and movement speed." )
  COMMAND( track, ROLE_PROGRAMMER,
           " - toggles current object movement tracking state." )
+ COMMAND( warpto, ROLE_GMH,
+          " - warp to an object using its itemID." )

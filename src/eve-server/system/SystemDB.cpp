@@ -208,7 +208,7 @@ double SystemDB::GetCelestialRadius(uint32 itemID) {
 }
 
 bool SystemDB::GetWrecksToTypes(DBQueryResult& res) {
-    if(!sDatabase.RunQuery(res, "SELECT * FROM invTypesToWrecks")) {
+    if(!sDatabase.RunQuery(res, "SELECT typeID, wreckTypeID FROM invTypesToWrecks")) {
         codelog(DATABASE__ERROR, "Error in GetWrecksToTypes query: %s", res.error.c_str());
         return false;
     }

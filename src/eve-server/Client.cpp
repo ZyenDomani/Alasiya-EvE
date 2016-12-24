@@ -276,6 +276,7 @@ void Client::ProcessClient() {
         SetInvul(false);
     }
 
+    /*  this may need to be moved to net process, as some of these are NOT on 1s intervals */
     if (m_stateTimer.Check(false)) {
         m_stateTimer.Disable();
         switch (m_clientState) {
@@ -299,6 +300,7 @@ void Client::ProcessClient() {
                 SetBallPark();
             } break;
         }
+        m_clientState = csIdle;
     }
 
     if (m_scanTimer.Check(false)) {
@@ -340,7 +342,7 @@ void Client::SetDestiny(const GPoint& pt, bool count) {
         m_setStateSent = false;
         if (m_beyonce)
             return;
-        if ((!m_login) and (!IsJump()))
+        if ((!m_login) and (!IsJump()) and (!m_undock))
             SetBallPark();
     } else
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
@@ -505,7 +507,6 @@ void Client::UndockFromStation() {
         mts->CancelTrade(this);
     }
 
-    m_login = false;
     m_invul = m_undock = true;
     //set position and direction of docking ramp for later use
     m_dockPoint = m_StationData.dockPosition;
@@ -535,7 +536,6 @@ void Client::SetBallPark() {
         pShipSE->DestinyMgr()->Undock(m_movePoint);
     if (!m_setStateSent)
         pShipSE->DestinyMgr()->SendSetState();
-    m_clientState = csIdle;
 }
 
 void Client::DockToStation() {
@@ -543,7 +543,6 @@ void Client::DockToStation() {
 
     SetAutoPilot(false);
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
-    m_clientState = csIdle;
     m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls
 
     //Check if player is in pod, in which case they get a rookie ship for free
@@ -695,7 +694,7 @@ void Client::SetAutoPilot(bool autoPilot /*false*/) {
 
 void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     if ((m_clientState != csIdle) or m_stateTimer.Enabled()) {
-        sLog.Error("Client","%s: StargateJump called when a jump is already pending. Ignoring.", m_char->itemName().c_str());
+        sLog.Error("Client","%s: StargateJump called when a move is already pending. Ignoring.", m_char->itemName().c_str());
         return;
     }
 
@@ -744,8 +743,8 @@ void Client::ExecuteJump() {
     m_invul = true;
     m_beyonce = m_setStateSent = false;
 
-    pShipSE->DestinyMgr()->Jump();
     MoveToLocation(m_moveSystemID, m_movePoint);
+    pShipSE->DestinyMgr()->Jump();
     pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
 
     m_toGate = 0;
@@ -753,6 +752,7 @@ void Client::ExecuteJump() {
 }
 
 void Client::SetJumpTimers() {
+    pShipSE->DestinyMgr()->Cloak();
     m_jumpTimer.Start(ClientTimers::JumpTimer);
     m_cloakTimer.Start(ClientTimers::JumpCloak);
     m_invulTimer.Start(ClientTimers::JumpInvul);

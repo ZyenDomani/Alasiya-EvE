@@ -162,7 +162,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
     if (pSE->HasPilot()) {
         Client* pClient = pSE->GetPilot();
         SendAddBalls( pSE );
-        if (!pClient->GetShipSE()->DestinyMgr()->IsCloaked()) {
+        if (!pClient->IsJump()) {
             if (HasPlayers())
                 AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
         }

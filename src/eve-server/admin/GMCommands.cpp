@@ -54,9 +54,9 @@ PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, cons
 
     if (!args.isNumber(1))
         throw PyException(MakeCustomError("Argument 1 must be type ID."));
-    const uint32 typeID = atoi(args.arg(1).c_str());
+    int typeID = atoi(args.arg(1).c_str());
 
-    uint32 qty = 1;
+    int qty = 1;
     if (2 < args.argCount()) {
         if (args.isNumber(2))
             qty = atoi(args.arg(2).c_str());
@@ -106,9 +106,9 @@ PyResult Command_createitem(Client* who, CommandDB* db, PyServiceMgr* services, 
     //each time it creates an item
     if (!args.isNumber(1))
         throw PyException(MakeCustomError("Argument 1 must be type ID."));
-    const uint32 typeID = atoi(args.arg(1).c_str());
+    int typeID = atoi(args.arg(1).c_str());
 
-    uint32 qty = 1;
+    int qty = 1;
     if (2 < args.argCount()) {
         if (args.isNumber(2))
             qty = atoi(args.arg(2).c_str());
@@ -219,7 +219,7 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
     // Argument Discovery
     Client * p_targetClient = nullptr;
     SystemEntity * destinationEntity = nullptr;
-    uint32 locationID = 0, trMode = 0;
+    int locationID = 0, trMode = 0;
     GPoint destinationPoint(NULL_ORIGIN);
     uint32 argsCount = args.argCount();
     std::string name1 = args.arg(1);
@@ -304,7 +304,7 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
             throw PyException(MakeCustomError(std::string(usageString+"<br><br>YOU MUST BE IN SPACE!").c_str()));
 
         if (args.isNumber(1) && args.isNumber(2) && args.isNumber(3))
-            destinationPoint = GPoint(atoi(args.arg(1).c_str()), atoi(args.arg(2).c_str()), atoi(args.arg(3).c_str()));
+            destinationPoint = GPoint(atoll(args.arg(1).c_str()), atoll(args.arg(2).c_str()), atoll(args.arg(3).c_str()));
     }
 
     //  in case ap is set, unset it, as it will do odd things when undocking or loging in
@@ -347,7 +347,7 @@ PyResult Command_giveisk(Client* who, CommandDB* db, PyServiceMgr* services, con
     // If target (arg #1) is not the string "me" then decode number from argument string, otherwise get this character's ID:
     uint32 entity;
     if (target == "")
-        entity = atoi(args.arg(1).c_str());
+        entity = atol(args.arg(1).c_str());
     else
         entity = who->GetCharacterID();
 
@@ -403,9 +403,9 @@ PyResult Command_goto(Client* who, CommandDB* db, PyServiceMgr* services, const 
         throw PyException(MakeCustomError("Correct Usage: /goto [x coord] [y coor] [z coord]"));
     }
 
-    GPoint p(atof(args.arg(1).c_str()),
-              atof(args.arg(2).c_str()),
-              atof(args.arg(3).c_str()));
+    GPoint p(atoll(args.arg(1).c_str()),
+             atoll(args.arg(2).c_str()),
+             atoll(args.arg(3).c_str()));
 
     sLog.White("Command", "%s: Goto (%.13f, %.13f, %.13f)", who->GetName(), p.x, p.y, p.z);
 
@@ -415,7 +415,7 @@ PyResult Command_goto(Client* who, CommandDB* db, PyServiceMgr* services, const 
 
 PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    uint32 typeID = 0;
+    int typeID = 0;
     uint32 actualTypeID = 0;
     std::string actualTypeName = "";
     uint32 actualGroupID = 0;
@@ -494,8 +494,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
 
 PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    uint32 typeID = 0;
-    uint32 spawnCount = 1;
+    int typeID = 0, spawnCount = 1;
     uint32 spawnIndex = 0;
     uint32 maximumSpawnCountAllowed = 100;
     uint32 actualTypeID = 0;
@@ -560,9 +559,9 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
         else
             throw PyException(MakeCustomError("TOO FEW PARAMETERS: %s", usage.c_str()));
 
-        offsetLocation.x = atoi(args.arg(3).c_str());
-        offsetLocation.y = atoi(args.arg(4).c_str());
-        offsetLocation.z = atoi(args.arg(5).c_str());
+        offsetLocation.x = atoll(args.arg(3).c_str());
+        offsetLocation.y = atoll(args.arg(4).c_str());
+        offsetLocation.z = atoll(args.arg(5).c_str());
         offsetLocationSet = true;
     }
 
@@ -684,7 +683,7 @@ PyResult Command_setbpattr(Client* who, CommandDB* db, PyServiceMgr* services, c
 
     if (!args.isNumber(1))
         throw PyException(MakeCustomError("Argument 1 must be blueprint ID. (got %s)", args.arg(1).c_str()));
-    uint32 blueprintID = atoi(args.arg(1).c_str());
+    int blueprintID = atoi(args.arg(1).c_str());
 
     if ("0" != args.arg(2) && "1" != args.arg(2))
         throw PyException(MakeCustomError("Argument 2 must be 0 (original) or 1 (copy). (got %s)", args.arg(2).c_str()));
@@ -692,15 +691,15 @@ PyResult Command_setbpattr(Client* who, CommandDB* db, PyServiceMgr* services, c
 
     if (!args.isNumber(3))
         throw PyException(MakeCustomError("Argument 3 must be material level. (got %s)", args.arg(3).c_str()));
-    uint32 materialLevel = atoi(args.arg(3).c_str());
+    int materialLevel = atoi(args.arg(3).c_str());
 
     if (!args.isNumber(4))
         throw PyException(MakeCustomError("Argument 4 must be productivity level. (got %s)", args.arg(4).c_str()));
-    uint32 productivityLevel = atoi(args.arg(4).c_str());
+    int productivityLevel = atoi(args.arg(4).c_str());
 
     if (!args.isNumber(5))
         throw PyException(MakeCustomError("Argument 5 must be remaining licensed production runs. (got %s)", args.arg(5).c_str()));
-    uint32 licensedProductionRunsRemaining = atoi(args.arg(5).c_str());
+    int licensedProductionRunsRemaining = atoi(args.arg(5).c_str());
 
     BlueprintRef bp = services->item_factory->GetBlueprint(blueprintID);
     if (!bp)
@@ -805,7 +804,7 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
     }
 
     // Check for target (arg #1) for either a number or the string "myship":
-    uint32 itemID = 0;
+    int itemID = 0;
     std::string target = "";
     if (!args.isNumber(1))
     {
@@ -851,7 +850,7 @@ PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const S
         throw PyException(MakeCustomError("Correct Usage: /fit [typeID] "));
     }
 
-    uint32 typeID = 0;
+    int typeID = 0;
 
     if (args.argCount() == 3)
     {
@@ -1229,7 +1228,7 @@ PyResult Command_dogma(Client* who, CommandDB* db, PyServiceMgr* services, const
     if (!args.isNumber(1)) {
         throw PyException(MakeCustomError("Invalid itemID. \n Correct Usage: /dogma [itemID] [attributeName] = [value]"));
     }
-    uint32 itemID = atoi(args.arg(1).c_str());
+    int32 itemID = atoi(args.arg(1).c_str());
 
     if (args.isNumber(2)) {
         throw PyException(MakeCustomError("Invalid attributeName. \n Correct Usage: /dogma [itemID] [attributeName] = [value]"));
@@ -1363,7 +1362,7 @@ PyResult Command_kill(Client* who, CommandDB* db, PyServiceMgr* services, const 
         if (!args.isNumber(1)) {
             throw PyException(MakeCustomError("Argument 1 should be a character ID"));
         }
-        uint32 entity = atoi(args.arg(1).c_str());
+        int entity = atoi(args.arg(1).c_str());
 
         InventoryItemRef itemRef = services->item_factory->GetShip(entity);
         if (itemRef.get() == NULL)

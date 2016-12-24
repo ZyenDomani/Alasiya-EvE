@@ -49,22 +49,22 @@ int DGM_Types_to_Wrecks_Table::Initialize()
 void DGM_Types_to_Wrecks_Table::_Populate()
 {
     double start = GetTimeUSeconds();
-    uint32 wreckID, typeID;
+    uint16 wreckID, typeID;
 
     //first get list of all effects from dgmEffects table
     DBQueryResult *res = new DBQueryResult();
+    //SELECT typeID, wreckTypeID FROM invTypesToWrecks
     SystemDB::GetWrecksToTypes(*res);
 
 	//go through and populate each effect
     DBResultRow row;
-    while( res->GetRow(row) )
-    {
+    while (res->GetRow(row)) {
         typeID = row.GetInt(0);
         wreckID = row.GetInt(1);
-		m_WrecksToTypesMap.insert(std::pair<uint32, uint32>(typeID,wreckID));
+		m_WrecksToTypesMap[typeID] = wreckID;
     }
 
-    sLog.Cyan("     Wrecks Table", "%u wreck objects loaded in %.3fms.", m_WrecksToTypesMap.size(), (GetTimeUSeconds() - start));
+    sLog.Cyan("     Wrecks Table", "%u wreck objects loaded in %.3fus.", m_WrecksToTypesMap.size(), (GetTimeUSeconds() - start));
 
     //cleanup
     SafeDelete(res);
@@ -72,14 +72,10 @@ void DGM_Types_to_Wrecks_Table::_Populate()
 
 uint32 DGM_Types_to_Wrecks_Table::GetWreckID(uint32 typeID)
 {
-    std::map<uint32, uint32>::iterator mWrecksMapIterator;
-
-    if( (mWrecksMapIterator = m_WrecksToTypesMap.find(typeID)) == m_WrecksToTypesMap.end() )
-        return 0;
-    else
-    {
-        return mWrecksMapIterator->second;
-    }
+    std::map<uint32, uint32>::iterator itr = m_WrecksToTypesMap.find(typeID);
+    if (itr != m_WrecksToTypesMap.end())
+        return itr->second;
+    return 0;
 }
 
 
@@ -140,7 +136,7 @@ void DGM_Loot_Groups_Table::_Populate()
     //cleanup
     SafeDelete(res);
 
-    sLog.Cyan("       Loot Table", "%u loot group buckets and %u definitions loaded in %.3fms.",
+    sLog.Cyan("       Loot Table", "%u loot group buckets and %u definitions loaded in %.3fus.",
              (m_LootGroupMap.bucket_count() + m_LootGroupTypeMap.bucket_count()),
              (m_LootGroupMap.size() + m_LootGroupTypeMap.size()),
              (GetTimeUSeconds() - start));
@@ -230,7 +226,7 @@ void DGM_Salvage_Table::_Populate()
     //cleanup
     SafeDelete(res);
 
-    sLog.Cyan("    Salvage Table", "%u salvage definitions loaded in %.3fms.", m_SalvageMap.size(), (GetTimeUSeconds() - start));
+    sLog.Cyan("    Salvage Table", "%u salvage definitions loaded in %.3fus.", m_SalvageMap.size(), (GetTimeUSeconds() - start));
 }
 
 void DGM_Salvage_Table::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {

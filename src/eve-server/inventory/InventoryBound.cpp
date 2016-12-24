@@ -329,7 +329,7 @@ PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
  * this does not check for other ship, instead adding items to CURRENT ship
  */
 PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::Add() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+   // _log(INV__MESSAGE, "Calling InventoryBound::Add() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     if (is_log_enabled(INV__DUMP)) {
         _log(INV__DUMP, "InventoryBound::Handle_Add() size= %u", call.tuple->size());
         call.Dump(INV__DUMP);
@@ -414,9 +414,9 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 
 PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::MultiAdd() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    if (sConfig.server.IsTestServer) {
-        sLog.White( "InventoryBound::Handle_MultiAdd()", "size= %u", call.tuple->size());
-        call.Dump(SERVICE__CALL_DUMP);
+    if (is_log_enabled(INV__DUMP)) {
+        _log(INV__DUMP, "InventoryBound::Handle_MultiAdd() size= %u", call.tuple->size());
+        call.Dump(INV__DUMP);
     }
     /*  called like this when dragging loaded charges from module in fit window to cargohold on ship
      * 23:57:53 [BindDump] NodeID: 888444 BindID: 147 calling MultiAdd in service manager 'InventoryBound'
@@ -478,6 +478,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
 
 PyRep* InventoryBound::_ExecAdd(Client* pClient, const std::vector< int32 >& items, int32 quantity, EVEItemFlags flag) {
     // method logic rewrite to handle all types and send a proper return, and added some error returns.   -allan 2Jan16 (UD 24May16)
+    /** @todo  update this....check for correct container when adding items */
 
     //quantity is used in logic for spitting stacks
     int32 origQty = quantity;
@@ -587,7 +588,7 @@ PyRep* InventoryBound::_ExecAdd(Client* pClient, const std::vector< int32 >& ite
             flag = openSlotFlag;
         }
 
-        if (IsModuleSlot(flag) || IsCargoHoldFlag(flag)) {
+        if (IsModuleSlot(flag)/* || IsCargoHoldFlag(flag)*/) {
             // verify ship has room for this item.
             if (!pShip->AddItem(flag, itemRef)) {
                 // if not, and in station, move item to hangar

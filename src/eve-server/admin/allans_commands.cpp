@@ -148,7 +148,7 @@ PyResult Command_list(Client* who, CommandDB* db, PyServiceMgr* services, const 
         if (who->IsInSpace())
             who->EnterSystem(who->GetSystemID());
         else
-            throw PyException(MakeCustomError("You must be in space to list space inventory."));
+            throw PyException(MakeCustomError("You must be in space to list bubble inventory."));
 
         SystemBubble *b = who->GetShipSE()->SysBubble();
     uint32 bubble = b->GetID();
@@ -561,6 +561,26 @@ PyResult Command_track(Client* who, CommandDB* db, PyServiceMgr* services, const
     char reply[25];
     snprintf(reply, 25,
              "Tracking %s.", track.c_str());
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
+PyResult Command_warpto(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!who->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->SysBubble())
+        who->EnterSystem(who->GetSystemID());
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny(NULL_ORIGIN);
+
+    /** @todo  finish this.... */
+    who->GetShipSE()->DestinyMgr()->Halt();
+
+    char reply[25];
+    snprintf(reply, 25,
+             "Ship Halted.");
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);

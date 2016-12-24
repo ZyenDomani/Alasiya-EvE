@@ -237,7 +237,7 @@ public:
     /* Base */
     virtual bool                IsInanimateSE()         { return true; }
     /* Static */
-    virtual bool                Global()                { return true; }    // just in case item->global() fails here...which it shouldnt
+    virtual bool                Global()                { return true; }    // just in case item->global() fails here...which it may
     virtual bool                IsStaticEntity()        { return true; }
 
     /* SystemEntity interface */

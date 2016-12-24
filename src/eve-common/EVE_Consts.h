@@ -9,6 +9,7 @@
 
 static const char alphaList[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static const char numList[] = "0123456789";
+static const char hexList[] = "0123456789ABCDEF";
 
 /*  these are based on client settings of damage notification.
  * msg packets are

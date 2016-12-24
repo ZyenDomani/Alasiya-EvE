@@ -655,12 +655,11 @@ void DestinyManager::_Move() {
             if (m_activeSpeedFraction > m_userSpeedFraction) {
                 delta = m_activeSpeedFraction - m_userSpeedFraction;
                 m_activeSpeedFraction -= (delta * m_currentSpeedFraction);
-                speed = m_maxShipSpeed * m_activeSpeedFraction;
             } else {
                 delta = m_userSpeedFraction - m_activeSpeedFraction;
                 m_activeSpeedFraction += (delta * m_currentSpeedFraction);
-                speed = m_maxShipSpeed * m_activeSpeedFraction;
             }
+            speed = m_maxShipSpeed * m_activeSpeedFraction;
         } else {
             m_activeSpeedFraction = m_userSpeedFraction * m_currentSpeedFraction;
             speed = m_maxSpeed * m_activeSpeedFraction;
@@ -1739,7 +1738,7 @@ PyResult DestinyManager::AttemptDockOperation() {
             throw PyException(MakeUserError("DockingApproach"));
     }
 
-    pClient->SetClientTimer(ClientState::csDock, sConfig.world.StationDockDelay *1000); // default @ 5sec();
+    pClient->SetClientTimer(ClientState::csDock, sConfig.world.StationDockDelay *1000); // default @ 4sec();
 
     return new PyNone();
 }
@@ -1780,7 +1779,7 @@ void DestinyManager::Dock()
 void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
     m_position = pt;
 
-    // sets InventoryItemRef.m_position correctly. (for all position references)
+    // this sets InventoryItemRef.m_position correctly, which is used for all position references
     mySE->SetPosition(m_position);
 
     if (mySE->IsPOSSE()) {         //according to packet sniffs, this is only used for 'Structure' items
@@ -1806,13 +1805,15 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
 // settings for ship, npc and missile max speeds
 void DestinyManager::SetMaxVelocity(float maxVelocity)
 {
-    float maxSpeed = 0;
+    float maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
+    /*
     if (mySE->IsMissileSE() or mySE->IsNPCSE())
         maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
     else if (mySE->IsShipSE())
-        maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float();
+        maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float();   // this is depreciated.  used as an absolute max speed, accounting for ab/mwd
     else
         ; // make error here?
+        */
     if (maxVelocity > maxSpeed)
         m_maxShipSpeed = maxSpeed;
     else

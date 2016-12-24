@@ -24,11 +24,9 @@
     Updates:    Allan   (rewrite)
 */
 
-/*  NOTE   this is NEW StructureItem and StructureSE code from SE rewrite.  */
-
-
 #ifndef __STRUCTURE__H__INCL__
 #define __STRUCTURE__H__INCL__
+
 
 #include "inventory/Inventory.h"
 #include "system/SystemEntity.h"
@@ -151,36 +149,38 @@ public:
     void Init(StructureItemRef structure);
 
     /* class type pointer querys. */
-    virtual StructureSE* GetCOSE()                      { return (m_co ? this : nullptr); }
-    virtual StructureSE* GetPOSSE()                     { return (m_pos ? this : nullptr); }
-    virtual StructureSE* GetTCUSE()                     { return (m_tcu ? this : nullptr); }
-    virtual StructureSE* GetSBUSE()                     { return (m_sbu ? this : nullptr); }
-    virtual StructureSE* GetOutpostSE()                 { return (m_bridge ? this : nullptr); }
-    virtual StructureSE* GetJumpBridgeSE()              { return (m_outpost ? this : nullptr); }
+    virtual StructureSE*        GetCOSE()               { return (m_co ? this : nullptr); }
+    virtual StructureSE*        GetPOSSE()              { return (m_pos ? this : nullptr); }
+    virtual StructureSE*        GetTCUSE()              { return (m_tcu ? this : nullptr); }
+    virtual StructureSE*        GetSBUSE()              { return (m_sbu ? this : nullptr); }
+    virtual StructureSE*        GetOutpostSE()          { return (m_bridge ? this : nullptr); }
+    virtual StructureSE*        GetJumpBridgeSE()       { return (m_outpost ? this : nullptr); }
 
     /* class type tests. */
-    virtual bool IsCOSE()                               { return m_co; }
-    virtual bool IsPOSSE()                              { return m_pos; }
-    virtual bool IsTCUSE()                              { return m_tcu; }
-    virtual bool IsSBUSE()                              { return m_sbu; }
-    virtual bool IsOutpostSE()                          { return m_outpost; }
-    virtual bool IsJumpBridgeSE()                       { return m_bridge; }
+    virtual bool                IsCOSE()                { return m_co; }
+    virtual bool                IsPOSSE()               { return m_pos; }
+    virtual bool                IsTCUSE()               { return m_tcu; }
+    virtual bool                IsSBUSE()               { return m_sbu; }
+    virtual bool                IsOutpostSE()           { return m_outpost; }
+    virtual bool                IsJumpBridgeSE()        { return m_bridge; }
+
+    virtual bool                Global()                { return m_co; }    // just in case item->global() fails here for customs offices...which it may
 
     /* SystemEntity interface */
-    virtual void Process();
-    virtual void EncodeDestiny( Buffer& into );
-    virtual PyDict *MakeSlimItem();
+    virtual void                Process();
+    virtual void                EncodeDestiny( Buffer& into );
+    virtual PyDict*             MakeSlimItem();
 
     /* specific functions handled in this class. */
-    inline void SetPOSState(uint8 state)                       { m_state = state; }
+    inline void                 SetPOSState(uint8 state) { m_state = state; }
 
-    uint8 GetStructureState() const;
+    uint8                       GetStructureState() const;
 
-    PyTuple *GetEffectState();
+    PyTuple*                    GetEffectState();
 
     // for orbital infrastructure
-    void SetPlanet(uint32 planetID)                     { m_planetID = planetID; }
-    uint32 GetPlanetID()                                { return m_planetID; }
+    void                        SetPlanet(uint32 planetID) { m_planetID = planetID; }
+    uint32                      GetPlanetID()           { return m_planetID; }
 
 private:
     bool m_co = false;
@@ -198,10 +198,10 @@ private:
     uint8 m_state;          /* used to hold POS state (online, reinforced, operating, etc) */
     uint32 m_harmonic;      /* this tracks shield frequency for passing thru POS shields.  not sure how to use it yet.... */
     uint32 m_towerID;       /* this is the controlling towerID for POS modules */
-    uint64 m_timestamp;     /* used to track time on POS states (onlining, reinforced, etc) */
+    uint64 m_timestamp;     /* used to track start time on POS states (onlining, reinforced, etc) */
 
     // for orbital infrastructure (customs office)
-    GPoint m_rotation;
+    GPoint m_rotation;      /* direction to planet (for correct orientation) */
     uint32 m_planetID = 0;
 };
 

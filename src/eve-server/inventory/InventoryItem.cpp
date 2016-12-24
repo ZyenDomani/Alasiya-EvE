@@ -389,6 +389,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             if (!itemRef)
                 return InventoryItemRef();
             // THESE SHOULD BE MOVED INTO A Structure::Spawn() function that does not exist yet
+            itemRef->SetAttribute(AttrIsGlobal,       1);
             itemRef->SetAttribute(AttrShieldCharge,   itemRef->GetAttribute(AttrShieldCapacity));       // Shield Charge
             itemRef->SetAttribute(AttrArmorDamage,    0.0);                                       // Armor Damage
             itemRef->SetAttribute(AttrMass,           itemRef->type().mass());           // Mass
@@ -470,7 +471,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
 			 * groupID 319   Beacon   typeid 29189
 			 * groupID 920    Effect_Beacon
 			 *
-			 *  then use SetAttribute(AttrIsGlobal, 1)    (1207)
+            itemRef->SetAttribute(AttrIsGlobal,       1);
 			 */
             else {
                 // Spawn new Celestial Object
@@ -506,12 +507,7 @@ uint32 InventoryItem::GetPackagedVolume()
         return type().volume();
 
     if ((categoryID() == EVEDB::invCategories::Ship)
-        or (groupID() == EVEDB::invGroups::Cargo_Container)
-        or (groupID() == EVEDB::invGroups::Spawn_Container)
-        or (groupID() == EVEDB::invGroups::Secure_Cargo_Container)
-        or (groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
-        or (groupID() == EVEDB::invGroups::Freight_Container)
-        or (groupID() == EVEDB::invGroups::Mission_Container)) {
+        or (categoryID() == EVEDB::invCategories::Celestial)) {
         // these volumes are hard-coded in client.
         switch (type().groupID()) {
             case 29:  //   Capsule

@@ -486,7 +486,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 //  this bm is for different system.  make error here.
                 return nullptr;
             }
-            warpToPoint = (GPoint)(x, y, z);
+            warpToPoint.x = x;
+            warpToPoint.y = y;
+            warpToPoint.z = z;
         } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
             pSE = pSM->GetSE( toID );
@@ -553,7 +555,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
             s = EvE::max(0.5, EvE::min(s, 10.5));
             double t = asin((warpToPoint.x/fabs(warpToPoint.x)) * (warpToPoint.z / sqrt(pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2)))) +j;
-            uint32 d = radius * (s +1) +100000;
+            uint32 d = radius * (s +1) +10000;
             warpToPoint.x += d * sin(t);
             warpToPoint.y += 0.5 * radius * sin(j);
             warpToPoint.z -= d * cos(t);
@@ -563,7 +565,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             sDataMgr.GetStationInfo(toID, data);
             warpToPoint.y = data.dockPosition.y;
         } else if (pSE->IsGateSE()) {
-            distance += (pSE->GetRadius() /2);  // fudge the distance a bit for gates... its' a lil close by default
+            distance += (pSE->GetRadius() /4);  // fudge the distance a bit for gates... its' a lil close by default
         } else if (radius > 90000) {
             /** @todo  this formula is right, but isnt working correctly....revert to my formula
              *   warpToPoint.x += ((radius + 5000000) * cos(radius));
@@ -627,11 +629,11 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     // autopilot check
     //call.client->SetAutoPilot(true);
 
-    if (call.client->IsUndock()) {
+    if (call.client->IsUndock())
         call.client->SetUndock(false);
-        if (call.client->IsInvul())
-            call.client->SetInvul(false);
-    }
+    if (call.client->IsInvul())
+        call.client->SetInvul(false);
+
 	//Adding in ship and target object radius'
     distance += call.client->GetShipSE()->GetRadius() + pSE->GetRadius();
     pDestiny->WarpTo(pSE->GetPosition(), distance);
@@ -715,11 +717,11 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
 
     /** @todo  check distance from ship to gate */
 
-    if (call.client->IsUndock()) {
+    if (call.client->IsUndock())
         call.client->SetUndock(false);
-        if (call.client->IsInvul())
-            call.client->SetInvul(false);
-    }
+    if (call.client->IsInvul())
+        call.client->SetInvul(false);
+
     call.client->StargateJump(args.fromStargateID, args.toStargateID);
     return new PyNone();
 }

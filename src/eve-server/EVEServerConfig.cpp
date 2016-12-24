@@ -62,7 +62,7 @@ EVEServerConfig::EVEServerConfig()
     world.loginInfo = false;//N
     world.loginMsg = false;//N
     world.mailDelay = 5;//N
-    world.StationDockDelay = 5 /*s*/;
+    world.StationDockDelay = 4 /*s*/;
 
     // rates
     rates.npcBountyMultiply = 1.0;

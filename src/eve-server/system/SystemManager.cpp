@@ -187,21 +187,24 @@ void SystemManager::UnloadSystem() {
 
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     while (itr != m_entities.end()) {
-        sBubbleMgr.Remove(itr->second);
-
         if (itr->second->IsStationSE()) {
             itr->second->GetStationSE()->UnloadStation();
             sEntityList.RemoveStation(itr->first);
+            sBubbleMgr.Remove(itr->second);
         } else if (itr->second->IsNPCSE()) {
             RemoveNPC(itr->second->GetNPCSE());
         } else if (itr->second->IsDynamicEntity()) {
             RemoveEntity(itr->second);
+        } else {
+            sBubbleMgr.Remove(itr->second);
         }
 
         m_services.item_factory->RemoveItem(itr->first);
         SafeDelete(itr->second);
-        itr = m_entities.erase(itr);
+        ++itr; // = m_entities.erase(itr);      // not sure why .erase() crashes on occasion.  seems like it's only on system shutdown
     }
+
+    m_entities.clear();
 
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
     // save items, then remove from system inventory, item factory and decrement item count
@@ -390,9 +393,9 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 return nullptr;
             /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
             StructureSE* sSE = new StructureSE(structure, *(system.GetServiceMgr()), &system, data);
-            structure->GetInventory()->LoadContents(factory);
-            sSE->SetPlanet(entity.planetID);
+            //structure->GetInventory()->LoadContents(factory);  this is called during structureItem creation
             if ((entity.planetID) and (entity.groupID != EVEDB::invGroups::Test_Orbitals)) {
+                sSE->SetPlanet(entity.planetID);
                 SystemEntity* pPE = system.GetSE(entity.planetID);
                 if (pPE and pPE->IsPlanetSE())
                     pPE->GetPlanetSE()->SetCustomsOffice(sSE);

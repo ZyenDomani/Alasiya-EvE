@@ -313,11 +313,11 @@ struct PlanetResourceData {
     int32 type_3 = 0;
     int32 type_4 = 0;
     int32 type_5 = 0;
-    uint8 numBands_1 = 0;
-    uint8 numBands_2 = 0;
-    uint8 numBands_3 = 0;
-    uint8 numBands_4 = 0;
-    uint8 numBands_5 = 0;
+    std::string buffer_1 = "";
+    std::string buffer_2 = "";
+    std::string buffer_3 = "";
+    std::string buffer_4 = "";
+    std::string buffer_5 = "";
 };
 
 struct PI_Link {

@@ -43,15 +43,10 @@ public:
 
         m_strBoundObjectName = "PlanetORBBound";
 
+        PyCallable_REG_CALL(PlanetORBBound, GetTaxRate);
+        PyCallable_REG_CALL(PlanetORBBound, UpdateSettings);
+        PyCallable_REG_CALL(PlanetORBBound, GetSettingsInfo);
         PyCallable_REG_CALL(PlanetORBBound, GMChangeSpaceObjectOwner);
-        /*
-                    taxRate = moniker.GetPlanetOrbitalRegistry(session.solarsystemid).GetTaxRate(itemID)
-                    remoteOrbitalRegistry.UpdateSettings(self.orbitalID, reinforceValue, taxRateValues, standingValue, allowAllianceValue, allowStandingsValue)
-
-                    self.orbitalData = self.remoteOrbitalRegistry.GetSettingsInfo(self.orbitalID)  << for customs offices
-                    self.selectedHour, self.taxRateValues, self.standingLevel, self.allowAlliance, self.allowStandings = self.orbitalData
-
-        */
     }
     virtual ~PlanetORBBound() { delete m_dispatch; }
     virtual void Release() {
@@ -59,6 +54,9 @@ public:
         delete this;
     }
 
+    PyCallable_DECL_CALL(GetTaxRate);
+    PyCallable_DECL_CALL(UpdateSettings);
+    PyCallable_DECL_CALL(GetSettingsInfo);
     PyCallable_DECL_CALL(GMChangeSpaceObjectOwner);
 
 protected:
@@ -84,7 +82,7 @@ planetORB::~planetORB() {
 }
 
 PyBoundObject* planetORB::_CreateBoundObject(Client *c, const PyRep *bind_args) {
-    _log(PLANET__INFO, "planetORB bind request for:");
+    _log(PLANET__INFO, "planetORB bind request for:");  // sends systemID in request
     bind_args->Dump(PLANET__INFO, "    ");
     if(!bind_args->IsInt()) {
         codelog(SERVICE__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
@@ -93,6 +91,37 @@ PyBoundObject* planetORB::_CreateBoundObject(Client *c, const PyRep *bind_args) 
     return new PlanetORBBound(m_manager);
 }
 
+PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
+{
+    /*  taxRate = moniker.GetPlanetOrbitalRegistry(session.solarsystemid).GetTaxRate(itemID)
+     */
+    _log(PLANET__DEBUG, "PlanetORBBound::Handle_GetTaxRate - size%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return new PyNone();
+}
+
+PyResult PlanetORBBound::Handle_UpdateSettings( PyCallArgs& call )
+{
+    /*  remoteOrbitalRegistry.UpdateSettings(self.orbitalID, reinforceValue, taxRateValues, standingValue, allowAllianceValue, allowStandingsValue)
+     */
+    _log(PLANET__DEBUG, "PlanetORBBound::Handle_UpdateSettings - size%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return new PyNone();
+}
+
+PyResult PlanetORBBound::Handle_GetSettingsInfo( PyCallArgs& call )
+{
+    /*
+     *   self.orbitalData = self.remoteOrbitalRegistry.GetSettingsInfo(self.orbitalID)  << for customs offices
+     *   self.selectedHour, self.taxRateValues, self.standingLevel, self.allowAlliance, self.allowStandings = self.orbitalData
+     */
+    _log(PLANET__DEBUG, "PlanetORBBound::Handle_GetSettingsInfo - size%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return new PyNone();
+}
 
 PyResult PlanetORBBound::Handle_GMChangeSpaceObjectOwner( PyCallArgs& call )
 {
@@ -108,7 +137,6 @@ PyResult PlanetORBBound::Handle_GMChangeSpaceObjectOwner( PyCallArgs& call )
 
     return new PyNone();
 }
-
 
 
 /**

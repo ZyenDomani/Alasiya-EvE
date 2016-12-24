@@ -56,21 +56,29 @@ bool PlanetSE::LoadExtras(SystemDB* db) {
     m_data.type_4 = typeIDs.at(3);
     m_data.type_5 = typeIDs.at(4);
 
-    /** @todo  make these more realistic, based on system trusec and planet size
-     *   quality: (min=1.0, max=154.275)
-     */
+    /*  quality: (min=1.0, max=154.275)  */
     double sysSec = (1.1 - m_system->GetSystemSecurityRating());
-    m_data.dist_1 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
-    m_data.dist_2 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
-    m_data.dist_3 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
-    m_data.dist_4 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
-    m_data.dist_5 = MakeRandomInt(1, 75) * sysSec + MakeRandomFloat(0, 1);
-    // this sets the vein "hot spots" on planet, should be 2 - 30?
-    m_data.numBands_1 = MakeRandomInt(15, 30);
-    m_data.numBands_2 = MakeRandomInt(15, 30);
-    m_data.numBands_3 = MakeRandomInt(15, 30);
-    m_data.numBands_4 = MakeRandomInt(15, 30);
-    m_data.numBands_5 = MakeRandomInt(15, 30);
+    m_data.dist_1 = MakeRandomInt(2, 75) * sysSec + MakeRandomFloat(0, 1);
+    m_data.dist_2 = MakeRandomInt(2, 75) * sysSec + MakeRandomFloat(0, 1);
+    m_data.dist_3 = MakeRandomInt(2, 75) * sysSec + MakeRandomFloat(0, 1);
+    m_data.dist_4 = MakeRandomInt(2, 75) * sysSec + MakeRandomFloat(0, 1);
+    m_data.dist_5 = MakeRandomInt(2, 75) * sysSec + MakeRandomFloat(0, 1);
+
+    for (uint16 i=0; i<3600; i++) {
+        m_data.buffer_1 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 3k6 bytes.
+    }
+    for (uint16 i=0; i<3600; i++) {
+        m_data.buffer_2 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 3k6 bytes.
+    }
+    for (uint16 i=0; i<3600; i++) {
+        m_data.buffer_3 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 3k6 bytes.
+    }
+    for (uint16 i=0; i<3600; i++) {
+        m_data.buffer_4 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 3k6 bytes.
+    }
+    for (uint16 i=0; i<3600; i++) {
+        m_data.buffer_5 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 3k6 bytes.
+    }
 
     return true;
 }
@@ -122,19 +130,21 @@ void PlanetSE::CreateCustomsOffice()
     double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
     s = EvE::max(0.5, EvE::min(s, 10.5));
     double t = asin((pos.x/fabs(pos.x)) * (pos.z / sqrt(pow(pos.x, 2) + pow(pos.z, 2)))) +j;
-    uint32 d = radius * (s +1) +100000;
+    uint32 d = radius * (s +1) +10000;
     pos.x += d * sin(t);
     pos.y += 0.5 * radius * sin(j);
     pos.z -= d * cos(t);
-
+/*
     GVector dir(pos, m_self->position());
     dir.normalize();
     pos -= (dir * 25000);   // put CO 25km closer to planet than warpIn point.
-    
+*/
     ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
     StructureItemRef iRef = m_services.item_factory->SpawnStructure(idata);
     iRef->Relocate(pos);
+    iRef->ChangeSingleton(true, false);
     iRef->SetAttribute(AttrIsGlobal, 1, false);
+    iRef->SaveItem();
     pCO = new StructureSE(iRef, m_services, m_system, data);
     m_system->AddEntity(pCO);
 }
@@ -142,20 +152,23 @@ void PlanetSE::CreateCustomsOffice()
 PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
 {
     // will update this to use PI skills (sent in dict) as system grows
-    uint8 numBands = 2, bufferData = /*62*/63/*64*/;  // this seems to give the best results
-         if (dict.resourceTypeID == m_data.type_1) { numBands = m_data.numBands_1; }
-    else if (dict.resourceTypeID == m_data.type_2) { numBands = m_data.numBands_2; }
-    else if (dict.resourceTypeID == m_data.type_3) { numBands = m_data.numBands_3; }
-    else if (dict.resourceTypeID == m_data.type_4) { numBands = m_data.numBands_4; }
-    else if (dict.resourceTypeID == m_data.type_5) { numBands = m_data.numBands_5; }
-    else
-        _log(PLANET__ERROR, "PlanetSE::GetResourceData() - Resource TypeID %u not found in list.", dict.resourceTypeID);
-
-    size_t buffer = (uint16)pow(numBands, 2)*4;
-    _log(PLANET__DEBUG, "PlanetSE::GetResourceData() - proximity: %u, newBand: %u, bands: %u, data: %u, bufferSize: %u", dict.proximity, dict.newBand, numBands, bufferData, (uint32)buffer);
+    /** @todo  this needs a minor rewrite....bands are dictated by client request.
+     * bufferData is random fill based on bands, but kept per planet
+     * will have to create a method to fill buffer with random values, rather than fill with single value
+     *  the full 30 band data buffer will be created on planet creation for each resource, and the "bands"
+     * are the "layers" of the resource, per se, with more layers giving higher degree of accuracy.
+     *  the client sends depth request, and that will determine the bands and buffer size to return.
+     * the requested bands will have to be taken from the full 30-band data buffer, as needed.
+     * this resource data *MAY* change over the course of the running server, but not decided how/when/why yet.
+     */
+    //Buffer* dataBuffer = new Buffer;
+    //uint16 size = (uint16)pow(bands, 2)*4;
+    uint8 bufferData = /*62*/63/*64*/;  // this seems to give the best results for static data (need to change/update)
+    size_t buffer = (uint16)pow(dict.newBand, 2)*4;
+    _log(PLANET__DEBUG, "PlanetSE::GetResourceData() - proximity: %u, newBand: %u, oldBand: %u, data: %u, bufferSize: %u", dict.proximity, dict.newBand, dict.oldBand, bufferData, (uint32)buffer);
     PyDict* args = new PyDict();
         args->SetItemString("data", new PyBuffer(buffer, bufferData));
-        args->SetItemString("numBands", new PyInt(numBands));
+        args->SetItemString("numBands", new PyInt(dict.newBand));
         args->SetItemString("proximity", new PyInt(dict.proximity));
     PyIncRef(args);
     PyObject* rtn = new PyObject("util.KeyVal", args);

@@ -412,12 +412,12 @@ double Inventory::GetStoredVolume(EVEItemFlags locationFlag) const
 
 bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
 {
-    EvilNumber volume = EvilNumber(item->quantity()) * item->GetAttribute(AttrVolume);
+    float volume = item->quantity() * item->GetAttribute(AttrVolume).get_float();
     double capacity = GetRemainingCapacity(flag);
     if (volume > capacity) {
         std::map<std::string, PyRep *> args;
             args["available"] = new PyFloat(capacity);
-            args["volume"] = volume.GetPyObject();
+            args["volume"] = new PyFloat(volume);
 
         Client* pClient = m_factory->GetUsingClient();
         if (pClient and pClient->CanThrow())

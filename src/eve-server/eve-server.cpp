@@ -583,6 +583,7 @@ static void SetupSignals()
     ::signal( SIGINT, CatchSignal );
     ::signal( SIGTERM, CatchSignal );
     ::signal( SIGABRT, CatchSignal );
+    ::signal( SIGSEGV, CatchSignal );
 
     #ifdef SIGABRT_COMPAT
     ::signal( SIGABRT_COMPAT, CatchSignal );

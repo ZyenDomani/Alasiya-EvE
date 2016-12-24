@@ -44,7 +44,7 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
   m_lifeTimer(0)
 {
     m_destiny = new DestinyManager(this);
-    
+
     if (ship->HasPilot()) {
         m_ownerID = ship->GetPilot()->GetCharacterID();
         m_warID = ship->GetPilot()->GetWarFactionID();
@@ -264,14 +264,13 @@ void Missile::MakeDamageState(DoDestinyDamageState &into) {
 
 void Missile::_HitTarget() {
     // Create Damage action:
-
     Damage d(m_ship->GetPilot()->GetShipSE(),
              m_self,
-             GetKinetic(), // kinetic damage
-             GetThermal(), // thermal damage
-             GetEM(), // em damage
-             GetExplosive(), // explosive damage
-             0,     // this is placeholder for modifier for turrents to-hit calculations.  not used for missiles
+             m_kinDamage, // kinetic damage
+             m_therDamage, // thermal damage
+             m_emDamage, // em damage
+             m_expDamage, // explosive damage
+             0,     // this is for modifier for turrents to-hit calculations.  not used for missiles
              effectMissileLaunching  // from EVEEffectID::  should be an explosion effect here
             );
 
