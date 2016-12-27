@@ -18,8 +18,8 @@ Items with date style DayMonthYear as last line in comments are accurate for Ala
 Please Note: This page is in the process of being updated for Alasiya's Code Status.<BR>
 Please Also Note:  Items listed as "NOT IMPLEMENTED" means there is no code written for that particular system, and the server will not respond to requests for that system.<BR>
 Items listed as "Skeleton Framework Only" has basic code, with limited or no processing and/or returns, and the server will not respond, or only partially respond to these requests.<BR><BR>
-Last Update: <font color="yellow">10 Oct 2016</font><BR>
-Page Status: <font color="yellow">Slightly Inaccurate</font><BR><BR></table>
+Last Update: <font color="green">27 Dec 2016</font><BR>
+Page Status: <font color="green">Current</font><BR><BR></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="System_Foundation_Fundamentals"> System Foundation Fundamentals </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
@@ -1722,11 +1722,11 @@ Page Status: <font color="yellow">Slightly Inaccurate</font><BR><BR></table>
 <h2> <span class="mw-headline" id="Planetary_Interaction"> Planetary Interaction System </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:20%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:73%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:20%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>20</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:73%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>73.3</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -1734,66 +1734,66 @@ Page Status: <font color="yellow">Slightly Inaccurate</font><BR><BR></table>
 <tr><td style="width: 70&amp;;">Service/Something</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Planet Search</td><td class="broken">10%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>30Nov15</td></tr>
-<tr><td> - Planet View</td><td class="working">50%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Implemented - somewhat buggy<BR>30Nov15</td></tr>
-<tr><td> - Planet Resource Survey</td><td class="broken">10%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>30Nov15</td></tr>
-<tr><td> - Customs Office</td><td class="broken">10%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>30Nov15</td></tr>
-<tr><td> - Install/Use Command Center </td><td class="working">40%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Creating Command Center works.  Use is buggy.<BR>9Dec15</td></tr>
-<tr><td> - Extractor Head</td><td class="working">30%
+<tr><td> - Planet Search</td><td class="broken">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Creating Extractor Head works.<BR>9Dec15</td></tr>
-<tr><td> - Install/Use Silo</td><td class="broken">10%
+<td>Preliminary Implementation<BR>27Dec16</td></tr>
+<tr><td> - Planet View</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>30Nov15</td></tr>
-<tr><td> - Creating logistic routes (links) on planet</td><td class="works">40%
+<td>Complete - Testing<BR>27Dec16</td></tr>
+<tr><td> - Planet Resource Survey</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Can Create Links Between Items<BR>9Dec15</td></tr>
-<tr><td> - Launching Items to Customs Office</td><td class="broken">10%
+<td>Complete - Testing<BR>27Dec16</td></tr>
+<tr><td> - Install/Use Command Center </td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>30Nov15</td></tr>
-<tr><td> - Installing Schematics</td><td class="broken">10%
+<td>Complete - Testing<BR>27Dec16</td></tr>
+<tr><td> - Creating Extractor Heads</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>30Nov15</td></tr>
-<tr><td> - Factory Automation (run schematics)</td><td class="broken">10%
+<td>Complete - Testing<BR>27Dec16</td></tr>
+<tr><td> - Install/Use Silo</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>30Nov15</td></tr>
-<tr><td> - Upgrade Items</td><td class="broken">10%
+<td>Complete - Testing<BR>27Dec16</td></tr>
+<tr><td> - Creating logistic routes (links) on planet</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>30Nov15</td></tr>
+<td>Complete - Testing<BR>27Dec16</td></tr>
+<tr><td> - Installing Schematics</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Complete - Testing<BR>27Dec16</td></tr>
+<tr><td> - Factory Automation (run schematics)</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Complete - Testing<BR>27Dec16</td></tr>
+<tr><td> - Install/Use Space Ports</td><td class="broken">30%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Preliminary Implementation<BR>27Dec16</td></tr>
+<tr><td> - Planetary Customs Office</td><td class="broken">30%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Preliminary Implementation<BR>27Dec16</td></tr>
+<tr><td> - Launching Items to Customs Office</td><td class="broken">30%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Preliminary Implementation<BR>27Dec16</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Corporation_Management"> Corporation Management </span></h2>
