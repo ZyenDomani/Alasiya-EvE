@@ -92,13 +92,13 @@ void ItemFactory::SaveItems() {
                 data.customInfo = cur.second->customInfo();
             items.push_back(data);
             ++count;
-            // not sure if i wanna do this here...maybe so later
+            // not sure if i wanna save all attribs here.  for now, just save skillpoints
             if ((cur.second->flag() == flagSkill) or (cur.second->flag() == flagSkillInTraining))
                 cur.second->SaveAttributes();
         }
     }
     m_db.SaveItems(items);
-    sLog.Warning("        SaveItems", "Saved %u Items in %.3fus.", count, (GetTimeUSeconds() -startTime) );
+    sLog.Warning("        SaveItems", "Saved %u Dynamic Items in %.3fus.", count, (GetTimeUSeconds() -startTime) );
 }
 
 Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {

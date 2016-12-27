@@ -310,6 +310,11 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             BlueprintData bdata; // use default blueprint attributes
             return Blueprint::Spawn( factory, data, bdata );
         }
+        case EVEDB::invCategories::Orbitals:
+        case EVEDB::invCategories::Structure: {
+            /*  this is for all Orbital items */
+            return StructureItem::Spawn( factory, data );
+        }
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Drone:
         case EVEDB::invCategories::Deployable: {
@@ -379,26 +384,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 return InventoryItemRef();
 			return itemRef;
         }
-        case EVEDB::invCategories::Orbitals:
-        case EVEDB::invCategories::Structure: {     /*  this is for all Orbital items */
-            /** @todo structure class is not complete.  */
-            uint32 itemID = StructureItem::CreateItemID( factory, data );
-            if (!itemID)
-                return InventoryItemRef();
-            StructureItemRef itemRef = StructureItem::Load( factory, itemID );
-            if (!itemRef)
-                return InventoryItemRef();
-            // THESE SHOULD BE MOVED INTO A Structure::Spawn() function that does not exist yet
-            itemRef->SetAttribute(AttrIsGlobal,       1);
-            itemRef->SetAttribute(AttrShieldCharge,   itemRef->GetAttribute(AttrShieldCapacity));       // Shield Charge
-            itemRef->SetAttribute(AttrArmorDamage,    0.0);                                       // Armor Damage
-            itemRef->SetAttribute(AttrMass,           itemRef->type().mass());           // Mass
-            itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
-            itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
-            itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
-            //itemRef->SaveAttributes();
-            return itemRef;
-        }
         case EVEDB::invCategories::Station: {
             uint32 itemID = StationItem::CreateItemID( factory, data );
             if (!itemID)
@@ -438,7 +423,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 cargoRef->SetAttribute(AttrRadius,        cargoRef->type().radius());        // Radius
                 cargoRef->SetAttribute(AttrVolume,        cargoRef->GetPackagedVolume());        // Volume
                 cargoRef->SetAttribute(AttrCapacity,      cargoRef->type().capacity());      // Capacity
-                //cargoRef->SaveAttributes();
+                cargoRef->SaveAttributes();
                 return cargoRef;
             } else if (t->groupID() == EVEDB::invGroups::Wreck) {
                 // Spawn new Wreck Container
@@ -455,7 +440,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 wreckRef->SetAttribute(AttrRadius,        wreckRef->type().radius());        // Radius
                 wreckRef->SetAttribute(AttrVolume,        wreckRef->type().volume());        // Volume
                 wreckRef->SetAttribute(AttrCapacity,      wreckRef->type().capacity());      // Capacity
-                //wreckRef->SaveAttributes();
+                wreckRef->SaveAttributes();
                 return wreckRef;
             } else if (t->groupID() == EVEDB::invGroups::Force_Field) {
                 // Spawn force field item in EVEMU_TEMP_ENTITY_ID range and does NOT save Force_Field to db
@@ -497,7 +482,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
     itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
     itemRef->SetAttribute(AttrVolume,         itemRef->GetPackagedVolume());       // Volume
     itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
-	//itemRef->SaveAttributes();
+	itemRef->SaveAttributes();
     return itemRef;
 }
 

@@ -337,10 +337,11 @@ PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
         } else if (item->locationID() != args.locationID) {
             _log(INV__ERROR, "%s: Item %u is not in location %u. Skipping.", call.client->GetName(), *cur, args.locationID);
         } else {
-            //item->Delete();
+            item->Delete();
+            // these below dont work...
             //item->SetFlag(flagJunkyardTrashed);
-            item->ChangeOwner(call.client->GetStationID(), false);
-            item->Move(call.client->GetStationID(), flagJunkyardTrashed);
+            //item->ChangeOwner(call.client->GetStationID(), false);
+            //item->Move(call.client->GetStationID(), flagJunkyardTrashed);
         }
     }
 

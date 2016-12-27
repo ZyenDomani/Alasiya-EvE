@@ -73,7 +73,43 @@ StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data) {
     uint32 structureID = StructureItem::CreateItemID( factory, data );
     if (!structureID)
         return StructureItemRef();
-    return StructureItem::Load( factory, structureID );
+    StructureItemRef sRef = StructureItem::Load( factory, structureID );
+    // check for customs offices and set global flag
+    if ((data.typeID == EVEDB::invTypes::typeInterbusCustomsOffice)
+        or (data.typeID == EVEDB::invTypes::typePlanetaryCustomsOffice)) {
+        sRef->SetAttribute(AttrIsGlobal,                        1, false);
+    }
+    // Create default dynamic attributes in the AttributeMap:
+    sRef->SetAttribute(AttrMass,                                sRef->type().mass(), false);
+    sRef->SetAttribute(AttrRadius,                              sRef->type().radius(), false);
+    sRef->SetAttribute(AttrVolume,                              sRef->type().volume(), false);
+    sRef->SetAttribute(AttrCapacity,                            sRef->type().capacity(), false);
+    sRef->SetAttribute(AttrShieldCharge,                        sRef->GetAttribute(AttrShieldCapacity), false);
+
+    // Check for existence of some attributes that may or may not have already been loaded and set them
+    // to default values:
+    if (!sRef->HasAttribute(AttrDamage))                        sRef->SetAttribute(AttrDamage, 0.0f, false );
+    if (!sRef->HasAttribute(AttrArmorDamage))                   sRef->SetAttribute(AttrArmorDamage, 0.0f, false );
+    if (!sRef->HasAttribute(AttrArmorMaxDamageResonance))       sRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f, false);
+    if (!sRef->HasAttribute(AttrShieldMaxDamageResonance))      sRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f, false);
+
+    // Shield Resonance
+    if (!sRef->HasAttribute(AttrShieldEmDamageResonance))       sRef->SetAttribute(AttrShieldEmDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrShieldKineticDamageResonance))  sRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrShieldThermalDamageResonance))  sRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrArmorEmDamageResonance))        sRef->SetAttribute(AttrArmorEmDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrArmorKineticDamageResonance))   sRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrArmorThermalDamageResonance))   sRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrEmDamageResonance))             sRef->SetAttribute(AttrEmDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrExplosiveDamageResonance))      sRef->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrKineticDamageResonance))        sRef->SetAttribute(AttrKineticDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrThermalDamageResonance))        sRef->SetAttribute(AttrThermalDamageResonance, 1.0, false);
+
+    sRef->SaveAttributes();
+
+    return sRef;
 }
 
 uint32 StructureItem::CreateItemID(ItemFactory &factory, ItemData &data) {
@@ -263,7 +299,7 @@ void StructureSE::Init(StructureItemRef structure)
             if (m_planetID) {
                 GVector dir(m_self->position(), m_system->GetSE(m_planetID)->GetPosition());
                 dir.normalize();
-                m_rotation = (GPoint)dir;
+                m_rotation = dir;
             }
         } break;
         case EVEDB::invGroups::Sovereignty_Blockade_Units: {
@@ -353,21 +389,21 @@ void StructureSE::EncodeDestiny( Buffer& into )
     //const uint16 miniballsCount = GetMiniBalls();
 
     BallHeader head;
-    head.entityID = GetID();
+        head.entityID = GetID();
         head.radius = GetRadius();
         head.x = x();
         head.y = y();
         head.z = z();
-        if (m_tcu) {
-            head.mode = DSTBALL_STOP;
-            head.flags = IsGlobal;
-        } else if (m_co) {
-            head.mode = DSTBALL_RIGID;
-            head.flags = IsGlobal /*| HasMiniBalls*/;
-        } else {
-            head.mode = DSTBALL_RIGID;
-            head.flags = IsMassive | IsInteractive /*| HasMiniBalls*/;        //TODO check for miniballs and add here if found.
-        }
+    if (m_tcu) {
+        head.mode = DSTBALL_STOP;
+        head.flags = IsGlobal;
+    } else if (m_co) {
+        head.mode = DSTBALL_RIGID;
+        head.flags = IsGlobal /*| HasMiniBalls*/;
+    } else {
+        head.mode = DSTBALL_RIGID;
+        head.flags = IsMassive | IsInteractive /*| HasMiniBalls*/;        //TODO check for miniballs and add here if found.
+    }
     into.Append( head );
 
     DSTBALL_RIGID_Struct main;
