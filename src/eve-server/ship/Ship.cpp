@@ -65,6 +65,8 @@ m_pilot(nullptr),
 m_ModuleManager(nullptr)
 {
     m_IsLoaded = false;
+    m_stackMap.clear();
+    m_resistMap.clear();
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created ShipItem for %s(%u).", itemName().c_str(), itemID());
 }
@@ -278,6 +280,9 @@ void ShipItem::Init()
      * AttrWarpFactor(21) [all are 0]
      * AttrWarpInhibitor(29) [default is null]
      */
+
+    // set initial resist map before altered by modules
+    InitTrueResist();
 
     // create and initialize the module manager if not already done
     if (!m_ModuleManager)
@@ -1109,6 +1114,7 @@ void ShipItem::StripFitting()
 // stacking penality system   -allan   (UD 29Jul16)
 double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
 {
+    /*  NOTE:  this system now uses "stacking attribute" to properly process modifiers that have stacking penalities.
     if ((attrib == AttrWarpFactor) or (attrib == AttrCargoCapacityMultiplier)
         or (attrib == AttrMiningAmount) or (attrib == AttrCpuLoad)
         or (attrib == AttrPowerLoad) or (attrib == AttrRechargeRate)
@@ -1116,6 +1122,7 @@ double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
         or (attrib == AttrShieldCapacity) or (attrib == AttrArmorHP)
         or (attrib == AttrAccessDifficulty) or (attrib = AttrDuration))
         return 1.0f;
+    */
 
     uint8 count = 1;
     std::map<uint16, uint8>::iterator itr = m_stackMap.find(attrib);
@@ -1150,6 +1157,42 @@ double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
     return effectiveness;
 }
 
+// resist cap system    -allan 26Dec16
+void ShipItem::InitTrueResist()
+{
+    m_resistMap[AttrKineticDamageResonance] = GetAttribute(AttrKineticDamageResonance).get_float();
+    m_resistMap[AttrThermalDamageResonance] = GetAttribute(AttrThermalDamageResonance).get_float();
+    m_resistMap[AttrExplosiveDamageResonance] = GetAttribute(AttrExplosiveDamageResonance).get_float();
+    m_resistMap[AttrEmDamageResonance] = GetAttribute(AttrEmDamageResonance).get_float();
+    m_resistMap[AttrArmorEmDamageResonance] = GetAttribute(AttrArmorEmDamageResonance).get_float();
+    m_resistMap[AttrArmorExplosiveDamageResonance] = GetAttribute(AttrArmorExplosiveDamageResonance).get_float();
+    m_resistMap[AttrArmorKineticDamageResonance] = GetAttribute(AttrArmorKineticDamageResonance).get_float();
+    m_resistMap[AttrArmorThermalDamageResonance] = GetAttribute(AttrArmorThermalDamageResonance).get_float();
+    m_resistMap[AttrShieldEmDamageResonance] = GetAttribute(AttrShieldEmDamageResonance).get_float();
+    m_resistMap[AttrShieldExplosiveDamageResonance] = GetAttribute(AttrShieldExplosiveDamageResonance).get_float();
+    m_resistMap[AttrShieldKineticDamageResonance] = GetAttribute(AttrShieldKineticDamageResonance).get_float();
+    m_resistMap[AttrShieldThermalDamageResonance] = GetAttribute(AttrShieldThermalDamageResonance).get_float();
+}
+
+void ShipItem::SetTrueResist(uint16 attrib, EvilNumber& value)
+{
+    std::map<uint16, float>::iterator itr = m_resistMap.find(attrib);
+    if (itr != m_resistMap.end()) {
+        itr->second = value.get_float();
+
+        // hard-cap resist values here  - moved from CalculateNewAttributeValue()
+        // NOTE:  remember, these are BACKWARD from 'normal' fuzzy logic..  0=full and 1=none
+        if (value < 0.05) value = 0.05; // cap resists at 95%
+        if (value > 1) value = 1;       // verify resist doesnt go below 0
+    }
+}
+
+void ShipItem::GetTrueResist(uint16 attrib, EvilNumber& value)
+{
+    std::map<uint16, float>::iterator itr = m_resistMap.find(attrib);
+    if (itr != m_resistMap.end())
+        value = itr->second;
+}
 
 std::string ShipItem::GetShipDNA()
 {

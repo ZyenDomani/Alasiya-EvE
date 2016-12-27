@@ -322,15 +322,22 @@ private:
 
     std::vector<uint32> m_onlineModuleVec;
 
+public:
     /* stacking penality system   -allan
      * each ship will have a map of the attribs affected and the current effectiveness on that attrib
      * this is set and used in MSAC, but needs to be kept here, as it's specific to *this ship
      * the other component, attrib stack counting, is a std::map and holds a k,v pair of (attribID, module count)
      */
-public:
     double GetEffectiveness(uint16 attrib, ModuleStates state);
+    /*  resist tracking system  -allan
+     * the resist map is to hard-code resist caps at 95%, and keep a map of the *actual* resist, for correct calculations when altering
+     */
+    void InitTrueResist();
+    void SetTrueResist(uint16 attrib, EvilNumber& value);
+    void GetTrueResist(uint16 attrib, EvilNumber& value);
 private:
     std::map<uint16, uint8> m_stackMap;
+    std::map<uint16, float> m_resistMap;
 
 };
 

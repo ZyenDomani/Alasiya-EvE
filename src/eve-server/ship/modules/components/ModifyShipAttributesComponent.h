@@ -45,14 +45,12 @@ public:
     void ModifyNonStackingShipAttributes(uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type);
 
 private:
-
     //internal access to owner
     GenericModule* m_Mod;
     ShipItemRef m_Ship;
 
-    void _modifyShipAttributes(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
-    EvilNumber _calculateNewValue(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, GenericModule* mod, bool stacking);
-    void SetAttribute(ShipItemRef shipRef, uint16 targetAttrID, EvilNumber newVal);
+    void ModifyShipAttributes(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
+    EvilNumber CalculateNewValue(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, GenericModule* mod, bool stacking);
 };
 
 #endif

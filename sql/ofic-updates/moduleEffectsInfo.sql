@@ -99,7 +99,6 @@ VALUES
 
 
 -- shield effects data
-
 INSERT INTO `dgmEffectsInfo` (`effectID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `stackingPenalty`, `effectState`, `targetType`, `targetGroup`)
 VALUES
 -- shield cap
@@ -126,10 +125,10 @@ VALUES
 (2118, 986, 273, 50, 'Hardener - Active Kin Resist', 51, '6', 1, 12, 1, 77),
 (2118, 987, 274, 50, 'Hardener - Active Therm Resist', 51, '6', 1, 12, 1, 77),
 -- actives overload bonus
-(3035, 1208, 271, 54, 'Hardener - Overload EM Resist', 55, '6', 0, 8, 1, 77),
-(3035, 1208, 272, 54, 'Hardener - Overload Exp Resist', 55, '6', 0, 8, 1, 77),
-(3035, 1208, 273, 54, 'Hardener - Overload Kin Resist', 55, '6', 0, 8, 1, 77),
-(3035, 1208, 274, 54, 'Hardener - Overload Therm Resist', 55, '6', 0, 8, 1, 77);
+(3035, 1208, 271, 54, 'Hardener - Overload EM Resist', 55, '6', 1, 8, 1, 77),
+(3035, 1208, 272, 54, 'Hardener - Overload Exp Resist', 55, '6', 1, 8, 1, 77),
+(3035, 1208, 273, 54, 'Hardener - Overload Kin Resist', 55, '6', 1, 8, 1, 77),
+(3035, 1208, 274, 54, 'Hardener - Overload Therm Resist', 55, '6', 1, 8, 1, 77);
 
 -- armor effects data
 INSERT INTO `dgmEffectsInfo` (`effectID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `stackingPenalty`, `effectState`, `targetType`, `targetGroup`)
@@ -157,14 +156,14 @@ VALUES
 (2098, 986, 269, 50, 'Hardener - Active Kin Resist', 51, '6', 1, 12, 1, 328),
 (2098, 987, 270, 50, 'Hardener - Active Therm Resist', 51, '6', 1, 12, 1, 328),
 -- active overload bonus
-(3029, 1208, 113, 56, 'Hardener - Overload EM Resist', 57, '6', 0, 8, 1, 328),
-(3031, 1208, 111, 56, 'Hardener - Overload Exp Resist', 57, '6', 0, 8, 1, 328),
-(3032, 1208, 109, 56, 'Hardener - Overload Kin Resist', 57, '6', 0, 8, 1, 328),
-(3030, 1208, 110, 56, 'Hardener - Overload Therm Resist', 57, '6', 0, 8, 1, 328),
-(4039, 1208, 113, 56, 'Hardener - Overload EM Resist', 57, '6', 0, 8, 1, 328),
-(4039, 1208, 111, 56, 'Hardener - Overload Exp Resist', 57, '6', 0, 8, 1, 328),
-(4039, 1208, 109, 56, 'Hardener - Overload Kin Resist', 57, '6', 0, 8, 1, 328),
-(4039, 1208, 110, 56, 'Hardener - Overload Therm Resist', 57, '6', 0, 8, 1, 328);
+(3029, 1208, 113, 56, 'Hardener - Overload EM Resist', 57, '6', 1, 8, 1, 328),
+(3031, 1208, 111, 56, 'Hardener - Overload Exp Resist', 57, '6', 1, 8, 1, 328),
+(3032, 1208, 109, 56, 'Hardener - Overload Kin Resist', 57, '6', 1, 8, 1, 328),
+(3030, 1208, 110, 56, 'Hardener - Overload Therm Resist', 57, '6', 1, 8, 1, 328),
+(4039, 1208, 113, 56, 'Hardener - Overload EM Resist', 57, '6', 1, 8, 1, 328),
+(4039, 1208, 111, 56, 'Hardener - Overload Exp Resist', 57, '6', 1, 8, 1, 328),
+(4039, 1208, 109, 56, 'Hardener - Overload Kin Resist', 57, '6', 1, 8, 1, 328),
+(4039, 1208, 110, 56, 'Hardener - Overload Therm Resist', 57, '6', 1, 8, 1, 328);
 
 -- rig effects data
 INSERT INTO `dgmEffectsInfo` (`effectID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `stackingPenalty`, `effectState`, `targetType`, `targetGroup`)

@@ -59,18 +59,18 @@ public:
                                 // added checks here for > 95% resists, and < 1% to avoid crazy damage shit.
                                 // also added checks for missing resists (some npcs have no hull resist in db which = 100% resist)
                             if (_kinetic_multiplier > 1.0) _kinetic_multiplier = 1.0;
-                            if (_kinetic_multiplier < 0.05) _kinetic_multiplier = 0.05;
+                            if (_kinetic_multiplier < 0.01) _kinetic_multiplier = 0.01;
                             if (_thermal_multiplier > 1.0) _thermal_multiplier = 1.0;
-                            if (_thermal_multiplier < 0.05) _thermal_multiplier = 0.05;
+                            if (_thermal_multiplier < 0.01) _thermal_multiplier = 0.01;
                             if (_em_multiplier > 1.0) _em_multiplier = 1.0;
-                            if (_em_multiplier < 0.05) _em_multiplier = 0.05;
+                            if (_em_multiplier < 0.01) _em_multiplier = 0.01;
                             if (_explosive_multiplier > 1.0) _explosive_multiplier = 1.0;
-                            if (_explosive_multiplier < 0.05) _explosive_multiplier = 0.05;
+                            if (_explosive_multiplier < 0.01) _explosive_multiplier = 0.01;
                             return Damage( source, weapon,
-                                            kinetic      * _kinetic_multiplier,
-                                            thermal      * _thermal_multiplier,
-                                            em           * _em_multiplier,
-                                            explosive    * _explosive_multiplier,
+                                            kinetic   * _kinetic_multiplier,
+                                            thermal   * _thermal_multiplier,
+                                            em        * _em_multiplier,
+                                            explosive * _explosive_multiplier,
                                             modifier,
                                             effect );
     }

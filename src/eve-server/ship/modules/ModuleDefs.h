@@ -26,7 +26,6 @@
 
 /** @todo  there is much more to be done here.  this is just the beginning.
  * many, many effects missing from dgmEffectsInfo table (aknor was hand-writing them)
- * module states incomplete.  only coded for online, deactivating, offline and unfitted right now.
  *
  *      this file is to decode the fields in the 'dgmEffectsInfo' table.
  */
@@ -37,7 +36,7 @@
 #include "utils/EvilNumber.h"
 
 
-//this is to avoid include complications and multiple dependancies etc..
+//this is to avoid include complications and multiple dependancies etc.
 enum ModuleCommand
 {
     CMD_ERROR                   = 1000,
@@ -64,20 +63,19 @@ enum ChargeStates
 enum ModuleStates
 {
     MOD_UNFITTED                = 0,
-    MOD_OFFLINE                 = 1,   // module fitted, but NOT put online yet - NOT used for rigs    -- not used yet (needs code rewrite)
-    MOD_ONLINE                  = 2,    // module online  - rigs are either online or offline.
+    MOD_OFFLINE                 = 1,   // module fitted, but NOT put online yet - NOT used for rigs
     /* 'Online' is used for:
-     * ACTIVE modules fitted and online, but not activated (PASSIVE effects only)
+     * ACTIVE modules fitted and online, but not activated (using the PASSIVE effects only)
      * PASSSIVE modules fitted and online
-     * RIG modules fitted (always online)
+     * RIG modules fitted (either online or offline)
      */
-    MOD_ACTIVATED               = 3,    // used only for ACTIVE modules operating in non-Overloaded mode
+    MOD_ONLINE                  = 2,    // module online  - rigs are either online or offline.
+    MOD_ACTIVATED               = 3,    // used only for activated ACTIVE modules (Overloaded mode is calculated separately now)
     MOD_DEACTIVATING            = 4     // module transistioning from MOD_ACTIVATED to MOD_OFFLINE
 };
 
-// These are the module states when an effect will take affect:  still needs a bit of work and thought.
+// These are used in ModuleEffects.cpp to seperate effects into state containers
 // *** these values are the 'effectAppliedInState' bitfield (as integer)
-/* these are used in ModuleEffects.cpp to seperate effects into state containers  */
 enum EffectStates
 {
     EFFECT_UNFITTED             = 0,
@@ -90,7 +88,7 @@ enum EffectStates
     EFFECT_DEACTIVATING         = 64
 };
 
-enum EffectCategories   // not sure what this is, or if it's used.
+enum EffectCategories   // not sure what this is.  not currently used.
 {
     dgmEffPassive               = 0,
     dgmEffActivation            = 1,
@@ -171,7 +169,7 @@ enum EVECalculationType
     CALC_ADD_AS_PERCENT         = 54,
     CALC_SUBTRACT_AS_PERCENT    = 55,
 
-    //  added these but not sure if we'll use them....yes, in incursion effect beacons (ie 3069)
+    //  added these but not sure if we'll use them....yes, in incursion effect beacons (ie 3069)  - but much later
     CALC_SUBTRACT_PERCENT       = 52,
     CALC_REV_SUBTRACT_PERCENT   = 53,
     CALC_MODIFY_PERCENT_W_PERCENT       = 56,
@@ -181,195 +179,175 @@ enum EVECalculationType
 };
 
 
-static EvilNumber Percentage(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber Percentage(EvilNumber& attrVal, EvilNumber& modVal)
 {
-    return (attrVal * (EvilNumber(1.0) + (modVal / EvilNumber(100.0))));
+    return attrVal * (1 + (modVal / 100));
 }
 
-static EvilNumber ReversePercentage(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber ReversePercentage(EvilNumber& attrVal, EvilNumber& modVal)
 {
-    return (attrVal / (EvilNumber(1.0) + (modVal / EvilNumber(100.0))));
+    return attrVal / (1 + (modVal / 100));
 }
 
-static EvilNumber Addition(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber Addition(EvilNumber& attrVal, EvilNumber& modVal)
 {// 1
-    return (attrVal + modVal);
+    return attrVal + modVal;
 }
 
-static EvilNumber Subtraction(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber Subtraction(EvilNumber& attrVal, EvilNumber& modVal)
 {// 8
-    return (attrVal - modVal);
+    return attrVal - modVal;
 }
 
-static EvilNumber Difference(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber Difference(EvilNumber& attrVal, EvilNumber& modVal)
 {
-	if( modVal <= 0 )
-		return (((EvilNumber(100.0) - attrVal) * (-modVal / EvilNumber(100))) + attrVal);
+	if (modVal <= 0)
+		return ((100 - attrVal) * (-modVal / 100)) + attrVal;
 	else
-		return ((attrVal * (-modVal / EvilNumber(100.0))) + attrVal);
+		return (attrVal * (-modVal / 100)) + attrVal;
 }
 
-static EvilNumber Velocity(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber Velocity(EvilNumber& attrVal, EvilNumber& modVal)
 {
 	// In this special case, it is expected that modVal is actually the thrust/mass ratio multiplied by the module effect source attribute:
-	return (attrVal + (attrVal * modVal / EvilNumber(100.0)));
+	return attrVal + (attrVal * (modVal / 100));
 }
 
-static EvilNumber Multiplier(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber Multiplier(EvilNumber& attrVal, EvilNumber& modVal)
 {// 5
-    return (attrVal * modVal);
+    return attrVal * modVal;
 }
 
-static EvilNumber Divider(EvilNumber &val1, EvilNumber &val2)
+static EvilNumber Divider(EvilNumber& val1, EvilNumber& val2)
 {// 25
     if (val2 != 0)
-        return ( val1 / val2 );
+        return val1 / val2;
     return val1;
 }
 
-static EvilNumber AddPositive(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber AddPositive(EvilNumber& attrVal, EvilNumber& modVal)
 {
-	if( modVal > 0 )
-		return (attrVal + modVal);
+	if (modVal > 0)
+		return attrVal + modVal;
 	else
-		return (attrVal);
+		return attrVal;
 }
 
-static EvilNumber AddNegative(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber AddNegative(EvilNumber& attrVal, EvilNumber& modVal)
 {
-	if( modVal < 0 )
-		return (attrVal + modVal);
+	if (modVal < 0 )
+		return attrVal + modVal;
 	else
-		return (attrVal);
+		return attrVal;
 }
 
-static EvilNumber SubtractPositive(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber SubtractPositive(EvilNumber& attrVal, EvilNumber& modVal)
 {
-    if( modVal > 0 )
+    if (modVal > 0)
         return (attrVal - modVal);
     else
-        return (attrVal);
+        return attrVal;
 }
 
-static EvilNumber SubtractNegative(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber SubtractNegative(EvilNumber& attrVal, EvilNumber& modVal)
 {
-    if( modVal < 0 )
+    if (modVal < 0)
         return (attrVal - modVal);
     else
-        return (attrVal);
+        return attrVal;
 }
 
-static EvilNumber CloakedVelocity(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber CloakedVelocity(EvilNumber& attrVal, EvilNumber& modVal)
 {
-	return (EvilNumber(-100.0) + ((EvilNumber(100.0) + attrVal * (modVal / EvilNumber(100.0)))));
+	return (-100 + (100 + attrVal * (modVal / 100)));
 }
 
-static EvilNumber AbsoluteMax(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber AbsoluteMax(EvilNumber& attrVal, EvilNumber& modVal)
 {
-	if( attrVal > modVal )
+	if (attrVal > modVal)
 		return attrVal;
 	else
 		return modVal;
 }
 
-static EvilNumber AbsoluteMin(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber AbsoluteMin(EvilNumber& attrVal, EvilNumber& modVal)
 {
-	if( attrVal < modVal )
+	if (attrVal < modVal)
 		return attrVal;
 	else
 		return modVal;
 }
 
-static EvilNumber CapBoosters(EvilNumber &attrVal, EvilNumber &modVal)
+static EvilNumber CapBoosters(EvilNumber& attrVal, EvilNumber& modVal)
 {
-	if( (attrVal - modVal) < 0 )
+	if ((attrVal - modVal) < 0)
 		return (attrVal - modVal);
 	else
-		return EvilNumber(0.0);
+		return 0;
 }
 
-static EvilNumber AddResist(EvilNumber &val1, EvilNumber &val2)
-{   // name/operation is confusing...this ADDS RESISTANCE to ship (lowers attribute)
-    EvilNumber res = val1 - ( 1 - val2 );
-    if (res < 0) res = 0;
-    if (res > 1) res = 1;
-    return res;
+// these are both used for all resistance calc's done on ships by modules
+static EvilNumber AddResist(EvilNumber& val1, EvilNumber& val2)
+{// 30
+    // name/operation is confusing...this ADDS RESISTANCE to ship (lowers attribute)
+    return val1 - ( 1 - val2 );
 }
 
-static EvilNumber SubtractResist(EvilNumber &val1, EvilNumber &val2)
-{   // name/operation is confusing...this SUBTRACTS RESISTANCE to ship (raises attribute)
-    EvilNumber res = val1 + ( 1 - val2 );
-    if (res < 0) res = 0;
-    if (res > 1) res = 1;
-    return res;
+static EvilNumber SubtractResist(EvilNumber& val1, EvilNumber& val2)
+{// 31
+    // name/operation is confusing...this SUBTRACTS RESISTANCE to ship (raises attribute)
+    return val1 + ( 1 - val2 );
 }
 
 // used for shields
-static EvilNumber AddPercent(EvilNumber &val1, EvilNumber &val2)
+static EvilNumber AddPercent(EvilNumber& val1, EvilNumber& val2)
 {// 50
     return val1 + ( val2 /100 );
 }
 
-static EvilNumber ReverseAddPercent(EvilNumber &val1, EvilNumber &val2)
+static EvilNumber ReverseAddPercent(EvilNumber& val1, EvilNumber& val2)
 {// 51
     return val1 - ( val2 /100 );
 }
 
-static EvilNumber SubtractPercent(EvilNumber &val1, EvilNumber &val2)
+static EvilNumber SubtractPercent(EvilNumber& val1, EvilNumber& val2)
 {
     return val1 - ( val1 * val2 );
 }
 
-static EvilNumber ReverseSubtractPercent(EvilNumber &val1, EvilNumber &val2)
+static EvilNumber ReverseSubtractPercent(EvilNumber& val1, EvilNumber& val2)
 {
-    EvilNumber val3 = 1;
-    return val1 / ( val3 - val2 );
+    return val1 / ( 1 - val2 );
 }
 
-static EvilNumber AddAsPercent(EvilNumber &val1, EvilNumber &val2)
+static EvilNumber AddAsPercent(EvilNumber& val1, EvilNumber& val2)
 {// 54
-    EvilNumber val3 = 100;
-    return val1 + ( val1 * (val2 / val3) );
+    return val1 + ( val1 * (val2 / 100) );
 }
 
-static EvilNumber SubtractAsPercent(EvilNumber &val1, EvilNumber &val2)
+static EvilNumber SubtractAsPercent(EvilNumber& val1, EvilNumber& val2)
 {//55
-    EvilNumber val3 = 1;
-    EvilNumber val4 = 100;
-
-    return val1 / ( val3 + (val2 / val4) );
+    return val1 / ( 1 + (val2 / 100) );
 }
 
-static EvilNumber ModifyPercentWithPercent(EvilNumber &val1, EvilNumber &val2)
+static EvilNumber ModifyPercentWithPercent(EvilNumber& val1, EvilNumber& val2)
 {//56
-    EvilNumber val3 = 1;
-    EvilNumber val4 = 100;
-
-    return val1 * (val3 + (val2 / val4) );
+    return val1 * (1 + (val2 / 100) );
 }
 
-static EvilNumber ReverseModifyPercentWithPercent(EvilNumber &val1, EvilNumber &val2)
+static EvilNumber ReverseModifyPercentWithPercent(EvilNumber& val1, EvilNumber& val2)
 {//57
-    EvilNumber val3 = 1;
-    EvilNumber val4 = 100;
-
-    return val4 * ( (val1 / val2) - 1 );
+    return 100 * ( (val1 / val2) - 1 );
 }
 
-static EvilNumber ReduceByPercent(EvilNumber &val1, EvilNumber &val2)
+static EvilNumber ReduceByPercent(EvilNumber& val1, EvilNumber& val2)
 {
-	EvilNumber val3 = 1;
-	EvilNumber val4 = 100;
-
-	return val1 * ( val3 - (val2 / val4) );
+	return val1 * ( 1 - (val2 / 100) );
 }
 
-static EvilNumber ReverseReduceByPercent(EvilNumber &val1, EvilNumber &val2)
+static EvilNumber ReverseReduceByPercent(EvilNumber& val1, EvilNumber& val2)
 {
-	EvilNumber val3 = 1;
-	EvilNumber val4 = 100;
-
-	return val1 / ( val3 - (val2 / val4) );
+	return val1 / ( 1 - (val2 / 100) );
 }
 
 static EvilNumber CalculateNewAttributeValue(EvilNumber attrVal, EvilNumber attrMod, EVECalculationType type)

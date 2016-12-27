@@ -1246,6 +1246,7 @@ void ModuleManager::SaveModules()
     m_Modules->SaveModules();
 }
 
+// these below are not used yet.  not sure what they're actually for, or if ill even implement them.
 int32 ModuleManager::ApplyRemoteEffect(uint32 attributeID, uint32 originatorID, SystemEntity * systemEntity, ModifierRef modifierRef)
 {
     sLog.Magenta("ModuleManager::ApplyRemoteEffect()","Needs to be implemented");

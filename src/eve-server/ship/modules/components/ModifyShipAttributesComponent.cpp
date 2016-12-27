@@ -36,13 +36,13 @@ ModifyShipAttributesComponent::ModifyShipAttributesComponent(GenericModule* mod,
 }
 
 void ModifyShipAttributesComponent::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking) {
-    _modifyShipAttributes(m_Ship, targetAttrID, sourceAttrID, type, stacking);
+    ModifyShipAttributes(m_Ship, targetAttrID, sourceAttrID, type, stacking);
 }
 
 void ModifyShipAttributesComponent::ModifyTargetShipAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking) {
     ShipItemRef target = m_Ship->GetItemFactory()->GetShip(targetItemID);
     if (target)
-        _modifyShipAttributes(target, targetAttrID, sourceAttrID, type, stacking);
+        ModifyShipAttributes(target, targetAttrID, sourceAttrID, type, stacking);
     else {
         _log(SHIP__ERROR, "MSAC::ModifyTargetShipAttribute() - %s(%u): Failed to find target ship %u", \
                 m_Ship->itemName().c_str(), m_Ship->itemID(), targetItemID);
@@ -52,15 +52,24 @@ void ModifyShipAttributesComponent::ModifyTargetShipAttribute(uint32 targetItemI
 }
 
 /* rewrote attrib calculations and implemented true stacking penality, with checks for exceptions.  -allan 13April16  */
-void ModifyShipAttributesComponent::_modifyShipAttributes(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking)
+void ModifyShipAttributesComponent::ModifyShipAttributes(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking)
 {
-    EvilNumber newVal = _calculateNewValue(shipRef, targetAttrID, sourceAttrID, type, m_Mod, stacking);
-    SetAttribute(shipRef, targetAttrID, newVal);
+    EvilNumber newVal = CalculateNewValue(shipRef, targetAttrID, sourceAttrID, type, m_Mod, stacking);
+
+    // this method will check resist values for fuzzy logic and cap as needed, returning modified value if attrib is a resist, or unmodified value if not resist
+    shipRef->SetTrueResist(targetAttrID, newVal);
+
+    //set the attribute for the ship with the new modifier
+    if (!shipRef->SetAttribute(targetAttrID, newVal))
+        sLog.Error("MSAC::ModifyShipAttributes()","Failed to set attribute %u to %.3f on ship %u", targetAttrID, newVal.get_float(), m_Ship->itemID());
 }
 
-EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, GenericModule* mod, bool stacking)
+EvilNumber ModifyShipAttributesComponent::CalculateNewValue(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, GenericModule* mod, bool stacking)
 {
     EvilNumber modVal = mod->GetAttribute(sourceAttrID), startVal = shipRef->GetAttribute(targetAttrID);
+
+    // this method checks for resist attrib, and gets true value, based on all multipliers, or actual attrib value if NOT a resist attrib.
+    shipRef->GetTrueResist(targetAttrID, startVal);
 
     double effectiveness = 1;
     /* check for stacking attributes here, and get stacked (cached) effectiveness. */
@@ -69,25 +78,8 @@ EvilNumber ModifyShipAttributesComponent::_calculateNewValue(ShipItemRef shipRef
 
     modVal *= effectiveness;
     EvilNumber newVal = CalculateNewAttributeValue(startVal, modVal, type);
-    _log(SHIP__MODULE_TRACE, "MSAC::_calculateNewValue() -  origVal:%f, Mod:%f, newVal:%f, effective:%f, type:%i", \
-                startVal.get_double(), modVal.get_double(), newVal.get_double(), effectiveness, (int)type);
+    _log(SHIP__MODULE_TRACE, "MSAC::CalculateNewValue() -  origVal:%f, Mod:%f, newVal:%f, effective:%f, type:%i", \
+            startVal.get_float(), modVal.get_float(), newVal.get_float(), effectiveness, (int)type);
     return newVal;
-}
-
-// this method will check resist values for fuzzy logic and correct if needed.
-void ModifyShipAttributesComponent::SetAttribute(ShipItemRef shipRef, uint16 targetAttrID, EvilNumber newVal)
-{
-    // basic check for ship resistance attrubutes (fuzzy logic range check *HACK*)
-    if (((targetAttrID >= AttrKineticDamageResonance) and (targetAttrID <= AttrExplosiveDamageResonance))
-        or (targetAttrID == AttrEmDamageResonance)
-        or ((targetAttrID >= AttrArmorEmDamageResonance) and (targetAttrID <= AttrShieldThermalDamageResonance)))
-    {
-        if (newVal < 0) newVal = 0;
-        if (newVal > 1) newVal = 1;
-    }
-
-    //set the attribute for the ship with the new modifier
-    if (!shipRef->SetAttribute(targetAttrID, newVal))
-        sLog.Error("MSAC::SetOnlineAttributes()","Failed to set attribute %u to %f on ship %u", targetAttrID, newVal, m_Ship->itemID());
 }
 
