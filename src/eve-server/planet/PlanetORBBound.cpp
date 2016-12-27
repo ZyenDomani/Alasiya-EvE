@@ -94,11 +94,19 @@ PyBoundObject* planetORB::_CreateBoundObject(Client *c, const PyRep *bind_args) 
 PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
 {
     /*  taxRate = moniker.GetPlanetOrbitalRegistry(session.solarsystemid).GetTaxRate(itemID)
+     *
+     * 01:01:15 [SvcCall] Service PlanetORBBound::GetTaxRate()
+     * 01:01:15 [PlanetDebug] PlanetORBBound::Handle_GetTaxRate - size1
+     * 01:01:15 [PlanetCallDump]   Call Arguments:
+     * 01:01:15 [PlanetCallDump]       Tuple: 1 elements
+     * 01:01:15 [PlanetCallDump]         [ 0] Integer field: 140007483
+     *
+     * NOTE:  "return PyNone()" = access denied to customs office.
      */
     _log(PLANET__DEBUG, "PlanetORBBound::Handle_GetTaxRate - size%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
-    return new PyNone();
+    return new PyFloat(0.05);
 }
 
 PyResult PlanetORBBound::Handle_UpdateSettings( PyCallArgs& call )
