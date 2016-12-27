@@ -231,7 +231,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     SendSessionChange();
 
     // register new pilot in system data
-    m_system->AddClient(this, IsStation(locationID), m_login);
+    m_system->AddClient(this, IsStation(m_locationID), m_login);
     m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(m_locationID), m_login);
 
     //johnsus - characterOnline mod
