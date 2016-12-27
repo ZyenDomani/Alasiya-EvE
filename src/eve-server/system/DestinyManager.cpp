@@ -1814,6 +1814,11 @@ void DestinyManager::SetMaxVelocity(float maxVelocity)
     else
         ; // make error here?
         */
+    if (mySE->IsShipSE()) {
+        _log(DESTINY__TRACE, "Destiny::SetMaxVelocity() - Ship:%s(%u) Pilot:%s(%u) - AttrMaxDirectionalVelocity is %.1f", \
+                    mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID(), \
+                    mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float());
+    }
     if (maxVelocity > maxSpeed)
         m_maxShipSpeed = maxSpeed;
     else

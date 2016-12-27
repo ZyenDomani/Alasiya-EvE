@@ -231,6 +231,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     SendSessionChange();
 
     // register new pilot in system data
+    m_system->AddClient(this, IsStation(locationID), m_login);
     m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(m_locationID), m_login);
 
     //johnsus - characterOnline mod
@@ -239,6 +240,10 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_services.item_factory->UnsetUsingClient();
     m_char->SetLoginTime();
     UpdateSkillTraining();
+
+    if (IsSolarSystem(m_locationID))
+        WarpIn();
+
     return true;
 }
 
@@ -445,10 +450,10 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_beyonce = false;
 
         m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(locationID), count);
+        // register ourself with new system manager.
+        m_system->AddClient(this, IsStation(locationID), count);
     }
 
-    // register ourself with new system manager.  if system dont change, this will catch it.
-    m_system->AddClient(this, IsStation(locationID), count);
     m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
 
     char ci[25];
@@ -479,9 +484,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             m_char->Move(m_shipId, flagPilot, false);
 
         SetDestiny(pt, !m_undock);
-
-        if (m_login)
-            WarpIn();
     }
 
     m_ship->SetCustomInfo(ci);
