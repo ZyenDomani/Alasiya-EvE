@@ -39,16 +39,16 @@
 //this is to avoid include complications and multiple dependancies etc.
 enum ModuleCommand
 {
-    CMD_ERROR                   = 1000,
-    ONLINE                      = 1001,
-    OFFLINE                     = 1002,
-    ACTIVATE                    = 1003,
-    DEACTIVATE                  = 1004,
-    OVERLOAD                    = 1005,  //idk if this is used
-    DEOVERLOAD                  = 1006,  //idk if this is used
-    LOAD_CHARGE                 = 1007,
-    RELOAD_CHARGE               = 1008,
-    UNLOAD_CHARGE               = 1009
+    CMD_ERROR                   = 0,
+    ONLINE                      = 1,
+    OFFLINE                     = 2,
+    ACTIVATE                    = 3,
+    DEACTIVATE                  = 4,
+    OVERLOAD                    = 5,
+    DEOVERLOAD                  = 6,
+    LOAD_CHARGE                 = 7,
+    RELOAD_CHARGE               = 8,
+    UNLOAD_CHARGE               = 9
 };
 
 enum ChargeStates
@@ -88,18 +88,8 @@ enum EffectStates
     EFFECT_DEACTIVATING         = 64
 };
 
-enum EffectCategories   // not sure what this is.  not currently used.
-{
-    dgmEffPassive               = 0,
-    dgmEffActivation            = 1,
-    dgmEffTarget                = 2,
-    dgmEffArea                  = 3,
-    dgmEffOnline                = 4,
-    dgmEffOverload              = 5
-};
-
 /** @todo  this needs updating and implementation....eventually  */
-// These are the target types to which module effects are applied when activated:
+// Target types to which module effects are applied when activated:
 // *** these values are the 'targetType' field
 enum EffectTargetTypes
 {   // 0: zero value.  undefined
@@ -112,11 +102,11 @@ enum EffectTargetTypes
     EFFECT_LOADED_CHARGE        = 3,
     // 4: the target is the current target of the ship to which the module is fitted
     EFFECT_TARGET               = 4,
-    // 5: the target is a loaded module  - this could use EFFECT_MODULE
+    // 5: the target is a charge of a loaded module
     EFFECT_CHARGE               = 5,
-    // 6: the target of the effect is the module's own attribute(s)  - maybe unused
+    // 6: the target of the effect is the module's own attribute(s)
     EFFECT_TARGET_SELF          = 6,
-    // 7: the effect acts upon the character's attribute specific to the effect  - maybe unused.
+    // 7: the effect acts upon the character's attribute specific to the effect
     EFFECT_CHARACTER            = 7
 };
 
@@ -131,175 +121,64 @@ enum ModulePowerLevel
     MODULE_BANK_SUBSYSTEM       = 5
 };
 
-//calculation types    updated Dec2015    -allan
-// *** these values are the 'calculationTypeID' and the 'reverseCalculationTypeID' fields
+//calculation types    rewrite 27Dec16    -allan
+// *** these values are the 'calculationTypeID' and 'reverseCalculationTypeID' fields
 enum EVECalculationType
 {
-    CALC_NONE                   = -1,
-    CALC_PERCENTAGE             = 0,
-    CALC_ADDITION               = 1,
-    CALC_DIFFERENCE             = 2,
-	CALC_VELOCITY               = 3,
-    CALC_ABSOLUTE               = 4,
-	CALC_MULTIPLIER             = 5,
-    CALC_ADD_POSITIVE           = 6,
-    CALC_ADD_NEGATIVE           = 7,
-    CALC_SUBTRACTION            = 8,
-    CALC_CLOAKED_VELOCITY       = 9,
-    CALC_SKILL_LEVEL            = 10,
-    CALC_SKILL_LEVEL_x_ATT      = 11,
-    CALC_ABSOLUTE_MAX           = 12,
-    CALC_ABSOLUTE_MIN           = 13,
-    CALC_CAP_BOOSTERS           = 14,
-
-    CALC_REV_ABSOLUTE           = 24,
-    CALC_DIVIDER                = 25,
-    CALC_SUBTRACT_POSITIVE      = 26,
-    CALC_SUBTRACT_NEGATIVE      = 27,
-
-    CALC_ADD_RESIST             = 30,
-    CALC_SUBTRACT_RESIST        = 31,
-
-    CALC_REVERSE_PERCENTAGE     = 40,
-
-    // for resists
-    CALC_ADD_PERCENT            = 50,
-    CALC_REV_ADD_PERCENT        = 51,
-
-    CALC_ADD_AS_PERCENT         = 54,
-    CALC_SUBTRACT_AS_PERCENT    = 55,
-
-    //  added these but not sure if we'll use them....yes, in incursion effect beacons (ie 3069)  - but much later
-    CALC_SUBTRACT_PERCENT       = 52,
-    CALC_REV_SUBTRACT_PERCENT   = 53,
-    CALC_MODIFY_PERCENT_W_PERCENT       = 56,
-    CALC_REV_MODIFY_PERCENT_W_PERCENT   = 57,
-    CALC_REDUCE_BY_PERCENT      = 58,
-    CALC_REV_REDUCE_BY_PERCENT  = 59
+    CALC_NONE                   = 0,
+    CALC_ADD                    = 1,
+    CALC_SUBTRACT               = 2,
+    CALC_MULTIPLY               = 3,
+    CALC_DIVIDE                 = 4,
+    CALC_PERCENTAGE             = 5,
+    CALC_REV_PERCENTAGE         = 6,
+    CALC_ADD_PERCENT            = 7,
+    CALC_SUBTRACT_PERCENT       = 8,
+    CALC_ADD_RESIST             = 9,
+    CALC_SUBTRACT_RESIST        = 10,
 };
 
-
-static EvilNumber Percentage(EvilNumber& attrVal, EvilNumber& modVal)
+static EvilNumber CalculateNewAttributeValue(EvilNumber val1, EvilNumber val2, EVECalculationType type)
 {
-    return attrVal * (1 + (modVal / 100));
+    switch(type) {
+        case CALC_NONE:                            return val1;
+        case CALC_ADD:                             return val1 + val2;
+        case CALC_SUBTRACT:                        return val1 - val2;
+        case CALC_MULTIPLY:                        return val1 * val2;
+        case CALC_DIVIDE:                          return ((val2 != 0) ? val1 / val2 : val1);
+        case CALC_PERCENTAGE:                      return val1 * (1 + (val2 / 100));
+        case CALC_REV_PERCENTAGE:                  return val1 / (1 + (val2 / 100));
+        case CALC_ADD_PERCENT:                     return val1 + (val2 /100);
+        case CALC_SUBTRACT_PERCENT:                return val1 - (val2 /100);
+        case CALC_ADD_RESIST:                      return val1 - (1 - val2);
+        case CALC_SUBTRACT_RESIST:                 return val1 + (1 - val2);
+    }
+
+    _log(SHIP__MODULE_ERROR, "CalculateNewAttributeValue() - Unknown EveCalculationType used: %i", (int)type);
+    return 0;
 }
 
-static EvilNumber ReversePercentage(EvilNumber& attrVal, EvilNumber& modVal)
-{
-    return attrVal / (1 + (modVal / 100));
-}
 
-static EvilNumber Addition(EvilNumber& attrVal, EvilNumber& modVal)
-{// 1
-    return attrVal + modVal;
-}
-
-static EvilNumber Subtraction(EvilNumber& attrVal, EvilNumber& modVal)
-{// 8
-    return attrVal - modVal;
-}
-
-static EvilNumber Difference(EvilNumber& attrVal, EvilNumber& modVal)
-{
-	if (modVal <= 0)
-		return ((100 - attrVal) * (-modVal / 100)) + attrVal;
-	else
-		return (attrVal * (-modVal / 100)) + attrVal;
-}
-
-static EvilNumber Velocity(EvilNumber& attrVal, EvilNumber& modVal)
-{
-	// In this special case, it is expected that modVal is actually the thrust/mass ratio multiplied by the module effect source attribute:
-	return attrVal + (attrVal * (modVal / 100));
-}
-
-static EvilNumber Multiplier(EvilNumber& attrVal, EvilNumber& modVal)
-{// 5
-    return attrVal * modVal;
-}
-
-static EvilNumber Divider(EvilNumber& val1, EvilNumber& val2)
-{// 25
+static EvilNumber Divide(EvilNumber& val1, EvilNumber& val2)
+{// 4
     if (val2 != 0)
         return val1 / val2;
     return val1;
 }
 
-static EvilNumber AddPositive(EvilNumber& attrVal, EvilNumber& modVal)
-{
-	if (modVal > 0)
-		return attrVal + modVal;
-	else
-		return attrVal;
-}
-
-static EvilNumber AddNegative(EvilNumber& attrVal, EvilNumber& modVal)
-{
-	if (modVal < 0 )
-		return attrVal + modVal;
-	else
-		return attrVal;
-}
-
-static EvilNumber SubtractPositive(EvilNumber& attrVal, EvilNumber& modVal)
-{
-    if (modVal > 0)
-        return (attrVal - modVal);
-    else
-        return attrVal;
-}
-
-static EvilNumber SubtractNegative(EvilNumber& attrVal, EvilNumber& modVal)
-{
-    if (modVal < 0)
-        return (attrVal - modVal);
-    else
-        return attrVal;
-}
-
-static EvilNumber CloakedVelocity(EvilNumber& attrVal, EvilNumber& modVal)
-{
-	return (-100 + (100 + attrVal * (modVal / 100)));
-}
-
-static EvilNumber AbsoluteMax(EvilNumber& attrVal, EvilNumber& modVal)
-{
-	if (attrVal > modVal)
-		return attrVal;
-	else
-		return modVal;
-}
-
-static EvilNumber AbsoluteMin(EvilNumber& attrVal, EvilNumber& modVal)
-{
-	if (attrVal < modVal)
-		return attrVal;
-	else
-		return modVal;
-}
-
-static EvilNumber CapBoosters(EvilNumber& attrVal, EvilNumber& modVal)
-{
-	if ((attrVal - modVal) < 0)
-		return (attrVal - modVal);
-	else
-		return 0;
-}
-
-// these are both used for all resistance calc's done on ships by modules
+// these are used for DCU's (full resist, no penality)
 static EvilNumber AddResist(EvilNumber& val1, EvilNumber& val2)
 {// 30
     // name/operation is confusing...this ADDS RESISTANCE to ship (lowers attribute)
     return val1 - ( 1 - val2 );
 }
-
 static EvilNumber SubtractResist(EvilNumber& val1, EvilNumber& val2)
 {// 31
     // name/operation is confusing...this SUBTRACTS RESISTANCE to ship (raises attribute)
     return val1 + ( 1 - val2 );
 }
 
-// used for shields
+// used for passive resists (1%)
 static EvilNumber AddPercent(EvilNumber& val1, EvilNumber& val2)
 {// 50
     return val1 + ( val2 /100 );
@@ -310,94 +189,35 @@ static EvilNumber ReverseAddPercent(EvilNumber& val1, EvilNumber& val2)
     return val1 - ( val2 /100 );
 }
 
-static EvilNumber SubtractPercent(EvilNumber& val1, EvilNumber& val2)
-{
-    return val1 - ( val1 * val2 );
-}
-
-static EvilNumber ReverseSubtractPercent(EvilNumber& val1, EvilNumber& val2)
-{
-    return val1 / ( 1 - val2 );
-}
-
 static EvilNumber AddAsPercent(EvilNumber& val1, EvilNumber& val2)
 {// 54
     return val1 + ( val1 * (val2 / 100) );
 }
 
 static EvilNumber SubtractAsPercent(EvilNumber& val1, EvilNumber& val2)
-{//55
+{// 55
     return val1 / ( 1 + (val2 / 100) );
 }
 
-static EvilNumber ModifyPercentWithPercent(EvilNumber& val1, EvilNumber& val2)
-{//56
-    return val1 * (1 + (val2 / 100) );
+// the following arent currently used:
+static EvilNumber SubtractByPercent(EvilNumber& val1, EvilNumber& val2)
+{
+    return val1 - ( val1 * val2 );
 }
 
-static EvilNumber ReverseModifyPercentWithPercent(EvilNumber& val1, EvilNumber& val2)
-{//57
-    return 100 * ( (val1 / val2) - 1 );
+static EvilNumber ReverseSubtractByPercent(EvilNumber& val1, EvilNumber& val2)
+{
+    return val1 / ( 1 - val2 );
 }
 
-static EvilNumber ReduceByPercent(EvilNumber& val1, EvilNumber& val2)
+static EvilNumber MultiplyByPercent(EvilNumber& val1, EvilNumber& val2)
 {
 	return val1 * ( 1 - (val2 / 100) );
 }
 
-static EvilNumber ReverseReduceByPercent(EvilNumber& val1, EvilNumber& val2)
+static EvilNumber ReverseMultiplyByPercent(EvilNumber& val1, EvilNumber& val2)
 {
 	return val1 / ( 1 - (val2 / 100) );
-}
-
-static EvilNumber CalculateNewAttributeValue(EvilNumber attrVal, EvilNumber attrMod, EVECalculationType type)
-{
-    switch(type)
-    {
-        case CALC_NONE :                            return attrVal;
-		case CALC_PERCENTAGE :						return Percentage(attrVal, attrMod); break;
-        case CALC_REVERSE_PERCENTAGE :              return ReversePercentage(attrVal, attrMod); break;
-		case CALC_ADDITION :						return Addition(attrVal, attrMod); break;
-		case CALC_DIFFERENCE :						return Difference(attrVal, attrMod); break;
-		case CALC_VELOCITY :						return Velocity(attrVal, attrMod); break;
-        case CALC_ABSOLUTE :						return attrVal - attrMod; break;
-        case CALC_REV_ABSOLUTE :                    return attrVal + attrMod; break;
-        case CALC_MULTIPLIER :						return Multiplier(attrVal, attrMod); break;
-        case CALC_DIVIDER :                         return Divider(attrVal, attrMod); break;
-		case CALC_ADD_POSITIVE :					return AddPositive(attrVal, attrMod); break;
-        case CALC_SUBTRACT_POSITIVE :               return SubtractPositive(attrVal, attrMod); break;
-		case CALC_ADD_NEGATIVE :					return AddNegative(attrVal, attrMod); break;
-        case CALC_SUBTRACT_NEGATIVE :               return SubtractNegative(attrVal, attrMod); break;
-		case CALC_SUBTRACTION :						return Subtraction(attrVal, attrMod); break;
-		case CALC_CLOAKED_VELOCITY :				return CloakedVelocity(attrVal, attrMod); break;
-		case CALC_SKILL_LEVEL :						return attrVal; break;	// is this really right for attribute effect per skill level?
-		case CALC_SKILL_LEVEL_x_ATT :				return attrVal; break;	// is this really right for attribute effect per skill level?
-		case CALC_ABSOLUTE_MAX :					return AbsoluteMax(attrVal, attrMod); break;
-		case CALC_ABSOLUTE_MIN :					return AbsoluteMin(attrVal, attrMod); break;
-		case CALC_CAP_BOOSTERS :					return CapBoosters(attrVal, attrMod); break;
-        case CALC_ADD_RESIST :                      return AddResist(attrVal, attrMod); break;
-        case CALC_SUBTRACT_RESIST :                 return SubtractResist(attrVal, attrMod); break;
-        //case CALC_AUTO :                            return attrVal; break;                             // AUTO NOT SUPPORTED AT THIS TIME !!!
-        //case CALC_ADD :                             return Add(attrVal, attrMod); break;
-        //case CALC_SUBTRACT :                        return Subtract(attrVal, attrMod); break;
-        //case CALC_DIVIDE :                          return Divide(attrVal, attrMod); break;
-        //case CALC_MULTIPLY :                        return Multiply(attrVal, attrMod); break;
-        case CALC_ADD_PERCENT :                     return AddPercent(attrVal, attrMod); break;
-        case CALC_REV_ADD_PERCENT :                 return ReverseAddPercent(attrVal, attrMod); break;
-        case CALC_SUBTRACT_PERCENT :                return SubtractPercent(attrVal, attrMod); break;
-        case CALC_REV_SUBTRACT_PERCENT :            return ReverseSubtractPercent(attrVal, attrMod); break;
-        case CALC_ADD_AS_PERCENT :                  return AddAsPercent(attrVal, attrMod); break;
-        case CALC_SUBTRACT_AS_PERCENT :             return SubtractAsPercent(attrVal, attrMod); break;
-        case CALC_MODIFY_PERCENT_W_PERCENT :        return ModifyPercentWithPercent(attrVal, attrMod); break;
-        case CALC_REV_MODIFY_PERCENT_W_PERCENT :    return ReverseModifyPercentWithPercent(attrVal, attrMod); break;
-		case CALC_REDUCE_BY_PERCENT:				return ReduceByPercent(attrVal, attrMod); break;
-		case CALC_REV_REDUCE_BY_PERCENT :			return ReverseReduceByPercent(attrVal, attrMod); break;
-		//default:									return 0; break;
-    }
-
-    _log(SHIP__MODULE_ERROR, "CalculateNewAttributeValue() - Unknown EveCalculationType used: %i", (int)type);
-    //assert(false);
-    return 0;
 }
 
 #endif

@@ -1506,6 +1506,7 @@ void ModuleManager::_processExternalEffect(SubEffect * s)
 
 }
 
+// not used
 ModuleCommand ModuleManager::_translateEffectName(std::string s)
 {
     //slow but it's better to do it once then many times as it gets passed around in modules or w/e

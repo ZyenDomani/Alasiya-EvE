@@ -1114,31 +1114,28 @@ void ShipItem::StripFitting()
 // stacking penality system   -allan   (UD 29Jul16)
 double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
 {
-    /*  NOTE:  this system now uses "stacking attribute" to properly process modifiers that have stacking penalities.
-    if ((attrib == AttrWarpFactor) or (attrib == AttrCargoCapacityMultiplier)
-        or (attrib == AttrMiningAmount) or (attrib == AttrCpuLoad)
-        or (attrib == AttrPowerLoad) or (attrib == AttrRechargeRate)
-        or (attrib == AttrCapacitorCapacity) or (attrib == AttrHP)
-        or (attrib == AttrShieldCapacity) or (attrib == AttrArmorHP)
-        or (attrib == AttrAccessDifficulty) or (attrib = AttrDuration))
-        return 1.0f;
-    */
-
+    /*  NOTE:  this system now uses the module effects' "stacking attribute" to properly process modifiers that have stacking penalities.  */
     uint8 count = 1;
     std::map<uint16, uint8>::iterator itr = m_stackMap.find(attrib);
     if (itr != m_stackMap.end()) {
-        if ((state == MOD_ONLINE) or (state == MOD_ACTIVATED)) {
-            count = ++(itr->second);
-        } else if ((state == MOD_OFFLINE) or (state == MOD_DEACTIVATING)) {
-            count = itr->second;
-            if (itr->second == 1)
-                m_stackMap.erase(itr);
-            else
-                count = --(itr->second);
-        } else {
-            codelog(SHIP__MODULE_ERROR, "ShipItem::GetEffectiveness() -  module has invalid state %u", state);
-            if (m_pilot)
-                m_pilot->SendErrorMsg("Internal Server Error - module has invalid state.  Ref: ServerError 15611");
+        switch (state) {
+            case MOD_ONLINE:
+            case MOD_ACTIVATED: {
+                count = ++(itr->second);
+            } break;
+            case MOD_OFFLINE:
+            case MOD_DEACTIVATING: {
+                count = itr->second;
+                if (itr->second == 1)
+                    m_stackMap.erase(itr);
+                else
+                    --(itr->second);
+            } break;
+            default: {
+                codelog(SHIP__MODULE_ERROR, "ShipItem::GetEffectiveness() -  module has invalid state %u", state);
+                if (m_pilot)
+                    m_pilot->SendErrorMsg("Internal Server Error - module has invalid state.  Ref: ServerError 15611");
+            } break;
         }
     } else {
         m_stackMap.emplace(attrib, 1);

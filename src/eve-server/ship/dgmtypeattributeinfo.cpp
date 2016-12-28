@@ -76,16 +76,14 @@ DgmTypeAttributeSet* dgmtypeattributemgr::GetDgmTypeAttributeSet( uint32 typeID 
 {
     DgmTypeAttributeMapItr itr;
     itr = mDgmTypeAttrInfo.find(typeID);
-    if (itr == mDgmTypeAttrInfo.end())
-    {
+    if (itr == mDgmTypeAttrInfo.end()) {
         sLog.Debug("DgmTypeAttrMgr", "INFO: No type attributes found for type %u.", typeID);
-        return NULL;
+        return nullptr;
     }
 
-    if (!itr->second)
-    {
+    if (!itr->second) {
         sLog.Error("DgmTypeAttrMgr", "something went wrong with typeID: %u, db problem.... maybe", typeID);
-        return NULL;
+        return nullptr;
     }
 
     // whooo we found it :D
