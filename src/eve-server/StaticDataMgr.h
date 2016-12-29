@@ -37,7 +37,7 @@ public:
 
     bool GetStaticInfo(uint32 itemID, StaticData& data);
     bool GetStationInfo(uint32 stationID, StationData& data);
-    bool GetSystemInfo(uint32 systemID, SystemData& data);
+    bool GetSystemInfo(uint32 locationID, SystemData& data);
 
     bool GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids);
     uint8 GetRegionQuarter(uint32 regionID);

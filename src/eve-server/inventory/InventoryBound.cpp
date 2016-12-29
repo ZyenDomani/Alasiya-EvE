@@ -399,13 +399,33 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
                     capacity = call.byname.find("capacity")->second->AsInt()->value();
             }
 
-        // TODO  check for 'dividing' byname bool..dont know what this does
+        /* check for avalible capy vs item volume
+         *  this will avoid an unnecessary call to _ExecAdd() if there's no room in dest container.
+         */
+        if (capacity) {
+            InventoryItemRef item = m_manager->item_factory->GetItem(args.itemID);
+            if (!quantity)
+                quantity = item->quantity();    // assume all.
+
+            float volume = quantity * item->GetAttribute(AttrVolume).get_float();
+            if (volume > capacity) {
+                std::map<std::string, PyRep *> args;
+                args["available"] = new PyFloat(capacity);
+                args["volume"] = new PyFloat(volume);
+
+                if (call.client->CanThrow())
+                    throw PyException(MakeUserError("NotEnoughCargoSpace", args));
+                return nullptr;
+            }
+        }
+
+        // TODO  check for 'dividing' byname bool...this means "DivideItemStack"
         if (call.byname.find("dividing") != call.byname.end())
             _log(INV__ERROR, "[Add] byname.dividing found when adding itemID %u(flag %u) to inventoryID %u", args.itemID, flag, args.inventoryID);
 
         std::vector<int32> items;
         items.push_back(args.itemID);
-        return _ExecAdd( call.client, items, quantity, (EVEItemFlags)flag );
+        return ExecAdd( call.client, items, quantity, (EVEItemFlags)flag );
     } else {
         _log(INV__ERROR, "[Add] Unknown number of elements in a tuple: %u.", call.tuple->items.size() );
         return nullptr;
@@ -468,15 +488,14 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
             if (!call.byname.find("fromManyFlags")->second->IsNone())
                 quantity = -1; //special value here to hit tests in _ExecAdd
 
-        return _ExecAdd( call.client, args.itemIDs, quantity, (EVEItemFlags)flag );
+        return ExecAdd( call.client, args.itemIDs, quantity, (EVEItemFlags)flag );
     } else {
         _log(INV__ERROR, "[MultiAdd] Unknown number of elements in a tuple: %u.", call.tuple->items.size() );
         return nullptr;
     }
 }
 
-
-PyRep* InventoryBound::_ExecAdd(Client* pClient, const std::vector< int32 >& items, int32 quantity, EVEItemFlags flag) {
+PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& items, int32 quantity, EVEItemFlags flag) {
     // method logic rewrite to handle all types and send a proper return, and added some error returns.   -allan 2Jan16 (UD 24May16)
     /** @todo  update this....check for correct container when adding items */
 
@@ -485,7 +504,7 @@ PyRep* InventoryBound::_ExecAdd(Client* pClient, const std::vector< int32 >& ite
     InventoryItemRef itemRef(nullptr);
     EVEItemFlags old_flag(flagAutoFit);
     ShipItem* pShip = pClient->GetShip().get();
-    // set ship to owner of this inventory object.  this will fix adding items to inactive ships in hangar.
+    // set pShip to owner of this inventory object.  this will fix adding items to inactive ships in hangar.
     if (m_self->categoryID() == EVEDB::invCategories::Ship)
         pShip = m_manager->item_factory->GetShip(m_self->itemID()).get();
 
@@ -538,7 +557,7 @@ PyRep* InventoryBound::_ExecAdd(Client* pClient, const std::vector< int32 >& ite
             // at this point, item is in stack, so split off quantity and create new item to move.
             InventoryItemRef newItem = itemRef->Split(quantity);
             if (!newItem) {
-                sLog.Error("_ExecAdd", "Error splitting item %u. Skipping.", itemRef->itemID());
+                sLog.Error("ExecAdd", "Error splitting item %u. Skipping.", itemRef->itemID());
                 return nullptr;
             }
             // set itemRef to newly created single item.  this will allow common move code later and avoid complications (that were in original code)
@@ -597,11 +616,15 @@ PyRep* InventoryBound::_ExecAdd(Client* pClient, const std::vector< int32 >& ite
             }
         } else {
             // what else do we need to check for here?
+            m_manager->item_factory->SetUsingClient(pClient);
             if (mInventory->ValidateAddItem(flag, itemRef)) {
                 // all checks have passed.  move the item
                 pClient->MoveItem(itemRef->itemID(), m_self->itemID(), flag);
-            } else
+            } else {
+                m_manager->item_factory->UnsetUsingClient();
                 return nullptr;
+            }
+            m_manager->item_factory->UnsetUsingClient();
         }
     }
 

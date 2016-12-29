@@ -83,30 +83,33 @@ void StaticDataMgr::GetInfo()
 }
 
 //  the system data is cached on initial boot of system
-bool StaticDataMgr::GetSystemInfo(uint32 systemID, SystemData& data)
+bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
 {
     // this specific cache method is designed to use EITHER a stationID OR a systemID to determine system data wanted.
-    if (IsStation(systemID)) {
-        std::map<uint32, uint32>::iterator itr = m_stationSystem.find(systemID);
+    if (IsStation(locationID)) {
+        std::map<uint32, uint32>::iterator itr = m_stationSystem.find(locationID);
         if (itr != m_stationSystem.end()) {
-            systemID = itr->second;
+            locationID = itr->second;
         } else {
             DBQueryResult res;
-            if (!sDatabase.RunQuery(res, "SELECT solarSystemID FROM staStations WHERE stationID = %u", systemID)) {
-                codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", systemID, res.error.c_str());
+            if (!sDatabase.RunQuery(res, "SELECT solarSystemID FROM staStations WHERE stationID = %u", locationID)) {
+                codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", locationID, res.error.c_str());
                 return false;
             }
 
             DBResultRow row;
             if (!res.GetRow(row)) {
-                _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", systemID);
+                _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", locationID);
                 return false;
             }
-            m_stationSystem.insert(std::pair<uint32, uint32>(systemID, (systemID = row.GetUInt(0))));
+            m_stationSystem.insert(std::pair<uint32, uint32>(locationID, (locationID = row.GetUInt(0))));
         }
+    } else if (!IsSolarSystem(locationID)) {
+        _log(SERVICE__WARNING, "Failed to query info:  locationID %u is neither station nor system.", locationID);
+        return false;
     }
 
-    std::map<uint32, SystemData>::iterator itr = m_systemData.find(systemID);
+    std::map<uint32, SystemData>::iterator itr = m_systemData.find(locationID);
     if (itr != m_systemData.end()) {
         data = itr->second;
     } else {
@@ -120,28 +123,28 @@ bool StaticDataMgr::GetSystemInfo(uint32 systemID, SystemData& data)
             " security"
             " FROM mapSolarSystems"
             " WHERE solarSystemID = %u",
-            systemID))
+                                locationID))
         {
-            codelog(DATABASE__ERROR, "Failed to query info for system %u: %s.", systemID, res.error.c_str());
+            codelog(DATABASE__ERROR, "Failed to query info for system %u: %s.", locationID, res.error.c_str());
             return false;
         }
 
         DBResultRow row;
         if (!res.GetRow(row)) {
-            _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", systemID);
+            _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
             return false;
         }
 
-        data.systemID          = systemID;
+        data.systemID          = locationID;
         data.name              = row.GetText(0);
         data.constellationID   = row.GetUInt(1);
         data.regionID          = row.GetUInt(2);
-		if (row.IsNull(3))
-			data.securityClass = "0";
-		else
-			data.securityClass = row.GetText(3);
+        if (row.IsNull(3))
+            data.securityClass = "0";
+        else
+            data.securityClass = row.GetText(3);
         data.securityRating    = row.GetFloat(4);
-        m_systemData.insert(std::pair<uint32, SystemData>(systemID, data));
+        m_systemData.insert(std::pair<uint32, SystemData>(locationID, data));
     }
     return true;
 }
