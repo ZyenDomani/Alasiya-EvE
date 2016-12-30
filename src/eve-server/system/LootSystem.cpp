@@ -49,20 +49,14 @@ int DGM_Types_to_Wrecks_Table::Initialize()
 void DGM_Types_to_Wrecks_Table::_Populate()
 {
     double start = GetTimeUSeconds();
-    uint16 wreckID, typeID;
 
-    //first get list of all effects from dgmEffects table
     DBQueryResult *res = new DBQueryResult();
     //SELECT typeID, wreckTypeID FROM invTypesToWrecks
     SystemDB::GetWrecksToTypes(*res);
 
-	//go through and populate each effect
     DBResultRow row;
-    while (res->GetRow(row)) {
-        typeID = row.GetInt(0);
-        wreckID = row.GetInt(1);
-		m_WrecksToTypesMap[typeID] = wreckID;
-    }
+    while (res->GetRow(row))
+		m_WrecksToTypesMap[row.GetInt(0)] = row.GetInt(1);
 
     sLog.Cyan("     Wrecks Table", "%u wreck objects loaded in %.3fus.", m_WrecksToTypesMap.size(), (GetTimeUSeconds() - start));
 
@@ -112,7 +106,6 @@ void DGM_Loot_Groups_Table::_Populate()
     DBLootGroup LootGroup;
     while( res->GetRow(row) ) {
         //SELECT npcGroupID, itemGroupID, groupDropChance FROM lootGroup
-        //LootGroup.groupID = row.GetInt(0);
         LootGroup.lootGroupID = row.GetInt(1);
         LootGroup.dropChance = row.GetDouble(2);
         m_LootGroupMap.emplace(row.GetInt(0), LootGroup);
@@ -161,7 +154,7 @@ void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
             metaLevel = 0;
             if (randChance < 0.1) metaLevel = 4;
             else if (randChance < 0.25) metaLevel = 3;
-            else if (randChance < 0.5) metaLevel = 2;
+            else if (randChance < 0.4) metaLevel = 2;
             else if (randChance < 0.6) metaLevel = 1;
             /*need to figure out how to get faction loot for faction wrecks
     elif meta_level == 7:

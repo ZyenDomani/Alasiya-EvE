@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    7.2
+    Version:    7.3
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -103,6 +103,19 @@ public:
 
         uint8 WebUpdate;
     } rates;
+
+    // From <bpTimes/>
+    struct
+    {
+        float ProdTime;
+        float ProdMod;
+        float MatMod;
+        float WasteMod;
+        float ResPE;
+        float ResME;
+        float ResCopy;
+        float ResRE;
+    } bpTimes;
 
     // From <account/>
     struct
@@ -230,6 +243,7 @@ protected:
     bool ProcessThreads( const TiXmlElement* ele );
     bool ProcessCosmic( const TiXmlElement* ele );
     bool ProcessCrime( const TiXmlElement* ele );
+    bool ProcessBPTimes( const TiXmlElement* ele );
 };
 
 /// A macro for easier access to the singleton.

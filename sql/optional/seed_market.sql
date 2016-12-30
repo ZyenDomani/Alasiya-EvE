@@ -23,21 +23,25 @@ UPDATE `market_orders` SET `price`=100 WHERE `price`=0
   ****************************
  -- use this to spawn items in market for single station
 
-set @stationid=60014809; --Ryddinjorn VI - Moon 2 - Pator Tech School
+set @stationid=60014809;     --Ryddinjorn VI - Moon 2 - Pator Tech School
 set @solarSystemID=30003410; --Ryddinjorn  - minmatar noob system for pator tech
-set @regionid=10000042;  --metropolis
+set @regionid=10000042;      --metropolis
 -----------------
-set @stationid=60014137;    --Ibaria III - Thukker Mix Warehouse(60014137)
-set @solarSystemID=30000053 --Ibaria
-set @regionid=10000001;     --Derelik
+set @stationid=60014140;     --Zemalu IX - Moon 2 - Thukker Mix Factory(60014140)
+set @solarSystemID=30000055; --Zemalu
+set @regionid=10000001;      --Derelik
 -----------------
-set @stationid=60004591;    --Abudban IX - Brutor Tribe Bureau
-set @solarSystemID=30002507 --Abudban
-set @regionid=10000030;     --Heimatar
+set @stationid=60014137;     --Ibaria III - Thukker Mix Warehouse(60014137)
+set @solarSystemID=30000053; --Ibaria
+set @regionid=10000001;      --Derelik
+-----------------
+set @stationid=60004591;     --Abudban IX - Brutor Tribe Bureau
+set @solarSystemID=30002507; --Abudban
+set @regionid=10000030;      --Heimatar
 
 create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int);
 truncate table tStations;
-insert into tStations values (60004591, 30002507, 10000030);
+insert into tStations values (60014140, 30000055, 10000001);
 
 -- actual seeding
 INSERT INTO market_orders (typeID, charID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState,
@@ -46,8 +50,8 @@ minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps
   550 as volEntered, 550 as volRemaining, 130565976636875000 as issued,1 as orderState, 1 as minVolume,0 as contraband,
   0 as accountID, 18250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 15 as jumps
   FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
-  WHERE invTypes.published = 1 and categoryID IN (4,5,6,7,8,9,16,17,18,20,22,23,24,25,32,34,35,39,40,41,42,43,46);
-UPDATE `market_orders` SET `price`=100 WHERE `price`=0
+  WHERE invTypes.published = 1 and categoryID IN (4,9,16,17,24,25,34,35);
+UPDATE `market_orders` SET `price`=1000 WHERE `price`=0
 
 
 categoryID  categoryName

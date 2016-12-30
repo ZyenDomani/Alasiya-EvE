@@ -82,28 +82,58 @@ void StaticDataMgr::GetInfo()
      */
 }
 
+uint32 StaticDataMgr::GetStationRegion(uint32 stationID)
+{
+    uint32 regionID = 0;
+    std::map<uint32, uint32>::iterator itr = m_stationRegion.find(stationID);
+    if (itr != m_stationRegion.end()) {
+        regionID = itr->second;
+    } else {
+        DBQueryResult res;
+        if (!sDatabase.RunQuery(res, "SELECT regionID FROM staStations WHERE stationID = %u", stationID)) {
+            codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
+            return 0;
+        }
+
+        DBResultRow row;
+        if (!res.GetRow(row)) {
+            _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", stationID);
+            return 0;
+        }
+        m_stationRegion[stationID] = (regionID = row.GetUInt(0));
+    }
+    return regionID;
+}
+
+uint32 StaticDataMgr::GetStationSystem(uint32 stationID)
+{
+    uint32 systemID = 0;
+    std::map<uint32, uint32>::iterator itr = m_stationSystem.find(stationID);
+        if (itr != m_stationSystem.end()) {
+            systemID = itr->second;
+        } else {
+            DBQueryResult res;
+            if (!sDatabase.RunQuery(res, "SELECT solarSystemID FROM staStations WHERE stationID = %u", stationID)) {
+                codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
+                return 0;
+            }
+
+            DBResultRow row;
+            if (!res.GetRow(row)) {
+                _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", stationID);
+                return 0;
+            }
+            m_stationSystem[stationID] = (systemID = row.GetUInt(0));
+        }
+    return systemID;
+}
+
 //  the system data is cached on initial boot of system
 bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
 {
     // this specific cache method is designed to use EITHER a stationID OR a systemID to determine system data wanted.
     if (IsStation(locationID)) {
-        std::map<uint32, uint32>::iterator itr = m_stationSystem.find(locationID);
-        if (itr != m_stationSystem.end()) {
-            locationID = itr->second;
-        } else {
-            DBQueryResult res;
-            if (!sDatabase.RunQuery(res, "SELECT solarSystemID FROM staStations WHERE stationID = %u", locationID)) {
-                codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", locationID, res.error.c_str());
-                return false;
-            }
-
-            DBResultRow row;
-            if (!res.GetRow(row)) {
-                _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", locationID);
-                return false;
-            }
-            m_stationSystem.insert(std::pair<uint32, uint32>(locationID, (locationID = row.GetUInt(0))));
-        }
+        locationID = GetStationSystem(locationID);
     } else if (!IsSolarSystem(locationID)) {
         _log(SERVICE__WARNING, "Failed to query info:  locationID %u is neither station nor system.", locationID);
         return false;

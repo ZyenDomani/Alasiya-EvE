@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 6.6
+    Log Version: 6.8
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -223,6 +223,7 @@ LOG_TYPE( MANUF, WARNING, DISABLED, "ManufWarning" )
 LOG_TYPE( MANUF, MESSAGE, DISABLED, "ManufMsg" )
 LOG_TYPE( MANUF, INFO, DISABLED, "ManufInfo" )
 LOG_TYPE( MANUF, DEBUG, DISABLED, "ManufDebug" )
+LOG_TYPE( MANUF, DUMP, DISABLED, "ManufDump" )
 LOG_TYPE( MANUF, TRACE, DISABLED, "ManufTrace" )
 
 LOG_CATEGORY( DESTINY )
@@ -337,6 +338,7 @@ LOG_TYPE( CLIENT, NOTIFY_REP, DISABLED, "ClientNotifyRep" )
 LOG_TYPE( CLIENT, NOTIFY_DUMP, DISABLED, "ClientNotifyDmp" )
 LOG_TYPE( CLIENT, QUEUE_DUMP, DISABLED, "ClientQueueDump" )
 LOG_TYPE( CLIENT, SESSION, DISABLED, "ClientSession" )
+LOG_TYPE( CLIENT, TIMER, DISABLED, "ClientTimer" )
 LOG_TYPE( CLIENT, TRACE, DISABLED, "ClientTrace" )
 LOG_TYPE( CLIENT, STACK_TRACE, DISABLED, "ClientStack" )
 LOG_TYPE( CLIENT, TEXT, DISABLED, "ClientText" )

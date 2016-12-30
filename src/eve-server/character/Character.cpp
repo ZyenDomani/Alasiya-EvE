@@ -658,6 +658,7 @@ void Character::AddToSkillQueue(uint32 typeID, uint8 level) {
 		qs.typeID = typeID;
 		qs.level = level;
     m_skillQueue.push_back( qs );
+    _log(CHARACTER__SKILL_TRACE, "%s(%u) Skill %u training to level %u added to queue", itemName().c_str(), itemID(), typeID, level);
 }
 
 void Character::SendSkillComplete(Skill* pSkill, uint8 oldLevel, uint8 newLevel, EvilNumber EN_Points, int64 newPoints, bool stopped) {
@@ -1018,7 +1019,7 @@ void Character::SaveFullCharacter() {
 }
 
 void Character::SaveSkillQueue() {
-    _log( CHARACTER__INFO, "Saving skill queue of character %u.", itemID() );
+    _log( CHARACTER__SKILL_TRACE, "Saving skill queue of character %u.", itemID() );
 
     // skill queue
     m_db.SaveSkillQueue( itemID(), m_skillQueue );

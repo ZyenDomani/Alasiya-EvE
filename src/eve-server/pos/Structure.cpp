@@ -296,11 +296,6 @@ void StructureSE::Init(StructureItemRef structure)
         case EVEDB::invGroups::Orbital_Infrastructure: {
             m_co = true;
             m_planetID = atoi(m_self->customInfo().c_str());
-            if (m_planetID) {
-                GVector dir(m_self->position(), m_system->GetSE(m_planetID)->GetPosition());
-                dir.normalize();
-                m_rotation = dir;
-            }
         } break;
         case EVEDB::invGroups::Sovereignty_Blockade_Units: {
             m_sbu = true;

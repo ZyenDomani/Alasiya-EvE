@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 7.2 -->
+     Version: 7.3 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -58,6 +58,18 @@
         <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
         <RepairCost>1.0</RepairCost><!--  only used if != 1.0 -->
     </rates>
+
+    <bpTimes> <!-- these are multiplied to db values to get a modified result - < 1.0 = faster -->
+        <ResPE>1.0</ResPE>
+        <ResME>1.0</ResME>
+        <ResRE>1.0</ResRE>
+        <MatMod>1.0</MatMod>
+        <ProdMod>1.0</ProdMod>
+        <ResCopy>1.0</ResCopy>
+        <ProdTime>1.0</ProdTime>
+        <WasteMod>1.0</WasteMod>
+    </bpTimes>
+
     <account><!--         0  disable AutoAccount
  6917529027641081856  ???  in packet logs = ROLE_LOGIN | ROLE_PLAYER
  6917529029788565504 (0x6000000080000000)  ROLE_STD     = ROLE_LOGIN | ROLE_PLAYER | ROLE_IGB

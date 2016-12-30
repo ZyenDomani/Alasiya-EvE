@@ -181,6 +181,7 @@ public:
     // for orbital infrastructure
     void                        SetPlanet(uint32 planetID) { m_planetID = planetID; }
     uint32                      GetPlanetID()           { return m_planetID; }
+    void                        SetRotation(GPoint dir) { m_rotation = dir; }
 
 private:
     bool m_co = false;

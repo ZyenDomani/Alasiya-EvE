@@ -271,23 +271,23 @@
         <stringInline value="util.KeyVal" />
           <dictInline>
               <dictInlineEntry key="quote">
-          <objectInline>
+                 <objectInline>
                     <stringInline value="util.Row" />
                       <dictInline>
                           <dictInlineEntry key="header">
                               <listInline>
-                  <stringInline value="bom" />
-                  <stringInline value="materialMultiplier" />
-                  <stringInline value="charMaterialMultiplier" />
-                  <stringInline value="timeMultiplier" />
-                  <stringInline value="charTimeMultiplier" />
-                  <stringInline value="cost" />
-                  <stringInline value="installCost" />
-                  <stringInline value="usageCost" />
-                  <stringInline value="productionTime" />
-                  <stringInline value="maxJobStartTime" />
-                  <stringInline value="bomLocationData" />
-                  <stringInline value="missingMaterials" />
+                                <stringInline value="bom" />
+                                <stringInline value="materialMultiplier" />
+                                <stringInline value="charMaterialMultiplier" />
+                                <stringInline value="timeMultiplier" />
+                                <stringInline value="charTimeMultiplier" />
+                                <stringInline value="cost" />
+                                <stringInline value="installCost" />
+                                <stringInline value="usageCost" />
+                                <stringInline value="productionTime" />
+                                <stringInline value="maxJobStartTime" />
+                                <stringInline value="bomLocationData" />
+                                <stringInline value="missingMaterials" />
                               </listInline>
                           </dictInlineEntry>
                           <dictInlineEntry key="line">

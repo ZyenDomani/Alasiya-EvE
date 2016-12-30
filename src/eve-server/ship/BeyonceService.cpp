@@ -69,9 +69,7 @@ public:
 
         // beyonce is constructed when player first enters system and not removed until sys change or logout.
         // these functions are only called when beyonce is created. (fix for BlackScreen Bug)
-        if (pClient->IsJump())
-            pClient->SetJumpTimers();
-        else if (pClient->IsLogin())
+        if (pClient->IsLogin())
             pClient->SetBallPark();
 
         pClient->SetBeyonce(true);
@@ -564,6 +562,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             StationData data;
             sDataMgr.GetStationInfo(toID, data);
             warpToPoint.y = data.dockPosition.y;
+        } else if (pSE->IsCOSE()) {
+            distance += 1200;  // hack distance for customs offices until i get the radius working correctly
         } else if (pSE->IsGateSE()) {
             distance += (pSE->GetRadius() /4);  // fudge the distance a bit for gates... its' a lil close by default
         } else if (radius > 90000) {

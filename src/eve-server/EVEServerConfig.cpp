@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    7.2
+    Version:    7.3
 */
 
 
@@ -78,6 +78,16 @@ EVEServerConfig::EVEServerConfig()
     rates.RateDropMoney = 1.0;//N
     rates.RepairCost = 1.0;//N
     rates.WebUpdate = 15 /*m*/;
+
+    // bpTimes
+    bpTimes.ProdTime = 1.0;
+    bpTimes.MatMod = 1.0;
+    bpTimes.ProdMod = 1.0;
+    bpTimes.WasteMod = 1.0;
+    bpTimes.ResCopy = 1.0;
+    bpTimes.ResME = 1.0;
+    bpTimes.ResPE = 1.0;
+    bpTimes.ResRE = 1.0;
 
     // account
     account.autoAccountRole = ROLE_STD;
@@ -151,6 +161,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     AddMemberParser( "server",      &EVEServerConfig::ProcessServer );
     AddMemberParser( "world",       &EVEServerConfig::ProcessWorld );
     AddMemberParser( "rates",       &EVEServerConfig::ProcessRates );
+    AddMemberParser( "bpTimes",     &EVEServerConfig::ProcessBPTimes );
     AddMemberParser( "account",     &EVEServerConfig::ProcessAccount );
     AddMemberParser( "character",   &EVEServerConfig::ProcessCharacter );
     AddMemberParser( "npc",         &EVEServerConfig::ProcessNPC );
@@ -168,6 +179,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     RemoveParser( "server" );
     RemoveParser( "world" );
     RemoveParser( "rates" );
+    RemoveParser( "bpTimes" );
     RemoveParser( "account" );
     RemoveParser( "character" );
     RemoveParser( "npc" );
@@ -184,16 +196,16 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
 {
-    AddValueParser( "DisableIGB",            server.DisableIGB );
-    AddValueParser( "IsTestServer",         server.IsTestServer );
-    AddValueParser( "UseBeanCount",         server.UseBeanCount );
-    AddValueParser( "UseMarketBot",         server.UseMarketBot );
-    AddValueParser( "maxPlayers",           server.maxPlayers );
-    AddValueParser( "UseProfiling",         server.UseProfiling );
-    AddValueParser( "UseShipTracking",      server.UseShipTracking );
-    AddValueParser( "UseStackTrace",        server.UseStackTrace );
-    AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
-    AddValueParser( "idleSleepTime",        server.idleSleepTime );
+    AddValueParser( "DisableIGB",       server.DisableIGB );
+    AddValueParser( "IsTestServer",     server.IsTestServer );
+    AddValueParser( "UseBeanCount",     server.UseBeanCount );
+    AddValueParser( "UseMarketBot",     server.UseMarketBot );
+    AddValueParser( "maxPlayers",       server.maxPlayers );
+    AddValueParser( "UseProfiling",     server.UseProfiling );
+    AddValueParser( "UseShipTracking",  server.UseShipTracking );
+    AddValueParser( "UseStackTrace",    server.UseStackTrace );
+    AddValueParser( "ServerSleepTime",  server.ServerSleepTime );
+    AddValueParser( "idleSleepTime",    server.idleSleepTime );
 
     const bool result = ParseElementChildren( ele );
 
@@ -219,7 +231,7 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     AddValueParser( "loginInfo",        world.loginInfo );
     AddValueParser( "loginMsg",         world.loginMsg );
     AddValueParser( "mailDelay",        world.mailDelay );
-    AddValueParser( "StationDockDelay",     world.StationDockDelay );
+    AddValueParser( "StationDockDelay", world.StationDockDelay );
 
     const bool result = ParseElementChildren( ele );
 
@@ -237,19 +249,19 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
 {
-    AddValueParser( "secRate",              rates.secRate );
-    AddValueParser( "npcBountyMultiply",    rates.npcBountyMultiply );
-    AddValueParser( "damageRate",           rates.damageRate );
-    AddValueParser( "missileRate",          rates.missileRate );
-    AddValueParser( "missileTime",          rates.missileTime );
-    AddValueParser( "turrentRate",          rates.turrentRate );
-    AddValueParser( "corpCost",             rates.corpCost );
-    AddValueParser( "WorldDecay",           rates.WorldDecay );
-    AddValueParser( "NPCDecay",             rates.NPCDecay );
-    AddValueParser( "RateDropItem",         rates.RateDropItem );
-    AddValueParser( "RateDropMoney",        rates.RateDropMoney );
-    AddValueParser( "RepairCost",           rates.RepairCost );
-    AddValueParser( "WebUpdate",            rates.WebUpdate );
+    AddValueParser( "secRate",          rates.secRate );
+    AddValueParser( "npcBountyMultiply",rates.npcBountyMultiply );
+    AddValueParser( "damageRate",       rates.damageRate );
+    AddValueParser( "missileRate",      rates.missileRate );
+    AddValueParser( "missileTime",      rates.missileTime );
+    AddValueParser( "turrentRate",      rates.turrentRate );
+    AddValueParser( "corpCost",         rates.corpCost );
+    AddValueParser( "WorldDecay",       rates.WorldDecay );
+    AddValueParser( "NPCDecay",         rates.NPCDecay );
+    AddValueParser( "RateDropItem",     rates.RateDropItem );
+    AddValueParser( "RateDropMoney",    rates.RateDropMoney );
+    AddValueParser( "RepairCost",       rates.RepairCost );
+    AddValueParser( "WebUpdate",        rates.WebUpdate );
 
     const bool result = ParseElementChildren( ele );
 
@@ -270,10 +282,35 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     return result;
 }
 
+bool EVEServerConfig::ProcessBPTimes(const TiXmlElement* ele)
+{
+    AddValueParser( "ProdTime",         bpTimes.ProdTime);
+    AddValueParser( "ResCopy",          bpTimes.ResCopy);
+    AddValueParser( "ProdMod",          bpTimes.ProdMod);
+    AddValueParser( "WasteMod",         bpTimes.WasteMod);
+    AddValueParser( "MatMod",           bpTimes.MatMod);
+    AddValueParser( "ResME",            bpTimes.ResME);
+    AddValueParser( "ResPE",            bpTimes.ResPE);
+    AddValueParser( "ResRE",            bpTimes.ResRE);
+
+    const bool result = ParseElementChildren( ele );
+
+    RemoveParser( "ProdTime" );
+    RemoveParser( "ResCopy" );
+    RemoveParser( "ProdMod" );
+    RemoveParser( "WasteMod" );
+    RemoveParser( "MatMod" );
+    RemoveParser( "ResME" );
+    RemoveParser( "ResPE" );
+    RemoveParser( "ResRE" );
+
+    return result;
+}
+
 bool EVEServerConfig::ProcessAccount( const TiXmlElement* ele )
 {
-    AddValueParser( "autoAccountRole", account.autoAccountRole );
-    AddValueParser( "loginMessage",    account.loginMessage );
+    AddValueParser( "autoAccountRole",  account.autoAccountRole );
+    AddValueParser( "loginMessage",     account.loginMessage );
 
     const bool result = ParseElementChildren( ele );
 
@@ -308,13 +345,13 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
 {
-    AddValueParser( "ThreatRadius",  npc.ThreatRadius );
-    AddValueParser( "RoamingSpawns", npc.RoamingSpawns );
-    AddValueParser( "StaticSpawns",  npc.StaticSpawns );
-    AddValueParser( "RoamingTimer",  npc.RoamingTimer );
-    AddValueParser( "StaticTimer",   npc.StaticTimer );
-    AddValueParser( "RatFaction",    npc.RatFaction );
-    AddValueParser( "SpawnTest",     npc.SpawnTest );
+    AddValueParser( "ThreatRadius",     npc.ThreatRadius );
+    AddValueParser( "RoamingSpawns",    npc.RoamingSpawns );
+    AddValueParser( "StaticSpawns",     npc.StaticSpawns );
+    AddValueParser( "RoamingTimer",     npc.RoamingTimer );
+    AddValueParser( "StaticTimer",      npc.StaticTimer );
+    AddValueParser( "RatFaction",       npc.RatFaction );
+    AddValueParser( "SpawnTest",        npc.SpawnTest );
     AddValueParser( "EnableDrones",     npc.EnableDrones );
 
     const bool result = ParseElementChildren( ele );
@@ -333,11 +370,11 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessDatabase( const TiXmlElement* ele )
 {
-    AddValueParser( "host",     database.host );
-    AddValueParser( "port",     database.port );
-    AddValueParser( "username", database.username );
-    AddValueParser( "password", database.password );
-    AddValueParser( "db",       database.db );
+    AddValueParser( "host",             database.host );
+    AddValueParser( "port",             database.port );
+    AddValueParser( "username",         database.username );
+    AddValueParser( "password",         database.password );
+    AddValueParser( "db",               database.db );
 
     const bool result = ParseElementChildren( ele );
 
@@ -352,10 +389,10 @@ bool EVEServerConfig::ProcessDatabase( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessFiles( const TiXmlElement* ele )
 {
-    AddValueParser( "logDir",      files.logDir );
-    AddValueParser( "logSettings", files.logSettings );
-    AddValueParser( "cacheDir",    files.cacheDir );
-    AddValueParser( "imageDir",    files.imageDir );
+    AddValueParser( "logDir",           files.logDir );
+    AddValueParser( "logSettings",      files.logSettings );
+    AddValueParser( "cacheDir",         files.cacheDir );
+    AddValueParser( "imageDir",         files.imageDir );
 
     const bool result = ParseElementChildren( ele );
 
@@ -428,11 +465,11 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessCrime( const TiXmlElement* ele )
 {
-    AddValueParser( "AggFlagTime",     crime.AggFlagTime );
-    AddValueParser( "CrimFlagTime",    crime.CrimFlagTime );
-    AddValueParser( "CWSessionTime",   crime.CWSessionTime );
-    AddValueParser( "KillRightTime",   crime.KillRightTime );
-    AddValueParser( "WeaponFlagTime",  crime.WeaponFlagTime );
+    AddValueParser( "AggFlagTime",      crime.AggFlagTime );
+    AddValueParser( "CrimFlagTime",     crime.CrimFlagTime );
+    AddValueParser( "CWSessionTime",    crime.CWSessionTime );
+    AddValueParser( "KillRightTime",    crime.KillRightTime );
+    AddValueParser( "WeaponFlagTime",   crime.WeaponFlagTime );
 
     const bool result = ParseElementChildren( ele );
 

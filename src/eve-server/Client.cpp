@@ -258,7 +258,7 @@ void Client::ProcessClient() {
         m_char->UpdateSkillQueue();
 
     if (m_sessionTimer.Check(false)) {
-        _log(CLIENT__TRACE, "Client::ProcessClient():  SetSessionChange to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+        _log(CLIENT__TIMER, "Client::ProcessClient():  SetSessionChange to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
         m_sessionTimer.Disable();
         SetSessionChange();
     }
@@ -270,13 +270,13 @@ void Client::ProcessClient() {
     }
 
     if (pShipSE->DestinyMgr()->IsCloaked() and m_cloakTimer.Check(false)) {
-        _log(CLIENT__TRACE, "Client::ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+        _log(CLIENT__TIMER, "Client::ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
         m_cloakTimer.Disable();
         pShipSE->DestinyMgr()->UnCloak();
     }
 
     if (m_invul and m_invulTimer.Check(false)) {
-        _log(CLIENT__TRACE, "Client::ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+        _log(CLIENT__TIMER, "Client::ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
         m_invulTimer.Disable();
         SetInvul(false);
     }
@@ -289,37 +289,39 @@ void Client::ProcessClient() {
                 sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
             } break;
             case csDock: {
-                _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csDock");
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
                 DockToStation();
+                m_clientState = csIdle;
             } break;
             case csUndock: {
-                _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csUndock");
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
                 SetBallPark();
             } break;
             case csJump: {
-                _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csJump");
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
                 ExecuteJump();
             } break;
             case csKilled: {
-                _log(CLIENT__TRACE, "Client::ProcessClient()::CheckState():  case: csKilled");
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
                 SetBallPark();
             } break;
         }
-        m_clientState = csIdle;
     }
 
     if (m_scanTimer.Check(false)) {
+        _log(CLIENT__TIMER, "Client::ProcessClient():  Scan Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
         m_scanTimer.Disable();
         m_scan->ScanResult();
     }
 
     if (m_jumpTimer.Check(false)) {
+        _log(CLIENT__TIMER, "Client::ProcessClient():  Jump Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
         m_jumpTimer.Disable();
         SetBallPark();
     }
     /* Check Character Save Timer Expiry:  (not currently used  -allan 17May16)
     if (m_char->CheckSaveTimer()) {
-        _log(CLIENT__TRACE, "Client::ProcessClient():  SaveTimer for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+        _log(CLIENT__TIMER, "Client::ProcessClient():  SaveTimer for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
         m_char->SaveCharacter();
         m_ship->SaveShip();
     }
@@ -538,6 +540,9 @@ void Client::SetBallPark() {
         pShipSE->DestinyMgr()->Undock(m_movePoint);
     if (!m_setStateSent)
         pShipSE->DestinyMgr()->SendSetState();
+    if (m_clientState == ClientState::csJump)
+        pShipSE->DestinyMgr()->Jump();
+    m_clientState = csIdle;
 }
 
 void Client::DockToStation() {
@@ -746,29 +751,40 @@ void Client::ExecuteJump() {
     m_beyonce = m_setStateSent = false;
 
     MoveToLocation(m_moveSystemID, m_movePoint);
-    pShipSE->DestinyMgr()->Jump();
+    //pShipSE->DestinyMgr()->Jump();
     pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
+
+    m_jumpTimer.Start(ClientTimers::JumpTimer);
+    m_cloakTimer.Start(ClientTimers::JumpCloak);
+    m_invulTimer.Start(ClientTimers::JumpInvul);
 
     m_toGate = 0;
     m_movePoint = NULL_ORIGIN;
 }
 
 void Client::SetJumpTimers() {
-    pShipSE->DestinyMgr()->Cloak();
+    //pShipSE->DestinyMgr()->Cloak();
     m_jumpTimer.Start(ClientTimers::JumpTimer);
     m_cloakTimer.Start(ClientTimers::JumpCloak);
     m_invulTimer.Start(ClientTimers::JumpInvul);
 }
 
 bool Client::AddBalance(double amount) {
-    if (!m_char->AlterBalance(amount))
+    if (!m_char->AlterBalance(amount)) {
+        if (CanThrow()) {
+            std::map<std::string, PyRep *> args;
+            args["amount"] = new PyFloat(amount);
+            args["balance"] = new PyFloat(m_char->balance());
+            throw(PyException(MakeUserError("NotEnoughMoney", args)));
+        }
         return false;
+    }
 
     //send notification of change
     OnAccountChange ac;
         ac.accountKey = "cash";
         ac.ownerid = m_char->itemID();
-        ac.balance = GetBalance();
+        ac.balance = m_char->balance();
     PyTuple *answer = ac.Encode();
     SendNotification("OnAccountChange", "cash", &answer, false);
 
@@ -899,6 +915,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
 
     item->Move(location, flag);
 
+    /** @todo  this isnt right....correct it.  */
     if ((item->flag() >= flagSlotFirst) and (item->flag() <= flagSlotLast))
         m_ship->UpdateModules();
     else

@@ -38,6 +38,9 @@ public:
     bool GetStaticInfo(uint32 itemID, StaticData& data);
     bool GetStationInfo(uint32 stationID, StationData& data);
     bool GetSystemInfo(uint32 locationID, SystemData& data);
+    
+    uint32 GetStationRegion(uint32 stationID);
+    uint32 GetStationSystem(uint32 stationID);
 
     bool GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids);
     uint8 GetRegionQuarter(uint32 regionID);
@@ -49,6 +52,7 @@ protected:
 private:
     ManagerDB m_db;
 
+    std::map<uint32, uint32> m_stationRegion;
     std::map<uint32, uint32> m_stationSystem;
     std::map<uint32, SystemData> m_systemData;
     std::map<uint32, StaticData> m_staticData;

@@ -133,10 +133,10 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
     if( !args.Decode( &call.tuple ) )
     {
         codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
-        return NULL;
+        return nullptr;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
@@ -148,10 +148,10 @@ PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
     if( !args.Decode( &call.tuple ) )
     {
         codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
-        return NULL;
+        return nullptr;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult SkillMgrBound::Handle_GetSkillQueueAndFreePoints(PyCallArgs &call) {
@@ -163,11 +163,10 @@ PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
     Call_SaveSkillQueue args;
     if(!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     CharacterRef ch = call.client->GetChar();
-
     ch->ClearSkillQueue();
     SkillQueue_Element el;
     std::vector<PyRep*>::const_iterator cur = args.queue->begin();
@@ -179,22 +178,21 @@ PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
         ch->AddToSkillQueue( el.typeID, el.level );
     }
     ch->UpdateSkillQueue();
-    return NULL;
- }
+    return nullptr;
+}
 
 PyResult SkillMgrBound::Handle_AddToEndOfSkillQueue(PyCallArgs &call) {
     Call_TwoIntegerArgs args;
     if(!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     CharacterRef ch = call.client->GetChar();
-
     ch->AddToSkillQueue(args.arg1, args.arg2);
     ch->UpdateSkillQueue();
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
@@ -204,7 +202,7 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
     Call_RespecCharacter spec;
     if (!spec.Decode(call.tuple)) {
         codelog(CLIENT__ERROR, "Failed to decode RespecCharacter arguments");
-        return NULL;
+        return nullptr;
     }
 
 	CharacterRef cref = call.client->GetChar();
@@ -213,7 +211,7 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 
     // return early if this is an illegal call
     if (!m_db.ReportRespec(call.client->GetCharacterID()))
-        return NULL;
+        return nullptr;
     uint8 multiplier = sConfig.character.statMultiplier;
     cref->SetAttribute(AttrCharisma, spec.charisma * multiplier);
     cref->SetAttribute(AttrIntelligence, spec.intelligence * multiplier);
@@ -223,7 +221,7 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
     cref->SaveAttributes();
 
     // no return value
-    return NULL;
+    return nullptr;
 }
 
 PyResult SkillMgrBound::Handle_GetRespecInfo( PyCallArgs& call )
@@ -249,7 +247,7 @@ PyResult SkillMgrBound::Handle_CharStartTrainingSkillByTypeID( PyCallArgs& call 
     ch->UpdateSkillQueue();
     //ch->GetSkillQueue();
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
@@ -257,7 +255,7 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
     Call_InjectSkillIntoBrain args;
     if (!args.Decode(&call.tuple)) {
         codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
-        return NULL;
+        return nullptr;
     }
 
     CharacterRef ch = call.client->GetChar();
@@ -275,5 +273,5 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
         }
     }
 
-    return NULL;
+    return nullptr;
 }

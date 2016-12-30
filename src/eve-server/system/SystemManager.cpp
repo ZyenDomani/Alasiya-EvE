@@ -397,8 +397,12 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
             if ((entity.planetID) and (entity.groupID != EVEDB::invGroups::Test_Orbitals)) {
                 sSE->SetPlanet(entity.planetID);
                 SystemEntity* pPE = system.GetSE(entity.planetID);
-                if (pPE and pPE->IsPlanetSE())
+                if (pPE and pPE->IsPlanetSE()) {
+                    GVector dir(structure->position(), pPE->GetPosition());
+                    dir.normalize();
+                    sSE->SetRotation(dir);
                     pPE->GetPlanetSE()->SetCustomsOffice(sSE);
+                }
             }
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return sSE;
