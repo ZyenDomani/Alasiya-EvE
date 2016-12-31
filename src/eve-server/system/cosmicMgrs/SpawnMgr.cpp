@@ -91,7 +91,7 @@ void SpawnDataMgr::_Populate()
     SafeDelete(res);
     SafeDelete(res2);
 
-    sLog.Cyan("     SpawnDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fms.",
+    sLog.Cyan("     SpawnDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fus.",
              m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_regions.size(), (GetTimeUSeconds() - start));
 }
 

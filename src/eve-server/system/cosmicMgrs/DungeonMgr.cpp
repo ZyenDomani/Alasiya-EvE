@@ -123,7 +123,7 @@ void DungeonDataMgr::_Populate()
     //cleanup
     SafeDelete(res);
 
-    sLog.Cyan("   DungeonDataMgr", "%u rooms in %u buckets and %u groups in %u buckets for %u dungeon templates loaded in %.3fms.",
+    sLog.Cyan("   DungeonDataMgr", "%u rooms in %u buckets and %u groups in %u buckets for %u dungeon templates loaded in %.3fus.",
              m_rooms.size(), m_rooms.bucket_count(), m_groups.size(), m_groups.bucket_count(), m_templates.size(), (GetTimeUSeconds() - start));
 }
 

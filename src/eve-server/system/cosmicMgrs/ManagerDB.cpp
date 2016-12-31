@@ -13,6 +13,27 @@
 #include "system/cosmicMgrs/ManagerDB.h"
 
 
+void ManagerDB::GetSkillList(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (SELECT groupID FROM invGroups WHERE categoryID = 16)")) {
+        codelog(DATABASE__ERROR, "Error in GetSkillList query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetRAMMaterials(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT typeID, materialTypeID, quantity FROM invTypeMaterials")) {
+        codelog(DATABASE__ERROR, "Error in GetRAMMaterials query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetRAMRequirements(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, recycle FROM ramTypeRequirements")) {
+        codelog(DATABASE__ERROR, "Error in GetRAMRequirements query: %s", res.error.c_str());
+    }
+}
+
 void ManagerDB::GetOreBySSC(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT systemSec, roidID, percent FROM roidDistribution")) {

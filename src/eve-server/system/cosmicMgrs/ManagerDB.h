@@ -40,8 +40,14 @@ typedef enum {
 
 class ManagerDB {
 public:
+    /* db methods for... */
 
-    /* db methods for all cosmic managers */
+    /* common data */
+    void GetSkillList(DBQueryResult& res);
+
+    /* R.A.M. data */
+    void GetRAMMaterials(DBQueryResult& res);
+    void GetRAMRequirements(DBQueryResult& res);
 
     /* data manager */
     void GetOreBySSC(DBQueryResult& res);
