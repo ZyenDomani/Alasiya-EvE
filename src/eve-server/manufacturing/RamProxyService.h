@@ -38,32 +38,31 @@ public:
     RamProxyService(PyServiceMgr *mgr);
     virtual ~RamProxyService();
 
+protected:
+    // verifying functions
+    void VerifyInstallJob_Call(const Call_InstallJob &args, InventoryItemRef installedItem, const PathElement &bomLocation, Client *const c);
+    void VerifyInstallJob_Install(const Rsp_InstallJob& rsp, const PathElement& pathBomLocation, const std::vector< RequiredItem >& reqItems, const int32 runs, Client*const c);
+    void VerifyCompleteJob(const Call_CompleteJob &args, Client *const c);
+
+    bool Calculate(const Call_InstallJob &args, InventoryItemRef installedItem, Client *const c, Rsp_InstallJob &into);
+    void EncodeBillOfMaterials(const std::vector<RequiredItem> &reqItems, double materialMultiplier, double charMaterialMultiplier, uint32 runs, BillOfMaterials &into);
+    void EncodeMissingMaterials(const std::vector<RequiredItem> &reqItems, const PathElement &bomLocation, Client *const c, double materialMultiplier, double charMaterialMultiplier, int32 runs, std::map<int32, PyRep *> &into);
+
+    void GetBOMItems(const PathElement &bomLocation, std::vector<InventoryItemRef> &into);
+
 private:
     class Dispatcher;
     Dispatcher *const m_dispatch;
-
     RamProxyDB m_db;
 
-    // verifying functions
-    void _VerifyInstallJob_Call(const Call_InstallJob &args, InventoryItemRef installedItem, const PathElement &bomLocation, Client *const c);
-    void _VerifyInstallJob_Install(const Rsp_InstallJob& rsp, const PathElement& pathBomLocation, const std::vector< RequiredItem >& reqItems, const int32 runs, Client*const c);
-    void _VerifyCompleteJob(const Call_CompleteJob &args, Client *const c);
-
-    bool _Calculate(const Call_InstallJob &args, InventoryItemRef installedItem, Client *const c, Rsp_InstallJob &into);
-    void _EncodeBillOfMaterials(const std::vector<RequiredItem> &reqItems, double materialMultiplier, double charMaterialMultiplier, uint32 runs, BillOfMaterials &into);
-    void _EncodeMissingMaterials(const std::vector<RequiredItem> &reqItems, const PathElement &bomLocation, Client *const c, double materialMultiplier, double charMaterialMultiplier, int32 runs, std::map<int32, PyRep *> &into);
-
-    void _GetBOMItems(const PathElement &bomLocation, std::vector<InventoryItemRef> &into);
-
-    PyCallable_DECL_CALL(AssemblyLinesGet);
-    PyCallable_DECL_CALL(AssemblyLinesSelect);
-    PyCallable_DECL_CALL(AssemblyLinesSelectPublic);
-    PyCallable_DECL_CALL(AssemblyLinesSelectPrivate);
     PyCallable_DECL_CALL(GetJobs2);
     PyCallable_DECL_CALL(InstallJob);
     PyCallable_DECL_CALL(CompleteJob);
-
+    PyCallable_DECL_CALL(AssemblyLinesGet);
+    PyCallable_DECL_CALL(AssemblyLinesSelect);
     PyCallable_DECL_CALL(GetRelevantCharSkills);
+    PyCallable_DECL_CALL(AssemblyLinesSelectPublic);
+    PyCallable_DECL_CALL(AssemblyLinesSelectPrivate);
 };
 
 #endif

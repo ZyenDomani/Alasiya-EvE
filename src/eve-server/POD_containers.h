@@ -33,6 +33,31 @@ struct FleetData {
     uint8 fleetJob;
 };
 
+/* POD structure for blueprint data */
+struct BlueprintData {
+    bool copy;
+    int32 mLevel;
+    int32 pLevel;
+    int32 runs;
+};
+
+/* POD structure  for blueprint type data */
+struct BlueprintTypeData {
+    uint32 parentBlueprintTypeID;
+    uint32 productTypeID;
+    uint32 productionTime;
+    uint32 techLevel;
+    uint32 researchProductivityTime;
+    uint32 researchMaterialTime;
+    uint32 researchCopyTime;
+    uint32 researchTechTime;
+    uint32 productivityModifier;
+    uint32 materialModifier;
+    uint32 maxProductionLimit;
+    double wasteFactor;
+    double chanceOfReverseEngineering;
+};
+
 /* POD structure for character kill data  -allan 01May16 */
 struct CharKillData {
     uint32 killID;

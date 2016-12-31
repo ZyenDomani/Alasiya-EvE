@@ -523,7 +523,8 @@ PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& item
 
         if (IsModuleSlot(old_flag) or IsModuleSlot(flag) or IsCargoHoldFlag(old_flag))
             if (!pShip) {
-                throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", itemRef->itemName().c_str()));
+                if (pClient->CanThrow())
+                    throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", itemRef->itemName().c_str()));
                 return nullptr;
             }
 

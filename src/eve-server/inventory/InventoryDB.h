@@ -78,6 +78,10 @@ public:
     bool GetTypeEffectsList(uint32 typeID, std::vector<uint32> &into);
 
     bool GetBlueprintType(uint32 blueprintTypeID, BlueprintTypeData &into);
+    /* Blueprint data (invBlueprints)  */
+    bool DeleteBlueprint(uint32 blueprintID);
+    bool GetBlueprint(uint32 blueprintID, BlueprintData& into);
+    bool SaveBlueprintData(uint32 blueprintID, BlueprintData& data);
 
     /**
      * Loads character type data.
@@ -186,16 +190,6 @@ public:
     bool UpdateAttribute_double(uint32 itemID, uint32 attributeID, double v);
     bool EraseAttribute(uint32 itemID, uint32 attributeID);
     bool EraseAttributes(uint32 itemID);
-
-    /*
-     * Blueprint stuff
-     * (invBlueprints)
-     */
-    bool GetBlueprint(uint32 blueprintID, BlueprintData &into);
-
-    bool NewBlueprint(uint32 blueprintID, BlueprintData &data);
-    bool SaveBlueprint(uint32 blueprintID, BlueprintData data);
-    bool DeleteBlueprint(uint32 blueprintID);
 
     /*
      * Character stuff

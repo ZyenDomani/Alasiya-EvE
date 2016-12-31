@@ -200,7 +200,7 @@ bool InventoryDB::GetBlueprintType(uint32 blueprintTypeID, BlueprintTypeData &in
         "  researchTechTime,"
         "  productivityModifier,"
         "  materialModifier,"
-        "  wasteFactor / 100,"   // we have it in db as percentage ...
+        "  wasteFactor,"
         "  maxProductionLimit "
         " FROM invBlueprintTypes "
         " WHERE blueprintTypeID=%u",
@@ -218,16 +218,79 @@ bool InventoryDB::GetBlueprintType(uint32 blueprintTypeID, BlueprintTypeData &in
 
     into.parentBlueprintTypeID = row.IsNull(0) ? 0 : row.GetUInt(0);
     into.productTypeID = row.GetUInt(1);
-    into.productionTime = row.GetUInt(2);
+    into.productionTime = row.GetUInt(2) * sConfig.bpTimes.ProdTime;
     into.techLevel = row.GetUInt(3);
-    into.researchProductivityTime = row.GetUInt(4);
-    into.researchMaterialTime = row.GetUInt(5);
-    into.researchCopyTime = row.GetUInt(6);
-    into.researchTechTime = row.GetUInt(7);
-    into.productivityModifier = row.GetUInt(8);
-    into.materialModifier = row.GetUInt(9);
-    into.wasteFactor = row.GetDouble(10);
+    into.researchProductivityTime = row.GetUInt(4) * sConfig.bpTimes.ResPE;
+    into.researchMaterialTime = row.GetUInt(5) * sConfig.bpTimes.ResME;
+    into.researchCopyTime = row.GetUInt(6) * sConfig.bpTimes.ResCopy;
+    into.researchTechTime = row.GetUInt(7) * sConfig.bpTimes.ResRE;
+    into.productivityModifier = row.GetUInt(8) * sConfig.bpTimes.ProdMod;
+    into.materialModifier = row.GetUInt(9) * sConfig.bpTimes.MatMod;
+    into.wasteFactor = (row.GetDouble(10) / 100)  * sConfig.bpTimes.WasteMod;   // we have it in db as percentage ...
     into.maxProductionLimit = row.GetUInt(11);
+    return true;
+}
+
+bool InventoryDB::SaveBlueprintData(uint32 blueprintID, BlueprintData& data) {
+    DBerror err;
+    if(!sDatabase.RunQuery(err,
+        "INSERT INTO invBlueprints"
+        "  (blueprintID, copy, materialLevel, productivityLevel, licensedProductionRunsRemaining)"
+        " VALUES"
+        "  (%u, %u, %i, %i, %i)"
+        "ON DUPLICATE KEY UPDATE "
+        "materialLevel=VALUES(materialLevel), "
+        "productivityLevel=VALUES(productivityLevel), "
+        "licensedProductionRunsRemaining=VALUES(licensedProductionRunsRemaining) ",
+                           blueprintID, (data.copy ? 1 : 0), data.mLevel, data.pLevel, data.runs))
+    {
+        codelog(DATABASE__ERROR, "Error in SaveBlueprint query: %s.", err.c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool InventoryDB::DeleteBlueprint(uint32 blueprintID) {
+    DBerror err;
+
+    if(!sDatabase.RunQuery(err,
+        "DELETE FROM invBlueprints"
+        " WHERE blueprintID=%u",
+        blueprintID))
+    {
+        codelog(DATABASE__ERROR, "Failed to delete blueprint %u: %s.", blueprintID, err.c_str());
+        return false;
+    }
+    return true;
+}
+
+bool InventoryDB::GetBlueprint(uint32 blueprintID, BlueprintData &into) {
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT"
+        "  copy,"
+        "  materialLevel,"
+        "  productivityLevel,"
+        "  licensedProductionRunsRemaining"
+        " FROM invBlueprints"
+        " WHERE blueprintID=%u",
+        blueprintID))
+    {
+        codelog(DATABASE__ERROR, "Error in GetBlueprint query: %s.", res.error.c_str());
+        return false;
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        _log(DATABASE__MESSAGE, "Blueprint %u not found.", blueprintID);
+        return false;
+    }
+
+    into.copy = (row.GetInt(0) ? true : false);
+    into.mLevel = row.GetInt(1);
+    into.pLevel = row.GetInt(2);
+    into.runs = row.GetInt(3);
 
     return true;
 }
@@ -876,92 +939,6 @@ bool InventoryDB::EraseAttributes(uint32 itemID) {
         itemID))
     {
         _log(DATABASE__MESSAGE, "Failed to erase attributes for item %u: %s", itemID, err.c_str());
-        return false;
-    }
-    return true;
-}
-
-bool InventoryDB::GetBlueprint(uint32 blueprintID, BlueprintData &into) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  copy,"
-        "  materialLevel,"
-        "  productivityLevel,"
-        "  licensedProductionRunsRemaining"
-        " FROM invBlueprints"
-        " WHERE blueprintID=%u",
-        blueprintID))
-    {
-        codelog(DATABASE__ERROR, "Error in GetBlueprint query: %s.", res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Blueprint %u not found.", blueprintID);
-        return false;
-    }
-
-    into.copy = (row.GetInt(0) ? true : false);
-    into.materialLevel = row.GetInt(1);
-    into.productivityLevel = row.GetInt(2);
-    into.licensedProductionRunsRemaining = row.GetInt(3);
-
-    return true;
-}
-
-bool InventoryDB::NewBlueprint(uint32 blueprintID, BlueprintData &data) {
-    DBerror err;
-
-    if(!sDatabase.RunQuery(err,
-        "INSERT"
-        " INTO invBlueprints"
-        "  (blueprintID, copy, materialLevel, productivityLevel, licensedProductionRunsRemaining)"
-        " VALUES"
-        "  (%u, %u, %i, %i, %i)",
-        blueprintID, data.copy, data.materialLevel, data.productivityLevel, data.licensedProductionRunsRemaining))
-    {
-        codelog(DATABASE__ERROR, "Unable to create new blueprint entry for blueprint %u: %s.", blueprintID, err.c_str());
-        return false;
-    }
-
-    return true;
-}
-
-bool InventoryDB::SaveBlueprint(uint32 blueprintID, BlueprintData data) {
-    DBerror err;
-
-    if(!sDatabase.RunQuery(err,
-        "UPDATE invBlueprints"
-        " SET"
-        "  copy = %u,"
-        "  materialLevel = %i,"
-        "  productivityLevel = %i,"
-        "  licensedProductionRunsRemaining = %i"
-        " WHERE blueprintID = %u",
-        uint32(data.copy),
-        data.materialLevel,
-        data.productivityLevel,
-        data.licensedProductionRunsRemaining))
-    {
-        codelog(DATABASE__ERROR, "Error in SaveBlueprint query: %s.", err.c_str());
-        return false;
-    }
-
-    return true;
-}
-
-bool InventoryDB::DeleteBlueprint(uint32 blueprintID) {
-    DBerror err;
-
-    if(!sDatabase.RunQuery(err,
-        "DELETE FROM invBlueprints"
-        " WHERE blueprintID=%u",
-        blueprintID))
-    {
-        codelog(DATABASE__ERROR, "Failed to delete blueprint %u: %s.", blueprintID, err.c_str());
         return false;
     }
     return true;

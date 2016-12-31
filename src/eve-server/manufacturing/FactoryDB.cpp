@@ -27,7 +27,7 @@
 
 #include "manufacturing/FactoryDB.h"
 
-PyRep *FactoryDB::GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) const {
+PyRep* FactoryDB::GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) const {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
@@ -72,7 +72,7 @@ PyRep *FactoryDB::GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) 
                             */
 }
 
-PyRep *FactoryDB::GetMaterialCompositionOfItemType(const uint32 typeID) const {
+PyRep* FactoryDB::GetMaterialCompositionOfItemType(const uint32 typeID) const {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,

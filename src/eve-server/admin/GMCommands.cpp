@@ -699,7 +699,7 @@ PyResult Command_setbpattr(Client* who, CommandDB* db, PyServiceMgr* services, c
 
     if (!args.isNumber(5))
         throw PyException(MakeCustomError("Argument 5 must be remaining licensed production runs. (got %s)", args.arg(5).c_str()));
-    int licensedProductionRunsRemaining = atoi(args.arg(5).c_str());
+    int runs = atoi(args.arg(5).c_str());
 
     BlueprintRef bp = services->item_factory->GetBlueprint(blueprintID);
     if (!bp)
@@ -707,9 +707,9 @@ PyResult Command_setbpattr(Client* who, CommandDB* db, PyServiceMgr* services, c
 
     // these need to check current settings to see if anything changed
     bp->SetCopy(copy);
-    bp->SetMaterialLevel(materialLevel);
-    bp->SetProductivityLevel(productivityLevel);
-    bp->SetLicensedProductionRunsRemaining(licensedProductionRunsRemaining);
+    bp->SetME(materialLevel);
+    bp->SetPE(productivityLevel);
+    bp->SetRuns(runs);
 
     return new PyString("Properties modified.");
 }

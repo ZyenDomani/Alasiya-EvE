@@ -27,7 +27,7 @@
 
 #include "manufacturing/RamProxyDB.h"
 
-PyRep *RamProxyDB::GetJobs2(const uint32 ownerID, const bool completed)
+PyRep *RamProxyDB::GetJobs2(const int32 ownerID, const bool completed)
 {
     DBQueryResult res;
 
@@ -561,7 +561,7 @@ uint32 RamProxyDB::GetTech2Blueprint(const uint32 blueprintTypeID) {
     return(row.GetUInt(0));
 }
 
-uint64 RamProxyDB::GetNextFreeTime(const uint32 assemblyLineID) {
+int64 RamProxyDB::GetNextFreeTime(const uint32 assemblyLineID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
@@ -580,30 +580,7 @@ uint64 RamProxyDB::GetNextFreeTime(const uint32 assemblyLineID) {
         _log(DATABASE__ERROR, "Assembly line %u not found.", assemblyLineID);
         return 0;
     } else
-        return (row.IsNull(0) ? 0 : row.GetUInt64(0));
-}
-
-uint32 RamProxyDB::GetRegionOfContainer(const uint32 containerID) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT regionID"
-        " FROM ramAssemblyLineStations"
-        " WHERE stationID = %u",
-        containerID))
-    {
-        _log(DATABASE__ERROR, "Unable to query region for container %u: %s", containerID, res.error.c_str());
-        return 0;
-    }
-
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "No region found for container %u.", containerID);
-        return 0;
-    }
-
-    return(row.GetUInt(0));
-
+        return (row.IsNull(0) ? 0 : row.GetInt64(0));
 }
 
 bool RamProxyDB::_GetMultipliers(const uint32 assemblyLineID, uint32 groupID, double &materialMultiplier, double &timeMultiplier) {

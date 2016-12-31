@@ -283,6 +283,28 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Implant:
         case EVEDB::invCategories::Reaction:
             break;
+        case EVEDB::invCategories::Skill: {
+            return Skill::Spawn( factory, data );
+        }
+        case EVEDB::invCategories::Owner: {
+            return Character::Spawn( factory, data );
+        }
+        case EVEDB::invCategories::Ship: {
+            return ShipItem::Spawn( factory, data );
+        }
+        case EVEDB::invCategories::Orbitals:
+        case EVEDB::invCategories::Structure: {
+            /*  this is for all Orbital items */
+            return StructureItem::Spawn( factory, data );
+        }
+        case EVEDB::invCategories::Blueprint: {
+            BlueprintData bpData;
+                bpData.runs = -1;
+                bpData.copy = false;
+                bpData.mLevel = 0;
+                bpData.pLevel = 0;
+            return Blueprint::Spawn( factory, data, bpData );
+        }
         case EVEDB::invCategories::Asteroid: {
             uint32 itemID = InventoryItem::CreateItemID( factory, data );
             if (!itemID)
@@ -296,24 +318,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
             //itemRef->SaveAttributes();
             return itemRef;
-        }
-        case EVEDB::invCategories::Skill: {
-            return Skill::Spawn( factory, data );
-        }
-        case EVEDB::invCategories::Owner: {
-            return Character::Spawn( factory, data );
-        }
-        case EVEDB::invCategories::Ship: {
-            return ShipItem::Spawn( factory, data );
-        }
-        case EVEDB::invCategories::Blueprint: {
-            BlueprintData bdata; // use default blueprint attributes
-            return Blueprint::Spawn( factory, data, bdata );
-        }
-        case EVEDB::invCategories::Orbitals:
-        case EVEDB::invCategories::Structure: {
-            /*  this is for all Orbital items */
-            return StructureItem::Spawn( factory, data );
         }
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Drone:
@@ -886,7 +890,7 @@ InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify) {
     if (notify)
         res->Move( m_locationID, m_flag );
 
-    return( res );
+    return res;
 }
 
 bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notify/*true*/) {
@@ -911,6 +915,9 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
         }
     }
     */
+    if (singleton() or to_merge->singleton()) {
+        throw PyException( MakeCustomError("You cannot stack unpackaged items."));
+    }
     if (typeID() != to_merge->typeID()) {
         _log(ITEM__ERROR, "%s (%u): Asked to merge with %s (%u).", itemName().c_str(), itemID(), to_merge->itemName().c_str(), to_merge->itemID());
         return false;

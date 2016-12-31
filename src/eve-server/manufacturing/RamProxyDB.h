@@ -73,13 +73,13 @@ struct RequiredItem {
 class RamProxyDB : public ServiceDB
 {
 public:
-    PyRep *GetJobs2(const uint32 ownerID, const bool completed); //, const uint64 fromDate, const uint64 toDate);
-    PyRep *AssemblyLinesSelectPublic(const uint32 regionID);
-    PyRep *AssemblyLinesSelectPersonal(const uint32 charID);
-    PyRep *AssemblyLinesSelectPrivate(const uint32 charID);
-    PyRep *AssemblyLinesSelectCorporation(const uint32 corporationID);
-    PyRep *AssemblyLinesSelectAlliance(const uint32 allianceID);
-    PyRep *AssemblyLinesGet(const uint32 containerID);
+    PyRep* GetJobs2(const int32 ownerID, const bool completed);
+    PyRep* AssemblyLinesSelectPublic(const uint32 regionID);
+    PyRep* AssemblyLinesSelectPersonal(const uint32 charID);
+    PyRep* AssemblyLinesSelectPrivate(const uint32 charID);
+    PyRep* AssemblyLinesSelectCorporation(const uint32 corporationID);
+    PyRep* AssemblyLinesSelectAlliance(const uint32 allianceID);
+    PyRep* AssemblyLinesGet(const uint32 containerID);
 
     // InstallJob stuff
     bool GetAssemblyLineProperties(const uint32 assemblyLineID, double &baseMaterialMultiplier, double &baseTimeMultiplier, double &costInstall, double &costPerHour);
@@ -100,9 +100,8 @@ public:
 
     // other
     std::string GetStationName(const uint32 stationID);
-    uint32 GetRegionOfContainer(const uint32 containerID);
     uint32 GetTech2Blueprint(const uint32 blueprintTypeID);
-    uint64 GetNextFreeTime(const uint32 assemblyLineID);
+    int64 GetNextFreeTime(const uint32 assemblyLineID);
 
 protected:
     bool _GetMultipliers(const uint32 assemblyLineID, uint32 groupID, double &materialMultiplier, double &timeMultiplier);
