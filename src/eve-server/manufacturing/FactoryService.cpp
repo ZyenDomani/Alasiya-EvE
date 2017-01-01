@@ -61,6 +61,9 @@ PyResult FactoryService::Handle_GetBlueprintAttributes(PyCallArgs &call) {
     return b->GetBlueprintAttributes();
 }
 
+/** @todo  maybe make this a static data object when the BP is created,
+ * as this is called on EVERY "show info" of the blueprint
+ */
 PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call) {
 	Call_SingleIntegerArg args;
     if(!args.Decode(&call.tuple)) {
