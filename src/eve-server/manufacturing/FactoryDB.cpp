@@ -27,51 +27,6 @@
 
 #include "manufacturing/FactoryDB.h"
 
-PyRep* FactoryDB::GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) const {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-                "SELECT requiredTypeID, quantity, damagePerJob, activityID AS activity"
-				" FROM ramTypeRequirements"
-                " WHERE typeID = %u",
-                blueprintTypeID))
-    {
-        _log(DATABASE__ERROR, "Could not retrieve materials for type %u : %s", blueprintTypeID, res.error.c_str());
-        return nullptr;
-    }
-
-    const char* key = "activity";
-    return DBResultToIndexRowset(res, key);
-
-    // should be indexed rowset, but may have to build the packet here, as we are missing a lot of info in this return.
-    //return DBResultToIndexRowset(res, "activity");
-    /*
-     *      bomByActivity = sm.RemoteSvc('factory').GetMaterialsForTypeWithActivity(typeID)
-     *      for activity in activities:
-                indexedExtras = copy.deepcopy(bomByActivity[activity].extras).Index('requiredTypeID')
-                for skill in bomByActivity[activity].skills:                            PyDict->setitemstring("skills", PyRep*)
-                    propertyInfo = cfg.invtypes.Get(skill.requiredTypeID)
-                    propertyName = propertyInfo.typeName
-                    propertyValue = localization.GetByLabel('UI/InfoWindow/SkillAndLevel', skill=skill.requiredTypeID, skillLevel=skill.quantity)
-                    skills.append((propertyName,
-                     propertyValue,
-                     skill.requiredTypeID,
-                     skill.quantity))
-
-                for material in bomByActivity[activity].rawMaterials:                   PyDict->setitemstring("rawMaterials", PyRep*)
-                    if material.quantity <= 0:
-                        continue
-                    propertyInfo = cfg.invtypes.Get(material.requiredTypeID)
-                    propertyName = propertyInfo.typeName
-                    amountRequired = amountRequiredByPlayer = material.quantity
-                    blueprintWaste = characterWaste = 0.0
-                    extraAmount = 0
-                    if activity in (const.activityManufacturing, const.activityDuplicating):
-                        if material.requiredTypeID in indexedExtras and indexedExtras[material.requiredTypeID].quantity > 0:
-                            extraAmount = indexedExtras[material.requiredTypeID].quantity
-                            indexedExtras[material.requiredTypeID].quantity = 0
-                            */
-}
 
 PyRep* FactoryDB::GetMaterialCompositionOfItemType(const uint32 typeID) const {
     DBQueryResult res;

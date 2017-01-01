@@ -31,7 +31,6 @@
 class FactoryDB : public ServiceDB
 {
 public:
-    PyRep *GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) const;
     PyRep *GetMaterialCompositionOfItemType(const uint32 typeID) const;
 };
 
