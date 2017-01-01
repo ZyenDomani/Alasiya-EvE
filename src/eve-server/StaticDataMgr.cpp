@@ -65,9 +65,47 @@ void StaticDataMgr::Populate()
         m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
     }
 
+    res->Reset();
+    m_db.GetSkillList(*res);
+    while (res->GetRow(row)) {
+        //SELECT typeID, typeName FROM invTypes [where type=skill]
+        m_skills.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+    }
+
+    res->Reset();
+    m_db.GetRAMRequirements(*res);
+    ramRequirements ramReq;
+    ramReq.activityID = 0;
+    ramReq.requiredTypeID = 0;
+    ramReq.quantity = 0;
+    ramReq.damagePerJob = 0;
+    ramReq.recycle = 0;
+    while (res->GetRow(row)) {
+        //SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, recycle FROM ramTypeRequirements
+        ramReq.activityID = row.GetInt(1);
+        ramReq.requiredTypeID = row.GetInt(2);
+        ramReq.quantity = row.GetInt(3);
+        ramReq.damagePerJob = row.GetFloat(4);
+        ramReq.recycle = (row.GetInt(5) ? true : false);
+        m_ramReq.insert(std::pair<uint16, ramRequirements>(row.GetInt(0), ramReq));
+    }
+
+    res->Reset();
+    m_db.GetRAMMaterials(*res);
+    ramMaterials ramMatls;
+    ramMatls.quantity = 0;
+    ramMatls.materialTypeID = 0;
+    while (res->GetRow(row)) {
+        //SELECT typeID, materialTypeID, quantity FROM invTypeMaterials
+        ramMatls.quantity = row.GetInt(2);
+        ramMatls.materialTypeID = row.GetInt(1);
+        m_ramMatl.insert(std::pair<uint16, ramMaterials>(row.GetInt(0), ramMatls));
+    }
+
     //cleanup
     SafeDelete(res);
-    sLog.Cyan("    StaticDataMgr", "%u ore data sets and %u region factions loaded in %.3fms.", m_oreBySecClass.size(), m_regions.size(), (GetTimeUSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u data sets loaded in %.3fus.",
+              (m_oreBySecClass.size() + m_regions.size() + m_skills.size() + m_ramMatl.size() + m_ramReq.size()), (GetTimeUSeconds() - start));
 }
 
 void StaticDataMgr::GetInfo()
@@ -80,6 +118,37 @@ void StaticDataMgr::GetInfo()
      * m_stationData;
      *
      */
+}
+
+bool StaticDataMgr::IsSkillTypeID(uint16 typeID)
+{
+    if (m_skills.find(typeID) != m_skills.end())
+        return true;
+    return false;
+}
+
+bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
+{
+    std::map<uint16, std::string>::iterator itr = m_skills.find(skillID);
+    if (itr != m_skills.end()) {
+        name = itr->second;
+        return true;
+    }
+    return false;
+}
+
+bool StaticDataMgr::GetRamMaterials(uint16 typeID, std::vector< ramMaterials >& ramMatls)
+{
+    auto itr = m_ramMatl.equal_range(typeID);
+    for (auto it = itr.first; it != itr.second; it++)
+        ramMatls.push_back(it->second);
+}
+
+bool StaticDataMgr::GetRamRequirements(uint16 typeID, std::vector< ramRequirements >& ramReqs)
+{
+    auto itr = m_ramReq.equal_range(typeID);
+    for (auto it = itr.first; it != itr.second; it++)
+        ramReqs.push_back(it->second);
 }
 
 uint32 StaticDataMgr::GetStationRegion(uint32 stationID)

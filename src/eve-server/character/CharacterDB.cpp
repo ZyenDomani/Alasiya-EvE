@@ -1532,6 +1532,15 @@ void CharacterDB::SaveKillOrLoss(CharKillData &data) {
 }
 
 PyRep* CharacterDB::GetKillOrLoss(uint32 charID) {
+    /*
+     *    def GetKillsRecentKills(self, num, startIndex):
+     *        shipKills = sm.RemoteSvc('charMgr').GetRecentShipKillsAndLosses(num, startIndex)
+     *        return [ k for k in shipKills if k.finalCharacterID == eve.session.charid ]
+     *
+     *    def GetKillsRecentLosses(self, num, startIndex):
+     *        shipKills = sm.RemoteSvc('charMgr').GetRecentShipKillsAndLosses(num, startIndex)
+     *        return [ k for k in shipKills if k.victimCharacterID == eve.session.charid ]
+     */
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"

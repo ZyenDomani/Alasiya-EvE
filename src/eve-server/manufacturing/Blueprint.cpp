@@ -207,3 +207,23 @@ PyDict* Blueprint::GetBlueprintAttributes() {
         rsp.researchCopyTime = type().researchCopyTime();
     return rsp.Encode();
 }
+
+/* invention
+ *
+ *
+ *    The chance for a succesful invention is calculated by this formula: Invention_Chance = Base_Chance * (1 + (0.01 * Encryption_Skill_Level)) * (1 + ((Datacore_1_Skill_Level + Datacore_2_Skill_Level) * Decryptor_Modifier
+ *        Base Chance
+ *            Modules and Ammo have a base probability of 40%
+ *            Frigates, Destroyers, Freighters and Skiff have a base probability of 30%
+ *            Cruisers, Industrials and Mackinaw have a base probability of 25%
+ *            Battlecruisers, Battleships and Hulk have a base probability of 20%
+ *            In summary, it's not difficult to get a good chance of success for modules, but progressively more difficult for ships as their size increases. This is why investing in some decryptors is a good idea for Tech II ship invention jobs.
+ *        (Racial) Encryption Skill Level
+ *            0.01 x Encryption Skill Level (so something between 0.01 and 0.05)
+ *        Science Skills (one for each of the required datacores)
+ *            0.02 x Combined Level of Advanced Science Skills (so something between 0.04 and 0.2)
+ *        Decryptor (optional)
+ *            See table above for probability multiplier
+ *
+ *
+ */

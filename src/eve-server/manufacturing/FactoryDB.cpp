@@ -33,14 +33,15 @@ PyRep* FactoryDB::GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) 
     if(!sDatabase.RunQuery(res,
                 "SELECT requiredTypeID, quantity, damagePerJob, activityID AS activity"
 				" FROM ramTypeRequirements"
-                " WHERE typeID IN (%u, (SELECT productTypeID FROM invBlueprintTypes WHERE blueprintTypeID = %u))",
-                blueprintTypeID, blueprintTypeID))
+                " WHERE typeID = %u",
+                blueprintTypeID))
     {
         _log(DATABASE__ERROR, "Could not retrieve materials for type %u : %s", blueprintTypeID, res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
-    return DBResultToRowset(res);
+    const char* key = "activity";
+    return DBResultToIndexRowset(res, key);
 
     // should be indexed rowset, but may have to build the packet here, as we are missing a lot of info in this return.
     //return DBResultToIndexRowset(res, "activity");
@@ -48,7 +49,7 @@ PyRep* FactoryDB::GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) 
      *      bomByActivity = sm.RemoteSvc('factory').GetMaterialsForTypeWithActivity(typeID)
      *      for activity in activities:
                 indexedExtras = copy.deepcopy(bomByActivity[activity].extras).Index('requiredTypeID')
-                for skill in bomByActivity[activity].skills:
+                for skill in bomByActivity[activity].skills:                            PyDict->setitemstring("skills", PyRep*)
                     propertyInfo = cfg.invtypes.Get(skill.requiredTypeID)
                     propertyName = propertyInfo.typeName
                     propertyValue = localization.GetByLabel('UI/InfoWindow/SkillAndLevel', skill=skill.requiredTypeID, skillLevel=skill.quantity)
@@ -57,7 +58,7 @@ PyRep* FactoryDB::GetMaterialsForTypeWithActivity(const uint32 blueprintTypeID) 
                      skill.requiredTypeID,
                      skill.quantity))
 
-                for material in bomByActivity[activity].rawMaterials:
+                for material in bomByActivity[activity].rawMaterials:                   PyDict->setitemstring("rawMaterials", PyRep*)
                     if material.quantity <= 0:
                         continue
                     propertyInfo = cfg.invtypes.Get(material.requiredTypeID)
@@ -84,7 +85,7 @@ PyRep* FactoryDB::GetMaterialCompositionOfItemType(const uint32 typeID) const {
                 typeID))
     {
         _log(DATABASE__ERROR, "Could not retrieve material composition for type %u : %s", typeID, res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);

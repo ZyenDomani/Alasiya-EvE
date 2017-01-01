@@ -41,7 +41,7 @@ struct BlueprintData {
     int32 runs;
 };
 
-/* POD structure  for blueprint type data */
+/* POD structure for blueprint type data */
 struct BlueprintTypeData {
     uint32 parentBlueprintTypeID;
     uint32 productTypeID;
@@ -56,6 +56,21 @@ struct BlueprintTypeData {
     uint32 maxProductionLimit;
     double wasteFactor;
     double chanceOfReverseEngineering;
+};
+
+/* POD structure for blueprint ram requirements */
+struct ramRequirements {
+    bool recycle;
+    uint8 activityID;
+    uint16 requiredTypeID;
+    uint32 quantity;
+    float damagePerJob;
+};
+
+/* POD structure for blueprint item materials  */
+struct ramMaterials {
+    uint16 materialTypeID;
+    uint32 quantity;
 };
 
 /* POD structure for character kill data  -allan 01May16 */

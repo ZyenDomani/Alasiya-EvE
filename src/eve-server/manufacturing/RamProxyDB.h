@@ -29,37 +29,6 @@
 #include "inventory/InventoryItem.h"
 #include "ServiceDB.h"
 
-//from table 'ramActivities'
-enum EVERamActivity {
-    ramActivityManufacturing = 1,
-    ramActivityResearchingTechnology = 2,
-    ramActivityResearchingTimeProductivity = 3,
-    ramActivityResearchingMaterialProductivity = 4,
-    ramActivityCopying = 5,
-    ramActivityDuplicating = 6,
-    ramActivityReverseEngineering = 7,
-    ramActivityInvention = 8
-};
-
-//from table 'ramCompletedStatuses'
-enum EVERamCompletedStatus {
-    ramCompletedStatusInProgress = 0,
-    ramCompletedStatusDelivered = 1,
-    ramCompletedStatusAbort = 2,
-    ramCompletedStatusGMAbort = 3,
-    ramCompletedStatusUnanchor = 4,
-    ramCompletedStatusDestruction = 5
-};
-
-//restrictionMask from table 'ramAssemblyLines'
-enum EVERamRestrictionMask {
-    ramRestrictNone = 0,
-    ramRestrictBySecurity = 1,
-    ramRestrictByStanding = 2,
-    ramRestrictByCorp = 4,
-    ramRestrictByAlliance = 8
-};
-
 struct RequiredItem {
     RequiredItem(uint32 _typeID, uint32 _quantity, double _damagePerJob, bool _isSkill)
         : typeID(_typeID), quantity(_quantity), damagePerJob(_damagePerJob), isSkill(_isSkill) {}

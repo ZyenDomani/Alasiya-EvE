@@ -35,10 +35,16 @@ public:
     void Clear();
     void GetInfo();
 
+    bool IsSkillTypeID(uint16 typeID);
+    bool GetSkillName(uint16 skillID, std::string& name);
+
+    bool GetRamMaterials(uint16 typeID, std::vector<ramMaterials>& ramMatls);
+    bool GetRamRequirements(uint16 typeID, std::vector<ramRequirements>& ramReqs);
+
     bool GetStaticInfo(uint32 itemID, StaticData& data);
     bool GetStationInfo(uint32 stationID, StationData& data);
     bool GetSystemInfo(uint32 locationID, SystemData& data);
-    
+
     uint32 GetStationRegion(uint32 stationID);
     uint32 GetStationSystem(uint32 stationID);
 
@@ -52,14 +58,17 @@ protected:
 private:
     ManagerDB m_db;
 
-    std::map<uint32, uint32> m_stationRegion;
-    std::map<uint32, uint32> m_stationSystem;
-    std::map<uint32, SystemData> m_systemData;
-    std::map<uint32, StaticData> m_staticData;
-    std::map<uint32, StationData> m_stationData;
+    std::map<uint32, uint32>        m_regions;          // regionID/factionID
+    std::map<uint32, uint32>        m_stationRegion;    // stationID/regionID
+    std::map<uint32, uint32>        m_stationSystem;    // stationID/systemID
+    std::map<uint32, SystemData>    m_systemData;       // systemID/data
+    std::map<uint32, StaticData>    m_staticData;       // itemID/data
+    std::map<uint32, StationData>   m_stationData;      // stationID/data
+    std::map<uint16, std::string>   m_skills;           // typeID/name
 
-    std::map<uint32, uint32> m_regions;   // this simple map holds k,v of regionID/factionID
-    std::unordered_multimap<std::string, OreTypeChance> m_oreBySecClass;
+    std::unordered_multimap<uint16, ramMaterials>           m_ramMatl;          // itemTypeID/data
+    std::unordered_multimap<uint16, ramRequirements>        m_ramReq;           // bpTypeID/data
+    std::unordered_multimap<std::string, OreTypeChance>     m_oreBySecClass;    // systemSecClass/data
 };
 
 //Singleton

@@ -711,9 +711,9 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
     if (bubble)
        bubble->GetEntities(visibleEntities);
 
-    into.slims = new PyList;
-    into.effectStates = new PyList;
-    into.allianceBridges = new PyList;
+    into.slims = new PyList();
+    into.effectStates = new PyList();
+    into.allianceBridges = new PyList();
 
     //go through all visible entities and gather the info we need...
     for (auto cur : visibleEntities) {
