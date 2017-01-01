@@ -82,16 +82,21 @@ PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call
     PyDict* ResearchingTimeProductivity = new PyDict();
     PyDict* ResearchingMaterialProductivity = new PyDict();
 
+    DBRowDescriptor* header = new DBRowDescriptor;
+        header->AddColumn( "quantity",          DBTYPE_I4 );
+        header->AddColumn( "requiredTypeID",    DBTYPE_I4 );
+        header->AddColumn( "damagePerJob",      DBTYPE_R4 );
+
     //  get skills and materials for R.A.M.
     std::vector<ramRequirements> ramReqs;
     sDataMgr.GetRamRequirements(args.arg, ramReqs);
     for (auto cur : ramReqs) {
-        PyDict* linedata = new PyDict();
-        linedata->SetItemString("quantity",         new PyInt(cur.quantity));
-        linedata->SetItemString("requiredTypeID",   new PyInt(cur.requiredTypeID));
-        linedata->SetItemString("damagePerJob",     new PyFloat(cur.damagePerJob));
+        PyPackedRow* row = new PyPackedRow( header );
+        row->SetField( "quantity",        new PyInt(cur.quantity));
+        row->SetField( "requiredTypeID",  new PyInt(cur.requiredTypeID));
+        row->SetField( "damagePerJob",    new PyFloat(cur.damagePerJob));
         if (sDataMgr.IsSkillTypeID(cur.requiredTypeID))
-            skilllist->AddItem(linedata);
+            skilllist->AddItem(row);
         /*
         else
             matllist->AddItem(linedata);
@@ -154,41 +159,51 @@ PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call
     std::vector<ramMaterials> ramMatls;
     sDataMgr.GetRamMaterials(bpType->productTypeID(), ramMatls);
     for (auto cur : ramMatls) {
-        PyDict* linedata = new PyDict();
-        linedata->SetItemString("requiredTypeID",   new PyInt(cur.materialTypeID));
-        linedata->SetItemString("quantity",         new PyInt(cur.quantity));
-        linedata->SetItemString("damagePerJob",     new PyFloat(1.0));
-        matllist->AddItem(linedata);
+        PyPackedRow* row = new PyPackedRow( header );
+        row->SetField( "quantity",        new PyInt(cur.quantity));
+        row->SetField( "requiredTypeID",  new PyInt(cur.materialTypeID));
+        row->SetField( "damagePerJob",    new PyFloat(1.0));
+        matllist->AddItem(row);
     }
 
     Manufacturing->SetItemString("skills", skilllist);
     Manufacturing->SetItemString("rawMaterials", matllist);
-    Manufacturing->SetItemString("extras", extras);
 
-    PyTuple *tuple = new PyTuple(9);
+    DBQueryResult mtRes;
+    Manufacturing->SetItemString("extras", DBResultToCRowset(mtRes)/*new PyObject("util.RowSet", extraDict)*/);
+
+    PyObject* obj = new PyObject("util.KeyVal", Manufacturing);
+/*
+    Invention->SetItemString("skills", new PyList());
+    Invention->SetItemString("rawMaterials", new PyList());
+    Invention->SetItemString("extras", extras);
+*/
+    //PyTuple *tuple = new PyTuple(9);
+    PyDict* rsp = new PyDict();
     //activityNone = 0
-    tuple->SetItem(0, new PyDict());  // this should stay empty
+    //rsp->SetItem(0, new PyDict());  // this should stay empty
     //activityManufacturing = 1
-    tuple->SetItem(1, Manufacturing);
+    rsp->SetItem(new PyInt(1), obj);
     //activityResearchingTechnology = 2
-    tuple->SetItem(2, ResearchingTechnology);
+    //rsp->SetItem(new PyInt(2), ResearchingTechnology);
     //activityResearchingTimeProductivity = 3
-    tuple->SetItem(3, ResearchingTimeProductivity);
+    //rsp->SetItem(new PyInt(3), ResearchingTimeProductivity);
     //activityResearchingMaterialProductivity = 4
-    tuple->SetItem(4, ResearchingMaterialProductivity );
+    //rsp->SetItem(new PyInt(4), ResearchingMaterialProductivity );
     //activityCopying = 5
-    tuple->SetItem(5, Copying);
+    //rsp->SetItem(new PyInt(5), Copying);
     //activityDuplicating = 6
-    tuple->SetItem(6, Duplicating);
+    //rsp->SetItem(new PyInt(6), Duplicating);
     //activityReverseEngineering = 7
-    tuple->SetItem(7, ReverseEngineering);
+    //rsp->SetItem(new PyInt(7), ReverseEngineering);
     //activityInvention = 8
-    tuple->SetItem(8, Invention);
+    //rsp->SetItem(new PyInt(8), Invention);
 
-    PyIncRef(tuple);
+    PyIncRef(rsp);
     if (is_log_enabled(MANUF__DUMP))
-        tuple->Dump(MANUF__DUMP, "   ");
-    return tuple;
+        rsp->Dump(MANUF__DUMP, "   ");
+
+    return rsp;
 }
 
 PyResult FactoryService::Handle_GetMaterialCompositionOfItemType(PyCallArgs &call) {
