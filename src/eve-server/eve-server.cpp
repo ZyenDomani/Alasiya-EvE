@@ -492,7 +492,7 @@ int main( int argc, char* argv[] )
     uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
 
-    sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime));
+    sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime) /1000);
     sLog.Green("       ServerInit", "Alasiya EvEmu Server is Online.");
 
     /////////////////////////////////////////////////////////////////////////////////////

@@ -85,9 +85,7 @@ double GetTimeMSeconds() {  // -allan
     //  NOTE  auto, std::chrono and system_clock::now() require C++11
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();     // return in nanoseconds
-    double millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    millis /= 1000;
-    return (millis);
+    return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 }
 
 double GetTimeUSeconds() {  // -allan
@@ -95,9 +93,7 @@ double GetTimeUSeconds() {  // -allan
     //  NOTE  auto, std::chrono and system_clock::now() require C++11
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();     // return in nanoseconds
-    double micros = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
-    micros /= 1000;
-    return (micros);
+    return std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
 }
 
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss

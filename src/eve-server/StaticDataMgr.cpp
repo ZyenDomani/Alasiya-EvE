@@ -47,7 +47,7 @@ void StaticDataMgr::Clear()
 
 void StaticDataMgr::Populate()
 {
-    double start = GetTimeUSeconds();
+    double start = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 
@@ -110,18 +110,19 @@ void StaticDataMgr::Populate()
     m_mdb.GetStationCount(*res);
     while (res->GetRow(row))
         m_stationCount.insert(std::pair<uint32, uint8>(row.GetInt(0), row.GetInt(1)));
-    
-/* this isnt working right...not sure why.
+
     res->Reset();
-    m_sdb.DoGetStation(*res);
-    while (res->GetRow(row))
-        m_stationPyData.insert(std::pair<uint32, PyObject*>(row.GetInt(0), DBRowToKeyVal(row)));
-*/
+    DBQueryResult* res2 = new DBQueryResult();
+    m_sdb.GetStationIDs(*res2);
+    while (res2->GetRow(row))
+        m_stationPyData.insert(std::pair<uint32, PyObject*>(row.GetInt(0), m_sdb.DoGetStation(row.GetInt(0))));
+
     //cleanup
     SafeDelete(res);
-    sLog.Cyan("    StaticDataMgr", "%u data sets loaded in %.3fus.", \
+    SafeDelete(res2);
+    sLog.Cyan("    StaticDataMgr", "%u data sets loaded in %.3fms.", \
               (m_oreBySecClass.size() + m_regions.size() + m_skills.size() + m_ramMatl.size() + m_ramReq.size() + m_stationPyData.size() + m_stationCount.size()),\
-              (GetTimeUSeconds() - start));
+              (GetTimeMSeconds() - start));
 }
 
 void StaticDataMgr::GetInfo()
@@ -170,8 +171,10 @@ bool StaticDataMgr::GetRamRequirements(uint16 typeID, std::vector< ramRequiremen
 PyObject* StaticDataMgr::GetStationData(uint32 stationID)
 {
     std::map<uint32, PyObject*>::iterator itr = m_stationPyData.find(stationID);
-    if (itr != m_stationPyData.end())
+    if (itr != m_stationPyData.end()) {
+        PyIncRef(itr->second);
         return itr->second;
+    }
     return nullptr;
 }
 
