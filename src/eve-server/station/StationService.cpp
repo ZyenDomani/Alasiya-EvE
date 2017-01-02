@@ -56,9 +56,8 @@ PyResult StationService::Handle_GetSolarSystem(PyCallArgs &call) {
     return new PyObject("util.CachedObject", new PyInt(arg.arg));
 }
 
-PyResult StationService::Handle_GetGuests(PyCallArgs &call) {		// this returns ALL docked clients....
+PyResult StationService::Handle_GetGuests(PyCallArgs &call) {
     PyList* res = new PyList();
-
     std::vector<Client*> clients;
     clients.clear();
     sEntityList.FindClientByStationID(call.client->GetStationID(), clients);

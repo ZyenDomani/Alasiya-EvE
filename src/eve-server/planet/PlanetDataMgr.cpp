@@ -24,7 +24,7 @@ int PlanetDataMgr::Initialize()
 
 void PlanetDataMgr::_Populate()
 {
-    double start = GetTimeUSeconds();
+    double start = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 
@@ -36,8 +36,8 @@ void PlanetDataMgr::_Populate()
 
     //cleanup
     SafeDelete(res);
-    sLog.Cyan("    PlanetDataMgr", "%u planet data groups in %u buckets loaded in %.3fus.",\
-             m_planetData.size(), m_planetData.bucket_count(), (GetTimeUSeconds() - start));
+    sLog.Cyan("    PlanetDataMgr", "%u planet data groups in %u buckets loaded in %.3fms.",\
+            m_planetData.size(), m_planetData.bucket_count(), (GetTimeMSeconds() - start));
 }
 
 void PlanetDataMgr::GetPlanetData(uint32 planetID, std::vector<uint32> &typeIDs)
@@ -60,7 +60,7 @@ int PIDataMgr::Initialize()
 
 void PIDataMgr::_Populate()
 {
-    double start = GetTimeUSeconds();
+    double start = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 
@@ -100,7 +100,7 @@ void PIDataMgr::_Populate()
 
     //cleanup
     SafeDelete(res);
-    sLog.Cyan("        PIDataMgr", "%u PI Schematic data groups loaded in %.3fus.", m_schematicData.size(), (GetTimeUSeconds() - start));
+    sLog.Cyan("        PIDataMgr", "%u PI Schematic data groups loaded in %.3fms.", m_schematicData.size(), (GetTimeMSeconds() - start));
 }
 
 void PIDataMgr::GetSchematicData(uint16 schematicID, PI_Schematic& data)

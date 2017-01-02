@@ -45,7 +45,7 @@ int DungeonDataMgr::Initialize()
 
 void DungeonDataMgr::_Populate()
 {
-    double start = GetTimeUSeconds();
+    double start = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 
@@ -123,8 +123,8 @@ void DungeonDataMgr::_Populate()
     //cleanup
     SafeDelete(res);
 
-    sLog.Cyan("   DungeonDataMgr", "%u rooms in %u buckets and %u groups in %u buckets for %u dungeon templates loaded in %.3fus.",
-             m_rooms.size(), m_rooms.bucket_count(), m_groups.size(), m_groups.bucket_count(), m_templates.size(), (GetTimeUSeconds() - start));
+    sLog.Cyan("   DungeonDataMgr", "%u rooms in %u buckets and %u groups in %u buckets for %u dungeon templates loaded in %.3fms.",
+              m_rooms.size(), m_rooms.bucket_count(), m_groups.size(), m_groups.bucket_count(), m_templates.size(), (GetTimeMSeconds() - start));
 }
 
 void DungeonDataMgr::AddDungeon(ActiveDungeon& dungeon)

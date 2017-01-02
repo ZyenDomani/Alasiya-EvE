@@ -1639,8 +1639,8 @@ enum EveAttrEnum {
     AttrmanufactureCostBonusShowInfo = 1778,
     AttrnpcCustomsOfficeTaxRate = 1780,
     AttrdefaultCustomsOfficeTaxRate = 1781,
-    AttrallowedDroneGroup1 = 1782,
-    AttrallowedDroneGroup2 = 1783,
+    AttrAllowedDroneGroup1 = 1782,
+    AttrAllowedDroneGroup2 = 1783,
     AttrIsCapitalSize = 1785,
     AttrbcLargeTurretPower = 1786,
     AttrbcLargeTurretCPU = 1787,
@@ -1686,7 +1686,11 @@ enum EveAttrEnum {
     AttrrookieShipVelocityBonus = 1835,
     AttrrookieSPTDamageBonus = 1836,
     AttrrookieShieldBoostBonus = 1837,
-    AttrdamageDelayDuration = 1839
+    AttrdamageDelayDuration = 1839,
+    AttrCanFitShipGroup5 = 1872,
+    AttrCanFitShipGroup6 = 1879,
+    AttrCanFitShipGroup7 = 1880,
+    AttrCanFitShipGroup8 = 1881
 };
 
 #endif // AttributeEnum_h__

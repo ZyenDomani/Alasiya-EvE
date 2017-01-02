@@ -194,8 +194,7 @@ PyObject* StationDB::DoGetStation(uint32 stationID)
     " WHERE staStations.stationID = %u"
     " GROUP BY staStations.stationID", stationID ))
     {
-        //codelog(DATABASE__ERROR, "Error in DoGetStation query: %s", res.error.c_str());
-        sLog.Error("StationDB", "Error in DoGetStation query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in DoGetStation query: %s", res.error.c_str());
         return nullptr;
     }
 
@@ -205,7 +204,6 @@ PyObject* StationDB::DoGetStation(uint32 stationID)
         return nullptr;
     }
 
-    //only a guess that this is row
     return DBRowToKeyVal(row);
 
 }
@@ -237,18 +235,11 @@ PyRep *StationDB::GetStationItemBits(uint32 stationID) {
         return NULL;
     }
 
-//hangarGraphicID
-//station owner corp
-//station ID
-//serviceMask
-//stationTypeID
-
     PyTuple * result = new PyTuple(5);
-    result->SetItem(0, new PyInt(row.GetUInt(3)));
-    result->SetItem(1, new PyInt(row.GetUInt(2)));
-    result->SetItem(2, new PyInt(row.GetUInt(0)));
-    result->SetItem(3, new PyInt(row.GetUInt(4)));
-    result->SetItem(4, new PyInt(row.GetUInt(1)));
-
+        result->SetItem(0, new PyInt(row.GetUInt(3)));
+        result->SetItem(1, new PyInt(row.GetUInt(2)));
+        result->SetItem(2, new PyInt(row.GetUInt(0)));
+        result->SetItem(3, new PyInt(row.GetUInt(4)));
+        result->SetItem(4, new PyInt(row.GetUInt(1)));
     return result;
 }

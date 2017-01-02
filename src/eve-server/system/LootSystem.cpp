@@ -48,7 +48,7 @@ int DGM_Types_to_Wrecks_Table::Initialize()
 
 void DGM_Types_to_Wrecks_Table::_Populate()
 {
-    double start = GetTimeUSeconds();
+    double start = GetTimeMSeconds();
 
     DBQueryResult *res = new DBQueryResult();
     //SELECT typeID, wreckTypeID FROM invTypesToWrecks
@@ -58,7 +58,7 @@ void DGM_Types_to_Wrecks_Table::_Populate()
     while (res->GetRow(row))
 		m_WrecksToTypesMap[row.GetInt(0)] = row.GetInt(1);
 
-    sLog.Cyan("     Wrecks Table", "%u wreck objects loaded in %.3fus.", m_WrecksToTypesMap.size(), (GetTimeUSeconds() - start));
+    sLog.Cyan("     Wrecks Table", "%u wreck objects loaded in %.3fms.", m_WrecksToTypesMap.size(), (GetTimeMSeconds() - start));
 
     //cleanup
     SafeDelete(res);
@@ -97,7 +97,7 @@ int DGM_Loot_Groups_Table::Initialize()
 
 void DGM_Loot_Groups_Table::_Populate()
 {
-    double start = GetTimeUSeconds();
+    double start = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
 
     //first get all loot groups from LootGroup table
@@ -129,10 +129,10 @@ void DGM_Loot_Groups_Table::_Populate()
     //cleanup
     SafeDelete(res);
 
-    sLog.Cyan("       Loot Table", "%u loot group buckets and %u definitions loaded in %.3fus.",
+    sLog.Cyan("       Loot Table", "%u loot group buckets and %u definitions loaded in %.3fms.",
              (m_LootGroupMap.bucket_count() + m_LootGroupTypeMap.bucket_count()),
              (m_LootGroupMap.size() + m_LootGroupTypeMap.size()),
-             (GetTimeUSeconds() - start));
+              (GetTimeMSeconds() - start));
 }
 
 void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
@@ -206,7 +206,7 @@ int DGM_Salvage_Table::Initialize()
 
 void DGM_Salvage_Table::_Populate()
 {
-    double start = GetTimeUSeconds();
+    double start = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
 
     //get all groups from salvage table
@@ -218,7 +218,7 @@ void DGM_Salvage_Table::_Populate()
 
     //cleanup
     SafeDelete(res);
-    sLog.Cyan("    Salvage Table", "%u salvage definitions loaded in %.3fus.", m_SalvageMap.size(), (GetTimeUSeconds() - start));
+    sLog.Cyan("    Salvage Table", "%u salvage definitions loaded in %.3fms.", m_SalvageMap.size(), (GetTimeMSeconds() - start));
 }
 
 void DGM_Salvage_Table::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {

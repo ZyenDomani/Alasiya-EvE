@@ -35,6 +35,7 @@
  * different service objects. It should be inherited by each serviceDB
  * implementation.
  *
+ * it's also in need of an overhaul.
  */
 
 class PyObject;

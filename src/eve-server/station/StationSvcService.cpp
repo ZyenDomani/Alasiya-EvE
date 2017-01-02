@@ -73,10 +73,6 @@ PyResult StationSvcService::Handle_GetSolarSystem(PyCallArgs &call) {
 }
 
 PyResult StationSvcService::Handle_GetStation(PyCallArgs &call) {
-  /*
-                stationinfo = sm.RemoteSvc('stationSvc').GetStation(session.stationid)
-                self.BookmarkLocationPopup(session.stationid, stationinfo.stationTypeID, session.solarsystemid2)
-                */
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
@@ -84,7 +80,6 @@ PyResult StationSvcService::Handle_GetStation(PyCallArgs &call) {
     }
 
     return sDataMgr.GetStationData(arg.arg);
-    //return m_db.DoGetStation(arg.arg);
 }
 
 PyResult StationSvcService::Handle_GetAllianceSystems(PyCallArgs &call) {

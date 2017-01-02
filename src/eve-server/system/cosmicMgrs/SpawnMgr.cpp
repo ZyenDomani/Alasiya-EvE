@@ -38,7 +38,7 @@ int SpawnDataMgr::Initialize()
 
 void SpawnDataMgr::_Populate()
 {
-    double start = GetTimeUSeconds();
+    double start = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
     DBQueryResult* res2 = new DBQueryResult();
     DBResultRow row, row2;
@@ -91,8 +91,8 @@ void SpawnDataMgr::_Populate()
     SafeDelete(res);
     SafeDelete(res2);
 
-    sLog.Cyan("     SpawnDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fus.",
-             m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_regions.size(), (GetTimeUSeconds() - start));
+    sLog.Cyan("     SpawnDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fms.",
+              m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_regions.size(), (GetTimeMSeconds() - start));
 }
 
 /*

@@ -274,9 +274,9 @@ void SystemDB::GetPlanets(uint32 systemID, std::vector<DBGPointEntity>* planetID
 
     DBResultRow row;
     DBGPointEntity entry;
-	int8 itr = 0;
+	int8 count = 0;
     while(res.GetRow(row)) {
-	    entry.idx = itr;
+	    entry.idx = count;
         entry.itemID = row.GetInt(0);
         entry.position = GPoint (
 			row.GetDouble(1),
@@ -285,9 +285,9 @@ void SystemDB::GetPlanets(uint32 systemID, std::vector<DBGPointEntity>* planetID
         );
         entry.radius = row.GetInt(4);
         planetIDs->push_back(entry);
-		++itr;
+		++count;
     }
-    *total = itr;
+    *total = count;
 }
 
 void SystemDB::GetMoons(uint32 systemID, std::vector<DBGPointEntity>* moonIDs, uint8* total) {
@@ -297,9 +297,9 @@ void SystemDB::GetMoons(uint32 systemID, std::vector<DBGPointEntity>* moonIDs, u
 
     DBResultRow row;
     DBGPointEntity entry;
-	int8 itr = 0;
+	int8 count = 0;
     while(res.GetRow(row)) {
-	    entry.idx = itr;
+	    entry.idx = count;
         entry.itemID = row.GetInt(0);
         entry.position = GPoint (
 			row.GetDouble(1),
@@ -309,9 +309,9 @@ void SystemDB::GetMoons(uint32 systemID, std::vector<DBGPointEntity>* moonIDs, u
         entry.radius = row.GetInt(4);
 
         moonIDs->push_back(entry);
-		++itr;
+		++count;
     }
-    *total = itr;
+    *total = count;
 }
 
 void SystemDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity >* beltIDs, uint8* total)
@@ -322,9 +322,9 @@ void SystemDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity >* beltIDs,
 
     DBResultRow row;
     DBGPointEntity entry;
-    int8 itr = 0;
+    int8 count = 0;
     while(res.GetRow(row)) {
-        entry.idx = itr;
+        entry.idx = count;
         entry.itemID = row.GetInt(0);
         entry.position = GPoint (
             row.GetDouble(1),
@@ -334,10 +334,9 @@ void SystemDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity >* beltIDs,
         entry.radius = row.GetInt(4);
 
         beltIDs->push_back(entry);
-        ++itr;
+        ++count;
     }
-    *total = itr;
-
+    *total = count;
 }
 
 void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity >* gateIDs, uint8* total)
@@ -348,9 +347,9 @@ void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity >* gateIDs,
 
     DBResultRow row;
     DBGPointEntity entry;
-    int8 itr = 0;
+    int8 count = 0;
     while(res.GetRow(row)) {
-        entry.idx = itr;
+        entry.idx = count;
         entry.itemID = row.GetInt(0);
         entry.position = GPoint (
             row.GetDouble(1),
@@ -360,8 +359,7 @@ void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity >* gateIDs,
         entry.radius = row.GetInt(4);
 
         gateIDs->push_back(entry);
-        ++itr;
+        ++count;
     }
-    *total = itr;
-
+    *total = count;
 }
