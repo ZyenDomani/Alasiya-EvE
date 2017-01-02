@@ -72,7 +72,7 @@ public:
     void SetBubble(bool set = false)                    { m_inBubble = set; }
     void SetPosition(const GPoint& pt, bool update = false);
     void SetMaxVelocity(float maxVelocity);
-    void SetShipCapabilities(InventoryItemRef ship, bool undock = false);
+    void SetShipCapabilities(const InventoryItemRef ship, bool undock = false);
 
     /* Global Actions */
     void Stop();

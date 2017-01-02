@@ -1943,6 +1943,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
 
 void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) const {
     std::vector<PyTuple*> updates;
+    SetShipCapabilities(newShipRef);
 
     SendBallInteractive(newShipRef, true);
 

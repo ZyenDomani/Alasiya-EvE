@@ -183,8 +183,6 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         oldShipRef->SetFlag(flagShipOffline);
     }
 
-    /* missing something here.  blank space after boarding ship from pod.  */
-
     //response should be nodeid and timestamp
     return new PyLong(Win32TimeNow());
 }
@@ -759,7 +757,7 @@ PyResult ShipBound::Handle_ScoopToSMA(PyCallArgs &call) {
 
     sLog.White("ShipBound::Handle_ScoopToSMA()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
-    
+
     return nullptr;
 }
 

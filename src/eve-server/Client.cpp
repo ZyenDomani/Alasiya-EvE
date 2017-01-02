@@ -619,7 +619,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         pdMgr->UpdateNewShip(m_ship);
         snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
         pdMgr->SendSetState();  //reset ego in destiny setstate
-        FlushQueue();
+        //FlushQueue();
     } else {
         snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
     }
