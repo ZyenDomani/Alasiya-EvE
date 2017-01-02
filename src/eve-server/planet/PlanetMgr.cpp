@@ -127,21 +127,22 @@ bool PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
     // the return here is used to cancel loop in UpdateNetwork.  return false = continue
 
     int8 oldLevel = m_colony->GetLevel(), newLevel = (int8)nc.command_data->GetItem(1)->AsInt()->value();
-    uint32 cost = 0;
+    int32 cost = 0;
     while (oldLevel != newLevel) {
         //  calculate total upgrade cost in cases where upgrading multiple levels at once
         switch (oldLevel) {
-            case PinLevel0: cost += 580000; break;
-            case PinLevel1: cost += 930000; break;
-            case PinLevel2: cost += 1200000; break;
-            case PinLevel3: cost += 1500000; break;
-            case PinLevel4: cost += 2100000; break;
+            case PinLevel0: cost -= 580000; break;
+            case PinLevel1: cost -= 930000; break;
+            case PinLevel2: cost -= 1200000; break;
+            case PinLevel3: cost -= 1500000; break;
+            case PinLevel4: cost -= 2100000; break;
         }
         ++oldLevel;
     }
-    if (m_client->AddBalance(-cost)) {
+    if (!m_client->AddBalance(cost)) {
         m_client->SendErrorMsg("You cannot afford the upgrade cost required for this Command Center.");
         return true;
+
     }
     m_colony->UpgradeCommandCenter(nc.command_data->GetItem(0)->AsInt()->value(), newLevel);
     return false;

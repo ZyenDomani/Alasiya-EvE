@@ -403,10 +403,10 @@ int main( int argc, char* argv[] )
     sDunDataMgr.Initialize();
     sLog.Green("       ServerInit", "Spawn Data");
     sSpawnDataMgr.Initialize();
-    sLog.Green("       ServerInit", "PI Data");
-    sPIDataMgr.Initialize();
     sLog.Green("       ServerInit", "Planet Data");
     sPlanetDataMgr.Initialize();
+    sLog.Green("       ServerInit", "PI Data");
+    sPIDataMgr.Initialize();
 
     /* Custom config file options
      * current settings displayed on console at start-up

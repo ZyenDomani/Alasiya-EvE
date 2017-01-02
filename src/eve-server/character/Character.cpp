@@ -348,6 +348,8 @@ Character::Character(
 
 Character::~Character()
 {
+    SaveFullCharacter();
+    SaveCertificates();
     SafeDelete(m_inventory);
 }
 
@@ -574,6 +576,37 @@ float Character::GetAgilitySkills(bool cap) {
         modifier *= (1 - (0.05 * GetSkillLevel(skillCapitalShips, true)));    //5%
     }
     return modifier;
+}
+
+PyRep* Character::GetRAMSkills()
+{
+    /*  this queries RAM skills and is used to display blueprints tab (S&I -> Blueprints)
+     *
+     *
+     *            skillLevels, attributeValues = sm.GetService('manufacturing').GetRelevantCharSkills()
+     *            maxManufacturingJobCount = int(attributeValues[const.attributeManufactureSlotLimit])    -AttrManufactureSlotLimit = 196,
+     *            maxResearchJobCount = int(attributeValues[const.attributeMaxLaborotorySlots])           -AttrMaxLaborotorySlots = 467,
+     *
+     *            skillLevels <<  this is a dict. of max remote ram jobs
+     *            attributeValues  << this is a dict. of max ram jobs
+     */
+
+    PyDict* skillLevels = new PyDict();
+    PyDict* attributeValues = new PyDict();
+
+    skillLevels->SetItem(new PyInt(EVEDB::invTypes::typeScientificNetworking), new PyInt(GetSkillLevel(skillScientificNetworking)));
+    skillLevels->SetItem(new PyInt(EVEDB::invTypes::typeSupplyChainManagement), new PyInt(GetSkillLevel(skillSupplyChainManagement)));
+
+    uint8 mLab = 1 + GetSkillLevel(skillLaboratoryOperation) + GetSkillLevel(skillAdvancedLaboratoryOperation);
+    attributeValues->SetItem(new PyInt(AttrMaxLaborotorySlots), new PyInt(mLab));
+
+    uint8 mSlot = 1 + GetSkillLevel(skillMassProduction) + GetSkillLevel(skillAdvancedMassProduction);
+    attributeValues->SetItem(new PyInt(AttrManufactureSlotLimit), new PyInt(mSlot));
+
+    PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, skillLevels);
+        tuple->SetItem(1, attributeValues);
+    return tuple;
 }
 
 SkillRef Character::GetSkillInTraining() const {

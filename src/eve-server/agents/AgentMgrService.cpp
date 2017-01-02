@@ -654,6 +654,8 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
     //research:
     tuple->items[1] = new PyList();
 
+    if (is_log_enabled(AGENT__DUMP))
+        tuple->Dump(AGENT__DUMP, "   ");
     return tuple;
 }
 

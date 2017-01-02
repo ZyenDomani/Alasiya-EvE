@@ -185,6 +185,10 @@ PyResult MapService::Handle_GetStationCount(PyCallArgs &call)
     maxCount = 0
     for solarSystemID, amount in history:
   */
+
+  /** @todo  see if i can load a static object (for corps?) as [solarsystem:stations]
+   * this return should be a tuple
+   */
     return m_db.GetStationCount();
 }
 
@@ -354,7 +358,7 @@ PyResult MapService::Handle_GetVictoryPoints(PyCallArgs &call)
 PyResult MapService::Handle_GetMyExtraMapInfoAgents(PyCallArgs &call)  //ColorStarsByMyAgents
 {
      /**
-    standingInfo = sm.RemoteSvc('map').GetMyExtraMapInfoAgents().Index('fromID')
+    standingInfo = sm.RemoteSvc('map').GetMyExtraMapInfoAgents().Index('fromID')        <<<  .Index(columnName) means a rowset or crowset
               fromID, (to)factionID, (to)corporationID, (to)agentID
      */
   sLog.White( "MapService::Handle_GetMyExtraMapInfoAgents()", "size= %u", call.tuple->size() );

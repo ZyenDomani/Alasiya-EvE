@@ -69,23 +69,7 @@ RamProxyService::~RamProxyService() {
  */
 
 PyResult RamProxyService::Handle_GetRelevantCharSkills(PyCallArgs &call) {
-    /*still dont know what this is for....
-     *
-     *
-     *            skillLevels, attributeValues =  sm.ProxySvc('ramProxy').GetRelevantCharSkills()
-     *
-     * 23:54:18 L RamProxyService::Handle_GetRelevantCharSkills: Called GetRelevantCharSkills Stub.
-     * 23:54:18 [SvcCall]   Call Arguments:
-     * 23:54:18 [SvcCall]       Tuple: Empty
-     * 23:54:18 [SvcCall]   Call Named Arguments:
-     * 23:54:18 [SvcCall]     Argument 'machoVersion':
-     * 23:54:18 [SvcCall]         Integer field: 1
-     *
-     *    sLog.White("RamProxyService::Handle_GetRelevantCharSkills", "Called GetRelevantCharSkills Stub.");
-     *    call.Dump(MANUF__DUMP);
-     */
-
-    return nullptr;
+    return call.client->GetChar()->GetRAMSkills();
 }
 
 PyResult RamProxyService::Handle_AssemblyLinesGet(PyCallArgs &call) {

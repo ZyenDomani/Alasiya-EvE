@@ -403,6 +403,13 @@ public:
      */
     float           GetAgilitySkills(bool cap=false);
     /**
+     * Get char's Research and Manufacturing skills
+     *
+     * @param[in] none
+     * @return Python wire object
+     */
+    PyRep*          GetRAMSkills();
+    /**
      * Returns skill currently in training.
      *
      * @param[in] newref Whether new reference should be returned.

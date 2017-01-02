@@ -1519,3 +1519,19 @@ PyDict* Ship::MakeSlimItem() {
     }
     return slim;
 }
+
+/*
+ *    def GetBaseWarpSpeed(self, typeID, shipinfo = None):
+ *        defaultWSM = 1.0
+ *        defaultBWS = 3.0
+ *        if shipinfo:
+ *            wsm = getattr(shipinfo, 'warpSpeedMultiplier', defaultWSM)
+ *            bws = getattr(shipinfo, 'baseWarpSpeed', defaultBWS)
+ *        else:
+ *            attrTypeInfo = util.IndexedRows(cfg.dgmtypeattribs.get(typeID, []), ('attributeID',))
+ *            wsm = attrTypeInfo.get(const.attributeWarpSpeedMultiplier) or util.KeyVal(value=defaultWSM)
+ *            bws = attrTypeInfo.get(const.attributeBaseWarpSpeed) or util.KeyVal(value=defaultBWS)
+ *            wsm = wsm.value
+ *            bws = bws.value
+ *        return localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
+ */

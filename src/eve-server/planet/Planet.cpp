@@ -111,10 +111,10 @@ void PlanetSE::CreateCustomsOffice()
         data.factionID = factionInterBus;
         data.allianceID = 0;
         data.corporationID = corpInterbus;
-    uint16 typeID = 4318;
+    uint16 typeID = EVEDB::invTypes::typeInterbusCustomsOffice;
 
     if (m_system->GetSystemSecurityRating() > 0.49) {
-        typeID = 2233;
+        typeID = EVEDB::invTypes::typePlanetaryCustomsOffice;
         // hisec...reset data for system sov holder...not sure how im gonna do this one.
         data.ownerID = 1;
         data.factionID = sDataMgr.GetRegionFaction(m_system->GetRegionID());

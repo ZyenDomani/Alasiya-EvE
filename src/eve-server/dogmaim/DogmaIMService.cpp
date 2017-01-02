@@ -376,11 +376,9 @@ PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
 
 PyResult DogmaIMBound::Handle_CharGetInfo(PyCallArgs& call) {
     //no arguments
-
-    Client* pClient = call.client;
-    PyDict* result = pClient->GetChar()->GetCharInfo();
+    PyDict* result = call.client->GetChar()->GetCharInfo();
     if (!result ) {
-        _log(SERVICE__ERROR, "Unable to build char info for char %u", pClient->GetCharacterID());
+        _log(SERVICE__ERROR, "Unable to build char info for char %u", call.client->GetCharacterID());
         return new PyNone();
     }
 
@@ -388,11 +386,10 @@ PyResult DogmaIMBound::Handle_CharGetInfo(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_ShipGetInfo(PyCallArgs& call) {
-    //takes no arguments
-    Client* pClient = call.client;
-    PyDict* result = pClient->GetShip()->ShipGetInfo();
+    //no arguments
+    PyDict* result = call.client->GetShip()->ShipGetInfo();
     if (!result ) {
-        _log(SERVICE__ERROR, "Unable to build ship info for ship %u", pClient->GetShipID());
+        _log(SERVICE__ERROR, "Unable to build ship info for ship %u", call.client->GetShipID());
         return new PyNone();
     }
 
@@ -525,11 +522,8 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
             continue;
         }
 
-        /** @todo this still needs to call modulemanager to add charge to module. */
         EVEItemFlags moduleFlag = moduleRef->flag();
         uint32 loadedChargeID = shipRef->AddItem( moduleFlag, chargeRef );
-        //pClient->MoveItem(chargeRef->itemID(), args.shipID, moduleFlag);
-
         //Create new item id return result
         if (loadedChargeID)
             chargeList.ints.push_back(loadedChargeID);
@@ -574,6 +568,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 	// WARNING!  Initial Implementation ONLY handles the FIRST entry in the args.itemIDs,
 	// which is basically supporting only single charge stacks applied to module!
 
+	/** @todo  update this to check all charges in args.itemIDs to see if they can be loaded also. */
 	// Get Reference to Ship, Module, and Charge
 	ShipItemRef shipRef = pClient->GetShip();
 	InventoryItemRef moduleRef = shipRef->GetModule(args.masterID);
@@ -583,13 +578,9 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 	}
 
 	if (!args.itemIDs.empty()) {
-        /** @todo this still needs to call modulemanager to add charge to module. */
 	    InventoryItemRef chargeRef = m_manager->item_factory->GetItem(args.itemIDs.at(0));
-
 	    EVEItemFlags moduleFlag = moduleRef->flag();
-		// Move Charge into Ship's Inventory and change the Charge's flag to match flag of Module
 	    uint32 loadedChargeID = shipRef->AddItem( moduleFlag, chargeRef );
-	    //pClient->MoveItem(chargeRef->itemID(), args.shipID, moduleFlag);
 
 		//Create new item id return result
 	    if (loadedChargeID) {
@@ -651,26 +642,28 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
                 }
 
                 /** @todo somehow notify client with one of these effects:
-                 * 1) effectAnchorDrop for effect = 649
-                 * 2) effectAnchorDropForStructures = 1022
-                 * 3) effectAnchorLift = 650
-                 * 4) effectAnchorLiftForStructures = 1023
+                 *  effectAnchorDrop = 649
+                 *  effectAnchorLift = 650
+                 *  effectAnchorDropForStructures = 1022
+                 *  effectAnchorLiftForStructures = 1023
                  *
                  ** @todo  many more effects to send for.....look into later.
                  * effectOnlineForStructures = 901
+                 *
+                 ** @note  also note there are timers involved here...
                  */
 
                 switch(effectID) {
                     case 649: //effectAnchorDrop;
                         //pClient->GetShipSE()->DestinyMgr()->SendContainerAnchor( pClient->services().item_factory->GetCargoContainer( itemID ) );
                         break;
-                    case 650:
+                    case 650: //effectAnchorLift
                         //pClient->GetShipSE()->DestinyMgr()->SendContainerUnanchor( pClient->services().item_factory->GetCargoContainer( itemID ) );
                         break;
-                    case 1022:
+                    case 1022: //effectAnchorDropForStructures
                         //pClient->GetShipSE()->DestinyMgr()->SendStructureAnchor( pClient->services().item_factory->GetStructure( itemID ) );
                         break;
-                    case 1023:
+                    case 1023: //effectAnchorLiftForStructures
                         //pClient->GetShipSE()->DestinyMgr()->SendStructureUnanchor( pClient->services().item_factory->GetStructure( itemID ) );
                         break;
                     default:
@@ -765,9 +758,8 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         _log(DESTINY__ERROR, "Client %u or Target %u does not have a bubble.", pClient->GetName(), target->GetName());
         return rsp.Encode();
     }
-    ShipItemRef ship = pClient->GetShip();
 
-    if (!pClient->GetShipSE()->TargetMgr()->StartTargeting(target, ship)) {
+    if (!pClient->GetShipSE()->TargetMgr()->StartTargeting(target, pClient->GetShip())) {
         _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed.");
         return rsp.Encode();
     }
@@ -812,7 +804,7 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
                             target->GetName(),target->GetID(), vectorToTarget.length() );
         }
 
-        pClient->GetShipSE()->TargetMgr()->ClearTarget(target);
+    pClient->GetShipSE()->TargetMgr()->ClearTarget(target);
     return nullptr;
 }
 
@@ -831,6 +823,7 @@ PyResult DogmaIMBound::Handle_GetTargeters(PyCallArgs& call) {
 
 
 PyResult DogmaIMBound::Handle_GetWeaponBankInfoForShip(PyCallArgs& call) {
+    /** @todo  look into this...what is it used for?  */
     return new BuiltinSet();
 }
 
@@ -849,7 +842,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     }
 
 	/* Create the response dictionary */
-    PyDict* rsp = new PyDict;
+    PyDict* rsp = new PyDict();
     rsp->SetItemString("activeShipID", new PyInt(pClient->GetShipID()));
     /* Setting "locationInfo" in the Dictionary */
     /** @todo  havent found a populated item in packet logs
@@ -873,7 +866,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         }
         rsp->SetItemString("charInfo", charResult);
     } else  // fixed
-        rsp->SetItemString("charInfo", new PyDict);
+        rsp->SetItemString("charInfo", new PyDict());
 
 	/* Setting "shipInfo" in the Dictionary  -fixed 26Mar16 */
 	if (args.arg2) {
@@ -884,7 +877,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         }
         rsp->SetItemString("shipInfo", shipResult);
     } else
-        rsp->SetItemString("shipInfo", new PyDict);
+        rsp->SetItemString("shipInfo", new PyDict());
 
     /* Setting "shipState" in the Dictionary  -fixed 26Mar16 */
     if (!pClient->GetShip()) {
