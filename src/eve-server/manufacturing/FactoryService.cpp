@@ -102,22 +102,23 @@ PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call
         header->AddColumn( "requiredTypeID",    DBTYPE_I4 );
         header->AddColumn( "damagePerJob",      DBTYPE_R4 );
 
-    // ramMaterials is only for manufacturing the bp product  NOTE: this is always populated
-    const BlueprintType* bpType = call.client->services().item_factory->GetBlueprintType(args.arg);
-    std::vector<ramMaterials> ramMatls;
-    sDataMgr.GetRamMaterials(bpType->productTypeID(), ramMatls);
-    for (auto cur : ramMatls) {
-        PyPackedRow* row = new PyPackedRow( header );
-        row->SetField( "quantity",        new PyInt(cur.quantity));
-        row->SetField( "requiredTypeID",  new PyInt(cur.materialTypeID));
-        row->SetField( "damagePerJob",    new PyFloat(1.0));
-        matlListManuf->AddItem(row);
+    const ItemType* iType = call.client->services().item_factory->GetType(args.arg);
+    if (iType->categoryID() == EVEDB::invCategories::Blueprint) {
+        // ramMaterials is only for manufacturing the bp product  NOTE: this is for BLUEPRINTS ONLY and is always populated
+        const BlueprintType* bpType = call.client->services().item_factory->GetBlueprintType(args.arg);
+        std::vector<ramMaterials> ramMatls;
+        sDataMgr.GetRamMaterials(bpType->productTypeID(), ramMatls);
+        for (auto cur : ramMatls) {
+            PyPackedRow* row = new PyPackedRow( header );
+            row->SetField( "quantity",        new PyInt(cur.quantity));
+            row->SetField( "requiredTypeID",  new PyInt(cur.materialTypeID));
+            row->SetField( "damagePerJob",    new PyFloat(1.0));
+            matlListManuf->AddItem(row);
+        }
     }
-    PyDict* Manufacturing = new PyDict();
-    Manufacturing->SetItemString("rawMaterials", matlListManuf);
 
     // booleans to only set items that are populated  NOTE: manuf is always populated
-    bool copy = false, invent = false, dup = false, me = false, re = false, te = false, tech = false;
+    bool manuf = false, copy = false, invent = false, dup = false, me = false, re = false, te = false, tech = false;
     //  get skills and materials for R.A.M.
     std::vector<ramRequirements> ramReqs;
     sDataMgr.GetRamRequirements(args.arg, ramReqs);
@@ -193,7 +194,7 @@ PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call
         }
     }
 
-    // this is the response.  test for populated items, and create an ItemString in the dict for that item.
+    // this is the response.  test for items populated above, and create an ItemString in the dict for that item.
     // items not populated and set in the response dict will not be shown in the BP info.
     PyDict* rsp = new PyDict();
 
@@ -201,12 +202,14 @@ PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call
     //activityNone = 0
     //rsp->SetItem(0, new PyDict());
 
-    // manuf is always populated
     //activityManufacturing = 1
-    Manufacturing->SetItemString("skills", skillListManuf);
-    Manufacturing->SetItemString("extras", DBResultToCRowset(mtRes));
-    rsp->SetItem(new PyInt(1), new PyObject("util.KeyVal", Manufacturing));
-
+    if (manuf) {
+        PyDict* Manufacturing = new PyDict();
+        Manufacturing->SetItemString("skills", skillListManuf);
+        Manufacturing->SetItemString("rawMaterials", matlListManuf);
+        Manufacturing->SetItemString("extras", DBResultToCRowset(mtRes));
+        rsp->SetItem(new PyInt(1), new PyObject("util.KeyVal", Manufacturing));
+    }
     if (tech) {
         //activityResearchingTechnology = 2
         PyDict* ResearchingTechnology = new PyDict();
