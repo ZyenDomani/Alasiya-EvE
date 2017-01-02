@@ -293,8 +293,9 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             return ShipItem::Spawn( factory, data );
         }
         case EVEDB::invCategories::Orbitals:
-        case EVEDB::invCategories::Structure: {
-            /*  this is for all Orbital items */
+        case EVEDB::invCategories::Structure:
+        case EVEDB::invCategories::SovereigntyStructure: {
+            /*  this is for all Orbital and Structure items */
             return StructureItem::Spawn( factory, data );
         }
         case EVEDB::invCategories::Blueprint: {
@@ -736,7 +737,11 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     } else {
         AttributeMap::AttrMapItr itr = mAttributeMap.begin();
         for (; itr != mAttributeMap.end(); itr++) {
-            result.attributes[(*itr).first] = (*itr).second.GetPyObject();
+            //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
+            if ((*itr).first == AttrWarpSpeedMultiplier)
+                result.attributes[(*itr).first] = new PyInt(mAttributeMap.GetAttribute(AttrWarpSpeedMultiplier).get_int() /3);
+            else
+                result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         }
     }
 

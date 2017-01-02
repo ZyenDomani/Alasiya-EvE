@@ -386,6 +386,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making DeployableSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return dSE;
         } break;
+        case EVEDB::invCategories::SovereigntyStructure:// SOV structures
         case EVEDB::invCategories::Orbitals:            // planet orbitals
         case EVEDB::invCategories::Structure: {         // POS Structures of all kinds
             StructureItemRef structure = factory->GetStructure( entity.itemID );
