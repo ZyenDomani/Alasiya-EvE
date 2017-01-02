@@ -26,6 +26,7 @@
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
+#include "StaticDataMgr.h"
 #include "cache/ObjCacheService.h"
 #include "map/MapService.h"
 
@@ -167,6 +168,11 @@ PyResult MapService::Handle_GetBeaconCount(PyCallArgs &call) {
 
         return util.KeyVal(cynoModules=totalModules, cynoStructures=totalStructures)
 */
+  /*
+  PyTuple* res = new PyTuple();
+  PyTuple* counts = new PyTuple();
+  PyTuple* system = new PyTuple();
+  */
     return (m_db.GetDynamicData(2, 24));
 }
 
@@ -175,21 +181,7 @@ PyResult MapService::Handle_GetStationCount(PyCallArgs &call)
 {  // cached on client side.  if cache is empty, this call is made.
   sLog.White( "MapService::Handle_GetStationCount()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
-  /**
-  ColorStarsByStationCount
-  - not real sure how to do this one.....see MapDB.cpp
-  ValueError: need more than 1 value to unpack
-
-        starmap.stationCountCache = sm.RemoteSvc('map').GetStationCount()
-    history = starmap.stationCountCache
-    maxCount = 0
-    for solarSystemID, amount in history:
-  */
-
-  /** @todo  see if i can load a static object (for corps?) as [solarsystem:stations]
-   * this return should be a tuple
-   */
-    return m_db.GetStationCount();
+    return sDataMgr.GetStationCount();
 }
 
 /** not handled */

@@ -40,11 +40,10 @@ public:
     PyObject *GetStationExtraInfo();
     PyObject *GetStationOpServices();
     PyObject *GetStationServiceInfo();
-    PyObject *GetStationCount();
     PyObject *GetSolSystemVisits(uint32);
-    PyRep *GetDynamicData(uint32, uint32);
+    PyRep *GetDynamicData(uint8 type, uint8 time);
 
-protected:
+    void GetStationCount(DBQueryResult& res);
 };
 
 #endif
