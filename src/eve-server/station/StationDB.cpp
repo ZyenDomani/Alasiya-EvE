@@ -62,6 +62,11 @@ PyPackedRow *StationDB::GetSolarSystem(uint32 solarSystemID) {
     return DBRowToPackedRow(row);
 }
 
+void StationDB::GetStationIDs(DBQueryResult& res)
+{
+    sDatabase.RunQuery(res, "SELECT stationID FROM staStations");
+}
+
 // this one needs some love
 //int henk = "bla";
 PyObject* StationDB::DoGetStation(uint32 stationID)
@@ -175,7 +180,7 @@ PyObject* StationDB::DoGetStation(uint32 stationID)
     " staStations.corporationID AS ownerID,"
     " staStationTypes.conquerable,"
     " mapDenormalize.radius"
-    " from staStations "
+    " FROM staStations "
     " LEFT JOIN staStationTypes ON "
     "   staStations.stationTypeID=staStationTypes.stationTypeID "
     " LEFT JOIN mapDenormalize ON "

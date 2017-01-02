@@ -83,8 +83,8 @@ PyResult StationSvcService::Handle_GetStation(PyCallArgs &call) {
         return (new PyInt(0));
     }
 
-    //return sDataMgr.GetStationData(arg.arg);
-    return m_db.DoGetStation(arg.arg);
+    return sDataMgr.GetStationData(arg.arg);
+    //return m_db.DoGetStation(arg.arg);
 }
 
 PyResult StationSvcService::Handle_GetAllianceSystems(PyCallArgs &call) {
