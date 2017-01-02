@@ -844,12 +844,12 @@ void ModuleManager::Online(uint32 itemID)
         if (mod->isOnline())
             return;
         if (OnlineCheck(mod)) {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Online() -  %s going Online", mod->getItem()->itemName().c_str());
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s going Online", mod->getItem()->itemName().c_str());
             mod->Online();
         } else
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Online() -  Not enough CPU/PG to put %s online.", mod->getItem()->itemName().c_str());
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  Not enough CPU/PG to put %s online.", mod->getItem()->itemName().c_str());
     } else
-        _log(SHIP__MODULE_ERROR, "ModuleManager::Online() -  Module %u not found", itemID);
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Online(itemID) -  Module %u not found", itemID);
 }
 
 void ModuleManager::Online(EVEItemFlags flag)
@@ -859,12 +859,12 @@ void ModuleManager::Online(EVEItemFlags flag)
         if (mod->isOnline())
             return;
         if (OnlineCheck(mod)) {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Online() -  %s going Online", mod->getItem()->itemName().c_str());
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  %s going Online", mod->getItem()->itemName().c_str());
             mod->Online();
         } else
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Online() -  Not enough CPU/PG to put %s online.", mod->getItem()->itemName().c_str());
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  Not enough CPU/PG to put %s online.", mod->getItem()->itemName().c_str());
     } else
-        _log(SHIP__MODULE_ERROR, "ModuleManager::Online() -  Module at location %u not found", flag);
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Online(flag) -  Module at location %u not found", flag);
 }
 
 void ModuleManager::Offline(uint32 itemID)
@@ -873,20 +873,20 @@ void ModuleManager::Offline(uint32 itemID)
     if (mod) {
         if (!mod->isOnline())
             return;
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline() -  %s going Offline", mod->getItem()->itemName().c_str());
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s going Offline", mod->getItem()->itemName().c_str());
         mod->Offline();
     } else
-        _log(SHIP__MODULE_ERROR, "ModuleManager::Offline() -  Module %u not found", itemID);
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Offline(itemID) -  Module %u not found", itemID);
 }
 
 void ModuleManager::Offline(EVEItemFlags flag)
 {
     GenericModule* mod = m_Modules->GetModule(flag);
     if (mod) {
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline() -  %s going Offline", mod->getItem()->itemName().c_str());
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s going Offline", mod->getItem()->itemName().c_str());
         mod->Offline();
     } else
-        _log(SHIP__MODULE_ERROR, "ModuleManager::Online() -  Module at location %u not found", flag);
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Offline(flag) -  Module at location %u not found", flag);
 }
 
 void ModuleManager::AbortCycle()
