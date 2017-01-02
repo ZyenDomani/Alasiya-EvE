@@ -117,12 +117,11 @@ PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call
         }
     }
 
-    // booleans to only set items that are populated  NOTE: manuf is always populated
-    bool manuf = false, copy = false, invent = false, dup = false, me = false, re = false, te = false, tech = false;
+    // booleans to only set items that are populated  NOTE: manuf is always populated for blueprints
+    bool manuf = false, copy = false, invent = false, dup = false, me = false, re = false, te = false, tech = false, skill = false;
     //  get skills and materials for R.A.M.
     std::vector<ramRequirements> ramReqs;
     sDataMgr.GetRamRequirements(args.arg, ramReqs);
-    bool skill = false;
     for (auto cur : ramReqs) {
         skill = false;
         PyPackedRow* row = new PyPackedRow( header );
@@ -158,6 +157,7 @@ PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call
                     matlListDup->AddItem(row);
             } break;
             case ramActivityManufacturing:{ //1
+                manuf = true;
                 if (skill)
                     skillListManuf->AddItem(row);
                 else
