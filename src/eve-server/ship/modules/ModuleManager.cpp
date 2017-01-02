@@ -825,6 +825,8 @@ bool ModuleManager::_fitModule(InventoryItemRef item, EVEItemFlags flag)
 
 bool ModuleManager::OnlineCheck(GenericModule* mod)
 {
+    /** @update client will not call "Online()" if ship doesnt meet requirements.  */
+    return true;
     if (mod->isRig() or mod->isSubSystem()) return true;
     if (m_Ship->GetPilot()->IsLogin()) return true;
     // check PG and CPU usage to see if we have enough to online this module

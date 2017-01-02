@@ -1041,6 +1041,16 @@ void ShipItem::RepairModules()
 
 void ShipItem::Online (uint32 moduleID)
 {
+    if (IsSolarSystem(locationID())) {
+        ; // check for avalible cap, and drain accordingly
+        /*
+        float Charge = GetAttribute(AttrCapacitorCharge).get_float();
+        float Capacity = GetAttribute(AttrCapacitorCapacity).get_float();
+        float newCharge = 0;
+        SetAttribute(AttrCapacitorCharge, newCharge);
+        _log(SHIP__MESSAGE, "ShipItem::Online(): %s(%u) - New Cap Charge: %f", GetPilot()->GetName(), itemID(), newCharge );
+        */
+    }
 	m_ModuleManager->Online(moduleID);
 }
 
@@ -1407,11 +1417,11 @@ void Ship::EncodeDestiny( Buffer& into ) {
         mass.allianceID = GetAllianceID();
         into.Append( mass );
     DataSector data;
+        data.intertia = m_destiny->GetInertia();
         data.maxVelocity = m_destiny->GetMaxVelocity();
         data.velocity_x = m_destiny->GetVelocity().x;
         data.velocity_y = m_destiny->GetVelocity().y;
         data.velocity_z = m_destiny->GetVelocity().z;
-        data.intertia = m_destiny->GetInertia();
         data.speedfraction = m_destiny->GetSpeedFraction();
         into.Append( data );
     if (mode == DSTBALL_WARP) {
@@ -1519,19 +1529,3 @@ PyDict* Ship::MakeSlimItem() {
     }
     return slim;
 }
-
-/*
- *    def GetBaseWarpSpeed(self, typeID, shipinfo = None):
- *        defaultWSM = 1.0
- *        defaultBWS = 3.0
- *        if shipinfo:
- *            wsm = getattr(shipinfo, 'warpSpeedMultiplier', defaultWSM)
- *            bws = getattr(shipinfo, 'baseWarpSpeed', defaultBWS)
- *        else:
- *            attrTypeInfo = util.IndexedRows(cfg.dgmtypeattribs.get(typeID, []), ('attributeID',))
- *            wsm = attrTypeInfo.get(const.attributeWarpSpeedMultiplier) or util.KeyVal(value=defaultWSM)
- *            bws = attrTypeInfo.get(const.attributeBaseWarpSpeed) or util.KeyVal(value=defaultBWS)
- *            wsm = wsm.value
- *            bws = bws.value
- *        return localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
- */

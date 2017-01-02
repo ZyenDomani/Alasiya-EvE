@@ -47,8 +47,6 @@ RamProxyService::RamProxyService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(RamProxyService, GetJobs2);
     PyCallable_REG_CALL(RamProxyService, InstallJob);
     PyCallable_REG_CALL(RamProxyService, CompleteJob);
-
-    // unhandled calls
     PyCallable_REG_CALL(RamProxyService, GetRelevantCharSkills);
 }
 
@@ -655,11 +653,6 @@ void RamProxyService::VerifyInstallJob_Call(const Call_InstallJob &args, Invento
 }
 
 void RamProxyService::VerifyInstallJob_Install(const Rsp_InstallJob &rsp, const PathElement &pathBomLocation, const std::vector<RequiredItem> &reqItems, const int32 runs, Client *const c) {
-    // MONEY CHECK
-    // ************
-    if (!c->AddBalance(-rsp.cost))
-        return;
-
     // PRODUCTION TIME CHECK
     // **********************
     if((uint32)rsp.productionTime > ramProductionTimeLimit) {
@@ -709,6 +702,10 @@ void RamProxyService::VerifyInstallJob_Install(const Rsp_InstallJob &rsp, const 
             }
         }
     }
+    // MONEY CHECK
+    // ************
+    if (!c->AddBalance(-rsp.cost))
+        return;
 }
 
 void RamProxyService::VerifyCompleteJob(const Call_CompleteJob &args, Client *const c) {
@@ -878,9 +875,9 @@ void RamProxyService::EncodeMissingMaterials(const std::vector<RequiredItem> &re
     for(; cur != end; cur++) {
         uint32 qtyReq = cur->quantity;
         if(!cur->isSkill) {
-            qtyReq = static_cast<uint32>(ceil(qtyReq * materialMultiplier * runs));
+            qtyReq = (uint32)ceil(qtyReq * materialMultiplier * runs);
             if(cur->damagePerJob == 1.0)
-                qtyReq = static_cast<uint32>(ceil(qtyReq * charMaterialMultiplier));
+                qtyReq = (uint32)ceil(qtyReq * charMaterialMultiplier);
         }
 
         std::vector<InventoryItemRef>::const_iterator curi, endi;
@@ -889,9 +886,9 @@ void RamProxyService::EncodeMissingMaterials(const std::vector<RequiredItem> &re
         for(; curi != endi && qtyReq > 0; curi++) {
             if((*curi)->typeID() == cur->typeID && (*curi)->ownerID() == pClient->GetCharacterID()) {
                 if(cur->isSkill)
-                    qtyReq -= std::min((uint32)qtyReq, (uint32)(*curi)->GetAttribute(AttrSkillLevel).get_int() );
+                    qtyReq -= std::min(qtyReq, (uint32)(*curi)->GetAttribute(AttrSkillLevel).get_int() );
                 else
-                    qtyReq -= std::min((uint32)qtyReq, (uint32)(*curi)->quantity() );
+                    qtyReq -= std::min(qtyReq, (uint32)(*curi)->quantity() );
             }
         }
 

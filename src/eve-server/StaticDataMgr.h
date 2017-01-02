@@ -21,6 +21,8 @@
 #include "eve-server.h"
 #include "POD_containers.h"
 
+#include "map/MapDB.h"
+#include "station/StationDB.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 class StaticDataMgr
@@ -45,8 +47,10 @@ public:
     bool GetStationInfo(uint32 stationID, StationData& data);
     bool GetSystemInfo(uint32 locationID, SystemData& data);
 
+    PyRep* GetStationCount();
     uint32 GetStationRegion(uint32 stationID);
     uint32 GetStationSystem(uint32 stationID);
+    PyObject* GetStationData(uint32 stationID);
 
     bool GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids);
     uint8 GetRegionQuarter(uint32 regionID);
@@ -56,7 +60,9 @@ protected:
     void Populate();
 
 private:
+    MapDB m_mdb;
     ManagerDB m_db;
+    StationDB m_sdb;
 
     std::map<uint32, uint32>        m_regions;          // regionID/factionID
     std::map<uint32, uint32>        m_stationRegion;    // stationID/regionID
@@ -69,6 +75,11 @@ private:
     std::unordered_multimap<uint16, ramMaterials>           m_ramMatl;          // itemTypeID/data
     std::unordered_multimap<uint16, ramRequirements>        m_ramReq;           // bpTypeID/data
     std::unordered_multimap<std::string, OreTypeChance>     m_oreBySecClass;    // systemSecClass/data
+
+    std::map<uint32, PyObject*>     m_stationPyData;
+
+    /* map data */
+    std::map<uint32, uint8>         m_stationCount;
 };
 
 //Singleton

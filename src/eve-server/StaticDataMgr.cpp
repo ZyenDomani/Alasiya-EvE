@@ -11,8 +11,8 @@
   *
   */
 
-
 #include "StaticDataMgr.h"
+#include "database/EVEDBUtils.h"
 
 
 StaticDataMgr::StaticDataMgr()
@@ -33,12 +33,16 @@ int StaticDataMgr::Initialize()
 
 void StaticDataMgr::Clear()
 {
+    m_ramReq.clear();
+    m_ramMatl.clear();
     m_regions.clear();
     m_systemData.clear();
     m_staticData.clear();
     m_stationData.clear();
-    m_stationSystem.clear();
+    m_stationCount.clear();
     m_oreBySecClass.clear();
+    m_stationSystem.clear();
+    m_stationPyData.clear();
 }
 
 void StaticDataMgr::Populate()
@@ -102,10 +106,22 @@ void StaticDataMgr::Populate()
         m_ramMatl.insert(std::pair<uint16, ramMaterials>(row.GetInt(0), ramMatls));
     }
 
+    res->Reset();
+    m_mdb.GetStationCount(*res);
+    while (res->GetRow(row))
+        m_stationCount.insert(std::pair<uint32, uint8>(row.GetInt(0), row.GetInt(1)));
+    
+/* this isnt working right...not sure why.
+    res->Reset();
+    m_sdb.DoGetStation(*res);
+    while (res->GetRow(row))
+        m_stationPyData.insert(std::pair<uint32, PyObject*>(row.GetInt(0), DBRowToKeyVal(row)));
+*/
     //cleanup
     SafeDelete(res);
-    sLog.Cyan("    StaticDataMgr", "%u data sets loaded in %.3fus.",
-              (m_oreBySecClass.size() + m_regions.size() + m_skills.size() + m_ramMatl.size() + m_ramReq.size()), (GetTimeUSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u data sets loaded in %.3fus.", \
+              (m_oreBySecClass.size() + m_regions.size() + m_skills.size() + m_ramMatl.size() + m_ramReq.size() + m_stationPyData.size() + m_stationCount.size()),\
+              (GetTimeUSeconds() - start));
 }
 
 void StaticDataMgr::GetInfo()
@@ -149,6 +165,28 @@ bool StaticDataMgr::GetRamRequirements(uint16 typeID, std::vector< ramRequiremen
     auto itr = m_ramReq.equal_range(typeID);
     for (auto it = itr.first; it != itr.second; it++)
         ramReqs.push_back(it->second);
+}
+
+PyObject* StaticDataMgr::GetStationData(uint32 stationID)
+{
+    std::map<uint32, PyObject*>::iterator itr = m_stationPyData.find(stationID);
+    if (itr != m_stationPyData.end())
+        return itr->second;
+    return nullptr;
+}
+
+PyRep* StaticDataMgr::GetStationCount()
+{
+    PyList* list = new PyList();
+    std::map<uint32, uint8>::iterator itr = m_stationCount.begin();
+    while (itr != m_stationCount.end()) {
+        PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyInt(itr->first));
+        tuple->SetItem(1, new PyInt(itr->second));
+        list->AddItem(tuple);
+        ++itr;
+    }
+    return list;
 }
 
 uint32 StaticDataMgr::GetStationRegion(uint32 stationID)

@@ -26,45 +26,10 @@
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
+#include "StaticDataMgr.h"
 #include "cache/ObjCacheService.h"
 #include "station/StationSvcService.h"
 
-/*
-class StationSvcBound
-: public PyBoundObject {
-public:
-
-    class Dispatcher
-    : public PyCallableDispatcher<StationSvcBound> {
-    public:
-        Dispatcher(StationSvcBound *c)
-        : PyCallableDispatcher<StationSvcBound>(c) {}
-    };
-
-    StationSvcBound(PyServiceMgr *mgr, StationSvcDB *db)
-    : PyBoundObject(mgr, "StationSvcBound"),
-      m_db(db),
-      m_dispatch(new Dispatcher(this))
-    {
-        _SetCallDispatcher(m_dispatch);
-
-        PyCallable_REG_CALL(StationSvcBound, )
-        PyCallable_REG_CALL(StationSvcBound, )
-    }
-    virtual ~StationSvcBound() {}
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
-
-    PyCallable_DECL_CALL()
-    PyCallable_DECL_CALL()
-
-protected:
-    StationSvcDB *const m_db;
-    Dispatcher *const m_dispatch;
-};
-*/
 
 PyCallable_Make_InnerDispatcher(StationSvcService)
 
@@ -83,17 +48,6 @@ StationSvcService::StationSvcService(PyServiceMgr *mgr)
 StationSvcService::~StationSvcService() {
     delete m_dispatch;
 }
-
-/*
-PyBoundObject* StationSvcService::_CreateBoundObject( Client* c, const PyRep* bind_args )
-{
-    _log( CLIENT__MESSAGE, "StationSvcService bind request for:" );
-    bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
-
-    return new StationSvcBound( m_manager, &m_db );
-}*/
-
-
 
 PyResult StationSvcService::Handle_GetStationItemBits(PyCallArgs &call) {
     return m_db.GetStationItemBits(call.client->GetStationID());
@@ -129,6 +83,7 @@ PyResult StationSvcService::Handle_GetStation(PyCallArgs &call) {
         return (new PyInt(0));
     }
 
+    //return sDataMgr.GetStationData(arg.arg);
     return m_db.DoGetStation(arg.arg);
 }
 

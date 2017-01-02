@@ -61,6 +61,7 @@ public:
         PyCallable_REG_CALL(ShipBound, Drop);
         PyCallable_REG_CALL(ShipBound, Scoop);
         PyCallable_REG_CALL(ShipBound, ScoopDrone);
+        PyCallable_REG_CALL(ShipBound, ScoopToSMA);
         PyCallable_REG_CALL(ShipBound, Jettison);
         PyCallable_REG_CALL(ShipBound, GetShipConfiguration);
         PyCallable_REG_CALL(ShipBound, SelfDestruct);
@@ -81,6 +82,7 @@ public:
     PyCallable_DECL_CALL(Drop);
     PyCallable_DECL_CALL(Scoop);
     PyCallable_DECL_CALL(ScoopDrone);
+    PyCallable_DECL_CALL(ScoopToSMA);
     PyCallable_DECL_CALL(Jettison);
     PyCallable_DECL_CALL(GetShipConfiguration);
     PyCallable_DECL_CALL(SelfDestruct);
@@ -749,6 +751,15 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         }
     }
 
+    return nullptr;
+}
+
+PyResult ShipBound::Handle_ScoopToSMA(PyCallArgs &call) {
+    /*      ******* no packet data ***********     */
+
+    sLog.White("ShipBound::Handle_ScoopToSMA()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+    
     return nullptr;
 }
 

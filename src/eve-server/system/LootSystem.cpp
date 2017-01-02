@@ -218,15 +218,11 @@ void DGM_Salvage_Table::_Populate()
 
     //cleanup
     SafeDelete(res);
-
     sLog.Cyan("    Salvage Table", "%u salvage definitions loaded in %.3fus.", m_SalvageMap.size(), (GetTimeUSeconds() - start));
 }
 
 void DGM_Salvage_Table::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {
     double start = GetTimeUSeconds();
-    double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
     double randChance = 0.0;
 
     auto itr = m_SalvageMap.equal_range(factionID);
@@ -235,7 +231,5 @@ void DGM_Salvage_Table::GetSalvage(uint32 factionID, std::vector<uint32> &itemLi
     }
 
     if (sConfig.server.UseProfiling)
-        sProfile.AddTime(_salvageProfile, GetTimeUSeconds() - profileStartTime);
-    sLog.White("     GetSalvage()", "Took %fus to iterate thru %u loops, with %u items returned for factionID %u",
-             (GetTimeUSeconds() - start), m_SalvageMap.size(), itemList.size(), factionID);
+        sProfile.AddTime(_salvageProfile, GetTimeUSeconds() - start);
 }

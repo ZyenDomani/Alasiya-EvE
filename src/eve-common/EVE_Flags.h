@@ -10,7 +10,7 @@
 
 
 //from invFlags DB table
-typedef enum EVEItemFlags {
+enum EVEItemFlags {
     flagAutoFit                        = 0,
     flagWallet                        = 1,
     flagFactory                        = 2,
@@ -175,8 +175,8 @@ typedef enum EVEItemFlags {
 
     flagClone                        = 400,
 
-    flagIllegal                     = 9999
-} EVEItemFlags;
+    flagIllegal                     = 999
+};
 
 //for use in the new module manager
 typedef enum {
@@ -200,10 +200,5 @@ static const uint8 MAX_MEDIUM_SLOT_COUNT = flagMedSlot7 - flagMedSlot0 + 1;
 static const uint8 MAX_LOW_SLOT_COUNT = flagLowSlot7 - flagLowSlot0 + 1;
 static const uint8 MAX_RIG_COUNT = flagRigSlot7 - flagRigSlot0 + 1;
 static const uint8 MAX_ASSEMBLY_COUNT = flagSubSystem7 - flagSubSystem0 + 1;
-
-#define FlagToSlot(flag) \
-    (flag - flagSlotFirst)
-#define SlotToFlag(slot) \
-    ((EVEItemFlags)(flagSlotFirst + slot))
 
 #endif  // EVE_FLAGS_H

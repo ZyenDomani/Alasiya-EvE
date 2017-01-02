@@ -162,6 +162,12 @@ minFakeClientItem = 17000000000000000000L
 #define IsNotStaticItem(itemID) \
 (itemID >= EVEMU_MINIMUM_ID)
 
+#define FlagToSlot(flag) \
+(flag - flagSlotFirst)
+
+#define SlotToFlag(slot) \
+((EVEItemFlags)(flagSlotFirst + slot))
+
 #define IsModuleSlot(flag) \
 (((flag >= flagLowSlot0) && (flag <= flagHiSlot7)) \
   || ((flag >= flagRigSlot0) && (flag <= flagRigSlot7)) \

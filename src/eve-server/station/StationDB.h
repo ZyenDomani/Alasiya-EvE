@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 
@@ -29,99 +30,14 @@
 
 #include "ServiceDB.h"
 
-class PyRep;
-
-/** @todo  great storage class for static db data....can be interegrated into other things later  */
-
-/**
- * a example of a storage class for static db data. not exactly doxygen commented.
- *
-class storage
-{
-public:
-    storage() : mLoaded(false) {}
-
-    bool load()
-    {
-        if (mLoaded == true)
-            return true;
-
-        DBQueryResult res;
-        if(!sDatabase.RunQuery(res,    "SELECT "
-            " solarSystemID,"                    // int
-            " solarSystemName,"                    // string
-            " x, y, z,"                            // double
-            " radius,"                            // double
-            " security,"                        // double
-            " constellationID,"                    // int
-            " factionID,"                        // int
-            " sunTypeID,"                        // int
-            " regionID,"                        // int
-
-            //Hack: I think this is dynamic data.... meaning it should be stored somewhere else in the db...
-            " NULL AS allianceID,"                // int
-            " 0 AS sovereigntyLevel,"            // int
-            " 0 AS constellationSovereignty"    // int
-            " FROM mapSolarSystems"))
-        {
-            sLog.Error("Station DB", "Error in storage GetSolarSystem query: %s", res.error.c_str());
-            return false;
-        }
-
-        sLog.White("       ServerInit", "Loading Solar systems.");
-
-        DBResultRow row;
-        for(unsigned int i = 0; res.GetRow(row); i++)
-        {
-            mStorageContainer.insert(std::make_pair(row.GetUInt(0), DBRowToRow(row)));
-        }
-        mLoaded = true;
-
-        return true;
-    }
-
-    // returned pointer doesn't have to be const, but I don't think
-    // we would like anyone to change static db data, so ...
-    const PyObject* find(uint32 id) const
-    {
-        DataContainerConstItr Itr = mStorageContainer.find(id);
-        if (Itr != mStorageContainer.end())
-        {
-            return Itr->second;
-        }
-        return NULL;
-    }
-
-    ~storage()
-    {
-        DataContainerItr Itr = mStorageContainer.begin();
-        for (; Itr != mStorageContainer.end(); Itr++)
-        {
-            PyDecRef( Itr->second );
-        }
-    }
-
-protected:
-    typedef std::tr1::unordered_map<uint32, PyObject*>    DataContainer;
-    typedef DataContainer::iterator                            DataContainerItr;
-    typedef DataContainer::const_iterator                    DataContainerConstItr;
-
-    DataContainer mStorageContainer;
-    bool mLoaded;
-};
-*/
 
 class StationDB : public ServiceDB
 {
 public:
-    StationDB();
 
     PyPackedRow *GetSolarSystem(uint32 ssid);
-    PyRep *DoGetStation(uint32 ssid);
-    PyRep *GetStationItemBits(uint32 sid);
-
-protected:
-    //static storage g_station_db_storage;
+    PyObject* DoGetStation(uint32 stationID);
+    PyRep *GetStationItemBits(uint32 stationID);
 };
 
 #endif
