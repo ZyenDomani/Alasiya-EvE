@@ -367,7 +367,6 @@ SET( pos_SOURCE
 SET( scan_INCLUDE
      "${TARGET_INCLUDE_DIR}/scanning/Scan.h"
      "${TARGET_INCLUDE_DIR}/scanning/ScanMgrService.h"
-     "${TARGET_INCLUDE_DIR}/scanning/ScanStructures.h"
      "${TARGET_INCLUDE_DIR}/scanning/ScanningDB.h")
 SET( scan_SOURCE
      "${TARGET_SOURCE_DIR}/scanning/Scan.cpp"

@@ -753,3 +753,10 @@ DBRowDescriptor* TradeService::CreateHeader() {
     return header;
 }
 
+uint32 TradeService::GetTradeSessionID()
+{
+    if (m_SessionID < 1999)
+        return ++m_SessionID;
+    else
+        return (m_SessionID = 1001);
+}

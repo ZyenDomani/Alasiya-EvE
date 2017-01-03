@@ -104,9 +104,9 @@ void ItemFactory::SaveItems() {
 Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
     InventoryItemRef item;
     std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-    if (res != m_items.end())
+    if (res != m_items.end()){
         item = res->second;
-    else {
+    } else {
         if (load)
             item = GetItem( itemID );
     }
@@ -120,9 +120,9 @@ Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
 InventoryItemRef ItemFactory::GetInventoryItemFromID( uint32 itemID, bool load /*true*/) {
     InventoryItemRef item;
     std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-    if (res != m_items.end())
+    if (res != m_items.end()) {
         item = res->second;
-    else {
+    } else {
         if (load)
             item = GetItem( itemID );
     }
@@ -178,12 +178,12 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load)
 
     return nullptr;
 }
-
+// somethign funky going on here......
 void ItemFactory::RemoveItem(uint32 itemID) {
     std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-    if (res == m_items.end())
+    if (res == m_items.end()) {
         _log(ITEM__WARNING, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
-    else {
+    } else {
         --m_itemCount;
         m_items.erase( res );
     }
@@ -193,8 +193,8 @@ const ItemCategory* ItemFactory::GetCategory(EVEItemCategories category) {
     std::map<EVEItemCategories, ItemCategory *>::iterator res = m_categories.find(category);
     if (res == m_categories.end()) {
         ItemCategory *cat = ItemCategory::Load(*this, category);
-        if (cat == NULL)
-            return NULL;
+        if (!cat)
+            return nullptr;
 
         // insert it into our cache
         res = m_categories.insert(
@@ -209,7 +209,7 @@ const ItemGroup* ItemFactory::GetGroup(uint32 groupID) {
     if (res == m_groups.end()) {
         ItemGroup* group = ItemGroup::Load(*this, groupID);
         if (!group)
-            return NULL;
+            return nullptr;
 
         // insert it into cache
         res = m_groups.insert(
@@ -225,7 +225,7 @@ const _Ty* ItemFactory::_GetType(uint32 typeID) {
     if (res == m_types.end()) {
         _Ty* type = _Ty::Load(*this, typeID);
         if (!type)
-            return NULL;
+            return nullptr;
 
         // insert into cache
         res = m_types.insert(
@@ -251,7 +251,7 @@ const CharacterType* ItemFactory::GetCharacterTypeByBloodline(uint32 bloodlineID
     // Unfortunately, we have it indexed by typeID, so we must get it ...
     uint32 characterTypeID;
     if (!db().GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
-        return NULL;
+        return nullptr;
     return GetCharacterType(characterTypeID);
 }
 

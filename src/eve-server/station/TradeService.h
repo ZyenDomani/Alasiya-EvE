@@ -39,7 +39,7 @@ public:
     TradeService(PyServiceMgr* mgr);
     virtual ~TradeService();
 
-    uint32 GetTradeSessionID()      { return ++m_SessionID; }
+    uint32 GetTradeSessionID();
     DBRowDescriptor* CreateHeader();
 
     void InitiateTrade(Client* pClient, PyRep* resp);
