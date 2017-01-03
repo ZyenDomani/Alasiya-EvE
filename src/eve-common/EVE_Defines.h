@@ -90,7 +90,7 @@ minFakeClientItem = 17000000000000000000L
  (pinID < 1000)
 
 #define IsTradeCont(itemID) \
- ((itemID > 1000) && (itemID) < 2000))
+ ((itemID > 1000) && (itemID < 2000))
 
 #define IsCharType(typeID) \
  ((typeID >= minCharType) && (typeID <= maxCharType))

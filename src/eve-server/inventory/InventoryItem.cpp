@@ -785,24 +785,28 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
         return; //nothing to do...
 
     //first, take myself out of my old inventory, if its loaded.
-    Inventory *old_inventory = m_factory.GetInventoryFromId( old_location, false );
-    if (old_inventory)
-        old_inventory->RemoveItem(InventoryItemRef(this));  //releases its ref
-    else {
-        if (m_locationID)
-            _log(INV__WARNING, "Inventory for %u not found. %s not removed from it's container's inventory.", itemName().c_str(), old_location);
+    if (!IsTradeCont(old_location)) {   // fix for trade containers segfault (as they dont have an inventory* object)
+        Inventory *old_inventory = m_factory.GetInventoryFromId( old_location, false );
+        if (old_inventory) {
+            old_inventory->RemoveItem(InventoryItemRef(this));  //releases its ref
+        } else {
+            if (m_locationID)
+                _log(INV__WARNING, "Inventory for %u not found. %s not removed from it's container's inventory.", itemName().c_str(), old_location);
+        }
     }
 
     m_locationID = new_location;
     m_flag = new_flag;
 
     //then make sure that my new inventory is updated, if its loaded.
-    Inventory *new_inventory = m_factory.GetInventoryFromId( new_location, false );
-    if (new_inventory)
-        new_inventory->AddItem(InventoryItemRef(this)); //makes a new ref
-    else {
-        if (m_locationID)
-            _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", itemName().c_str(), new_location);
+    if (!IsTradeCont(new_location)) {
+        Inventory *new_inventory = m_factory.GetInventoryFromId( new_location, false );
+        if (new_inventory) {
+            new_inventory->AddItem(InventoryItemRef(this)); //makes a new ref
+        } else {
+            if (m_locationID)
+                _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", itemName().c_str(), new_location);
+        }
     }
 
     SaveItem();
