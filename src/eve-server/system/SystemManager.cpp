@@ -187,7 +187,9 @@ void SystemManager::UnloadSystem() {
 
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     while (itr != m_entities.end()) {
-        if (itr->second->IsStationSE()) {
+        if (!itr->second) {
+            ; // do nothing here
+        } else if (itr->second->IsStationSE()) {
             itr->second->GetStationSE()->UnloadStation();
             sEntityList.RemoveStation(itr->first);
             sBubbleMgr.Remove(itr->second);
