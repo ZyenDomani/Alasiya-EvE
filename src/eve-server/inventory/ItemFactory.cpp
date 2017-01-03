@@ -74,7 +74,7 @@ ItemFactory::~ItemFactory() {
 
 void ItemFactory::SaveItems() {
     uint32 count = 0;
-    double startTime = GetTimeUSeconds();
+    double startTime = GetTimeMSeconds();
     std::vector<SaveData> items;
     items.clear();
     for (auto cur : m_items) {
@@ -98,7 +98,7 @@ void ItemFactory::SaveItems() {
         }
     }
     m_db.SaveItems(items);
-    sLog.Warning("        SaveItems", "Saved %u Dynamic Items in %.3fus.", count, (GetTimeUSeconds() -startTime) );
+    sLog.Warning("        SaveItems", "Saved %u Dynamic Items in %.3fms.", count, (GetTimeMSeconds() -startTime) );
 }
 
 Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
