@@ -686,16 +686,7 @@ void DestinyManager::_Move() {
     _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
         mySE->GetName(), mySE->GetID(), move.c_str(), \
         speed, csf, m_activeSpeedFraction, timeStamp);
-/*
-    // hack for some fucked up movement shit where npc's have a move-type state, but have no speedFraction.
-    if (mySE->IsNPCSE() and (!csf)) {
-        _log(DESTINY__ERROR, "Destiny::_Move() - %s(%u) **NPC ERROR** %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
-            mySE->GetName(), mySE->GetID(), speed, csf, m_activeSpeedFraction, timeStamp);
-        SetPosition(m_position, true);
-        //Halt();
-        //return;
-    }
-*/
+
     m_velocity = m_shipHeading * speed;
 
     _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) Position: %.2f, %.2f, %.2f  velocity: %.3f, %.3f, %.3f", \
@@ -1237,7 +1228,7 @@ void DestinyManager::_WarpUpdate(double currentShipSpeed) {
         if (m_warpState->accel)
             if (!mySE->SysBubble()->InBubble(m_position)) {
                 sBubbleMgr.Remove(mySE);
-                SetBubble(false);
+                m_inBubble = false;
             }
     } else if (!m_inBubble and m_warpState->decel) {
         if (m_targetDistance < BUBBLE_RADIUS_METERS) {    //this assumes target is center of bubble.  will have to fix one day.
@@ -1245,7 +1236,7 @@ void DestinyManager::_WarpUpdate(double currentShipSpeed) {
                     mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
             sBubbleMgr.Add(mySE, true);
             SetPosition(m_position, true);
-            SetBubble(true);
+            m_inBubble = true;
         }
     }
 }
@@ -2035,6 +2026,7 @@ void DestinyManager::UnCloak() {
 
 void DestinyManager::TractorBeamStart(SystemEntity* pShipSE)
 {
+    /** @todo  need to update this */
     State = DSTBALL_FOLLOW;
 
     m_stop = false;
@@ -2266,9 +2258,10 @@ void DestinyManager::SendGateActivity(uint32 gateID) const {
 }
 
 void DestinyManager::SendBallInteractive(const ShipItemRef shipRef, bool set) const {
+    // interactive means "ship has pilot"
     DoDestiny_SetBallInteractive sbi;
-    sbi.entityID = shipRef->itemID();
-    sbi.interactive = set;
+        sbi.entityID = shipRef->itemID();
+        sbi.interactive = set;
     PyTuple* up = sbi.Encode();
     SendSingleDestinyUpdate(&up);
 }

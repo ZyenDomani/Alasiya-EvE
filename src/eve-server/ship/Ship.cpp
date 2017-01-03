@@ -1407,7 +1407,10 @@ void Ship::EncodeDestiny( Buffer& into ) {
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsInteractive | IsFree;
+        if (m_self->HasPilot())
+            head.flags = IsInteractive | IsFree;
+        else
+            head.flags = IsFree;
         into.Append( head );
     MassSector mass;
         mass.mass = m_destiny->GetMass();

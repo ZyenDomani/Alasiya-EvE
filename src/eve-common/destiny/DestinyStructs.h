@@ -59,8 +59,8 @@ enum ball_flags
     IsFree = 0x01,          // set if ball is free to move, has extra BallData
     IsGlobal = 0x02,        // set if ball should be visible from all
     IsMassive = 0x04,       // set if ball is solid
-    IsInteractive = 0x08,   // set if ball is interactive - i.e. non-piloted ships
-    IsMoribund = 0x10,      // set if ball is dieing.. this is a rough guess..
+    IsInteractive = 0x08,   // set if ball is interactive - i.e. piloted ships
+    IsMoribund = 0x10,      // set if ball is dying.. this is a rough guess..
     HasMiniBalls = 0x40,    // if set, the client expects mini balls
 };
 

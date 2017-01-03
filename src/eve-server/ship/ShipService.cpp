@@ -172,17 +172,6 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     pClient->BoardShip(newShipRef);
 
-    //  if not pod, bubblecast updated info for old ship
-    if (!isPod) {
-        oldShipRef->ChangeOwner(1);
-        pClient->GetShipSE()->DestinyMgr()->SendBallInteractive(oldShipRef);
-        pClient->GetShipSE()->DestinyMgr()->UpdateOldShip(oldShipRef);
-        char ci[1];
-        snprintf(ci, sizeof(ci), "");
-        oldShipRef->SetCustomInfo(ci);
-        oldShipRef->SetFlag(flagShipOffline);
-    }
-
     //response should be nodeid and timestamp
     return new PyLong(Win32TimeNow());
 }
@@ -232,18 +221,10 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     if (!capsuleRef)
         capsuleRef = pClient->services().item_factory->GetShip(pClient->GetPodID());
     capsuleRef->Relocate(capsulePosition);
-
+    
     /* all previous SE and DestinyMgr objects are updated to new ship object here */
     pClient->BoardShip(capsuleRef);
-    pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
-    pClient->GetShipSE()->DestinyMgr()->UpdateOldShip(oldShipRef);
-    /* missing something here....capsule has no data. */
 
-    char ci[1];
-    snprintf(ci, sizeof(ci), "");
-    oldShipRef->ChangeOwner(1);
-    oldShipRef->SetCustomInfo(ci);
-    oldShipRef->SetFlag(flagShipOffline);
     //response should be nodeid and timestamp
     return new PyLong(Win32TimeNow());
 }

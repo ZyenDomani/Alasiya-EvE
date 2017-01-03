@@ -75,15 +75,15 @@ enum EVEItemFlags {
     flagPromenadeSlot15           = 54,
     flagPromenadeSlot16           = 55,  //Promenade slot 16
 
-    flagCapsule                        = 56,    //Capsule item in space
-    flagPilot                        = 57,
-    flagPassenger                    = 58,
-    flagBoardingGate                = 59,
-    flagCrew                        = 60,
-    flagSkillInTraining                = 61,
-    flagCorpMarket                    = 62,    //Corporation Market Deliveries / Returns
-    flagLocked                        = 63,    //Locked item, can not be moved unless unlocked
-    flagUnlocked                    = 64,
+    flagCapsule                   = 56,    //Capsule item in space
+    flagPilot                     = 57,
+    flagPassenger                 = 58,
+    flagBoardingGate              = 59,
+    flagCrew                      = 60,
+    flagSkillInTraining           = 61,
+    flagCorpMarket                = 62,    //Corporation Market Deliveries / Returns
+    flagLocked                    = 63,    //Locked item, can not be moved unless unlocked
+    flagUnlocked                  = 64,
 
     flagOfficeSlot1                = 70,
     flagOfficeSlot2                = 71,

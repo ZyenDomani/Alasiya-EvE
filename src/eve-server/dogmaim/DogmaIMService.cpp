@@ -703,7 +703,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
     }
 
     call.Dump(SERVICE__CALL_DUMP);
-    //18:50:24 [PacketError] Decode Call_Dogma_Deactivate failed: effectName is not a wide string: Integer
+    //18:50:24 [PacketError] Decode Call_Dogma_Deactivate failed: effectName is not a wide string: Integer      << called by POS->SetOffline
     //  this is also used on POS items, so adjust as needed.  (will have to construct it like Activate())
 
     Call_Dogma_Deactivate args;

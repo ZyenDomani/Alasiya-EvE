@@ -1103,6 +1103,8 @@ void InventoryItem::Relocate(const GPoint &pos) {
         return;
 
     m_position = pos;
+
+    _log(ITEM__TRACE, "%s(%u) Relocating to %.3f, %.3f, %.3f.", m_itemName.c_str(), m_itemID, m_position.x, m_position.y, m_position.z);
     //SaveItem();
 }
 

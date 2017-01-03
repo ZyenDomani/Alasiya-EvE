@@ -344,7 +344,6 @@ void Client::SetDestiny(const GPoint& pt, bool count) {
             pShipSE->DestinyMgr()->SetPosition(pt, true);
         if (count and !m_login)
             pShipSE->GetShipSE()->ResetShipSystemMgr(m_system);
-        m_system->AddEntity(pShipSE);
         m_bubbleWait = false;
         m_setStateSent = false;
         if (m_beyonce)
@@ -375,11 +374,13 @@ void Client::WarpIn() {
 
 void Client::WarpOut() {
 	sLog.Blue("Client::WarpOut()", "Client Destructor for %s(%u) called WarpOut().  Finish code here.", GetName(), m_char->itemID());
-    char ci[30];
-    snprintf(ci, sizeof(ci), "Logout (%s)", GetName());
+    char ci[35];
+    snprintf(ci, sizeof(ci), "Logout: %s", GetName());
     m_ship->SetCustomInfo(ci);
-    if (!InPod())
+    if (!InPod()) {
         m_ship->SetFlag(flagShipOffline, false);
+        m_ship->SaveShip();
+    }
     m_system->RemoveEntity(pShipSE);
     return;
     m_invulTimer.Start(ClientTimers::WarpOutInvul);
@@ -463,10 +464,10 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
         sDataMgr.GetStationInfo(locationID, m_StationData);
         snprintf(ci, sizeof(ci), "Docked:%u", locationID);
-        m_ship->Move(locationID, flagHangar);
         m_char->Move(locationID, flagAutoFit);
+        m_ship->Move(locationID, flagHangar);
+        m_ship->Relocate(pt);
         m_ship->Dock();
-        m_ship->SaveShip();
         if (!IsHangarLoaded(locationID))
             LoadStationHangar(locationID);
         OnCharNowInStation();
@@ -489,6 +490,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     }
 
     m_ship->SetCustomInfo(ci);
+    m_ship->SaveShip();
 
     _UpdateSession(m_char);
 
@@ -523,7 +525,6 @@ void Client::UndockFromStation() {
      *  ***** 9sec from hitting undock to space view on live. *****
      */
     OnCharNoLongerInStation();
-    m_ship->Relocate(m_StationData.dockPosition);
     CreateShipSE();
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     m_ship->Undock();
@@ -547,6 +548,7 @@ void Client::SetBallPark() {
 
 void Client::DockToStation() {
     pShipSE->DestinyMgr()->Dock();
+    m_ship->SaveShip();
 
     SetAutoPilot(false);
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
@@ -581,12 +583,22 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         DestroyShipSE();
     else {
         m_ship->SetPlayer(nullptr);
-        char co[1];
-        snprintf(co, sizeof(co), "");
-        m_ship->SetCustomInfo(co);
         m_ship->SaveShip();
-        if (IsInSpace())
-            m_ship->SetFlag(flagShipOffline);
+        if (IsInSpace()) {
+            pShipSE->Abandon();
+            m_ship->ChangeOwner(1);
+            m_ship->SetFlag(flagShipOffline, false);
+            char ci[40];
+            snprintf(ci, sizeof(ci), "Abandoned: %s", GetName());
+            m_ship->SetCustomInfo(ci);
+            pShipSE->DestinyMgr()->UpdateOldShip(m_ship);
+            pShipSE->DestinyMgr()->SendJettisonPacket();
+            pShipSE->DestinyMgr()->SendBallInteractive(m_ship);
+        } else {
+            char ci[1];
+            snprintf(ci, sizeof(ci), "");
+            m_ship->SetCustomInfo(ci);
+        }
     }
 
     /* set internal vars for new ship */
@@ -600,26 +612,23 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         /* if ejecting into pod, setup and create new pod object */
         if (m_ship->typeID() == itemTypeCapsule) {
             m_ship->Move(m_locationID, flagCapsule);
-            FactionData data;
-                data.allianceID = GetAllianceID();
-                data.corporationID = GetCorporationID();
-                data.factionID = GetWarFactionID();
-                data.ownerID = GetCharacterID();
-            pShipSE = new Ship(m_ship, m_services, SystemMgr(), data);
+            CreateShipSE();
             pShipSE->GetShipSE()->SetPodShipID(m_shipId);
+            m_system->AddEntity(pShipSE);
         } else {
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSEFromInventory(m_shipId);
+            pShipSE->SetPilot(this);
+            pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         }
         UpdateSessionInt("shipid", m_shipId);
         m_char->Move(m_shipId, flagPilot);
         SetDestiny(m_ship->position());
 
-        DestinyManager* pdMgr = pShipSE->DestinyMgr();
-        pdMgr->UpdateNewShip(m_ship);
+        pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
+        pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
+
         snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
-        pdMgr->SendSetState();  //reset ego in destiny setstate
-        //FlushQueue();
     } else {
         snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
     }
@@ -821,30 +830,17 @@ void Client::SpawnNewRookieShip() {
     //create rookie ship of appropriate type
     uint32 typeID = amarrRookie;
     EVERace race = m_char->race();
-    if (race == raceAmarr)  typeID = amarrRookie;
-    else if (race == raceCaldari)  typeID = caldariRookie;
-    else if (race == raceGallente)  typeID = gallenteRookie;
-    else if (race == raceMinmatar)  typeID = minmatarRookie;
+         if (race == raceCaldari)  typeID = caldariRookie;
+    else if (race == raceGallente) typeID = gallenteRookie;
+    else if (race == raceMinmatar) typeID = minmatarRookie;
 
     std::string name =  m_char->itemName() + "'s Noob Ship";
-
     //create data for new rookie ship
-    ItemData idata(
-        typeID,
-        m_char->itemID(),
-                   GetStationID(),
-                   flagHangar,
-                   name.c_str(),
-                   NULL_ORIGIN
-    );
+    ItemData idata(typeID, m_char->itemID(), 0, flagHangar, name.c_str(), NULL_ORIGIN);
     //spawn rookie ship
-    ShipItemRef i = m_services.item_factory->SpawnShip(idata);
-
-    if (!i)
-        if (m_canThrow)
-            throw PyException(MakeCustomError("Unable to generate rookie ship"));
-
-    SetShip(i);
+    ShipItemRef shipRef = m_services.item_factory->SpawnShip(idata);
+    if (shipRef)
+        shipRef->Move(m_locationID);
 }
 
 void Client::ResetAfterPodded() {
