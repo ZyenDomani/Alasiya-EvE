@@ -1941,7 +1941,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
     SendDestinyUpdate(updates); //consumed
 }
 
-void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) const {
+void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
     std::vector<PyTuple*> updates;
     SetShipCapabilities(newShipRef);
 
@@ -1991,7 +1991,7 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) const {
     SendDestinyUpdate(updates);
 }
 
-void DestinyManager::UpdateOldShip(const ShipItemRef oldShipRef) const
+void DestinyManager::UpdateOldShip(const ShipItemRef oldShipRef)
 {
     PyDict* slimPod = new PyDict();
         slimPod->SetItemString("itemID",           new PyInt(oldShipRef->itemID()));
