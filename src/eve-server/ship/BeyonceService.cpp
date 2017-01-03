@@ -543,7 +543,6 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     if (pSE) {
         radius = pSE->GetRadius();
         warpToPoint = pSE->GetPosition();
-
         if (pSE->IsPlanetSE()) {
             srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
             int64 rand = random();
@@ -563,7 +562,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         } else if (pSE->IsCOSE()) {
             distance += 1200;  // hack distance for customs offices until i get the radius working correctly
         } else if (pSE->IsGateSE()) {
-            ;//distance += (radius /4);  // fudge the distance a bit for gates... its' a lil close by default
+            distance += (radius /4);  // fudge the distance a bit for gates... its' a lil close by default
         } else if (radius > 90000) {
             /** @todo  this formula is right, but isnt working correctly....revert to my formula
              *   warpToPoint.x += ((radius + 5000000) * cos(radius));

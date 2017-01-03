@@ -165,8 +165,6 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         return nullptr;
     }
 
-    bool isPod = pClient->InPod();
-
     // Change ownership of new ship to this character
     newShipRef->ChangeOwner(pClient->GetCharacterID());
 
@@ -221,7 +219,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     if (!capsuleRef)
         capsuleRef = pClient->services().item_factory->GetShip(pClient->GetPodID());
     capsuleRef->Relocate(capsulePosition);
-    
+
     /* all previous SE and DestinyMgr objects are updated to new ship object here */
     pClient->BoardShip(capsuleRef);
 

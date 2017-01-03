@@ -132,30 +132,30 @@ bool SystemManager::ProcessTic() {
      * std::map internally orders items by key(itemID here), so use an int var to hold last-processed itemID (mLast).
      *  when iteration starts over, increment until cur > mLast and continue from there to end of list.
      */
-    std::map<uint32, SystemEntity*>::iterator cur = m_entities.begin();
+    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     uint32 mLast = 0;
-    while (cur != m_entities.end()) {
+    while (itr != m_entities.end()) {
         if (mLast) {
-            if (mLast >= cur->first) {
-                ++cur;
+            if (mLast >= itr->first) {
+                ++itr;
                 continue;
             }
             mLast = 0;
         }
         if (m_entityChanged) {
-            mLast = cur->first;
+            mLast = itr->first;
             m_entityChanged = false;
-            cur = m_entities.begin();
+            itr = m_entities.begin();
             continue;
         }
-        cur->second->Process(); /* main process call. */
+        itr->second->Process(); /* main process call. */
         if (m_entityChanged) {
-            mLast = cur->first;
+            mLast = itr->first;
             m_entityChanged = false;
-            cur = m_entities.begin();
+            itr = m_entities.begin();
             continue;
         }
-        ++cur;
+        ++itr;
     }
 
     /* the following are coded for single-tic calls */
@@ -187,8 +187,9 @@ void SystemManager::UnloadSystem() {
 
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     while (itr != m_entities.end()) {
-        if (!itr->second) {
-            ; // do nothing here
+        if ((!itr->second) or (!itr->second->IsSystemEntity())) {
+            itr = m_entities.erase(itr);
+            continue;
         } else if (itr->second->IsStationSE()) {
             itr->second->GetStationSE()->UnloadStation();
             sEntityList.RemoveStation(itr->first);

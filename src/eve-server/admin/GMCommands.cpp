@@ -641,13 +641,13 @@ PyResult Command_location(Client* who, CommandDB* db, PyServiceMgr* services, co
     const GPoint &loc = dm->GetPosition();
     const GVector &vel = dm->GetVelocity();
 
-    char reply[135];
-    snprintf(reply, 135,
-        "SystemID: %u (%u)<br>"
-        "x: %lf<br>"
-        "y: %lf<br>"
-        "z: %lf<br>"
-        "speed: %lf",
+    char reply[140];
+    snprintf(reply, 140,
+        "SystemID: %u  BubbleID: %u<br>"
+        "x: %.2f<br>"
+        "y: %.2f<br>"
+        "z: %.2f<br>"
+        "speed: %.1f",
         who->GetSystemID(), bubble,
         loc.x, loc.y, loc.z,
         vel.length()

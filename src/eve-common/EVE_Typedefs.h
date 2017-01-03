@@ -283,6 +283,7 @@ typedef enum {
 //  -updated 18Dec16
 enum ClientTimers {
     DefaultTimer     = 1000,
+    BoardTimer       = 700,
     JumpTimer        = 300,
     UndockTimer      = 500,
     DockingTimer     = 1000,     // Timer to delay docking (as on live)
@@ -310,7 +311,8 @@ enum ClientState {
     csDock = 3,
     csUndock = 4,
     csKilled = 5,
-    csLogout = 6
+    csLogout = 6,
+    csBoard  = 7
 };
 
 //  -allan 7Jul14

@@ -846,31 +846,35 @@ void DestinyManager::_Follow() {
             SendDestinyUpdate(updates);
             return;
         } else {
-            // this will mimic real movement, where ship will decel instead of a sudden halt
-            //  still need to call _Move() here
-            SetSpeedFraction(0);
+            if (m_targetEntity.second->DestinyMgr()->IsMoving()) {
+                // this will mimic real movement, where ship will decel instead of a sudden halt
+                //  still need to call _Move() here
+                SetSpeedFraction(0.2);
+            } else {
+                Stop();
+            }
+        }
+    } else {
+        if (m_tractored and m_tractorPause) {
+            // tractored object is outside follow distance.  begin movement again
+            m_tractorPause = false;
+            m_velocity = m_shipHeading * m_maxSpeed;
+            m_moveTimer = GetTimeMSeconds();
+            m_stateStamp = sEntityList.GetStamp();
+            m_activeSpeedFraction = m_userSpeedFraction = m_currentSpeedFraction = 1;
+            std::vector<PyTuple*> updates;
+            DoDestiny_CmdSetSpeedFraction ssf;
+                ssf.entityID = mySE->GetID();
+                ssf.fraction = 1;
+            updates.push_back(ssf.Encode());
+            SendDestinyUpdate(updates);
+        } else if (!m_userSpeedFraction) {
+            SetSpeedFraction(1.0f);
         }
     }
 
     heading.normalize();
     m_targetPoint = target_point + (heading * m_targetDistance);
-
-    if (m_tractored and m_tractorPause) {
-        // tractored object is outside follow distance.  begin movement again
-        m_tractorPause = false;
-        m_velocity = m_shipHeading * m_maxSpeed;
-        m_moveTimer = GetTimeMSeconds();
-        m_stateStamp = sEntityList.GetStamp();
-        m_activeSpeedFraction = m_userSpeedFraction = m_currentSpeedFraction = 1;
-        std::vector<PyTuple*> updates;
-        DoDestiny_CmdSetSpeedFraction ssf;
-            ssf.entityID = mySE->GetID();
-            ssf.fraction = 1;
-        updates.push_back(ssf.Encode());
-        SendDestinyUpdate(updates);
-    } else if (!m_userSpeedFraction) {
-        SetSpeedFraction(1.0f);
-    }
 
     _Move();
 }

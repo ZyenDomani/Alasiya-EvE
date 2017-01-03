@@ -297,13 +297,17 @@ void Client::ProcessClient() {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
                 SetBallPark();
             } break;
-            case csJump: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
-                ExecuteJump();
-            } break;
             case csKilled: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
                 SetBallPark();
+            } break;
+            case csBoard: {
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
+                SetBallPark();
+            } break;
+            case csJump: {
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
+                ExecuteJump();
             } break;
         }
     }
@@ -543,6 +547,11 @@ void Client::SetBallPark() {
         pShipSE->DestinyMgr()->SendSetState();
     if (m_clientState == ClientState::csJump)
         pShipSE->DestinyMgr()->Jump();
+    if (m_clientState == ClientState::csBoard) {
+        pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
+        pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
+        //pShipSE->DestinyMgr()->SendSetState();
+    }
     m_clientState = csIdle;
 }
 
@@ -579,9 +588,10 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         return;
     }
     /* check for and delete pod entity if boarding new ship */
-    if (m_ship->typeID() == itemTypeCapsule)
+    if (m_ship->typeID() == itemTypeCapsule) {
+        m_ship->Relocate(NULL_ORIGIN);
         DestroyShipSE();
-    else {
+    } else {
         m_ship->SetPlayer(nullptr);
         m_ship->SaveShip();
         if (IsInSpace()) {
@@ -623,10 +633,8 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         }
         UpdateSessionInt("shipid", m_shipId);
         m_char->Move(m_shipId, flagPilot);
-        SetDestiny(m_ship->position());
-
-        pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
-        pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
+        //SetDestiny(m_ship->position());
+        SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
 
         snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
     } else {
@@ -654,8 +662,8 @@ void Client::CreateShipSE() {
 }
 
 void Client::DestroyShipSE() {
-    _log(PLAYER__MESSAGE, "DestroyShipSE() - pShipSE %p (%s) destroyed for %s(%u)", pShipSE, m_ship->itemName().c_str(), m_char->itemName().c_str(), m_char->itemID());
     if (pShipSE) {
+        _log(PLAYER__MESSAGE, "DestroyShipSE() - pShipSE %p (%s) destroyed for %s(%u)", pShipSE, m_ship->itemName().c_str(), m_char->itemName().c_str(), m_char->itemID());
         m_system->RemoveEntity(pShipSE);
         SafeDelete(pShipSE);
     } else
