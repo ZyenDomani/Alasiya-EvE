@@ -187,6 +187,7 @@ void SystemManager::UnloadSystem() {
 
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     while (itr != m_entities.end()) {
+        // still getting trash data in entity map....dunno why or how
         if ((!itr->second) or (!itr->second->IsSystemEntity())) {
             itr = m_entities.erase(itr);
             continue;

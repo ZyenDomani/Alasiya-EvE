@@ -103,7 +103,7 @@ PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
     }
 
     //validate flag.
-    if (args.flag < flagSlotFirst || args.flag > flagSlotLast) {
+    if (!IsModuleSlot(args.flag)) {
         _log(INV__ERROR, "%s: Invalid flag %d", call.client->GetName(), args.flag);
         return nullptr;
     }
@@ -120,9 +120,9 @@ PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
         return nullptr;
     }
 
-    if (new_charge->quantity() < (uint32)args.quantity) {
+    if (new_charge->quantity() < args.quantity) {
         _log(INV__WARNING, "%s: Item %u: Requested quantity (%d) exceeds actual quantity (%d), using actual.", call.client->GetName(), args.itemID, args.quantity, new_charge->quantity());
-    } else if (new_charge->quantity() > (uint32)args.quantity) {
+    } else if (new_charge->quantity() > args.quantity) {
         new_charge = new_charge->Split(args.quantity);  // split item
         if ( !new_charge ) {
             _log(INV__ERROR, "%s: Unable to split charge %d into %d", call.client->GetName(), args.itemID, args.quantity);
@@ -131,11 +131,10 @@ PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
     }
 
     // new ref is consumed, we don't release it
-    call.client->GetShip()->ReplaceCharges( (EVEItemFlags) args.flag, (InventoryItemRef)new_charge );
+    call.client->GetShip()->ReplaceCharges( (EVEItemFlags)args.flag, new_charge );
 
-    return(new PyInt(1));
+    return new PyInt(1);
 }
-
 
 PyResult InventoryBound::Handle_ListStations( PyCallArgs& call )
 {
@@ -219,6 +218,7 @@ sLog.White( "InventoryBound::Handle_CreateBookmarkVouchers()", "%u Vouchers crea
 /** @todo (allan) need to put check in here for isMove bool.  true=remove from PnP->bookmarks tab....false = leave
  *
  *      /** @todo (allan) need to reload hangar to show newly created BM item.
+ *       *  no....call item->Move() to update hangar
  */
  return new PyInt( 0 );
 }
@@ -419,7 +419,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
             }
         }
 
-        // TODO  check for 'dividing' byname bool...this means "DivideItemStack"
+        // TODO  check for 'dividing' byname bool...this means "DivideItemStack" (split stack)
         if (call.byname.find("dividing") != call.byname.end())
             _log(INV__ERROR, "[Add] byname.dividing found when adding itemID %u(flag %u) to inventoryID %u", args.itemID, flag, args.inventoryID);
 
@@ -496,7 +496,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
 }
 
 PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& items, int32 quantity, EVEItemFlags flag) {
-    // method logic rewrite to handle all types and send a proper return, and added some error returns.   -allan 2Jan16 (UD 24May16)
+    // method logic rewrite to handle all types and send a proper return, and added some error returns...still incomplete   -allan 2Jan16 (UD 24May16, 13Dec16)
     /** @todo  update this....check for correct container when adding items */
 
     //quantity is used in logic for spitting stacks

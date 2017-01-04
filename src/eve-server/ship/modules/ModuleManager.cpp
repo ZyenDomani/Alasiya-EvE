@@ -753,11 +753,10 @@ bool ModuleManager::InstallSubSystem(InventoryItemRef item, EVEItemFlags flag)
 void ModuleManager::UnfitModule(uint32 itemID)
 {
     GenericModule* mod = m_Modules->GetModule(itemID);
-    m_Modules->RemoveModule(itemID);
     if (mod) {
         EVEItemFlags flag = flagCargoHold;
         bool inSpace = (IsStation(m_Ship->locationID()) ? false : true);
-        if (inSpace)
+        if (!inSpace)
             flag = flagHangar;
         if (mod->IsLoaded()) {
             mod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
@@ -768,6 +767,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
         // dont actually move the module here....let the caller do that in it's specific code
         //mod->getItem()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
     }
+    m_Modules->RemoveModule(itemID);
 }
 
 bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)

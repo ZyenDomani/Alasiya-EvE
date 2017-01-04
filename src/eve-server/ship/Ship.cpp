@@ -950,20 +950,14 @@ void ShipItem::RemoveItem(InventoryItemRef item, uint32 qty/*0*/)
         if (!m_ModuleManager)
             return;
         // if item being removed is in a module slot, remove it via Module Manager here, and let invBound take care of the rest.
-        if ((item->categoryID() == EVEDB::invCategories::Charge)
-                and ((item->flag() >= flagLowSlot0) and (item->flag() <= flagHiSlot7))) {
+        if (item->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->UnloadCharge(item->flag());
-            return;
         } else if ((item->categoryID() == EVEDB::invCategories::Module) or (item->categoryID() == EVEDB::invCategories::Subsystem)) {
             Deactivate( item->itemID(), "offline" );
-            if (((item->flag() >= flagLowSlot0) and (item->flag() <= flagHiSlot7))
-                or ((item->flag() >= flagSubSystem0) and (item->flag() <= flagSubSystem7))) {
-                m_ModuleManager->UnfitModule(item->itemID());
-                return;
-            } else if ((item->flag() >= flagRigSlot0) and (item->flag() <= flagRigSlot7)) {
+            if ((item->flag() >= flagRigSlot0) and (item->flag() <= flagRigSlot7))
                 m_ModuleManager->UninstallRig(item->itemID());
-                return;
-            }
+            else
+                m_ModuleManager->UnfitModule(item->itemID());
         }
     } else
         ModifyHoldVolumeByFlag( item->flag(), -(item->GetAttribute(AttrVolume).get_float() * (qty ? qty : item->quantity())));
