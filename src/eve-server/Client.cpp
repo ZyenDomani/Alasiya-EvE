@@ -128,7 +128,12 @@ Client::~Client() {
 	 *		6)  remove client from sysmgr/destiny/server
      */
         //m_ship->OfflineAll();
-        SaveAllToDatabase();
+        //SaveAllToDatabase();
+        if (pShipSE) {
+            pShipSE->SetPosition(pShipSE->DestinyMgr()->GetPosition());
+            m_ship->SaveShip();
+        }
+        m_char->SaveFullCharacter();         // Save Character info to DB
 
         if (IsDocked()) {
             if (GetTradeSession()) {
@@ -383,7 +388,7 @@ void Client::WarpOut() {
     m_ship->SetCustomInfo(ci);
     if (!InPod()) {
         m_ship->SetFlag(flagShipOffline, false);
-        m_ship->SaveShip();
+        //m_ship->SaveShip();
     }
     m_system->RemoveEntity(pShipSE);
     return;
