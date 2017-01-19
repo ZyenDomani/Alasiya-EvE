@@ -160,6 +160,7 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
 }
 
 void BubbleManager::NewBubbleCenter(GVector shipVelocity, GPoint &newCenter) {
+    /** @todo  need to write a method that will check for other bubbles within (radius) of this one, and if found, move centers to (2r) away. */
     shipVelocity.normalize();
     newCenter += (shipVelocity * (BUBBLE_RADIUS_METERS /2));
 }

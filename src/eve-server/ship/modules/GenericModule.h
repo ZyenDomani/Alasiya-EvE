@@ -101,24 +101,10 @@ public:
     virtual void DestroyRig()                           { /* Do nothing here */ }
 
     /* functions to be overridden in derived classes as needed */
+    virtual bool isTurretFitted()                       { return (m_Effects->HasEffect(effectTurretFitted) ? true : false); }
+    virtual bool isLauncherFitted()                     { return (m_Effects->HasEffect(effectLauncherFitted) ? true : false); }
+    virtual bool isMaxGroupFitLimited()                 { return (m_Effects->HasEffect(AttrMaxGroupFitted) ? true : false); }
     virtual InventoryItemRef GetLoadedChargeRef()       { return InventoryItemRef(); }
-    virtual bool isTurretFitted() {
-        if( m_Effects->HasEffect(effectTurretFitted) )
-            return true;
-        return false;
-    }
-
-    virtual bool isLauncherFitted() {
-        if( m_Effects->HasEffect(effectLauncherFitted) )
-            return true;
-        return false;
-    }
-
-    virtual bool isMaxGroupFitLimited()  {
-        if( m_Item->HasAttribute(AttrMaxGroupFitted) )
-            return true;
-        return false;
-    }
 
     /* override for rigs and subsystems in approprate derived class */
     virtual ModulePowerLevel GetModulePowerLevel() {
@@ -143,6 +129,11 @@ protected:
     ChargeStates                    m_ChargeState;
 
     int32                           m_repeat;
+
+private:
+    void ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
+    void ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
+    void ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
 
 };
 

@@ -165,9 +165,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         return nullptr;
     }
 
-    // Change ownership of new ship to this character
-    newShipRef->ChangeOwner(pClient->GetCharacterID());
-
+    /* all previous SE and DestinyMgr objects are updated to new ship object here */
     pClient->BoardShip(newShipRef);
 
     //response should be nodeid and timestamp

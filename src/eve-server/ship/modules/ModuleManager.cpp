@@ -668,6 +668,18 @@ bool ModuleManager::Initialize() {
     return (m_initalized = true);
 }
 
+void ModuleManager::Process()
+{
+    double profileStartTime = 0.0;
+    if (sConfig.server.UseProfiling)
+        profileStartTime = GetTimeUSeconds();
+
+    m_Modules->Process();
+
+    if (sConfig.server.UseProfiling)
+        sProfile.AddTime(_modulesProfile, GetTimeUSeconds() - profileStartTime);
+}
+
 bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
 {
     if (m_Modules->GetModule(flag))
@@ -681,33 +693,6 @@ uint32 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
 	// Call into ModuleContainer class with slotBank effectID to have it check for and return any available slot flag in
 	// in the specified slot bank:
 	return m_Modules->GetAvailableSlotInBank(slotBank);
-}
-
-void ModuleManager::_SendInfoMessage(const char *fmt, ...)
-{
-    if (!m_Ship->GetPilot())     // Operator assumed to be Client *
-        sLog.Error("SendMessage","message should have been sent to character, but *m_Client is null.  Did you forget to call GetShip()->SetOwner(Client *c)?");
-    else
-    {
-        va_list args;
-        va_start(args,fmt);
-        m_Ship->GetPilot()->SendNotifyMsg(fmt,args);
-        va_end(args);
-
-    }
-}
-
-void ModuleManager::_SendErrorMessage(const char *fmt, ...)
-{
-    if (!m_Ship->GetPilot())     // Operator assumed to be Client *
-        sLog.Error("SendMessage","message should have been sent to character, but *m_Client is null.  Did you forget to call GetShip()->SetOwner(Client *c)?");
-    else
-    {
-        va_list args;
-        va_start(args,fmt);
-        m_Ship->GetPilot()->SendErrorMsg(fmt,args);
-        va_end(args);
-    }
 }
 
 bool ModuleManager::InstallRig(InventoryItemRef item, EVEItemFlags flag) {
@@ -906,18 +891,26 @@ void ModuleManager::OfflineAll()
     m_Modules->OfflineAll();
 }
 
+void ModuleManager::DeactivateAllModules()
+{
+    m_Modules->DeactivateAll();
+}
+
 void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targetID, int32 repeat)
 {
+    if (!m_Ship->HasPilot()) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called from a ship with no pilot." );
+        return;
+    }
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (!mod) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called on a module that is NOT loaded!" );
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called on a module that is not loaded." );
         return;
     } else if (!mod->isOnline()) {
         if (effectName == "online") {
             mod->Online();
         } else {
-            if (m_Ship->HasPilot())
-                m_Ship->GetPilot()->SendErrorMsg("You cannot activate an offline module. Ref: ServerError 25164");
+            m_Ship->GetPilot()->SendErrorMsg("You cannot activate an offline module. Ref: ServerError 25164");
         }
         return;
     } else {
@@ -927,15 +920,13 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
         if (mod->needsTarget()) {
             if (!targetID) {
                 sLog.Error("ModuleManager::Activate()", "targetID == 0");
-                if (m_Ship->HasPilot())
-                    m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate that module.  Ref: ServerError 25268");
+                m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate that module.  Ref: ServerError 25268");
                 return;
             }
             pSE = m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(targetID);
             if (!pSE) {
                 sLog.Error("ModuleManager::Activate()", "pSE == NULL");
-                if (m_Ship->HasPilot())
-                    m_Ship->GetPilot()->SendErrorMsg("Current target was not found.  Ref: ServerError 25263");
+                m_Ship->GetPilot()->SendErrorMsg("Current target was not found.  Ref: ServerError 25263");
                 return;
             }
         }
@@ -965,11 +956,6 @@ void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
     }
 }
 
-void ModuleManager::DeactivateAllModules()
-{
-    m_Modules->DeactivateAll();
-}
-
 void ModuleManager::Overload(EVEItemFlags flag)
 {
     GenericModule* mod = m_Modules->GetModule(flag);
@@ -984,7 +970,7 @@ void ModuleManager::DeOverload(EVEItemFlags flag)
     GenericModule* mod = m_Modules->GetModule(flag);
     if (mod) {
         mod->DeOverload();
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Overload() - %s DeOverload...", mod->getItem()->itemName().c_str());
+        _log(SHIP__MODULE_TRACE, "ModuleManager::DeOverload() - %s DeOverload...", mod->getItem()->itemName().c_str());
     }
 }
 
@@ -1004,6 +990,7 @@ void ModuleManager::RepairModule(uint32 itemID)
         mod->Repair();
 }
 
+/** @todo   need to update this */
 void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 {
     GenericModule* mod = m_Modules->GetModule(flag);
@@ -1215,25 +1202,6 @@ void ModuleManager::ShipJumping()
     //DeactivateAllModules();
 }
 
-
-void ModuleManager::Process()
-{
-    double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
-
-    m_Modules->Process();
-
-    if (sConfig.server.UseProfiling)
-        sProfile.AddTime(_modulesProfile, GetTimeUSeconds() - profileStartTime);
-}
-
-void ModuleManager::ProcessExternalEffect(Effect* e)
-{
-    while (e->hasEffect())
-        _processExternalEffect(e->next());
-}
-
 void ModuleManager::GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList)
 {
 	m_Modules->GetModuleListOfRefs(pModuleList);
@@ -1249,6 +1217,12 @@ void ModuleManager::SaveModules()
 }
 
 // these below are not used yet.  not sure what they're actually for, or if ill even implement them.
+void ModuleManager::ProcessExternalEffect(Effect* e)
+{
+    while (e->hasEffect())
+        _processExternalEffect(e->next());
+}
+
 int32 ModuleManager::ApplyRemoteEffect(uint32 attributeID, uint32 originatorID, SystemEntity * systemEntity, ModifierRef modifierRef)
 {
     sLog.Magenta("ModuleManager::ApplyRemoteEffect()","Needs to be implemented");
@@ -1493,14 +1467,14 @@ void ModuleManager::_processExternalEffect(SubEffect * s)
     {
         //calculate new attribute
         mod->SetAttribute(s->AttributeID(),
-                          CalculateNewAttributeValue(mod->GetAttribute(s->AttributeID()),
+                          CalculateAttributeValue(mod->GetAttribute(s->AttributeID()),
                                                                        s->AppliedValue(), s->CalculationType()));
     }
     else if ( s->TargetItemID() == m_Ship->itemID() ) //guess it's not, but that means it should be targeting our ship itself
     {
         //calculate new attribute
         m_Ship->SetAttribute(s->AttributeID(),
-                             CalculateNewAttributeValue(m_Ship->GetAttribute(s->AttributeID()),
+                             CalculateAttributeValue(m_Ship->GetAttribute(s->AttributeID()),
                                                                              s->AppliedValue(), s->CalculationType()));
     }
     else //i have no idea what their targeting X_X

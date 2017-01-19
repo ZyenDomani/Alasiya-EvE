@@ -54,11 +54,17 @@ void ModifyShipAttributesComponent::ModifyTargetShipAttribute(uint32 targetItemI
 /* rewrote attrib calculations and implemented true stacking penality, with checks for exceptions.  -allan 13April16  */
 void ModifyShipAttributesComponent::ModifyShipAttributes(ShipItemRef shipRef, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking)
 {
-    EvilNumber newVal = CalculateNewValue(shipRef, targetAttrID, sourceAttrID, type, m_Mod, stacking);
+    EvilNumber modVal = m_Mod->GetAttribute(sourceAttrID), startVal = shipRef->GetAttribute(targetAttrID), newVal = 0;
+    // check for stacking attributes here, and get stacked (cached) effectiveness.
+    if (stacking) {
+        // this method checks for resist attrib, and gets true stacked value based on all multipliers and modifiers
+        shipRef->CheckStacking(targetAttrID, type, m_Mod->GetModuleState(), newVal);
+    } else {
+        newVal = CalculateAttributeValue(startVal, modVal, type);
+    }
 
-    // this method will check resist values for fuzzy logic and cap as needed, returning modified value if attrib is a resist, or unmodified value if not resist
-    shipRef->SetTrueResist(targetAttrID, newVal);
-
+    _log(SHIP__MODULE_TRACE, "MSAC::ModifyShipAttributes() -  origVal:%f, Mod:%f, newVal:%f, type:%i", \
+                startVal.get_float(), modVal.get_float(), newVal.get_float(), (int)type);
     //set the attribute for the ship with the new modifier
     if (!shipRef->SetAttribute(targetAttrID, newVal))
         sLog.Error("MSAC::ModifyShipAttributes()","Failed to set attribute %u to %.3f on ship %u", targetAttrID, newVal.get_float(), m_Ship->itemID());
@@ -72,12 +78,13 @@ EvilNumber ModifyShipAttributesComponent::CalculateNewValue(ShipItemRef shipRef,
     shipRef->GetTrueResist(targetAttrID, startVal);
 
     double effectiveness = 1;
-    /* check for stacking attributes here, and get stacked (cached) effectiveness. */
+    /* check for stacking attributes here, and get stacked (cached) effectiveness.
     if (stacking)
         effectiveness = m_Ship->GetEffectiveness(targetAttrID, mod->GetModuleState());
+    */
 
     modVal *= effectiveness;
-    EvilNumber newVal = CalculateNewAttributeValue(startVal, modVal, type);
+    EvilNumber newVal = CalculateAttributeValue(startVal, modVal, type);
     _log(SHIP__MODULE_TRACE, "MSAC::CalculateNewValue() -  origVal:%f, Mod:%f, newVal:%f, effective:%f, type:%i", \
             startVal.get_float(), modVal.get_float(), newVal.get_float(), effectiveness, (int)type);
     return newVal;

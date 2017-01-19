@@ -329,12 +329,15 @@ public:
      * the other component, attrib stack counting, is a std::map and holds a k,v pair of (attribID, module count)
      */
     double GetEffectiveness(uint16 attrib, ModuleStates state);
-    /*  resist tracking system  -allan
-     * the resist map is to hard-code resist caps at 95%, and keep a map of the *actual* resist, for correct calculations when altering
+    /*  stacking tracking system  -allan
+     * the stacking map is to hard-code resist caps at 95%, and keep a map of the *actual* resist, for correct calculations when altering
      */
-    void InitTrueResist();
+    void InitStackingMap();
     void SetTrueResist(uint16 attrib, EvilNumber& value);
     void GetTrueResist(uint16 attrib, EvilNumber& value);
+
+    void CheckStacking(uint16 attrib, EVECalculationType type, ModuleStates state, EvilNumber& value);
+
 private:
     std::map<uint16, uint8> m_stackMap;
     std::map<uint16, float> m_resistMap;
@@ -377,9 +380,10 @@ public:
     virtual Client* GetPilot()                          { return (m_shipRef ? m_shipRef->GetPilot() : nullptr); }
 
     /* specific functions handled here. */
-    void AbortCycle()                                   { m_shipRef->AbortCycle(); }
     void PayInsurance();
     void ResetShipSystemMgr(SystemManager* pSystem);
+
+    void AbortCycle()                                   { m_shipRef->AbortCycle(); }
     void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
 
     uint32 GetPodShipID()                               { return m_podShipID; }

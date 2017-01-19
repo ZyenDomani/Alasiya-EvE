@@ -25,9 +25,9 @@
 */
 
 /** @todo  there is much more to be done here.  this is just the beginning.
- * many, many effects missing from dgmEffectsInfo table (aknor was hand-writing them)
+ * many, many effects missing from dgmModuleEffects table (aknor was hand-writing them)
  *
- *      this file is to decode the fields in the 'dgmEffectsInfo' table.
+ *      this file is to decode the fields in the 'dgmModuleEffects' table.
  */
 
 #ifndef MODULE_DEFS_H
@@ -67,10 +67,10 @@ enum ModuleStates
     /* 'Online' is used for:
      * ACTIVE modules fitted and online, but not activated (using the PASSIVE effects only)
      * PASSSIVE modules fitted and online
-     * RIG modules fitted (either online or offline)
+     * RIG modules fitted (always online when fit)
      */
-    MOD_ONLINE                  = 2,    // module online  - rigs are either online or offline.
-    MOD_ACTIVATED               = 3,    // used only for activated ACTIVE modules (Overloaded mode is calculated separately now)
+    MOD_ONLINE                  = 2,    // module online  - rigs are either online or unfitted.
+    MOD_ACTIVATED               = 3,    // used only for activated ACTIVE modules (Overloaded mode is calculated separately)
     MOD_DEACTIVATING            = 4     // module transistioning from MOD_ACTIVATED to MOD_OFFLINE
 };
 
@@ -138,7 +138,7 @@ enum EVECalculationType
     CALC_SUBTRACT_RESIST        = 10,
 };
 
-static EvilNumber CalculateNewAttributeValue(EvilNumber val1, EvilNumber val2, EVECalculationType type)
+static EvilNumber CalculateAttributeValue(EvilNumber val1, EvilNumber val2, EVECalculationType type)
 {
     switch(type) {
         case CALC_NONE:                            return val1;
@@ -158,7 +158,8 @@ static EvilNumber CalculateNewAttributeValue(EvilNumber val1, EvilNumber val2, E
     return 0;
 }
 
-
+// updated above call to use inline methods.
+//  below is original code for reference
 static EvilNumber Divide(EvilNumber& val1, EvilNumber& val2)
 {// 4
     if (val2 != 0)

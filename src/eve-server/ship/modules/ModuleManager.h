@@ -80,7 +80,7 @@ class ModuleManager;
 //////////////////////////////////////////////////////////////////////////////////
 
 /** @todo
- * update these notes with my corrections
+ * update these notes with my updates and corrections
  * -allan
  */
 
@@ -374,7 +374,6 @@ public:
     void ProcessExternalEffect(Effect* e);
     void AbortCycle();
 
-
     GenericModule* GetModule(EVEItemFlags flag)         { return m_Modules->GetModule(flag); }
     GenericModule* GetModule(uint32 itemID)             { return m_Modules->GetModule(itemID); }
 
@@ -410,19 +409,14 @@ private:
 
     ModuleCommand _translateEffectName(std::string s);
 
-    void _SendInfoMessage(const char* fmt, ...);
-    void _SendErrorMessage(const char* fmt, ...);
-
     //access to the ship its system entity that owns us.  We do not own these
     ShipItem* m_Ship;
 
     //modules storage, we own this
     ModuleContainer* m_Modules;                    // Holds Module class objects in container arrays, one for each slot bank, rig, subsystem
 
-    /* charge storage  k:flag, v:charge  */
-    std::map<EVEItemFlags, InventoryItemRef> m_charges;
-    /* attrib storage  k:attrib, v:module */
-    std::unordered_map<uint16, GenericModule*> m_attribMap;
+    std::map<EVEItemFlags, InventoryItemRef> m_charges;  //* charge storage  flag, chargeItem
+    std::unordered_map<uint16, GenericModule*> m_attribMap;    //* attrib storage  attrib, module
 
     //modifier maps, we own these
     ModifierMaps* m_LocalSubsystemModifierMaps;    // Holds std::map<> maps of Modifiers for attributes applied by SUBSYSTEMS

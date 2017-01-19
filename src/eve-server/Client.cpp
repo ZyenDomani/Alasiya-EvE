@@ -555,7 +555,7 @@ void Client::SetBallPark() {
     if (m_clientState == ClientState::csBoard) {
         pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
         pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
-        //pShipSE->DestinyMgr()->SendSetState();
+        pShipSE->DestinyMgr()->SendSetState();
     }
     m_clientState = csIdle;
 }
@@ -631,6 +631,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             pShipSE->GetShipSE()->SetPodShipID(m_shipId);
             m_system->AddEntity(pShipSE);
         } else {
+            m_ship->ChangeOwner(m_char->itemID());
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSEFromInventory(m_shipId);
             pShipSE->SetPilot(this);

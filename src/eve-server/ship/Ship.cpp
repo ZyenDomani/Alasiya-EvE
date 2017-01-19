@@ -281,8 +281,8 @@ void ShipItem::Init()
      * AttrWarpInhibitor(29) [default is null]
      */
 
-    // set initial resist map before altered by modules
-    InitTrueResist();
+    // set initial stacking map before attribs are altered by modules
+    InitStackingMap();
 
     // create and initialize the module manager if not already done
     if (!m_ModuleManager)
@@ -1159,7 +1159,7 @@ double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
 }
 
 // resist cap system    -allan 26Dec16
-void ShipItem::InitTrueResist()
+void ShipItem::InitStackingMap()
 {
     m_resistMap[AttrKineticDamageResonance] = GetAttribute(AttrKineticDamageResonance).get_float();
     m_resistMap[AttrThermalDamageResonance] = GetAttribute(AttrThermalDamageResonance).get_float();
@@ -1173,6 +1173,17 @@ void ShipItem::InitTrueResist()
     m_resistMap[AttrShieldExplosiveDamageResonance] = GetAttribute(AttrShieldExplosiveDamageResonance).get_float();
     m_resistMap[AttrShieldKineticDamageResonance] = GetAttribute(AttrShieldKineticDamageResonance).get_float();
     m_resistMap[AttrShieldThermalDamageResonance] = GetAttribute(AttrShieldThermalDamageResonance).get_float();
+
+    // this is not resist...cannot use cap method on these...
+    m_resistMap[AttrScanResolution] = GetAttribute(AttrScanResolution).get_float();
+    m_resistMap[AttrSignatureRadius] = GetAttribute(AttrSignatureRadius).get_float();
+
+    /** these also have char skills that will need to be recalculated if the attrib is reset to base
+    m_resistMap[AttrMaxVelocity] = GetAttribute(AttrMaxVelocity).get_float();
+    m_resistMap[AttrInetia] = GetAttribute(AttrInetia).get_float();
+    m_resistMap[AttrShieldRechargeRate] = GetAttribute(AttrShieldRechargeRate).get_float();
+    m_resistMap[AttrMaxTargetRange] = GetAttribute(AttrMaxTargetRange).get_float();
+    */
 }
 
 void ShipItem::SetTrueResist(uint16 attrib, EvilNumber& value)
@@ -1181,7 +1192,7 @@ void ShipItem::SetTrueResist(uint16 attrib, EvilNumber& value)
     if (itr != m_resistMap.end()) {
         itr->second = value.get_float();
 
-        // hard-cap resist values here  - moved from CalculateNewAttributeValue()
+        // hard-cap resist values here  - moved from CalculateAttributeValue()
         // NOTE:  remember, these are BACKWARD from 'normal' fuzzy logic..  0=full and 1=none
         if (value < 0.05) value = 0.05; // cap resists at 95%
         if (value > 1) value = 1;       // verify resist doesnt go below 0
@@ -1194,6 +1205,15 @@ void ShipItem::GetTrueResist(uint16 attrib, EvilNumber& value)
     if (itr != m_resistMap.end())
         value = itr->second;
 }
+
+void ShipItem::CheckStacking(uint16 attrib, EVECalculationType type, ModuleStates state, EvilNumber& value)
+{
+    EvilNumber newVal = 0;
+    std::map<uint16, float>::iterator itr = m_resistMap.find(attrib);
+    if (itr != m_resistMap.end())
+        newVal = CalculateAttributeValue(newVal, value, type);
+}
+
 
 std::string ShipItem::GetShipDNA()
 {
