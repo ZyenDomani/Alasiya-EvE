@@ -32,13 +32,13 @@ ShieldHardener::ShieldHardener( InventoryItemRef item, ShipItemRef ship )
 
 void ShieldHardener::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-     m_Item->itemID(),
-     m_Item->typeID(),
+        m_shipRef,
+     m_modRef->itemID(),
+     m_modRef->typeID(),
      0,
      0,
      "effects.ModifyShieldResonance",
@@ -51,9 +51,9 @@ void ShieldHardener::StopCycle(bool abort)
 
     // Create Destiny Updates:
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();
         ge.targetID = 0;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -72,17 +72,17 @@ void ShieldHardener::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void ShieldHardener::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-     m_Item->itemID(),
-     m_Item->typeID(),
+        m_shipRef,
+     m_modRef->itemID(),
+     m_modRef->typeID(),
      0,
      0,
      "effects.ModifyShieldResonance",
@@ -95,12 +95,12 @@ void ShieldHardener::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = 0;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = 0;
         ge.other = go.Encode();
@@ -120,7 +120,7 @@ void ShieldHardener::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void ShieldHardener::_SetCapNeed()

@@ -51,17 +51,17 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
 
     m_effectID = effectMiningLaser;
     m_effectStr = "effects.Mining";
-    if (m_Item->groupID() == EVEDB::invGroups::Mining_Laser) {
+    if (m_modRef->groupID() == EVEDB::invGroups::Mining_Laser) {
         m_rMiner = true;
-    } else if ((m_Item->typeID() == 12108) or (m_Item->typeID() == 18068) or (m_Item->typeID() == 24305) or (m_Item->typeID() == 28748)) {
+    } else if ((m_modRef->typeID() == 12108) or (m_modRef->typeID() == 18068) or (m_modRef->typeID() == 24305) or (m_modRef->typeID() == 28748)) {
         m_dcMiner = true;
-    } else if (m_Item->groupID() == EVEDB::invGroups::Frequency_Mining_Laser) {
+    } else if (m_modRef->groupID() == EVEDB::invGroups::Frequency_Mining_Laser) {
         m_rMiner = true;
-    } else if ((m_Item->typeID() == 16278) or (m_Item->typeID() == 22229) or (m_Item->typeID() == 22589) or (m_Item->typeID() == 22591)
-        or (m_Item->typeID() == 22597) or (m_Item->typeID() == 22599) or (m_Item->typeID() == 28752)) {
+    } else if ((m_modRef->typeID() == 16278) or (m_modRef->typeID() == 22229) or (m_modRef->typeID() == 22589) or (m_modRef->typeID() == 22591)
+        or (m_modRef->typeID() == 22597) or (m_modRef->typeID() == 22599) or (m_modRef->typeID() == 28752)) {
         /* this includes 'dev testing modules', also  */
         m_iMiner = true;
-    } else if (m_Item->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester) {
+    } else if (m_modRef->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester) {
         m_gMiner = true;
         m_effectID = effectMiningClouds;
         m_effectStr = "effects.CloudMining";
@@ -78,7 +78,7 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
     ResetAttribute(AttrMiningAmount);
     ResetAttribute(AttrSpecialtyMiningAmount);
 
-    Character* pChar = m_Ship->GetPilot()->GetChar().get();
+    Character* pChar = m_shipRef->GetPilot()->GetChar().get();
     // get module volume per cycle
     m_cycleVol = GetAttribute(AttrMiningAmount).get_float();
     if (HasAttribute(AttrSpecialtyMiningAmount))
@@ -97,17 +97,17 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
     m_maxRange *= (1 + (0.03 * (pChar->GetSkillLevel(skillAstrometrics, true))));           // 3% increase in range (here)
     m_maxRange *= (1 + (0.03 * (pChar->GetSkillLevel(skillLongRangeTargeting, true))));     // 3% increase in range (here)
 
-    if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge) {
+    if (m_shipRef->type().groupID() == EVEDB::invGroups::MiningBarge) {
         m_cycleTime *= (1 - (0.01 * (pChar->GetSkillLevel(skillMiningBarge, true))));       // 1% decrease in duration (here)
         m_cycleVol *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true))));        // 2% increase in yield (here)
         m_cycleVol2 *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true))));       // 2% increase in yield (here)
-    } else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer) {
+    } else if (m_shipRef->type().groupID() == EVEDB::invGroups::Exhumer) {
         m_cycleTime *= (1 - (0.02 * (pChar->GetSkillLevel(skillExhumers, true))));          // 2% decrease in duration
         m_cycleVol *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true))));        // 2% increase in yield (here)
         m_cycleVol2 *= (1 + (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true))));       // 2% increase in yield (here)
     }
 
-    switch (m_Ship->typeID()) {
+    switch (m_shipRef->typeID()) {
         case 591: { /* Tormentor */
             m_cycleVol *= (1 + (0.2 * (pChar->GetSkillLevel(skillAmarrFrigate, true)))); // 20% increase in yield
         } break;
@@ -181,7 +181,7 @@ void MiningLaser::LoadCharge(InventoryItemRef charge)
     m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
     m_crystalDmgChance = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
     SetAttribute(AttrSpecialtyMiningAmount, m_cycleVol2);
-    _log(MINING__TRACE, "Charge %s loaded for %s.  SpecialityVolume updated to %.3f", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str(), m_cycleVol2);
+    _log(MINING__TRACE, "Charge %s loaded for %s.  SpecialityVolume updated to %.3f", m_chargeRef->itemName().c_str(), m_modRef->itemName().c_str(), m_cycleVol2);
 }
 
 void MiningLaser::UnloadCharge()
@@ -193,7 +193,7 @@ void MiningLaser::UnloadCharge()
     m_crystalDmgAmount = 0;
     m_crystalDmgChance = 0;
     SetAttribute(AttrSpecialtyMiningAmount, m_cycleVol);
-    _log(MINING__TRACE, "Charge %s unloaded for %s.  SpecialityVolume updated to %.3f", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str(), m_cycleVol2);
+    _log(MINING__TRACE, "Charge %s unloaded for %s.  SpecialityVolume updated to %.3f", m_chargeRef->itemName().c_str(), m_modRef->itemName().c_str(), m_cycleVol2);
     ActiveModule::UnloadCharge();
 }
 
@@ -209,15 +209,15 @@ void MiningLaser::UnloadCharge()
 void MiningLaser::Activate(SystemEntity* pSE)
 {
     if (!m_cycleVol) {
-        _log(MINING__ERROR, "Mining Module %s(%u) has 0 CycleVolume", m_Item->itemName().c_str(), m_Item->itemID());
-        if (m_Ship->HasPilot())
-            if (m_Ship->GetPilot()->CanThrow())
+        _log(MINING__ERROR, "Mining Module %s(%u) has 0 CycleVolume", m_modRef->itemName().c_str(), m_modRef->itemID());
+        if (m_shipRef->HasPilot())
+            if (m_shipRef->GetPilot()->CanThrow())
                 throw PyException( MakeCustomError( "Module Activate: Invalid Attribute - Ref: ServerError 15168" ) );
     }
     if (m_chargeLoaded and !m_cycleVol2) {
-        _log(MINING__ERROR, "Mining Module %s(%u) has loaded crystal and 0 SpecialityVolume", m_Item->itemName().c_str(), m_Item->itemID());
-        if (m_Ship->HasPilot())
-            if (m_Ship->GetPilot()->CanThrow())
+        _log(MINING__ERROR, "Mining Module %s(%u) has loaded crystal and 0 SpecialityVolume", m_modRef->itemName().c_str(), m_modRef->itemID());
+        if (m_shipRef->HasPilot())
+            if (m_shipRef->GetPilot()->CanThrow())
                 throw PyException( MakeCustomError( "Module Activate: Invalid Attribute - Ref: ServerError 15168" ) );
     }
 
@@ -232,7 +232,7 @@ void MiningLaser::Activate(SystemEntity* pSE)
 
         m_IsInitialCycle = true;
         // Activate active processing component timer:
-        m_AMPC->ActivateCycle();
+        ActivateCycle();
 
         //# _ShowCycle();
         _SetCapNeed();
@@ -241,8 +241,8 @@ void MiningLaser::Activate(SystemEntity* pSE)
         //m_Ship->GetPilot()->GetShipSE()->SystemMgr()->GetBeltMgr()->SetActive(m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetID());
     } else {
         _log(MINING__WARNING, "Activate() - Invalid target");
-        if (m_Ship->HasPilot())
-            if (m_Ship->GetPilot()->CanThrow())
+        if (m_shipRef->HasPilot())
+            if (m_shipRef->GetPilot()->CanThrow())
                 throw PyException( MakeCustomError( "Module Activate: Invalid Target - Ref: ServerError 15628" ) );
     }
 }
@@ -255,8 +255,8 @@ void MiningLaser::Deactivate()
 }
 
 double MiningLaser::DoCycle() {
-    if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
-        or (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))) {
+    if ((!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
+        or (!m_shipRef->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))) {
             StopCycle();
             m_AMPC->StopTimer();
             return 0;
@@ -302,12 +302,12 @@ void MiningLaser::ProcessCycle(bool partial)
 
     if (cycleVol < oreVolume) {
         _log(MINING__ERROR, "%s(%u) - Laser could not extract ore from %s(%u)", \
-              m_Item->itemName().c_str(), m_Item->itemID(), m_targetEntity->GetSelf()->itemName().c_str(), m_targetEntity->GetID() );
+              m_modRef->itemName().c_str(), m_modRef->itemID(), m_targetEntity->GetSelf()->itemName().c_str(), m_targetEntity->GetID() );
         return;
     }
 
     double oreAmount = cycleVol /oreVolume;
-    double remainingCargoVolume = m_Ship->GetRemainingVolumeByFlag(flagCargoHold);
+    double remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(flagCargoHold);
     double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_double();
 
     if (remainingCargoVolume < cycleVol) {
@@ -323,10 +323,10 @@ void MiningLaser::ProcessCycle(bool partial)
         }
     } else if (partial) {
         if (m_iMiner) {
-            oreAmount *= (m_AMPC->GetRemainingCycleTimeMS() / m_cycleTime);
+            oreAmount *= (GetRemainingCycleTimeMS() / m_cycleTime);
             oreAmount = floor(oreAmount);
         } else {
-            oreAmount *= (m_AMPC->GetRemainingCycleTimeMS() / m_cycleTime);
+            oreAmount *= (GetRemainingCycleTimeMS() / m_cycleTime);
         }
     }
 
@@ -338,15 +338,15 @@ void MiningLaser::ProcessCycle(bool partial)
     if (oreAmount < 1)
         return;
 
-    ItemData idata(roidRef->typeID(), m_Ship->ownerID(), 0, flagAutoFit, oreAmount);
-    InventoryItemRef ore = m_Ship->GetItemFactory()->SpawnItem( idata );
+    ItemData idata(roidRef->typeID(), m_shipRef->ownerID(), 0, flagAutoFit, oreAmount);
+    InventoryItemRef ore = m_shipRef->GetItemFactory()->SpawnItem( idata );
     if (!ore) {
-        _log(MINING__ERROR, "Could not create mined ore for %s(%u)", m_Ship->itemName().c_str(), m_Ship->itemID() );
+        _log(MINING__ERROR, "Could not create mined ore for %s(%u)", m_shipRef->itemName().c_str(), m_shipRef->itemID() );
         return;
     }
 
-    if (!m_Ship->AddItem(flagCargoHold, ore)) {
-        _log(MINING__ERROR, "Could not add mined ore in cargo for %s(%u)", m_Ship->itemName().c_str(), m_Ship->itemID() );
+    if (!m_shipRef->AddItem(flagCargoHold, ore)) {
+        _log(MINING__ERROR, "Could not add mined ore in cargo for %s(%u)", m_shipRef->itemName().c_str(), m_shipRef->itemID() );
         return;
     }
 
@@ -369,9 +369,9 @@ void MiningLaser::ProcessCycle(bool partial)
             if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
                 m_crystalDmg += m_crystalDmgAmount;
                 if (m_crystalDmg > 1.0f) {
-                    m_Ship->GetPilot()->SendNotifyMsg("Your %s loaded in %s has been destroyed.", m_chargeRef->itemName().c_str(), m_Item->itemName().c_str());
+                    m_shipRef->GetPilot()->SendNotifyMsg("Your %s loaded in %s has been destroyed.", m_chargeRef->itemName().c_str(), m_modRef->itemName().c_str());
                     InventoryItemRef chargeRef = m_chargeRef;   // make a copy of item ref, as m_chargeRef is nulled after next call returns
-                    m_Ship->RemoveItem(m_chargeRef);
+                    m_shipRef->RemoveItem(m_chargeRef);
                     chargeRef->Delete();
                     cycleVol = m_cycleVol;  //m_cycleVol2 is reset when charge is removed.
                 } else {
@@ -388,11 +388,11 @@ void MiningLaser::_ShowCycle()
     if (m_chargeLoaded)
         chargeTypeID = m_chargeRef->typeID();
 
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         m_targetID,
         chargeTypeID,
         m_effectStr.c_str(),
@@ -405,12 +405,12 @@ void MiningLaser::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = chargeTypeID;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
@@ -430,14 +430,14 @@ void MiningLaser::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void MiningLaser::StopCycle(bool abort)
 {
     double timeTillStop = 2000;
     if (!abort)
-        timeTillStop = m_AMPC->GetRemainingCycleTimeMS();
+        timeTillStop = GetRemainingCycleTimeMS();
 
     _log(MINING__DEBUG, "StopCycle() - abort:%s, timeTillStop:%.3fms", (abort?"true":"false"), timeTillStop);
 
@@ -450,10 +450,10 @@ void MiningLaser::StopCycle(bool abort)
         if (m_chargeRef)
             chargeTypeID = m_chargeRef->typeID();
 
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         m_targetID,
         chargeTypeID,
         m_effectStr.c_str(),
@@ -466,12 +466,12 @@ void MiningLaser::StopCycle(bool abort)
 
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = chargeTypeID;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
@@ -491,7 +491,7 @@ void MiningLaser::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void MiningLaser::_SetCapNeed()

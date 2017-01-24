@@ -32,7 +32,7 @@
 ProjectileTurret::ProjectileTurret( InventoryItemRef item, ShipItemRef shipRef )
 : TurrentModule(item, shipRef)
 {
-    Character* pChar = m_Ship->GetPilot()->GetChar().get();
+    Character* pChar = m_shipRef->GetPilot()->GetChar().get();
 
     switch (GetAttribute(AttrChargeSize).get_int()) {
         case 1:
@@ -49,7 +49,7 @@ ProjectileTurret::ProjectileTurret( InventoryItemRef item, ShipItemRef shipRef )
             break;
     }
     //specialization bonuses for tech 2
-    switch (m_Item->typeID()) {
+    switch (m_modRef->typeID()) {
         case 2873:   //  125mm Gatling AutoCannon II
         case 2881:   //  150mm Light AutoCannon II
         case 2889:   //  200mm AutoCannon II
@@ -79,7 +79,7 @@ ProjectileTurret::ProjectileTurret( InventoryItemRef item, ShipItemRef shipRef )
             break;
     }
 
-    m_Item->SetAttribute(AttrDamageMultiplier, m_damageModifier);
+    m_modRef->SetAttribute(AttrDamageMultiplier, m_damageModifier);
 }
 
 void ProjectileTurret::Activate(SystemEntity* pSE)
@@ -87,11 +87,11 @@ void ProjectileTurret::Activate(SystemEntity* pSE)
 	if (m_chargeRef) {
         m_targetEntity = pSE;
         m_targetID = pSE->GetID();
-		m_AMPC->ActivateCycle();
+		ActivateCycle();
     } else {
         _log(SHIP__MODULE_WARNING, "ProjectileTurret::Activate() - Cannot find loaded charge for this module");
-        if (m_Ship->HasPilot())
-            if (m_Ship->GetPilot()->CanThrow())
+        if (m_shipRef->HasPilot())
+            if (m_shipRef->GetPilot()->CanThrow())
                 throw PyException( MakeCustomError( "Cannot find loaded charge for this module  - Ref: ServerError 15693"));
     }
 }
@@ -100,21 +100,21 @@ void ProjectileTurret::StopCycle(bool abort)
 {
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         if (m_chargeRef)
             go.chargeTypeID = m_chargeRef->typeID();
         else
             go.chargeTypeID = 0;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectProjectileFired;
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -130,12 +130,12 @@ void ProjectileTurret::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double ProjectileTurret::DoCycle() {
-        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
-            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))
+        if ((!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_shipRef->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))
             || (!m_chargeLoaded) || (!m_chargeRef) )
         {
             Deactivate();
@@ -149,13 +149,13 @@ double ProjectileTurret::DoCycle() {
 
         _ShowCycle();
 
-        Damage d(m_Ship->GetPilot()->GetShipSE(),
-                 m_Item,
+        Damage d(m_shipRef->GetPilot()->GetShipSE(),
+                 m_modRef,
                  m_kinetic,
                  m_thermal,
                  m_em,
                  m_explosive,
-                 m_formula.GetToHit(m_Ship, this, m_targetEntity),
+                 m_formula.GetToHit(m_shipRef, this, m_targetEntity),
                  effectProjectileFired       // from EVEEffectID::
                  );
 
@@ -173,11 +173,11 @@ double ProjectileTurret::DoCycle() {
 void ProjectileTurret::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         m_targetID,
         m_chargeRef->typeID(),
         "effects.ProjectileFired",
@@ -190,12 +190,12 @@ void ProjectileTurret::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = m_chargeRef->typeID();
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
@@ -215,7 +215,7 @@ void ProjectileTurret::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void ProjectileTurret::_SetCapNeed()

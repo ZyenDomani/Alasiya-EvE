@@ -36,10 +36,10 @@ SurveyScanner::SurveyScanner(InventoryItemRef item, ShipItemRef ship)
 {
     m_firstRun = true;
 
-    pChar = m_Ship->GetPilot()->GetChar().get();
+    pChar = m_shipRef->GetPilot()->GetChar().get();
 
-    m_Item->ResetAttribute(AttrDuration);
-    m_Item->ResetAttribute(AttrSurveyScanRange);
+    m_modRef->ResetAttribute(AttrDuration);
+    m_modRef->ResetAttribute(AttrSurveyScanRange);
 
     // get module range
     m_range = GetAttribute(AttrSurveyScanRange).get_double();
@@ -49,19 +49,19 @@ SurveyScanner::SurveyScanner(InventoryItemRef item, ShipItemRef ship)
     m_range *= (1 + (0.03 * (pChar->GetSkillLevel(skillLongRangeTargeting, true)))); // 3% increase in range (here)
     m_cycleTime *= (1 - (0.02 * (pChar->GetSkillLevel(skillSignatureAnalysis, true)))); // 2% decrease in duration (here)
 
-    if (m_Ship->type().id() == 28606) { /* orca */
+    if (m_shipRef->type().id() == 28606) { /* orca */
         m_range *= 500;               // 500% increase in range
-    } else if (m_Ship->type().id() == 28352) {  /* rorqual */
+    } else if (m_shipRef->type().id() == 28352) {  /* rorqual */
         m_range *= 900;               // 900% increase in range
-    } else if (m_Ship->type().groupID() == EVEDB::invGroups::MiningBarge) {
+    } else if (m_shipRef->type().groupID() == EVEDB::invGroups::MiningBarge) {
         m_range *= (1 + (0.05 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 5% increase in range (here)
         m_cycleTime *= (1 - (0.02 * (pChar->GetSkillLevel(skillMiningBarge, true)))); // 2% decrease in duration (here)
-    } else if (m_Ship->type().groupID() == EVEDB::invGroups::Exhumer) {
+    } else if (m_shipRef->type().groupID() == EVEDB::invGroups::Exhumer) {
         m_range *= (1 + (0.1 * (pChar->GetSkillLevel(skillExhumers, true))));    // 10% increase in range (here)
         m_cycleTime *= (1 - (0.05 * (pChar->GetSkillLevel(skillExhumers, true)))); // 5% decrease in duration (here)
     } else {
         // lets modify range by 20% and duration by 5% for small mining ships.
-        switch (m_Ship->typeID()) {
+        switch (m_shipRef->typeID()) {
             case 591: { /* Tormentor */
                 m_range *= (1 + (0.2 * (pChar->GetSkillLevel(skillAmarrFrigate, true))));
                 m_cycleTime *= (1 - (0.05 * (pChar->GetSkillLevel(skillAmarrFrigate, true))));
@@ -90,25 +90,25 @@ SurveyScanner::SurveyScanner(InventoryItemRef item, ShipItemRef ship)
     }
 
     // save adjusted attributes
-    m_Item->SetAttribute(AttrDuration, m_cycleTime);
-    m_Item->SetAttribute(AttrSurveyScanRange, m_range);
+    m_modRef->SetAttribute(AttrDuration, m_cycleTime);
+    m_modRef->SetAttribute(AttrSurveyScanRange, m_range);
 }
 
 SurveyScanner::~SurveyScanner()
 {
-    m_Item->ResetAttribute(AttrDuration);
-    m_Item->ResetAttribute(AttrSurveyScanRange);
+    m_modRef->ResetAttribute(AttrDuration);
+    m_modRef->ResetAttribute(AttrSurveyScanRange);
 }
 
 void SurveyScanner::Activate(SystemEntity* pSE)
 {
     m_firstRun = true;
-    m_AMPC->ActivateCycle();
+    ActivateCycle();
     //_ShowCycle();
 }
 
 double SurveyScanner::DoCycle() {
-    if (!m_Ship->GetPilot()->GetShipSE()->SysBubble()) {
+    if (!m_shipRef->GetPilot()->GetShipSE()->SysBubble()) {
         Deactivate();
         return 0;
     }
@@ -117,7 +117,7 @@ double SurveyScanner::DoCycle() {
         _ShowCycle();
         m_firstRun = false;
     } else {
-        SystemEntity* pShipSE = m_Ship->GetPilot()->GetShipSE();
+        SystemEntity* pShipSE = m_shipRef->GetPilot()->GetShipSE();
         SystemBubble* pBubble = pShipSE->SysBubble();
         PyTuple* tuple = new PyTuple(2);
             tuple->SetItem(0, new PyString("OnSurveyScanComplete"));
@@ -128,7 +128,7 @@ double SurveyScanner::DoCycle() {
             pShipSE->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetSpawnID(pBubble->GetID()), vList);
             for (auto pASE : vList) {
                 // allow ice scanning without a radius check....may change later.
-                if (pShipSE->SysBubble()->IsIce() or (m_Ship->position().distance(pASE->GetPosition()) < m_range)) {
+                if (pShipSE->SysBubble()->IsIce() or (m_shipRef->position().distance(pASE->GetPosition()) < m_range)) {
                     PyTuple* tuple2 = new PyTuple(3);
                         tuple2->SetItem(0, new PyInt(pASE->GetID()));
                         tuple2->SetItem(1, new PyInt(pASE->GetTypeID()));
@@ -151,15 +151,15 @@ double SurveyScanner::DoCycle() {
 
 void SurveyScanner::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
 
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         m_targetID,
         0,
         "effects.SurveyScan",
@@ -172,9 +172,9 @@ void SurveyScanner::StopCycle(bool abort)
 
     // Create Destiny Updates:
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -193,17 +193,17 @@ void SurveyScanner::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void SurveyScanner::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         m_targetID,
         0,
         "effects.SurveyScan",
@@ -216,9 +216,9 @@ void SurveyScanner::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -237,7 +237,7 @@ void SurveyScanner::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void SurveyScanner::_SetCapNeed()

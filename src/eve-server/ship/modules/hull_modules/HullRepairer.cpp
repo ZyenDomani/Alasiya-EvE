@@ -30,21 +30,21 @@
 HullRepairer::HullRepairer( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
-    Character* pChar = m_Ship->GetPilot()->GetChar().get();
+    Character* pChar = m_shipRef->GetPilot()->GetChar().get();
     m_cycleTime *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillRepairSystems, true))));      //  5% decrease in cycle time
-    m_Item->SetAttribute(AttrDuration, m_cycleTime);
+    m_modRef->SetAttribute(AttrDuration, m_cycleTime);
 
 }
 
 void HullRepairer::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-     m_Item->itemID(),
-     m_Item->typeID(),
+        m_shipRef,
+     m_modRef->itemID(),
+     m_modRef->typeID(),
      0,
      0,
      "effects.StructureRepair",
@@ -57,12 +57,12 @@ void HullRepairer::StopCycle(bool abort)
 
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = 0;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
@@ -82,12 +82,12 @@ void HullRepairer::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double HullRepairer::DoCycle()
 {
-        if (!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+        if (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
         {
             Deactivate();
             return 0;
@@ -95,13 +95,13 @@ double HullRepairer::DoCycle()
         _ShowCycle();
 
 		// Apply repair amount:
-        EvilNumber newDamageAmount = m_Ship->GetAttribute(AttrDamage);
+        EvilNumber newDamageAmount = m_shipRef->GetAttribute(AttrDamage);
         newDamageAmount -= GetAttribute(AttrStructureDamageAmount);
         if (newDamageAmount < 0) {
-            m_Ship->SetAttribute(AttrDamage, 0);
+            m_shipRef->SetAttribute(AttrDamage, 0);
             Deactivate();
         } else
-            m_Ship->SetAttribute(AttrDamage, newDamageAmount);
+            m_shipRef->SetAttribute(AttrDamage, newDamageAmount);
 
         return m_cycleTime;
 }
@@ -109,11 +109,11 @@ double HullRepairer::DoCycle()
 void HullRepairer::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-     m_Item->itemID(),
-     m_Item->typeID(),
+        m_shipRef,
+     m_modRef->itemID(),
+     m_modRef->typeID(),
      0,
      0,
      "effects.StructureRepair",
@@ -126,12 +126,12 @@ void HullRepairer::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = 0;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
@@ -151,7 +151,7 @@ void HullRepairer::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void HullRepairer::_SetCapNeed()

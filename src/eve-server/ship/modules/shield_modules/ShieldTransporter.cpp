@@ -35,15 +35,15 @@ ShieldTransporter::ShieldTransporter( InventoryItemRef item, ShipItemRef ship )
 
 void ShieldTransporter::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
 
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         m_targetID,
         0,
         "effects.ShieldTransfer",
@@ -56,9 +56,9 @@ void ShieldTransporter::StopCycle(bool abort)
 
     // Create Destiny Updates:
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -77,12 +77,12 @@ void ShieldTransporter::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double ShieldTransporter::DoCycle()
 {
-        if (!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+        if (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
         {
             Deactivate();
             return 0;
@@ -103,11 +103,11 @@ double ShieldTransporter::DoCycle()
 void ShieldTransporter::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-     m_Ship,
-     m_Item->itemID(),
-     m_Item->typeID(),
+     m_shipRef,
+     m_modRef->itemID(),
+     m_modRef->typeID(),
      m_targetID,
      0,
      "effects.ShieldTransfer",
@@ -120,9 +120,9 @@ void ShieldTransporter::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();;
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();;
         ge.targetID = m_targetID;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -141,7 +141,7 @@ void ShieldTransporter::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double ShieldTransporter::_GetCapNeed()
@@ -151,11 +151,11 @@ double ShieldTransporter::_GetCapNeed()
 	double moduleCapNeed = GetAttribute(AttrCapacitorNeed).get_double();
 
 	// Now we do the initial cap need calculations
-	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillShieldEmissionSystems)));
+	double capacitorNeed = moduleCapNeed * (1 - (0.05 * m_shipRef->GetPilot()->GetChar()->GetSkillLevel(skillShieldEmissionSystems)));
 
 	// Now we check if our ship is Scimitar or Basilisk. If yes - we apply ship's bonuses
-	if(m_Ship->typeID() == 11985 || m_Ship->typeID() == 11978){
-		capacitorNeed *= (1 - (0.15 * m_Ship->GetPilot()->GetChar()->GetSkillLevel(skillLogistics)));
+	if(m_shipRef->typeID() == 11985 || m_shipRef->typeID() == 11978){
+		capacitorNeed *= (1 - (0.15 * m_shipRef->GetPilot()->GetChar()->GetSkillLevel(skillLogistics)));
 	}
 
     return capacitorNeed;

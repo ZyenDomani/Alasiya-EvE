@@ -154,15 +154,15 @@ void ModuleDB::GetDgmEffectsInfo(uint32 effectID, DBQueryResult &res)
 {
     if( !sDatabase.RunQuery(res,
         " SELECT "
-        " sourceAttributeID, "
-        " targetAttributeID, "
-        " calculationTypeID, "
-        " reverseCalculationTypeID, "
-        " targetGroupIDs, "
-        " stackingPenalty, " //5
-        " effectState, "
+        " sourceAttribute, "
+        " targetAttribute, "
+        " calculation, "
+        " rCalculation, "
+        " affectedGrps, "
+        " stacked, " //5
+        " state, "
         " targetType, "
-        " targetGroup "
+        " effectGrp "
         " FROM dgmEffectsInfo "
         " WHERE effectID = %u ",
         effectID))

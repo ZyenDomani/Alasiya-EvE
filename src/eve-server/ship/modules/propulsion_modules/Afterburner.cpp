@@ -38,19 +38,19 @@ Afterburner::Afterburner( InventoryItemRef item, ShipItemRef ship )
  */
 void Afterburner::Activate(SystemEntity* pSE)
 {
-    m_AMPC->ActivateCycle();
-    DestinyManager* pDestiny = m_Ship->GetPilot()->GetShipSE()->DestinyMgr();
+    ActivateCycle();
+    DestinyManager* pDestiny = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
     if (!pDestiny) return;  // make error msg here?
 
     m_shipSpeed = pDestiny->GetMaxVelocity();
-    double maxSpeed = m_Ship->GetAttribute(AttrMaxVelocity).get_float();
+    double maxSpeed = m_shipRef->GetAttribute(AttrMaxVelocity).get_float();
 
     // Tell Destiny Manager about our updated speed so it properly tracks ship movement:
     pDestiny->SetMaxVelocity(maxSpeed);
     pDestiny->SetSpeedFraction(1.0);
 
     DoDestiny_SetMaxSpeed ms;
-        ms.entityID = m_Ship->itemID();
+        ms.entityID = m_shipRef->itemID();
         ms.speedValue = maxSpeed;
     PyTuple *tmp = ms.Encode();
     pDestiny->SendSingleDestinyUpdate(&tmp);    //consumed
@@ -62,9 +62,9 @@ void Afterburner::Deactivate()
         return;
     ActiveModule::Deactivate();
 
-    double maxSpeed = m_Ship->GetAttribute(AttrMaxVelocity).get_float();
+    double maxSpeed = m_shipRef->GetAttribute(AttrMaxVelocity).get_float();
 
-    DestinyManager* pDestiny = m_Ship->GetPilot()->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
     if (!pDestiny) return;  // make error msg here?
 
     // Tell Destiny Manager about our updated speed so it properly tracks ship movement:
@@ -72,7 +72,7 @@ void Afterburner::Deactivate()
     pDestiny->SetSpeedFraction(1.0);
 
     DoDestiny_SetMaxSpeed ms;
-        ms.entityID = m_Ship->itemID();
+        ms.entityID = m_shipRef->itemID();
         ms.speedValue = maxSpeed;
     PyTuple *tmp = ms.Encode();
     pDestiny->SendSingleDestinyUpdate(&tmp);    //consumed
@@ -80,7 +80,7 @@ void Afterburner::Deactivate()
 
 void Afterburner::StopCycle(bool abort)
 {
-    DestinyManager* pDestiny = m_Ship->GetPilot()->GetShipSE()->DestinyMgr();
+    DestinyManager* pDestiny = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
     if (!pDestiny) return;  // make error msg here?
 	// Tell Destiny Manager about our new speed so it properly tracks ship movement:
     //TODO  get ship speed from destiny, using skill updates.
@@ -88,14 +88,14 @@ void Afterburner::StopCycle(bool abort)
     pDestiny->SetSpeedFraction();    //reset speed variables, update destiny, update client
 
     DoDestiny_SetMaxSpeed ms;
-        ms.entityID = m_Ship->itemID();
+        ms.entityID = m_shipRef->itemID();
         ms.speedValue = m_shipSpeed;
     PyTuple *tmp = ms.Encode();
     pDestiny->SendSingleDestinyUpdate(&tmp);    //consumed
 
     std::string effectString = " ";
     uint32 effectID = 0;
-    switch (m_Item->groupID())
+    switch (m_modRef->groupID())
     {
         case EVEDB::invGroups::Afterburner: {
             effectString = "effects.SpeedBoostMassAddition";
@@ -108,15 +108,15 @@ void Afterburner::StopCycle(bool abort)
         } break;
     }
 
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
 
     // Create Special Effect:
     pDestiny->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         0,
         0,
         effectString,
@@ -128,12 +128,12 @@ void Afterburner::StopCycle(bool abort)
      );
 
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = 0;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
@@ -161,7 +161,7 @@ void Afterburner::_ShowCycle()
 {
     std::string effectString = " ";
     uint32 effectID = 0;
-    switch (m_Item->groupID())
+    switch (m_modRef->groupID())
     {
         case EVEDB::invGroups::Afterburner: {
             effectString = "effects.SpeedBoostMassAddition";
@@ -175,11 +175,11 @@ void Afterburner::_ShowCycle()
     }
 
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         0,
         0,
         effectString,
@@ -192,12 +192,12 @@ void Afterburner::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = 0;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
@@ -217,7 +217,7 @@ void Afterburner::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void Afterburner::_SetCapNeed()

@@ -1,5 +1,6 @@
 
 #include "Client.h"
+#include "EffectsProcessor.h"
 #include "EVEServerConfig.h"
 #include "Profile.h"
 #include "character/Character.h"
@@ -1211,7 +1212,7 @@ void ShipItem::CheckStacking(uint16 attrib, EVECalculationType type, ModuleState
     EvilNumber newVal = 0;
     std::map<uint16, float>::iterator itr = m_resistMap.find(attrib);
     if (itr != m_resistMap.end())
-        newVal = CalculateAttributeValue(newVal, value, type);
+        newVal = sFxProc.CalculateAttributeValue(newVal, value, type);
 }
 
 

@@ -29,7 +29,6 @@
 
 #include "Client.h"
 #include "ship/modules/GenericModule.h"
-#include "ship/modules/components/ActiveModuleProcessingComponent.h"
 #include "system/SystemBubble.h"
 
 
@@ -64,7 +63,7 @@ public:
     virtual void StopCycle(bool abort=false)            { /* Do nothing here */ }
 
     /* ActiveModule methods */
-    bool ShipHasCapCharge()                             { return (_GetCapNeed() <  m_Ship->GetAttribute(AttrCapacitorCharge).get_double()); }
+    bool ShipHasCapCharge()                             { return (_GetCapNeed() <  m_shipRef->GetAttribute(AttrCapacitorCharge).get_double()); }
     uint32 GetTargetID()                                { return m_targetID; }
     SystemEntity* GetTarget()                           { return m_targetEntity; }
     double GetCycleTime()                               { return m_cycleTime; }
@@ -87,7 +86,6 @@ protected:
     //SystemBubble* m_bubble;                           // we do not own this
 	SystemEntity* m_targetEntity;                       // we do not own this
 	//DestinyManager* m_destiny;                        // we do not own this
-	ActiveModuleProcessingComponent* m_AMPC;            // we do not own this
 
 	InventoryItemRef m_chargeRef;                       // we do not own this
 
@@ -106,12 +104,32 @@ protected:
     double m_damageModifier = 0;
     double m_trackingSpeed = 0;
 
+    //  these should be overridden in derived clases to use skills and other factors as needed as this returns default attribute only.
+    virtual double _GetCapNeed()                        { return GetAttribute(AttrCapacitorNeed).get_double(); }
+
     /** @todo currently reworking these to have common data set and maintained here -wip */
     virtual void _ProcessCycle()                        { /* Do nothing here */ }
     virtual void _ShowCycle()                           { /* Do nothing here */ }
     virtual void _SetCapNeed()                          { /* Do nothing here */ }
-    //  these should be overridden in derived clases to use skills and other factors as needed as this returns default attribute only.
-    virtual double _GetCapNeed()                        { return GetAttribute(AttrCapacitorNeed).get_double(); }
+
+
+    // to sort and integrate.....
+    void ActivateCycle();
+    void DeactivateCycle(bool abort=false);
+    void ShouldProcessActiveCycle();
+    void ProcessActiveCycle();
+    void ProcessDeactivateCycle();
+
+    uint32 GetRemainingCycleTimeMS()                    { return m_timer.GetRemainingTime(); }
+
+    void SetTimer(uint32 time);
+    void StopTimer()                                    { m_timer.Disable(); }
+
+private:
+    Timer m_timer;
+
+    bool m_Stop;
+
 };
 
 

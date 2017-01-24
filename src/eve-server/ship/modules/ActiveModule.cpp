@@ -30,10 +30,8 @@
 #include "ship/modules/ActiveModule.h"
 
 ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
-: GenericModule(item, ship),
-  m_reloadTimer(10000)
+: GenericModule(item, ship)
 {
-    m_AMPC = new ActiveModuleProcessingComponent(item, this, ship);
     m_targetEntity = nullptr;
     /** @todo  bubble isnt ready yet.  will have to update every time we change bubble */
     //m_bubble = ship->GetPilot()->GetShipSE()->SysBubble();
@@ -44,22 +42,22 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
     m_chargeLoaded = false;
 
     // as we hard-set attributes here, we need to make sure they are DEFAULT before adding bonuses.  (error fix)
-    m_Item->ResetAttribute(AttrSpeed);
-    m_Item->ResetAttribute(AttrFalloff);
-    m_Item->ResetAttribute(AttrDuration);
-    m_Item->ResetAttribute(AttrMaxRange);
-    m_Item->ResetAttribute(AttrCapacitorNeed);
-    m_Item->ResetAttribute(AttrTrackingSpeed);
-    m_Item->ResetAttribute(AttrDamageMultiplier);
-    m_Item->ResetAttribute(AttrOptimalSigRadius);
+    m_modRef->ResetAttribute(AttrSpeed);
+    m_modRef->ResetAttribute(AttrFalloff);
+    m_modRef->ResetAttribute(AttrDuration);
+    m_modRef->ResetAttribute(AttrMaxRange);
+    m_modRef->ResetAttribute(AttrCapacitorNeed);
+    m_modRef->ResetAttribute(AttrTrackingSpeed);
+    m_modRef->ResetAttribute(AttrDamageMultiplier);
+    m_modRef->ResetAttribute(AttrOptimalSigRadius);
 
-    if (m_Item->HasAttribute(AttrMaxRange))
+    if (m_modRef->HasAttribute(AttrMaxRange))
         m_maxRange = GetAttribute(AttrMaxRange).get_int();
 
-    if (m_Item->HasAttribute(AttrDuration))
+    if (m_modRef->HasAttribute(AttrDuration))
         m_cycleTime = GetAttribute(AttrDuration).get_float();
 
-    if (m_Item->HasAttribute(AttrCapacitorNeed))
+    if (m_modRef->HasAttribute(AttrCapacitorNeed))
         m_capNeed = GetAttribute(AttrCapacitorNeed).get_float();
 
     m_warpSafe = (GetAttribute(AttrDisallowActivateOnWarp).get_int() ? false : true );
@@ -71,46 +69,58 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
      * maybe make config option later to avoid hard-coding
      */
     if (!m_reloadTime) {
-        if (m_Item->groupID() == EVEDB::invGroups::Projectile_Weapon)
+        if (m_modRef->groupID() == EVEDB::invGroups::Projectile_Weapon)
             m_reloadTime = 4000;
-        else if (m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Snowball
-            or m_Item->groupID() == EVEDB::invGroups::Scan_Probe_Launcher)
+        else if (m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Snowball
+            or m_modRef->groupID() == EVEDB::invGroups::Scan_Probe_Launcher)
             m_reloadTime = 5000;
-        else if (m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Cruise
-            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Rocket
-            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Siege
-            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Standard
-            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Heavy
-            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Assault
-            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Defender
-            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Citadel
-            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Heavy_Assault
-            or m_Item->groupID() == EVEDB::invGroups::Missile_Launcher_Bomb)
+        else if (m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Cruise
+            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Rocket
+            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Siege
+            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Standard
+            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Heavy
+            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Assault
+            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Defender
+            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Citadel
+            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Heavy_Assault
+            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Bomb)
             m_reloadTime = 7000;
         else
             m_reloadTime = 10000;
     }
+    m_timer.Disable();
     m_reloadTimer.Disable();
 
-    _log(SHIP__MODULE_TRACE, "Set reload time for %s(%u) to %ums", m_Item->itemName().c_str(), m_Item->itemID(), m_reloadTime);
+    _log(SHIP__MODULE_TRACE, "Set reload time for %s(%u) to %ums", m_modRef->itemName().c_str(), m_modRef->itemID(), m_reloadTime);
 }
 
 ActiveModule::~ActiveModule()
 {
-    SafeDelete(m_AMPC);
-    m_Item->ResetAttribute(AttrSpeed);
-    m_Item->ResetAttribute(AttrFalloff);
-    m_Item->ResetAttribute(AttrDuration);
-    m_Item->ResetAttribute(AttrMaxRange);
-    m_Item->ResetAttribute(AttrCapacitorNeed);
-    m_Item->ResetAttribute(AttrTrackingSpeed);
-    m_Item->ResetAttribute(AttrDamageMultiplier);
-    m_Item->ResetAttribute(AttrOptimalSigRadius);
+    m_modRef->ResetAttribute(AttrSpeed);
+    m_modRef->ResetAttribute(AttrFalloff);
+    m_modRef->ResetAttribute(AttrDuration);
+    m_modRef->ResetAttribute(AttrMaxRange);
+    m_modRef->ResetAttribute(AttrCapacitorNeed);
+    m_modRef->ResetAttribute(AttrTrackingSpeed);
+    m_modRef->ResetAttribute(AttrDamageMultiplier);
+    m_modRef->ResetAttribute(AttrOptimalSigRadius);
 }
 
 void ActiveModule::Process()
 {
-    m_AMPC->Process();
+    // timing and verification function
+        //check if we have signal to stop the cycle
+        if (m_Stop) {
+            //wait for time to run out and send deactivate to client
+            if (m_timer.Check(false)) {
+                m_timer.Disable();
+                DeactivateCycle();
+                return;
+            }
+        }
+        //check if the timer expired & subtract time
+        if (m_timer.Check())
+            ShouldProcessActiveCycle();
 
     if (m_reloadTimer.Enabled()) {
         if (m_reloadTimer.Check(false)) {
@@ -124,7 +134,47 @@ void ActiveModule::Process()
 void ActiveModule::Activate(SystemEntity* pSE)
 {
     m_targetEntity = pSE;
-    m_AMPC->ActivateCycle();
+    m_Stop = false;
+    m_ModuleState = MOD_ACTIVATED;  //this HAS to be set before mod::DoCycle()
+
+    /** @todo   these need to check for targetable actions, and apply changes accordingly */
+    /** @todo  this needs to be updated to check for/use targetGroupIDs */
+    EVECalculationType ecType = CALC_NONE;
+    bool stacking = false;
+    uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
+    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr, end;
+    if (IsOverloaded()) {
+        itr = m_Effects->GetOverloadEffectsBegin();
+        end = m_Effects->GetOverloadEffectsEnd();
+        _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() -  there are %u OverLoaded effects to process", m_Effects->GetOverloadEffectsSize() );
+    } else {
+        itr = m_Effects->GetActiveEffectsBegin();
+        end = m_Effects->GetActiveEffectsEnd();
+        _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() -  there are %u Active effects to process", m_Effects->GetActiveEffectsSize() );
+    }
+    for (; itr != end; itr++) {
+        uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
+        _log(SHIP__MODULE_INFO, "AMPC::ActivateCycle() -  there are %u attributes in effect %u", ids, itr->first );
+        while (cur < ids) {
+            testID = itr->second->GetTargetGroup(cur);
+            if (groupID != testID) { ++cur; continue; }
+            stacking = itr->second->GetStackingPenalty(cur);
+            targetAttrID = itr->second->GetTargetAttributeID(cur);
+            sourceAttrID = itr->second->GetSourceAttributeID(cur);
+            ecType = itr->second->GetCalculationType(cur);
+            _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
+            itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
+            if (needsTarget() and GetTarget())
+                ModifyTargetAttribute(GetTargetID(), targetAttrID, sourceAttrID, ecType, stacking);
+            else
+                ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
+            ++cur;
+        }
+    }
+
+    //active module class has a m_cycleTime variable that holds cycle time,
+    // based on character skills and specific module attributes.  -allan 19Dec15
+    SetTimer((uint32)DoCycle()); // Do initial cycle immediately while we start timer
 
     //DoEffect(true);
 }
@@ -136,7 +186,7 @@ void ActiveModule::Deactivate()
         or (m_ModuleState == MOD_DEACTIVATING))
         return;
 
-    m_AMPC->StopCycle();
+    m_Stop = true;
 
     //DoEffect(false);
 }
@@ -150,9 +200,9 @@ void ActiveModule::Overload()
     m_overLoaded = true;
     GenericModule::Overload();
 
-    if (m_Item->HasAttribute(AttrOverloadDurationBonus)) {
+    if (m_modRef->HasAttribute(AttrOverloadDurationBonus)) {
         m_cycleTime *= (1 + GetAttribute(AttrOverloadDurationBonus).get_float());
-        m_Item->SetAttribute(AttrDuration, m_cycleTime);
+        m_modRef->SetAttribute(AttrDuration, m_cycleTime);
     }
 }
 
@@ -160,9 +210,9 @@ void ActiveModule::DeOverload()
 {
     m_overLoaded = false;
     GenericModule::DeOverload();
-    if (m_Item->HasAttribute(AttrOverloadDurationBonus)) {
+    if (m_modRef->HasAttribute(AttrOverloadDurationBonus)) {
         m_cycleTime /= (1 + GetAttribute(AttrOverloadDurationBonus).get_float());
-        m_Item->SetAttribute(AttrDuration, m_cycleTime);
+        m_modRef->SetAttribute(AttrDuration, m_cycleTime);
     }
 }
 
@@ -181,12 +231,12 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
      *          [PyFloat 10000]                 << reloadTime (ms)
      */
     PyTuple* module = new PyTuple(1);
-        module->SetItem(0, new PyInt(m_Item->itemID()));
+        module->SetItem(0, new PyInt(m_modRef->itemID()));
     PyTuple* tmp = new PyTuple(3);
         tmp->SetItem(0, module);
         tmp->SetItem(1, new PyInt(charge->typeID()));
         tmp->SetItem(2, new PyInt(m_reloadTime));
-    m_Ship->GetPilot()->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
+    m_shipRef->GetPilot()->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
     m_reloadTimer.Start(m_reloadTime);
 }
 
@@ -199,7 +249,7 @@ void ActiveModule::UnloadCharge()
 
 double ActiveModule::DoCycle()
 {
-    if (m_Ship->GetPilot()->GetShipSE()->SysBubble()) {
+    if (m_shipRef->GetPilot()->GetShipSE()->SysBubble()) {
         _ShowCycle();
         //DoEffect();
         return m_cycleTime;
@@ -210,7 +260,13 @@ double ActiveModule::DoCycle()
 
 void ActiveModule::AbortCycle()
 {
-    m_AMPC->AbortCycle();
+    if (m_Stop or (GetModuleState() != MOD_ACTIVATED))
+        return;
+    // Immediately stop active cycle for things such as init warp, target left bubble, or miner deactivated by player:
+    m_Stop = true;
+    DeactivateCycle(true);
+    SetModuleState(MOD_ONLINE);
+    m_timer.Disable();
 }
 
 void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
@@ -220,14 +276,14 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
 
     std::string effectStr = "effects.";
     effectStr += effect;
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
 
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         m_targetID,
         (m_chargeLoaded?m_chargeRef->typeID():0),
         effectStr,
@@ -241,12 +297,12 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
     // Create Destiny Updates:
     //  there are slight variations on this.  look into and fix as required.
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
-        go.chargeTypeID = m_Item->typeID();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
+        go.chargeTypeID = m_modRef->typeID();
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
@@ -266,5 +322,80 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
     std::vector<PyTuple*> events;
     events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+}
+
+/*  moved from ActiveModuleProcessingComponent to consolidate code before/during module effect rewrite.
+ *
+ */
+void ActiveModule::DeactivateCycle(bool abort/*false*/)
+{
+    m_ModuleState = MOD_DEACTIVATING;
+    EVECalculationType ecType = CALC_NONE;
+    bool stacking = false;
+    uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
+    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr, end;
+    if (IsOverloaded()) {
+        itr = m_Effects->GetOverloadEffectsBegin();
+        end = m_Effects->GetOverloadEffectsEnd();
+        _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() -  there are %u OverLoaded effects to process", m_Effects->GetOverloadEffectsSize() );
+    } else {
+        itr = m_Effects->GetActiveEffectsBegin();
+        end = m_Effects->GetActiveEffectsEnd();
+        _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() -  there are %u Active effects to process", m_Effects->GetActiveEffectsSize() );
+    }
+    for (; itr != end; itr++) {
+        uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
+        _log(SHIP__MODULE_INFO, "AMPC::DeactivateCycle() -  there are %u attributes in effect %u", ids, itr->first );
+        while (cur < ids) {
+            testID = itr->second->GetTargetGroup(cur);
+            if (groupID != testID) { ++cur; continue; }
+            stacking = itr->second->GetStackingPenalty(cur);
+            targetAttrID = itr->second->GetTargetAttributeID(cur);
+            sourceAttrID = itr->second->GetSourceAttributeID(cur);
+            ecType = itr->second->GetReverseCalculationType(cur);
+            _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
+            itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
+            if (needsTarget() and GetTarget())
+                ModifyTargetAttribute(GetTargetID(), targetAttrID, sourceAttrID, ecType, stacking);
+            else
+                ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
+            ++cur;
+        }
+    }
+    StopCycle(abort);
+}
+
+void ActiveModule::ShouldProcessActiveCycle() {
+    if (m_Stop)
+        return;
+    if (ShipHasCapCharge())
+        ProcessActiveCycle();
+    else
+        m_Stop = true;
+}
+
+void ActiveModule::ProcessActiveCycle()
+{
+    if (m_Stop)
+        return;
+
+    // check if we are targeting another ship or not and apply attribute changes
+    //maybe we can have a check for modules that repeat the same attributes so we
+    //send the changes just once at activation and at deactivation      --in progress  -allan 19Dec15
+
+    // consume capacitor...this will be taken over by module effects when i get to that point.
+    EvilNumber capCapacity = m_shipRef->GetAttribute(AttrCapacitorCharge);
+    capCapacity -= GetAttribute(AttrCapacitorNeed);  // this is reset by modules that need it to be.
+    m_shipRef->SetAttribute(AttrCapacitorCharge, capCapacity);
+
+    // reset timer here, in the case of cycle time changing for fleet bonuses
+    SetTimer((uint32)DoCycle());
+}
+
+void ActiveModule::SetTimer(uint32 time) {
+    if (!time)
+        return;
+    _log(SHIP__MODULE_TRACE, "AMPC::SetTimer() - Started with %u ms.", time);
+    m_timer.Start(time);
 }

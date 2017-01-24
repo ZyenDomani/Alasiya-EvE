@@ -38,7 +38,7 @@ Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
 
     m_accessChance = 0;
 
-    pChar = m_Ship->GetPilot()->GetChar().get();
+    pChar = m_shipRef->GetPilot()->GetChar().get();
 }
 
 void Salvager::Activate(SystemEntity* pSE)
@@ -53,15 +53,15 @@ void Salvager::Activate(SystemEntity* pSE)
         m_targetID = pSE->GetID();
 
         // Activate active processing component timer:
-        m_AMPC->ActivateCycle();
+        ActivateCycle();
         //_ShowCycle();
         //m_ActiveModuleProc->ProcessActiveCycle();
     }
 }
 
 double Salvager::DoCycle() {
-    if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
-        or (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
+    if ((!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
+        or (!m_shipRef->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
     {
         Deactivate();
         return 0;
@@ -87,15 +87,15 @@ double Salvager::DoCycle() {
 
 void Salvager::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
 
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         m_targetID,
         0,
         "effects.Salvaging",
@@ -108,9 +108,9 @@ void Salvager::StopCycle(bool abort)
 
     // Create Destiny Updates:
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -129,17 +129,17 @@ void Salvager::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void Salvager::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         m_targetID,
         0,
         "effects.Salvaging",
@@ -152,9 +152,9 @@ void Salvager::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -173,7 +173,7 @@ void Salvager::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void Salvager::_SetCapNeed()
@@ -214,7 +214,7 @@ void Salvager::SendFailure()
     std::vector<PyTuple*> events;
         events.push_back(tup);
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void Salvager::CheckSuccess()
@@ -259,14 +259,14 @@ void Salvager::DropSalvage()
             itemRef = pChar->GetItemFactory()->SpawnItem(iLoot);
             if (!itemRef) // we'll get over it...continue
                 continue;
-            itemRef->Move(m_Ship->itemID(), flagCargoHold);
-            m_Ship->AddItem(itemRef);
+            itemRef->Move(m_shipRef->itemID(), flagCargoHold);
+            m_shipRef->AddItem(itemRef);
         }
     }
 
     m_accessChance = 0;
 
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
     // Create Destiny Updates:
     PyTuple* type = new PyTuple(2);
@@ -278,9 +278,9 @@ void Salvager::DropSalvage()
         tup->SetItem(0, new PyString("SalvagingSuccess"));
         tup->SetItem(1, dict);
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();
         ge.targetID = m_targetID;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -299,7 +299,7 @@ void Salvager::DropSalvage()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 
     if (!m_targetEntity->GetSelf()->GetInventory()->IsEmpty()) {
         std::map<uint32, InventoryItemRef> shipLoot;

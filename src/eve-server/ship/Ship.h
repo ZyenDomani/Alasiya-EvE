@@ -280,13 +280,9 @@ public:
 
     void UpdateHoldsUsedVolume();
 
-    // External Methods For use by hostile entities directing effects to this entity:
-    int32 ApplyRemoteEffect() { assert(true); }     // DO NOT CALL THIS YET!!!  This function needs to call down to ModuleManager::ApplyRemoteEffect with the proper argument list.
-    int32 RemoveRemoteEffect() { assert(true); }    // DO NOT CALL THIS YET!!!  This function needs to call down to ModuleManager::RemoveRemoteEffect with the proper argument list.
-
+    // template loading system
     using InventoryItem::_Load;
     virtual bool _Load();
-
 protected:
     // Template loader:
     template<class _Ty>
@@ -341,6 +337,8 @@ public:
 private:
     std::map<uint16, uint8> m_stackMap;
     std::map<uint16, float> m_resistMap;
+
+    std::unordered_map<uint16, GenericModule*> m_attribMap;    //* attrib storage  attrib, module
 
 };
 

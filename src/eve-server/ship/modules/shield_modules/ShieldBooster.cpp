@@ -34,15 +34,15 @@ ShieldBooster::ShieldBooster( InventoryItemRef item, ShipItemRef ship )
 
 void ShieldBooster::StopCycle(bool abort)
 {
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
 
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         0,
         0,
         "effects.ShieldBoosting",
@@ -55,9 +55,9 @@ void ShieldBooster::StopCycle(bool abort)
 
     // Create Destiny Updates:
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();
         ge.targetID = 0;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -76,12 +76,12 @@ void ShieldBooster::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double ShieldBooster::DoCycle()
 {
-        if (!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+        if (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
         {
             Deactivate();
             return 0;
@@ -89,25 +89,25 @@ double ShieldBooster::DoCycle()
         _ShowCycle();
 
         // Apply boost amount:
-        EvilNumber newShieldCharge = m_Ship->GetAttribute(AttrShieldCharge);
+        EvilNumber newShieldCharge = m_shipRef->GetAttribute(AttrShieldCharge);
         newShieldCharge += GetAttribute(AttrShieldBonus);
-        if (newShieldCharge > m_Ship->GetAttribute(AttrShieldCapacity)) {
-            newShieldCharge = m_Ship->GetAttribute(AttrShieldCapacity);
+        if (newShieldCharge > m_shipRef->GetAttribute(AttrShieldCapacity)) {
+            newShieldCharge = m_shipRef->GetAttribute(AttrShieldCapacity);
             Deactivate();
         }
 
-        m_Ship->SetAttribute(AttrShieldCharge, newShieldCharge);
+        m_shipRef->SetAttribute(AttrShieldCharge, newShieldCharge);
         return m_cycleTime;
 }
 
 void ShieldBooster::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-     m_Item->itemID(),
-     m_Item->typeID(),
+        m_shipRef,
+     m_modRef->itemID(),
+     m_modRef->typeID(),
      0,
      0,
      "effects.ShieldBoosting",
@@ -120,9 +120,9 @@ void ShieldBooster::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();;
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();;
         ge.targetID = 0;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -141,7 +141,7 @@ void ShieldBooster::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void ShieldBooster::_SetCapNeed()

@@ -33,27 +33,27 @@
 ArmorRepairer::ArmorRepairer( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
-    Character* pChar = m_Ship->GetPilot()->GetChar().get();
+    Character* pChar = m_shipRef->GetPilot()->GetChar().get();
     m_cycleTime *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillRepairSystems, true))));      //  5% decrease in cycle time
-    m_Item->SetAttribute(AttrDuration, m_cycleTime);
+    m_modRef->SetAttribute(AttrDuration, m_cycleTime);
 }
 
 void ArmorRepairer::StopCycle(bool abort)
 {
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = 0;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = 0;
         ge.other = go.Encode();
         ge.area = new PyList;
         ge.effectID = effectArmorRepair;
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
@@ -69,12 +69,12 @@ void ArmorRepairer::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double ArmorRepairer::DoCycle()
 {
-        if (!m_Ship->GetPilot()->GetShipSE()->SysBubble())
+        if (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
         {
             Deactivate();
             return 0;
@@ -82,13 +82,13 @@ double ArmorRepairer::DoCycle()
         _ShowCycle();
 
 		// Apply repair amount:
-        EvilNumber newDamageAmount = m_Ship->GetAttribute(AttrArmorDamage);
+        EvilNumber newDamageAmount = m_shipRef->GetAttribute(AttrArmorDamage);
         newDamageAmount -= GetAttribute(AttrArmorDamageAmount);
         if (newDamageAmount < 0) {
-            m_Ship->SetAttribute(AttrArmorDamage, 0);
+            m_shipRef->SetAttribute(AttrArmorDamage, 0);
             Deactivate();
         } else
-            m_Ship->SetAttribute(AttrArmorDamage, newDamageAmount);
+            m_shipRef->SetAttribute(AttrArmorDamage, newDamageAmount);
 
         return m_cycleTime;
 }
@@ -96,11 +96,11 @@ double ArmorRepairer::DoCycle()
 void ArmorRepairer::_ShowCycle()
 {
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-     m_Item->itemID(),
-     m_Item->typeID(),
+        m_shipRef,
+     m_modRef->itemID(),
+     m_modRef->typeID(),
      0,
      0,
      "effects.ArmorRepair",
@@ -113,12 +113,12 @@ void ArmorRepairer::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = 0;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = 0;
         ge.other = go.Encode();
@@ -138,7 +138,7 @@ void ArmorRepairer::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void ArmorRepairer::_SetCapNeed()

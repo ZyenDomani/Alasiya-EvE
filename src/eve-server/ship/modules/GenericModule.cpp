@@ -23,34 +23,29 @@
     Author:     Allan
 */
 
+#include "ship/Ship.h"
 #include "ship/modules/GenericModule.h"
-#include "ship/modules/components/ModifyModuleAttributesComponent.h"
-#include "ship/modules/components/ModifyShipAttributesComponent.h"
 
 GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
 {
-    m_Item = item;
-    m_Ship = ship;
+    m_modRef = item;
+    m_shipRef = ship;
 
-    m_Effects = new ModuleEffects(m_Item.get());
-    m_MMAC = new ModifyModuleAttributesComponent(this);
-    m_MSAC = new ModifyShipAttributesComponent(this, ship);
+    m_Effects = new ModuleEffects(m_modRef.get());
 
     m_ModuleState = MOD_UNFITTED;
     m_ChargeState = MOD_UNLOADED;
 
     m_repeat = 0;
     // incase module item has AttrIsOnline set to true....it shouldn't but this is a catchall.
-    m_Item->PutOffline();
+    m_modRef->PutOffline();
 }
 
 GenericModule::~GenericModule()
 {
-    m_Item->PutOffline();
+    m_modRef->PutOffline();
     //delete members
     SafeDelete(m_Effects);
-    SafeDelete(m_MMAC);
-    SafeDelete(m_MSAC);
 }
 
 /** @todo  this needs to be updated (as all module effects methods) to test for targetGroupIDs
@@ -70,13 +65,13 @@ void GenericModule::Online()
     if (m_ModuleState != MOD_OFFLINE)
         return;     // already online
 
-    m_Item->PutOnline(isRig());
+    m_modRef->PutOnline(isRig());
     m_ModuleState = MOD_ONLINE; // this must be set to online before calling msac or mmac.
 
     EVECalculationType ecType = CALC_NONE;
     bool stacking = false;
     typeTargetGroupIDlist targetIDs;
-    uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
+    uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
     std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Effects->GetOnlineEffectsBegin();
     _log(SHIP__MODULE_TRACE, "GenericModule::Online() -  there are %u effects to process", m_Effects->GetOnlineEffectsSize() );
     for (; itr != m_Effects->GetOnlineEffectsEnd(); itr++) {
@@ -100,7 +95,7 @@ void GenericModule::Online()
             ecType = itr->second->GetCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "GenericModule::Online() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
-            m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
+            ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
             ++cur;
             targetIDs.clear();
         }
@@ -120,7 +115,7 @@ void GenericModule::Offline()
     EVECalculationType ecType = CALC_NONE;
     bool stacking = false;
     typeTargetGroupIDlist targetIDs;
-    uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
+    uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
     std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Effects->GetOnlineEffectsBegin();
     _log(SHIP__MODULE_TRACE, "GenericModule::Offline() -  there are %u effects to process", m_Effects->GetOnlineEffectsSize() );
     for (; itr != m_Effects->GetOnlineEffectsEnd(); itr++) {
@@ -144,13 +139,47 @@ void GenericModule::Offline()
             ecType = itr->second->GetReverseCalculationType(cur);
             _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
                         itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
-            m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
+            ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
             ++cur;
             targetIDs.clear();
         }
     }
 
     m_ModuleState = MOD_OFFLINE;
-    m_Item->PutOffline();
+    m_modRef->PutOffline();
+}
+
+void GenericModule::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking) {
+    EvilNumber modVal = GetAttribute(sourceAttrID), startVal = m_shipRef->GetAttribute(targetAttrID), newVal = 0;
+    // check for stacking attributes here, and get stacked (cached) effectiveness.
+    if (stacking) {
+        // this method checks for resist attrib, and gets true stacked value based on all multipliers and modifiers
+        m_shipRef->CheckStacking(targetAttrID, type, GetModuleState(), newVal);
+    } else {
+        newVal = CalculateAttributeValue(startVal, modVal, type);
+    }
+
+    _log(SHIP__MODULE_TRACE, "MSAC::ModifyShipAttributes() -  origVal:%f, Mod:%f, newVal:%f, type:%i", \
+    startVal.get_float(), modVal.get_float(), newVal.get_float(), (int)type);
+    //set the attribute for the ship with the new modifier
+    if (!m_shipRef->SetAttribute(targetAttrID, newVal))
+        sLog.Error("MSAC::ModifyShipAttributes()","Failed to set attribute %u to %.3f on ship %u", targetAttrID, newVal.get_float(), m_shipRef->itemID());
+}
+
+void GenericModule::ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking) {
+    ShipItemRef target = m_shipRef->GetItemFactory()->GetShip(targetItemID);
+    if (target)
+        ModifyShipAttribute(target, targetAttrID, sourceAttrID, type, stacking);
+    else {
+        _log(SHIP__ERROR, "MSAC::ModifyTargetShipAttribute() - %s(%u): Failed to find target ship %u", \
+        m_shipRef->itemName().c_str(), m_shipRef->itemID(), targetItemID);
+        if (m_shipRef->HasPilot())
+            m_shipRef->GetPilot()->SendErrorMsg("Internal Server Error - Cannot find target.  Ref: ServerError 15623");
+    }
+}
+
+void GenericModule::ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type)
+{
+
 }
 

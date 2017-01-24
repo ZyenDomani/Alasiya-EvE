@@ -1,9 +1,9 @@
 
 --
--- Table structure for table `dgmSkillBonusModifiers`
+-- Table structure for table `dgmSkillEffects`
 --
 
-CREATE TABLE IF NOT EXISTS `dgmSkillBonusModifiers` (
+CREATE TABLE IF NOT EXISTS `dgmSkillEffects` (
   `skillID` int(11) DEFAULT NULL,
   `effectID` int(11) NOT NULL,
   `sourceAttributeID` int(11) NOT NULL,
@@ -19,10 +19,10 @@ CREATE TABLE IF NOT EXISTS `dgmSkillBonusModifiers` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `dgmSkillBonusModifiers`
+-- Dumping data for table `dgmSkillEffects`
 --
 
-INSERT INTO `dgmSkillBonusModifiers` (`skillID`, `effectID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `targetChargeSize`, `appliedPerLevel`, `affectingType`, `affectedType`) VALUES
+INSERT INTO `dgmSkillEffects` (`skillID`, `effectID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `targetChargeSize`, `appliedPerLevel`, `affectingType`, `affectedType`) VALUES
 (24613, 2429, 280, 763, 10, 'Advanced Drone Interfacing', 0, '407', 0, 1, 1, 2),
 (12484, 146, 292, 64, 0, 'Amarr Drone Specialization', 0, '12484', 0, 1, 1, 5),
 (12487, 146, 292, 64, 0, 'Caldari Drone Specialization', 0, '12487', 0, 1, 1, 5),

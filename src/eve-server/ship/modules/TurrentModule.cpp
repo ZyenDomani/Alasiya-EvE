@@ -40,7 +40,7 @@ TurrentModule::TurrentModule(InventoryItemRef item, ShipItemRef shipRef)
     m_damageModifier = GetAttribute(AttrDamageMultiplier).get_float();
     m_optimalSigRadius = GetAttribute(AttrOptimalSigRadius).get_int();
 
-    Character* pChar = m_Ship->GetPilot()->GetChar().get();
+    Character* pChar = m_shipRef->GetPilot()->GetChar().get();
     m_cycleTime *= (1 - ( 0.02 * (pChar->GetSkillLevel(skillGunnery, true))));      //  2% increase in rof (lower cycle times)
     m_cycleTime *= (1 - ( 0.04 * (pChar->GetSkillLevel(skillRapidFiring, true))));  //  4% increase in rof
     m_capNeed *= (1 - ( 0.05 * (pChar->GetSkillLevel(skillControlledBursts, true))));  //  5% decrease in cap need
@@ -55,12 +55,12 @@ TurrentModule::TurrentModule(InventoryItemRef item, ShipItemRef shipRef)
     // add ship bonuses here
 
     // save adjusted attributes
-    m_Item->SetAttribute(AttrSpeed, m_cycleTime);
-    m_Item->SetAttribute(AttrCapacitorNeed, m_capNeed);
-    m_Item->SetAttribute(AttrFalloff, m_falloff);
-    m_Item->SetAttribute(AttrMaxRange, m_maxRange);
-    m_Item->SetAttribute(AttrTrackingSpeed, m_trackingSpeed);
-    m_Item->SetAttribute(AttrOptimalSigRadius, m_optimalSigRadius);
+    m_modRef->SetAttribute(AttrSpeed, m_cycleTime);
+    m_modRef->SetAttribute(AttrCapacitorNeed, m_capNeed);
+    m_modRef->SetAttribute(AttrFalloff, m_falloff);
+    m_modRef->SetAttribute(AttrMaxRange, m_maxRange);
+    m_modRef->SetAttribute(AttrTrackingSpeed, m_trackingSpeed);
+    m_modRef->SetAttribute(AttrOptimalSigRadius, m_optimalSigRadius);
     //m_Item->SetAttribute(AttrDamageMultiplier, m_damageModifier);  set in individual module code
 }
 
@@ -69,8 +69,8 @@ void TurrentModule::Overload()
     GenericModule::Overload();
     m_damageModifier *= (1 + (GetAttribute(AttrOverloadDamageModifier).get_float() /100));
     m_cycleTime *= (1 + GetAttribute(AttrOverloadRofBonus).get_float());
-    m_Item->SetAttribute(AttrSpeed, m_cycleTime);
-    m_Item->SetAttribute(AttrDamageMultiplier, m_damageModifier);
+    m_modRef->SetAttribute(AttrSpeed, m_cycleTime);
+    m_modRef->SetAttribute(AttrDamageMultiplier, m_damageModifier);
 }
 
 void TurrentModule::DeOverload()
@@ -78,8 +78,8 @@ void TurrentModule::DeOverload()
     m_damageModifier /= (1 + (GetAttribute(AttrOverloadDamageModifier).get_float() /100));
     m_cycleTime /= (1 + GetAttribute(AttrOverloadRofBonus).get_float());
     GenericModule::DeOverload();
-    m_Item->SetAttribute(AttrSpeed, m_cycleTime);
-    m_Item->SetAttribute(AttrDamageMultiplier, m_damageModifier);
+    m_modRef->SetAttribute(AttrSpeed, m_cycleTime);
+    m_modRef->SetAttribute(AttrDamageMultiplier, m_damageModifier);
 }
 
 void TurrentModule::LoadCharge(InventoryItemRef charge)

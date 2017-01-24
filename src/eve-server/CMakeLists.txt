@@ -20,6 +20,7 @@ SET( INCLUDE
      "${TARGET_INCLUDE_DIR}/Client.h"
      "${TARGET_INCLUDE_DIR}/ClientSession.h"
      "${TARGET_INCLUDE_DIR}/ConsoleCommands.h"
+     "${TARGET_INCLUDE_DIR}/EffectsProcessor.h"
      "${TARGET_INCLUDE_DIR}/EntityList.h"
      "${TARGET_INCLUDE_DIR}/EVEServerConfig.h"
      "${TARGET_INCLUDE_DIR}/LiveUpdateDB.h"
@@ -38,6 +39,7 @@ SET( SOURCE
      "${TARGET_SOURCE_DIR}/Client.cpp"
      "${TARGET_SOURCE_DIR}/ClientSession.cpp"
      "${TARGET_SOURCE_DIR}/ConsoleCommands.cpp"
+     "${TARGET_SOURCE_DIR}/EffectsProcessor.cpp"
      "${TARGET_SOURCE_DIR}/EntityList.cpp"
      "${TARGET_SOURCE_DIR}/EVEServerConfig.cpp"
      "${TARGET_SOURCE_DIR}/LiveUpdateDB.cpp"
@@ -464,15 +466,6 @@ SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/weapon_modules/SuperWeapon.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/weapon_modules/TurrentFormulas.cpp")
 
-SET( ship_modules_components_INCLUDE
-     "${TARGET_INCLUDE_DIR}/ship/modules/components/ActiveModuleProcessingComponent.h"
-     "${TARGET_INCLUDE_DIR}/ship/modules/components/ModifyModuleAttributesComponent.h"
-     "${TARGET_INCLUDE_DIR}/ship/modules/components/ModifyShipAttributesComponent.h" )
-SET( ship_modules_components_SOURCE
-     "${TARGET_SOURCE_DIR}/ship/modules/components/ActiveModuleProcessingComponent.cpp"
-     "${TARGET_SOURCE_DIR}/ship/modules/components/ModifyModuleAttributesComponent.cpp"
-     "${TARGET_SOURCE_DIR}/ship/modules/components/ModifyShipAttributesComponent.cpp" )
-
 SET( standing_INCLUDE
      "${TARGET_INCLUDE_DIR}/standing/FactionWarMgrDB.h"
      "${TARGET_INCLUDE_DIR}/standing/FactionWarMgrService.h"
@@ -610,7 +603,6 @@ SOURCE_GROUP( "src\\scanning"      FILES ${scan_INCLUDE} )
 SOURCE_GROUP( "src\\search"        FILES ${search_INCLUDE} )
 SOURCE_GROUP( "src\\ship"          FILES ${ship_INCLUDE} )
 SOURCE_GROUP( "src\\ship\\modules" FILES ${ship_modules_INCLUDE} )
-SOURCE_GROUP( "src\\ship\\modules\\components" FILES ${ship_modules_components_INCLUDE} )
 SOURCE_GROUP( "src\\standing"      FILES ${standing_INCLUDE} )
 SOURCE_GROUP( "src\\station"       FILES ${station_INCLUDE} )
 SOURCE_GROUP( "src\\system"        FILES ${system_INCLUDE} )
@@ -642,7 +634,6 @@ SOURCE_GROUP( "src\\scanning"      FILES ${scan_SOURCE} )
 SOURCE_GROUP( "src\\search"        FILES ${search_SOURCE} )
 SOURCE_GROUP( "src\\ship"          FILES ${ship_SOURCE} )
 SOURCE_GROUP( "src\\ship\\modules" FILES ${ship_modules_SOURCE} )
-SOURCE_GROUP( "src\\ship\\modules\\components" FILES ${ship_modules_components_SOURCE} )
 SOURCE_GROUP( "src\\standing"      FILES ${standing_SOURCE} )
 SOURCE_GROUP( "src\\station"       FILES ${station_SOURCE} )
 SOURCE_GROUP( "src\\system"        FILES ${system_SOURCE} )
@@ -675,7 +666,6 @@ ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${search_INCLUDE}         ${search_SOURCE}
                 ${ship_INCLUDE}           ${ship_SOURCE}
                 ${ship_modules_INCLUDE}   ${ship_modules_SOURCE}
-                ${ship_modules_components_INCLUDE} ${ship_modules_components_SOURCE}
                 ${standing_INCLUDE}       ${standing_SOURCE}
                 ${station_INCLUDE}        ${station_SOURCE}
                 ${system_INCLUDE}         ${system_SOURCE}
@@ -685,11 +675,9 @@ TARGET_BUILD_PCH( "${TARGET_NAME}"
                   "${TARGET_INCLUDE_DIR}/eve-server.h"
                   "${TARGET_SOURCE_DIR}/eve-server.cpp" )
 TARGET_INCLUDE_DIRECTORIES( "${TARGET_NAME}"
-                            #"${LUA_INCLUDE_DIR}"
                             ${eve-common_INCLUDE_DIRS}
                             "${TARGET_INCLUDE_DIR}" )
 TARGET_LINK_LIBRARIES( "${TARGET_NAME}"
-                       #${LUA_LIBRARIES}
                        "eve-common" )
 
 INSTALL( TARGETS "${TARGET_NAME}"

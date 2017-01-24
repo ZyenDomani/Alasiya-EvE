@@ -29,9 +29,9 @@
 
 #include "EVEServerConfig.h"
 #include "inventory/InventoryItem.h"
-#include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
 #include "ship/modules/ModuleEffects.h"
+
 
 class ModuleEffects;
 class ModifyModuleAttributesComponent;
@@ -48,17 +48,18 @@ public:
     void Offline();
     void Online();
 
-    void Repair()                                       { m_Item->ResetAttribute(AttrHP, true); }
-    void Repair(EvilNumber amount)                      { m_Item->SetAttribute(AttrHP, m_Item->GetAttribute(AttrHP) + amount); }
+    void Repair()                                       { m_modRef->ResetAttribute(AttrHP, true); }
+    void Repair(EvilNumber amount)                      { m_modRef->SetAttribute(AttrHP, m_modRef->GetAttribute(AttrHP) + amount); }
 
-    bool HasAttribute(uint32 attrID)                    { return m_Item->HasAttribute(attrID); }
-    void SetAttribute(uint32 attrID, EvilNumber val)    { m_Item->SetAttribute(attrID, val); }
-    void ResetAttribute(uint32 attrID)                  { m_Item->ResetAttribute(attrID); }
-    EvilNumber GetAttribute(uint32 attrID)              { return m_Item->GetAttribute(attrID); }
+    bool HasAttribute(uint32 attrID)                    { return m_modRef->HasAttribute(attrID); }
+    void SetAttribute(uint32 attrID, EvilNumber val)    { m_modRef->SetAttribute(attrID, val); }
+    void ResetAttribute(uint32 attrID)                  { m_modRef->ResetAttribute(attrID); }
+    EvilNumber GetAttribute(uint32 attrID)              { return m_modRef->GetAttribute(attrID); }
 
     void SetRepeat(int32 repeat)                        { m_repeat = repeat; }
 
-    ShipItemRef GetShipRef()                            { return m_Ship; }
+    // not used.  throws compile error
+    //ShipItemRef GetShipRef()                            { return m_shipRef; }
 
     /* class type helpers.  public for anyone to access. */
     virtual bool IsWarpSafe() const                     { return true; }
@@ -71,7 +72,7 @@ public:
     virtual bool IsTurrentModule()                      { return false; }
 
     /* generic access functions handled here, but set elsewhere.  slower than above */
-    bool isOnline()                                     { return (m_Item->GetAttribute(AttrIsOnline) == 1); }
+    bool isOnline()                                     { return (m_modRef->GetAttribute(AttrIsOnline) == 1); }
     bool isLowPower()                                   { return m_Effects->isLowSlot(); }
     bool isHighPower()                                  { return m_Effects->isHighSlot(); }
     bool isMediumPower()                                { return m_Effects->isMediumSlot(); }
@@ -79,11 +80,11 @@ public:
     bool isSubSystem()                                  { return m_Effects->isSubSystem(); }
     bool needsTarget()                                  { return m_Effects->needsTarget(); }
 
-    uint32 itemID()                                     { return m_Item->itemID(); }
-    uint32 typeID()                                     { return m_Item->typeID(); }
-    uint32 groupID()                                    { return m_Item->groupID(); }
-    EVEItemFlags flag()                                 { return m_Item->flag(); }
-    InventoryItemRef getItem()                          { return m_Item; }
+    uint32 itemID()                                     { return m_modRef->itemID(); }
+    uint32 typeID()                                     { return m_modRef->typeID(); }
+    uint32 groupID()                                    { return m_modRef->groupID(); }
+    EVEItemFlags flag()                                 { return m_modRef->flag(); }
+    InventoryItemRef getItem()                          { return m_modRef; }
 
 	void SetModuleState(ModuleStates state)             { m_ModuleState = state; }
 	ModuleStates GetModuleState()                       { return m_ModuleState; }
@@ -118,19 +119,16 @@ public:
 
 	/*  these have to be public for ampc/msac/mmac to access it's methods */
     ModuleEffects*                  m_Effects;          /* we own this */
-    ModifyModuleAttributesComponent*  m_MMAC;           /* we own this */
-    ModifyShipAttributesComponent*  m_MSAC;             /* we own this */
 
 protected:
-    InventoryItemRef                m_Item;
-    ShipItemRef                     m_Ship;
+    InventoryItemRef                m_modRef;
+    ShipItemRef                     m_shipRef;
 
     ModuleStates                    m_ModuleState;
     ChargeStates                    m_ChargeState;
 
     int32                           m_repeat;
 
-private:
     void ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
     void ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
     void ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);

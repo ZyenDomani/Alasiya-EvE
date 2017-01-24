@@ -46,7 +46,7 @@ void SuperWeapon::Activate(SystemEntity* pSE)
     m_targetID = pSE->GetID();
 
 	// Activate active processing component timer:
-	m_AMPC->ActivateCycle();
+	ActivateCycle();
 	//_ShowCycle();
 	//m_ActiveModuleProc->ProcessActiveCycle();
 }
@@ -58,7 +58,7 @@ void SuperWeapon::StopCycle(bool abort)
 
     std::string effectString = "";
     uint32 effectID = 0;
-	switch (m_Item->typeID())
+	switch (m_modRef->typeID())
 	{
 		case 24550:
 			effectString = "effects.SuperWeaponAmarr";
@@ -81,15 +81,15 @@ void SuperWeapon::StopCycle(bool abort)
 			break;
 	}
 
-    uint32 timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
 
 	// Create Special Effect:
-	m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+	m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
 	(
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         0,
         0,
         effectString,
@@ -101,9 +101,9 @@ void SuperWeapon::StopCycle(bool abort)
     );
 
 	GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();
         ge.targetID = 0;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -122,13 +122,13 @@ void SuperWeapon::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double SuperWeapon::DoCycle()
 {
-        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
-            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))
+        if ((!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_shipRef->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))
             /*|| (!m_chargeLoaded) || (!m_chargeRef)*/ )
         {
             Deactivate();
@@ -158,8 +158,8 @@ double SuperWeapon::DoCycle()
 		//    and calculate distance from target to calculate area-of-effect damage using some 1/x formula, where damage sustained
 		//    drops off the further away from the primary target.
 
-        Damage d(m_Ship->GetPilot()->GetShipSE(),
-                 m_Item,
+        Damage d(m_shipRef->GetPilot()->GetShipSE(),
+                 m_modRef,
                  m_chargeRef->GetAttribute(AttrKineticDamage).get_float(),     // kinetic damage
                  m_chargeRef->GetAttribute(AttrThermalDamage).get_float(),     // thermal damage
                  m_chargeRef->GetAttribute(AttrEmDamage).get_float(),     // em damage
@@ -179,7 +179,7 @@ void SuperWeapon::_ShowCycle()
 {
     std::string effectString = "";
     uint32 effectID = 0;
-	switch (m_Item->typeID())
+	switch (m_modRef->typeID())
 	{
 	case 24550:
 		effectString = "effects.SuperWeaponAmarr";
@@ -203,11 +203,11 @@ void SuperWeapon::_ShowCycle()
 	}
 
 	// Create Special Effect:
-	m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+	m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
 	(
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         0,
         0,
         effectString,
@@ -220,9 +220,9 @@ void SuperWeapon::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
-        ge.shipID = m_Ship->itemID();;
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
+        ge.shipID = m_shipRef->itemID();;
         ge.targetID = 0;
         ge.other = new PyNone();
         ge.area = new PyList;
@@ -241,7 +241,7 @@ void SuperWeapon::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void SuperWeapon::_SetCapNeed()

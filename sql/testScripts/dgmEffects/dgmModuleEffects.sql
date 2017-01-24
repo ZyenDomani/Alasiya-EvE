@@ -1,46 +1,29 @@
 
 --
--- Table structure for table `dgmEffectsInfo`
+-- Table structure for table `dgmModuleEffects`
 --
 
-CREATE TABLE `dgmEffectsInfo` (
+CREATE TABLE `dgmModuleEffects` (
   `effectID` int(11) DEFAULT NULL,
-  `sourceAttributeID` int(11) NOT NULL,
-  `targetAttributeID` int(11) NOT NULL,
-  `calculationTypeID` int(11) NOT NULL,
   `description` varchar(500) NOT NULL,
-  `reverseCalculationTypeID` int(11) NOT NULL,
-  `targetGroupIDs` varchar(500) NOT NULL,
-  `stackingPenalty` int(11) NOT NULL,
-  `effectState` int(11) NOT NULL,
+  `sourceAttribute` int(11) NOT NULL,
+  `targetAttribute` int(11) NOT NULL,
+  `calculation` int(11) NOT NULL,
+  `rCalculation` int(11) NOT NULL,
+  `affectedGrps` varchar(500) NOT NULL,
+  `stacked` int(11) NOT NULL,
+  `state` int(11) NOT NULL,
   `targetType` int(11) NOT NULL,
-  `targetGroup` int(11) NOT NULL
+  `effectGrp` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `dgmEffectsInfo`
+-- Dumping data for table `dgmModuleEffects`
 --
-/*          this is the data for 'targetType' field.
-    // 0: zero value.  undefined
-    EFFECT_UNDEFINED            = 0,
-    // 1: the target is the ship to which the module is fitted
-    EFFECT_SHIP                 = 1,
-    // 2: the target is a module fit to same ship. use 'targetGroupIDs' to decode affected groups
-    EFFECT_MODULE               = 2,
-    // 3: the target is a loaded charge.  use 'targetGroupIDs' to decode affected groups of loaded charges
-    EFFECT_LOADED_CHARGE        = 3,
-    // 4: the target is the current target of the ship to which the module is fitted
-    EFFECT_TARGET               = 4,
-    // 5: the target is a loaded module  - this could use EFFECT_MODULE
-    EFFECT_CHARGE               = 5,
-    // 6: the target of the effect is the module's own attribute(s)  - maybe unused
-    EFFECT_TARGET_SELF          = 6,
-    // 7: the effect acts upon the character's attribute specific to the effect  - maybe unused.
-    EFFECT_CHARACTER            = 7
-    */
-INSERT INTO `dgmEffectsInfo` (`effectID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `stackingPenalty`, `effectState`, `targetType`, `targetGroup`)
+
+INSERT INTO `dgmModuleEffects` (`effectID`, `sourceAttribute`, `targetAttribute`, `calculation`, `description`, `rCalculation`, `affectedGrps`, `stacked`, `state`, `targetType`, `effectGrp`)
 VALUES
--- ID, src, targ, calc, des, rcalc, tgrpID, stack, state, targetType, targetGroup
+-- ID, des, srcAttr, targAttr, calc, rcalc, affectedGrps, stacked?, state, targetType, effectGrp
 -- common for all modules
 (16, 30, 15, 1, 'PG -> PG_Used', 8, '6', 0, 2, 1, 0),
 (16, 50, 49, 1, 'CPU -> CPU_Used', 8, '6', 0, 2, 1, 0),
@@ -52,30 +35,30 @@ VALUES
 -- cpu output
 (536, 202, 48, 5, 'Co-Processor - CPU Output Bonus', 25, '6', 0, 2, 1, 285),
 -- pg
-(56, 145, 11, 5, 'Power Diagnostic - PG', 25, '6', 0, 2, 1, 766),
-(56, 145, 11, 5, 'Reactor Control - PG', 25, '6', 0, 2, 1, 769),
-(627, 549, 11, 1, 'Auxiliary Power Core - PG', 8, '6', 0, 2, 1, 339),
+(56, 145, 11, 5, 'Power Diagnostic - PG Output Bonus', 25, '6', 0, 2, 1, 766),
+(56, 145, 11, 5, 'Reactor Control - PG Output Bonus', 25, '6', 0, 2, 1, 769),
+(627, 549, 11, 1, 'Auxiliary Power Core - PG Output Bonus', 8, '6', 0, 2, 1, 339),
 -- cap capacity
-(25, 67, 482, 1, 'Capacitor Battery - Cap Capacity', 8, '6', 0, 2, 1, 61),
-(58, 147, 482, 5, 'AB/MWD Cap Penalty', 25, '6', 0, 2, 1, 46),
-(58, 147, 482, 5, 'Cap Flux Coil - Cap Capacity', 25, '6', 0, 2, 1, 768),
-(58, 147, 482, 5, 'Power Diagnostic - Cap Capacity', 25, '6', 0, 2, 1, 766),
+(25, 67, 482, 1, 'Capacitor Battery - Cap Capacity Bonus', 8, '6', 0, 2, 1, 61),
+(58, 147, 482, 5, 'AB/MWD Cap Capacity Penalty', 25, '6', 0, 2, 1, 46),
+(58, 147, 482, 5, 'Cap Flux Coil - Cap Capacity Bonus', 25, '6', 0, 2, 1, 768),
+(58, 147, 482, 5, 'Power Diagnostic - Cap Capacity Bonus', 25, '6', 0, 2, 1, 766),
 -- cap recharge
-(51, 144, 55, 5, 'Cap Flux Coil - Cap Recharge Rate', 25, '6', 0, 2, 1, 768),
-(51, 144, 55, 5, 'Cap Power Relay - Cap Recharge Rate', 25, '6', 0, 2, 1, 767),
-(51, 144, 55, 5, 'Cap Recharger - Cap Recharge Rate', 25, '6', 0, 2, 1, 43),
-(51, 144, 55, 5, 'Power Diagnostic - Cap Recharge Rate', 25, '6', 0, 2, 1, 766),
-(51, 144, 55, 5, 'Power Relay - Cap Recharge Rate', 25, '6', 0, 2, 1, 57),
+(51, 144, 55, 5, 'Cap Flux Coil - Cap Recharge Rate Bonus', 25, '6', 0, 2, 1, 768),
+(51, 144, 55, 5, 'Cap Power Relay - Cap Recharge Rate Bonus', 25, '6', 0, 2, 1, 767),
+(51, 144, 55, 5, 'Cap Recharger - Cap Recharge Rate Bonus', 25, '6', 0, 2, 1, 43),
+(51, 144, 55, 5, 'Power Diagnostic - Cap Recharge Rate Bonus', 25, '6', 0, 2, 1, 766),
+(51, 144, 55, 5, 'Power Relay - Cap Recharge Rate Bonus', 25, '6', 0, 2, 1, 57),
 -- inertia mods
 (657, 169, 70, 56, 'NF Structure - Inertia Bonus', 57, '6', 1, 2, 1, 763),
 (657, 169, 70, 56, 'Reinforced Bulkhead - Inertia Penalty', 57, '6', 1, 2, 1, 78),
-(657, 169, 70, 56, 'IStab - Inertia Modifier', 57, '6', 1, 2, 1, 762),
+(657, 169, 70, 56, 'IStab - Inertia Bonus', 57, '6', 1, 2, 1, 762),
 -- sig radius mods
 (1254, 554, 552, 54, 'MWD Sig Radius Penalty', 55, '6', 1, 12, 1, 46),
 (2029, 983, 552, 1, 'Shield Extenders - Sig Radius Penality', 8, '6', 1, 2, 1, 38),
 (2644, 554, 552, 54, 'IStab - Sig Radius Penalty', 55, '6', 1, 2, 1, 762),
 -- mass mods
-(1254, 796, 4, 1, 'AB/MWD Mass addition', 8, '6', 1, 12, 1, 46),
+(1254, 796, 4, 1, 'AB/MWD Mass Addition', 8, '6', 1, 12, 1, 46),
 (1959, 796, 4, 1, 'Armor Plates - Mass Addition', 8, '6', 0, 2, 1, 329),
 -- cargo cap
 (59, 149, 38, 5, 'Exp Cargohold - Cargo Cap Bonus', 25, '6', 0, 2, 1, 765),
@@ -89,7 +72,7 @@ VALUES
 (3046, 306, 37, 5, 'Exp Cargohold - Velocity Penalty', 25, '6', 1, 2, 1, 765),
 -- warp core str
 (670, 105, 21, 1, 'Warp Stab - Strength Bonus', 8, '6', 0, 2, 1, 315),
-(3725, 105, 21, 1, 'Warp Core Strength', 8, '6', 0, 2, 1, 52),
+(3725, 105, 21, 1, 'Warp Core Strength Bonus', 8, '6', 0, 2, 1, 52),
 -- target range
 (2646, 309, 76, 56, 'Warp Stab - Targeting Range Penalty', 57, '6', 1, 2, 1, 315),
 -- scan res

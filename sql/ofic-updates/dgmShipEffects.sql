@@ -1,9 +1,9 @@
 
 --
--- Table structure for table `dgmShipBonusModifiers`
+-- Table structure for table `dgmShipEffects`
 --
 
-CREATE TABLE IF NOT EXISTS `dgmShipBonusModifiers` (
+CREATE TABLE IF NOT EXISTS `dgmShipEffects` (
   `shipID` int(11) DEFAULT NULL,
   `effectID` int(11) NOT NULL,
   `attributeSkillID` int(11) NOT NULL,
@@ -19,10 +19,10 @@ CREATE TABLE IF NOT EXISTS `dgmShipBonusModifiers` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `dgmShipBonusModifiers`
+-- Dumping data for table `dgmShipEffects`
 --
 
-INSERT INTO `dgmShipBonusModifiers` (`shipID`, `effectID`, `attributeSkillID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `appliedPerLevel`, `affectingType`, `affectedType`) VALUES
+INSERT INTO `dgmShipEffects` (`shipID`, `effectID`, `attributeSkillID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `appliedPerLevel`, `affectingType`, `affectedType`) VALUES
 (24692, 0, 3339, 585, 64, 0, 'Large Energy Turret Damage', 0, '569;573', 1, 1, 4),
 (24692, 0, 3339, 492, 267, 2, 'Armor EM Resistance', 0, '24692', 1, 1, 1),
 (24692, 0, 3339, 492, 268, 2, 'Armor Explosive Resistance', 0, '24692', 1, 1, 1),
@@ -618,7 +618,7 @@ INSERT INTO `dgmShipBonusModifiers` (`shipID`, `effectID`, `attributeSkillID`, `
 (12747, 0, 19719, 807, 263, 0, 'Shield HP', 0, '12747', 1, 1, 1),
 (12747, 0, 19719, 807, 72, 0, 'Shield HP (Extenders)', 0, '38', 1, 1, 2),
 (12747, 0, 19719, 807, 68, 0, 'Shield Booster Boost', 0, '40;1156', 1, 1, 2);
-INSERT INTO `dgmShipBonusModifiers` (`shipID`, `effectID`, `attributeSkillID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `appliedPerLevel`, `affectingType`, `affectedType`) VALUES
+INSERT INTO `dgmShipEffects` (`shipID`, `effectID`, `attributeSkillID`, `sourceAttributeID`, `targetAttributeID`, `calculationTypeID`, `description`, `reverseCalculationTypeID`, `targetGroupIDs`, `appliedPerLevel`, `affectingType`, `affectedType`) VALUES
 (609, 0, 3328, 462, 64, 0, 'Small Hybrid Turret Damage', 0, '564;561', 1, 1, 4),
 (609, 0, 3328, 586, 309, 0, 'Remote Sensor Damp Range', 0, '208', 1, 1, 2),
 (609, 0, 3328, 586, 566, 0, 'Remote Sensor Damp Res', 0, '208', 1, 1, 2),

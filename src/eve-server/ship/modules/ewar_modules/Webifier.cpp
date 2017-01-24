@@ -44,7 +44,7 @@ void Webifier::Activate(SystemEntity* pSE)
     m_targetID = pSE->GetID();
 
 	// Activate active processing component timer:
-	m_AMPC->ActivateCycle();
+	ActivateCycle();
 	//_ShowCycle();
 
     m_originalSpeed = pDestiny->GetMaxVelocity();
@@ -69,15 +69,15 @@ void Webifier::Deactivate()
 
 void Webifier::StopCycle(bool abort)
 {
-    double timeLeft = m_AMPC->GetRemainingCycleTimeMS();
+    double timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
 
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         m_targetID,
         0,
         "effects.decreaseTargetSpeed",
@@ -90,12 +90,12 @@ void Webifier::StopCycle(bool abort)
 
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = 0;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
@@ -115,13 +115,13 @@ void Webifier::StopCycle(bool abort)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 double Webifier::DoCycle()
 {
-        if ((!m_Ship->GetPilot()->GetShipSE()->SysBubble())
-            || (!m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
+        if ((!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
+            || (!m_shipRef->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID)) )
         {
             Deactivate();
             return 0;
@@ -158,11 +158,11 @@ void Webifier::_ShowCycle()
                         [PyNone]
                         */
     // Create Special Effect:
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect
     (
-        m_Ship,
-        m_Item->itemID(),
-        m_Item->typeID(),
+        m_shipRef,
+        m_modRef->itemID(),
+        m_modRef->typeID(),
         m_targetID,
         0,
         "effects.decreaseTargetSpeed",
@@ -175,12 +175,12 @@ void Webifier::_ShowCycle()
 
     // Create Destiny Updates:
     GodmaOther go;
-        go.shipID = m_Ship->itemID();
-        go.slotID = m_Item->flag();
+        go.shipID = m_shipRef->itemID();
+        go.slotID = m_modRef->flag();
         go.chargeTypeID = 0;
     GodmaEnvironment ge;
-        ge.selfID = m_Item->itemID();
-        ge.charID = m_Ship->ownerID();
+        ge.selfID = m_modRef->itemID();
+        ge.charID = m_shipRef->ownerID();
         ge.shipID = go.shipID;
         ge.targetID = m_targetID;
         ge.other = go.Encode();
@@ -200,7 +200,7 @@ void Webifier::_ShowCycle()
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
 void Webifier::_SetCapNeed()
