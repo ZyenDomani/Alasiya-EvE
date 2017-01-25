@@ -29,6 +29,7 @@
 
 #include "EVEServerConfig.h"
 #include "inventory/InventoryItem.h"
+#include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
 #include "ship/modules/ModuleEffects.h"
 
@@ -57,9 +58,6 @@ public:
     EvilNumber GetAttribute(uint32 attrID)              { return m_modRef->GetAttribute(attrID); }
 
     void SetRepeat(int32 repeat)                        { m_repeat = repeat; }
-
-    // not used.  throws compile error
-    //ShipItemRef GetShipRef()                            { return m_shipRef; }
 
     /* class type helpers.  public for anyone to access. */
     virtual bool IsWarpSafe() const                     { return true; }

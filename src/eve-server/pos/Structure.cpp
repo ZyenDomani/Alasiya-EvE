@@ -26,7 +26,6 @@
 
 #include "eve-server.h"
 
-#include "inventory/AttributeEnum.h"
 #include "pos/Structure.h"
 #include "system/DestinyManager.h"
 #include "system/SystemManager.h"
@@ -35,12 +34,7 @@
 /*
  * Structure
  */
-StructureItem::StructureItem(
-    ItemFactory &_factory,
-    uint32 _structureID,
-    // InventoryItem stuff:
-    const ItemType &_itemType,
-    const ItemData &_data)
+StructureItem::StructureItem(ItemFactory &_factory, uint32 _structureID, const ItemType &_itemType, const ItemData &_data)
 : InventoryItem(_factory, _structureID, _itemType, _data)
 {
     m_inventory = new Inventory(InventoryItemRef(this));
@@ -52,24 +46,21 @@ StructureItem::~StructureItem()
     SafeDelete(m_inventory);
 }
 
-StructureItemRef StructureItem::Load(ItemFactory &factory, uint32 structureID) {
+StructureItemRef StructureItem::Load(ItemFactory &factory, uint32 structureID)
+{
     return InventoryItem::Load<StructureItem>( factory, structureID );
 }
 
-bool StructureItem::_Load() {
+bool StructureItem::_Load()
+{
     if( !m_inventory->LoadContents( &m_factory ) )
         return false;
 
     return InventoryItem::_Load();
 }
 
-template<class _Ty>
-RefPtr<_Ty> StructureItem::_LoadStructure(ItemFactory &factory, uint32 structureID, const ItemType &itemType, const ItemData &data) {
-    // we don't need any additional stuff
-    return StructureItemRef( new StructureItem( factory, structureID, itemType, data ) );
-}
-
-StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data) {
+StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data)
+{
     uint32 structureID = StructureItem::CreateItemID( factory, data );
     if (!structureID)
         return StructureItemRef();
@@ -112,7 +103,8 @@ StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data) {
     return sRef;
 }
 
-uint32 StructureItem::CreateItemID(ItemFactory &factory, ItemData &data) {
+uint32 StructureItem::CreateItemID(ItemFactory &factory, ItemData &data)
+{
     return InventoryItem::CreateItemID( factory, data );
 }
 
@@ -124,7 +116,8 @@ void StructureItem::Delete()
     InventoryItem::Delete();
 }
 
-void StructureItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const {
+void StructureItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
+{
     /** @todo update this to new inventory system  */
     EvilNumber capacityUsed(0);
     std::vector<InventoryItemRef> items;

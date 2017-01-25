@@ -30,7 +30,9 @@
 #include "ship/modules/ActiveModule.h"
 
 ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
-: GenericModule(item, ship)
+: GenericModule(item, ship),
+m_timer(1000),
+m_reloadTimer(10000)
 {
     m_targetEntity = nullptr;
     /** @todo  bubble isnt ready yet.  will have to update every time we change bubble */
@@ -60,9 +62,9 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
     if (m_modRef->HasAttribute(AttrCapacitorNeed))
         m_capNeed = GetAttribute(AttrCapacitorNeed).get_float();
 
-    m_warpSafe = (GetAttribute(AttrDisallowActivateOnWarp).get_int() ? false : true );
+    m_warpSafe = GetAttribute(AttrDisallowActivateOnWarp).get_bool();
 
-    // this is internal variable only.
+    // this is an internal variable only.
     m_reloadTime = GetAttribute(AttrReloadTime).get_int();
     /* our db doesnt have reload times for launchers or projectile turrents.
      * set default of 4s for turrents, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.

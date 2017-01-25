@@ -100,12 +100,11 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static _Ty *_LoadBlueprintType(ItemFactory& factory, uint32 typeID,
-        // ItemType stuff:
-        const ItemGroup& group, const TypeData& data,
-        // BlueprintType stuff:
-        const BlueprintType *parentBlueprintType, const ItemType& productType, const BlueprintTypeData& bpData
-    );
+    static _Ty *_LoadBlueprintType(ItemFactory& factory, uint32 typeID, const ItemGroup& group, const TypeData& data,
+        const BlueprintType *parentBlueprintType, const ItemType& productType, const BlueprintTypeData& bpData)
+    {
+        return new BlueprintType(typeID, group, data, parentBlueprintType, productType, bpData );
+    }
 
     /*
      * Data members
@@ -188,7 +187,6 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem(ItemFactory& factory, uint32 blueprintID, const ItemType& type, const ItemData& data)
     {
-        // check it's blueprint type
         if( type.categoryID() != EVEDB::invCategories::Blueprint )
         {
             sLog.Error("Blueprint", "Trying to load %s as Blueprint.", type.category().name().c_str() );
@@ -205,12 +203,10 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadBlueprint(ItemFactory& factory, uint32 blueprintID,
-        // InventoryItem stuff:
-        const BlueprintType& bpType, const ItemData& data,
-        // Blueprint stuff:
-        BlueprintData& bpData
-    );
+    static RefPtr<_Ty> _LoadBlueprint(ItemFactory& factory, uint32 blueprintID, const BlueprintType& bpType, const ItemData& data, BlueprintData& bpData)
+    {
+        return BlueprintRef( new Blueprint( factory, blueprintID, bpType, data, bpData ) );
+    }
 
     void                    SaveBlueprint();
     static uint32           CreateItemID(ItemFactory& factory, ItemData& data, BlueprintData& bpData);

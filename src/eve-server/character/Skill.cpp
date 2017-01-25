@@ -48,14 +48,6 @@ SkillRef Skill::Load(ItemFactory &factory, uint32 skillID)
     return InventoryItem::Load<Skill>( factory, skillID );
 }
 
-template<class _Ty>
-RefPtr<_Ty> Skill::_LoadSkill(ItemFactory &factory, uint32 skillID,
-    // InventoryItem stuff:
-    const ItemType &type, const ItemData &data)
-{
-    return SkillRef( new Skill( factory, skillID, type, data ) );
-}
-
 SkillRef Skill::Spawn(ItemFactory &factory, ItemData &data)
 {
     uint32 skillID = CreateItemID( factory, data );

@@ -114,7 +114,7 @@ protected:
 
 
     // to sort and integrate.....
-    void ActivateCycle();
+    //void ActivateCycle();
     void DeactivateCycle(bool abort=false);
     void ShouldProcessActiveCycle();
     void ProcessActiveCycle();

@@ -84,7 +84,7 @@ void MissileLauncher::Activate(SystemEntity* pSE)
         m_targetEntity = pSE;
         m_targetID = pSE->GetID();
 		// Activate active processing component timer:
-		ActivateCycle();
+		ActiveModule::Activate(pSE);
     } else {
         _log(SHIP__MODULE_WARNING, "MissileLauncher::Activate() - Cannot find loaded charge for this module" );
         if (m_shipRef->HasPilot())

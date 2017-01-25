@@ -108,17 +108,6 @@ CharacterType *CharacterType::Load(ItemFactory &factory, uint32 characterTypeID)
     return ItemType::Load<CharacterType>( factory, characterTypeID );
 }
 
-template<class _Ty>
-_Ty *CharacterType::_LoadCharacterType(ItemFactory &factory, uint32 typeID, uint8 bloodlineID,
-    // ItemType stuff:
-    const ItemGroup &group, const TypeData &data,
-    // CharacterType stuff:
-    const ItemType &shipType, const CharacterTypeData &charData)
-{
-    // enough data for construction
-    return new CharacterType( typeID, bloodlineID, group, data, shipType, charData );
-}
-
 /*
  * CharacterAppearance
  */

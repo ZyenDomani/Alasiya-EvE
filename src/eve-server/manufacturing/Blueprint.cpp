@@ -64,16 +64,6 @@ BlueprintType *BlueprintType::Load(ItemFactory& factory, uint32 typeID)
     return ItemType::Load<BlueprintType>( factory, typeID );
 }
 
-template<class _Ty>
-_Ty *BlueprintType::_LoadBlueprintType(ItemFactory& factory, uint32 typeID,
-    // ItemType stuff:
-    const ItemGroup& group, const TypeData& data,
-    // BlueprintType stuff:
-    const BlueprintType *parentBlueprintType, const ItemType& productType, const BlueprintTypeData& bpData)
-{
-    return new BlueprintType(typeID, group, data, parentBlueprintType, productType, bpData );
-}
-
 /*
  * Blueprint
  */
@@ -98,17 +88,6 @@ Blueprint::Blueprint(
 BlueprintRef Blueprint::Load(ItemFactory& factory, uint32 blueprintID)
 {
     return InventoryItem::Load<Blueprint>( factory, blueprintID );
-}
-
-template<class _Ty>
-RefPtr<_Ty> Blueprint::_LoadBlueprint(ItemFactory& factory, uint32 blueprintID,
-    // InventoryItem stuff:
-    const BlueprintType& bpType, const ItemData& data,
-    // Blueprint stuff:
-    BlueprintData& bpData)
-{
-    // we have enough data, construct the item
-    return BlueprintRef( new Blueprint( factory, blueprintID, bpType, data, bpData ) );
 }
 
 BlueprintRef Blueprint::Spawn(ItemFactory& factory, ItemData& data, BlueprintData& bpData) {

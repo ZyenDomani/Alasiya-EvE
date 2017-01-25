@@ -348,10 +348,7 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static _Ty *_LoadType(ItemFactory &factory, uint32 typeID,
-        // ItemType stuff:
-        const ItemGroup &group, const TypeData &data
-    );
+    static _Ty *_LoadType(ItemFactory &factory, uint32 typeID, const ItemGroup &group, const TypeData &data);
 
     virtual bool _Load(ItemFactory &factory);
 

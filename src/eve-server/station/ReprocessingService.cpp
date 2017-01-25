@@ -127,6 +127,7 @@ ReprocessingServiceBound::ReprocessingServiceBound(PyServiceMgr *mgr, Reprocessi
 }
 
 ReprocessingServiceBound::~ReprocessingServiceBound() {
+    delete m_dispatch;
 }
 
 void ReprocessingServiceBound::Release() {

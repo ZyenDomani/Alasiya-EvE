@@ -90,7 +90,7 @@ void HybridTurret::Activate(SystemEntity* pSE)
 	if( this->m_chargeRef )	{
         m_targetEntity = pSE;
         m_targetID = pSE->GetID();
-		ActivateCycle();
+		ActiveModule::Activate(pSE);
     } else {
         _log(SHIP__MODULE_WARNING, "HybridTurret::Activate() - Cannot find loaded charge for this module");
         if (m_shipRef->HasPilot())

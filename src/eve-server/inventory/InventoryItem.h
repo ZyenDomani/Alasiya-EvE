@@ -28,6 +28,8 @@
 
 
 #include "POD_containers.h"
+#include "inventory/Inventory.h"
+#include "inventory/InventoryDB.h"
 #include "inventory/ItemType.h"
 #include "inventory/ItemFactory.h"
 #include "inventory/EVEAttributeMgr.h"

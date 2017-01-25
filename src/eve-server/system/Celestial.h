@@ -77,22 +77,15 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 celestialID,
-        // InventoryItem stuff:
-        const ItemType &type, const ItemData &data)
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 celestialID, const ItemType &type, const ItemData &data)
     {
-        // make sure it's celestial object, entity object or station
-        if( type.categoryID() != EVEDB::invCategories::Celestial
-            && type.categoryID() != EVEDB::invCategories::Entity
-            && type.groupID() != EVEDB::invGroups::Station )
-        {
+        if (type.categoryID() != EVEDB::invCategories::Celestial)  {
             _log( ITEM__ERROR, "Trying to load %s as Celestial.", type.category().name().c_str() );
             return RefPtr<_Ty>();
         }
 
-        // load celestial data
         CelestialObjectData cData;
-        if( !factory.db().GetCelestialObject( celestialID, cData ) )
+        if (!factory.db().GetCelestialObject(celestialID, cData))
             return RefPtr<_Ty>();
 
         return _Ty::template _LoadCelestialObject<_Ty>( factory, celestialID, type, data, cData );
@@ -100,17 +93,12 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadCelestialObject(ItemFactory &factory, uint32 celestialID,
-        // InventoryItem stuff:
-        const ItemType &type, const ItemData &data,
-        // CelestialObject stuff:
-        const CelestialObjectData &cData
-    );
+    static RefPtr<_Ty> _LoadCelestialObject(ItemFactory &factory, uint32 celestialID, const ItemType &type, const ItemData &data, const CelestialObjectData &cData)
+    {
+        return CelestialObjectRef( new CelestialObject( factory, celestialID, type, data, cData ) );
+    }
 
-    static uint32 CreateItemID(ItemFactory &factory,
-        // InventoryItem stuff:
-        ItemData &data
-    );
+    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
 
     /* these have to be public for inventorydb to load into them. */
     double m_radius;

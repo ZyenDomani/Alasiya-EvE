@@ -44,7 +44,7 @@ void Webifier::Activate(SystemEntity* pSE)
     m_targetID = pSE->GetID();
 
 	// Activate active processing component timer:
-	ActivateCycle();
+	ActiveModule::Activate(pSE);
 	//_ShowCycle();
 
     m_originalSpeed = pDestiny->GetMaxVelocity();

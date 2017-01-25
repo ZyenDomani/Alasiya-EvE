@@ -103,7 +103,7 @@ SurveyScanner::~SurveyScanner()
 void SurveyScanner::Activate(SystemEntity* pSE)
 {
     m_firstRun = true;
-    ActivateCycle();
+    ActiveModule::Activate(pSE);
     //_ShowCycle();
 }
 

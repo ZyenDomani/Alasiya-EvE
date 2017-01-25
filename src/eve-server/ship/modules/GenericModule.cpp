@@ -23,6 +23,8 @@
     Author:     Allan
 */
 
+#include "Client.h"
+#include "EffectsProcessor.h"
 #include "ship/Ship.h"
 #include "ship/modules/GenericModule.h"
 
@@ -156,7 +158,7 @@ void GenericModule::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID
         // this method checks for resist attrib, and gets true stacked value based on all multipliers and modifiers
         m_shipRef->CheckStacking(targetAttrID, type, GetModuleState(), newVal);
     } else {
-        newVal = CalculateAttributeValue(startVal, modVal, type);
+        newVal = sFxProc.CalculateAttributeValue(startVal, modVal, type);
     }
 
     _log(SHIP__MODULE_TRACE, "MSAC::ModifyShipAttributes() -  origVal:%f, Mod:%f, newVal:%f, type:%i", \
@@ -169,7 +171,7 @@ void GenericModule::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID
 void GenericModule::ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking) {
     ShipItemRef target = m_shipRef->GetItemFactory()->GetShip(targetItemID);
     if (target)
-        ModifyShipAttribute(target, targetAttrID, sourceAttrID, type, stacking);
+        ModifyShipAttribute(/*target,*/ targetAttrID, sourceAttrID, type, stacking);
     else {
         _log(SHIP__ERROR, "MSAC::ModifyTargetShipAttribute() - %s(%u): Failed to find target ship %u", \
         m_shipRef->itemName().c_str(), m_shipRef->itemID(), targetItemID);

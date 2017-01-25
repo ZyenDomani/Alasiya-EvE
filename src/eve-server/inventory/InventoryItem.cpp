@@ -149,9 +149,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
     // See what to do next:
     switch( type.categoryID() ) {
         /* not handled yet...
-        case EVEDB::invCategories::_System:
         case EVEDB::invCategories::Material:
-        case EVEDB::invCategories::Accessories:
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Charge:
         case EVEDB::invCategories::Trading:
@@ -160,12 +158,14 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
         case EVEDB::invCategories::Implant:
         case EVEDB::invCategories::Deployable:
         case EVEDB::invCategories::Reaction:
+            not needed...
+        case EVEDB::invCategories::_System:
+        case EVEDB::invCategories::Drone:
+        case EVEDB::invCategories::Accessories:
             */
             /** @todo (Allan) these need work ...for now, load default item
              *        case EVEDB::invCategories::Asteroid:
-             *            //return AsteroidItem::_LoadItem<AsteroidItem>( factory, itemID, type, data );
-             *        case EVEDB::invCategories::Drone:
-             *            //return DroneItem::_LoadItem<DroneItem>( factory, itemID, type, data );
+             *            return AsteroidItem::_LoadItem<AsteroidItem>( factory, itemID, type, data );
              */
             case EVEDB::invCategories::Orbitals:
             case EVEDB::invCategories::Structure: {  // this is for all Orbital structure types (POS, customs offices, etc)
@@ -194,7 +194,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
                     or (type.groupID() == EVEDB::invGroups::Freight_Container)
                     or (type.groupID() == EVEDB::invGroups::Cargo_Container) )
                     return CargoContainer::_LoadItem<CargoContainer>( factory, itemID, type, data );
-                else if (type.groupID() == EVEDB::invGroups::Force_Field)
+                else if (type.groupID() == EVEDB::invGroups::Force_Field)   // POS force fields  - not sure if these need their own class
                     return InventoryItemRef( new InventoryItem( factory, itemID, type, data ) );
                 else
                     return CelestialObject::_LoadItem<CelestialObject>( factory, itemID, type, data );
@@ -259,7 +259,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
                     return CelestialObject::_LoadItem<CelestialObject>( factory, itemID, type, data );
             }
             default:
-                _log(ITEM__MESSAGE, "item %u (type %u, cat %u) tried _LoadItem, but is not handled.", itemID, type.id(), type.categoryID());
+                _log(ITEM__MESSAGE, "item %u (type %u, cat %u) is not handled in  InventoryItem::_LoadItem.", itemID, type.id(), type.categoryID());
                 break;
     }
     // Generic item, create one:

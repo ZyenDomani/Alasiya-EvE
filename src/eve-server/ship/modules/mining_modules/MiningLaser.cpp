@@ -232,7 +232,7 @@ void MiningLaser::Activate(SystemEntity* pSE)
 
         m_IsInitialCycle = true;
         // Activate active processing component timer:
-        ActivateCycle();
+        ActiveModule::Activate(pSE);
 
         //# _ShowCycle();
         _SetCapNeed();
@@ -258,13 +258,13 @@ double MiningLaser::DoCycle() {
     if ((!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
         or (!m_shipRef->GetPilot()->GetShipSE()->SysBubble()->GetEntity(m_targetID))) {
             StopCycle();
-            m_AMPC->StopTimer();
+            StopTimer();
             return 0;
         }
     if (m_chargeLoaded)
         if (!m_chargeRef->quantity()) {
             StopCycle();
-            m_AMPC->StopTimer();
+            StopTimer();
             return 0;
         }
 
@@ -316,7 +316,7 @@ void MiningLaser::ProcessCycle(bool partial)
                 oreAmount = remainingCargoVolume /oreVolume;
             else
                 oreAmount = 0;
-        m_AMPC->StopTimer();
+        StopTimer();
         if (!partial) {
             StopCycle();
             return;
@@ -355,7 +355,7 @@ void MiningLaser::ProcessCycle(bool partial)
 
     if (!roidQuantity) {
         StopCycle();
-        m_AMPC->StopTimer();
+        StopTimer();
         m_targetEntity->Delete();
     } else if (!m_iMiner) {
         // do not reset ice radius

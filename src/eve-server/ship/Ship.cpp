@@ -46,17 +46,6 @@ ShipType *ShipType::Load(ItemFactory &factory, uint32 shipTypeID)
     return ItemType::Load<ShipType>( factory, shipTypeID );
 }
 
-template<class _Ty>
-_Ty *ShipType::_LoadShipType(ItemFactory &factory, uint32 shipTypeID,
-                             // ItemType stuff:
-                             const ItemGroup &group, const TypeData &data,
-                             // ShipType stuff:
-                             const ItemType *weaponType, const ItemType *miningType, const ItemType *skillType, const ShipTypeData &stData)
-{
-    // we have all the data, let's create new object
-    return new ShipType(shipTypeID, group, data, weaponType, miningType, skillType, stData );
-}
-
 /*
  * ShipItem
  */
@@ -81,12 +70,6 @@ ShipItem::~ShipItem()
 ShipItemRef ShipItem::Load(ItemFactory &factory, uint32 shipID)
 {
     return InventoryItem::Load<ShipItem>( factory, shipID );
-}
-
-template<class _Ty>
-RefPtr<_Ty> ShipItem::_LoadShip(ItemFactory &factory, uint32 shipID, const ShipType &shipType, const ItemData &data)
-{
-    return ShipItemRef( new ShipItem(factory, shipID, shipType, data ));
 }
 
 ShipItemRef ShipItem::Spawn(ItemFactory &factory, ItemData &data) {

@@ -26,12 +26,11 @@
 #ifndef __SHIP__H__INCL__
 #define __SHIP__H__INCL__
 
+#include "EffectsData.h"
 #include "inventory/ItemType.h"
-#include "inventory/Inventory.h"
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
 #include "ship/modules/ModuleManager.h"
-#include "ship/modules/GenericModule.h"
 #include "ship/ShipDB.h"
 
 /**
@@ -140,12 +139,11 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static _Ty *_LoadShipType(ItemFactory &factory, uint32 shipTypeID,
-        // ItemType stuff:
-        const ItemGroup &group, const TypeData &data,
-        // ShipType stuff:
-        const ItemType *weaponType, const ItemType *miningType, const ItemType *skillType, const ShipTypeData &stData
-    );
+    static _Ty *_LoadShipType(ItemFactory &factory, uint32 shipTypeID, const ItemGroup &group, const TypeData &data,
+        const ItemType *weaponType, const ItemType *miningType, const ItemType *skillType, const ShipTypeData &stData)
+    {
+        return new ShipType(shipTypeID, group, data, weaponType, miningType, skillType, stData );
+    }
 
     /*
      * Data content:
@@ -158,6 +156,8 @@ protected:
 /**
  * InventoryItem which represents ShipItem.
  */
+class Client;
+class GenericModule;
 
 class ShipItem
 : public InventoryItem
@@ -298,10 +298,10 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadShip(ItemFactory &factory, uint32 shipID,
-                                 // InventoryItem stuff:
-                                 const ShipType &shipType, const ItemData &data
-    );
+    static RefPtr<_Ty> _LoadShip(ItemFactory &factory, uint32 shipID, const ShipType &shipType, const ItemData &data)
+    {
+        return ShipItemRef( new ShipItem(factory, shipID, shipType, data ));
+    }
 
     //bool LoadAttributes();
     bool m_IsLoaded;

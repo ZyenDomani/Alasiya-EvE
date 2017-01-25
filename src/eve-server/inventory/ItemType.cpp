@@ -34,10 +34,7 @@
 /*
  * CategoryData
  */
-CategoryData::CategoryData(
-    const char *_name,
-    const char *_desc,
-    bool _published)
+CategoryData::CategoryData(const char *_name, const char *_desc, bool _published)
 : name(_name),
   description(_desc),
   published(_published)
@@ -47,10 +44,7 @@ CategoryData::CategoryData(
 /*
  * ItemCategory
  */
-ItemCategory::ItemCategory(
-    EVEItemCategories _id,
-    // ItemCategory stuff:
-    const CategoryData &_data)
+ItemCategory::ItemCategory(EVEItemCategories _id, const CategoryData &_data)
 : m_id(_id),
   m_name(_data.name),
   m_description(_data.description),
@@ -59,37 +53,26 @@ ItemCategory::ItemCategory(
     _log(ITEM__TRACE, "Created object %p for category %s (%u).", this, m_name.c_str(), (uint32)m_id);
 }
 
-ItemCategory *ItemCategory::Load(ItemFactory &factory, EVEItemCategories category) {
-    // create category
-    ItemCategory *c = ItemCategory::_Load(factory, category);
-    if(c == NULL)
-        return NULL;
+ItemCategory* ItemCategory::Load(ItemFactory &factory, EVEItemCategories category)
+{
+    ItemCategory* c = ItemCategory::_Load(factory, category);
 
     // ItemCategory has no virtual _Load()
-
-    return(c);
+    return c;
 }
 
-ItemCategory *ItemCategory::_Load(ItemFactory &factory, EVEItemCategories category
-) {
-    // pull data
+ItemCategory* ItemCategory::_Load(ItemFactory &factory, EVEItemCategories category)
+{
     CategoryData data;
     if(!factory.db().GetCategory(category, data))
-        return NULL;
+        return nullptr;
 
-    return(
-        ItemCategory::_Load(factory, category, data)
-    );
+    return ItemCategory::_Load(factory, category, data);
 }
 
-ItemCategory *ItemCategory::_Load(ItemFactory &factory, EVEItemCategories category,
-    // ItemCategory stuff:
-    const CategoryData &data
-) {
-    // enough data for construction
-    return(new ItemCategory(
-        category, data
-    ));
+ItemCategory* ItemCategory::_Load(ItemFactory &factory, EVEItemCategories category, const CategoryData &data)
+{
+    return new ItemCategory(category, data);
 }
 
 /*
@@ -145,42 +128,32 @@ ItemGroup::ItemGroup(
     _log(ITEM__TRACE, "Created object %p for group %s (%u).", this, name().c_str(), id());
 }
 
-ItemGroup *ItemGroup::Load(ItemFactory &factory, uint32 groupID) {
-    // create group
-    ItemGroup *g = ItemGroup::_Load(factory, groupID);
-    if(g == NULL)
-        return NULL;
+ItemGroup* ItemGroup::Load(ItemFactory &factory, uint32 groupID)
+{
+    ItemGroup* g = ItemGroup::_Load(factory, groupID);
 
     // ItemGroup has no virtual _Load()
-
-    return(g);
+    return g;
 }
 
-ItemGroup *ItemGroup::_Load(ItemFactory &factory, uint32 groupID
-) {
+ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint32 groupID)
+{
     // pull data
     GroupData data;
     if(!factory.db().GetGroup(groupID, data))
-        return NULL;
+        return nullptr;
 
     // retrieve category
     const ItemCategory *c = factory.GetCategory(data.category);
-    if(c == NULL)
-        return NULL;
+    if(c == nullptr)
+        return nullptr;
 
-    return(
-        ItemGroup::_Load(factory, groupID, *c, data)
-    );
+    return ItemGroup::_Load(factory, groupID, *c, data);
 }
 
-ItemGroup *ItemGroup::_Load(ItemFactory &factory, uint32 groupID,
-    // ItemGroup stuff:
-    const ItemCategory &category, const GroupData &data
-) {
-    // enough data for construction
-    return(new ItemGroup(
-        groupID, category, data
-    ));
+ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint32 groupID, const ItemCategory &category, const GroupData &data)
+{
+    return new ItemGroup(groupID, category, data);
 }
 
 /*
@@ -245,17 +218,14 @@ ItemType::ItemType(
     _log(ITEM__TRACE, "Created ItemType object %p for type %s (%u).", this, name().c_str(), id());
 }
 
-ItemType *ItemType::Load(ItemFactory &factory, uint32 typeID)
+ItemType* ItemType::Load(ItemFactory &factory, uint32 typeID)
 {
     return ItemType::Load<ItemType>( factory, typeID );
 }
 
 template<class _Ty>
-_Ty *ItemType::_LoadType(ItemFactory &factory, uint32 typeID,
-    // ItemType stuff:
-    const ItemGroup &group, const TypeData &data)
+_Ty* ItemType::_LoadType(ItemFactory &factory, uint32 typeID,  const ItemGroup &group, const TypeData &data)
 {
-    // See what to do next:
     switch( group.categoryID() ) {
         /** @todo  really need planets and moons here to load true radius' (from mapDenormalize)
         case EVEDB::invCategories::Celestial:
@@ -300,10 +270,11 @@ _Ty *ItemType::_LoadType(ItemFactory &factory, uint32 typeID,
 
 bool ItemType::_Load(ItemFactory &factory) {
 	// load type effects
+    /** @todo  update this bullshit with my memcache system.  */
 	factory.db().GetTypeEffectsList( m_id, m_effects );
 
     // load type attributes
-    return (attributes.Load( factory.db() ));
+    return attributes.Load( factory.db());
 }
 
 /*

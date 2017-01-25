@@ -41,6 +41,47 @@ void ManagerDB::GetOreBySSC(DBQueryResult& res)
     }
 }
 
+void ManagerDB::GetSystemInfo(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+        "SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems")) {
+        codelog(DATABASE__ERROR, "Error in GetSystemInfo query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetStaticInfo(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+        "SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize")) {
+        codelog(DATABASE__ERROR, "Error in GetStaticInfo query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetStationInfo(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+        "SELECT s.stationID, s.x, s.y, s.z, st.dockEntryX, st.dockEntryY, st.dockEntryZ, st.dockOrientationX, st.dockOrientationY, st.dockOrientationZ FROM staStations AS s"
+        " LEFT JOIN staStationTypes AS st USING (stationTypeID)")) {
+        codelog(DATABASE__ERROR, "Error in GetStationInfo query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetStationRegion(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT stationID, regionID FROM staStations")) {
+        codelog(DATABASE__ERROR, "Error in GetStationRegion query: %s", res.error.c_str());
+    }
+
+}
+
+void ManagerDB::GetStationSystem(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT stationID, solarSystemID FROM staStations")) {
+        codelog(DATABASE__ERROR, "Error in GetStationSystem query: %s", res.error.c_str());
+    }
+
+}
+
 void ManagerDB::SaveAnomaly(CosmicSignature& sig)
 {// sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
     DBerror err;

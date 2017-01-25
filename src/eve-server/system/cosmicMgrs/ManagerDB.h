@@ -42,15 +42,16 @@ class ManagerDB {
 public:
     /* db methods for... */
 
-    /* common data */
-    void GetSkillList(DBQueryResult& res);
-
-    /* R.A.M. data */
-    void GetRAMMaterials(DBQueryResult& res);
-    void GetRAMRequirements(DBQueryResult& res);
-
     /* data manager */
     void GetOreBySSC(DBQueryResult& res);
+    void GetSkillList(DBQueryResult& res);
+    void GetSystemInfo(DBQueryResult& res);
+    void GetStaticInfo(DBQueryResult& res);
+    void GetStationInfo(DBQueryResult& res);
+    void GetRAMMaterials(DBQueryResult& res);
+    void GetStationSystem(DBQueryResult& res);
+    void GetStationRegion(DBQueryResult& res);
+    void GetRAMRequirements(DBQueryResult& res);
 
     /* belt manager */
     void SaveRoid(AsteroidData& data);

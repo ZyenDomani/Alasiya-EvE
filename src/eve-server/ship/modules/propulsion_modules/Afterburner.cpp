@@ -38,7 +38,7 @@ Afterburner::Afterburner( InventoryItemRef item, ShipItemRef ship )
  */
 void Afterburner::Activate(SystemEntity* pSE)
 {
-    ActivateCycle();
+    ActiveModule::Activate(pSE);
     DestinyManager* pDestiny = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
     if (!pDestiny) return;  // make error msg here?
 

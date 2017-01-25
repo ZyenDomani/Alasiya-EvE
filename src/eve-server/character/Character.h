@@ -30,7 +30,6 @@
 #include "character/CharacterDB.h"
 #include "character/Skill.h"
 #include "inventory/ItemType.h"
-#include "inventory/Inventory.h"
 #include "inventory/InventoryDB.h"
 #include "inventory/InventoryItem.h"
 #include "standing/StandingDB.h"
@@ -163,12 +162,11 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static _Ty* _LoadCharacterType(ItemFactory& factory, uint32 typeID, uint8 bloodlineID,
-        // ItemType stuff:
-        const ItemGroup& group, const TypeData& data,
-        // CharacterType stuff:
-        const ItemType& shipType, const CharacterTypeData& charData
-    );
+    static _Ty* _LoadCharacterType(ItemFactory& factory, uint32 typeID, uint8 bloodlineID, const ItemGroup& group, const TypeData& data,
+        const ItemType& shipType, const CharacterTypeData& charData)
+    {
+        return new CharacterType( typeID, bloodlineID, group, data, shipType, charData );
+    }
 
     /*
      * Data members

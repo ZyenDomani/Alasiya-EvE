@@ -64,15 +64,6 @@ bool CargoContainer::_Load() {
     return InventoryItem::_Load();
 }
 
-template<class _Ty>
-RefPtr<_Ty> CargoContainer::_LoadCargoContainer(ItemFactory &factory, uint32 containerID,
-    // InventoryItem stuff:
-    const ItemType &itemType, const ItemData &data)
-{
-    // we don't need any additional stuff
-    return CargoContainerRef( new CargoContainer( factory, containerID, itemType, data ) );
-}
-
 CargoContainerRef CargoContainer::Spawn(ItemFactory &factory, ItemData &data) {
     uint32 containerID = CargoContainer::CreateItemID( factory, data );
     if (containerID == 0 )
@@ -317,12 +308,6 @@ bool WreckContainer::_Load() {
         return false;
 
     return InventoryItem::_Load();
-}
-
-template<class _Ty>
-RefPtr<_Ty> WreckContainer::_LoadWreck(ItemFactory &factory, uint32 containerID, const ItemType &itemType, const ItemData &data) {
-    // we don't need any additional stuff
-    return WreckContainerRef( new WreckContainer( factory, containerID, itemType, data ) );
 }
 
 WreckContainerRef WreckContainer::Spawn(ItemFactory &factory, ItemData &data) {

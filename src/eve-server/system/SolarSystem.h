@@ -26,7 +26,7 @@
 #ifndef __SOLAR_SYSTEM__H__INCL__
 #define __SOLAR_SYSTEM__H__INCL__
 
-#include "inventory/Inventory.h"
+
 #include "system/Celestial.h"
 
 /**
@@ -143,18 +143,17 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadCelestialObject(ItemFactory &factory, uint32 solarSystemID,
-        // InventoryItem stuff:
-        const ItemType &type, const ItemData &data,
-        // CelestialObject stuff:
-        const CelestialObjectData &cData)
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 solarSystemID, const ItemType &type, const ItemData &data)
     {
-        // check it's a solar system
-        if( type.groupID() != EVEDB::invGroups::Solar_System )
-        {
-            _log( ITEM__ERROR, "Trying to load %s %u as Solar system.", type.name().c_str(), solarSystemID );
+        if (type.groupID() != EVEDB::invGroups::Solar_System) {
+            _log( ITEM__ERROR, "Trying to load %s as Solar system %u.", type.name().c_str(), solarSystemID );
             return RefPtr<_Ty>();
         }
+
+        // load celestial data
+        CelestialObjectData cData;
+        if (!factory.db().GetCelestialObject(solarSystemID, cData))
+            return RefPtr<_Ty>();
 
         // load solar system data
         SolarSystemData ssData;
@@ -171,14 +170,12 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadSolarSystem(ItemFactory &factory, uint32 solarSystemID,
-        // InventoryItem stuff:
-        const ItemType &type, const ItemData &data,
-        // CelestialObject stuff:
-        const CelestialObjectData &cData,
-        // SolarSystem stuff:
-        const ItemType &sunType, const SolarSystemData &ssData
-    );
+    static RefPtr<_Ty> _LoadSolarSystem(ItemFactory &factory, uint32 solarSystemID, const ItemType &type, const ItemData &data,
+                    const CelestialObjectData &cData, const ItemType &sunType, const SolarSystemData &ssData)
+    {
+        return SolarSystemRef( new SolarSystem( factory, solarSystemID, type, data, cData, sunType, ssData ) );
+    }
+
 
     /*
      * Data members:
