@@ -29,8 +29,7 @@
 #ifndef MODULE_EFFECTS_H
 #define MODULE_EFFECTS_H
 
-#include "EffectsData.h"
-#include "ship/modules/ModuleDB.h"
+#include "effects/EffectsData.h"
 #include "ship/modules/ModuleDefs.h"
 #include "utils/Singleton.h"
 

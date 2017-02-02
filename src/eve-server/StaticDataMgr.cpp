@@ -53,37 +53,20 @@ void StaticDataMgr::Populate()
 
     m_db.GetOreBySSC(*res);
     OreTypeChance oreChance;
-    oreChance.typeID  = 0;
-    oreChance.chance  = 0;
+    oreChance.typeID = oreChance.chance  = 0;
     while (res->GetRow(row)) {
         //SELECT systemSec, roidID, percent FROM roidDistribution
         oreChance.typeID  = row.GetInt(1);
         oreChance.chance  = row.GetFloat(2);
         m_oreBySecClass.insert(std::pair<std::string, OreTypeChance>(row.GetText(0), oreChance));
     }
+    sLog.Cyan("    StaticDataMgr", "%u Ore defs loaded in %.3fms.", m_oreBySecClass.size(), (GetTimeMSeconds() - start));
 
     res->Reset();
-    m_db.GetRegionFaction(*res);
-    while (res->GetRow(row)) {
-        //SELECT regionID, factionID FROM mapRegions
-        m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
-    }
-
-    res->Reset();
-    m_db.GetSkillList(*res);
-    while (res->GetRow(row)) {
-        //SELECT typeID, typeName FROM invTypes [where type=skill]
-        m_skills.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
-    }
-
-    res->Reset();
+    start = GetTimeMSeconds();
     m_db.GetRAMRequirements(*res);
     ramRequirements ramReq;
-    ramReq.activityID = 0;
-    ramReq.requiredTypeID = 0;
-    ramReq.quantity = 0;
-    ramReq.damagePerJob = 0;
-    ramReq.recycle = 0;
+    ramReq.activityID = ramReq.requiredTypeID = ramReq.quantity = ramReq.damagePerJob = ramReq.recycle = 0;
     while (res->GetRow(row)) {
         //SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, recycle FROM ramTypeRequirements
         ramReq.activityID = row.GetInt(1);
@@ -97,32 +80,49 @@ void StaticDataMgr::Populate()
     res->Reset();
     m_db.GetRAMMaterials(*res);
     ramMaterials ramMatls;
-    ramMatls.quantity = 0;
-    ramMatls.materialTypeID = 0;
+    ramMatls.quantity = ramMatls.materialTypeID = 0;
     while (res->GetRow(row)) {
         //SELECT typeID, materialTypeID, quantity FROM invTypeMaterials
         ramMatls.quantity = row.GetInt(2);
         ramMatls.materialTypeID = row.GetInt(1);
         m_ramMatl.insert(std::pair<uint16, ramMaterials>(row.GetInt(0), ramMatls));
     }
+    sLog.Cyan("    StaticDataMgr", "%u R.A.M. defs loaded in %.3fms.", (m_ramMatl.size() + m_ramReq.size()), (GetTimeMSeconds() - start));
 
     res->Reset();
+    start = GetTimeMSeconds();
     m_mdb.GetStationCount(*res);
-    while (res->GetRow(row))
+    while (res->GetRow(row)) {
+        //SELECT map.solarSystemID, count(sta.stationID) FROM staStations sta
         m_stationCount.insert(std::pair<uint32, uint8>(row.GetInt(0), row.GetInt(1)));
+    }
 
     res->Reset();
-    DBQueryResult* res2 = new DBQueryResult();
-    m_sdb.GetStationIDs(*res2);
-    while (res2->GetRow(row))
+    m_sdb.GetStationIDs(*res);
+    while (res->GetRow(row)) {
+        //SELECT stationID FROM staStations   (then convert it into Python Data...)
         m_stationPyData.insert(std::pair<uint32, PyObject*>(row.GetInt(0), m_sdb.DoGetStation(row.GetInt(0))));
+    }
+    sLog.Cyan("    StaticDataMgr", "%u Static Station data sets loaded in %.3fms.", m_stationPyData.size(), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
+    m_db.GetRegionFaction(*res);
+    while (res->GetRow(row)) {
+        //SELECT regionID, factionID FROM mapRegions
+        m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
+    }
+
+    res->Reset();
+    m_db.GetSkillList(*res);
+    while (res->GetRow(row)) {
+        //SELECT typeID, typeName FROM invTypes [where type=skill]
+        m_skills.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
+    }
+    sLog.Cyan("    StaticDataMgr", "%u misc data sets loaded in %.3fms.", (m_regions.size() + m_skills.size()), (GetTimeMSeconds() - start));
 
     //cleanup
     SafeDelete(res);
-    SafeDelete(res2);
-    sLog.Cyan("    StaticDataMgr", "%u data sets loaded in %.3fms.", \
-              (m_oreBySecClass.size() + m_regions.size() + m_skills.size() + m_ramMatl.size() + m_ramReq.size() + m_stationPyData.size() + m_stationCount.size()),\
-              (GetTimeMSeconds() - start));
 }
 
 void StaticDataMgr::GetInfo()

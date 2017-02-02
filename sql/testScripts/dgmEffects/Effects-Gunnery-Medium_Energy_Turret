@@ -1,0 +1,176 @@
+typeID->effectID->preExpression->operandID->  call process using operandID(arg1, arg2), and loop as needed.
+will have to use conditionals and assignments to set category, domain, association, environment, srcAttrib, targAttrib
+
+t.groupID, g.groupName, te.typeID, t.typeName, te.effectID, e.effectName, te.isDefault
+"255","Gunnery","3306","Medium Energy Turret","132","skillEffect","1"
+
+(`effectID`, `effectName`, `effectCategory`, `preExpression`, `postExpression`, `description`, `graphicID`, `guid`, `iconID`, `isOffensive`, `isAssistance`, `durationAttributeID`, `trackingSpeedAttributeID`, `dischargeAttributeID`, `rangeAttributeID`, `falloffAttributeID`, `disallowAutoRepeat`, `published`, `displayName`, `isWarpSafe`, `rangeChance`, `electronicChance`, `propulsionChance`, `distribution`, `sfxName`, `npcUsageChanceAttributeID`, `npcActivationChanceAttributeID`, `fittingUsageChanceAttributeID`, `dataID`) VALUES
+(132, 'skillEffect', 0, 1071, 1070, 'masks skill level onto skill modules.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, NULL, 1, 'skillEffect', 1, 1, 1, 0, 0, 'None', 0, 0, 0, 899656),
+
+(`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
+root (pre)
+(1071, 17, 1064, 1067, '', '', '((CurrentSelf->skillLevel).(ModAdd)).AddItemModifier (skillPoints));     (((CurrentSelf->skillLevel).(9)).AddItemModifier (skillTimeConstant)', 0, 0, 0),
+(`operandID`, `operandKey`, `description`, `format`, `arg1categoryID`, `arg2categoryID`, `resultCategoryID`, `pythonFormat`)
+(17, 'COMBINE', 'executes two statements', '%(arg1)s);     (%(arg2)s', 4, 4, 4, '%(arg1)s\r\n%(arg2)s'),
+root.arg1
+    (1064, 6, 1061, 1062, '', '', '((CurrentSelf->skillLevel).(ModAdd)).AddItemModifier (skillPoints)', 0, 0, 0),
+    (6, 'AIM', 'add item modifier', '(%(arg1)s).AddItemModifier (%(arg2)s)', 5, 2, 4, 'dogma.AddItemModifier(env,%(arg1)s, %(arg2)s)'),
+    root.arg1.arg1
+        (1061, 31, 7, 1060, '', '', '(CurrentSelf->skillLevel).(ModAdd)', 0, 0, 0),
+        (31, 'EFF', 'define association type', '(%(arg2)s).(%(arg1)s)', 1, 3, 5, '(%(arg1)s, %(arg2)s)'),
+        root.arg1.arg1.arg1
+            (7, 21, 0, 0, 'ModAdd', 'Addition association', 'ModAdd', 0, 0, 0),
+            (21, 'DEFASSOCIATION', 'define attribute association type', '%(value)s', 0, 0, 1, 'const.dgmAss%(value)s'),
+        root.arg1.arg1.arg2
+            (1060, 12, 1, 1059, '', '', 'CurrentSelf->skillLevel', 0, 0, 0),
+            (12, 'ATT', 'attribute', '%(arg1)s->%(arg2)s', 6, 2, 3, '(%(arg1)s, %(arg2)s)'),
+            root.arg1.arg1.arg2.arg1
+                (1, 24, 0, 0, 'Self', 'Index of affecting module  in environment', 'CurrentSelf', 0, 0, 0),
+                (24, 'DEFENVIDX', 'define environment index', 'Current%(value)s', 0, 0, 6, 'env[const.dgmEnv%(value)s]'),
+            root.arg1.arg1.arg2.arg2
+                (1059, 22, 0, 0, '', 'level of skill', 'skillLevel', 0, 0, 280),
+                (22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+    root.arg1.arg2
+        (1062, 22, 0, 0, '', '', 'skillPoints', 0, 0, 276),
+        (22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+root.arg2
+    (1067, 6, 1065, 1066, '', '', '((CurrentSelf->skillLevel).(9)).AddItemModifier (skillTimeConstant)', 0, 0, 0),
+    (6, 'AIM', 'add item modifier', '(%(arg1)s).AddItemModifier (%(arg2)s)', 5, 2, 4, 'dogma.AddItemModifier(env,%(arg1)s, %(arg2)s)'),
+    root.arg2.arg1
+        (1065, 31, 1063, 1060, '', '', '(CurrentSelf->skillLevel).(9)', 0, 0, 0),
+        (31, 'EFF', 'define association type', '(%(arg2)s).(%(arg1)s)', 1, 3, 5, '(%(arg1)s, %(arg2)s)'),
+        root.arg2.arg1.arg1
+            (1063, 21, 0, 0, '9', '', '9', 0, 0, 0),
+            (21, 'DEFASSOCIATION', 'define attribute association type', '%(value)s', 0, 0, 1, 'const.dgmAss%(value)s'),
+        root.arg2.arg1.arg2
+            (1060, 12, 1, 1059, '', '', 'CurrentSelf->skillLevel', 0, 0, 0),
+            (12, 'ATT', 'attribute', '%(arg1)s->%(arg2)s', 6, 2, 3, '(%(arg1)s, %(arg2)s)'),
+            root.arg2.arg1.arg2.arg1
+                (1, 24, 0, 0, 'Self', 'Index of affecting module  in environment', 'CurrentSelf', 0, 0, 0),
+                (24, 'DEFENVIDX', 'define environment index', 'Current%(value)s', 0, 0, 6, 'env[const.dgmEnv%(value)s]'),
+            root.arg2.arg1.arg2.arg2
+                (1059, 22, 0, 0, '', 'level of skill', 'skillLevel', 0, 0, 280),
+                (22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+     root.arg2.arg2
+        (1066, 22, 0, 0, '', '', 'skillTimeConstant', 0, 0, 275),
+        (22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+root(post)
+(1070, 17, 1069, 1068, '', 'post skill removal', '((CurrentSelf->skillLevel).(ModAdd)).RemoveItemModifier (skillPoints));     (((CurrentSelf->skillLevel).(9)).RemoveItemModifier (skillTimeConstant)', 0, 0, 0),
+(17, 'COMBINE', 'executes two statements', '%(arg1)s);     (%(arg2)s', 4, 4, 4, '%(arg1)s\r\n%(arg2)s'),
+root.arg1
+    (1069, 58, 1061, 1062, '', '', '((CurrentSelf->skillLevel).(ModAdd)).RemoveItemModifier (skillPoints)', 0, 0, 0),
+    (58, 'RIM', 'remove  item modifier', '(%(arg1)s).RemoveItemModifier (%(arg2)s)', 5, 2, 4, 'dogma.RemoveItemModifier(env,%(arg1)s, %(arg2)s)'),
+    root.arg1.arg1
+        (1061, 31, 7, 1060, '', '', '(CurrentSelf->skillLevel).(ModAdd)', 0, 0, 0),
+        (31, 'EFF', 'define association type', '(%(arg2)s).(%(arg1)s)', 1, 3, 5, '(%(arg1)s, %(arg2)s)'),
+        root.arg1.arg1.arg1
+            (7, 21, 0, 0, 'ModAdd', 'Addition association', 'ModAdd', 0, 0, 0),
+            (21, 'DEFASSOCIATION', 'define attribute association type', '%(value)s', 0, 0, 1, 'const.dgmAss%(value)s'),
+        root.arg1.arg1.arg2
+            (1060, 12, 1, 1059, '', '', 'CurrentSelf->skillLevel', 0, 0, 0),
+            (12, 'ATT', 'attribute', '%(arg1)s->%(arg2)s', 6, 2, 3, '(%(arg1)s, %(arg2)s)'),
+            root.arg1.arg1.arg2.arg1
+                (1, 24, 0, 0, 'Self', 'Index of affecting module  in environment', 'CurrentSelf', 0, 0, 0),
+                (24, 'DEFENVIDX', 'define environment index', 'Current%(value)s', 0, 0, 6, 'env[const.dgmEnv%(value)s]'),
+            root.arg1.arg1.arg2.arg2
+                (1059, 22, 0, 0, '', 'level of skill', 'skillLevel', 0, 0, 280),
+                (22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+    root.arg1.arg2
+        (1062, 22, 0, 0, '', '', 'skillPoints', 0, 0, 276),
+        (22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+root.arg2
+    (1068, 58, 1065, 1066, '', '', '((CurrentSelf->skillLevel).(9)).RemoveItemModifier (skillTimeConstant)', 0, 0, 0),
+    (58, 'RIM', 'remove  item modifier', '(%(arg1)s).RemoveItemModifier (%(arg2)s)', 5, 2, 4, 'dogma.RemoveItemModifier(env,%(arg1)s, %(arg2)s)'),
+    root.arg2.arg1
+        (1065, 31, 1063, 1060, '', '', '(CurrentSelf->skillLevel).(9)', 0, 0, 0),
+        (31, 'EFF', 'define association type', '(%(arg2)s).(%(arg1)s)', 1, 3, 5, '(%(arg1)s, %(arg2)s)'),
+        root.arg2.arg1.arg1
+            (1063, 21, 0, 0, '9', '', '9', 0, 0, 0),
+            (21, 'DEFASSOCIATION', 'define attribute association type', '%(value)s', 0, 0, 1, 'const.dgmAss%(value)s'),
+        root.arg2.arg1.arg2
+            (1060, 12, 1, 1059, '', '', 'CurrentSelf->skillLevel', 0, 0, 0),
+            (12, 'ATT', 'attribute', '%(arg1)s->%(arg2)s', 6, 2, 3, '(%(arg1)s, %(arg2)s)'),
+            root.arg2.arg1.arg2.arg1
+                (1, 24, 0, 0, 'Self', 'Index of affecting module  in environment', 'CurrentSelf', 0, 0, 0),
+                (24, 'DEFENVIDX', 'define environment index', 'Current%(value)s', 0, 0, 6, 'env[const.dgmEnv%(value)s]'),
+            root.arg2.arg1.arg2.arg2
+                (1059, 22, 0, 0, '', 'level of skill', 'skillLevel', 0, 0, 280),
+                (22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+     root.arg2.arg2
+        (1066, 22, 0, 0, '', '', 'skillTimeConstant', 0, 0, 275),
+        (22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+
+
+        
+t.groupID, g.groupName, te.typeID, t.typeName, te.effectID, e.effectName, te.isDefault
+"255","Gunnery","3306","Medium Energy Turret","152","skillBoostDamageMultiplierBonus","0"
+
+(`effectID`, `effectName`, `effectCategory`, `preExpression`, `postExpression`, `description`, `graphicID`, `guid`, `iconID`, `isOffensive`, `isAssistance`, `durationAttributeID`, `trackingSpeedAttributeID`, `dischargeAttributeID`, `rangeAttributeID`, `falloffAttributeID`, `disallowAutoRepeat`, `published`, `displayName`, `isWarpSafe`, `rangeChance`, `electronicChance`, `propulsionChance`, `distribution`, `sfxName`, `npcUsageChanceAttributeID`, `npcActivationChanceAttributeID`, `fittingUsageChanceAttributeID`, `dataID`) VALUES
+(152, 'skillBoostDamageMultiplierBonus', 0, 1167, 1168, 'Boost of damageMultiplierBonus by PreMul of skillLevel', 0, '', 0, 0, 1, 0, 0, 0, 0, 0, NULL, 0, 'SkillBoostDamageMultiplierBonus', 1, 1, 1, 0, 0, 'None', 0, 0, 0, 899662),
+
+(`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
+(1167, 6, 1166, 1059, '', 'Autogenerated AIM, self.damageMultiplierBonus.AIM(skillLevel,PreMul)', '((CurrentSelf->damageMultiplierBonus).(PreMul)).AddItemModifier (skillLevel)', 0, 0, 0),
+(1166, 31, 5, 1165, '', 'Autogenerated EFF, PreMul modification to self.damageMultiplierBonus', '(CurrentSelf->damageMultiplierBonus).(PreMul)', 0, 0, 0),
+(31, 'EFF', 'define association type', '(%(arg2)s).(%(arg1)s)', 1, 3, 5, '(%(arg1)s, %(arg2)s)'),
+(5, 21, 0, 0, 'PreMul', 'Pre-multiplying association', 'PreMul', 0, 0, 0),
+(21, 'DEFASSOCIATION', 'define attribute association type', '%(value)s', 0, 0, 1, 'const.dgmAss%(value)s'),
+
+(1165, 12, 1, 1164, '', 'Autogenerated ATT, self.damageMultiplierBonus', 'CurrentSelf->damageMultiplierBonus', 0, 0, 0),
+(12, 'ATT', 'attribute', '%(arg1)s->%(arg2)s', 6, 2, 3, '(%(arg1)s, %(arg2)s)'),
+(1, 24, 0, 0, 'Self', 'Index of affecting module  in environment', 'CurrentSelf', 0, 0, 0),
+
+(1164, 22, 0, 0, '', 'Autogenerated attribute, damageMultiplierBonus', 'damageMultiplierBonus', 0, 0, 292),
+(22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+(1059, 22, 0, 0, '', 'level of skill', 'skillLevel', 0, 0, 280),
+(22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+
+
+t.groupID, g.groupName, te.typeID, t.typeName, te.effectID, e.effectName, te.isDefault
+"255","Gunnery","3306","Medium Energy Turret","159","mediumEnergyTurretDamageMultiplierBonusPostPercentDamageMultiplierLocationShipModulesRequiringMediumEnergyTurret","0"
+
+(`effectID`, `effectName`, `effectCategory`, `preExpression`, `postExpression`, `description`, `graphicID`, `guid`, `iconID`, `isOffensive`, `isAssistance`, `durationAttributeID`, `trackingSpeedAttributeID`, `dischargeAttributeID`, `rangeAttributeID`, `falloffAttributeID`, `disallowAutoRepeat`, `published`, `displayName`, `isWarpSafe`, `rangeChance`, `electronicChance`, `propulsionChance`, `distribution`, `sfxName`, `npcUsageChanceAttributeID`, `npcActivationChanceAttributeID`, `fittingUsageChanceAttributeID`, `dataID`) VALUES
+(159, 'mediumEnergyTurretDamageMultiplierBonusPostPercentDamageMultiplierLocationShipModulesRequiringMediumEnergyTurret', 0, 1200, 1201, 'Automatically generated effect', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, NULL, 0, 'mediumEnergyTurretDamageMultiplierBonusPostPercentDamageMultiplierLocationShipModulesRequiringMediumEnergyTurret', 1, 1, 1, 0, 0, 'None', 0, 0, 0, 899668),
+
+(`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
+(1200, 9, 1199, 1164, '', 'Autogenerated ALRSM, (damageMultiplier of modules on Ship requiring Medium Energy Turret).ALRSM(PostPercent,damageMultiplierBonus)', '((CurrentShip[Type(Medium Energy Turret)]->damageMultiplier).(PostPercent)).ALRSM(damageMultiplierBonus)', 0, 0, 0),
+(1199, 31, 1095, 1198, '', 'Autogenerated EFF, PostPercent modification to damageMultiplier on modules requiring Medium Energy Turret on Ship', '(CurrentShip[Type(Medium Energy Turret)]->damageMultiplier).(PostPercent)', 0, 0, 0),
+(31, 'EFF', 'define association type', '(%(arg2)s).(%(arg1)s)', 1, 3, 5, '(%(arg1)s, %(arg2)s)'),
+(1095, 21, 0, 0, 'PostPercent', 'Autogenerated association, PostPercent', 'PostPercent', 0, 0, 0),
+(21, 'DEFASSOCIATION', 'define attribute association type', '%(value)s', 0, 0, 1, 'const.dgmAss%(value)s'),
+
+(1164, 22, 0, 0, '', 'Autogenerated attribute, damageMultiplierBonus', 'damageMultiplierBonus', 0, 0, 292),
+(22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+
+(1198, 12, 1197, 656, '', 'Autogenerated ATT, damageMultiplier on modules requiring Medium Energy Turret on Ship', 'CurrentShip[Type(Medium Energy Turret)]->damageMultiplier', 0, 0, 0),
+(12, 'ATT', 'attribute', '%(arg1)s->%(arg2)s', 6, 2, 3, '(%(arg1)s, %(arg2)s)'),
+(1197, 49, 4, 1196, '', 'Autogenerated LRS, modules on Ship that require Medium Energy Turret', 'CurrentShip[Type(Medium Energy Turret)]', 0, 0, 0),
+(49, 'LS', 'location - skill required item group', '%(arg1)s[%(arg2)s]', 6, 9, 6, '(%(arg1)s, %(arg2)s)'),
+(4, 24, 0, 0, 'Ship', 'Index of affecting ship in environment', 'CurrentShip', 0, 0, 0),
+(24, 'DEFENVIDX', 'define environment index', 'Current%(value)s', 0, 0, 6, 'env[const.dgmEnv%(value)s]'),
+
+(656, 22, 0, 0, '', '', 'damageMultiplier', 0, 0, 64),
+(22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+
+(1196, 29, 0, 0, 'Medium Energy Turret', 'Autogenerated skill type, Medium Energy Turret', 'Type(Medium Energy Turret)', 3306, 0, 0),
+(29, 'DEFTYPEID', 'define a type ID', 'Type(%(value)s)', 0, 0, 9, ' '),
+
+(1201, 61, 1199, 1164, '', 'Autogenerated RLRSM, (damageMultiplier of modules on Ship requiring Medium Energy Turret).RLRSM(PostPercent,damageMultiplierBonus)', '((CurrentShip[Type(Medium Energy Turret)]->damageMultiplier).(PostPercent)).RLRSM(damageMultiplierBonus)', 0, 0, 0),
+(61, 'RLRSM', 'remove a  required skill modifier', '(%(arg1)s).RLRSM(%(arg2)s)', 5, 2, 4, 'dogma.RemoveLocationRequiredSkillModifier(env,%(arg1)s, %(arg2)s)'),
+(1199, 31, 1095, 1198, '', 'Autogenerated EFF, PostPercent modification to damageMultiplier on modules requiring Medium Energy Turret on Ship', '(CurrentShip[Type(Medium Energy Turret)]->damageMultiplier).(PostPercent)', 0, 0, 0),
+(31, 'EFF', 'define association type', '(%(arg2)s).(%(arg1)s)', 1, 3, 5, '(%(arg1)s, %(arg2)s)'),
+(1095, 21, 0, 0, 'PostPercent', 'Autogenerated association, PostPercent', 'PostPercent', 0, 0, 0),
+(21, 'DEFASSOCIATION', 'define attribute association type', '%(value)s', 0, 0, 1, 'const.dgmAss%(value)s'),
+
+(1164, 22, 0, 0, '', 'Autogenerated attribute, damageMultiplierBonus', 'damageMultiplierBonus', 0, 0, 292),
+(22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+
+(1198, 12, 1197, 656, '', 'Autogenerated ATT, damageMultiplier on modules requiring Medium Energy Turret on Ship', 'CurrentShip[Type(Medium Energy Turret)]->damageMultiplier', 0, 0, 0),
+(12, 'ATT', 'attribute', '%(arg1)s->%(arg2)s', 6, 2, 3, '(%(arg1)s, %(arg2)s)'),
+(1197, 49, 4, 1196, '', 'Autogenerated LRS, modules on Ship that require Medium Energy Turret', 'CurrentShip[Type(Medium Energy Turret)]', 0, 0, 0),
+(49, 'LS', 'location - skill required item group', '%(arg1)s[%(arg2)s]', 6, 9, 6, '(%(arg1)s, %(arg2)s)'),
+(4, 24, 0, 0, 'Ship', 'Index of affecting ship in environment', 'CurrentShip', 0, 0, 0),
+(24, 'DEFENVIDX', 'define environment index', 'Current%(value)s', 0, 0, 6, 'env[const.dgmEnv%(value)s]'),
+
+(656, 22, 0, 0, '', '', 'damageMultiplier', 0, 0, 64),
+(22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s'),
+

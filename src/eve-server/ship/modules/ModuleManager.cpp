@@ -44,8 +44,10 @@
 // ModuleContainer class definitions
 #pragma region ModuleContainerClass
 ModuleContainer::ModuleContainer(uint8 lowSlots, uint8 medSlots, uint8 highSlots, uint8 rigSlots, uint8 subSystemSlots,
-    uint8 turretSlots, uint8 launcherSlots, ModuleManager *myManager)
+    uint8 turretSlots, uint8 launcherSlots, ModuleManager* myManager)
 {
+    m_MyManager = myManager;
+
     m_LowSlots = lowSlots;
     m_MediumSlots = medSlots;
     m_HighSlots = highSlots;
@@ -54,110 +56,42 @@ ModuleContainer::ModuleContainer(uint8 lowSlots, uint8 medSlots, uint8 highSlots
     m_TurretSlots = turretSlots;
     m_LauncherSlots = launcherSlots;
 
-    _initializeModuleContainers();
-
-    m_TotalTurretsFitted = 0;
-    m_TotalLaunchersFitted = 0;
-
-    m_MyManager = myManager;
+    initializeModuleContainers();
 }
 
 ModuleContainer::~ModuleContainer()
 {
-    //clean up arrays of module pointers
-    delete[] m_LowSlotModules;
-    delete[] m_MediumSlotModules;
-    delete[] m_HighSlotModules;
-    delete[] m_RigModules;
-    delete[] m_SubSystemModules;
-
-    //nullify pointers
-    SafeDelete(m_LowSlotModules);
-    SafeDelete(m_MediumSlotModules);
-    SafeDelete(m_HighSlotModules);
-    SafeDelete(m_RigModules);
-    SafeDelete(m_SubSystemModules);
+    for (std::map<uint8, GenericModule*>::iterator itr = m_modules.begin(); itr != m_modules.end(); itr++)
+        SafeDelete(itr->second);
 }
 
-void ModuleContainer::_initializeModuleContainers() {
-    /** @todo  change this to use vector instead of pointer arrays .. mem mgmt and cleanup update*/
-    //initialize our arrays of pointers for avalible ship slots.
-    //  this solves a segfault when iterating (and the cooresponding dereference) past avalible ship slots
-    m_HighSlotModules = new GenericModule*[m_HighSlots];
-    m_MediumSlotModules = new GenericModule*[m_MediumSlots];
-    m_LowSlotModules = new GenericModule*[m_LowSlots];
-    m_RigModules = new GenericModule*[m_RigSlots];
-    m_SubSystemModules = new GenericModule*[m_SubSystemSlots];
+void ModuleContainer::initializeModuleContainers() {
+    m_turrents = 0;
+    m_launchers = 0;
 
-    uint8 i = 0;
-    for (i = 0; i < m_HighSlots; ++i)
-        m_HighSlotModules[i] = nullptr;
-
-    for (i = 0; i < m_MediumSlots; ++i)
-        m_MediumSlotModules[i] = nullptr;
-
-    for (i = 0; i < m_LowSlots; ++i)
-        m_LowSlotModules[i] = nullptr;
-
-    for (i = 0; i < m_RigSlots; ++i)
-        m_RigModules[i] = nullptr;
-
-    for (i = 0; i < m_SubSystemSlots; ++i)
-        m_SubSystemModules[i] = nullptr;
-
-    for (uint8 flag = 11; flag < 35; ++flag) {
+    for (uint8 flag = 11; flag < 35; ++flag)    // modules
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
-    }
-
+    if (m_RigSlots)
+        for (uint8 flag = 92; flag < 100; ++flag)   // rigs
+            m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
+    if (m_SubSystemSlots)
+        for (uint8 flag = 125; flag < 134; ++flag)  // subsystems
+            m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
 }
+
 bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* mod)
 {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.find(flag);
-    if (itr != m_modules.end())
+    if (itr == m_modules.end())
+        return false;
+    else
         itr->second = mod;
-
-    switch(_checkBounds(flag))
-    {
-        case NaT:
-            sLog.Error("ModuleContainer::AddModule()","Flag Out of bounds");
-			return false;
-        case slotTypeSubSystem:
-			if (!m_SubSystemModules[flag - flagSubSystem0])
-				m_SubSystemModules[flag - flagSubSystem0] = mod;
-			else
-				return false;
-            break;
-        case slotTypeRig:
-			if (!m_RigModules[flag - flagRigSlot0])
-	            m_RigModules[flag - flagRigSlot0] = mod;
-			else
-				return false;
-            break;
-        case slotTypeLowPower:
-			if (!m_LowSlotModules[flag - flagLowSlot0])
-	            m_LowSlotModules[flag - flagLowSlot0] = mod;
-			else
-				return false;
-            break;
-        case slotTypeMedPower:
-			if (!m_MediumSlotModules[flag - flagMedSlot0])
-	            m_MediumSlotModules[flag - flagMedSlot0] = mod;
-			else
-				return false;
-            break;
-        case slotTypeHiPower:
-			if (!m_HighSlotModules[flag - flagHiSlot0])
-	            m_HighSlotModules[flag - flagHiSlot0] = mod;
-			else
-				return false;
-            break;
-    }
 
     // Maintain Turret and Launcher Fitted module counts:
     if ( mod->isTurretFitted() )
-        ++m_TotalTurretsFitted;
+        ++m_turrents;
     if ( mod->isLauncherFitted() )
-        ++m_TotalLaunchersFitted;
+        ++m_launchers;
 
     // Maintain the Modules Fitted By Group counter for this module group:
     if ( m_ModulesFittedByGroupID.find(mod->getItem()->groupID()) != m_ModulesFittedByGroupID.end() )
@@ -175,9 +109,7 @@ bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
     if (!mod)
         return false;
 
-    _deleteModuleRef(mod->flag(), mod);
-    mod->SetModuleState(MOD_UNFITTED);
-    //SafeDelete(mod);
+    deleteModuleRef(mod->flag(), mod);
 	return true;
 }
 
@@ -186,45 +118,21 @@ bool ModuleContainer::RemoveModule(uint32 itemID) {
     if (!mod)
         return false;
 
-    _deleteModuleRef(mod->flag(), mod);
-    mod->SetModuleState(MOD_UNFITTED);
+    deleteModuleRef(mod->flag(), mod);
     return true;
 }
 
 void ModuleContainer::StripModules()
 {
-    /* may not need this */
-    uint8 i = 0;
-    for (i = 0; i < m_HighSlots; ++i)
-        m_HighSlotModules[i] = nullptr;
-
-    for (i = 0; i < m_MediumSlots; ++i)
-        m_MediumSlotModules[i] = nullptr;
-
-    for (i = 0; i < m_LowSlots; ++i)
-        m_LowSlotModules[i] = nullptr;
-
-    for (i = 0; i < m_RigSlots; ++i)
-        m_RigModules[i] = nullptr;
-
-    for (i = 0; i < m_SubSystemSlots; ++i)
-        m_SubSystemModules[i] = nullptr;
-
-    for (uint8 flag = 11; flag < 35; ++flag) {
+    for (uint8 flag = 11; flag < 35; ++flag)
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
-    }
 }
 
 GenericModule* ModuleContainer::GetModule(EVEItemFlags flag)
 {
-    switch(_checkBounds(flag)) {
-        case slotTypeLowPower:     return m_LowSlotModules[flag - flagLowSlot0];
-        case slotTypeMedPower:     return m_MediumSlotModules[flag - flagMedSlot0];
-        case slotTypeHiPower:      return m_HighSlotModules[flag - flagHiSlot0];
-        case slotTypeSubSystem:    return m_SubSystemModules[flag - flagSubSystem0];
-        case slotTypeRig:          return m_RigModules[flag - flagRigSlot0];
-        case NaT:                  _log(SHIP__ERROR, "ModuleContainer::GetModule() - Flag Out of bounds");
-    }
+    std::map<uint8, GenericModule*>::iterator itr = m_modules.find(flag);
+    if (itr != m_modules.end())
+        return itr->second;
 
     return nullptr;
 }
@@ -232,53 +140,39 @@ GenericModule* ModuleContainer::GetModule(EVEItemFlags flag)
 GenericModule* ModuleContainer::GetModule(uint32 itemID)
 {
     //iterate through the list and see if we have it
-    uint8 r = 0;
-    for (r = 0; r < m_HighSlots; r++)
-        if (m_HighSlotModules[r] and (m_HighSlotModules[r]->itemID() == itemID))
-            return m_HighSlotModules[r];
-
-    for (r = 0; r < m_MediumSlots; r++)
-        if (m_MediumSlotModules[r] and (m_MediumSlotModules[r]->itemID() == itemID))
-            return m_MediumSlotModules[r];
-
-    for (r = 0; r < m_LowSlots; r++)
-        if (m_LowSlotModules[r] and (m_LowSlotModules[r]->itemID() == itemID))
-            return m_LowSlotModules[r];
-
-    for (r = 0; r < m_SubSystemSlots; r++)
-        if (m_SubSystemModules[r] and (m_SubSystemModules[r]->itemID() == itemID))
-            return m_SubSystemModules[r];
-
-    for (r = 0; r < m_RigSlots; r++)
-        if (m_RigModules[r] and (m_RigModules[r]->itemID() == itemID))
-            return m_RigModules[r];
-
+    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+    while (itr != m_modules.end()) {
+        if (itr->second->itemID() == itemID)
+            return itr->second;
+        else
+            ++itr;
+    }
     return nullptr;  //we don't
 }
 
 
 void ModuleContainer::AbortCycle() {
-    _process(typeAbort);
+    process(typeAbort);
 }
 
 void ModuleContainer::Process() {
-    _process(typeProcessAll);
+    process(typeProcessAll);
 }
 
 void ModuleContainer::OnlineAll() {
-    _process(typeOnlineAll);
+    process(typeOnlineAll);
 }
 
 void ModuleContainer::OfflineAll() {
-    _process(typeOfflineAll);
+    process(typeOfflineAll);
 }
 
 void ModuleContainer::DeactivateAll() {
-    _process(typeDeactivateAll);
+    process(typeDeactivateAll);
 }
 
 void ModuleContainer::UnloadAll() {
-    _process(typeUnloadAll);
+    process(typeUnloadAll);
 }
 
 bool ModuleContainer::isSlotOccupied(EVEItemFlags flag) {
@@ -286,57 +180,39 @@ bool ModuleContainer::isSlotOccupied(EVEItemFlags flag) {
     return (itr == m_modules.end() ? false : true);
 }
 
-uint32 ModuleContainer::GetAvailableSlotInBank(EVEEffectID slotBank)
+uint16 ModuleContainer::GetAvailableSlotInBank(EVEEffectID slotBank)
 {
-	uint32 slot = 0, slotFound = flagIllegal;
-	switch (slotBank)
-	{
-        case effectLoPower:
-			for ( slot=0; slot < m_LowSlots; slot++)
-				if ( m_LowSlotModules[slot] == NULL )
-				{
-					slotFound = slot + flagLowSlot0;
-					break;
-				}
-			break;
-		case effectMedPower:
-			for ( slot=0; slot < m_MediumSlots; slot++)
-				if ( m_MediumSlotModules[slot] == NULL )
-				{
-					slotFound = slot + flagMedSlot0;
-					break;
-				}
-			break;
-		case effectHiPower:
-			for ( slot=0; slot < m_HighSlots; slot++)
-				if ( m_HighSlotModules[slot] == NULL )
-				{
-					slotFound = slot + flagHiSlot0;
-					break;
-				}
-			break;
-		case effectRigSlot:
-			for ( slot=0; slot < m_RigSlots; slot++)
-				if ( m_RigModules[slot] == NULL )
-				{
-					slotFound = slot + flagRigSlot0;
-					break;
-				}
-			break;
-		case effectSubSystem:
-			for ( slot=0; slot < m_SubSystemSlots; slot++)
-				if ( m_SubSystemModules[slot] == NULL )
-				{
-					slotFound = slot + flagSubSystem0;
-					break;
-				}
-			break;
-		default:
+    switch (slotBank) {
+        case effectLoPower: {
+            for (uint8 slot=flagLowSlot0; slot < (flagLowSlot0 + m_LowSlots); slot++)
+				if ( m_modules[slot] == nullptr )
+					return slot;
+            } break;
+		case effectMedPower: {
+            for (uint8 slot=flagMedSlot0; slot < (flagMedSlot0 + m_MediumSlots); slot++)
+                if ( m_modules[slot] == nullptr )
+					return slot;
+            } break;
+		case effectHiPower: {
+            for (uint8 slot=flagHiSlot0; slot < (flagHiSlot0 + m_HighSlots); slot++)
+                if ( m_modules[slot] == nullptr )
+					return slot;
+            } break;
+		case effectRigSlot: {
+            for (uint8 slot=flagRigSlot0; slot < (flagRigSlot0 + m_RigSlots); slot++)
+                if ( m_modules[slot] == nullptr )
+					return slot;
+            } break;
+		case effectSubSystem: {
+            for (uint8 slot=flagSubSystem0; slot < (flagSubSystem0 + m_SubSystemSlots); slot++)
+                if ( m_modules[slot] == nullptr )
+					return slot;
+            } break;
+		default: {
 			// ERROR: This is not a module that fits in any of the slot banks
-			break;
+            return flagIllegal;
+            } break;
 	}
-
-	return slotFound;
 }
 
 uint32 ModuleContainer::GetFittedModuleCountByGroup(uint32 groupID)
@@ -349,216 +225,103 @@ uint32 ModuleContainer::GetFittedModuleCountByGroup(uint32 groupID)
 
 void ModuleContainer::GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList)
 {
-    uint8 r;
-    for (r = 0; r < m_HighSlots; r++) {
-        if (m_HighSlotModules[r])
-			pModuleList->push_back( m_HighSlotModules[r]->getItem() );
-    }
-
-    for (r = 0; r < m_MediumSlots; r++) {
-        if (m_MediumSlotModules[r])
-            pModuleList->push_back( m_MediumSlotModules[r]->getItem() );
-    }
-
-    for (r = 0; r < m_LowSlots; r++) {
-        if (m_LowSlotModules[r])
-            pModuleList->push_back( m_LowSlotModules[r]->getItem() );
-    }
-
-    for (r = 0; r < m_SubSystemSlots; r++) {
-        if (m_SubSystemModules[r])
-            pModuleList->push_back( m_SubSystemModules[r]->getItem() );
-    }
-
-    for (r = 0; r < m_RigSlots; r++) {
-        if (m_RigModules[r])
-            pModuleList->push_back( m_RigModules[r]->getItem() );
+    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+    while (itr != m_modules.end()) {
+        if (itr->second)
+            pModuleList->push_back( itr->second->getItem() );
+        ++itr;
     }
 }
 
 void ModuleContainer::SaveModules()
 {
-    uint8 r;
-    for (r = 0; r < m_HighSlots; r++) {
-        if (m_HighSlotModules[r])
-            m_HighSlotModules[r]->getItem()->SaveItem();
-    }
-
-    for (r = 0; r < m_MediumSlots; r++) {
-        if (m_MediumSlotModules[r])
-            m_MediumSlotModules[r]->getItem()->SaveItem();
-    }
-
-    for (r = 0; r < m_LowSlots; r++) {
-        if (m_LowSlotModules[r])
-            m_LowSlotModules[r]->getItem()->SaveItem();
-    }
-
-    for (r = 0; r < m_SubSystemSlots; r++) {
-        if (m_SubSystemModules[r])
-            m_SubSystemModules[r]->getItem()->SaveItem();
-    }
-
-    for (r = 0; r < m_RigSlots; r++) {
-        if (m_RigModules[r])
-            m_RigModules[r]->getItem()->SaveItem();
+    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+    while (itr != m_modules.end()) {
+        if (itr->second)
+            itr->second->getItem()->SaveItem();
+        ++itr;
     }
 }
 
-void ModuleContainer::_deleteModuleRef(EVEItemFlags flag, GenericModule* mod)
+void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* mod)
 {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.find(flag);
     if (itr != m_modules.end())
         itr->second = nullptr;
 
-    switch(_checkBounds(flag))
-    {
-    case NaT:
-        sLog.Error("ModuleContainer::_deleteModuleRef()","Flag %u retuned NaT.", flag);
-        break;
-    case slotTypeSubSystem:
-        m_SubSystemModules[flag-flagSubSystem0] = nullptr;
-        break;
-    case slotTypeRig:
-        m_RigModules[flag-flagRigSlot0] = nullptr;
-        break;
-    case slotTypeLowPower:
-        m_LowSlotModules[flag-flagLowSlot0] = nullptr;
-        break;
-    case slotTypeMedPower:
-        m_MediumSlotModules[flag-flagMedSlot0] = nullptr;
-        break;
-    case slotTypeHiPower:
-        m_HighSlotModules[flag-flagHiSlot0] = nullptr;
-        break;
-    default:
-        sLog.Error("ModuleContainer::_deleteModuleRef()","Flag %u not handled.", flag);
-        return;
-    }
-
     // Maintain Turret and Launcher Fitted module counts:
     if ( mod->isTurretFitted() )
-        --m_TotalTurretsFitted;
+        --m_turrents;
     if ( mod->isLauncherFitted() )
-        --m_TotalLaunchersFitted;
+        --m_launchers;
 
     // Maintain the Modules Fitted By Group counter for this module group:
     if (m_ModulesFittedByGroupID.find(mod->getItem()->groupID()) != m_ModulesFittedByGroupID.end()) {
         if (m_ModulesFittedByGroupID.find(mod->getItem()->groupID())->second > 1) {
             // We still have more than one module of this group fitted, so just reduce number fitted by 1:
-            m_ModulesFittedByGroupID.find(mod->getItem()->groupID())->second--;
+            --(m_ModulesFittedByGroupID.find(mod->getItem()->groupID())->second);
         } else {
             // This was the last module of this group fitted, so remove the entry from the map:
             m_ModulesFittedByGroupID.erase(mod->getItem()->groupID());
         }
     } else
-        sLog.Error( "ModuleContainer::_deleteModuleRef()", "Removing Module from ship fit when it had NO entry in m_ModulesFittedByGroup !" );
+        sLog.Error( "ModuleContainer::deleteModuleRef()", "Removing Module from ship fit when it had NO entry in m_ModulesFittedByGroup !" );
+
+    mod->SetModuleState(MOD_UNFITTED);
 }
 
-void ModuleContainer::_process(processType p)
+void ModuleContainer::process(processType p)
 {
-    //high slots
-    _processEx(p, highSlot);
-
-    //med slots
-    _processEx(p, mediumSlot);
-
-    //low slots
-    _processEx(p, lowSlot);
-}
-
-void ModuleContainer::_processEx(processType p, slotType t)
-{
-    uint8 r, COUNT;
-    GenericModule** cur = nullptr;
-
-    switch(t) {
-    case highSlot:
-        COUNT = m_HighSlots;
-        cur = m_HighSlotModules;
-        break;
-    case mediumSlot:
-        COUNT = m_MediumSlots;
-        cur = m_MediumSlotModules;
-        break;
-    case lowSlot:
-        COUNT = m_LowSlots;
-        cur = m_LowSlotModules;
-        break;
-    case rigSlot:
-        COUNT = m_RigSlots;
-        cur = m_RigModules;
-        break;
-    case subSystemSlot:
-        COUNT = m_SubSystemSlots;
-        cur = m_SubSystemModules;
-        break;
-    }
-
     switch(p) {
-    case typeOnlineAll:
-        for (r = 0; r < COUNT; r++, cur++) {
-            if (*cur == nullptr)
-                continue;
-            (*cur)->Online();
+        case typeOnlineAll: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if (itr->second)
+                    itr->second->Online();
+                ++itr;
+            }
         } break;
-
-    case typeOfflineAll:
-        for (r = 0; r < COUNT; r++, cur++) {
-            if (*cur == nullptr)
-                continue;
-            (*cur)->Offline();
+        case typeOfflineAll: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if (itr->second)
+                    itr->second->Offline();
+                ++itr;
+            }
         } break;
-
-    case typeDeactivateAll:
-        for (r = 0; r < COUNT; r++, cur++) {
-            if (*cur == nullptr)
-                continue;
-            (*cur)->Deactivate();
+        case typeDeactivateAll: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if (itr->second)
+                    itr->second->Deactivate();
+                ++itr;
+            }
         } break;
-
-    case typeUnloadAll:
-        for (r = 0; r < COUNT; r++, cur++) {
-            if (*cur == nullptr)
-                continue;
-            (*cur)->UnloadCharge();
+        case typeUnloadAll: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if (itr->second)
+                    itr->second->UnloadCharge();
+                ++itr;
+            }
         } break;
-
-    case typeProcessAll:
-        for (r = 0; r < COUNT; r++, cur++) {
-            if (*cur == nullptr)
-                continue;
-            (*cur)->Process();
+        case typeProcessAll: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if (itr->second)
+                    itr->second->Process();
+                ++itr;
+            }
         } break;
-
-    case typeAbort:
-        for (r = 0; r < COUNT; r++, cur++) {
-            if (*cur == nullptr)
-                continue;
-            (*cur)->AbortCycle();
+        case typeAbort: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if ((itr->second) and (itr->second->IsActiveModule()))
+                    itr->second->AbortCycle();
+                ++itr;
+            }
         } break;
     }
-}
-
-EVEItemSlotType ModuleContainer::_checkBounds(EVEItemFlags flag)
-{
-    //this could be done better         -not sure how yet.
-    if ((flag >= flagLowSlot0) and (flag <= flagLowSlot7))
-        return slotTypeLowPower;
-
-    if ((flag >= flagMedSlot0) and (flag <= flagMedSlot7))
-        return slotTypeMedPower;
-
-    if ((flag >= flagHiSlot0) and (flag <= flagHiSlot7))
-        return slotTypeHiPower;
-
-    if ((flag >= flagRigSlot0) and (flag <= flagRigSlot7))
-        return slotTypeRig;
-
-    if ((flag >= flagSubSystem0) and (flag <= flagSubSystem7))
-        return slotTypeSubSystem;
-
-    return NaT;  //Not a Type
 }
 
 #pragma endregion
@@ -570,6 +333,9 @@ EVEItemSlotType ModuleContainer::_checkBounds(EVEItemFlags flag)
 #pragma region ModuleManagerClass
 ModuleManager::ModuleManager(ShipItem *const ship)
 {
+    m_initalized = false;
+    m_Ship = ship;
+
     // Create ModuleContainer object and initialize with sizes for avalible slot banks for this ship:
     m_Modules = new ModuleContainer((uint8)ship->GetAttribute(AttrLowSlots).get_int(),
                                     (uint8)ship->GetAttribute(AttrMedSlots).get_int(),
@@ -579,24 +345,18 @@ ModuleManager::ModuleManager(ShipItem *const ship)
                                     (uint8)ship->GetAttribute(AttrTurretSlotsLeft).get_int(),
                                     (uint8)ship->GetAttribute(AttrLauncherSlotsLeft).get_int(),
                                     this);
-
-    m_initalized = false;
-
-    // Store reference to the Ship object to which the ModuleManager belongs:
-    m_Ship = ship;
 }
 
 ModuleManager::~ModuleManager()
 {
     //module cleanup is handled in the ModuleContainer destructor
-    delete m_Modules;
-    m_Modules = nullptr;
+    SafeDelete(m_Modules);
 }
 
 bool ModuleManager::Initialize() {
     if (m_initalized) {
         // this ship is already initalized and active (in case of BoardShip() or reactivation)
-        OnlineAll();
+        OnlineAll();    // use CharacterBoardingShip() as it will call all needed functions to correctly apply modifiers
         return true;
     }
 
@@ -607,7 +367,7 @@ bool ModuleManager::Initialize() {
     for (auto cur : itemVec) {
         if (cur->flag() == flagCargoHold) continue;
         if (cur->categoryID() == EVEDB::invCategories::Module) {
-            mod = ModuleFactory(cur, ShipItemRef(m_Ship));
+            mod = ModuleFactory(cur, ShipItemRef(m_Ship));  // rigs are modules
             if (m_Modules->AddModule(cur->flag(), mod)) {
                 Online(cur->flag());
             } else {
@@ -659,9 +419,9 @@ bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
     return false;
 }
 
-uint32 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
+uint16 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
 {
-	// Call into ModuleContainer class with slotBank effectID to have it check for and return any available slot flag in
+	// Call into ModuleContainer class with slotBank effectID to have it check for and return first available slot flag in
 	// in the specified slot bank:
 	return m_Modules->GetAvailableSlotInBank(slotBank);
 }
@@ -674,7 +434,7 @@ bool ModuleManager::InstallRig(InventoryItemRef item, EVEItemFlags flag) {
         return false;
     }
     if (((item->groupID() >= 773) and (item->groupID() <= 782)) or (item->groupID() == 786)) {
-        _fitModule(item,flag);
+        fitModule(item,flag);
         m_Ship->SetAttribute(AttrUpgradeSlotsLeft, --slots);
         return true;
     } else
@@ -698,7 +458,7 @@ void ModuleManager::UninstallRig(uint32 itemID)
 bool ModuleManager::InstallSubSystem(InventoryItemRef item, EVEItemFlags flag)
 {
     if (item->categoryID() == EVEDB::invCategories::Subsystem) {
-        _fitModule(item,flag);
+        fitModule(item,flag);
         return true;
     } else
         sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a subsystem", m_Ship->GetPilot()->GetName(), item->itemID());
@@ -730,7 +490,7 @@ bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
 {
     if (item->categoryID() == EVEDB::invCategories::Module) {
         // Attempt to fit the module
-        if ( _fitModule(item, flag) ) {
+        if ( fitModule(item, flag) ) {
             // Now that module is successfully fitted, attempt to put it Online:
             Online(item->itemID());
             return true;
@@ -741,7 +501,7 @@ bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
     return false;
 }
 
-bool ModuleManager::_fitModule(InventoryItemRef item, EVEItemFlags flag)
+bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
 {
     bool verifyFailed = false;
 	GenericModule* existingMod = m_Modules->GetModule(item->itemID());
@@ -1086,7 +846,8 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
     return;
 }
 
-void ModuleManager::UnloadCharge(EVEItemFlags flag) {
+void ModuleManager::UnloadCharge(EVEItemFlags flag)
+{
     GenericModule* mod = m_Modules->GetModule(flag);
     if (mod and mod->IsLoaded() ) {
         _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s",
@@ -1113,7 +874,8 @@ bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
     return false;
 }
 
-void ModuleManager::UnloadAllModules() {
+void ModuleManager::UnloadAllModules()
+{
     m_Modules->UnloadAll();
 }
 
@@ -1178,7 +940,8 @@ void ModuleManager::GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleL
 	m_Modules->GetModuleListOfRefs(pModuleList);
 }
 
-void ModuleManager::StripModules() {
+void ModuleManager::StripModules()
+{
     m_Modules->StripModules();
 }
 

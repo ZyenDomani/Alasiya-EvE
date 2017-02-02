@@ -1,9 +1,9 @@
 
 #include "Client.h"
-#include "EffectsProcessor.h"
 #include "EVEServerConfig.h"
 #include "Profile.h"
 #include "character/Character.h"
+#include "effects/EffectsProcessor.h"
 #include "system/DestinyManager.h"
 #include "ship/modules/ModuleManager.h"
 #include "ship/Ship.h"
@@ -857,7 +857,7 @@ InventoryItemRef ShipItem::GetModule(uint32 itemID)
 }
 
 EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef item) {
-    uint32 slotFound = flagIllegal;
+    uint16 slotFound = flagIllegal;
     // 1) get slot bank (low, med, high, rig, subsystem) from dgmTypeEffects using item->itemID()
     // 2) query this ship's ModuleManager to determine if there are any free slots in that bank,
     //    it should return a slot flag number for the next available slot starting at the lowest number
@@ -1194,8 +1194,10 @@ void ShipItem::CheckStacking(uint16 attrib, EVECalculationType type, ModuleState
 {
     EvilNumber newVal = 0;
     std::map<uint16, float>::iterator itr = m_resistMap.find(attrib);
-    if (itr != m_resistMap.end())
-        newVal = sFxProc.CalculateAttributeValue(newVal, value, type);
+    if (itr != m_resistMap.end()) {
+        FxProc fxProc;
+        newVal = fxProc.CalculateAttributeValue(newVal, value, type);
+    }
 }
 
 
@@ -1266,6 +1268,164 @@ std::string ShipItem::GetShipDNA()
     _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), itemName().c_str(), itemID());
     return dna.str();
 }
+
+// new effects system.  wip
+// these below are not used yet.  WIP for new effect processing system.
+bool ShipItem::AddEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+{
+    // Make sure the ModifierRef passed in is not NULL:
+    if (!modifierRef.get())
+        return -1;
+
+    ModifierMap* modMap = nullptr;
+
+    // Check to see if this attributeID does not have a ModifierMap in the Map of ModifierMaps
+    if ( m_ModifierMaps->find(attributeID) == m_ModifierMaps->end() )
+    {
+        // A Modifier Map for this attributeID does not exist, create a new one:
+        modMap = new ModifierMap();
+        if (!modMap)
+            return -1;
+    } else {
+        // A Modifier Map for this attributeID already exists, find it and get its pointer:
+        modMap = m_ModifierMaps->find(attributeID)->second;
+        if (!modMap)
+            return -1;
+    }
+
+    // Check to see if the modifier map has any entries corresponding to the passed-in modifier's value:
+    if ( modMap->m_ModifierMap.find(modifierRef->GetModifierValue()) != modMap->m_ModifierMap.end() )
+    {
+        // Modifier entry in this attributeID's Modifier Map already exists (modifierRef->GetModifierValue() found a match),
+        // so check its originatorID and if that matches, DO NOT add this Modifier object to the map as the reference
+        // already exists, the Module class can modify the contents of the Modifier object without really calling this function,
+        // however, to maintain consistent code, the Module classes will always call this function to notify the map class
+        // that the contents of the map was changed, or made 'dirty':
+        modMap->m_MapIsDirty = true;
+        ModifierMapType::iterator cur;
+        std::pair<ModifierMapType::iterator,ModifierMapType::iterator> range;
+        range = modMap->m_ModifierMap.equal_range(modifierRef->GetModifierValue());   // Get the one or more modifier map entries matching this modifier being added
+        for (cur=range.first; cur!=range.second; ++cur)
+            if ( cur->second->GetOriginatorID() == originatorID )
+                return 1;   // Yep, we found the Modifier owned by this originatorID, so we return "success" because the Module
+                            // class object already updated this Modifier through its own ModifierRef, we don't need to do anything
+                            // else here except return and prevent ADDING to the ModifierMap
+
+        // For loop searching existing modifiers completed, so this originatorID's Modifier
+        // is NOT in the map yet... Let's add it:
+        modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
+    } else {
+        // Modifier entry in this attributeID's Modifier Map does not exist yet, so lets insert it for the first time:
+        // Insert the (modifierValue, ModifierRef) pair into the Modifier Map for this attributeID:
+        modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
+        modMap->m_MapIsDirty = true;
+        m_ModifierMaps->insert(std::pair<uint32, ModifierMap*>(attributeID, modMap));
+    }
+
+    return 1;
+}
+
+bool ShipItem::RemoveEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+{
+    bool bModifierFound = false;
+    ModifierMap* modMap = nullptr;
+
+    if ( m_ModifierMaps->find(attributeID) != m_ModifierMaps->end() )  {
+        modMap = m_ModifierMaps->find(attributeID)->second;
+        modMap->m_MapIsDirty = true;
+
+        if ( modMap->m_ModifierMap.find(modifierRef->GetModifierValue()) != modMap->m_ModifierMap.end() ) {
+            modMap->m_MapIsDirty = true;
+            ModifierMapType::iterator cur;
+            std::pair<ModifierMapType::iterator,ModifierMapType::iterator> range;
+            range = modMap->m_ModifierMap.equal_range(modifierRef->GetModifierValue());   // Get the one or more modifier map entries matching this modifier being removed
+            for (cur=range.first; cur!=range.second; ++cur)
+                if ( cur->second->GetOriginatorID() == originatorID ) {
+                    bModifierFound = true;  // Yep, we found the Modifier owned by this originatorID, so we break out of the for ()
+                                            // so we can now remove this exact Modifier object from the multimap
+                    break;
+                }
+
+            if (bModifierFound)    {
+                // For loop searching existing modifiers completed, so this originatorID's Modifier
+                // was found in the map
+                modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
+            }
+            else
+                return -1;  // This modifier's originatorID was not found in the map, so return error code
+        }
+        else
+            return -1;  // This modifier's modifier value was not even found in the map, so return error code
+    }
+    else
+        return -1;  // Modifier Map for supplied attributeID does not exist, return error value
+
+    return 1;
+}
+
+
+/*
+# Stacking penalty base constant, used in attribute calculations
+PENALTY_BASE = 1 / exp((1 / 2.67) ** 2)
+
+# Items belonging to these categories never have
+# their effects stacking penalized
+PENALTY_IMMUNE_CATEGORIES = (
+    Category.ship,
+    Category.charge,
+    Category.skill,
+    Category.implant,
+    Category.subsystem
+)
+
+# Tuple with penalizable operators
+PENALIZABLE_OPERATORS = (
+    Operator.pre_mul,
+    Operator.post_mul,
+    Operator.post_percent,
+    Operator.pre_div,
+    Operator.post_div
+)
+
+# Map which helps to normalize modifiers
+NORMALIZATION_MAP = {
+    Operator.pre_assign: lambda val: val,
+    Operator.pre_mul: lambda val: val,
+    Operator.pre_div: lambda val: 1 / val,
+    Operator.mod_add: lambda val: val,
+    Operator.mod_sub: lambda val: -val,
+    Operator.post_mul: lambda val: val,
+    Operator.post_div: lambda val: 1 / val,
+    Operator.post_percent: lambda val: val / 100 + 1,
+    Operator.post_assign: lambda val: val
+}
+
+# List operator types, according to their already normalized values
+ASSIGNMENTS = (
+    Operator.pre_assign,
+    Operator.post_assign
+)
+ADDITIONS = (
+    Operator.mod_add,
+    Operator.mod_sub
+)
+MULTIPLICATIONS = (
+    Operator.pre_mul,
+    Operator.pre_div,
+    Operator.post_mul,
+    Operator.post_div,
+    Operator.post_percent
+)
+
+# Following attributes have limited precision - only
+# to second number after point
+LIMITED_PRECISION = (
+    Attribute.cpu,
+    Attribute.power,
+    Attribute.cpu_output,
+    Attribute.power_output
+)
+*/
 
 
 /* DynamicSystemEntity representing ship object in space */

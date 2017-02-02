@@ -27,7 +27,10 @@
 
 #include "ship/dgmtypeattributeinfo.h"
 
-/** @todo  this whole system needs to be updated/optimized */
+/** @todo  this whole system needs to be updated/optimized
+ *      should also look into moving this entire class into the static data manager
+ */
+
 
 void dgmtypeattributemgr::Initialize()
 {
@@ -63,7 +66,7 @@ void dgmtypeattributemgr::Initialize()
 
         entry->attributeset.push_back(attr_entry);
     }
-    sLog.Cyan("       ServerInit", "%u attributes loaded in %.3fms", amount, (GetTimeMSeconds() - start));
+    sLog.Cyan("    Attribs Table", "%u attributes loaded in %.3fms", amount, (GetTimeMSeconds() - start));
 }
 
 void dgmtypeattributemgr::Close()

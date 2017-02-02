@@ -25,7 +25,7 @@
 
 #include "eve-server.h"
 
-#include "scanning/ScanningDB.h"
+#include "exploration/ScanningDB.h"
 
 void ScanningDB::GetScanResults(DBQueryResult &res) {
     //`dedTestTable` (`typeID`, `scanGroupID`, `groupID`, `strengthAttributeID`, `dungeonName`, `id`, `x`, `y`, `z`)

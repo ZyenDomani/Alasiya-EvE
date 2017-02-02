@@ -42,7 +42,7 @@
 #include "system/SystemGPoint.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
-#include "scanning/Scan.h"
+#include "exploration/Scan.h"
 #include "station/Station.h"
 #include "station/TradeService.h"
 

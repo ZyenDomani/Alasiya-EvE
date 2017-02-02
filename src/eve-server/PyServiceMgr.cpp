@@ -62,6 +62,11 @@ void PyServiceMgr::Close() {
     m_boundObjects.clear();
 }
 
+void PyServiceMgr::Initalize(double startTime)
+{
+    sLog.Cyan("     PyServiceMgr", "%u services registered in %.3fms", m_svcList.size(),(GetTimeMSeconds() - startTime));
+}
+
 void PyServiceMgr::Process() {
     //well... we used to have something to do, but not right now...
 }

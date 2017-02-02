@@ -31,6 +31,8 @@
 #include "ConsoleCommands.h"
 #include "threading/Threading.h"
 
+#include "effects/EffectsDataMgr.h"
+
 
 ConsoleCommand::ConsoleCommand() :
 m_updateTimer(sConfig.rates.WebUpdate * 60000)	//15 mins
@@ -378,28 +380,36 @@ void ConsoleCommand::MemStatus(float* vm_usage, float* resident_set)
 void ConsoleCommand::Test()
 {
     sLog.Green("  Alasiya's EvEMu", "Server Test:");
-    sLog.Error("     Allan\'s Test", "Not Avalible Yet.");
-    /*
-    DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT `itemID`, `typeID`, `itemName` FROM `entity` WHERE itemID < %u", maxAgent);
+    //sLog.Error("     Allan\'s Test", "Not Avalible Yet.");
 
-    _log(DATABASE__RESULTS, "query returned %u items", res.GetRowCount());
+    sLog.Yellow("     Effects Test", "Test Begin.");
+    // make list of modules to test effects loading on
+    std::vector<uint16> m_items;
+    // add modules to list
+    m_items.push_back(10850); //  Medium Shield Booster II
+    m_items.push_back(2281);  //  Invulnerability Field II
+    m_items.push_back(1276);  //  Regenerative Plating II
+    m_items.push_back(3319);  //  Missile Launcher Operation
+    m_items.push_back(3306);  //  Medium Energy Turrent
+    m_items.push_back(28526); //  Khanid Navy Armor Kinetic Hardener
+    m_items.push_back(22544); //  Hulk
 
-    mydata data;
-    std::vector<mydata> vec;
-
-    DBResultRow row;
-    while(res.GetRow(row)) {
-        data.itemID = row.GetInt(0);
-        data.typeID = row.GetInt(1);
-        data.name = row.GetText(2);
-        vec.push_back(data);
+    // loop items to simulate loading using effect proc code
+    std::vector< TypeEffects > typeEffMap;
+    for (auto cur : m_items) {
+        sFxDataMgr.GetTypeEffect(cur, typeEffMap);
     }
 
-    res.Reset();
-    for (auto cur : vec)
-        sDatabase.RunQuery(res, "UPDATE `agtAgents` SET `typeID` = %u, `agentName` = %s WHERE `itemID` = %u", cur.typeID, cur.name.c_str(), cur.itemID );
-    */
+    std::vector<Effect> effectMap;
+    for (auto cur : typeEffMap) {
+        sLog.Yellow("     Effects Test", "Adding effectID %u.", cur.effectID);
+        effectMap.push_back(sFxDataMgr.GetEffect(cur.effectID));
+    }
+
+    sFxDataMgr.ConfigureEffects(effectMap);
+
+    sLog.Yellow("     Effects Test", "Test Complete.");
+    sLog.Yellow("     Effects Test", "%u sets loaded in %.3fms.", sFxDataMgr.GetFxSize(), sFxDataMgr.GetFxTime());
 }
 
 void ConsoleCommand::UpdateStatus() {

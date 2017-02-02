@@ -26,7 +26,7 @@
 #ifndef __SHIP__H__INCL__
 #define __SHIP__H__INCL__
 
-#include "EffectsData.h"
+#include "effects/EffectsData.h"
 #include "inventory/ItemType.h"
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
@@ -153,6 +153,61 @@ protected:
     const ItemType *m_skillType;
 };
 
+//////////////////////////////////////////////////////////////////////////////////
+// Modifier classes containing all data to modify an attribute
+#pragma region Modifier
+
+class Modifier
+: public RefObject
+{
+public:
+    Modifier(uint32 originatorID, uint32 targetAttributeID, uint32 targetID, bool penaltiesApply, double modifierValue, uint32 calcTypeID, uint32 revCalcTypeID)
+    : RefObject( 0 )
+    {
+        m_OriginatorID = originatorID;
+        m_TargetAttributeID = targetAttributeID;
+        m_TargetID = targetID;
+        m_bPenaltiesApply = penaltiesApply;
+        m_ModifierValue = modifierValue;
+        m_CalculationTypeID = calcTypeID;
+        m_ReverseCalculationTypeID = revCalcTypeID;
+    }
+
+    ~Modifier();
+
+    double GetModifierValue() { return m_ModifierValue; }
+    void SetModifierValue(double newModifierValue) { m_ModifierValue = newModifierValue; }
+    uint32 GetOriginatorID() { return m_OriginatorID; }
+
+protected:
+    uint32 m_OriginatorID;
+    uint32 m_TargetAttributeID;
+    uint32 m_TargetID;
+    bool m_bPenaltiesApply;
+    double m_ModifierValue;
+    uint32 m_CalculationTypeID;
+    uint32 m_ReverseCalculationTypeID;
+};
+
+typedef RefPtr<Modifier> ModifierRef;
+
+typedef std::multimap<double, ModifierRef> ModifierMapType;     // The ModifierRef is NOT owned by the owner of instances of this type
+
+class ModifierMap
+{
+public:
+    ModifierMap() { m_MapIsDirty = false; }
+    ~ModifierMap();
+
+    bool m_MapIsDirty;
+    ModifierMapType m_ModifierMap;   // Key= modifier value, Value= Modifier class object containing all data describing this modifier for this attribute
+};
+
+typedef std::map<uint32, ModifierMap *> ModifierMaps;   // Key= attributeID, Value= ModifierMap class object containing a map of all modifiers for this attribute
+
+#pragma endregion
+/////////////////////////////// END MODIFIER /////////////////////////////////////
+
 /**
  * InventoryItem which represents ShipItem.
  */
@@ -230,12 +285,17 @@ public:
 
     /* begin new module manager interface */
     void ProcessModules();
-    InventoryItemRef GetModule(EVEItemFlags flag);
-    InventoryItemRef GetModule(uint32 itemID);
-    EVEItemFlags FindAvailableModuleSlot( InventoryItemRef item );
-    EvilNumber GetMaxTurrentHardpoints() { return GetAttribute(AttrTurretSlotsLeft); }
-    EvilNumber GetMaxLauncherHardpoints() { return GetAttribute(AttrLauncherSlotsLeft); }
-    uint32 AddItem( EVEItemFlags flag, InventoryItemRef item);
+    void Online(uint32 moduleID);
+    void Offline(uint32 moduleID);
+    void OnlineAll();
+    void OfflineAll();
+    void Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat);
+    void Deactivate(int32 itemID, std::string effectName);
+    void DeactivateAllModules();
+    void Overload();
+    void CancelOverloading();
+    void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);
+    void RemoveRig(InventoryItemRef item);
     void AddItem(InventoryItemRef item);
     void RemoveItem( InventoryItemRef item, uint32 qty=0/*, uint32 inventoryID, EVEItemFlags flag*/ );
     void UpdateModules();
@@ -244,21 +304,17 @@ public:
     void UnloadAllModules();
     void MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2);
     void RepairModules();
+    void StripFitting();
 
     void AbortCycle()                                        { m_ModuleManager->AbortCycle(); }
 
-    void Online(uint32 moduleID);
-    void Offline(uint32 moduleID);
-    void Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat);
-    void Deactivate(int32 itemID, std::string effectName);
-    void Overload();
-    void CancelOverloading();
-    void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);
-    void RemoveRig(InventoryItemRef item);
-    void DeactivateAllModules();
-    void OnlineAll();
-    void OfflineAll();
-    void StripFitting();
+    InventoryItemRef GetModule(EVEItemFlags flag);
+    InventoryItemRef GetModule(uint32 itemID);
+    EVEItemFlags FindAvailableModuleSlot( InventoryItemRef item );
+    EvilNumber GetMaxTurrentHardpoints() { return GetAttribute(AttrTurretSlotsLeft); }
+    EvilNumber GetMaxLauncherHardpoints() { return GetAttribute(AttrLauncherSlotsLeft); }
+    uint32 AddItem( EVEItemFlags flag, InventoryItemRef item);
+    /* end new module manager interface */
 
     // Tactical Interface:
     void SetShipShield(double fraction);
@@ -334,12 +390,22 @@ public:
 
     void CheckStacking(uint16 attrib, EVECalculationType type, ModuleStates state, EvilNumber& value);
 
+    // all this needs to be moved to ShipItem, as the ship should hold all data concerning its attribs, it's fitted module's attribs, and it's module's loaded charges attribs
+    //  and it has easy reference to its own modifers, it's pilot's skills and implants/boosters, and it's fitted modules.
+    //void ProcessEffect(Effect* e);
+    //void ProcessSubEffect(SubEffect * e);
+
+    bool AddEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef);
+    bool RemoveEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef);
+
 private:
     std::map<uint16, uint8> m_stackMap;
     std::map<uint16, float> m_resistMap;
 
     std::unordered_map<uint16, GenericModule*> m_attribMap;    //* attrib storage  attrib, module
 
+    //modifier maps, we own these
+    ModifierMaps* m_ModifierMaps;    // attribID, ModifierMap<std::multimap<double, Modifier>>  where double is final post-calc modifier value
 };
 
 /**

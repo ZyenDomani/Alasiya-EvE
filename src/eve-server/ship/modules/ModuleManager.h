@@ -24,8 +24,8 @@
 */
 
 
-#ifndef __MODULEMANAGER_H_INCL__
-#define __MODULEMANAGER_H_INCL__
+#ifndef _MODULEMANAGER_H_INCL__
+#define _MODULEMANAGER_H_INCL__
 
 class DestinyManager;
 class InventoryItem;
@@ -106,7 +106,7 @@ public:
 
     void StripModules();
 
-	uint32 GetAvailableSlotInBank(EVEEffectID slotBank);
+    uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
 
     //batch processes handlers
     void AbortCycle();
@@ -126,13 +126,15 @@ public:
     uint8 GetSubSysCount()                  { return m_SubSystemSlots; }
 
     uint32 GetFittedModuleCountByGroup(uint32 groupID);
-    uint32 GetFittedTurretCount()           { return m_TotalTurretsFitted; }
-    uint32 GetFittedLauncherCount()         { return m_TotalLaunchersFitted; }
+    uint32 GetFittedTurretCount()           { return m_turrents; }
+    uint32 GetFittedLauncherCount()         { return m_launchers; }
 
 	void GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList);
     void SaveModules();
 
 private:
+
+    ModuleManager* m_MyManager;        // we do not own this
 
     //internal enums
     enum processType
@@ -154,22 +156,12 @@ private:
         subSystemSlot
     };
 
-    void _deleteModuleRef(EVEItemFlags flag, GenericModule* mod);
+    void process(processType p);
+    void initializeModuleContainers();
+    void deleteModuleRef(EVEItemFlags flag, GenericModule* mod);
 
-    void _process(processType p);
-    void _processEx(processType p, slotType t);
-
-    EVEItemSlotType _checkBounds(EVEItemFlags flag);
-
-    void _initializeModuleContainers();
-
-    //we own these
-    GenericModule** m_HighSlotModules;
-    GenericModule** m_MediumSlotModules;
-    GenericModule** m_LowSlotModules;
-    GenericModule** m_RigModules;
-    GenericModule** m_SubSystemModules;
-
+    uint8 m_turrents;
+    uint8 m_launchers;
     uint8 m_LowSlots;
     uint8 m_MediumSlots;
     uint8 m_HighSlots;
@@ -178,14 +170,9 @@ private:
     uint8 m_TurretSlots;
     uint8 m_LauncherSlots;
 
-    uint8 m_TotalTurretsFitted;
-    uint8 m_TotalLaunchersFitted;
-    std::map<uint32, uint32> m_ModulesFittedByGroupID;
-
-    // testing - map of all modules by flag
+    // map of all modules by flag
     std::map<uint8, GenericModule*> m_modules;      // k,v of flag, pointer to module
-
-    ModuleManager* m_MyManager;        // we do not own this
+    std::map<uint32, uint32> m_ModulesFittedByGroupID;
 };
 
 #pragma endregion
@@ -203,7 +190,7 @@ public:
 
     bool Initialize();
     bool IsSlotOccupied(EVEItemFlags flag);
-    uint32 GetAvailableSlotInBank(EVEEffectID slotBank);
+    uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
 
     bool InstallRig(InventoryItemRef item, EVEItemFlags flag);
     void UninstallRig(uint32 itemID);
@@ -238,8 +225,8 @@ public:
     void Process();
     void AbortCycle();
 
-    GenericModule* GetModule(EVEItemFlags flag)         { return m_Modules->GetModule(flag); }
-    GenericModule* GetModule(uint32 itemID)             { return m_Modules->GetModule(itemID); }
+    GenericModule* GetModule(EVEItemFlags flag)         { return m_Modules->GetModule(flag); }      // faster than GetModule(itemID)
+    GenericModule* GetModule(uint32 itemID)             { return m_Modules->GetModule(itemID); }    // slower than GetModule(flag)
 
 	InventoryItemRef GetLoadedChargeOnModule(EVEItemFlags flag);
 
@@ -250,15 +237,13 @@ public:
 
 private:
     bool m_initalized;
-    bool _fitModule(InventoryItemRef item, EVEItemFlags flag);
+    bool fitModule(InventoryItemRef item, EVEItemFlags flag);
 
-    //access to the ship its system entity that owns us.  We do not own these
     ShipItem* m_Ship;
 
-    //modules storage, we own this
-    ModuleContainer* m_Modules;                    // Holds Module class objects in container arrays, one for each slot bank, rig, subsystem
+    ModuleContainer* m_Modules;                         // Holds Module class objects in container arrays, one for each slot bank
 
-    std::map<EVEItemFlags, InventoryItemRef> m_charges;  //* charge storage  flag, chargeItem
+    std::map<EVEItemFlags, InventoryItemRef> m_charges; // flag, chargeItem
 };
 
 #pragma endregion

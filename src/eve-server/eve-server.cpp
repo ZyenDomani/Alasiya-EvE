@@ -85,11 +85,14 @@
 // dogmaim services
 #include "dogmaim/DogmaIMService.h"
 #include "dogmaim/DogmaService.h"
+#include "effects/EffectsDataMgr.h"
 // dungeon services
 #include "dungeon/DungeonExplorationMgrService.h"
 #include "dungeon/DungeonService.h"
 // entity service (player drones)
 #include "npc/EntityService.h"
+// exploration services
+#include "exploration/ScanMgrService.h"
 // fleet services
 #include "fleet/FleetObject.h"
 #include "fleet/FleetProxy.h"
@@ -125,8 +128,6 @@
 // pos services
 #include "pos/PosMgrService.h"
 #include "pos/Structure.h"
-// scanning services
-#include "scanning/ScanMgrService.h"
 // search services
 #include "search/Search.h"
 // ship services
@@ -151,7 +152,6 @@
 #include "system/BubbleManager.h"
 #include "system/KeeperService.h"
 #include "system/LootSystem.h"
-#include "system/Modifiers.h"
 #include "system/ScenarioService.h"
 #include "system/SovereigntyMgrService.h"
 #include "system/WormholeSvc.h"
@@ -256,11 +256,11 @@ int main( int argc, char* argv[] )
 
     /* create a service manager */
     sLog.Green("       ServerInit", "Starting Service Manager");
-    PyServiceMgr services( 888444, sEntityList, item_factory );
+    PyServiceMgr pyServMgr( 888444, sEntityList, item_factory );
 
     /* create the WormholeMgr singleton */
     sLog.Green("       ServerInit", "Starting Wormhole Manager");
-    sWHMgr.Init(&services);
+    sWHMgr.Init(&pyServMgr);
 
     /* create the BubbleManager singleton */
     sLog.Green("       ServerInit", "Starting Bubble Manager");
@@ -272,7 +272,7 @@ int main( int argc, char* argv[] )
 
     /* create a command dispatcher */
     sLog.Green("       ServerInit", "Starting Command Dispatch Manager");
-    CommandDispatcher command_dispatcher( services );
+    CommandDispatcher command_dispatcher( pyServMgr );
     RegisterAllCommands( command_dispatcher );
 
     /* create console command interperter singleton */
@@ -280,98 +280,100 @@ int main( int argc, char* argv[] )
     sConsole.Init(&command_dispatcher, item_factory);
 
     /* Service creation and registration. */
-    sLog.Yellow("       ServerInit", "Creating services.");
-
-    /* Please keep the services list clean so it's easier to find things */
+    sLog.Yellow("       ServerInit", "Creating pyServMgr."); // 85 currently known pyServMgr
+    double startTime = GetTimeMSeconds();
+    /* Please keep the pyServMgr list clean so it's easier to find things */
     /* service here are systems responding to client calls */
-    services.RegisterService("account", new AccountService(&services));
-    services.RegisterService("agentMgr", new AgentMgrService(&services));
-    services.RegisterService("aggressionMgr", new AggressionMgrService(&services));
-    services.RegisterService("alert", new AlertService(&services));
-    services.RegisterService("allianceRegistry", new AllianceRegistry(&services));
-    services.RegisterService("authentication", new AuthService(&services));
-    services.RegisterService("billMgr", new BillMgrService(&services));
-    services.RegisterService("beyonce", new BeyonceService(&services));
-    services.RegisterService("bookmark", new BookmarkService(&services));
-    services.RegisterService("browserLockdownSvc", new BrowserLockdownService(&services));
-    services.RegisterService("bulkMgr", new BulkMgrService(&services));
-    services.RegisterService("CalendarProxy", new CalendarProxy(&services));
-    services.RegisterService("calendarMgr", new CalendarMgrService(&services));
-    services.RegisterService("certificateMgr", new CertificateMgrService(&services));
-    services.RegisterService("charFittingMgr", new CharFittingMgrService(&services));
-    services.RegisterService("charUnboundMgr", new CharUnboundMgrService(&services));
-    services.RegisterService("charMgr", new CharMgrService(&services));
-    services.RegisterService("clientStatLogger", new ClientStatLogger(&services));
-    services.RegisterService("clientStatsMgr", new ClientStatsMgr(&services));
-    services.RegisterService("config", new ConfigService(&services));
-    services.RegisterService("corpBookmarkMgr", new CorpBookmarkMgrService(&services));
-    services.RegisterService("corpmgr", new CorpMgrService(&services));
-    services.RegisterService("corporationSvc", new CorporationService(&services));
-    services.RegisterService("corpRegistry", new CorpRegistryService(&services));
-    services.RegisterService("corpStationMgr", new CorpStationMgrService(&services));
-    services.RegisterService("contractMgr", new ContractMgrService(&services));
-    services.RegisterService("contractProxy", new ContractProxyService(&services));
-    services.RegisterService("devToolsProvider", new DevToolsProviderService(&services));
-    services.RegisterService("dogmaIM", new DogmaIMService(&services));
-    services.RegisterService("dogma", new DogmaService(&services));
-    services.RegisterService("dungeonExplorationMgr", new DungeonExplorationMgrService(&services));
-    services.RegisterService("dungeon", new DungeonService(&services));
-    services.RegisterService("entity", new EntityService(&services));
-    services.RegisterService("facWarMgr", new FactionWarMgrService(&services));
-    services.RegisterService("factory", new FactoryService(&services));
-    services.RegisterService("fleetMgr", new FleetManager(&services));
-    services.RegisterService("fleetObjectHandler", new FleetObject(&services));
-    services.RegisterService("fleetProxy", new FleetProxyService(&services));
-    services.RegisterService("holoscreenMgr", new HoloscreenMgrService(&services));
-    services.RegisterService("devIndexManager", new IndexManager(&services));
-    services.RegisterService("infoGatheringMgr", new InfoGatheringMgr(&services));
-    services.RegisterService("insuranceSvc", new InsuranceService(&services));
-    services.RegisterService("invbroker", new InvBrokerService(&services));
-    services.RegisterService("jumpCloneSvc", new JumpCloneService(&services));
-    services.RegisterService("keeper", new KeeperService(&services));
-    services.RegisterService("languageSvc", new LanguageService(&services));
-    services.RegisterService("localizationServer", new LocalizationServerService(&services));
-    services.RegisterService("lookupSvc", new LookupService(&services));
-    services.RegisterService("LPSvc", new LPService(&services));
-    services.RegisterService("storeServer", new LPStore(&services));
-    services.RegisterService("LSC", (services.lsc_service = new LSCService(&services, &command_dispatcher)));
-    services.RegisterService("mailMgr", new MailMgrService(&services));
-    services.RegisterService("mailingListsMgr", new MailingListMgrService(&services));
-    services.RegisterService("map", new MapService(&services));
-    services.RegisterService("marketProxy", new MarketProxyService(&services));
-    services.RegisterService("missionMgr", new MissionMgrService(&services));
-    services.RegisterService("machoNet", new NetService(&services));
-    services.RegisterService("notificationMgr", new NotificationMgrService(&services));
-    services.RegisterService("objectCaching", (services.cache_service = new ObjCacheService(&services, sConfig.files.cacheDir.c_str())));
-    services.RegisterService("onlineStatus", new OnlineStatusService(&services));
-    services.RegisterService("paperDollServer", new PaperDollService(&services));
-    services.RegisterService("petitioner", new PetitionerService(&services));
-    services.RegisterService("photoUploadSvc", new PhotoUploadService(&services));
-    services.RegisterService("planetMgr", new PlanetMgrService(&services));
-    services.RegisterService("planetOrbitalRegistryBroker", new planetORB(&services));
-    services.RegisterService("posMgr", new PosMgrService(&services));
-    services.RegisterService("ramProxy", new RamProxyService(&services));
-    services.RegisterService("repairSvc", new RepairService(&services));
-    services.RegisterService("reprocessingSvc", new ReprocessingService(&services));
-    services.RegisterService("search", new Search(&services));
-    services.RegisterService("scanMgr", new ScanMgrService(&services));
-    services.RegisterService("ship", new ShipService(&services));
-    services.RegisterService("skillMgr", new SkillMgrService(&services));
-    services.RegisterService("slash", new SlashService(&services, &command_dispatcher));
-    services.RegisterService("sovMgr", new SovereigntyMgrService(&services));
-    services.RegisterService("standing2", new Standing(&services));
-    services.RegisterService("station", new StationService(&services));
-    services.RegisterService("stationSvc", new StationSvcService(&services));
-    services.RegisterService("trademgr", new TradeService(&services));
-    services.RegisterService("tutorialSvc", new TutorialService(&services));
-    services.RegisterService("userSvc", new UserService(&services));
-    services.RegisterService("voiceMgr", new VoiceMgrService(&services));
-    services.RegisterService("voucher", new VoucherService(&services));
-    services.RegisterService("warRegistry", new WarRegistryService(&services));
-    services.RegisterService("wormholeMgr", new WormHoleSvc(&services));
+    // move this into a service Init() function?   will need more work to do...
+    pyServMgr.RegisterService("account", new AccountService(&pyServMgr));
+    pyServMgr.RegisterService("agentMgr", new AgentMgrService(&pyServMgr));
+    pyServMgr.RegisterService("aggressionMgr", new AggressionMgrService(&pyServMgr));
+    pyServMgr.RegisterService("alert", new AlertService(&pyServMgr));
+    pyServMgr.RegisterService("allianceRegistry", new AllianceRegistry(&pyServMgr));
+    pyServMgr.RegisterService("authentication", new AuthService(&pyServMgr));
+    pyServMgr.RegisterService("billMgr", new BillMgrService(&pyServMgr));
+    pyServMgr.RegisterService("beyonce", new BeyonceService(&pyServMgr));
+    pyServMgr.RegisterService("bookmark", new BookmarkService(&pyServMgr));
+    pyServMgr.RegisterService("browserLockdownSvc", new BrowserLockdownService(&pyServMgr));
+    pyServMgr.RegisterService("bulkMgr", new BulkMgrService(&pyServMgr));
+    pyServMgr.RegisterService("CalendarProxy", new CalendarProxy(&pyServMgr));
+    pyServMgr.RegisterService("calendarMgr", new CalendarMgrService(&pyServMgr));
+    pyServMgr.RegisterService("certificateMgr", new CertificateMgrService(&pyServMgr));
+    pyServMgr.RegisterService("charFittingMgr", new CharFittingMgrService(&pyServMgr));
+    pyServMgr.RegisterService("charUnboundMgr", new CharUnboundMgrService(&pyServMgr));
+    pyServMgr.RegisterService("charMgr", new CharMgrService(&pyServMgr));
+    pyServMgr.RegisterService("clientStatLogger", new ClientStatLogger(&pyServMgr));
+    pyServMgr.RegisterService("clientStatsMgr", new ClientStatsMgr(&pyServMgr));
+    pyServMgr.RegisterService("config", new ConfigService(&pyServMgr));
+    pyServMgr.RegisterService("corpBookmarkMgr", new CorpBookmarkMgrService(&pyServMgr));
+    pyServMgr.RegisterService("corpmgr", new CorpMgrService(&pyServMgr));
+    pyServMgr.RegisterService("corporationSvc", new CorporationService(&pyServMgr));
+    pyServMgr.RegisterService("corpRegistry", new CorpRegistryService(&pyServMgr));
+    pyServMgr.RegisterService("corpStationMgr", new CorpStationMgrService(&pyServMgr));
+    pyServMgr.RegisterService("contractMgr", new ContractMgrService(&pyServMgr));
+    pyServMgr.RegisterService("contractProxy", new ContractProxyService(&pyServMgr));
+    pyServMgr.RegisterService("devToolsProvider", new DevToolsProviderService(&pyServMgr));
+    pyServMgr.RegisterService("dogmaIM", new DogmaIMService(&pyServMgr));
+    pyServMgr.RegisterService("dogma", new DogmaService(&pyServMgr));
+    pyServMgr.RegisterService("dungeonExplorationMgr", new DungeonExplorationMgrService(&pyServMgr));
+    pyServMgr.RegisterService("dungeon", new DungeonService(&pyServMgr));
+    pyServMgr.RegisterService("entity", new EntityService(&pyServMgr));
+    pyServMgr.RegisterService("facWarMgr", new FactionWarMgrService(&pyServMgr));
+    pyServMgr.RegisterService("factory", new FactoryService(&pyServMgr));
+    pyServMgr.RegisterService("fleetMgr", new FleetManager(&pyServMgr));
+    pyServMgr.RegisterService("fleetObjectHandler", new FleetObject(&pyServMgr));
+    pyServMgr.RegisterService("fleetProxy", new FleetProxyService(&pyServMgr));
+    pyServMgr.RegisterService("holoscreenMgr", new HoloscreenMgrService(&pyServMgr));
+    pyServMgr.RegisterService("devIndexManager", new IndexManager(&pyServMgr));
+    pyServMgr.RegisterService("infoGatheringMgr", new InfoGatheringMgr(&pyServMgr));
+    pyServMgr.RegisterService("insuranceSvc", new InsuranceService(&pyServMgr));
+    pyServMgr.RegisterService("invbroker", new InvBrokerService(&pyServMgr));
+    pyServMgr.RegisterService("jumpCloneSvc", new JumpCloneService(&pyServMgr));
+    pyServMgr.RegisterService("keeper", new KeeperService(&pyServMgr));
+    pyServMgr.RegisterService("languageSvc", new LanguageService(&pyServMgr));
+    pyServMgr.RegisterService("localizationServer", new LocalizationServerService(&pyServMgr));
+    pyServMgr.RegisterService("lookupSvc", new LookupService(&pyServMgr));
+    pyServMgr.RegisterService("LPSvc", new LPService(&pyServMgr));
+    pyServMgr.RegisterService("storeServer", new LPStore(&pyServMgr));
+    pyServMgr.RegisterService("LSC", (pyServMgr.lsc_service = new LSCService(&pyServMgr, &command_dispatcher)));
+    pyServMgr.RegisterService("mailMgr", new MailMgrService(&pyServMgr));
+    pyServMgr.RegisterService("mailingListsMgr", new MailingListMgrService(&pyServMgr));
+    pyServMgr.RegisterService("map", new MapService(&pyServMgr));
+    pyServMgr.RegisterService("marketProxy", new MarketProxyService(&pyServMgr));
+    pyServMgr.RegisterService("missionMgr", new MissionMgrService(&pyServMgr));
+    pyServMgr.RegisterService("machoNet", new NetService(&pyServMgr));
+    pyServMgr.RegisterService("notificationMgr", new NotificationMgrService(&pyServMgr));
+    pyServMgr.RegisterService("objectCaching", (pyServMgr.cache_service = new ObjCacheService(&pyServMgr, sConfig.files.cacheDir.c_str())));
+    pyServMgr.RegisterService("onlineStatus", new OnlineStatusService(&pyServMgr));
+    pyServMgr.RegisterService("paperDollServer", new PaperDollService(&pyServMgr));
+    pyServMgr.RegisterService("petitioner", new PetitionerService(&pyServMgr));
+    pyServMgr.RegisterService("photoUploadSvc", new PhotoUploadService(&pyServMgr));
+    pyServMgr.RegisterService("planetMgr", new PlanetMgrService(&pyServMgr));
+    pyServMgr.RegisterService("planetOrbitalRegistryBroker", new planetORB(&pyServMgr));
+    pyServMgr.RegisterService("posMgr", new PosMgrService(&pyServMgr));
+    pyServMgr.RegisterService("ramProxy", new RamProxyService(&pyServMgr));
+    pyServMgr.RegisterService("repairSvc", new RepairService(&pyServMgr));
+    pyServMgr.RegisterService("reprocessingSvc", new ReprocessingService(&pyServMgr));
+    pyServMgr.RegisterService("search", new Search(&pyServMgr));
+    pyServMgr.RegisterService("scanMgr", new ScanMgrService(&pyServMgr));
+    pyServMgr.RegisterService("ship", new ShipService(&pyServMgr));
+    pyServMgr.RegisterService("skillMgr", new SkillMgrService(&pyServMgr));
+    pyServMgr.RegisterService("slash", new SlashService(&pyServMgr, &command_dispatcher));
+    pyServMgr.RegisterService("sovMgr", new SovereigntyMgrService(&pyServMgr));
+    pyServMgr.RegisterService("standing2", new Standing(&pyServMgr));
+    pyServMgr.RegisterService("station", new StationService(&pyServMgr));
+    pyServMgr.RegisterService("stationSvc", new StationSvcService(&pyServMgr));
+    pyServMgr.RegisterService("trademgr", new TradeService(&pyServMgr));
+    pyServMgr.RegisterService("tutorialSvc", new TutorialService(&pyServMgr));
+    pyServMgr.RegisterService("userSvc", new UserService(&pyServMgr));
+    pyServMgr.RegisterService("voiceMgr", new VoiceMgrService(&pyServMgr));
+    pyServMgr.RegisterService("voucher", new VoucherService(&pyServMgr));
+    pyServMgr.RegisterService("warRegistry", new WarRegistryService(&pyServMgr));
+    pyServMgr.RegisterService("wormholeMgr", new WormHoleSvc(&pyServMgr));
+    pyServMgr.Initalize(startTime);
 
     sLog.Yellow("       ServerInit", "Priming cached objects.");
-    services.cache_service->PrimeCache();
+    pyServMgr.cache_service->PrimeCache();
 
     // start up the image server
     sLog.Green("       ServerInit", "Starting Image Server");
@@ -383,16 +385,8 @@ int main( int argc, char* argv[] )
     sLog.Yellow("       ServerInit", "Loading Static Database Table Objects...");
     sLog.Green("       ServerInit", "Dogma Attributes");
     sDgmTypeAttrMgr.Initialize();
-    sLog.Green("       ServerInit", "Static Data");
-    sDataMgr.Initialize();
-    sLog.Green("       ServerInit", "Module Effects Data");
-    sDGM_Effects_Table.Initialize();
-    sLog.Green("       ServerInit", "Skill Modifier Data");
-    sDGM_Skill_Bonus_Modifiers_Table.Initialize();
-    sLog.Green("       ServerInit", "Ship Modifier Data");
-    sDGM_Ship_Bonus_Modifiers_Table.Initialize();
-    sLog.Green("       ServerInit", "Implant Modifier Data");
-    sDGM_Implant_Modifiers_Table.Initialize();
+    sLog.Green("       ServerInit", "Effect Data Sets");
+    sFxDataMgr.Initialize();
     sLog.Green("       ServerInit", "Wreck Data");
     sDGM_Types_to_Wrecks_Table.Initialize();
     sLog.Green("       ServerInit", "Loot Data");
@@ -407,6 +401,8 @@ int main( int argc, char* argv[] )
     sPlanetDataMgr.Initialize();
     sLog.Green("       ServerInit", "PI Data");
     sPIDataMgr.Initialize();
+    sLog.Green("       ServerInit", "Misc Data Sets");
+    sDataMgr.Initialize();
 
     /* Custom config file options
      * current settings displayed on console at start-up
@@ -511,7 +507,7 @@ int main( int argc, char* argv[] )
         //++m_worldLoopCounter;
 
         if (tcpc = tcps.PopConnection())
-            sEntityList.Add(new Client(services, &tcpc));
+            sEntityList.Add(new Client(pyServMgr, &tcpc));
 
         /** @todo test for adding OpenMP here, or at other Process() points in code */
         sEntityList.Process();
@@ -552,7 +548,7 @@ int main( int argc, char* argv[] )
     sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
     SafeDelete(item_factory);
     /* Close the service manager */
-    services.Close();
+    pyServMgr.Close();
     /* close the db handler */
     sDatabase.Close();
     /** @todo  the thread system is only implemented for tcp connections at this time. */

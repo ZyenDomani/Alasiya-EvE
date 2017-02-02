@@ -21,7 +21,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 UPDATE `dgmTypeAttributes` SET valueFloat = 100 WHERE (typeID = 22548 AND attributeID = 924);
 
 -- For Onerios, value for bonus to Ice Harvester Yield 100% in description, yet 'dgmTypeAttributes' has 10%
-UPDATE `dgmTypeAttributes` SET valueFloat = 20 WHERE (typeID = 11989 AND attributeID = 1219);
+UPDATE `dgmTypeAttributes` SET valueFloat = 100 WHERE (typeID = 11989 AND attributeID = 1219);
 
 -- For Scimitar, value for bonus to Shield Maintenance Bot Transfer Amount per level is 20% in description, yet 'dgmTypeAttributes' has 100
 UPDATE `dgmTypeAttributes` SET valueFloat = 20 WHERE (typeID = 11978 AND attributeID = 1220);

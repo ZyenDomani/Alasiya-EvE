@@ -28,8 +28,8 @@
 #define EVEMU_SCANING_SCANMGR_H_
 
 #include "PyService.h"
-#include "scanning/Scan.h"
-#include "scanning/ScanningDB.h"
+#include "exploration/Scan.h"
+#include "exploration/ScanningDB.h"
 
 
 class ScanMgrService : public PyService {

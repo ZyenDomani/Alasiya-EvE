@@ -26,7 +26,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
-#include "scanning/Scan.h"
+#include "exploration/Scan.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 

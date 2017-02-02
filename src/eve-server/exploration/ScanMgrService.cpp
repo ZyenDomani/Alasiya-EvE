@@ -28,7 +28,7 @@
 #include "Client.h"
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
-#include "scanning/ScanMgrService.h"
+#include "exploration/ScanMgrService.h"
 #include "system/DestinyManager.h"
 
 class ScanBound

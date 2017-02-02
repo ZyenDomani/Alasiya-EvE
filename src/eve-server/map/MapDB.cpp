@@ -83,10 +83,10 @@ PyObject *MapDB::GetStationServiceInfo() {
 void MapDB::GetStationCount(DBQueryResult& res)
 {
     if(!sDatabase.RunQuery(res,
-        "SELECT solar.solarSystemID AS `System`,count(sta.stationID) AS `Stations`"
-        " FROM staStations sta"
-        "  LEFT JOIN mapSolarSystems solar ON sta.solarSystemID = solar.solarSystemID"
-        " GROUP BY solar.solarSystemID"))
+        "SELECT map.solarSystemID, count(sta.stationID)"
+        " FROM mapSolarSystems AS map"
+        "  LEFT JOIN staStations AS sta USING(solarSystemID)"
+        " GROUP BY map.solarSystemID"))
     {
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
     }

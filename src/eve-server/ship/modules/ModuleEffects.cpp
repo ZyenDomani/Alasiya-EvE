@@ -97,7 +97,6 @@ void MEffect::_Populate(uint32 effectID)
     if (m_EffectLoaded)
         return;
     DBQueryResult* res = new DBQueryResult();
-    ModuleDB::GetDgmEffectsInfo(effectID, *res);
 
     // Initialize the new tables
 	if (res->GetRowCount() > 0) {
@@ -170,14 +169,13 @@ typeTargetGroupIDlist MEffect::GetTargetIDList(uint32 index) {
 
 // ////////////////////// DGM_Type_Effects_Table Class ////////////////////////////
 TypeEffectsList::TypeEffectsList(uint32 typeID)
-{
+{//update this
     uint32 effectID = 0, isDefault = 0;
 
     m_typeEffectsList.clear();
 
     //first get list of all effects from dgmTypeEffects table for the given typeID
     DBQueryResult* res = new DBQueryResult();
-    ModuleDB::GetDgmTypeEffects(typeID, *res);
 
 	//go through and insert each effectID into the list
     DBResultRow row;
@@ -235,7 +233,6 @@ void DGM_Effects_Table::_Populate()
 {
     double start = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
-    ModuleDB::GetAllDgmEffects(*res);
 
     uint32 effectID = 0;
     DBResultRow row;

@@ -26,6 +26,23 @@
 #include "eve-server.h"
 
 #include "system/SolarSystem.h"
+/*
+    Border = Borders another Region or Constellation
+
+    Fringe = 1 connection to this system (dead end system)
+
+    Corridor = 2 connections to this system (in one side and out the other)
+
+    Hub = 3+ connections to this system
+
+    International = always has Border/Constellation, almost always Regional
+
+    Regional = always has Border/Constellation
+
+    Constellation = always the same as Border
+
+    Security = If it is positive, rounding to nearest 1/10th gives the in-game security level. 0 or lower are 0.0 in-game.
+    */
 
 /*
  * SolarSystemData

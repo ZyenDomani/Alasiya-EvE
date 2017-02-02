@@ -20,7 +20,6 @@ SET( INCLUDE
      "${TARGET_INCLUDE_DIR}/Client.h"
      "${TARGET_INCLUDE_DIR}/ClientSession.h"
      "${TARGET_INCLUDE_DIR}/ConsoleCommands.h"
-     "${TARGET_INCLUDE_DIR}/EffectsProcessor.h"
      "${TARGET_INCLUDE_DIR}/EntityList.h"
      "${TARGET_INCLUDE_DIR}/EVEServerConfig.h"
      "${TARGET_INCLUDE_DIR}/LiveUpdateDB.h"
@@ -39,7 +38,6 @@ SET( SOURCE
      "${TARGET_SOURCE_DIR}/Client.cpp"
      "${TARGET_SOURCE_DIR}/ClientSession.cpp"
      "${TARGET_SOURCE_DIR}/ConsoleCommands.cpp"
-     "${TARGET_SOURCE_DIR}/EffectsProcessor.cpp"
      "${TARGET_SOURCE_DIR}/EntityList.cpp"
      "${TARGET_SOURCE_DIR}/EVEServerConfig.cpp"
      "${TARGET_SOURCE_DIR}/LiveUpdateDB.cpp"
@@ -214,6 +212,25 @@ SET( dungeon_SOURCE
      "${TARGET_SOURCE_DIR}/dungeon/DungeonExplorationMgrService.cpp"
      "${TARGET_SOURCE_DIR}/dungeon/DungeonService.cpp" )
 
+SET( effects_INCLUDE
+     "${TARGET_INCLUDE_DIR}/effects/EffectsData.h"
+     "${TARGET_INCLUDE_DIR}/effects/EffectsDataMgr.h"
+     "${TARGET_INCLUDE_DIR}/effects/EffectsProcessor.h")
+SET( effects_SOURCE
+     "${TARGET_SOURCE_DIR}/effects/EffectsDataMgr.cpp"
+     "${TARGET_SOURCE_DIR}/effects/EffectsProcessor.cpp" )
+
+SET( explore_INCLUDE
+     "${TARGET_INCLUDE_DIR}/exploration/Exploration.h"
+     "${TARGET_INCLUDE_DIR}/exploration/Scan.h"
+     "${TARGET_INCLUDE_DIR}/exploration/ScanMgrService.h"
+     "${TARGET_INCLUDE_DIR}/exploration/ScanningDB.h")
+SET( explore_SOURCE
+     "${TARGET_SOURCE_DIR}/exploration/Exploration.cpp"
+     "${TARGET_SOURCE_DIR}/exploration/Scan.cpp"
+     "${TARGET_SOURCE_DIR}/exploration/ScanMgrService.cpp"
+     "${TARGET_SOURCE_DIR}/exploration/ScanningDB.cpp")
+
 SET( fleet_INCLUDE
      "${TARGET_INCLUDE_DIR}/fleet/FleetManager.h"
      "${TARGET_INCLUDE_DIR}/fleet/FleetObject.h"
@@ -366,15 +383,6 @@ SET( pos_SOURCE
      "${TARGET_SOURCE_DIR}/pos/PosMgrService.cpp"
      "${TARGET_SOURCE_DIR}/pos/Structure.cpp" )
 
-SET( scan_INCLUDE
-     "${TARGET_INCLUDE_DIR}/scanning/Scan.h"
-     "${TARGET_INCLUDE_DIR}/scanning/ScanMgrService.h"
-     "${TARGET_INCLUDE_DIR}/scanning/ScanningDB.h")
-SET( scan_SOURCE
-     "${TARGET_SOURCE_DIR}/scanning/Scan.cpp"
-     "${TARGET_SOURCE_DIR}/scanning/ScanMgrService.cpp"
-     "${TARGET_SOURCE_DIR}/scanning/ScanningDB.cpp")
-
 SET( search_INCLUDE
      "${TARGET_INCLUDE_DIR}/search/Search.h"
      "${TARGET_INCLUDE_DIR}/search/SearchDB.h")
@@ -399,7 +407,6 @@ SET( ship_SOURCE
 
 SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/ActiveModule.h"
-     "${TARGET_INCLUDE_DIR}/ship/modules/ModuleDB.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleDefs.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleEffects.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleFactory.h"
@@ -434,7 +441,6 @@ SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/weapon_modules/TurrentFormulas.h" )
 SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/ActiveModule.cpp"
-     "${TARGET_SOURCE_DIR}/ship/modules/ModuleDB.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/ModuleEffects.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/ModuleManager.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/GenericModule.cpp"
@@ -520,7 +526,6 @@ SET( system_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/IndexManager.h"
      "${TARGET_INCLUDE_DIR}/system/KeeperService.h"
      "${TARGET_INCLUDE_DIR}/system/LootSystem.h"
-     "${TARGET_INCLUDE_DIR}/system/Modifiers.h"
      "${TARGET_INCLUDE_DIR}/system/ScenarioService.h"
      "${TARGET_INCLUDE_DIR}/system/SolarSystem.h"
      "${TARGET_INCLUDE_DIR}/system/SovereigntyMgrService.h"
@@ -547,7 +552,6 @@ SET( system_SOURCE
      "${TARGET_SOURCE_DIR}/system/IndexManager.cpp"
      "${TARGET_SOURCE_DIR}/system/KeeperService.cpp"
      "${TARGET_SOURCE_DIR}/system/LootSystem.cpp"
-     "${TARGET_SOURCE_DIR}/system/Modifiers.cpp"
      "${TARGET_SOURCE_DIR}/system/ScenarioService.cpp"
      "${TARGET_SOURCE_DIR}/system/SolarSystem.cpp"
      "${TARGET_SOURCE_DIR}/system/SovereigntyMgrService.cpp"
@@ -588,6 +592,8 @@ SOURCE_GROUP( "src\\config"        FILES ${config_INCLUDE} )
 SOURCE_GROUP( "src\\corporation"   FILES ${corporation_INCLUDE} )
 SOURCE_GROUP( "src\\dogmaim"       FILES ${dogmaim_INCLUDE} )
 SOURCE_GROUP( "src\\dungeon"       FILES ${dungeon_INCLUDE} )
+SOURCE_GROUP( "src\\effects"       FILES ${effects_INCLUDE} )
+SOURCE_GROUP( "src\\exploration"   FILES ${explore_INCLUDE} )
 SOURCE_GROUP( "src\\fleet"         FILES ${fleet_INCLUDE} )
 SOURCE_GROUP( "src\\imageserver"   FILES ${imageserver_INCLUDE} )
 SOURCE_GROUP( "src\\inventory"     FILES ${inventory_INCLUDE} )
@@ -599,7 +605,6 @@ SOURCE_GROUP( "src\\missions"      FILES ${missions_INCLUDE} )
 SOURCE_GROUP( "src\\npc"           FILES ${npc_INCLUDE} )
 SOURCE_GROUP( "src\\planet"        FILES ${planet_INCLUDE} )
 SOURCE_GROUP( "src\\pos"           FILES ${pos_INCLUDE} )
-SOURCE_GROUP( "src\\scanning"      FILES ${scan_INCLUDE} )
 SOURCE_GROUP( "src\\search"        FILES ${search_INCLUDE} )
 SOURCE_GROUP( "src\\ship"          FILES ${ship_INCLUDE} )
 SOURCE_GROUP( "src\\ship\\modules" FILES ${ship_modules_INCLUDE} )
@@ -619,6 +624,8 @@ SOURCE_GROUP( "src\\config"        FILES ${config_SOURCE} )
 SOURCE_GROUP( "src\\corporation"   FILES ${corporation_SOURCE} )
 SOURCE_GROUP( "src\\dogmaim"       FILES ${dogmaim_SOURCE} )
 SOURCE_GROUP( "src\\dungeon"       FILES ${dungeon_SOURCE} )
+SOURCE_GROUP( "src\\effects"       FILES ${effects_SOURCE} )
+SOURCE_GROUP( "src\\exploration"   FILES ${explore_SOURCE} )
 SOURCE_GROUP( "src\\fleet"         FILES ${fleet_SOURCE} )
 SOURCE_GROUP( "src\\imageserver"   FILES ${imageserver_SOURCE} )
 SOURCE_GROUP( "src\\inventory"     FILES ${inventory_SOURCE} )
@@ -630,7 +637,6 @@ SOURCE_GROUP( "src\\missions"      FILES ${missions_SOURCE} )
 SOURCE_GROUP( "src\\npc"           FILES ${npc_SOURCE} )
 SOURCE_GROUP( "src\\planet"        FILES ${planet_SOURCE} )
 SOURCE_GROUP( "src\\pos"           FILES ${pos_SOURCE} )
-SOURCE_GROUP( "src\\scanning"      FILES ${scan_SOURCE} )
 SOURCE_GROUP( "src\\search"        FILES ${search_SOURCE} )
 SOURCE_GROUP( "src\\ship"          FILES ${ship_SOURCE} )
 SOURCE_GROUP( "src\\ship\\modules" FILES ${ship_modules_SOURCE} )
@@ -651,6 +657,8 @@ ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${corporation_INCLUDE}    ${corporation_SOURCE}
                 ${dogmaim_INCLUDE}        ${dogmaim_SOURCE}
                 ${dungeon_INCLUDE}        ${dungeon_SOURCE}
+                ${effects_INCLUDE}        ${effects_SOURCE}
+                ${explore_INCLUDE}        ${explore_SOURCE}
                 ${fleet_INCLUDE}          ${fleet_SOURCE}
                 ${imageserver_INCLUDE}    ${imageserver_SOURCE}
                 ${inventory_INCLUDE}      ${inventory_SOURCE}
@@ -662,7 +670,6 @@ ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${npc_INCLUDE}            ${npc_SOURCE}
                 ${planet_INCLUDE}         ${planet_SOURCE}
                 ${pos_INCLUDE}            ${pos_SOURCE}
-                ${scan_INCLUDE}           ${scan_SOURCE}
                 ${search_INCLUDE}         ${search_SOURCE}
                 ${ship_INCLUDE}           ${ship_SOURCE}
                 ${ship_modules_INCLUDE}   ${ship_modules_SOURCE}
