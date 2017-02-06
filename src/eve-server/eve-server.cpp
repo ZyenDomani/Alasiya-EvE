@@ -133,7 +133,6 @@
 // ship services
 #include "ship/BeyonceService.h"
 #include "ship/ShipService.h"
-#include "ship/modules/ModuleEffects.h"
 // standing services
 #include "standing/FactionWarMgrService.h"
 #include "standing/Standing.h"

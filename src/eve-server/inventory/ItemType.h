@@ -259,14 +259,7 @@ public:
      */
     static ItemType* Load(ItemFactory &factory, uint32 typeID);
 
-    /*
-     * Attributes:
-     */
-    TypeAttributeMgr attributes;
-
-    /*
-     * Helper methods
-     */
+    /* Helper methods  */
     uint32 id() const                                   { return m_id; }
 
     const ItemGroup &group() const                      { return (*m_group); }
@@ -356,6 +349,8 @@ private:
     /*
      * Data members
      */
+    std::map<uint16, EvilNumber> m_AttributeMap;
+
     const uint32 m_id;
     const ItemGroup *m_group;
     std::string m_name;

@@ -56,6 +56,10 @@ public:
     uint8 GetRegionQuarter(uint32 regionID);
     uint16 GetRegionFaction(uint32 regionID);
 
+
+    void GetItems(DBQueryResult& res);
+    std::vector<uint16> m_items;
+
 protected:
     void Populate();
 

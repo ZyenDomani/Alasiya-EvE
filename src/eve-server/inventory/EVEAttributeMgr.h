@@ -30,9 +30,8 @@
  * This file contains EVE-specific derivations of attribute managers.
  * it is also incomplete.  revisit and update as needed.
  */
-/** @todo finish these classes */
+/** @todo update/finish this class */
 
-#include "inventory/AttributeMgr.h"
 #include "ship/dgmtypeattributeinfo.h"
 
 class PyRep;
@@ -42,101 +41,14 @@ class ItemFactory;
 class InventoryItem;
 class InventoryDB;
 
-class ItemAttributeMgr;
-
-/**
- * Base EVE AttributeManager, defines types to use.
- */
-class EVEAttributeMgr : virtual public AttributeMgr<int, double>
-{
-public:
-    /**
-     * Returns attribute value as PyRep.
-     *
-     * @param[in] attr Attribute which value should be retrieved.
-     * @return Pointer to new PyRep object; NULL if fails.
-     */
-    PyRep *PyGet(Attr attr) const;
-
-    /**
-     * Builds Int dictionary from attributes.
-     *
-     * @param[in] into Int dictionary into which values are saved.
-     */
-    virtual void EncodeAttributes(std::map<int32, PyRep *> &into) const;
-
-    /**
-     * Checks whether the attribute is persistent.
-     *
-     * @param[in] attr Attribute to be checked.
-     * @return True if attribute is persistent, false if not.
-     */
-    static bool IsPersistent(Attr attr) {
-        _LoadPersistent();
-        return m_persistent[attr];
-    }
-
-protected:
-    // Turns given value into proper PyRep
-    static PyRep *_PyGet(const real_t &v);
-
-    /*
-     * Persistent stuff
-     */
-    static void _LoadPersistent();
-
-    static bool m_persistentLoaded;
-    static bool m_persistent[Invalid_Attr];
-};
-
-/**
- * Base EVE AdvancedAttributeMgr, defines type to use.
- */
-class EVEAdvancedAttributeMgr : public AdvancedAttributeMgr<int, double>, public EVEAttributeMgr
-{
-public:
-    // Uses PyGet instead of _PyGet to include income of attribute value.
-    void EncodeAttributes(std::map<int32, PyRep *> &into) const;
-
-    /*
-     * These kill warnings about inheritance's dominance
-     */
-    real_t GetReal(Attr attr) const { return AdvancedAttributeMgr<int_t, real_t>::GetReal(attr); }
-
-    void SetReal(Attr attr, const real_t &v) { AdvancedAttributeMgr<int_t, real_t>::SetReal(attr, v); }
-    void SetInt(Attr attr, const int_t &v) { AdvancedAttributeMgr<int_t, real_t>::SetInt(attr, v); }
-
-    void Clear(Attr attr) { AdvancedAttributeMgr<int_t, real_t>::Clear(attr); }
-};
-
-/**
- * Attribute manager for type attributes. (still used)
- */
-class TypeAttributeMgr : public EVEAttributeMgr
-{
-    friend class ItemAttributeMgr;  // for access to _Get
-public:
-    TypeAttributeMgr(const ItemType &type) : m_type(type) {}
-
-    /**
-     * @return ItemType which this manager is bound to.
-     */
-    const ItemType &type() const { return(m_type); }
-
-    /**
-     * Loads attributes from DB.
-     *
-     * @param[in] db Database to use.
-     * @return True if load was successful, false if not.
-     */
-    bool Load(InventoryDB &db);
-
-protected:
-    const ItemType &m_type;
+/** @todo update entire attrib class structure to use this data set for default and current attr data */
+struct NewAttrMap {
+        bool useDefault;
+        EvilNumber defaultValue;
+        EvilNumber currentValue;
 };
 
 // small map that does the magic of item attributes..
-//class EvilNumber;
 
 /**
  * @brief rewrite of the item attribute system.
@@ -194,12 +106,6 @@ public:
     bool DeleteAttribute(uint32 attributeID);
 
     // load the default attributes that come with the itemID
-
-
-    typedef std::map<uint32, EvilNumber>    AttrMap;
-    typedef AttrMap::iterator               AttrMapItr;
-    typedef AttrMap::const_iterator         AttrMapConstItr;
-
     bool Load();
 
     /* only save the ship damage other attribs are calculated when ship activated */
@@ -221,13 +127,12 @@ public:
      */
     bool ResetAttribute(uint32 attrID, bool notify);
 
-    //void set_item(InventoryItem *item) {mItem = item;}
+    typedef std::map<uint16, EvilNumber>    AttrMap;
+    typedef AttrMap::iterator               AttrMapItr;
+    typedef AttrMap::const_iterator         AttrMapConstItr;
 
     /**
      * @brief return the begin iterator of the AttributeMap
-     *
-     *
-     *
      * @return the begin iterator of the AttributeMap
      * @note this way to solve the attribute system problems are quite hacky... but atm its needed
      */
@@ -235,9 +140,6 @@ public:
 
     /**
      * @brief return the end iterator of the AttributeMap
-     *
-     *
-     *
      * @return the end iterator of the AttributeMap
      * @note this way to solve the attribute system problems are quite hacky... but atm its needed
      */
@@ -283,7 +185,7 @@ protected:
      * @note possible design flaw because only items contain AttributeMap's so
      *       we don't need to store this.
      */
-    InventoryItem &mItem;
+    InventoryItem& mItem;
 
     /**
      * @note possible design flaw, stack corruption because of a enormous amount

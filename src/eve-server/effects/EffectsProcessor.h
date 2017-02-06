@@ -26,11 +26,11 @@ public:
     EvilNumber CalculateAttributeValue(EvilNumber val1, EvilNumber val2, EVECalculationType type);
 
     // new effects system
-    void EvaluateExpression(const uint16 expID, EffectData& fxData);
+    void EvaluateExpression(const uint16 expID);
     int8 GetEnvironmentEnum(const std::string& domain);
     int8 GetAssociationEnum(const std::string& association);
 
-    std::string ParseExpression(Expression expression, bool restricted = false, bool topLevel = false);
+    std::string ParseExpression(Expression expression, InventoryItemRef src, InventoryItemRef targ, bool restricted = false, bool topLevel = false);
 
 protected:
 

@@ -32,82 +32,11 @@
 #include "inventory/InventoryDB.h"
 #include "inventory/InventoryItem.h"
 
-/*
- * EVEAttributeMgr
- */
-bool EVEAttributeMgr::m_persistentLoaded = false;
-bool EVEAttributeMgr::m_persistent[EVEAttributeMgr::Invalid_Attr];
-
-PyRep *EVEAttributeMgr::PyGet(Attr attr) const {
-    return _PyGet(GetReal(attr));
-}
-
-void EVEAttributeMgr::EncodeAttributes(std::map<int32, PyRep *> &into) const {
-    // integers first
-    for (auto cur : m_ints) {
-        if (into.find(cur.first) != into.end())
-            PyDecRef( into[cur.first] );
-        into[cur.first] = _PyGet(cur.second);
-    }
-    // then reals
-    for (auto cur : m_reals) {
-        if (into.find(cur.first) != into.end())
-            PyDecRef( into[cur.first] );
-        into[cur.first] = _PyGet(cur.second);
-    }
-}
-
-PyRep *EVEAttributeMgr::_PyGet(const real_t &v)
-{
-    if (_IsInt(v))
-        return new PyInt(static_cast<int32>(v));
-
-    return new PyFloat(v);
-}
-
-void EVEAttributeMgr::_LoadPersistent() {
-    if (!m_persistentLoaded) {
-        memset(m_persistent, false, sizeof(m_persistent));
-
-        #define ATTR(ID, name, default_value, persistent) \
-            m_persistent[Attr_##name] = persistent;
-        #include "inventory/EVEAttributes.h"
-
-        m_persistentLoaded = true;
-    }
-}
-
-/*
- * EVEAdvancedAttributeMgr
- */
-void EVEAdvancedAttributeMgr::EncodeAttributes(std::map<int32, PyRep *> &into) const {
-    // EVEAttributeMgr::EncodeAttributes(into);
-    // integers first
-    for (auto cur : m_ints) {
-        if (into.find(cur.first) != into.end())
-            PyDecRef( into[cur.first] );
-        into[cur.first] = _PyGet(cur.second);
-    }
-    // then reals
-    for (auto cur : m_reals) {
-        if (into.find(cur.first) != into.end())
-            PyDecRef( into[cur.first] );
-        into[cur.first] = _PyGet(cur.second);
-    }
-}
-
-/*
- * TypeAttributeMgr
- */
-bool TypeAttributeMgr::Load(InventoryDB &db) {
-    // load new contents from DB
-    return db.LoadTypeAttributes(type().id(), *this);
-}
 
 /************************************************************************/
 /* Start of new attribute system                                        */
 /************************************************************************/
-AttributeMap::AttributeMap( InventoryItem & item, bool bDefaultMap )
+AttributeMap::AttributeMap( InventoryItem& item, bool bDefaultMap/*false*/ )
 : mItem(item),
   mChanged(true),
   mDefault(bDefaultMap)
@@ -214,6 +143,7 @@ bool AttributeMap::ResetAttribute(uint32 attrID, bool notify) {
 }
 
 bool AttributeMap::Load() {
+    /** @todo  update this to used data from itemType  */
     /* First, we load default attributes values from itemType */
     DgmTypeAttributeSet *attr_set = sDgmTypeAttrMgr.GetDgmTypeAttributeSet( mItem.typeID() );
     if (attr_set) {

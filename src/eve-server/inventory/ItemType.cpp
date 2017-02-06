@@ -196,8 +196,7 @@ ItemType::ItemType(
     uint32 _id,
     const ItemGroup &_group,
     const TypeData &_data)
-: attributes(*this),
-  m_id(_id),
+: m_id(_id),
   m_group(&_group),
   m_name(_data.name),
   m_description(_data.description),
@@ -215,6 +214,8 @@ ItemType::ItemType(
 {
     // assert for data consistency
     assert(_data.groupID == _group.id());
+    m_AttributeMap.clear();
+
     _log(ITEM__TRACE, "Created ItemType object %p for type %s (%u).", this, name().c_str(), id());
 }
 
@@ -269,12 +270,14 @@ _Ty* ItemType::_LoadType(ItemFactory &factory, uint32 typeID,  const ItemGroup &
 }
 
 bool ItemType::_Load(ItemFactory &factory) {
-	// load type effects
-    /** @todo  update this bullshit with my memcache system.  */
-	factory.db().GetTypeEffectsList( m_id, m_effects );
-
-    // load type attributes
-    return attributes.Load( factory.db());
+    // load type attribs
+    DgmTypeAttributeSet* attr_set = sDgmTypeAttrMgr.GetDgmTypeAttributeSet( m_id );
+    if (attr_set) {
+        DgmTypeAttributeSet::AttrSetItr itr = attr_set->attributeset.begin();
+        for (; itr != attr_set->attributeset.end(); itr++)
+            m_AttributeMap.insert(std::pair<uint16, EvilNumber>((*itr)->attributeID, (*itr)->number));
+    }
+    return true;
 }
 
 /*

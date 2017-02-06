@@ -121,6 +121,16 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u misc data sets loaded in %.3fms.", (m_regions.size() + m_skills.size()), (GetTimeMSeconds() - start));
 
+/*  this was for a test.  is not needed for normal run
+    res->Reset();
+    start = GetTimeMSeconds();
+    GetItems(*res);
+    while (res->GetRow(row)) {
+        //SELECT typeID FROM invTypes [where type=player-usable items]
+        m_items.push_back(row.GetInt(0));
+    }
+    sLog.Cyan("    StaticDataMgr", "%u game items loaded in %.3fms.", m_items.size(), (GetTimeMSeconds() - start));
+*/
     //cleanup
     SafeDelete(res);
 }
@@ -190,6 +200,19 @@ PyRep* StaticDataMgr::GetStationCount()
         ++itr;
     }
     return list;
+}
+
+void StaticDataMgr::GetItems(DBQueryResult& res)
+{
+    /*Ship = 6,Module = 7,Charge = 8,Skill = 16,Drone = 18,Implant = 20,Deployable = 22,Structure = 23,Subsystem = 32,
+        AncientRelics = 34,Decryptors = 35,StructureUpgrade = 39,SovereigntyStructure = 40,*/
+    if (!sDatabase.RunQuery(res,
+        "SELECT t.typeID FROM invTypes AS t"
+        " LEFT JOIN `dgmTypeEffects` AS te USING (typeID)"
+        " WHERE groupID IN (SELECT groupID FROM invGroups WHERE categoryID IN (6,7,8,16,18,20,22,23,32,34,35,39,40))"
+        " AND te.effectID > 0")) {
+        codelog(DATABASE__ERROR, "Error in GetItems query: %s", res.error.c_str());
+    }
 }
 
 uint32 StaticDataMgr::GetStationRegion(uint32 stationID)

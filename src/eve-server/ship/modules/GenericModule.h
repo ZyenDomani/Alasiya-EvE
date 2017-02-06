@@ -59,23 +59,25 @@ public:
 
     void SetRepeat(int32 repeat)                        { m_repeat = repeat; }
 
-    /* class type helpers.  public for anyone to access. */
-    virtual bool IsWarpSafe() const                     { return true; }
+    /* class type helpers.  public for anyone to access. */                 //  update these below as noted
+    virtual bool IsWarpSafe() const                     { return true; }    // check this in module effect data.
     virtual bool IsLoaded()                             { return false; }
     virtual bool IsGenericModule() const                { return true; }
     virtual bool IsPassiveModule() const                { return false; }
     virtual bool IsActiveModule() const                 { return false; }
-    virtual bool IsRigModule() const                    { return false; }
-    virtual bool IsSubSystemModule() const              { return false; }
-    virtual bool IsTurrentModule()                      { return false; }
+    virtual bool IsRigModule() const                    { return false; }   // check this in m_rigSlot?
+    virtual bool IsSubSystemModule() const              { return false; }   // check this in m_subSystem?
+    virtual bool IsTurrentModule()                      { return false; }   // check this in module effect data.
+    virtual bool IsLauncherModule()                     { return false; }   // check this in module effect data.
 
-    /* generic access functions handled here, but set elsewhere.  slower than above */
+    /* generic access functions handled here, but set elsewhere.  only slightly slower than above */
     bool isOnline()                                     { return (m_modRef->GetAttribute(AttrIsOnline) == 1); }
-    bool isLowPower()                                   { return m_Effects->isLowSlot(); }
-    bool isHighPower()                                  { return m_Effects->isHighSlot(); }
-    bool isMediumPower()                                { return m_Effects->isMediumSlot(); }
-    bool isRig()                                        { return m_Effects->isRig(); }
-    bool isSubSystem()                                  { return m_Effects->isSubSystem(); }
+    bool isLowPower()                                   { return m_loPower; }
+    bool isHighPower()                                  { return m_hiPower; }
+    bool isMediumPower()                                { return m_medPower; }
+    bool isRig()                                        { return m_rigSlot; }
+    bool isSubSystem()                                  { return m_subSystem; }
+
     bool needsTarget()                                  { return m_Effects->needsTarget(); }
 
     uint32 itemID()                                     { return m_modRef->itemID(); }
@@ -107,11 +109,11 @@ public:
 
     /* override for rigs and subsystems in approprate derived class */
     virtual ModulePowerLevel GetModulePowerLevel() {
-        return isHighPower() ? MODULE_BANK_HIGH_POWER
-                : ( isMediumPower() ? MODULE_BANK_MEDIUM_POWER
-                        : (isLowPower() ? MODULE_BANK_LOW_POWER
-                            : (isRig() ? MODULE_BANK_RIG
-                                : (isSubSystem() ? MODULE_BANK_SUBSYSTEM
+        return m_hiPower ? MODULE_BANK_HIGH_POWER
+                : ( m_medPower ? MODULE_BANK_MEDIUM_POWER
+                        : (m_loPower ? MODULE_BANK_LOW_POWER
+                            : (m_rigSlot ? MODULE_BANK_RIG
+                                : (m_subSystem ? MODULE_BANK_SUBSYSTEM
                                     : MODULE_BANK_UNDEFINED ))));
     }
 
@@ -124,6 +126,14 @@ protected:
 
     ModuleStates                    m_ModuleState;
     ChargeStates                    m_ChargeState;
+
+    bool                            m_hiPower;
+    bool                            m_medPower;
+    bool                            m_loPower;
+    bool                            m_rigSlot;
+    bool                            m_subSystem;
+    bool                            m_warpSafe;
+    bool                            m_targReq;
 
     int32                           m_repeat;
 

@@ -27,7 +27,10 @@
 #define EVE_INVENTORY_ITEM_H
 
 
+#include <unordered_map>
+
 #include "POD_containers.h"
+#include "effects/EffectsData.h"
 #include "inventory/Inventory.h"
 #include "inventory/InventoryDB.h"
 #include "inventory/ItemType.h"
@@ -87,12 +90,12 @@ public:
     const std::string &     customInfo() const          { return m_customInfo; }
 
     /* public type queries  */
-    uint32                  typeID() const              { return type().id(); }
-    uint32                  groupID() const             { return type().groupID(); }
+    uint32                  typeID() const              { return m_type.id(); }
+    uint32                  groupID() const             { return m_type.groupID(); }
     double                  radius() const              { return (HasAttribute(AttrRadius) ? GetAttribute(AttrRadius).get_double() : 1.0); }
-    const ItemGroup &       group() const               { return type().group(); }
-    const ItemCategory &    category() const            { return type().category(); }
-    EVEItemCategories       categoryID() const          { return type().categoryID(); }
+    const ItemGroup &       group() const               { return m_type.group(); }
+    const ItemCategory &    category() const            { return m_type.category(); }
+    EVEItemCategories       categoryID() const          { return m_type.categoryID(); }
     bool                    global() const              { return (HasAttribute(AttrIsGlobal) ? true : false); }
 
     /* public-access generic functions handled in base class. */
@@ -264,9 +267,33 @@ private:
     // for asteroid item:
     AsteroidData m_roidData;
 
+/* new effects processing system */
+public:
+    // this has to be called on item to perform the check on.  the item sent in arg is holder of skill requirements (module, ship, implant, etc)
+    bool SkillCheck(InventoryItemRef refItem);
+    bool EffectsLoaded()                                { return m_effectsLoaded; }
 
+    void ApplyEffect(uint8 state, InventoryItemRef src, InventoryItemRef targ);
+    void RemoveEffect(uint8 state, InventoryItemRef src, InventoryItemRef targ);
+
+protected:
+    void LoadEffects();
+
+private:
+    bool m_effectsLoaded;
+    //data members
+    std::map<uint16, Effect> m_GangEffects;
+    std::map<uint16, Effect> m_FleetEffects;
+    std::map<uint16, Effect> m_OnlineEffects;
+    std::map<uint16, Effect> m_ActiveEffects;
+    std::map<uint16, Effect> m_OverloadEffects;
+
+    std::unordered_multimap<uint16, Effect> m_stateFxMap;  // k,v of state, data   -to search by state
+
+/* end new effects system */
 
 /* end rewrite...originals follow */
+
 
 /************************************************************************/
 /* start experimental new attribute system ( semi-operational )         */

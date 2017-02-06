@@ -27,6 +27,7 @@
 
 #include "Client.h"
 #include "EntityList.h"
+#include "effects/EffectsProcessor.h"
 #include "character/Skill.h"
 #include "manufacturing/Blueprint.h"
 #include "pos/Structure.h"
@@ -63,6 +64,10 @@ InventoryItem::InventoryItem(
 {
     // assert for data consistency
     assert(_data.typeID == _type.id());
+
+    m_effectsLoaded = false;
+    m_stateFxMap.clear();
+    LoadEffects();
 
     //m_saveTimerExpiryTime = ITEM_DB_SAVE_TIMER_EXPIRY * 60 * 1000;      // 10 minutes in milliseconds
     //m_saveTimer.SetTimer(m_saveTimerExpiryTime);                        // set timer in milliseconds
@@ -1193,4 +1198,73 @@ bool InventoryItem::ResetAttribute(uint32 attrID, bool notify) {
 
 bool InventoryItem::DeleteAttribute(uint32 attrID) {
     return mAttributeMap.DeleteAttribute(attrID);
+}
+
+// new effects system  -allan 4Feb17
+void InventoryItem::LoadEffects()
+{
+    // loop items to simulate loading using effect proc code
+    std::vector< TypeEffects > typeEffMap;
+    sFxDataMgr.GetTypeEffect(m_type.id(), typeEffMap);
+
+    if (typeEffMap.empty())
+        return;
+
+    for (auto cur : typeEffMap) {
+        Effect mEffect = sFxDataMgr.GetEffect(cur.effectID);
+        m_stateFxMap.insert(std::pair<uint16, Effect>(mEffect.effectCategory, mEffect));
+    }
+
+    m_effectsLoaded = true;
+}
+
+bool InventoryItem::SkillCheck(InventoryItemRef refItem)
+{
+    bool check = true;
+    EvilNumber need = 0, has = 0;
+    uint16 attr = 182, skill = 277;
+    for (int8 i = 0; i < 3; i++, attr++, skill++) {
+        if ((refItem->HasAttribute(attr, need)) and (mAttributeMap.HasAttribute(skill, has))) {
+            if (need > has)
+                check = false;
+        }
+
+        if (!check)
+            return check;
+    }
+    if ((refItem->HasAttribute(1285, need)) and (mAttributeMap.HasAttribute(1286, has))) {
+        if (need > has)
+            check = false;
+    }
+    if (!check)
+        return check;
+    attr = 1289; skill = 1287;
+    for (int8 i = 0; i < 2; i++, attr++, skill++) {
+        if ((refItem->HasAttribute(attr, need)) and (mAttributeMap.HasAttribute(skill, has))) {
+            if (need > has)
+                check = false;
+        }
+
+        if (!check)
+            return check;
+    }
+    return check;
+}
+
+void InventoryItem::ApplyEffect(uint8 state, InventoryItemRef src, InventoryItemRef targ)
+{
+    FxProc fxProc;
+    auto itr = m_stateFxMap.equal_range(state);
+    for (auto it = itr.first; it != itr.second; it++) {
+        fxProc.ParseExpression(sFxDataMgr.GetExpression(it->second.preExpression), src, targ, false, true);
+    }
+}
+
+void InventoryItem::RemoveEffect(uint8 state, InventoryItemRef src, InventoryItemRef targ)
+{
+    FxProc fxProc;
+    auto itr = m_stateFxMap.equal_range(state);
+    for (auto it = itr.first; it != itr.second; it++) {
+        fxProc.ParseExpression(sFxDataMgr.GetExpression(it->second.postExpression), src, targ, false, true);
+    }
 }

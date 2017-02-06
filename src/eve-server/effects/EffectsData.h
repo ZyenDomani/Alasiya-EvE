@@ -36,6 +36,7 @@ struct Effect {
     float electronicChance;
     float propulsionChance;
     std::string effectName;
+    std::string guid;
 };
 
 struct Expression {
@@ -62,56 +63,6 @@ struct Operand {
 struct TypeEffects {
     bool isDefault;
     uint16 effectID;
-};
-
-// POD for processed effects data
-struct EffectData {
-    uint16 preExpression;
-    uint16 postExpression;
-    std::string effectName;
-    std::string sourceName;
-    std::string targetName;
-    std::string arg1Description;
-    std::string arg2Description;
-
-    uint8 srcEnv;
-    uint8 targEnv;
-    uint16 srcAttrib;
-    uint16 targAttrib;
-    uint8 association;
-
-    uint16 id;
-    uint16 typeID;
-    uint16 groupID;
-    uint16 attribID;
-    std::string value;
-};
-
-struct EffectsData {
-    bool isOffensive;
-    bool isAssistance;
-    bool disallowAutoRepeat;
-    bool isWarpSafe;
-
-    uint16 effectCategory;
-    uint16 preExpression;
-    uint16 postExpression;
-    uint16 npcUsageChanceAttributeID;
-    uint16 npcActivationChanceAttributeID;
-    uint16 fittingUsageChanceAttributeID;
-    uint16 durationAttributeID;
-    uint16 trackingSpeedAttributeID;
-    uint16 dischargeAttributeID;
-    uint16 rangeAttributeID;
-    uint16 falloffAttributeID;
-
-    float rangeChance;
-    float electronicChance;
-    float propulsionChance;
-
-    std::string effectName;
-    EffectData pre;
-    EffectData post;
 };
 
 typedef std::map<uint16, Effect> effectMapType;
@@ -155,7 +106,7 @@ namespace Effects {
         ASSOC_POST_DIV        = 6,
         ASSOC_POST_PERCENT    = 7,
         ASSOC_POST_ASSIGNMENT = 8,
-        ASSOC_SKILL_TIME      = 9,
+        ASSOC_SKILL_CHECK     = 9,
         ASSOC_ADD_RATE        = 10,
         ASSOC_SUB_RATE        = 11
         /*

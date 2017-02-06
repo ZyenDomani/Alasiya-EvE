@@ -26,6 +26,7 @@
 
 #include "eve-server.h"
 
+#include "Client.h"
 #include "PyCallable.h"
 #include "character/Character.h"
 #include "manufacturing/Blueprint.h"
@@ -33,7 +34,6 @@
 #include "station/Station.h"
 #include "system/Asteroid.h"
 #include "system/SolarSystem.h"
-#include <Client.h>
 
 bool InventoryDB::GetCategory(EVEItemCategories category, CategoryData &into) {
     DBQueryResult res;
@@ -829,26 +829,21 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
     return true;
 }
 
-bool InventoryDB::LoadTypeAttributes(uint32 typeID, EVEAttributeMgr &into) {
+bool InventoryDB::LoadTypeAttributes(uint32 typeID, std::map< uint16, EvilNumber >& into) {
     DgmTypeAttributeSet *attrset = sDgmTypeAttrMgr.GetDgmTypeAttributeSet(typeID);
 
-    // if not found return true because there can be items without attributes I guess
-    if (attrset == NULL)
+    if (!attrset)
         return true;
 
     DgmTypeAttributeSet::AttrSetItr itr = attrset->begin();
-
     for (; itr != attrset->end(); itr++) {
-        if ((*itr)->number.get_type() == evil_number_int)
-            into.SetInt((EVEAttributeMgr::Attr)(*itr)->attributeID, static_cast<int32>((*itr)->number.get_int()));
-        else
-            into.SetReal((EVEAttributeMgr::Attr)(*itr)->attributeID, (*itr)->number.get_double());
+        into.insert(std::pair<uint16, EvilNumber>((*itr)->attributeID, (*itr)->number));
     }
 
     return true;
 }
 
-bool InventoryDB::LoadItemAttributes(uint32 itemID, EVEAttributeMgr &into) {
+bool InventoryDB::LoadItemAttributes(uint32 itemID, std::map< uint16, EvilNumber >& into) {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
@@ -866,25 +861,12 @@ bool InventoryDB::LoadItemAttributes(uint32 itemID, EVEAttributeMgr &into) {
 
     //_log(DATABASE__RESULTS, "LoadItemAttributes returned %u items", res.GetRowCount());
     DBResultRow row;
-    EVEAttributeMgr::Attr attr;
     while(res.GetRow(row)) {
         if(row.IsNull(0)) {
             _log(DATABASE__MESSAGE, "Attribute row for item %u has attributeID NULL. Skipping.", itemID);
             continue;
         }
-        attr = EVEAttributeMgr::Attr(row.GetUInt(0));
-        if(row.IsNull(2)) {
-            if(row.IsNull(1)){
-                _log(DATABASE__MESSAGE, "Attribute %u for item %u has both values NULL. Skipping.", attr, itemID);
-            }
-            else
-                into.SetInt(attr, row.GetInt(1));
-        } else {
-            if(!row.IsNull(1)) {
-                _log(DATABASE__MESSAGE, "Attribute %u for item %u has both values non-NULL. Using float.", attr, itemID);
-            }
-            into.SetReal(attr, row.GetDouble(2));
-        }
+        into.insert(std::pair<uint16, EvilNumber>(row.GetUInt(0), row.GetInt(1)));
     }
     return true;
 }

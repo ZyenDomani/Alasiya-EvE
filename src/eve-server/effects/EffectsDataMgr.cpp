@@ -111,7 +111,7 @@ void FxDataMgr::Initialize()
     while (res->GetRow(row)) {
         //SELECT effectID, effectName, effectCategory, preExpression, postExpression, isOffensive, isAssistance, disallowAutoRepeat, isWarpSafe \
         //      npcUsageChanceAttributeID, npcActivationChanceAttributeID, fittingUsageChanceAttributeID,\
-        //      durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, falloffAttributeID, rangeChance, electronicChance, propulsionChance
+        //      durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, falloffAttributeID, rangeChance, electronicChance, propulsionChance, guid
         Effect mEffect;
             mEffect.effectID = row.GetInt(0);
             mEffect.effectName = row.GetText(1);
@@ -133,6 +133,7 @@ void FxDataMgr::Initialize()
             mEffect.rangeChance = (row.IsNull(17) ? 0 : row.GetFloat(17));
             mEffect.electronicChance = (row.IsNull(18) ? 0 : row.GetFloat(18));
             mEffect.propulsionChance = (row.IsNull(19) ? 0 : row.GetFloat(19));
+            mEffect.guid = row.GetText(20);
         m_effectMap.insert(std::pair<uint16, Effect>(row.GetInt(0), mEffect));
     }
     // insert a zero-value data set
@@ -156,6 +157,7 @@ void FxDataMgr::Initialize()
         mEffect.rangeChance = 0;
         mEffect.electronicChance = 0;
         mEffect.propulsionChance = 0;
+        mEffect.guid = "";
     m_effectMap.insert(std::pair<uint16, Effect>(0, mEffect));
     sLog.Cyan("        FxDataMgr", "%u Effects loaded in %.3fms.", m_effectMap.size(), (GetTimeMSeconds() - start));
 
@@ -165,55 +167,9 @@ void FxDataMgr::Initialize()
     m_loaded = true;
 }
 
-void FxDataMgr::ConfigureEffects(std::vector<Effect>& effectMap)
+void FxDataMgr::ConfigureEffects()
 {
-    double start = GetTimeMSeconds();
-    Initialize();
-
-    FxProc fxProc;
-    // begin the task of compiling effect data
-    for (auto curFx : effectMap) {
-        // we only want ONE copy of the effect
-        if (m_fxMap.find(curFx.effectID) != m_fxMap.end())
-            continue;
-        EffectsData tFxData;
-            tFxData.isOffensive = curFx.isOffensive;
-            tFxData.isAssistance = curFx.isAssistance;
-            tFxData.disallowAutoRepeat = curFx.disallowAutoRepeat;
-            tFxData.isWarpSafe = curFx.isWarpSafe;
-            tFxData.effectCategory = curFx.effectCategory;
-            tFxData.effectName = curFx.effectName;
-            tFxData.preExpression = curFx.preExpression;
-            tFxData.postExpression = curFx.postExpression;
-            tFxData.npcUsageChanceAttributeID = curFx.npcUsageChanceAttributeID;
-            tFxData.npcActivationChanceAttributeID = curFx.npcActivationChanceAttributeID;
-            tFxData.fittingUsageChanceAttributeID = curFx.fittingUsageChanceAttributeID;
-            tFxData.durationAttributeID = curFx.durationAttributeID;
-            tFxData.trackingSpeedAttributeID = curFx.trackingSpeedAttributeID;
-            tFxData.dischargeAttributeID = curFx.dischargeAttributeID;
-            tFxData.rangeAttributeID = curFx.rangeAttributeID;
-            tFxData.falloffAttributeID = curFx.falloffAttributeID;
-            tFxData.rangeChance = curFx.rangeChance;
-            tFxData.electronicChance = curFx.electronicChance;
-            tFxData.propulsionChance = curFx.propulsionChance;
-
-        EffectData fxData1;
-        tFxData.pre = fxData1;
-        sLog.Blue("ConfigureEffects", "starting pre eval for effect %u", curFx.effectID);
-        fxProc.EvaluateExpression(curFx.preExpression, tFxData.pre);
-
-        EffectData fxData2;
-        tFxData.post = fxData2;
-        sLog.Blue("ConfigureEffects", "starting post eval for effect %u", curFx.effectID);
-        fxProc.EvaluateExpression(curFx.postExpression, tFxData.post);
-
-        m_fxMap.insert(std::pair<uint16, EffectsData>(curFx.effectID, tFxData));
-        m_stateFxMap.insert(std::pair<uint16, EffectsData>(tFxData.effectCategory, tFxData));
-    }
-
-    // save compiled effect data to avoid compilation on every startup?  -check for execution time
-    //SaveFXData();
-    m_time = (GetTimeMSeconds() - start);
+        /** @todo  remove this.  */
 }
 
 Effect FxDataMgr::GetEffect(uint16 eID)
@@ -246,11 +202,6 @@ Operand FxDataMgr::GetOperand(uint16 oID)
     if (itr != m_opMap.end())
         return itr->second;
     return m_opMap.at(0);
-
-}
-
-void FxDataMgr::ApplyEffect()
-{
 
 }
 
@@ -293,7 +244,8 @@ void FxDataMgr::GetDgmEffects(DBQueryResult& res)
         "   falloffAttributeID,"
         "   rangeChance,"    // dunno what this is ...bool?
         "   electronicChance,"   // dunno what this is...bool?
-        "   propulsionChance"   // not used (all 0)...bool?
+        "   propulsionChance,"   // not used (all 0)...bool?
+        "   guid"
         " FROM dgmEffects"))
     {
         codelog(DATABASE__ERROR, "Error in GetDgmEffects: %s", res.error.c_str());
@@ -330,31 +282,5 @@ void FxDataMgr::GetDgmTypeEffects(DBQueryResult &res)
         " FROM dgmTypeEffects "))
     {
         codelog(DATABASE__ERROR, "Error in GetDgmTypeEffects: %s", res.error.c_str());
-    }
-}
-
-void FxDataMgr::SaveFXData()
-{
-    std::ostringstream Inserts;
-    // start the insert into command.
-    Inserts << "INSERT INTO dgmFxData";
-    Inserts << " (effectID, effectName, effectCategory, preExpression, postExpression, isOffensive, isAssistance, disallowAutoRepeat, isWarpSafe)";
-    bool first = true;
-
-    for (auto cur : m_fxMap) {
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else
-            Inserts << ", ";
-        Inserts << "(" << cur.first << ", " << cur.second.effectName << ", " << cur.second.effectCategory << ", " << cur.second.preExpression << ", " << cur.second.postExpression << ", ";
-        Inserts << (cur.second.isOffensive ? 1 : 0) << ", " << (cur.second.isAssistance ? 1 : 0) << ", " << (cur.second.disallowAutoRepeat ? 1 : 0) << ", " << (cur.second.isWarpSafe ? 1 : 0) << ")";
-    }
-
-    if (!first) {
-        DBerror err;
-        sDatabase.RunQuery(err, "TRUNICATE TABLE dgmFxData");
-        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
-            _log(DATABASE__ERROR, "SaveFXData - unable to save data - %s", err.c_str());
     }
 }

@@ -41,7 +41,7 @@
 
 /** @todo see if we can update/optimize this class */
 
-// this represents 1 attribute modifier
+// this represents 1 attribute
 #pragma pack(push,1)
 class DmgTypeAttribute
 {
@@ -52,7 +52,7 @@ public:
 #pragma pack(pop)
 
 
-// this represents a collection of attribute modifiers for a single typeID
+// this represents a collection of attributes for a typeID
 class DgmTypeAttributeSet
 {
 public:
@@ -92,6 +92,7 @@ public:
     void Close();
 
     DgmTypeAttributeSet* GetDgmTypeAttributeSet(uint32 typeID);
+    
 private:
     DgmTypeAttributeMap mDgmTypeAttrInfo;
 };

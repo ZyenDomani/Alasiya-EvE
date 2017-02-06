@@ -380,33 +380,12 @@ void ConsoleCommand::MemStatus(float* vm_usage, float* resident_set)
 void ConsoleCommand::Test()
 {
     sLog.Green("  Alasiya's EvEMu", "Server Test:");
-    //sLog.Error("     Allan\'s Test", "Not Avalible Yet.");
+    sLog.Error("     Allan\'s Test", "Nothing Avalible at this time.");
+    return;
+    
+    sLog.Yellow("     Effects Test", "Test Begin - Process and Save all Effects.");
 
-    sLog.Yellow("     Effects Test", "Test Begin.");
-    // make list of modules to test effects loading on
-    std::vector<uint16> m_items;
-    // add modules to list
-    m_items.push_back(10850); //  Medium Shield Booster II
-    m_items.push_back(2281);  //  Invulnerability Field II
-    m_items.push_back(1276);  //  Regenerative Plating II
-    m_items.push_back(3319);  //  Missile Launcher Operation
-    m_items.push_back(3306);  //  Medium Energy Turrent
-    m_items.push_back(28526); //  Khanid Navy Armor Kinetic Hardener
-    m_items.push_back(22544); //  Hulk
-
-    // loop items to simulate loading using effect proc code
-    std::vector< TypeEffects > typeEffMap;
-    for (auto cur : m_items) {
-        sFxDataMgr.GetTypeEffect(cur, typeEffMap);
-    }
-
-    std::vector<Effect> effectMap;
-    for (auto cur : typeEffMap) {
-        sLog.Yellow("     Effects Test", "Adding effectID %u.", cur.effectID);
-        effectMap.push_back(sFxDataMgr.GetEffect(cur.effectID));
-    }
-
-    sFxDataMgr.ConfigureEffects(effectMap);
+    sFxDataMgr.ConfigureEffects();
 
     sLog.Yellow("     Effects Test", "Test Complete.");
     sLog.Yellow("     Effects Test", "%u sets loaded in %.3fms.", sFxDataMgr.GetFxSize(), sFxDataMgr.GetFxTime());

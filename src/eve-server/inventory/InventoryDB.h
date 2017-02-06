@@ -30,8 +30,6 @@
 
 #include "inventory/ItemRef.h"
 
-class EVEAttributeMgr;
-
 class CategoryData;
 
 class GroupData;
@@ -156,7 +154,7 @@ public:
      * @param[in] into Attribute manager the attributes should be loaded into.
      * @return True if load was successful, false if not.
      */
-    bool LoadTypeAttributes(uint32 typeID, EVEAttributeMgr &into);
+    bool LoadTypeAttributes(uint32 typeID, std::map< uint16, EvilNumber >& into);
 
     /*
      * Item stuff
@@ -184,7 +182,7 @@ public:
      * @param[in] into Attribute manager the attributes should be loaded into.
      * @return True if load was successful, false if not.
      */
-    bool LoadItemAttributes(uint32 itemID, EVEAttributeMgr &into);
+    bool LoadItemAttributes(uint32 itemID, std::map<uint16, EvilNumber>& into);
 
     bool UpdateAttribute_int(uint32 itemID, uint32 attributeID, int v);
     bool UpdateAttribute_double(uint32 itemID, uint32 attributeID, double v);
