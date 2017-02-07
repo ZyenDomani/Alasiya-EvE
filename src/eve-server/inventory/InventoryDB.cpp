@@ -726,15 +726,6 @@ bool InventoryDB::DeleteItem(uint32 itemID) {
         codelog(DATABASE__ERROR, "Failed to delete item %u: %s", itemID, err.c_str());
         return false;
     }
-    if (!sDatabase.RunQuery(err,
-        "DELETE"
-        " FROM entity_default_attributes"
-        " WHERE itemID=%u",
-        itemID))
-    {
-        codelog(DATABASE__ERROR, "Failed to delete item %u: %s", itemID, err.c_str());
-        return false;
-    }
     return true;
 }
 
@@ -1323,10 +1314,10 @@ bool InventoryDB::DeleteCharacter(uint32 characterID) {
     sDatabase.RunQuery(err, "DELETE FROM chrCertificates, character_, chrEmployment, market_journal, crpCharShares"
          " WHERE characterID=%u", characterID);
 
-    sDatabase.RunQuery(err, "DELETE FROM entity, entity_attributes, entity_default_attributes"
+    sDatabase.RunQuery(err, "DELETE FROM entity, entity_attributes"
         " WHERE itemID = %u", characterID);
 
-    sDatabase.RunQuery(err, "DELETE FROM entity_attributes, entity_default_attributes"
+    sDatabase.RunQuery(err, "DELETE FROM entity_attributes"
         " WHERE itemID IN (SELECT itemID FROM entity WHERE ownerID = %u)", characterID);
 
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE ownerID = %u", characterID);

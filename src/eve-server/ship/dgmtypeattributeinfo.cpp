@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Captnoord
+    Author:        Captnoord - Juni 2010
+    Rewrite:    Allan       - 6Feb17
 */
 
 #include "eve-server.h"
@@ -47,7 +48,6 @@ void dgmtypeattributemgr::Initialize()
     DgmTypeAttributeSet* entry(nullptr);
     DBResultRow row;
     size_t amount = res.GetRowCount();
-    //for (int i = 0; i < amount; i++) {
     while (res.GetRow(row)) {
         typeID = row.GetUInt(0);
 

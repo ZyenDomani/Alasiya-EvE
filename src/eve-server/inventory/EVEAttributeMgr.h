@@ -41,13 +41,6 @@ class ItemFactory;
 class InventoryItem;
 class InventoryDB;
 
-/** @todo update entire attrib class structure to use this data set for default and current attr data */
-struct NewAttrMap {
-        bool useDefault;
-        EvilNumber defaultValue;
-        EvilNumber currentValue;
-};
-
 // small map that does the magic of item attributes..
 
 /**
@@ -65,9 +58,9 @@ public:
     /**
      * we store our keeper so we can use it in the various functions.
      * @param[in] item reference to the InventoryItem for which attributes will be managed
-     * @param[in] bDefaultMap boolean indicating whether this attribute map uses 'entity_default_attributes' table or 'entity_attributes' table
+     * @param[in] isDefault boolean indicating whether this attribute map uses 'default' itemType attributes or saved-per-item 'entity_attributes' table
      */
-    AttributeMap(InventoryItem &item, bool bDefaultMap=false);
+    AttributeMap(InventoryItem& item, bool isDefault=false);
 
 	/**
      * @brief set the attribute with @num

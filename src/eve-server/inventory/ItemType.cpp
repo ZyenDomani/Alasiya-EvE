@@ -275,10 +275,19 @@ bool ItemType::_Load(ItemFactory &factory) {
     if (attr_set) {
         DgmTypeAttributeSet::AttrSetItr itr = attr_set->attributeset.begin();
         for (; itr != attr_set->attributeset.end(); itr++)
-            m_AttributeMap.insert(std::pair<uint16, EvilNumber>((*itr)->attributeID, (*itr)->number));
+            m_AttributeMap.insert(std::pair<uint32, EvilNumber>((*itr)->attributeID, (*itr)->number));
     }
     return true;
 }
+
+const EvilNumber ItemType::GetAttribute(const uint32 attributeID) const
+{
+    std::map<uint32, EvilNumber>::const_iterator itr = m_AttributeMap.find(attributeID);
+    if (itr != m_AttributeMap.end())
+        return itr->second;
+    return 0;
+}
+
 
 /*
  * ItemData

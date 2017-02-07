@@ -21,7 +21,8 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
-    Updates:    Allan
+    Update:     Captnoord   - Juni 2010
+    Rewrite:    Allan       - 6Feb17
 */
 
 #include "eve-server.h"
@@ -36,10 +37,10 @@
 /************************************************************************/
 /* Start of new attribute system                                        */
 /************************************************************************/
-AttributeMap::AttributeMap( InventoryItem& item, bool bDefaultMap/*false*/ )
+AttributeMap::AttributeMap( InventoryItem& item, bool isDefault/*false*/ )
 : mItem(item),
   mChanged(true),
-  mDefault(bDefaultMap)
+  mDefault(isDefault)
 {
 }
 
@@ -138,43 +139,42 @@ bool AttributeMap::SendAttributeChanges( PyTuple* attrChange ) {
 }
 
 bool AttributeMap::ResetAttribute(uint32 attrID, bool notify) {
+    /** @todo update this */
     EvilNumber value = mItem.GetDefaultAttribute(attrID);
     return SetAttribute(attrID, value, notify);
 }
 
 bool AttributeMap::Load() {
-    /** @todo  update this to used data from itemType  */
-    /* First, we load default attributes values from itemType */
+    /** @todo  update this to use data from itemType and optimize method */
+    /* First, we load default attributes values from itemType ...no we dont....we load from typeattrmgr.*/
+    /** @note all 'default' settings are straight from itemType.  enable use of type().* for default needs */
     DgmTypeAttributeSet *attr_set = sDgmTypeAttrMgr.GetDgmTypeAttributeSet( mItem.typeID() );
     if (attr_set) {
         DgmTypeAttributeSet::AttrSetItr itr = attr_set->attributeset.begin();
         for (; itr != attr_set->attributeset.end(); itr++)
             SetAttribute((*itr)->attributeID, (*itr)->number, false);
     }
+    int16 amount = attr_set->attributeset.size();
     /* Then we load the saved attributes from the db, if there are any yet, and overwrite the defaults */
     DBQueryResult res;
-    if (mDefault) {
-        if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM entity_default_attributes WHERE itemID='%u'", mItem.itemID())) {
-            _log(DATABASE__ERROR, "AttributeMap (DEFAULT)", "Error in db load query: %s", res.error.c_str());
-            return false;
-        }
-    } else {
+    if (!mDefault) {
         if (!sDatabase.RunQuery(res, "SELECT  attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID='%u'", mItem.itemID())) {
             _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
             return false;
         }
-    }
-    DBResultRow row;
-    EvilNumber attr_value = 0;
-    uint32 attributeID = 0;
-    int16 amount = res.GetRowCount();
-    while (res.GetRow(row)) {
-        attributeID = row.GetUInt(0);
-        if (row.IsNull(1))
-            attr_value = row.GetDouble(2);
-        else
-            attr_value = row.GetInt64(1);
-        SetAttribute(attributeID, attr_value, false);
+
+        DBResultRow row;
+        EvilNumber attr_value = 0;
+        uint32 attributeID = 0;
+        amount = res.GetRowCount();
+        while (res.GetRow(row)) {
+            attributeID = row.GetUInt(0);
+            if (row.IsNull(1))
+                attr_value = row.GetDouble(2);
+            else
+                attr_value = row.GetInt64(1);
+            SetAttribute(attributeID, attr_value, false);
+        }
     }
     _log(ITEM__DEBUG, "AttributeMap::Load()  Loaded %u attribs for %s.  Default: %s", amount, mItem.itemName().c_str(), (mDefault ? "True" : "False"));
     return true;
@@ -182,19 +182,14 @@ bool AttributeMap::Load() {
 
 bool AttributeMap::SaveIntAttribute(uint32 attributeID, int64 value)
 {
+    if (mDefault)
+        return true;
+    /** @todo update this */
     // SAVE INTEGER ATTRIBUTE
     std::ostringstream Inserts;
     // start the insert into command.
-    Inserts << "REPLACE INTO ";
-
-    if (mDefault)
-        Inserts << "entity_default_attributes ";
-    else
-        Inserts << "entity_attributes ";
-
-    Inserts << "(itemID, attributeID, valueInt, valueFloat) VALUES (";
-    Inserts << mItem.itemID() << ", " << attributeID << ", ";
-    Inserts << value << ", NULL " << ")";
+    Inserts << "REPLACE INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) VALUES (";
+    Inserts << mItem.itemID() << ", " << attributeID << ", " << value << ", NULL)";
 
     DBerror err;
     if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
@@ -207,19 +202,14 @@ bool AttributeMap::SaveIntAttribute(uint32 attributeID, int64 value)
 
 bool AttributeMap::SaveFloatAttribute(uint32 attributeID, double value)
 {
+    if (mDefault)
+        return true;
+    /** @todo update this */
     // SAVE FLOAT ATTRIBUTE
     std::ostringstream Inserts;
     // start the insert into command.
-    Inserts << "REPLACE INTO ";
-
-	if (mDefault)
-        Inserts << "entity_default_attributes ";
-	else
-        Inserts << "entity_attributes ";
-
-    Inserts << "(itemID, attributeID, valueInt, valueFloat) VALUES (";
-    Inserts << mItem.itemID() << ", " << attributeID;
-    Inserts << ", NULL, " << value << ")";
+    Inserts << "REPLACE INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) VALUES (";
+    Inserts << mItem.itemID() << ", " << attributeID << ", NULL, " << value << ")";
 
     DBerror err;
     if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
@@ -233,6 +223,7 @@ bool AttributeMap::SaveFloatAttribute(uint32 attributeID, double value)
 /* hmmm only save 'state' related attributes... and calculate the rest on the fly....*/
 /* we should save skills */
 bool AttributeMap::Save() {
+    /** @todo update this */
     if (mItem.itemID() >= EVEMU_NPC_ID) return true;    // not saving npc attribs
     if (mItem.itemID() < EVEMU_MINIMUM_ID) return true; // not saving static object attribs
 	bool success = false;
@@ -243,13 +234,7 @@ bool AttributeMap::Save() {
 
     std::ostringstream Inserts;
     // start the insert into command.
-    Inserts << "INSERT INTO ";
-    // set the appropriate table name.
-    if (mDefault)
-        Inserts << "entity_default_attributes";
-    else
-        Inserts << "entity_attributes";
-    Inserts << " (itemID, attributeID, valueInt, valueFloat) ";
+    Inserts << "INSERT INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) ";
     bool first = true;
     AttrMapItr itr = mAttributes.begin();
     for (; itr != mAttributes.end(); itr++) {
@@ -350,20 +335,8 @@ void AttributeMap::SaveShipState()
 }
 
 bool AttributeMap::Delete() {
-    // Remove all attributes from the entity_default_attributes table and entity_attributes table for this item:
-    std::ostringstream Inserts;
-    // start the insert into command.
-    Inserts << "DELETE FROM ";
-    // set the appropriate table name.
-    if (mDefault)
-        Inserts << "entity_default_attributes";
-    else
-        Inserts << "entity_attributes";
-    Inserts << " WHERE itemID = " << mItem.itemID();
-
-    // execute the command.
     DBerror err;
-    if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
+    if (!sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u", mItem.itemID())) {
         _log(DATABASE__ERROR, "AttributeMap - unable to delete attributes - %s", err.c_str());
         return false;
     }
@@ -374,20 +347,8 @@ bool AttributeMap::Delete() {
 }
 
 bool AttributeMap::DeleteAttribute(uint32 attributeID) {
-    std::ostringstream Inserts;
-    // start the insert into command.
-    Inserts << "DELETE FROM ";
-    // set the appropriate table name.
-    if (mDefault)
-        Inserts << "entity_default_attributes";
-    else
-        Inserts << "entity_attributes";
-    Inserts << " WHERE itemID = " << mItem.itemID();
-    Inserts << " AND attributeID = " << attributeID;
-
-    // execute the command.
     DBerror err;
-    if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
+    if (!sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u", attributeID)) {
         _log(DATABASE__ERROR, "AttributeMap - unable to delete attributeID %u for itemID %u - %s", attributeID, mItem.itemID(), err.c_str());
         return false;
     }

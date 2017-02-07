@@ -282,13 +282,13 @@ public:
     double capacity() const                             { return m_capacity; }
     EVERace race() const                                { return m_raceID; }
 
-	bool HasEffect(uint32 effectID) const
+    // update this to new effects class
+    bool HasEffect(uint16 effectID) const
 	{
-		if(std::find(m_effects.begin(), m_effects.end(), effectID)!=m_effects.end())
-			return true;
-		else
-			return false;
+        return true;
 	}
+
+	const EvilNumber GetAttribute(const uint32 attributeID) const;
 
 protected:
     ItemType(
@@ -296,8 +296,6 @@ protected:
         const ItemGroup &_group,
         const TypeData &_data
     );
-
-	std::vector<uint32> m_effects;
 
 	/*
      * Member functions
@@ -349,7 +347,7 @@ private:
     /*
      * Data members
      */
-    std::map<uint16, EvilNumber> m_AttributeMap;
+    std::map<uint32, EvilNumber> m_AttributeMap;
 
     const uint32 m_id;
     const ItemGroup *m_group;

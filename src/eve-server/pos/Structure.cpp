@@ -68,35 +68,35 @@ StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data)
     // check for customs offices and set global flag
     if ((data.typeID == EVEDB::invTypes::typeInterbusCustomsOffice)
         or (data.typeID == EVEDB::invTypes::typePlanetaryCustomsOffice)) {
-        sRef->SetAttribute(AttrIsGlobal,                        1, false);
+        sRef->SetAttribute(AttrIsGlobal,                        1);
     }
     // Create default dynamic attributes in the AttributeMap:
-    sRef->SetAttribute(AttrMass,                                sRef->type().mass(), false);
-    sRef->SetAttribute(AttrRadius,                              sRef->type().radius(), false);
-    sRef->SetAttribute(AttrVolume,                              sRef->type().volume(), false);
-    sRef->SetAttribute(AttrCapacity,                            sRef->type().capacity(), false);
-    sRef->SetAttribute(AttrShieldCharge,                        sRef->GetAttribute(AttrShieldCapacity), false);
+    sRef->SetAttribute(AttrMass,                                sRef->type().mass());
+    sRef->SetAttribute(AttrRadius,                              sRef->type().radius());
+    sRef->SetAttribute(AttrVolume,                              sRef->type().volume());
+    sRef->SetAttribute(AttrCapacity,                            sRef->type().capacity());
+    sRef->SetAttribute(AttrShieldCharge,                        sRef->GetAttribute(AttrShieldCapacity));
 
     // Check for existence of some attributes that may or may not have already been loaded and set them
     // to default values:
     if (!sRef->HasAttribute(AttrDamage))                        sRef->SetAttribute(AttrDamage, 0.0f, false );
     if (!sRef->HasAttribute(AttrArmorDamage))                   sRef->SetAttribute(AttrArmorDamage, 0.0f, false );
-    if (!sRef->HasAttribute(AttrArmorMaxDamageResonance))       sRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f, false);
-    if (!sRef->HasAttribute(AttrShieldMaxDamageResonance))      sRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f, false);
+    if (!sRef->HasAttribute(AttrArmorMaxDamageResonance))       sRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
+    if (!sRef->HasAttribute(AttrShieldMaxDamageResonance))      sRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f);
 
     // Shield Resonance
-    if (!sRef->HasAttribute(AttrShieldEmDamageResonance))       sRef->SetAttribute(AttrShieldEmDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrShieldKineticDamageResonance))  sRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrShieldThermalDamageResonance))  sRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorEmDamageResonance))        sRef->SetAttribute(AttrArmorEmDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorKineticDamageResonance))   sRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorThermalDamageResonance))   sRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrEmDamageResonance))             sRef->SetAttribute(AttrEmDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrExplosiveDamageResonance))      sRef->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrKineticDamageResonance))        sRef->SetAttribute(AttrKineticDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrThermalDamageResonance))        sRef->SetAttribute(AttrThermalDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrShieldEmDamageResonance))       sRef->SetAttribute(AttrShieldEmDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrShieldKineticDamageResonance))  sRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrShieldThermalDamageResonance))  sRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrArmorEmDamageResonance))        sRef->SetAttribute(AttrArmorEmDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrArmorKineticDamageResonance))   sRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrArmorThermalDamageResonance))   sRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrEmDamageResonance))             sRef->SetAttribute(AttrEmDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrExplosiveDamageResonance))      sRef->SetAttribute(AttrExplosiveDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrKineticDamageResonance))        sRef->SetAttribute(AttrKineticDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrThermalDamageResonance))        sRef->SetAttribute(AttrThermalDamageResonance, 1.0);
 
     sRef->SaveAttributes();
 
@@ -306,7 +306,7 @@ void StructureSE::Init(StructureItemRef structure)
             if (!iRef)
                 break;  // we'll get over it
             iRef->Relocate(GetPosition());
-            iRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius), false);
+            iRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius));
             ItemSystemEntity* iSE = new ItemSystemEntity(iRef, m_services, m_system);
             m_system->AddEntity(iSE);
         } break;

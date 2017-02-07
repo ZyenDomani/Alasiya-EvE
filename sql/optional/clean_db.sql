@@ -35,7 +35,6 @@ DELETE FROM `dungeonsspawned` WHERE 1;
 DELETE FROM `entity` WHERE 1;
 ALTER TABLE `entity` auto_increment = 140000000;
 DELETE FROM `entity_attributes` 1;
-DELETE FROM `entity_default_attributes` 1;
 DELETE FROM `eveMail` WHERE 1;
 DELETE FROM `eveMailDetails` WHERE 1;
 DELETE FROM `invBlueprints` WHERE 1;

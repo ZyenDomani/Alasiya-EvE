@@ -80,42 +80,42 @@ ShipItemRef ShipItem::Spawn(ItemFactory &factory, ItemData &data) {
     ShipItemRef sShipRef = ShipItem::Load( factory, shipID );
 
     // Create default dynamic attributes in the AttributeMap:
-    sShipRef->SetAttribute(AttrMass,                                sShipRef->type().mass(), false);
-    sShipRef->SetAttribute(AttrRadius,                              sShipRef->type().radius(), false);
-    sShipRef->SetAttribute(AttrVolume,                              sShipRef->GetPackagedVolume(), false);
-    sShipRef->SetAttribute(AttrCapacity,                            sShipRef->type().capacity(), false);
-    sShipRef->SetAttribute(AttrShieldCharge,                        sShipRef->GetAttribute(AttrShieldCapacity), false);
-    sShipRef->SetAttribute(AttrCapacitorCharge,                     sShipRef->GetAttribute(AttrCapacitorCapacity), false);
+    sShipRef->SetAttribute(AttrMass,                                sShipRef->type().mass());
+    sShipRef->SetAttribute(AttrRadius,                              sShipRef->type().radius());
+    sShipRef->SetAttribute(AttrVolume,                              sShipRef->GetPackagedVolume());
+    sShipRef->SetAttribute(AttrCapacity,                            sShipRef->type().capacity());
+    sShipRef->SetAttribute(AttrShieldCharge,                        sShipRef->GetAttribute(AttrShieldCapacity));
+    sShipRef->SetAttribute(AttrCapacitorCharge,                     sShipRef->GetAttribute(AttrCapacitorCapacity));
 
     // Check for existence of some attributes that may or may not have already been loaded and set them
     // to default values:
-    if (!sShipRef->HasAttribute(AttrDamage))                        sShipRef->SetAttribute(AttrDamage, 0.0f, false );
-    if (!sShipRef->HasAttribute(AttrArmorDamage))                   sShipRef->SetAttribute(AttrArmorDamage, 0.0f, false );
-    if (!sShipRef->HasAttribute(AttrMaximumRangeCap))               sShipRef->SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS), false);
-    if (!sShipRef->HasAttribute(AttrArmorMaxDamageResonance))       sShipRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f, false);
-    if (!sShipRef->HasAttribute(AttrShieldMaxDamageResonance))      sShipRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f, false);
-    if (!sShipRef->HasAttribute(AttrWarpSpeedMultiplier))           sShipRef->SetAttribute(AttrWarpSpeedMultiplier, 1.0f, false);
+    if (!sShipRef->HasAttribute(AttrDamage))                        sShipRef->SetAttribute(AttrDamage, 0.0f);
+    if (!sShipRef->HasAttribute(AttrArmorDamage))                   sShipRef->SetAttribute(AttrArmorDamage, 0.0f);
+    if (!sShipRef->HasAttribute(AttrMaximumRangeCap))               sShipRef->SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS));
+    if (!sShipRef->HasAttribute(AttrArmorMaxDamageResonance))       sShipRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
+    if (!sShipRef->HasAttribute(AttrShieldMaxDamageResonance))      sShipRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f);
+    if (!sShipRef->HasAttribute(AttrWarpSpeedMultiplier))           sShipRef->SetAttribute(AttrWarpSpeedMultiplier, 1.0f);
     // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some already have it defined):
-    if (!sShipRef->HasAttribute(AttrWarpScrambleStatus))            sShipRef->SetAttribute(AttrWarpScrambleStatus, 0.0f, false);
+    if (!sShipRef->HasAttribute(AttrWarpScrambleStatus))            sShipRef->SetAttribute(AttrWarpScrambleStatus, 0.0f);
 
     // Shield Resonance
-    if (!sShipRef->HasAttribute(AttrShieldEmDamageResonance))       sShipRef->SetAttribute(AttrShieldEmDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sShipRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrShieldKineticDamageResonance))  sShipRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrShieldThermalDamageResonance))  sShipRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrArmorEmDamageResonance))        sShipRef->SetAttribute(AttrArmorEmDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sShipRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrArmorKineticDamageResonance))   sShipRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrArmorThermalDamageResonance))   sShipRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrEmDamageResonance))             sShipRef->SetAttribute(AttrEmDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrExplosiveDamageResonance))      sShipRef->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrKineticDamageResonance))        sShipRef->SetAttribute(AttrKineticDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrThermalDamageResonance))        sShipRef->SetAttribute(AttrThermalDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrTurretSlotsLeft))               sShipRef->SetAttribute(AttrTurretSlotsLeft, 0, false);
-    if (!sShipRef->HasAttribute(AttrLauncherSlotsLeft))             sShipRef->SetAttribute(AttrLauncherSlotsLeft, 0, false);
+    if (!sShipRef->HasAttribute(AttrShieldEmDamageResonance))       sShipRef->SetAttribute(AttrShieldEmDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sShipRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrShieldKineticDamageResonance))  sShipRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrShieldThermalDamageResonance))  sShipRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrArmorEmDamageResonance))        sShipRef->SetAttribute(AttrArmorEmDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sShipRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrArmorKineticDamageResonance))   sShipRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrArmorThermalDamageResonance))   sShipRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrEmDamageResonance))             sShipRef->SetAttribute(AttrEmDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrExplosiveDamageResonance))      sShipRef->SetAttribute(AttrExplosiveDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrKineticDamageResonance))        sShipRef->SetAttribute(AttrKineticDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrThermalDamageResonance))        sShipRef->SetAttribute(AttrThermalDamageResonance, 1.0);
+    if (!sShipRef->HasAttribute(AttrTurretSlotsLeft))               sShipRef->SetAttribute(AttrTurretSlotsLeft, 0);
+    if (!sShipRef->HasAttribute(AttrLauncherSlotsLeft))             sShipRef->SetAttribute(AttrLauncherSlotsLeft, 0);
 
-    sShipRef->SetAttribute(AttrCpuLoad, 0.0f, false);
-    sShipRef->SetAttribute(AttrPowerLoad, 0.0f, false);
+    sShipRef->SetAttribute(AttrCpuLoad, 0.0f);
+    sShipRef->SetAttribute(AttrPowerLoad, 0.0f);
 
     sShipRef->SaveAttributes();
 
@@ -140,7 +140,7 @@ bool ShipItem::_Load()
         return false;
 
     // reset ship default capacity due to errors seen while testing.
-    SetAttribute(AttrCapacity, type().capacity(), false);
+    SetAttribute(AttrCapacity, type().capacity());
 
     /** @todo  apply ship and skill bonuses to hold capacities here */
 
@@ -241,7 +241,7 @@ void ShipItem::Init()
     ResetAttribute(AttrThermalDamageResonance);
 
     SetAttribute(AttrHP, hullHP);
-    SetAttribute(AttrMass, type().mass(), false);   // no default mass in ship item.
+    SetAttribute(AttrMass, type().mass());   // no default mass in ship item.
     SetAttribute(AttrInetia, shipInertia);
     SetAttribute(AttrArmorHP, armorHP);
     SetAttribute(AttrCpuOutput, cpu);

@@ -59,7 +59,7 @@ public:
 
     void SetRepeat(int32 repeat)                        { m_repeat = repeat; }
 
-    /* class type helpers.  public for anyone to access. */                 //  update these below as noted
+    /* class type helpers.  public for anyone to access. */                 /** @todo  update these below as noted */
     virtual bool IsWarpSafe() const                     { return true; }    // check this in module effect data.
     virtual bool IsLoaded()                             { return false; }
     virtual bool IsGenericModule() const                { return true; }

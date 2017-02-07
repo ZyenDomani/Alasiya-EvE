@@ -39,7 +39,7 @@
  * sets are comparable to db query results, you iterate through the result using begin() and end() like stl containers.
  */
 
-/** @todo see if we can update/optimize this class */
+/** @todo see if we can update/optimize this class and move to static data mgr */
 
 // this represents 1 attribute
 #pragma pack(push,1)
@@ -92,7 +92,7 @@ public:
     void Close();
 
     DgmTypeAttributeSet* GetDgmTypeAttributeSet(uint32 typeID);
-    
+
 private:
     DgmTypeAttributeMap mDgmTypeAttrInfo;
 };

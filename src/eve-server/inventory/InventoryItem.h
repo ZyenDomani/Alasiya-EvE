@@ -281,102 +281,27 @@ protected:
 
 private:
     bool m_effectsLoaded;
-    //data members
-    std::map<uint16, Effect> m_GangEffects;
-    std::map<uint16, Effect> m_FleetEffects;
-    std::map<uint16, Effect> m_OnlineEffects;
-    std::map<uint16, Effect> m_ActiveEffects;
-    std::map<uint16, Effect> m_OverloadEffects;
 
     std::unordered_multimap<uint16, Effect> m_stateFxMap;  // k,v of state, data   -to search by state
 
-/* end new effects system */
 
-/* end rewrite...originals follow */
-
-
-/************************************************************************/
-/* start experimental new attribute system ( semi-operational )         */
-/************************************************************************/
+/*  new attribute system */
 protected:
     AttributeMap mAttributeMap;
-    AttributeMap mDefaultAttributeMap;
 public:
-    bool SetAttribute(uint32 attributeID, int num, bool notify = true, bool shadow_copy_to_default_set = false);
-    bool SetAttribute(uint32 attributeID, uint32 num, bool notify = true, bool shadow_copy_to_default_set = false);
-    bool SetAttribute(uint32 attributeID, int64 num, bool notify = true, bool shadow_copy_to_default_set = false);
-    bool SetAttribute(uint32 attributeID, uint64 num, bool notify = true, bool shadow_copy_to_default_set = false);
-    bool SetAttribute(uint32 attributeID, double num, bool notify = true, bool shadow_copy_to_default_set = false);
-    bool SetAttribute(uint32 attributeID, EvilNumber num, bool notify = true, bool shadow_copy_to_default_set = false);
-
-    /**
-     * GetAttribute
-     * Retrieves the attribute of the entity.
-     * @param attributeID the attribute to check for.
-     * @returns the attribute value
-     * @note a value of zero is returned and an error message generated if the value is not found.
-     *
-     * @note this function should be used very infrequently and only for specific reasons
-     */
-    EvilNumber GetAttribute(const uint32 attributeID) const;
-    EvilNumber GetDefaultAttribute(const uint32 attributeID) const;
-    /**
-     * GetAttribute
-     * Retrieves the attribute of the entity.
-     * @note Should only be used when the attribute might not be defined.
-     * @param attributeID the attribute to check for.
-     * @param defaultValue a default value to return if no attribute is found.
-     * @returns the attribute value or the default value.
-     * @note does not generate an error message if the value is not found.
-     *
-     * @note this function should be used very infrequently and only for specific reasons
-     */
-    //EvilNumber GetAttribute(const uint32 attributeID, const uint32 defaultValue);
-
-    /**
-     * HasAttribute
-     * Checks to see if the entity has the specified attribute.
-     * value not altered if attribute not found.  This could be useful for preserving a default value.
-     * @param attributeID the attribute to check for.
-     * @returns true if this item has the attribute 'attributeID', false if it does not have this attribute
-     *
-     * returns true if this item has the attribute 'attributeID', false if it does not have this attribute
-     * @note this function should be used very infrequently and only for specific reasons
-     */
-    bool HasAttribute(const uint32 attributeID) const;
-    /**
-     * HasAttribute
-     * Checks to see if the entity has the specified attribute.
-     * @param attributeID the attribute to check for.
-     * @param value the location to return the attribute if it exist.
-     * @returns true if this item has the attribute 'attributeID', false if it does not have this attribute
-     *
-     * @note this function should be used very infrequently and only for specific reasons
-     */
-    bool HasAttribute(const uint32 attributeID, EvilNumber& value) const;
-
-    /**
-     * SaveAttributes
-     *
-     * save all the attributes from a Item.
-     *
-     * @note this should be incorporated into the normal save function and only save when things have changes.
-     */
-    bool SaveAttributes();
-
-    /*
-     * ResetAttribute
-     *
-     *@note this function will force reload the default value for the specified attribute
-     */
-    bool ResetAttribute(uint32 attrID, bool notify=false);
-
-    bool DeleteAttribute(uint32 attrID);
-
-/************************************************************************/
-/* end experimental new attribute system                                */
-/************************************************************************/
-
+    bool SetAttribute(uint32 attributeID, int num, bool notify=true);
+    bool SetAttribute(uint32 attributeID, uint32 num, bool notify=true);
+    bool SetAttribute(uint32 attributeID, int64 num, bool notify=true);
+    bool SetAttribute(uint32 attributeID, uint64 num, bool notify=true);
+    bool SetAttribute(uint32 attributeID, double num, bool notify=true);
+    bool SetAttribute(uint32 attributeID, EvilNumber num, bool notify=true);
+    bool HasAttribute(const uint32 attributeID) const { return mAttributeMap.HasAttribute(attributeID); }
+    bool HasAttribute(const uint32 attributeID, EvilNumber &value) const { return mAttributeMap.HasAttribute(attributeID, value); }
+    bool SaveAttributes() { return mAttributeMap.SaveAttributes(); }
+    bool ResetAttribute(uint32 attributeID, bool notify=false) { return mAttributeMap.ResetAttribute(attributeID, notify); }
+    bool DeleteAttribute(uint32 attributeID) { return mAttributeMap.DeleteAttribute(attributeID); }
+    EvilNumber GetAttribute(const uint32 attributeID) const { return mAttributeMap.GetAttribute(attributeID); }
+    EvilNumber GetDefaultAttribute(const uint32 attributeID)  { return m_type.GetAttribute(attributeID); }
 };
 
 #endif

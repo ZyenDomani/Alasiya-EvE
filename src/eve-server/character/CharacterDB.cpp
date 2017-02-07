@@ -137,8 +137,6 @@ PyRep* CharacterDB::DeleteCharacter(uint32 accountID, uint32 charID)
 		0 matches in chrPausedSkillQueue
 		1 match in entity
 		61 matches in entity_attributes
-		0 matches in entity_attributesStatic
-		60 matches in entity_default_attributes
 		0 matches in ramJobs
 		*/
 

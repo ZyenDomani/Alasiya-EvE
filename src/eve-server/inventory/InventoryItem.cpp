@@ -47,7 +47,6 @@ InventoryItem::InventoryItem(
     const ItemData &_data)
 : RefObject( 0 ),
   mAttributeMap(*this),
-  mDefaultAttributeMap(*this,true),
   m_saveTimer(0),
   m_factory(_factory),
   m_itemID(_itemID),
@@ -141,10 +140,10 @@ uint32 InventoryItem::CreateTempItemID(ItemFactory &factory, ItemData &data) {
 }
 
 bool InventoryItem::_Load() {
-    if (!mDefaultAttributeMap.Load())
-        _log(ITEM__WARNING, "%s (%u): Failed to load default attribute map.", itemName().c_str(), itemID());
-    if (!mAttributeMap.Load())
+    if (!mAttributeMap.Load()) {
         _log(ITEM__WARNING, "%s (%u): Failed to load attribute map.", itemName().c_str(), itemID());
+        return false;
+    }
 
     return true;
 }
@@ -590,7 +589,6 @@ void InventoryItem::Delete() {
     m_factory.db().DeleteItem( itemID() );
 
     mAttributeMap.Delete();
-    mDefaultAttributeMap.Delete();
 
     //delete ourselves from factory cache
     m_factory.RemoveItem( itemID() );
@@ -1115,100 +1113,46 @@ void InventoryItem::Relocate(const GPoint &pos)
     //SaveItem();
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, int64 num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
+bool InventoryItem::SetAttribute( uint32 attributeID, int64 num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
 	bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
-	if (shadow_copy_to_default_set)
-		status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
-	return status;
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, double num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
+bool InventoryItem::SetAttribute( uint32 attributeID, double num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
     bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
-	if (shadow_copy_to_default_set)
-        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
-	return status;
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, EvilNumber num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
+bool InventoryItem::SetAttribute( uint32 attributeID, EvilNumber num, bool notify/*true*/)
 {
     bool status = mAttributeMap.SetAttribute(attributeID, num, notify);
-	if (shadow_copy_to_default_set)
-		status = (status and mDefaultAttributeMap.SetAttribute(attributeID, num, notify));
-	return status;
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, int num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
+bool InventoryItem::SetAttribute( uint32 attributeID, int num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
     bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
-    if (shadow_copy_to_default_set)
-        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
-	return status;
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, uint64 num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
-{
-    EvilNumber devil_number(*((int64*)&num));
-    bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
-    if (shadow_copy_to_default_set)
-        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
-	return status;
-}
-
-bool InventoryItem::SetAttribute( uint32 attributeID, uint32 num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
+bool InventoryItem::SetAttribute( uint32 attributeID, uint64 num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
     bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
-    if (shadow_copy_to_default_set)
-        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
-	return status;
 }
 
-EvilNumber InventoryItem::GetAttribute( const uint32 attributeID ) const {
-     return mAttributeMap.GetAttribute(attributeID);
-}
-
-EvilNumber InventoryItem::GetDefaultAttribute( const uint32 attributeID ) const {
-     return mDefaultAttributeMap.GetAttribute(attributeID);
-}
-/*
-EvilNumber InventoryItem::GetAttribute( const uint32 attributeID, const uint32 defaultValue ) const {
-     return mAttributeMap.GetAttribute(attributeID, defaultValue);
-}
-*/
-bool InventoryItem::HasAttribute(const uint32 attributeID) const {
-    return mAttributeMap.HasAttribute(attributeID);
-}
-
-bool InventoryItem::HasAttribute(const uint32 attributeID, EvilNumber &value) const {
-    return mAttributeMap.HasAttribute(attributeID, value);
-}
-
-bool InventoryItem::SaveAttributes() {
-	return (mAttributeMap.SaveAttributes() and mDefaultAttributeMap.SaveAttributes());
-}
-
-bool InventoryItem::ResetAttribute(uint32 attrID, bool notify) {
-    return mAttributeMap.ResetAttribute(attrID, notify);
-}
-
-bool InventoryItem::DeleteAttribute(uint32 attrID) {
-    return mAttributeMap.DeleteAttribute(attrID);
+bool InventoryItem::SetAttribute( uint32 attributeID, uint32 num, bool notify/*true*/)
+{
+    EvilNumber devil_number(num);
+    bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
 }
 
 // new effects system  -allan 4Feb17
 void InventoryItem::LoadEffects()
 {
-    // loop items to simulate loading using effect proc code
     std::vector< TypeEffects > typeEffMap;
     sFxDataMgr.GetTypeEffect(m_type.id(), typeEffMap);
-
-    if (typeEffMap.empty())
-        return;
 
     for (auto cur : typeEffMap) {
         Effect mEffect = sFxDataMgr.GetEffect(cur.effectID);
