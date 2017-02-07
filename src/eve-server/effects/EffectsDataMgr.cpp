@@ -174,7 +174,7 @@ void FxDataMgr::ConfigureEffects()
 
 Effect FxDataMgr::GetEffect(uint16 eID)
 {
-    effectMapType::iterator itr = m_effectMap.find(eID);
+    effectMapType::const_iterator itr = m_effectMap.find(eID);
     if (itr != m_effectMap.end())
         return itr->second;
     return m_effectMap.at(0);
@@ -190,7 +190,7 @@ void FxDataMgr::GetTypeEffect(uint16 typeID, std::vector< TypeEffects >& typeEff
 
 Expression FxDataMgr::GetExpression(uint16 eID)
 {
-    std::map<uint16, Expression>::iterator itr = m_expMap.find(eID);
+    std::map<uint16, Expression>::const_iterator itr = m_expMap.find(eID);
     if (itr != m_expMap.end())
         return itr->second;
     return m_expMap.at(0);
@@ -198,7 +198,7 @@ Expression FxDataMgr::GetExpression(uint16 eID)
 
 Operand FxDataMgr::GetOperand(uint16 oID)
 {
-    std::map<uint16, Operand>::iterator itr = m_opMap.find(oID);
+    std::map<uint16, Operand>::const_iterator itr = m_opMap.find(oID);
     if (itr != m_opMap.end())
         return itr->second;
     return m_opMap.at(0);

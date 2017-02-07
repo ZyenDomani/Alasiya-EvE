@@ -66,7 +66,7 @@ void DGM_Types_to_Wrecks_Table::_Populate()
 
 uint32 DGM_Types_to_Wrecks_Table::GetWreckID(uint32 typeID)
 {
-    std::map<uint32, uint32>::iterator itr = m_WrecksToTypesMap.find(typeID);
+    std::map<uint32, uint32>::const_iterator itr = m_WrecksToTypesMap.find(typeID);
     if (itr != m_WrecksToTypesMap.end())
         return itr->second;
     return 0;

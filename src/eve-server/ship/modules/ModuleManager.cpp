@@ -130,7 +130,7 @@ void ModuleContainer::StripModules()
 
 GenericModule* ModuleContainer::GetModule(EVEItemFlags flag)
 {
-    std::map<uint8, GenericModule*>::iterator itr = m_modules.find(flag);
+    std::map<uint8, GenericModule*>::const_iterator itr = m_modules.find(flag);
     if (itr != m_modules.end())
         return itr->second;
 

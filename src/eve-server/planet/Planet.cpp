@@ -237,7 +237,7 @@ PyRep* PlanetSE::GetExtractorsForPlanet(int32 planetID) {
 
 Colony* PlanetSE::GetColony(Client* pClient)
 {
-    std::map<uint32, Colony*>::iterator itr = m_colonies.find(pClient->GetCharacterID());
+    std::map<uint32, Colony*>::const_iterator itr = m_colonies.find(pClient->GetCharacterID());
     if (itr != m_colonies.end())
         return itr->second;
     Colony* pColony = new Colony(&m_services, pClient, this);
@@ -251,7 +251,7 @@ Colony* PlanetSE::GetColony(Client* pClient)
 
 void PlanetSE::AbandonColony(Colony* pColony)
 {
-    std::map<uint32, Colony*>::iterator itr = m_colonies.find(pColony->GetOwner());
+    std::map<uint32, Colony*>::const_iterator itr = m_colonies.find(pColony->GetOwner());
     if (itr != m_colonies.end())
         m_colonies.erase(itr);
     pColony->AbandonColony();

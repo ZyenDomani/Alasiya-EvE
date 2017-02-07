@@ -106,7 +106,7 @@ bool AsteroidBeltMgr::CheckSpawn(uint16 bubbleID)
 bool AsteroidBeltMgr::IsSpawned(uint16 bubbleID)
 {
     uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
-    std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
+    std::map<uint32, bool>::const_iterator itr = m_spawned.find(beltID);
     if (itr != m_spawned.end())
         return itr->second;
     return false;
@@ -115,7 +115,7 @@ bool AsteroidBeltMgr::IsSpawned(uint16 bubbleID)
 bool AsteroidBeltMgr::IsActive(uint16 bubbleID)
 {
     uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
-    std::map<uint32, bool>::iterator itr = m_active.find(beltID);
+    std::map<uint32, bool>::const_iterator itr = m_active.find(beltID);
     if (itr != m_active.end())
         return itr->second;
     return false;

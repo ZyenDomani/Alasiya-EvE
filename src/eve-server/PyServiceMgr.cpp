@@ -77,7 +77,7 @@ void PyServiceMgr::RegisterService(const std::string name, PyService* svc)
 }
 
 PyService* PyServiceMgr::LookupService(const std::string &name) {
-    std::map<std::string, PyService*>::iterator itr = m_svcList.find(name);
+    std::map<std::string, PyService*>::const_iterator itr = m_svcList.find(name);
     if (itr != m_svcList.end())
         return itr->second;
 
