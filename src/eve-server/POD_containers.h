@@ -9,6 +9,8 @@
 
 #include "eve-server.h"
 
+/** @todo  update these for more approprate variable types */
+
 /* POD structure for account data */
 struct AccountData {
     int32 id;
@@ -25,12 +27,12 @@ struct AccountData {
 
 /* POD structure for fleet data    -allan 31Jul14 */
 struct FleetData {
-    uint32 fleetID;
-    uint32 wingID;
-    uint32 squadID;
     uint8 fleetRole;
     uint8 fleetBooster;
     uint8 fleetJob;
+    uint32 fleetID;
+    uint32 wingID;
+    uint32 squadID;
 };
 
 /* POD structure for blueprint data */
@@ -256,12 +258,18 @@ struct FactionData {
     uint32 factionID = 0;
 };
 
+/* structure for type attributes */
+struct DmgTypeAttribute {
+    uint16 attributeID = 0;
+    EvilNumber value = 0;
+};
+
 class DBSystemEntity {
 public:
     uint32 itemID = 0;
     uint32 typeID = 0;
     uint32 groupID = 0;
-    uint32 categoryID = 0;  //TODO populate this for simple system entities. (recently added - 1Dec15)
+    uint32 categoryID = 0;
     uint32 orbitID = 0;
     GPoint position = NULL_ORIGIN;
     double radius = 0;

@@ -25,6 +25,7 @@
 
 #include "eve-server.h"
 
+#include "StaticDataMgr.h"
 #include "character/Character.h"
 #include "inventory/ItemType.h"
 #include "manufacturing/Blueprint.h"
@@ -271,12 +272,11 @@ _Ty* ItemType::_LoadType(ItemFactory &factory, uint32 typeID,  const ItemGroup &
 
 bool ItemType::_Load(ItemFactory &factory) {
     // load type attribs
-    DgmTypeAttributeSet* attr_set = sDgmTypeAttrMgr.GetDgmTypeAttributeSet( m_id );
-    if (attr_set) {
-        DgmTypeAttributeSet::AttrSetItr itr = attr_set->attributeset.begin();
-        for (; itr != attr_set->attributeset.end(); itr++)
-            m_AttributeMap.insert(std::pair<uint32, EvilNumber>((*itr)->attributeID, (*itr)->number));
-    }
+    std::vector< DmgTypeAttribute > typeAttrVec;
+    sDataMgr.GetDgmTypeAttrVec(m_id, typeAttrVec);
+    for (auto cur : typeAttrVec)
+        m_AttributeMap.insert(std::pair<uint32, EvilNumber>(cur.attributeID, cur.value));
+
     return true;
 }
 

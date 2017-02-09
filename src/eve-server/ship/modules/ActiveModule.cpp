@@ -144,35 +144,6 @@ void ActiveModule::Activate(SystemEntity* pSE)
     EVECalculationType ecType = CALC_NONE;
     bool stacking = false;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
-    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr, end;
-    if (IsOverloaded()) {
-        itr = m_Effects->GetOverloadEffectsBegin();
-        end = m_Effects->GetOverloadEffectsEnd();
-        _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() -  there are %u OverLoaded effects to process", m_Effects->GetOverloadEffectsSize() );
-    } else {
-        itr = m_Effects->GetActiveEffectsBegin();
-        end = m_Effects->GetActiveEffectsEnd();
-        _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() -  there are %u Active effects to process", m_Effects->GetActiveEffectsSize() );
-    }
-    for (; itr != end; itr++) {
-        uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
-        _log(SHIP__MODULE_INFO, "AMPC::ActivateCycle() -  there are %u attributes in effect %u", ids, itr->first );
-        while (cur < ids) {
-            testID = itr->second->GetTargetGroup(cur);
-            if (groupID != testID) { ++cur; continue; }
-            stacking = itr->second->GetStackingPenalty(cur);
-            targetAttrID = itr->second->GetTargetAttributeID(cur);
-            sourceAttrID = itr->second->GetSourceAttributeID(cur);
-            ecType = itr->second->GetCalculationType(cur);
-            _log(SHIP__MODULE_TRACE, "AMPC::ActivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
-            itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            if (needsTarget() and GetTarget())
-                ModifyTargetAttribute(GetTargetID(), targetAttrID, sourceAttrID, ecType, stacking);
-            else
-                ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
-            ++cur;
-        }
-    }
 
     //active module class has a m_cycleTime variable that holds cycle time,
     // based on character skills and specific module attributes.  -allan 19Dec15
@@ -289,7 +260,7 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
         m_targetID,
         (m_chargeLoaded?m_chargeRef->typeID():0),
         effectStr,
-        m_Effects->GetDefaultEffect()->GetIsOffensive(),
+        0,   /* fixme */
         (active ? 1 : 0),
         (active ? 1 : 0),
         (active ? (Win32TimeNow() + (timeLeft * Win32Time_Second)) : Win32TimeNow()),
@@ -309,7 +280,7 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
         ge.targetID = m_targetID;
         ge.other = go.Encode();
         ge.area = new PyList;   // still dont know what this is.
-        ge.effectID = m_Effects->GetDefaultEffect()->GetEffectID();
+        ge.effectID = 0;   /* fixme */
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -336,35 +307,6 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     EVECalculationType ecType = CALC_NONE;
     bool stacking = false;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
-    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr, end;
-    if (IsOverloaded()) {
-        itr = m_Effects->GetOverloadEffectsBegin();
-        end = m_Effects->GetOverloadEffectsEnd();
-        _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() -  there are %u OverLoaded effects to process", m_Effects->GetOverloadEffectsSize() );
-    } else {
-        itr = m_Effects->GetActiveEffectsBegin();
-        end = m_Effects->GetActiveEffectsEnd();
-        _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() -  there are %u Active effects to process", m_Effects->GetActiveEffectsSize() );
-    }
-    for (; itr != end; itr++) {
-        uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
-        _log(SHIP__MODULE_INFO, "AMPC::DeactivateCycle() -  there are %u attributes in effect %u", ids, itr->first );
-        while (cur < ids) {
-            testID = itr->second->GetTargetGroup(cur);
-            if (groupID != testID) { ++cur; continue; }
-            stacking = itr->second->GetStackingPenalty(cur);
-            targetAttrID = itr->second->GetTargetAttributeID(cur);
-            sourceAttrID = itr->second->GetSourceAttributeID(cur);
-            ecType = itr->second->GetReverseCalculationType(cur);
-            _log(SHIP__MODULE_TRACE, "AMPC::DeactivateCycle() - effect %u[%u] - modify attr target:%u, source:%u, ecType:%i", \
-            itr->first, cur, targetAttrID, sourceAttrID, (int8)ecType);
-            if (needsTarget() and GetTarget())
-                ModifyTargetAttribute(GetTargetID(), targetAttrID, sourceAttrID, ecType, stacking);
-            else
-                ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
-            ++cur;
-        }
-    }
     StopCycle(abort);
 }
 

@@ -31,7 +31,6 @@
 #include "inventory/InventoryItem.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
-#include "ship/modules/ModuleEffects.h"
 
 
 class ModuleEffects;
@@ -78,7 +77,7 @@ public:
     bool isRig()                                        { return m_rigSlot; }
     bool isSubSystem()                                  { return m_subSystem; }
 
-    bool needsTarget()                                  { return m_Effects->needsTarget(); }
+    bool needsTarget()                                  { return true; }    /* fixme */
 
     uint32 itemID()                                     { return m_modRef->itemID(); }
     uint32 typeID()                                     { return m_modRef->typeID(); }
@@ -102,9 +101,11 @@ public:
     virtual void DestroyRig()                           { /* Do nothing here */ }
 
     /* functions to be overridden in derived classes as needed */
-    virtual bool isTurretFitted()                       { return (m_Effects->HasEffect(effectTurretFitted) ? true : false); }
-    virtual bool isLauncherFitted()                     { return (m_Effects->HasEffect(effectLauncherFitted) ? true : false); }
-    virtual bool isMaxGroupFitLimited()                 { return (m_Effects->HasEffect(AttrMaxGroupFitted) ? true : false); }
+    /** @todo update to new effects system */
+    virtual bool isTurretFitted()                       { return /*(HasEffect(effectTurretFitted) ? true : false);*/ false; }
+    virtual bool isLauncherFitted()                     { return /*(HasEffect(effectLauncherFitted) ? true : false);*/ false; }
+    virtual bool isMaxGroupFitLimited()                 { return /*(HasEffect(AttrMaxGroupFitted) ? true : false);*/ false; }
+
     virtual InventoryItemRef GetLoadedChargeRef()       { return InventoryItemRef(); }
 
     /* override for rigs and subsystems in approprate derived class */
@@ -116,9 +117,6 @@ public:
                                 : (m_subSystem ? MODULE_BANK_SUBSYSTEM
                                     : MODULE_BANK_UNDEFINED ))));
     }
-
-	/*  these have to be public for ampc/msac/mmac to access it's methods */
-    ModuleEffects*                  m_Effects;          /* we own this */
 
 protected:
     InventoryItemRef                m_modRef;

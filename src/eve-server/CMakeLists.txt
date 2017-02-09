@@ -253,8 +253,7 @@ SET( imageserver_SOURCE
 
 SET( inventory_INCLUDE
      "${TARGET_INCLUDE_DIR}/inventory/AttributeEnum.h"
-     #"${TARGET_INCLUDE_DIR}/inventory/EffectsEnum.h"
-     "${TARGET_INCLUDE_DIR}/inventory/EVEAttributeMgr.h"
+     "${TARGET_INCLUDE_DIR}/inventory/AttributeMap.h"
      "${TARGET_INCLUDE_DIR}/inventory/InvBrokerService.h"
      "${TARGET_INCLUDE_DIR}/inventory/Inventory.h"
      "${TARGET_INCLUDE_DIR}/inventory/InventoryBound.h"
@@ -266,7 +265,7 @@ SET( inventory_INCLUDE
      "${TARGET_INCLUDE_DIR}/inventory/ItemType.h"
      "${TARGET_INCLUDE_DIR}/inventory/Voucher.h" )
 SET( inventory_SOURCE
-     "${TARGET_SOURCE_DIR}/inventory/EVEAttributeMgr.cpp"
+     "${TARGET_SOURCE_DIR}/inventory/AttributeMap.cpp"
      "${TARGET_SOURCE_DIR}/inventory/InvBrokerService.cpp"
      "${TARGET_SOURCE_DIR}/inventory/Inventory.cpp"
      "${TARGET_SOURCE_DIR}/inventory/InventoryBound.cpp"
@@ -390,14 +389,12 @@ SET( search_SOURCE
 
 SET( ship_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/BeyonceService.h"
-     "${TARGET_INCLUDE_DIR}/ship/dgmtypeattributeinfo.h"
      "${TARGET_INCLUDE_DIR}/ship/Missile.h"
      "${TARGET_INCLUDE_DIR}/ship/Ship.h"
      "${TARGET_INCLUDE_DIR}/ship/ShipDB.h"
      "${TARGET_INCLUDE_DIR}/ship/ShipService.h")
 SET( ship_SOURCE
      "${TARGET_SOURCE_DIR}/ship/BeyonceService.cpp"
-     "${TARGET_SOURCE_DIR}/ship/dgmtypeattributeinfo.cpp"
      "${TARGET_SOURCE_DIR}/ship/Missile.cpp"
      "${TARGET_SOURCE_DIR}/ship/Ship.cpp"
      "${TARGET_SOURCE_DIR}/ship/ShipDB.cpp"
@@ -406,7 +403,6 @@ SET( ship_SOURCE
 SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/ActiveModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleDefs.h"
-     "${TARGET_INCLUDE_DIR}/ship/modules/ModuleEffects.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleFactory.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleManager.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/GenericModule.h"
@@ -439,7 +435,6 @@ SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/weapon_modules/TurrentFormulas.h" )
 SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/ActiveModule.cpp"
-     "${TARGET_SOURCE_DIR}/ship/modules/ModuleEffects.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/ModuleManager.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/GenericModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/PassiveModule.cpp"

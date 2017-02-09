@@ -1116,36 +1116,36 @@ void InventoryItem::Relocate(const GPoint &pos)
 bool InventoryItem::SetAttribute( uint32 attributeID, int64 num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-	bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
+	return mAttributeMap.SetAttribute(attributeID, devil_number, notify);
 }
 
 bool InventoryItem::SetAttribute( uint32 attributeID, double num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-    bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
+    return mAttributeMap.SetAttribute(attributeID, devil_number, notify);
 }
 
 bool InventoryItem::SetAttribute( uint32 attributeID, EvilNumber num, bool notify/*true*/)
 {
-    bool status = mAttributeMap.SetAttribute(attributeID, num, notify);
+    return mAttributeMap.SetAttribute(attributeID, num, notify);
 }
 
 bool InventoryItem::SetAttribute( uint32 attributeID, int num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-    bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
+    return mAttributeMap.SetAttribute(attributeID, devil_number, notify);
 }
 
 bool InventoryItem::SetAttribute( uint32 attributeID, uint64 num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-    bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
+    return mAttributeMap.SetAttribute(attributeID, devil_number, notify);
 }
 
 bool InventoryItem::SetAttribute( uint32 attributeID, uint32 num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-    bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
+    return mAttributeMap.SetAttribute(attributeID, devil_number, notify);
 }
 
 // new effects system  -allan 4Feb17

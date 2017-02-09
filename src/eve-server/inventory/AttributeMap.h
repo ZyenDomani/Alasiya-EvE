@@ -26,32 +26,12 @@
 #ifndef __EVE_ATTRIBUTE_MGR__H__INCL__
 #define __EVE_ATTRIBUTE_MGR__H__INCL__
 
-/*
- * This file contains EVE-specific derivations of attribute managers.
- * it is also incomplete.  revisit and update as needed.
- */
+#include "./eve-common.h"
+
+
 /** @todo update/finish this class */
-
-#include "ship/dgmtypeattributeinfo.h"
-
-class PyRep;
 class PyTuple;
-class ItemType;
-class ItemFactory;
 class InventoryItem;
-class InventoryDB;
-
-// small map that does the magic of item attributes..
-
-/**
- * @brief rewrite of the item attribute system.
- *
- * @author Captnoord.
- * @date Juni 2010
- * @note keeping track of the base value of the attribute is not implemented.
- * Besides the fact in increases memory concumption its unclear how to design it
- * at this moment.
- */
 class AttributeMap
 {
 public:
@@ -60,7 +40,7 @@ public:
      * @param[in] item reference to the InventoryItem for which attributes will be managed
      * @param[in] isDefault boolean indicating whether this attribute map uses 'default' itemType attributes or saved-per-item 'entity_attributes' table
      */
-    AttributeMap(InventoryItem& item, bool isDefault=false);
+    AttributeMap(InventoryItem& item);
 
 	/**
      * @brief set the attribute with @num
@@ -110,8 +90,6 @@ public:
      * changes attributes.
      */
     bool SaveAttributes();
-    bool SaveIntAttribute(uint32 attributeID, int64 value);
-    bool SaveFloatAttribute(uint32 attributeID, double value);
 
     /*
      * ResetAttribute
@@ -171,9 +149,6 @@ protected:
      */
     bool SendAttributeChanges(PyTuple* attrChange);
 
-    bool SaveIntAttribute(uint32 attributeID);
-    bool SaveFloatAttribute(uint32 attributeID);
-
     /** we belong to this item..
      * @note possible design flaw because only items contain AttributeMap's so
      *       we don't need to store this.
@@ -193,11 +168,6 @@ protected:
      */
     bool mChanged;
 
-    /**
-     * we set this true to tell the class methods to use attributes from 'entity_default_attributes' table
-	 * instead of the normal 'entity_attributes' table
-     */
-    bool mDefault;
 };
 
 #endif /* __EVE_ATTRIBUTE_MGR__H__INCL__ */

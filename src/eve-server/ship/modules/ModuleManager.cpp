@@ -654,7 +654,7 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
                 m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate that module.  Ref: ServerError 25268");
                 return;
             }
-            pSE = m_Ship->GetPilot()->GetShipSE()->SysBubble()->GetEntity(targetID);
+            pSE = m_Ship->GetPilot()->SystemMgr()->GetSE(targetID);
             if (!pSE) {
                 sLog.Error("ModuleManager::Activate()", "pSE == NULL");
                 m_Ship->GetPilot()->SendErrorMsg("Current target was not found.  Ref: ServerError 25263");

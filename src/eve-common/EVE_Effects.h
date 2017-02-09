@@ -8,6 +8,7 @@
 #ifndef EVE_EFFECTS_H
 #define EVE_EFFECTS_H
 
+/** @todo  this shit is no longer needed......delete it.  */
 
 //these come from dgmEffects.
 //  -allan 18Aug14

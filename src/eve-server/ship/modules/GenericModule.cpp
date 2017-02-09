@@ -33,8 +33,6 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_modRef = item;
     m_shipRef = ship;
 
-    m_Effects = new ModuleEffects(m_modRef.get());
-
     m_ModuleState = MOD_UNFITTED;
     m_ChargeState = MOD_UNLOADED;
 
@@ -46,8 +44,6 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
 GenericModule::~GenericModule()
 {
     m_modRef->PutOffline();
-    //delete members
-    SafeDelete(m_Effects);
 }
 
 /** @todo  this needs to be updated (as all module effects methods) to test for targetGroupIDs
@@ -72,36 +68,7 @@ void GenericModule::Online()
 
     EVECalculationType ecType = CALC_NONE;
     bool stacking = false;
-    typeTargetGroupIDlist targetIDs;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
-    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Effects->GetOnlineEffectsBegin();
-    _log(SHIP__MODULE_TRACE, "GenericModule::Online() -  there are %u effects to process", m_Effects->GetOnlineEffectsSize() );
-    for (; itr != m_Effects->GetOnlineEffectsEnd(); itr++) {
-        uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
-        _log(SHIP__MODULE_TRACE, "GenericModule::Online() -  there are %u attributes in effect %u", ids, itr->first );
-        while (cur < ids) {
-            if (itr->first != effectOnline) {  // effect Online.  this sets CPU and PG usage
-                testID = itr->second->GetTargetGroup(cur);
-                _log(SHIP__MODULE_DEBUG, "GenericModule::Online() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
-                if ((testID != 0) && (groupID != testID)) {
-                    ++cur;
-                    continue;
-                }
-            }
-            // vector<uint32> of targetgroups (or targetCategorys if id < 50)
-            /* this isnt right yet....targetIDsList is vector, but i need size for it to iterate */
-            stacking = itr->second->GetStackingPenalty(cur);
-            targetIDs = itr->second->GetTargetIDList(cur);
-            targetAttrID = itr->second->GetTargetAttributeID(cur);
-            sourceAttrID = itr->second->GetSourceAttributeID(cur);
-            ecType = itr->second->GetCalculationType(cur);
-            _log(SHIP__MODULE_TRACE, "GenericModule::Online() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
-                        itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
-            ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
-            ++cur;
-            targetIDs.clear();
-        }
-    }
 }
 
 void GenericModule::Offline()
@@ -116,36 +83,7 @@ void GenericModule::Offline()
     m_ModuleState = MOD_DEACTIVATING;
     EVECalculationType ecType = CALC_NONE;
     bool stacking = false;
-    typeTargetGroupIDlist targetIDs;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
-    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Effects->GetOnlineEffectsBegin();
-    _log(SHIP__MODULE_TRACE, "GenericModule::Offline() -  there are %u effects to process", m_Effects->GetOnlineEffectsSize() );
-    for (; itr != m_Effects->GetOnlineEffectsEnd(); itr++) {
-        uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
-        _log(SHIP__MODULE_TRACE, "GenericModule::Offline() -  there are %u attributes in effect %u", ids, itr->first );
-        while (cur < ids) {
-            if (itr->first != effectOnline) {  // effect Online.  this sets CPU and PG usage
-                testID = itr->second->GetTargetGroup(cur);
-                _log(SHIP__MODULE_DEBUG, "GenericModule::Offline() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
-                if ((testID != 0) && (groupID != testID)) {
-                    ++cur;
-                    continue;
-                }
-            }
-            // vector<uint32> of targetgroups (or targetCategorys if id < 50)
-            /* this isnt right yet....targetIDsList is vector, but i need size for it to iterate */
-            stacking = itr->second->GetStackingPenalty(cur);
-            targetIDs = itr->second->GetTargetIDList(cur);
-            targetAttrID = itr->second->GetTargetAttributeID(cur);
-            sourceAttrID = itr->second->GetSourceAttributeID(cur);
-            ecType = itr->second->GetReverseCalculationType(cur);
-            _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
-                        itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
-            ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
-            ++cur;
-            targetIDs.clear();
-        }
-    }
 
     m_ModuleState = MOD_OFFLINE;
     m_modRef->PutOffline();

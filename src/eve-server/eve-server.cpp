@@ -382,8 +382,6 @@ int main( int argc, char* argv[] )
 
     // Create In-Memory Database Objects for Critical and HighUse Systems:
     sLog.Yellow("       ServerInit", "Loading Static Database Table Objects...");
-    sLog.Green("       ServerInit", "Dogma Attributes");
-    sDgmTypeAttrMgr.Initialize();
     sLog.Green("       ServerInit", "Effect Data Sets");
     sFxDataMgr.Initialize();
     sLog.Green("       ServerInit", "Wreck Data");
@@ -536,9 +534,6 @@ int main( int argc, char* argv[] )
     command_dispatcher.Close();
     /* Stop Console Command Interperter */
     //sConsole.Stop();
-    /* delete the dogma attrib object */
-    sLog.Warning("   ServerShutdown", "Deleting Dogma Attribute Cache" );
-    sDgmTypeAttrMgr.Close();
     /* Close the entity list */
     sEntityList.Close();
 	sLog.Warning("   ServerShutdown", "Saving Items." );

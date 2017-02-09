@@ -29,7 +29,8 @@
 
 #include "Client.h"
 #include "EntityList.h"
-#include "inventory/EVEAttributeMgr.h"
+#include "StaticDataMgr.h"
+#include "inventory/AttributeMap.h"
 #include "inventory/InventoryDB.h"
 #include "inventory/InventoryItem.h"
 
@@ -37,14 +38,101 @@
 /************************************************************************/
 /* Start of new attribute system                                        */
 /************************************************************************/
-AttributeMap::AttributeMap( InventoryItem& item, bool isDefault/*false*/ )
+AttributeMap::AttributeMap( InventoryItem& item)
 : mItem(item),
-  mChanged(true),
-  mDefault(isDefault)
+  mChanged(true)
 {
 }
 
-bool AttributeMap::SetAttribute( uint32 attributeId, EvilNumber &num, bool notify /*true*/ )
+bool AttributeMap::Load() {
+    /* First, we load default attributes values from typeattrmgr.*/
+    std::vector< DmgTypeAttribute > typeAttrVec;
+    sDataMgr.GetDgmTypeAttrVec(mItem.typeID(), typeAttrVec);
+    for (auto cur : typeAttrVec) {
+        SetAttribute(cur.attributeID, cur.value, false);
+    }
+
+    /* Then we load item damage from the db, if any, to update the defaults */
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT  attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID='%u'", mItem.itemID())) {
+        _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
+    }
+
+    DBResultRow row;
+    EvilNumber value = 0;
+    while (res.GetRow(row)) {
+        if (row.IsNull(1))
+            value = row.GetDouble(2);
+        else
+            value = row.GetInt64(1);
+        SetAttribute(row.GetUInt(0), value, false);
+    }
+    /* item has it's own attribute map, and is deleted when item object is destroyed */
+    _log(ITEM__DEBUG, "AttributeMap::Load()  Loaded %u attribs for %s.", mAttributes.size(), mItem.itemName().c_str());
+    return true;
+}
+
+bool AttributeMap::Save() {
+    /** @todo update this
+     * we are saving:
+     *   all attribs for skills
+     *   all attribs for ISEs and CSEs, where applicable
+     *   damage for ships/modules/charges, where applicable
+     */
+    if (mItem.itemID() >= EVEMU_NPC_ID) return true;    // not saving npc attribs
+    if (mItem.itemID() < EVEMU_MINIMUM_ID) return true; // not saving static object attribs
+    bool success = false;
+
+    /* if nothing changed... it means this action has previously been successful we return true... */
+    if (!mChanged)
+        return true;
+
+    std::ostringstream Inserts;
+    // start the insert into command.
+    Inserts << "INSERT INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) ";
+    bool first = true;
+    AttrMapItr itr = mAttributes.begin();
+    for (; itr != mAttributes.end(); itr++) {
+        if (first) {
+            Inserts << "VALUES";
+            first = false;
+        } else
+            Inserts << ", ";
+        Inserts << "(" << mItem.itemID() << ", " << itr->first << ", ";
+        if ( itr->second.get_type() == evil_number_int ) {
+            if (IsNaN(itr->second.get_int())) {
+                _log(INV__ERROR, "AttributeMap::Save() - int == NaN for itemID:%u", mItem.itemID());
+                return false;
+            }
+            Inserts << itr->second.get_int() << ", NULL)";
+        } else {
+            if (IsNaN(itr->second.get_double())) {
+                _log(INV__ERROR, "AttributeMap::Save() - float == NaN for itemID:%u", mItem.itemID());
+                return false;
+            }
+            Inserts << " NULL, " << itr->second.get_double() << ")";
+        }
+    }
+
+    if (!first) {
+        Inserts << "ON DUPLICATE KEY UPDATE ";
+        Inserts << "valueInt=VALUES(valueInt), ";
+        Inserts << "valueFloat=VALUES(valueFloat)";
+        // execute the command.
+        /** @todo  take this outta here.  copy from itemfactory.save() */
+        DBerror err;
+        if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
+            _log(DATABASE__ERROR, "AttributeMap - unable to save attributes - %s", err.c_str());
+            return false;
+        }
+    }
+
+    mChanged = false;
+    return true;
+}
+
+
+bool AttributeMap::SetAttribute( uint32 attributeId, EvilNumber& num, bool notify /*true*/ )
 {
     AttrMapItr itr = mAttributes.find(attributeId);
 
@@ -143,144 +231,6 @@ bool AttributeMap::ResetAttribute(uint32 attrID, bool notify) {
     EvilNumber value = mItem.GetDefaultAttribute(attrID);
     return SetAttribute(attrID, value, notify);
 }
-
-bool AttributeMap::Load() {
-    /** @todo  update this to use data from itemType and optimize method */
-    /* First, we load default attributes values from itemType ...no we dont....we load from typeattrmgr.*/
-    /** @note all 'default' settings are straight from itemType.  enable use of type().* for default needs */
-    DgmTypeAttributeSet *attr_set = sDgmTypeAttrMgr.GetDgmTypeAttributeSet( mItem.typeID() );
-    if (attr_set) {
-        DgmTypeAttributeSet::AttrSetItr itr = attr_set->attributeset.begin();
-        for (; itr != attr_set->attributeset.end(); itr++)
-            SetAttribute((*itr)->attributeID, (*itr)->number, false);
-    }
-    int16 amount = attr_set->attributeset.size();
-    /* Then we load the saved attributes from the db, if there are any yet, and overwrite the defaults */
-    DBQueryResult res;
-    if (!mDefault) {
-        if (!sDatabase.RunQuery(res, "SELECT  attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID='%u'", mItem.itemID())) {
-            _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
-            return false;
-        }
-
-        DBResultRow row;
-        EvilNumber attr_value = 0;
-        uint32 attributeID = 0;
-        amount = res.GetRowCount();
-        while (res.GetRow(row)) {
-            attributeID = row.GetUInt(0);
-            if (row.IsNull(1))
-                attr_value = row.GetDouble(2);
-            else
-                attr_value = row.GetInt64(1);
-            SetAttribute(attributeID, attr_value, false);
-        }
-    }
-    _log(ITEM__DEBUG, "AttributeMap::Load()  Loaded %u attribs for %s.  Default: %s", amount, mItem.itemName().c_str(), (mDefault ? "True" : "False"));
-    return true;
-}
-
-bool AttributeMap::SaveIntAttribute(uint32 attributeID, int64 value)
-{
-    if (mDefault)
-        return true;
-    /** @todo update this */
-    // SAVE INTEGER ATTRIBUTE
-    std::ostringstream Inserts;
-    // start the insert into command.
-    Inserts << "REPLACE INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) VALUES (";
-    Inserts << mItem.itemID() << ", " << attributeID << ", " << value << ", NULL)";
-
-    DBerror err;
-    if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
-        _log(DATABASE__ERROR, "AttributeMap - unable to save int attributes - %s", err.c_str());
-        return false;
-    }
-
-    return true;
-}
-
-bool AttributeMap::SaveFloatAttribute(uint32 attributeID, double value)
-{
-    if (mDefault)
-        return true;
-    /** @todo update this */
-    // SAVE FLOAT ATTRIBUTE
-    std::ostringstream Inserts;
-    // start the insert into command.
-    Inserts << "REPLACE INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) VALUES (";
-    Inserts << mItem.itemID() << ", " << attributeID << ", NULL, " << value << ")";
-
-    DBerror err;
-    if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
-        _log(DATABASE__ERROR, "AttributeMap - unable to save float attributes - %s", err.c_str());
-        return false;
-    }
-
-    return true;
-}
-
-/* hmmm only save 'state' related attributes... and calculate the rest on the fly....*/
-/* we should save skills */
-bool AttributeMap::Save() {
-    /** @todo update this */
-    if (mItem.itemID() >= EVEMU_NPC_ID) return true;    // not saving npc attribs
-    if (mItem.itemID() < EVEMU_MINIMUM_ID) return true; // not saving static object attribs
-	bool success = false;
-
-    /* if nothing changed... it means this action has been successful we return true... */
-    if (!mChanged)
-        return true;
-
-    std::ostringstream Inserts;
-    // start the insert into command.
-    Inserts << "INSERT INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) ";
-    bool first = true;
-    AttrMapItr itr = mAttributes.begin();
-    for (; itr != mAttributes.end(); itr++) {
-        // if this is the first row specify the VALUES keyword
-        if (first) {
-            Inserts << "VALUES";
-            first = false;
-        }
-        // otherwise comma separate the values.
-        else
-            Inserts << ", ";
-        // itemID and attributeID keys.
-        Inserts << "(" << mItem.itemID() << ", " << itr->first << ", ";
-        // the value to set.
-        if ( itr->second.get_type() == evil_number_int ) {
-            if (IsNaN(itr->second.get_int())) {
-                _log(INV__ERROR, "AttributeMap::Save() - int == NaN for itemID:%u", mItem.itemID());
-                return false;
-            }
-            Inserts << itr->second.get_int() << ", NULL)";
-        } else {
-            if (IsNaN(itr->second.get_double())) {
-                _log(INV__ERROR, "AttributeMap::Save() - float == NaN for itemID:%u", mItem.itemID());
-                return false;
-            }
-            Inserts << " NULL, " << itr->second.get_double() << ")";
-        }
-    }
-    // did we get at least 1 insert?
-    if (!first) {
-        // finish creating the command.
-        Inserts << "ON DUPLICATE KEY UPDATE ";
-        Inserts << "valueInt=VALUES(valueInt), ";
-        Inserts << "valueFloat=VALUES(valueFloat)";
-        // execute the command.
-        DBerror err;
-        if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
-            _log(DATABASE__ERROR, "AttributeMap - unable to save attributes - %s", err.c_str());
-            return false;
-        }
-    }
-
-    mChanged = false;
-    return true;
-}
-
 
 bool AttributeMap::SaveAttributes() {
     return Save();

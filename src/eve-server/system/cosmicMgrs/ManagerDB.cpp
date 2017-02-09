@@ -20,6 +20,13 @@ void ManagerDB::GetSkillList(DBQueryResult& res)
     }
 }
 
+void ManagerDB::GetTypeAttributes(DBQueryResult& res)
+{
+    if( !sDatabase.RunQuery(res, "SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes")) {
+        codelog(DATABASE__ERROR, "Error in GetTypeAttributes query: %s", res.error.c_str());
+    }
+}
+
 void ManagerDB::GetRAMMaterials(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT typeID, materialTypeID, quantity FROM invTypeMaterials")) {

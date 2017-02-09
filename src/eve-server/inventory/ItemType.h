@@ -26,7 +26,7 @@
 #ifndef __ITEM_TYPE__H__INCL__
 #define __ITEM_TYPE__H__INCL__
 
-#include "inventory/EVEAttributeMgr.h"
+#include "inventory/AttributeMap.h"
 #include "inventory/ItemFactory.h"
 
 /*

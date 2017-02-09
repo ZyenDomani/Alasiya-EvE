@@ -52,6 +52,7 @@ public:
 
 /**
  * Class managing ship type data.
+ ** @todo wtf is this for???  delete it.
  */
 class ShipType
 : public ItemType

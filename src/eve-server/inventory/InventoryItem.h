@@ -35,7 +35,7 @@
 #include "inventory/InventoryDB.h"
 #include "inventory/ItemType.h"
 #include "inventory/ItemFactory.h"
-#include "inventory/EVEAttributeMgr.h"
+#include "inventory/AttributeMap.h"
 
 class PyRep;
 class PyDict;

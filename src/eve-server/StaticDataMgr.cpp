@@ -39,6 +39,7 @@ void StaticDataMgr::Clear()
     m_systemData.clear();
     m_staticData.clear();
     m_stationData.clear();
+    m_typeAttrMap.clear();
     m_stationCount.clear();
     m_oreBySecClass.clear();
     m_stationSystem.clear();
@@ -51,6 +52,22 @@ void StaticDataMgr::Populate()
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 
+    m_db.GetTypeAttributes(*res);
+    DmgTypeAttribute typeAttr;
+    while (res->GetRow(row)) {
+        //SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes
+        typeAttr.attributeID = row.GetUInt(1);
+        if (row.IsNull(2))
+            typeAttr.value = row.GetFloat(3);
+        else
+            typeAttr.value = row.GetInt(2);
+
+        m_typeAttrMap.insert(std::pair<uint16, DmgTypeAttribute>(row.GetUInt(0), typeAttr));
+    }
+    sLog.Cyan("    StaticDataMgr", "%u Type Attribute Sets loaded in %.3fms", m_typeAttrMap.size(), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
     m_db.GetOreBySSC(*res);
     OreTypeChance oreChance;
     oreChance.typeID = oreChance.chance  = 0;
@@ -121,16 +138,6 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u misc data sets loaded in %.3fms.", (m_regions.size() + m_skills.size()), (GetTimeMSeconds() - start));
 
-/*  this was for a test.  is not needed for normal run
-    res->Reset();
-    start = GetTimeMSeconds();
-    GetItems(*res);
-    while (res->GetRow(row)) {
-        //SELECT typeID FROM invTypes [where type=player-usable items]
-        m_items.push_back(row.GetInt(0));
-    }
-    sLog.Cyan("    StaticDataMgr", "%u game items loaded in %.3fms.", m_items.size(), (GetTimeMSeconds() - start));
-*/
     //cleanup
     SafeDelete(res);
 }
@@ -145,6 +152,13 @@ void StaticDataMgr::GetInfo()
      * m_stationData;
      *
      */
+}
+
+void StaticDataMgr::GetDgmTypeAttrVec(uint32 typeID, std::vector< DmgTypeAttribute >& typeAttrVec)
+{
+    auto itr = m_typeAttrMap.equal_range(typeID);
+    for (auto it = itr.first; it != itr.second; it++)
+        typeAttrVec.push_back(it->second);
 }
 
 bool StaticDataMgr::IsSkillTypeID(uint16 typeID)
@@ -202,19 +216,6 @@ PyRep* StaticDataMgr::GetStationCount()
     return list;
 }
 
-void StaticDataMgr::GetItems(DBQueryResult& res)
-{
-    /*Ship = 6,Module = 7,Charge = 8,Skill = 16,Drone = 18,Implant = 20,Deployable = 22,Structure = 23,Subsystem = 32,
-        AncientRelics = 34,Decryptors = 35,StructureUpgrade = 39,SovereigntyStructure = 40,*/
-    if (!sDatabase.RunQuery(res,
-        "SELECT t.typeID FROM invTypes AS t"
-        " LEFT JOIN `dgmTypeEffects` AS te USING (typeID)"
-        " WHERE groupID IN (SELECT groupID FROM invGroups WHERE categoryID IN (6,7,8,16,18,20,22,23,32,34,35,39,40))"
-        " AND te.effectID > 0")) {
-        codelog(DATABASE__ERROR, "Error in GetItems query: %s", res.error.c_str());
-    }
-}
-
 uint32 StaticDataMgr::GetStationRegion(uint32 stationID)
 {
     uint32 regionID = 0;
@@ -261,7 +262,6 @@ uint32 StaticDataMgr::GetStationSystem(uint32 stationID)
     return systemID;
 }
 
-//  the system data is cached on initial boot of system
 bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
 {
     // this specific cache method is designed to use EITHER a stationID OR a systemID to determine system data wanted.
@@ -275,41 +275,11 @@ bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
     std::map<uint32, SystemData>::const_iterator itr = m_systemData.find(locationID);
     if (itr != m_systemData.end()) {
         data = itr->second;
+        return true;
     } else {
-        DBQueryResult res;
-        if (!sDatabase.RunQuery(res,
-            "SELECT"
-            " solarSystemName,"
-            " constellationID,"
-            " regionID,"
-            " securityClass,"
-            " security"
-            " FROM mapSolarSystems"
-            " WHERE solarSystemID = %u",
-                                locationID))
-        {
-            codelog(DATABASE__ERROR, "Failed to query info for system %u: %s.", locationID, res.error.c_str());
-            return false;
-        }
-
-        DBResultRow row;
-        if (!res.GetRow(row)) {
-            _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
-            return false;
-        }
-
-        data.systemID          = locationID;
-        data.name              = row.GetText(0);
-        data.constellationID   = row.GetUInt(1);
-        data.regionID          = row.GetUInt(2);
-        if (row.IsNull(3))
-            data.securityClass = "0";
-        else
-            data.securityClass = row.GetText(3);
-        data.securityRating    = row.GetFloat(4);
-        m_systemData.insert(std::pair<uint32, SystemData>(locationID, data));
+        _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
     }
-    return true;
+    return false;
 }
 
 bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)
@@ -317,37 +287,11 @@ bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)
     std::map<uint32, StaticData>::const_iterator itr = m_staticData.find(itemID);
     if (itr != m_staticData.end()) {
         data = itr->second;
+        return true;
     } else {
-        DBQueryResult res;
-        if (!sDatabase.RunQuery(res,
-            "SELECT"
-            " regionID,"
-            " constellationID,"
-            " solarSystemID,"
-            " x, y, z"
-            " FROM mapDenormalize"
-            " WHERE itemID = %u",
-            itemID))
-        {
-            codelog(DATABASE__ERROR, "Failed to query info for static item %u: %s.", itemID, res.error.c_str());
-            return false;
-        }
-
-        DBResultRow row;
-        if (!res.GetRow(row)) {
-            _log(DATABASE__MESSAGE, "Failed to query info for static item %u: Item not found.", itemID);
-            return false;
-        }
-
-        data.itemID          = itemID;
-        data.regionID        = row.GetUInt(0);
-        data.constellationID = row.GetUInt(1);
-        data.systemID        = row.GetUInt(2);
-        data.position        = GPoint(row.GetDouble(3),row.GetDouble(4),row.GetDouble(5));
-
-        m_staticData.insert(std::pair<uint32, StaticData>(itemID, data));
+        _log(DATABASE__MESSAGE, "Failed to query info for static item %u: Item not found.", itemID);
     }
-    return true;
+    return false;
 }
 
 bool StaticDataMgr::GetStationInfo(uint32 stationID, StationData& data)

@@ -156,35 +156,6 @@ bool InventoryDB::GetType(uint32 typeID, TypeData &into) {
     return true;
 }
 
-bool InventoryDB::GetTypeEffectsList(uint32 typeID, std::vector<uint32> &into) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  effectID "
-        " FROM dgmTypeEffects "
-        " WHERE typeID=%u",
-        typeID))
-    {
-        codelog(DATABASE__ERROR, "Failed to query type %u: %s.", typeID, res.error.c_str());
-        return false;
-    }
-
-    //_log(DATABASE__RESULTS, "GetTypeEffectsList returned %u items", res.GetRowCount());
-	into.clear();
-
-    DBResultRow row;
-    while( res.GetRow( row ) )
-		into.push_back( row.GetUInt(0) );
-
-    if( into.size() == 0 ) {
-        _log(DATABASE__MESSAGE, "No type effects found for type %u.", typeID);
-        return false;
-    }
-
-	return true;
-}
-
 bool InventoryDB::GetBlueprintType(uint32 blueprintTypeID, BlueprintTypeData &into) {
     DBQueryResult res;
 
@@ -820,103 +791,6 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
     return true;
 }
 
-bool InventoryDB::LoadTypeAttributes(uint32 typeID, std::map< uint16, EvilNumber >& into) {
-    DgmTypeAttributeSet *attrset = sDgmTypeAttrMgr.GetDgmTypeAttributeSet(typeID);
-
-    if (!attrset)
-        return true;
-
-    DgmTypeAttributeSet::AttrSetItr itr = attrset->begin();
-    for (; itr != attrset->end(); itr++) {
-        into.insert(std::pair<uint16, EvilNumber>((*itr)->attributeID, (*itr)->number));
-    }
-
-    return true;
-}
-
-bool InventoryDB::LoadItemAttributes(uint32 itemID, std::map< uint16, EvilNumber >& into) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  attributeID,"
-        "  valueInt,"
-        "  valueFloat"
-        " FROM entity_attributes"
-        " WHERE itemID=%u",
-        itemID))
-    {
-        codelog(DATABASE__ERROR, "Failed to query item attributes for item %u: %s.", itemID, res.error.c_str());
-        return false;
-    }
-
-    //_log(DATABASE__RESULTS, "LoadItemAttributes returned %u items", res.GetRowCount());
-    DBResultRow row;
-    while(res.GetRow(row)) {
-        if(row.IsNull(0)) {
-            _log(DATABASE__MESSAGE, "Attribute row for item %u has attributeID NULL. Skipping.", itemID);
-            continue;
-        }
-        into.insert(std::pair<uint16, EvilNumber>(row.GetUInt(0), row.GetInt(1)));
-    }
-    return true;
-}
-
-bool InventoryDB::UpdateAttribute_int(uint32 itemID, uint32 attributeID, int v) {
-    DBerror err;
-    if(!sDatabase.RunQuery(err,
-        "REPLACE INTO entity_attributes"
-        "   (itemID, attributeID, valueInt, valueFloat)"
-        " VALUES"
-        "   (%u, %u, %d, NULL)",
-        itemID, attributeID, v)
-    ) {
-        _log(DATABASE__MESSAGE, "Failed to store attribute %d for item %u: %s", attributeID, itemID, err.c_str());
-        return false;
-    }
-    return true;
-}
-
-bool InventoryDB::UpdateAttribute_double(uint32 itemID, uint32 attributeID, double v) {
-    DBerror err;
-    if(!sDatabase.RunQuery(err,
-        "REPLACE INTO entity_attributes"
-        "   (itemID, attributeID, valueInt, valueFloat)"
-        " VALUES"
-        "   (%u, %u, NULL, %f)",
-        itemID, attributeID, v)
-    ) {
-        _log(DATABASE__MESSAGE, "Failed to store attribute %d for item %u: %s", attributeID, itemID, err.c_str());
-        return false;
-    }
-    return true;
-}
-bool InventoryDB::EraseAttribute(uint32 itemID, uint32 attributeID) {
-    DBerror err;
-    if(!sDatabase.RunQuery(err,
-        "DELETE FROM entity_attributes"
-        " WHERE itemID=%u AND attributeID=%u",
-        itemID, attributeID)
-    ) {
-        _log(DATABASE__MESSAGE, "Failed to erase attribute %d for item %u: %s", attributeID, itemID, err.c_str());
-        return false;
-    }
-    return true;
-}
-
-bool InventoryDB::EraseAttributes(uint32 itemID) {
-    DBerror err;
-    if(!sDatabase.RunQuery(err,
-        "DELETE FROM entity_attributes"
-        " WHERE itemID=%u",
-        itemID))
-    {
-        _log(DATABASE__MESSAGE, "Failed to erase attributes for item %u: %s", itemID, err.c_str());
-        return false;
-    }
-    return true;
-}
-
 bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
     DBQueryResult res;
 
@@ -1465,98 +1339,9 @@ bool InventoryDB::GetStation(uint32 stationID, StationInfo &into) {
     return true;
 }
 
-bool InventoryDB::SaveAsteroidData(uint32 itemID, const AsteroidData& data)
-{
-    DBerror err;
-    if(!sDatabase.RunQuery(err,
-        "INSERT"
-        " INTO sysAsteroids"
-        " (itemID, itemName, typeID, systemID, beltID, quantity, radius, x, y, z)"
-        " VALUES"
-        "  (%u, '%s', %u, %u, %u, %d, %d, %d, %d, %d)"
-        "ON DUPLICATE KEY UPDATE "
-        "quantity=VALUES(quantity), "
-        "radius=VALUES(radius)",
-        data.itemID,
-        data.itemName.c_str(),
-        data.typeID,
-        data.systemID,
-        data.beltID,
-        data.quantity,
-        data.radius,
-        data.x, data.y, data.z))
-    {
-        codelog(DATABASE__ERROR, "Error in query: %s.", err.c_str());
-        return false;
-    }
-
-    return true;
-}
-
-bool InventoryDB::GetAsteroidData(uint32 itemID, AsteroidData& data)
-{
-    DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "   itemID,"
-        "   itemName,"
-        "   typeID,"
-        "   systemID,"
-        "   beltID,"
-        "   quantity,"
-        "   radius,"
-        "   x, y, z"
-        " FROM sysAsteroids"
-        " WHERE itemID = %u", itemID))
-    {
-        codelog(DATABASE__ERROR, "Error in GetAsteroidData query: %s", res.error.c_str());
-        return false;
-    }
-
-    _log(DATABASE__RESULTS, "GetAsteroidData returned %u items", res.GetRowCount());
-    DBResultRow row;
-    res.GetRow(row);
-    data.itemID = row.GetInt(0);
-    data.itemName = row.GetText(1);
-    data.typeID = row.GetInt(2);
-    data.systemID = row.GetInt(3);
-    data.beltID = row.GetInt(4);
-    data.quantity = row.GetDouble(5);
-    data.radius = row.GetDouble(6);
-    data.x = row.GetDouble(7);
-    data.y = row.GetDouble(8);
-    data.z = row.GetDouble(9);
-
-    return true;
-}
-
-
-bool InventoryDB::GetTypeID(uint32 itemID, uint32 &typeID)
-{
-    DBQueryResult res;
-    DBResultRow row;
-
-    if(!sDatabase.RunQuery(res,
-        " SELECT "
-        "  typeID "
-        " FROM entity "
-        " WHERE itemID = %u ",itemID))
-    {
-        codelog(DATABASE__ERROR, "Failed to query typeID for itemID = %u", itemID);
-    }
-
-    if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Item of type %u not found.", itemID);
-        return false;
-    }
-
-    typeID = row.GetUInt(0);
-    return true;
-}
-
 bool InventoryDB::GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into)
 {
-    /** @todo (Allan) check into this, finish if needed.  may not be used. */
+    /** @todo only used by gmcommands.  update and remove. */
     DBQueryResult res;
     DBResultRow row;
 
@@ -1630,6 +1415,7 @@ bool InventoryDB::GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into)
 
 bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &into)
 {
+    /** @todo only used by gmcommands.  update and remove. */
     DBQueryResult res;
     uint32 attributeID = 0;
     uint32 firstFlag;
@@ -1674,7 +1460,6 @@ bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &i
     }
 
     //Only time it should make it this far...
-
     if (ship->HasPilot())
         if (ship->GetPilot()->CanThrow())
             throw PyException( MakeCustomError( "There are no available slots" ));
@@ -1682,6 +1467,3 @@ bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &i
     return false;
 
 }
-
-
-

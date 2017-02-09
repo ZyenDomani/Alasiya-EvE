@@ -55,32 +55,6 @@ class InventoryDB
 : public ServiceDB
 {
 public:
-    /*
-     * Category stuff
-     * (invCategories)
-     */
-    bool GetCategory(EVEItemCategories category, CategoryData &into);
-
-    /*
-     * Group stuff
-     * (invGroups)
-     */
-    bool GetGroup(uint32 groupID, GroupData &into);
-
-    /*
-     * Type stuff
-     * (invTypes, invBlueprintTypes, bloodlineTypes, chrBloodlines, invShipTypes, staStationTypes)
-     */
-    bool GetType(uint32 typeID, TypeData &into);
-
-    bool GetTypeEffectsList(uint32 typeID, std::vector<uint32> &into);
-
-    bool GetBlueprintType(uint32 blueprintTypeID, BlueprintTypeData &into);
-    /* Blueprint data (invBlueprints)  */
-    bool DeleteBlueprint(uint32 blueprintID);
-    bool GetBlueprint(uint32 blueprintID, BlueprintData& into);
-    bool SaveBlueprintData(uint32 blueprintID, BlueprintData& data);
-
     /**
      * Loads character type data.
      *
@@ -134,28 +108,6 @@ public:
      */
     bool GetShipType(uint32 shipTypeID, ShipTypeData &into);
 
-    /**
-     * Loads station type data into given container.
-     *
-     * @param[in] stationTypeID ID of station type to load.
-     * @param[in] into Container to load data into.
-     * @return True if load succeeded, false if not.
-     */
-    bool GetStationType(uint32 stationTypeID, StationTypeData &into);
-
-    /*
-     * Type attribute stuff
-     * (dgmTypeAttributes)
-     */
-    /**
-     * Loads type attributes into given attribute manager.
-     *
-     * @param[in] typeID ID of type which attributes should be loaded.
-     * @param[in] into Attribute manager the attributes should be loaded into.
-     * @return True if load was successful, false if not.
-     */
-    bool LoadTypeAttributes(uint32 typeID, std::map< uint16, EvilNumber >& into);
-
     /*
      * Item stuff
      * (entity)
@@ -172,24 +124,6 @@ public:
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 ownerID, std::vector<uint32> &into);
 
     /*
-     * Item attribute stuff
-     * (entity_attributes)
-     */
-    /**
-     * Loads item attributes into given attribute manager.
-     *
-     * @param[in] itemID ID of item which attributes should be loaded.
-     * @param[in] into Attribute manager the attributes should be loaded into.
-     * @return True if load was successful, false if not.
-     */
-    bool LoadItemAttributes(uint32 itemID, std::map<uint16, EvilNumber>& into);
-
-    bool UpdateAttribute_int(uint32 itemID, uint32 attributeID, int v);
-    bool UpdateAttribute_double(uint32 itemID, uint32 attributeID, double v);
-    bool EraseAttribute(uint32 itemID, uint32 attributeID);
-    bool EraseAttributes(uint32 itemID);
-
-    /*
      * Character stuff
      * (character_, chrSkillQueue)
      */
@@ -201,58 +135,18 @@ public:
     bool SaveCorpData(uint32 characterID, const CorpData &data);
     bool DeleteCharacter(uint32 characterID);
 
-    /*
-     * Celestial object stuff
-     * (mapDenormalize)
-     */
-    /**
-     * Loads celestial object data.
-     *
-     * @param[in] celestialID ID of celestial object to load.
-     * @param[in] into Containter into which the data should be loaded.
-     * @return True if succeeds, false if fails.
-     */
+    /** @todo update these below to use static data manager */
+    bool GetCategory(EVEItemCategories category, CategoryData &into);
+    bool GetGroup(uint32 groupID, GroupData &into);
+    bool GetType(uint32 typeID, TypeData &into);
+    bool GetBlueprintType(uint32 blueprintTypeID, BlueprintTypeData &into);
+    bool DeleteBlueprint(uint32 blueprintID);
+    bool GetBlueprint(uint32 blueprintID, BlueprintData& into);
+    bool SaveBlueprintData(uint32 blueprintID, BlueprintData& data);
+    bool GetStationType(uint32 stationTypeID, StationTypeData &into);
     bool GetCelestialObject(uint32 celestialID, CelestialObjectData &into);
-
-    /*
-     * Solar system stuff
-     * (mapSolarSystems)
-     */
-    /**
-     * Loads solar system data.
-     *
-     * @param[in] solarSystemID ID of solar system which data should be loaded.
-     * @param[in] into Container into which the data should be loaded.
-     * @return True if load succeeds, false if fails.
-     */
     bool GetSolarSystem(uint32 solarSystemID, SolarSystemData &into);
-
-    /*
-     * Station stuff
-     * (staStations)
-     */
-    /**
-     * Loads station data.
-     *
-     * @param[in] stationID ID of station which data should be loaded.
-     * @param[in] into Container where data should be stored.
-     * @return True if load succeeds, false if fails.
-     */
     bool GetStation(uint32 stationID, StationInfo &into);
-
-    /*
-     * Asteroid stuff
-     * (staStations)
-     */
-    /**
-     * Loads asteroid data.
-     *
-     * @param[in] itemID ID of asteroid which data should be loaded.
-     * @param[in] into Container where data should be stored.
-     * @return True if load succeeds, false if fails.
-     */
-    bool GetAsteroidData(uint32 itemID, AsteroidData &into);
-    bool SaveAsteroidData(uint32 itemID, const AsteroidData& data);
 
     /* /Fit command helper function
      *
@@ -274,13 +168,6 @@ public:
      * returns arry of slot flags 0 for open, 1 for filled
      */
     static bool GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &into);
-
-    static bool GetTypeID(uint32 itemID, uint32 &typeID);
-
 };
 
-
-
 #endif
-
-

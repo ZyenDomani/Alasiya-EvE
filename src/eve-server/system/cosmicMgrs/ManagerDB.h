@@ -51,6 +51,7 @@ public:
     void GetRAMMaterials(DBQueryResult& res);
     void GetStationSystem(DBQueryResult& res);
     void GetStationRegion(DBQueryResult& res);
+    void GetTypeAttributes(DBQueryResult& res);
     void GetRAMRequirements(DBQueryResult& res);
 
     /* belt manager */
@@ -62,14 +63,14 @@ public:
     /* spawn manager */
     void DeleteSpawnedRats();
     void GetSpawnClasses(DBQueryResult& res);
-    void GetGroupTypeIDs(uint32 groupID, DBQueryResult& res);
     void GetFactionGroups(DBQueryResult& res);
     void GetRegionRatFaction(DBQueryResult& res);
+    void GetGroupTypeIDs(uint32 groupID, DBQueryResult& res);
 
     /* dungeon manager */
-    void GetDunTemplates(DBQueryResult& res);
     void GetDunRoomInfo(DBQueryResult& res);
     void GetDunRoomData(DBQueryResult& res);
+    void GetDunTemplates(DBQueryResult& res);
     void GetDunGroupData(DBQueryResult& res);
     void GetDunSpawnInfo(DBQueryResult& res);
     void SaveActiveDungeon(ActiveDungeon& dun);

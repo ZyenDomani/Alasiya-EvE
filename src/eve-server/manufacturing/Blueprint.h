@@ -140,8 +140,8 @@ public:
     virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true) { return SplitBlueprint( qty_to_take, notify ); }
     BlueprintRef            SplitBlueprint(int32 qty_to_take, bool notify);
 
-    static BlueprintRef Load(ItemFactory& factory, uint32 blueprintID);
-    static BlueprintRef Spawn(ItemFactory& factory, ItemData& data, BlueprintData& bpData);
+    static BlueprintRef     Load(ItemFactory& factory, uint32 blueprintID);
+    static BlueprintRef     Spawn(ItemFactory& factory, ItemData& data, BlueprintData& bpData);
 
     /*
      * Public fields:
