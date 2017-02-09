@@ -108,9 +108,9 @@ uint32 Blueprint::CreateItemID(ItemFactory& factory, ItemData& data, BlueprintDa
     if (blueprintID == 0)
         return 0;
 
+    FactoryDB mdb;
     // insert blueprint data into DB
-    if (!factory.db().SaveBlueprintData(blueprintID, bpData)) {
-        // delete item
+    if (!mdb.SaveBlueprintData(blueprintID, bpData)) {
         factory.db().DeleteItem(blueprintID);
         return 0;
     }
@@ -119,9 +119,7 @@ uint32 Blueprint::CreateItemID(ItemFactory& factory, ItemData& data, BlueprintDa
 }
 
 void Blueprint::Delete() {
-    // delete our blueprint data
-    m_factory.db().DeleteBlueprint(m_itemID);
-    // redirect to parent
+    m_db.DeleteBlueprint(m_itemID);
     InventoryItem::Delete();
 }
 
@@ -166,7 +164,7 @@ void Blueprint::SaveBlueprint() {
         data.runs   = m_runs;
         data.mLevel = m_mLevel;
         data.pLevel = m_pLevel;
-    m_factory.db().SaveBlueprintData(itemID(), data);
+    m_db.SaveBlueprintData(itemID(), data);
 }
 
 PyDict* Blueprint::GetBlueprintAttributes() {

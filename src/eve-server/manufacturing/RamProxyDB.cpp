@@ -25,7 +25,10 @@
 
 #include "eve-server.h"
 
+#include "StaticDataMgr.h"
 #include "manufacturing/RamProxyDB.h"
+
+/** @todo  go thru and update/optimize this class */
 
 PyRep *RamProxyDB::GetJobs2(const int32 ownerID, const bool completed)
 {
@@ -399,6 +402,8 @@ bool RamProxyDB::GetRequiredItems(const uint32 typeID, const EVERamActivity acti
     DBResultRow row;
 
     if (activity == 1) {
+        /** @todo update this.  */
+        //sDataMgr.GetRamMaterials();
         if(!sDatabase.RunQuery(res,
             "SELECT"
             " m.materialTypeID,"

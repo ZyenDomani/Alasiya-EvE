@@ -58,6 +58,8 @@ public:
 
     void                GetDgmTypeAttrVec(uint32 typeID, std::vector< DmgTypeAttribute >& typeAttrVec);
 
+    void                GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData);
+
 protected:
     void                Populate();
 
@@ -87,6 +89,9 @@ private:
 
     /* map data */
     std::map<uint32, uint8>         m_stationCount;
+
+    /* bp data */
+    std::map<uint16, BlueprintTypeData> m_bpTypeData;
 };
 
 //Singleton

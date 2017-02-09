@@ -81,6 +81,30 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
+    m_db.GetBlueprintType(*res);
+    BlueprintTypeData bpTypeData;
+    while (res->GetRow(row)) {
+        //SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime,
+        //  researchTechTime, productivityModifier, materialModifier, wasteFactor, maxProductionLimit FROM invBlueprintTypes
+        bpTypeData.parentBlueprintTypeID = row.GetInt(1);
+        bpTypeData.productTypeID = row.GetInt(1);
+        bpTypeData.productionTime = row.GetInt(1);
+        bpTypeData.techLevel = row.GetInt(1);
+        bpTypeData.researchProductivityTime = row.GetInt(1);
+        bpTypeData.researchMaterialTime = row.GetInt(1);
+        bpTypeData.researchCopyTime = row.GetInt(1);
+        bpTypeData.researchTechTime = row.GetInt(1);
+        bpTypeData.productivityModifier = row.GetInt(1);
+        bpTypeData.materialModifier = row.GetInt(1);
+        bpTypeData.maxProductionLimit = row.GetInt(1);
+        bpTypeData.wasteFactor = row.GetInt(1);
+        bpTypeData.chanceOfReverseEngineering = row.GetInt(1);
+        m_bpTypeData.insert(std::pair<uint16, BlueprintTypeData>(row.GetInt(0), bpTypeData));
+    }
+    sLog.Cyan("    StaticDataMgr", "%u BP Type defs loaded in %.3fms.", m_bpTypeData.size(), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
     m_db.GetRAMRequirements(*res);
     ramRequirements ramReq;
     ramReq.activityID = ramReq.requiredTypeID = ramReq.quantity = ramReq.damagePerJob = ramReq.recycle = 0;
@@ -176,6 +200,13 @@ bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
         return true;
     }
     return false;
+}
+
+void StaticDataMgr::GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData)
+{
+    std::map<uint16, BlueprintTypeData>::const_iterator itr = m_bpTypeData.find(typeID);
+    if (itr != m_bpTypeData.end())
+        bpData = itr->second;
 }
 
 bool StaticDataMgr::GetRamMaterials(uint16 typeID, std::vector< ramMaterials >& ramMatls)

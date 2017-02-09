@@ -27,6 +27,7 @@
 #ifndef __BLUEPRINT_ITEM__H__INCL__
 #define __BLUEPRINT_ITEM__H__INCL__
 
+#include "StaticDataMgr.h"
 #include "inventory/ItemType.h"
 #include "inventory/InventoryItem.h"
 #include "manufacturing/FactoryDB.h"
@@ -51,12 +52,12 @@ public:
     uint32                  researchTechTime()    const { return m_researchTechTime; }
     uint32                  materialModifier()    const { return m_materialModifier; }
     uint32                  maxProductionLimit()  const { return m_maxProductionLimit; }
-    uint32                  researchMaterialTime() const { return m_researchMaterialTime; }
-    uint32                  productivityModifier() const { return m_productivityModifier; }
-    uint32                  researchProductivityTime() const { return m_researchProductivityTime; }
-    uint32                  parentBlueprintTypeID() const { return (m_parentBlueprintType == nullptr ? 0 : parentBlueprintType()->id()); }
+    uint32                 researchMaterialTime() const { return m_researchMaterialTime; }
+    uint32                 productivityModifier() const { return m_productivityModifier; }
+    uint32             researchProductivityTime() const { return m_researchProductivityTime; }
+    uint32                parentBlueprintTypeID() const { return (m_parentBlueprintType ? 0 : parentBlueprintType()->id()); }
     double                  wasteFactor()         const { return m_wasteFactor; }
-    double                  chanceOfReverseEngineering() const { return m_chanceOfReverseEngineering; }
+    double           chanceOfReverseEngineering() const { return m_chanceOfReverseEngineering; }
 
 protected:
     BlueprintType(uint32 _id, const ItemGroup& _group, const TypeData& _data, const BlueprintType *_parentBlueprintType, const ItemType& _productType, const BlueprintTypeData& _bpData);
@@ -70,28 +71,26 @@ protected:
     template<class _Ty>
     static _Ty *_LoadType(ItemFactory& factory, uint32 typeID, const ItemGroup& group, const TypeData& data)  {
         // check if we are really loading a blueprint
-        if( group.categoryID() != EVEDB::invCategories::Blueprint ) {
+        if (group.categoryID() != EVEDB::invCategories::Blueprint ) {
             sLog.Error("Blueprint", "Load of blueprint type %u requested, but it's %s.", typeID, group.category().name().c_str() );
             return nullptr;
         }
 
         // pull additional blueprint data
         BlueprintTypeData bpData;
-        if( !factory.db().GetBlueprintType( typeID, bpData ) )
-            return nullptr;
+        sDataMgr.GetBpTypeData(typeID, bpData);
 
         // obtain parent blueprint type (might be NULL)
-        const BlueprintType *parentBlueprintType = NULL;
-        if( bpData.parentBlueprintTypeID != 0 ) {
-            // we have parent type, get it
+        const BlueprintType* parentBlueprintType(nullptr);
+        if (bpData.parentBlueprintTypeID) {
             parentBlueprintType = factory.GetBlueprintType( bpData.parentBlueprintTypeID );
-            if( parentBlueprintType == NULL )
+            if (!parentBlueprintType)
                 return nullptr;
         }
 
         // obtain product type
-        const ItemType *productType = factory.GetType( bpData.productTypeID );
-        if( productType == NULL )
+        const ItemType* productType = factory.GetType( bpData.productTypeID );
+        if (!productType)
             return nullptr;
 
         // create blueprint type
@@ -112,17 +111,17 @@ protected:
     const BlueprintType *m_parentBlueprintType;
     const ItemType& m_productType;
 
-    uint32 m_productionTime;
     uint8 m_techLevel;
+    uint32 m_productionTime;
     uint32 m_researchProductivityTime;
     uint32 m_researchMaterialTime;
     uint32 m_researchCopyTime;
     uint32 m_researchTechTime;
     uint32 m_productivityModifier;
     uint32 m_materialModifier;
+    uint32 m_maxProductionLimit;
     double m_wasteFactor;
     double m_chanceOfReverseEngineering;
-    uint32 m_maxProductionLimit;
 };
 
 /*
@@ -175,6 +174,9 @@ public:
      */
     PyDict*                 GetBlueprintAttributes();
 
+private:
+    FactoryDB m_db;
+
 protected:
     Blueprint(ItemFactory& _factory, uint32 _blueprintID, const BlueprintType& _bpType, const ItemData& _data, BlueprintData& _bpData);
 
@@ -187,15 +189,16 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem(ItemFactory& factory, uint32 blueprintID, const ItemType& type, const ItemData& data)
     {
-        if( type.categoryID() != EVEDB::invCategories::Blueprint )
+        if (type.categoryID() != EVEDB::invCategories::Blueprint )
         {
             sLog.Error("Blueprint", "Trying to load %s as Blueprint.", type.category().name().c_str() );
             return RefPtr<_Ty>();
         }
         const BlueprintType& bpType = static_cast<const BlueprintType& >( type );
 
+        FactoryDB mdb;
         BlueprintData bpData;
-        if( !factory.db().GetBlueprint( blueprintID, bpData ) )
+        if (!mdb.GetBlueprint( blueprintID, bpData ) )
             return RefPtr<_Ty>();
 
         return _Ty::template _LoadBlueprint<_Ty>( factory, blueprintID, bpType, data, bpData );

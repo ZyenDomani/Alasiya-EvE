@@ -31,11 +31,9 @@
 #include "inventory/ItemRef.h"
 
 class CategoryData;
-
 class GroupData;
-
 class TypeData;
-class BlueprintTypeData;
+
 class CharacterTypeData;
 class ShipTypeData;
 class StationTypeData;
@@ -139,34 +137,12 @@ public:
     bool GetCategory(EVEItemCategories category, CategoryData &into);
     bool GetGroup(uint32 groupID, GroupData &into);
     bool GetType(uint32 typeID, TypeData &into);
-    bool GetBlueprintType(uint32 blueprintTypeID, BlueprintTypeData &into);
-    bool DeleteBlueprint(uint32 blueprintID);
-    bool GetBlueprint(uint32 blueprintID, BlueprintData& into);
-    bool SaveBlueprintData(uint32 blueprintID, BlueprintData& data);
     bool GetStationType(uint32 stationTypeID, StationTypeData &into);
     bool GetCelestialObject(uint32 celestialID, CelestialObjectData &into);
     bool GetSolarSystem(uint32 solarSystemID, SolarSystemData &into);
     bool GetStation(uint32 stationID, StationInfo &into);
 
-    /* /Fit command helper function
-     *
-     * Determines which slots the selected module can be fit to
-     *
-     * @param[in] itemID of the item to be checked
-     * @param[in] into Container where data should be stored.
-     * @return True if load succeeds, false if fails.
-     * returns 0,1,2,3 for module, low slot, med slot, or high slot respectively
-     */
     static bool GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into);
-    /*
-     * Determines which slots are open on current ship
-     *
-     * @param[in] slotType 0,1,2,3 for module, low, med, or high slot respectively
-     * @param[in] shipID of the ship to be checked
-     * @param[in] into Container where data should be stored.
-     * @return True if load succeeds, false if fails.
-     * returns arry of slot flags 0 for open, 1 for filled
-     */
     static bool GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &into);
 };
 

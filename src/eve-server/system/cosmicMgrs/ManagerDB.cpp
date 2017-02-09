@@ -27,6 +27,29 @@ void ManagerDB::GetTypeAttributes(DBQueryResult& res)
     }
 }
 
+
+void ManagerDB::GetBlueprintType(DBQueryResult& res) {
+    if(!sDatabase.RunQuery(res,
+        "SELECT"
+        "  blueprintTypeID,"
+        "  parentBlueprintTypeID,"
+        "  productTypeID,"
+        "  productionTime,"
+        "  techLevel,"
+        "  researchProductivityTime,"
+        "  researchMaterialTime,"
+        "  researchCopyTime,"
+        "  researchTechTime,"
+        "  productivityModifier,"
+        "  materialModifier,"
+        "  wasteFactor,"
+        "  maxProductionLimit "
+        " FROM invBlueprintTypes "))
+    {
+        codelog(DATABASE__ERROR, "Error in GetBlueprintType query: %s.", res.error.c_str());
+    }
+}
+
 void ManagerDB::GetRAMMaterials(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT typeID, materialTypeID, quantity FROM invTypeMaterials")) {
