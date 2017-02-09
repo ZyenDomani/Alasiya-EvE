@@ -85,20 +85,20 @@ void StaticDataMgr::Populate()
     BlueprintTypeData bpTypeData;
     while (res->GetRow(row)) {
         //SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime,
-        //  researchTechTime, productivityModifier, materialModifier, wasteFactor, maxProductionLimit FROM invBlueprintTypes
-        bpTypeData.parentBlueprintTypeID = row.GetInt(1);
-        bpTypeData.productTypeID = row.GetInt(1);
-        bpTypeData.productionTime = row.GetInt(1);
-        bpTypeData.techLevel = row.GetInt(1);
-        bpTypeData.researchProductivityTime = row.GetInt(1);
-        bpTypeData.researchMaterialTime = row.GetInt(1);
-        bpTypeData.researchCopyTime = row.GetInt(1);
-        bpTypeData.researchTechTime = row.GetInt(1);
-        bpTypeData.productivityModifier = row.GetInt(1);
-        bpTypeData.materialModifier = row.GetInt(1);
-        bpTypeData.maxProductionLimit = row.GetInt(1);
-        bpTypeData.wasteFactor = row.GetInt(1);
-        bpTypeData.chanceOfReverseEngineering = row.GetInt(1);
+        //  researchTechTime, productivityModifier, materialModifier, wasteFactor, maxProductionLimit, chanceOfRE FROM invBlueprintTypes
+        bpTypeData.parentBlueprintTypeID    = row.GetInt(1);
+        bpTypeData.productTypeID            = row.GetInt(2);
+        bpTypeData.productionTime           = row.GetInt(3);
+        bpTypeData.techLevel                = row.GetInt(4);
+        bpTypeData.researchProductivityTime = row.GetInt(5);
+        bpTypeData.researchMaterialTime     = row.GetInt(6);
+        bpTypeData.researchCopyTime         = row.GetInt(7);
+        bpTypeData.researchTechTime         = row.GetInt(8);
+        bpTypeData.productivityModifier     = row.GetInt(9);
+        bpTypeData.materialModifier         = row.GetInt(10);
+        bpTypeData.wasteFactor              = row.GetInt(11);
+        bpTypeData.maxProductionLimit       = row.GetInt(12);
+        bpTypeData.chanceOfReverseEngineering = row.GetFloat(13);
         m_bpTypeData.insert(std::pair<uint16, BlueprintTypeData>(row.GetInt(0), bpTypeData));
     }
     sLog.Cyan("    StaticDataMgr", "%u BP Type defs loaded in %.3fms.", m_bpTypeData.size(), (GetTimeMSeconds() - start));
@@ -110,11 +110,11 @@ void StaticDataMgr::Populate()
     ramReq.activityID = ramReq.requiredTypeID = ramReq.quantity = ramReq.damagePerJob = ramReq.recycle = 0;
     while (res->GetRow(row)) {
         //SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, recycle FROM ramTypeRequirements
-        ramReq.activityID = row.GetInt(1);
-        ramReq.requiredTypeID = row.GetInt(2);
-        ramReq.quantity = row.GetInt(3);
-        ramReq.damagePerJob = row.GetFloat(4);
-        ramReq.recycle = (row.GetInt(5) ? true : false);
+        ramReq.activityID       = row.GetInt(1);
+        ramReq.requiredTypeID   = row.GetInt(2);
+        ramReq.quantity         = row.GetInt(3);
+        ramReq.damagePerJob     = row.GetFloat(4);
+        ramReq.recycle          = (row.GetInt(5) ? true : false);
         m_ramReq.insert(std::pair<uint16, ramRequirements>(row.GetInt(0), ramReq));
     }
 

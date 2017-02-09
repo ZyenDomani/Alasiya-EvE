@@ -43,7 +43,8 @@ void ManagerDB::GetBlueprintType(DBQueryResult& res) {
         "  productivityModifier,"
         "  materialModifier,"
         "  wasteFactor,"
-        "  maxProductionLimit "
+        "  maxProductionLimit, "
+        "  chanceOfRE"
         " FROM invBlueprintTypes "))
     {
         codelog(DATABASE__ERROR, "Error in GetBlueprintType query: %s.", res.error.c_str());

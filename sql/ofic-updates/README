@@ -18,7 +18,7 @@ dgmTypeEffects                      missing rows
 eveConstants                        not in dump
 eveMessages                         not in dump
 eveRoles                            not in dump
-invBlueprintTypes                   missing columns (`chanceOfReverseEngineering`)
+invBlueprintTypes                   missing columns (`chanceOfReverseEngineering`).  missing data (updated)
 invShipTypes                        not in dump
 mapCelestialDescriptions            not in dump
 mapLocationWormholeClasses          not in dump
@@ -29,7 +29,6 @@ invTypesToWrecks                    table linking ship typeIDs to wreck typeIDs
 
 Alasiya-EvE updated/added files
 -------------------------------------------------------------------------------
-bptypes_update
 dgmExpressions                      for effect processing
 dgmOperands                         for effect processing
 mission_data
