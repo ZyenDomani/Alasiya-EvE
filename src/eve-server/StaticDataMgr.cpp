@@ -177,7 +177,7 @@ void StaticDataMgr::Populate()
         staticData.position        = GPoint(row.GetDouble(4),row.GetDouble(5),row.GetDouble(6));
         m_staticData.insert(std::pair<uint32, StaticData>(row.GetUInt(0), staticData));
     }
-    sLog.Cyan("    StaticDataMgr", "%u Static Entity data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - start));
 
     res->Reset();
     start = GetTimeMSeconds();
