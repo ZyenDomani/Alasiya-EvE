@@ -188,12 +188,26 @@ void StaticDataMgr::Populate()
     }
 
     res->Reset();
+    m_db.GetStationInfo(*res);
+    StationData staData;
+    while (res->GetRow(row)) {
+        //SELECT s.stationID, s.x, s.y, s.z, st.dockEntryX, st.dockEntryY, st.dockEntryZ, st.dockOrientationX, st.dockOrientationY, st.dockOrientationZ FROM staStations
+        staData.stationID       = row.GetUInt(0);
+        staData.position        = GPoint(row.GetDouble(1),row.GetDouble(2),row.GetDouble(3));
+        staData.dockPosition    = GPoint(row.GetDouble(4) + row.GetDouble(1),
+                                         row.GetDouble(5) + row.GetDouble(2),
+                                         row.GetDouble(6) + row.GetDouble(3));
+        staData.dockOrientation = GVector(row.GetDouble(7),row.GetDouble(8),row.GetDouble(9));
+        m_stationData.insert(std::pair<uint32, StationData>(row.GetUInt(0), staData));
+    }
+
+    res->Reset();
     m_sdb.GetStationIDs(*res);
     while (res->GetRow(row)) {
         //SELECT stationID FROM staStations   (then convert it into Python Data...)
         m_stationPyData.insert(std::pair<uint32, PyObject*>(row.GetInt(0), m_sdb.DoGetStation(row.GetInt(0))));
     }
-    sLog.Cyan("    StaticDataMgr", "%u Static Station data sets loaded in %.3fms.", m_stationPyData.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Static Station data sets loaded in %.3fms.", (m_stationCount.size() + m_stationData.size() + m_stationPyData.size()), (GetTimeMSeconds() - start));
 
     res->Reset();
     start = GetTimeMSeconds();
@@ -247,7 +261,8 @@ bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
     if (itr != m_skills.end()) {
         name = itr->second;
         return true;
-    }
+    } else
+        _log(DATABASE__MESSAGE, "Failed to query name for skill %u: Skill not found.", skillID);
     return false;
 }
 
@@ -256,6 +271,8 @@ void StaticDataMgr::GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData)
     std::map<uint16, BlueprintTypeData>::const_iterator itr = m_bpTypeData.find(typeID);
     if (itr != m_bpTypeData.end())
         bpData = itr->second;
+    else
+        _log(DATABASE__MESSAGE, "Failed to query info for bpType %u: Type not found.", typeID);
 }
 
 bool StaticDataMgr::GetRamMaterials(uint16 typeID, std::vector< ramMaterials >& ramMatls)
@@ -278,7 +295,8 @@ PyObject* StaticDataMgr::GetStationData(uint32 stationID)
     if (itr != m_stationPyData.end()) {
         PyIncRef(itr->second);
         return itr->second;
-    }
+    } else
+        _log(DATABASE__MESSAGE, "Failed to query data for station %u: Station not found.", stationID);
     return nullptr;
 }
 
@@ -353,36 +371,9 @@ bool StaticDataMgr::GetStationInfo(uint32 stationID, StationData& data)
     std::map<uint32, StationData>::const_iterator itr = m_stationData.find(stationID);
     if (itr != m_stationData.end()) {
         data = itr->second;
+        return true;
     } else {
-        DBQueryResult res;
-        if (!sDatabase.RunQuery(res,
-            "SELECT"
-            " s.x, s.y, s.z,"
-            " st.dockEntryX, st.dockEntryY, st.dockEntryZ,"
-            " st.dockOrientationX, st.dockOrientationY, st.dockOrientationZ"
-            " FROM staStations AS s"
-            " LEFT JOIN staStationTypes AS st USING (stationTypeID)"
-            " WHERE s.stationID = %u",
-            stationID))
-        {
-            codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
-            return false;
-        }
-
-        DBResultRow row;
-        if (!res.GetRow(row)) {
-            _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", stationID);
-            return false;
-        }
-
-        data.stationID       = stationID;
-        data.position        = GPoint(row.GetDouble(0),row.GetDouble(1),row.GetDouble(2));
-        data.dockPosition    = GPoint(row.GetDouble(3) + row.GetDouble(0),
-                                      row.GetDouble(4) + row.GetDouble(1),
-                                      row.GetDouble(5) + row.GetDouble(2));
-        data.dockOrientation = GVector(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
-
-        m_stationData.insert(std::pair<uint32, StationData>(stationID, data));
+        _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", stationID);
     }
     return true;
 }
@@ -392,6 +383,8 @@ uint16 StaticDataMgr::GetRegionFaction(uint32 regionID)
     std::map<uint32, uint32>::const_iterator itr = m_regions.find(regionID);
     if (itr != m_regions.end())
         return (*itr).second;
+    else
+        _log(DATABASE__MESSAGE, "Failed to query faction for region %u: region not found.", regionID);
     return 0;
 }
 
@@ -404,30 +397,30 @@ uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID)
 
     // caldari=1, minmatar=2, amarr=3, gallente=4, none=5
     switch (factionID) {
-        case factionCaldari:    //Caldari State
-        case factionGuristas:   //Guristas Pirates
+        case factionCaldari:        //Caldari State
+        case factionGuristas:       //Guristas Pirates
             return 1; break;
-        case factionMinmatar:   //Minmatar Republic
-        case factionAngel:      //Angel Cartel
+        case factionMinmatar:       //Minmatar Republic
+        case factionAngel:          //Angel Cartel
             return 2; break;
-        case 500003:    //Amarr Empire
-        case 500007:    //Ammatar Mandate
-        case 500008:    //Khanid Kingdom
-        case 500012:    //Blood Raider Covenant
-        case 500019:    //Sansha's Nation
+        case factionAmarr:          //Amarr Empire
+        case factionAmmatar:        //Ammatar Mandate
+        case factionKhanid:         //Khanid Kingdom
+        case factionBloodRaider:    //Blood Raider Covenant
+        case factionSanshas:        //Sansha's Nation
             return 3; break;
-        case 500004:    //Gallente Federation
-        case 500020:    //Serpentis
+        case factionGallente:       //Gallente Federation
+        case factionSerpentis:      //Serpentis
             return 4; break;
-        case 500005:    //Jove Empire
-        case 500006:    //CONCORD Assembly
-        case 500009:    //The Syndicate
-        case factionInterBus:    //The InterBus
-        case 500014:    //ORE
-        case 500015:    //Thukker Tribe
-        case 500016:    //Servant Sisters of EVE
-        case 500017:    //The Society of Conscious Thought
-        case 500018:    //Mordu's Legion Command
+        case factionJove:           //Jove Empire
+        case factionCONCORD:        //CONCORD Assembly
+        case factionSyndicate:      //The Syndicate
+        case factionInterBus:       //The InterBus
+        case factionORE:            //ORE
+        case factionThukker:        //Thukker Tribe
+        case factionSistersOfEVE:   //Servant Sisters of EVE
+        case factionSociety:        //The Society of Conscious Thought
+        case factionMordusLegion:   //Mordu's Legion Command
             return 5; break;
     }
 }
