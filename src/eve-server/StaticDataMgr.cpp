@@ -42,8 +42,9 @@ void StaticDataMgr::Clear()
     m_typeAttrMap.clear();
     m_stationCount.clear();
     m_oreBySecClass.clear();
-    m_stationSystem.clear();
     m_stationPyData.clear();
+    m_stationRegion.clear();
+    m_stationSystem.clear();
 }
 
 void StaticDataMgr::Populate()
@@ -129,6 +130,54 @@ void StaticDataMgr::Populate()
         m_ramMatl.insert(std::pair<uint16, ramMaterials>(row.GetInt(0), ramMatls));
     }
     sLog.Cyan("    StaticDataMgr", "%u R.A.M. defs loaded in %.3fms.", (m_ramMatl.size() + m_ramReq.size()), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
+    m_db.GetSystemData(*res);
+    SystemData sysData;
+    while (res->GetRow(row)) {
+        //SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems
+        sysData.systemID          = row.GetUInt(0);
+        sysData.name              = row.GetText(1);
+        sysData.constellationID   = row.GetUInt(2);
+        sysData.regionID          = row.GetUInt(3);
+        if (row.IsNull(4))
+            sysData.securityClass = "0";
+        else
+            sysData.securityClass = row.GetText(4);
+        sysData.securityRating    = row.GetFloat(5);
+        m_systemData.insert(std::pair<uint32, SystemData>(row.GetUInt(0), sysData));
+    }
+
+    res->Reset();
+    m_db.GetStationRegion(*res);
+    while (res->GetRow(row)) {
+        //SELECT stationID, regionID FROM staStations
+        m_stationRegion.insert(std::pair<uint32, uint32>(row.GetUInt(0), row.GetUInt(1)));
+    }
+
+    res->Reset();
+    m_db.GetStationSystem(*res);
+    while (res->GetRow(row)) {
+        //SELECT stationID, solarSystemID FROM staStations
+        m_stationSystem.insert(std::pair<uint32, uint32>(row.GetUInt(0), row.GetUInt(1)));
+    }
+    sLog.Cyan("    StaticDataMgr", "%u Static System data sets loaded in %.3fms.", (m_systemData.size() + m_stationRegion.size() + m_stationSystem.size()), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
+    m_db.GetStaticData(*res);
+    StaticData staticData;
+    while (res->GetRow(row)) {
+        //SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize
+        staticData.itemID          = row.GetUInt(0);
+        staticData.regionID        = row.GetUInt(1);
+        staticData.constellationID = row.GetUInt(2);
+        staticData.systemID        = row.GetUInt(3);
+        staticData.position        = GPoint(row.GetDouble(4),row.GetDouble(5),row.GetDouble(6));
+        m_staticData.insert(std::pair<uint32, StaticData>(row.GetUInt(0), staticData));
+    }
+    sLog.Cyan("    StaticDataMgr", "%u Static Entity data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - start));
 
     res->Reset();
     start = GetTimeMSeconds();
@@ -249,48 +298,22 @@ PyRep* StaticDataMgr::GetStationCount()
 
 uint32 StaticDataMgr::GetStationRegion(uint32 stationID)
 {
-    uint32 regionID = 0;
     std::map<uint32, uint32>::const_iterator itr = m_stationRegion.find(stationID);
-    if (itr != m_stationRegion.end()) {
-        regionID = itr->second;
-    } else {
-        DBQueryResult res;
-        if (!sDatabase.RunQuery(res, "SELECT regionID FROM staStations WHERE stationID = %u", stationID)) {
-            codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
-            return 0;
-        }
-
-        DBResultRow row;
-        if (!res.GetRow(row)) {
-            _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", stationID);
-            return 0;
-        }
-        m_stationRegion[stationID] = (regionID = row.GetUInt(0));
-    }
-    return regionID;
+    if (itr != m_stationRegion.end())
+        return itr->second;
+    else
+        _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", stationID);
+    return 0;
 }
 
 uint32 StaticDataMgr::GetStationSystem(uint32 stationID)
 {
-    uint32 systemID = 0;
     std::map<uint32, uint32>::const_iterator itr = m_stationSystem.find(stationID);
-        if (itr != m_stationSystem.end()) {
-            systemID = itr->second;
-        } else {
-            DBQueryResult res;
-            if (!sDatabase.RunQuery(res, "SELECT solarSystemID FROM staStations WHERE stationID = %u", stationID)) {
-                codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
-                return 0;
-            }
-
-            DBResultRow row;
-            if (!res.GetRow(row)) {
-                _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", stationID);
-                return 0;
-            }
-            m_stationSystem[stationID] = (systemID = row.GetUInt(0));
-        }
-    return systemID;
+    if (itr != m_stationSystem.end())
+        return itr->second;
+    else
+        _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", stationID);
+    return 0;
 }
 
 bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)

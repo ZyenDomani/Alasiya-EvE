@@ -45,8 +45,8 @@ public:
     /* data manager */
     void GetOreBySSC(DBQueryResult& res);
     void GetSkillList(DBQueryResult& res);
-    void GetSystemInfo(DBQueryResult& res);
-    void GetStaticInfo(DBQueryResult& res);
+    void GetSystemData(DBQueryResult& res);
+    void GetStaticData(DBQueryResult& res); // static items in a solar system
     void GetStationInfo(DBQueryResult& res);
     void GetRAMMaterials(DBQueryResult& res);
     void GetBlueprintType(DBQueryResult& res);

@@ -77,21 +77,23 @@ bool AttributeMap::Save() {
      * we are saving:
      *   all attribs for skills
      *   all attribs for ISEs and CSEs, where applicable
-     *   damage for ships/modules/charges, where applicable
+     *   damage for modules/charges, where applicable (ship damage saved separately)
      */
     if (mItem.itemID() >= EVEMU_NPC_ID) return true;    // not saving npc attribs
     if (mItem.itemID() < EVEMU_MINIMUM_ID) return true; // not saving static object attribs
-    bool success = false;
-
     /* if nothing changed... it means this action has previously been successful we return true... */
-    if (!mChanged)
+    if ((!mChanged) or (mItem.categoryID() == EVEDB::invCategories::Ship))
         return true;
+
+    bool success = false;
 
     std::ostringstream Inserts;
     // start the insert into command.
     Inserts << "INSERT INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) ";
     bool first = true;
     AttrMapItr itr = mAttributes.begin();
+    /** @todo  test for and save ONLY damage attributes (for persistance) EXCEPT on ships (saved separately) */
+    // it will probably be AttrDamage
     for (; itr != mAttributes.end(); itr++) {
         if (first) {
             Inserts << "VALUES";

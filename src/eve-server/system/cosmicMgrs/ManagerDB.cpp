@@ -72,7 +72,7 @@ void ManagerDB::GetOreBySSC(DBQueryResult& res)
     }
 }
 
-void ManagerDB::GetSystemInfo(DBQueryResult& res)
+void ManagerDB::GetSystemData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
         "SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems")) {
@@ -80,10 +80,10 @@ void ManagerDB::GetSystemInfo(DBQueryResult& res)
     }
 }
 
-void ManagerDB::GetStaticInfo(DBQueryResult& res)
+void ManagerDB::GetStaticData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize")) {
+        "SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize WHERE solarSystemID IS NOT NULL")) {
         codelog(DATABASE__ERROR, "Error in GetStaticInfo query: %s", res.error.c_str());
     }
 }
@@ -97,18 +97,18 @@ void ManagerDB::GetStationInfo(DBQueryResult& res)
     }
 }
 
-void ManagerDB::GetStationRegion(DBQueryResult& res)
-{
-    if (!sDatabase.RunQuery(res, "SELECT stationID, regionID FROM staStations")) {
-        codelog(DATABASE__ERROR, "Error in GetStationRegion query: %s", res.error.c_str());
-    }
-
-}
-
 void ManagerDB::GetStationSystem(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT stationID, solarSystemID FROM staStations")) {
         codelog(DATABASE__ERROR, "Error in GetStationSystem query: %s", res.error.c_str());
+    }
+
+}
+
+void ManagerDB::GetStationRegion(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT stationID, regionID FROM staStations")) {
+        codelog(DATABASE__ERROR, "Error in GetStationRegion query: %s", res.error.c_str());
     }
 
 }
