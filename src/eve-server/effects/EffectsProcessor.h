@@ -13,24 +13,23 @@
 #define _EVE_FX_PROC_H__
 
 #include "effects/EffectsDataMgr.h"
-
+#include "inventory/InventoryItem.h"
 
 
 class FxProc
-//: public Singleton< FxProc >
 {
 public:
     FxProc();
     virtual ~FxProc();
 
-    EvilNumber CalculateAttributeValue(EvilNumber val1, EvilNumber val2, EVECalculationType type);
+    EvilNumber CalculateAttributeValue(EvilNumber val1, EvilNumber val2, Effects::Association type);
 
     // new effects system
     void EvaluateExpression(const uint16 expID);
     int8 GetEnvironmentEnum(const std::string& domain);
     int8 GetAssociationEnum(const std::string& association);
 
-    std::string ParseExpression(Expression expression, InventoryItemRef src, InventoryItemRef targ, bool restricted = false, bool topLevel = false);
+    std::string ParseExpression(InventoryItem* pItem, Expression expression, bool restricted = false, bool topLevel = false);
 
 protected:
 
@@ -38,10 +37,5 @@ private:
 
 
 };
-
-/*
-#define sFxProc \
-( FxProc::get() )
-*/
 
 #endif  // _EVE_FX_PROC_H__

@@ -169,7 +169,26 @@ void FxDataMgr::Initialize()
 
 void FxDataMgr::ConfigureEffects()
 {
-        /** @todo  remove this.  */
+    double start = GetTimeMSeconds();
+    Initialize();
+
+    FxProc fxProc;
+    // begin the task of compiling effect data
+    for (auto curFx : m_effectMap) {
+    // we only want ONE copy of the effect
+        if (m_fxMap.find(curFx.first) != m_fxMap.end())
+            continue;
+
+        sLog.Blue("ConfigureEffects", "starting eval for %u (%s)", curFx.first, curFx.second.effectName.c_str());
+        fxProc.EvaluateExpression(curFx.second.preExpression);
+        fxProc.EvaluateExpression(curFx.second.postExpression);
+
+        m_fxMap.insert(std::pair<uint16, Effect>(curFx.first, curFx.second));
+    }
+
+    // save compiled effect data to avoid compilation on every startup?  -check for execution time
+    //SaveFXData();
+    m_time = (GetTimeMSeconds() - start);
 }
 
 Effect FxDataMgr::GetEffect(uint16 eID)
@@ -183,9 +202,8 @@ Effect FxDataMgr::GetEffect(uint16 eID)
 void FxDataMgr::GetTypeEffect(uint16 typeID, std::vector< TypeEffects >& typeEffMap)
 {
     auto itr = m_typeFxMap.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; it++) {
+    for (auto it = itr.first; it != itr.second; it++)
         typeEffMap.push_back(it->second);
-    }
 }
 
 Expression FxDataMgr::GetExpression(uint16 eID)

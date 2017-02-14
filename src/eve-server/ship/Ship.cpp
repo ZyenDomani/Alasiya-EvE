@@ -33,11 +33,11 @@ m_miningType(_miningType),
 m_skillType(_skillType)
 {
     // data consistency checks:
-    if (_weaponType != NULL)
+    if (_weaponType)
         assert(_weaponType->id() == stData.mWeaponTypeID);
-    if (_miningType != NULL)
+    if (_miningType)
         assert(_miningType->id() == stData.mMiningTypeID);
-    if (_skillType != NULL)
+    if (_skillType)
         assert(_skillType->id() == stData.mSkillTypeID);
 }
 
@@ -56,7 +56,7 @@ m_ModuleManager(nullptr)
 {
     m_IsLoaded = false;
     m_stackMap.clear();
-    m_resistMap.clear();
+    m_attribMap.clear();
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created ShipItem for %s(%u).", itemName().c_str(), itemID());
 }
@@ -79,46 +79,6 @@ ShipItemRef ShipItem::Spawn(ItemFactory &factory, ItemData &data) {
 
     ShipItemRef sShipRef = ShipItem::Load( factory, shipID );
 
-    // Create default dynamic attributes in the AttributeMap:
-    sShipRef->SetAttribute(AttrMass,                                sShipRef->type().mass());
-    sShipRef->SetAttribute(AttrRadius,                              sShipRef->type().radius());
-    sShipRef->SetAttribute(AttrVolume,                              sShipRef->GetPackagedVolume());
-    sShipRef->SetAttribute(AttrCapacity,                            sShipRef->type().capacity());
-    sShipRef->SetAttribute(AttrShieldCharge,                        sShipRef->GetAttribute(AttrShieldCapacity));
-    sShipRef->SetAttribute(AttrCapacitorCharge,                     sShipRef->GetAttribute(AttrCapacitorCapacity));
-
-    // Check for existence of some attributes that may or may not have already been loaded and set them
-    // to default values:
-    if (!sShipRef->HasAttribute(AttrDamage))                        sShipRef->SetAttribute(AttrDamage, 0.0f);
-    if (!sShipRef->HasAttribute(AttrArmorDamage))                   sShipRef->SetAttribute(AttrArmorDamage, 0.0f);
-    if (!sShipRef->HasAttribute(AttrMaximumRangeCap))               sShipRef->SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS));
-    if (!sShipRef->HasAttribute(AttrArmorMaxDamageResonance))       sShipRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
-    if (!sShipRef->HasAttribute(AttrShieldMaxDamageResonance))      sShipRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f);
-    if (!sShipRef->HasAttribute(AttrWarpSpeedMultiplier))           sShipRef->SetAttribute(AttrWarpSpeedMultiplier, 1.0f);
-    // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some already have it defined):
-    if (!sShipRef->HasAttribute(AttrWarpScrambleStatus))            sShipRef->SetAttribute(AttrWarpScrambleStatus, 0.0f);
-
-    // Shield Resonance
-    if (!sShipRef->HasAttribute(AttrShieldEmDamageResonance))       sShipRef->SetAttribute(AttrShieldEmDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sShipRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrShieldKineticDamageResonance))  sShipRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrShieldThermalDamageResonance))  sShipRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrArmorEmDamageResonance))        sShipRef->SetAttribute(AttrArmorEmDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sShipRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrArmorKineticDamageResonance))   sShipRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrArmorThermalDamageResonance))   sShipRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrEmDamageResonance))             sShipRef->SetAttribute(AttrEmDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrExplosiveDamageResonance))      sShipRef->SetAttribute(AttrExplosiveDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrKineticDamageResonance))        sShipRef->SetAttribute(AttrKineticDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrThermalDamageResonance))        sShipRef->SetAttribute(AttrThermalDamageResonance, 1.0);
-    if (!sShipRef->HasAttribute(AttrTurretSlotsLeft))               sShipRef->SetAttribute(AttrTurretSlotsLeft, 0);
-    if (!sShipRef->HasAttribute(AttrLauncherSlotsLeft))             sShipRef->SetAttribute(AttrLauncherSlotsLeft, 0);
-
-    sShipRef->SetAttribute(AttrCpuLoad, 0.0f);
-    sShipRef->SetAttribute(AttrPowerLoad, 0.0f);
-
-    sShipRef->SaveAttributes();
-
     return sShipRef;
 }
 
@@ -139,12 +99,44 @@ bool ShipItem::_Load()
     if (!m_inventory->LoadContents(&m_factory))
         return false;
 
-    // reset ship default capacity due to errors seen while testing.
-    SetAttribute(AttrCapacity, type().capacity());
+    // Create default dynamic attributes in the AttributeMap
+    SetAttribute(AttrVolume,                            GetPackagedVolume());
 
-    /** @todo  apply ship and skill bonuses to hold capacities here */
+    // Check for existence of attributes.  if not loaded then set them to default values:
+    if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, 0.0f);
+    if (!HasAttribute(AttrCpuLoad))                     SetAttribute(AttrCpuLoad, 0);
+    if (!HasAttribute(AttrPowerLoad))                   SetAttribute(AttrPowerLoad, 0);
+    if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, 0.0f);
+    if (!HasAttribute(AttrUpgradeLoad))                 SetAttribute(AttrUpgradeLoad, 0);
+    // shield and cap are part of persistance, and loaded on attrib map initalization.  check for value here
+    if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrShieldCapacity));
+    if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrCapacitorCapacity));
+    if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS));
+    // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some already have it defined):
+    if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, 0.0f);
+    if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, 1.0f);
+    if (!HasAttribute(AttrArmorMaxDamageResonance))     SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
+    if (!HasAttribute(AttrShieldMaxDamageResonance))    SetAttribute(AttrShieldMaxDamageResonance, 1.0f);
 
-	// fill cargo holds data here:
+    /*  Resonance  - these should be set in item type
+    if (!HasAttribute(AttrShieldEmDamageResonance))       SetAttribute(AttrShieldEmDamageResonance, 1.0);
+    if (!HasAttribute(AttrShieldExplosiveDamageResonance)) SetAttribute(AttrShieldExplosiveDamageResonance, 1.0);
+    if (!HasAttribute(AttrShieldKineticDamageResonance))  SetAttribute(AttrShieldKineticDamageResonance, 1.0);
+    if (!HasAttribute(AttrShieldThermalDamageResonance))  SetAttribute(AttrShieldThermalDamageResonance, 1.0);
+    if (!HasAttribute(AttrArmorEmDamageResonance))        SetAttribute(AttrArmorEmDamageResonance, 1.0);
+    if (!HasAttribute(AttrArmorExplosiveDamageResonance)) SetAttribute(AttrArmorExplosiveDamageResonance, 1.0);
+    if (!HasAttribute(AttrArmorKineticDamageResonance))   SetAttribute(AttrArmorKineticDamageResonance, 1.0);
+    if (!HasAttribute(AttrArmorThermalDamageResonance))   SetAttribute(AttrArmorThermalDamageResonance, 1.0);
+    if (!HasAttribute(AttrTurretSlotsLeft))               SetAttribute(AttrTurretSlotsLeft, 0);
+    if (!HasAttribute(AttrLauncherSlotsLeft))             SetAttribute(AttrLauncherSlotsLeft, 0);
+    */
+    // hull res is stored in item type as AttrHull*Resonance.  set accordingly
+    if (!HasAttribute(AttrEmDamageResonance))           SetAttribute(AttrEmDamageResonance, mAttributeMap.GetAttribute(AttrHullEmDamageResonance));
+    if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance, mAttributeMap.GetAttribute(AttrHullExplosiveDamageResonance));
+    if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance, mAttributeMap.GetAttribute(AttrHullKineticDamageResonance));
+    if (!HasAttribute(AttrThermalDamageResonance))      SetAttribute(AttrThermalDamageResonance, mAttributeMap.GetAttribute(AttrHullThermalDamageResonance));
+
+	// set cargo holds data here:
 	if (HasAttribute(AttrCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagCargoHold,mAttributeMap.GetAttribute(AttrCapacity).get_float()));
 	if (HasAttribute(AttrDroneCapacity))
@@ -177,110 +169,14 @@ bool ShipItem::_Load()
 
 void ShipItem::Init()
 {
-    Character* pChar = m_pilot->GetChar().get();
-    if (!pChar) {
-        _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot.", itemName().c_str(), itemID());
-        return;
-    }
-
-    /** @todo These all still need to have ship bonuses applied */
-    /** @todo this will need to be changed to use skill modifiers when i get them working.... */
-
-    double pg = GetDefaultAttribute(AttrPowerOutput).get_int();
-    double cpu = GetDefaultAttribute(AttrCpuOutput).get_float();
-    double hullHP = GetDefaultAttribute(AttrHP).get_int();
-    double armorHP = GetDefaultAttribute(AttrArmorHP).get_float();
-    double capCapacity = GetDefaultAttribute(AttrCapacitorCapacity).get_float();
-    double shipInertia = GetDefaultAttribute(AttrInetia).get_float();
-    double warpCapNeed = GetDefaultAttribute(AttrWarpCapacitorNeed).get_float();
-    double capChargeRate = GetDefaultAttribute(AttrRechargeRate).get_float();
-    double shieldCapacity = GetDefaultAttribute(AttrShieldCapacity).get_float();
-    double shipMaxVelocity = GetDefaultAttribute(AttrMaxVelocity).get_float();
-    double shieldChargeRate = GetDefaultAttribute(AttrShieldRechargeRate).get_float();
-
-    pg *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEngineering, true))));                       // 5% increase
-    cpu *=  (1 + (0.05 * (pChar->GetSkillLevel(skillElectronics, true))));                      // 5% increase
-    hullHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillMechanics, true))));                     // 5% increase
-    armorHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillHullUpgrades, true))));                 // 5% increase
-    capCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEnergyManagement, true))));         // 5% increase
-    shipInertia *= pChar->GetAgilitySkills(HasAttribute(AttrIsCapitalSize));                    // multiple skill effects
-    warpCapNeed *=  (1 - (0.1 * ( pChar->GetSkillLevel(skillWarpDriveOperation, true))));       // 10% decrease
-    capChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillEnergySystemsOperation, true)))); // 5% decrease
-    shieldCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillShieldManagement, true))));      // 5% increase
-    shipMaxVelocity *= (1 + (0.05 * ( pChar->GetSkillLevel(skillNavigation, true))));           // 5% increase
-    shieldChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillShieldOperation, true))));     // 5% decrease
-
-    // add checks for implants here.
-    //  ship bonuses are found in dgmShipBonusModifiers
-    //  skill bonuses are found in dgmSkillBonusModifiers
-
-    /* to reset for new pilot:
-     * offline all modules
-     * reset ship attribs
-     * add new pilot skills
-     * online all modules
-     * save current attribs
-     */
-
-    // reset basic ship attribs before updating modules   this is catchall incase of server crash (and subsequent data corruption)
-    ResetAttribute(AttrCpuLoad);
-    ResetAttribute(AttrPowerLoad);
-    ResetAttribute(AttrUpgradeLoad);
-    ResetAttribute(AttrUpgradeSlotsLeft);
-    ResetAttribute(AttrShieldEmDamageResonance);
-    ResetAttribute(AttrShieldExplosiveDamageResonance);
-    ResetAttribute(AttrShieldKineticDamageResonance);
-    ResetAttribute(AttrShieldThermalDamageResonance);
-    ResetAttribute(AttrArmorEmDamageResonance);
-    ResetAttribute(AttrArmorExplosiveDamageResonance);
-    ResetAttribute(AttrArmorKineticDamageResonance);
-    ResetAttribute(AttrArmorThermalDamageResonance);
-    ResetAttribute(AttrEmDamageResonance);
-    ResetAttribute(AttrExplosiveDamageResonance);
-    ResetAttribute(AttrKineticDamageResonance);
-    ResetAttribute(AttrThermalDamageResonance);
-
-    SetAttribute(AttrHP, hullHP);
-    SetAttribute(AttrMass, type().mass());   // no default mass in ship item.
-    SetAttribute(AttrInetia, shipInertia);
-    SetAttribute(AttrArmorHP, armorHP);
-    SetAttribute(AttrCpuOutput, cpu);
-    SetAttribute(AttrPowerOutput, pg);
-    SetAttribute(AttrMaxVelocity, shipMaxVelocity);
-    SetAttribute(AttrRechargeRate, capChargeRate);
-    SetAttribute(AttrShieldCapacity, shieldCapacity);
-    SetAttribute(AttrCapacitorCharge, capCapacity);
-    SetAttribute(AttrWarpCapacitorNeed, warpCapNeed);
-    SetAttribute(AttrShieldRechargeRate,shieldChargeRate );
-    SetAttribute(AttrWarpScrambleStatus, 0);
-
-    /* AttrMass = 4,    (largest mass = Leviathan(3764) @ 2,430,000,000kg)
-     * AttrMassLimit = 622,
-     * AttrMassAddition = 796,
-     * AttrMassMultiplier = 1471,
-     */
-    /*   look into these, too...
-     * AttrWarpSBonus(624) [rigs and implants]
-     * AttrWarpFactor(21) [all are 0]
-     * AttrWarpInhibitor(29) [default is null]
-     */
-
-    // set initial stacking map before attribs are altered by modules
-    InitStackingMap();
-
     // create and initialize the module manager if not already done
     if (!m_ModuleManager)
         m_ModuleManager = new ModuleManager(this);
 
     m_ModuleManager->Initialize();
 
-    /** @todo need to check for ship damage status BEFORE or INSTEAD of calling this.
-     * this is being saved in db, but no methods to retrieve it yet.
-     */
-    //set everything to full AFTER modules possibably update ship stats
     if (sConfig.server.IsTestServer) {
-        Heal();
-    } else {
+        // if test server, update shield and cap (simulate idle charging)
         if (m_pilot->IsInSpace()) {
             SetShipShield(1.0);
             SetShipCapacitorLevel(1.0);
@@ -294,12 +190,9 @@ void ShipItem::InitPod() {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
-    if (sConfig.server.IsTestServer) {
+    // pod will be full when activated
+    if (m_pilot->IsInSpace())
         Heal();
-    } else {
-        SetShipShield(1.0);
-        SetShipCapacitorLevel(1.0);
-    }
 }
 
 void ShipItem::SetPlayer(Client* pClient) {
@@ -307,11 +200,14 @@ void ShipItem::SetPlayer(Client* pClient) {
         return;
     m_pilot = pClient;
     if (!m_pilot) {
+        // remove ship effects and char skill effects for char leaving ship here.
+        // should we check for cargo and damage after char leaves ship?  maybe later
         if (m_ModuleManager)
             m_ModuleManager->CharacterLeavingShip();
         return;
     }
     Init();
+    // set char skill effects then ship effects for char boarding ship here.
     m_ModuleManager->CharacterBoardingShip();
 }
 
@@ -842,7 +738,7 @@ void ShipItem::SetShipHull(double fraction)
 /* Begin new Module Manager Interface */
 InventoryItemRef ShipItem::GetModule(EVEItemFlags flag)
 {
-    if (m_ModuleManager and m_ModuleManager->GetModule(flag) != NULL )
+    if (m_ModuleManager and m_ModuleManager->GetModule(flag) )
 		return (m_ModuleManager->GetModule(flag))->getItem();
 	else
 		return InventoryItemRef();
@@ -850,7 +746,7 @@ InventoryItemRef ShipItem::GetModule(EVEItemFlags flag)
 
 InventoryItemRef ShipItem::GetModule(uint32 itemID)
 {
-    if (m_ModuleManager and m_ModuleManager->GetModule(itemID) != NULL )
+    if (m_ModuleManager and m_ModuleManager->GetModule(itemID) )
 		return (m_ModuleManager->GetModule(itemID))->getItem();
 	else
 		return InventoryItemRef();
@@ -1102,8 +998,8 @@ void ShipItem::StripFitting()
 // stacking penality system   -allan   (UD 29Jul16)
 double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
 {
-    /*  NOTE:  this system now uses the module effects' "stacking attribute" to properly process modifiers that have stacking penalities.  */
     uint8 count = 1;
+    /** @note this is no longer valid....
     std::map<uint16, uint8>::iterator itr = m_stackMap.find(attrib);
     if (itr != m_stackMap.end()) {
         switch (state) {
@@ -1128,7 +1024,7 @@ double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
     } else {
         m_stackMap.emplace(attrib, 1);
     }
-
+    */
     //stacking calculation fixed  -allan  20Dec15
     double effectiveness = exp(-pow(((count - 1)/2.67),2));
 
@@ -1145,6 +1041,7 @@ double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
 // resist cap system    -allan 26Dec16
 void ShipItem::InitStackingMap()
 {
+    /*
     m_resistMap[AttrKineticDamageResonance] = GetAttribute(AttrKineticDamageResonance).get_float();
     m_resistMap[AttrThermalDamageResonance] = GetAttribute(AttrThermalDamageResonance).get_float();
     m_resistMap[AttrExplosiveDamageResonance] = GetAttribute(AttrExplosiveDamageResonance).get_float();
@@ -1161,7 +1058,7 @@ void ShipItem::InitStackingMap()
     // this is not resist...cannot use cap method on these...
     m_resistMap[AttrScanResolution] = GetAttribute(AttrScanResolution).get_float();
     m_resistMap[AttrSignatureRadius] = GetAttribute(AttrSignatureRadius).get_float();
-
+    */
     /** these also have char skills that will need to be recalculated if the attrib is reset to base
     m_resistMap[AttrMaxVelocity] = GetAttribute(AttrMaxVelocity).get_float();
     m_resistMap[AttrInetia] = GetAttribute(AttrInetia).get_float();
@@ -1172,32 +1069,14 @@ void ShipItem::InitStackingMap()
 
 void ShipItem::SetTrueResist(uint16 attrib, EvilNumber& value)
 {
-    std::map<uint16, float>::iterator itr = m_resistMap.find(attrib);
-    if (itr != m_resistMap.end()) {
-        itr->second = value.get_float();
-
-        // hard-cap resist values here  - moved from CalculateAttributeValue()
-        // NOTE:  remember, these are BACKWARD from 'normal' fuzzy logic..  0=full and 1=none
-        if (value < 0.05) value = 0.05; // cap resists at 95%
-        if (value > 1) value = 1;       // verify resist doesnt go below 0
-    }
 }
 
 void ShipItem::GetTrueResist(uint16 attrib, EvilNumber& value)
 {
-    std::map<uint16, float>::iterator itr = m_resistMap.find(attrib);
-    if (itr != m_resistMap.end())
-        value = itr->second;
 }
 
-void ShipItem::CheckStacking(uint16 attrib, EVECalculationType type, ModuleStates state, EvilNumber& value)
+void ShipItem::CheckStacking(uint16 attrib, Effects::Association type, ModuleStates state, EvilNumber& value)
 {
-    EvilNumber newVal = 0;
-    std::map<uint16, float>::iterator itr = m_resistMap.find(attrib);
-    if (itr != m_resistMap.end()) {
-        FxProc fxProc;
-        newVal = fxProc.CalculateAttributeValue(newVal, value, type);
-    }
 }
 
 
@@ -1271,96 +1150,30 @@ std::string ShipItem::GetShipDNA()
 
 // new effects system.  wip
 // these below are not used yet.  WIP for new effect processing system.
-bool ShipItem::AddEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+
+void ShipItem::ApplyShipEffects()
 {
-    // Make sure the ModifierRef passed in is not NULL:
-    if (!modifierRef.get())
-        return -1;
-
-    ModifierMap* modMap = nullptr;
-
-    // Check to see if this attributeID does not have a ModifierMap in the Map of ModifierMaps
-    if ( m_ModifierMaps->find(attributeID) == m_ModifierMaps->end() )
-    {
-        // A Modifier Map for this attributeID does not exist, create a new one:
-        modMap = new ModifierMap();
-        if (!modMap)
-            return -1;
-    } else {
-        // A Modifier Map for this attributeID already exists, find it and get its pointer:
-        modMap = m_ModifierMaps->find(attributeID)->second;
-        if (!modMap)
-            return -1;
-    }
-
-    // Check to see if the modifier map has any entries corresponding to the passed-in modifier's value:
-    if ( modMap->m_ModifierMap.find(modifierRef->GetModifierValue()) != modMap->m_ModifierMap.end() )
-    {
-        // Modifier entry in this attributeID's Modifier Map already exists (modifierRef->GetModifierValue() found a match),
-        // so check its originatorID and if that matches, DO NOT add this Modifier object to the map as the reference
-        // already exists, the Module class can modify the contents of the Modifier object without really calling this function,
-        // however, to maintain consistent code, the Module classes will always call this function to notify the map class
-        // that the contents of the map was changed, or made 'dirty':
-        modMap->m_MapIsDirty = true;
-        ModifierMapType::iterator cur;
-        std::pair<ModifierMapType::iterator,ModifierMapType::iterator> range;
-        range = modMap->m_ModifierMap.equal_range(modifierRef->GetModifierValue());   // Get the one or more modifier map entries matching this modifier being added
-        for (cur=range.first; cur!=range.second; ++cur)
-            if ( cur->second->GetOriginatorID() == originatorID )
-                return 1;   // Yep, we found the Modifier owned by this originatorID, so we return "success" because the Module
-                            // class object already updated this Modifier through its own ModifierRef, we don't need to do anything
-                            // else here except return and prevent ADDING to the ModifierMap
-
-        // For loop searching existing modifiers completed, so this originatorID's Modifier
-        // is NOT in the map yet... Let's add it:
-        modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
-    } else {
-        // Modifier entry in this attributeID's Modifier Map does not exist yet, so lets insert it for the first time:
-        // Insert the (modifierValue, ModifierRef) pair into the Modifier Map for this attributeID:
-        modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
-        modMap->m_MapIsDirty = true;
-        m_ModifierMaps->insert(std::pair<uint32, ModifierMap*>(attributeID, modMap));
-    }
-
-    return 1;
+    ApplyEffect(0);
 }
 
-bool ShipItem::RemoveEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef)
+void ShipItem::ApplySkillEffects()
 {
-    bool bModifierFound = false;
-    ModifierMap* modMap = nullptr;
+    m_pilot->GetChar()->ApplyEffect(0);
+}
 
-    if ( m_ModifierMaps->find(attributeID) != m_ModifierMaps->end() )  {
-        modMap = m_ModifierMaps->find(attributeID)->second;
-        modMap->m_MapIsDirty = true;
+void ShipItem::AddEffect(uint16 attributeID, InventoryItemRef iRef)
+{
 
-        if ( modMap->m_ModifierMap.find(modifierRef->GetModifierValue()) != modMap->m_ModifierMap.end() ) {
-            modMap->m_MapIsDirty = true;
-            ModifierMapType::iterator cur;
-            std::pair<ModifierMapType::iterator,ModifierMapType::iterator> range;
-            range = modMap->m_ModifierMap.equal_range(modifierRef->GetModifierValue());   // Get the one or more modifier map entries matching this modifier being removed
-            for (cur=range.first; cur!=range.second; ++cur)
-                if ( cur->second->GetOriginatorID() == originatorID ) {
-                    bModifierFound = true;  // Yep, we found the Modifier owned by this originatorID, so we break out of the for ()
-                                            // so we can now remove this exact Modifier object from the multimap
-                    break;
-                }
+}
 
-            if (bModifierFound)    {
-                // For loop searching existing modifiers completed, so this originatorID's Modifier
-                // was found in the map
-                modMap->m_ModifierMap.insert(std::pair<double, ModifierRef>(modifierRef->GetModifierValue(), modifierRef));
-            }
-            else
-                return -1;  // This modifier's originatorID was not found in the map, so return error code
-        }
-        else
-            return -1;  // This modifier's modifier value was not even found in the map, so return error code
-    }
-    else
-        return -1;  // Modifier Map for supplied attributeID does not exist, return error value
+void ShipItem::RemoveEffect(uint16 attributeID, InventoryItemRef iRef)
+{
 
-    return 1;
+}
+
+void ShipItem::ApplyModifiers()
+{
+
 }
 
 

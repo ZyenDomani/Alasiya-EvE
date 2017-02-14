@@ -380,13 +380,11 @@ void ConsoleCommand::MemStatus(float* vm_usage, float* resident_set)
 void ConsoleCommand::Test()
 {
     sLog.Green("  Alasiya's EvEMu", "Server Test:");
-    sLog.Error("     Allan\'s Test", "Nothing Avalible at this time.");
-    return;
-    
+    //sLog.Error("     Allan\'s Test", "Nothing Avalible at this time.");
     sLog.Yellow("     Effects Test", "Test Begin - Process and Save all Effects.");
 
     sFxDataMgr.ConfigureEffects();
-
+    
     sLog.Yellow("     Effects Test", "Test Complete.");
     sLog.Yellow("     Effects Test", "%u sets loaded in %.3fms.", sFxDataMgr.GetFxSize(), sFxDataMgr.GetFxTime());
 }

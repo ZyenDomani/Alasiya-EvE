@@ -175,6 +175,60 @@ void ModuleContainer::UnloadAll() {
     process(typeUnloadAll);
 }
 
+void ModuleContainer::process(processType p)
+{
+    switch(p) {
+        case typeOnlineAll: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if (itr->second)
+                    itr->second->Online();
+                ++itr;
+            }
+        } break;
+        case typeOfflineAll: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if (itr->second)
+                    itr->second->Offline();
+                ++itr;
+            }
+        } break;
+        case typeDeactivateAll: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if (itr->second)
+                    itr->second->Deactivate();
+                ++itr;
+            }
+        } break;
+        case typeUnloadAll: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if (itr->second)
+                    itr->second->UnloadCharge();
+                ++itr;
+            }
+        } break;
+        case typeProcessAll: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if (itr->second)
+                    itr->second->Process();
+                ++itr;
+            }
+        } break;
+        case typeAbort: {
+            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+            while (itr != m_modules.end()) {
+                if ((itr->second) and (itr->second->IsActiveModule()))
+                    itr->second->AbortCycle();
+                ++itr;
+            }
+        } break;
+    }
+}
+
 bool ModuleContainer::isSlotOccupied(EVEItemFlags flag) {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.find((uint8)flag);
     return (itr == m_modules.end() ? false : true);
@@ -268,60 +322,6 @@ void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* mod)
         sLog.Error( "ModuleContainer::deleteModuleRef()", "Removing Module from ship fit when it had NO entry in m_ModulesFittedByGroup !" );
 
     mod->SetModuleState(MOD_UNFITTED);
-}
-
-void ModuleContainer::process(processType p)
-{
-    switch(p) {
-        case typeOnlineAll: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
-                if (itr->second)
-                    itr->second->Online();
-                ++itr;
-            }
-        } break;
-        case typeOfflineAll: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
-                if (itr->second)
-                    itr->second->Offline();
-                ++itr;
-            }
-        } break;
-        case typeDeactivateAll: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
-                if (itr->second)
-                    itr->second->Deactivate();
-                ++itr;
-            }
-        } break;
-        case typeUnloadAll: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
-                if (itr->second)
-                    itr->second->UnloadCharge();
-                ++itr;
-            }
-        } break;
-        case typeProcessAll: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
-                if (itr->second)
-                    itr->second->Process();
-                ++itr;
-            }
-        } break;
-        case typeAbort: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
-                if ((itr->second) and (itr->second->IsActiveModule()))
-                    itr->second->AbortCycle();
-                ++itr;
-            }
-        } break;
-    }
 }
 
 #pragma endregion

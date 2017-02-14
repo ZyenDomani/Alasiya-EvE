@@ -1,6 +1,6 @@
 /*
     ------------------------------------------------------------------------------------
-    This file is for decoding the proprietary format of effect data for Alasiya-EvE
+    This file is for decoding the module states for Alasiya-EvE
     Copyright 2017  Alasiya-EVEmu Team
     ------------------------------------------------------------------------------------
     Author:     Allan
@@ -10,7 +10,7 @@
 #ifndef MODULE_DEFS_H
 #define MODULE_DEFS_H
 
-#include "utils/EvilNumber.h"
+#include "./utils/EvilNumber.h"
 
 
 // internal charge states

@@ -135,9 +135,9 @@ protected:
 
     int32                           m_repeat;
 
-    void ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
-    void ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
-    void ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
+    void ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, Effects::Association type, bool stacking);
+    void ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, Effects::Association type);
+    void ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, Effects::Association type, bool stacking);
 
 };
 

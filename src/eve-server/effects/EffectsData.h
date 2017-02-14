@@ -70,58 +70,60 @@ typedef std::map<uint16, Effect> effectMapType;
 namespace Effects {
     // these tables are used to decode fields in Effects table
     enum Environment {
-        dgmEnvInvalid     = -1,
+        dgmEnvInvalid        = -1,
         // these define the item containing the attribute [to modify(target)]/[data(source)]
         //  these are found (as text) in the expressionValue field of dgmExpressions table and may need to merge with Association, or test with it
-        dgmEnvSelf = 0,
-        dgmEnvChar = 1,
-        dgmEnvShip = 2,
-        dgmEnvTarget = 3,
-        dgmEnvOther = 4,
-        dgmEnvArea = 5
+        dgmEnvSelf           = 0,
+        dgmEnvChar           = 1,
+        dgmEnvShip           = 2,
+        dgmEnvTarget         = 3,
+        dgmEnvOther          = 4,
+        dgmEnvArea           = 5
     };
 
     enum Category  {
-        CAT_INVALID        = -1,
+        dgmCatInvalid        = -1,
         // these are the effectCategory in dgmEffects table to denote when/where this effect is applied or removed
-        CAT_PASSIVE        = 0,    //Applied when item is just present in fit - implants, skills, offlined modules
-        CAT_ACTIVE         = 1,    //also online effectApplied only when module is activated
-        CAT_TARGET         = 2,    //Applied onto selected target
-        CAT_AREA           = 3,    //No effects with this category, so actual impact is unknown
-        CAT_ONLINE         = 4,    //Applied when module is onlined
-        CAT_OVERLOADED     = 5,    //Applied only when module is overloaded
-        CAT_DUNGEON        = 6,    //Dungeon effects, several effects exist in this category, but not assigned to any item
-        CAT_SYSTEM         = 7     //System-wide effects, like WH and incursion
+        dgmCatPassive        = 0,    //Applied when item is just present in fit - implants, skills, offlined modules
+        dgmCatActive         = 1,    //also online effectApplied only when module is activated
+        dgmCatTarget         = 2,    //Applied onto selected target
+        dgmCatArea           = 3,    //No effects with this category, so actual impact is unknown
+        dgmCatOnline         = 4,    //Applied when module is onlined
+        dgmCatOverloaded     = 5,    //Applied only when module is overloaded
+        dgmCatDungeon        = 6,    //Dungeon effects, several effects exist in this category, but not assigned to any item
+        dgmCatSystem         = 7     //System-wide effects, like WH and incursion
     };
 
     enum Association {
-        ASSOC_INVALID         = -1,
+        dgmAssInvalid        = -1,
         // these define how the data is manipulated according to the format field in dgmOperands table
-        ASSOC_PRE_ASSIGNMENT  = 0,
-        ASSOC_PRE_MUL         = 1,
-        ASSOC_PRE_DIV         = 2,
-        ASSOC_MOD_ADD         = 3,
-        ASSOC_MOD_SUB         = 4,
-        ASSOC_POST_MUL        = 5,
-        ASSOC_POST_DIV        = 6,
-        ASSOC_POST_PERCENT    = 7,
-        ASSOC_POST_ASSIGNMENT = 8,
-        ASSOC_SKILL_CHECK     = 9,
-        ASSOC_ADD_RATE        = 10,
-        ASSOC_SUB_RATE        = 11
-        /*
-        dgmAssPreAssignment = -1
-        dgmAssPreMul = 0
-        dgmAssPreDiv = 1
-        dgmAssModAdd = 2
-        dgmAssModSub = 3
-        dgmAssPostMul = 4
-        dgmAssPostDiv = 5
-        dgmAssPostPercent = 6
-        dgmAssPostAssignment = 7
-        */
+        dgmAssPreAssignment  = 0,
+        dgmAssPreMul         = 1,
+        dgmAssPreDiv         = 2,
+        dgmAssModAdd         = 3,
+        dgmAssModSub         = 4,
+        dgmAssPostMul        = 5,
+        dgmAssPostDiv        = 6,
+        dgmAssPostPercent    = 7,
+        dgmAssPostAssignment = 8,
+        dgmAssSkillCheck     = 9,
+        /* not data or expressions with these */
+        dgmAssAddRate        = 10,
+        dgmAssSubRate        = 11
     };
-
+    /*  old shit
+             case CALC_NONE:                            return val1;
+             case CALC_ADD:                             return val1 + val2;
+             case CALC_SUBTRACT:                        return val1 - val2;
+             case CALC_MULTIPLY:                        return val1 * val2;
+             case CALC_DIVIDE:                          return ((val2 != 0) ? val1 / val2 : val1);
+             case CALC_PERCENTAGE:                      return val1 * (1 + (val2 / 100));
+             case CALC_REV_PERCENTAGE:                  return val1 / (1 + (val2 / 100));
+             case CALC_ADD_PERCENT:                     return val1 + (val2 /100);
+             case CALC_SUBTRACT_PERCENT:                return val1 - (val2 /100);
+             case CALC_ADD_RESIST:                      return val1 - (1 - val2);
+             case CALC_SUBTRACT_RESIST:                 return val1 + (1 - val2);
+     */
     /*
     dgmUnnerfedCategories = [
         categorySkill,
@@ -162,17 +164,18 @@ namespace Effects {
     */
 
     enum Operands {
+        /** @note  '//*' denotes implemented */
         operandADD = 1,             //*
-        operandAGGM = 2,
-        operandAGIM = 3,
-        operandAGORSM = 4,
-        operandAGRSM = 5,
+        operandAGGM = 2,            //*
+        operandAGIM = 3,            //*
+        operandAGORSM = 4,          //*
+        operandAGRSM = 5,           //*
         operandAIM = 6,             //*
-        operandALGM = 7,
-        operandALM = 8,
-        operandALRSM = 9,
+        operandALGM = 7,            //*
+        operandALM = 8,             //*
+        operandALRSM = 9,           //*
         operandAND = 10,            //*
-        operandAORSM = 11,
+        operandAORSM = 11,          //*
         operandATT = 12,            //*
         operandATTACK = 13,
         operandCARGOSCAN = 14,
@@ -194,14 +197,14 @@ namespace Effects {
         operandECMBURST = 30,
         operandEFF = 31,            //*
         operandEMPWAVE = 32,
-        operandEQ = 33,
-        operandGA = 34,
-        operandGET = 35,
-        operandGETTYPE = 36,
-        operandGM = 37,
-        operandGT = 38,
-        operandGTE = 39,
-        operandIA = 40,
+        operandEQ = 33,             //*
+        operandGA = 34,             //*
+        operandGET = 35,            //*
+        operandGETTYPE = 36,        //*
+        operandGM = 37,             //*
+        operandGT = 38,             //*
+        operandGTE = 39,            //*
+        operandIA = 40,             //*
         operandIF = 41,             //*
         operandINC = 42,            //*
         operandINCN = 43,           //*
@@ -209,23 +212,23 @@ namespace Effects {
         operandLAUNCHDEFENDERMISSILE = 45,
         operandLAUNCHDRONE = 46,
         operandLAUNCHFOFMISSILE = 47,
-        operandLG = 48,
-        operandLS = 49,
+        operandLG = 48,             //*
+        operandLS = 49,             //*
         operandMINE = 50,
-        operandMUL = 51,
+        operandMUL = 51,            //*
         operandOR = 52,             //*
         operandPOWERBOOST = 53,
-        operandRGGM = 54,
-        operandRGIM = 55,
-        operandRGORSM = 56,
-        operandRGRSM = 57,
+        operandRGGM = 54,           //*
+        operandRGIM = 55,           //*
+        operandRGORSM = 56,         //*
+        operandRGRSM = 57,          //*
         operandRIM = 58,            //*
-        operandRLGM = 59,
-        operandRLM = 60,
-        operandRLRSM = 61,
-        operandRORSM = 62,
+        operandRLGM = 59,           //*
+        operandRLM = 60,            //*
+        operandRLRSM = 61,          //*
+        operandRORSM = 62,          //*
         operandRS = 63,             //*
-        operandRSA = 64,
+        operandRSA = 64,            //*
         operandSET = 65,            //*
         operandSHIPSCAN = 66,
         operandSKILLCHECK = 67,     //*
@@ -320,116 +323,5 @@ namespace Effects {
  * (73, 'UE', 'raises an user error', 'UserError(%(arg1)s)', 4, 0, 4, 'raise UserError(%(arg1)s)')
  * (74, 'VERIFYTARGETGROUP', 'raises a user error if incorrect target group', 'VerifyTargetGroup()', 0, 0, 4, 'dogma.VerifyTargetGroup(env, None, None)');
  */
-
-////////////////////////////  OLD MODULE EFFECTS CODE/DATA....PHASING OUT /////
-/** @todo  there is much more to be done here.  this is just the beginning.
- * many, many effects missing from dgmModuleEffects table (aknor was hand-writing them)
- *
- * this file is to decode the fields in the 'dgmModuleEffects' table.
- *
- * field defs...
- * effectID             - id of this effect
- * description          - effect description
- * sourceAttribute      - modifier value location
- * targetAttribute      - location of value to be modified
- * calculationType      - calculation to be used when applying this effect.     defined in EVECalculationType
- * rCalculationType     - calculation to be used when removing this effect.     defined in EVECalculationType
- * affectedGrps         - this is a list of groupIDs affected by this effect
- * stacked              - boolean requesting the application of stacking penality for this effect
- * state                - item state needed to apply this effect.               defined in EffectStates
- * targetType           - this is the "type" of item affected by this effect.   defined in EffectTargetTypes
- * effectGrp            - this is the module groupID this effect is applied to
- *
- *
- * Distinguish the difference between targetGroupIDs, targetGroup, affectedGrps, targetType
- *
- * targetGroup      = effectGrp
- * targetGroupIDs   = affectedGrps
- *
- */
-
-// These are used in ModuleEffects.cpp to seperate effects into state containers
-// *** these values are the 'state' bitfield (as integer) and tested during module object creation for effect states
-enum EffectStates
-{
-    EFFECT_UNFITTED             = 0,
-    EFFECT_OFFLINE              = 1,
-    EFFECT_ONLINE               = 2,
-    EFFECT_ACTIVATED            = 4,
-    EFFECT_OVERLOADED           = 8,
-    EFFECT_GANG                 = 16,
-    EFFECT_FLEET                = 32,
-    EFFECT_PASSIVE              = 64   // for character and system effects
-    /*      new shit
-        // these are the effectCategory in dgmEffects table to denote when/where this effect is applied or removed
-        CAT_PASSIVE        = 0,    //Applied when item is just present in fit - implants, skills, offlined modules
-        CAT_ACTIVE         = 1,    //also online effectApplied only when module is activated
-        CAT_TARGET         = 2,    //Applied onto selected target
-        CAT_AREA           = 3,    //No effects with this category, so actual impact is unknown
-        CAT_ONLINE         = 4,    //Applied when module at least onlined
-        CAT_OVERLOADED     = 5,    //Applied only when module is overloaded
-        CAT_DUNGEON        = 6,    //Dungeon effects, several effects exist in this category, but not assigned to any item
-        CAT_SYSTEM         = 7     //System-wide effects, like WH and incursion
-    */
-};
-
-// Target types to which module effects are applied when activated:
-// *** these values are the 'targetType' field
-enum EffectTargetTypes
-{   // 0: zero value.  undefined effect.  this effect is not loaded (currently in testing or incomplete)
-    EFFECT_UNDEFINED            = 0,
-    // 1: the target is the ship to which the module is fitted
-    EFFECT_SHIP                 = 1,
-    // 2: the target is a module fit to same ship. use 'affectedGrps' to decode affected groups
-    EFFECT_MODULE               = 2,
-    // 3: the target is a charge.  use 'affectedGrps' to decode affected groups of charges
-    EFFECT_CHARGE               = 3,
-    // 4: the affected target is the current target of the ship the module is fitted to  (remotes)
-    EFFECT_TARGET               = 4,
-    // 7: passive effect which acts upon the character's attribute specific to the effect  (boosters and implants)
-    EFFECT_CHARACTER            = 5,
-    // 6: passive effect which acts upon all ships in the system with this beacon.  (wormholes and incursions)
-    EFFECT_SYSTEM               = 6
-    /*          new shit
-        ENV_NONE        = 0,
-        ENV_SELF        = 1,
-        ENV_CHAR        = 2,
-        ENV_SHIP        = 3,
-        ENV_TARGET      = 4,
-        ENV_AREA        = 5,
-        ENV_OTHER       = 6
-    */
-};
-
-//calculation types    rewrite 27Dec16    -allan
-// *** these values are the 'calculation' and 'rCalculation' fields
-enum EVECalculationType
-{
-    CALC_NONE                   = 0,
-    CALC_ADD                    = 1,
-    CALC_SUBTRACT               = 2,
-    CALC_MULTIPLY               = 3,
-    CALC_DIVIDE                 = 4,
-    CALC_PERCENTAGE             = 5,
-    CALC_REV_PERCENTAGE         = 6,
-    CALC_ADD_PERCENT            = 7,
-    CALC_SUBTRACT_PERCENT       = 8,
-    CALC_ADD_RESIST             = 9,
-    CALC_SUBTRACT_RESIST        = 10
-    /*      new shit
-        ASSOC_PRE_ASSIGNMENT  = 0,
-        ASSOC_PRE_MUL         = 1,
-        ASSOC_PRE_DIV         = 2,
-        ASSOC_MOD_ADD         = 3,
-        ASSOC_MOD_SUB         = 4,
-        ASSOC_POST_MUL        = 5,
-        ASSOC_POST_DIV        = 6,
-        ASSOC_POST_PERCENT    = 7,
-        ASSOC_POST_ASSIGNMENT = 8,
-        ASSOC_SKILL_TIME      = 9,
-        ASSOC_ADD_RATE        = 10,
-        ASSOC_SUB_RATE        = 11
-    */
-};
 
 #endif  // _EVE_FX_PROC_DATA_H__

@@ -141,7 +141,6 @@ void ActiveModule::Activate(SystemEntity* pSE)
 
     /** @todo   these need to check for targetable actions, and apply changes accordingly */
     /** @todo  this needs to be updated to check for/use targetGroupIDs */
-    EVECalculationType ecType = CALC_NONE;
     bool stacking = false;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
 
@@ -304,7 +303,6 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
     m_ModuleState = MOD_DEACTIVATING;
-    EVECalculationType ecType = CALC_NONE;
     bool stacking = false;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
     StopCycle(abort);

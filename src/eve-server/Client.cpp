@@ -621,6 +621,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     m_shipId = m_ship->itemID();
     m_char->SetActiveShip(m_shipId);    // this also saves shipID for char in db. (error fix)
     m_ship->SetPlayer(this);
+    m_ship->UpdateModules();
 
     char ci[25];
     if (IsInSpace()) {
@@ -648,7 +649,6 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     }
 
     m_ship->SetCustomInfo(ci);
-    m_ship->UpdateModules();
     m_ship->SaveShip();
 
     SetSessionTimer();

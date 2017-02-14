@@ -1164,51 +1164,44 @@ void InventoryItem::LoadEffects()
 
 bool InventoryItem::SkillCheck(InventoryItemRef refItem)
 {
-    bool check = true;
     EvilNumber need = 0, has = 0;
     uint16 attr = 182, skill = 277;
     for (int8 i = 0; i < 3; i++, attr++, skill++) {
         if ((refItem->HasAttribute(attr, need)) and (mAttributeMap.HasAttribute(skill, has))) {
             if (need > has)
-                check = false;
+                return false;
         }
-
-        if (!check)
-            return check;
     }
     if ((refItem->HasAttribute(1285, need)) and (mAttributeMap.HasAttribute(1286, has))) {
         if (need > has)
-            check = false;
+            return false;
     }
-    if (!check)
-        return check;
+
     attr = 1289; skill = 1287;
     for (int8 i = 0; i < 2; i++, attr++, skill++) {
         if ((refItem->HasAttribute(attr, need)) and (mAttributeMap.HasAttribute(skill, has))) {
             if (need > has)
-                check = false;
+                return false;
         }
-
-        if (!check)
-            return check;
     }
-    return check;
+    // all skill requirement checks passed.
+    return true;
 }
 
-void InventoryItem::ApplyEffect(uint8 state, InventoryItemRef src, InventoryItemRef targ)
+void InventoryItem::ApplyEffect(uint8 state)
 {
     FxProc fxProc;
     auto itr = m_stateFxMap.equal_range(state);
     for (auto it = itr.first; it != itr.second; it++) {
-        fxProc.ParseExpression(sFxDataMgr.GetExpression(it->second.preExpression), src, targ, false, true);
+        fxProc.ParseExpression(this, sFxDataMgr.GetExpression(it->second.preExpression), false, true);
     }
 }
 
-void InventoryItem::RemoveEffect(uint8 state, InventoryItemRef src, InventoryItemRef targ)
+void InventoryItem::RemoveEffect(uint8 state)
 {
     FxProc fxProc;
     auto itr = m_stateFxMap.equal_range(state);
     for (auto it = itr.first; it != itr.second; it++) {
-        fxProc.ParseExpression(sFxDataMgr.GetExpression(it->second.postExpression), src, targ, false, true);
+        fxProc.ParseExpression(this, sFxDataMgr.GetExpression(it->second.postExpression), false, true);
     }
 }

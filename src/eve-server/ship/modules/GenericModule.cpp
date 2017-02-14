@@ -37,7 +37,7 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_ChargeState = MOD_UNLOADED;
 
     m_repeat = 0;
-    // incase module item has AttrIsOnline set to true....it shouldn't but this is a catchall.
+    // incase module item has AttrIsOnline set to true....it shouldn't (IsOnline isnt persistant) but this is a catchall.
     m_modRef->PutOffline();
 }
 
@@ -46,15 +46,7 @@ GenericModule::~GenericModule()
     m_modRef->PutOffline();
 }
 
-/** @todo  this needs to be updated (as all module effects methods) to test for targetGroupIDs
- * GetTargetIDList() from ModuleEffects gives a vector of groupIDs each effect works on.
- * these need to be retrieved and checked against current target when module activated.
- * here, in Online(), targetGroupIDs should be checked for a value < 50, in which case this means
- * a category is the intended target (common ones are '6' for "ship" and '32' for "subsystem")
- * onlining passives should give a target group, either ship or another module (or group of modules)
- * to adjust attributes for.
- * ....this will get complicated.  -allan 12April16
- */
+/** @todo  this needs to be updated to use new FxProc code */
 void GenericModule::Online()
 {
     if (m_ModuleState == MOD_UNFITTED)
@@ -66,7 +58,6 @@ void GenericModule::Online()
     m_modRef->PutOnline(isRig());
     m_ModuleState = MOD_ONLINE; // this must be set to online before calling msac or mmac.
 
-    EVECalculationType ecType = CALC_NONE;
     bool stacking = false;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
 }
@@ -81,7 +72,6 @@ void GenericModule::Offline()
         return;     // already deactivating
 
     m_ModuleState = MOD_DEACTIVATING;
-    EVECalculationType ecType = CALC_NONE;
     bool stacking = false;
     uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
 
@@ -89,7 +79,7 @@ void GenericModule::Offline()
     m_modRef->PutOffline();
 }
 
-void GenericModule::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking) {
+void GenericModule::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, Effects::Association type, bool stacking) {
     EvilNumber modVal = GetAttribute(sourceAttrID), startVal = m_shipRef->GetAttribute(targetAttrID), newVal = 0;
     // check for stacking attributes here, and get stacked (cached) effectiveness.
     if (stacking) {
@@ -107,7 +97,7 @@ void GenericModule::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID
         sLog.Error("MSAC::ModifyShipAttributes()","Failed to set attribute %u to %.3f on ship %u", targetAttrID, newVal.get_float(), m_shipRef->itemID());
 }
 
-void GenericModule::ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking) {
+void GenericModule::ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, Effects::Association type, bool stacking) {
     ShipItemRef target = m_shipRef->GetItemFactory()->GetShip(targetItemID);
     if (target)
         ModifyShipAttribute(/*target,*/ targetAttrID, sourceAttrID, type, stacking);
@@ -119,7 +109,7 @@ void GenericModule::ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttr
     }
 }
 
-void GenericModule::ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type)
+void GenericModule::ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, Effects::Association type)
 {
 
 }

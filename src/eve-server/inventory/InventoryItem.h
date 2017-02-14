@@ -273,8 +273,8 @@ public:
     bool SkillCheck(InventoryItemRef refItem);
     bool EffectsLoaded()                                { return m_effectsLoaded; }
 
-    void ApplyEffect(uint8 state, InventoryItemRef src, InventoryItemRef targ);
-    void RemoveEffect(uint8 state, InventoryItemRef src, InventoryItemRef targ);
+    void ApplyEffect(uint8 state);
+    void RemoveEffect(uint8 state);
 
 protected:
     void LoadEffects();

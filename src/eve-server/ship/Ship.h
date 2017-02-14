@@ -389,24 +389,20 @@ public:
     void SetTrueResist(uint16 attrib, EvilNumber& value);
     void GetTrueResist(uint16 attrib, EvilNumber& value);
 
-    void CheckStacking(uint16 attrib, EVECalculationType type, ModuleStates state, EvilNumber& value);
+    void CheckStacking(uint16 attrib, Effects::Association type, ModuleStates state, EvilNumber& value);
+    void ApplyModifiers();
 
-    // all this needs to be moved to ShipItem, as the ship should hold all data concerning its attribs, it's fitted module's attribs, and it's module's loaded charges attribs
-    //  and it has easy reference to its own modifers, it's pilot's skills and implants/boosters, and it's fitted modules.
-    //void ProcessEffect(Effect* e);
-    //void ProcessSubEffect(SubEffect * e);
+    void ApplyShipEffects();
+    void ApplySkillEffects();
 
-    bool AddEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef);
-    bool RemoveEffect(uint32 attributeID, uint32 originatorID, ModifierRef modifierRef);
+    void AddEffect(uint16 attributeID, InventoryItemRef iRef);
+    void RemoveEffect(uint16 attributeID, InventoryItemRef iRef);
 
 private:
-    std::map<uint16, uint8> m_stackMap;
-    std::map<uint16, float> m_resistMap;
+    typedef std::list<GenericModule*> modList;
+    std::map<uint16, modList> m_stackMap;     // stacking attrib storage  attrib, list<module*>
+    std::map<uint16, modList> m_attribMap;    // non-stacking attrib storage  attrib, list<module*>
 
-    std::unordered_map<uint16, GenericModule*> m_attribMap;    //* attrib storage  attrib, module
-
-    //modifier maps, we own these
-    ModifierMaps* m_ModifierMaps;    // attribID, ModifierMap<std::multimap<double, Modifier>>  where double is final post-calc modifier value
 };
 
 /**
