@@ -92,16 +92,10 @@ zlib/
 
 # evemu output
 build/
+buildRel/
 
 # doxygen output
 doc/
-
-# evemu playertools
-utils/playertools/
-
-# initial GC code
-src/eve-gc/
-src/eve-core/borrowed/
 
 # DS_Store stuff
 .DS_Store

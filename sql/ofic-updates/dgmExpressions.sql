@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jan 29, 2017 at 11:09 AM
+-- Generation Time: Feb 15, 2017 at 09:48 PM
 -- Server version: 10.0.24-MariaDB
 -- PHP Version: 5.6.21
 
@@ -26,9 +26,10 @@ SET time_zone = "+00:00";
 -- Table structure for table `dgmExpressions`
 --
 
-CREATE TABLE IF NOT EXISTS `dgmExpressions` (
+DROP TABLE IF EXISTS `dgmExpressions`;
+CREATE TABLE `dgmExpressions` (
   `expressionID` int(11) NOT NULL,
-  `operandID` tinyint(3) unsigned NOT NULL,
+  `operandID` smallint(3) unsigned NOT NULL,
   `arg1` smallint(5) unsigned NOT NULL,
   `arg2` smallint(5) unsigned NOT NULL,
   `expressionValue` varchar(100) NOT NULL,
@@ -36,8 +37,7 @@ CREATE TABLE IF NOT EXISTS `dgmExpressions` (
   `expressionName` varchar(500) NOT NULL,
   `expressionTypeID` smallint(5) unsigned NOT NULL,
   `expressionGroupID` smallint(5) unsigned NOT NULL,
-  `expressionAttributeID` smallint(5) unsigned NOT NULL,
-    PRIMARY KEY (expressionID)
+  `expressionAttributeID` smallint(5) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -516,7 +516,7 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (629, 27, 0, 0, '4', '', 'raceAmarr', 0, 0, 0),
 (630, 27, 0, 0, '8', '', 'raceGallente', 0, 0, 0),
 (631, 27, 0, 0, '16', '', 'raceJove', 0, 0, 0),
-(632, 67, 634, 0, 'SkillCheck', '', 'SkillCheck(OnlineHasSkillPrerequisites)', 0, 0, 0),
+(632, 67, 634, 0, '', '', 'SkillCheck(OnlineHasSkillPrerequisites)', 0, 0, 0),
 (633, 10, 632, 387, '', '', '(SkillCheck(OnlineHasSkillPrerequisites)) AND (If(CurrentShip.cpuOutput()>=(CurrentShip.cpuLoad())+(CurrentSelf.cpu())), Then (If(CurrentShip.powerOutput()>=(CurrentShip.powerLoad())+(CurrentSelf.power())), Then (CurrentSelf->isOnline := Int(1));     (((CurrentShip->cpuLoad).(ModAdd)).AddItemModifier (cpu));     (((CurrentShip->powerLoad).(ModAdd)).AddItemModifier (power)) OR UserError(NotEnoughPower)) OR UserError(NotEnoughCpu))', 0, 0, 0),
 (634, 28, 0, 0, 'OnlineHasSkillPrerequisites', '', 'OnlineHasSkillPrerequisites', 0, 0, 0),
 (635, 12, 4, 166, '', '', 'CurrentShip->cpu', 0, 0, 0),
@@ -874,7 +874,7 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (1060, 12, 1, 1059, '', '', 'CurrentSelf->skillLevel', 0, 0, 0),
 (1061, 31, 7, 1060, '', '', '(CurrentSelf->skillLevel).(ModAdd)', 0, 0, 0),
 (1062, 22, 0, 0, '', '', 'skillPoints', 0, 0, 276),
-(1063, 21, 0, 0, 'SkillCheck', '', 'SkillCheck()', 0, 0, 0),
+(1063, 21, 0, 0, '9', '', '9', 0, 0, 0),
 (1064, 6, 1061, 1062, '', '', '((CurrentSelf->skillLevel).(ModAdd)).AddItemModifier (skillPoints)', 0, 0, 0),
 (1065, 31, 1063, 1060, '', '', '(CurrentSelf->skillLevel).(9)', 0, 0, 0),
 (1066, 22, 0, 0, '', '', 'skillTimeConstant', 0, 0, 275),
