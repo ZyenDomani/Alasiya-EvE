@@ -202,7 +202,7 @@ namespace EVEDB {
             Convoy = 297,
             Convoy_Drone = 298,
             Repair_Drone = 299,
-            Cyberimplant = 300,
+            CyberImplant = 300,
             Concord_Drone = 301,
             Magnetic_Field_Stabilizer = 302,
             Booster = 303,

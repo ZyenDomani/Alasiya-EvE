@@ -17,25 +17,28 @@
 
 
 class FxProc
+: public Singleton<FxProc>
 {
 public:
-    FxProc();
-    virtual ~FxProc();
+    FxProc() { }
+    ~FxProc() { }
 
-    EvilNumber CalculateAttributeValue(EvilNumber val1, EvilNumber val2, Effects::Association type);
+    EvilNumber CalculateAttributeValue(EvilNumber val1, EvilNumber val2, /*Effects::Association*/int8 assoc);
 
     // new effects system
     void EvaluateExpression(const uint16 expID);
     int8 GetEnvironmentEnum(const std::string& domain);
     int8 GetAssociationEnum(const std::string& association);
 
-    std::string ParseExpression(InventoryItem* pItem, Expression expression, bool restricted = false, bool topLevel = false);
+    std::string ParseExpression(Expression expression, bool restricted = false, bool topLevel = false);
 
 protected:
 
 private:
 
-
 };
+
+#define sFxProc \
+( FxProc::get() )
 
 #endif  // _EVE_FX_PROC_H__

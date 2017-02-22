@@ -35,9 +35,6 @@
 #include "inventory/InventoryItem.h"
 
 
-/************************************************************************/
-/* Start of new attribute system                                        */
-/************************************************************************/
 AttributeMap::AttributeMap( InventoryItem& item)
 : mItem(item),
   mChanged(true)
@@ -92,9 +89,18 @@ bool AttributeMap::Save() {
     Inserts << "INSERT INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) ";
     bool first = true;
     AttrMapItr itr = mAttributes.begin();
-    /** @todo  test for and save ONLY damage attributes (for persistance) EXCEPT on ships (saved separately) */
-    // it will probably be AttrDamage
+    /** @todo  test for and save the following:
+     *  damage attributes for items (for persistance)
+     *  sp/lvl attribs for skills
+     *  size/etc for roids (should be in bms)
+     * 
+     * ships saved separately
+     */
     for (; itr != mAttributes.end(); itr++) {
+        if (mItem.groupID() != EVEDB::invGroups::Character)
+            if ((itr->first != AttrDamage) or (itr->first != AttrSkillPoints) or (itr->first != AttrSkillLevel))
+                continue;
+
         if (first) {
             Inserts << "VALUES";
             first = false;
@@ -286,6 +292,7 @@ void AttributeMap::SaveShipState()
     }
 }
 
+/** @todo update delete functions */
 bool AttributeMap::Delete() {
     DBerror err;
     if (!sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u", mItem.itemID())) {
@@ -315,6 +322,3 @@ AttributeMap::AttrMapItr AttributeMap::begin() {
 AttributeMap::AttrMapItr AttributeMap::end() {
     return mAttributes.end();
 }
-/************************************************************************/
-/* End of new attribute system                                          */
-/************************************************************************/

@@ -108,11 +108,11 @@ bool ShipItem::_Load()
     if (!HasAttribute(AttrPowerLoad))                   SetAttribute(AttrPowerLoad, 0);
     if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, 0.0f);
     if (!HasAttribute(AttrUpgradeLoad))                 SetAttribute(AttrUpgradeLoad, 0);
-    // shield and cap are part of persistance, and loaded on attrib map initalization.  check for value here
+    // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
     if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrShieldCapacity));
     if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrCapacitorCapacity));
     if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS));
-    // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some already have it defined):
+    // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some (t2 indy) already have it defined):
     if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, 0.0f);
     if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, 1.0f);
     if (!HasAttribute(AttrArmorMaxDamageResonance))     SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
@@ -169,6 +169,77 @@ bool ShipItem::_Load()
 
 void ShipItem::Init()
 {
+    if (m_type.groupID() == EVEDB::invGroups::Capsule) {
+        InitPod();
+        return;
+    }
+    Character* pChar = m_pilot->GetChar().get();
+    if (!pChar) {
+        _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot.", itemName().c_str(), itemID());
+        return;
+    }
+
+    /** @todo These all still need to have ship bonuses applied */
+    // these get default from item type.  specific non-damage attrs are NOT saved.
+    float pg = GetDefaultAttribute(AttrPowerOutput).get_int();
+    float cpu = GetDefaultAttribute(AttrCpuOutput).get_float();
+    float hullHP = GetDefaultAttribute(AttrHP).get_int();
+    float armorHP = GetDefaultAttribute(AttrArmorHP).get_float();
+    float capCapacity = GetDefaultAttribute(AttrCapacitorCapacity).get_float();
+    float shipInertia = GetDefaultAttribute(AttrInetia).get_float();
+    double warpCapNeed = GetDefaultAttribute(AttrWarpCapacitorNeed).get_float();
+    float capChargeRate = GetDefaultAttribute(AttrRechargeRate).get_float();
+    float shieldCapacity = GetDefaultAttribute(AttrShieldCapacity).get_float();
+    float shipMaxVelocity = GetDefaultAttribute(AttrMaxVelocity).get_float();
+    float shieldChargeRate = GetDefaultAttribute(AttrShieldRechargeRate).get_float();
+
+    pg *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEngineering, true))));                       // 5% increase
+    cpu *=  (1 + (0.05 * (pChar->GetSkillLevel(skillElectronics, true))));                      // 5% increase
+    hullHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillMechanics, true))));                     // 5% increase
+    armorHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillHullUpgrades, true))));                 // 5% increase
+    capCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEnergyManagement, true))));         // 5% increase
+    shipInertia *= pChar->GetAgilitySkills(HasAttribute(AttrIsCapitalSize));                    // multiple skill effects
+    warpCapNeed *=  (1 - (0.1 * ( pChar->GetSkillLevel(skillWarpDriveOperation, true))));       // 10% decrease
+    capChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillEnergySystemsOperation, true)))); // 5% decrease
+    shieldCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillShieldManagement, true))));      // 5% increase
+    shipMaxVelocity *= (1 + (0.05 * ( pChar->GetSkillLevel(skillNavigation, true))));           // 5% increase
+    shieldChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillShieldOperation, true))));     // 5% decrease
+
+    // add checks for implants here.
+
+    /* to reset for new pilot:
+     * offline all modules
+     * reset ship attribs
+     * add new pilot skills
+     * online all modules
+     */
+
+    SetAttribute(AttrHP, hullHP);
+    SetAttribute(AttrMass, type().mass());   // no default mass in ship item.
+    SetAttribute(AttrInetia, shipInertia);
+    SetAttribute(AttrArmorHP, armorHP);
+    SetAttribute(AttrCpuOutput, cpu);
+    SetAttribute(AttrPowerOutput, pg);
+    SetAttribute(AttrMaxVelocity, shipMaxVelocity);
+    SetAttribute(AttrRechargeRate, capChargeRate);
+    SetAttribute(AttrShieldCapacity, shieldCapacity);
+    SetAttribute(AttrCapacitorCharge, capCapacity);
+    SetAttribute(AttrWarpCapacitorNeed, warpCapNeed);
+    SetAttribute(AttrShieldRechargeRate,shieldChargeRate );
+    // will eventually code checks for char boarding a tackled ship.  warpScram will be updated then
+    SetAttribute(AttrWarpScrambleStatus, 0);
+
+    /* AttrMass = 4,    (largest mass = Leviathan(3764) @ 2,430,000,000kg)
+     * AttrMassLimit = 622,
+     * AttrMassAddition = 796,
+     * AttrMassMultiplier = 1471,
+     */
+    /*   look into these, too...
+     * AttrWarpSBonus(624) [rigs and implants]
+     * AttrWarpFactor(21) [all are 0]
+     * AttrWarpInhibitor(29) [default is null]
+     */
+
     // create and initialize the module manager if not already done
     if (!m_ModuleManager)
         m_ModuleManager = new ModuleManager(this);
@@ -201,13 +272,15 @@ void ShipItem::SetPlayer(Client* pClient) {
     m_pilot = pClient;
     if (!m_pilot) {
         // remove ship effects and char skill effects for char leaving ship here.
+        ProcessEffects(false);
         // should we check for cargo and damage after char leaves ship?  maybe later
         if (m_ModuleManager)
             m_ModuleManager->CharacterLeavingShip();
         return;
     }
     Init();
-    // set char skill effects then ship effects for char boarding ship here.
+    ProcessEffects(true);
+    ApplyEffects();
     m_ModuleManager->CharacterBoardingShip();
 }
 
@@ -634,11 +707,16 @@ void ShipItem::Undock() {
         // Heal Ship completely on test server
         Heal();
     } else {
-        // live server will ONLY Recharge shields and cap
-        SetShipShield(1.0);
-        SetShipCapacitorLevel(1.0);
+        // live server will Recharge shields and cap if session change isnt active
+        if (!m_pilot->IsSessionChange()) {
+            SetShipShield(1.0);
+            SetShipCapacitorLevel(1.0);
+        }
     }
+    // apply ship effects
+    ApplyEffects();
     //get list of modules to activate from ShipBound::Handle_Undock()
+    // calling Online() on modules will also apply their state 0 effects
     for (auto cur : m_onlineModuleVec) {
         if (m_ModuleManager)
             m_ModuleManager->Online(cur);
@@ -1149,16 +1227,62 @@ std::string ShipItem::GetShipDNA()
 }
 
 // new effects system.  wip
-// these below are not used yet.  WIP for new effect processing system.
-
-void ShipItem::ApplyShipEffects()
+void ShipItem::ProcessEffects(bool add/*true*/)
 {
-    ApplyEffect(0);
+    fxData data;
+    data.assoc = data.targEnv = data.targAttr = data.srcAttr = data.grpID = data.typeID = 0;
+    auto itr = m_stateFxMap.equal_range(0);
+    for (auto it = itr.first; it != itr.second; it++) {
+        if (add)
+            ParseExpression(sFxDataMgr.GetExpression(it->second.preExpression), data);
+        else
+            ParseExpression(sFxDataMgr.GetExpression(it->second.postExpression), data);
+    }
 }
 
-void ShipItem::ApplySkillEffects()
+void ShipItem::ApplyEffects()
 {
-    m_pilot->GetChar()->ApplyEffect(0);
+    for (auto cur : m_modifiers) {  // k,v of assoc, data<assoc, targEnv, targAttr, srcAttr, grpID, typeID>
+        // dunno yet....wip
+        if (cur.second.grpID)
+            ; // required group location
+        if (cur.second.typeID)
+            ; // required type location
+
+        // get targEnv
+        using namespace Effects;
+        switch (cur.second.targEnv) {
+            case dgmEnvInvalid: {   // null
+            } break;
+            case dgmEnvSelf: {      // ship
+            } break;
+            case dgmEnvChar: {      // pilot
+            } break;
+            case dgmEnvShip: {      // should be self.  probably not used for ship effects
+            } break;
+            case dgmEnvTarget: {    // not used for ship effects
+            } break;
+            case dgmEnvOther: {     // charges?
+            } break;
+            case dgmEnvArea: {      // not used for ship effects
+            } break;
+        }
+
+        // get targAttr
+        EvilNumber targAttr = GetAttribute(cur.second.targAttr);
+
+        // get srcAttr, check for nerf, modify value as needed
+        EvilNumber srcAttr = mAttributeMap.GetAttribute(cur.second.srcAttr);
+
+        // send data to calculator
+        EvilNumber newAttr = sFxProc.CalculateAttributeValue(targAttr, srcAttr, cur.first);
+        // set new calculated value for target attribute
+        SetAttribute(cur.second.targAttr, newAttr, false); // no, dont notifiy client of change.  will be updated after undock, when requesting ship info
+    }
+}
+
+void ShipItem::RemoveEffects()
+{
 }
 
 void ShipItem::AddEffect(uint16 attributeID, InventoryItemRef iRef)
@@ -1178,9 +1302,6 @@ void ShipItem::ApplyModifiers()
 
 
 /*
-# Stacking penalty base constant, used in attribute calculations
-PENALTY_BASE = 1 / exp((1 / 2.67) ** 2)
-
 # Items belonging to these categories never have
 # their effects stacking penalized
 PENALTY_IMMUNE_CATEGORIES = (
@@ -1191,6 +1312,9 @@ PENALTY_IMMUNE_CATEGORIES = (
     Category.subsystem
 )
 
+# Stacking penalty base constant, used in attribute calculations
+PENALTY_BASE = 1 / exp((1 / 2.67) ** 2)
+
 # Tuple with penalizable operators
 PENALIZABLE_OPERATORS = (
     Operator.pre_mul,
@@ -1200,45 +1324,138 @@ PENALIZABLE_OPERATORS = (
     Operator.post_div
 )
 
-# Map which helps to normalize modifiers
-NORMALIZATION_MAP = {
-    Operator.pre_assign: lambda val: val,
-    Operator.pre_mul: lambda val: val,
-    Operator.pre_div: lambda val: 1 / val,
-    Operator.mod_add: lambda val: val,
-    Operator.mod_sub: lambda val: -val,
-    Operator.post_mul: lambda val: val,
-    Operator.post_div: lambda val: 1 / val,
-    Operator.post_percent: lambda val: val / 100 + 1,
-    Operator.post_assign: lambda val: val
-}
-
-# List operator types, according to their already normalized values
-ASSIGNMENTS = (
-    Operator.pre_assign,
-    Operator.post_assign
-)
-ADDITIONS = (
-    Operator.mod_add,
-    Operator.mod_sub
-)
-MULTIPLICATIONS = (
-    Operator.pre_mul,
-    Operator.pre_div,
-    Operator.post_mul,
-    Operator.post_div,
-    Operator.post_percent
-)
-
-# Following attributes have limited precision - only
-# to second number after point
-LIMITED_PRECISION = (
-    Attribute.cpu,
-    Attribute.power,
-    Attribute.cpu_output,
-    Attribute.power_output
-)
 */
+
+void ShipItem::ParseExpression(Expression expression, fxData data)
+{
+    using namespace Effects;
+    switch(expression.operandID) {
+        // trivial attribute operations
+        case operandATT: {      //'%(arg1)s->%(arg2)s'      (domain:attribID)
+            if (expression.arg1)
+                ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            if (expression.arg2)
+                ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+
+        // these return the given expressionValue
+        case operandDEFBOOL:    // this evaulates to 'true' (Bool(1))
+        case operandDEFINT: {   // this is used as  0,1,2,{raceID}
+            // not sure what to do here
+            expression.expressionValue;
+        } break;
+        case operandDEFASSOCIATION: {
+            data.assoc = sFxProc.GetAssociationEnum(expression.expressionValue);
+        } break;
+        case operandDEFENVIDX: {
+            data.targEnv = sFxProc.GetEnvironmentEnum(expression.expressionValue);
+        } break;
+
+        // these provide the given expression*ID
+        case operandDEFATTRIBUTE: {    // check this....
+            if (expression.expressionAttributeID) {
+                if (data.targAttr)
+                    data.srcAttr = expression.expressionAttributeID;
+                else
+                    data.targAttr = expression.expressionAttributeID;
+            }
+        } break;
+        case operandDEFGROUP: {    //
+            if (expression.expressionGroupID)
+                data.grpID = expression.expressionGroupID;
+        } break;
+        case operandDEFTYPEID: {    //
+            if (expression.expressionTypeID)
+                data.typeID = expression.expressionTypeID;
+        } break;
+
+        // do as stated
+        case operandCOMBINE: { // executes two statements  '%(arg1)s); (%(arg2)s'
+            fxData data1;
+            data1.assoc = data1.targEnv = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = 0;
+            if (expression.arg1)
+                ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data1);
+            data1.assoc = data1.targEnv = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = 0;
+            if (expression.arg2)
+                ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data1);
+        } break;
+
+        // these function calls are a bit more complicated...will need more work and better understanding
+        case operandGM: {    //'%(arg1)s.GetModule(%(arg2)s)'      --used by subsystems as (GetModule(Ship.201):55)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+        case operandGETTYPE: {    //'%(arg1)s.GetTypeID()'  --used by SRLG in AORSM/RORSM
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+        case operandLG: {    //'%(arg1)s.LocationGroup.%(arg2)s'  -- specify a group in a location'
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+        case operandLS: {    //'%(arg1)s.SkillRequiredLocationGroup[%(arg2)s]'  --  specify a group by skill requirement...not sure how to do this
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+
+        // effect function calls.
+        // here is where we'll actually add the modifier data to the map
+        case operandAIM: {    //
+            //'dogma.AddItemModifier(env,%(arg1)s, %(arg2)s)'
+            Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
+            ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
+        } break;
+        case operandALGM: {    //7,(%(arg1)s).AddLocationGroupModifier (%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
+        } break;
+        case operandALM: {    //8,(%(arg1)s).AddLocationModifier (%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
+        } break;
+        case operandALRSM: {    //9,(%(arg1)s).AddLocationRequiredSkillModifier(%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
+        } break;
+        case operandAORSM: {    //11,(%(arg1)s).AddOwnerRequiredSkillModifier(%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
+        } break;
+        /** @todo  will have to figure out how to remove modifiers and delete from the map(s) */
+        // why?  reset everything....
+        case operandRIM: {    //
+            //'dogma.RemoveItemModifier(env,%(arg1)s, %(arg2)s)'
+            Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
+            ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            //m_modifiers.erase();
+        } break;
+        case operandRLGM: {    //59,(%(arg1)s).RemoveLocationGroupModifier (%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+        case operandRLM: {    //60, (%(arg1)s).RemoveLocationModifier (%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+        case operandRLRSM: {    //61,(%(arg1)s).RemoveLocationRequiredSkillModifier(%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+        case operandRORSM: {    //62, (%(arg1)s).RemoveOwnerRequiredSkillModifier(%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+    }
+}
 
 
 /* DynamicSystemEntity representing ship object in space */

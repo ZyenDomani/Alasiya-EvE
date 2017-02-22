@@ -252,7 +252,6 @@ protected:
     const uint32            m_itemID;
     std::string             m_itemName;
 
-private:
     // our item data:
     bool                    m_contraband;
     bool                    m_singleton;
@@ -264,6 +263,7 @@ private:
     EVEItemFlags            m_flag;
     GPoint                  m_position;
 
+private:
     // for asteroid item:
     AsteroidData m_roidData;
 
@@ -279,7 +279,6 @@ public:
 protected:
     void LoadEffects();
 
-private:
     bool m_effectsLoaded;
 
     std::unordered_multimap<uint16, Effect> m_stateFxMap;  // k,v of state, data   -to search by state

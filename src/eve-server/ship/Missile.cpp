@@ -44,14 +44,17 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
   m_lifeTimer(0)
 {
     m_destiny = new DestinyManager(this);
+    Character* pChar(nullptr);
 
     if (ship->HasPilot()) {
-        m_ownerID = ship->GetPilot()->GetCharacterID();
-        m_warID = ship->GetPilot()->GetWarFactionID();
-        m_allyID = ship->GetPilot()->GetAllianceID();
-        m_corpID = ship->GetPilot()->GetCorporationID();
+        pChar = m_ship->GetPilot()->GetChar().get();
+        m_ownerID = pChar->itemID();
+        m_allyID = pChar->allianceID();
+        m_corpID = pChar->corporationID();
+        m_warID = pChar->warFactionID();
     } else {
         m_ownerID = ship->itemID();
+        /** @todo finish these for npcs */
         m_warID = 0;
         m_allyID = 0;
         m_corpID = 0;
@@ -64,7 +67,8 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
 
     m_hitTimer.Disable();
     double flightTime = self->GetAttribute(AttrExplosionDelay).get_float();
-    flightTime *= (1 + ( 0.1 * (ship->GetPilot()->GetChar()->GetSkillLevel(skillMissileBombardment, true)))); // 10% increase in flightTime
+    if (ship->HasPilot())
+        flightTime *= (1 + ( 0.1 * (pChar->GetSkillLevel(skillMissileBombardment, true)))); // 10% increase in flightTime
     if (sConfig.rates.missileTime != 1.0)
         flightTime *= sConfig.rates.missileTime;
     m_lifeTimer.Start(flightTime);
@@ -100,9 +104,10 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
     double DRF = m_self->GetAttribute(AttrAoeDamageReductionFactor).get_float(); // Damage Reduction Factor
     double DRS = m_self->GetAttribute(AttrAoeDamageReductionSensitivity).get_float(); // Damage Reduction Sensitivity
 
-    Character* pChar = m_ship->GetPilot()->GetChar().get();
-    Er *=  (1 - ( 0.05 * (pChar->GetSkillLevel(skillGuidedMissilePrecision, true))));  //  5% decrease in exp radius
-    Ev *=  (1 + ( 0.1 * (pChar->GetSkillLevel(skillTargetNavigationPrediction, true))));  // 10% increase in exp velocity
+    if (ship->HasPilot()) {
+        Er *=  (1 - ( 0.05 * (pChar->GetSkillLevel(skillGuidedMissilePrecision, true))));  //  5% decrease in exp radius
+        Ev *=  (1 + ( 0.1 * (pChar->GetSkillLevel(skillTargetNavigationPrediction, true))));  // 10% increase in exp velocity
+    }
 
     GPoint Vel = m_target->GetVelocity();
     double V = Vel.length();
@@ -111,7 +116,11 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
     double v2 = pow(((Ev/V) * (Sr/Er)), (log(DRF) / log(DRS)));
     m_damageMod = Min(v1, v2);
 
+    if (!ship->HasPilot())
+        return;
+
     // damage adjustments here...
+    m_damageMod *= pChar->GetAttribute(AttrMissileDamageMultiplier).get_float();    //skill/implant/booster modifier
     m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillWarheadUpgrades, true)))); // 5% increase in damage (upped from 2%)
 
     switch (m_self->groupID()) {

@@ -11,18 +11,13 @@
 #include "effects/EffectsProcessor.h"
 #include "inventory/InventoryItem.h"
 
-FxProc::FxProc()
-{
-}
 
-FxProc::~FxProc()
-{
-}
-
-EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1, EvilNumber val2, Effects::Association type)
+EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1, EvilNumber val2, int8 assoc)
 {
     using namespace Effects;
-    switch (type) {
+    switch (assoc) {
+        case dgmAssInvalid:
+            _log(SHIP__MODULE_ERROR, "CalculateNewAttributeValue() - Invalid Association used");
         case dgmAssSkillCheck:
         case dgmAssPreAssignment:
         case dgmAssPostAssignment:
@@ -40,7 +35,7 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1, EvilNumber val2, Eff
         case dgmAssPostPercent:
             return val1 * ((100 + val2) / 100);
     }
-    _log(SHIP__MODULE_ERROR, "CalculateNewAttributeValue() - Unknown Association used: %i", (int)type);
+    _log(SHIP__MODULE_ERROR, "CalculateNewAttributeValue() - Unknown Association used: %i", (int8)assoc);
     return 0;
 }
 
@@ -97,11 +92,11 @@ int8 FxProc::GetEnvironmentEnum(const std::string& domain)
 void FxProc::EvaluateExpression(const uint16 expID)
 {
     std::string res = "\n";
-    res += ParseExpression(nullptr, sFxDataMgr.GetExpression(expID), false, true);
+    res += ParseExpression(sFxDataMgr.GetExpression(expID), false, true);
     sLog.Green("EvaluateExpression", "expID %u: %s", expID, res.c_str());
 }
 
-std::string FxProc::ParseExpression(InventoryItem* pItem, Expression expression, bool restricted/*false*/, bool topLevel/*false*/)
+std::string FxProc::ParseExpression(Expression expression, bool restricted/*false*/, bool topLevel/*false*/)
 {
     using namespace Effects;
 
@@ -113,10 +108,10 @@ std::string FxProc::ParseExpression(InventoryItem* pItem, Expression expression,
              ret << "UserError(env";
              std::string a1 = "", a2 = "";
              if (expression.arg1) {
-                 a1 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1));
+                 a1 = ParseExpression(sFxDataMgr.GetExpression(expression.arg1));
                  ret << ", " << a1;
                  if (expression.arg2) {
-                     a2 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2));
+                     a2 = ParseExpression(sFxDataMgr.GetExpression(expression.arg2));
                      ret << ", " << a2;
                 }
             } else
@@ -127,269 +122,249 @@ std::string FxProc::ParseExpression(InventoryItem* pItem, Expression expression,
         // these return the provided expressionValue
         case operandDEFASSOCIATION:
         case operandDEFENVIDX:
-        case operandDEFBOOL:
-        case operandDEFINT: {
+        case operandDEFBOOL:    // this evaulates to 'true' (Bool(1))
+        case operandDEFINT: {   // this is used as  0,1,2,{raceID}
             //if (topLevel)
                 ret << expression.expressionValue;
         } break;
-        case operandDEFFLOAT: {    //
+        case operandDEFFLOAT:   // not used
+        case operandDEFSTRING: { // errors and SkillCheck()
             if (expression.expressionValue != "")
                 ret << expression.expressionValue;
-            else
-                ret << "(defFloat.value==NULL)";
-        } break;
-        case operandDEFSTRING: { //
-            if (expression.expressionValue != "")
-                ret << expression.expressionValue;
-            else
-                ret << "(defString.value==NULL)";
         } break;
         // these provide the given expression*ID
         case operandDEFATTRIBUTE: {    //
-            if (expression.expressionAttributeID) {
+            if (expression.expressionAttributeID)
                 ret << expression.expressionAttributeID;
-            }
         } break;
         case operandDEFGROUP: {    //
-            if (expression.expressionGroupID){
+            if (expression.expressionGroupID)
                 ret << expression.expressionGroupID;
-            } else if (expression.expressionValue != "") {
-                ret << "(*GroupName* " << expression.expressionValue << ")";
-                /*
-                 *        groupName = expression.expressionValue.replace(' ', '')
-                 *        groupName = 'group' + groupName[0].upper() + groupName[1:]
-                 *        if hasattr(const, groupName)
-                 *            return str(getattr(const, groupName));
-                 */}
         } break;
         case operandDEFTYPEID: {    //
-            if (expression.expressionTypeID) {
+            if (expression.expressionTypeID)
                 ret << expression.expressionTypeID;
-            } else if (expression.expressionValue != "") {
-                ret << "(*TypeName* " << expression.expressionValue << ")";
-                /*
-                 *        typeName = expression.expressionValue.replace(' ', '')
-                 *        typeName = 'type' + typeName[0].upper() + typeName[1:]
-                 *        if hasattr(const, typeName)
-                 *            return str(getattr(const, typeName));
-                 */}
         } break;
         // do as stated
         case operandCOMBINE: { // executes two statements  '%(arg1)s); (%(arg2)s'
             if (expression.arg1)
-                ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted) << "\n";
+                ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << "\n";
             if (expression.arg2)
-                ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted);
+                ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted);
         } break;
         case operandEFF: {      //define association type  '(%(arg2)s).(%(arg1)s)'
-            std::string arg1= "nil", arg2 = "nil";
+            std::string arg1 = "nil", arg2 = "nil";
             if (expression.arg1)
-                arg1 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted);
+                arg1 = ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted);
             if (expression.arg2)
-                arg2 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted);
+                arg2 = ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted);
             ret  << arg1 << ", " << arg2;
         } break;
 
         // these are trivial attribute operations
         case operandATT: {      //'%(arg1)s->%(arg2)s'      (domain:attribID)
-            std::string arg1= "", arg2 = "";
+            std::string arg1 = "nil", arg2 = "nil";
             if (expression.arg1)
-                arg1 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted);
+                arg1 = ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted);
             if (expression.arg2)
-                arg2 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted);
+                arg2 = ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted);
             ret << "(" << arg1 << ":" << arg2 << ")";
         } break;
         case operandADD: {      //'(%(arg1)s)+(%(arg2)s)'
-            std::string arg1= "", arg2 = "";
+            std::string arg1 = "nil", arg2 = "nil";
             if (expression.arg1)
-                arg1 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted);
+                arg1 = ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted);
             if (expression.arg2)
-                arg2 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted);
+                arg2 = ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted);
             ret << "(" << arg1 << "+" << arg2 << ")";
         } break;
         case operandSUB: {      //'(%(arg1)s)-(%(arg2)s)'
-            std::string arg1= "", arg2 = "";
+            std::string arg1 = "nil", arg2 = "nil";
             if (expression.arg1)
-                arg1 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted);
+                arg1 = ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted);
             if (expression.arg2)
-                arg2 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted);
+                arg2 = ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted);
             ret << "(" << arg1 << "-" << arg2 << ")";
         } break;
         case operandMUL: {    //'(%(arg1)s)*(%(arg2)s)'
-            std::string arg1= "", arg2 = "";
+            std::string arg1 = "nil", arg2 = "nil";
             if (expression.arg1)
-                arg1 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted);
+                arg1 = ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted);
             if (expression.arg2)
-                arg2 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted);
+                arg2 = ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted);
             ret << "(" << arg1 << "*" << arg2 << ")";
         } break;
         case operandEQ: {    //'%(arg1)s == %(arg2)s'
-            ret << "(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << "==";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << "==";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandGT: {    //'%(arg1)s> %(arg2)s'
-            ret << "(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ">";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ">";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandGTE: {   //'%(arg1)s>=%(arg2)s'
-            ret << "(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ">=";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ">=";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandINC: {      //'%(arg1)s+=self.%(arg2)s'
-            ret << "(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted) << " += (Self:";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted) << "))";
+            ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << " += (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << "))";
         } break;
         case operandINCN: {     //'%(arg1)s+=%(arg2)s'
-            ret << "(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted) << " += ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
+            ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << " += (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
         } break;
         case operandDEC: {      //'%(arg1)s-=self.%(arg2)s'
-            ret << "(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted) << " -= (Self:";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted) << "))";
+            ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << " -= (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << "))";
         } break;
         case operandDECN: {     //'%(arg1)s-=%(arg2)s'
-            ret << "(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted) << " -= ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
+            ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << " -= (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
         } break;
 
         // effect function calls.   handled in ShipItem class in Ship.cpp
         case operandSKILLCHECK: { //'dogma.SkillCheck(env, %(arg1)s, %(arg2)s)'
-            ret << "SkillCheck(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted);
+            ret << "SkillCheck(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted);
             if (expression.arg2) {
-                ret << ", " << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted);
+                ret << ", " << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted);
             }
             ret << ")";
         } break;
         case operandAIM: {    //
             //'dogma.AddItemModifier(env,%(arg1)s, %(arg2)s)'
             Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
-            ret << "AddModifier(" << ParseExpression(pItem, sFxDataMgr.GetExpression(arg1Expression.arg1));
-            ret << ", " << ParseExpression(pItem, sFxDataMgr.GetExpression(arg1Expression.arg2)) << ", (Self:";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << "))";
+            ret << "AddItemModifier(" << ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1));
+            ret << ", " << ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << "))";
         } break;
         case operandRIM: {    //
             //'dogma.RemoveItemModifier(env,%(arg1)s, %(arg2)s)'
             Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
-            ret << "RemoveModifier(" << ParseExpression(pItem, sFxDataMgr.GetExpression(arg1Expression.arg1));
-            ret << ", " << ParseExpression(pItem, sFxDataMgr.GetExpression(arg1Expression.arg2)) << ", (Self:";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << "))";
+            ret << "RemoveItemModifier(" << ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1));
+            ret << ", " << ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << "))";
         } break;
-        case operandAGGM: {    //2,[%(arg1)s].AGGM(%(arg2)s)
-            ret << "AGGM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+        case operandAGGM: {    //2,[%(arg1)s].AGGM(%(arg2)s)    --not used
+            ret << "AddGangGroupModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandAGIM: {    //3,[%(arg1)s].AGIM(%(arg2)s)
-            ret << "AGIM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "AddGangShipModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
-        case operandAGORSM: {    //4, [%(arg1)s].AGORSM(%(arg2)s)
-            ret << "AGORSM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+        case operandAGORSM: {    //4, [%(arg1)s].AGORSM(%(arg2)s)   --not used
+            ret << "AddGangOwnerRequiredSkillModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandAGRSM: {    //5,  [%(arg1)s].AGRSM(%(arg2)s)
-            ret << "AGRSM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "AddGangRequiredSkillModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandALGM: {    //7,(%(arg1)s).AddLocationGroupModifier (%(arg2)s)
-            ret << "AddLocationGroupModifier(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "AddLocationGroupModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandALM: {    //8,(%(arg1)s).AddLocationModifier (%(arg2)s)
-            ret << "AddLocationModifier(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "AddLocationModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandALRSM: {    //9,(%(arg1)s).ALRSM(%(arg2)s)
-            ret << "ALRSM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "AddLocationRequiredSkillModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandAORSM: {    //11,(%(arg1)s).AORSM(%(arg2)s)
-            ret << "AORSM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "AddOwnerRequiredSkillModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRGGM: {    //54, [%(arg1)s].RGGM(%(arg2)s)
-            ret << "RGGM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "RemoveGangGroupModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRGIM: {    //55,[%(arg1)s].RGIM(%(arg2)s)
-            ret << "RGIM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "RemoveGangShipModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRGORSM: {    //56,[%(arg1)s].RGORSM(%(arg2)s)
-            ret << "RGORSM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "RemoveGangOwnerRequiredSkillModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRGRSM: {    //57,[%(arg1)s].RGRSM(%(arg2)s)
-            ret << "RGRSM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "RemoveGangRequiredSModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRLGM: {    //59,(%(arg1)s).RemoveLocationGroupModifier (%(arg2)s)
-            ret << "RemoveLocationGroupModifier(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "RemoveLocationGroupModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRLM: {    //60, (%(arg1)s).RemoveLocationModifier (%(arg2)s)
-            ret << "RemoveLocationModifier(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "RemoveLocationModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRLRSM: {    //61,(%(arg1)s).RLRSM(%(arg2)s)
-            ret << "RLRSM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "RemoveLocationRequiredSkillModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRORSM: {    //62, (%(arg1)s).RORSM(%(arg2)s)
-            ret << "RORSM(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+            ret << "RemoveOwnerRequiredSkillModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
-        case operandRS: {    //63, %(arg1)s.Requires(%(arg2)s)
-            ret << "(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ".Requires(";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+        case operandRS: {    //63, %(arg1)s.Requires(%(arg2)s)  --not used
+            ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ".Requires(";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
-        case operandRSA: {    //64, %(arg1)s.%(arg2)s
-            ret << "RSA(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ", ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+        case operandRSA: {    //64, %(arg1)s.%(arg2)s      -- used by AGRSM/RGRSM  ** NEEDS WORK **
+            ret << "RequiredSkillAttribute(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", Self:";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
 
-        // these function calls are a bit more complicated.  handled in ShipItem class in Ship.cpp
-        case operandGA: {    //'%(arg1)s.%(arg2)s'
-            ret << "ModuleGroupAttrib(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ".";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+
+        // these function calls are a bit more complicated...will need more work and better understanding
+        //      handled in ShipItem class in Ship.cpp
+        case operandGA: {    //'%(arg1)s.%(arg2)s'      --not used
+            ret << "ModuleGroupAttrib(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ".";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
-        case operandGM: {    //'%(arg1)s.%(arg2)s'
-            ret << "GetModule(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ".";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+        case operandGM: {    //'%(arg1)s.%(arg2)s'      --used by subsystems as GetModule(Ship:201)
+            ret << "GetModule(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ":";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
-        case operandGET: {    //'%(arg1)s.%(arg2)s()'
-            ret << "GetAttribute(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ".";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << ")";
+        case operandGET: {    //'%(arg1)s.%(arg2)s()'   --used a lot.  eg. GetAttribute(Ship:101)
+            ret << "GetAttribute(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ":";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
-        case operandGETTYPE: {    //'%(arg1)s.GetTypeID()'
-            ret << "GetTypeID(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ")";
+        case operandGETTYPE: {    //'%(arg1)s.GetTypeID()'  --used by SRLG in AORSM/RORSM
+            ret << "GetTypeID(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << "[";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << "])";
         } break;
-        case operandIA: {    //'%(arg1)s'
-            std::string arg1 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1));
-            ret << "attribute(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << ")";
+        case operandIA: {    //'%(arg1)s'   -used by AGIM
+            std::string arg1 = ParseExpression(sFxDataMgr.GetExpression(expression.arg1));
+            ret << "attribute(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ")";
         } break;
         case operandLG: {    //'%(arg1)s..%(arg2)s'  -- specify a group in a location'
-            ret << "LG(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << "[";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << "])";
+            ret << "LocationGroup(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << "[";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << "])";
         } break;
         case operandLS: {    //'%(arg1)s[%(arg2)s]'  -- skill required item group in location
-            ret << "SRLG(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1)) << "[";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2)) << "])";
+            ret << "SkillRequiredLocationGroup(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << "[";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << "])";
         } break;
-        case operandSET: {      //'%(arg1)s := %(arg2)s'
-            ret << "SetAttribute(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted) << " = ";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
+        case operandSET: {      //'%(arg1)s := %(arg2)s'        --used by online/offline for all moodules
+            ret << "SetAttribute(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << " = ";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
         } break;
-        case operandOR: {       //'%(arg1)s OR %(arg2)s'
-            ret << "(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted) << ")\nOR (";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
+        // these will need to work to properly code conditionals here
+        case operandOR: {       //'%(arg1)s OR %(arg2)s'    -- this is the 'else' of the 'if'
+            ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << ")\nOR (";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
         } break;
-        case operandAND: {      //'(%(arg1)s) AND (%(arg2)s)'
-            ret << "(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted) << ")\nAND (";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
+        case operandAND: {      //'(%(arg1)s) AND (%(arg2)s)'   -- means to run both arg1 and arg2
+            ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << ")\nAND (";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
         } break;
-        case operandIF: { //'If(%(arg1)s), Then (%(arg2)s)'
-            ret << "IF(" << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted) << ")\nTHEN (";
-            ret << ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
+        case operandIF: { //'If(%(arg1)s), Then (%(arg2)s)'     --std conditional.  if (arg1 == true) then (arg2)
+            ret << "IF(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << ")\nTHEN (";
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
         } break;
 
         // effect action calls.  handled in dogmaLM
@@ -424,22 +399,16 @@ std::string FxProc::ParseExpression(InventoryItem* pItem, Expression expression,
         } break;
     }
     if (ret == "") {            // check for empty returns
-        if (expression.expressionAttributeID) {
-            ret << expression.expressionAttributeID;
-        } else if (expression.expressionTypeID) {
-            ret << expression.expressionTypeID;
-        } else if (expression.expressionGroupID) {
-            ret << expression.expressionGroupID;
-        } else if (expression.operandID == operandDEFGROUP) {
+        if (expression.operandID == operandDEFGROUP) {
             ret << "*groupNameByID*" << expression.expressionValue; // get group name by id here
         } else if (expression.operandID == operandDEFTYPEID) {
             ret << "*typeNameByID*" << expression.expressionValue; // get type name by id here
-        } else {
-            std::string arg1= "", arg2 = "";
+        } else {    //not used
+            std::string arg1 = "nil", arg2 = "nil";
             if (expression.arg1)
-                arg1 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), restricted);
+                arg1 = ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted);
             if (expression.arg2)
-                arg2 = ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), restricted);
+                arg2 = ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted);
             if ((arg1 != "") and (arg1.find_first_of('\n') > 1))
                 ret << "*arg1Newline*" ;   //arg1 = arg1.strip();
             if ((arg2 != "") and (arg2.find_first_of('\n') > 1))

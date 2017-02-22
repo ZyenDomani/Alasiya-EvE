@@ -85,11 +85,11 @@ namespace Effects {
         dgmCatInvalid        = -1,
         // these are the effectCategory in dgmEffects table to denote when/where this effect is applied or removed
         dgmCatPassive        = 0,    //Applied when item is just present in fit - implants, skills, offlined modules
-        dgmCatActive         = 1,    //also online effectApplied only when module is activated
+        dgmCatActive         = 1,    //also online effect - Applied when module is onlined
         dgmCatTarget         = 2,    //Applied onto selected target
         dgmCatArea           = 3,    //No effects with this category, so actual impact is unknown
-        dgmCatOnline         = 4,    //Applied when module is onlined
-        dgmCatOverloaded     = 5,    //Applied only when module is overloaded
+        dgmCatOnline         = 4,    //Applied when module is activated
+        dgmCatOverloaded     = 5,    //Applied when module is overloaded
         dgmCatDungeon        = 6,    //Dungeon effects, several effects exist in this category, but not assigned to any item
         dgmCatSystem         = 7     //System-wide effects, like WH and incursion
     };

@@ -26,6 +26,8 @@
 #ifndef __SHIP__H__INCL__
 #define __SHIP__H__INCL__
 
+
+#include <unordered_map>
 #include "effects/EffectsData.h"
 #include "inventory/ItemType.h"
 #include "inventory/InventoryItem.h"
@@ -392,13 +394,28 @@ public:
     void CheckStacking(uint16 attrib, Effects::Association type, ModuleStates state, EvilNumber& value);
     void ApplyModifiers();
 
-    void ApplyShipEffects();
-    void ApplySkillEffects();
+    void ApplyEffects();
+    void RemoveEffects();
 
     void AddEffect(uint16 attributeID, InventoryItemRef iRef);
     void RemoveEffect(uint16 attributeID, InventoryItemRef iRef);
 
 private:
+    void ProcessEffects(bool add=false);
+
+    struct fxData {
+        int8 assoc;
+        int8 targEnv;
+        uint16 targAttr;
+        uint16 srcAttr;
+        uint16 grpID;
+        uint16 typeID;
+    };
+
+    void ParseExpression(Expression expression, fxData data);
+
+    std::multimap<int8, fxData> m_modifiers;    // k,v of assoc, data<assoc, targEnv, targAttr, srcAttr, grpID, typeID>, ordered by key (assoc)
+
     typedef std::list<GenericModule*> modList;
     std::map<uint16, modList> m_stackMap;     // stacking attrib storage  attrib, list<module*>
     std::map<uint16, modList> m_attribMap;    // non-stacking attrib storage  attrib, list<module*>

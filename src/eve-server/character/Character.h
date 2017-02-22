@@ -718,6 +718,7 @@ private:
 	uint32 m_loginTime;
     uint32 m_logonMinutes;
 
+    /** @todo  use corpData.* and remove these */
     uint32 m_corporationID;
     uint32 m_corpHQ;
     uint32 m_allianceID;
@@ -730,6 +731,7 @@ private:
     uint64 m_rolesAtHQ;
     uint64 m_rolesAtOther;
 
+    /** @todo  use fleetData.* and remove these */
     uint32 m_fleetID;
     uint32 m_wingID;
     uint32 m_squadID;
@@ -742,6 +744,7 @@ private:
     uint32 m_constellationID;
     uint32 m_regionID;
 
+    /** @todo  use charData.* and remove these */
     uint32 m_ancestryID;
     uint8  m_bloodlineID;
     uint8  m_raceID;
@@ -768,6 +771,23 @@ private:
     Client* m_pClient;
 
     bool m_loaded;      /* to avoid multiple load calls (_Load is called ~4x) */
+
+    /* skill effect groups for easier application */
+    /*  gunnery
+     *  ship command
+     *  missile
+     *  leadership
+     *  indy
+     *  mechanics
+     *  science
+     *  engineering
+     *  electronics
+     *  drones
+     *  navigation
+     *  subsystems
+     *  
+     */
+
 };
 
 #endif /* !__CHARACTER__H__INCL__ */

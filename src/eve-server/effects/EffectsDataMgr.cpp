@@ -179,7 +179,7 @@ void FxDataMgr::ConfigureEffects()
         if (m_fxMap.find(curFx.first) != m_fxMap.end())
             continue;
 
-        sLog.Blue("ConfigureEffects", "starting eval for %u (%s)", curFx.first, curFx.second.effectName.c_str());
+        sLog.Blue("ConfigureEffects", "starting eval for %u:%u (%s)", curFx.first, curFx.second.effectCategory, curFx.second.effectName.c_str());
         fxProc.EvaluateExpression(curFx.second.preExpression);
         fxProc.EvaluateExpression(curFx.second.postExpression);
 

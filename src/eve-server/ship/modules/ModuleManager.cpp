@@ -879,6 +879,9 @@ void ModuleManager::UnloadAllModules()
     m_Modules->UnloadAll();
 }
 
+/* this will be used to update modules for ..... (state reason for calling)
+ *   will be used to call effects updates on modules
+ */
 void ModuleManager::UpdateModules()
 {
     /** @todo  figure out what needs to be done here and implement it. */
@@ -891,11 +894,23 @@ void ModuleManager::UpdateModules()
         Initialize();
 }
 
+/* this will be used to update modules for ..... (state reason for calling)
+ *   will be used to call effects updates on modules
+ */
 void ModuleManager::UpdateModules(EVEItemFlags flag)
 {
     /** @todo  figure out what needs to be done here and implement it. */
     //  this should update all ship attribs for this bank.
     //sLog.Magenta("ModuleManager::UpdateModules()","Needs to be implemented");
+}
+
+/* these are used to call module effects for states 0 and 1 for initial application of effect data */
+void ModuleManager::CharacterBoardingShip()
+{
+    if (!m_initalized)
+        Initialize();
+    if (m_Ship->GetPilot()->IsInSpace())
+        OnlineAll();
 }
 
 void ModuleManager::CharacterLeavingShip()
@@ -905,14 +920,6 @@ void ModuleManager::CharacterLeavingShip()
     //a few things become more clear
 
     //OfflineAll();
-}
-
-void ModuleManager::CharacterBoardingShip()
-{
-    if (!m_initalized)
-        Initialize();
-    if (m_Ship->GetPilot()->IsInSpace())
-        OnlineAll();
 }
 
 void ModuleManager::ShipWarping()

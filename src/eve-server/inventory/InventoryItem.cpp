@@ -1192,16 +1192,14 @@ void InventoryItem::ApplyEffect(uint8 state)
 {
     FxProc fxProc;
     auto itr = m_stateFxMap.equal_range(state);
-    for (auto it = itr.first; it != itr.second; it++) {
-        fxProc.ParseExpression(this, sFxDataMgr.GetExpression(it->second.preExpression), false, true);
-    }
+    for (auto it = itr.first; it != itr.second; it++)
+        fxProc.ParseExpression(sFxDataMgr.GetExpression(it->second.preExpression), false, true);
 }
 
 void InventoryItem::RemoveEffect(uint8 state)
 {
     FxProc fxProc;
     auto itr = m_stateFxMap.equal_range(state);
-    for (auto it = itr.first; it != itr.second; it++) {
-        fxProc.ParseExpression(this, sFxDataMgr.GetExpression(it->second.postExpression), false, true);
-    }
+    for (auto it = itr.first; it != itr.second; it++)
+        fxProc.ParseExpression(sFxDataMgr.GetExpression(it->second.postExpression), false, true);
 }
