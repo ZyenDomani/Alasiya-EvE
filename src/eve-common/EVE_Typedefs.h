@@ -725,4 +725,5 @@ typedef enum {
     cacheMapOutposts = 100300022,
     cacheMapLandmarks = 100300023
 } cacheFlags;
+
 #endif  // EVE_TYPEDEFS_H

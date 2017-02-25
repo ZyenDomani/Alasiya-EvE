@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        ozatomic
+    Author:        ozatomic (hacked for static client data)
+    Updates:    Allan (added calls and (hacked) updates for new dgm data)
 */
 
 #include "eve-server.h"
@@ -50,9 +51,19 @@ BulkMgrService::BulkMgrService( PyServiceMgr *mgr )
 BulkMgrService::~BulkMgrService() {
     delete m_dispatch;
 }
-
+/*
+BULKDATA__ERROR=1
+BULKDATA__WARNING=0
+BULKDATA__MESSAGE=0
+BULKDATA__DEBUG=0
+BULKDATA__INFO=0
+BULKDATA__TRACE=0
+BULKDATA__DUMP=0
+*/
 PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
 {
+    sLog.White( "BulkMgrService::Handle_UpdateBulk()", "size= %u", call.tuple->size() );
+    call.Dump(BULKDATA__DUMP);
     /*
 
     updateData = self.bulkMgr.UpdateBulk(changeID, hashValue, branch)
@@ -61,7 +72,7 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
         self.allowUnsubmitted = updateData['allowUnsubmitted']
         if 'version' in updateData:
             serverVersion = updateData['version']
-        if 'data' in updateData:        -- list of bulkdata fileID 'numbers'
+        if 'data' in updateData:        -- list of bulkdata fileID 'numbers' that have changed.
             updateInfo = updateData['data']
 
 
@@ -76,56 +87,86 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
     args.hashValue;
     args.branch;
     */
-    
+
+    _log(BULKDATA__INFO, "BulkMgrService::Handle_UpdateBulk(): changeID: %u, branch: %u, hashValue: %s", args.changeID, args.branch, args.hashValue.c_str() );
+
     PyDict* test = new PyDict();
     test->SetItemString("type", new PyInt(updateBulkStatusOK));
     test->SetItemString("allowUnsubmitted", new PyBool(false));
+    /*
+    test->SetItemString("version", new PyInt(0));
+    version is used when 'type' = updateBulkStatusNeedToUpdate
 
+    test->SetItemString("data", new PyList(0));
+        data is PyList of fileIDs when 'type' =  updateBulkStatusHashMismatch
+        data is PyDict of 'chunkCount','chunk','changedTablesKeys','toBeDeleted','changedTablesKeys','branch' when 'type' = updateBulkStatusNeedToUpdate
+    */
     return test;
 }
 
 PyResult BulkMgrService::Handle_GetChunk(PyCallArgs &call)
 {
+    sLog.White( "BulkMgrService::Handle_GetChunk()", "size= %u", call.tuple->size() );
+    call.Dump(BULKDATA__DUMP);
     /*
     toBeChanged = self.bulkMgr.GetChunk(changeID, chunkNumber)
+    changeID is from GetVersion()
+    chunkNumber is incremented during loop when bulkdata return 'type' =  updateBulkStatusNeedToUpdate
      */
     return new PyNone();
 }
 
 PyResult BulkMgrService::Handle_GetVersion(PyCallArgs &call)
 {
+    sLog.White( "BulkMgrService::Handle_GetVersion()", "size= %u", call.tuple->size() );
+    call.Dump(BULKDATA__DUMP);
     /*
     serverChangeID, branch = self.bulkMgr.GetVersion()
      */
     return new PyNone();
 }
 
-PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
+PyResult BulkMgrService::Handle_GetAllBulkIDs(PyCallArgs &call)
 {
+    sLog.White( "BulkMgrService::Handle_GetAllBulkIDs()", "size= %u", call.tuple->size() );
+    call.Dump(BULKDATA__DUMP);
     /*
-            toBeChanged, bulksEndingInChunk, numberOfChunks, chunkSetID, self.allowUnsubmitted = self.bulkMgr.GetFullFiles(toGet)
+    serverBulkIDs = self.bulkMgr.GetAllBulkIDs()
+        PyList of server-cached bulkdata files (will need to get their IDs from typedefs.h)
      */
+
+    // hard-code a list of 'new' dgm fileIDs here.
+    // this can also be used to update other data files as needed
     return new PyNone();
 }
 
-PyResult BulkMgrService::Handle_GetAllBulkIDs(PyCallArgs &call)
+PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
 {
+    sLog.White( "BulkMgrService::Handle_GetFullFiles()", "size= %u", call.tuple->size() );
+    call.Dump(BULKDATA__DUMP);
     /*
-    serverBulkIDs = self.bulkMgr.GetAllBulkIDs()
+        toBeChanged, bulksEndingInChunk, numberOfChunks, chunkSetID, self.allowUnsubmitted = self.bulkMgr.GetFullFiles(toGet)
+
+        -- toGet is sent as PyList of fileIDs server should send back
      */
     return new PyNone();
 }
 
 PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
 {
+    sLog.White( "BulkMgrService::Handle_GetFullFilesChunk()", "size= %u", call.tuple->size() );
+    call.Dump(BULKDATA__DUMP);
     /*
-                    toBeChanged, bulksEndingInChunk = self.bulkMgr.GetFullFilesChunk(chunkSetID, chunkNumber)
+        toBeChanged, bulksEndingInChunk = self.bulkMgr.GetFullFilesChunk(chunkSetID, chunkNumber)
+            this breaks files up into ?kb chunks for sending to client.  client requests "chunkSetID" and "chunkNumber", where chunkSetID is the fileID
      */
     return new PyNone();
 }
 
 PyResult BulkMgrService::Handle_GetUnsubmittedChunk(PyCallArgs &call)
 {
+    sLog.White( "BulkMgrService::Handle_GetUnsubmittedChunk()", "size= %u", call.tuple->size() );
+    call.Dump(BULKDATA__DUMP);
     /*
                 toBeChanged = self.bulkMgr.GetUnsubmittedChunk(chunkNumber)
      */
@@ -134,200 +175,12 @@ PyResult BulkMgrService::Handle_GetUnsubmittedChunk(PyCallArgs &call)
 
 PyResult BulkMgrService::Handle_GetUnsubmittedChanges(PyCallArgs &call)
 {
+    sLog.White( "BulkMgrService::Handle_GetUnsubmittedChanges()", "size= %u", call.tuple->size() );
+    call.Dump(BULKDATA__DUMP);
     /*
         unsubmitted = self.bulkMgr.GetUnsubmittedChanges()
+        PyDict of 'toBeChanged','toBeDeleted','changedTablesKeys','chunkCount'
+          this one is complicated.  will need work if we're allowing unsubmitted (whatever that means)
      */
     return new PyNone();
 }
-
-/*
-
-==================== Sent from Client 352 bytes [Compressed]
-
-[PyObjectData Name: macho.CallReq]
-  [PyTuple 7 items]
-    [PyInt 6]
-    [PyObjectData Name: macho.MachoAddress]
-      [PyTuple 4 items]
-        [PyInt 2]
-        [PyInt 0]
-        [PyIntegerVar 5]
-        [PyNone]
-    [PyObjectData Name: macho.MachoAddress]
-      [PyTuple 4 items]
-        [PyInt 1]
-        [PyInt 810144]
-        [PyString "bulkMgr"]
-        [PyNone]
-    [PyInt 5654387]
-    [PyTuple 1 items]
-      [PyTuple 2 items]
-        [PyInt 0]
-        [PySubStream 435 bytes]
-          [PyTuple 4 items]
-            [PyInt 1]
-            [PyString "GetFullFiles"]
-            [PyTuple 1 items]
-              [PyList 81 items]
-                [PyInt 2002600004]
-                [PyInt 2002400001]
-                [PyInt 2001600002]
-                [PyInt 2001600003]
-                [PyInt 2002400004]
-                [PyInt 2002400005]
-                [PyInt 2001600006]
-                [PyInt 2001600007]
-                [PyInt 800003]
-                [PyInt 800009]
-                [PyInt 2000001]
-                [PyInt 3200011]
-                [PyInt 600005]
-                [PyInt 2001800002]
-                [PyInt 3200012]
-                [PyInt 3200015]
-                [PyInt 800005]
-                [PyInt 1800007]
-                [PyInt 2002400003]
-                [PyInt 3200001]
-                [PyInt 800004]
-                [PyInt 1400010]
-                [PyInt 2001600004]
-                [PyInt 600002]
-                [PyInt 2002600005]
-                [PyInt 2001600005]
-                [PyInt 1200001]
-                [PyInt 2002500001]
-                [PyInt 2002500002]
-                [PyInt 7300003]
-                [PyInt 7300004]
-                [PyInt 2002500005]
-                [PyInt 2002600001]
-                [PyInt 1400002]
-                [PyInt 800007]
-                [PyInt 2209987]
-                [PyInt 1400008]
-                [PyInt 600001]
-                [PyInt 1400009]
-                [PyInt 1800004]
-                [PyInt 600004]
-                [PyInt 2002600010]
-                [PyInt 6400004]
-                [PyInt 2002200001]
-                [PyInt 2002200002]
-                [PyInt 2001700035]
-                [PyInt 2001800004]
-                [PyInt 2001800005]
-                [PyInt 2002200006]
-                [PyInt 600007]
-                [PyInt 600008]
-                [PyInt 2002200009]
-                [PyInt 2002200010]
-                [PyInt 2002200011]
-                [PyInt 2002600012]
-                [PyInt 2003100002]
-                [PyInt 2209999]
-                [PyInt 1400016]
-                [PyInt 2002600011]
-                [PyInt 2003100003]
-                [PyInt 3200016]
-                [PyInt 1800005]
-                [PyInt 2800006]
-                [PyInt 2002400002]
-                [PyInt 1800001]
-                [PyInt 7300005]
-                [PyInt 1800003]
-                [PyInt 2003100001]
-                [PyInt 2001900002]
-                [PyInt 2001900003]
-                [PyInt 5100004]
-                [PyInt 1400011]
-                [PyInt 1800006]
-                [PyInt 600010]
-                [PyInt 800006]
-                [PyInt 3200010]
-                [PyInt 5100001]
-                [PyInt 2002600002]
-                [PyInt 3200002]
-                [PyInt 600006]
-                [PyInt 2809992]
-            [PyDict 1 kvp]
-              [PyString "machoVersion"]
-              [PyInt 1]
-    [PyNone]
-    [PyNone]
-
-
-
-==================== Sent from Server 57921 bytes [Compressed]
-
-[PyObjectData Name: macho.CallRsp]
-  [PyTuple 7 items]
-    [PyInt 7]
-    [PyObjectData Name: macho.MachoAddress]
-      [PyTuple 4 items]
-        [PyInt 1]
-        [PyInt 810144]
-        [PyString "bulkMgr"]
-        [PyNone]
-    [PyObjectData Name: macho.MachoAddress]
-      [PyTuple 4 items]
-        [PyInt 2]
-        [PyIntegerVar 238691000002101]
-        [PyIntegerVar 5]
-        [PyNone]
-    [PyInt 5654387]
-    [PyTuple 1 items]
-      [PySubStream 151253 bytes]
-        [PyTuple 5 items]
-          [PyDict 3 kvp]
-            [PyInt 600001]
-            [PyObjectEx Type2]
-              [PyTuple 2 items]
-                [PyTuple 1 items]
-                  [PyToken dbutil.CRowset]
-                [PyDict 1 kvp]
-                  [PyString "header"]
-                  [PyObjectEx Normal]
-                    [PyTuple 2 items]
-                      [PyToken blue.DBRowDescriptor]
-                      [PyTuple 1 items]
-                        [PyTuple 7 items]
-                          [PyTuple 2 items]
-                            [PyString "categoryID"]
-                            [PyInt 3]
-                          [PyTuple 2 items]
-                            [PyString "categoryName"]
-                            [PyInt 130]
-                          [PyTuple 2 items]
-                            [PyString "description"]
-                            [PyInt 130]
-                          [PyTuple 2 items]
-                            [PyString "published"]
-                            [PyInt 11]
-                          [PyTuple 2 items]
-                            [PyString "iconID"]
-                            [PyInt 3]
-                          [PyTuple 2 items]
-                            [PyString "categoryNameID"]
-                            [PyInt 3]
-                          [PyTuple 2 items]
-                            [PyString "dataID"]
-                            [PyInt 3]
-              [PyPackedRow 17 bytes]
-                ["categoryID" => <0> [I4]]
-                ["categoryName" => <23-53-79-73-74-65-6D> [WStr]]
-                ["description" => <empty string> [WStr]]
-                ["published" => <0> [Bool]]
-                ["iconID" => <0> [I4]]
-                ["categoryNameID" => <63539> [I4]]
-                ["dataID" => <16545519> [I4]]
-              [PyPackedRow 17 bytes]
-                ["categoryID" => <1> [I4]]
-                ["categoryName" => <Owner> [WStr]]
-                ["description" => <empty string> [WStr]]
-                ["published" => <0> [Bool]]
-                ["iconID" => <0> [I4]]
-                ["categoryNameID" => <63540> [I4]]
-                ["dataID" => <16545520> [I4]]
-
-                */

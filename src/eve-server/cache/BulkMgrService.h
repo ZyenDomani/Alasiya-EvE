@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        ozatomic
+    Author:        ozatomic (hacked for static client data)
+    Updates:    Allan (added calls and (hacked) updates for new dgm data)
 */
 
 #ifndef __BULKMGR_SERVICE_H_INCL__
@@ -36,12 +37,12 @@ public:
 
 private:
     enum bulkStatus {
-        updateBulkStatusOK               = 0,
-        updateBulkStatusWrongBranch      = 1,
-        updateBulkStatusHashMismatch     = 2,
-        updateBulkStatusClientNewer      = 3,
-        updateBulkStatusNeedToUpdate     = 4,
-        updateBulkStatusTooManyRevisions = 5
+        updateBulkStatusOK               = 0,   // client data == server data  - no change
+        updateBulkStatusWrongBranch      = 1,   // client != server.  calls GetFullFiles then GetVersion
+        updateBulkStatusHashMismatch     = 2,   // client missing files  - compares server (returned) fileIDs with local fileIDs
+        updateBulkStatusClientNewer      = 3,   // client != server.  calls GetFullFiles then GetVersion
+        updateBulkStatusNeedToUpdate     = 4,   // this one will be complicated.  see notes in cpp
+        updateBulkStatusTooManyRevisions = 5    // server has too many updates to bring client files up-to-date.  calls GetFullFiles then GetVersion
     };
 
 protected:
@@ -56,7 +57,6 @@ protected:
     PyCallable_DECL_CALL(GetFullFilesChunk);
     PyCallable_DECL_CALL(GetUnsubmittedChanges);
     PyCallable_DECL_CALL(GetUnsubmittedChunk);
-
 
 };
 

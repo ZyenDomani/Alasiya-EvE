@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 6.8
+    Log Version: 6.9
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -131,6 +131,15 @@ LOG_TYPE( SPAWN, MESSAGE, DISABLED, "SpawnMsg" )
 LOG_TYPE( SPAWN, POP, DISABLED, "SpawnPop" )
 LOG_TYPE( SPAWN, DEPOP, DISABLED, "SpawnDepop" )
 LOG_TYPE( SPAWN, TRACE, DISABLED, "SpawnTrace" )
+
+LOG_CATEGORY( BULKDATA )
+LOG_TYPE( BULKDATA, ERROR,   ENABLED, "BulkError" )
+LOG_TYPE( BULKDATA, WARNING, DISABLED, "BulkWarning" )
+LOG_TYPE( BULKDATA, MESSAGE, DISABLED, "BulkMsg" )
+LOG_TYPE( BULKDATA, DEBUG, DISABLED, "BulkDebug" )
+LOG_TYPE( BULKDATA, INFO, DISABLED, "BulkInfo" )
+LOG_TYPE( BULKDATA, TRACE, DISABLED, "BulkTrace" )
+LOG_TYPE( BULKDATA, DUMP, DISABLED, "BulkDump" )
 
 LOG_CATEGORY( CACHE )
 LOG_TYPE( CACHE, ERROR,   ENABLED, "CacheError" )
