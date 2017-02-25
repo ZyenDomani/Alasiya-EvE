@@ -495,7 +495,9 @@ PyRep *ObjCacheDB::Generate_dgmEffects()
 PyRep *ObjCacheDB::Generate_dgmAttribs()
 {
     DBQueryResult res;
-    const char *q = "SELECT attributeID, attributeName, attributeCategory, description, maxAttributeID, attributeIdx, graphicID, chargeRechargeTimeID, defaultValue, published, unitID, displayName, stackable, highIsGood, iconID, dataID FROM dgmattribs";
+    //attributeID, attributeName, attributeCategory, description, maxAttributeID, attributeIdx, chargeRechargeTimeID, defaultValue,\
+            published, displayName, unitID, stackable, highIsGood, categoryID, iconID, displayNameID, dataID
+    const char *q = "SELECT attributeID, attributeName, description, iconID, defaultValue, published, displayName, unitID, stackable, highIsGood, categoryID FROM dgmAttributeTypes";
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmattribs': %s",res.error.c_str());

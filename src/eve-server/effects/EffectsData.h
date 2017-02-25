@@ -69,6 +69,18 @@ typedef std::map<uint16, Effect> effectMapType;
 
 namespace Effects {
     // these tables are used to decode fields in Effects table
+    enum Domain {
+        dgmDomainInvalid    = -1,
+        //  these define the location for group-, skill-, gang-, and owner-required domains
+        dgmDomainSelf       = 0,
+        dgmDomainSkill      = 1,
+        dgmDomainShip       = 2,
+        dgmDomainOwner      = 3,
+        dgmDomainGang       = 4,
+        dgmDomainGroup      = 5,
+        dgmDomainTarget     = 6
+    };
+
     enum Environment {
         dgmEnvInvalid        = -1,
         // these define the item containing the attribute [to modify(target)]/[data(source)]

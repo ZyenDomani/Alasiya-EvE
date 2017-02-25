@@ -37,11 +37,11 @@ public:
 private:
     enum bulkStatus {
         updateBulkStatusOK               = 0,
-	updateBulkStatusWrongBranch      = 1,
-	updateBulkStatusHashMismatch     = 2,
-	updateBulkStatusClientNewer      = 3,
-	updateBulkStatusNeedToUpdate     = 4,
-	updateBulkStatusTooManyRevisions = 5
+        updateBulkStatusWrongBranch      = 1,
+        updateBulkStatusHashMismatch     = 2,
+        updateBulkStatusClientNewer      = 3,
+        updateBulkStatusNeedToUpdate     = 4,
+        updateBulkStatusTooManyRevisions = 5
     };
 
 protected:
@@ -49,6 +49,14 @@ protected:
     Dispatcher *const m_dispatch;
 
     PyCallable_DECL_CALL(UpdateBulk);
+    PyCallable_DECL_CALL(GetAllBulkIDs);
+    PyCallable_DECL_CALL(GetVersion);
+    PyCallable_DECL_CALL(GetChunk);
+    PyCallable_DECL_CALL(GetFullFiles);
+    PyCallable_DECL_CALL(GetFullFilesChunk);
+    PyCallable_DECL_CALL(GetUnsubmittedChanges);
+    PyCallable_DECL_CALL(GetUnsubmittedChunk);
+
 
 };
 

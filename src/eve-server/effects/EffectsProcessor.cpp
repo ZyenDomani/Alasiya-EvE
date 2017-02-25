@@ -14,6 +14,8 @@
 
 EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1, EvilNumber val2, int8 assoc)
 {
+    if (val2 == 0)
+        return val1;
     using namespace Effects;
     switch (assoc) {
         case dgmAssInvalid:
@@ -27,7 +29,7 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1, EvilNumber val2, int
             return val1 * val2;
         case dgmAssPreDiv:
         case dgmAssPostDiv:
-            return ((val2 != 0) ? val1 / val2 : val1);
+            return val1 / val2;
         case dgmAssModAdd:
             return val1 + val2;
         case dgmAssModSub:
@@ -70,20 +72,20 @@ int8 FxProc::GetAssociationEnum(const std::string& association)
         return dgmAssInvalid;  //throw std::bad_typeid();
 }
 
-int8 FxProc::GetEnvironmentEnum(const std::string& domain)
+int8 FxProc::GetEnvironmentEnum(const std::string& env)
 {   // opID 24
     using namespace Effects;
-    if (domain == "Self")
+    if (env == "Self")
         return dgmEnvSelf;
-    else if (domain == "Char")
+    else if (env == "Char")
         return dgmEnvChar;
-    else if (domain == "Ship")
+    else if (env == "Ship")
         return dgmEnvShip;
-    else if (domain == "Target")
+    else if (env == "Target")
         return dgmEnvTarget;
-    else if (domain == "Area")
+    else if (env == "Area")
         return dgmEnvArea;
-    else if (domain == "Other")
+    else if (env == "Other")
         return dgmEnvOther;
     else
         return dgmEnvInvalid;  //throw std::bad_typeid();
@@ -290,7 +292,7 @@ std::string FxProc::ParseExpression(Expression expression, bool restricted/*fals
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRGRSM: {    //57,[%(arg1)s].RGRSM(%(arg2)s)
-            ret << "RemoveGangRequiredSModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
+            ret << "RemoveGangRequiredSkillModifier(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", (Self:";
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRLGM: {    //59,(%(arg1)s).RemoveLocationGroupModifier (%(arg2)s)
@@ -314,7 +316,7 @@ std::string FxProc::ParseExpression(Expression expression, bool restricted/*fals
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRSA: {    //64, %(arg1)s.%(arg2)s      -- used by AGRSM/RGRSM  ** NEEDS WORK **
-            ret << "RequiredSkillAttribute(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ", Self:";
+            ret << "RequiredSkillAttribute(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ":";
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
 
@@ -341,11 +343,11 @@ std::string FxProc::ParseExpression(Expression expression, bool restricted/*fals
             std::string arg1 = ParseExpression(sFxDataMgr.GetExpression(expression.arg1));
             ret << "attribute(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ")";
         } break;
-        case operandLG: {    //'%(arg1)s..%(arg2)s'  -- specify a group in a location'
+        case operandLG: {    //48, %(arg1)s..%(arg2)s  -- specify a group by grpID in a location'
             ret << "LocationGroup(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << "[";
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << "])";
         } break;
-        case operandLS: {    //'%(arg1)s[%(arg2)s]'  -- skill required item group in location
+        case operandLS: {    //49, %(arg1)s[%(arg2)s]  -- specify a group by skillID in a location
             ret << "SkillRequiredLocationGroup(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << "[";
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << "])";
         } break;
@@ -354,15 +356,15 @@ std::string FxProc::ParseExpression(Expression expression, bool restricted/*fals
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
         } break;
         // these will need to work to properly code conditionals here
-        case operandOR: {       //'%(arg1)s OR %(arg2)s'    -- this is the 'else' of the 'if'
+        case operandOR: {       //'%(arg1)s OR %(arg2)s'    -- usually used with 'if'  (if x ... OR y)  (used as "else" or elif)
             ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << ")\nOR (";
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
         } break;
-        case operandAND: {      //'(%(arg1)s) AND (%(arg2)s)'   -- means to run both arg1 and arg2
+        case operandAND: {      //'(%(arg1)s) AND (%(arg2)s)'   -- usually used with 'if'  (if x AND y then ....)
             ret << "(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << ")\nAND (";
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
         } break;
-        case operandIF: { //'If(%(arg1)s), Then (%(arg2)s)'     --std conditional.  if (arg1 == true) then (arg2)
+        case operandIF: { //'If(%(arg1)s), Then (%(arg2)s)'     --std conditional.  if x then y
             ret << "IF(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted) << ")\nTHEN (";
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted) << ")";
         } break;

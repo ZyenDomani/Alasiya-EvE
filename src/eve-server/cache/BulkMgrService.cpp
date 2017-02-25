@@ -36,7 +36,15 @@ BulkMgrService::BulkMgrService( PyServiceMgr *mgr )
 {
     _SetCallDispatcher(m_dispatch);
 
+    PyCallable_REG_CALL(BulkMgrService, GetChunk);
     PyCallable_REG_CALL(BulkMgrService, UpdateBulk);
+    PyCallable_REG_CALL(BulkMgrService, GetVersion);
+    PyCallable_REG_CALL(BulkMgrService, GetFullFiles);
+    PyCallable_REG_CALL(BulkMgrService, GetAllBulkIDs);
+    PyCallable_REG_CALL(BulkMgrService, GetFullFilesChunk);
+    PyCallable_REG_CALL(BulkMgrService, GetUnsubmittedChunk);
+    PyCallable_REG_CALL(BulkMgrService, GetUnsubmittedChanges);
+
 }
 
 BulkMgrService::~BulkMgrService() {
@@ -45,20 +53,94 @@ BulkMgrService::~BulkMgrService() {
 
 PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
 {
+    /*
+
+    updateData = self.bulkMgr.UpdateBulk(changeID, hashValue, branch)
+
+        updateType = updateData['type']
+        self.allowUnsubmitted = updateData['allowUnsubmitted']
+        if 'version' in updateData:
+            serverVersion = updateData['version']
+        if 'data' in updateData:        -- list of bulkdata fileID 'numbers'
+            updateInfo = updateData['data']
+
+
+    */
     Call_UpdateBulk args;
     if(!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "Invalid arguments");
 	return NULL;
     }
-
+    /*
+    args.changeID;
+    args.hashValue;
+    args.branch;
+    */
+    
     PyDict* test = new PyDict();
     test->SetItemString("type", new PyInt(updateBulkStatusOK));
     test->SetItemString("allowUnsubmitted", new PyBool(false));
 
     return test;
 }
-/*
 
+PyResult BulkMgrService::Handle_GetChunk(PyCallArgs &call)
+{
+    /*
+    toBeChanged = self.bulkMgr.GetChunk(changeID, chunkNumber)
+     */
+    return new PyNone();
+}
+
+PyResult BulkMgrService::Handle_GetVersion(PyCallArgs &call)
+{
+    /*
+    serverChangeID, branch = self.bulkMgr.GetVersion()
+     */
+    return new PyNone();
+}
+
+PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
+{
+    /*
+            toBeChanged, bulksEndingInChunk, numberOfChunks, chunkSetID, self.allowUnsubmitted = self.bulkMgr.GetFullFiles(toGet)
+     */
+    return new PyNone();
+}
+
+PyResult BulkMgrService::Handle_GetAllBulkIDs(PyCallArgs &call)
+{
+    /*
+    serverBulkIDs = self.bulkMgr.GetAllBulkIDs()
+     */
+    return new PyNone();
+}
+
+PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
+{
+    /*
+                    toBeChanged, bulksEndingInChunk = self.bulkMgr.GetFullFilesChunk(chunkSetID, chunkNumber)
+     */
+    return new PyNone();
+}
+
+PyResult BulkMgrService::Handle_GetUnsubmittedChunk(PyCallArgs &call)
+{
+    /*
+                toBeChanged = self.bulkMgr.GetUnsubmittedChunk(chunkNumber)
+     */
+    return new PyNone();
+}
+
+PyResult BulkMgrService::Handle_GetUnsubmittedChanges(PyCallArgs &call)
+{
+    /*
+        unsubmitted = self.bulkMgr.GetUnsubmittedChanges()
+     */
+    return new PyNone();
+}
+
+/*
 
 ==================== Sent from Client 352 bytes [Compressed]
 

@@ -28,12 +28,13 @@
 
 
 #include <unordered_map>
+
 #include "effects/EffectsData.h"
 #include "inventory/ItemType.h"
 #include "inventory/InventoryItem.h"
-#include "system/SystemEntity.h"
-#include "ship/modules/ModuleManager.h"
 #include "ship/ShipDB.h"
+#include "ship/modules/ModuleManager.h"
+#include "system/SystemEntity.h"
 
 /**
  * Basic container for raw ship type data.
@@ -401,20 +402,22 @@ public:
     void RemoveEffect(uint16 attributeID, InventoryItemRef iRef);
 
 private:
+    bool m_effectsApplied;
     void ProcessEffects(bool add=false);
 
     struct fxData {
-        int8 assoc;
-        int8 targEnv;
+        int8 env;           // area affected by modifier
+        int8 assoc;         // method to apply to attributes
+        int8 domain;        // area used to define groups
         uint16 targAttr;
         uint16 srcAttr;
-        uint16 grpID;
-        uint16 typeID;
+        uint16 grpID;       // used to define items affected in domain grouped by item groupID
+        uint16 typeID;      // used to define items in domain grouped by skill requirement
     };
 
     void ParseExpression(Expression expression, fxData data);
 
-    std::multimap<int8, fxData> m_modifiers;    // k,v of assoc, data<assoc, targEnv, targAttr, srcAttr, grpID, typeID>, ordered by key (assoc)
+    std::multimap<int8, fxData> m_modifiers;    // k,v of assoc, data<assoc, domain, env, grpID, typeID, targAttr, srcAttr>, ordered by key (assoc)
 
     typedef std::list<GenericModule*> modList;
     std::map<uint16, modList> m_stackMap;     // stacking attrib storage  attrib, list<module*>

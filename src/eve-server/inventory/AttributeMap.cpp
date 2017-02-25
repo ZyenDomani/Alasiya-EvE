@@ -41,7 +41,11 @@ AttributeMap::AttributeMap( InventoryItem& item)
 {
 }
 
-bool AttributeMap::Load() {
+bool AttributeMap::Load(bool reset/*false*/) {
+    if (reset) {
+        // this will allow total clearing of preset attribs, and eliminate the necessity of 'removing' effect mods
+        mAttributes.clear();
+    }
     /* First, we load default attributes values from typeattrmgr.*/
     std::vector< DmgTypeAttribute > typeAttrVec;
     sDataMgr.GetDgmTypeAttrVec(mItem.typeID(), typeAttrVec);
@@ -69,6 +73,10 @@ bool AttributeMap::Load() {
     return true;
 }
 
+bool AttributeMap::SaveAttributes() {
+    return Save();
+}
+
 bool AttributeMap::Save() {
     /** @todo update this
      * we are saving:
@@ -82,8 +90,6 @@ bool AttributeMap::Save() {
     if ((!mChanged) or (mItem.categoryID() == EVEDB::invCategories::Ship))
         return true;
 
-    bool success = false;
-
     std::ostringstream Inserts;
     // start the insert into command.
     Inserts << "INSERT INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) ";
@@ -93,7 +99,7 @@ bool AttributeMap::Save() {
      *  damage attributes for items (for persistance)
      *  sp/lvl attribs for skills
      *  size/etc for roids (should be in bms)
-     * 
+     *
      * ships saved separately
      */
     for (; itr != mAttributes.end(); itr++) {
@@ -208,7 +214,7 @@ bool AttributeMap::Add( uint32 attributeID, EvilNumber& num ) {
         modChange.attributeID = attributeID;
         modChange.time = Win32TimeNow();
         modChange.newValue = num.GetPyObject();
-        modChange.oldValue = new PyInt(0);
+        modChange.oldValue = new PyNone();
     return SendAttributeChanges(modChange.Encode());
 }
 
@@ -238,10 +244,6 @@ bool AttributeMap::ResetAttribute(uint32 attrID, bool notify) {
     /** @todo update this */
     EvilNumber value = mItem.GetDefaultAttribute(attrID);
     return SetAttribute(attrID, value, notify);
-}
-
-bool AttributeMap::SaveAttributes() {
-    return Save();
 }
 
 void AttributeMap::SaveShipState()

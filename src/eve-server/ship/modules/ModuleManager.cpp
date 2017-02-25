@@ -957,5 +957,16 @@ void ModuleManager::SaveModules()
     m_Modules->SaveModules();
 }
 
+void ModuleManager::GetModuleListByReqSkill(uint16 skillID, std::vector< InventoryItemRef >* pModuleList)
+{
+    std::vector<InventoryItemRef> moduleList;
+    GetModuleListOfRefs(&moduleList);
+    for (auto cur : moduleList) {
+        if (cur->HasReqSkill(skillID)) {
+            pModuleList->push_back(cur);
+        }
+    }
+}
+
 #pragma endregion
 //////////////////////////////////////////////////////////////////////////////////

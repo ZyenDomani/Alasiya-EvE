@@ -276,13 +276,15 @@ public:
     void ApplyEffect(uint8 state);
     void RemoveEffect(uint8 state);
 
+    bool HasReqSkill(uint16 skillID);
+
 protected:
     void LoadEffects();
 
     bool m_effectsLoaded;
 
+    std::map<uint16, uint8> m_reqSkillMap;  // k,v map of required skill, level for this item, if any.
     std::unordered_multimap<uint16, Effect> m_stateFxMap;  // k,v of state, data   -to search by state
-
 
 /*  new attribute system */
 protected:

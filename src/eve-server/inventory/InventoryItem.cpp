@@ -145,6 +145,20 @@ bool InventoryItem::_Load() {
         return false;
     }
 
+    // load required skills and levels into their own map, for later checks
+    if (mAttributeMap.HasAttribute(AttrRequiredSkill1))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill1).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill1Level).get_int()));
+    if (mAttributeMap.HasAttribute(AttrRequiredSkill2))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill2).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill2Level).get_int()));
+    if (mAttributeMap.HasAttribute(AttrRequiredSkill3))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill3).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill3Level).get_int()));
+    if (mAttributeMap.HasAttribute(AttrRequiredSkill4))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill4).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill4Level).get_int()));
+    if (mAttributeMap.HasAttribute(AttrRequiredSkill5))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill5).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill5Level).get_int()));
+    if (mAttributeMap.HasAttribute(AttrRequiredSkill6))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill6).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill6Level).get_int()));
+
     return true;
 }
 
@@ -1187,6 +1201,15 @@ bool InventoryItem::SkillCheck(InventoryItemRef refItem)
     // all skill requirement checks passed.
     return true;
 }
+
+bool InventoryItem::HasReqSkill(uint16 skillID)
+{
+    std::map<uint16, uint8>::const_iterator itr = m_reqSkillMap.find(skillID);
+    if (itr != m_reqSkillMap.end())
+        return true;
+    return false;
+}
+
 
 void InventoryItem::ApplyEffect(uint8 state)
 {

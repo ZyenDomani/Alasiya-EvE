@@ -233,6 +233,7 @@ public:
     void GetLoadedCharges(std::map<EVEItemFlags, InventoryItemRef> &charges);
 
 	void GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList);
+    void GetModuleListByReqSkill(uint16 skillID, std::vector<InventoryItemRef> * pModuleList);
     void SaveModules();
 
 private:

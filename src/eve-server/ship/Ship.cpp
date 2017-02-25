@@ -5,7 +5,6 @@
 #include "character/Character.h"
 #include "effects/EffectsProcessor.h"
 #include "system/DestinyManager.h"
-#include "ship/modules/ModuleManager.h"
 #include "ship/Ship.h"
 #include "system/BubbleManager.h"
 
@@ -55,6 +54,7 @@ m_pilot(nullptr),
 m_ModuleManager(nullptr)
 {
     m_IsLoaded = false;
+    m_effectsApplied = false;
     m_stackMap.clear();
     m_attribMap.clear();
     m_inventory = new Inventory(InventoryItemRef(this));
@@ -273,6 +273,7 @@ void ShipItem::SetPlayer(Client* pClient) {
     if (!m_pilot) {
         // remove ship effects and char skill effects for char leaving ship here.
         ProcessEffects(false);
+        RemoveEffects();
         // should we check for cargo and damage after char leaves ship?  maybe later
         if (m_ModuleManager)
             m_ModuleManager->CharacterLeavingShip();
@@ -280,7 +281,8 @@ void ShipItem::SetPlayer(Client* pClient) {
     }
     Init();
     ProcessEffects(true);
-    ApplyEffects();
+    if (IsSolarSystem(m_locationID))
+        ApplyEffects();
     m_ModuleManager->CharacterBoardingShip();
 }
 
@@ -1230,7 +1232,7 @@ std::string ShipItem::GetShipDNA()
 void ShipItem::ProcessEffects(bool add/*true*/)
 {
     fxData data;
-    data.assoc = data.targEnv = data.targAttr = data.srcAttr = data.grpID = data.typeID = 0;
+    data.assoc = data.env = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.domain = 0;
     auto itr = m_stateFxMap.equal_range(0);
     for (auto it = itr.first; it != itr.second; it++) {
         if (add)
@@ -1242,47 +1244,83 @@ void ShipItem::ProcessEffects(bool add/*true*/)
 
 void ShipItem::ApplyEffects()
 {
-    for (auto cur : m_modifiers) {  // k,v of assoc, data<assoc, targEnv, targAttr, srcAttr, grpID, typeID>
-        // dunno yet....wip
-        if (cur.second.grpID)
-            ; // required group location
-        if (cur.second.typeID)
-            ; // required type location
-
-        // get targEnv
-        using namespace Effects;
-        switch (cur.second.targEnv) {
+    if (!m_ModuleManager) {
+        m_effectsApplied = false;
+        return;
+    }
+    using namespace Effects;
+    for (auto cur : m_modifiers) {  // k,v of assoc, data<assoc, domain, env, targAttr, srcAttr, grpID, typeID>
+        // get env
+        InventoryItem* envItem(nullptr);
+        switch (cur.second.env) {
             case dgmEnvInvalid: {   // null
+                // if environment is invalid, just continue.  make error later
             } break;
+            case dgmEnvShip:        // should be self.
             case dgmEnvSelf: {      // ship
+                envItem = this;
             } break;
             case dgmEnvChar: {      // pilot
-            } break;
-            case dgmEnvShip: {      // should be self.  probably not used for ship effects
-            } break;
-            case dgmEnvTarget: {    // not used for ship effects
+                envItem = m_pilot->GetChar().get();
             } break;
             case dgmEnvOther: {     // charges?
             } break;
+            case dgmEnvTarget:      // not used for ship effects
             case dgmEnvArea: {      // not used for ship effects
             } break;
         }
 
-        // get targAttr
-        EvilNumber targAttr = GetAttribute(cur.second.targAttr);
-
         // get srcAttr, check for nerf, modify value as needed
         EvilNumber srcAttr = mAttributeMap.GetAttribute(cur.second.srcAttr);
 
-        // send data to calculator
-        EvilNumber newAttr = sFxProc.CalculateAttributeValue(targAttr, srcAttr, cur.first);
-        // set new calculated value for target attribute
-        SetAttribute(cur.second.targAttr, newAttr, false); // no, dont notifiy client of change.  will be updated after undock, when requesting ship info
+        EvilNumber targAttr = 0;
+        // test for location domain
+        if (cur.second.domain) {
+            std::vector<InventoryItemRef> itemVec;
+            switch (cur.second.domain) {
+                case dgmDomainGroup: {
+                    std::vector<InventoryItemRef> moduleList;
+                    m_ModuleManager->GetModuleListOfRefs(&moduleList);
+                    // location group defined by data.grpID
+                    // get modules beloning to 'grpID'
+                    for (auto mod : moduleList)
+                        if (mod->groupID() == cur.second.grpID)
+                            itemVec.push_back(mod);
+                } break;
+                case dgmDomainSkill: {
+                    // location group defined by data.typeID (for getting items based on skill requirement)
+                    // get modules that require skill 'typeID'
+                    m_ModuleManager->GetModuleListByReqSkill(cur.second.typeID, &itemVec);
+                } break;
+            }
+            for (auto item : itemVec) {
+                // get targAttr
+                targAttr = item->GetAttribute(cur.second.targAttr);
+                // send data to calculator
+                EvilNumber newAttr = sFxProc.CalculateAttributeValue(targAttr, srcAttr, cur.first);
+                // set new calculated value for target attribute
+                item->SetAttribute(cur.second.targAttr, newAttr, false);
+            }
+        } else {
+            // location domain is self.
+            // get targAttr
+            if (envItem)
+                targAttr = envItem->GetAttribute(cur.second.targAttr);
+            // send data to calculator
+            EvilNumber newAttr = sFxProc.CalculateAttributeValue(targAttr, srcAttr, cur.first);
+            // set new calculated value for target attribute
+            if (envItem)
+                envItem->SetAttribute(cur.second.targAttr, newAttr, false); // no, dont notifiy client of change.  will be updated after undock, when requesting ship info
+        }
     }
+    m_effectsApplied = true;
 }
 
 void ShipItem::RemoveEffects()
 {
+    SaveShip();
+    mAttributeMap.Load(true);
+    m_effectsApplied = false;
 }
 
 void ShipItem::AddEffect(uint16 attributeID, InventoryItemRef iRef)
@@ -1348,7 +1386,7 @@ void ShipItem::ParseExpression(Expression expression, fxData data)
             data.assoc = sFxProc.GetAssociationEnum(expression.expressionValue);
         } break;
         case operandDEFENVIDX: {
-            data.targEnv = sFxProc.GetEnvironmentEnum(expression.expressionValue);
+            data.env = sFxProc.GetEnvironmentEnum(expression.expressionValue);
         } break;
 
         // these provide the given expression*ID
@@ -1372,12 +1410,16 @@ void ShipItem::ParseExpression(Expression expression, fxData data)
         // do as stated
         case operandCOMBINE: { // executes two statements  '%(arg1)s); (%(arg2)s'
             fxData data1;
-            data1.assoc = data1.targEnv = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = 0;
+            data1.assoc = data1.env = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = data.domain = 0;
             if (expression.arg1)
                 ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data1);
-            data1.assoc = data1.targEnv = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = 0;
+            data1.assoc = data1.env = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = data.domain = 0;
             if (expression.arg2)
                 ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data1);
+        } break;
+        case operandEFF: {      //31, '(%(arg2)s).(%(arg1)s)'       --define association type
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
         } break;
 
         // these function calls are a bit more complicated...will need more work and better understanding
@@ -1389,19 +1431,20 @@ void ShipItem::ParseExpression(Expression expression, fxData data)
             ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
         } break;
-        case operandLG: {    //'%(arg1)s.LocationGroup.%(arg2)s'  -- specify a group in a location'
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        case operandLG: {    //48, '%(arg1)s.LocationGroup.%(arg2)s'  -- specify a group by grpID in a location'
+            data.domain = dgmDomainGroup;   //preliminary....will need work later.
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);   //domain
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);   //groupID
         } break;
-        case operandLS: {    //'%(arg1)s.SkillRequiredLocationGroup[%(arg2)s]'  --  specify a group by skill requirement...not sure how to do this
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        case operandLS: {    //49, '%(arg1)s.SkillRequiredLocationGroup[%(arg2)s]'  --  specify a group by skillID in a location...not sure how to do this
+            data.domain = dgmDomainSkill;   //preliminary....will need work later.
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);   //domain
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);   //skillID
         } break;
 
         // effect function calls.
         // here is where we'll actually add the modifier data to the map
-        case operandAIM: {    //
-            //'dogma.AddItemModifier(env,%(arg1)s, %(arg2)s)'
+        case operandAIM: {    //'AddItemModifier(env,%(arg1)s, %(arg2)s)'
             Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
             ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1), data);
             ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2), data);
@@ -1430,8 +1473,7 @@ void ShipItem::ParseExpression(Expression expression, fxData data)
         } break;
         /** @todo  will have to figure out how to remove modifiers and delete from the map(s) */
         // why?  reset everything....
-        case operandRIM: {    //
-            //'dogma.RemoveItemModifier(env,%(arg1)s, %(arg2)s)'
+        case operandRIM: {    //'RemoveItemModifier(env,%(arg1)s, %(arg2)s)'
             Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
             ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1), data);
             ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2), data);
@@ -1453,6 +1495,16 @@ void ShipItem::ParseExpression(Expression expression, fxData data)
         case operandRORSM: {    //62, (%(arg1)s).RemoveOwnerRequiredSkillModifier(%(arg2)s)
             ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+        default: {              // in case the op hasnt been defined, make a note here (should not hit)
+            std::ostringstream ret;
+            Operand operand = sFxDataMgr.GetOperand(expression.operandID);
+            ret << "Operand id:" << expression.operandID << " key:" << operand.operandKey;
+            if (operand.format == "")
+                ret << " - has not been defined";
+            else                // % {'arg1': arg1, 'arg2': arg2, 'value': expression.expressionValue}
+                ret << " *needsWork*";
+            sLog.Error("Ship::ParseExpression", "%s", ret.str().c_str());
         } break;
     }
 }
