@@ -107,10 +107,12 @@ SET( agent_SOURCE
      "${TARGET_SOURCE_DIR}/agents/AgentMgrService.cpp")
 
 SET( cache_INCLUDE
+     "${TARGET_INCLUDE_DIR}/cache/BulkDB.h"
      "${TARGET_INCLUDE_DIR}/cache/BulkMgrService.h"
      "${TARGET_INCLUDE_DIR}/cache/ObjCacheDB.h"
      "${TARGET_INCLUDE_DIR}/cache/ObjCacheService.h" )
 SET( cache_SOURCE
+     "${TARGET_SOURCE_DIR}/cache/BulkDB.cpp"
      "${TARGET_SOURCE_DIR}/cache/BulkMgrService.cpp"
      "${TARGET_SOURCE_DIR}/cache/ObjCacheDB.cpp"
      "${TARGET_SOURCE_DIR}/cache/ObjCacheService.cpp" )

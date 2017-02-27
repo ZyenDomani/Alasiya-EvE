@@ -7,6 +7,9 @@
 #ifndef EVE_DEFINES_H
 #define EVE_DEFINES_H
 
+// bulkdata version
+#define bulkDataBranch          4
+#define bulkDataChangeID        70726
 
 //  defines based on itemID, per client
 #define maxNonCapitalModuleSize 500

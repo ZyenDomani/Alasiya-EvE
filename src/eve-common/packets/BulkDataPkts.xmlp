@@ -1,0 +1,38 @@
+
+<elements>
+
+  <elementDef name="Call_UpdateBulk">
+    <tupleInline>
+      <int name="changeID" />
+      <string name="hashValue" />
+      <int name="branch" />
+    </tupleInline>
+  </elementDef>
+
+  <!-- GetFullFiles(toGet)  this is single int list - use Call_SingleIntList -->
+
+  <!-- GetChunk(changeID, chunkNumber) -->
+  <elementDef name="Call_GetChunk">
+    <tupleInline>
+      <int name="changeID" />
+      <int name="chunkNumber" />
+    </tupleInline>
+  </elementDef>
+
+  <!-- GetFullFilesChunk(chunkSetID, chunkNumber) -->
+  <elementDef name="Call_GetFullFilesChunk">
+    <tupleInline>
+      <int name="chunkSetID" />
+      <int name="chunkNumber" />
+    </tupleInline>
+  </elementDef>
+
+  <!-- GetUnsubmittedChunk(chunkNumber) -->
+  <elementDef name="Call_GetUnsubmittedChunk">
+    <tupleInline>
+      <int name="chunkNumber" />
+    </tupleInline>
+  </elementDef>
+
+
+</elements>
