@@ -64,18 +64,6 @@ BULKDATA__DUMP=0
 */
 PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
 {
-    /*
-     * 23:08:27 W BulkMgrService::Handle_UpdateBulk(): size= 3
-     * 23:08:27 [BulkDump]   Call Arguments:
-     * 23:08:27 [BulkDump]       Tuple: 3 elements
-     * 23:08:27 [BulkDump]         [ 0] Integer field: 65761                        <- changeID
-     * 23:08:27 [BulkDump]         [ 1] String: '084a2e9a53ca5636e27b0c452c243437'  <- hashValue
-     * 23:08:27 [BulkDump]         [ 2] Integer field: 3                            <- branch
-     * 23:08:27 [BulkDump]   Call Named Arguments:
-     * 23:08:27 [BulkDump]     Argument 'machoVersion':
-     * 23:08:27 [BulkDump]         Integer field: 1
-     *
-     */
     sLog.White( "BulkMgrService::Handle_UpdateBulk()", "size= %u", call.tuple->size() );
     call.Dump(BULKDATA__DUMP);
     /*
@@ -95,17 +83,15 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
         return nullptr;
     }
 
-    //_log(BULKDATA__INFO, "BulkMgrService::Handle_UpdateBulk(): changeID: %u, branch: %u, hashValue: %s", args.changeID, args.branch, args.hashValue.c_str() );
-
     PyDict* res = new PyDict();
     // bulkDataChangeID found in eve-common/EVE_Defines.h and defines the serverVersion of this set of bulkdata
-    if ((1/*args.changeID == bulkDataChangeID*/)
-        or (args.hashValue == "")) {
+    if ((args.changeID == bulkDataChangeID)
+        or (args.hashValue->IsNone())) {
         res->SetItemString("type", new PyInt(updateBulkStatusOK));
     } else {
         // not right response, but easiest to hack, as it compares servers fileIDs to local fileIDs and removes matching ids
         // will change to 'updateBulkStatusNeedToUpdate' when i get the syntax figure out.
-        res->SetItemString("type", new PyInt(updateBulkStatusHashMismatch));
+        res->SetItemString("type", new PyInt(/*updateBulkStatusWrongBranch*/updateBulkStatusHashMismatch));
         // make list of fileIDs to send to client.
         PyList* list = new PyList();
             list->AddItem(new PyInt(800002));
@@ -165,7 +151,7 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
           [PyInt 0]             << chunkSetID
           [PyBool False]        << allowUnsubmitted
         */
-    Call_SingleIntList args;
+    Call_GetFullFiles args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode arguments");
         return nullptr;
@@ -179,7 +165,7 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
     //   multiple files can be sent in this call, with their listIDs inserted into bulksEndingInChunk list.
     PyList* bulksEndingInChunk = new PyList();  // bulksEndingIn(this)Chunk
 
-    if (args.ints.size() < 1) {
+    if (args.toGet->IsNone()) {
         // toGet = null.  this means get all bulkdata files
         toBeChanged->SetItem(new PyInt(800002), m_db.GetOperands());
         bulksEndingInChunk->AddItem(new PyInt(800002));
@@ -190,11 +176,11 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
         // will have to determine what files are needed, and how to arrange this data correctly
         response->SetItem(2, new PyInt(m_db.GetNumChunks()));   //numberOfChunks
         response->SetItem(3, new PyInt(0));                     //chunkSetID
-    } else {
-        std::vector<int32>::const_iterator itr = args.ints.begin();
+    } else if (args.toGet->IsList()) {
+        PyList::const_iterator itr = args.toGet->AsList()->begin(), end = args.toGet->AsList()->end();
         uint8 setID = 0;
-        while (itr != args.ints.end()) {
-            switch (*itr) {
+        while (itr != end) {
+            switch ((*itr)->AsInt()->value()) {
                 case 800002: {
                     toBeChanged->SetItem(new PyInt(800002), m_db.GetOperands());
                     bulksEndingInChunk->AddItem(new PyInt(800002));
@@ -224,8 +210,12 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
             ++itr;
         }
         // will have to determine what files are needed, and how to arrange this data correctly
-        response->SetItem(2, new PyInt((m_db.GetNumChunks(setID) -1)));   //numberOfChunks
-        response->SetItem(3, new PyInt(setID));                      //chunkSetID
+        uint8 chunks = m_db.GetNumChunks(setID);
+        --chunks;
+        response->SetItem(2, new PyInt(chunks));   //numberOfChunks
+        response->SetItem(3, new PyInt(setID));    //chunkSetID
+    } else {
+        _log(BULKDATA__ERROR, "BulkMgrService::Handle_GetFullFiles(): args.toGet->TypeString() is %s", args.toGet->TypeString());
     }
 
     response->SetItem(0, toBeChanged);
@@ -237,6 +227,9 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
         response->SetItem(1, new PyNone());
 
     response->SetItem(4, new PyBool(false));                //allowUnsubmitted
+
+    if (is_log_enabled(BULKDATA__TRACE))
+        response->Dump(BULKDATA__TRACE, "  ");
 
     return response;
 }

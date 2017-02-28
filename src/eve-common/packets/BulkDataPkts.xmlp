@@ -4,7 +4,7 @@
   <elementDef name="Call_UpdateBulk">
     <tupleInline>
       <int name="changeID" />
-      <string name="hashValue" />
+      <raw name="hashValue" />
       <int name="branch" />
     </tupleInline>
   </elementDef>
@@ -34,5 +34,11 @@
     </tupleInline>
   </elementDef>
 
+  <!-- GetFullFiles(toGet) -->
+  <elementDef name="Call_GetFullFiles">
+    <tupleInline>
+      <raw name="toGet" />
+    </tupleInline>
+  </elementDef>
 
 </elements>
