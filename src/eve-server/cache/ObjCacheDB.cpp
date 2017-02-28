@@ -23,6 +23,7 @@
     Author:        Zhur
 */
 /** @todo this needs to be updated a bit... */
+/** @note  NONE of this is actually used.... */
 
 #include "eve-server.h"
 

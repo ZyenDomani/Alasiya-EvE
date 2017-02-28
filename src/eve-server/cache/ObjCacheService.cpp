@@ -23,6 +23,8 @@
     Author:        Zhur
 */
 
+/** @todo this is for CACHED objects....NOT BulkData...  needs to be fixed.  */
+
 #include "eve-server.h"
 
 #include "PyServiceCD.h"

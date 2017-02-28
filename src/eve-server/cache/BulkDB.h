@@ -35,9 +35,32 @@ class BulkDB
 public:
     BulkDB();
 
+    uint8 GetNumChunks(uint8 setID=0);
+    int32 GetFileIDfromChunk(uint8 setID, uint8 chunkID);
 
-protected:
+    /* updated dogma files to send to client in bulkData */
+    PyRep* GetOperands();
+    PyRep* GetDogmaAttribs();
+    PyRep* GetDogmaEffects();
+
+    /* these need to be split into ~8k-row chunks for easier handling */
+    PyRep* GetExpressions(uint8 chunkID);
+    PyRep* GetDogmaTypeEffects(uint8 chunkID);
+    PyRep* GetDogmaTypeAttribs(uint8 chunkID);
+    /* this is used to determine what to get */
+    PyRep* GetBulkDataChunks(uint8 setID, uint8 chunkID);
+
+private:
+    uint8 m_chunks;
 
 };
 
 #endif  // _EVE_CACHE_BULKDB_H_
+
+/*  notes to keep track of chunkID and the data it refers to
+ *
+ *
+ *
+ *
+ *
+ */
