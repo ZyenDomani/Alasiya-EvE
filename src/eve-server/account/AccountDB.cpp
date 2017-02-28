@@ -96,7 +96,7 @@ PyRep *AccountDB::GetWalletDivisionsInfo(uint32 corpID) {
         " WHERE corporationID = %u", corpID))
     {
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-        return false;
+        return NULL;
     }
 
     DBResultRow row;
