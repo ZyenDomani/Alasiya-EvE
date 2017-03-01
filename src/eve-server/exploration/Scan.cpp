@@ -81,7 +81,7 @@ void Scan::RequestScans(PyDict* dict) {
 
     //NOTE  for now, we are returning hard-coded data for appearance and bugfinding.
 
-    uint32 scanTimer = m_client->GetShip()->GetAttribute(AttrScanSpeed).get_int();
+    uint32 scanTimer = m_client->GetShip()->GetAttribute(AttrScanSpeed).get_int();  // attrib 1123
     OnSystemScanStarted osss;
         osss.timestamp = Win32TimeNow();
         osss.duration = scanTimer;

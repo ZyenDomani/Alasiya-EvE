@@ -59,7 +59,9 @@ private:
 
 /*  notes to keep track of chunkID and the data it refers to
  *
- *
+ *  use this to keep mem map of chunk data, loaded on server start
+    std::map<uint32, PyObject*>     m_stationPyData;    // stationID/data
+        m_stationPyData.insert(std::pair<uint32, PyObject*>(row.GetInt(0), m_sdb.DoGetStation(row.GetInt(0))));
  *
  *
  *

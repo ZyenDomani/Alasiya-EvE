@@ -27,10 +27,11 @@
 
 #include "station/StationDB.h"
 
-/** @todo this needs updating and optimizing.  --in progress 1Jan17  -allan */
+/** @todo this needs updating and optimizing and put into staticdata.  --in progress 1Jan17  -allan */
 
 
 PyPackedRow *StationDB::GetSolarSystem(uint32 solarSystemID) {
+    /** @note wtf is this doing here?  */
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res,
@@ -191,8 +192,7 @@ PyObject* StationDB::DoGetStation(uint32 stationID)
     "   staStations.operationID=staOperations.operationID "
     " LEFT JOIN staOperationServices ON "
     "   staStations.operationID=staOperationServices.operationID "
-    " WHERE staStations.stationID = %u"
-    " GROUP BY staStations.stationID", stationID ))
+    " WHERE staStations.stationID = %u", stationID))
     {
         _log(DATABASE__ERROR, "Error in DoGetStation query: %s", res.error.c_str());
         return nullptr;
@@ -221,9 +221,7 @@ PyRep *StationDB::GetStationItemBits(uint32 stationID) {
         " FROM staStations "
         " LEFT JOIN staStationTypes ON staStations.stationTypeID = staStationTypes.stationTypeID "
         " LEFT JOIN staOperationServices ON staStations.operationID = staOperationServices.operationID "
-        " WHERE staStations.stationID = %u "
-        " GROUP BY staStations.stationID ", stationID
-    ))
+        " WHERE staStations.stationID = %u ", stationID))
     {
         codelog(DATABASE__ERROR, "Error in GetStationItemBits query: %s", res.error.c_str());
         return NULL;

@@ -43,7 +43,7 @@ static const float Config_Version = 7.3; /*  match versions here with eve-server
 static const float Log_Version = 6.9;    /*  match versions here with logtypes.h and log.ini for full logging support */
 static const float Bot_Version = 0.3;    /*  match versions here with MarketBot.xml and MarketBotConf.cpp for full config support */
 static const float EVE_Build = 1.85;     /* this is for bug tracking on my forums.  -allan 3July15 */
-static const char* const EVEMU_REVISION = "0.8.87-allan";
-static const char* const EVEMU_BUILD_DATE = "30 December 2016";
+static const char* const EVEMU_REVISION = "0.8.89-allan";
+static const char* const EVEMU_BUILD_DATE = "28 Feburary 2017";
 
 #endif

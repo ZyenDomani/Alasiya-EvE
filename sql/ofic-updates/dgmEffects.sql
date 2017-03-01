@@ -21,12 +21,12 @@ SET time_zone = "+00:00";
 --
 
 -- --------------------------------------------------------
-DROP TABLE `dgmEffects`;
+
 --
 -- Table structure for table `dgmEffects`
 --
 
-CREATE TABLE `dgmEffects` (
+CREATE TABLE IF NOT EXISTS `dgmEffects` (
   `effectID` smallint(6) NOT NULL,
   `effectName` varchar(400) NOT NULL DEFAULT '0',
   `effectCategory` smallint(6) NOT NULL DEFAULT '0',

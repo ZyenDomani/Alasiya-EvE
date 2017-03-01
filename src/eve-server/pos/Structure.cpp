@@ -127,6 +127,7 @@ void StructureItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) co
     capacityUsed += item->GetAttribute(AttrVolume);
 
     /*
+     * 1351,1352
     AttrSpecialFuelBayCapacity = 1549,
     AttrSpecialOreHoldCapacity = 1556,
     AttrSpecialGasHoldCapacity = 1557,
