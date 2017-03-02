@@ -515,12 +515,12 @@ int main( int argc, char* argv[] )
         RunLoops = sConsole.Process();
 
         /* do the stuff for thread sleeping */
-        if (sEntityList.GetClientCount()) {
+        //if (sEntityList.GetClientCount()) {
             start = GetTimeMSeconds() - start;
             if (MAIN_LOOP_DELAY > start)
                 Sleep(start);
-        } else /* if no clients, let server idle longer*/
-            Sleep(idle);
+        //} else /* if no clients, let server idle longer*/
+        //    Sleep(idle);
     }
 
     sLog.Warning("   ServerShutdown", "Main loop stopped" );

@@ -89,7 +89,7 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
         res->SetItemString("type", new PyInt(updateBulkStatusTooManyRevisions));
     } else if (args.branch != bulkDataBranch) {
         res->SetItemString("type", new PyInt(updateBulkStatusWrongBranch));
-    } else if (args.hashValue->IsNone()) {
+    } else if (args.hashValue->IsNone()) {  //241bfba3c85c1bb4680be745e6c7d1ee
         // not right response, but easiest to hack, as it compares servers fileIDs to local fileIDs and removes matching ids
         res->SetItemString("type", new PyInt(updateBulkStatusHashMismatch));
         // make list of fileIDs to send to client.
@@ -121,16 +121,8 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
 PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
 {
     /*
-     * 00:29:16 W BulkMgrService::Handle_GetFullFiles(): size= 1
-     * 00:29:16 [BulkDump]   Call Arguments:
-     * 00:29:16 [BulkDump]       Tuple: 1 elements
-     * 00:29:16 [BulkDump]         [ 0] List: 2 elements
-     * 00:29:16 [BulkDump]         [ 0]   [ 0] Integer field: 800001
-     * 00:29:16 [BulkDump]         [ 0]   [ 1] Integer field: 800002
-     */
     sLog.White( "BulkMgrService::Handle_GetFullFiles()", "size= %u", call.tuple->size() );
     call.Dump(BULKDATA__DUMP);
-    /*
         toBeChanged, bulksEndingInChunk, numberOfChunks, chunkSetID, self.allowUnsubmitted = self.bulkMgr.GetFullFiles(toGet)
         -- toGet is sent as PyList of fileIDs server should send back
 
@@ -260,7 +252,7 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
     _log(BULKDATA__INFO, "BulkMgrService::Handle_GetFullFilesChunk(): bulkFileID: %i, chunkSetID: %u, chunkNumber: %u", bulkFileID, args.chunkSetID, args.chunkNumber);
     toBeChanged->SetItem(new PyInt(bulkFileID), m_db.GetBulkDataChunks(args.chunkSetID, args.chunkNumber));
 
-    // 2, 4, 37
+    // 2, 4, 36
     if (args.chunkSetID == 0) {
         if (args.chunkNumber == 2) {
             PyList* bulksEndingInChunk = new PyList();
@@ -270,7 +262,7 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
             PyList* bulksEndingInChunk = new PyList();
             bulksEndingInChunk->AddItem(new PyInt(bulkFileID));
             response->SetItem(1, bulksEndingInChunk);
-        } else if (args.chunkNumber == 44) {
+        } else if (args.chunkNumber == 42) {
             PyList* bulksEndingInChunk = new PyList();
             bulksEndingInChunk->AddItem(new PyInt(bulkFileID));
             response->SetItem(1, bulksEndingInChunk);

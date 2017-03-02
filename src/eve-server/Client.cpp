@@ -617,9 +617,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     }
 
     /* set internal vars for new ship */
-    m_ship = newShipItemRef;
-    m_shipId = m_ship->itemID();
-    m_char->SetActiveShip(m_shipId);    // this also saves shipID for char in db. (error fix)
+    SetShip(newShipItemRef);
     m_ship->SetPlayer(this);
     m_ship->UpdateModules();
 
@@ -638,7 +636,6 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             pShipSE->SetPilot(this);
             pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         }
-        UpdateSessionInt("shipid", m_shipId);
         m_char->Move(m_shipId, flagPilot);
         //SetDestiny(m_ship->position());
         SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
@@ -823,6 +820,7 @@ void Client::SetClientTimer(ClientState type, uint32 wait_ms)
 void Client::SetShip(ShipItemRef shipRef) {
     m_ship = shipRef;
     m_shipId = shipRef->itemID();
+    UpdateSessionInt("shipid", m_shipId);   // update shipID in session
     if (m_char)
         m_char->SetActiveShip(m_shipId);
 }
@@ -1074,10 +1072,10 @@ void Client::_UpdateSession(const CharacterConstRef& character)
     uint32 solarsystemID = character->solarSystemID();
     if (stationID) {
         mSession.Clear("solarsystemid");    //must be 0 in station
-        mSession.Clear("shipid");           //must be 0 in station
+        mSession.Clear("shipid");    //must be 0 in station
 
         mSession.SetInt("stationid", stationID);
-        mSession.SetInt("stationid2", stationID);
+        mSession.SetInt("stationid2", stationID);   // client uses this to get correct dogmaLocation
         mSession.SetInt("worldspaceid", stationID);
         mSession.SetInt("locationid", stationID);
     } else {

@@ -142,7 +142,7 @@ GenericModule* ModuleContainer::GetModule(uint32 itemID)
     //iterate through the list and see if we have it
     std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
     while (itr != m_modules.end()) {
-        if (itr->second->itemID() == itemID)
+        if ((itr->second) and (itr->second->itemID() == itemID))
             return itr->second;
         else
             ++itr;

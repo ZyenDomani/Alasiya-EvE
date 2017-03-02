@@ -170,7 +170,7 @@ private:
     uint8 m_TurretSlots;
     uint8 m_LauncherSlots;
 
-    // map of all modules by flag
+    // map of all module slots by flag
     std::map<uint8, GenericModule*> m_modules;      // k,v of flag, pointer to module
     std::map<uint32, uint32> m_ModulesFittedByGroupID;
 };

@@ -31,7 +31,7 @@ BulkDB::BulkDB()
 {
     // will need to make this dynamic at some point.
     //  dunno how yet.
-    m_chunks = 45;
+    m_chunks = 43;
 }
 
 /* updated files to send to client in bulkdata
@@ -40,8 +40,9 @@ BulkDB::BulkDB()
     dgmExpressions = 800003,             -17757
     dgmAttributes = 800004,              -1791
     dgmEffects = 800005,                 -3537
-    dgmTypeAttributes = 800006,          -372866
+    dgmTypeAttributes = 800006,          -359049
     dgmTypeEffects = 800007,             -34076
+    dgmUnits = 800009,                   -57
 
     will have to split these up in chunks, hard-code chunk numbers, and keep track of the data and its relevant number
     not sure how im gonna do this yet.
@@ -52,16 +53,7 @@ PyRep* BulkDB::GetOperands()
 {   //74
     DBQueryResult res;
     if( !sDatabase.RunQuery(res,
-        " SELECT"
-        " operandID,"
-        " operandKey,"
-        " description,"
-        " format,"
-        " arg1categoryID,"
-        " arg2categoryID,"
-        " resultCategoryID,"
-        " pythonFormat"
-        " FROM dgmOperands"))
+        " SELECT operandID, operandKey, description, format, arg1categoryID, arg2categoryID, resultCategoryID, pythonFormat FROM dgmOperands"))
     {
         codelog(DATABASE__ERROR, "Error in GetOperands: %s", res.error.c_str());
         return nullptr;
@@ -73,8 +65,8 @@ PyRep* BulkDB::GetDogmaAttribs()
 {   //1791
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
-        "SELECT attributeID, attributeName, attributeCategory, description, maxAttributeID, attributeIdx, graphicID, chargeRechargeTimeID, "
-        "iconID, dataID, defaultValue, published, displayName, displayNameID, unitID, stackable, highIsGood FROM dgmAttributeTypes"))
+        "SELECT attributeID, attributeName, attributeCategory, description, descriptionID, maxAttributeID, attributeIdx, graphicID, "
+        "chargeRechargeTimeID, defaultValue, published, unitID, displayName, displayNameID, stackable, highIsGood, iconID, dataID FROM dgmAttributeTypes"))
     {
         _log(DATABASE__ERROR, "Error in GetDogmaAttribs: %s",res.error.c_str());
         return nullptr;
@@ -86,11 +78,10 @@ PyRep* BulkDB::GetDogmaEffects()
 {   //3537
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
-        "SELECT effectID, effectName, effectCategory, preExpression, postExpression, description, guid, iconID, "
-        "isOffensive, isAssistance, durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, "
-        "falloffAttributeID, published, displayName, 0 AS displayNameID, isWarpSafe, rangeChance, electronicChance, propulsionChance, distribution, "
-        "sfxName, npcUsageChanceAttributeID, npcActivationChanceAttributeID, 0 as graphicID, fittingUsageChanceAttributeID, 0 AS dataID, 0 AS descriptionID "
-        "FROM dgmEffects"))
+        "SELECT effectID, effectName, displayNameID, descriptionID, dataID, effectCategory, preExpression, postExpression, description, guid, "
+        "isOffensive, isAssistance, durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, falloffAttributeID, "
+        "disallowAutoRepeat, published, displayName, isWarpSafe, rangeChance, electronicChance, propulsionChance, distribution, sfxName, "
+        "npcUsageChanceAttributeID, npcActivationChanceAttributeID, fittingUsageChanceAttributeID, iconID, modifierInfo FROM dgmEffects"))
     {
         _log(DATABASE__ERROR, "Error in GetDogmaEffects: %s",res.error.c_str());
         return nullptr;
@@ -110,7 +101,7 @@ uint8 BulkDB::GetNumChunks(uint8 setID /*0*/)
             return 2;
         }
         case 3: {   // dgmTypeAttributes
-            return 37;
+            return 36;
         }
         case 4: {   // dgmTypeEffects
             return 4;
@@ -171,8 +162,8 @@ PyRep* BulkDB::GetBulkDataChunks(uint8 setID, uint8 chunkID)
                     return GetDogmaTypeEffects(chunk);
                 } break;
                 default: {
-                    uint8 chunk = chunkID - 6;  // 1 to 38
-                    if (chunk > 38)
+                    uint8 chunk = chunkID - 6;  // 1 to 36
+                    if (chunk > 36)
                         return nullptr;   // make error here for wrong chunkID
                     return GetDogmaTypeAttribs(chunk);
                 } break;
@@ -241,8 +232,8 @@ PyRep* BulkDB::GetDogmaTypeEffects(uint8 chunkID)   // 4 chunks
     return DBResultToCRowset(res);
 }
 
-PyRep* BulkDB::GetDogmaTypeAttribs(uint8 chunkID)   // 38 chunks
-{   //372866
+PyRep* BulkDB::GetDogmaTypeAttribs(uint8 chunkID)   // 36 chunks
+{   //359049
     DBQueryResult res;
     std::ostringstream q;
     q << "SELECT typeID, attributeID, IF(valueInt IS NULL, valueFloat, valueInt) AS value FROM dgmTypeAttributes";
@@ -354,12 +345,6 @@ PyRep* BulkDB::GetDogmaTypeAttribs(uint8 chunkID)   // 38 chunks
         } break;
         case 36: {
             q << " LIMIT 350000, 10000";
-        } break;
-        case 37: {
-            q << " LIMIT 360000, 10000";
-        } break;
-        case 38: {
-            q << " LIMIT 370000, 3000";
         } break;
     };
 

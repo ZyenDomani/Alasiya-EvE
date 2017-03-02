@@ -1667,6 +1667,7 @@ enum EveAttrEnum {
     AttrneutReflectAmount = 1815,
     AttrneutReflectAmountBonus = 1816,
     AttrnosReflectAmountBonus = 1817,
+    // end of bulkdata packets
     AttraurumConversionRate = 1818,
     AttrbaseDefenderAllyCost = 1820,
     AttrskillAllyCostModifierBonus = 1821,
@@ -1691,7 +1692,7 @@ enum EveAttrEnum {
     AttrCanFitShipGroup6 = 1879,
     AttrCanFitShipGroup7 = 1880,
     AttrCanFitShipGroup8 = 1881
-    /*  new shit...deleted from TypeAttributes
+    /*  new shit from rhea
     warfareLinkCPUAdd   1882
     warfareLinkCPUPenalty   1883
     chargedArmorDamageMultiplier    1886
@@ -1699,7 +1700,7 @@ enum EveAttrEnum {
     shipBonusAD2    1888
     shipBonusABC2   1889
     nondestructible     1890
-    allowedInCapIndustrialMaintenanceBay    1891
+    allowedInCapIndustrialMaintenanceBay    1891    ..deleted from TypeAttributes
     entityArmorRepairAmountPerSecond    1892
     entityShieldBoostAmountPerSecond    1893
     entityCapacitorLevel    1894
