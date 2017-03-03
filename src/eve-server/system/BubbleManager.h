@@ -50,7 +50,7 @@ public:
     BubbleManager();
     ~BubbleManager();
 
-    void Init();
+    void Initialize();
     void Process();
 
     //call whenever an entity may have left its bubble.

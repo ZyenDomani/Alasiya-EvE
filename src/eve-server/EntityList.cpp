@@ -53,7 +53,7 @@ EntityList::~EntityList() {
     sLog.Green("   ServerShutdown", " Complete.");
 }
 
-void EntityList::Init() {
+void EntityList::Initialize() {
     /* start the timer */
     m_stampTimer.Start(1000);
     ServiceDB m_db;

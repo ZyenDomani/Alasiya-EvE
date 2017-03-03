@@ -40,7 +40,7 @@ m_updateTimer(sConfig.rates.WebUpdate * 60000)	//15 mins
     m_updateTimer.Disable();
 }
 
-void ConsoleCommand::Init(CommandDispatcher* cd, ItemFactory* itmf)
+void ConsoleCommand::Initialize(CommandDispatcher* cd, ItemFactory* itmf)
 {
     pCommand = cd;
     pFactory = itmf;
@@ -72,7 +72,7 @@ bool ConsoleCommand::Process() {
 		buf = (char*) malloc (BUFLEN);
 	    if (fgets(buf, BUFLEN, stdin)) {
 			if (strncmp(buf, "x", 1) == 0) {
-				sLog.Warning("  Alasiya's EvEMu", "EXIT called.  Setting RunLoops to false.");
+				sLog.Warning("  Alasiya's EvEMu", "EXIT called.  Breaking out of Main Loop.");
 				free (buf);
 				return false;
 			} else if (strncmp(buf, "h", 1) == 0) {
@@ -384,7 +384,7 @@ void ConsoleCommand::Test()
     sLog.Yellow("     Effects Test", "Test Begin - Process and Save all Effects.");
 
     sFxDataMgr.ConfigureEffects();
-    
+
     sLog.Yellow("     Effects Test", "Test Complete.");
     sLog.Yellow("     Effects Test", "%u sets loaded in %.3fms.", sFxDataMgr.GetFxSize(), sFxDataMgr.GetFxTime());
 }

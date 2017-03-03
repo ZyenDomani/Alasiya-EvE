@@ -1364,7 +1364,7 @@ PENALIZABLE_OPERATORS = (
 
 */
 
-void ShipItem::ParseExpression(Expression expression, fxData data)
+void ShipItem::ParseExpression(Expression expression, fxData& data)
 {
     using namespace Effects;
     switch(expression.operandID) {
@@ -1409,10 +1409,10 @@ void ShipItem::ParseExpression(Expression expression, fxData data)
 
         // do as stated
         case operandCOMBINE: { // executes two statements  '%(arg1)s); (%(arg2)s'
-            fxData data1;
-            data1.assoc = data1.env = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = data.domain = 0;
+            //data1.assoc = data1.env = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = data.domain = 0;
             if (expression.arg1)
-                ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data1);
+                ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            fxData data1;
             data1.assoc = data1.env = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = data.domain = 0;
             if (expression.arg2)
                 ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data1);
@@ -1451,6 +1451,7 @@ void ShipItem::ParseExpression(Expression expression, fxData data)
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
             m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
         } break;
+        // these arent completely correct yet.  testing
         case operandALGM: {    //7,(%(arg1)s).AddLocationGroupModifier (%(arg2)s)
             ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
@@ -1472,7 +1473,7 @@ void ShipItem::ParseExpression(Expression expression, fxData data)
             m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
         } break;
         /** @todo  will have to figure out how to remove modifiers and delete from the map(s) */
-        // why?  reset everything....
+        // why?  just reset everything....
         case operandRIM: {    //'RemoveItemModifier(env,%(arg1)s, %(arg2)s)'
             Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
             ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1), data);

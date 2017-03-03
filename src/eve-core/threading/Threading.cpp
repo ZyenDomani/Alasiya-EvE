@@ -28,7 +28,7 @@ Threading::~Threading()
     m_threads.clear();
 }
 
-void Threading::Init() {
+void Threading::Initialize() {
     nfds = 1;
     bufferLen = 64 * 1024; // 64kbyte recieve buffer, up from default of 8k
     sleepTime = 10;     //sConfig.rates.NetSleepTime

@@ -64,7 +64,7 @@ public:
 
     typedef std::set<uint32> character_set;
 
-    void Init();
+    void Initialize();
     void Close();
     void Process();
     void Shutdown();
@@ -88,7 +88,7 @@ public:
     uint32 GetSystemCount() const                       { return m_systems.size(); }
     uint32 GetStationCount() const                      { return m_stations.size(); }
     uint32 GetClientSeed()                              { return ++m_clientSeedID; }
-    
+
     /* stamp shit here */
     uint32 GetStamp()                                   { return m_stamp; }
     bool IsTicActive()                                  { return m_stampTimer.Check(false); }

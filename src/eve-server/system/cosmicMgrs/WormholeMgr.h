@@ -44,7 +44,7 @@ public:
     WormholeMgr();
     virtual ~WormholeMgr()                              { /* do nothing here */ }
 
-    void Init(PyServiceMgr* svc);
+    void Initialize(PyServiceMgr* svc);
     void Process();
 
 private:
@@ -54,7 +54,7 @@ private:
     Timer m_updateTimer;
 
     bool m_initalized;
-    
+
 };
 
 //Singleton

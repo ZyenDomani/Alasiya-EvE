@@ -53,6 +53,7 @@
 #include "system/CalendarMgrService.h"
 #include "system/CalendarProxy.h"
 // cache services
+#include "cache/BulkDB.h"
 #include "cache/BulkMgrService.h"
 #include "cache/ObjCacheService.h"
 // character services
@@ -167,7 +168,7 @@ static const char* const SRV_CONFIG_FILE = EVEMU_ROOT "/etc/eve-server.xml";
 static void SetupSignals();
 static void CatchSignal( int sig_num );
 
-static volatile bool RunLoops = true;
+static volatile bool m_run = true;
 
 int main( int argc, char* argv[] )
 {
@@ -186,7 +187,7 @@ int main( int argc, char* argv[] )
 
     /* init logging */
     sLog.InitializeLogging(sConfig.files.logDir);
-    sThread.Init();
+    sThread.Initialize();
     sLog.White( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
     //sThread.AddThread(pthread_self());
     sLog.White("       ServerInit", "Loading server");
@@ -251,7 +252,7 @@ int main( int argc, char* argv[] )
 
     /* initialize EntityList singleton, clientID seed and start tic timer */
     sLog.Green("       ServerInit", "Starting Entity List");
-    sEntityList.Init();
+    sEntityList.Initialize();
 
     /* create a service manager */
     sLog.Green("       ServerInit", "Starting Service Manager");
@@ -259,15 +260,15 @@ int main( int argc, char* argv[] )
 
     /* create the WormholeMgr singleton */
     sLog.Green("       ServerInit", "Starting Wormhole Manager");
-    sWHMgr.Init(&pyServMgr);
+    sWHMgr.Initialize(&pyServMgr);
 
     /* create the BubbleManager singleton */
     sLog.Green("       ServerInit", "Starting Bubble Manager");
-    sBubbleMgr.Init();
+    sBubbleMgr.Initialize();
 
     /* create the MarketBot singleton */
     sLog.Green("       ServerInit", "Starting Market Bot Manager");
-    sMktBotMgr.Init();
+    sMktBotMgr.Initialize();
 
     /* create a command dispatcher */
     sLog.Green("       ServerInit", "Starting Command Dispatch Manager");
@@ -276,7 +277,7 @@ int main( int argc, char* argv[] )
 
     /* create console command interperter singleton */
     sLog.Green("       ServerInit", "Starting Console Manager");
-    sConsole.Init(&command_dispatcher, item_factory);
+    sConsole.Initialize(&command_dispatcher, item_factory);
 
     /* Service creation and registration. */
     sLog.Yellow("       ServerInit", "Creating pyServMgr."); // 85 currently known pyServMgr
@@ -384,6 +385,8 @@ int main( int argc, char* argv[] )
 
     // Create In-Memory Database Objects for Critical and HighUse Systems:
     sLog.Yellow("       ServerInit", "Loading Static Database Table Objects...");
+    sLog.Green("       ServerInit", "BulkData");
+    sBulkDB.Initialize();
     sLog.Green("       ServerInit", "Effect Data Sets");
     sFxDataMgr.Initialize();
     sLog.Green("       ServerInit", "Wreck Data");
@@ -407,18 +410,18 @@ int main( int argc, char* argv[] )
      * current settings displayed on console at start-up
      *   -allan 7June2015
      */
-    uint8 MAIN_LOOP_DELAY = sConfig.server.ServerSleepTime; // delay 10 ms.
+    uint8 m_sleepTime = sConfig.server.ServerSleepTime; // delay 10 ms.
     if (sConfig.server.ServerSleepTime != 10) {
-        MAIN_LOOP_DELAY = sConfig.server.ServerSleepTime;
+        m_sleepTime = sConfig.server.ServerSleepTime;
         sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
-        sLog.Warning("  Loop Sleep Time","Changed from default 10ms to %ums.", MAIN_LOOP_DELAY);
+        sLog.Warning("  Loop Sleep Time","Changed from default 10ms to %ums.", m_sleepTime);
     } else
         sLog.Green("  Loop Sleep Time","Default at 10ms.");
-    int idle = sConfig.server.idleSleepTime;
-    if (idle == 1000)
+    uint16 m_idle = sConfig.server.idleSleepTime;
+    if (m_idle == 1000)
         sLog.Green("  Idle Sleep Time","Default at 1000ms.");
     else
-        sLog.Yellow("  Idle Sleep Time","Changed from default 1000ms to %ums.", idle);
+        sLog.Yellow("  Idle Sleep Time","Changed from default 1000ms to %ums.", m_idle);
     if (sConfig.server.UseShipTracking)
         sLog.Warning("    Ship Tracking","Enabled.");
     else
@@ -498,7 +501,7 @@ int main( int argc, char* argv[] )
      * THE MAIN LOOP
      * Everything except IO should happen in this loop, in this thread context.
      */
-    while (RunLoops) {
+    while (m_run) {
         Timer::SetCurrentTime();
         start = GetTimeMSeconds();
 
@@ -512,16 +515,21 @@ int main( int argc, char* argv[] )
         sEntityList.Process();
 
         /*  process console commands, if any, and check for 'exit' command */
-        RunLoops = sConsole.Process();
+        m_run = sConsole.Process();
 
         /* do the stuff for thread sleeping */
-        //if (sEntityList.GetClientCount()) {
+        if (sEntityList.GetClientCount()) {
             start = GetTimeMSeconds() - start;
-            if (MAIN_LOOP_DELAY > start)
+            if (m_sleepTime > start)
                 Sleep(start);
-        //} else /* if no clients, let server idle longer*/
-        //    Sleep(idle);
+        } else /* if no clients, let server idle longer*/
+            Sleep(m_idle);
     }
+
+    /*
+     * end of main loop
+     *  at this point, server has been killed, and these are cleanup methods below here
+     */
 
     sLog.Warning("   ServerShutdown", "Main loop stopped" );
     m_sdb.SetServerOnlineStatus(false);
@@ -545,6 +553,9 @@ int main( int argc, char* argv[] )
     SafeDelete(item_factory);
     /* Close the service manager */
     pyServMgr.Close();
+    /* Close the bulk data manager */
+    sLog.Warning("   ServerShutdown", "Closing the BulkData Manager." );
+    sBulkDB.Close();
     /* close the db handler */
     sDatabase.Close();
     /** @todo  the thread system is only implemented for tcp connections at this time. */
@@ -594,7 +605,7 @@ static void CatchSignal( int sig_num )
 {
     sLog.White( "    Signal System", "Caught signal: %d", sig_num );
     EvE::traceStack();
-    RunLoops = false;
+    m_run = false;
 }
 
 /*      Freeze Detector Code taken from TrinityCore.  figure out how to implement here (based on seeing occational freezes on main)  -allan 29Dec15

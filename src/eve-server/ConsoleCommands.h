@@ -50,7 +50,7 @@ class ConsoleCommand
     ConsoleCommand();
     virtual ~ConsoleCommand()   { /* do nothing here */ }
 
-    void Init(CommandDispatcher* cd, ItemFactory* itmf);
+    void Initialize(CommandDispatcher* cd, ItemFactory* itmf);
 
 	void UpdateStatus();
     void HaltServer()           { m_haltServer = true; }

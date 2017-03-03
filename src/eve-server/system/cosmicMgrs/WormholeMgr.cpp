@@ -53,7 +53,7 @@ WormholeMgr::WormholeMgr()
     m_initalized = false;
 }
 
-void WormholeMgr::Init(PyServiceMgr* svc) {
+void WormholeMgr::Initialize(PyServiceMgr* svc) {
     m_services = svc;
     if (!sConfig.cosmic.WormHoleEnabled) {
         sLog.Warning(" Wormhole Manager", "Wormhole Manager Disabled.");

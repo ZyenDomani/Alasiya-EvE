@@ -415,7 +415,7 @@ private:
         uint16 typeID;      // used to define items in domain grouped by skill requirement
     };
 
-    void ParseExpression(Expression expression, fxData data);
+    void ParseExpression(Expression expression, ShipItem::fxData& data);
 
     std::multimap<int8, fxData> m_modifiers;    // k,v of assoc, data<assoc, domain, env, grpID, typeID, targAttr, srcAttr>, ordered by key (assoc)
 
