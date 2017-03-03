@@ -51,7 +51,6 @@ protected:
     PyCallable_DECL_CALL(GetUnsubmittedChunk);
 
 private:
-    BulkDB m_db;
 
     enum bulkStatus {
         updateBulkStatusOK               = 0,   // client data == server data  - no change

@@ -1657,6 +1657,7 @@ enum EveAttrEnum {
     AttrtriageRemoteModuleCapNeed = 1802,
     AttrMWDSignatureRadiusBonus = 1803,
     AttrspecialQuafeHoldCapacity = 1804,
+    // end of client const attrib data 
     AttrrequiresSovereigntyDisplayOnly = 1806,
     AttrnosReflector = 1808,
     AttrneutReflector = 1809,
