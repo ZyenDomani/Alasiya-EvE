@@ -641,6 +641,7 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
         if (effectName == "online") {
             mod->Online();
         } else {
+            // client wont allow activating an offline module.  this is catchall.
             m_Ship->GetPilot()->SendErrorMsg("You cannot activate an offline module. Ref: ServerError 25164");
         }
         return;
