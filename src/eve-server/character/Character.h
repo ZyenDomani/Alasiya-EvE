@@ -356,6 +356,7 @@ public:
     void SetClient(Client* pClient)                     { m_pClient = pClient; }
     Client* GetClient()                                 { return m_pClient; }
 
+    /** @todo  update skillqueue data */
     typedef CharacterDB::QueuedSkill QueuedSkill;   // structure of <uint32 typeID, uint8 level>
     typedef CharacterDB::SkillQueue SkillQueue;     // vector of QueuedSkill
 
@@ -785,7 +786,7 @@ private:
      *  drones
      *  navigation
      *  subsystems
-     *  
+     *
      */
 
 };

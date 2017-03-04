@@ -275,14 +275,14 @@ bool ItemType::_Load(ItemFactory &factory) {
     std::vector< DmgTypeAttribute > typeAttrVec;
     sDataMgr.GetDgmTypeAttrVec(m_id, typeAttrVec);
     for (auto cur : typeAttrVec)
-        m_AttributeMap.insert(std::pair<uint32, EvilNumber>(cur.attributeID, cur.value));
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(cur.attributeID, cur.value));
 
     return true;
 }
 
-const EvilNumber ItemType::GetAttribute(const uint32 attributeID) const
+const EvilNumber ItemType::GetAttribute(const uint16 attributeID) const
 {
-    std::map<uint32, EvilNumber>::const_iterator itr = m_AttributeMap.find(attributeID);
+    AttrMapConstItr itr = m_AttributeMap.find(attributeID);
     if (itr != m_AttributeMap.end())
         return itr->second;
     return 0;

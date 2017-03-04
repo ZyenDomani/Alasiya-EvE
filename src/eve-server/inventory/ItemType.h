@@ -282,13 +282,13 @@ public:
     double capacity() const                             { return m_capacity; }
     EVERace race() const                                { return m_raceID; }
 
-    // update this to new effects class
+    /** @todo  update this to new effects class */
     bool HasEffect(uint16 effectID) const
 	{
         return true;
 	}
 
-	const EvilNumber GetAttribute(const uint32 attributeID) const;
+	const EvilNumber GetAttribute(const uint16 attributeID) const;
 
 protected:
     ItemType(
@@ -347,7 +347,7 @@ private:
     /*
      * Data members
      */
-    std::map<uint32, EvilNumber> m_AttributeMap;
+    std::map<uint16, EvilNumber> m_AttributeMap;
 
     const uint32 m_id;
     const ItemGroup *m_group;

@@ -128,12 +128,10 @@ Client::~Client() {
 	 *		6)  remove client from sysmgr/destiny/server
      */
         //m_ship->OfflineAll();
-        //SaveAllToDatabase();
-        if (pShipSE) {
+        if (pShipSE)
             pShipSE->SetPosition(pShipSE->DestinyMgr()->GetPosition());
-            m_ship->SaveShip();
-        }
-        m_char->SaveFullCharacter();         // Save Character info to DB
+
+        SaveAllToDatabase();
 
         if (IsDocked()) {
             if (GetTradeSession()) {
@@ -646,7 +644,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     }
 
     m_ship->SetCustomInfo(ci);
-    m_ship->SaveShip();
+    //m_ship->SaveShip();
 
     SetSessionTimer();
 }
@@ -933,19 +931,13 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
 }
 
 void Client::SavePosition() {
-    if (!pShipSE) {
-        _log(CLIENT__MESSAGE, "%s: Unable to save position. We are probably not in space.",  m_char->itemName().c_str());
-        return;
-    }
-    pShipSE->SetPosition(pShipSE->DestinyMgr()->GetPosition());
+    if (pShipSE)
+        pShipSE->SetPosition(pShipSE->DestinyMgr()->GetPosition());
     m_ship->SaveShip();
 }
 
 void Client::SaveAllToDatabase() {
     SavePosition();
-    if (m_ship)
-        m_ship->SaveShip();  // Save Ship and Modules' attributes and info to DB
-
     m_char->SaveFullCharacter();         // Save Character info to DB
 }
 

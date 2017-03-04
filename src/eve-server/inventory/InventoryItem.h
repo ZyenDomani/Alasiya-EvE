@@ -290,19 +290,19 @@ protected:
 protected:
     AttributeMap mAttributeMap;
 public:
-    bool SetAttribute(uint32 attributeID, int num, bool notify=true);
-    bool SetAttribute(uint32 attributeID, uint32 num, bool notify=true);
-    bool SetAttribute(uint32 attributeID, int64 num, bool notify=true);
-    bool SetAttribute(uint32 attributeID, uint64 num, bool notify=true);
-    bool SetAttribute(uint32 attributeID, double num, bool notify=true);
-    bool SetAttribute(uint32 attributeID, EvilNumber num, bool notify=true);
-    bool HasAttribute(const uint32 attributeID) const { return mAttributeMap.HasAttribute(attributeID); }
-    bool HasAttribute(const uint32 attributeID, EvilNumber &value) const { return mAttributeMap.HasAttribute(attributeID, value); }
-    bool SaveAttributes() { return mAttributeMap.SaveAttributes(); }
-    bool ResetAttribute(uint32 attributeID, bool notify=false) { return mAttributeMap.ResetAttribute(attributeID, notify); }
-    bool DeleteAttribute(uint32 attributeID) { return mAttributeMap.DeleteAttribute(attributeID); }
-    EvilNumber GetAttribute(const uint32 attributeID) const { return mAttributeMap.GetAttribute(attributeID); }
-    EvilNumber GetDefaultAttribute(const uint32 attributeID)  { return m_type.GetAttribute(attributeID); }
+    void SetAttribute(uint16 attrID, int num, bool notify=true);
+    void SetAttribute(uint16 attrID, uint32 num, bool notify=true);
+    void SetAttribute(uint16 attrID, int64 num, bool notify = true);
+    void SetAttribute(uint16 attrID, uint64 num, bool notify=true);
+    void SetAttribute(uint16 attrID, double num, bool notify=true);
+    void SetAttribute(uint16 attrID, EvilNumber num, bool notify=true);
+    bool HasAttribute(const uint16 attrID) const                       { return mAttributeMap.HasAttribute(attrID); }
+    bool HasAttribute(const uint16 attrID, EvilNumber &value) const    { return mAttributeMap.HasAttribute(attrID, value); }
+    bool SaveAttributes()                                              { return mAttributeMap.SaveAttributes(); }
+    void ResetAttribute(uint16 attrID, bool notify=false)              { mAttributeMap.ResetAttribute(attrID, notify); }
+    void DeleteAttribute(uint16 attrID)                                { mAttributeMap.DeleteAttribute(attrID); }
+    EvilNumber GetAttribute(const uint16 attrID) const                 { return mAttributeMap.GetAttribute(attrID); }
+    EvilNumber GetDefaultAttribute(const uint16 attrID)                { return m_type.GetAttribute(attrID); }
 };
 
 #endif

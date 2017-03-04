@@ -723,7 +723,7 @@ void Character::UpdateSkillQueue() {
             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u", itemName().c_str(), m_itemID, currentTraining->typeID(), oldLevel);
 
             currentTraining->SetAttribute(AttrSkillPoints, skillPointsTrained);
-            currentTraining->DeleteAttribute(AttrExpiryTime);
+            currentTraining->SetAttribute(AttrExpiryTime, 0, false);
             currentTraining->SetFlag(flagSkill);
             currentTraining = SkillRef();
         }
@@ -740,7 +740,7 @@ void Character::UpdateSkillQueue() {
             }
 
             if (currentTraining->GetAttribute(AttrSkillLevel) > 4) {  //check for skillLevel above max.
-                currentTraining->DeleteAttribute(AttrExpiryTime);
+                currentTraining->SetAttribute(AttrExpiryTime, 0, false);
                 currentTraining->SetFlag(flagSkill);
                 m_skillQueue.erase( m_skillQueue.begin() );
                 break;
@@ -756,7 +756,7 @@ void Character::UpdateSkillQueue() {
             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining started - skill: %u, level: %u", \
                             itemName().c_str(), m_itemID, skillID, level.get_int());
 
-            currentTraining->SetAttribute(AttrExpiryTime, timeTraining.get_double());
+            currentTraining->SetAttribute(AttrExpiryTime, timeTraining);
             currentTraining->SetFlag(flagSkillInTraining);
 
             OnSkillStartTraining osst;
@@ -787,7 +787,7 @@ void Character::UpdateSkillQueue() {
 
             currentTraining->SetAttribute(AttrSkillLevel, level );
             currentTraining->SetAttribute(AttrSkillPoints, newPoints);
-            currentTraining->DeleteAttribute(AttrExpiryTime);
+            currentTraining->SetAttribute(AttrExpiryTime, 0, false);
             currentTraining->SetFlag(flagSkill);
             m_skillQueue.erase( m_skillQueue.begin() );
 
@@ -799,7 +799,7 @@ void Character::UpdateSkillQueue() {
             currentTraining = GetSkill( skillID );
             if (!currentTraining) break;
             if (currentTraining->GetAttribute(AttrSkillLevel) > 4) {  //check for skillLevel above max.
-                currentTraining->DeleteAttribute(AttrExpiryTime);
+                currentTraining->SetAttribute(AttrExpiryTime, 0, false);
                 currentTraining->SetFlag(flagSkill);
                 m_skillQueue.erase( m_skillQueue.begin() );
                 break;
@@ -814,7 +814,7 @@ void Character::UpdateSkillQueue() {
             SaveSkillHistory(skillEventTrainingStarted, timeTraining.get_int(), m_itemID, skillID, level, CurrentSP.get_double(), GetTotalSP().get_double() );
              _log(CHARACTER__SKILL_TRACE, "%s(%u) Persistant Training started - skill: %u, level: %u", itemName().c_str(), m_itemID, skillID, level);
 
-            currentTraining->SetAttribute(AttrExpiryTime, timeTraining.get_double());
+            currentTraining->SetAttribute(AttrExpiryTime, timeTraining);
             currentTraining->SetFlag(flagSkillInTraining);
 
             OnSkillStartTraining osst;
@@ -841,7 +841,7 @@ void Character::UpdateSkillQueue() {
 void Character::UpdateSkillQueueEndTime(const SkillQueue &queue) {
     /**   this code is start for looping skillqueue for multiple levels of same skill.
     std::unordered_multimap<uint32, uint8> flatSkillQueue;
-    std::unordered_multimap<uint32, uint8>::iterator itr
+    std::unordered_multimap<uint32, uint8>::iterator itr;
     for (auto cur : queue) {
         const QueuedSkill qs = cur;
         itr = flatSkillQueue.find(qs.typeID);

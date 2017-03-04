@@ -36,17 +36,24 @@
 
 
 AttributeMap::AttributeMap( InventoryItem& item)
-: mItem(item),
-  mChanged(true)
+: mItem(item)
 {
+    mAttributes.clear();
 }
+
+AttributeMap::~AttributeMap()
+{
+    mAttributes.clear();
+}
+
 
 bool AttributeMap::Load(bool reset/*false*/) {
     if (reset) {
-        // this will allow total clearing of preset attribs, and eliminate the necessity of 'removing' effect mods
+        // this will allow total clearing of attribs to eliminate the necessity of 'removing' effects
         mAttributes.clear();
     }
     /* First, we load default attributes values from typeattrmgr.*/
+    /* most attribute have default values which are related to the item type */
     std::vector< DmgTypeAttribute > typeAttrVec;
     sDataMgr.GetDgmTypeAttrVec(mItem.typeID(), typeAttrVec);
     for (auto cur : typeAttrVec) {
@@ -68,7 +75,7 @@ bool AttributeMap::Load(bool reset/*false*/) {
             value = row.GetInt64(1);
         SetAttribute(row.GetUInt(0), value, false);
     }
-    /* item has it's own attribute map, and is deleted when item object is destroyed */
+    /* item now has it's own attribute map, and is deleted when item object is destroyed or reset */
     _log(ITEM__DEBUG, "AttributeMap::Load()  Loaded %u attribs for %s.", mAttributes.size(), mItem.itemName().c_str());
     return true;
 }
@@ -86,8 +93,7 @@ bool AttributeMap::Save() {
      */
     if (mItem.itemID() >= EVEMU_NPC_ID) return true;    // not saving npc attribs
     if (mItem.itemID() < EVEMU_MINIMUM_ID) return true; // not saving static object attribs
-    /* if nothing changed... it means this action has previously been successful we return true... */
-    if ((!mChanged) or (mItem.categoryID() == EVEDB::invCategories::Ship))
+    if (mItem.categoryID() == EVEDB::invCategories::Ship) // ship attribs saved in shipItem
         return true;
 
     std::ostringstream Inserts;
@@ -141,53 +147,50 @@ bool AttributeMap::Save() {
         }
     }
 
-    mChanged = false;
     return true;
 }
 
 
-bool AttributeMap::SetAttribute( uint32 attributeId, EvilNumber& num, bool notify /*true*/ )
+void AttributeMap::SetAttribute( uint16 attrID, EvilNumber& num, bool nofity /*true*/ )
 {
-    AttrMapItr itr = mAttributes.find(attributeId);
+    AttrMapItr itr = mAttributes.find(attrID);
 
-    /* most attribute have default values which are related to the item type */
     if (itr == mAttributes.end()) {
-        mAttributes.insert(std::make_pair(attributeId, num));
-        if (notify)
-            Add(attributeId, num);
-        return (mChanged = true);
+        mAttributes.insert(std::make_pair(attrID, num));
+        if (nofity)
+            Add(attrID, num);
+        return;
     }
 
     if (itr->second == num)
-        return true;
+        return;
 
-    // notify dogma of attribute change
-    if (notify)
-        Change(attributeId, itr->second, num);
+    if (nofity)
+        Change(attrID, itr->second, num);
 
     itr->second = num;
-    return (mChanged = true);
+    return;
 }
 
-EvilNumber AttributeMap::GetAttribute( const uint32 attributeId ) const
+EvilNumber AttributeMap::GetAttribute( const uint16 attrID ) const
 {
-    AttrMapConstItr itr = mAttributes.find(attributeId);
+    AttrMapConstItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end())
         return itr->second;
     return EvilNumber(0);
 }
 
-bool AttributeMap::HasAttribute(const uint32 attributeID) const
+bool AttributeMap::HasAttribute(const uint16 attrID) const
 {
-    AttrMapConstItr itr = mAttributes.find(attributeID);
+    AttrMapConstItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end())
         return true;
     return false;
 }
 
-bool AttributeMap::HasAttribute(const uint32 attributeID, EvilNumber &value) const
+bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
 {
-    AttrMapConstItr itr = mAttributes.find(attributeID);
+    AttrMapConstItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end()) {
         value = itr->second;
         return true;
@@ -195,30 +198,30 @@ bool AttributeMap::HasAttribute(const uint32 attributeID, EvilNumber &value) con
     return false;
 }
 
-bool AttributeMap::Change( uint32 attributeID, EvilNumber& old_val, EvilNumber& new_val ) {
+bool AttributeMap::Change( uint16 attrID, EvilNumber& old_val, EvilNumber& new_val ) {
     if (old_val == new_val) return true;
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
         modChange.itemKey = mItem.itemID();
-        modChange.attributeID = attributeID;
+        modChange.attributeID = attrID;
         modChange.time = Win32TimeNow();
         modChange.newValue = new_val.GetPyObject();
         modChange.oldValue = old_val.GetPyObject();
-	return SendAttributeChanges(modChange.Encode());
+	return SendChanges(modChange.Encode());
 }
 
-bool AttributeMap::Add( uint32 attributeID, EvilNumber& num ) {
+bool AttributeMap::Add( uint16 attrID, EvilNumber& num ) {
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
         modChange.itemKey = mItem.itemID();
-        modChange.attributeID = attributeID;
+        modChange.attributeID = attrID;
         modChange.time = Win32TimeNow();
         modChange.newValue = num.GetPyObject();
         modChange.oldValue = new PyNone();
-    return SendAttributeChanges(modChange.Encode());
+    return SendChanges(modChange.Encode());
 }
 
-bool AttributeMap::SendAttributeChanges( PyTuple* attrChange ) {
+bool AttributeMap::SendChanges( PyTuple* attrChange ) {
     if (!attrChange) return true;
     Client* client(nullptr);
 
@@ -234,16 +237,16 @@ bool AttributeMap::SendAttributeChanges( PyTuple* attrChange ) {
             attrChange->Dump(CLIENT__TRACE, "");
         client->QueueDestinyEvent(&attrChange);
     } else {
-        _log(PLAYER__WARNING, "AttributeMap::SendAttributeChanges() - ownerID for %u not found", mItem.itemID() );
+        _log(PLAYER__WARNING, "AttributeMap::SendChanges() - ownerID for %u not found", mItem.itemID() );
         return false;
     }
     return true;
 }
 
-bool AttributeMap::ResetAttribute(uint32 attrID, bool notify) {
+void AttributeMap::ResetAttribute(uint16 attrID, bool notify) {
     /** @todo update this */
     EvilNumber value = mItem.GetDefaultAttribute(attrID);
-    return SetAttribute(attrID, value, notify);
+    SetAttribute(attrID, value, notify);
 }
 
 void AttributeMap::SaveShipState()
@@ -294,33 +297,21 @@ void AttributeMap::SaveShipState()
     }
 }
 
-/** @todo update delete functions */
-bool AttributeMap::Delete() {
-    DBerror err;
-    if (!sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u", mItem.itemID())) {
-        _log(DATABASE__ERROR, "AttributeMap - unable to delete attributes - %s", err.c_str());
-        return false;
-    }
-
+// Delete() only called from InventoryItem::Delete()
+void AttributeMap::Delete() {
 	mAttributes.clear();
-	mChanged = false; // just synced with database, no need to save
-    return true;
 }
 
-bool AttributeMap::DeleteAttribute(uint32 attributeID) {
-    DBerror err;
-    if (!sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u", attributeID)) {
-        _log(DATABASE__ERROR, "AttributeMap - unable to delete attributeID %u for itemID %u - %s", attributeID, mItem.itemID(), err.c_str());
-        return false;
-    }
-    mChanged = false; // just synced with database, no need to save
-    return true;
+void AttributeMap::DeleteAttribute(uint16 attrID) {
+    AttrMapItr itr = mAttributes.find(attrID);
+    if (itr != end())
+        mAttributes.erase(itr);
 }
 
-AttributeMap::AttrMapItr AttributeMap::begin() {
+AttrMapItr AttributeMap::begin() {
     return mAttributes.begin();
 }
 
-AttributeMap::AttrMapItr AttributeMap::end() {
+AttrMapItr AttributeMap::end() {
     return mAttributes.end();
 }

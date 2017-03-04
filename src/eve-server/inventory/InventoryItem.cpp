@@ -752,7 +752,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
         result.attributes[AttrSkillPoints] = new PyInt(mAttributeMap.GetAttribute(AttrSkillPoints).get_int());
         result.attributes[AttrSkillLevel] = new PyInt(mAttributeMap.GetAttribute(AttrSkillLevel).get_int());
     } else {
-        AttributeMap::AttrMapItr itr = mAttributeMap.begin();
+        AttrMapItr itr = mAttributeMap.begin();
         for (; itr != mAttributeMap.end(); itr++) {
             //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
             if ((*itr).first == AttrWarpSpeedMultiplier)
@@ -1056,20 +1056,14 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
     //c->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.
 }
 
-/** @todo set a notify boolean here? */
 void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
     /** @note  this is only used by modules
      ** check for pos structures also!! **
      */
     _log(SHIP__MODULE_DEBUG, "InventoryItem::SetOnline() - set module %s(%u) to %s", \
                     m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
-    if (!isRig) {   // rigs DO NOT get isOnline attrib set.
-        if (!SetAttribute(AttrIsOnline, int(online))) {
-            _log(SHIP__MODULE_ERROR, "InventoryItem::SetOnline() - module %s(%u) could not be set %s", \
-                            m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
-            return;
-        }
-    }
+    if (!isRig)   // rigs DO NOT get isOnline attrib set.
+        SetAttribute(AttrIsOnline, int(online));
 
     Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
     if (!pClient) {
@@ -1127,39 +1121,39 @@ void InventoryItem::Relocate(const GPoint &pos)
     //SaveItem();
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, int64 num, bool notify/*true*/)
+void InventoryItem::SetAttribute( uint16 attrID, int64 num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-	return mAttributeMap.SetAttribute(attributeID, devil_number, notify);
+    mAttributeMap.SetAttribute(attrID, devil_number, notify);
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, double num, bool notify/*true*/)
+void InventoryItem::SetAttribute( uint16 attrID, double num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-    return mAttributeMap.SetAttribute(attributeID, devil_number, notify);
+    mAttributeMap.SetAttribute(attrID, devil_number, notify);
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, EvilNumber num, bool notify/*true*/)
+void InventoryItem::SetAttribute( uint16 attrID, EvilNumber num, bool notify/*true*/)
 {
-    return mAttributeMap.SetAttribute(attributeID, num, notify);
+    mAttributeMap.SetAttribute(attrID, num, notify);
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, int num, bool notify/*true*/)
-{
-    EvilNumber devil_number(num);
-    return mAttributeMap.SetAttribute(attributeID, devil_number, notify);
-}
-
-bool InventoryItem::SetAttribute( uint32 attributeID, uint64 num, bool notify/*true*/)
+void InventoryItem::SetAttribute( uint16 attrID, int num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-    return mAttributeMap.SetAttribute(attributeID, devil_number, notify);
+    mAttributeMap.SetAttribute(attrID, devil_number, notify);
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, uint32 num, bool notify/*true*/)
+void InventoryItem::SetAttribute( uint16 attrID, uint64 num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-    return mAttributeMap.SetAttribute(attributeID, devil_number, notify);
+    mAttributeMap.SetAttribute(attrID, devil_number, notify);
+}
+
+void InventoryItem::SetAttribute( uint16 attrID, uint32 num, bool notify/*true*/)
+{
+    EvilNumber devil_number(num);
+    mAttributeMap.SetAttribute(attrID, devil_number, notify);
 }
 
 // new effects system  -allan 4Feb17

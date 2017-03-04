@@ -93,8 +93,8 @@ void GenericModule::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID
     _log(SHIP__MODULE_TRACE, "MSAC::ModifyShipAttributes() -  origVal:%f, Mod:%f, newVal:%f, type:%i", \
     startVal.get_float(), modVal.get_float(), newVal.get_float(), (int)type);
     //set the attribute for the ship with the new modifier
-    if (!m_shipRef->SetAttribute(targetAttrID, newVal))
-        sLog.Error("MSAC::ModifyShipAttributes()","Failed to set attribute %u to %.3f on ship %u", targetAttrID, newVal.get_float(), m_shipRef->itemID());
+    m_shipRef->SetAttribute(targetAttrID, newVal);
+        //sLog.Error("MSAC::ModifyShipAttributes()","Failed to set attribute %u to %.3f on ship %u", targetAttrID, newVal.get_float(), m_shipRef->itemID());
 }
 
 void GenericModule::ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, Effects::Association type, bool stacking) {

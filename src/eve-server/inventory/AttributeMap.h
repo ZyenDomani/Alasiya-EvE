@@ -28,6 +28,9 @@
 
 #include "./eve-common.h"
 
+typedef std::map<uint16, EvilNumber>    AttrMap;
+typedef AttrMap::iterator               AttrMapItr;
+typedef AttrMap::const_iterator         AttrMapConstItr;
 
 /** @todo update/finish this class */
 class PyTuple;
@@ -41,6 +44,7 @@ public:
      * @param[in] isDefault boolean indicating whether this attribute map uses 'default' itemType attributes or saved-per-item 'entity_attributes' table
      */
     AttributeMap(InventoryItem& item);
+    ~AttributeMap();
 
 	/**
      * @brief set the attribute with @num
@@ -53,19 +57,19 @@ public:
      * @retval true  The attribute has successfully been set and queued.
      * @retval false The attribute change has not been queued but has not been changed.
      */
-    bool SetAttribute(uint32 attributeId, EvilNumber &num, bool nofity = true);
+    void SetAttribute(uint16 attrID, EvilNumber& num, bool nofity = true);
 
-    EvilNumber GetAttribute(const uint32 attributeId) const;
+    EvilNumber GetAttribute(const uint16 attrID) const;
 
     /*
      * HasAttribute
      *
-     * returns true if this item has the attribute 'attributeID', false if it does not have this attribute
+     * returns true if this item has the attribute 'attrID', false if it does not have this attribute
      *
      * @note this function should be used very infrequently and only for specific reasons
      */
-    bool HasAttribute(const uint32 attributeID) const;
-    bool HasAttribute(const uint32 attributeID, EvilNumber &value) const;
+    bool HasAttribute(const uint16 attrID) const;
+    bool HasAttribute(const uint16 attrID, EvilNumber &value) const;
 
     /* ATM we don't load or save as we assume that all attribute modifiers are calculated on the fly
      * except charge attributes but we won't handle them for now
@@ -75,8 +79,8 @@ public:
 	// Allow users to force changed flag to true, indicating that Save() should really save attributes to the database
 	void ForceChanged() { ; }//mChanged = true; }
 
-    bool Delete();
-    bool DeleteAttribute(uint32 attributeID);
+    void Delete();
+    void DeleteAttribute(uint16 attrID);
 
     // load the default attributes that come with the item's typeID
     bool Load(bool reset=false);
@@ -96,11 +100,7 @@ public:
      *
      *@note this function will force reload the default value for the specified attribute
      */
-    bool ResetAttribute(uint32 attrID, bool notify);
-
-    typedef std::map<uint16, EvilNumber>    AttrMap;
-    typedef AttrMap::iterator               AttrMapItr;
-    typedef AttrMap::const_iterator         AttrMapConstItr;
+    void ResetAttribute(uint16 attrID, bool notify);
 
     /**
      * @brief return the begin iterator of the AttributeMap
@@ -126,7 +126,7 @@ protected:
      * @retval true  The attribute change has successfully been set and queued.
      * @retval false The attribute change has not been queued but has been changed.
      */
-    bool Change(uint32 attributeID, EvilNumber& old_val, EvilNumber& new_val);
+    bool Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_val);
 
     /**
      * @brief internal function to handle adding attributes.
@@ -137,7 +137,7 @@ protected:
      * @retval true  The attribute has successfully been added and queued.
      * @retval false The attribute addition has not been queued and not been changed.
      */
-    bool Add(uint32 attributeID, EvilNumber& num);
+    bool Add(uint16 attrID, EvilNumber& num);
 
     /**
      * @brief queue the attribute changes into the QueueDestinyEvent system.
@@ -147,7 +147,7 @@ protected:
      * @retval true  The attribute has successfully been added and queued.
      * @retval false The attribute addition has not been queued and not been changed.
      */
-    bool SendAttributeChanges(PyTuple* attrChange);
+    bool SendChanges(PyTuple* attrChange);
 
     /** we belong to this item..
      * @note possible design flaw because only items contain AttributeMap's so
@@ -160,14 +160,6 @@ protected:
      *       of 'EvilNumber' objects not fitting into the stack.
      */
     AttrMap mAttributes;
-
-    /**
-     * we set and we clear this flag when we change attributes of this item....
-     * @note we should improve this idea... and only save the changed attributes...
-     *       but that is for the future.
-     */
-    bool mChanged;
-
 };
 
 #endif /* __EVE_ATTRIBUTE_MGR__H__INCL__ */
