@@ -386,7 +386,10 @@ int main( int argc, char* argv[] )
     // Create In-Memory Database Objects for Critical and HighUse Systems:
     sLog.Yellow("       ServerInit", "Loading Static Database Table Objects...");
     sLog.Green("       ServerInit", "BulkData");
-    sBulkDB.Initialize();
+    if (sConfig.server.BulkDataOD)
+        sLog.Yellow("      BulkDataMgr", "PreLoading Disabled. BulkData will load on first call.");
+    else
+        sBulkDB.Initialize();
     sLog.Green("       ServerInit", "Effect Data Sets");
     sFxDataMgr.Initialize();
     sLog.Green("       ServerInit", "Wreck Data");

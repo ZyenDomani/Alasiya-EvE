@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 7.3 -->
+     Version: 7.4 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -20,6 +20,7 @@
         <maxPlayers>2500</maxPlayers>
         <UseMarketBot>false</UseMarketBot>
         <DisableIGB>true</DisableIGB>
+        <BulkDataOD>false</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
     </server>
 
     <world>

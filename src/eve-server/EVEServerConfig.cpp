@@ -50,6 +50,7 @@ EVEServerConfig::EVEServerConfig()
     server.UseProfiling = false;
     server.UseShipTracking = false;
     server.UseStackTrace = false;//N
+    server.BulkDataOD = false;
     server.ServerSleepTime = 10 /*ms*/;
     server.idleSleepTime = 1000;
     server.DisableIGB = true;
@@ -204,6 +205,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "UseProfiling",     server.UseProfiling );
     AddValueParser( "UseShipTracking",  server.UseShipTracking );
     AddValueParser( "UseStackTrace",    server.UseStackTrace );
+    AddValueParser( "BulkDataOD",       server.BulkDataOD );
     AddValueParser( "ServerSleepTime",  server.ServerSleepTime );
     AddValueParser( "idleSleepTime",    server.idleSleepTime );
 
@@ -216,6 +218,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "UseProfiling" );
     RemoveParser( "UseShipTracking" );
     RemoveParser( "UseStackTrace" );
+    RemoveParser( "BulkDataOD" );
     RemoveParser( "ServerSleepTime" );
     RemoveParser( "idleSleepTime" );
 

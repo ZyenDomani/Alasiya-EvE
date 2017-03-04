@@ -4,12 +4,10 @@
   <elementDef name="Call_UpdateBulk">
     <tupleInline>
       <int name="changeID" />
-      <raw name="hashValue" />
+      <raw name="hashValue" />  <!-- could be string or none -->
       <int name="branch" />
     </tupleInline>
   </elementDef>
-
-  <!-- GetFullFiles(toGet)  this is single int list - use Call_SingleIntList -->
 
   <!-- GetChunk(changeID, chunkNumber) -->
   <elementDef name="Call_GetChunk">
@@ -37,7 +35,7 @@
   <!-- GetFullFiles(toGet) -->
   <elementDef name="Call_GetFullFiles">
     <tupleInline>
-      <raw name="toGet" />
+      <raw name="toGet" /> <!-- could be list or none -->
     </tupleInline>
   </elementDef>
 
