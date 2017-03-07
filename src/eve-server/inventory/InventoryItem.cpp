@@ -1225,5 +1225,5 @@ void InventoryItem::GetEffectsInState(int8 state, std::vector< Effect >& effectR
 {
     auto itr = m_stateFxMap.equal_range(state);
     for (auto it = itr.first; it != itr.second; it++)
-        effectRef.push_back(it.second);
+        effectRef.push_back(it->second);
 }
