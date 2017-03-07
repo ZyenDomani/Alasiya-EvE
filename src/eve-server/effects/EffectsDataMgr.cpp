@@ -22,7 +22,6 @@ FxDataMgr::FxDataMgr()
     m_expMap.clear();
     m_effectMap.clear();
     m_typeFxMap.clear();
-    m_stateFxMap.clear();
 }
 
 FxDataMgr::~FxDataMgr()
@@ -109,13 +108,13 @@ void FxDataMgr::Initialize()
     start = GetTimeMSeconds();
     GetDgmEffects(*res);
     while (res->GetRow(row)) {
-        //SELECT effectID, effectName, effectCategory, preExpression, postExpression, isOffensive, isAssistance, disallowAutoRepeat, isWarpSafe \
+        //SELECT effectID, effectName, effectState, preExpression, postExpression, isOffensive, isAssistance, disallowAutoRepeat, isWarpSafe \
         //      npcUsageChanceAttributeID, npcActivationChanceAttributeID, fittingUsageChanceAttributeID,\
         //      durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, falloffAttributeID, rangeChance, electronicChance, propulsionChance, guid
         Effect mEffect;
             mEffect.effectID = row.GetInt(0);
             mEffect.effectName = row.GetText(1);
-            mEffect.effectCategory = row.GetInt(2);
+            mEffect.effectState = row.GetInt(2);
             mEffect.preExpression = row.GetInt(3);
             mEffect.postExpression = row.GetInt(4);
             mEffect.isOffensive = (row.IsNull(5) ? 0 : row.GetBool(5));
@@ -139,7 +138,7 @@ void FxDataMgr::Initialize()
     // insert a zero-value data set
     Effect mEffect;
         mEffect.effectName = "NULL";
-        mEffect.effectCategory = 0;
+        mEffect.effectState = 0;
         mEffect.preExpression = 0;
         mEffect.postExpression = 0;
         mEffect.isOffensive = false;
@@ -179,7 +178,7 @@ void FxDataMgr::ConfigureEffects()
         if (m_fxMap.find(curFx.first) != m_fxMap.end())
             continue;
 
-        sLog.Blue("ConfigureEffects", "starting eval for %u:%u (%s)", curFx.first, curFx.second.effectCategory, curFx.second.effectName.c_str());
+        sLog.Blue("ConfigureEffects", "starting eval for %u:%u (%s)", curFx.first, curFx.second.effectState, curFx.second.effectName.c_str());
         fxProc.EvaluateExpression(curFx.second.preExpression);
         fxProc.EvaluateExpression(curFx.second.postExpression);
 
@@ -245,7 +244,7 @@ void FxDataMgr::GetDgmEffects(DBQueryResult& res)
         " SELECT"
         "   effectID,"
         "   effectName,"
-        "   effectCategory,"
+        "   effectState,"
         "   preExpression,"
         "   postExpression,"
         "   isOffensive,"

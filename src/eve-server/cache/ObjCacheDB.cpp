@@ -484,7 +484,7 @@ PyRep *ObjCacheDB::Generate_dgmTypeEffects()
 PyRep *ObjCacheDB::Generate_dgmEffects()
 {
     DBQueryResult res;
-    const char *q = "SELECT effectID, effectName, effectCategory, preExpression, postExpression, description, guid, iconID, isOffensive, isAssistance, durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, falloffAttributeID, published, displayName, isWarpSafe, rangeChance, electronicChance, propulsionChance, distribution, sfxName, npcUsageChanceAttributeID, npcActivationChanceAttributeID, 0 as graphicID, fittingUsageChanceAttributeID, 0 AS dataID FROM dgmEffects";
+    const char *q = "SELECT effectID, effectName, effectState, preExpression, postExpression, description, guid, iconID, isOffensive, isAssistance, durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, falloffAttributeID, published, displayName, isWarpSafe, rangeChance, electronicChance, propulsionChance, distribution, sfxName, npcUsageChanceAttributeID, npcActivationChanceAttributeID, 0 as graphicID, fittingUsageChanceAttributeID, 0 AS dataID FROM dgmEffects";
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmeffects': %s",res.error.c_str());

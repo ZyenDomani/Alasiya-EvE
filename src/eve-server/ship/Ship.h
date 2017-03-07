@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Bloody.Rabbit
+    Updates:    Allan
 */
 
 #ifndef __SHIP__H__INCL__
@@ -370,14 +371,6 @@ protected:
 
     void ModifyHoldVolumeByFlag(EVEItemFlags flag, double amount);
 
-private:
-    Client* m_pilot;
-
-    //the ship's module manager.  We own this
-    ModuleManager* m_ModuleManager;
-
-    std::vector<uint32> m_onlineModuleVec;
-
 public:
     /* stacking penality system   -allan
      * each ship will have a map of the attribs affected and the current effectiveness on that attrib
@@ -385,12 +378,6 @@ public:
      * the other component, attrib stack counting, is a std::map and holds a k,v pair of (attribID, module count)
      */
     double GetEffectiveness(uint16 attrib, ModuleStates state);
-    /*  stacking tracking system  -allan
-     * the stacking map is to hard-code resist caps at 95%, and keep a map of the *actual* resist, for correct calculations when altering
-     */
-    void InitStackingMap();
-    void SetTrueResist(uint16 attrib, EvilNumber& value);
-    void GetTrueResist(uint16 attrib, EvilNumber& value);
 
     void CheckStacking(uint16 attrib, Effects::Association type, ModuleStates state, EvilNumber& value);
     void ApplyModifiers();
@@ -402,8 +389,19 @@ public:
     void RemoveEffect(uint16 attributeID, InventoryItemRef iRef);
 
 private:
+    Client* m_pilot;
+
+    //the ship's module manager.  We own this
+    ModuleManager* m_ModuleManager;
+
+    std::vector<uint32> m_onlineModuleVec;
+
+    /*  stacking tracking system  -allan  */
+    void InitStackingMaps();
+
     bool m_effectsApplied;
-    void ProcessEffects(bool add=false);
+    void ProcessShipEffects(bool add=false);
+    void ProcessSkillEffects();
 
     struct fxData {
         int8 env;           // area affected by modifier

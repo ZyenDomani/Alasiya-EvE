@@ -23,7 +23,7 @@ enum ChargeStates
 };
 
 // internal module states
-// to be used in conjunction with effectCategory (when to apply effect)
+// to be used in conjunction with effectState (when to apply effect)
     /* 'Online' is used for:
      * ACTIVE modules fitted and online, but not activated (using the PASSIVE effects only where applicable)
      * PASSSIVE modules fitted and online

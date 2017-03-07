@@ -272,15 +272,14 @@ void ShipItem::SetPlayer(Client* pClient) {
     m_pilot = pClient;
     if (!m_pilot) {
         // remove ship effects and char skill effects for char leaving ship here.
-        ProcessEffects(false);
-        RemoveEffects();
+        ProcessShipEffects(false);
         // should we check for cargo and damage after char leaves ship?  maybe later
         if (m_ModuleManager)
             m_ModuleManager->CharacterLeavingShip();
         return;
     }
     Init();
-    ProcessEffects(true);
+    ProcessShipEffects(true);
     if (IsSolarSystem(m_locationID))
         ApplyEffects();
     m_ModuleManager->CharacterBoardingShip();
@@ -718,9 +717,9 @@ void ShipItem::Undock() {
     // apply ship effects
     ApplyEffects();
     //get list of modules to activate from ShipBound::Handle_Undock()
-    // calling Online() on modules will also apply their state 0 effects
-    for (auto cur : m_onlineModuleVec) {
-        if (m_ModuleManager)
+    // calling Online() on modules will also apply their state 1 (online) effects
+    if (m_ModuleManager) {
+        for (auto cur : m_onlineModuleVec)
             m_ModuleManager->Online(cur);
     }
 }
@@ -1053,7 +1052,6 @@ void ShipItem::OfflineAll()
     m_ModuleManager->OfflineAll();
 }
 
-
 void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
 {
 
@@ -1067,9 +1065,9 @@ void ShipItem::DeactivateAllModules()
 
 void ShipItem::StripFitting()
 {
-    std::vector<InventoryItemRef> modList;
-    m_ModuleManager->GetModuleListOfRefs(&modList);
-    for (auto cur : modList) {
+    std::vector<InventoryItemRef> moduleList;
+    m_ModuleManager->GetModuleListOfRefs(&moduleList);
+    for (auto cur : moduleList) {
         m_ModuleManager->UnfitModule(cur->itemID());
         cur->Move(m_pilot->GetLocationID(), flagHangar);
     }
@@ -1119,126 +1117,64 @@ double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
 }
 
 // resist cap system    -allan 26Dec16
-void ShipItem::InitStackingMap()
+void ShipItem::InitStackingMaps()
 {
-    /*
-    m_resistMap[AttrKineticDamageResonance] = GetAttribute(AttrKineticDamageResonance).get_float();
-    m_resistMap[AttrThermalDamageResonance] = GetAttribute(AttrThermalDamageResonance).get_float();
-    m_resistMap[AttrExplosiveDamageResonance] = GetAttribute(AttrExplosiveDamageResonance).get_float();
-    m_resistMap[AttrEmDamageResonance] = GetAttribute(AttrEmDamageResonance).get_float();
-    m_resistMap[AttrArmorEmDamageResonance] = GetAttribute(AttrArmorEmDamageResonance).get_float();
-    m_resistMap[AttrArmorExplosiveDamageResonance] = GetAttribute(AttrArmorExplosiveDamageResonance).get_float();
-    m_resistMap[AttrArmorKineticDamageResonance] = GetAttribute(AttrArmorKineticDamageResonance).get_float();
-    m_resistMap[AttrArmorThermalDamageResonance] = GetAttribute(AttrArmorThermalDamageResonance).get_float();
-    m_resistMap[AttrShieldEmDamageResonance] = GetAttribute(AttrShieldEmDamageResonance).get_float();
-    m_resistMap[AttrShieldExplosiveDamageResonance] = GetAttribute(AttrShieldExplosiveDamageResonance).get_float();
-    m_resistMap[AttrShieldKineticDamageResonance] = GetAttribute(AttrShieldKineticDamageResonance).get_float();
-    m_resistMap[AttrShieldThermalDamageResonance] = GetAttribute(AttrShieldThermalDamageResonance).get_float();
+    std::list<GenericModule*> list;
+    list.push_back(nullptr);
+    m_stackMap.clear();
+    m_attribMap.clear();
 
-    // this is not resist...cannot use cap method on these...
-    m_resistMap[AttrScanResolution] = GetAttribute(AttrScanResolution).get_float();
-    m_resistMap[AttrSignatureRadius] = GetAttribute(AttrSignatureRadius).get_float();
-    */
-    /** these also have char skills that will need to be recalculated if the attrib is reset to base
-    m_resistMap[AttrMaxVelocity] = GetAttribute(AttrMaxVelocity).get_float();
-    m_resistMap[AttrInetia] = GetAttribute(AttrInetia).get_float();
-    m_resistMap[AttrShieldRechargeRate] = GetAttribute(AttrShieldRechargeRate).get_float();
-    m_resistMap[AttrMaxTargetRange] = GetAttribute(AttrMaxTargetRange).get_float();
-    */
-}
-
-void ShipItem::SetTrueResist(uint16 attrib, EvilNumber& value)
-{
-}
-
-void ShipItem::GetTrueResist(uint16 attrib, EvilNumber& value)
-{
+    /** these also have char skills that will need to be calculated */
+    m_stackMap[AttrKineticDamageResonance] = list;
+    m_stackMap[AttrThermalDamageResonance] = list;
+    m_stackMap[AttrExplosiveDamageResonance] = list;
+    m_stackMap[AttrEmDamageResonance] = list;
+    m_stackMap[AttrArmorEmDamageResonance] = list;
+    m_stackMap[AttrArmorExplosiveDamageResonance] = list;
+    m_stackMap[AttrArmorKineticDamageResonance] = list;
+    m_stackMap[AttrArmorThermalDamageResonance] = list;
+    m_stackMap[AttrShieldEmDamageResonance] = list;
+    m_stackMap[AttrShieldExplosiveDamageResonance] = list;
+    m_stackMap[AttrShieldKineticDamageResonance] = list;
+    m_stackMap[AttrShieldThermalDamageResonance] = list;
+    m_stackMap[AttrScanResolution] = list;
+    m_stackMap[AttrSignatureRadius] = list;
+    m_stackMap[AttrMaxVelocity] = list;
+    m_stackMap[AttrInetia] = list;
+    m_stackMap[AttrShieldRechargeRate] = list;
+    m_stackMap[AttrMaxTargetRange] = list;
 }
 
 void ShipItem::CheckStacking(uint16 attrib, Effects::Association type, ModuleStates state, EvilNumber& value)
 {
 }
 
-
-std::string ShipItem::GetShipDNA()
+// new effects system.  wip
+void ShipItem::ProcessShipEffects(bool add/*true*/)
 {
-    /* ship dna is shorthand notation to describe a ship and it's fittings purely thru the use of typeIDs and quantities
-     *
-     * the format is as follows:
-     * <shipTypeID>:
-     *      <subsystemID>:
-     *      <moduleType-Highslot>;<quantity>:
-     *      <moduleType-Midslot>;<quantity>:
-     *      <moduleType-Lowslot>;<quantity>:
-     *      <moduleType-Rigslot>;<quantity>:
-     *      <chargeType>;<quantity>:
-     *      <droneType>;<quantity>
-     *
-     * Condensed version:
-     *  Ship:Subsystem:Highs:Mids:Lows:Rigs:Charges:Drones
-     *
-     * [PyString "<url=fitting:24698:3841;2:2531;1:19812;1:23527;1:2410;7:1422;4:2547;1:31802;3:2301;1:2454;5::>Anchor</url>"]
-     *
-     *  current code returns this:
-     * "587:8863;1:8863;1:8863;1:499;1:578;1:1798;1:6485;1:2046;1:8325;1:31788;1:31800;1:31788;1::"
-     *  need to figure out how to group modules for correct condensed counts
-     */
-    if (type().id() == EVEDB::invTypes::typeCapsule) {
-        std::stringstream dna;
-        dna << type().id() << ":";
-        _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), itemName().c_str(), itemID());
-        return dna.str();
+    if (add) {
+        // get all effects in state '0' - passive.
+        //  ship does not have effects in state > 0
+        for (auto it : m_stateFxMap) {
+            fxData data;
+            data.assoc = data.env = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.domain = 0;
+            ParseExpression(sFxDataMgr.GetExpression(it.second.preExpression), data);  //add effect
+          //ParseExpression(sFxDataMgr.GetExpression(it.second.postExpression), data);  // remove effect
+        }
+    } else {
+        RemoveEffects();
     }
-
-    /* find and encode the module typeIDs */
-    std::stringstream modHi, modMid, modLow, subSys, modRig, charges, drones;
-
-    std::vector<InventoryItemRef> modList;
-    m_ModuleManager->GetModuleListOfRefs(&modList);
-
-    for (auto cur : modList) {
-        if (IsRigSlot(cur->flag()))
-            modRig << cur->typeID() << ";" << cur->quantity() << ":";
-        else if (IsHiSlot(cur->flag()))
-            modHi << cur->typeID() << ";" << cur->quantity() << ":";
-        else if (IsMidSlot(cur->flag()))
-            modMid << cur->typeID() << ";" << cur->quantity() << ":";
-        else if (IsLowSlot(cur->flag()))
-            modLow << cur->typeID() << ";" << cur->quantity() << ":";
-        else if (IsSubSystem(cur->flag()))
-            subSys << cur->typeID() << ":";
-        else
-           ; // error?
-    }
-
-    std::map<EVEItemFlags, InventoryItemRef> chargeList;
-    m_ModuleManager->GetLoadedCharges(chargeList);
-    for (auto cur : chargeList)
-        charges << cur.second->typeID() << ";" << cur.second->quantity() << ":";
-
-    /* not sure how to get drones yet.  will work on later */
-    drones << ":";
-
-    /* build the dna stream */
-    std::stringstream dna;
-    dna << type().id() << ":";
-    dna << subSys.str() << modHi.str() << modMid.str() << modLow.str() << modRig.str() << charges.str() << drones.str();
-
-    _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), itemName().c_str(), itemID());
-    return dna.str();
 }
 
-// new effects system.  wip
-void ShipItem::ProcessEffects(bool add/*true*/)
+void ShipItem::ProcessSkillEffects()
 {
-    fxData data;
-    data.assoc = data.env = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.domain = 0;
-    auto itr = m_stateFxMap.equal_range(0);
-    for (auto it = itr.first; it != itr.second; it++) {
-        if (add)
-            ParseExpression(sFxDataMgr.GetExpression(it->second.preExpression), data);
-        else
-            ParseExpression(sFxDataMgr.GetExpression(it->second.postExpression), data);
+    Character* pChar = m_pilot->GetChar().get();
+
+    for (auto it : m_stateFxMap) {
+        fxData data;
+        data.assoc = data.env = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.domain = 0;
+        ParseExpression(sFxDataMgr.GetExpression(it.second.preExpression), data);  //add effect
+        //ParseExpression(sFxDataMgr.GetExpression(it.second.postExpression), data);  // remove effect
     }
 }
 
@@ -1248,6 +1184,8 @@ void ShipItem::ApplyEffects()
         m_effectsApplied = false;
         return;
     }
+
+    // maybe this should have the search for state....
     using namespace Effects;
     for (auto cur : m_modifiers) {  // k,v of assoc, data<assoc, domain, env, targAttr, srcAttr, grpID, typeID>
         // get env
@@ -1272,6 +1210,16 @@ void ShipItem::ApplyEffects()
 
         // get srcAttr, check for nerf, modify value as needed
         EvilNumber srcAttr = mAttributeMap.GetAttribute(cur.second.srcAttr);
+        switch (cur.second.assoc) {
+            case dgmAssPreDiv:
+            case dgmAssPreMul:
+            case dgmAssPostMul:
+            case dgmAssPostDiv:
+            case dgmAssPostPercent: {
+
+            }
+        }
+
 
         EvilNumber targAttr = 0;
         // test for location domain
@@ -1320,6 +1268,7 @@ void ShipItem::RemoveEffects()
 {
     SaveShip();
     mAttributeMap.Load(true);
+    m_modifiers.clear();
     m_effectsApplied = false;
 }
 
@@ -1337,7 +1286,6 @@ void ShipItem::ApplyModifiers()
 {
 
 }
-
 
 /*
 # Items belonging to these categories never have
@@ -1508,6 +1456,75 @@ void ShipItem::ParseExpression(Expression expression, fxData& data)
             sLog.Error("Ship::ParseExpression", "%s", ret.str().c_str());
         } break;
     }
+}
+
+
+std::string ShipItem::GetShipDNA()
+{
+    /* ship dna is shorthand notation to describe a ship and it's fittings purely thru the use of typeIDs and quantities
+     *
+     * the format is as follows:
+     * <shipTypeID>:
+     *      <subsystemID>:
+     *      <moduleType-Highslot>;<quantity>:
+     *      <moduleType-Midslot>;<quantity>:
+     *      <moduleType-Lowslot>;<quantity>:
+     *      <moduleType-Rigslot>;<quantity>:
+     *      <chargeType>;<quantity>:
+     *      <droneType>;<quantity>
+     *
+     * Condensed version:
+     *  Ship:Subsystem:Highs:Mids:Lows:Rigs:Charges:Drones
+     *
+     * [PyString "<url=fitting:24698:3841;2:2531;1:19812;1:23527;1:2410;7:1422;4:2547;1:31802;3:2301;1:2454;5::>Anchor</url>"]
+     *
+     *  current code returns this:
+     * "587:8863;1:8863;1:8863;1:499;1:578;1:1798;1:6485;1:2046;1:8325;1:31788;1:31800;1:31788;1::"
+     *  need to figure out how to group modules for correct condensed counts
+     */
+    if (type().id() == EVEDB::invTypes::typeCapsule) {
+        std::stringstream dna;
+        dna << type().id() << ":";
+        _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), itemName().c_str(), itemID());
+        return dna.str();
+    }
+
+    /* find and encode the module typeIDs */
+    std::stringstream modHi, modMid, modLow, subSys, modRig, charges, drones;
+
+    std::vector<InventoryItemRef> moduleList;
+    m_ModuleManager->GetModuleListOfRefs(&moduleList);
+
+    for (auto cur : moduleList) {
+        if (IsRigSlot(cur->flag()))
+            modRig << cur->typeID() << ";" << cur->quantity() << ":";
+        else if (IsHiSlot(cur->flag()))
+            modHi << cur->typeID() << ";" << cur->quantity() << ":";
+        else if (IsMidSlot(cur->flag()))
+            modMid << cur->typeID() << ";" << cur->quantity() << ":";
+        else if (IsLowSlot(cur->flag()))
+            modLow << cur->typeID() << ";" << cur->quantity() << ":";
+        else if (IsSubSystem(cur->flag()))
+            subSys << cur->typeID() << ":";
+        else
+            ; // error?
+    }
+
+    std::map<EVEItemFlags, InventoryItemRef> chargeList;
+    m_ModuleManager->GetLoadedCharges(chargeList);
+    for (auto cur : chargeList)
+        charges << cur.second->typeID() << ";" << cur.second->quantity() << ":";
+
+    /* not sure how to get drones yet.  will work on later */
+    drones << ":";
+
+    /* build the dna stream */
+    std::stringstream dna;
+    dna << type().id() << ":";
+    dna << subSys.str() << modHi.str() << modMid.str() << modLow.str() << modRig.str() << charges.str() << drones.str();
+
+    _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), itemName().c_str(), itemID());
+    return dna.str();
 }
 
 

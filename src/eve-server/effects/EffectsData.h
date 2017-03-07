@@ -21,7 +21,7 @@ struct Effect {
     bool disallowAutoRepeat;
     bool isWarpSafe;
     uint16 effectID;
-    uint16 effectCategory;
+    uint8 effectState;
     uint16 preExpression;
     uint16 postExpression;
     uint16 npcUsageChanceAttributeID;
@@ -93,17 +93,17 @@ namespace Effects {
         dgmEnvArea           = 5
     };
 
-    enum Category  {
-        dgmCatInvalid        = -1,
-        // these are the effectCategory in dgmEffects table to denote when/where this effect is applied or removed
-        dgmCatPassive        = 0,    //Applied when item is just present in fit - implants, skills, offlined modules
-        dgmCatActive         = 1,    //also online effect - Applied when module is onlined
-        dgmCatTarget         = 2,    //Applied onto selected target
-        dgmCatArea           = 3,    //No effects with this category, so actual impact is unknown
-        dgmCatOnline         = 4,    //Applied when module is activated
-        dgmCatOverloaded     = 5,    //Applied when module is overloaded
-        dgmCatDungeon        = 6,    //Dungeon effects, several effects exist in this category, but not assigned to any item
-        dgmCatSystem         = 7     //System-wide effects, like WH and incursion
+    enum State  {
+        dgmStateInvalid        = -1,
+        // these are the effectState in dgmEffects table to denote when this effect is applied or removed
+        dgmStatePassive        = 0,    //Applied when item is just present in fit - implants, skills, offlined modules
+        dgmStateActive         = 1,    //also online effect - Applied when module is onlined
+        dgmStateTarget         = 2,    //Applied onto selected target
+        dgmStateArea           = 3,    //No effects with this category, so actual impact is unknown
+        dgmStateOnline         = 4,    //Applied when module is activated
+        dgmStateOverloaded     = 5,    //Applied when module is overloaded
+        dgmStateDungeon        = 6,    //Dungeon effects, several effects exist in this category, but not assigned to any item
+        dgmStateSystem         = 7     //System-wide effects, like WH and incursion
     };
 
     enum Association {
@@ -119,7 +119,7 @@ namespace Effects {
         dgmAssPostPercent    = 7,
         dgmAssPostAssignment = 8,
         dgmAssSkillCheck     = 9,
-        /* not data or expressions with these */
+        /* no data or expressions with these */
         dgmAssAddRate        = 10,
         dgmAssSubRate        = 11
     };

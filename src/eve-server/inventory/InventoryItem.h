@@ -273,8 +273,9 @@ public:
     bool SkillCheck(InventoryItemRef refItem);
     bool EffectsLoaded()                                { return m_effectsLoaded; }
 
-    void ApplyEffect(uint8 state);
-    void RemoveEffect(uint8 state);
+    void ApplyEffect(int8 state);
+    void RemoveEffect(int8 state);
+    void GetEffectsInState(int8 state, std::vector<Effect>& effectRef);
 
     bool HasReqSkill(uint16 skillID);
 
@@ -284,11 +285,12 @@ protected:
     bool m_effectsLoaded;
 
     std::map<uint16, uint8> m_reqSkillMap;  // k,v map of required skill, level for this item, if any.
-    std::unordered_multimap<uint16, Effect> m_stateFxMap;  // k,v of state, data   -to search by state
+    std::unordered_multimap<int8, Effect> m_stateFxMap;  // k,v of state, data   -to search by state
 
 /*  new attribute system */
 protected:
     AttributeMap mAttributeMap;
+
 public:
     void SetAttribute(uint16 attrID, int num, bool notify=true);
     void SetAttribute(uint16 attrID, uint32 num, bool notify=true);

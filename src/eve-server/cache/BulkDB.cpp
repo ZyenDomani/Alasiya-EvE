@@ -222,7 +222,7 @@ PyRep* BulkDB::GetDogmaEffects()
 {   //3537
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
-        "SELECT effectID, effectName, displayNameID, descriptionID, dataID, effectCategory, preExpression, postExpression, description, guid, "
+        "SELECT effectID, effectName, displayNameID, descriptionID, dataID, effectState, preExpression, postExpression, description, guid, "
         "isOffensive, isAssistance, durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, falloffAttributeID, "
         "disallowAutoRepeat, published, displayName, isWarpSafe, rangeChance, electronicChance, propulsionChance, distribution, sfxName, "
         "npcUsageChanceAttributeID, npcActivationChanceAttributeID, fittingUsageChanceAttributeID, iconID, modifierInfo FROM dgmEffects"))

@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Mar 02, 2017 at 04:52 PM
+-- Generation Time: Mar 07, 2017 at 02:50 PM
 -- Server version: 10.0.24-MariaDB
 -- PHP Version: 5.6.21
 
@@ -26,7 +26,6 @@ SET time_zone = "+00:00";
 -- Table structure for table `dgmUnits`
 --
 
-DROP TABLE IF EXISTS `dgmUnits`;
 CREATE TABLE IF NOT EXISTS `dgmUnits` (
   `unitID` tinyint(3) unsigned NOT NULL,
   `unitName` varchar(100) DEFAULT NULL,

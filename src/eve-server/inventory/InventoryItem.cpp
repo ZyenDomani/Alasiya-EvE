@@ -784,8 +784,8 @@ PyObject* InventoryItem::ItemGetInfo()
     return result.Encode();
 }
 
-void InventoryItem::Rename(const char *to) {
-
+void InventoryItem::Rename(const char *to)
+{
     m_itemName = to;
     SaveItem();
 }
@@ -1164,7 +1164,7 @@ void InventoryItem::LoadEffects()
 
     for (auto cur : typeEffMap) {
         Effect mEffect = sFxDataMgr.GetEffect(cur.effectID);
-        m_stateFxMap.insert(std::pair<uint16, Effect>(mEffect.effectCategory, mEffect));
+        m_stateFxMap.insert(std::pair<int8, Effect>(mEffect.effectState, mEffect));
     }
 
     m_effectsLoaded = true;
@@ -1205,7 +1205,7 @@ bool InventoryItem::HasReqSkill(uint16 skillID)
 }
 
 
-void InventoryItem::ApplyEffect(uint8 state)
+void InventoryItem::ApplyEffect(int8 state)
 {
     FxProc fxProc;
     auto itr = m_stateFxMap.equal_range(state);
@@ -1213,10 +1213,17 @@ void InventoryItem::ApplyEffect(uint8 state)
         fxProc.ParseExpression(sFxDataMgr.GetExpression(it->second.preExpression), false, true);
 }
 
-void InventoryItem::RemoveEffect(uint8 state)
+void InventoryItem::RemoveEffect(int8 state)
 {
     FxProc fxProc;
     auto itr = m_stateFxMap.equal_range(state);
     for (auto it = itr.first; it != itr.second; it++)
         fxProc.ParseExpression(sFxDataMgr.GetExpression(it->second.postExpression), false, true);
+}
+
+void InventoryItem::GetEffectsInState(int8 state, std::vector< Effect >& effectRef)
+{
+    auto itr = m_stateFxMap.equal_range(state);
+    for (auto it = itr.first; it != itr.second; it++)
+        effectRef.push_back(it.second);
 }

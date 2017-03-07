@@ -46,7 +46,6 @@ private:
 
     // data maps
     effectMapType m_fxMap;   // k,v of effID, data   -to search by effect
-    std::unordered_multimap<uint16, Effect> m_stateFxMap;  // k,v of state, data   -to search by state
 
     // these are temp to build effect data table
     effectMapType m_effectMap;  //std::map<uint16, Effect>
