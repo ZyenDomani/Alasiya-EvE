@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 6.9
+    Log Version: 7.0
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -131,6 +131,13 @@ LOG_TYPE( SPAWN, MESSAGE, DISABLED, "SpawnMsg" )
 LOG_TYPE( SPAWN, POP, DISABLED, "SpawnPop" )
 LOG_TYPE( SPAWN, DEPOP, DISABLED, "SpawnDepop" )
 LOG_TYPE( SPAWN, TRACE, DISABLED, "SpawnTrace" )
+
+LOG_CATEGORY( EFFECTS )
+LOG_TYPE( EFFECTS, ERROR,   ENABLED, "FxError" )
+LOG_TYPE( EFFECTS, WARNING, DISABLED, "FxWarning" )
+LOG_TYPE( EFFECTS, MESSAGE, DISABLED, "FxMsg" )
+LOG_TYPE( EFFECTS, DEBUG, DISABLED, "FxDebug" )
+LOG_TYPE( EFFECTS, TRACE, DISABLED, "FxTrace" )
 
 LOG_CATEGORY( BULKDATA )
 LOG_TYPE( BULKDATA, ERROR,   ENABLED, "BulkError" )

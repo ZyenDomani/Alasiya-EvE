@@ -994,7 +994,7 @@ void ShipItem::RepairModules()
 
 void ShipItem::Online (uint32 moduleID)
 {
-    if (IsSolarSystem(locationID())) {
+    if (IsSolarSystem(m_locationID)) {
         ; // check for avalible cap, and drain accordingly
         /*
         float Charge = GetAttribute(AttrCapacitorCharge).get_float();
@@ -1072,7 +1072,15 @@ void ShipItem::StripFitting()
         cur->Move(m_pilot->GetLocationID(), flagHangar);
     }
 }
-
+/*
+# Effects Logging:
+EFFECTS=0
+EFFECTS__ERROR=1
+EFFECTS__WARNING=0
+EFFECTS__MESSAGE=0
+EFFECTS__DEBUG=0
+EFFECTS__TRACE=0
+*/
 // stacking penality system   -allan   (UD 29Jul16)
 double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
 {
@@ -1094,7 +1102,7 @@ double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
                     --(itr->second);
             } break;
             default: {
-                codelog(SHIP__MODULE_ERROR, "ShipItem::GetEffectiveness() -  module has invalid state %u", state);
+                codelog(EFFECTS__ERROR, "ShipItem::GetEffectiveness() -  module has invalid state %u", state);
                 if (m_pilot)
                     m_pilot->SendErrorMsg("Internal Server Error - module has invalid state.  Ref: ServerError 15611");
             } break;
@@ -1107,7 +1115,7 @@ double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
     double effectiveness = exp(-pow(((count - 1)/2.67),2));
 
     if (effectiveness <= 0) {   /* this should never happen */
-        codelog(SHIP__MODULE_ERROR, "ShipItem::GetEffectiveness() -  effectiveness <= 0");
+        codelog(EFFECTS__ERROR, "ShipItem::GetEffectiveness() -  effectiveness <= 0");
         if (m_pilot)
             m_pilot->SendErrorMsg("Internal Server Error - module has 0 effectiveness.  Hacking to 1.  Ref: ServerError 15610");
         effectiveness = 1;
@@ -1120,11 +1128,11 @@ double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
 void ShipItem::InitStackingMaps()
 {
     std::list<GenericModule*> list;
-    list.push_back(nullptr);
+    list.clear();
     m_stackMap.clear();
     m_attribMap.clear();
 
-    /** these also have char skills that will need to be calculated */
+    /** these have char skills that will need to be calculated */
     m_stackMap[AttrKineticDamageResonance] = list;
     m_stackMap[AttrThermalDamageResonance] = list;
     m_stackMap[AttrExplosiveDamageResonance] = list;
@@ -1188,14 +1196,16 @@ void ShipItem::ApplyEffects()
     // maybe this should have the search for state....
     using namespace Effects;
     for (auto cur : m_modifiers) {  // k,v of assoc, data<assoc, domain, env, targAttr, srcAttr, grpID, typeID>
+        _log(EFFECTS__TRACE, "ShipItem::ApplyEffects(): assoc: %i, domain: %i, env: %i, targAttr: %u, srcAttr: %u, grpID: %u, typeID: %u", \
+                cur.second.assoc, cur.second.domain, cur.second.env, cur.second.targAttr, cur.second.srcAttr, cur.second.grpID, cur.second.typeID );
         // get env
         InventoryItem* envItem(nullptr);
         switch (cur.second.env) {
             case dgmEnvInvalid: {   // null
-                // if environment is invalid, just continue.  make error later
+                _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): environment invalid.");
             } break;
-            case dgmEnvShip:        // should be self.
-            case dgmEnvSelf: {      // ship
+            case dgmEnvShip:        // this = ship
+            case dgmEnvSelf: {      // self = ship in this case
                 envItem = this;
             } break;
             case dgmEnvChar: {      // pilot
@@ -1208,8 +1218,14 @@ void ShipItem::ApplyEffects()
             } break;
         }
 
+        if (!envItem) {
+            _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): environment item is null for data.env %i.", cur.second.env);
+            continue;
+        }
+
         // get srcAttr, check for nerf, modify value as needed
         EvilNumber srcAttr = mAttributeMap.GetAttribute(cur.second.srcAttr);
+        /* in ship environment, nothing is nerfed...check env to verify here?
         switch (cur.second.assoc) {
             case dgmAssPreDiv:
             case dgmAssPreMul:
@@ -1218,14 +1234,16 @@ void ShipItem::ApplyEffects()
             case dgmAssPostPercent: {
 
             }
-        }
-
+        } */
 
         EvilNumber targAttr = 0;
         // test for location domain
         if (cur.second.domain) {
             std::vector<InventoryItemRef> itemVec;
             switch (cur.second.domain) {
+                case dgmDomainInvalid: {
+                    _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): domain invalid.");
+                } break;
                 case dgmDomainGroup: {
                     std::vector<InventoryItemRef> moduleList;
                     m_ModuleManager->GetModuleListOfRefs(&moduleList);
@@ -1247,18 +1265,20 @@ void ShipItem::ApplyEffects()
                 // send data to calculator
                 EvilNumber newAttr = sFxProc.CalculateAttributeValue(targAttr, srcAttr, cur.first);
                 // set new calculated value for target attribute
+                _log(EFFECTS__MESSAGE, "ShipItem::ApplyEffects(): setting %s in domain %i attribute %u to %f.", \
+                        item->itemName().c_str(), cur.second.domain, cur.second.targAttr, newAttr.get_float());
                 item->SetAttribute(cur.second.targAttr, newAttr, false);
             }
         } else {
             // location domain is self.
             // get targAttr
-            if (envItem)
-                targAttr = envItem->GetAttribute(cur.second.targAttr);
+            targAttr = envItem->GetAttribute(cur.second.targAttr);
             // send data to calculator
             EvilNumber newAttr = sFxProc.CalculateAttributeValue(targAttr, srcAttr, cur.first);
             // set new calculated value for target attribute
-            if (envItem)
-                envItem->SetAttribute(cur.second.targAttr, newAttr, false); // no, dont notifiy client of change.  will be updated after undock, when requesting ship info
+            _log(EFFECTS__MESSAGE, "ShipItem::ApplyEffects(): setting %s attribute %u to %f.", \
+                    envItem->itemName().c_str(), cur.second.targAttr, newAttr.get_float());
+            envItem->SetAttribute(cur.second.targAttr, newAttr, false); // no, dont notifiy client of change.  will be updated when requesting ship info
         }
     }
     m_effectsApplied = true;
@@ -1328,7 +1348,7 @@ void ShipItem::ParseExpression(Expression expression, fxData& data)
         case operandDEFBOOL:    // this evaulates to 'true' (Bool(1))
         case operandDEFINT: {   // this is used as  0,1,2,{raceID}
             // not sure what to do here
-            expression.expressionValue;
+            //expression.expressionValue;
         } break;
         case operandDEFASSOCIATION: {
             data.assoc = sFxProc.GetAssociationEnum(expression.expressionValue);
@@ -1340,7 +1360,7 @@ void ShipItem::ParseExpression(Expression expression, fxData& data)
         // these provide the given expression*ID
         case operandDEFATTRIBUTE: {    // check this....
             if (expression.expressionAttributeID) {
-                if (data.targAttr)
+                if (data.targAttr)  // always processed first
                     data.srcAttr = expression.expressionAttributeID;
                 else
                     data.targAttr = expression.expressionAttributeID;
@@ -1357,11 +1377,10 @@ void ShipItem::ParseExpression(Expression expression, fxData& data)
 
         // do as stated
         case operandCOMBINE: { // executes two statements  '%(arg1)s); (%(arg2)s'
-            //data1.assoc = data1.env = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = data.domain = 0;
             if (expression.arg1)
                 ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
             fxData data1;
-            data1.assoc = data1.env = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = data.domain = 0;
+            data1.assoc = data1.env = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = data1.domain = 0;
             if (expression.arg2)
                 ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data1);
         } break;
@@ -1455,6 +1474,31 @@ void ShipItem::ParseExpression(Expression expression, fxData& data)
                 ret << " *needsWork*";
             sLog.Error("Ship::ParseExpression", "%s", ret.str().c_str());
         } break;
+    }
+
+    // data integrity tests
+    if (sConfig.server.IsTestServer) {
+        if (data.domain > 6) {
+            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range domain: %i.", data.domain);
+            SrvPause();  // Stop here and wait for enter using std::getchar()
+            //system("pause");
+        }
+        if (data.assoc > 11) {
+            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range assoc: %i.", data.assoc);
+            system("pause");
+        }
+        if (data.env > 5) {
+            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range env: %i.", data.env);
+            system("pause");
+        }
+        if (data.targAttr > 1817) {  //2003 -max Rhea value;  1817 -max Crucible value
+            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range targAttr: %u.", data.targAttr);
+            system("pause");
+        }
+        if (data.srcAttr > 1817) {   //2003 -max Rhea value;  1817 -max Crucible value
+            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range srcAttr: %u.", data.srcAttr);
+            system("pause");
+        }
     }
 }
 

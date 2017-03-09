@@ -7,6 +7,9 @@
 #ifndef EVE_DEFINES_H
 #define EVE_DEFINES_H
 
+// defined breakPoint
+#define SrvPause()  do { printf("%s %d\n", __FILE__, __LINE__); getchar(); } while (0)
+
 // bulkdata version
 #define bulkDataBranch          4
 #define bulkDataChangeID        70726

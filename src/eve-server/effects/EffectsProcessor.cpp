@@ -11,6 +11,15 @@
 #include "effects/EffectsProcessor.h"
 #include "inventory/InventoryItem.h"
 
+/*
+ * # Effects Logging:
+ * EFFECTS=0
+ * EFFECTS__ERROR=1
+ * EFFECTS__WARNING=0
+ * EFFECTS__MESSAGE=0
+ * EFFECTS__DEBUG=0
+ * EFFECTS__TRACE=0
+ */
 
 EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1, EvilNumber val2, int8 assoc)
 {
@@ -19,7 +28,7 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1, EvilNumber val2, int
     using namespace Effects;
     switch (assoc) {
         case dgmAssInvalid:
-            _log(SHIP__MODULE_ERROR, "CalculateNewAttributeValue() - Invalid Association used");
+            _log(EFFECTS__WARNING, "FxProc::CalculateNewAttributeValue() - Invalid Association used");
         case dgmAssSkillCheck:
         case dgmAssPreAssignment:
         case dgmAssPostAssignment:
@@ -37,7 +46,7 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1, EvilNumber val2, int
         case dgmAssPostPercent:
             return val1 * ((100 + val2) / 100);
     }
-    _log(SHIP__MODULE_ERROR, "CalculateNewAttributeValue() - Unknown Association used: %i", (int8)assoc);
+    _log(EFFECTS__ERROR, "FxProc::CalculateNewAttributeValue() - Unknown Association used: %i", (int8)assoc);
     return 0;
 }
 
