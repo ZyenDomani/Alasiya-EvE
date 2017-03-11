@@ -26,6 +26,10 @@
 #ifndef __ITEM_TYPE__H__INCL__
 #define __ITEM_TYPE__H__INCL__
 
+#include <unordered_map>
+
+#include "POD_containers.h"
+#include "effects/EffectsData.h"
 #include "inventory/AttributeMap.h"
 #include "inventory/ItemFactory.h"
 
@@ -282,13 +286,12 @@ public:
     double capacity() const                             { return m_capacity; }
     EVERace race() const                                { return m_raceID; }
 
-    /** @todo  update this to new effects class */
-    bool HasEffect(uint16 effectID) const
-	{
-        return true;
-	}
+    /* new effects processing system */
+    bool HasEffect(uint16 effectID) const;
+    bool HasReqSkill(const uint16 skillID, ItemFactory& m_factory) const;
 
-	const EvilNumber GetAttribute(const uint16 attributeID) const;
+    const bool HasAttribute(const uint16 attributeID) const;
+    EvilNumber GetAttribute(const uint16 attributeID) const;
 
 protected:
     ItemType(
@@ -343,11 +346,15 @@ protected:
 
     virtual bool _Load(ItemFactory &factory);
 
+    void LoadEffects();
+
+public:
+    // i dont like this......MUST fix later
+    std::unordered_multimap<int8, Effect> m_stateFxMap; // k,v map of state, data   -to search by state
+
 private:
-    /*
-     * Data members
-     */
-    std::map<uint16, EvilNumber> m_AttributeMap;
+    std::map<uint16, uint8> m_reqSkillMap;              // k,v map of required skill, level for this ItemType, if any.
+    std::map<uint16, EvilNumber> m_AttributeMap;        // k,v map of attributeID, value
 
     const uint32 m_id;
     const ItemGroup *m_group;
@@ -363,6 +370,9 @@ private:
     double m_volume;
     double m_capacity;
     EVERace m_raceID;
+
+    bool m_offensive;
+    bool m_assistance;
 };
 
 /*

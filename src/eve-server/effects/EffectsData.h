@@ -65,63 +65,78 @@ struct TypeEffects {
     uint16 effectID;
 };
 
+struct fxData {
+    int8 math;          // math used on data
+    int8 fxSrc;        // effect source location
+    int8 targLoc;       // effect target location
+    uint16 targAttr;
+    uint16 srcAttr;
+    uint16 grpID;       // used to define items in env grouped by item groupID
+    uint16 typeID;      // used to define items in env grouped by skill requirement
+    InventoryItemRef srcRef;   // source item ref, if required
+};
+
 typedef std::map<uint16, Effect> effectMapType;
 
+// these tables are used to decode fields in Effects table
 namespace Effects {
-    // these tables are used to decode fields in Effects table
-    enum Domain {
-        dgmDomainInvalid    = -1,
-        //  these define the location for group-, skill-, gang-, and owner-required domains
-        dgmDomainSelf       = 0,
-        dgmDomainSkill      = 1,
-        dgmDomainShip       = 2,
-        dgmDomainOwner      = 3,
-        dgmDomainGang       = 4,
-        dgmDomainGroup      = 5,
-        dgmDomainTarget     = 6
+    enum Source {   // formally known as domain
+        dgmSrcInvalid          = -1,
+        //  these define the location for group-, skill-, gang-, and owner-required effects
+        dgmSrcSelf             = 0,
+        dgmSrcSkill            = 1,
+        dgmSrcShip             = 2,
+        dgmSrcOwner            = 3,
+        dgmSrcGang             = 4,
+        dgmSrcGroup            = 5,
+        dgmSrcTarget           = 6,
+        MaxSrcLocation            = 6
     };
 
-    enum Environment {
-        dgmEnvInvalid        = -1,
-        // these define the item containing the attribute [to modify(target)]/[data(source)]
+    enum TargetLocation {   //formally known as environment
+        dgmTargLocInvalid      = -1,
+        // these define the item containing the attribute to be modified
         //  these are found (as text) in the expressionValue field of dgmExpressions table and may need to merge with Association, or test with it
-        dgmEnvSelf           = 0,
-        dgmEnvChar           = 1,
-        dgmEnvShip           = 2,
-        dgmEnvTarget         = 3,
-        dgmEnvOther          = 4,
-        dgmEnvArea           = 5
+        dgmTargLocSelf         = 0,
+        dgmTargLocChar         = 1,
+        dgmTargLocShip         = 2,
+        dgmTargLocTarget       = 3,
+        dgmTargLocOther        = 4, //charges
+        dgmTargLocArea         = 5,
+        dgmTargLocPowerCore    = 6,  //defined but not used
+        MaxTargLocation        = 6
     };
 
-    enum State  {
+    enum State  {       // formally known as category
         dgmStateInvalid        = -1,
         // these are the effectState in dgmEffects table to denote when this effect is applied or removed
-        dgmStatePassive        = 0,    //Applied when item is just present in fit - implants, skills, offlined modules
-        dgmStateActive         = 1,    //also online effect - Applied when module is onlined
-        dgmStateTarget         = 2,    //Applied onto selected target
-        dgmStateArea           = 3,    //No effects with this category, so actual impact is unknown
-        dgmStateOnline         = 4,    //Applied when module is activated
-        dgmStateOverloaded     = 5,    //Applied when module is overloaded
-        dgmStateDungeon        = 6,    //Dungeon effects, several effects exist in this category, but not assigned to any item
-        dgmStateSystem         = 7     //System-wide effects, like WH and incursion
+        dgmStatePassive        = 0, //Applied when item is just present in fit - implants, skills, offlined modules
+        dgmStateActive         = 1, //also online effect - Applied when module is onlined
+        dgmStateTarget         = 2, //Applied onto selected target
+        dgmStateArea           = 3, //defined but not used
+        dgmStateOnline         = 4, //Applied when module is activated
+        dgmStateOverloaded     = 5, //Applied when module is overloaded
+        dgmStateDungeon        = 6, //Dungeon effects, several effects exist in this category, but not assigned to any item
+        dgmStateSystem         = 7,  //System-wide effects, like WH and incursion
+        MaxState               = 7
     };
 
-    enum Association {
-        dgmAssInvalid        = -1,
+    enum Math {     // formally known as association
+        dgmMathInvalid        = -1,
         // these define how the data is manipulated according to the format field in dgmOperands table
-        dgmAssPreAssignment  = 0,
-        dgmAssPreMul         = 1,
-        dgmAssPreDiv         = 2,
-        dgmAssModAdd         = 3,
-        dgmAssModSub         = 4,
-        dgmAssPostMul        = 5,
-        dgmAssPostDiv        = 6,
-        dgmAssPostPercent    = 7,
-        dgmAssPostAssignment = 8,
-        dgmAssSkillCheck     = 9,
+        dgmMathPreAssignment  = 0,
+        dgmMathPreMul         = 1,
+        dgmMathPreDiv         = 2,
+        dgmMathModAdd         = 3,
+        dgmMathModSub         = 4,
+        dgmMathPostMul        = 5,
+        dgmMathPostDiv        = 6,
+        dgmMathPostPercent    = 7,
+        dgmMathPostAssignment = 8,
+        dgmMathSkillCheck     = 9,
         /* no data or expressions with these */
-        dgmAssAddRate        = 10,
-        dgmAssSubRate        = 11
+        dgmMathAddRate        = 10,
+        dgmMathSubRate        = 11
     };
     /*  old shit
              case CALC_NONE:                            return val1;
@@ -144,21 +159,21 @@ namespace Effects {
         categoryCharge,
         categorySubSystem]
     dgmPreStackingNerfOperators = {
-        dgmAssPreAssignment: lambda ret, value: value,
-        dgmAssPreMul: lambda ret, value: ret * value,
-        dgmAssPreDiv: lambda ret, value: ret / value,
-        dgmAssModAdd: lambda ret, value: ret + value,
-        dgmAssModSub: lambda ret, value: ret - value}
+        dgmMathPreAssignment: lambda ret, value: value,
+        dgmMathPreMul: lambda ret, value: ret * value,
+        dgmMathPreDiv: lambda ret, value: ret / value,
+        dgmMathModAdd: lambda ret, value: ret + value,
+        dgmMathModSub: lambda ret, value: ret - value}
     dgmOperators = {
-        dgmAssPreAssignment: lambda ret, value: value,
-        dgmAssPostAssignment: lambda ret, value: value,
-        dgmAssPreMul: lambda ret, value: ret * value,
-        dgmAssPostMul: lambda ret, value: ret * value,
-        dgmAssPreDiv: lambda ret, value: ret / value,
-        dgmAssPostDiv: lambda ret, value: ret / value,
-        dgmAssModAdd: lambda ret, value: ret + value,
-        dgmAssModSub: lambda ret, value: ret - value,
-        dgmAssPostPercent: lambda ret, value: ret * (100 + value) / 100}
+        dgmMathPreAssignment: lambda ret, value: value,
+        dgmMathPostAssignment: lambda ret, value: value,
+        dgmMathPreMul: lambda ret, value: ret * value,
+        dgmMathPostMul: lambda ret, value: ret * value,
+        dgmMathPreDiv: lambda ret, value: ret / value,
+        dgmMathPostDiv: lambda ret, value: ret / value,
+        dgmMathModAdd: lambda ret, value: ret + value,
+        dgmMathModSub: lambda ret, value: ret - value,
+        dgmMathPostPercent: lambda ret, value: ret * (100 + value) / 100}
     dgmAttributesByIdx = {
         1: attributeIsOnline,
         2: attributeDamage,
@@ -303,10 +318,10 @@ namespace Effects {
  * (18, 'DEC', 'decreases an item-attribute by the value of another attribute', '%(arg1)s-=self.%(arg2)s', 3, 2, 4, ' ')
  * (19, 'DECLOAKWAVE', 'broadcasts a decloaking wave', 'DecloakWave', 0, 0, 4, 'DecloakWave(env, None, None)')
  * (20, 'DECN', 'decreases an item-attribute by number', '%(arg1)s-=%(arg2)s', 3, 4, 4, ' ')
- * (21, 'DEFASSOCIATION', 'define attribute association type', '%(value)s', 0, 0, 1, 'const.dgmAss%(value)s')
+ * (21, 'DEFASSOCIATION', 'define attribute association type', '%(value)s', 0, 0, 1, 'const.dgmMath%(value)s')
  * (22, 'DEFATTRIBUTE', 'define attribute', '%(value)s', 0, 0, 2, '%(value)s')
  * (23, 'DEFBOOL', 'define bool constant', 'Bool(%(value)s)', 0, 0, 4, '%(value)s')
- * (24, 'DEFENVIDX', 'define environment index', 'Current%(value)s', 0, 0, 6, 'env[const.dgmEnv%(value)s]')
+ * (24, 'DEFENVIDX', 'define environment index', 'Current%(value)s', 0, 0, 6, 'env[const.dgmTargLoc%(value)s]')
  * (25, 'DEFFLOAT', 'defines a float constant', 'Float(%(value)s)', 0, 0, 4, ' ')
  * (26, 'DEFGROUP', 'define group', '%(value)s', 0, 0, 8, ' ')
  * (27, 'DEFINT', 'defines an int constant', 'Int(%(value)s)', 0, 0, 4, '%(value)s')

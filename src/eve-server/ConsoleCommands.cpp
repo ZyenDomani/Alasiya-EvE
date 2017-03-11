@@ -381,7 +381,6 @@ void ConsoleCommand::Test()
 {
     sLog.Green("  Alasiya's EvEMu", "Server Test:");
     //sLog.Error("     Allan\'s Test", "Nothing Avalible at this time.");
-    sLog.Yellow("     Effects Test", "Test Begin - Process and Save all Effects.");
 
     sFxDataMgr.ConfigureEffects();
 

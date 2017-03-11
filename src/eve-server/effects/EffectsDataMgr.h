@@ -24,6 +24,7 @@ public:
 
     void Initialize();
     void ConfigureEffects();
+    bool needsTarget(std::string effectName);
 
     Effect GetEffect(uint16 eID);
     Operand GetOperand(uint16 oID);
@@ -52,6 +53,8 @@ private:
     std::map<uint16, Expression> m_expMap;
     std::map<uint16, Operand> m_opMap;
     std::unordered_multimap<uint16, TypeEffects> m_typeFxMap;  // k,v of typeID, data<effectID, isDefault>
+
+    std::map<uint16, std::string> m_targEffects;  // k,v of effectID, effectName.  these effectIDs need a target.
 };
 
 #define sFxDataMgr \

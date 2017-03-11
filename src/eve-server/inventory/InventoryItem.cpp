@@ -64,10 +64,6 @@ InventoryItem::InventoryItem(
     // assert for data consistency
     assert(_data.typeID == _type.id());
 
-    m_effectsLoaded = false;
-    m_stateFxMap.clear();
-    LoadEffects();
-
     //m_saveTimerExpiryTime = ITEM_DB_SAVE_TIMER_EXPIRY * 60 * 1000;      // 10 minutes in milliseconds
     //m_saveTimer.SetTimer(m_saveTimerExpiryTime);                        // set timer in milliseconds
     m_saveTimer.Disable();                                              // disable timer by default
@@ -144,20 +140,6 @@ bool InventoryItem::_Load() {
         _log(ITEM__WARNING, "%s (%u): Failed to load attribute map.", itemName().c_str(), itemID());
         return false;
     }
-
-    // load required skills and levels into their own map, for later checks
-    if (mAttributeMap.HasAttribute(AttrRequiredSkill1))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill1).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill1Level).get_int()));
-    if (mAttributeMap.HasAttribute(AttrRequiredSkill2))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill2).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill2Level).get_int()));
-    if (mAttributeMap.HasAttribute(AttrRequiredSkill3))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill3).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill3Level).get_int()));
-    if (mAttributeMap.HasAttribute(AttrRequiredSkill4))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill4).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill4Level).get_int()));
-    if (mAttributeMap.HasAttribute(AttrRequiredSkill5))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill5).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill5Level).get_int()));
-    if (mAttributeMap.HasAttribute(AttrRequiredSkill6))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)mAttributeMap.GetAttribute(AttrRequiredSkill6).get_int(), (uint8)mAttributeMap.GetAttribute(AttrRequiredSkill6Level).get_int()));
 
     return true;
 }
@@ -1157,19 +1139,6 @@ void InventoryItem::SetAttribute( uint16 attrID, uint32 num, bool notify/*true*/
 }
 
 // new effects system  -allan 4Feb17
-void InventoryItem::LoadEffects()
-{
-    std::vector< TypeEffects > typeEffMap;
-    sFxDataMgr.GetTypeEffect(m_type.id(), typeEffMap);
-
-    for (auto cur : typeEffMap) {
-        Effect mEffect = sFxDataMgr.GetEffect(cur.effectID);
-        m_stateFxMap.insert(std::pair<int8, Effect>(mEffect.effectState, mEffect));
-    }
-
-    m_effectsLoaded = true;
-}
-
 bool InventoryItem::SkillCheck(InventoryItemRef refItem)
 {
     EvilNumber need = 0, has = 0;
@@ -1196,34 +1165,14 @@ bool InventoryItem::SkillCheck(InventoryItemRef refItem)
     return true;
 }
 
-bool InventoryItem::HasReqSkill(uint16 skillID)
-{
-    std::map<uint16, uint8>::const_iterator itr = m_reqSkillMap.find(skillID);
-    if (itr != m_reqSkillMap.end())
-        return true;
-    return false;
-}
-
-
 void InventoryItem::ApplyEffect(int8 state)
 {
-    FxProc fxProc;
-    auto itr = m_stateFxMap.equal_range(state);
-    for (auto it = itr.first; it != itr.second; it++)
-        fxProc.ParseExpression(sFxDataMgr.GetExpression(it->second.preExpression), false, true);
 }
 
 void InventoryItem::RemoveEffect(int8 state)
 {
-    FxProc fxProc;
-    auto itr = m_stateFxMap.equal_range(state);
-    for (auto it = itr.first; it != itr.second; it++)
-        fxProc.ParseExpression(sFxDataMgr.GetExpression(it->second.postExpression), false, true);
 }
 
 void InventoryItem::GetEffectsInState(int8 state, std::vector< Effect >& effectRef)
 {
-    auto itr = m_stateFxMap.equal_range(state);
-    for (auto it = itr.first; it != itr.second; it++)
-        effectRef.push_back(it->second);
 }

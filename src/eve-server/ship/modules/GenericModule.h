@@ -77,8 +77,6 @@ public:
     bool isRig()                                        { return m_rigSlot; }
     bool isSubSystem()                                  { return m_subSystem; }
 
-    bool needsTarget()                                  { return true; }    /* fixme */
-
     uint32 itemID()                                     { return m_modRef->itemID(); }
     uint32 typeID()                                     { return m_modRef->typeID(); }
     uint32 groupID()                                    { return m_modRef->groupID(); }
@@ -101,10 +99,9 @@ public:
     virtual void DestroyRig()                           { /* Do nothing here */ }
 
     /* functions to be overridden in derived classes as needed */
-    /** @todo update to new effects system */
-    virtual bool isTurretFitted()                       { return /*(HasEffect(effectTurretFitted) ? true : false);*/ false; }
-    virtual bool isLauncherFitted()                     { return /*(HasEffect(effectLauncherFitted) ? true : false);*/ false; }
-    virtual bool isMaxGroupFitLimited()                 { return /*(HasEffect(AttrMaxGroupFitted) ? true : false);*/ false; }
+    virtual bool isTurretFitted()                       { return (m_modRef->type().HasEffect(effectTurretFitted) ? true : false); false; }
+    virtual bool isLauncherFitted()                     { return (m_modRef->type().HasEffect(effectLauncherFitted) ? true : false); false; }
+    virtual bool isMaxGroupFitLimited()                 { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); false; }
 
     virtual InventoryItemRef GetLoadedChargeRef()       { return InventoryItemRef(); }
 
@@ -112,10 +109,10 @@ public:
     virtual ModulePowerLevel GetModulePowerLevel() {
         return m_hiPower ? MODULE_BANK_HIGH_POWER
                 : ( m_medPower ? MODULE_BANK_MEDIUM_POWER
-                        : (m_loPower ? MODULE_BANK_LOW_POWER
-                            : (m_rigSlot ? MODULE_BANK_RIG
-                                : (m_subSystem ? MODULE_BANK_SUBSYSTEM
-                                    : MODULE_BANK_UNDEFINED ))));
+                    : (m_loPower ? MODULE_BANK_LOW_POWER
+                        : (m_rigSlot ? MODULE_BANK_RIG
+                            : (m_subSystem ? MODULE_BANK_SUBSYSTEM
+                                : MODULE_BANK_UNDEFINED ))));
     }
 
 protected:
@@ -135,9 +132,9 @@ protected:
 
     int32                           m_repeat;
 
-    void ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, Effects::Association type, bool stacking);
-    void ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, Effects::Association type);
-    void ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, Effects::Association type, bool stacking);
+    void ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, Effects::Math type, bool stacking);
+    void ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, Effects::Math type);
+    void ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, Effects::Math type, bool stacking);
 
 };
 

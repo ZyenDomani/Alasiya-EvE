@@ -29,7 +29,9 @@
 #include "Client.h"
 #include "EntityList.h"
 #include "character/Character.h"
+#include "effects/EffectsProcessor.h"
 #include "inventory/AttributeEnum.h"
+#include "ship/Ship.h"
 #include "utils/EVE_Equations.h"
 
 /*
@@ -570,7 +572,7 @@ float Character::GetAgilitySkills(bool cap) {
 PyRep* Character::GetRAMSkills()
 {
     /*  this queries RAM skills and is used to display blueprints tab (S&I -> Blueprints)
-     *
+     *      called by RamProxy::GetRelevantCharSkills()
      *
      *            skillLevels, attributeValues = sm.GetService('manufacturing').GetRelevantCharSkills()
      *            maxManufacturingJobCount = int(attributeValues[const.attributeManufactureSlotLimit])    -AttrManufactureSlotLimit = 196,
@@ -597,6 +599,422 @@ PyRep* Character::GetRAMSkills()
         tuple->SetItem(1, attributeValues);
     return tuple;
 }
+
+/*
+# Effects Logging:
+EFFECTS=0
+EFFECTS__ERROR=1
+EFFECTS__WARNING=0
+EFFECTS__MESSAGE=0
+EFFECTS__DEBUG=0
+EFFECTS__TRACE=0
+*/
+void Character::ProcessSkillEffects(InventoryItemRef itemRef)
+{
+    //  427 total skills.  this should be fairly fast...
+    /*  notes for char skills as affecting ship stats...
+     *   drones will be applied in drone class
+     *   mechanics will be queried indifidually
+     *   others will use full set of skill group
+     *   t3 shit handled in that class
+     *   missile class has all skill data for missiles, but only some for launchers
+     *  NOTE:  ALL module code will have to be rewritten after effects code is implemented
+     */
+    std::vector<InventoryItemRef> allSkills, skillList;
+    GetSkillsList(allSkills);
+    for (auto cur : allSkills) {
+        switch (cur->groupID()) {
+            case EVEDB::invGroups::Gunnery:
+            case EVEDB::invGroups::Spaceship_Command:
+            case EVEDB::invGroups::Navigation:
+            case EVEDB::invGroups::Electronics:
+            case EVEDB::invGroups::Engineering: {   // all of these are applied to ship stats
+                skillList.push_back(cur);
+            } break;
+            case EVEDB::invGroups::Mechanic: {  // dont need construction skills.  skip them.
+                switch (cur->typeID()) {
+                    case 3395:      //Frigate Construction
+                    case 3396:      //Industrial Construction
+                    case 3397:      //Cruiser Construction
+                    case 3398:      //Battleship Construction
+                    case 3400:      //Outpost Construction
+                    case 22242: {    //Capital Ship Construction
+                        continue;
+                    } break;
+                    default: {
+                        skillList.push_back(cur);
+                    } break;
+                }
+            } break;
+        }
+    }
+
+    Effect curEffect;
+    std::vector<TypeEffects> typeFx;
+    for (auto curSkill : skillList) {
+        typeFx.clear();
+        sFxDataMgr.GetTypeEffect(curSkill->typeID(), typeFx);
+        for (auto curFx : typeFx) {
+            curEffect = sFxDataMgr.GetEffect(curFx.effectID);
+            fxData data;
+            data.srcRef = curSkill;
+            data.math = data.targLoc = data.fxSrc = data.targAttr = data.srcAttr = data.grpID = data.typeID = 0;
+            ParseExpression(sFxDataMgr.GetExpression(curEffect.preExpression), data);
+        }
+    }
+    
+    ApplyEffects(itemRef);
+}
+
+void Character::ParseExpression(Expression expression, fxData& data)
+{
+    using namespace Effects;
+    switch(expression.operandID) {
+        // trivial attribute operations
+        case operandATT: {      //12,'%(arg1)s->%(arg2)s'      (domain:attribID)
+            if (expression.arg1)
+                ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            if (expression.arg2)
+                ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+
+        // these return the given expressionValue
+        case operandDEFBOOL:    //23 this evaulates to 'true' (Bool(1))
+        case operandDEFINT: {   //27 this is used as  0,1,2,{raceID}
+            // not sure what to do here
+            //expression.expressionValue;
+        } break;
+        case operandDEFASSOCIATION: {   //21
+            data.math = sFxProc.GetAssociationEnum(expression.expressionValue);
+            if (data.math > 11) {
+                Operand operand = sFxDataMgr.GetOperand(expression.operandID);
+                _log(EFFECTS__ERROR, "Character::ParseExpression(): out of range assoc: %i for operand %u (%s).", \
+                            data.targAttr, expression.operandID, operand.operandKey.c_str());
+            }
+        } break;
+        case operandDEFENVIDX: {    //24
+            data.targLoc = sFxProc.GetEnvironmentEnum(expression.expressionValue);
+            if (data.targLoc > MaxTargLocation) {
+                Operand operand = sFxDataMgr.GetOperand(expression.operandID);
+                _log(EFFECTS__ERROR, "Character::ParseExpression(): out of range env: %i for operand %u (%s).", \
+                        data.targAttr, expression.operandID, operand.operandKey.c_str());
+            }
+        } break;
+
+        // these provide the given expression*ID
+        case operandDEFATTRIBUTE: {    //22
+            if (expression.expressionAttributeID) {
+                /*
+                if (expression.expressionAttributeID > 1817) {  //2003 -max Rhea value;  1817 -max Crucible value
+                    std::string type = "targ";
+                    if (data.targAttr)
+                        type = "src";
+                    Operand operand = sFxDataMgr.GetOperand(expression.operandID);
+                    _log(EFFECTS__ERROR, "Character::ParseExpression(): out of range %sAttr: %u > 1817 for operand %u (%s).", \
+                            type.c_str(), data.targAttr, expression.operandID, operand.operandKey.c_str());
+                }*/
+                if (data.targAttr)  // always processed first
+                    data.srcAttr = expression.expressionAttributeID;
+                else
+                    data.targAttr = expression.expressionAttributeID;
+            }
+        } break;
+        case operandDEFGROUP: {    //26
+            if (expression.expressionGroupID)
+                data.grpID = expression.expressionGroupID;
+        } break;
+        case operandDEFTYPEID: {    //29
+            if (expression.expressionTypeID)
+                data.typeID = expression.expressionTypeID;
+        } break;
+
+        // do as stated
+        case operandCOMBINE: { //17,'%(arg1)s); (%(arg2)s'      --executes two statements
+            if (expression.arg1)
+                ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            fxData data1;
+            data1.srcRef = RefPtr<InventoryItem>();
+            data1.math = data1.targLoc = data1.fxSrc = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = 0;
+            if (expression.arg2)
+                ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data1);
+        } break;
+        case operandEFF: {      //31, '(%(arg2)s).(%(arg1)s)'       --define association type
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+
+        // these function calls are a bit more complicated...will need more work and better understanding
+        case operandGA: {    //34,'%(arg1)s.%(arg2)s'      --not used
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+        case operandGET: {    //35,'%(arg1)s.%(arg2)s()'   --used a lot.  eg. GetAttribute(Ship:101)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+        case operandIA: {    //40,'%(arg1)s'   -used by AGIM
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+        } break;
+        case operandGM: {    //37,'%(arg1)s.GetModule(%(arg2)s)'      --used by subsystems as (GetModule(Ship.201):55)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
+        case operandGETTYPE: {    //36,'%(arg1)s.GetTypeID()'  --used by SRLG in AORSM/RORSM
+            //_log(EFFECTS__TRACE, "Character::ParseExpression()::GetType(pre): method: %s, src: %s, targLoc: %s, targAttr: %u, srcAttr: %u, grpID: %u, typeID: %u", \
+                    sFxProc.GetMathMethodName(data.math).c_str(), sFxProc.GetSourceName(data.fxSrc).c_str(), sFxProc.GetTargLocName(data.targLoc).c_str(),\
+                    data.targAttr, data.srcAttr, data.grpID, data.typeID );
+            fxData data1;
+            data1.srcRef = RefPtr<InventoryItem>();
+            data1.math = data1.targLoc = -1;
+            data1.fxSrc = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = 0;
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data1);
+            switch (data1.targLoc) {
+                case dgmTargLocSelf: {
+                    data.typeID = data.srcRef->typeID();    // seems to be the only one used...."get modules/charges on ship that require *this skill"
+                } break;
+                case dgmTargLocChar: {
+                    data.typeID = m_type.id();
+                } break;
+                case dgmTargLocShip: {
+                    data.typeID = m_factory.GetItem(m_shipID)->typeID();
+                } break;
+                case dgmTargLocTarget:  {
+                    data.typeID = m_pClient->GetShipSE()->TargetMgr()->GetFirstTarget(true)->GetTypeID();
+                } break;
+                case dgmTargLocOther:
+                case dgmTargLocArea:
+                case dgmTargLocInvalid:
+                default:
+                    data.typeID = 9999;    //invalid
+            }
+           // _log(EFFECTS__TRACE, "Character::ParseExpression()::GetType(post): method: %s, src: %s, targLoc: %s, targ: %s, targAttr: %u, srcAttr: %u, grpID: %u, typeID: %u", \
+                    sFxProc.GetMathMethodName(data.math).c_str(), sFxProc.GetSourceName(data.fxSrc).c_str(), sFxProc.GetTargLocName(data.targLoc).c_str(),\
+                    sFxProc.GetTargLocName(data1.targLoc).c_str(), data.targAttr, data.srcAttr, data.grpID, data.typeID );
+        } break;
+        case operandLG: {    //48, '%(arg1)s.LocationGroup.%(arg2)s'  -- specify a group by grpID for a location'
+            data.fxSrc = dgmSrcGroup;   //preliminary....will need work later.
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);   //domain
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);   //groupID
+        } break;
+        case operandLS: {    //49, '%(arg1)s.SkillRequiredLocationGroup[%(arg2)s]'  --  specify a group by skillID for a location
+            data.fxSrc = dgmSrcSkill;   //preliminary....will need work later.
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);   //domain
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);   //skillID
+        } break;
+
+        // effect function calls.
+        // here is where we'll actually add the modifier data to the map
+        case operandAIM: {    //6,'AddItemModifier(env,%(arg1)s, %(arg2)s)'
+            Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
+            ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+        } break;
+        // these arent completely correct yet.  testing
+        case operandALGM: {    //7,(%(arg1)s).AddLocationGroupModifier (%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+        } break;
+        case operandALM: {    //8,(%(arg1)s).AddLocationModifier (%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+        } break;
+        case operandALRSM: {    //9,(%(arg1)s).AddLocationRequiredSkillModifier(%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+        } break;
+        case operandAORSM: {    //11,(%(arg1)s).AddOwnerRequiredSkillModifier(%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+        } break;
+
+        // not sure on what to do with these yet....
+        case operandAGRSM: {    //5,  [%(arg1)s].AGRSM(%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+        } break;
+        case operandAGIM: {    //3,[%(arg1)s].AGIM(%(arg2)s)
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+        } break;
+        case operandRSA: {    //64, %(arg1)s.%(arg2)s      -- used by AGRSM/RGRSM
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+        } break;
+
+        default: {              // in case the op hasnt been defined, make a note here (should not hit)
+            std::ostringstream ret;
+            Operand operand = sFxDataMgr.GetOperand(expression.operandID);
+            ret << "*** ERROR ***  Operand id:" << expression.operandID << " key:" << operand.operandKey;
+            if (operand.format == "")
+                ret << " - has not been defined";
+            else                // % {'arg1': arg1, 'arg2': arg2, 'value': expression.expressionValue}
+                ret << " *needsWork*";
+                sLog.Error("Character::ParseExpression", "%s", ret.str().c_str());
+        } break;
+    }
+}
+
+void Character::ApplyEffects(InventoryItemRef itemRef)
+{
+    using namespace Effects;
+    for (auto cur : m_modifiers) {  // k,v of assoc, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>
+        _log(EFFECTS__TRACE, "Character::ApplyEffects(%i): method: %s, fxSrc: %s(%s), targLoc: %s, targAttr: %u, srcAttr: %u, grpID: %u, typeID: %u", cur.first,\
+                sFxProc.GetMathMethodName(cur.second.math).c_str(), sFxProc.GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcRef->itemName().c_str(), \
+                sFxProc.GetTargLocName(cur.second.targLoc).c_str(), cur.second.targAttr, cur.second.srcAttr, cur.second.grpID, cur.second.typeID );
+
+        InventoryItemRef srcItemRef = cur.second.srcRef;
+        std::vector<InventoryItemRef> itemRefVec;
+        // get targ(s)
+        switch (cur.second.fxSrc) {
+            case dgmSrcGroup: {
+                std::vector<InventoryItemRef> moduleList;
+                ShipItemRef shipRef = ShipItemRef::StaticCast(itemRef);
+                shipRef->GetModuleManager()->GetModuleListOfRefs(&moduleList);
+                // get modules of group defined in 'grpID'
+                for (auto mod : moduleList)
+                    if (mod->groupID() == cur.second.grpID)
+                        itemRefVec.push_back(mod);
+            } break;
+            case dgmSrcSkill: {    // source of this effect is skill, implant, or booster
+                if (cur.second.typeID == 9999)    //invalid
+                    continue;  // make error here
+                switch (cur.second.targLoc) {
+                    case dgmTargLocShip:  {      // this is to apply modifiers to fitted ship modules that require skill in 'typeID'
+                        ShipItemRef shipRef = ShipItemRef::StaticCast(itemRef);
+                        shipRef->GetModuleManager()->GetModuleListByReqSkill(cur.second.typeID, &itemRefVec);
+                    } break;
+                    case dgmTargLocSelf: {      // item applying effect to itself
+                        itemRefVec.push_back(cur.second.srcRef);
+                    } break;
+                    case dgmTargLocChar: {       // this is to apply modifiers to char skills that require skill in 'srcRef' or 'typeID'
+                        uint16 skillID = cur.second.srcRef->typeID();
+                        if (cur.second.typeID)
+                            skillID = cur.second.typeID;
+                        std::vector<InventoryItemRef> allSkills;
+                        GetSkillsList(allSkills);
+                        for (auto curSkill : allSkills)
+                            if (curSkill->HasReqSkill(skillID))
+                                itemRefVec.push_back(curSkill);
+                    } break;
+                    case dgmTargLocOther: {     // charge
+                        // will need more testing to verify this.
+                        ShipItemRef shipRef = ShipItemRef::StaticCast(itemRef);
+                        std::map<EVEItemFlags, InventoryItemRef> charges;
+                        shipRef->GetModuleManager()->GetLoadedCharges(charges);
+                        for (auto mod : charges)
+                            if (mod.second->HasReqSkill(cur.second.typeID))
+                                itemRefVec.push_back(mod.second);
+                    } break;
+                    case dgmTargLocTarget: {
+                        // will need more testing to verify this.  havent seen it called yet
+                        ShipItemRef shipRef = ShipItemRef::StaticCast(itemRef);
+                        itemRefVec.push_back(shipRef->GetPilot()->GetShipSE()->TargetMgr()->GetFirstTarget(true)->GetSelf());
+                    } break;
+                    case dgmTargLocArea: {      // not used for char effects
+                        _log(EFFECTS__WARNING, "Character::ApplyEffects(): called Area() target location.");
+                        continue;
+                    } break;
+                    case dgmTargLocInvalid: {   // null
+                        _log(EFFECTS__WARNING, "Character::ApplyEffects(): target location invalid.");
+                        continue;
+                    } break;
+                }
+            } break;
+            case dgmSrcSelf: {  // used by skills (so far)
+                switch (cur.second.targLoc) {
+                    case dgmTargLocShip:  {
+                        if (cur.second.typeID) {
+                            // this will need update if removed from Character code
+                            m_pClient->GetShip()->GetModuleManager()->GetModuleListByReqSkill(cur.second.typeID, &itemRefVec);
+                        } else {
+                            // this is to apply modifiers to ships that require skill in 'srcRef'
+                            if (itemRef->HasReqSkill(cur.second.srcRef->typeID()))
+                                itemRefVec.push_back(itemRef);
+                        }
+                    } break;
+                    case dgmTargLocSelf: {      // item applying effect to itself
+                        itemRefVec.push_back(cur.second.srcRef);
+                    } break;
+                    case dgmTargLocChar: {      // this is to apply modifiers to char skills that require skill in 'srcRef' or 'typeID'
+                        uint16 skillID = cur.second.srcRef->typeID();
+                        if (cur.second.typeID)
+                            skillID = cur.second.typeID;
+                        std::vector<InventoryItemRef> allSkills;
+                        GetSkillsList(allSkills);
+                        for (auto curSkill : allSkills)
+                            if (curSkill->HasReqSkill(skillID))
+                                itemRefVec.push_back(curSkill);
+                    } break;
+                    default: {
+                        _log(EFFECTS__WARNING, "Character::ApplyEffects(): target is default.");
+                        // get modules of type defined in 'typeID'
+                        std::vector<InventoryItemRef> moduleList;
+                        ShipItemRef shipRef = ShipItemRef::StaticCast(itemRef);
+                        shipRef->GetModuleManager()->GetModuleListOfRefs(&moduleList);
+                        for (auto mod : moduleList)
+                            if (mod->typeID() == cur.second.typeID)
+                                itemRefVec.push_back(mod);
+                    } break;
+                }
+            } break;
+            case dgmSrcTarget:{
+                _log(EFFECTS__WARNING, "Character::ApplyEffects(): src is target.  is this right?");
+                ShipItemRef shipRef = ShipItemRef::StaticCast(itemRef);
+                srcItemRef = shipRef->GetPilot()->GetShipSE()->TargetMgr()->GetFirstTarget(true)->GetSelf();
+            } break;
+            case dgmSrcInvalid: {
+                _log(EFFECTS__ERROR, "Character::ApplyEffects(): source location invalid.");
+                continue;
+            } break;
+            case dgmSrcShip:    // not used?
+            case dgmSrcOwner:   // not used?
+            case dgmSrcGang: {  // not used?
+                _log(EFFECTS__ERROR, "Character::ApplyEffects(): called ship, owner, or gang as source.");
+                continue;
+            } break;
+        }
+        // get srcAttr
+        EvilNumber srcAttr = srcItemRef->GetAttribute(cur.second.srcAttr);
+
+        // check for nerf, modify value as needed
+        switch (cur.second.math) {
+            case dgmMathPreDiv:
+            case dgmMathPreMul:
+            case dgmMathPostMul:
+            case dgmMathPostDiv:
+            case dgmMathPostPercent: {
+                ; // not sure how to do this yet....probably map these on ship for easier access.
+                //_log(EFFECTS__MESSAGE, "Character::ApplyEffects(): math method %s nerfed.", sFxProc.GetMathMethodName(cur.second.math).c_str());
+            } break;
+        }
+        // set target attr to modified value
+        EvilNumber targAttr = 0;
+        if (itemRefVec.size()) {
+            for (auto item : itemRefVec) {
+                // get targAttr
+                targAttr = item->GetAttribute(cur.second.targAttr);
+                // send data to calculator
+                EvilNumber newAttr = sFxProc.CalculateAttributeValue(targAttr, srcAttr, cur.first);
+                // set new calculated value for target attribute
+                _log(EFFECTS__MESSAGE, "Character::ApplyEffects(): setting attribute %u for %s to %.3f.", \
+                        cur.second.targAttr, item->itemName().c_str(), newAttr.get_float());
+                item->SetAttribute(cur.second.targAttr, newAttr, false);
+            }
+        } else {
+            _log(EFFECTS__WARNING, "Character::ApplyEffects(): target item vector empty.");
+        }
+    }
+}
+
 
 SkillRef Character::GetSkillInTraining() const {
     InventoryItemRef item;

@@ -9,7 +9,7 @@
  */
 
 
-#include "EffectsDataMgr.h"
+#include "effects/EffectsDataMgr.h"
 #include "effects/EffectsProcessor.h"
 
 
@@ -134,6 +134,8 @@ void FxDataMgr::Initialize()
             mEffect.propulsionChance = (row.IsNull(19) ? 0 : row.GetFloat(19));
             mEffect.guid = row.GetText(20);
         m_effectMap.insert(std::pair<uint16, Effect>(row.GetInt(0), mEffect));
+        if (mEffect.isAssistance or mEffect.isOffensive)
+            m_targEffects.insert(std::pair<uint16, std::string>(row.GetInt(0), mEffect.effectName));
     }
     // insert a zero-value data set
     Effect mEffect;
@@ -168,21 +170,33 @@ void FxDataMgr::Initialize()
 
 void FxDataMgr::ConfigureEffects()
 {
+    sLog.Yellow("     Effects Test", "Test Begin - Process Skill Effects.");
     double start = GetTimeMSeconds();
     Initialize();
-
+    std::vector<uint16> types;
+    std::vector<TypeEffects> typeFx;
+    DBQueryResult res;
+    DBResultRow row;
+    sDatabase.RunQuery(res, "SELECT it.typeID, it.typeName FROM invGroups AS ig LEFT JOIN invTypes AS it USING (groupID) WHERE ig.categoryID = 16");
     FxProc fxProc;
+    effectMapType::const_iterator itr;
     // begin the task of compiling effect data
-    for (auto curFx : m_effectMap) {
-    // we only want ONE copy of the effect
-        if (m_fxMap.find(curFx.first) != m_fxMap.end())
-            continue;
-
-        sLog.Blue("ConfigureEffects", "starting eval for %u:%u (%s)", curFx.first, curFx.second.effectState, curFx.second.effectName.c_str());
-        fxProc.EvaluateExpression(curFx.second.preExpression);
-        fxProc.EvaluateExpression(curFx.second.postExpression);
-
-        m_fxMap.insert(std::pair<uint16, Effect>(curFx.first, curFx.second));
+    while (res.GetRow(row)) {
+        typeFx.clear();
+        sLog.Blue("ConfigureEffects", "getting data for skill %u (%s)", row.GetInt(0), row.GetText(1));
+        GetTypeEffect(row.GetInt(0), typeFx);
+        for (auto cur : typeFx) {
+            itr = m_effectMap.find(cur.effectID);
+            if (itr == m_effectMap.end())
+                continue;
+            // we only want ONE copy of the effect
+            if (m_fxMap.find(itr->first) != m_fxMap.end())
+                continue;
+            sLog.Yellow("ConfigureEffects", "starting eval for %u:%u (%s)", itr->first, itr->second.effectState, itr->second.effectName.c_str());
+            fxProc.EvaluateExpression(itr->second.preExpression);
+            //fxProc.EvaluateExpression(itr->second.postExpression);
+            m_fxMap.insert(std::pair<uint16, Effect>(itr->first, itr->second));
+        }
     }
 
     // save compiled effect data to avoid compilation on every startup?  -check for execution time
@@ -220,6 +234,16 @@ Operand FxDataMgr::GetOperand(uint16 oID)
         return itr->second;
     return m_opMap.at(0);
 
+}
+
+bool FxDataMgr::needsTarget(std::string effectName)
+{
+    std::map<uint16, std::string>::const_iterator itr = m_targEffects.begin();
+    for (; itr != m_targEffects.end(); itr++) {
+        if (itr->second == effectName)
+            return true;
+    }
+    return false;
 }
 
 void FxDataMgr::GetOperands(DBQueryResult& res)
@@ -296,7 +320,8 @@ void FxDataMgr::GetDgmTypeEffects(DBQueryResult &res)
         "  typeID,"
         "  effectID,"
         "  isDefault"
-        " FROM dgmTypeEffects "))
+        " FROM dgmTypeEffects "
+        " WHERE effectID != 132"))  // this maps skill level onto skill data.  we are tracking skill level, so dont need to process this effect
     {
         codelog(DATABASE__ERROR, "Error in GetDgmTypeEffects: %s", res.error.c_str());
     }

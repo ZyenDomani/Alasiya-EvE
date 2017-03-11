@@ -23,12 +23,16 @@ public:
     FxProc() { }
     ~FxProc() { }
 
-    EvilNumber CalculateAttributeValue(EvilNumber val1, EvilNumber val2, /*Effects::Association*/int8 assoc);
+    EvilNumber CalculateAttributeValue(EvilNumber val1, EvilNumber val2, /*Effects::Math*/int8 assoc);
 
     // new effects system
     void EvaluateExpression(const uint16 expID);
     int8 GetEnvironmentEnum(const std::string& domain);
     int8 GetAssociationEnum(const std::string& association);
+
+    std::string GetSourceName(int8 id);
+    std::string GetMathMethodName(int8 id);
+    std::string GetTargLocName(int8 id);
 
     std::string ParseExpression(Expression expression, bool restricted = false, bool topLevel = false);
 
@@ -36,6 +40,8 @@ protected:
 
 private:
 
+protected:
+    const char* association;
 };
 
 #define sFxProc \

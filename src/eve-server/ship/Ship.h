@@ -379,7 +379,7 @@ public:
      */
     double GetEffectiveness(uint16 attrib, ModuleStates state);
 
-    void CheckStacking(uint16 attrib, Effects::Association type, ModuleStates state, EvilNumber& value);
+    void CheckStacking(uint16 attrib, Effects::Math type, ModuleStates state, EvilNumber& value);
     void ApplyModifiers();
 
     void ApplyEffects();
@@ -400,22 +400,13 @@ private:
     void InitStackingMaps();
 
     bool m_effectsApplied;
-    void ProcessShipEffects(bool add=false);
-    void ProcessSkillEffects();
+    void ProcessEffects(bool add=false);
+    void ProcessShipEffects();
+    void ProcessModuleEffects();
 
-    struct fxData {
-        int8 env;           // area affected by modifier
-        int8 assoc;         // method to apply to attributes
-        int8 domain;        // area used to define groups
-        uint16 targAttr;
-        uint16 srcAttr;
-        uint16 grpID;       // used to define items affected in domain grouped by item groupID
-        uint16 typeID;      // used to define items in domain grouped by skill requirement
-    };
+    void ParseExpression(Expression expression, fxData& data);
 
-    void ParseExpression(Expression expression, ShipItem::fxData& data);
-
-    std::multimap<int8, fxData> m_modifiers;    // k,v of assoc, data<assoc, domain, env, grpID, typeID, targAttr, srcAttr>, ordered by key (assoc)
+    std::multimap<int8, fxData> m_modifiers;    // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
 
     typedef std::list<GenericModule*> modList;
     std::map<uint16, modList> m_stackMap;     // stacking attrib storage  attrib, list<module*>
@@ -464,6 +455,9 @@ public:
 
     void AbortCycle()                                   { m_shipRef->AbortCycle(); }
     void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
+
+
+    ShipItemRef GetShipItemRef()                        { return m_shipRef; }
 
     uint32 GetPodShipID()                               { return m_podShipID; }
 

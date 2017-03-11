@@ -27,6 +27,7 @@
 
 #include "StaticDataMgr.h"
 #include "character/Character.h"
+#include "effects/EffectsDataMgr.h"
 #include "inventory/ItemType.h"
 #include "manufacturing/Blueprint.h"
 #include "ship/Ship.h"
@@ -270,22 +271,81 @@ _Ty* ItemType::_LoadType(ItemFactory &factory, uint32 typeID,  const ItemGroup &
     return new ItemType( typeID, group, data );
 }
 
-bool ItemType::_Load(ItemFactory &factory) {
+bool ItemType::_Load(ItemFactory &factory)
+{
     // load type attribs
     std::vector< DmgTypeAttribute > typeAttrVec;
     sDataMgr.GetDgmTypeAttrVec(m_id, typeAttrVec);
     for (auto cur : typeAttrVec)
         m_AttributeMap.insert(std::pair<uint16, EvilNumber>(cur.attributeID, cur.value));
 
+    // load required skills and levels into their own map, for later checks
+    if (HasAttribute(AttrRequiredSkill1))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill1).get_int(), (uint8)GetAttribute(AttrRequiredSkill1Level).get_int()));
+    if (HasAttribute(AttrRequiredSkill2))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill2).get_int(), (uint8)GetAttribute(AttrRequiredSkill2Level).get_int()));
+    if (HasAttribute(AttrRequiredSkill3))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill3).get_int(), (uint8)GetAttribute(AttrRequiredSkill3Level).get_int()));
+    if (HasAttribute(AttrRequiredSkill4))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill4).get_int(), (uint8)GetAttribute(AttrRequiredSkill4Level).get_int()));
+    if (HasAttribute(AttrRequiredSkill5))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill5).get_int(), (uint8)GetAttribute(AttrRequiredSkill5Level).get_int()));
+    if (HasAttribute(AttrRequiredSkill6))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill6).get_int(), (uint8)GetAttribute(AttrRequiredSkill6Level).get_int()));
+
+    LoadEffects();
+
     return true;
 }
 
-const EvilNumber ItemType::GetAttribute(const uint16 attributeID) const
+const bool ItemType::HasAttribute(const uint16 attributeID) const
+{
+    AttrMapConstItr itr = m_AttributeMap.find(attributeID);
+    if (itr != m_AttributeMap.end())
+        return true;
+    return false;
+}
+
+EvilNumber ItemType::GetAttribute(const uint16 attributeID) const
 {
     AttrMapConstItr itr = m_AttributeMap.find(attributeID);
     if (itr != m_AttributeMap.end())
         return itr->second;
     return 0;
+}
+
+bool ItemType::HasReqSkill(const uint16 skillID, ItemFactory& m_factory) const
+{
+    std::map<uint16, uint8>::const_iterator itr = m_reqSkillMap.find(skillID);
+    if (itr != m_reqSkillMap.end())
+        return true;
+    for (auto cur : m_reqSkillMap) {
+        if (m_factory.GetType(cur.first)->HasReqSkill(skillID, m_factory))
+            return true;
+        else
+            return false;
+    }
+    return false;
+}
+
+void ItemType::LoadEffects()
+{
+    std::vector< TypeEffects > typeEffMap;
+    sFxDataMgr.GetTypeEffect(m_id, typeEffMap);
+
+    for (auto cur : typeEffMap) {
+        Effect mEffect = sFxDataMgr.GetEffect(cur.effectID);
+        m_stateFxMap.insert(std::pair<int8, Effect>(mEffect.effectState, mEffect));
+    }
+}
+
+bool ItemType::HasEffect(uint16 effectID) const
+{
+    std::unordered_multimap<int8, Effect>::const_iterator itr = m_stateFxMap.begin();
+    for (; itr != m_stateFxMap.end(); itr++)
+        if (itr->second.effectID == effectID)
+            return true;
+    return false;
 }
 
 

@@ -272,16 +272,17 @@ void ShipItem::SetPlayer(Client* pClient) {
     m_pilot = pClient;
     if (!m_pilot) {
         // remove ship effects and char skill effects for char leaving ship here.
-        ProcessShipEffects(false);
+        ProcessEffects(false);
         // should we check for cargo and damage after char leaves ship?  maybe later
         if (m_ModuleManager)
             m_ModuleManager->CharacterLeavingShip();
         return;
     }
     Init();
-    ProcessShipEffects(true);
-    if (IsSolarSystem(m_locationID))
+    if (IsSolarSystem(m_locationID)) {
+        ProcessEffects(true);
         ApplyEffects();
+    }
     m_ModuleManager->CharacterBoardingShip();
 }
 
@@ -1153,37 +1154,52 @@ void ShipItem::InitStackingMaps()
     m_stackMap[AttrMaxTargetRange] = list;
 }
 
-void ShipItem::CheckStacking(uint16 attrib, Effects::Association type, ModuleStates state, EvilNumber& value)
+void ShipItem::CheckStacking(uint16 attrib, Effects::Math type, ModuleStates state, EvilNumber& value)
 {
 }
 
 // new effects system.  wip
-void ShipItem::ProcessShipEffects(bool add/*true*/)
+void ShipItem::ProcessEffects(bool add/*true*/)
 {
+    /*
+    Effects processing order...
+        boosters   //char effect
+        Implants   //char effect
+        skills     //char effect
+        Ship       //ship effect
+        Subsystem  //module effect
+        Rigs       //module effect
+        Low        //module effect
+        Mid        //module effect
+        Hi         //module effect
+    */
     if (add) {
         // get all effects in state '0' - passive.
-        //  ship does not have effects in state > 0
-        for (auto it : m_stateFxMap) {
-            fxData data;
-            data.assoc = data.env = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.domain = 0;
-            ParseExpression(sFxDataMgr.GetExpression(it.second.preExpression), data);  //add effect
-          //ParseExpression(sFxDataMgr.GetExpression(it.second.postExpression), data);  // remove effect
-        }
+        m_pilot->GetChar()->ProcessSkillEffects(static_cast<InventoryItemRef>(this));
+        ProcessShipEffects();
+        ProcessModuleEffects();
     } else {
         RemoveEffects();
     }
 }
-
-void ShipItem::ProcessSkillEffects()
+void ShipItem::ProcessShipEffects()
 {
-    Character* pChar = m_pilot->GetChar().get();
-
-    for (auto it : m_stateFxMap) {
+    //  ship does not have effects in state > 0
+    
+    for (auto it : m_type.m_stateFxMap) {
         fxData data;
-        data.assoc = data.env = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.domain = 0;
+        data.srcRef = static_cast<InventoryItemRef>(this);
+        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         ParseExpression(sFxDataMgr.GetExpression(it.second.preExpression), data);  //add effect
         //ParseExpression(sFxDataMgr.GetExpression(it.second.postExpression), data);  // remove effect
     }
+}
+
+void ShipItem::ProcessModuleEffects()
+{
+    // get passive module effects from ModuleManager
+    // not sure if we process/apply module effects here, or in ModuleManager
+
 }
 
 void ShipItem::ApplyEffects()
@@ -1195,56 +1211,57 @@ void ShipItem::ApplyEffects()
 
     // maybe this should have the search for state....
     using namespace Effects;
-    for (auto cur : m_modifiers) {  // k,v of assoc, data<assoc, domain, env, targAttr, srcAttr, grpID, typeID>
-        _log(EFFECTS__TRACE, "ShipItem::ApplyEffects(): assoc: %i, domain: %i, env: %i, targAttr: %u, srcAttr: %u, grpID: %u, typeID: %u", \
-                cur.second.assoc, cur.second.domain, cur.second.env, cur.second.targAttr, cur.second.srcAttr, cur.second.grpID, cur.second.typeID );
+    for (auto cur : m_modifiers) {  // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
+        _log(EFFECTS__TRACE, "ShipItem::ApplyEffects(): assoc: %s, domain: %s, env: %s, targAttr: %u, srcAttr: %u, grpID: %u, typeID: %u", \
+            sFxProc.GetMathMethodName(cur.second.math).c_str(), sFxProc.GetSourceName(cur.second.fxSrc).c_str(), sFxProc.GetTargLocName(cur.second.targLoc).c_str(),\
+            cur.second.targAttr, cur.second.srcAttr, cur.second.grpID, cur.second.typeID );
         // get env
-        InventoryItem* envItem(nullptr);
-        switch (cur.second.env) {
-            case dgmEnvInvalid: {   // null
+        InventoryItem* targItem(nullptr);
+        switch (cur.second.targLoc) {
+            case dgmTargLocInvalid: {   // null
                 _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): environment invalid.");
             } break;
-            case dgmEnvShip:        // this = ship
-            case dgmEnvSelf: {      // self = ship in this case
-                envItem = this;
+            case dgmTargLocShip:        // this = ship
+            case dgmTargLocSelf: {      // self = ship in this case
+                targItem = this;
             } break;
-            case dgmEnvChar: {      // pilot
-                envItem = m_pilot->GetChar().get();
+            case dgmTargLocChar: {      // character
+                targItem = m_pilot->GetChar().get();
             } break;
-            case dgmEnvOther: {     // charges?
+            case dgmTargLocOther: {     // charges?
             } break;
-            case dgmEnvTarget:      // not used for ship effects
-            case dgmEnvArea: {      // not used for ship effects
+            case dgmTargLocTarget:      // not used for ship effects
+            case dgmTargLocArea: {      // not used for ship effects
             } break;
         }
 
-        if (!envItem) {
-            _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): environment item is null for data.env %i.", cur.second.env);
+        if (!targItem) {
+            _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): environment item is null for data.targLoc %i.", cur.second.targLoc);
             continue;
         }
 
         // get srcAttr, check for nerf, modify value as needed
         EvilNumber srcAttr = mAttributeMap.GetAttribute(cur.second.srcAttr);
         /* in ship environment, nothing is nerfed...check env to verify here?
-        switch (cur.second.assoc) {
-            case dgmAssPreDiv:
-            case dgmAssPreMul:
-            case dgmAssPostMul:
-            case dgmAssPostDiv:
-            case dgmAssPostPercent: {
+        switch (cur.second.math) {
+            case dgmMathPreDiv:
+            case dgmMathPreMul:
+            case dgmMathPostMul:
+            case dgmMathPostDiv:
+            case dgmMathPostPercent: {
 
             }
         } */
 
         EvilNumber targAttr = 0;
         // test for location domain
-        if (cur.second.domain) {
+        if (cur.second.fxSrc) {
             std::vector<InventoryItemRef> itemVec;
-            switch (cur.second.domain) {
-                case dgmDomainInvalid: {
+            switch (cur.second.fxSrc) {
+                case dgmSrcInvalid: {
                     _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): domain invalid.");
                 } break;
-                case dgmDomainGroup: {
+                case dgmSrcGroup: {
                     std::vector<InventoryItemRef> moduleList;
                     m_ModuleManager->GetModuleListOfRefs(&moduleList);
                     // location group defined by data.grpID
@@ -1253,11 +1270,14 @@ void ShipItem::ApplyEffects()
                         if (mod->groupID() == cur.second.grpID)
                             itemVec.push_back(mod);
                 } break;
-                case dgmDomainSkill: {
+                case dgmSrcSkill: {
                     // location group defined by data.typeID (for getting items based on skill requirement)
                     // get modules that require skill 'typeID'
                     m_ModuleManager->GetModuleListByReqSkill(cur.second.typeID, &itemVec);
                 } break;
+                default: {
+                    _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): domain %s needs work.", sFxProc.GetSourceName(cur.second.fxSrc).c_str());
+                }
             }
             for (auto item : itemVec) {
                 // get targAttr
@@ -1265,20 +1285,20 @@ void ShipItem::ApplyEffects()
                 // send data to calculator
                 EvilNumber newAttr = sFxProc.CalculateAttributeValue(targAttr, srcAttr, cur.first);
                 // set new calculated value for target attribute
-                _log(EFFECTS__MESSAGE, "ShipItem::ApplyEffects(): setting %s in domain %i attribute %u to %f.", \
-                        item->itemName().c_str(), cur.second.domain, cur.second.targAttr, newAttr.get_float());
+                _log(EFFECTS__MESSAGE, "ShipItem::ApplyEffects(): setting attribute %u for %s to %.3f.", \
+                        cur.second.targAttr, item->itemName().c_str(), newAttr.get_float());
                 item->SetAttribute(cur.second.targAttr, newAttr, false);
             }
         } else {
             // location domain is self.
             // get targAttr
-            targAttr = envItem->GetAttribute(cur.second.targAttr);
+            targAttr = targItem->GetAttribute(cur.second.targAttr);
             // send data to calculator
             EvilNumber newAttr = sFxProc.CalculateAttributeValue(targAttr, srcAttr, cur.first);
             // set new calculated value for target attribute
-            _log(EFFECTS__MESSAGE, "ShipItem::ApplyEffects(): setting %s attribute %u to %f.", \
-                    envItem->itemName().c_str(), cur.second.targAttr, newAttr.get_float());
-            envItem->SetAttribute(cur.second.targAttr, newAttr, false); // no, dont notifiy client of change.  will be updated when requesting ship info
+            _log(EFFECTS__MESSAGE, "ShipItem::ApplyEffects(): setting attribute %u for %s to %.3f.", \
+                    cur.second.targAttr, targItem->itemName().c_str(), newAttr.get_float());
+            targItem->SetAttribute(cur.second.targAttr, newAttr, false); // no, dont notifiy client of change.  will be updated when requesting ship info
         }
     }
     m_effectsApplied = true;
@@ -1351,15 +1371,24 @@ void ShipItem::ParseExpression(Expression expression, fxData& data)
             //expression.expressionValue;
         } break;
         case operandDEFASSOCIATION: {
-            data.assoc = sFxProc.GetAssociationEnum(expression.expressionValue);
+            data.math = sFxProc.GetAssociationEnum(expression.expressionValue);
         } break;
         case operandDEFENVIDX: {
-            data.env = sFxProc.GetEnvironmentEnum(expression.expressionValue);
+            data.targLoc = sFxProc.GetEnvironmentEnum(expression.expressionValue);
         } break;
 
         // these provide the given expression*ID
         case operandDEFATTRIBUTE: {    // check this....
             if (expression.expressionAttributeID) {
+                /*
+                if (expression.expressionAttributeID > 1817) {  //2003 -max Rhea value;  1817 -max Crucible value
+                    std::string type = "targ";
+                    if (data.targAttr)
+                        type = "src";
+                    Operand operand = sFxDataMgr.GetOperand(expression.operandID);
+                    _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range %sAttr: %u > 1817 for operand %u (%s).", \
+                            type.c_str(), data.targAttr, expression.operandID, operand.operandKey.c_str());
+                }*/
                 if (data.targAttr)  // always processed first
                     data.srcAttr = expression.expressionAttributeID;
                 else
@@ -1380,7 +1409,8 @@ void ShipItem::ParseExpression(Expression expression, fxData& data)
             if (expression.arg1)
                 ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
             fxData data1;
-            data1.assoc = data1.env = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = data1.domain = 0;
+            data1.srcRef = static_cast<InventoryItemRef>(this);
+            data1.math = data1.targLoc = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = data1.fxSrc = 0;
             if (expression.arg2)
                 ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data1);
         } break;
@@ -1390,21 +1420,24 @@ void ShipItem::ParseExpression(Expression expression, fxData& data)
         } break;
 
         // these function calls are a bit more complicated...will need more work and better understanding
+        case operandGA: {    //'%(arg1)s.%(arg2)s'      --not used
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+        } break;
         case operandGM: {    //'%(arg1)s.GetModule(%(arg2)s)'      --used by subsystems as (GetModule(Ship.201):55)
             ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
         } break;
         case operandGETTYPE: {    //'%(arg1)s.GetTypeID()'  --used by SRLG in AORSM/RORSM
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
+            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);   //type
         } break;
         case operandLG: {    //48, '%(arg1)s.LocationGroup.%(arg2)s'  -- specify a group by grpID in a location'
-            data.domain = dgmDomainGroup;   //preliminary....will need work later.
+            data.fxSrc = dgmSrcGroup;   //preliminary....will need work later.
             ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);   //domain
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);   //groupID
         } break;
         case operandLS: {    //49, '%(arg1)s.SkillRequiredLocationGroup[%(arg2)s]'  --  specify a group by skillID in a location...not sure how to do this
-            data.domain = dgmDomainSkill;   //preliminary....will need work later.
+            data.fxSrc = dgmSrcSkill;   //preliminary....will need work later.
             ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);   //domain
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);   //skillID
         } break;
@@ -1416,28 +1449,28 @@ void ShipItem::ParseExpression(Expression expression, fxData& data)
             ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1), data);
             ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2), data);
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-            m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
         } break;
         // these arent completely correct yet.  testing
         case operandALGM: {    //7,(%(arg1)s).AddLocationGroupModifier (%(arg2)s)
             ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-            m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
         } break;
         case operandALM: {    //8,(%(arg1)s).AddLocationModifier (%(arg2)s)
             ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-            m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
         } break;
         case operandALRSM: {    //9,(%(arg1)s).AddLocationRequiredSkillModifier(%(arg2)s)
             ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-            m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
         } break;
         case operandAORSM: {    //11,(%(arg1)s).AddOwnerRequiredSkillModifier(%(arg2)s)
             ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-            m_modifiers.emplace(std::pair<uint8, fxData>(data.assoc, data));
+            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
         } break;
         /** @todo  will have to figure out how to remove modifiers and delete from the map(s) */
         // why?  just reset everything....
@@ -1478,27 +1511,12 @@ void ShipItem::ParseExpression(Expression expression, fxData& data)
 
     // data integrity tests
     if (sConfig.server.IsTestServer) {
-        if (data.domain > 6) {
-            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range domain: %i.", data.domain);
-            SrvPause();  // Stop here and wait for enter using std::getchar()
-            //system("pause");
-        }
-        if (data.assoc > 11) {
-            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range assoc: %i.", data.assoc);
-            system("pause");
-        }
-        if (data.env > 5) {
-            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range env: %i.", data.env);
-            system("pause");
-        }
-        if (data.targAttr > 1817) {  //2003 -max Rhea value;  1817 -max Crucible value
-            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range targAttr: %u.", data.targAttr);
-            system("pause");
-        }
-        if (data.srcAttr > 1817) {   //2003 -max Rhea value;  1817 -max Crucible value
-            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range srcAttr: %u.", data.srcAttr);
-            system("pause");
-        }
+        if (data.fxSrc > 6)
+            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range domain: %i for operand %u.", data.fxSrc, expression.operandID);
+        if (data.math > 11)
+            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range assoc: %i for operand %u.", data.math, expression.operandID);
+        if (data.targLoc > 5)
+            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range env: %i for operand %u.", data.targLoc, expression.operandID);
     }
 }
 

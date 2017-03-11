@@ -27,23 +27,23 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1, EvilNumber val2, int
         return val1;
     using namespace Effects;
     switch (assoc) {
-        case dgmAssInvalid:
+        case dgmMathInvalid:
             _log(EFFECTS__WARNING, "FxProc::CalculateNewAttributeValue() - Invalid Association used");
-        case dgmAssSkillCheck:
-        case dgmAssPreAssignment:
-        case dgmAssPostAssignment:
+        case dgmMathSkillCheck:
+        case dgmMathPreAssignment:
+        case dgmMathPostAssignment:
             return val1;
-        case dgmAssPreMul:
-        case dgmAssPostMul:
+        case dgmMathPreMul:
+        case dgmMathPostMul:
             return val1 * val2;
-        case dgmAssPreDiv:
-        case dgmAssPostDiv:
+        case dgmMathPreDiv:
+        case dgmMathPostDiv:
             return val1 / val2;
-        case dgmAssModAdd:
+        case dgmMathModAdd:
             return val1 + val2;
-        case dgmAssModSub:
+        case dgmMathModSub:
             return val1 - val2;
-        case dgmAssPostPercent:
+        case dgmMathPostPercent:
             return val1 * ((100 + val2) / 100);
     }
     _log(EFFECTS__ERROR, "FxProc::CalculateNewAttributeValue() - Unknown Association used: %i", (int8)assoc);
@@ -54,50 +54,102 @@ int8 FxProc::GetAssociationEnum(const std::string& association)
 {   // opID 21
     using namespace Effects;
     if (association == "PreAssignment")
-        return dgmAssPreAssignment;
+        return dgmMathPreAssignment;
     else if (association == "PreDiv")
-        return dgmAssPreDiv;
+        return dgmMathPreDiv;
     else if (association == "PreMul")
-        return dgmAssPreMul;
+        return dgmMathPreMul;
     else if (association == "ModAdd")
-        return dgmAssModAdd;
+        return dgmMathModAdd;
     else if (association == "ModSub")
-        return dgmAssModSub;
+        return dgmMathModSub;
     else if (association == "PostPercent")
-        return dgmAssPostPercent;
+        return dgmMathPostPercent;
     else if (association == "PostMul")
-        return dgmAssPostMul;
+        return dgmMathPostMul;
     else if (association == "PostDiv")
-        return dgmAssPostDiv;
+        return dgmMathPostDiv;
     else if (association == "PostAssignment")
-        return dgmAssPostAssignment;
+        return dgmMathPostAssignment;
     else if (association == "SkillCheck")
-        return dgmAssSkillCheck;
+        return dgmMathSkillCheck;
     else if (association == "AddRate")
-        return dgmAssAddRate;
+        return dgmMathAddRate;
     else if (association == "SubRate")
-        return dgmAssSubRate;
+        return dgmMathSubRate;
     else
-        return dgmAssInvalid;  //throw std::bad_typeid();
+        return dgmMathInvalid;  //throw std::bad_typeid();
 }
 
 int8 FxProc::GetEnvironmentEnum(const std::string& env)
 {   // opID 24
     using namespace Effects;
     if (env == "Self")
-        return dgmEnvSelf;
+        return dgmTargLocSelf;
     else if (env == "Char")
-        return dgmEnvChar;
+        return dgmTargLocChar;
     else if (env == "Ship")
-        return dgmEnvShip;
+        return dgmTargLocShip;
     else if (env == "Target")
-        return dgmEnvTarget;
+        return dgmTargLocTarget;
     else if (env == "Area")
-        return dgmEnvArea;
+        return dgmTargLocArea;
     else if (env == "Other")
-        return dgmEnvOther;
+        return dgmTargLocOther;
     else
-        return dgmEnvInvalid;  //throw std::bad_typeid();
+        return dgmTargLocInvalid;  //throw std::bad_typeid();
+}
+
+std::string FxProc::GetMathMethodName(int8 id)
+{
+    using namespace Effects;
+    switch (id) {
+        case dgmMathPreAssignment:   return "PreAssignment";
+        case dgmMathPreDiv:          return "PreDiv";
+        case dgmMathPreMul:          return "PreMul";
+        case dgmMathModAdd:          return "ModAdd";
+        case dgmMathModSub:          return "ModSub";
+        case dgmMathPostPercent:     return "PostPercent";
+        case dgmMathPostMul:         return "PostMul";
+        case dgmMathPostDiv:         return "PostDiv";
+        case dgmMathPostAssignment:  return "PostAssignment";
+        case dgmMathSkillCheck:      return "SkillCheck";
+        case dgmMathAddRate:         return "AddRate";
+        case dgmMathSubRate:         return "SubRate";
+        case dgmMathInvalid:
+        default:                    return "Invalid";
+    }
+}
+
+std::string FxProc::GetSourceName(int8 id)
+{
+    using namespace Effects;
+    switch (id) {
+        case dgmSrcSelf:         return "Self";
+        case dgmSrcSkill:        return "Skill";
+        case dgmSrcShip:         return "Ship";
+        case dgmSrcOwner:        return "Owner";
+        case dgmSrcGang:         return "Gang";
+        case dgmSrcGroup:        return "Group";
+        case dgmSrcTarget:       return "Target";
+        case dgmSrcInvalid:
+        default:                    return "Invalid";
+    }
+}
+
+std::string FxProc::GetTargLocName(int8 id)
+{
+    using namespace Effects;
+    switch (id) {
+        case dgmTargLocSelf:            return "Self";
+        case dgmTargLocChar:            return "Char";
+        case dgmTargLocShip:            return "Ship";
+        case dgmTargLocTarget:          return "Target";
+        case dgmTargLocArea:            return "Area";
+        case dgmTargLocOther:           return "Other";
+        case dgmTargLocInvalid:
+        default:                    return "Invalid";
+    }
 }
 
 void FxProc::EvaluateExpression(const uint16 expID)
@@ -164,12 +216,8 @@ std::string FxProc::ParseExpression(Expression expression, bool restricted/*fals
                 ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted);
         } break;
         case operandEFF: {      //define association type  '(%(arg2)s).(%(arg1)s)'
-            std::string arg1 = "nil", arg2 = "nil";
-            if (expression.arg1)
-                arg1 = ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted);
-            if (expression.arg2)
-                arg2 = ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted);
-            ret  << arg1 << ", " << arg2;
+            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg1), restricted);
+            ret << ", " << ParseExpression(sFxDataMgr.GetExpression(expression.arg2), restricted);
         } break;
 
         // these are trivial attribute operations
@@ -243,14 +291,14 @@ std::string FxProc::ParseExpression(Expression expression, bool restricted/*fals
             ret << ")";
         } break;
         case operandAIM: {    //
-            //'dogma.AddItemModifier(env,%(arg1)s, %(arg2)s)'
+            //'dogma.AddItemModifier(env, %(arg1)s, %(arg2)s)'
             Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
             ret << "AddItemModifier(" << ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1));
             ret << ", " << ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2)) << ", (Self:";
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << "))";
         } break;
         case operandRIM: {    //
-            //'dogma.RemoveItemModifier(env,%(arg1)s, %(arg2)s)'
+            //'dogma.RemoveItemModifier(env, %(arg1)s, %(arg2)s)'
             Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
             ret << "RemoveItemModifier(" << ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1));
             ret << ", " << ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2)) << ", (Self:";
@@ -325,7 +373,7 @@ std::string FxProc::ParseExpression(Expression expression, bool restricted/*fals
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandRSA: {    //64, %(arg1)s.%(arg2)s      -- used by AGRSM/RGRSM  ** NEEDS WORK **
-            ret << "RequiredSkillAttribute(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ":";
+            ret << "RequiredSkillAttribute(typeID(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << "):";
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
 
@@ -345,11 +393,9 @@ std::string FxProc::ParseExpression(Expression expression, bool restricted/*fals
             ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << ")";
         } break;
         case operandGETTYPE: {    //'%(arg1)s.GetTypeID()'  --used by SRLG in AORSM/RORSM
-            ret << "GetTypeID(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << "[";
-            ret << ParseExpression(sFxDataMgr.GetExpression(expression.arg2)) << "])";
+            ret << "GetTypeID(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ")";
         } break;
         case operandIA: {    //'%(arg1)s'   -used by AGIM
-            std::string arg1 = ParseExpression(sFxDataMgr.GetExpression(expression.arg1));
             ret << "attribute(" << ParseExpression(sFxDataMgr.GetExpression(expression.arg1)) << ")";
         } break;
         case operandLG: {    //48, %(arg1)s..%(arg2)s  -- specify a group by grpID in a location'

@@ -91,27 +91,20 @@ bool AttributeMap::Save() {
      *   all attribs for ISEs and CSEs, where applicable
      *   damage for modules/charges, where applicable (ship damage saved separately)
      */
-    if (mItem.itemID() >= EVEMU_NPC_ID) return true;    // not saving npc attribs
-    if (mItem.itemID() < EVEMU_MINIMUM_ID) return true; // not saving static object attribs
+    if (mItem.itemID() >= EVEMU_NPC_ID)    // not saving npc attribs
+        return true;
+    if (mItem.itemID() < EVEMU_MINIMUM_ID)  // not saving static object attribs
+        return true;
     if (mItem.categoryID() == EVEDB::invCategories::Ship) // ship attribs saved in shipItem
         return true;
 
     std::ostringstream Inserts;
-    // start the insert into command.
     Inserts << "INSERT INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) ";
     bool first = true;
     AttrMapItr itr = mAttributes.begin();
-    /** @todo  test for and save the following:
-     *  damage attributes for items (for persistance)
-     *  sp/lvl attribs for skills
-     *  size/etc for roids (should be in bms)
-     *
-     * ships saved separately
-     */
     for (; itr != mAttributes.end(); itr++) {
-        if (mItem.groupID() != EVEDB::invGroups::Character)
-            if ((itr->first != AttrDamage) or (itr->first != AttrSkillPoints) or (itr->first != AttrSkillLevel))
-                continue;
+        if ((itr->first != AttrDamage) or (itr->first != AttrSkillPoints) or (itr->first != AttrSkillLevel))
+            continue;
 
         if (first) {
             Inserts << "VALUES";
@@ -138,7 +131,6 @@ bool AttributeMap::Save() {
         Inserts << "ON DUPLICATE KEY UPDATE ";
         Inserts << "valueInt=VALUES(valueInt), ";
         Inserts << "valueFloat=VALUES(valueFloat)";
-        // execute the command.
         /** @todo  take this outta here.  copy from itemfactory.save() */
         DBerror err;
         if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {

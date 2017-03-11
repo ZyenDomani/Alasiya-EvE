@@ -31,6 +31,7 @@
 #include "PyCallable.h"
 #include "EVEServerConfig.h"
 #include "Client.h"
+#include "effects/EffectsDataMgr.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleManager.h"
 #include "ship/modules/ModuleFactory.h"
@@ -649,7 +650,7 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
         _log(SHIP__MODULE_TRACE, "ModuleManager::Activate() - %s (%s).", mod->getItem()->itemName().c_str(), effectName.c_str());
         mod->SetRepeat(repeat);
         SystemEntity* pSE(nullptr);
-        if (mod->needsTarget()) {
+        if (sFxDataMgr.needsTarget(effectName)) {
             if (!targetID) {
                 sLog.Error("ModuleManager::Activate()", "targetID == 0");
                 m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate that module.  Ref: ServerError 25268");

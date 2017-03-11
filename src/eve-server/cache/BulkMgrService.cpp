@@ -64,9 +64,9 @@ BULKDATA__DUMP=0
 */
 PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
 {
+    /*
     sLog.White( "BulkMgrService::Handle_UpdateBulk()", "size= %u", call.tuple->size() );
     call.Dump(BULKDATA__DUMP);
-    /*
     updateData = self.bulkMgr.UpdateBulk(changeID, hashValue, branch)
 
         updateType = updateData['type']

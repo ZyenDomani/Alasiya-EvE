@@ -79,7 +79,7 @@ void GenericModule::Offline()
     m_modRef->PutOffline();
 }
 
-void GenericModule::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, Effects::Association type, bool stacking) {
+void GenericModule::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, Effects::Math type, bool stacking) {
     EvilNumber modVal = GetAttribute(sourceAttrID), startVal = m_shipRef->GetAttribute(targetAttrID), newVal = 0;
     // check for stacking attributes here, and get stacked (cached) effectiveness.
     if (stacking) {
@@ -97,7 +97,7 @@ void GenericModule::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID
         //sLog.Error("MSAC::ModifyShipAttributes()","Failed to set attribute %u to %.3f on ship %u", targetAttrID, newVal.get_float(), m_shipRef->itemID());
 }
 
-void GenericModule::ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, Effects::Association type, bool stacking) {
+void GenericModule::ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, Effects::Math type, bool stacking) {
     ShipItemRef target = m_shipRef->GetItemFactory()->GetShip(targetItemID);
     if (target)
         ModifyShipAttribute(/*target,*/ targetAttrID, sourceAttrID, type, stacking);
@@ -109,7 +109,7 @@ void GenericModule::ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttr
     }
 }
 
-void GenericModule::ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, Effects::Association type)
+void GenericModule::ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, Effects::Math type)
 {
 
 }

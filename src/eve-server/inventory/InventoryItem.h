@@ -27,10 +27,7 @@
 #define EVE_INVENTORY_ITEM_H
 
 
-#include <unordered_map>
-
 #include "POD_containers.h"
-#include "effects/EffectsData.h"
 #include "inventory/Inventory.h"
 #include "inventory/InventoryDB.h"
 #include "inventory/ItemType.h"
@@ -271,21 +268,15 @@ private:
 public:
     // this has to be called on item to perform the check on.  the item sent in arg is holder of skill requirements (module, ship, implant, etc)
     bool SkillCheck(InventoryItemRef refItem);
-    bool EffectsLoaded()                                { return m_effectsLoaded; }
 
     void ApplyEffect(int8 state);
     void RemoveEffect(int8 state);
     void GetEffectsInState(int8 state, std::vector<Effect>& effectRef);
 
-    bool HasReqSkill(uint16 skillID);
+    //  if itemType requires skill(skillID) return true else return false
+    bool HasReqSkill(const uint16 skillID)              { return m_type.HasReqSkill(skillID, m_factory); }
 
 protected:
-    void LoadEffects();
-
-    bool m_effectsLoaded;
-
-    std::map<uint16, uint8> m_reqSkillMap;  // k,v map of required skill, level for this item, if any.
-    std::unordered_multimap<int8, Effect> m_stateFxMap;  // k,v of state, data   -to search by state
 
 /*  new attribute system */
 protected:
@@ -304,7 +295,7 @@ public:
     void ResetAttribute(uint16 attrID, bool notify=false)              { mAttributeMap.ResetAttribute(attrID, notify); }
     void DeleteAttribute(uint16 attrID)                                { mAttributeMap.DeleteAttribute(attrID); }
     EvilNumber GetAttribute(const uint16 attrID) const                 { return mAttributeMap.GetAttribute(attrID); }
-    EvilNumber GetDefaultAttribute(const uint16 attrID)                { return m_type.GetAttribute(attrID); }
+    EvilNumber GetDefaultAttribute(const uint16 attrID) const          { return m_type.GetAttribute(attrID); }
 };
 
 #endif
