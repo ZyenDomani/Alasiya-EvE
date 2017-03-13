@@ -4,6 +4,7 @@
 namespace EVEDB {
     namespace invTypes {
         typedef enum {
+            typeInvalid = 35564,
             typeTicketFrigate = 30717,
             typeTicketDestroyer = 30718,
             typeTicketBattleship = 30721,

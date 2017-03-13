@@ -865,8 +865,15 @@ void ModuleManager::GetLoadedCharges(std::map< EVEItemFlags, InventoryItemRef >&
 InventoryItemRef ModuleManager::GetLoadedChargeOnModule(EVEItemFlags flag) {
     GenericModule* mod = m_Modules->GetModule(flag);
     if (mod and mod->IsLoaded() )
-    	return mod->GetLoadedChargeRef();
-	return InventoryItemRef();
+        return mod->GetLoadedChargeRef();
+    return InventoryItemRef();
+}
+
+InventoryItemRef ModuleManager::GetLoadedChargeOnModule(InventoryItemRef moduleRef) {
+    GenericModule* mod = m_Modules->GetModule(moduleRef->itemID());
+    if (mod and mod->IsLoaded() )
+        return mod->GetLoadedChargeRef();
+    return InventoryItemRef();
 }
 
 bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
@@ -928,8 +935,13 @@ void ModuleManager::ShipWarping()
 {
     sLog.Magenta("ModuleManager::ShipWarping()","Deactivating all modules.");
     /** @todo  figure out how to check modules for warpsafe-ness and Deactivate accordingly
-     *  there is an attribute for it (AttrDisallowActivateOnWarp), so we could test for that and adjust as needed started...(mod->IsWarpSafe())
+     *
+     * the "correct" way here is to test all currently active effects for "Effect.isWarpSafe" boolean, and deactivate those that dont have it.
      * for now, abort all modules.  yes, this is harsh, but will have to fix later.
+     */
+    /*  for_each(active_effect)
+            if (sFxDataMgr.isWarpSafe(effectID) == false)
+                deactivate(effect);
      */
     AbortCycle();
 }

@@ -90,7 +90,7 @@ namespace Effects {
         dgmSrcGang             = 4,
         dgmSrcGroup            = 5,
         dgmSrcTarget           = 6,
-        MaxSrcLocation            = 6
+        MaxSrcLocation         = 6
     };
 
     enum TargetLocation {   //formally known as environment
@@ -101,10 +101,11 @@ namespace Effects {
         dgmTargLocChar         = 1,
         dgmTargLocShip         = 2,
         dgmTargLocTarget       = 3,
-        dgmTargLocOther        = 4, //charges
+        dgmTargLocOther        = 4,
         dgmTargLocArea         = 5,
         dgmTargLocPowerCore    = 6,  //defined but not used
-        MaxTargLocation        = 6
+        dgmTargLocCharge       = 7,
+        MaxTargLocation        = 7
     };
 
     enum State  {       // formally known as category
@@ -136,7 +137,8 @@ namespace Effects {
         dgmMathSkillCheck     = 9,
         /* no data or expressions with these */
         dgmMathAddRate        = 10,
-        dgmMathSubRate        = 11
+        dgmMathSubRate        = 11,
+        MaxMathMethod         = 11
     };
     /*  old shit
              case CALC_NONE:                            return val1;
@@ -152,28 +154,6 @@ namespace Effects {
              case CALC_SUBTRACT_RESIST:                 return val1 + (1 - val2);
      */
     /*
-    dgmUnnerfedCategories = [
-        categorySkill,
-        categoryImplant,
-        categoryShip,
-        categoryCharge,
-        categorySubSystem]
-    dgmPreStackingNerfOperators = {
-        dgmMathPreAssignment: lambda ret, value: value,
-        dgmMathPreMul: lambda ret, value: ret * value,
-        dgmMathPreDiv: lambda ret, value: ret / value,
-        dgmMathModAdd: lambda ret, value: ret + value,
-        dgmMathModSub: lambda ret, value: ret - value}
-    dgmOperators = {
-        dgmMathPreAssignment: lambda ret, value: value,
-        dgmMathPostAssignment: lambda ret, value: value,
-        dgmMathPreMul: lambda ret, value: ret * value,
-        dgmMathPostMul: lambda ret, value: ret * value,
-        dgmMathPreDiv: lambda ret, value: ret / value,
-        dgmMathPostDiv: lambda ret, value: ret / value,
-        dgmMathModAdd: lambda ret, value: ret + value,
-        dgmMathModSub: lambda ret, value: ret - value,
-        dgmMathPostPercent: lambda ret, value: ret * (100 + value) / 100}
     dgmAttributesByIdx = {
         1: attributeIsOnline,
         2: attributeDamage,

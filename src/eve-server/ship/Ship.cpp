@@ -54,7 +54,6 @@ m_pilot(nullptr),
 m_ModuleManager(nullptr)
 {
     m_IsLoaded = false;
-    m_effectsApplied = false;
     m_stackMap.clear();
     m_attribMap.clear();
     m_inventory = new Inventory(InventoryItemRef(this));
@@ -173,72 +172,10 @@ void ShipItem::Init()
         InitPod();
         return;
     }
-    Character* pChar = m_pilot->GetChar().get();
-    if (!pChar) {
+    if (! m_pilot->GetChar().get()) {
         _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot.", itemName().c_str(), itemID());
         return;
     }
-
-    /** @todo These all still need to have ship bonuses applied */
-    // these get default from item type.  specific non-damage attrs are NOT saved.
-    float pg = GetDefaultAttribute(AttrPowerOutput).get_int();
-    float cpu = GetDefaultAttribute(AttrCpuOutput).get_float();
-    float hullHP = GetDefaultAttribute(AttrHP).get_int();
-    float armorHP = GetDefaultAttribute(AttrArmorHP).get_float();
-    float capCapacity = GetDefaultAttribute(AttrCapacitorCapacity).get_float();
-    float shipInertia = GetDefaultAttribute(AttrInetia).get_float();
-    double warpCapNeed = GetDefaultAttribute(AttrWarpCapacitorNeed).get_float();
-    float capChargeRate = GetDefaultAttribute(AttrRechargeRate).get_float();
-    float shieldCapacity = GetDefaultAttribute(AttrShieldCapacity).get_float();
-    float shipMaxVelocity = GetDefaultAttribute(AttrMaxVelocity).get_float();
-    float shieldChargeRate = GetDefaultAttribute(AttrShieldRechargeRate).get_float();
-
-    pg *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEngineering, true))));                       // 5% increase
-    cpu *=  (1 + (0.05 * (pChar->GetSkillLevel(skillElectronics, true))));                      // 5% increase
-    hullHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillMechanics, true))));                     // 5% increase
-    armorHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillHullUpgrades, true))));                 // 5% increase
-    capCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEnergyManagement, true))));         // 5% increase
-    shipInertia *= pChar->GetAgilitySkills(HasAttribute(AttrIsCapitalSize));                    // multiple skill effects
-    warpCapNeed *=  (1 - (0.1 * ( pChar->GetSkillLevel(skillWarpDriveOperation, true))));       // 10% decrease
-    capChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillEnergySystemsOperation, true)))); // 5% decrease
-    shieldCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillShieldManagement, true))));      // 5% increase
-    shipMaxVelocity *= (1 + (0.05 * ( pChar->GetSkillLevel(skillNavigation, true))));           // 5% increase
-    shieldChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillShieldOperation, true))));     // 5% decrease
-
-    // add checks for implants here.
-
-    /* to reset for new pilot:
-     * offline all modules
-     * reset ship attribs
-     * add new pilot skills
-     * online all modules
-     */
-
-    SetAttribute(AttrHP, hullHP);
-    SetAttribute(AttrMass, type().mass());   // no default mass in ship item.
-    SetAttribute(AttrInetia, shipInertia);
-    SetAttribute(AttrArmorHP, armorHP);
-    SetAttribute(AttrCpuOutput, cpu);
-    SetAttribute(AttrPowerOutput, pg);
-    SetAttribute(AttrMaxVelocity, shipMaxVelocity);
-    SetAttribute(AttrRechargeRate, capChargeRate);
-    SetAttribute(AttrShieldCapacity, shieldCapacity);
-    SetAttribute(AttrCapacitorCharge, capCapacity);
-    SetAttribute(AttrWarpCapacitorNeed, warpCapNeed);
-    SetAttribute(AttrShieldRechargeRate,shieldChargeRate );
-    // will eventually code checks for char boarding a tackled ship.  warpScram will be updated then
-    SetAttribute(AttrWarpScrambleStatus, 0);
-
-    /* AttrMass = 4,    (largest mass = Leviathan(3764) @ 2,430,000,000kg)
-     * AttrMassLimit = 622,
-     * AttrMassAddition = 796,
-     * AttrMassMultiplier = 1471,
-     */
-    /*   look into these, too...
-     * AttrWarpSBonus(624) [rigs and implants]
-     * AttrWarpFactor(21) [all are 0]
-     * AttrWarpInhibitor(29) [default is null]
-     */
 
     // create and initialize the module manager if not already done
     if (!m_ModuleManager)
@@ -246,9 +183,11 @@ void ShipItem::Init()
 
     m_ModuleManager->Initialize();
 
-    if (sConfig.server.IsTestServer) {
-        // if test server, update shield and cap (simulate idle charging)
-        if (m_pilot->IsInSpace()) {
+    if (m_pilot->IsInSpace()) {
+        if (sConfig.server.IsTestServer) {
+            Heal();
+        } else {
+            // if live server, update shield and cap (simulate idle charging)
             SetShipShield(1.0);
             SetShipCapacitorLevel(1.0);
         }
@@ -269,6 +208,13 @@ void ShipItem::InitPod() {
 void ShipItem::SetPlayer(Client* pClient) {
     if (m_pilot == pClient)
         return;
+    /* to reset for new pilot:
+     * offline all modules
+     * reset ship attribs
+     * add new pilot skills
+     * online all modules
+     */
+
     m_pilot = pClient;
     if (!m_pilot) {
         // remove ship effects and char skill effects for char leaving ship here.
@@ -279,10 +225,9 @@ void ShipItem::SetPlayer(Client* pClient) {
         return;
     }
     Init();
-    if (IsSolarSystem(m_locationID)) {
+    if (IsSolarSystem(m_locationID))
         ProcessEffects(true);
-        ApplyEffects();
-    }
+
     m_ModuleManager->CharacterBoardingShip();
 }
 
@@ -355,7 +300,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
             return false;
         }
     } else if (flag == flagShipHangar) {
-        if (GetAttribute(AttrHasShipMaintenanceBay) != 0) {
+        if (GetAttribute(AttrHasShipMaintenanceBay) == 0) {
             m_pilot->SendErrorMsg("%s has no ship maintenance bay.", item->itemName().c_str());
             return false;
         }
@@ -364,7 +309,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
             return false;
         }
     } else if (flag == flagHangar) {
-        if (GetAttribute(AttrHasCorporateHangars) != 0) {
+        if (GetAttribute(AttrHasCorporateHangars) == 0) {
             m_pilot->SendErrorMsg("%s has no corporate hangars.", itemName().c_str());
             return false;
         }
@@ -587,7 +532,6 @@ PyDict* ShipItem::GetChargeState() {
 
     if (charges.empty()) {
         PyDict *result = new PyDict;
-        //result->SetItem(new PyInt(itemID()), new BuiltinSet());
         return result;
     }
 
@@ -715,14 +659,10 @@ void ShipItem::Undock() {
             SetShipCapacitorLevel(1.0);
         }
     }
-    // apply ship effects
-    ApplyEffects();
-    //get list of modules to activate from ShipBound::Handle_Undock()
-    // calling Online() on modules will also apply their state 1 (online) effects
-    if (m_ModuleManager) {
-        for (auto cur : m_onlineModuleVec)
-            m_ModuleManager->Online(cur);
-    }
+
+    if (m_ModuleManager)
+        ProcessEffects();
+
 }
 
 void ShipItem::Warp() {
@@ -1073,15 +1013,7 @@ void ShipItem::StripFitting()
         cur->Move(m_pilot->GetLocationID(), flagHangar);
     }
 }
-/*
-# Effects Logging:
-EFFECTS=0
-EFFECTS__ERROR=1
-EFFECTS__WARNING=0
-EFFECTS__MESSAGE=0
-EFFECTS__DEBUG=0
-EFFECTS__TRACE=0
-*/
+
 // stacking penality system   -allan   (UD 29Jul16)
 double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
 {
@@ -1156,6 +1088,7 @@ void ShipItem::InitStackingMaps()
 
 void ShipItem::CheckStacking(uint16 attrib, Effects::Math type, ModuleStates state, EvilNumber& value)
 {
+
 }
 
 // new effects system.  wip
@@ -1174,134 +1107,40 @@ void ShipItem::ProcessEffects(bool add/*true*/)
         Hi         //module effect
     */
     if (add) {
-        // get all effects in state '0' - passive.
-        m_pilot->GetChar()->ProcessSkillEffects(static_cast<InventoryItemRef>(this));
+        double start = GetTimeMSeconds();
+        // char effects are processed when char is loaded.
+        sFxProc.ApplyEffects(m_pilot->GetChar().get(), m_pilot->GetChar().get(), this); //apply char effects
         ProcessShipEffects();
         ProcessModuleEffects();
+        sFxProc.ApplyEffects(this, m_pilot->GetChar().get(), this); // apply ship effects (which now includes all ship, char and module effects)
+        _log(EFFECTS__DEBUG, "ShipItem::ProcessEffects() - %u ship and char effects processed and applied in %.3fms", \
+                (m_pilot->GetChar()->m_modifiers.size() + m_modifiers.size()), (GetTimeMSeconds() - start));
     } else {
         RemoveEffects();
     }
 }
+
 void ShipItem::ProcessShipEffects()
 {
-    //  ship does not have effects in state > 0
-    
     for (auto it : m_type.m_stateFxMap) {
         fxData data;
         data.srcRef = static_cast<InventoryItemRef>(this);
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
-        ParseExpression(sFxDataMgr.GetExpression(it.second.preExpression), data);  //add effect
-        //ParseExpression(sFxDataMgr.GetExpression(it.second.postExpression), data);  // remove effect
+        sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(it.second.preExpression), data);
     }
 }
 
 void ShipItem::ProcessModuleEffects()
 {
-    // get passive module effects from ModuleManager
-    // not sure if we process/apply module effects here, or in ModuleManager
-
-}
-
-void ShipItem::ApplyEffects()
-{
-    if (!m_ModuleManager) {
-        m_effectsApplied = false;
-        return;
+    /* when modules are created (in GenericModule). their passive effects are loaded into it's owning ship's m_modifiers map.
+     *  (NOTE: this will need adjustments for fitting in space)
+     * calling Online() on the module will load it's state 1 (online) effects to the m_modifiers map of the first arg of ApplyEffects().
+     * in this case, it's the module's m_modifiers map, which we will have to explicitly call here to apply to ship
+     */
+    for (auto cur : m_onlineModuleVec) {
+        m_ModuleManager->Online(cur);
+        sFxProc.ApplyEffects(m_factory.GetItem(cur).get(), m_pilot->GetChar().get(), this);
     }
-
-    // maybe this should have the search for state....
-    using namespace Effects;
-    for (auto cur : m_modifiers) {  // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
-        _log(EFFECTS__TRACE, "ShipItem::ApplyEffects(): assoc: %s, domain: %s, env: %s, targAttr: %u, srcAttr: %u, grpID: %u, typeID: %u", \
-            sFxProc.GetMathMethodName(cur.second.math).c_str(), sFxProc.GetSourceName(cur.second.fxSrc).c_str(), sFxProc.GetTargLocName(cur.second.targLoc).c_str(),\
-            cur.second.targAttr, cur.second.srcAttr, cur.second.grpID, cur.second.typeID );
-        // get env
-        InventoryItem* targItem(nullptr);
-        switch (cur.second.targLoc) {
-            case dgmTargLocInvalid: {   // null
-                _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): environment invalid.");
-            } break;
-            case dgmTargLocShip:        // this = ship
-            case dgmTargLocSelf: {      // self = ship in this case
-                targItem = this;
-            } break;
-            case dgmTargLocChar: {      // character
-                targItem = m_pilot->GetChar().get();
-            } break;
-            case dgmTargLocOther: {     // charges?
-            } break;
-            case dgmTargLocTarget:      // not used for ship effects
-            case dgmTargLocArea: {      // not used for ship effects
-            } break;
-        }
-
-        if (!targItem) {
-            _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): environment item is null for data.targLoc %i.", cur.second.targLoc);
-            continue;
-        }
-
-        // get srcAttr, check for nerf, modify value as needed
-        EvilNumber srcAttr = mAttributeMap.GetAttribute(cur.second.srcAttr);
-        /* in ship environment, nothing is nerfed...check env to verify here?
-        switch (cur.second.math) {
-            case dgmMathPreDiv:
-            case dgmMathPreMul:
-            case dgmMathPostMul:
-            case dgmMathPostDiv:
-            case dgmMathPostPercent: {
-
-            }
-        } */
-
-        EvilNumber targAttr = 0;
-        // test for location domain
-        if (cur.second.fxSrc) {
-            std::vector<InventoryItemRef> itemVec;
-            switch (cur.second.fxSrc) {
-                case dgmSrcInvalid: {
-                    _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): domain invalid.");
-                } break;
-                case dgmSrcGroup: {
-                    std::vector<InventoryItemRef> moduleList;
-                    m_ModuleManager->GetModuleListOfRefs(&moduleList);
-                    // location group defined by data.grpID
-                    // get modules beloning to 'grpID'
-                    for (auto mod : moduleList)
-                        if (mod->groupID() == cur.second.grpID)
-                            itemVec.push_back(mod);
-                } break;
-                case dgmSrcSkill: {
-                    // location group defined by data.typeID (for getting items based on skill requirement)
-                    // get modules that require skill 'typeID'
-                    m_ModuleManager->GetModuleListByReqSkill(cur.second.typeID, &itemVec);
-                } break;
-                default: {
-                    _log(EFFECTS__WARNING, "ShipItem::ApplyEffects(): domain %s needs work.", sFxProc.GetSourceName(cur.second.fxSrc).c_str());
-                }
-            }
-            for (auto item : itemVec) {
-                // get targAttr
-                targAttr = item->GetAttribute(cur.second.targAttr);
-                // send data to calculator
-                EvilNumber newAttr = sFxProc.CalculateAttributeValue(targAttr, srcAttr, cur.first);
-                // set new calculated value for target attribute
-                _log(EFFECTS__MESSAGE, "ShipItem::ApplyEffects(): setting attribute %u for %s to %.3f.", \
-                        cur.second.targAttr, item->itemName().c_str(), newAttr.get_float());
-                item->SetAttribute(cur.second.targAttr, newAttr, false);
-            }
-        } else {
-            // location domain is self.
-            // get targAttr
-            targAttr = targItem->GetAttribute(cur.second.targAttr);
-            // send data to calculator
-            EvilNumber newAttr = sFxProc.CalculateAttributeValue(targAttr, srcAttr, cur.first);
-            // set new calculated value for target attribute
-            _log(EFFECTS__MESSAGE, "ShipItem::ApplyEffects(): setting attribute %u for %s to %.3f.", \
-                    cur.second.targAttr, targItem->itemName().c_str(), newAttr.get_float());
-            targItem->SetAttribute(cur.second.targAttr, newAttr, false); // no, dont notifiy client of change.  will be updated when requesting ship info
-        }
-    }
-    m_effectsApplied = true;
 }
 
 void ShipItem::RemoveEffects()
@@ -1309,217 +1148,7 @@ void ShipItem::RemoveEffects()
     SaveShip();
     mAttributeMap.Load(true);
     m_modifiers.clear();
-    m_effectsApplied = false;
 }
-
-void ShipItem::AddEffect(uint16 attributeID, InventoryItemRef iRef)
-{
-
-}
-
-void ShipItem::RemoveEffect(uint16 attributeID, InventoryItemRef iRef)
-{
-
-}
-
-void ShipItem::ApplyModifiers()
-{
-
-}
-
-/*
-# Items belonging to these categories never have
-# their effects stacking penalized
-PENALTY_IMMUNE_CATEGORIES = (
-    Category.ship,
-    Category.charge,
-    Category.skill,
-    Category.implant,
-    Category.subsystem
-)
-
-# Stacking penalty base constant, used in attribute calculations
-PENALTY_BASE = 1 / exp((1 / 2.67) ** 2)
-
-# Tuple with penalizable operators
-PENALIZABLE_OPERATORS = (
-    Operator.pre_mul,
-    Operator.post_mul,
-    Operator.post_percent,
-    Operator.pre_div,
-    Operator.post_div
-)
-
-*/
-
-void ShipItem::ParseExpression(Expression expression, fxData& data)
-{
-    using namespace Effects;
-    switch(expression.operandID) {
-        // trivial attribute operations
-        case operandATT: {      //'%(arg1)s->%(arg2)s'      (domain:attribID)
-            if (expression.arg1)
-                ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            if (expression.arg2)
-                ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-        } break;
-
-        // these return the given expressionValue
-        case operandDEFBOOL:    // this evaulates to 'true' (Bool(1))
-        case operandDEFINT: {   // this is used as  0,1,2,{raceID}
-            // not sure what to do here
-            //expression.expressionValue;
-        } break;
-        case operandDEFASSOCIATION: {
-            data.math = sFxProc.GetAssociationEnum(expression.expressionValue);
-        } break;
-        case operandDEFENVIDX: {
-            data.targLoc = sFxProc.GetEnvironmentEnum(expression.expressionValue);
-        } break;
-
-        // these provide the given expression*ID
-        case operandDEFATTRIBUTE: {    // check this....
-            if (expression.expressionAttributeID) {
-                /*
-                if (expression.expressionAttributeID > 1817) {  //2003 -max Rhea value;  1817 -max Crucible value
-                    std::string type = "targ";
-                    if (data.targAttr)
-                        type = "src";
-                    Operand operand = sFxDataMgr.GetOperand(expression.operandID);
-                    _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range %sAttr: %u > 1817 for operand %u (%s).", \
-                            type.c_str(), data.targAttr, expression.operandID, operand.operandKey.c_str());
-                }*/
-                if (data.targAttr)  // always processed first
-                    data.srcAttr = expression.expressionAttributeID;
-                else
-                    data.targAttr = expression.expressionAttributeID;
-            }
-        } break;
-        case operandDEFGROUP: {    //
-            if (expression.expressionGroupID)
-                data.grpID = expression.expressionGroupID;
-        } break;
-        case operandDEFTYPEID: {    //
-            if (expression.expressionTypeID)
-                data.typeID = expression.expressionTypeID;
-        } break;
-
-        // do as stated
-        case operandCOMBINE: { // executes two statements  '%(arg1)s); (%(arg2)s'
-            if (expression.arg1)
-                ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            fxData data1;
-            data1.srcRef = static_cast<InventoryItemRef>(this);
-            data1.math = data1.targLoc = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = data1.fxSrc = 0;
-            if (expression.arg2)
-                ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data1);
-        } break;
-        case operandEFF: {      //31, '(%(arg2)s).(%(arg1)s)'       --define association type
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-        } break;
-
-        // these function calls are a bit more complicated...will need more work and better understanding
-        case operandGA: {    //'%(arg1)s.%(arg2)s'      --not used
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-        } break;
-        case operandGM: {    //'%(arg1)s.GetModule(%(arg2)s)'      --used by subsystems as (GetModule(Ship.201):55)
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-        } break;
-        case operandGETTYPE: {    //'%(arg1)s.GetTypeID()'  --used by SRLG in AORSM/RORSM
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);   //type
-        } break;
-        case operandLG: {    //48, '%(arg1)s.LocationGroup.%(arg2)s'  -- specify a group by grpID in a location'
-            data.fxSrc = dgmSrcGroup;   //preliminary....will need work later.
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);   //domain
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);   //groupID
-        } break;
-        case operandLS: {    //49, '%(arg1)s.SkillRequiredLocationGroup[%(arg2)s]'  --  specify a group by skillID in a location...not sure how to do this
-            data.fxSrc = dgmSrcSkill;   //preliminary....will need work later.
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);   //domain
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);   //skillID
-        } break;
-
-        // effect function calls.
-        // here is where we'll actually add the modifier data to the map
-        case operandAIM: {    //'AddItemModifier(env,%(arg1)s, %(arg2)s)'
-            Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
-            ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
-        } break;
-        // these arent completely correct yet.  testing
-        case operandALGM: {    //7,(%(arg1)s).AddLocationGroupModifier (%(arg2)s)
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
-        } break;
-        case operandALM: {    //8,(%(arg1)s).AddLocationModifier (%(arg2)s)
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
-        } break;
-        case operandALRSM: {    //9,(%(arg1)s).AddLocationRequiredSkillModifier(%(arg2)s)
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
-        } break;
-        case operandAORSM: {    //11,(%(arg1)s).AddOwnerRequiredSkillModifier(%(arg2)s)
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-            m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
-        } break;
-        /** @todo  will have to figure out how to remove modifiers and delete from the map(s) */
-        // why?  just reset everything....
-        case operandRIM: {    //'RemoveItemModifier(env,%(arg1)s, %(arg2)s)'
-            Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
-            ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(arg1Expression.arg2), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-            //m_modifiers.erase();
-        } break;
-        case operandRLGM: {    //59,(%(arg1)s).RemoveLocationGroupModifier (%(arg2)s)
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-        } break;
-        case operandRLM: {    //60, (%(arg1)s).RemoveLocationModifier (%(arg2)s)
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-        } break;
-        case operandRLRSM: {    //61,(%(arg1)s).RemoveLocationRequiredSkillModifier(%(arg2)s)
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-        } break;
-        case operandRORSM: {    //62, (%(arg1)s).RemoveOwnerRequiredSkillModifier(%(arg2)s)
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg1), data);
-            ParseExpression(sFxDataMgr.GetExpression(expression.arg2), data);
-        } break;
-        default: {              // in case the op hasnt been defined, make a note here (should not hit)
-            std::ostringstream ret;
-            Operand operand = sFxDataMgr.GetOperand(expression.operandID);
-            ret << "Operand id:" << expression.operandID << " key:" << operand.operandKey;
-            if (operand.format == "")
-                ret << " - has not been defined";
-            else                // % {'arg1': arg1, 'arg2': arg2, 'value': expression.expressionValue}
-                ret << " *needsWork*";
-            sLog.Error("Ship::ParseExpression", "%s", ret.str().c_str());
-        } break;
-    }
-
-    // data integrity tests
-    if (sConfig.server.IsTestServer) {
-        if (data.fxSrc > 6)
-            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range domain: %i for operand %u.", data.fxSrc, expression.operandID);
-        if (data.math > 11)
-            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range assoc: %i for operand %u.", data.math, expression.operandID);
-        if (data.targLoc > 5)
-            _log(EFFECTS__ERROR, "ShipItem::ParseExpression(): out of range env: %i for operand %u.", data.targLoc, expression.operandID);
-    }
-}
-
 
 std::string ShipItem::GetShipDNA()
 {

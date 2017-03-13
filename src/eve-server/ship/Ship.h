@@ -371,6 +371,7 @@ protected:
 
     void ModifyHoldVolumeByFlag(EVEItemFlags flag, double amount);
 
+    /* new effects system */
 public:
     /* stacking penality system   -allan
      * each ship will have a map of the attribs affected and the current effectiveness on that attrib
@@ -380,13 +381,8 @@ public:
     double GetEffectiveness(uint16 attrib, ModuleStates state);
 
     void CheckStacking(uint16 attrib, Effects::Math type, ModuleStates state, EvilNumber& value);
-    void ApplyModifiers();
 
-    void ApplyEffects();
     void RemoveEffects();
-
-    void AddEffect(uint16 attributeID, InventoryItemRef iRef);
-    void RemoveEffect(uint16 attributeID, InventoryItemRef iRef);
 
 private:
     Client* m_pilot;
@@ -399,19 +395,13 @@ private:
     /*  stacking tracking system  -allan  */
     void InitStackingMaps();
 
-    bool m_effectsApplied;
     void ProcessEffects(bool add=false);
     void ProcessShipEffects();
     void ProcessModuleEffects();
 
-    void ParseExpression(Expression expression, fxData& data);
-
-    std::multimap<int8, fxData> m_modifiers;    // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
-
     typedef std::list<GenericModule*> modList;
     std::map<uint16, modList> m_stackMap;     // stacking attrib storage  attrib, list<module*>
     std::map<uint16, modList> m_attribMap;    // non-stacking attrib storage  attrib, list<module*>
-
 };
 
 /**

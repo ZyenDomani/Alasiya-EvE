@@ -39,6 +39,8 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_repeat = 0;
     // incase module item has AttrIsOnline set to true....it shouldn't (IsOnline isnt persistant) but this is a catchall.
     m_modRef->PutOffline();
+
+    ProcessEffects(Effects::dgmStatePassive, true);
 }
 
 GenericModule::~GenericModule()
@@ -46,20 +48,17 @@ GenericModule::~GenericModule()
     m_modRef->PutOffline();
 }
 
-/** @todo  this needs to be updated to use new FxProc code */
 void GenericModule::Online()
 {
     if (m_ModuleState == MOD_UNFITTED)
         return;  // make error here for online called for unfitted module?  isnt this error printed elsewhere? -nope
-
     if (m_ModuleState != MOD_OFFLINE)
         return;     // already online
 
     m_modRef->PutOnline(isRig());
-    m_ModuleState = MOD_ONLINE; // this must be set to online before calling msac or mmac.
-
-    bool stacking = false;
-    uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
+    m_ModuleState = MOD_ONLINE;
+    ProcessEffects(Effects::dgmStateOnline, true);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get());
 }
 
 void GenericModule::Offline()
@@ -72,45 +71,30 @@ void GenericModule::Offline()
         return;     // already deactivating
 
     m_ModuleState = MOD_DEACTIVATING;
-    bool stacking = false;
-    uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
+    // code for offlining module before MOD_OFFLINE state is set.
+    ProcessEffects(Effects::dgmStateOnline, false);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get());
 
     m_ModuleState = MOD_OFFLINE;
     m_modRef->PutOffline();
 }
 
-void GenericModule::ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, Effects::Math type, bool stacking) {
-    EvilNumber modVal = GetAttribute(sourceAttrID), startVal = m_shipRef->GetAttribute(targetAttrID), newVal = 0;
-    // check for stacking attributes here, and get stacked (cached) effectiveness.
-    if (stacking) {
-        // this method checks for resist attrib, and gets true stacked value based on all multipliers and modifiers
-        m_shipRef->CheckStacking(targetAttrID, type, GetModuleState(), newVal);
-    } else {
-        FxProc fxProc;
-        newVal = fxProc.CalculateAttributeValue(startVal, modVal, type);
-    }
-
-    _log(SHIP__MODULE_TRACE, "MSAC::ModifyShipAttributes() -  origVal:%f, Mod:%f, newVal:%f, type:%i", \
-    startVal.get_float(), modVal.get_float(), newVal.get_float(), (int)type);
-    //set the attribute for the ship with the new modifier
-    m_shipRef->SetAttribute(targetAttrID, newVal);
-        //sLog.Error("MSAC::ModifyShipAttributes()","Failed to set attribute %u to %.3f on ship %u", targetAttrID, newVal.get_float(), m_shipRef->itemID());
-}
-
-void GenericModule::ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, Effects::Math type, bool stacking) {
-    ShipItemRef target = m_shipRef->GetItemFactory()->GetShip(targetItemID);
-    if (target)
-        ModifyShipAttribute(/*target,*/ targetAttrID, sourceAttrID, type, stacking);
-    else {
-        _log(SHIP__ERROR, "MSAC::ModifyTargetShipAttribute() - %s(%u): Failed to find target ship %u", \
-        m_shipRef->itemName().c_str(), m_shipRef->itemID(), targetItemID);
-        if (m_shipRef->HasPilot())
-            m_shipRef->GetPilot()->SendErrorMsg("Internal Server Error - Cannot find target.  Ref: ServerError 15623");
-    }
-}
-
-void GenericModule::ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, Effects::Math type)
+void GenericModule::ProcessEffects(uint8 state, bool online/*false*/)
 {
-
+    // get module effects in state 0
+    std::vector< Effect > effectVec;
+    m_modRef->type().GetEffect(state, effectVec);
+    for (auto it : effectVec) {
+        fxData data;
+        data.srcRef = m_modRef;
+        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
+        /* passive effects are added directly to ship item m_modifers
+         * non-passive effects are added/deleted to/from module item and called on their effect target from ???
+         * will need remove* methods finished for this to work properly
+         */
+        if (online)
+            sFxProc.ParseExpression((state ? m_modRef.get() : m_shipRef.get()), sFxDataMgr.GetExpression(it.preExpression), data);
+        else if (state)
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.postExpression), data);
+    }
 }
-

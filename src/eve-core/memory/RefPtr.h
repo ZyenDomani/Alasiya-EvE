@@ -229,7 +229,7 @@ public:
     }
 
     /**
-     * @brief Acts as static_cast.
+     * @brief Acts as static_cast from one RefPtr to another
      */
     template<typename Y>
     static RefPtr StaticCast( const RefPtr<Y>& oth )

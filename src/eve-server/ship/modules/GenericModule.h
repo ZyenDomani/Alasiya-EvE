@@ -59,7 +59,6 @@ public:
     void SetRepeat(int32 repeat)                        { m_repeat = repeat; }
 
     /* class type helpers.  public for anyone to access. */                 /** @todo  update these below as noted */
-    virtual bool IsWarpSafe() const                     { return true; }    // check this in module effect data.
     virtual bool IsLoaded()                             { return false; }
     virtual bool IsGenericModule() const                { return true; }
     virtual bool IsPassiveModule() const                { return false; }
@@ -87,6 +86,10 @@ public:
 	ModuleStates GetModuleState()                       { return m_ModuleState; }
 	ChargeStates GetChargeState()                       { return m_ChargeState; }
 
+	virtual bool isTurretFitted()                       { return (m_modRef->type().HasEffect(effectTurretFitted) ? true : false); false; }
+	virtual bool isLauncherFitted()                     { return (m_modRef->type().HasEffect(effectLauncherFitted) ? true : false); false; }
+	virtual bool isMaxGroupFitLimited()                 { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); false; }
+
     /* functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }
     virtual void Activate(SystemEntity* pSE)            { /* Do nothing here */ }
@@ -99,10 +102,6 @@ public:
     virtual void DestroyRig()                           { /* Do nothing here */ }
 
     /* functions to be overridden in derived classes as needed */
-    virtual bool isTurretFitted()                       { return (m_modRef->type().HasEffect(effectTurretFitted) ? true : false); false; }
-    virtual bool isLauncherFitted()                     { return (m_modRef->type().HasEffect(effectLauncherFitted) ? true : false); false; }
-    virtual bool isMaxGroupFitLimited()                 { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); false; }
-
     virtual InventoryItemRef GetLoadedChargeRef()       { return InventoryItemRef(); }
 
     /* override for rigs and subsystems in approprate derived class */
@@ -116,25 +115,24 @@ public:
     }
 
 protected:
-    InventoryItemRef                m_modRef;
-    ShipItemRef                     m_shipRef;
+    InventoryItemRef m_modRef;
+    ShipItemRef      m_shipRef;
 
-    ModuleStates                    m_ModuleState;
-    ChargeStates                    m_ChargeState;
+    ModuleStates     m_ModuleState;
+    ChargeStates     m_ChargeState;
 
-    bool                            m_hiPower;
-    bool                            m_medPower;
-    bool                            m_loPower;
-    bool                            m_rigSlot;
-    bool                            m_subSystem;
-    bool                            m_warpSafe;
-    bool                            m_targReq;
+    bool             m_hiPower;
+    bool             m_medPower;
+    bool             m_loPower;
+    bool             m_rigSlot;
+    bool             m_subSystem;
+    bool             m_warpSafe;
+    bool             m_targReq;
 
-    int32                           m_repeat;
+    int32            m_repeat;
 
-    void ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, Effects::Math type, bool stacking);
-    void ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, Effects::Math type);
-    void ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, Effects::Math type, bool stacking);
+private:
+    void            ProcessEffects(uint8 state, bool online=false);
 
 };
 

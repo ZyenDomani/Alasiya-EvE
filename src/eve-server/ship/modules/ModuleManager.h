@@ -228,7 +228,8 @@ public:
     GenericModule* GetModule(EVEItemFlags flag)         { return m_Modules->GetModule(flag); }      // faster than GetModule(itemID)
     GenericModule* GetModule(uint32 itemID)             { return m_Modules->GetModule(itemID); }    // slower than GetModule(flag)
 
-	InventoryItemRef GetLoadedChargeOnModule(EVEItemFlags flag);
+    InventoryItemRef GetLoadedChargeOnModule(EVEItemFlags flag);
+    InventoryItemRef GetLoadedChargeOnModule(InventoryItemRef moduleRef);
 
     void GetLoadedCharges(std::map<EVEItemFlags, InventoryItemRef> &charges);
 

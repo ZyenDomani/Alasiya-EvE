@@ -112,6 +112,7 @@ public:
 private:
     /* this should ONLY be called from within InventoryItem */
     void                    SetOnline(bool online, bool isRig);
+
 public:
     void                    PutOnline(bool isRig=false) { SetOnline(true, isRig); }
     void                    PutOffline(bool isRig=false){ SetOnline(false, isRig); }
@@ -119,6 +120,7 @@ public:
 
     /* public-access data functions handled in base class. */
     void                    SaveItem();  //save the item to the DB.
+    // save timers arent currently used.  not sure if i'll implement them.
     void                    SetSaveTimerExpiry(uint32 saveTimerExpiry) \
                                 { m_saveTimerExpiryTime = saveTimerExpiry; }
     void                    EnableSaveTimer() \
@@ -269,6 +271,7 @@ public:
     // this has to be called on item to perform the check on.  the item sent in arg is holder of skill requirements (module, ship, implant, etc)
     bool SkillCheck(InventoryItemRef refItem);
 
+    void AddModifier(fxData data);
     void ApplyEffect(int8 state);
     void RemoveEffect(int8 state);
     void GetEffectsInState(int8 state, std::vector<Effect>& effectRef);
@@ -276,7 +279,8 @@ public:
     //  if itemType requires skill(skillID) return true else return false
     bool HasReqSkill(const uint16 skillID)              { return m_type.HasReqSkill(skillID, m_factory); }
 
-protected:
+    // gotta make this public for now...
+    std::multimap<int8, fxData> m_modifiers;    // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
 
 /*  new attribute system */
 protected:

@@ -648,13 +648,9 @@ public:
 	void                    AddPodKillToDynamicData(uint32 solarSystemID);
 	void                    AddFactionKillToDynamicData(uint32 solarSystemID);
 
-    // character skill, implant and booster effects
+    // character skill, implant and booster effects.  parsed on char load.  applied on ship init in space (with all other ship-related effects)
     // NOTE:  implants and boosters not implemented yet
-    void                    ProcessSkillEffects(InventoryItemRef itemRef);
-    void                    ParseExpression(Expression expression, fxData& data);
-    void                    ApplyEffects(InventoryItemRef itemRef);
-
-    std::multimap<int8, fxData> m_modifiers;    // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
+    void                    ProcessEffects();
 
 
     virtual bool _Load();

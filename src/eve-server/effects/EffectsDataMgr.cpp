@@ -236,6 +236,14 @@ Operand FxDataMgr::GetOperand(uint16 oID)
 
 }
 
+bool FxDataMgr::isWarpSafe(uint16 eID)
+{
+    effectMapType::const_iterator itr = m_effectMap.find(eID);
+    if (itr != m_effectMap.end())
+        return itr->second.isWarpSafe;
+    return false;   // default to false if effectID not found
+}
+
 bool FxDataMgr::needsTarget(std::string effectName)
 {
     std::map<uint16, std::string>::const_iterator itr = m_targEffects.begin();

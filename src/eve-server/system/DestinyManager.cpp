@@ -2175,6 +2175,7 @@ void DestinyManager::SendAnchorLift() const {
                 [PyBool False]
     */
 
+/** @todo combine these two with an "apply/remove" boolean */
 void DestinyManager::SendCloakShip(const bool IsWarpSafe) const {
     DoDestiny_OnSpecialFX10 effect;
         effect.effect_type = "effects.Cloak";

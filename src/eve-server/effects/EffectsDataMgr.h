@@ -24,6 +24,7 @@ public:
 
     void Initialize();
     void ConfigureEffects();
+    bool isWarpSafe(uint16 eID);
     bool needsTarget(std::string effectName);
 
     Effect GetEffect(uint16 eID);

@@ -43,16 +43,6 @@ m_reloadTimer(10000)
     m_overLoaded = false;
     m_chargeLoaded = false;
 
-    // as we hard-set attributes here, we need to make sure they are DEFAULT before adding bonuses.  (error fix)
-    m_modRef->ResetAttribute(AttrSpeed);
-    m_modRef->ResetAttribute(AttrFalloff);
-    m_modRef->ResetAttribute(AttrDuration);
-    m_modRef->ResetAttribute(AttrMaxRange);
-    m_modRef->ResetAttribute(AttrCapacitorNeed);
-    m_modRef->ResetAttribute(AttrTrackingSpeed);
-    m_modRef->ResetAttribute(AttrDamageMultiplier);
-    m_modRef->ResetAttribute(AttrOptimalSigRadius);
-
     if (m_modRef->HasAttribute(AttrMaxRange))
         m_maxRange = GetAttribute(AttrMaxRange).get_int();
 
@@ -61,8 +51,6 @@ m_reloadTimer(10000)
 
     if (m_modRef->HasAttribute(AttrCapacitorNeed))
         m_capNeed = GetAttribute(AttrCapacitorNeed).get_float();
-
-    m_warpSafe = GetAttribute(AttrDisallowActivateOnWarp).get_bool();
 
     // this is an internal variable only.
     m_reloadTime = GetAttribute(AttrReloadTime).get_int();
@@ -96,33 +84,21 @@ m_reloadTimer(10000)
     _log(SHIP__MODULE_TRACE, "Set reload time for %s(%u) to %ums", m_modRef->itemName().c_str(), m_modRef->itemID(), m_reloadTime);
 }
 
-ActiveModule::~ActiveModule()
-{
-    m_modRef->ResetAttribute(AttrSpeed);
-    m_modRef->ResetAttribute(AttrFalloff);
-    m_modRef->ResetAttribute(AttrDuration);
-    m_modRef->ResetAttribute(AttrMaxRange);
-    m_modRef->ResetAttribute(AttrCapacitorNeed);
-    m_modRef->ResetAttribute(AttrTrackingSpeed);
-    m_modRef->ResetAttribute(AttrDamageMultiplier);
-    m_modRef->ResetAttribute(AttrOptimalSigRadius);
-}
-
 void ActiveModule::Process()
 {
     // timing and verification function
-        //check if we have signal to stop the cycle
-        if (m_Stop) {
-            //wait for time to run out and send deactivate to client
-            if (m_timer.Check(false)) {
-                m_timer.Disable();
-                DeactivateCycle();
-                return;
-            }
+    //check if we have signal to stop the cycle
+    if (m_Stop) {
+        //wait for time to run out and send deactivate to client
+        if (m_timer.Check(false)) {
+            m_timer.Disable();
+            DeactivateCycle();
+            return;
         }
-        //check if the timer expired & subtract time
-        if (m_timer.Check())
-            ShouldProcessActiveCycle();
+    }
+    //check if the timer expired & subtract time
+    if (m_timer.Check())
+        ShouldProcessActiveCycle();
 
     if (m_reloadTimer.Enabled()) {
         if (m_reloadTimer.Check(false)) {
@@ -140,9 +116,6 @@ void ActiveModule::Activate(SystemEntity* pSE)
     m_ModuleState = MOD_ACTIVATED;  //this HAS to be set before mod::DoCycle()
 
     /** @todo   these need to check for targetable actions, and apply changes accordingly */
-    /** @todo  this needs to be updated to check for/use targetGroupIDs */
-    bool stacking = false;
-    uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_modRef->groupID();
 
     //active module class has a m_cycleTime variable that holds cycle time,
     // based on character skills and specific module attributes.  -allan 19Dec15
@@ -163,29 +136,16 @@ void ActiveModule::Deactivate()
     //DoEffect(false);
 }
 
-    /** @todo  Overload and DeOverload only need to reset/adjust module effects
-     * not sure how to manage this yet, but should only need to call
-     * offline/online/activate/deactivate to change effects.
-     */
 void ActiveModule::Overload()
 {
     m_overLoaded = true;
     GenericModule::Overload();
-
-    if (m_modRef->HasAttribute(AttrOverloadDurationBonus)) {
-        m_cycleTime *= (1 + GetAttribute(AttrOverloadDurationBonus).get_float());
-        m_modRef->SetAttribute(AttrDuration, m_cycleTime);
-    }
 }
 
 void ActiveModule::DeOverload()
 {
     m_overLoaded = false;
     GenericModule::DeOverload();
-    if (m_modRef->HasAttribute(AttrOverloadDurationBonus)) {
-        m_cycleTime /= (1 + GetAttribute(AttrOverloadDurationBonus).get_float());
-        m_modRef->SetAttribute(AttrDuration, m_cycleTime);
-    }
 }
 
 void ActiveModule::LoadCharge(InventoryItemRef charge)
@@ -210,6 +170,8 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
         tmp->SetItem(2, new PyInt(m_reloadTime));
     m_shipRef->GetPilot()->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
     m_reloadTimer.Start(m_reloadTime);
+
+    // process and apply charge effects here
 }
 
 void ActiveModule::UnloadCharge()
@@ -217,6 +179,8 @@ void ActiveModule::UnloadCharge()
 	m_chargeRef = InventoryItemRef();		// Ensure ref is NULL
     m_chargeLoaded = false;
     m_ChargeState = MOD_UNLOADED;
+
+    // remove charge effects here
 }
 
 double ActiveModule::DoCycle()
@@ -257,7 +221,7 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
         m_modRef->itemID(),
         m_modRef->typeID(),
         m_targetID,
-        (m_chargeLoaded?m_chargeRef->typeID():0),
+        (m_chargeLoaded ? m_chargeRef->typeID() : 0),
         effectStr,
         0,   /* fixme */
         (active ? 1 : 0),
@@ -297,9 +261,6 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
     m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }
 
-/*  moved from ActiveModuleProcessingComponent to consolidate code before/during module effect rewrite.
- *
- */
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
     m_ModuleState = MOD_DEACTIVATING;
@@ -326,11 +287,6 @@ void ActiveModule::ProcessActiveCycle()
     //maybe we can have a check for modules that repeat the same attributes so we
     //send the changes just once at activation and at deactivation      --in progress  -allan 19Dec15
 
-    // consume capacitor...this will be taken over by module effects when i get to that point.
-    EvilNumber capCapacity = m_shipRef->GetAttribute(AttrCapacitorCharge);
-    capCapacity -= GetAttribute(AttrCapacitorNeed);  // this is reset by modules that need it to be.
-    m_shipRef->SetAttribute(AttrCapacitorCharge, capCapacity);
-
     // reset timer here, in the case of cycle time changing for fleet bonuses
     SetTimer((uint32)DoCycle());
 }
@@ -338,6 +294,6 @@ void ActiveModule::ProcessActiveCycle()
 void ActiveModule::SetTimer(uint32 time) {
     if (!time)
         return;
-    _log(SHIP__MODULE_TRACE, "AMPC::SetTimer() - Started with %u ms.", time);
+    _log(SHIP__MODULE_TRACE, "ActiveModule::SetTimer() - Started with %u ms.", time);
     m_timer.Start(time);
 }

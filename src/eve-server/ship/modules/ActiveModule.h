@@ -36,10 +36,9 @@ class ActiveModule : public GenericModule
 {
 public:
     ActiveModule(InventoryItemRef item, ShipItemRef ship);
-    virtual ~ActiveModule();
+    virtual ~ActiveModule()                             { /* Do nothing here */ }
 
     /* class type helpers.  public for anyone to access. */
-    virtual bool IsWarpSafe() const                     { return m_warpSafe; }
     virtual bool IsActiveModule() const                 { return true; }
 
     /* GenericModule overrides */
@@ -89,7 +88,6 @@ protected:
 
 	InventoryItemRef m_chargeRef;                       // we do not own this
 
-	bool m_warpSafe = false;                            // can be active during warp (no module is jumpsafe)
 	bool m_overLoaded = false;
     bool m_chargeLoaded = false;
 

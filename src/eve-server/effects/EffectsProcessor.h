@@ -15,36 +15,144 @@
 #include "effects/EffectsDataMgr.h"
 #include "inventory/InventoryItem.h"
 
+class Character;
+class ShipItem;
 
 class FxProc
 : public Singleton<FxProc>
 {
 public:
-    FxProc() { }
-    ~FxProc() { }
+    FxProc()        { /* do nothing here */ }
+    ~FxProc()       { /* do nothing here */ }
 
-    EvilNumber CalculateAttributeValue(EvilNumber val1, EvilNumber val2, /*Effects::Math*/int8 assoc);
+    void            ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip);
+    void            ParseExpression(InventoryItem* pItem, Expression expression, fxData& data);
+    void            EvaluateExpression(const uint16 expID);
+    int8            GetEnvironmentEnum(const std::string& domain);
+    int8            GetAssociationEnum(const std::string& association);
 
-    // new effects system
-    void EvaluateExpression(const uint16 expID);
-    int8 GetEnvironmentEnum(const std::string& domain);
-    int8 GetAssociationEnum(const std::string& association);
+    std::string     GetSourceName(int8 id);
+    std::string     GetMathMethodName(int8 id);
+    std::string     GetTargLocName(int8 id);
+    std::string     DecodeExpression(Expression expression, bool restricted = false, bool topLevel = false);
 
-    std::string GetSourceName(int8 id);
-    std::string GetMathMethodName(int8 id);
-    std::string GetTargLocName(int8 id);
-
-    std::string ParseExpression(Expression expression, bool restricted = false, bool topLevel = false);
+    EvilNumber      CalculateAttributeValue(EvilNumber val1, EvilNumber val2, /*Effects::Math*/int8 method);
 
 protected:
 
 private:
 
-protected:
-    const char* association;
 };
 
 #define sFxProc \
 ( FxProc::get() )
 
 #endif  // _EVE_FX_PROC_H__
+
+
+/*
+            if operand.operandID in (const.operandALRSM,
+             const.operandRLRSM,
+             const.operandALGM,
+             const.operandRLGM,
+             const.operandAORSM,
+             const.operandRORSM):
+                return 'dogmaLM.%s(%s, %s, %s, %s, itemID, %s)' % (funcName,
+                 arg1[0],
+                 arg1[1][0][0],
+                 arg1[1][0][1],
+                 arg1[1][1],
+                 arg2)
+            if operand.operandID in (const.operandAGRSM, const.operandRGRSM):
+                return 'dogmaLM.%s(shipID, %s, %s, %s, itemID, %s)' % (funcName,
+                 arg1[0],
+                 arg1[1][0],
+                 arg1[1][1],
+                 arg2)
+            if operand.operandID in (const.operandAGIM, const.operandRGIM):
+                return 'dogmaLM.%s(shipID, %s, %s, itemID, %s)' % (funcName,
+                 arg1[0],
+                 arg1[1],
+                 arg2)
+            if operand.operandID in (const.operandALM, const.operandRLM):
+                return 'dogmaLM.%s(%s, %s, %s, itemID, %s)' % (funcName,
+                 arg1[0],
+                 arg1[1][0],
+                 arg1[1][1],
+                 arg2)
+
+*/
+
+/*
+    def AddOwnerRequiredSkillModifier(self, env, arg1, arg2):
+        affectingModuleID = env.itemID
+        affectingAttributeID = arg2
+        affectedOwnerID = arg1[1][0][0]
+        affectedSkillID = arg1[1][0][1]
+        affectedAttributeID = arg1[1][1]
+        affectType = arg1[0]
+
+    def AddLocationRequiredSkillModifier(self, env, arg1, arg2):
+        affectingModuleID = env.itemID
+        affectingAttributeID = arg2
+        affectedLocationID = arg1[1][0][0]
+        affectedSkillID = arg1[1][0][1]
+        affectedAttributeID = arg1[1][1]
+        affectType = arg1[0]
+
+    def AddGangRequiredSkillModifier(self, env, arg1, arg2):
+        affectingModuleID = env.itemID
+        affectingAttributeID = arg2
+        affectingCharID = env.charID
+        affectingShipID = env.shipID
+        affectedSkillID = arg1[1][0]
+        affectedAttributeID = arg1[1][1]
+        affectType = arg1[0]
+
+    def AddGangGroupModifier(self, env, arg1, arg2):
+        affectingModuleID = env.itemID
+        affectingAttributeID = arg2
+        affectingCharID = env.charID
+        affectingShipID = env.shipID
+        affectedGroupID = arg1[1][0]
+        affectedAttributeID = arg1[1][1]
+        affectType = arg1[0]
+
+    def AddGangShipModifier(self, env, arg1, arg2):
+        affectingModuleID = env.itemID
+        affectingAttributeID = arg2
+        affectingCharID = env.charID
+        affectingShipID = env.shipID
+        affectedAttributeID = arg1[1]
+        affectType = arg1[0]
+
+    def AddItemModifier(self, env, arg1, arg2):
+        affectingModuleID = env.itemID
+        if not arg2:
+            raise RuntimeError('Expression is wrong.  AIM(%s, %s) - NULL/None value is not allowed' % (arg1, arg2))
+        affectingAttributeID = arg2
+        affectedModuleID = arg1[1][0]
+        affectedAttributeID = arg1[1][1]
+        affectType = arg1[0]
+        if affectedModuleID == 0:
+            return 1
+        if affectedModuleID is None:
+            self.LogWarn('AffectedModuleID is None.  Env:', env)
+            return
+
+    def AddLocationModifier(self, env, arg1, arg2):
+        affectingModuleID = env.itemID
+        affectingAttributeID = arg2
+        affectedLocationID = arg1[1][0]
+        affectedAttributeID = arg1[1][1]
+        affectType = arg1[0]
+
+    def AddLocationGroupModifier(self, env, arg1, arg2):
+        affectingModuleID = env.itemID
+        affectingAttributeID = arg2
+        affectedLocationID = arg1[1][0][0]
+        affectedGroupID = arg1[1][0][1]
+        affectedAttributeID = arg1[1][1]
+        affectType = arg1[0]
+
+*/

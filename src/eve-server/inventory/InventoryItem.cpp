@@ -376,7 +376,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                     return itemRef;
                 }
             }
-            _log(ITEM__ERROR, "");
+            _log(ITEM__ERROR, "Unhandled charge spawn");
         }
         case EVEDB::invCategories::Entity: {
 			// Spawn generic item for Entities at this time:
@@ -456,14 +456,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 if (!itemRef)
                     return InventoryItemRef();
                 return itemRef;
-            }
-            /*  put a check in here for these,
-			 * groupID 319   Beacon   typeid 29189
-			 * groupID 920    Effect_Beacon
-			 *
-            itemRef->SetAttribute(AttrIsGlobal,       1);
-			 */
-            else {
+            } else {
                 // Spawn new Celestial Object
                 uint32 itemID = CelestialObject::CreateItemID( factory, data );
                 if (!itemID)
@@ -471,6 +464,8 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 CelestialObjectRef celestialRef = CelestialObject::Load( factory, itemID );
                 if (!celestialRef)
                     return CelestialObjectRef();
+                if ((t->groupID() == EVEDB::invGroups::Beacon) or (t->groupID() == EVEDB::invGroups::Effect_Beacon))
+                    celestialRef->SetAttribute(AttrIsGlobal,       1);
                 return celestialRef;
             }
         }
@@ -494,12 +489,12 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
 uint32 InventoryItem::GetPackagedVolume()
 {
     if (m_singleton)
-        return type().volume();
+        return m_type.volume();
 
-    if ((categoryID() == EVEDB::invCategories::Ship)
-        or (categoryID() == EVEDB::invCategories::Celestial)) {
+    if ((m_type.categoryID() == EVEDB::invCategories::Ship)
+        or (m_type.categoryID() == EVEDB::invCategories::Celestial)) {
         // these volumes are hard-coded in client.
-        switch (type().groupID()) {
+        switch (m_type.groupID()) {
             case 29:  //   Capsule
             case 31:  //   Shuttle
             case 1022: {  //     Prototype Exploration Ship
@@ -570,7 +565,7 @@ uint32 InventoryItem::GetPackagedVolume()
         }
     }
     // catchall
-    return type().volume();
+    return m_type.volume();
 }
 
 void InventoryItem::Delete() {
@@ -1175,4 +1170,9 @@ void InventoryItem::RemoveEffect(int8 state)
 
 void InventoryItem::GetEffectsInState(int8 state, std::vector< Effect >& effectRef)
 {
+}
+
+void InventoryItem::AddModifier(fxData data)
+{
+    m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
 }
