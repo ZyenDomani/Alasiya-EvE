@@ -1111,8 +1111,10 @@ void ShipItem::ProcessEffects(bool add/*true*/)
         // char effects are processed when char is loaded.
         sFxProc.ApplyEffects(m_pilot->GetChar().get(), m_pilot->GetChar().get(), this); //apply char effects
         ProcessShipEffects();
-        ProcessModuleEffects();
-        sFxProc.ApplyEffects(this, m_pilot->GetChar().get(), this); // apply ship effects (which now includes all ship, char and module effects)
+        // apply ship effects (which now includes all ship, char and passive module effects)
+        sFxProc.ApplyEffects(this, m_pilot->GetChar().get(), this);
+        // explicitly apply all online module effects for state dgmStateOnline
+        ApplyOnlineModuleEffects(); // call online module effects
         _log(EFFECTS__DEBUG, "ShipItem::ProcessEffects() - %u ship and char effects processed and applied in %.3fms", \
                 (m_pilot->GetChar()->m_modifiers.size() + m_modifiers.size()), (GetTimeMSeconds() - start));
     } else {
@@ -1130,16 +1132,24 @@ void ShipItem::ProcessShipEffects()
     }
 }
 
-void ShipItem::ProcessModuleEffects()
+void ShipItem::ApplyOnlineModuleEffects()
 {
     /* when modules are created (in GenericModule). their passive effects are loaded into it's owning ship's m_modifiers map.
      *  (NOTE: this will need adjustments for fitting in space)
      * calling Online() on the module will load it's state 1 (online) effects to the m_modifiers map of the first arg of ApplyEffects().
      * in this case, it's the module's m_modifiers map, which we will have to explicitly call here to apply to ship
      */
-    for (auto cur : m_onlineModuleVec) {
-        m_ModuleManager->Online(cur);
-        sFxProc.ApplyEffects(m_factory.GetItem(cur).get(), m_pilot->GetChar().get(), this);
+    if (m_pilot->IsLogin() and m_onlineModuleVec.empty()) {
+        m_ModuleManager->OnlineAll();
+        std::vector<InventoryItemRef> moduleList;
+        m_ModuleManager->GetModuleListOfRefs(&moduleList);
+        for (auto cur : moduleList)
+            sFxProc.ApplyEffects(cur.get(), m_pilot->GetChar().get(), this);
+    } else {
+        for (auto cur : m_onlineModuleVec) {
+            m_ModuleManager->Online(cur);
+            sFxProc.ApplyEffects(m_factory.GetItem(cur).get(), m_pilot->GetChar().get(), this);
+        }
     }
 }
 

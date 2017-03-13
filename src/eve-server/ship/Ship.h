@@ -397,7 +397,7 @@ private:
 
     void ProcessEffects(bool add=false);
     void ProcessShipEffects();
-    void ProcessModuleEffects();
+    void ApplyOnlineModuleEffects();
 
     typedef std::list<GenericModule*> modList;
     std::map<uint16, modList> m_stackMap;     // stacking attrib storage  attrib, list<module*>
