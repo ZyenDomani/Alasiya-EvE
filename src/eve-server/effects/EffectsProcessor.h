@@ -49,6 +49,12 @@ private:
 
 #endif  // _EVE_FX_PROC_H__
 
+/** @todo  list of possible improvements
+ * populate data.typeID with the skillID of skills that affect modules on location(ship)  (better conditional)
+ *
+ *
+ *
+ */
 
 /*
             if operand.operandID in (const.operandALRSM,
