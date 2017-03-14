@@ -287,6 +287,8 @@ protected:
     AttributeMap mAttributeMap;
 
 public:
+    // this deletes all attributes, reloads default attribs from itemType and clears m_modifiers
+    void ReloadAttributes();
     void SetAttribute(uint16 attrID, int num, bool notify=true);
     void SetAttribute(uint16 attrID, uint32 num, bool notify=true);
     void SetAttribute(uint16 attrID, int64 num, bool notify = true);
@@ -298,6 +300,7 @@ public:
     bool SaveAttributes()                                              { return mAttributeMap.SaveAttributes(); }
     void ResetAttribute(uint16 attrID, bool notify=false)              { mAttributeMap.ResetAttribute(attrID, notify); }
     void DeleteAttribute(uint16 attrID)                                { mAttributeMap.DeleteAttribute(attrID); }
+
     EvilNumber GetAttribute(const uint16 attrID) const                 { return mAttributeMap.GetAttribute(attrID); }
     EvilNumber GetDefaultAttribute(const uint16 attrID) const          { return m_type.GetAttribute(attrID); }
 };

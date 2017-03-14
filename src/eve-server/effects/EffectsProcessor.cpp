@@ -521,9 +521,11 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                     _log(EFFECTS__ERROR, "FxProc::ParseExpression(): out of range %sAttr: %u > 1817 for operand %u (%s).", \
                             type.c_str(), data.targAttr, expression.operandID, operand.operandKey.c_str());
                 }*/
-                if (data.targAttr)  // always processed first
+                if (data.targAttr) { // always processed first
                     data.srcAttr = expression.expressionAttributeID;
-                else
+                    if (expression.expressionName == "skillLevel")
+                        data.fxSrc = dgmSrcSkill;
+                } else
                     data.targAttr = expression.expressionAttributeID;
             }
         } break;
@@ -602,9 +604,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         // effect function calls.
         // here is where we'll actually add the modifier data to the item's map
         case operandAIM: {    //6,'AddItemModifier(env,%(arg1)s, %(arg2)s)'
-            Expression arg1Expression = sFxDataMgr.GetExpression(expression.arg1);
-            ParseExpression(pItem, sFxDataMgr.GetExpression(arg1Expression.arg1), data);
-            ParseExpression(pItem, sFxDataMgr.GetExpression(arg1Expression.arg2), data);
+            ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data);
             pItem->AddModifier(data);
         } break;

@@ -105,6 +105,8 @@ void ActiveModule::Process()
             // charge loading complete
             m_reloadTimer.Disable();
             m_ChargeState = MOD_LOADED;
+            // apply charge effects here
+            sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get());
         }
     }
 }
@@ -171,16 +173,27 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
     m_shipRef->GetPilot()->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
     m_reloadTimer.Start(m_reloadTime);
 
-    // process and apply charge effects here
+    // process new charge's effects here
+    std::vector< Effect > effectVec;
+    charge->type().GetEffect(Effects::dgmStatePassive, effectVec);
+    for (auto it : effectVec) {
+        fxData data;
+        data.srcRef = charge;
+        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
+        sFxProc.ParseExpression(charge.get(), sFxDataMgr.GetExpression(it.postExpression), data);
+    }
 }
 
 void ActiveModule::UnloadCharge()
 {
+    // remove charge effects here
+    GenericModule::ProcessEffects(Effects::dgmStatePassive, false);
+    m_chargeRef->ReloadAttributes();
+
 	m_chargeRef = InventoryItemRef();		// Ensure ref is NULL
     m_chargeLoaded = false;
     m_ChargeState = MOD_UNLOADED;
 
-    // remove charge effects here
 }
 
 double ActiveModule::DoCycle()

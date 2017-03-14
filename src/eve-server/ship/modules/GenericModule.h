@@ -28,6 +28,7 @@
 #define __EVESERVER_SHIPMODULES_GENERICMODULE_H_
 
 #include "EVEServerConfig.h"
+#include "effects/EffectsProcessor.h"
 #include "inventory/InventoryItem.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
@@ -115,6 +116,8 @@ public:
     }
 
 protected:
+    void             ProcessEffects(uint8 state, bool online=false);
+
     InventoryItemRef m_modRef;
     ShipItemRef      m_shipRef;
 
@@ -130,9 +133,6 @@ protected:
     bool             m_targReq;
 
     int32            m_repeat;
-
-private:
-    void            ProcessEffects(uint8 state, bool online=false);
 
 };
 

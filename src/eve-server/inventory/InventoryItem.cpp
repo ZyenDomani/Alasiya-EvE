@@ -1176,3 +1176,9 @@ void InventoryItem::AddModifier(fxData data)
 {
     m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
 }
+
+void InventoryItem::ReloadAttributes()
+{
+    mAttributeMap.Load(true);
+    m_modifiers.clear();
+}

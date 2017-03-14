@@ -367,7 +367,8 @@ bool ModuleManager::Initialize() {
     GenericModule* mod = nullptr;
     for (auto cur : itemVec) {
         if (cur->flag() == flagCargoHold) continue;
-        if (cur->categoryID() == EVEDB::invCategories::Module) {
+        if ((cur->categoryID() == EVEDB::invCategories::Module)
+            or (cur->categoryID() == EVEDB::invCategories::Subsystem)) {
             mod = ModuleFactory(cur, ShipItemRef(m_Ship));  // rigs are modules
             if (m_Modules->AddModule(cur->flag(), mod)) {
                 Online(cur->flag());
@@ -375,7 +376,6 @@ bool ModuleManager::Initialize() {
                 _log(SHIP__ERROR, "ModuleManager::Initialize() - Could not insert module %s(%u) at flag %u into module container.",
                      cur->itemName().c_str(), cur->itemID(), cur->flag() );
             }
-            continue;
         } else if (cur->categoryID() == EVEDB::invCategories::Charge) {
             if (GetModule(cur->flag())) {
                 GetModule(cur->flag())->LoadCharge(cur);
@@ -383,16 +383,6 @@ bool ModuleManager::Initialize() {
                 _log(SHIP__ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",
                      cur->itemName().c_str(), cur->itemID(), cur->flag() );
             }
-            continue;
-        } else if (cur->categoryID() == EVEDB::invCategories::Subsystem) {
-            mod = ModuleFactory(cur, ShipItemRef(m_Ship));
-            if (m_Modules->AddModule(cur->flag(), mod)) {
-                Online(cur->flag());
-            } else {
-                _log(SHIP__ERROR, "ModuleManager::Initialize() - Could not insert Subsystem %s(%u) at flag %u into module container.",
-                     cur->itemName().c_str(), cur->itemID(), cur->flag() );
-            }
-            continue;
         } else
             return false;
     }

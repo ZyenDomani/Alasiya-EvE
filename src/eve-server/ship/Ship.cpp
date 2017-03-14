@@ -661,7 +661,7 @@ void ShipItem::Undock() {
     }
 
     if (m_ModuleManager)
-        ProcessEffects();
+        ProcessEffects(true);
 
 }
 
@@ -1092,7 +1092,7 @@ void ShipItem::CheckStacking(uint16 attrib, Effects::Math type, ModuleStates sta
 }
 
 // new effects system.  wip
-void ShipItem::ProcessEffects(bool add/*true*/)
+void ShipItem::ProcessEffects(bool add/*false*/)
 {
     /*
     Effects processing order...
@@ -1139,8 +1139,7 @@ void ShipItem::ApplyOnlineModuleEffects()
      * calling Online() on the module will load it's state 1 (online) effects to the m_modifiers map of the first arg of ApplyEffects().
      * in this case, it's the module's m_modifiers map, which we will have to explicitly call here to apply to ship
      */
-    if (m_pilot->IsLogin() and m_onlineModuleVec.empty()) {
-        m_ModuleManager->OnlineAll();
+    if (m_pilot->IsLogin()) {
         std::vector<InventoryItemRef> moduleList;
         m_ModuleManager->GetModuleListOfRefs(&moduleList);
         for (auto cur : moduleList)

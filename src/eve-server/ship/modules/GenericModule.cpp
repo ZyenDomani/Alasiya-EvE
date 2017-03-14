@@ -24,7 +24,6 @@
 */
 
 #include "Client.h"
-#include "effects/EffectsProcessor.h"
 #include "ship/Ship.h"
 #include "ship/modules/GenericModule.h"
 
@@ -58,7 +57,6 @@ void GenericModule::Online()
     m_modRef->PutOnline(isRig());
     m_ModuleState = MOD_ONLINE;
     ProcessEffects(Effects::dgmStateOnline, true);
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get());
 }
 
 void GenericModule::Offline()
