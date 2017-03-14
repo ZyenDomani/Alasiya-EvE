@@ -14,7 +14,7 @@
  */
 
 /* fix base warp speeds */
-UPDATE dgmTypeAttributes SET valueFloat = 3 WHERE attributeID = 1281;
+UPDATE dgmTypeAttributes SET valueFloat = 3 WHERE attributeID = 1281 AND typeID > 0;
 
 -- warp speed update for groupID 28,380,902 (Freighter)
 UPDATE dgmTypeAttributes

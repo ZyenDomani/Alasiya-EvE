@@ -372,10 +372,9 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("wormholeMgr", new WormHoleSvc(&pyServMgr));
     pyServMgr.Initalize(startTime);
 
-    /** @note  this is NOT used correctly yet...
+    /** @note  this is NOT used correctly yet...  */
     sLog.Yellow("       ServerInit", "Priming cached objects.");
     pyServMgr.cache_service->PrimeCache();
-    */
 
     // start up the image server
     sLog.Green("       ServerInit", "Starting Image Server");

@@ -26,7 +26,6 @@
 
 #include "eve-server.h"
 
-#include "character/Character.h"
 #include "ship/modules/TurrentModule.h"
 
 TurrentModule::TurrentModule(InventoryItemRef item, ShipItemRef shipRef)
@@ -59,7 +58,7 @@ void TurrentModule::LoadCharge(InventoryItemRef charge)
     m_thermal       = m_chargeRef->GetAttribute(AttrThermalDamage).get_float();
     m_em            = m_chargeRef->GetAttribute(AttrEmDamage).get_float();
     m_explosive     = m_chargeRef->GetAttribute(AttrExplosiveDamage).get_float();
-
+/*
     if (m_chargeRef->HasAttribute(AttrWeaponRangeMultiplier)) {
         m_falloff *= m_chargeRef->GetAttribute(AttrWeaponRangeMultiplier).get_float();
         m_maxRange *= m_chargeRef->GetAttribute(AttrWeaponRangeMultiplier).get_float();
@@ -72,7 +71,7 @@ void TurrentModule::LoadCharge(InventoryItemRef charge)
         m_trackingSpeed *= m_chargeRef->GetAttribute(AttrTrackingSpeedBonus).get_float();
     if (m_chargeRef->HasAttribute(AttrFalloffBonus))
         m_falloff *= m_chargeRef->GetAttribute(AttrFalloffBonus).get_float();
-
+*/
     /*  these are tracking scripts used with weapon upgrades modules 209,213, etc
     if (m_chargeRef->HasAttribute(AttrMaxRangeBonusBonus))
         m_maxRange *= m_chargeRef->GetAttribute(AttrMaxRangeBonusBonus).get_float();
