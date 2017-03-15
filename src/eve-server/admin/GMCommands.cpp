@@ -356,7 +356,7 @@ PyResult Command_giveisk(Client* who, CommandDB* db, PyServiceMgr* services, con
     double amount = strtod(args.arg(2).c_str(), NULL);
 
     Client* tgt;
-    if (entity >= EVEMU_MINIMUM_ID)
+    if (entity >= EVEMU_MINIMUM_DYNAMIC_ID)
     {
         tgt = sEntityList.FindClientByCharID(entity);
         if (!tgt)
@@ -828,7 +828,7 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
         throw PyException(MakeCustomError("3rd argument must be value (got %s).", args.arg(3).c_str()));
     const double value = atof(args.arg(3).c_str());
 
-    if (itemID < EVEMU_MINIMUM_ID)
+    if (itemID < EVEMU_MINIMUM_DYNAMIC_ID)
         throw PyException(MakeCustomError("1st argument must be a valid 'entity' table itemID that MUST be larger >= 140000000. (got %s)", args.arg(1).c_str()));
 
     InventoryItemRef item = services->item_factory->GetItem(itemID);

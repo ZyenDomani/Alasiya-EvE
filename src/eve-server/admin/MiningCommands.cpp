@@ -33,6 +33,10 @@
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 
+
+/** @todo either delete this or update to use BeltMgr */
+
+
 uint32 GetAsteroidType( double p, const std::map<float, uint32>& roids );
 void SpawnAsteroid( SystemManager* pSystem, uint32 typeID, double radius, const GPoint& position );
 
@@ -190,7 +194,6 @@ void SpawnAsteroid( SystemManager* pSystem, uint32 typeID, double radius, const 
 	i->SetAttribute(AttrQuantity,  quantity);   // quantity in m^3
     i->SetAttribute(AttrRadius, (i->type().radius() * radius));  // Radius
     i->SetAttribute(AttrMass, (i->type().mass() * quantity));      // Mass
-    i->SaveAttributes();
 
     AsteroidSE* se = new AsteroidSE(i, *(pSystem->GetServiceMgr()), pSystem);
 

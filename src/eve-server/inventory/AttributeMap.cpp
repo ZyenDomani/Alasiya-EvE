@@ -87,44 +87,78 @@ bool AttributeMap::SaveAttributes() {
 bool AttributeMap::Save() {
     /** @todo update this
      * we are saving:
-     *   all attribs for skills
+     *   all attribs for characters
+     *   level and sp attribs for skills
      *   all attribs for ISEs and CSEs, where applicable
      *   damage for modules/charges, where applicable (ship damage saved separately)
      */
     if (mItem.itemID() >= EVEMU_NPC_ID)    // not saving npc attribs
         return true;
-    if (mItem.itemID() < EVEMU_MINIMUM_ID)  // not saving static object attribs
-        return true;
-    if (mItem.categoryID() == EVEDB::invCategories::Ship) // ship attribs saved in shipItem
+    else if (mItem.itemID() < EVEMU_MINIMUM_DYNAMIC_ID)  // not saving static object attribs
         return true;
 
+    bool skill = false, damage = false, owner = false;
+
+    switch (mItem.categoryID()) {
+        case EVEDB::invCategories::Asteroid:    // asteroids and blueprints are NOT saved here
+        case EVEDB::invCategories::Blueprint: {
+            return false;
+        } break;
+        case EVEDB::invCategories::Ship: {      // ship attribs saved in shipItem, not here.
+            return true;
+        } break;
+        case EVEDB::invCategories::Skill: {     // save SP and Level for skills
+            skill = true;
+        } break;
+        case EVEDB::invCategories::Owner:       // save all attribs for these
+        case EVEDB::invCategories::Celestial:
+        case EVEDB::invCategories::Structure:
+        case EVEDB::invCategories::StructureUpgrade:
+        case EVEDB::invCategories::SovereigntyStructure:
+        case EVEDB::invCategories::Orbitals:
+        case EVEDB::invCategories::Deployable: {
+            owner = true;
+        } break;
+        case EVEDB::invCategories::Module:      // save damage for these
+        case EVEDB::invCategories::Charge:
+        case EVEDB::invCategories::Subsystem:
+        case EVEDB::invCategories::Drone: {
+            damage = true;
+        } break;
+    }
     std::ostringstream Inserts;
     Inserts << "INSERT INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) ";
-    bool first = true;
+    bool first = true, save = false;
     AttrMapItr itr = mAttributes.begin();
     for (; itr != mAttributes.end(); itr++) {
-        if ((itr->first != AttrDamage) or (itr->first != AttrSkillPoints) or (itr->first != AttrSkillLevel))
-            continue;
-
-        if (first) {
-            Inserts << "VALUES";
-            first = false;
-        } else
-            Inserts << ", ";
-        Inserts << "(" << mItem.itemID() << ", " << itr->first << ", ";
-        if ( itr->second.get_type() == evil_number_int ) {
-            if (IsNaN(itr->second.get_int())) {
-                _log(INV__ERROR, "AttributeMap::Save() - int == NaN for itemID:%u", mItem.itemID());
-                return false;
+        if ((skill) and ((itr->first == AttrSkillPoints) or (itr->first == AttrSkillLevel)))
+            save = true;
+        if ((damage) and (itr->first == AttrDamage))
+            save = true;
+        if (owner)
+            save = true;
+        if (save) {
+            if (first) {
+                Inserts << "VALUES";
+                first = false;
+            } else
+                Inserts << ", ";
+            Inserts << "(" << mItem.itemID() << ", " << itr->first << ", ";
+            if ( itr->second.get_type() == evil_number_int ) {
+                if (IsNaN(itr->second.get_int())) {
+                    _log(INV__ERROR, "AttributeMap::Save() - int == NaN for itemID:%u", mItem.itemID());
+                    return false;
+                }
+                Inserts << itr->second.get_int() << ", NULL)";
+            } else {
+                if (IsNaN(itr->second.get_double())) {
+                    _log(INV__ERROR, "AttributeMap::Save() - float == NaN for itemID:%u", mItem.itemID());
+                    return false;
+                }
+                Inserts << " NULL, " << itr->second.get_double() << ")";
             }
-            Inserts << itr->second.get_int() << ", NULL)";
-        } else {
-            if (IsNaN(itr->second.get_double())) {
-                _log(INV__ERROR, "AttributeMap::Save() - float == NaN for itemID:%u", mItem.itemID());
-                return false;
-            }
-            Inserts << " NULL, " << itr->second.get_double() << ")";
         }
+        save = false;
     }
 
     if (!first) {

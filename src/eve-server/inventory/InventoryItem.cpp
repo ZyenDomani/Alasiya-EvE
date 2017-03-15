@@ -73,11 +73,8 @@ InventoryItem::InventoryItem(
 
 InventoryItem::~InventoryItem()
 {
-    // Save this item's entity_attributes info to the Database before it is destroyed
-    //mAttributeMap.SaveAttributes();
-
-    // Save this item's entity table info to the Database before it is destroyed
-    //SaveItem();
+    // item should call save before object is removed.
+    // if item is being removed during shutdow, item factory is responsible for saving loaded items
 }
 
 InventoryItemRef InventoryItem::Load(ItemFactory &factory, uint32 itemID)
@@ -317,7 +314,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             // Create default dynamic attributes in the AttributeMap:
             itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
             itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
-            //itemRef->SaveAttributes();
             return itemRef;
         }
         case EVEDB::invCategories::Module:
@@ -335,8 +331,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
             itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
             itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
-            //itemRef->SaveAttributes();
-
             return itemRef;
         }
         case EVEDB::invCategories::Charge: {
@@ -355,7 +349,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                     itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
                     itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
                     itemRef->SetAttribute(AttrCapacity,   itemRef->type().capacity());   // Capacity
-                    //itemRef->SaveAttributes();
                     return itemRef;
                 }
                 default: {
@@ -372,7 +365,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                     itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
                     itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
                     itemRef->SetAttribute(AttrCapacity,   itemRef->type().capacity());   // Capacity
-                    //itemRef->SaveAttributes();
                     return itemRef;
                 }
             }
@@ -403,7 +395,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             stationRef->SetAttribute(AttrRadius,         stationRef->type().radius());       // Radius
             stationRef->SetAttribute(AttrVolume,         stationRef->type().volume());       // Volume
             stationRef->SetAttribute(AttrCapacity,       stationRef->type().capacity());   // Capacity
-            //stationRef->SaveAttributes();
             return stationRef;
         }
         case EVEDB::invCategories::Celestial: {
@@ -428,7 +419,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 cargoRef->SetAttribute(AttrRadius,        cargoRef->type().radius());        // Radius
                 cargoRef->SetAttribute(AttrVolume,        cargoRef->GetPackagedVolume());        // Volume
                 cargoRef->SetAttribute(AttrCapacity,      cargoRef->type().capacity());      // Capacity
-                cargoRef->SaveAttributes();
                 return cargoRef;
             } else if (t->groupID() == EVEDB::invGroups::Wreck) {
                 // Spawn new Wreck Container
@@ -445,7 +435,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 wreckRef->SetAttribute(AttrRadius,        wreckRef->type().radius());        // Radius
                 wreckRef->SetAttribute(AttrVolume,        wreckRef->type().volume());        // Volume
                 wreckRef->SetAttribute(AttrCapacity,      wreckRef->type().capacity());      // Capacity
-                wreckRef->SaveAttributes();
                 return wreckRef;
             } else if (t->groupID() == EVEDB::invGroups::Force_Field) {
                 // Spawn force field item in EVEMU_TEMP_ENTITY_ID range and does NOT save Force_Field to db
@@ -482,7 +471,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
     itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
     itemRef->SetAttribute(AttrVolume,         itemRef->GetPackagedVolume());       // Volume
     itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
-	itemRef->SaveAttributes();
     return itemRef;
 }
 
@@ -1010,9 +998,9 @@ void InventoryItem::SaveItem() {
             customInfo().c_str()
         )
     );
-
-    /* do we really want to save attributes?  they may (most likely) have been modified by skills/modules/items/etc  */
-    SaveAttributes();
+    // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
+    // make call here for items saved after *some* change
+    mAttributeMap.SaveAttributes();
 }
 
 //contents of changes are consumed and cleared
@@ -1087,7 +1075,7 @@ void InventoryItem::SetCustomInfo(const char *ci) {
         m_customInfo = ci;
     else
         m_customInfo = "";
-    //SaveItem();
+    SaveItem();
 }
 
 void InventoryItem::Relocate(const GPoint &pos)
@@ -1095,7 +1083,6 @@ void InventoryItem::Relocate(const GPoint &pos)
     m_position = pos;
 
     _log(ITEM__TRACE, "%s(%u) Relocating to %.3f, %.3f, %.3f.", m_itemName.c_str(), m_itemID, m_position.x, m_position.y, m_position.z);
-    //SaveItem();
 }
 
 void InventoryItem::SetAttribute( uint16 attrID, int64 num, bool notify/*true*/)
@@ -1160,6 +1147,18 @@ bool InventoryItem::SkillCheck(InventoryItemRef refItem)
     return true;
 }
 
+void InventoryItem::AddModifier(fxData data)
+{
+    m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+}
+
+void InventoryItem::ReloadAttributes()
+{
+    mAttributeMap.Load(true);
+    m_modifiers.clear();
+}
+
+// not sure if/how i can use these...maybe for Implants, boosters, modules(state>1)
 void InventoryItem::ApplyEffect(int8 state)
 {
 }
@@ -1170,15 +1169,4 @@ void InventoryItem::RemoveEffect(int8 state)
 
 void InventoryItem::GetEffectsInState(int8 state, std::vector< Effect >& effectRef)
 {
-}
-
-void InventoryItem::AddModifier(fxData data)
-{
-    m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
-}
-
-void InventoryItem::ReloadAttributes()
-{
-    mAttributeMap.Load(true);
-    m_modifiers.clear();
 }

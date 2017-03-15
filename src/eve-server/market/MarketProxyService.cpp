@@ -770,7 +770,7 @@ void MarketProxyService::_ExecuteSellOrder(uint32 sell_order_id, uint32 stationI
     } else if (IsPlayerCorp(orderOwnerID)) {
         //TODO:  add money to player corp account.
         //TODO:  find corp wallet division for market orders?
-    } else if (orderOwnerID >= EVEMU_MINIMUM_ID) {
+    } else if (orderOwnerID >= EVEMU_MINIMUM_DYNAMIC_ID) {
         Client* seller = sEntityList.FindClientByCharID(orderOwnerID);
         if (seller) {
             //the seller is logged in, send them a notification...

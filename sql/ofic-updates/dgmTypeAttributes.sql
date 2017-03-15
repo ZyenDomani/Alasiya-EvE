@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `dgmTypeAttributes` (
   `attributeID` smallint(6) NOT NULL,
   `valueInt` int(11) DEFAULT NULL,
   `valueFloat` double DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `dgmTypeAttributes`

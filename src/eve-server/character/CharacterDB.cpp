@@ -38,7 +38,7 @@ CharacterDB::CharacterDB()
 bool CharacterDB::ReportRespec(uint32 characterId)
 {
     DBerror error;
-    if (!sDatabase.RunQuery(error, "UPDATE character_ SET freeRespecs = freeRespecs - 1, lastRespecDateTime = %" PRIu64 ", nextRespecDateTime = %" PRIu64 " WHERE characterId = %u AND freeRespecs > 0",
+    if (!sDatabase.RunQuery(error, "UPDATE chrCharacter SET freeRespecs = freeRespecs - 1, lastRespecDateTime = %" PRIu64 ", nextRespecDateTime = %" PRIu64 " WHERE characterId = %u AND freeRespecs > 0",
         Win32TimeNow(), Win32TimeNow() + Win32Time_Year, characterId))
         return false;
     return true;
@@ -47,7 +47,7 @@ bool CharacterDB::ReportRespec(uint32 characterId)
 bool CharacterDB::GetRespecInfo(uint32 characterId, uint32& out_freeRespecs, uint64& out_lastRespec, uint64& out_nextRespec)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT freeRespecs, lastRespecDateTime, nextRespecDateTime FROM character_ WHERE characterID = %u", characterId))
+    if (!sDatabase.RunQuery(res, "SELECT freeRespecs, lastRespecDateTime, nextRespecDateTime FROM chrCharacter WHERE characterID = %u", characterId))
         return false;
     if (res.GetRowCount() < 1)
         return false;
@@ -71,7 +71,7 @@ bool CharacterDB::GetRespecInfo(uint32 characterId, uint32& out_freeRespecs, uin
 
         // reflect this in the database, too
         DBerror err;
-        sDatabase.RunQuery(err, "UPDATE character_ SET freeRespecs = %u, nextRespecDateTime = %" PRIu64 " WHERE characterId = %u",
+        sDatabase.RunQuery(err, "UPDATE chrCharacter SET freeRespecs = %u, nextRespecDateTime = %" PRIu64 " WHERE characterId = %u",
             out_freeRespecs, out_nextRespec, characterId);
     }
 
@@ -88,7 +88,7 @@ uint64 CharacterDB::PrepareCharacterForDelete(uint32 accountID, uint32 charID)
 
     DBerror error;
     uint32 affectedRows;
-    sDatabase.RunQuery(error, affectedRows, "UPDATE character_ SET deletePrepareDateTime = %" PRIu64 " WHERE accountID = %u AND characterID = %u", deleteTime, accountID, charID);
+    sDatabase.RunQuery(error, affectedRows, "UPDATE chrCharacter SET deletePrepareDateTime = %" PRIu64 " WHERE accountID = %u AND characterID = %u", deleteTime, accountID, charID);
     if (affectedRows != 1)
         return 0;
 
@@ -99,7 +99,7 @@ void CharacterDB::CancelCharacterDeletePrepare(uint32 accountID, uint32 charID)
 {
     DBerror error;
     uint32 affectedRows;
-    sDatabase.RunQuery(error, affectedRows, "UPDATE character_ SET deletePrepareDateTime = 0 WHERE accountID = %u AND characterID = %u", accountID, charID);
+    sDatabase.RunQuery(error, affectedRows, "UPDATE chrCharacter SET deletePrepareDateTime = 0 WHERE accountID = %u AND characterID = %u", accountID, charID);
     if (affectedRows != 1)
         codelog(CLIENT__ERROR, "Failed to cancel character deletion, affected rows: %u", affectedRows);
 }
@@ -108,7 +108,7 @@ PyRep* CharacterDB::DeleteCharacter(uint32 accountID, uint32 charID)
 {
     DBerror error;
     uint32 affectedRows;
-    sDatabase.RunQuery(error, affectedRows, "DELETE FROM character_ WHERE deletePrepareDateTime > 0 AND deletePrepareDateTime <= %" PRIu64 " AND accountID = %u AND characterID = %u", Win32TimeNow(), accountID, charID);
+    sDatabase.RunQuery(error, affectedRows, "DELETE FROM chrCharacter WHERE deletePrepareDateTime > 0 AND deletePrepareDateTime <= %" PRIu64 " AND accountID = %u AND characterID = %u", Win32TimeNow(), accountID, charID);
 
     if (affectedRows == 1)
     {
@@ -156,7 +156,7 @@ PyRep *CharacterDB::GetCharacterList(uint32 accountID) {
         "  c.deletePrepareDateTime,"
         "  c.gender,"
         "  e.typeID"
-        " FROM character_ AS c "
+        " FROM chrCharacter AS c "
         "  LEFT JOIN entity AS e ON c.characterID = e.itemID"
         " WHERE c.accountID=%u", accountID))
     {
@@ -209,7 +209,7 @@ void CharacterDB::UpdateCharCorpRecords(uint32 charID, uint32 corpID) {
     }
 
     if (!sDatabase.RunQuery(err,
-        "UPDATE character_ SET startDateTime = %" PRIu64 " WHERE characterID = %u",
+        "UPDATE chrCharacter SET startDateTime = %" PRIu64 " WHERE characterID = %u",
         Win32TimeNow(), charID
     ))
     {
@@ -224,7 +224,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
     uint32 shipTypeID = 606;  //arbitrary default.
 
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT itemName, typeID FROM entity WHERE itemID = (SELECT shipID FROM character_ WHERE characterID = %u)", characterID)) {
+    if(!sDatabase.RunQuery(res, "SELECT itemName, typeID FROM entity WHERE itemID = (SELECT shipID FROM chrCharacter WHERE characterID = %u)", characterID)) {
         _log(CLIENT__WARNING, "Unable to get current ship: %s", res.error.c_str());
     } else {
         DBResultRow row;
@@ -273,7 +273,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
         "  15 AS daysLeft, "    /* this calls a subscription renewal warning on char select screen (see pic in gallery) when <= 10 */
         "  30 AS userType,"     /* 23 is trial acct.  30 is normal */
         "  paperDollState"      // used for re-customization.  see paperDollState:: in packet_types.h
-        " FROM character_"
+        " FROM chrCharacter"
         " WHERE characterID=%u",
         unreadMailCount, upcomingEventCount, unprocessedNotifications,
         shipTypeID, shipName.c_str(), characterID))
@@ -285,7 +285,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
 }
 
 PyRep *CharacterDB::GetCharPublicInfo(uint32 characterID) {
-    if(characterID < EVEMU_MINIMUM_ID) {
+    if(characterID < EVEMU_MINIMUM_DYNAMIC_ID) {
         sLog.Error("CharacterDB::GetCharPublicInfo()", "Character %u is NPC.", characterID);
         return nullptr;
     }
@@ -309,7 +309,7 @@ PyRep *CharacterDB::GetCharPublicInfo(uint32 characterID) {
         "  ch.characterID,"
         "  ch.description,"
         "  ch.startDateTime"
-        " FROM character_ AS ch"
+        " FROM chrCharacter AS ch"
         "  LEFT JOIN entity AS e ON e.itemID = ch.characterID "
         "  LEFT JOIN chrSchools AS cs USING (schoolID) "
         " WHERE ch.characterID=%u", characterID))
@@ -351,7 +351,7 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, uin
         "  ch.bloodlineID, "
         "  ch.raceID, "     //15
         "  entity.locationID "
-        " FROM character_ AS ch"
+        " FROM chrCharacter AS ch"
         "    LEFT JOIN corporation AS co USING (corporationID) "
         "    LEFT JOIN entity ON entity.itemID = ch.characterID "
         " WHERE characterID = %u",
@@ -398,7 +398,7 @@ PyRep* CharacterDB::GetCharPublicInfo3(uint32 characterID) {
         "  startDateTime"
         "  description,"
         "  corporationID"
-        " FROM character_ "
+        " FROM chrCharacter "
         " WHERE characterID=%u", characterID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -416,7 +416,7 @@ PyRep *CharacterDB::GetInfoWindowDataForChar(uint32 characterID) {
         "  ch.corporationID AS corpID,"
         "  co.allianceID,"
         "  ch.title"
-        " FROM character_ AS ch"
+        " FROM chrCharacter AS ch"
         "    LEFT JOIN corporation AS co USING (corporationID)"
         " WHERE characterID=%u", characterID))
     {
@@ -473,7 +473,7 @@ void CharacterDB::SetCurrentShip(uint32 charID, uint32 shipID)
 {
     DBerror err;
     if(!sDatabase.RunQuery(err,
-        "UPDATE character_"
+        "UPDATE chrCharacter"
         " SET"
         "  shipID = %u"
         " WHERE characterID = %u",
@@ -489,7 +489,7 @@ void CharacterDB::SetCurrentPod(uint32 charID, uint32 podID)
 {
     DBerror err;
     if(!sDatabase.RunQuery(err,
-        "UPDATE character_"
+        "UPDATE chrCharacter"
         " SET"
         "  capsuleID = %u"
         " WHERE characterID = %u",
@@ -1198,7 +1198,7 @@ void CharacterDB::load_name_validation_set()
     if(!sDatabase.RunQuery(res,
         "SELECT"
         "  characterID, itemName AS characterName"
-        " FROM character_"
+        " FROM chrCharacter"
         "    JOIN entity ON characterID = itemID"
         ))
     {
@@ -1450,13 +1450,13 @@ PyRep* CharacterDB::GetSkillHistory(uint32 characterID) {
 
 void CharacterDB::UpdateSkillQueueEndTime(uint64 endtime, uint32 charID) {
     DBerror err;
-    sDatabase.RunQuery( err, "UPDATE character_ SET skillQueueEndTime = %" PRIu64 " WHERE characterID = %u ", endtime, charID );
+    sDatabase.RunQuery( err, "UPDATE chrCharacter SET skillQueueEndTime = %" PRIu64 " WHERE characterID = %u ", endtime, charID );
 }
 
 bool CharacterDB::isOffline(uint32 characterID) {
 	//this isnt (and shouldnt be) used...hit db for online status??  hell no.
     DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT Online FROM character_ WHERE characterID = %u", characterID );
+    sDatabase.RunQuery(res, "SELECT Online FROM chrCharacter WHERE characterID = %u", characterID );
 
     DBResultRow row;
     return (!res.GetRow(row));
@@ -1472,7 +1472,7 @@ void CharacterDB::addOwnerCache(uint32 ownerID, std::string ownerName, uint32 ty
 
 PyRep* CharacterDB::GetBounty(uint32 charID, uint32 ownerID) {
     DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT characterID, bounty FROM character_ WHERE bounty > 0 ORDER BY bounty DESC");
+    sDatabase.RunQuery(res, "SELECT characterID, bounty FROM chrCharacter WHERE bounty > 0 ORDER BY bounty DESC");
     return DBResultToRowset(res);
 }
 
@@ -1480,7 +1480,7 @@ PyRep* CharacterDB::GetTopBounties() {
     DBQueryResult res;
     sDatabase.RunQuery(res,
                        "SELECT c.characterID, c.bounty, c.online, e.itemName AS ownerName"
-                       " FROM character_ AS c"
+                       " FROM chrCharacter AS c"
                        " LEFT JOIN entity AS e ON e.itemID = c.characterID"
                        " WHERE c.bounty > 0"
                        " ORDER BY bounty DESC"
@@ -1492,7 +1492,7 @@ void CharacterDB::AddBounty(uint32 charID, uint32 ownerID, uint32 amount) {
     DBerror err;
 
     sDatabase.RunQuery(err,
-        "UPDATE character_ SET bounty = bounty + %u WHERE characterID = %u",
+        "UPDATE chrCharacter SET bounty = bounty + %u WHERE characterID = %u",
         amount, charID);
 
     sDatabase.RunQuery(err,
@@ -1504,7 +1504,7 @@ void CharacterDB::AddBounty(uint32 charID, uint32 ownerID, uint32 amount) {
 uint32 CharacterDB::PayBounty(CharacterRef cRef)
 {
     DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT bounty FROM character_ WHERE characterID = %u", cRef->itemID());
+    sDatabase.RunQuery(res, "SELECT bounty FROM chrCharacter WHERE characterID = %u", cRef->itemID());
 
     DBResultRow row;
     if (res.GetRow(row))

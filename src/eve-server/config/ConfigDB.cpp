@@ -93,7 +93,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  e.typeID,"
             "  c.gender,"
             "  NULL AS ownerNameID"
-            " FROM character_ AS c"
+            " FROM chrCharacter AS c"
             "  LEFT JOIN entity AS e ON e.itemID = c.characterID"
             " WHERE characterID IN (%s)", ids.c_str()))
         {

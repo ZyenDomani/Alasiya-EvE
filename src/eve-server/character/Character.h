@@ -703,8 +703,6 @@ protected:
         const CharacterData& charData, const CorpData& corpData
     );
 
-    void _CalculateTotalSPTrained();
-
     void _GetLogonMinutes();
 
 private:

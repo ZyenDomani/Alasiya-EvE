@@ -98,8 +98,6 @@ StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data)
     if (!sRef->HasAttribute(AttrKineticDamageResonance))        sRef->SetAttribute(AttrKineticDamageResonance, 1.0);
     if (!sRef->HasAttribute(AttrThermalDamageResonance))        sRef->SetAttribute(AttrThermalDamageResonance, 1.0);
 
-    sRef->SaveAttributes();
-
     return sRef;
 }
 

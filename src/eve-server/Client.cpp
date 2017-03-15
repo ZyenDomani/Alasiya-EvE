@@ -127,20 +127,22 @@ Client::~Client() {
 	 *		5)  _warp to random point, but DONT make/update new bubble with entering ship
 	 *		6)  remove client from sysmgr/destiny/server
      */
-        //m_ship->OfflineAll();
-        if (pShipSE)
-            pShipSE->SetPosition(pShipSE->DestinyMgr()->GetPosition());
-
-        SaveAllToDatabase();
-
         if (IsDocked()) {
             if (GetTradeSession()) {
                 TradeService* mts = (TradeService*)(m_services.LookupService("trademgr"));
                 mts->CancelTrade(this);
             }
             OnCharNoLongerInStation();
-        } else
+        }
+
+        //m_ship->OfflineAll();
+        if (pShipSE) {
             WarpOut();
+            // remove position set after WarpOut() is completed (redundant call)
+            pShipSE->SetPosition(pShipSE->DestinyMgr()->GetPosition());
+        }
+
+        SaveAllToDatabase();
 
         m_system->RemoveClient(this, IsDocked(), true);
 

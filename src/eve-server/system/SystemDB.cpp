@@ -133,7 +133,7 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         " FROM entity AS e"
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
-        "  LEFT JOIN character_ AS c ON c.characterID = e.ownerID"
+        "  LEFT JOIN chrCharacter AS c ON c.characterID = e.ownerID"
         "  LEFT JOIN corporation AS co ON co.corporationID = c.corporationID"
         " WHERE e.locationID = %u"
         "  AND g.categoryID IN (%d, %d, %d, %d, %d, %d, %d, %d)"

@@ -123,7 +123,7 @@ public:
 
     /*
      * Character stuff
-     * (character_, chrSkillQueue)
+     * (chrCharacter, chrSkillQueue)
      */
     bool GetCharacter(uint32 characterID, CharacterData &into);
     bool GetCorpData(uint32 characterID, CorpData &into);

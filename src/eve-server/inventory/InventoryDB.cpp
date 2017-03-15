@@ -605,8 +605,8 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
     } else if (IsStation(od.locID)) {
         if (od.ownerID == 1) {
             /* this will get agents in station */
-            query << " AND ownerID < " << EVEMU_MINIMUM_ID;
-            query << " AND itemID < " << EVEMU_MINIMUM_ID;
+            query << " AND ownerID < " << EVEMU_MINIMUM_DYNAMIC_ID;
+            query << " AND itemID < " << EVEMU_MINIMUM_DYNAMIC_ID;
         } else
             query << " AND ownerID = " << od.ownerID;
     } else if (IsNotStaticItem(od.locID)) {
@@ -747,7 +747,7 @@ bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
             "   chr.createDateTime,"
             "   chr.shipID,"
             "   chr.capsuleID"
-            " FROM character_ AS chr"
+            " FROM chrCharacter AS chr"
             "  LEFT JOIN corporation AS crp USING (corporationID)"
             " WHERE chr.characterID = %u", characterID))
         {
@@ -811,7 +811,7 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
             "  rolesAtBase,"
             "  rolesAtHQ,"
             "  rolesAtOther"
-            " FROM character_"
+            " FROM chrCharacter"
             " WHERE characterID = %u",
             characterID))
         {
@@ -848,7 +848,7 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
         if(!sDatabase.RunQuery(res,
             "SELECT"
             "  corporation.stationID"
-            " FROM character_"
+            " FROM chrCharacter"
             "  LEFT JOIN corporation USING (corporationID)"
             " WHERE characterID = %u",
             characterID))
@@ -902,9 +902,9 @@ bool InventoryDB::NewCharacter(uint32 characterID, const CharacterData &data, co
     sDatabase.DoEscapeString(titleEsc, data.title);
     sDatabase.DoEscapeString(descriptionEsc, data.description);
 
-    // Table character_ goes first
+    // Table chrCharacter goes first
     if(!sDatabase.RunQuery(err,
-        "INSERT INTO character_"
+        "INSERT INTO chrCharacter"
         // CharacterData:
         "  (characterID, accountID, title, description, bounty, balance, aurBalance, securityRating, petitionMessage,"
         "   logonDateTime, logonMinutes, corporationID, corpRole, rolesAtAll, rolesAtBase, rolesAtHQ, rolesAtOther,"
@@ -966,7 +966,7 @@ bool InventoryDB::SaveCharacter(uint32 characterID, const CharacterData &data) {
     sDatabase.DoEscapeString(descriptionEsc, data.description);
 
     if(!sDatabase.RunQuery(err,
-        "UPDATE character_"
+        "UPDATE chrCharacter"
         " SET"
         "  accountID = %u,"
         "  title = '%s',"
@@ -1028,7 +1028,7 @@ bool InventoryDB::SaveCorpData(uint32 characterID, const CorpData &data) {
     DBerror err;
 
     if(!sDatabase.RunQuery(err,
-        "UPDATE character_"
+        "UPDATE chrCharacter"
         " SET"
         "  corpRole = %" PRIu64 ","
         "  corpAccountKey = %i,"
@@ -1075,7 +1075,7 @@ bool InventoryDB::DeleteCharacter(uint32 characterID) {
     sDatabase.RunQuery(err, "DELETE FROM repAgent, repAlliance, repChar, repCorp, repNPCCorp, repStandingChanges"
         " WHERE (fromID = %u OR toID = %u)", characterID, characterID);
 
-    sDatabase.RunQuery(err, "DELETE FROM chrCertificates, character_, chrEmployment, market_journal, crpCharShares"
+    sDatabase.RunQuery(err, "DELETE FROM chrCertificates, chrCharacter, chrEmployment, market_journal, crpCharShares"
          " WHERE characterID=%u", characterID);
 
     sDatabase.RunQuery(err, "DELETE FROM entity, entity_attributes"

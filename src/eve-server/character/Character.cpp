@@ -856,7 +856,7 @@ void Character::UpdateSkillQueue() {
     }
 
     if ( !m_skillQueue.empty() && currentTraining ) {
-        _CalculateTotalSPTrained();             // Re-Calculate total SP trained and store in internal variable:
+        GetTotalSP();                           // Re-Calculate total SP trained and store in internal variable:
         SaveSkillQueue();                       // Save character skill data
         UpdateSkillQueueEndTime(m_skillQueue);  // and Queue end time:
     } else
@@ -866,7 +866,7 @@ void Character::UpdateSkillQueue() {
     GetSkillQueue();                        	//update skill queue on client
 }
 
-//  this still needs work...in progress...see commented code for using <map> flatSkillQueue
+/** @todo update this to use highest level of skills when multiple levels in queue */
 void Character::UpdateSkillQueueEndTime(const SkillQueue &queue) {
     /**   this code is start for looping skillqueue for multiple levels of same skill.
     std::unordered_multimap<uint32, uint8> flatSkillQueue;
@@ -1002,6 +1002,7 @@ void Character::SaveCharacter() {
     _GetLogonMinutes();
 
     // character data
+    /** @todo rework this to save only updated data */
     m_factory.db().SaveCharacter(
         m_itemID,
         CharacterData(
@@ -1036,6 +1037,7 @@ void Character::SaveCharacter() {
     );
 
     // corporation data
+    /** @todo remove this in favor of updating data when changed */
     m_factory.db().SaveCorpData(
         m_itemID,
         CorpData(
@@ -1061,12 +1063,6 @@ void Character::SaveFullCharacter() {
         GetSkillInTraining()->SaveItem();
     // Save skill queue:
     SaveSkillQueue();
-
-    // TODO
-    // Loop through all items owned by this Character and save each one
-	// Loop through all contracts or other non-item things owned by this Character and save each one
-
-//  we DO NOT need to iterate thru all skills and save them...
 }
 
 void Character::SaveSkillQueue() {
@@ -1081,17 +1077,6 @@ void Character::SaveCertificates() {
     m_db.SaveCertificates( m_itemID, m_certificates );
 }
 
-void Character::_CalculateTotalSPTrained() {
-    // Loop through all skills trained and calculate total SP this character has trained so far
-    EvilNumber totalSP = 0.0f;
-    std::vector<InventoryItemRef> skills;
-    GetSkillsList( skills );
-    for (auto cur : skills) {
-        totalSP += cur->GetAttribute(AttrSkillPoints);    // much cleaner and more accurate    -allan
-    }
-    m_totalSPtrained = totalSP;
-}
-
 EvilNumber Character::GetTotalSP() {
     // Loop through all skills trained and calculate total SP this character has trained so far
     EvilNumber totalSP = 0.0f;
@@ -1101,7 +1086,7 @@ EvilNumber Character::GetTotalSP() {
         totalSP += cur->GetAttribute( AttrSkillPoints );    // much cleaner and more accurate    -allan
     }
 
-    return totalSP;
+    return (m_totalSPtrained = totalSP);
 }
 
 void Character::SaveSkillHistory(uint8 eventID, uint64 logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints) {

@@ -92,9 +92,8 @@ void ItemFactory::SaveItems() {
                 data.customInfo = cur.second->customInfo();
             items.push_back(data);
             ++count;
-            // not sure if i wanna save all attribs here.  for now, just save skillpoints
-            if ((cur.second->flag() == flagSkill) or (cur.second->flag() == flagSkillInTraining))
-                cur.second->SaveAttributes();
+            // attribMap is updated to save relevant attributes.  this call is safe and desirable here
+            cur.second->SaveAttributes();
         }
     }
     m_db.SaveItems(items);

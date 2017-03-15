@@ -723,7 +723,7 @@ bool MarketDB::DeleteOrder(uint32 orderID) {
 bool MarketDB::AddCharacterBalance(uint32 char_id, double delta)
 {
     DBerror err;
-    if(!sDatabase.RunQuery(err, "UPDATE character_ SET balance=balance+%f WHERE characterID=%u",delta,char_id)) {
+    if(!sDatabase.RunQuery(err, "UPDATE chrCharacter SET balance=balance+%f WHERE characterID=%u",delta,char_id)) {
         codelog(DATABASE__ERROR, "Error in query : %s", err.c_str());
         return false;
     }

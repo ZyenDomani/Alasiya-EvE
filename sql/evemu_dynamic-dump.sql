@@ -153,9 +153,9 @@ CREATE TABLE `channelMods` (
 
 /*Data for the table `channelMods` */
 
-/*Table structure for table `character_` */
+/*Table structure for table `chrCharacter` */
 
-CREATE TABLE `character_` (
+CREATE TABLE `chrCharacter` (
   `characterID` int(10) unsigned NOT NULL DEFAULT '0',
   `accountID` int(10) unsigned DEFAULT NULL,
   `title` varchar(85) NOT NULL DEFAULT '',

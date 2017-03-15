@@ -334,7 +334,6 @@ void AsteroidBeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius,
     itemRef->SetAttribute(AttrQuantity,  quantity);                          // Quantity
     itemRef->SetAttribute(AttrVolume,    itemRef->type().volume());          // Volume
     itemRef->SetAttribute(AttrMass,      itemRef->type().mass() * quantity); // Mass
-    //itemRef->SaveAttributes();
 
     AsteroidSE* pASE = new AsteroidSE(itemRef, *(m_system->GetServiceMgr()), m_system );
     m_system->AddEntity(pASE);

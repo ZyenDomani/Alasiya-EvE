@@ -163,7 +163,6 @@ StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManag
     station->SetAttribute(AttrMass,             station->type().mass());
     station->SetAttribute(AttrRadius,           station->type().radius());
     station->SetAttribute(AttrVolume,           station->type().volume());
-    station->SaveAttributes();
 }
 
 void StationSE::EncodeDestiny( Buffer& into )

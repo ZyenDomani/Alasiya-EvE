@@ -268,7 +268,8 @@ private:
 
 /* new effects processing system */
 public:
-    // this has to be called on item to perform the check on.  the item sent in arg is holder of skill requirements (module, ship, implant, etc)
+    /*  this checks requires skills on refItem against current skills in caller.
+     *  returns true if all pass */
     bool SkillCheck(InventoryItemRef refItem);
 
     void AddModifier(fxData data);

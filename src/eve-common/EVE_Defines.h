@@ -1,6 +1,6 @@
-/*
- *
- *
+/*  EVE_Defines.h
+ *   this file defines hard-coded values for game item classes
+ *   we also define C-type macros for ease of readibilty in various item conditionals
  *
  */
 
@@ -55,8 +55,8 @@
 #define minStation              60000000
 #define maxNPCStation           60999999
 #define maxStation              69999999
-#define minUniverseAsteroid     70000000
-#define maxUniverseAsteroid     79999999
+#define minUniverseAsteroid     70000000        // deco only
+#define maxUniverseAsteroid     79999999        // deco only
 #define minAlliance             99000000
 #define maxAlliance             99900000
 #define minPlayerItem           140000000
@@ -79,18 +79,17 @@ minFakeClientItem = 17000000000000000000L
 //  **update these**
 #define EVEMU_OUTPOST_ID               61000000
 #define EVEMU_SCENERIO_ID              90000000
+#define EVEMU_MAXIMUM_STATIC_ID        99900000
 #define EVEMU_ASTEROID_ID             100000000
 #define EVEMU_TEMP_ENTITY_ID          110000000
 #define EVEMU_PLANET_PIN_ID           130000000
-#define EVEMU_MINIMUM_ID          minPlayerItem
-#define EVEMU_MINIMUM_ENTITY_ID       140000000
+#define EVEMU_MINIMUM_DYNAMIC_ID      140000000
 #define EVEMU_DRONE_ID                500000000
 #define EVEMU_NPC_ID                  750000000
 #define EVEMU_MISSILE_ID             1000000000
 #define EVEMU_DUNGEON_ID             1200000000
 #define EVEMU_MAX_SHORT_ID           2147483647
 #define EVEMU_MAX_LONG_ID   9223372036854775807     //this is max for a SIGNED int64.
-#define EVEMU_MAXIMUM_ENTITY_ID (EVEMU_MINIMUM_ID-1)
 
 #define IsTempPinID(pinID) \
  (pinID < 1000)
@@ -166,10 +165,10 @@ minFakeClientItem = 17000000000000000000L
 ((itemID >= 70000000) && (itemID < 80000000))
 
 #define IsScenarioItem(itemID) \
-((itemID >= 90000000) && (itemID < EVEMU_MINIMUM_ID))
+((itemID >= 90000000) && (itemID < EVEMU_MINIMUM_DYNAMIC_ID))
 
 #define IsNotStaticItem(itemID) \
-(itemID >= EVEMU_MINIMUM_ID)
+(itemID >= EVEMU_MINIMUM_DYNAMIC_ID)
 
 #define FlagToSlot(flag) \
 (flag - flagSlotFirst)
