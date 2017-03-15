@@ -280,7 +280,7 @@ int main( int argc, char* argv[] )
     sConsole.Initialize(&command_dispatcher, item_factory);
 
     /* Service creation and registration. */
-    sLog.Yellow("       ServerInit", "Creating pyServMgr."); // 85 currently known pyServMgr
+    sLog.Green("       ServerInit", "Registering Service Managers."); // 85 currently known pyServMgr
     double startTime = GetTimeMSeconds();
     /* Please keep the pyServMgr list clean so it's easier to find things */
     /* service here are systems responding to client calls */
@@ -373,7 +373,7 @@ int main( int argc, char* argv[] )
     pyServMgr.Initalize(startTime);
 
     /** @note  this is NOT used correctly yet...  */
-    sLog.Yellow("       ServerInit", "Priming cached objects.");
+    sLog.Green("       ServerInit", "Priming cached objects.");
     pyServMgr.cache_service->PrimeCache();
 
     // start up the image server

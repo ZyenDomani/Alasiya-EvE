@@ -50,8 +50,8 @@ ImageServer::ImageServer()
     if (_basePath[_basePath.size() - 1] != '/')
         _basePath += "/";
 
-    sLog.Blue("       ServerInit", "Image Server URL: %s", _url.c_str());
-    sLog.Blue("       ServerInit", "Image Server path: %s", _basePath.c_str());
+    sLog.Cyan("      ImageServer", "Image Server URL: %s", _url.c_str());
+    sLog.Cyan("      ImageServer", "Image Server path: %s", _basePath.c_str());
 
     if (CreateDirectory( _basePath.c_str(), NULL ) == 0) {
         for (int i = 0; i < CategoryCount; i++) {
@@ -59,7 +59,7 @@ ImageServer::ImageServer()
             subdir.append(Categories[i]);
             CreateDirectory( subdir.c_str(), NULL );
         }
-        sLog.Green("      ImageServer", "Image Server Created directorys in %s", _basePath.c_str());
+        sLog.Blue("      ImageServer", "Image Server Created directorys in path");
     } /* else directory probably exists */
 }
 

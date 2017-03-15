@@ -58,7 +58,7 @@ void MarketBotMgr::Initialize()
     m_initalized = true;
     sMktBotDataMgr.Initialize();
 
-    sLog.Green("   Market Bot Mgr", "Market Bot Manager Initialized.");
+    sLog.Blue("   Market Bot Mgr", "Market Bot Manager Initialized.");
     /* start timers, process current data, and create new orders, if needed */
 
 }

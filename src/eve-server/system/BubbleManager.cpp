@@ -61,7 +61,7 @@ BubbleManager::~BubbleManager() {
 
 void BubbleManager::Initialize() {
     /* just to create the singleton here */
-    sLog.Green("   Bubble Manager", "Bubble Manager Initialized.");
+    sLog.Blue("   Bubble Manager", "Bubble Manager Initialized.");
 }
 
 void BubbleManager::clear() {

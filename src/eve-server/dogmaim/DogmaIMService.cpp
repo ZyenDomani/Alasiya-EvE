@@ -80,6 +80,7 @@ public:
 
         /*StopModuleRepair*/
         /*InitiateModuleRepair*/
+        
     }
     virtual ~DogmaIMBound() {delete m_dispatch;}
     virtual void Release() {

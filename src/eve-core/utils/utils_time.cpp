@@ -74,9 +74,9 @@ uint64 Win32TimeNow() {
 }
 
 double GetTimeMSeconds() {  // -allan
-    //  this gives microsecond resolution
+    //  this returns milliseconds in microsecond resolution
     /*
-     * win32timenow returns seconds resolution.
+     * win32timenow returns second resolution.
      * 1305821829.00000000
      *
      * resolution of double will give 1 ten-millionth precision (5 places, or 1/100000)
@@ -90,7 +90,7 @@ double GetTimeMSeconds() {  // -allan
 }
 
 double GetTimeUSeconds() {  // -allan
-    //  this gives nanosecond resolution
+    //  this returns microseconds in nanosecond resolution
     //  NOTE  auto, std::chrono and system_clock::now() require C++11
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();     // return in nanoseconds

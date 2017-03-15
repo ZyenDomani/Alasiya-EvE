@@ -122,7 +122,7 @@ Client::~Client() {
 	/** @todo  - for warping to random point when client logs out in space...
 	 *		1)  check client IsInSpace(?)
 	 *		2)  set timer to delay removing bubble/sysmgr/destiny...or check based on destiny->isstopped() or timer on destiny->ismoving()
-	 *		3)  set current position (DB::character_.logoutPosition?)  initial code in place for warp-in on login
+	 *		3)  set current position (DB::chrCharacter.logoutPosition?)  initial code in place for warp-in on login
 	 *		4)  generate random point to warp to ** use m_SGP.GetRandPointInSystem(systemID, distance)
 	 *		5)  _warp to random point, but DONT make/update new bubble with entering ship
 	 *		6)  remove client from sysmgr/destiny/server
@@ -290,6 +290,7 @@ void Client::ProcessClient() {
         switch (m_clientState) {
             case csIdle: {
                 sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
+                SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
             } break;
             case csDock: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
@@ -761,6 +762,8 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
 
     //delay the move 5sec so they can see the JumpOut animation
     SetClientTimer(ClientState::csJump, ClientTimers::JumpingTimer);
+
+    //return new PyLong(Win32TimeNow());
 }
 
 void Client::ExecuteJump() {
@@ -809,16 +812,17 @@ bool Client::AddBalance(double amount) {
     return true;
 }
 
-void Client::SetClientTimer(ClientState type, uint32 wait_ms)
+void Client::SetClientTimer(ClientState state, uint32 time)
 {
-    m_clientState = type;
-    m_stateTimer.Start(wait_ms);
+    m_clientState = state;
+    m_stateTimer.Start(time);
 }
 
 void Client::SetShip(ShipItemRef shipRef) {
     m_ship = shipRef;
     m_shipId = shipRef->itemID();
-    UpdateSessionInt("shipid", m_shipId);   // update shipID in session
+    if (IsSolarSystem(m_locationID))
+        UpdateSessionInt("shipid", m_shipId);   // update shipID in session
     if (m_char)
         m_char->SetActiveShip(m_shipId);
 }

@@ -182,16 +182,6 @@ void ShipItem::Init()
         m_ModuleManager = new ModuleManager(this);
 
     m_ModuleManager->Initialize();
-
-    if (m_pilot->IsInSpace()) {
-        if (sConfig.server.IsTestServer) {
-            Heal();
-        } else {
-            // if live server, update shield and cap (simulate idle charging)
-            SetShipShield(1.0);
-            SetShipCapacitorLevel(1.0);
-        }
-    }
 }
 
 void ShipItem::InitPod() {
@@ -225,8 +215,17 @@ void ShipItem::SetPlayer(Client* pClient) {
         return;
     }
     Init();
-    if (IsSolarSystem(m_locationID))
+
+    if (IsSolarSystem(m_locationID)) {
         ProcessEffects(true);
+        if (sConfig.server.IsTestServer) {
+            Heal();
+        } else {
+            // if live server, update shield and cap (simulate idle charging)
+            SetShipShield(1.0);
+            SetShipCapacitorLevel(1.0);
+        }
+    }
 
     m_ModuleManager->CharacterBoardingShip();
 }
@@ -649,6 +648,9 @@ void ShipItem::Dock() {
 }
 
 void ShipItem::Undock() {
+    if (m_ModuleManager)
+        ProcessEffects(true);
+
     if (sConfig.server.IsTestServer) {
         // Heal Ship completely on test server
         Heal();
@@ -659,10 +661,6 @@ void ShipItem::Undock() {
             SetShipCapacitorLevel(1.0);
         }
     }
-
-    if (m_ModuleManager)
-        ProcessEffects(true);
-
 }
 
 void ShipItem::Warp() {

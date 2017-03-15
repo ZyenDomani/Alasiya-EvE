@@ -13,7 +13,7 @@
  COMMAND( secstatus, ROLE_PLAYER,
           " - note giving you this character's current security status")
  COMMAND( list, ROLE_PLAYER,
-          " - gives a list of all dynamic entities and players in this bubble")
+          " - gives a list of all dynamic entities and players and their destinyState in this bubble")
  COMMAND( commandlist, ROLE_PLAYER,
           " - gives a list of all game commands, required role, and a description")
  COMMAND( destinyvars, ROLE_GMH,

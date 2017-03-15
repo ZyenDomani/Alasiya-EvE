@@ -61,7 +61,7 @@ void WormholeMgr::Initialize(PyServiceMgr* svc) {
     }
 
     m_initalized = true;
-    sLog.Green(" Wormhole Manager", "Wormhole Manager Initialized.");
+    sLog.Blue(" Wormhole Manager", "Wormhole Manager Initialized.");
     /* load current data, start timers, process current data, and create new items, if needed */
 }
 

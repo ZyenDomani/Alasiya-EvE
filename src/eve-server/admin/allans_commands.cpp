@@ -578,9 +578,9 @@ PyResult Command_warpto(Client* who, CommandDB* db, PyServiceMgr* services, cons
     /** @todo  finish this.... */
     who->GetShipSE()->DestinyMgr()->Halt();
 
-    char reply[25];
-    snprintf(reply, 25,
-             "Ship Halted.");
+    char reply[55];
+    snprintf(reply, 55,
+             "Command Unavalible.\nShip Halted.");
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);

@@ -283,22 +283,22 @@ typedef enum {
 //  -updated 18Dec16
 enum ClientTimers {
     DefaultTimer     = 1000,
-    BoardTimer       = 700,
-    JumpTimer        = 300,
-    UndockTimer      = 500,
-    DockingTimer     = 1000,     // Timer to delay docking (as on live)
+    BoardTimer       = 900,
+    JumpTimer        = 600,
+    UndockTimer      = 800,
+    DockingTimer     = 1000,    // Timer to delay docking (as on live)
     JumpingTimer     = 3000,
     MovingTimer      = 1000,
-    ScanningTimer    = 10000,      // used to delay scan results based on skills, items, and other shit
+    ScanningTimer    = 10000,   // used to delay scan results based on skills, items, and other shit
     KilledTimer      = 3000,    // used to reset destiny set state after killed or otherwise changing ships
-    ProcTimer        = 1000,     // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
-    JetcanTimer      = 180000,     // used to delay jetcan creation.  3min default
+    ProcTimer        = 1000,    // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
+    JetcanTimer      = 180000,  // used to delay jetcan creation.  3min default
     LogoutTimer      = 1000,    // used to hold client object until WarpOut finishes
     SessionTimer     = 10000,   // used to prevent multiple session changes from occuring too fast
     DockInvul        = 3000,
     JumpInvul        = 5000,
     WarpOutInvul     = 5000,
-    WarpInInvul      = 10000,
+    WarpInInvul      = 12000,   // increased from 10s
     UndockInvul      = 15000,
     RestoringInvul   = 60000,
     JumpCloak        = 10000,

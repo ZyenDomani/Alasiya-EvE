@@ -576,7 +576,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         } break;
         case operandLG: {    //48, '%(arg1)s.LocationGroup.%(arg2)s'  -- specify a group by grpID for a location'  used by ALGM
             if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source when fxSrc == self.");
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Group when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
             if (data.fxSrc)
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): LocationGroup called when fxSrc previously defined as %s.", sFxProc.GetSourceName(data.fxSrc).c_str());
             data.fxSrc = dgmSrcGroup;
@@ -585,7 +585,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         } break;
         case operandLS: {    //49, '%(arg1)s.SkillRequiredLocationGroup[%(arg2)s]'  --  specify a group by skillID for a location   used by ALRSM and AORSM
             if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source when fxSrc == self.");
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Skill when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
             if (data.fxSrc)
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): SkillRequiredLocationGroup called when fxSrc previously defined as %s.", sFxProc.GetSourceName(data.fxSrc).c_str());
             data.fxSrc = dgmSrcSkill;
@@ -605,7 +605,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         } break;
         case operandGM: {    //37,'%(arg1)s.GetModule(%(arg2)s)'      --used by subsystems as (GetModule(Ship:201):55)
             if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source when fxSrc == self.");
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Ship when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
             if (data.fxSrc)
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): GetModule called when fxSrc previously defined as %s.", sFxProc.GetSourceName(data.fxSrc).c_str());
             data.fxSrc = dgmSrcShip;
@@ -618,7 +618,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data);
             if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source when fxSrc == self.");
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Skill when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
             if (skill and (data.fxSrc == dgmSrcSelf))
                 data.fxSrc = dgmSrcSkill;
             if (group and  (data.fxSrc != dgmSrcGang))
@@ -657,7 +657,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data);
             if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source when fxSrc == self.");
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Gang when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
             if (data.fxSrc)
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): AddGangRequiredSkillModifier called when fxSrc previously defined as %s.", sFxProc.GetSourceName(data.fxSrc).c_str());
             data.fxSrc = dgmSrcGang;
@@ -667,7 +667,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data);
             if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source when fxSrc == self.");
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Gang when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
             if (data.fxSrc)
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): AddGangShipModifier called when fxSrc previously defined as %s.", sFxProc.GetSourceName(data.fxSrc).c_str());
             data.fxSrc = dgmSrcGang;

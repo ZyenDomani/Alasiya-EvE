@@ -101,6 +101,10 @@ ShipService::ShipService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     //PyCallable_REG_CALL(ShipService,);
+
+    /* return error msg from this call, if applicable */
+    //sm.StartService('sessionMgr').PerformSessionChange('board', ship.BoardStoredShip, structureID, shipID)
+    //sm.StartService('sessionMgr').PerformSessionChange('storeVessel', ship.StoreVessel, destID)
 }
 
 ShipService::~ShipService() {
@@ -168,7 +172,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     /* all previous SE and DestinyMgr objects are updated to new ship object here */
     pClient->BoardShip(newShipRef);
 
-    //response should be nodeid and timestamp
+    /* return error msg from this call, if applicable, else nodeid and timestamp */
     return new PyLong(Win32TimeNow());
 }
 
@@ -221,7 +225,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     /* all previous SE and DestinyMgr objects are updated to new ship object here */
     pClient->BoardShip(capsuleRef);
 
-    //response should be nodeid and timestamp
+    /* return error msg from this call, if applicable, else nodeid and timestamp */
     return new PyLong(Win32TimeNow());
 }
 
@@ -872,6 +876,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     }
 
     pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+
     //response should be nodeid and timestamp
     return new PyLong(Win32TimeNow());
 }
@@ -972,9 +977,8 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
 
 */
 
-    Client* pClient = call.client;
-    PyRep *result = NULL;
-    return result;
+    /* return error msg from this call, if applicable, else nodeid and timestamp */
+    return new PyLong(Win32TimeNow());
 }
 
 PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call) {

@@ -162,6 +162,9 @@ int32 BulkDB::GetFileIDfromChunk(uint8 setID, uint8 chunkID)
 /** @todo  update this to use setIDs, and consolidate all data and calls */
 PyRep* BulkDB::GetBulkData(uint8 chunkID)
 {
+    if (!m_loaded)
+        Initialize();
+    
     std::map<uint8, PyRep*>::const_iterator itr = m_bulkData.find(chunkID);
     if (itr != m_bulkData.end())
         return itr->second;
