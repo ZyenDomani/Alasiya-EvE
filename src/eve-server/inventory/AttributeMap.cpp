@@ -31,7 +31,6 @@
 #include "EntityList.h"
 #include "StaticDataMgr.h"
 #include "inventory/AttributeMap.h"
-#include "inventory/InventoryDB.h"
 #include "inventory/InventoryItem.h"
 
 
@@ -148,7 +147,7 @@ bool AttributeMap::Save() {
         }
     }
 
-    m_db.SaveAttributes(AttrMap);
+    m_db.SaveAttributes(items);
 
     return true;
 }
