@@ -560,6 +560,33 @@ void InventoryDB::SaveItems(std::vector<SaveData>& data)
 
 }
 
+void InventoryDB::SaveAttributes(std::vector<AttrData>& data)
+{
+    std::ostringstream Inserts;
+    // start the insert into command.
+    Inserts << "INSERT INTO entity_attributes";
+    Inserts << " (itemID, attributeID, valueInt, valueFloat)";
+    bool first = true;
+    for (auto cur : data) {
+        if (first) {
+            Inserts << " VALUES ";
+            first = false;
+        } else
+            Inserts << ", ";
+        Inserts << "(" << cur.itemID << ", " << cur.attrID << ", " << cur.valueInt << ", " << cur.valueFloat << ")";
+    }
+
+    if (!first) {
+        Inserts << "ON DUPLICATE KEY UPDATE ";
+        Inserts << "valueInt=VALUES(valueInt), ";
+        Inserts << "valueFloat=VALUES(valueFloat)";
+        DBerror err;
+        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
+            _log(DATABASE__ERROR, "SaveItems - unable to save data - %s", err.c_str());
+    }
+
+}
+
 
 bool InventoryDB::DeleteItem(uint32 itemID) {
     if (IsStaticMapItem(itemID)) {

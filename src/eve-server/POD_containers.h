@@ -11,6 +11,14 @@
 
 /** @todo  update these for more approprate variable types */
 
+/* POD structure for saving attribute data */
+struct AttrData {
+    uint32 itemID;
+    uint16 attrID;
+    uint32 valueInt;
+    double valueFloat;
+};
+
 /* POD structure for account data */
 struct AccountData {
     int32 id;

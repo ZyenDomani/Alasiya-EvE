@@ -116,6 +116,7 @@ public:
     uint32 NewItem(const ItemData &data);
     bool SaveItem(uint32 itemID, const ItemData &data);
     void SaveItems(std::vector< SaveData >& data);
+    void SaveAttributes(std::vector< AttrData >& data);
 
     bool GetItemContents(OwnerData &od, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<uint32> &into);

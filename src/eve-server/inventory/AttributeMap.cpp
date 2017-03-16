@@ -52,7 +52,7 @@ bool AttributeMap::Load(bool reset/*false*/) {
         // this will allow total clearing of attribs to eliminate the necessity of 'removing' effects
         mAttributes.clear();
     }
-    /* First, we load default attributes values from our itemType */
+    /* First, we copy default attributes values from our itemType */
     mItem.type().CopyAttributes(mItem);
 
     /* Then we load item damage from the db, if any, to update the defaults */
@@ -80,7 +80,7 @@ bool AttributeMap::SaveAttributes() {
 }
 
 bool AttributeMap::Save() {
-    /** @todo update this
+    /** @note
      * we are saving:
      *   all attribs for characters
      *   level and sp attribs for skills
@@ -120,9 +120,10 @@ bool AttributeMap::Save() {
             damage = true;
         } break;
     }
-    std::ostringstream Inserts;
-    Inserts << "INSERT INTO entity_attributes (itemID, attributeID, valueInt, valueFloat) ";
+    EvilNumber zero = 0;
     bool first = true, save = false;
+    std::vector<AttrData> items;
+    items.clear();
     AttrMapItr itr = mAttributes.begin();
     for (; itr != mAttributes.end(); itr++) {
         save = false;
@@ -132,40 +133,22 @@ bool AttributeMap::Save() {
             save = true;
         if (owner)
             save = true;
-        if ((save) and (itr->second != 0)) {
-            if (first) {
-                Inserts << "VALUES";
-                first = false;
-            } else
-                Inserts << ", ";
-            Inserts << "(" << mItem.itemID() << ", " << itr->first << ", ";
+        if ((save) and (itr->second != zero)) {
+            AttrData data;
+            data.itemID = mItem.itemID();
+            data.attrID = itr->first;
             if ( itr->second.get_type() == evil_number_int ) {
-                if (IsNaN(itr->second.get_int())) {
-                    _log(INV__ERROR, "AttributeMap::Save() - int == NaN for itemID:%u", mItem.itemID());
-                    return false;
-                }
-                Inserts << itr->second.get_int() << ", NULL)";
+                data.valueInt = itr->second.get_int();
+                data.valueFloat = 0;
             } else {
-                if (IsNaN(itr->second.get_double())) {
-                    _log(INV__ERROR, "AttributeMap::Save() - float == NaN for itemID:%u", mItem.itemID());
-                    return false;
-                }
-                Inserts << " NULL, " << itr->second.get_double() << ")";
+                data.valueInt = 0;
+                data.valueFloat = itr->second.get_double();
             }
+            items.push_back(data);
         }
     }
 
-    if (!first) {
-        Inserts << "ON DUPLICATE KEY UPDATE ";
-        Inserts << "valueInt=VALUES(valueInt), ";
-        Inserts << "valueFloat=VALUES(valueFloat)";
-        /** @todo  take this outta here.  copy from itemfactory.save() */
-        DBerror err;
-        if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
-            _log(DATABASE__ERROR, "AttributeMap - unable to save attributes - %s", err.c_str());
-            return false;
-        }
-    }
+    m_db.SaveAttributes(AttrMap);
 
     return true;
 }

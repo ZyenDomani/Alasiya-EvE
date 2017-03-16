@@ -24,6 +24,11 @@
     Updates:    Allan (added calls and (hacked) updates for new dgm data)
 */
 
+/** @todo  this system will need to work with objectCache, as those ARE the bulkdata files sent to the client.
+ * will have to look into sorting/sending to client eventually.
+ * for now, we'll leave this as-is, because it seems to be working ok.
+ */
+
 #include "eve-server.h"
 
 #include "PyServiceCD.h"

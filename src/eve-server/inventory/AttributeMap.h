@@ -32,9 +32,10 @@ typedef std::map<uint16, EvilNumber>    AttrMap;
 typedef AttrMap::iterator               AttrMapItr;
 typedef AttrMap::const_iterator         AttrMapConstItr;
 
-/** @todo update/finish this class */
 class PyTuple;
 class InventoryItem;
+class InventoryDB;
+
 class AttributeMap
 {
 public:
@@ -160,6 +161,10 @@ protected:
      *       of 'EvilNumber' objects not fitting into the stack.
      */
     AttrMap mAttributes;
+
+private:
+    InventoryDB m_db;
+
 };
 
 #endif /* __EVE_ATTRIBUTE_MGR__H__INCL__ */

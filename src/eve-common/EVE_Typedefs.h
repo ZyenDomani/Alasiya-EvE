@@ -287,7 +287,7 @@ enum ClientTimers {
     JumpTimer        = 300,
     UndockTimer      = 500,
     DockingTimer     = 1000,    // Timer to delay docking (as on live)
-    JumpingTimer     = 3000,
+    JumpingTimer     = 4000,    // Timer to delay jumping
     MovingTimer      = 1000,
     ScanningTimer    = 10000,   // used to delay scan results based on skills, items, and other shit
     KilledTimer      = 1500,    // used to reset destiny set state after killed or otherwise changing ships
