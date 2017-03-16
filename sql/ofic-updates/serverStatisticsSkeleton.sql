@@ -36,7 +36,7 @@ CREATE TABLE `srvStatisticDataDescription` (
   `dataDescription` varchar(200) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Descriptions for DataNames in srvStatisticData table';
 
-INSERT INTO srvStatisticDataDescription (dataName, dataDescription)
+INSERT INTO srvStatisticDataDescription (dataID, dataName, dataDescription)
 VALUES
 (1, 'Turret Shots Fired', 'Contains the total amount of players turret modules uses, or shots fired in certain period of time.'),
 (2, 'Missiles Launched', 'Contains the total amount of players missiles launched (fired) in certain period of time.'),

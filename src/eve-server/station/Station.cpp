@@ -159,6 +159,7 @@ StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManag
     station->SetAttribute(AttrShieldCapacity,   20000000.0);
     station->SetAttribute(AttrShieldCharge,     station->GetAttribute(AttrShieldCapacity));
     station->SetAttribute(AttrArmorHP,          station->GetAttribute(AttrArmorHP));
+    station->SetAttribute(AttrArmorUniformity,  station->GetAttribute(AttrArmorUniformity));
     station->SetAttribute(AttrArmorDamage,      0.0);
     station->SetAttribute(AttrMass,             station->type().mass());
     station->SetAttribute(AttrRadius,           station->type().radius());

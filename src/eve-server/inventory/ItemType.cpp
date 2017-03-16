@@ -279,6 +279,18 @@ bool ItemType::_Load(ItemFactory &factory)
     for (auto cur : typeAttrVec)
         m_AttributeMap.insert(std::pair<uint16, EvilNumber>(cur.attributeID, cur.value));
 
+    // load attributes that are needed but NOT in default DgmTypeAttributes set (but found in invTypes)
+    if (m_mass)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrMass, m_mass));
+    if (m_radius)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrRadius, m_radius));
+    if (m_volume)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrVolume, m_volume));
+    if (m_capacity)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrCapacity, m_capacity));
+    if (m_raceID)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrRaceID, m_raceID));
+
     // load required skills and levels into their own map, for later checks
     if (HasAttribute(AttrRequiredSkill1))
         m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill1).get_int(), (uint8)GetAttribute(AttrRequiredSkill1Level).get_int()));
@@ -296,6 +308,13 @@ bool ItemType::_Load(ItemFactory &factory)
     LoadEffects();
 
     return true;
+}
+
+const void ItemType::CopyAttributes(InventoryItem& itemRef) const
+{
+    // set attributes in the item's own attrMap.
+    for (auto cur : m_AttributeMap)
+        itemRef.SetAttribute(cur.first, cur.second, false);
 }
 
 const bool ItemType::HasAttribute(const uint16 attributeID) const

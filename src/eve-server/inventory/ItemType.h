@@ -294,6 +294,7 @@ public:
 
     const bool HasAttribute(const uint16 attributeID) const;
     EvilNumber GetAttribute(const uint16 attributeID) const;
+    const void CopyAttributes(InventoryItem& itemRef) const;
 
 protected:
     ItemType(

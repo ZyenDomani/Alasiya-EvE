@@ -286,10 +286,10 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
 PyResult BulkMgrService::Handle_GetVersion(PyCallArgs &call)
 {
     // changeID, branch = self.bulkMgr.GetVersion()
-
+/*
     sLog.White( "BulkMgrService::Handle_GetVersion()", "size= %u", call.tuple->size() );
     call.Dump(BULKDATA__DUMP);
-
+*/
     PyTuple* tuple = new PyTuple(2);
         tuple->SetItem(0, new PyInt(bulkDataChangeID));
         tuple->SetItem(1, new PyInt(bulkDataBranch));
@@ -298,9 +298,9 @@ PyResult BulkMgrService::Handle_GetVersion(PyCallArgs &call)
 
 PyResult BulkMgrService::Handle_GetAllBulkIDs(PyCallArgs &call)
 {
+    /*
     sLog.White( "BulkMgrService::Handle_GetAllBulkIDs()", "size= %u", call.tuple->size() );
     call.Dump(BULKDATA__DUMP);
-    /*
      *    serverBulkIDs = self.bulkMgr.GetAllBulkIDs()
      *        PyList of fileIDs of updated data files to be sent to client in bulk
      */

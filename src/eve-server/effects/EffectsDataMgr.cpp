@@ -276,7 +276,7 @@ void FxDataMgr::GetDgmEffects(DBQueryResult& res)
         " SELECT"
         "   effectID,"
         "   effectName,"
-        "   effectState,"
+        "   effectCategory,"
         "   preExpression,"
         "   postExpression,"
         "   isOffensive,"

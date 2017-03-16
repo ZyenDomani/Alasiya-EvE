@@ -148,6 +148,13 @@ public:
     uint32 GetStateStamp()                              { return m_stateStamp; }
     GVector GetHeading()                                { return m_shipHeading; }
 
+    float GetAlignTime()                                { return m_alignTime; }
+    float GetAccelTime()                                { return m_shipMaxAccelTime; }
+    float GetWarpTime()                                 { return m_timeToEnterWarp; }
+    float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
+    double GetRadius()                                  { return m_radius; }
+    double GetCapNeed()                                 { return m_warpCapacitorNeed; }
+
     void MakeMissile(Missile* missile);
 
 protected:
@@ -155,7 +162,9 @@ protected:
 
     SystemEntity* const mySE;			//we do not own this.
 
-    bool _IsTargetInvalid();              //performs common target checks
+    bool IsTargetInvalid();              //performs common target checks
+
+    bool m_hasSentShipUpdates;
 
     //things dictated by our entity's configuration:
     int8 m_warpStrength;                //signed    - >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
@@ -172,7 +181,7 @@ protected:
     float m_speedToLeaveWarp;           //in m/s    - this is set to 75% of m_maxShipSpeed
 
     double m_radius;                    //in m
-    double m_capNeeded;                 //in GJ     - capacitor charged needed to initiate warp
+    double m_capNeeded;                 //in GJ     - variable to drain cap during warp init
     double m_warpCapacitorNeed;         //in GJ     - capacitor charged needed to initiate warp
     // ship motion factors for complicated maths
     double m_shipAgility;               //in s/Mkg  - time-constant of movement for objects in eve physics (and 't' in Dr. SS's calculations)

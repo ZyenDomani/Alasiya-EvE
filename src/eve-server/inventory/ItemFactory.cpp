@@ -92,7 +92,7 @@ void ItemFactory::SaveItems() {
                 data.customInfo = cur.second->customInfo();
             items.push_back(data);
             ++count;
-            // attribMap is updated to save relevant attributes.  this call is safe and desirable here
+            // attribMap has been updated to save relevant attributes.  this call is safe and desirable here
             cur.second->SaveAttributes();
         }
     }

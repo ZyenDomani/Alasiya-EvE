@@ -100,13 +100,13 @@ bool ShipItem::_Load()
 
     // Create default dynamic attributes in the AttributeMap
     SetAttribute(AttrVolume,                            GetPackagedVolume());
+    SetAttribute(AttrCpuLoad,                           0);
+    SetAttribute(AttrPowerLoad,                         0);
+    SetAttribute(AttrUpgradeLoad,                       0);
 
     // Check for existence of attributes.  if not loaded then set them to default values:
     if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, 0.0f);
-    if (!HasAttribute(AttrCpuLoad))                     SetAttribute(AttrCpuLoad, 0);
-    if (!HasAttribute(AttrPowerLoad))                   SetAttribute(AttrPowerLoad, 0);
     if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, 0.0f);
-    if (!HasAttribute(AttrUpgradeLoad))                 SetAttribute(AttrUpgradeLoad, 0);
     // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
     if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrShieldCapacity));
     if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrCapacitorCapacity));
@@ -116,20 +116,7 @@ bool ShipItem::_Load()
     if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, 1.0f);
     if (!HasAttribute(AttrArmorMaxDamageResonance))     SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
     if (!HasAttribute(AttrShieldMaxDamageResonance))    SetAttribute(AttrShieldMaxDamageResonance, 1.0f);
-
-    /*  Resonance  - these should be set in item type
-    if (!HasAttribute(AttrShieldEmDamageResonance))       SetAttribute(AttrShieldEmDamageResonance, 1.0);
-    if (!HasAttribute(AttrShieldExplosiveDamageResonance)) SetAttribute(AttrShieldExplosiveDamageResonance, 1.0);
-    if (!HasAttribute(AttrShieldKineticDamageResonance))  SetAttribute(AttrShieldKineticDamageResonance, 1.0);
-    if (!HasAttribute(AttrShieldThermalDamageResonance))  SetAttribute(AttrShieldThermalDamageResonance, 1.0);
-    if (!HasAttribute(AttrArmorEmDamageResonance))        SetAttribute(AttrArmorEmDamageResonance, 1.0);
-    if (!HasAttribute(AttrArmorExplosiveDamageResonance)) SetAttribute(AttrArmorExplosiveDamageResonance, 1.0);
-    if (!HasAttribute(AttrArmorKineticDamageResonance))   SetAttribute(AttrArmorKineticDamageResonance, 1.0);
-    if (!HasAttribute(AttrArmorThermalDamageResonance))   SetAttribute(AttrArmorThermalDamageResonance, 1.0);
-    if (!HasAttribute(AttrTurretSlotsLeft))               SetAttribute(AttrTurretSlotsLeft, 0);
-    if (!HasAttribute(AttrLauncherSlotsLeft))             SetAttribute(AttrLauncherSlotsLeft, 0);
-    */
-    // hull res is stored in item type as AttrHull*Resonance.  set accordingly
+    // hull res is stored in item type as AttrHull*Resonance for 6 ships.  set accordingly
     if (!HasAttribute(AttrEmDamageResonance))           SetAttribute(AttrEmDamageResonance, mAttributeMap.GetAttribute(AttrHullEmDamageResonance));
     if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance, mAttributeMap.GetAttribute(AttrHullExplosiveDamageResonance));
     if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance, mAttributeMap.GetAttribute(AttrHullKineticDamageResonance));
@@ -190,6 +177,8 @@ void ShipItem::InitPod() {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
+    // pods have 57 attribs and 0 effects
+
     // pod will be full when activated
     if (m_pilot->IsInSpace())
         Heal();

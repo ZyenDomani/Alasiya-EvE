@@ -17,7 +17,9 @@
  COMMAND( commandlist, ROLE_PLAYER,
           " - gives a list of all game commands, required role, and a description")
  COMMAND( destinyvars, ROLE_GMH,
-          " - shows current destiny variables")
+          " - shows some current destiny variables")
+ COMMAND( shipvars, ROLE_GMH,
+          " - shows other current destiny variables")
  COMMAND( fixconnections, ROLE_WORLDMOD,
           " - updates current (incorrect) db table for mapConnections")
  COMMAND( shutdown, ROLE_GMH,

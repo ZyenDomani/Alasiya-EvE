@@ -535,6 +535,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             }
         } break;
         case operandDEFGROUP: {    //26
+            data.fxSrc = dgmSrcGroup;
             if (expression.expressionGroupID) {
                 data.grpID = expression.expressionGroupID;
             } else if (expression.expressionValue != "") {
@@ -575,20 +576,26 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): GetType called when typeID previously defined as %u.", data.typeID);
         } break;
         case operandLG: {    //48, '%(arg1)s.LocationGroup.%(arg2)s'  -- specify a group by grpID for a location'  used by ALGM
-            if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Group when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
             if (data.fxSrc)
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): LocationGroup called when fxSrc previously defined as %s.", sFxProc.GetSourceName(data.fxSrc).c_str());
+            if (set)
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Group when fxSrc == self for %s.", \
+                        GetSourceName(data.fxSrc).c_str(), data.srcRef->itemName().c_str());
             data.fxSrc = dgmSrcGroup;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data);   //source
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data);   //groupID
         } break;
         case operandLS: {    //49, '%(arg1)s.SkillRequiredLocationGroup[%(arg2)s]'  --  specify a group by skillID for a location   used by ALRSM and AORSM
-            if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Skill when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
             if (data.fxSrc)
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): SkillRequiredLocationGroup called when fxSrc previously defined as %s.", sFxProc.GetSourceName(data.fxSrc).c_str());
-            data.fxSrc = dgmSrcSkill;
+            else {
+                if ((set) and (!skill))
+                    data.fxSrc = dgmSrcSelf;
+                else if (skill)
+                    data.fxSrc = dgmSrcSkill;
+                else
+                    data.fxSrc = dgmSrcGroup;
+            }
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data);   //source
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data);   //skillID
         } break;
@@ -605,7 +612,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         } break;
         case operandGM: {    //37,'%(arg1)s.GetModule(%(arg2)s)'      --used by subsystems as (GetModule(Ship:201):55)
             if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Ship when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Ship when fxSrc == self for %s.", \
+                        GetSourceName(data.fxSrc).c_str(), data.srcRef->itemName().c_str());
             if (data.fxSrc)
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): GetModule called when fxSrc previously defined as %s.", sFxProc.GetSourceName(data.fxSrc).c_str());
             data.fxSrc = dgmSrcShip;
@@ -618,7 +626,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data);
             if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Skill when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Skill when fxSrc == self for %s.", \
+                        GetSourceName(data.fxSrc).c_str(), data.srcRef->itemName().c_str());
             if (skill and (data.fxSrc == dgmSrcSelf))
                 data.fxSrc = dgmSrcSkill;
             if (group and  (data.fxSrc != dgmSrcGang))
@@ -657,7 +666,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data);
             if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Gang when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Gang when fxSrc == self for %s.", \
+                GetSourceName(data.fxSrc).c_str(), data.srcRef->itemName().c_str());
             if (data.fxSrc)
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): AddGangRequiredSkillModifier called when fxSrc previously defined as %s.", sFxProc.GetSourceName(data.fxSrc).c_str());
             data.fxSrc = dgmSrcGang;
@@ -667,7 +677,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data);
             if (set)
-                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Gang when fxSrc == self.", GetSourceName(data.fxSrc).c_str());
+                _log(EFFECTS__ERROR, "FxProc::ParseExpression(): trying to change source from %s to Gang when fxSrc == self for %s.", \
+                        GetSourceName(data.fxSrc).c_str(), data.srcRef->itemName().c_str());
             if (data.fxSrc)
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): AddGangShipModifier called when fxSrc previously defined as %s.", sFxProc.GetSourceName(data.fxSrc).c_str());
             data.fxSrc = dgmSrcGang;
@@ -767,7 +778,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             } break;
             case dgmSrcSkill: {    // source of this effect is skill, implant, or booster and IS NOT nerfed
                 if (cur.second.typeID == EVEDB::invTypes::typeInvalid) {    //invalid
-                    _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): fxSrc is skill.  typeID is invalid");
+                    _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): typeID is invalid");
                     continue;  // make error here
                 }
                 switch (cur.second.targLoc) {
@@ -781,9 +792,6 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                             if (pShip->HasReqSkill(cur.second.srcRef->typeID()))
                                 itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                         }
-                        // if neither above are right, the target is ship itself
-                        if (itemRefVec.empty())
-                            itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                     } break;
                     case dgmTargLocSelf: {
                         // ....item itself
@@ -817,7 +825,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case dgmTargLocArea: {
                         // ....unknown at this time
-                        _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): called Area() target location.");
+                        _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling target.");
                         continue;
                     } break;
                     case dgmTargLocInvalid: {   // null
@@ -825,24 +833,14 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         continue;
                     } break;
                     default: {
-                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): src is skill.  target is not defined yet.");
+                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): target undefined.");
                     } break;
                 }
             } break;
             case dgmSrcSelf: {  // source is module or charge and IS nerfed
                 switch (cur.second.targLoc) {
                     case dgmTargLocShip:  {
-                        // apply effect to....
-                        if (cur.second.typeID) {
-                            // .....ship's modules that require skillID defined in "typeID"
-                            pShip->GetModuleManager()->GetModuleListByReqSkill(cur.second.typeID, &itemRefVec);
-                        } else {
-                            // ..... ship that require skill in 'srcRef'
-                            if (pShip->HasReqSkill(cur.second.srcRef->typeID()))
-                                itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
-                        }
-                        // if neither above are right, the source could be a module, and target is ship itself
-                        // incorrect?
+                        // apply effect to the ship the calling item is located in/on
                         if (itemRefVec.empty())
                             itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                     } break;
@@ -856,15 +854,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         itemRefVec.push_back(pShip->GetModuleManager()->GetLoadedChargeOnModule(cur.second.srcRef));
                     } break;
                     case dgmTargLocChar: {  // no longer valid?
-                        // apply effect to char skills that require skill in 'srcRef' or 'typeID'
-                        uint16 skillID = cur.second.srcRef->typeID();
-                        if (cur.second.typeID)
-                            skillID = cur.second.typeID;
-                        std::vector<InventoryItemRef> allSkills;
-                        pChar->GetSkillsList(allSkills);
-                        for (auto curSkill : allSkills)
-                            if (curSkill->HasReqSkill(skillID))
-                                itemRefVec.push_back(curSkill);
+                        _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling target.");
                     } break;
                     default: {
                         _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): src is self.  target is default (ship modules by typeID?).");
@@ -879,9 +869,11 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             } break;
             case dgmSrcShip: {      // source is a subsystem and IS NOT nerfed
                 ;   // not sure how to do this on yet.  t3 ships arent implemented (actually blocked)
+                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling target.");
             } break;
             case dgmSrcGang: {      // source is a gang leader skill and IS nerfed
                 ;   //dgmTargLocSelf is ship of gang member to apply leader's skill bonuses to
+                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling target.");
             } break;
             case dgmSrcInvalid: {
                 _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): source location invalid.");
@@ -890,21 +882,14 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             // these are not used (not coded)
             case dgmSrcTarget:
             case dgmSrcOwner: {
-                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): called owner, target or gang as source.");
+                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling target.");
                 continue;
             } break;
         }
         // get srcAttr
         EvilNumber srcValue = srcItemRef->GetAttribute(cur.second.srcAttr);
-        /*
-        dgmUnnerfedCategories = [
-        categorySkill,
-        categoryImplant,
-        categoryShip,
-        categoryCharge,
-        categorySubSystem]
-        */
-        // check for nerf, modify value as needed
+
+        // check for nerf, modify value as needed  -nerf test is working correctly
         bool nerfed = false;
         switch (cur.second.fxSrc) {
             case dgmSrcSelf:
@@ -937,6 +922,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             for (auto item : itemRefVec) {
                 // get targAttr
                 targValue = item->GetAttribute(cur.second.targAttr);
+                if (targValue == 0)
+                    targValue = 1;
                 // send data to calculator
                 EvilNumber newValue = sFxProc.CalculateAttributeValue(targValue, srcValue, cur.first);
                 // avoid creating 0-value attributes on items

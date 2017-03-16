@@ -299,8 +299,43 @@ PyResult Command_destinyvars(Client* who, CommandDB* db, PyServiceMgr* services,
              "HasBeyonce: %u<br>" //27
              "IsBubbleWait: %u<br>" //27
              "IsSetStateSent: %u<br>", //27
-             who->GetShipID(), dm->IsCloaked(), dm->IsWarping(), who->InPod(), who->IsInSpace(), who->IsDocked(), who->IsJump(),
-             who->IsInvul(), who->IsLogin(),  who->IsUndock(), who->HasBeyonce(), who->IsBubbleWait(), who->IsSetStateSent());
+                who->GetShipID(), dm->IsCloaked(), dm->IsWarping(), who->InPod(), who->IsInSpace(), who->IsDocked(), who->IsJump(),
+                who->IsInvul(), who->IsLogin(),  who->IsUndock(), who->HasBeyonce(), who->IsBubbleWait(), who->IsSetStateSent()
+            );
+
+    who->SendInfoModalMsg(reply);
+
+    return new PyString(reply);
+}
+
+PyResult Command_shipvars(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!who->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->SysBubble())
+        who->EnterSystem(who->GetSystemID());
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny(NULL_ORIGIN);
+
+    DestinyManager* dm = who->GetShipSE()->DestinyMgr();
+
+    char reply[250];
+    snprintf(reply, 250,
+             "ShipID: %u<br>"
+             "Mass: %.2f<br>" //28
+             "AlignTime: %.2f<br>" //27
+             "AccelTime: %.2f<br>"
+             "MaxSpeed: %.2f<br>" //27
+             "WarpSpeed: %.2f<br>" //27
+             "WarpTime: %.2f<br>" //27
+             "WarpDropSpeed: %.2f<br>" //27
+             "Radius: %.2f<br>" //27
+             "CapNeed: %.2f<br>" //27
+             "Agility: %.3f<br>" //27
+             "Inertia: %.3f<br>", //27
+                who->GetShipID(), dm->GetMass(), dm->GetAlignTime(), dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() /10), dm->GetWarpTime(),
+                dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(), dm->GetAgility(), dm->GetInertia()
+            );
 
     who->SendInfoModalMsg(reply);
 

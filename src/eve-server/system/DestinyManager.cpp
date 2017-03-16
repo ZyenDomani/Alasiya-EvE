@@ -83,6 +83,7 @@ m_warpCapacitorNeed(0.00001f)
     m_orbiting = 0;
     m_tractored = false;
     m_tractorPause = false;
+    m_hasSentShipUpdates = false;
     m_capNeeded = 0.0f;
     m_stateStamp = 0;
 
@@ -145,12 +146,12 @@ void DestinyManager::ProcessState() {
             SetPosition(m_position + m_velocity);
         } break;
         case DSTBALL_ORBIT: {
-            if (_IsTargetInvalid())
+            if (IsTargetInvalid())
                 return;
             _Orbit();
         } break;
         case DSTBALL_FOLLOW: {
-            if (_IsTargetInvalid())
+            if (IsTargetInvalid())
                 return;
             _Follow();
         } break;
@@ -1280,7 +1281,7 @@ void DestinyManager::EntityRemoved(SystemEntity *pSE) {
     }
 }
 
-bool DestinyManager::_IsTargetInvalid()
+bool DestinyManager::IsTargetInvalid()
 {
     if (!mySE->SystemMgr()->GetSE(m_targetEntity.first)) {
         // Our target was removed
@@ -1307,6 +1308,25 @@ bool DestinyManager::_IsTargetInvalid()
 // Basic Movement Calls:
 void DestinyManager::_BeginMovement() {
     // common movement for all types
+    if (!m_hasSentShipUpdates) {
+        // error fix for setting ship move variables before ship is in bubble (cannot BubbleCast)
+        std::vector<PyTuple*> updates;
+        DoDestiny_SetBallAgility sbagility;
+            sbagility.entityID =  mySE->GetID();
+            sbagility.agility = m_shipInertia;
+        updates.push_back(sbagility.Encode());
+        DoDestiny_SetBallMassive sbmassive;
+            sbmassive.entityID = mySE->GetID();
+            sbmassive.is_massive = true;
+        updates.push_back(sbmassive.Encode());
+        DoDestiny_SetBallMass sbmass;
+            sbmass.entityID = mySE->GetID();
+            sbmass.mass = m_mass;
+        updates.push_back(sbmass.Encode());
+        SendDestinyUpdate(updates); //consumed
+        m_hasSentShipUpdates = true;
+    }
+
     // reset turn and movement checks for possible heading change.
     m_stop = false;
     m_accel = false;
@@ -1740,6 +1760,8 @@ PyResult DestinyManager::AttemptDockOperation() {
 
 void DestinyManager::Dock()
 {
+    Stop();
+
     Client *pClient = mySE->GetPilot();
     uint32 stationID = pClient->GetDockStationID();
     SystemEntity *station = mySE->SystemMgr()->GetSE(stationID);
@@ -1756,19 +1778,6 @@ void DestinyManager::Dock()
         oda.stationID = stationID;
     PyTuple* ev = oda.Encode();
     pClient->SendNotification("OnDockingAccepted", "charid", &ev);
-
-    // per client packet sniff
-    DoDestiny_SetBallMassive bm;
-        bm.entityID = mySE->GetID();
-        bm.is_massive = false;
-    updates.push_back(bm.Encode());
-
-    DoDestiny_CmdStop du;
-        du.entityID = mySE->GetID();
-    updates.push_back(du.Encode());
-    SendDestinyUpdate(updates, true);
-
-    Stop();
 }
 
 void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
@@ -1820,7 +1829,7 @@ void DestinyManager::SetMaxVelocity(float maxVelocity)
         m_maxShipSpeed = maxVelocity;
 }
 
-//  called from Client::CreateShipSE(), Client::ResetAfterPodded(), NPC::NPC(), Concord::Concord(), Drone::Drone()
+//  called from Client::CreateShipSE(), Client::ResetAfterPodded(), NPC::NPC(), Concord::Concord(), Drone::Drone(), DestinyManager::UpdateNewShip()
 void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
 {
     /* this sets variables needed for correct movement math.
@@ -1878,7 +1887,7 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
 
     if (!mySE->HasPilot())
         return;
-    if (mySE->GetPilot()->IsInSpace()) {
+    if (mySE->GetPilot()->IsInSpace() and mySE->SysBubble()) {
         std::vector<PyTuple*> updates;
         DoDestiny_SetBallAgility sbagility;
             sbagility.entityID =  mySE->GetID();
@@ -1893,6 +1902,9 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
             sbmass.mass = m_mass;
         updates.push_back(sbmass.Encode());
         SendDestinyUpdate(updates); //consumed
+        m_hasSentShipUpdates = true;
+    } else {
+        m_hasSentShipUpdates = false;
     }
 }
 
@@ -2370,7 +2382,7 @@ void DestinyManager::SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self
 
 void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vector<PyTuple*>& events, bool self_only ) const {
     if (self_only) {
-        _log(PLAYER__MESSAGE, "[%u] DestinyManager::SendDestinyUpdate() (u:%lu, e:%lu) called as 'self_only' for %s(%u)", \
+        _log(PLAYER__MESSAGE, "[%u] DestinyManager::SendDestinyUpdate() (u:%i, e:%i) called as 'self_only' for %s(%u)", \
                     sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         std::vector<PyTuple*>::iterator cur = updates.begin();
@@ -2388,10 +2400,11 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
         }
         events.clear();
     } else if( mySE->SysBubble() ) {
-        _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny update (u:%lu, e:%lu)", sEntityList.GetStamp(), updates.size(), events.size() );
+        _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny update (u:%u, e:%u)", sEntityList.GetStamp(), updates.size(), events.size() );
         mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
     } else {
-        _log( DESTINY__UPDATES, "[%u] Cannot BubbleCast destiny update (u:%lu, e:%lu); entity (%u) is not in any bubble.", \
-                    sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetID() );
+        _log( DESTINY__ERROR, "[%u] Cannot BubbleCast destiny update (u:%u, e:%u); entity (%u) is not in any bubble.", \
+                sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetID() );
+        EvE::traceStack();
     }
 }

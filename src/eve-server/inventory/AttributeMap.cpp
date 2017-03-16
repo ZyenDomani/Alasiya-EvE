@@ -52,13 +52,8 @@ bool AttributeMap::Load(bool reset/*false*/) {
         // this will allow total clearing of attribs to eliminate the necessity of 'removing' effects
         mAttributes.clear();
     }
-    /* First, we load default attributes values from typeattrmgr.*/
-    /* most attribute have default values which are related to the item type */
-    std::vector< DmgTypeAttribute > typeAttrVec;
-    sDataMgr.GetDgmTypeAttrVec(mItem.typeID(), typeAttrVec);
-    for (auto cur : typeAttrVec) {
-        SetAttribute(cur.attributeID, cur.value, false);
-    }
+    /* First, we load default attributes values from our itemType */
+    mItem.type().CopyAttributes(mItem);
 
     /* Then we load item damage from the db, if any, to update the defaults */
     DBQueryResult res;
@@ -98,7 +93,6 @@ bool AttributeMap::Save() {
         return true;
 
     bool skill = false, damage = false, owner = false;
-
     switch (mItem.categoryID()) {
         case EVEDB::invCategories::Asteroid:    // asteroids and blueprints are NOT saved here
         case EVEDB::invCategories::Blueprint: {
@@ -131,13 +125,14 @@ bool AttributeMap::Save() {
     bool first = true, save = false;
     AttrMapItr itr = mAttributes.begin();
     for (; itr != mAttributes.end(); itr++) {
+        save = false;
         if ((skill) and ((itr->first == AttrSkillPoints) or (itr->first == AttrSkillLevel)))
             save = true;
         if ((damage) and (itr->first == AttrDamage))
             save = true;
         if (owner)
             save = true;
-        if (save) {
+        if ((save) and (itr->second != 0)) {
             if (first) {
                 Inserts << "VALUES";
                 first = false;
@@ -158,7 +153,6 @@ bool AttributeMap::Save() {
                 Inserts << " NULL, " << itr->second.get_double() << ")";
             }
         }
-        save = false;
     }
 
     if (!first) {

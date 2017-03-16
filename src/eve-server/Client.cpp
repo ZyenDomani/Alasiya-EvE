@@ -136,11 +136,8 @@ Client::~Client() {
         }
 
         //m_ship->OfflineAll();
-        if (pShipSE) {
+        if (pShipSE)
             WarpOut();
-            // remove position set after WarpOut() is completed (redundant call)
-            pShipSE->SetPosition(pShipSE->DestinyMgr()->GetPosition());
-        }
 
         SaveAllToDatabase();
 
@@ -328,6 +325,9 @@ void Client::ProcessClient() {
         _log(CLIENT__TIMER, "Client::ProcessClient():  Jump Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
         m_jumpTimer.Disable();
         SetBallPark();
+        pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
+        m_toGate = 0;
+        SetJumpTimers();
     }
     /* Check Character Save Timer Expiry:  (not currently used  -allan 17May16)
     if (m_char->CheckSaveTimer()) {
@@ -347,11 +347,11 @@ void Client::SetDestiny(const GPoint& pt, bool count) {
     if (IsSolarSystem(m_locationID)) {
         if (pt.isZero()) {
             if (pShipSE->GetPosition().isZero())
-                pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()), true);
+                pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()), false);
             else
-                pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), true);
+                pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), false);
         } else
-            pShipSE->DestinyMgr()->SetPosition(pt, true);
+            pShipSE->DestinyMgr()->SetPosition(pt, false);
         if (count and !m_login)
             pShipSE->GetShipSE()->ResetShipSystemMgr(m_system);
         m_bubbleWait = false;
@@ -387,10 +387,8 @@ void Client::WarpOut() {
     char ci[35];
     snprintf(ci, sizeof(ci), "Logout: %s", GetName());
     m_ship->SetCustomInfo(ci);
-    if (!InPod()) {
+    if (!InPod())
         m_ship->SetFlag(flagShipOffline, false);
-        //m_ship->SaveShip();
-    }
     m_system->RemoveEntity(pShipSE);
     return;
     m_invulTimer.Start(ClientTimers::WarpOutInvul);
@@ -774,20 +772,13 @@ void Client::ExecuteJump() {
     m_beyonce = m_setStateSent = false;
 
     MoveToLocation(m_moveSystemID, m_movePoint);
-    //pShipSE->DestinyMgr()->Jump();
-    pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
 
     m_jumpTimer.Start(ClientTimers::JumpTimer);
-    m_cloakTimer.Start(ClientTimers::JumpCloak);
-    m_invulTimer.Start(ClientTimers::JumpInvul);
 
-    m_toGate = 0;
     m_movePoint = NULL_ORIGIN;
 }
 
 void Client::SetJumpTimers() {
-    //pShipSE->DestinyMgr()->Cloak();
-    m_jumpTimer.Start(ClientTimers::JumpTimer);
     m_cloakTimer.Start(ClientTimers::JumpCloak);
     m_invulTimer.Start(ClientTimers::JumpInvul);
 }
@@ -863,19 +854,17 @@ void Client::ResetAfterPodded() {
     /** @todo
      * destroy all implants
      * check skillpoints vs. clone grade and adjust accordingly.
+     * reset skill effects if clone != current SP and skills lost
      */
 
-    //clear AutoPilot
     m_bubbleWait = true;
+    //clear AutoPilot
     SetAutoPilot(false);
 
     MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
     SpawnNewRookieShip();
     CreateNewPod();
     SetShip(m_system->GetShipFromInventory(m_char->capsuleID()));
-
-    if (pShipSE->DestinyMgr())
-        pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
 
     m_ship->UpdateModules();
     m_ship->SaveShip();
