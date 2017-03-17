@@ -33,7 +33,6 @@
 #include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
 
-
 class ModuleEffects;
 class ModifyModuleAttributesComponent;
 class ModifyShipAttributesComponent;
@@ -48,6 +47,8 @@ public:
     /* generic functions handled in base class */
     void Offline();
     void Online();
+
+    void ProcessEffects(uint8 state, bool online=false);
 
     void Repair()                                       { m_modRef->ResetAttribute(AttrHP, true); }
     void Repair(EvilNumber amount)                      { m_modRef->SetAttribute(AttrHP, m_modRef->GetAttribute(AttrHP) + amount); }
@@ -70,7 +71,7 @@ public:
     virtual bool IsLauncherModule()                     { return false; }   // check this in module effect data.
 
     /* generic access functions handled here, but set elsewhere.  only slightly slower than above */
-    bool isOnline()                                     { return (m_modRef->GetAttribute(AttrIsOnline) == 1); }
+    bool isOnline()                                     { return m_modRef->IsOnline(); }
     bool isLowPower()                                   { return m_loPower; }
     bool isHighPower()                                  { return m_hiPower; }
     bool isMediumPower()                                { return m_medPower; }
@@ -83,6 +84,8 @@ public:
     EVEItemFlags flag()                                 { return m_modRef->flag(); }
     InventoryItemRef getItem()                          { return m_modRef; }
 
+    ShipItemRef GetShipRef()                            { return m_shipRef; }
+
 	void SetModuleState(ModuleStates state)             { m_ModuleState = state; }
 	ModuleStates GetModuleState()                       { return m_ModuleState; }
 	ChargeStates GetChargeState()                       { return m_ChargeState; }
@@ -91,18 +94,18 @@ public:
 	virtual bool isLauncherFitted()                     { return (m_modRef->type().HasEffect(effectLauncherFitted) ? true : false); false; }
 	virtual bool isMaxGroupFitLimited()                 { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); false; }
 
-    /* functions to be handled in derived classes (must override) */
+	/* generic access functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }
     virtual void Activate(SystemEntity* pSE)            { /* Do nothing here */ }
     virtual void Deactivate()                           { /* Do nothing here */ }
     virtual void AbortCycle()                           { /* Do nothing here */ }
     virtual void LoadCharge(InventoryItemRef charge)    { /* Do nothing here */ }
     virtual void UnloadCharge()                         { /* Do nothing here */ }
-    virtual void Overload()                             { /* Do nothing here */ }
-    virtual void DeOverload()                           { /* Do nothing here */ }
     virtual void DestroyRig()                           { /* Do nothing here */ }
 
-    /* functions to be overridden in derived classes as needed */
+    /* generic access functions to be overridden in derived classes as needed */
+    virtual void Overload();
+    virtual void DeOverload();
     virtual InventoryItemRef GetLoadedChargeRef()       { return InventoryItemRef(); }
 
     /* override for rigs and subsystems in approprate derived class */
@@ -116,8 +119,6 @@ public:
     }
 
 protected:
-    void             ProcessEffects(uint8 state, bool online=false);
-
     InventoryItemRef m_modRef;
     ShipItemRef      m_shipRef;
 

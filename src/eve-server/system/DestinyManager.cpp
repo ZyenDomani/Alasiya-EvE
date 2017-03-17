@@ -1844,13 +1844,8 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
         m_warpStrength = (int8)ship->GetAttribute(AttrWarpScrambleStatus).get_int();    // >0 == cannot warp
 
     // this will catch speeds/needs for all ships (player and npc), and is easier to do here.
-    float warpSpeedMultiplier = 1.0f, shipBaseWarpSpeed = 3.0f;  // arbitrary defaults
-    if (ship->HasAttribute(AttrBaseWarpSpeed))
-        shipBaseWarpSpeed = ship->GetAttribute(AttrBaseWarpSpeed).get_float();
     if (ship->HasAttribute(AttrWarpSpeedMultiplier))
-        warpSpeedMultiplier = ship->GetAttribute(AttrWarpSpeedMultiplier).get_float();
-    m_shipWarpSpeed = ( warpSpeedMultiplier * shipBaseWarpSpeed );
-
+        m_shipWarpSpeed = ship->GetAttribute(AttrWarpSpeedMultiplier).get_float();
     if (ship->HasAttribute(AttrInetia))
         m_shipInertia = ship->GetAttribute(AttrInetia).get_float();
     if (ship->HasAttribute(AttrMaxVelocity))

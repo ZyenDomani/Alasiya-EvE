@@ -36,10 +36,6 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_ChargeState = MOD_UNLOADED;
 
     m_repeat = 0;
-    // incase module item has AttrIsOnline set to true....it shouldn't (IsOnline isnt persistant) but this is a catchall.
-    m_modRef->PutOffline();
-
-    ProcessEffects(Effects::dgmStatePassive, true);
 }
 
 GenericModule::~GenericModule()
@@ -56,7 +52,9 @@ void GenericModule::Online()
 
     m_modRef->PutOnline(isRig());
     m_ModuleState = MOD_ONLINE;
-    ProcessEffects(Effects::dgmStateOnline, true);
+
+    m_shipRef->SetAttribute(AttrCpuLoad, m_shipRef->GetAttribute(AttrCpuLoad) + GetAttribute(AttrCpu));
+    m_shipRef->SetAttribute(AttrPowerLoad, m_shipRef->GetAttribute(AttrPowerLoad) + GetAttribute(AttrPower));
 }
 
 void GenericModule::Offline()
@@ -69,30 +67,58 @@ void GenericModule::Offline()
         return;     // already deactivating
 
     m_ModuleState = MOD_DEACTIVATING;
-    // code for offlining module before MOD_OFFLINE state is set.
+    /* code for offlining module before MOD_OFFLINE state is set. */
+    m_shipRef->SetAttribute(AttrCpuLoad, m_shipRef->GetAttribute(AttrCpuLoad) - GetAttribute(AttrCpu));
+    m_shipRef->SetAttribute(AttrPowerLoad, m_shipRef->GetAttribute(AttrPowerLoad) - GetAttribute(AttrPower));
+
+    // need to clear item's effectMap here to avoid duplicating.
+    // it will be populated on it's next ProcessEffects() call with relevant data.
+    m_modRef->m_modifiers.clear();
     ProcessEffects(Effects::dgmStateOnline, false);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get());
 
     m_ModuleState = MOD_OFFLINE;
     m_modRef->PutOffline();
+
+}
+
+void GenericModule::Overload()
+{
+    // need to clear item's effectMap here to avoid duplicating.
+    m_modRef->m_modifiers.clear();
+    // it will be populated on it's next ProcessEffects() call with relevant data.
+    ProcessEffects(Effects::dgmStateOverloaded, true);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get());
+}
+
+void GenericModule::DeOverload()
+{
+    // need to clear item's effectMap here to avoid duplicating.
+    m_modRef->m_modifiers.clear();
+    // it will be populated on it's next ProcessEffects() call with relevant data.
+    ProcessEffects(Effects::dgmStateOverloaded, false);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get());
 }
 
 void GenericModule::ProcessEffects(uint8 state, bool online/*false*/)
 {
-    // get module effects in state 0
+    // get module/charge pre/post effects in state x
     std::vector< Effect > effectVec;
     m_modRef->type().GetEffect(state, effectVec);
     for (auto it : effectVec) {
+        if (it.id == 16)    // skip the online effect for now.  will hack the data for it later.
+            continue;
         fxData data;
+        data.result = false;
         data.srcRef = m_modRef;
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
-        /* passive effects are added directly to ship item m_modifers
-         * non-passive effects are added/deleted to/from module item and called on their effect target from ???
-         * will need remove* methods finished for this to work properly
+        /* module effects will be added/removed from module item
+         * passive effects will be applied when ship undocks and removed when ship docks
+         * active/overload/gang/other effects will be applied and removed when called.
          */
         if (online)
-            sFxProc.ParseExpression((state ? m_modRef.get() : m_shipRef.get()), sFxDataMgr.GetExpression(it.preExpression), data);
-        else if (state)
-            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.postExpression), data);
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.preExpression), data, this);
+        else
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.postExpression), data, this);
     }
 }

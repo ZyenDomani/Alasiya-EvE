@@ -721,7 +721,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
         for (; itr != mAttributeMap.end(); itr++) {
             //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
             if ((*itr).first == AttrWarpSpeedMultiplier)
-                result.attributes[(*itr).first] = new PyInt(mAttributeMap.GetAttribute(AttrWarpSpeedMultiplier).get_int() /3);
+                result.attributes[(*itr).first] = new PyFloat(mAttributeMap.GetAttribute(AttrWarpSpeedMultiplier).get_float() /3);
             else
                 result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         }
@@ -1027,6 +1027,8 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
      */
     _log(SHIP__MODULE_DEBUG, "InventoryItem::SetOnline() - set module %s(%u) to %s", \
                     m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
+
+    m_modifiers.clear();
     if (!isRig)   // rigs DO NOT get isOnline attrib set.
         SetAttribute(AttrIsOnline, int(online));
 
@@ -1151,21 +1153,32 @@ void InventoryItem::AddModifier(fxData data)
     m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
 }
 
+void InventoryItem::RemoveModifier(fxData data)
+{
+    auto itr = m_modifiers.equal_range(data.math);
+    for (auto it = itr.first; it != itr.second; it++)
+        if ((it->second.srcRef == data.srcRef) and (it->second.targAttr == data.targAttr))
+            m_modifiers.erase(it);
+}
+
+
 void InventoryItem::ReloadAttributes()
 {
     mAttributeMap.Load(true);
     m_modifiers.clear();
 }
 
-// not sure if/how i can use these...maybe for Implants, boosters, modules(state>1)
+void InventoryItem::GetEffectsInState(int8 state, std::vector< Effect >& effectRef)
+{
+}
+
+/* currently implemented items for these calls...
+ *  charges
+ */
 void InventoryItem::ApplyEffect(int8 state)
 {
 }
 
 void InventoryItem::RemoveEffect(int8 state)
-{
-}
-
-void InventoryItem::GetEffectsInState(int8 state, std::vector< Effect >& effectRef)
 {
 }

@@ -38,12 +38,12 @@ CREATE TABLE `srvStatisticDataDescription` (
 
 INSERT INTO srvStatisticDataDescription (dataID, dataName, dataDescription)
 VALUES
-(1, 'Turret Shots Fired', 'Contains the total amount of players turret modules uses, or shots fired in certain period of time.'),
-(2, 'Missiles Launched', 'Contains the total amount of players missiles launched (fired) in certain period of time.'),
-(3, 'NPC Ships killed', 'Contains the total amount of NPC ships killed in certain period of time.'),
-(4, 'Player Ships killed', 'Contains the total amount of player ships killed in certain period of time.'),
-(5, 'Bounties Paid', 'Contains the total amount of bounty payouts (in ISK) in certain period of time. Note that the value MUST be INT.'),
-(6, 'Bounties Placed', 'Contains the total amount of bounties placed by players in certain period of time. Note that the value MUST be INT.'),
-(7, 'Ore Mined', 'Contains the total amount of ore (in m3) mined in certain period of time. Note that value MUST be INT.'),
-(8, 'ISK Spent In Market', 'Contains the total amount of ISK spen in the marked in certain period of time. Note that value MUST be INT.'),
+(1, 'Turret Shots Fired', 'Shots fired from turrents on player ships.'),
+(2, 'Missiles Launched', 'Missiles fired from launchers on player ships.'),
+(3, 'NPC Ships killed', 'NPC ships killed.'),
+(4, 'Player Ships killed', 'Players popped (not tracking podded).'),
+(5, 'Bounties Paid', 'Amount of bounty payouts in ISK.'),
+(6, 'Bounties Placed', 'Amount of bounties placed in ISK.'),
+(7, 'Ore Mined', 'M3 of ore mined.'),
+(8, 'ISK Spent In Market', 'ISK spent in the market, not including broker fees.'),
 (9, 'Player Logins', 'Number of player logins.');

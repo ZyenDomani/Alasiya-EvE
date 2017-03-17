@@ -16,6 +16,7 @@
 #include "inventory/InventoryItem.h"
 
 class Character;
+class GenericModule;
 class ShipItem;
 
 class FxProc
@@ -26,7 +27,7 @@ public:
     ~FxProc()       { /* do nothing here */ }
 
     void            ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip);
-    void            ParseExpression(InventoryItem* pItem, Expression expression, fxData& data);
+    void            ParseExpression(InventoryItem* pItem, Expression expression, fxData& data, GenericModule* pMod=nullptr);
     void            EvaluateExpression(const uint16 expID);
     int8            GetEnvironmentEnum(const std::string& domain);
     int8            GetAssociationEnum(const std::string& association);
@@ -57,7 +58,8 @@ private:
  */
 
 /*
-            if operand.operandID in (const.operandALRSM,
+            if operand.operandID in (
+             const.operandALRSM,
              const.operandRLRSM,
              const.operandALGM,
              const.operandRLGM,

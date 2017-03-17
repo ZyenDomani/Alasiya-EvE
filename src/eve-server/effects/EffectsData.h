@@ -69,6 +69,7 @@ struct fxData {
     int8 math;          // math used on data
     int8 fxSrc;        // effect source location
     int8 targLoc;       // effect target location
+    float result;
     uint16 targAttr;
     uint16 srcAttr;
     uint16 grpID;       // used to define items in env grouped by item groupID
@@ -112,10 +113,10 @@ namespace Effects {
         dgmStateInvalid        = -1,
         // these are the effectState in dgmEffects table to denote when this effect is applied or removed
         dgmStatePassive        = 0, //Applied when item is just present in fit - implants, skills, offlined modules
-        dgmStateActive         = 1, //also online effect - Applied when module is onlined
+        dgmStateOnline         = 1, //also online effect - Applied when module is onlined
         dgmStateTarget         = 2, //Applied onto selected target
         dgmStateArea           = 3, //defined but not used
-        dgmStateOnline         = 4, //Applied when module is activated
+        dgmStateActive         = 4, //Applied when module is activated
         dgmStateOverloaded     = 5, //Applied when module is overloaded
         dgmStateDungeon        = 6, //Dungeon effects, several effects exist in this category, but not assigned to any item
         dgmStateSystem         = 7,  //System-wide effects, like WH and incursion

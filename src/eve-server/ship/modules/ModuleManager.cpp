@@ -325,6 +325,29 @@ void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* mod)
     mod->SetModuleState(MOD_UNFITTED);
 }
 
+void ModuleContainer::ApplyAllPassiveModEffects()
+{
+    for (auto cur : m_modules)
+        if (cur.second) {
+            // clear module effect map (just in case)
+            cur.second->getItem()->m_modifiers.clear();
+            cur.second->ProcessEffects(Effects::dgmStatePassive, true);
+            sFxProc.ApplyEffects(cur.second->getItem().get(), cur.second->GetShipRef()->GetPilot()->GetChar().get(), cur.second->GetShipRef().get());
+        }
+}
+
+void ModuleContainer::ApplyAllOnlineModEffects()
+{
+    for (auto cur : m_modules)
+        if (cur.second) {
+            // clear module effect map (just in case)
+            cur.second->getItem()->m_modifiers.clear();
+            cur.second->ProcessEffects(Effects::dgmStateOnline, true);
+            sFxProc.ApplyEffects(cur.second->getItem().get(), cur.second->GetShipRef()->GetPilot()->GetChar().get(), cur.second->GetShipRef().get());
+        }
+}
+
+
 #pragma endregion
 /////////////////////////// END MODULECONTAINER //////////////////////////////////
 
@@ -356,36 +379,32 @@ ModuleManager::~ModuleManager()
 
 bool ModuleManager::Initialize() {
     if (m_initalized) {
-        // this ship is already initalized and active (in case of BoardShip() or reactivation)
-        OnlineAll();    // use CharacterBoardingShip() as it will call all needed functions to correctly apply modifiers
         return true;
     }
 
     // Load modules, rigs and subsystems from Ship's inventory into ModuleContainer:
     std::vector<InventoryItemRef> itemVec;
     m_Ship->GetInventory()->GetInventoryVec(itemVec);   // this method also sorts in order - cargo, modules, charge, subsystems.
-    GenericModule* mod = nullptr;
-    for (auto cur : itemVec) {
-        if (cur->flag() == flagCargoHold) continue;
-        if ((cur->categoryID() == EVEDB::invCategories::Module)
-            or (cur->categoryID() == EVEDB::invCategories::Subsystem)) {
-            mod = ModuleFactory(cur, ShipItemRef(m_Ship));  // rigs are modules
-            if (m_Modules->AddModule(cur->flag(), mod)) {
-                Online(cur->flag());
-            } else {
-                _log(SHIP__ERROR, "ModuleManager::Initialize() - Could not insert module %s(%u) at flag %u into module container.",
-                     cur->itemName().c_str(), cur->itemID(), cur->flag() );
+    GenericModule* mod(nullptr);
+    for (auto cur : itemVec)
+        if (cur->flag() != flagCargoHold)
+            switch (cur->categoryID()) {
+                case EVEDB::invCategories::Module:
+                case EVEDB::invCategories::Subsystem: {
+                    mod = ModuleFactory(cur, ShipItemRef(m_Ship));  // rigs are modules
+                    if (!m_Modules->AddModule(cur->flag(), mod))
+                        _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Could not insert module %s(%u) at flag %u into module container.",
+                                cur->itemName().c_str(), cur->itemID(), cur->flag() );
+                } break;
+                case EVEDB::invCategories::Charge: {
+                    mod = GetModule(cur->flag());
+                    if (mod)
+                        mod->LoadCharge(cur);
+                    else
+                        _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",
+                                cur->itemName().c_str(), cur->itemID(), cur->flag() );
+                } break;
             }
-        } else if (cur->categoryID() == EVEDB::invCategories::Charge) {
-            if (GetModule(cur->flag())) {
-                GetModule(cur->flag())->LoadCharge(cur);
-            } else {
-                _log(SHIP__ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",
-                     cur->itemName().c_str(), cur->itemID(), cur->flag() );
-            }
-        } else
-            return false;
-    }
 
     return (m_initalized = true);
 }
@@ -548,10 +567,15 @@ bool ModuleManager::OnlineCheck(GenericModule* mod)
 
 void ModuleManager::Online(uint32 itemID)
 {
+    if (IsStation(m_Ship->locationID()))
+        return;
+
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
-        if (mod->isOnline())
+        if (mod->isOnline()) {
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s already Online", mod->getItem()->itemName().c_str());
             return;
+        }
         if (OnlineCheck(mod)) {
             _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s going Online", mod->getItem()->itemName().c_str());
             mod->Online();
@@ -563,10 +587,15 @@ void ModuleManager::Online(uint32 itemID)
 
 void ModuleManager::Online(EVEItemFlags flag)
 {
+    if (IsStation(m_Ship->locationID()))
+        return;
+
     GenericModule* mod = m_Modules->GetModule(flag);
     if (mod) {
-        if (mod->isOnline())
+        if (mod->isOnline()) {
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  %s already Online", mod->getItem()->itemName().c_str());
             return;
+        }
         if (OnlineCheck(mod)) {
             _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  %s going Online", mod->getItem()->itemName().c_str());
             mod->Online();
@@ -626,7 +655,7 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
     }
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (!mod) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called on a module that is not loaded." );
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called on module %u that is not loaded.", itemID );
         return;
     } else if (!mod->isOnline()) {
         if (effectName == "online") {
@@ -878,38 +907,57 @@ void ModuleManager::UnloadAllModules()
     m_Modules->UnloadAll();
 }
 
-/* this will be used to update modules for ..... (state reason for calling)
- *   will be used to call effects updates on modules
- */
-void ModuleManager::UpdateModules()
+void ModuleManager::UpdateModules(std::vector<uint32> modVec)
 {
-    /** @todo  figure out what needs to be done here and implement it. */
-    // this one is called from board,
-    //  ALL modules need skillcheck, online check, cpu/pg check, etc.  run everthing on these and make calls as required.
-    //  this should also update all ship attribs.
-    //sLog.Magenta("ModuleManager::UpdateModules()","Needs to be implemented");
-
-    if (!m_initalized)
-        Initialize();
+    // this one is called from BoardShip()
+    GenericModule* mod(nullptr);
+    if (modVec.size()) {
+        // process and apply passive effects for present modules....these are slot and ??? info.  no processing needed
+        _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec) - Starting passive effect processing.");
+        for (auto cur : modVec) {
+            mod = GetModule(cur);
+            if (!mod)
+                continue;
+            Online(cur);
+            // clear module effect map (just in case)
+            mod->getItem()->m_modifiers.clear();
+            mod->ProcessEffects(Effects::dgmStatePassive, true);
+            sFxProc.ApplyEffects(mod->getItem().get(), mod->GetShipRef()->GetPilot()->GetChar().get(), mod->GetShipRef().get());
+        }
+        // process and apply all effects for online modules
+        _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec) - Starting online effect processing.");
+        for (auto cur : modVec) {
+            mod = GetModule(cur);
+            if (!mod)
+                continue;
+            //Online(cur);
+            // clear module effect map (remove already-applied passive effects)
+            mod->getItem()->m_modifiers.clear();
+            mod->ProcessEffects(Effects::dgmStateOnline, true);
+            sFxProc.ApplyEffects(mod->getItem().get(), mod->GetShipRef()->GetPilot()->GetChar().get(), mod->GetShipRef().get());
+        }
+    } else {
+        _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules() - Starting passive effect processing.");
+        m_Modules->ApplyAllPassiveModEffects();
+        _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules() - Starting online effect processing.");
+        m_Modules->ApplyAllOnlineModEffects();
+    }
 }
 
-/* this will be used to update modules for ..... (state reason for calling)
- *   will be used to call effects updates on modules
- */
 void ModuleManager::UpdateModules(EVEItemFlags flag)
 {
     /** @todo  figure out what needs to be done here and implement it. */
     //  this should update all ship attribs for this bank.
-    //sLog.Magenta("ModuleManager::UpdateModules()","Needs to be implemented");
+    sLog.Magenta("ModuleManager::UpdateModules(flag)","Needs to be implemented");
+
+    // reset ship and module effect data, and reapply?
+    // call ProcessEffects(false), ApplyEffects(), then UpdateModules() ?
 }
 
-/* these are used to call module effects for states 0 and 1 for initial application of effect data */
 void ModuleManager::CharacterBoardingShip()
 {
     if (!m_initalized)
         Initialize();
-    if (m_Ship->GetPilot()->IsInSpace())
-        OnlineAll();
 }
 
 void ModuleManager::CharacterLeavingShip()
@@ -918,7 +966,7 @@ void ModuleManager::CharacterLeavingShip()
     //this is complicated and im gonna leave it alone for now until
     //a few things become more clear
 
-    //OfflineAll();
+    OfflineAll();
 }
 
 void ModuleManager::ShipWarping()

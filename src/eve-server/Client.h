@@ -365,6 +365,8 @@ private:
 
     bool DoDestinyUpdate();
     std::list<PyTuple*> mDogmaMessages;
+
+    std::string GetStateName(ClientState state);
 };
 
 #endif

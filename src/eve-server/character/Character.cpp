@@ -612,6 +612,7 @@ void Character::ProcessEffects()
     std::vector<InventoryItemRef> allSkills;
     GetSkillsList(allSkills);
 
+    _log(EFFECTS__TRACE, "Character::ParseExpression():  Beginning Character Effects Processing.");
     Effect curEffect;
     std::vector<TypeEffects> typeFx;
     for (auto curSkill : allSkills) {
@@ -620,6 +621,7 @@ void Character::ProcessEffects()
         for (auto curFx : typeFx) {
             curEffect = sFxDataMgr.GetEffect(curFx.effectID);
             fxData data;
+            data.result = false;
             data.srcRef = curSkill;
             data.math = data.targLoc = data.fxSrc = data.targAttr = data.srcAttr = data.grpID = data.typeID = 0;
             sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(curEffect.preExpression), data);

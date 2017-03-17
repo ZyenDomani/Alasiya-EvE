@@ -243,8 +243,10 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_char->SetLoginTime();
     UpdateSkillTraining();
 
-    if (IsSolarSystem(m_locationID))
+    if (IsSolarSystem(m_locationID)) {
+        //m_ship->UpdateModules();
         WarpIn();
+    }
 
     return true;
 }
@@ -289,7 +291,7 @@ void Client::ProcessClient() {
         switch (m_clientState) {
             case csIdle: {
                 sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
-                SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
+                //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
             } break;
             case csDock: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
@@ -618,14 +620,14 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     /* set internal vars for new ship */
     SetShip(newShipItemRef);
     m_ship->SetPlayer(this);
-    m_ship->UpdateModules();
 
     char ci[25];
-    if (IsInSpace()) {
+    if (IsSolarSystem(m_locationID)) {
         /* if ejecting into pod, setup and create new pod object */
         if (m_ship->typeID() == itemTypeCapsule) {
             m_ship->Move(m_locationID, flagCapsule);
             CreateShipSE();
+            pShipSE->SetPilot(this);
             pShipSE->GetShipSE()->SetPodShipID(m_shipId);
             m_system->AddEntity(pShipSE);
         } else {
@@ -633,6 +635,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSEFromInventory(m_shipId);
             pShipSE->SetPilot(this);
+            m_ship->UpdateModules();
             pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         }
         m_char->Move(m_shipId, flagPilot);
@@ -809,6 +812,20 @@ void Client::SetClientTimer(ClientState state, uint32 time)
 {
     m_clientState = state;
     m_stateTimer.Start(time);
+    sLog.Cyan("Client::SetTimer()","%s: ClientTimer set %s to %ums.", m_char->itemName().c_str(), GetStateName(state).c_str(), time);
+}
+
+std::string Client::GetStateName(ClientState state)
+{
+    switch (state) {
+        case csIdle:    return "Idle";
+        case csJump:    return "Jump";
+        case csDock:    return "Dock";
+        case csUndock:  return "Undock";
+        case csKilled:  return "Killed";
+        case csLogout:  return "Logout";
+        case csBoard:   return "Board";
+    }
 }
 
 void Client::SetShip(ShipItemRef shipRef) {
@@ -866,7 +883,6 @@ void Client::ResetAfterPodded() {
     CreateNewPod();
     SetShip(m_system->GetShipFromInventory(m_char->capsuleID()));
 
-    m_ship->UpdateModules();
     m_ship->SaveShip();
     m_char->ResetClone();
     m_char->SaveCharacter();
@@ -918,7 +934,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
 
     /** @todo  this isnt right....correct it.  */
     if ((item->flag() >= flagSlotFirst) and (item->flag() <= flagSlotLast))
-        m_ship->UpdateModules();
+        m_ship->UpdateModules(item->flag());
     else
         m_ship->UpdateHoldsUsedVolume();
 

@@ -273,6 +273,7 @@ public:
     bool SkillCheck(InventoryItemRef refItem);
 
     void AddModifier(fxData data);
+    void RemoveModifier(fxData data);
     void ApplyEffect(int8 state);
     void RemoveEffect(int8 state);
     void GetEffectsInState(int8 state, std::vector<Effect>& effectRef);
@@ -282,6 +283,7 @@ public:
 
     // gotta make this public for now...
     std::multimap<int8, fxData> m_modifiers;    // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
+    std::multimap<int8, fxData> m_rModifiers;    // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
 
 /*  new attribute system */
 protected:

@@ -487,18 +487,23 @@ PyResult Command_skilllist(Client* who, CommandDB* db, PyServiceMgr* services, c
     inv->GetInventoryList(invMap);
 
     std::ostringstream str;
-    str << "InventoryID %u(%p) (Char %p) has %u skills.<br><br>"; //50
+    str << "InventoryID %u(%p) (%s) has %u skills.<br><br>"; //80
 
     for (auto cur : invMap) {
-        str << cur.first << "(" << cur.second->flag() << "): " << cur.second->itemName() << " (";
-        str << cur.second->GetAttribute(AttrSkillLevel).get_int() << ")<br>"; // 20 + 40 + 15 for name (75)
+        str << cur.first << " - " << cur.second->itemName();    //45
+        str  << " (" << cur.second->GetAttribute(AttrSkillLevel).get_int() << ") "; //3
+        if (cur.second->GetAttribute(AttrSkillPoints).get_type() == evil_number_int)    //15
+            str << "[i-" << cur.second->GetAttribute(AttrSkillPoints).get_int();
+        else
+            str << "[f-" << cur.second->GetAttribute(AttrSkillPoints).get_float();
+        str << "]<br>"; // 45 + 3 + 15 + 5 (70)
     }
 
     int count = invMap.size();
-    int size = count * 75;
-    size += 50;
+    int size = count * 80;
+    size += 80;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), inventoryID, inv, who->GetChar().get(), count);
+    snprintf(reply, size, str.str().c_str(), inventoryID, inv, who->GetChar()->itemName().c_str(), count);
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);

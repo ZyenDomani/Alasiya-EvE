@@ -56,6 +56,7 @@ m_ModuleManager(nullptr)
     m_IsLoaded = false;
     m_stackMap.clear();
     m_attribMap.clear();
+    m_onlineModuleVec.clear();
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created ShipItem for %s(%u).", itemName().c_str(), itemID());
 }
@@ -201,22 +202,18 @@ void ShipItem::SetPlayer(Client* pClient) {
         // should we check for cargo and damage after char leaves ship?  maybe later
         if (m_ModuleManager)
             m_ModuleManager->CharacterLeavingShip();
+        m_onlineModuleVec.clear();
         return;
     }
+
     Init();
 
     if (IsSolarSystem(m_locationID)) {
+        // this hits ONLY when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
         ProcessEffects(true);
-        if (sConfig.server.IsTestServer) {
-            Heal();
-        } else {
-            // if live server, update shield and cap (simulate idle charging)
-            SetShipShield(1.0);
-            SetShipCapacitorLevel(1.0);
-        }
+        m_ModuleManager->CharacterBoardingShip();
+        UpdateModules();
     }
-
-    m_ModuleManager->CharacterBoardingShip();
 }
 
 void ShipItem::UpdateHoldsUsedVolume()    /** @todo (allan)  look into this....not working right. */
@@ -465,14 +462,15 @@ PyDict* ShipItem::GetShipState() {
     if (m_inventory->FindSingleByFlag(flagPilot, pilot))
         result->SetItem(new PyInt(pilot->itemID()), pilot->GetItemStatusRow());
 
-    if (m_ModuleManager) {
-        // Create entries for ALL modules, rigs, and subsystems present on ship:
-        std::vector<InventoryItemRef> moduleList;
-        m_ModuleManager->GetModuleListOfRefs( &moduleList );
-        for (int i=0; i<moduleList.size(); i++)
-            result->SetItem(new PyInt(moduleList.at(i)->itemID()), moduleList.at(i)->GetItemStatusRow());
-    } else
-        _log(SHIP__MODULE_ERROR, "GetShipState() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+    if (!m_ModuleManager) {
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
+    }
+    // Create entries for ALL modules, rigs, and subsystems present on ship:
+    std::vector<InventoryItemRef> moduleList;
+    m_ModuleManager->GetModuleListOfRefs( &moduleList );
+    for (int i=0; i<moduleList.size(); i++)
+        result->SetItem(new PyInt(moduleList.at(i)->itemID()), moduleList.at(i)->GetItemStatusRow());
 
     return result;
 }
@@ -483,8 +481,8 @@ PyList* ShipItem::ShipGetModuleList() {
         return nullptr;
     }
     if (!m_ModuleManager) {
-        _log(SHIP__MODULE_ERROR, "ShipGetModuleList() - %s(%u) has no module manager.", itemName().c_str(), itemID());
-        return nullptr;
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
     }
 
     PyList* result = new PyList;
@@ -510,8 +508,8 @@ PyDict* ShipItem::GetChargeState() {
         }
     }
     if (!m_ModuleManager) {
-        _log(SHIP__MODULE_ERROR, "GetChargeState() - %s(%u) has no module manager.", itemName().c_str(), itemID());
-        return nullptr;
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
     }
 
     /* get list of charges loaded in ship modules (*all slots*) */
@@ -630,15 +628,27 @@ void ShipItem::ProcessModules() {
         return;
     if (m_ModuleManager)
         m_ModuleManager->Process();
+    else {
+        _log(SHIP__MODULE_ERROR, "ProcessModules() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
 }
 
 void ShipItem::Dock() {
+    m_onlineModuleVec.clear();
     DeactivateAllModules();
 }
 
 void ShipItem::Undock() {
-    if (m_ModuleManager)
+    // apply ship effects, as all variables are set at this point.
+    if (m_ModuleManager) {
         ProcessEffects(true);
+        m_ModuleManager->CharacterBoardingShip();
+        UpdateModules();
+    } else {
+        _log(SHIP__MODULE_ERROR, "Undock() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
 
     if (sConfig.server.IsTestServer) {
         // Heal Ship completely on test server
@@ -655,11 +665,19 @@ void ShipItem::Undock() {
 void ShipItem::Warp() {
     if (m_ModuleManager)
         m_ModuleManager->ShipWarping();
+    else {
+        _log(SHIP__MODULE_ERROR, "Warp() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
 }
 
 void ShipItem::Jump() {
     if (m_ModuleManager)
         m_ModuleManager->ShipJumping();
+    else {
+        _log(SHIP__MODULE_ERROR, "Jump() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
 }
 
 void ShipItem::Heal()
@@ -789,8 +807,10 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
         return 0;
 
     if (IsModuleSlot(flag)) {
-        if (!m_ModuleManager)
-            return 0;
+        if (!m_ModuleManager) {
+            m_ModuleManager = new ModuleManager(this);
+            m_ModuleManager->Initialize();
+        }
         if (item->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->LoadCharge(item, flag);
             InventoryItemRef loadedChargeOnModule = m_ModuleManager->GetLoadedChargeOnModule(flag);
@@ -834,8 +854,10 @@ void ShipItem::RemoveItem(InventoryItemRef item, uint32 qty/*0*/)
 
     // check to see if item is currently in a module slot.  going by category is NOT working after _ExecAdd() updates.
     if (IsModuleSlot(item->flag())) {
-        if (!m_ModuleManager)
-            return;
+        if (!m_ModuleManager) {
+            m_ModuleManager = new ModuleManager(this);
+            m_ModuleManager->Initialize();
+        }
         // if item being removed is in a module slot, remove it via Module Manager here, and let invBound take care of the rest.
         if (item->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->UnloadCharge(item->flag());
@@ -885,21 +907,20 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
 
 void ShipItem::UpdateModules()
 {
-    // List of callees to put this function into context as to what it should be doing:
-    // Client::BoardShip()              - put modules online that are recorded with attributeID 2 as being online / skill check all modules and if any fail, keep those OFFLINE
-    // InventoryBound::_ExecAdd()       - things have been added or removed, recheck all modules for... some reason
-    // Client::MoveItem()               - something has been moved into or out of the ship, recheck all modules for... some reason
-    m_ModuleManager->UpdateModules();
-    //sLog.Error( "Ship::UpdateModules()", "We are currently not checking for modules that need to go online, or skill checking character for any modules of a newly boarded ship, or updating module states based on things being moved into or off the ship!" );
-    //sLog.Error( "Ship::UpdateModules()", "This should really be a simple call to a function ModuleManager::UpdateModules() and the code put inside there." );
+    /* this is only called when ship is in space
+     * this will processes and apply passive effects for all present modules on ship,
+     * it will then Online() and apply all online effects.
+     */
+    m_ModuleManager->UpdateModules(m_onlineModuleVec);
+    m_onlineModuleVec.clear();
 }
 
 void ShipItem::UpdateModules(EVEItemFlags flag)
 {
 	// List of callees to put this function into context as to what it should be doing:
-	// Client::BoardShip()				- put modules online that are recorded with attributeID 2 as being online / skill check all modules and if any fail, keep those OFFLINE
-	// InventoryBound::_ExecAdd()		- things have been added or removed, recheck all modules for... some reason
-	// Client::MoveItem()				- something has been moved into or out of the ship, recheck all modules for... some reason
+    // Ship::AddItem()
+    // Ship::MoveModuleSlot()
+    // Client::MoveItem()               - something has been moved into or out of the ship, recheck all modules for... some reason
     m_ModuleManager->UpdateModules(flag);
 }
 
@@ -972,12 +993,22 @@ void ShipItem::RemoveRig(InventoryItemRef item) {
 
 void ShipItem::OnlineAll()
 {
-    m_ModuleManager->OnlineAll();
+    if (m_ModuleManager)
+        m_ModuleManager->OnlineAll();
+    else {
+        _log(SHIP__MODULE_ERROR, "OnlineAll() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
 }
 
 void ShipItem::OfflineAll()
 {
-    m_ModuleManager->OfflineAll();
+    if (m_ModuleManager)
+        m_ModuleManager->OfflineAll();
+    else {
+        _log(SHIP__MODULE_ERROR, "OfflineAll() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
 }
 
 void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
@@ -987,17 +1018,23 @@ void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
 
 void ShipItem::DeactivateAllModules()
 {
-    m_ModuleManager->DeactivateAllModules();
+    if (m_ModuleManager)
+        m_ModuleManager->DeactivateAllModules();
 }
 /* End new Module Manager Interface */
 
 void ShipItem::StripFitting()
 {
-    std::vector<InventoryItemRef> moduleList;
-    m_ModuleManager->GetModuleListOfRefs(&moduleList);
-    for (auto cur : moduleList) {
-        m_ModuleManager->UnfitModule(cur->itemID());
-        cur->Move(m_pilot->GetLocationID(), flagHangar);
+    if (m_ModuleManager) {
+        std::vector<InventoryItemRef> moduleList;
+        m_ModuleManager->GetModuleListOfRefs(&moduleList);
+        for (auto cur : moduleList) {
+            m_ModuleManager->UnfitModule(cur->itemID());
+            cur->Move(m_pilot->GetLocationID(), flagHangar);
+        }
+    } else {
+        _log(SHIP__MODULE_ERROR, "StripFitting() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
     }
 }
 
@@ -1096,12 +1133,9 @@ void ShipItem::ProcessEffects(bool add/*false*/)
     if (add) {
         double start = GetTimeMSeconds();
         // char effects are processed when char is loaded.
-        sFxProc.ApplyEffects(m_pilot->GetChar().get(), m_pilot->GetChar().get(), this); //apply char effects
+        // apply char effects
+        sFxProc.ApplyEffects(m_pilot->GetChar().get(), m_pilot->GetChar().get(), this);
         ProcessShipEffects();
-        // apply ship effects (which now includes all ship, char and passive module effects)
-        sFxProc.ApplyEffects(this, m_pilot->GetChar().get(), this);
-        // explicitly apply all online module effects for state dgmStateOnline
-        ApplyOnlineModuleEffects(); // call online module effects
         _log(EFFECTS__DEBUG, "ShipItem::ProcessEffects() - %u ship and char effects processed and applied in %.3fms", \
                 (m_pilot->GetChar()->m_modifiers.size() + m_modifiers.size()), (GetTimeMSeconds() - start));
     } else {
@@ -1111,32 +1145,16 @@ void ShipItem::ProcessEffects(bool add/*false*/)
 
 void ShipItem::ProcessShipEffects()
 {
+    _log(EFFECTS__TRACE, "ShipItem::ParseExpression():  Beginning Ship Effects Processing.");
     for (auto it : m_type.m_stateFxMap) {
         fxData data;
+        data.result = false;
         data.srcRef = static_cast<InventoryItemRef>(this);
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(it.second.preExpression), data);
     }
-}
-
-void ShipItem::ApplyOnlineModuleEffects()
-{
-    /* when modules are created (in GenericModule). their passive effects are loaded into it's owning ship's m_modifiers map.
-     *  (NOTE: this will need adjustments for fitting in space)
-     * calling Online() on the module will load it's state 1 (online) effects to the m_modifiers map of the first arg of ApplyEffects().
-     * in this case, it's the module's m_modifiers map, which we will have to explicitly call here to apply to ship
-     */
-    if (m_pilot->IsLogin()) {
-        std::vector<InventoryItemRef> moduleList;
-        m_ModuleManager->GetModuleListOfRefs(&moduleList);
-        for (auto cur : moduleList)
-            sFxProc.ApplyEffects(cur.get(), m_pilot->GetChar().get(), this);
-    } else {
-        for (auto cur : m_onlineModuleVec) {
-            m_ModuleManager->Online(cur);
-            sFxProc.ApplyEffects(m_factory.GetItem(cur).get(), m_pilot->GetChar().get(), this);
-        }
-    }
+    // apply processed effects
+    sFxProc.ApplyEffects(this, m_pilot->GetChar().get(), this);
 }
 
 void ShipItem::RemoveEffects()
@@ -1148,6 +1166,11 @@ void ShipItem::RemoveEffects()
 
 std::string ShipItem::GetShipDNA()
 {
+    if (!m_ModuleManager) {
+        _log(SHIP__MODULE_ERROR, "GetShipDNA() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
+
     /* ship dna is shorthand notation to describe a ship and it's fittings purely thru the use of typeIDs and quantities
      *
      * the format is as follows:

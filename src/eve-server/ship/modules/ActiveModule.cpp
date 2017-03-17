@@ -59,24 +59,30 @@ m_reloadTimer(10000)
      * maybe make config option later to avoid hard-coding
      */
     if (!m_reloadTime) {
-        if (m_modRef->groupID() == EVEDB::invGroups::Projectile_Weapon)
-            m_reloadTime = 4000;
-        else if (m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Snowball
-            or m_modRef->groupID() == EVEDB::invGroups::Scan_Probe_Launcher)
-            m_reloadTime = 5000;
-        else if (m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Cruise
-            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Rocket
-            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Siege
-            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Standard
-            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Heavy
-            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Assault
-            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Defender
-            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Citadel
-            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Heavy_Assault
-            or m_modRef->groupID() == EVEDB::invGroups::Missile_Launcher_Bomb)
-            m_reloadTime = 7000;
-        else
-            m_reloadTime = 10000;
+        switch (m_modRef->groupID()) {
+            case EVEDB::invGroups::Projectile_Weapon: {
+                m_reloadTime = 4000;
+            } break;
+            case EVEDB::invGroups::Missile_Launcher_Snowball:
+            case EVEDB::invGroups::Scan_Probe_Launcher: {
+                m_reloadTime = 5000;
+            } break;
+            case EVEDB::invGroups::Missile_Launcher_Cruise:
+            case EVEDB::invGroups::Missile_Launcher_Rocket:
+            case EVEDB::invGroups::Missile_Launcher_Siege:
+            case EVEDB::invGroups::Missile_Launcher_Standard:
+            case EVEDB::invGroups::Missile_Launcher_Heavy:
+            case EVEDB::invGroups::Missile_Launcher_Assault:
+            case EVEDB::invGroups::Missile_Launcher_Defender:
+            case EVEDB::invGroups::Missile_Launcher_Citadel:
+            case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
+            case EVEDB::invGroups::Missile_Launcher_Bomb: {
+                m_reloadTime = 7000;
+            } break;
+            default: {
+                m_reloadTime = 10000;
+            } break;
+        }
     }
     m_timer.Disable();
     m_reloadTimer.Disable();
@@ -178,22 +184,30 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
     charge->type().GetEffect(Effects::dgmStatePassive, effectVec);
     for (auto it : effectVec) {
         fxData data;
+        data.result = false;
         data.srcRef = charge;
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
-        sFxProc.ParseExpression(charge.get(), sFxDataMgr.GetExpression(it.postExpression), data);
+        sFxProc.ParseExpression(charge.get(), sFxDataMgr.GetExpression(it.preExpression), data, this);
     }
 }
 
 void ActiveModule::UnloadCharge()
 {
     // remove charge effects here
-    GenericModule::ProcessEffects(Effects::dgmStatePassive, false);
-    m_chargeRef->ReloadAttributes();
+    std::vector< Effect > effectVec;
+    m_chargeRef->type().GetEffect(Effects::dgmStatePassive, effectVec);
+    for (auto it : effectVec) {
+        fxData data;
+        data.result = false;
+        data.srcRef = m_chargeRef;
+        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
+        sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.postExpression), data, this);
+    }
+    sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get());
 
 	m_chargeRef = InventoryItemRef();		// Ensure ref is NULL
     m_chargeLoaded = false;
     m_ChargeState = MOD_UNLOADED;
-
 }
 
 double ActiveModule::DoCycle()
@@ -264,12 +278,12 @@ void ActiveModule::DoEffect(bool active /*false*/, std::string effect /*""*/)
         shipEff.start = (active ? 1 : 0);
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
-        shipEff.startTime = (active ? shipEff.timeNow : (shipEff.timeNow + (timeLeft * Win32Time_Second)));
+        shipEff.startTime = (active ? shipEff.timeNow : (shipEff.timeNow - (timeLeft * Win32Time_Second)));
         shipEff.duration = (active ? m_cycleTime : timeLeft);
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone(); /* look into setting this ... only used for salvaging? */
     std::vector<PyTuple*> events;
-    events.push_back(shipEff.Encode());
+        events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
     m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }

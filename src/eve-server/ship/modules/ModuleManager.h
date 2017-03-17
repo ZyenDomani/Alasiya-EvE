@@ -116,6 +116,9 @@ public:
     void DeactivateAll();
     void UnloadAll();
 
+    void ApplyAllPassiveModEffects();
+    void ApplyAllOnlineModEffects();
+
     //useful accessors
 	bool isSlotOccupied(EVEItemFlags flag);
 
@@ -215,7 +218,7 @@ public:
     void UnloadCharge(EVEItemFlags flag);
     void UnloadAllModules();
     void StripModules();
-    void UpdateModules();
+    void UpdateModules(std::vector<uint32> modVec);
     void UpdateModules(EVEItemFlags flag);
     bool VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2);
     void CharacterLeavingShip();

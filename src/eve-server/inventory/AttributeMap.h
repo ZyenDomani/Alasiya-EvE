@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Rewrite:    Allan
 */
 
 #ifndef __EVE_ATTRIBUTE_MGR__H__INCL__
@@ -40,46 +41,17 @@ class InventoryItem;
 class AttributeMap
 {
 public:
-    /**
-     * we store our keeper so we can use it in the various functions.
-     * @param[in] item reference to the InventoryItem for which attributes will be managed
-     * @param[in] isDefault boolean indicating whether this attribute map uses 'default' itemType attributes or saved-per-item 'entity_attributes' table
-     */
     AttributeMap(InventoryItem& item);
     ~AttributeMap();
 
-	/**
-     * @brief set the attribute with @num
-     *
-     * set the attribute with @num
-     *
-     * @param[in] attributeId the attribute id that needs to be changed.
-     * @param[in] num the number the attribute needs to be changed in.
-     *
-     * @retval true  The attribute has successfully been set and queued.
-     * @retval false The attribute change has not been queued but has not been changed.
-     */
     void SetAttribute(uint16 attrID, EvilNumber& num, bool nofity = true);
 
     EvilNumber GetAttribute(const uint16 attrID) const;
 
-    /*
-     * HasAttribute
-     *
-     * returns true if this item has the attribute 'attrID', false if it does not have this attribute
-     *
-     * @note this function should be used very infrequently and only for specific reasons
-     */
     bool HasAttribute(const uint16 attrID) const;
     bool HasAttribute(const uint16 attrID, EvilNumber &value) const;
 
-    /* ATM we don't load or save as we assume that all attribute modifiers are calculated on the fly
-     * except charge attributes but we won't handle them for now
-     */
     bool Save();
-
-	// Allow users to force changed flag to true, indicating that Save() should really save attributes to the database
-	void ForceChanged() { ; }//mChanged = true; }
 
     void Delete();
     void DeleteAttribute(uint16 attrID);
@@ -89,19 +61,8 @@ public:
 
     /* only save the ship damage other attribs are calculated when ship activated */
     void SaveShipState();
-    /**
-     * SaveAttributes
-     *
-     * @note this function always saves everything and doesn't take into account the fact that we should only save the
-     * changes attributes.
-     */
     bool SaveAttributes();
 
-    /*
-     * ResetAttribute
-     *
-     *@note this function will force reload the default value for the specified attribute
-     */
     void ResetAttribute(uint16 attrID, bool notify);
 
     /**
@@ -151,16 +112,8 @@ protected:
      */
     bool SendChanges(PyTuple* attrChange);
 
-    /** we belong to this item..
-     * @note possible design flaw because only items contain AttributeMap's so
-     *       we don't need to store this.
-     */
     InventoryItem& mItem;
 
-    /**
-     * @note possible design flaw, stack corruption because of a enormous amount
-     *       of 'EvilNumber' objects not fitting into the stack.
-     */
     AttrMap mAttributes;
 
 private:

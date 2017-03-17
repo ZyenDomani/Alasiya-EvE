@@ -573,7 +573,11 @@ void InventoryDB::SaveAttributes(std::vector<AttrData>& data)
             first = false;
         } else
             Inserts << ", ";
-        Inserts << "(" << cur.itemID << ", " << cur.attrID << ", " << cur.valueInt << ", " << cur.valueFloat << ")";
+        Inserts << "(" << cur.itemID << ", " << cur.attrID << ", ";
+        if (cur.valueInt)
+            Inserts << cur.valueInt << ", NULL)";
+        else
+            Inserts << "NULL, " << cur.valueFloat << ")";
     }
 
     if (!first) {
