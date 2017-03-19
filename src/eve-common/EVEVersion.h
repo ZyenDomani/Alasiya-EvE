@@ -40,10 +40,10 @@ static const int32 EVEBirthday = 170472;
 
 /*  Allan's Static Definitions */
 static const float Config_Version = 7.4; /*  match versions here with eve-server.xml and EveServerConfig.cpp for full config support */
-static const float Log_Version = 7.0;    /*  match versions here with logtypes.h and log.ini for full logging support */
+static const float Log_Version = 7.2;    /*  match versions here with logtypes.h and log.ini for full logging support */
 static const float Bot_Version = 0.3;    /*  match versions here with MarketBot.xml and MarketBotConf.cpp for full config support */
 static const float EVE_Build = 1.87;     /* this is for bug tracking on my forums.  -allan 3July15 */
-static const char* const EVEMU_REVISION = "0.8.91-allan";
-static const char* const EVEMU_BUILD_DATE = "8 March 2017";
+static const char* const EVEMU_REVISION = "0.8.93-allan";
+static const char* const EVEMU_BUILD_DATE = "18 March 2017";
 
 #endif

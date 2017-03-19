@@ -91,7 +91,8 @@ namespace Effects {
         dgmSrcGang             = 4,
         dgmSrcGroup            = 5,
         dgmSrcTarget           = 6,
-        MaxSrcLocation         = 6
+        dgmSrcCharge           = 7,
+        MaxSrcLocation         = 7
     };
 
     enum TargetLocation {   //formally known as environment
@@ -111,15 +112,15 @@ namespace Effects {
 
     enum State  {       // formally known as category
         dgmStateInvalid        = -1,
-        // these are the effectState in dgmEffects table to denote when this effect is applied or removed
-        dgmStatePassive        = 0, //Applied when item is just present in fit - implants, skills, offlined modules
-        dgmStateOnline         = 1, //also online effect - Applied when module is onlined
-        dgmStateTarget         = 2, //Applied onto selected target
+        // these are the effectCategory in dgmEffects table to denote when this effect is applied or removed
+        dgmStatePassive        = 0, //Applied when item is present and online - implants, skills, modules, charges
+        dgmStateActive         = 1, //Applied when active module is activated
+        dgmStateTarget         = 2, //Applied onto selected target when module is activated
         dgmStateArea           = 3, //defined but not used
-        dgmStateActive         = 4, //Applied when module is activated
-        dgmStateOverloaded     = 5, //Applied when module is overloaded
-        dgmStateDungeon        = 6, //Dungeon effects, several effects exist in this category, but not assigned to any item
-        dgmStateSystem         = 7,  //System-wide effects, like WH and incursion
+        dgmStateOnline         = 4, //Applied when module is onlined
+        dgmStateOverloaded     = 5, //Applied when module is overloaded and activated
+        dgmStateDungeon        = 6, //Dungeon effects, several effects exist in this category, but not assigned to any item  -passive
+        dgmStateSystem         = 7, //System-wide effects, like WH and incursion  -passive
         MaxState               = 7
     };
 
@@ -136,10 +137,11 @@ namespace Effects {
         dgmMathPostPercent    = 7,
         dgmMathPostAssignment = 8,
         dgmMathSkillCheck     = 9,
-        /* no data or expressions with these */
+        /* no data or expressions with these next two */
         dgmMathAddRate        = 10,
         dgmMathSubRate        = 11,
-        MaxMathMethod         = 11
+        dgmMathRevPostPercent = 12,
+        MaxMathMethod         = 12
     };
     /*  old shit
              case CALC_NONE:                            return val1;
@@ -155,6 +157,16 @@ namespace Effects {
              case CALC_SUBTRACT_RESIST:                 return val1 + (1 - val2);
      */
     /*
+dgmEffActivation = 1
+dgmEffArea = 3
+dgmEffOnline = 4
+dgmEffPassive = 0
+dgmEffTarget = 2
+dgmEffOverload = 5
+dgmEffDungeon = 6
+dgmEffSystem = 7
+dgmPassiveEffectCategories = (dgmEffPassive, dgmEffDungeon, dgmEffSystem)
+
     dgmAttributesByIdx = {
         1: attributeIsOnline,
         2: attributeDamage,

@@ -737,7 +737,7 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
             */
         /** @todo (allan)  to be written (both)   -effectStates is a PyList */
         //  if ((cur->IsPOSSE()) or (cur->IsOutpost()))
-        //ss.effectStates  --pos and other structures (using effects.StructureOnline and et.al.)
+        //ss.effectStates  --pos and other structures (using Notify_OnGodmaShipEffect)
         /*
                             [PyString "effectStates"]
                             [PyList 1 items]

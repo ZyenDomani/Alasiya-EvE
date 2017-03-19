@@ -25,7 +25,9 @@ public:
     void Initialize();
     void ConfigureEffects();
     bool isWarpSafe(uint16 eID);
+    bool isOffensive(uint16 eID);
     bool needsTarget(std::string effectName);
+    uint16 GetEffectID(std::string effectName);
 
     Effect GetEffect(uint16 eID);
     Operand GetOperand(uint16 oID);
@@ -56,6 +58,7 @@ private:
     std::unordered_multimap<uint16, TypeEffects> m_typeFxMap;  // k,v of typeID, data<effectID, isDefault>
 
     std::map<uint16, std::string> m_targEffects;  // k,v of effectID, effectName.  these effectIDs need a target.
+    std::map<uint16, std::string> m_effectName;  // k,v of effectID, effectName.  maps all effectIDs to their name.
 };
 
 #define sFxDataMgr \

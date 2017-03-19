@@ -64,6 +64,7 @@ public:
     bool SaveAttributes();
 
     void ResetAttribute(uint16 attrID, bool notify);
+    void CopyAttributes(std::map<uint16, EvilNumber>& attrMap);
 
     /**
      * @brief return the begin iterator of the AttributeMap

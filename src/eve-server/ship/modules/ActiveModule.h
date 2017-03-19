@@ -48,8 +48,8 @@ public:
     virtual void Overload();
     virtual void AbortCycle();
     virtual void DeOverload();
-    virtual void Deactivate();
-    virtual void Activate(SystemEntity* pSE);
+    virtual void Deactivate(std::string effect="");
+    virtual void Activate(SystemEntity* pSE, std::string effect="");
 
     /* GenericModule access function overriders */
     virtual bool IsLoaded()                             { return m_chargeLoaded; }
@@ -58,14 +58,13 @@ public:
 
     // generic *Cycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
     //  for modules that perform action on each DoCycle(), they will override this call in their class implementation
-    virtual double DoCycle();
+    uint32 DoCycle();
     virtual void StopCycle(bool abort=false)            { /* Do nothing here */ }
 
     /* ActiveModule methods */
-    bool ShipHasCapCharge()                             { return (_GetCapNeed() <  m_shipRef->GetAttribute(AttrCapacitorCharge).get_double()); }
+    bool ShipHasCapCharge();
     uint32 GetTargetID()                                { return m_targetID; }
     SystemEntity* GetTarget()                           { return m_targetEntity; }
-    double GetCycleTime()                               { return m_cycleTime; }
 
     // public methods to enable calls from other classes (namely, TurrentFormulas.cpp)
     uint32 GetFalloff()                                 { return m_falloff; }
@@ -73,25 +72,25 @@ public:
     uint32 GetSigRadius()                               { return m_optimalSigRadius; }
     double GetTrackingSpeed()                           { return m_trackingSpeed; }
 
+    /* new effects processing code and updates */
+    void ApplyEffect(Effects::State state, bool active=false);
 	/* common method for all modules that have a visual effect when active (wip) */
-    void DoEffect(bool active=false, std::string effect="");
+    void ShowEffect(bool active=false, bool abort=false, std::string effect="");
 
 protected:
-    uint32 m_effectID = 0;
-    uint32 m_targetID = 0;                              //passed to us by activate
-    uint16 m_reloadTime = 0;
-    Timer m_reloadTimer;
-    std::string m_effectStr = "";
-    //SystemBubble* m_bubble;                           // we do not own this
-	SystemEntity* m_targetEntity;                       // we do not own this
-	//DestinyManager* m_destiny;                        // we do not own this
-
-	InventoryItemRef m_chargeRef;                       // we do not own this
-
 	bool m_overLoaded = false;
     bool m_chargeLoaded = false;
 
+    void DeactivateCycle(bool abort=false);
+    void ShouldProcessActiveCycle();
+
+    uint32 GetRemainingCycleTimeMS()                    { return m_timer.GetRemainingTime(); }
+
+    void SetTimer(uint32 time);
+    void StopTimer()                                    { m_timer.Disable(); }
+
     /* skill, charge, and module combined modifiers to avoid constant calculations. */
+    // may no longer need these....pull current attrib from item, as effects are working now, and modify items attribs directly.
     uint32 m_falloff = 0;                               // distance past maximum range at which accuracy has fallen by half
     uint32 m_optimalRange = 0;
     uint32 m_maxRange = 0;
@@ -102,28 +101,16 @@ protected:
     double m_damageModifier = 0;
     double m_trackingSpeed = 0;
 
-    //  these should be overridden in derived clases to use skills and other factors as needed as this returns default attribute only.
-    virtual double _GetCapNeed()                        { return GetAttribute(AttrCapacitorNeed).get_double(); }
-
-    /** @todo currently reworking these to have common data set and maintained here -wip */
-    virtual void _ProcessCycle()                        { /* Do nothing here */ }
-    virtual void _ShowCycle()                           { /* Do nothing here */ }
-    virtual void _SetCapNeed()                          { /* Do nothing here */ }
-
-
-    // to sort and integrate.....
-    //void ActivateCycle();
-    void DeactivateCycle(bool abort=false);
-    void ShouldProcessActiveCycle();
-    void ProcessActiveCycle();
-    void ProcessDeactivateCycle();
-
-    uint32 GetRemainingCycleTimeMS()                    { return m_timer.GetRemainingTime(); }
-
-    void SetTimer(uint32 time);
-    void StopTimer()                                    { m_timer.Disable(); }
-
 private:
+    uint32 m_targetID = 0;                              //passed to us by activate
+    uint16 m_reloadTime = 0;
+    Timer m_reloadTimer;
+    //SystemBubble* m_bubble;                           // we do not own this
+    SystemEntity* m_targetEntity;                       // we do not own this
+    //DestinyManager* m_destiny;                        // we do not own this
+
+    std::string m_effectStr;
+
     Timer m_timer;
 
     bool m_Stop;

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 7.1
+    Log Version: 7.2
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -305,9 +305,10 @@ LOG_TYPE( SHIP, INFO, DISABLED, "ShipInfo" )
 LOG_TYPE( SHIP, TRACE, DISABLED, "ShipTrace" )
 LOG_TYPE( SHIP, MODULE_ERROR, ENABLED, "ModError" )
 LOG_TYPE( SHIP, MODULE_WARNING, ENABLED, "ModWarn" )
-LOG_TYPE( SHIP, MODULE_TRACE, DISABLED, "ModTrace" )
+LOG_TYPE( SHIP, MODULE_MESSAGE, DISABLED, "ModMsg" )
 LOG_TYPE( SHIP, MODULE_INFO, DISABLED, "ModInfo" )
 LOG_TYPE( SHIP, MODULE_DEBUG, DISABLED, "ModDebug" )
+LOG_TYPE( SHIP, MODULE_TRACE, DISABLED, "ModTrace" )
 
 LOG_CATEGORY( TARGET )
 LOG_TYPE( TARGET, ERROR, ENABLED, "TargetError" )

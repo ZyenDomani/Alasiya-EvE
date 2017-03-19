@@ -1062,7 +1062,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
     } else {
         shipEff.duration = 0.0;
     }
-        shipEff.repeat = (online ? 1000 : 0);
+        shipEff.repeat = (online ? 1 : 0);
         shipEff.error = new PyNone();
     PyList* events = new PyList;
         events->AddItem(shipEff.Encode());
@@ -1159,8 +1159,21 @@ void InventoryItem::RemoveModifier(fxData data)
     for (auto it = itr.first; it != itr.second; it++)
         if ((it->second.srcRef == data.srcRef) and (it->second.targAttr == data.targAttr))
             m_modifiers.erase(it);
-}
 
+    using namespace Effects;
+    switch (data.math) {
+        case dgmMathPreMul:         data.math = dgmMathPreDiv;          break;
+        case dgmMathPreDiv:         data.math = dgmMathPreMul;          break;
+        case dgmMathModAdd:         data.math = dgmMathModSub;          break;
+        case dgmMathModSub:         data.math = dgmMathModAdd;          break;
+        case dgmMathPostMul:        data.math = dgmMathPostDiv;         break;
+        case dgmMathPostDiv:        data.math = dgmMathPostMul;         break;
+        case dgmMathPostPercent:    data.math = dgmMathRevPostPercent;  break;
+        case dgmMathPreAssignment:  data.math = dgmMathPostAssignment;  break;
+        case dgmMathPostAssignment: data.math = dgmMathPreAssignment;   break;
+    }
+    m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+}
 
 void InventoryItem::ReloadAttributes()
 {

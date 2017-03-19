@@ -80,7 +80,7 @@ public:
 
         /*StopModuleRepair*/
         /*InitiateModuleRepair*/
-        
+
     }
     virtual ~DogmaIMBound() {delete m_dispatch;}
     virtual void Release() {
@@ -296,19 +296,25 @@ PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
     /*
-     *    c alled thru r*click menu on module
-     *    17:20:22 L DogmaIMBound::Handle_OverloadRack(): [00msize=1
+     *    called thru rclick menu on module
+     *    17:20:22 L DogmaIMBound::Handle_OverloadRack(): size=1
      *    17:20:22 [SvcCall]   Call Arguments:
      *    17:20:22 [SvcCall]       Tuple: 1 elements
      *    17:20:22 [SvcCall]         [ 0] Integer field: 140000223    <--  itemID in any slot of location to OL
      *
      *    called thru OL button on ship dashboard
-     *    17:24:00 L DogmaIMBound::Handle_OverloadRack(): [00msize=1
+     *    17:24:00 L DogmaIMBound::Handle_OverloadRack(): size=1
      *    17:24:00 [SvcCall]   Call Arguments:
      *    17:24:00 [SvcCall]       Tuple: 1 elements
      *    17:24:00 [SvcCall]         [ 0] Integer field: 140000213    <--  itemID in first slot of location to OL
      *
      *    returns - list of moduleIDs to OL
+     *
+     * /client/script/environment/godma.py(2407) OverloadRack
+     *        itemID = 140001963L
+     *        self = <godma.StateManager instance at 0x3CB717D8>
+     *        moduleIDs = None
+     * TypeError: 'NoneType' object is not iterable
      *
      *    sLog.White("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
      *    call.Dump(SERVICE__CALL_DUMP);
@@ -321,7 +327,7 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
     /*
      */
-    sLog.White("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
+    sLog.White("DogmaIMBound::Handle_StopOverloadRack()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     Client* pClient = call.client;
 

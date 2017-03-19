@@ -59,7 +59,7 @@ PyResult Command_roid( Client* who, CommandDB* db, PyServiceMgr* services, const
     sLog.White( "Command", "Roid %u of radius %f", typeID, radius );
 
     GPoint position( who->GetShipSE()->GetPosition() );
-    position.x += radius + 1 + who->GetShipSE()->GetRadius();    //put it far enough away to not push us around.
+    position.x += radius + 100 + who->GetShipSE()->GetRadius();    //put it far enough away to not push us around.
 
     SpawnAsteroid( who->SystemMgr(), typeID, radius, position );
 

@@ -509,6 +509,46 @@ PyResult Command_skilllist(Client* who, CommandDB* db, PyServiceMgr* services, c
     return new PyString(reply);
 }
 
+PyResult Command_attrlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    /* this command is used to debug attributes
+     * wip.   -allan 15Mar17
+     */
+
+    if (!args.isNumber(1))
+        throw PyException(MakeCustomError("Argument 1 must be a valid itemID."));
+    uint32 itemID = atol(args.arg(1).c_str());
+
+    InventoryItemRef iRef = services->item_factory->GetItem(itemID);
+    if (!iRef) {
+        // make error msg here
+        return new PyNone();
+    }
+
+    std::map<uint16, EvilNumber> attrMap;
+    iRef->GetAttributeMap().CopyAttributes(attrMap);
+
+    std::ostringstream str;
+    str << "%u(%s) has %u attributes.<br><br>"; //70
+
+    for (auto cur : attrMap) {
+        str << cur.first << " ";  //15
+        if (cur.second.get_type() == evil_number_int)    //15
+            str << "i- " << cur.second.get_int();
+        else
+            str << "f- " << cur.second.get_float();
+        str << "<br>"; // 3 + 15 + 15 (40)
+    }
+
+    int count = attrMap.size();
+    int size = count * 40;
+    size += 70;
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(), itemID, iRef->itemName().c_str(), count);
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
 PyResult Command_showsession(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
 
     std::ostringstream str;

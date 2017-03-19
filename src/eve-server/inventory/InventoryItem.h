@@ -286,6 +286,8 @@ public:
     std::multimap<int8, fxData> m_rModifiers;    // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
 
 /*  new attribute system */
+    AttributeMap& GetAttributeMap()                     { return mAttributeMap; }
+
 protected:
     AttributeMap mAttributeMap;
 

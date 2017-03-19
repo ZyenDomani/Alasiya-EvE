@@ -45,10 +45,10 @@ public:
     virtual ~GenericModule();
 
     /* generic functions handled in base class */
-    void Offline();
     void Online();
+    void Offline();
 
-    void ProcessEffects(uint8 state, bool online=false);
+    void ProcessEffects(Effects::State state, bool online = false);
 
     void Repair()                                       { m_modRef->ResetAttribute(AttrHP, true); }
     void Repair(EvilNumber amount)                      { m_modRef->SetAttribute(AttrHP, m_modRef->GetAttribute(AttrHP) + amount); }
@@ -86,7 +86,9 @@ public:
 
     ShipItemRef GetShipRef()                            { return m_shipRef; }
 
-	void SetModuleState(ModuleStates state)             { m_ModuleState = state; }
+    void SetChargeRef(InventoryItemRef iRef)            { m_chargeRef = iRef; }
+    void SetModuleState(ModuleStates state)             { m_ModuleState = state; }
+    void SetChargeState(ChargeStates state)             { m_ChargeState = state; }
 	ModuleStates GetModuleState()                       { return m_ModuleState; }
 	ChargeStates GetChargeState()                       { return m_ChargeState; }
 
@@ -96,8 +98,8 @@ public:
 
 	/* generic access functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }
-    virtual void Activate(SystemEntity* pSE)            { /* Do nothing here */ }
-    virtual void Deactivate()                           { /* Do nothing here */ }
+    virtual void Activate(SystemEntity* pSE, std::string effect="") { /* Do nothing here */ }
+    virtual void Deactivate(std::string effect="")      { /* Do nothing here */ }
     virtual void AbortCycle()                           { /* Do nothing here */ }
     virtual void LoadCharge(InventoryItemRef charge)    { /* Do nothing here */ }
     virtual void UnloadCharge()                         { /* Do nothing here */ }
@@ -121,6 +123,7 @@ public:
 protected:
     InventoryItemRef m_modRef;
     ShipItemRef      m_shipRef;
+    InventoryItemRef m_chargeRef;
 
     ModuleStates     m_ModuleState;
     ChargeStates     m_ChargeState;

@@ -635,7 +635,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSEFromInventory(m_shipId);
             pShipSE->SetPilot(this);
-            m_ship->UpdateModules();
+            //m_ship->UpdateModules();
             pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         }
         m_char->Move(m_shipId, flagPilot);

@@ -87,7 +87,7 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* mod)
         return false;
     else
         itr->second = mod;
-
+    _log(SHIP__MODULE_TRACE, "AddModule() - adding %s.", mod->getItem()->itemName().c_str());
     // Maintain Turret and Launcher Fitted module counts:
     if ( mod->isTurretFitted() )
         ++m_turrents;
@@ -109,6 +109,8 @@ bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
     GenericModule* mod = GetModule(flag);
     if (!mod)
         return false;
+
+    mod->ProcessEffects(Effects::dgmStatePassive, false);
 
     deleteModuleRef(mod->flag(), mod);
 	return true;
@@ -387,24 +389,28 @@ bool ModuleManager::Initialize() {
     m_Ship->GetInventory()->GetInventoryVec(itemVec);   // this method also sorts in order - cargo, modules, charge, subsystems.
     GenericModule* mod(nullptr);
     for (auto cur : itemVec)
-        if (cur->flag() != flagCargoHold)
+        if (cur->flag() != flagCargoHold) {
             switch (cur->categoryID()) {
                 case EVEDB::invCategories::Module:
                 case EVEDB::invCategories::Subsystem: {
                     mod = ModuleFactory(cur, ShipItemRef(m_Ship));  // rigs are modules
-                    if (!m_Modules->AddModule(cur->flag(), mod))
+                    if (m_Modules->AddModule(cur->flag(), mod))
+                        mod->ProcessEffects(Effects::dgmStatePassive, true);
+                    else
                         _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Could not insert module %s(%u) at flag %u into module container.",
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
                 } break;
                 case EVEDB::invCategories::Charge: {
                     mod = GetModule(cur->flag());
-                    if (mod)
-                        mod->LoadCharge(cur);
-                    else
+                    if (mod) {
+                        mod->SetChargeRef(cur);
+                        mod->SetChargeState(ChargeStates::MOD_LOADED);
+                    } else
                         _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
                 } break;
             }
+        }
 
     return (m_initalized = true);
 }
@@ -486,12 +492,10 @@ void ModuleManager::UnfitModule(uint32 itemID)
             flag = flagHangar;
         if (mod->IsLoaded()) {
             mod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
-            mod->UnloadCharge();
+            mod->UnloadCharge();    // this does not physically remove charge from module, hence the need for the above call.
         }
         if (mod->isOnline())
             mod->Offline();
-        // dont actually move the module here....let the caller do that in it's specific code
-        //mod->getItem()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
     }
     m_Modules->RemoveModule(itemID);
 }
@@ -607,10 +611,15 @@ void ModuleManager::Online(EVEItemFlags flag)
 
 void ModuleManager::Offline(uint32 itemID)
 {
+    if (IsStation(m_Ship->locationID()))
+        return;
+
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
-        if (!mod->isOnline())
+        if (!mod->isOnline()) {
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s not Online", mod->getItem()->itemName().c_str());
             return;
+        }
         _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s going Offline", mod->getItem()->itemName().c_str());
         mod->Offline();
     } else
@@ -619,8 +628,15 @@ void ModuleManager::Offline(uint32 itemID)
 
 void ModuleManager::Offline(EVEItemFlags flag)
 {
+    if (IsStation(m_Ship->locationID()))
+        return;
+
     GenericModule* mod = m_Modules->GetModule(flag);
     if (mod) {
+        if (!mod->isOnline()) {
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s not Online", mod->getItem()->itemName().c_str());
+            return;
+        }
         _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s going Offline", mod->getItem()->itemName().c_str());
         mod->Offline();
     } else
@@ -658,6 +674,7 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
         _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called on module %u that is not loaded.", itemID );
         return;
     } else if (!mod->isOnline()) {
+        // fix this to work with effectID 16 (needs ProcessEffects code completion)
         if (effectName == "online") {
             mod->Online();
         } else {
@@ -666,7 +683,7 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
         }
         return;
     } else {
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Activate() - %s (%s).", mod->getItem()->itemName().c_str(), effectName.c_str());
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Activate() - %s (%s)  repeat: %i.", mod->getItem()->itemName().c_str(), effectName.c_str(), repeat);
         mod->SetRepeat(repeat);
         SystemEntity* pSE(nullptr);
         if (sFxDataMgr.needsTarget(effectName)) {
@@ -683,15 +700,7 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
             }
         }
 
-        if (effectName == "cloaking") {//FIXME  set this to use module code, drain cap, etc.
-            if (m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->IsCloaked())
-                m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->UnCloak();
-            else    //MakeUserError("CantCloakProximity");
-                m_Ship->GetPilot()->GetShipSE()->DestinyMgr()->Cloak();
-            /** @todo  not working right....check for attrib '10' being added and error msgs with ServerError 25610 */
-        } else {
-            mod->Activate(pSE);
-        }
+        mod->Activate(pSE, effectName);
     }
 }
 
@@ -699,13 +708,12 @@ void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
 {
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
+        if (mod->GetModuleState() != MOD_ACTIVATED)  // we dont need an error msgs here....this is acceptable, as the module may not be active
+            return;
         _log(SHIP__MODULE_TRACE, "ModuleManager::Deactivate() - %s Deactivating - '%s'", mod->getItem()->itemName().c_str(), effectName.c_str());
-        if (effectName == "online") {
-			mod->Offline();
-        } else {
-			mod->Deactivate();
-        }
-    }
+        mod->Deactivate();
+    } else
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Deactivate() - Called on module %u that is not loaded.", itemID );
 }
 
 void ModuleManager::Overload(EVEItemFlags flag)
@@ -714,7 +722,8 @@ void ModuleManager::Overload(EVEItemFlags flag)
     if (mod) {
         mod->Overload();
         _log(SHIP__MODULE_TRACE, "ModuleManager::Overload() - %s Overloading...", mod->getItem()->itemName().c_str());
-    }
+    } else
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Overload() - Called on module that is not loaded at slot %i.", (int8)flag );
 }
 
 void ModuleManager::DeOverload(EVEItemFlags flag)
@@ -723,7 +732,8 @@ void ModuleManager::DeOverload(EVEItemFlags flag)
     if (mod) {
         mod->DeOverload();
         _log(SHIP__MODULE_TRACE, "ModuleManager::DeOverload() - %s DeOverload...", mod->getItem()->itemName().c_str());
-    }
+    } else
+        _log(SHIP__MODULE_ERROR, "ModuleManager::DeOverload() - Called on module that is not loaded at slot %i.", (int8)flag);
 }
 
 void ModuleManager::DamageModule(uint32 itemID, EvilNumber val)
@@ -732,7 +742,8 @@ void ModuleManager::DamageModule(uint32 itemID, EvilNumber val)
     if (mod) {
         mod->SetAttribute(AttrHP, val);
         _log(SHIP__MODULE_TRACE, "ModuleManager::DamageModule() - %s taking %f damage.", mod->getItem()->itemName().c_str(), val.get_float());
-    }
+    } else
+        _log(SHIP__MODULE_ERROR, "ModuleManager::DamageModule() - Called on module %u that is not loaded.", itemID );
 }
 
 void ModuleManager::RepairModule(uint32 itemID)
@@ -740,6 +751,8 @@ void ModuleManager::RepairModule(uint32 itemID)
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod)
         mod->Repair();
+    else
+        _log(SHIP__MODULE_ERROR, "ModuleManager::RepairModule() - Called on module %u that is not loaded.", itemID );
 }
 
 /** @todo   need to update this */
@@ -870,11 +883,15 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 void ModuleManager::UnloadCharge(EVEItemFlags flag)
 {
     GenericModule* mod = m_Modules->GetModule(flag);
-    if (mod and mod->IsLoaded() ) {
-        _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s",
-             mod->getItem()->itemName().c_str(), mod->GetLoadedChargeRef()->itemName().c_str());
-        mod->UnloadCharge();
-	}
+    if (mod) {
+        if (mod->IsLoaded() ) {
+            _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s",
+                    mod->getItem()->itemName().c_str(), mod->GetLoadedChargeRef()->itemName().c_str());
+            mod->UnloadCharge();
+        } else
+            _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module %s at slot %i is not loaded", mod->getItem()->itemName().c_str(), flag);
+    } else
+        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module not found at slot %i", flag);
 }
 void ModuleManager::GetLoadedCharges(std::map< EVEItemFlags, InventoryItemRef >& charges)
 {
@@ -909,6 +926,7 @@ void ModuleManager::UnloadAllModules()
 
 void ModuleManager::UpdateModules(std::vector<uint32> modVec)
 {
+    sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
     // this one is called from BoardShip()
     GenericModule* mod(nullptr);
     if (modVec.size()) {
@@ -918,12 +936,15 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
             mod = GetModule(cur);
             if (!mod)
                 continue;
-            Online(cur);
+
             // clear module effect map (just in case)
             mod->getItem()->m_modifiers.clear();
             mod->ProcessEffects(Effects::dgmStatePassive, true);
             sFxProc.ApplyEffects(mod->getItem().get(), mod->GetShipRef()->GetPilot()->GetChar().get(), mod->GetShipRef().get());
+
+            Online(cur);
         }
+        /*
         // process and apply all effects for online modules
         _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec) - Starting online effect processing.");
         for (auto cur : modVec) {
@@ -935,13 +956,14 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
             mod->getItem()->m_modifiers.clear();
             mod->ProcessEffects(Effects::dgmStateOnline, true);
             sFxProc.ApplyEffects(mod->getItem().get(), mod->GetShipRef()->GetPilot()->GetChar().get(), mod->GetShipRef().get());
-        }
-    } else {
+        } */
+    }
+    /*else {
         _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules() - Starting passive effect processing.");
         m_Modules->ApplyAllPassiveModEffects();
-        _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules() - Starting online effect processing.");
-        m_Modules->ApplyAllOnlineModEffects();
-    }
+        //_log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules() - Starting online effect processing.");
+        //m_Modules->ApplyAllOnlineModEffects();
+    } */
 }
 
 void ModuleManager::UpdateModules(EVEItemFlags flag)
@@ -956,8 +978,12 @@ void ModuleManager::UpdateModules(EVEItemFlags flag)
 
 void ModuleManager::CharacterBoardingShip()
 {
+    sLog.Magenta("ModuleManager::CharacterBoardingShip()","Needs to be tested");
     if (!m_initalized)
         Initialize();
+
+    m_Modules->ApplyAllPassiveModEffects();
+    OnlineAll();
 }
 
 void ModuleManager::CharacterLeavingShip()
@@ -972,7 +998,7 @@ void ModuleManager::CharacterLeavingShip()
 void ModuleManager::ShipWarping()
 {
     sLog.Magenta("ModuleManager::ShipWarping()","Deactivating all modules.");
-    /** @todo  figure out how to check modules for warpsafe-ness and Deactivate accordingly
+    /** @todo  figure out how to check modules for warpsafe-ness and Deactivate accordingly....done.  use sFxDataMgr.isWarpSafe(effectID)
      *
      * the "correct" way here is to test all currently active effects for "Effect.isWarpSafe" boolean, and deactivate those that dont have it.
      * for now, abort all modules.  yes, this is harsh, but will have to fix later.
@@ -987,11 +1013,9 @@ void ModuleManager::ShipWarping()
 void ModuleManager::ShipJumping()
 {
     sLog.Magenta("ModuleManager::ShipJumping()","Deactivating all modules.");
-    /** @todo figure out what needs to be done here and implement it
-     * same as warping...check attribute and deactivate module.  this should be ALL modules
-     */
+
+    // no modules are jumpsafe
     AbortCycle();
-    //DeactivateAllModules();
 }
 
 void ModuleManager::GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList)

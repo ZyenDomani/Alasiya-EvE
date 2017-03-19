@@ -298,7 +298,7 @@ enum ClientTimers {
     DockInvul        = 3000,
     JumpInvul        = 5000,
     WarpOutInvul     = 5000,
-    WarpInInvul      = 12000,   // increased from 10s
+    WarpInInvul      = 18000,   // increased from 10s
     UndockInvul      = 15000,
     RestoringInvul   = 60000,
     JumpCloak        = 12000,

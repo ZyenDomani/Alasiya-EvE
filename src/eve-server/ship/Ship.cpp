@@ -212,7 +212,19 @@ void ShipItem::SetPlayer(Client* pClient) {
         // this hits ONLY when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
         ProcessEffects(true);
         m_ModuleManager->CharacterBoardingShip();
-        UpdateModules();
+        //UpdateModules();
+        if (pClient->IsLogin()) {
+            if (sConfig.server.IsTestServer) {
+                // Heal Ship completely on test server
+                Heal();
+            } else {
+                // live server will Recharge shields and cap if session change isnt active
+                if (!m_pilot->IsSessionChange()) {
+                    SetShipShield(1.0);
+                    SetShipCapacitorLevel(1.0);
+                }
+            }
+        }
     }
 }
 
@@ -643,7 +655,7 @@ void ShipItem::Undock() {
     // apply ship effects, as all variables are set at this point.
     if (m_ModuleManager) {
         ProcessEffects(true);
-        m_ModuleManager->CharacterBoardingShip();
+        //m_ModuleManager->CharacterBoardingShip();
         UpdateModules();
     } else {
         _log(SHIP__MODULE_ERROR, "Undock() - %s(%u) has no module manager.", itemName().c_str(), itemID());
@@ -1134,6 +1146,7 @@ void ShipItem::ProcessEffects(bool add/*false*/)
         double start = GetTimeMSeconds();
         // char effects are processed when char is loaded.
         // apply char effects
+        _log(EFFECTS__TRACE, "Applying Char Effects");
         sFxProc.ApplyEffects(m_pilot->GetChar().get(), m_pilot->GetChar().get(), this);
         ProcessShipEffects();
         _log(EFFECTS__DEBUG, "ShipItem::ProcessEffects() - %u ship and char effects processed and applied in %.3fms", \
@@ -1153,6 +1166,7 @@ void ShipItem::ProcessShipEffects()
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(it.second.preExpression), data);
     }
+    _log(EFFECTS__TRACE, "Applying Ship Effects");
     // apply processed effects
     sFxProc.ApplyEffects(this, m_pilot->GetChar().get(), this);
 }

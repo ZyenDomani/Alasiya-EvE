@@ -2205,8 +2205,7 @@ void DestinyManager::SendUncloakShip() const {
     SendSingleDestinyUpdate(&up);
 }
 
-void DestinyManager::SendSpecialEffect10(uint32 entityID, const ShipItemRef shipRef, uint32 targetID,
-                                         std::string effectString, bool isOffensive, bool start, bool isActive) const
+void DestinyManager::SendSpecialEffect10(uint32 entityID, uint32 targetID, std::string effectString, bool isOffensive, bool start, bool isActive) const
 {
 	std::vector<int32, std::allocator<int32> > area;    //TODO need to figure out what this is....
 
@@ -2222,14 +2221,14 @@ void DestinyManager::SendSpecialEffect10(uint32 entityID, const ShipItemRef ship
     SendSingleDestinyUpdate(&up);
 }
 
-void DestinyManager::SendSpecialEffect(const ShipItemRef shipRef, uint32 moduleID, uint32 moduleTypeID, uint32 targetID,
+void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID,
                                        uint32 chargeTypeID, std::string effectString, bool isOffensive, bool start,
                                        bool isActive, double duration, uint32 repeat) const
 {
     std::vector<int32, std::allocator<int32> > area;    //TODO need to figure out what this is....
 
     DoDestiny_OnSpecialFX13 effect;
-        effect.entityID = shipRef->itemID();
+        effect.entityID = entityID;
         effect.moduleID = moduleID;
         effect.moduleTypeID = moduleTypeID;
         effect.targetID = targetID;

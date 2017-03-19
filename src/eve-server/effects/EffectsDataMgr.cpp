@@ -134,6 +134,7 @@ void FxDataMgr::Initialize()
             mEffect.propulsionChance = (row.IsNull(19) ? 0 : row.GetFloat(19));
             mEffect.guid = row.GetText(20);
         m_effectMap.insert(std::pair<uint16, Effect>(row.GetInt(0), mEffect));
+        m_effectName.insert(std::pair<uint16, std::string>(row.GetInt(0), mEffect.effectName));
         if (mEffect.isAssistance or mEffect.isOffensive)
             m_targEffects.insert(std::pair<uint16, std::string>(row.GetInt(0), mEffect.effectName));
     }
@@ -244,6 +245,14 @@ bool FxDataMgr::isWarpSafe(uint16 eID)
     return false;   // default to false if effectID not found
 }
 
+bool FxDataMgr::isOffensive(uint16 eID)
+{
+    effectMapType::const_iterator itr = m_effectMap.find(eID);
+    if (itr != m_effectMap.end())
+        return itr->second.isOffensive;
+    return false;   // default to false if effectID not found
+}
+
 bool FxDataMgr::needsTarget(std::string effectName)
 {
     std::map<uint16, std::string>::const_iterator itr = m_targEffects.begin();
@@ -252,6 +261,16 @@ bool FxDataMgr::needsTarget(std::string effectName)
             return true;
     }
     return false;
+}
+
+uint16 FxDataMgr::GetEffectID(std::string effectName)
+{
+    std::map<uint16, std::string>::const_iterator itr = m_effectName.begin();
+    for (; itr != m_effectName.end(); itr++) {
+        if (itr->second == effectName)
+            return itr->first;
+    }
+    return 0;
 }
 
 void FxDataMgr::GetOperands(DBQueryResult& res)

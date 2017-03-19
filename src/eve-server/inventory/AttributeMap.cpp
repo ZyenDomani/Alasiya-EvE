@@ -251,6 +251,12 @@ void AttributeMap::ResetAttribute(uint16 attrID, bool notify) {
     SetAttribute(attrID, value, notify);
 }
 
+void AttributeMap::CopyAttributes(std::map< uint16, EvilNumber >& attrMap)
+{
+    for (auto cur : mAttributes)
+        attrMap.insert(std::pair<uint16, EvilNumber>(cur.first, cur.second));
+}
+
 void AttributeMap::SaveShipState()
 {
     std::ostringstream Inserts;
