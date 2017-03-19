@@ -395,7 +395,7 @@ bool ModuleManager::Initialize() {
                 case EVEDB::invCategories::Subsystem: {
                     mod = ModuleFactory(cur, ShipItemRef(m_Ship));  // rigs are modules
                     if (m_Modules->AddModule(cur->flag(), mod))
-                        mod->ProcessEffects(Effects::dgmStatePassive, true);
+                        ; //mod->ProcessEffects(Effects::dgmStatePassive, true);
                     else
                         _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Could not insert module %s(%u) at flag %u into module container.",
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
@@ -938,9 +938,9 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
                 continue;
 
             // clear module effect map (just in case)
-            mod->getItem()->m_modifiers.clear();
-            mod->ProcessEffects(Effects::dgmStatePassive, true);
-            sFxProc.ApplyEffects(mod->getItem().get(), mod->GetShipRef()->GetPilot()->GetChar().get(), mod->GetShipRef().get());
+            //mod->getItem()->m_modifiers.clear();
+            //mod->ProcessEffects(Effects::dgmStatePassive, true);
+            //sFxProc.ApplyEffects(mod->getItem().get(), mod->GetShipRef()->GetPilot()->GetChar().get(), mod->GetShipRef().get());
 
             Online(cur);
         }
@@ -982,7 +982,7 @@ void ModuleManager::CharacterBoardingShip()
     if (!m_initalized)
         Initialize();
 
-    m_Modules->ApplyAllPassiveModEffects();
+    //m_Modules->ApplyAllPassiveModEffects();
     OnlineAll();
 }
 

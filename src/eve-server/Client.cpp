@@ -566,6 +566,8 @@ void Client::DockToStation() {
     m_ship->SaveShip();
 
     SetAutoPilot(false);
+    // null ship's modifier map as it will be populated with new data on undock
+    m_ship->m_modifiers.clear();
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
     m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls
 

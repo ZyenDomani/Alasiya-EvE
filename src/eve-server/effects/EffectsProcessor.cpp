@@ -48,9 +48,9 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber v
         case dgmMathModSub:
             return val1 - val2;
         case dgmMathPostPercent:
-            return val1 * ((100 + val2) / 100);
+            return val1 * (1 + (val2 / 100));
         case dgmMathRevPostPercent:
-            return val1 / ((100 + val2) / 100);
+            return val1 / (1 + (val2 / 100));
     }
     _log(EFFECTS__ERROR, "FxProc::CalculateNewAttributeValue() - Unknown Association used: %i", (int8)method);
     return 0;

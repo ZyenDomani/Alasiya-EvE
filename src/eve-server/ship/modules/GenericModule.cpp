@@ -86,6 +86,7 @@ void GenericModule::Online()
     // need to clear item's effectMap here to avoid duplicating.
     // it will be populated on it's next ProcessEffects() call with relevant data.
     m_modRef->m_modifiers.clear();
+    ProcessEffects(Effects::dgmStatePassive, true);
     ProcessEffects(Effects::dgmStateOnline, true);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), (!m_shipRef->GetPilot()->IsLogin()));
 
@@ -162,6 +163,7 @@ void GenericModule::Offline()
     // need to clear item's effectMap here to avoid duplicating.
     // it will be populated on it's next ProcessEffects() call with relevant data.
     m_modRef->m_modifiers.clear();
+    ProcessEffects(Effects::dgmStatePassive, false);
     ProcessEffects(Effects::dgmStateOnline, false);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 
