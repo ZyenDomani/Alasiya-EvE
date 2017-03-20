@@ -988,7 +988,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                             case dgmMathPostMul:
                             case dgmMathPostPercent:
                             case dgmMathRevPostPercent: {
-                                if ((!isRig) and (!subSys))
+                                if ((!isRig) and (!subSys) and (!charge))
                                     nerfed = true; // not sure how to do this yet....probably map these on ship for easier access/checking/etc
                             } break;
                         }
