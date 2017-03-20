@@ -618,6 +618,7 @@ public:
     void                    SetLoaded(bool set=false)   { m_loaded = set; }
 
     void                    SetLoginTime();
+    void                    SetLogonMinutes();
 
 	//  Standings functions
 	//     toID = me|myCorp|myAlliance.  fromID = char|agent|corp|faction|alliance
@@ -703,7 +704,6 @@ protected:
         const CharacterData& charData, const CorpData& corpData
     );
 
-    void _GetLogonMinutes();
 
 private:
     /*

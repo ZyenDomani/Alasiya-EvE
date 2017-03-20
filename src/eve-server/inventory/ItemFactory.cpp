@@ -177,9 +177,9 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load)
 
     return nullptr;
 }
-// somethign funky going on here......
+
 void ItemFactory::RemoveItem(uint32 itemID) {
-    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
+    std::map<uint32, InventoryItemRef>::const_iterator res = m_items.find( itemID );
     if (res == m_items.end()) {
         _log(ITEM__WARNING, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
     } else {

@@ -508,7 +508,7 @@ bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
         data.typeID,
         data.ownerID,
         data.locationID,
-        (uint32)data.flag,
+        (uint16)data.flag,
         (data.contraband?1:0),
         (data.singleton?1:0),
         data.quantity,

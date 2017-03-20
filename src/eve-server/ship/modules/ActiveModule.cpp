@@ -176,8 +176,15 @@ void ActiveModule::DeOverload()
 uint32 ActiveModule::DoCycle()
 {
     if (m_shipRef->GetPilot()->GetShipSE()->SysBubble()) {
-        return GetAttribute(AttrDuration).get_int();
+        EvilNumber cycleTime = 0;
+        if (m_modRef->HasAttribute(AttrDuration, cycleTime))
+            return cycleTime.get_int();
+        else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
+            return cycleTime.get_int();
+        else
+            ; // make error for no duration attribute
     }
+    // make error for no bubble
     Deactivate();
     return 0;
 }

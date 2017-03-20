@@ -116,9 +116,6 @@ public:
     void DeactivateAll();
     void UnloadAll();
 
-    void ApplyAllPassiveModEffects();
-    void ApplyAllOnlineModEffects();
-
     //useful accessors
 	bool isSlotOccupied(EVEItemFlags flag);
 

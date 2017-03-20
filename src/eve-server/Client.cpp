@@ -142,6 +142,8 @@ Client::~Client() {
         SaveAllToDatabase();
 
         m_system->RemoveClient(this, IsDocked(), true);
+        // remove ship item here, as *something* changes ship postion when saving items from factory.
+        m_services.item_factory->RemoveItem(m_shipId);
 
         m_TS = nullptr;
         m_system = nullptr;

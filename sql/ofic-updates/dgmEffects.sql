@@ -106,7 +106,7 @@ INSERT INTO `dgmEffects` (`effectID`, `effectName`, `effectCategory`, `preExpres
 (61, 'agilityBonus', 0, 500, 501, '', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899533, ''),
 (62, 'maxPassengersBonus', 0, 506, 507, '', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899536, ''),
 (63, 'armorHPMultiply', 4, 509, 510, '', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899539, ''),
-(67, 'miningLaser', 2, 3134, 184, 'Mining of ore.', 0, 'effects.Laser', 0, 0, 73, 0, 6, 54, 0, 0, 0, '', 0, 0, 0, 0, 0, 2, 'None', 0, 0, 0, 0, 899542, ''),
+(67, 'miningLaser', 2, 3134, 184, 'Mining of ore.', 0, 'effects.Mining', 0, 0, 73, 0, 6, 54, 0, 0, 0, '', 0, 0, 0, 0, 0, 2, 'None', 0, 0, 0, 0, 899542, ''),
 (70, 'agilityMultiply', 0, 566, 567, 'Scale the agility of a ship.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899545, ''),
 (73, 'repairCostMultiply', 0, 578, 579, '', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899548, ''),
 (81, 'surveyScan', 1, 131, 602, 'Scanning an asteroid to determine any helpful information.', 0, 'effects.SurveyScan', 0, 0, 73, 0, 6, 197, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899551, ''),
