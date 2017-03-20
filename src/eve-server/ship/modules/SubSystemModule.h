@@ -38,7 +38,7 @@ public:
 
     bool IsSubSystemModule() const              { return true; }
 
-    ModulePowerLevel GetModulePowerLevel();
+    ModStates::ModulePowerLevel GetModulePowerLevel();
 };
 
 #endif

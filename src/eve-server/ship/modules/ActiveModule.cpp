@@ -29,6 +29,8 @@
 
 #include "ship/modules/ActiveModule.h"
 
+using namespace ModStates;
+
 ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
 : GenericModule(item, ship),
 m_timer(1000, true),    // this needs to be accurate
@@ -110,7 +112,7 @@ void ActiveModule::Process()
         if (m_reloadTimer.Check(false)) {
             // charge loading complete
             m_reloadTimer.Disable();
-            m_ChargeState = MOD_LOADED;
+            m_ChargeState = ChargeStates::CHG_LOADED;
             // apply charge effects here after "loading" is complete
             sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
         }
@@ -122,7 +124,7 @@ void ActiveModule::Activate(SystemEntity* pSE, std::string effect/*""*/)
     m_Stop = false;
     m_effectStr = effect;
     m_targetEntity = pSE;
-    m_ModuleState = MOD_ACTIVATED;  //this HAS to be set before mod::DoCycle()
+    m_ModuleState = ModuleStates::MOD_ACTIVATED;  //this HAS to be set before mod::DoCycle()
 
     /** @todo   these need to check for targetable actions, and apply changes accordingly */
 
@@ -139,9 +141,9 @@ void ActiveModule::Activate(SystemEntity* pSE, std::string effect/*""*/)
 
 void ActiveModule::Deactivate(std::string effect/*""*/)
 {
-    if ((m_ModuleState == MOD_UNFITTED)
-        or (m_ModuleState == MOD_OFFLINE)
-        or (m_ModuleState == MOD_DEACTIVATING))
+    if ((m_ModuleState == ModuleStates::MOD_UNFITTED)
+        or (m_ModuleState == ModuleStates::MOD_OFFLINE)
+        or (m_ModuleState == ModuleStates::MOD_DEACTIVATING))
         return;
 
     _log(SHIP__MODULE_TRACE, "ActiveModule::Deactivate() - module %u(%s) remaining time %ums.", \
@@ -155,7 +157,7 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
 
     m_Stop = true;
 
-    SetModuleState(MOD_DEACTIVATING);
+    SetModuleState(ModuleStates::MOD_DEACTIVATING);
 }
 
 void ActiveModule::Overload()
@@ -182,7 +184,7 @@ uint32 ActiveModule::DoCycle()
 
 void ActiveModule::AbortCycle()
 {
-    if (m_Stop or (m_ModuleState != MOD_ACTIVATED))
+    if (m_Stop or (m_ModuleState != ModuleStates::MOD_ACTIVATED))
         return;
     // Immediately stop active cycle for things such as init warp, target left bubble, or miner deactivated by player:
     m_Stop = true;
@@ -195,7 +197,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     ApplyEffect(Effects::dgmStateActive, false);
     ShowEffect(false, abort, m_effectStr);
 
-    SetModuleState(MOD_ONLINE);
+    SetModuleState(ModuleStates::MOD_ONLINE);
 }
 
 void ActiveModule::ShouldProcessActiveCycle() {
@@ -226,7 +228,7 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
 {
     m_chargeRef = charge;
     m_chargeLoaded = true;
-    m_ChargeState = MOD_RELOADING;
+    m_ChargeState = ChargeStates::CHG_LOADING;
     /*
      * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
      *  {returns}
@@ -256,7 +258,7 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
         sFxProc.ParseExpression(charge.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     }
     if (m_shipRef->GetPilot()->IsInSpace() and m_shipRef->GetPilot()->IsLogin()) {
-        m_ChargeState = MOD_LOADED;
+        m_ChargeState = ChargeStates::CHG_LOADED;
         sFxProc.ApplyEffects(charge.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
     }
 }
@@ -277,13 +279,13 @@ void ActiveModule::UnloadCharge()
 
     m_chargeRef = InventoryItemRef();       // Ensure ref is NULL
     m_chargeLoaded = false;
-    m_ChargeState = MOD_UNLOADED;
+    m_ChargeState = ChargeStates::CHG_UNLOADED;
 }
 
 void ActiveModule::ApplyEffect(Effects::State state, bool active/*false*/)
 {
     // process and apply module's active effects
-    m_modRef->ClearModifiers();
+    m_modRef->m_modifiers.clear();
     ProcessEffects(state, active);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
@@ -299,13 +301,12 @@ void ActiveModule::ShowEffect(bool active /*false*/, bool abort /*false*/, std::
     if (!effectID)
         return;
 
-    std::string effectStr = "effects.";
-    effectStr += effect;
     uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;
 
     // targetID MUST be defined (so client can properly direct GFx sequence)
     uint32 targetID = (m_targetID ? m_targetID : m_shipRef->itemID());
+    uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
 
     // Create Destiny Updates and GFx
     GodmaEnvironment ge;
@@ -321,7 +322,7 @@ void ActiveModule::ShowEffect(bool active /*false*/, bool abort /*false*/, std::
         GodmaOther go;  // "other" means "charge" in evelang
             go.shipID = ge.shipID;
             go.slotID = m_modRef->flag();
-            go.chargeTypeID = m_chargeRef->typeID();
+            go.chargeTypeID = chgTypeID;
         ge.other = go.Encode();
 
         m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
@@ -329,8 +330,8 @@ void ActiveModule::ShowEffect(bool active /*false*/, bool abort /*false*/, std::
                 m_modRef->itemID(),
                 m_modRef->typeID(),
                 targetID,
-                (m_chargeLoaded ? m_chargeRef->typeID() : 0),
-                effectStr,
+                chgTypeID,
+                sFxDataMgr.GetEffectGuid(effectID),
                 sFxDataMgr.isOffensive(effectID),
                 (active ? 1 : 0),   // start    - if (start = 0) THEN remove effect
                 (active ? 1 : 0),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)

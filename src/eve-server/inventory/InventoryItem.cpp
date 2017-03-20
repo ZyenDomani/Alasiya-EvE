@@ -1028,7 +1028,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
     _log(SHIP__MODULE_DEBUG, "InventoryItem::SetOnline() - set module %s(%u) to %s", \
                     m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
 
-    ClearModifiers();
+    m_modifiers.clear();
     if (!isRig)   // rigs DO NOT get isOnline attrib set.
         SetAttribute(AttrIsOnline, int(online));
 

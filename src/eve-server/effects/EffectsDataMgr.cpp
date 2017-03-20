@@ -273,6 +273,15 @@ uint16 FxDataMgr::GetEffectID(std::string effectName)
     return 0;
 }
 
+std::string FxDataMgr::GetEffectGuid(uint16 eID)
+{
+    effectMapType::const_iterator itr = m_effectMap.find(eID);
+    if (itr != m_effectMap.end())
+        return itr->second.guid;
+    return "";   // default to 'nothing' if effectID not found
+}
+
+
 void FxDataMgr::GetOperands(DBQueryResult& res)
 {
     if( !sDatabase.RunQuery(res,

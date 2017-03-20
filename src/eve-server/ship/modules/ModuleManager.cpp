@@ -101,7 +101,7 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* mod)
         m_ModulesFittedByGroupID.insert(std::pair<uint32,uint32>(mod->getItem()->groupID(), 1));
 
     // module is fit so change state from MOD_UNFITTED to MOD_OFFLINE now.
-    mod->SetModuleState(MOD_OFFLINE);
+    mod->SetModuleState(ModStates::MOD_OFFLINE);
 	return true;
 }
 
@@ -324,29 +324,7 @@ void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* mod)
     } else
         sLog.Error( "ModuleContainer::deleteModuleRef()", "Removing Module from ship fit when it had NO entry in m_ModulesFittedByGroup !" );
 
-    mod->SetModuleState(MOD_UNFITTED);
-}
-
-void ModuleContainer::ApplyAllPassiveModEffects()
-{
-    for (auto cur : m_modules)
-        if (cur.second) {
-            // clear module effect map (just in case)
-            cur.second->getItem()->ClearModifiers();
-            cur.second->ProcessEffects(Effects::dgmStatePassive, true);
-            sFxProc.ApplyEffects(cur.second->getItem().get(), cur.second->GetShipRef()->GetPilot()->GetChar().get(), cur.second->GetShipRef().get());
-        }
-}
-
-void ModuleContainer::ApplyAllOnlineModEffects()
-{
-    for (auto cur : m_modules)
-        if (cur.second) {
-            // clear module effect map (just in case)
-            cur.second->getItem()->ClearModifiers();
-            cur.second->ProcessEffects(Effects::dgmStateOnline, true);
-            sFxProc.ApplyEffects(cur.second->getItem().get(), cur.second->GetShipRef()->GetPilot()->GetChar().get(), cur.second->GetShipRef().get());
-        }
+    mod->SetModuleState(ModStates::MOD_UNFITTED);
 }
 
 
@@ -404,7 +382,7 @@ bool ModuleManager::Initialize() {
                     mod = GetModule(cur->flag());
                     if (mod) {
                         mod->SetChargeRef(cur);
-                        mod->SetChargeState(ChargeStates::MOD_LOADED);
+                        mod->SetChargeState(ModStates::CHG_LOADED);
                     } else
                         _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
@@ -571,8 +549,8 @@ bool ModuleManager::OnlineCheck(GenericModule* mod)
 
 void ModuleManager::Online(uint32 itemID)
 {
-    if (IsStation(m_Ship->locationID()))
-        return;
+    //if (IsStation(m_Ship->locationID()))
+      //  return;
 
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
@@ -591,9 +569,6 @@ void ModuleManager::Online(uint32 itemID)
 
 void ModuleManager::Online(EVEItemFlags flag)
 {
-    if (IsStation(m_Ship->locationID()))
-        return;
-
     GenericModule* mod = m_Modules->GetModule(flag);
     if (mod) {
         if (mod->isOnline()) {
@@ -611,9 +586,6 @@ void ModuleManager::Online(EVEItemFlags flag)
 
 void ModuleManager::Offline(uint32 itemID)
 {
-    if (IsStation(m_Ship->locationID()))
-        return;
-
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
         if (!mod->isOnline()) {
@@ -628,9 +600,6 @@ void ModuleManager::Offline(uint32 itemID)
 
 void ModuleManager::Offline(EVEItemFlags flag)
 {
-    if (IsStation(m_Ship->locationID()))
-        return;
-
     GenericModule* mod = m_Modules->GetModule(flag);
     if (mod) {
         if (!mod->isOnline()) {
@@ -708,7 +677,7 @@ void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
 {
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
-        if (mod->GetModuleState() != MOD_ACTIVATED)  // we dont need an error msgs here....this is acceptable, as the module may not be active
+        if (mod->GetModuleState() != ModStates::MOD_ACTIVATED)  // we dont need an error msgs here....this is acceptable, as the module may not be active
             return;
         _log(SHIP__MODULE_TRACE, "ModuleManager::Deactivate() - %s Deactivating - '%s'", mod->getItem()->itemName().c_str(), effectName.c_str());
         mod->Deactivate();
@@ -930,6 +899,7 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
     // this one is called from BoardShip()
     GenericModule* mod(nullptr);
     if (modVec.size()) {
+        OfflineAll();
         // process and apply passive effects for present modules....these are slot and ??? info.  no processing needed
         _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec)");
         for (auto cur : modVec) {
@@ -959,7 +929,6 @@ void ModuleManager::CharacterBoardingShip()
     if (!m_initalized)
         Initialize();
 
-    //m_Modules->ApplyAllPassiveModEffects();
     OnlineAll();
 }
 

@@ -797,6 +797,9 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             //    data.result = true;
 
         } break;
+        case operandGT: {   //38    %(arg1)s> %(arg2)s
+
+        } break;
         case operandUE: {   //73    UserError(%(arg1)s)
 
         } break;
@@ -1001,13 +1004,23 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         if (itemRefVec.empty()) {
             _log(EFFECTS__TRACE, "FxProc::ApplyEffects(): target item vector empty.");
         } else {
+            int8 opID = cur.first;
             for (auto item : itemRefVec) {
                 if (!item)  // not sure why i need this, but have seen nulls in the vector (segfaults)
                     continue;
                 // get targAttr
                 targValue = item->GetAttribute(cur.second.targAttr);
+                switch (opID) {
+                    case dgmMathPreDiv:
+                    case dgmMathPreMul:
+                    case dgmMathPostDiv:
+                    case dgmMathPostMul: {
+                        if (targValue == 0)
+                            targValue = 1;
+                    } break;
+                }
                 // send data to calculator
-                EvilNumber newValue = sFxProc.CalculateAttributeValue(targValue, srcValue, cur.first);
+                EvilNumber newValue = sFxProc.CalculateAttributeValue(targValue, srcValue, opID);
                 // avoid creating 0-value attributes on items
                 if (newValue == 0)
                     continue;

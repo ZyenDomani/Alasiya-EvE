@@ -237,6 +237,7 @@ protected:
 public:
     void Init();
     void InitPod();
+    void InitAttribs();
     static ShipItemRef Load(ItemFactory &factory, uint32 shipID);
     static ShipItemRef Spawn(ItemFactory &factory, ItemData &data);
 
@@ -378,9 +379,9 @@ public:
      * this is set and used in MSAC, but needs to be kept here, as it's specific to *this ship
      * the other component, attrib stack counting, is a std::map and holds a k,v pair of (attribID, module count)
      */
-    double GetEffectiveness(uint16 attrib, ModuleStates state);
+    double GetEffectiveness(uint16 attrib, ModStates::ModuleStates state);
 
-    void CheckStacking(uint16 attrib, Effects::Math type, ModuleStates state, EvilNumber& value);
+    void CheckStacking(uint16 attrib, Effects::Math type, ModStates::ModuleStates state, EvilNumber& value);
 
     void RemoveEffects();
 
@@ -395,8 +396,8 @@ private:
     /*  stacking tracking system  -allan  */
     void InitStackingMaps();
 
-    void ProcessEffects(bool add=false);
-    void ProcessShipEffects();
+    void ProcessEffects(bool add=false, bool update=false);
+    void ProcessShipEffects(bool update=false);
 
     typedef std::list<GenericModule*> modList;
     std::map<uint16, modList> m_stackMap;     // stacking attrib storage  attrib, list<module*>

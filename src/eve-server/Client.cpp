@@ -46,7 +46,7 @@
 #include "station/Station.h"
 #include "station/TradeService.h"
 
-static const uint32 PING_INTERVAL_US = 60000;
+static const uint32 PING_INTERVAL_MS = 600000; //10m
 
 Client::Client(PyServiceMgr &services, EVETCPConnection** con)
 : EVEClientSession(con),
@@ -59,7 +59,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_clientState(ClientState::csIdle),
   m_stateTimer(ClientTimers::MovingTimer),
   m_jumpTimer(ClientTimers::JumpTimer),
-  m_pingTimer(PING_INTERVAL_US),
+  m_pingTimer(PING_INTERVAL_MS),
   m_scanTimer(ClientTimers::ScanningTimer),
   m_cloakTimer(ClientTimers::LoginCloak),
   m_invulTimer(ClientTimers::RestoringInvul),
@@ -160,9 +160,6 @@ bool Client::ProcessNet()
     if (GetState() != TCPConnection::STATE_CONNECTED)
         return false;
 
-    if (m_pingTimer.Check())    //60s
-        _SendPingRequest();
-
     PyPacket *p(nullptr);
     while (p = PopPacket()) {
         if (is_log_enabled(CLIENT__IN_ALL)) {
@@ -258,6 +255,12 @@ void Client::ProcessClient() {
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
+    // wtf is this for?
+    if (m_pingTimer.Check()) {
+        _SendPingRequest();  //10m
+        m_char->SetLogonMinutes();
+    }
+
     if ((m_timeEndTrain != 0) and (m_timeEndTrain < EvilTimeNow()))
         m_char->UpdateSkillQueue();
 
@@ -266,6 +269,14 @@ void Client::ProcessClient() {
         m_sessionTimer.Disable();
         SetSessionChange();
     }
+
+    /* Check Character Save Timer Expiry:  (not currently used  -allan 17May16)
+    if (m_char->CheckSaveTimer()) {
+        _log(CLIENT__TIMER, "Client::ProcessClient():  SaveTimer for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+        m_char->SaveCharacter();
+        m_ship->SaveShip();
+    }
+    */
 
     if (IsStation(m_locationID)) {
         if (sConfig.server.UseProfiling)
@@ -331,13 +342,6 @@ void Client::ProcessClient() {
         m_toGate = 0;
         SetJumpTimers();
     }
-    /* Check Character Save Timer Expiry:  (not currently used  -allan 17May16)
-    if (m_char->CheckSaveTimer()) {
-        _log(CLIENT__TIMER, "Client::ProcessClient():  SaveTimer for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
-        m_char->SaveCharacter();
-        m_ship->SaveShip();
-    }
-    */
 
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
@@ -535,6 +539,8 @@ void Client::UndockFromStation() {
      *  ***** 9sec from hitting undock to space view on live. *****
      */
     OnCharNoLongerInStation();
+    m_char->ClearModifiers();
+    m_char->ProcessEffects();
     CreateShipSE();
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     m_ship->Undock();
@@ -566,6 +572,7 @@ void Client::DockToStation() {
     m_ship->SaveShip();
 
     SetAutoPilot(false);
+    // char modifier map should be ok here for indy and other non-ship shit.  will clear and reprocess on undock
     // null ship's modifier map as it will be populated with new data on undock
     m_ship->ClearModifiers();
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
@@ -630,13 +637,17 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         if (m_ship->typeID() == itemTypeCapsule) {
             m_ship->Move(m_locationID, flagCapsule);
             CreateShipSE();
+            m_char->ClearModifiers();
+            m_char->ProcessEffects();
             pShipSE->SetPilot(this);
             pShipSE->GetShipSE()->SetPodShipID(m_shipId);
             m_system->AddEntity(pShipSE);
         } else {
+            m_char->ClearModifiers();
             m_ship->ChangeOwner(m_char->itemID());
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSEFromInventory(m_shipId);
+            m_char->ProcessEffects();
             pShipSE->SetPilot(this);
             m_ship->UpdateModules();
             pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);

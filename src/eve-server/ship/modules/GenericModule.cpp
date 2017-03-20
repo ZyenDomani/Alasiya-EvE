@@ -40,13 +40,14 @@ SHIP__MODULE_TRACE=1
 #include "ship/Ship.h"
 #include "ship/modules/GenericModule.h"
 
+using namespace ModStates;
 GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
 {
     m_modRef = item;
     m_shipRef = ship;
 
-    m_ModuleState = MOD_UNFITTED;
-    m_ChargeState = MOD_UNLOADED;
+    m_ModuleState = ModuleStates::MOD_UNFITTED;
+    m_ChargeState = ChargeStates::CHG_UNLOADED;
 
     m_repeat = 0;
 /*
@@ -71,24 +72,25 @@ GenericModule::~GenericModule()
 
 void GenericModule::Online()
 {
-    if (m_ModuleState == MOD_UNFITTED) {
+    if (m_ModuleState == ModuleStates::MOD_UNFITTED) {
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Online() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
         return;
     }
-    if (m_ModuleState != MOD_OFFLINE) {
-        _log(SHIP__MODULE_MESSAGE, "GenericModule::Online() called for non-offline module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+    if (m_ModuleState != ModuleStates::MOD_OFFLINE) {
+        _log(SHIP__MODULE_MESSAGE, "GenericModule::Online() called for non-offline module %u(%s).  State is %s", \
+                m_modRef->itemID(), m_modRef->itemName().c_str(), GetModuleStateName(m_ModuleState).c_str());
         return;     // already online
     }
 
-    m_modRef->PutOnline(isRig());
-    m_ModuleState = MOD_ONLINE;
-
     // need to clear item's effectMap here to avoid duplicating.
     // it will be populated on it's next ProcessEffects() call with relevant data.
-    m_modRef->ClearModifiers();
+    m_modRef->ClearModifiers(); // ClearModifiers DELETES AttrIsOnline from the map!!  (elusive error)
+    m_modRef->PutOnline(isRig());
+    m_ModuleState = ModuleStates::MOD_ONLINE;
+
     ProcessEffects(Effects::dgmStatePassive, true);
     ProcessEffects(Effects::dgmStateOnline, true);
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), (!m_shipRef->GetPilot()->IsLogin()));
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
     EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) + GetAttribute(AttrCpu));
     EvilNumber pgNeed = (m_shipRef->GetAttribute(AttrPowerLoad) + GetAttribute(AttrPower));
@@ -97,9 +99,9 @@ void GenericModule::Online()
 
     _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
-    if (m_ChargeState == MOD_LOADED) {
+    if (m_ChargeState == ChargeStates::CHG_LOADED) {
         if (!m_chargeRef) {
-            _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(MOD_LOADED) but m_chargeRef = NULL.", \
+            _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
                     m_modRef->itemID(), m_modRef->itemName().c_str());
         } else {
             _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) loading charge %s.", m_modRef->itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
@@ -119,20 +121,20 @@ void GenericModule::Online()
 
 void GenericModule::Offline()
 {
-    if (m_ModuleState == MOD_OFFLINE) {
+    if (m_ModuleState == ModuleStates::MOD_OFFLINE) {
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for offline module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
         return;
     }
-    if (m_ModuleState == MOD_UNFITTED) {
+    if (m_ModuleState == ModuleStates::MOD_UNFITTED) {
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
         return;
     }
-    if (m_ModuleState == MOD_DEACTIVATING) {
+    if (m_ModuleState == ModuleStates::MOD_DEACTIVATING) {
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
         return;
     }
 
-    m_ModuleState = MOD_DEACTIVATING;
+    m_ModuleState = ModuleStates::MOD_DEACTIVATING;
 
     /* code for offlining module before MOD_OFFLINE state is set. */
     EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) - GetAttribute(AttrCpu));
@@ -142,9 +144,9 @@ void GenericModule::Offline()
 
     _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
-    if (m_ChargeState == MOD_LOADED) {
+    if (m_ChargeState == ChargeStates::CHG_LOADED) {
         if (!m_chargeRef) {
-            _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(MOD_LOADED) but m_chargeRef = NULL.", \
+            _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
                     m_modRef->itemID(), m_modRef->itemName().c_str());
         } else {
             m_chargeRef->ClearModifiers();
@@ -165,16 +167,16 @@ void GenericModule::Offline()
     m_modRef->ClearModifiers();
     ProcessEffects(Effects::dgmStatePassive, false);
     ProcessEffects(Effects::dgmStateOnline, false);
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
-    m_ModuleState = MOD_OFFLINE;
+    m_ModuleState = ModuleStates::MOD_OFFLINE;
     m_modRef->PutOffline();
 }
 
 void GenericModule::Overload()
 {
     // need to clear item's effectMap here to avoid duplicating.
-    m_modRef->ClearModifiers();
+    m_modRef->m_modifiers.clear();
     // it will be populated on it's next ProcessEffects() call with relevant data.
     ProcessEffects(Effects::dgmStateOverloaded, true);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
@@ -183,7 +185,7 @@ void GenericModule::Overload()
 void GenericModule::DeOverload()
 {
     // need to clear item's effectMap here to avoid duplicating.
-    m_modRef->ClearModifiers();
+    m_modRef->m_modifiers.clear();
     // it will be populated on it's next ProcessEffects() call with relevant data.
     ProcessEffects(Effects::dgmStateOverloaded, false);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
@@ -210,5 +212,26 @@ void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
             sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.preExpression), data, this);
         else
             sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.postExpression), data, this);
+    }
+}
+
+std::string GenericModule::GetChargeStateName(ModStates::ChargeStates state)
+{
+    switch(state) {
+        case ChargeStates::CHG_UNLOADED:     return "Unloaded"; break;
+        case ChargeStates::CHG_LOADED:       return "Loaded"; break;
+        case ChargeStates::CHG_LOADING:      return "Loading"; break;
+        case ChargeStates::CHG_RELOADING:    return "Reloading"; break;
+    }
+}
+
+std::string GenericModule::GetModuleStateName(ModStates::ModuleStates state)
+{
+    switch(state) {
+        case ModuleStates::MOD_UNFITTED:     return "Unfitted"; break;
+        case ModuleStates::MOD_OFFLINE:      return "Offline"; break;
+        case ModuleStates::MOD_ONLINE:       return "Online"; break;
+        case ModuleStates::MOD_ACTIVATED:    return "Activated"; break;
+        case ModuleStates::MOD_DEACTIVATING: return "Deactivating"; break;
     }
 }

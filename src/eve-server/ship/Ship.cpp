@@ -99,30 +99,6 @@ bool ShipItem::_Load()
     if (!m_inventory->LoadContents(&m_factory))
         return false;
 
-    // Create default dynamic attributes in the AttributeMap
-    SetAttribute(AttrVolume,                            GetPackagedVolume());
-    SetAttribute(AttrCpuLoad,                           0);
-    SetAttribute(AttrPowerLoad,                         0);
-    SetAttribute(AttrUpgradeLoad,                       0);
-
-    // Check for existence of attributes.  if not loaded then set them to default values:
-    if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, 0.0f);
-    if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, 0.0f);
-    // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
-    if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrShieldCapacity));
-    if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrCapacitorCapacity));
-    if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS));
-    // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some (t2 indy) already have it defined):
-    if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, 0.0f);
-    if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, 1.0f);
-    if (!HasAttribute(AttrArmorMaxDamageResonance))     SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
-    if (!HasAttribute(AttrShieldMaxDamageResonance))    SetAttribute(AttrShieldMaxDamageResonance, 1.0f);
-    // hull res is stored in item type as AttrHull*Resonance for 6 ships.  set accordingly
-    if (!HasAttribute(AttrEmDamageResonance))           SetAttribute(AttrEmDamageResonance, mAttributeMap.GetAttribute(AttrHullEmDamageResonance));
-    if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance, mAttributeMap.GetAttribute(AttrHullExplosiveDamageResonance));
-    if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance, mAttributeMap.GetAttribute(AttrHullKineticDamageResonance));
-    if (!HasAttribute(AttrThermalDamageResonance))      SetAttribute(AttrThermalDamageResonance, mAttributeMap.GetAttribute(AttrHullThermalDamageResonance));
-
 	// set cargo holds data here:
 	if (HasAttribute(AttrCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagCargoHold,mAttributeMap.GetAttribute(AttrCapacity).get_float()));
@@ -164,6 +140,8 @@ void ShipItem::Init()
         _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot.", itemName().c_str(), itemID());
         return;
     }
+
+    InitAttribs();
 
     // create and initialize the module manager if not already done
     if (!m_ModuleManager)
@@ -208,7 +186,7 @@ void ShipItem::SetPlayer(Client* pClient) {
 
     if (IsSolarSystem(m_locationID)) {
         // this hits ONLY when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
-        ProcessEffects(true);
+        ProcessEffects(true, true);
         m_ModuleManager->CharacterBoardingShip();
         //UpdateModules();
         if (pClient->IsLogin()) {
@@ -224,6 +202,34 @@ void ShipItem::SetPlayer(Client* pClient) {
             }
         }
     }
+}
+
+void ShipItem::InitAttribs()
+{
+    // Create default dynamic attributes in the AttributeMap
+    SetAttribute(AttrVolume,                            GetPackagedVolume());
+    SetAttribute(AttrCpuLoad,                           0);
+    SetAttribute(AttrPowerLoad,                         0);
+    SetAttribute(AttrUpgradeLoad,                       0);
+
+    // Check for existence of attributes.  if not loaded then set them to default values:
+    if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, 0.0f);
+    if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, 0.0f);
+    // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
+    if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrShieldCapacity));
+    if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrCapacitorCapacity));
+    if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS));
+    // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some (t2 indy) already have it defined):
+    if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, 0.0f);
+    if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, 1.0f);
+    if (!HasAttribute(AttrArmorMaxDamageResonance))     SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
+    if (!HasAttribute(AttrShieldMaxDamageResonance))    SetAttribute(AttrShieldMaxDamageResonance, 1.0f);
+    // hull res is stored in item type as AttrHull*Resonance for 6 ships.  set accordingly
+    if (!HasAttribute(AttrEmDamageResonance))           SetAttribute(AttrEmDamageResonance, mAttributeMap.GetAttribute(AttrHullEmDamageResonance));
+    if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance, mAttributeMap.GetAttribute(AttrHullExplosiveDamageResonance));
+    if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance, mAttributeMap.GetAttribute(AttrHullKineticDamageResonance));
+    if (!HasAttribute(AttrThermalDamageResonance))      SetAttribute(AttrThermalDamageResonance, mAttributeMap.GetAttribute(AttrHullThermalDamageResonance));
+
 }
 
 void ShipItem::UpdateHoldsUsedVolume()    /** @todo (allan)  look into this....not working right. */
@@ -653,7 +659,7 @@ void ShipItem::Dock() {
 void ShipItem::Undock() {
     // apply ship effects, as all variables are set at this point.
     if (m_ModuleManager) {
-        ProcessEffects(true);
+        ProcessEffects(true, true);
         //m_ModuleManager->CharacterBoardingShip();
         UpdateModules();
     } else {
@@ -830,7 +836,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
             else
                 return 0;
         } else if (item->categoryID() == EVEDB::invCategories::Module) {
-            item->PutOffline();
+            //item->PutOffline();
             item->ChangeSingleton(true, false);
             // rigs are classed in the module category.  check here and call approprate method as needed.
             if ((item->groupID() >= 773 and item->groupID() <= 782) or item->groupID() == 786) {
@@ -1049,7 +1055,7 @@ void ShipItem::StripFitting()
 }
 
 // stacking penality system   -allan   (UD 29Jul16)
-double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
+double ShipItem::GetEffectiveness(uint16 attrib, ModStates::ModuleStates state)
 {
     uint8 count = 1;
     /** @note this is no longer valid....
@@ -1099,7 +1105,6 @@ void ShipItem::InitStackingMaps()
     m_stackMap.clear();
     m_attribMap.clear();
 
-    /** these have char skills that will need to be calculated */
     m_stackMap[AttrKineticDamageResonance] = list;
     m_stackMap[AttrThermalDamageResonance] = list;
     m_stackMap[AttrExplosiveDamageResonance] = list;
@@ -1120,13 +1125,13 @@ void ShipItem::InitStackingMaps()
     m_stackMap[AttrMaxTargetRange] = list;
 }
 
-void ShipItem::CheckStacking(uint16 attrib, Effects::Math type, ModuleStates state, EvilNumber& value)
+void ShipItem::CheckStacking(uint16 attrib, Effects::Math type, ModStates::ModuleStates state, EvilNumber& value)
 {
 
 }
 
 // new effects system.  wip
-void ShipItem::ProcessEffects(bool add/*false*/)
+void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 {
     /*
     Effects processing order...
@@ -1145,8 +1150,8 @@ void ShipItem::ProcessEffects(bool add/*false*/)
         // char effects are processed when char is loaded.
         // apply char effects
         _log(EFFECTS__TRACE, "Applying Char Effects");
-        sFxProc.ApplyEffects(m_pilot->GetChar().get(), m_pilot->GetChar().get(), this);
-        ProcessShipEffects();
+        sFxProc.ApplyEffects(m_pilot->GetChar().get(), m_pilot->GetChar().get(), this, update);
+        ProcessShipEffects(update);
         _log(EFFECTS__DEBUG, "ShipItem::ProcessEffects() - %u ship and char effects processed and applied in %.3fms", \
                 (m_pilot->GetChar()->m_modifiers.size() + m_modifiers.size()), (GetTimeMSeconds() - start));
     } else {
@@ -1154,7 +1159,7 @@ void ShipItem::ProcessEffects(bool add/*false*/)
     }
 }
 
-void ShipItem::ProcessShipEffects()
+void ShipItem::ProcessShipEffects(bool update/*false*/)
 {
     _log(EFFECTS__TRACE, "ShipItem::ParseExpression():  Beginning Ship Effects Processing.");
     for (auto it : m_type.m_stateFxMap) {
@@ -1166,7 +1171,7 @@ void ShipItem::ProcessShipEffects()
     }
     _log(EFFECTS__TRACE, "Applying Ship Effects");
     // apply processed effects
-    sFxProc.ApplyEffects(this, m_pilot->GetChar().get(), this);
+    sFxProc.ApplyEffects(this, m_pilot->GetChar().get(), this, update);
 }
 
 void ShipItem::RemoveEffects()

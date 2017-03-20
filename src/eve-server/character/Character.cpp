@@ -377,6 +377,8 @@ bool Character::_Load() {
     // get all skills, implants, and boosters, then process each, and store processed effect in m_modifiers.
     // m_modifiers will be looped and applied when ship is boarded.
     // no reason to delete m_modifiers as they are generic, and nothing changes in char when appling to ship.
+    //   ....yes, they do.  skills apply to other skills, ships, modules, etc.
+    //  it all gets reset when docking, and undock applies everything, so char will need reset also.
     ProcessEffects();
 
     return m_loaded;
@@ -1001,7 +1003,7 @@ void Character::SaveCharacter() {
     _log( CHARACTER__INFO, "Saving character info for %u.", m_itemID );
 
     // Set current m_logonMinutes
-    _GetLogonMinutes();
+    SetLogonMinutes();
 
     // character data
     /** @todo rework this to save only updated data */
@@ -1107,14 +1109,15 @@ void Character::SetLoginTime() {
     m_loginTime = sEntityList.GetStamp();
 }
 
-void Character::_GetLogonMinutes() {
+// called on 10m timer from client
+void Character::SetLogonMinutes() {
     //  get login time and set _logonMinutes       -allan
-    uint32 loginMinutes = (sEntityList.GetStamp() - m_loginTime) /60;
+    uint16 loginMinutes = (sEntityList.GetStamp() - m_loginTime) /60;
 
     // some checks are done < 1m, so if this check has no minutes, keep original time and exit
     if (loginMinutes > 0) {
         m_logonMinutes += loginMinutes;
-		SetLoginTime();
+        m_loginTime = sEntityList.GetStamp();
     }
 }
 

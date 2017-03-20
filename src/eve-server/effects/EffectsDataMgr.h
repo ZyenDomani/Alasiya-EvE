@@ -28,6 +28,7 @@ public:
     bool isOffensive(uint16 eID);
     bool needsTarget(std::string effectName);
     uint16 GetEffectID(std::string effectName);
+    std::string GetEffectGuid(uint16 eID);
 
     Effect GetEffect(uint16 eID);
     Operand GetOperand(uint16 oID);
