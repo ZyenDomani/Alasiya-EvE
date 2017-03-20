@@ -130,6 +130,9 @@ void ActiveModule::Activate(SystemEntity* pSE, std::string effect/*""*/)
     // based on character skills and specific module attributes.  -allan 19Dec15
     SetTimer(DoCycle()); // Do initial cycle immediately while we start timer
 
+    if (!m_repeat)
+        m_Stop = true;
+
     ApplyEffect(Effects::dgmStateActive, true);
     ShowEffect(true, false, effect);
 }
@@ -244,7 +247,7 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
         m_reloadTimer.Start(m_reloadTime);
     }
     // process new charge's effects here
-    charge->m_modifiers.clear();
+    charge->ClearModifiers();
     for (auto it : charge->type().m_stateFxMap) {
         fxData data;
         data.result = false;
@@ -261,7 +264,7 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
 void ActiveModule::UnloadCharge()
 {
     // remove charge effects here
-    m_chargeRef->m_modifiers.clear();
+    m_chargeRef->ClearModifiers();
     for (auto it : m_chargeRef->type().m_stateFxMap) {
         fxData data;
         data.result = false;
@@ -280,7 +283,7 @@ void ActiveModule::UnloadCharge()
 void ActiveModule::ApplyEffect(Effects::State state, bool active/*false*/)
 {
     // process and apply module's active effects
-    m_modRef->m_modifiers.clear();
+    m_modRef->ClearModifiers();
     ProcessEffects(state, active);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
@@ -336,15 +339,6 @@ void ActiveModule::ShowEffect(bool active /*false*/, bool abort /*false*/, std::
         );
     } else {
         ge.other = new PyNone();
-        /*
-        m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect10(
-                m_shipRef->itemID(),
-                targetID,
-                effectStr,
-                sFxDataMgr.isOffensive(effectID),
-                (active ? 1 : 0),   // start    - if (start = 0) THEN remove effect
-                (active ? 1 : 0)    // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
-        ); */
     }
 
     Notify_OnGodmaShipEffect shipEff;

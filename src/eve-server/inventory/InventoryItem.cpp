@@ -1028,7 +1028,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
     _log(SHIP__MODULE_DEBUG, "InventoryItem::SetOnline() - set module %s(%u) to %s", \
                     m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
 
-    m_modifiers.clear();
+    ClearModifiers();
     if (!isRig)   // rigs DO NOT get isOnline attrib set.
         SetAttribute(AttrIsOnline, int(online));
 
@@ -1175,10 +1175,11 @@ void InventoryItem::RemoveModifier(fxData data)
     m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
 }
 
-void InventoryItem::ReloadAttributes()
+void InventoryItem::ClearModifiers()
 {
-    mAttributeMap.Load(true);
     m_modifiers.clear();
+    mAttributeMap.Save();
+    mAttributeMap.Load(true);
 }
 
 void InventoryItem::GetEffectsInState(int8 state, std::vector< Effect >& effectRef)

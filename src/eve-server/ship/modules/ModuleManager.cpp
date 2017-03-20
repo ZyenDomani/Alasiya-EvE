@@ -332,7 +332,7 @@ void ModuleContainer::ApplyAllPassiveModEffects()
     for (auto cur : m_modules)
         if (cur.second) {
             // clear module effect map (just in case)
-            cur.second->getItem()->m_modifiers.clear();
+            cur.second->getItem()->ClearModifiers();
             cur.second->ProcessEffects(Effects::dgmStatePassive, true);
             sFxProc.ApplyEffects(cur.second->getItem().get(), cur.second->GetShipRef()->GetPilot()->GetChar().get(), cur.second->GetShipRef().get());
         }
@@ -343,7 +343,7 @@ void ModuleContainer::ApplyAllOnlineModEffects()
     for (auto cur : m_modules)
         if (cur.second) {
             // clear module effect map (just in case)
-            cur.second->getItem()->m_modifiers.clear();
+            cur.second->getItem()->ClearModifiers();
             cur.second->ProcessEffects(Effects::dgmStateOnline, true);
             sFxProc.ApplyEffects(cur.second->getItem().get(), cur.second->GetShipRef()->GetPilot()->GetChar().get(), cur.second->GetShipRef().get());
         }
@@ -931,39 +931,16 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
     GenericModule* mod(nullptr);
     if (modVec.size()) {
         // process and apply passive effects for present modules....these are slot and ??? info.  no processing needed
-        _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec) - Starting passive effect processing.");
+        _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec)");
         for (auto cur : modVec) {
             mod = GetModule(cur);
-            if (!mod)
+            if (!mod)   // make error here?
                 continue;
-
-            // clear module effect map (just in case)
-            //mod->getItem()->m_modifiers.clear();
-            //mod->ProcessEffects(Effects::dgmStatePassive, true);
-            //sFxProc.ApplyEffects(mod->getItem().get(), mod->GetShipRef()->GetPilot()->GetChar().get(), mod->GetShipRef().get());
-
             Online(cur);
         }
-        /*
-        // process and apply all effects for online modules
-        _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec) - Starting online effect processing.");
-        for (auto cur : modVec) {
-            mod = GetModule(cur);
-            if (!mod)
-                continue;
-            //Online(cur);
-            // clear module effect map (remove already-applied passive effects)
-            mod->getItem()->m_modifiers.clear();
-            mod->ProcessEffects(Effects::dgmStateOnline, true);
-            sFxProc.ApplyEffects(mod->getItem().get(), mod->GetShipRef()->GetPilot()->GetChar().get(), mod->GetShipRef().get());
-        } */
+    } else {
+        OnlineAll();
     }
-    /*else {
-        _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules() - Starting passive effect processing.");
-        m_Modules->ApplyAllPassiveModEffects();
-        //_log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules() - Starting online effect processing.");
-        //m_Modules->ApplyAllOnlineModEffects();
-    } */
 }
 
 void ModuleManager::UpdateModules(EVEItemFlags flag)

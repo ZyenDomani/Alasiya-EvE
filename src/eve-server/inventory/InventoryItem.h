@@ -272,6 +272,7 @@ public:
      *  returns true if all pass */
     bool SkillCheck(InventoryItemRef refItem);
 
+    void ClearModifiers();
     void AddModifier(fxData data);
     void RemoveModifier(fxData data);
     void ApplyEffect(int8 state);

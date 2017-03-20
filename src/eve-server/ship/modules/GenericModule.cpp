@@ -85,7 +85,7 @@ void GenericModule::Online()
 
     // need to clear item's effectMap here to avoid duplicating.
     // it will be populated on it's next ProcessEffects() call with relevant data.
-    m_modRef->m_modifiers.clear();
+    m_modRef->ClearModifiers();
     ProcessEffects(Effects::dgmStatePassive, true);
     ProcessEffects(Effects::dgmStateOnline, true);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), (!m_shipRef->GetPilot()->IsLogin()));
@@ -103,7 +103,7 @@ void GenericModule::Online()
                     m_modRef->itemID(), m_modRef->itemName().c_str());
         } else {
             _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) loading charge %s.", m_modRef->itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
-            m_chargeRef->m_modifiers.clear();
+            m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
                 fxData data;
                 data.result = false;
@@ -147,7 +147,7 @@ void GenericModule::Offline()
             _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(MOD_LOADED) but m_chargeRef = NULL.", \
                     m_modRef->itemID(), m_modRef->itemName().c_str());
         } else {
-            m_chargeRef->m_modifiers.clear();
+            m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
                 fxData data;
                 data.result = false;
@@ -162,7 +162,7 @@ void GenericModule::Offline()
 
     // need to clear item's effectMap here to avoid duplicating.
     // it will be populated on it's next ProcessEffects() call with relevant data.
-    m_modRef->m_modifiers.clear();
+    m_modRef->ClearModifiers();
     ProcessEffects(Effects::dgmStatePassive, false);
     ProcessEffects(Effects::dgmStateOnline, false);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
@@ -174,7 +174,7 @@ void GenericModule::Offline()
 void GenericModule::Overload()
 {
     // need to clear item's effectMap here to avoid duplicating.
-    m_modRef->m_modifiers.clear();
+    m_modRef->ClearModifiers();
     // it will be populated on it's next ProcessEffects() call with relevant data.
     ProcessEffects(Effects::dgmStateOverloaded, true);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
@@ -183,7 +183,7 @@ void GenericModule::Overload()
 void GenericModule::DeOverload()
 {
     // need to clear item's effectMap here to avoid duplicating.
-    m_modRef->m_modifiers.clear();
+    m_modRef->ClearModifiers();
     // it will be populated on it's next ProcessEffects() call with relevant data.
     ProcessEffects(Effects::dgmStateOverloaded, false);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);

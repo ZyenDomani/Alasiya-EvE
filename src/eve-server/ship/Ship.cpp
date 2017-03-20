@@ -200,8 +200,6 @@ void ShipItem::SetPlayer(Client* pClient) {
         // remove ship effects and char skill effects for char leaving ship here.
         ProcessEffects(false);
         // should we check for cargo and damage after char leaves ship?  maybe later
-        if (m_ModuleManager)
-            m_ModuleManager->CharacterLeavingShip();
         m_onlineModuleVec.clear();
         return;
     }
@@ -647,6 +645,7 @@ void ShipItem::ProcessModules() {
 }
 
 void ShipItem::Dock() {
+    ClearModifiers();
     m_onlineModuleVec.clear();
     DeactivateAllModules();
 }
@@ -920,8 +919,7 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
 void ShipItem::UpdateModules()
 {
     /* this is only called when ship is in space
-     * this will processes and apply passive effects for all present modules on ship,
-     * it will then Online() and apply all online effects.
+     * this will call Online() on all modules, which will apply passive and online effects.
      */
     m_ModuleManager->UpdateModules(m_onlineModuleVec);
     m_onlineModuleVec.clear();
@@ -1174,8 +1172,8 @@ void ShipItem::ProcessShipEffects()
 void ShipItem::RemoveEffects()
 {
     SaveShip();
-    mAttributeMap.Load(true);
-    m_modifiers.clear();
+    // clear also reloads default attribs
+    ClearModifiers();
 }
 
 std::string ShipItem::GetShipDNA()

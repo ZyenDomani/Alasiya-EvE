@@ -567,7 +567,7 @@ void Client::DockToStation() {
 
     SetAutoPilot(false);
     // null ship's modifier map as it will be populated with new data on undock
-    m_ship->m_modifiers.clear();
+    m_ship->ClearModifiers();
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
     m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls
 
@@ -600,6 +600,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         m_ship->Relocate(NULL_ORIGIN);
         DestroyShipSE();
     } else {
+        m_ship->GetModuleManager()->CharacterLeavingShip();
         m_ship->SetPlayer(nullptr);
         m_ship->SaveShip();
         if (IsInSpace()) {
@@ -637,7 +638,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSEFromInventory(m_shipId);
             pShipSE->SetPilot(this);
-            //m_ship->UpdateModules();
+            m_ship->UpdateModules();
             pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         }
         m_char->Move(m_shipId, flagPilot);
