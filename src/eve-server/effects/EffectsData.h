@@ -91,8 +91,7 @@ namespace Effects {
         dgmSrcGang             = 4,
         dgmSrcGroup            = 5,
         dgmSrcTarget           = 6,
-        dgmSrcCharge           = 7,
-        MaxSrcLocation         = 7
+        MaxSrcLocation         = 6
     };
 
     enum TargetLocation {   //formally known as environment

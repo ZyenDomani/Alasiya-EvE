@@ -141,7 +141,6 @@ std::string FxProc::GetSourceName(int8 id)
         case dgmSrcGang:            return "Gang";
         case dgmSrcGroup:           return "Group";
         case dgmSrcTarget:          return "Target";
-        case dgmSrcCharge:          return "Charge";
         case dgmSrcInvalid:
         default:                    return "Invalid";
     }
@@ -655,8 +654,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
             if (charge) {
-                data.fxSrc = dgmSrcCharge;
-                data.targLoc = dgmTargLocSelf;
+                data.fxSrc = dgmSrcSelf;
+                data.targLoc = dgmTargLocShip;
             } else if (skill) {
                 if (!data.fxSrc)
                     data.fxSrc = dgmSrcSkill;
@@ -695,13 +694,23 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
             data.fxSrc = dgmSrcGang;
-            /* the "AddModifier()" call adds the data to the (now empty) effects map for the module.
-             *  ApplyEffects() is called after the effects are processed by the Offline(), DeOverload(), or (yet-to-be-written) RemoveImplant() and RemoveBooster() methods
-             * this is not techinally a misnomer, as the modifier added to the map is "Remove Effect"
-             */
             pItem->RemoveModifier(data);
         } break;
-        case operandRIM:     //58, (%(arg1)s).RemoveItemModifier (%(arg2)s)
+        case operandRIM: {   //58, (%(arg1)s).RemoveItemModifier (%(arg2)s)
+            ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
+            ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
+            if (charge) {
+                data.fxSrc = dgmSrcSelf;
+                data.targLoc = dgmTargLocShip;
+            } else if (skill) {
+                if (!data.fxSrc)
+                    data.fxSrc = dgmSrcSkill;
+                if (data.targLoc == dgmTargLocShip)
+                    if ((!data.typeID) and (core))
+                        data.targLoc = dgmTargLocOther;     // this skill is a core skill, and is not "required" so needs a special check to apply correctly
+            }
+            pItem->RemoveModifier(data);
+        } break;
         case operandRLGM:    //59, (%(arg1)s).RemoveLocationGroupModifier (%(arg2)s)
         case operandRLM:     //60, (%(arg1)s).RemoveLocationModifier (%(arg2)s)
         case operandRLRSM:   //61, (%(arg1)s).RemoveLocationRequiredSkillModifier(%(arg2)s)
@@ -710,10 +719,6 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
             if ((skill) and (!data.fxSrc))
                 data.fxSrc = dgmSrcSkill;
-            /* the "AddModifier()" call adds the data to the (now empty) effects map for the module.
-             *  ApplyEffects() is called after the effects are processed by the Offline(), DeOverload(), or (yet-to-be-written) RemoveImplant() and RemoveBooster() methods
-             * this is not techinally a misnomer, as the modifier added to the map is "Remove Effect"
-             */
             pItem->RemoveModifier(data);
         } break;
         // these will need more work to properly code conditionals here.
@@ -814,7 +819,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
 
 void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update/*false*/)
 {
-    bool isRig = false, subSys = false;
+    bool isRig = false, subSys = false, charge = false;
     using namespace Effects;
     for (auto cur : pItem->m_modifiers) {  // k,v of assoc, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>
         switch (cur.second.srcRef->groupID()) {
@@ -833,16 +838,13 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             case EVEDB::invGroups::Rig_Shield: {
                 isRig = true;
             } break;
-            default: {
-                isRig = false;
-            } break;
         }
         switch (cur.second.srcRef->categoryID()) {
+            case EVEDB::invCategories::Charge: {
+                charge = true;
+            } break;
             case EVEDB::invCategories::Subsystem: {
                 subSys = true;
-            } break;
-            default: {
-                subSys = false;
             } break;
         }
         _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): method: %s, fxSrc: %s(%s), targLoc: %s, targAttr: %u, srcAttr: %u, grpID: %u, typeID: %u, rig: %s, subsys: %s", cur.first,\
@@ -925,9 +927,14 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 //  apply the modifier to ....
                 switch (cur.second.targLoc) {
                     case dgmTargLocShip:  {
+                        /*
+                        if (charge) {
+                            // .... item's module (in case of a loaded charge's effect)
+                            itemRefVec.push_back(pShip->GetModule(cur.second.srcRef->flag()));
+                        } else {*/
                         // ....the ship the calling item is located in/on
-                        if (itemRefVec.empty())
-                            itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
+                        itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
+                        //}
                     } break;
                     case dgmTargLocSelf: {
                         // ....item itself
@@ -942,10 +949,6 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): target undefined.");
                     } break;
                 }
-            } break;
-            case dgmSrcCharge: {
-                // this is a charge modifying it's module
-                itemRefVec.push_back(pShip->GetModule(cur.second.srcRef->flag()));
             } break;
             case dgmSrcShip: {      // source is a subsystem and IS NOT nerfed
                 ;   // not sure how to do this on yet.  t3 ships arent implemented (actually blocked)
