@@ -49,7 +49,7 @@ public:
     virtual void AbortCycle();
     virtual void DeOverload();
     virtual void Deactivate(std::string effect="");
-    virtual void Activate(SystemEntity* pSE, std::string effect="");
+    virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
 
     /* GenericModule access function overriders */
     virtual bool IsLoaded()                             { return m_chargeLoaded; }
@@ -75,7 +75,7 @@ public:
     /* new effects processing code and updates */
     void ApplyEffect(Effects::State state, bool active=false);
 	/* common method for all modules that have a visual effect when active (wip) */
-    void ShowEffect(bool active=false, bool abort=false, std::string effect="");
+    void ShowEffect(bool active=false, bool abort=false);
 
 protected:
 	bool m_overLoaded = false;
@@ -91,24 +91,25 @@ protected:
 
     /* skill, charge, and module combined modifiers to avoid constant calculations. */
     // may no longer need these....pull current attrib from item, as effects are working now, and modify items attribs directly.
-    uint32 m_falloff = 0;                               // distance past maximum range at which accuracy has fallen by half
-    uint32 m_optimalRange = 0;
-    uint32 m_maxRange = 0;
-    uint32 m_optimalSigRadius = 0;
-    double m_capNeed = 0;
-    double m_cycleTime = 0;
-    double m_rangeModifier = 0;
-    double m_damageModifier = 0;
-    double m_trackingSpeed = 0;
+    uint32 m_falloff;                               // distance past maximum range at which accuracy has fallen by half
+    uint32 m_optimalRange;
+    uint32 m_maxRange;
+    uint32 m_optimalSigRadius;
+    double m_capNeed;
+    double m_cycleTime;
+    double m_rangeModifier;
+    double m_damageModifier;
+    double m_trackingSpeed;
 
 private:
-    uint32 m_targetID = 0;                              //passed to us by activate
-    uint16 m_reloadTime = 0;
     Timer m_reloadTimer;
     //SystemBubble* m_bubble;                           // we do not own this
     SystemEntity* m_targetEntity;                       // we do not own this
     //DestinyManager* m_destiny;                        // we do not own this
 
+    uint16 m_effectID;                                  //passed to us by activate
+    uint32 m_targetID;                                  //passed to us by activate
+    uint16 m_reloadTime;
     std::string m_effectStr;
 
     Timer m_timer;

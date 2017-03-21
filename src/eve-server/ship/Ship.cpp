@@ -651,9 +651,10 @@ void ShipItem::ProcessModules() {
 }
 
 void ShipItem::Dock() {
+    DeactivateAllModules();
+    OfflineAll();
     ClearModifiers();
     m_onlineModuleVec.clear();
-    DeactivateAllModules();
 }
 
 void ShipItem::Undock() {
@@ -979,7 +980,7 @@ void ShipItem::Offline (uint32 moduleID)
 
 void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat)
 {
-    m_ModuleManager->Activate( itemID, effectName, targetID, repeat );
+    m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(effectName), targetID, repeat );
 }
 
 void ShipItem::Deactivate(int32 itemID, std::string effectName)

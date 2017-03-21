@@ -58,8 +58,6 @@ public:
     void ResetAttribute(uint32 attrID)                  { m_modRef->ResetAttribute(attrID); }
     EvilNumber GetAttribute(uint32 attrID)              { return m_modRef->GetAttribute(attrID); }
 
-    void SetRepeat(int32 repeat)                        { m_repeat = repeat; }
-
     /* class type helpers.  public for anyone to access. */                 /** @todo  update these below as noted */
     virtual bool IsLoaded()                             { return false; }
     virtual bool IsGenericModule() const                { return true; }
@@ -98,7 +96,7 @@ public:
 
 	/* generic access functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }
-    virtual void Activate(SystemEntity* pSE, std::string effect="") { /* Do nothing here */ }
+    virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0) { /* Do nothing here */ }
     virtual void Deactivate(std::string effect="")      { /* Do nothing here */ }
     virtual void AbortCycle()                           { /* Do nothing here */ }
     virtual void LoadCharge(InventoryItemRef charge)    { /* Do nothing here */ }
@@ -136,7 +134,7 @@ protected:
     bool             m_warpSafe;
     bool             m_targReq;
 
-    int32            m_repeat;
+    int16            m_repeat;
 
     std::string GetModuleStateName(ModStates::ModuleStates state);
     std::string GetChargeStateName(ModStates::ChargeStates state);

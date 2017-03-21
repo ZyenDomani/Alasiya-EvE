@@ -753,7 +753,8 @@ void Character::UpdateSkillQueue() {
             m_pClient->QueueDestinyEvent(&tmp); // consumed
 
             SaveSkillHistory(skillEventTrainingCancelled, Win32TimeNow(), m_itemID, currentTraining->typeID(), oldLevel, skillPointsTrained.get_double(), GetTotalSP().get_double() );
-            _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u", itemName().c_str(), m_itemID, currentTraining->typeID(), oldLevel);
+            _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u, completionTime: %.1f", \
+                        itemName().c_str(), m_itemID, currentTraining->typeID(), oldLevel, currentTraining->GetAttribute(AttrExpiryTime).get_float());
 
             currentTraining->SetAttribute(AttrSkillPoints, skillPointsTrained);
             currentTraining->SetAttribute(AttrExpiryTime, 0, false);
@@ -786,8 +787,8 @@ void Character::UpdateSkillQueue() {
             EvilNumber timeTraining = (EvilTimeNow() + (EvilTime_Minute * (SPToNextLevel / GetSPPerMin(currentTraining))));
 
             SaveSkillHistory(skillEventTrainingStarted, Win32TimeNow(), m_itemID, skillID, (uint8)level.get_int(), CurrentSP.get_double(), GetTotalSP().get_double() );
-            _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining started - skill: %u, level: %u", \
-                            itemName().c_str(), m_itemID, skillID, level.get_int());
+            _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining started - skill: %u, level: %u, completionTime: %.1f", \
+                            itemName().c_str(), m_itemID, skillID, level.get_int(), timeTraining.get_float());
 
             currentTraining->SetAttribute(AttrExpiryTime, timeTraining);
             currentTraining->SetFlag(flagSkillInTraining);
@@ -803,15 +804,16 @@ void Character::UpdateSkillQueue() {
         if ( currentTraining->GetAttribute(AttrExpiryTime) < EvilTimeNow() ) {
             // training has been finished
             uint8 oldLevel = currentTraining->GetAttribute(AttrSkillLevel).get_int();
-            EvilNumber oldPoints = currentTraining->GetAttribute(AttrSkillPoints);
+            //EvilNumber oldPoints = currentTraining->GetAttribute(AttrSkillPoints);
             uint8 level = oldLevel + 1;
             if (level > 5) level = 5;
             EvilNumber newPoints = currentTraining->GetSPForLevel( (EvilNumber)level );
-            uint64 completeTime = currentTraining->GetAttribute(AttrExpiryTime).get_int();
-            if ( completeTime < (Win32TimeNow() - Win32Time_Year)) completeTime = Win32TimeNow();
+            EvilNumber completeTime = currentTraining->GetAttribute(AttrExpiryTime);
+            //if ( completeTime < (Win32TimeNow() - Win32Time_Minute)) completeTime = Win32TimeNow();
 
             SaveSkillHistory(skillEventTrainingComplete, completeTime, m_itemID, currentTraining->typeID(), level, currentTraining->GetAttribute(AttrSkillPoints).get_double(), GetTotalSP().get_double() );
-             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining completed - skill: %u, level: %u", itemName().c_str(), m_itemID, currentTraining->typeID(), level);
+            _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining completed - skill: %u, level: %u, completionTime: %.1f", \
+                        itemName().c_str(), m_itemID, currentTraining->typeID(), level, completeTime.get_float());
 
             OnSkillTrained ost;
                 ost.itemID = currentTraining->itemID();
@@ -845,7 +847,8 @@ void Character::UpdateSkillQueue() {
             EvilNumber timeTraining = (completeTime + (EvilTime_Minute * (SPToNextLevel / GetSPPerMin(currentTraining))));
 
             SaveSkillHistory(skillEventTrainingStarted, timeTraining.get_int(), m_itemID, skillID, level, CurrentSP.get_double(), GetTotalSP().get_double() );
-             _log(CHARACTER__SKILL_TRACE, "%s(%u) Persistant Training started - skill: %u, level: %u", itemName().c_str(), m_itemID, skillID, level);
+             _log(CHARACTER__SKILL_TRACE, "%s(%u) Persistant Training started - skill: %u, level: %u, completionTime: %.1f", \
+                        itemName().c_str(), m_itemID, skillID, level, completeTime.get_float());
 
             currentTraining->SetAttribute(AttrExpiryTime, timeTraining);
             currentTraining->SetFlag(flagSkillInTraining);
@@ -873,8 +876,8 @@ void Character::UpdateSkillQueue() {
 /** @todo update this to use highest level of skills when multiple levels in queue */
 void Character::UpdateSkillQueueEndTime(const SkillQueue &queue) {
     /**   this code is start for looping skillqueue for multiple levels of same skill.
-    std::unordered_multimap<uint32, uint8> flatSkillQueue;
-    std::unordered_multimap<uint32, uint8>::iterator itr;
+    std::multimap<uint16, uint8> flatSkillQueue;
+    std::multimap<uint16, uint8>::iterator itr;
     for (auto cur : queue) {
         const QueuedSkill qs = cur;
         itr = flatSkillQueue.find(qs.typeID);
@@ -1093,8 +1096,8 @@ EvilNumber Character::GetTotalSP() {
     return (m_totalSPtrained = totalSP);
 }
 
-void Character::SaveSkillHistory(uint8 eventID, uint64 logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints) {
-    m_db.SaveSkillHistory(eventID, (double)logDate, characterID, skillTypeID, skillLevel, relativePoints, absolutePoints);
+void Character::SaveSkillHistory(uint8 eventID, EvilNumber logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints) {
+    m_db.SaveSkillHistory(eventID, logDate.get_double(), characterID, skillTypeID, skillLevel, relativePoints, absolutePoints);
 }
 
 PyRep* Character::GetSkillHistory() {

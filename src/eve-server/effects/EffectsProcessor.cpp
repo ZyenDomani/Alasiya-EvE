@@ -971,6 +971,12 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 continue;
             } break;
         }
+
+        if (itemRefVec.empty()) {
+            _log(EFFECTS__TRACE, "FxProc::ApplyEffects(): target item vector empty.");
+            continue;
+        }
+
         // get srcAttr
         EvilNumber srcValue = srcItemRef->GetAttribute(cur.second.srcAttr);
 
@@ -1001,35 +1007,31 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         }
         // set target attr to modified value
         EvilNumber targValue = 0;
-        if (itemRefVec.empty()) {
-            _log(EFFECTS__TRACE, "FxProc::ApplyEffects(): target item vector empty.");
-        } else {
-            int8 opID = cur.first;
-            for (auto item : itemRefVec) {
-                if (!item)  // not sure why i need this, but have seen nulls in the vector (segfaults)
-                    continue;
-                // get targAttr
-                targValue = item->GetAttribute(cur.second.targAttr);
-                switch (opID) {
-                    case dgmMathPreDiv:
-                    case dgmMathPreMul:
-                    case dgmMathPostDiv:
-                    case dgmMathPostMul: {
-                        if (targValue == 0)
+        int8 opID = cur.first;
+        for (auto item : itemRefVec) {
+            if (!item)  // not sure why i need this, but have seen nulls in the vector (segfaults)
+                continue;
+            // get targAttr
+            targValue = item->GetAttribute(cur.second.targAttr);
+            switch (opID) {
+                case dgmMathPreDiv:
+                case dgmMathPreMul:
+                case dgmMathPostDiv:
+                case dgmMathPostMul: {
+                    if (targValue == 0)
                             targValue = 1;
-                    } break;
-                }
-                // send data to calculator
-                EvilNumber newValue = sFxProc.CalculateAttributeValue(targValue, srcValue, opID);
-                // avoid creating 0-value attributes on items
-                if (newValue == 0)
-                    continue;
-                // set new calculated value for target attribute
-                _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(): setting attribute %u for %u(%s) from %.3f to %.3f.  Nerfed: %s", \
-                        cur.second.targAttr, item->itemID(), item->itemName().c_str(), targValue.get_float(), newValue.get_float(), (nerfed ? "true" : "false"));
-                // update is used to send attrib changes to client when changing module states while in space, but NOT for pilot login. (client acts funky)
-                item->SetAttribute(cur.second.targAttr, newValue, update);
+                } break;
             }
+            // send data to calculator
+            EvilNumber newValue = sFxProc.CalculateAttributeValue(targValue, srcValue, opID);
+            // avoid creating 0-value attributes on items
+            if (newValue == 0)
+                continue;
+            // set new calculated value for target attribute
+            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(): setting attribute %u for %u(%s) from %.3f to %.3f.  Nerfed: %s", \
+                    cur.second.targAttr, item->itemID(), item->itemName().c_str(), targValue.get_float(), newValue.get_float(), (nerfed ? "true" : "false"));
+            // update is used to send attrib changes to client when changing module states while in space, but NOT for pilot login. (client acts funky)
+            item->SetAttribute(cur.second.targAttr, newValue, update);
         }
     }
 }

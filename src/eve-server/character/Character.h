@@ -612,7 +612,7 @@ public:
     void                    SaveFullCharacter();
     void                    SaveSkillQueue();
     void                    SaveCertificates();
-    void                    SaveSkillHistory(uint8 eventID, uint64 logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints);
+    void                    SaveSkillHistory(uint8 eventID, EvilNumber logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints);
 
     bool                    isOffline(uint32 online);
     void                    SetLoaded(bool set=false)   { m_loaded = set; }

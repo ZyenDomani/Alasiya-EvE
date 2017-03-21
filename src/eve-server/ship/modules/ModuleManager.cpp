@@ -632,7 +632,7 @@ void ModuleManager::DeactivateAllModules()
     m_Modules->DeactivateAll();
 }
 
-void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targetID, int32 repeat)
+void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int32 repeat)
 {
     if (!m_Ship->HasPilot()) {
         _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called from a ship with no pilot." );
@@ -643,33 +643,17 @@ void ModuleManager::Activate(uint32 itemID, std::string effectName, uint32 targe
         _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called on module %u that is not loaded.", itemID );
         return;
     } else if (!mod->isOnline()) {
-        // fix this to work with effectID 16 (needs ProcessEffects code completion)
-        if (effectName == "online") {
+        if (effectID == 16) { //16    online
             mod->Online();
         } else {
-            // client wont allow activating an offline module.  this is catchall.
+            // client wont allow activating an offline module.  this is catchall. (but should never hit)
             m_Ship->GetPilot()->SendErrorMsg("You cannot activate an offline module. Ref: ServerError 25164");
         }
         return;
     } else {
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Activate() - %s (%s)  repeat: %i.", mod->getItem()->itemName().c_str(), effectName.c_str(), repeat);
-        mod->SetRepeat(repeat);
-        SystemEntity* pSE(nullptr);
-        if (sFxDataMgr.needsTarget(effectName)) {
-            if (!targetID) {
-                sLog.Error("ModuleManager::Activate()", "targetID == 0");
-                m_Ship->GetPilot()->SendErrorMsg("You must have a target to activate that module.  Ref: ServerError 25268");
-                return;
-            }
-            pSE = m_Ship->GetPilot()->SystemMgr()->GetSE(targetID);
-            if (!pSE) {
-                sLog.Error("ModuleManager::Activate()", "pSE == NULL");
-                m_Ship->GetPilot()->SendErrorMsg("Current target was not found.  Ref: ServerError 25263");
-                return;
-            }
-        }
-
-        mod->Activate(pSE, effectName);
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Activate() - %s (%s)  targetID: %i, repeat: %i.", \
+                mod->getItem()->itemName().c_str(), sFxDataMgr.GetEffectName(effectID).c_str(), targetID, repeat);
+        mod->Activate(effectID, targetID, repeat);
     }
 }
 

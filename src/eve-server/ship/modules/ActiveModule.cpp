@@ -28,6 +28,7 @@
 #include "eve-server.h"
 
 #include "ship/modules/ActiveModule.h"
+#include <system/SystemManager.h>
 
 using namespace ModStates;
 
@@ -119,11 +120,21 @@ void ActiveModule::Process()
     }
 }
 
-void ActiveModule::Activate(SystemEntity* pSE, std::string effect/*""*/)
+void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/)
 {
+    if (targetID) {
+        m_targetID = targetID;
+        m_targetEntity = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
+        if (!m_targetEntity) {
+            sLog.Error("ActiveModule::Activate()", "m_targetEntity == NULL");
+            m_shipRef->GetPilot()->SendErrorMsg("Current target was not found.  Ref: ServerError 25263");
+            return;
+        }
+    }
     m_Stop = false;
-    m_effectStr = effect;
-    m_targetEntity = pSE;
+    m_repeat = repeat;
+    m_effectID = effectID;
+    m_effectStr = sFxDataMgr.GetEffectName(effectID);
     m_ModuleState = ModuleStates::MOD_ACTIVATED;  //this HAS to be set before mod::DoCycle()
 
     /** @todo   these need to check for targetable actions, and apply changes accordingly */
@@ -132,11 +143,11 @@ void ActiveModule::Activate(SystemEntity* pSE, std::string effect/*""*/)
     // based on character skills and specific module attributes.  -allan 19Dec15
     SetTimer(DoCycle()); // Do initial cycle immediately while we start timer
 
+    ApplyEffect(Effects::dgmStateActive, true);
+    ShowEffect(true, false);
+
     if (!m_repeat)
         m_Stop = true;
-
-    ApplyEffect(Effects::dgmStateActive, true);
-    ShowEffect(true, false, effect);
 }
 
 void ActiveModule::Deactivate(std::string effect/*""*/)
@@ -201,10 +212,15 @@ void ActiveModule::AbortCycle()
 
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
+    m_repeat = 0;
+
     ApplyEffect(Effects::dgmStateActive, false);
-    ShowEffect(false, abort, m_effectStr);
+    ShowEffect(false, abort);
 
     SetModuleState(ModuleStates::MOD_ONLINE);
+
+    m_targetID = 0;
+    m_targetEntity = nullptr;
 }
 
 void ActiveModule::ShouldProcessActiveCycle() {
@@ -297,15 +313,9 @@ void ActiveModule::ApplyEffect(Effects::State state, bool active/*false*/)
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
 
-void ActiveModule::ShowEffect(bool active /*false*/, bool abort /*false*/, std::string effect /*""*/)
+void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
 {
-    if (abort)
-        active = false;  // just in case
-
     if (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
-        return;
-    uint16 effectID = sFxDataMgr.GetEffectID(effect);
-    if (!effectID)
         return;
 
     uint32 timeLeft = GetRemainingCycleTimeMS();
@@ -315,6 +325,19 @@ void ActiveModule::ShowEffect(bool active /*false*/, bool abort /*false*/, std::
     uint32 targetID = (m_targetID ? m_targetID : m_shipRef->itemID());
     uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
 
+    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
+                m_shipRef->itemID(),
+                m_modRef->itemID(),
+                m_modRef->typeID(),
+                targetID,
+                chgTypeID,
+                sFxDataMgr.GetEffectGuid(m_effectID),
+                sFxDataMgr.isOffensive(m_effectID),
+                (abort ? false : (active ? true : false)),   // start    - if (start = 0) THEN remove effect
+                (abort ? false : (active ? true : false)),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
+                timeLeft,           // duration
+                m_repeat   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
+    );
     // Create Destiny Updates and GFx
     GodmaEnvironment ge;
         ge.selfID = m_modRef->itemID();
@@ -322,29 +345,14 @@ void ActiveModule::ShowEffect(bool active /*false*/, bool abort /*false*/, std::
         ge.shipID = m_shipRef->itemID();
         ge.targetID = targetID;
         ge.area = new PyList();   // still dont know what this is.
-        ge.effectID = effectID;
+        ge.effectID = m_effectID;
 
-        // what happens here when charge is depleted or target is invalid?
-    if (m_chargeLoaded or m_targetID) {
+    if (m_chargeLoaded) {
         GodmaOther go;  // "other" means "charge" in evelang
             go.shipID = ge.shipID;
             go.slotID = m_modRef->flag();
             go.chargeTypeID = chgTypeID;
         ge.other = go.Encode();
-
-        m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
-                m_shipRef->itemID(),
-                m_modRef->itemID(),
-                m_modRef->typeID(),
-                targetID,
-                chgTypeID,
-                sFxDataMgr.GetEffectGuid(effectID),
-                sFxDataMgr.isOffensive(effectID),
-                (active ? 1 : 0),   // start    - if (start = 0) THEN remove effect
-                (active ? 1 : 0),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
-                timeLeft,           // duration
-                (abort ? 0 : (active ? m_repeat : 0))   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
-        );
     } else {
         ge.other = new PyNone();
     }
@@ -357,8 +365,8 @@ void ActiveModule::ShowEffect(bool active /*false*/, bool abort /*false*/, std::
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
         shipEff.startTime = (abort ? shipEff.timeNow : (shipEff.timeNow - (timeLeft * Win32Time_Second)));  //if now - startTime > 150000000: return
-        shipEff.duration = (abort ? 1 : (active ? GetAttribute(AttrDuration).get_float() : timeLeft));
-        shipEff.repeat = (abort ? 0 : (active ? m_repeat : 0));
+        shipEff.duration = (abort ? 1000 : (active ? GetAttribute(AttrDuration).get_float() : timeLeft));
+        shipEff.repeat = m_repeat;
         shipEff.error = new PyNone(); /* look into setting this ... only used for salvaging? */
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());

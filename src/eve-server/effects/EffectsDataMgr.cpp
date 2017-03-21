@@ -117,10 +117,10 @@ void FxDataMgr::Initialize()
             mEffect.effectState = row.GetInt(2);
             mEffect.preExpression = row.GetInt(3);
             mEffect.postExpression = row.GetInt(4);
-            mEffect.isOffensive = row.GetBool(5);
-            mEffect.isAssistance = row.GetBool(6);
-            mEffect.disallowAutoRepeat = row.GetBool(7);
-            mEffect.isWarpSafe = row.GetBool(8);
+            mEffect.isOffensive = (row.GetInt(5) ? true : false);
+            mEffect.isAssistance = (row.GetInt(6) ? true : false);
+            mEffect.disallowAutoRepeat = (row.GetInt(7) ? true : false);
+            mEffect.isWarpSafe = (row.GetInt(8) ? true : false);
             mEffect.npcUsageChanceAttributeID = row.GetInt(9);
             mEffect.npcActivationChanceAttributeID = row.GetInt(10);
             mEffect.fittingUsageChanceAttributeID = row.GetInt(11);
@@ -134,9 +134,7 @@ void FxDataMgr::Initialize()
             mEffect.propulsionChance = row.GetFloat(19);
             mEffect.guid = row.GetText(20);
         m_effectMap.insert(std::pair<uint16, Effect>(row.GetInt(0), mEffect));
-        m_effectName.insert(std::pair<uint16, std::string>(row.GetInt(0), mEffect.effectName));
-        if (mEffect.isAssistance or mEffect.isOffensive)
-            m_targEffects.insert(std::pair<uint16, std::string>(row.GetInt(0), mEffect.effectName));
+        m_effectName.insert(std::pair<std::string, uint16>(mEffect.effectName, row.GetInt(0)));
     }
     // insert a zero-value data set
     Effect mEffect;
@@ -253,23 +251,11 @@ bool FxDataMgr::isOffensive(uint16 eID)
     return false;   // default to false if effectID not found
 }
 
-bool FxDataMgr::needsTarget(std::string effectName)
-{
-    std::map<uint16, std::string>::const_iterator itr = m_targEffects.begin();
-    for (; itr != m_targEffects.end(); itr++) {
-        if (itr->second == effectName)
-            return true;
-    }
-    return false;
-}
-
 uint16 FxDataMgr::GetEffectID(std::string effectName)
 {
-    std::map<uint16, std::string>::const_iterator itr = m_effectName.begin();
-    for (; itr != m_effectName.end(); itr++) {
-        if (itr->second == effectName)
-            return itr->first;
-    }
+    std::map<std::string, uint16>::const_iterator itr = m_effectName.find(effectName);
+    for (; itr != m_effectName.end(); itr++)
+        return itr->second;
     return 0;
 }
 
@@ -278,6 +264,14 @@ std::string FxDataMgr::GetEffectGuid(uint16 eID)
     effectMapType::const_iterator itr = m_effectMap.find(eID);
     if (itr != m_effectMap.end())
         return itr->second.guid;
+    return "";   // default to 'nothing' if effectID not found
+}
+
+std::string FxDataMgr::GetEffectName(uint16 eID)
+{
+    effectMapType::const_iterator itr = m_effectMap.find(eID);
+    if (itr != m_effectMap.end())
+        return itr->second.effectName;
     return "";   // default to 'nothing' if effectID not found
 }
 

@@ -574,9 +574,8 @@ void Client::DockToStation() {
     m_ship->SaveShip();
 
     SetAutoPilot(false);
-    // char modifier map should be ok here for indy and other non-ship shit.  will clear and reprocess on undock
-    // null ship's modifier map as it will be populated with new data on undock
-    m_ship->ClearModifiers();
+    
+    m_ship->Dock();
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
     m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls
 
