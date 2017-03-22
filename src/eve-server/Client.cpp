@@ -208,6 +208,8 @@ bool Client::SelectCharacter(uint32 char_id) {
     }
 
     m_char->SetClient(this);
+    m_char->UpdateSkillQueue();
+    
     SetPodItem();
 
     m_ship = m_services.item_factory->GetShip(m_shipId);
@@ -574,7 +576,7 @@ void Client::DockToStation() {
     m_ship->SaveShip();
 
     SetAutoPilot(false);
-    
+
     m_ship->Dock();
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
     m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls

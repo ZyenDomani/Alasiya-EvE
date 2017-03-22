@@ -126,25 +126,28 @@ bool AttributeMap::Save() {
     AttrMapItr itr = mAttributes.begin();
     for (; itr != mAttributes.end(); itr++) {
         save = false;
-        if ((skill) and ((itr->first == AttrSkillPoints) or (itr->first == AttrSkillLevel)))
-            save = true;
-        if ((damage) and (itr->first == AttrDamage))
-            save = true;
+        if (skill)
+            if ((itr->first == AttrSkillPoints) or (itr->first == AttrSkillLevel) or (itr->first == AttrExpiryTime))
+                save = true;
+        if (damage)
+            if (itr->first == AttrDamage)
+                save = true;
         if (owner)
             save = true;
-        if ((save) and (itr->second != zero)) {
-            AttrData data;
-            data.itemID = mItem.itemID();
-            data.attrID = itr->first;
-            if ( itr->second.get_type() == evil_number_int ) {
-                data.valueInt = itr->second.get_int();
-                data.valueFloat = 0;
-            } else {
-                data.valueInt = 0;
-                data.valueFloat = itr->second.get_double();
+        if (save)
+            if (itr->second != zero) {
+                AttrData data;
+                data.itemID = mItem.itemID();
+                data.attrID = itr->first;
+                if ( itr->second.get_type() == evil_number_int ) {
+                    data.valueInt = itr->second.get_int();
+                    data.valueFloat = 0;
+                } else {
+                    data.valueInt = 0;
+                    data.valueFloat = itr->second.get_double();
+                }
+                items.push_back(data);
             }
-            items.push_back(data);
-        }
     }
 
     m_db.SaveAttributes(items);

@@ -160,7 +160,6 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
             m_modRef->itemID(), m_modRef->itemName().c_str(), GetRemainingCycleTimeMS());
 
     if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds)) {
-        // set timer to fake allowing mining module to "complete" gathering and process mined ore.  (avoid immediate deactivation)
         AbortCycle();
         return;
     }
@@ -317,8 +316,13 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
     if (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
         return;
 
+    int64 abortTime = Win32TimeNow();
+    if ((abort)
+        and ((m_effectID == EVEEffectID::miningLaser)
+            or (m_effectID == EVEEffectID::miningClouds)))
+        abortTime += (8 * Win32Time_Second);
+
     uint32 timeLeft = GetRemainingCycleTimeMS();
-    timeLeft /= 1000;
 
     // targetID MUST be defined (so client can properly direct GFx sequence)
     uint32 targetID = (m_targetID ? m_targetID : m_shipRef->itemID());
@@ -333,10 +337,12 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
                 m_guidStr,
                 sFxDataMgr.isOffensive(m_effectID),
                 (abort ? false : (active ? true : false)),   // start    - if (start = 0) THEN remove effect
-                false, //(abort ? false : (active ? true : false)),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
-                timeLeft,           // duration
+                (abort ? false : (active ? true : false)),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
+                (double)timeLeft,           // duration
                 m_repeat   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
     );
+
+    timeLeft /= 1000;
     // Create Destiny Updates and GFx
     GodmaEnvironment ge;
         ge.selfID = m_modRef->itemID();
@@ -363,7 +369,7 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
         shipEff.start = (active ? 1 : 0);
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
-        shipEff.startTime = (abort ? shipEff.timeNow : (shipEff.timeNow - (timeLeft * Win32Time_Second)));  //if now - startTime > 150000000: return
+        shipEff.startTime = (abort ? (abortTime / Win32Time_Second) : (shipEff.timeNow - (timeLeft * Win32Time_Second)));  //if now - startTime > 150000000: return
         shipEff.duration = (abort ? 1000 : (active ? GetAttribute(AttrDuration).get_float() : timeLeft));
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone(); /* look into setting this ... only used for salvaging? */
