@@ -881,9 +881,9 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
 {
     sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
     // this one is called from BoardShip()
+    OfflineAll();
     GenericModule* mod(nullptr);
     if (modVec.size()) {
-        OfflineAll();
         m_Ship->SetAttribute(AttrCpuLoad,     0);
         m_Ship->SetAttribute(AttrPowerLoad,   0);
         //m_Ship->SetAttribute(AttrUpgradeLoad, 0);

@@ -135,7 +135,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_Stop = false;
     m_repeat = repeat;
     m_effectID = effectID;
-    m_guidStr = sFxDataMgr.GetEffectName(effectID);
+    m_guidStr = sFxDataMgr.GetEffectGuid(effectID);
     m_ModuleState = ModuleStates::MOD_ACTIVATED;  //this HAS to be set before mod::DoCycle()
 
     /** @todo   these need to check for targetable actions, and apply changes accordingly */
@@ -153,16 +153,14 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
 void ActiveModule::Deactivate(std::string effect/*""*/)
 {
-    if ((m_ModuleState == ModuleStates::MOD_UNFITTED)
-        or (m_ModuleState == ModuleStates::MOD_OFFLINE)
-        or (m_ModuleState == ModuleStates::MOD_DEACTIVATING))
+    if (m_ModuleState != ModuleStates::MOD_ACTIVATED)
         return;
 
     _log(SHIP__MODULE_TRACE, "ActiveModule::Deactivate() - module %u(%s) remaining time %ums.", \
             m_modRef->itemID(), m_modRef->itemName().c_str(), GetRemainingCycleTimeMS());
 
-    if (m_guidStr == "miningLaser") {
-        // set timer to fake  allowing mining module to "complete" gathering and process mined ore.  (avoid immediate deactivation)
+    if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds)) {
+        // set timer to fake allowing mining module to "complete" gathering and process mined ore.  (avoid immediate deactivation)
         AbortCycle();
         return;
     }

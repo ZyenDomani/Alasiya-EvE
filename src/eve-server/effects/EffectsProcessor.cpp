@@ -532,7 +532,11 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 case EVEDB::invGroups::Electronics:
                 case EVEDB::invGroups::Engineering:
                 case EVEDB::invGroups::Navigation: {
-                    core = true;    // define core skills that may/may not be processed correctly (!HasReqSkill(thisType))
+                    if ((data.srcRef->typeID() == EVEDB::invTypes::typeTargeting)
+                        or (data.srcRef->typeID() == EVEDB::invTypes::typeMultitasking))
+                        core = false;
+                    else
+                        core = true;    // define core skills that may/may not be processed correctly (!HasReqSkill(thisType))
                 } break;
             }
             skill = true;
@@ -1006,7 +1010,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 }
             } break;
         }
-        
+
         // set target attr to modified value
         EvilNumber targValue = 0;
         int8 opID = cur.first;

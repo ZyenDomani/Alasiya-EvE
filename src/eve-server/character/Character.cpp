@@ -752,7 +752,7 @@ void Character::UpdateSkillQueue() {
                 PyTuple* tmp = osst.Encode();
             m_pClient->QueueDestinyEvent(&tmp); // consumed
 
-            SaveSkillHistory(skillEventTrainingCancelled, Win32TimeNow(), m_itemID, currentTraining->typeID(), oldLevel, skillPointsTrained.get_double(), GetTotalSP().get_double() );
+            SaveSkillHistory(skillEventTrainingCancelled, EvilTimeNow(), m_itemID, currentTraining->typeID(), oldLevel, skillPointsTrained.get_double(), GetTotalSP().get_double() );
             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u, completionTime: %.1f", \
                         itemName().c_str(), m_itemID, currentTraining->typeID(), oldLevel, currentTraining->GetAttribute(AttrExpiryTime).get_float());
 
@@ -786,7 +786,7 @@ void Character::UpdateSkillQueue() {
             SPToNextLevel -= CurrentSP;
             EvilNumber timeTraining = (EvilTimeNow() + (EvilTime_Minute * (SPToNextLevel / GetSPPerMin(currentTraining))));
 
-            SaveSkillHistory(skillEventTrainingStarted, Win32TimeNow(), m_itemID, skillID, (uint8)level.get_int(), CurrentSP.get_double(), GetTotalSP().get_double() );
+            SaveSkillHistory(skillEventTrainingStarted, EvilTimeNow(), m_itemID, skillID, (uint8)level.get_int(), CurrentSP.get_double(), GetTotalSP().get_double() );
             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining started - skill: %u, level: %u, completionTime: %.1f", \
                             itemName().c_str(), m_itemID, skillID, level.get_int(), timeTraining.get_float());
 
@@ -848,7 +848,7 @@ void Character::UpdateSkillQueue() {
 
             SaveSkillHistory(skillEventTrainingStarted, timeTraining.get_int(), m_itemID, skillID, level, CurrentSP.get_double(), GetTotalSP().get_double() );
              _log(CHARACTER__SKILL_TRACE, "%s(%u) Persistant Training started - skill: %u, level: %u, completionTime: %.1f", \
-                        itemName().c_str(), m_itemID, skillID, level, completeTime.get_float());
+                        itemName().c_str(), m_itemID, skillID, level, timeTraining.get_float());
 
             currentTraining->SetAttribute(AttrExpiryTime, timeTraining);
             currentTraining->SetFlag(flagSkillInTraining);

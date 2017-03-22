@@ -73,7 +73,7 @@ GenericModule::~GenericModule()
 void GenericModule::Online()
 {
     if (m_ModuleState == ModuleStates::MOD_UNFITTED) {
-        _log(SHIP__MODULE_MESSAGE, "GenericModule::Online() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        _log(SHIP__MODULE_WARNING, "GenericModule::Online() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
         return;
     }
     if (m_ModuleState != ModuleStates::MOD_OFFLINE) {
@@ -122,15 +122,17 @@ void GenericModule::Online()
 void GenericModule::Offline()
 {
     if (m_ModuleState == ModuleStates::MOD_OFFLINE) {
-        _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for offline module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for offline module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
         return;
     }
     if (m_ModuleState == ModuleStates::MOD_UNFITTED) {
-        _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
         return;
     }
     if (m_ModuleState == ModuleStates::MOD_DEACTIVATING) {
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        m_ModuleState = ModuleStates::MOD_OFFLINE;
+        m_modRef->PutOffline();
         return;
     }
 
