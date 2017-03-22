@@ -110,7 +110,7 @@ private:
     uint16 m_effectID;                                  //passed to us by activate
     uint32 m_targetID;                                  //passed to us by activate
     uint16 m_reloadTime;
-    std::string m_effectStr;
+    std::string m_guidStr;
 
     Timer m_timer;
 

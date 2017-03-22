@@ -512,7 +512,7 @@ void NPCAIMgr::AttackTarget(SystemEntity* pTarget) {
              m_npc->GetEM(),
              m_npc->GetExplosive(),
              m_formula.GetNPCToHit(m_npc, pTarget),
-             effectTargetAttack
+             EVEEffectID::targetAttack
             );
 
     d *= m_damageMultiplier;
@@ -527,7 +527,7 @@ void NPCAIMgr::_SendWeaponEffect( const char* effect, SystemEntity* pTarget ) {
         sfx.moduleTypeID = m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int();
         sfx.targetID = pTarget->GetID();
         sfx.otherTypeID = pTarget->GetSelf()->typeID();
-        sfx.effect_type = effect;
+        sfx.guid = effect;
         sfx.isOffensive = 1;
         sfx.start = 1;
         sfx.active = 1;

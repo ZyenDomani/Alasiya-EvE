@@ -535,7 +535,7 @@ PyTuple *StructureSE::GetEffectState() {
             effect.duration_ms = -1;
         }
         effect.area = area;
-        effect.effect_type = "effects.StructureOnline";
+        effect.guid = "effects.StructureOnline";
         effect.isOffensive = 0;                     /** @todo (Allan) this should be boolean */
         effect.start = 1;
         effect.active = 1;

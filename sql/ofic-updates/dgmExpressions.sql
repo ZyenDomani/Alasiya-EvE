@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Mar 14, 2017 at 02:33 AM
+-- Generation Time: Mar 22, 2017 at 03:03 AM
 -- Server version: 10.0.24-MariaDB
 -- PHP Version: 5.6.21
 
@@ -17,7 +17,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `Alasiya-EvE`
+-- Database: `alasiya-new`
 --
 
 -- --------------------------------------------------------
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `dgmExpressions` (
   `expressionTypeID` smallint(5) unsigned NOT NULL,
   `expressionGroupID` smallint(5) unsigned NOT NULL,
   `expressionAttributeID` smallint(5) unsigned NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=Aria DEFAULT CHARSET=utf8 PAGE_CHECKSUM=0 TRANSACTIONAL=0;
 
 --
 -- Dumping data for table `dgmExpressions`
@@ -46,7 +46,6 @@ CREATE TABLE IF NOT EXISTS `dgmExpressions` (
 
 INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
 (1, 24, 0, 0, 'Self', 'Index of affecting module  in environment', 'CurrentSelf', 0, 0, 0),
-(2, 24, 0, 0, 'Charge', 'Index of affecting charge in environment', 'CurrentCharge', 0, 0, 0),
 (3, 24, 0, 0, 'Char', 'Index of affecting character in environment', 'CurrentChar', 0, 0, 0),
 (4, 24, 0, 0, 'Ship', 'Index of affecting ship in environment', 'CurrentShip', 0, 0, 0),
 (5, 21, 0, 0, 'PreMul', 'Pre-multiplying association', 'PreMul', 0, 0, 0),
@@ -551,9 +550,9 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (663, 26, 0, 0, 'HybridWeapon', '', 'HybridWeapon', 0, 74, 0),
 (664, 48, 4, 663, '', '', 'CurrentShip..HybridWeapon', 0, 0, 0),
 (665, 12, 664, 656, '', '', 'CurrentShip..HybridWeapon->damageMultiplier', 0, 0, 0),
-(666, 31, 10, 665, '', '', '(CurrentShip..HybridWeapon->damageMultiplier).(PostMul)', 0, 0, 0);
+(666, 31, 10, 665, '', '', '(CurrentShip..HybridWeapon->damageMultiplier).(PostMul)', 0, 0, 0),
+(667, 7, 661, 656, '', '', '((CurrentShip..ProjectileWeapon->damageMultiplier).(PostMul)).AddLocationGroupModifier (damageMultiplier)', 0, 0, 0);
 INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
-(667, 7, 661, 656, '', '', '((CurrentShip..ProjectileWeapon->damageMultiplier).(PostMul)).AddLocationGroupModifier (damageMultiplier)', 0, 0, 0),
 (668, 7, 662, 656, '', '', '((CurrentShip..EnergyWeapon->damageMultiplier).(PostMul)).AddLocationGroupModifier (damageMultiplier)', 0, 0, 0),
 (669, 7, 666, 656, '', '', '((CurrentShip..HybridWeapon->damageMultiplier).(PostMul)).AddLocationGroupModifier (damageMultiplier)', 0, 0, 0),
 (670, 59, 661, 656, '', '', '((CurrentShip..ProjectileWeapon->damageMultiplier).(PostMul)).RemoveLocationGroupModifier (damageMultiplier)', 0, 0, 0),
@@ -897,9 +896,9 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (1082, 58, 551, 541, '', '', '((CurrentChar->intelligence).(ModAdd)).RemoveItemModifier (customIntelligenceBonus)', 0, 0, 0),
 (1083, 58, 552, 542, '', '', '((CurrentChar->memory).(ModAdd)).RemoveItemModifier (customMemoryBonus)', 0, 0, 0),
 (1084, 58, 553, 543, '', '', '((CurrentChar->perception).(ModAdd)).RemoveItemModifier (customPerceptionBonus)', 0, 0, 0),
-(1085, 58, 554, 544, '', '', '((CurrentChar->willpower).(ModAdd)).RemoveItemModifier (customWillpowerBonus)', 0, 0, 0);
+(1085, 58, 554, 544, '', '', '((CurrentChar->willpower).(ModAdd)).RemoveItemModifier (customWillpowerBonus)', 0, 0, 0),
+(1086, 17, 1081, 1082, '', '', '((CurrentChar->charisma).(ModAdd)).RemoveItemModifier (customCharismaBonus));     (((CurrentChar->intelligence).(ModAdd)).RemoveItemModifier (customIntelligenceBonus)', 0, 0, 0);
 INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
-(1086, 17, 1081, 1082, '', '', '((CurrentChar->charisma).(ModAdd)).RemoveItemModifier (customCharismaBonus));     (((CurrentChar->intelligence).(ModAdd)).RemoveItemModifier (customIntelligenceBonus)', 0, 0, 0),
 (1087, 17, 1083, 1084, '', '', '((CurrentChar->memory).(ModAdd)).RemoveItemModifier (customMemoryBonus));     (((CurrentChar->perception).(ModAdd)).RemoveItemModifier (customPerceptionBonus)', 0, 0, 0),
 (1088, 17, 1086, 1087, '', '', '((CurrentChar->charisma).(ModAdd)).RemoveItemModifier (customCharismaBonus));     (((CurrentChar->intelligence).(ModAdd)).RemoveItemModifier (customIntelligenceBonus));     (((CurrentChar->memory).(ModAdd)).RemoveItemModifier (customMemoryBonus));     (((CurrentChar->perception).(ModAdd)).RemoveItemModifier (customPerceptionBonus)', 0, 0, 0),
 (1089, 17, 1088, 1085, '', '', '((CurrentChar->charisma).(ModAdd)).RemoveItemModifier (customCharismaBonus));     (((CurrentChar->intelligence).(ModAdd)).RemoveItemModifier (customIntelligenceBonus));     (((CurrentChar->memory).(ModAdd)).RemoveItemModifier (customMemoryBonus));     (((CurrentChar->perception).(ModAdd)).RemoveItemModifier (customPerceptionBonus));     (((CurrentChar->willpower).(ModAdd)).RemoveItemModifier (customWillpowerBonus)', 0, 0, 0),
@@ -1198,9 +1197,9 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (1383, 29, 0, 0, 'Amarr Battleship', 'Autogenerated skill type, Amarr Battleship', 'Type(Amarr Battleship)', 3339, 0, 0),
 (1384, 49, 4, 1383, '', 'Autogenerated LRS, modules on Ship that require Amarr Battleship', 'CurrentShip[Type(Amarr Battleship)]', 0, 0, 0),
 (1385, 12, 1384, 12, '', 'Autogenerated ATT, powerOutput on modules requiring Amarr Battleship on Ship', 'CurrentShip[Type(Amarr Battleship)]->powerOutput', 0, 0, 0),
-(1386, 31, 1095, 1385, '', 'Autogenerated EFF, PostPercent modification to powerOutput on modules requiring Amarr Battleship on Ship', '(CurrentShip[Type(Amarr Battleship)]->powerOutput).(PostPercent)', 0, 0, 0);
+(1386, 31, 1095, 1385, '', 'Autogenerated EFF, PostPercent modification to powerOutput on modules requiring Amarr Battleship on Ship', '(CurrentShip[Type(Amarr Battleship)]->powerOutput).(PostPercent)', 0, 0, 0),
+(1387, 9, 1386, 1288, '', 'Autogenerated ALRSM, (powerOutput of modules on Ship requiring Amarr Battleship).ALRSM(PostPercent,abPowerBonus)', '((CurrentShip[Type(Amarr Battleship)]->powerOutput).(PostPercent)).ALRSM(abPowerBonus)', 0, 0, 0);
 INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
-(1387, 9, 1386, 1288, '', 'Autogenerated ALRSM, (powerOutput of modules on Ship requiring Amarr Battleship).ALRSM(PostPercent,abPowerBonus)', '((CurrentShip[Type(Amarr Battleship)]->powerOutput).(PostPercent)).ALRSM(abPowerBonus)', 0, 0, 0),
 (1388, 61, 1386, 1288, '', 'Autogenerated RLRSM, (powerOutput of modules on Ship requiring Amarr Battleship).RLRSM(PostPercent,abPowerBonus)', '((CurrentShip[Type(Amarr Battleship)]->powerOutput).(PostPercent)).RLRSM(abPowerBonus)', 0, 0, 0),
 (1389, 22, 0, 0, '', 'Autogenerated attribute, scannerDurationBonus', 'scannerDurationBonus', 0, 0, 307),
 (1390, 12, 1, 1389, '', 'Autogenerated ATT, self.scannerDurationBonus', 'CurrentSelf->scannerDurationBonus', 0, 0, 0),
@@ -1496,9 +1495,9 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (1680, 29, 0, 0, 'Controlled Bursts', 'Autogenerated skill type, Controlled Bursts', 'Type(Controlled Bursts)', 3316, 0, 0),
 (1681, 49, 4, 1680, '', 'Autogenerated LRS, modules on Ship that require Controlled Bursts', 'CurrentShip[Type(Controlled Bursts)]', 0, 0, 0),
 (1682, 12, 1681, 46, '', 'Autogenerated ATT, capacitorNeed on modules requiring Controlled Bursts on Ship', 'CurrentShip[Type(Controlled Bursts)]->capacitorNeed', 0, 0, 0),
-(1683, 31, 1095, 1682, '', 'Autogenerated EFF, PostPercent modification to capacitorNeed on modules requiring Controlled Bursts on Ship', '(CurrentShip[Type(Controlled Bursts)]->capacitorNeed).(PostPercent)', 0, 0, 0);
+(1683, 31, 1095, 1682, '', 'Autogenerated EFF, PostPercent modification to capacitorNeed on modules requiring Controlled Bursts on Ship', '(CurrentShip[Type(Controlled Bursts)]->capacitorNeed).(PostPercent)', 0, 0, 0),
+(1684, 9, 1683, 1501, '', 'Autogenerated ALRSM, (capacitorNeed of modules on Ship requiring Controlled Bursts).ALRSM(PostPercent,capNeedBonus)', '((CurrentShip[Type(Controlled Bursts)]->capacitorNeed).(PostPercent)).ALRSM(capNeedBonus)', 0, 0, 0);
 INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
-(1684, 9, 1683, 1501, '', 'Autogenerated ALRSM, (capacitorNeed of modules on Ship requiring Controlled Bursts).ALRSM(PostPercent,capNeedBonus)', '((CurrentShip[Type(Controlled Bursts)]->capacitorNeed).(PostPercent)).ALRSM(capNeedBonus)', 0, 0, 0),
 (1685, 61, 1683, 1501, '', 'Autogenerated RLRSM, (capacitorNeed of modules on Ship requiring Controlled Bursts).RLRSM(PostPercent,capNeedBonus)', '((CurrentShip[Type(Controlled Bursts)]->capacitorNeed).(PostPercent)).RLRSM(capNeedBonus)', 0, 0, 0),
 (1686, 22, 0, 0, '', 'Autogenerated attribute, armorHpBonus', 'armorHpBonus', 0, 0, 335),
 (1687, 12, 1, 1686, '', 'Autogenerated ATT, self.armorHpBonus', 'CurrentSelf->armorHpBonus', 0, 0, 0),
@@ -1811,9 +1810,9 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (2004, 6, 2003, 1059, '', 'Autogenerated AIM, self.battleshipConstructionTimeBonus.AIM(skillLevel,PreMul)', '((CurrentSelf->battleshipConstructionTimeBonus).(PreMul)).AddItemModifier (skillLevel)', 0, 0, 0),
 (2005, 58, 2003, 1059, '', 'Autogenerated RIM, self.battleshipConstructionTimeBonus.RIM(skillLevel,PreMul)', '((CurrentSelf->battleshipConstructionTimeBonus).(PreMul)).RemoveItemModifier (skillLevel)', 0, 0, 0),
 (2006, 12, 3, 1972, '', 'Autogenerated ATT, Char.battleshipConstructionTime', 'CurrentChar->battleshipConstructionCost', 0, 0, 0),
-(2007, 31, 1095, 2006, '', 'Autogenerated EFF, PostPercent modification to Char.battleshipConstructionTime', '(CurrentChar->battleshipConstructionCost).(PostPercent)', 0, 0, 0);
+(2007, 31, 1095, 2006, '', 'Autogenerated EFF, PostPercent modification to Char.battleshipConstructionTime', '(CurrentChar->battleshipConstructionCost).(PostPercent)', 0, 0, 0),
+(2008, 6, 2007, 2001, '', 'Autogenerated AIM, Char.battleshipConstructionTime.AIM(battleshipConstructionTimeBonus,PostPercent)', '((CurrentChar->battleshipConstructionCost).(PostPercent)).AddItemModifier (battleshipConstructionTimeBonus)', 0, 0, 0);
 INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
-(2008, 6, 2007, 2001, '', 'Autogenerated AIM, Char.battleshipConstructionTime.AIM(battleshipConstructionTimeBonus,PostPercent)', '((CurrentChar->battleshipConstructionCost).(PostPercent)).AddItemModifier (battleshipConstructionTimeBonus)', 0, 0, 0),
 (2009, 58, 2007, 2001, '', 'Autogenerated RIM, Char.battleshipConstructionTime.RIM(battleshipConstructionTimeBonus,PostPercent)', '((CurrentChar->battleshipConstructionCost).(PostPercent)).RemoveItemModifier (battleshipConstructionTimeBonus)', 0, 0, 0),
 (2010, 22, 0, 0, '', 'Autogenerated skill attribute, cruiserConstructionTimeBonus', 'cruiserConstructionTimeBonus', 0, 0, 409),
 (2011, 12, 1, 2010, '', 'Autogenerated ATT, self.cruiserConstructionTimeBonus', 'CurrentSelf->cruiserConstructionTimeBonus', 0, 0, 0),
@@ -2101,10 +2100,10 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (2297, 58, 2295, 1059, '', 'Autogenerated RIM, self.socialMutator.RIM(skillLevel,PreMul)', '((CurrentSelf->socialMutator).(PreMul)).RemoveItemModifier (skillLevel)', 0, 0, 0),
 (2298, 12, 3, 1883, '', 'Autogenerated ATT, Char.socialBonus', 'CurrentChar->socialBonus', 0, 0, 0),
 (2299, 31, 1095, 2298, '', 'Autogenerated EFF, PostPercent modification to Char.socialBonus', '(CurrentChar->socialBonus).(PostPercent)', 0, 0, 0),
-(2300, 6, 2299, 2293, '', 'Autogenerated AIM, Char.socialBonus.AIM(socialMutator,PostPercent)', '((CurrentChar->socialBonus).(PostPercent)).AddItemModifier (socialMutator)', 0, 0, 0);
-INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
+(2300, 6, 2299, 2293, '', 'Autogenerated AIM, Char.socialBonus.AIM(socialMutator,PostPercent)', '((CurrentChar->socialBonus).(PostPercent)).AddItemModifier (socialMutator)', 0, 0, 0),
 (2301, 58, 2299, 2293, '', 'Autogenerated RIM, Char.socialBonus.RIM(socialMutator,PostPercent)', '((CurrentChar->socialBonus).(PostPercent)).RemoveItemModifier (socialMutator)', 0, 0, 0),
-(2302, 29, 0, 0, '', 'This is some useful type or other', 'Large Projectile Turret', 3308, 0, 0),
+(2302, 29, 0, 0, '', 'This is some useful type or other', 'Large Projectile Turret', 3308, 0, 0);
+INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
 (2303, 49, 4, 2302, '', 'Autogenerated LRS, modules on Ship that require Large Projectile Turret', 'CurrentShip[Large Projectile Turret]', 0, 0, 0),
 (2304, 12, 2303, 656, '', 'Autogenerated ATT, damageMultiplier on modules requiring Large Projectile Turret on Ship', 'CurrentShip[Large Projectile Turret]->damageMultiplier', 0, 0, 0),
 (2305, 31, 1095, 2304, '', 'Autogenerated EFF, PostPercent modification to damageMultiplier on modules requiring Large Projectile Turret on Ship', '(CurrentShip[Large Projectile Turret]->damageMultiplier).(PostPercent)', 0, 0, 0),
@@ -2399,10 +2398,10 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (2616, 6, 2114, 1472, '', 'Autogenerated ALGM, (powerOutput located on Ship).ALGM(powerEngineeringOutputBonus,PostPercent)', '((CurrentShip->powerOutput).(PostPercent)).AddItemModifier (powerEngineeringOutputBonus)', 0, 0, 0),
 (2617, 58, 2114, 1472, '', 'Autogenerated RLGM, (powerOutput located on Ship).RLGM(powerEngineeringOutputBonus,PostPercent)', '((CurrentShip->powerOutput).(PostPercent)).RemoveItemModifier (powerEngineeringOutputBonus)', 0, 0, 0),
 (2622, 22, 0, 0, '', '', 'boosterDuration', 0, 0, 330),
-(2623, 29, 0, 0, '', 'This is some useful type or other', 'Biology', 3405, 0, 0);
-INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
+(2623, 29, 0, 0, '', 'This is some useful type or other', 'Biology', 3405, 0, 0),
 (2624, 49, 3, 2623, '', 'Autogenerated LRS, modules on Char that require Biology', 'CurrentChar[Biology]', 0, 0, 0),
-(2625, 12, 2624, 1420, '', 'Autogenerated ATT, durationBonus on modules requiring Biology on Char', 'CurrentChar[Biology]->durationBonus', 0, 0, 0),
+(2625, 12, 2624, 1420, '', 'Autogenerated ATT, durationBonus on modules requiring Biology on Char', 'CurrentChar[Biology]->durationBonus', 0, 0, 0);
+INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
 (2626, 31, 1095, 2625, '', 'Autogenerated EFF, PostPercent modification to durationBonus on modules requiring Biology on Char', '(CurrentChar[Biology]->durationBonus).(PostPercent)', 0, 0, 0),
 (2627, 9, 2626, 2622, '', 'Autogenerated ALRSM, (durationBonus of modules on Char requiring Biology).ALRSM(PostPercent,boosterDuration)', '((CurrentChar[Biology]->durationBonus).(PostPercent)).ALRSM(boosterDuration)', 0, 0, 0),
 (2628, 61, 2626, 2622, '', 'Autogenerated RLRSM, (durationBonus of modules on Char requiring Biology).RLRSM(PostPercent,boosterDuration)', '((CurrentChar[Biology]->durationBonus).(PostPercent)).RLRSM(boosterDuration)', 0, 0, 0),
@@ -2720,9 +2719,9 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (2953, 12, 4, 2930, '', 'Autogenerated ATT, Ship.manufactureSlotLimit', 'CurrentShip->manufactureSlotLimit', 0, 0, 0),
 (2954, 31, 7, 2953, '', 'Autogenerated EFF, ModAdd modification to Ship.manufactureSlotLimit', '(CurrentShip->manufactureSlotLimit).(ModAdd)', 0, 0, 0),
 (2955, 6, 2954, 1059, '', 'Autogenerated AIM, Ship.manufactureSlotLimit.AIM(skillLevel,ModAdd)', '((CurrentShip->manufactureSlotLimit).(ModAdd)).AddItemModifier (skillLevel)', 0, 0, 0),
-(2956, 58, 2954, 1059, '', 'Autogenerated RIM, Ship.manufactureSlotLimit.RIM(skillLevel,ModAdd)', '((CurrentShip->manufactureSlotLimit).(ModAdd)).RemoveItemModifier (skillLevel)', 0, 0, 0);
+(2956, 58, 2954, 1059, '', 'Autogenerated RIM, Ship.manufactureSlotLimit.RIM(skillLevel,ModAdd)', '((CurrentShip->manufactureSlotLimit).(ModAdd)).RemoveItemModifier (skillLevel)', 0, 0, 0),
+(2957, 31, 7, 2931, '', 'Autogenerated EFF, ModAdd modification to Char.manufactureSlotLimit', '(CurrentChar->manufactureSlotLimit).(ModAdd)', 0, 0, 0);
 INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
-(2957, 31, 7, 2931, '', 'Autogenerated EFF, ModAdd modification to Char.manufactureSlotLimit', '(CurrentChar->manufactureSlotLimit).(ModAdd)', 0, 0, 0),
 (2958, 6, 2957, 1059, '', 'Autogenerated AIM, Char.manufactureSlotLimit.AIM(skillLevel,ModAdd)', '((CurrentChar->manufactureSlotLimit).(ModAdd)).AddItemModifier (skillLevel)', 0, 0, 0),
 (2959, 58, 2957, 1059, '', 'Autogenerated RIM, Char.manufactureSlotLimit.RIM(skillLevel,ModAdd)', '((CurrentChar->manufactureSlotLimit).(ModAdd)).RemoveItemModifier (skillLevel)', 0, 0, 0),
 (2960, 22, 0, 0, '', '', 'missileLaunchDuration', 0, 0, 506),
@@ -3022,9 +3021,9 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (3263, 58, 3261, 1059, '', 'Autogenerated RIM, self.cloakVelocityBonus.RIM(skillLevel,PreMul)', '((CurrentSelf->cloakVelocityBonus).(PreMul)).RemoveItemModifier (skillLevel)', 0, 0, 0),
 (3264, 29, 0, 0, '', 'This is some useful type or other', 'Cloaking', 11579, 0, 0),
 (3265, 49, 4, 3264, '', 'Autogenerated LRS, modules on Ship that require Cloaking', 'CurrentShip[Cloaking]', 0, 0, 0),
-(3266, 12, 3265, 105, '', 'Autogenerated ATT, speedFactor on modules requiring Cloaking on Ship', 'CurrentShip[Cloaking]->speedFactor', 0, 0, 0);
+(3266, 12, 3265, 105, '', 'Autogenerated ATT, speedFactor on modules requiring Cloaking on Ship', 'CurrentShip[Cloaking]->speedFactor', 0, 0, 0),
+(3267, 31, 1095, 3266, '', 'Autogenerated EFF, PostPercent modification to speedFactor on modules requiring Cloaking on Ship', '(CurrentShip[Cloaking]->speedFactor).(PostPercent)', 0, 0, 0);
 INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
-(3267, 31, 1095, 3266, '', 'Autogenerated EFF, PostPercent modification to speedFactor on modules requiring Cloaking on Ship', '(CurrentShip[Cloaking]->speedFactor).(PostPercent)', 0, 0, 0),
 (3268, 9, 3267, 3259, '', 'Autogenerated ALRSM, (speedFactor of modules on Ship requiring Cloaking).ALRSM(PostPercent,cloakVelocityBonus)', '((CurrentShip[Cloaking]->speedFactor).(PostPercent)).ALRSM(cloakVelocityBonus)', 0, 0, 0),
 (3269, 61, 3267, 3259, '', 'Autogenerated RLRSM, (speedFactor of modules on Ship requiring Cloaking).RLRSM(PostPercent,cloakVelocityBonus)', '((CurrentShip[Cloaking]->speedFactor).(PostPercent)).RLRSM(cloakVelocityBonus)', 0, 0, 0),
 (3270, 12, 3265, 166, '', 'Autogenerated ATT, cpu on modules requiring Cloaking on Ship', 'CurrentShip[Cloaking]->cpu', 0, 0, 0),
@@ -3309,9 +3308,9 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (3562, 60, 3560, 1094, '', 'Autogenerated RLM, (maxRange located on Other).RLM(weaponRangeMultiplier,PreMul)', '((CurrentOther->maxRange).(PreMul)).RemoveLocationModifier (weaponRangeMultiplier)', 0, 0, 0),
 (3563, 12, 4, 3559, '', 'Autogenerated ATT, Ship.shipBonusAB2', 'CurrentShip->shipBonusAB2', 0, 0, 0),
 (3564, 31, 5, 3563, '', 'Autogenerated EFF, PreMul modification to Ship.shipBonusAB2', '(CurrentShip->shipBonusAB2).(PreMul)', 0, 0, 0),
-(3565, 6, 3564, 1059, '', 'Autogenerated AIM, Ship.shipBonusAB2.AIM(skillLevel,PreMul)', '((CurrentShip->shipBonusAB2).(PreMul)).AddItemModifier (skillLevel)', 0, 0, 0);
+(3565, 6, 3564, 1059, '', 'Autogenerated AIM, Ship.shipBonusAB2.AIM(skillLevel,PreMul)', '((CurrentShip->shipBonusAB2).(PreMul)).AddItemModifier (skillLevel)', 0, 0, 0),
+(3566, 58, 3564, 1059, '', 'Autogenerated RIM, Ship.shipBonusAB2.RIM(skillLevel,PreMul)', '((CurrentShip->shipBonusAB2).(PreMul)).RemoveItemModifier (skillLevel)', 0, 0, 0);
 INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
-(3566, 58, 3564, 1059, '', 'Autogenerated RIM, Ship.shipBonusAB2.RIM(skillLevel,PreMul)', '((CurrentShip->shipBonusAB2).(PreMul)).RemoveItemModifier (skillLevel)', 0, 0, 0),
 (3567, 6, 2467, 3559, '', 'Autogenerated AIM, Ship.capacitorCapacity.AIM(shipBonusAB2,PostPercent)', '((CurrentShip->capacitorCapacity).(PostPercent)).AddItemModifier (shipBonusAB2)', 0, 0, 0),
 (3568, 58, 2467, 3559, '', 'Autogenerated RIM, Ship.capacitorCapacity.RIM(shipBonusAB2,PostPercent)', '((CurrentShip->capacitorCapacity).(PostPercent)).RemoveItemModifier (shipBonusAB2)', 0, 0, 0),
 (3569, 6, 1493, 2820, '', 'Autogenerated AIM, Ship.maxVelocity.AIM(shipBonusCI,PostPercent)', '((CurrentShip->maxVelocity).(PostPercent)).AddItemModifier (shipBonusCI)', 0, 0, 0),
@@ -3588,9 +3587,9 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (3840, 58, 3838, 419, '', 'Autogenerated RIM, Ship.113.RIM(133,PostMul)', '((CurrentShip->emDamageResonance).(PostMul)).RemoveItemModifier (emDamageResonanceMultiplier)', 0, 0, 0),
 (3841, 31, 10, 2995, '', 'Autogenerated EFF, PostMul modification to Ship.111', '(CurrentShip->explosiveDamageResonance).(PostMul)', 0, 0, 0),
 (3842, 6, 3841, 420, '', 'Autogenerated AIM, Ship.111.AIM(132,PostMul)', '((CurrentShip->explosiveDamageResonance).(PostMul)).AddItemModifier (explosiveDamageResonanceMultiplier)', 0, 0, 0),
-(3843, 58, 3841, 420, '', 'Autogenerated RIM, Ship.111.RIM(132,PostMul)', '((CurrentShip->explosiveDamageResonance).(PostMul)).RemoveItemModifier (explosiveDamageResonanceMultiplier)', 0, 0, 0);
+(3843, 58, 3841, 420, '', 'Autogenerated RIM, Ship.111.RIM(132,PostMul)', '((CurrentShip->explosiveDamageResonance).(PostMul)).RemoveItemModifier (explosiveDamageResonanceMultiplier)', 0, 0, 0),
+(3844, 31, 1095, 3003, '', 'Autogenerated EFF, PostPercent modification to Ship.109', '(CurrentShip->kineticDamageResonance).(PostPercent)', 0, 0, 0);
 INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expressionValue`, `description`, `expressionName`, `expressionTypeID`, `expressionGroupID`, `expressionAttributeID`) VALUES
-(3844, 31, 1095, 3003, '', 'Autogenerated EFF, PostPercent modification to Ship.109', '(CurrentShip->kineticDamageResonance).(PostPercent)', 0, 0, 0),
 (3845, 6, 3844, 418, '', 'Autogenerated AIM, Ship.109.AIM(131,PostPercent)', '((CurrentShip->kineticDamageResonance).(PostPercent)).AddItemModifier (kineticDamageResonanceMultiplier)', 0, 0, 0),
 (3846, 58, 3844, 418, '', 'Autogenerated RIM, Ship.109.RIM(131,PostPercent)', '((CurrentShip->kineticDamageResonance).(PostPercent)).RemoveItemModifier (kineticDamageResonanceMultiplier)', 0, 0, 0),
 (3847, 31, 10, 2999, '', 'Autogenerated EFF, PostMul modification to Ship.110', '(CurrentShip->thermalDamageResonance).(PostMul)', 0, 0, 0),

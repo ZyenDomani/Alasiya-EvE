@@ -1553,7 +1553,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
             wt.warpSpeed = GetWarpSpeed();
         updates.push_back(wt.Encode());
         DoDestiny_OnSpecialFX10 sfx;
-            sfx.effect_type = "effects.Warping";
+            sfx.guid = "effects.Warping";
             sfx.entityID = mySE->GetID();
             sfx.isOffensive = false;
             sfx.start = true;
@@ -1647,7 +1647,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
     updates.push_back(wt.Encode());
     //send a warp effect...
     DoDestiny_OnSpecialFX10 sfx;
-        sfx.effect_type = "effects.Warping";
+        sfx.guid = "effects.Warping";
         sfx.entityID = mySE->GetID();
         sfx.isOffensive = false;
         sfx.start = true;
@@ -2114,7 +2114,7 @@ void DestinyManager::TractorBeamStop()
 void DestinyManager::SendJettisonPacket() const {
     DoDestiny_OnSpecialFX10 effect;
         effect.entityID = mySE->GetID();
-        effect.effect_type = "effects.Jettison";
+        effect.guid = "effects.Jettison";
         effect.isOffensive = 0;
         effect.start = 1;
         effect.active = 0;
@@ -2125,7 +2125,7 @@ void DestinyManager::SendJettisonPacket() const {
 void DestinyManager::SendAnchorDrop() const {
     DoDestiny_OnSpecialFX10 effect;
         effect.entityID = mySE->GetID();
-        effect.effect_type = "effects.AnchorDrop";
+        effect.guid = "effects.AnchorDrop";
         effect.isOffensive = 0;
         effect.start = 1;
         effect.active = 0;
@@ -2136,7 +2136,7 @@ void DestinyManager::SendAnchorDrop() const {
 void DestinyManager::SendAnchorLift() const {
     DoDestiny_OnSpecialFX10 effect;
         effect.entityID = mySE->GetID();
-        effect.effect_type = "effects.AnchorLift";
+        effect.guid = "effects.AnchorLift";
         effect.isOffensive = 0;
         effect.start = 1;
         effect.active = 0;
@@ -2185,7 +2185,7 @@ void DestinyManager::SendAnchorLift() const {
 /** @todo combine these two with an "apply/remove" boolean */
 void DestinyManager::SendCloakShip(const bool IsWarpSafe) const {
     DoDestiny_OnSpecialFX10 effect;
-        effect.effect_type = "effects.Cloak";
+        effect.guid = "effects.Cloak";
         effect.entityID = mySE->GetID();
         effect.isOffensive = 0;
         effect.start = 1;
@@ -2196,7 +2196,7 @@ void DestinyManager::SendCloakShip(const bool IsWarpSafe) const {
 
 void DestinyManager::SendUncloakShip() const {
     DoDestiny_OnSpecialFX10 effect;
-        effect.effect_type = "effects.Uncloak";
+        effect.guid = "effects.Uncloak";
         effect.entityID = mySE->GetID();
         effect.isOffensive = 0;
         effect.start = 1;
@@ -2205,14 +2205,14 @@ void DestinyManager::SendUncloakShip() const {
     SendSingleDestinyUpdate(&up);
 }
 
-void DestinyManager::SendSpecialEffect10(uint32 entityID, uint32 targetID, std::string effectString, bool isOffensive, bool start, bool isActive) const
+void DestinyManager::SendSpecialEffect10(uint32 entityID, uint32 targetID, std::string guid, bool isOffensive, bool start, bool isActive) const
 {
 	std::vector<int32, std::allocator<int32> > area;    //TODO need to figure out what this is....
 
     DoDestiny_OnSpecialFX10 effect;
         effect.entityID = entityID;
         effect.targetID = targetID;
-        effect.effect_type = effectString;
+        effect.guid = guid;
         effect.area = area;
         effect.isOffensive = isOffensive;
         effect.start = start;
@@ -2222,7 +2222,7 @@ void DestinyManager::SendSpecialEffect10(uint32 entityID, uint32 targetID, std::
 }
 
 void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID,
-                                       uint32 chargeTypeID, std::string effectString, bool isOffensive, bool start,
+                                       uint32 chargeTypeID, std::string guid, bool isOffensive, bool start,
                                        bool isActive, double duration, uint32 repeat) const
 {
     std::vector<int32, std::allocator<int32> > area;    //TODO need to figure out what this is....
@@ -2234,7 +2234,7 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
         effect.targetID = targetID;
         effect.otherTypeID = chargeTypeID;
         effect.area = area;
-        effect.effect_type = effectString;
+        effect.guid = guid;
         effect.isOffensive = isOffensive;
         effect.start = start;
         effect.active = isActive;
@@ -2249,7 +2249,7 @@ void DestinyManager::SendJumpOut(uint32 gateID) const {
     DoDestiny_OnSpecialFX10 effect;
         effect.entityID = mySE->GetID();
         effect.targetID = gateID;
-        effect.effect_type = "effects.JumpOut";
+        effect.guid = "effects.JumpOut";
         effect.isOffensive = 0;
         effect.start = 1;
         effect.active = 0;
@@ -2260,7 +2260,7 @@ void DestinyManager::SendJumpOut(uint32 gateID) const {
 void DestinyManager::SendGateActivity(uint32 gateID) const {
     DoDestiny_OnSpecialFX10 du;
         du.entityID = gateID;
-        du.effect_type = "effects.GateActivity";
+        du.guid = "effects.GateActivity";
         du.isOffensive = 0;
         du.start = 1;
         du.active = 0;
@@ -2287,7 +2287,7 @@ void DestinyManager::SendJumpOutEffect(std::string JumpEffect, uint32 locationID
     DoDestiny_OnSpecialFX10 effect;
     effect.entityID = mySE->GetID();
     effect.targetID = locationID;
-    effect.effect_type = "effects.JumpDriveOut";   /* JumpDriveInBO */
+    effect.guid = "effects.JumpDriveOut";   /* JumpDriveInBO */
     effect.isOffensive = 0;
     effect.start = 1;
     effect.active = 0;
@@ -2300,7 +2300,7 @@ void DestinyManager::SendJumpInEffect(std::string JumpEffect) const {
     std::vector<PyTuple*> updates;
 
     DoDestiny_OnSpecialFX10 effect;
-    effect.effect_type = "effects.JumpDriveIn";
+    effect.guid = "effects.JumpDriveIn";
     effect.entityID = mySE->GetID();
     effect.isOffensive = 0;
     effect.start = 1;

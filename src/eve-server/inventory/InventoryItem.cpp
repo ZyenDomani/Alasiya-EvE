@@ -703,7 +703,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
                 es.env_target = 0;
                 es.env_other = new PyNone();
                 es.env_area = new PyNone();
-                es.env_effectID = effectOnline;
+                es.env_effectID = 16;
                 es.startTime = Win32TimeNow() - Win32Time_Minute; /** @todo fix this once we start tracking effects */
                 es.duration = -1;
                 es.repeat = 1;
@@ -1046,7 +1046,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
         ge.targetID = 0;
         ge.other = new PyNone();
         ge.area = new PyList;
-        ge.effectID = effectOnline;
+        ge.effectID = 16;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;

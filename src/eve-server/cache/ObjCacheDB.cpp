@@ -23,7 +23,6 @@
     Author:        Zhur
 */
 /** @todo this needs to be updated a bit... */
-/** @note  NONE of this is actually used.... */
 
 #include "eve-server.h"
 
@@ -66,6 +65,7 @@ ObjCacheDB::ObjCacheDB()
     m_generators["config.BulkData.dgmtypeeffects"] = &ObjCacheDB::Generate_dgmTypeEffects;
     m_generators["config.BulkData.dgmeffects"] = &ObjCacheDB::Generate_dgmEffects;
     m_generators["config.BulkData.dgmattribs"] = &ObjCacheDB::Generate_dgmAttribs;
+    m_generators["config.BulkData.dgmexpressions"] = &ObjCacheDB::Generate_dgmExpressions;
     m_generators["config.BulkData.metagroups"] = &ObjCacheDB::Generate_invMetaGroups;
     m_generators["config.BulkData.ramactivities"] = &ObjCacheDB::Generate_ramActivities;
     m_generators["config.BulkData.ramaltypesdetailpergroup"] = &ObjCacheDB::Generate_ramALTypeGroup;
@@ -504,6 +504,19 @@ PyRep *ObjCacheDB::Generate_dgmAttribs()
         "chargeRechargeTimeID, defaultValue, published, unitID, displayName, displayNameID, stackable, highIsGood, iconID, dataID FROM dgmAttributeTypes"))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmattribs': %s",res.error.c_str());
+        return NULL;
+    }
+    return DBResultToCRowset(res);
+}
+
+PyRep* ObjCacheDB::Generate_dgmExpressions()
+{
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT expressionID, operandID, arg1, arg2, expressionValue, description, expressionName, expressionTypeID, expressionGroupID, expressionAttributeID"
+        " FROM dgmExpressions"))
+    {
+        _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmexpressions': %s",res.error.c_str());
         return NULL;
     }
     return DBResultToCRowset(res);

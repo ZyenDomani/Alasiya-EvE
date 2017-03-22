@@ -28,7 +28,7 @@
 #include "eve-server.h"
 
 #include "ship/modules/ActiveModule.h"
-#include <system/SystemManager.h>
+#include "system/SystemManager.h"
 
 using namespace ModStates;
 
@@ -38,8 +38,9 @@ m_timer(1000, true),    // this needs to be accurate
 m_reloadTimer(10000)
 {
     m_repeat = 1;
-
-    m_effectStr = "";
+    m_targetID = 0;
+    m_effectID = 0;
+    m_guidStr = "";
     m_targetEntity = nullptr;
     /** @todo  bubble isnt ready yet.  will have to update every time we change bubble */
     //m_bubble = ship->GetPilot()->GetShipSE()->SysBubble();
@@ -134,7 +135,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_Stop = false;
     m_repeat = repeat;
     m_effectID = effectID;
-    m_effectStr = sFxDataMgr.GetEffectName(effectID);
+    m_guidStr = sFxDataMgr.GetEffectName(effectID);
     m_ModuleState = ModuleStates::MOD_ACTIVATED;  //this HAS to be set before mod::DoCycle()
 
     /** @todo   these need to check for targetable actions, and apply changes accordingly */
@@ -160,7 +161,7 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
     _log(SHIP__MODULE_TRACE, "ActiveModule::Deactivate() - module %u(%s) remaining time %ums.", \
             m_modRef->itemID(), m_modRef->itemName().c_str(), GetRemainingCycleTimeMS());
 
-    if (m_effectStr == "miningLaser") {
+    if (m_guidStr == "miningLaser") {
         // set timer to fake  allowing mining module to "complete" gathering and process mined ore.  (avoid immediate deactivation)
         AbortCycle();
         return;
@@ -331,10 +332,10 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
                 m_modRef->typeID(),
                 targetID,
                 chgTypeID,
-                sFxDataMgr.GetEffectGuid(m_effectID),
+                m_guidStr,
                 sFxDataMgr.isOffensive(m_effectID),
                 (abort ? false : (active ? true : false)),   // start    - if (start = 0) THEN remove effect
-                (abort ? false : (active ? true : false)),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
+                false, //(abort ? false : (active ? true : false)),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
                 timeLeft,           // duration
                 m_repeat   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
     );
@@ -347,7 +348,7 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
         ge.area = new PyList();   // still dont know what this is.
         ge.effectID = m_effectID;
 
-    if (m_chargeLoaded) {
+    if (1) {
         GodmaOther go;  // "other" means "charge" in evelang
             go.shipID = ge.shipID;
             go.slotID = m_modRef->flag();

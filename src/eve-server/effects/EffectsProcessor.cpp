@@ -838,7 +838,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             case EVEDB::invGroups::Rig_Mining:
             case EVEDB::invGroups::Rig_Projectile_Weapon:
             case EVEDB::invGroups::Rig_Security_Transponder:
-            case EVEDB::invGroups::Rig_Shield: {
+            case EVEDB::invGroups::Rig_Shield:
+            case EVEDB::invGroups::Damage_Control: {    // this is not a rig, but it is NOT nerfed.  easiest way to make this check
                 isRig = true;
             } break;
         }
@@ -1005,6 +1006,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 }
             } break;
         }
+        
         // set target attr to modified value
         EvilNumber targValue = 0;
         int8 opID = cur.first;

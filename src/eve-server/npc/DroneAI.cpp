@@ -432,7 +432,7 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
              m_drone->GetEM(),
              m_drone->GetExplosive(),
              m_formula.GetDroneToHit(m_drone, pTarget),
-             effectTargetAttack
+             EVEEffectID::targetAttack
             );
 
     d *= m_drone->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
@@ -447,7 +447,7 @@ void DroneAIMgr::_SendWeaponEffect( const char*effect, SystemEntity* pTarget ) {
     sfx.moduleTypeID = m_drone->GetSelf()->typeID();
     sfx.targetID = pTarget->GetID();
     sfx.otherTypeID = pTarget->GetSelf()->typeID();
-    sfx.effect_type = effect;
+    sfx.guid = effect;
     sfx.isOffensive = 1;
     sfx.start = 1;
     sfx.active = 1;

@@ -802,16 +802,16 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef item) {
     //    it should return a slot flag number for the next available slot starting at the lowest number
     //    for that bank
     // 3) return that slot flag number
-    if (item->type().HasEffect(effectLoPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectLoPower);
-    } else if (item->type().HasEffect(effectMedPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectMedPower);
-    } else if (item->type().HasEffect(effectHiPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectHiPower);
-    } else if (item->type().HasEffect(effectSubSystem)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectSubSystem);
-    } else if (item->type().HasEffect(effectRigSlot)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectRigSlot);
+    if (item->type().HasEffect(EVEEffectID::loPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::loPower);
+    } else if (item->type().HasEffect(EVEEffectID::medPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::medPower);
+    } else if (item->type().HasEffect(EVEEffectID::hiPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::hiPower);
+    } else if (item->type().HasEffect(EVEEffectID::subSystem)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::subSystem);
+    } else if (item->type().HasEffect(EVEEffectID::rigSlot)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::rigSlot);
     } else {
         // ERROR: This is not a module that fits in any of the slot banks
     }

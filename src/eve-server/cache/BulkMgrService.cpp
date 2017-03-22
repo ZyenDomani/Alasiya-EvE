@@ -25,8 +25,9 @@
 */
 
 /** @todo  this system will need to work with objectCache, as those ARE the bulkdata files sent to the client.
- * will have to look into sorting/sending to client eventually.
- * for now, we'll leave this as-is, because it seems to be working ok.
+ *  they are already packed and loaded into the server.  this system ive created for bulkData is redundant.
+ * will have to look into sorting/sending to client eventually, using hash comparison to determine what files to send. (if possible)
+ * for now, we'll leave this as-is, because it seems to be working ok, and i *MAY NOT* have complete data for all the bulkfiles
  */
 
 #include "eve-server.h"

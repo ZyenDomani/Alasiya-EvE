@@ -65,7 +65,7 @@ Damage::Damage(
 
 Damage::Damage(
     SystemEntity *_source,
-    bool fatal_blow): source(_source), effect(effectTargetAttack)
+    bool fatal_blow): source(_source), effect(EVEEffectID::targetAttack)
 {
 	assert(fatal_blow and "Damage() constructor meant for fatal_blow called without 2nd param being true!");
 

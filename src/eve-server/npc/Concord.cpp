@@ -640,8 +640,8 @@ void ConcordAI::AttackTarget(SystemEntity* pTarget) {
              m_npc->GetEM(),
              m_npc->GetExplosive(),
              m_formula.GetNPCToHit(m_npc, pTarget),
-             effectTargetAttack
-    );
+             EVEEffectID::targetAttack
+            );
 
     d *= m_npc->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
     pTarget->ApplyDamage(d);
@@ -655,7 +655,7 @@ void ConcordAI::_SendWeaponEffect( const char*effect, SystemEntity* pTarget ) {
     sfx.moduleTypeID = m_npc->GetSelf()->typeID();
     sfx.targetID = pTarget->GetID();
     sfx.otherTypeID = pTarget->GetSelf()->typeID();
-    sfx.effect_type = effect;
+    sfx.guid = effect;
     sfx.isOffensive = 1;
     sfx.start = 1;
     sfx.active = 1;

@@ -240,27 +240,27 @@ bool ModuleContainer::isSlotOccupied(EVEItemFlags flag) {
 uint16 ModuleContainer::GetAvailableSlotInBank(EVEEffectID slotBank)
 {
     switch (slotBank) {
-        case effectLoPower: {
+        case EVEEffectID::loPower: {
             for (uint8 slot=flagLowSlot0; slot < (flagLowSlot0 + m_LowSlots); slot++)
 				if ( m_modules[slot] == nullptr )
 					return slot;
             } break;
-		case effectMedPower: {
+		case EVEEffectID::medPower: {
             for (uint8 slot=flagMedSlot0; slot < (flagMedSlot0 + m_MediumSlots); slot++)
                 if ( m_modules[slot] == nullptr )
 					return slot;
             } break;
-		case effectHiPower: {
+		case EVEEffectID::hiPower: {
             for (uint8 slot=flagHiSlot0; slot < (flagHiSlot0 + m_HighSlots); slot++)
                 if ( m_modules[slot] == nullptr )
 					return slot;
             } break;
-		case effectRigSlot: {
+		case EVEEffectID::rigSlot: {
             for (uint8 slot=flagRigSlot0; slot < (flagRigSlot0 + m_RigSlots); slot++)
                 if ( m_modules[slot] == nullptr )
 					return slot;
             } break;
-		case effectSubSystem: {
+		case EVEEffectID::subSystem: {
             for (uint8 slot=flagSubSystem0; slot < (flagSubSystem0 + m_SubSystemSlots); slot++)
                 if ( m_modules[slot] == nullptr )
 					return slot;

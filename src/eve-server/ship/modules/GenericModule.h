@@ -90,9 +90,9 @@ public:
     ModStates::ModuleStates GetModuleState()            { return m_ModuleState; }
     ModStates::ChargeStates GetChargeState()            { return m_ChargeState; }
 
-	virtual bool isTurretFitted()                       { return (m_modRef->type().HasEffect(effectTurretFitted) ? true : false); false; }
-	virtual bool isLauncherFitted()                     { return (m_modRef->type().HasEffect(effectLauncherFitted) ? true : false); false; }
-	virtual bool isMaxGroupFitLimited()                 { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); false; }
+    virtual bool isTurretFitted()                       { return m_modRef->type().HasEffect(EVEEffectID::turretFitted); }
+    virtual bool isLauncherFitted()                     { return m_modRef->type().HasEffect(EVEEffectID::launcherFitted); }
+	virtual bool isMaxGroupFitLimited()                 { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); } /** @todo this needs work */
 
 	/* generic access functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }

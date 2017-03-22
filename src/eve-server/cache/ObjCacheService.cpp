@@ -83,6 +83,7 @@ const char *const ObjCacheService::LoginCachableObjects[] = {
     "config.BulkData.certificaterelationships",
     "config.BulkData.units",
     "config.BulkData.dgmeffects",
+    "config.BulkData.dgmexpressions",
     "config.BulkData.types",
     "config.BulkData.invmetatypes"
 };
@@ -172,6 +173,7 @@ ObjCacheService::ObjCacheService(PyServiceMgr *mgr, const char *cacheDir)
     m_cacheKeys["config.BulkData.allianceshortnames"] = "config.BulkData.allianceshortnames";
     m_cacheKeys["config.BulkData.categories"] = "config.BulkData.categories";
     m_cacheKeys["config.BulkData.invtypereactions"] = "config.BulkData.invtypereactions";
+    m_cacheKeys["config.BulkData.dgmexpressions"] = "config.BulkData.dgmexpressions";
     m_cacheKeys["config.BulkData.dgmtypeattribs"] = "config.BulkData.dgmtypeattribs";
     m_cacheKeys["config.BulkData.dgmtypeeffects"] = "config.BulkData.dgmtypeeffects";
     m_cacheKeys["config.BulkData.dgmeffects"] = "config.BulkData.dgmeffects";

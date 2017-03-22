@@ -118,7 +118,7 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
 
     if (!ship->HasPilot())
         return;
-
+/*
     // damage adjustments here...
     m_damageMod *= pChar->GetAttribute(AttrMissileDamageMultiplier).get_float();    //skill/implant/booster modifier
     m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillWarheadUpgrades, true)))); // 5% increase in damage (upped from 2%)
@@ -176,7 +176,7 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
 
     if (IsOverloaded())
         m_damageMod *= (1 + m_self->GetAttribute(AttrOverloadDamageModifier).get_float());
-
+*/
     // _log(NPC__TRACE, "Created Missile object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
 }
 
@@ -280,7 +280,7 @@ void Missile::_HitTarget() {
              m_emDamage, // em damage
              m_expDamage, // explosive damage
              0,     // this is for modifier for turrents to-hit calculations.  not used for missiles
-             effectMissileLaunching  // from EVEEffectID::  should be an explosion effect here
+             EVEEffectID::missileLaunching  // from EVEEffectID::  should be an explosion effect here
             );
 
     d *= m_damageMod;
