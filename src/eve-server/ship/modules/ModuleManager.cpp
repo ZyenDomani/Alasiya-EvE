@@ -182,8 +182,8 @@ void ModuleContainer::process(processType p)
 {
     switch(p) {
         case typeOnlineAll: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
+            std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin();
+            while (itr != m_modules.rend()) {
                 if (itr->second)
                     itr->second->Online();
                 ++itr;
@@ -214,8 +214,8 @@ void ModuleContainer::process(processType p)
             }
         } break;
         case typeProcessAll: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
+            std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin();
+            while (itr != m_modules.rend()) {
                 if (itr->second)
                     itr->second->Process();
                 ++itr;
@@ -280,7 +280,7 @@ uint32 ModuleContainer::GetFittedModuleCountByGroup(uint32 groupID)
         return m_ModulesFittedByGroupID.find(groupID)->second;
 }
 
-void ModuleContainer::GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList)
+void ModuleContainer::GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList)
 {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
     while (itr != m_modules.end()) {
@@ -289,6 +289,17 @@ void ModuleContainer::GetModuleListOfRefs(std::vector<InventoryItemRef> * pModul
         ++itr;
     }
 }
+
+void ModuleContainer::GetModuleListOfRefsDec(std::vector< InventoryItemRef >* pModuleList)
+{
+    std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin();
+    while (itr != m_modules.rend()) {
+        if (itr->second)
+            pModuleList->push_back( itr->second->getItem() );
+        ++itr;
+    }
+}
+
 
 void ModuleContainer::SaveModules()
 {
@@ -889,12 +900,11 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
         //m_Ship->SetAttribute(AttrUpgradeLoad, 0);
         // process and apply passive effects for present modules....these are slot and ??? info.  no processing needed
         _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec)");
-        for (auto cur : modVec) {
-            mod = GetModule(cur);
-            if (!mod)   // make error here?
-                continue;
-            Online(cur);
-        }
+        std::vector< GenericModule* > modList;
+        SortModulesBySlotDec(modVec, modList);
+        for (auto cur : modList)
+            cur->Online();
+
     } else {
         OnlineAll();
     }
@@ -951,9 +961,14 @@ void ModuleManager::ShipJumping()
     AbortCycle();
 }
 
-void ModuleManager::GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList)
+void ModuleManager::GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList)
 {
-	m_Modules->GetModuleListOfRefs(pModuleList);
+	m_Modules->GetModuleListOfRefsAsc(pModuleList);
+}
+
+void ModuleManager::GetModuleListOfRefsDec(std::vector< InventoryItemRef >* pModuleList)
+{
+    m_Modules->GetModuleListOfRefsDec(pModuleList);
 }
 
 void ModuleManager::StripModules()
@@ -969,12 +984,31 @@ void ModuleManager::SaveModules()
 void ModuleManager::GetModuleListByReqSkill(uint16 skillID, std::vector< InventoryItemRef >* pModuleList)
 {
     std::vector<InventoryItemRef> moduleList;
-    GetModuleListOfRefs(&moduleList);
+    GetModuleListOfRefsAsc(&moduleList);
     for (auto cur : moduleList) {
         if (cur->HasReqSkill(skillID)) {
             pModuleList->push_back(cur);
         }
     }
+}
+
+void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vector< GenericModule* >& pModList)
+{
+    if (modVec.empty())
+        return;
+    GenericModule* pMod(nullptr);
+    std::map<uint8, GenericModule*> tmpList;
+    for (auto cur : modVec) {
+        pMod = GetModule(cur);
+        if (pMod)
+            tmpList.insert(std::pair<uint8, GenericModule*>(pMod->flag(), pMod));
+    }
+    if (tmpList.empty())
+        return;
+    std::map<uint8, GenericModule*>::reverse_iterator itr = tmpList.rbegin();
+    for (; itr != tmpList.rend(); itr++)
+        pModList.push_back(itr->second);
+
 }
 
 #pragma endregion

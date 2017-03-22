@@ -129,7 +129,8 @@ public:
     uint32 GetFittedTurretCount()           { return m_turrents; }
     uint32 GetFittedLauncherCount()         { return m_launchers; }
 
-	void GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList);
+    void GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList);
+    void GetModuleListOfRefsDec(std::vector<InventoryItemRef> * pModuleList);
     void SaveModules();
 
 private:
@@ -233,7 +234,9 @@ public:
 
     void GetLoadedCharges(std::map<EVEItemFlags, InventoryItemRef> &charges);
 
-	void GetModuleListOfRefs(std::vector<InventoryItemRef> * pModuleList);
+    void SortModulesBySlotDec(std::vector< uint32 >& modVec, std::vector< GenericModule* >& pModList);
+    void GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList);
+    void GetModuleListOfRefsDec(std::vector<InventoryItemRef> * pModuleList);
     void GetModuleListByReqSkill(uint16 skillID, std::vector<InventoryItemRef> * pModuleList);
     void SaveModules();
 

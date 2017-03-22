@@ -866,7 +866,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             case dgmSrcGroup: {     // not a source per se, but defines effect's target selection requirements and IS nerfed
                 // this is to apply modifiers to ship's modules of groupID defined in 'grpID'
                 std::vector<InventoryItemRef> moduleList;
-                pShip->GetModuleManager()->GetModuleListOfRefs(&moduleList);
+                pShip->GetModuleManager()->GetModuleListOfRefsAsc(&moduleList);
                 for (auto mod : moduleList)
                     if (mod->groupID() == cur.second.grpID)
                         itemRefVec.push_back(mod);

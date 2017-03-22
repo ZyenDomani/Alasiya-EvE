@@ -484,7 +484,7 @@ PyDict* ShipItem::GetShipState() {
     }
     // Create entries for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
-    m_ModuleManager->GetModuleListOfRefs( &moduleList );
+    m_ModuleManager->GetModuleListOfRefsAsc( &moduleList );
     for (int i=0; i<moduleList.size(); i++)
         result->SetItem(new PyInt(moduleList.at(i)->itemID()), moduleList.at(i)->GetItemStatusRow());
 
@@ -505,7 +505,7 @@ PyList* ShipItem::ShipGetModuleList() {
     PyTuple* module = new PyTuple(2);
     // Create entries in "onslimitemchange" modules list for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
-    m_ModuleManager->GetModuleListOfRefs( &moduleList );
+    m_ModuleManager->GetModuleListOfRefsAsc( &moduleList );
     for (int i=0; i<moduleList.size(); i++) {
         module->SetItem(0, new PyInt(moduleList.at(i)->typeID()));
         module->SetItem(1, new PyInt(moduleList.at(i)->itemID()));
@@ -1044,7 +1044,7 @@ void ShipItem::StripFitting()
 {
     if (m_ModuleManager) {
         std::vector<InventoryItemRef> moduleList;
-        m_ModuleManager->GetModuleListOfRefs(&moduleList);
+        m_ModuleManager->GetModuleListOfRefsAsc(&moduleList);
         for (auto cur : moduleList) {
             m_ModuleManager->UnfitModule(cur->itemID());
             cur->Move(m_pilot->GetLocationID(), flagHangar);
@@ -1221,7 +1221,7 @@ std::string ShipItem::GetShipDNA()
     std::stringstream modHi, modMid, modLow, subSys, modRig, charges, drones;
 
     std::vector<InventoryItemRef> moduleList;
-    m_ModuleManager->GetModuleListOfRefs(&moduleList);
+    m_ModuleManager->GetModuleListOfRefsAsc(&moduleList);
 
     for (auto cur : moduleList) {
         if (IsRigSlot(cur->flag()))
