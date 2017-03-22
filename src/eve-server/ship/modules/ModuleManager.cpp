@@ -475,16 +475,16 @@ void ModuleManager::UnfitModule(uint32 itemID)
 {
     GenericModule* mod = m_Modules->GetModule(itemID);
     if (mod) {
-        EVEItemFlags flag = flagCargoHold;
-        bool inSpace = (IsStation(m_Ship->locationID()) ? false : true);
-        if (!inSpace)
-            flag = flagHangar;
+        EVEItemFlags flag = flagHangar;
+        bool inSpace = IsSolarSystem(m_Ship->locationID());
+        if (inSpace)
+            flag = flagCargoHold;
+        mod->AbortCycle();
+        mod->Offline();
         if (mod->IsLoaded()) {
             mod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
             mod->UnloadCharge();    // this does not physically remove charge from module, hence the need for the above call.
         }
-        if (mod->isOnline())
-            mod->Offline();
     }
     m_Modules->RemoveModule(itemID);
 }

@@ -200,9 +200,9 @@ uint32 ActiveModule::DoCycle()
 
 void ActiveModule::AbortCycle()
 {
-    if (m_Stop or (m_ModuleState != ModuleStates::MOD_ACTIVATED))
+    if (m_Stop)
         return;
-    // Immediately stop active cycle for things such as init warp, target left bubble, or miner deactivated by player:
+    // Immediately stop active cycle for things such as remove module, init warp, target left bubble, or miner deactivated by player:
     m_Stop = true;
     DeactivateCycle(true);
     m_timer.Disable();
@@ -210,6 +210,9 @@ void ActiveModule::AbortCycle()
 
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
+    if (m_ModuleState != ModuleStates::MOD_ACTIVATED)
+        return;
+    
     m_repeat = 0;
 
     ApplyEffect(Effects::dgmStateActive, false);

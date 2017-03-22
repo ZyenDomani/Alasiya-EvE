@@ -167,8 +167,8 @@ void GenericModule::Offline()
     // need to clear item's effectMap here to avoid duplicating.
     // it will be populated on it's next ProcessEffects() call with relevant data.
     m_modRef->ClearModifiers();
-    ProcessEffects(Effects::dgmStatePassive, false);
     ProcessEffects(Effects::dgmStateOnline, false);
+    ProcessEffects(Effects::dgmStatePassive, false);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
     m_ModuleState = ModuleStates::MOD_OFFLINE;

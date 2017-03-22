@@ -880,7 +880,6 @@ void ShipItem::RemoveItem(InventoryItemRef item, uint32 qty/*0*/)
         if (item->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->UnloadCharge(item->flag());
         } else if ((item->categoryID() == EVEDB::invCategories::Module) or (item->categoryID() == EVEDB::invCategories::Subsystem)) {
-            Deactivate( item->itemID(), "offline" );
             if ((item->flag() >= flagRigSlot0) and (item->flag() <= flagRigSlot7))
                 m_ModuleManager->UninstallRig(item->itemID());
             else
