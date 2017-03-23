@@ -317,8 +317,6 @@ public:
     InventoryItemRef GetModule(EVEItemFlags flag);
     InventoryItemRef GetModule(uint32 itemID);
     EVEItemFlags FindAvailableModuleSlot( InventoryItemRef item );
-    EvilNumber GetMaxTurrentHardpoints() { return GetAttribute(AttrTurretSlotsLeft); }
-    EvilNumber GetMaxLauncherHardpoints() { return GetAttribute(AttrLauncherSlotsLeft); }
     uint32 AddItem( EVEItemFlags flag, InventoryItemRef item);
     /* end new module manager interface */
 

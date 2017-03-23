@@ -837,7 +837,6 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
             else
                 return 0;
         } else if (item->categoryID() == EVEDB::invCategories::Module) {
-            //item->PutOffline();
             item->ChangeSingleton(true, false);
             // rigs are classed in the module category.  check here and call approprate method as needed.
             if ((item->groupID() >= 773 and item->groupID() <= 782) or item->groupID() == 786) {

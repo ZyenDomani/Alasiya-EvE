@@ -67,9 +67,6 @@ ModuleContainer::~ModuleContainer()
 }
 
 void ModuleContainer::initializeModuleContainers() {
-    m_turrents = 0;
-    m_launchers = 0;
-
     for (uint8 flag = 11; flag < 35; ++flag)    // modules
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
     if (m_RigSlots)
@@ -88,11 +85,6 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* mod)
     else
         itr->second = mod;
     _log(SHIP__MODULE_TRACE, "AddModule() - adding %s.", mod->getItem()->itemName().c_str());
-    // Maintain Turret and Launcher Fitted module counts:
-    if ( mod->isTurretFitted() )
-        ++m_turrents;
-    if ( mod->isLauncherFitted() )
-        ++m_launchers;
 
     // Maintain the Modules Fitted By Group counter for this module group:
     if ( m_ModulesFittedByGroupID.find(mod->getItem()->groupID()) != m_ModulesFittedByGroupID.end() )
@@ -152,7 +144,6 @@ GenericModule* ModuleContainer::GetModule(uint32 itemID)
     }
     return nullptr;  //we don't
 }
-
 
 void ModuleContainer::AbortCycle() {
     process(typeAbort);
@@ -316,12 +307,7 @@ void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* mod)
     std::map<uint8, GenericModule*>::iterator itr = m_modules.find(flag);
     if (itr != m_modules.end())
         itr->second = nullptr;
-
-    // Maintain Turret and Launcher Fitted module counts:
-    if ( mod->isTurretFitted() )
-        --m_turrents;
-    if ( mod->isLauncherFitted() )
-        --m_launchers;
+        // make error for module not found in map?  should never happen.
 
     // Maintain the Modules Fitted By Group counter for this module group:
     if (m_ModulesFittedByGroupID.find(mod->getItem()->groupID()) != m_ModulesFittedByGroupID.end()) {
@@ -369,9 +355,8 @@ ModuleManager::~ModuleManager()
 }
 
 bool ModuleManager::Initialize() {
-    if (m_initalized) {
+    if (m_initalized)
         return true;
-    }
 
     // Load modules, rigs and subsystems from Ship's inventory into ModuleContainer:
     std::vector<InventoryItemRef> itemVec;
@@ -382,20 +367,18 @@ bool ModuleManager::Initialize() {
             switch (cur->categoryID()) {
                 case EVEDB::invCategories::Module:
                 case EVEDB::invCategories::Subsystem: {
-                    mod = ModuleFactory(cur, ShipItemRef(m_Ship));  // rigs are modules
-                    if (m_Modules->AddModule(cur->flag(), mod))
-                        ; //mod->ProcessEffects(Effects::dgmStatePassive, true);
-                    else
-                        _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Could not insert module %s(%u) at flag %u into module container.",
+                    if (!fitModule(cur, cur->flag()))   // cannot use FitModule() here, as it calls Online()...which we cant do yet. (effect errors)
+                        _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Could not insert module %s(%u) at flag %u into module container.",\
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
                 } break;
                 case EVEDB::invCategories::Charge: {
                     mod = GetModule(cur->flag());
                     if (mod) {
                         mod->SetChargeRef(cur);
+                        // set ChargeState == CHG_LOADED here, then when module Online() is called, all effects will be applied in correct order
                         mod->SetChargeState(ModStates::CHG_LOADED);
                     } else
-                        _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",
+                        _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",\
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
                 } break;
             }
@@ -485,6 +468,11 @@ void ModuleManager::UnfitModule(uint32 itemID)
             mod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
             mod->UnloadCharge();    // this does not physically remove charge from module, hence the need for the above call.
         }
+
+        if (mod->isTurretFitted())
+            m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) +1));
+        if (mod->isLauncherFitted())
+            m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) +1));
     }
     m_Modules->RemoveModule(itemID);
 }
@@ -506,9 +494,7 @@ bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
 
 bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
 {
-    bool verifyFailed = false;
-	GenericModule* existingMod = m_Modules->GetModule(item->itemID());
-	if (existingMod) {
+	if (m_Modules->GetModule(item->itemID())) {
 		if (m_Modules->isSlotOccupied(flag))
 			throw PyException( MakeUserError("SlotAlreadyOccupied"));
         /** @todo change this to use movemodule */
@@ -516,30 +502,35 @@ bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
 	} else {
         // create new module object
 		GenericModule* mod = ModuleFactory(item, ShipItemRef(m_Ship));
-		if (!mod) return false;
-		// Check for max turret modules allowed:
-		if (mod->isTurretFitted() and (m_Modules->GetFittedTurretCount() == m_Ship->GetMaxTurrentHardpoints().get_int())) {
-			throw PyException( MakeUserError( "NotEnoughTurretSlots" ) );
-			verifyFailed = true;
-		}
-		// Check for max launcher modules allowed:
-		if (mod->isLauncherFitted() and (m_Modules->GetFittedLauncherCount() == m_Ship->GetMaxLauncherHardpoints().get_int())) {
-			throw PyException( MakeUserError( "NotEnoughLauncherSlots" ) );
-			verifyFailed = true;
-		}
-		// Check for max modules of group allowed:
-		if (mod->isMaxGroupFitLimited() and (m_Modules->GetFittedModuleCountByGroup(item->groupID()) == mod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int())) {
-			throw PyException( MakeUserError( "CantFitTooManyByGroup" ) );
-			verifyFailed = true;
-		}
-        if (verifyFailed) {
-            if (mod)
-                SafeDelete(mod);
+		if (!mod)
             return false;
+        if (mod->isMaxGroupFitLimited()) {
+            if (m_Modules->GetFittedModuleCountByGroup(item->groupID()) == mod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int()) {
+                SafeDelete(mod);
+                throw PyException( MakeUserError( "CantFitTooManyByGroup" ) );
+                return false;
+            }
         }
-		// Fit Module now that all checks have passed:
-		return m_Modules->AddModule(flag, mod);
-	}
+        if (mod->isTurretFitted()) {
+            if (m_Ship->GetAttribute(AttrTurretSlotsLeft).get_bool()) {
+                m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) +1));
+            } else {
+                SafeDelete(mod);
+                throw PyException( MakeUserError( "NotEnoughTurretSlots" ) );
+                return false;
+            }
+		} else if (mod->isLauncherFitted()) {
+            if (m_Ship->GetAttribute(AttrLauncherSlotsLeft).get_bool()) {
+                m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) +1));
+            } else {
+                SafeDelete(mod);
+                throw PyException( MakeUserError( "NotEnoughLauncherSlots" ) );
+                return false;
+            }
+		}
+
+        return m_Modules->AddModule(flag, mod);
+    }
 }
 
 bool ModuleManager::OnlineCheck(GenericModule* mod)

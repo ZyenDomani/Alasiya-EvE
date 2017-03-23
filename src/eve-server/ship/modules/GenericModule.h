@@ -58,6 +58,10 @@ public:
     void ResetAttribute(uint32 attrID)                  { m_modRef->ResetAttribute(attrID); }
     EvilNumber GetAttribute(uint32 attrID)              { return m_modRef->GetAttribute(attrID); }
 
+    bool isTurretFitted()                               { return m_modRef->type().HasEffect(EVEEffectID::turretFitted); }
+    bool isLauncherFitted()                             { return m_modRef->type().HasEffect(EVEEffectID::launcherFitted); }
+    bool isMaxGroupFitLimited()                         { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); } /** @todo this needs work */
+
     /* class type helpers.  public for anyone to access. */                 /** @todo  update these below as noted */
     virtual bool IsLoaded()                             { return false; }
     virtual bool IsGenericModule() const                { return true; }
@@ -89,10 +93,6 @@ public:
     void SetChargeState(ModStates::ChargeStates state)  { m_ChargeState = state; }
     ModStates::ModuleStates GetModuleState()            { return m_ModuleState; }
     ModStates::ChargeStates GetChargeState()            { return m_ChargeState; }
-
-    virtual bool isTurretFitted()                       { return m_modRef->type().HasEffect(EVEEffectID::turretFitted); }
-    virtual bool isLauncherFitted()                     { return m_modRef->type().HasEffect(EVEEffectID::launcherFitted); }
-	virtual bool isMaxGroupFitLimited()                 { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); } /** @todo this needs work */
 
 	/* generic access functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }

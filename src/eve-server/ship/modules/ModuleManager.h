@@ -119,15 +119,13 @@ public:
     //useful accessors
 	bool isSlotOccupied(EVEItemFlags flag);
 
-    uint8 GetLowSlotCount()                 { return m_LowSlots; }
-    uint8 GetMedSlotCount()                 { return m_MediumSlots; }
-    uint8 GetHighSlotCount()                { return m_HighSlots; }
-    uint8 GetRigSlotCount()                 { return m_RigSlots; }
-    uint8 GetSubSysCount()                  { return m_SubSystemSlots; }
+    uint8 GetLowSlotCount()                             { return m_LowSlots; }
+    uint8 GetMedSlotCount()                             { return m_MediumSlots; }
+    uint8 GetHighSlotCount()                            { return m_HighSlots; }
+    uint8 GetRigSlotCount()                             { return m_RigSlots; }
+    uint8 GetSubSysCount()                              { return m_SubSystemSlots; }
 
     uint32 GetFittedModuleCountByGroup(uint32 groupID);
-    uint32 GetFittedTurretCount()           { return m_turrents; }
-    uint32 GetFittedLauncherCount()         { return m_launchers; }
 
     void GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList);
     void GetModuleListOfRefsDec(std::vector<InventoryItemRef> * pModuleList);
@@ -161,8 +159,6 @@ private:
     void initializeModuleContainers();
     void deleteModuleRef(EVEItemFlags flag, GenericModule* mod);
 
-    uint8 m_turrents;
-    uint8 m_launchers;
     uint8 m_LowSlots;
     uint8 m_MediumSlots;
     uint8 m_HighSlots;
