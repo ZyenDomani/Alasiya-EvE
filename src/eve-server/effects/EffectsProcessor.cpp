@@ -552,7 +552,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         // these return the given expressionValue
         case operandDEFBOOL:   //23  this evaulates to 'true' (Bool(1))
         case operandDEFINT: {  //27  this is used as  0,1,2,{raceID}
-            //  seems to be called only to online/offline modules
+            //  seems to be called only to online/offline modules (and screws up my Online/Offline code...)
             /*
             int8 value = atoi(expression.expressionValue.c_str());
             if (module) {
@@ -935,11 +935,6 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 //  apply the modifier to ....
                 switch (cur.second.targLoc) {
                     case dgmTargLocShip:  {
-                        /*
-                        if (charge) {
-                            // .... item's module (in case of a loaded charge's effect)
-                            itemRefVec.push_back(pShip->GetModule(cur.second.srcRef->flag()));
-                        } else {*/
                         // ....the ship the calling item is located in/on
                         itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                         //}
@@ -1028,6 +1023,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                             targValue = 1;
                 } break;
             }
+            if (nerfed)
+                pShip->GetNerf(cur.second.targAttr, pItem, targValue);
             // send data to calculator
             EvilNumber newValue = sFxProc.CalculateAttributeValue(targValue, srcValue, opID);
             // avoid creating 0-value attributes on items

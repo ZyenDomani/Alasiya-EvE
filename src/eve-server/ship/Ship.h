@@ -375,13 +375,10 @@ protected:
     /* new effects system */
 public:
     /* stacking penality system   -allan
-     * each ship will have a map of the attribs affected and the current effectiveness on that attrib
-     * this is set and used in MSAC, but needs to be kept here, as it's specific to *this ship
-     * the other component, attrib stack counting, is a std::map and holds a k,v pair of (attribID, module count)
+     * each ship will have a map of the attribs affected and the module affecting that attrib
+     * the code will calculate and update the value via reference
      */
-    double GetEffectiveness(uint16 attrib, ModStates::ModuleStates state);
-
-    void CheckStacking(uint16 attrib, Effects::Math type, ModStates::ModuleStates state, EvilNumber& value);
+    void GetNerf(uint16& attrib, InventoryItem* pItem, EvilNumber& value);
 
     void RemoveEffects();
 
@@ -393,15 +390,11 @@ private:
 
     std::vector<uint32> m_onlineModuleVec;
 
-    /*  stacking tracking system  -allan  */
-    void InitStackingMaps();
-
     void ProcessEffects(bool add=false, bool update=false);
     void ProcessShipEffects(bool update=false);
 
-    typedef std::list<GenericModule*> modList;
-    std::map<uint16, modList> m_stackMap;     // stacking attrib storage  attrib, list<module*>
-    std::map<uint16, modList> m_attribMap;    // non-stacking attrib storage  attrib, list<module*>
+    typedef std::map<InventoryItem*, double> iMap;
+    std::map<uint16, ShipItem::iMap> m_stackMap;     // stacking attrib storage  attrib, map<InventoryItem*, double> 
 
     bool m_isDocking;
     bool m_isUndocking;

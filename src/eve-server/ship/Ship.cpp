@@ -57,7 +57,6 @@ m_ModuleManager(nullptr)
     m_isDocking = false;
     m_isUndocking = false;
     m_stackMap.clear();
-    m_attribMap.clear();
     m_onlineModuleVec.clear();
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created ShipItem for %s(%u).", itemName().c_str(), itemID());
@@ -1057,83 +1056,67 @@ void ShipItem::StripFitting()
     }
 }
 
-// stacking penality system   -allan   (UD 29Jul16)
-double ShipItem::GetEffectiveness(uint16 attrib, ModStates::ModuleStates state)
-{
-    uint8 count = 1;
-    /** @note this is no longer valid....
-    std::map<uint16, uint8>::iterator itr = m_stackMap.find(attrib);
-    if (itr != m_stackMap.end()) {
-        switch (state) {
-            case MOD_ONLINE:
-            case MOD_ACTIVATED: {
-                count = ++(itr->second);
-            } break;
-            case MOD_OFFLINE:
-            case MOD_DEACTIVATING: {
-                count = itr->second;
-                if (itr->second == 1)
-                    m_stackMap.erase(itr);
-                else
-                    --(itr->second);
-            } break;
-            default: {
-                codelog(EFFECTS__ERROR, "ShipItem::GetEffectiveness() -  module has invalid state %u", state);
-                if (m_pilot)
-                    m_pilot->SendErrorMsg("Internal Server Error - module has invalid state.  Ref: ServerError 15611");
-            } break;
-        }
-    } else {
-        m_stackMap.emplace(attrib, 1);
-    }
-    */
-    //stacking calculation fixed  -allan  20Dec15
-    double effectiveness = exp(-pow(((count - 1)/2.67),2));
-
-    if (effectiveness <= 0) {   /* this should never happen */
-        codelog(EFFECTS__ERROR, "ShipItem::GetEffectiveness() -  effectiveness <= 0");
-        if (m_pilot)
-            m_pilot->SendErrorMsg("Internal Server Error - module has 0 effectiveness.  Hacking to 1.  Ref: ServerError 15610");
-        effectiveness = 1;
-    }
-
-    return effectiveness;
-}
-
-// resist cap system    -allan 26Dec16
-void ShipItem::InitStackingMaps()
-{
-    std::list<GenericModule*> list;
-    list.clear();
-    m_stackMap.clear();
-    m_attribMap.clear();
-
-    m_stackMap[AttrKineticDamageResonance] = list;
-    m_stackMap[AttrThermalDamageResonance] = list;
-    m_stackMap[AttrExplosiveDamageResonance] = list;
-    m_stackMap[AttrEmDamageResonance] = list;
-    m_stackMap[AttrArmorEmDamageResonance] = list;
-    m_stackMap[AttrArmorExplosiveDamageResonance] = list;
-    m_stackMap[AttrArmorKineticDamageResonance] = list;
-    m_stackMap[AttrArmorThermalDamageResonance] = list;
-    m_stackMap[AttrShieldEmDamageResonance] = list;
-    m_stackMap[AttrShieldExplosiveDamageResonance] = list;
-    m_stackMap[AttrShieldKineticDamageResonance] = list;
-    m_stackMap[AttrShieldThermalDamageResonance] = list;
-    m_stackMap[AttrScanResolution] = list;
-    m_stackMap[AttrSignatureRadius] = list;
-    m_stackMap[AttrMaxVelocity] = list;
-    m_stackMap[AttrInetia] = list;
-    m_stackMap[AttrShieldRechargeRate] = list;
-    m_stackMap[AttrMaxTargetRange] = list;
-}
-
-void ShipItem::CheckStacking(uint16 attrib, Effects::Math type, ModStates::ModuleStates state, EvilNumber& value)
-{
-
-}
-
 // new effects system.  wip
+void ShipItem::GetNerf(uint16& attrib, InventoryItem* pItem, EvilNumber& value)
+{
+    int8 pos = 0;
+    ShipItem::iMap::iterator mapItr;
+    std::map<uint16, ShipItem::iMap>::iterator itr = m_stackMap.find(attrib);
+    if (itr == m_stackMap.end()) {
+        std::map<InventoryItem*, double> itmMap;
+        itmMap.clear();
+        itmMap.insert(std::pair<InventoryItem*, double>(pItem, value.get_double()));
+        std::pair<std::map<uint16, ShipItem::iMap>::iterator, bool> ins;
+        ins = m_stackMap.insert(std::pair<uint16, ShipItem::iMap>(attrib, itmMap));
+        if (ins.second)
+            itr = ins.first;
+        else
+            _log(EFFECTS__ERROR, "ShipItem::GetNerf() - Could not insert %s into map with attrib %u", pItem->itemName().c_str(), attrib);
+        // even if inserting errors, there are no nerfed attribs in this map....pos is still 1, so no modifying value needed.
+        //return;
+        pos = 1;
+    } else {
+        /* this attrib is already in the map.  see if the item exists in the vector.
+         * if found, it's being removed from the nerf map.
+         *   in this case, shits gonna be all fuked up, as we'll have to remove ALL modifiers, recalculate nerf based on
+         *  modifier's new positions, then reapply all modifiers.....this'll suk.
+         *
+         *   i have no idea how to do this yet...
+         */
+
+        if (itr->second.size() < 2) {
+            pos = 0;
+            m_stackMap.erase(itr);
+        } else {
+            pos = std::distance(itr->second.begin(), mapItr);
+            mapItr = itr->second.find(pItem);
+            if (mapItr != itr->second.end())
+                itr->second.erase(pItem);
+        }
+
+    }
+
+    /* in order to mimic live's way of applying nerfed modifiers in decending order, we will need the expression for the modifier here, or access to it,
+     * to process a new value, as existing modifiers will have to be negated, the modifiers map resorted, then reapply modifiers with new nerfed value(s)
+     *
+     *   i have no idea how to do this yet...
+     */
+
+    if (pos < 0) {
+        _log(EFFECTS__ERROR, "ShipItem::GetNerf() - %s with attrib %u has negative index", pItem->itemName().c_str(), attrib);
+        return; // pos is fucked up....return without modifying value here.
+    }
+
+
+    float effective = 1.0f;
+    if (pos > 1)
+        effective = exp(-pow(((pos - 1)/2.67),2));
+
+    _log(EFFECTS__TRACE, "ShipItem::GetNerf() - %s with attrib %u is at index %i of %i.  Nerf is at %.3f%", \
+            pItem->itemName().c_str(), attrib, pos, (itr->second.empty() > 0 ? itr->second.size() : 0), effective);
+
+}
+
 void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 {
     /*

@@ -198,7 +198,7 @@ void FxDataMgr::ConfigureEffects()
         }
     }
 
-    // save compiled effect data to avoid compilation on every startup?  -check for execution time
+    // save compiled effect data to avoid compilation on every startup?  -check for execution time  ...nah, it's fast enough
     //SaveFXData();
     m_time = (GetTimeMSeconds() - start);
 }
