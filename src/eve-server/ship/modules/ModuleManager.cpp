@@ -889,12 +889,15 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
         m_Ship->SetAttribute(AttrCpuLoad,     0);
         m_Ship->SetAttribute(AttrPowerLoad,   0);
         //m_Ship->SetAttribute(AttrUpgradeLoad, 0);
-        // process and apply passive effects for present modules....these are slot and ??? info.  no processing needed
+
         _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec)");
         std::vector< GenericModule* > modList;
         SortModulesBySlotDec(modVec, modList);
-        for (auto cur : modList)
+        for (auto cur : modList) {
+            if (m_Ship->IsUndocking())
+                cur->SetAttribute(AttrIsOnline, false, false);
             cur->Online();
+        }
 
     } else {
         OnlineAll();

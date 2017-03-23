@@ -313,6 +313,8 @@ public:
     void StripFitting();
 
     void AbortCycle()                                        { m_ModuleManager->AbortCycle(); }
+    bool IsDocking()                                         { return m_isDocking; }
+    bool IsUndocking()                                       { return m_isUndocking; }
 
     InventoryItemRef GetModule(EVEItemFlags flag);
     InventoryItemRef GetModule(uint32 itemID);
@@ -400,6 +402,9 @@ private:
     typedef std::list<GenericModule*> modList;
     std::map<uint16, modList> m_stackMap;     // stacking attrib storage  attrib, list<module*>
     std::map<uint16, modList> m_attribMap;    // non-stacking attrib storage  attrib, list<module*>
+
+    bool m_isDocking;
+    bool m_isUndocking;
 };
 
 /**
@@ -462,6 +467,7 @@ private:
     Timer m_processTimer;
 
     uint32 m_podShipID;
+
 
 };
 

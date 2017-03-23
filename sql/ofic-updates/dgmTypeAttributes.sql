@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Mar 22, 2017 at 05:26 AM
+-- Generation Time: Mar 23, 2017 at 03:54 AM
 -- Server version: 10.0.24-MariaDB
 -- PHP Version: 5.6.21
 
@@ -2656,7 +2656,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (501, 422, 1, NULL),
 (501, 604, 385, NULL),
 (501, 605, 395, NULL),
-(501, 606, NULL, 1158),
 (501, 633, 0, NULL),
 (501, 1180, NULL, 0.01),
 (501, 1205, NULL, -15),
@@ -4956,9 +4955,9 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (601, 1178, NULL, 100),
 (601, 1179, NULL, 0.01),
 (601, 1196, NULL, 0.01),
-(601, 1198, NULL, 0.01);
+(601, 1198, NULL, 0.01),
+(601, 1199, NULL, 100);
 INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
-(601, 1199, NULL, 100),
 (601, 1200, NULL, 100),
 (601, 1224, NULL, 1),
 (601, 1259, NULL, 0.25),
@@ -7378,9 +7377,9 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (638, 525, NULL, 1),
 (638, 552, NULL, 410),
 (638, 564, NULL, 85),
-(638, 598, 10, NULL);
+(638, 598, 10, NULL),
+(638, 600, NULL, 2);
 INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
-(638, 600, NULL, 2),
 (638, 633, 0, NULL),
 (638, 661, NULL, 1000),
 (638, 662, NULL, 0.5),
@@ -9774,9 +9773,9 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (1292, 148, NULL, 1),
 (1292, 182, 3392, NULL),
 (1292, 277, 1, NULL),
-(1292, 422, 1, NULL);
+(1292, 422, 1, NULL),
+(1292, 633, 0, NULL);
 INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
-(1292, 633, 0, NULL),
 (1292, 984, NULL, 0),
 (1292, 985, NULL, 0),
 (1292, 986, NULL, 0),
@@ -12137,9 +12136,9 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (1916, 1200, NULL, 100),
 (1916, 1224, NULL, 0.5),
 (1916, 1259, NULL, 0.82),
-(1916, 1261, NULL, 0.76);
+(1916, 1261, NULL, 0.76),
+(1916, 1262, NULL, 0.76);
 INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
-(1916, 1262, NULL, 0.76),
 (1916, 1271, NULL, 125),
 (1916, 1281, NULL, 1),
 (1918, 3, 0, NULL),
@@ -14440,10 +14439,10 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (2210, 277, NULL, 1),
 (2210, 278, NULL, 1),
 (2210, 281, NULL, 6000),
-(2210, 422, NULL, 1);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(2210, 422, NULL, 1),
 (2210, 525, NULL, 1),
-(2210, 612, NULL, 0),
+(2210, 612, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (2210, 613, NULL, 0),
 (2210, 633, NULL, 0),
 (2210, 644, NULL, 1),
@@ -15695,7 +15694,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (2410, 422, 2, NULL),
 (2410, 604, 385, NULL),
 (2410, 605, 395, NULL),
-(2410, 606, NULL, 1158),
 (2410, 609, 655, NULL),
 (2410, 633, 5, NULL),
 (2410, 1180, NULL, 0.02),
@@ -16729,11 +16727,11 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (2488, 247, NULL, 2800),
 (2488, 263, NULL, 120),
 (2488, 265, NULL, 108),
-(2488, 267, NULL, 0.4);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(2488, 267, NULL, 0.4),
 (2488, 268, NULL, 0.9),
 (2488, 269, NULL, 0.75),
-(2488, 270, NULL, 0.65),
+(2488, 270, NULL, 0.65);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (2488, 271, NULL, 1),
 (2488, 272, NULL, 0.5),
 (2488, 273, NULL, 0.6),
@@ -19049,11 +19047,11 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (3057, 633, 5, NULL),
 (3057, 1180, NULL, 0.02),
 (3057, 1210, NULL, 15),
-(3057, 1211, NULL, 0.9);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(3057, 1211, NULL, 0.9),
 (3057, 1212, 1, NULL),
 (3057, 1768, NULL, 11314),
-(3058, 422, 2, NULL),
+(3058, 422, 2, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (3058, 1955, NULL, 23.4),
 (3059, 9, NULL, 2000),
 (3059, 54, NULL, 0),
@@ -21410,11 +21408,11 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (3408, 183, NULL, 3409),
 (3408, 184, NULL, 3403),
 (3408, 275, 4, NULL),
-(3408, 277, 5, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(3408, 277, 5, NULL),
 (3408, 278, NULL, 4),
 (3408, 279, NULL, 4),
-(3408, 280, 0, NULL),
+(3408, 280, 0, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (3408, 474, 10, NULL),
 (3409, 180, 165, NULL),
 (3409, 181, 166, NULL),
@@ -23718,11 +23716,11 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (3742, 192, 8, NULL),
 (3742, 193, 1, NULL),
 (3742, 208, NULL, 1000),
-(3742, 209, NULL, 1000);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(3742, 209, NULL, 1000),
 (3742, 210, NULL, 1000),
 (3742, 211, NULL, 1000),
-(3742, 245, 367, NULL),
+(3742, 245, 367, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (3742, 247, 1000000, NULL),
 (3742, 263, NULL, 4800),
 (3742, 265, 7200, NULL),
@@ -26017,11 +26015,11 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (4071, 1773, NULL, 3),
 (4072, 1773, NULL, 3),
 (4073, 1773, NULL, 3),
-(4074, 1773, NULL, 3);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(4074, 1773, NULL, 3),
 (4075, 1773, NULL, 3),
 (4076, 1773, NULL, 3),
-(4077, 9, NULL, 1000000),
+(4077, 9, NULL, 1000000);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (4077, 154, NULL, 2500),
 (4077, 265, NULL, 1000000),
 (4077, 622, NULL, 5000000),
@@ -26330,7 +26328,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (4256, 422, NULL, 2),
 (4256, 604, NULL, 90),
 (4256, 605, NULL, 863),
-(4256, 606, NULL, 864),
 (4256, 633, NULL, 5),
 (4256, 669, NULL, 135000),
 (4256, 763, NULL, 1),
@@ -28340,13 +28337,13 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (4833, 604, 87, NULL),
 (4833, 633, 4, NULL),
 (4833, 918, NULL, 0),
-(4833, 1180, NULL, 0.01);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(4833, 1180, NULL, 0.01),
 (4833, 1206, NULL, -20),
 (4833, 1211, NULL, 4),
 (4833, 1212, 1, NULL),
 (4835, 9, 40, NULL),
-(4835, 30, 150, NULL),
+(4835, 30, 150, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (4835, 50, 25, NULL),
 (4835, 56, 1, NULL),
 (4835, 73, NULL, 13500),
@@ -30695,13 +30692,13 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (6043, 143, 50000, NULL),
 (6043, 182, 3429, NULL),
 (6043, 235, 2, NULL),
-(6043, 277, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(6043, 277, 1, NULL),
 (6043, 422, 1, NULL),
 (6043, 633, 2, NULL),
 (6045, 6, NULL, 8),
 (6045, 9, 40, NULL),
-(6045, 30, 1, NULL),
+(6045, 30, 1, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (6045, 50, 0, NULL),
 (6045, 73, NULL, 5000),
 (6045, 143, 50000, NULL),
@@ -33054,12 +33051,12 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (7217, 633, 3, NULL),
 (7217, 1027, NULL, 115),
 (7217, 1028, NULL, 115),
-(7217, 1029, NULL, 115);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(7217, 1029, NULL, 115),
 (7217, 1030, NULL, 115),
 (7217, 1180, NULL, 0.01),
 (7217, 1211, NULL, 3.4),
-(7217, 1212, NULL, 1),
+(7217, 1212, NULL, 1);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (7217, 1226, NULL, 30),
 (7218, 6, NULL, 18),
 (7218, 9, 40, NULL),
@@ -35227,7 +35224,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (7997, 422, 1, NULL),
 (7997, 604, 385, NULL),
 (7997, 605, 395, NULL),
-(7997, 606, NULL, 1158),
 (7997, 633, 3, NULL),
 (7997, 1180, NULL, 0.01),
 (7997, 1205, NULL, -15),
@@ -35373,13 +35369,13 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (8093, 633, 4, NULL),
 (8093, 1180, NULL, 0.01),
 (8093, 1205, NULL, -15),
-(8093, 1211, NULL, 3);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(8093, 1211, NULL, 3),
 (8093, 1212, 1, NULL),
 (8093, 1768, NULL, 20113),
 (8101, 9, 40, NULL),
 (8101, 30, 100, NULL),
-(8101, 47, 1, NULL),
+(8101, 47, 1, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (8101, 50, 40, NULL),
 (8101, 51, 14250, NULL),
 (8101, 56, 1, NULL),
@@ -35388,7 +35384,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (8101, 422, 1, NULL),
 (8101, 604, 385, NULL),
 (8101, 605, 395, NULL),
-(8101, 606, NULL, 1158),
 (8101, 633, 1, NULL),
 (8101, 1180, NULL, 0.01),
 (8101, 1205, NULL, -15),
@@ -35406,7 +35401,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (8103, 422, 1, NULL),
 (8103, 604, 385, NULL),
 (8103, 605, 395, NULL),
-(8103, 606, NULL, 1158),
 (8103, 633, 2, NULL),
 (8103, 1180, NULL, 0.01),
 (8103, 1205, NULL, -15),
@@ -35424,7 +35418,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (8105, 422, 1, NULL),
 (8105, 604, 385, NULL),
 (8105, 605, 395, NULL),
-(8105, 606, NULL, 1158),
 (8105, 633, 4, NULL),
 (8105, 1180, NULL, 0.01),
 (8105, 1205, NULL, -15),
@@ -37748,8 +37741,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (9333, 920, NULL, 0),
 (9333, 1180, NULL, 0.01),
 (9333, 1210, NULL, 15),
-(9333, 1211, NULL, 0.9);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(9333, 1211, NULL, 0.9),
 (9333, 1212, 1, NULL),
 (9333, 1768, NULL, 11342),
 (9367, 6, NULL, 0),
@@ -37758,7 +37750,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (9367, 47, 1, NULL),
 (9367, 50, NULL, 37),
 (9367, 51, NULL, 21038),
-(9367, 54, NULL, 38640),
+(9367, 54, NULL, 38640);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (9367, 56, 1, NULL),
 (9367, 63, NULL, 0),
 (9367, 64, NULL, 6.098),
@@ -40061,8 +40054,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (9989, 64, NULL, 20),
 (9989, 114, NULL, 8),
 (9989, 116, NULL, 4),
-(9989, 117, NULL, 8);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(9989, 117, NULL, 8),
 (9989, 118, NULL, 4),
 (9989, 158, NULL, 7500),
 (9989, 160, NULL, 0.5),
@@ -40071,7 +40063,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (9989, 208, NULL, 0),
 (9989, 209, NULL, 7.5),
 (9989, 210, NULL, 0),
-(9989, 211, NULL, 0),
+(9989, 211, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (9989, 217, 397, NULL),
 (9989, 245, 375, NULL),
 (9989, 246, 397, NULL),
@@ -42236,8 +42229,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (10056, 271, NULL, 1),
 (10056, 272, NULL, 0.5),
 (10056, 273, NULL, 0.6),
-(10056, 274, NULL, 0.8);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(10056, 274, NULL, 0.8),
 (10056, 416, NULL, 25000),
 (10056, 466, NULL, 1),
 (10056, 475, NULL, 5000),
@@ -42245,7 +42237,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (10056, 479, NULL, 2500000),
 (10056, 482, NULL, 1500),
 (10056, 484, NULL, 0.75),
-(10056, 508, NULL, 400),
+(10056, 508, NULL, 400);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (10056, 524, NULL, 0.75),
 (10056, 525, NULL, 0.75),
 (10056, 552, NULL, 100),
@@ -44407,8 +44400,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (10133, 64, NULL, 4.017857143),
 (10133, 79, 2000, NULL),
 (10133, 114, 0, NULL),
-(10133, 116, 0, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(10133, 116, 0, NULL),
 (10133, 117, 6, NULL),
 (10133, 118, 5, NULL),
 (10133, 158, NULL, 50000),
@@ -44417,7 +44409,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (10133, 193, 1, NULL),
 (10133, 208, NULL, 1000),
 (10133, 209, NULL, 1000),
-(10133, 210, NULL, 1000),
+(10133, 210, NULL, 1000);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (10133, 211, NULL, 1000),
 (10133, 217, 395, NULL),
 (10133, 238, -12, NULL),
@@ -46588,8 +46581,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (10653, 9, 120, NULL),
 (10653, 37, 450, NULL),
 (10653, 51, 3000, NULL),
-(10653, 54, 420, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(10653, 54, 420, NULL),
 (10653, 55, NULL, 500000),
 (10653, 64, NULL, 3.125),
 (10653, 79, 2000, NULL),
@@ -46598,7 +46590,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (10653, 117, 4, NULL),
 (10653, 118, 4, NULL),
 (10653, 158, NULL, 50000),
-(10653, 160, NULL, 1),
+(10653, 160, NULL, 1);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (10653, 192, 1, NULL),
 (10653, 193, 1, NULL),
 (10653, 208, NULL, 1000),
@@ -48771,8 +48764,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (10987, 251, 1, NULL),
 (10987, 252, NULL, 0),
 (10987, 263, NULL, 5),
-(10987, 265, 10, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(10987, 265, 10, NULL),
 (10987, 267, NULL, 0.4),
 (10987, 268, NULL, 0.9),
 (10987, 269, NULL, 0.75),
@@ -48781,7 +48773,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (10987, 272, NULL, 0.4),
 (10987, 273, NULL, 0.6),
 (10987, 274, NULL, 0.8),
-(10987, 416, 500, NULL),
+(10987, 416, 500, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (10987, 456, 1, NULL),
 (10987, 457, 1, NULL),
 (10987, 465, 1, NULL),
@@ -50935,8 +50928,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11037, 524, NULL, 0.75),
 (11037, 525, NULL, 0.75),
 (11037, 552, NULL, 125),
-(11037, 562, NULL, 0.005);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(11037, 562, NULL, 0.005),
 (11037, 563, NULL, 5),
 (11037, 564, NULL, 235),
 (11037, 580, 10000, NULL),
@@ -50945,7 +50937,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11037, 583, NULL, 1),
 (11037, 620, NULL, 125),
 (11037, 630, 10000, NULL),
-(11037, 631, NULL, 140),
+(11037, 631, NULL, 140);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (11037, 640, NULL, 1),
 (11037, 645, NULL, 1.2294),
 (11037, 646, NULL, 1.2294),
@@ -53116,8 +53109,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11178, 48, NULL, 160),
 (11178, 49, 0, NULL),
 (11178, 55, NULL, 266300),
-(11178, 70, NULL, 3.4);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(11178, 70, NULL, 3.4),
 (11178, 76, NULL, 27500),
 (11178, 79, 3000, NULL),
 (11178, 101, NULL, 1),
@@ -53126,7 +53118,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11178, 110, NULL, 1),
 (11178, 111, NULL, 1),
 (11178, 113, NULL, 1),
-(11178, 124, 16777215, NULL),
+(11178, 124, 16777215, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (11178, 129, 8, NULL),
 (11178, 136, NULL, 1),
 (11178, 153, NULL, 0.000002),
@@ -55348,8 +55341,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11379, 1196, NULL, 0.01),
 (11379, 1198, NULL, 0.01),
 (11379, 1199, NULL, 100),
-(11379, 1200, NULL, 100);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(11379, 1200, NULL, 100),
 (11379, 1224, NULL, 1),
 (11379, 1259, NULL, 0.71),
 (11379, 1261, NULL, 0.71),
@@ -55358,7 +55350,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11379, 1281, NULL, 1),
 (11379, 1547, NULL, 1),
 (11379, 1555, NULL, 50),
-(11379, 1581, NULL, 75),
+(11379, 1581, NULL, 75);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (11379, 1768, NULL, 11412),
 (11379, 1803, NULL, -50),
 (11380, 422, 2, NULL),
@@ -57548,8 +57541,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11648, 30, 1, NULL),
 (11648, 50, 36, NULL),
 (11648, 73, NULL, 20000),
-(11648, 182, NULL, 3394);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(11648, 182, NULL, 3394),
 (11648, 277, NULL, 5),
 (11648, 422, NULL, 2),
 (11648, 633, 5, NULL),
@@ -57559,7 +57551,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11648, 987, NULL, -55),
 (11648, 1180, NULL, 0.02),
 (11648, 1208, NULL, 20),
-(11648, 1211, NULL, 6.6),
+(11648, 1211, NULL, 6.6);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (11648, 1212, 1, NULL),
 (11649, 422, 2, NULL),
 (11649, 1955, NULL, 7.8),
@@ -59742,8 +59735,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11713, 210, NULL, 0),
 (11713, 211, NULL, 0),
 (11713, 245, 378, NULL),
-(11713, 246, 394, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(11713, 246, 394, NULL),
 (11713, 247, 4000, NULL),
 (11713, 248, 1, NULL),
 (11713, 250, 120, NULL),
@@ -59753,7 +59745,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11713, 267, NULL, 0.5),
 (11713, 268, NULL, 0.8),
 (11713, 269, NULL, 0.7),
-(11713, 270, NULL, 0.625),
+(11713, 270, NULL, 0.625);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (11713, 271, NULL, 1),
 (11713, 272, NULL, 0.4),
 (11713, 273, NULL, 0.6),
@@ -61891,8 +61884,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11917, 158, NULL, 2500),
 (11917, 160, NULL, 0.11),
 (11917, 192, 1, NULL),
-(11917, 193, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(11917, 193, 1, NULL),
 (11917, 210, NULL, 24),
 (11917, 217, 394, NULL),
 (11917, 237, NULL, 0.75),
@@ -61901,7 +61893,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11917, 247, 15375, NULL),
 (11917, 250, 1, NULL),
 (11917, 252, NULL, 0.012),
-(11917, 263, NULL, 1050),
+(11917, 263, NULL, 1050);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (11917, 265, 1250, NULL),
 (11917, 267, NULL, 0.56),
 (11917, 268, NULL, 0.46),
@@ -64051,8 +64044,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11978, 552, NULL, 65),
 (11978, 564, NULL, 400),
 (11978, 600, NULL, 3.3),
-(11978, 633, 5, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(11978, 633, 5, NULL),
 (11978, 659, NULL, 150),
 (11978, 678, NULL, 10),
 (11978, 679, NULL, -15),
@@ -64061,7 +64053,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (11978, 1154, 2, NULL),
 (11978, 1178, NULL, 100),
 (11978, 1179, NULL, 0.01),
-(11978, 1196, NULL, 0.01),
+(11978, 1196, NULL, 0.01);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (11978, 1198, NULL, 0.01),
 (11978, 1199, NULL, 100),
 (11978, 1200, NULL, 100),
@@ -66246,8 +66239,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (12068, 73, NULL, 10000),
 (12068, 147, NULL, 1),
 (12068, 182, 3450, NULL),
-(12068, 277, 4, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(12068, 277, 4, NULL),
 (12068, 422, 2, NULL),
 (12068, 567, 150000000, NULL),
 (12068, 576, NULL, 0.01),
@@ -66257,7 +66249,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (12068, 796, NULL, 50000000),
 (12068, 801, 0, NULL),
 (12068, 914, NULL, 0),
-(12068, 920, NULL, 0),
+(12068, 920, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (12068, 1180, NULL, 0.04),
 (12068, 1211, NULL, 4.1),
 (12068, 1212, 1, NULL),
@@ -68440,8 +68433,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (12390, 542, 20, NULL),
 (12390, 552, NULL, 400),
 (12390, 562, NULL, 0.03),
-(12390, 564, NULL, 100);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(12390, 564, NULL, 100),
 (12390, 580, 10000, NULL),
 (12390, 581, NULL, 0.5),
 (12390, 582, 10000, NULL),
@@ -68451,7 +68443,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (12390, 646, NULL, 1.5),
 (12390, 665, 0, NULL),
 (12390, 798, 1, NULL),
-(12391, 9, 4250, NULL),
+(12391, 9, 4250, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (12391, 20, NULL, 0),
 (12391, 37, 400, NULL),
 (12391, 51, NULL, 2500),
@@ -70660,8 +70653,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (12810, 277, 1, NULL),
 (12810, 317, 0, NULL),
 (12810, 422, 2, NULL),
-(12810, 612, NULL, 0);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(12810, 612, NULL, 0),
 (12810, 613, NULL, 0),
 (12810, 633, 5, NULL),
 (12810, 779, NULL, 1),
@@ -70671,7 +70663,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (12811, 422, 2, NULL),
 (12811, 1955, NULL, 3.2),
 (12812, 9, 1, NULL),
-(12812, 64, NULL, 1.1),
+(12812, 64, NULL, 1.1);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (12812, 114, NULL, 8),
 (12812, 116, NULL, 40),
 (12812, 117, NULL, 0),
@@ -72818,8 +72811,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13104, 105, 2, NULL),
 (13104, 114, 0, NULL),
 (13104, 116, 0, NULL),
-(13104, 117, 6, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(13104, 117, 6, NULL),
 (13104, 118, 14, NULL),
 (13104, 158, NULL, 30000),
 (13104, 160, NULL, 0.033),
@@ -72829,7 +72821,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13104, 209, NULL, 0),
 (13104, 210, NULL, 0),
 (13104, 211, NULL, 20),
-(13104, 245, 373, NULL),
+(13104, 245, 373, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (13104, 246, 397, NULL),
 (13104, 247, 30000, NULL),
 (13104, 250, 1, NULL),
@@ -74997,8 +74990,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13527, 1006, NULL, 0.17),
 (13527, 1009, NULL, 0.17),
 (13528, 9, 100, NULL),
-(13528, 37, 2200, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(13528, 37, 2200, NULL),
 (13528, 51, NULL, 2500),
 (13528, 54, 1125, NULL),
 (13528, 55, NULL, 500000),
@@ -75008,7 +75000,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13528, 117, NULL, 3),
 (13528, 118, NULL, 2),
 (13528, 158, NULL, 5000),
-(13528, 160, NULL, 0.4375),
+(13528, 160, NULL, 0.4375);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (13528, 192, 2, NULL),
 (13528, 193, 1, NULL),
 (13528, 209, NULL, 16),
@@ -77121,8 +77114,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13559, 562, NULL, 0.01),
 (13559, 563, NULL, 5),
 (13559, 564, NULL, 110),
-(13559, 580, 10000, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(13559, 580, 10000, NULL),
 (13559, 581, NULL, 0.5),
 (13559, 582, 10000, NULL),
 (13559, 583, NULL, 1),
@@ -77132,7 +77124,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13559, 640, NULL, 0),
 (13559, 665, 28000, NULL),
 (13559, 798, 1, NULL),
-(13559, 1011, NULL, 0.67),
+(13559, 1011, NULL, 0.67);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (13560, 9, 4750, NULL),
 (13560, 37, 1120, NULL),
 (13560, 51, 3000, NULL),
@@ -79253,8 +79246,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13592, 252, NULL, 0.028),
 (13592, 263, NULL, 1650),
 (13592, 265, 1100, NULL),
-(13592, 267, NULL, 0.42);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(13592, 267, NULL, 0.42),
 (13592, 268, NULL, 0.52),
 (13592, 269, NULL, 0.72),
 (13592, 270, NULL, 0.62),
@@ -79264,7 +79256,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13592, 274, NULL, 0.62),
 (13592, 416, 23000, NULL),
 (13592, 456, 4, NULL),
-(13592, 457, 6, NULL),
+(13592, 457, 6, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (13592, 466, NULL, 0.59),
 (13592, 475, 4950, NULL),
 (13592, 476, 19800, NULL),
@@ -81384,8 +81377,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13625, 272, NULL, 0.67),
 (13625, 273, NULL, 0.77),
 (13625, 274, NULL, 0.87),
-(13625, 416, 4375, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(13625, 416, 4375, NULL),
 (13625, 456, 1, NULL),
 (13625, 457, 2, NULL),
 (13625, 466, NULL, 0.28),
@@ -81395,7 +81387,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13625, 481, 52500, NULL),
 (13625, 482, NULL, 100),
 (13625, 484, NULL, 0.75),
-(13625, 497, NULL, 0),
+(13625, 497, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (13625, 504, NULL, 0),
 (13625, 506, NULL, 11200),
 (13625, 507, 2512, NULL),
@@ -83519,8 +83512,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13660, 64, NULL, 9.010416667),
 (13660, 117, NULL, 12),
 (13660, 118, NULL, 16),
-(13660, 158, NULL, 7500);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(13660, 158, NULL, 7500),
 (13660, 160, NULL, 0.0625),
 (13660, 192, 1, NULL),
 (13660, 193, 1, NULL),
@@ -83530,7 +83522,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13660, 246, 394, NULL),
 (13660, 247, 16500, NULL),
 (13660, 250, 1, NULL),
-(13660, 252, NULL, 0.064),
+(13660, 252, NULL, 0.064);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (13660, 263, NULL, 3500),
 (13660, 265, 3975, NULL),
 (13660, 267, NULL, 0.4),
@@ -85680,8 +85673,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13713, 272, NULL, 0.4),
 (13713, 273, NULL, 0.6),
 (13713, 274, NULL, 0.8),
-(13713, 416, 200000, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(13713, 416, 200000, NULL),
 (13713, 456, 1, NULL),
 (13713, 457, 2, NULL),
 (13713, 479, NULL, 2000000),
@@ -85691,7 +85683,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13713, 508, 200, NULL),
 (13713, 524, NULL, 0.75),
 (13713, 525, NULL, 0.75),
-(13713, 552, NULL, 100),
+(13713, 552, NULL, 100);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (13713, 562, NULL, 0.0025),
 (13713, 563, NULL, 5),
 (13713, 640, NULL, 0),
@@ -87885,8 +87878,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13834, 158, NULL, 20000),
 (13834, 160, NULL, 0.013921),
 (13834, 182, 3309, NULL),
-(13834, 183, 3300, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(13834, 183, 3300, NULL),
 (13834, 277, 1, NULL),
 (13834, 278, 5, NULL),
 (13834, 422, 1, NULL),
@@ -87897,7 +87889,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13834, 1205, NULL, -15),
 (13834, 1211, NULL, 1.4),
 (13834, 1212, 1, NULL),
-(13834, 1692, NULL, 4),
+(13834, 1692, NULL, 4);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (13834, 1768, NULL, 11349),
 (13835, 9, 100000000, NULL),
 (13836, 9, 100000000, NULL),
@@ -90070,8 +90063,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13916, 482, NULL, 175),
 (13916, 484, NULL, 0.75),
 (13916, 497, NULL, 0),
-(13916, 504, NULL, 0);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(13916, 504, NULL, 0),
 (13916, 508, 200, NULL),
 (13916, 525, NULL, 0.75),
 (13916, 552, NULL, 45),
@@ -90082,7 +90074,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13916, 581, NULL, 0),
 (13916, 582, 0, NULL),
 (13916, 583, NULL, 0),
-(13916, 620, NULL, 45),
+(13916, 620, NULL, 45);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (13916, 630, 25000, NULL),
 (13916, 631, NULL, 80),
 (13916, 638, NULL, 0.35),
@@ -90206,7 +90199,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13921, 422, 1, NULL),
 (13921, 604, 385, NULL),
 (13921, 605, 395, NULL),
-(13921, 606, NULL, 1158),
 (13921, 633, 7, NULL),
 (13921, 1180, NULL, 0.01),
 (13921, 1205, NULL, -15),
@@ -90225,7 +90217,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (13922, 422, 1, NULL),
 (13922, 604, 385, NULL),
 (13922, 605, 395, NULL),
-(13922, 606, NULL, 1158),
 (13922, 633, 8, NULL),
 (13922, 1180, NULL, 0.01),
 (13922, 1205, NULL, -15),
@@ -92340,8 +92331,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (14154, 633, 8, NULL),
 (14154, 918, NULL, 0),
 (14154, 1180, NULL, 0.01),
-(14154, 1206, NULL, -15);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(14154, 1206, NULL, -15),
 (14154, 1211, NULL, 1.9),
 (14154, 1212, 1, NULL),
 (14154, 1692, NULL, 4),
@@ -92354,7 +92344,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (14156, 91, NULL, 15000),
 (14156, 182, 3423, NULL),
 (14156, 277, 2, NULL),
-(14156, 422, 1, NULL),
+(14156, 422, 1, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (14156, 633, 8, NULL),
 (14156, 918, NULL, 0),
 (14156, 1180, NULL, 0.01),
@@ -94559,8 +94550,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (14357, 116, NULL, 16),
 (14357, 117, NULL, 8),
 (14357, 118, NULL, 0),
-(14357, 158, NULL, 10000);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(14357, 158, NULL, 10000),
 (14357, 160, NULL, 0.009375),
 (14357, 192, 4, NULL),
 (14357, 193, 1, NULL),
@@ -94573,7 +94563,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (14357, 246, 397, NULL),
 (14357, 247, 5000, NULL),
 (14357, 250, 1, NULL),
-(14357, 252, NULL, 0),
+(14357, 252, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (14357, 263, NULL, 4200),
 (14357, 265, 4200, NULL),
 (14357, 267, NULL, 0.4),
@@ -96763,8 +96754,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (14486, 1223, 50, NULL),
 (14486, 1692, NULL, 5),
 (14488, 6, NULL, 320),
-(14488, 9, 40, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(14488, 9, 40, NULL),
 (14488, 20, NULL, 159),
 (14488, 30, NULL, 750),
 (14488, 50, NULL, 50),
@@ -96777,7 +96767,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (14488, 576, NULL, 0.01),
 (14488, 578, NULL, 1),
 (14488, 633, NULL, 13),
-(14488, 763, 1, NULL),
+(14488, 763, 1, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (14488, 796, NULL, 50000000),
 (14488, 801, 0, NULL),
 (14488, 914, NULL, 0),
@@ -99017,8 +99008,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (14767, 986, NULL, -50),
 (14767, 987, NULL, -50),
 (14767, 1180, NULL, 0.01),
-(14767, 1208, NULL, 20);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(14767, 1208, NULL, 20),
 (14767, 1211, NULL, 4),
 (14767, 1212, 1, NULL),
 (14767, 1692, NULL, 5),
@@ -99032,7 +99022,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (14768, 633, NULL, 11),
 (14768, 1692, NULL, 5),
 (14770, 9, 40, NULL),
-(14770, 30, 1, NULL),
+(14770, 30, 1, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (14770, 50, 0, NULL),
 (14770, 182, 3432, NULL),
 (14770, 202, NULL, 1.17),
@@ -101280,8 +101271,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15066, 9, 40, NULL),
 (15066, 30, 1, NULL),
 (15066, 50, 18, NULL),
-(15066, 73, NULL, 20000);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(15066, 73, NULL, 20000),
 (15066, 182, NULL, 3394),
 (15066, 277, NULL, 3),
 (15066, 422, NULL, 1),
@@ -101294,7 +101284,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15066, 1208, NULL, 20),
 (15066, 1211, NULL, 6.6),
 (15066, 1212, 1, NULL),
-(15066, 1692, NULL, 5),
+(15066, 1692, NULL, 5);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (15068, 6, NULL, 38),
 (15068, 9, 40, NULL),
 (15068, 30, 1, NULL),
@@ -103525,8 +103516,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15326, 513, NULL, 20000),
 (15326, 514, 22500, NULL),
 (15326, 524, NULL, 0.75),
-(15326, 525, NULL, 0.75);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(15326, 525, NULL, 0.75),
 (15326, 552, NULL, 450),
 (15326, 562, NULL, 0.01),
 (15326, 564, NULL, 100),
@@ -103539,7 +103529,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15326, 637, NULL, 260),
 (15326, 639, NULL, 0.75),
 (15326, 645, NULL, 1.5),
-(15326, 646, NULL, 1.5),
+(15326, 646, NULL, 1.5);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (15326, 665, 0, NULL),
 (15326, 798, 1, NULL),
 (15327, 9, 3975, NULL),
@@ -105703,8 +105694,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15411, 552, NULL, 125),
 (15411, 620, NULL, 125),
 (15411, 645, NULL, 1.5),
-(15411, 646, NULL, 1.5);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(15411, 646, NULL, 1.5),
 (15411, 665, 0, NULL),
 (15411, 798, 1, NULL),
 (15412, 9, 225, NULL),
@@ -105719,7 +105709,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15412, 114, 0, NULL),
 (15412, 116, 0, NULL),
 (15412, 117, 5, NULL),
-(15412, 118, 7, NULL),
+(15412, 118, 7, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (15412, 158, NULL, 6000),
 (15412, 160, NULL, 0.085),
 (15412, 192, 2, NULL),
@@ -107907,8 +107898,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15737, 9, 40, NULL),
 (15737, 30, 1, NULL),
 (15737, 50, 25, NULL),
-(15737, 148, NULL, 1);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(15737, 148, NULL, 1),
 (15737, 182, 3394, NULL),
 (15737, 277, 3, NULL),
 (15737, 422, 1, NULL),
@@ -107923,7 +107913,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15739, 30, 1, NULL),
 (15739, 50, 30, NULL),
 (15739, 148, NULL, 1),
-(15739, 182, 3394, NULL),
+(15739, 182, 3394, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (15739, 277, 3, NULL),
 (15739, 422, 1, NULL),
 (15739, 633, 8, NULL),
@@ -110123,8 +110114,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15867, 422, 1, NULL),
 (15867, 604, 86, NULL),
 (15867, 620, NULL, 125),
-(15867, 633, 8, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(15867, 633, 8, NULL),
 (15867, 918, NULL, 1.02),
 (15867, 1180, NULL, 0.01),
 (15867, 1205, NULL, -15),
@@ -110139,7 +110129,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15868, 50, 3, NULL),
 (15868, 51, 2100, NULL),
 (15868, 54, 5000, 5250),
-(15868, 61, 0, NULL),
+(15868, 61, 0, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (15868, 64, NULL, 1.875),
 (15868, 128, 1, NULL),
 (15868, 158, NULL, 1000),
@@ -112334,8 +112325,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15987, 270, NULL, 0.625),
 (15987, 271, NULL, 1),
 (15987, 272, NULL, 0.4),
-(15987, 273, NULL, 0.6);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(15987, 273, NULL, 0.6),
 (15987, 274, NULL, 0.8),
 (15987, 416, 3500, NULL),
 (15987, 456, 2, NULL),
@@ -112349,7 +112339,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (15987, 497, NULL, 0.01),
 (15987, 504, NULL, 0.25),
 (15987, 508, 650, NULL),
-(15987, 512, NULL, 0.35),
+(15987, 512, NULL, 0.35);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (15987, 513, NULL, 20000),
 (15987, 514, 10000, NULL),
 (15987, 524, NULL, 0.75),
@@ -114515,8 +114506,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16061, 47, 1, NULL),
 (16061, 50, 39, NULL),
 (16061, 51, NULL, 5460),
-(16061, 56, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16061, 56, 1, NULL),
 (16061, 182, 3319, NULL),
 (16061, 277, 1, NULL),
 (16061, 422, 1, NULL),
@@ -114531,7 +114521,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16061, 1692, NULL, 4),
 (16061, 1768, NULL, 11321),
 (16061, 1795, NULL, 35000),
-(16062, 9, 40, NULL),
+(16062, 9, 40, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16062, 30, NULL, 1325),
 (16062, 47, 1, NULL),
 (16062, 50, 66, NULL),
@@ -114562,7 +114553,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16064, 422, 1, NULL),
 (16064, 604, 385, NULL),
 (16064, 605, 395, NULL),
-(16064, 606, NULL, 1158),
 (16064, 633, 8, NULL),
 (16064, 1180, NULL, 0.01),
 (16064, 1205, NULL, -15),
@@ -116698,8 +116688,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16128, 183, 3300, NULL),
 (16128, 277, 1, NULL),
 (16128, 278, 1, NULL),
-(16128, 422, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16128, 422, 1, NULL),
 (16128, 604, 86, NULL),
 (16128, 620, NULL, 40),
 (16128, 633, 9, NULL),
@@ -116716,7 +116705,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16129, 54, 21600, NULL),
 (16129, 61, 0, NULL),
 (16129, 64, NULL, 3),
-(16129, 128, 3, NULL),
+(16129, 128, 3, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16129, 158, NULL, 6000),
 (16129, 160, NULL, 0.0375),
 (16129, 182, 3309, NULL),
@@ -116865,7 +116855,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16137, 422, 1, NULL),
 (16137, 604, 385, NULL),
 (16137, 605, 395, NULL),
-(16137, 606, NULL, 1158),
 (16137, 633, 8, NULL),
 (16137, 1180, NULL, 0.01),
 (16137, 1205, NULL, -15),
@@ -118899,8 +118888,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16202, 158, NULL, 20000),
 (16202, 160, NULL, 0.05),
 (16202, 192, 4, NULL),
-(16202, 193, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16202, 193, 1, NULL),
 (16202, 208, NULL, 30),
 (16202, 209, NULL, 30),
 (16202, 210, NULL, 30),
@@ -118917,7 +118905,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16202, 268, NULL, 0.4),
 (16202, 269, NULL, 0.4),
 (16202, 270, NULL, 0.4),
-(16202, 271, NULL, 0.8),
+(16202, 271, NULL, 0.8);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16202, 272, NULL, 0.4),
 (16202, 273, NULL, 0.4),
 (16202, 274, NULL, 0.8),
@@ -120268,7 +120257,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16242, 3, 0, NULL),
 (16242, 9, NULL, 750),
 (16242, 11, NULL, 70),
-(16242, 12, NULL, 2),
+(16242, 12, 3, NULL),
 (16242, 13, NULL, 3),
 (16242, 14, NULL, 8),
 (16242, 15, 0, NULL),
@@ -121076,8 +121065,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16309, 277, 1, NULL),
 (16309, 422, 1, NULL),
 (16309, 633, 3, NULL),
-(16309, 984, NULL, -13.52);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16309, 984, NULL, -13.52),
 (16309, 985, NULL, -13.52),
 (16309, 986, NULL, -13.52),
 (16309, 987, NULL, -13.52),
@@ -121095,7 +121083,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16311, 987, NULL, -15.36),
 (16313, 9, 40, NULL),
 (16313, 30, 1, NULL),
-(16313, 50, 0, NULL),
+(16313, 50, 0, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16313, 148, NULL, 1),
 (16313, 182, 3394, NULL),
 (16313, 277, 1, NULL),
@@ -123322,8 +123311,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16560, 582, 10000, NULL),
 (16560, 583, NULL, 1),
 (16560, 620, NULL, 125),
-(16560, 630, 25000, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16560, 630, 25000, NULL),
 (16560, 631, NULL, 400),
 (16560, 638, NULL, 0.6),
 (16560, 645, NULL, 1.5),
@@ -123342,7 +123330,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16561, 105, 1, NULL),
 (16561, 114, NULL, 5),
 (16561, 116, NULL, 4),
-(16561, 117, NULL, 2),
+(16561, 117, NULL, 2);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16561, 118, NULL, 0),
 (16561, 158, NULL, 8750),
 (16561, 160, NULL, 0.091875),
@@ -125499,8 +125488,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16607, 209, NULL, 10),
 (16607, 210, NULL, 10),
 (16607, 211, NULL, 10),
-(16607, 217, 397, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16607, 217, 397, NULL),
 (16607, 245, 393, NULL),
 (16607, 246, 397, NULL),
 (16607, 247, 6000, NULL),
@@ -125518,7 +125506,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16607, 274, NULL, 0.8),
 (16607, 416, 1250, NULL),
 (16607, 456, 1, NULL),
-(16607, 457, 2, NULL),
+(16607, 457, 2, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16607, 466, NULL, 0.4),
 (16607, 475, 6000, NULL),
 (16607, 476, 17000, NULL),
@@ -127668,8 +127657,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16722, 525, NULL, 0.75),
 (16722, 552, NULL, 500),
 (16722, 665, 0, NULL),
-(16723, 9, 1000000, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16723, 9, 1000000, NULL),
 (16723, 54, 0, NULL),
 (16723, 158, NULL, 0),
 (16723, 160, NULL, 0),
@@ -127687,7 +127675,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16724, 158, NULL, 0),
 (16724, 160, NULL, 0),
 (16724, 247, 0, NULL),
-(16724, 416, 0, NULL),
+(16724, 416, 0, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16724, 456, 3, NULL),
 (16724, 457, 5, NULL),
 (16724, 470, 3600000, NULL),
@@ -129918,8 +129907,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16838, 250, 5, NULL),
 (16838, 251, 10, NULL),
 (16838, 252, NULL, 0),
-(16838, 263, NULL, 4000);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16838, 263, NULL, 4000),
 (16838, 265, 2000, NULL),
 (16838, 416, 0, NULL),
 (16838, 456, 5, NULL),
@@ -129937,7 +129925,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16839, 250, 5, NULL),
 (16839, 251, 10, NULL),
 (16839, 252, NULL, 0),
-(16839, 263, NULL, 2000),
+(16839, 263, NULL, 2000);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16839, 265, 930000, NULL),
 (16839, 416, 0, NULL),
 (16839, 456, 5, NULL),
@@ -132100,8 +132089,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16891, 158, NULL, 8000),
 (16891, 160, NULL, 0.1056),
 (16891, 192, 4, NULL),
-(16891, 193, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16891, 193, 1, NULL),
 (16891, 208, NULL, 0),
 (16891, 209, NULL, 14),
 (16891, 210, NULL, 0),
@@ -132118,7 +132106,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16891, 268, NULL, 0.74),
 (16891, 269, NULL, 0.64),
 (16891, 270, NULL, 0.54),
-(16891, 271, NULL, 0.44),
+(16891, 271, NULL, 0.44);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16891, 272, NULL, 0.74),
 (16891, 273, NULL, 0.64),
 (16891, 274, NULL, 0.54),
@@ -134244,8 +134233,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16917, 209, NULL, 14),
 (16917, 210, NULL, 0),
 (16917, 211, NULL, 0),
-(16917, 217, 397, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16917, 217, 397, NULL),
 (16917, 245, 385, NULL),
 (16917, 246, 397, NULL),
 (16917, 247, 55000, NULL),
@@ -134262,7 +134250,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16917, 273, NULL, 0.64),
 (16917, 274, NULL, 0.54),
 (16917, 416, 3250, NULL),
-(16917, 456, -6, NULL),
+(16917, 456, -6, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16917, 457, 5, NULL),
 (16917, 466, NULL, 0.57),
 (16917, 475, 5100, NULL),
@@ -136385,8 +136374,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16947, 933, NULL, 0.05),
 (16947, 940, 40000, NULL),
 (16947, 944, 30000, NULL),
-(16947, 948, NULL, 0.9);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16947, 948, NULL, 0.9),
 (16947, 951, 20000, NULL),
 (16947, 1009, NULL, 0.19),
 (16948, 9, 1100, NULL),
@@ -136403,7 +136391,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16948, 193, 1, NULL),
 (16948, 208, NULL, 22),
 (16948, 217, 397, NULL),
-(16948, 243, NULL, 0.75),
+(16948, 243, NULL, 0.75);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16948, 244, NULL, 0.75),
 (16948, 245, 357, NULL),
 (16948, 246, 397, NULL),
@@ -138523,8 +138512,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16980, 272, NULL, 0.58),
 (16980, 273, NULL, 0.78),
 (16980, 274, NULL, 0.68),
-(16980, 416, 25000, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(16980, 416, 25000, NULL),
 (16980, 456, -4, NULL),
 (16980, 457, 3, NULL),
 (16980, 466, NULL, 0.53),
@@ -138541,7 +138529,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (16980, 508, 180, NULL),
 (16980, 512, NULL, 0),
 (16980, 513, NULL, 0),
-(16980, 514, 0, NULL),
+(16980, 514, 0, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (16980, 524, NULL, 0.75),
 (16980, 525, NULL, 0.75),
 (16980, 552, NULL, 180),
@@ -140682,8 +140671,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17005, 662, NULL, 0.5),
 (17005, 665, 52500, NULL),
 (17005, 798, 1, NULL),
-(17005, 858, NULL, 1);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(17005, 858, NULL, 1),
 (17005, 859, NULL, 1.4508),
 (17005, 1008, NULL, 0.68),
 (17005, 1011, NULL, 0.68),
@@ -140701,7 +140689,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17006, 117, NULL, 0),
 (17006, 118, NULL, 0),
 (17006, 158, NULL, 0),
-(17006, 160, NULL, 0),
+(17006, 160, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (17006, 192, 2, NULL),
 (17006, 193, 1, NULL),
 (17006, 208, NULL, 0),
@@ -142837,8 +142826,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17031, 212, NULL, 1.2),
 (17031, 217, 395, NULL),
 (17031, 238, NULL, 5.5),
-(17031, 239, NULL, 6.5);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(17031, 239, NULL, 6.5),
 (17031, 240, NULL, 7),
 (17031, 241, NULL, 6),
 (17031, 245, 366, NULL),
@@ -142855,7 +142843,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17031, 271, NULL, 0.25),
 (17031, 272, NULL, 0.35),
 (17031, 273, NULL, 0.55),
-(17031, 274, NULL, 0.45),
+(17031, 274, NULL, 0.45);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (17031, 416, 28750, NULL),
 (17031, 456, -4, NULL),
 (17031, 457, 6, NULL),
@@ -144962,8 +144951,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17064, 20, NULL, 0),
 (17064, 37, 250, NULL),
 (17064, 51, NULL, 2500),
-(17064, 54, 500, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(17064, 54, 500, NULL),
 (17064, 55, NULL, 500000),
 (17064, 64, NULL, 0.625),
 (17064, 103, 0, NULL),
@@ -144981,7 +144969,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17064, 252, NULL, 0.000625),
 (17064, 263, NULL, 50),
 (17064, 265, 50, NULL),
-(17064, 267, NULL, 0.5),
+(17064, 267, NULL, 0.5);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (17064, 268, NULL, 0.9),
 (17064, 269, NULL, 0.75),
 (17064, 270, NULL, 0.65),
@@ -147106,8 +147095,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17092, 506, NULL, 1),
 (17092, 508, 220, NULL),
 (17092, 512, NULL, 0),
-(17092, 513, NULL, 0);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(17092, 513, NULL, 0),
 (17092, 514, 0, NULL),
 (17092, 524, NULL, 0.75),
 (17092, 525, NULL, 0.75),
@@ -147125,7 +147113,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17092, 638, NULL, 0.16),
 (17092, 645, NULL, 1.008),
 (17092, 646, NULL, 1.008),
-(17092, 665, 7250, NULL),
+(17092, 665, 7250, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (17092, 798, 1, NULL),
 (17092, 858, NULL, 0.75),
 (17092, 859, NULL, 1.26),
@@ -149252,8 +149241,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17123, 118, NULL, 10),
 (17123, 158, NULL, 12500),
 (17123, 160, NULL, 0.035),
-(17123, 192, 3, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(17123, 192, 3, NULL),
 (17123, 193, 1, NULL),
 (17123, 210, NULL, 22),
 (17123, 217, 394, NULL),
@@ -149271,7 +149259,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17123, 270, NULL, 0.68),
 (17123, 271, NULL, 0.58),
 (17123, 272, NULL, 0.48),
-(17123, 273, NULL, 0.78),
+(17123, 273, NULL, 0.78);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (17123, 274, NULL, 0.68),
 (17123, 416, 17500, NULL),
 (17123, 456, -5, NULL),
@@ -151413,8 +151402,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17168, 30, 225000, NULL),
 (17168, 50, 0, NULL),
 (17168, 51, 9000, NULL),
-(17168, 54, 280500, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(17168, 54, 280500, NULL),
 (17168, 64, NULL, 27),
 (17168, 109, NULL, 1),
 (17168, 110, NULL, 1),
@@ -151432,7 +151420,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17168, 209, NULL, 200),
 (17168, 210, NULL, 200),
 (17168, 211, NULL, 200),
-(17168, 245, NULL, 459),
+(17168, 245, NULL, 459);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (17168, 263, NULL, 50000),
 (17168, 265, 750000, NULL),
 (17168, 277, 1, NULL),
@@ -153583,8 +153572,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17476, 267, NULL, 0.4),
 (17476, 268, NULL, 0.9),
 (17476, 269, NULL, 0.75),
-(17476, 270, NULL, 0.65);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(17476, 270, NULL, 0.65),
 (17476, 271, NULL, 1),
 (17476, 272, NULL, 0.5),
 (17476, 273, NULL, 0.6),
@@ -153603,7 +153591,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17476, 564, NULL, 660),
 (17476, 600, NULL, 3),
 (17476, 633, NULL, 0),
-(17476, 661, NULL, 3000),
+(17476, 661, NULL, 3000);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (17476, 662, NULL, 0.05),
 (17476, 774, NULL, 5),
 (17476, 926, NULL, -4),
@@ -153865,7 +153854,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17487, 422, 1, NULL),
 (17487, 604, 385, NULL),
 (17487, 605, 395, NULL),
-(17487, 606, NULL, 1158),
 (17487, 633, 7, NULL),
 (17487, 920, NULL, 1.02),
 (17487, 1180, NULL, 0.01),
@@ -155793,8 +155781,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17589, 482, NULL, 1000),
 (17589, 484, NULL, 0.75),
 (17589, 497, NULL, 0.15),
-(17589, 506, NULL, 24000);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(17589, 506, NULL, 24000),
 (17589, 507, 212, NULL),
 (17589, 525, NULL, 0.75),
 (17589, 552, NULL, 100),
@@ -155814,7 +155801,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17590, 116, 0, NULL),
 (17590, 117, 0, NULL),
 (17590, 118, 0, NULL),
-(17590, 154, 250000, NULL),
+(17590, 154, 250000, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (17590, 158, NULL, 50000),
 (17590, 160, NULL, 0.04),
 (17590, 182, 3373, NULL),
@@ -157980,8 +157968,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17670, 613, NULL, 0),
 (17670, 779, NULL, 0.75),
 (17671, 1955, NULL, 4),
-(17672, 114, NULL, 0);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(17672, 114, NULL, 0),
 (17672, 116, NULL, 32),
 (17672, 117, NULL, 8),
 (17672, 118, NULL, 0),
@@ -158001,7 +157988,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17674, 118, NULL, 80),
 (17674, 120, NULL, 0.5),
 (17674, 124, 3304021, NULL),
-(17674, 128, 4, NULL),
+(17674, 128, 4, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (17674, 137, 55, NULL),
 (17674, 244, NULL, 1),
 (17674, 422, 1, NULL),
@@ -160176,8 +160164,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17779, 524, NULL, 1),
 (17779, 525, NULL, 0.75),
 (17779, 552, NULL, 1000),
-(17779, 665, 0, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(17779, 665, 0, NULL),
 (17780, 9, 2000, NULL),
 (17780, 54, 0, NULL),
 (17780, 158, NULL, 0),
@@ -160198,7 +160185,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17780, 665, 0, NULL),
 (17781, 9, 700, NULL),
 (17781, 54, 0, NULL),
-(17781, 158, NULL, 0),
+(17781, 158, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (17781, 160, NULL, 0),
 (17781, 247, 0, NULL),
 (17781, 250, 3, NULL),
@@ -162377,8 +162365,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17924, 113, NULL, 1),
 (17924, 124, 16777215, NULL),
 (17924, 129, 12, NULL),
-(17924, 136, NULL, 1);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(17924, 136, NULL, 1),
 (17924, 153, NULL, 0.000002),
 (17924, 182, 3331, NULL),
 (17924, 183, 3330, NULL),
@@ -162398,7 +162385,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (17924, 271, NULL, 1),
 (17924, 272, NULL, 0.5),
 (17924, 273, NULL, 0.6),
-(17924, 274, NULL, 0.8),
+(17924, 274, NULL, 0.8);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (17924, 277, 3, NULL),
 (17924, 278, 3, NULL),
 (17924, 283, NULL, 0),
@@ -164576,8 +164564,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (18073, 247, 62500, NULL),
 (18073, 250, 2, NULL),
 (18073, 251, 4, NULL),
-(18073, 252, NULL, 0);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(18073, 252, NULL, 0),
 (18073, 263, NULL, 800),
 (18073, 265, 1800, NULL),
 (18073, 267, NULL, 0.7),
@@ -164596,7 +164583,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (18073, 475, 4725, NULL),
 (18073, 476, 18900, NULL),
 (18073, 479, NULL, 500000),
-(18073, 481, 0, NULL),
+(18073, 481, 0, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (18073, 482, NULL, 875),
 (18073, 484, NULL, 0.75),
 (18073, 497, NULL, 0.04),
@@ -166750,8 +166738,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (18598, 633, 5, NULL),
 (18598, 781, 467, NULL),
 (18598, 782, NULL, 1.75),
-(18598, 783, NULL, 0.2);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(18598, 783, NULL, 0.2),
 (18598, 784, NULL, 0.025),
 (18598, 785, NULL, 50),
 (18598, 786, 1, NULL),
@@ -166770,7 +166757,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (18600, 422, 2, NULL),
 (18600, 633, 5, NULL),
 (18600, 781, 454, NULL),
-(18600, 782, NULL, 1.75),
+(18600, 782, NULL, 1.75);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (18600, 783, NULL, 0.2),
 (18600, 784, NULL, 0.025),
 (18600, 785, NULL, 45),
@@ -168995,8 +168983,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (18865, 30, 1, NULL),
 (18865, 50, 32, NULL),
 (18865, 148, NULL, 1),
-(18865, 182, 3394, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(18865, 182, 3394, NULL),
 (18865, 277, 3, NULL),
 (18865, 422, 1, NULL),
 (18865, 633, 13, NULL),
@@ -169016,7 +169003,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (18867, 984, NULL, 0),
 (18867, 985, NULL, 0),
 (18867, 986, NULL, 0),
-(18867, 987, NULL, -44.5),
+(18867, 987, NULL, -44.5);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (18867, 1692, NULL, 6),
 (18869, 9, 40, NULL),
 (18869, 30, 1, NULL),
@@ -171248,8 +171236,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (19149, 73, NULL, 5000),
 (19149, 87, NULL, 7000),
 (19149, 182, 3422, NULL),
-(19149, 277, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(19149, 277, 1, NULL),
 (19149, 422, 1, NULL),
 (19149, 633, 12, NULL),
 (19149, 1180, NULL, 0.01),
@@ -171268,7 +171255,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (19151, 277, 1, NULL),
 (19151, 422, 1, NULL),
 (19151, 633, 13, NULL),
-(19151, 1180, NULL, 0.01),
+(19151, 1180, NULL, 0.01);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (19151, 1206, NULL, -15),
 (19151, 1211, NULL, 1.3),
 (19151, 1212, 1, NULL),
@@ -173497,8 +173485,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (19368, 725, NULL, 0.75),
 (19369, 9, 5500, NULL),
 (19369, 20, NULL, 0),
-(19369, 37, 1500, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(19369, 37, 1500, NULL),
 (19369, 51, NULL, 2500),
 (19369, 54, 50000, NULL),
 (19369, 55, NULL, 400000),
@@ -173517,7 +173504,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (19369, 192, 8, NULL),
 (19369, 193, 1, NULL),
 (19369, 208, NULL, 1000),
-(19369, 209, NULL, 1000),
+(19369, 209, NULL, 1000);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (19369, 210, NULL, 1000),
 (19369, 211, NULL, 1000),
 (19369, 217, 394, NULL),
@@ -175693,8 +175681,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (19664, 552, NULL, 50),
 (19664, 620, NULL, 100),
 (19664, 645, NULL, 1.5),
-(19664, 646, NULL, 1.5);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(19664, 646, NULL, 1.5),
 (19664, 665, 0, NULL),
 (19664, 798, 1, NULL),
 (19665, 6, NULL, 0),
@@ -175714,7 +175701,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (19665, 182, 3373, NULL),
 (19665, 192, 8, NULL),
 (19665, 193, 3, NULL),
-(19665, 208, NULL, 40),
+(19665, 208, NULL, 40);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (19665, 209, NULL, 0),
 (19665, 210, NULL, 0),
 (19665, 211, NULL, 0),
@@ -177882,8 +177870,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (19795, 552, NULL, 1000),
 (19795, 645, NULL, 1.5),
 (19795, 646, NULL, 1.5),
-(19795, 665, 0, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(19795, 665, 0, NULL),
 (19806, 6, NULL, 12),
 (19806, 9, 40, NULL),
 (19806, 30, 1, NULL),
@@ -177903,7 +177890,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (19807, 422, 2, NULL),
 (19807, 1955, NULL, 15.6),
 (19808, 6, NULL, 10),
-(19808, 9, 40, NULL),
+(19808, 9, 40, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (19808, 30, 1, NULL),
 (19808, 50, 19, NULL),
 (19808, 54, 26250, NULL),
@@ -180036,7 +180024,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20138, 277, 1, NULL),
 (20138, 422, 1, NULL),
 (20138, 604, 772, NULL),
-(20138, 606, NULL, 1158),
 (20138, 633, NULL, 0),
 (20138, 1180, NULL, 0.01),
 (20138, 1205, NULL, -15),
@@ -180086,8 +180073,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20160, 331, 5, NULL),
 (20160, 422, 2, NULL),
 (20160, 548, NULL, 5),
-(20160, 838, NULL, 1.15);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(20160, 838, NULL, 1.15),
 (20161, 175, 0, NULL),
 (20161, 176, 0, NULL),
 (20161, 177, 0, NULL),
@@ -180108,7 +180094,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20162, 252, NULL, 0),
 (20162, 263, NULL, 1000),
 (20162, 265, 3500, NULL),
-(20162, 416, 0, NULL),
+(20162, 416, 0, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (20162, 456, 5, NULL),
 (20162, 457, 10, NULL),
 (20162, 479, NULL, 86400000),
@@ -182304,8 +182291,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20367, 278, 3, NULL),
 (20367, 422, 1, NULL),
 (20367, 554, NULL, -20),
-(20367, 633, 0, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(20367, 633, 0, NULL),
 (20367, 763, 1, NULL),
 (20367, 800, NULL, 0.25),
 (20368, 1955, NULL, 3),
@@ -182326,7 +182312,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20370, 192, 3, NULL),
 (20370, 193, 1, NULL),
 (20370, 208, NULL, 0),
-(20370, 209, NULL, 0),
+(20370, 209, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (20370, 210, NULL, 0),
 (20370, 211, NULL, 20),
 (20370, 212, NULL, 1.9375),
@@ -184485,8 +184472,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20475, 581, NULL, 0),
 (20475, 582, 0, NULL),
 (20475, 583, NULL, 0),
-(20475, 620, NULL, 40);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(20475, 620, NULL, 40),
 (20475, 636, 10000, NULL),
 (20475, 637, NULL, 36),
 (20475, 639, NULL, 0.35),
@@ -184507,7 +184493,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20482, 79, 6000, NULL),
 (20482, 103, 7500, NULL),
 (20482, 105, 1, NULL),
-(20482, 114, NULL, 0),
+(20482, 114, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (20482, 116, NULL, 0),
 (20482, 117, NULL, 8),
 (20482, 118, NULL, 10),
@@ -186434,7 +186421,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20599, 422, 1, NULL),
 (20599, 604, 385, NULL),
 (20599, 605, 395, NULL),
-(20599, 606, NULL, 1158),
 (20599, 633, 6, NULL),
 (20599, 1180, NULL, 0.01),
 (20599, 1205, NULL, -15),
@@ -186685,8 +186671,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20635, 73, NULL, 10000),
 (20635, 182, 3420, NULL),
 (20635, 277, 1, NULL),
-(20635, 422, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(20635, 422, 1, NULL),
 (20635, 633, 6, NULL),
 (20635, 984, NULL, 0),
 (20635, 985, NULL, 0),
@@ -186709,7 +186694,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20637, 633, 6, NULL),
 (20637, 984, NULL, -27.5),
 (20637, 985, NULL, -27.5),
-(20637, 986, NULL, -27.5),
+(20637, 986, NULL, -27.5);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (20637, 987, NULL, -27.5),
 (20637, 1180, NULL, 0.01),
 (20637, 1208, NULL, 20),
@@ -188903,8 +188889,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20945, 128, 1, NULL),
 (20945, 137, 74, NULL),
 (20945, 317, -30, NULL),
-(20945, 422, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(20945, 422, 1, NULL),
 (20945, 612, NULL, 0),
 (20945, 613, NULL, 0),
 (20945, 779, NULL, 1.6),
@@ -188927,7 +188912,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (20949, 116, NULL, 0),
 (20949, 117, NULL, 4.8),
 (20949, 118, NULL, 3.6),
-(20949, 120, NULL, 1.2),
+(20949, 120, NULL, 1.2);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (20949, 124, 6201492, NULL),
 (20949, 128, 1, NULL),
 (20949, 137, 74, NULL),
@@ -191084,8 +191070,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21208, 612, NULL, 0),
 (21208, 613, NULL, 0),
 (21208, 779, NULL, 0.5),
-(21208, 783, NULL, 1);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(21208, 783, NULL, 1),
 (21208, 784, NULL, 0.00025),
 (21208, 786, 1, NULL),
 (21208, 1692, NULL, 4),
@@ -191108,7 +191093,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21210, 784, NULL, 0.00025),
 (21210, 786, 1, NULL),
 (21210, 1692, NULL, 4),
-(21212, 3, 0, NULL),
+(21212, 3, 0, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (21212, 9, 1, NULL),
 (21212, 114, NULL, 11),
 (21212, 116, NULL, 0),
@@ -193324,8 +193310,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21476, 1212, 1, NULL),
 (21476, 1223, 50, NULL),
 (21476, 1692, NULL, 3),
-(21477, 1955, NULL, 3);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(21477, 1955, NULL, 3),
 (21478, 6, NULL, 144),
 (21478, 9, 40, NULL),
 (21478, 20, NULL, 500),
@@ -193347,7 +193332,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21478, 801, 1, NULL),
 (21478, 914, NULL, 0),
 (21478, 920, NULL, 0),
-(21478, 1180, NULL, 0.04),
+(21478, 1180, NULL, 0.04);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (21478, 1211, NULL, 11.4),
 (21478, 1212, 1, NULL),
 (21478, 1223, 50, NULL),
@@ -195530,8 +195516,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21648, 525, NULL, 0.75),
 (21648, 552, NULL, 135),
 (21648, 562, NULL, 0.0055),
-(21648, 563, NULL, 5);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(21648, 563, NULL, 5),
 (21648, 564, NULL, 275),
 (21648, 580, 20000, NULL),
 (21648, 581, NULL, 0.35),
@@ -195553,7 +195538,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21649, 37, 500, NULL),
 (21649, 51, 2500, NULL),
 (21649, 54, 2500, NULL),
-(21649, 55, NULL, 1000000),
+(21649, 55, NULL, 1000000);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (21649, 64, NULL, 2.75),
 (21649, 79, 6000, NULL),
 (21649, 103, 7500, NULL),
@@ -197717,8 +197703,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21757, 193, 1, NULL),
 (21757, 208, NULL, 0),
 (21757, 209, NULL, 24),
-(21757, 210, NULL, 0);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(21757, 210, NULL, 0),
 (21757, 211, NULL, 0),
 (21757, 212, NULL, 1.25),
 (21757, 217, 397, NULL),
@@ -197740,7 +197725,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21757, 416, 3500, NULL),
 (21757, 456, -3, NULL),
 (21757, 457, 4, NULL),
-(21757, 466, NULL, 0.7),
+(21757, 466, NULL, 0.7);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (21757, 475, 1500, NULL),
 (21757, 476, 7500, NULL),
 (21757, 479, NULL, 500000),
@@ -199897,8 +199883,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21792, 484, NULL, 0.75),
 (21792, 497, NULL, 0.2),
 (21792, 504, NULL, 0),
-(21792, 506, NULL, 8500);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(21792, 506, NULL, 8500),
 (21792, 507, 203, NULL),
 (21792, 508, 145, NULL),
 (21792, 512, NULL, 0),
@@ -199920,7 +199905,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21792, 640, NULL, 1),
 (21792, 645, NULL, 1.5),
 (21792, 646, NULL, 1.5),
-(21792, 661, NULL, 1000),
+(21792, 661, NULL, 1000);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (21792, 662, NULL, 0.5),
 (21792, 665, 30000, NULL),
 (21792, 798, 1, NULL),
@@ -202092,8 +202078,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21978, 270, NULL, 0.86),
 (21978, 271, NULL, 0.66),
 (21978, 272, NULL, 0.76),
-(21978, 273, NULL, 0.96);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(21978, 273, NULL, 0.96),
 (21978, 274, NULL, 0.86),
 (21978, 416, 8750, NULL),
 (21978, 456, 1, NULL),
@@ -202116,7 +202101,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (21978, 525, NULL, 0.75),
 (21978, 552, NULL, 50),
 (21978, 562, NULL, 0.002),
-(21978, 563, NULL, 5),
+(21978, 563, NULL, 5);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (21978, 564, NULL, 400),
 (21978, 580, 10000, NULL),
 (21978, 581, NULL, 0.05),
@@ -204251,8 +204237,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22009, 620, NULL, 40),
 (22009, 630, 10000, NULL),
 (22009, 631, NULL, 40),
-(22009, 636, 5000, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(22009, 636, 5000, NULL),
 (22009, 637, NULL, 20),
 (22009, 640, NULL, 1),
 (22009, 645, NULL, 1.0326),
@@ -204275,7 +204260,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22010, 114, NULL, 0),
 (22010, 116, NULL, 2),
 (22010, 117, NULL, 6),
-(22010, 118, NULL, 0),
+(22010, 118, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (22010, 158, NULL, 8750),
 (22010, 160, NULL, 0.082),
 (22010, 192, 2, NULL),
@@ -206414,8 +206400,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22079, 274, NULL, 0.3),
 (22079, 416, 40000, NULL),
 (22079, 456, -4, NULL),
-(22079, 457, 5, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(22079, 457, 5, NULL),
 (22079, 466, NULL, 0.7),
 (22079, 475, 1500, NULL),
 (22079, 476, 7500, NULL),
@@ -206438,7 +206423,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22079, 563, NULL, 5),
 (22079, 564, NULL, 100),
 (22079, 580, 10000, NULL),
-(22079, 581, NULL, 0.5),
+(22079, 581, NULL, 0.5);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (22079, 582, 10000, NULL),
 (22079, 583, NULL, 1),
 (22079, 620, NULL, 400),
@@ -208615,8 +208601,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22237, 484, NULL, 0.75),
 (22237, 497, NULL, 0.08),
 (22237, 504, NULL, 0),
-(22237, 506, NULL, 20000);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(22237, 506, NULL, 20000),
 (22237, 507, 206, NULL),
 (22237, 508, 200, NULL),
 (22237, 512, NULL, 0),
@@ -208639,7 +208624,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22237, 640, NULL, 1),
 (22237, 645, NULL, 1.5),
 (22237, 646, NULL, 1.5),
-(22237, 661, NULL, 2000),
+(22237, 661, NULL, 2000);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (22237, 662, NULL, 0.25),
 (22237, 665, 7500, NULL),
 (22237, 798, 1, NULL),
@@ -210793,8 +210779,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22282, 250, 2, NULL),
 (22282, 251, 6, NULL),
 (22282, 252, NULL, 0),
-(22282, 263, NULL, 1600);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(22282, 263, NULL, 1600),
 (22282, 265, 650, NULL),
 (22282, 267, NULL, 0.4),
 (22282, 268, NULL, 0.9),
@@ -210816,7 +210801,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22282, 484, NULL, 0.75),
 (22282, 497, NULL, 0.09),
 (22282, 508, 200, NULL),
-(22282, 524, NULL, 0.75),
+(22282, 524, NULL, 0.75);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (22282, 525, NULL, 0.75),
 (22282, 542, 4, NULL),
 (22282, 552, NULL, 100),
@@ -212989,8 +212975,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22542, 50, 30, NULL),
 (22542, 182, 22578, NULL),
 (22542, 277, 1, NULL),
-(22542, 422, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(22542, 422, 1, NULL),
 (22542, 434, 5, NULL),
 (22542, 633, 0, NULL),
 (22542, 1082, NULL, 10),
@@ -213014,7 +212999,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22544, 101, NULL, 0),
 (22544, 102, NULL, 0),
 (22544, 109, NULL, 1),
-(22544, 110, NULL, 1),
+(22544, 110, NULL, 1);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (22544, 111, NULL, 1),
 (22544, 113, NULL, 1),
 (22544, 124, 16777215, NULL),
@@ -213421,7 +213407,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22567, 422, 1, NULL),
 (22567, 604, 385, NULL),
 (22567, 605, 395, NULL),
-(22567, 606, NULL, 1158),
 (22567, 633, 7, NULL),
 (22567, 1180, NULL, 0.01),
 (22567, 1205, NULL, -15),
@@ -215184,8 +215169,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22713, 525, NULL, 1),
 (22713, 552, NULL, 25),
 (22713, 580, 1, NULL),
-(22713, 581, NULL, 1);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(22713, 581, NULL, 1),
 (22713, 582, 2500, NULL),
 (22713, 583, NULL, 1),
 (22713, 620, NULL, 25),
@@ -215209,7 +215193,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22716, 79, 6750, NULL),
 (22716, 114, NULL, 0),
 (22716, 116, NULL, 28),
-(22716, 117, NULL, 8),
+(22716, 117, NULL, 8);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (22716, 118, NULL, 0),
 (22716, 158, NULL, 100000),
 (22716, 160, NULL, 0.0129375),
@@ -217344,8 +217329,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22830, 268, NULL, 0.28),
 (22830, 269, NULL, 0.21),
 (22830, 270, NULL, 0.15),
-(22830, 271, NULL, 0.1);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(22830, 271, NULL, 0.1),
 (22830, 272, NULL, 0.28),
 (22830, 273, NULL, 0.21),
 (22830, 274, NULL, 0.15),
@@ -217367,7 +217351,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22830, 525, NULL, 0.75),
 (22830, 552, NULL, 130),
 (22830, 562, NULL, 0.008),
-(22830, 563, NULL, 5),
+(22830, 563, NULL, 5);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (22830, 564, NULL, 280),
 (22830, 580, 10000, NULL),
 (22830, 581, NULL, 0.4375),
@@ -219472,8 +219457,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22873, 580, 10000, NULL),
 (22873, 581, NULL, 0.3125),
 (22873, 582, 10000, NULL),
-(22873, 583, NULL, 1);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(22873, 583, NULL, 1),
 (22873, 620, NULL, 400),
 (22873, 630, 10000, NULL),
 (22873, 631, NULL, 0),
@@ -219495,7 +219479,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (22874, 55, NULL, 1000000),
 (22874, 64, NULL, 12.5),
 (22874, 114, NULL, 20),
-(22874, 116, NULL, 16),
+(22874, 116, NULL, 16);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (22874, 117, NULL, 8),
 (22874, 118, NULL, 0),
 (22874, 158, NULL, 43750),
@@ -221699,8 +221684,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23113, 137, 53, NULL),
 (23113, 317, -45, NULL),
 (23113, 422, 1, NULL),
-(23113, 612, NULL, 0);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23113, 612, NULL, 0),
 (23113, 613, NULL, 0),
 (23113, 779, NULL, 1),
 (23113, 783, NULL, 1),
@@ -221724,7 +221708,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23115, 779, NULL, 1.2),
 (23115, 783, NULL, 1),
 (23115, 784, NULL, 0.00025),
-(23115, 786, 1, NULL),
+(23115, 786, 1, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23115, 1692, NULL, 4),
 (23117, 3, 0, NULL),
 (23117, 9, 1, NULL),
@@ -223869,8 +223854,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23261, 37, 1440, NULL),
 (23261, 51, NULL, 2500),
 (23261, 54, 7500, NULL),
-(23261, 55, NULL, 500000);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23261, 55, NULL, 500000),
 (23261, 64, NULL, 5.3125),
 (23261, 103, 0, NULL),
 (23261, 114, NULL, 5),
@@ -223892,7 +223876,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23261, 268, NULL, 0.15),
 (23261, 269, NULL, 0.21),
 (23261, 270, NULL, 0.28),
-(23261, 271, NULL, 0.36),
+(23261, 271, NULL, 0.36);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23261, 272, NULL, 0.15),
 (23261, 273, NULL, 0.21),
 (23261, 274, NULL, 0.28),
@@ -226012,8 +225997,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23297, 267, NULL, 0.7),
 (23297, 268, NULL, 0.4),
 (23297, 269, NULL, 0.5),
-(23297, 270, NULL, 0.6);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23297, 270, NULL, 0.6),
 (23297, 271, NULL, 0.7),
 (23297, 272, NULL, 0.4),
 (23297, 273, NULL, 0.5),
@@ -226034,7 +226018,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23297, 525, NULL, 0.75),
 (23297, 552, NULL, 255),
 (23297, 562, NULL, 0.0055),
-(23297, 563, NULL, 5),
+(23297, 563, NULL, 5);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23297, 564, NULL, 210),
 (23297, 580, 10000, NULL),
 (23297, 581, NULL, 0.25),
@@ -228141,8 +228126,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23337, 564, NULL, 75),
 (23337, 580, 10000, NULL),
 (23337, 581, NULL, 0.25),
-(23337, 582, 10000, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23337, 582, 10000, NULL),
 (23337, 583, NULL, 1),
 (23337, 620, NULL, 36000),
 (23337, 636, 5000, NULL),
@@ -228163,7 +228147,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23338, 9, 4750, NULL),
 (23338, 37, 1120, NULL),
 (23338, 51, 2750, NULL),
-(23338, 54, 20000, NULL),
+(23338, 54, 20000, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23338, 55, NULL, 1000000),
 (23338, 64, NULL, 3),
 (23338, 117, NULL, 20),
@@ -230273,8 +230258,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23370, 246, 394, NULL),
 (23370, 247, 75000, NULL),
 (23370, 250, 1, NULL),
-(23370, 252, NULL, 0.022);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23370, 252, NULL, 0.022),
 (23370, 263, NULL, 1150),
 (23370, 265, 1650, NULL),
 (23370, 267, NULL, 0.28),
@@ -230295,7 +230279,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23370, 481, 360000, NULL),
 (23370, 482, NULL, 1200),
 (23370, 484, NULL, 0.75),
-(23370, 497, NULL, 0.0725),
+(23370, 497, NULL, 0.0725);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23370, 506, NULL, 15000),
 (23370, 507, 207, NULL),
 (23370, 508, 160, NULL),
@@ -232393,8 +232378,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23408, 552, NULL, 80),
 (23408, 562, NULL, 0.00325),
 (23408, 563, NULL, 5),
-(23408, 564, NULL, 500);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23408, 564, NULL, 500),
 (23408, 580, 10000, NULL),
 (23408, 581, NULL, 0.075),
 (23408, 582, 10000, NULL),
@@ -232416,7 +232400,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23409, 118, NULL, 5),
 (23409, 158, NULL, 5000),
 (23409, 160, NULL, 0.125),
-(23409, 192, 1, NULL),
+(23409, 192, 1, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23409, 193, 1, NULL),
 (23409, 208, NULL, 12),
 (23409, 217, 394, NULL),
@@ -234539,8 +234524,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23452, 482, NULL, 3600),
 (23452, 484, NULL, 0.75),
 (23452, 497, NULL, 0.27),
-(23452, 508, 140, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23452, 508, 140, NULL),
 (23452, 524, NULL, 0.75),
 (23452, 525, NULL, 0.75),
 (23452, 552, NULL, 390),
@@ -234562,7 +234546,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23453, 9, 6750, NULL),
 (23453, 37, 1120, NULL),
 (23453, 51, 3000, NULL),
-(23453, 54, 6000, NULL),
+(23453, 54, 6000, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23453, 55, NULL, 1000000),
 (23453, 64, NULL, 8.75),
 (23453, 117, NULL, 16),
@@ -236689,8 +236674,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23487, 482, NULL, 800),
 (23487, 484, NULL, 0.75),
 (23487, 497, NULL, 0.0225),
-(23487, 506, NULL, 13500);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23487, 506, NULL, 13500),
 (23487, 507, 206, NULL),
 (23487, 508, 225, NULL),
 (23487, 524, NULL, 0.75),
@@ -236712,7 +236696,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23487, 638, NULL, 0.48),
 (23487, 639, NULL, 0.48),
 (23487, 645, NULL, 1.2786),
-(23487, 646, NULL, 1.2786),
+(23487, 646, NULL, 1.2786);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23487, 665, 29063, NULL),
 (23487, 798, 1, NULL),
 (23487, 858, NULL, 0.8607),
@@ -238857,8 +238842,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23596, 211, NULL, 0),
 (23596, 212, NULL, 1),
 (23596, 217, 394, NULL),
-(23596, 245, 374, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23596, 245, 374, NULL),
 (23596, 246, 394, NULL),
 (23596, 247, 40000, NULL),
 (23596, 250, 1, NULL),
@@ -238880,7 +238864,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23596, 475, 2500, NULL),
 (23596, 476, 9000, NULL),
 (23596, 479, NULL, 1000000),
-(23596, 481, 45000, NULL),
+(23596, 481, 45000, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23596, 482, NULL, 900),
 (23596, 484, NULL, 0.75),
 (23596, 497, NULL, 0.03),
@@ -240988,8 +240973,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23658, 9, 1800, NULL),
 (23658, 37, 1280, NULL),
 (23658, 51, NULL, 2500),
-(23658, 54, 4500, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23658, 54, 4500, NULL),
 (23658, 55, NULL, 1000000),
 (23658, 64, NULL, 4.6875),
 (23658, 117, NULL, 6),
@@ -241011,7 +240995,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23658, 267, NULL, 0.1875),
 (23658, 268, NULL, 0.15),
 (23658, 269, NULL, 0.2625),
-(23658, 270, NULL, 0.225),
+(23658, 270, NULL, 0.225);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23658, 271, NULL, 0.1875),
 (23658, 272, NULL, 0.15),
 (23658, 273, NULL, 0.2625),
@@ -243176,8 +243161,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23797, 30, NULL, 108),
 (23797, 50, 20, NULL),
 (23797, 73, NULL, 12000),
-(23797, 84, NULL, 368);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23797, 84, NULL, 368),
 (23797, 182, 3393, NULL),
 (23797, 183, 3392, NULL),
 (23797, 277, 1, NULL),
@@ -243200,7 +243184,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23799, 182, 3393, NULL),
 (23799, 183, 3392, NULL),
 (23799, 277, 1, NULL),
-(23799, 278, 3, NULL),
+(23799, 278, 3, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23799, 422, 1, NULL),
 (23799, 633, 6, NULL),
 (23799, 1180, NULL, 0.01),
@@ -245361,8 +245346,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23951, 114, 12, NULL),
 (23951, 116, 0, NULL),
 (23951, 117, 0, NULL),
-(23951, 118, 0, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23951, 118, 0, NULL),
 (23951, 158, NULL, 8000),
 (23951, 160, NULL, 0.024),
 (23951, 192, 1, NULL),
@@ -245385,7 +245369,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23951, 270, NULL, 0.625),
 (23951, 271, NULL, 1),
 (23951, 272, NULL, 0.4),
-(23951, 273, NULL, 0.6),
+(23951, 273, NULL, 0.6);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23951, 274, NULL, 0.8),
 (23951, 416, 30000, NULL),
 (23951, 456, 3, NULL),
@@ -247528,8 +247513,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23991, 114, NULL, 5),
 (23991, 116, NULL, 0),
 (23991, 117, NULL, 0),
-(23991, 118, NULL, 5);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(23991, 118, NULL, 5),
 (23991, 158, NULL, 4000),
 (23991, 160, NULL, 0.1),
 (23991, 192, 1, NULL),
@@ -247552,7 +247536,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (23991, 270, NULL, 0.8),
 (23991, 271, NULL, 0.9),
 (23991, 272, NULL, 0.6),
-(23991, 273, NULL, 0.7),
+(23991, 273, NULL, 0.7);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (23991, 274, NULL, 0.8),
 (23991, 416, 16000, NULL),
 (23991, 456, -6, NULL),
@@ -249676,8 +249661,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24020, 630, 10000, NULL),
 (24020, 631, NULL, 300),
 (24020, 638, NULL, 0.65),
-(24020, 645, NULL, 1.3114);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24020, 645, NULL, 1.3114),
 (24020, 646, NULL, 1.3114),
 (24020, 661, NULL, 2000),
 (24020, 662, NULL, 0.25),
@@ -249699,7 +249683,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24021, 117, NULL, 0),
 (24021, 118, NULL, 10),
 (24021, 158, NULL, 8000),
-(24021, 160, NULL, 0.033),
+(24021, 160, NULL, 0.033);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24021, 192, 1, NULL),
 (24021, 193, 1, NULL),
 (24021, 208, NULL, 19),
@@ -251808,8 +251793,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24053, 273, NULL, 0.21),
 (24053, 274, NULL, 0.28),
 (24053, 416, 8000, NULL),
-(24053, 456, -4, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24053, 456, -4, NULL),
 (24053, 457, 5, NULL),
 (24053, 466, NULL, 0.47),
 (24053, 475, 5850, NULL),
@@ -251830,7 +251814,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24053, 525, NULL, 0.75),
 (24053, 552, NULL, 35),
 (24053, 562, NULL, 0.00475),
-(24053, 563, NULL, 5),
+(24053, 563, NULL, 5);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24053, 564, NULL, 750),
 (24053, 580, 10000, NULL),
 (24053, 581, NULL, 0.175),
@@ -253935,8 +253920,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24084, 484, NULL, 0.75),
 (24084, 497, NULL, 0.07),
 (24084, 504, NULL, 0),
-(24084, 506, NULL, 1);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24084, 506, NULL, 1),
 (24084, 508, 160, NULL),
 (24084, 512, NULL, 0),
 (24084, 513, NULL, 0),
@@ -253957,7 +253941,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24084, 638, NULL, 0.57),
 (24084, 640, NULL, 1),
 (24084, 645, NULL, 1.4016),
-(24084, 646, NULL, 1.4016),
+(24084, 646, NULL, 1.4016);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24084, 661, NULL, 2000),
 (24084, 662, NULL, 0.25),
 (24084, 665, 48000, NULL),
@@ -256068,8 +256053,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24113, 479, NULL, 1000000),
 (24113, 481, 180000, NULL),
 (24113, 482, NULL, 900),
-(24113, 484, NULL, 0.75);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24113, 484, NULL, 0.75),
 (24113, 497, NULL, 0.0525),
 (24113, 504, NULL, 0),
 (24113, 506, NULL, 1),
@@ -256091,7 +256075,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24113, 620, NULL, 125),
 (24113, 630, 10000, NULL),
 (24113, 631, NULL, 220),
-(24113, 636, 5000, NULL),
+(24113, 636, 5000, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24113, 637, NULL, 110),
 (24113, 638, NULL, 0.6),
 (24113, 640, NULL, 1),
@@ -258203,8 +258188,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24142, 217, 397, NULL),
 (24142, 245, 364, NULL),
 (24142, 246, 397, NULL),
-(24142, 247, 122500, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24142, 247, 122500, NULL),
 (24142, 250, 1, NULL),
 (24142, 252, NULL, 0.049),
 (24142, 263, NULL, 4750),
@@ -258225,7 +258209,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24142, 476, 13500, NULL),
 (24142, 479, NULL, 500000),
 (24142, 481, 1331250, NULL),
-(24142, 482, NULL, 3700),
+(24142, 482, NULL, 3700);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24142, 484, NULL, 0.75),
 (24142, 497, NULL, 0.175),
 (24142, 504, NULL, 0),
@@ -260332,8 +260317,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24170, 582, 10000, NULL),
 (24170, 583, NULL, 1),
 (24170, 620, NULL, 400),
-(24170, 630, 10000, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24170, 630, 10000, NULL),
 (24170, 631, NULL, 710),
 (24170, 665, 17000, NULL),
 (24170, 798, 1, NULL),
@@ -260355,7 +260339,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24171, 245, 367, NULL),
 (24171, 246, 394, NULL),
 (24171, 247, 127500, NULL),
-(24171, 250, 1, NULL),
+(24171, 250, 1, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24171, 252, NULL, 0.048),
 (24171, 263, NULL, 4750),
 (24171, 265, 5250, NULL),
@@ -262468,8 +262453,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24200, 51, NULL, 2500),
 (24200, 54, 5625, NULL),
 (24200, 55, NULL, 1000000),
-(24200, 64, NULL, 8.4765625);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24200, 64, NULL, 8.4765625),
 (24200, 117, NULL, 6),
 (24200, 118, NULL, 12),
 (24200, 158, NULL, 3125),
@@ -262491,7 +262475,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24200, 270, NULL, 0.6),
 (24200, 271, NULL, 0.5),
 (24200, 272, NULL, 0.4),
-(24200, 273, NULL, 0.7),
+(24200, 273, NULL, 0.7);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24200, 274, NULL, 0.6),
 (24200, 416, 5125, NULL),
 (24200, 456, -5, NULL),
@@ -264619,8 +264604,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24231, 552, NULL, 80),
 (24231, 562, NULL, 0.00325),
 (24231, 563, NULL, 5),
-(24231, 564, NULL, 550);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24231, 564, NULL, 550),
 (24231, 580, 10000, NULL),
 (24231, 581, NULL, 0.09375),
 (24231, 582, 10000, NULL),
@@ -264642,7 +264626,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24231, 859, NULL, 1.37),
 (24231, 1006, NULL, 0.2),
 (24231, 1009, NULL, 0.2),
-(24232, 9, 250, NULL),
+(24232, 9, 250, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24232, 20, NULL, 0),
 (24232, 37, 500, NULL),
 (24232, 51, 3750, NULL),
@@ -266797,8 +266782,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24373, 269, NULL, 0.94),
 (24373, 270, NULL, 0.84),
 (24373, 271, NULL, 0.74),
-(24373, 272, NULL, 0.64);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24373, 272, NULL, 0.64),
 (24373, 273, NULL, 0.94),
 (24373, 274, NULL, 0.84),
 (24373, 416, 11500, NULL),
@@ -266821,7 +266805,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24373, 525, NULL, 0.75),
 (24373, 552, NULL, 37),
 (24373, 562, NULL, 0.0025),
-(24373, 563, NULL, 5),
+(24373, 563, NULL, 5);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24373, 564, NULL, 650),
 (24373, 580, 10000, NULL),
 (24373, 581, NULL, 0.05),
@@ -268977,8 +268962,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24497, 184, 3319, NULL),
 (24497, 277, 1, NULL),
 (24497, 278, 5, NULL),
-(24497, 279, 5, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24497, 279, 5, NULL),
 (24497, 281, NULL, 3750),
 (24497, 422, 2, NULL),
 (24497, 525, NULL, 1),
@@ -269002,7 +268986,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24499, 137, 509, NULL),
 (24499, 182, 20210, NULL),
 (24499, 183, 3321, NULL),
-(24499, 184, 3319, NULL),
+(24499, 184, 3319, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24499, 277, 1, NULL),
 (24499, 278, 5, NULL),
 (24499, 279, 5, NULL),
@@ -271167,8 +271152,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24671, 252, NULL, 0),
 (24671, 263, NULL, 600),
 (24671, 265, 500, NULL),
-(24671, 416, 0, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24671, 416, 0, NULL),
 (24671, 456, 2, NULL),
 (24671, 457, 5, NULL),
 (24671, 479, NULL, 86400000),
@@ -271191,7 +271175,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24682, 160, NULL, 0.017400625),
 (24682, 192, 1, NULL),
 (24682, 193, 1, NULL),
-(24682, 208, NULL, 26),
+(24682, 208, NULL, 26);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24682, 209, NULL, 0),
 (24682, 210, NULL, 0),
 (24682, 211, NULL, 0),
@@ -273350,8 +273335,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24793, 665, 14531, NULL),
 (24793, 798, 1, NULL),
 (24793, 858, NULL, 0.9632),
-(24793, 859, NULL, 1.0736);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24793, 859, NULL, 1.0736),
 (24793, 1006, NULL, 0.19),
 (24797, 9, 250, NULL),
 (24797, 20, NULL, 0),
@@ -273375,7 +273359,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24797, 210, NULL, 0),
 (24797, 211, NULL, 0),
 (24797, 217, 397, NULL),
-(24797, 245, 389, NULL),
+(24797, 245, 389, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24797, 246, 397, NULL),
 (24797, 247, 7500, NULL),
 (24797, 250, 1, NULL),
@@ -275503,8 +275488,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24843, 507, 209, NULL),
 (24843, 508, 200, NULL),
 (24843, 513, NULL, 0),
-(24843, 524, NULL, 0.75);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24843, 524, NULL, 0.75),
 (24843, 525, NULL, 0.75),
 (24843, 552, NULL, 240),
 (24843, 562, NULL, 0.009),
@@ -275526,7 +275510,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24843, 661, NULL, 2000),
 (24843, 662, NULL, 0.25),
 (24843, 665, 10000, NULL),
-(24843, 798, 1, NULL),
+(24843, 798, 1, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24843, 858, NULL, 0.8443),
 (24843, 859, NULL, 1.3114),
 (24843, 1007, NULL, 0.6),
@@ -277653,8 +277638,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24896, 160, NULL, 0.219),
 (24896, 192, 1, NULL),
 (24896, 193, 1, NULL),
-(24896, 208, NULL, 8);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24896, 208, NULL, 8),
 (24896, 217, 397, NULL),
 (24896, 245, 351, NULL),
 (24896, 246, 397, NULL),
@@ -277676,7 +277660,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24896, 466, NULL, 0.28),
 (24896, 475, 7275, NULL),
 (24896, 476, 29100, NULL),
-(24896, 479, NULL, 2000000),
+(24896, 479, NULL, 2000000);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24896, 482, NULL, 100),
 (24896, 484, NULL, 0.75),
 (24896, 497, NULL, 0),
@@ -279808,8 +279793,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24938, 948, NULL, 0.75),
 (24938, 951, 15000, NULL),
 (24938, 1010, NULL, 0.43),
-(24940, 9, 1250, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24940, 9, 1250, NULL),
 (24940, 37, 360, NULL),
 (24940, 51, NULL, 2500),
 (24940, 54, 6500, NULL),
@@ -279832,7 +279816,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24940, 263, NULL, 1050),
 (24940, 265, 1400, NULL),
 (24940, 267, NULL, 0.76),
-(24940, 268, NULL, 0.46),
+(24940, 268, NULL, 0.46);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24940, 269, NULL, 0.56),
 (24940, 270, NULL, 0.66),
 (24940, 271, NULL, 0.76),
@@ -281947,8 +281932,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24997, 524, NULL, 0.75),
 (24997, 525, NULL, 0.75),
 (24997, 542, 1, NULL),
-(24997, 552, NULL, 33);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(24997, 552, NULL, 33),
 (24997, 562, NULL, 0.001),
 (24997, 563, NULL, 5),
 (24997, 564, NULL, 1050),
@@ -281971,7 +281955,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (24997, 665, 7125, NULL),
 (24997, 798, 1, NULL),
 (24997, 858, NULL, 1),
-(24997, 859, NULL, 1),
+(24997, 859, NULL, 1);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (24997, 1006, NULL, 0.15),
 (24997, 1009, NULL, 0.15),
 (24999, 9, 55, NULL),
@@ -284108,8 +284093,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25043, 497, NULL, 0.0025),
 (25043, 504, NULL, 0),
 (25043, 506, NULL, 1),
-(25043, 507, 210, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(25043, 507, 210, NULL),
 (25043, 508, 180, NULL),
 (25043, 512, NULL, 0),
 (25043, 513, NULL, 0),
@@ -284132,7 +284116,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25043, 637, NULL, 60),
 (25043, 638, NULL, 0.4),
 (25043, 639, NULL, 0.4),
-(25043, 640, NULL, 1),
+(25043, 640, NULL, 1);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (25043, 645, NULL, 1.5325),
 (25043, 646, NULL, 1.5325),
 (25043, 661, NULL, 2000),
@@ -286264,8 +286249,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25085, 246, 395, NULL),
 (25085, 247, 245000, NULL),
 (25085, 250, 1, NULL),
-(25085, 252, NULL, 0);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(25085, 252, NULL, 0),
 (25085, 263, NULL, 5500),
 (25085, 265, 4250, NULL),
 (25085, 267, NULL, 0.28),
@@ -286286,7 +286270,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25085, 482, NULL, 3200),
 (25085, 484, NULL, 0.75),
 (25085, 497, NULL, 0.115),
-(25085, 504, NULL, 0),
+(25085, 504, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (25085, 506, NULL, 4475),
 (25085, 507, 203, NULL),
 (25085, 508, 140, NULL),
@@ -288419,8 +288404,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25144, 508, 180, NULL),
 (25144, 512, NULL, 0.5),
 (25144, 513, NULL, 20000),
-(25144, 514, 10000, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(25144, 514, 10000, NULL),
 (25144, 524, NULL, 0.75),
 (25144, 525, NULL, 0.75),
 (25144, 552, NULL, 37),
@@ -288442,7 +288426,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25145, 37, 360, NULL),
 (25145, 51, 3500, NULL),
 (25145, 54, 12500, NULL),
-(25145, 55, NULL, 500000),
+(25145, 55, NULL, 500000);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (25145, 64, NULL, 8),
 (25145, 103, 20000, NULL),
 (25145, 105, 1, NULL),
@@ -290553,8 +290538,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25209, 245, 380, NULL),
 (25209, 246, 397, NULL),
 (25209, 247, 77000, NULL),
-(25209, 252, NULL, 0.034);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(25209, 252, NULL, 0.034),
 (25209, 263, NULL, 4450),
 (25209, 265, 3975, NULL),
 (25209, 267, NULL, 0.29),
@@ -290575,7 +290559,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25209, 481, 650000, NULL),
 (25209, 482, NULL, 2600),
 (25209, 484, NULL, 0.75),
-(25209, 497, NULL, 0.11),
+(25209, 497, NULL, 0.11);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (25209, 506, NULL, 20000),
 (25209, 507, 2508, NULL),
 (25209, 508, 50, NULL),
@@ -292711,8 +292696,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25400, 507, 2703, NULL),
 (25400, 508, 165, NULL),
 (25400, 524, NULL, 0.75),
-(25400, 525, NULL, 0.75);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(25400, 525, NULL, 0.75),
 (25400, 552, NULL, 350),
 (25400, 562, NULL, 0.01),
 (25400, 564, NULL, 100),
@@ -292734,7 +292718,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25402, 158, NULL, 0),
 (25402, 160, NULL, 0),
 (25402, 247, 0, NULL),
-(25402, 250, 5, NULL),
+(25402, 250, 5, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (25402, 251, 10, NULL),
 (25402, 252, NULL, 0),
 (25402, 263, NULL, 500),
@@ -294893,8 +294878,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25642, 267, NULL, 0.7),
 (25642, 268, NULL, 0.4),
 (25642, 269, NULL, 0.5),
-(25642, 270, NULL, 0.6);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(25642, 270, NULL, 0.6),
 (25642, 271, NULL, 0.7),
 (25642, 272, NULL, 0.4),
 (25642, 273, NULL, 0.5),
@@ -294915,7 +294899,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25642, 508, 200, NULL),
 (25642, 524, NULL, 0.75),
 (25642, 525, NULL, 0.75),
-(25642, 542, 4, NULL),
+(25642, 542, 4, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (25642, 552, NULL, 275),
 (25642, 562, NULL, 0),
 (25642, 563, NULL, 0),
@@ -297058,8 +297043,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25672, 636, 5000, NULL),
 (25672, 637, NULL, 0),
 (25672, 638, NULL, 0.25),
-(25672, 639, NULL, 0.25);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(25672, 639, NULL, 0.25),
 (25672, 645, NULL, 1.0982),
 (25672, 646, NULL, 1.0982),
 (25672, 665, 19102, NULL),
@@ -297080,7 +297064,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25673, 118, NULL, 16),
 (25673, 158, NULL, 21875),
 (25673, 160, NULL, 0.022),
-(25673, 192, 8, NULL),
+(25673, 192, 8, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (25673, 193, 1, NULL),
 (25673, 209, NULL, 20),
 (25673, 210, NULL, 19),
@@ -299206,8 +299191,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25702, 269, NULL, 0.75),
 (25702, 270, NULL, 0.65),
 (25702, 271, NULL, 1),
-(25702, 272, NULL, 0.4);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(25702, 272, NULL, 0.4),
 (25702, 273, NULL, 0.6),
 (25702, 274, NULL, 0.8),
 (25702, 416, 500, NULL),
@@ -299229,7 +299213,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25702, 562, NULL, 0),
 (25702, 563, NULL, 0),
 (25702, 564, NULL, 1500),
-(25702, 580, 10000, NULL),
+(25702, 580, 10000, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (25702, 581, NULL, 0.85),
 (25702, 582, 10000, NULL),
 (25702, 583, NULL, 1),
@@ -299511,7 +299496,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25707, 277, 1, NULL),
 (25707, 422, 1, NULL),
 (25707, 604, 772, NULL),
-(25707, 606, NULL, 1158),
 (25707, 633, 4, NULL),
 (25707, 1180, NULL, 0.01),
 (25707, 1205, NULL, -15),
@@ -299528,7 +299512,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25709, 277, 1, NULL),
 (25709, 422, 1, NULL),
 (25709, 604, 772, NULL),
-(25709, 606, NULL, 1158),
 (25709, 633, 1, NULL),
 (25709, 1180, NULL, 0.01),
 (25709, 1205, NULL, -15),
@@ -299545,7 +299528,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25711, 277, 1, NULL),
 (25711, 422, 1, NULL),
 (25711, 604, 772, NULL),
-(25711, 606, NULL, 1158),
 (25711, 633, 2, NULL),
 (25711, 1180, NULL, 0.01),
 (25711, 1205, NULL, -15),
@@ -299562,7 +299544,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25713, 277, 1, NULL),
 (25713, 422, 1, NULL),
 (25713, 604, 772, NULL),
-(25713, 606, NULL, 1158),
 (25713, 633, 3, NULL),
 (25713, 1180, NULL, 0.01),
 (25713, 1205, NULL, -15),
@@ -299582,7 +299563,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25715, 422, 2, NULL),
 (25715, 604, 772, NULL),
 (25715, 605, 654, NULL),
-(25715, 606, NULL, 1158),
 (25715, 633, 5, NULL),
 (25715, 1180, NULL, 0.02),
 (25715, 1205, NULL, -15),
@@ -301369,8 +301349,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25881, 158, NULL, 6250),
 (25881, 160, NULL, 0.10825),
 (25881, 192, 1, NULL),
-(25881, 193, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(25881, 193, 1, NULL),
 (25881, 210, NULL, 29),
 (25881, 217, 394, NULL),
 (25881, 245, 367, NULL),
@@ -301396,7 +301375,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (25881, 476, 12900, NULL),
 (25881, 479, NULL, 500000),
 (25881, 481, 1443750, NULL),
-(25881, 482, NULL, 3900),
+(25881, 482, NULL, 3900);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (25881, 484, NULL, 0.75),
 (25881, 497, NULL, 0.375),
 (25881, 508, 140, NULL),
@@ -303553,8 +303533,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (26224, 180, 166, NULL),
 (26224, 181, 165, NULL),
 (26224, 275, 2, NULL),
-(26224, 280, 0, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(26224, 280, 0, NULL),
 (26224, 312, 1, NULL),
 (26224, 1047, 1, NULL),
 (26227, 9, 6750, NULL),
@@ -303580,7 +303559,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (26227, 265, 5250, NULL),
 (26227, 267, NULL, 0.34),
 (26227, 268, NULL, 0.24),
-(26227, 269, NULL, 0.54),
+(26227, 269, NULL, 0.54);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (26227, 270, NULL, 0.44),
 (26227, 271, NULL, 0.34),
 (26227, 272, NULL, 0.24),
@@ -305765,8 +305745,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (26562, 552, NULL, 5000),
 (26562, 901, NULL, 20),
 (26563, 9, 500, NULL),
-(26563, 525, NULL, 1);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(26563, 525, NULL, 1),
 (26563, 552, NULL, 5000),
 (26563, 901, NULL, 10),
 (26564, 9, 500, NULL),
@@ -305793,7 +305772,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (26569, 525, NULL, 1),
 (26569, 552, NULL, 5000),
 (26569, 901, NULL, 10),
-(26570, 9, 500, NULL),
+(26570, 9, 500, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (26570, 525, NULL, 1),
 (26570, 552, NULL, 5000),
 (26570, 901, NULL, -10),
@@ -307943,8 +307923,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (26692, 583, NULL, 1),
 (26692, 620, NULL, 400),
 (26692, 630, 25000, NULL),
-(26692, 631, NULL, 1250);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(26692, 631, NULL, 1250),
 (26692, 638, NULL, 0.75),
 (26692, 645, NULL, 1.4836),
 (26692, 646, NULL, 1.4836),
@@ -307969,7 +307948,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (26694, 192, 1, NULL),
 (26694, 193, 1, NULL),
 (26694, 210, NULL, 28),
-(26694, 217, 394, NULL),
+(26694, 217, 394, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (26694, 245, 367, NULL),
 (26694, 246, 394, NULL),
 (26694, 247, 63750, NULL),
@@ -310108,8 +310088,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (26767, 524, NULL, 0.75),
 (26767, 525, NULL, 0.75),
 (26767, 552, NULL, 89),
-(26767, 562, NULL, 0.00325);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(26767, 562, NULL, 0.00325),
 (26767, 563, NULL, 5),
 (26767, 564, NULL, 475),
 (26767, 580, 10000, NULL),
@@ -310134,7 +310113,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (26768, 55, NULL, 500000),
 (26768, 64, NULL, 8),
 (26768, 79, 2000, NULL),
-(26768, 114, NULL, 0),
+(26768, 114, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (26768, 116, NULL, 0),
 (26768, 117, NULL, 4),
 (26768, 118, NULL, 16),
@@ -312239,8 +312219,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (26861, 158, NULL, 0),
 (26861, 160, NULL, 0),
 (26861, 182, 21718, NULL),
-(26861, 247, 0, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(26861, 247, 0, NULL),
 (26861, 416, 0, NULL),
 (26861, 456, 2, NULL),
 (26861, 457, 5, NULL),
@@ -312265,7 +312244,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (26862, 160, NULL, 0.082),
 (26862, 192, 2, NULL),
 (26862, 193, 1, NULL),
-(26862, 209, NULL, 9),
+(26862, 209, NULL, 9);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (26862, 217, 397, NULL),
 (26862, 245, 0, NULL),
 (26862, 246, 397, NULL),
@@ -314398,8 +314378,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27005, 265, 120, NULL),
 (27005, 267, NULL, 0.4),
 (27005, 268, NULL, 0.9),
-(27005, 269, NULL, 0.75);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(27005, 269, NULL, 0.75),
 (27005, 270, NULL, 0.65),
 (27005, 271, NULL, 1),
 (27005, 272, NULL, 0.4),
@@ -314423,7 +314402,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27005, 564, NULL, 600),
 (27005, 580, 10000, NULL),
 (27005, 581, NULL, 0.175),
-(27005, 582, 10000, NULL),
+(27005, 582, 10000, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (27005, 583, NULL, 1),
 (27005, 620, NULL, 1),
 (27005, 630, 10000, NULL),
@@ -316632,8 +316612,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27311, 9, 450, NULL),
 (27311, 20, NULL, -75),
 (27311, 37, 360, NULL),
-(27311, 51, 2750, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(27311, 51, 2750, NULL),
 (27311, 54, 11250, NULL),
 (27311, 55, NULL, 500000),
 (27311, 64, NULL, 3.25),
@@ -316657,7 +316636,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27311, 245, 375, NULL),
 (27311, 246, 395, NULL),
 (27311, 247, 9500, NULL),
-(27311, 250, 2, NULL),
+(27311, 250, 2, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (27311, 252, NULL, 0.00675),
 (27311, 263, NULL, 725),
 (27311, 265, 450, NULL),
@@ -318855,8 +318835,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27475, 653, NULL, 69),
 (27475, 654, NULL, 330),
 (27475, 655, NULL, 1500),
-(27475, 1353, NULL, 4.5);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(27475, 1353, NULL, 4.5),
 (27475, 1354, NULL, 5.5),
 (27475, 1692, NULL, 4),
 (27477, 9, NULL, 70),
@@ -318881,7 +318860,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27477, 613, NULL, 0),
 (27477, 644, 1, NULL),
 (27477, 653, NULL, 69),
-(27477, 654, NULL, 330),
+(27477, 654, NULL, 330);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (27477, 655, NULL, 1500),
 (27477, 1353, NULL, 4.5),
 (27477, 1354, NULL, 5.5),
@@ -321004,8 +320984,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27573, 479, NULL, 10000000),
 (27573, 484, NULL, 0.75),
 (27573, 524, NULL, 0.75),
-(27573, 525, NULL, 1);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(27573, 525, NULL, 1),
 (27573, 552, NULL, 3000),
 (27573, 556, NULL, 5000),
 (27573, 564, NULL, 36),
@@ -321029,7 +321008,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27574, 154, 300000, NULL),
 (27574, 156, NULL, 0.001),
 (27574, 158, NULL, 100000),
-(27574, 182, 11584, NULL),
+(27574, 182, 11584, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (27574, 192, 1, NULL),
 (27574, 208, NULL, 200),
 (27574, 209, NULL, 200),
@@ -323124,8 +323104,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27647, 158, NULL, 63000),
 (27647, 160, NULL, 0.03456),
 (27647, 182, 11584, NULL),
-(27647, 192, 1, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(27647, 192, 1, NULL),
 (27647, 208, NULL, 200),
 (27647, 209, NULL, 200),
 (27647, 210, NULL, 200),
@@ -323148,7 +323127,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27647, 604, 83, NULL),
 (27647, 620, NULL, 125),
 (27647, 676, NULL, 5000),
-(27647, 677, NULL, 120000),
+(27647, 677, NULL, 120000);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (27647, 691, 60000, NULL),
 (27647, 771, NULL, 10000),
 (27647, 872, 1, NULL),
@@ -325273,8 +325253,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27738, 524, NULL, 0.75),
 (27738, 525, NULL, 0.75),
 (27738, 542, 4, NULL),
-(27738, 552, NULL, 125);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(27738, 552, NULL, 125),
 (27738, 562, NULL, 0),
 (27738, 563, NULL, 0),
 (27738, 564, NULL, 235),
@@ -325297,7 +325276,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27738, 858, NULL, 0.66),
 (27738, 859, NULL, 1.54),
 (27738, 1007, NULL, 0.37),
-(27739, 9, 600, NULL),
+(27739, 9, 600, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (27739, 37, 450, NULL),
 (27739, 51, 5000, NULL),
 (27739, 54, 18750, NULL),
@@ -327439,8 +327419,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27768, 209, NULL, 200),
 (27768, 210, NULL, 200),
 (27768, 211, NULL, 200),
-(27768, 245, NULL, 459);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(27768, 245, NULL, 459),
 (27768, 263, NULL, 75000),
 (27768, 265, 1125000, NULL),
 (27768, 277, 1, NULL),
@@ -327463,7 +327442,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27768, 771, NULL, 5),
 (27768, 786, 1, NULL),
 (27768, 872, 1, NULL),
-(27768, 1165, 5000, NULL),
+(27768, 1165, 5000, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (27768, 1167, 1, NULL),
 (27768, 1692, NULL, 4),
 (27768, 1768, NULL, 11349),
@@ -329603,8 +329583,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27902, 182, 3392, NULL),
 (27902, 275, 2, NULL),
 (27902, 277, 3, NULL),
-(27902, 280, 0, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(27902, 280, 0, NULL),
 (27902, 317, -5, NULL),
 (27904, 6, NULL, 488),
 (27904, 9, 40, NULL),
@@ -329628,7 +329607,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (27906, 1047, NULL, 1),
 (27911, 180, 165, NULL),
 (27911, 181, 166, NULL),
-(27911, 182, 3427, NULL),
+(27911, 182, 3427, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (27911, 275, 8, NULL),
 (27911, 277, 5, NULL),
 (27911, 280, 0, NULL),
@@ -331764,8 +331744,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28168, 243, NULL, 0.75),
 (28168, 244, NULL, 0.75),
 (28168, 245, 364, NULL),
-(28168, 246, 397, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(28168, 246, 397, NULL),
 (28168, 247, 55500, NULL),
 (28168, 250, 1, NULL),
 (28168, 252, NULL, 0),
@@ -331787,7 +331766,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28168, 476, 12900, NULL),
 (28168, 479, NULL, 500000),
 (28168, 482, NULL, 3900),
-(28168, 484, NULL, 0.75),
+(28168, 484, NULL, 0.75);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (28168, 497, NULL, 0.15),
 (28168, 504, NULL, 0),
 (28168, 506, NULL, 1),
@@ -333937,8 +333917,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28266, 267, NULL, 0.4),
 (28266, 268, NULL, 0.9),
 (28266, 269, NULL, 0.75),
-(28266, 270, NULL, 0.65);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(28266, 270, NULL, 0.65),
 (28266, 271, NULL, 1),
 (28266, 272, NULL, 0.5),
 (28266, 273, NULL, 0.6),
@@ -333961,7 +333940,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28266, 620, NULL, 400),
 (28266, 633, NULL, 6),
 (28266, 665, NULL, 7000),
-(28266, 1272, NULL, 25),
+(28266, 1272, NULL, 25);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (28266, 1692, NULL, 4),
 (28267, 1955, NULL, 3),
 (28268, 9, NULL, 936),
@@ -335722,7 +335702,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28375, 277, 1, NULL),
 (28375, 422, NULL, 1),
 (28375, 604, 772, NULL),
-(28375, 606, NULL, 1158),
 (28375, 633, NULL, 7),
 (28375, 1180, NULL, 0.01),
 (28375, 1205, NULL, -15),
@@ -335741,7 +335720,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28377, 277, 1, NULL),
 (28377, 422, NULL, 1),
 (28377, 604, 772, NULL),
-(28377, 606, NULL, 1158),
 (28377, 633, NULL, 8),
 (28377, 1180, NULL, 0.01),
 (28377, 1205, NULL, -15),
@@ -335760,7 +335738,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28379, 277, 1, NULL),
 (28379, 422, NULL, 1),
 (28379, 604, 772, NULL),
-(28379, 606, NULL, 1158),
 (28379, 633, NULL, 7),
 (28379, 1180, NULL, 0.01),
 (28379, 1205, NULL, -15),
@@ -335779,7 +335756,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28381, 277, 1, NULL),
 (28381, 422, NULL, 1),
 (28381, 604, 772, NULL),
-(28381, 606, NULL, 1158),
 (28381, 633, NULL, 8),
 (28381, 1180, NULL, 0.01),
 (28381, 1205, NULL, -15),
@@ -335798,7 +335774,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28383, 277, 1, NULL),
 (28383, 422, NULL, 1),
 (28383, 604, 772, NULL),
-(28383, 606, NULL, 1158),
 (28383, 633, NULL, 7),
 (28383, 1180, NULL, 0.01),
 (28383, 1205, NULL, -15),
@@ -336125,8 +336100,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28507, 638, NULL, 0.85),
 (28507, 645, NULL, 1.5),
 (28507, 646, NULL, 1.5),
-(28507, 665, 55000, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(28507, 665, 55000, NULL),
 (28507, 798, 1, NULL),
 (28507, 872, 1, NULL),
 (28508, 6, NULL, 0),
@@ -336154,7 +336128,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28508, 245, 372, NULL),
 (28508, 247, 100000, NULL),
 (28508, 252, NULL, 0),
-(28508, 263, NULL, 250),
+(28508, 263, NULL, 250);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (28508, 265, 2600, NULL),
 (28508, 267, NULL, 0.4),
 (28508, 268, NULL, 0.9),
@@ -336796,7 +336771,6 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28565, 277, 1, NULL),
 (28565, 422, NULL, 1),
 (28565, 604, 772, NULL),
-(28565, 606, NULL, 1158),
 (28565, 633, NULL, 8),
 (28565, 1180, NULL, 0.01),
 (28565, 1205, NULL, -15),
@@ -338339,8 +338313,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28788, 277, 1, NULL),
 (28788, 422, 1, NULL),
 (28788, 633, 6, NULL),
-(28788, 763, 0, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(28788, 763, 0, NULL),
 (28788, 906, 1, NULL),
 (28788, 1692, NULL, 4),
 (28788, 1768, NULL, 11353),
@@ -338370,7 +338343,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (28792, 175, 0, NULL),
 (28792, 176, NULL, 3),
 (28792, 177, 0, NULL),
-(28792, 178, 0, NULL),
+(28792, 178, 0, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (28792, 179, 0, NULL),
 (28792, 182, 3411, NULL),
 (28792, 277, 3, NULL),
@@ -340555,8 +340529,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (29019, 114, NULL, 0),
 (29019, 116, NULL, 0),
 (29019, 117, NULL, 0),
-(29019, 118, NULL, 0);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(29019, 118, NULL, 0),
 (29019, 158, NULL, 0),
 (29019, 160, NULL, 0),
 (29019, 192, 1, NULL),
@@ -340585,7 +340558,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (29019, 456, -4, NULL),
 (29019, 457, 2, NULL),
 (29019, 466, NULL, 0.27),
-(29019, 475, 7350, NULL),
+(29019, 475, 7350, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (29019, 476, 29400, NULL),
 (29019, 479, NULL, 2000000),
 (29019, 482, NULL, 90),
@@ -342753,8 +342727,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (29241, 476, NULL, 22200),
 (29241, 479, NULL, 1000000),
 (29241, 482, NULL, 600),
-(29241, 484, NULL, 0.75);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(29241, 484, NULL, 0.75),
 (29241, 497, NULL, 0.005),
 (29241, 508, NULL, 180),
 (29241, 524, NULL, 0.75),
@@ -342782,7 +342755,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (29242, 64, NULL, 0.541666667),
 (29242, 103, NULL, 0),
 (29242, 117, NULL, 2),
-(29242, 118, NULL, 2),
+(29242, 118, NULL, 2);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (29242, 158, NULL, 1500),
 (29242, 160, NULL, 0.365),
 (29242, 192, NULL, 1),
@@ -344934,8 +344908,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (29967, 1433, NULL, 2),
 (29969, 9, NULL, 40),
 (29969, 11, NULL, 0),
-(29969, 48, NULL, 0);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(29969, 48, NULL, 0),
 (29969, 182, NULL, 30544),
 (29969, 263, NULL, 3250),
 (29969, 277, NULL, 1),
@@ -344963,7 +344936,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (29969, 1883, NULL, 10000),
 (29970, 9, NULL, 40),
 (29970, 11, NULL, 0),
-(29970, 48, NULL, 0),
+(29970, 48, NULL, 0);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (29970, 182, NULL, 30544),
 (29970, 263, NULL, 3550),
 (29970, 277, NULL, 1),
@@ -347148,8 +347122,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (30191, 466, NULL, 0.85),
 (30191, 475, 5000, NULL),
 (30191, 476, 8000, NULL),
-(30191, 482, NULL, 3300);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(30191, 482, NULL, 3300),
 (30191, 506, NULL, 18000),
 (30191, 507, 30426, NULL),
 (30191, 508, 150, NULL),
@@ -347178,7 +347151,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (30191, 942, 10000, NULL),
 (30191, 1011, NULL, 0),
 (30191, 1648, 1, NULL),
-(30191, 1649, 1, NULL),
+(30191, 1649, 1, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (30191, 1650, 1, NULL),
 (30191, 1651, NULL, 0),
 (30191, 1652, 1, NULL),
@@ -349339,8 +349313,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (30301, 525, NULL, 1),
 (30301, 552, NULL, 1000),
 (30301, 665, NULL, 0),
-(30302, 9, NULL, 50000);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(30302, 9, NULL, 50000),
 (30302, 54, NULL, 0),
 (30302, 158, NULL, 0),
 (30302, 160, NULL, 0),
@@ -349370,7 +349343,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (30325, 181, NULL, 166),
 (30325, 182, NULL, 3403),
 (30325, 183, NULL, 11433),
-(30325, 275, 5, NULL),
+(30325, 275, 5, NULL);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (30325, 277, NULL, 5),
 (30325, 278, NULL, 4),
 (30325, 280, 0, NULL),
@@ -351565,8 +351539,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (31162, 1955, NULL, 10),
 (31163, 9, NULL, 40),
 (31163, 66, NULL, 0),
-(31163, 151, NULL, 0);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(31163, 151, NULL, 0),
 (31163, 182, NULL, 26254),
 (31163, 216, NULL, 0),
 (31163, 277, NULL, 1),
@@ -351597,7 +351570,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (31167, 9, NULL, 40),
 (31167, 182, NULL, 26254),
 (31167, 277, NULL, 4),
-(31167, 422, NULL, 2),
+(31167, 422, NULL, 2);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (31167, 624, NULL, 25),
 (31167, 633, NULL, 5),
 (31167, 1138, NULL, -10),
@@ -353833,8 +353807,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (31534, 182, NULL, 26259),
 (31534, 204, NULL, 0.85),
 (31534, 277, NULL, 4),
-(31534, 422, NULL, 2);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(31534, 422, NULL, 2),
 (31534, 633, NULL, 5),
 (31534, 1138, NULL, 10),
 (31534, 1153, NULL, 300),
@@ -353865,7 +353838,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (31538, 277, NULL, 1),
 (31538, 422, NULL, 1),
 (31538, 633, NULL, 0),
-(31538, 1138, NULL, 10),
+(31538, 1138, NULL, 10);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (31538, 1153, NULL, 200),
 (31538, 1547, NULL, 1),
 (31539, 1955, NULL, 5),
@@ -356091,8 +356065,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (31878, 51, NULL, 4000),
 (31878, 54, NULL, 60000),
 (31878, 55, NULL, 2500000),
-(31878, 64, NULL, 1.4);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(31878, 64, NULL, 1.4),
 (31878, 70, NULL, 0.001),
 (31878, 79, NULL, 2000),
 (31878, 109, NULL, 1),
@@ -356122,7 +356095,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (31878, 267, NULL, 0.5),
 (31878, 268, NULL, 0.9),
 (31878, 269, NULL, 0.75),
-(31878, 270, NULL, 0.55),
+(31878, 270, NULL, 0.55);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (31878, 271, NULL, 1),
 (31878, 272, NULL, 0.5),
 (31878, 273, NULL, 0.6),
@@ -358325,8 +358299,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (32307, 662, NULL, 0.5),
 (32307, 1132, NULL, 400),
 (32307, 1137, 3, NULL),
-(32307, 1154, 3, NULL);
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
+(32307, 1154, 3, NULL),
 (32307, 1178, NULL, 100),
 (32307, 1179, NULL, 0.01),
 (32307, 1196, NULL, 0.01),
@@ -358357,7 +358330,8 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (32309, 48, NULL, 780),
 (32309, 49, NULL, 0),
 (32309, 55, NULL, 1100000),
-(32309, 70, NULL, 0.125),
+(32309, 70, NULL, 0.125);
+INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES
 (32309, 76, NULL, 90000),
 (32309, 79, NULL, 9000),
 (32309, 101, NULL, 6),
@@ -359135,7 +359109,7 @@ INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloa
 (32461, 422, NULL, 1),
 (32461, 604, NULL, 384),
 (32461, 605, NULL, 394),
-(32461, 606, NULL, 88),
+(32461, 606, 88, NULL),
 (32461, 633, NULL, 0),
 (32461, 1180, NULL, 0.01),
 (32461, 1211, NULL, 0),

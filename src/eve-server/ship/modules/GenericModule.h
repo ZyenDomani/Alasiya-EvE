@@ -54,7 +54,7 @@ public:
     void Repair(EvilNumber amount)                      { m_modRef->SetAttribute(AttrHP, m_modRef->GetAttribute(AttrHP) + amount); }
 
     bool HasAttribute(uint32 attrID)                    { return m_modRef->HasAttribute(attrID); }
-    void SetAttribute(uint32 attrID, EvilNumber val)    { m_modRef->SetAttribute(attrID, val); }
+    void SetAttribute(uint32 attrID, EvilNumber val, bool update=true) { m_modRef->SetAttribute(attrID, val, update); }
     void ResetAttribute(uint32 attrID)                  { m_modRef->ResetAttribute(attrID); }
     EvilNumber GetAttribute(uint32 attrID)              { return m_modRef->GetAttribute(attrID); }
 

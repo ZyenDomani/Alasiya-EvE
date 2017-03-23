@@ -54,6 +54,8 @@ m_pilot(nullptr),
 m_ModuleManager(nullptr)
 {
     m_IsLoaded = false;
+    m_isDocking = false;
+    m_isUndocking = false;
     m_stackMap.clear();
     m_attribMap.clear();
     m_onlineModuleVec.clear();
@@ -651,6 +653,7 @@ void ShipItem::ProcessModules() {
 }
 
 void ShipItem::Dock() {
+    m_isDocking = true;
     DeactivateAllModules();
     OfflineAll();
     ClearModifiers();
@@ -658,6 +661,7 @@ void ShipItem::Dock() {
 }
 
 void ShipItem::Undock() {
+    m_isUndocking = true;
     // apply ship effects, as all variables are set at this point.
     if (m_ModuleManager) {
         ProcessEffects(true, true);

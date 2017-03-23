@@ -173,6 +173,8 @@ void GenericModule::Offline()
 
     m_ModuleState = ModuleStates::MOD_OFFLINE;
     m_modRef->PutOffline();
+    if (m_shipRef->IsDocking())
+        m_modRef->SetAttribute(AttrIsOnline, true, true);
 }
 
 void GenericModule::Overload()
