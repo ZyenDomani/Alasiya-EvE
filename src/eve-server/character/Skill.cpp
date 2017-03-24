@@ -45,7 +45,9 @@ Skill::Skill(
 
 SkillRef Skill::Load(ItemFactory &factory, uint32 skillID)
 {
-    return InventoryItem::Load<Skill>( factory, skillID );
+    SkillRef sRef = InventoryItem::Load<Skill>( factory, skillID );
+    sRef->VerifySP();
+    return sRef;
 }
 
 SkillRef Skill::Spawn(ItemFactory &factory, ItemData &data)
@@ -65,8 +67,17 @@ uint32 Skill::CreateItemID(ItemFactory &factory, ItemData &data)
 }
 
 EvilNumber Skill::GetSPForLevel( EvilNumber level ) {
-    return (EVIL_SKILL_BASE_POINTS * GetAttribute(AttrSkillTimeConstant) * EvilNumber::pow(2, (2.5*(level - 1))));
+    return EvEMath::SkillPointsAtLevel(level, GetAttribute(AttrSkillTimeConstant));
 }
+
+void Skill::VerifySP()
+{
+    EvilNumber spThisLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel), GetAttribute(AttrSkillTimeConstant));
+    EvilNumber spNextLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel) +1, GetAttribute(AttrSkillTimeConstant));
+    if ((GetAttribute(AttrSkillPoints) < spThisLevel) or (GetAttribute(AttrSkillPoints) > spNextLevel))
+        SetAttribute(AttrSkillPoints, spThisLevel);
+}
+
 
 bool Skill::SkillPrereqsComplete(Character &ch) {
     EvilNumber skillID;

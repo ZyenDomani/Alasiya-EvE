@@ -1053,11 +1053,11 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
             ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
             skill = services->item_factory->SpawnSkill(idata);
 
-            character->AddItem(skill);
             if (!skill) {
                 throw PyException(MakeCustomError("Unable to create item for skillID %u.", skillID));
                 return new PyString ("Skill Gifting Failure - Unable to create item for skillID %u.", skillID);
             } else {
+                character->AddItem(skill);
                 newPoints = skill->GetSPForLevel((EvilNumber)level);
                 skill->SetAttribute(AttrSkillLevel, level);
                 skill->SetAttribute(AttrSkillPoints, newPoints);

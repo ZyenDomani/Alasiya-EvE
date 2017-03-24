@@ -82,6 +82,8 @@ public:
      */
     static bool FitModuleSkillCheck(InventoryItemRef item, CharacterRef ch);
 
+    void VerifySP();
+
 protected:
     Skill(
         ItemFactory &_factory,
