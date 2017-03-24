@@ -141,8 +141,11 @@ Client::~Client() {
 
         // remove ship and char memory objects from running server
         m_system->RemoveClient(this, IsDocked(), true);
-        m_char->LogOut();
-        m_ship->LogOut();
+
+        if (!sConsole.IsShutdown()) {
+            m_char->LogOut();
+            m_ship->LogOut();
+        }
 
         m_TS = nullptr;
         m_system = nullptr;
