@@ -142,6 +142,29 @@ namespace Effects {
         dgmMathRevPostPercent = 12,
         MaxMathMethod         = 12
     };
+
+    enum Action {
+        dgmATTACK                   = 13,
+        dgmCARGOSCAN                = 14,
+        dgmCHEATTELEDOCK            = 15,
+        dgmCHEATTELEGATE            = 16,
+        dgmDECLOAKWAVE              = 19,
+        dgmECMBURST                 = 30,
+        dgmEMPWAVE                  = 32,
+        dgmLAUNCH                   = 44,
+        dgmLAUNCHDEFENDERMISSILE    = 45,
+        dgmLAUNCHDRONE              = 46,
+        dgmLAUNCHFOFMISSILE         = 47,
+        dgmMINE                     = 50,
+        dgmPOWERBOOST               = 53,
+        dgmSHIPSCAN                 = 66,
+        dgmSURVEYSCAN               = 69,
+        dgmTARGETHOSTILES           = 70,
+        dgmTARGETSILENTLY           = 71,
+        dgmTOOLTARGETSKILLS         = 72,
+        dgmVERIFYTARGETGROUP        = 74
+    };
+    
     /*  old shit
              case CALC_NONE:                            return val1;
              case CALC_ADD:                             return val1 + val2;

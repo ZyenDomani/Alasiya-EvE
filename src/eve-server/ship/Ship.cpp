@@ -1057,6 +1057,8 @@ void ShipItem::StripFitting()
 }
 
 // new effects system.  wip
+
+// this call isnt used, and i dont think it's needed.
 void ShipItem::GetNerf(uint16& attrib, InventoryItem* pItem, EvilNumber& value)
 {
     int8 pos = 0;
@@ -1112,8 +1114,8 @@ void ShipItem::GetNerf(uint16& attrib, InventoryItem* pItem, EvilNumber& value)
     if (pos > 1)
         effective = exp(-pow(((pos - 1)/2.67),2));
 
-    _log(EFFECTS__TRACE, "ShipItem::GetNerf() - %s with attrib %u is at index %i of %i.  Nerf is at %.3f%", \
-            pItem->itemName().c_str(), attrib, pos, (itr->second.empty() > 0 ? itr->second.size() : 0), effective);
+    _log(EFFECTS__TRACE, "ShipItem::GetNerf() - itemID %u, attrib %u, index %i of %i.  Nerf is at %.3f%", \
+            pItem->itemID(), attrib, pos, (itr->second.empty() ? 0 : itr->second.size()), effective);
 
 }
 
