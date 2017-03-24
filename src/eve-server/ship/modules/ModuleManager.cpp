@@ -513,7 +513,7 @@ bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
         }
         if (mod->isTurretFitted()) {
             if (m_Ship->GetAttribute(AttrTurretSlotsLeft).get_bool()) {
-                m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) +1));
+                m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) -1));
             } else {
                 SafeDelete(mod);
                 throw PyException( MakeUserError( "NotEnoughTurretSlots" ) );
@@ -521,7 +521,7 @@ bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
             }
 		} else if (mod->isLauncherFitted()) {
             if (m_Ship->GetAttribute(AttrLauncherSlotsLeft).get_bool()) {
-                m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) +1));
+                m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) -1));
             } else {
                 SafeDelete(mod);
                 throw PyException( MakeUserError( "NotEnoughLauncherSlots" ) );
