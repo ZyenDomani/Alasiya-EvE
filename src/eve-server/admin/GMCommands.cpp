@@ -1069,7 +1069,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
         character->SaveSkillHistory(skillEventGMGive, EvilTimeNow().get_double(), ownerID, skillID, level, \
                                     newPoints.get_double(), character->GetTotalSP().get_double());
 
-        sLog.White("Command::GiveSkill", "skill %u set to level %u.", skillID, level);
+        sLog.White("Command::GiveSkill", "skill %u set to level %u with %.2f SP.", skillID, level, newPoints.get_float());
 
         return new PyString ("Skill Gifting Complete");
     } else

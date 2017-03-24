@@ -12,7 +12,8 @@
 
 EvilNumber EvEMath::SkillPointsAtLevel( EvilNumber SkillLevel, EvilNumber SkillRank )
 {
-    return (pow( 2, (2.5 * SkillLevel.get_double()) - 2.5 ) * 250.0 * SkillRank);
+    return ceil(pow(4 * sqrt(2), (SkillLevel.get_int() -1)) * 250.0 * SkillRank.get_int());
+
 }
 
 EvilNumber EvEMath::SkillPointsPerMinute( EvilNumber EffectivePrimaryAttribute, EvilNumber EffectiveSecondaryAttribute )
@@ -173,4 +174,3 @@ EvilNumber EvEMath::ME_EffectOnWaste( EvilNumber MaterialAmount, EvilNumber Base
 	 return (100.0 * ((0.01 - 0.0005 * BrokerRelationsSkillLevel.get_double())
 	 / (pow( 2, (0.14 * FactionStanding.get_double() + 0.06 * CorporationStanding.get_double()) ))));
  }
- 
