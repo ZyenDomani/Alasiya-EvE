@@ -1177,6 +1177,7 @@ void InventoryItem::RemoveModifier(fxData data)
 
 void InventoryItem::ClearModifiers()
 {
+    _log(EFFECTS__TRACE, "Resetting modifier map for %s", itemName().c_str());
     m_modifiers.clear();
     mAttributeMap.Save();
     mAttributeMap.Load(true);
