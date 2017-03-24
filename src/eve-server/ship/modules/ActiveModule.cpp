@@ -98,7 +98,7 @@ void ActiveModule::Process()
 {
     // timing and verification function
     //check if we have signal to stop the cycle
-    if (m_Stop) {
+    if ((m_Stop) and (m_ModuleState != ModuleStates::MOD_ONLINE)) {
         //wait for time to run out and send deactivate to client
         if (m_timer.Check(false)) {
             m_timer.Disable();
@@ -136,15 +136,11 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_repeat = repeat;
     m_effectID = effectID;
     m_guidStr = sFxDataMgr.GetEffectGuid(effectID);
-    m_ModuleState = ModuleStates::MOD_ACTIVATED;  //this HAS to be set before mod::DoCycle()
 
-    /** @todo   these need to check for targetable actions, and apply changes accordingly */
-
-    //active module class has a m_cycleTime variable that holds cycle time,
-    // based on character skills and specific module attributes.  -allan 19Dec15
     SetTimer(DoCycle()); // Do initial cycle immediately while we start timer
 
-    ApplyEffect(Effects::dgmStateActive, true);
+    m_ModuleState = ModuleStates::MOD_ACTIVATED;
+
     ShowEffect(true, false);
 
     if (!m_repeat)
@@ -184,7 +180,12 @@ void ActiveModule::DeOverload()
 // yes, the xCycle() shit below seems overkill, but each has a specific purpose
 uint32 ActiveModule::DoCycle()
 {
+    if (m_ModuleState == ModuleStates::MOD_ACTIVATED)
+        ApplyEffect(Effects::dgmStateActive, false);
+    // modules seem to apply their active effect on EVERY call.
+    //  will need to test for this, and test against those that make calls AFTER the effect (mining)
     if (m_shipRef->GetPilot()->GetShipSE()->SysBubble()) {
+        ApplyEffect(Effects::dgmStateActive, true);
         EvilNumber cycleTime = 0;
         if (m_modRef->HasAttribute(AttrDuration, cycleTime))
             return cycleTime.get_int();
@@ -210,9 +211,9 @@ void ActiveModule::AbortCycle()
 
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
-    if (m_ModuleState != ModuleStates::MOD_ACTIVATED)
+    if (m_ModuleState != ModuleStates::MOD_DEACTIVATING)
         return;
-    
+
     m_repeat = 0;
 
     ApplyEffect(Effects::dgmStateActive, false);
@@ -323,7 +324,7 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
     if ((abort)
         and ((m_effectID == EVEEffectID::miningLaser)
             or (m_effectID == EVEEffectID::miningClouds)))
-        abortTime += (8 * Win32Time_Second);
+        abortTime += (3 * Win32Time_Second);    // delay mining abort for 3s to simulate module "completing" its' cycle and dumping ore to cargo
 
     uint32 timeLeft = GetRemainingCycleTimeMS();
 
