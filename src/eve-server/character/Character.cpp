@@ -422,6 +422,11 @@ CharacterRef Character::Spawn(ItemFactory &factory, ItemData &data, CharacterDat
     return charRef;
 }
 
+void Character::LogOut()
+{
+    m_factory.RemoveItem(m_itemID);
+}
+
 void Character::Delete() {
     // delete contents
     m_inventory->DeleteContents();

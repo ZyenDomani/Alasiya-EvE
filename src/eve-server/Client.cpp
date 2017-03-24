@@ -139,11 +139,10 @@ Client::~Client() {
         if (pShipSE)
             WarpOut();
 
-        SaveAllToDatabase();
-
+        // remove ship and char memory objects from running server
         m_system->RemoveClient(this, IsDocked(), true);
-        // remove ship item here, as *something* changes ship postion when saving items from factory.
-        m_services.item_factory->RemoveItem(m_shipId);
+        m_char->LogOut();
+        m_ship->LogOut();
 
         m_TS = nullptr;
         m_system = nullptr;
@@ -209,7 +208,7 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     m_char->SetClient(this);
     m_char->UpdateSkillQueue();
-    
+
     SetPodItem();
 
     m_ship = m_services.item_factory->GetShip(m_shipId);
@@ -956,17 +955,6 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
         m_ship->UpdateHoldsUsedVolume();
 
     m_services.item_factory->UnsetUsingClient();
-}
-
-void Client::SavePosition() {
-    if (pShipSE)
-        pShipSE->SetPosition(pShipSE->DestinyMgr()->GetPosition());
-    m_ship->SaveShip();
-}
-
-void Client::SaveAllToDatabase() {
-    SavePosition();
-    m_char->SaveFullCharacter();         // Save Character info to DB
 }
 
 PyRep *Client::GetInfoWindowDataForChar(Client *pClient) {

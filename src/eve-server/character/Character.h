@@ -608,6 +608,7 @@ public:
     void                    LogKill(CharKillData data)          { m_db.SaveKillOrLoss(data); }
 
     //  saves
+    void                    LogOut();
     void                    SaveCharacter();
     void                    SaveFullCharacter();
     void                    SaveSkillQueue();

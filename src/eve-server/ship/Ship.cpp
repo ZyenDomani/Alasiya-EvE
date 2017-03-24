@@ -164,6 +164,13 @@ void ShipItem::InitPod() {
         Heal();
 }
 
+void ShipItem::LogOut()
+{
+    SaveShip();
+    // remove ship item here, as *something* changes ship postion when saving items from factory.
+    m_factory.RemoveItem(m_itemID);
+}
+
 void ShipItem::SetPlayer(Client* pClient) {
     if (m_pilot == pClient)
         return;

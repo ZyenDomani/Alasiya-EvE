@@ -151,8 +151,6 @@ public:
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
     void SetClientTimer(ClientState state, uint32 time=ClientTimers::DefaultTimer);
     void SetDestiny(const GPoint& pt, bool count = false);
-    void SavePosition();
-    void SaveAllToDatabase();
     void UpdateSkillTraining();
 	void SpawnNewRookieShip();
     void LoadStationHangar(uint32 stationID);

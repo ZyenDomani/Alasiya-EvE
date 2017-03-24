@@ -238,6 +238,7 @@ public:
     void Init();
     void InitPod();
     void InitAttribs();
+    void LogOut();
     static ShipItemRef Load(ItemFactory &factory, uint32 shipID);
     static ShipItemRef Spawn(ItemFactory &factory, ItemData &data);
 
@@ -394,7 +395,7 @@ private:
     void ProcessShipEffects(bool update=false);
 
     typedef std::map<InventoryItem*, double> iMap;
-    std::map<uint16, ShipItem::iMap> m_stackMap;     // stacking attrib storage  attrib, map<InventoryItem*, double> 
+    std::map<uint16, ShipItem::iMap> m_stackMap;     // stacking attrib storage  attrib, map<InventoryItem*, double>
 
     bool m_isDocking;
     bool m_isUndocking;
