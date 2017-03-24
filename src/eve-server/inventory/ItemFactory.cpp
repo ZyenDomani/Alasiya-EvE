@@ -66,8 +66,10 @@ ItemFactory::~ItemFactory() {
         SafeDelete(cur.second);
     m_categories.clear();
     // items
+    /*
     for (auto cur : m_items)
         delete(cur.second.get());
+    */
     // Set Client pointer to NULL
     m_pClient = nullptr;
 }
@@ -185,8 +187,6 @@ void ItemFactory::RemoveItem(uint32 itemID) {
     } else {
         --m_itemCount;
         m_items.erase( res );
-        // i know these items are ref-counted, but that doesnt delete them from here
-        delete(res->second.get());
     }
 }
 
