@@ -45,9 +45,7 @@ Skill::Skill(
 
 SkillRef Skill::Load(ItemFactory &factory, uint32 skillID)
 {
-    SkillRef sRef = InventoryItem::Load<Skill>( factory, skillID );
-    sRef->VerifySP();
-    return sRef;
+    return InventoryItem::Load<Skill>( factory, skillID );
 }
 
 SkillRef Skill::Spawn(ItemFactory &factory, ItemData &data)

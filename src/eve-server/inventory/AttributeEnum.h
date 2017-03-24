@@ -43,16 +43,16 @@ enum EveAttrEnum {
     AttrSpeedFactor = 20,
     AttrWarpFactor = 21,
     AttrWarpInhibitor = 29,
-    AttrPower = 30,
+    AttrPower = 30,         //required by this item
     AttrMaxArmor = 31,
     AttrBreakPoint = 32,
     AttrMaxVelocity = 37,
-    AttrCapacity = 38,
+    AttrCapacity = 38,      //cargohold
     AttrDamageHP = 39,
     AttrSlots = 47,
     AttrCpuOutput = 48,
     AttrCpuLoad = 49,
-    AttrCpu = 50,
+    AttrCpu = 50,       //required by this item
     AttrSpeed = 51,             //durationAttributeID in dgmEffects
     AttrDamageResistance = 52,
     AttrMaxRange = 54,          //rangeAttributeID in dgmEffects
@@ -1657,7 +1657,7 @@ enum EveAttrEnum {
     AttrtriageRemoteModuleCapNeed = 1802,
     AttrMWDSignatureRadiusBonus = 1803,
     AttrspecialQuafeHoldCapacity = 1804,
-    // end of client const attrib data 
+    // end of client const attrib data
     AttrrequiresSovereigntyDisplayOnly = 1806,
     AttrnosReflector = 1808,
     AttrneutReflector = 1809,

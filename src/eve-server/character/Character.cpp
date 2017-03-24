@@ -364,6 +364,7 @@ bool Character::_Load() {
 
     // Update Skill Queue and Total Skill Points Trained:
     if (m_loaded) {
+        VerifySP();
         if (GetSkillInTraining())
             UpdateSkillQueue();
         m_certificates.clear();
@@ -381,6 +382,17 @@ bool Character::_Load() {
     ProcessEffects();
 
     return m_loaded;
+}
+
+void Character::VerifySP()
+{
+    std::vector<InventoryItemRef> skillList;
+    GetSkillsList(skillList);
+    SkillRef sRef(nullptr);
+    for (auto cur : skillList) {
+        sRef = SkillRef::StaticCast(cur);
+        sRef->VerifySP();
+    }
 }
 
 template<class _Ty>

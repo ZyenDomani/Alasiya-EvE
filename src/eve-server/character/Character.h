@@ -670,6 +670,8 @@ protected:
     );
     virtual ~Character();
 
+    void VerifySP();
+    
     /*
      * Member functions:
      */
