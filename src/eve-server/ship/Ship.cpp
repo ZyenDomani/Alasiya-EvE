@@ -1064,68 +1064,6 @@ void ShipItem::StripFitting()
 }
 
 // new effects system.  wip
-
-// this call isnt used, and i dont think it's needed.
-void ShipItem::GetNerf(uint16& attrib, InventoryItem* pItem, EvilNumber& value)
-{
-    int8 pos = 0;
-    ShipItem::iMap::iterator mapItr;
-    std::map<uint16, ShipItem::iMap>::iterator itr = m_stackMap.find(attrib);
-    if (itr == m_stackMap.end()) {
-        std::map<InventoryItem*, double> itmMap;
-        itmMap.clear();
-        itmMap.insert(std::pair<InventoryItem*, double>(pItem, value.get_double()));
-        std::pair<std::map<uint16, ShipItem::iMap>::iterator, bool> ins;
-        ins = m_stackMap.insert(std::pair<uint16, ShipItem::iMap>(attrib, itmMap));
-        if (ins.second)
-            itr = ins.first;
-        else
-            _log(EFFECTS__ERROR, "ShipItem::GetNerf() - Could not insert %s into map with attrib %u", pItem->itemName().c_str(), attrib);
-        // even if inserting errors, there are no nerfed attribs in this map....pos is still 1, so no modifying value needed.
-        //return;
-        pos = 1;
-    } else {
-        /* this attrib is already in the map.  see if the item exists in the vector.
-         * if found, it's being removed from the nerf map.
-         *   in this case, shits gonna be all fuked up, as we'll have to remove ALL modifiers, recalculate nerf based on
-         *  modifier's new positions, then reapply all modifiers.....this'll suk.
-         *
-         *   i have no idea how to do this yet...
-         */
-
-        if (itr->second.size() < 2) {
-            pos = 0;
-            m_stackMap.erase(itr);
-        } else {
-            pos = std::distance(itr->second.begin(), mapItr);
-            mapItr = itr->second.find(pItem);
-            if (mapItr != itr->second.end())
-                itr->second.erase(pItem);
-        }
-
-    }
-
-    /* in order to mimic live's way of applying nerfed modifiers in decending order, we will need the expression for the modifier here, or access to it,
-     * to process a new value, as existing modifiers will have to be negated, the modifiers map resorted, then reapply modifiers with new nerfed value(s)
-     *
-     *   i have no idea how to do this yet...
-     */
-
-    if (pos < 0) {
-        _log(EFFECTS__ERROR, "ShipItem::GetNerf() - %s with attrib %u has negative index", pItem->itemName().c_str(), attrib);
-        return; // pos is fucked up....return without modifying value here.
-    }
-
-
-    float effective = 1.0f;
-    if (pos > 1)
-        effective = exp(-pow(((pos - 1)/2.67),2));
-
-    _log(EFFECTS__TRACE, "ShipItem::GetNerf() - itemID %u, attrib %u, index %i of %i.  Nerf is at %.3f%", \
-            pItem->itemID(), attrib, pos, (itr->second.empty() ? 0 : itr->second.size()), effective);
-
-}
-
 void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 {
     /*

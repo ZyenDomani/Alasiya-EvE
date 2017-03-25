@@ -72,8 +72,10 @@ void Skill::VerifySP()
 {
     EvilNumber spThisLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel), GetAttribute(AttrSkillTimeConstant));
     EvilNumber spNextLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel) +1, GetAttribute(AttrSkillTimeConstant));
-    if ((GetAttribute(AttrSkillPoints) < spThisLevel) or (GetAttribute(AttrSkillPoints) > spNextLevel))
+    if ((GetAttribute(AttrSkillPoints) < spThisLevel) or (GetAttribute(AttrSkillPoints) > spNextLevel)) {
+        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %.2f to %.2f", itemName().c_str(), GetAttribute(AttrSkillPoints).get_float(), spThisLevel.get_float());
         SetAttribute(AttrSkillPoints, spThisLevel);
+    }
 }
 
 

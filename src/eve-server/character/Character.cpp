@@ -623,6 +623,15 @@ PyRep* Character::GetRAMSkills()
     return tuple;
 }
 
+void Character::ResetModifiers()
+{
+    ClearModifiers();
+    std::vector<InventoryItemRef> allSkills;
+    GetSkillsList(allSkills);
+    for (auto curSkill : allSkills)
+        curSkill->ClearModifiers();
+}
+
 void Character::ProcessEffects()
 {
     //  427 total skills.  this should be fairly fast...it is.
@@ -836,7 +845,7 @@ void Character::UpdateSkillQueue() {
             m_pClient->QueueDestinyEvent(&tmp); // consumed
 
             currentTraining->SetAttribute(AttrSkillLevel, level );
-            currentTraining->SetAttribute(AttrSkillPoints, newPoints);
+            currentTraining->SetAttribute(AttrSkillPoints, newPoints.get_int());
             currentTraining->SetAttribute(AttrExpiryTime, 0, false);
             currentTraining->SetFlag(flagSkill);
             m_skillQueue.erase( m_skillQueue.begin() );

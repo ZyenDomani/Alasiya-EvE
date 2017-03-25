@@ -1043,7 +1043,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
             //EvilNumber tmp = EVIL_SKILL_BASE_POINTS * skill->GetAttribute(AttrSkillTimeConstant) * EvilNumber::pow(2, (2.5*(level - 1)));
             newPoints = skill->GetSPForLevel((EvilNumber)level);
             skill->SetAttribute(AttrSkillLevel, level);
-            skill->SetAttribute(AttrSkillPoints, newPoints);
+            skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
 
             if (skill->flag() == flagSkillInTraining) {
                 skill->SetFlag(flagSkill);
@@ -1060,7 +1060,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
                 character->AddItem(skill);
                 newPoints = skill->GetSPForLevel((EvilNumber)level);
                 skill->SetAttribute(AttrSkillLevel, level);
-                skill->SetAttribute(AttrSkillPoints, newPoints);
+                skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
             }
         }
         skill->SaveItem();

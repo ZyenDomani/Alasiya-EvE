@@ -653,7 +653,7 @@ public:
     // character skill, implant and booster effects.  parsed on char load.  applied on ship init in space (with all other ship-related effects)
     // NOTE:  implants and boosters not implemented yet
     void                    ProcessEffects();
-
+    void                    ResetModifiers();   // this will reset ALL char and skill attribs and modifier maps to default
 
     virtual bool _Load();
 
@@ -671,7 +671,7 @@ protected:
     virtual ~Character();
 
     void VerifySP();
-    
+
     /*
      * Member functions:
      */

@@ -12,14 +12,14 @@
 
 EvilNumber EvEMath::SkillPointsAtLevel( EvilNumber SkillLevel, EvilNumber SkillRank )
 {
-    return ceil(pow(4 * sqrt(2), (SkillLevel.get_int() -1)) * 250.0 * SkillRank.get_int());
-
+    return ceil(pow(4 * sqrt(2), (SkillLevel.get_int() -1)) * 250 * SkillRank.get_int());
 }
 
 EvilNumber EvEMath::SkillPointsPerMinute( EvilNumber EffectivePrimaryAttribute, EvilNumber EffectiveSecondaryAttribute )
 {
     return (EffectivePrimaryAttribute + (0.5 * EffectiveSecondaryAttribute));
 }
+
 EvilNumber EvEMath::SkillStartingTime( EvilNumber currentSkillSP, EvilNumber nextLevelSkillSP, EvilNumber effectiveSPperMinute, EvilNumber timeNow )
 {
     return (timeNow - ((currentSkillSP / effectiveSPperMinute) * EvilTime_Minute));

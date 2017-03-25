@@ -545,7 +545,7 @@ void Client::UndockFromStation() {
      *  ***** 9sec from hitting undock to space view on live. *****
      */
     OnCharNoLongerInStation();
-    m_char->ClearModifiers();
+    m_char->ResetModifiers();
     m_char->ProcessEffects();
     CreateShipSE();
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
@@ -642,13 +642,13 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         if (m_ship->typeID() == itemTypeCapsule) {
             m_ship->Move(m_locationID, flagCapsule);
             CreateShipSE();
-            m_char->ClearModifiers();
+            m_char->ResetModifiers();
             m_char->ProcessEffects();
             pShipSE->SetPilot(this);
             pShipSE->GetShipSE()->SetPodShipID(m_shipId);
             m_system->AddEntity(pShipSE);
         } else {
-            m_char->ClearModifiers();
+            m_char->ResetModifiers();
             m_ship->ChangeOwner(m_char->itemID());
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSEFromInventory(m_shipId);

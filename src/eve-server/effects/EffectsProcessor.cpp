@@ -725,8 +725,9 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 data.fxSrc = dgmSrcSkill;
             pItem->RemoveModifier(data);
         } break;
+        /*
         // these will need more work to properly code conditionals here.
-        //  that is not a priority, as they are only used by effect 16 (Online), which is covered (hacked) in GenericModule class.
+        //  that is not a priority, as they are only used by effect 16 (Online), which is kinda covered (hacked) in GenericModule class.
         case operandOR: {    //'%(arg1)s OR %(arg2)s'       -- used with 'if' in arg2 as 'y'.   ((if x then y) OR z)  (used as "else" or elif)
             fxData arg1;
                 arg1.result = 0;
@@ -768,9 +769,6 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             }
         } break;
         // trivial attribute operations
-        case operandSKILLCHECK: {   //67    SkillCheck(%(arg1)s)
-            data.result = true;
-        } break;
         case operandADD: {      //1, (%(arg1)s)+(%(arg2)s)
             // this isnt complete.
             fxData arg1;
@@ -804,8 +802,12 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         case operandGT: {   //38    %(arg1)s> %(arg2)s
 
         } break;
+        */
         case operandUE: {   //73    UserError(%(arg1)s)
 
+        } break;
+        case operandSKILLCHECK: {   //67    SkillCheck(%(arg1)s)
+            data.result = true;
         } break;
         /** @todo  add trivial ops here...add, sub, mult, div */
         default: {              // in case the op hasnt been defined, make a note here (should not hit)
@@ -824,6 +826,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
      */
 }
 
+// attrib nerf and caps arent needed, from what ive seen while testing.  
 void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update/*false*/)
 {
     bool isRig = false, subSys = false, charge = false;
@@ -980,32 +983,6 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         // get srcAttr
         EvilNumber srcValue = srcItemRef->GetAttribute(cur.second.srcAttr);
 
-        // check for nerf, modify value as needed  -nerf test is working correctly
-        bool nerfed = false;
-        switch (cur.second.fxSrc) {
-            case dgmSrcSelf:
-            case dgmSrcGang:
-            case dgmSrcTarget:
-            case dgmSrcOwner: {
-                switch (cur.second.targLoc) {
-                    case dgmTargLocShip:
-                    case dgmTargLocTarget: {
-                        switch (cur.second.math) {
-                            case dgmMathPreDiv:
-                            case dgmMathPreMul:
-                            case dgmMathPostDiv:
-                            case dgmMathPostMul:
-                            case dgmMathPostPercent:
-                            case dgmMathRevPostPercent: {
-                                if ((!isRig) and (!subSys) and (!charge))
-                                    nerfed = true; // not sure how to do this yet....probably map these on ship for easier access/checking/etc
-                            } break;
-                        }
-                    } break;
-                }
-            } break;
-        }
-
         // set target attr to modified value
         EvilNumber targValue = 0;
         int8 opID = cur.first;
@@ -1023,16 +1000,15 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                             targValue = 1;
                 } break;
             }
-            if (nerfed)
-                pShip->GetNerf(cur.second.targAttr, pItem, targValue);
+
             // send data to calculator
             EvilNumber newValue = sFxProc.CalculateAttributeValue(targValue, srcValue, opID);
             // avoid creating 0-value attributes on items
             if (newValue == 0)
                 continue;
             // set new calculated value for target attribute
-            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(): setting attribute %u for %u(%s) from %.3f to %.3f.  Nerfed: %s", \
-                    cur.second.targAttr, item->itemID(), item->itemName().c_str(), targValue.get_float(), newValue.get_float(), (nerfed ? "true" : "false"));
+            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(): setting attribute %u for %u(%s) from %.3f to %.3f.", \
+                    cur.second.targAttr, item->itemID(), item->itemName().c_str(), targValue.get_float(), newValue.get_float());
             // update is used to send attrib changes to client when changing module states while in space, but NOT for pilot login. (client acts funky)
             item->SetAttribute(cur.second.targAttr, newValue, update);
         }

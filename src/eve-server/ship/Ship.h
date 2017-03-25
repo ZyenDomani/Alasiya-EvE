@@ -375,12 +375,6 @@ protected:
 
     /* new effects system */
 public:
-    /* stacking penality system   -allan
-     * each ship will have a map of the attribs affected and the module affecting that attrib
-     * the code will calculate and update the value via reference
-     */
-    void GetNerf(uint16& attrib, InventoryItem* pItem, EvilNumber& value);
-
     void RemoveEffects();
 
 private:
