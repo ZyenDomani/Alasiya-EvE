@@ -425,8 +425,7 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
         || (target->IsContainerSE()) || (target->IsInanimateSE()) || (target->IsStaticEntity()) )
         return 2.0;
 
-    //  fixed lock time  -allan 24Dec14  -updated 26May15
-    /** @todo add ship bonuses in here */
+    //  fixed lock time  -allan 24Dec14  -updated 26May15   -revisited after new effects system implementation 25Mar17
     uint32 scanRes = ship->GetAttribute(AttrScanResolution).get_int();
     uint32 sigRad = 25; // set base as capsule with 25m signature radius
 
@@ -434,18 +433,16 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
         if ( target->GetSelf()->HasAttribute(AttrSignatureRadius) )
             sigRad = target->GetSelf()->GetAttribute(AttrSignatureRadius).get_int();
 
-    /*
-     * fleet invlovement enhances targeting speed using leadership of highest member (2%/lvl)
-     * modules - sensor boosters
-     */
-
     //https://wiki.eveonline.com/en/wiki/Targeting_speed
     //locktime = 40000/(scanres * asinh(sigrad)^2)
     float time = ( 40000 /(scanRes * pow(asinh(sigRad), 2)));
 
     if (mySE->HasPilot()) {
         Character* pChar = mySE->GetPilot()->GetChar().get();
-        time *= (1 - (0.05 * pChar->GetSkillLevel(skillSignatureAnalysis))); // 5% decrease/level
+        // this is applied using skill effects now.
+        //time *= (1 - (0.05 * pChar->GetSkillLevel(skillSignatureAnalysis))); // 5% decrease/level
+
+        // fleet invlovement enhances targeting speed using leadership of highest member (2%/lvl)
         if (pChar->fleetID()) { /** @todo  always returns 0 until fleets are implemented */
             //Character* pLeader = pChar->GetFleetLeader;   /** @todo this needs to be written */
             time *= (1 - (0.02 * pChar->GetSkillLevel(skillLeadership))); // 2% decrease/level
@@ -460,7 +457,7 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
      */
     double distance = ship->position().distance(target->GetPosition());
     // check for snipers... >85k distance do NOT need additional 7.5+s to targettime
-    if (mySE->IsNPCSE())
+    //if (mySE->IsNPCSE())      // not all snipers are npc
         if (distance > 85000)
             distance -= 75000;
 
