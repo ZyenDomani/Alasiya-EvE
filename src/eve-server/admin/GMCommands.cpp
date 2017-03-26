@@ -993,9 +993,9 @@ PyResult Command_giveskills(Client* who, CommandDB* db, PyServiceMgr* services, 
 }
 
 PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    uint8 level = 0, oldLevel = 0;
+    uint8 level = 0;
     uint32 ownerID = 0, skillID = 0;
-    EvilNumber oldPoints = 0, newPoints = 0;
+    EvilNumber newPoints = 0;
     CharacterRef character;
     Client *pTarget = nullptr;
 
@@ -1033,18 +1033,13 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
 
     if (pTarget && character.get()) {       // Make sure references are not NULL before trying to use them:
         SkillRef skill;
-
         if (character->HasSkillTrainedToLevel(skillID, level))
             return new PyNone();
         else if (character->HasSkill(skillID)) {
             skill = character->GetSkill(skillID);
-            oldLevel = skill->GetAttribute(AttrSkillLevel).get_int();
-            oldPoints = skill->GetAttribute(AttrSkillPoints);
-            //EvilNumber tmp = EVIL_SKILL_BASE_POINTS * skill->GetAttribute(AttrSkillTimeConstant) * EvilNumber::pow(2, (2.5*(level - 1)));
             newPoints = skill->GetSPForLevel((EvilNumber)level);
             skill->SetAttribute(AttrSkillLevel, level);
             skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
-
             if (skill->flag() == flagSkillInTraining) {
                 skill->SetFlag(flagSkill);
                 skill->SetAttribute(AttrExpiryTime, 0);
@@ -1052,7 +1047,6 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
         } else {    // Character DOES NOT have this skill
             ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
             skill = services->item_factory->SpawnSkill(idata);
-
             if (!skill) {
                 throw PyException(MakeCustomError("Unable to create item for skillID %u.", skillID));
                 return new PyString ("Skill Gifting Failure - Unable to create item for skillID %u.", skillID);
@@ -1064,7 +1058,6 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
             }
         }
         skill->SaveItem();
-
         //  save gm skill gift in history  -allan
         character->SaveSkillHistory(skillEventGMGive, EvilTimeNow().get_double(), ownerID, skillID, level, \
                                     newPoints.get_double(), character->GetTotalSP().get_double());
