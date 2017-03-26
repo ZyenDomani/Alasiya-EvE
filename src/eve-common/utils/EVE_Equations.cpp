@@ -12,7 +12,7 @@
 
 EvilNumber EvEMath::SkillPointsAtLevel( EvilNumber SkillLevel, EvilNumber SkillRank )
 {
-    return ceil(pow(4 * sqrt(2), (SkillLevel.get_int() -1)) * 250 * SkillRank.get_int());
+    return pow(sqrt(32), (SkillLevel.get_int() -1)) * 250 * SkillRank.get_int();
 }
 
 EvilNumber EvEMath::SkillPointsPerMinute( EvilNumber EffectivePrimaryAttribute, EvilNumber EffectiveSecondaryAttribute )
