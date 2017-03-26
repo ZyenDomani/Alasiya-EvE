@@ -573,25 +573,6 @@ int8 Character::GetSkillLevel(uint32 skillTypeID, bool zeroForNotInjected /*true
     return (int8)requiredSkill->GetAttribute(AttrSkillLevel).get_int() ;
 }
 
-float Character::GetAgilitySkills(bool cap) {
-    /* Spaceship Command: 2% agility for all ships per level
-     * Evasive Maneuvering: 5% agility bonus for all ships per level
-     * Advanced Spaceship Command: 5% agility bonus per level on ships requiring this skill
-     * Capital Ships: 5% agility bonus per level on ships requiring this skill
-     * **  these 2 will have to be set in fleet, once that system is operational  **
-     * Skirmish Warfare: 2% agility to fleet per skill level
-     * Skirmish warfare Mindlink (implant): 15% agility to fleet, replaces Skirmish warfare skill
-     */
-    float modifier = 1.0;
-    modifier *= (1 - (0.02 * GetSkillLevel(skillSpaceshipCommand, true)));  //2%
-    modifier *= (1 - (0.05 * GetSkillLevel(skillEvasiveManeuvering, true)));  //5%
-    if (cap) {
-        modifier *= (1 - (0.05 * GetSkillLevel(skillAdvancedSpaceshipCommand, true)));  //5%
-        modifier *= (1 - (0.05 * GetSkillLevel(skillCapitalShips, true)));    //5%
-    }
-    return modifier;
-}
-
 PyRep* Character::GetRAMSkills()
 {
     /*  this queries RAM skills and is used to display blueprints tab (S&I -> Blueprints)
@@ -715,13 +696,13 @@ bool Character::InjectSkillIntoBrain(SkillRef skill) {
             return false;
         }
         // use single_skill ...
-        single_skill->SetAttribute(AttrSkillPoints, 0, false);
-        single_skill->SetAttribute(AttrSkillLevel, 0, false);
+        single_skill->SetAttribute(AttrSkillPoints, 0);
+        single_skill->SetAttribute(AttrSkillLevel, 0);
         single_skill->ChangeSingleton(true);
         single_skill->Move(m_itemID, flagSkill);
     } else {  // use original skill
-        skill->SetAttribute(AttrSkillPoints, 0, false);
-        skill->SetAttribute(AttrSkillLevel, 0, false);
+        skill->SetAttribute(AttrSkillPoints, 0);
+        skill->SetAttribute(AttrSkillLevel, 0);
         skill->ChangeSingleton(true);
         skill->Move(m_itemID, flagSkill);
     }
@@ -781,7 +762,7 @@ void Character::UpdateSkillQueue() {
             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u, completionTime: %.1f", \
                         itemName().c_str(), m_itemID, currentTraining->typeID(), oldLevel, currentTraining->GetAttribute(AttrExpiryTime).get_float());
 
-            currentTraining->SetAttribute(AttrSkillPoints, skillPointsTrained);
+            currentTraining->SetAttribute(AttrSkillPoints, skillPointsTrained.get_int());
             currentTraining->SetAttribute(AttrExpiryTime, 0, false);
             currentTraining->SetFlag(flagSkill);
             currentTraining = SkillRef();

@@ -90,7 +90,6 @@ EvilNumber::EvilNumber( int64 val ) : mType(evil_number_int)
  */
 EvilNumber::EvilNumber( uint64 val ) : mType(evil_number_int)
 {
-    // TODO: put some check in here for greater than maximum positive integer
     if( val > MAX_EVIL_INTEGER )
         mValue.iVal = MAX_EVIL_INTEGER;     // Intentionally saturate the integer value to maximum positive value if incoming uint64 is larger
     else
@@ -302,25 +301,8 @@ bool EvilNumber::isInt()
     // First check to see if this value is already integer and if so, do nothing:
     if( mType == evil_number_int )
         return true;
-    else
-        return false;
 
-    // We're converting from double to int64, so check to see if the int64
-    // type can contain the magnitude of the value in the double, and if not,
-    // return false:
-    double testValue = mValue.fVal;
-    if( testValue < 0 )
-        testValue *= -1;    // Make sign positive
-
-    if( testValue <= (double)MAX_EVIL_INTEGER )
-    {
-        mValue.iVal = (int64)(mValue.fVal);
-        mType = evil_number_int;
-    }
-    else
-        return false;
-
-    return true;
+    return false;
 }
 
 bool EvilNumber::isFloat()
@@ -328,16 +310,8 @@ bool EvilNumber::isFloat()
     // First check to see if this value is already float and if so, do nothing:
     if( mType == evil_number_float )
         return true;
-    else
-        return false;
 
-    // We're converting from int64 to double, and since we know that the double
-    // type can hold a magnitude larger than the int64, this is a straight-forward
-    // conversion that does not result in a possible false return:
-    mValue.fVal = (double)(mValue.iVal);
-    mType = evil_number_float;
-
-    return true;
+    return false;
 }
 
 bool EvilNumber::get_bool()
@@ -352,7 +326,7 @@ bool EvilNumber::get_bool()
 int64 EvilNumber::get_int()
 {
     if (mType == evil_number_float)
-        return (int64)mValue.fVal;
+        return (int64)rint(mValue.fVal);
     return mValue.iVal;
 }
 

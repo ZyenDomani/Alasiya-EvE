@@ -395,13 +395,6 @@ public:
      */
     int8             GetSkillLevel(uint32 skillTypeID, bool zeroForNotInjected=true) const;
     /**
-     * Get ship agility modifier
-     *
-     * @param[in] cap boolean to add capital ship skills also.
-     * @return total modifier for ship agility
-     */
-    float           GetAgilitySkills(bool cap=false);
-    /**
      * Get char's Research and Manufacturing skills
      *
      * @param[in] none
