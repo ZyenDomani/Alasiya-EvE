@@ -326,7 +326,7 @@ bool EvilNumber::get_bool()
 int64 EvilNumber::get_int()
 {
     if (mType == evil_number_float)
-        return (int64)rint(mValue.fVal);
+        return (int64)ceil(mValue.fVal);
     return mValue.iVal;
 }
 
