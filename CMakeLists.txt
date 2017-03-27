@@ -56,17 +56,6 @@ MARK_AS_ADVANCED(
 INCLUDE( "DetectScm" )
 
 #
-# Setup some default libraries.
-#
-# We need a bunch of additional network libraries when building
-# for Windows.
-#
-IF( WIN32 )
-  # Create a list of the additional libraries
-  SET( CMAKE_NET_LIBS_INIT "ws2_32" "mswsock" )
-ENDIF( WIN32 )
-
-#
 # Setup some recommended compiler flags.
 #
 # Intentionally specify the CMAKE_CXX_FLAGS as last to allow user
@@ -104,10 +93,7 @@ CHECK_INCLUDE_FILE_CXX( "crtdbg.h"   HAVE_CRTDBG_H )
 CHECK_INCLUDE_FILE_CXX( "inttypes.h" HAVE_INTTYPES_H )
 CHECK_INCLUDE_FILE_CXX( "sys/stat.h" HAVE_SYS_STAT_H )
 CHECK_INCLUDE_FILE_CXX( "sys/time.h" HAVE_SYS_TIME_H )
-CHECK_INCLUDE_FILE_CXX( "tr1/tuple"  HAVE_TR1_PREFIX )
 CHECK_INCLUDE_FILE_CXX( "vld.h"      HAVE_VLD_H )
-CHECK_INCLUDE_FILE_CXX( "windows.h"  HAVE_WINDOWS_H )
-CHECK_INCLUDE_FILE_CXX( "winsock2.h" HAVE_WINSOCK2_H )
 
 # Keywords
 CHECK_CXX_SOURCE_COMPILES(

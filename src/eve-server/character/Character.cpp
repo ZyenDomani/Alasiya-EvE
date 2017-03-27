@@ -755,7 +755,7 @@ void Character::UpdateSkillQueue() {
             OnSkillTrainingStopped osst;
                 osst.itemID = currentTraining->itemID();
                 osst.silent = 0;    //look into this...why would it be silent?
-                PyTuple* tmp = osst.Encode();
+            PyTuple* tmp = osst.Encode();
             m_pClient->QueueDestinyEvent(&tmp); // consumed
 
             SaveSkillHistory(skillEventTrainingCancelled, EvilTimeNow(), m_itemID, currentTraining->typeID(), oldLevel, skillPointsTrained.get_double(), GetTotalSP().get_double() );
