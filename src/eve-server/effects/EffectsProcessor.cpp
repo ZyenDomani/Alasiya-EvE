@@ -858,7 +858,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 subSys = true;
             } break;
         }
-        _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): method: %s, fxSrc: %s(%s), targLoc: %s, targAttr: %u, srcAttr: %u, grpID: %u, typeID: %u, rig: %s, subsys: %s", cur.first,\
+       // _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): method: %s, fxSrc: %s(%s), targLoc: %s, targAttr: %u, srcAttr: %u, grpID: %u, typeID: %u, rig: %s, subsys: %s", cur.first,\
                 sFxProc.GetMathMethodName(cur.second.math).c_str(), sFxProc.GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcRef->itemName().c_str(), \
                 sFxProc.GetTargLocName(cur.second.targLoc).c_str(), cur.second.targAttr, cur.second.srcAttr, cur.second.grpID, cur.second.typeID, \
                 (isRig ? "true" : "false"), (subSys ? "true" : "false"));
@@ -1007,7 +1007,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             if (newValue == 0)
                 continue;
             // set new calculated value for target attribute
-            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(): (%s:%u) %.3f <%s> (%s:%u) %.3f = %.3f.", \
+            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s - (%s:%u) %.3f <%s> (%s:%u) %.3f = %.3f.", cur.first, cur.second.srcRef->itemName().c_str(), \
                 GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID).c_str(), \
                 GetTargLocName(cur.second.targLoc).c_str(), cur.second.targAttr, targValue.get_float(), newValue.get_float());
 
