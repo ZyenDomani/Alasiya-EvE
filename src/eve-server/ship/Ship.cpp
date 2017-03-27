@@ -1,12 +1,14 @@
 
 #include "Client.h"
+#include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "Profile.h"
 #include "character/Character.h"
 #include "effects/EffectsProcessor.h"
-#include "system/DestinyManager.h"
 #include "ship/Ship.h"
+#include "system/DestinyManager.h"
 #include "system/BubbleManager.h"
+#include "system/SolarSystem.h"
 
 /*
  * ShipTypeData
@@ -167,8 +169,20 @@ void ShipItem::InitPod() {
 void ShipItem::LogOut()
 {
     SaveShip();
-    // remove ship item here, as *something* changes ship postion when saving items from factory.
+    // remove ship item from factory master list here, as *something* changes ship postion when saving items from factory.
     m_factory.RemoveItem(m_itemID);
+    // remove ship item from its' container's inventory list also.
+
+    Inventory* inv(nullptr);
+    if (IsStation(m_locationID)) {
+        InventoryItemRef station = sEntityList.GetStationByID(m_locationID);
+        inv = station->GetInventory();
+    } else {
+        SolarSystemRef system = m_factory.GetSolarSystem(m_locationID);
+        inv = system->GetInventory();
+    }
+    if (inv)
+        inv->RemoveItem(inv->GetByID(m_itemID));
 }
 
 void ShipItem::SetPlayer(Client* pClient) {
