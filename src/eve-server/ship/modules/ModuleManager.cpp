@@ -367,7 +367,7 @@ bool ModuleManager::Initialize() {
             switch (cur->categoryID()) {
                 case EVEDB::invCategories::Module:
                 case EVEDB::invCategories::Subsystem: {
-                    if (!fitModule(cur, cur->flag()))   // cannot use FitModule() here, as it calls Online()...which we cant do yet. (effect errors)
+                    if (!FitModule(cur, cur->flag()))   // cannot use FitModule() here, as it calls Online()...which we cant do yet. (effect errors)
                         _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Could not insert module %s(%u) at flag %u into module container.",\
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
                 } break;

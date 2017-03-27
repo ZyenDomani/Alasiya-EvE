@@ -82,12 +82,10 @@ void GenericModule::Online()
         return;     // already online
     }
 
-    // need to clear item's effectMap here to avoid duplicating.
-    // it will be populated on it's next ProcessEffects() call with relevant data.
+    // clear item's effectMap to avoid duplicating.
     m_modRef->ClearModifiers(); // ClearModifiers DELETES AttrIsOnline from the map!!  (elusive error)
     m_modRef->PutOnline(isRig());
     m_ModuleState = ModuleStates::MOD_ONLINE;
-
     ProcessEffects(Effects::dgmStatePassive, true);
     ProcessEffects(Effects::dgmStateOnline, true);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
@@ -164,11 +162,11 @@ void GenericModule::Offline()
         }
     }
 
-    // need to clear item's effectMap here to avoid duplicating.
-    // it will be populated on it's next ProcessEffects() call with relevant data.
+    // clear item's effectMap to avoid duplicating.
+    // each effect will need to be applied individually per group (passive, online, active, overloaded)
     m_modRef->ClearModifiers();
-    ProcessEffects(Effects::dgmStateOnline, false);
     ProcessEffects(Effects::dgmStatePassive, false);
+    ProcessEffects(Effects::dgmStateOnline, false);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
     m_ModuleState = ModuleStates::MOD_OFFLINE;
