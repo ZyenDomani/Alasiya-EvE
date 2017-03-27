@@ -826,7 +826,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
      */
 }
 
-// attrib nerf and caps arent needed, from what ive seen while testing.  
+// attrib nerf and caps arent needed, from what ive seen while testing.
 void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update/*false*/)
 {
     bool isRig = false, subSys = false, charge = false;
@@ -1007,8 +1007,10 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             if (newValue == 0)
                 continue;
             // set new calculated value for target attribute
-            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(): setting attribute %u for %u(%s) from %.3f to %.3f.", \
-                    cur.second.targAttr, item->itemID(), item->itemName().c_str(), targValue.get_float(), newValue.get_float());
+            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(): (%s:%u) %.3f <%s> (%s:%u) %.3f = %.3f.", \
+                GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID).c_str(), \
+                GetTargLocName(cur.second.targLoc).c_str(), cur.second.targAttr, targValue.get_float(), newValue.get_float());
+
             // update is used to send attrib changes to client when changing module states while in space, but NOT for pilot login. (client acts funky)
             item->SetAttribute(cur.second.targAttr, newValue, update);
         }

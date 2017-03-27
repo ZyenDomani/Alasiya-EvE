@@ -169,14 +169,14 @@ void FxDataMgr::Initialize()
 
 void FxDataMgr::ConfigureEffects()
 {
-    sLog.Yellow("     Effects Test", "Test Begin - Process Skill Effects.");
+    sLog.Yellow("     Effects Test", "Test Begin - Process Prop Mod Effects.");
     double start = GetTimeMSeconds();
     Initialize();
     std::vector<uint16> types;
     std::vector<TypeEffects> typeFx;
     DBQueryResult res;
     DBResultRow row;
-    sDatabase.RunQuery(res, "SELECT it.typeID, it.typeName FROM invGroups AS ig LEFT JOIN invTypes AS it USING (groupID) WHERE ig.categoryID = 16");
+    sDatabase.RunQuery(res, "SELECT typeID, typeName FROM `invTypes` WHERE `groupID` IN (46.475)");
     FxProc fxProc;
     effectMapType::const_iterator itr;
     // begin the task of compiling effect data
@@ -186,14 +186,16 @@ void FxDataMgr::ConfigureEffects()
         GetTypeEffect(row.GetInt(0), typeFx);
         for (auto cur : typeFx) {
             itr = m_effectMap.find(cur.effectID);
-            if (itr == m_effectMap.end())
+            if (itr == m_effectMap.end()) {
+                sLog.Blue("ConfigureEffects", "No effect found for effectID %u", cur.effectID);
                 continue;
+            }
             // we only want ONE copy of the effect
-            if (m_fxMap.find(itr->first) != m_fxMap.end())
-                continue;
+           // if (m_fxMap.find(itr->first) != m_fxMap.end())
+             //   continue;
             sLog.Yellow("ConfigureEffects", "starting eval for %u:%u (%s)", itr->first, itr->second.effectState, itr->second.effectName.c_str());
             fxProc.EvaluateExpression(itr->second.preExpression);
-            //fxProc.EvaluateExpression(itr->second.postExpression);
+            fxProc.EvaluateExpression(itr->second.postExpression);
             m_fxMap.insert(std::pair<uint16, Effect>(itr->first, itr->second));
         }
     }
