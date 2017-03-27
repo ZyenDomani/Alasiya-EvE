@@ -1007,7 +1007,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             if (newValue == 0)
                 continue;
             // set new calculated value for target attribute
-            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s - (%s:%u) %.3f <%s> (%s:%u) %.3f = %.3f.", cur.first, cur.second.srcRef->itemName().c_str(), \
+            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s - src(%s:%u) %.3f <%s> targ(%s:%u) %.3f = set targ to %.3f.", cur.first, cur.second.srcRef->itemName().c_str(), \
                 GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID).c_str(), \
                 GetTargLocName(cur.second.targLoc).c_str(), cur.second.targAttr, targValue.get_float(), newValue.get_float());
 

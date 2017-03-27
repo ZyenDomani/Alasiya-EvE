@@ -367,11 +367,11 @@ bool ItemType::HasEffect(uint16 effectID) const
     return false;
 }
 
-void ItemType::GetEffect(const int8 state, std::vector< Effect >& effectVec) const
+void ItemType::GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const
 {
     auto itr = m_stateFxMap.equal_range(state);
     for (auto it = itr.first; it != itr.second; it++)
-        effectVec.push_back(it->second);
+        effectMap.insert(std::pair<uint16, Effect>(it->second.effectID, it->second));
 }
 
 

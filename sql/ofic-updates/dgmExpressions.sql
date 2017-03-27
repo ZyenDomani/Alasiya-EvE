@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Mar 22, 2017 at 03:03 AM
+-- Generation Time: Mar 27, 2017 at 06:30 AM
 -- Server version: 10.0.24-MariaDB
 -- PHP Version: 5.6.21
 
@@ -3243,13 +3243,13 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (3491, 58, 3487, 105, '', '', '((CurrentTarget->maxVelocity).(PostPercent)).RemoveItemModifier (speedFactor)', 0, 0, 0),
 (3492, 12, 1, 3486, '', '', 'CurrentSelf->speedBoostFactorCalc', 0, 0, 0),
 (3494, 31, 1095, 3492, '', '', '(CurrentSelf->speedBoostFactorCalc).(PostPercent)', 0, 0, 0),
-(3495, 6, 3497, 105, '', '', '((CurrentSelf->speedBoostFactorCalc).(PostMul)).AddItemModifier (speedFactor)', 0, 0, 0),
-(3496, 58, 3497, 105, '', '', '((CurrentSelf->speedBoostFactorCalc).(PostMul)).RemoveItemModifier (speedFactor)', 0, 0, 0),
-(3497, 31, 10, 3492, '', '', '(CurrentSelf->speedBoostFactorCalc).(PostMul)', 0, 0, 0),
-(3498, 6, 3497, 3438, '', '', '((CurrentSelf->speedBoostFactorCalc).(PostMul)).AddItemModifier (speedBoostFactor)', 0, 0, 0),
-(3499, 58, 3497, 3438, '', '', '((CurrentSelf->speedBoostFactorCalc).(PostMul)).RemoveItemModifier (speedBoostFactor)', 0, 0, 0),
-(3500, 17, 3495, 3498, '', '', '((CurrentSelf->speedBoostFactorCalc).(PostMul)).AddItemModifier (speedFactor));     (((CurrentSelf->speedBoostFactorCalc).(PostMul)).AddItemModifier (speedBoostFactor)', 0, 0, 0),
-(3501, 17, 3496, 3499, '', '', '((CurrentSelf->speedBoostFactorCalc).(PostMul)).RemoveItemModifier (speedFactor));     (((CurrentSelf->speedBoostFactorCalc).(PostMul)).RemoveItemModifier (speedBoostFactor)', 0, 0, 0),
+(3495, 6, 3497, 105, '', '', '((CurrentSelf->speedBoostFactorCalc).(PreMul)).AddItemModifier (speedFactor)', 0, 0, 0),
+(3496, 58, 3497, 105, '', '', '((CurrentSelf->speedBoostFactorCalc).(PreMul)).RemoveItemModifier (speedFactor)', 0, 0, 0),
+(3497, 31, 5, 3492, '', '', '(CurrentSelf->speedBoostFactorCalc).(PreMul)', 0, 0, 0),
+(3498, 6, 3497, 3438, '', '', '((CurrentSelf->speedBoostFactorCalc).(PreMul)).AddItemModifier (speedBoostFactor)', 0, 0, 0),
+(3499, 58, 3497, 3438, '', '', '((CurrentSelf->speedBoostFactorCalc).(PreMul)).RemoveItemModifier (speedBoostFactor)', 0, 0, 0),
+(3500, 17, 3495, 3498, '', '', '((CurrentSelf->speedBoostFactorCalc).(PreMul)).AddItemModifier (speedFactor));     (((CurrentSelf->speedBoostFactorCalc).(PreMul)).AddItemModifier (speedBoostFactor)', 0, 0, 0),
+(3501, 17, 3496, 3499, '', '', '((CurrentSelf->speedBoostFactorCalc).(PreMul)).RemoveItemModifier (speedFactor));     (((CurrentSelf->speedBoostFactorCalc).(PreMul)).RemoveItemModifier (speedBoostFactor)', 0, 0, 0),
 (3506, 31, 11, 3492, '', '', '(CurrentSelf->speedBoostFactorCalc).(PostDiv)', 0, 0, 0),
 (3507, 12, 1513, 3486, '', '', 'CurrentShip..Afterburner->speedBoostFactorCalc', 0, 0, 0),
 (3508, 31, 11, 3507, '', '', '(CurrentShip..Afterburner->speedBoostFactorCalc).(PostDiv)', 0, 0, 0),

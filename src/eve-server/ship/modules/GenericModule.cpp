@@ -82,7 +82,7 @@ void GenericModule::Online()
         return;     // already online
     }
 
-    // clear item's effectMap to avoid duplicating.
+    // clear map before adding new shit...avoids duplicating
     m_modRef->ClearModifiers(); // ClearModifiers DELETES AttrIsOnline from the map!!  (elusive error)
     m_modRef->PutOnline(isRig());
     m_ModuleState = ModuleStates::MOD_ONLINE;
@@ -162,8 +162,6 @@ void GenericModule::Offline()
         }
     }
 
-    // clear item's effectMap to avoid duplicating.
-    // each effect will need to be applied individually per group (passive, online, active, overloaded)
     m_modRef->ClearModifiers();
     ProcessEffects(Effects::dgmStatePassive, false);
     ProcessEffects(Effects::dgmStateOnline, false);
@@ -196,12 +194,12 @@ void GenericModule::DeOverload()
 void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
 {
     // get module/charge pre/post effects in state x
-    std::vector< Effect > effectVec;
-    m_modRef->type().GetEffect(state, effectVec);
+    std::map<uint16, Effect> effectMap;
+    m_modRef->type().GetEffectMap(state, effectMap);
     _log(EFFECTS__TRACE, "GenericModule::ProcessEffects() called for %s. effects: %u, state: %s, online: %s", \
-            m_modRef->itemName().c_str(), effectVec.size(), sFxProc.GetStateName(state).c_str(), (online ? "true" : "false"));
-    for (auto it : effectVec) {
-        if (it.effectID == 16)    // skip the online effect for now.  will hack the data for it later.
+            m_modRef->itemName().c_str(), effectMap.size(), sFxProc.GetStateName(state).c_str(), (online ? "true" : "false"));
+    for (auto it : effectMap) {
+        if (it.first == 16)    // skip the online effect for now.  will hack the data for it later.
             continue;
         fxData data;
         data.result = false;
@@ -211,9 +209,9 @@ void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
          * active/overload/gang/other effects will be applied and removed when called.
          */
         if (online)
-            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.preExpression), data, this);
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
         else
-            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.postExpression), data, this);
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
     }
 }
 

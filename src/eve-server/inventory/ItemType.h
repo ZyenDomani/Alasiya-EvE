@@ -287,7 +287,7 @@ public:
     EVERace race() const                                { return m_raceID; }
 
     /* new effects processing system */
-    void GetEffect(const int8 state, std::vector<Effect> &effectVec) const;
+    void GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const;
 
     bool HasEffect(uint16 effectID) const;
     bool HasReqSkill(const uint16 skillID, ItemFactory& m_factory) const;

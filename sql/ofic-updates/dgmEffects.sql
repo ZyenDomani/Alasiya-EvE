@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Mar 07, 2017 at 02:48 PM
+-- Generation Time: Mar 21, 2017 at 11:26 PM
 -- Server version: 10.0.24-MariaDB
 -- PHP Version: 5.6.21
 
@@ -17,7 +17,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `Alasiya-EvE`
+-- Database: `alasiya-new`
 --
 
 -- --------------------------------------------------------
@@ -73,7 +73,7 @@ INSERT INTO `dgmEffects` (`effectID`, `effectName`, `effectCategory`, `preExpres
 (11, 'loPower', 0, 131, 131, 'Requires a low power slot.', 107004, '', 0, 0, 0, 0, 0, 0, 0, 0, 1, 'Low power', 109441, 0, 0, 0, 0, 0, '', 0, 0, 0, 295, 16545330, ''),
 (12, 'hiPower', 0, 131, 131, 'Requires a high power slot.', 107005, '', 0, 0, 0, 0, 0, 0, 0, 0, 1, 'High power', 109442, 0, 0, 0, 0, 0, '', 0, 0, 0, 293, 16545331, ''),
 (13, 'medPower', 0, 131, 131, 'Requires a medium power slot.', 107006, '', 0, 0, 0, 0, 0, 0, 0, 0, 1, 'Medium power', 109443, 0, 0, 0, 0, 0, '', 0, 0, 0, 294, 16545332, ''),
-(16, 'online', 1, 633, 400, 'this is the online effect', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899443, ''),
+(16, 'online', 1, 633, 400, 'this is the activation effect', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899443, ''),
 (17, 'mining', 2, 3134, 184, 'mining of ore', 0, 'effects.Mining', 0, 0, 73, 0, 0, 54, 0, 0, 0, '', 0, 0, 0, 0, 0, 2, '', 0, 0, 0, 0, 899446, ''),
 (18, 'shieldTransfer', 2, 185, 89, 'Boosts the shield of the target ship by draining the doers ships shield.', 0, 'effects.ShieldTransfer', 0, 1, 73, 0, 6, 87, 0, 0, 0, '', 0, 0, 0, 0, 0, 1, '', 0, 0, 0, 0, 899449, ''),
 (21, 'shieldCapacityBonusOnline', 4, 199, 201, 'Increases maximum shield capacity.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899452, ''),
@@ -417,7 +417,7 @@ INSERT INTO `dgmEffects` (`effectID`, `effectName`, `effectCategory`, `preExpres
 (707, 'bomberRocketRangeBonus', 0, 3469, 3470, 'Automatically generated effect', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 900463, ''),
 (708, 'bomberLightsRangeBonus', 0, 3473, 3474, 'Automatically generated effect', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 900466, ''),
 (709, 'interceptorSignatoreRadiusBonus', 0, 3475, 3476, 'Automatically generated effect', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 900469, ''),
-(710, 'speedBoostFactorCalculator', 0, 3500, 3501, 'Aid to auto-calc this.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 900472, ''),
+(710, 'speedBoostFactorCalculator', 0, /*3500*/3495, /*3501*/3496, 'Aid to auto-calc this.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 900472, ''),
 (712, 'speedBoostFactorCalculator2', 0, 3515, 3516, 'Aid to auto-calc', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 900475, ''),
 (713, 'stealthActive', 1, 3520, 3521, 'Automatically generated effect', 0, 'effects.ElectronicAttributeModifyActivate', 0, 0, 73, 0, 6, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 900478, ''),
 (716, 'sensorBoostTargeted', 2, 3525, 3526, '', 0, 'effects.ElectronicAttributeModifyTarget', 0, 1, 73, 0, 6, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 1, '', 0, 0, 0, 0, 900481, ''),

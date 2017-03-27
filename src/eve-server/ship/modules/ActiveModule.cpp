@@ -37,7 +37,7 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
 m_timer(1000, true),    // this needs to be accurate
 m_reloadTimer(10000)
 {
-    m_repeat = 1;
+    m_repeat = 1000;
     m_targetID = 0;
     m_effectID = 0;
     m_guidStr = "";
@@ -321,30 +321,32 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
         return;
 
     int64 abortTime = Win32TimeNow();
-    if ((abort)
-        and ((m_effectID == EVEEffectID::miningLaser)
-            or (m_effectID == EVEEffectID::miningClouds)))
+    if (abort) {
+        active = false;
+        if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds))
         abortTime += (3 * Win32Time_Second);    // delay mining abort for 3s to simulate module "completing" its' cycle and dumping ore to cargo
+    }
 
     uint32 timeLeft = GetRemainingCycleTimeMS();
 
     // targetID MUST be defined (so client can properly direct GFx sequence)
-    uint32 targetID = (m_targetID ? m_targetID : m_shipRef->itemID());
+    //uint32 targetID = (m_targetID ? m_targetID : m_shipRef->itemID());
     uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
 
-    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
+    if (m_guidStr != "")
+        m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
                 m_shipRef->itemID(),
                 m_modRef->itemID(),
                 m_modRef->typeID(),
-                targetID,
+                m_targetID,
                 chgTypeID,
                 m_guidStr,
                 sFxDataMgr.isOffensive(m_effectID),
-                (abort ? false : (active ? true : false)),   // start    - if (start = 0) THEN remove effect
-                (abort ? false : (active ? true : false)),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
+                (active ? true : false),   // start    - if (start = 0) THEN remove effect
+                (active ? true : false),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
                 (double)timeLeft,           // duration
                 m_repeat   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
-    );
+        );
 
     timeLeft /= 1000;
     // Create Destiny Updates and GFx
@@ -352,11 +354,11 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
         ge.selfID = m_modRef->itemID();
         ge.charID = m_shipRef->ownerID();
         ge.shipID = m_shipRef->itemID();
-        ge.targetID = targetID;
+        ge.targetID = m_targetID;
         ge.area = new PyList();   // still dont know what this is.
         ge.effectID = m_effectID;
 
-    if (1) {
+    if (chgTypeID and m_targetID) {
         GodmaOther go;  // "other" means "charge" in evelang
             go.shipID = ge.shipID;
             go.slotID = m_modRef->flag();
