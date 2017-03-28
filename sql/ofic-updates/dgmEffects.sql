@@ -73,7 +73,7 @@ INSERT INTO `dgmEffects` (`effectID`, `effectName`, `effectCategory`, `preExpres
 (11, 'loPower', 0, 131, 131, 'Requires a low power slot.', 107004, '', 0, 0, 0, 0, 0, 0, 0, 0, 1, 'Low power', 109441, 0, 0, 0, 0, 0, '', 0, 0, 0, 295, 16545330, ''),
 (12, 'hiPower', 0, 131, 131, 'Requires a high power slot.', 107005, '', 0, 0, 0, 0, 0, 0, 0, 0, 1, 'High power', 109442, 0, 0, 0, 0, 0, '', 0, 0, 0, 293, 16545331, ''),
 (13, 'medPower', 0, 131, 131, 'Requires a medium power slot.', 107006, '', 0, 0, 0, 0, 0, 0, 0, 0, 1, 'Medium power', 109443, 0, 0, 0, 0, 0, '', 0, 0, 0, 294, 16545332, ''),
-(14, 'speedBoost', 1, 140, 89, 'Applies effects from AB/MWD to destiny.', 0, '', 0, 0, 73, 0, 6, 0, 0, 0, 0, 'Speed Boost', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 7582954, '' )
+(14, 'speedBoost', 1, 140, 89, 'Applies effects from AB/MWD to destiny.', 0, '', 0, 0, 73, 0, 6, 0, 0, 0, 0, 'Speed Boost', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 7582954, '' ),
 (16, 'online', 1, 633, 400, 'this is the activation effect', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899443, ''),
 (17, 'mining', 2, 3134, 184, 'mining of ore', 0, 'effects.Mining', 0, 0, 73, 0, 0, 54, 0, 0, 0, '', 0, 0, 0, 0, 0, 2, '', 0, 0, 0, 0, 899446, ''),
 (18, 'shieldTransfer', 2, 185, 89, 'Boosts the shield of the target ship by draining the doers ships shield.', 0, 'effects.ShieldTransfer', 0, 1, 73, 0, 6, 87, 0, 0, 0, '', 0, 0, 0, 0, 0, 1, '', 0, 0, 0, 0, 899449, ''),
