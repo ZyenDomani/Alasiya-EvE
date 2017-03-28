@@ -33,7 +33,7 @@ CREATE TABLE `dgmOperands` (
   KEY `arg1categoryID` (`arg1categoryID`),
   KEY `arg2categoryID` (`arg2categoryID`),
   KEY `resultCategoryID` (`resultCategoryID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `dgmOperands`
@@ -113,4 +113,5 @@ INSERT INTO `dgmOperands` (`operandID`, `operandKey`, `description`, `format`, `
 (71, 'TARGETSILENTLY', '', 'TargetSilently()', 0, 0, 4, 'dogmaLM.AddTargetEx(shipID,targetID, silent=1, tasklet=1)'),
 (72, 'TOOLTARGETSKILLS', ' ', 'CheckToolTargetSkills', 0, 0, 4, 'dogma.CheckToolTargetSkills(env,None,None)'),
 (73, 'UE', 'raises an user error', 'UserError(%(arg1)s)', 4, 0, 4, 'raise UserError(%(arg1)s)'),
-(74, 'VERIFYTARGETGROUP', 'raises a user error if incorrect target group', 'VerifyTargetGroup()', 0, 0, 4, 'dogma.VerifyTargetGroup(env, None, None)');
+(74, 'VERIFYTARGETGROUP', 'raises a user error if incorrect target group', 'VerifyTargetGroup()', 0, 0, 4, 'dogma.VerifyTargetGroup(env, None, None)'),
+(75, 'SPEEDBOOST', 'applies speed booster to ship', 'SpeedBoost()', 0, 0, 0, 'dogma.SpeedBoost(env, none, none)');

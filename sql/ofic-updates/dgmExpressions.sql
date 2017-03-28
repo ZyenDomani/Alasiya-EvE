@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Mar 27, 2017 at 06:30 AM
+-- Generation Time: Mar 22, 2017 at 03:03 AM
 -- Server version: 10.0.24-MariaDB
 -- PHP Version: 5.6.21
 
@@ -133,6 +133,7 @@ INSERT INTO `dgmExpressions` (`expressionID`, `operandID`, `arg1`, `arg2`, `expr
 (133, 31, 8, 124, '', '', '(CurrentShip->medSlots).(ModSub)', 0, 0, 0),
 (134, 31, 8, 123, '', '', '(CurrentShip->hiSlots).(ModSub)', 0, 0, 0),
 (135, 31, 8, 122, '', '', '(CurrentShip->lowSlots).(ModSub)', 0, 0, 0),
+(140, 75, 0, 0, '', 'calls destiny method to update ship speed with AB/MWD boost-modified data', 'Destiny.SpeedBoost()', 0, 0, 0),
 (152, 58, 111, 109, '', '', '((CurrentShip->capacity).(ModAdd)).RemoveItemModifier (capacity)', 0, 0, 0),
 (155, 13, 656, 0, '', '', 'Attack', 0, 0, 0),
 (158, 35, 1, 25, '', '', 'CurrentSelf.power()', 0, 0, 0),
