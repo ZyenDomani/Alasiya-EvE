@@ -417,6 +417,10 @@ void DestinyManager::Stop() {
     m_turning = false;
     m_orbiting = 0;
 
+    // reset move timers for new state
+    m_moveTimer = GetTimeMSeconds();
+    m_stateStamp = sEntityList.GetStamp();
+
     SetSpeedFraction(0.0f);
     m_stop = true;
 
@@ -1832,7 +1836,7 @@ void DestinyManager::SetMaxVelocity(float maxVelocity)
         m_maxShipSpeed = maxVelocity;
 }
 
-void DestinyManager::SpeedBoost()
+void DestinyManager::SpeedBoost(bool deactivate/*false*/)
 {
     if (m_cloaked)
         UnCloak();  // we all know you cant run prop mods with cloak...
@@ -1847,8 +1851,8 @@ void DestinyManager::SpeedBoost()
     m_alignTime = (-log(0.25) * m_shipAgility);
     m_shipMaxAccelTime = (m_shipAgility * -log(0.0001));
 
-    _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost() - oldMass: %.5f, newMass: %.5f, oldAgility: %.5f, newAgility: %.5f, inertia: %.5f", \
-                oldMass, m_mass, oldAgility, m_shipAgility, m_shipInertia);
+    _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost() - oldMass: %.5f, newMass: %.5f, oldAgility: %.5f, newAgility: %.5f", \
+                oldMass, m_mass, oldAgility, m_shipAgility);
 
     // check current movement and reset variables using modified values
     float oldMaxSpeed = m_maxShipSpeed;
@@ -1873,7 +1877,13 @@ void DestinyManager::SpeedBoost()
     double curTime = (GetTimeMSeconds() - m_moveTimer) /1000;   // current movement ticTime
 
     // ship is currently....
-    if (m_turning) {
+    if (deactivate) {
+        // ....deactivating prop mod
+        // - use accel formula to determine decel time
+        // t=IM(10^-6) * -ln(1-(v/V))
+        m_shipMaxAccelTime = -log(1 - ((oldMaxSpeed * m_userSpeedFraction) / (m_maxShipSpeed * m_userSpeedFraction)));
+
+    } else if (m_turning) {
         // ....turning
         // - reset current turn and let turn code handle the rest
         m_turnTic = 0;
@@ -1901,17 +1911,16 @@ void DestinyManager::SpeedBoost()
                     curTime, m_currentSpeedFraction, m_activeSpeedFraction, curSpeed, m_shipMaxAccelTime);
         } else {
             // ....is not decelerating
-            // - get current speed and recalculate csf with new max speed
+            // - recalculate asf with new variables
             double curSpeed = m_maxSpeed * m_currentSpeedFraction;  //get current ship speed
             m_maxSpeed = m_maxShipSpeed * m_userSpeedFraction;      // reset ship max speed using updated m_maxShipSpeed
-            m_activeSpeedFraction = curSpeed / m_maxSpeed;          //get updated asf
-            // - reset csf to new speed vs time
-            double newTime = (log(m_activeSpeedFraction) /-1000000) * (m_shipInertia * m_mass) -1;
-            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(0<asf<usf) - newTime: %.2f, m_moveTimer: %.3f, timeNow: %.3f", \
-                        newTime, m_moveTimer, GetTimeMSeconds());
-            m_currentSpeedFraction = (1 - exp(-newTime * 1000000 / (m_shipInertia * m_mass)));
-            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(0<asf<usf) - sec: %.2f, new csf: %.3f, new asf: %.3f, curSpeed: %.3f, accelTime: %.3f", \
-                        curTime, m_currentSpeedFraction, m_activeSpeedFraction, curSpeed, m_shipMaxAccelTime);
+            m_currentSpeedFraction = m_activeSpeedFraction = curSpeed / m_maxSpeed;          //get updated asf
+            // - reverse accel equation to calculate new csf based on new variables
+            //m_currentSpeedFraction = ((-log(m_activeSpeedFraction) +1) / m_shipAgility);
+            // - use accel equation to get elapsed time for new csf
+            double newTime = (-log(1 - m_currentSpeedFraction) * m_shipAgility);
+            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(0<asf<usf) - newTime: %.2f, new csf: %.3f, new asf: %.3f, curSpeed: %.3f, accelTime: %.3f", \
+                        newTime, m_currentSpeedFraction, m_activeSpeedFraction, curSpeed, m_shipMaxAccelTime);
             // adjust m_moveTimer time to fit current speed onto new max speed range.  (previous max < new max)
             m_moveTimer = (GetTimeMSeconds() - (newTime * 1000));
         }

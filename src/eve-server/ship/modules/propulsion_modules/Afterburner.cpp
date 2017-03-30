@@ -40,5 +40,5 @@ void Afterburner::Activate(uint16 effectID, uint32 targetID, int16 repeat)
 void Afterburner::DeactivateCycle(bool abort)
 {
     ActiveModule::DeactivateCycle(abort);
-    m_destiny->SpeedBoost();
+    m_destiny->SpeedBoost(true);
 }

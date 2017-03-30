@@ -71,7 +71,7 @@ public:
     /* Configuration methods */
     void WebbedMe();
     void SetBubble(bool set = false)                    { m_inBubble = set; }
-    void SpeedBoost();                                  // bubblecast ship's AB/MWD modified speed (module activate/deactivate)
+    void SpeedBoost(bool deactivate=false);             // reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
     void SetPosition(const GPoint& pt, bool update = false);
     void SetMaxVelocity(float maxVelocity);
     void SetShipCapabilities(const InventoryItemRef ship, bool undock = false);
