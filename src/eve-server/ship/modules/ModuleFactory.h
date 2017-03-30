@@ -32,6 +32,8 @@
 #include "PassiveModule.h"
 #include "RigModule.h"
 #include "SubSystemModule.h"
+#include "propulsion_modules/Afterburner.h"
+
 
 //how you should access the modules
 static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
@@ -159,8 +161,8 @@ static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
             case EVEDB::invGroups::Gas_Cloud_Harvester:                     return (new ActiveModule(item, ship)); break;     // Active - external
 
             // Propulsion Modules Subgroup:
-            case EVEDB::invGroups::Afterburner:                             return (new ActiveModule(item, ship)); break;
-            case EVEDB::invGroups::Microwarpdrive:                          return (new ActiveModule(item, ship)); break;
+            case EVEDB::invGroups::Afterburner:                             return (new Afterburner(item, ship)); break;
+            case EVEDB::invGroups::Microwarpdrive:                          return (new Afterburner(item, ship)); break;
             case EVEDB::invGroups::Warp_Core_Stabilizer:                    return (new PassiveModule(item, ship)); break;
             case EVEDB::invGroups::Inertial_Stabilizer:                     return (new PassiveModule(item, ship)); break;
             case EVEDB::invGroups::Nanofiber_Internal_Structure:            return (new PassiveModule(item, ship)); break;

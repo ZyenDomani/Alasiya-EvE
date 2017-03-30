@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 7.4 -->
+     Version: 7.5 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -155,6 +155,7 @@
         <BeltRespawn>6</BeltRespawn><!-- hours  (6h default) -->
         <roidRadiusMultiplier>1.0</roidRadiusMultiplier><!-- float  used to change default coded roid size (and the belt radius) -->
         <WormHoleEnabled>true</WormHoleEnabled><!-- bool -->
+        <BumpEnabled>true</BumpEnabled><!-- bool -->
     </cosmic>
 
     <crime><!-- not implemented yet -->

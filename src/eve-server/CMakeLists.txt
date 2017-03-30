@@ -215,10 +215,12 @@ SET( dungeon_SOURCE
      "${TARGET_SOURCE_DIR}/dungeon/DungeonService.cpp" )
 
 SET( effects_INCLUDE
+     #"${TARGET_INCLUDE_DIR}/effects/EffectsActions.h"
      "${TARGET_INCLUDE_DIR}/effects/EffectsData.h"
      "${TARGET_INCLUDE_DIR}/effects/EffectsDataMgr.h"
      "${TARGET_INCLUDE_DIR}/effects/EffectsProcessor.h")
 SET( effects_SOURCE
+     #"${TARGET_SOURCE_DIR}/effects/EffectsActions.cpp"
      "${TARGET_SOURCE_DIR}/effects/EffectsDataMgr.cpp"
      "${TARGET_SOURCE_DIR}/effects/EffectsProcessor.cpp" )
 
@@ -412,6 +414,7 @@ SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/RigModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/SubSystemModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/TurrentModule.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/propulsion_modules/Afterburner.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/weapon_modules/TurrentFormulas.h" )
 SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/ActiveModule.cpp"
@@ -421,6 +424,7 @@ SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/RigModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/SubSystemModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/TurrentModule.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/propulsion_modules/Afterburner.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/weapon_modules/TurrentFormulas.cpp")
 
 SET( standing_INCLUDE

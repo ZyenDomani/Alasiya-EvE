@@ -69,7 +69,9 @@ public:
     void EntityRemoved(SystemEntity* who);
 
     /* Configuration methods */
+    void WebbedMe();
     void SetBubble(bool set = false)                    { m_inBubble = set; }
+    void SpeedBoost();                                  // bubblecast ship's AB/MWD modified speed (module activate/deactivate)
     void SetPosition(const GPoint& pt, bool update = false);
     void SetMaxVelocity(float maxVelocity);
     void SetShipCapabilities(const InventoryItemRef ship, bool undock = false);
@@ -211,9 +213,10 @@ protected:
 
     int8 m_orbiting;                    //specific to orbiting (only)
     uint8 m_turnTic;                    //time into turn
-    uint32 m_stateStamp;                //timestamp of when current state began, in seconds
+    uint32 m_stateStamp;                //statestamp of when current state began, in seconds
 
     float m_orbitRadTic;                //in rad/sec  - for orbiting
+    float m_prevSpeedFraction;          //fuzzy logic - speed % - set by _UpdateVelocity for decel where (m_userSpeedFraction == 0)
     float m_userSpeedFraction;          //fuzzy logic - speed % - set by user command
     float m_currentSpeedFraction;       //fuzzy logic - speed % - current ship speed
     float m_activeSpeedFraction;        //fuzzy logic - speed % - set by USF and CSF
@@ -221,7 +224,7 @@ protected:
 
     double m_targetDistance;            //in m
     double m_followDistance;            //in m
-    double m_moveTimer;                 //in ms
+    double m_moveTimer;                 //in ms     - movement timestamp container for calculating csf
     double m_orbitTimer;                //in ms
 
     GPoint m_targetPoint;

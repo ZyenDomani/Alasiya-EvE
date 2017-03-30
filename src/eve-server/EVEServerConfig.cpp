@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    7.3
+    Version:    7.5
 */
 
 
@@ -147,6 +147,7 @@ EVEServerConfig::EVEServerConfig()
     cosmic.BeltGrowth = 6 /*h*/;
     cosmic.roidRadiusMultiplier = 1.0;
     cosmic.WormHoleEnabled = false;
+    cosmic.BumpEnabled = false;
 
     // crime
     crime.AggFlagTime = 900 /*s*/;//N

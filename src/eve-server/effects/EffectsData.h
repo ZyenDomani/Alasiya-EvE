@@ -40,8 +40,8 @@ struct Effect {
 };
 
 struct Expression {
+    int8 operandID;
     uint16 id;
-    uint16 operandID;
     uint16 arg1;
     uint16 arg2;
     uint16 expressionTypeID;
@@ -69,7 +69,7 @@ struct fxData {
     int8 math;          // math used on data
     int8 fxSrc;        // effect source location
     int8 targLoc;       // effect target location
-    float result;
+    uint8 action;        // effect *DOES* something (module action aside from modification)
     uint16 targAttr;
     uint16 srcAttr;
     uint16 grpID;       // used to define items in env grouped by item groupID
@@ -144,6 +144,7 @@ namespace Effects {
     };
 
     enum Action {
+        dgmActInvalid               = 0,
         dgmATTACK                   = 13,
         dgmCARGOSCAN                = 14,
         dgmCHEATTELEDOCK            = 15,
@@ -156,15 +157,17 @@ namespace Effects {
         dgmLAUNCHDRONE              = 46,
         dgmLAUNCHFOFMISSILE         = 47,
         dgmMINE                     = 50,
-        dgmPOWERBOOST               = 53,
+        dgmPOWERBOOST               = 53,   //effectID 48  - Consumes power booster charges to increase the available power in the capacitor.
         dgmSHIPSCAN                 = 66,
         dgmSURVEYSCAN               = 69,
         dgmTARGETHOSTILES           = 70,
         dgmTARGETSILENTLY           = 71,
         dgmTOOLTARGETSKILLS         = 72,
-        dgmVERIFYTARGETGROUP        = 74
+        dgmVERIFYTARGETGROUP        = 74,
+        /* unique/special to Alasiya */
+        dgmSPEEDBOOST               = 75    //effectID 14  - prop mod to call destiny speed updates
     };
-    
+
     /*  old shit
              case CALC_NONE:                            return val1;
              case CALC_ADD:                             return val1 + val2;
@@ -303,7 +306,8 @@ dgmPassiveEffectCategories = (dgmEffPassive, dgmEffDungeon, dgmEffSystem)
         operandTARGETSILENTLY = 71,
         operandTOOLTARGETSKILLS = 72,
         operandUE = 73,             //*
-        operandVERIFYTARGETGROUP = 74
+        operandVERIFYTARGETGROUP = 74,
+        operandSPEEDBOOST = 75
     };
 }
 

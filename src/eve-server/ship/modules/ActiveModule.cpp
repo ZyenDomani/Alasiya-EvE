@@ -44,10 +44,9 @@ m_reloadTimer(10000)
     m_targetEntity = nullptr;
     /** @todo  bubble isnt ready yet.  will have to update every time we change bubble */
     //m_bubble = ship->GetPilot()->GetShipSE()->SysBubble();
-    /** @todo  destiny isnt ready yet.  will have to update when undocking, as this is created before ShipSE is */
-    //m_destiny = ship->GetPilot()->GetShipSE()->DestinyMgr();
     m_chargeRef = InventoryItemRef();
     m_overLoaded = false;
+    m_needsCharge = m_modRef->HasAttribute(AttrChargeGroup1);
     m_chargeLoaded = false;
 
     if (m_modRef->HasAttribute(AttrMaxRange))
@@ -62,7 +61,7 @@ m_reloadTimer(10000)
      * set default of 4s for turrents, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
      * maybe make config option later to avoid hard-coding
      */
-    if (!m_reloadTime) {
+    if ((!m_reloadTime) and m_needsCharge)  {
         switch (m_modRef->groupID()) {
             case EVEDB::invGroups::Projectile_Weapon: {
                 m_reloadTime = 4000;
@@ -103,22 +102,28 @@ void ActiveModule::Process()
         if (m_timer.Check(false)) {
             m_timer.Disable();
             DeactivateCycle();
-            return;
         }
+        // we have stop signal....dont process any further
+        return;
     }
-    //check if the timer expired & subtract time
-    if (m_timer.Check())
-        ShouldProcessActiveCycle();
 
-    if (m_reloadTimer.Enabled()) {
-        if (m_reloadTimer.Check(false)) {
-            // charge loading complete
-            m_reloadTimer.Disable();
-            m_ChargeState = ChargeStates::CHG_LOADED;
-            // apply charge effects here after "loading" is complete
-            sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+    // the order of these next two is significant for reloading modules...
+    if (m_needsCharge) {
+        if (m_reloadTimer.Enabled()) {
+            if (m_reloadTimer.Check(false)) {
+                // charge loading complete
+                m_reloadTimer.Disable();
+                m_ChargeState = ChargeStates::CHG_LOADED;
+                // apply charge effects here after "loading" is complete
+                sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+            }
         }
+        if (!m_chargeLoaded)
+            return;
     }
+
+    if (m_timer.Check())
+        ProcessActiveCycle();
 }
 
 void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/)
@@ -136,12 +141,17 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_repeat = repeat;
     m_effectID = effectID;
     m_guidStr = sFxDataMgr.GetEffectGuid(effectID);
+    m_destiny = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
 
     SetTimer(DoCycle()); // Do initial cycle immediately while we start timer
 
-    m_ModuleState = ModuleStates::MOD_ACTIVATED;
+    if (!m_timer.Enabled())
+        return;
 
+    ApplyEffect(Effects::dgmStateActive, true);
     ShowEffect(true, false);
+
+    m_ModuleState = ModuleStates::MOD_ACTIVATED;
 
     if (!m_repeat)
         m_Stop = true;
@@ -180,30 +190,36 @@ void ActiveModule::DeOverload()
 // yes, the xCycle() shit below seems overkill, but each has a specific purpose
 uint32 ActiveModule::DoCycle()
 {
-    if (m_ModuleState == ModuleStates::MOD_ACTIVATED)
-        ApplyEffect(Effects::dgmStateActive, false);
-    // modules seem to apply their active effect on EVERY call.
-    //  will need to test for this, and test against those that make calls AFTER the effect (mining)
-    if (m_shipRef->GetPilot()->GetShipSE()->SysBubble()) {
-        ApplyEffect(Effects::dgmStateActive, true);
-        EvilNumber cycleTime = 0;
-        if (m_modRef->HasAttribute(AttrDuration, cycleTime))
-            return cycleTime.get_int();
-        else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
-            return cycleTime.get_int();
-        else
-            ; // make error for no duration attribute
+    if ((!m_destiny) or (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())) {
+        // make error for no destiny/bubble
+        Deactivate();
+        return 0;
     }
-    // make error for no bubble
-    Deactivate();
-    return 0;
+    if (m_needsCharge) {
+        uint16 amount = m_chargeRef->GetAttribute(AttrQuantity).get_int();
+        if (m_chargeLoaded and amount)  {
+            m_chargeRef->SetAttribute(AttrQuantity, --amount);
+        } else {
+            // send error to client?
+            Deactivate();
+            return 0;
+        }
+    }
+
+    EvilNumber cycleTime = 0;
+    if (m_modRef->HasAttribute(AttrDuration, cycleTime))
+        return cycleTime.get_int();
+    else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
+        return cycleTime.get_int();
+    else
+        ; // make error for no duration attribute
 }
 
 void ActiveModule::AbortCycle()
 {
     if (m_Stop)
         return;
-    // Immediately stop active cycle for things such as remove module, init warp, target left bubble, or miner deactivated by player:
+    // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target left bubble, or miner deactivated by player:
     m_Stop = true;
     DeactivateCycle(true);
     m_timer.Disable();
@@ -225,21 +241,16 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     m_targetEntity = nullptr;
 }
 
-void ActiveModule::ShouldProcessActiveCycle() {
+void ActiveModule::ProcessActiveCycle() {
     if (m_Stop)
         return;
 
-    if (ShipHasCapCharge())
+    float newCap = (m_shipRef->GetAttribute(AttrCapacitorCharge).get_float() - GetAttribute(AttrCapacitorNeed)).get_float();
+    if (newCap >= 0 ) {
+        m_shipRef->SetAttribute(AttrCapacitorCharge, newCap);
         SetTimer(DoCycle());
-    else
+    } else
         AbortCycle();
-}
-
-bool ActiveModule::ShipHasCapCharge()
-{
-    if (GetAttribute(AttrCapacitorNeed) < m_shipRef->GetAttribute(AttrCapacitorCharge))
-        return true;
-    return false;
 }
 
 void ActiveModule::SetTimer(uint32 time) {
@@ -277,14 +288,14 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
     charge->ClearModifiers();
     for (auto it : charge->type().m_stateFxMap) {
         fxData data;
-        data.result = false;
+        data.action = Effects::Action::dgmActInvalid;
         data.srcRef = charge;
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         sFxProc.ParseExpression(charge.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     }
-    if (m_shipRef->GetPilot()->IsInSpace() and m_shipRef->GetPilot()->IsLogin()) {
+    if (m_shipRef->GetPilot()->IsLogin()) {
         m_ChargeState = ChargeStates::CHG_LOADED;
-        sFxProc.ApplyEffects(charge.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+        sFxProc.ApplyEffects(charge.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
     }
 }
 
@@ -294,13 +305,12 @@ void ActiveModule::UnloadCharge()
     m_chargeRef->ClearModifiers();
     for (auto it : m_chargeRef->type().m_stateFxMap) {
         fxData data;
-        data.result = false;
+        data.action = Effects::Action::dgmActInvalid;
         data.srcRef = m_chargeRef;
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
     }
-    if (m_shipRef->GetPilot()->IsInSpace())
-        sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+    sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
     m_chargeRef = InventoryItemRef();       // Ensure ref is NULL
     m_chargeLoaded = false;
@@ -324,17 +334,14 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
     if (abort) {
         active = false;
         if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds))
-        abortTime += (3 * Win32Time_Second);    // delay mining abort for 3s to simulate module "completing" its' cycle and dumping ore to cargo
+            abortTime += (3 * Win32Time_Second);    // delay mining abort for 3s to simulate module "completing" its' cycle and dumping ore to cargo
     }
 
+    uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
     uint32 timeLeft = GetRemainingCycleTimeMS();
 
-    // targetID MUST be defined (so client can properly direct GFx sequence)
-    //uint32 targetID = (m_targetID ? m_targetID : m_shipRef->itemID());
-    uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
-
-    if (m_guidStr != "")
-        m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendSpecialEffect(
+    if ((m_targetID) and (m_destiny))
+        m_destiny->SendSpecialEffect(
                 m_shipRef->itemID(),
                 m_modRef->itemID(),
                 m_modRef->typeID(),
@@ -345,10 +352,8 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
                 (active ? true : false),   // start    - if (start = 0) THEN remove effect
                 (active ? true : false),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
                 (double)timeLeft,           // duration
-                m_repeat   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
-        );
+                m_repeat);   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
 
-    timeLeft /= 1000;
     // Create Destiny Updates and GFx
     GodmaEnvironment ge;
         ge.selfID = m_modRef->itemID();
@@ -358,7 +363,7 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
         ge.area = new PyList();   // still dont know what this is.
         ge.effectID = m_effectID;
 
-    if (chgTypeID and m_targetID) {
+    if (chgTypeID) {
         GodmaOther go;  // "other" means "charge" in evelang
             go.shipID = ge.shipID;
             go.slotID = m_modRef->flag();
@@ -368,6 +373,7 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
         ge.other = new PyNone();
     }
 
+    timeLeft /= 1000;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -382,5 +388,8 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    if (m_destiny)
+        m_destiny->SendDestinyUpdate(updates, events, false);
+    else
+        m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 }

@@ -9,11 +9,12 @@
  */
 
 #include "Client.h"
+#include "effects/EffectsActions.h"
 #include "effects/EffectsProcessor.h"
 #include "inventory/InventoryItem.h"
 #include "character/Character.h"
 #include "ship/Ship.h"
-#include <ship/modules/GenericModule.h>
+#include "ship/modules/GenericModule.h"
 
 /*
  * # Effects Logging:
@@ -616,7 +617,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         case operandCOMBINE: { //17, %(arg1)s); (%(arg2)s      --executes two statements
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
             fxData data1;
-            data1.result = 0;
+            data1.action = Effects::Action::dgmActInvalid;
             data1.srcRef = data.srcRef;
             data1.math = data1.targLoc = data1.fxSrc = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data1, pMod);
@@ -807,9 +808,31 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
 
         } break;
         case operandSKILLCHECK: {   //67    SkillCheck(%(arg1)s)
-            data.result = true;
+            //data.result = true;
         } break;
-        /** @todo  add trivial ops here...add, sub, mult, div */
+        // module action method calls...not used.
+        case operandATTACK: // 13,
+        case operandCARGOSCAN: // 14,
+        case operandCHEATTELEDOCK: // 15,
+        case operandCHEATTELEGATE: // 16,
+        case operandDECLOAKWAVE: // 19,
+        case operandECMBURST: // 30,
+        case operandEMPWAVE: // 32,
+        case operandLAUNCH: // 44,
+        case operandLAUNCHDEFENDERMISSILE: // 45,
+        case operandLAUNCHDRONE: // 46,
+        case operandLAUNCHFOFMISSILE: // 47,
+        case operandMINE: // 50,
+        case operandPOWERBOOST: // 53,
+        case operandSHIPSCAN: // 66,
+        case operandSURVEYSCAN: // 69,
+        case operandTARGETHOSTILES: // 70,
+        case operandTARGETSILENTLY: // 71,
+        case operandTOOLTARGETSKILLS: // 72,
+        case operandSPEEDBOOST: {   //75    Alasiya-specific operand to apply modified speed attribs to destiny variables and update bubble
+            data.action = expression.operandID;
+           // pItem->AddModifier(data);
+        } break;
         default: {              // in case the op hasnt been defined, make a note here (should not hit)
             std::ostringstream ret;
             Operand operand = sFxDataMgr.GetOperand(expression.operandID);
@@ -831,7 +854,13 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
 {
     bool isRig = false, subSys = false, charge = false;
     using namespace Effects;
+    //uint8 action = Action::dgmActInvalid;
     for (auto cur : pItem->m_modifiers) {  // k,v of assoc, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>
+        /*
+        if (cur.second.action) {
+            action = cur.second.action;
+            continue;
+        } */
         switch (cur.second.srcRef->groupID()) {
             case EVEDB::invGroups::Rig_Armor:
             case EVEDB::invGroups::Rig_Astronautic:
@@ -976,7 +1005,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         }
 
         if (itemRefVec.empty()) {
-            _log(EFFECTS__TRACE, "FxProc::ApplyEffects(): target item vector empty.");
+            //_log(EFFECTS__TRACE, "FxProc::ApplyEffects(): target item vector empty.");
             continue;
         }
 
@@ -1015,4 +1044,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             item->SetAttribute(cur.second.targAttr, newValue, update);
         }
     }
+    /*  not used
+    if (action)
+        sFxAct.DoAction(action, pShip->GetPilot()->GetShipSE());   // this MUST be called AFTER all active effects are applied, as it uses those modified values
+    */
 }

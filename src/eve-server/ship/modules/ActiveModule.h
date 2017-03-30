@@ -58,11 +58,11 @@ public:
 
     // generic *Cycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
     //  for modules that perform action on each DoCycle(), they will override this call in their class implementation
-    uint32 DoCycle();
+    virtual uint32 DoCycle();
     virtual void StopCycle(bool abort=false)            { /* Do nothing here */ }
+    virtual void DeactivateCycle(bool abort=false);
 
     /* ActiveModule methods */
-    bool ShipHasCapCharge();
     uint32 GetTargetID()                                { return m_targetID; }
     SystemEntity* GetTarget()                           { return m_targetEntity; }
 
@@ -78,11 +78,12 @@ public:
     void ShowEffect(bool active=false, bool abort=false);
 
 protected:
+    DestinyManager* m_destiny;                          // we do not own this
+
 	bool m_overLoaded = false;
     bool m_chargeLoaded = false;
 
-    void DeactivateCycle(bool abort=false);
-    void ShouldProcessActiveCycle();
+    void ProcessActiveCycle();
 
     uint32 GetRemainingCycleTimeMS()                    { return m_timer.GetRemainingTime(); }
 
@@ -105,7 +106,6 @@ private:
     Timer m_reloadTimer;
     //SystemBubble* m_bubble;                           // we do not own this
     SystemEntity* m_targetEntity;                       // we do not own this
-    //DestinyManager* m_destiny;                        // we do not own this
 
     uint16 m_effectID;                                  //passed to us by activate
     uint32 m_targetID;                                  //passed to us by activate
@@ -115,6 +115,7 @@ private:
     Timer m_timer;
 
     bool m_Stop;
+    bool m_needsCharge;
 
 };
 

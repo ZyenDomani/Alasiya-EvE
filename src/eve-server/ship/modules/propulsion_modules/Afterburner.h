@@ -20,11 +20,11 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Luck
+    Author:     Allan
 */
 
-#ifndef __AFTERBURNER_H__
-#define __AFTERBURNER_H__
+#ifndef __SHIP_MODULES_AFTERBURNER_H_
+#define __SHIP_MODULES_AFTERBURNER_H_
 
 #include "ship/modules/ActiveModule.h"
 
@@ -34,19 +34,13 @@ public:
     Afterburner( InventoryItemRef item, ShipItemRef ship );
     virtual ~Afterburner() { }
 
+    /* GenericModule overrides */
+    virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
+    virtual void DeactivateCycle(bool abort=false);
+
     /* ActiveModule overrides */
-    virtual void Activate(SystemEntity* pSE);
-    virtual void Deactivate();
-    virtual void StopCycle(bool abort=false);
+    //virtual uint32 DoCycle();
 
-protected:
-	void _ProcessCycle() {}
-	void _ShowCycle();
-    //double m_cycleTime;
-    //double _GetCapNeed();
-    void _SetCapNeed();
-
-    double m_shipSpeed;
 };
 
-#endif
+#endif  // __SHIP_MODULES_AFTERBURNER_H_

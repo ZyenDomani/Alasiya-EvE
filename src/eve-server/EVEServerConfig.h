@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    7.4
+    Version:    7.5
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -218,6 +218,7 @@ public:
         uint8 BeltGrowth;
         float roidRadiusMultiplier;
         bool WormHoleEnabled;
+        bool BumpEnabled;
     } cosmic;
 
     // From <crime/>

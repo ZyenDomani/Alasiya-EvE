@@ -1111,7 +1111,7 @@ void ShipItem::ProcessShipEffects(bool update/*false*/)
     _log(EFFECTS__TRACE, "ShipItem::ParseExpression():  Beginning Ship Effects Processing.");
     for (auto it : m_type.m_stateFxMap) {
         fxData data;
-        data.result = false;
+        data.action = Effects::Action::dgmActInvalid;
         data.srcRef = static_cast<InventoryItemRef>(this);
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(it.second.preExpression), data);

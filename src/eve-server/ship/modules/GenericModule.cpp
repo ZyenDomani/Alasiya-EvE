@@ -50,18 +50,7 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_ChargeState = ChargeStates::CHG_UNLOADED;
 
     m_repeat = 0;
-/*
-    sLog.Blue("GenericModule()", "processing effect data for %u (%s)", item->itemID(), item->itemName().c_str());
-    std::vector<TypeEffects> typeFx;
-    sFxDataMgr.GetTypeEffect(item->itemID(), typeFx);
-    Effect fx;
-    for (auto cur : typeFx) {
-        fx = sFxDataMgr.GetEffect(cur.effectID);
-        sLog.Yellow("ConfigureEffects", "starting eval for %u:%s (%s)", fx.effectID, sFxProc.GetStateName(fx.effectState).c_str(), fx.effectName.c_str());
-        sFxProc.EvaluateExpression(fx.preExpression);
-        sFxProc.EvaluateExpression(fx.postExpression);
-    }
-*/
+
     _log(SHIP__MODULE_DEBUG, "Created GenericModule %p for item %s (%u).", this, item->itemName().c_str(), item->itemID());
 }
 
@@ -81,6 +70,21 @@ void GenericModule::Online()
                 m_modRef->itemID(), m_modRef->itemName().c_str(), GetModuleStateName(m_ModuleState).c_str());
         return;     // already online
     }
+    // check for avalible resources to online this module.
+    EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) + GetAttribute(AttrCpu));
+    if (cpuNeed < 0) {
+        ; // make error for not enough cpu
+        m_modRef->PutOffline();
+        return;
+    }
+    EvilNumber pgNeed = (m_shipRef->GetAttribute(AttrPowerLoad) + GetAttribute(AttrPower));
+    if (cpuNeed < 0) {
+        ; // make error for not enough cpu
+        m_modRef->PutOffline();
+        return;
+    }
+    m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed);
+    m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
     // clear map before adding new shit...avoids duplicating
     m_modRef->ClearModifiers(); // ClearModifiers DELETES AttrIsOnline from the map!!  (elusive error)
@@ -89,11 +93,6 @@ void GenericModule::Online()
     ProcessEffects(Effects::dgmStatePassive, true);
     ProcessEffects(Effects::dgmStateOnline, true);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
-
-    EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) + GetAttribute(AttrCpu));
-    EvilNumber pgNeed = (m_shipRef->GetAttribute(AttrPowerLoad) + GetAttribute(AttrPower));
-    m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed);
-    m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
     _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
@@ -106,13 +105,13 @@ void GenericModule::Online()
             m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
                 fxData data;
-                data.result = false;
+                data.action = Effects::Action::dgmActInvalid;
                 data.srcRef = m_chargeRef;
                 data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
                 sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
             }
-            if (m_shipRef->GetPilot()->IsInSpace())
-                sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+            //if (m_shipRef->GetPilot()->IsInSpace())
+            sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         }
     }
 }
@@ -152,13 +151,13 @@ void GenericModule::Offline()
             m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
                 fxData data;
-                data.result = false;
+                data.action = Effects::Action::dgmActInvalid;
                 data.srcRef = m_chargeRef;
                 data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
                 sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
             }
-            if (m_shipRef->GetPilot()->IsInSpace())
-                sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+            //if (m_shipRef->GetPilot()->IsInSpace())
+            sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         }
     }
 
@@ -177,7 +176,6 @@ void GenericModule::Overload()
 {
     // need to clear item's effectMap here to avoid duplicating.
     m_modRef->m_modifiers.clear();
-    // it will be populated on it's next ProcessEffects() call with relevant data.
     ProcessEffects(Effects::dgmStateOverloaded, true);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
@@ -186,7 +184,6 @@ void GenericModule::DeOverload()
 {
     // need to clear item's effectMap here to avoid duplicating.
     m_modRef->m_modifiers.clear();
-    // it will be populated on it's next ProcessEffects() call with relevant data.
     ProcessEffects(Effects::dgmStateOverloaded, false);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
@@ -202,7 +199,7 @@ void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
         if (it.first == 16)    // skip the online effect for now.  will hack the data for it later.
             continue;
         fxData data;
-        data.result = false;
+        data.action = Effects::Action::dgmActInvalid;
         data.srcRef = m_modRef;
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         /* module and charge effects will be added/removed from it's item

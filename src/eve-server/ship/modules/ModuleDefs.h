@@ -10,7 +10,6 @@
 #ifndef MODULE_DEFS_H
 #define MODULE_DEFS_H
 
-#include "./utils/EvilNumber.h"
 
 namespace ModStates {
     // internal charge states

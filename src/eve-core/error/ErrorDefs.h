@@ -7,6 +7,7 @@
   * @date:   ?? May 2015
   */
 
+ // Latest change - 29Mar17
 
 
 #ifndef EVE_CORE_ERROR_DEFS_H_
@@ -39,6 +40,7 @@
  * Ref: ServerError 25268. << ModuleManager::Activate() - targetID == 0
  * Ref: ServerError 31110. << commandDispatcher::Execute()
  * Ref: ServerError 35412. << DestinyManager::_Orbit() - distance checks oob
+ * Ref: ServerError 35928. << DestinyManager::Process() - warpState checks invalid
  * Ref: ServerError 65282. << ShipItem::ModifyHoldVolumeByFlag() - flag not in map
  * Ref: ServerError 75520. << Ship::InsureShip() - fraction is 0
  * Ref: ServerError 75521. << Ship::InsureShip() - fraction is < 0.05 -- ship is insured @ 30% (which gives error in client)

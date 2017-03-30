@@ -639,7 +639,7 @@ void Character::ProcessEffects()
         for (auto curFx : typeFx) {
             curEffect = sFxDataMgr.GetEffect(curFx.effectID);
             fxData data;
-            data.result = false;
+            data.action = Effects::Action::dgmActInvalid;
             data.srcRef = curSkill;
             data.math = data.targLoc = data.fxSrc = data.targAttr = data.srcAttr = data.grpID = data.typeID = 0;
             sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(curEffect.preExpression), data);
