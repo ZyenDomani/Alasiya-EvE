@@ -59,19 +59,17 @@ public:
     // this is a check for those active modules that need it (mining, ???)
     virtual bool CanActivate()                          { return true; }
 
-    // generic DoCycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
-    //  for modules that perform action on each DoCycle(), they will override this call in their class implementation
+    /* generic DoCycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
+     *  for modules that perform action on each DoCycle(), they will override this call in their class implementation
+     */
     virtual uint32 DoCycle();
+
+    /* functions to be handled in derived classes as needed */
+    virtual void ApplyDamage()                          { /* do nothing here */ }
 
     /* ActiveModule methods */
     uint32 GetTargetID()                                { return m_targetID; }
     SystemEntity* GetTarget()                           { return m_targetEntity; }
-
-    // public methods to enable calls from other classes (namely, TurrentFormulas.cpp)
-    uint32 GetFalloff()                                 { return m_falloff; }
-    uint32 GetMaxRange()                                { return m_maxRange; }
-    uint32 GetSigRadius()                               { return m_optimalSigRadius; }
-    double GetTrackingSpeed()                           { return m_trackingSpeed; }
 
     /* new effects processing code and updates */
     void ApplyEffect(Effects::State state, bool active=false);
@@ -83,9 +81,7 @@ protected:
     SystemEntity* m_targetEntity;                       // we do not own this
     DestinyManager* m_destiny;                          // we do not own this
 
-	bool m_overLoaded = false;
-    bool m_chargeLoaded = false;
-
+    void Clear();
     void ProcessActiveCycle();
 
     uint32 GetRemainingCycleTimeMS()                    { return m_timer.GetRemainingTime(); }
@@ -93,29 +89,21 @@ protected:
     void SetTimer(uint32 time);
     void StopTimer()                                    { m_timer.Disable(); }
 
-    /* skill, charge, and module combined modifiers to avoid constant calculations. */
-    // may no longer need these....pull current attrib from item, as effects are working now, and modify items attribs directly.
-    uint32 m_falloff;                               // distance past maximum range at which accuracy has fallen by half
-    uint32 m_optimalRange;
-    uint32 m_maxRange;
-    uint32 m_optimalSigRadius;
-    double m_capNeed;
-    double m_rangeModifier;
-    double m_damageModifier;
-    double m_trackingSpeed;
-
-private:
-    Timer m_reloadTimer;
+    bool m_overLoaded;
+    bool m_chargeLoaded;
 
     uint16 m_effectID;                                  //passed to us by activate
     uint32 m_targetID;                                  //passed to us by activate
-    uint16 m_reloadTime;
-    std::string m_guidStr;
-
+    
+private:
     Timer m_timer;
+    Timer m_reloadTimer;
 
     bool m_Stop;
     bool m_needsCharge;
+
+    uint16 m_reloadTime;
+    std::string m_guidStr;
 
 };
 

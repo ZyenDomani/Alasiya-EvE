@@ -87,7 +87,7 @@ void GenericModule::Online()
     m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
     // clear map before adding new shit...avoids duplicating
-    m_modRef->ClearModifiers(); // ClearModifiers DELETES AttrIsOnline from the map!!  (elusive error)
+    //m_modRef->ClearModifiers(); // ClearModifiers DELETES AttrIsOnline from the map!!  (elusive error)
     m_modRef->PutOnline(isRig());
     m_ModuleState = ModuleStates::MOD_ONLINE;
     ProcessEffects(Effects::dgmStatePassive, true);

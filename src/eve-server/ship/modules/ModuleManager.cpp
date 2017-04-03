@@ -885,6 +885,9 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
     // this one is called from BoardShip()
     OfflineAll();
     GenericModule* mod(nullptr);
+    // gotta add rigs and Subsystems to the vector, as they wont be listed in the "modules to online" list when undocking.
+    GetShipRigs(modVec);
+    GetShipSubSystems(modVec);
     if (modVec.size()) {
         m_Ship->SetAttribute(AttrCpuLoad,     0);
         m_Ship->SetAttribute(AttrPowerLoad,   0);
@@ -898,7 +901,6 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
                 cur->SetAttribute(AttrIsOnline, false, false);
             cur->Online();
         }
-
     } else {
         OnlineAll();
     }
@@ -973,6 +975,20 @@ void ModuleManager::StripModules()
 void ModuleManager::SaveModules()
 {
     m_Modules->SaveModules();
+}
+
+void ModuleManager::GetShipRigs(std::vector< uint32 >& modVec)
+{
+    // get rigs on ship, by itemID (there's only 3 slots...)
+    for (int8 i = flagRigSlot0; i < flagRigSlot3; i++)
+        modVec.push_back(m_Modules->GetModule(i)->itemID());
+}
+
+void ModuleManager::GetShipSubSystems(std::vector< uint32 >& modVec)
+{
+    // get subsystems on ship, by itemID (there's only 5 slots...)
+    for (int8 i = flagSubSystem0; i < flagSubSystem5; i++)
+        modVec.push_back(m_Modules->GetModule(i)->itemID());
 }
 
 void ModuleManager::GetModuleListByReqSkill(uint16 skillID, std::vector< InventoryItemRef >* pModuleList)

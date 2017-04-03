@@ -32,24 +32,15 @@
 
 class Damage {
 public:
-    Damage( SystemEntity *_source,
-            InventoryItemRef _weapon,
-            double _kinetic,
-            double _thermal,
-            double _em,
-            double _explosive,
-            double modifier,
-            EVEEffectID _effect);
-    Damage( SystemEntity *_source,
-            bool fatal_blow );          // weapon-less and charge-less constructor RESERVED for Killed() methods of derived SystemEntity objects
-    Damage( SystemEntity *_source,
-            InventoryItemRef _weapon,  // damage derrived directly from weapon.
-            EVEEffectID _effect );
-    Damage( SystemEntity* _source, InventoryItemRef _weapon, InventoryItemRef _charge, EVEEffectID _effect );
+    Damage( SystemEntity* source, InventoryItemRef weapon, uint16 eID);
+    Damage( SystemEntity* source, InventoryItemRef weapon, InventoryItemRef charge, uint16 eID );
+    Damage( SystemEntity* source, InventoryItemRef weapon, double kinetic, double thermal, double em, double explosive, double modifier, uint16 eID );
+    // constructor for Killed() methods of derived SystemEntity objects with no weapon
+    Damage( SystemEntity *source, bool fatal_blow );
 
-    virtual ~Damage() { }
+    virtual ~Damage()                                   { /* do nothing here */ }
 
-    double GetTotal() const { return (kinetic + thermal + em + explosive); }
+    double GetTotal() const                             { return (m_kinetic + m_thermal + m_em + m_explosive); }
 
     Damage MultiplyDup( double _kinetic_multiplier,
                         double _thermal_multiplier,
@@ -66,13 +57,13 @@ public:
                             if (_em_multiplier < 0.01) _em_multiplier = 0.01;
                             if (_explosive_multiplier > 1.0) _explosive_multiplier = 1.0;
                             if (_explosive_multiplier < 0.01) _explosive_multiplier = 0.01;
-                            return Damage( source, weapon,
-                                            kinetic   * _kinetic_multiplier,
-                                            thermal   * _thermal_multiplier,
-                                            em        * _em_multiplier,
-                                            explosive * _explosive_multiplier,
-                                            modifier,
-                                            effect );
+                            return Damage( srcSE, weaponRef,
+                                           m_kinetic   * _kinetic_multiplier,
+                                           m_thermal   * _thermal_multiplier,
+                                           m_em        * _em_multiplier,
+                                           m_explosive * _explosive_multiplier,
+                                           m_modifier,
+                                           effectID );
     }
 
     void ReduceTo(double total_amount)
@@ -83,39 +74,39 @@ public:
     Damage &operator *=(double factor)
     {
         if (!factor) factor = 1;
-        kinetic     *= factor;
-        thermal     *= factor;
-        em          *= factor;
-        explosive   *= factor;
+        m_kinetic     *= factor;
+        m_thermal     *= factor;
+        m_em          *= factor;
+        m_explosive   *= factor;
 
         return *this;
     }
 
     void SumWithMultFactor( double factor )
     {
-        kinetic   += kinetic * factor;
-        thermal   += thermal * factor;
-        em        += em * factor;
-        explosive += explosive * factor;
+        m_kinetic   += m_kinetic    * factor;
+        m_thermal   += m_thermal    * factor;
+        m_em        += m_em         * factor;
+        m_explosive += m_explosive  * factor;
     }
 
-    float GetThermal()      { return thermal; }
-    float GetEM()           { return em; }
-    float GetKinetic()      { return kinetic; }
-    float GetExplosive()    { return explosive; }
-    double GetModifier()    { return modifier; }
+    float GetThermal()                                  { return m_thermal; }
+    float GetEM()                                       { return m_em; }
+    float GetKinetic()                                  { return m_kinetic; }
+    float GetExplosive()                                { return m_explosive; }
+    double GetModifier()                                { return m_modifier; }
 
-    SystemEntity *const     source;    //we do not own this.
-    const EVEEffectID       effect;
-    InventoryItemRef        weapon;    //we own a ref to this.
-    InventoryItemRef        charge;    //we own a ref to this. May be null.
+    SystemEntity*           srcSE;     //we do not own this.
+    uint16                  effectID;
+    InventoryItemRef        weaponRef;    //we own a ref to this.
+    InventoryItemRef        chargeRef;    //we own a ref to this. May be null.
 
 private:
-    double kinetic;
-    double thermal;
-    double em;
-    double explosive;
-    double modifier;
+    double m_kinetic;
+    double m_thermal;
+    double m_em;
+    double m_explosive;
+    double m_modifier;
 };
 
 #endif

@@ -12,15 +12,15 @@
 #include "npc/NPCAI.h"
 #include "npc/Drone.h"
 #include "ship/modules/weapon_modules/TurrentFormulas.h"
-#include "ship/modules/TurrentModule.h"
+#include "ship/modules/weapon_modules/TurrentModule.h"
 
 
 float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, SystemEntity* pTarget)
 {
     if (!pTarget)
         return 0;
-    uint32 falloff = pMod->GetFalloff();
-    double range = pMod->GetMaxRange();
+    uint32 falloff = pMod->GetAttribute(AttrFalloff).get_int();
+    double range = pMod->GetAttribute(AttrMaxRange).get_int();
     double distance = shipRef->position().distance(pTarget->DestinyMgr()->GetPosition());
 
     _log(DAMAGE__TRACE, "Turrent::GetToHit - distance:%.2f, range:%.2f, falloff:%u", distance, range, falloff);
@@ -37,8 +37,8 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, System
      *     e =  (d / falloff) ^ 2
      * tohit =  0.5 ^ (c + e)    **NOTE**  e=0 when distance < range
      */
-    double a = (angVelocity / (distance * pMod->GetTrackingSpeed()));
-    double b = (pMod->GetSigRadius() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_double());
+    double a = (angVelocity / (distance * pMod->GetAttribute(AttrTrackingSpeed).get_float()));
+    double b = (pMod->GetAttribute(AttrOptimalSigRadius).get_int() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_double());
     double c = pow((a * b), 2);
     double e = 0;
     if (distance > range) {

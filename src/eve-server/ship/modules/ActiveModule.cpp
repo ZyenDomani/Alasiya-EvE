@@ -37,11 +37,6 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
 m_timer(1000, true),    // this needs to be accurate
 m_reloadTimer(10000)
 {
-    m_repeat = 1000;
-    m_targetID = 0;
-    m_effectID = 0;
-    m_guidStr = "";
-    m_targetEntity = nullptr;
     /** @todo  bubble isnt ready yet.  will have to update every time we change bubble */
     //m_bubble = ship->GetPilot()->GetShipSE()->SysBubble();
     m_chargeRef = InventoryItemRef();
@@ -49,6 +44,7 @@ m_reloadTimer(10000)
     m_needsCharge = item->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
         switch (item->groupID()) {
+            // these neither require nor consume charges
             case EVEDB::invGroups::Remote_Sensor_Damper:
             case EVEDB::invGroups::Tracking_Link:
             case EVEDB::invGroups::Signal_Amplifier:
@@ -64,12 +60,6 @@ m_reloadTimer(10000)
     }
 
     m_chargeLoaded = false;
-
-    if (item->HasAttribute(AttrMaxRange))
-        m_maxRange = GetAttribute(AttrMaxRange).get_int();
-
-    if (item->HasAttribute(AttrCapacitorNeed))
-        m_capNeed = GetAttribute(AttrCapacitorNeed).get_float();
 
     // this is an internal variable only.
     m_reloadTime = GetAttribute(AttrReloadTime).get_int();
@@ -103,11 +93,24 @@ m_reloadTimer(10000)
             } break;
         }
     }
-    m_timer.Disable();
+
     m_reloadTimer.Disable();
+
+    Clear();
 
     if ((m_reloadTime > 0) and (m_reloadTime < 9000))
         _log(SHIP__MODULE_TRACE, "Reload time for %s(%u) set to %ums", item->itemName().c_str(), item->itemID(), m_reloadTime);
+}
+
+void ActiveModule::Clear()
+{
+    m_Stop = true;
+    m_repeat = 1000;
+    m_targetID = 0;
+    m_effectID = 0;
+    m_guidStr = "";
+    m_targetEntity = nullptr;
+    m_timer.Disable();
 }
 
 void ActiveModule::Process()
@@ -124,7 +127,7 @@ void ActiveModule::Process()
         return;
     }
 
-    // the order of these next two is significant for reloading modules...
+    // the order of these next two is significant for reloading modules.  check for reload before DoCycle for this tic
     if (m_needsCharge) {
         if (m_reloadTimer.Enabled()) {
             if (m_reloadTimer.Check(false)) {
@@ -135,8 +138,11 @@ void ActiveModule::Process()
                 sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
             }
         }
-        if (!m_chargeLoaded)
+        if ((!m_chargeRef->quantity()) or (!m_chargeLoaded)) {
+            UnloadCharge();
+            DeactivateCycle(true);
             return;
+        }
     }
 
     if (m_timer.Check())
@@ -167,13 +173,17 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_guidStr = sFxDataMgr.GetEffectGuid(effectID);
     m_destiny = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
 
-    if (!CanActivate())
+    if (!CanActivate()) {
+        Clear();
         return;
+    }
 
     SetTimer(DoCycle()); // Do initial cycle immediately while we start timer
 
-    if (!m_timer.Enabled())
+    if (!m_timer.Enabled()) {
+        Clear();
         return;
+    }
 
     ApplyEffect(Effects::dgmStateActive, true);
     ShowEffect(true, false);
@@ -228,9 +238,9 @@ uint32 ActiveModule::DoCycle()
             Deactivate();
             return 0;
         }
-        if (m_needsCharge)  {
-            uint16 amount = m_chargeRef->GetAttribute(AttrQuantity).get_int();
-            m_chargeRef->SetAttribute(AttrQuantity, --amount);
+        if ((m_needsCharge) and sFxDataMgr.isOffensive(m_effectID)) {
+            // not sure if this is entirely accurate...
+            ApplyDamage();
         }
     }
 
@@ -240,7 +250,7 @@ uint32 ActiveModule::DoCycle()
     else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
         return cycleTime.get_int();
     else
-        ; // make error for no duration attribute
+        return 10000; // return 10s and make error for no duration attribute
 }
 
 void ActiveModule::AbortCycle()
@@ -249,6 +259,7 @@ void ActiveModule::AbortCycle()
         return;
     // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target left bubble, or miner deactivated by player:
     m_Stop = true;
+    SetModuleState(ModuleStates::MOD_DEACTIVATING);
     DeactivateCycle(true);
     m_timer.Disable();
 }
@@ -258,15 +269,12 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     if (m_ModuleState != ModuleStates::MOD_DEACTIVATING)
         return;
 
-    m_repeat = 0;
-
     ApplyEffect(Effects::dgmStateActive, false);
     ShowEffect(false, abort);
 
     SetModuleState(ModuleStates::MOD_ONLINE);
 
-    m_targetID = 0;
-    m_targetEntity = nullptr;
+    Clear();
 }
 
 void ActiveModule::ProcessActiveCycle() {
@@ -362,11 +370,16 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
     if (abort) {
         active = false;
         if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds))
-            abortTime += (3 * Win32Time_Second);    // delay mining abort for 3s to simulate module "completing" its' cycle and dumping ore to cargo
+            abortTime += (2 * Win32Time_Second);    // delay mining abort for 2s to simulate module "completing" its' cycle and dumping ore to cargo
     }
 
     uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
     uint32 timeLeft = GetRemainingCycleTimeMS();
+    EvilNumber cycleTime = 0;
+    if (m_modRef->HasAttribute(AttrDuration, cycleTime))
+        ;
+    else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
+        ;
 
     if ((m_targetID) and (m_destiny))
         m_destiny->SendSpecialEffect(
@@ -410,7 +423,7 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
         shipEff.startTime = (abort ? (abortTime / Win32Time_Second) : (shipEff.timeNow - (timeLeft * Win32Time_Second)));  //if now - startTime > 150000000: return
-        shipEff.duration = (abort ? 1000 : (active ? GetAttribute(AttrDuration).get_float() : timeLeft));
+        shipEff.duration = (abort ? 2 : (active ? cycleTime.get_float() : timeLeft));  // i *think* this is in seconds
         shipEff.repeat = m_repeat;
         shipEff.error = new PyNone(); /* look into setting this ... only used for salvaging? */
     std::vector<PyTuple*> events;

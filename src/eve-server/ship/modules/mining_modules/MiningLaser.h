@@ -36,6 +36,9 @@ public:
     MiningLaser( InventoryItemRef item, ShipItemRef ship );
     virtual ~MiningLaser()                              { /* do nothing here */ }
 
+    /* GenericModule overrides */
+    virtual void DeactivateCycle(bool abort=false);
+    
     /* ActiveModule overrides */
     virtual uint32 DoCycle();
     virtual bool CanActivate();

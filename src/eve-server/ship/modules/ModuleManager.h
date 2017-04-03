@@ -230,6 +230,8 @@ public:
 
     void GetLoadedCharges(std::map<EVEItemFlags, InventoryItemRef> &charges);
 
+    void GetShipRigs(std::vector< uint32 >& modVec);
+    void GetShipSubSystems(std::vector< uint32 >& modVec);
     void SortModulesBySlotDec(std::vector< uint32 >& modVec, std::vector< GenericModule* >& pModList);
     void GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList);
     void GetModuleListOfRefsDec(std::vector<InventoryItemRef> * pModuleList);

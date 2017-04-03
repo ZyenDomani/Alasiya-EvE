@@ -212,8 +212,8 @@ protected:
 
     int32 m_stopDistance;               //from destination, in m
 
-    int8 m_orbiting;                    //specific to orbiting (only)
     uint8 m_turnTic;                    //time into turn
+    uint8 m_orbiting;                   //specific to orbit state
     uint32 m_stateStamp;                //statestamp of when current state began, in seconds
 
     float m_orbitRadTic;                //in rad/sec  - for orbiting

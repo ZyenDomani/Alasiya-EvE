@@ -80,7 +80,7 @@ m_warpCapacitorNeed(0.00001f)
     m_cloaked = false;
     m_turning = false;
     m_inBubble = true;
-    m_orbiting = -1;
+    m_orbiting = 0;
     m_tractored = false;
     m_tractorPause = false;
     m_hasSentShipUpdates = false;
@@ -950,7 +950,7 @@ void DestinyManager::_Orbit() {
      * m_shipHeading - current direction ship is pointed
      * m_stateStamp - statestamp of when current state began, in seconds
      * m_moveTimer - millisecond timer to calculate velocity
-     * m_orbiting - -1=other movement, 0=stop/halt/other non-movement, 1=std orbit, 2=orbit but too far, 3=orbit but too close
+     * m_orbiting - 0=no orbit, >0=in orbit, 1=at distance 2=way too close , 3=too close, 4=too far
      * m_orbitRadTic - rad/sec in current orbit.  set by Orbit()
      * m_maxOrbitSpeedFraction - calculated max speed to maintain commanded orbit distance.  set in Orbit() but not used here
      *
@@ -1382,7 +1382,7 @@ void DestinyManager::_BeginMovement() {
         m_shipHeading = moveVector;
     }
 
-    if (m_orbiting < 1) {
+    if (!m_orbiting) {
         // reset target distance just in case it changed.
         GVector shipVector(m_position, m_targetPoint);
         m_targetDistance = shipVector.length();
@@ -1406,7 +1406,7 @@ void DestinyManager::Follow(SystemEntity* pSE, double distance) {
     if ((State == DSTBALL_FOLLOW) and (m_targetEntity.second == pSE) and (m_followDistance == distance) and (m_userSpeedFraction))
         return;
     if (m_orbiting) {
-        m_orbiting = -1;
+        m_orbiting = 0;
         m_shipHeading = NULL_ORIGIN_V;
     }
 
@@ -1469,7 +1469,7 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Target Data - mass:%.3f, speed:%.2f, radius:%.2f", \
                 Tm, (pSE->DestinyMgr() ? pSE->DestinyMgr()->GetSpeed() : 0 ), Tr);
 
-    // fudge distance to work 'close enough' with all targets...this was trial-n-error 
+    // fudge distance to work 'close enough' with all targets...this was trial-n-error
     double Rc = ((distance + 150 + m_radius - (pSE->GetRadius() /12)) * 1.2);
     double Rc2 = pow(Rc,2);
     double Vm2 = pow(m_maxShipSpeed,2);
@@ -1527,7 +1527,7 @@ void DestinyManager::AlignTo(SystemEntity* ent) {
 
 void DestinyManager::GotoDirection(const GPoint& direction) {
     if (m_orbiting) {
-        m_orbiting = -1;
+        m_orbiting = 0;
         m_shipHeading = NULL_ORIGIN_V;
     }
 
@@ -1546,7 +1546,7 @@ void DestinyManager::GotoDirection(const GPoint& direction) {
 
 void DestinyManager::GotoPoint(const GPoint& point) {
     if (m_orbiting) {
-        m_orbiting = -1;
+        m_orbiting = 0;
         m_shipHeading = NULL_ORIGIN_V;
     }
 
@@ -1746,7 +1746,7 @@ void DestinyManager::SetUndockSpeed() {
     //start ship movement @ max velocity for undocking.
     // this simulates being forcefully "ejected" from station
     m_stop = false;
-    m_orbiting = -1;
+    m_orbiting = 0;
     m_stateStamp = sEntityList.GetStamp();
     m_moveTimer = GetTimeMSeconds();
     m_shipMaxAccelTime = 0.1f;

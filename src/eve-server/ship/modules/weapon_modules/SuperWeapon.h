@@ -26,9 +26,8 @@
 #ifndef __SUPERWEAPON_H__
 #define __SUPERWEAPON_H__
 
-#include "ship/modules/TurrentModule.h"
 
-class SuperWeapon: public TurrentModule
+class SuperWeapon
 {
 public:
     SuperWeapon( InventoryItemRef item, ShipItemRef ship );

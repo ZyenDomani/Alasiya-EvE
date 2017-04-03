@@ -374,8 +374,6 @@ private:
     double m_capacity;
     EVERace m_raceID;
 
-    bool m_offensive;
-    bool m_assistance;
 };
 
 /*

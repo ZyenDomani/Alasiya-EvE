@@ -31,7 +31,7 @@
 #include "system/Damage.h"
 
 SuperWeapon::SuperWeapon( InventoryItemRef item, ShipItemRef ship )
-: TurrentModule(item, ship),
+:
 	m_buildUpTimer(0), m_effectDurationTimer(0)
 {
 }

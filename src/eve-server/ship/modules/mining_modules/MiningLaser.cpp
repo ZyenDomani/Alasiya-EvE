@@ -60,7 +60,7 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
     } else if (m_modRef->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester) {
         m_gMiner = true;
     }
-    _log(MINING__TRACE, "MiningLaser Created for %s.  Duration:%ums, Range:%um", item->itemName().c_str(), GetAttribute(AttrDuration).get_int(), m_maxRange);
+    _log(MINING__TRACE, "MiningLaser Created for %s with %ums Duration.", item->itemName().c_str(), GetAttribute(AttrDuration).get_int());
 }
 
 void MiningLaser::LoadCharge(InventoryItemRef charge)
@@ -119,6 +119,22 @@ uint32 MiningLaser::DoCycle() {
     return ActiveModule::DoCycle();
 }
 
+void MiningLaser::DeactivateCycle(bool abort)
+{
+    using namespace ModStates;
+
+    if (m_ModuleState != ModuleStates::MOD_DEACTIVATING)
+        return;
+
+    ApplyEffect(Effects::dgmStateActive, false);
+    ShowEffect(false, abort);
+
+    ProcessCycle(abort);
+
+    SetModuleState(ModuleStates::MOD_ONLINE);
+    Clear();
+}
+
 // note:  gas cloud contains radius/10 units of gas.
 /** @todo verify for ice and gas */
 void MiningLaser::ProcessCycle(bool partial)
@@ -154,7 +170,7 @@ void MiningLaser::ProcessCycle(bool partial)
             return;
         }
     } else if (partial) {
-        oreAmount *= (GetRemainingCycleTimeMS() / GetAttribute(AttrDuration).get_int());
+        oreAmount *= ((GetRemainingCycleTimeMS() - 2000) / GetAttribute(AttrDuration).get_int());
         if (m_iMiner)
             oreAmount = floor(oreAmount);
     }
