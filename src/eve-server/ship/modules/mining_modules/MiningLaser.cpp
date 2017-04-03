@@ -170,7 +170,7 @@ void MiningLaser::ProcessCycle(bool partial)
             return;
         }
     } else if (partial) {
-        oreAmount *= ((GetRemainingCycleTimeMS() - 2000) / GetAttribute(AttrDuration).get_int());
+        oreAmount *= (GetRemainingCycleTimeMS() / GetAttribute(AttrDuration).get_float());
         if (m_iMiner)
             oreAmount = floor(oreAmount);
     }

@@ -34,7 +34,7 @@ using namespace ModStates;
 
 ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
 : GenericModule(item, ship),
-m_timer(1000, true),    // this needs to be accurate
+m_timer(1000),
 m_reloadTimer(10000)
 {
     /** @todo  bubble isnt ready yet.  will have to update every time we change bubble */

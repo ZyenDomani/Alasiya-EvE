@@ -465,15 +465,21 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         }
 
         uint32 flag = flagAutoFit;
-        if ( call.byname.find("flag") == call.byname.end() ) {
+        if ((call.byname.find("flag") == call.byname.end()) or (call.byname.find("flag")->second->IsNone())) {
             if (IsStation(call.client->GetLocationID()))
                 flag = flagHangar;
             else {
 
                 flag = flagCargoHold;
             }
-        } else
-            flag = call.byname.find("flag")->second->AsInt()->value();
+        } else {
+            if (call.byname.find("flag")->second->IsInt())
+                flag = call.byname.find("flag")->second->AsInt()->value();
+            else if (call.byname.find("flag")->second->IsFloat())
+                flag = call.byname.find("flag")->second->AsFloat()->value();
+            else
+                ; // make error here.  should never hit.
+        }
 
         if (flag == flagLocked)
             flag = flagCargoHold;
