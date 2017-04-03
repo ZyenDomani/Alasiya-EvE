@@ -46,13 +46,29 @@ m_reloadTimer(10000)
     //m_bubble = ship->GetPilot()->GetShipSE()->SysBubble();
     m_chargeRef = InventoryItemRef();
     m_overLoaded = false;
-    m_needsCharge = m_modRef->HasAttribute(AttrChargeGroup1);
+    m_needsCharge = item->HasAttribute(AttrChargeGroup1);
+    if (m_needsCharge) {
+        switch (item->groupID()) {
+            case EVEDB::invGroups::Remote_Sensor_Damper:
+            case EVEDB::invGroups::Tracking_Link:
+            case EVEDB::invGroups::Signal_Amplifier:
+            case EVEDB::invGroups::Tracking_Enhancer:
+            case EVEDB::invGroups::Sensor_Booster:
+            case EVEDB::invGroups::Tracking_Computer:
+            case EVEDB::invGroups::Projected_ECCM:
+            case EVEDB::invGroups::Remote_Sensor_Booster:
+            case EVEDB::invGroups::Tracking_Disruptor: {
+                m_needsCharge = false;
+            }
+        }
+    }
+
     m_chargeLoaded = false;
 
-    if (m_modRef->HasAttribute(AttrMaxRange))
+    if (item->HasAttribute(AttrMaxRange))
         m_maxRange = GetAttribute(AttrMaxRange).get_int();
 
-    if (m_modRef->HasAttribute(AttrCapacitorNeed))
+    if (item->HasAttribute(AttrCapacitorNeed))
         m_capNeed = GetAttribute(AttrCapacitorNeed).get_float();
 
     // this is an internal variable only.
@@ -62,7 +78,7 @@ m_reloadTimer(10000)
      * maybe make config option later to avoid hard-coding
      */
     if ((!m_reloadTime) and m_needsCharge)  {
-        switch (m_modRef->groupID()) {
+        switch (item->groupID()) {
             case EVEDB::invGroups::Projectile_Weapon: {
                 m_reloadTime = 4000;
             } break;
@@ -90,7 +106,8 @@ m_reloadTimer(10000)
     m_timer.Disable();
     m_reloadTimer.Disable();
 
-    _log(SHIP__MODULE_TRACE, "Set reload time for %s(%u) to %ums", m_modRef->itemName().c_str(), m_modRef->itemID(), m_reloadTime);
+    if ((m_reloadTime > 0) and (m_reloadTime < 9000))
+        _log(SHIP__MODULE_TRACE, "Reload time for %s(%u) set to %ums", item->itemName().c_str(), item->itemID(), m_reloadTime);
 }
 
 void ActiveModule::Process()
@@ -128,6 +145,13 @@ void ActiveModule::Process()
 
 void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/)
 {
+    if ((m_needsCharge) and ((!m_chargeLoaded) or (!m_chargeRef))) {
+        _log(SHIP__MODULE_WARNING, "ActiveModule::Activate() - Cannot find loaded charge for this module");
+        if (m_shipRef->HasPilot())
+            if (m_shipRef->GetPilot()->CanThrow())
+                throw PyException( MakeCustomError( "Cannot find loaded charge for this module  - Ref: ServerError 15693"));
+        return;
+    }
     if (targetID) {
         m_targetID = targetID;
         m_targetEntity = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
@@ -142,6 +166,9 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_effectID = effectID;
     m_guidStr = sFxDataMgr.GetEffectGuid(effectID);
     m_destiny = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
+
+    if (!CanActivate())
+        return;
 
     SetTimer(DoCycle()); // Do initial cycle immediately while we start timer
 
@@ -195,14 +222,15 @@ uint32 ActiveModule::DoCycle()
         Deactivate();
         return 0;
     }
-    if (m_needsCharge) {
-        uint16 amount = m_chargeRef->GetAttribute(AttrQuantity).get_int();
-        if (m_chargeLoaded and amount)  {
-            m_chargeRef->SetAttribute(AttrQuantity, --amount);
-        } else {
+    if (m_chargeLoaded) {
+        if (!m_chargeRef) {
             // send error to client?
             Deactivate();
             return 0;
+        }
+        if (m_needsCharge)  {
+            uint16 amount = m_chargeRef->GetAttribute(AttrQuantity).get_int();
+            m_chargeRef->SetAttribute(AttrQuantity, --amount);
         }
     }
 

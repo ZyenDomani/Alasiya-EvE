@@ -176,6 +176,7 @@ protected:
     float m_mass;                       //in kg
     float m_massMKg;                    //in Millions of kg
     float m_alignTime;                  //in s      - align and enter warp are same (for our purposes)
+    float m_prevSpeed;                  //in m/s    - used by decel when deactivating prop mod
     float m_maxShipSpeed;               //in m/s
     float m_shipWarpSpeed;              //in au/s
     float m_timeToEnterWarp;            //in s
@@ -225,7 +226,6 @@ protected:
     double m_targetDistance;            //in m
     double m_followDistance;            //in m
     double m_moveTimer;                 //in ms     - movement timestamp container for calculating csf
-    double m_orbitTimer;                //in ms
 
     GPoint m_targetPoint;
     GVector m_shipHeading;              //direction ship is facing

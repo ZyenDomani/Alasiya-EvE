@@ -218,6 +218,7 @@ public:
         uint8 BeltGrowth;
         float roidRadiusMultiplier;
         bool WormHoleEnabled;
+        bool CiviliansEnabled;
         bool BumpEnabled;
     } cosmic;
 

@@ -147,6 +147,7 @@ EVEServerConfig::EVEServerConfig()
     cosmic.BeltGrowth = 6 /*h*/;
     cosmic.roidRadiusMultiplier = 1.0;
     cosmic.WormHoleEnabled = false;
+    cosmic.CiviliansEnabled = false;
     cosmic.BumpEnabled = false;
 
     // crime
@@ -452,6 +453,7 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
     AddValueParser( "BeltGrowth",           cosmic.BeltGrowth );
     AddValueParser( "roidRadiusMultiplier", cosmic.roidRadiusMultiplier );
     AddValueParser( "WormHoleEnabled",      cosmic.WormHoleEnabled );
+    AddValueParser( "CiviliansEnabled",     cosmic.CiviliansEnabled);
 
     const bool result = ParseElementChildren( ele );
 
@@ -463,6 +465,7 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
     RemoveParser( "BeltGrowth" );
     RemoveParser( "roidRadiusMultiplier" );
     RemoveParser( "WormHoleEnabled" );
+    RemoveParser( "CiviliansEnabled" );
 
     return result;
 }

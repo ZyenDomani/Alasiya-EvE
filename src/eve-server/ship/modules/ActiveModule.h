@@ -49,18 +49,19 @@ public:
     virtual void AbortCycle();
     virtual void DeOverload();
     virtual void Deactivate(std::string effect="");
+    virtual void DeactivateCycle(bool abort=false);
     virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
 
     /* GenericModule access function overriders */
     virtual bool IsLoaded()                             { return m_chargeLoaded; }
     virtual bool IsOverloaded()                         { return m_overLoaded; }
     virtual InventoryItemRef GetLoadedChargeRef()       { return m_chargeRef; }
+    // this is a check for those active modules that need it (mining, ???)
+    virtual bool CanActivate()                          { return true; }
 
-    // generic *Cycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
+    // generic DoCycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
     //  for modules that perform action on each DoCycle(), they will override this call in their class implementation
     virtual uint32 DoCycle();
-    virtual void StopCycle(bool abort=false)            { /* Do nothing here */ }
-    virtual void DeactivateCycle(bool abort=false);
 
     /* ActiveModule methods */
     uint32 GetTargetID()                                { return m_targetID; }
@@ -74,10 +75,12 @@ public:
 
     /* new effects processing code and updates */
     void ApplyEffect(Effects::State state, bool active=false);
-	/* common method for all modules that have a visual effect when active (wip) */
+	/* common method for all modules that have a visual effect when active */
     void ShowEffect(bool active=false, bool abort=false);
 
 protected:
+    //SystemBubble* m_bubble;                           // we do not own this
+    SystemEntity* m_targetEntity;                       // we do not own this
     DestinyManager* m_destiny;                          // we do not own this
 
 	bool m_overLoaded = false;
@@ -97,15 +100,12 @@ protected:
     uint32 m_maxRange;
     uint32 m_optimalSigRadius;
     double m_capNeed;
-    double m_cycleTime;
     double m_rangeModifier;
     double m_damageModifier;
     double m_trackingSpeed;
 
 private:
     Timer m_reloadTimer;
-    //SystemBubble* m_bubble;                           // we do not own this
-    SystemEntity* m_targetEntity;                       // we do not own this
 
     uint16 m_effectID;                                  //passed to us by activate
     uint32 m_targetID;                                  //passed to us by activate

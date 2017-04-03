@@ -414,6 +414,7 @@ SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/RigModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/SubSystemModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/TurrentModule.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/mining_modules/MiningLaser.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/propulsion_modules/Afterburner.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/weapon_modules/TurrentFormulas.h" )
 SET( ship_modules_SOURCE
@@ -424,6 +425,7 @@ SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/RigModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/SubSystemModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/TurrentModule.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/mining_modules/MiningLaser.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/propulsion_modules/Afterburner.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/weapon_modules/TurrentFormulas.cpp")
 
@@ -521,6 +523,7 @@ SET( system_SOURCE
 SET( system_managers_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/AnomalyMgr.h"
      "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/BeltMgr.h"
+     "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/CivilianMgr.h"
      "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/DungeonMgr.h"
      "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/ManagerDB.h"
      "${TARGET_INCLUDE_DIR}/system/cosmicMgrs/SpawnMgr.h"
@@ -528,6 +531,7 @@ SET( system_managers_INCLUDE
 SET( system_managers_SOURCE
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/AnomalyMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/BeltMgr.cpp"
+     "${TARGET_SOURCE_DIR}/system/cosmicMgrs/CivilianMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/DungeonMgr.cpp"
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/ManagerDB.cpp"
      "${TARGET_SOURCE_DIR}/system/cosmicMgrs/SpawnMgr.cpp"

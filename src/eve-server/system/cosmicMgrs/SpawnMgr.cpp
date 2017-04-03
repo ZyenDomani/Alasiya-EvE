@@ -4,7 +4,7 @@
   *     NPC Spawn managment system for Alasiya EvEmu
   *
   * @Author:         Allan
-  * @date:
+  * @date:          15 July 2015
   *
   */
 

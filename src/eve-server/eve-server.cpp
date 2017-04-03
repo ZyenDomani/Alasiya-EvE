@@ -156,6 +156,7 @@
 #include "system/SovereigntyMgrService.h"
 #include "system/WormholeSvc.h"
 // cosmic managers
+#include "system/cosmicMgrs/CivilianMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
 #include "system/cosmicMgrs/SpawnMgr.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
@@ -261,6 +262,10 @@ int main( int argc, char* argv[] )
     /* create the WormholeMgr singleton */
     sLog.Green("       ServerInit", "Starting Wormhole Manager");
     sWHMgr.Initialize(&pyServMgr);
+
+    /* create the CivilianMgr singleton */
+    sLog.Green("       ServerInit", "Starting Civilian Manager");
+    sCivMgr.Initialize(&pyServMgr);
 
     /* create the BubbleManager singleton */
     sLog.Green("       ServerInit", "Starting Bubble Manager");

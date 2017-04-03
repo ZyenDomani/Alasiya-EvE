@@ -34,13 +34,11 @@ class MiningLaser: public ActiveModule
 {
 public:
     MiningLaser( InventoryItemRef item, ShipItemRef ship );
-    virtual ~MiningLaser();
+    virtual ~MiningLaser()                              { /* do nothing here */ }
 
     /* ActiveModule overrides */
-    virtual void Activate(SystemEntity* pSE);
-    virtual void Deactivate();
-    virtual double DoCycle();
-    virtual void StopCycle(bool abort=false);
+    virtual uint32 DoCycle();
+    virtual bool CanActivate();
 
     //  functions to be handled in derived classes as needed
     virtual void LoadCharge(InventoryItemRef charge);
@@ -49,21 +47,16 @@ public:
 protected:
 	void ProcessCycle(bool partial=false);
 
-    void _ShowCycle();
-    //double _GetCapNeed();
-    void _SetCapNeed();
 
 private:
-    bool m_IsInitialCycle = true;
-    bool m_crystalTakeDmg = false;
+    bool m_IsInitialCycle;
+    bool m_crystalTakeDmg;
 
-    uint16 m_crystalRoidGrp = 0;
+    uint16 m_crystalRoidGrp;
 
-    float m_cycleVol = 0;
-    float m_cycleVol2 = 0;
-    float m_crystalDmg = 0;
-    float m_crystalDmgAmount = 0;
-    float m_crystalDmgChance = 0;
+    float m_crystalDmg;
+    float m_crystalDmgAmount;
+    float m_crystalDmgChance;
 
     //cached item-type stuff
     bool m_rMiner, m_dcMiner, m_iMiner, m_gMiner;
