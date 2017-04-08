@@ -642,14 +642,9 @@ void DestinyManager::_Move() {
      */
 
     double timeStamp = 0;   // keep all these timers in seconds.
-    if ((m_orbiting != 1) and m_userSpeedFraction) {  // if usf==0 then ship is stopping, so continue movement along current ship heading (cancel turn)
+    if ((m_orbiting != 1) and m_userSpeedFraction)  // if usf==0 then ship is stopping, so continue movement along current ship heading (cancel turn)
         m_shipHeading = _Turn();
-        timeStamp = (GetTimeMSeconds() - m_moveTimer) /1000;
-    } else if (m_orbiting == 1) {
-        timeStamp = sEntityList.GetStamp() - m_stateStamp;
-    } else {
-        timeStamp = (GetTimeMSeconds() - m_moveTimer) /1000;
-    }
+    timeStamp = (GetTimeMSeconds() - m_moveTimer) /1000;
 
     float speed = 0.0f, csf = 0.0f;
     std::string move = "";
@@ -964,7 +959,7 @@ void DestinyManager::_Orbit() {
      */
 
     // get current times
-    double timeStamp = GetTimeMSeconds() - m_moveTimer;
+    double timeStamp = (GetTimeMSeconds() - m_moveTimer) /1000;
     float Tr =  m_targetEntity.second->GetRadius();
     GPoint Tp(m_targetEntity.second->GetPosition());
     // todo...most entites DO NOT have destiny managers yet, so these will return 0.  (wip)
