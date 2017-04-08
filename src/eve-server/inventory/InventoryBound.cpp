@@ -234,7 +234,6 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::MultiMerge() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     //Decode Args
     Inventory_CallMultiMerge elements;
-
     if (!elements.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Unable to decode elements");
         return nullptr;
@@ -242,6 +241,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
 
     Inventory_CallMultiMergeElement element;
 
+    call.client->services().item_factory->SetUsingClient(call.client);
     std::vector<PyRep *>::const_iterator cur = elements.MMElements->begin();
     for (; cur != elements.MMElements->end(); cur++) {
         if (!element.Decode( *cur )) {
@@ -261,9 +261,12 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
             continue;
         }
 
-        draggedItem->SetFlag(stationaryItem->flag());   // Set dragged item's flag to the stationary item's flag so merge can complete
-        stationaryItem->Merge( draggedItem, element.draggedQty );
+        if (stationaryItem->GetInventory()->ValidateAddItem(stationaryItem->flag(), draggedItem)) {
+            draggedItem->ChangeOwner(call.client->GetCharacterID());
+            stationaryItem->Merge( draggedItem, element.draggedQty );
+        } // if false, error is thrown in ValidateAddItem() call
     }
+    call.client->services().item_factory->UnsetUsingClient();
 
     return nullptr;
 }

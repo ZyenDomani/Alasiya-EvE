@@ -300,7 +300,7 @@ bool DungeonMgr::Create(uint16 templateID)
 
         DBSystemDynamicEntity entity;
             entity.allianceID = 0;
-            entity.categoryID = cur->typeCatID;
+            entity.categoryID = (EVEItemCategories)cur->typeCatID;
             entity.corporationID = 0;
             entity.groupID = cur->typeGrpID;
             entity.itemID = item->itemID();

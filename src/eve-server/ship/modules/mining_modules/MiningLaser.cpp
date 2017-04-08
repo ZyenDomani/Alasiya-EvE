@@ -1,28 +1,11 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ /**
+  * @name MiningModule.cpp
+  *   mining module class
+  * @Author:         Allan
+  * @date:   10 June 2015   -UD/RW 02 April 2017
+  */
 
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Reve
-    Updates:    Allan, AlTahir(DaVinci)
-*/
 
 #include "eve-server.h"
 
@@ -43,7 +26,6 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
 
     m_crystalDmg = 0;
     m_crystalRoidGrp = 0;
-    m_crystalTakeDmg = false;
     m_crystalDmgAmount = 0;
     m_crystalDmgChance = 0;
 
@@ -69,7 +51,6 @@ void MiningLaser::LoadCharge(InventoryItemRef charge)
 
     m_crystalDmg = m_chargeRef->GetAttribute(AttrDamage).get_float();
     m_crystalRoidGrp = m_chargeRef->GetAttribute(AttrSpecialisationAsteroidGroup).get_float();
-    m_crystalTakeDmg = m_chargeRef->GetAttribute(AttrCrystalsGetDamaged).get_bool();
     m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
     m_crystalDmgChance = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
 }
@@ -78,7 +59,6 @@ void MiningLaser::UnloadCharge()
 {
     m_crystalDmg = 0;
     m_crystalRoidGrp = 0;
-    m_crystalTakeDmg = false;
     m_crystalDmgAmount = 0;
     m_crystalDmgChance = 0;
 
@@ -88,14 +68,14 @@ void MiningLaser::UnloadCharge()
 bool MiningLaser::CanActivate()
 {
     // verify module vs target for activation.  disallow if not compatible.
-    if ((m_rMiner and (m_targetEntity->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid) and (m_targetEntity->GetSelf()->groupID() != EVEDB::invGroups::Mercoxit))
-        or (m_dcMiner and (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit))
-        or (m_iMiner and (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Ice))
-        or (m_gMiner and (m_targetEntity->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)))
+    if ((m_rMiner and (m_targetSE->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid) and (m_targetSE->GetSelf()->groupID() != EVEDB::invGroups::Mercoxit))
+        or (m_dcMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit))
+        or (m_iMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Ice))
+        or (m_gMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)))
     {
         m_IsInitialCycle = true;
 
-        m_targetEntity->SystemMgr()->GetBeltMgr()->SetActive(m_targetEntity->SysBubble()->GetID());
+        m_targetSE->SystemMgr()->GetBeltMgr()->SetActive(m_targetSE->SysBubble()->GetID());
         return true;
     } else {
         _log(MINING__WARNING, "Activate() - Invalid target");
@@ -142,15 +122,15 @@ void MiningLaser::ProcessCycle(bool partial)
     // update for t2 crystal shit, if applicable
     float cycleVol = GetAttribute(AttrMiningAmount).get_float();
     if (m_chargeLoaded)
-        if (m_targetEntity->GetGroupID() == m_crystalRoidGrp)
+        if (m_targetSE->GetGroupID() == m_crystalRoidGrp)
             cycleVol = GetAttribute(AttrSpecialtyMiningAmount).get_float();
 
-	InventoryItemRef roidRef = m_targetEntity->GetSelf();
+	InventoryItemRef roidRef = m_targetSE->GetSelf();
     float oreVolume = roidRef->GetAttribute(AttrVolume).get_float();
 
     if (cycleVol < oreVolume) {
         _log(MINING__ERROR, "%s(%u) - Mining Laser could not extract ore from %s(%u)", \
-              m_modRef->itemName().c_str(), m_modRef->itemID(), m_targetEntity->GetSelf()->itemName().c_str(), m_targetEntity->GetID() );
+              m_modRef->itemName().c_str(), m_modRef->itemID(), m_targetSE->GetSelf()->itemName().c_str(), m_targetSE->GetID() );
         return;
     }
 
@@ -200,7 +180,7 @@ void MiningLaser::ProcessCycle(bool partial)
 
     if (!roidQuantity) {
         ActiveModule::AbortCycle();
-        m_targetEntity->Delete();
+        m_targetSE->Delete();
     } else if (!m_iMiner) {
         // do not reset ice radius
         /* reversing the radius-to-quantity formula, we get radius = exp((quantity + 112404.8) /25000)  */
@@ -209,7 +189,7 @@ void MiningLaser::ProcessCycle(bool partial)
         roidRef->SetAttribute(AttrQuantity, roidQuantity);
     }
     if (m_chargeLoaded)
-        if (m_crystalTakeDmg)
+        if (m_chargeRef->HasAttribute(AttrCrystalsGetDamaged))
             if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
                 m_crystalDmg += m_crystalDmgAmount;
                 if (m_crystalDmg > 1.0f) {

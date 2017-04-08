@@ -90,12 +90,12 @@ double ShieldTransporter::DoCycle()
         _ShowCycle();
 
         // Apply boost amount:
-        EvilNumber shieldCharge = m_targetEntity->GetSelf()->GetAttribute(AttrShieldCharge);
+        EvilNumber shieldCharge = m_targetSE->GetSelf()->GetAttribute(AttrShieldCharge);
         shieldCharge += GetAttribute(AttrShieldBonus);
-        if (shieldCharge > m_targetEntity->GetSelf()->GetAttribute(AttrShieldCapacity)) {
-            shieldCharge = m_targetEntity->GetSelf()->GetAttribute(AttrShieldCapacity);
+        if (shieldCharge > m_targetSE->GetSelf()->GetAttribute(AttrShieldCapacity)) {
+            shieldCharge = m_targetSE->GetSelf()->GetAttribute(AttrShieldCapacity);
         }
-        m_targetEntity->GetSelf()->SetAttribute(AttrShieldCharge, shieldCharge);
+        m_targetSE->GetSelf()->SetAttribute(AttrShieldCharge, shieldCharge);
 
         return m_cycleTime;
 }

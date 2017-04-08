@@ -50,14 +50,12 @@
 /*
 #include "shield_modules/ShieldBooster.h"
 #include "shield_modules/ShieldTransporter.h"
-#include "weapon_modules/MissileLauncher.h"
 #include "weapon_modules/SuperWeapon.h"
 */
 
-//how you should access the modules
 static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
 {
-    if( (item->categoryID() != EVEDB::invCategories::Module) and (item->categoryID() != EVEDB::invCategories::Subsystem)) {
+    if ((item->categoryID() != EVEDB::invCategories::Module) and (item->categoryID() != EVEDB::invCategories::Subsystem)) {
         sLog.Error("ModuleFactory","Cannot create module from non module type item");
         assert(false);
     } else {

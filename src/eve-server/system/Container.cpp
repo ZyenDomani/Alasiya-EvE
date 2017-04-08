@@ -479,7 +479,12 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        //slim->SetItemString("lootRights",       new PyNone());    //TODO needs more work here
+        PyTuple* tuple1 = new PyTuple(4);
+            tuple1->SetItem(0, new PyInt(m_self->ownerID()));
+            tuple1->SetItem(1, new PyInt(m_corpID));
+            tuple1->SetItem(2, new PyLong(Win32TimeNow()));
+            tuple1->SetItem(3, new PyBool(false));
+        slim->SetItemString("lootRights",       tuple1);
         slim->SetItemString("corpID",           new PyInt(m_corpID));
         slim->SetItemString("allianceID",       new PyLong(m_allyID));
         slim->SetItemString("isEmpty",          new PyBool(IsEmpty()));
@@ -488,11 +493,11 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("ownerID",          new PyInt(m_self->ownerID()));
         PyDict* dict = new PyDict;
             dict->SetItemString("WreckTypeID",  new PyInt(m_self->typeID()));
-        PyTuple* tuple = new PyTuple(2);
-            tuple->SetItem(0, new PyString("UI/Inflight/WreckNameTypeID"));
-            tuple->SetItem(1, dict);
-        slim->SetItemString("nameID",           tuple);
-        slim->SetItemString("warFactionID",     new PyInt(GetWarFactionID()));
+        PyTuple* tuple2 = new PyTuple(2);
+            tuple2->SetItem(0, new PyString("UI/Inflight/WreckNameTypeID"));
+            tuple2->SetItem(1, dict);
+        slim->SetItemString("nameID",           tuple2);
+        slim->SetItemString("warFactionID",     new PyInt(m_warID));
 
     return slim;
 }
@@ -507,10 +512,10 @@ PyDict *WreckSE::MakeSlimItem() {
                                         [PyString "Matriarch Alvus Wreck"]
                                         [PyString "lootRights"]
                                         [PyTuple 4 items]
-                                          [PyInt 90752035]
-                                          [PyInt 506478887]
-                                          [PyIntegerVar 1306510806464]
-                                          [PyBool False]
+                                          [PyInt 90752035]      << ownerID
+                                          [PyInt 506478887]     << owners corpID
+                                          [PyIntegerVar 1306510806464]  << time
+                                          [PyBool False]            << dunno
                                         [PyString "corpID"]
                                         [PyInt 506478887]
                                         [PyString "allianceID"]

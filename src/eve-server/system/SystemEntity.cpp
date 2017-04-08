@@ -160,7 +160,7 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
             ++cur;
         }
     }
-    wreckRef->MakeSlimItemChange();
+    //wreckRef->MakeSlimItemChange();
 }
 
 /** @todo (allan)  this doesnt need to be here */

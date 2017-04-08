@@ -91,12 +91,12 @@ double HullTransporter::DoCycle()
         _ShowCycle();
 
         // Apply repair amount:
-        EvilNumber hullDamage = m_targetEntity->GetSelf()->GetAttribute(AttrDamage);
+        EvilNumber hullDamage = m_targetSE->GetSelf()->GetAttribute(AttrDamage);
         hullDamage -= GetAttribute(AttrStructureDamageAmount);
         if (hullDamage <= 0) {
             hullDamage = 0;
         }
-        m_targetEntity->GetSelf()->SetAttribute(AttrDamage, hullDamage);
+        m_targetSE->GetSelf()->SetAttribute(AttrDamage, hullDamage);
 
         return m_cycleTime;
 }

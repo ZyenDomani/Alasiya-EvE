@@ -238,7 +238,7 @@ public:
      */
     PyObject *WreckContainerGetInfo();
 
-    bool IsEmpty()                                      { return GetInventory()->IsEmpty(); }
+    bool IsEmpty()                                      { return m_inventory->IsEmpty(); }
     void MakeSlimItemChange();
     void SetMySE(SystemEntity* pSE)                     { mySE = pSE;}
 
@@ -265,7 +265,7 @@ protected:
     {
         return WreckContainerRef( new WreckContainer( factory, containerID, itemType, data ) );
     }
-    
+
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data );
 
 private:

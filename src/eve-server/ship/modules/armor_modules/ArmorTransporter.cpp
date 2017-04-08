@@ -90,12 +90,12 @@ double ArmorTransporter::DoCycle()
         _ShowCycle();
 
         // Apply repair amount:
-        EvilNumber armorDamage = m_targetEntity->GetSelf()->GetAttribute(AttrArmorDamage);
+        EvilNumber armorDamage = m_targetSE->GetSelf()->GetAttribute(AttrArmorDamage);
         armorDamage -= GetAttribute(AttrArmorDamageAmount);
         if (armorDamage <= 0) {
             armorDamage = 0;
         }
-        m_targetEntity->GetSelf()->SetAttribute(AttrArmorDamage, armorDamage);
+        m_targetSE->GetSelf()->SetAttribute(AttrArmorDamage, armorDamage);
 
         return m_cycleTime;
 }

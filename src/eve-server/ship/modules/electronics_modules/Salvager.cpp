@@ -49,7 +49,7 @@ void Salvager::Activate(SystemEntity* pSE)
     /** @todo allow orca-specific tractoring */
     /** @todo allow tractoring if not anchored */
     if (pSE->IsContainerSE() or pSE->IsWreckSE()) {
-        m_targetEntity = pSE;
+        m_targetSE = pSE;
         m_targetID = pSE->GetID();
 
         // Activate active processing component timer:
@@ -204,7 +204,7 @@ void Salvager::SendFailure()
 {
     PyTuple* type = new PyTuple(2);
         type->SetItem(0, new PyInt(cacheSolarSystemObjects));
-        type->SetItem(1, new PyInt(m_targetEntity->GetTypeID()));
+        type->SetItem(1, new PyInt(m_targetSE->GetTypeID()));
     PyDict* dict = new PyDict;
         dict->SetItemString("type", type);
     PyTuple* tup = new PyTuple(3);
@@ -219,7 +219,7 @@ void Salvager::SendFailure()
 
 void Salvager::CheckSuccess()
 { // same forumla used in analyzing and data salvage
-    m_accessChance = m_targetEntity->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
+    m_accessChance = m_targetSE->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
     int8 bonus = (GetAttribute(AttrAccessDifficultyBonus).get_int() * pChar->GetSkillLevel(skillSalvaging));
 
     /** @todo need to check for salvage tackle and add to chance here */
@@ -234,7 +234,7 @@ void Salvager::CheckSuccess()
 
 void Salvager::DropSalvage()
 {
-    uint32 factionID = m_targetEntity->GetWarFactionID();
+    uint32 factionID = m_targetSE->GetWarFactionID();
 
     std::vector<uint32> list;
     sDGM_Salvage_Table.GetSalvage(factionID, list);
@@ -255,7 +255,7 @@ void Salvager::DropSalvage()
             if (IsEven(MakeRandomInt(0,10)))
                 continue;
             quantity = (MakeRandomInt(minDrop, maxDrop));
-            ItemData iLoot(cur, pChar->itemID(), m_targetEntity->GetID(), flagAutoFit, quantity);
+            ItemData iLoot(cur, pChar->itemID(), m_targetSE->GetID(), flagAutoFit, quantity);
             itemRef = pChar->GetItemFactory()->SpawnItem(iLoot);
             if (!itemRef) // we'll get over it...continue
                 continue;
@@ -271,7 +271,7 @@ void Salvager::DropSalvage()
     // Create Destiny Updates:
     PyTuple* type = new PyTuple(2);
         type->SetItem(0, new PyInt(cacheSolarSystemObjects));
-        type->SetItem(1, new PyInt(m_targetEntity->GetTypeID()));
+        type->SetItem(1, new PyInt(m_targetSE->GetTypeID()));
     PyDict* dict = new PyDict;
         dict->SetItemString("type", type);
     PyTuple* tup = new PyTuple(2);
@@ -301,17 +301,17 @@ void Salvager::DropSalvage()
     std::vector<PyTuple*> updates;
     m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
 
-    if (!m_targetEntity->GetSelf()->GetInventory()->IsEmpty()) {
+    if (!m_targetSE->GetSelf()->GetInventory()->IsEmpty()) {
         std::map<uint32, InventoryItemRef> shipLoot;
         shipLoot.clear();
-        m_targetEntity->GetSelf()->GetInventory()->GetInventoryList(shipLoot);
+        m_targetSE->GetSelf()->GetInventory()->GetInventoryList(shipLoot);
 
         ItemData p_idata(23,   // 23 = cargo container
-                        m_targetEntity->GetSelf()->ownerID(),
-                        m_targetEntity->GetLocationID(),
+                        m_targetSE->GetSelf()->ownerID(),
+                        m_targetSE->GetLocationID(),
                         flagAutoFit,
                         "Jettisoned Loot Container",
-                        m_targetEntity->GetPosition());
+                        m_targetSE->GetPosition());
 
         CargoContainerRef jetCanRef = pChar->GetItemFactory()->SpawnCargoContainer(p_idata);
         if (!jetCanRef)
@@ -322,17 +322,17 @@ void Salvager::DropSalvage()
 
         // create new container
         FactionData contData;
-            contData.allianceID = m_targetEntity->GetAllianceID();
-            contData.corporationID = m_targetEntity->GetCorporationID();
-            contData.factionID = m_targetEntity->GetWarFactionID();
-            contData.ownerID = m_targetEntity->GetSelf()->ownerID();
-        ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetEntity->GetServices(), m_targetEntity->SystemMgr(), contData);
+            contData.allianceID = m_targetSE->GetAllianceID();
+            contData.corporationID = m_targetSE->GetCorporationID();
+            contData.factionID = m_targetSE->GetWarFactionID();
+            contData.ownerID = m_targetSE->GetSelf()->ownerID();
+        ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetSE->GetServices(), m_targetSE->SystemMgr(), contData);
         jetCanRef->SetMySE(cSE);
-        m_targetEntity->SystemMgr()->AddEntity(cSE);
-        m_targetEntity->DestinyMgr()->SendJettisonPacket();
+        m_targetSE->SystemMgr()->AddEntity(cSE);
+        m_targetSE->DestinyMgr()->SendJettisonPacket();
     }
-    m_targetEntity->SystemMgr()->RemoveEntity(m_targetEntity);
-    m_targetEntity->GetSelf()->Delete();
+    m_targetSE->SystemMgr()->RemoveEntity(m_targetSE);
+    m_targetSE->GetSelf()->Delete();
 }
 
 /*

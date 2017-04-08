@@ -98,13 +98,13 @@ public:
     ModuleContainer(uint8 lowSlots, uint8 medSlots, uint8 highSlots, uint8 rigSlots, uint8 subSystemSlots, uint8 turretSlots, uint8 launcherSlots, ModuleManager *myManager);
     ~ModuleContainer();
 
+    void ClearModMap();
+
     bool AddModule(EVEItemFlags flag, GenericModule * mod);
     bool RemoveModule(EVEItemFlags flag);
     bool RemoveModule(uint32 itemID);
     GenericModule* GetModule(EVEItemFlags flag); //faster than GetModule(itemID)
     GenericModule* GetModule(uint32 itemID); //slower than GetModule(flag)
-
-    void StripModules();
 
     uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
 
@@ -125,7 +125,7 @@ public:
     uint8 GetRigSlotCount()                             { return m_RigSlots; }
     uint8 GetSubSysCount()                              { return m_SubSystemSlots; }
 
-    uint32 GetFittedModuleCountByGroup(uint32 groupID);
+    uint8 GetFittedModuleCountByGroup(uint16 groupID);
 
     void GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList);
     void GetModuleListOfRefsDec(std::vector<InventoryItemRef> * pModuleList);
@@ -156,7 +156,6 @@ private:
     };
 
     void process(processType p);
-    void initializeModuleContainers();
     void deleteModuleRef(EVEItemFlags flag, GenericModule* mod);
 
     uint8 m_LowSlots;

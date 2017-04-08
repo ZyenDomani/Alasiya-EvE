@@ -42,7 +42,7 @@ void SuperWeapon::Activate(SystemEntity* pSE)
 	// 1. Prevent activation on certain targets: asteroids, NPC stations, ice, clouds...  Perhaps restrict to ships and structures.
 	// 2. Check for minimum qty of consumable materials needed according to the 'consumptionType' attribute value in appropriate cargo bay on board the ship
 
-    m_targetEntity = pSE;
+    m_targetSE = pSE;
     m_targetID = pSE->GetID();
 
 	// Activate active processing component timer:
@@ -168,7 +168,7 @@ double SuperWeapon::DoCycle()
                  effectProjectileFired       // from EVEEffectID::
         );
 
-        m_targetEntity->ApplyDamage(d);
+        m_targetSE->ApplyDamage(d);
 
 		// Reduce consumable in cargo:
 		// TODO

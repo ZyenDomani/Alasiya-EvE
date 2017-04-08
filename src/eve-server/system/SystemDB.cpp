@@ -100,7 +100,7 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.typeID = row.GetInt(2);
         entry.ownerID = 1;
         entry.groupID = row.GetInt(3);
-        entry.categoryID = row.GetInt(4);
+        entry.categoryID = (EVEItemCategories)row.GetInt(4);
         entry.corporationID = 0;
         entry.allianceID = 0;
         entry.x = row.GetDouble(5);
@@ -157,7 +157,7 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.typeID = row.GetInt(2);
         entry.ownerID = row.GetInt(3);
         entry.groupID = row.GetInt(4);
-        entry.categoryID = row.GetInt(5);
+        entry.categoryID = (EVEItemCategories)row.GetInt(5);
         entry.corporationID = row.GetInt(6);
         entry.allianceID = row.GetInt(7);
         entry.x = row.GetDouble(8);

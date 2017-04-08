@@ -40,7 +40,7 @@ void WarpScrambler::Activate(SystemEntity* pSE)
 {
     DestinyManager* pDestiny = pSE->DestinyMgr();
     if (!pDestiny) return;
-    m_targetEntity = pSE;
+    m_targetSE = pSE;
     m_targetID = pSE->GetID();
 
 	// Activate active processing component timer:
@@ -59,8 +59,8 @@ void WarpScrambler::Deactivate()
     ActiveModule::Deactivate();
 
     EvilNumber scramStr = GetAttribute(AttrWarpScrambleStrength);
-    scramStr -= m_targetEntity->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
-    m_targetEntity->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
+    scramStr -= m_targetSE->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
+    m_targetSE->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
 }
 
 void WarpScrambler::StopCycle(bool abort)

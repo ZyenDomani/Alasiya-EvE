@@ -973,6 +973,7 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
                   [PyString "when"]
                   [PyInt 83]
 
+                  //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
         throw PyException(MakeUserError("SelfDestructAborted2"));
 
 */

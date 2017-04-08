@@ -1,28 +1,11 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ /**
+  * @name GenericModule.h
+  *   base module class
+  * @Author:         Allan
+  * @date:   10 June 2015   -UD/RW 02 April 2017
+  */
 
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Luck
-    Updates:    Allan   (rewrite)
-*/
 
 #ifndef __EVESERVER_SHIPMODULES_GENERICMODULE_H_
 #define __EVESERVER_SHIPMODULES_GENERICMODULE_H_
@@ -62,15 +45,16 @@ public:
     bool isLauncherFitted()                             { return m_modRef->type().HasEffect(EVEEffectID::launcherFitted); }
     bool isMaxGroupFitLimited()                         { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); } /** @todo this needs work */
 
-    /* class type helpers.  public for anyone to access. */                 /** @todo  update these below as noted */
+    /* class type helpers.  public for anyone to access. */
     virtual bool IsLoaded()                             { return false; }
     virtual bool IsGenericModule() const                { return true; }
     virtual bool IsPassiveModule() const                { return false; }
     virtual bool IsActiveModule() const                 { return false; }
     virtual bool IsRigModule() const                    { return false; }   // check this in m_rigSlot?
     virtual bool IsSubSystemModule() const              { return false; }   // check this in m_subSystem?
-    virtual bool IsTurrentModule()                      { return false; }   // check this in module effect data.
-    virtual bool IsLauncherModule()                     { return false; }   // check this in module effect data.
+
+    bool IsTurrentModule()                              { return m_launcher; }
+    bool IsLauncherModule()                             { return m_turrent; }
 
     /* generic access functions handled here, but set elsewhere.  only slightly slower than above */
     bool isOnline()                                     { return m_modRef->IsOnline(); }
@@ -126,13 +110,13 @@ protected:
     ModStates::ModuleStates     m_ModuleState;
     ModStates::ChargeStates     m_ChargeState;
 
-    bool             m_hiPower;
-    bool             m_medPower;
-    bool             m_loPower;
-    bool             m_rigSlot;
-    bool             m_subSystem;
-    bool             m_warpSafe;
-    bool             m_targReq;
+    bool             m_hiPower : 1;
+    bool             m_medPower : 1;
+    bool             m_loPower : 1;
+    bool             m_rigSlot : 1;
+    bool             m_subSystem : 1;
+    bool             m_launcher : 1;
+    bool             m_turrent : 1;
 
     int16            m_repeat;
 

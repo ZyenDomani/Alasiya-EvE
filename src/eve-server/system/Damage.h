@@ -32,7 +32,7 @@
 
 class Damage {
 public:
-    Damage( SystemEntity* source, InventoryItemRef weapon, uint16 eID);
+    Damage( SystemEntity* source, InventoryItemRef weapon, double _modifier, uint16 eID);
     Damage( SystemEntity* source, InventoryItemRef weapon, InventoryItemRef charge, uint16 eID );
     Damage( SystemEntity* source, InventoryItemRef weapon, double kinetic, double thermal, double em, double explosive, double modifier, uint16 eID );
     // constructor for Killed() methods of derived SystemEntity objects with no weapon
@@ -40,61 +40,57 @@ public:
 
     virtual ~Damage()                                   { /* do nothing here */ }
 
-    double GetTotal() const                             { return (m_kinetic + m_thermal + m_em + m_explosive); }
+    double GetTotal() const                             { return (kinetic + thermal + em + explosive); }
 
-    Damage MultiplyDup( double _kinetic_multiplier,
-                        double _thermal_multiplier,
-                        double _em_multiplier,
-                        double _explosive_multiplier ) const
+    Damage MultiplyDup( double kinetic_multiplier,
+                        double thermal_multiplier,
+                        double em_multiplier,
+                        double explosive_multiplier ) const
                         {       // NOTE:  remember, these come in BACKWARD from 'normal' fuzzy logic..  0=full and 1=none
                                 // added checks here for > 95% resists, and < 1% to avoid crazy damage shit.
                                 // also added checks for missing resists (some npcs have no hull resist in db which = 100% resist)
-                            if (_kinetic_multiplier > 1.0) _kinetic_multiplier = 1.0;
-                            if (_kinetic_multiplier < 0.01) _kinetic_multiplier = 0.01;
-                            if (_thermal_multiplier > 1.0) _thermal_multiplier = 1.0;
-                            if (_thermal_multiplier < 0.01) _thermal_multiplier = 0.01;
-                            if (_em_multiplier > 1.0) _em_multiplier = 1.0;
-                            if (_em_multiplier < 0.01) _em_multiplier = 0.01;
-                            if (_explosive_multiplier > 1.0) _explosive_multiplier = 1.0;
-                            if (_explosive_multiplier < 0.01) _explosive_multiplier = 0.01;
+                            if (kinetic_multiplier > 1.0) kinetic_multiplier = 1.0;
+                            if (kinetic_multiplier < 0.01) kinetic_multiplier = 0.01;
+                            if (thermal_multiplier > 1.0) thermal_multiplier = 1.0;
+                            if (thermal_multiplier < 0.01) thermal_multiplier = 0.01;
+                            if (em_multiplier > 1.0) em_multiplier = 1.0;
+                            if (em_multiplier < 0.01) em_multiplier = 0.01;
+                            if (explosive_multiplier > 1.0) explosive_multiplier = 1.0;
+                            if (explosive_multiplier < 0.01) explosive_multiplier = 0.01;
                             return Damage( srcSE, weaponRef,
-                                           m_kinetic   * _kinetic_multiplier,
-                                           m_thermal   * _thermal_multiplier,
-                                           m_em        * _em_multiplier,
-                                           m_explosive * _explosive_multiplier,
-                                           m_modifier,
+                                           kinetic   * kinetic_multiplier,
+                                           thermal   * thermal_multiplier,
+                                           em        * em_multiplier,
+                                           explosive * explosive_multiplier,
+                                           modifier,
                                            effectID );
-    }
-
-    void ReduceTo(double total_amount)
-    {
-        *this *= ( total_amount / GetTotal() );
     }
 
     Damage &operator *=(double factor)
     {
         if (!factor) factor = 1;
-        m_kinetic     *= factor;
-        m_thermal     *= factor;
-        m_em          *= factor;
-        m_explosive   *= factor;
+        kinetic     *= factor;
+        thermal     *= factor;
+        em          *= factor;
+        explosive   *= factor;
 
         return *this;
     }
 
     void SumWithMultFactor( double factor )
     {
-        m_kinetic   += m_kinetic    * factor;
-        m_thermal   += m_thermal    * factor;
-        m_em        += m_em         * factor;
-        m_explosive += m_explosive  * factor;
+        if (!factor) factor = 1;
+        kinetic   += kinetic    * factor;
+        thermal   += thermal    * factor;
+        em        += em         * factor;
+        explosive += explosive  * factor;
     }
 
-    float GetThermal()                                  { return m_thermal; }
-    float GetEM()                                       { return m_em; }
-    float GetKinetic()                                  { return m_kinetic; }
-    float GetExplosive()                                { return m_explosive; }
-    double GetModifier()                                { return m_modifier; }
+    double GetThermal()                                 { return thermal; }
+    double GetEM()                                      { return em; }
+    double GetKinetic()                                 { return kinetic; }
+    double GetExplosive()                               { return explosive; }
+    double GetModifier()                                { return modifier; }
 
     SystemEntity*           srcSE;     //we do not own this.
     uint16                  effectID;
@@ -102,11 +98,11 @@ public:
     InventoryItemRef        chargeRef;    //we own a ref to this. May be null.
 
 private:
-    double m_kinetic;
-    double m_thermal;
-    double m_em;
-    double m_explosive;
-    double m_modifier;
+    double kinetic;
+    double thermal;
+    double em;
+    double explosive;
+    double modifier;
 };
 
 #endif

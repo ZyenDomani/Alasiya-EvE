@@ -40,7 +40,7 @@ void Webifier::Activate(SystemEntity* pSE)
 
     /** @todo  check for distance here  */
 
-    m_targetEntity = pSE;
+    m_targetSE = pSE;
     m_targetID = pSE->GetID();
 
 	// Activate active processing component timer:
@@ -61,7 +61,7 @@ void Webifier::Deactivate()
         return;
     ActiveModule::Deactivate();
 
-    DestinyManager* pDestiny = m_targetEntity->DestinyMgr();
+    DestinyManager* pDestiny = m_targetSE->DestinyMgr();
     pDestiny->SetMaxVelocity(m_originalSpeed);
     // MUST change speed fraction to recompute with new variables
     pDestiny->SetSpeedFraction(pDestiny->GetSpeedFraction() -.001, true);

@@ -36,7 +36,7 @@ public:
     SubSystemModule(InventoryItemRef item, ShipItemRef ship);
     virtual ~SubSystemModule() { }
 
-    bool IsSubSystemModule() const              { return true; }
+    bool IsSubSystemModule() const                      { return true; }
 
     ModStates::ModulePowerLevel GetModulePowerLevel();
 };

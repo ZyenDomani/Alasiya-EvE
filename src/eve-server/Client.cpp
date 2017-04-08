@@ -290,12 +290,6 @@ void Client::ProcessClient() {
         return;
     }
 
-    if (pShipSE->DestinyMgr()->IsCloaked() and m_cloakTimer.Check(false)) {
-        _log(CLIENT__TIMER, "Client::ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
-        m_cloakTimer.Disable();
-        pShipSE->DestinyMgr()->UnCloak();
-    }
-
     if (m_invul and m_invulTimer.Check(false)) {
         _log(CLIENT__TIMER, "Client::ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
         m_invulTimer.Disable();
@@ -347,6 +341,12 @@ void Client::ProcessClient() {
         pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
         m_toGate = 0;
         SetJumpTimers();
+    }
+
+    if (pShipSE->DestinyMgr()->IsCloaked() and m_cloakTimer.Check(false)) {
+        _log(CLIENT__TIMER, "Client::ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+        m_cloakTimer.Disable();
+        pShipSE->DestinyMgr()->UnCloak();
     }
 
     if (sConfig.server.UseProfiling)
@@ -1787,8 +1787,8 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
         if (!dest) {
             sLog.Error("Client","Unable to find service to handle call to: %s", packet->dest.service.c_str());
             packet->dest.Dump(CLIENT__CALL_DUMP, "    ");
-
-            throw PyException(MakeUserError("ServiceNotFound"));
+            if( CanThrow())
+                throw PyException(MakeUserError("ServiceNotFound"));
         }
     }
 

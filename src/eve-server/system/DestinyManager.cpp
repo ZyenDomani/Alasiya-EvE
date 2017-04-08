@@ -727,7 +727,7 @@ void DestinyManager::_Move() {
     if (m_orbiting) {
         // object IS orbiting...set orbit speed correctly.
         speed *= m_maxOrbitSpeedFraction;
-        move = move + " in orbit";
+        move += " in orbit";
     }
 
     _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
@@ -735,13 +735,13 @@ void DestinyManager::_Move() {
 
     m_velocity = m_shipHeading * speed;
 
-    //_log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) Position: %.2f, %.2f, %.2f  velocity: %.3f, %.3f, %.3f", \
-        mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z, m_velocity.x, m_velocity.y, m_velocity.z);
-
     if (m_orbiting != 1) {
         //set position and direction for this round of movement
         SetPosition(m_position + m_velocity);
     }
+
+    _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) Position: %.2f, %.2f, %.2f  velocity: %.3f, %.3f, %.3f", \
+            mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z, m_velocity.x, m_velocity.y, m_velocity.z);
 
     if (sConfig.cosmic.BumpEnabled)
         if (mySE->HasPilot() and mySE->SysBubble()->HasPlayers()) // no players in bubble = nothing to check against (for now)
@@ -978,6 +978,7 @@ void DestinyManager::_Orbit() {
     Tp += (Tv*Th); // use Tv*Th and add to position to account for target movement.  Tv for non-moving targets return 0.
 
     GPoint mPos = NULL_ORIGIN, mPosAdj = NULL_ORIGIN;
+    double curRad = m_orbitRadTic * timeStamp;  // this isnt quite right...but pretty damn close
     // adjust 'distance' variable as needed to correct orbit circumfrence based on target distance
     if ((distance - (m_targetDistance /10)) > m_followDistance) {
         // too far to realistically orbit.
@@ -996,17 +997,21 @@ void DestinyManager::_Orbit() {
                     radTarg, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
         _Move();
         return; // this is all we need to do at this point.
-    } else if (m_position.distance(Tp) < m_targetDistance) {
+    } else if (distance < m_targetDistance) {
         // to close to realistically orbit.  move away from target
         _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - way too close");
         m_orbiting = 2;
-        mPosAdj = m_velocity;
+        mPosAdj = m_position;
+        mPosAdj.normalize();
+        mPosAdj *= (distance /2);
         // this is all we need to do at this point.
-    } else if (distance < m_targetDistance) {
+    } else if (m_position.distance(Tp) < m_targetDistance) {
         _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - too close");
         // we are too close to our target; move to increase distance to target.
         m_orbiting = 3;
-        mPosAdj = m_velocity;
+        mPosAdj = m_position;
+        mPosAdj.normalize();
+        mPosAdj *= (m_position.distance(Tp) /6);
     } else {
         _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - within tolerance");
         if (m_orbiting != 1)
@@ -1018,9 +1023,6 @@ void DestinyManager::_Orbit() {
     // use orbit math to set ship position and _Move() to set other attribs.
 
     // set current position (this is where we are this tic)
-    double curRad = m_orbitRadTic * timeStamp;  // this isnt quite right...but pretty damn close
-    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%.3f", curRad, timeStamp);
-    if (m_orbiting == 1) {
         /** @todo need more info before i can get this working correctly.  use flat orbit for now
         double radX = m_position.x - Tp.x + mPosAdj.x, radY = m_position.y - Tp.y + mPosAdj.y, radZ = m_position.z - Tp.z + mPosAdj.z;
         mPos.x = radX * cos(curRad) + radZ * sin(curRad);
@@ -1029,12 +1031,18 @@ void DestinyManager::_Orbit() {
         mPos.y = radY * cos(curRad) - intmZ * sin(curRad);
         _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit()  rad: %.3f, %.3f, %.3f  intmZ:%.3f  mposition: %.3f, %.3f, %.3f",radX, radY, radZ, intmZ, mPos.x, mPos.y, mPos.z);
         */
-        mPos.x = m_targetDistance * cos(curRad);
-        mPos.z = m_targetDistance * sin(curRad);
+    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%.3f", curRad, timeStamp);
+    mPos.x = m_targetDistance * cos(curRad);
+    mPos.z = m_targetDistance * sin(curRad);
+    if (m_orbiting == 1) {
         mPos.y = 0; // flat horizontal orbit
-        SetPosition(Tp + mPos);
+    } else if (m_orbiting) {
+        mPos.y = 1; // flat horizontal orbit
+        mPos *= mPosAdj;
     }
-    // set current heading, based on where we will be next tic
+    SetPosition(Tp + mPos);
+
+    // set current heading as vector from current location to location on next tic
     curRad += m_orbitRadTic;
     /*
     mPos.x = radX * cos(curRad) + radZ * sin(curRad);
@@ -1044,7 +1052,7 @@ void DestinyManager::_Orbit() {
     */
     mPos.x = m_targetDistance * cos(curRad);
     mPos.z = m_targetDistance * sin(curRad);
-    mPos.y = 0;
+    //mPos.y = 0;
     GVector heading(m_position, Tp + mPos);
     heading.normalize();
     m_shipHeading = heading;    // this sets object velocity in _Move() (using speed)

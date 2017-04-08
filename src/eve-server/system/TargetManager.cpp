@@ -312,6 +312,8 @@ void TargetManager::TargetLost(SystemEntity *who) {
     _log(TARGET__INFO, "%s(%u) has lost lock on %s(%u)",
          mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
 
+    mySE->DestinyMgr()->EntityRemoved(who);
+
     if (mySE->IsNPCSE())
         mySE->GetNPCSE()->TargetLost(who);
 
@@ -388,7 +390,7 @@ PyList* TargetManager::GetTargets() const {
     return result;
 }
 
-SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked) const {
+SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/) const {
     if (m_targets.empty())
         return nullptr;
 

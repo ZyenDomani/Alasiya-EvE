@@ -1,27 +1,10 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:     Allan
-*/
+ /**
+  * @name GenericModule.cpp
+  *   base module class
+  * @Author:         Allan
+  * @date:   10 June 2015   -UD/RW 02 April 2017
+  */
 
 /*
 # Ship Module Logging:
@@ -45,11 +28,36 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
 {
     m_modRef = item;
     m_shipRef = ship;
+    m_chargeRef = InventoryItemRef();
 
     m_ModuleState = ModuleStates::MOD_UNFITTED;
     m_ChargeState = ChargeStates::CHG_UNLOADED;
 
     m_repeat = 0;
+
+    m_hiPower = false;
+    m_medPower = false;
+    m_loPower = false;
+    m_rigSlot = false;
+    m_subSystem = false;
+    m_turrent = false;
+    m_launcher = false;
+
+    if (item->type().HasEffect(EVEEffectID::loPower))
+        m_loPower = true;
+    else if (item->type().HasEffect(EVEEffectID::medPower))
+        m_medPower = true;
+    else if (item->type().HasEffect(EVEEffectID::hiPower))
+        m_hiPower = true;
+    else if (item->type().HasEffect(EVEEffectID::rigSlot))
+        m_rigSlot = true;
+    else if (item->type().HasEffect(EVEEffectID::subSystem))
+        m_subSystem = true;
+
+    if (item->type().HasEffect(EVEEffectID::turretFitted))
+        m_turrent = true;
+    else if (item->type().HasEffect(EVEEffectID::launcherFitted))
+        m_launcher = true;
 
     _log(SHIP__MODULE_DEBUG, "Created GenericModule %p for item %s (%u).", this, item->itemName().c_str(), item->itemID());
 }

@@ -1,31 +1,14 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ /**
+  * @name ActiveModule.h
+  *   active module class
+  * @Author:         Allan
+  * @date:   10 June 2015   -UD/RW 02 April 2017
+  */
 
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Luck
-    Updates:    Allan
-*/
 
-#ifndef ACTIVE_MODULES_H
-#define ACTIVE_MODULES_H
+#ifndef __EVESERVER_SHIPMODULES_ACTIVE_MODULES_H
+#define __EVESERVER_SHIPMODULES_ACTIVE_MODULES_H
 
 #include "Client.h"
 #include "ship/modules/GenericModule.h"
@@ -56,8 +39,6 @@ public:
     virtual bool IsLoaded()                             { return m_chargeLoaded; }
     virtual bool IsOverloaded()                         { return m_overLoaded; }
     virtual InventoryItemRef GetLoadedChargeRef()       { return m_chargeRef; }
-    // this is a check for those active modules that need it (mining, ???)
-    virtual bool CanActivate()                          { return true; }
 
     /* generic DoCycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
      *  for modules that perform action on each DoCycle(), they will override this call in their class implementation
@@ -66,10 +47,14 @@ public:
 
     /* functions to be handled in derived classes as needed */
     virtual void ApplyDamage()                          { /* do nothing here */ }
+    // this is a check for those active modules that need it (mining, weapons) and overridden as needed
+    virtual bool CanActivate();
 
     /* ActiveModule methods */
     uint32 GetTargetID()                                { return m_targetID; }
-    SystemEntity* GetTarget()                           { return m_targetEntity; }
+    SystemEntity* GetTarget()                           { return m_targetSE; }
+
+    void LaunchMissile();
 
     /* new effects processing code and updates */
     void ApplyEffect(Effects::State state, bool active=false);
@@ -78,8 +63,9 @@ public:
 
 protected:
     //SystemBubble* m_bubble;                           // we do not own this
-    SystemEntity* m_targetEntity;                       // we do not own this
-    DestinyManager* m_destiny;                          // we do not own this
+    SystemEntity* m_targetSE;                           // we do not own this
+    DestinyManager* m_destinyMgr;                       // we do not own this
+    TargetManager* m_targMgr;                           // we do not own this
 
     void Clear();
     void ProcessActiveCycle();
@@ -89,18 +75,18 @@ protected:
     void SetTimer(uint32 time);
     void StopTimer()                                    { m_timer.Disable(); }
 
-    bool m_overLoaded;
-    bool m_chargeLoaded;
+    bool m_overLoaded : 1;
+    bool m_chargeLoaded : 1;
 
     uint16 m_effectID;                                  //passed to us by activate
     uint32 m_targetID;                                  //passed to us by activate
-    
+
 private:
     Timer m_timer;
     Timer m_reloadTimer;
 
-    bool m_Stop;
-    bool m_needsCharge;
+    bool m_Stop : 1;
+    bool m_needsCharge : 1;
 
     uint16 m_reloadTime;
     std::string m_guidStr;
@@ -108,4 +94,4 @@ private:
 };
 
 
-#endif
+#endif  // __EVESERVER_SHIPMODULES_ACTIVE_MODULES_H

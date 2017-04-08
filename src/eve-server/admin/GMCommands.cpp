@@ -471,7 +471,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
 
     DBSystemDynamicEntity entity;
         entity.allianceID = 0;
-        entity.categoryID = actualCategoryID;
+        entity.categoryID = (EVEItemCategories)actualCategoryID;
         entity.corporationID = 0;
         entity.factionID = 0;
         entity.groupID = actualGroupID;
@@ -603,7 +603,7 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
 
         DBSystemDynamicEntity entity;
         entity.allianceID = 0;
-        entity.categoryID = actualCategoryID;
+        entity.categoryID = (EVEItemCategories)actualCategoryID;
         entity.corporationID = 0;
         entity.factionID = 0;
         entity.groupID = actualGroupID;

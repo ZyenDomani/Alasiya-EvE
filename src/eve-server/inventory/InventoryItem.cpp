@@ -907,7 +907,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
     }
     */
     if (singleton() or to_merge->singleton()) {
-        throw PyException( MakeCustomError("You cannot stack unpackaged items."));
+        throw PyException( MakeCustomError("You cannot stack assembled items."));
     }
     if (typeID() != to_merge->typeID()) {
         _log(ITEM__ERROR, "%s (%u): Asked to merge with %s (%u).", itemName().c_str(), itemID(), to_merge->itemName().c_str(), to_merge->itemID());

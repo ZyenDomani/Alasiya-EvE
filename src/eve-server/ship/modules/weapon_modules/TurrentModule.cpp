@@ -1,11 +1,10 @@
 
  /**
-  * @name TurrentModule.h
-  *   turrent module helper class
+  * @name TurrentModule.cpp
+  *   turrent module class
   * @Author:         Allan
-  * @date:   10 June 2015
+  * @date:   10 June 2015   -UD/RW 02 April 2017
   */
-
 
 
 #include "eve-server.h"
@@ -16,18 +15,15 @@
 TurrentModule::TurrentModule(InventoryItemRef item, ShipItemRef shipRef)
 : ActiveModule(item, shipRef)
 {
-
+    m_crystalDmg = 0;
+    m_crystalDmgAmount = 0;
+    m_crystalDmgChance = 0;
 }
 
 void TurrentModule::LoadCharge(InventoryItemRef charge)
 {
     ActiveModule::LoadCharge(charge);
-    m_kinetic           = m_chargeRef->GetAttribute(AttrKineticDamage).get_float();
-    m_thermal           = m_chargeRef->GetAttribute(AttrThermalDamage).get_float();
-    m_em                = m_chargeRef->GetAttribute(AttrEmDamage).get_float();
-    m_explosive         = m_chargeRef->GetAttribute(AttrExplosiveDamage).get_float();
     m_crystalDmg        = m_chargeRef->GetAttribute(AttrDamage).get_float();
-    m_crystalTakeDmg    = m_chargeRef->GetAttribute(AttrCrystalsGetDamaged).get_bool();
     m_crystalDmgAmount  = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
     m_crystalDmgChance  = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
 }
@@ -35,12 +31,7 @@ void TurrentModule::LoadCharge(InventoryItemRef charge)
 void TurrentModule::UnloadCharge()
 {
     ActiveModule::UnloadCharge();
-    m_kinetic           = 0;
-    m_thermal           = 0;
-    m_em                = 0;
-    m_explosive         = 0;
     m_crystalDmg        = 0;
-    m_crystalTakeDmg    = false;
     m_crystalDmgAmount  = 0;
     m_crystalDmgChance  = 0;
 }
@@ -49,18 +40,18 @@ void TurrentModule::ApplyDamage()
 {
     Damage d(m_shipRef->GetPilot()->GetShipSE(),
              m_modRef,
-             m_kinetic,
-             m_thermal,
-             m_em,
-             m_explosive,
-             m_formula.GetToHit(m_shipRef, this, m_targetEntity),
+             m_chargeRef->GetAttribute(AttrKineticDamage).get_float(),
+             m_chargeRef->GetAttribute(AttrThermalDamage).get_float(),
+             m_chargeRef->GetAttribute(AttrEmDamage).get_float(),
+             m_chargeRef->GetAttribute(AttrExplosiveDamage).get_float(),
+             m_formula.GetToHit(m_shipRef, this, m_targetSE),
              m_effectID
     );
 
     d *= GetAttribute(AttrDamageMultiplier).get_float();
     if (sConfig.rates.turrentRate != 1.0)
         d *= sConfig.rates.turrentRate;
-    m_targetEntity->ApplyDamage(d);
+    m_targetSE->ApplyDamage(d);
 
     switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Projectile_Weapon:
@@ -68,7 +59,7 @@ void TurrentModule::ApplyDamage()
             m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1);
         } break;
         case EVEDB::invGroups::Energy_Weapon: {
-            if (m_crystalTakeDmg)
+            if (m_chargeRef->HasAttribute(AttrCrystalsGetDamaged))
                 if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
                     m_crystalDmg += m_crystalDmgAmount;
                     if (m_crystalDmg > 1.0f) {

@@ -108,7 +108,7 @@ GroupData::GroupData(
  * ItemGroup
  */
 ItemGroup::ItemGroup(
-    uint32 _id,
+    uint16 _id,
     // ItemGroup stuff:
     const ItemCategory &_category,
     const GroupData &_data)
@@ -130,7 +130,7 @@ ItemGroup::ItemGroup(
     _log(ITEM__TRACE, "Created object %p for group %s (%u).", this, name().c_str(), id());
 }
 
-ItemGroup* ItemGroup::Load(ItemFactory &factory, uint32 groupID)
+ItemGroup* ItemGroup::Load(ItemFactory &factory, uint16 groupID)
 {
     ItemGroup* g = ItemGroup::_Load(factory, groupID);
 
@@ -138,7 +138,7 @@ ItemGroup* ItemGroup::Load(ItemFactory &factory, uint32 groupID)
     return g;
 }
 
-ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint32 groupID)
+ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint16 groupID)
 {
     // pull data
     GroupData data;
@@ -153,7 +153,7 @@ ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint32 groupID)
     return ItemGroup::_Load(factory, groupID, *c, data);
 }
 
-ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint32 groupID, const ItemCategory &category, const GroupData &data)
+ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint16 groupID, const ItemCategory &category, const GroupData &data)
 {
     return new ItemGroup(groupID, category, data);
 }
@@ -161,20 +161,7 @@ ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint32 groupID, const ItemCate
 /*
  * TypeData
  */
-TypeData::TypeData(
-    uint32 _groupID,
-    const char *_name,
-    const char *_desc,
-    double _radius,
-    double _mass,
-    double _volume,
-    double _capacity,
-    uint32 _portionSize,
-    EVERace _race,
-    double _basePrice,
-    bool _published,
-    uint32 _marketGroupID,
-    double _chanceOfDuplicating)
+TypeData::TypeData(uint16 _groupID, const char* _name, const char* _desc, double _radius, double _mass, double _volume, double _capacity, uint32 _portionSize, EVERace _race, double _basePrice, bool _published, uint32 _marketGroupID, double _chanceOfDuplicating)
 : groupID(_groupID),
   name(_name),
   description(_desc),

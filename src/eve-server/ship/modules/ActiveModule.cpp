@@ -1,32 +1,15 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Luck
-    Updates:    Allan
-*/
+ /**
+  * @name ActiveModule.cpp
+  *   active module class
+  * @Author:         Allan
+  * @date:   10 June 2015   -UD/RW 02 April 2017
+  */
 
 
 #include "eve-server.h"
 
+#include "ship/Missile.h"
 #include "ship/modules/ActiveModule.h"
 #include "system/SystemManager.h"
 
@@ -39,8 +22,9 @@ m_reloadTimer(10000)
 {
     /** @todo  bubble isnt ready yet.  will have to update every time we change bubble */
     //m_bubble = ship->GetPilot()->GetShipSE()->SysBubble();
-    m_chargeRef = InventoryItemRef();
     m_overLoaded = false;
+    m_chargeLoaded = false;
+
     m_needsCharge = item->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
         switch (item->groupID()) {
@@ -58,8 +42,6 @@ m_reloadTimer(10000)
             }
         }
     }
-
-    m_chargeLoaded = false;
 
     // this is an internal variable only.
     m_reloadTime = GetAttribute(AttrReloadTime).get_int();
@@ -109,7 +91,9 @@ void ActiveModule::Clear()
     m_targetID = 0;
     m_effectID = 0;
     m_guidStr = "";
-    m_targetEntity = nullptr;
+    m_targetSE = nullptr;
+    m_destinyMgr = nullptr;
+    m_targMgr = nullptr;
     m_timer.Disable();
 }
 
@@ -138,6 +122,9 @@ void ActiveModule::Process()
                 sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
             }
         }
+        // is this right?  should i do something else here?
+        if ((!m_chargeRef) or (m_ChargeState == ChargeStates::CHG_UNLOADED))
+            return;
         if ((!m_chargeRef->quantity()) or (!m_chargeLoaded)) {
             UnloadCharge();
             DeactivateCycle(true);
@@ -160,9 +147,9 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     }
     if (targetID) {
         m_targetID = targetID;
-        m_targetEntity = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
-        if (!m_targetEntity) {
-            sLog.Error("ActiveModule::Activate()", "m_targetEntity == NULL");
+        m_targetSE = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
+        if (!m_targetSE) {
+            sLog.Error("ActiveModule::Activate()", "m_targetSE == NULL");
             m_shipRef->GetPilot()->SendErrorMsg("Current target was not found.  Ref: ServerError 25263");
             return;
         }
@@ -171,7 +158,8 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_repeat = repeat;
     m_effectID = effectID;
     m_guidStr = sFxDataMgr.GetEffectGuid(effectID);
-    m_destiny = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
+    m_destinyMgr = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
+    m_targMgr = m_shipRef->GetPilot()->GetShipSE()->TargetMgr();
 
     if (!CanActivate()) {
         Clear();
@@ -227,11 +215,16 @@ void ActiveModule::DeOverload()
 // yes, the xCycle() shit below seems overkill, but each has a specific purpose
 uint32 ActiveModule::DoCycle()
 {
-    if ((!m_destiny) or (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())) {
+    if ((!m_destinyMgr) or (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())) {
         // make error for no destiny/bubble
         Deactivate();
         return 0;
     }
+    if ((m_targetID) and (m_targMgr))
+        if (m_targMgr->GetTarget(m_targetID) != m_targetSE) {
+            Deactivate();
+            return 0;
+        }
     if (m_chargeLoaded) {
         if (!m_chargeRef) {
             // send error to client?
@@ -240,7 +233,26 @@ uint32 ActiveModule::DoCycle()
         }
         if ((m_needsCharge) and sFxDataMgr.isOffensive(m_effectID)) {
             // not sure if this is entirely accurate...
-            ApplyDamage();
+            switch (m_modRef->groupID()) {
+                case EVEDB::invGroups::Projectile_Weapon:
+                case EVEDB::invGroups::Hybrid_Weapon:
+                case EVEDB::invGroups::Energy_Weapon: {
+                    ApplyDamage();
+                } break;
+                case EVEDB::invGroups::Missile_Launcher_Assault:
+                case EVEDB::invGroups::Missile_Launcher_Bomb:   // not sure here
+                case EVEDB::invGroups::Missile_Launcher_Citadel:
+                case EVEDB::invGroups::Missile_Launcher_Cruise:
+                case EVEDB::invGroups::Missile_Launcher_Defender:   // not sure here
+                case EVEDB::invGroups::Missile_Launcher_Heavy:
+                case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
+                case EVEDB::invGroups::Missile_Launcher_Rocket:
+                case EVEDB::invGroups::Missile_Launcher_Siege:
+                case EVEDB::invGroups::Missile_Launcher_Snowball:
+                case EVEDB::invGroups::Missile_Launcher_Standard: {
+                    LaunchMissile();
+                } break;
+            }
         }
     }
 
@@ -301,6 +313,7 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
     m_chargeRef = charge;
     m_chargeLoaded = true;
     m_ChargeState = ChargeStates::CHG_LOADING;
+
     /*
      * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
      *  {returns}
@@ -361,6 +374,27 @@ void ActiveModule::ApplyEffect(Effects::State state, bool active/*false*/)
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
 
+bool ActiveModule::CanActivate()
+{
+    if (!sFxDataMgr.isOffensive(m_effectID))
+        return true;
+    if (!m_targetSE)
+        return false;
+    //  use this to determine if target can be fired upon.
+    //  can go between this and Target() for all needed checks.
+    if ((m_targetSE->IsItemEntity())
+        or (m_targetSE->IsStaticEntity())
+        or (m_targetSE->IsAsteroidSE())
+        or (m_targetSE->IsLogin()))
+    {
+        m_shipRef->GetPilot()->SendErrorMsg("You cannot attack that %s.  Ref: ServerError 22228", m_targetSE->GetName());
+        return false;
+    }
+
+  return true;
+}
+
+
 void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
 {
     if (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
@@ -381,8 +415,8 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
     else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
         ;
 
-    if ((m_targetID) and (m_destiny))
-        m_destiny->SendSpecialEffect(
+    if ((m_targetID) and (m_destinyMgr))
+        m_destinyMgr->SendSpecialEffect(
                 m_shipRef->itemID(),
                 m_modRef->itemID(),
                 m_modRef->typeID(),
@@ -429,8 +463,36 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    if (m_destiny)
-        m_destiny->SendDestinyUpdate(updates, events, false);
+    if (m_destinyMgr)
+        m_destinyMgr->SendDestinyUpdate(updates, events, false);
     else
         m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+}
+
+
+void ActiveModule::LaunchMissile()
+{
+    // Actually Launch a missile, creating a new Destiny object for it
+    Character* pChar = m_shipRef->GetPilot()->GetChar().get();
+    SystemManager* pSystem = m_shipRef->GetPilot()->SystemMgr();
+    ItemData idata(m_chargeRef->typeID(), pChar->itemID(), pChar->locationID(), flagMissile, m_chargeRef->itemName().c_str(), m_shipRef->position() );
+
+    InventoryItemRef missileRef = m_shipRef->GetItemFactory()->SpawnItem(idata);
+
+    if (!missileRef)
+        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", \
+                m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
+
+    Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()),  pSystem, m_modRef, m_targetSE, m_shipRef.get());
+    double distance = pMissile->GetSelf()->position().distance(m_targetSE->GetPosition());
+    double missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
+    double travelTime = (distance/missileSpeed);
+    if (travelTime < 1)
+        travelTime = 1;
+    pMissile->SetSpeed(missileSpeed);
+    pMissile->SetHitTimer(travelTime *1000);
+    pMissile->DestinyMgr()->MakeMissile(pMissile);
+
+    // Reduce ammo charge by 1 unit:
+    m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1);
 }

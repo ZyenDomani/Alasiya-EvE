@@ -68,7 +68,7 @@ void TractorBeam::Activate(SystemEntity* pSE)
     /** @todo allow orca-specific tractoring */
     /** @todo allow tractoring if not anchored */
     if (pSE->IsContainerSE() or pSE->IsWreckSE()) {
-        m_targetEntity = pSE;
+        m_targetSE = pSE;
         m_targetID = pSE->GetID();
 
         // Activate active processing component timer:
@@ -88,9 +88,9 @@ double TractorBeam::DoCycle() {
 
 		_ShowCycle();
 
-		GVector distanceToTarget(m_shipRef->position(), m_targetEntity->GetPosition());
+		GVector distanceToTarget(m_shipRef->position(), m_targetSE->GetPosition());
         if (distanceToTarget.length() < (GetAttribute(AttrMaxRange).get_double())) {
-            m_targetEntity->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE());
+            m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE());
             return m_cycleTime;
 		} else {
 			Deactivate();
@@ -143,7 +143,7 @@ void TractorBeam::_ShowCycle()
 
 void TractorBeam::StopCycle(bool abort)
 {
-    m_targetEntity->DestinyMgr()->TractorBeamStop();
+    m_targetSE->DestinyMgr()->TractorBeamStop();
 
     uint32 timeLeft = GetRemainingCycleTimeMS();
     timeLeft /= 1000;

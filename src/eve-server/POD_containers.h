@@ -9,7 +9,6 @@
 
 #include "eve-server.h"
 
-/** @todo  update these for more approprate variable types */
 
 /* POD structure for saving attribute data */
 struct AttrData {
@@ -276,8 +275,8 @@ class DBSystemEntity {
 public:
     uint32 itemID;
     uint32 typeID;
-    uint32 groupID;
-    uint32 categoryID;
+    uint16 groupID;
+    EVEItemCategories categoryID;
     uint32 orbitID;
     GPoint position;
     double radius;
@@ -290,8 +289,8 @@ public:
     uint32 itemID;
     std::string itemName;
     uint32 typeID;
-    uint32 groupID;
-    uint32 categoryID;
+    uint16 groupID;
+    EVEItemCategories categoryID;
     uint32 ownerID;
     uint32 corporationID;
     uint32 allianceID;
@@ -429,13 +428,13 @@ struct PI_Plant {
 /* optimize this after everything is working!!  */
 class PI_Pin {
 public:
-    bool isCommandCenter;
-    bool isStorage;
-    bool isConsumer;
-    bool isLaunchable;
-    bool isProcess;
-    bool isBase;
-    bool isECU;
+    bool isCommandCenter : 1;
+    bool isStorage : 1;
+    bool isConsumer : 1;
+    bool isLaunchable : 1;
+    bool isProcess : 1;
+    bool isBase : 1;
+    bool isECU : 1;
 
     // common for all pins
     int8 state;
@@ -455,8 +454,8 @@ public:
     float headRadius;
 
     // Process and ECU
-    bool hasReceivedInputs;
-    bool receivedInputsLastCycle;
+    bool hasReceivedInputs : 1;
+    bool receivedInputsLastCycle : 1;
     uint16 schematicID;   // used in ecu as extractor head typeID
     uint16 programType;      // used in extractors as extracted resource typeID
     uint16 qtyPerCycle;
@@ -468,7 +467,7 @@ public:
     std::map<uint16, uint32> contents;
 
     // specifically for updating contents. this is not saved in db
-    bool update;
+    bool update : 1;
     float capacity;  // this is not implemented yet
 };
 

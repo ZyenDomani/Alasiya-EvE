@@ -87,8 +87,8 @@ public:
     const std::string &     customInfo() const          { return m_customInfo; }
 
     /* public type queries  */
-    uint32                  typeID() const              { return m_type.id(); }
-    uint32                  groupID() const             { return m_type.groupID(); }
+    uint16                  typeID() const              { return m_type.id(); }
+    uint16                  groupID() const             { return m_type.groupID(); }
     double                  radius() const              { return (HasAttribute(AttrRadius) ? GetAttribute(AttrRadius).get_double() : 1.0); }
     const ItemGroup &       group() const               { return m_type.group(); }
     const ItemCategory &    category() const            { return m_type.category(); }

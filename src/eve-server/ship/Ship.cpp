@@ -615,6 +615,7 @@ void ShipItem::SaveShip()
 }
 
 bool ShipItem::ValidateItemSpecifics(InventoryItemRef item) {
+    /** @todo wtf is this shit?  fix it.  */
     uint32 groupID = m_pilot->GetShip()->groupID();
 
     EvilNumber canFitShipGroup1=0, canFitShipGroup2=0, canFitShipGroup3=0, canFitShipGroup4=0;
@@ -657,7 +658,7 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef item) {
                 _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Item Validation passed.");
         }
 
-    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the module");
+    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the %s", itemName().c_str());
     return true;
 }
 

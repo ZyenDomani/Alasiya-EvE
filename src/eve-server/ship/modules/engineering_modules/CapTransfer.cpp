@@ -91,12 +91,12 @@ double CapTransfer::DoCycle()
         _ShowCycle();
 
         // Apply boost amount:
-        EvilNumber capCharge = m_targetEntity->GetSelf()->GetAttribute(AttrCapacitorCharge);
+        EvilNumber capCharge = m_targetSE->GetSelf()->GetAttribute(AttrCapacitorCharge);
         capCharge += GetAttribute(AttrPowerTransferAmount);
-        if (capCharge > m_targetEntity->GetSelf()->GetAttribute(AttrCapacitorCapacity)) {
-            capCharge = m_targetEntity->GetSelf()->GetAttribute(AttrCapacitorCapacity);
+        if (capCharge > m_targetSE->GetSelf()->GetAttribute(AttrCapacitorCapacity)) {
+            capCharge = m_targetSE->GetSelf()->GetAttribute(AttrCapacitorCapacity);
         }
-        m_targetEntity->GetSelf()->SetAttribute(AttrCapacitorCharge, capCharge);
+        m_targetSE->GetSelf()->SetAttribute(AttrCapacitorCharge, capCharge);
 
         return m_cycleTime;
 }

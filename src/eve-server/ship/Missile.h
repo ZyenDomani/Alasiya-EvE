@@ -54,7 +54,7 @@ public:
 
     /* specific functions handled here. */
     ShipItem* GetShip()                                 { return m_ship; }
-    SystemEntity* GetTarget()                           { return m_target; }
+    SystemEntity* GetTarget()                           { return m_targetSE; }
 
     void SetHitTimer(uint32 setTime)                    { m_hitTimer.Start(setTime); }
     void SetSpeed(double speed)                         { m_speed = speed; }
@@ -74,12 +74,12 @@ public:
     double Min(double a, double b);
 
 protected:
-    SystemEntity* m_target;
+    SystemEntity* m_targetSE;
     InventoryItemRef m_module;
     ShipItem* m_ship;
 
-    void _HitTarget();
-    void _EndOfLife();
+    void HitTarget();
+    void EndOfLife();
 
     Timer m_hitTimer;
     Timer m_lifeTimer;
