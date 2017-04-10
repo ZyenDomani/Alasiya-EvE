@@ -755,6 +755,7 @@ void Character::UpdateSkillQueue() {
     /* cleaned up code and reworked logic  -allan 28Apr16   -- revisited 23Mar17*/
     if (!m_pClient) return;
     SkillRef currentTraining = GetSkillInTraining();
+    currentTraining->VerifySP();
     if (currentTraining) {
         if (m_skillQueue.empty() or (currentTraining->typeID() != m_skillQueue.front().typeID)) {
             uint8 oldLevel = currentTraining->GetAttribute(AttrSkillLevel).get_int();
@@ -789,6 +790,7 @@ void Character::UpdateSkillQueue() {
                 break;
             }
 
+            currentTraining->VerifySP();
             EvilNumber level = (currentTraining->GetAttribute(AttrSkillLevel) + 1);
             if (level > 5)
                 level = 5;
@@ -851,6 +853,7 @@ void Character::UpdateSkillQueue() {
             if (!currentTraining)
                 break;
 
+            currentTraining->VerifySP();
             level = (currentTraining->GetAttribute(AttrSkillLevel).get_int() + 1);
             if (level > 5) level = 5;
             EvilNumber NextLevelSP = currentTraining->GetSPForLevel(level);

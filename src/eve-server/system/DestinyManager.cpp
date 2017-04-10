@@ -716,7 +716,6 @@ void DestinyManager::_Move() {
                 speed = m_maxSpeed - speed;
             csf = 1 - m_currentSpeedFraction;
         }
-
     }
 
     if (m_orbiting) {
@@ -728,12 +727,9 @@ void DestinyManager::_Move() {
     _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f sec: %.3f).", \
         mySE->GetName(), mySE->GetID(), move.c_str(), speed, csf, m_activeSpeedFraction, timeStamp);
 
+    //set speed, direction and position for this round of movement
     m_velocity = m_shipHeading * speed;
-
-    if (m_orbiting != 1) {
-        //set position and direction for this round of movement
-        SetPosition(m_position + m_velocity);
-    }
+    SetPosition(m_position + m_velocity);
 
     _log(DESTINY__MOVE_TRACE, "Destiny::_Move() - %s(%u) Position: %.2f, %.2f, %.2f  velocity: %.3f, %.3f, %.3f", \
             mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z, m_velocity.x, m_velocity.y, m_velocity.z);
@@ -945,7 +941,7 @@ void DestinyManager::_Orbit() {
      * m_shipHeading - current direction ship is pointed
      * m_stateStamp - statestamp of when current state began, in seconds
      * m_moveTimer - millisecond timer to calculate velocity
-     * m_orbiting - 0=no orbit, >0=in orbit, 1=at distance 2=way too close , 3=too close, 4=too far
+     * m_orbiting - 0=no orbit, >0=in orbit, 1=at distance 2=way too close , 3=too close, 4=too far, 5=way too far
      * m_orbitRadTic - rad/sec in current orbit.  set by Orbit()
      * m_maxOrbitSpeedFraction - calculated max speed to maintain commanded orbit distance.  set in Orbit() but not used here
      *
@@ -956,62 +952,99 @@ void DestinyManager::_Orbit() {
      * Td = target distance
      * Th = target heading
      * Cd = current direction*
+     *
+     * current = distance between object and target centers
+     * actual = current distance minus radius of object and target
+     * near = fraction of actual / m_targetDistance
+     * far = fraction of actual / m_followDistance
      */
 
     // get current times
     double timeStamp = (GetTimeMSeconds() - m_moveTimer) /1000;
     float Tr =  m_targetEntity.second->GetRadius();
     GPoint Tp(m_targetEntity.second->GetPosition());
-    // todo...most entites DO NOT have destiny managers yet, so these will return 0.  (wip)
+    // only dynamic entites have a destiny manager, others will return 0.
+    //  this still needs testing
     float Tv = (m_targetEntity.second->DestinyMgr() ? m_targetEntity.second->DestinyMgr()->GetSpeed() : 0);
     GVector Th(m_targetEntity.second->DestinyMgr() ? m_targetEntity.second->DestinyMgr()->GetHeading() : NULL_ORIGIN_V);
-
-    double distance = (m_position.distance(Tp) - m_radius - Tr);
-    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - distance:%.2f, target:%.2f, follow:%.2f, actual:%.2f", \
-            distance, m_targetDistance, m_followDistance, m_position.distance(Tp));
-
     Tp += (Tv*Th); // use Tv*Th and add to position to account for target movement.  Tv for non-moving targets return 0.
 
-    GPoint mPos = NULL_ORIGIN, mPosAdj = NULL_ORIGIN;
+    // current and actual are used to determine ship's orbit distance, and adjust position accordingly
+    double current = m_position.distance(Tp);
+    double actual = (current - m_radius - Tr);
+    float near = actual / m_targetDistance, far = actual / m_followDistance;
+    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - current:%.2f, actual:%.2f, target:%.2f, follow:%.2f, near:%.3f, far:%.3f", \
+            current, actual, m_targetDistance, m_followDistance, near, far);
+
+    // distances for orbit calculations for orbits within engage distance
+    double orbitDistNow = 0.0f, orbitDistNext = 0.0f, curSpeed = m_maxSpeed * m_activeSpeedFraction * m_maxOrbitSpeedFraction;
+
+    GPoint mPos = NULL_ORIGIN;
     double curRad = m_orbitRadTic * timeStamp;  // this isnt quite right...but pretty damn close
     // adjust 'distance' variable as needed to correct orbit circumfrence based on target distance
-    if ((distance - (m_targetDistance /10)) > m_followDistance) {
-        // too far to realistically orbit.
+    if (far > 2.5) { //far = actual / m_followDistance
+        // too far to engage target.
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - way too far");
+        m_orbiting = 5;
         // set point to side of target (based on current position), to avoid near-zero angular velocity
-        m_orbiting = 4;
         double radTarg = atan2(Tp.z - m_position.z, Tp.x - m_position.x);  // rad from '0' to target
-        radTarg += atan2(m_targetDistance, distance);  // rad from 'distance line' to target 'offset'
-        mPos.x = distance * cos(radTarg);
-        mPos.z = distance * sin(radTarg);
+        radTarg += atan2(m_targetDistance, current);  // rad from 'distance line' to target 'offset'
+        mPos.x = current * cos(radTarg);
+        mPos.z = current * sin(radTarg);
         m_targetPoint = m_position + mPos;
         m_targetPoint.y = Tp.y;     // stay on 'y' elevation...easier this way.
         GVector heading(m_position, m_targetPoint);
         heading.normalize();
         m_shipHeading = heading;    // this sets object velocity in _Move() (using speed)
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - too far - rads:%.3f, heading: %.3f, %.3f, %.3f", \
-                    radTarg, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
         _Move();
         return; // this is all we need to do at this point.
-    } else if (distance < m_targetDistance) {
-        // to close to realistically orbit.  move away from target
+    } else if (near < 0.65) {  // near = actual / m_targetDistance
+        // way too close inside orbit.  move away quickly.
         _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - way too close");
         m_orbiting = 2;
-        mPosAdj = m_position;
-        mPosAdj.normalize();
-        mPosAdj *= (distance /2);
-        // this is all we need to do at this point.
-    } else if (m_position.distance(Tp) < m_targetDistance) {
+        GVector heading(m_position, Tp);
+        heading.normalize();
+        m_shipHeading = heading * -1;    // this sets object velocity in _Move() (using speed)
+        m_targetPoint = m_position + (m_shipHeading * 1.0e16);
+        _Move();
+        return; // this is all we need to do at this point.
+
+    /**  @note these still need to determine ship position to properly set quadrant. (I, II, III, IV)
+     *  right now, once ship is within orbit tolerance, we reset radian position to 0
+     *  which will reset ship's orbit quadrant to I.
+     */
+    // these below are within engage distance.
+    /** @note these should use a bit of trig to calculate true position, but im lazy, so will hack it for now.  will have to revisit later */
+    } else if (far > 1.0) {     //far = actual / m_followDistance
+        // too far outside orbit.  move closer
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - too far");
+        m_orbiting = 4;
+        // simulate orbiting distance here...the distance isnt a straight line, so we need to fudge it as ship will be trying for a larger orbit
+        float test = actual - (curSpeed *0.75);
+        if (test < m_targetDistance)
+            orbitDistNow = actual - (m_followDistance - m_targetDistance);  // subtract the difference of follow and target from actual distance
+        else
+            orbitDistNow = actual - curSpeed;
+        // determine distance for next tic based on ship speed and position
+        orbitDistNext = orbitDistNow - test;
+    } else if (near < 1.0) {    // near = actual / m_targetDistance
+        // too close inside orbit; move away slowly.
         _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - too close");
-        // we are too close to our target; move to increase distance to target.
         m_orbiting = 3;
-        mPosAdj = m_position;
-        mPosAdj.normalize();
-        mPosAdj *= (m_position.distance(Tp) /6);
+        float test = actual - (curSpeed *0.75);
+        if (test > m_followDistance)
+            orbitDistNow = actual + (m_followDistance - m_targetDistance);    // add the difference of follow and target from actual distance
+        else
+            orbitDistNow = actual + curSpeed;
+        // determine distance for next tic based on ship speed and position
+        orbitDistNext = orbitDistNow + test;
     } else {
+        // within orbit distance tolerance
         _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - within tolerance");
         if (m_orbiting != 1)
             m_moveTimer = GetTimeMSeconds();
         m_orbiting = 1;
+        orbitDistNow = orbitDistNext = m_followDistance;  // this is calculated orbit distance for this ship
     }
 
     // distance was checked and adjusted as needed for this tic.
@@ -1019,6 +1052,7 @@ void DestinyManager::_Orbit() {
 
     // set current position (this is where we are this tic)
         /** @todo need more info before i can get this working correctly.  use flat orbit for now
+         *  GPoint mPosAdj = NULL_ORIGIN;
         double radX = m_position.x - Tp.x + mPosAdj.x, radY = m_position.y - Tp.y + mPosAdj.y, radZ = m_position.z - Tp.z + mPosAdj.z;
         mPos.x = radX * cos(curRad) + radZ * sin(curRad);
         double intmZ = radZ * cos(curRad) - radX * sin(curRad);
@@ -1026,18 +1060,14 @@ void DestinyManager::_Orbit() {
         mPos.y = radY * cos(curRad) - intmZ * sin(curRad);
         _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit()  rad: %.3f, %.3f, %.3f  intmZ:%.3f  mposition: %.3f, %.3f, %.3f",radX, radY, radZ, intmZ, mPos.x, mPos.y, mPos.z);
         */
-    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%.3f", curRad, timeStamp);
-    mPos.x = m_targetDistance * cos(curRad);
-    mPos.z = m_targetDistance * sin(curRad);
-    if (m_orbiting == 1) {
-        mPos.y = 0; // flat horizontal orbit
-    } else if (m_orbiting) {
-        mPos.y = 1; // flat horizontal orbit
-        mPos *= mPosAdj;
-    }
+    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%.3f, speed:%.2f", curRad, timeStamp, curSpeed);
+
+    mPos.x = orbitDistNow * cos(curRad);
+    mPos.z = orbitDistNow * sin(curRad);
+    mPos.y = 0; // flat horizontal orbit until i can get the math right for 'true' orbit
     SetPosition(Tp + mPos);
 
-    // set current heading as vector from current location to location on next tic
+    // set current heading as vector from current location to (calculated supposed) location on next tic
     curRad += m_orbitRadTic;
     /*
     mPos.x = radX * cos(curRad) + radZ * sin(curRad);
@@ -1045,16 +1075,16 @@ void DestinyManager::_Orbit() {
     mPos.z = intmZ * cos(curRad) + radY * sin(curRad);
     mPos.y = radY * cos(curRad) - intmZ * sin(curRad);
     */
-    mPos.x = m_targetDistance * cos(curRad);
-    mPos.z = m_targetDistance * sin(curRad);
+    mPos.x = orbitDistNext * cos(curRad);
+    mPos.z = orbitDistNext * sin(curRad);
     //mPos.y = 0;
     GVector heading(m_position, Tp + mPos);
     heading.normalize();
     m_shipHeading = heading;    // this sets object velocity in _Move() (using speed)
     m_targetPoint = m_position + (m_shipHeading * 1.0e16);
 
-    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - heading: %.3f, %.3f, %.3f", \
-            m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - heading: %.3f, %.3f, %.3f", m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+
     _Move();
 }
 
@@ -1502,24 +1532,30 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%.2f, followDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
                 Rc, velocity, m_maxOrbitSpeedFraction, m_targetDistance, m_followDistance, orbitTime, m_orbitRadTic);
 
-    if ((m_position.distance(pSE->GetPosition()) - m_radius - Tr) > (m_followDistance *2)) {
-        // way too far to orbit
+    double current = m_position.distance(pSE->GetPosition());
+    double actual = (current - m_radius - Tr);
+    // m_orbiting - 0=no orbit, >0=in orbit, 1=at distance 2=way too close , 3=too close, 4=too far, 5=way too far
+    if ((actual - m_targetDistance) > m_followDistance) {
+        // too far to engage target.
+        m_orbiting = 5;
+    } else if (current > m_followDistance) {
+        // too far outside orbit.  move closer
         m_orbiting = 4;
-    } else if ((m_position.distance(pSE->GetPosition()) - m_radius - Tr) < m_targetDistance) {
-        // too close
-        m_orbiting = 3;
-    } else if ((m_position.distance(pSE->GetPosition()) - m_radius - Tr) < m_followDistance) {
-        // way too close
+    } else if (actual < m_targetDistance) {
+        // way too close inside orbit.  move away quickly.
         m_orbiting = 2;
+    } else if (current < m_targetDistance) {
+        // too close inside orbit; move away slowly.
+        m_orbiting = 3;
     } else {
-        // at orbit distance.
+        // within orbit distance tolerance
         m_orbiting = 1;
     }
 
     DoDestiny_CmdOrbit du;
         du.entityID = mySE->GetID();
         du.orbitEntityID = pSE->GetID();
-        du.distance = (int32)distance;
+        du.distance = (int32)actual;
     PyTuple *up = du.Encode();
     SendSingleDestinyUpdate(&up);    //consumed
 }
