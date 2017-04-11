@@ -253,6 +253,14 @@ bool FxDataMgr::isOffensive(uint16 eID)
     return false;   // default to false if effectID not found
 }
 
+bool FxDataMgr::isAssistance(uint16 eID)
+{
+    effectMapType::const_iterator itr = m_effectMap.find(eID);
+    if (itr != m_effectMap.end())
+        return itr->second.isAssistance;
+    return false;   // default to false if effectID not found
+}
+
 uint16 FxDataMgr::GetEffectID(std::string effectName)
 {
     std::map<std::string, uint16>::const_iterator itr = m_effectName.find(effectName);

@@ -376,12 +376,12 @@ void ActiveModule::ApplyEffect(Effects::State state, bool active/*false*/)
 
 bool ActiveModule::CanActivate()
 {
-    if (!sFxDataMgr.isOffensive(m_effectID))
+    // we are not attacking.  allow activation
+    if ((!sFxDataMgr.isOffensive(m_effectID)) and (!sFxDataMgr.isAssistance(m_effectID)))
         return true;
     if (!m_targetSE)
         return false;
-    //  use this to determine if target can be fired upon.
-    //  can go between this and Target() for all needed checks.
+    // if target is non-combatant deny attack
     if ((m_targetSE->IsItemEntity())
         or (m_targetSE->IsStaticEntity())
         or (m_targetSE->IsAsteroidSE())
@@ -390,6 +390,9 @@ bool ActiveModule::CanActivate()
         m_shipRef->GetPilot()->SendErrorMsg("You cannot attack that %s.  Ref: ServerError 22228", m_targetSE->GetName());
         return false;
     }
+    // check distance
+    if (sFxDataMgr.isAssistance(m_effectID) and (m_shipRef->position().distance(m_targetSE->GetPosition()) > GetAttribute(AttrMaxRange).get_float()))
+        return false;
 
   return true;
 }

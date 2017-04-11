@@ -26,6 +26,7 @@ public:
     void ConfigureEffects();
     bool isWarpSafe(uint16 eID);
     bool isOffensive(uint16 eID);
+    bool isAssistance(uint16 eID);
     uint16 GetEffectID(std::string effectName);
     std::string GetEffectGuid(uint16 eID);
     std::string GetEffectName(uint16 eID);
