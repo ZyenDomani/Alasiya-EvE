@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS `dgmEffects` (
 --
 
 INSERT INTO `dgmEffects` (`effectID`, `effectName`, `effectCategory`, `preExpression`, `postExpression`, `description`, `descriptionID`, `guid`, `isOffensive`, `isAssistance`, `durationAttributeID`, `trackingSpeedAttributeID`, `dischargeAttributeID`, `rangeAttributeID`, `falloffAttributeID`, `disallowAutoRepeat`, `published`, `displayName`, `displayNameID`, `isWarpSafe`, `rangeChance`, `electronicChance`, `propulsionChance`, `distribution`, `sfxName`, `npcUsageChanceAttributeID`, `npcActivationChanceAttributeID`, `fittingUsageChanceAttributeID`, `iconID`, `dataID`, `modifierInfo`) VALUES
+(0, 'nullEffect', 0, 0, 0, 'Null EffectID 0 to avoid client errors.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, ''),
 (4, 'shieldBoosting', 1, 183, 131, '', 0, 'effects.ShieldBoosting', 0, 0, 73, 0, 6, 0, 0, 0, 0, '', 0, 1, 0, 0, 0, 0, '', 0, 0, 0, 0, 899422, ''),
 (7, 'speedBoost', 1, 3517, 3518, '', 0, '', 0, 0, 73, 0, 6, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 7582954, ''),
 (9, 'missileLaunching', 2, 114, 89, 'Launches a missile', 0, 'effects.MissileDeployment', 1, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899428, ''),
@@ -122,7 +123,7 @@ INSERT INTO `dgmEffects` (`effectID`, `effectName`, `effectCategory`, `preExpres
 (96, 'hybridWeaponSpeedMultiply', 4, 682, 684, 'Scales the rate of fire of all fitted hybrid weapons.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899578, ''),
 (97, 'turretWeaponAccuracyMultiply', 0, 703, 705, 'Scale the accuracy of all fitted turret weapons.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 'None', 0, 0, 0, 0, 899581, ''),
 (100, 'hybridWeaponAccuracyMultiply', 0, 698, 701, 'Scales the accuracy of all fitted hybrid weapons.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 'None', 0, 0, 0, 0, 899584, ''),
-(101, 'useMissiles', 1, 131, 131, 'The ammunition loaded into this item defines its operation.', 0, '', 0, 0, 51, 0, 6, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 2, '', 0, 0, 0, 0, 899587, ''),
+(101, 'useMissiles', 1, 131, 131, 'The ammunition loaded into this item defines its operation.', 0, '', 1, 0, 51, 0, 6, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 2, '', 0, 0, 0, 0, 899587, ''),
 (102, 'mineLaying', 1, 114, 131, 'Drops a mine in space.', 0, '', 1, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 'None', 0, 0, 0, 0, 899590, ''),
 (103, 'defenderMissileLaunching', 1, 706, 131, 'Drops a defender missile in space to go do its thing.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 2, '', 0, 0, 0, 0, 899593, ''),
 (104, 'fofMissileLaunching', 1, 707, 131, 'Launches an FOF missile.  Auto targets at someone hostile to you.', 0, 'effects.MissileDeployment', 1, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 2, '', 0, 0, 0, 0, 2638592, ''),
