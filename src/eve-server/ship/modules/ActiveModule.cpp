@@ -99,6 +99,18 @@ void ActiveModule::Clear()
 
 void ActiveModule::Process()
 {
+    if (m_reloadTimer.Enabled()) {
+        if (m_reloadTimer.Check(false)) {
+            // charge loading complete
+            m_reloadTimer.Disable();
+            m_ChargeState = ChargeStates::CHG_LOADED;
+            // apply charge effects here after "loading" is complete
+            sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+        }
+    }
+    if (m_ModuleState == ModuleStates::MOD_ONLINE)
+        return;
+
     // timing and verification function
     //check if we have signal to stop the cycle
     if ((m_Stop) and (m_ModuleState != ModuleStates::MOD_ONLINE)) {
@@ -113,15 +125,6 @@ void ActiveModule::Process()
 
     // the order of these next two is significant for reloading modules.  check for reload before DoCycle for this tic
     if (m_needsCharge) {
-        if (m_reloadTimer.Enabled()) {
-            if (m_reloadTimer.Check(false)) {
-                // charge loading complete
-                m_reloadTimer.Disable();
-                m_ChargeState = ChargeStates::CHG_LOADED;
-                // apply charge effects here after "loading" is complete
-                sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
-            }
-        }
         // is this right?  should i do something else here?
         if ((!m_chargeRef) or (m_ChargeState == ChargeStates::CHG_UNLOADED) or (!m_chargeRef->quantity()) or (!m_chargeLoaded)) {
             UnloadCharge();
@@ -251,7 +254,7 @@ uint32 ActiveModule::DoCycle()
     if (m_needsCharge) {
         // modules that use scripts arent considered as needsCharge, as they work with or without the script.
         if ((!m_chargeLoaded) or (!m_chargeRef)) {
-            // send error to client?
+            m_shipRef->GetPilot()->SendErrorMsg("Your %s has no loaded charge.  Deactivating.", m_modRef->itemName().c_str());
             Deactivate();
             return 0;
         }
@@ -484,16 +487,18 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
 
 void ActiveModule::UnloadCharge()
 {
-    // remove charge effects here
-    m_chargeRef->ClearModifiers();
-    for (auto it : m_chargeRef->type().m_stateFxMap) {
-        fxData data;
-        data.action = Effects::Action::dgmActInvalid;
-        data.srcRef = m_chargeRef;
-        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
-        sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
+    if (m_chargeRef) {
+        // remove charge effects here
+        m_chargeRef->ClearModifiers();
+        for (auto it : m_chargeRef->type().m_stateFxMap) {
+            fxData data;
+            data.action = Effects::Action::dgmActInvalid;
+            data.srcRef = m_chargeRef;
+            data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
+            sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
+        }
+        sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
     }
-    sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
     m_chargeRef = InventoryItemRef();       // Ensure ref is NULL
     m_chargeLoaded = false;
