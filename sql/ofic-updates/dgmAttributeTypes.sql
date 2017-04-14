@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS `dgmAttributeTypes` (
 --
 
 INSERT INTO `dgmAttributeTypes` (`attributeID`, `attributeName`, `attributeCategory`, `description`, `maxAttributeID`, `attributeIdx`, `chargeRechargeTimeID`, `defaultValue`, `published`, `displayName`, `displayNameID`, `unitID`, `stackable`, `highIsGood`, `dataID`, `iconID`, `categoryID`) VALUES
+(0, 'null', 0, 'null placeholder', 0, 0, 0, 0, 0, '', 0, NULL, 0, 0, 0, NULL, 0),
 (2, 'isOnline', 0, 'Boolean to store status of online effect', 0, 1, 0, 0, 0, '', 0, NULL, 1, 1, 2582954, NULL, 9),
 (3, 'damage', 1, 'current damage dealt to module', 9, 2, 0, 0, 1, 'Damage', 233070, NULL, 1, 1, 16560133, NULL, 7),
 (4, 'mass', 9, 'Integer that describes the types mass', 0, 0, 0, 0, 1, 'Mass', 233287, 2, 0, 1, 16560350, 76, 4),
