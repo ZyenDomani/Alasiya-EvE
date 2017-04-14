@@ -49,6 +49,7 @@ NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, c
 
     m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
     if (!m_orbitRange) {
+        /** @todo this isnt right....check into later */
         if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff))
             m_orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
         else
@@ -65,8 +66,6 @@ NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, c
     m_self->SetAttribute(AttrRadius,              m_self->type().radius());
     m_self->SetAttribute(AttrVolume,              m_self->type().volume());
     m_self->SetAttribute(AttrCapacity,            m_self->type().capacity());
-    m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity));
-    m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity));
 
     m_destiny->SetShipCapabilities(m_self);
 

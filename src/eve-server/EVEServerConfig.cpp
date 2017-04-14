@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    7.5
+    Version:    7.6
 */
 
 
@@ -104,6 +104,7 @@ EVEServerConfig::EVEServerConfig()
     character.statMultiplier = 1;
 
     // npc
+    npc.IdleWander = false;//P
     npc.ThreatRadius = 1.0;//N
     npc.RoamingSpawns = false;//P
     npc.StaticSpawns = false;//N
@@ -350,6 +351,7 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
 {
+    AddValueParser( "IdleWander",       npc.IdleWander );
     AddValueParser( "ThreatRadius",     npc.ThreatRadius );
     AddValueParser( "RoamingSpawns",    npc.RoamingSpawns );
     AddValueParser( "StaticSpawns",     npc.StaticSpawns );
@@ -361,6 +363,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
 
     const bool result = ParseElementChildren( ele );
 
+    RemoveParser( "IdleWander" );
     RemoveParser( "ThreatRadius" );
     RemoveParser( "RoamingSpawns" );
     RemoveParser( "StaticSpawns" );

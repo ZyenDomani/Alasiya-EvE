@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 7.5 -->
+     Version: 7.6 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -105,6 +105,7 @@
     </character>
 
     <npc>
+        <IdleWander>false</IdleWander><!-- bool  npc will wander when idle -->
         <!-- npc podkilling not implemented yet -->
         <TargetPod>false</TargetPod><!-- bool   npc target/attack pod -->
         <TargetPodSec>0.4</TargetPodSec><!-- float   npc target/attack pod in truSec of this and lower -->

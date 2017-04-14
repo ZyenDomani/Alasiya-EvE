@@ -33,6 +33,7 @@
 #include "market/MarketBotMgr.h"
 #include "system/DestinyManager.h"
 #include "system/SystemManager.h"
+#include "system/cosmicMgrs/CivilianMgr.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
@@ -135,6 +136,7 @@ void EntityList::Process() {
     if (m_stampTimer.Check()) {
         ++m_stamp;
         sWHMgr.Process();
+        sCivMgr.Process();
         sBubbleMgr.Process();
         sMktBotMgr.Process();
 

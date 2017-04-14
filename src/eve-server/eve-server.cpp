@@ -193,6 +193,8 @@ int main( int argc, char* argv[] )
     //sThread.AddThread(pthread_self());
     sLog.White("       ServerInit", "Loading server");
 
+    sLog.White("", "");     // spacer
+
     /* Load server log settings */
     if ( load_log_settings( sConfig.files.logSettings.c_str() ) )
         sLog.Green( "       ServerInit", "Log settings loaded from %s", sConfig.files.logSettings.c_str() );
@@ -231,7 +233,10 @@ int main( int argc, char* argv[] )
     sLog.White("MarketBot Version", " %.1f", Bot_Version );
     sLog.White("   Config Version", " %.1f", Config_Version );
     sLog.White("      Log Version", " %.1f", Log_Version );
-    sLog.White("", "");
+    sLog.White("   NPC AI Version", " %.1f", NPC_AI_Version );
+    sLog.White(" Civilian Version", " %.1f", Civilian_AI_Version );
+
+    sLog.White("", "");     // spacer
 
     /* connect to the database */
     DBerror err;
@@ -246,6 +251,7 @@ int main( int argc, char* argv[] )
         std::cout << std::endl << "press any key to exit...";  std::cin.get();
         return EXIT_FAILURE;
     }
+    sLog.White("", "");     // spacer
 
     /* create a single item factory */
     sLog.Green("       ServerInit", "Starting Item Factory");
@@ -389,7 +395,7 @@ int main( int argc, char* argv[] )
 
     // Create In-Memory Database Objects for Critical and HighUse Systems:
     sLog.Yellow("       ServerInit", "Loading Static Database Table Objects...");
-    sLog.Green("       ServerInit", "BulkData");
+    sLog.Green("       ServerInit", "Initalizing BulkData");
     if (sConfig.server.BulkDataOD)
         sLog.Yellow("      BulkDataMgr", "PreLoading Disabled. BulkData will load on first call.");
     else
@@ -412,6 +418,8 @@ int main( int argc, char* argv[] )
     sPIDataMgr.Initialize();
     sLog.Green("       ServerInit", "Misc Data Sets");
     sDataMgr.Initialize();
+
+    sLog.White("", "");     // spacer
 
     /* Custom config file options
      * current settings displayed on console at start-up
@@ -482,8 +490,10 @@ int main( int argc, char* argv[] )
         sLog.Yellow("      Turrent Dmg","Modified at %.0f%%.", (sConfig.rates.turrentRate *100) );
     else
         sLog.Blue("      Turrent Dmg","Normal.");
-    sLog.Green("      Decay Timer","Runs every %u minutes", sConfig.rates.WorldDecay);
-    sLog.White("","");
+    // config option for decay?
+    sLog.Green("      Decay Timer","Enabled.  Checks every %u minutes", sConfig.rates.WorldDecay);
+
+    sLog.White("", "");     // spacer
 
     //sLog.Warning("server init", "Adding NPC Market Orders.");
     //NPCMarket::CreateNPCMarketFromFile("/etc/npcMarket.xml");

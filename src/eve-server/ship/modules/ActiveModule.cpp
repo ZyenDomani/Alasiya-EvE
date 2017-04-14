@@ -593,7 +593,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
                 sFxDataMgr.isOffensive(m_effectID),
                 (active ? true : false),   // start    - if (start = 0) THEN remove effect
                 (active ? true : false),   // active   - if (start and active) THEN starting ONE-SHOT event of (duration)  (dunno what 'ONE-SHOT event' is)
-                (double)timeLeft,           // duration
+                (double)timeLeft,           // duration in ms
                 m_repeat);   // repeat   - if (repeat > 0) THEN starting REPEAT event  ELSE (repeat == 0) THEN starting TOGGLE event
 
     // Create Destiny Updates and GFx
@@ -624,7 +624,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
         shipEff.startTime = (abort ? (abortTime / Win32Time_Second) : (shipEff.timeNow - (timeLeft * Win32Time_Second)));  //if now - startTime > 150000000: return
-        shipEff.duration = (abort ? 2 : (active ? cycleTime.get_float() : timeLeft));  // i *think* this is in seconds
+        shipEff.duration = (abort ? 2 : (active ? cycleTime.get_float() : timeLeft));  // duration in seconds
         shipEff.repeat = m_repeat;
         if ((groupID() == EVEDB::invGroups::Salvager) and (abort)) {
             // Create Destiny Updates:

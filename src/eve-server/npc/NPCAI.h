@@ -73,18 +73,27 @@ protected:
 
     double GetTargetTime();
 
-    typedef enum {
-        Idle,       // not doing anything....idle.
-        Chasing,    // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
-        Following,  // too close to chase, but to far to engage
-        Engaged,    // actively fighting
-        Fleeing,    // running away
-        Signaling   // calling for help
-    } State;
+    enum State {
+        Idle        = 1,  // not doing anything....idle.
+        Chasing     = 2,  // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
+        Following   = 3,  // too close to chase, but to far to engage
+        Engaged     = 4,  // actively fighting
+        Fleeing     = 5,  // running away
+        Signaling   = 6   // calling for help
+    };
     State m_state;
 
+    std::string GetStateName(State name);
+
 private:
-    bool m_isWandering;
+    bool m_webber : 1;
+    bool m_warpScram : 1;
+    bool m_isWandering : 1;
+    bool m_useSigRadius : 1;
+    bool m_useTargSwitching : 1;
+    bool m_useSecondTarget : 1;
+    float m_switchTargChance;   //fuzzy logic
+    uint16 m_preferedSigRadius;
     //these attributes are cached to reduce access times. (much faster but uses more memory)
     uint16 m_maxSpeed;
     uint16 m_ROF;

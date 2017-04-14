@@ -22,6 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Updates:    Allan
+    AI Version: 0.4
 */
 
 #include "eve-server.h"
@@ -43,23 +44,23 @@ NPCAIMgr::NPCAIMgr(NPC* who)
   m_armorRepairTimer(8000),     //arbitrary.
   m_beginFindTarget(5000),      //arbitrary.
   m_warpScramblerTimer(5000),   //arbitrary.
-  m_webifierTimer(5000),        //arbitrary.
-  m_radius(who->GetSelf()->GetAttribute(AttrSignatureRadius).get_int()),
-  m_damageMultiplier(who->GetSelf()->GetAttribute(AttrDamageMultiplier).get_int()),
-  m_shieldBoosterDuration(who->GetSelf()->GetAttribute(AttrEntityShieldBoostDuration).get_int()),
-  m_armorRepairDuration(who->GetSelf()->GetAttribute(AttrEntityArmorRepairDuration).get_int())
+  m_webifierTimer(5000)         //arbitrary.
 {
     m_webifierTimer.Disable();      //not implemented yet
     m_beginFindTarget.Disable();    //arbitrary.
-    m_mainAttackTimer.Disable();    //dont start timer until we have a target
+    m_mainAttackTimer.Disable();    //waiting till engaged
     m_armorRepairTimer.Disable();   //waiting till engaged
-    m_warpScramblerTimer.Disable(); //not implemented yet
     m_shieldBoosterTimer.Disable(); //waiting till engaged
+    m_warpScramblerTimer.Disable(); //not implemented yet
 
+    m_webber = false;
+    m_warpScram = false;
     m_isWandering = false;
 
+    m_damageMultiplier = who->GetSelf()->GetAttribute(AttrDamageMultiplier).get_int();
+
     /* set npc ship speeds and distances */
-    // Rate of fire
+    m_radius = who->GetSelf()->GetAttribute(AttrSignatureRadius).get_int();
     m_ROF = who->GetSelf()->GetAttribute(AttrSpeed).get_int();
     m_processTimer.Start(m_ROF);
 
@@ -96,6 +97,11 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     else
         m_armorRepairChance = 0;
 
+    if (m_armorRepairChance)
+        m_armorRepairDuration = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDuration).get_int();
+    else
+        m_armorRepairDuration = 0;
+
     if (who->GetSelf()->HasAttribute(AttrEntityShieldBoostDelayChanceSmall))
         m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float();
     else if (who->GetSelf()->HasAttribute(AttrEntityShieldBoostDelayChanceLarge))
@@ -103,17 +109,31 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     else
         m_shieldBoosterChance = 0;
 
-    /*
-     AttrAI_ShouldUseTargetSwitching =    1648,
-     AttrAI_ShouldUseSecondaryTarget =    1649,
-     AttrAI_ShouldUseSignatureRadius =    1650,
-     AttrAI_ChanceToNotTargetSwitch = 1651,
-     AttrAI_ShouldUseEffectMultiplier =   1652,
-     AttrAI_ImmuneToSuperWeapon = 1654,
-     AttrAI_PreferredSignatureRadius =    1655,
-     AttrAI_TankingModifierDrone =    1656,
-     AttrAI_TankingModifier = 1657,
-     */
+    if (m_shieldBoosterChance)
+        m_shieldBoosterDuration = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDuration).get_int();
+    else
+        m_shieldBoosterDuration = 0;
+
+    // advanced AI variables  only used by sleepers for now.  will update advanced npcs to use these also
+    if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseTargetSwitching))
+        m_useTargSwitching = true;
+    else
+        m_useTargSwitching = false;
+    if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseSecondaryTarget))
+        m_useSecondTarget = true;
+    else
+        m_useSecondTarget = false;
+    if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseSignatureRadius)) {
+        m_useSigRadius = true;
+        m_preferedSigRadius = who->GetSelf()->GetAttribute(AttrAI_PreferredSignatureRadius).get_int();
+    } else {
+        m_useSigRadius = false;
+        m_preferedSigRadius = 0;
+    }
+    if (who->GetSelf()->HasAttribute(AttrAI_ChanceToNotTargetSwitch))
+        m_switchTargChance = 1.0 - who->GetSelf()->GetAttribute(AttrAI_ChanceToNotTargetSwitch).get_float();
+    else
+        m_switchTargChance = 0.0f;
 }
 
 void NPCAIMgr::Process() {
@@ -147,7 +167,7 @@ void NPCAIMgr::Process() {
                 std::vector<Client*> clientVec;
                 clientVec.clear();
                 DestinyManager* pDestiny(nullptr);
-                m_npc->SysBubble()->GetPlayers(clientVec); // what about player drones?
+                m_npc->SysBubble()->GetPlayers(clientVec); // what about player drones?  yes...later
                 for (auto cur : clientVec) {
                     if (cur->IsLogin() or cur->IsInvul() or cur->InPod())
                         continue;
@@ -164,54 +184,27 @@ void NPCAIMgr::Process() {
                     Target(cur->GetShipSE());
                     return;
                 }
-                if (!m_isWandering)
-                    Wander();
+                if (sConfig.npc.IdleWander)
+                    if (!m_isWandering)
+                        Wander();
             } else {
                 if (!m_beginFindTarget.Enabled())
                     m_beginFindTarget.Start(m_ROF);  //find target is based on npc attack speed.
             }
         } break;
 
-        case Chasing: {
-            //NOTE: getting our target like this is pretty weak...
-            SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
-            if (!pTarget) {
-                if (m_npc->TargetMgr()->HasNoTargets()) {
-                    _log(NPC__AI_TRACE, "%s(%u): Stopped chasing, GetFirstTarget() returned NULL.",  m_npc->GetName(), m_npc->GetID());
-                    m_state = Idle;
-                }
-                return;
-            } else if (!pTarget->SysBubble()) {
-                m_npc->TargetMgr()->ClearTarget(pTarget);
-                return;
-            }
-            _CheckDistance(pTarget);
-        } break;
-
-        case Following: {
-            //NOTE: getting our target like this is pretty weak...
-            SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
-            if (!pTarget) {
-                if (m_npc->TargetMgr()->HasNoTargets()) {
-                    _log(NPC__AI_TRACE, "%s(%u): Stopped following, GetFirstTarget() returned NULL.",  m_npc->GetName(), m_npc->GetID());
-                    m_state = Idle;
-                }
-                return;
-            } else if (!pTarget->SysBubble()) {
-                m_npc->TargetMgr()->ClearTarget(pTarget);
-                return;
-            }
-            _CheckDistance(pTarget);
-        } break;
-
+        case Chasing:
+        case Following:
         case Engaged: {
-            //NOTE: getting our pTarget like this is pretty weak...
+            if (m_npc->TargetMgr()->HasNoTargets()) {
+                _log(NPC__AI_TRACE, "%s(%u): Stopped %s, HasNoTargets = true.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
+                EnterIdle();
+                return;
+            }
             SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
             if (!pTarget) {
-                if (m_npc->TargetMgr()->HasNoTargets()) {
-                    _log(NPC__AI_TRACE, "%s(%u): Stopped engagement, GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID());
-                    EnterIdle();
-                }
+                _log(NPC__AI_TRACE, "%s(%u): Stopped %s, GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
+                EnterIdle();
                 return;
             } else if (!pTarget->SysBubble()) {
                 m_npc->TargetMgr()->ClearTarget(pTarget);
@@ -220,15 +213,11 @@ void NPCAIMgr::Process() {
             _CheckDistance(pTarget);
         } break;
 
-        case Fleeing: {
-            // not sure how im gonna do this one yet.
+        case Fleeing:
+        case Signaling: {
+            _log(NPC__AI_TRACE, "%s(%u): Called %s, needs to be completed.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
+            // not sure how im gonna do these
         } break;
-
-		case Signaling: {
-			// not sure how im gonna do this one yet.
-        } break;
-
-    //no default on purpose
     }
 }
 
@@ -238,12 +227,13 @@ void NPCAIMgr::Wander()
          m_npc->GetName(), m_npc->GetID(), m_sightRange);
     // wandering.  nothing to shoot.  look for target.
     if (m_npc->SysBubble()->HasDynamics()) {
+        // pick random entity and loosely orbit it.
         SystemEntity* pTarget = m_npc->SysBubble()->GetRandomEntity();
+        // 2 chances to get random target
         if (!pTarget)
             pTarget = m_npc->SysBubble()->GetRandomEntity();
         if (!pTarget)
             return;
-        // pick random entity and loosely orbit it.
         m_isWandering = true;
         m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
         uint16 orbitDistance = MakeRandomInt(10000, 20000);
@@ -251,6 +241,7 @@ void NPCAIMgr::Wander()
         _log(NPC__AI_TRACE, "%s(%u):  Just for shits-n-giggles, I\'m gonna orbit %s(%u) at %um.", \
             m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID(), orbitDistance);
     } else {
+        /** @todo  figure out a way for npc to wander 'aimlessly' around their bubble */
         m_npc->DestinyMgr()->Halt();
     }
 }
@@ -562,4 +553,16 @@ void NPCAIMgr::DisableRepTimers()
 {
     m_armorRepairTimer.Disable();
     m_shieldBoosterTimer.Disable();
+}
+
+std::string NPCAIMgr::GetStateName(NPCAIMgr::State name)
+{
+    switch (name) {
+        case Idle:      return "Idle";
+        case Chasing:   return "Chasing";
+        case Following: return "Following";
+        case Engaged:   return "Engaged";
+        case Fleeing:   return "Fleeing";
+        case Signaling: return "Signaling";
+    }
 }

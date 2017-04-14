@@ -37,8 +37,6 @@ private:
     ServiceDB* m_db;
     PyServiceMgr* m_services;
 
-    Timer m_updateTimer;
-
     bool m_initalized;
 
 };
