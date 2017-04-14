@@ -28,30 +28,15 @@
 #ifndef __MODULEFACTORY_H__
 #define __MODULEFACTORY_H__
 
-#include "ActiveModule.h"
-#include "PassiveModule.h"
-#include "RigModule.h"
-#include "SubSystemModule.h"
-/*
-#include "armor_modules/ArmorRepairer.h"
-#include "armor_modules/ArmorTransporter.h"
-#include "ewar_modules/Webifier.h"
-#include "ewar_modules/WarpScrambler.h"
-#include "electronics_modules/Salvager.h"
-#include "electronics_modules/SurveyScanner.h"
-#include "electronics_modules/TractorBeam.h"
-#include "engineering_modules/CapTransfer.h"
-#include "hull_modules/HullRepairer.h"
-#include "hull_modules/HullTransporter.h"
-*/
-#include "mining_modules/MiningLaser.h"
-#include "propulsion_modules/Afterburner.h"
-#include "weapon_modules/TurrentModule.h"
-/*
-#include "shield_modules/ShieldBooster.h"
-#include "shield_modules/ShieldTransporter.h"
-#include "weapon_modules/SuperWeapon.h"
-*/
+#include "ship/modules/ActiveModule.h"
+#include "ship/modules/MiningLaser.h"
+#include "ship/modules/PassiveModule.h"
+#include "ship/modules/RigModule.h"
+#include "ship/modules/Salvager.h"
+#include "ship/modules/SubSystemModule.h"
+//#include "modules/SuperWeapon.h"
+#include "ship/modules/TurrentModule.h"
+
 
 static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
 {
@@ -123,7 +108,8 @@ static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
             case EVEDB::invGroups::Drone_Tracking_Modules:                  return (new PassiveModule(item, ship));
             case EVEDB::invGroups::Drone_Control_Range_Module:              return (new PassiveModule(item, ship));
             case EVEDB::invGroups::Tractor_Beam:                            return (new ActiveModule(item, ship));    // Active - external
-            case EVEDB::invGroups::Salvager:                                return (new ActiveModule(item, ship));    // Active - external
+            case EVEDB::invGroups::Salvager:                                return (new Salvager(item, ship));    // Active - external
+            case EVEDB::invGroups::Data_Miners:                             return (new Salvager(item, ship));    // Active - external
 
             // Engineering Modules:
             case EVEDB::invGroups::Capacitor_Recharger:                     return (new PassiveModule(item, ship));
@@ -162,7 +148,6 @@ static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
             // Gang Assist Modules:
             case EVEDB::invGroups::Gang_Coordinator:                        return (new ActiveModule(item, ship));    // Active - external
             case EVEDB::invGroups::Siege_Module:                            return (new ActiveModule(item, ship));    // Active - external
-            case EVEDB::invGroups::Data_Miners:                             return (new ActiveModule(item, ship));    // Active - external
             case EVEDB::invGroups::Jump_Portal_Generator:                   return (new ActiveModule(item, ship));    // Active - external
             case EVEDB::invGroups::Cynosural_Field:                         return (new ActiveModule(item, ship));    // Active - external
             case EVEDB::invGroups::Clone_Vat_Bay:                           return (new PassiveModule(item, ship));
@@ -175,8 +160,8 @@ static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
             case EVEDB::invGroups::Gas_Cloud_Harvester:                     return (new MiningLaser(item, ship));     // Active - external
 
             // Propulsion Modules:
-            case EVEDB::invGroups::Afterburner:                             return (new Afterburner(item, ship));     // Active - external
-            case EVEDB::invGroups::Microwarpdrive:                          return (new Afterburner(item, ship));     // Active - external
+            case EVEDB::invGroups::Afterburner:                             return (new ActiveModule(item, ship));     // Active
+            case EVEDB::invGroups::Microwarpdrive:                          return (new ActiveModule(item, ship));     // Active
             case EVEDB::invGroups::Warp_Core_Stabilizer:                    return (new PassiveModule(item, ship));
             case EVEDB::invGroups::Inertial_Stabilizer:                     return (new PassiveModule(item, ship));
             case EVEDB::invGroups::Nanofiber_Internal_Structure:            return (new PassiveModule(item, ship));

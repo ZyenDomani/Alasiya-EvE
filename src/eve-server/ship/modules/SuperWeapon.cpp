@@ -26,7 +26,7 @@
 #include "eve-server.h"
 
 #include "ship/Ship.h"
-#include "ship/modules/weapon_modules/SuperWeapon.h"
+#include "ship/modules/SuperWeapon.h"
 #include "system/SystemBubble.h"
 #include "system/Damage.h"
 

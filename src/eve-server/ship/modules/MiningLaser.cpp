@@ -12,7 +12,7 @@
 #include "PyServiceMgr.h"
 #include "character/Character.h"
 #include "ship/Ship.h"
-#include "ship/modules/mining_modules/MiningLaser.h"
+#include "ship/modules/MiningLaser.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"

@@ -157,7 +157,7 @@ public:
     virtual bool                IsOutpostSE()           { return m_outpost; }
     virtual bool                IsJumpBridgeSE()        { return m_bridge; }
 
-    virtual bool                Global()                { return m_co; }    // just in case item->global() fails here for customs offices...which it may
+    virtual bool                isGlobal()                { return m_co; }    // just in case item->isGlobal() fails here for customs offices...which it may
 
     /* SystemEntity interface */
     virtual void                Process();

@@ -26,7 +26,7 @@
 #ifndef __EVEMU_SHIP_DRONEAI_H__
 #define __EVEMU_SHIP_DRONEAI_H__
 
-#include "ship/modules/weapon_modules/TurrentFormulas.h"
+#include "ship/modules/TurrentFormulas.h"
 
 class Drone;
 class SystemEntity;

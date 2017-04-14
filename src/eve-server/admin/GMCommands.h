@@ -54,7 +54,7 @@ COMMAND( unload, ROLE_VIP,
 COMMAND( repairmodules, ROLE_HEALSELF,
         "(entityID) (itemID) - repair the modules of the character with the entityID" )
 COMMAND( unspawn, ROLE_SPAWN,
-        "(entityID) (itemID) - unload module itemID from entityID (itemID=all=>unload all) (entityID=me=>my modules)" )
+        "(itemID) - remove and delete itemID" )
 COMMAND( giveskills, ROLE_ADMIN,
         "(itemID) - gives skills to character." )
 COMMAND( dogma, ROLE_ADMIN,

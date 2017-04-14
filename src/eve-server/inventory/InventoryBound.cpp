@@ -580,7 +580,7 @@ PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& item
 
         /* check for and remove item from container inventory */
         if (old_flag == flagAutoFit) {
-            _log(INV__WARNING, "old_flag == flagAutoFit for item %s(%u) in locationID %u for inventory of %s(%u).", \
+            _log(INV__TRACE, "old_flag == flagAutoFit for item %s(%u) in locationID %u for inventory of %s(%u).", \
                     itemRef->itemName().c_str(), itemRef->itemID(), itemRef->locationID(), m_self->itemName().c_str(), m_self->itemID());
             if (pClient->IsDocked()) {
                 CargoContainerRef contRef = m_manager->item_factory->GetCargoContainer(itemRef->locationID());

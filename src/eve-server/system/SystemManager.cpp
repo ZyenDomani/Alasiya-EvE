@@ -710,7 +710,7 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
     std::vector<SystemEntity*> visibleEntities;
 
     for (auto cur : m_entities)
-        if (cur.second->Global()) // get only global entities here (StaticSystemEntity)
+        if (cur.second->isGlobal()) // get only global entities here (StaticSystemEntity)
             visibleEntities.push_back(cur.second);
 
     if (bubble)

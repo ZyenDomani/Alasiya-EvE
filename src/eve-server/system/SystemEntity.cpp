@@ -47,7 +47,10 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
   m_services(services),
   m_system(system)
 {
+    m_bubble = nullptr;
+    m_destiny = nullptr;
     m_targMgr = new TargetManager(this);
+    Abandon();
 }
 
 SystemEntity::~SystemEntity()
@@ -491,7 +494,7 @@ void ObjectSystemEntity::Killed(Damage &fatal_blow)
     m_targMgr->ClearTargets(false);
     if (m_destiny && m_bubble) {
         m_destiny->Stop();
-        m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), m_self->global());
+        m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
     }
 
     m_system->RemoveEntity(this);

@@ -1175,33 +1175,26 @@ PyResult Command_repairmodules(Client* who, CommandDB* db, PyServiceMgr* service
 
 PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    uint32 entityID = 0;
-    uint32 itemID = 0;
-
-    if ((args.argCount() < 3) || (args.argCount() > 3))
-        throw PyException(MakeCustomError("Correct Usage: /unspawn (entityID) (itemID), and for now (entityID) is unused, so just type 0, and use the itemID from the entity table for (itemID)"));
-
-    if (!args.isNumber(1))
-        throw PyException(MakeCustomError("Argument 1 should be an item entity ID"));
-
-    if (!args.isNumber(2))
-        throw PyException(MakeCustomError("Argument 2 should be an item item ID"));
-
-    entityID = atoi(args.arg(1).c_str());
-    itemID = atoi(args.arg(2).c_str());
-
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You must be in space to unspawn things."));
 
+    if ((args.argCount() < 2) || (args.argCount() > 2))
+        throw PyException(MakeCustomError("Correct Usage: /unspawn (itemID)"));
+
+    if (!args.isNumber(1))
+        throw PyException(MakeCustomError("Argument 1 should be itemID"));
+
+    uint32 itemID = atoi(args.arg(1).c_str());
+
     // Search for the itemRef for itemID:
     InventoryItemRef itemRef = who->services().item_factory->GetItem(itemID);
-    SystemEntity* entityRef = who->SystemMgr()->GetSE(itemID);
+    SystemEntity* pSE = who->SystemMgr()->GetSE(itemID);
 
     // Actually do the unspawn using SystemManager's RemoveEntity:
-    if (!entityRef) {
+    if (!pSE) {
         return new PyString("Un-Spawn Failed: itemID not found.");
     } else {
-        who->SystemMgr()->RemoveEntity(entityRef);
+        who->SystemMgr()->RemoveEntity(pSE);
         itemRef->Delete();
     }
 

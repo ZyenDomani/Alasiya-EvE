@@ -11,8 +11,8 @@
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
 #include "npc/Drone.h"
-#include "ship/modules/weapon_modules/TurrentFormulas.h"
-#include "ship/modules/weapon_modules/TurrentModule.h"
+#include "ship/modules/TurrentFormulas.h"
+#include "ship/modules/TurrentModule.h"
 
 
 float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, SystemEntity* pTarget)

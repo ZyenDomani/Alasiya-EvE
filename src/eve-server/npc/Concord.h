@@ -12,7 +12,7 @@
 
 #include "eve-server.h"
 
-#include "ship/modules/weapon_modules/TurrentFormulas.h"
+#include "ship/modules/TurrentFormulas.h"
 #include "system/SystemEntity.h"
 
 /*  basic notes for concord actions...

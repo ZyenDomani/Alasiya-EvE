@@ -197,7 +197,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 
     SystemEntity* pShipSE = pClient->GetShipSE();
     /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
-    if (pShipSE->Global()) { /* close enough.  cyno (Global() = true), so this will work */
+    if (pShipSE->isGlobal()) { /* close enough.  cyno (isGlobal() = true), so this will work */
         /* find proper error msg for this...im sure there is one  */
         call.client->SendNotifyMsg("You cannot eject with an active Cyno Field.");
         return nullptr;

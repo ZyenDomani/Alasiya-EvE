@@ -698,6 +698,8 @@ void DestinyManager::_Move() {
             m_activeSpeedFraction = m_prevSpeedFraction * m_currentSpeedFraction;
         else if (m_userSpeedFraction != m_activeSpeedFraction)
             m_activeSpeedFraction = m_currentSpeedFraction;
+        else if ((m_tractored) or (m_tractorPause))
+            ;   // do nothing here.  this is to remove error reporting from next line.
         else
             _log(DESTINY__ERROR, "Destiny::_Move() - %s(%u) is not turning and move checks are not set right.", mySE->GetName(), mySE->GetID());
 
@@ -2260,7 +2262,7 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE)
     updates.push_back(bf.Encode());
     DoDestiny_SetBallMass sbmass;
         sbmass.entityID = mySE->GetID();
-        sbmass.mass = 10;
+        sbmass.mass = 10000;
     updates.push_back(sbmass.Encode());
     DoDestiny_CmdSetSpeedFraction ssf;
         ssf.entityID = mySE->GetID();
@@ -2289,7 +2291,7 @@ void DestinyManager::TractorBeamStop()
     updates.push_back(bf.Encode());
     DoDestiny_SetBallMass sbmass;
         sbmass.entityID = mySE->GetID();
-        sbmass.mass = 10000000000;
+        sbmass.mass = m_mass;
     updates.push_back(sbmass.Encode());
     SendDestinyUpdate(updates);
 }

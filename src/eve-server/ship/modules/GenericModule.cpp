@@ -109,7 +109,7 @@ void GenericModule::Online()
             _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
                     m_modRef->itemID(), m_modRef->itemName().c_str());
         } else {
-            _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) loading charge %s.", m_modRef->itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
+            _log(SHIP__MODULE_INFO, "GenericModule::Online() - module %u(%s) loading charge %s.", m_modRef->itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
             m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
                 fxData data;

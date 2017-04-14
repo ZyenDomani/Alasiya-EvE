@@ -9,7 +9,7 @@
 
 #include "eve-server.h"
 
-#include "ship/modules/weapon_modules/TurrentModule.h"
+#include "ship/modules/TurrentModule.h"
 #include "system/Damage.h"
 
 TurrentModule::TurrentModule(InventoryItemRef item, ShipItemRef shipRef)

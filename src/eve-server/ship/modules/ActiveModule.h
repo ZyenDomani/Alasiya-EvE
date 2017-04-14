@@ -62,13 +62,15 @@ public:
     void ShowEffect(bool active=false, bool abort=false);
 
 protected:
-    //SystemBubble* m_bubble;                           // we do not own this
+    SystemBubble* m_bubble;                             // we do not own this
     SystemEntity* m_targetSE;                           // we do not own this
     DestinyManager* m_destinyMgr;                       // we do not own this
     TargetManager* m_targMgr;                           // we do not own this
 
     void Clear();
-    void ProcessActiveCycle();
+    void ProcessActiveCycle();                          // checks and sets cap use
+    void UpdateCharge(uint16 attrID, uint16 testAttrID, uint16 srcAttrID, InventoryItemRef iRef);
+    void UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRef iRef);
 
     uint32 GetRemainingCycleTimeMS()                    { return m_timer.GetRemainingTime(); }
 

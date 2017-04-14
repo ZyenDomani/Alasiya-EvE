@@ -11,7 +11,7 @@
 #define __EVESERVER_SHIPMODULES_ACTIVE_MODULES_TURRENTMODULE_H
 
 #include "ship/modules/ActiveModule.h"
-#include "ship/modules/weapon_modules/TurrentFormulas.h"
+#include "ship/modules/TurrentFormulas.h"
 
 
 class TurrentModule : public ActiveModule

@@ -93,7 +93,7 @@ public:
     const ItemGroup &       group() const               { return m_type.group(); }
     const ItemCategory &    category() const            { return m_type.category(); }
     EVEItemCategories       categoryID() const          { return m_type.categoryID(); }
-    bool                    global() const              { return (HasAttribute(AttrIsGlobal) ? true : false); }
+    bool                    isGlobal() const            { return (HasAttribute(AttrIsGlobal) ? true : false); }
 
     /* public-access generic functions handled in base class. */
     void                    Rename(const char *to);

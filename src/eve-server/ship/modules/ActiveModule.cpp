@@ -12,6 +12,7 @@
 #include "ship/Missile.h"
 #include "ship/modules/ActiveModule.h"
 #include "system/SystemManager.h"
+#include "system/cosmicMgrs/BeltMgr.h"
 
 using namespace ModStates;
 
@@ -20,8 +21,6 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
 m_timer(1000),
 m_reloadTimer(10000)
 {
-    /** @todo  bubble isnt ready yet.  will have to update every time we change bubble */
-    //m_bubble = ship->GetPilot()->GetShipSE()->SysBubble();
     m_overLoaded = false;
     m_chargeLoaded = false;
 
@@ -91,9 +90,10 @@ void ActiveModule::Clear()
     m_targetID = 0;
     m_effectID = 0;
     m_guidStr = "";
+    m_bubble = nullptr;
+    m_targMgr = nullptr;
     m_targetSE = nullptr;
     m_destinyMgr = nullptr;
-    m_targMgr = nullptr;
     m_timer.Disable();
 }
 
@@ -123,9 +123,7 @@ void ActiveModule::Process()
             }
         }
         // is this right?  should i do something else here?
-        if ((!m_chargeRef) or (m_ChargeState == ChargeStates::CHG_UNLOADED))
-            return;
-        if ((!m_chargeRef->quantity()) or (!m_chargeLoaded)) {
+        if ((!m_chargeRef) or (m_ChargeState == ChargeStates::CHG_UNLOADED) or (!m_chargeRef->quantity()) or (!m_chargeLoaded)) {
             UnloadCharge();
             DeactivateCycle(true);
             return;
@@ -151,6 +149,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         if (!m_targetSE) {
             sLog.Error("ActiveModule::Activate()", "m_targetSE == NULL");
             m_shipRef->GetPilot()->SendErrorMsg("Current target was not found.  Ref: ServerError 25263");
+            Clear();
             return;
         }
     }
@@ -158,17 +157,20 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_repeat = repeat;
     m_effectID = effectID;
     m_guidStr = sFxDataMgr.GetEffectGuid(effectID);
-    m_destinyMgr = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
+    m_bubble = m_shipRef->GetPilot()->GetShipSE()->SysBubble();
     m_targMgr = m_shipRef->GetPilot()->GetShipSE()->TargetMgr();
+    m_destinyMgr = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
 
     if (!CanActivate()) {
         Clear();
         return;
     }
 
-    SetTimer(DoCycle()); // Do initial cycle immediately while we start timer
+    // Do initial cycle immediately while we start timer
+    SetTimer(DoCycle());
 
     if (!m_timer.Enabled()) {
+        // if the timer wasnt set (for whatever reason), kill activation and return
         Clear();
         return;
     }
@@ -177,6 +179,24 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     ShowEffect(true, false);
 
     m_ModuleState = ModuleStates::MOD_ACTIVATED;
+
+    switch (groupID()) {
+        case EVEDB::invGroups::Afterburner:
+        case EVEDB::invGroups::Microwarpdrive: {
+            m_destinyMgr->SpeedBoost();
+        } break;
+        case EVEDB::invGroups::Tractor_Beam: {
+            m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE());
+        } break;
+        case EVEDB::invGroups::Stasis_Web: {
+            m_targetSE->DestinyMgr()->WebbedMe();
+        } break;
+        case EVEDB::invGroups::Warp_Scrambler: {
+            EvilNumber scramStr = GetAttribute(AttrWarpScrambleStrength);
+            scramStr += m_targetSE->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
+            m_targetSE->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
+        } break;
+    }
 
     if (!m_repeat)
         m_Stop = true;
@@ -212,48 +232,113 @@ void ActiveModule::DeOverload()
     GenericModule::DeOverload();
 }
 
-// yes, the xCycle() shit below seems overkill, but each has a specific purpose
+// yes, the xxCycle() shit below seems overkill, but each has a specific purpose
 uint32 ActiveModule::DoCycle()
 {
-    if ((!m_destinyMgr) or (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())) {
+    if ((!m_destinyMgr) or (!m_bubble)) {
         // make error for no destiny/bubble
         Deactivate();
         return 0;
     }
-    if ((m_targetID) and (m_targMgr))
+    if ((m_targetID) and (m_targMgr)) {
+        // data consistency check
         if (m_targMgr->GetTarget(m_targetID) != m_targetSE) {
+            _log(SHIP__MODULE_WARNING, "GetTarget() != m_targetSE");
             Deactivate();
             return 0;
         }
-    if (m_chargeLoaded) {
-        if (!m_chargeRef) {
+    }
+    if (m_needsCharge) {
+        // modules that use scripts arent considered as needsCharge, as they work with or without the script.
+        if ((!m_chargeLoaded) or (!m_chargeRef)) {
             // send error to client?
             Deactivate();
             return 0;
         }
-        if ((m_needsCharge) and sFxDataMgr.isOffensive(m_effectID)) {
-            // not sure if this is entirely accurate...
-            switch (m_modRef->groupID()) {
-                case EVEDB::invGroups::Projectile_Weapon:
-                case EVEDB::invGroups::Hybrid_Weapon:
-                case EVEDB::invGroups::Energy_Weapon: {
-                    ApplyDamage();
-                } break;
-                case EVEDB::invGroups::Missile_Launcher_Assault:
-                case EVEDB::invGroups::Missile_Launcher_Bomb:   // not sure here
-                case EVEDB::invGroups::Missile_Launcher_Citadel:
-                case EVEDB::invGroups::Missile_Launcher_Cruise:
-                case EVEDB::invGroups::Missile_Launcher_Defender:   // not sure here
-                case EVEDB::invGroups::Missile_Launcher_Heavy:
-                case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
-                case EVEDB::invGroups::Missile_Launcher_Rocket:
-                case EVEDB::invGroups::Missile_Launcher_Siege:
-                case EVEDB::invGroups::Missile_Launcher_Snowball:
-                case EVEDB::invGroups::Missile_Launcher_Standard: {
-                    LaunchMissile();
-                } break;
-            }
-        }
+    }
+
+    // not sure if this is entirely accurate...wip
+    switch (m_modRef->groupID()) {
+        case EVEDB::invGroups::Artifacts_and_Prototypes: { // (this module group will need specific code)
+        } break;
+        case EVEDB::invGroups::Passive_Targeting_System: { // (this passive module will need specific code)
+        } break;
+        case EVEDB::invGroups::Scan_Probe_Launcher: { // (this active module will need specific code)
+        } break;
+        case EVEDB::invGroups::Automated_Targeting_System: { // (this active module will need specific code)
+        } break;
+
+        case EVEDB::invGroups::ECM:
+        case EVEDB::invGroups::ECCM:
+        case EVEDB::invGroups::Gang_Coordinator:
+        case EVEDB::invGroups::Cloaking_Device:
+        case EVEDB::invGroups::Target_Painter:
+        case EVEDB::invGroups::Siege_Module:
+        case EVEDB::invGroups::Super_Weapon:
+        case EVEDB::invGroups::Interdiction_Sphere_Launcher:
+        case EVEDB::invGroups::Jump_Portal_Generator:
+        case EVEDB::invGroups::Cynosural_Field:
+        case EVEDB::invGroups::Remote_ECM_Burst:
+        case EVEDB::invGroups::Warp_Disrupt_Field_Generator:
+        case EVEDB::invGroups::Covert_Cynosural_Field_Generator:
+        case EVEDB::invGroups::Energy_Destabilizer:
+        case EVEDB::invGroups::Energy_Vampire:
+        case EVEDB::invGroups::Smart_Bomb:
+        case EVEDB::invGroups::ECM_Burst:
+        // these neither require nor consume charges
+        case EVEDB::invGroups::Remote_Sensor_Damper:
+        case EVEDB::invGroups::Tracking_Link:
+        case EVEDB::invGroups::Signal_Amplifier:
+        case EVEDB::invGroups::Tracking_Enhancer:
+        case EVEDB::invGroups::Sensor_Booster:
+        case EVEDB::invGroups::Tracking_Computer:
+        case EVEDB::invGroups::Projected_ECCM:
+        case EVEDB::invGroups::Remote_Sensor_Booster:
+        case EVEDB::invGroups::Tracking_Disruptor: {
+        } break;
+        case EVEDB::invGroups::Capacitor_Booster:{
+            UpdateCharge(AttrCapacitorCharge, AttrCapacitorCapacity, AttrPowerTransferAmount, m_shipRef);
+        } break;
+        case EVEDB::invGroups::Energy_Transfer_Array: {
+            UpdateCharge(AttrCapacitorCharge, AttrCapacitorCapacity, AttrPowerTransferAmount, m_targetSE->GetSelf());
+        } break;
+        case EVEDB::invGroups::Shield_Transporter: {
+            UpdateCharge(AttrShieldCharge, AttrShieldCapacity, AttrShieldBonus, m_targetSE->GetSelf());
+        } break;
+        case EVEDB::invGroups::Shield_Booster: {
+            UpdateCharge(AttrShieldCharge, AttrShieldCapacity, AttrShieldBonus, m_shipRef);
+        } break;
+        case EVEDB::invGroups::Remote_Hull_Repairer: {
+            UpdateDamage(AttrDamage, AttrStructureDamageAmount, m_targetSE->GetSelf());
+        } break;
+        case EVEDB::invGroups::Hull_Repair_Unit: {
+            UpdateDamage(AttrDamage, AttrStructureDamageAmount, m_shipRef);
+        } break;
+        case EVEDB::invGroups::Armor_Repair_Projector: {
+            UpdateDamage(AttrArmorDamage, AttrArmorDamageAmount, m_targetSE->GetSelf());
+        } break;
+        case EVEDB::invGroups::Armor_Repair_Unit: {
+            UpdateDamage(AttrArmorDamage, AttrArmorDamageAmount, m_shipRef);
+        } break;
+        case EVEDB::invGroups::Projectile_Weapon:
+        case EVEDB::invGroups::Hybrid_Weapon:
+        case EVEDB::invGroups::Energy_Weapon: {
+            // turrent weapons still use specific code.
+            ApplyDamage();
+        } break;
+        case EVEDB::invGroups::Missile_Launcher_Assault:
+        case EVEDB::invGroups::Missile_Launcher_Bomb:   // not sure here
+        case EVEDB::invGroups::Missile_Launcher_Citadel:
+        case EVEDB::invGroups::Missile_Launcher_Cruise:
+        case EVEDB::invGroups::Missile_Launcher_Defender:   // not sure here
+        case EVEDB::invGroups::Missile_Launcher_Heavy:
+        case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
+        case EVEDB::invGroups::Missile_Launcher_Rocket:
+        case EVEDB::invGroups::Missile_Launcher_Siege:
+        case EVEDB::invGroups::Missile_Launcher_Snowball:
+        case EVEDB::invGroups::Missile_Launcher_Standard: {
+            LaunchMissile();
+        } break;
     }
 
     EvilNumber cycleTime = 0;
@@ -285,6 +370,55 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     ShowEffect(false, abort);
 
     SetModuleState(ModuleStates::MOD_ONLINE);
+
+    switch (groupID()) {
+        case EVEDB::invGroups::Tractor_Beam: {
+            m_targetSE->DestinyMgr()->TractorBeamStop();
+        } break;
+        case EVEDB::invGroups::Afterburner:
+        case EVEDB::invGroups::Microwarpdrive: {
+            m_destinyMgr->SpeedBoost(true);
+        } break;
+        case EVEDB::invGroups::Warp_Scrambler: {
+            EvilNumber scramStr = GetAttribute(AttrWarpScrambleStrength);
+            scramStr -= m_targetSE->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
+            m_targetSE->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
+        } break;
+        case EVEDB::invGroups::Stasis_Web: {
+            m_targetSE->DestinyMgr()->WebbedMe();
+        } break;
+        case EVEDB::invGroups::Survey_Scanner: {
+            PyTuple* tuple = new PyTuple(2);
+            tuple->SetItem(0, new PyString("OnSurveyScanComplete"));
+            PyList* list = new PyList();
+            tuple->SetItem(1, list);
+            if (m_bubble->IsBelt()) {
+                float m_range = GetAttribute(AttrSurveyScanRange).get_float();
+                m_range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(skillLongRangeTargeting, true)))); // 3% increase in range (here)
+                std::vector<AsteroidSE*> vList;
+                m_shipRef->GetPilot()->GetShipSE()->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetSpawnID(m_bubble->GetID()), vList);
+                for (auto pASE : vList) {
+                    // allow ice scanning without a radius check....may change later.
+                    if (m_bubble->IsIce() or (m_shipRef->position().distance(pASE->GetPosition()) < m_range)) {
+                        PyTuple* tuple2 = new PyTuple(3);
+                        tuple2->SetItem(0, new PyInt(pASE->GetID()));
+                        tuple2->SetItem(1, new PyInt(pASE->GetTypeID()));
+                        tuple2->SetItem(2, new PyInt(pASE->GetSelf()->GetAttribute(AttrQuantity).get_int()));
+                        list->AddItem(tuple2);
+                    }
+                }
+            }
+            // Send results.
+            std::vector<PyTuple*> events;
+            events.push_back(tuple);
+            std::vector<PyTuple*> updates;
+            m_destinyMgr->SendDestinyUpdate(updates, events, false);
+        } break;
+        case EVEDB::invGroups::Ship_Scanner:
+        case EVEDB::invGroups::Cargo_Scanner:
+        case EVEDB::invGroups::System_Scanner: {
+        } break;
+    }
 
     Clear();
 }
@@ -374,31 +508,56 @@ void ActiveModule::ApplyEffect(Effects::State state, bool active/*false*/)
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
 
+void ActiveModule::UpdateCharge(uint16 attrID, uint16 testAttrID, uint16 srcAttrID, InventoryItemRef iRef)
+{
+    // Apply boost amount:
+    EvilNumber newValue = iRef->GetAttribute(attrID);
+    newValue += GetAttribute(srcAttrID);
+    if (newValue > iRef->GetAttribute(testAttrID)) {
+        newValue = iRef->GetAttribute(testAttrID);
+        Deactivate();
+    }
+    iRef->SetAttribute(attrID, newValue);
+}
+
+void ActiveModule::UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRef iRef)
+{
+    EvilNumber newValue = iRef->GetAttribute(attrID);
+    newValue -= GetAttribute(srcAttrID);
+    if (newValue < 0) {
+        newValue = 0;
+        Deactivate();
+    }
+    iRef->SetAttribute(attrID, newValue);
+}
+
 bool ActiveModule::CanActivate()
 {
-    // we are not attacking.  allow activation
-    if ((!sFxDataMgr.isOffensive(m_effectID)) and (!sFxDataMgr.isAssistance(m_effectID)))
-        return true;
-    if (!m_targetSE)
-        return false;
-    // if target is non-combatant deny attack
-    if ((m_targetSE->IsItemEntity())
-        or (m_targetSE->IsStaticEntity())
-        or (m_targetSE->IsAsteroidSE())
-        or (m_targetSE->IsLogin()))
-    {
-        m_shipRef->GetPilot()->SendErrorMsg("You cannot attack that %s.  Ref: ServerError 22228", m_targetSE->GetName());
-        return false;
-    }
-    // check distance
-    if (sFxDataMgr.isAssistance(m_effectID) and (m_shipRef->position().distance(m_targetSE->GetPosition()) > GetAttribute(AttrMaxRange).get_float()))
-        return false;
+    // there is still more to be done here.  wip
 
-  return true;
+    // check distance for targetable actions
+    if (m_targetSE) {
+        if (m_shipRef->position().distance(m_targetSE->GetPosition()) > GetAttribute(AttrMaxRange).get_float()) {
+            m_shipRef->GetPilot()->SendErrorMsg("The %s is outside of the effective range of your %s.  Ref: ServerError 16222.", m_targetSE->GetName(), m_modRef->itemName().c_str());
+            return false;
+        }
+
+        // if target is non-combatant deny attack
+        if (sFxDataMgr.isOffensive(m_effectID)
+            and ((m_targetSE->IsItemEntity())
+                or (m_targetSE->IsStaticEntity())
+                or (m_targetSE->IsAsteroidSE())
+                or (m_targetSE->IsLogin())))
+        {
+            m_shipRef->GetPilot()->SendErrorMsg("You cannot attack that %s.  Ref: ServerError 16228.", m_targetSE->GetName());
+            return false;
+        }
+    }
+    return true;
 }
 
 
-void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
+void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 {
     if (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
         return;
@@ -462,7 +621,19 @@ void ActiveModule::ShowEffect(bool active, bool abort /*""*/)
         shipEff.startTime = (abort ? (abortTime / Win32Time_Second) : (shipEff.timeNow - (timeLeft * Win32Time_Second)));  //if now - startTime > 150000000: return
         shipEff.duration = (abort ? 2 : (active ? cycleTime.get_float() : timeLeft));  // i *think* this is in seconds
         shipEff.repeat = m_repeat;
-        shipEff.error = new PyNone(); /* look into setting this ... only used for salvaging? */
+        if ((groupID() == EVEDB::invGroups::Salvager) and (abort)) {
+            // Create Destiny Updates:
+            PyTuple* type = new PyTuple(2);
+                type->SetItem(0, new PyInt(cacheSolarSystemObjects));
+                type->SetItem(1, new PyInt(m_targetSE->GetTypeID()));
+            PyDict* dict = new PyDict;
+                dict->SetItemString("type", type);
+            PyTuple* tup = new PyTuple(2);
+                tup->SetItem(0, new PyString("SalvagingSuccess"));
+                tup->SetItem(1, dict);
+            shipEff.error = tup;
+        } else
+            shipEff.error = new PyNone();
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;

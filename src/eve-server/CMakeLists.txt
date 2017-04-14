@@ -406,28 +406,28 @@ SET( ship_SOURCE
 
 SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/ActiveModule.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/GenericModule.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/MiningLaser.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleDefs.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleFactory.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleManager.h"
-     "${TARGET_INCLUDE_DIR}/ship/modules/GenericModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/PassiveModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/RigModule.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/Salvager.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/SubSystemModule.h"
-     "${TARGET_INCLUDE_DIR}/ship/modules/mining_modules/MiningLaser.h"
-     "${TARGET_INCLUDE_DIR}/ship/modules/propulsion_modules/Afterburner.h"
-     "${TARGET_INCLUDE_DIR}/ship/modules/weapon_modules/TurrentFormulas.h"
-     "${TARGET_INCLUDE_DIR}/ship/modules/weapon_modules/TurrentModule.h" )
+     "${TARGET_INCLUDE_DIR}/ship/modules/TurrentFormulas.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/TurrentModule.h" )
 SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/ActiveModule.cpp"
-     "${TARGET_SOURCE_DIR}/ship/modules/ModuleManager.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/GenericModule.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/MiningLaser.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/ModuleManager.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/PassiveModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/RigModule.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/Salvager.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/SubSystemModule.cpp"
-     "${TARGET_SOURCE_DIR}/ship/modules/mining_modules/MiningLaser.cpp"
-     "${TARGET_SOURCE_DIR}/ship/modules/propulsion_modules/Afterburner.cpp"
-     "${TARGET_SOURCE_DIR}/ship/modules/weapon_modules/TurrentFormulas.cpp"
-     "${TARGET_SOURCE_DIR}/ship/modules/weapon_modules/TurrentModule.cpp" )
+     "${TARGET_SOURCE_DIR}/ship/modules/TurrentFormulas.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/TurrentModule.cpp" )
 
 SET( standing_INCLUDE
      "${TARGET_INCLUDE_DIR}/standing/FactionWarMgrDB.h"

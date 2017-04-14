@@ -27,7 +27,7 @@
 #ifndef __NPCAI_H_INCL__
 #define __NPCAI_H_INCL__
 
-#include "ship/modules/weapon_modules/TurrentFormulas.h"
+#include "ship/modules/TurrentFormulas.h"
 
 class NPC;
 class SystemEntity;
