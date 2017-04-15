@@ -773,7 +773,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
             old_inventory->RemoveItem(InventoryItemRef(this));  //releases its ref
         } else {
             if (m_locationID)
-                _log(INV__WARNING, "Inventory for %u not found. %s not removed from it's container's inventory.", itemName().c_str(), old_location);
+                _log(INV__WARNING, "Inventory for %s not found. %s not removed from it's container's inventory.", itemName().c_str(), old_location);
         }
     }
 
@@ -787,7 +787,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
             new_inventory->AddItem(InventoryItemRef(this)); //makes a new ref
         } else {
             if (m_locationID)
-                _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", itemName().c_str(), new_location);
+                _log(INV__WARNING, "Inventory for %s not found. %s not added to it's container's inventory.", itemName().c_str(), new_location);
         }
     }
 

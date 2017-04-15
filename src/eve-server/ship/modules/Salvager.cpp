@@ -26,10 +26,10 @@ Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
 }
 void Salvager::Activate(uint16 effectID, uint32 targetID, int16 repeat)
 {
-    ActiveModule::Activate(effectID, targetID, repeat);
     // reset for each activation
     m_success = false;
     m_firstRun = true;
+    ActiveModule::Activate(effectID, targetID, repeat);
 }
 
 bool Salvager::CanActivate()
