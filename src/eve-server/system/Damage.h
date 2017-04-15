@@ -40,12 +40,12 @@ public:
 
     virtual ~Damage()                                   { /* do nothing here */ }
 
-    double GetTotal() const                             { return (kinetic + thermal + em + explosive); }
+    float GetTotal() const                              { return (kinetic + thermal + em + explosive); }
 
-    Damage MultiplyDup( double kinetic_multiplier,
-                        double thermal_multiplier,
-                        double em_multiplier,
-                        double explosive_multiplier ) const
+    Damage MultiplyDup( float kinetic_multiplier,
+                        float thermal_multiplier,
+                        float em_multiplier,
+                        float explosive_multiplier ) const
                         {       // NOTE:  remember, these come in BACKWARD from 'normal' fuzzy logic..  0=full and 1=none
                                 // added checks here for > 95% resists, and < 1% to avoid crazy damage shit.
                                 // also added checks for missing resists (some npcs have no hull resist in db which = 100% resist)

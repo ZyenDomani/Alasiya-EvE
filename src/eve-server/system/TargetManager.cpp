@@ -203,8 +203,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     if (targetSkills < maxLockedTargets)
         maxLockedTargets = targetSkills;
     if (GetTotalTargets() >= maxLockedTargets) {
-        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only handle %u targets at a time.", \
-            maxLockedTargets);
+        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only handle %u targets at a time.", maxLockedTargets);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
         return TargetFail(who);
@@ -220,7 +219,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     if (who->IsAsteroidSE())
         targetDistance -= who->GetRadius();
     if (targetDistance > maxTargetLockRange) {
-        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only target to %f meters.  %s is %f meters away.", \
+        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only target to %.0f meters.  %s is %.0f meters away.", \
             maxTargetLockRange, who->GetName(), targetDistance);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are too far away.  Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());

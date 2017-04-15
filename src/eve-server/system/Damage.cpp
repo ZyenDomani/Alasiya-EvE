@@ -165,12 +165,12 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         m_self->GetAttribute(AttrShieldEmDamageResonance).get_float(),
         m_self->GetAttribute(AttrShieldExplosiveDamageResonance).get_float() );
 
-    double total_damage = 0.0;
-    double shield_damage = DamageToShield.GetTotal();
-    double available_shield = m_self->GetAttribute(AttrShieldCharge).get_float();
+    float total_damage = 0.0;
+    float shield_damage = DamageToShield.GetTotal();
+    float available_shield = m_self->GetAttribute(AttrShieldCharge).get_float();
     if (shield_damage <= available_shield) {
         if (HasPilot()) {
-            double uniformity = m_self->GetAttribute(AttrShieldUniformity).get_float();
+            float uniformity = m_self->GetAttribute(AttrShieldUniformity).get_float();
             uniformity += (0.05 * GetPilot()->GetChar()->GetSkillLevel(skillTacticalShieldManipulation));
             if ((available_shield /m_self->GetAttribute(AttrShieldCapacity).get_float()) < uniformity) {
                 float new_damage = d.GetTotal() * 0.01;
@@ -179,7 +179,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             }
         }
         total_damage += shield_damage;
-        double new_charge = available_shield - shield_damage;
+        float new_charge = available_shield - shield_damage;
         m_self->SetAttribute(AttrShieldCharge, new_charge);
 
         _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f damage to shields. New charge: %.3f.",
@@ -196,14 +196,14 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         }
 
         //Armor:
-        double available_armor = m_self->GetAttribute(AttrArmorHP).get_float() - m_self->GetAttribute(AttrArmorDamage).get_float();
+        float available_armor = m_self->GetAttribute(AttrArmorHP).get_float() - m_self->GetAttribute(AttrArmorDamage).get_float();
         Damage DamageToArmor = d.MultiplyDup(
             m_self->GetAttribute(AttrArmorKineticDamageResonance).get_float(),
             m_self->GetAttribute(AttrArmorThermalDamageResonance).get_float(),
             m_self->GetAttribute(AttrArmorEmDamageResonance).get_float(),
             m_self->GetAttribute(AttrArmorExplosiveDamageResonance).get_float() );
 
-        double armor_damage = DamageToArmor.GetTotal();
+        float armor_damage = DamageToArmor.GetTotal();
         if (armor_damage <= available_armor) {
             if (HasPilot()) {
                 if ((available_armor /m_self->GetAttribute(AttrArmorHP)) < m_self->GetAttribute(AttrArmorUniformity).get_float()) {
@@ -229,14 +229,14 @@ bool SystemEntity::ApplyDamage(Damage &d) {
 
             //Hull/Structure:
             //The base hp and damage attributes represent structure.
-            double available_hull = m_self->GetAttribute(AttrHP).get_int() - m_self->GetAttribute(AttrDamage).get_float();
+            float available_hull = m_self->GetAttribute(AttrHP).get_int() - m_self->GetAttribute(AttrDamage).get_float();
             Damage DamageToHull = d.MultiplyDup(
                 m_self->GetAttribute(AttrKineticDamageResonance).get_float(),
                 m_self->GetAttribute(AttrThermalDamageResonance).get_float(),
                 m_self->GetAttribute(AttrEmDamageResonance).get_float(),
                 m_self->GetAttribute(AttrExplosiveDamageResonance).get_float() );
 
-            double hull_damage = DamageToHull.GetTotal();
+            float hull_damage = DamageToHull.GetTotal();
             if (hull_damage < available_hull) {
                 total_damage += hull_damage;
                 EvilNumber new_damage = m_self->GetAttribute(AttrDamage) + EvilNumber(hull_damage);

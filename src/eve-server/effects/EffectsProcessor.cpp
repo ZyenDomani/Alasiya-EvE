@@ -804,6 +804,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
 
         } break;
         */
+        //02:48:33 E FxProc::ParseExpression: *** ERROR ***  Operand id:* key:INC - should be added as %(arg1)s+=self.%(arg2)s
+
         case operandUE: {   //73    UserError(%(arg1)s)
 
         } break;

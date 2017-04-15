@@ -698,7 +698,7 @@ void DestinyManager::_Move() {
             m_activeSpeedFraction = m_prevSpeedFraction * m_currentSpeedFraction;
         else if (m_userSpeedFraction != m_activeSpeedFraction)
             m_activeSpeedFraction = m_currentSpeedFraction;
-        else if ((m_tractored) or (m_tractorPause))
+        else if ((m_tractored) or (m_tractorPause) or (m_activeSpeedFraction == 1))
             ;   // do nothing here.  this is to remove error reporting from next line.
         else
             _log(DESTINY__ERROR, "Destiny::_Move() - %s(%u) is not turning and move checks are not set right.", mySE->GetName(), mySE->GetID());

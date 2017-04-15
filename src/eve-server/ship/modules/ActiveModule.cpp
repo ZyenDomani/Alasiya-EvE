@@ -542,9 +542,14 @@ bool ActiveModule::CanActivate()
 
     // check distance for targetable actions
     if (m_targetSE) {
-        if (m_shipRef->position().distance(m_targetSE->GetPosition()) > GetAttribute(AttrMaxRange).get_float()) {
-            m_shipRef->GetPilot()->SendErrorMsg("The %s is outside of the effective range of your %s.", m_targetSE->GetName(), m_modRef->itemName().c_str());
-            return false;
+        if (!m_turrent and !m_launcher) {
+            float range = GetAttribute(AttrMaxRange).get_float();
+            float distance = m_shipRef->position().distance(m_targetSE->GetPosition());
+            if (distance > range) {
+                m_shipRef->GetPilot()->SendErrorMsg("The %s is %.0f meters from you, outside the effective range of your %s, which is %.0f meters.", \
+                        m_targetSE->GetName(), distance, m_modRef->itemName().c_str(), range);
+                return false;
+            }
         }
 
         // if target is non-combatant deny attack
