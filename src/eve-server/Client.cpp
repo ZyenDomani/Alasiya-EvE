@@ -112,13 +112,6 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
 
 Client::~Client() {
     if (m_char) {   // we have valid character
-        ServiceDB m_sdb;
-        m_sdb.SetAccountOnlineStatus(GetUserID(), false);
-        m_sdb.SetCharacterOnlineStatus(m_char->itemID(), false);
-        // LSC logout
-        m_services.lsc_service->CharacterLogout(m_char->itemID(), LSCChannel::_MakeSenderInfo(this));
-        m_services.ClearBoundObjects(this);
-
         /** @todo  - for warping to random point when client logs out in space...
          *      1)  check client IsInSpace(?)
          *      2)  set timer to delay removing bubble/sysmgr/destiny...or check based on destiny->isstopped() or timer on destiny->ismoving()
@@ -135,7 +128,6 @@ Client::~Client() {
             OnCharNoLongerInStation();
         }
 
-        //m_ship->OfflineAll();
         if (pShipSE)
             WarpOut();
 
@@ -147,6 +139,13 @@ Client::~Client() {
 
         // remove ship and char memory objects from running server
         m_system->RemoveClient(this, IsDocked(), true);
+
+        ServiceDB m_sdb;
+        m_sdb.SetAccountOnlineStatus(GetUserID(), false);
+        m_sdb.SetCharacterOnlineStatus(m_char->itemID(), false);
+        // LSC logout
+        m_services.lsc_service->CharacterLogout(m_char->itemID(), LSCChannel::_MakeSenderInfo(this));
+        m_services.ClearBoundObjects(this);
 
         m_TS = nullptr;
         m_system = nullptr;
