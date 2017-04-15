@@ -139,14 +139,14 @@ Client::~Client() {
         if (pShipSE)
             WarpOut();
 
-        // remove ship and char memory objects from running server
-        m_system->RemoveClient(this, IsDocked(), true);
-
         if (!sConsole.IsShutdown()) {
             m_char->LogOut();
             // ship logout also offlines modules.  this resets ship effects data for error fix on char relog
             m_ship->LogOut();
         }
+
+        // remove ship and char memory objects from running server
+        m_system->RemoveClient(this, IsDocked(), true);
 
         m_TS = nullptr;
         m_system = nullptr;
@@ -292,14 +292,8 @@ void Client::ProcessClient() {
     }
 
     if (!pShipSE) {
-        // make error for no ship here.
+        sLog.Error("Client","%s: InSpace with no shipSE.", m_char->itemName().c_str());
         return;
-    }
-
-    if (m_invul and m_invulTimer.Check(false)) {
-        _log(CLIENT__TIMER, "Client::ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
-        m_invulTimer.Disable();
-        SetInvul(false);
     }
 
     /*  this may need to be moved to net process, as some of these are NOT on 1s intervals */
@@ -333,6 +327,12 @@ void Client::ProcessClient() {
                 ExecuteJump();
             } break;
         }
+    }
+
+    if (m_invul and m_invulTimer.Check(false)) {
+        _log(CLIENT__TIMER, "Client::ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+        m_invulTimer.Disable();
+        SetInvul(false);
     }
 
     if (m_scanTimer.Check(false)) {

@@ -183,7 +183,7 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load)
 void ItemFactory::RemoveItem(uint32 itemID) {
     std::map<uint32, InventoryItemRef>::const_iterator res = m_items.find( itemID );
     if (res == m_items.end()) {
-        _log(ITEM__WARNING, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
+        _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
     } else {
         --m_itemCount;
         m_items.erase( res );
