@@ -119,14 +119,14 @@ Client::~Client() {
         m_services.lsc_service->CharacterLogout(m_char->itemID(), LSCChannel::_MakeSenderInfo(this));
         m_services.ClearBoundObjects(this);
 
-	/** @todo  - for warping to random point when client logs out in space...
-	 *		1)  check client IsInSpace(?)
-	 *		2)  set timer to delay removing bubble/sysmgr/destiny...or check based on destiny->isstopped() or timer on destiny->ismoving()
-	 *		3)  set current position (DB::chrCharacter.logoutPosition?)  initial code in place for warp-in on login
-	 *		4)  generate random point to warp to ** use m_SGP.GetRandPointInSystem(systemID, distance)
-	 *		5)  _warp to random point, but DONT make/update new bubble with entering ship
-	 *		6)  remove client from sysmgr/destiny/server
-     */
+        /** @todo  - for warping to random point when client logs out in space...
+         *      1)  check client IsInSpace(?)
+         *      2)  set timer to delay removing bubble/sysmgr/destiny...or check based on destiny->isstopped() or timer on destiny->ismoving()
+         *      3)  set current position (DB::chrCharacter.logoutPosition?)  initial code in place for warp-in on login
+         *      4)  generate random point to warp to ** use m_SGP.GetRandPointInSystem(systemID, distance)
+         *      5)  _warp to random point, but DONT make/update new bubble with entering ship
+         *      6)  remove client from sysmgr/destiny/server
+         */
         if (IsDocked()) {
             if (GetTradeSession()) {
                 TradeService* mts = (TradeService*)(m_services.LookupService("trademgr"));
@@ -144,6 +144,7 @@ Client::~Client() {
 
         if (!sConsole.IsShutdown()) {
             m_char->LogOut();
+            // ship logout also offlines modules.  this resets ship effects data for error fix on char relog
             m_ship->LogOut();
         }
 
@@ -308,6 +309,7 @@ void Client::ProcessClient() {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
                 DockToStation();
                 m_clientState = csIdle;
+                return;
             } break;
             case csUndock: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");

@@ -60,7 +60,7 @@ public:
 
     bool                IsTargetedBySomething() const   { return (!m_targetedBy.empty()); }
 
-    uint32              GetTotalTargets() const         { return (uint32)m_targets.size(); }
+    uint8               GetTotalTargets() const         { return (uint8)m_targets.size(); }
 
     float               TimeToLock(ShipItemRef ship, SystemEntity *target) const;
 

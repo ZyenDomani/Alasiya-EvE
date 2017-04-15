@@ -168,11 +168,15 @@ void ShipItem::InitPod() {
 
 void ShipItem::LogOut()
 {
-    SaveShip();
+    // remove module effects
+    m_ModuleManager->OfflineAll();
+    // reset ship effects and save ship data
+    ProcessEffects();
+
     // remove ship item from factory master list here, as *something* changes ship postion when saving items from factory.
     m_factory.RemoveItem(m_itemID);
-    // remove ship item from its' container's inventory list also.
 
+    // remove ship item from its' container's inventory list also.
     Inventory* inv(nullptr);
     if (IsStation(m_locationID)) {
         InventoryItemRef station = sEntityList.GetStationByID(m_locationID);
@@ -1305,8 +1309,6 @@ void Ship::PayInsurance() {
 void Ship::ResetShipSystemMgr(SystemManager* pSystem)
 {
     m_system = pSystem;
-    //SafeDelete(m_destiny);
-    //m_destiny = new DestinyManager(this);
 }
 
 void Ship::SetPilot(Client* pClient) {
