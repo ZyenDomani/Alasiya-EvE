@@ -543,7 +543,7 @@ bool ActiveModule::CanActivate()
     // check distance for targetable actions
     if (m_targetSE) {
         if (m_shipRef->position().distance(m_targetSE->GetPosition()) > GetAttribute(AttrMaxRange).get_float()) {
-            m_shipRef->GetPilot()->SendErrorMsg("Your intended target is outside of the effective range of that module.  Ref: ServerError 16222.");
+            m_shipRef->GetPilot()->SendErrorMsg("The %s is outside of the effective range of your %s.", m_targetSE->GetName(), m_modRef->itemName().c_str());
             return false;
         }
 
@@ -554,7 +554,7 @@ bool ActiveModule::CanActivate()
                 or (m_targetSE->IsAsteroidSE())
                 or (m_targetSE->IsLogin())))
         {
-            m_shipRef->GetPilot()->SendErrorMsg("You cannot attack that target.  Ref: ServerError 16228.");
+            m_shipRef->GetPilot()->SendErrorMsg("You cannot attack the %s", m_targetSE->GetName());
             return false;
         }
     }

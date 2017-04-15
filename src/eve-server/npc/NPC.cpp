@@ -66,6 +66,8 @@ NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, c
     m_self->SetAttribute(AttrRadius,              m_self->type().radius());
     m_self->SetAttribute(AttrVolume,              m_self->type().volume());
     m_self->SetAttribute(AttrCapacity,            m_self->type().capacity());
+    m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
+    m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
 
     m_destiny->SetShipCapabilities(m_self);
 

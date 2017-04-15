@@ -66,7 +66,6 @@ CREATE TABLE IF NOT EXISTS `dgmEffects` (
 --
 
 INSERT INTO `dgmEffects` (`effectID`, `effectName`, `effectCategory`, `preExpression`, `postExpression`, `description`, `descriptionID`, `guid`, `isOffensive`, `isAssistance`, `durationAttributeID`, `trackingSpeedAttributeID`, `dischargeAttributeID`, `rangeAttributeID`, `falloffAttributeID`, `disallowAutoRepeat`, `published`, `displayName`, `displayNameID`, `isWarpSafe`, `rangeChance`, `electronicChance`, `propulsionChance`, `distribution`, `sfxName`, `npcUsageChanceAttributeID`, `npcActivationChanceAttributeID`, `fittingUsageChanceAttributeID`, `iconID`, `dataID`, `modifierInfo`) VALUES
-(0, 'nullEffect', 0, 0, 0, 'Null EffectID 0 to avoid client errors.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, ''),
 (4, 'shieldBoosting', 1, 183, 131, '', 0, 'effects.ShieldBoosting', 0, 0, 73, 0, 6, 0, 0, 0, 0, '', 0, 1, 0, 0, 0, 0, '', 0, 0, 0, 0, 899422, ''),
 (7, 'speedBoost', 1, 3517, 3518, '', 0, '', 0, 0, 73, 0, 6, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 7582954, ''),
 (9, 'missileLaunching', 2, 114, 89, 'Launches a missile', 0, 'effects.MissileDeployment', 1, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 899428, ''),

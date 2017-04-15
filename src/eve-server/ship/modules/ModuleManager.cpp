@@ -520,7 +520,7 @@ bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
             } else {
                 SafeDelete(mod);
                 //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
-                //throw PyException( MakeUserError("NotEnoughTurretSlots"));
+                //throw PyException( MakeUserError("NotEnoughTurretSlots"));    // this takes 2 args, u/k and module's typeID
                 return false;
             }
 		} else if (mod->isLauncherFitted()) {
@@ -529,7 +529,7 @@ bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
             } else {
                 SafeDelete(mod);
                 //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
-                //throw PyException( MakeUserError("NotEnoughLauncherSlots"));
+                //throw PyException( MakeUserError("NotEnoughLauncherSlots"));    // this takes 2 args, u/k and module's typeID
                 return false;
             }
 		}
@@ -545,20 +545,23 @@ bool ModuleManager::OnlineCheck(GenericModule* mod)
     // check PG and CPU usage to see if we have enough to online this module
     EvilNumber cpuNeed = (m_Ship->GetAttribute(AttrCpuLoad) + mod->GetAttribute(AttrCpu));
     if (cpuNeed  > m_Ship->GetAttribute(AttrCpuOutput)) {
-        if (0/*m_Ship->GetPilot()->CanThrow()*/) {
+        if (!m_Ship->GetPilot()->IsLogin() and m_Ship->GetPilot()->CanThrow()) {
             // throwing an error negates further processing
+            float require = m_Ship->GetAttribute(AttrCpu).get_float();
+            float total = mod->GetAttribute(AttrCpuOutput).get_float();
+            float remaining = total - mod->GetAttribute(AttrCpuLoad).get_float();
             std::map<std::string, PyRep *> args;
             args["moduleType"] = new PyInt(mod->typeID());
-            args["require"] = new PyFloat(m_Ship->GetAttribute(AttrCpu).get_float());
-            args["remaining"] = new PyFloat(m_Ship->GetAttribute(AttrCpuOutput).get_float() - mod->GetAttribute(AttrCpuLoad).get_float());
-            args["total"] = new PyFloat(mod->GetAttribute(AttrCpuOutput).get_float());
+            args["require"] = new PyFloat(require);
+            args["remaining"] = new PyFloat(remaining);
+            args["total"] = new PyFloat(total);
             throw PyException( MakeUserError("NotEnoughCpu", args));
         }
         return false;
     }
     EvilNumber pgNeed = (m_Ship->GetAttribute(AttrPowerLoad) + mod->GetAttribute(AttrPower));
     if (pgNeed > m_Ship->GetAttribute(AttrPowerOutput)) {
-        if (0/*m_Ship->GetPilot()->CanThrow()*/) {
+        if (!m_Ship->GetPilot()->IsLogin() and m_Ship->GetPilot()->CanThrow()) {
             // throwing an error negates further processing
             std::map<std::string, PyRep *> args;
             args["moduleType"] = new PyInt(mod->typeID());

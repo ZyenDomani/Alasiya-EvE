@@ -291,6 +291,11 @@ void Client::ProcessClient() {
         return;
     }
 
+    if (!pShipSE) {
+        // make error for no ship here.
+        return;
+    }
+
     if (m_invul and m_invulTimer.Check(false)) {
         _log(CLIENT__TIMER, "Client::ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
         m_invulTimer.Disable();
@@ -809,7 +814,7 @@ void Client::SetJumpTimers() {
 
 bool Client::AddBalance(double amount) {
     if (!m_char->AlterBalance(amount)) {
-        if (CanThrow()) {
+        if (m_canThrow) {
             std::map<std::string, PyRep *> args;
             args["amount"] = new PyFloat(amount);
             args["balance"] = new PyFloat(m_char->balance());
@@ -1789,8 +1794,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
         if (!dest) {
             sLog.Error("Client","Unable to find service to handle call to: %s", packet->dest.service.c_str());
             packet->dest.Dump(CLIENT__CALL_DUMP, "    ");
-            if( CanThrow())
-                throw PyException(MakeUserError("ServiceNotFound"));
+            throw PyException(MakeUserError("ServiceNotFound"));
         }
     }
 
@@ -1865,14 +1869,9 @@ void Client::SendErrorMsg(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-
     char* str = nullptr;
     vasprintf(&str, fmt, args);
     assert(str);
-
-    if (m_char)
-        sLog.Error("Client","Sending Error Message to %s:", m_char->itemName().c_str());
-    log_messageVA(CLIENT__ERROR, fmt, args);
     va_end(args);
 
     //want to send some sort of notify with a "ServerMessage" message ID maybe?
@@ -1893,10 +1892,6 @@ void Client::SendErrorMsg(const char* fmt, va_list args)
     vasprintf(&str, fmt, args);
     assert(str);
 
-    if (m_char)
-        sLog.Error("Client","Sending Error Message to %s:", m_char->itemName().c_str());
-    log_messageVA(CLIENT__ERROR, fmt, args);
-
     //want to send some sort of notify with a "ServerMessage" message ID maybe?
     //else maybe a "ChatTxt"??
     Notify_OnRemoteMessage n;
@@ -1915,14 +1910,9 @@ void Client::SendInfoModalMsg(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-
     char* str = nullptr;
     vasprintf(&str, fmt, args);
     assert(str);
-
-    if (m_char)
-        sLog.White("Client","Info Modal to %s:", m_char->itemName().c_str());
-    log_messageVA(CLIENT__MESSAGE, fmt, args);
     va_end(args);
 
     //want to send some sort of notify with a "ServerMessage" message ID maybe?
@@ -1942,14 +1932,9 @@ void Client::SendNotifyMsg(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-
     char* str = nullptr;
     vasprintf(&str, fmt, args);
     assert(str);
-
-    if (m_char)
-        sLog.White("Client","Notify to %s:", m_char->itemName().c_str());
-    log_messageVA(CLIENT__MESSAGE, fmt, args);
     va_end(args);
 
     //want to send some sort of notify with a "ServerMessage" message ID maybe?
@@ -1970,10 +1955,6 @@ void Client::SendNotifyMsg(const char* fmt, va_list args)
     vasprintf(&str, fmt, args);
     assert(str);
 
-    if (m_char)
-        sLog.White("Client","Notify to %s:", m_char->itemName().c_str());
-    log_messageVA(CLIENT__MESSAGE, fmt, args);
-
     //want to send some sort of notify with a "ServerMessage" message ID maybe?
     //else maybe a "ChatTxt"??
     Notify_OnRemoteMessage n;
@@ -1991,11 +1972,9 @@ void Client::SelfChatMessage(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-
     char* str = nullptr;
     vasprintf(&str, fmt, args);
     assert(str);
-
     va_end(args);
 
     if (m_channels.empty()) {
