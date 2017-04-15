@@ -546,7 +546,7 @@ bool ActiveModule::CanActivate()
             float range = GetAttribute(AttrMaxRange).get_float();
             float distance = m_shipRef->position().distance(m_targetSE->GetPosition());
             if (distance > range) {
-                m_shipRef->GetPilot()->SendErrorMsg("The %s is %.0f meters from you, outside the effective range of your %s, which is %.0f meters.", \
+                m_shipRef->GetPilot()->SendNotifyMsg("The %s is %.0f meters from you, outside the effective range of your %s, which is %.0f meters.", \
                         m_targetSE->GetName(), distance, m_modRef->itemName().c_str(), range);
                 return false;
             }
@@ -559,7 +559,7 @@ bool ActiveModule::CanActivate()
                 or (m_targetSE->IsAsteroidSE())
                 or (m_targetSE->IsLogin())))
         {
-            m_shipRef->GetPilot()->SendErrorMsg("You cannot attack the %s", m_targetSE->GetName());
+            m_shipRef->GetPilot()->SendNotifyMsg("You cannot attack the %s", m_targetSE->GetName());
             return false;
         }
     }

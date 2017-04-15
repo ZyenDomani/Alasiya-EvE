@@ -203,10 +203,13 @@ public:
     void StartJetcanTimer()                             { m_jetcanTimer.Start(ClientTimers::JetcanTimer); }
 
     //messages and LSC
+    // error requires dismissal (click 'ok')
     void SendErrorMsg(const char *fmt, ...);
     void SendErrorMsg(const char *fmt, va_list args);
+    // notify self-removes after delay
     void SendNotifyMsg(const char *fmt, ...);
     void SendNotifyMsg(const char *fmt, va_list args);
+    // info requires dismissal (click 'ok')
     void SendInfoModalMsg(const char *fmt, ...);
     void SelfChatMessage(const char *fmt, ...);
     void SelfEveMail(const char *subject, const char *fmt, ...);
