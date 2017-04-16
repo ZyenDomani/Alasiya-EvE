@@ -212,7 +212,7 @@ void SystemManager::UnloadSystem() {
 
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
     // save items, then remove from system inventory, item factory and decrement item count
-    m_solarSystemRef->GetInventory()->Unload();
+    m_solarSystemRef->GetMyInventory()->Unload();
 
     /** @todo finish this */
     //m_services.lsc_service->DeleteChannel(m_data.systemID);
@@ -398,7 +398,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 return nullptr;
             /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
             StructureSE* sSE = new StructureSE(structure, *(system.GetServiceMgr()), &system, data);
-            //structure->GetInventory()->LoadContents(factory);  this is called during structureItem creation
+            //structure->GetMyInventory()->LoadContents(factory);  this is called during structureItem creation
             if ((entity.planetID) and (entity.groupID != EVEDB::invGroups::Test_Orbitals)) {
                 sSE->SetPlanet(entity.planetID);
                 SystemEntity* pPE = system.GetSE(entity.planetID);
@@ -424,7 +424,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 data.factionID = sEntityList.GetWreckFaction(entity.typeID);
                 WreckSE* wSE = new WreckSE(wreck, *(system.GetServiceMgr()), &system, data);
-                wreck->GetInventory()->LoadContents(factory);
+                wreck->GetMyInventory()->LoadContents(factory);
                 wreck->SetMySE(wSE);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WreckSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return wSE;
@@ -436,7 +436,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 ContainerSE* cSE = new ContainerSE(contRef, *(system.GetServiceMgr()), &system, data);
-                contRef->GetInventory()->LoadContents(factory);
+                contRef->GetMyInventory()->LoadContents(factory);
                 contRef->SetMySE(cSE);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return cSE;
@@ -495,7 +495,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 ContainerSE* cSE = new ContainerSE(contRef, *(system.GetServiceMgr()), &system, data);
-                contRef->GetInventory()->LoadContents(factory);
+                contRef->GetMyInventory()->LoadContents(factory);
                 contRef->SetMySE(cSE);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerEntity item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return cSE;
@@ -835,17 +835,17 @@ SystemEntity* SystemManager::GetSEFromInventory(uint32 itemID) {
 
 ShipItemRef SystemManager::GetShipFromInventory(uint32 shipID)
 {
-    return RefPtr<ShipItem>::StaticCast( m_solarSystemRef->GetInventory()->GetByID( shipID ) );
+    return RefPtr<ShipItem>::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( shipID ) );
 }
 
 CargoContainerRef SystemManager::GetContainerFromInventory(uint32 contID)
 {
-    return RefPtr<CargoContainer>::StaticCast( m_solarSystemRef->GetInventory()->GetByID( contID ) );
+    return RefPtr<CargoContainer>::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( contID ) );
 }
 
 StationItemRef SystemManager::GetStationFromInventory(uint32 stationID)
 {
-    return RefPtr<StationItem>::StaticCast( m_solarSystemRef->GetInventory()->GetByID( stationID ) );
+    return RefPtr<StationItem>::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( stationID ) );
 }
 
 

@@ -94,7 +94,7 @@ public:
 
     virtual void MakeDamageState(DoDestinyDamageState &into) const;
 
-    bool IsEmpty()                                      { return GetInventory()->IsEmpty(); }
+    bool IsEmpty()                                      { return GetMyInventory()->IsEmpty(); }
     void SetMySE(SystemEntity* pSE)                     { mySE = pSE;}
 
 protected:

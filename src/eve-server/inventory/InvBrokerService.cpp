@@ -168,7 +168,7 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
             throw PyException(MakeUserError("CantDoThatWithSomeoneElsesStuff"));
     }
 
-	return item->GetInventory()->List( flagAnywhere );
+	return item->GetMyInventory()->List( flagAnywhere );
 }
 
 //this is a view into the entire inventory item.
@@ -217,7 +217,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
 //this is a view into an inventory item using a specific flag.
 PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
     /** @note  this means "Get the Inventory containing this itemID */
-    _log(INV__DUMP, "InvBrokerBound::Handle_GetInventory() size=%u", call.tuple->size());
+    _log(INV__DUMP, "InvBrokerBound::Handle_GetMyInventory() size=%u", call.tuple->size());
     call.Dump(INV__DUMP);
     Inventory_GetInventory args;
     if(!args.Decode(&call.tuple)) {

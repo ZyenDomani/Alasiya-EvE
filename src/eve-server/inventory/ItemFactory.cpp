@@ -113,7 +113,7 @@ Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
     }
 
     if (item)
-        return item->GetInventory();
+        return item->GetMyInventory();
 
     return nullptr;
 }
@@ -175,7 +175,7 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load)
     }
 
     if (item)
-        return item->GetInventory();
+        return item->GetMyInventory();
 
     return nullptr;
 }

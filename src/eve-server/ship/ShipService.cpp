@@ -666,7 +666,7 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     /** @todo  check to see if this object is anchored and if so, refuse to scoop it */
 
     // Check cargo bay capacity:
-    double capacity = pClient->GetShip()->GetInventory()->GetCapacity(flagCargoHold);
+    double capacity = pClient->GetShip()->GetMyInventory()->GetCapacity(flagCargoHold);
     double volume = item->GetAttribute(AttrVolume).get_float();
     if (capacity < volume)
         throw PyException(MakeCustomError("%s is too large to fit in remaining Cargo bay capacity.", item->itemName().c_str()));
@@ -717,7 +717,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         /** @todo check ownership/control. */
 
         // Check drone bay capacity:
-        double capacity = pClient->GetShip()->GetInventory()->GetCapacity(flagDroneBay);
+        double capacity = pClient->GetShip()->GetMyInventory()->GetCapacity(flagDroneBay);
         double volume = item->GetAttribute(AttrVolume).get_float();
         if (capacity < volume)
             throw PyException(MakeCustomError("%s is too large to fit in remaining Drone bay capacity.", item->itemName().c_str()));

@@ -69,7 +69,7 @@ public:
     /* begin rewrite */
 
     /* generic access functions handled here */
-    Inventory*              GetInventory()              { return m_inventory; }
+    Inventory*              GetMyInventory()            { return m_inventory; }
     ItemFactory*            GetItemFactory()            { return &m_factory; }
 
     /* common functions for all entities handled here */
@@ -238,7 +238,7 @@ public:
     PyPackedRow*            GetChargeStatusRow(uint32 shipID) const;
 
 protected:
-    Inventory* m_inventory = nullptr;
+    Inventory* m_inventory;
 
     ItemFactory& m_factory;
 

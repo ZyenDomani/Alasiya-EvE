@@ -47,6 +47,7 @@ InventoryItem::InventoryItem(
     const ItemData &_data)
 : RefObject( 0 ),
   mAttributeMap(*this),
+  m_inventory(nullptr),
   m_saveTimer(0),
   m_factory(_factory),
   m_itemID(_itemID),

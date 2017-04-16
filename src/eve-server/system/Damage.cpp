@@ -700,7 +700,7 @@ void Ship::Killed(Damage &fatal_blow) {
                 // For now, just transfer everything in the Ship's inventory to the wreck
                 std::map<uint32, InventoryItemRef> deadShipInventory;
                 deadShipInventory.clear();
-                deadShipRef->GetInventory()->GetInventoryList(deadShipInventory);
+                deadShipRef->GetMyInventory()->GetInventoryList(deadShipInventory);
 
                 for (auto cur : deadShipInventory)
                     cur.second->Move(wreckItemRef->itemID(),flagAutoFit);

@@ -942,7 +942,7 @@ void Client::LoadStationHangar(uint32 stationID) {
     _log(PLAYER__INFO, "Client::LoadStationHangar() is loading hangar for %s(%u) in stationID %u",  m_char->itemName().c_str(), m_char->itemID(), stationID);
     StationItemRef sRef = m_system->GetStationFromInventory(stationID);
     m_system->itemFactory()->SetUsingClient(this);
-    sRef->GetInventory()->LoadContents(m_system->itemFactory());
+    sRef->GetMyInventory()->LoadContents(m_system->itemFactory());
     m_system->itemFactory()->UnsetUsingClient();
 }
 

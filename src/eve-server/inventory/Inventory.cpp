@@ -414,13 +414,13 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
     float volume = item->quantity() * item->GetAttribute(AttrVolume).get_float();
     double capacity = GetRemainingCapacity(flag);
     if (volume > capacity) {
-        std::map<std::string, PyRep *> args;
+        Client* pClient = m_factory->GetUsingClient();
+        if (pClient and pClient->CanThrow()) {
+            std::map<std::string, PyRep *> args;
             args["available"] = new PyFloat(capacity);
             args["volume"] = new PyFloat(volume);
-
-        Client* pClient = m_factory->GetUsingClient();
-        if (pClient and pClient->CanThrow())
             throw PyException(MakeUserError("NotEnoughCargoSpace", args));
+        }
         return false;
     }
     return true;

@@ -419,14 +419,14 @@ PyResult Command_inventory(Client* who, CommandDB* db, PyServiceMgr* services, c
     if (inventoryID) {
         InventoryItemRef station = sEntityList.GetStationByID(inventoryID);
         if (!station) throw PyException(MakeCustomError("Cannot find Station Reference for stationID %u", inventoryID));
-        inv = station->GetInventory();
+        inv = station->GetMyInventory();
         inv->GetInventoryList(invMap);
         item = station.get();
     } else {
         Command_list(who,db,services,args);
         inventoryID = who->GetSystemID();
         SolarSystemRef system = services->item_factory->GetSolarSystem(inventoryID);
-        inv = system->GetInventory();
+        inv = system->GetMyInventory();
         inv->GetInventoryList(invMap);
         item = system.get();
     }
@@ -456,7 +456,7 @@ PyResult Command_shipinventory(Client* who, CommandDB* db, PyServiceMgr* service
     invMap.clear();
     uint32 inventoryID = who->GetShipID();
     ShipItemRef ship = services->item_factory->GetShip(inventoryID);
-    Inventory* inv = ship->GetInventory();
+    Inventory* inv = ship->GetMyInventory();
     inv->GetInventoryList(invMap);
 
     std::ostringstream str;
@@ -483,7 +483,7 @@ PyResult Command_skilllist(Client* who, CommandDB* db, PyServiceMgr* services, c
     std::map<uint32, InventoryItemRef> invMap;
     invMap.clear();
     uint32 inventoryID = who->GetCharacterID();
-    Inventory* inv = who->GetChar()->GetInventory();
+    Inventory* inv = who->GetChar()->GetMyInventory();
     inv->GetInventoryList(invMap);
 
     std::ostringstream str;

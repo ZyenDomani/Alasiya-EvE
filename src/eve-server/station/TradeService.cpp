@@ -643,14 +643,14 @@ void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryIt
         ShipItemRef shipRef = pSysMgr->GetShipFromInventory(itemRef->itemID());
         if (!shipRef)
             shipRef = m_SvcMgr->item_factory->GetShip(itemRef->itemID());
-        if (!shipRef->GetInventory()->IsEmpty())
-            shipRef->GetInventory()->GetInventoryList(InventoryMap);
+        if (!shipRef->GetMyInventory()->IsEmpty())
+            shipRef->GetMyInventory()->GetInventoryList(InventoryMap);
     } else {
         CargoContainerRef contRef = pSysMgr->GetContainerFromInventory(itemRef->itemID());
         if (!contRef)
             contRef = m_SvcMgr->item_factory->GetCargoContainer(itemRef->itemID());
         if (!contRef->IsEmpty())
-            contRef->GetInventory()->GetInventoryList(InventoryMap);
+            contRef->GetMyInventory()->GetInventoryList(InventoryMap);
     }
 
     for (auto cur : InventoryMap)

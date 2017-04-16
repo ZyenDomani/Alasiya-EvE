@@ -358,7 +358,7 @@ bool ModuleManager::Initialize() {
 
     // Load modules, charges, rigs and subsystems into ship's ModuleContainer:
     std::vector<InventoryItemRef> itemVec;
-    m_Ship->GetInventory()->GetInventoryVec(itemVec);   // this method also sorts in order - cargo, modules, charge, subsystems.
+    m_Ship->GetMyInventory()->GetInventoryVec(itemVec);   // this method also sorts in order - cargo, modules, charge, subsystems.
 
     // first we have to fit and online modules
     for (auto cur : itemVec)

@@ -136,10 +136,10 @@ void Salvager::DropSalvage()
 
     m_accessChance = 0;
 
-    if (!m_targetSE->GetSelf()->GetInventory()->IsEmpty()) {
+    if (!m_targetSE->GetSelf()->GetMyInventory()->IsEmpty()) {
         std::map<uint32, InventoryItemRef> shipLoot;
         shipLoot.clear();
-        m_targetSE->GetSelf()->GetInventory()->GetInventoryList(shipLoot);
+        m_targetSE->GetSelf()->GetMyInventory()->GetInventoryList(shipLoot);
 
         ItemData p_idata(23,   // 23 = cargo container
                         m_targetSE->GetSelf()->ownerID(),

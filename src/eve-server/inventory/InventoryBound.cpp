@@ -38,7 +38,7 @@ PyCallable_Make_InnerDispatcher(InventoryBound)
 InventoryBound::InventoryBound( PyServiceMgr *mgr, InventoryItemRef item, EVEItemFlags flag)
 : PyBoundObject(mgr),
 m_dispatch(new Dispatcher(this)),
-mInventory(item->GetInventory()),
+mInventory(item->GetMyInventory()),
 mFlag(flag),
 m_self(item)
 {
@@ -261,7 +261,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
             continue;
         }
 
-        if (stationaryItem->GetInventory()->ValidateAddItem(stationaryItem->flag(), draggedItem)) {
+        if (call.client->services().item_factory->GetItemContainerInventory(stationaryItem->itemID())->ValidateAddItem(stationaryItem->flag(), draggedItem)) {
             draggedItem->ChangeOwner(call.client->GetCharacterID());
             stationaryItem->Merge( draggedItem, element.draggedQty );
         } // if false, error is thrown in ValidateAddItem() call

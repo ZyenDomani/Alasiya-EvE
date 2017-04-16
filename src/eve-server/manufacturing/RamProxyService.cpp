@@ -862,8 +862,8 @@ void RamProxyService::EncodeMissingMaterials(const std::vector<RequiredItem> &re
     std::vector<InventoryItemRef> skills, items;
 
     //get the skills
-    pClient->GetChar()->GetInventory()->FindByFlag(flagSkill, skills);
-    pClient->GetChar()->GetInventory()->FindByFlag(flagSkillInTraining, skills);
+    pClient->GetChar()->GetMyInventory()->FindByFlag(flagSkill, skills);
+    pClient->GetChar()->GetMyInventory()->FindByFlag(flagSkillInTraining, skills);
 
     //get the items
     GetBOMItems( bomLocation, items );

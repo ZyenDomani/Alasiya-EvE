@@ -180,10 +180,10 @@ void ShipItem::LogOut()
     Inventory* inv(nullptr);
     if (IsStation(m_locationID)) {
         InventoryItemRef station = sEntityList.GetStationByID(m_locationID);
-        inv = station->GetInventory();
+        inv = station->GetMyInventory();
     } else {
         SolarSystemRef system = m_factory.GetSolarSystem(m_locationID);
-        inv = system->GetInventory();
+        inv = system->GetMyInventory();
     }
     if (inv)
         inv->RemoveItem(inv->GetByID(m_itemID));
@@ -1449,8 +1449,8 @@ PyDict* Ship::MakeSlimItem() {
 
     //encode the hiSlot and Subsystem modules list ONLY
     std::vector<InventoryItemRef> items;
-    m_self->GetInventory()->FindByFlagRange(flagHiSlot0, flagHiSlot7, items);
-    //m_self->GetInventory()->FindByFlagRange(flagSubSystem0, flagSubSystem7, items);
+    m_self->GetMyInventory()->FindByFlagRange(flagHiSlot0, flagHiSlot7, items);
+    //m_self->GetMyInventory()->FindByFlagRange(flagSubSystem0, flagSubSystem7, items);
     if (!items.empty()) {
         PyList *l = new PyList();
         for (auto cur : items) {

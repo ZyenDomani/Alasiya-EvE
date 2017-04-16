@@ -215,6 +215,6 @@ PyDict *StationSE::MakeSlimItem() {
 
 void StationSE::UnloadStation()
 {
-    m_self->GetInventory()->Unload();
+    m_self->GetMyInventory()->Unload();
 }
 
