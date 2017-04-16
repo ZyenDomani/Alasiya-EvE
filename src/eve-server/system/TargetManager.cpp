@@ -607,11 +607,29 @@ void TargetManager::QueueTBDestinyUpdate( PyTuple** up_in ) const
 }
 
 /* debugging methods */
-void TargetManager::TargetList(std::string* into, uint16* length, uint16* count) {
-    for (auto cur : m_targets)
-        ++count;
-    for (auto cur : m_targetedBy)
-        ++count;
+std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
+    std::ostringstream str;
+    if (!m_targets.empty()) {
+        str << "Targets: \n";
+        length += 11;
+        for (auto cur : m_targets) {
+            str << "  " << cur.second->who->GetSelf()->itemName();
+            str << " (" << cur.second->who->GetID() << ") \n";
+            length += 35;
+            ++count;
+        }
+    }
+    if (!m_targetedBy.empty()) {
+        str << "Targeted by: \n";
+        length += 15;
+        for (auto cur : m_targetedBy) {
+            str << "  " << cur.second->who->GetSelf()->itemName();
+            str << " (" << cur.second->who->GetID() << ") \n";
+            length += 35;
+            ++count;
+        }
+    }
+    return str.str();
 }
 
 void TargetManager::Dump() const {
@@ -623,7 +641,7 @@ void TargetManager::Dump() const {
 }
 
 void TargetManager::TargetEntry::Dump() const {
-    const char *sname = "Unknown State";
+    const char *sname = "Invalid";
     switch(state) {
         case Idle:              sname = "Idle";    break;
         case PassiveLocking:    sname = "Passive"; break;
@@ -635,7 +653,7 @@ void TargetManager::TargetEntry::Dump() const {
 }
 
 void TargetManager::TargetedByEntry::Dump() const {
-    const char *sname = "Unknown State";
+    const char *sname = "Invalid";
     switch(state) {
         case Idle:      sname = "Idle";     break;
         case Locking:   sname = "Locking";  break;

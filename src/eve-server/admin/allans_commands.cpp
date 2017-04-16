@@ -608,12 +608,11 @@ PyResult Command_shipdna(Client* who, CommandDB* db, PyServiceMgr* services, con
 
 PyResult Command_targlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    std::string into = "";
     uint16 length = 1, count = 0;
-    who->GetShipSE()->TargetMgr()->TargetList(&into, &length, &count);
+    std::string into = who->GetShipSE()->TargetMgr()->TargetList(length, count);
 
     std::ostringstream str;
-    str << "Target List for %s( in ship %u)<br>"; //30+30
+    str << "Target List for %s in shipID %u<br>"; //30+30
     str << "    %u entries in list<br>";   //30
     str << "%s"; //length
 
@@ -639,8 +638,7 @@ PyResult Command_track(Client* who, CommandDB* db, PyServiceMgr* services, const
         sEntityList.SetTracking(true);
 
     char reply[25];
-    snprintf(reply, 25,
-             "Tracking %s.", track.c_str());
+    snprintf(reply, 25, "Tracking %s.", track.c_str());
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -659,8 +657,7 @@ PyResult Command_warpto(Client* who, CommandDB* db, PyServiceMgr* services, cons
     who->GetShipSE()->DestinyMgr()->Halt();
 
     char reply[55];
-    snprintf(reply, 55,
-             "Command Unavalible.\nShip Halted.");
+    snprintf(reply, 55, "Command Unavalible.\nShip Halted.");
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
