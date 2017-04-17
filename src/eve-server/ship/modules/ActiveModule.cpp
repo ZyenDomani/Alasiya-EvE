@@ -117,6 +117,7 @@ void ActiveModule::Process()
         //wait for time to run out and send deactivate to client
         if (m_timer.Check(false)) {
             m_timer.Disable();
+            SetModuleState(ModuleStates::MOD_DEACTIVATING);
             DeactivateCycle();
         }
         // we have stop signal....dont process any further
@@ -128,6 +129,7 @@ void ActiveModule::Process()
         // is this right?  should i do something else here?
         if ((!m_chargeRef) or (m_ChargeState == ChargeStates::CHG_UNLOADED) or (!m_chargeRef->quantity()) or (!m_chargeLoaded)) {
             UnloadCharge();
+            SetModuleState(ModuleStates::MOD_DEACTIVATING);
             DeactivateCycle(true);
             return;
         }
