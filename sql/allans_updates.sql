@@ -371,3 +371,4 @@ UPDATE `invTypes` SET `radius` = '1000' WHERE `typeID` = 12356;
 
 /* not sure how many of these are wrong... */
 UPDATE `mapDenormalize` SET `radius` = '343000' WHERE `mapDenormalize`.`itemID` = 40003343;
+UPDATE `dgmTypeAttributes` SET `valueInt`=2500,`valueFloat`=NULL WHERE `attributeID` = 247 AND (`valueInt` = 0 OR `valueFloat` = 0)

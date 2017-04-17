@@ -322,6 +322,10 @@ bool SystemEntity::ApplyDamage(Damage &d) {
 void NPC::Killed(Damage &fatal_blow) {
     if (!m_bubble or !m_destiny) return;
 
+    //notify our spawn manager that we are gone.
+    if ((m_spawnMgr) and (m_bubble) and (m_self))
+        m_spawnMgr->SpawnDepopped(m_bubble, m_self->itemID());
+
     m_destiny->Halt();
 
     SystemEntity *killer = fatal_blow.srcSE;
@@ -341,10 +345,6 @@ void NPC::Killed(Damage &fatal_blow) {
         killerID = killer->GetID();
 
     m_destiny->SendTerminalExplosion(GetID(), m_bubble->GetID());
-
-    //notify our spawn manager that we are gone.
-    if (m_spawnMgr)
-        m_spawnMgr->SpawnDepopped(m_bubble, m_self->itemID());
 
     GPoint deadNPCPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());

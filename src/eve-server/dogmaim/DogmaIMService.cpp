@@ -237,12 +237,12 @@ PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
 
     Client* pClient = call.client;
 
-    Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple)) {
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Failed to decode arguments");
         return new PyNone();
     }
-    uint32 shipID = args.arg;
+    uint32 shipID = arg.arg;
 
     return nullptr;
 }
@@ -272,6 +272,13 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
 
     sLog.White("DogmaIMBound::Handle_Overload()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+
+    Call_TwoIntegerArgs args;   //itemID, effectID
+    if (!args.Decode(&call.tuple)) {
+        _log(SERVICE__ERROR, "Failed to decode arguments");
+        return new PyNone();
+    }
+
     return nullptr;
 }
 
@@ -308,7 +315,7 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
      *    17:24:00 [SvcCall]       Tuple: 1 elements
      *    17:24:00 [SvcCall]         [ 0] Integer field: 140000213    <--  itemID in first slot of location to OL
      *
-     *    returns - list of moduleIDs to OL
+     *    returns - PyList of moduleIDs to OL
      *
      * /client/script/environment/godma.py(2407) OverloadRack
      *        itemID = 140001963L
@@ -320,6 +327,12 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
      *    call.Dump(SERVICE__CALL_DUMP);
      */
     Client* pClient = call.client;
+
+    Call_SingleIntegerArg args;
+    if (!args.Decode(&call.tuple)) {
+        _log(SERVICE__ERROR, "Failed to decode arguments");
+        return new PyNone();
+    }
 
     return nullptr;
 }
