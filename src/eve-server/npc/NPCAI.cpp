@@ -229,16 +229,20 @@ void NPCAIMgr::Wander()
                 m_npc->GetName(), m_npc->GetID(), m_sightRange);
     // wandering.  nothing to shoot.  look for target.
     if (m_npc->SysBubble()->HasDynamics()) {
-        // pick random entity and loosely orbit it.
         SystemEntity* pTarget = m_npc->SysBubble()->GetRandomEntity();
         if (!pTarget)
+            pTarget = m_npc->SystemMgr()->GetSE(m_npc->SysBubble()->GetID());
+        if (!pTarget) {
+            _log(NPC__ERROR, "%s(%u): Wandering.  No Target or beltSE found", m_npc->GetName(), m_npc->GetID());
             return;
+        }
+        // pick random entity and loosely orbit it.  if no entity found, orbit center of belt
         m_isWandering = true;
         m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
         uint16 orbitDistance = MakeRandomInt(10000, 20000);
         m_npc->DestinyMgr()->Orbit(pTarget, orbitDistance);
         _log(NPC__AI_TRACE, "%s(%u):  Just for shits-n-giggles, I\'m gonna orbit %s(%u) at %um.", \
-            m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID(), orbitDistance);
+                m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID(), orbitDistance);
     } else {
         /** @todo  figure out a way for npc to wander 'aimlessly' around their bubble */
         m_npc->DestinyMgr()->Halt();
