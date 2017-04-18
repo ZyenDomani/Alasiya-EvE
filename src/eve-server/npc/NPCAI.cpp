@@ -327,11 +327,11 @@ void NPCAIMgr::EnterSignaling(SystemEntity* pTarget) {
 void NPCAIMgr::_CheckDistance(SystemEntity* pSE)
 {
     double dist = m_npc->GetPosition().distance(pSE->GetPosition());
-    if (dist > m_sightRange) {
+    if ((dist > m_sightRange) and (!m_npc->TargetMgr()->IsTargetedBy(pSE))) {
         _log(NPC__AI_TRACE, "%s(%u): _CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
              m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist);
         if (m_state != Idle) {
-            // target is no longer in npc's "sight range".  unlock target and return to idle.
+            // target is no longer in npc's "sight range" and is NOT targeting this npc.  unlock target and return to idle.
             //   should we do anything else here?  search for another target?  wander around?  yes..later
             // if npc is targeted greater than this distance, it will chase
             m_npc->TargetMgr()->ClearTarget(pSE);

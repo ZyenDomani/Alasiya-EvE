@@ -65,6 +65,7 @@ public:
     float               TimeToLock(ShipItemRef ship, SystemEntity *target) const;
 
     /* NPC AI Methods */
+    bool                IsTargetedBy(SystemEntity *pSE);
     SystemEntity*       GetFirstTarget(bool need_locked);
     SystemEntity*       GetTarget(uint32 targetID, bool need_locked=true) const;
 

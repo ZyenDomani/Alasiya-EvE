@@ -361,6 +361,14 @@ void TargetManager::TargetedByLost(SystemEntity *from_who) {
     }
 }
 
+bool TargetManager::IsTargetedBy(SystemEntity* pSE)
+{
+    std::map<SystemEntity *, TargetedByEntry *>::iterator res = m_targetedBy.find(pSE);
+    if (res != m_targetedBy.end())
+        return true;
+    return false;
+}
+
 SystemEntity* TargetManager::GetFirstTarget(bool need_locked) {
     if (m_targets.empty())
         return nullptr;
