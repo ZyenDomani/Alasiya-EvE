@@ -92,7 +92,7 @@ bool AsteroidBeltMgr::CheckSpawn(uint16 bubbleID)
 
 bool AsteroidBeltMgr::IsSpawned(uint16 bubbleID)
 {
-    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
+    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     std::map<uint32, bool>::const_iterator itr = m_spawned.find(beltID);
     if (itr != m_spawned.end())
         return itr->second;
@@ -101,7 +101,7 @@ bool AsteroidBeltMgr::IsSpawned(uint16 bubbleID)
 
 bool AsteroidBeltMgr::IsActive(uint16 bubbleID)
 {
-    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
+    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     std::map<uint32, bool>::const_iterator itr = m_active.find(beltID);
     if (itr != m_active.end())
         return itr->second;
@@ -110,7 +110,7 @@ bool AsteroidBeltMgr::IsActive(uint16 bubbleID)
 
 void AsteroidBeltMgr::SetActive(uint16 bubbleID, bool active/*true*/)
 {
-    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
+    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     std::map<uint32, bool>::iterator itr = m_active.find(beltID);
     if (itr != m_active.end())
         itr->second = active;
@@ -129,7 +129,7 @@ void AsteroidBeltMgr::Process() {
 bool AsteroidBeltMgr::Load(uint16 bubbleID) {
     std::vector<AsteroidData> entities;
     entities.clear();
-    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
+    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     m_db.LoadSystemRoids(m_systemID, beltID, entities);
     if (entities.empty())
         return false;
@@ -206,7 +206,7 @@ void AsteroidBeltMgr::SpawnBelt(uint16 bubbleID)
     if (IsSpawned(bubbleID))
         return;
 
-    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
+    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     if (!IsUniverseCelestial(beltID))
         return;
 

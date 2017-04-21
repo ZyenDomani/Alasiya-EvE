@@ -31,6 +31,8 @@ public:
     void Online();
     void Offline();
 
+    InventoryItemRef GetSelf()                          { return m_modRef; }
+
     void ProcessEffects(Effects::State state, bool online = false);
 
     void Repair()                                       { m_modRef->ResetAttribute(AttrHP, true); }
@@ -53,8 +55,8 @@ public:
     virtual bool IsRigModule() const                    { return false; }   // check this in m_rigSlot?
     virtual bool IsSubSystemModule() const              { return false; }   // check this in m_subSystem?
 
-    bool IsTurrentModule()                              { return m_launcher; }
-    bool IsLauncherModule()                             { return m_turrent; }
+    bool IsTurretModule()                               { return m_turret; }
+    bool IsLauncherModule()                             { return m_launcher; }
 
     /* generic access functions handled here, but set elsewhere.  only slightly slower than above */
     bool isOnline()                                     { return m_modRef->IsOnline(); }
@@ -116,7 +118,7 @@ protected:
     bool             m_rigSlot : 1;
     bool             m_subSystem : 1;
     bool             m_launcher : 1;
-    bool             m_turrent : 1;
+    bool             m_turret : 1;
 
     int16            m_repeat;
 

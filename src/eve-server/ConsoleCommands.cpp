@@ -154,10 +154,10 @@ bool ConsoleCommand::Process() {
                     sLog.Green("      Missile Dmg","Enabled at %.0f%%.", (sConfig.rates.missileRate *100) );
                 else
 					sLog.Warning("      Missile Dmg","Normal.");
-                if (sConfig.rates.turrentRate != 1.0)
-                    sLog.Green("      Turrent Dmg","Enabled at %.0f%%.", (sConfig.rates.turrentRate *100) );
+                if (sConfig.rates.turretRate != 1.0)
+                    sLog.Green("      Turret Dmg","Enabled at %.0f%%.", (sConfig.rates.turretRate *100) );
                 else
-                    sLog.Warning("      Turrent Dmg","Normal.");
+                    sLog.Warning("      Turret Dmg","Normal.");
 			} else if (strncmp(buf, "v", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Version:");
                 sLog.Warning("     Server Build", " %.2f", EVE_Build );

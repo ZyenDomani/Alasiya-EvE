@@ -264,8 +264,8 @@ void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     if (!_FindSpawnForBubble(pSysBubble->GetID())) {
-        sLog.Green("SpawnMgr", "DoSpawnForBubble called for bubble %u in %s(%u)(%.4f). Main Timer enabled.",
-                     pSysBubble->GetID(), m_system->GetName().c_str(), m_system->GetID(), secRating);
+        sLog.Green("SpawnMgr", "DoSpawnForBubble called for bubble %u(%u) in %s(%u)(%.4f). Main Timer enabled.",
+                     pSysBubble->GetID(), sBubbleMgr.GetBeltID(pSysBubble->GetID()), m_system->GetName().c_str(), m_system->GetID(), secRating);
         PrepSpawn(pSysBubble, regionID, secRating);
         pSysBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
     }
@@ -275,8 +275,8 @@ void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
         sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
 }
 
-bool SpawnMgr::_FindSpawnForBubble(uint32 bubbleID) {
-    SpawnEntryDef::iterator itr = m_spawns.find(bubbleID);
+bool SpawnMgr::_FindSpawnForBubble(uint16 itemID) {
+    SpawnEntryDef::iterator itr = m_spawns.find(itemID);
     if (itr != m_spawns.end())
         return true;
 

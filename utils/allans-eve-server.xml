@@ -41,9 +41,9 @@
         <damageRate>1.0</damageRate><!-- ALL damage. only used if != 1.0 -->
         <missileRate>1.0</missileRate><!-- ALL missiles. only used if != 1.0 -->
         <missileTime>1.0</missileTime><!--  ALL missiles. only used if != 1.0 -->
-        <turrentRate>1.0</turrentRate><!-- PC turrents. only used if != 1.0 -->
+        <turretRate>1.0</turretRate><!-- PC turrets. only used if != 1.0 -->
         <missileRoF>1.0</missileRoF><!-- ALL missiles. only used if != 1.0 -->
-        <turrentRoF>1.0</turrentRoF><!-- PC turrents. only used if != 1.0 -->
+        <turretRoF>1.0</turretRoF><!-- PC turrets. only used if != 1.0 -->
         <npcBountyMultiply>10.0</npcBountyMultiply><!-- only used if != 1.0 -->
         <corpCost>20000000</corpCost>
         <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->

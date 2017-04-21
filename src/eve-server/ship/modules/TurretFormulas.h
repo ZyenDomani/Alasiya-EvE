@@ -1,7 +1,7 @@
 
  /**
-  * @name TurrentFormulas.h
-  *   forumlas for turrent tracking, to hit, and other specific things
+  * @name TurretFormulas.h
+  *   forumlas for turret tracking, to hit, and other specific things
   * @Author:         Allan
   * @date:   10 June 2015
   */
@@ -13,12 +13,12 @@
 
 class Drone;
 class NPC;
-class TurrentModule;
-class TurrentFormulas {
+class TurretModule;
+class TurretFormulas {
 public:
     //  returns damage modifier from hit, based on calculations made about ship, item, and target.
     //    return 0 is missed
-    float GetToHit(ShipItemRef shipRef, TurrentModule* pMod, SystemEntity* pTarget);
+    float GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEntity* pTarget);
     float GetNPCToHit(NPC* pNPC, SystemEntity* pTarget);
     float GetDroneToHit(Drone* pDrone, SystemEntity* pTarget);
 

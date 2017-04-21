@@ -402,6 +402,7 @@ void DestinyManager::_UpdateVelocity(bool isMoving) {
         case 6: {
             _log(DESTINY__ERROR, "Destiny::_UpdateVelocity Error!  Ship %s(%u) Has No WarpState or Speed Fraction.",
                                     mySE->GetName(), mySE->GetID());
+            Halt();
             return;
         } break;
     }

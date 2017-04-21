@@ -27,7 +27,7 @@
 #ifndef __NPCAI_H_INCL__
 #define __NPCAI_H_INCL__
 
-#include "ship/modules/TurrentFormulas.h"
+#include "ship/modules/TurretFormulas.h"
 
 class NPC;
 class SystemEntity;
@@ -50,7 +50,7 @@ public:
 
     void DisableRepTimers();
 
-    // public methods to enable calls from other classes (namely, TurrentFormulas.cpp)
+    // public methods to enable calls from other classes (namely, TurretFormulas.cpp)
     bool IsIdle()                                       { return (m_state == Idle); }
     bool IsFighting()                                   { return (m_state != Idle); }
     uint16 GetMaxRange()                                { return m_optimalRange; }
@@ -118,7 +118,7 @@ private:
 
     NPC* m_npc;
 
-    TurrentFormulas m_formula;
+    TurretFormulas m_formula;
 
     Timer m_processTimer;
     Timer m_mainAttackTimer;

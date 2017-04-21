@@ -41,12 +41,12 @@ static const int32 EVEBirthday = 170472;
 /*  Allan's Static Definitions */
 static const float Config_Version = 7.6; /* match versions here with eve-server.xml and EveServerConfig.cpp for full config support */
 static const float Log_Version = 7.2;    /* match versions here with logtypes.h and log.ini for full logging support */
-static const float EVE_Build = 1.91;     /* this is for bug tracking on my forums.  -allan 3July15 */
-static const char* const EVEMU_REVISION = "0.8.97-allan";
-static const char* const EVEMU_BUILD_DATE = "14 April 2017";
+static const float EVE_Build = 1.93;     /* this is for bug tracking on my forums.  -allan 3July15 */
+static const char* const EVEMU_REVISION = "0.8.98-allan";
+static const char* const EVEMU_BUILD_DATE = "21 April 2017";
 /* AI versions for shitz-n-giggles */
-static const float Bot_Version = 0.3;    /* match versions here with MarketBot.xml and MarketBotConf.cpp for full config support */
-static const float NPC_AI_Version = 0.4;
-static const float Civilian_AI_Version = 0.1;
+static const float Bot_Version = 0.10;    /* match versions here with MarketBot.xml and MarketBotConf.cpp for full config support */
+static const float NPC_AI_Version = 0.43;
+static const float Civilian_AI_Version = 0.10;
 
 #endif

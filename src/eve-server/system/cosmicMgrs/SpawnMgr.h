@@ -72,7 +72,7 @@ public:
     bool IsTimerStarted()                               { return m_mainTimer.Enabled(); }
 
 protected:
-    bool _FindSpawnForBubble(uint32 itemID);
+    bool _FindSpawnForBubble(uint16 itemID);
     void PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRating);
     void MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type, uint8 subtype);
     void ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry);
@@ -88,7 +88,7 @@ protected:
     typedef std::vector<RatSpawnClass> RatSpawnClassVec;
     typedef std::vector<RatFactionGroups> RatFactionGroupsVec;
     typedef std::map<uint8, uint32> RatFactionGroupsMap;    //map to enable 'find'  shipClass is key
-    typedef std::unordered_multimap<uint32, SpawnEntry> SpawnEntryDef;    //bubbleID is key
+    typedef std::unordered_multimap<uint16, SpawnEntry> SpawnEntryDef;    //bubbleID is key
     //typedef std::vector<uint32, SystemSpawnGroup> SystemSpawnGroupVec;  //systemID is key  *unused at this time*
 
 private:

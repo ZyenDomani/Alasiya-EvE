@@ -1,7 +1,7 @@
 
  /**
-  * @name TurrentFormulas.cpp
-  *   forumlas for turrent tracking, to hit, and other specific things
+  * @name TurretFormulas.cpp
+  *   forumlas for turret tracking, to hit, and other specific things
   * @Author:         Allan
   * @date:   10 June 2015
   */
@@ -11,11 +11,11 @@
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
 #include "npc/Drone.h"
-#include "ship/modules/TurrentFormulas.h"
-#include "ship/modules/TurrentModule.h"
+#include "ship/modules/TurretFormulas.h"
+#include "ship/modules/TurretModule.h"
 
 
-float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, SystemEntity* pTarget)
+float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEntity* pTarget)
 {
     if (!pTarget)
         return 0;
@@ -23,15 +23,15 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, System
     double range = pMod->GetAttribute(AttrMaxRange).get_int();
     double distance = shipRef->position().distance(pTarget->DestinyMgr()->GetPosition());
 
-    _log(DAMAGE__TRACE, "Turrent::GetToHit - distance:%.2f, range:%.2f, falloff:%u", distance, range, falloff);
+    _log(DAMAGE__TRACE, "Turret::GetToHit - distance:%.2f, range:%.2f, falloff:%u", distance, range, falloff);
     GPoint vel = pTarget->GetVelocity();
     double speed = vel.length();
     double angVelocity = (speed /distance);
-    _log(DAMAGE__TRACE, "Turrent::GetToHit - speed/dist=angVelocity: %.3f / %.3f = %.3f", speed, distance, angVelocity);
+    _log(DAMAGE__TRACE, "Turret::GetToHit - speed/dist=angVelocity: %.3f / %.3f = %.3f", speed, distance, angVelocity);
 
     //  calculations for chance to hit
     /*     a =  angVelocity/(distance * tracking)
-     *     b =  turrent sig res / target sig radius
+     *     b =  turret sig res / target sig radius
      *     c =  (a * b) ^ 2
      *     d =  max(0, distance - optimal range)
      *     e =  (d / falloff) ^ 2
@@ -48,7 +48,7 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, System
 
     float ChanceToHit = pow(0.5, c + e);
     double rNum = MakeRandomFloat(0.0, 1.0);
-    _log(DAMAGE__TRACE, "Turrent::GetToHit - ChanceToHit:%f, Rand:%.3f  (c:%.5f + e:%.5f)", ChanceToHit, rNum, c, e);
+    _log(DAMAGE__TRACE, "Turret::GetToHit - ChanceToHit:%f, Rand:%.3f ((%.3fx%.3f)^2 = %.5f + e:%.5f)", ChanceToHit, rNum, a, b, c, e);
     if (rNum <= 0.02)
         return 3.0f;
     else if (rNum < ChanceToHit)
@@ -57,7 +57,7 @@ float TurrentFormulas::GetToHit(ShipItemRef shipRef, TurrentModule* pMod, System
         return 0;
 }
 
-float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
+float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
 {
     if (!pTarget)
         return 0;
@@ -91,7 +91,7 @@ float TurrentFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
         return 0;
 }
 
-float TurrentFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
+float TurretFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
 {
     if (!pTarget)
         return 0;

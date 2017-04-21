@@ -99,7 +99,7 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
     double v2 = pow(((Ev/V) * (Sr/Er)), (log(DRF) / log(DRS)));
     m_damageMod = Min(v1, v2);
 
-     _log(NPC__TRACE, "Created Missile object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
+    _log(DAMAGE__MESSAGE, "Created Missile object for %s (%u) with damageMod of %0.3f", self.get()->itemName().c_str(), self.get()->itemID(), m_damageMod);
 }
 
 Missile::~Missile() {

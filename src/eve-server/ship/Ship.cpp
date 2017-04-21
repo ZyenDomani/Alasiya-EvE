@@ -662,7 +662,7 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef item) {
                 _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Item Validation passed.");
         }
 
-    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the %s", itemName().c_str());
+    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the %s", item->itemName().c_str());
     return true;
 }
 

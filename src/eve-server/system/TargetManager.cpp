@@ -369,7 +369,7 @@ bool TargetManager::IsTargetedBy(SystemEntity* pSE)
     return false;
 }
 
-SystemEntity* TargetManager::GetFirstTarget(bool need_locked) {
+SystemEntity* TargetManager::GetFirstTarget(bool need_locked/*false*/) {
     if (m_targets.empty())
         return nullptr;
 

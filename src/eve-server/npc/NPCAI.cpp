@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Updates:    Allan
-    AI Version: 0.4
+    AI Version: 0.43
 */
 
 #include "eve-server.h"
@@ -202,7 +202,7 @@ void NPCAIMgr::Process() {
                 EnterIdle();
                 return;
             }
-            SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
+            SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(false);
             if (!pTarget) {
                 _log(NPC__AI_TRACE, "%s(%u): Stopped %s, GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
                 EnterIdle();
@@ -224,20 +224,21 @@ void NPCAIMgr::Process() {
 
 void NPCAIMgr::Wander()
 {
-    if (!m_isWandering)
+    if (!m_isWandering) {
         _log(NPC__AI_TRACE, "%s(%u): Wandering.  No Targets within my sight range of %um", \
                 m_npc->GetName(), m_npc->GetID(), m_sightRange);
+        m_isWandering = true;
+    }
     // wandering.  nothing to shoot.  look for target.
     if (m_npc->SysBubble()->HasDynamics()) {
         SystemEntity* pTarget = m_npc->SysBubble()->GetRandomEntity();
         if (!pTarget)
-            pTarget = m_npc->SystemMgr()->GetSE(m_npc->SysBubble()->GetID());
+            pTarget = m_npc->SystemMgr()->GetSE(sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()));
         if (!pTarget) {
             _log(NPC__ERROR, "%s(%u): Wandering.  No Target or beltSE found", m_npc->GetName(), m_npc->GetID());
             return;
         }
         // pick random entity and loosely orbit it.  if no entity found, orbit center of belt
-        m_isWandering = true;
         m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
         uint16 orbitDistance = MakeRandomInt(10000, 20000);
         m_npc->DestinyMgr()->Orbit(pTarget, orbitDistance);

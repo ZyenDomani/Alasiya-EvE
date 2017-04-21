@@ -74,7 +74,7 @@ public:
 
     // for spawn system     -allan 15April16
     void AddSpawnID(uint16 bubbleID, uint32 spawnID);
-    uint32 GetSpawnID(uint16 bubbleID);
+    uint32 GetBeltID(uint16 bubbleID);
 
 private:
     Timer m_wanderTimer;

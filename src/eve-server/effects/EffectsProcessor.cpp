@@ -627,21 +627,21 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 data.typeID = data.srcRef->typeID();    // get items on ship that require SkillItem in srcRef
         } break;
         case operandLG: {    //48, %(arg1)s.LocationGroup.%(arg2)s  -- specify a group by grpID for a location'  used by ALGM
-            //_log(EFFECTS__TRACE, "FxProc::ParseExpression(): LocationGroup: setting fxSrc to Group.  set: %s, skill: %s, module: %s, charge: %s", \
-                    (self? "true" : "false"), (skill ? "true" : "false"), (module? "true" : "false"), (charge ? "true" : "false"));
             data.fxSrc = dgmSrcGroup;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);   //source
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);   //groupID
+            //_log(EFFECTS__TRACE, "FxProc::ParseExpression(): LocationGroup: setting fxSrc to Group.  set: %s, skill: %s, module: %s, charge: %s, grp: %u", \
+                    (self? "true" : "false"), (skill ? "true" : "false"), (module? "true" : "false"), (charge ? "true" : "false"), data.grpID);
         } break;
         case operandLS: {    //49, %(arg1)s.SkillRequiredLocationGroup[%(arg2)s]  --  specify a group by skillID for a location   used by ALRSM and AORSM
-            //_log(EFFECTS__TRACE, "FxProc::ParseExpression(): SRLG: setting fxSrc to Skill.  set: %s, skill: %s, module: %s, charge: %s", \
-                    (self? "true" : "false"), (skill ? "true" : "false"), (module? "true" : "false"), (charge ? "true" : "false"));
             data.fxSrc = dgmSrcSkill;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);   //source
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);   //skillID
+            //_log(EFFECTS__TRACE, "FxProc::ParseExpression(): SRLG: setting fxSrc to Skill.  set: %s, skill: %s, module: %s, charge: %s", \
+                    (self? "true" : "false"), (skill ? "true" : "false"), (module? "true" : "false"), (charge ? "true" : "false"));
         } break;
         case operandATT:     //12, %(arg1)s->%(arg2)s               --(item:attribID)
-        case operandEFF:     //31, (%(arg2)s).(%(arg1)s)            --define association type
+        case operandEFF:     //31, %(arg2)s.%(arg1)s                --define association type
         case operandGA:      //34, %(arg1)s.%(arg2)s                --GetAttribute      (no known uses)
         case operandGET:     //35, %(arg1)s.%(arg2)s()              --used a lot.  eg. Get(Ship:101) means 'get attribute 101 on ShipItem'
         case operandIA: {    //40, %(arg1)s                         --used by AGIM
@@ -660,7 +660,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
             if (charge) {
                 data.fxSrc = dgmSrcSelf;
-                data.targLoc = dgmTargLocShip;
+                if (data.targLoc != dgmTargLocOther)
+                    data.targLoc = dgmTargLocShip;
             } else if (skill) {
                 if (!data.fxSrc)
                     data.fxSrc = dgmSrcSkill;
@@ -706,7 +707,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
             if (charge) {
                 data.fxSrc = dgmSrcSelf;
-                data.targLoc = dgmTargLocShip;
+                if (data.targLoc != dgmTargLocOther)
+                    data.targLoc = dgmTargLocShip;
             } else if (skill) {
                 if (!data.fxSrc)
                     data.fxSrc = dgmSrcSkill;
@@ -804,7 +806,9 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
 
         } break;
         */
-        //02:48:33 E FxProc::ParseExpression: *** ERROR ***  Operand id:* key:INC - should be added as %(arg1)s+=self.%(arg2)s
+        //02:48:33 E FxProc::ParseExpression: *** ERROR ***  Operand id:* key:INC - should be added as %(arg1)s+=self.%(arg2)se
+        //17:53:15 E FxProc::ParseExpression: *** ERROR ***  Operand id:4 key:OR - should be added as %(arg1)s OR %(arg2)s
+
 
         case operandUE: {   //73    UserError(%(arg1)s)
 
@@ -889,15 +893,11 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 subSys = true;
             } break;
         }
-       // _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): method: %s, fxSrc: %s(%s), targLoc: %s, targAttr: %u, srcAttr: %u, grpID: %u, typeID: %u, rig: %s, subsys: %s", cur.first,\
-                sFxProc.GetMathMethodName(cur.second.math).c_str(), sFxProc.GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcRef->itemName().c_str(), \
-                sFxProc.GetTargLocName(cur.second.targLoc).c_str(), cur.second.targAttr, cur.second.srcAttr, cur.second.grpID, cur.second.typeID, \
-                (isRig ? "true" : "false"), (subSys ? "true" : "false"));
         InventoryItemRef srcItemRef = cur.second.srcRef;
         std::vector<InventoryItemRef> itemRefVec;
         // affected target depends on source.  get source and target(s) here.
         switch (cur.second.fxSrc) {
-            case dgmSrcGroup: {     // not a source per se, but defines effect's target selection requirements and IS nerfed
+            case dgmSrcGroup: {     // not a source per se, but defines effect's target selection requirements
                 // this is to apply modifiers to ship's modules of groupID defined in 'grpID'
                 std::vector<InventoryItemRef> moduleList;
                 pShip->GetModuleManager()->GetModuleListOfRefsAsc(&moduleList);
@@ -905,7 +905,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     if (mod->groupID() == cur.second.grpID)
                         itemRefVec.push_back(mod);
             } break;
-            case dgmSrcSkill: {    // source of this effect is skill, implant, or booster and IS NOT nerfed
+            case dgmSrcSkill: {    // source of this effect is skill, implant, or booster
                 if (cur.second.typeID == EVEDB::invTypes::typeInvalid) {    //invalid
                     _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): typeID is invalid");
                     continue;  // make error here
@@ -965,7 +965,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                 }
             } break;
-            case dgmSrcSelf: {  // source is module or charge and IS nerfed
+            case dgmSrcSelf: {  // source is module or charge
                 //  apply the modifier to ....
                 switch (cur.second.targLoc) {
                     case dgmTargLocShip:  {
@@ -981,6 +981,11 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         // ....charge on src item
                         // will need more testing to verify this.
                         itemRefVec.push_back(pShip->GetModuleManager()->GetLoadedChargeOnModule(cur.second.srcRef->flag()));
+                    } break;
+                    case dgmTargLocOther: {
+                        // ....module containing the src item (charge)
+                        // will need more testing to verify this.
+                        itemRefVec.push_back(pShip->GetModuleManager()->GetModule(cur.second.srcRef->flag())->GetSelf());
                     } break;
                     default: {
                         _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): target undefined.");

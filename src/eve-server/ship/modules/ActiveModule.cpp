@@ -44,8 +44,8 @@ m_reloadTimer(10000)
 
     // this is an internal variable only.
     m_reloadTime = GetAttribute(AttrReloadTime).get_int();
-    /* our db doesnt have reload times for launchers or projectile turrents.
-     * set default of 4s for turrents, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
+    /* our db doesnt have reload times for launchers or projectile turrets.
+     * set default of 4s for turrets, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
      * maybe make config option later to avoid hard-coding
      */
     if ((!m_reloadTime) and m_needsCharge)  {
@@ -328,7 +328,7 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Projectile_Weapon:
         case EVEDB::invGroups::Hybrid_Weapon:
         case EVEDB::invGroups::Energy_Weapon: {
-            // turrent weapons still use specific code.
+            // turret weapons still use specific code.
             ApplyDamage();
         } break;
         case EVEDB::invGroups::Missile_Launcher_Assault:
@@ -401,7 +401,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
                 float m_range = GetAttribute(AttrSurveyScanRange).get_float();
                 m_range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(skillLongRangeTargeting, true)))); // 3% increase in range (here)
                 std::vector<AsteroidSE*> vList;
-                m_shipRef->GetPilot()->GetShipSE()->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetSpawnID(m_bubble->GetID()), vList);
+                m_shipRef->GetPilot()->GetShipSE()->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetBeltID(m_bubble->GetID()), vList);
                 for (auto pASE : vList) {
                     // allow ice scanning without a radius check....may change later.
                     if (m_bubble->IsIce() or (m_shipRef->position().distance(pASE->GetPosition()) < m_range)) {
@@ -544,7 +544,7 @@ bool ActiveModule::CanActivate()
 
     // check distance for targetable actions
     if (m_targetSE) {
-        if (!m_turrent and !m_launcher) {
+        if (!m_turret and !m_launcher) {
             float range = GetAttribute(AttrMaxRange).get_float();
             float distance = m_shipRef->position().distance(m_targetSE->GetPosition());
             if (distance > range) {

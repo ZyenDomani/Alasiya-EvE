@@ -12,7 +12,7 @@
 
 #include "eve-server.h"
 
-#include "ship/modules/TurrentFormulas.h"
+#include "ship/modules/TurretFormulas.h"
 #include "system/SystemEntity.h"
 
 /*  basic notes for concord actions...
@@ -155,7 +155,7 @@ private:
 
     Concord* m_npc;
 
-    TurrentFormulas m_formula;
+    TurretFormulas m_formula;
 
     Timer m_processTimer;
     Timer m_mainAttackTimer;

@@ -1,7 +1,7 @@
 
  /**
-  * @name TurrentModule.cpp
-  *   turrent module class
+  * @name TurretModule.cpp
+  *   turret module class
   * @Author:         Allan
   * @date:   10 June 2015   -UD/RW 02 April 2017
   */
@@ -9,10 +9,10 @@
 
 #include "eve-server.h"
 
-#include "ship/modules/TurrentModule.h"
+#include "ship/modules/TurretModule.h"
 #include "system/Damage.h"
 
-TurrentModule::TurrentModule(InventoryItemRef item, ShipItemRef shipRef)
+TurretModule::TurretModule(InventoryItemRef item, ShipItemRef shipRef)
 : ActiveModule(item, shipRef)
 {
     m_crystalDmg = 0;
@@ -20,7 +20,7 @@ TurrentModule::TurrentModule(InventoryItemRef item, ShipItemRef shipRef)
     m_crystalDmgChance = 0;
 }
 
-void TurrentModule::LoadCharge(InventoryItemRef charge)
+void TurretModule::LoadCharge(InventoryItemRef charge)
 {
     ActiveModule::LoadCharge(charge);
     m_crystalDmg        = m_chargeRef->GetAttribute(AttrDamage).get_float();
@@ -28,7 +28,7 @@ void TurrentModule::LoadCharge(InventoryItemRef charge)
     m_crystalDmgChance  = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
 }
 
-void TurrentModule::UnloadCharge()
+void TurretModule::UnloadCharge()
 {
     ActiveModule::UnloadCharge();
     m_crystalDmg        = 0;
@@ -36,7 +36,7 @@ void TurrentModule::UnloadCharge()
     m_crystalDmgChance  = 0;
 }
 
-void TurrentModule::ApplyDamage()
+void TurretModule::ApplyDamage()
 {
     Damage d(m_shipRef->GetPilot()->GetShipSE(),
              m_modRef,
@@ -49,8 +49,8 @@ void TurrentModule::ApplyDamage()
     );
 
     d *= GetAttribute(AttrDamageMultiplier).get_float();
-    if (sConfig.rates.turrentRate != 1.0)
-        d *= sConfig.rates.turrentRate;
+    if (sConfig.rates.turretRate != 1.0)
+        d *= sConfig.rates.turretRate;
     m_targetSE->ApplyDamage(d);
 
     switch (m_modRef->groupID()) {

@@ -35,7 +35,7 @@
 #include "ship/modules/Salvager.h"
 #include "ship/modules/SubSystemModule.h"
 //#include "modules/SuperWeapon.h"
-#include "ship/modules/TurrentModule.h"
+#include "ship/modules/TurretModule.h"
 
 
 static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
@@ -46,13 +46,13 @@ static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
     } else {
         switch(item->groupID()) {
             // Weapon Modules:
-            case EVEDB::invGroups::Energy_Weapon:                           return (new TurrentModule(item, ship));    // Active - external
-            case EVEDB::invGroups::Projectile_Weapon:                       return (new TurrentModule(item, ship));    // Active - external
+            case EVEDB::invGroups::Energy_Weapon:                           return (new TurretModule(item, ship));    // Active - external
+            case EVEDB::invGroups::Projectile_Weapon:                       return (new TurretModule(item, ship));    // Active - external
             case EVEDB::invGroups::Gyrostabilizer:                          return (new PassiveModule(item, ship));
             case EVEDB::invGroups::Energy_Vampire:                          return (new ActiveModule(item, ship));    // Active - external
             case EVEDB::invGroups::Energy_Destabilizer:                     return (new ActiveModule(item, ship));    // Active - external
             case EVEDB::invGroups::Smart_Bomb:                              return (new ActiveModule(item, ship));    // Active - external
-            case EVEDB::invGroups::Hybrid_Weapon:                           return (new TurrentModule(item, ship));    // Active - external
+            case EVEDB::invGroups::Hybrid_Weapon:                           return (new TurretModule(item, ship));    // Active - external
             case EVEDB::invGroups::Heat_Sink:                               return (new PassiveModule(item, ship));
             case EVEDB::invGroups::Magnetic_Field_Stabilizer:               return (new PassiveModule(item, ship));
             case EVEDB::invGroups::Ballistic_Control_system:                return (new PassiveModule(item, ship));

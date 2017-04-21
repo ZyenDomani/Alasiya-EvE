@@ -360,18 +360,29 @@ bool ModuleManager::Initialize() {
     std::vector<InventoryItemRef> itemVec;
     m_Ship->GetMyInventory()->GetInventoryVec(itemVec);   // this method also sorts in order - cargo, modules, charge, subsystems.
 
+    GenericModule* mod(nullptr);
     // first we have to fit and online modules
     for (auto cur : itemVec)
         if (cur->flag() != flagCargoHold)
             switch (cur->categoryID()) {
                 case EVEDB::invCategories::Module:
                 case EVEDB::invCategories::Subsystem: {
-                    if (!FitModule(cur, cur->flag()))
+                    if (!fitModule(cur, cur->flag()))
                         _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Could not insert module %s(%u) at flag %u into module container.",\
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
                 } break;
+                case EVEDB::invCategories::Charge: {
+                    mod = GetModule(cur->flag());
+                    if (mod) {
+                        mod->SetChargeRef(cur);
+                        // set ChargeState == CHG_LOADED here, then when module Online() is called, all effects will be applied in correct order
+                        mod->SetChargeState(ModStates::CHG_LOADED);
+                    } else
+                        _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",\
+                                cur->itemName().c_str(), cur->itemID(), cur->flag() );
+                } break;
             }
-
+/*
     // then load charges
     GenericModule* mod(nullptr);
     for (auto cur : itemVec)
@@ -383,7 +394,7 @@ bool ModuleManager::Initialize() {
                 _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",\
                         cur->itemName().c_str(), cur->itemID(), cur->flag() );
         }
-
+*/
     return (m_initalized = true);
 }
 
@@ -916,7 +927,7 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
 {
     sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
     // this one is called from BoardShip()
-    OfflineAll();
+    //OfflineAll();
     GenericModule* mod(nullptr);
     // gotta add rigs and Subsystems to the vector, as they wont be listed in the "modules to online" list when undocking.
     GetShipRigs(modVec);

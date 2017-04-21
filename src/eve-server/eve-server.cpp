@@ -230,11 +230,11 @@ int main( int argc, char* argv[] )
     sLog.White("     Server Build", " %.2f", EVE_Build );
     sLog.White("  Server Revision", " %s", EVEMU_REVISION );
     sLog.White("       Build Date", " %s", EVEMU_BUILD_DATE );
-    sLog.White("MarketBot Version", " %.1f", Bot_Version );
     sLog.White("   Config Version", " %.1f", Config_Version );
     sLog.White("      Log Version", " %.1f", Log_Version );
-    sLog.White("   NPC AI Version", " %.1f", NPC_AI_Version );
-    sLog.White("    NC AI Version", " %.1f", Civilian_AI_Version );
+    sLog.White("   NPC AI Version", " %.2f", NPC_AI_Version );
+    sLog.White("    NC AI Version", " %.2f", Civilian_AI_Version );
+    sLog.White("MarketBot Version", " %.2f", Bot_Version );
 
     sLog.White("", "");     // spacer
 
@@ -486,10 +486,10 @@ int main( int argc, char* argv[] )
         sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
 	else
         sLog.Blue("     Missile Time","Normal.");
-    if (sConfig.rates.turrentRate != 1.0)
-        sLog.Yellow("      Turrent Dmg","Modified at %.0f%%.", (sConfig.rates.turrentRate *100) );
+    if (sConfig.rates.turretRate != 1.0)
+        sLog.Yellow("      Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretRate *100) );
     else
-        sLog.Blue("      Turrent Dmg","Normal.");
+        sLog.Blue("      Turret Dmg","Normal.");
     // config option for decay?
     sLog.Green("      Decay Timer","Enabled.  Checks every %u minutes", sConfig.rates.WorldDecay);
 

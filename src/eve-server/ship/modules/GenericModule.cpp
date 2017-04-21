@@ -40,7 +40,7 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_loPower = false;
     m_rigSlot = false;
     m_subSystem = false;
-    m_turrent = false;
+    m_turret = false;
     m_launcher = false;
 
     if (item->type().HasEffect(EVEEffectID::loPower))
@@ -55,7 +55,7 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
         m_subSystem = true;
 
     if (item->type().HasEffect(EVEEffectID::turretFitted))
-        m_turrent = true;
+        m_turret = true;
     else if (item->type().HasEffect(EVEEffectID::launcherFitted))
         m_launcher = true;
 

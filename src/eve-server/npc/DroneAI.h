@@ -26,7 +26,7 @@
 #ifndef __EVEMU_SHIP_DRONEAI_H__
 #define __EVEMU_SHIP_DRONEAI_H__
 
-#include "ship/modules/TurrentFormulas.h"
+#include "ship/modules/TurretFormulas.h"
 
 class Drone;
 class SystemEntity;
@@ -91,7 +91,7 @@ private:
 
     Drone* m_drone;
 
-    TurrentFormulas m_formula;
+    TurretFormulas m_formula;
 
     Timer m_processTimer;
     Timer m_mainAttackTimer;

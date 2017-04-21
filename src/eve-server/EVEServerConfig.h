@@ -89,8 +89,8 @@ public:
         float missileRate;
         /// Modifier for missile flightTime
         float missileTime;
-        /// Modifier for damage from PC turrents
-        float turrentRate;
+        /// Modifier for damage from PC turrets
+        float turretRate;
         /// Startup Cost to create a corporation.
         double corpCost;
         // Decay timer for item deletion (garbage collection)

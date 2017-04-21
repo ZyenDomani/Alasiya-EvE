@@ -71,7 +71,7 @@ EVEServerConfig::EVEServerConfig()
     rates.damageRate = 1.0;
     rates.missileRate = 1.0;
     rates.missileTime = 1.0;
-    rates.turrentRate = 1.0;
+    rates.turretRate = 1.0;
     rates.corpCost = 1599800;
     rates.WorldDecay = 120 /*m*/;//P   2 hours
     rates.NPCDecay = 90 /*m*/; //P 90 mins
@@ -260,7 +260,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "damageRate",       rates.damageRate );
     AddValueParser( "missileRate",      rates.missileRate );
     AddValueParser( "missileTime",      rates.missileTime );
-    AddValueParser( "turrentRate",      rates.turrentRate );
+    AddValueParser( "turretRate",      rates.turretRate );
     AddValueParser( "corpCost",         rates.corpCost );
     AddValueParser( "WorldDecay",       rates.WorldDecay );
     AddValueParser( "NPCDecay",         rates.NPCDecay );
@@ -276,7 +276,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "damageRate" );
     RemoveParser( "missileRate" );
     RemoveParser( "missileTime" );
-    RemoveParser( "turrentRate" );
+    RemoveParser( "turretRate" );
     RemoveParser( "corpCost" );
     RemoveParser( "WorldDecay" );
     RemoveParser( "NPCDecay" );

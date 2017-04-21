@@ -66,7 +66,7 @@ public:
 
     /* NPC AI Methods */
     bool                IsTargetedBy(SystemEntity *pSE);
-    SystemEntity*       GetFirstTarget(bool need_locked);
+    SystemEntity*       GetFirstTarget(bool need_locked=false);
     SystemEntity*       GetTarget(uint32 targetID, bool need_locked=true) const;
 
     bool                StartTargeting(SystemEntity* who, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool& chase);

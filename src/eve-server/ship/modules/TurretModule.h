@@ -1,7 +1,7 @@
 
  /**
-  * @name TurrentModule.h
-  *   turrent module class
+  * @name TurretModule.h
+  *   turret module class
   * @Author:         Allan
   * @date:   10 June 2015   -UD/RW 02 April 2017
   */
@@ -11,17 +11,17 @@
 #define __EVESERVER_SHIPMODULES_ACTIVE_MODULES_TURRENTMODULE_H
 
 #include "ship/modules/ActiveModule.h"
-#include "ship/modules/TurrentFormulas.h"
+#include "ship/modules/TurretFormulas.h"
 
 
-class TurrentModule : public ActiveModule
+class TurretModule : public ActiveModule
 {
 public:
-    TurrentModule(InventoryItemRef item, ShipItemRef shipRef);
-    virtual ~TurrentModule()                            { /* do nothing here */ }
+    TurretModule(InventoryItemRef item, ShipItemRef shipRef);
+    virtual ~TurretModule()                            { /* do nothing here */ }
 
     //  class type helpers.  public for anyone to access.
-    virtual bool IsTurrentModule()                      { return true; }
+    virtual bool IsTurretModule()                      { return true; }
 
     /* ActiveModule overrides */
     virtual void LoadCharge(InventoryItemRef charge);
@@ -31,7 +31,7 @@ public:
     virtual void ApplyDamage();
 
 protected:
-    TurrentFormulas m_formula;
+    TurretFormulas m_formula;
 
     float m_crystalDmg;
     float m_crystalDmgAmount;
