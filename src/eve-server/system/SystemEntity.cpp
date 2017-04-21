@@ -614,11 +614,10 @@ void DynamicSystemEntity::Killed(Damage &fatal_blow)
 void DynamicSystemEntity::AwardBounty(Client* pClient)
 {
     double bounty = m_self->GetAttribute(AttrEntityKillBounty).get_double();
+    bounty *= sConfig.rates.npcBountyMultiply;
     if (bounty <= 0)
         return;    //no bounty to award...
 
-    if (sConfig.rates.npcBountyMultiply != 1.0)
-        bounty *= sConfig.rates.npcBountyMultiply;
 
     /** @todo handle distribution to gangs. */
     /** @todo handle corp tax */

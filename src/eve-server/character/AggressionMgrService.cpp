@@ -127,8 +127,8 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar
     double oldSec = pChar->GetSecurityRating();
     double secAward = (((10 -oldSec) *killBonus) +oldSec) /1000;
     secAward *=  (1 + ( 0.05 * (pChar->GetSkillLevel(skillFastTalk, true))));      // 5% increase
+    secAward *= sConfig.rates.secRate;
     if (secAward) {
-        if (sConfig.rates.secRate != 1.0) secAward *= sConfig.rates.secRate;
         sLog.Magenta("SystemEntity::AwardSecurityStatus()"," %s(%u): killBonus: %f.  oldSec: %f.  secAward: %f.",
                      GetName(), GetID(), killBonus, oldSec, secAward);
         //pChar->secStatusChange( secAward );

@@ -49,8 +49,7 @@ void TurretModule::ApplyDamage()
     );
 
     d *= GetAttribute(AttrDamageMultiplier).get_float();
-    if (sConfig.rates.turretRate != 1.0)
-        d *= sConfig.rates.turretRate;
+    d *= sConfig.rates.turretRate;
     m_targetSE->ApplyDamage(d);
 
     switch (m_modRef->groupID()) {

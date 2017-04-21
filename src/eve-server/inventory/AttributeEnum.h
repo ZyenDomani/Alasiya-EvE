@@ -47,7 +47,7 @@ enum EveAttrEnum {
     AttrMaxArmor = 31,
     AttrBreakPoint = 32,
     AttrMaxVelocity = 37,
-    AttrCapacity = 38,      //cargohold capacity 
+    AttrCapacity = 38,      //cargohold capacity
     AttrDamageHP = 39,
     AttrSlots = 47,
     AttrCpuOutput = 48,
@@ -256,7 +256,7 @@ enum EveAttrEnum {
     AttrRequiredSkill2Level = 278,
     AttrRequiredSkill3Level = 279,
     AttrSkillLevel = 280,
-    AttrExplosionDelay = 281,
+    AttrExplosionDelay = 281,       // in ms
     AttrLauncherCapacityMultiplier = 282,
     AttrDroneCapacity = 283,
     AttrExcludeGangMembers = 284,

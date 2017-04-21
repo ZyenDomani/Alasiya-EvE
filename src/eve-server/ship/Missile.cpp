@@ -66,8 +66,7 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
 
     m_hitTimer.Disable();
     double flightTime = self->GetAttribute(AttrExplosionDelay).get_float();
-    if (sConfig.rates.missileTime != 1.0)
-        flightTime *= sConfig.rates.missileTime;
+    flightTime *= sConfig.rates.missileTime;
     m_lifeTimer.Start(flightTime);
 
     m_alive = true;
@@ -200,9 +199,7 @@ void Missile::HitTarget() {
     double v1 = Sr/Er;
     double v2 = pow(((Ev/V) * (Sr/Er)), (log(DRF) / log(DRS)));
     d *= EvE::min1(v1, v2);
-
-    if (sConfig.rates.missileRate != 1.0)
-        d *= sConfig.rates.missileRate;
+    d *= sConfig.rates.missileRate;
 
     m_targetSE->ApplyDamage(d);
     m_alive = false;
