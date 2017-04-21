@@ -71,7 +71,6 @@ public:
     float GetExplosive()                                { return m_expDamage; }
 
     double GetSpeed()                                   { return m_speed; }
-    double Min(double a, double b);
 
 protected:
     SystemEntity* m_targetSE;
@@ -96,7 +95,6 @@ protected:
     double m_therDamage;
     double m_kinDamage;
     double m_expDamage;
-    double m_damageMod;
 };
 
 #endif  //EVE_SHIP_MISSILE_H

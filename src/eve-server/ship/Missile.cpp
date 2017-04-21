@@ -74,32 +74,7 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
 
     m_hullHP = self->GetAttribute(AttrHP).get_int();
 
-    /*  this is damage formula for missiles
-     * Damage = D * MIN(1, Sr/Er, (Ev/V * Sr/Er)^(ln(DRF) / ln(DRS)) )
-     *
-     * D = base damage of the missile,
-     * Sr = signature radius of the target,
-     * Er = Explosion radius of the missile,
-     * Ev = Explosion Velocity of the missile,
-     * V = velocity of the target ship,
-     * DRF = damage reduction factor of the missile.
-     * MIN being a function that chooses the lower of two given vaules,
-     * ln is natural logarithm.
-     */
-    double Sr = m_targetSE->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();    // this is a default number, based on itemtype
-    double Er = m_self->GetAttribute(AttrAoeCloudSize).get_float(); // Explosion Radius
-    double Ev = m_self->GetAttribute(AttrAoeVelocity).get_float(); // Explosion Velocity
-    double DRF = m_self->GetAttribute(AttrAoeDamageReductionFactor).get_float(); // Damage Reduction Factor
-    double DRS = m_self->GetAttribute(AttrAoeDamageReductionSensitivity).get_float(); // Damage Reduction Sensitivity
-
-    GPoint Vel = m_targetSE->GetVelocity();
-    double V = Vel.length();
-
-    double v1 = Sr/Er;
-    double v2 = pow(((Ev/V) * (Sr/Er)), (log(DRF) / log(DRS)));
-    m_damageMod = Min(v1, v2);
-
-    _log(DAMAGE__MESSAGE, "Created Missile object for %s (%u) with damageMod of %0.3f", self.get()->itemName().c_str(), self.get()->itemID(), m_damageMod);
+    //_log(DAMAGE__MESSAGE, "Created Missile object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
 }
 
 Missile::~Missile() {
@@ -201,7 +176,31 @@ void Missile::HitTarget() {
              EVEEffectID::missileLaunching  // from EVEEffectID::  should be an explosion effect here
             );
 
-    d *= m_damageMod;
+    /*  this is damage formula for missiles
+     * Damage = D * MIN(1, Sr/Er, (Ev/V * Sr/Er)^(ln(DRF) / ln(DRS)) )
+     *
+     * D = base damage of the missile,
+     * Sr = signature radius of the target,
+     * Er = Explosion radius of the missile,
+     * Ev = Explosion Velocity of the missile,
+     * V = velocity of the target ship,
+     * DRF = damage reduction factor of the missile.
+     * MIN being a function that chooses the lower of two given vaules,
+     * ln is natural logarithm.
+     */
+    double Sr = m_targetSE->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();    // this is a default number, based on itemtype
+    double Er = m_self->GetAttribute(AttrAoeCloudSize).get_float(); // Explosion Radius
+    double Ev = m_self->GetAttribute(AttrAoeVelocity).get_float(); // Explosion Velocity
+    double DRF = m_self->GetAttribute(AttrAoeDamageReductionFactor).get_float(); // Damage Reduction Factor
+    double DRS = m_self->GetAttribute(AttrAoeDamageReductionSensitivity).get_float(); // Damage Reduction Sensitivity
+
+    GPoint Vel = m_targetSE->GetVelocity();
+    double V = Vel.length();
+
+    double v1 = Sr/Er;
+    double v2 = pow(((Ev/V) * (Sr/Er)), (log(DRF) / log(DRS)));
+    d *= EvE::min1(v1, v2);
+
     if (sConfig.rates.missileRate != 1.0)
         d *= sConfig.rates.missileRate;
 
@@ -221,15 +220,4 @@ void Missile::Delete() {
     m_system->RemoveEntity(this);
     m_self->Delete();
     // do we need to do anything else here?
-}
-
-double Missile::Min(double a, double b)
-{
-    /*  this method returns the smallest number of the 2 given, or 1 if a>1 && b>1 */
-    double min = ( a > b ? b : a );
-
-    if (min > 1)
-        return 1;
-    else
-        return min;
 }

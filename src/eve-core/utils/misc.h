@@ -92,10 +92,12 @@ uint32 CreatePIDFile(const std::string& filename);
 
 namespace EvE {
     // returns the minimum of x,y
-    double min(double x, double y);
+    inline double min(double x, double y);
+    // returns the minimum of x,y and 1
+    inline double min1(double x, double y);
     // returns the max of x,y with y=0 by default
-    uint64 max(int64 x, int64 y=0);
-    double max(double x, double y=0);
+    inline uint64 max(int64 x, int64 y=0);
+    inline double max(double x, double y=0);
     // prints the top10 items in stack to stdout
     void traceStack(void);
 }
