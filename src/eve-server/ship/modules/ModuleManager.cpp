@@ -926,18 +926,17 @@ void ModuleManager::UnloadAllModules()
 void ModuleManager::UpdateModules(std::vector<uint32> modVec)
 {
     sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
-    // this one is called from BoardShip()
+    // this one is called from BoardShip() and Ship::Undock()
     //OfflineAll();
     GenericModule* mod(nullptr);
-    // gotta add rigs and Subsystems to the vector, as they wont be listed in the "modules to online" list when undocking.
-    GetShipRigs(modVec);
-    GetShipSubSystems(modVec);
-    if (modVec.size()) {
-        m_Ship->SetAttribute(AttrCpuLoad,     0);
-        m_Ship->SetAttribute(AttrPowerLoad,   0);
-        //m_Ship->SetAttribute(AttrUpgradeLoad, 0);
-
+    m_Ship->SetAttribute(AttrCpuLoad,     0);
+    m_Ship->SetAttribute(AttrPowerLoad,   0);
+    //m_Ship->SetAttribute(AttrUpgradeLoad, 0);
+    if (!modVec.empty()) {
         _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec)");
+        // gotta add rigs and Subsystems to the vector, as they wont be listed in the "modules to online" list when undocking.
+        GetShipRigs(modVec);
+        GetShipSubSystems(modVec);
         std::vector< GenericModule* > modList;
         SortModulesBySlotDec(modVec, modList);
         for (auto cur : modList) {
