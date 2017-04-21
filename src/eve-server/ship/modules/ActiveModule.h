@@ -51,7 +51,7 @@ public:
     virtual bool CanActivate();
 
     /* ActiveModule methods */
-    uint32 GetTargetID()                                { return m_targetID; }
+    virtual uint32 GetTargetID()                        { return m_targetID; }
     SystemEntity* GetTarget()                           { return m_targetSE; }
 
     void LaunchMissile();

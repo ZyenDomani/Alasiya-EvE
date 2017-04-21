@@ -536,7 +536,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     Call_SingleIntList chargeList;
 
     for (uint8 i=0; i<args.moduleIDs.size(); ++i) {
-        InventoryItemRef moduleRef = shipRef->GetModule(args.moduleIDs.at(i));
+        InventoryItemRef moduleRef = shipRef->GetModuleRef(args.moduleIDs.at(i));
         if (!moduleRef) {
             sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "ERROR: cannot find module into which charge should be loaded." );
             continue;
@@ -591,7 +591,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 	/** @todo  update this to check all charges in args.itemIDs to see if they can be loaded also. */
 	// Get Reference to Ship, Module, and Charge
 	ShipItemRef shipRef = pClient->GetShip();
-	InventoryItemRef moduleRef = shipRef->GetModule(args.masterID);
+	InventoryItemRef moduleRef = shipRef->GetModuleRef(args.masterID);
 	if (!moduleRef) {
 		sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "ERROR: cannot find module into which charge should be loaded." );
 		return new PyNone();

@@ -316,9 +316,11 @@ public:
     void AbortCycle()                                        { m_ModuleManager->AbortCycle(); }
     bool IsDocking()                                         { return m_isDocking; }
     bool IsUndocking()                                       { return m_isUndocking; }
+    InventoryItemRef GetTargetRef()                          { return m_targetRef; }
+    void ClearTargetRef()                                    { m_targetRef = InventoryItemRef(); }
 
-    InventoryItemRef GetModule(EVEItemFlags flag);
-    InventoryItemRef GetModule(uint32 itemID);
+    InventoryItemRef GetModuleRef(EVEItemFlags flag);
+    InventoryItemRef GetModuleRef(uint32 itemID);
     EVEItemFlags FindAvailableModuleSlot( InventoryItemRef item );
     uint32 AddItem( EVEItemFlags flag, InventoryItemRef item);
     /* end new module manager interface */
@@ -382,6 +384,8 @@ private:
 
     //the ship's module manager.  We own this
     ModuleManager* m_ModuleManager;
+
+    InventoryItemRef m_targetRef;
 
     std::vector<uint32> m_onlineModuleVec;
 

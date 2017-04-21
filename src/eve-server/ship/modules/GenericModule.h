@@ -92,6 +92,7 @@ public:
     /* generic access functions to be overridden in derived classes as needed */
     virtual void Overload();
     virtual void DeOverload();
+    virtual uint32 GetTargetID()                        { return 0; }
     virtual InventoryItemRef GetLoadedChargeRef()       { return InventoryItemRef(); }
 
     /* override for rigs and subsystems in approprate derived class */

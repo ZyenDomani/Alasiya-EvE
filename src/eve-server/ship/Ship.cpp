@@ -60,6 +60,7 @@ m_ModuleManager(nullptr)
     m_isUndocking = false;
     m_stackMap.clear();
     m_onlineModuleVec.clear();
+    m_targetRef = InventoryItemRef();
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created ShipItem for %s(%u).", itemName().c_str(), itemID());
 }
@@ -808,7 +809,7 @@ void ShipItem::SetShipHull(double fraction)
 }
 
 /* Begin new Module Manager Interface */
-InventoryItemRef ShipItem::GetModule(EVEItemFlags flag)
+InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
 {
     if (m_ModuleManager and m_ModuleManager->GetModule(flag) )
 		return (m_ModuleManager->GetModule(flag))->getItem();
@@ -816,7 +817,7 @@ InventoryItemRef ShipItem::GetModule(EVEItemFlags flag)
 		return InventoryItemRef();
 }
 
-InventoryItemRef ShipItem::GetModule(uint32 itemID)
+InventoryItemRef ShipItem::GetModuleRef(uint32 itemID)
 {
     if (m_ModuleManager and m_ModuleManager->GetModule(itemID) )
 		return (m_ModuleManager->GetModule(itemID))->getItem();
@@ -919,7 +920,7 @@ void ShipItem::RemoveItem(InventoryItemRef item, uint32 qty/*0*/)
 
 void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     // slot1 is occupied, as this is location module is from.
-    InventoryItemRef modItemRef1 = GetModule(slot1);
+    InventoryItemRef modItemRef1 = GetModuleRef(slot1);
     if (!modItemRef1) {
         _log(SHIP__MODULE_TRACE, "Ship::MoveModuleSlot - modItemRef1 is null." );
         m_pilot->SendNotifyMsg("There was an internal error.  The module to move was not found.");
@@ -932,7 +933,7 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
 
     if (m_ModuleManager->IsSlotOccupied(slot2)) {
         // dropped-on slot is occupied.  procede with moving the module currently in this slot.
-        InventoryItemRef modItemRef2 = GetModule(slot2);
+        InventoryItemRef modItemRef2 = GetModuleRef(slot2);
         InventoryItemRef chargeItemRef2 = m_ModuleManager->GetLoadedChargeOnModule(slot2);
         if (chargeItemRef2)
             m_ModuleManager->UnloadCharge(slot2);
@@ -1007,6 +1008,7 @@ void ShipItem::Offline (uint32 moduleID)
 
 void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat)
 {
+    m_targetRef = m_factory.GetItem(targetID);
     m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(effectName), targetID, repeat );
 }
 

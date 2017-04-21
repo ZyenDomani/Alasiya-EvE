@@ -951,10 +951,9 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                                 itemRefVec.push_back(mod.second);
                     } break;
                     case dgmTargLocTarget: {
-                        // ....unknown at this time
-                        // will need more testing to verify this.
-                        _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): targLoc is target.  is this right?");
-                        itemRefVec.push_back(pShip->GetPilot()->GetShipSE()->TargetMgr()->GetFirstTarget(true)->GetSelf());
+                        // ...current target (focused)
+                        // will need more testing to verify this. (disruptor works)
+                        itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
                     case dgmTargLocInvalid: {   // null
                         _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): target location invalid.");
@@ -987,8 +986,13 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         // will need more testing to verify this.
                         itemRefVec.push_back(pShip->GetModuleManager()->GetModule(cur.second.srcRef->flag())->GetSelf());
                     } break;
+                    case dgmTargLocTarget: {
+                        // ...current target (focused)
+                        // will need more testing to verify this. (target painter works)
+                        itemRefVec.push_back(pShip->GetTargetRef());
+                    } break;
                     default: {
-                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): target undefined.");
+                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): target undefined - %s.", GetSourceName(cur.second.targLoc).c_str());
                     } break;
                 }
             } break;

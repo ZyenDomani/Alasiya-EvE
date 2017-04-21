@@ -95,6 +95,8 @@ void ActiveModule::Clear()
     m_targetSE = nullptr;
     m_destinyMgr = nullptr;
     m_timer.Disable();
+
+    m_shipRef->ClearTargetRef();
 }
 
 void ActiveModule::Process()
