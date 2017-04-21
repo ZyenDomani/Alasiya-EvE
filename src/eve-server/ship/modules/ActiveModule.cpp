@@ -180,7 +180,11 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         return;
     }
 
-    ApplyEffect(Effects::dgmStateActive, true);
+    if (targetID)
+        ApplyEffect(Effects::dgmStateTarget, true);
+    else
+        ApplyEffect(Effects::dgmStateActive, true);
+
     ShowEffect(true, false);
 
     m_ModuleState = ModuleStates::MOD_ACTIVATED;
@@ -371,7 +375,11 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     if (m_ModuleState != ModuleStates::MOD_DEACTIVATING)
         return;
 
-    ApplyEffect(Effects::dgmStateActive, false);
+    if (m_targetID)
+        ApplyEffect(Effects::dgmStateTarget, false);
+    else
+        ApplyEffect(Effects::dgmStateActive, false);
+
     ShowEffect(false, abort);
 
     SetModuleState(ModuleStates::MOD_ONLINE);
