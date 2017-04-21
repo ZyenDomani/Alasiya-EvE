@@ -85,19 +85,19 @@ int64 MakeRandomInt( int64 low = 0, int64 high = RAND_MAX );
  */
 double MakeRandomFloat( double low = 0, double high = 1 );
 
-inline bool IsEven(int64 number) { return ((number %2) == 0); }
-inline bool IsNaN(double x)      { return x!= x; }
+inline bool IsEven(int64 number)                        { return ((number %2) == 0); }
+inline bool IsNaN(double x)                             { return x!= x; }
 
 uint32 CreatePIDFile(const std::string& filename);
 
 namespace EvE {
     // returns the minimum of x,y
-    inline double min(double x, double y);
+    inline double min(double x, double y)               { return ((x < y) ? x : y); }
     // returns the minimum of x,y and 1
-    inline double min1(double x, double y);
+    double min1(double x, double y);
     // returns the max of x,y with y=0 by default
-    inline uint64 max(int64 x, int64 y=0);
-    inline double max(double x, double y=0);
+    inline uint64 max(int64 x, int64 y=0)               { return ((x > y) ? x : y); }
+    inline double max(double x, double y=0)             { return ((x > y) ? x : y); }
     // prints the top10 items in stack to stdout
     void traceStack(void);
 }

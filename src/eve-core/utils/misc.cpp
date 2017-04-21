@@ -146,6 +146,12 @@ uint32 CreatePIDFile(const std::string& filename)
 }
 
 // EvE namespace
+double EvE::min1(double x, double y)
+{
+    double min = ((x < y) ? x : y);
+    return  ((min > 1) ? 1 : min);
+}
+
 void EvE::traceStack(void)
 {
     int j, nptrs;
@@ -169,25 +175,4 @@ void EvE::traceStack(void)
         printf("%s\n", strings[j]);
 
     free(strings);
-}
-
-double EvE::min(double x, double y)
-{
-    return ((x < y) ? x : y);
-}
-
-double EvE::min1(double x, double y)
-{
-    double min = ((x < y) ? x : y);
-    return  ((min > 1) ? 1 : min);
-}
-
-uint64 EvE::max(int64 x, int64 y)
-{
-    return ((x > y) ? x : y);
-}
-
-double EvE::max(double x, double y)
-{
-    return ((x > y) ? x : y);
 }
