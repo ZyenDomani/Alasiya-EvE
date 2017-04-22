@@ -95,7 +95,6 @@ private:
     float m_switchTargChance;   //fuzzy logic
     uint16 m_preferedSigRadius;
     //these attributes are cached to reduce access times. (much faster but uses more memory)
-    uint16 m_maxSpeed;
     uint16 m_ROF;
     uint16 m_orbitSpeed;
     uint16 m_targetRange;   // max targeting range  default: m_maxAttackRange (unused)

@@ -35,11 +35,6 @@ public:
     virtual void DeactivateCycle(bool abort=false);
     virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
 
-    /* GenericModule access function overriders */
-    virtual bool IsLoaded()                             { return m_chargeLoaded; }
-    virtual bool IsOverloaded()                         { return m_overLoaded; }
-    virtual InventoryItemRef GetLoadedChargeRef()       { return m_chargeRef; }
-
     /* generic DoCycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
      *  for modules that perform action on each DoCycle(), they will override this call in their class implementation
      */
@@ -76,9 +71,6 @@ protected:
 
     void SetTimer(uint32 time);
     void StopTimer()                                    { m_timer.Disable(); }
-
-    bool m_overLoaded : 1;
-    bool m_chargeLoaded : 1;
 
     uint16 m_effectID;                                  //passed to us by activate
     uint32 m_targetID;                                  //passed to us by activate

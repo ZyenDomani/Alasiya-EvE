@@ -26,6 +26,8 @@ SHIP__MODULE_TRACE=1
 using namespace ModStates;
 GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
 {
+    m_repeat = 0;
+
     m_modRef = item;
     m_shipRef = ship;
     m_chargeRef = InventoryItemRef();
@@ -33,7 +35,8 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_ModuleState = ModuleStates::MOD_UNFITTED;
     m_ChargeState = ChargeStates::CHG_UNLOADED;
 
-    m_repeat = 0;
+    m_overLoaded = false;
+    m_chargeLoaded = false;
 
     m_hiPower = false;
     m_medPower = false;
@@ -70,7 +73,7 @@ GenericModule::~GenericModule()
 void GenericModule::Online()
 {
     if (m_ModuleState == ModuleStates::MOD_UNFITTED) {
-        _log(SHIP__MODULE_WARNING, "GenericModule::Online() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        _log(SHIP__MODULE_ERROR, "GenericModule::Online() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
         return;
     }
     if (m_ModuleState != ModuleStates::MOD_OFFLINE) {
@@ -87,7 +90,7 @@ void GenericModule::Online()
     }
     EvilNumber pgNeed = (m_shipRef->GetAttribute(AttrPowerLoad) + GetAttribute(AttrPower));
     if (cpuNeed < 0) {
-        ; // make error for not enough cpu
+        ; // make error for not enough pg
         m_modRef->PutOffline();
         return;
     }
@@ -95,13 +98,9 @@ void GenericModule::Online()
     m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
     // clear map before adding new shit...avoids duplicating
-    //m_modRef->ClearModifiers(); // ClearModifiers DELETES AttrIsOnline from the map!!  (elusive error)
+    //m_modRef->ClearModifiers(); // ClearModifiers DELETES AttrIsOnline and all ship-modified attribs from the map!!  (elusive error)
     m_modRef->PutOnline(isRig());
     m_ModuleState = ModuleStates::MOD_ONLINE;
-    ProcessEffects(Effects::dgmStatePassive, true);
-    ProcessEffects(Effects::dgmStateOnline, true);
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
-
     _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
     if (m_ChargeState == ChargeStates::CHG_LOADED) {
@@ -110,6 +109,7 @@ void GenericModule::Online()
                     m_modRef->itemID(), m_modRef->itemName().c_str());
         } else {
             _log(SHIP__MODULE_INFO, "GenericModule::Online() - module %u(%s) loading charge %s.", m_modRef->itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
+            m_chargeLoaded = true;
             m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
                 fxData data;
@@ -122,6 +122,11 @@ void GenericModule::Online()
             sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         }
     }
+
+    // process passive and online effects AFTER charge is loaded and charge effects are applied. (in the case of charge modifying module - elusive error)
+    ProcessEffects(Effects::dgmStatePassive, true);
+    ProcessEffects(Effects::dgmStateOnline, true);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 }
 
 void GenericModule::Offline()
@@ -151,6 +156,11 @@ void GenericModule::Offline()
 
     _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
+    m_modRef->ClearModifiers();
+    ProcessEffects(Effects::dgmStatePassive, false);
+    ProcessEffects(Effects::dgmStateOnline, false);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+
     if (m_ChargeState == ChargeStates::CHG_LOADED) {
         if (!m_chargeRef) {
             _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
@@ -168,11 +178,6 @@ void GenericModule::Offline()
             sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         }
     }
-
-    m_modRef->ClearModifiers();
-    ProcessEffects(Effects::dgmStatePassive, false);
-    ProcessEffects(Effects::dgmStateOnline, false);
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
     m_ModuleState = ModuleStates::MOD_OFFLINE;
     m_modRef->PutOffline();

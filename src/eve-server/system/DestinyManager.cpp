@@ -2013,6 +2013,12 @@ void DestinyManager::WebbedMe()
 {
     m_maxShipSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
 
+    std::vector<PyTuple*> updates;
+    DoDestiny_SetMaxSpeed sbms;
+        sbms.entityID = mySE->GetID();
+        sbms.speedValue = m_maxShipSpeed;
+    updates.push_back(sbms.Encode());
+    SendDestinyUpdate(updates);
 }
 
 //  called from Client::CreateShipSE(), Client::ResetAfterPodded(), NPC::NPC(), Concord::Concord(), Drone::Drone(), DestinyManager::UpdateNewShip()

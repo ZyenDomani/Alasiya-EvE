@@ -21,9 +21,6 @@ ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
 m_timer(1000),
 m_reloadTimer(10000)
 {
-    m_overLoaded = false;
-    m_chargeLoaded = false;
-
     m_needsCharge = item->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
         switch (item->groupID()) {
@@ -39,6 +36,17 @@ m_reloadTimer(10000)
             case EVEDB::invGroups::Tracking_Disruptor: {
                 m_needsCharge = false;
             }
+        }
+    } else {
+        switch (item->groupID()) {
+            case EVEDB::invGroups::Survey_Scanner:
+            case EVEDB::invGroups::Ship_Scanner:
+            case EVEDB::invGroups::Cargo_Scanner:
+            case EVEDB::invGroups::System_Scanner: {
+                float m_range = GetAttribute(AttrSurveyScanRange).get_float();
+                m_range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(skillLongRangeTargeting, true)))); // 3% increase in range (here)
+                SetAttribute(AttrSurveyScanRange, m_range);
+            } break;
         }
     }
 
@@ -401,13 +409,13 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
             m_targetSE->DestinyMgr()->WebbedMe();
         } break;
         case EVEDB::invGroups::Survey_Scanner: {
+            // this is the complete belt scanner code here.
             PyTuple* tuple = new PyTuple(2);
             tuple->SetItem(0, new PyString("OnSurveyScanComplete"));
             PyList* list = new PyList();
             tuple->SetItem(1, list);
             if (m_bubble->IsBelt()) {
                 float m_range = GetAttribute(AttrSurveyScanRange).get_float();
-                m_range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(skillLongRangeTargeting, true)))); // 3% increase in range (here)
                 std::vector<AsteroidSE*> vList;
                 m_shipRef->GetPilot()->GetShipSE()->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetBeltID(m_bubble->GetID()), vList);
                 for (auto pASE : vList) {

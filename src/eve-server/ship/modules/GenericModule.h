@@ -48,15 +48,16 @@ public:
     bool isMaxGroupFitLimited()                         { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); } /** @todo this needs work */
 
     /* class type helpers.  public for anyone to access. */
-    virtual bool IsLoaded()                             { return false; }
     virtual bool IsGenericModule() const                { return true; }
     virtual bool IsPassiveModule() const                { return false; }
     virtual bool IsActiveModule() const                 { return false; }
     virtual bool IsRigModule() const                    { return false; }   // check this in m_rigSlot?
     virtual bool IsSubSystemModule() const              { return false; }   // check this in m_subSystem?
 
+    bool IsLoaded()                                     { return m_chargeLoaded; }
     bool IsTurretModule()                               { return m_turret; }
     bool IsLauncherModule()                             { return m_launcher; }
+    bool IsOverloaded()                                 { return m_overLoaded; }
 
     /* generic access functions handled here, but set elsewhere.  only slightly slower than above */
     bool isOnline()                                     { return m_modRef->IsOnline(); }
@@ -77,6 +78,8 @@ public:
     void SetChargeRef(InventoryItemRef iRef)            { m_chargeRef = iRef; }
     void SetModuleState(ModStates::ModuleStates state)  { m_ModuleState = state; }
     void SetChargeState(ModStates::ChargeStates state)  { m_ChargeState = state; }
+
+    InventoryItemRef GetLoadedChargeRef()               { return m_chargeRef; }
     ModStates::ModuleStates GetModuleState()            { return m_ModuleState; }
     ModStates::ChargeStates GetChargeState()            { return m_ChargeState; }
 
@@ -93,7 +96,6 @@ public:
     virtual void Overload();
     virtual void DeOverload();
     virtual uint32 GetTargetID()                        { return 0; }
-    virtual InventoryItemRef GetLoadedChargeRef()       { return InventoryItemRef(); }
 
     /* override for rigs and subsystems in approprate derived class */
     virtual ModStates::ModulePowerLevel GetModulePowerLevel() {
@@ -120,6 +122,9 @@ protected:
     bool             m_subSystem : 1;
     bool             m_launcher : 1;
     bool             m_turret : 1;
+    bool             m_overLoaded : 1;
+    bool             m_chargeLoaded : 1;
+
 
     int16            m_repeat;
 

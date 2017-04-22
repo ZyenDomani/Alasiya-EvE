@@ -414,7 +414,6 @@ bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
 {
     if (m_Modules->GetModule(flag))
         return true;
-
     return false;
 }
 
@@ -429,7 +428,7 @@ bool ModuleManager::InstallRig(InventoryItemRef item, EVEItemFlags flag) {
     uint8 slots = m_Ship->GetAttribute(AttrUpgradeSlotsLeft).get_int();
     if (!slots) {
         /* send error to player?  or does client do it?  dunno...  */
-        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s tried to fit item %u, which is not a rig", m_Ship->GetPilot()->GetName(), item->itemID());
+        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s has no upgrade slots left.", m_Ship->itemName().c_str());
         return false;
     }
     if (((item->groupID() >= EVEDB::invGroups::Rig_Armor) and (item->groupID() <= EVEDB::invGroups::Rig_Astronautic))

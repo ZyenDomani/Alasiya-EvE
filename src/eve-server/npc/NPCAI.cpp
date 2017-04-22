@@ -65,8 +65,6 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_processTimer.Start(m_ROF);
 
     /** @todo  all of these need to be verified and/or updated */
-    // absolute Max Ship Speed
-    m_maxSpeed = who->GetSelf()->GetAttribute(AttrMaxVelocity).get_int();
     // Optimal Range
     m_optimalRange = who->GetSelf()->GetAttribute(AttrMaxRange).get_int();
     // Accuracy falloff  (distance past maximum range at which accuracy has fallen by half)
@@ -155,10 +153,10 @@ void NPCAIMgr::Process() {
 
     /* NPC::State definitions   -allan 25July15  (UD 1June16)
      *   Idle,       // not doing anything, nothing in sight....idle.  call Wander() to loosely orbit random object in bubble ~10-20k at 1/2 orbit speed
-     *   Chasing,    // target within npc sight range.  attacking begins here.  use m_maxSpeed to get within falloff
+     *   Chasing,    // target within npc sight range.  attacking begins here.  use AttrMaxVelocity to get within falloff
      *   Following,  // between optimal and falloff.  try to get closer, but still orbiting and attacking
      *   Engaged,    // actively fighting (in orbit).  use m_orbitSpeed.
-     *   Fleeing,    // running away....use m_maxSpeed then warp away when out of range	(does this make sense??)
+     *   Fleeing,    // running away....use AttrMaxVelocity then warp away when out of range	(does this make sense??)
      *   Signaling   // calling for help..use m_orbitSpeed *2 to speed tank while calling for reinforcements
      */
     switch(m_state) {
@@ -277,7 +275,7 @@ void NPCAIMgr::EnterChasing(SystemEntity* pTarget) {
     _log(NPC__AI_TRACE, "%s(%u): _EnterChasing: Begin chasing.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
-    m_npc->DestinyMgr()->SetMaxVelocity(m_maxSpeed);
+    m_npc->DestinyMgr()->SetMaxVelocity(m_npc->GetSelf()->GetAttribute(AttrMaxVelocity).get_int());
     m_npc->DestinyMgr()->GotoPoint(pTarget->GetPosition());  //head towards target
     m_state = Chasing;
 }
@@ -312,7 +310,7 @@ void NPCAIMgr::EnterFleeing(SystemEntity* pTarget) {
     // actively fleeing
     //  use superspeed to disengage, then warp.  << both these will need to be written.
     //  this state is only usable by higher-class npcs.
-    m_npc->DestinyMgr()->SetMaxVelocity(m_maxSpeed);
+    m_npc->DestinyMgr()->SetMaxVelocity(m_npc->GetSelf()->GetAttribute(AttrMaxVelocity).get_int());
     m_state = Fleeing;
 }
 
