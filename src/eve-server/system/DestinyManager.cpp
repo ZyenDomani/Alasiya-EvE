@@ -2015,7 +2015,7 @@ void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
         m_maxShipSpeed *= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100));
     else
         m_maxShipSpeed /= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100));
-
+    m_activeSpeedFraction = m_userSpeedFraction * 0.999;
     SetSpeedFraction(m_userSpeedFraction, true);
 }
 

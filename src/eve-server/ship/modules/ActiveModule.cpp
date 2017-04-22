@@ -209,11 +209,6 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         case EVEDB::invGroups::Stasis_Web: {
             m_targetSE->DestinyMgr()->WebbedMe(m_modRef, true);
         } break;
-        case EVEDB::invGroups::Warp_Scrambler: {
-            EvilNumber scramStr = GetAttribute(AttrWarpScrambleStrength);
-            scramStr += m_targetSE->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
-            m_targetSE->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
-        } break;
     }
 
     if (!m_repeat)
@@ -399,11 +394,6 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         case EVEDB::invGroups::Afterburner:
         case EVEDB::invGroups::Microwarpdrive: {
             m_destinyMgr->SpeedBoost(true);
-        } break;
-        case EVEDB::invGroups::Warp_Scrambler: {
-            EvilNumber scramStr = GetAttribute(AttrWarpScrambleStrength);
-            scramStr -= m_targetSE->GetSelf()->GetAttribute(AttrWarpScrambleStatus);
-            m_targetSE->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
         } break;
         case EVEDB::invGroups::Stasis_Web: {
             m_targetSE->DestinyMgr()->WebbedMe(m_modRef, false);
