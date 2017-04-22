@@ -69,7 +69,7 @@ public:
     void EntityRemoved(SystemEntity* who);
 
     /* Configuration methods */
-    void WebbedMe();
+    void WebbedMe(InventoryItemRef modRef, bool apply=false);
     void SetBubble(bool set = false)                    { m_inBubble = set; }
     void SpeedBoost(bool deactivate=false);             // reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
     void SetPosition(const GPoint& pt, bool update = false);

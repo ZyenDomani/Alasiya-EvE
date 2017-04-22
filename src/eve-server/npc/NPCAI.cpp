@@ -36,7 +36,7 @@
 #include "system/SystemBubble.h"
 
 NPCAIMgr::NPCAIMgr(NPC* who)
-: m_state(Idle),
+: m_state(State::Idle),
   m_npc(who),
   m_mainAttackTimer(1000),
   m_processTimer(5000),         //arbitrary.
@@ -65,6 +65,8 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_processTimer.Start(m_ROF);
 
     /** @todo  all of these need to be verified and/or updated */
+    // absolute Max Ship Speed
+    m_maxSpeed = who->GetSelf()->GetAttribute(AttrMaxVelocity).get_int();
     // Optimal Range
     m_optimalRange = who->GetSelf()->GetAttribute(AttrMaxRange).get_int();
     // Accuracy falloff  (distance past maximum range at which accuracy has fallen by half)
@@ -153,14 +155,14 @@ void NPCAIMgr::Process() {
 
     /* NPC::State definitions   -allan 25July15  (UD 1June16)
      *   Idle,       // not doing anything, nothing in sight....idle.  call Wander() to loosely orbit random object in bubble ~10-20k at 1/2 orbit speed
-     *   Chasing,    // target within npc sight range.  attacking begins here.  use AttrMaxVelocity to get within falloff
+     *   Chasing,    // target within npc sight range.  attacking begins here.  use m_maxSpeed to get within falloff
      *   Following,  // between optimal and falloff.  try to get closer, but still orbiting and attacking
      *   Engaged,    // actively fighting (in orbit).  use m_orbitSpeed.
-     *   Fleeing,    // running away....use AttrMaxVelocity then warp away when out of range	(does this make sense??)
+     *   Fleeing,    // running away....use m_maxSpeed then warp away when out of range	(does this make sense??)
      *   Signaling   // calling for help..use m_orbitSpeed *2 to speed tank while calling for reinforcements
      */
     switch(m_state) {
-        case Idle: {
+        case State::Idle: {
             // The parameter proximityRange (154) tells us how far we "see" (npc's dont have this, but drones do)
             if (m_beginFindTarget.Check()) {
                 std::vector<Client*> clientVec;
@@ -185,45 +187,45 @@ void NPCAIMgr::Process() {
                 }
                 if (sConfig.npc.IdleWander)
                     if (!m_isWandering)
-                        Wander();
+                        SetWander();
             } else {
                 if (!m_beginFindTarget.Enabled())
                     m_beginFindTarget.Start(m_ROF);  //find target is based on npc attack speed.
             }
         } break;
 
-        case Chasing:
-        case Following:
-        case Engaged: {
+        case State::Chasing:
+        case State::Following:
+        case State::Engaged: {
             if (m_npc->TargetMgr()->HasNoTargets()) {
                 _log(NPC__AI_TRACE, "%s(%u): Stopped %s, HasNoTargets = true.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
-                EnterIdle();
+                SetIdle();
                 return;
             }
             SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(false);
             if (!pTarget) {
                 _log(NPC__AI_TRACE, "%s(%u): Stopped %s, GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
-                EnterIdle();
+                SetIdle();
                 return;
             } else if (!pTarget->SysBubble()) {
                 m_npc->TargetMgr()->ClearTarget(pTarget);
                 return;
             }
-            _CheckDistance(pTarget);
+            CheckDistance(pTarget);
         } break;
 
-        case Fleeing:
-        case Signaling: {
+        case State::Fleeing:
+        case State::Signaling: {
             _log(NPC__AI_TRACE, "%s(%u): Called %s, needs to be completed.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
             // not sure how im gonna do these
         } break;
     }
 }
 
-void NPCAIMgr::Wander()
+void NPCAIMgr::SetWander()
 {
     if (!m_isWandering) {
-        _log(NPC__AI_TRACE, "%s(%u): Wandering.  No Targets within my sight range of %um", \
+        _log(NPC__AI_TRACE, "%s(%u): Wandering:  No Targets within my sight range of %um", \
                 m_npc->GetName(), m_npc->GetID(), m_sightRange);
         m_isWandering = true;
     }
@@ -233,7 +235,7 @@ void NPCAIMgr::Wander()
         if (!pTarget)
             pTarget = m_npc->SystemMgr()->GetSE(sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()));
         if (!pTarget) {
-            _log(NPC__ERROR, "%s(%u): Wandering.  No Target or beltSE found", m_npc->GetName(), m_npc->GetID());
+            _log(NPC__ERROR, "%s(%u): Wandering:  No Target or beltSE found", m_npc->GetName(), m_npc->GetID());
             return;
         }
         // pick random entity and loosely orbit it.  if no entity found, orbit center of belt
@@ -244,16 +246,16 @@ void NPCAIMgr::Wander()
                 m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID(), orbitDistance);
     } else {
         /** @todo  figure out a way for npc to wander 'aimlessly' around their bubble */
-        m_npc->DestinyMgr()->Halt();
+        m_npc->DestinyMgr()->Stop();
     }
 }
 
-void NPCAIMgr::EnterIdle() {
-    if (m_state == Idle) return;
+void NPCAIMgr::SetIdle() {
+    if (m_state == State::Idle) return;
     // not doing anything....idle.
-    _log(NPC__AI_TRACE, "%s(%u): _EnterIdle: returning to idle.", \
+    _log(NPC__AI_TRACE, "%s(%u): Idle: returning to idle.", \
          m_npc->GetName(), m_npc->GetID());
-    m_state = Idle;
+    m_state = State::Idle;
     m_npc->DestinyMgr()->Stop();
     m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
 
@@ -268,78 +270,78 @@ void NPCAIMgr::EnterIdle() {
     // sounds like a good idea, but will take process power away from other shit.
 }
 
-void NPCAIMgr::EnterChasing(SystemEntity* pTarget) {
+void NPCAIMgr::SetChasing(SystemEntity* pTarget) {
     /** @todo implement chase timer using entityChaseMaxDuration to limit chase time. */
-    if ((m_state == Chasing) and (m_npc->DestinyMgr()->IsGoto() or m_npc->DestinyMgr()->IsFollowing()))
+    if ((m_state == State::Chasing) and (m_npc->DestinyMgr()->IsGoto() or m_npc->DestinyMgr()->IsFollowing()))
         return;
-    _log(NPC__AI_TRACE, "%s(%u): _EnterChasing: Begin chasing.  Target is %s(%u).", \
+    _log(NPC__AI_TRACE, "%s(%u): Chasing: Begin chasing.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
-    m_npc->DestinyMgr()->SetMaxVelocity(m_npc->GetSelf()->GetAttribute(AttrMaxVelocity).get_int());
+    m_npc->DestinyMgr()->SetMaxVelocity(m_maxSpeed);
     m_npc->DestinyMgr()->GotoPoint(pTarget->GetPosition());  //head towards target
-    m_state = Chasing;
+    m_state = State::Chasing;
 }
 
-void NPCAIMgr::EnterFollowing(SystemEntity* pTarget) {
-    if ((m_state == Following) and (m_npc->DestinyMgr()->IsGoto() or m_npc->DestinyMgr()->IsFollowing()))
+void NPCAIMgr::SetFollowing(SystemEntity* pTarget) {
+    if ((m_state == State::Following) and (m_npc->DestinyMgr()->IsGoto() or m_npc->DestinyMgr()->IsFollowing()))
         return;
-    _log(NPC__AI_TRACE, "%s(%u): _EnterFollowing: Begin following.  Target is %s(%u).", \
+    _log(NPC__AI_TRACE, "%s(%u): Following: Begin following.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // too close to chase, but to far to engage
     m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed *2);
     m_npc->DestinyMgr()->Follow(pTarget, m_falloff);  //try to get inside falloff range
-    m_state = Following;
+    m_state = State::Following;
 }
 
-void NPCAIMgr::EnterEngaged(SystemEntity* pTarget) {
-    if ((m_state == Engaged) and m_npc->DestinyMgr()->IsOrbiting())
+void NPCAIMgr::SetEngaged(SystemEntity* pTarget) {
+    if ((m_state == State::Engaged) and m_npc->DestinyMgr()->IsOrbiting())
         return;
-    _log(NPC__AI_TRACE, "%s(%u): _EnterEngaged: Begin engaging.  Target is %s(%u).", \
+    _log(NPC__AI_TRACE, "%s(%u): Engaged: Begin engaging.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively fighting
     m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
     m_npc->DestinyMgr()->Orbit(pTarget, m_optimalRange);  //try to get inside orbit range
-    m_state = Engaged;
+    m_state = State::Engaged;
 }
 
-void NPCAIMgr::EnterFleeing(SystemEntity* pTarget) {
-    if ((m_state == Fleeing) and m_npc->DestinyMgr()->IsMoving())
+void NPCAIMgr::SetFleeing(SystemEntity* pTarget) {
+    if ((m_state == State::Fleeing) and m_npc->DestinyMgr()->IsMoving())
         return;
-    _log(NPC__AI_TRACE, "%s(%u): _EnterFleeing: Begin fleeing.  Target is %s(%u).", \
+    _log(NPC__AI_TRACE, "%s(%u): Fleeing: Begin fleeing.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively fleeing
     //  use superspeed to disengage, then warp.  << both these will need to be written.
     //  this state is only usable by higher-class npcs.
-    m_npc->DestinyMgr()->SetMaxVelocity(m_npc->GetSelf()->GetAttribute(AttrMaxVelocity).get_int());
-    m_state = Fleeing;
+    m_npc->DestinyMgr()->SetMaxVelocity(m_maxSpeed);
+    m_state = State::Fleeing;
 }
 
-void NPCAIMgr::EnterSignaling(SystemEntity* pTarget) {
-    if ((m_state == Signaling) and m_npc->DestinyMgr()->IsOrbiting())
+void NPCAIMgr::SetSignaling(SystemEntity* pTarget) {
+    if ((m_state == State::Signaling) and m_npc->DestinyMgr()->IsOrbiting())
         return;
-    _log(NPC__AI_TRACE, "%s(%u): _EnterSignaling: Begin signaling.  Target is %s(%u).", \
+    _log(NPC__AI_TRACE, "%s(%u): Signaling: Begin signaling.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively signaling
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
     //  this state is only usable by higher-class npcs.
     m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed * 2);
     m_npc->DestinyMgr()->Orbit(pTarget, m_falloff);  //try to get outside orbit range
-    m_state = Signaling;
+    m_state = State::Signaling;
 }
 
-void NPCAIMgr::_CheckDistance(SystemEntity* pSE)
+void NPCAIMgr::CheckDistance(SystemEntity* pSE)
 {
     double dist = m_npc->GetPosition().distance(pSE->GetPosition());
     if ((dist > m_sightRange) and (!m_npc->TargetMgr()->IsTargetedBy(pSE))) {
-        _log(NPC__AI_TRACE, "%s(%u): _CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
+        _log(NPC__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
              m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist);
-        if (m_state != Idle) {
+        if (m_state != State::Idle) {
             // target is no longer in npc's "sight range" and is NOT targeting this npc.  unlock target and return to idle.
             //   should we do anything else here?  search for another target?  wander around?  yes..later
             // if npc is targeted greater than this distance, it will chase
             m_npc->TargetMgr()->ClearTarget(pSE);
             if (m_npc->TargetMgr()->HasNoTargets())
-                EnterIdle();
+                SetIdle();
         }
         return;
     }
@@ -347,11 +349,11 @@ void NPCAIMgr::_CheckDistance(SystemEntity* pSE)
     m_isWandering = false;
 
     if (dist < m_flyRange)
-        EnterEngaged(pSE);
+        SetEngaged(pSE);
     else if (dist < m_boostRange)
-        EnterFollowing(pSE);
+        SetFollowing(pSE);
     else
-        EnterChasing(pSE);
+        SetChasing(pSE);
 
     if (m_shieldBoosterDuration && (!m_shieldBoosterTimer.Enabled()))
         m_shieldBoosterTimer.Start(m_shieldBoosterDuration);
@@ -379,84 +381,81 @@ void NPCAIMgr::Target(SystemEntity* pTarget) {
         if (chase) {
             _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
                         m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-            EnterChasing(pTarget);
+            SetChasing(pTarget);
         } else {
             _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.", \
                         m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-            EnterIdle();
+            SetIdle();
         }
         return;
     }
     m_beginFindTarget.Disable();
-    _CheckDistance(pTarget);
+    CheckDistance(pTarget);
 }
 
 void NPCAIMgr::Targeted(SystemEntity* pAgressor) {
     double targetTime = GetTargetTime();
 
     switch(m_state) {
-        case Idle: {
+        case State::Idle: {
             _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) in Idle. Begin Approaching and start Targeting sequence.", \
                     m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
-            EnterChasing(pAgressor);
+            SetChasing(pAgressor);
 
             bool chase = false;
 			if (!m_npc->TargetMgr()->StartTargeting( pAgressor, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
                 if (chase) {
                     _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
                             m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
-                    EnterChasing(pAgressor);
+                    SetChasing(pAgressor);
                 } else {
                     _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.", \
                             m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
-                    EnterIdle();
+                    SetIdle();
                 }
             }
             m_beginFindTarget.Disable();
-            //_CheckDistance(pAgressor);
+            //CheckDistance(pAgressor);
         } break;
 
         /** @todo  determine if new targetedby entity is weaker than current target. use optimalSigRadius to test for 'optimal' target */
-        case Chasing: {
+        case State::Chasing: {
             _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while chasing.", \
                     m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
-        case Following: {
+        case State::Following: {
             _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while following.", \
                     m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
-        case Engaged: {
+        case State::Engaged: {
             _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while engaged.", \
                     m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
-        case Fleeing: {
+        case State::Fleeing: {
             _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while fleeing.", \
                     m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
-        case Signaling: {
+        case State::Signaling: {
             _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while signaling.", \
                     m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
-
-        //no default on purpose
     }
 }
 
 void NPCAIMgr::TargetLost(SystemEntity* pTarget) {
     switch(m_state) {
-        case Chasing:
-        case Following:
-        case Engaged: {
+        case State::Chasing:
+        case State::Following:
+        case State::Engaged: {
             if (m_npc->TargetMgr()->HasNoTargets()) {
                 _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) lost. No targets remain.  Return to Idle.", \
                         m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-                EnterIdle();
+                SetIdle();
             } else {
                 _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) lost, but more targets remain.", \
                         m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
                 /** @todo engage weakest target in current list */
             }
-
         } break;
     }
 }
@@ -496,7 +495,7 @@ void NPCAIMgr::Attack(SystemEntity* pTarget)
 void NPCAIMgr::AttackTarget(SystemEntity* pTarget) {
     // some npcs use missiles.
     //  write code for using missiles   -- entityMissileTypeID
-    _SendWeaponEffect("effects.Laser", pTarget);
+    SendWeaponEffect("effects.Laser", pTarget);
 
     Damage d(m_npc,
              m_npc->GetSelf(),
@@ -513,7 +512,7 @@ void NPCAIMgr::AttackTarget(SystemEntity* pTarget) {
 }
 
 //NOTE: duplicated from module manager code. They should share some day!
-void NPCAIMgr::_SendWeaponEffect( const char* effect, SystemEntity* pTarget ) {
+void NPCAIMgr::SendWeaponEffect( const char* effect, SystemEntity* pTarget ) {
     DoDestiny_OnSpecialFX13 sfx;
         sfx.entityID = m_npc->GetSelf()->itemID();
         sfx.moduleID = m_npc->GetSelf()->itemID();
@@ -560,11 +559,11 @@ void NPCAIMgr::DisableRepTimers()
 std::string NPCAIMgr::GetStateName(NPCAIMgr::State name)
 {
     switch (name) {
-        case Idle:      return "Idle";
-        case Chasing:   return "Chasing";
-        case Following: return "Following";
-        case Engaged:   return "Engaged";
-        case Fleeing:   return "Fleeing";
-        case Signaling: return "Signaling";
+        case State::Idle:      return "Idle";
+        case State::Chasing:   return "Chasing";
+        case State::Engaged:   return "Engaged";
+        case State::Fleeing:   return "Fleeing";
+        case State::Following: return "Following";
+        case State::Signaling: return "Signaling";
     }
 }

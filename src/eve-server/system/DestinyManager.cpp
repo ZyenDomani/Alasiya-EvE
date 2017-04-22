@@ -2009,9 +2009,13 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     SendDestinyUpdate(updates);
 }
 
-void DestinyManager::WebbedMe()
+void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
 {
-    m_maxShipSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
+    if (apply)
+        m_maxShipSpeed *= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100));
+    else
+        m_maxShipSpeed /= (1 + (modRef->GetAttribute(AttrSpeedFactor).get_float() / 100));
+
     SetSpeedFraction(m_userSpeedFraction, true);
 }
 

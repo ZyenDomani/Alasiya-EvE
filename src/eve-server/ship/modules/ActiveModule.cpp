@@ -207,7 +207,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
             m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE());
         } break;
         case EVEDB::invGroups::Stasis_Web: {
-            m_targetSE->DestinyMgr()->WebbedMe();
+            m_targetSE->DestinyMgr()->WebbedMe(m_modRef, true);
         } break;
         case EVEDB::invGroups::Warp_Scrambler: {
             EvilNumber scramStr = GetAttribute(AttrWarpScrambleStrength);
@@ -406,7 +406,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
             m_targetSE->GetSelf()->SetAttribute(AttrWarpScrambleStatus, scramStr);
         } break;
         case EVEDB::invGroups::Stasis_Web: {
-            m_targetSE->DestinyMgr()->WebbedMe();
+            m_targetSE->DestinyMgr()->WebbedMe(m_modRef, false);
         } break;
         case EVEDB::invGroups::Survey_Scanner: {
             // this is the complete belt scanner code here.
