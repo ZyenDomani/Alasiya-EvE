@@ -42,27 +42,35 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
     GVector vector = vel - shipRef->GetPilot()->GetShipSE()->GetVelocity();
     double transversalV = vector.length();
     double angularVel = transversalV / distance;
+    float ChanceToHit = 0;
+    if (!angularVel)
+        angularVel = pTarget->DestinyMgr()->GetRadTic();
     _log(DAMAGE__TRACE, "Turret::GetToHit - angularVel:%.3f tracking:%.3f", angularVel, modTrackSpeed);
-
-    //  calculations for chance to hit  --UD 23April17
-    /*     a =  angVelocity * 40000
-     *     b =  turret tracking * target sig radius
-     *     c =  (a / b) ^ 2
-     *     d =  max(0, distance - optimal range)
-     *     e =  (d / falloff) ^ 2
-     * tohit =  0.5 ^ (c + e)
-     */
-    double a = (angularVel * 40000);
-    double b = (modTrackSpeed * pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
-    double c = pow((a / b), 2);
-    double d = EvE::max(distance - range);
-    double e = pow((d / falloff), 2);
-
-    float ChanceToHit = pow(0.5, c + e);
+    if (!angularVel) {
+        // cant get angular.  hack ToHit
+        if (distance < range)
+            ChanceToHit = MakeRandomFloat(0, 0.5);  // hack a 20% chance to hit when !angularVel and targ is inside weapon range
+    } else {
+        //  calculations for chance to hit  --UD 23April17
+        /*     a =  angVelocity * 40000
+         *     b =  turret tracking * target sig radius
+         *     c =  (a / b) ^ 2
+         *     d =  max(0, distance - optimal range)
+         *     e =  (d / falloff) ^ 2
+         * tohit =  0.5 ^ (c + e)
+         */
+        double a = (angularVel * 40000);
+        double b = (modTrackSpeed * pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
+        double c = pow((a / b), 2);
+        double d = EvE::max(distance - range);
+        double e = pow((d / falloff), 2);
+        ChanceToHit = pow(0.5, c + e);
+        _log(DAMAGE__TRACE, "Turret::GetToHit - (%.3fx%.3f)^2 = %.5f + e:%.5f", a, b, c, e);
+    }
     if (ChanceToHit == 0)
         return 0;
     double rNum = MakeRandomFloat(0.0, 1.0);
-    _log(DAMAGE__TRACE, "Turret::GetToHit - ChanceToHit:%f, Rand:%.3f ((%.3fx%.3f)^2 = %.5f + e:%.5f)", ChanceToHit, rNum, a, b, c, e);
+    _log(DAMAGE__TRACE, "Turret::GetToHit - ChanceToHit:%f, Rand:%.3f", ChanceToHit, rNum);
     if (rNum <= 0.02)
         return 3.0f;
     else if (rNum < ChanceToHit)
@@ -86,19 +94,27 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     GVector vector = vel - pNPC->GetVelocity();
     double transversalV = vector.length();
     double angularVel = transversalV / distance;
+    float ChanceToHit = 0;
+    if (!angularVel)
+        angularVel = pTarget->DestinyMgr()->GetRadTic();
     _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - angularVel:%.3f tracking:%.3f", angularVel, trackSpeed);
-
-    double a = (angularVel * 40000);
-    double b = (trackSpeed * pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
-    double c = pow((a / b), 2);
-    double d = EvE::max(distance - range);
-    double e = pow((d / falloff), 2);
-
-    float ChanceToHit = pow(0.5, c + e);
+    if (!angularVel) {
+        // cant get angular.  hack ToHit
+        if (distance < range)
+            ChanceToHit = MakeRandomFloat(0, 0.5);  // hack a 20% chance to hit when !angularVel and targ is inside weapon range
+    } else {
+        double a = (angularVel * 40000);
+        double b = (trackSpeed * pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
+        double c = pow((a / b), 2);
+        double d = EvE::max(distance - range);
+        double e = pow((d / falloff), 2);
+        ChanceToHit = pow(0.5, c + e);
+        _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - (%.3fx%.3f)^2 = %.5f + e:%.5f", a, b, c, e);
+    }
     if (ChanceToHit == 0)
         return 0;
     double rNum = MakeRandomFloat(0.0, 1.0);
-    _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - ChanceToHit:%f, Rand:%.3f ((%.3fx%.3f)^2 = %.5f + e:%.5f)", ChanceToHit, rNum, a, b, c, e);
+    _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - ChanceToHit:%f, Rand:%.3f", ChanceToHit, rNum);
     if (rNum <= 0.015)
         return 3.0f;
     else if (rNum < ChanceToHit)
