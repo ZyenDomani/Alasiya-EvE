@@ -35,6 +35,7 @@
 #include "planet/Moon.h"
 #include "pos/Structure.h"
 #include "npc/Drone.h"
+#include "npc/Sentry.h"
 #include "ship/Missile.h"
 #include "ship/Ship.h"
 #include "station/Station.h"
@@ -531,10 +532,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 or (entity.groupID == EVEDB::invGroups::Mission_Faction_Cruiser) or (entity.groupID == EVEDB::invGroups::Mission_Faction_Frigate)
                 or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Industrial) or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Capital)
                 or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Frigate) or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Cruiser)
-                or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship)
-                /** @todo (allan)  sentry guns will need their own class, seperate from NPC class here. */
-                or (entity.groupID == EVEDB::invGroups::Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Protective_Sentry_Gun)
-                or (entity.groupID == EVEDB::invGroups::Destructible_Sentry_Gun))
+                or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship))
             {
                 InventoryItemRef npcRef = factory->GetItem( entity.itemID );
                 if (!npcRef)
@@ -543,6 +541,16 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 NPC* npcSE = new NPC(npcRef, *(system.GetServiceMgr()), &system, data);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making NPC item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return npcSE;
+            } else if ((entity.groupID == EVEDB::invGroups::Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Protective_Sentry_Gun)
+                or (entity.groupID == EVEDB::invGroups::Destructible_Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Mobile_Sentry_Gun))
+            {
+                InventoryItemRef sentryRef = factory->GetItem( entity.itemID );
+                if (!sentryRef)
+                    return nullptr;
+                /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                Sentry* SentrySE = new Sentry(sentryRef, *(system.GetServiceMgr()), &system, data);
+                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making Sentry item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                return SentrySE;
             } else {
                 CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
                 if (!celestial)

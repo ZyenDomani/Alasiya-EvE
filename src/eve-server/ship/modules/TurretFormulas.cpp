@@ -16,6 +16,7 @@
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
 #include "npc/Drone.h"
+#include "npc/Sentry.h"
 #include "ship/modules/TurretFormulas.h"
 #include "ship/modules/TurretModule.h"
 
@@ -124,6 +125,36 @@ float TurretFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
     double b = (pDrone->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float() * pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
     double c = pow((a / b), 2);
     double d = EvE::max(distance - pDrone->GetSelf()->GetAttribute(AttrEntityAttackRange).get_double());
+    double e = pow((d / falloff), 2);
+
+    float ChanceToHit = pow(0.5, c + e);
+    if (ChanceToHit == 0)
+        return 0;
+    double rNum = MakeRandomFloat(0.0, 1.0);
+    if (rNum <= 0.03)
+        return 3.0f;
+    else if (rNum < ChanceToHit)
+        return rNum;
+    else
+        return 0;
+}
+
+float TurretFormulas::GetSentryToHit(Sentry* pSentry, SystemEntity* pTarget)
+{
+    if (!pTarget)
+        return 0;
+    double falloff = pSentry->GetSelf()->GetAttribute(AttrFalloff).get_double();
+    double distance = pSentry->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
+
+    GVector vel = pTarget->GetVelocity();
+    double speed = vel.length();
+    double angularVelDest = pTarget->DestinyMgr()->GetRadTic();
+    double angularVel = speed / distance;
+
+    double a = (angularVel * 40000);
+    double b = (pSentry->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float() * pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
+    double c = pow((a / b), 2);
+    double d = EvE::max(distance - pSentry->GetSelf()->GetAttribute(AttrEntityAttackRange).get_double());
     double e = pow((d / falloff), 2);
 
     float ChanceToHit = pow(0.5, c + e);

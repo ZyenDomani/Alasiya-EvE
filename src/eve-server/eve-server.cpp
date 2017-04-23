@@ -234,6 +234,7 @@ int main( int argc, char* argv[] )
     sLog.White("      Log Version", " %.1f", Log_Version );
     sLog.White("   NPC AI Version", " %.2f", NPC_AI_Version );
     sLog.White("    NC AI Version", " %.2f", Civilian_AI_Version );
+    sLog.White("Sentry AI Version", " %.2f", Sentry_AI_Version );
     sLog.White("MarketBot Version", " %.2f", Bot_Version );
 
     sLog.White("", "");     // spacer

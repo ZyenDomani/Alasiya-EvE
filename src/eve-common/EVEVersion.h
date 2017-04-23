@@ -46,7 +46,8 @@ static const char* const EVEMU_REVISION = "0.8.98-allan";
 static const char* const EVEMU_BUILD_DATE = "21 April 2017";
 /* AI versions for shitz-n-giggles */
 static const float Bot_Version = 0.10;    /* match versions here with MarketBot.xml and MarketBotConf.cpp for full config support */
-static const float NPC_AI_Version = 0.43;
+static const float NPC_AI_Version = 0.44;
 static const float Civilian_AI_Version = 0.10;
+static const float Sentry_AI_Version = 0.10;
 
 #endif

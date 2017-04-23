@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Updates:    Allan
-    AI Version: 0.43
+    AI Version: 0.44
 */
 
 #include "eve-server.h"
@@ -74,18 +74,18 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_trackingSpeed = who->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float();
     // Orbit Velocity
     m_orbitSpeed = who->GetSelf()->GetAttribute(AttrEntityCruiseSpeed).get_int();
-    // Orbit Range, Follow Range  - npc tries to stay at this distance from active target    default:800
+    // Orbit Range, Follow Range  - npc tries to stay at this distance from active target
     m_flyRange = who->GetSelf()->GetAttribute(AttrEntityFlyRange).get_int();
     if (!m_flyRange)
-        m_flyRange = 800;
-    // distance for Speed Boost activation   default:5000
+        m_flyRange = 0;
+    // distance for Speed Boost activation
     m_boostRange = who->GetSelf()->GetAttribute(AttrEntityChaseMaxDistance).get_int();
     if (!m_boostRange)
-        m_boostRange = 5000;
-    // max firing range   default:25000
+        m_boostRange = 0;
+    // max firing range   default:10000
     m_maxAttackRange = who->GetSelf()->GetAttribute(AttrEntityAttackRange).get_int();
     if (!m_maxAttackRange)
-        m_maxAttackRange = 25000;
+        m_maxAttackRange = 10000;
     // 'sight' range
     m_sightRange = 20000;
     if (m_maxAttackRange > m_sightRange)

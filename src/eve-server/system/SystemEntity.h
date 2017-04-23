@@ -42,6 +42,7 @@ class DBSystemEntity;
 class Drone;
 class NPC;
 class Player;
+class Sentry;
 class SystemBubble;
 class SystemManager;
 class WreckSE;
@@ -100,6 +101,7 @@ public:
     virtual StructureSE*        GetTCUSE()              { return nullptr; }
     virtual StructureSE*        GetSBUSE()              { return nullptr; }
     virtual DeployableSE*       GetDeployableSE()       { return nullptr; }
+    virtual Sentry*             GetSentrySE()           { return nullptr; }
     /* Dynamic */
     virtual DynamicSystemEntity* GetDynamicSE()         { return nullptr; }
     virtual NPC*                GetNPCSE()              { return nullptr; }
@@ -128,6 +130,7 @@ public:
     virtual bool                IsContainerSE()         { return false; }
     /* Object */
     virtual bool                IsObjectEntity()        { return false; }
+    virtual bool                IsSentrySE()            { return false; }
     virtual bool                IsCOSE()                { return false; }
     virtual bool                IsPOSSE()               { return false; }
     virtual bool                IsTCUSE()               { return false; }

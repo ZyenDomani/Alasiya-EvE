@@ -347,14 +347,18 @@ SET( npc_INCLUDE
      "${TARGET_INCLUDE_DIR}/npc/DroneAI.h"
      "${TARGET_INCLUDE_DIR}/npc/EntityService.h"
      "${TARGET_INCLUDE_DIR}/npc/NPC.h"
-     "${TARGET_INCLUDE_DIR}/npc/NPCAI.h")
+     "${TARGET_INCLUDE_DIR}/npc/NPCAI.h"
+     "${TARGET_INCLUDE_DIR}/npc/Sentry.h"
+     "${TARGET_INCLUDE_DIR}/npc/SentryAI.h")
 SET( npc_SOURCE
      #"${TARGET_SOURCE_DIR}/npc/Concord.cpp"
      "${TARGET_SOURCE_DIR}/npc/Drone.cpp"
      "${TARGET_SOURCE_DIR}/npc/DroneAI.cpp"
      "${TARGET_SOURCE_DIR}/npc/EntityService.cpp"
      "${TARGET_SOURCE_DIR}/npc/NPC.cpp"
-     "${TARGET_SOURCE_DIR}/npc/NPCAI.cpp" )
+     "${TARGET_SOURCE_DIR}/npc/NPCAI.cpp"
+     "${TARGET_SOURCE_DIR}/npc/Sentry.cpp"
+     "${TARGET_SOURCE_DIR}/npc/SentryAI.cpp" )
 
 SET( planet_INCLUDE
      "${TARGET_INCLUDE_DIR}/planet/Colony.h"
