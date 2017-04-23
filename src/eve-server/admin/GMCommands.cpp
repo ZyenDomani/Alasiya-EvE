@@ -603,13 +603,13 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
 
         DBSystemDynamicEntity entity;
         entity.allianceID = 0;
-        entity.categoryID = (EVEItemCategories)actualCategoryID;
         entity.corporationID = 0;
         entity.factionID = 0;
+        entity.ownerID = 1;
+        entity.categoryID = (EVEItemCategories)actualCategoryID;
         entity.groupID = actualGroupID;
         entity.itemID = item->itemID();
         entity.itemName = actualTypeName;
-        entity.ownerID = 1;
         entity.typeID = actualTypeID;
         entity.x = loc.x;
         entity.y = loc.y;

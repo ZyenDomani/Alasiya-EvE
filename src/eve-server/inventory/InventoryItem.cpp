@@ -562,7 +562,7 @@ void InventoryItem::Delete() {
         //first, get out of client's sight.
         //this also removes us from our inventory.
         Move(0);
-        ChangeOwner(2);
+        ChangeOwner(1);
     }
 
     //take ourself out of the DB

@@ -66,9 +66,8 @@ public:
                                            effectID );
     }
 
-    Damage &operator *=(double factor)
+    Damage &operator *=(float factor)
     {
-        if (!factor) factor = 1;
         kinetic     *= factor;
         thermal     *= factor;
         em          *= factor;
@@ -77,20 +76,19 @@ public:
         return *this;
     }
 
-    void SumWithMultFactor( double factor )
+    void SumWithMultFactor(float factor)
     {
-        if (!factor) factor = 1;
         kinetic   += kinetic    * factor;
         thermal   += thermal    * factor;
         em        += em         * factor;
         explosive += explosive  * factor;
     }
 
-    double GetThermal()                                 { return thermal; }
-    double GetEM()                                      { return em; }
-    double GetKinetic()                                 { return kinetic; }
-    double GetExplosive()                               { return explosive; }
-    double GetModifier()                                { return modifier; }
+    float GetThermal()                                 { return thermal; }
+    float GetEM()                                      { return em; }
+    float GetKinetic()                                 { return kinetic; }
+    float GetExplosive()                               { return explosive; }
+    float GetModifier()                                { return modifier; }
 
     SystemEntity*           srcSE;     //we do not own this.
     uint16                  effectID;
@@ -98,11 +96,11 @@ public:
     InventoryItemRef        chargeRef;    //we own a ref to this. May be null.
 
 private:
-    double kinetic;
-    double thermal;
-    double em;
-    double explosive;
-    double modifier;
+    float kinetic;
+    float thermal;
+    float em;
+    float explosive;
+    float modifier;
 };
 
 #endif

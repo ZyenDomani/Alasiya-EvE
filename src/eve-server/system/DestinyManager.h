@@ -155,6 +155,8 @@ public:
     float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
     double GetRadius()                                  { return m_radius; }
     double GetCapNeed()                                 { return m_warpCapacitorNeed; }
+    
+    float GetRadTic()                                   { return m_orbitRadTic; }
 
     void MakeMissile(Missile* missile);
 

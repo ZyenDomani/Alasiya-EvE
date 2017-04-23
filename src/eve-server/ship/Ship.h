@@ -460,9 +460,6 @@ private:
 
     uint32 m_podShipID;
 
-
 };
 
 #endif /* !__SHIP__H__INCL__ */
-
-

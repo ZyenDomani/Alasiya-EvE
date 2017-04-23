@@ -97,26 +97,26 @@ Damage::Damage(SystemEntity* _source, bool fatal_blow)
 {
     assert(fatal_blow and "Damage() constructor meant for fatal_blow called without 2nd param being true!");
 
-    em = kinetic = thermal = explosive = 0.0;
+    em = kinetic = thermal = explosive = 0.0f;
     weaponRef = chargeRef = InventoryItemRef();
 }
 
-
 bool SystemEntity::ApplyDamage(Damage &d) {
     if (d.srcSE->IsNPCSE()) {
-        _log(DAMAGE__TRACE, "%s(%u): Initalizing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+        _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetName(), d.srcSE->GetID(), \
                     d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
     } else if (d.srcSE->IsDroneSE()){
-        _log(DAMAGE__TRACE, "%s(%u): Initalizing %.2f damage from Drone %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+        _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from Drone %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetName(), d.srcSE->GetID(), \
                     d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
     } else if (d.srcSE->HasPilot()) {
-        _log(DAMAGE__TRACE, "%s(%u): Initalizing %.2f damage from %s/'s %s(%u) using %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
+        _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from %s's %s(%u) using %s(%u) %s with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetPilot()->GetName(), d.srcSE->GetName(), d.srcSE->GetID(), \
-                    d.weaponRef->itemName().c_str(), d.weaponRef->itemID(), d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
+                    d.weaponRef->itemName().c_str(), d.weaponRef->itemID(), (d.chargeRef ? d.chargeRef->itemName().c_str() : ""), \
+                    d.GetKinetic(), d.GetThermal(), d.GetEM(), d.GetExplosive() );
     } else {
-        _log(DAMAGE__TRACE, "%s(%u): Initalizing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
+        _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
     }
 
     bool killed = false;

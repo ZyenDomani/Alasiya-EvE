@@ -438,6 +438,7 @@ void DestinyManager::Stop() {
     m_decel = false;
     m_turning = false;
     m_orbiting = 0;
+    m_orbitRadTic = 0.0f;
 
     // reset move timers for new state
     m_moveTimer = GetTimeMSeconds();
@@ -1422,6 +1423,7 @@ void DestinyManager::_BeginMovement() {
         // reset target distance just in case it changed.
         GVector shipVector(m_position, m_targetPoint);
         m_targetDistance = shipVector.length();
+        m_orbitRadTic = 0.0f;
     }
 
     // if ship is moving, reset accel checks
