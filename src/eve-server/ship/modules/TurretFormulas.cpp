@@ -65,7 +65,7 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
         double d = EvE::max(distance - range);
         double e = pow((d / falloff), 2);
         ChanceToHit = pow(0.5, c + e);
-        _log(DAMAGE__TRACE, "Turret::GetToHit - (%.3fx%.3f)^2 = %.5f + e:%.5f", a, b, c, e);
+        _log(DAMAGE__TRACE, "Turret::GetToHit - (%.3f/%.3f)^2 = %.5f + e:%.5f", a, b, c, e);
     }
     if (ChanceToHit == 0)
         return 0;
@@ -109,7 +109,7 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
         double d = EvE::max(distance - range);
         double e = pow((d / falloff), 2);
         ChanceToHit = pow(0.5, c + e);
-        _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - (%.3fx%.3f)^2 = %.5f + e:%.5f", a, b, c, e);
+        _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - (%.3f/%.3f)^2 = %.5f + e:%.5f", a, b, c, e);
     }
     if (ChanceToHit == 0)
         return 0;

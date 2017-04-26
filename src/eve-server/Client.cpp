@@ -1325,6 +1325,7 @@ void Client::_SendQueuedUpdates() {
 void Client::SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq /*true*/) {
     //build a little notification out of it.
     EVENotificationStream notify;
+        notify.notifyType = notifyType;
         notify.remoteObject = 1;
         notify.args = (PyTuple*)(*payload)->Clone();    //consumed
     PySafeDecRef(*payload);

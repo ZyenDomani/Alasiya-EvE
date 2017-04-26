@@ -640,7 +640,7 @@ PyResult Command_track(Client* who, CommandDB* db, PyServiceMgr* services, const
     char reply[25];
     snprintf(reply, 25, "Tracking %s.", track.c_str());
 
-    who->SendInfoModalMsg(reply);
+    who->SendNotifyMsg(reply);
     return new PyString(reply);
 }
 
