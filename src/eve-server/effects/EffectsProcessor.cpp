@@ -848,7 +848,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 ret << " - has not been defined.";
             else                // % {'arg1': arg1, 'arg2': arg2, 'value': expression.expressionValue}
                 ret << " - should be added as " << operand.format.c_str();
-                sLog.Error("FxProc::ParseExpression", "%s", ret.str().c_str());
+                _log(EFFECTS__WARNING, "FxProc::ParseExpression() - %s", ret.str().c_str());
         } break;
     }
     /*
