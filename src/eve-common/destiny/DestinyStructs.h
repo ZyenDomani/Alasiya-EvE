@@ -138,8 +138,8 @@ struct DSTBALL_WARP_Struct {
     double y;
     double z;
     uint32 effectStamp;   //statestamp of when warp started
-    double followRange;   //followRange
-    uint64 followID;      //followID
+    uint64 followRange;   //unknown   -4616189618054758400 when warp is initiated.  calculation unknown for other values (used during warp)
+    uint64 followID;      //unknown   4669471951536783360 when warp is initiated or ship enters new bubble (AddBalls), 0 otherwise
     uint64 ownerID;
 };
 

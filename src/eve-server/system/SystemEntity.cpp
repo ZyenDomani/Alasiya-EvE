@@ -299,7 +299,7 @@ PyDict* StargateSE::MakeSlimItem() {
     return slim;
 }
 
-/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace */
+/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace, ForceFields */
 ItemSystemEntity::ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
@@ -563,7 +563,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
     into.Append( head );
     MassSector mass;
         mass.mass = m_destiny->GetMass();
-        mass.cloak = 0;
+        mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.Harmonic = 1.0f;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;

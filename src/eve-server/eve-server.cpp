@@ -488,9 +488,9 @@ int main( int argc, char* argv[] )
 	else
         sLog.Blue("     Missile Time","Normal.");
     if (sConfig.rates.turretRate != 1.0)
-        sLog.Yellow("      Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretRate *100) );
+        sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretRate *100) );
     else
-        sLog.Blue("      Turret Dmg","Normal.");
+        sLog.Blue("       Turret Dmg","Normal.");
     // config option for decay?
     sLog.Green("      Decay Timer","Enabled.  Checks every %u minutes", sConfig.rates.WorldDecay);
 

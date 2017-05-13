@@ -1351,8 +1351,8 @@ void Ship::EncodeDestiny( Buffer& into ) {
         into.Append( head );
     MassSector mass;
         mass.mass = m_destiny->GetMass();
-        mass.cloak = 0;
-        mass.Harmonic = -1.0f;
+        mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
+        mass.Harmonic = -1.0f;      // @todo:  fix this when POS system is more mature
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
         into.Append( mass );
@@ -1368,13 +1368,14 @@ void Ship::EncodeDestiny( Buffer& into ) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
             warp.formationID = 0xFF;
-            warp.effectStamp = -1; // m_destiny->GetStateStamp();   //timestamp when warp started...not working right yet.
             warp.x = target.x;
             warp.y = target.y;
             warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.followRange = 0; //m_destiny->GetDistance();
-            warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
+            //  warp timing.  wip
+            warp.effectStamp = -1; // m_destiny->GetStateStamp();   //timestamp when warp started...not working right yet.
+            warp.followRange = 0;  //this isnt right.  server sends -4616189618054758400 when warp starts.  not sure of computation used for other values (when ship in warp)
+            warp.followID = 0;  //this isnt right  server sends 4669471951536783360 when warp starts or when sending AddBalls.  0 otherwise
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
@@ -1417,7 +1418,8 @@ void Ship::EncodeDestiny( Buffer& into ) {
         case 12: modeStr = "Formation"; break;
     }
 
-    _log(SHIP__INFO, "Ship::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X", GetName(), head.entityID, modeStr.c_str(), head.flags);
+    _log(DESTINY__UPDATES, "Ship::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
+            GetName(), head.entityID, modeStr.c_str(), head.flags, data.velocity_x, data.velocity_y, data.velocity_z);
 }
 
 void Ship::MakeDamageState(DoDestinyDamageState &into) {

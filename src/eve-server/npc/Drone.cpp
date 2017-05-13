@@ -234,7 +234,7 @@ void Drone::EncodeDestiny( Buffer& into )
             warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
             warp.followRange = 0;
-            warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
+            warp.followID = 0;  //this isnt right
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
@@ -261,7 +261,7 @@ void Drone::EncodeDestiny( Buffer& into )
         into.Append( main );
     }
 
-    _log(COMMON__WARNING, "Drone::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(DESTINY__UPDATES, "Drone::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void Drone::MakeDamageState(DoDestinyDamageState &into)

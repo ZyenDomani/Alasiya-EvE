@@ -142,7 +142,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
     into.Append( head );
     MassSector mass;
     mass.mass = m_destiny->GetMass();
-    mass.cloak = 0;
+    mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
     mass.Harmonic = -1.0f;
     mass.corporationID = GetCorporationID();
     mass.allianceID = GetAllianceID();
@@ -165,7 +165,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
         warp.z = target.z;
         warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
         warp.followRange = 0;
-        warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
+        warp.followID = 0;  //this isnt right
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
@@ -193,7 +193,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
         into.Append( main );
     }
 
-    _log(COMMON__WARNING, "NPC::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(DESTINY__UPDATES, "Concord::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 

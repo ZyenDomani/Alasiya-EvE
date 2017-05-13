@@ -155,7 +155,7 @@ public:
     float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
     double GetRadius()                                  { return m_radius; }
     double GetCapNeed()                                 { return m_warpCapacitorNeed; }
-    
+
     float GetRadTic()                                   { return m_orbitRadTic; }
 
     void MakeMissile(Missile* missile);
@@ -230,6 +230,7 @@ protected:
     double m_moveTimer;                 //in ms     - movement timestamp container for calculating csf
 
     GPoint m_targetPoint;
+    GPoint m_turnCenter;                //center point for turns.  used to correctly set radius
     GVector m_shipHeading;              //direction ship is facing
     GVector m_targetHeading;            //direction to target from current heading  -- should this be the *actual* heading of our current target??
     Destiny::BallMode State;

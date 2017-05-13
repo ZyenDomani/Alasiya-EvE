@@ -149,7 +149,7 @@ void NPC::EncodeDestiny( Buffer& into )
     into.Append( head );
     MassSector mass;
         mass.mass = m_destiny->GetMass();
-        mass.cloak = 0;
+        mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.Harmonic = -1.0f;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
@@ -161,18 +161,19 @@ void NPC::EncodeDestiny( Buffer& into )
         data.velocity_z = m_destiny->GetVelocity().z;
         data.intertia = m_destiny->GetInertia();
         data.speedfraction = m_destiny->GetSpeedFraction();
-        into.Append( data );
+    into.Append( data );
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
             warp.formationID = 0xFF;
-            warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
             warp.x = target.x;
             warp.y = target.y;
             warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.followRange = 0;
-            warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
+            // warp timing.  see Ship::EncodeDestiny() for notes/updates
+            warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
+            warp.followRange = 0;   //this isnt right
+            warp.followID = 0;  //this isnt right
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
@@ -200,7 +201,24 @@ void NPC::EncodeDestiny( Buffer& into )
         into.Append( main );
     }
 
-    _log(COMMON__WARNING, "NPC::EncodeDestiny: %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    std::string modeStr = "Goto";
+    switch (head.mode) {
+        case 1: modeStr = "Follow"; break;
+        case 2: modeStr = "Stop"; break;
+        case 3: modeStr = "Warp"; break;
+        case 4: modeStr = "Orbit"; break;
+        case 5: modeStr = "Missile"; break;
+        case 6: modeStr = "Mushroom"; break;
+        case 7: modeStr = "Boid"; break;
+        case 8: modeStr = "Troll"; break;
+        case 9: modeStr = "Miniball"; break;
+        case 10: modeStr = "Field"; break;
+        case 11: modeStr = "Rigid"; break;
+        case 12: modeStr = "Formation"; break;
+    }
+
+    _log(DESTINY__UPDATES, "NPC::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
+            GetName(), head.entityID, modeStr.c_str(), head.flags, data.velocity_x, data.velocity_y, data.velocity_z);
 }
 
 void NPC::UseShieldRecharge()
