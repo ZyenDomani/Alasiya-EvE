@@ -239,6 +239,11 @@ PyResult MailingListMgrService::Handle_GetInfo(PyCallArgs& call)
     }
 
     int listID = args.arg;
+    if (listID == 0) {
+        PyDict *ret = new PyDict();
+        ret->SetItem("displayName", new PyString("Test"));
+        return new PyObject("util.KeyVal", ret);
+    }
     return NULL;
 }
 
