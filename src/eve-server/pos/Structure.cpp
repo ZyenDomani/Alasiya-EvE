@@ -531,7 +531,7 @@ PyTuple *StructureSE::GetEffectState() {
             effect.moduleID = m_self->itemID();         /* structure/module id as part of above tower system */
             effect.moduleTypeID = m_self->typeID();
             effect.targetID = m_self->itemID();
-            effect.otherTypeID = 0;
+            effect.chargeTypeID = 0;
             effect.duration_ms = -1;
         }
         effect.area = area;

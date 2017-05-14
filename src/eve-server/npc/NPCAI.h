@@ -79,7 +79,6 @@ protected:
     void SetSignaling(SystemEntity* pTarget);
     void AttackTarget(SystemEntity* pTarget);
     void CheckDistance(SystemEntity* pTarget);
-    void SendWeaponEffect(const char *effect, SystemEntity* pTarget);
 
     double GetTargetTime();
 
@@ -98,7 +97,7 @@ private:
     uint16 m_preferedSigRadius;
     //these attributes are cached to reduce access times. (much faster but uses more memory)
     uint16 m_maxSpeed;
-    uint16 m_ROF;
+    uint16 m_attackSpeed;
     uint16 m_orbitSpeed;
     uint16 m_targetRange;   // max targeting range  default: m_maxAttackRange (unused)
     uint16 m_damageMultiplier;

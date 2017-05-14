@@ -123,7 +123,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     int8 damageID = 0;
     switch (d.weaponRef->groupID()) {
         case EVEDB::invGroups::Missile_Launcher_Assault:
-        case EVEDB::invGroups::Missile_Launcher_Bomb:   // not sure here
+        case EVEDB::invGroups::Missile_Launcher_Bomb:       // not sure here
         case EVEDB::invGroups::Missile_Launcher_Citadel:
         case EVEDB::invGroups::Missile_Launcher_Cruise:
         case EVEDB::invGroups::Missile_Launcher_Defender:   // not sure here

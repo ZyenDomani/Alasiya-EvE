@@ -142,7 +142,7 @@ void DroneAIMgr::Process() {
                 m_drone->TargetMgr()->ClearTarget(pTarget);
                 return;
             }
-            _CheckDistance(pTarget);
+            CheckDistance(pTarget);
         } break;
 
         case Following: {
@@ -158,7 +158,7 @@ void DroneAIMgr::Process() {
                 m_drone->TargetMgr()->ClearTarget(pTarget);
                 return;
             }
-            _CheckDistance(pTarget);
+            CheckDistance(pTarget);
         } break;
 
         case Engaged: {
@@ -167,14 +167,14 @@ void DroneAIMgr::Process() {
             if (!pTarget) {
                 if (m_drone->TargetMgr()->HasNoTargets()) {
                     _log(NPC__AI_TRACE, "Drone %s(%u): Stopped engagement, GetFirstTarget() returned NULL.", m_drone->GetName(), m_drone->GetID());
-                    _EnterIdle();
+                    SetIdle();
                 }
                 return;
             } else if (!pTarget->SysBubble()) {
                 m_drone->TargetMgr()->ClearTarget(pTarget);
                 return;
             }
-            _CheckDistance(pTarget);
+            CheckDistance(pTarget);
         } break;
 
         case Fleeing: {
@@ -189,10 +189,10 @@ void DroneAIMgr::Process() {
     }
 }
 
-void DroneAIMgr::_EnterIdle() {
+void DroneAIMgr::SetIdle() {
     if (m_state == Idle) return;
     // not doing anything....idle.
-    _log(NPC__AI_TRACE, "Drone %s(%u): _EnterIdle: returning to idle.",
+    _log(NPC__AI_TRACE, "Drone %s(%u): SetIdle: returning to idle.",
          m_drone->GetName(), m_drone->GetID());
     m_state = Idle;
     m_drone->DestinyMgr()->Stop();
@@ -209,9 +209,9 @@ void DroneAIMgr::_EnterIdle() {
     // sounds like a good idea, but will take process power away from other shit.
 }
 
-void DroneAIMgr::_EnterChasing(SystemEntity* pTarget) {
+void DroneAIMgr::SetChasing(SystemEntity* pTarget) {
     if (m_state == Chasing) return;
-    _log(NPC__AI_TRACE, "Drone %s(%u): _EnterChasing: %s(%u) begin chasing.",
+    _log(NPC__AI_TRACE, "Drone %s(%u): SetChasing: %s(%u) begin chasing.",
          m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
     // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
     m_drone->DestinyMgr()->SetMaxVelocity(m_chaseSpeed);
@@ -219,9 +219,9 @@ void DroneAIMgr::_EnterChasing(SystemEntity* pTarget) {
     m_state = Chasing;
 }
 
-void DroneAIMgr::_EnterFollowing(SystemEntity* pTarget) {
+void DroneAIMgr::SetFollowing(SystemEntity* pTarget) {
     if (m_state == Following) return;
-    _log(NPC__AI_TRACE, "Drone %s(%u): _EnterFollowing: %s(%u) begin following.",
+    _log(NPC__AI_TRACE, "Drone %s(%u): SetFollowing: %s(%u) begin following.",
          m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
     // too close to chase, but to far to engage
     m_drone->DestinyMgr()->SetMaxVelocity(m_chaseSpeed /2);
@@ -229,9 +229,9 @@ void DroneAIMgr::_EnterFollowing(SystemEntity* pTarget) {
     m_state = Following;
 }
 
-void DroneAIMgr::_EnterEngaged(SystemEntity* pTarget) {
+void DroneAIMgr::SetEngaged(SystemEntity* pTarget) {
     if (m_state == Engaged) return;
-    _log(NPC__AI_TRACE, "Drone %s(%u): _EnterEngaged: %s(%u) begin engaging.",
+    _log(NPC__AI_TRACE, "Drone %s(%u): SetEngaged: %s(%u) begin engaging.",
          m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively fighting
     //   not sure of the actual orbit speed of npc's, but their 'cruise speed' seems a bit slow.
@@ -242,9 +242,9 @@ void DroneAIMgr::_EnterEngaged(SystemEntity* pTarget) {
     m_state = Engaged;
 }
 
-void DroneAIMgr::_EnterFleeing(SystemEntity* pTarget) {
+void DroneAIMgr::SetFleeing(SystemEntity* pTarget) {
     if (m_state == Fleeing) return;
-    _log(NPC__AI_TRACE, "Drone %s(%u): _EnterFleeing: %s(%u) begin fleeing.",
+    _log(NPC__AI_TRACE, "Drone %s(%u): SetFleeing: %s(%u) begin fleeing.",
          m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively fleeing
     //  use superspeed to disengage, then warp.  << both these will need to be written.
@@ -253,9 +253,9 @@ void DroneAIMgr::_EnterFleeing(SystemEntity* pTarget) {
     m_state = Fleeing;
 }
 
-void DroneAIMgr::_EnterSignaling(SystemEntity* pTarget) {
+void DroneAIMgr::SetSignaling(SystemEntity* pTarget) {
     if (m_state == Signaling) return;
-    _log(NPC__AI_TRACE, "Drone %s(%u): _EnterSignaling: %s(%u) begin signaling.",
+    _log(NPC__AI_TRACE, "Drone %s(%u): SetSignaling: %s(%u) begin signaling.",
          m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively signaling
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
@@ -265,27 +265,27 @@ void DroneAIMgr::_EnterSignaling(SystemEntity* pTarget) {
     m_state = Signaling;
 }
 
-void DroneAIMgr::_CheckDistance(SystemEntity* pSE)
+void DroneAIMgr::CheckDistance(SystemEntity* pSE)
 {
     //rewrote distance checks for correct logic this time
     double dist = m_drone->GetPosition().distance(pSE->GetPosition());
     if (dist > m_entityAttackRange) {
-        _log(NPC__AI_TRACE, "Drone %s(%u): _CheckDistance: %s(%u) is too far away (%u).  Return to Idle.",
+        _log(NPC__AI_TRACE, "Drone %s(%u): CheckDistance: %s(%u) is too far away (%u).  Return to Idle.",
              m_drone->GetName(), m_drone->GetID(), pSE->GetName(), pSE->GetID(), dist);
         if (m_state != Idle) {
             // target is no longer in npc's "sight range".  unlock target and return to idle.
             //   should we do anything else here?  search for another target?  wander around?
             m_drone->TargetMgr()->ClearTarget(pSE);
             if (m_drone->TargetMgr()->HasNoTargets())
-                _EnterIdle();
+                SetIdle();
         }
         return;
     } else if (dist < m_entityFlyRange) { //within weapon max (and within falloff)
-        _EnterEngaged(pSE); //engage and orbit
+        SetEngaged(pSE); //engage and orbit
     } else if (dist < m_entityChaseRange) { //within follow
-        _EnterFollowing(pSE);
+        SetFollowing(pSE);
     } else if (dist < m_entityAttackRange) { //within sight
-        _EnterChasing(pSE);
+        SetChasing(pSE);
         return;
     }
 
@@ -315,11 +315,11 @@ void DroneAIMgr::Target(SystemEntity* pTarget) {
         _log(NPC__AI_TRACE, "Drone %s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.",
              m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
         //ClearAllTargets();
-        _EnterIdle();
+        SetIdle();
         return;
     }
     m_beginFindTarget.Disable();
-    _CheckDistance(pTarget);
+    CheckDistance(pTarget);
 }
 
 void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
@@ -329,15 +329,15 @@ void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
         case Idle: {
             _log(NPC__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) in Idle. Begin Approaching and start Targeting sequence.",
                  m_drone->GetName(), m_drone->GetID(), pAgressor->GetName(), pAgressor->GetID());
-            _EnterChasing(pAgressor);
+            SetChasing(pAgressor);
 
             bool chase = false;
 			if (!m_drone->TargetMgr()->StartTargeting( pAgressor, targetTime, (uint8)m_drone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange, chase)) {
-                _EnterIdle();
+                SetIdle();
                 return;
             }
             m_beginFindTarget.Disable();
-            _CheckDistance(pAgressor);
+            CheckDistance(pAgressor);
         } break;
 
         case Chasing: {
@@ -373,7 +373,7 @@ void DroneAIMgr::TargetLost(SystemEntity* pTarget) {
             if (m_drone->TargetMgr()->HasNoTargets()) {
                 _log(NPC__AI_TRACE, "Drone %s(%u): Target %s(%u) lost. No targets remain.  Return to Idle.",
                      m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
-                _EnterIdle();
+                SetIdle();
             } else {
                 _log(NPC__AI_TRACE, "Drone %s(%u): Target %s(%u) lost, but more targets remain.",
                      m_drone->GetName(), m_drone->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -423,7 +423,13 @@ void DroneAIMgr::Attack(SystemEntity* pSE)
 
 void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
     /** @todo  not all drones use lazors...fix this */
-    _SendWeaponEffect("effects.Laser", pTarget);
+    std::string guid = "effects.Laser";
+    m_drone->DestinyMgr()->SendSpecialEffect(m_drone->GetSelf()->itemID(),
+                                           m_drone->GetSelf()->itemID(),
+                                           m_drone->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
+                                             pTarget->GetID(),
+                                             0,guid,1,1,1,m_attackSpeed,1
+    );
 
     Damage d(m_drone,
              m_drone->GetSelf(),
@@ -437,26 +443,6 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
 
     d *= m_drone->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
     pTarget->ApplyDamage(d);
-}
-
-//NOTE: duplicated from module manager code. They should share some day!
-void DroneAIMgr::_SendWeaponEffect( const char*effect, SystemEntity* pTarget ) {
-    DoDestiny_OnSpecialFX13 sfx;
-    sfx.entityID = m_drone->GetSelf()->itemID();
-    sfx.moduleID = m_drone->GetSelf()->itemID();
-    sfx.moduleTypeID = m_drone->GetSelf()->typeID();
-    sfx.targetID = pTarget->GetID();
-    sfx.otherTypeID = pTarget->GetSelf()->typeID();
-    sfx.guid = effect;
-    sfx.isOffensive = 1;
-    sfx.start = 1;
-    sfx.active = 1;
-    sfx.duration_ms = m_attackSpeed;
-    sfx.repeat = 1;
-    sfx.startTime = Win32TimeNow();
-
-    PyTuple* up = sfx.Encode();
-    m_drone->DestinyMgr()->SendSingleDestinyUpdate( &up );    //consumed
 }
 
 double DroneAIMgr::GetTargetTime()

@@ -920,10 +920,10 @@ enum EveAttrEnum {
     AttrEliteBonusCommandShip2DONOTUSE = 1004,
     AttrJumpPortalCapacitorNeed = 1005,
     AttrEntityShieldBoostDelayChanceSmall = 1006,   // npcActivationChanceAttributeID in dgmEffects
-    AttrEntityShieldBoostDelayChanceMedium = 1007,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityShieldBoostDelayChanceMedium = 1007,  // npcActivationChanceAttributeID in dgmEffects
     AttrEntityShieldBoostDelayChanceLarge = 1008,   // npcActivationChanceAttributeID in dgmEffects
     AttrEntityArmorRepairDelayChanceSmall = 1009,   // npcActivationChanceAttributeID in dgmEffects
-    AttrEntityArmorRepairDelayChanceMedium = 1010,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityArmorRepairDelayChanceMedium = 1010,  // npcActivationChanceAttributeID in dgmEffects
     AttrEntityArmorRepairDelayChanceLarge = 1011,   // npcActivationChanceAttributeID in dgmEffects
     AttrEliteBonusInterdictors1 = 1012,
     AttrEliteBonusInterdictors2 = 1013,

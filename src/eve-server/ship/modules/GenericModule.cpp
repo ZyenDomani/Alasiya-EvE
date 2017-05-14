@@ -23,7 +23,6 @@ SHIP__MODULE_TRACE=1
 #include "ship/Ship.h"
 #include "ship/modules/GenericModule.h"
 
-using namespace ModStates;
 GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
 {
     m_repeat = 0;
@@ -32,8 +31,8 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_shipRef = ship;
     m_chargeRef = InventoryItemRef();
 
-    m_ModuleState = ModuleStates::MOD_UNFITTED;
-    m_ChargeState = ChargeStates::CHG_UNLOADED;
+    m_ModuleState = ModStates::ModuleStates::MOD_UNFITTED;
+    m_ChargeState = ModStates::ChargeStates::CHG_UNLOADED;
 
     m_overLoaded = false;
     m_chargeLoaded = false;
@@ -72,11 +71,11 @@ GenericModule::~GenericModule()
 
 void GenericModule::Online()
 {
-    if (m_ModuleState == ModuleStates::MOD_UNFITTED) {
+    if (m_ModuleState == ModStates::ModuleStates::MOD_UNFITTED) {
         _log(SHIP__MODULE_ERROR, "GenericModule::Online() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
         return;
     }
-    if (m_ModuleState != ModuleStates::MOD_OFFLINE) {
+    if (m_ModuleState != ModStates::ModuleStates::MOD_OFFLINE) {
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Online() called for non-offline module %u(%s).  State is %s", \
                 m_modRef->itemID(), m_modRef->itemName().c_str(), GetModuleStateName(m_ModuleState).c_str());
         return;     // already online
@@ -100,10 +99,10 @@ void GenericModule::Online()
     // clear map before adding new shit...avoids duplicating
     //m_modRef->ClearModifiers(); // ClearModifiers DELETES AttrIsOnline and all ship-modified attribs from the map!!  (elusive error)
     m_modRef->PutOnline(isRig());
-    m_ModuleState = ModuleStates::MOD_ONLINE;
+    m_ModuleState = ModStates::ModuleStates::MOD_ONLINE;
     _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
-    if (m_ChargeState == ChargeStates::CHG_LOADED) {
+    if (m_ChargeState == ModStates::ChargeStates::CHG_LOADED) {
         if (!m_chargeRef) {
             _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
                     m_modRef->itemID(), m_modRef->itemName().c_str());
@@ -131,22 +130,22 @@ void GenericModule::Online()
 
 void GenericModule::Offline()
 {
-    if (m_ModuleState == ModuleStates::MOD_OFFLINE) {
+    if (m_ModuleState == ModStates::ModuleStates::MOD_OFFLINE) {
         _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for offline module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
         return;
     }
-    if (m_ModuleState == ModuleStates::MOD_UNFITTED) {
+    if (m_ModuleState == ModStates::ModuleStates::MOD_UNFITTED) {
         _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
         return;
     }
-    if (m_ModuleState == ModuleStates::MOD_DEACTIVATING) {
+    if (m_ModuleState == ModStates::ModuleStates::MOD_DEACTIVATING) {
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
-        m_ModuleState = ModuleStates::MOD_OFFLINE;
+        m_ModuleState = ModStates::ModuleStates::MOD_OFFLINE;
         m_modRef->PutOffline();
         return;
     }
 
-    m_ModuleState = ModuleStates::MOD_DEACTIVATING;
+    m_ModuleState = ModStates::ModuleStates::MOD_DEACTIVATING;
 
     /* code for offlining module before MOD_OFFLINE state is set. */
     EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) - GetAttribute(AttrCpu));
@@ -161,7 +160,7 @@ void GenericModule::Offline()
     ProcessEffects(Effects::dgmStateOnline, false);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
-    if (m_ChargeState == ChargeStates::CHG_LOADED) {
+    if (m_ChargeState == ModStates::ChargeStates::CHG_LOADED) {
         if (!m_chargeRef) {
             _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
                     m_modRef->itemID(), m_modRef->itemName().c_str());
@@ -179,7 +178,7 @@ void GenericModule::Offline()
         }
     }
 
-    m_ModuleState = ModuleStates::MOD_OFFLINE;
+    m_ModuleState = ModStates::ModuleStates::MOD_OFFLINE;
     m_modRef->PutOffline();
     if (m_shipRef->IsDocking())
         m_modRef->SetAttribute(AttrIsOnline, true, true);
@@ -228,20 +227,20 @@ void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
 std::string GenericModule::GetChargeStateName(ModStates::ChargeStates state)
 {
     switch(state) {
-        case ChargeStates::CHG_UNLOADED:     return "Unloaded"; break;
-        case ChargeStates::CHG_LOADED:       return "Loaded"; break;
-        case ChargeStates::CHG_LOADING:      return "Loading"; break;
-        case ChargeStates::CHG_RELOADING:    return "Reloading"; break;
+        case ModStates::ChargeStates::CHG_UNLOADED:     return "Unloaded";  break;
+        case ModStates::ChargeStates::CHG_LOADED:       return "Loaded";    break;
+        case ModStates::ChargeStates::CHG_LOADING:      return "Loading";   break;
+        case ModStates::ChargeStates::CHG_RELOADING:    return "Reloading"; break;
     }
 }
 
 std::string GenericModule::GetModuleStateName(ModStates::ModuleStates state)
 {
     switch(state) {
-        case ModuleStates::MOD_UNFITTED:     return "Unfitted"; break;
-        case ModuleStates::MOD_OFFLINE:      return "Offline"; break;
-        case ModuleStates::MOD_ONLINE:       return "Online"; break;
-        case ModuleStates::MOD_ACTIVATED:    return "Activated"; break;
-        case ModuleStates::MOD_DEACTIVATING: return "Deactivating"; break;
+        case ModStates::ModuleStates::MOD_UNFITTED:     return "Unfitted";      break;
+        case ModStates::ModuleStates::MOD_OFFLINE:      return "Offline";       break;
+        case ModStates::ModuleStates::MOD_ONLINE:       return "Online";        break;
+        case ModStates::ModuleStates::MOD_ACTIVATED:    return "Activated";     break;
+        case ModStates::ModuleStates::MOD_DEACTIVATING: return "Deactivating";  break;
     }
 }

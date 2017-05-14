@@ -59,21 +59,24 @@ NPCAIMgr::NPCAIMgr(NPC* who)
 
     m_damageMultiplier = who->GetSelf()->GetAttribute(AttrDamageMultiplier).get_int();
 
-    /* set npc ship speeds and distances */
+    /* set npc ship data */
+    m_attackSpeed = who->GetSelf()->GetAttribute(AttrSpeed).get_int();
     m_radius = who->GetSelf()->GetAttribute(AttrSignatureRadius).get_int();
-    m_ROF = who->GetSelf()->GetAttribute(AttrSpeed).get_int();
-    m_processTimer.Start(m_ROF);
 
     /** @todo  all of these need to be verified and/or updated */
-    // absolute Max Ship Speed
+
+    // ship speeds
+    // absolute (boosted) Max Ship Speed
     m_maxSpeed = who->GetSelf()->GetAttribute(AttrMaxVelocity).get_int();
-    // Optimal Range
-    m_optimalRange = who->GetSelf()->GetAttribute(AttrMaxRange).get_int();
-    // Accuracy falloff  (distance past maximum range at which accuracy has fallen by half)
-    m_falloff = who->GetSelf()->GetAttribute(AttrFalloff).get_int();
-    m_trackingSpeed = who->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float();
     // Orbit Velocity
     m_orbitSpeed = who->GetSelf()->GetAttribute(AttrEntityCruiseSpeed).get_int();
+
+    // ship distances
+    // Optimal Range
+    m_optimalRange = who->GetSelf()->GetAttribute(AttrMaxRange).get_int();
+    // Accuracy falloff  (distance past optimal range at which accuracy has fallen by half)
+    m_falloff = who->GetSelf()->GetAttribute(AttrFalloff).get_int();
+    m_trackingSpeed = who->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float();
     // Orbit Range, Follow Range  - npc tries to stay at this distance from active target
     m_flyRange = who->GetSelf()->GetAttribute(AttrEntityFlyRange).get_int();
     if (!m_flyRange)
@@ -91,13 +94,15 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     if (m_maxAttackRange > m_sightRange)
         m_sightRange = m_maxAttackRange *2;
 
+    // these next two have effects that define the rep/boost chance attribID
     if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int())
         m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int();
+    else if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceMedium).get_int())
+        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceMedium).get_int();
     else if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_int())
         m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_int();
     else
         m_armorRepairChance = 0;
-
     if (m_armorRepairChance)
         m_armorRepairDuration = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDuration).get_int();
     else
@@ -105,17 +110,18 @@ NPCAIMgr::NPCAIMgr(NPC* who)
 
     if (who->GetSelf()->HasAttribute(AttrEntityShieldBoostDelayChanceSmall))
         m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float();
+    else if (who->GetSelf()->HasAttribute(AttrEntityShieldBoostDelayChanceMedium))
+        m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceMedium).get_float();
     else if (who->GetSelf()->HasAttribute(AttrEntityShieldBoostDelayChanceLarge))
         m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float();
     else
         m_shieldBoosterChance = 0;
-
     if (m_shieldBoosterChance)
         m_shieldBoosterDuration = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDuration).get_int();
     else
         m_shieldBoosterDuration = 0;
 
-    // advanced AI variables  only used by sleepers for now.  will update advanced npcs to use these also
+    // advanced AI variables  only used by sleepers for now (and on live).  will update advanced npcs to use these also (unique to alasiya)
     if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseTargetSwitching))
         m_useTargSwitching = true;
     else
@@ -134,7 +140,11 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     if (who->GetSelf()->HasAttribute(AttrAI_ChanceToNotTargetSwitch))
         m_switchTargChance = 1.0 - who->GetSelf()->GetAttribute(AttrAI_ChanceToNotTargetSwitch).get_float();
     else
-        m_switchTargChance = 0.0f;
+        m_switchTargChance = 0;
+
+    // does this need to be running if there are no players in bubble?
+    //  yes...npcs will (eventually) warp out when no targets in sight range, but need a process tic to do that.
+    m_processTimer.Start(m_attackSpeed);
 }
 
 void NPCAIMgr::Process() {
@@ -145,7 +155,7 @@ void NPCAIMgr::Process() {
 
     if (m_shieldBoosterTimer.Enabled()
         and m_shieldBoosterTimer.Check())
-        if (MakeRandomInt() < m_shieldBoosterChance)
+        if (MakeRandomFloat() < m_shieldBoosterChance)
             m_npc->UseShieldRecharge();
 
     if (m_armorRepairTimer.Enabled()
@@ -190,10 +200,9 @@ void NPCAIMgr::Process() {
                         SetWander();
             } else {
                 if (!m_beginFindTarget.Enabled())
-                    m_beginFindTarget.Start(m_ROF);  //find target is based on npc attack speed.
+                    m_beginFindTarget.Start(m_attackSpeed);  //find target is based on npc attack speed.
             }
         } break;
-
         case State::Chasing:
         case State::Following:
         case State::Engaged: {
@@ -213,7 +222,6 @@ void NPCAIMgr::Process() {
             }
             CheckDistance(pTarget);
         } break;
-
         case State::Fleeing:
         case State::Signaling: {
             _log(NPC__AI_TRACE, "%s(%u): Called %s, needs to be completed.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
@@ -265,9 +273,6 @@ void NPCAIMgr::SetIdle() {
     m_armorRepairTimer.Disable();
     m_warpScramblerTimer.Disable();
     m_shieldBoosterTimer.Disable();
-
-    // write code to enable npcs to wander around when idle?
-    // sounds like a good idea, but will take process power away from other shit.
 }
 
 void NPCAIMgr::SetChasing(SystemEntity* pTarget) {
@@ -360,7 +365,7 @@ void NPCAIMgr::CheckDistance(SystemEntity* pSE)
     if (m_armorRepairDuration && (!m_armorRepairTimer.Enabled()))
         m_armorRepairTimer.Start(m_armorRepairDuration);
     if (!m_mainAttackTimer.Enabled())
-        m_mainAttackTimer.Start(m_ROF);
+        m_mainAttackTimer.Start(m_attackSpeed);
 
     Attack(pSE);
 }
@@ -493,9 +498,14 @@ void NPCAIMgr::Attack(SystemEntity* pTarget)
 //modifyTargetSpeedRange, modifyTargetSpeedChance
 //entityWarpScrambleChance
 void NPCAIMgr::AttackTarget(SystemEntity* pTarget) {
-    // some npcs use missiles.
-    //  write code for using missiles   -- entityMissileTypeID
-    SendWeaponEffect("effects.Laser", pTarget);
+    // some npcs use missiles.....write code for using missiles   -- entityMissileTypeID
+    std::string guid = "effects.Laser";
+    m_npc->DestinyMgr()->SendSpecialEffect(m_npc->GetSelf()->itemID(),
+                                           m_npc->GetSelf()->itemID(),
+                                           m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
+                                           pTarget->GetID(),
+                                           0,guid,1,1,1,m_attackSpeed,1
+                                          );
 
     Damage d(m_npc,
              m_npc->GetSelf(),
@@ -509,25 +519,6 @@ void NPCAIMgr::AttackTarget(SystemEntity* pTarget) {
 
     d *= m_damageMultiplier;
     pTarget->ApplyDamage(d);
-}
-
-//NOTE: duplicated from module manager code. They should share some day!
-void NPCAIMgr::SendWeaponEffect( const char* effect, SystemEntity* pTarget ) {
-    DoDestiny_OnSpecialFX13 sfx;
-        sfx.entityID = m_npc->GetSelf()->itemID();
-        sfx.moduleID = m_npc->GetSelf()->itemID();
-        sfx.moduleTypeID = m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int();
-        sfx.targetID = pTarget->GetID();
-        sfx.otherTypeID = pTarget->GetSelf()->typeID();
-        sfx.guid = effect;
-        sfx.isOffensive = 1;
-        sfx.start = 1;
-        sfx.active = 1;
-        sfx.duration_ms = m_ROF;
-        sfx.repeat = 1;
-        sfx.startTime = Win32TimeNow();
-    PyTuple* up = sfx.Encode();
-    m_npc->DestinyMgr()->SendSingleDestinyUpdate( &up );    //consumed
 }
 
 double NPCAIMgr::GetTargetTime()

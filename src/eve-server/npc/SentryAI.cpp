@@ -38,8 +38,8 @@ m_webifierTimer(5000)         //arbitrary.
 
     /* set npc ship speeds and distances */
     m_radius = who->GetSelf()->GetAttribute(AttrSignatureRadius).get_int();
-    m_ROF = who->GetSelf()->GetAttribute(AttrSpeed).get_int();
-    m_processTimer.Start(m_ROF);
+    m_attackSpeed = who->GetSelf()->GetAttribute(AttrSpeed).get_int();
+    m_processTimer.Start(m_attackSpeed);
 
     /** @todo  all of these need to be verified and/or updated */
     // Optimal Range
@@ -114,7 +114,7 @@ void SentryAI::Process() {
                 }
             } else {
                 if (!m_beginFindTarget.Enabled())
-                    m_beginFindTarget.Start(m_ROF);  //find target is based on npc attack speed.
+                    m_beginFindTarget.Start(m_attackSpeed);  //find target is based on npc attack speed.
             }
         } break;
         case State::Engaged: {
@@ -192,7 +192,7 @@ void SentryAI::CheckDistance(SystemEntity* pSE)
     SetEngaged(pSE);
 
     if (!m_mainAttackTimer.Enabled())
-        m_mainAttackTimer.Start(m_ROF);
+        m_mainAttackTimer.Start(m_attackSpeed);
 
     Attack(pSE);
 }
@@ -303,9 +303,14 @@ void SentryAI::Attack(SystemEntity* pTarget)
 //modifyTargetSpeedRange, modifyTargetSpeedChance
 //entityWarpScrambleChance
 void SentryAI::AttackTarget(SystemEntity* pTarget) {
-    // some npcs use missiles.
-    //  write code for using missiles   -- entityMissileTypeID
-    SendWeaponEffect("effects.Laser", pTarget);
+    // some npcs use missiles.....write code for using missiles   -- entityMissileTypeID
+    std::string guid = "effects.Laser";
+    m_npc->DestinyMgr()->SendSpecialEffect(m_npc->GetSelf()->itemID(),
+                                           m_npc->GetSelf()->itemID(),
+                                           m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
+                                           pTarget->GetID(),
+                                           0,guid,1,1,1,m_attackSpeed,1
+    );
 
     Damage d(m_npc,
              m_npc->GetSelf(),
@@ -319,25 +324,6 @@ void SentryAI::AttackTarget(SystemEntity* pTarget) {
 
     d *= m_damageMultiplier;
     pTarget->ApplyDamage(d);
-}
-
-//NOTE: duplicated from module manager code. They should share some day!
-void SentryAI::SendWeaponEffect( const char* effect, SystemEntity* pTarget ) {
-    DoDestiny_OnSpecialFX13 sfx;
-        sfx.entityID = m_npc->GetSelf()->itemID();
-        sfx.moduleID = m_npc->GetSelf()->itemID();
-        sfx.moduleTypeID = m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int();
-        sfx.targetID = pTarget->GetID();
-        sfx.otherTypeID = pTarget->GetSelf()->typeID();
-        sfx.guid = effect;
-        sfx.isOffensive = 1;
-        sfx.start = 1;
-        sfx.active = 1;
-        sfx.duration_ms = m_ROF;
-        sfx.repeat = 1;
-        sfx.startTime = Win32TimeNow();
-    PyTuple* up = sfx.Encode();
-    m_npc->DestinyMgr()->SendSingleDestinyUpdate( &up );    //consumed
 }
 
 double SentryAI::GetTargetTime()

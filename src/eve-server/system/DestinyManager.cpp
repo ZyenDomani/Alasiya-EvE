@@ -2162,7 +2162,7 @@ void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
 void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
 {
     /* this sets variables needed for correct movement math.
-     *  these attribs are set ship item when ship created.  DO NOT modify here
+     *  these attribs are set from ship item when shipSE created.  DO NOT modify anything here
      */
     m_mass = ship->GetAttribute(AttrMass).get_float();
     m_radius = ship->GetAttribute(AttrRadius).get_float();
@@ -2191,7 +2191,7 @@ void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
      * 75% of sub-warp max speed, or 100m/s, whichever is the lower.
      */
     m_speedToLeaveWarp = m_maxShipSpeed *0.75;
-    if ((m_speedToLeaveWarp < 100) and (m_maxShipSpeed > 100))
+    if ((m_speedToLeaveWarp < 100) and (m_maxShipSpeed > 135))      // 75% of 135 is 101.25
         m_speedToLeaveWarp = 100;
 
     /* The product of Mass and the Inertia Modifier gives the ship's agility
@@ -2536,8 +2536,8 @@ void DestinyManager::SendUncloakShip() const {
 
 void DestinyManager::SendSpecialEffect10(uint32 entityID, uint32 targetID, std::string guid, bool isOffensive, bool start, bool isActive) const
 {
-	std::vector<int32, std::allocator<int32> > area;    //TODO need to figure out what this is....
-
+    //TODO need to figure out what this is....
+	std::vector<int32, std::allocator<int32> > area;
     DoDestiny_OnSpecialFX10 effect;
         effect.entityID = entityID;
         effect.targetID = targetID;
@@ -2554,14 +2554,14 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
                                        uint32 chargeTypeID, std::string guid, bool isOffensive, bool start,
                                        bool isActive, double duration, uint32 repeat) const
 {
-    std::vector<int32, std::allocator<int32> > area;    //TODO need to figure out what this is....
-
+    //TODO need to figure out what this is....
+    std::vector<int32, std::allocator<int32> > area; 
     DoDestiny_OnSpecialFX13 effect;
         effect.entityID = entityID;
         effect.moduleID = moduleID;
         effect.moduleTypeID = moduleTypeID;
         effect.targetID = targetID;
-        effect.otherTypeID = chargeTypeID;
+        effect.chargeTypeID = chargeTypeID;
         effect.area = area;
         effect.guid = guid;
         effect.isOffensive = isOffensive;
