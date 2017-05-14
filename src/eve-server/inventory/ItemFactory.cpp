@@ -53,8 +53,6 @@ ItemFactory::ItemFactory()
 }
 
 ItemFactory::~ItemFactory() {
-    // items
-    //SaveItems();
     // types
     for (auto cur : m_types)
         SafeDelete(cur.second);
@@ -67,7 +65,11 @@ ItemFactory::~ItemFactory() {
     for (auto cur : m_categories)
         SafeDelete(cur.second);
     m_categories.clear();
-
+    // items
+    /*
+    for (auto cur : m_items)
+        delete(cur.second.get());
+    */
     // Set Client pointer to NULL
     m_pClient = nullptr;
 }
@@ -92,9 +94,8 @@ void ItemFactory::SaveItems() {
                 data.customInfo = cur.second->customInfo();
             items.push_back(data);
             ++count;
-            // not sure if i wanna save all attribs here.  for now, just save skillpoints
-            if ((cur.second->flag() == flagSkill) or (cur.second->flag() == flagSkillInTraining))
-                cur.second->SaveAttributes();
+            // attribMap has been updated to save relevant attributes.  this call is safe and desirable here
+            cur.second->SaveAttributes();
         }
     }
     m_db.SaveItems(items);
@@ -112,7 +113,7 @@ Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
     }
 
     if (item)
-        return item->GetInventory();
+        return item->GetMyInventory();
 
     return nullptr;
 }
@@ -174,15 +175,15 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load)
     }
 
     if (item)
-        return item->GetInventory();
+        return item->GetMyInventory();
 
     return nullptr;
 }
-// somethign funky going on here......
+
 void ItemFactory::RemoveItem(uint32 itemID) {
-    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
+    std::map<uint32, InventoryItemRef>::const_iterator res = m_items.find( itemID );
     if (res == m_items.end()) {
-        _log(ITEM__WARNING, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
+        _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
     } else {
         --m_itemCount;
         m_items.erase( res );

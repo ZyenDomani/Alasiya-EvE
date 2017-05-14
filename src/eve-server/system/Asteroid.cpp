@@ -70,12 +70,6 @@ AsteroidItemRef AsteroidItem::Spawn(ItemFactory& factory, ItemData& idata, Aster
     return roidRef;
 }
 
-template<class _Ty>
-RefPtr<_Ty>  AsteroidItem::_LoadAsteroid(ItemFactory& factory, uint32 asteroidID, const ItemType& type, const ItemData& data, const AsteroidData& dbData)
-{
-    // ready to create
-    return AsteroidItemRef( new AsteroidItem( factory, asteroidID, type, data, dbData ) );
-}
 */
 
 AsteroidSE::AsteroidSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)

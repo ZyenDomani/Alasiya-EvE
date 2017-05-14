@@ -1,12 +1,14 @@
 
 #include "Client.h"
+#include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "Profile.h"
 #include "character/Character.h"
-#include "system/DestinyManager.h"
-#include "ship/modules/ModuleManager.h"
+#include "effects/EffectsProcessor.h"
 #include "ship/Ship.h"
+#include "system/DestinyManager.h"
 #include "system/BubbleManager.h"
+#include "system/SolarSystem.h"
 
 /*
  * ShipTypeData
@@ -32,28 +34,17 @@ m_miningType(_miningType),
 m_skillType(_skillType)
 {
     // data consistency checks:
-    if (_weaponType != NULL)
+    if (_weaponType)
         assert(_weaponType->id() == stData.mWeaponTypeID);
-    if (_miningType != NULL)
+    if (_miningType)
         assert(_miningType->id() == stData.mMiningTypeID);
-    if (_skillType != NULL)
+    if (_skillType)
         assert(_skillType->id() == stData.mSkillTypeID);
 }
 
 ShipType *ShipType::Load(ItemFactory &factory, uint32 shipTypeID)
 {
     return ItemType::Load<ShipType>( factory, shipTypeID );
-}
-
-template<class _Ty>
-_Ty *ShipType::_LoadShipType(ItemFactory &factory, uint32 shipTypeID,
-                             // ItemType stuff:
-                             const ItemGroup &group, const TypeData &data,
-                             // ShipType stuff:
-                             const ItemType *weaponType, const ItemType *miningType, const ItemType *skillType, const ShipTypeData &stData)
-{
-    // we have all the data, let's create new object
-    return new ShipType(shipTypeID, group, data, weaponType, miningType, skillType, stData );
 }
 
 /*
@@ -65,8 +56,11 @@ m_pilot(nullptr),
 m_ModuleManager(nullptr)
 {
     m_IsLoaded = false;
+    m_isDocking = false;
+    m_isUndocking = false;
     m_stackMap.clear();
-    m_resistMap.clear();
+    m_onlineModuleVec.clear();
+    m_targetRef = InventoryItemRef();
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created ShipItem for %s(%u).", itemName().c_str(), itemID());
 }
@@ -82,58 +76,12 @@ ShipItemRef ShipItem::Load(ItemFactory &factory, uint32 shipID)
     return InventoryItem::Load<ShipItem>( factory, shipID );
 }
 
-template<class _Ty>
-RefPtr<_Ty> ShipItem::_LoadShip(ItemFactory &factory, uint32 shipID, const ShipType &shipType, const ItemData &data)
-{
-    return ShipItemRef( new ShipItem(factory, shipID, shipType, data ));
-}
-
 ShipItemRef ShipItem::Spawn(ItemFactory &factory, ItemData &data) {
     uint32 shipID = ShipItem::CreateItemID( factory, data );
     if ( shipID == 0 )
         return ShipItemRef();
 
     ShipItemRef sShipRef = ShipItem::Load( factory, shipID );
-
-    // Create default dynamic attributes in the AttributeMap:
-    sShipRef->SetAttribute(AttrMass,                                sShipRef->type().mass(), false);
-    sShipRef->SetAttribute(AttrRadius,                              sShipRef->type().radius(), false);
-    sShipRef->SetAttribute(AttrVolume,                              sShipRef->GetPackagedVolume(), false);
-    sShipRef->SetAttribute(AttrCapacity,                            sShipRef->type().capacity(), false);
-    sShipRef->SetAttribute(AttrShieldCharge,                        sShipRef->GetAttribute(AttrShieldCapacity), false);
-    sShipRef->SetAttribute(AttrCapacitorCharge,                     sShipRef->GetAttribute(AttrCapacitorCapacity), false);
-
-    // Check for existence of some attributes that may or may not have already been loaded and set them
-    // to default values:
-    if (!sShipRef->HasAttribute(AttrDamage))                        sShipRef->SetAttribute(AttrDamage, 0.0f, false );
-    if (!sShipRef->HasAttribute(AttrArmorDamage))                   sShipRef->SetAttribute(AttrArmorDamage, 0.0f, false );
-    if (!sShipRef->HasAttribute(AttrMaximumRangeCap))               sShipRef->SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS), false);
-    if (!sShipRef->HasAttribute(AttrArmorMaxDamageResonance))       sShipRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f, false);
-    if (!sShipRef->HasAttribute(AttrShieldMaxDamageResonance))      sShipRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f, false);
-    if (!sShipRef->HasAttribute(AttrWarpSpeedMultiplier))           sShipRef->SetAttribute(AttrWarpSpeedMultiplier, 1.0f, false);
-    // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some already have it defined):
-    if (!sShipRef->HasAttribute(AttrWarpScrambleStatus))            sShipRef->SetAttribute(AttrWarpScrambleStatus, 0.0f, false);
-
-    // Shield Resonance
-    if (!sShipRef->HasAttribute(AttrShieldEmDamageResonance))       sShipRef->SetAttribute(AttrShieldEmDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sShipRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrShieldKineticDamageResonance))  sShipRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrShieldThermalDamageResonance))  sShipRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrArmorEmDamageResonance))        sShipRef->SetAttribute(AttrArmorEmDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sShipRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrArmorKineticDamageResonance))   sShipRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrArmorThermalDamageResonance))   sShipRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrEmDamageResonance))             sShipRef->SetAttribute(AttrEmDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrExplosiveDamageResonance))      sShipRef->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrKineticDamageResonance))        sShipRef->SetAttribute(AttrKineticDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrThermalDamageResonance))        sShipRef->SetAttribute(AttrThermalDamageResonance, 1.0, false);
-    if (!sShipRef->HasAttribute(AttrTurretSlotsLeft))               sShipRef->SetAttribute(AttrTurretSlotsLeft, 0, false);
-    if (!sShipRef->HasAttribute(AttrLauncherSlotsLeft))             sShipRef->SetAttribute(AttrLauncherSlotsLeft, 0, false);
-
-    sShipRef->SetAttribute(AttrCpuLoad, 0.0f, false);
-    sShipRef->SetAttribute(AttrPowerLoad, 0.0f, false);
-
-    sShipRef->SaveAttributes();
 
     return sShipRef;
 }
@@ -155,12 +103,7 @@ bool ShipItem::_Load()
     if (!m_inventory->LoadContents(&m_factory))
         return false;
 
-    // reset ship default capacity due to errors seen while testing.
-    SetAttribute(AttrCapacity, type().capacity(), false);
-
-    /** @todo  apply ship and skill bonuses to hold capacities here */
-
-	// fill cargo holds data here:
+	// set cargo holds data here:
 	if (HasAttribute(AttrCapacity))
 		m_cargoHoldsUsedVolumeByFlag.insert(std::pair<EVEItemFlags,double>(flagCargoHold,mAttributeMap.GetAttribute(AttrCapacity).get_float()));
 	if (HasAttribute(AttrDroneCapacity))
@@ -193,115 +136,22 @@ bool ShipItem::_Load()
 
 void ShipItem::Init()
 {
-    Character* pChar = m_pilot->GetChar().get();
-    if (!pChar) {
+    if (m_type.groupID() == EVEDB::invGroups::Capsule) {
+        InitPod();
+        return;
+    }
+    if (! m_pilot->GetChar().get()) {
         _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot.", itemName().c_str(), itemID());
         return;
     }
 
-    /** @todo These all still need to have ship bonuses applied */
-    /** @todo this will need to be changed to use skill modifiers when i get them working.... */
-
-    double pg = GetDefaultAttribute(AttrPowerOutput).get_int();
-    double cpu = GetDefaultAttribute(AttrCpuOutput).get_float();
-    double hullHP = GetDefaultAttribute(AttrHP).get_int();
-    double armorHP = GetDefaultAttribute(AttrArmorHP).get_float();
-    double capCapacity = GetDefaultAttribute(AttrCapacitorCapacity).get_float();
-    double shipInertia = GetDefaultAttribute(AttrInetia).get_float();
-    double warpCapNeed = GetDefaultAttribute(AttrWarpCapacitorNeed).get_float();
-    double capChargeRate = GetDefaultAttribute(AttrRechargeRate).get_float();
-    double shieldCapacity = GetDefaultAttribute(AttrShieldCapacity).get_float();
-    double shipMaxVelocity = GetDefaultAttribute(AttrMaxVelocity).get_float();
-    double shieldChargeRate = GetDefaultAttribute(AttrShieldRechargeRate).get_float();
-
-    pg *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEngineering, true))));                       // 5% increase
-    cpu *=  (1 + (0.05 * (pChar->GetSkillLevel(skillElectronics, true))));                      // 5% increase
-    hullHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillMechanics, true))));                     // 5% increase
-    armorHP *=  (1 + (0.05 * (pChar->GetSkillLevel(skillHullUpgrades, true))));                 // 5% increase
-    capCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillEnergyManagement, true))));         // 5% increase
-    shipInertia *= pChar->GetAgilitySkills(HasAttribute(AttrIsCapitalSize));                    // multiple skill effects
-    warpCapNeed *=  (1 - (0.1 * ( pChar->GetSkillLevel(skillWarpDriveOperation, true))));       // 10% decrease
-    capChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillEnergySystemsOperation, true)))); // 5% decrease
-    shieldCapacity *=  (1 + (0.05 * (pChar->GetSkillLevel(skillShieldManagement, true))));      // 5% increase
-    shipMaxVelocity *= (1 + (0.05 * ( pChar->GetSkillLevel(skillNavigation, true))));           // 5% increase
-    shieldChargeRate *=  (1 - (0.05 * (pChar->GetSkillLevel(skillShieldOperation, true))));     // 5% decrease
-
-    // add checks for implants here.
-    //  ship bonuses are found in dgmShipBonusModifiers
-    //  skill bonuses are found in dgmSkillBonusModifiers
-
-    /* to reset for new pilot:
-     * offline all modules
-     * reset ship attribs
-     * add new pilot skills
-     * online all modules
-     * save current attribs
-     */
-
-    // reset basic ship attribs before updating modules   this is catchall incase of server crash (and subsequent data corruption)
-    ResetAttribute(AttrCpuLoad);
-    ResetAttribute(AttrPowerLoad);
-    ResetAttribute(AttrUpgradeLoad);
-    ResetAttribute(AttrUpgradeSlotsLeft);
-    ResetAttribute(AttrShieldEmDamageResonance);
-    ResetAttribute(AttrShieldExplosiveDamageResonance);
-    ResetAttribute(AttrShieldKineticDamageResonance);
-    ResetAttribute(AttrShieldThermalDamageResonance);
-    ResetAttribute(AttrArmorEmDamageResonance);
-    ResetAttribute(AttrArmorExplosiveDamageResonance);
-    ResetAttribute(AttrArmorKineticDamageResonance);
-    ResetAttribute(AttrArmorThermalDamageResonance);
-    ResetAttribute(AttrEmDamageResonance);
-    ResetAttribute(AttrExplosiveDamageResonance);
-    ResetAttribute(AttrKineticDamageResonance);
-    ResetAttribute(AttrThermalDamageResonance);
-
-    SetAttribute(AttrHP, hullHP);
-    SetAttribute(AttrMass, type().mass(), false);   // no default mass in ship item.
-    SetAttribute(AttrInetia, shipInertia);
-    SetAttribute(AttrArmorHP, armorHP);
-    SetAttribute(AttrCpuOutput, cpu);
-    SetAttribute(AttrPowerOutput, pg);
-    SetAttribute(AttrMaxVelocity, shipMaxVelocity);
-    SetAttribute(AttrRechargeRate, capChargeRate);
-    SetAttribute(AttrShieldCapacity, shieldCapacity);
-    SetAttribute(AttrCapacitorCharge, capCapacity);
-    SetAttribute(AttrWarpCapacitorNeed, warpCapNeed);
-    SetAttribute(AttrShieldRechargeRate,shieldChargeRate );
-    SetAttribute(AttrWarpScrambleStatus, 0);
-
-    /* AttrMass = 4,    (largest mass = Leviathan(3764) @ 2,430,000,000kg)
-     * AttrMassLimit = 622,
-     * AttrMassAddition = 796,
-     * AttrMassMultiplier = 1471,
-     */
-    /*   look into these, too...
-     * AttrWarpSBonus(624) [rigs and implants]
-     * AttrWarpFactor(21) [all are 0]
-     * AttrWarpInhibitor(29) [default is null]
-     */
-
-    // set initial stacking map before attribs are altered by modules
-    InitStackingMap();
+    InitAttribs();
 
     // create and initialize the module manager if not already done
     if (!m_ModuleManager)
         m_ModuleManager = new ModuleManager(this);
 
     m_ModuleManager->Initialize();
-
-    /** @todo need to check for ship damage status BEFORE or INSTEAD of calling this.
-     * this is being saved in db, but no methods to retrieve it yet.
-     */
-    //set everything to full AFTER modules possibably update ship stats
-    if (sConfig.server.IsTestServer) {
-        Heal();
-    } else {
-        if (m_pilot->IsInSpace()) {
-            SetShipShield(1.0);
-            SetShipCapacitorLevel(1.0);
-        }
-    }
 }
 
 void ShipItem::InitPod() {
@@ -310,25 +160,103 @@ void ShipItem::InitPod() {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
-    if (sConfig.server.IsTestServer) {
+    // pods have 57 attribs and 0 effects
+
+    // pod will be full when activated
+    if (m_pilot->IsInSpace())
         Heal();
+}
+
+void ShipItem::LogOut()
+{
+    // remove module effects
+    m_ModuleManager->OfflineAll();
+    // reset ship effects and save ship data
+    ProcessEffects();
+
+    // remove ship item from factory master list here, as *something* changes ship postion when saving items from factory.
+    m_factory.RemoveItem(m_itemID);
+
+    // remove ship item from its' container's inventory list also.
+    Inventory* inv(nullptr);
+    if (IsStation(m_locationID)) {
+        InventoryItemRef station = sEntityList.GetStationByID(m_locationID);
+        inv = station->GetMyInventory();
     } else {
-        SetShipShield(1.0);
-        SetShipCapacitorLevel(1.0);
+        SolarSystemRef system = m_factory.GetSolarSystem(m_locationID);
+        inv = system->GetMyInventory();
     }
+    if (inv)
+        inv->RemoveItem(inv->GetByID(m_itemID));
 }
 
 void ShipItem::SetPlayer(Client* pClient) {
     if (m_pilot == pClient)
         return;
+    /* to reset for new pilot:
+     * offline all modules
+     * reset ship attribs
+     * add new pilot skills
+     * online all modules
+     */
+
     m_pilot = pClient;
     if (!m_pilot) {
-        if (m_ModuleManager)
-            m_ModuleManager->CharacterLeavingShip();
+        // remove ship effects and char skill effects for char leaving ship here.
+        ProcessEffects(false);
+        // should we check for cargo and damage after char leaves ship?  maybe later
+        m_onlineModuleVec.clear();
         return;
     }
+
     Init();
-    m_ModuleManager->CharacterBoardingShip();
+
+    if (IsSolarSystem(m_locationID)) {
+        // this hits ONLY when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
+        ProcessEffects(true, true);
+        m_ModuleManager->CharacterBoardingShip();
+        //UpdateModules();
+        if (pClient->IsLogin()) {
+            if (sConfig.server.IsTestServer) {
+                // Heal Ship completely on test server
+                Heal();
+            } else {
+                // live server will Recharge shields and cap if session change isnt active
+                if (!m_pilot->IsSessionChange()) {
+                    SetShipShield(1.0);
+                    SetShipCapacitorLevel(1.0);
+                }
+            }
+        }
+    }
+}
+
+void ShipItem::InitAttribs()
+{
+    // Create default dynamic attributes in the AttributeMap
+    SetAttribute(AttrVolume,                            GetPackagedVolume());
+    SetAttribute(AttrCpuLoad,                           0);
+    SetAttribute(AttrPowerLoad,                         0);
+    SetAttribute(AttrUpgradeLoad,                       0);
+
+    // Check for existence of attributes.  if not loaded then set them to default values:
+    if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, 0.0f);
+    if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, 0.0f);
+    // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
+    if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrShieldCapacity));
+    if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrDamage, mAttributeMap.GetAttribute(AttrCapacitorCapacity));
+    if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS));
+    // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some (t2 indy) already have it defined):
+    if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, 0.0f);
+    if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, 1.0f);
+    if (!HasAttribute(AttrArmorMaxDamageResonance))     SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
+    if (!HasAttribute(AttrShieldMaxDamageResonance))    SetAttribute(AttrShieldMaxDamageResonance, 1.0f);
+    // hull res is stored in item type as AttrHull*Resonance for 6 ships.  set accordingly
+    if (!HasAttribute(AttrEmDamageResonance))           SetAttribute(AttrEmDamageResonance, mAttributeMap.GetAttribute(AttrHullEmDamageResonance));
+    if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance, mAttributeMap.GetAttribute(AttrHullExplosiveDamageResonance));
+    if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance, mAttributeMap.GetAttribute(AttrHullKineticDamageResonance));
+    if (!HasAttribute(AttrThermalDamageResonance))      SetAttribute(AttrThermalDamageResonance, mAttributeMap.GetAttribute(AttrHullThermalDamageResonance));
+
 }
 
 void ShipItem::UpdateHoldsUsedVolume()    /** @todo (allan)  look into this....not working right. */
@@ -400,7 +328,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
             return false;
         }
     } else if (flag == flagShipHangar) {
-        if (GetAttribute(AttrHasShipMaintenanceBay) != 0) {
+        if (GetAttribute(AttrHasShipMaintenanceBay) == 0) {
             m_pilot->SendErrorMsg("%s has no ship maintenance bay.", item->itemName().c_str());
             return false;
         }
@@ -409,7 +337,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
             return false;
         }
     } else if (flag == flagHangar) {
-        if (GetAttribute(AttrHasCorporateHangars) != 0) {
+        if (GetAttribute(AttrHasCorporateHangars) == 0) {
             m_pilot->SendErrorMsg("%s has no corporate hangars.", itemName().c_str());
             return false;
         }
@@ -577,14 +505,15 @@ PyDict* ShipItem::GetShipState() {
     if (m_inventory->FindSingleByFlag(flagPilot, pilot))
         result->SetItem(new PyInt(pilot->itemID()), pilot->GetItemStatusRow());
 
-    if (m_ModuleManager) {
-        // Create entries for ALL modules, rigs, and subsystems present on ship:
-        std::vector<InventoryItemRef> moduleList;
-        m_ModuleManager->GetModuleListOfRefs( &moduleList );
-        for (int i=0; i<moduleList.size(); i++)
-            result->SetItem(new PyInt(moduleList.at(i)->itemID()), moduleList.at(i)->GetItemStatusRow());
-    } else
-        _log(SHIP__MODULE_ERROR, "GetShipState() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+    if (!m_ModuleManager) {
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
+    }
+    // Create entries for ALL modules, rigs, and subsystems present on ship:
+    std::vector<InventoryItemRef> moduleList;
+    m_ModuleManager->GetModuleListOfRefsAsc( &moduleList );
+    for (int i=0; i<moduleList.size(); i++)
+        result->SetItem(new PyInt(moduleList.at(i)->itemID()), moduleList.at(i)->GetItemStatusRow());
 
     return result;
 }
@@ -595,15 +524,15 @@ PyList* ShipItem::ShipGetModuleList() {
         return nullptr;
     }
     if (!m_ModuleManager) {
-        _log(SHIP__MODULE_ERROR, "ShipGetModuleList() - %s(%u) has no module manager.", itemName().c_str(), itemID());
-        return nullptr;
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
     }
 
     PyList* result = new PyList;
     PyTuple* module = new PyTuple(2);
     // Create entries in "onslimitemchange" modules list for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
-    m_ModuleManager->GetModuleListOfRefs( &moduleList );
+    m_ModuleManager->GetModuleListOfRefsAsc( &moduleList );
     for (int i=0; i<moduleList.size(); i++) {
         module->SetItem(0, new PyInt(moduleList.at(i)->typeID()));
         module->SetItem(1, new PyInt(moduleList.at(i)->itemID()));
@@ -622,8 +551,8 @@ PyDict* ShipItem::GetChargeState() {
         }
     }
     if (!m_ModuleManager) {
-        _log(SHIP__MODULE_ERROR, "GetChargeState() - %s(%u) has no module manager.", itemName().c_str(), itemID());
-        return nullptr;
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
     }
 
     /* get list of charges loaded in ship modules (*all slots*) */
@@ -632,7 +561,6 @@ PyDict* ShipItem::GetChargeState() {
 
     if (charges.empty()) {
         PyDict *result = new PyDict;
-        //result->SetItem(new PyInt(itemID()), new BuiltinSet());
         return result;
     }
 
@@ -692,6 +620,7 @@ void ShipItem::SaveShip()
 }
 
 bool ShipItem::ValidateItemSpecifics(InventoryItemRef item) {
+    /** @todo wtf is this shit?  fix it.  */
     uint32 groupID = m_pilot->GetShip()->groupID();
 
     EvilNumber canFitShipGroup1=0, canFitShipGroup2=0, canFitShipGroup3=0, canFitShipGroup4=0;
@@ -734,7 +663,7 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef item) {
                 _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Item Validation passed.");
         }
 
-    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the module");
+    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the %s", item->itemName().c_str());
     return true;
 }
 
@@ -743,36 +672,60 @@ void ShipItem::ProcessModules() {
         return;
     if (m_ModuleManager)
         m_ModuleManager->Process();
+    else {
+        _log(SHIP__MODULE_ERROR, "ProcessModules() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
 }
 
 void ShipItem::Dock() {
+    m_isDocking = true;
     DeactivateAllModules();
+    OfflineAll();
+    ClearModifiers();
+    m_onlineModuleVec.clear();
 }
 
 void ShipItem::Undock() {
+    m_isUndocking = true;
+    // apply ship effects, as all variables are set at this point.
+    if (m_ModuleManager) {
+        ProcessEffects(true, true);
+        //m_ModuleManager->CharacterBoardingShip();
+        UpdateModules();
+    } else {
+        _log(SHIP__MODULE_ERROR, "Undock() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
+
     if (sConfig.server.IsTestServer) {
         // Heal Ship completely on test server
         Heal();
     } else {
-        // live server will ONLY Recharge shields and cap
-        SetShipShield(1.0);
-        SetShipCapacitorLevel(1.0);
-    }
-    //get list of modules to activate from ShipBound::Handle_Undock()
-    for (auto cur : m_onlineModuleVec) {
-        if (m_ModuleManager)
-            m_ModuleManager->Online(cur);
+        // live server will Recharge shields and cap if session change isnt active
+        if (!m_pilot->IsSessionChange()) {
+            SetShipShield(1.0);
+            SetShipCapacitorLevel(1.0);
+        }
     }
 }
 
 void ShipItem::Warp() {
     if (m_ModuleManager)
         m_ModuleManager->ShipWarping();
+    else {
+        _log(SHIP__MODULE_ERROR, "Warp() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
 }
 
 void ShipItem::Jump() {
     if (m_ModuleManager)
         m_ModuleManager->ShipJumping();
+    else {
+        _log(SHIP__MODULE_ERROR, "Jump() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
 }
 
 void ShipItem::Heal()
@@ -856,39 +809,39 @@ void ShipItem::SetShipHull(double fraction)
 }
 
 /* Begin new Module Manager Interface */
-InventoryItemRef ShipItem::GetModule(EVEItemFlags flag)
+InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
 {
-    if (m_ModuleManager and m_ModuleManager->GetModule(flag) != NULL )
+    if (m_ModuleManager and m_ModuleManager->GetModule(flag) )
 		return (m_ModuleManager->GetModule(flag))->getItem();
 	else
 		return InventoryItemRef();
 }
 
-InventoryItemRef ShipItem::GetModule(uint32 itemID)
+InventoryItemRef ShipItem::GetModuleRef(uint32 itemID)
 {
-    if (m_ModuleManager and m_ModuleManager->GetModule(itemID) != NULL )
+    if (m_ModuleManager and m_ModuleManager->GetModule(itemID) )
 		return (m_ModuleManager->GetModule(itemID))->getItem();
 	else
 		return InventoryItemRef();
 }
 
 EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef item) {
-    uint32 slotFound = flagIllegal;
+    uint16 slotFound = flagIllegal;
     // 1) get slot bank (low, med, high, rig, subsystem) from dgmTypeEffects using item->itemID()
     // 2) query this ship's ModuleManager to determine if there are any free slots in that bank,
     //    it should return a slot flag number for the next available slot starting at the lowest number
     //    for that bank
     // 3) return that slot flag number
-    if (item->type().HasEffect(effectLoPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectLoPower);
-    } else if (item->type().HasEffect(effectMedPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectMedPower);
-    } else if (item->type().HasEffect(effectHiPower)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectHiPower);
-    } else if (item->type().HasEffect(effectSubSystem)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectSubSystem);
-    } else if (item->type().HasEffect(effectRigSlot)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(effectRigSlot);
+    if (item->type().HasEffect(EVEEffectID::loPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::loPower);
+    } else if (item->type().HasEffect(EVEEffectID::medPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::medPower);
+    } else if (item->type().HasEffect(EVEEffectID::hiPower)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::hiPower);
+    } else if (item->type().HasEffect(EVEEffectID::subSystem)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::subSystem);
+    } else if (item->type().HasEffect(EVEEffectID::rigSlot)) {
+        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::rigSlot);
     } else {
         // ERROR: This is not a module that fits in any of the slot banks
     }
@@ -902,8 +855,10 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
         return 0;
 
     if (IsModuleSlot(flag)) {
-        if (!m_ModuleManager)
-            return 0;
+        if (!m_ModuleManager) {
+            m_ModuleManager = new ModuleManager(this);
+            m_ModuleManager->Initialize();
+        }
         if (item->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->LoadCharge(item, flag);
             InventoryItemRef loadedChargeOnModule = m_ModuleManager->GetLoadedChargeOnModule(flag);
@@ -912,7 +867,6 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
             else
                 return 0;
         } else if (item->categoryID() == EVEDB::invCategories::Module) {
-            item->PutOffline();
             item->ChangeSingleton(true, false);
             // rigs are classed in the module category.  check here and call approprate method as needed.
             if ((item->groupID() >= 773 and item->groupID() <= 782) or item->groupID() == 786) {
@@ -947,13 +901,14 @@ void ShipItem::RemoveItem(InventoryItemRef item, uint32 qty/*0*/)
 
     // check to see if item is currently in a module slot.  going by category is NOT working after _ExecAdd() updates.
     if (IsModuleSlot(item->flag())) {
-        if (!m_ModuleManager)
-            return;
+        if (!m_ModuleManager) {
+            m_ModuleManager = new ModuleManager(this);
+            m_ModuleManager->Initialize();
+        }
         // if item being removed is in a module slot, remove it via Module Manager here, and let invBound take care of the rest.
         if (item->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->UnloadCharge(item->flag());
         } else if ((item->categoryID() == EVEDB::invCategories::Module) or (item->categoryID() == EVEDB::invCategories::Subsystem)) {
-            Deactivate( item->itemID(), "offline" );
             if ((item->flag() >= flagRigSlot0) and (item->flag() <= flagRigSlot7))
                 m_ModuleManager->UninstallRig(item->itemID());
             else
@@ -965,7 +920,7 @@ void ShipItem::RemoveItem(InventoryItemRef item, uint32 qty/*0*/)
 
 void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     // slot1 is occupied, as this is location module is from.
-    InventoryItemRef modItemRef1 = GetModule(slot1);
+    InventoryItemRef modItemRef1 = GetModuleRef(slot1);
     if (!modItemRef1) {
         _log(SHIP__MODULE_TRACE, "Ship::MoveModuleSlot - modItemRef1 is null." );
         m_pilot->SendNotifyMsg("There was an internal error.  The module to move was not found.");
@@ -978,7 +933,7 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
 
     if (m_ModuleManager->IsSlotOccupied(slot2)) {
         // dropped-on slot is occupied.  procede with moving the module currently in this slot.
-        InventoryItemRef modItemRef2 = GetModule(slot2);
+        InventoryItemRef modItemRef2 = GetModuleRef(slot2);
         InventoryItemRef chargeItemRef2 = m_ModuleManager->GetLoadedChargeOnModule(slot2);
         if (chargeItemRef2)
             m_ModuleManager->UnloadCharge(slot2);
@@ -998,21 +953,19 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
 
 void ShipItem::UpdateModules()
 {
-    // List of callees to put this function into context as to what it should be doing:
-    // Client::BoardShip()              - put modules online that are recorded with attributeID 2 as being online / skill check all modules and if any fail, keep those OFFLINE
-    // InventoryBound::_ExecAdd()       - things have been added or removed, recheck all modules for... some reason
-    // Client::MoveItem()               - something has been moved into or out of the ship, recheck all modules for... some reason
-    m_ModuleManager->UpdateModules();
-    //sLog.Error( "Ship::UpdateModules()", "We are currently not checking for modules that need to go online, or skill checking character for any modules of a newly boarded ship, or updating module states based on things being moved into or off the ship!" );
-    //sLog.Error( "Ship::UpdateModules()", "This should really be a simple call to a function ModuleManager::UpdateModules() and the code put inside there." );
+    /* this is only called when ship is in space
+     * this will call Online() on all modules, which will apply passive and online effects.
+     */
+    m_ModuleManager->UpdateModules(m_onlineModuleVec);
+    m_onlineModuleVec.clear();
 }
 
 void ShipItem::UpdateModules(EVEItemFlags flag)
 {
 	// List of callees to put this function into context as to what it should be doing:
-	// Client::BoardShip()				- put modules online that are recorded with attributeID 2 as being online / skill check all modules and if any fail, keep those OFFLINE
-	// InventoryBound::_ExecAdd()		- things have been added or removed, recheck all modules for... some reason
-	// Client::MoveItem()				- something has been moved into or out of the ship, recheck all modules for... some reason
+    // Ship::AddItem()
+    // Ship::MoveModuleSlot()
+    // Client::MoveItem()               - something has been moved into or out of the ship, recheck all modules for... some reason
     m_ModuleManager->UpdateModules(flag);
 }
 
@@ -1035,7 +988,7 @@ void ShipItem::RepairModules()
 
 void ShipItem::Online (uint32 moduleID)
 {
-    if (IsSolarSystem(locationID())) {
+    if (IsSolarSystem(m_locationID)) {
         ; // check for avalible cap, and drain accordingly
         /*
         float Charge = GetAttribute(AttrCapacitorCharge).get_float();
@@ -1055,7 +1008,8 @@ void ShipItem::Offline (uint32 moduleID)
 
 void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat)
 {
-    m_ModuleManager->Activate( itemID, effectName, targetID, repeat );
+    m_targetRef = m_factory.GetItem(targetID);
+    m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(effectName), targetID, repeat );
 }
 
 void ShipItem::Deactivate(int32 itemID, std::string effectName)
@@ -1085,14 +1039,23 @@ void ShipItem::RemoveRig(InventoryItemRef item) {
 
 void ShipItem::OnlineAll()
 {
-    m_ModuleManager->OnlineAll();
+    if (m_ModuleManager)
+        m_ModuleManager->OnlineAll();
+    else {
+        _log(SHIP__MODULE_ERROR, "OnlineAll() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
 }
 
 void ShipItem::OfflineAll()
 {
-    m_ModuleManager->OfflineAll();
+    if (m_ModuleManager)
+        m_ModuleManager->OfflineAll();
+    else {
+        _log(SHIP__MODULE_ERROR, "OfflineAll() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
 }
-
 
 void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
 {
@@ -1101,122 +1064,84 @@ void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
 
 void ShipItem::DeactivateAllModules()
 {
-    m_ModuleManager->DeactivateAllModules();
+    if (m_ModuleManager)
+        m_ModuleManager->DeactivateAllModules();
 }
 /* End new Module Manager Interface */
 
 void ShipItem::StripFitting()
 {
-    std::vector<InventoryItemRef> modList;
-    m_ModuleManager->GetModuleListOfRefs(&modList);
-    for (auto cur : modList) {
-        m_ModuleManager->UnfitModule(cur->itemID());
-        cur->Move(m_pilot->GetLocationID(), flagHangar);
-    }
-}
-
-// stacking penality system   -allan   (UD 29Jul16)
-double ShipItem::GetEffectiveness(uint16 attrib, ModuleStates state)
-{
-    /*  NOTE:  this system now uses the module effects' "stacking attribute" to properly process modifiers that have stacking penalities.  */
-    uint8 count = 1;
-    std::map<uint16, uint8>::iterator itr = m_stackMap.find(attrib);
-    if (itr != m_stackMap.end()) {
-        switch (state) {
-            case MOD_ONLINE:
-            case MOD_ACTIVATED: {
-                count = ++(itr->second);
-            } break;
-            case MOD_OFFLINE:
-            case MOD_DEACTIVATING: {
-                count = itr->second;
-                if (itr->second == 1)
-                    m_stackMap.erase(itr);
-                else
-                    --(itr->second);
-            } break;
-            default: {
-                codelog(SHIP__MODULE_ERROR, "ShipItem::GetEffectiveness() -  module has invalid state %u", state);
-                if (m_pilot)
-                    m_pilot->SendErrorMsg("Internal Server Error - module has invalid state.  Ref: ServerError 15611");
-            } break;
+    if (m_ModuleManager) {
+        std::vector<InventoryItemRef> moduleList;
+        m_ModuleManager->GetModuleListOfRefsAsc(&moduleList);
+        for (auto cur : moduleList) {
+            m_ModuleManager->UnfitModule(cur->itemID());
+            cur->Move(m_pilot->GetLocationID(), flagHangar);
         }
     } else {
-        m_stackMap.emplace(attrib, 1);
+        _log(SHIP__MODULE_ERROR, "StripFitting() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
     }
-
-    //stacking calculation fixed  -allan  20Dec15
-    double effectiveness = exp(-pow(((count - 1)/2.67),2));
-
-    if (effectiveness <= 0) {   /* this should never happen */
-        codelog(SHIP__MODULE_ERROR, "ShipItem::GetEffectiveness() -  effectiveness <= 0");
-        if (m_pilot)
-            m_pilot->SendErrorMsg("Internal Server Error - module has 0 effectiveness.  Hacking to 1.  Ref: ServerError 15610");
-        effectiveness = 1;
-    }
-
-    return effectiveness;
 }
 
-// resist cap system    -allan 26Dec16
-void ShipItem::InitStackingMap()
+// new effects system.  wip
+void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 {
-    m_resistMap[AttrKineticDamageResonance] = GetAttribute(AttrKineticDamageResonance).get_float();
-    m_resistMap[AttrThermalDamageResonance] = GetAttribute(AttrThermalDamageResonance).get_float();
-    m_resistMap[AttrExplosiveDamageResonance] = GetAttribute(AttrExplosiveDamageResonance).get_float();
-    m_resistMap[AttrEmDamageResonance] = GetAttribute(AttrEmDamageResonance).get_float();
-    m_resistMap[AttrArmorEmDamageResonance] = GetAttribute(AttrArmorEmDamageResonance).get_float();
-    m_resistMap[AttrArmorExplosiveDamageResonance] = GetAttribute(AttrArmorExplosiveDamageResonance).get_float();
-    m_resistMap[AttrArmorKineticDamageResonance] = GetAttribute(AttrArmorKineticDamageResonance).get_float();
-    m_resistMap[AttrArmorThermalDamageResonance] = GetAttribute(AttrArmorThermalDamageResonance).get_float();
-    m_resistMap[AttrShieldEmDamageResonance] = GetAttribute(AttrShieldEmDamageResonance).get_float();
-    m_resistMap[AttrShieldExplosiveDamageResonance] = GetAttribute(AttrShieldExplosiveDamageResonance).get_float();
-    m_resistMap[AttrShieldKineticDamageResonance] = GetAttribute(AttrShieldKineticDamageResonance).get_float();
-    m_resistMap[AttrShieldThermalDamageResonance] = GetAttribute(AttrShieldThermalDamageResonance).get_float();
-
-    // this is not resist...cannot use cap method on these...
-    m_resistMap[AttrScanResolution] = GetAttribute(AttrScanResolution).get_float();
-    m_resistMap[AttrSignatureRadius] = GetAttribute(AttrSignatureRadius).get_float();
-
-    /** these also have char skills that will need to be recalculated if the attrib is reset to base
-    m_resistMap[AttrMaxVelocity] = GetAttribute(AttrMaxVelocity).get_float();
-    m_resistMap[AttrInetia] = GetAttribute(AttrInetia).get_float();
-    m_resistMap[AttrShieldRechargeRate] = GetAttribute(AttrShieldRechargeRate).get_float();
-    m_resistMap[AttrMaxTargetRange] = GetAttribute(AttrMaxTargetRange).get_float();
+    /*
+    Effects processing order...
+        boosters   //char effect
+        Implants   //char effect
+        skills     //char effect
+        Ship       //ship effect
+        Subsystem  //module effect
+        Rigs       //module effect
+        Low        //module effect
+        Mid        //module effect
+        Hi         //module effect
     */
-}
-
-void ShipItem::SetTrueResist(uint16 attrib, EvilNumber& value)
-{
-    std::map<uint16, float>::iterator itr = m_resistMap.find(attrib);
-    if (itr != m_resistMap.end()) {
-        itr->second = value.get_float();
-
-        // hard-cap resist values here  - moved from CalculateAttributeValue()
-        // NOTE:  remember, these are BACKWARD from 'normal' fuzzy logic..  0=full and 1=none
-        if (value < 0.05) value = 0.05; // cap resists at 95%
-        if (value > 1) value = 1;       // verify resist doesnt go below 0
+    if (add) {
+        double start = GetTimeMSeconds();
+        // char effects are processed when char is loaded.
+        // apply char effects
+        _log(EFFECTS__TRACE, "Applying Char Effects");
+        sFxProc.ApplyEffects(m_pilot->GetChar().get(), m_pilot->GetChar().get(), this, update);
+        ProcessShipEffects(update);
+        _log(EFFECTS__DEBUG, "ShipItem::ProcessEffects() - %u ship and char effects processed and applied in %.3fms", \
+                (m_pilot->GetChar()->m_modifiers.size() + m_modifiers.size()), (GetTimeMSeconds() - start));
+    } else {
+        RemoveEffects();
     }
 }
 
-void ShipItem::GetTrueResist(uint16 attrib, EvilNumber& value)
+void ShipItem::ProcessShipEffects(bool update/*false*/)
 {
-    std::map<uint16, float>::iterator itr = m_resistMap.find(attrib);
-    if (itr != m_resistMap.end())
-        value = itr->second;
+    _log(EFFECTS__TRACE, "ShipItem::ParseExpression():  Beginning Ship Effects Processing.");
+    for (auto it : m_type.m_stateFxMap) {
+        fxData data;
+        data.action = Effects::Action::dgmActInvalid;
+        data.srcRef = static_cast<InventoryItemRef>(this);
+        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
+        sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(it.second.preExpression), data);
+    }
+    _log(EFFECTS__TRACE, "Applying Ship Effects");
+    // apply processed effects
+    sFxProc.ApplyEffects(this, m_pilot->GetChar().get(), this, update);
 }
 
-void ShipItem::CheckStacking(uint16 attrib, EVECalculationType type, ModuleStates state, EvilNumber& value)
+void ShipItem::RemoveEffects()
 {
-    EvilNumber newVal = 0;
-    std::map<uint16, float>::iterator itr = m_resistMap.find(attrib);
-    if (itr != m_resistMap.end())
-        newVal = CalculateAttributeValue(newVal, value, type);
+    SaveShip();
+    // clear also reloads default attribs
+    ClearModifiers();
 }
-
 
 std::string ShipItem::GetShipDNA()
 {
+    if (!m_ModuleManager) {
+        _log(SHIP__MODULE_ERROR, "GetShipDNA() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        EvE::traceStack();
+    }
+
     /* ship dna is shorthand notation to describe a ship and it's fittings purely thru the use of typeIDs and quantities
      *
      * the format is as follows:
@@ -1248,10 +1173,10 @@ std::string ShipItem::GetShipDNA()
     /* find and encode the module typeIDs */
     std::stringstream modHi, modMid, modLow, subSys, modRig, charges, drones;
 
-    std::vector<InventoryItemRef> modList;
-    m_ModuleManager->GetModuleListOfRefs(&modList);
+    std::vector<InventoryItemRef> moduleList;
+    m_ModuleManager->GetModuleListOfRefsAsc(&moduleList);
 
-    for (auto cur : modList) {
+    for (auto cur : moduleList) {
         if (IsRigSlot(cur->flag()))
             modRig << cur->typeID() << ";" << cur->quantity() << ":";
         else if (IsHiSlot(cur->flag()))
@@ -1263,7 +1188,7 @@ std::string ShipItem::GetShipDNA()
         else if (IsSubSystem(cur->flag()))
             subSys << cur->typeID() << ":";
         else
-           ; // error?
+            ; // error?
     }
 
     std::map<EVEItemFlags, InventoryItemRef> chargeList;
@@ -1386,8 +1311,6 @@ void Ship::PayInsurance() {
 void Ship::ResetShipSystemMgr(SystemManager* pSystem)
 {
     m_system = pSystem;
-    //SafeDelete(m_destiny);
-    //m_destiny = new DestinyManager(this);
 }
 
 void Ship::SetPilot(Client* pClient) {
@@ -1428,8 +1351,8 @@ void Ship::EncodeDestiny( Buffer& into ) {
         into.Append( head );
     MassSector mass;
         mass.mass = m_destiny->GetMass();
-        mass.cloak = 0;
-        mass.Harmonic = -1.0f;
+        mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
+        mass.Harmonic = -1.0f;      // @todo:  fix this when POS system is more mature
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
         into.Append( mass );
@@ -1445,13 +1368,14 @@ void Ship::EncodeDestiny( Buffer& into ) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
             warp.formationID = 0xFF;
-            warp.effectStamp = -1; // m_destiny->GetStateStamp();   //timestamp when warp started...not working right yet.
             warp.x = target.x;
             warp.y = target.y;
             warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.followRange = 0; //m_destiny->GetDistance();
-            warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
+            //  warp timing.  wip
+            warp.effectStamp = -1; // m_destiny->GetStateStamp();   //timestamp when warp started...not working right yet.
+            warp.followRange = 0;  //this isnt right.  server sends -4616189618054758400 when warp starts.  not sure of computation used for other values (when ship in warp)
+            warp.followID = 0;  //this isnt right  server sends 4669471951536783360 when warp starts or when sending AddBalls.  0 otherwise
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
@@ -1494,7 +1418,8 @@ void Ship::EncodeDestiny( Buffer& into ) {
         case 12: modeStr = "Formation"; break;
     }
 
-    _log(SHIP__INFO, "Ship::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X", GetName(), head.entityID, modeStr.c_str(), head.flags);
+    _log(DESTINY__UPDATES, "Ship::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
+            GetName(), head.entityID, modeStr.c_str(), head.flags, data.velocity_x, data.velocity_y, data.velocity_z);
 }
 
 void Ship::MakeDamageState(DoDestinyDamageState &into) {
@@ -1528,8 +1453,8 @@ PyDict* Ship::MakeSlimItem() {
 
     //encode the hiSlot and Subsystem modules list ONLY
     std::vector<InventoryItemRef> items;
-    m_self->GetInventory()->FindByFlagRange(flagHiSlot0, flagHiSlot7, items);
-    //m_self->GetInventory()->FindByFlagRange(flagSubSystem0, flagSubSystem7, items);
+    m_self->GetMyInventory()->FindByFlagRange(flagHiSlot0, flagHiSlot7, items);
+    //m_self->GetMyInventory()->FindByFlagRange(flagSubSystem0, flagSubSystem7, items);
     if (!items.empty()) {
         PyList *l = new PyList();
         for (auto cur : items) {

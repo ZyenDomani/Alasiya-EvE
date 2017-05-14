@@ -26,10 +26,8 @@
 #ifndef __STATION__H__INCL__
 #define __STATION__H__INCL__
 
-#include "inventory/Inventory.h"
 #include "inventory/ItemType.h"
 #include "system/Celestial.h"
-#include "system/SystemEntity.h"
 
 /**
  * Station type data container.
@@ -108,32 +106,28 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty *_LoadType(ItemFactory &factory, uint32 stationTypeID,
-        // ItemType stuff:
-        const ItemGroup &group, const TypeData &data)
+    static _Ty *_LoadType(ItemFactory &factory, uint32 stationTypeID, const ItemGroup &group, const TypeData &data)
     {
-        // verify it's a station type
-        if( group.id() != EVEDB::invGroups::Station ) {
+        if (group.id() != EVEDB::invGroups::Station) {
             _log( ITEM__ERROR, "Trying to load %s as Station.", group.name().c_str() );
-            return NULL;
+            return nullptr;
         }
 
         // get station type data
         StationTypeData stData;
         if( !factory.db().GetStationType(stationTypeID, stData) )
-            return NULL;
+            return nullptr;
 
         return _Ty::template _LoadStationType<_Ty>( factory, stationTypeID, group, data, stData );
     }
 
     // Actual loading stuff:
     template<class _Ty>
-    static _Ty *_LoadStationType(ItemFactory &factory, uint32 stationTypeID,
-        // ItemType stuff:
-        const ItemGroup &group, const TypeData &data,
-        // StationType stuff:
-        const StationTypeData &stData
-    );
+    static _Ty *_LoadStationType(ItemFactory &factory, uint32 stationTypeID, const ItemGroup &group, const TypeData &data, const StationTypeData &stData)
+    {
+        // ready to create
+        return new StationType( stationTypeID, group, data, stData );
+    }
 
     /*
      * Data members:
@@ -234,13 +228,8 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadCelestialObject(ItemFactory &factory, uint32 stationID,
-        // InventoryItem stuff:
-        const ItemType &type, const ItemData &data,
-        // CelestialObject stuff:
-        const CelestialObjectData &cData)
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 stationID, const ItemType &type, const ItemData &data)
     {
-        // check it's a station
         if( type.groupID() != EVEDB::invGroups::Station )
         {
             _log( ITEM__ERROR, "Trying to load %s as Station.", type.group().name().c_str() );
@@ -248,6 +237,11 @@ protected:
         }
         // cast the type
         const StationType &stType = static_cast<const StationType &>( type );
+
+        // load celestial data
+        CelestialObjectData cData;
+        if (!factory.db().GetCelestialObject(stationID, cData))
+            return RefPtr<_Ty>();
 
         // load station data
         StationInfo stData;
@@ -259,17 +253,14 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadStation(ItemFactory &factory, uint32 stationID,
-        // InventoryItem stuff:
-        const StationType &type, const ItemData &data,
-        // CelestialObject stuff:
-        const CelestialObjectData &cData,
-        // Station stuff:
-        const StationInfo &stData
-    );
+    static RefPtr<_Ty> _LoadStation(ItemFactory &factory, uint32 stationID, const StationType &type, const ItemData &data,
+        const CelestialObjectData &cData, const StationInfo &stData)
+    {
+        // ready to create
+        return StationItemRef( new StationItem( factory, stationID, type, data, cData, stData ) );
+    }
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
-
 
     /*
      * Data members:

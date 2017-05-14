@@ -30,7 +30,7 @@ enum EveAttrEnum {
     AttrIsOnline = 2,
     AttrDamage = 3,
     AttrMass = 4,
-    AttrCapacitorNeed = 6,
+    AttrCapacitorNeed = 6,  //dischargeAttributeID in dgmEffects
     AttrMinRange = 8,
     AttrHP = 9,
     AttrPowerOutput = 11,
@@ -43,19 +43,19 @@ enum EveAttrEnum {
     AttrSpeedFactor = 20,
     AttrWarpFactor = 21,
     AttrWarpInhibitor = 29,
-    AttrPower = 30,
+    AttrPower = 30,         //required by this item for fitting
     AttrMaxArmor = 31,
     AttrBreakPoint = 32,
     AttrMaxVelocity = 37,
-    AttrCapacity = 38,
+    AttrCapacity = 38,      //cargohold capacity
     AttrDamageHP = 39,
     AttrSlots = 47,
     AttrCpuOutput = 48,
     AttrCpuLoad = 49,
-    AttrCpu = 50,
-    AttrSpeed = 51,
+    AttrCpu = 50,       //required by this item for fitting
+    AttrSpeed = 51,             //durationAttributeID in dgmEffects
     AttrDamageResistance = 52,
-    AttrMaxRange = 54,
+    AttrMaxRange = 54,          //rangeAttributeID in dgmEffects
     AttrRechargeRate = 55,      //Amount of time taken to fully recharge the capacitor.
     AttrChargeRate = 56,        //Number of charges consumed per activation
     AttrTargetModule = 61,
@@ -68,7 +68,7 @@ enum EveAttrEnum {
     AttrRateBonus = 69,
     AttrInetia = 70,   // listed in db as "agility", this is actually Inertia, where agility is an internal variable
     AttrCapacityBonus = 72,
-    AttrDuration = 73,
+    AttrDuration = 73,      //durationAttributeID in dgmEffects
     AttrHpToCapacity = 75,
     AttrMaxTargetRange = 76,
     AttrMiningAmount = 77,
@@ -78,21 +78,21 @@ enum EveAttrEnum {
     AttrStructureBonus = 82,
     AttrStructureDamageAmount = 83,
     AttrArmorDamageAmount = 84,
-    AttrShieldTransferRange = 87,
+    AttrShieldTransferRange = 87,  //rangeAttributeID in dgmEffects
     AttrShieldDrainAmount = 88,
     AttrShieldDrainRange = 89,
     AttrPowerTransferAmount = 90,
-    AttrPowerTransferRange = 91,
+    AttrPowerTransferRange = 91,  //rangeAttributeID in dgmEffects
     AttrKineticDampeningFieldStrength = 92,
     AttrKineticDampeningFieldBonus = 93,
     AttrEnergyReflectionStrength = 95,
     AttrEnergyReflectionBonus = 96,
     AttrEnergyDestabilizationAmount = 97,
-    AttrEnergyDestabilizationRange = 98,
-    AttrEmpFieldRange = 99,
+    AttrEnergyDestabilizationRange = 98,  //rangeAttributeID in dgmEffects
+    AttrEmpFieldRange = 99,  //rangeAttributeID in dgmEffects
     AttrLauncherSlotsLeft = 101,
     AttrTurretSlotsLeft = 102,
-    AttrWarpScrambleRange = 103,
+    AttrWarpScrambleRange = 103,  //rangeAttributeID in dgmEffects
     AttrWarpScrambleStatus = 104,
     AttrWarpScrambleStrength = 105,
     AttrDroneBaySlotsLeft = 106,
@@ -112,8 +112,8 @@ enum EveAttrEnum {
     AttrArmorPiercingChance = 122,
     AttrShieldPiercingChance = 123,
     AttrMainColor = 124,
-    AttrShipScanRange = 125,
-    AttrCargoScanRange = 126,
+    AttrShipScanRange = 125,  //rangeAttributeID in dgmEffects
+    AttrCargoScanRange = 126,  //rangeAttributeID in dgmEffects
     AttrAmmoLoaded = 127,
     AttrChargeSize = 128,
     AttrMaxPassengers = 129,
@@ -129,7 +129,7 @@ enum EveAttrEnum {
     AttrExplosiveDamageBonus = 139,
     AttrKineticDamageBonus = 140,
     AttrThermalDamageBonus = 141,
-    AttrEcmBurstRange = 142,
+    AttrEcmBurstRange = 142,  //rangeAttributeID in dgmEffects
     AttrTargetHostileRange = 143,
     AttrCapacitorRechargeRateMultiplier = 144,
     AttrPowerOutputMultiplier = 145,
@@ -144,8 +144,8 @@ enum EveAttrEnum {
     AttrProximityRange = 154,
     AttrIncapacitationRatio = 156,
     AttrOrbitRange = 157,
-    AttrFalloff = 158,
-    AttrTrackingSpeed = 160,
+    AttrFalloff = 158,      //falloffAttributeID in dgmEffects
+    AttrTrackingSpeed = 160,    //trackingSpeedAttributeID in dgmEffects
     AttrVolume = 161,
     AttrRadius = 162,
     AttrDummyDuration = 163,
@@ -256,7 +256,7 @@ enum EveAttrEnum {
     AttrRequiredSkill2Level = 278,
     AttrRequiredSkill3Level = 279,
     AttrSkillLevel = 280,
-    AttrExplosionDelay = 281,
+    AttrExplosionDelay = 281,       // in ms
     AttrLauncherCapacityMultiplier = 282,
     AttrDroneCapacity = 283,
     AttrExcludeGangMembers = 284,
@@ -303,7 +303,7 @@ enum EveAttrEnum {
     AttrBarrageFalloffMutator = 325,
     AttrBarrageDmgMultiplier = 326,
     AttrHullHpBonus = 327,
-    AttrBarrageFalloff = 328,
+    AttrBarrageFalloff = 328,    //falloffAttributeID in dgmEffects
     AttrGangRofBonus = 329,
     AttrBoosterDuration = 330,
     AttrImplantness = 331,
@@ -460,17 +460,17 @@ enum EveAttrEnum {
     AttrShipBonus2CB = 501,
     AttrEntityConvoyDroneMin = 502,
     AttrEntityConvoyDroneMax = 503,
-    AttrEntityWarpScrambleChance = 504,
+    AttrEntityWarpScrambleChance = 504, // npcUsageChanceAttributeID in dgmEffects
     AttrWarpScrambleDuration = 505,
     AttrMissileLaunchDuration = 506,
     AttrEntityMissileTypeID = 507,
     AttrEntityCruiseSpeed = 508,
-    AttrCargoScanFalloff = 509,
-    AttrShipScanFalloff = 510,
+    AttrCargoScanFalloff = 509,  //falloffAttributeID in dgmEffects
+    AttrShipScanFalloff = 510,  //falloffAttributeID in dgmEffects
     AttrShipScanResistance = 511,
-    AttrModifyTargetSpeedChance = 512,
+    AttrModifyTargetSpeedChance = 512, // npcUsageChanceAttributeID in dgmEffects
     AttrModifyTargetSpeedDuration = 513,
-    AttrModifyTargetSpeedRange = 514,
+    AttrModifyTargetSpeedRange = 514,  //rangeAttributeID in dgmEffects
     AttrModifyTargetSpeedCapacitorNeed = 515,
     AttrChassisType = 516,
     AttrFallofMultiplier = 517,
@@ -590,7 +590,7 @@ enum EveAttrEnum {
     AttrShieldTUNEBonus = 648,
     AttrCloakingCpuNeedBonus = 649,
     AttrMaxStructureDistance = 650,
-    AttrDecloakFieldRange = 651,
+    AttrDecloakFieldRange = 651,  //rangeAttributeID in dgmEffects
     AttrSignatureRadiusMultiplier = 652,
     AttrAoeVelocity = 653,
     AttrAoeCloudSize = 654,
@@ -845,11 +845,11 @@ enum EveAttrEnum {
     AttrMiningUpgradeCPUReductionBonus = 927,
     AttrEntityTargetJam = 928,
     AttrEntityTargetJamDuration = 929,
-    AttrEntityTargetJamDurationChance = 930,
-    AttrEntityCapacitorDrainDurationChance = 931,
-    AttrEntitySensorDampenDurationChance = 932,
-    AttrEntityTrackingDisruptDurationChance = 933,
-    AttrEntityTargetPaintDurationChance = 935,
+    AttrEntityTargetJamDurationChance = 930,    // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityCapacitorDrainDurationChance = 931,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntitySensorDampenDurationChance = 932,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityTrackingDisruptDurationChance = 933,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityTargetPaintDurationChance = 935,   // npcActivationChanceAttributeID in dgmEffects
     AttrEntityTargetJamMaxRange = 936,
     AttrEntityCapacitorDrainMaxRange = 937,
     AttrEntitySensorDampenMaxRange = 938,
@@ -919,12 +919,12 @@ enum EveAttrEnum {
     AttrEliteBonusCommandShip1DONOTUSE = 1003,
     AttrEliteBonusCommandShip2DONOTUSE = 1004,
     AttrJumpPortalCapacitorNeed = 1005,
-    AttrEntityShieldBoostDelayChanceSmall = 1006,
-    AttrEntityShieldBoostDelayChanceMedium = 1007,
-    AttrEntityShieldBoostDelayChanceLarge = 1008,
-    AttrEntityArmorRepairDelayChanceSmall = 1009,
-    AttrEntityArmorRepairDelayChanceMedium = 1010,
-    AttrEntityArmorRepairDelayChanceLarge = 1011,
+    AttrEntityShieldBoostDelayChanceSmall = 1006,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityShieldBoostDelayChanceMedium = 1007,  // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityShieldBoostDelayChanceLarge = 1008,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityArmorRepairDelayChanceSmall = 1009,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityArmorRepairDelayChanceMedium = 1010,  // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityArmorRepairDelayChanceLarge = 1011,   // npcActivationChanceAttributeID in dgmEffects
     AttrEliteBonusInterdictors1 = 1012,
     AttrEliteBonusInterdictors2 = 1013,
     AttrDisallowRepeatingActivation = 1014,
@@ -999,11 +999,11 @@ enum EveAttrEnum {
     AttrFuelCargoCapacity = 1086,
     AttrBoosterness = 1087,
     AttrExpiryTime = 1088,
-    AttrBoosterEffectChance1 = 1089,
-    AttrBoosterEffectChance2 = 1090,
-    AttrBoosterEffectChance3 = 1091,
-    AttrBoosterEffectChance4 = 1092,
-    AttrBoosterEffectChance5 = 1093,
+    AttrBoosterEffectChance1 = 1089,    //fittingUsageChanceAttributeID in dgmEffects table
+    AttrBoosterEffectChance2 = 1090,    //fittingUsageChanceAttributeID in dgmEffects table
+    AttrBoosterEffectChance3 = 1091,    //fittingUsageChanceAttributeID in dgmEffects table
+    AttrBoosterEffectChance4 = 1092,    //fittingUsageChanceAttributeID in dgmEffects table
+    AttrBoosterEffectChance5 = 1093,    //fittingUsageChanceAttributeID in dgmEffects table
     AttrDisplayCapacitorCapacityBonus = 1094,
     AttrDisplayShieldBoostMultiplier = 1095,
     AttrDisplayShieldCapacityBonus = 1096,
@@ -1342,13 +1342,13 @@ enum EveAttrEnum {
     AttrSubsystemBonusMinmatarOffensive = 1449,
     AttrSubsystemBonusMinmatarPropulsion = 1450,
     AttrNpcAssistanceProirity = 1451,
-    AttrNpcRemoteArmorRepairChance = 1453,
+    AttrNpcRemoteArmorRepairChance = 1453,   // npcActivationChanceAttributeID in dgmEffects
     AttrNpcRemoteArmorRepairDuration = 1454,
     AttrNpcRemoteArmorRepairAmount = 1455,
     AttrNpcRemoteArmorRepairThreshold = 1456,
     AttrWormholeTargetDistribution = 1457,
     AttrNpcRemoteShieldBoostDuration = 1458,
-    AttrNpcRemoteShieldBoostChance = 1459,
+    AttrNpcRemoteShieldBoostChance = 1459,   // npcActivationChanceAttributeID in dgmEffects
     AttrNpcRemoteShieldBoostAmount = 1460,
     AttrNpcRemoteShieldBoostThreshold = 1462,
     AttrNpcAssistanceRange = 1464,
@@ -1533,21 +1533,21 @@ enum EveAttrEnum {
     AttrentityRemoteECMBaseDuration = 1661,
     AttrentityRemoteECMExtraPlayerScale = 1662,
     AttrentityRemoteECMIntendedNumPlayers = 1663,
-    AttrentityRemoteECMChanceOfActivation = 1664,
+    AttrentityRemoteECMChanceOfActivation = 1664, // npcUsageChanceAttributeID in dgmEffects
     AttrShipBonusOreIndustrial1 = 1669,
     AttrShipBonusOreIndustrial2 = 1670,
     AttrentityGroupShieldResistanceBonus = 1671,
     AttrentityGroupShieldResistanceDuration = 1672,
-    AttrentityGroupShieldResistanceActivationChance = 1673,
+    AttrentityGroupShieldResistanceActivationChance = 1673,   // npcActivationChanceAttributeID in dgmEffects
     AttrentityGroupSpeedBonus = 1674,
     AttrentityGroupPropJamBonus = 1675,
     AttrentityGroupArmorResistanceBonus = 1676,
     AttrentityGroupSpeedDuration = 1677,
-    AttrentityGroupSpeedActivationChance = 1678,
+    AttrentityGroupSpeedActivationChance = 1678,   // npcActivationChanceAttributeID in dgmEffects
     AttrentityGroupPropJamDuration = 1679,
-    AttrentityGroupPropJamActivationChance = 1680,
+    AttrentityGroupPropJamActivationChance = 1680,   // npcActivationChanceAttributeID in dgmEffects
     AttrentityGroupArmorResistanceDuration = 1681,
-    AttrentityGroupArmorResistanceActivationChance = 1682,
+    AttrentityGroupArmorResistanceActivationChance = 1682,   // npcActivationChanceAttributeID in dgmEffects
     /* these are for PI */
     AttrECUDecayFactor = 1683,
     AttrECUMaxVolume = 1684,
@@ -1657,6 +1657,7 @@ enum EveAttrEnum {
     AttrtriageRemoteModuleCapNeed = 1802,
     AttrMWDSignatureRadiusBonus = 1803,
     AttrspecialQuafeHoldCapacity = 1804,
+    // end of client const attrib data
     AttrrequiresSovereigntyDisplayOnly = 1806,
     AttrnosReflector = 1808,
     AttrneutReflector = 1809,
@@ -1667,6 +1668,7 @@ enum EveAttrEnum {
     AttrneutReflectAmount = 1815,
     AttrneutReflectAmountBonus = 1816,
     AttrnosReflectAmountBonus = 1817,
+    // end of bulkdata packets
     AttraurumConversionRate = 1818,
     AttrbaseDefenderAllyCost = 1820,
     AttrskillAllyCostModifierBonus = 1821,
@@ -1691,6 +1693,112 @@ enum EveAttrEnum {
     AttrCanFitShipGroup6 = 1879,
     AttrCanFitShipGroup7 = 1880,
     AttrCanFitShipGroup8 = 1881
+    /*  new shit from rhea
+    warfareLinkCPUAdd   1882
+    warfareLinkCPUPenalty   1883
+    chargedArmorDamageMultiplier    1886
+    shipBonusAD1    1887
+    shipBonusAD2    1888
+    shipBonusABC2   1889
+    nondestructible     1890
+    allowedInCapIndustrialMaintenanceBay    1891    ..deleted from TypeAttributes
+    entityArmorRepairAmountPerSecond    1892
+    entityShieldBoostAmountPerSecond    1893
+    entityCapacitorLevel    1894
+    entityCapacitorLevelModifierSmall   1895
+    entityCapacitorLevelModifierMedium  1896
+    entityCapacitorLevelModifierLarge   1897
+    securityProcessingFee   1904
+    maxScanDeviationModifierModule  1905
+    scanDurationBonus   1906
+    scanStrengthBonusModule     1907
+    scanWormholeStrength    1908
+    virusCoherence  1909
+    virusStrength   1910
+    virusElementSlots   1911
+    spewContainerCount  1912
+    defaultJunkLootTypeID   1913
+    spewVelocity    1914
+    virusCoherenceBonus     1915
+    followsJumpClones   1916
+    spewContainerLifeExtension  1917
+    virusStrengthBonus  1918
+    tierDifficulty  1919
+    disallowActivateInForcefield    1920
+    cloneJumpCoolDown   1921
+    warfareLinkBonus    1922
+    roleBonusMarauder   1923
+    eliteBonusCommandShips3     1924
+    piTaxReductionModifer   1925
+    piTaxReduction  1926
+    hackable    1927
+    siphonRawMaterial   1928
+    siphonProMaterial   1929
+    siphonWasteAmount   1930
+    implantSetWarpSpeed     1932
+    siphonPolyMaterial  1933
+    deactivateIfOffensive   1934
+    overloadTrackingModuleStrengthBonus     1935
+    overloadSensorModuleStrengthBonus   1936
+    overloadPainterStrengthBonus    1937
+    miningAmountBonusBonus  1938
+    stationOreRefiningBonus     1939
+    compressionTypeID   1940
+    compressionQuantityNeeded   1941
+    eliteBonusExpedition1   1942
+    eliteBonusExpedition2   1943
+    canFitShipType5     1944
+    nosOverride     1945
+    anchoringSecurityLevelMin   1946
+    roleBonusOverheatDST    1949
+    warpSpeedAdd    1950
+    industryStructureCostBonusSet   1951
+    industryStructureCostBonus  1952
+    industryJobCostMultiplier   1954
+    industryBlueprintRank   1955
+    clothingRemovesCategory     1956
+    clothingRuleException   1957
+    dscanImmune     1958
+    inventionReverseEngineeringResearchSpeed    1959
+    advancedIndustrySkillIndustryJobTimeBonus   1961
+    energyWarfareStrengthMultiplier     1966
+    aoeCloudSizeMultiplier  1967
+    targetPainterStrengthMultiplier     1968
+    stasisWebStrengthMultiplier     1969
+    disallowInHighSec   1970
+    jumpFatigueMultiplier   1971
+    jumpThroughFatigueMultiplier    1972
+    gateScrambleStatus  1973
+    gateScrambleStrength    1974
+    published   1975
+    resistanceKiller    1978
+    resistanceKillerHull    1979
+    asteroidRadiusGrowthFactor  1980
+    asteroidRadiusUnitSize  1981
+    manufactureTimePerLevel     1982
+    freighterBonusO1    1983
+    freighterBonusO2    1984
+    stanceSwitchTime    1985
+    shipBonusTacticalDestroyerAmarr1    1986
+    shipBonusTacticalDestroyerAmarr2    1987
+    shipBonusTacticalDestroyerAmarr3    1988
+    roleBonusTacticalDestroyer1     1989
+    modeMaxRangePostDiv     1990
+    modeMaxTargetRangePostDiv   1991
+    modeRadarStrengthPostDiv    1992
+    modeScanResPostDiv  1993
+    modeLadarStrengthPercent    1994
+    modeGravimetricStrengthPercent  1995
+    modeMagnetometricStrengthPercent    1996
+    modeEmResistancePostDiv     1997
+    modeExplosiveResistancePostDiv  1998
+    modeThermicResistancePostDiv    1999
+    modeKineticResistancePostDiv    2000
+    attributeName   attributeID
+    modeSignatureRadiusPostDiv  2001
+    modeAgilityPostDiv  2002
+    modeVelocityPostDiv     2003
+    */
 };
 
 #endif // AttributeEnum_h__

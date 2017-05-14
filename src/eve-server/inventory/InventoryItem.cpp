@@ -27,6 +27,7 @@
 
 #include "Client.h"
 #include "EntityList.h"
+#include "effects/EffectsProcessor.h"
 #include "character/Skill.h"
 #include "manufacturing/Blueprint.h"
 #include "pos/Structure.h"
@@ -46,7 +47,7 @@ InventoryItem::InventoryItem(
     const ItemData &_data)
 : RefObject( 0 ),
   mAttributeMap(*this),
-  mDefaultAttributeMap(*this,true),
+  m_inventory(nullptr),
   m_saveTimer(0),
   m_factory(_factory),
   m_itemID(_itemID),
@@ -73,11 +74,8 @@ InventoryItem::InventoryItem(
 
 InventoryItem::~InventoryItem()
 {
-    // Save this item's entity_attributes info to the Database before it is destroyed
-    //mAttributeMap.SaveAttributes();
-
-    // Save this item's entity table info to the Database before it is destroyed
-    //SaveItem();
+    // item should call save before object is removed.
+    // if item is being removed during shutdow, item factory is responsible for saving loaded items
 }
 
 InventoryItemRef InventoryItem::Load(ItemFactory &factory, uint32 itemID)
@@ -136,10 +134,10 @@ uint32 InventoryItem::CreateTempItemID(ItemFactory &factory, ItemData &data) {
 }
 
 bool InventoryItem::_Load() {
-    if (!mDefaultAttributeMap.Load())
-        _log(ITEM__WARNING, "%s (%u): Failed to load default attribute map.", itemName().c_str(), itemID());
-    if (!mAttributeMap.Load())
+    if (!mAttributeMap.Load()) {
         _log(ITEM__WARNING, "%s (%u): Failed to load attribute map.", itemName().c_str(), itemID());
+        return false;
+    }
 
     return true;
 }
@@ -149,9 +147,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
     // See what to do next:
     switch( type.categoryID() ) {
         /* not handled yet...
-        case EVEDB::invCategories::_System:
         case EVEDB::invCategories::Material:
-        case EVEDB::invCategories::Accessories:
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Charge:
         case EVEDB::invCategories::Trading:
@@ -160,12 +156,14 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
         case EVEDB::invCategories::Implant:
         case EVEDB::invCategories::Deployable:
         case EVEDB::invCategories::Reaction:
+            not needed...
+        case EVEDB::invCategories::_System:
+        case EVEDB::invCategories::Drone:
+        case EVEDB::invCategories::Accessories:
             */
             /** @todo (Allan) these need work ...for now, load default item
              *        case EVEDB::invCategories::Asteroid:
-             *            //return AsteroidItem::_LoadItem<AsteroidItem>( factory, itemID, type, data );
-             *        case EVEDB::invCategories::Drone:
-             *            //return DroneItem::_LoadItem<DroneItem>( factory, itemID, type, data );
+             *            return AsteroidItem::_LoadItem<AsteroidItem>( factory, itemID, type, data );
              */
             case EVEDB::invCategories::Orbitals:
             case EVEDB::invCategories::Structure: {  // this is for all Orbital structure types (POS, customs offices, etc)
@@ -194,72 +192,74 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
                     or (type.groupID() == EVEDB::invGroups::Freight_Container)
                     or (type.groupID() == EVEDB::invGroups::Cargo_Container) )
                     return CargoContainer::_LoadItem<CargoContainer>( factory, itemID, type, data );
-                else if (type.groupID() == EVEDB::invGroups::Force_Field)
+                else if (type.groupID() == EVEDB::invGroups::Force_Field)   // POS force fields  - not sure if these need their own class
                     return InventoryItemRef( new InventoryItem( factory, itemID, type, data ) );
                 else
                     return CelestialObject::_LoadItem<CelestialObject>( factory, itemID, type, data );
             }
             case EVEDB::invCategories::Entity: {
                 //  added checks for all npc's   -allan 26Dec14
-                if ((type.groupID() == EVEDB::invGroups::Sentry_Gun)
-                    or  (type.groupID() == EVEDB::invGroups::Protective_Sentry_Gun)
-                    or  (type.groupID() == EVEDB::invGroups::Police_Drone)
-                    or  (type.groupID() == EVEDB::invGroups::Pirate_Drone)
-                    or  (type.groupID() == EVEDB::invGroups::LCO_Drone)
-                    or  (type.groupID() == EVEDB::invGroups::Tutorial_Drone)
-                    or  (type.groupID() == EVEDB::invGroups::Rogue_Drone)
-                    or  (type.groupID() == EVEDB::invGroups::Faction_Drone)
-                    or  (type.groupID() == EVEDB::invGroups::Convoy)
-                    or  (type.groupID() == EVEDB::invGroups::Convoy_Drone)
-                    or  (type.groupID() == EVEDB::invGroups::Concord_Drone)
-                    or  (type.groupID() == EVEDB::invGroups::Mission_Drone)
-                    or  (type.groupID() == EVEDB::invGroups::Destructible_Sentry_Gun)
-                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer)
-                    or  (type.groupID() == EVEDB::invGroups::Customs_Official)
-                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Structure)
-                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Sentry)
-                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Belongings)
-                    or  (type.groupID() == EVEDB::invGroups::Storyline_Frigate)
-                    or  (type.groupID() == EVEDB::invGroups::Storyline_Cruiser)
-                    or  (type.groupID() == EVEDB::invGroups::Storyline_Battleship)
-                    or  (type.groupID() == EVEDB::invGroups::Storyline_Mission_Frigate)
-                    or  (type.groupID() == EVEDB::invGroups::Storyline_Mission_Cruiser)
-                    or  (type.groupID() == EVEDB::invGroups::Storyline_Mission_Battleship)
-                    or  ((type.groupID() >= EVEDB::invGroups::Asteroid_Angel_Cartel_Frigate) and (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_BattleCruiser))
-                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Angel_Cartel_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Angel_Cartel_Frigate))
-                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Blood_Raiders_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Blood_Raiders_Frigate))
-                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Guristas_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Guristas_Frigate))
-                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Sanshas_Nation_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Sanshas_Nation_Frigate))
-                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Serpentis_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Serpentis_Frigate))
-                    or  ((type.groupID() >= EVEDB::invGroups::Mission_Amarr_Empire_Frigate) and (type.groupID() <= EVEDB::invGroups::Mission_Minmatar_Republic_Battleship))
-                    or  (type.groupID() == EVEDB::invGroups::Destructible_Agents_In_Space)
-                    or  ((type.groupID() >= EVEDB::invGroups::Asteroid_Rogue_Drone_Battlecruiser) and (type.groupID() <= EVEDB::invGroups::Asteroid_Rogue_Drone_Swarm))
-                    or  (type.groupID() == EVEDB::invGroups::Large_Collidable_Ship)
-                    or  ((type.groupID() >= EVEDB::invGroups::Asteroid_Angel_Cartel_Commander_Frigate) and (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Frigate))
-                    or  ((type.groupID() >= EVEDB::invGroups::Mission_Generic_Battleships) and (type.groupID() <= EVEDB::invGroups::Mission_Generic_Destroyers))
-                    or  ((type.groupID() >= EVEDB::invGroups::Asteroid_Rogue_Drone_Commander_Battlecruiser) and (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Battleship))
-                    or  (type.groupID() == EVEDB::invGroups::Mission_Fighter_Drone)
-                    or  ((type.groupID() >= EVEDB::invGroups::Mission_Amarr_Empire_Carrier) and (type.groupID() <= EVEDB::invGroups::Mission_Minmatar_Republic_Carrier))
-                    or  (type.groupID() == EVEDB::invGroups::Mission_Faction_Transports)
-                    or  (type.groupID() == EVEDB::invGroups::Mission_Faction_Industrials)
-                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Sleepless_Sentinel)
-                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Awakened_Sentinel)
-                    or  (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Emergent_Sentinel)
-                    or  ((type.groupID() >= EVEDB::invGroups::Deadspace_Sleeper_Sleepless_Defender) and (type.groupID() <= EVEDB::invGroups::Deadspace_Sleeper_Emergent_Patroller))
-                    or  (type.groupID() == EVEDB::invGroups::Mission_Faction_Cruiser)
-                    or  (type.groupID() == EVEDB::invGroups::Mission_Faction_Frigate)
-                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Industrial)
-                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Capital)
-                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Frigate)
-                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Cruiser)
-                    or  (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship)) {
+                if ((type.groupID() == EVEDB::invGroups::Police_Drone)
+                    or (type.groupID() == EVEDB::invGroups::Pirate_Drone)
+                    or (type.groupID() == EVEDB::invGroups::LCO_Drone)
+                    or (type.groupID() == EVEDB::invGroups::Tutorial_Drone)
+                    or (type.groupID() == EVEDB::invGroups::Rogue_Drone)
+                    or (type.groupID() == EVEDB::invGroups::Faction_Drone)
+                    or (type.groupID() == EVEDB::invGroups::Convoy)
+                    or (type.groupID() == EVEDB::invGroups::Convoy_Drone)
+                    or (type.groupID() == EVEDB::invGroups::Concord_Drone)
+                    or (type.groupID() == EVEDB::invGroups::Mission_Drone)
+                    or (type.groupID() == EVEDB::invGroups::Deadspace_Overseer)
+                    or (type.groupID() == EVEDB::invGroups::Customs_Official)
+                    or (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Structure)
+                    or (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Sentry)
+                    or (type.groupID() == EVEDB::invGroups::Deadspace_Overseer_s_Belongings)
+                    or (type.groupID() == EVEDB::invGroups::Storyline_Frigate)
+                    or (type.groupID() == EVEDB::invGroups::Storyline_Cruiser)
+                    or (type.groupID() == EVEDB::invGroups::Storyline_Battleship)
+                    or (type.groupID() == EVEDB::invGroups::Storyline_Mission_Frigate)
+                    or (type.groupID() == EVEDB::invGroups::Storyline_Mission_Cruiser)
+                    or (type.groupID() == EVEDB::invGroups::Storyline_Mission_Battleship)
+                    or ((type.groupID() >= EVEDB::invGroups::Asteroid_Angel_Cartel_Frigate) and (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_BattleCruiser))
+                    or ((type.groupID() >= EVEDB::invGroups::Deadspace_Angel_Cartel_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Angel_Cartel_Frigate))
+                    or ((type.groupID() >= EVEDB::invGroups::Deadspace_Blood_Raiders_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Blood_Raiders_Frigate))
+                    or ((type.groupID() >= EVEDB::invGroups::Deadspace_Guristas_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Guristas_Frigate))
+                    or ((type.groupID() >= EVEDB::invGroups::Deadspace_Sanshas_Nation_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Sanshas_Nation_Frigate))
+                    or ((type.groupID() >= EVEDB::invGroups::Deadspace_Serpentis_BattleCruiser) and (type.groupID() <= EVEDB::invGroups::Deadspace_Serpentis_Frigate))
+                    or ((type.groupID() >= EVEDB::invGroups::Mission_Amarr_Empire_Frigate) and (type.groupID() <= EVEDB::invGroups::Mission_Minmatar_Republic_Battleship))
+                    or (type.groupID() == EVEDB::invGroups::Destructible_Agents_In_Space)
+                    or ((type.groupID() >= EVEDB::invGroups::Asteroid_Rogue_Drone_Battlecruiser) and (type.groupID() <= EVEDB::invGroups::Asteroid_Rogue_Drone_Swarm))
+                    or (type.groupID() == EVEDB::invGroups::Large_Collidable_Ship)
+                    or ((type.groupID() >= EVEDB::invGroups::Asteroid_Angel_Cartel_Commander_Frigate) and (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Frigate))
+                    or ((type.groupID() >= EVEDB::invGroups::Mission_Generic_Battleships) and (type.groupID() <= EVEDB::invGroups::Mission_Generic_Destroyers))
+                    or ((type.groupID() >= EVEDB::invGroups::Asteroid_Rogue_Drone_Commander_Battlecruiser) and (type.groupID() <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Battleship))
+                    or (type.groupID() == EVEDB::invGroups::Mission_Fighter_Drone)
+                    or ((type.groupID() >= EVEDB::invGroups::Mission_Amarr_Empire_Carrier) and (type.groupID() <= EVEDB::invGroups::Mission_Minmatar_Republic_Carrier))
+                    or (type.groupID() == EVEDB::invGroups::Mission_Faction_Transports)
+                    or (type.groupID() == EVEDB::invGroups::Mission_Faction_Industrials)
+                    or (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Sleepless_Sentinel)
+                    or (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Awakened_Sentinel)
+                    or (type.groupID() == EVEDB::invGroups::Deadspace_Sleeper_Emergent_Sentinel)
+                    or ((type.groupID() >= EVEDB::invGroups::Deadspace_Sleeper_Sleepless_Defender) and (type.groupID() <= EVEDB::invGroups::Deadspace_Sleeper_Emergent_Patroller))
+                    or (type.groupID() == EVEDB::invGroups::Mission_Faction_Cruiser)
+                    or (type.groupID() == EVEDB::invGroups::Mission_Faction_Frigate)
+                    or (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Industrial)
+                    or (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Capital)
+                    or (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Frigate)
+                    or (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Cruiser)
+                    or (type.groupID() == EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship)
+                    or (type.groupID() == EVEDB::invGroups::Sentry_Gun)
+                    or (type.groupID() == EVEDB::invGroups::Mobile_Sentry_Gun)
+                    or (type.groupID() == EVEDB::invGroups::Protective_Sentry_Gun)
+                    or (type.groupID() == EVEDB::invGroups::Destructible_Sentry_Gun))
+                {
                     /*  these should probably get an NPCItem ItemType eventually */
                     return InventoryItemRef( new InventoryItem( factory, itemID, type, data ) );
                 } else
                     return CelestialObject::_LoadItem<CelestialObject>( factory, itemID, type, data );
             }
             default:
-                _log(ITEM__MESSAGE, "item %u (type %u, cat %u) tried _LoadItem, but is not handled.", itemID, type.id(), type.categoryID());
+                _log(ITEM__MESSAGE, "item %u (type %u, cat %u) is not handled in  InventoryItem::_LoadItem.", itemID, type.id(), type.categoryID());
                 break;
     }
     // Generic item, create one:
@@ -317,7 +317,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             // Create default dynamic attributes in the AttributeMap:
             itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
             itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
-            //itemRef->SaveAttributes();
             return itemRef;
         }
         case EVEDB::invCategories::Module:
@@ -335,8 +334,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
             itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
             itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
-            //itemRef->SaveAttributes();
-
             return itemRef;
         }
         case EVEDB::invCategories::Charge: {
@@ -355,7 +352,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                     itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
                     itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
                     itemRef->SetAttribute(AttrCapacity,   itemRef->type().capacity());   // Capacity
-                    //itemRef->SaveAttributes();
                     return itemRef;
                 }
                 default: {
@@ -372,11 +368,10 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                     itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
                     itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
                     itemRef->SetAttribute(AttrCapacity,   itemRef->type().capacity());   // Capacity
-                    //itemRef->SaveAttributes();
                     return itemRef;
                 }
             }
-            _log(ITEM__ERROR, "");
+            _log(ITEM__ERROR, "Unhandled charge spawn");
         }
         case EVEDB::invCategories::Entity: {
 			// Spawn generic item for Entities at this time:
@@ -403,7 +398,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             stationRef->SetAttribute(AttrRadius,         stationRef->type().radius());       // Radius
             stationRef->SetAttribute(AttrVolume,         stationRef->type().volume());       // Volume
             stationRef->SetAttribute(AttrCapacity,       stationRef->type().capacity());   // Capacity
-            //stationRef->SaveAttributes();
             return stationRef;
         }
         case EVEDB::invCategories::Celestial: {
@@ -428,7 +422,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 cargoRef->SetAttribute(AttrRadius,        cargoRef->type().radius());        // Radius
                 cargoRef->SetAttribute(AttrVolume,        cargoRef->GetPackagedVolume());        // Volume
                 cargoRef->SetAttribute(AttrCapacity,      cargoRef->type().capacity());      // Capacity
-                cargoRef->SaveAttributes();
                 return cargoRef;
             } else if (t->groupID() == EVEDB::invGroups::Wreck) {
                 // Spawn new Wreck Container
@@ -445,7 +438,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 wreckRef->SetAttribute(AttrRadius,        wreckRef->type().radius());        // Radius
                 wreckRef->SetAttribute(AttrVolume,        wreckRef->type().volume());        // Volume
                 wreckRef->SetAttribute(AttrCapacity,      wreckRef->type().capacity());      // Capacity
-                wreckRef->SaveAttributes();
                 return wreckRef;
             } else if (t->groupID() == EVEDB::invGroups::Force_Field) {
                 // Spawn force field item in EVEMU_TEMP_ENTITY_ID range and does NOT save Force_Field to db
@@ -456,14 +448,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 if (!itemRef)
                     return InventoryItemRef();
                 return itemRef;
-            }
-            /*  put a check in here for these,
-			 * groupID 319   Beacon   typeid 29189
-			 * groupID 920    Effect_Beacon
-			 *
-            itemRef->SetAttribute(AttrIsGlobal,       1);
-			 */
-            else {
+            } else {
                 // Spawn new Celestial Object
                 uint32 itemID = CelestialObject::CreateItemID( factory, data );
                 if (!itemID)
@@ -471,6 +456,8 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 CelestialObjectRef celestialRef = CelestialObject::Load( factory, itemID );
                 if (!celestialRef)
                     return CelestialObjectRef();
+                if ((t->groupID() == EVEDB::invGroups::Beacon) or (t->groupID() == EVEDB::invGroups::Effect_Beacon))
+                    celestialRef->SetAttribute(AttrIsGlobal,       1);
                 return celestialRef;
             }
         }
@@ -487,19 +474,18 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
     itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
     itemRef->SetAttribute(AttrVolume,         itemRef->GetPackagedVolume());       // Volume
     itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
-	itemRef->SaveAttributes();
     return itemRef;
 }
 
 uint32 InventoryItem::GetPackagedVolume()
 {
     if (m_singleton)
-        return type().volume();
+        return m_type.volume();
 
-    if ((categoryID() == EVEDB::invCategories::Ship)
-        or (categoryID() == EVEDB::invCategories::Celestial)) {
+    if ((m_type.categoryID() == EVEDB::invCategories::Ship)
+        or (m_type.categoryID() == EVEDB::invCategories::Celestial)) {
         // these volumes are hard-coded in client.
-        switch (type().groupID()) {
+        switch (m_type.groupID()) {
             case 29:  //   Capsule
             case 31:  //   Shuttle
             case 1022: {  //     Prototype Exploration Ship
@@ -570,7 +556,7 @@ uint32 InventoryItem::GetPackagedVolume()
         }
     }
     // catchall
-    return type().volume();
+    return m_type.volume();
 }
 
 void InventoryItem::Delete() {
@@ -578,14 +564,13 @@ void InventoryItem::Delete() {
         //first, get out of client's sight.
         //this also removes us from our inventory.
         Move(0);
-        ChangeOwner(2);
+        ChangeOwner(1);
     }
 
     //take ourself out of the DB
     m_factory.db().DeleteItem( itemID() );
 
     mAttributeMap.Delete();
-    mDefaultAttributeMap.Delete();
 
     //delete ourselves from factory cache
     m_factory.RemoveItem( itemID() );
@@ -721,7 +706,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
                 es.env_target = 0;
                 es.env_other = new PyNone();
                 es.env_area = new PyNone();
-                es.env_effectID = effectOnline;
+                es.env_effectID = 16;
                 es.startTime = Win32TimeNow() - Win32Time_Minute; /** @todo fix this once we start tracking effects */
                 es.duration = -1;
                 es.repeat = 1;
@@ -735,11 +720,11 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
         result.attributes[AttrSkillPoints] = new PyInt(mAttributeMap.GetAttribute(AttrSkillPoints).get_int());
         result.attributes[AttrSkillLevel] = new PyInt(mAttributeMap.GetAttribute(AttrSkillLevel).get_int());
     } else {
-        AttributeMap::AttrMapItr itr = mAttributeMap.begin();
+        AttrMapItr itr = mAttributeMap.begin();
         for (; itr != mAttributeMap.end(); itr++) {
             //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
             if ((*itr).first == AttrWarpSpeedMultiplier)
-                result.attributes[(*itr).first] = new PyInt(mAttributeMap.GetAttribute(AttrWarpSpeedMultiplier).get_int() /3);
+                result.attributes[(*itr).first] = new PyFloat(mAttributeMap.GetAttribute(AttrWarpSpeedMultiplier).get_float() /3);
             else
                 result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         }
@@ -767,8 +752,8 @@ PyObject* InventoryItem::ItemGetInfo()
     return result.Encode();
 }
 
-void InventoryItem::Rename(const char *to) {
-
+void InventoryItem::Rename(const char *to)
+{
     m_itemName = to;
     SaveItem();
 }
@@ -791,7 +776,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
             old_inventory->RemoveItem(InventoryItemRef(this));  //releases its ref
         } else {
             if (m_locationID)
-                _log(INV__WARNING, "Inventory for %u not found. %s not removed from it's container's inventory.", itemName().c_str(), old_location);
+                _log(INV__WARNING, "Inventory for %s not found. %s not removed from it's container's inventory.", itemName().c_str(), old_location);
         }
     }
 
@@ -805,7 +790,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
             new_inventory->AddItem(InventoryItemRef(this)); //makes a new ref
         } else {
             if (m_locationID)
-                _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", itemName().c_str(), new_location);
+                _log(INV__WARNING, "Inventory for %s not found. %s not added to it's container's inventory.", itemName().c_str(), new_location);
         }
     }
 
@@ -925,7 +910,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
     }
     */
     if (singleton() or to_merge->singleton()) {
-        throw PyException( MakeCustomError("You cannot stack unpackaged items."));
+        throw PyException( MakeCustomError("You cannot stack assembled items."));
     }
     if (typeID() != to_merge->typeID()) {
         _log(ITEM__ERROR, "%s (%u): Asked to merge with %s (%u).", itemName().c_str(), itemID(), to_merge->itemName().c_str(), to_merge->itemID());
@@ -1016,9 +1001,9 @@ void InventoryItem::SaveItem() {
             customInfo().c_str()
         )
     );
-
-    /* do we really want to save attributes?  they may (most likely) have been modified by skills/modules/items/etc  */
-    SaveAttributes();
+    // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
+    // make call here for items saved after *some* change
+    mAttributeMap.SaveAttributes();
 }
 
 //contents of changes are consumed and cleared
@@ -1039,20 +1024,16 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
     //c->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.
 }
 
-/** @todo set a notify boolean here? */
 void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
     /** @note  this is only used by modules
      ** check for pos structures also!! **
      */
     _log(SHIP__MODULE_DEBUG, "InventoryItem::SetOnline() - set module %s(%u) to %s", \
                     m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
-    if (!isRig) {   // rigs DO NOT get isOnline attrib set.
-        if (!SetAttribute(AttrIsOnline, int(online))) {
-            _log(SHIP__MODULE_ERROR, "InventoryItem::SetOnline() - module %s(%u) could not be set %s", \
-                            m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
-            return;
-        }
-    }
+
+    m_modifiers.clear();
+    if (!isRig)   // rigs DO NOT get isOnline attrib set.
+        SetAttribute(AttrIsOnline, int(online));
 
     Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
     if (!pClient) {
@@ -1068,7 +1049,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
         ge.targetID = 0;
         ge.other = new PyNone();
         ge.area = new PyList;
-        ge.effectID = effectOnline;
+        ge.effectID = 16;
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
@@ -1084,7 +1065,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
     } else {
         shipEff.duration = 0.0;
     }
-        shipEff.repeat = (online ? 1000 : 0);
+        shipEff.repeat = (online ? 1 : 0);
         shipEff.error = new PyNone();
     PyList* events = new PyList;
         events->AddItem(shipEff.Encode());
@@ -1099,98 +1080,123 @@ void InventoryItem::SetCustomInfo(const char *ci) {
         m_customInfo = ci;
     else
         m_customInfo = "";
-    //SaveItem();
+    SaveItem();
 }
 
 void InventoryItem::Relocate(const GPoint &pos)
 {
     m_position = pos;
-
     _log(ITEM__TRACE, "%s(%u) Relocating to %.3f, %.3f, %.3f.", m_itemName.c_str(), m_itemID, m_position.x, m_position.y, m_position.z);
-    //SaveItem();
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, int64 num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
+void InventoryItem::SetAttribute( uint16 attrID, int64 num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-	bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
-	if (shadow_copy_to_default_set)
-		status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
-	return status;
+    mAttributeMap.SetAttribute(attrID, devil_number, notify);
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, double num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
+void InventoryItem::SetAttribute( uint16 attrID, double num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-    bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
-	if (shadow_copy_to_default_set)
-        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
-	return status;
+    mAttributeMap.SetAttribute(attrID, devil_number, notify);
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, EvilNumber num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
+void InventoryItem::SetAttribute( uint16 attrID, EvilNumber num, bool notify/*true*/)
 {
-    bool status = mAttributeMap.SetAttribute(attributeID, num, notify);
-	if (shadow_copy_to_default_set)
-		status = (status and mDefaultAttributeMap.SetAttribute(attributeID, num, notify));
-	return status;
+    mAttributeMap.SetAttribute(attrID, num, notify);
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, int num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
+void InventoryItem::SetAttribute( uint16 attrID, int num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-    bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
-    if (shadow_copy_to_default_set)
-        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
-	return status;
+    mAttributeMap.SetAttribute(attrID, devil_number, notify);
 }
 
-bool InventoryItem::SetAttribute( uint32 attributeID, uint64 num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
-{
-    EvilNumber devil_number(*((int64*)&num));
-    bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
-    if (shadow_copy_to_default_set)
-        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
-	return status;
-}
-
-bool InventoryItem::SetAttribute( uint32 attributeID, uint32 num, bool notify /* true */, bool shadow_copy_to_default_set /* false */ )
+void InventoryItem::SetAttribute( uint16 attrID, uint64 num, bool notify/*true*/)
 {
     EvilNumber devil_number(num);
-    bool status = mAttributeMap.SetAttribute(attributeID, devil_number, notify);
-    if (shadow_copy_to_default_set)
-        status = (status and mDefaultAttributeMap.SetAttribute(attributeID, devil_number, notify));
-	return status;
+    mAttributeMap.SetAttribute(attrID, devil_number, notify);
 }
 
-EvilNumber InventoryItem::GetAttribute( const uint32 attributeID ) const {
-     return mAttributeMap.GetAttribute(attributeID);
+void InventoryItem::SetAttribute( uint16 attrID, uint32 num, bool notify/*true*/)
+{
+    EvilNumber devil_number(num);
+    mAttributeMap.SetAttribute(attrID, devil_number, notify);
 }
 
-EvilNumber InventoryItem::GetDefaultAttribute( const uint32 attributeID ) const {
-     return mDefaultAttributeMap.GetAttribute(attributeID);
-}
-/*
-EvilNumber InventoryItem::GetAttribute( const uint32 attributeID, const uint32 defaultValue ) const {
-     return mAttributeMap.GetAttribute(attributeID, defaultValue);
-}
-*/
-bool InventoryItem::HasAttribute(const uint32 attributeID) const {
-    return mAttributeMap.HasAttribute(attributeID);
+// new effects system  -allan 4Feb17
+bool InventoryItem::SkillCheck(InventoryItemRef refItem)
+{
+    EvilNumber need = 0, has = 0;
+    uint16 attr = 182, skill = 277;
+    for (int8 i = 0; i < 3; i++, attr++, skill++) {
+        if ((refItem->HasAttribute(attr, need)) and (mAttributeMap.HasAttribute(skill, has))) {
+            if (need > has)
+                return false;
+        }
+    }
+    if ((refItem->HasAttribute(1285, need)) and (mAttributeMap.HasAttribute(1286, has))) {
+        if (need > has)
+            return false;
+    }
+
+    attr = 1289; skill = 1287;
+    for (int8 i = 0; i < 2; i++, attr++, skill++) {
+        if ((refItem->HasAttribute(attr, need)) and (mAttributeMap.HasAttribute(skill, has))) {
+            if (need > has)
+                return false;
+        }
+    }
+    // all skill requirement checks passed.
+    return true;
 }
 
-bool InventoryItem::HasAttribute(const uint32 attributeID, EvilNumber &value) const {
-    return mAttributeMap.HasAttribute(attributeID, value);
+void InventoryItem::AddModifier(fxData data)
+{
+    m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
 }
 
-bool InventoryItem::SaveAttributes() {
-	return (mAttributeMap.SaveAttributes() and mDefaultAttributeMap.SaveAttributes());
+void InventoryItem::RemoveModifier(fxData data)
+{
+    auto itr = m_modifiers.equal_range(data.math);
+    for (auto it = itr.first; it != itr.second; it++)
+        if ((it->second.srcRef == data.srcRef) and (it->second.targAttr == data.targAttr))
+            m_modifiers.erase(it);
+
+    using namespace Effects;
+    switch (data.math) {
+        case dgmMathPreMul:         data.math = dgmMathPreDiv;          break;
+        case dgmMathPreDiv:         data.math = dgmMathPreMul;          break;
+        case dgmMathModAdd:         data.math = dgmMathModSub;          break;
+        case dgmMathModSub:         data.math = dgmMathModAdd;          break;
+        case dgmMathPostMul:        data.math = dgmMathPostDiv;         break;
+        case dgmMathPostDiv:        data.math = dgmMathPostMul;         break;
+        case dgmMathPostPercent:    data.math = dgmMathRevPostPercent;  break;
+        case dgmMathPreAssignment:  data.math = dgmMathPostAssignment;  break;
+        case dgmMathPostAssignment: data.math = dgmMathPreAssignment;   break;
+    }
+    m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
 }
 
-bool InventoryItem::ResetAttribute(uint32 attrID, bool notify) {
-    return mAttributeMap.ResetAttribute(attrID, notify);
+void InventoryItem::ClearModifiers()
+{
+    _log(EFFECTS__TRACE, "Resetting modifier map for %s", itemName().c_str());
+    m_modifiers.clear();
+    mAttributeMap.Save();
+    mAttributeMap.Load(true);
 }
 
-bool InventoryItem::DeleteAttribute(uint32 attrID) {
-    return mAttributeMap.DeleteAttribute(attrID);
+void InventoryItem::GetEffectsInState(int8 state, std::vector< Effect >& effectRef)
+{
+}
+
+/* currently implemented items for these calls...
+ *  charges
+ */
+void InventoryItem::ApplyEffect(int8 state)
+{
+}
+
+void InventoryItem::RemoveEffect(int8 state)
+{
 }

@@ -31,7 +31,7 @@ PyObject *MapDB::GetPseudoSecurities() {
     DBQueryResult res;
 
     if(!sDatabase.RunQuery(res, "SELECT solarSystemID, security FROM mapSolarSystems")) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -49,7 +49,7 @@ PyObject *MapDB::GetStationExtraInfo() {
         "   stationTypeID,"
         "   corporationID AS ownerID"
         " FROM staStations" )) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -61,7 +61,7 @@ PyObject *MapDB::GetStationOpServices() {
 
     if(!sDatabase.RunQuery(res,
         "SELECT operationID, serviceID FROM staOperationServices")) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -73,7 +73,7 @@ PyObject *MapDB::GetStationServiceInfo() {
 
     if(!sDatabase.RunQuery(res,
         "SELECT serviceID, serviceName FROM staServices ")) {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 
@@ -83,12 +83,12 @@ PyObject *MapDB::GetStationServiceInfo() {
 void MapDB::GetStationCount(DBQueryResult& res)
 {
     if(!sDatabase.RunQuery(res,
-        "SELECT solar.solarSystemID AS `System`,count(sta.stationID) AS `Stations`"
-        " FROM staStations sta"
-        "  LEFT JOIN mapSolarSystems solar ON sta.solarSystemID = solar.solarSystemID"
-        " GROUP BY solar.solarSystemID"))
+        "SELECT map.solarSystemID, count(sta.stationID)"
+        " FROM mapSolarSystems AS map"
+        "  LEFT JOIN staStations AS sta USING(solarSystemID)"
+        " GROUP BY map.solarSystemID"))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
 
@@ -104,7 +104,7 @@ PyObject *MapDB::GetSolSystemVisits(uint32 charID)
         " FROM chrVisitedSystems"
         " WHERE characterID = %u", charID ))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return NULL;
     }
 

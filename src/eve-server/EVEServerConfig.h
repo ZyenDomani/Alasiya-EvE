@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    7.3
+    Version:    7.6
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -57,6 +57,7 @@ public:
         bool UseStackTrace;
         bool IsTestServer;    // to distuinguish between live production server or experimental testing server
         bool DisableIGB;
+        bool BulkDataOD;
         uint8 ServerSleepTime;
         uint16 idleSleepTime;
         uint16 maxPlayers;
@@ -88,8 +89,8 @@ public:
         float missileRate;
         /// Modifier for missile flightTime
         float missileTime;
-        /// Modifier for damage from PC turrents
-        float turrentRate;
+        /// Modifier for damage from PC turrets
+        float turretRate;
         /// Startup Cost to create a corporation.
         double corpCost;
         // Decay timer for item deletion (garbage collection)
@@ -147,6 +148,7 @@ public:
     // From <NPC/>
     struct
     {
+        bool IdleWander;
         bool RoamingSpawns;
         bool StaticSpawns;
         uint8 RoamingTimer;
@@ -217,6 +219,8 @@ public:
         uint8 BeltGrowth;
         float roidRadiusMultiplier;
         bool WormHoleEnabled;
+        bool CiviliansEnabled;
+        bool BumpEnabled;
     } cosmic;
 
     // From <crime/>

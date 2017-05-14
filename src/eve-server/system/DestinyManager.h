@@ -69,7 +69,9 @@ public:
     void EntityRemoved(SystemEntity* who);
 
     /* Configuration methods */
+    void WebbedMe(InventoryItemRef modRef, bool apply=false);
     void SetBubble(bool set = false)                    { m_inBubble = set; }
+    void SpeedBoost(bool deactivate=false);             // reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
     void SetPosition(const GPoint& pt, bool update = false);
     void SetMaxVelocity(float maxVelocity);
     void SetShipCapabilities(const InventoryItemRef ship, bool undock = false);
@@ -130,9 +132,8 @@ public:
     void SendAnchorLift() const;
     void SendCloakShip(const bool IsWarpSafe) const;
     void SendUncloakShip() const;
-	void SendSpecialEffect10(uint32 gateID, const ShipItemRef shipRef, uint32 targetID, std::string effectString, bool isOffensive, bool start, bool isActive) const;
-	void SendSpecialEffect(const ShipItemRef shipRef, uint32 moduleID, uint32 moduleTypeID,
-    uint32 targetID, uint32 chargeTypeID, std::string effectString, bool isOffensive, bool start, bool isActive, double duration, uint32 repeat) const;
+    void SendSpecialEffect10(uint32 entityID, uint32 targetID, std::string guid, bool isOffensive, bool start, bool isActive) const;
+    void SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID, uint32 chargeTypeID, std::string guid, bool isOffensive, bool start, bool isActive, double duration, uint32 repeat) const;
 
     //  functions to return protected variables for SystemBubble exclusive WarpTo updates and other methods that need Destiny Variables
     int32 GetDistance()                                 { return m_stopDistance; }
@@ -148,6 +149,15 @@ public:
     uint32 GetStateStamp()                              { return m_stateStamp; }
     GVector GetHeading()                                { return m_shipHeading; }
 
+    float GetAlignTime()                                { return m_alignTime; }
+    float GetAccelTime()                                { return m_shipMaxAccelTime; }
+    float GetWarpTime()                                 { return m_timeToEnterWarp; }
+    float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
+    double GetRadius()                                  { return m_radius; }
+    double GetCapNeed()                                 { return m_warpCapacitorNeed; }
+
+    float GetRadTic()                                   { return m_orbitRadTic; }
+
     void MakeMissile(Missile* missile);
 
 protected:
@@ -155,7 +165,9 @@ protected:
 
     SystemEntity* const mySE;			//we do not own this.
 
-    bool _IsTargetInvalid();              //performs common target checks
+    bool IsTargetInvalid();              //performs common target checks
+
+    bool m_hasSentShipUpdates;
 
     //things dictated by our entity's configuration:
     int8 m_warpStrength;                //signed    - >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
@@ -166,13 +178,14 @@ protected:
     float m_mass;                       //in kg
     float m_massMKg;                    //in Millions of kg
     float m_alignTime;                  //in s      - align and enter warp are same (for our purposes)
+    float m_prevSpeed;                  //in m/s    - used by decel when deactivating prop mod
     float m_maxShipSpeed;               //in m/s
     float m_shipWarpSpeed;              //in au/s
     float m_timeToEnterWarp;            //in s
     float m_speedToLeaveWarp;           //in m/s    - this is set to 75% of m_maxShipSpeed
 
     double m_radius;                    //in m
-    double m_capNeeded;                 //in GJ     - capacitor charged needed to initiate warp
+    double m_capNeeded;                 //in GJ     - variable to drain cap during warp init
     double m_warpCapacitorNeed;         //in GJ     - capacitor charged needed to initiate warp
     // ship motion factors for complicated maths
     double m_shipAgility;               //in s/Mkg  - time-constant of movement for objects in eve physics (and 't' in Dr. SS's calculations)
@@ -201,11 +214,12 @@ protected:
 
     int32 m_stopDistance;               //from destination, in m
 
-    int8 m_orbiting;                    //specific to orbiting (only)
     uint8 m_turnTic;                    //time into turn
-    uint32 m_stateStamp;                //timestamp of when current state began, in seconds
+    uint8 m_orbiting;                   //specific to orbit state
+    uint32 m_stateStamp;                //statestamp of when current state began, in seconds
 
     float m_orbitRadTic;                //in rad/sec  - for orbiting
+    float m_prevSpeedFraction;          //fuzzy logic - speed % - set by _UpdateVelocity for decel where (m_userSpeedFraction == 0)
     float m_userSpeedFraction;          //fuzzy logic - speed % - set by user command
     float m_currentSpeedFraction;       //fuzzy logic - speed % - current ship speed
     float m_activeSpeedFraction;        //fuzzy logic - speed % - set by USF and CSF
@@ -213,10 +227,10 @@ protected:
 
     double m_targetDistance;            //in m
     double m_followDistance;            //in m
-    double m_moveTimer;                 //in ms
-    double m_orbitTimer;                //in ms
+    double m_moveTimer;                 //in ms     - movement timestamp container for calculating csf
 
     GPoint m_targetPoint;
+    GPoint m_turnCenter;                //center point for turns.  used to correctly set radius
     GVector m_shipHeading;              //direction ship is facing
     GVector m_targetHeading;            //direction to target from current heading  -- should this be the *actual* heading of our current target??
     Destiny::BallMode State;

@@ -1,37 +1,20 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ /**
+  * @name GenericModule.h
+  *   base module class
+  * @Author:         Allan
+  * @date:   10 June 2015   -UD/RW 02 April 2017
+  */
 
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Luck
-    Updates:    Allan   (rewrite)
-*/
 
 #ifndef __EVESERVER_SHIPMODULES_GENERICMODULE_H_
 #define __EVESERVER_SHIPMODULES_GENERICMODULE_H_
 
 #include "EVEServerConfig.h"
+#include "effects/EffectsProcessor.h"
 #include "inventory/InventoryItem.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
-#include "ship/modules/ModuleEffects.h"
 
 class ModuleEffects;
 class ModifyModuleAttributesComponent;
@@ -45,95 +28,108 @@ public:
     virtual ~GenericModule();
 
     /* generic functions handled in base class */
-    void Offline();
     void Online();
+    void Offline();
 
-    void Repair()                                       { m_Item->ResetAttribute(AttrHP, true); }
-    void Repair(EvilNumber amount)                      { m_Item->SetAttribute(AttrHP, m_Item->GetAttribute(AttrHP) + amount); }
+    InventoryItemRef GetSelf()                          { return m_modRef; }
 
-    bool HasAttribute(uint32 attrID)                    { return m_Item->HasAttribute(attrID); }
-    void SetAttribute(uint32 attrID, EvilNumber val)    { m_Item->SetAttribute(attrID, val); }
-    void ResetAttribute(uint32 attrID)                  { m_Item->ResetAttribute(attrID); }
-    EvilNumber GetAttribute(uint32 attrID)              { return m_Item->GetAttribute(attrID); }
+    void ProcessEffects(Effects::State state, bool online = false);
 
-    void SetRepeat(int32 repeat)                        { m_repeat = repeat; }
+    void Repair()                                       { m_modRef->ResetAttribute(AttrHP, true); }
+    void Repair(EvilNumber amount)                      { m_modRef->SetAttribute(AttrHP, m_modRef->GetAttribute(AttrHP) + amount); }
 
-    ShipItemRef GetShipRef()                            { return m_Ship; }
+    bool HasAttribute(uint32 attrID)                    { return m_modRef->HasAttribute(attrID); }
+    void SetAttribute(uint32 attrID, EvilNumber val, bool update=true) { m_modRef->SetAttribute(attrID, val, update); }
+    void ResetAttribute(uint32 attrID)                  { m_modRef->ResetAttribute(attrID); }
+    EvilNumber GetAttribute(uint32 attrID)              { return m_modRef->GetAttribute(attrID); }
+
+    bool isTurretFitted()                               { return m_modRef->type().HasEffect(EVEEffectID::turretFitted); }
+    bool isLauncherFitted()                             { return m_modRef->type().HasEffect(EVEEffectID::launcherFitted); }
+    bool isMaxGroupFitLimited()                         { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); } /** @todo this needs work */
 
     /* class type helpers.  public for anyone to access. */
-    virtual bool IsWarpSafe() const                     { return true; }
-    virtual bool IsLoaded()                             { return false; }
     virtual bool IsGenericModule() const                { return true; }
     virtual bool IsPassiveModule() const                { return false; }
     virtual bool IsActiveModule() const                 { return false; }
-    virtual bool IsRigModule() const                    { return false; }
-    virtual bool IsSubSystemModule() const              { return false; }
-    virtual bool IsTurrentModule()                      { return false; }
+    virtual bool IsRigModule() const                    { return false; }   // check this in m_rigSlot?
+    virtual bool IsSubSystemModule() const              { return false; }   // check this in m_subSystem?
 
-    /* generic access functions handled here, but set elsewhere.  slower than above */
-    bool isOnline()                                     { return (m_Item->GetAttribute(AttrIsOnline) == 1); }
-    bool isLowPower()                                   { return m_Effects->isLowSlot(); }
-    bool isHighPower()                                  { return m_Effects->isHighSlot(); }
-    bool isMediumPower()                                { return m_Effects->isMediumSlot(); }
-    bool isRig()                                        { return m_Effects->isRig(); }
-    bool isSubSystem()                                  { return m_Effects->isSubSystem(); }
-    bool needsTarget()                                  { return m_Effects->needsTarget(); }
+    bool IsLoaded()                                     { return m_chargeLoaded; }
+    bool IsTurretModule()                               { return m_turret; }
+    bool IsLauncherModule()                             { return m_launcher; }
+    bool IsOverloaded()                                 { return m_overLoaded; }
 
-    uint32 itemID()                                     { return m_Item->itemID(); }
-    uint32 typeID()                                     { return m_Item->typeID(); }
-    uint32 groupID()                                    { return m_Item->groupID(); }
-    EVEItemFlags flag()                                 { return m_Item->flag(); }
-    InventoryItemRef getItem()                          { return m_Item; }
+    /* generic access functions handled here, but set elsewhere.  only slightly slower than above */
+    bool isOnline()                                     { return m_modRef->IsOnline(); }
+    bool isLowPower()                                   { return m_loPower; }
+    bool isHighPower()                                  { return m_hiPower; }
+    bool isMediumPower()                                { return m_medPower; }
+    bool isRig()                                        { return m_rigSlot; }
+    bool isSubSystem()                                  { return m_subSystem; }
 
-	void SetModuleState(ModuleStates state)             { m_ModuleState = state; }
-	ModuleStates GetModuleState()                       { return m_ModuleState; }
-	ChargeStates GetChargeState()                       { return m_ChargeState; }
+    uint32 itemID()                                     { return m_modRef->itemID(); }
+    uint32 typeID()                                     { return m_modRef->typeID(); }
+    uint32 groupID()                                    { return m_modRef->groupID(); }
+    EVEItemFlags flag()                                 { return m_modRef->flag(); }
+    InventoryItemRef getItem()                          { return m_modRef; }
 
-    /* functions to be handled in derived classes (must override) */
+    ShipItemRef GetShipRef()                            { return m_shipRef; }
+
+    void SetChargeRef(InventoryItemRef iRef)            { m_chargeRef = iRef; }
+    void SetModuleState(ModStates::ModuleStates state)  { m_ModuleState = state; }
+    void SetChargeState(ModStates::ChargeStates state)  { m_ChargeState = state; }
+
+    InventoryItemRef GetLoadedChargeRef()               { return m_chargeRef; }
+    ModStates::ModuleStates GetModuleState()            { return m_ModuleState; }
+    ModStates::ChargeStates GetChargeState()            { return m_ChargeState; }
+
+	/* generic access functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }
-    virtual void Activate(SystemEntity* pSE)            { /* Do nothing here */ }
-    virtual void Deactivate()                           { /* Do nothing here */ }
+    virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0) { /* Do nothing here */ }
+    virtual void Deactivate(std::string effect="")      { /* Do nothing here */ }
     virtual void AbortCycle()                           { /* Do nothing here */ }
     virtual void LoadCharge(InventoryItemRef charge)    { /* Do nothing here */ }
     virtual void UnloadCharge()                         { /* Do nothing here */ }
-    virtual void Overload()                             { /* Do nothing here */ }
-    virtual void DeOverload()                           { /* Do nothing here */ }
     virtual void DestroyRig()                           { /* Do nothing here */ }
 
-    /* functions to be overridden in derived classes as needed */
-    virtual bool isTurretFitted()                       { return (m_Effects->HasEffect(effectTurretFitted) ? true : false); }
-    virtual bool isLauncherFitted()                     { return (m_Effects->HasEffect(effectLauncherFitted) ? true : false); }
-    virtual bool isMaxGroupFitLimited()                 { return (m_Effects->HasEffect(AttrMaxGroupFitted) ? true : false); }
-    virtual InventoryItemRef GetLoadedChargeRef()       { return InventoryItemRef(); }
+    /* generic access functions to be overridden in derived classes as needed */
+    virtual void Overload();
+    virtual void DeOverload();
+    virtual uint32 GetTargetID()                        { return 0; }
 
     /* override for rigs and subsystems in approprate derived class */
-    virtual ModulePowerLevel GetModulePowerLevel() {
-        return isHighPower() ? MODULE_BANK_HIGH_POWER
-                : ( isMediumPower() ? MODULE_BANK_MEDIUM_POWER
-                        : (isLowPower() ? MODULE_BANK_LOW_POWER
-                            : (isRig() ? MODULE_BANK_RIG
-                                : (isSubSystem() ? MODULE_BANK_SUBSYSTEM
-                                    : MODULE_BANK_UNDEFINED ))));
+    virtual ModStates::ModulePowerLevel GetModulePowerLevel() {
+        return m_hiPower ? ModStates::MODULE_BANK_HIGH_POWER
+                : ( m_medPower ? ModStates::MODULE_BANK_MEDIUM_POWER
+                    : (m_loPower ? ModStates::MODULE_BANK_LOW_POWER
+                        : (m_rigSlot ? ModStates::MODULE_BANK_RIG
+                            : (m_subSystem ? ModStates::MODULE_BANK_SUBSYSTEM
+                                : ModStates::MODULE_BANK_UNDEFINED ))));
     }
 
-	/*  these have to be public for ampc/msac/mmac to access it's methods */
-    ModuleEffects*                  m_Effects;          /* we own this */
-    ModifyModuleAttributesComponent*  m_MMAC;           /* we own this */
-    ModifyShipAttributesComponent*  m_MSAC;             /* we own this */
-
 protected:
-    InventoryItemRef                m_Item;
-    ShipItemRef                     m_Ship;
+    InventoryItemRef m_modRef;
+    ShipItemRef      m_shipRef;
+    InventoryItemRef m_chargeRef;
 
-    ModuleStates                    m_ModuleState;
-    ChargeStates                    m_ChargeState;
+    ModStates::ModuleStates     m_ModuleState;
+    ModStates::ChargeStates     m_ChargeState;
 
-    int32                           m_repeat;
+    bool             m_hiPower : 1;
+    bool             m_medPower : 1;
+    bool             m_loPower : 1;
+    bool             m_rigSlot : 1;
+    bool             m_subSystem : 1;
+    bool             m_launcher : 1;
+    bool             m_turret : 1;
+    bool             m_overLoaded : 1;
+    bool             m_chargeLoaded : 1;
 
-private:
-    void ModifyShipAttribute(uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
-    void ModifyModuleAttribute(GenericModule* targetMod, uint32 targetAttrID, uint32 sourceAttrID, EVECalculationType type);
-    void ModifyTargetAttribute(uint32 targetItemID, uint16 targetAttrID, uint16 sourceAttrID, EVECalculationType type, bool stacking);
+
+    int16            m_repeat;
+
+    std::string GetModuleStateName(ModStates::ModuleStates state);
+    std::string GetChargeStateName(ModStates::ChargeStates state);
 
 };
 

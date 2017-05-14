@@ -31,6 +31,8 @@
 #include "ConsoleCommands.h"
 #include "threading/Threading.h"
 
+#include "effects/EffectsDataMgr.h"
+
 
 ConsoleCommand::ConsoleCommand() :
 m_updateTimer(sConfig.rates.WebUpdate * 60000)	//15 mins
@@ -38,7 +40,7 @@ m_updateTimer(sConfig.rates.WebUpdate * 60000)	//15 mins
     m_updateTimer.Disable();
 }
 
-void ConsoleCommand::Init(CommandDispatcher* cd, ItemFactory* itmf)
+void ConsoleCommand::Initialize(CommandDispatcher* cd, ItemFactory* itmf)
 {
     pCommand = cd;
     pFactory = itmf;
@@ -47,8 +49,8 @@ void ConsoleCommand::Init(CommandDispatcher* cd, ItemFactory* itmf)
 	tv.tv_usec = 0;
 	UpdateStatus();	//initial status setting
     m_haltServer = false;
-    sLog.Green( "       ServerInit", "Console Commands Initialized." );
-    sLog.Blue( "   ConsoleCommand", "Enter 'h' for current list of supported commands." );
+    sLog.Blue( "   ConsoleCommand", "Console Commands Initialized." );
+    sLog.Yellow( "   ConsoleCommand", "Enter 'h' for current list of supported commands." );
 }
 
 bool ConsoleCommand::Process() {
@@ -70,7 +72,7 @@ bool ConsoleCommand::Process() {
 		buf = (char*) malloc (BUFLEN);
 	    if (fgets(buf, BUFLEN, stdin)) {
 			if (strncmp(buf, "x", 1) == 0) {
-				sLog.Warning("  Alasiya's EvEMu", "EXIT called.  Setting RunLoops to false.");
+				sLog.Warning("  Alasiya's EvEMu", "EXIT called.  Breaking out of Main Loop.");
 				free (buf);
 				return false;
 			} else if (strncmp(buf, "h", 1) == 0) {
@@ -152,10 +154,10 @@ bool ConsoleCommand::Process() {
                     sLog.Green("      Missile Dmg","Enabled at %.0f%%.", (sConfig.rates.missileRate *100) );
                 else
 					sLog.Warning("      Missile Dmg","Normal.");
-                if (sConfig.rates.turrentRate != 1.0)
-                    sLog.Green("      Turrent Dmg","Enabled at %.0f%%.", (sConfig.rates.turrentRate *100) );
+                if (sConfig.rates.turretRate != 1.0)
+                    sLog.Green("      Turret Dmg","Enabled at %.0f%%.", (sConfig.rates.turretRate *100) );
                 else
-                    sLog.Warning("      Turrent Dmg","Normal.");
+                    sLog.Warning("      Turret Dmg","Normal.");
 			} else if (strncmp(buf, "v", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Version:");
                 sLog.Warning("     Server Build", " %.2f", EVE_Build );
@@ -378,28 +380,12 @@ void ConsoleCommand::MemStatus(float* vm_usage, float* resident_set)
 void ConsoleCommand::Test()
 {
     sLog.Green("  Alasiya's EvEMu", "Server Test:");
-    sLog.Error("     Allan\'s Test", "Not Avalible Yet.");
-    /*
-    DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT `itemID`, `typeID`, `itemName` FROM `entity` WHERE itemID < %u", maxAgent);
+    //sLog.Error("     Allan\'s Test", "Nothing Avalible at this time.");
 
-    _log(DATABASE__RESULTS, "query returned %u items", res.GetRowCount());
+    sFxDataMgr.ConfigureEffects();
 
-    mydata data;
-    std::vector<mydata> vec;
-
-    DBResultRow row;
-    while(res.GetRow(row)) {
-        data.itemID = row.GetInt(0);
-        data.typeID = row.GetInt(1);
-        data.name = row.GetText(2);
-        vec.push_back(data);
-    }
-
-    res.Reset();
-    for (auto cur : vec)
-        sDatabase.RunQuery(res, "UPDATE `agtAgents` SET `typeID` = %u, `agentName` = %s WHERE `itemID` = %u", cur.typeID, cur.name.c_str(), cur.itemID );
-    */
+    sLog.Yellow("     Effects Test", "Test Complete.");
+    sLog.Yellow("     Effects Test", "%u sets loaded in %.3fms.", sFxDataMgr.GetFxSize(), sFxDataMgr.GetFxTime());
 }
 
 void ConsoleCommand::UpdateStatus() {

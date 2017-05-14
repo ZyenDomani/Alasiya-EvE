@@ -90,6 +90,13 @@ CorpRegistryBound::CorpRegistryBound(PyServiceMgr *mgr, CorporationDB& db, uint3
     PyCallable_REG_CALL(CorpRegistryBound, CreateAlliance);
     PyCallable_REG_CALL(CorpRegistryBound, GetSuggestedAllianceShortNames);
 
+    /*
+    02:24:59 [SvcCall] Service CorpRegistryBound::GetBulletins()
+    02:24:59 E Server: Unknown call to 'GetBulletins' by 'allan'
+    02:27:44 [SvcCall] Service CorpRegistryBound::GetRecentKillsAndLosses()
+    02:27:44 E Server: Unknown call to 'GetRecentKillsAndLosses' by 'allan'
+
+    */
     m_corpID = corpID;
 }
 

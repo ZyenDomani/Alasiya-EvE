@@ -9,6 +9,15 @@
 
 #include "eve-server.h"
 
+
+/* POD structure for saving attribute data */
+struct AttrData {
+    uint32 itemID;
+    uint16 attrID;
+    uint32 valueInt;
+    double valueFloat;
+};
+
 /* POD structure for account data */
 struct AccountData {
     int32 id;
@@ -25,12 +34,12 @@ struct AccountData {
 
 /* POD structure for fleet data    -allan 31Jul14 */
 struct FleetData {
-    uint32 fleetID;
-    uint32 wingID;
-    uint32 squadID;
     uint8 fleetRole;
     uint8 fleetBooster;
     uint8 fleetJob;
+    uint32 fleetID;
+    uint32 wingID;
+    uint32 squadID;
 };
 
 /* POD structure for blueprint data */
@@ -243,152 +252,158 @@ struct SaveData {
 
 /* POD structure for loading dynamic items */
 struct OwnerData {
-    uint32          ownerID = 0;
-    uint32          corpID = 0;
-    uint32          locID = 0;
+    uint32          ownerID;
+    uint32          corpID;
+    uint32          locID;
 };
 
 /* POD structure for container faction data */
 struct FactionData {
-    uint32 ownerID = 0;
-    uint32 corporationID = 0;
-    uint32 allianceID = 0;
-    uint32 factionID = 0;
+    uint32 ownerID;
+    uint32 corporationID;
+    uint32 allianceID;
+    uint32 factionID;
+};
+
+/* structure for type attributes */
+struct DmgTypeAttribute {
+    uint16 attributeID;
+    EvilNumber value;
 };
 
 class DBSystemEntity {
 public:
-    uint32 itemID = 0;
-    uint32 typeID = 0;
-    uint32 groupID = 0;
-    uint32 categoryID = 0;  //TODO populate this for simple system entities. (recently added - 1Dec15)
-    uint32 orbitID = 0;
-    GPoint position = NULL_ORIGIN;
-    double radius = 0;
-    double security = 0;
-    std::string itemName = "";
+    uint32 itemID;
+    uint32 typeID;
+    uint16 groupID;
+    EVEItemCategories categoryID;
+    uint32 orbitID;
+    GPoint position;
+    double radius;
+    double security;
+    std::string itemName;
 };
 
 class DBSystemDynamicEntity {
 public:
-    uint32 itemID = 0;
-    std::string itemName = "";
-    uint32 typeID = 0;
-    uint32 groupID = 0;
-    uint32 categoryID = 0;
-    uint32 ownerID = 0;
-    uint32 corporationID = 0;
-    uint32 allianceID = 0;
-    uint32 factionID = 0;
-    uint32 planetID = 0;
-    double x = 0;
-    double y = 0;
-    double z = 0;
+    uint32 itemID;
+    std::string itemName;
+    uint32 typeID;
+    uint16 groupID;
+    EVEItemCategories categoryID;
+    uint32 ownerID;
+    uint32 corporationID;
+    uint32 allianceID;
+    uint32 factionID;
+    uint32 planetID;
+    double x;
+    double y;
+    double z;
 };
 
 struct DBGPointEntity {
-    uint8 idx = 0;
-    uint32 itemID = 0;
-    double radius = 0;
-    GPoint position = NULL_ORIGIN;
-    double x = 0;
-    double y = 0;
-    double z = 0;
+    uint8 idx;
+    uint32 itemID;
+    double radius;
+    GPoint position;
+    double x;
+    double y;
+    double z;
 };
 
 /* POD structure entries for dungeon data */
 struct DunTemplate {
-    std::string dunName = "";
-    uint16 dunRoomID = 0;
-    uint16 dunEntryID = 0;
-    uint8 dunTypeID = 0;
-    uint8 dunSpawnType = 0;
-    uint8 dunRooms = 0;
-    uint8 dunRoomTypeID = 0;
-    uint8 dunRoomCategoryID = 0;
+    std::string dunName;
+    uint16 dunRoomID;
+    uint16 dunEntryID;
+    uint8 dunTypeID;
+    uint8 dunSpawnType;
+    uint8 dunRooms;
+    uint8 dunRoomTypeID;
+    uint8 dunRoomCategoryID;
 };
 
 struct DunRoomInfo {
-    uint16 dunRoomID = 0;
-    uint8 dunRoomType = 0;
-    uint8 dunRoomCategory = 0;
-    uint8 dunRoomSpawnID = 0;
-    uint8 dunRoomSpawnType = 0;
+    uint16 dunRoomID;
+    uint8 dunRoomType;
+    uint8 dunRoomCategory;
+    uint8 dunRoomSpawnID;
+    uint8 dunRoomSpawnType;
 };
 
 struct DunRoomData {
-    uint32 dunGroupID = 0;
-    uint16 x = 0;
-    uint16 y = 0;
-    uint16 z = 0;
+    uint32 dunGroupID;
+    uint16 x;
+    uint16 y;
+    uint16 z;
 };
 
 struct DunGroupData {
-    uint32 typeID = 0;
-    std::string typeName = "";
-    uint32 typeGrpID = 0;   // this is groupID of the itemType, and needed to simplify create/spawn code
-    uint8 typeCatID = 0;    // this is categoryID of the itemType, and needed to simplify create/spawn code
-    uint16 x = 0;
-    uint16 y = 0;
-    uint16 z = 0;
+    uint32 typeID;
+    std::string typeName;
+    uint32 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
+    uint8 typeCatID;    // this is categoryID of the itemType, and needed to simplify create/spawn code
+    uint16 x;
+    uint16 y;
+    uint16 z;
 };
 
 struct DunRoomSpawnInfo {
-    uint16 dunRoomSpawnID = 0;
-    uint16 dunRoomSpawnType = 0;
-    uint16 x = 0;
-    uint16 y = 0;
-    uint16 z = 0;
+    uint16 dunRoomSpawnID;
+    uint16 dunRoomSpawnType;
+    uint16 x;
+    uint16 y;
+    uint16 z;
 };
 
 /* POD structure entries for PI data */
 struct PlanetResourceData {
-    float dist_1 = 0;
-    float dist_2 = 0;
-    float dist_3 = 0;
-    float dist_4 = 0;
-    float dist_5 = 0;
-    int32 type_1 = 0;
-    int32 type_2 = 0;
-    int32 type_3 = 0;
-    int32 type_4 = 0;
-    int32 type_5 = 0;
-    std::string buffer_1 = "";
-    std::string buffer_2 = "";
-    std::string buffer_3 = "";
-    std::string buffer_4 = "";
-    std::string buffer_5 = "";
+    float dist_1;
+    float dist_2;
+    float dist_3;
+    float dist_4;
+    float dist_5;
+    int32 type_1;
+    int32 type_2;
+    int32 type_3;
+    int32 type_4;
+    int32 type_5;
+    std::string buffer_1;
+    std::string buffer_2;
+    std::string buffer_3;
+    std::string buffer_4;
+    std::string buffer_5;
 };
 
 struct PI_Link {
-    int8 state = 0;
-    uint16 level = 0;
-    uint16 typeID = 0;
-    uint32 endpoint1 = 0;
-    uint32 endpoint2 = 0;
+    int8 state;
+    uint16 level;
+    uint16 typeID;
+    uint32 endpoint1;
+    uint32 endpoint2;
 };
 
 struct PI_Route {
-    int8 state = 0;
-    int8 priority = 0;
-    uint32 srcPinID = 0;
-    uint32 destPinID = 0;
-    uint16 commodityTypeID = 0;
-    uint16 commodityQuantity = 0;
+    int8 state;
+    int8 priority;
+    uint32 srcPinID;
+    uint32 destPinID;
+    uint16 commodityTypeID;
+    uint16 commodityQuantity;
     std::list<uint32> path;
 };
 
 struct PI_Heads {
-    uint16 typeID = 0;
-    uint32 ecuPinID = 0;
-    double latitude = 0.0f;
-    double longitude = 0.0f;
+    uint16 typeID;
+    uint32 ecuPinID;
+    double latitude;
+    double longitude;
 };
 
 struct PI_Schematic {
-    uint8 outputQty = 0;
-    uint16 outputType = 0;
-    uint32 cycleTime = 0;
+    uint8 outputQty;
+    uint16 outputType;
+    uint32 cycleTime;
 
     // typeID, qty
     std::map<uint16, uint16> inputs;
@@ -397,70 +412,70 @@ struct PI_Schematic {
 struct PI_Plant {
     // specifically for processing plants. this is not saved in db
     PI_Schematic data;
-    int8 state = 0;
-    uint8 order = 0;
-    uint16 schematicID = 0;
-    uint16 qtyPerCycle = 0;
-    uint64 cycleTime = 0;
-    uint64 expiryTime = 0;
-    uint64 installTime = 0;
-    uint64 lastRunTime = 0;
+    int8 state;
+    uint8 order;
+    uint16 schematicID;
+    uint16 qtyPerCycle;
+    uint64 cycleTime;
+    uint64 expiryTime;
+    uint64 installTime;
+    uint64 lastRunTime;
 
-    bool hasReceivedInputs = false;
-    bool receivedInputsLastCycle = false;
+    bool hasReceivedInputs;
+    bool receivedInputsLastCycle;
 };
 
 /* optimize this after everything is working!!  */
 class PI_Pin {
 public:
-    bool isCommandCenter = false;
-    bool isStorage = false;
-    bool isConsumer = false;
-    bool isLaunchable = false;
-    bool isProcess = false;
-    bool isBase = false;
-    bool isECU = false;
+    bool isCommandCenter : 1;
+    bool isStorage : 1;
+    bool isConsumer : 1;
+    bool isLaunchable : 1;
+    bool isProcess : 1;
+    bool isBase : 1;
+    bool isECU : 1;
 
     // common for all pins
-    int8 state = 0;
-    uint16 level = 0;
-    uint16 typeID = 0;
-    uint32 ownerID = 0;
-    uint64 lastRunTime = 0;
+    int8 state;
+    uint16 level;
+    uint16 typeID;
+    uint32 ownerID;
+    uint64 lastRunTime;
 
-    double latitude = 0.0f;
-    double longitude = 0.0f;
+    double latitude;
+    double longitude;
 
     // Command/Spaceport
-    uint64 lastLaunchTime = 0;
+    uint64 lastLaunchTime;
 
     //ExtractorControlUnit
     std::map<uint16, PI_Heads> heads;
-    float headRadius = 0.0f;
+    float headRadius;
 
     // Process and ECU
-    bool hasReceivedInputs = false;
-    bool receivedInputsLastCycle = false;
-    uint16 schematicID = 0;   // used in ecu as extractor head typeID
-    uint16 programType = 0;      // used in extractors as extracted resource typeID
-    uint16 qtyPerCycle = 0;
-    uint64 cycleTime = 0;
-    uint64 expiryTime = 0;
-    uint64 installTime = 0;
+    bool hasReceivedInputs : 1;
+    bool receivedInputsLastCycle : 1;
+    uint16 schematicID;   // used in ecu as extractor head typeID
+    uint16 programType;      // used in extractors as extracted resource typeID
+    uint16 qtyPerCycle;
+    uint64 cycleTime;
+    uint64 expiryTime;
+    uint64 installTime;
 
     // Storage    typeID, qty
     std::map<uint16, uint32> contents;
 
     // specifically for updating contents. this is not saved in db
-    bool update = false;
-    float capacity = 0;  // this is not implemented yet
+    bool update : 1;
+    float capacity;  // this is not implemented yet
 };
 
 class PI_CCPin {
 public:
-    uint8 level = 0;
-    uint32 ccPinID = 0;
-    uint64 currentSimTime = 0;
+    uint8 level;
+    uint32 ccPinID;
+    uint64 currentSimTime;
 
     // pinID, pinData
     std::map<uint32, PI_Pin> pins;

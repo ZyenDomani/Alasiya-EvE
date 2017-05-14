@@ -27,7 +27,7 @@ CREATE TABLE `qstCourierMissions` (
   `dropSolarSystemID` int(10) unsigned default NULL,
   `dropRegionID` int(10) unsigned default NULL,
   PRIMARY KEY  (`missionID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 /*Data for the table `qstCourierMissions` */
 

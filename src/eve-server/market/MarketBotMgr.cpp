@@ -24,7 +24,7 @@ MarketBotDataMgr::MarketBotDataMgr()
     m_initalized = false;
 }
 
-void MarketBotDataMgr::Init()
+void MarketBotDataMgr::Initialize()
 {
     m_initalized = true;
 
@@ -43,7 +43,7 @@ MarketBotMgr::MarketBotMgr()
 }
 
 
-void MarketBotMgr::Init()
+void MarketBotMgr::Initialize()
 {
     if (!sConfig.server.UseMarketBot) {
         sLog.Warning("   Market Bot Mgr", "Market Bot Disabled.");
@@ -56,9 +56,9 @@ void MarketBotMgr::Init()
     }
 
     m_initalized = true;
-    sMktBotDataMgr.Init();
+    sMktBotDataMgr.Initialize();
 
-    sLog.Green("   Market Bot Mgr", "Market Bot Manager Initialized.");
+    sLog.Blue("   Market Bot Mgr", "Market Bot Manager Initialized.");
     /* start timers, process current data, and create new orders, if needed */
 
 }

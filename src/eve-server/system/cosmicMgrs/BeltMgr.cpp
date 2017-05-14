@@ -1,27 +1,14 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ /**
+  * @name BeltMgr.cpp
+  *     Asteroid Belt Spawn managment system for Alasiya EvEmu
+  *
+  * @Author:        Allan
+  * @date:          15 April 2016
+  *
+  */
 
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Allan
-*/
+
 
 #include "eve-server.h"
 
@@ -105,8 +92,8 @@ bool AsteroidBeltMgr::CheckSpawn(uint16 bubbleID)
 
 bool AsteroidBeltMgr::IsSpawned(uint16 bubbleID)
 {
-    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
-    std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
+    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
+    std::map<uint32, bool>::const_iterator itr = m_spawned.find(beltID);
     if (itr != m_spawned.end())
         return itr->second;
     return false;
@@ -114,8 +101,8 @@ bool AsteroidBeltMgr::IsSpawned(uint16 bubbleID)
 
 bool AsteroidBeltMgr::IsActive(uint16 bubbleID)
 {
-    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
-    std::map<uint32, bool>::iterator itr = m_active.find(beltID);
+    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
+    std::map<uint32, bool>::const_iterator itr = m_active.find(beltID);
     if (itr != m_active.end())
         return itr->second;
     return false;
@@ -123,7 +110,7 @@ bool AsteroidBeltMgr::IsActive(uint16 bubbleID)
 
 void AsteroidBeltMgr::SetActive(uint16 bubbleID, bool active/*true*/)
 {
-    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
+    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     std::map<uint32, bool>::iterator itr = m_active.find(beltID);
     if (itr != m_active.end())
         itr->second = active;
@@ -142,7 +129,7 @@ void AsteroidBeltMgr::Process() {
 bool AsteroidBeltMgr::Load(uint16 bubbleID) {
     std::vector<AsteroidData> entities;
     entities.clear();
-    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
+    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     m_db.LoadSystemRoids(m_systemID, beltID, entities);
     if (entities.empty())
         return false;
@@ -219,7 +206,7 @@ void AsteroidBeltMgr::SpawnBelt(uint16 bubbleID)
     if (IsSpawned(bubbleID))
         return;
 
-    uint32 beltID = sBubbleMgr.GetSpawnID(bubbleID);
+    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     if (!IsUniverseCelestial(beltID))
         return;
 
@@ -334,7 +321,6 @@ void AsteroidBeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius,
     itemRef->SetAttribute(AttrQuantity,  quantity);                          // Quantity
     itemRef->SetAttribute(AttrVolume,    itemRef->type().volume());          // Volume
     itemRef->SetAttribute(AttrMass,      itemRef->type().mass() * quantity); // Mass
-    //itemRef->SaveAttributes();
 
     AsteroidSE* pASE = new AsteroidSE(itemRef, *(m_system->GetServiceMgr()), m_system );
     m_system->AddEntity(pASE);

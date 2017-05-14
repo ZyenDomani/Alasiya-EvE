@@ -32,6 +32,10 @@ class FactoryDB : public ServiceDB
 {
 public:
     PyRep *GetMaterialCompositionOfItemType(const uint32 typeID) const;
+
+    bool DeleteBlueprint(uint32 blueprintID);
+    bool GetBlueprint(uint32 blueprintID, BlueprintData& into);
+    bool SaveBlueprintData(uint32 blueprintID, BlueprintData& data);
 };
 
 #endif

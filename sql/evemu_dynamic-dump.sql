@@ -153,9 +153,9 @@ CREATE TABLE `channelMods` (
 
 /*Data for the table `channelMods` */
 
-/*Table structure for table `character_` */
+/*Table structure for table `chrCharacter` */
 
-CREATE TABLE `character_` (
+CREATE TABLE `chrCharacter` (
   `characterID` int(10) unsigned NOT NULL DEFAULT '0',
   `accountID` int(10) unsigned DEFAULT NULL,
   `title` varchar(85) NOT NULL DEFAULT '',
@@ -617,19 +617,6 @@ CREATE TABLE `entity_attributes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `entity_attributes` */
-
-/*Table structure for table `entity_default_attributes` */
-
-CREATE TABLE `entity_default_attributes` (
-  `itemID` int(10) unsigned NOT NULL default '0',
-  `attributeID` int(10) unsigned NOT NULL default '0',
-  `valueInt` int(10) default NULL,
-  `valueFloat` double default NULL,
-  PRIMARY KEY  (`itemID`,`attributeID`),
-  KEY `attributeID` (`attributeID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Data for the table `entity_default_attributes` */
 
 /*Table structure for table `eveMail` */
 

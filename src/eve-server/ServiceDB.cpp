@@ -81,8 +81,8 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
 
     account_info.name       = _escaped_username;
     account_info.role       = row.GetUInt64(4);
-    account_info.online     = (row.GetBool(5) ? true : false);
-    account_info.banned     = (row.GetBool(6) ? true : false);
+    account_info.online     = row.GetBool(5);
+    account_info.banned     = row.GetBool(6);
     account_info.visits     = row.GetInt(7);
 
     if (!row.IsNull(8))
@@ -144,6 +144,7 @@ uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, uint64 
     return accountID;
 }
 
+/** @todo  all of the following bullshit needs to be checked/updated/deleted as appropriate */
 //this function is temporary, I dont plan to keep this crap in the DB.
 //   will make mem object for droneState later...   test with this.
 PyObject *ServiceDB::GetSolDroneState(uint32 systemID) const {
@@ -194,6 +195,7 @@ uint32 ServiceDB::GetStationRegion(uint32 stationID)
         return 1;
 }
 
+/** @todo this bullshit isnt used...delete it */
 uint32 ServiceDB::GetDestinationStargateID(uint32 fromSystem, uint32 toSystem)
 {
     DBQueryResult res;
@@ -308,7 +310,7 @@ void ServiceDB::ProcessIntChange(const char * key, uint32 oldValue, uint32 newVa
 void ServiceDB::SetCharacterOnlineStatus(uint32 char_id, bool online) {
     _log(CLIENT__TRACE, "ServiceDB:  Setting character %u %s.", char_id, online ? "Online" : "Offline");
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE character_ SET online = %d WHERE characterID = %u", online, char_id);
+    sDatabase.RunQuery(err, "UPDATE chrCharacter SET online = %d WHERE characterID = %u", online, char_id);
 
     if ( online )
         sDatabase.RunQuery(err, "UPDATE srvStatus SET Connections = Connections + 1");
@@ -322,8 +324,8 @@ void ServiceDB::SetServerOnlineStatus(bool online) {
 
     //this is only called on startup/shutdown.  reset all char online counts/status'
     sDatabase.RunQuery(err,
-        "UPDATE character_, account"
-        " SET character_.online = 0,"
+        "UPDATE chrCharacter, account"
+        " SET chrCharacter.online = 0,"
         "     account.online = 0");
 
     sDatabase.RunQuery( err,

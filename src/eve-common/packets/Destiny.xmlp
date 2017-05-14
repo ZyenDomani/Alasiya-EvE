@@ -358,12 +358,12 @@ DST_WARPEXIT = 11
             <int name="moduleTypeID" default="0" none_marker="0" />
             <!-- 3: targetID -->
             <int name="targetID" default="0" none_marker="0" />
-            <!-- 4: otherTypeID -->
-            <int name="otherTypeID" default="0" none_marker="0" />
+            <!-- 4: chargeTypeID -->
+            <int name="chargeTypeID" default="0" none_marker="0" />
             <!-- 5: completely unknown contents, probably not really an listInt -->
             <listInt name="area" />
             <!-- 6: see scripts/parklife/fxSequencer.py -->
-            <string name="effect_type"/>
+            <string name="guid"/>
             <!-- 7: isOffensive: soft boolean -->
             <int name="isOffensive" />
             <!-- 8: start: soft boolean -->
@@ -388,12 +388,12 @@ DST_WARPEXIT = 11
             <int name="moduleTypeID" default="0" none_marker="0" />
             <!-- 3: targetID -->
             <int name="targetID" default="0" none_marker="0" />
-            <!-- 4: otherTypeID -->
-            <int name="otherTypeID" default="0" none_marker="0" />
+            <!-- 4: chargeTypeID -->
+            <int name="chargeTypeID" default="0" none_marker="0" />
             <!-- 5: area, completely unknown contents, probably not really an listInt -->
             <listInt name="area" />
             <!-- 6: guid: see scripts/parklife/fxSequencer.py -->
-            <string name="effect_type" />
+            <string name="guid" />
             <!-- 7: isOffensive: saw 0 -->
             <int name="isOffensive" />
             <!-- 8: start: saw 1 -->

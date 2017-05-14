@@ -42,15 +42,18 @@ class ManagerDB {
 public:
     /* db methods for... */
 
-    /* common data */
-    void GetSkillList(DBQueryResult& res);
-
-    /* R.A.M. data */
-    void GetRAMMaterials(DBQueryResult& res);
-    void GetRAMRequirements(DBQueryResult& res);
-
     /* data manager */
     void GetOreBySSC(DBQueryResult& res);
+    void GetSkillList(DBQueryResult& res);
+    void GetSystemData(DBQueryResult& res);
+    void GetStaticData(DBQueryResult& res); // static items in a solar system
+    void GetStationInfo(DBQueryResult& res);
+    void GetRAMMaterials(DBQueryResult& res);
+    void GetBlueprintType(DBQueryResult& res);
+    void GetStationSystem(DBQueryResult& res);
+    void GetStationRegion(DBQueryResult& res);
+    void GetTypeAttributes(DBQueryResult& res);
+    void GetRAMRequirements(DBQueryResult& res);
 
     /* belt manager */
     void SaveRoid(AsteroidData& data);
@@ -61,14 +64,14 @@ public:
     /* spawn manager */
     void DeleteSpawnedRats();
     void GetSpawnClasses(DBQueryResult& res);
-    void GetGroupTypeIDs(uint32 groupID, DBQueryResult& res);
     void GetFactionGroups(DBQueryResult& res);
     void GetRegionRatFaction(DBQueryResult& res);
+    void GetGroupTypeIDs(uint32 groupID, DBQueryResult& res);
 
     /* dungeon manager */
-    void GetDunTemplates(DBQueryResult& res);
     void GetDunRoomInfo(DBQueryResult& res);
     void GetDunRoomData(DBQueryResult& res);
+    void GetDunTemplates(DBQueryResult& res);
     void GetDunGroupData(DBQueryResult& res);
     void GetDunSpawnInfo(DBQueryResult& res);
     void SaveActiveDungeon(ActiveDungeon& dun);

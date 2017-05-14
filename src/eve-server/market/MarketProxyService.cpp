@@ -351,7 +351,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 
         //verify that they specified a valid station ID to sell from.
         if ((item->locationID() != args.stationID)   //item in station hanger
-           and !(call.client->GetShip()->GetInventory()->Contains( item->itemID() )  //item is in our ship
+           and !(call.client->GetShip()->GetMyInventory()->Contains( item->itemID() )  //item is in our ship
                 and call.client->GetStationID() == args.stationID ))   //and our ship is in the station
         {
             codelog(MARKET__ERROR, "%s: Tried to sell item %d which is in location %d through station %d while in station %d", call.client->GetName(), item->itemID(), item->locationID(), args.stationID, call.client->GetStationID());
@@ -770,7 +770,7 @@ void MarketProxyService::_ExecuteSellOrder(uint32 sell_order_id, uint32 stationI
     } else if (IsPlayerCorp(orderOwnerID)) {
         //TODO:  add money to player corp account.
         //TODO:  find corp wallet division for market orders?
-    } else if (orderOwnerID >= EVEMU_MINIMUM_ID) {
+    } else if (orderOwnerID >= EVEMU_MINIMUM_DYNAMIC_ID) {
         Client* seller = sEntityList.FindClientByCharID(orderOwnerID);
         if (seller) {
             //the seller is logged in, send them a notification...

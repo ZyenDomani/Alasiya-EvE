@@ -64,16 +64,6 @@ BlueprintType *BlueprintType::Load(ItemFactory& factory, uint32 typeID)
     return ItemType::Load<BlueprintType>( factory, typeID );
 }
 
-template<class _Ty>
-_Ty *BlueprintType::_LoadBlueprintType(ItemFactory& factory, uint32 typeID,
-    // ItemType stuff:
-    const ItemGroup& group, const TypeData& data,
-    // BlueprintType stuff:
-    const BlueprintType *parentBlueprintType, const ItemType& productType, const BlueprintTypeData& bpData)
-{
-    return new BlueprintType(typeID, group, data, parentBlueprintType, productType, bpData );
-}
-
 /*
  * Blueprint
  */
@@ -100,17 +90,6 @@ BlueprintRef Blueprint::Load(ItemFactory& factory, uint32 blueprintID)
     return InventoryItem::Load<Blueprint>( factory, blueprintID );
 }
 
-template<class _Ty>
-RefPtr<_Ty> Blueprint::_LoadBlueprint(ItemFactory& factory, uint32 blueprintID,
-    // InventoryItem stuff:
-    const BlueprintType& bpType, const ItemData& data,
-    // Blueprint stuff:
-    BlueprintData& bpData)
-{
-    // we have enough data, construct the item
-    return BlueprintRef( new Blueprint( factory, blueprintID, bpType, data, bpData ) );
-}
-
 BlueprintRef Blueprint::Spawn(ItemFactory& factory, ItemData& data, BlueprintData& bpData) {
     uint32 blueprintID = Blueprint::CreateItemID(factory, data, bpData);
     if (blueprintID == 0)
@@ -129,9 +108,9 @@ uint32 Blueprint::CreateItemID(ItemFactory& factory, ItemData& data, BlueprintDa
     if (blueprintID == 0)
         return 0;
 
+    FactoryDB mdb;
     // insert blueprint data into DB
-    if (!factory.db().SaveBlueprintData(blueprintID, bpData)) {
-        // delete item
+    if (!mdb.SaveBlueprintData(blueprintID, bpData)) {
         factory.db().DeleteItem(blueprintID);
         return 0;
     }
@@ -140,9 +119,7 @@ uint32 Blueprint::CreateItemID(ItemFactory& factory, ItemData& data, BlueprintDa
 }
 
 void Blueprint::Delete() {
-    // delete our blueprint data
-    m_factory.db().DeleteBlueprint(m_itemID);
-    // redirect to parent
+    m_db.DeleteBlueprint(m_itemID);
     InventoryItem::Delete();
 }
 
@@ -187,7 +164,7 @@ void Blueprint::SaveBlueprint() {
         data.runs   = m_runs;
         data.mLevel = m_mLevel;
         data.pLevel = m_pLevel;
-    m_factory.db().SaveBlueprintData(itemID(), data);
+    m_db.SaveBlueprintData(itemID(), data);
 }
 
 PyDict* Blueprint::GetBlueprintAttributes() {

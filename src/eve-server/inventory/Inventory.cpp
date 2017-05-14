@@ -300,7 +300,7 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
         done = true;  //assume sorted
         for (int i = 0, i2 = 1; (i < itemVec.size()) && (i2 < itemVec.size()); i++, i2++) { //iterate though list
             if ((IsModuleSlot(itemVec[i]->flag())) && (IsModuleSlot(itemVec[i2]->flag()))) {
-                if (itemVec[i]->categoryID() > itemVec[i2]->categoryID()) {  //check if each pair is sorted by category.  charges > modules
+                if (itemVec[i]->categoryID() > itemVec[i2]->categoryID()) {  //check if each pair is sorted by category.  subsystems > charges > modules
                     //it's not, so flip the values
                     tmp = itemVec[i];
                     itemVec[i] = itemVec[i2];
@@ -406,7 +406,6 @@ double Inventory::GetStoredVolume(EVEItemFlags locationFlag) const
             totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume);
             // This formula is a hybrid of both old and new ones...and it works \o/
 
-    // this is crap... bleh... as it should return a EvilNumber
     return totalVolume.get_float();
 }
 
@@ -415,13 +414,13 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
     float volume = item->quantity() * item->GetAttribute(AttrVolume).get_float();
     double capacity = GetRemainingCapacity(flag);
     if (volume > capacity) {
-        std::map<std::string, PyRep *> args;
+        Client* pClient = m_factory->GetUsingClient();
+        if (pClient and pClient->CanThrow()) {
+            std::map<std::string, PyRep *> args;
             args["available"] = new PyFloat(capacity);
             args["volume"] = new PyFloat(volume);
-
-        Client* pClient = m_factory->GetUsingClient();
-        if (pClient and pClient->CanThrow())
             throw PyException(MakeUserError("NotEnoughCargoSpace", args));
+        }
         return false;
     }
     return true;

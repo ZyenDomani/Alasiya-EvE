@@ -127,6 +127,7 @@ ReprocessingServiceBound::ReprocessingServiceBound(PyServiceMgr *mgr, Reprocessi
 }
 
 ReprocessingServiceBound::~ReprocessingServiceBound() {
+    delete m_dispatch;
 }
 
 void ReprocessingServiceBound::Release() {
@@ -259,7 +260,6 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             std::map<std::string, PyRep *> args;
             args["typename"] = new PyString(item->itemName().c_str());
             args["portion"] = new PyInt(item->type().portionSize());
-
             throw(PyException(MakeUserError("QuantityLessThanMinimumPortion", args)));
         }
 
@@ -340,16 +340,16 @@ PyRep *ReprocessingServiceBound::_GetQuote(uint32 itemID, const Client *c) const
         _log(SERVICE__ERROR, "Character %u tried to reprocess item %u of character %u.", c->GetCharacterID(), item->itemID(), item->ownerID());
         return NULL;
     }
-
+/*
     if(item->quantity() < item->type().portionSize()) {
-        std::map<std::string, PyRep *> args;
-        args["typename"] = new PyString(item->itemName().c_str());
-        args["portion"] = new PyInt(item->type().portionSize());
-
-       // throw(PyException(MakeUserError("QuantityLessThanMinimumPortion", args)));
-        //this isnt working right...not sure why.   -allan 14June15
+        if (c and c->CanThrow()) {
+            std::map<std::string, PyRep *> args;
+            args["typename"] = new PyString(item->itemName().c_str());
+            args["portion"] = new PyInt(item->type().portionSize());
+            // throw(PyException(MakeUserError("QuantityLessThanMinimumPortion", args)));
+        }
     }
-
+*/
     Rsp_GetQuote quote;
     quote.lines = new PyList;
     quote.leftOvers = item->quantity() % item->type().portionSize();

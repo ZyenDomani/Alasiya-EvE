@@ -18,12 +18,30 @@ dgmTypeEffects                      missing rows
 eveConstants                        not in dump
 eveMessages                         not in dump
 eveRoles                            not in dump
-invBlueprintTypes                   missing columns (`chanceOfReverseEngineering`)
+invBlueprintTypes                   missing columns (`chanceOfReverseEngineering`).  missing data (updated)
 invShipTypes                        not in dump
 mapCelestialDescriptions            not in dump
 mapLocationWormholeClasses          not in dump
 staStationFix                       auto conversion error between null and 0
-dgmEffectsInfo                      table linking effectID to source attribute on module to the attribute modified on target
-dgmSkillBonusModifiers              table linking skillID to source attribute and target attribute being modified
-dgmSkillBonusModifiers              table linking shipID to source attribute and target attribute being modified
 invTypesToWrecks                    table linking ship typeIDs to wreck typeIDs
+
+
+
+Alasiya-EvE updated/added files
+-------------------------------------------------------------------------------
+dgmExpressions                      for effect processing
+dgmOperands                         for effect processing
+mission_data
+PI_data
+dunTemplates
+LPstore
+mapConnections
+lootGroup
+lootItemGroup
+roid_rat
+roid_rats_class
+serverStatisticsSkeleton
+ship_cap_updates
+sovereignty
+sysSignatures
+warp_update

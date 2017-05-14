@@ -101,6 +101,10 @@ ShipService::ShipService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     //PyCallable_REG_CALL(ShipService,);
+
+    /* return error msg from this call, if applicable */
+    //sm.StartService('sessionMgr').PerformSessionChange('board', ship.BoardStoredShip, structureID, shipID)
+    //sm.StartService('sessionMgr').PerformSessionChange('storeVessel', ship.StoreVessel, destID)
 }
 
 ShipService::~ShipService() {
@@ -168,7 +172,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     /* all previous SE and DestinyMgr objects are updated to new ship object here */
     pClient->BoardShip(newShipRef);
 
-    //response should be nodeid and timestamp
+    /* return error msg from this call, if applicable, else nodeid and timestamp */
     return new PyLong(Win32TimeNow());
 }
 
@@ -193,7 +197,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 
     SystemEntity* pShipSE = pClient->GetShipSE();
     /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
-    if (pShipSE->Global()) { /* close enough.  cyno (Global() = true), so this will work */
+    if (pShipSE->isGlobal()) { /* close enough.  cyno (isGlobal() = true), so this will work */
         /* find proper error msg for this...im sure there is one  */
         call.client->SendNotifyMsg("You cannot eject with an active Cyno Field.");
         return nullptr;
@@ -221,7 +225,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     /* all previous SE and DestinyMgr objects are updated to new ship object here */
     pClient->BoardShip(capsuleRef);
 
-    //response should be nodeid and timestamp
+    /* return error msg from this call, if applicable, else nodeid and timestamp */
     return new PyLong(Win32TimeNow());
 }
 
@@ -662,7 +666,7 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     /** @todo  check to see if this object is anchored and if so, refuse to scoop it */
 
     // Check cargo bay capacity:
-    double capacity = pClient->GetShip()->GetInventory()->GetCapacity(flagCargoHold);
+    double capacity = pClient->GetShip()->GetMyInventory()->GetCapacity(flagCargoHold);
     double volume = item->GetAttribute(AttrVolume).get_float();
     if (capacity < volume)
         throw PyException(MakeCustomError("%s is too large to fit in remaining Cargo bay capacity.", item->itemName().c_str()));
@@ -713,7 +717,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         /** @todo check ownership/control. */
 
         // Check drone bay capacity:
-        double capacity = pClient->GetShip()->GetInventory()->GetCapacity(flagDroneBay);
+        double capacity = pClient->GetShip()->GetMyInventory()->GetCapacity(flagDroneBay);
         double volume = item->GetAttribute(AttrVolume).get_float();
         if (capacity < volume)
             throw PyException(MakeCustomError("%s is too large to fit in remaining Drone bay capacity.", item->itemName().c_str()));
@@ -872,6 +876,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     }
 
     pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+
     //response should be nodeid and timestamp
     return new PyLong(Win32TimeNow());
 }
@@ -968,13 +973,13 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
                   [PyString "when"]
                   [PyInt 83]
 
+                  //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
         throw PyException(MakeUserError("SelfDestructAborted2"));
 
 */
 
-    Client* pClient = call.client;
-    PyRep *result = NULL;
-    return result;
+    /* return error msg from this call, if applicable, else nodeid and timestamp */
+    return new PyLong(Win32TimeNow());
 }
 
 PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call) {

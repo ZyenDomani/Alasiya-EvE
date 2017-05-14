@@ -42,6 +42,7 @@ class DBSystemEntity;
 class Drone;
 class NPC;
 class Player;
+class Sentry;
 class SystemBubble;
 class SystemManager;
 class WreckSE;
@@ -100,6 +101,7 @@ public:
     virtual StructureSE*        GetTCUSE()              { return nullptr; }
     virtual StructureSE*        GetSBUSE()              { return nullptr; }
     virtual DeployableSE*       GetDeployableSE()       { return nullptr; }
+    virtual Sentry*             GetSentrySE()           { return nullptr; }
     /* Dynamic */
     virtual DynamicSystemEntity* GetDynamicSE()         { return nullptr; }
     virtual NPC*                GetNPCSE()              { return nullptr; }
@@ -110,6 +112,7 @@ public:
 
     /* class type tests, grouped by base class.  public for anyone to access. */
     /* Base */
+    virtual bool                isGlobal()              { return m_self->isGlobal(); }    // not all items have this attribute set
     virtual bool                IsSystemEntity()        { return true; }
     virtual bool                IsInanimateSE()         { return false; }
     /* Static */
@@ -127,6 +130,7 @@ public:
     virtual bool                IsContainerSE()         { return false; }
     /* Object */
     virtual bool                IsObjectEntity()        { return false; }
+    virtual bool                IsSentrySE()            { return false; }
     virtual bool                IsCOSE()                { return false; }
     virtual bool                IsPOSSE()               { return false; }
     virtual bool                IsTCUSE()               { return false; }
@@ -145,7 +149,7 @@ public:
     virtual bool                IsShipSE()              { return false; }
     virtual bool                IsConcord()             { return false; }
 
-    /* generic access functions handled here */
+    /* generic functions handled here */
     PyServiceMgr&               GetServices()           { return m_services; }
     SystemBubble*               SysBubble()             { return m_bubble; }
     SystemManager*              SystemMgr()             { return m_system; }
@@ -154,19 +158,26 @@ public:
 
     /* common functions for all entities handled here */
     /* public data queries  */
-    virtual bool                Global()                { return m_self->global(); }
-    virtual InventoryItemRef    GetSelf()               { return m_self; }
-    virtual uint32              GetID()                 { return m_self->itemID(); }
-    virtual double              GetRadius();            /* too long to put here */
-    virtual uint32              GetLocationID()         { return m_self->locationID(); }
-    virtual const char*         GetName() const         { return m_self->itemName().c_str(); }
-    virtual const GPoint&       GetPosition() const     { return m_self->position(); }
-    virtual void          SetPosition(const GPoint &pos){ m_self->Relocate(pos); }
-    inline virtual double       x()                     { return m_self->position().x; }
-    inline virtual double       y()                     { return m_self->position().y; }
-    inline virtual double       z()                     { return m_self->position().z; }
+    InventoryItemRef            GetSelf()               { return m_self; }
+    uint32                      GetTypeID()             { return m_self->typeID(); }
+    uint32                      GetGroupID()            { return m_self->groupID(); }
+    EVEItemCategories           GetCategoryID()         { return m_self->categoryID(); }
+    EVEItemFlags                GetFlag()               { return m_self->flag(); }
+    uint32                      GetID()                 { return m_self->itemID(); }
+    double                      GetRadius();            /* too long to put here */
+    uint32                      GetLocationID()         { return m_self->locationID(); }
+    const char*                 GetName() const         { return m_self->itemName().c_str(); }
+    const GPoint&               GetPosition() const     { return m_self->position(); }
+    void                  SetPosition(const GPoint &pos){ m_self->Relocate(pos); }
+    inline double               x()                     { return m_self->position().x; }
+    inline double               y()                     { return m_self->position().y; }
+    inline double               z()                     { return m_self->position().z; }
+    uint32                      GetCorporationID()      { return m_corpID; }
+    uint32                      GetAllianceID()         { return m_allyID; }
+    uint32                      GetWarFactionID()       { return m_warID; }
+    uint32                      GetOwnerID()            { return m_ownerID; }
 
-    /* public-access generic functions handled in base class. */
+    /* public generic functions handled in base class. */
     void                        DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner);
     void                        AwardSecurityStatus(InventoryItemRef m_self, Character* pChar);
     void                        SendDamageStateChanged(SystemEntity* source);
@@ -174,11 +185,11 @@ public:
     double                      DistanceTo2(const SystemEntity* other);
     PyTuple*                    MakeDamageState();
 
-    /* public-access specific functions handled in base class. */
+    /* public specific functions handled in base class. */
     virtual void                Abandon();
 
-    /* generic access functions handled here, but set elsewhere */
-    virtual const GVector&      GetVelocity()           { return (m_destiny ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
+    /* generic functions handled here, but set elsewhere */
+    const GVector&              GetVelocity()           { return (m_destiny ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
 
     /* virtual functions default to base class and overridden as needed */
     virtual void                Killed(Damage &fatal_blow) { /* Do nothing here */ }
@@ -190,16 +201,6 @@ public:
     virtual void                UpdateDamage()          { /* Do nothing here */ }
     virtual bool                LoadExtras(SystemDB *db){ return true; }
 
-    /* virtual functions in base to allow common interface calls */
-    virtual uint32              GetTypeID()             { return m_self->typeID(); }
-    virtual uint32              GetGroupID()            { return m_self->groupID(); }
-    virtual EVEItemCategories   GetCategoryID()         { return m_self->categoryID(); }
-    virtual EVEItemFlags        GetFlag()               { return m_self->flag(); }
-    virtual uint32              GetCorporationID()      { return m_corpID; }
-    virtual uint32              GetAllianceID()         { return m_allyID; }
-    virtual uint32              GetWarFactionID()       { return m_warID; }
-    virtual uint32              GetOwnerID()            { return m_ownerID; }
-
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void                SetPilot(Client* pClient){ /* Do nothing here */ }
     virtual bool                HasPilot()              { return false; }
@@ -207,20 +208,20 @@ public:
     virtual void                Delete()                { /* Do nothing here */ }  // this is only for asteroids and missiles and containers/wrecks (so far...)
 
 protected:
-    SystemBubble*               m_bubble  = nullptr;    /* we do not own this. never NULL in space */
-    TargetManager*              m_targMgr = nullptr;    /* we do not own this. never NULL in space */
-    SystemManager*              m_system  = nullptr;    /* we do not own this  never NULL in space */
-    DestinyManager*             m_destiny = nullptr;    /* we do not own this. never NULL in space */
+    SystemBubble*               m_bubble;               /* we do not own this. never NULL in space */
+    TargetManager*              m_targMgr;              /* we do not own this. never NULL in space */
+    SystemManager*              m_system;               /* we do not own this  never NULL in space */
+    DestinyManager*             m_destiny;              /* we do not own this. never NULL in space */
 
     PyServiceMgr&               m_services;
 
-    InventoryItemRef            m_self = InventoryItemRef();
+    InventoryItemRef            m_self;
 
     /* ease of access to common data for ownable objects */
-    uint32                      m_warID = 0;
-    uint32                      m_corpID = 0;
-    uint32                      m_allyID = 0;
-    uint32                      m_ownerID = 0;
+    uint32                      m_warID;
+    uint32                      m_corpID;
+    uint32                      m_allyID;
+    uint32                      m_ownerID;
 
 };
 
@@ -237,7 +238,7 @@ public:
     /* Base */
     virtual bool                IsInanimateSE()         { return true; }
     /* Static */
-    virtual bool                Global()                { return true; }    // just in case item->global() fails here...which it may
+    virtual bool                isGlobal()              { return true; }    // just in case item->isGlobal() fails here...which it may
     virtual bool                IsStaticEntity()        { return true; }
 
     /* SystemEntity interface */

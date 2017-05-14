@@ -26,6 +26,23 @@
 #include "eve-server.h"
 
 #include "system/SolarSystem.h"
+/*
+    Border = Borders another Region or Constellation
+
+    Fringe = 1 connection to this system (dead end system)
+
+    Corridor = 2 connections to this system (in one side and out the other)
+
+    Hub = 3+ connections to this system
+
+    International = always has Border/Constellation, almost always Regional
+
+    Regional = always has Border/Constellation
+
+    Constellation = always the same as Border
+
+    Security = If it is positive, rounding to nearest 1/10th gives the in-game security level. 0 or lower are 0.0 in-game.
+    */
 
 /*
  * SolarSystemData
@@ -114,19 +131,6 @@ SolarSystemRef SolarSystem::Load(ItemFactory &factory, uint32 solarSystemID)
 
 bool SolarSystem::_Load() {
     return CelestialObject::_Load();
-}
-
-template<class _Ty>
-RefPtr<_Ty> SolarSystem::_LoadSolarSystem(ItemFactory &factory, uint32 solarSystemID,
-    // InventoryItem stuff:
-    const ItemType &type, const ItemData &data,
-    // CelestialObject stuff:
-    const CelestialObjectData &cData,
-    // SolarSystem stuff:
-    const ItemType &sunType, const SolarSystemData &ssData)
-{
-    // we have it all
-    return SolarSystemRef( new SolarSystem( factory, solarSystemID, type, data, cData, sunType, ssData ) );
 }
 
 void SolarSystem::AddItemToInventory(InventoryItemRef item)

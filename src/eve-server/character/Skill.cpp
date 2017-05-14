@@ -48,14 +48,6 @@ SkillRef Skill::Load(ItemFactory &factory, uint32 skillID)
     return InventoryItem::Load<Skill>( factory, skillID );
 }
 
-template<class _Ty>
-RefPtr<_Ty> Skill::_LoadSkill(ItemFactory &factory, uint32 skillID,
-    // InventoryItem stuff:
-    const ItemType &type, const ItemData &data)
-{
-    return SkillRef( new Skill( factory, skillID, type, data ) );
-}
-
 SkillRef Skill::Spawn(ItemFactory &factory, ItemData &data)
 {
     uint32 skillID = CreateItemID( factory, data );
@@ -73,8 +65,19 @@ uint32 Skill::CreateItemID(ItemFactory &factory, ItemData &data)
 }
 
 EvilNumber Skill::GetSPForLevel( EvilNumber level ) {
-    return (EVIL_SKILL_BASE_POINTS * GetAttribute(AttrSkillTimeConstant) * EvilNumber::pow(2, (2.5*(level - 1))));
+    return EvEMath::SkillPointsAtLevel(level, GetAttribute(AttrSkillTimeConstant));
 }
+
+void Skill::VerifySP()
+{
+    EvilNumber spThisLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel), GetAttribute(AttrSkillTimeConstant));
+    EvilNumber spNextLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel) +1, GetAttribute(AttrSkillTimeConstant));
+    if ((GetAttribute(AttrSkillPoints) < spThisLevel) or (GetAttribute(AttrSkillPoints) > spNextLevel)) {
+        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %.6f to %.6f", itemName().c_str(), GetAttribute(AttrSkillPoints).get_float(), spThisLevel.get_float());
+        SetAttribute(AttrSkillPoints, spThisLevel);
+    }
+}
+
 
 bool Skill::SkillPrereqsComplete(Character &ch) {
     EvilNumber skillID;

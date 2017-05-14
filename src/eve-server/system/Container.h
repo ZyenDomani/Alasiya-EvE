@@ -27,8 +27,7 @@
 #ifndef __CONTAINER__H__INCL__
 #define __CONTAINER__H__INCL__
 
-#include "inventory/AttributeEnum.h"
-#include "inventory/Inventory.h"
+
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
 
@@ -95,7 +94,7 @@ public:
 
     virtual void MakeDamageState(DoDestinyDamageState &into) const;
 
-    bool IsEmpty()                                      { return GetInventory()->IsEmpty(); }
+    bool IsEmpty()                                      { return GetMyInventory()->IsEmpty(); }
     void SetMySE(SystemEntity* pSE)                     { mySE = pSE;}
 
 protected:
@@ -116,7 +115,8 @@ protected:
             && (type.groupID() != EVEDB::invGroups::Secure_Cargo_Container)
             && (type.groupID() != EVEDB::invGroups::Spawn_Container) )
         {
-            _log( ITEM__ERROR, "CargoContainer::_LoadItem()  Trying to load category=%s, group=%s as CargoContainer.", type.category().name().c_str(), type.group().name().c_str() );
+            _log( ITEM__ERROR, "CargoContainer::_LoadItem()  Trying to load category=%s, group=%s as CargoContainer %u.",\
+                            type.category().name().c_str(), type.group().name().c_str(), containerID );
             return RefPtr<_Ty>();
         }
         return _Ty::template _LoadCargoContainer<_Ty>( factory, containerID, type, data );
@@ -124,7 +124,10 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadCargoContainer(ItemFactory &factory, uint32 containerID, const ItemType &itemType, const ItemData &data);
+    static RefPtr<_Ty> _LoadCargoContainer(ItemFactory &factory, uint32 containerID, const ItemType &itemType, const ItemData &data)
+    {
+        return CargoContainerRef( new CargoContainer( factory, containerID, itemType, data ) );
+    }
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
 
@@ -235,7 +238,7 @@ public:
      */
     PyObject *WreckContainerGetInfo();
 
-    bool IsEmpty()                                      { return GetInventory()->IsEmpty(); }
+    bool IsEmpty()                                      { return m_inventory->IsEmpty(); }
     void MakeSlimItemChange();
     void SetMySE(SystemEntity* pSE)                     { mySE = pSE;}
 
@@ -258,7 +261,10 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadWreck(ItemFactory &factory, uint32 containerID, const ItemType &itemType, const ItemData &data );
+    static RefPtr<_Ty> _LoadWreck(ItemFactory &factory, uint32 containerID, const ItemType &itemType, const ItemData &data )
+    {
+        return WreckContainerRef( new WreckContainer( factory, containerID, itemType, data ) );
+    }
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data );
 

@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `invTypesToWrecks` (
   `typeName` text,
   `wreckTypeID` int(11) NOT NULL,
   `wreckName` text NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=Aria DEFAULT CHARSET=utf8 PAGE_CHECKSUM=0 TRANSACTIONAL=0;
 
 --
 -- Dumping data for table `invTypesToWrecks`

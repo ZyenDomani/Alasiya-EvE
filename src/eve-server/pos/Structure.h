@@ -28,7 +28,7 @@
 #define __STRUCTURE__H__INCL__
 
 
-#include "inventory/Inventory.h"
+#include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
 
 // TODO: We may need to create StructureTypeData and StructureType classes just as Ship.h/Ship.cpp
@@ -104,31 +104,24 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 structureID,
-        // InventoryItem stuff:
-        const ItemType &type, const ItemData &data)
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 structureID, const ItemType &type, const ItemData &data)
     {
-        // check if it's a structure
         if ((type.categoryID() != EVEDB::invCategories::Structure)
             and (type.categoryID() != EVEDB::invCategories::Orbitals))
         {
-            _log( ITEM__ERROR, "Trying to load %s as Structure.", type.category().name().c_str() );
+            _log( ITEM__ERROR, "Trying to load %s as Structure %u.", type.category().name().c_str(), structureID);
             return RefPtr<_Ty>();
         }
-        //// cast the type
-        //const ItemType &itemType = static_cast<const ItemType &>( type );
-
-        // no additional stuff
 
         return _Ty::template _LoadStructure<_Ty>( factory, structureID, type, data );
     }
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadStructure(ItemFactory &factory, uint32 structureID,
-        // InventoryItem stuff:
-        const ItemType &itemType, const ItemData &data
-    );
+    static RefPtr<_Ty> _LoadStructure(ItemFactory &factory, uint32 structureID, const ItemType &itemType, const ItemData &data)
+    {
+        return StructureItemRef( new StructureItem( factory, structureID, itemType, data ) );
+    }
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
 
@@ -164,7 +157,7 @@ public:
     virtual bool                IsOutpostSE()           { return m_outpost; }
     virtual bool                IsJumpBridgeSE()        { return m_bridge; }
 
-    virtual bool                Global()                { return m_co; }    // just in case item->global() fails here for customs offices...which it may
+    virtual bool                isGlobal()                { return m_co; }    // just in case item->isGlobal() fails here for customs offices...which it may
 
     /* SystemEntity interface */
     virtual void                Process();

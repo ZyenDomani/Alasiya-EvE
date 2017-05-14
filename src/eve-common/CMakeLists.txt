@@ -84,6 +84,7 @@ SET( network_SOURCE
 SET( packets_INCLUDE
      "${TARGET_PACKETS_DIR}/packets/AccountPkts.h"
      "${TARGET_PACKETS_DIR}/packets/Bookmarks.h"
+     "${TARGET_PACKETS_DIR}/packets/BulkDataPkts.h"
      "${TARGET_PACKETS_DIR}/packets/Character.h"
      "${TARGET_PACKETS_DIR}/packets/CorporationPkts.h"
      "${TARGET_PACKETS_DIR}/packets/Crypto.h"
@@ -113,6 +114,7 @@ SET( packets_INCLUDE
 SET( packets_SOURCE
      "${TARGET_PACKETS_DIR}/packets/AccountPkts.cpp"
      "${TARGET_PACKETS_DIR}/packets/Bookmarks.cpp"
+     "${TARGET_PACKETS_DIR}/packets/BulkDataPkts.cpp"
      "${TARGET_PACKETS_DIR}/packets/Character.cpp"
      "${TARGET_PACKETS_DIR}/packets/CorporationPkts.cpp"
      "${TARGET_PACKETS_DIR}/packets/Crypto.cpp"
@@ -142,6 +144,7 @@ SET( packets_SOURCE
 SET( packets_XMLP
      "${TARGET_SOURCE_DIR}/packets/AccountPkts.xmlp"
      "${TARGET_SOURCE_DIR}/packets/Bookmarks.xmlp"
+     "${TARGET_SOURCE_DIR}/packets/BulkDataPkts.xmlp"
      "${TARGET_SOURCE_DIR}/packets/Character.xmlp"
      "${TARGET_SOURCE_DIR}/packets/CorporationPkts.xmlp"
      "${TARGET_SOURCE_DIR}/packets/Crypto.xmlp"

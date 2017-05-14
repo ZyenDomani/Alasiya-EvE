@@ -34,7 +34,7 @@ SubSystemModule::SubSystemModule(InventoryItemRef item, ShipItemRef ship)
 }
 
 //not much to do here... hopefully there won't be
-ModulePowerLevel SubSystemModule::GetModulePowerLevel()
+ModStates::ModulePowerLevel SubSystemModule::GetModulePowerLevel()
 {
-    return MODULE_BANK_SUBSYSTEM;
+    return ModStates::MODULE_BANK_SUBSYSTEM;
 }

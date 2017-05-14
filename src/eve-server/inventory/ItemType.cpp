@@ -25,7 +25,9 @@
 
 #include "eve-server.h"
 
+#include "StaticDataMgr.h"
 #include "character/Character.h"
+#include "effects/EffectsDataMgr.h"
 #include "inventory/ItemType.h"
 #include "manufacturing/Blueprint.h"
 #include "ship/Ship.h"
@@ -34,10 +36,7 @@
 /*
  * CategoryData
  */
-CategoryData::CategoryData(
-    const char *_name,
-    const char *_desc,
-    bool _published)
+CategoryData::CategoryData(const char *_name, const char *_desc, bool _published)
 : name(_name),
   description(_desc),
   published(_published)
@@ -47,10 +46,7 @@ CategoryData::CategoryData(
 /*
  * ItemCategory
  */
-ItemCategory::ItemCategory(
-    EVEItemCategories _id,
-    // ItemCategory stuff:
-    const CategoryData &_data)
+ItemCategory::ItemCategory(EVEItemCategories _id, const CategoryData &_data)
 : m_id(_id),
   m_name(_data.name),
   m_description(_data.description),
@@ -59,37 +55,26 @@ ItemCategory::ItemCategory(
     _log(ITEM__TRACE, "Created object %p for category %s (%u).", this, m_name.c_str(), (uint32)m_id);
 }
 
-ItemCategory *ItemCategory::Load(ItemFactory &factory, EVEItemCategories category) {
-    // create category
-    ItemCategory *c = ItemCategory::_Load(factory, category);
-    if(c == NULL)
-        return NULL;
+ItemCategory* ItemCategory::Load(ItemFactory &factory, EVEItemCategories category)
+{
+    ItemCategory* c = ItemCategory::_Load(factory, category);
 
     // ItemCategory has no virtual _Load()
-
-    return(c);
+    return c;
 }
 
-ItemCategory *ItemCategory::_Load(ItemFactory &factory, EVEItemCategories category
-) {
-    // pull data
+ItemCategory* ItemCategory::_Load(ItemFactory &factory, EVEItemCategories category)
+{
     CategoryData data;
     if(!factory.db().GetCategory(category, data))
-        return NULL;
+        return nullptr;
 
-    return(
-        ItemCategory::_Load(factory, category, data)
-    );
+    return ItemCategory::_Load(factory, category, data);
 }
 
-ItemCategory *ItemCategory::_Load(ItemFactory &factory, EVEItemCategories category,
-    // ItemCategory stuff:
-    const CategoryData &data
-) {
-    // enough data for construction
-    return(new ItemCategory(
-        category, data
-    ));
+ItemCategory* ItemCategory::_Load(ItemFactory &factory, EVEItemCategories category, const CategoryData &data)
+{
+    return new ItemCategory(category, data);
 }
 
 /*
@@ -123,7 +108,7 @@ GroupData::GroupData(
  * ItemGroup
  */
 ItemGroup::ItemGroup(
-    uint32 _id,
+    uint16 _id,
     // ItemGroup stuff:
     const ItemCategory &_category,
     const GroupData &_data)
@@ -145,61 +130,38 @@ ItemGroup::ItemGroup(
     _log(ITEM__TRACE, "Created object %p for group %s (%u).", this, name().c_str(), id());
 }
 
-ItemGroup *ItemGroup::Load(ItemFactory &factory, uint32 groupID) {
-    // create group
-    ItemGroup *g = ItemGroup::_Load(factory, groupID);
-    if(g == NULL)
-        return NULL;
+ItemGroup* ItemGroup::Load(ItemFactory &factory, uint16 groupID)
+{
+    ItemGroup* g = ItemGroup::_Load(factory, groupID);
 
     // ItemGroup has no virtual _Load()
-
-    return(g);
+    return g;
 }
 
-ItemGroup *ItemGroup::_Load(ItemFactory &factory, uint32 groupID
-) {
+ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint16 groupID)
+{
     // pull data
     GroupData data;
     if(!factory.db().GetGroup(groupID, data))
-        return NULL;
+        return nullptr;
 
     // retrieve category
     const ItemCategory *c = factory.GetCategory(data.category);
-    if(c == NULL)
-        return NULL;
+    if(c == nullptr)
+        return nullptr;
 
-    return(
-        ItemGroup::_Load(factory, groupID, *c, data)
-    );
+    return ItemGroup::_Load(factory, groupID, *c, data);
 }
 
-ItemGroup *ItemGroup::_Load(ItemFactory &factory, uint32 groupID,
-    // ItemGroup stuff:
-    const ItemCategory &category, const GroupData &data
-) {
-    // enough data for construction
-    return(new ItemGroup(
-        groupID, category, data
-    ));
+ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint16 groupID, const ItemCategory &category, const GroupData &data)
+{
+    return new ItemGroup(groupID, category, data);
 }
 
 /*
  * TypeData
  */
-TypeData::TypeData(
-    uint32 _groupID,
-    const char *_name,
-    const char *_desc,
-    double _radius,
-    double _mass,
-    double _volume,
-    double _capacity,
-    uint32 _portionSize,
-    EVERace _race,
-    double _basePrice,
-    bool _published,
-    uint32 _marketGroupID,
-    double _chanceOfDuplicating)
+TypeData::TypeData(uint16 _groupID, const char* _name, const char* _desc, double _radius, double _mass, double _volume, double _capacity, uint32 _portionSize, EVERace _race, double _basePrice, bool _published, uint32 _marketGroupID, double _chanceOfDuplicating)
 : groupID(_groupID),
   name(_name),
   description(_desc),
@@ -223,8 +185,7 @@ ItemType::ItemType(
     uint32 _id,
     const ItemGroup &_group,
     const TypeData &_data)
-: attributes(*this),
-  m_id(_id),
+: m_id(_id),
   m_group(&_group),
   m_name(_data.name),
   m_description(_data.description),
@@ -242,20 +203,19 @@ ItemType::ItemType(
 {
     // assert for data consistency
     assert(_data.groupID == _group.id());
+    m_AttributeMap.clear();
+
     _log(ITEM__TRACE, "Created ItemType object %p for type %s (%u).", this, name().c_str(), id());
 }
 
-ItemType *ItemType::Load(ItemFactory &factory, uint32 typeID)
+ItemType* ItemType::Load(ItemFactory &factory, uint32 typeID)
 {
     return ItemType::Load<ItemType>( factory, typeID );
 }
 
 template<class _Ty>
-_Ty *ItemType::_LoadType(ItemFactory &factory, uint32 typeID,
-    // ItemType stuff:
-    const ItemGroup &group, const TypeData &data)
+_Ty* ItemType::_LoadType(ItemFactory &factory, uint32 typeID,  const ItemGroup &group, const TypeData &data)
 {
-    // See what to do next:
     switch( group.categoryID() ) {
         /** @todo  really need planets and moons here to load true radius' (from mapDenormalize)
         case EVEDB::invCategories::Celestial:
@@ -298,13 +258,109 @@ _Ty *ItemType::_LoadType(ItemFactory &factory, uint32 typeID,
     return new ItemType( typeID, group, data );
 }
 
-bool ItemType::_Load(ItemFactory &factory) {
-	// load type effects
-	factory.db().GetTypeEffectsList( m_id, m_effects );
+bool ItemType::_Load(ItemFactory &factory)
+{
+    // load type attribs
+    std::vector< DmgTypeAttribute > typeAttrVec;
+    sDataMgr.GetDgmTypeAttrVec(m_id, typeAttrVec);
+    for (auto cur : typeAttrVec)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(cur.attributeID, cur.value));
 
-    // load type attributes
-    return (attributes.Load( factory.db() ));
+    // load attributes that are needed but NOT in default DgmTypeAttributes set (but found in invTypes)
+    if (m_mass)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrMass, m_mass));
+    if (m_radius)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrRadius, m_radius));
+    if (m_volume)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrVolume, m_volume));
+    if (m_capacity)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrCapacity, m_capacity));
+    if (m_raceID)
+        m_AttributeMap.insert(std::pair<uint16, EvilNumber>(AttrRaceID, m_raceID));
+
+    // load required skills and levels into their own map, for later checks
+    if (HasAttribute(AttrRequiredSkill1))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill1).get_int(), (uint8)GetAttribute(AttrRequiredSkill1Level).get_int()));
+    if (HasAttribute(AttrRequiredSkill2))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill2).get_int(), (uint8)GetAttribute(AttrRequiredSkill2Level).get_int()));
+    if (HasAttribute(AttrRequiredSkill3))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill3).get_int(), (uint8)GetAttribute(AttrRequiredSkill3Level).get_int()));
+    if (HasAttribute(AttrRequiredSkill4))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill4).get_int(), (uint8)GetAttribute(AttrRequiredSkill4Level).get_int()));
+    if (HasAttribute(AttrRequiredSkill5))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill5).get_int(), (uint8)GetAttribute(AttrRequiredSkill5Level).get_int()));
+    if (HasAttribute(AttrRequiredSkill6))
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill6).get_int(), (uint8)GetAttribute(AttrRequiredSkill6Level).get_int()));
+
+    LoadEffects();
+
+    return true;
 }
+
+const void ItemType::CopyAttributes(InventoryItem& itemRef) const
+{
+    // set attributes in the item's own attrMap.
+    for (auto cur : m_AttributeMap)
+        itemRef.SetAttribute(cur.first, cur.second, false);
+}
+
+const bool ItemType::HasAttribute(const uint16 attributeID) const
+{
+    AttrMapConstItr itr = m_AttributeMap.find(attributeID);
+    if (itr != m_AttributeMap.end())
+        return true;
+    return false;
+}
+
+EvilNumber ItemType::GetAttribute(const uint16 attributeID) const
+{
+    AttrMapConstItr itr = m_AttributeMap.find(attributeID);
+    if (itr != m_AttributeMap.end())
+        return itr->second;
+    return 0;
+}
+
+bool ItemType::HasReqSkill(const uint16 skillID, ItemFactory& m_factory) const
+{
+    std::map<uint16, uint8>::const_iterator itr = m_reqSkillMap.find(skillID);
+    if (itr != m_reqSkillMap.end())
+        return true;
+    for (auto cur : m_reqSkillMap) {
+        if (m_factory.GetType(cur.first)->HasReqSkill(skillID, m_factory))
+            return true;
+        else
+            return false;
+    }
+    return false;
+}
+
+void ItemType::LoadEffects()
+{
+    std::vector< TypeEffects > typeEffMap;
+    sFxDataMgr.GetTypeEffect(m_id, typeEffMap);
+
+    for (auto cur : typeEffMap) {
+        Effect mEffect = sFxDataMgr.GetEffect(cur.effectID);
+        m_stateFxMap.insert(std::pair<int8, Effect>(mEffect.effectState, mEffect));
+    }
+}
+
+bool ItemType::HasEffect(uint16 effectID) const
+{
+    std::unordered_multimap<int8, Effect>::const_iterator itr = m_stateFxMap.begin();
+    for (; itr != m_stateFxMap.end(); itr++)
+        if (itr->second.effectID == effectID)
+            return true;
+    return false;
+}
+
+void ItemType::GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const
+{
+    auto itr = m_stateFxMap.equal_range(state);
+    for (auto it = itr.first; it != itr.second; it++)
+        effectMap.insert(std::pair<uint16, Effect>(it->second.effectID, it->second));
+}
+
 
 /*
  * ItemData

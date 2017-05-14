@@ -162,10 +162,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     sLog.White( "KeeperService", "Handle_ActivateAccelerationGate  size: %u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
-    PyRep *result = NULL;
-
-        Call_SingleIntegerArg args;
-
+    Call_SingleIntegerArg args;
     if( !args.Decode( &call.tuple ) )
     {
                 sLog.Error( "KeeperService::Handle_ActivateAccelerationGate(): failed to decode arguments for character '%s' !", call.client->GetName() );
@@ -174,7 +171,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
 
     Client *pClient = call.client;
 
-    pClient->GetShipSE()->DestinyMgr()->SendSpecialEffect10(args.arg, pClient->GetShip(), 0, "effects.WarpGateEffect", 0, 1, 0);
+    pClient->GetShipSE()->DestinyMgr()->SendSpecialEffect10(args.arg, 0, "effects.WarpGateEffect", 0, 1, 0);
 	double distance = MakeRandomFloat(5, 25) * ONE_AU_IN_METERS;
     GPoint currentPosition(pClient->GetShipSE()->GetPosition());
     GPoint deltaPosition;
@@ -186,5 +183,6 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     double distanceToDestination = vectorToDestination.length();
     pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint, distanceToDestination);
 
-    return result;
+    /* return error msg from this call, if applicable, else nodeid and timestamp */
+    return new PyLong(Win32TimeNow());
 }

@@ -80,6 +80,7 @@ public:
 
         /*StopModuleRepair*/
         /*InitiateModuleRepair*/
+
     }
     virtual ~DogmaIMBound() {delete m_dispatch;}
     virtual void Release() {
@@ -236,12 +237,12 @@ PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
 
     Client* pClient = call.client;
 
-    Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple)) {
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
         _log(SERVICE__ERROR, "Failed to decode arguments");
         return new PyNone();
     }
-    uint32 shipID = args.arg;
+    uint32 shipID = arg.arg;
 
     return nullptr;
 }
@@ -271,6 +272,13 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
 
     sLog.White("DogmaIMBound::Handle_Overload()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+
+    Call_TwoIntegerArgs args;   //itemID, effectID
+    if (!args.Decode(&call.tuple)) {
+        _log(SERVICE__ERROR, "Failed to decode arguments");
+        return new PyNone();
+    }
+
     return nullptr;
 }
 
@@ -295,24 +303,36 @@ PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
     /*
-     *    c alled thru r*click menu on module
-     *    17:20:22 L DogmaIMBound::Handle_OverloadRack(): [00msize=1
+     *    called thru rclick menu on module
+     *    17:20:22 L DogmaIMBound::Handle_OverloadRack(): size=1
      *    17:20:22 [SvcCall]   Call Arguments:
      *    17:20:22 [SvcCall]       Tuple: 1 elements
      *    17:20:22 [SvcCall]         [ 0] Integer field: 140000223    <--  itemID in any slot of location to OL
      *
      *    called thru OL button on ship dashboard
-     *    17:24:00 L DogmaIMBound::Handle_OverloadRack(): [00msize=1
+     *    17:24:00 L DogmaIMBound::Handle_OverloadRack(): size=1
      *    17:24:00 [SvcCall]   Call Arguments:
      *    17:24:00 [SvcCall]       Tuple: 1 elements
      *    17:24:00 [SvcCall]         [ 0] Integer field: 140000213    <--  itemID in first slot of location to OL
      *
-     *    returns - list of moduleIDs to OL
+     *    returns - PyList of moduleIDs to OL
+     *
+     * /client/script/environment/godma.py(2407) OverloadRack
+     *        itemID = 140001963L
+     *        self = <godma.StateManager instance at 0x3CB717D8>
+     *        moduleIDs = None
+     * TypeError: 'NoneType' object is not iterable
      *
      *    sLog.White("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
      *    call.Dump(SERVICE__CALL_DUMP);
      */
     Client* pClient = call.client;
+
+    Call_SingleIntegerArg args;
+    if (!args.Decode(&call.tuple)) {
+        _log(SERVICE__ERROR, "Failed to decode arguments");
+        return new PyNone();
+    }
 
     return nullptr;
 }
@@ -320,7 +340,7 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
     /*
      */
-    sLog.White("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
+    sLog.White("DogmaIMBound::Handle_StopOverloadRack()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     Client* pClient = call.client;
 
@@ -516,7 +536,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     Call_SingleIntList chargeList;
 
     for (uint8 i=0; i<args.moduleIDs.size(); ++i) {
-        InventoryItemRef moduleRef = shipRef->GetModule(args.moduleIDs.at(i));
+        InventoryItemRef moduleRef = shipRef->GetModuleRef(args.moduleIDs.at(i));
         if (!moduleRef) {
             sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "ERROR: cannot find module into which charge should be loaded." );
             continue;
@@ -571,7 +591,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 	/** @todo  update this to check all charges in args.itemIDs to see if they can be loaded also. */
 	// Get Reference to Ship, Module, and Charge
 	ShipItemRef shipRef = pClient->GetShip();
-	InventoryItemRef moduleRef = shipRef->GetModule(args.masterID);
+	InventoryItemRef moduleRef = shipRef->GetModuleRef(args.masterID);
 	if (!moduleRef) {
 		sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "ERROR: cannot find module into which charge should be loaded." );
 		return new PyNone();

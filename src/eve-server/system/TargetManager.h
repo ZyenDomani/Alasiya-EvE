@@ -60,12 +60,13 @@ public:
 
     bool                IsTargetedBySomething() const   { return (!m_targetedBy.empty()); }
 
-    uint32              GetTotalTargets() const         { return (uint32)m_targets.size(); }
+    uint8               GetTotalTargets() const         { return (uint8)m_targets.size(); }
 
     float               TimeToLock(ShipItemRef ship, SystemEntity *target) const;
 
     /* NPC AI Methods */
-    SystemEntity*       GetFirstTarget(bool need_locked);
+    bool                IsTargetedBy(SystemEntity *pSE);
+    SystemEntity*       GetFirstTarget(bool need_locked=false);
     SystemEntity*       GetTarget(uint32 targetID, bool need_locked=true) const;
 
     bool                StartTargeting(SystemEntity* who, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool& chase);
@@ -75,7 +76,7 @@ public:
 
     /* debugging methods */
     void                Dump() const;
-    void                TargetList(std::string* into, uint16* length, uint16* count);
+    std::string         TargetList(uint16 &length, uint16 &count);
 
     /* Packet builders: */
     PyList*             GetTargets() const;

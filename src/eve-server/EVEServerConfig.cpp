@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    7.3
+    Version:    7.6
 */
 
 
@@ -50,6 +50,7 @@ EVEServerConfig::EVEServerConfig()
     server.UseProfiling = false;
     server.UseShipTracking = false;
     server.UseStackTrace = false;//N
+    server.BulkDataOD = false;
     server.ServerSleepTime = 10 /*ms*/;
     server.idleSleepTime = 1000;
     server.DisableIGB = true;
@@ -70,7 +71,7 @@ EVEServerConfig::EVEServerConfig()
     rates.damageRate = 1.0;
     rates.missileRate = 1.0;
     rates.missileTime = 1.0;
-    rates.turrentRate = 1.0;
+    rates.turretRate = 1.0;
     rates.corpCost = 1599800;
     rates.WorldDecay = 120 /*m*/;//P   2 hours
     rates.NPCDecay = 90 /*m*/; //P 90 mins
@@ -103,6 +104,7 @@ EVEServerConfig::EVEServerConfig()
     character.statMultiplier = 1;
 
     // npc
+    npc.IdleWander = false;//P
     npc.ThreatRadius = 1.0;//N
     npc.RoamingSpawns = false;//P
     npc.StaticSpawns = false;//N
@@ -146,6 +148,8 @@ EVEServerConfig::EVEServerConfig()
     cosmic.BeltGrowth = 6 /*h*/;
     cosmic.roidRadiusMultiplier = 1.0;
     cosmic.WormHoleEnabled = false;
+    cosmic.CiviliansEnabled = false;
+    cosmic.BumpEnabled = false;
 
     // crime
     crime.AggFlagTime = 900 /*s*/;//N
@@ -204,6 +208,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "UseProfiling",     server.UseProfiling );
     AddValueParser( "UseShipTracking",  server.UseShipTracking );
     AddValueParser( "UseStackTrace",    server.UseStackTrace );
+    AddValueParser( "BulkDataOD",       server.BulkDataOD );
     AddValueParser( "ServerSleepTime",  server.ServerSleepTime );
     AddValueParser( "idleSleepTime",    server.idleSleepTime );
 
@@ -216,6 +221,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "UseProfiling" );
     RemoveParser( "UseShipTracking" );
     RemoveParser( "UseStackTrace" );
+    RemoveParser( "BulkDataOD" );
     RemoveParser( "ServerSleepTime" );
     RemoveParser( "idleSleepTime" );
 
@@ -254,7 +260,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "damageRate",       rates.damageRate );
     AddValueParser( "missileRate",      rates.missileRate );
     AddValueParser( "missileTime",      rates.missileTime );
-    AddValueParser( "turrentRate",      rates.turrentRate );
+    AddValueParser( "turretRate",      rates.turretRate );
     AddValueParser( "corpCost",         rates.corpCost );
     AddValueParser( "WorldDecay",       rates.WorldDecay );
     AddValueParser( "NPCDecay",         rates.NPCDecay );
@@ -270,7 +276,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "damageRate" );
     RemoveParser( "missileRate" );
     RemoveParser( "missileTime" );
-    RemoveParser( "turrentRate" );
+    RemoveParser( "turretRate" );
     RemoveParser( "corpCost" );
     RemoveParser( "WorldDecay" );
     RemoveParser( "NPCDecay" );
@@ -345,6 +351,7 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
 {
+    AddValueParser( "IdleWander",       npc.IdleWander );
     AddValueParser( "ThreatRadius",     npc.ThreatRadius );
     AddValueParser( "RoamingSpawns",    npc.RoamingSpawns );
     AddValueParser( "StaticSpawns",     npc.StaticSpawns );
@@ -356,6 +363,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
 
     const bool result = ParseElementChildren( ele );
 
+    RemoveParser( "IdleWander" );
     RemoveParser( "ThreatRadius" );
     RemoveParser( "RoamingSpawns" );
     RemoveParser( "StaticSpawns" );
@@ -448,6 +456,7 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
     AddValueParser( "BeltGrowth",           cosmic.BeltGrowth );
     AddValueParser( "roidRadiusMultiplier", cosmic.roidRadiusMultiplier );
     AddValueParser( "WormHoleEnabled",      cosmic.WormHoleEnabled );
+    AddValueParser( "CiviliansEnabled",     cosmic.CiviliansEnabled);
 
     const bool result = ParseElementChildren( ele );
 
@@ -459,6 +468,7 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
     RemoveParser( "BeltGrowth" );
     RemoveParser( "roidRadiusMultiplier" );
     RemoveParser( "WormHoleEnabled" );
+    RemoveParser( "CiviliansEnabled" );
 
     return result;
 }

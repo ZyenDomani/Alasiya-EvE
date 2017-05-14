@@ -123,7 +123,7 @@ bool PyDumpVisitor::VisitTuple( const PyTuple* rep )
         for( uint32 i = 0; cur != rep->end(); cur++, i++ )
         {
             if (*cur == nullptr) continue;
-            if( i > 200 && !fullNested() )
+            if( i > 100 && !fullNested() )
             {
                 _print( "%s  ... truncated ...", _pfx() );
                 break;
@@ -152,7 +152,7 @@ bool PyDumpVisitor::VisitList( const PyList* rep )
         for( uint32 i = 0; cur != rep->end(); cur++, i++ )
         {
             if (*cur == nullptr) continue;
-            if( i > 200 && !fullNested() )
+            if( i > 100 && !fullNested() )
             {
                 _print( "%s  ... truncated ...", _pfx() );
                 break;
@@ -180,7 +180,7 @@ bool PyDumpVisitor::VisitDict( const PyDict* rep )
         PyDict::const_iterator cur = rep->begin();
         for( uint32 i = 0; cur != rep->end(); cur++, i++ )
         {
-            if( i > 200 && !fullNested() )
+            if( i > 100 && !fullNested() )
             {
                 _print( "%s  ... truncated ...", _pfx() );
                 break;
@@ -251,7 +251,7 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
         for( uint32 i = 0; cur != rep->list().end(); cur++, i++ )
         {
             if (*cur == nullptr) continue;
-            if( i > 200 && !fullNested() )
+            if( i > 100 && !fullNested() )
             {
                 _print( "%s  ... truncated ...", _pfx() );
                 break;
@@ -274,7 +274,7 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
         PyObjectEx::const_dict_iterator cur = rep->dict().begin();
         for( uint32 i = 0; cur != rep->dict().end(); cur++, i++ )
         {
-            if( i > 200 && !fullNested() )
+            if( i > 100 && !fullNested() )
             {
                 _print( "%s  ... truncated ...", _pfx() );
                 break;

@@ -27,7 +27,7 @@
 #ifndef __NPCAI_H_INCL__
 #define __NPCAI_H_INCL__
 
-#include "ship/modules/weapon_modules/TurrentFormulas.h"
+#include "ship/modules/TurretFormulas.h"
 
 class NPC;
 class SystemEntity;
@@ -35,6 +35,16 @@ class Timer;
 class EvilNumber;
 
 class NPCAIMgr {
+protected:
+    enum State {
+        Idle        = 1,  // not doing anything....idle.
+        Chasing     = 2,  // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
+        Following   = 3,  // too close to chase, but to far to engage
+        Engaged     = 4,  // actively fighting
+        Fleeing     = 5,  // running away
+        Signaling   = 6   // calling for help
+    };
+
 public:
     NPCAIMgr(NPC *who);
     ~NPCAIMgr()                 { /* do nothing here */ }
@@ -50,9 +60,9 @@ public:
 
     void DisableRepTimers();
 
-    // public methods to enable calls from other classes (namely, TurrentFormulas.cpp)
-    bool IsIdle()                                       { return (m_state == Idle); }
-    bool IsFighting()                                   { return (m_state != Idle); }
+    // public methods to enable calls from other classes (namely, TurretFormulas.cpp)
+    bool IsIdle()                                       { return (m_state == State::Idle); }
+    bool IsFighting()                                   { return (m_state != State::Idle); }
     uint16 GetMaxRange()                                { return m_optimalRange; }
     uint32 GetFalloff()                                 { return m_falloff; }
     uint32 GetAttackRange()                             { return m_maxAttackRange; }
@@ -60,34 +70,34 @@ public:
 
 protected:
     void Attack(SystemEntity* pTarget);
+    void SetIdle();
+    void SetWander();
+    void SetChasing(SystemEntity* pTarget);
+    void SetEngaged(SystemEntity* pTarget);
+    void SetFleeing(SystemEntity* pTarget);
+    void SetFollowing(SystemEntity* pTarget);
+    void SetSignaling(SystemEntity* pTarget);
     void AttackTarget(SystemEntity* pTarget);
-    void Wander();
-    void EnterIdle();
-    void EnterChasing(SystemEntity* pTarget);
-    void EnterFollowing(SystemEntity* pTarget);
-    void EnterEngaged(SystemEntity* pTarget);
-    void EnterFleeing(SystemEntity* pTarget);
-    void EnterSignaling(SystemEntity* pTarget);
-    void _CheckDistance(SystemEntity* pTarget);
-    void _SendWeaponEffect(const char *effect, SystemEntity* pTarget);
+    void CheckDistance(SystemEntity* pTarget);
 
     double GetTargetTime();
 
-    typedef enum {
-        Idle,       // not doing anything....idle.
-        Chasing,    // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
-        Following,  // too close to chase, but to far to engage
-        Engaged,    // actively fighting
-        Fleeing,    // running away
-        Signaling   // calling for help
-    } State;
     State m_state;
 
+    std::string GetStateName(State name);
+
 private:
-    bool m_isWandering;
+    bool m_webber : 1;
+    bool m_warpScram : 1;
+    bool m_isWandering : 1;
+    bool m_useSigRadius : 1;
+    bool m_useTargSwitching : 1;
+    bool m_useSecondTarget : 1;
+    float m_switchTargChance;   //fuzzy logic
+    uint16 m_preferedSigRadius;
     //these attributes are cached to reduce access times. (much faster but uses more memory)
     uint16 m_maxSpeed;
-    uint16 m_ROF;
+    uint16 m_attackSpeed;
     uint16 m_orbitSpeed;
     uint16 m_targetRange;   // max targeting range  default: m_maxAttackRange (unused)
     uint16 m_damageMultiplier;
@@ -109,7 +119,7 @@ private:
 
     NPC* m_npc;
 
-    TurrentFormulas m_formula;
+    TurretFormulas m_formula;
 
     Timer m_processTimer;
     Timer m_mainAttackTimer;

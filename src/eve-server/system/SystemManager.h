@@ -68,7 +68,7 @@ public:
     StationItemRef GetStationFromInventory(uint32 stationID);
     CargoContainerRef GetContainerFromInventory(uint32 contID);
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
-    Inventory* GetSystemInv()                           { return m_solarSystemRef->GetInventory(); }
+    Inventory* GetSystemInv()                           { return m_solarSystemRef->GetMyInventory(); }
 
     bool ProcessTic();          // called at 1Hz.
     bool BootSystem();

@@ -4,6 +4,7 @@
 namespace EVEDB {
     namespace invTypes {
         typedef enum {
+            typeInvalid = 35564,
             typeTicketFrigate = 30717,
             typeTicketDestroyer = 30718,
             typeTicketBattleship = 30721,
@@ -136,6 +137,7 @@ namespace EVEDB {
             typeMinmatarCaptainsQuarters = 32580,
             typeMissileLauncherOperation = 3319,
             typeMoon = 14,
+            typeMultitasking = 3430,
             typeNaniteRepairPaste = 28668,
             typeNegotiation = 3356,
             typeOffice = 27,
@@ -212,6 +214,7 @@ namespace EVEDB {
             typeTrade = 3443,
             typeTradeSession = 53,
             typeTrading = 52,
+            typeTargeting = 3429,
             typeTritanium = 34,
             typeTycoon = 18580,
             typeUniverse = 9,

@@ -20,6 +20,37 @@ void ManagerDB::GetSkillList(DBQueryResult& res)
     }
 }
 
+void ManagerDB::GetTypeAttributes(DBQueryResult& res)
+{
+    if( !sDatabase.RunQuery(res, "SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes")) {
+        codelog(DATABASE__ERROR, "Error in GetTypeAttributes query: %s", res.error.c_str());
+    }
+}
+
+
+void ManagerDB::GetBlueprintType(DBQueryResult& res) {
+    if(!sDatabase.RunQuery(res,
+        "SELECT"
+        "  blueprintTypeID,"
+        "  parentBlueprintTypeID,"
+        "  productTypeID,"
+        "  productionTime,"
+        "  techLevel,"
+        "  researchProductivityTime,"
+        "  researchMaterialTime,"
+        "  researchCopyTime,"
+        "  researchTechTime,"
+        "  productivityModifier,"
+        "  materialModifier,"
+        "  wasteFactor,"
+        "  maxProductionLimit, "
+        "  chanceOfRE"
+        " FROM invBlueprintTypes "))
+    {
+        codelog(DATABASE__ERROR, "Error in GetBlueprintType query: %s.", res.error.c_str());
+    }
+}
+
 void ManagerDB::GetRAMMaterials(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT typeID, materialTypeID, quantity FROM invTypeMaterials")) {
@@ -39,6 +70,47 @@ void ManagerDB::GetOreBySSC(DBQueryResult& res)
     if (!sDatabase.RunQuery(res, "SELECT systemSec, roidID, percent FROM roidDistribution")) {
         codelog(DATABASE__ERROR, "Error in GetRoidDist query: %s", res.error.c_str());
     }
+}
+
+void ManagerDB::GetSystemData(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+        "SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems")) {
+        codelog(DATABASE__ERROR, "Error in GetSystemInfo query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetStaticData(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+        "SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize WHERE solarSystemID IS NOT NULL")) {
+        codelog(DATABASE__ERROR, "Error in GetStaticInfo query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetStationInfo(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+        "SELECT s.stationID, s.x, s.y, s.z, st.dockEntryX, st.dockEntryY, st.dockEntryZ, st.dockOrientationX, st.dockOrientationY, st.dockOrientationZ FROM staStations AS s"
+        " LEFT JOIN staStationTypes AS st USING (stationTypeID)")) {
+        codelog(DATABASE__ERROR, "Error in GetStationInfo query: %s", res.error.c_str());
+    }
+}
+
+void ManagerDB::GetStationSystem(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT stationID, solarSystemID FROM staStations")) {
+        codelog(DATABASE__ERROR, "Error in GetStationSystem query: %s", res.error.c_str());
+    }
+
+}
+
+void ManagerDB::GetStationRegion(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT stationID, regionID FROM staStations")) {
+        codelog(DATABASE__ERROR, "Error in GetStationRegion query: %s", res.error.c_str());
+    }
+
 }
 
 void ManagerDB::SaveAnomaly(CosmicSignature& sig)

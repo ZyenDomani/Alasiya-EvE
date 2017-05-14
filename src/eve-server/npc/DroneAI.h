@@ -26,7 +26,7 @@
 #ifndef __EVEMU_SHIP_DRONEAI_H__
 #define __EVEMU_SHIP_DRONEAI_H__
 
-#include "ship/modules/weapon_modules/TurrentFormulas.h"
+#include "ship/modules/TurretFormulas.h"
 
 class Drone;
 class SystemEntity;
@@ -51,14 +51,13 @@ public:
 protected:
     void Attack(SystemEntity* pTarget);
     void AttackTarget(SystemEntity* pTarget);
-    void _EnterIdle();
-    void _EnterChasing(SystemEntity* pTarget);
-    void _EnterFollowing(SystemEntity* pTarget);
-    void _EnterEngaged(SystemEntity* pTarget);
-    void _EnterFleeing(SystemEntity* pTarget);
-    void _EnterSignaling(SystemEntity* pTarget);
-    void _CheckDistance(SystemEntity* pTarget);
-    void _SendWeaponEffect(const char *effect, SystemEntity* pTarget);
+    void SetIdle();
+    void SetChasing(SystemEntity* pTarget);
+    void SetFollowing(SystemEntity* pTarget);
+    void SetEngaged(SystemEntity* pTarget);
+    void SetFleeing(SystemEntity* pTarget);
+    void SetSignaling(SystemEntity* pTarget);
+    void CheckDistance(SystemEntity* pTarget);
 
     double GetTargetTime();
 
@@ -91,7 +90,7 @@ private:
 
     Drone* m_drone;
 
-    TurrentFormulas m_formula;
+    TurretFormulas m_formula;
 
     Timer m_processTimer;
     Timer m_mainAttackTimer;

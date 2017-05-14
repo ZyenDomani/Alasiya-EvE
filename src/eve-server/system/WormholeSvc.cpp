@@ -57,7 +57,9 @@ PyResult WormHoleSvc::Handle_WormholeJump( PyCallArgs& call ) {
      *    snprintf(ci, sizeof(ci), "Jumping:%u", toGate);
      *    GetShip()->SetCustomInfo(ci);
      */
-    return NULL;
+    
+    /* return error msg from this call, if applicable, else nodeid and timestamp */
+    return new PyLong(Win32TimeNow());
 }
 
 //                  ----------  wormhole data sent thru "AddBalls2" packet

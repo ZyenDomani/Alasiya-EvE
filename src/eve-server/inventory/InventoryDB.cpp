@@ -26,6 +26,7 @@
 
 #include "eve-server.h"
 
+#include "Client.h"
 #include "PyCallable.h"
 #include "character/Character.h"
 #include "manufacturing/Blueprint.h"
@@ -33,7 +34,6 @@
 #include "station/Station.h"
 #include "system/Asteroid.h"
 #include "system/SolarSystem.h"
-#include <Client.h>
 
 bool InventoryDB::GetCategory(EVEItemCategories category, CategoryData &into) {
     DBQueryResult res;
@@ -152,145 +152,6 @@ bool InventoryDB::GetType(uint32 typeID, TypeData &into) {
     into.published = (row.GetInt(10) ? true : false);
     into.marketGroupID = (row.IsNull(11) ? 0 : row.GetUInt(11));
     into.chanceOfDuplicating = row.GetDouble(12);
-
-    return true;
-}
-
-bool InventoryDB::GetTypeEffectsList(uint32 typeID, std::vector<uint32> &into) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  effectID "
-        " FROM dgmTypeEffects "
-        " WHERE typeID=%u",
-        typeID))
-    {
-        codelog(DATABASE__ERROR, "Failed to query type %u: %s.", typeID, res.error.c_str());
-        return false;
-    }
-
-    //_log(DATABASE__RESULTS, "GetTypeEffectsList returned %u items", res.GetRowCount());
-	into.clear();
-
-    DBResultRow row;
-    while( res.GetRow( row ) )
-		into.push_back( row.GetUInt(0) );
-
-    if( into.size() == 0 ) {
-        _log(DATABASE__MESSAGE, "No type effects found for type %u.", typeID);
-        return false;
-    }
-
-	return true;
-}
-
-bool InventoryDB::GetBlueprintType(uint32 blueprintTypeID, BlueprintTypeData &into) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  parentBlueprintTypeID,"
-        "  productTypeID,"
-        "  productionTime,"
-        "  techLevel,"
-        "  researchProductivityTime,"
-        "  researchMaterialTime,"
-        "  researchCopyTime,"
-        "  researchTechTime,"
-        "  productivityModifier,"
-        "  materialModifier,"
-        "  wasteFactor,"
-        "  maxProductionLimit "
-        " FROM invBlueprintTypes "
-        " WHERE blueprintTypeID=%u",
-        blueprintTypeID))
-    {
-        codelog(DATABASE__ERROR, "Error in GetBlueprintType query: %s.", res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Blueprint type %u not found.", blueprintTypeID);
-        return false;
-    }
-
-    into.parentBlueprintTypeID = row.IsNull(0) ? 0 : row.GetUInt(0);
-    into.productTypeID = row.GetUInt(1);
-    into.productionTime = row.GetUInt(2) * sConfig.bpTimes.ProdTime;
-    into.techLevel = row.GetUInt(3);
-    into.researchProductivityTime = row.GetUInt(4) * sConfig.bpTimes.ResPE;
-    into.researchMaterialTime = row.GetUInt(5) * sConfig.bpTimes.ResME;
-    into.researchCopyTime = row.GetUInt(6) * sConfig.bpTimes.ResCopy;
-    into.researchTechTime = row.GetUInt(7) * sConfig.bpTimes.ResRE;
-    into.productivityModifier = row.GetUInt(8) * sConfig.bpTimes.ProdMod;
-    into.materialModifier = row.GetUInt(9) * sConfig.bpTimes.MatMod;
-    into.wasteFactor = (row.GetDouble(10) / 100)  * sConfig.bpTimes.WasteMod;   // we have it in db as percentage ...
-    into.maxProductionLimit = row.GetUInt(11);
-    return true;
-}
-
-bool InventoryDB::SaveBlueprintData(uint32 blueprintID, BlueprintData& data) {
-    DBerror err;
-    if(!sDatabase.RunQuery(err,
-        "INSERT INTO invBlueprints"
-        "  (blueprintID, copy, materialLevel, productivityLevel, licensedProductionRunsRemaining)"
-        " VALUES"
-        "  (%u, %u, %i, %i, %i)"
-        "ON DUPLICATE KEY UPDATE "
-        "materialLevel=VALUES(materialLevel), "
-        "productivityLevel=VALUES(productivityLevel), "
-        "licensedProductionRunsRemaining=VALUES(licensedProductionRunsRemaining) ",
-                           blueprintID, (data.copy ? 1 : 0), data.mLevel, data.pLevel, data.runs))
-    {
-        codelog(DATABASE__ERROR, "Error in SaveBlueprint query: %s.", err.c_str());
-        return false;
-    }
-
-    return true;
-}
-
-bool InventoryDB::DeleteBlueprint(uint32 blueprintID) {
-    DBerror err;
-
-    if(!sDatabase.RunQuery(err,
-        "DELETE FROM invBlueprints"
-        " WHERE blueprintID=%u",
-        blueprintID))
-    {
-        codelog(DATABASE__ERROR, "Failed to delete blueprint %u: %s.", blueprintID, err.c_str());
-        return false;
-    }
-    return true;
-}
-
-bool InventoryDB::GetBlueprint(uint32 blueprintID, BlueprintData &into) {
-    DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  copy,"
-        "  materialLevel,"
-        "  productivityLevel,"
-        "  licensedProductionRunsRemaining"
-        " FROM invBlueprints"
-        " WHERE blueprintID=%u",
-        blueprintID))
-    {
-        codelog(DATABASE__ERROR, "Error in GetBlueprint query: %s.", res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Blueprint %u not found.", blueprintID);
-        return false;
-    }
-
-    into.copy = (row.GetInt(0) ? true : false);
-    into.mLevel = row.GetInt(1);
-    into.pLevel = row.GetInt(2);
-    into.runs = row.GetInt(3);
 
     return true;
 }
@@ -647,7 +508,7 @@ bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
         data.typeID,
         data.ownerID,
         data.locationID,
-        (uint32)data.flag,
+        (uint16)data.flag,
         (data.contraband?1:0),
         (data.singleton?1:0),
         data.quantity,
@@ -699,6 +560,37 @@ void InventoryDB::SaveItems(std::vector<SaveData>& data)
 
 }
 
+void InventoryDB::SaveAttributes(std::vector<AttrData>& data)
+{
+    std::ostringstream Inserts;
+    // start the insert into command.
+    Inserts << "INSERT INTO entity_attributes";
+    Inserts << " (itemID, attributeID, valueInt, valueFloat)";
+    bool first = true;
+    for (auto cur : data) {
+        if (first) {
+            Inserts << " VALUES ";
+            first = false;
+        } else
+            Inserts << ", ";
+        Inserts << "(" << cur.itemID << ", " << cur.attrID << ", ";
+        if (cur.valueInt)
+            Inserts << cur.valueInt << ", NULL)";
+        else
+            Inserts << "NULL, " << cur.valueFloat << ")";
+    }
+
+    if (!first) {
+        Inserts << "ON DUPLICATE KEY UPDATE ";
+        Inserts << "valueInt=VALUES(valueInt), ";
+        Inserts << "valueFloat=VALUES(valueFloat)";
+        DBerror err;
+        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
+            _log(DATABASE__ERROR, "SaveItems - unable to save data - %s", err.c_str());
+    }
+
+}
+
 
 bool InventoryDB::DeleteItem(uint32 itemID) {
     if (IsStaticMapItem(itemID)) {
@@ -726,15 +618,6 @@ bool InventoryDB::DeleteItem(uint32 itemID) {
         codelog(DATABASE__ERROR, "Failed to delete item %u: %s", itemID, err.c_str());
         return false;
     }
-    if (!sDatabase.RunQuery(err,
-        "DELETE"
-        " FROM entity_default_attributes"
-        " WHERE itemID=%u",
-        itemID))
-    {
-        codelog(DATABASE__ERROR, "Failed to delete item %u: %s", itemID, err.c_str());
-        return false;
-    }
     return true;
 }
 
@@ -753,8 +636,8 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
     } else if (IsStation(od.locID)) {
         if (od.ownerID == 1) {
             /* this will get agents in station */
-            query << " AND ownerID < " << EVEMU_MINIMUM_ID;
-            query << " AND itemID < " << EVEMU_MINIMUM_ID;
+            query << " AND ownerID < " << EVEMU_MINIMUM_DYNAMIC_ID;
+            query << " AND itemID < " << EVEMU_MINIMUM_DYNAMIC_ID;
         } else
             query << " AND ownerID = " << od.ownerID;
     } else if (IsNotStaticItem(od.locID)) {
@@ -829,121 +712,6 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
     return true;
 }
 
-bool InventoryDB::LoadTypeAttributes(uint32 typeID, EVEAttributeMgr &into) {
-    DgmTypeAttributeSet *attrset = sDgmTypeAttrMgr.GetDgmTypeAttributeSet(typeID);
-
-    // if not found return true because there can be items without attributes I guess
-    if (attrset == NULL)
-        return true;
-
-    DgmTypeAttributeSet::AttrSetItr itr = attrset->begin();
-
-    for (; itr != attrset->end(); itr++) {
-        if ((*itr)->number.get_type() == evil_number_int)
-            into.SetInt((EVEAttributeMgr::Attr)(*itr)->attributeID, static_cast<int32>((*itr)->number.get_int()));
-        else
-            into.SetReal((EVEAttributeMgr::Attr)(*itr)->attributeID, (*itr)->number.get_double());
-    }
-
-    return true;
-}
-
-bool InventoryDB::LoadItemAttributes(uint32 itemID, EVEAttributeMgr &into) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  attributeID,"
-        "  valueInt,"
-        "  valueFloat"
-        " FROM entity_attributes"
-        " WHERE itemID=%u",
-        itemID))
-    {
-        codelog(DATABASE__ERROR, "Failed to query item attributes for item %u: %s.", itemID, res.error.c_str());
-        return false;
-    }
-
-    //_log(DATABASE__RESULTS, "LoadItemAttributes returned %u items", res.GetRowCount());
-    DBResultRow row;
-    EVEAttributeMgr::Attr attr;
-    while(res.GetRow(row)) {
-        if(row.IsNull(0)) {
-            _log(DATABASE__MESSAGE, "Attribute row for item %u has attributeID NULL. Skipping.", itemID);
-            continue;
-        }
-        attr = EVEAttributeMgr::Attr(row.GetUInt(0));
-        if(row.IsNull(2)) {
-            if(row.IsNull(1)){
-                _log(DATABASE__MESSAGE, "Attribute %u for item %u has both values NULL. Skipping.", attr, itemID);
-            }
-            else
-                into.SetInt(attr, row.GetInt(1));
-        } else {
-            if(!row.IsNull(1)) {
-                _log(DATABASE__MESSAGE, "Attribute %u for item %u has both values non-NULL. Using float.", attr, itemID);
-            }
-            into.SetReal(attr, row.GetDouble(2));
-        }
-    }
-    return true;
-}
-
-bool InventoryDB::UpdateAttribute_int(uint32 itemID, uint32 attributeID, int v) {
-    DBerror err;
-    if(!sDatabase.RunQuery(err,
-        "REPLACE INTO entity_attributes"
-        "   (itemID, attributeID, valueInt, valueFloat)"
-        " VALUES"
-        "   (%u, %u, %d, NULL)",
-        itemID, attributeID, v)
-    ) {
-        _log(DATABASE__MESSAGE, "Failed to store attribute %d for item %u: %s", attributeID, itemID, err.c_str());
-        return false;
-    }
-    return true;
-}
-
-bool InventoryDB::UpdateAttribute_double(uint32 itemID, uint32 attributeID, double v) {
-    DBerror err;
-    if(!sDatabase.RunQuery(err,
-        "REPLACE INTO entity_attributes"
-        "   (itemID, attributeID, valueInt, valueFloat)"
-        " VALUES"
-        "   (%u, %u, NULL, %f)",
-        itemID, attributeID, v)
-    ) {
-        _log(DATABASE__MESSAGE, "Failed to store attribute %d for item %u: %s", attributeID, itemID, err.c_str());
-        return false;
-    }
-    return true;
-}
-bool InventoryDB::EraseAttribute(uint32 itemID, uint32 attributeID) {
-    DBerror err;
-    if(!sDatabase.RunQuery(err,
-        "DELETE FROM entity_attributes"
-        " WHERE itemID=%u AND attributeID=%u",
-        itemID, attributeID)
-    ) {
-        _log(DATABASE__MESSAGE, "Failed to erase attribute %d for item %u: %s", attributeID, itemID, err.c_str());
-        return false;
-    }
-    return true;
-}
-
-bool InventoryDB::EraseAttributes(uint32 itemID) {
-    DBerror err;
-    if(!sDatabase.RunQuery(err,
-        "DELETE FROM entity_attributes"
-        " WHERE itemID=%u",
-        itemID))
-    {
-        _log(DATABASE__MESSAGE, "Failed to erase attributes for item %u: %s", itemID, err.c_str());
-        return false;
-    }
-    return true;
-}
-
 bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
     DBQueryResult res;
 
@@ -1010,7 +778,7 @@ bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
             "   chr.createDateTime,"
             "   chr.shipID,"
             "   chr.capsuleID"
-            " FROM character_ AS chr"
+            " FROM chrCharacter AS chr"
             "  LEFT JOIN corporation AS crp USING (corporationID)"
             " WHERE chr.characterID = %u", characterID))
         {
@@ -1074,7 +842,7 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
             "  rolesAtBase,"
             "  rolesAtHQ,"
             "  rolesAtOther"
-            " FROM character_"
+            " FROM chrCharacter"
             " WHERE characterID = %u",
             characterID))
         {
@@ -1111,7 +879,7 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
         if(!sDatabase.RunQuery(res,
             "SELECT"
             "  corporation.stationID"
-            " FROM character_"
+            " FROM chrCharacter"
             "  LEFT JOIN corporation USING (corporationID)"
             " WHERE characterID = %u",
             characterID))
@@ -1165,9 +933,9 @@ bool InventoryDB::NewCharacter(uint32 characterID, const CharacterData &data, co
     sDatabase.DoEscapeString(titleEsc, data.title);
     sDatabase.DoEscapeString(descriptionEsc, data.description);
 
-    // Table character_ goes first
+    // Table chrCharacter goes first
     if(!sDatabase.RunQuery(err,
-        "INSERT INTO character_"
+        "INSERT INTO chrCharacter"
         // CharacterData:
         "  (characterID, accountID, title, description, bounty, balance, aurBalance, securityRating, petitionMessage,"
         "   logonDateTime, logonMinutes, corporationID, corpRole, rolesAtAll, rolesAtBase, rolesAtHQ, rolesAtOther,"
@@ -1229,7 +997,7 @@ bool InventoryDB::SaveCharacter(uint32 characterID, const CharacterData &data) {
     sDatabase.DoEscapeString(descriptionEsc, data.description);
 
     if(!sDatabase.RunQuery(err,
-        "UPDATE character_"
+        "UPDATE chrCharacter"
         " SET"
         "  accountID = %u,"
         "  title = '%s',"
@@ -1291,7 +1059,7 @@ bool InventoryDB::SaveCorpData(uint32 characterID, const CorpData &data) {
     DBerror err;
 
     if(!sDatabase.RunQuery(err,
-        "UPDATE character_"
+        "UPDATE chrCharacter"
         " SET"
         "  corpRole = %" PRIu64 ","
         "  corpAccountKey = %i,"
@@ -1338,13 +1106,13 @@ bool InventoryDB::DeleteCharacter(uint32 characterID) {
     sDatabase.RunQuery(err, "DELETE FROM repAgent, repAlliance, repChar, repCorp, repNPCCorp, repStandingChanges"
         " WHERE (fromID = %u OR toID = %u)", characterID, characterID);
 
-    sDatabase.RunQuery(err, "DELETE FROM chrCertificates, character_, chrEmployment, market_journal, crpCharShares"
+    sDatabase.RunQuery(err, "DELETE FROM chrCertificates, chrCharacter, chrEmployment, market_journal, crpCharShares"
          " WHERE characterID=%u", characterID);
 
-    sDatabase.RunQuery(err, "DELETE FROM entity, entity_attributes, entity_default_attributes"
+    sDatabase.RunQuery(err, "DELETE FROM entity, entity_attributes"
         " WHERE itemID = %u", characterID);
 
-    sDatabase.RunQuery(err, "DELETE FROM entity_attributes, entity_default_attributes"
+    sDatabase.RunQuery(err, "DELETE FROM entity_attributes"
         " WHERE itemID IN (SELECT itemID FROM entity WHERE ownerID = %u)", characterID);
 
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE ownerID = %u", characterID);
@@ -1492,98 +1260,9 @@ bool InventoryDB::GetStation(uint32 stationID, StationInfo &into) {
     return true;
 }
 
-bool InventoryDB::SaveAsteroidData(uint32 itemID, const AsteroidData& data)
-{
-    DBerror err;
-    if(!sDatabase.RunQuery(err,
-        "INSERT"
-        " INTO sysAsteroids"
-        " (itemID, itemName, typeID, systemID, beltID, quantity, radius, x, y, z)"
-        " VALUES"
-        "  (%u, '%s', %u, %u, %u, %d, %d, %d, %d, %d)"
-        "ON DUPLICATE KEY UPDATE "
-        "quantity=VALUES(quantity), "
-        "radius=VALUES(radius)",
-        data.itemID,
-        data.itemName.c_str(),
-        data.typeID,
-        data.systemID,
-        data.beltID,
-        data.quantity,
-        data.radius,
-        data.x, data.y, data.z))
-    {
-        codelog(DATABASE__ERROR, "Error in query: %s.", err.c_str());
-        return false;
-    }
-
-    return true;
-}
-
-bool InventoryDB::GetAsteroidData(uint32 itemID, AsteroidData& data)
-{
-    DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "   itemID,"
-        "   itemName,"
-        "   typeID,"
-        "   systemID,"
-        "   beltID,"
-        "   quantity,"
-        "   radius,"
-        "   x, y, z"
-        " FROM sysAsteroids"
-        " WHERE itemID = %u", itemID))
-    {
-        codelog(DATABASE__ERROR, "Error in GetAsteroidData query: %s", res.error.c_str());
-        return false;
-    }
-
-    _log(DATABASE__RESULTS, "GetAsteroidData returned %u items", res.GetRowCount());
-    DBResultRow row;
-    res.GetRow(row);
-    data.itemID = row.GetInt(0);
-    data.itemName = row.GetText(1);
-    data.typeID = row.GetInt(2);
-    data.systemID = row.GetInt(3);
-    data.beltID = row.GetInt(4);
-    data.quantity = row.GetDouble(5);
-    data.radius = row.GetDouble(6);
-    data.x = row.GetDouble(7);
-    data.y = row.GetDouble(8);
-    data.z = row.GetDouble(9);
-
-    return true;
-}
-
-
-bool InventoryDB::GetTypeID(uint32 itemID, uint32 &typeID)
-{
-    DBQueryResult res;
-    DBResultRow row;
-
-    if(!sDatabase.RunQuery(res,
-        " SELECT "
-        "  typeID "
-        " FROM entity "
-        " WHERE itemID = %u ",itemID))
-    {
-        codelog(DATABASE__ERROR, "Failed to query typeID for itemID = %u", itemID);
-    }
-
-    if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Item of type %u not found.", itemID);
-        return false;
-    }
-
-    typeID = row.GetUInt(0);
-    return true;
-}
-
 bool InventoryDB::GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into)
 {
-    /** @todo (Allan) check into this, finish if needed.  may not be used. */
+    /** @todo only used by gmcommands.  update and remove. */
     DBQueryResult res;
     DBResultRow row;
 
@@ -1657,6 +1336,7 @@ bool InventoryDB::GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into)
 
 bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &into)
 {
+    /** @todo only used by gmcommands.  update and remove. */
     DBQueryResult res;
     uint32 attributeID = 0;
     uint32 firstFlag;
@@ -1694,14 +1374,13 @@ bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &i
 
     for( uint32 flag = firstFlag; flag < (firstFlag + slotsOnShip); flag++ ) {
         // this is far from efficient as we are iterating through all of the ships item slots.... every iteration... so this will be slow when you got loads of players with a single free slot.
-        if(ship->GetInventory()->IsEmptyByFlag((EVEItemFlags)flag)) {
+        if(ship->GetMyInventory()->IsEmptyByFlag((EVEItemFlags)flag)) {
             into = flag;
             return true;
         }
     }
 
     //Only time it should make it this far...
-
     if (ship->HasPilot())
         if (ship->GetPilot()->CanThrow())
             throw PyException( MakeCustomError( "There are no available slots" ));
@@ -1709,6 +1388,3 @@ bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &i
     return false;
 
 }
-
-
-

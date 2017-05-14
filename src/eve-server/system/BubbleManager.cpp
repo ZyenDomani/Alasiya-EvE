@@ -59,9 +59,9 @@ BubbleManager::~BubbleManager() {
     clear();
 }
 
-void BubbleManager::Init() {
+void BubbleManager::Initialize() {
     /* just to create the singleton here */
-    sLog.Green("   Bubble Manager", "Bubble Manager Initialized.");
+    sLog.Blue("   Bubble Manager", "Bubble Manager Initialized.");
 }
 
 void BubbleManager::clear() {
@@ -222,9 +222,9 @@ void BubbleManager::AddSpawnID(uint16 bubbleID, uint32 spawnID)
     m_spawnIDs.emplace(bubbleID, spawnID);
 }
 
-uint32 BubbleManager::GetSpawnID(uint16 bubbleID)
+uint32 BubbleManager::GetBeltID(uint16 bubbleID)
 {
-    std::map<uint16, uint32>::iterator itr = m_spawnIDs.find(bubbleID);
+    std::map<uint16, uint32>::const_iterator itr = m_spawnIDs.find(bubbleID);
     if (itr == m_spawnIDs.end())
         return 0;
     return itr->second;

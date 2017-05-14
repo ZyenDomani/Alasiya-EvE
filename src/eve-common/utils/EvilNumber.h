@@ -208,6 +208,7 @@ public:
         }
     }
 
+    // doesnt work when compared to 0 (num != 0)
     bool operator!=(const EvilNumber& val)
     {
         // see comments from '==' operator.

@@ -46,6 +46,7 @@ NetService::~NetService() {
     delete m_dispatch;
 }
 
+/** @note:  wtf is this used for???  */
 PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
     PyString* str = new PyString( "machoNet.serviceInfo" );
 

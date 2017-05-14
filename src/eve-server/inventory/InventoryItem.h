@@ -28,9 +28,11 @@
 
 
 #include "POD_containers.h"
+#include "inventory/Inventory.h"
+#include "inventory/InventoryDB.h"
 #include "inventory/ItemType.h"
 #include "inventory/ItemFactory.h"
-#include "inventory/EVEAttributeMgr.h"
+#include "inventory/AttributeMap.h"
 
 class PyRep;
 class PyDict;
@@ -67,7 +69,7 @@ public:
     /* begin rewrite */
 
     /* generic access functions handled here */
-    Inventory*              GetInventory()              { return m_inventory; }
+    Inventory*              GetMyInventory()            { return m_inventory; }
     ItemFactory*            GetItemFactory()            { return &m_factory; }
 
     /* common functions for all entities handled here */
@@ -85,13 +87,13 @@ public:
     const std::string &     customInfo() const          { return m_customInfo; }
 
     /* public type queries  */
-    uint32                  typeID() const              { return type().id(); }
-    uint32                  groupID() const             { return type().groupID(); }
+    uint16                  typeID() const              { return m_type.id(); }
+    uint16                  groupID() const             { return m_type.groupID(); }
     double                  radius() const              { return (HasAttribute(AttrRadius) ? GetAttribute(AttrRadius).get_double() : 1.0); }
-    const ItemGroup &       group() const               { return type().group(); }
-    const ItemCategory &    category() const            { return type().category(); }
-    EVEItemCategories       categoryID() const          { return type().categoryID(); }
-    bool                    global() const              { return (HasAttribute(AttrIsGlobal) ? true : false); }
+    const ItemGroup &       group() const               { return m_type.group(); }
+    const ItemCategory &    category() const            { return m_type.category(); }
+    EVEItemCategories       categoryID() const          { return m_type.categoryID(); }
+    bool                    isGlobal() const            { return (HasAttribute(AttrIsGlobal) ? true : false); }
 
     /* public-access generic functions handled in base class. */
     void                    Rename(const char *to);
@@ -110,6 +112,7 @@ public:
 private:
     /* this should ONLY be called from within InventoryItem */
     void                    SetOnline(bool online, bool isRig);
+
 public:
     void                    PutOnline(bool isRig=false) { SetOnline(true, isRig); }
     void                    PutOffline(bool isRig=false){ SetOnline(false, isRig); }
@@ -117,6 +120,7 @@ public:
 
     /* public-access data functions handled in base class. */
     void                    SaveItem();  //save the item to the DB.
+    // save timers arent currently used.  not sure if i'll implement them.
     void                    SetSaveTimerExpiry(uint32 saveTimerExpiry) \
                                 { m_saveTimerExpiryTime = saveTimerExpiry; }
     void                    EnableSaveTimer() \
@@ -234,7 +238,7 @@ public:
     PyPackedRow*            GetChargeStatusRow(uint32 shipID) const;
 
 protected:
-    Inventory* m_inventory = nullptr;
+    Inventory* m_inventory;
 
     ItemFactory& m_factory;
 
@@ -247,7 +251,6 @@ protected:
     const uint32            m_itemID;
     std::string             m_itemName;
 
-private:
     // our item data:
     bool                    m_contraband;
     bool                    m_singleton;
@@ -259,95 +262,53 @@ private:
     EVEItemFlags            m_flag;
     GPoint                  m_position;
 
+private:
     // for asteroid item:
     AsteroidData m_roidData;
 
+/* new effects processing system */
+public:
+    /*  this checks requires skills on refItem against current skills in caller.
+     *  returns true if all pass */
+    bool SkillCheck(InventoryItemRef refItem);
 
+    void ClearModifiers();
+    void AddModifier(fxData data);
+    void RemoveModifier(fxData data);
+    void ApplyEffect(int8 state);
+    void RemoveEffect(int8 state);
+    void GetEffectsInState(int8 state, std::vector<Effect>& effectRef);
 
-/* end rewrite...originals follow */
+    //  if itemType requires skill(skillID) return true else return false
+    bool HasReqSkill(const uint16 skillID)              { return m_type.HasReqSkill(skillID, m_factory); }
 
-/************************************************************************/
-/* start experimental new attribute system ( semi-operational )         */
-/************************************************************************/
+    // gotta make this public for now...
+    std::multimap<int8, fxData> m_modifiers;    // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
+    std::multimap<int8, fxData> m_rModifiers;    // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
+
+/*  new attribute system */
+    AttributeMap& GetAttributeMap()                     { return mAttributeMap; }
+
 protected:
     AttributeMap mAttributeMap;
-    AttributeMap mDefaultAttributeMap;
+
 public:
-    bool SetAttribute(uint32 attributeID, int num, bool notify = true, bool shadow_copy_to_default_set = false);
-    bool SetAttribute(uint32 attributeID, uint32 num, bool notify = true, bool shadow_copy_to_default_set = false);
-    bool SetAttribute(uint32 attributeID, int64 num, bool notify = true, bool shadow_copy_to_default_set = false);
-    bool SetAttribute(uint32 attributeID, uint64 num, bool notify = true, bool shadow_copy_to_default_set = false);
-    bool SetAttribute(uint32 attributeID, double num, bool notify = true, bool shadow_copy_to_default_set = false);
-    bool SetAttribute(uint32 attributeID, EvilNumber num, bool notify = true, bool shadow_copy_to_default_set = false);
+    // this deletes all attributes, reloads default attribs from itemType and clears m_modifiers
+    void ReloadAttributes();
+    void SetAttribute(uint16 attrID, int num, bool notify=true);
+    void SetAttribute(uint16 attrID, uint32 num, bool notify=true);
+    void SetAttribute(uint16 attrID, int64 num, bool notify = true);
+    void SetAttribute(uint16 attrID, uint64 num, bool notify=true);
+    void SetAttribute(uint16 attrID, double num, bool notify=true);
+    void SetAttribute(uint16 attrID, EvilNumber num, bool notify=true);
+    bool HasAttribute(const uint16 attrID) const                       { return mAttributeMap.HasAttribute(attrID); }
+    bool HasAttribute(const uint16 attrID, EvilNumber &value) const    { return mAttributeMap.HasAttribute(attrID, value); }
+    bool SaveAttributes()                                              { return mAttributeMap.SaveAttributes(); }
+    void ResetAttribute(uint16 attrID, bool notify=false)              { mAttributeMap.ResetAttribute(attrID, notify); }
+    void DeleteAttribute(uint16 attrID)                                { mAttributeMap.DeleteAttribute(attrID); }
 
-    /**
-     * GetAttribute
-     * Retrieves the attribute of the entity.
-     * @param attributeID the attribute to check for.
-     * @returns the attribute value
-     * @note a value of zero is returned and an error message generated if the value is not found.
-     *
-     * @note this function should be used very infrequently and only for specific reasons
-     */
-    EvilNumber GetAttribute(const uint32 attributeID) const;
-    EvilNumber GetDefaultAttribute(const uint32 attributeID) const;
-    /**
-     * GetAttribute
-     * Retrieves the attribute of the entity.
-     * @note Should only be used when the attribute might not be defined.
-     * @param attributeID the attribute to check for.
-     * @param defaultValue a default value to return if no attribute is found.
-     * @returns the attribute value or the default value.
-     * @note does not generate an error message if the value is not found.
-     *
-     * @note this function should be used very infrequently and only for specific reasons
-     */
-    //EvilNumber GetAttribute(const uint32 attributeID, const uint32 defaultValue);
-
-    /**
-     * HasAttribute
-     * Checks to see if the entity has the specified attribute.
-     * value not altered if attribute not found.  This could be useful for preserving a default value.
-     * @param attributeID the attribute to check for.
-     * @returns true if this item has the attribute 'attributeID', false if it does not have this attribute
-     *
-     * returns true if this item has the attribute 'attributeID', false if it does not have this attribute
-     * @note this function should be used very infrequently and only for specific reasons
-     */
-    bool HasAttribute(const uint32 attributeID) const;
-    /**
-     * HasAttribute
-     * Checks to see if the entity has the specified attribute.
-     * @param attributeID the attribute to check for.
-     * @param value the location to return the attribute if it exist.
-     * @returns true if this item has the attribute 'attributeID', false if it does not have this attribute
-     *
-     * @note this function should be used very infrequently and only for specific reasons
-     */
-    bool HasAttribute(const uint32 attributeID, EvilNumber& value) const;
-
-    /**
-     * SaveAttributes
-     *
-     * save all the attributes from a Item.
-     *
-     * @note this should be incorporated into the normal save function and only save when things have changes.
-     */
-    bool SaveAttributes();
-
-    /*
-     * ResetAttribute
-     *
-     *@note this function will force reload the default value for the specified attribute
-     */
-    bool ResetAttribute(uint32 attrID, bool notify=false);
-
-    bool DeleteAttribute(uint32 attrID);
-
-/************************************************************************/
-/* end experimental new attribute system                                */
-/************************************************************************/
-
+    EvilNumber GetAttribute(const uint16 attrID) const                 { return mAttributeMap.GetAttribute(attrID); }
+    EvilNumber GetDefaultAttribute(const uint16 attrID) const          { return m_type.GetAttribute(attrID); }
 };
 
 #endif

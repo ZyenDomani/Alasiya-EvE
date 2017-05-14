@@ -61,7 +61,10 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadAsteroid(ItemFactory& factory, uint32 asteroidID, const ItemType& type, const ItemData& data, const AsteroidData& dbData);
+    static RefPtr<_Ty> _LoadAsteroid(ItemFactory& factory, uint32 asteroidID, const ItemType& type, const ItemData& data, const AsteroidData& dbData)
+    {
+        return AsteroidItemRef( new AsteroidItem( factory, asteroidID, type, data, dbData ) );
+    }
 
 private:
     AsteroidData m_dbData;

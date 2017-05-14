@@ -4,7 +4,7 @@
   *     NPC Spawn managment system for Alasiya EvEmu
   *
   * @Author:         Allan
-  * @date:
+  * @date:          15 July 2015
   *
   */
 
@@ -264,8 +264,8 @@ void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     if (!_FindSpawnForBubble(pSysBubble->GetID())) {
-        sLog.Green("SpawnMgr", "DoSpawnForBubble called for bubble %u in %s(%u)(%.4f). Main Timer enabled.",
-                     pSysBubble->GetID(), m_system->GetName().c_str(), m_system->GetID(), secRating);
+        sLog.Green("SpawnMgr", "DoSpawnForBubble called for bubble %u(%u) in %s(%u)(%.4f). Main Timer enabled.",
+                     pSysBubble->GetID(), sBubbleMgr.GetBeltID(pSysBubble->GetID()), m_system->GetName().c_str(), m_system->GetID(), secRating);
         PrepSpawn(pSysBubble, regionID, secRating);
         pSysBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
     }
@@ -275,8 +275,8 @@ void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
         sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
 }
 
-bool SpawnMgr::_FindSpawnForBubble(uint32 bubbleID) {
-    SpawnEntryDef::iterator itr = m_spawns.find(bubbleID);
+bool SpawnMgr::_FindSpawnForBubble(uint16 itemID) {
+    SpawnEntryDef::iterator itr = m_spawns.find(itemID);
     if (itr != m_spawns.end())
         return true;
 
@@ -553,7 +553,8 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
     }
 
     //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
-    startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 30) *1000);
+    //startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 20) *1000);
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *5000); //50-75km from current bubble center
     npc->DestinyMgr()->SetPosition(startPos);
     //npc->DestinyMgr()->WarpTo(warpToPoint);
     m_system->AddNPC(npc);
@@ -571,11 +572,13 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
      * to make it 'realistic', they will need the appearance of warping in from some random point,
      *  to somewhere around bubble center.  this will make their origin appear elsewhere,
      * but not from same place every time.  they're pirates, they got other shit to do, too.
+     *  eventually, when other systems are working, npcs will appear to 'warp in' from a hideout in the current system.
+     *  this particular bit is not general knowledge.
      *
      * however, warping in dont seem to be working.  will look into later.
      */
     GPoint startPos(pSysBubble->GetCenter());
-    //startPos.MakeRandomPointOnSphere(MakeRandomInt(-5, 10) *1000); //200km from bubble center...in current bubble
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *8000); //80-120km from current bubble center
     //const GPoint warpToPoint(pSysBubble->GetCenter());
 
     uint32 corpID = GetCorpID(factionID);
@@ -616,7 +619,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
                 continue;
             }
             //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
-            startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 30) *1000);
+            //startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 20) *1000);
             npc->DestinyMgr()->SetPosition(startPos);
             //npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
             m_system->AddNPC(npc);

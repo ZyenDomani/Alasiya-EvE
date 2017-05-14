@@ -356,7 +356,7 @@ PyResult Command_giveisk(Client* who, CommandDB* db, PyServiceMgr* services, con
     double amount = strtod(args.arg(2).c_str(), NULL);
 
     Client* tgt;
-    if (entity >= EVEMU_MINIMUM_ID)
+    if (entity >= EVEMU_MINIMUM_DYNAMIC_ID)
     {
         tgt = sEntityList.FindClientByCharID(entity);
         if (!tgt)
@@ -471,7 +471,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
 
     DBSystemDynamicEntity entity;
         entity.allianceID = 0;
-        entity.categoryID = actualCategoryID;
+        entity.categoryID = (EVEItemCategories)actualCategoryID;
         entity.corporationID = 0;
         entity.factionID = 0;
         entity.groupID = actualGroupID;
@@ -603,13 +603,13 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
 
         DBSystemDynamicEntity entity;
         entity.allianceID = 0;
-        entity.categoryID = actualCategoryID;
         entity.corporationID = 0;
         entity.factionID = 0;
+        entity.ownerID = 1;
+        entity.categoryID = (EVEItemCategories)actualCategoryID;
         entity.groupID = actualGroupID;
         entity.itemID = item->itemID();
         entity.itemName = actualTypeName;
-        entity.ownerID = 1;
         entity.typeID = actualTypeID;
         entity.x = loc.x;
         entity.y = loc.y;
@@ -828,7 +828,7 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
         throw PyException(MakeCustomError("3rd argument must be value (got %s).", args.arg(3).c_str()));
     const double value = atof(args.arg(3).c_str());
 
-    if (itemID < EVEMU_MINIMUM_ID)
+    if (itemID < EVEMU_MINIMUM_DYNAMIC_ID)
         throw PyException(MakeCustomError("1st argument must be a valid 'entity' table itemID that MUST be larger >= 140000000. (got %s)", args.arg(1).c_str()));
 
     InventoryItemRef item = services->item_factory->GetItem(itemID);
@@ -993,9 +993,9 @@ PyResult Command_giveskills(Client* who, CommandDB* db, PyServiceMgr* services, 
 }
 
 PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    uint8 level = 0, oldLevel = 0;
+    uint8 level = 0;
     uint32 ownerID = 0, skillID = 0;
-    EvilNumber oldPoints = 0, newPoints = 0;
+    EvilNumber newPoints = 0;
     CharacterRef character;
     Client *pTarget = nullptr;
 
@@ -1033,18 +1033,13 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
 
     if (pTarget && character.get()) {       // Make sure references are not NULL before trying to use them:
         SkillRef skill;
-
         if (character->HasSkillTrainedToLevel(skillID, level))
             return new PyNone();
         else if (character->HasSkill(skillID)) {
             skill = character->GetSkill(skillID);
-            oldLevel = skill->GetAttribute(AttrSkillLevel).get_int();
-            oldPoints = skill->GetAttribute(AttrSkillPoints);
-            //EvilNumber tmp = EVIL_SKILL_BASE_POINTS * skill->GetAttribute(AttrSkillTimeConstant) * EvilNumber::pow(2, (2.5*(level - 1)));
             newPoints = skill->GetSPForLevel((EvilNumber)level);
             skill->SetAttribute(AttrSkillLevel, level);
-            skill->SetAttribute(AttrSkillPoints, newPoints);
-
+            skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
             if (skill->flag() == flagSkillInTraining) {
                 skill->SetFlag(flagSkill);
                 skill->SetAttribute(AttrExpiryTime, 0);
@@ -1052,24 +1047,22 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
         } else {    // Character DOES NOT have this skill
             ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
             skill = services->item_factory->SpawnSkill(idata);
-
-            character->AddItem(skill);
             if (!skill) {
                 throw PyException(MakeCustomError("Unable to create item for skillID %u.", skillID));
                 return new PyString ("Skill Gifting Failure - Unable to create item for skillID %u.", skillID);
             } else {
+                character->AddItem(skill);
                 newPoints = skill->GetSPForLevel((EvilNumber)level);
                 skill->SetAttribute(AttrSkillLevel, level);
-                skill->SetAttribute(AttrSkillPoints, newPoints);
+                skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
             }
         }
         skill->SaveItem();
-
         //  save gm skill gift in history  -allan
         character->SaveSkillHistory(skillEventGMGive, EvilTimeNow().get_double(), ownerID, skillID, level, \
                                     newPoints.get_double(), character->GetTotalSP().get_double());
 
-        sLog.White("Command::GiveSkill", "skill %u set to level %u.", skillID, level);
+        sLog.White("Command::GiveSkill", "skill %u set to level %u with %" PRIi64 " SP.", skillID, level, newPoints.get_int());
 
         return new PyString ("Skill Gifting Complete");
     } else
@@ -1182,33 +1175,26 @@ PyResult Command_repairmodules(Client* who, CommandDB* db, PyServiceMgr* service
 
 PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    uint32 entityID = 0;
-    uint32 itemID = 0;
-
-    if ((args.argCount() < 3) || (args.argCount() > 3))
-        throw PyException(MakeCustomError("Correct Usage: /unspawn (entityID) (itemID), and for now (entityID) is unused, so just type 0, and use the itemID from the entity table for (itemID)"));
-
-    if (!args.isNumber(1))
-        throw PyException(MakeCustomError("Argument 1 should be an item entity ID"));
-
-    if (!args.isNumber(2))
-        throw PyException(MakeCustomError("Argument 2 should be an item item ID"));
-
-    entityID = atoi(args.arg(1).c_str());
-    itemID = atoi(args.arg(2).c_str());
-
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You must be in space to unspawn things."));
 
+    if ((args.argCount() < 2) || (args.argCount() > 2))
+        throw PyException(MakeCustomError("Correct Usage: /unspawn (itemID)"));
+
+    if (!args.isNumber(1))
+        throw PyException(MakeCustomError("Argument 1 should be itemID"));
+
+    uint32 itemID = atoi(args.arg(1).c_str());
+
     // Search for the itemRef for itemID:
     InventoryItemRef itemRef = who->services().item_factory->GetItem(itemID);
-    SystemEntity* entityRef = who->SystemMgr()->GetSE(itemID);
+    SystemEntity* pSE = who->SystemMgr()->GetSE(itemID);
 
     // Actually do the unspawn using SystemManager's RemoveEntity:
-    if (!entityRef) {
+    if (!pSE) {
         return new PyString("Un-Spawn Failed: itemID not found.");
     } else {
-        who->SystemMgr()->RemoveEntity(entityRef);
+        who->SystemMgr()->RemoveEntity(pSE);
         itemRef->Delete();
     }
 

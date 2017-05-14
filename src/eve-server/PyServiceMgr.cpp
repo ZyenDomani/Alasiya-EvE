@@ -62,6 +62,11 @@ void PyServiceMgr::Close() {
     m_boundObjects.clear();
 }
 
+void PyServiceMgr::Initalize(double startTime)
+{
+    sLog.Cyan("     PyServiceMgr", "%u services registered in %.3fms", m_svcList.size(),(GetTimeMSeconds() - startTime));
+}
+
 void PyServiceMgr::Process() {
     //well... we used to have something to do, but not right now...
 }
@@ -72,7 +77,7 @@ void PyServiceMgr::RegisterService(const std::string name, PyService* svc)
 }
 
 PyService* PyServiceMgr::LookupService(const std::string &name) {
-    std::map<std::string, PyService*>::iterator itr = m_svcList.find(name);
+    std::map<std::string, PyService*>::const_iterator itr = m_svcList.find(name);
     if (itr != m_svcList.end())
         return itr->second;
 

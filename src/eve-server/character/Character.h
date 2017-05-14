@@ -30,7 +30,6 @@
 #include "character/CharacterDB.h"
 #include "character/Skill.h"
 #include "inventory/ItemType.h"
-#include "inventory/Inventory.h"
 #include "inventory/InventoryDB.h"
 #include "inventory/InventoryItem.h"
 #include "standing/StandingDB.h"
@@ -163,12 +162,11 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static _Ty* _LoadCharacterType(ItemFactory& factory, uint32 typeID, uint8 bloodlineID,
-        // ItemType stuff:
-        const ItemGroup& group, const TypeData& data,
-        // CharacterType stuff:
-        const ItemType& shipType, const CharacterTypeData& charData
-    );
+    static _Ty* _LoadCharacterType(ItemFactory& factory, uint32 typeID, uint8 bloodlineID, const ItemGroup& group, const TypeData& data,
+        const ItemType& shipType, const CharacterTypeData& charData)
+    {
+        return new CharacterType( typeID, bloodlineID, group, data, shipType, charData );
+    }
 
     /*
      * Data members
@@ -358,6 +356,7 @@ public:
     void SetClient(Client* pClient)                     { m_pClient = pClient; }
     Client* GetClient()                                 { return m_pClient; }
 
+    /** @todo  update skillqueue data */
     typedef CharacterDB::QueuedSkill QueuedSkill;   // structure of <uint32 typeID, uint8 level>
     typedef CharacterDB::SkillQueue SkillQueue;     // vector of QueuedSkill
 
@@ -396,19 +395,13 @@ public:
      */
     int8             GetSkillLevel(uint32 skillTypeID, bool zeroForNotInjected=true) const;
     /**
-     * Get ship agility modifier
-     *
-     * @param[in] cap boolean to add capital ship skills also.
-     * @return total modifier for ship agility
-     */
-    float           GetAgilitySkills(bool cap=false);
-    /**
      * Get char's Research and Manufacturing skills
      *
      * @param[in] none
      * @return Python wire object
      */
     PyRep*          GetRAMSkills();
+
     /**
      * Returns skill currently in training.
      *
@@ -608,16 +601,18 @@ public:
     void                    LogKill(CharKillData data)          { m_db.SaveKillOrLoss(data); }
 
     //  saves
+    void                    LogOut();
     void                    SaveCharacter();
     void                    SaveFullCharacter();
     void                    SaveSkillQueue();
     void                    SaveCertificates();
-    void                    SaveSkillHistory(uint8 eventID, uint64 logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints);
+    void                    SaveSkillHistory(uint8 eventID, EvilNumber logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints);
 
     bool                    isOffline(uint32 online);
     void                    SetLoaded(bool set=false)   { m_loaded = set; }
 
     void                    SetLoginTime();
+    void                    SetLogonMinutes();
 
 	//  Standings functions
 	//     toID = me|myCorp|myAlliance.  fromID = char|agent|corp|faction|alliance
@@ -648,6 +643,10 @@ public:
 	void                    AddPodKillToDynamicData(uint32 solarSystemID);
 	void                    AddFactionKillToDynamicData(uint32 solarSystemID);
 
+    // character skill, implant and booster effects.  parsed on char load.  applied on ship init in space (with all other ship-related effects)
+    // NOTE:  implants and boosters not implemented yet
+    void                    ProcessEffects();
+    void                    ResetModifiers();   // this will reset ALL char and skill attribs and modifier maps to default
 
     virtual bool _Load();
 
@@ -663,6 +662,8 @@ protected:
         const CorpData& _corpData
     );
     virtual ~Character();
+
+    void VerifySP();
 
     /*
      * Member functions:
@@ -699,9 +700,6 @@ protected:
         const CharacterData& charData, const CorpData& corpData
     );
 
-    void _CalculateTotalSPTrained();
-
-    void _GetLogonMinutes();
 
 private:
     /*
@@ -720,6 +718,7 @@ private:
 	uint32 m_loginTime;
     uint32 m_logonMinutes;
 
+    /** @todo  use corpData.* and remove these */
     uint32 m_corporationID;
     uint32 m_corpHQ;
     uint32 m_allianceID;
@@ -732,6 +731,7 @@ private:
     uint64 m_rolesAtHQ;
     uint64 m_rolesAtOther;
 
+    /** @todo  use fleetData.* and remove these */
     uint32 m_fleetID;
     uint32 m_wingID;
     uint32 m_squadID;
@@ -744,6 +744,7 @@ private:
     uint32 m_constellationID;
     uint32 m_regionID;
 
+    /** @todo  use charData.* and remove these */
     uint32 m_ancestryID;
     uint8  m_bloodlineID;
     uint8  m_raceID;
@@ -770,6 +771,7 @@ private:
     Client* m_pClient;
 
     bool m_loaded;      /* to avoid multiple load calls (_Load is called ~4x) */
+
 };
 
 #endif /* !__CHARACTER__H__INCL__ */

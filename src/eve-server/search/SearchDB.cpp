@@ -69,7 +69,7 @@ PyRep *SearchDB::Query(std::string string, std::vector<int> *searchID, uint32 ch
                     " FROM entity"
                     " WHERE itemName LIKE '%s' "
                     " AND itemID >= %u "
-                    " AND ownerID = 1", string.c_str(), EVEMU_MINIMUM_ID );
+                    " AND ownerID = 1", string.c_str(), EVEMU_MINIMUM_DYNAMIC_ID );
                 id = "ownerID";
                 break;
             case 3: //searchResultCorporation = 3
@@ -180,7 +180,7 @@ PyRep *SearchDB::QuickQuery(std::string string, std::vector<int> *searchID, uint
                                    " FROM entity"
                                    " WHERE itemName LIKE '%s' "
                                    " AND itemID >= %u "
-                                   " AND ownerID = 1", string.c_str(), EVEMU_MINIMUM_ID );
+                                   " AND ownerID = 1", string.c_str(), EVEMU_MINIMUM_DYNAMIC_ID );
                 break;
             case 3: //searchResultCorporation = 3
                 sDatabase.RunQuery(res,

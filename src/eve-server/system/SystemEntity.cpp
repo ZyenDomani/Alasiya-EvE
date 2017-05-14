@@ -47,7 +47,10 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
   m_services(services),
   m_system(system)
 {
+    m_bubble = nullptr;
+    m_destiny = nullptr;
     m_targMgr = new TargetManager(this);
+    Abandon();
 }
 
 SystemEntity::~SystemEntity()
@@ -160,7 +163,7 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
             ++cur;
         }
     }
-    wreckRef->MakeSlimItemChange();
+    //wreckRef->MakeSlimItemChange();
 }
 
 /** @todo (allan)  this doesnt need to be here */
@@ -296,7 +299,7 @@ PyDict* StargateSE::MakeSlimItem() {
     return slim;
 }
 
-/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace */
+/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace, ForceFields */
 ItemSystemEntity::ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
@@ -491,7 +494,7 @@ void ObjectSystemEntity::Killed(Damage &fatal_blow)
     m_targMgr->ClearTargets(false);
     if (m_destiny && m_bubble) {
         m_destiny->Stop();
-        m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), m_self->global());
+        m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
     }
 
     m_system->RemoveEntity(this);
@@ -560,7 +563,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
     into.Append( head );
     MassSector mass;
         mass.mass = m_destiny->GetMass();
-        mass.cloak = 0;
+        mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.Harmonic = 1.0f;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
@@ -611,11 +614,10 @@ void DynamicSystemEntity::Killed(Damage &fatal_blow)
 void DynamicSystemEntity::AwardBounty(Client* pClient)
 {
     double bounty = m_self->GetAttribute(AttrEntityKillBounty).get_double();
+    bounty *= sConfig.rates.npcBountyMultiply;
     if (bounty <= 0)
         return;    //no bounty to award...
 
-    if (sConfig.rates.npcBountyMultiply != 1.0)
-        bounty *= sConfig.rates.npcBountyMultiply;
 
     /** @todo handle distribution to gangs. */
     /** @todo handle corp tax */

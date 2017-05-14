@@ -54,7 +54,7 @@ PyResult PhotoUploadService::Handle_Upload(PyCallArgs &call)
         return  new PyBool(false);
     }
 
-    std::tr1::shared_ptr<std::vector<char> > data(new std::vector<char>(arg.arg.begin(), arg.arg.end()));
+    std::shared_ptr<std::vector<char> > data(new std::vector<char>(arg.arg.begin(), arg.arg.end()));
     sImageServer.ReportNewImage(call.client->GetUserID(), data);
 
     call.client->SetPicRec(true);

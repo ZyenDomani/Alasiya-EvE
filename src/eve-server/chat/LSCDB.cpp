@@ -37,9 +37,9 @@ PyObject *LSCDB::LookupChars(const char *match, bool exact) {
         if(!sDatabase.RunQuery(res,
             "SELECT "
             "    characterID, itemName AS characterName, typeID"
-            " FROM character_"
+            " FROM chrCharacter"
             "  LEFT JOIN entity ON characterID = itemID"
-            " WHERE characterID >= %u", EVEMU_MINIMUM_ID))
+            " WHERE characterID >= %u", EVEMU_MINIMUM_DYNAMIC_ID))
         {
             _log(DATABASE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
             return NULL;
@@ -48,7 +48,7 @@ PyObject *LSCDB::LookupChars(const char *match, bool exact) {
         if(!sDatabase.RunQuery(res,
             "SELECT "
             "    characterID, itemName AS characterName, typeID"
-            " FROM character_"
+            " FROM chrCharacter"
             "  LEFT JOIN entity ON characterID = itemID"
             " WHERE itemName %s '%s'",
             exact?"=":"RLIKE", matchEsc.c_str()
@@ -76,13 +76,13 @@ PyObject *LSCDB::LookupOwners(const char *match, bool exact) {
 
     if(!sDatabase.RunQuery(res,
         "SELECT"
-        "  character_.characterID AS ownerID,"
+        "  chrCharacter.characterID AS ownerID,"
         "  entity.itemName AS ownerName,"
         "  invTypes.groupID AS groupID"
-        " FROM character_"
+        " FROM chrCharacter"
         "  LEFT JOIN entity ON characterID = itemID"
         "  LEFT JOIN invTypes ON entity.typeID = invTypes.typeID"
-        " WHERE character_.characterID >= %u"
+        " WHERE chrCharacter.characterID >= %u"
         "  AND entity.itemName %s '%s'"
         " UNION "
         "SELECT"
@@ -92,7 +92,7 @@ PyObject *LSCDB::LookupOwners(const char *match, bool exact) {
         " FROM corporation"
         "  LEFT JOIN invTypes ON groupID = 2"
         " WHERE corporation.corporationName %s '%s'",
-        EVEMU_MINIMUM_ID, (exact?"=":"RLIKE"), matchEsc.c_str(), (exact?"=":"RLIKE"), matchEsc.c_str()))
+        EVEMU_MINIMUM_DYNAMIC_ID, (exact?"=":"RLIKE"), matchEsc.c_str(), (exact?"=":"RLIKE"), matchEsc.c_str()))
     {
         _log(DATABASE__ERROR, "Failed to lookup player char '%s': %s.", matchEsc.c_str(), res.error.c_str());
         return NULL;
@@ -110,11 +110,11 @@ PyObject *LSCDB::LookupPlayerChars(const char *match, bool exact) {
     if(!sDatabase.RunQuery(res,
         "SELECT"
         " characterID, itemName AS characterName, typeID"
-        " FROM character_"
+        " FROM chrCharacter"
         "  LEFT JOIN entity ON characterID = itemID"
         " WHERE characterID >= %u"
         "  AND itemName %s '%s'",
-        EVEMU_MINIMUM_ID, exact?"=":"RLIKE", matchEsc.c_str()))
+        EVEMU_MINIMUM_DYNAMIC_ID, exact?"=":"RLIKE", matchEsc.c_str()))
     {
         _log(DATABASE__ERROR, "Failed to lookup player char '%s': %s.", matchEsc.c_str(), res.error.c_str());
         return NULL;
@@ -383,13 +383,13 @@ void LSCDB::GetChannelNames(uint32 charID, std::vector<std::string> & names) {
         "    mapSolarSystems.solarSystemName, "
         "    mapConstellations.constellationName, "
         "    mapRegions.regionName "
-        " FROM character_ "
-        "    LEFT JOIN entity ON entity.itemID = character_.characterID "
-        "    LEFT JOIN corporation ON character_.corporationID = corporation.corporationID "
-        "    LEFT JOIN mapSolarSystems ON character_.solarSystemID = mapSolarSystems.solarSystemID "
-        "    LEFT JOIN mapConstellations ON character_.constellationID = mapConstellations.constellationID "
-        "    LEFT JOIN mapRegions ON character_.regionID = mapRegions.regionID "
-        " WHERE character_.characterID = %u ", charID))
+        " FROM chrCharacter "
+        "    LEFT JOIN entity ON entity.itemID = chrCharacter.characterID "
+        "    LEFT JOIN corporation ON chrCharacter.corporationID = corporation.corporationID "
+        "    LEFT JOIN mapSolarSystems ON chrCharacter.solarSystemID = mapSolarSystems.solarSystemID "
+        "    LEFT JOIN mapConstellations ON chrCharacter.constellationID = mapConstellations.constellationID "
+        "    LEFT JOIN mapRegions ON chrCharacter.regionID = mapRegions.regionID "
+        " WHERE chrCharacter.characterID = %u ", charID))
     {
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
         return;

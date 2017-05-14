@@ -38,7 +38,7 @@ PyCallable_Make_InnerDispatcher(InventoryBound)
 InventoryBound::InventoryBound( PyServiceMgr *mgr, InventoryItemRef item, EVEItemFlags flag)
 : PyBoundObject(mgr),
 m_dispatch(new Dispatcher(this)),
-mInventory(item->GetInventory()),
+mInventory(item->GetMyInventory()),
 mFlag(flag),
 m_self(item)
 {
@@ -234,7 +234,6 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::MultiMerge() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     //Decode Args
     Inventory_CallMultiMerge elements;
-
     if (!elements.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Unable to decode elements");
         return nullptr;
@@ -242,6 +241,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
 
     Inventory_CallMultiMergeElement element;
 
+    call.client->services().item_factory->SetUsingClient(call.client);
     std::vector<PyRep *>::const_iterator cur = elements.MMElements->begin();
     for (; cur != elements.MMElements->end(); cur++) {
         if (!element.Decode( *cur )) {
@@ -261,9 +261,12 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
             continue;
         }
 
-        draggedItem->SetFlag(stationaryItem->flag());   // Set dragged item's flag to the stationary item's flag so merge can complete
-        stationaryItem->Merge( draggedItem, element.draggedQty );
+        if (call.client->services().item_factory->GetItemContainerInventory(stationaryItem->itemID())->ValidateAddItem(stationaryItem->flag(), draggedItem)) {
+            draggedItem->ChangeOwner(call.client->GetCharacterID());
+            stationaryItem->Merge( draggedItem, element.draggedQty );
+        } // if false, error is thrown in ValidateAddItem() call
     }
+    call.client->services().item_factory->UnsetUsingClient();
 
     return nullptr;
 }
@@ -465,15 +468,21 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         }
 
         uint32 flag = flagAutoFit;
-        if ( call.byname.find("flag") == call.byname.end() ) {
+        if ((call.byname.find("flag") == call.byname.end()) or (call.byname.find("flag")->second->IsNone())) {
             if (IsStation(call.client->GetLocationID()))
                 flag = flagHangar;
             else {
 
                 flag = flagCargoHold;
             }
-        } else
-            flag = call.byname.find("flag")->second->AsInt()->value();
+        } else {
+            if (call.byname.find("flag")->second->IsInt())
+                flag = call.byname.find("flag")->second->AsInt()->value();
+            else if (call.byname.find("flag")->second->IsFloat())
+                flag = call.byname.find("flag")->second->AsFloat()->value();
+            else
+                ; // make error here.  should never hit.
+        }
 
         if (flag == flagLocked)
             flag = flagCargoHold;
@@ -571,7 +580,7 @@ PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& item
 
         /* check for and remove item from container inventory */
         if (old_flag == flagAutoFit) {
-            _log(INV__WARNING, "old_flag == flagAutoFit for item %s(%u) in locationID %u for inventory of %s(%u).", \
+            _log(INV__TRACE, "old_flag == flagAutoFit for item %s(%u) in locationID %u for inventory of %s(%u).", \
                     itemRef->itemName().c_str(), itemRef->itemID(), itemRef->locationID(), m_self->itemName().c_str(), m_self->itemID());
             if (pClient->IsDocked()) {
                 CargoContainerRef contRef = m_manager->item_factory->GetCargoContainer(itemRef->locationID());

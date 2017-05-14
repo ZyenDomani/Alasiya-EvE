@@ -26,7 +26,6 @@
 
 #include "eve-server.h"
 
-#include "inventory/AttributeEnum.h"
 #include "pos/Structure.h"
 #include "system/DestinyManager.h"
 #include "system/SystemManager.h"
@@ -35,12 +34,7 @@
 /*
  * Structure
  */
-StructureItem::StructureItem(
-    ItemFactory &_factory,
-    uint32 _structureID,
-    // InventoryItem stuff:
-    const ItemType &_itemType,
-    const ItemData &_data)
+StructureItem::StructureItem(ItemFactory &_factory, uint32 _structureID, const ItemType &_itemType, const ItemData &_data)
 : InventoryItem(_factory, _structureID, _itemType, _data)
 {
     m_inventory = new Inventory(InventoryItemRef(this));
@@ -52,24 +46,21 @@ StructureItem::~StructureItem()
     SafeDelete(m_inventory);
 }
 
-StructureItemRef StructureItem::Load(ItemFactory &factory, uint32 structureID) {
+StructureItemRef StructureItem::Load(ItemFactory &factory, uint32 structureID)
+{
     return InventoryItem::Load<StructureItem>( factory, structureID );
 }
 
-bool StructureItem::_Load() {
+bool StructureItem::_Load()
+{
     if( !m_inventory->LoadContents( &m_factory ) )
         return false;
 
     return InventoryItem::_Load();
 }
 
-template<class _Ty>
-RefPtr<_Ty> StructureItem::_LoadStructure(ItemFactory &factory, uint32 structureID, const ItemType &itemType, const ItemData &data) {
-    // we don't need any additional stuff
-    return StructureItemRef( new StructureItem( factory, structureID, itemType, data ) );
-}
-
-StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data) {
+StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data)
+{
     uint32 structureID = StructureItem::CreateItemID( factory, data );
     if (!structureID)
         return StructureItemRef();
@@ -77,42 +68,41 @@ StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data) {
     // check for customs offices and set global flag
     if ((data.typeID == EVEDB::invTypes::typeInterbusCustomsOffice)
         or (data.typeID == EVEDB::invTypes::typePlanetaryCustomsOffice)) {
-        sRef->SetAttribute(AttrIsGlobal,                        1, false);
+        sRef->SetAttribute(AttrIsGlobal,                        1);
     }
     // Create default dynamic attributes in the AttributeMap:
-    sRef->SetAttribute(AttrMass,                                sRef->type().mass(), false);
-    sRef->SetAttribute(AttrRadius,                              sRef->type().radius(), false);
-    sRef->SetAttribute(AttrVolume,                              sRef->type().volume(), false);
-    sRef->SetAttribute(AttrCapacity,                            sRef->type().capacity(), false);
-    sRef->SetAttribute(AttrShieldCharge,                        sRef->GetAttribute(AttrShieldCapacity), false);
+    sRef->SetAttribute(AttrMass,                                sRef->type().mass());
+    sRef->SetAttribute(AttrRadius,                              sRef->type().radius());
+    sRef->SetAttribute(AttrVolume,                              sRef->type().volume());
+    sRef->SetAttribute(AttrCapacity,                            sRef->type().capacity());
+    sRef->SetAttribute(AttrShieldCharge,                        sRef->GetAttribute(AttrShieldCapacity));
 
     // Check for existence of some attributes that may or may not have already been loaded and set them
     // to default values:
     if (!sRef->HasAttribute(AttrDamage))                        sRef->SetAttribute(AttrDamage, 0.0f, false );
     if (!sRef->HasAttribute(AttrArmorDamage))                   sRef->SetAttribute(AttrArmorDamage, 0.0f, false );
-    if (!sRef->HasAttribute(AttrArmorMaxDamageResonance))       sRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f, false);
-    if (!sRef->HasAttribute(AttrShieldMaxDamageResonance))      sRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f, false);
+    if (!sRef->HasAttribute(AttrArmorMaxDamageResonance))       sRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
+    if (!sRef->HasAttribute(AttrShieldMaxDamageResonance))      sRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f);
 
     // Shield Resonance
-    if (!sRef->HasAttribute(AttrShieldEmDamageResonance))       sRef->SetAttribute(AttrShieldEmDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrShieldKineticDamageResonance))  sRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrShieldThermalDamageResonance))  sRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorEmDamageResonance))        sRef->SetAttribute(AttrArmorEmDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorKineticDamageResonance))   sRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorThermalDamageResonance))   sRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrEmDamageResonance))             sRef->SetAttribute(AttrEmDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrExplosiveDamageResonance))      sRef->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrKineticDamageResonance))        sRef->SetAttribute(AttrKineticDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrThermalDamageResonance))        sRef->SetAttribute(AttrThermalDamageResonance, 1.0, false);
-
-    sRef->SaveAttributes();
+    if (!sRef->HasAttribute(AttrShieldEmDamageResonance))       sRef->SetAttribute(AttrShieldEmDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrShieldKineticDamageResonance))  sRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrShieldThermalDamageResonance))  sRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrArmorEmDamageResonance))        sRef->SetAttribute(AttrArmorEmDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrArmorKineticDamageResonance))   sRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrArmorThermalDamageResonance))   sRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrEmDamageResonance))             sRef->SetAttribute(AttrEmDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrExplosiveDamageResonance))      sRef->SetAttribute(AttrExplosiveDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrKineticDamageResonance))        sRef->SetAttribute(AttrKineticDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrThermalDamageResonance))        sRef->SetAttribute(AttrThermalDamageResonance, 1.0);
 
     return sRef;
 }
 
-uint32 StructureItem::CreateItemID(ItemFactory &factory, ItemData &data) {
+uint32 StructureItem::CreateItemID(ItemFactory &factory, ItemData &data)
+{
     return InventoryItem::CreateItemID( factory, data );
 }
 
@@ -124,7 +114,8 @@ void StructureItem::Delete()
     InventoryItem::Delete();
 }
 
-void StructureItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const {
+void StructureItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
+{
     /** @todo update this to new inventory system  */
     EvilNumber capacityUsed(0);
     std::vector<InventoryItemRef> items;
@@ -134,6 +125,7 @@ void StructureItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) co
     capacityUsed += item->GetAttribute(AttrVolume);
 
     /*
+     * 1351,1352
     AttrSpecialFuelBayCapacity = 1549,
     AttrSpecialOreHoldCapacity = 1556,
     AttrSpecialGasHoldCapacity = 1557,
@@ -313,7 +305,7 @@ void StructureSE::Init(StructureItemRef structure)
             if (!iRef)
                 break;  // we'll get over it
             iRef->Relocate(GetPosition());
-            iRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius), false);
+            iRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius));
             ItemSystemEntity* iSE = new ItemSystemEntity(iRef, m_services, m_system);
             m_system->AddEntity(iSE);
         } break;
@@ -539,11 +531,11 @@ PyTuple *StructureSE::GetEffectState() {
             effect.moduleID = m_self->itemID();         /* structure/module id as part of above tower system */
             effect.moduleTypeID = m_self->typeID();
             effect.targetID = m_self->itemID();
-            effect.otherTypeID = 0;
+            effect.chargeTypeID = 0;
             effect.duration_ms = -1;
         }
         effect.area = area;
-        effect.effect_type = "effects.StructureOnline";
+        effect.guid = "effects.StructureOnline";
         effect.isOffensive = 0;                     /** @todo (Allan) this should be boolean */
         effect.start = 1;
         effect.active = 1;

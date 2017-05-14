@@ -32,57 +32,42 @@
 
 class Damage {
 public:
-    Damage( SystemEntity *_source,
-            InventoryItemRef _weapon,
-            double _kinetic,
-            double _thermal,
-            double _em,
-            double _explosive,
-            double modifier,
-            EVEEffectID _effect);
-    Damage( SystemEntity *_source,
-            bool fatal_blow );          // weapon-less and charge-less constructor RESERVED for Killed() methods of derived SystemEntity objects
-    Damage( SystemEntity *_source,
-            InventoryItemRef _weapon,  // damage derrived directly from weapon.
-            EVEEffectID _effect );
-    Damage( SystemEntity* _source, InventoryItemRef _weapon, InventoryItemRef _charge, EVEEffectID _effect );
+    Damage( SystemEntity* source, InventoryItemRef weapon, double _modifier, uint16 eID);
+    Damage( SystemEntity* source, InventoryItemRef weapon, InventoryItemRef charge, uint16 eID );
+    Damage( SystemEntity* source, InventoryItemRef weapon, double kinetic, double thermal, double em, double explosive, double modifier, uint16 eID );
+    // constructor for Killed() methods of derived SystemEntity objects with no weapon
+    Damage( SystemEntity *source, bool fatal_blow );
 
-    virtual ~Damage() { }
+    virtual ~Damage()                                   { /* do nothing here */ }
 
-    double GetTotal() const { return (kinetic + thermal + em + explosive); }
+    float GetTotal() const                              { return (kinetic + thermal + em + explosive); }
 
-    Damage MultiplyDup( double _kinetic_multiplier,
-                        double _thermal_multiplier,
-                        double _em_multiplier,
-                        double _explosive_multiplier ) const
+    Damage MultiplyDup( float kinetic_multiplier,
+                        float thermal_multiplier,
+                        float em_multiplier,
+                        float explosive_multiplier ) const
                         {       // NOTE:  remember, these come in BACKWARD from 'normal' fuzzy logic..  0=full and 1=none
                                 // added checks here for > 95% resists, and < 1% to avoid crazy damage shit.
                                 // also added checks for missing resists (some npcs have no hull resist in db which = 100% resist)
-                            if (_kinetic_multiplier > 1.0) _kinetic_multiplier = 1.0;
-                            if (_kinetic_multiplier < 0.01) _kinetic_multiplier = 0.01;
-                            if (_thermal_multiplier > 1.0) _thermal_multiplier = 1.0;
-                            if (_thermal_multiplier < 0.01) _thermal_multiplier = 0.01;
-                            if (_em_multiplier > 1.0) _em_multiplier = 1.0;
-                            if (_em_multiplier < 0.01) _em_multiplier = 0.01;
-                            if (_explosive_multiplier > 1.0) _explosive_multiplier = 1.0;
-                            if (_explosive_multiplier < 0.01) _explosive_multiplier = 0.01;
-                            return Damage( source, weapon,
-                                            kinetic   * _kinetic_multiplier,
-                                            thermal   * _thermal_multiplier,
-                                            em        * _em_multiplier,
-                                            explosive * _explosive_multiplier,
-                                            modifier,
-                                            effect );
+                            if (kinetic_multiplier > 1.0) kinetic_multiplier = 1.0;
+                            if (kinetic_multiplier < 0.01) kinetic_multiplier = 0.01;
+                            if (thermal_multiplier > 1.0) thermal_multiplier = 1.0;
+                            if (thermal_multiplier < 0.01) thermal_multiplier = 0.01;
+                            if (em_multiplier > 1.0) em_multiplier = 1.0;
+                            if (em_multiplier < 0.01) em_multiplier = 0.01;
+                            if (explosive_multiplier > 1.0) explosive_multiplier = 1.0;
+                            if (explosive_multiplier < 0.01) explosive_multiplier = 0.01;
+                            return Damage( srcSE, weaponRef,
+                                           kinetic   * kinetic_multiplier,
+                                           thermal   * thermal_multiplier,
+                                           em        * em_multiplier,
+                                           explosive * explosive_multiplier,
+                                           modifier,
+                                           effectID );
     }
 
-    void ReduceTo(double total_amount)
+    Damage &operator *=(float factor)
     {
-        *this *= ( total_amount / GetTotal() );
-    }
-
-    Damage &operator *=(double factor)
-    {
-        if (!factor) factor = 1;
         kinetic     *= factor;
         thermal     *= factor;
         em          *= factor;
@@ -91,31 +76,31 @@ public:
         return *this;
     }
 
-    void SumWithMultFactor( double factor )
+    void SumWithMultFactor(float factor)
     {
-        kinetic   += kinetic * factor;
-        thermal   += thermal * factor;
-        em        += em * factor;
-        explosive += explosive * factor;
+        kinetic   += kinetic    * factor;
+        thermal   += thermal    * factor;
+        em        += em         * factor;
+        explosive += explosive  * factor;
     }
 
-    float GetThermal()      { return thermal; }
-    float GetEM()           { return em; }
-    float GetKinetic()      { return kinetic; }
-    float GetExplosive()    { return explosive; }
-    double GetModifier()    { return modifier; }
+    float GetThermal()                                 { return thermal; }
+    float GetEM()                                      { return em; }
+    float GetKinetic()                                 { return kinetic; }
+    float GetExplosive()                               { return explosive; }
+    float GetModifier()                                { return modifier; }
 
-    SystemEntity *const     source;    //we do not own this.
-    const EVEEffectID       effect;
-    InventoryItemRef        weapon;    //we own a ref to this.
-    InventoryItemRef        charge;    //we own a ref to this. May be null.
+    SystemEntity*           srcSE;     //we do not own this.
+    uint16                  effectID;
+    InventoryItemRef        weaponRef;    //we own a ref to this.
+    InventoryItemRef        chargeRef;    //we own a ref to this. May be null.
 
 private:
-    double kinetic;
-    double thermal;
-    double em;
-    double explosive;
-    double modifier;
+    float kinetic;
+    float thermal;
+    float em;
+    float explosive;
+    float modifier;
 };
 
 #endif

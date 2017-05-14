@@ -38,7 +38,7 @@ public:
 
     bool IsRigModule() const                            { return true; }
 
-    ModulePowerLevel GetModulePowerLevel();
+    ModStates::ModulePowerLevel GetModulePowerLevel();
 
     //  not real sure what to do here yet.
     void DestroyRig();

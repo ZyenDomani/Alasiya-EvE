@@ -353,26 +353,10 @@ UPDATE `srvStatus` SET `ClientSeed` = '10101' WHERE `AI` = 1;
 ALTER TABLE `ramAssemblyLines` CHANGE `nextFreeTime` `nextFreeTime` BIGINT(20) NOT NULL DEFAULT 0;
   /*  hack for minor client error...we dont have the real data for this yet  */
 ALTER TABLE `staOperations` ADD `descriptionID` INT(3) NOT NULL DEFAULT '0' AFTER `description`;
-/* set skill level from float to int */
-UPDATE `dgmTypeAttributes` SET `valueInt`=0,`valueFloat`=NULL WHERE `attributeID`=280 AND `valueFloat`=0;
-/* set skill time constanant to int from float */
-UPDATE `dgmTypeAttributes` SET `valueInt`=`valueFloat`, `valueFloat`=NULL WHERE `attributeID`=275 AND `valueFloat` IS NOT NULL;
 
 /* update `crtCategories` to add categoryNameID and dataID found in cache */
 ALTER TABLE `crtCategories` ADD `categoryNameID` int(10) unsigned DEFAULT '0';
 ALTER TABLE `crtCategories` ADD `dataID` int(10) unsigned DEFAULT '0';
-
-/* update beacon type 10124 IsGlobal attribute to true */
-INSERT INTO `dgmTypeAttributes` (`typeID`, `attributeID`, `valueInt`, `valueFloat`) VALUES ('10124', '1207', '1', NULL);
-
-/* update dgmTypeAttributes to add ore volume to asteroid invTypes */
-INSERT INTO `dgmTypeAttributes` (`typeID`, `valueFloat`, `attributeID`)
-(SELECT typeID, volume, 161 FROM invTypes
-WHERE groupID IN (450,451,452,453,454,455,456,457,458,459,460,461,462,467,468,469)
-AND published = 1 );
-
-/* reset rifter cap recharge rate  - there are more wrong i havent found yet.*/
-UPDATE `dgmTypeAttributes` SET `valueFloat` = '125000' WHERE `typeID` = 587 AND `attributeID` = 55;
 
 /* fix radius' in mapDenormalize */
 UPDATE `mapDenormalize` SET `radius`=1 WHERE `groupID`=9;
@@ -385,8 +369,6 @@ ALTER TABLE `mapRegions` ADD `ratFactionID` INT(8) NOT NULL DEFAULT '0' AFTER `f
 UPDATE `invTypes` SET `radius` = '100' WHERE `typeID` = 12346;
 UPDATE `invTypes` SET `radius` = '1000' WHERE `typeID` = 12356;
 
-/*  change charge size to interger from float */
-UPDATE `dgmTypeAttributes` SET `valueInt`=`valueFloat`, `valueFloat`= NULL WHERE `attributeID`=128 AND `valueFloat` IS NOT NULL;
-
 /* not sure how many of these are wrong... */
 UPDATE `mapDenormalize` SET `radius` = '343000' WHERE `mapDenormalize`.`itemID` = 40003343;
+UPDATE `dgmTypeAttributes` SET `valueInt`=2500,`valueFloat`=NULL WHERE `attributeID` = 247 AND (`valueInt` = 0 OR `valueFloat` = 0)

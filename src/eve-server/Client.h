@@ -149,10 +149,8 @@ public:
     void MoveToLocation(uint32 location, const GPoint &pt);
     void MoveToPosition(const GPoint &pt);
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
-    void SetClientTimer(ClientState type, uint32 wait_ms=ClientTimers::DefaultTimer);
+    void SetClientTimer(ClientState state, uint32 time=ClientTimers::DefaultTimer);
     void SetDestiny(const GPoint& pt, bool count = false);
-    void SavePosition();
-    void SaveAllToDatabase();
     void UpdateSkillTraining();
 	void SpawnNewRookieShip();
     void LoadStationHangar(uint32 stationID);
@@ -205,10 +203,13 @@ public:
     void StartJetcanTimer()                             { m_jetcanTimer.Start(ClientTimers::JetcanTimer); }
 
     //messages and LSC
+    // error requires dismissal (click 'ok')
     void SendErrorMsg(const char *fmt, ...);
     void SendErrorMsg(const char *fmt, va_list args);
+    // notify self-removes after delay
     void SendNotifyMsg(const char *fmt, ...);
     void SendNotifyMsg(const char *fmt, va_list args);
+    // info requires dismissal (click 'ok')
     void SendInfoModalMsg(const char *fmt, ...);
     void SelfChatMessage(const char *fmt, ...);
     void SelfEveMail(const char *subject, const char *fmt, ...);
@@ -365,6 +366,8 @@ private:
 
     bool DoDestinyUpdate();
     std::list<PyTuple*> mDogmaMessages;
+
+    std::string GetStateName(ClientState state);
 };
 
 #endif

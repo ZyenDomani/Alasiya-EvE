@@ -82,6 +82,8 @@ public:
      */
     static bool FitModuleSkillCheck(InventoryItemRef item, CharacterRef ch);
 
+    void VerifySP();
+
 protected:
     Skill(
         ItemFactory &_factory,
@@ -110,15 +112,12 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadSkill(ItemFactory &factory, uint32 skillID,
-        // InventoryItem stuff:
-        const ItemType &type, const ItemData &data
-    );
+    static RefPtr<_Ty> _LoadSkill(ItemFactory &factory, uint32 skillID, const ItemType &type, const ItemData &data)
+    {
+        return SkillRef( new Skill( factory, skillID, type, data ) );
+    }
 
-    static uint32 CreateItemID(ItemFactory &factory,
-        // InventoryItem stuff:
-        ItemData &data
-    );
+    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
 };
 
 class Certificate

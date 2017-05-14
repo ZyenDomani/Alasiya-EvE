@@ -21,18 +21,21 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Bloody.Rabbit
+    Updates:    Allan
 */
 
 #ifndef __SHIP__H__INCL__
 #define __SHIP__H__INCL__
 
+
+#include <unordered_map>
+
+#include "effects/EffectsData.h"
 #include "inventory/ItemType.h"
-#include "inventory/Inventory.h"
 #include "inventory/InventoryItem.h"
-#include "system/SystemEntity.h"
-#include "ship/modules/ModuleManager.h"
-#include "ship/modules/GenericModule.h"
 #include "ship/ShipDB.h"
+#include "ship/modules/ModuleManager.h"
+#include "system/SystemEntity.h"
 
 /**
  * Basic container for raw ship type data.
@@ -53,6 +56,7 @@ public:
 
 /**
  * Class managing ship type data.
+ ** @todo wtf is this for???  delete it.
  */
 class ShipType
 : public ItemType
@@ -140,12 +144,11 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static _Ty *_LoadShipType(ItemFactory &factory, uint32 shipTypeID,
-        // ItemType stuff:
-        const ItemGroup &group, const TypeData &data,
-        // ShipType stuff:
-        const ItemType *weaponType, const ItemType *miningType, const ItemType *skillType, const ShipTypeData &stData
-    );
+    static _Ty *_LoadShipType(ItemFactory &factory, uint32 shipTypeID, const ItemGroup &group, const TypeData &data,
+        const ItemType *weaponType, const ItemType *miningType, const ItemType *skillType, const ShipTypeData &stData)
+    {
+        return new ShipType(shipTypeID, group, data, weaponType, miningType, skillType, stData );
+    }
 
     /*
      * Data content:
@@ -155,9 +158,66 @@ protected:
     const ItemType *m_skillType;
 };
 
+//////////////////////////////////////////////////////////////////////////////////
+// Modifier classes containing all data to modify an attribute
+#pragma region Modifier
+
+class Modifier
+: public RefObject
+{
+public:
+    Modifier(uint32 originatorID, uint32 targetAttributeID, uint32 targetID, bool penaltiesApply, double modifierValue, uint32 calcTypeID, uint32 revCalcTypeID)
+    : RefObject( 0 )
+    {
+        m_OriginatorID = originatorID;
+        m_TargetAttributeID = targetAttributeID;
+        m_TargetID = targetID;
+        m_bPenaltiesApply = penaltiesApply;
+        m_ModifierValue = modifierValue;
+        m_CalculationTypeID = calcTypeID;
+        m_ReverseCalculationTypeID = revCalcTypeID;
+    }
+
+    ~Modifier();
+
+    double GetModifierValue() { return m_ModifierValue; }
+    void SetModifierValue(double newModifierValue) { m_ModifierValue = newModifierValue; }
+    uint32 GetOriginatorID() { return m_OriginatorID; }
+
+protected:
+    uint32 m_OriginatorID;
+    uint32 m_TargetAttributeID;
+    uint32 m_TargetID;
+    bool m_bPenaltiesApply;
+    double m_ModifierValue;
+    uint32 m_CalculationTypeID;
+    uint32 m_ReverseCalculationTypeID;
+};
+
+typedef RefPtr<Modifier> ModifierRef;
+
+typedef std::multimap<double, ModifierRef> ModifierMapType;     // The ModifierRef is NOT owned by the owner of instances of this type
+
+class ModifierMap
+{
+public:
+    ModifierMap() { m_MapIsDirty = false; }
+    ~ModifierMap();
+
+    bool m_MapIsDirty;
+    ModifierMapType m_ModifierMap;   // Key= modifier value, Value= Modifier class object containing all data describing this modifier for this attribute
+};
+
+typedef std::map<uint32, ModifierMap *> ModifierMaps;   // Key= attributeID, Value= ModifierMap class object containing a map of all modifiers for this attribute
+
+#pragma endregion
+/////////////////////////////// END MODIFIER /////////////////////////////////////
+
 /**
  * InventoryItem which represents ShipItem.
  */
+class Client;
+class GenericModule;
 
 class ShipItem
 : public InventoryItem
@@ -177,6 +237,8 @@ protected:
 public:
     void Init();
     void InitPod();
+    void InitAttribs();
+    void LogOut();
     static ShipItemRef Load(ItemFactory &factory, uint32 shipID);
     static ShipItemRef Spawn(ItemFactory &factory, ItemData &data);
 
@@ -230,12 +292,17 @@ public:
 
     /* begin new module manager interface */
     void ProcessModules();
-    InventoryItemRef GetModule(EVEItemFlags flag);
-    InventoryItemRef GetModule(uint32 itemID);
-    EVEItemFlags FindAvailableModuleSlot( InventoryItemRef item );
-    EvilNumber GetMaxTurrentHardpoints() { return GetAttribute(AttrTurretSlotsLeft); }
-    EvilNumber GetMaxLauncherHardpoints() { return GetAttribute(AttrLauncherSlotsLeft); }
-    uint32 AddItem( EVEItemFlags flag, InventoryItemRef item);
+    void Online(uint32 moduleID);
+    void Offline(uint32 moduleID);
+    void OnlineAll();
+    void OfflineAll();
+    void Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat);
+    void Deactivate(int32 itemID, std::string effectName);
+    void DeactivateAllModules();
+    void Overload();
+    void CancelOverloading();
+    void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);
+    void RemoveRig(InventoryItemRef item);
     void AddItem(InventoryItemRef item);
     void RemoveItem( InventoryItemRef item, uint32 qty=0/*, uint32 inventoryID, EVEItemFlags flag*/ );
     void UpdateModules();
@@ -244,21 +311,19 @@ public:
     void UnloadAllModules();
     void MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2);
     void RepairModules();
+    void StripFitting();
 
     void AbortCycle()                                        { m_ModuleManager->AbortCycle(); }
+    bool IsDocking()                                         { return m_isDocking; }
+    bool IsUndocking()                                       { return m_isUndocking; }
+    InventoryItemRef GetTargetRef()                          { return m_targetRef; }
+    void ClearTargetRef()                                    { m_targetRef = InventoryItemRef(); }
 
-    void Online(uint32 moduleID);
-    void Offline(uint32 moduleID);
-    void Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat);
-    void Deactivate(int32 itemID, std::string effectName);
-    void Overload();
-    void CancelOverloading();
-    void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);
-    void RemoveRig(InventoryItemRef item);
-    void DeactivateAllModules();
-    void OnlineAll();
-    void OfflineAll();
-    void StripFitting();
+    InventoryItemRef GetModuleRef(EVEItemFlags flag);
+    InventoryItemRef GetModuleRef(uint32 itemID);
+    EVEItemFlags FindAvailableModuleSlot( InventoryItemRef item );
+    uint32 AddItem( EVEItemFlags flag, InventoryItemRef item);
+    /* end new module manager interface */
 
     // Tactical Interface:
     void SetShipShield(double fraction);
@@ -280,13 +345,9 @@ public:
 
     void UpdateHoldsUsedVolume();
 
-    // External Methods For use by hostile entities directing effects to this entity:
-    int32 ApplyRemoteEffect() { assert(true); }     // DO NOT CALL THIS YET!!!  This function needs to call down to ModuleManager::ApplyRemoteEffect with the proper argument list.
-    int32 RemoveRemoteEffect() { assert(true); }    // DO NOT CALL THIS YET!!!  This function needs to call down to ModuleManager::RemoveRemoteEffect with the proper argument list.
-
+    // template loading system
     using InventoryItem::_Load;
     virtual bool _Load();
-
 protected:
     // Template loader:
     template<class _Ty>
@@ -302,10 +363,10 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadShip(ItemFactory &factory, uint32 shipID,
-                                 // InventoryItem stuff:
-                                 const ShipType &shipType, const ItemData &data
-    );
+    static RefPtr<_Ty> _LoadShip(ItemFactory &factory, uint32 shipID, const ShipType &shipType, const ItemData &data)
+    {
+        return ShipItemRef( new ShipItem(factory, shipID, shipType, data ));
+    }
 
     //bool LoadAttributes();
     bool m_IsLoaded;
@@ -314,34 +375,28 @@ protected:
 
     void ModifyHoldVolumeByFlag(EVEItemFlags flag, double amount);
 
+    /* new effects system */
+public:
+    void RemoveEffects();
+
 private:
     Client* m_pilot;
 
     //the ship's module manager.  We own this
     ModuleManager* m_ModuleManager;
 
+    InventoryItemRef m_targetRef;
+
     std::vector<uint32> m_onlineModuleVec;
 
-public:
-    /* stacking penality system   -allan
-     * each ship will have a map of the attribs affected and the current effectiveness on that attrib
-     * this is set and used in MSAC, but needs to be kept here, as it's specific to *this ship
-     * the other component, attrib stack counting, is a std::map and holds a k,v pair of (attribID, module count)
-     */
-    double GetEffectiveness(uint16 attrib, ModuleStates state);
-    /*  stacking tracking system  -allan
-     * the stacking map is to hard-code resist caps at 95%, and keep a map of the *actual* resist, for correct calculations when altering
-     */
-    void InitStackingMap();
-    void SetTrueResist(uint16 attrib, EvilNumber& value);
-    void GetTrueResist(uint16 attrib, EvilNumber& value);
+    void ProcessEffects(bool add=false, bool update=false);
+    void ProcessShipEffects(bool update=false);
 
-    void CheckStacking(uint16 attrib, EVECalculationType type, ModuleStates state, EvilNumber& value);
+    typedef std::map<InventoryItem*, double> iMap;
+    std::map<uint16, ShipItem::iMap> m_stackMap;     // stacking attrib storage  attrib, map<InventoryItem*, double>
 
-private:
-    std::map<uint16, uint8> m_stackMap;
-    std::map<uint16, float> m_resistMap;
-
+    bool m_isDocking;
+    bool m_isUndocking;
 };
 
 /**
@@ -381,10 +436,13 @@ public:
 
     /* specific functions handled here. */
     void PayInsurance();
-    void ResetShipSystemMgr(SystemManager* pSystem);
+    void ResetShipSystemMgr(SystemManager* pSystem);    // this is to reset system manager for jumps, etc.
 
     void AbortCycle()                                   { m_shipRef->AbortCycle(); }
     void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
+
+
+    ShipItemRef GetShipItemRef()                        { return m_shipRef; }
 
     uint32 GetPodShipID()                               { return m_podShipID; }
 
@@ -405,5 +463,3 @@ private:
 };
 
 #endif /* !__SHIP__H__INCL__ */
-
-

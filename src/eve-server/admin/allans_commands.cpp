@@ -299,8 +299,43 @@ PyResult Command_destinyvars(Client* who, CommandDB* db, PyServiceMgr* services,
              "HasBeyonce: %u<br>" //27
              "IsBubbleWait: %u<br>" //27
              "IsSetStateSent: %u<br>", //27
-             who->GetShipID(), dm->IsCloaked(), dm->IsWarping(), who->InPod(), who->IsInSpace(), who->IsDocked(), who->IsJump(),
-             who->IsInvul(), who->IsLogin(),  who->IsUndock(), who->HasBeyonce(), who->IsBubbleWait(), who->IsSetStateSent());
+                who->GetShipID(), dm->IsCloaked(), dm->IsWarping(), who->InPod(), who->IsInSpace(), who->IsDocked(), who->IsJump(),
+                who->IsInvul(), who->IsLogin(),  who->IsUndock(), who->HasBeyonce(), who->IsBubbleWait(), who->IsSetStateSent()
+            );
+
+    who->SendInfoModalMsg(reply);
+
+    return new PyString(reply);
+}
+
+PyResult Command_shipvars(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!who->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->SysBubble())
+        who->EnterSystem(who->GetSystemID());
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny(NULL_ORIGIN);
+
+    DestinyManager* dm = who->GetShipSE()->DestinyMgr();
+
+    char reply[250];
+    snprintf(reply, 250,
+             "ShipID: %u<br>"
+             "Mass: %.2f<br>" //28
+             "AlignTime: %.2f<br>" //27
+             "AccelTime: %.2f<br>"
+             "MaxSpeed: %.2f<br>" //27
+             "WarpSpeed: %.2f<br>" //27
+             "WarpTime: %.2f<br>" //27
+             "WarpDropSpeed: %.2f<br>" //27
+             "Radius: %.2f<br>" //27
+             "CapNeed: %.2f<br>" //27
+             "Agility: %.3f<br>" //27
+             "Inertia: %.3f<br>", //27
+                who->GetShipID(), dm->GetMass(), dm->GetAlignTime(), dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() /10), dm->GetWarpTime(),
+                dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(), dm->GetAgility(), dm->GetInertia()
+            );
 
     who->SendInfoModalMsg(reply);
 
@@ -350,7 +385,7 @@ PyResult Command_beltlist(Client* who, CommandDB* db, PyServiceMgr* services, co
 
     std::vector<AsteroidSE*> invMap;
     invMap.clear();
-    uint32 beltID = sBubbleMgr.GetSpawnID(who->GetShipSE()->SysBubble()->GetID());
+    uint32 beltID = sBubbleMgr.GetBeltID(who->GetShipSE()->SysBubble()->GetID());
     AsteroidBeltMgr* belt = who->GetShipSE()->SystemMgr()->GetBeltMgr();
     belt->GetList(beltID, invMap);
 
@@ -384,14 +419,14 @@ PyResult Command_inventory(Client* who, CommandDB* db, PyServiceMgr* services, c
     if (inventoryID) {
         InventoryItemRef station = sEntityList.GetStationByID(inventoryID);
         if (!station) throw PyException(MakeCustomError("Cannot find Station Reference for stationID %u", inventoryID));
-        inv = station->GetInventory();
+        inv = station->GetMyInventory();
         inv->GetInventoryList(invMap);
         item = station.get();
     } else {
         Command_list(who,db,services,args);
         inventoryID = who->GetSystemID();
         SolarSystemRef system = services->item_factory->GetSolarSystem(inventoryID);
-        inv = system->GetInventory();
+        inv = system->GetMyInventory();
         inv->GetInventoryList(invMap);
         item = system.get();
     }
@@ -421,7 +456,7 @@ PyResult Command_shipinventory(Client* who, CommandDB* db, PyServiceMgr* service
     invMap.clear();
     uint32 inventoryID = who->GetShipID();
     ShipItemRef ship = services->item_factory->GetShip(inventoryID);
-    Inventory* inv = ship->GetInventory();
+    Inventory* inv = ship->GetMyInventory();
     inv->GetInventoryList(invMap);
 
     std::ostringstream str;
@@ -448,22 +483,67 @@ PyResult Command_skilllist(Client* who, CommandDB* db, PyServiceMgr* services, c
     std::map<uint32, InventoryItemRef> invMap;
     invMap.clear();
     uint32 inventoryID = who->GetCharacterID();
-    Inventory* inv = who->GetChar()->GetInventory();
+    Inventory* inv = who->GetChar()->GetMyInventory();
     inv->GetInventoryList(invMap);
 
     std::ostringstream str;
-    str << "InventoryID %u(%p) (Char %p) has %u skills.<br><br>"; //50
+    str << "InventoryID %u(%p) (%s) has %u skills.<br><br>"; //80
 
     for (auto cur : invMap) {
-        str << cur.first << "(" << cur.second->flag() << "): " << cur.second->itemName() << " (";
-        str << cur.second->GetAttribute(AttrSkillLevel).get_int() << ")<br>"; // 20 + 40 + 15 for name (75)
+        str << cur.first << " - " << cur.second->itemName();    //45
+        str  << " (" << cur.second->GetAttribute(AttrSkillLevel).get_int() << ") "; //3
+        if (cur.second->GetAttribute(AttrSkillPoints).get_type() == evil_number_int)    //15
+            str << "[i-" << cur.second->GetAttribute(AttrSkillPoints).get_int();
+        else
+            str << "[f-" << cur.second->GetAttribute(AttrSkillPoints).get_float();
+        str << "]<br>"; // 45 + 3 + 15 + 5 (70)
     }
 
     int count = invMap.size();
-    int size = count * 75;
-    size += 50;
+    int size = count * 80;
+    size += 80;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), inventoryID, inv, who->GetChar().get(), count);
+    snprintf(reply, size, str.str().c_str(), inventoryID, inv, who->GetChar()->itemName().c_str(), count);
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
+PyResult Command_attrlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    /* this command is used to debug attributes
+     * wip.   -allan 15Mar17
+     */
+
+    if (!args.isNumber(1))
+        throw PyException(MakeCustomError("Argument 1 must be a valid itemID."));
+    uint32 itemID = atol(args.arg(1).c_str());
+
+    InventoryItemRef iRef = services->item_factory->GetItem(itemID);
+    if (!iRef) {
+        // make error msg here
+        return new PyNone();
+    }
+
+    std::map<uint16, EvilNumber> attrMap;
+    iRef->GetAttributeMap().CopyAttributes(attrMap);
+
+    std::ostringstream str;
+    str << "%u(%s) has %u attributes.<br><br>"; //70
+
+    for (auto cur : attrMap) {
+        str << cur.first << " ";  //15
+        if (cur.second.get_type() == evil_number_int)    //15
+            str << "i- " << cur.second.get_int();
+        else
+            str << "f- " << cur.second.get_float();
+        str << "<br>"; // 3 + 15 + 15 (40)
+    }
+
+    int count = attrMap.size();
+    int size = count * 40;
+    size += 70;
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(), itemID, iRef->itemName().c_str(), count);
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -528,12 +608,11 @@ PyResult Command_shipdna(Client* who, CommandDB* db, PyServiceMgr* services, con
 
 PyResult Command_targlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    std::string into = "";
     uint16 length = 1, count = 0;
-    who->GetShipSE()->TargetMgr()->TargetList(&into, &length, &count);
+    std::string into = who->GetShipSE()->TargetMgr()->TargetList(length, count);
 
     std::ostringstream str;
-    str << "Target List for %s( in ship %u)<br>"; //30+30
+    str << "Target List for %s in shipID %u<br>"; //30+30
     str << "    %u entries in list<br>";   //30
     str << "%s"; //length
 
@@ -559,10 +638,9 @@ PyResult Command_track(Client* who, CommandDB* db, PyServiceMgr* services, const
         sEntityList.SetTracking(true);
 
     char reply[25];
-    snprintf(reply, 25,
-             "Tracking %s.", track.c_str());
+    snprintf(reply, 25, "Tracking %s.", track.c_str());
 
-    who->SendInfoModalMsg(reply);
+    who->SendNotifyMsg(reply);
     return new PyString(reply);
 }
 
@@ -578,9 +656,8 @@ PyResult Command_warpto(Client* who, CommandDB* db, PyServiceMgr* services, cons
     /** @todo  finish this.... */
     who->GetShipSE()->DestinyMgr()->Halt();
 
-    char reply[25];
-    snprintf(reply, 25,
-             "Ship Halted.");
+    char reply[55];
+    snprintf(reply, 55, "Command Unavalible.\nShip Halted.");
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);

@@ -127,7 +127,7 @@ PyObject *CorporationDB::ListStationOwners(uint32 stationID) {
         "  cs.gender"
         " FROM entity AS e"
         "  LEFT JOIN corporation AS c USING ( corporationID )"
-        "  LEFT JOIN character_ AS cs ON cs.characterID = c.ceoID"
+        "  LEFT JOIN chrCharacter AS cs ON cs.characterID = c.ceoID"
         " WHERE e.itemID = %u", stationID ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -550,7 +550,7 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, uint32 charID
     }
 
     // update character join corp date
-    if (!sDatabase.RunQuery(err, " UPDATE character_ SET startDateTime = %" PRIu64 " WHERE characterID = %u", Win32TimeNow(), charID )) {
+    if (!sDatabase.RunQuery(err, " UPDATE chrCharacter SET startDateTime = %" PRIu64 " WHERE characterID = %u", Win32TimeNow(), charID )) {
         codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
     }
 
@@ -700,7 +700,7 @@ bool CorporationDB::JoinCorporation(uint32 charID, uint32 corpID, uint32 oldCorp
     }
 
     if (!sDatabase.RunQuery(err,
-        "UPDATE character_ SET "
+        "UPDATE chrCharacter SET "
         "   corporationID = %u, startDateTime = %" PRIu64 ", corpAccountKey = %i,"
         "   corpRole = %" PRIi64 ", rolesAtAll = %" PRIi64 ", rolesAtBase = %" PRIi64 ", rolesAtHQ = %" PRIi64 ", rolesAtOther = %" PRIi64 " "
         "   WHERE characterID = %u",
@@ -860,7 +860,7 @@ PyObject *CorporationDB::GetEveOwners(uint32 corpID) {
         " e.itemName AS ownerName,"
         " e.typeID,"
         " c.gender"
-        " FROM character_ AS c"
+        " FROM chrCharacter AS c"
         "  LEFT JOIN entity AS e ON e.itemID = c.characterID"
         " WHERE c.corporationID = %u", corpID
         ))
@@ -1214,7 +1214,7 @@ bool CorporationDB::CreateMemberAttributeUpdate(MemberAttributeUpdate & attrib, 
         "   title, startDateTime, corporationID, "
         "   corpRole, rolesAtAll, rolesAtBase, "
         "   rolesAtHQ, rolesAtOther "
-        " FROM character_ "
+        " FROM chrCharacter "
         " WHERE characterID = %u ", charID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());

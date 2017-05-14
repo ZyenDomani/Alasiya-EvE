@@ -15,7 +15,7 @@ TRUNCATE TABLE cacheLocations;
 TRUNCATE TABLE cacheOwners;
 TRUNCATE TABLE channelChars;
 TRUNCATE TABLE channelMods;
-TRUNCATE TABLE character_;
+TRUNCATE TABLE chrCharacter;
 TRUNCATE TABLE chrApplications;
 TRUNCATE TABLE chrEmployment;
 TRUNCATE TABLE chrMissionState;

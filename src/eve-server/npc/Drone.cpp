@@ -54,17 +54,17 @@ Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSys
     }
 
     // Create default dynamic attributes in the AttributeMap:
-    m_self->SetAttribute(AttrDamage,              0, false);
-    m_self->SetAttribute(AttrArmorDamage,         0, false);
-    m_self->SetAttribute(AttrInertia,             1, false);
-    m_self->SetAttribute(AttrWarpCapacitorNeed,   0.00001, false);
-    m_self->SetAttribute(AttrOrbitRange,          m_orbitRange, false);
-    m_self->SetAttribute(AttrMass,                m_self->type().mass(), false);
-    m_self->SetAttribute(AttrRadius,              m_self->type().radius(), false);
-    m_self->SetAttribute(AttrVolume,              m_self->type().volume(), false);
-    m_self->SetAttribute(AttrCapacity,            m_self->type().capacity(), false);
-    m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
-    m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
+    m_self->SetAttribute(AttrDamage,              0);
+    m_self->SetAttribute(AttrArmorDamage,         0);
+    m_self->SetAttribute(AttrInertia,             1);
+    m_self->SetAttribute(AttrWarpCapacitorNeed,   0.00001);
+    m_self->SetAttribute(AttrOrbitRange,          m_orbitRange);
+    m_self->SetAttribute(AttrMass,                m_self->type().mass());
+    m_self->SetAttribute(AttrRadius,              m_self->type().radius());
+    m_self->SetAttribute(AttrVolume,              m_self->type().volume());
+    m_self->SetAttribute(AttrCapacity,            m_self->type().capacity());
+    m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity));
+    m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity));
 
     m_destiny->SetShipCapabilities(m_self);
 
@@ -234,7 +234,7 @@ void Drone::EncodeDestiny( Buffer& into )
             warp.z = target.z;
             warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
             warp.followRange = 0;
-            warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
+            warp.followID = 0;  //this isnt right
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
@@ -261,7 +261,7 @@ void Drone::EncodeDestiny( Buffer& into )
         into.Append( main );
     }
 
-    _log(COMMON__WARNING, "Drone::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(DESTINY__UPDATES, "Drone::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void Drone::MakeDamageState(DoDestinyDamageState &into)
@@ -275,18 +275,18 @@ void Drone::MakeDamageState(DoDestinyDamageState &into)
 
 void Drone::SetResists() {
     /* fix for missing resist attribs -allan 18April16  */
-    if (!m_self->HasAttribute(AttrShieldEmDamageResonance)) m_self->SetAttribute(AttrShieldEmDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrShieldExplosiveDamageResonance)) m_self->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrShieldKineticDamageResonance)) m_self->SetAttribute(AttrShieldKineticDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrShieldThermalDamageResonance)) m_self->SetAttribute(AttrShieldThermalDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrArmorEmDamageResonance)) m_self->SetAttribute(AttrArmorEmDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrArmorExplosiveDamageResonance)) m_self->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrArmorKineticDamageResonance)) m_self->SetAttribute(AttrArmorKineticDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrArmorThermalDamageResonance)) m_self->SetAttribute(AttrArmorThermalDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrEmDamageResonance)) m_self->SetAttribute(AttrEmDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrExplosiveDamageResonance)) m_self->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrKineticDamageResonance)) m_self->SetAttribute(AttrKineticDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrThermalDamageResonance)) m_self->SetAttribute(AttrThermalDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrShieldEmDamageResonance)) m_self->SetAttribute(AttrShieldEmDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrShieldExplosiveDamageResonance)) m_self->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrShieldKineticDamageResonance)) m_self->SetAttribute(AttrShieldKineticDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrShieldThermalDamageResonance)) m_self->SetAttribute(AttrShieldThermalDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrArmorEmDamageResonance)) m_self->SetAttribute(AttrArmorEmDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrArmorExplosiveDamageResonance)) m_self->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrArmorKineticDamageResonance)) m_self->SetAttribute(AttrArmorKineticDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrArmorThermalDamageResonance)) m_self->SetAttribute(AttrArmorThermalDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrEmDamageResonance)) m_self->SetAttribute(AttrEmDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrExplosiveDamageResonance)) m_self->SetAttribute(AttrExplosiveDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrKineticDamageResonance)) m_self->SetAttribute(AttrKineticDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrThermalDamageResonance)) m_self->SetAttribute(AttrThermalDamageResonance, 1.0);
 }
 
 /*   when drone is scooped up....

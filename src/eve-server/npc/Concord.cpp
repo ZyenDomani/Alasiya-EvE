@@ -55,17 +55,17 @@ Concord::Concord(
      }
 
      // Create default dynamic attributes in the AttributeMap:
-     m_self->SetAttribute(AttrDamage,              0, false);
-     m_self->SetAttribute(AttrArmorDamage,         0, false);
-     m_self->SetAttribute(AttrInertia,             1, false);
-     m_self->SetAttribute(AttrWarpCapacitorNeed,   0.00001, false);
-     m_self->SetAttribute(AttrOrbitRange,          m_orbitRange, false);
-     m_self->SetAttribute(AttrMass,                m_self->type().mass(), false);
-     m_self->SetAttribute(AttrRadius,              m_self->type().radius(), false);
-     m_self->SetAttribute(AttrVolume,              m_self->type().volume(), false);
-     m_self->SetAttribute(AttrCapacity,            m_self->type().capacity(), false);
-     m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
-     m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
+     m_self->SetAttribute(AttrDamage,              0);
+     m_self->SetAttribute(AttrArmorDamage,         0);
+     m_self->SetAttribute(AttrInertia,             1);
+     m_self->SetAttribute(AttrWarpCapacitorNeed,   0.00001);
+     m_self->SetAttribute(AttrOrbitRange,          m_orbitRange);
+     m_self->SetAttribute(AttrMass,                m_self->type().mass());
+     m_self->SetAttribute(AttrRadius,              m_self->type().radius());
+     m_self->SetAttribute(AttrVolume,              m_self->type().volume());
+     m_self->SetAttribute(AttrCapacity,            m_self->type().capacity());
+     m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity));
+     m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity));
 
      m_destiny->SetShipCapabilities(m_self);
 
@@ -142,7 +142,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
     into.Append( head );
     MassSector mass;
     mass.mass = m_destiny->GetMass();
-    mass.cloak = 0;
+    mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
     mass.Harmonic = -1.0f;
     mass.corporationID = GetCorporationID();
     mass.allianceID = GetAllianceID();
@@ -165,7 +165,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
         warp.z = target.z;
         warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
         warp.followRange = 0;
-        warp.followID = (m_destiny->GetTargetID() ? m_destiny->GetTargetID() : 0);
+        warp.followID = 0;  //this isnt right
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
@@ -193,7 +193,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
         into.Append( main );
     }
 
-    _log(COMMON__WARNING, "NPC::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(DESTINY__UPDATES, "Concord::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 
@@ -249,18 +249,18 @@ void Concord::_UpdateDamage()
 
 void Concord::SetResists() {
     /* fix for missing resist attribs -allan 18April16  */
-    if (!m_self->HasAttribute(AttrShieldEmDamageResonance)) m_self->SetAttribute(AttrShieldEmDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrShieldExplosiveDamageResonance)) m_self->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrShieldKineticDamageResonance)) m_self->SetAttribute(AttrShieldKineticDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrShieldThermalDamageResonance)) m_self->SetAttribute(AttrShieldThermalDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrArmorEmDamageResonance)) m_self->SetAttribute(AttrArmorEmDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrArmorExplosiveDamageResonance)) m_self->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrArmorKineticDamageResonance)) m_self->SetAttribute(AttrArmorKineticDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrArmorThermalDamageResonance)) m_self->SetAttribute(AttrArmorThermalDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrEmDamageResonance)) m_self->SetAttribute(AttrEmDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrExplosiveDamageResonance)) m_self->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrKineticDamageResonance)) m_self->SetAttribute(AttrKineticDamageResonance, 1.0, false);
-    if (!m_self->HasAttribute(AttrThermalDamageResonance)) m_self->SetAttribute(AttrThermalDamageResonance, 1.0, false);
+    if (!m_self->HasAttribute(AttrShieldEmDamageResonance)) m_self->SetAttribute(AttrShieldEmDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrShieldExplosiveDamageResonance)) m_self->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrShieldKineticDamageResonance)) m_self->SetAttribute(AttrShieldKineticDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrShieldThermalDamageResonance)) m_self->SetAttribute(AttrShieldThermalDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrArmorEmDamageResonance)) m_self->SetAttribute(AttrArmorEmDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrArmorExplosiveDamageResonance)) m_self->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrArmorKineticDamageResonance)) m_self->SetAttribute(AttrArmorKineticDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrArmorThermalDamageResonance)) m_self->SetAttribute(AttrArmorThermalDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrEmDamageResonance)) m_self->SetAttribute(AttrEmDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrExplosiveDamageResonance)) m_self->SetAttribute(AttrExplosiveDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrKineticDamageResonance)) m_self->SetAttribute(AttrKineticDamageResonance, 1.0);
+    if (!m_self->HasAttribute(AttrThermalDamageResonance)) m_self->SetAttribute(AttrThermalDamageResonance, 1.0);
 }
 
 
@@ -349,7 +349,7 @@ void ConcordAI::Process() {
                         m_npc->TargetMgr()->ClearTarget(pTarget);
                         return;
                     }
-                    _CheckDistance(pTarget);
+                    CheckDistance(pTarget);
                 } break;
 
                 case Following: {
@@ -365,7 +365,7 @@ void ConcordAI::Process() {
                         m_npc->TargetMgr()->ClearTarget(pTarget);
                         return;
                     }
-                    _CheckDistance(pTarget);
+                    CheckDistance(pTarget);
                 } break;
 
                 case Engaged: {
@@ -374,14 +374,14 @@ void ConcordAI::Process() {
                     if (!pTarget) {
                         if (m_npc->TargetMgr()->HasNoTargets()) {
                             //_log(CONCORD__AI_TRACE, "%s(%u): Stopped engagement, GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID());
-                            _EnterIdle();
+                            SetIdle();
                         }
                         return;
                     } else if (!pTarget->SysBubble()) {
                         m_npc->TargetMgr()->ClearTarget(pTarget);
                         return;
                     }
-                    _CheckDistance(pTarget);
+                    CheckDistance(pTarget);
                 } break;
 
                 case Fleeing: {
@@ -396,10 +396,10 @@ void ConcordAI::Process() {
             }
 }
 
-void ConcordAI::_EnterIdle() {
+void ConcordAI::SetIdle() {
     if (m_state == Idle) return;
     // not doing anything....idle.
-    //_log(CONCORD__AI_TRACE, "%s(%u): _EnterIdle: returning to idle.",
+    //_log(CONCORD__AI_TRACE, "%s(%u): SetIdle: returning to idle.",
          m_npc->GetName(), m_npc->GetID());
     m_state = Idle;
     m_npc->DestinyMgr()->Stop();
@@ -416,9 +416,9 @@ void ConcordAI::_EnterIdle() {
     // sounds like a good idea, but will take process power away from other shit.
 }
 
-void ConcordAI::_EnterChasing(SystemEntity* pTarget) {
+void ConcordAI::SetChasing(SystemEntity* pTarget) {
     if (m_state == Chasing) return;
-    //_log(CONCORD__AI_TRACE, "%s(%u): _EnterChasing: %s(%u) begin chasing.",
+    //_log(CONCORD__AI_TRACE, "%s(%u): SetChasing: %s(%u) begin chasing.",
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
     m_npc->DestinyMgr()->SetMaxVelocity(m_chaseSpeed);
@@ -426,9 +426,9 @@ void ConcordAI::_EnterChasing(SystemEntity* pTarget) {
     m_state = Chasing;
 }
 
-void ConcordAI::_EnterFollowing(SystemEntity* pTarget) {
+void ConcordAI::SetFollowing(SystemEntity* pTarget) {
     if (m_state == Following) return;
-    //_log(CONCORD__AI_TRACE, "%s(%u): _EnterFollowing: %s(%u) begin following.",
+    //_log(CONCORD__AI_TRACE, "%s(%u): SetFollowing: %s(%u) begin following.",
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // too close to chase, but to far to engage
     m_npc->DestinyMgr()->SetMaxVelocity(m_chaseSpeed /2);
@@ -436,9 +436,9 @@ void ConcordAI::_EnterFollowing(SystemEntity* pTarget) {
     m_state = Following;
 }
 
-void ConcordAI::_EnterEngaged(SystemEntity* pTarget) {
+void ConcordAI::SetEngaged(SystemEntity* pTarget) {
     if (m_state == Engaged) return;
-    //_log(CONCORD__AI_TRACE, "%s(%u): _EnterEngaged: %s(%u) begin engaging.",
+    //_log(CONCORD__AI_TRACE, "%s(%u): SetEngaged: %s(%u) begin engaging.",
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively fighting
     //   not sure of the actual orbit speed of npc's, but their 'cruise speed' seems a bit slow.
@@ -449,9 +449,9 @@ void ConcordAI::_EnterEngaged(SystemEntity* pTarget) {
     m_state = Engaged;
 }
 
-void ConcordAI::_EnterFleeing(SystemEntity* pTarget) {
+void ConcordAI::SetFleeing(SystemEntity* pTarget) {
     if (m_state == Fleeing) return;
-    //_log(CONCORD__AI_TRACE, "%s(%u): _EnterFleeing: %s(%u) begin fleeing.",
+    //_log(CONCORD__AI_TRACE, "%s(%u): SetFleeing: %s(%u) begin fleeing.",
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively fleeing
     //  use superspeed to disengage, then warp.  << both these will need to be written.
@@ -460,9 +460,9 @@ void ConcordAI::_EnterFleeing(SystemEntity* pTarget) {
     m_state = Fleeing;
 }
 
-void ConcordAI::_EnterSignaling(SystemEntity* pTarget) {
+void ConcordAI::SetSignaling(SystemEntity* pTarget) {
     if (m_state == Signaling) return;
-    //_log(CONCORD__AI_TRACE, "%s(%u): _EnterSignaling: %s(%u) begin signaling.",
+    //_log(CONCORD__AI_TRACE, "%s(%u): SetSignaling: %s(%u) begin signaling.",
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // actively signaling
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
@@ -472,29 +472,29 @@ void ConcordAI::_EnterSignaling(SystemEntity* pTarget) {
     m_state = Signaling;
 }
 
-void ConcordAI::_CheckDistance(SystemEntity* pSE)
+void ConcordAI::CheckDistance(SystemEntity* pSE)
 {
     //rewrote distance checks for correct logic this time
     GVector usToThem(m_npc->GetPosition(), pSE->GetPosition());
     //double dist = m_npc->GetPosition().distance(pSE->GetPosition());     // this throws occasional errors (segfault)
     double dist = usToThem.length();
     if (dist > m_entityAttackRange) {
-        _log(CONCORD__AI_TRACE, "%s(%u): _CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
+        _log(CONCORD__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%u).  Return to Idle.", \
              m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist);
         if (m_state != Idle) {
             // target is no longer in npc's "sight range".  unlock target and return to idle.
             //   should we do anything else here?  search for another target?  wander around?
             m_npc->TargetMgr()->ClearTarget(pSE);
             if (m_npc->TargetMgr()->HasNoTargets())
-                _EnterIdle();
+                SetIdle();
         }
         return;
     } else if (dist < m_entityFlyRange) { //within weapon max (and within falloff)
-        _EnterEngaged(pSE); //engage and orbit
+        SetEngaged(pSE); //engage and orbit
     } else if (dist < m_entityChaseRange) { //within follow
-        _EnterFollowing(pSE);
+        SetFollowing(pSE);
     } else if (dist < m_entityAttackRange) { //within sight
-        _EnterChasing(pSE);
+        SetChasing(pSE);
         return;
     }
 
@@ -524,11 +524,11 @@ void ConcordAI::Target(SystemEntity* pTarget) {
         //_log(CONCORD__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.",
              m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
         //ClearAllTargets();
-        _EnterIdle();
+        SetIdle();
         return;
     }
     m_beginFindTarget.Disable();
-    _CheckDistance(pTarget);
+    CheckDistance(pTarget);
 }
 
 void ConcordAI::Targeted(SystemEntity* pAgressor) {
@@ -538,14 +538,14 @@ void ConcordAI::Targeted(SystemEntity* pAgressor) {
         case Idle: {
             _log(CONCORD__AI_TRACE, "%s(%u): Targeted by %s(%u) in Idle. Begin Approaching and start Targeting sequence.", \
                  m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
-            _EnterChasing(pAgressor);
+            SetChasing(pAgressor);
 
 			if (!m_npc->TargetMgr()->StartTargeting( pAgressor, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange)) {
-                _EnterIdle();
+                SetIdle();
                 return;
             }
             m_beginFindTarget.Disable();
-            _CheckDistance(pAgressor);
+            CheckDistance(pAgressor);
         } break;
         case Chasing: {
             _log(CONCORD__AI_TRACE, "%s(%u): Targeted by %s(%u) while chasing.",
@@ -580,7 +580,7 @@ void ConcordAI::TargetLost(SystemEntity* pTarget) {
             if (m_npc->TargetMgr()->HasNoTargets()) {
                 _log(CONCORD__AI_TRACE, "%s(%u): Target %s(%u) lost. No targets remain.  Return to Idle.",
                      m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-                _EnterIdle();
+                SetIdle();
             } else {
                 _log(CONCORD__AI_TRACE, "%s(%u): Target %s(%u) lost, but more targets remain.",
                      m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -627,11 +627,14 @@ void ConcordAI::Attack(SystemEntity* pSE)
 //also check for special effects and write code to implement them
 //modifyTargetSpeedRange, modifyTargetSpeedChance
 //entityWarpScrambleChance
-
 void ConcordAI::AttackTarget(SystemEntity* pTarget) {
-    // some npcs use missiles.
-    //  write code for using missiles   -- entityMissileTypeID
-    _SendWeaponEffect("effects.Laser", pTarget);
+    std::string guid = "effects.Laser";
+    m_npc->DestinyMgr()->SendSpecialEffect(m_npc->GetSelf()->itemID(),
+                                           m_npc->GetSelf()->itemID(),
+                                           m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
+                                           pTarget->GetID(),
+                                           0,guid,1,1,1,m_attackSpeed,1
+    );
 
     Damage d(m_npc,
              m_npc->GetSelf(),
@@ -640,31 +643,11 @@ void ConcordAI::AttackTarget(SystemEntity* pTarget) {
              m_npc->GetEM(),
              m_npc->GetExplosive(),
              m_formula.GetNPCToHit(m_npc, pTarget),
-             effectTargetAttack
-    );
+             EVEEffectID::targetAttack
+            );
 
     d *= m_npc->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
     pTarget->ApplyDamage(d);
-}
-
-//NOTE: duplicated from module manager code. They should share some day!
-void ConcordAI::_SendWeaponEffect( const char*effect, SystemEntity* pTarget ) {
-    DoDestiny_OnSpecialFX13 sfx;
-    sfx.entityID = m_npc->GetSelf()->itemID();
-    sfx.moduleID = m_npc->GetSelf()->itemID();
-    sfx.moduleTypeID = m_npc->GetSelf()->typeID();
-    sfx.targetID = pTarget->GetID();
-    sfx.otherTypeID = pTarget->GetSelf()->typeID();
-    sfx.effect_type = effect;
-    sfx.isOffensive = 1;
-    sfx.start = 1;
-    sfx.active = 1;
-    sfx.duration_ms = m_attackSpeed;
-    sfx.repeat = 1;
-    sfx.startTime = Win32TimeNow();
-
-    PyTuple* up = sfx.Encode();
-    m_npc->DestinyMgr()->SendSingleDestinyUpdate( &up );    //consumed
 }
 
 double ConcordAI::GetTargetTime()
@@ -692,7 +675,6 @@ void ConcordAI::DisableRepTimers()
     m_armorRepairTimer.Disable();
     m_shieldBoosterTimer.Disable();
 }
-
 
 ConcordSpawnMgr::ConcordSpawnMgr() {
 

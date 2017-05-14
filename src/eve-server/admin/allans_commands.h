@@ -13,11 +13,13 @@
  COMMAND( secstatus, ROLE_PLAYER,
           " - note giving you this character's current security status")
  COMMAND( list, ROLE_PLAYER,
-          " - gives a list of all dynamic entities and players in this bubble")
+          " - gives a list of all dynamic entities and players and their destinyState in this bubble")
  COMMAND( commandlist, ROLE_PLAYER,
           " - gives a list of all game commands, required role, and a description")
  COMMAND( destinyvars, ROLE_GMH,
-          " - shows current destiny variables")
+          " - shows some current destiny variables")
+ COMMAND( shipvars, ROLE_GMH,
+          " - shows other current destiny variables")
  COMMAND( fixconnections, ROLE_WORLDMOD,
           " - updates current (incorrect) db table for mapConnections")
  COMMAND( shutdown, ROLE_GMH,
@@ -40,5 +42,7 @@
           " - show current objects in bubble, their destiny state, and movement speed." )
  COMMAND( track, ROLE_PROGRAMMER,
           " - toggles current object movement tracking state." )
+ COMMAND( attrlist, ROLE_PROGRAMMER,
+          " - show current attributes for itemID given in args." )
  COMMAND( warpto, ROLE_GMH,
           " - warp to an object using its itemID." )

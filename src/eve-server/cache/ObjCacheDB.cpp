@@ -65,6 +65,7 @@ ObjCacheDB::ObjCacheDB()
     m_generators["config.BulkData.dgmtypeeffects"] = &ObjCacheDB::Generate_dgmTypeEffects;
     m_generators["config.BulkData.dgmeffects"] = &ObjCacheDB::Generate_dgmEffects;
     m_generators["config.BulkData.dgmattribs"] = &ObjCacheDB::Generate_dgmAttribs;
+    m_generators["config.BulkData.dgmexpressions"] = &ObjCacheDB::Generate_dgmExpressions;
     m_generators["config.BulkData.metagroups"] = &ObjCacheDB::Generate_invMetaGroups;
     m_generators["config.BulkData.ramactivities"] = &ObjCacheDB::Generate_ramActivities;
     m_generators["config.BulkData.ramaltypesdetailpergroup"] = &ObjCacheDB::Generate_ramALTypeGroup;
@@ -483,8 +484,11 @@ PyRep *ObjCacheDB::Generate_dgmTypeEffects()
 PyRep *ObjCacheDB::Generate_dgmEffects()
 {
     DBQueryResult res;
-    const char *q = "SELECT effectID, effectName, effectCategory, preExpression, postExpression, description, guid, iconID, isOffensive, isAssistance, durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, falloffAttributeID, published, displayName, isWarpSafe, rangeChance, electronicChance, propulsionChance, distribution, sfxName, npcUsageChanceAttributeID, npcActivationChanceAttributeID, 0 as graphicID, fittingUsageChanceAttributeID, 0 AS dataID FROM dgmEffects";
-    if(!sDatabase.RunQuery(res, q))
+    if(!sDatabase.RunQuery(res,
+    "SELECT effectID, effectName, displayNameID, descriptionID, dataID, effectCategory, preExpression, postExpression, description, guid, "
+    "isOffensive, isAssistance, durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, falloffAttributeID, "
+    "disallowAutoRepeat, published, displayName, isWarpSafe, rangeChance, electronicChance, propulsionChance, distribution, sfxName, "
+    "npcUsageChanceAttributeID, npcActivationChanceAttributeID, fittingUsageChanceAttributeID, iconID, modifierInfo FROM dgmEffects"))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmeffects': %s",res.error.c_str());
         return NULL;
@@ -495,10 +499,24 @@ PyRep *ObjCacheDB::Generate_dgmEffects()
 PyRep *ObjCacheDB::Generate_dgmAttribs()
 {
     DBQueryResult res;
-    const char *q = "SELECT attributeID, attributeName, attributeCategory, description, maxAttributeID, attributeIdx, graphicID, chargeRechargeTimeID, defaultValue, published, unitID, displayName, stackable, highIsGood, iconID, dataID FROM dgmattribs";
-    if(!sDatabase.RunQuery(res, q))
+    if(!sDatabase.RunQuery(res,
+    "SELECT attributeID, attributeName, attributeCategory, description, maxAttributeID, attributeIdx, "
+        "chargeRechargeTimeID, defaultValue, published, unitID, displayName, displayNameID, stackable, highIsGood, iconID, dataID FROM dgmAttributeTypes"))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmattribs': %s",res.error.c_str());
+        return NULL;
+    }
+    return DBResultToCRowset(res);
+}
+
+PyRep* ObjCacheDB::Generate_dgmExpressions()
+{
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT expressionID, operandID, arg1, arg2, expressionValue, description, expressionName, expressionTypeID, expressionGroupID, expressionAttributeID"
+        " FROM dgmExpressions"))
+    {
+        _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmexpressions': %s",res.error.c_str());
         return NULL;
     }
     return DBResultToCRowset(res);

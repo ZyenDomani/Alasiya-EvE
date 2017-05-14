@@ -46,9 +46,9 @@ extern uint64 Win32TimeNow();
 extern void Win32TimeToUnixTime( uint64 win32t, time_t &unix_time, uint32 &nsec );
 extern std::string Win32TimeToString(uint64 win32t);
 
-// returns time in milliseconds
+//  this returns milliseconds in microsecond resolution
 double GetTimeMSeconds();
-// returns time in microseconds
+//  this returns microseconds in nanosecond resolution
 double GetTimeUSeconds();
 
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss

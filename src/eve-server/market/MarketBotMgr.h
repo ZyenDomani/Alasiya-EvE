@@ -23,7 +23,7 @@ public:
     MarketBotDataMgr();
     ~MarketBotDataMgr() { /* do nothing here */ }
 
-    void Init();
+    void Initialize();
 
 private:
     bool m_initalized;
@@ -41,7 +41,7 @@ public:
     MarketBotMgr();
     ~MarketBotMgr() { /* do nothing here */ }
 
-    void Init();
+    void Initialize();
     void Process();
 
 private:

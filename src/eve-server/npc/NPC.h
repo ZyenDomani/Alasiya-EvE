@@ -57,7 +57,7 @@ public:
     virtual void EncodeDestiny(Buffer& into);
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Killed(Damage &fatal_blow);    /* This method is defined in Damage.cpp */
+    virtual void Killed(Damage &fatal_blow);
 
     /* specific functions handled here. */
     void SaveNPC();

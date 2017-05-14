@@ -27,7 +27,8 @@
 #ifndef __INVENTORY__H__INCL__
 #define __INVENTORY__H__INCL__
 
-#include "inventory/InventoryItem.h"
+
+#include "inventory/ItemFactory.h"
 
 class CRowSet;
 class OwnerData;

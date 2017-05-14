@@ -1,27 +1,49 @@
-# Server statistic - DB side skeleton
+/* Server Statistics Data
+ *  Data for graphing ingame player activity
+ */
 
-# This query creates the statistics container - simple 3-column table.
-CREATE TABLE serverStatistic (
-statID INT (5),
-statValue INT (20),
-timeEntered TIMESTAMP);
+CREATE TABLE `srvStatisticData` (
+  `timeStamp` bigint(20) NOT NULL DEFAULT '0',
+  `period` int(11) NOT NULL DEFAULT '0',
+  `1` int(10) unsigned NOT NULL DEFAULT '0',
+  `2` int(10) unsigned NOT NULL DEFAULT '0',
+  `3` int(10) unsigned NOT NULL DEFAULT '0',
+  `4` int(10) unsigned NOT NULL DEFAULT '0',
+  `5` int(10) unsigned NOT NULL DEFAULT '0',
+  `6` int(10) unsigned NOT NULL DEFAULT '0',
+  `7` int(10) unsigned NOT NULL DEFAULT '0',
+  `8` int(10) unsigned NOT NULL DEFAULT '0',
+  `9` int(10) unsigned NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Current Data for graphing player activity over period of time';
 
-# This query creates the body for statistic description.
-CREATE TABLE serverStatisticDescription (
-statID INT (5),
-statName TEXT,
-statDescription TEXT);
+CREATE TABLE `srvStatisticDataHistory` (
+  `month` tinyint(2) NOT NULL DEFAULT '1',
+  `1` int(10) unsigned NOT NULL DEFAULT '0',
+  `2` int(10) unsigned NOT NULL DEFAULT '0',
+  `3` int(10) unsigned NOT NULL DEFAULT '0',
+  `4` int(10) unsigned NOT NULL DEFAULT '0',
+  `5` int(10) unsigned NOT NULL DEFAULT '0',
+  `6` int(10) unsigned NOT NULL DEFAULT '0',
+  `7` int(10) unsigned NOT NULL DEFAULT '0',
+  `8` int(10) unsigned NOT NULL DEFAULT '0',
+  `9` int(10) unsigned NOT NULL DEFAULT '0'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Historical Data for graphing player activity from previous months';
 
-# And this query fills the desctiption table with data.
-INSERT INTO serverStatisticDescription (statID, statName, statDescription)
+
+CREATE TABLE `srvStatisticDataDescription` (
+  `dataID` tinyint(1) unsigned NOT NULL,
+  `dataName` varchar(30) NOT NULL,
+  `dataDescription` varchar(200) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Descriptions for DataNames in srvStatisticData table';
+
+INSERT INTO srvStatisticDataDescription (dataID, dataName, dataDescription)
 VALUES
-(1, 'CPU Load', 'Contains the snapshot of server CPU load activity in certain period of time. Note that the value MUST be INT.'),
-(2, 'Memory Use', 'Contains the snapshot of server memory usage in certain period of time. Note that the value MUST be INT.'),
-(3, 'Total Turret Shots Fired', 'Contains the total amount of players turret modules uses, or shots fired in certain period of time.'),
-(4, 'Total Missiles Launched', 'Contains the total amount of players missiles launched (fired) in certain period of time.'),
-(5, 'Total NPC Ships killed', 'Contains the total amount of NPC ships killed in certain period of time.'),
-(6, 'Total Player Ships killed', 'Contains the total amount of player ships killed in certain period of time.'),
-(7, 'Total Bounties Paid', 'Contains the total amount of bounty payouts (in ISK) in certain period of time. Note that the value MUST be INT.'),
-(8, 'Total Bounties Placed', 'Contains the total amount of bounties placed by players in certain period of time. Note that the value MUST be INT.'),
-(9, 'Total Ore Mined', 'Contains the total amount of ore (in m3) mined in certain period of time. Note that value MUST be INT.'),
-(10, 'Total ISK Spent In Market', 'Contains the total amount of ISK spen in the marked in certain period of time. Note that value MUST be INT.');
+(1, 'Turret Shots Fired', 'Shots fired from turrents on player ships.'),
+(2, 'Missiles Launched', 'Missiles fired from launchers on player ships.'),
+(3, 'NPC Ships killed', 'NPC ships killed.'),
+(4, 'Player Ships killed', 'Players popped (not tracking podded).'),
+(5, 'Bounties Paid', 'Amount of bounty payouts in ISK.'),
+(6, 'Bounties Placed', 'Amount of bounties placed in ISK.'),
+(7, 'Ore Mined', 'M3 of ore mined.'),
+(8, 'ISK Spent In Market', 'ISK spent in the market, not including broker fees.'),
+(9, 'Player Logins', 'Number of player logins.');

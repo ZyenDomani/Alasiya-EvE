@@ -26,7 +26,11 @@
 #ifndef __ITEM_TYPE__H__INCL__
 #define __ITEM_TYPE__H__INCL__
 
-#include "inventory/EVEAttributeMgr.h"
+#include <unordered_map>
+
+#include "POD_containers.h"
+#include "effects/EffectsData.h"
+#include "inventory/AttributeMap.h"
 #include "inventory/ItemFactory.h"
 
 /*
@@ -60,7 +64,7 @@ public:
     // Content:
     std::string name;
     std::string description;
-    bool published;
+    bool published : 1;
 };
 
 /*
@@ -68,14 +72,8 @@ public:
  */
 class ItemCategory {
 public:
-    /*
-     * Factory method:
-     */
     static ItemCategory *Load(ItemFactory &factory, EVEItemCategories category);
 
-    /*
-     * Access methods
-     */
     EVEItemCategories id() const                        { return m_id; }
 
     const std::string &name() const                     { return m_name; }
@@ -89,24 +87,14 @@ protected:
         const CategoryData &_data
     );
 
-    /*
-     * Member functions
-     */
-    static ItemCategory *_Load(ItemFactory &factory, EVEItemCategories category
-    );
-    static ItemCategory *_Load(ItemFactory &factory, EVEItemCategories category,
-        // ItemCategory stuff:
-        const CategoryData &data
-    );
+    static ItemCategory *_Load(ItemFactory &factory, EVEItemCategories category);
+    static ItemCategory *_Load(ItemFactory &factory, EVEItemCategories category, const CategoryData &data);
 
-    /*
-     * Data members
-     */
     const EVEItemCategories m_id;
 
     std::string m_name;
     std::string m_description;
-    bool m_published;
+    bool m_published : 1;
 };
 
 /*
@@ -145,17 +133,12 @@ public:
 /*
  * Class which maintains group data.
  */
+/** @todo update this to use EVEItemGroups instead of uint16 for groupID */
 class ItemGroup {
 public:
-    /*
-     * Factory method:
-     */
-    static ItemGroup *Load(ItemFactory &factory, uint32 groupID);
+    static ItemGroup *Load(ItemFactory &factory, uint16 groupID);
 
-    /*
-     * Access methods:
-     */
-    uint32 id() const                                   { return m_id; }
+    uint16 id() const                                   { return m_id; }
 
     const ItemCategory &category() const                { return (*m_category); }
     EVEItemCategories categoryID() const                { return m_category->id(); }
@@ -172,27 +155,13 @@ public:
 
 protected:
     ItemGroup(
-        uint32 _id,
-        // ItemGroup stuff:
-        const ItemCategory &_category,
-        const GroupData &_data
+        uint16 _id, const ItemCategory& _category, const GroupData& _data
     );
 
-    /*
-     * Member functions
-     */
-    static ItemGroup *_Load(ItemFactory &factory, uint32 groupID
-    );
-    static ItemGroup *_Load(ItemFactory &factory, uint32 groupID,
-        // ItemGroup stuff:
-        const ItemCategory &category, const GroupData &data
-    );
+    static ItemGroup *_Load(ItemFactory &factory, uint16 groupID);
+    static ItemGroup *_Load(ItemFactory &factory, uint16 groupID, const ItemCategory &category, const GroupData &data);
 
-    /*
-     * Data members
-     */
-    const uint32 m_id;
-
+    const uint16 m_id;
     const ItemCategory *m_category;
 
     std::string m_name;
@@ -214,7 +183,7 @@ protected:
 class TypeData {
 public:
     TypeData(
-        uint32 _groupID = 0,
+        uint16 _groupID = 0,
         const char *_name = "",
         const char *_desc = "",
         double _radius = 0.0,
@@ -230,7 +199,7 @@ public:
     );
 
     // Content:
-    uint32 groupID;
+    uint16 groupID;
     std::string name;
     std::string description;
     double radius;
@@ -259,18 +228,11 @@ public:
      */
     static ItemType* Load(ItemFactory &factory, uint32 typeID);
 
-    /*
-     * Attributes:
-     */
-    TypeAttributeMgr attributes;
-
-    /*
-     * Helper methods
-     */
-    uint32 id() const                                   { return m_id; }
+    /* Helper methods  */
+    uint16 id() const                                   { return m_id; }
 
     const ItemGroup &group() const                      { return (*m_group); }
-    uint32 groupID() const                              { return m_group->id(); }
+    uint16 groupID() const                              { return m_group->id(); }
 
     const ItemCategory &category() const                { return m_group->category(); }
     EVEItemCategories categoryID() const                { return m_group->categoryID(); }
@@ -289,13 +251,15 @@ public:
     double capacity() const                             { return m_capacity; }
     EVERace race() const                                { return m_raceID; }
 
-	bool HasEffect(uint32 effectID) const
-	{
-		if(std::find(m_effects.begin(), m_effects.end(), effectID)!=m_effects.end())
-			return true;
-		else
-			return false;
-	}
+    /* new effects processing system */
+    void GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const;
+
+    bool HasEffect(uint16 effectID) const;
+    bool HasReqSkill(const uint16 skillID, ItemFactory& m_factory) const;
+
+    const bool HasAttribute(const uint16 attributeID) const;
+    EvilNumber GetAttribute(const uint16 attributeID) const;
+    const void CopyAttributes(InventoryItem& itemRef) const;
 
 protected:
     ItemType(
@@ -303,8 +267,6 @@ protected:
         const ItemGroup &_group,
         const TypeData &_data
     );
-
-	std::vector<uint32> m_effects;
 
 	/*
      * Member functions
@@ -348,18 +310,21 @@ protected:
 
     // Actual loading stuff:
     template<class _Ty>
-    static _Ty *_LoadType(ItemFactory &factory, uint32 typeID,
-        // ItemType stuff:
-        const ItemGroup &group, const TypeData &data
-    );
+    static _Ty *_LoadType(ItemFactory &factory, uint32 typeID, const ItemGroup &group, const TypeData &data);
 
     virtual bool _Load(ItemFactory &factory);
 
+    void LoadEffects();
+
+public:
+    // i dont like this......MUST fix later
+    std::unordered_multimap<int8, Effect> m_stateFxMap; // k,v map of state, data   -to search by state
+
 private:
-    /*
-     * Data members
-     */
-    const uint32 m_id;
+    std::map<uint16, uint8> m_reqSkillMap;              // k,v map of required skill, level for this ItemType, if any.
+    std::map<uint16, EvilNumber> m_AttributeMap;        // k,v map of attributeID, value
+
+    const uint16 m_id;
     const ItemGroup *m_group;
     std::string m_name;
     std::string m_description;
@@ -373,6 +338,7 @@ private:
     double m_volume;
     double m_capacity;
     EVERace m_raceID;
+
 };
 
 /*
@@ -399,8 +365,8 @@ public:
     uint32          ownerID;
     uint32          locationID;
     EVEItemFlags    flag;
-    bool            contraband;
-    bool            singleton;
+    bool            contraband : 1;
+    bool            singleton : 1;
     uint32          quantity;
     GPoint          position;
     std::string     customInfo;

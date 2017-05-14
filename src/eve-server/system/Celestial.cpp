@@ -25,9 +25,7 @@
 
 #include "eve-server.h"
 
-#include "system/DestinyManager.h"
-#include "station/Station.h"
-#include "system/SolarSystem.h"
+#include "system/Celestial.h"
 
 /*
  * CelestialObjectData
@@ -81,29 +79,6 @@ CelestialObject::CelestialObject(
 CelestialObjectRef CelestialObject::Load(ItemFactory &factory, uint32 celestialID)
 {
     return InventoryItem::Load<CelestialObject>( factory, celestialID );
-}
-
-template<class _Ty>
-RefPtr<_Ty> CelestialObject::_LoadCelestialObject(ItemFactory &factory, uint32 celestialID,
-    const ItemType &type, const ItemData &data, const CelestialObjectData &cData)
-{
-    switch( type.groupID() ) {
-        case EVEDB::invGroups::Solar_System: {
-            return SolarSystem::_LoadCelestialObject<SolarSystem>( factory, celestialID, type, data, cData );
-        }
-        case EVEDB::invGroups::Station: {
-            return StationItem::_LoadCelestialObject<StationItem>( factory, celestialID, type, data, cData );
-        }
-        /** @todo  finish these later....
-        case EVEDB::invGroups::Planet: {
-            return PlanetItem::_LoadCelestialObject<PlanetItem>( factory, celestialID, type, data, cData );
-        }
-        case EVEDB::invGroups::Moon: {
-            return MoonItem::_LoadCelestialObject<MoonItem>( factory, celestialID, type, data, cData );
-        }*/
-    }
-
-    return CelestialObjectRef( new CelestialObject( factory, celestialID, type, data, cData ) );
 }
 
 CelestialObjectRef CelestialObject::Spawn(ItemFactory &factory, ItemData &data) {

@@ -79,6 +79,7 @@ protected:
     PyRep *Generate_dgmTypeEffects();
     PyRep *Generate_dgmEffects();
     PyRep *Generate_dgmAttribs();
+    PyRep *Generate_dgmExpressions();
 
     PyRep *Generate_invMetaGroups();
 

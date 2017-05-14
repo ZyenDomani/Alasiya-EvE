@@ -47,12 +47,6 @@
 #   define __STDC_FORMAT_MACROS 1
 #endif /* HAVE_INTTYPES_H */
 
-#ifdef HAVE_WINDOWS_H
-#   define _WIN32_WINNT 0x0500 // building for Win2k
-#   define WIN32_LEAN_AND_MEAN
-#   define NOMINMAX
-#endif /* !HAVE_WINDOWS_H */
-
 // Disable auto-linking of any Boost libraries
 #define BOOST_ALL_NO_LIB 1
 
@@ -86,24 +80,10 @@
 #include <string>
 #include <vector>
 #include <thread>
-
-/*
- * Technical Report 1 Standard Template Library includes
- * Note: my fellow developers please read 'http://en.wikipedia.org/wiki/Technical_Report_1'. I know its a wiki page
- *       but it gives you the general idea.
- */
-#ifdef HAVE_TR1_PREFIX
-#   include <tr1/functional>
-#   include <tr1/memory>
-#   include <tr1/tuple>
-#   include <tr1/unordered_map>
-#   include <tr1/unordered_set>
-#else /* !HAVE_TR1_PREFIX */
-#   include <functional>
-#   include <tuple>
-#   include <unordered_map>
-#   include <unordered_set>
-#endif /* !HAVE_TR1_PREFIX */
+#include <functional>
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
 
 #ifdef HAVE_CRTDBG_H
 #   include <crtdbg.h>
@@ -129,22 +109,14 @@
 #   include <vld.h>
 #endif /* HAVE_VLD_H */
 
-#ifdef HAVE_WINDOWS_H
-#   include <windows.h>
-#else /* !HAVE_WINDOWS_H */
-#   include <dirent.h>
-#   include <pthread.h>
-#endif /* !HAVE_WINDOWS_H */
-
-#ifdef HAVE_WINSOCK2_H
-#   include <winsock2.h>
-#else /* !HAVE_WINSOCK2_H */
-#   include <fcntl.h>
-#   include <netdb.h>
-#   include <arpa/inet.h>
-#   include <netinet/in.h>
-#   include <sys/socket.h>
-#endif /* !HAVE_WINSOCK2_H */
+/* *nix includes */
+#include <dirent.h>
+#include <pthread.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
 #ifndef HAVE_ASINH
 #   include <boost/math/special_functions.hpp>

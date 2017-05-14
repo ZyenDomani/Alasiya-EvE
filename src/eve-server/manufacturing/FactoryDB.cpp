@@ -25,6 +25,7 @@
 
 #include "eve-server.h"
 
+#include "EVEServerConfig.h"
 #include "manufacturing/FactoryDB.h"
 
 
@@ -46,3 +47,66 @@ PyRep* FactoryDB::GetMaterialCompositionOfItemType(const uint32 typeID) const {
     return DBResultToRowset(res);
 }
 
+bool FactoryDB::SaveBlueprintData(uint32 blueprintID, BlueprintData& data) {
+    DBerror err;
+    if(!sDatabase.RunQuery(err,
+        "INSERT INTO invBlueprints"
+        "  (blueprintID, copy, materialLevel, productivityLevel, licensedProductionRunsRemaining)"
+        " VALUES"
+        "  (%u, %u, %i, %i, %i)"
+        "ON DUPLICATE KEY UPDATE "
+        "materialLevel=VALUES(materialLevel), "
+        "productivityLevel=VALUES(productivityLevel), "
+        "licensedProductionRunsRemaining=VALUES(licensedProductionRunsRemaining) ",
+                           blueprintID, (data.copy ? 1 : 0), data.mLevel, data.pLevel, data.runs))
+    {
+        codelog(DATABASE__ERROR, "Error in SaveBlueprint query: %s.", err.c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool FactoryDB::DeleteBlueprint(uint32 blueprintID) {
+    DBerror err;
+
+    if(!sDatabase.RunQuery(err,
+        "DELETE FROM invBlueprints"
+        " WHERE blueprintID=%u",
+        blueprintID))
+    {
+        codelog(DATABASE__ERROR, "Failed to delete blueprint %u: %s.", blueprintID, err.c_str());
+        return false;
+    }
+    return true;
+}
+
+bool FactoryDB::GetBlueprint(uint32 blueprintID, BlueprintData &into) {
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT"
+        "  copy,"
+        "  materialLevel,"
+        "  productivityLevel,"
+        "  licensedProductionRunsRemaining"
+        " FROM invBlueprints"
+        " WHERE blueprintID=%u",
+        blueprintID))
+    {
+        codelog(DATABASE__ERROR, "Error in GetBlueprint query: %s.", res.error.c_str());
+        return false;
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        _log(DATABASE__MESSAGE, "Blueprint %u not found.", blueprintID);
+        return false;
+    }
+
+    into.copy = (row.GetInt(0) ? true : false);
+    into.mLevel = row.GetInt(1);
+    into.pLevel = row.GetInt(2);
+    into.runs = row.GetInt(3);
+
+    return true;
+}

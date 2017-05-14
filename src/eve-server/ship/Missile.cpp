@@ -38,20 +38,22 @@
 Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem, InventoryItemRef module, SystemEntity* target, ShipItem* ship)
 : DynamicSystemEntity(self, services, pSystem),
   m_module(module),
-  m_target(target),
+  m_targetSE(target),
   m_ship(ship),
-  m_hitTimer(0),
-  m_lifeTimer(0)
+  m_hitTimer(1000), //arbitrary default
+  m_lifeTimer(1000) //arbitrary default
 {
     m_destiny = new DestinyManager(this);
 
     if (ship->HasPilot()) {
-        m_ownerID = ship->GetPilot()->GetCharacterID();
-        m_warID = ship->GetPilot()->GetWarFactionID();
-        m_allyID = ship->GetPilot()->GetAllianceID();
-        m_corpID = ship->GetPilot()->GetCorporationID();
+        Character* pChar = m_ship->GetPilot()->GetChar().get();
+        m_ownerID = pChar->itemID();
+        m_allyID = pChar->allianceID();
+        m_corpID = pChar->corporationID();
+        m_warID = pChar->warFactionID();
     } else {
         m_ownerID = ship->itemID();
+        /** @todo finish these for npcs */
         m_warID = 0;
         m_allyID = 0;
         m_corpID = 0;
@@ -64,111 +66,14 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
 
     m_hitTimer.Disable();
     double flightTime = self->GetAttribute(AttrExplosionDelay).get_float();
-    flightTime *= (1 + ( 0.1 * (ship->GetPilot()->GetChar()->GetSkillLevel(skillMissileBombardment, true)))); // 10% increase in flightTime
-    if (sConfig.rates.missileTime != 1.0)
-        flightTime *= sConfig.rates.missileTime;
+    flightTime *= sConfig.rates.missileTime;
     m_lifeTimer.Start(flightTime);
 
     m_alive = true;
 
     m_hullHP = self->GetAttribute(AttrHP).get_int();
 
-    /** @todo (allan) This still needs ship, module, and implant bonuses */
-    /*  this is damage formula for missiles
-     * Damage = D * MIN(1, Sr/Er, (Ev/V * Sr/Er)^(ln(DRF) / ln(DRS)) )
-     *
-     * D = base damage of the missile,
-     * Sr = signature radius of the target,
-     * Er = Explosion radius of the missile,
-     * Ev = Explosion Velocity of the missile,
-     * V = velocity of the target ship,
-     * DRF = damage reduction factor of the missile.
-     * MIN being a function that chooses the lower of two given vaules,
-     * ln is natural logarithm.
-     */
-    /*
-     *        detonationRange     35  NULL
-     *        aoeVelocity     NULL    170
-     *        aoeCloudSize    NULL    50
-     *        aoeFalloff  NULL    1500
-     *        aoeDamageReductionFactor    NULL    2.8
-     *        aoeDamageReductionSensitivity   NULL    5.5
-     */
-    double Sr = m_target->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();    // this is a default number, based on itemtype
-    double Er = m_self->GetAttribute(AttrAoeCloudSize).get_float(); // Explosion Radius
-    double Ev = m_self->GetAttribute(AttrAoeVelocity).get_float(); // Explosion Velocity
-    double DRF = m_self->GetAttribute(AttrAoeDamageReductionFactor).get_float(); // Damage Reduction Factor
-    double DRS = m_self->GetAttribute(AttrAoeDamageReductionSensitivity).get_float(); // Damage Reduction Sensitivity
-
-    Character* pChar = m_ship->GetPilot()->GetChar().get();
-    Er *=  (1 - ( 0.05 * (pChar->GetSkillLevel(skillGuidedMissilePrecision, true))));  //  5% decrease in exp radius
-    Ev *=  (1 + ( 0.1 * (pChar->GetSkillLevel(skillTargetNavigationPrediction, true))));  // 10% increase in exp velocity
-
-    GPoint Vel = m_target->GetVelocity();
-    double V = Vel.length();
-
-    double v1 = Sr/Er;
-    double v2 = pow(((Ev/V) * (Sr/Er)), (log(DRF) / log(DRS)));
-    m_damageMod = Min(v1, v2);
-
-    // damage adjustments here...
-    m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillWarheadUpgrades, true)))); // 5% increase in damage (upped from 2%)
-
-    switch (m_self->groupID()) {
-        case EVEDB::invGroups::Light_Missile:
-        case EVEDB::invGroups::FoF_Light_Missile:
-        case EVEDB::invGroups::Advanced_Light_Missile:
-            m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillLightMissiles, true)))); // 5% increase in damage
-            if (m_self->groupID() == EVEDB::invGroups::Advanced_Light_Missile)
-                m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillLightMissileSpecialization, true)))); // 3% increase in damage
-                break;
-        case EVEDB::invGroups::Heavy_Missile:
-        case EVEDB::invGroups::FoF_Heavy_Missile:
-        case EVEDB::invGroups::Advanced_Heavy_Missile:
-            m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillHeavyMissiles, true)))); // 5% increase in damage
-            if (m_self->groupID() == EVEDB::invGroups::Advanced_Heavy_Missile)
-                m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillHeavyMissileSpecialization, true)))); // 3% increase in damage
-                break;
-        case EVEDB::invGroups::Cruise_Missile:
-        case EVEDB::invGroups::FoF_Cruise_Missile:
-        case EVEDB::invGroups::Advanced_Cruise_Missile:
-            m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillCruiseMissiles, true)))); // 5% increase in
-            if (m_self->groupID() == EVEDB::invGroups::Advanced_Cruise_Missile)
-                m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillCruiseMissileSpecialization, true)))); // 3% increase in damage
-                break;
-        case EVEDB::invGroups::Torpedo:
-        case EVEDB::invGroups::Advanced_Torpedo:
-            m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillTorpedoes, true)))); // 5% increase in damage
-            if (m_self->groupID() == EVEDB::invGroups::Advanced_Torpedo)
-                m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillTorpedoSpecialization, true)))); // 3% increase in damage
-                break;
-        case EVEDB::invGroups::Rocket:
-        case EVEDB::invGroups::Advanced_Rocket:
-            m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillRockets, true)))); // 5% increase in damage
-            if (m_self->groupID() == EVEDB::invGroups::Advanced_Rocket)
-                m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillRocketSpecialization, true)))); // 3% increase in damage
-                break;
-        case EVEDB::invGroups::Defender_Missile:
-            m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillDefenderMissiles, true)))); // 5% increase in damage
-            break;
-        case EVEDB::invGroups::Assault_Missile:
-        case EVEDB::invGroups::Advanced_Assault_Missile:
-            m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillHeavyAssaultMissiles, true)))); // 5% increase in damage
-            if (m_self->groupID() == EVEDB::invGroups::Advanced_Assault_Missile)
-                m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillHeavyAssaultMissileSpecialization, true)))); // 3% increase in damage
-                break;
-        case EVEDB::invGroups::Citadel_Cruise:
-            m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillCitadelCruiseMissiles, true)))); // 5% increase in damage
-            break;
-        case EVEDB::invGroups::Citadel_Torpedo:
-            m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillCitadelTorpedoes, true)))); // 5% increase in damage
-            break;
-    }
-
-    if (IsOverloaded())
-        m_damageMod *= (1 + m_self->GetAttribute(AttrOverloadDamageModifier).get_float());
-
-    // _log(NPC__TRACE, "Created Missile object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
+    //_log(DAMAGE__MESSAGE, "Created Missile object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
 }
 
 Missile::~Missile() {
@@ -184,10 +89,10 @@ void Missile::Process() {
     if (!m_alive) {
         Delete();
     } else if (m_lifeTimer.Check(false)) {
-        _EndOfLife();
+        EndOfLife();
     } else if (m_hitTimer.Check(false)) {
         m_hitTimer.Disable();
-        _HitTarget();
+        HitTarget();
     }
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_missileProfile, GetTimeUSeconds() - profileStartTime);
@@ -262,27 +167,45 @@ void Missile::MakeDamageState(DoDestinyDamageState &into) {
     into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
 }
 
-void Missile::_HitTarget() {
+void Missile::HitTarget() {
     // Create Damage action:
     Damage d(m_ship->GetPilot()->GetShipSE(),
+             m_module,
              m_self,
-             m_kinDamage, // kinetic damage
-             m_therDamage, // thermal damage
-             m_emDamage, // em damage
-             m_expDamage, // explosive damage
-             0,     // this is for modifier for turrents to-hit calculations.  not used for missiles
-             effectMissileLaunching  // from EVEEffectID::  should be an explosion effect here
+             EVEEffectID::missileLaunching  // from EVEEffectID::  should be an explosion effect here
             );
 
-    d *= m_damageMod;
-    if (sConfig.rates.missileRate != 1.0)
-        d *= sConfig.rates.missileRate;
+    /*  this is damage formula for missiles
+     * Damage = D * MIN(1, Sr/Er, (Ev/V * Sr/Er)^(ln(DRF) / ln(DRS)) )
+     *
+     * D = base damage of the missile,
+     * Sr = signature radius of the target,
+     * Er = Explosion radius of the missile,
+     * Ev = Explosion Velocity of the missile,
+     * V = velocity of the target ship,
+     * DRF = damage reduction factor of the missile.
+     * MIN being a function that chooses the lower of two given vaules,
+     * ln is natural logarithm.
+     */
+    double Sr = m_targetSE->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();    // this is a default number, based on itemtype
+    double Er = m_self->GetAttribute(AttrAoeCloudSize).get_float(); // Explosion Radius
+    double Ev = m_self->GetAttribute(AttrAoeVelocity).get_float(); // Explosion Velocity
+    double DRF = m_self->GetAttribute(AttrAoeDamageReductionFactor).get_float(); // Damage Reduction Factor
+    double DRS = m_self->GetAttribute(AttrAoeDamageReductionSensitivity).get_float(); // Damage Reduction Sensitivity
 
-    m_target->ApplyDamage(d);
+    GPoint Vel = m_targetSE->GetVelocity();
+    double V = Vel.length();
+
+    double v1 = Sr/Er;
+    double v2 = pow(((Ev/V) * (Sr/Er)), (log(DRF) / log(DRS)));
+    d *= EvE::min1(v1, v2);
+    d *= sConfig.rates.missileRate;
+
+    m_targetSE->ApplyDamage(d);
     m_alive = false;
 }
 
-void Missile::_EndOfLife() {
+void Missile::EndOfLife() {
     m_alive = false;
     Delete();
 }
@@ -294,15 +217,4 @@ void Missile::Delete() {
     m_system->RemoveEntity(this);
     m_self->Delete();
     // do we need to do anything else here?
-}
-
-double Missile::Min(double a, double b)
-{
-    /*  this method returns the smallest number of the 2 given, or 1 if a>1 && b>1 */
-    double min = ( a > b ? b : a );
-
-    if (min > 1)
-        return 1;
-    else
-        return min;
 }

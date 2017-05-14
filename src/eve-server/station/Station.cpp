@@ -25,9 +25,10 @@
 
 #include "eve-server.h"
 
-#include "inventory/AttributeEnum.h"
-#include "system/DestinyManager.h"
 #include "station/Station.h"
+#include "system/DestinyManager.h"
+#include "system/SystemEntity.h"
+#include "system/SystemManager.h"
 
 /*
  * StationTypeData
@@ -79,17 +80,6 @@ StationType::StationType(
 StationType *StationType::Load(ItemFactory &factory, uint32 stationTypeID)
 {
     return ItemType::Load<StationType>( factory, stationTypeID );
-}
-
-template<class _Ty>
-_Ty *StationType::_LoadStationType(ItemFactory &factory, uint32 stationTypeID,
-    // ItemType stuff:
-    const ItemGroup &group, const TypeData &data,
-    // StationType stuff:
-    const StationTypeData &stData)
-{
-    // ready to create
-    return new StationType( stationTypeID, group, data, stData );
 }
 
 /*
@@ -155,23 +145,9 @@ bool StationItem::_Load() {
     return CelestialObject::_Load();
 }
 
-template<class _Ty>
-RefPtr<_Ty> StationItem::_LoadStation(ItemFactory &factory, uint32 stationID,
-    // InventoryItem stuff:
-    const StationType &type, const ItemData &data,
-    // CelestialObject stuff:
-    const CelestialObjectData &cData,
-    // Station stuff:
-    const StationInfo &stData)
-{
-    // ready to create
-    return StationItemRef( new StationItem( factory, stationID, type, data, cData, stData ) );
-}
-
 uint32 StationItem::CreateItemID(ItemFactory &factory, ItemData &data) {
     return InventoryItem::CreateItemID(factory, data);
 }
-
 
 StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManager* system)
 : StaticSystemEntity(station, services, system)
@@ -183,11 +159,11 @@ StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManag
     station->SetAttribute(AttrShieldCapacity,   20000000.0);
     station->SetAttribute(AttrShieldCharge,     station->GetAttribute(AttrShieldCapacity));
     station->SetAttribute(AttrArmorHP,          station->GetAttribute(AttrArmorHP));
+    station->SetAttribute(AttrArmorUniformity,  station->GetAttribute(AttrArmorUniformity));
     station->SetAttribute(AttrArmorDamage,      0.0);
     station->SetAttribute(AttrMass,             station->type().mass());
     station->SetAttribute(AttrRadius,           station->type().radius());
     station->SetAttribute(AttrVolume,           station->type().volume());
-    station->SaveAttributes();
 }
 
 void StationSE::EncodeDestiny( Buffer& into )
@@ -195,7 +171,7 @@ void StationSE::EncodeDestiny( Buffer& into )
     using namespace Destiny;
 
     BallHeader head;
-    head.entityID = GetID();
+    head.entityID = m_self->itemID();
         head.mode = DSTBALL_RIGID;
         head.radius = GetRadius();
         head.x = x();
@@ -227,7 +203,7 @@ PyDict *StationSE::MakeSlimItem() {
         slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
         slim->SetItemString("corpID",           new PyInt(m_self->ownerID()));
-        slim->SetItemString("allianceID",       new PyInt(GetAllianceID()));
+        slim->SetItemString("allianceID",       new PyInt(m_allyID));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",          new PyInt(m_self->ownerID()));
         slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
@@ -239,6 +215,6 @@ PyDict *StationSE::MakeSlimItem() {
 
 void StationSE::UnloadStation()
 {
-    m_self->GetInventory()->Unload();
+    m_self->GetMyInventory()->Unload();
 }
 

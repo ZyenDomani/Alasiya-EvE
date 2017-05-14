@@ -1,156 +1,246 @@
+
+ /**
+  * @name GenericModule.cpp
+  *   base module class
+  * @Author:         Allan
+  * @date:   10 June 2015   -UD/RW 02 April 2017
+  */
+
 /*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
-
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:     Allan
+# Ship Module Logging:
+SHIP__MODULE_ERROR=1
+# Charge not found reported in SHIP__MODULE_WARNING
+SHIP__MODULE_WARNING=1
+SHIP__MODULE_MESSAGE=0
+# Mod Create/Populate and Undocking "OnlineModules" list dumped in SHIP__MODULE_INFO
+SHIP__MODULE_INFO=1
+# group tests, set module item online/offline, and Salvaging chance msgs in SHIP__MODULE_DEBUG
+SHIP__MODULE_DEBUG=1
+# Mod timer setting, Online/Offline calls and Effects msgs reported in SHIP__MODULE_TRACE
+SHIP__MODULE_TRACE=1
 */
-
+#include "Client.h"
+#include "ship/Ship.h"
 #include "ship/modules/GenericModule.h"
-#include "ship/modules/components/ModifyModuleAttributesComponent.h"
-#include "ship/modules/components/ModifyShipAttributesComponent.h"
 
 GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
 {
-    m_Item = item;
-    m_Ship = ship;
-
-    m_Effects = new ModuleEffects(m_Item.get());
-    m_MMAC = new ModifyModuleAttributesComponent(this);
-    m_MSAC = new ModifyShipAttributesComponent(this, ship);
-
-    m_ModuleState = MOD_UNFITTED;
-    m_ChargeState = MOD_UNLOADED;
-
     m_repeat = 0;
-    // incase module item has AttrIsOnline set to true....it shouldn't but this is a catchall.
-    m_Item->PutOffline();
+
+    m_modRef = item;
+    m_shipRef = ship;
+    m_chargeRef = InventoryItemRef();
+
+    m_ModuleState = ModStates::ModuleStates::MOD_UNFITTED;
+    m_ChargeState = ModStates::ChargeStates::CHG_UNLOADED;
+
+    m_overLoaded = false;
+    m_chargeLoaded = false;
+
+    m_hiPower = false;
+    m_medPower = false;
+    m_loPower = false;
+    m_rigSlot = false;
+    m_subSystem = false;
+    m_turret = false;
+    m_launcher = false;
+
+    if (item->type().HasEffect(EVEEffectID::loPower))
+        m_loPower = true;
+    else if (item->type().HasEffect(EVEEffectID::medPower))
+        m_medPower = true;
+    else if (item->type().HasEffect(EVEEffectID::hiPower))
+        m_hiPower = true;
+    else if (item->type().HasEffect(EVEEffectID::rigSlot))
+        m_rigSlot = true;
+    else if (item->type().HasEffect(EVEEffectID::subSystem))
+        m_subSystem = true;
+
+    if (item->type().HasEffect(EVEEffectID::turretFitted))
+        m_turret = true;
+    else if (item->type().HasEffect(EVEEffectID::launcherFitted))
+        m_launcher = true;
+
+    _log(SHIP__MODULE_DEBUG, "Created GenericModule %p for item %s (%u).", this, item->itemName().c_str(), item->itemID());
 }
 
 GenericModule::~GenericModule()
 {
-    m_Item->PutOffline();
-    //delete members
-    SafeDelete(m_Effects);
-    SafeDelete(m_MMAC);
-    SafeDelete(m_MSAC);
+    Offline();
 }
 
-/** @todo  this needs to be updated (as all module effects methods) to test for targetGroupIDs
- * GetTargetIDList() from ModuleEffects gives a vector of groupIDs each effect works on.
- * these need to be retrieved and checked against current target when module activated.
- * here, in Online(), targetGroupIDs should be checked for a value < 50, in which case this means
- * a category is the intended target (common ones are '6' for "ship" and '32' for "subsystem")
- * onlining passives should give a target group, either ship or another module (or group of modules)
- * to adjust attributes for.
- * ....this will get complicated.  -allan 12April16
- */
 void GenericModule::Online()
 {
-    if (m_ModuleState == MOD_UNFITTED)
-        return;  // make error here for online called for unfitted module?  isnt this error printed elsewhere? -nope
-
-    if (m_ModuleState != MOD_OFFLINE)
+    if (m_ModuleState == ModStates::ModuleStates::MOD_UNFITTED) {
+        _log(SHIP__MODULE_ERROR, "GenericModule::Online() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        return;
+    }
+    if (m_ModuleState != ModStates::ModuleStates::MOD_OFFLINE) {
+        _log(SHIP__MODULE_MESSAGE, "GenericModule::Online() called for non-offline module %u(%s).  State is %s", \
+                m_modRef->itemID(), m_modRef->itemName().c_str(), GetModuleStateName(m_ModuleState).c_str());
         return;     // already online
+    }
+    // check for avalible resources to online this module.
+    EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) + GetAttribute(AttrCpu));
+    if (cpuNeed < 0) {
+        ; // make error for not enough cpu
+        m_modRef->PutOffline();
+        return;
+    }
+    EvilNumber pgNeed = (m_shipRef->GetAttribute(AttrPowerLoad) + GetAttribute(AttrPower));
+    if (cpuNeed < 0) {
+        ; // make error for not enough pg
+        m_modRef->PutOffline();
+        return;
+    }
+    m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed);
+    m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
-    m_Item->PutOnline(isRig());
-    m_ModuleState = MOD_ONLINE; // this must be set to online before calling msac or mmac.
+    // clear map before adding new shit...avoids duplicating
+    //m_modRef->ClearModifiers(); // ClearModifiers DELETES AttrIsOnline and all ship-modified attribs from the map!!  (elusive error)
+    m_modRef->PutOnline(isRig());
+    m_ModuleState = ModStates::ModuleStates::MOD_ONLINE;
+    _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
-    EVECalculationType ecType = CALC_NONE;
-    bool stacking = false;
-    typeTargetGroupIDlist targetIDs;
-    uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
-    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Effects->GetOnlineEffectsBegin();
-    _log(SHIP__MODULE_TRACE, "GenericModule::Online() -  there are %u effects to process", m_Effects->GetOnlineEffectsSize() );
-    for (; itr != m_Effects->GetOnlineEffectsEnd(); itr++) {
-        uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
-        _log(SHIP__MODULE_TRACE, "GenericModule::Online() -  there are %u attributes in effect %u", ids, itr->first );
-        while (cur < ids) {
-            if (itr->first != effectOnline) {  // effect Online.  this sets CPU and PG usage
-                testID = itr->second->GetTargetGroup(cur);
-                _log(SHIP__MODULE_DEBUG, "GenericModule::Online() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
-                if ((testID != 0) && (groupID != testID)) {
-                    ++cur;
-                    continue;
-                }
+    if (m_ChargeState == ModStates::ChargeStates::CHG_LOADED) {
+        if (!m_chargeRef) {
+            _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
+                    m_modRef->itemID(), m_modRef->itemName().c_str());
+        } else {
+            _log(SHIP__MODULE_INFO, "GenericModule::Online() - module %u(%s) loading charge %s.", m_modRef->itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
+            m_chargeLoaded = true;
+            m_chargeRef->ClearModifiers();
+            for (auto it : m_chargeRef->type().m_stateFxMap) {
+                fxData data;
+                data.action = Effects::Action::dgmActInvalid;
+                data.srcRef = m_chargeRef;
+                data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
+                sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
             }
-            // vector<uint32> of targetgroups (or targetCategorys if id < 50)
-            /* this isnt right yet....targetIDsList is vector, but i need size for it to iterate */
-            stacking = itr->second->GetStackingPenalty(cur);
-            targetIDs = itr->second->GetTargetIDList(cur);
-            targetAttrID = itr->second->GetTargetAttributeID(cur);
-            sourceAttrID = itr->second->GetSourceAttributeID(cur);
-            ecType = itr->second->GetCalculationType(cur);
-            _log(SHIP__MODULE_TRACE, "GenericModule::Online() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
-                        itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
-            m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
-            ++cur;
-            targetIDs.clear();
+            //if (m_shipRef->GetPilot()->IsInSpace())
+            sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         }
     }
+
+    // process passive and online effects AFTER charge is loaded and charge effects are applied. (in the case of charge modifying module - elusive error)
+    ProcessEffects(Effects::dgmStatePassive, true);
+    ProcessEffects(Effects::dgmStateOnline, true);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 }
 
 void GenericModule::Offline()
 {
-    if (m_ModuleState == MOD_OFFLINE)
-        return; // make console note about offline call to offline module?  code trace, maybe?
-    if (m_ModuleState == MOD_UNFITTED)
-        return;  // make error here for offline called for unfitted module?  isnt this error printed elsewhere?
-    if (m_ModuleState == MOD_DEACTIVATING)
-        return;     // already deactivating
+    if (m_ModuleState == ModStates::ModuleStates::MOD_OFFLINE) {
+        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for offline module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        return;
+    }
+    if (m_ModuleState == ModStates::ModuleStates::MOD_UNFITTED) {
+        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        return;
+    }
+    if (m_ModuleState == ModStates::ModuleStates::MOD_DEACTIVATING) {
+        _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        m_ModuleState = ModStates::ModuleStates::MOD_OFFLINE;
+        m_modRef->PutOffline();
+        return;
+    }
 
-    m_ModuleState = MOD_DEACTIVATING;
-    EVECalculationType ecType = CALC_NONE;
-    bool stacking = false;
-    typeTargetGroupIDlist targetIDs;
-    uint32 targetAttrID = 0, sourceAttrID = 0, testID = 0, groupID = m_Item->groupID();
-    std::map<uint32, std::shared_ptr<MEffect>>::const_iterator itr = m_Effects->GetOnlineEffectsBegin();
-    _log(SHIP__MODULE_TRACE, "GenericModule::Offline() -  there are %u effects to process", m_Effects->GetOnlineEffectsSize() );
-    for (; itr != m_Effects->GetOnlineEffectsEnd(); itr++) {
-        uint32 cur = 0, ids = itr->second->GetSizeOfAttributeList();
-        _log(SHIP__MODULE_TRACE, "GenericModule::Offline() -  there are %u attributes in effect %u", ids, itr->first );
-        while (cur < ids) {
-            if (itr->first != effectOnline) {  // effect Online.  this sets CPU and PG usage
-                testID = itr->second->GetTargetGroup(cur);
-                _log(SHIP__MODULE_DEBUG, "GenericModule::Offline() - testing: %u %s %u", testID, (testID == groupID ? "==" : "!="), groupID);
-                if ((testID != 0) && (groupID != testID)) {
-                    ++cur;
-                    continue;
-                }
+    m_ModuleState = ModStates::ModuleStates::MOD_DEACTIVATING;
+
+    /* code for offlining module before MOD_OFFLINE state is set. */
+    EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) - GetAttribute(AttrCpu));
+    EvilNumber pgNeed = (m_shipRef->GetAttribute(AttrPowerLoad) - GetAttribute(AttrPower));
+    m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed);
+    m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
+
+    _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
+
+    m_modRef->ClearModifiers();
+    ProcessEffects(Effects::dgmStatePassive, false);
+    ProcessEffects(Effects::dgmStateOnline, false);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+
+    if (m_ChargeState == ModStates::ChargeStates::CHG_LOADED) {
+        if (!m_chargeRef) {
+            _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
+                    m_modRef->itemID(), m_modRef->itemName().c_str());
+        } else {
+            m_chargeRef->ClearModifiers();
+            for (auto it : m_chargeRef->type().m_stateFxMap) {
+                fxData data;
+                data.action = Effects::Action::dgmActInvalid;
+                data.srcRef = m_chargeRef;
+                data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
+                sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
             }
-            // vector<uint32> of targetgroups (or targetCategorys if id < 50)
-            /* this isnt right yet....targetIDsList is vector, but i need size for it to iterate */
-            stacking = itr->second->GetStackingPenalty(cur);
-            targetIDs = itr->second->GetTargetIDList(cur);
-            targetAttrID = itr->second->GetTargetAttributeID(cur);
-            sourceAttrID = itr->second->GetSourceAttributeID(cur);
-            ecType = itr->second->GetReverseCalculationType(cur);
-            _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - effect %u[%u] - %u targetIDs, attrib:%u, source:%u, ecType:%i", \
-                        itr->first, cur, targetIDs.size(), targetAttrID, sourceAttrID, (int8)ecType);
-            m_MSAC->ModifyShipAttribute(targetAttrID, sourceAttrID, ecType, stacking);
-            ++cur;
-            targetIDs.clear();
+            //if (m_shipRef->GetPilot()->IsInSpace())
+            sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         }
     }
 
-    m_ModuleState = MOD_OFFLINE;
-    m_Item->PutOffline();
+    m_ModuleState = ModStates::ModuleStates::MOD_OFFLINE;
+    m_modRef->PutOffline();
+    if (m_shipRef->IsDocking())
+        m_modRef->SetAttribute(AttrIsOnline, true, true);
 }
 
+void GenericModule::Overload()
+{
+    // need to clear item's effectMap here to avoid duplicating.
+    m_modRef->m_modifiers.clear();
+    ProcessEffects(Effects::dgmStateOverloaded, true);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+}
+
+void GenericModule::DeOverload()
+{
+    // need to clear item's effectMap here to avoid duplicating.
+    m_modRef->m_modifiers.clear();
+    ProcessEffects(Effects::dgmStateOverloaded, false);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+}
+
+void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
+{
+    // get module/charge pre/post effects in state x
+    std::map<uint16, Effect> effectMap;
+    m_modRef->type().GetEffectMap(state, effectMap);
+    _log(EFFECTS__TRACE, "GenericModule::ProcessEffects() called for %s. effects: %u, state: %s, online: %s", \
+            m_modRef->itemName().c_str(), effectMap.size(), sFxProc.GetStateName(state).c_str(), (online ? "true" : "false"));
+    for (auto it : effectMap) {
+        if (it.first == 16)    // skip the online effect for now.  will hack the data for it later.
+            continue;
+        fxData data;
+        data.action = Effects::Action::dgmActInvalid;
+        data.srcRef = m_modRef;
+        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
+        /* module and charge effects will be added/removed from it's item
+         * active/overload/gang/other effects will be applied and removed when called.
+         */
+        if (online)
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
+        else
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
+    }
+}
+
+std::string GenericModule::GetChargeStateName(ModStates::ChargeStates state)
+{
+    switch(state) {
+        case ModStates::ChargeStates::CHG_UNLOADED:     return "Unloaded";  break;
+        case ModStates::ChargeStates::CHG_LOADED:       return "Loaded";    break;
+        case ModStates::ChargeStates::CHG_LOADING:      return "Loading";   break;
+        case ModStates::ChargeStates::CHG_RELOADING:    return "Reloading"; break;
+    }
+}
+
+std::string GenericModule::GetModuleStateName(ModStates::ModuleStates state)
+{
+    switch(state) {
+        case ModStates::ModuleStates::MOD_UNFITTED:     return "Unfitted";      break;
+        case ModStates::ModuleStates::MOD_OFFLINE:      return "Offline";       break;
+        case ModStates::ModuleStates::MOD_ONLINE:       return "Online";        break;
+        case ModStates::ModuleStates::MOD_ACTIVATED:    return "Activated";     break;
+        case ModStates::ModuleStates::MOD_DEACTIVATING: return "Deactivating";  break;
+    }
+}

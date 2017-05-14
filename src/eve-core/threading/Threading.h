@@ -20,7 +20,7 @@ public:
     Threading();
     ~Threading();
 
-    void Init();
+    void Initialize();
     void RunLoop();
     void Process();
     void AddSocket(SOCKET soc);

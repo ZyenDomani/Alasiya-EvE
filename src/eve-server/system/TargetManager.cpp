@@ -197,13 +197,13 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     targetSkills += pChar->GetSkillLevel(skillTargeting);    // +1 target/level
     targetSkills += pChar->GetSkillLevel(skillMultitasking);    // +1 target/level
 	uint8 maxLockedTargets = (uint8)ship->GetAttribute(AttrMaxLockedTargets).get_int();
-    if (!maxLockedTargets) maxLockedTargets = 1;
+    if (maxLockedTargets < 1)
+        maxLockedTargets = 1;
     // add module updates to target capacity of ship here.
     if (targetSkills < maxLockedTargets)
         maxLockedTargets = targetSkills;
     if (GetTotalTargets() >= maxLockedTargets) {
-        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only handle %u targets at a time.", \
-            maxLockedTargets);
+        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only handle %u targets at a time.", maxLockedTargets);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
         return TargetFail(who);
@@ -219,7 +219,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     if (who->IsAsteroidSE())
         targetDistance -= who->GetRadius();
     if (targetDistance > maxTargetLockRange) {
-        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only target to %f meters.  %s is %f meters away.", \
+        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only target to %.0f meters.  %s is %.0f meters away.", \
             maxTargetLockRange, who->GetName(), targetDistance);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are too far away.  Ignoring request.", \
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
@@ -312,6 +312,8 @@ void TargetManager::TargetLost(SystemEntity *who) {
     _log(TARGET__INFO, "%s(%u) has lost lock on %s(%u)",
          mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
 
+    mySE->DestinyMgr()->EntityRemoved(who);
+
     if (mySE->IsNPCSE())
         mySE->GetNPCSE()->TargetLost(who);
 
@@ -359,7 +361,15 @@ void TargetManager::TargetedByLost(SystemEntity *from_who) {
     }
 }
 
-SystemEntity* TargetManager::GetFirstTarget(bool need_locked) {
+bool TargetManager::IsTargetedBy(SystemEntity* pSE)
+{
+    std::map<SystemEntity *, TargetedByEntry *>::iterator res = m_targetedBy.find(pSE);
+    if (res != m_targetedBy.end())
+        return true;
+    return false;
+}
+
+SystemEntity* TargetManager::GetFirstTarget(bool need_locked/*false*/) {
     if (m_targets.empty())
         return nullptr;
 
@@ -388,7 +398,7 @@ PyList* TargetManager::GetTargets() const {
     return result;
 }
 
-SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked) const {
+SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/) const {
     if (m_targets.empty())
         return nullptr;
 
@@ -425,8 +435,7 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
         || (target->IsContainerSE()) || (target->IsInanimateSE()) || (target->IsStaticEntity()) )
         return 2.0;
 
-    //  fixed lock time  -allan 24Dec14  -updated 26May15
-    /** @todo add ship bonuses in here */
+    //  fixed lock time  -allan 24Dec14  -updated 26May15   -revisited after new effects system implementation 25Mar17
     uint32 scanRes = ship->GetAttribute(AttrScanResolution).get_int();
     uint32 sigRad = 25; // set base as capsule with 25m signature radius
 
@@ -434,18 +443,16 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
         if ( target->GetSelf()->HasAttribute(AttrSignatureRadius) )
             sigRad = target->GetSelf()->GetAttribute(AttrSignatureRadius).get_int();
 
-    /*
-     * fleet invlovement enhances targeting speed using leadership of highest member (2%/lvl)
-     * modules - sensor boosters
-     */
-
     //https://wiki.eveonline.com/en/wiki/Targeting_speed
     //locktime = 40000/(scanres * asinh(sigrad)^2)
     float time = ( 40000 /(scanRes * pow(asinh(sigRad), 2)));
 
     if (mySE->HasPilot()) {
         Character* pChar = mySE->GetPilot()->GetChar().get();
-        time *= (1 - (0.05 * pChar->GetSkillLevel(skillSignatureAnalysis))); // 5% decrease/level
+        // this is applied using skill effects now.
+        //time *= (1 - (0.05 * pChar->GetSkillLevel(skillSignatureAnalysis))); // 5% decrease/level
+
+        // fleet invlovement enhances targeting speed using leadership of highest member (2%/lvl)
         if (pChar->fleetID()) { /** @todo  always returns 0 until fleets are implemented */
             //Character* pLeader = pChar->GetFleetLeader;   /** @todo this needs to be written */
             time *= (1 - (0.02 * pChar->GetSkillLevel(skillLeadership))); // 2% decrease/level
@@ -460,7 +467,7 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
      */
     double distance = ship->position().distance(target->GetPosition());
     // check for snipers... >85k distance do NOT need additional 7.5+s to targettime
-    if (mySE->IsNPCSE())
+    //if (mySE->IsNPCSE())      // not all snipers are npc
         if (distance > 85000)
             distance -= 75000;
 
@@ -608,11 +615,29 @@ void TargetManager::QueueTBDestinyUpdate( PyTuple** up_in ) const
 }
 
 /* debugging methods */
-void TargetManager::TargetList(std::string* into, uint16* length, uint16* count) {
-    for (auto cur : m_targets)
-        ++count;
-    for (auto cur : m_targetedBy)
-        ++count;
+std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
+    std::ostringstream str;
+    if (!m_targets.empty()) {
+        str << "Targets: \n";
+        length += 11;
+        for (auto cur : m_targets) {
+            str << "  " << cur.second->who->GetSelf()->itemName();
+            str << " (" << cur.second->who->GetID() << ") \n";
+            length += 35;
+            ++count;
+        }
+    }
+    if (!m_targetedBy.empty()) {
+        str << "Targeted by: \n";
+        length += 15;
+        for (auto cur : m_targetedBy) {
+            str << "  " << cur.second->who->GetSelf()->itemName();
+            str << " (" << cur.second->who->GetID() << ") \n";
+            length += 35;
+            ++count;
+        }
+    }
+    return str.str();
 }
 
 void TargetManager::Dump() const {
@@ -624,7 +649,7 @@ void TargetManager::Dump() const {
 }
 
 void TargetManager::TargetEntry::Dump() const {
-    const char *sname = "Unknown State";
+    const char *sname = "Invalid";
     switch(state) {
         case Idle:              sname = "Idle";    break;
         case PassiveLocking:    sname = "Passive"; break;
@@ -636,7 +661,7 @@ void TargetManager::TargetEntry::Dump() const {
 }
 
 void TargetManager::TargetedByEntry::Dump() const {
-    const char *sname = "Unknown State";
+    const char *sname = "Invalid";
     switch(state) {
         case Idle:      sname = "Idle";     break;
         case Locking:   sname = "Locking";  break;
