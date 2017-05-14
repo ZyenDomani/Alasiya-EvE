@@ -25,6 +25,12 @@
     AI Version: 0.44
 */
 
+/** @todo  ai update ideas
+ *   bubble call *SomeFunction* to tell ai of new ship arriving in bubble
+ *   method to use npc's prefered sig radius for targets
+ *   finish flee and signal action methods (and determine who can use them and when)
+ */
+
 #include "eve-server.h"
 
 #include "Client.h"
