@@ -459,6 +459,7 @@ PyObject *ConfigDB::GetMapOffices(uint32 solarSystemID) {
     return DBResultToRowset(res);
 }
 
+/** @todo more map data in /eve/client/script/ui/shared/maps/mapcommon.py */
 PyObject *ConfigDB::GetMapConnections(uint32 id, bool sol, bool reg, bool con, uint16 cel, uint16 _c) {
   sLog.Warning ("ConfigDB::GetMapConnections", "DB query - System:%u, Sol:%u, Reg:%u, Con:%u, Cel:%u, _c:%u", id, sol, reg, con, cel, _c);
 

@@ -64,7 +64,7 @@ bool AgentDB::LoadAgentLocation(uint32 agentID, uint32 &locationID, uint32 &loca
         "   itm.typeID "
         " FROM agtAgents AS agt"
         " LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID"
-        " LEFT JOIN invItems AS itm ON itm.itemID = agt.locationID"
+        " LEFT JOIN mapDenormalize AS itm ON itm.itemID = agt.locationID"
         " WHERE agt.agentID=%d", agentID
     ))
     {

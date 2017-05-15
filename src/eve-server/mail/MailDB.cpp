@@ -31,7 +31,7 @@ PyRep* MailDB::GetMailStatus(int charId)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT messageID, statusMask, labelMask FROM mailMessage WHERE toCharacterIDs LIKE '%%%u%%'", charId))
-        return NULL;
+        return nullptr;
     return DBResultToCRowset(res);
 }
 
@@ -39,7 +39,7 @@ PyRep* MailDB::GetNewMail(int charId)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT messageID, senderID, toCharacterIDs, toListID, toCorpOrAllianceID, title, sentDate FROM mailMessage WHERE toCharacterIDs LIKE '%%%u%%'", charId))
-        return NULL;
+        return nullptr;
     return DBResultToCRowset(res);
 }
 
@@ -91,13 +91,13 @@ PyString* MailDB::GetMailBody(int id) const
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT body FROM mailMessage WHERE messageID = %u", id))
-        return NULL;
+        return nullptr;
     if (res.GetRowCount() <= 0)
-        return NULL;
+        return nullptr;
 
     DBResultRow row;
     if (!res.GetRow(row) || row.IsNull(0))
-        return NULL;
+        return nullptr;
 
     return new PyString(row.GetText(0), row.ColumnLength(0));
 }
@@ -112,7 +112,7 @@ PyRep* MailDB::GetLabels(int characterID) const
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT bit, name, color, ownerId FROM mailLabel WHERE ownerID = %u", characterID))
-        return NULL;
+        return nullptr;
 
     PyDict* ret = new PyDict();
 

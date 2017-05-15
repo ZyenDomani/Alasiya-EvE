@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 7.2
+    Log Version: 7.3
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -164,6 +164,7 @@ LOG_TYPE( MAIL, MESSAGE, DISABLED, "MailMsg" )
 LOG_TYPE( MAIL, DEBUG, DISABLED, "MailDebug" )
 LOG_TYPE( MAIL, INFO, DISABLED, "MailInfo" )
 LOG_TYPE( MAIL, TRACE, DISABLED, "MailTrace" )
+LOG_TYPE( MAIL, DUMP, DISABLED, "MailDump" )
 
 LOG_CATEGORY( AUTOPILOT )
 LOG_TYPE( AUTOPILOT, ERROR,   ENABLED, "AP:Error" )

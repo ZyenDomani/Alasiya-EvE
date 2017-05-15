@@ -37,13 +37,17 @@ void MapCon::PopulateConnections() {
         fromcon = row.GetUInt(1);
         tocon = row.GetUInt(2);
         toreg = row.GetUInt(3);
-
+/*
+REGION_JUMP = 0
+CONSTELLATION_JUMP = 1
+SOLARSYSTEM_JUMP = 2
+*/
         if (( fromreg == toreg ) && ( fromcon == tocon ))
-            ctype = 2;
+            ctype = 2;  // change system
         else if ( fromreg == toreg )
-            ctype = 1;
+            ctype = 1;  // change constellation
         else
-            ctype = 3;
+            ctype = 0;  // change region
 
         DBerror err;
         sDatabase.RunQuery(err, "UPDATE mapConnections SET ctype = %u WHERE AI = %u", ctype, count);
