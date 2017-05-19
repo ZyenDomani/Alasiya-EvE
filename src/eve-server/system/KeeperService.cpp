@@ -165,7 +165,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if( !args.Decode( &call.tuple ) )
     {
-                sLog.Error( "KeeperService::Handle_ActivateAccelerationGate(): failed to decode arguments for character '%s' !", call.client->GetName() );
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 

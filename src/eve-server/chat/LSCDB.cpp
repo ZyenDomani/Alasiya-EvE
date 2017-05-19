@@ -218,161 +218,6 @@ PyObject *LSCDB::LookupKnownLocationsByGroup(const std::string & search, uint32 
     return DBResultToRowset(res);
 }
 
-
-//temporarily relocated into ServiceDB until some things get cleaned up...
-uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, const char * message, uint64 sentTime) {
-    DBQueryResult res;
-    DBerror err;
-    DBResultRow row;
-
-    std::string escaped;
-    // Escape message header
-    sDatabase.DoEscapeString(escaped, subject);
-
-    // Store message header
-    uint32 messageID;
-    if (!sDatabase.RunQueryLID(err, messageID,
-        " INSERT INTO "
-        " eveMail "
-        " (channelID, senderID, subject, created) "
-        " VALUES (%u, %u, '%s', %" PRIu64 ") ",
-        recipID, senderID, escaped.c_str(), sentTime ))
-    {
-        codelog(SERVICE__ERROR, "Error in query, message header couldn't be saved: %s", err.c_str());
-        return (0);
-    }
-
-    _log(SERVICE__MESSAGE, "New messageID: %u", messageID);
-
-    // Escape message content
-    sDatabase.DoEscapeString(escaped, message);
-
-    // Store message content
-    if (!sDatabase.RunQuery(err,
-        " INSERT INTO eveMailDetails "
-        " (messageID, mimeTypeID, attachment) VALUES (%u, 1, '%s') ",
-        messageID, escaped.c_str()
-        ))
-    {
-        codelog(SERVICE__ERROR, "Error in query, message content couldn't be saved: %s", err.c_str());
-        // Delete message header
-        if (!sDatabase.RunQuery(err, "DELETE FROM `eveMail` WHERE `messageID` = %u;", messageID))
-        {
-            codelog(SERVICE__ERROR, "Failed to remove invalid header data for messgae id %u: %s", messageID, err.c_str());
-        }
-        return (0);
-    }
-
-
-    return (messageID);
-}
-
-
-PyObject *LSCDB::GetMailHeaders(uint32 recID) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT channelID, messageID, senderID, subject, created, `read` "
-        " FROM eveMail "
-        " WHERE channelID=%u", recID))
-    {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
-    }
-
-    return DBResultToRowset(res);
-}
-
-
-PyRep *LSCDB::GetMailDetails(uint32 messageID, uint32 readerID) {
-    DBQueryResult result;
-    DBResultRow row;
-
-    //we need to query out the primary message here... not sure how to properly
-    //grab the "main message" though... the text/plain clause is pretty hackish.
-    if (!sDatabase.RunQuery(result,
-        " SELECT eveMail.messageID, eveMail.senderID, eveMail.subject, " // need messageID as char*
-        " eveMailDetails.attachment, eveMailDetails.mimeTypeID, "
-        " eveMailMimeType.mimeType, eveMailMimeType.`binary`, "
-        " eveMail.created, eveMail.channelID "
-        " FROM eveMail "
-        " LEFT JOIN eveMailDetails"
-        "    ON eveMailDetails.messageID = eveMail.messageID "
-        " LEFT JOIN eveMailMimeType"
-        "    ON eveMailMimeType.mimeTypeID = eveMailDetails.mimeTypeID "
-        " WHERE eveMail.messageID=%u"
-        "    AND channelID=%u",
-            messageID, readerID
-        ))
-    {
-        codelog(SERVICE__ERROR, "Error in query: %s", result.error.c_str());
-        return (NULL);
-    }
-
-    if (!result.GetRow(row)) {
-        codelog(SERVICE__MESSAGE, "No message with messageID %u", messageID);
-        return (NULL);
-    }
-
-    Rsp_GetEVEMailDetails details;
-    details.messageID = row.GetUInt(0);
-    details.senderID = row.GetUInt(1);
-    details.subject = row.GetText(2);
-    details.body = row.GetText(3);
-    details.created = row.GetUInt64(7);
-    details.channelID = row.GetUInt(8);
-    details.deleted = 0; // If a message's details are sent, then it isn't deleted. If it's deleted, details cannot be sent
-    details.mimeTypeID = row.GetInt(4);
-    details.mimeType = row.GetText(5);
-    details.binary = row.GetInt(6);
-
-    return(details.Encode());
-}
-
-
-bool LSCDB::MarkMessageRead(uint32 messageID) {
-    DBerror err;
-
-    if (!sDatabase.RunQuery(err,
-        " UPDATE eveMail "
-        " SET `read` = 1 "
-        " WHERE messageID=%u", messageID
-        ))
-    {
-        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
-        return false;
-    }
-
-    return true;
-}
-
-
-bool LSCDB::DeleteMessage(uint32 messageID, uint32 readerID) {
-    DBerror err;
-    bool ret = true;
-
-    if (!sDatabase.RunQuery(err,
-        " DELETE FROM eveMail "
-        " WHERE messageID=%u AND channelID=%u", messageID, readerID
-        ))
-    {
-        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
-        ret = false;
-    }
-    if (!sDatabase.RunQuery(err,
-        " DELETE FROM eveMailDetails "
-        " WHERE messageID=%u", messageID
-        ))
-    {
-        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
-        ret = false;
-    }
-
-    return ret;
-
-}
-
-
 void LSCDB::GetChannelNames(uint32 charID, std::vector<std::string> & names) {
     DBQueryResult res;
 
@@ -380,15 +225,9 @@ void LSCDB::GetChannelNames(uint32 charID, std::vector<std::string> & names) {
         " SELECT "
         "    entity.itemName AS characterName, "
         "    corporation.corporationName, "
-        "    mapSolarSystems.solarSystemName, "
-        "    mapConstellations.constellationName, "
-        "    mapRegions.regionName "
         " FROM chrCharacter "
         "    LEFT JOIN entity ON entity.itemID = chrCharacter.characterID "
         "    LEFT JOIN corporation ON chrCharacter.corporationID = corporation.corporationID "
-        "    LEFT JOIN mapSolarSystems ON chrCharacter.solarSystemID = mapSolarSystems.solarSystemID "
-        "    LEFT JOIN mapConstellations ON chrCharacter.constellationID = mapConstellations.constellationID "
-        "    LEFT JOIN mapRegions ON chrCharacter.regionID = mapRegions.regionID "
         " WHERE chrCharacter.characterID = %u ", charID))
     {
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
@@ -404,9 +243,6 @@ void LSCDB::GetChannelNames(uint32 charID, std::vector<std::string> & names) {
 
     names.push_back(row.GetText(0));    // charName
     names.push_back(row.GetText(1));    // corpName
-    names.push_back(row.GetText(2));    // solsysName
-    names.push_back(row.GetText(3));    // constName
-    names.push_back(row.GetText(4));    // regionName
 }
 
 
@@ -927,4 +763,158 @@ int LSCDB::RemoveChannelFromDatabase(uint32 channelID)
     }
 
     return ret;
+}
+
+
+//temporarily relocated into ServiceDB until some things get cleaned up...
+uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, const char * message, uint64 sentTime) {
+    DBQueryResult res;
+    DBerror err;
+    DBResultRow row;
+
+    std::string escaped;
+    // Escape message header
+    sDatabase.DoEscapeString(escaped, subject);
+
+    // Store message header
+    uint32 messageID;
+    if (!sDatabase.RunQueryLID(err, messageID,
+        " INSERT INTO "
+        " eveMail "
+        " (channelID, senderID, subject, created) "
+        " VALUES (%u, %u, '%s', %" PRIu64 ") ",
+                               recipID, senderID, escaped.c_str(), sentTime ))
+    {
+        codelog(SERVICE__ERROR, "Error in query, message header couldn't be saved: %s", err.c_str());
+        return (0);
+    }
+
+    _log(SERVICE__MESSAGE, "New messageID: %u", messageID);
+
+    // Escape message content
+    sDatabase.DoEscapeString(escaped, message);
+
+    // Store message content
+    if (!sDatabase.RunQuery(err,
+        " INSERT INTO eveMailDetails "
+        " (messageID, mimeTypeID, attachment) VALUES (%u, 1, '%s') ",
+                            messageID, escaped.c_str()
+    ))
+    {
+        codelog(SERVICE__ERROR, "Error in query, message content couldn't be saved: %s", err.c_str());
+        // Delete message header
+        if (!sDatabase.RunQuery(err, "DELETE FROM `eveMail` WHERE `messageID` = %u;", messageID))
+        {
+            codelog(SERVICE__ERROR, "Failed to remove invalid header data for messgae id %u: %s", messageID, err.c_str());
+        }
+        return (0);
+    }
+
+
+    return (messageID);
+}
+
+
+PyObject *LSCDB::GetMailHeaders(uint32 recID) {
+    DBQueryResult res;
+
+    if(!sDatabase.RunQuery(res,
+        "SELECT channelID, messageID, senderID, subject, created, `read` "
+        " FROM eveMail "
+        " WHERE channelID=%u", recID))
+    {
+        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        return NULL;
+    }
+
+    return DBResultToRowset(res);
+}
+
+
+PyRep *LSCDB::GetMailDetails(uint32 messageID, uint32 readerID) {
+    DBQueryResult result;
+    DBResultRow row;
+
+    //we need to query out the primary message here... not sure how to properly
+    //grab the "main message" though... the text/plain clause is pretty hackish.
+    if (!sDatabase.RunQuery(result,
+        " SELECT eveMail.messageID, eveMail.senderID, eveMail.subject, " // need messageID as char*
+        " eveMailDetails.attachment, eveMailDetails.mimeTypeID, "
+        " eveMailMimeType.mimeType, eveMailMimeType.`binary`, "
+        " eveMail.created, eveMail.channelID "
+        " FROM eveMail "
+        " LEFT JOIN eveMailDetails"
+        "    ON eveMailDetails.messageID = eveMail.messageID "
+        " LEFT JOIN eveMailMimeType"
+        "    ON eveMailMimeType.mimeTypeID = eveMailDetails.mimeTypeID "
+        " WHERE eveMail.messageID=%u"
+        "    AND channelID=%u",
+        messageID, readerID
+    ))
+    {
+        codelog(SERVICE__ERROR, "Error in query: %s", result.error.c_str());
+        return (NULL);
+    }
+
+    if (!result.GetRow(row)) {
+        codelog(SERVICE__MESSAGE, "No message with messageID %u", messageID);
+        return (NULL);
+    }
+
+    Rsp_GetEVEMailDetails details;
+    details.messageID = row.GetUInt(0);
+    details.senderID = row.GetUInt(1);
+    details.subject = row.GetText(2);
+    details.body = row.GetText(3);
+    details.created = row.GetUInt64(7);
+    details.channelID = row.GetUInt(8);
+    details.deleted = 0; // If a message's details are sent, then it isn't deleted. If it's deleted, details cannot be sent
+    details.mimeTypeID = row.GetInt(4);
+    details.mimeType = row.GetText(5);
+    details.binary = row.GetInt(6);
+
+    return(details.Encode());
+}
+
+
+bool LSCDB::MarkMessageRead(uint32 messageID) {
+    DBerror err;
+
+    if (!sDatabase.RunQuery(err,
+        " UPDATE eveMail "
+        " SET `read` = 1 "
+        " WHERE messageID=%u", messageID
+    ))
+    {
+        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
+        return false;
+    }
+
+    return true;
+}
+
+
+bool LSCDB::DeleteMessage(uint32 messageID, uint32 readerID) {
+    DBerror err;
+    bool ret = true;
+
+    if (!sDatabase.RunQuery(err,
+        " DELETE FROM eveMail "
+        " WHERE messageID=%u AND channelID=%u", messageID, readerID
+    ))
+    {
+        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
+        ret = false;
+    }
+    if (!sDatabase.RunQuery(err,
+        " DELETE FROM eveMailDetails "
+        " WHERE messageID=%u", messageID
+    ))
+    {
+        codelog(SERVICE__ERROR, "Error in query: %s", err.c_str());
+        ret = false;
+    }
+
+    return ret;
+
 }

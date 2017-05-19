@@ -62,7 +62,7 @@ PyResult TutorialService::Handle_GetTutorialInfo(PyCallArgs &call) {
   call.Dump(SERVICE__CALL_DUMP);
     Call_GetTutorialInfo args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Can't parse args.");
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return NULL;
     }
 
@@ -117,7 +117,7 @@ PyResult TutorialService::Handle_GetTutorialAgents(PyCallArgs &call) {
             [PyDict 1 kvp]
               [PyString "machoVersion"]
               [PyInt 1]
-              
+
       [PySubStream 377 bytes]
         [PyList 12 items]
           [PyPackedRow 28 bytes]

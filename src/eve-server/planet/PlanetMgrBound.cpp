@@ -188,7 +188,7 @@ PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
 PyResult PlanetMgrBound::Handle_GetExtractorsForPlanet(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode args for GetResourceData()");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -201,7 +201,7 @@ PyResult PlanetMgrBound::Handle_UserUpdateNetwork(PyCallArgs &call) {
 
     UUNCommandList uuncl;
     if (!uuncl.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode args for UUNCommandList");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -245,7 +245,7 @@ PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
 
     Call_ProgramResults args;
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode args for ProgramResults");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -285,7 +285,7 @@ PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
     PyDict* input = call.tuple->AsTuple()->GetItem(0)->AsObject()->arguments()->AsDict();
     //input->Dump(PLANET__DUMP, "   ");
     if (!dict.Decode(&input)) {
-        _log(SERVICE__ERROR, "Failed to decode args for GetResourceData()");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -367,7 +367,7 @@ eve-server: /usr/local/src/eve/Alasiya-EvE/src/eve-common/python/PyRep.h:141: Py
      */
     Call_LaunchCommodities args;
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode args for Call_LaunchCommodities()");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
     PyDict* dict = args.dict->AsDict();

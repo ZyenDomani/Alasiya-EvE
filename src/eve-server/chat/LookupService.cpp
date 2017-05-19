@@ -29,42 +29,6 @@
 #include "PyServiceCD.h"
 #include "chat/LookupService.h"
 
-/*
-class LookupSvcBound
-: public LookupSvcObject {
-public:
-
-    class Dispatcher
-    : public PyCallableDispatcher<LookupSvcBound> {
-    public:
-        Dispatcher(LookupSvcBound *c)
-        : PyCallableDispatcher<LookupSvcBound>(c) {}
-    };
-
-    LookupSvcBound(PyServiceMgr *mgr, LookupSvcDB *db)
-    : PyBoundObject(mgr, "LookupSvcBound"),
-      m_db(db),
-      m_dispatch(new Dispatcher(this))
-    {
-        _SetCallDispatcher(m_dispatch);
-
-        PyCallable_REG_CALL(LookupSvcBound, )
-        PyCallable_REG_CALL(LookupSvcBound, )
-    }
-    virtual ~LookupSvcBound() {}
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
-
-    PyCallable_DECL_CALL()
-    PyCallable_DECL_CALL()
-
-protected:
-    LookupSvcDB *const m_db;
-    Dispatcher *const m_dispatch;
-};
-*/
 
 PyCallable_Make_InnerDispatcher(LookupService)
 
@@ -90,21 +54,11 @@ LookupService::~LookupService() {
     delete m_dispatch;
 }
 
-
-/*
-PyBoundObject* LookupService::_CreateBoundObject( Client* c, const PyRep* bind_args )
-{
-    _log( CLIENT__MESSAGE, "LookupService bind request for:" );
-    bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
-
-    return new LookupSvcBound( m_manager, &m_db );
-}*/
-
 PyResult LookupService::Handle_LookupEvePlayerCharacters(PyCallArgs& call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Wrong incoming param in LookupEvePlayerCharacters");
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
 
     return m_db.LookupPlayerChars(args.searchString.c_str(), args.searchOption ? true : false);
@@ -113,8 +67,8 @@ PyResult LookupService::Handle_LookupEvePlayerCharacters(PyCallArgs& call) {
 PyResult LookupService::Handle_LookupCharacters(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Wrong incoming param in LookupCharacters");
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
 
     return m_db.LookupChars(args.searchString.c_str(), args.searchOption ? true : false);
@@ -123,8 +77,8 @@ PyResult LookupService::Handle_LookupCharacters(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupPCOwners(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Wrong incoming param in LookupPCOwners");
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
 
     return m_db.LookupChars(args.searchString.c_str(), args.searchOption ? true : false);
@@ -133,8 +87,8 @@ PyResult LookupService::Handle_LookupPCOwners(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupOwners(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Wrong incoming param in LookupOwners");
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
 
     return m_db.LookupOwners(args.searchString.c_str(),  args.searchOption ? true : false );
@@ -143,8 +97,8 @@ PyResult LookupService::Handle_LookupOwners(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupPlayerCharacters(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Wrong incoming param in LookupPlayerCharacters");
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
 
     return m_db.LookupPlayerChars(args.searchString.c_str(),  false);
@@ -152,8 +106,8 @@ PyResult LookupService::Handle_LookupPlayerCharacters(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupCorporations(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Wrong incoming param in LookupCorporations");
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
 
     return m_db.LookupCorporations(args.searchString);
@@ -161,8 +115,8 @@ PyResult LookupService::Handle_LookupCorporations(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupFactions(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Wrong incoming param in LookupCorporations");
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
 
     return m_db.LookupFactions(args.searchString);
@@ -170,8 +124,8 @@ PyResult LookupService::Handle_LookupFactions(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupCorporationTickers(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Wrong incoming param in LookupCorporations");
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
 
     return m_db.LookupCorporationTickers(args.searchString);
@@ -179,8 +133,8 @@ PyResult LookupService::Handle_LookupCorporationTickers(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupStations(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Wrong incoming param in LookupCorporations");
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
 
     return m_db.LookupStations(args.searchString);
@@ -189,33 +143,9 @@ PyResult LookupService::Handle_LookupStations(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupKnownLocationsByGroup(PyCallArgs &call) {
     Call_LookupIntString args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Wrong incoming param in LookupCorporations");
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
 
     return m_db.LookupKnownLocationsByGroup(args.searchString, args.searchOption);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

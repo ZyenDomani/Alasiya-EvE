@@ -72,7 +72,7 @@ PyResult AggressionMgrBound::Handle_GetCriminalTimeStamps(PyCallArgs &call)
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple))
     {
-        _log(CLIENT__ERROR, "Invalid GetCriminalTimeStamps call");
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return NULL;
     }
 
@@ -85,7 +85,7 @@ PyResult AggressionMgrBound::Handle_CheckLootRightExceptions(PyCallArgs &call)
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple))
     {
-        _log(CLIENT__ERROR, "Invalid CheckLootRightExceptions call");
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return NULL;
     }
 

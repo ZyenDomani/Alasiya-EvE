@@ -73,7 +73,7 @@ PyResult ConfigService::Handle_GetMultiOwnersEx(PyCallArgs &call) {
 
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode arguments.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -83,7 +83,7 @@ PyResult ConfigService::Handle_GetMultiOwnersEx(PyCallArgs &call) {
 PyResult ConfigService::Handle_GetMultiAllianceShortNamesEx(PyCallArgs &call) {
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode arguments.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -106,7 +106,7 @@ PyResult ConfigService::Handle_GetMultiLocationsEx(PyCallArgs &call) {      // n
 */
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode arguments.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -119,7 +119,7 @@ PyResult ConfigService::Handle_GetMultiStationEx(PyCallArgs &call) {
 
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode arguments.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -130,7 +130,7 @@ PyResult ConfigService::Handle_GetMultiCorpTickerNamesEx(PyCallArgs &call) {
     //parse the PyRep to get the list of IDs to query.
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode arguments.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -141,7 +141,7 @@ PyResult ConfigService::Handle_GetMultiGraphicsEx(PyCallArgs &call) {
     //parse the PyRep to get the list of IDs to query.
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode arguments.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -199,7 +199,7 @@ PyResult ConfigService::Handle_GetMultiInvTypesEx(PyCallArgs &call) {
     //parse the PyRep to get the list of IDs to query.
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode arguments.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -215,7 +215,7 @@ PyResult ConfigService::Handle_GetMapConnections(PyCallArgs &call) {
 */
     Call_GetMapConnections args;
     if(!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyInt(0);
     }
 
@@ -253,7 +253,7 @@ PyResult ConfigService::Handle_GetStationSolarSystemsByOwner(PyCallArgs &call) {
   call.Dump(SERVICE__CALL_DUMP);
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Bad arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -265,7 +265,7 @@ PyResult ConfigService::Handle_GetStationSolarSystemsByOwner(PyCallArgs &call) {
 PyResult ConfigService::Handle_GetCelestialStatistic(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Bad arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -275,7 +275,7 @@ PyResult ConfigService::Handle_GetCelestialStatistic(PyCallArgs &call) {
 PyResult ConfigService::Handle_GetDynamicCelestials(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Bad arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 

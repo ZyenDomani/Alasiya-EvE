@@ -24,44 +24,12 @@
 */
 
 
-
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
 #include "admin/CommandDispatcher.h"
 #include "admin/SlashService.h"
 
-/*
-class SlashBound
-: public PyBoundObject {
-public:
-
-    PyCallable_Make_Dispatcher(SlashBound)
-
-    SlashBound(PyServiceMgr *mgr, SlashDB *db)
-    : PyBoundObject(mgr, "SlashBound"),
-      m_db(db),
-      m_dispatch(new Dispatcher(this))
-    {
-        _SetCallDispatcher(m_dispatch);
-
-        PyCallable_REG_CALL(SlashBound, )
-        PyCallable_REG_CALL(SlashBound, )
-    }
-    virtual ~SlashBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
-
-    PyCallable_DECL_CALL()
-    PyCallable_DECL_CALL()
-
-protected:
-    SlashDB *const m_db;
-    Dispatcher *const m_dispatch;   //we own this
-};
-*/
 
 PyCallable_Make_InnerDispatcher(SlashService)
 
@@ -79,22 +47,11 @@ SlashService::~SlashService() {
     delete m_dispatch;
 }
 
-
-/*
-PyBoundObject *SlashService::_CreateBoundObject(Client *c, PyTuple *bind_args) {
-    _log(CLIENT__MESSAGE, "SlashService bind request for:");
-    bind_args->Dump(CLIENT__MESSAGE, "    ");
-
-    return(new SlashBound(m_manager, &m_db));
-}*/
-
-
 PyResult SlashService::Handle_SlashCmd( PyCallArgs& call )
 {
     Call_SingleWStringSoftArg arg;
-    if( !arg.Decode( &call.tuple ) )
-    {
-        codelog( SERVICE__ERROR, "Failed to decode arguments" );
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return NULL;
     }
 
@@ -103,13 +60,12 @@ PyResult SlashService::Handle_SlashCmd( PyCallArgs& call )
 
 PyResult SlashService::SlashCommand(Client * client, std::string command)
 {
-    if( !( client->GetAccountRole() & ROLE_SLASH ) )
-    {
-        _log( SERVICE__ERROR, "%s: Client '%s' used a slash command but does not have ROLE_SLASH. Modified client?", GetName(), client->GetName() );
+    if (!(client->GetAccountRole() & ROLE_SLASH)) {
+        _log( COMMAND__ERROR, "%s: Client '%s' used a slash command but does not have ROLE_SLASH. Modified client?", GetName(), client->GetName() );
         throw PyException( MakeCustomError( "You need to have ROLE_SLASH to execute commands." ) );
     }
 
-    sLog.Debug( "SlashService::Handle_SlashCmd()", "Slash command called: '%s'", command.c_str() );
+    _log(COMMAND__MESSAGE, "%s: '%s'", client->GetName(), command.c_str() );
 
     return m_commandDispatch->Execute( client, command.c_str() );
 }

@@ -120,7 +120,7 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
     //return sm.RemoteSvc('scanMgr').GetSystemScanMgr().ConeScan(scanangle, scanRange, x, y, z)
     Call_ConeScan args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         //TODO: throw exception
         return NULL;
     }

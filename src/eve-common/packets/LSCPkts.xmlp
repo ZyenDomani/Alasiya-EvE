@@ -21,6 +21,7 @@
             <stringInline value="mailingList" />
             <stringInline value="cspa" />
             <stringInline value="temporary" />
+            <stringInline value="languageRestriction" />
             <stringInline value="mode" />
             <stringInline value="subscribed" />
             <stringInline value="estimatedMemberCount" />
@@ -48,6 +49,7 @@
       <bool name="mailingList" />
       <int name="cspa" />
       <int name="temporary" />
+      <bool name="languageRestriction" default="false" />
       <int name="mode" />
       <bool name="subscribed" />
       <int name="estimatedMemberCount" />

@@ -52,9 +52,6 @@ public:
     PyObject *GetSolDroneState(uint32 systemID) const;
 
     uint32 GetStationOwner(uint32 stationID);
-    uint32 GetStationRegion(uint32 stationID);
-
-    uint32 GetDestinationStargateID(uint32 fromSystem, uint32 toSystem);
 
     bool GetConstant(const char *name, uint32 &into);
 

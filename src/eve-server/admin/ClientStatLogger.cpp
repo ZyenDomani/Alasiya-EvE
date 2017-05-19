@@ -46,7 +46,7 @@ ClientStatLogger::~ClientStatLogger() {
 PyResult ClientStatLogger::Handle_LogString(PyCallArgs &call) {
     Call_SingleStringArg args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode arguments");
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return NULL;
     }
 

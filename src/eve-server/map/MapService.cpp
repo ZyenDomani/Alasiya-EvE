@@ -373,7 +373,12 @@ PyResult MapService::Handle_GetMyExtraMapInfo(PyCallArgs &call)
 PyResult MapService::Handle_GetAllianceJumpBridges(PyCallArgs &call)
 {
      /**
-                 toLocID, fromLocID  */
+        if not hasattr(session, 'allianceid') or session.allianceid == None:
+            return
+
+        bridgesByLocation = m.GetAllianceJumpBridges()
+        for toLocID, fromLocID in bridgesByLocation:
+            */
   sLog.White( "MapService::Handle_GetAllianceJumpBridges()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 

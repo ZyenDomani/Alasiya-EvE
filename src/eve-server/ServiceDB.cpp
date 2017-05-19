@@ -180,55 +180,6 @@ uint32 ServiceDB::GetStationOwner(uint32 stationID)
         return 1;
 }
 
-uint32 ServiceDB::GetStationRegion(uint32 stationID)
-{
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT regionID FROM staStations WHERE stationID = %u", stationID)) {
-        codelog(DATABASE__ERROR, "Failed to query info for station %u: %s.", stationID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (res.GetRow(row))
-        return row.GetInt(0);
-    else
-        return 1;
-}
-
-/** @todo this bullshit isnt used...delete it */
-uint32 ServiceDB::GetDestinationStargateID(uint32 fromSystem, uint32 toSystem)
-{
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        " SELECT "
-        "    fromStargate.solarSystemID AS fromSystem,"
-        "    fromStargate.itemID AS fromGate,"
-        "    toStargate.itemID AS toGate,"
-        "    toStargate.solarSystemID AS toSystem"
-        " FROM mapJumps AS jump"
-        " LEFT JOIN mapDenormalize AS fromStargate"
-        "    ON fromStargate.itemID = jump.stargateID"
-        " LEFT JOIN mapDenormalize AS toStargate"
-        "    ON toStargate.itemID = jump.celestialID"
-        " WHERE fromStargate.solarSystemID = %u"
-        "    AND toStargate.solarSystemID = %u",
-        fromSystem, toSystem
-    ))
-    {
-        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return(0);
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Error in query: no data for %d, %d", fromSystem, toSystem);
-        return(0);
-    }
-
-    return row.GetUInt(2);
-}
-
 bool ServiceDB::GetConstant(const char *name, uint32 &into)
 {
     DBQueryResult res;

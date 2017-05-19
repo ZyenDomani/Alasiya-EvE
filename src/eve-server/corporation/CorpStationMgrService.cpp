@@ -242,7 +242,7 @@ PyResult CorpStationMgrIMBound::Handle_SetCloneTypeID(PyCallArgs &call) {
 
     Call_SetCloneTypeID arg;
     if(!arg.Decode(&call.tuple)){
-        sLog.Debug("CoporationMgrIMBound","Failed to determine Clone Type");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
     }
 
     //Get cost of clone
@@ -276,7 +276,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     // 1 param, corp rent price    //TODO: check against what we think it should cost.
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Wrong incoming param in RentOffice");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 

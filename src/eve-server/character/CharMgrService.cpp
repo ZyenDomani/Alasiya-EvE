@@ -242,7 +242,7 @@ PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
 {
     Call_TwoIntegerArgs args;
     if( !args.Decode( &call.tuple ) )  {
-        codelog( SERVICE__ERROR, "Unable to decode arguments for CharMgrService::Handle_AddToBounty from '%s'", call.client->GetName() );
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -307,7 +307,7 @@ PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
 PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
     Call_TwoIntegerArgs args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyNone();
     }
 
@@ -460,7 +460,7 @@ PyResult CharMgrService::Handle_GetCharacterDescription(PyCallArgs &call)
     //takes characterID
     Call_SingleIntegerArg args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -479,7 +479,7 @@ PyResult CharMgrService::Handle_SetCharacterDescription(PyCallArgs &call)
     //takes WString of bio
     Call_SingleWStringSoftArg args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -510,7 +510,7 @@ PyResult CharMgrService::Handle_SetNote(PyCallArgs &call)
 {
     Call_SetNote args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 

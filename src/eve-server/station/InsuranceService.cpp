@@ -118,7 +118,7 @@ PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
     if (call.tuple->size() > 1) {
         Call_IntBoolArg args;
         if(!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "Failed to decode arguments");
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             return NULL;
         }
 
@@ -135,7 +135,7 @@ PyResult InsuranceService::Handle_GetContractForShip( PyCallArgs& call ) {
 PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 	Call_InsureShip args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 

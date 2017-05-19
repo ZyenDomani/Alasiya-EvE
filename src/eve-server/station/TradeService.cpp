@@ -115,7 +115,7 @@ PyBoundObject* TradeService::_CreateBoundObject(Client* pClient, const PyRep *bi
     PyRep *t = bind_args->Clone();
     if(!args.Decode(&t)) {
         codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", pClient->GetName());
-        return NULL;
+        return nullptr;
     }
     _log(COLLECT__OTHER_DUMP, "Trade bind request for:");
     args.Dump(COLLECT__OTHER_DUMP, "    ");
@@ -319,7 +319,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
      *  call.byname "qty"
      */
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "TradeBound::Handle_Add() - Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         Handle_Abort(call);
         return new PyNone();
     }
@@ -411,7 +411,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
      *  call.byname "flag"
      */
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "TradeBound::Handle_Add() - Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         Handle_Abort(call);
         return new PyNone();
     }
@@ -662,20 +662,20 @@ PyResult TradeService::Handle_InitiateTrade(PyCallArgs &call) {
     if (call.client->GetTradeSession()) {
         target = sEntityList.FindClientByCharID( call.client->GetTradeSession()->m_tradeSession.herID );
         call.client->SendErrorMsg("You are currently trading with %s.  You can only trade with one player at a time.", target->GetName());
-        return NULL;
+        return nullptr;
     }
 
     Call_SingleIntegerArg args;
     //    .arg is char to trade with
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return NULL;
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
     }
     target = sEntityList.FindClientByCharID( args.arg );
     if (target->GetTradeSession()) {
         Client* otarget = sEntityList.FindClientByCharID( call.client->GetTradeSession()->m_tradeSession.herID );
         call.client->SendErrorMsg("%s is currently trading with %s.  Try again later.", target->GetName(), otarget->GetName());
-        return NULL;
+        return nullptr;
     }
 
     // wtf is this ???

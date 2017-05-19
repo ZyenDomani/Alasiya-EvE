@@ -48,7 +48,7 @@ StationService::~StationService() {
 PyResult StationService::Handle_GetSolarSystem(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: Failed to decode GetSolarSystem arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 

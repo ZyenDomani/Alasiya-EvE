@@ -77,14 +77,14 @@ PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)
     if (call.tuple->GetItem(0)->IsString()) {
         Call_SingleStringArg arg;
         if (!arg.Decode(&call.tuple)) {
-            codelog(CLIENT__ERROR, "Failed to decode args for ValidateNameEx call");
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             return new PyInt(-1);
         }
         return m_db.ValidateCharName(arg.arg.c_str());
     } else if (call.tuple->GetItem(0)->IsWString()) {
         Call_SingleWStringArg arg;
         if (!arg.Decode(&call.tuple)) {
-            codelog(CLIENT__ERROR, "Failed to decode args for ValidateNameEx call");
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             return new PyInt(-1);
         }
         return m_db.ValidateCharName(arg.arg.c_str());
@@ -101,7 +101,7 @@ PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call) {
 */
     CallSelectCharacterID arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Failed to decode args for SelectCharacterID call");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -116,7 +116,7 @@ PyResult CharUnboundMgrService::Handle_GetCharactersToSelect(PyCallArgs &call) {
 PyResult CharUnboundMgrService::Handle_GetCharacterToSelect(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -132,7 +132,7 @@ PyResult CharUnboundMgrService::Handle_GetCharacterToSelect(PyCallArgs &call) {
 PyResult CharUnboundMgrService::Handle_DeleteCharacter(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Invalid arguments for DeleteCharacter call");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -142,7 +142,7 @@ PyResult CharUnboundMgrService::Handle_DeleteCharacter(PyCallArgs &call) {
 PyResult CharUnboundMgrService::Handle_PrepareCharacterForDelete(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Invalid arguments for PrepareCharacterForDelete call");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -152,7 +152,7 @@ PyResult CharUnboundMgrService::Handle_PrepareCharacterForDelete(PyCallArgs &cal
 PyResult CharUnboundMgrService::Handle_CancelCharacterDeletePrepare(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Invalid arguments for CancelCharacterDeletePrepare call");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -191,7 +191,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         */
     CallCreateCharacterWithDoll arg;
     if (!arg.Decode(call.tuple)) {
-        codelog(CLIENT__ERROR, "Failed to decode args for CreateCharacterWithDoll call");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 

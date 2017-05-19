@@ -129,7 +129,7 @@ PyResult AccountService::Handle_GetKeyMap(PyCallArgs &call) {
 PyResult AccountService::Handle_GiveCash(PyCallArgs &call) {
     Call_GiveCash args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return nullptr;
     }
 
@@ -316,7 +316,7 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call) {
 
     Call_GetJournal args;
     if(!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Could not decode arguments");
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return nullptr;
     }
 
@@ -358,7 +358,7 @@ PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call) {
 
     Call_GiveCorpCash args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return nullptr;
     }
 

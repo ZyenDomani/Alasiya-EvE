@@ -145,7 +145,7 @@ PyResult FactionWarMgrService::Handle_GetFactionMilitiaCorporation(PyCallArgs &c
   call.Dump(SERVICE__CALL_DUMP);
     Call_SingleIntegerArg arg;
     if(!arg.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
     return (new PyInt(m_db.GetFactionMilitiaCorporation(arg.arg)));

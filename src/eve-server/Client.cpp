@@ -251,6 +251,9 @@ bool Client::SelectCharacter(uint32 char_id) {
         WarpIn();
     }
 
+    //create corp and ally chat channels (if not already created)
+    m_services.lsc_service->CharacterLogin(this);
+
     return true;
 }
 
@@ -2015,5 +2018,4 @@ void Client::ChannelJoined(LSCChannel *chan) {
 void Client::ChannelLeft(LSCChannel *chan) {
     m_channels.erase(chan);
 }
-
 

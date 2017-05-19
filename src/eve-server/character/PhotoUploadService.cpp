@@ -50,7 +50,7 @@ PyResult PhotoUploadService::Handle_Upload(PyCallArgs &call)
     Call_SingleStringArg arg;
     if (!arg.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode args for Upload call");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return  new PyBool(false);
     }
 
@@ -59,6 +59,6 @@ PyResult PhotoUploadService::Handle_Upload(PyCallArgs &call)
 
     call.client->SetPicRec(true);
     sLog.White("   PhotoUploadSvc", "Received image from account %u, size: %u", call.client->GetUserID(), (uint32)arg.arg.size());
-    
+
     return new PyBool(true);
 }

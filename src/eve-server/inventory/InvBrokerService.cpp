@@ -146,7 +146,7 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
      * args.arg2 = locationID of container
      */
     if (!args.Decode(&call.tuple)) {
-        _log(INV__ERROR, "%s: Cannot decode arguments", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -191,7 +191,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
      */
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        _log(INV__ERROR, "%s: Cannot decode arguments", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
     //bool passive = (args.arg2 != 0);  //no idea what this is for.
@@ -221,7 +221,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
     call.Dump(INV__DUMP);
     Inventory_GetInventory args;
     if(!args.Decode(&call.tuple)) {
-        codelog(INV__ERROR, "Unable to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -289,7 +289,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
 PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     CallSetLabel args;
     if(!args.Decode(&call.tuple)) {
-        codelog(INV__ERROR, "Unable to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -323,7 +323,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
 PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
     Call_TrashItems args;
     if(!args.Decode(&call.tuple)) {
-        _log(INV__ERROR, "Unable to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 

@@ -130,7 +130,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     //     .arg1 (newShipID) -  itemID of the ship to be boarded
     //     .arg2 (oldShipID) -  itemID of the current ship
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Handle_Board Failed to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -240,7 +240,7 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call) {
     call.Dump(SERVICE__CALL_DUMP);
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Handle_LeaveShip Failed to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -272,7 +272,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
     //     .arg1 (newShipID) -  itemID of the ship to be boarded
     //     .arg2 (oldShipID) -  itemID of the current ship
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Handle_ActivateShip Failed to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -319,7 +319,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
 
     Call_IntBoolArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         /** @todo throw exception */
         return nullptr;
     }
@@ -405,7 +405,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         	/*
             // Tuple contains single Integer, this is for Tech 3 Ship Assembly:
             if (!argsT3.Decode(&call.tuple)) {
-                sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: argsT3.Decode(&call.tuple) failed");
+                codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
                 return nullptr;
             }
             itemID = argsT3.item;
@@ -428,7 +428,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         }
     } else {
         if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "Failed to decode arguments");
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             return nullptr;
         }
         itemID = args.items.front();
@@ -484,7 +484,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
 
     Call_Drop3 drop3args;
     if (!drop3args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         //TODO: throw exception
         return nullptr;
     }
@@ -645,7 +645,7 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
 PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         //TODO: throw exception
         return nullptr;
     }
@@ -695,7 +695,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         */
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -745,7 +745,7 @@ PyResult ShipBound::Handle_ScoopToSMA(PyCallArgs &call) {
 PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         //TODO: throw exception
         return nullptr;
     }

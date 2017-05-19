@@ -144,7 +144,7 @@ PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &cal
 
     Call_GetOptionsForItemTypes call_args;
     if(!call_args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Unable to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -185,7 +185,7 @@ PyResult ReprocessingServiceBound::Handle_GetReprocessingInfo(PyCallArgs &call) 
 PyResult ReprocessingServiceBound::Handle_GetQuote(PyCallArgs &call) {
     Call_SingleIntegerArg call_args;    // itemID
     if(!call_args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Unable to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -196,7 +196,7 @@ PyResult ReprocessingServiceBound::Handle_GetQuotes(PyCallArgs &call) {
      Call_GetQuotes call_arg;
 
      if(!call_arg.Decode(&call.tuple)) {
-         _log(SERVICE__ERROR, "Unable to decode args.");
+         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
          return NULL;
      }
 
@@ -230,7 +230,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
     Call_Reprocess call_args;
 
     if(!call_args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to parse args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 

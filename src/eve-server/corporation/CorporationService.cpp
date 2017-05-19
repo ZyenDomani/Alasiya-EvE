@@ -127,7 +127,7 @@ PyResult CorporationService::Handle_GetFactionInfo(PyCallArgs &call) {
 PyResult CorporationService::Handle_GetCorpInfo(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Bad arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return (NULL);
     }
 
@@ -142,7 +142,7 @@ PyResult CorporationService::Handle_GetNPCDivisions(PyCallArgs &call) {
 PyResult CorporationService::Handle_GetEmploymentRecord(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Bad arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return (NULL);
     }
 
@@ -153,7 +153,7 @@ PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
 
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Bad arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return (NULL);
     }
     // dont know the details for this return yet.....
@@ -167,7 +167,7 @@ PyResult CorporationService::Handle_GetMedalDetails(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
 
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Bad arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return (NULL);
     }
     // dont know the details for this return yet.....
@@ -183,7 +183,7 @@ PyResult CorporationService::Handle_GetAllCorpMedals( PyCallArgs& call )
     Call_SingleIntegerArg arg;
     if ( !arg.Decode( &call.tuple ) )
     {
-        _log( SERVICE__ERROR, "Failed to decode args." );
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -241,7 +241,7 @@ PyResult CorporationService::Handle_GetRecruitmentAdsByCriteria( PyCallArgs& cal
     Call_GetRecruitmentAdsByCriteria args;
     if ( !args.Decode( &call.tuple ) )
     {
-        _log( SERVICE__ERROR, "Failed to decode args." );
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 

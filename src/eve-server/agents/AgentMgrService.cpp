@@ -194,7 +194,7 @@ PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
     */
     Call_SingleArg args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode args from '%s'", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return NULL;
     }
 
@@ -240,7 +240,7 @@ PyResult AgentMgrBound::Handle_DoAction(PyCallArgs &call) {
     //takes a single argument, which may be None, or may be an integer actionID
     Call_SingleArg args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode args from '%s'", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return NULL;
     }
 

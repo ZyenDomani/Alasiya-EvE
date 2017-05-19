@@ -29,6 +29,7 @@
 #include "chat/LSCChannel.h"
 #include "chat/LSCService.h"
 
+
 PyRep *LSCChannelChar::Encode() const {
     ChannelJoinChannelCharsLine line;
 
@@ -234,26 +235,20 @@ void LSCChannel::Evacuate(Client * c) {
     sEntityList.Multicast("OnLSC", GetTypeString(), &answer, mct);
 }
 
-void LSCChannel::SendMessage(Client * c, const char * message, bool self) {
+void LSCChannel::SendMessage(Client * c, const char * message, bool self/*false*/) {
     MulticastTarget mct;
     OnLSC_SendMessage sm;
 
-    if (message[0] == '#') {
-        m_service->ExecuteCommand(c, message);
+    if (self) {
         mct.characters.insert(c->GetCharacterID());
-        sm.sender = _MakeSenderInfo(c);
+        sm.sender = _FakeSenderInfo();
     } else {
-        if (self) {
-            mct.characters.insert(c->GetCharacterID());
-            sm.sender = _FakeSenderInfo();
-        } else {
-            std::map<uint32, LSCChannelChar>::iterator cur;
-            cur = m_chars.begin();
-            for(; cur != m_chars.end(); cur++)
-                mct.characters.insert( cur->first );
+        std::map<uint32, LSCChannelChar>::iterator cur;
+        cur = m_chars.begin();
+        for(; cur != m_chars.end(); cur++)
+            mct.characters.insert( cur->first );
 
-            sm.sender = _MakeSenderInfo(c);
-        }
+        sm.sender = _MakeSenderInfo(c);
     }
 
     sm.channelID = EncodeID();
@@ -308,7 +303,7 @@ PyRep *LSCChannel::EncodeChannel(uint32 charID) {
     line.motd = m_motd;
     line.ownerID = m_ownerID;
     line.password = m_password;
-    line.subscribed = !(m_chars.find(charID) == m_chars.end());
+    line.subscribed = (m_chars.find(charID) != m_chars.end());
     line.temporary = m_temporary;
 
     return line.Encode();
@@ -337,7 +332,7 @@ PyRep *LSCChannel::EncodeChannelSmall(uint32 charID) {
     info.motd = m_motd;
     info.ownerID = m_ownerID;
     info.password = (m_password.empty() ? (PyRep*)new PyNone() : (PyRep*)new PyString(m_password));
-    info.subscribed = !(m_chars.find(charID) == m_chars.end());
+    info.subscribed = (m_chars.find(charID) != m_chars.end());
     info.temporary = (m_temporary == 0) ? false : true;
 
     return info.Encode();
@@ -378,18 +373,12 @@ PyRep *LSCChannel::EncodeEmptyChannelChars() {
 
 const char *LSCChannel::GetTypeString() {
     switch(m_type) {
-    case normal:
-        return("normal");
-    case corp:
-        return("corpid");
-    case solarsystem:
-        return("solarsystemid2");
-    case region:
-        return("regionid");
-    case constellation:
-        return("constellationid");
-    //no default on purpose
+        case normal:          return "normal";
+        case corp:            return "corpid";
+        case solarsystem:     return "solarsystemid2";
+        case region:          return "regionid";
+        case constellation:   return "constellationid";
+        default:              return "unknown";
     }
-    return("unknown");
 }
 

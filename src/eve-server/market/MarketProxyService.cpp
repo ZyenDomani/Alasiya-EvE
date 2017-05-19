@@ -27,6 +27,7 @@
 
 #include "EntityList.h"
 #include "PyServiceCD.h"
+#include "StaticDataMgr.h"
 #include "cache/ObjCacheService.h"
 #include "market/MarketProxyService.h"
 #include "system/SystemManager.h"
@@ -804,12 +805,10 @@ void MarketProxyService::_ExecuteSellOrder(uint32 sell_order_id, uint32 stationI
     }
 
     //record this transaction in market_transactions
-    ServiceDB sDB;
-    uint32 regionID = sDB.GetStationRegion(stationID);
-    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, buyer->GetCharacterID(), regionID, stationID)) {
+    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, buyer->GetCharacterID(), sDataMgr.GetStationRegion(stationID), stationID)) {
         codelog(MARKET__ERROR, "%s: Failed to record buy side of transaction.", buyer->GetName());
     }
-    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, orderOwnerID, regionID, stationID)) {
+    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, orderOwnerID, sDataMgr.GetStationRegion(stationID), stationID)) {
         codelog(MARKET__ERROR, "%s: Failed to record sale side of transaction.", buyer->GetName());
     }
 }

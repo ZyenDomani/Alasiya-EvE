@@ -97,7 +97,7 @@ PyResult LanguageService::Handle_GetTextsForGroup(PyCallArgs &call) {
     Call_GetTextsForGroup args;
 
     if (!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Invalid arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 7.3
+    Log Version: 7.4
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -335,6 +335,8 @@ LOG_TYPE( LSC, WARNING, DISABLED, "LSCWarning" )
 LOG_TYPE( LSC, MESSAGE, DISABLED, "LSCMsg" )
 LOG_TYPE( LSC, INFO, DISABLED, "LSCInfo" )
 LOG_TYPE( LSC, CHANNELS, DISABLED, "LSCChan" )
+LOG_TYPE( LSC, CALL_DUMP, DISABLED, "LSC_CDump" )
+LOG_TYPE( LSC, RSP_DUMP, DISABLED, "LSC_RDump" )
 
 LOG_CATEGORY( LP )
 LOG_TYPE( LP, ERROR, ENABLED, "LPError" )

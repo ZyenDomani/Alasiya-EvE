@@ -79,7 +79,7 @@ AttributeError: Rowset instance has no attribute 'corporationID'
 */
     Call_SingleIntegerArg corpID;
     if (!corpID.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Bad param");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
@@ -92,7 +92,7 @@ AttributeError: Rowset instance has no attribute 'corporationID'
 PyResult CorpMgrService::Handle_GetCorporations(PyCallArgs &call) {
   Call_SingleIntegerArg corpID;
   if (!corpID.Decode(&call.tuple)) {
-      codelog(SERVICE__ERROR, "Bad param");
+      codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
       return NULL;
   }
 
@@ -114,7 +114,7 @@ PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
     Call_GetAssetInventory args;
 
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "CorpMgrService::Handle_GetAssetInventory() - Error Decoding Arguments.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 

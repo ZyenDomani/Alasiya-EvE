@@ -98,7 +98,7 @@ PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::ReplaceCharges() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     Inventory_CallReplaceCharges args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Unable to decode arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -235,7 +235,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
     //Decode Args
     Inventory_CallMultiMerge elements;
     if (!elements.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Unable to decode elements");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -245,7 +245,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
     std::vector<PyRep *>::const_iterator cur = elements.MMElements->begin();
     for (; cur != elements.MMElements->end(); cur++) {
         if (!element.Decode( *cur )) {
-            _log(SERVICE__WARNING, "Unable to decode element. Skipping.");
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             continue;
         }
 
@@ -278,7 +278,7 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
     if (call.tuple->items.size() != 0) {
         Call_SingleIntegerArg arg;
         if (!arg.Decode(&call.tuple)) {
-            _log(SERVICE__ERROR, "Failed to decode args.");
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             return nullptr;
         }
 
@@ -307,7 +307,7 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::DestroyFitting() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)){
-        sLog.Error("Destroy Fittings","Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
     }
 
     //get the actual item
@@ -352,7 +352,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
          * args.inventoryID     - the item's current location's itemID
          */
         if (!args.Decode(&call.tuple)) {
-            codelog(INV__ERROR, "Unable to decode arguments");
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             return nullptr;
         }
 
@@ -463,7 +463,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     if ( call.tuple->items.size() == 2 ) {
         Call_MultiAdd_2 args;
         if (!args.Decode(&call.tuple)) {
-            codelog(INV__ERROR, "Unable to decode arguments");
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             return nullptr;
         }
 

@@ -149,9 +149,9 @@ public:
     void SetMode(uint32 mode) { m_mode = mode; }
 
     void GetChannelInfo(uint32 * channelID, uint32 * ownerID, std::string &displayName, std::string &motd, std::string &comparisonKey,
-    bool * memberless, std::string &password, bool * mailingList, uint32 * cspa, uint32 * temporary, uint32 * mode);
+            bool * memberless, std::string &password, bool * mailingList, uint32 * cspa, uint32 * temporary, uint32 * mode);
     void SetChannelInfo(uint32 ownerID, std::string displayName, std::string motd, std::string comparisonKey,
-    bool memberless, std::string password, bool mailingList, uint32 cspa, uint32 temporary, uint32 mode);
+            bool memberless, std::string password, bool mailingList, uint32 cspa, uint32 temporary, uint32 mode);
 
     bool JoinChannel(Client * c);
     void LeaveChannel(Client *c, bool self = true);

@@ -119,7 +119,8 @@ PyResult CertificateMgrService::Handle_GetCertificateClasses(PyCallArgs &call) {
 PyResult CertificateMgrService::Handle_GrantCertificate(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        _log(CLIENT__ERROR, "Failed to decode args.");
+
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return new PyNone();
     }
 
@@ -129,7 +130,7 @@ PyResult CertificateMgrService::Handle_GrantCertificate(PyCallArgs &call) {
 PyResult CertificateMgrService::Handle_UpdateCertificateFlags(PyCallArgs &call) {
     Call_TwoIntegerArgs arg;
     if (!arg.Decode(&call.tuple)) {
-        _log(CLIENT__ERROR, "Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return new PyNone();
     }
 
@@ -141,7 +142,7 @@ PyResult CertificateMgrService::Handle_UpdateCertificateFlags(PyCallArgs &call) 
 PyResult CertificateMgrService::Handle_BatchCertificateGrant(PyCallArgs &call) {
     Call_SingleIntList arg;
     if (!arg.Decode(&call.tuple)) {
-        _log(CLIENT__ERROR, "Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return new PyNone();
     }
 
@@ -158,7 +159,7 @@ PyResult CertificateMgrService::Handle_BatchCertificateGrant(PyCallArgs &call) {
 PyResult CertificateMgrService::Handle_BatchCertificateUpdate(PyCallArgs &call) {
     Call_BatchCertificateUpdate args;
     if(!args.Decode(&call.tuple)) {
-        _log(CLIENT__ERROR, "Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return new PyNone();
     }
 

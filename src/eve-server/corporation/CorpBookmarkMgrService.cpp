@@ -97,7 +97,7 @@ PyResult CorpBookmarkMgrService::Handle_UpdateBookmark(PyCallArgs& call) {
     call.Dump(COMMON__INFO);
     Call_UpdateBookmark args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode args");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -120,7 +120,7 @@ PyResult CorpBookmarkMgrService::Handle_UpdateBookmark(PyCallArgs& call) {
         sLog.Error( "BookmarkService::Handle_BookmarkLocation()", "args.comment is of the wrong type: '%s'.  Expected PyString or PyWString.", args.comment->TypeString() );
         return new PyNone();
     }
-    
+
     if (!m_db.UpdateBookmarkInDatabase(args.bookmarkID, args.ownerID, memo, comment, args.folderID))
         ;   // make client error here to let them know updating failed
 
@@ -132,7 +132,7 @@ PyResult CorpBookmarkMgrService::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
     call.Dump(COMMON__INFO);
     Call_UpdateBookmark args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode args");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 

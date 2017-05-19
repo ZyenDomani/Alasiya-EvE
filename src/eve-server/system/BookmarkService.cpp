@@ -89,7 +89,7 @@ PyResult BookmarkService::Handle_CreateFolder(PyCallArgs &call) {
 PyResult BookmarkService::Handle_UpdateFolder(PyCallArgs &call) {
     Call_UpdateFolder args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode args");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -151,7 +151,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
   /*  bookmarkID, itemID, typeID, x, y, z, locationID = sm.RemoteSvc('bookmark').BookmarkLocation(itemID, ownerID, memo, comment, folderID)  */
     Call_BookmarkLocation args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode args");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -228,7 +228,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
 PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
     Call_BookmarkScanResult args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode args");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
     /*
@@ -288,7 +288,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
 PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
     Call_DeleteBookmarks args;
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -328,7 +328,7 @@ PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
 
     Call_MoveBookmarksToFolder args;
     if (!args.Decode(&call.tuple)) {
-        _log(SERVICE__ERROR, "Failed to decode args.");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
