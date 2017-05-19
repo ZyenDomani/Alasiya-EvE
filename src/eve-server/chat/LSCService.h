@@ -73,6 +73,8 @@ public:
     void CharacterLogin(Client *pClient);
     void CharacterLogout(uint32 charID, OnLSC_SenderInfo * si);
 
+    LSCChannel *CreateChannel(uint32 channelID);
+    
     void SendMail(uint32 sender, uint32 recipient, const std::string &subject, const std::string &content) {
         std::vector<int32> recs(1, recipient);
         SendMail(sender, recs, subject, content);
@@ -114,7 +116,6 @@ private:
         uint32 ownerID, bool memberless, const char * password, bool maillist, uint32 cspa, uint32 temporary, uint32 mode);
     LSCChannel *CreateChannel(uint32 channelID, const char * name, const char * motd, LSCChannel::Type type, bool maillist = false);
     LSCChannel *CreateChannel(uint32 channelID, const char * name, LSCChannel::Type type, bool maillist = false);
-    LSCChannel *CreateChannel(uint32 channelID);
     LSCChannel *CreateChannel(const char * name, bool maillist = false);
 
     void CreateStaticChannels();
