@@ -74,7 +74,8 @@ public:
     void CharacterLogout(uint32 charID, OnLSC_SenderInfo * si);
 
     LSCChannel *CreateChannel(uint32 channelID);
-    
+    void SystemUnload(uint32 systemID, uint32 constID, uint32 regionID);
+
     void SendMail(uint32 sender, uint32 recipient, const std::string &subject, const std::string &content) {
         std::vector<int32> recs(1, recipient);
         SendMail(sender, recs, subject, content);

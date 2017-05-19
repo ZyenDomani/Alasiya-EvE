@@ -151,12 +151,6 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
         // see if they exist yet and if not, create them:
         for( int i=0; i<channelCount; i++ )
         {
-            if( m_channels.find(charChannelIDs[i]) == m_channels.end() )
-            {
-                // Create each private chat channel listed in the names/IDs just procurred
-                // and grab a pointer to them while we're at it:
-                //channel = CreateChannel(charChannelIDs[i], charChannelNames[i].c_str(),
-                //    charChannelMOTDs[i].c_str(), LSCChannel::normal);
                 CreateChannel(
                     charChannelIDs[i],
                     charChannelNames[i].c_str(),
@@ -171,7 +165,6 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
                     charTemporaries[i],
                     charModes[i]
                     );
-            }
         }
     }
 
@@ -281,10 +274,7 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
         // Skip joining Help\Rookie and Help\Help channels when the character is no longer a rookie:
         if( isRookie || !( channelID == 1 || channelID == 2 ) )
         {
-            if( m_channels.find( channelID ) == m_channels.end() )
-                channel = CreateChannel( channelID );
-            else
-                channel = m_channels[ channelID ];
+            channel = CreateChannel( channelID );
 
             if( (!channel->IsJoined( charID )) && (channelID != call.client->GetCharacterID()) )
             {
@@ -874,9 +864,6 @@ PyResult LSCService::Handle_DestroyChannel( PyCallArgs& call )
     // packet sent back to the client?
     // **************************
 
-    // Remove the channel from the database:
-    m_db->RemoveChannelFromDatabase( res->second->GetChannelID() );
-
     // Finally, remove the channel from the server dynamic objects:
     res->second->Evacuate( call.client );
     SafeDelete( res->second );
@@ -1142,6 +1129,17 @@ void LSCService::CharacterLogout(uint32 charID, OnLSC_SenderInfo* si)
     SafeDelete( si );
 }
 
+void LSCService::SystemUnload(uint32 systemID, uint32 constID, uint32 regionID)
+{
+    std::map<uint32, LSCChannel*>::iterator itr = m_channels.find(systemID);
+    if (itr != m_channels.end()) {
+        SafeDelete( itr->second );
+        m_channels.erase( itr );
+    }
+    /** @todo  find a way to track usages of region and const channels to delete when no longer used */
+    //  is this needed?
+}
+
 
 LSCChannel* LSCService::CreateChannel(uint32 channelID, const char * name, const char * motd, LSCChannel::Type type, const char * compkey,
                                       uint32 ownerID, bool memberless, const char * password, bool maillist, uint32 cspa, uint32 temporary, uint32 mode) {
@@ -1193,10 +1191,29 @@ LSCChannel* LSCService::CreateChannel(const char * name, bool maillist/*false*/)
 }
 
 void LSCService::CreateStaticChannels() {
-    // hardcode creating basic static channels when system is first created.
+    // hardcode creating server static channels during server startup
+    const char * password = "";
+    const char *motd = "3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-30-30-30-30-3E-3C-62-3E-57-65-6C-63-6F-6D-65-20-74-6F-20-45-56-45-20-4F-6E-6C-69-6E-65-3A-20-49-6E-63-75-72-73-69-6F-6E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-37-66-66-66-3E-20-3C-62-72-3E-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-50-6C-61-79-65-72-20-47-75-69-64-65-73-3A-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-62-32-62-32-62-32-66-66-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-61-35-30-30-3E-3C-75-72-6C-3D-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-77-69-6B-69-2F-43-61-74-65-67-6F-72-79-3A-4E-65-77-5F-50-6C-61-79-65-72-5F-45-78-70-65-72-69-65-6E-63-65-3E-3C-75-3E-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-77-69-6B-69-2F-43-61-74-65-67-6F-72-79-3A-4E-65-77-5F-50-6C-61-79-65-72-5F-45-78-70-65-72-69-65-6E-63-65-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-62-32-62-32-62-32-66-66-3E-3C-2F-75-72-6C-3E-3C-2F-75-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-62-32-62-32-62-32-3E-77-6F-72-74-68-20-61-20-72-65-61-64-2E-2E-3C-62-72-3E-50-61-74-63-68-20-4E-6F-74-65-73-3A-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-62-32-62-32-62-32-66-66-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-61-35-30-30-3E-3C-75-72-6C-3D-68-74-74-70-3A-2F-2F-77-77-77-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-75-70-64-61-74-65-73-2F-70-61-74-63-68-6E-6F-74-65-73-2E-61-73-70-3E-3C-75-3E-68-74-74-70-3A-2F-2F-77-77-77-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-75-70-64-61-74-65-73-2F-70-61-74-63-68-6E-6F-74-65-73-2E-61-73-70-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-30-30-30-30-3E-3C-2F-75-72-6C-3E-3C-2F-62-3E-3C-2F-75-3E-20-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-62-32-62-32-62-32-3E-3C-62-3E-50-6C-65-61-73-65-3A-20-53-74-61-79-20-6F-6E-20-74-6F-70-69-63-2E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-62-32-62-32-62-32-66-66-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-66-66-30-30-3E-4E-6F-20-6F-66-66-74-6F-70-69-63-2C-20-57-54-42-2C-20-57-54-53-2C-20-50-43-2C-20-61-64-76-65-72-74-69-73-69-6E-67-2C-20-72-65-63-72-75-69-74-69-6E-67-2C-20-73-63-61-6D-6D-69-6E-67-20-74-72-61-64-69-6E-67-20-69-6E-20-67-65-6E-65-72-61-6C-20-6F-72-20-62-65-67-67-69-6E-67-20-69-6E-20-74-68-69-73-20-63-68-61-6E-6E-65-6C-2E-20-4E-6F-20-43-41-50-53-20-6F-72-20-74-65-78-74-2D-64-65-63-6F-72-61-74-69-6F-6E-20-65-69-74-68-65-72-20-21-21-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-4C-61-6E-67-75-61-67-65-3A-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-62-32-62-32-62-32-66-66-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-62-32-62-32-62-32-3E-54-68-69-73-20-63-68-61-6E-6E-65-6C-20-69-73-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-66-66-66-66-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-30-30-30-30-3E-45-4E-47-4C-49-53-48-20-4F-4E-4C-59-21-21-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-4C-69-6E-6B-73-3A-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-62-32-62-32-62-32-3E-55-52-4C-27-73-20-67-69-76-65-6E-20-74-6F-20-73-69-74-65-73-20-6F-74-68-65-72-20-74-68-61-6E-20-74-6F-20-77-77-77-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-20-6D-61-79-20-62-65-20-6F-75-74-64-61-74-65-64-2E-20-50-6C-65-61-73-65-20-68-61-6E-64-6C-65-20-61-6C-6C-20-74-68-6F-73-65-20-55-52-4C-27-73-20-77-69-74-68-20-63-61-72-65-2E-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-48-6F-77-20-74-6F-20-63-6F-6E-74-61-63-74-20-61-20-47-4D-3A-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-62-32-62-32-62-32-3E-46-69-6C-65-20-61-20-70-65-74-69-74-69-6F-6E-20-28-20-46-31-32-20-2D-20-50-65-74-69-74-69-6F-6E-73-20-2D-20-4E-65-77-20-50-65-74-69-74-69-6F-6E-20-29-20-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C\
+    -6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-45-70-69-63-20-41-72-63-20-41-67-65-6E-74-73-3A-20-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-61-35-30-30-3E-3C-75-72-6C-3D-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-65-6E-2F-77-69-6B-69-2F-44-6F-6D-69-6E-69-6F-6E-5F-65-70-69-63-5F-61-72-63-73-3E-3C-75-3E-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-65-6E-2F-77-69-6B-69-2F-44-6F-6D-69-6E-69-6F-6E-5F-65-70-69-63-5F-61-72-63-73-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-30-30-30-30-3E-3C-2F-75-72-6C-3E-3C-2F-62-3E-3C-2F-75-3E-20-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-61-35-30-30-3E-3C-75-72-6C-3D-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-65-6E-2F-77-69-6B-69-2F-45-70-69-63-5F-6D-69-73-73-69-6F-6E-5F-61-72-63-73-3E-3C-62-3E-3C-75-3E-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-65-6E-2F-77-69-6B-69-2F-45-70-69-63-5F-6D-69-73-73-69-6F-6E-5F-61-72-63-73-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-30-30-30-30-3E-3C-2F-75-72-6C-3E-3C-2F-62-3E-3C-2F-75-3E-20-3C-62-72-3E-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-3C-62-3E-54-68-65-20-74-6F-70-69-63-20-6F-66-20-74-68-69-73-20-63-68-61-6E-6E-65-6C-20-69-73-20-45-56-45-20-72-65-6C-61-74-65-64-20-68-65-6C-70-21-21-21-3C-62-72-3E-3C-62-72-3E-43-68-61-74-72-75-6C-65-73-3A-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-61-35-30-30-3E-3C-75-72-6C-3D-68-74-74-70-3A-2F-2F-77-77-77-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-70-6E-70-2F-63-68-61-74-72-75-6C-65-73-2E-61-73-70-3E-3C-75-3E-77-77-77-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-70-6E-70-2F-63-68-61-74-72-75-6C-65-73-2E-61-73-70-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-3C-2F-75-72-6C-3E-3C-2F-75-3E-20-70-6C-65-61-73-65-20-72-65-61-64-20-61-6E-64-20-6F-62-73-65-72-76-65-20-74-68-65-6D-2E-2E-3C-2F-63-6F-6C-6F-72-3E-3C-2F-62-3E";
+    CreateChannel(1, "Help\\Rookie Help", "Rookie motd", LSCChannel::normal, "help", 1, false, password, false, cspa, 0, 3);
+    CreateChannel(2, "Help\\Help", motd, LSCChannel::normal, "help", 1, false, password, false, cspa, 0, 3);
 
-    //CreateChannel(1, "Help\\Rookie Help", "Rookie motd", LSCChannel::normal);
-    //CreateChannel(2, "Help\\Help", "Help motd", LSCChannel::normal);
+    CreateChannel(10, "Trade\\Other", "motd", LSCChannel::normal, "other", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(11, "Trade\\Ships", "motd", LSCChannel::normal, "ships", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(12, "Trade\\Blueprints", "motd", LSCChannel::normal, "blueprints", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(13, "Trade\\Modules and Munitions", "motd", LSCChannel::normal, "modulesandmunitions", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(14, "Trade\\Minerals and Manufacturing", "motd", LSCChannel::normal, "mineralsandmanufacturing", 1, true, password, false, cspa, 0, 3);
+
+    CreateChannel(16, "Empires\\Caldari", "motd", LSCChannel::normal, "caldari", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(17, "Empires\\Amarr", "motd", LSCChannel::normal, "amarr", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(18, "Empires\\Minmatar", "motd", LSCChannel::normal, "minmatar", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(19, "Empires\\Gallente", "motd", LSCChannel::normal, "gallente", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(20, "Empires\\Jove", "motd", LSCChannel::normal, "jove", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(21, "Alliances\\Smacktalk", "motd", LSCChannel::normal, "smacktalk", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(22, "Alliances\\Rumour Mill", "motd", LSCChannel::normal, "rumourmill", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(23, "Alliances\\Freelancer", "motd", LSCChannel::normal, "freelancer", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(24, "Corporate\\Recruitment", "motd", LSCChannel::normal, "recruitment", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(25, "Corporate\\CEO", "motd", LSCChannel::normal, "ceo", 1, true, password, false, cspa, 0, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

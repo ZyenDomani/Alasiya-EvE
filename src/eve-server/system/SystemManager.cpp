@@ -125,7 +125,7 @@ bool SystemManager::BootSystem() {
     m_services.lsc_service->CreateChannel(m_data.regionID);
     m_services.lsc_service->CreateChannel(m_data.constellationID);
     m_services.lsc_service->CreateChannel(m_data.systemID);
-    
+
     return (m_loaded = true);
 }
 
@@ -219,7 +219,7 @@ void SystemManager::UnloadSystem() {
     m_solarSystemRef->GetMyInventory()->Unload();
 
     /** @todo finish this */
-    //m_services.lsc_service->DeleteChannel(m_data.systemID);
+    m_services.lsc_service->SystemUnload(m_data.systemID, m_data.constellationID, m_data.regionID);
     m_loaded = false;
 }
 
