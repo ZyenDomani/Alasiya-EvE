@@ -29,6 +29,18 @@
 
 PyRep* MailDB::GetMailStatus(int charId)
 {
+    /*
+                        [PyTuple 3 items]
+                          [PyTuple 2 items]
+                            [PyString "messageID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "statusMask"]
+                            [PyInt 17]
+                          [PyTuple 2 items]
+                            [PyString "labelMask"]
+                            [PyInt 3]
+                            */
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT messageID, statusMask, labelMask FROM mailMessage WHERE toCharacterIDs LIKE '%%%u%%'", charId))
         return nullptr;
@@ -37,6 +49,30 @@ PyRep* MailDB::GetMailStatus(int charId)
 
 PyRep* MailDB::GetNewMail(int charId)
 {
+    /*
+                        [PyTuple 7 items]
+                          [PyTuple 2 items]
+                            [PyString "messageID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "senderID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "toCharacterIDs"]
+                            [PyInt 129]
+                          [PyTuple 2 items]
+                            [PyString "toListID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "toCorpOrAllianceID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "title"]
+                            [PyInt 130]
+                          [PyTuple 2 items]
+                            [PyString "sentDate"]
+                            [PyInt 64]
+                            */
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT messageID, senderID, toCharacterIDs, toListID, toCorpOrAllianceID, title, sentDate FROM mailMessage WHERE toCharacterIDs LIKE '%%%u%%'", charId))
         return nullptr;

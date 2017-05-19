@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `mailMessage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mailMessage` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `messageID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `senderID` int(10) unsigned NOT NULL,
   `toCharacterIDs` text COLLATE utf8_unicode_ci,
   `toListID` int(10) unsigned DEFAULT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE `mailMessage` (
   `title` text COLLATE utf8_unicode_ci,
   `body` blob,
   `sentDate` bigint(20) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`messageID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
