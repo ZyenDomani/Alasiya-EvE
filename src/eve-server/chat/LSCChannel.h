@@ -27,6 +27,7 @@
 #define __LSCCHANNEL_H_INCL__
 
 #include "EntityList.h"
+#include "EVE_LSC.h"
 #include "packets/LSCPkts.h"
 
 class PyRep;
@@ -35,7 +36,7 @@ class LSCChannel;
 
 class LSCChannelChar {
 public:
-    LSCChannelChar(LSCChannel *chan, uint32 corpID, uint32 charID, std::string charName, uint32 allianceID, uint32 warFactionID, uint64 role, uint32 extra) :
+    LSCChannelChar(LSCChannel *chan, uint32 corpID, uint32 charID, std::string charName, uint32 allianceID, uint32 warFactionID, uint64 role, uint32 extra, LSC::Mode mode) :
       m_parent(chan),
       m_corpID(corpID),
       m_charID(charID),
@@ -43,7 +44,8 @@ public:
       m_allianceID(allianceID),
       m_warFactionID(warFactionID),
       m_role(role),
-      m_extra(extra) { }
+      m_extra(extra),
+      m_mode(mode) { }
 
     virtual ~LSCChannelChar() { }
     PyRep *Encode() const;
@@ -52,16 +54,17 @@ protected:
     LSCChannel *m_parent;
     uint32 m_corpID;
     uint32 m_charID;
-        std::string m_charName;
+    std::string m_charName;
     uint32 m_allianceID;
     uint32 m_warFactionID;
     uint64 m_role;
     uint32 m_extra;
+    LSC::Mode m_mode;
 };
 
 class LSCChannelMod {
 public:
-    LSCChannelMod(LSCChannel * chan, uint32 accessor, uint32 mode, uint64 untilWhen, uint32 originalMode, std::string admin, std::string reason) :
+    LSCChannelMod(LSCChannel * chan, uint32 accessor, uint64 untilWhen, uint32 originalMode, std::string admin, std::string reason, LSC::Mode mode) :
       m_parent(chan),
       m_accessor(accessor),
       m_mode(mode),
@@ -71,14 +74,12 @@ public:
       m_reason(reason) { }
 
     virtual ~LSCChannelMod() { }
-
     PyRep * Encode();
 
 protected:
     LSCChannel * m_parent;    // we do not own this
-
     uint32 m_accessor;
-    uint32 m_mode;
+    LSC::Mode m_mode;
     uint64 m_untilWhen;
     uint32 m_originalMode;
     std::string m_admin;
@@ -87,18 +88,10 @@ protected:
 
 class LSCChannel {
 public:
-    typedef enum {
-        normal = 0,
-        corp = 1,
-        solarsystem = 2,
-        region = 3,
-        constellation = 4
-    } Type;
-
     LSCChannel(
         LSCService *svc,
-        uint32 channelID,
-        Type type,
+        int32 channelID,
+        LSC::Type type,
         uint32 ownerID,
         const char *displayName,
         const char *motd,
@@ -107,92 +100,82 @@ public:
         const char *password,
         bool mailingList,
         uint32 cspa,
-        uint32 temporary,
-        uint32 mode
+        bool temporary,
+        bool languageRestriction,
+        int8 groupMessageID,
+        int8 channelMessageID
         );
     virtual ~LSCChannel();
 
-    PyRep *EncodeChannel(uint32 charID);
     PyRep *EncodeID();
-
-    PyRep *EncodeChannelSmall(uint32 charID);
+    PyRep *EncodeStaticChannel(uint32 charID);
+    PyRep *EncodeDynamicChannel(uint32 charID);
     PyRep *EncodeChannelMods();
     PyRep *EncodeChannelChars();
     PyRep *EncodeEmptyChannelChars();
 
     const char *GetTypeString();
-
-    uint32 GetChannelID() { return m_channelID; }
-    uint32 GetOwnerID() { return m_ownerID; }
-    Type GetType() { return m_type; }
-    std::string GetDisplayName() { return m_displayName; }
-    std::string GetMOTD() { return m_motd; }
-    std::string GetComparisonKey() { return m_comparisonKey; }
-    bool GetMemberless() { return m_memberless; }
-    std::string GetPassword() { return m_password; }
-    bool GetMailingList() { return m_mailingList; }
-    uint32 GetCSPA() { return m_cspa; }
-    uint32 GetTemporary() { return m_temporary; }
-    uint32 GetMode() { return m_mode; }
-    uint32 GetMemberCount() { return (uint32)m_chars.size(); }
-
-    void SetOwnerID(uint32 ownerID) { m_ownerID = ownerID; }
-    void SetType(Type new_type) { m_type = new_type; }
-    void SetDisplayName(std::string displayName) { m_displayName = displayName; }
-    void SetMOTD(std::string motd) { m_motd = motd; }
-    void SetComparisonKey(std::string comparisonKey) { m_comparisonKey = comparisonKey; }
-    void SetMemberless(bool memberless) { m_memberless = memberless; }
-    void SetPassword(std::string password) { m_password = password; }
-    void SetMailingList(bool mailingList) { m_mailingList = mailingList; }
-    void SetCSPA(uint32 cspa) { m_cspa = cspa; }
-    void SetTemporary(uint32 temporary) { m_temporary = temporary; }
-    void SetMode(uint32 mode) { m_mode = mode; }
-
-    void GetChannelInfo(uint32 * channelID, uint32 * ownerID, std::string &displayName, std::string &motd, std::string &comparisonKey,
-            bool * memberless, std::string &password, bool * mailingList, uint32 * cspa, uint32 * temporary, uint32 * mode);
-    void SetChannelInfo(uint32 ownerID, std::string displayName, std::string motd, std::string comparisonKey,
-            bool memberless, std::string password, bool mailingList, uint32 cspa, uint32 temporary, uint32 mode);
-
     bool JoinChannel(Client * c);
     void LeaveChannel(Client *c, bool self = true);
     void LeaveChannel(uint32 charID, OnLSC_SenderInfo * si);
     bool IsJoined(uint32 charID);
 
+    // this is used for updating joined clients when channel config is changed.
+    void UpdateConfig();
+
     void Evacuate(Client * c);
     void SendMessage(Client * c, const char * message, bool self = false);
 
+    void GetChannelInfo(int32 * channelID, uint32 * ownerID, std::string &displayName, std::string &motd, std::string &comparisonKey,
+            bool * memberless, std::string &password, bool * mailingList, uint32 * cspa, uint32 * temporary);
 
     static OnLSC_SenderInfo *_MakeSenderInfo(Client *from);
 
+    void        SetDisplayName(std::string displayName) { m_displayName = displayName; }
+    void                SetMOTD(std::string motd)       { m_motd = motd; }
+    void                SetMemberless(bool memberless)  { m_memberless = memberless; }
+    void              SetPassword(std::string password) { m_password = password; }
+
+
+    bool                GetMemberless()                 { return m_memberless; }
+    bool                GetMailingList()                { return m_mailingList; }
+    bool                GetTemporary()                  { return m_temporary; }
+    int8                GetGrpMsgID()                   { return m_groupMessageID; }
+    int8                GetChMsgID()                    { return m_channelMessageID; }
+    uint16              GetCSPA()                       { return m_cspa; }
+    uint32              GetOwnerID()                    { return m_ownerID; }
+    int32               GetChannelID()                  { return m_channelID; }
+    uint32              GetMemberCount()                { return (uint32)m_chars.size(); }
+    LSC::Type           GetType()                       { return m_type; }
+    std::string         GetDisplayName()                { return m_displayName; }
+    std::string         GetMOTD()                       { return m_motd; }
+    std::string         GetComparisonKey()              { return m_comparisonKey; }
+    std::string         GetPassword()                   { return m_password; }
+
 protected:
-    LSCService *const m_service;    //we do not own this
+    LSCService *const   m_service;    //we do not own this
 
-    //EntityList::character_set m_members;
+    LSC::Type           m_type;
+    // memberless - true = estimate member count, send estimatedMemberCount in packet.  false = actual memberList.count()   (5m refresh in client)
+    // non-npc corp, fleet, and k-space local are always memberless=false
+    bool                m_memberless;
+    bool                m_mailingList;
+    bool                m_temporary;
+    bool                m_languageRestriction;
+    int8                m_groupMessageID;
+    int8                m_channelMessageID;
+    uint16              m_cspa;
+    uint32              m_ownerID;
+    int32               m_channelID;            // ids < 0 are automatic conversationalist mode (or creator) and invite only (per client)
+    std::string         m_displayName;
+    std::string         m_motd;
+    std::string         m_comparisonKey;
+    std::string         m_password;
 
-    uint32 m_ownerID;
-    uint32 m_channelID;
-    Type m_type;
-    std::string m_displayName;
-    std::string m_motd;
-    std::string m_comparisonKey;
-    bool m_memberless;
-    std::string m_password;
-    bool m_mailingList;
-    uint32 m_cspa;
-    uint32 m_temporary;
-    uint32 m_mode;
-
-    std::vector<LSCChannelMod> m_mods;
+    std::map<uint32, LSCChannelMod> m_mods;
     std::map<uint32, LSCChannelChar> m_chars;
 
-
     OnLSC_SenderInfo *_FakeSenderInfo();
-
 };
 
-
-
-
 #endif
-
-

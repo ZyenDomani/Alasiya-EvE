@@ -38,7 +38,6 @@ class LSCDB
 public:
     PyObject *LookupChars(const char *match, bool exact);
     PyObject *LookupOwners(const char *match, bool exact);
-    PyObject *LookupPlayerChars(const char *match, bool exact);
     PyObject *LookupCorporations(const std::string &);
     PyObject *LookupFactions(const std::string &);
     PyObject *LookupCorporationTickers(const std::string &);
@@ -52,10 +51,10 @@ public:
     bool DeleteMessage(uint32 messageID, uint32 readerID);
     void GetChannelNames(uint32 charID, std::vector<std::string> & names);
 
-    uint32 GetNextAvailableChannelID();
+    int32 GetNextAvailableChannelID();
     bool IsChannelNameAvailable(std::string name);
-    bool IsChannelIDAvailable(uint32 channel_ID);
-    bool IsChannelSubscribedByThisChar(uint32 char_ID, uint32 channel_ID);
+    bool IsChannelIDAvailable(int32 channel_ID);
+    bool IsChannelSubscribedByThisChar(uint32 char_ID, int32 channel_ID);
 
     std::string GetRegionName(uint32 id) { return GetChannelName(id, "mapRegions", "regionName", "regionID"); }
     std::string GetConstellationName(uint32 id) { return GetChannelName(id, "mapConstellations", "constellationName", "constellationID"); }
@@ -63,41 +62,35 @@ public:
     std::string GetCorporationName(uint32 id) { return GetChannelName(id, "corporation", "corporationName", "corporationID"); }
     std::string GetCharacterName(uint32 id) { return GetChannelName(id, "entity", "itemName", "itemID"); }
 
-    void GetChannelInformation(std::string & name, uint32 & id,
+    void GetChannelInformation(std::string & name, int32 & id,
         std::string & motd, uint32 & ownerid, std::string & compkey,
         bool & memberless, std::string & password, bool & maillist,
-        uint32 & cspa, uint32 & temp, uint32 & mode);
+        uint32 & cspa, uint32 & temp);
 
-    void GetChannelInformation(uint32 channelID, std::string & name,
+    void GetChannelInformation(int32 channelID, std::string & name,
         std::string & motd, uint32 & ownerid, std::string & compkey,
         bool & memberless, std::string & password, bool & maillist,
-        uint32 & cspa, uint32 & temp, uint32 & mode);
+        uint32 & cspa, uint32 & temp);
 
-    void GetChannelSubscriptions(uint32 charID, std::vector<unsigned long> & ids, std::vector<std::string> & names,
+    void GetChannelSubscriptions(uint32 charID, std::vector<long> & ids, std::vector<std::string> & names,
         std::vector<std::string> & MOTDs, std::vector<unsigned long> & ownerids, std::vector<std::string> & compkeys,
         std::vector<int> & memberless, std::vector<std::string> & passwords, std::vector<int> & maillists,
-        std::vector<int> & cspas, std::vector<int> & temps, std::vector<int> & modes, int & channelCount);
+        std::vector<int> & cspas, std::vector<int> & temps, int & channelCount);
 
-    std::string GetChannelInfo(uint32 channelID, std::string & name, std::string & motd);
+    std::string GetChannelInfo(int32 channelID, std::string & name, std::string & motd);
 
-    uint32 GetChannelIDFromComparisonKey(std::string compkey);
+    int32 GetChannelIDFromComparisonKey(std::string compkey);
 
-    int WriteNewChannelSubscriptionToDatabase(uint32 characterID, uint32 channelID, uint32 corpID, uint32 allianceID, uint32 role, uint32 extra);
-    int WriteNewChannelToDatabase(uint32 channelID, std::string name, uint32 ownerID, uint32 temporary, uint32 mode);
+    int WriteNewChannelSubscriptionToDatabase(uint32 characterID, int32 channelID, uint32 corpID, uint32 allianceID, uint64 role, uint32 extra);
 
-    int UpdateChannelConfigureInfo(LSCChannel * channel);
+    void UpdateChannelInfo(LSCChannel * channel);
 
-    int RemoveChannelSubscriptionFromDatabase(uint32 channelID, uint32 charID);
-    int RemoveChannelFromDatabase(uint32 channelID);
+    int RemoveChannelSubscriptionFromDatabase(int32 channelID, uint32 charID);
+    int RemoveChannelFromDatabase(int32 channelID);
 
 protected:
     std::string GetChannelName(uint32 id, const char * table, const char * column, const char * key);
 };
 
 
-
-
-
 #endif
-
-

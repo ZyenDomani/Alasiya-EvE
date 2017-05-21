@@ -29,7 +29,7 @@
 #include "PyServiceCD.h"
 #include "account/BrowserLockdownSvc.h"
 
-// crap
+
 PyCallable_Make_InnerDispatcher(BrowserLockdownService)
 
 BrowserLockdownService::BrowserLockdownService( PyServiceMgr *mgr )
@@ -48,19 +48,17 @@ BrowserLockdownService::~BrowserLockdownService() {
     delete m_dispatch;
 }
 
-//02:40:18 L BrowserLockdownService::Handle_GetFlaggedSitesHash(): size= 0
 PyResult BrowserLockdownService::Handle_GetFlaggedSitesHash(PyCallArgs &call)
 {
     /* Future updates should be the md5 sum of the cache/browser/flaggedsites.dat file from user/appdata/Local/CCP/EVE
-     * Send md5 sum for an empty set.
+     *  as we dont have this list (which is sent from GetFlaggedSitesList), we send the md5 sum for an empty set.
      */
     return new PyString("df98509e1e3f0dd839083e7be1d2b360");
 }
 
-//02:40:18 L BrowserLockdownService::Handle_GetFlaggedSitesList(): size= 0
 PyResult BrowserLockdownService::Handle_GetFlaggedSitesList(PyCallArgs &call)
 {
-    return new PyNone();
+    return new PyList();
 }
 
 PyResult BrowserLockdownService::Handle_GetDefaultHomePage(PyCallArgs &call) {
@@ -68,7 +66,6 @@ PyResult BrowserLockdownService::Handle_GetDefaultHomePage(PyCallArgs &call) {
     return new PyWString(url);
 }
 
-//00:37:03 L BrowserLockdownService::Handle_IsBrowserInLockdown(): size= 0
 PyResult BrowserLockdownService::Handle_IsBrowserInLockdown(PyCallArgs &call) {
     return new PyBool(sConfig.server.DisableIGB);
 }

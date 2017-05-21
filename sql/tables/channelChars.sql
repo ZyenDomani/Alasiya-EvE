@@ -23,11 +23,11 @@ DROP TABLE IF EXISTS `channelChars`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `channelChars` (
-  `channelID` int(10) unsigned NOT NULL DEFAULT '0',
+  `channelID` int(10) NOT NULL DEFAULT '0',
   `corpID` int(10) unsigned NOT NULL DEFAULT '0',
   `charID` int(10) unsigned NOT NULL DEFAULT '0',
   `allianceID` int(10) unsigned NOT NULL DEFAULT '0',
-  `role` int(10) unsigned NOT NULL DEFAULT '0',
+  `role` bigint(20) unsigned NOT NULL DEFAULT '0',
   `extra` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`channelID`,`charID`),
   KEY `FK_CHANNELCHARS_CHARACTER` (`charID`),
@@ -42,7 +42,6 @@ CREATE TABLE `channelChars` (
 
 LOCK TABLES `channelChars` WRITE;
 /*!40000 ALTER TABLE `channelChars` DISABLE KEYS */;
-INSERT INTO `channelChars` VALUES (1000172,1000172,140000000,0,2,0),(1000172,1000172,140000130,0,2,0),(30000092,1000172,140000000,0,2,0),(30000092,1000172,140000130,0,2,0);
 /*!40000 ALTER TABLE `channelChars` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

@@ -21,6 +21,7 @@
 #define maxCharType             1386
 
 #define minEveMarketGroup       0
+#define maxStaticChannel        1000
 #define maxEveMarketGroup       350000
 #define minDustMarketGroup      350001
 #define maxDustMarketGroup      999999

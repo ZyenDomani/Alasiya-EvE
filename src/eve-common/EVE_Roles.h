@@ -24,7 +24,7 @@ enum:uint64_t {
     ROLE_WORLDMOD           = 4096L,                   // 0x01000
     ROLE_DBA                = 16384L,
     ROLE_REMOTESERVICE      = 131072L,
-    ROLE_LEGIONEER          = 262144L,
+    ROLE_LEGIONEER          = 262144L,                  // get ALL corp chat channels (and is usually invis)
     ROLE_TRANSLATION        = 524288L,
     ROLE_CHTINVISIBLE       = 1048576L,
     ROLE_CHTADMINISTRATOR   = 2097152L,

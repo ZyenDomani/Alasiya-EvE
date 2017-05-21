@@ -32,7 +32,7 @@
 #include "chat/LSCService.h"
 
 // Set the base (minimum) and maximum numbers for any user-created chat channel.
-const uint32 LSCService::BASE_CHANNEL_ID = 200000000;
+const int32 LSCService::BASE_CHANNEL_ID = 2100000000;      //trial accts are spam-restricted to 1m input buffer when channelID < 2100000000
 const uint32 LSCService::MAX_CHANNEL_ID = 0xFFFFFFFF;
 
 PyCallable_Make_InnerDispatcher(LSCService)
@@ -76,7 +76,7 @@ LSCService::LSCService(PyServiceMgr *mgr, CommandDispatcher* cd)
 
 LSCService::~LSCService() {
     delete m_dispatch;
-    std::map<uint32, LSCChannel* >::iterator cur = m_channels.begin();
+    std::map<int32, LSCChannel* >::iterator cur = m_channels.begin();
     for(; cur != m_channels.end(); cur++) {
         SafeDelete(cur->second);
     }
@@ -106,79 +106,17 @@ const int cspa = 2950; // CONCORD Spam Prevention Act
 
 PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
 {
-    if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White( "LSCService::Handle_GetChannels()", "size=%u", call.tuple->size());
-        call.Dump(LSC__CALL_DUMP);
-    }
-
-    /*
-        Assume this is only called when the char's logging in.
-        Next step from the client is to join to all channels that's been sent by this
-        So only send back the relevant channelIDs
-        These are:
-            - Help/Rookie, which is 1
-            - character
-            - corporation
-            - solar system
-            - region
-            - constellation
-            - allianceID
-            - gangID
-            - empireID
-    */
-
-    std::vector<unsigned long> charChannelIDs;
-    std::vector<std::string> charChannelNames;
-    std::vector<std::string> charChannelMOTDs;
-    std::vector<unsigned long> charOwnerIDs;
-    std::vector<std::string> charComparisonKeys;
-    std::vector<int> charMemberless;
-    std::vector<std::string> charPasswords;
-    std::vector<int> charMailingLists;
-    std::vector<int> charCSPAs;
-    std::vector<int> charTemporaries;
-    std::vector<int> charModes;
-    int channelCount = 0;
-
-    // Get this character's subscribed Private Channel names and IDs:
-    m_db->GetChannelSubscriptions(call.client->GetCharacterID(), charChannelIDs, charChannelNames, charChannelMOTDs,
-        charOwnerIDs, charComparisonKeys, charMemberless, charPasswords, charMailingLists, charCSPAs, charTemporaries,
-        charModes, channelCount);
-
-    if( channelCount > 0 )
-    {
-        // Check each private chat channel listed in the names/IDs just procurred to
-        // see if they exist yet and if not, create them:
-        for( int i=0; i<channelCount; i++ )
-        {
-                CreateChannel(
-                    charChannelIDs[i],
-                    charChannelNames[i].c_str(),
-                    charChannelMOTDs[i].c_str(),
-                    LSCChannel::normal,
-                    charComparisonKeys[i].c_str(),
-                    charOwnerIDs[i],
-                    (charMemberless[i] ? true : false),
-                    charPasswords[i].c_str(),
-                    (charMailingLists[i] ? true : false),
-                    charCSPAs[i],
-                    charTemporaries[i],
-                    charModes[i]
-                    );
-        }
-    }
-
     ChannelInfo info;
     info.lines = new PyList();
 
-    std::map<uint32, LSCChannel*>::iterator cur, end;
+    std::map<int32, LSCChannel*>::iterator cur, end;
     cur = m_channels.begin();
     end = m_channels.end();
-    for(; cur != end; cur++)
-        info.lines->AddItem( cur->second->EncodeChannel( call.client->GetCharacterID() ) );
-
-    if (is_log_enabled(LSC__RSP_DUMP))
-        info.Dump(LSC__RSP_DUMP);
+    for (; cur != end; cur++) {
+        if ((cur->first < 0) or (cur->first > maxStaticChannel))
+            continue;
+        info.lines->AddItem(cur->second->EncodeDynamicChannel(call.client->GetCharacterID()));
+    }
 
     return info.Encode();
 }
@@ -186,7 +124,7 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
 
 PyResult LSCService::Handle_GetRookieHelpChannel(PyCallArgs &call) {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White( "LSCService::Handle_GetRookieHelpChannel()", "size=%u", call.tuple->size());
+        sLog.White("LSCService::Handle_GetRookieHelpChannel()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
 
@@ -196,10 +134,9 @@ PyResult LSCService::Handle_GetRookieHelpChannel(PyCallArgs &call) {
 
 PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White( "LSCService::Handle_JoinChannels()", "size=%u", call.tuple->size());
+        sLog.White("LSCService::Handle_JoinChannels()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
-
 
     CallJoinChannels args;
     if (!args.Decode(&call.tuple)) {
@@ -207,774 +144,325 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
         return nullptr;
     }
 
-    std::set<uint32> toJoin;
+    std::set<int32> toJoin;
 
     PyList::const_iterator cur, end;
     cur = args.channels->begin();
     end = args.channels->end();
-
-    for( ; cur != end; cur++ )
-    {
-        if( (*cur)->IsInt() )
-            toJoin.insert( (*cur)->AsInt()->value() );
-        else if( (*cur)->IsTuple() )
-        {
+    for (; cur != end; cur++) {
+        if ((*cur)->IsInt())
+            toJoin.insert((*cur)->AsInt()->value());
+        else if ((*cur)->IsTuple()) {
             PyTuple* prt = (*cur)->AsTuple();
-
-            if( prt->items.size() != 1 || !prt->items[0]->IsTuple() )
-            {
+            if (prt->items.size() != 1 or !prt->items[0]->IsTuple()) {
                 codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
                 continue;
             }
             prt = prt->items[0]->AsTuple();
 
-            if( prt->items.size() != 2 || /* !prt->items[0]->IsString() || unnessecary */ !prt->items[1]->IsInt() )
-            {
+            if (prt->items.size() != 2 or /* !prt->items[0]->IsString() or unnessecary */ !prt->items[1]->IsInt()) {
                 codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
                 continue;
             }
-            toJoin.insert( prt->items[1]->AsInt()->value() );
-        }
-        else
-        {
+            toJoin.insert(prt->items[1]->AsInt()->value());
+        } else {
             codelog(SERVICE__ERROR, "%s: Bad argument ", call.client->GetName());
             return nullptr;
         }
     }
 
-    // ********** TODO **********
-    // Figure out how to send the right packet to the client requesting the joining of this channel
-    // to query that client for a password to join this channel if indeed there is a password required.
-    // Check the password supplied by the client against the password stored in the LSCChannel object
-    // or queried from the database if this channel has not had its own LSCChannel object created and
-    // allow joining to this channel if passwords match.
-    // **************************
-
     uint32 charID = call.client->GetCharacterID();
-    // and now ensure the working of the system
-    toJoin.insert( charID );
 
     PyList *ml = new PyList();
 
-    std::set<uint32>::iterator curs, ends;
+    const bool isRookie = Win32TimeNow() < (call.client->GetChar()->createDateTime() + Win32Time_Month);
+
+    std::set<int32>::iterator curs, ends;
     curs = toJoin.begin();
     ends = toJoin.end();
-
-    // Determine if the character is less than a month old
-    // and, if so, then set a flag that causes joining this character to the Help\Help and
-    // Help\Rookie channels.
-    const bool isRookie = Win32TimeNow() < ( call.client->GetChar()->createDateTime() + Win32Time_Month );
-
-    for( ; curs != ends; curs++ )
-    {
-        LSCChannel* channel;
-
-        uint32 channelID = *curs;
+    for (; curs != ends; curs++) {
+        LSCChannel* channel(nullptr);
+        int32 channelID = *curs;
 
         // Skip joining Help\Rookie and Help\Help channels when the character is no longer a rookie:
-        if( isRookie || !( channelID == 1 || channelID == 2 ) )
-        {
-            channel = CreateChannel( channelID );
-
-            if( (!channel->IsJoined( charID )) && (channelID != call.client->GetCharacterID()) )
-            {
-                ChannelJoinReply chjr;
-
+        if (isRookie or (channelID > 2)) {
+            channel = CreateChannel(channelID);
+            if (!channel)
+                continue;
+            ChannelJoinReply chjr;
                 chjr.ChannelID = channel->EncodeID();
-                chjr.ChannelInfo = channel->EncodeChannelSmall( charID );
-                // this one'll create an empty query result
-                // noone implemented channel mods.
-                chjr.ChannelMods = channel->EncodeChannelMods();
-                chjr.ChannelChars = channel->EncodeChannelChars();
-               // chjr.ChannelChars = channel->EncodeEmptyChannelChars();
 
-                channel->JoinChannel( call.client );
-
-                // Save this subscription to this channel to the database
-                if (!(m_db->IsChannelSubscribedByThisChar(charID, channel->GetChannelID())))
-                    m_db->WriteNewChannelSubscriptionToDatabase( charID, channel->GetChannelID(),
-                        call.client->GetCorporationID(), call.client->GetAllianceID(),
-                        2, 0 );
-                        // the "extra" field is hard-coded to '0' for now since I don't know what it's used for
-                ml->AddItem( chjr.Encode() );
+                /** @todo  query/check password and other stipulations */
+            if ((!channel->IsJoined(charID)) and (channelID != (int32)call.client->GetCharacterID())) {
+                if (channel->JoinChannel(call.client)) {
+                    ChannelJoinOK cjok;
+                   // if ((channelID < 0) or (channelID > maxStaticChannel))
+                        cjok.ChannelInfo = channel->EncodeDynamicChannel(charID);
+                   // else
+                   //     cjok.ChannelInfo = channel->EncodeStaticChannel(charID);
+                    cjok.ChannelMods = channel->EncodeChannelMods();
+                    cjok.ChannelChars = channel->EncodeChannelChars();
+                    chjr.JoinRsp = cjok.Encode();
+                    chjr.ok = 1;
+                } else {
+                    ChannelJoinNotOK cjnok;
+                        cjnok.Error = "LSCCannotJoin";
+                        cjnok.rspDict = new PyDict();   // dunno what goes here...
+                    chjr.JoinRsp = cjnok.Encode();
+                    chjr.ok = 0;
+                }
+            } else {
+                ChannelJoinNotOK cjnok;
+                    cjnok.Error = "LSCChannelIsJoined";
+                    cjnok.rspDict = new PyDict();   // dunno what goes here...
+                chjr.JoinRsp = cjnok.Encode();
+                chjr.ok = 0;
             }
+            ml->AddItem(chjr.Encode());
         }
     }
 
     if (is_log_enabled(LSC__RSP_DUMP))
         ml->Dump(LSC__RSP_DUMP, "   ");
+/*
+            ret = sm.RemoteSvc('LSC').JoinChannels(toJoin, eve.session.role)
+            argsList = []
+            for channelID, ok, tmp in ret:
+                if ok:
+                    info, acl, memberList = tmp
+                else:
+            {error} msg, dict = tmp      //dunno what the dict contains
+                if msg in ('LSCCannotJoin', 'LSCWrongPassword') ...
 
+                    LSCCannotDestroy
+                    LSCConfirmDestroyChannel
+                    LSCCannotSendMessage
+                    LSCChannelIsJoined
+                */
     return ml;
 }
 
-
-PyResult LSCService::Handle_LeaveChannel(PyCallArgs &call) {
-    if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White( "LSCService::Handle_LeaveChannel()", "size=%u", call.tuple->size());
-        call.Dump(LSC__CALL_DUMP);
-    }
-
-    CallLeaveChannel arg;
-    if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    uint32 toLeave;
-
-    if( arg.channel->IsInt() )
-        toLeave = arg.channel->AsInt()->value();
-    else if( arg.channel->IsTuple() )
-    {
-        PyTuple* prt = arg.channel->AsTuple();
-
-        if( prt->GetItem( 0 )->IsInt() )
-            toLeave = prt->GetItem( 0 )->AsInt()->value();
-        else if( prt->GetItem( 0 )->IsTuple() )
-        {
-            prt = prt->GetItem( 0 )->AsTuple();
-
-            if( prt->items.size() != 2 || !prt->GetItem( 1 )->IsInt() )
-            {
-                codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
-                return nullptr;
-            }
-
-            toLeave = prt->GetItem( 1 )->AsInt()->value();
-        }
-        else
-        {
-            codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
-            return nullptr;
-        }
-    }
-    else
-    {
-        codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
-        return nullptr;
-    }
-
-
-    if( m_channels.find( toLeave ) != m_channels.end() )
-    {
-        // Remove channel subscription from database if this character was subscribed to it.
-        // NOTE: channel subscriptions are NOT saved to the database for private convo chats
-        if( m_db->IsChannelSubscribedByThisChar(call.client->GetCharacterID(),toLeave) )
-            m_db->RemoveChannelSubscriptionFromDatabase(toLeave,call.client->GetCharacterID());
-
-        // Remove channel from database if this character was the last one
-        // in the channel to leave and it was a private convo (temporary==1):
-        if( (m_channels.find( toLeave )->second->GetMemberCount() == 1)
-            && (m_channels.find( toLeave )->second->GetTemporary() != 0)
-            && (toLeave >= LSCService::BASE_CHANNEL_ID) )
-                m_db->RemoveChannelFromDatabase(toLeave);
-
-        m_channels[ toLeave ]->LeaveChannel( call.client );
-    }
-
-    return nullptr;
-}
-
-
-PyResult LSCService::Handle_LeaveChannels(PyCallArgs &call) {
-    if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White( "LSCService::Handle_LeaveChannels()", "size=%u", call.tuple->size());
-        call.Dump(LSC__CALL_DUMP);
-    }
-
-    CallLeaveChannels args;
-
-    if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    std::set<uint32> toLeave;
-
-    {
-        PyList::const_iterator cur, end;
-        cur = args.channels->begin();
-        end = args.channels->end();
-
-        for(; cur != end; cur++)
-        {
-            if( (*cur)->IsInt() )
-                toLeave.insert( (*cur)->AsInt()->value() );
-            else if( (*cur)->IsTuple() )
-            {
-                PyTuple* prt = (*cur)->AsTuple();
-
-                if( prt->GetItem( 0 )->IsInt() )
-                {
-                    toLeave.insert( prt->GetItem( 0 )->AsInt()->value() );
-                    continue;
-                }
-
-                if( !prt->GetItem( 0 )->IsTuple() )
-                {
-                    codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
-                    continue;
-                }
-                prt = prt->GetItem( 0 )->AsTuple();
-
-                if( prt->GetItem( 0 )->IsTuple() )
-                    prt = prt->GetItem( 0 )->AsTuple();
-
-                if( prt->size() != 2 || !prt->GetItem( 1 )->IsInt() )
-                {
-                    codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
-                    continue;
-                }
-
-                toLeave.insert( prt->GetItem( 1 )->AsInt()->value() );
-            }
-            else
-            {
-                codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
-                continue;
-            }
-        }
-    }
-
-    {
-        std::set<uint32>::iterator cur = toLeave.begin(), end = toLeave.end();
-        for (;cur!=end;cur++) {
-            if (m_channels.find(*cur) != m_channels.end())
-            {
-                // Remove channel subscription from database if this character was subscribed to it.
-                // NOTE: channel subscriptions are NOT saved to the database for private convo chats
-                if( m_db->IsChannelSubscribedByThisChar(call.client->GetCharacterID(),*cur))
-                    m_db->RemoveChannelSubscriptionFromDatabase(*cur,call.client->GetCharacterID() );
-
-                // Remove channel from database if this character was the last one
-                // in the channel to leave and it was a private convo (temporary==1):
-                if( (m_channels.find( *cur )->second->GetMemberCount() == 1)
-                    && (m_channels.find( *cur )->second->GetTemporary() != 0)
-                    && (m_channels.find( *cur )->second->GetChannelID() >= LSCService::BASE_CHANNEL_ID) )
-                        m_db->RemoveChannelFromDatabase(*cur);
-
-                m_channels[*cur]->LeaveChannel(call.client);
-            }
-        }
-    }
-
-    return (new PyNone());
-}
-
-
-PyResult LSCService::Handle_CreateChannel( PyCallArgs& call )
+PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
 {
+    /** @todo  update this with error msgs where needed .. see end of method */
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White( "LSCService::Handle_CreateChannel()", "size=%u", call.tuple->size());
+        sLog.White("LSCService::Handle_CreateChannel()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
-
-    // WARNING: This call contains manual packet decoding to handle configuring parameters for
-    // user-created chat channels since I didn't want to monkey around with the LSCPkts.xmlp.
-    // -- Aknor Jaden (2010-11-26)
 
     Call_SingleWStringSoftArg name;
-    LSCChannel* channel = NULL;
-
-    if( !name.Decode( call.tuple ) )
-    {
+    if (!name.Decode(call.tuple))  {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
-    bool create_channel_exists = false;
-    bool create_channel = false;
-    bool temporary_exists = false;
-    bool temporary_channel = false;
-    bool joinExisting_exists = false;
-    bool joinExisting_channel = false;
-
+    bool create = false, temporary = false, joinExisting = false, noCallThrottling = false, memberless = false;
     if (call.byname.find("create") != call.byname.end())
-    {
-        create_channel_exists = true;
-        if (call.byname.find("create")->second->AsBool()->value())
-            create_channel = true;
-    }
-
+        create =  call.byname.find("create")->second->AsBool()->value();
     if (call.byname.find("temporary") != call.byname.end())
-    {
-        temporary_exists = true;
-        if (call.byname.find("temporary")->second->AsBool()->value())
-            temporary_channel = true;
-    }
-
+        temporary = call.byname.find("temporary")->second->AsBool()->value();
     if (call.byname.find("joinExisting") != call.byname.end())
-    {
-        joinExisting_exists = true;
-        if (call.byname.find("joinExisting")->second->AsBool()->value())
-            joinExisting_channel = true;
-    }
+        joinExisting = call.byname.find("joinExisting")->second->AsBool()->value();
+    if (call.byname.find("noCallThrottling") != call.byname.end())
+        noCallThrottling = call.byname.find("noCallThrottling")->second->AsBool()->value();
+    if (call.byname.find("memberless") != call.byname.end())
+        memberless = (call.byname.find("memberless")->second->AsInt()->value() ? true : false);
 
+    Client* pClient = call.client;
+    ChannelCreateReply reply;
+    LSCChannel* channel(nullptr);
 
-    if (create_channel_exists && create_channel)
-    {
+    if (create)  {
         // Query Database to see if a channel with this name does not exist and, if so, create the channel,
         // otherwise, set the channel pointer to NULL
         if (m_db->IsChannelNameAvailable(name.arg))
-            channel = CreateChannel( name.arg.c_str() );
-        else
-        {
-            _log(LSC__ERROR, "%s: Error creating new chat channel: channel name '%s' already exists.", call.client->GetName(), name.arg.c_str() );
-            channel = NULL;
-        }
-
-        if (channel == NULL)
-        {
-            _log(LSC__ERROR, "%s: Error creating new chat channel", call.client->GetName() );
+            channel = CreateChannel(name.arg.c_str());
+        else {
+            _log(LSC__ERROR, "%s: Error creating new chat channel: channel name '%s' already exists.", pClient->GetName(), name.arg.c_str());
             return nullptr;
         }
 
         // Save channel info and channel subscription to the database
-        m_db->WriteNewChannelToDatabase(channel->GetChannelID(),channel->GetDisplayName(), call.client->GetCharacterID(),0,/*mode*/3);
-        m_db->WriteNewChannelSubscriptionToDatabase( call.client->GetCharacterID(), channel->GetChannelID(),
-            call.client->GetCorporationID(), call.client->GetAllianceID(),
-            2, 0 );     // the "extra" field is hard-coded
-                                                    // to '0' for now since I don't
-                                                    // know what it's used for
+        m_db->UpdateChannelInfo(channel);
+        m_db->WriteNewChannelSubscriptionToDatabase(pClient->GetCharacterID(), channel->GetChannelID(), pClient->GetCorporationID(),
+                                                     pClient->GetAllianceID(), pClient->GetAccountRole(), 0);
 
-        channel->JoinChannel( call.client );
-
-        ChannelCreateReply reply;
-        reply.ChannelChars = channel->EncodeChannelChars();
-        reply.ChannelInfo = channel->EncodeChannelSmall( call.client->GetCharacterID() );
-        reply.ChannelMods = channel->EncodeChannelMods();
+        if (channel->JoinChannel(pClient)) {
+           // if ((channel->GetChannelID() < 0) or (channel->GetChannelID() > maxStaticChannel))
+                reply.ChannelInfo = channel->EncodeDynamicChannel(pClient->GetCharacterID());
+           // else
+           //     reply.ChannelInfo = channel->EncodeStaticChannel(pClient->GetCharacterID());
+            reply.ChannelChars = channel->EncodeChannelChars();
+            reply.ChannelMods = channel->EncodeChannelMods();
+        } else {
+            reply.ChannelInfo = new PyInt(LSC::Error::errUnspecified);
+        }
         return reply.Encode();
     }
 
-
-    if (joinExisting_exists && joinExisting_channel)
-    {
-        std::string channel_name = call.tuple->items[0]->AsWString()->content();
-
-        if (!(m_db->IsChannelNameAvailable(channel_name)))
-        {
+    if (joinExisting) {
+        if (!(m_db->IsChannelNameAvailable(name.arg))) {
             // Channel exists, so get its info from database and create this channel in the cache:
-            std::string ch_name, ch_motd, ch_compkey, ch_password;
-            uint32 ch_ID, ch_ownerID, ch_cspa, ch_temp, ch_mode;
-            bool ch_memberless, ch_maillist;
-            LSCChannel::Type ch_type = LSCChannel::normal;
+            std::string ch_name = "", ch_motd = "", ch_compkey = "", ch_password = "";
+            int32 ch_ID = 0;
+            uint32 ch_ownerID = 0, ch_cspa = 0, ch_temp = 0;
+            bool ch_memberless = false, ch_maillist = false;
+            LSC::Type ch_type = LSC::Type::normal;
 
-            m_db->GetChannelInformation(channel_name,ch_ID,ch_motd,ch_ownerID,ch_compkey,ch_memberless,ch_password,ch_maillist,ch_cspa,ch_temp,ch_mode);
+            m_db->GetChannelInformation(name.arg,ch_ID,ch_motd,ch_ownerID,ch_compkey,ch_memberless,ch_password,ch_maillist,ch_cspa,ch_temp);
 
-            channel = CreateChannel
-            (
-                ch_ID,
-                channel_name.c_str(),
-                ch_motd.c_str(),
-                ch_type,
-                ch_compkey.c_str(),
-                ch_ownerID,
-                ch_memberless,
-                ch_password.c_str(),
-                ch_maillist,
-                ch_cspa,
-                ch_temp,
-                ch_mode
-            );
+            channel = CreateChannel(ch_ID, name.arg.c_str(), ch_motd.c_str(), ch_type, ch_compkey.c_str(), ch_ownerID,
+                ch_memberless, ch_password.c_str(), ch_maillist, ch_cspa, (ch_temp ? true : false), false, 0,0);
 
-            if (channel == NULL)
-            {
-                _log(LSC__ERROR, "%s: Error creating new chat channel", call.client->GetName() );
-                return nullptr;
+            if (!channel) {
+                _log(LSC__ERROR, "%s: Error creating new chat channel", pClient->GetName());
+                reply.ChannelInfo = new PyInt(LSC::Error::errNoSuchChannel);
+                return reply.Encode();
             }
-        }
-        else
-        {
-            _log(LSC__ERROR, "%s: Unable to join channel '%s', this channel does not exist.", call.client->GetName(), channel_name.c_str() );
-            return nullptr;
+        } else {
+            pClient->SendErrorMsg("Unable to join channel '%s'. Channel does not exist.", name.arg.c_str());
+            reply.ChannelInfo = new PyInt(LSC::Error::errChannelExists);
+            return reply.Encode();
         }
     }
 
+    if (temporary) {
+        int32 channel_id = m_db->GetNextAvailableChannelID();
+        channel = CreateChannel(channel_id, name.arg.c_str(), "", LSC::Type::custom, "", pClient->GetCharacterID(),
+                                memberless, "", false, cspa, temporary, false, 0, 0);
 
-    if (temporary_exists && temporary_channel)
-    {
-        uint32 channel_id;
-        channel_id = m_db->GetNextAvailableChannelID();
-
-        // This is a temporary private chat channel, so don't look for it in the database, just make a new one:
-        channel = CreateChannel
-        (
-            channel_id,
-            call.tuple->GetItem(0)->AsString()->content().c_str(),
-            "",
-            LSCChannel::normal,
-            "",
-            call.client->GetCharacterID(),
-            false,
-            "",
-            false,
-            0,
-            1,
-            0
-        );
-
-        if (channel == NULL)
-        {
-            _log(LSC__ERROR, "%s: Error creating new Temporary chat channel", call.client->GetName() );
-            return nullptr;
-        }
-
-        // Save this channel to the database with the 'temporary' field marked as 1 so that when the last character
-        // leaves this channel, the server knows to remove it from the database:
-        m_db->WriteNewChannelToDatabase(channel_id,call.tuple->GetItem(0)->AsString()->content(),call.client->GetCharacterID(),1,/*mode*/3);
-    }
-
-
-    if ((joinExisting_exists && joinExisting_channel) || (temporary_exists && temporary_channel))
-    {
-        // Now that channel is created, join it:
-        if( !channel->IsJoined( call.client->GetCharacterID() ) )
-        {
-            // Save this subscription to this channel to the database IF it is not temporary:
-            if (channel->GetTemporary() == 0)
-                m_db->WriteNewChannelSubscriptionToDatabase( call.client->GetCharacterID(), channel->GetChannelID(),
-                    call.client->GetCorporationID(), call.client->GetAllianceID(),
-                    2, 0 );     // the "extra" field is hard-coded
-                                                            // to '0' for now since I don't
-                                                            // know what it's used for
-
-            channel->JoinChannel( call.client );
-
-            ChannelCreateReply reply;
-            reply.ChannelChars = channel->EncodeChannelChars();
-            reply.ChannelInfo = channel->EncodeChannelSmall( call.client->GetCharacterID() );
-            reply.ChannelMods = channel->EncodeChannelMods();
+        if (!channel) {
+            _log(LSC__ERROR, "%s: Error creating new Temporary chat channel", pClient->GetName());
+            reply.ChannelInfo = new PyInt(LSC::Error::errUnspecified);
             return reply.Encode();
         }
 
-        // Somehow execution got here and was not captured in either Creating a new channel, Joining a temporary channel,
-        // or Joining an existing channel, so print an error:
-        _log(LSC__ERROR, "%s: ERROR: Character %u tried to join/create channel '%s'.  The packet format was unexpected.", call.client->GetName(), call.client->GetCharacterID(), channel->GetDisplayName().c_str() );
-        return nullptr;
-    }
-    else
-    {
-        // Malformed packet somehow / no "create" field in byname map
-        _log(LSC__ERROR, "%s: Malformed packet: 'create' field in byname map is missing.", call.client->GetName() );
-        return nullptr;
+        m_db->UpdateChannelInfo(channel);
     }
 
-    // what does this return??
-    return nullptr;
+    if (!channel->IsJoined(pClient->GetCharacterID()))  {
+        if (!temporary)
+            m_db->WriteNewChannelSubscriptionToDatabase(pClient->GetCharacterID(), channel->GetChannelID(), pClient->GetCorporationID(),
+                                                         pClient->GetAllianceID(), pClient->GetAccountRole(), 0);
+
+        if (channel->JoinChannel(pClient)) {
+           // if ((channel->GetChannelID() < 0) or (channel->GetChannelID() > maxStaticChannel))
+                reply.ChannelInfo = channel->EncodeDynamicChannel(pClient->GetCharacterID());
+           // else
+           //     reply.ChannelInfo = channel->EncodeStaticChannel(pClient->GetCharacterID());
+            reply.ChannelChars = channel->EncodeChannelChars();
+            reply.ChannelMods = channel->EncodeChannelMods();
+        } else {
+            reply.ChannelInfo = new PyInt(LSC::Error::errUnspecified);
+        }
+        return reply.Encode();
+    } else {
+        _log(LSC__ERROR, "%s: Already joined Channel %i \"%s\".", pClient->GetName(), channel->GetChannelID(), channel->GetDisplayName().c_str());
+        reply.ChannelInfo = new PyInt(LSC::Error::errUnspecified);
+        return reply.Encode();
+    }
+
+    /*
+            ret = sm.RemoteSvc('LSC').CreateChannel(displayName, joinExisting=False, memberless=0, create=True)
+            if ret:
+                info, acl, memberList = ret
+        // on fail,  ChannelInfo is pyint(lsc::type::error), others are null
+            if info == CHTERR_ALREADYEXISTS:
+            if info == CHTERR_NOSUCHCHANNEL:
+                */
 }
 
-
-PyResult LSCService::Handle_Configure( PyCallArgs& call )
+PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
 {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White( "LSCService::Handle_Configure()", "size=%u", call.tuple->size());
+        sLog.White("LSCService::Handle_SendMessage()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
-
-    // WARNING: This call contains manual packet decoding to handle configuring parameters for
-    // user-created chat channels since I didn't want to monkey around with the LSCPkts.xmlp.
-    // -- Aknor Jaden (2010-11-26)
-
-    LSCChannel* channel = NULL;
-    int32 channel_id = 0;
-
-    //ChannelInfo args;
-    //if (!args.Decode( call.tuple )) {
-    //codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-    //    return nullptr;
-    //}
-
-    // Get Tuple which contains channel number to modify:
-    if (call.tuple->AsTuple()->GetItem(0)->IsInt())
-        channel_id = call.tuple->AsTuple()->GetItem(0)->AsInt()->value();
-    else
-    {
-        _log(LSC__ERROR, "%s: Tuple contained wrong type: '%s'", call.client->GetName(), call.tuple->TypeString() );
-        return nullptr;
-    }
-
-    // Get count of parameters or just loop through the std::map until you've reached the end
-    if (call.byname.size() == 0)
-    {
-        _log(LSC__ERROR, "%s: byname std::map contained zero elements, expected at least one.", call.client->GetName() );
-        return nullptr;
-    }
-
-    // Find channel in existing channels:
-    std::map<uint32, LSCChannel*>::iterator res = m_channels.find( channel_id );
-    if( m_channels.end() == res )
-    {
-        _log(LSC__ERROR, "%s: Handle_Configure Couldn't find channel %u", call.client->GetName(), channel_id );
-        return nullptr;
-    }
-
-    channel = m_channels.find(channel_id)->second;
-
-    std::string str_NEW_displayName;
-    int32 int_NEW_memberless;
-    std::string str_NEW_motd;
-    std::string str_newPassword;
-    std::string str_oldPassword;
-
-    // For each entry in the map, check its first value against one of these strings, then call appropriate set() function:
-    //        "displayName"
-    if (!(call.byname.find("displayName") == call.byname.end()))
-    {
-        if (call.byname.find("displayName")->second->IsWString())
-        {
-            str_NEW_displayName = call.byname.find("displayName")->second->AsWString()->content();
-            channel->SetDisplayName(str_NEW_displayName);
-        }
-        else
-        {
-            _log(LSC__ERROR, "%s: displayName contained wrong type: '%s'", call.client->GetName(), call.byname.find("displayName")->second->TypeString() );
-            return nullptr;
-        }
-    }
-
-    //        "memberless"
-    if (!(call.byname.find("memberless") == call.byname.end()))
-    {
-        if (call.byname.find("memberless")->second->IsInt())
-        {
-            int_NEW_memberless = call.byname.find("memberless")->second->AsInt()->value();
-            channel->SetMemberless(int_NEW_memberless ? true : false);
-        }
-        else
-        {
-            _log(LSC__ERROR, "%s: memberless contained wrong type: '%s'", call.client->GetName(), call.byname.find("memberless")->second->TypeString() );
-            return nullptr;
-        }
-    }
-
-    //        "motd"
-    if (!(call.byname.find("motd") == call.byname.end()))
-    {
-        if (call.byname.find("motd")->second->IsWString())
-        {
-            str_NEW_motd = call.byname.find("motd")->second->AsWString()->content();
-            channel->SetMOTD(str_NEW_motd);
-        }
-        else
-        {
-            _log(LSC__ERROR, "%s: motd contained wrong type: '%s'", call.client->GetName(), call.byname.find("motd")->second->TypeString() );
-            return nullptr;
-        }
-    }
-
-    //        "oldPassword"
-    if (!(call.byname.find("oldPassword") == call.byname.end()))
-    {
-        if (call.byname.find("oldPassword")->second->IsWString())
-        {
-            str_oldPassword = call.byname.find("oldPassword")->second->AsWString()->content();
-            if (channel->GetPassword() == str_oldPassword)
-            {
-                //        "newPassword"
-                if (!(call.byname.find("newPassword") == call.byname.end()))
-                {
-                    if (call.byname.find("newPassword")->second->IsWString())
-                    {
-                        str_newPassword = call.byname.find("newPassword")->second->AsWString()->content();
-                        channel->SetPassword(str_newPassword);
-                    }
-                    else
-                    {
-                        _log(LSC__ERROR, "%s: newPassword contained wrong type: '%s'", call.client->GetName(), call.byname.find("newPassword")->second->TypeString() );
-                        return nullptr;
-                    }
-                }
-            }
-            else
-            {
-                _log(LSC__ERROR, "%s: incorrect oldPassword supplied. Password NOT changed.", call.client->GetName() );
-                return nullptr;
-            }
-        }
-        else if (call.byname.find("oldPassword")->second->IsNone())
-        {
-            //        "newPassword"
-            if (!(call.byname.find("newPassword") == call.byname.end()))
-            {
-                if (call.byname.find("newPassword")->second->IsWString())
-                {
-                    str_newPassword = call.byname.find("newPassword")->second->AsWString()->content();
-                    channel->SetPassword(str_newPassword);
-                }
-                else
-                {
-                    _log(LSC__ERROR, "%s: newPassword contained wrong type: '%s'", call.client->GetName(), call.byname.find("newPassword")->second->TypeString() );
-                    return nullptr;
-                }
-            }
-        }
-        else
-        {
-            _log(LSC__ERROR, "%s: oldPassword is of an unexpected type: '%s'", call.client->GetName(), call.byname.find("newPassword")->second->TypeString() );
-            return nullptr;
-        }
-    }
-
-    // Save the new channel parameters to the database 'channels' table:
-    m_db->UpdateChannelConfigureInfo(channel);
-
-    // ********** TODO **********
-    // Figure out how to send a packet to all clients subscribed to this channel that contains all channel parameters
-    // so that their clients can update everything that has changed in this channel's configuration.
-    // **************************
-
-    // This packet sent back to the client configuring the channel parameters is insufficient to update itself or
-    // any other client attached to this channel.
-    ChannelCreateReply reply;
-    reply.ChannelChars = channel->EncodeChannelChars();
-    reply.ChannelInfo = channel->EncodeChannelSmall( call.client->GetCharacterID() );
-    reply.ChannelMods = channel->EncodeChannelMods();
-
-    if (is_log_enabled(LSC__RSP_DUMP))
-        reply.Dump(LSC__RSP_DUMP);
-
-    return reply.Encode();
-}
-
-
-PyResult LSCService::Handle_DestroyChannel( PyCallArgs& call )
-{
-    if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White( "LSCService::Handle_DestroyChannel()", "size=%u", call.tuple->size());
-        call.Dump(LSC__CALL_DUMP);
-    }
-
-    Call_SingleIntegerArg arg;
-    if( !arg.Decode( call.tuple ) )
-    {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    std::map<uint32, LSCChannel*>::iterator res = m_channels.find( arg.arg );
-    if( m_channels.end() == res )
-    {
-        _log(LSC__ERROR, "%s: Couldn't find channel %u", call.client->GetName(), arg.arg );
-        return nullptr;
-    }
-
-    // ********** TODO **********
-    // Figure out how to validate whether this character (call.client->GetCharacterID()) is allowed
-    // to destroy this chat channel, and proceed if they are, otherwise, do not.  And, is there an error
-    // packet sent back to the client?
-    // **************************
-
-    // Finally, remove the channel from the server dynamic objects:
-    res->second->Evacuate( call.client );
-    SafeDelete( res->second );
-    m_channels.erase( res );
-
-    // Now, remove the channel from the database:
-    m_db->RemoveChannelFromDatabase( res->second->GetChannelID() );
-
-    return new PyNone();
-}
-
-
-PyResult LSCService::Handle_SendMessage( PyCallArgs& call )
-{
-    if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White( "LSCService::Handle_SendMessage()", "size=%u", call.tuple->size());
-        call.Dump(LSC__CALL_DUMP);
-    }
-
-    // WARNING: This call contains manual packet decoding to handle chat messages sent inside user-created
-    // chat channels since I didn't want to monkey around with the LSCPkts.xmlp.  All chat message packets
-    // received for Local/Corp/Region/Constellation chat channels are still processed via LSCPkts.cpp.
-    // -- Aknor Jaden (2010-11-07)
-
 
     int32 channel_id = 0;
-    std::string message;
+    std::string message = "";
 
-    Call_SendMessage args;
-
-    if( ( call.tuple->IsTuple() ) && (call.tuple->AsTuple()->items[0]->IsInt()) )
-    {
+    if ((call.tuple->IsTuple()) and (call.tuple->AsTuple()->items[0]->IsInt())) {
         // Decode All User-created chat channel messages here:
-        if( !call.tuple->IsTuple() )
-        {
-            _log( NET__PACKET_ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong type: %s", call.tuple->TypeString() );
-
-            return nullptr;
+        if (!call.tuple->IsTuple()) {
+            _log(NET__PACKET_ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong type: %s", call.tuple->TypeString());
+            return new PyNone();
         }
         PyTuple* tuple0 = call.tuple->AsTuple();
 
-        if( tuple0->size() != 2 )
-        {
-            _log( NET__PACKET_ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong size: expected 2, but got %lu", tuple0->size() );
-
-            return nullptr;
+        if (tuple0->size() != 2) {
+            _log(NET__PACKET_ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong size: expected 2, but got %lu", tuple0->size());
+            return new PyNone();
         }
 
         channel_id = (call.tuple->AsTuple()->items[0]->AsInt())->value();
         message = ((call.tuple->AsTuple()->items[1]->AsWString())->content());
-        sLog.White( "LSCService", "Handle_SendMessage: call is either User-created chat message or bad packet.");
-    }
-    else
-    {
-        if( !args.Decode( call.tuple ) )
-        {
+        sLog.White("LSCService", "Handle_SendMessage: call is either User-created chat message or bad packet.");
+    } else {
+        Call_SendMessage args;
+        if (!args.Decode(call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return nullptr;
+            return new PyNone();
         }
         channel_id = args.channel.id;
         message = args.message;
         _log(LSC__INFO, "Handle_SendMessage: call is Corp/Local/Region/Constellation chat.");
     }
 
-    std::map<uint32, LSCChannel*>::iterator itr = m_channels.find( channel_id );
+    std::map<int32, LSCChannel*>::iterator itr = m_channels.find(channel_id);
     if (itr == m_channels.end()) {
-        _log(LSC__ERROR, "%s: Couldn't find channel %u", call.client->GetName(), channel_id );
-        return nullptr;
+        _log(LSC__ERROR, "%s: Couldn't find channel %u", call.client->GetName(), channel_id);
+        return new PyNone();
     }
 
-	std::string CIC_test_name = "CIC - " + std::string(call.client->GetName());
-	if( (message.substr(0,3) == "pcs") && (itr->second->GetDisplayName() == CIC_test_name) )
-	{
-        _log(LSC__INFO, "CALL to Player Command System via LSC Service" );
-
-		// call to Player Command System to parse command
-
-		//if( command_ack == 1 )
-			message = "[ COMMAND ACKNOWLEDGED ]";
-		//else
-		//	message = "[ COMMAND FAILED ]";
-	}
-
-	if( message == "cic" )
-        _log(LSC__INFO, "Message 'cic' received, creating/joining %s...", CIC_test_name.c_str() );
-
-    if( message.at(0) == '.' )
-    {
-        _log(LSC__INFO, "CALL to SlashService->SlashCmd() via LSC Service" );
-        static_cast<SlashService *>(m_manager->LookupService("slash"))->SlashCommand( call.client, message );
-
-        message = "*dot command via slash service*";      // Still transmit some message but minimal so that chat window is not "locked" by client for not getting a chat
+    std::string CIC_test_name = "CIC - " + std::string(call.client->GetName());
+    if ((message.substr(0,3) == "pcs") and (itr->second->GetDisplayName() == CIC_test_name)) {
+        _log(LSC__INFO, "CALL to Player Command System via LSC Service");
+        // call to Player Command System to parse command
+        //if (command_ack == 1)
+        message = "[ COMMAND ACKNOWLEDGED ]";
+        //else
+        //  message = "[ COMMAND FAILED ]";
     }
 
-    itr->second->SendMessage( call.client, message.c_str() );
+    if (message == "cic")
+        _log(LSC__INFO, "Message 'cic' received, creating/joining %s...", CIC_test_name.c_str());
 
-    return new PyInt( 1 );
+    if (message.at(0) == '.') {
+        _log(LSC__INFO, "CALL to SlashService->SlashCmd() via LSC Service");
+        static_cast<SlashService *>(m_manager->LookupService("slash"))->SlashCommand(call.client, message);
+        return new PyNone();
+    }
+
+    itr->second->SendMessage(call.client, message.c_str());
+
+    return new PyNone();
 }
 
-
-PyResult LSCService::Handle_AccessControl( PyCallArgs& call )
+PyResult LSCService::Handle_AccessControl(PyCallArgs& call)
 {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White( "LSCService::Handle_AccessControl()", "size=%u", call.tuple->size());
+        sLog.White("LSCService::Handle_AccessControl()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
+    /*
+     * 20:43:44 W LSCService::Handle_AccessControl(): size=3
+     * 20:43:44 [LSC_CDump]   Call Arguments:
+     * 20:43:44 [LSC_CDump]       Tuple: 3 elements
+     * 20:43:44 [LSC_CDump]         [ 0] Integer field: 2100000000
+     * 20:43:44 [LSC_CDump]         [ 1] (None)
+     * 20:43:44 [LSC_CDump]         [ 2] Integer field: 1
+     * 20:43:44 [LSC_CDump]   Call Named Arguments:
+     * 20:43:44 [LSC_CDump]     Argument 'machoVersion':
+     * 20:43:44 [LSC_CDump]         Integer field: 1
+     */
 
     // WARNING: This call contains manual packet decoding to handle Access Control since I didn't want to monkey around with the LSCPkts.xmlp.
     // -- Aknor Jaden (2010-11-26)
 
     int32 channel_id = 0;
+
+    //m_db->UpdateChannelInfo(channel);
 
     // BIG TODO:  The whole reason why normal players cannot post chats in other channels has to do with the Access Mode
     // in the channel settings dialog in the client.  Now, I don't know why chatting in the Help/Rookie Help is not allowed
@@ -997,19 +485,15 @@ PyResult LSCService::Handle_AccessControl( PyCallArgs& call )
     //     -2 = Add to Blocked List
     //     7 = Add to Moderators List
 
+    //channel->UpdateConfig();
 
-    // ********** TODO **********
-    // Figure out how to send a packet to all clients subscribed to this channel that contains all channel parameters
-    // so that their clients can update everything that has changed in this channel's access control.
-    // **************************
-
-    return new PyInt( 1 );
+    return new PyInt(1);
 }
 
 PyResult LSCService::Handle_Invite(PyCallArgs &call)
 {
     if (is_log_enabled(LSC__CALL_DUMP)) {
-        sLog.White( "LSCService::Handle_Invite()", "size=%u", call.tuple->size());
+        sLog.White("LSCService::Handle_Invite()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
 
@@ -1017,62 +501,54 @@ PyResult LSCService::Handle_Invite(PyCallArgs &call)
     // chat channels since I didn't want to monkey around with the LSCPkts.xmlp.
     // -- Aknor Jaden (2010-11-19)
 
-    LSCChannel* channel;
+    LSCChannel* channel(nullptr);
 
     uint32 channel_ID;
     uint32 char_ID = call.client->GetCharacterID();
     uint32 invited_char_ID;
 
     // Decode the call:
-    if (call.tuple->IsTuple())
-    {
+    if (call.tuple->IsTuple()) {
         if (call.tuple->GetItem(1)->IsInt())
             channel_ID = call.tuple->GetItem(1)->AsInt()->value();
-        else
-        {
-            _log(LSC__ERROR, "%s: call.tuple->GetItem(1) is of the wrong type: '%s'.  Expected PyInt type.", call.client->GetName(), call.tuple->TypeString() );
+        else {
+            _log(LSC__ERROR, "%s: call.tuple->GetItem(1) is of the wrong type: '%s'.  Expected PyInt type.", call.client->GetName(), call.tuple->TypeString());
             return nullptr;
         }
 
         if (call.tuple->GetItem(0)->IsInt())
             invited_char_ID = call.tuple->GetItem(0)->AsInt()->value();
-        else
-        {
-            _log(LSC__ERROR, "%s: call.tuple->GetItem(0) is of the wrong type: '%s'.  Expected PyInt type.", call.client->GetName(), call.tuple->TypeString() );
+        else {
+            _log(LSC__ERROR, "%s: call.tuple->GetItem(0) is of the wrong type: '%s'.  Expected PyInt type.", call.client->GetName(), call.tuple->TypeString());
             return nullptr;
         }
-    }
-    else
-    {
-        _log(LSC__ERROR, "%s: call.tuple is of the wrong type: '%s'.  Expected PyTuple type.", call.client->GetName(), call.tuple->TypeString() );
+    } else {
+        _log(LSC__ERROR, "%s: call.tuple is of the wrong type: '%s'.  Expected PyTuple type.", call.client->GetName(), call.tuple->TypeString());
         return nullptr;
     }
 
-    // Now that the packet is known to be good, find the channel to join and join it:
-    if (m_channels.find(channel_ID) != m_channels.end())
-    {
-        channel = m_channels[ channel_ID ];
+    if (m_channels.find(channel_ID) != m_channels.end()) {
+        channel = m_channels[channel_ID];
 
-        if( !channel->IsJoined( invited_char_ID ) )
-        {
+        if (!channel->IsJoined(invited_char_ID)) {
             // SOMEHOW SEND A JOIN COMMAND/REQUEST TO THE TARGET CLIENT FOR invited_char_ID
-        /*    OnLSC_JoinChannel join;
-            join.sender = channel->_MakeSenderInfo(call.client);
-            join.member_count = 1;
-            join.channelID = channel->EncodeID();
-            PyTuple *answer = join.Encode();
-            MulticastTarget mct;
-            //LSCChannelChar *invitor;
-            //LSCChannelChar *invitee;
-            if ( !channel->IsJoined(char_ID) )
-            {
-                //invitor = new LSCChannelChar(channel,0,char_ID,call.client->GetCharacterName(),0,0,0,0);
-                mct.characters.insert(char_ID);
-            }
-            //invitee = new LSCChannelChar(channel,0,invited_char_ID,entityList().FindCharacter(invited_char_ID)->GetCharacterName(),0,0,0,0);
-            mct.characters.insert(invited_char_ID);
-            entityList().Multicast( "OnLSC", channel->GetTypeString(), &answer, mct );
-            //entityList().Unicast(invited_char_ID,"OnLSC",channel->GetTypeString(),&answer,false);
+            /*    OnLSC_JoinChannel join;
+             *            join.sender = channel->_MakeSenderInfo(call.client);
+             *            join.member_count = 1;
+             *            join.channelID = channel->EncodeID();
+             *            PyTuple *answer = join.Encode();
+             *            MulticastTarget mct;
+             *            //LSCChannelChar *invitor;
+             *            //LSCChannelChar *invitee;
+             *            if (!channel->IsJoined(char_ID))
+             *            {
+             *                //invitor = new LSCChannelChar(channel,0,char_ID,call.client->GetCharacterName(),0,0,0,0);
+             *                mct.characters.insert(char_ID);
+        }
+        //invitee = new LSCChannelChar(channel,0,invited_char_ID,entityList().FindCharacter(invited_char_ID)->GetCharacterName(),0,0,0,0);
+        mct.characters.insert(invited_char_ID);
+        entityList().Multicast("OnLSC", channel->GetTypeString(), &answer, mct);
+        //entityList().Unicast(invited_char_ID,"OnLSC",channel->GetTypeString(),&answer,false);
         */
 
             // ********** TODO **********
@@ -1091,129 +567,455 @@ PyResult LSCService::Handle_Invite(PyCallArgs &call)
             //chatInvitePacket.integer5 = 1;
             //PyTuple *tuple = chatInvitePacket.Encode();
             //entityList().Unicast(invited_char_ID, "", "", &tuple, false);
-        }
-        else
-        {
-            _log(LSC__ERROR, "%s: Character %u is already joined to channel %u.", call.client->GetName(), invited_char_ID, channel_ID );
+        } else {
+            _log(LSC__ERROR, "%s: Character %u is already joined to channel %u.", call.client->GetName(), invited_char_ID, channel_ID);
             return nullptr;
         }
-    }
-    else
-    {
-        _log(LSC__ERROR, "%s: Cannot find channel %u.", call.client->GetName(), channel_ID );
+    } else {
+        _log(LSC__ERROR, "%s: Cannot find channel %u.", call.client->GetName(), channel_ID);
         return nullptr;
     }
 
-    return new PyInt( 1 );
+    return new PyInt(1);
 }
 
+PyResult LSCService::Handle_Configure(PyCallArgs& call)
+{
+    if (is_log_enabled(LSC__CALL_DUMP)) {
+        sLog.White("LSCService::Handle_Configure()", "size=%u", call.tuple->size());
+        call.Dump(LSC__CALL_DUMP);
+    }
+    /*
+     * 20:43:44 W LSCService::Handle_Configure(): size=1
+     * 20:43:44 [LSC_CDump]   Call Arguments:
+     * 20:43:44 [LSC_CDump]       Tuple: 1 elements
+     * 20:43:44 [LSC_CDump]         [ 0] Integer field: 2100000000
+     * 20:43:44 [LSC_CDump]   Call Named Arguments:
+     * 20:43:44 [LSC_CDump]     Argument 'machoVersion':
+     * 20:43:44 [LSC_CDump]         Integer field: 1
+     * 20:43:44 [LSC_CDump]     Argument 'motd':
+     * 20:43:44 [LSC_CDump]         WString: 'test MOTD'
+     *
+     * 21:13:02 W LSCService::Handle_Configure(): size=1
+     * 21:13:02 [LSC_CDump]   Call Arguments:
+     * 21:13:02 [LSC_CDump]       Tuple: 1 elements
+     * 21:13:02 [LSC_CDump]         [ 0] Integer field: 2100000000
+     * 21:13:02 [LSC_CDump]   Call Named Arguments:
+     * 21:13:02 [LSC_CDump]     Argument 'creator':
+     * 21:13:02 [LSC_CDump]         Integer field: 140000130
+     * 21:13:02 [LSC_CDump]     Argument 'machoVersion':
+     * 21:13:02 [LSC_CDump]         Integer field: 1
+     *
+     */
+
+    // WARNING: This call contains manual packet decoding to handle configuring parameters for
+    // user-created chat channels since I didn't want to monkey around with the LSCPkts.xmlp.
+    // -- Aknor Jaden (2010-11-26)
+
+    LSCChannel* channel(nullptr);
+    int32 channel_id = 0;
+
+    //ChannelInfo args;
+    //if (!args.Decode(call.tuple) {
+    //codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+    //    return nullptr;
+    //}
+
+    // Get Tuple which contains channel number to modify:
+    if (call.tuple->AsTuple()->GetItem(0)->IsInt())
+        channel_id = call.tuple->AsTuple()->GetItem(0)->AsInt()->value();
+    else {
+        _log(LSC__ERROR, "%s: Tuple contained wrong type: '%s'", call.client->GetName(), call.tuple->TypeString());
+        return nullptr;
+    }
+
+    // Get count of parameters or just loop through the std::map until you've reached the end
+    if (call.byname.size() == 0) {
+        _log(LSC__ERROR, "%s: byname std::map contained zero elements, expected at least one.", call.client->GetName());
+        return nullptr;
+    }
+
+    // Find channel in existing channels:
+    std::map<int32, LSCChannel*>::iterator res = m_channels.find(channel_id);
+    if (m_channels.end() == res)  {
+        _log(LSC__ERROR, "%s: Handle_Configure Couldn't find channel %u", call.client->GetName(), channel_id);
+        return nullptr;
+    }
+
+    channel = m_channels.find(channel_id)->second;
+    if (call.byname.find("displayName") != call.byname.end()) {
+        if (call.byname.find("displayName")->second->IsWString()) {
+            channel->SetDisplayName(call.byname.find("displayName")->second->AsWString()->content());
+        } else {
+            _log(LSC__ERROR, "%s: displayName contained wrong type: '%s'", call.client->GetName(), call.byname.find("displayName")->second->TypeString());
+            return nullptr;
+        }
+    }
+
+    if (call.byname.find("memberless") != call.byname.end()) {
+        if (call.byname.find("memberless")->second->IsInt()) {
+            channel->SetMemberless(call.byname.find("memberless")->second->AsInt()->value() ? true : false);
+        } else {
+            _log(LSC__ERROR, "%s: memberless contained wrong type: '%s'", call.client->GetName(), call.byname.find("memberless")->second->TypeString());
+            return nullptr;
+        }
+    }
+
+    if (call.byname.find("motd") != call.byname.end()) {
+        if (call.byname.find("motd")->second->IsWString()) {
+            channel->SetMOTD(call.byname.find("motd")->second->AsWString()->content());
+        } else {
+            _log(LSC__ERROR, "%s: motd contained wrong type: '%s'", call.client->GetName(), call.byname.find("motd")->second->TypeString());
+            return nullptr;
+        }
+    }
+
+    if (call.byname.find("oldPassword") != call.byname.end()) {
+        if (call.byname.find("oldPassword")->second->IsWString()) {
+            if (channel->GetPassword() == call.byname.find("oldPassword")->second->AsWString()->content()) {
+                if (call.byname.find("newPassword") != call.byname.end()) {
+                    if (call.byname.find("newPassword")->second->IsWString()) {
+                        channel->SetPassword(call.byname.find("newPassword")->second->AsWString()->content());
+                    } else {
+                        _log(LSC__ERROR, "%s: newPassword contained wrong type: '%s'", call.client->GetName(), call.byname.find("newPassword")->second->TypeString());
+                        return nullptr;
+                    }
+                }
+            } else {
+                _log(LSC__ERROR, "%s: incorrect oldPassword supplied. Password NOT changed.", call.client->GetName());
+                return nullptr;
+            }
+        } else if (call.byname.find("oldPassword")->second->IsNone()) {
+            if (call.byname.find("newPassword") != call.byname.end()) {
+                if (call.byname.find("newPassword")->second->IsWString()) {
+                    channel->SetPassword(call.byname.find("newPassword")->second->AsWString()->content());
+                } else {
+                    _log(LSC__ERROR, "%s: newPassword contained wrong type: '%s'", call.client->GetName(), call.byname.find("newPassword")->second->TypeString());
+                    return nullptr;
+                }
+            }
+        } else {
+            _log(LSC__ERROR, "%s: oldPassword is of an unexpected type: '%s'", call.client->GetName(), call.byname.find("newPassword")->second->TypeString());
+            return nullptr;
+        }
+    }
+
+    m_db->UpdateChannelInfo(channel);
+
+    channel->UpdateConfig();
+
+    return new PyNone();
+}
+
+
+PyResult LSCService::Handle_LeaveChannel(PyCallArgs &call) {
+    if (is_log_enabled(LSC__CALL_DUMP)) {
+        sLog.White("LSCService::Handle_LeaveChannel()", "size=%u", call.tuple->size());
+        call.Dump(LSC__CALL_DUMP);
+    }
+
+    CallLeaveChannel arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyNone();
+    }
+
+    uint32 toLeave = 0;
+
+    if (arg.channel->IsInt())
+        toLeave = arg.channel->AsInt()->value();
+    else if (arg.channel->IsTuple()) {
+        PyTuple* prt = arg.channel->AsTuple();
+
+        if (prt->GetItem(0)->IsInt())
+            toLeave = prt->GetItem(0)->AsInt()->value();
+        else if (prt->GetItem(0)->IsTuple()) {
+            prt = prt->GetItem(0)->AsTuple();
+
+            if (prt->items.size() != 2 or !prt->GetItem(1)->IsInt()) {
+                codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
+                return new PyNone();
+            }
+
+            toLeave = prt->GetItem(1)->AsInt()->value();
+        } else {
+            codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
+            return new PyNone();
+        }
+    } else {
+        codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
+        return new PyNone();
+    }
+
+    if (arg.unsubscribe)
+        m_db->RemoveChannelSubscriptionFromDatabase(toLeave,call.client->GetCharacterID());
+
+    std::map<int32, LSCChannel*>::iterator itr = m_channels.find(toLeave);
+    if (itr != m_channels.end()) {
+        itr->second->LeaveChannel(call.client);
+        if ((itr->second->GetMemberCount() < 1) and (itr->second->GetTemporary())) {
+            m_db->RemoveChannelFromDatabase(toLeave);
+            SafeDelete(itr->second);
+            m_channels.erase(itr);
+        }
+    }
+
+    return new PyNone();
+}
+
+
+PyResult LSCService::Handle_LeaveChannels(PyCallArgs &call) {
+    if (is_log_enabled(LSC__CALL_DUMP)) {
+        sLog.White("LSCService::Handle_LeaveChannels()", "size=%u", call.tuple->size());
+        call.Dump(LSC__CALL_DUMP);
+    }
+
+    CallLeaveChannels args;
+
+    if(!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyNone();
+    }
+
+    std::set<uint32> toLeave;
+    toLeave.clear();
+
+    PyList::const_iterator cur = args.channels->begin();
+    for (; cur != args.channels->end(); cur++) {
+        if ((*cur)->IsInt())
+            toLeave.insert((*cur)->AsInt()->value());
+        else if ((*cur)->IsTuple()) {
+            PyTuple* prt = (*cur)->AsTuple();
+
+            if (prt->GetItem(0)->IsInt()) {
+                toLeave.insert(prt->GetItem(0)->AsInt()->value());
+                continue;
+            }
+
+            if (!prt->GetItem(0)->IsTuple()) {
+                codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
+                continue;
+            }
+            prt = prt->GetItem(0)->AsTuple();
+
+            if (prt->GetItem(0)->IsTuple())
+                prt = prt->GetItem(0)->AsTuple();
+
+            if (prt->size() != 2 or !prt->GetItem(1)->IsInt()) {
+                codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
+                continue;
+            }
+
+            toLeave.insert(prt->GetItem(1)->AsInt()->value());
+        } else {
+            codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
+            continue;
+        }
+    }
+
+    std::set<uint32>::iterator itr = toLeave.begin();
+    std::map<int32, LSCChannel*>::iterator itr2;
+    for (; itr!=toLeave.end(); itr++) {
+        itr2 = m_channels.find(*itr);
+        if (itr2 != m_channels.end()) {
+            itr2->second->LeaveChannel(call.client);
+            if (args.unsubscribe)
+                m_db->RemoveChannelSubscriptionFromDatabase(*itr, call.client->GetCharacterID());
+
+            if ((itr2->second->GetMemberCount() < 1) and (itr2->second->GetTemporary())) {
+                m_db->RemoveChannelFromDatabase(*itr);
+                SafeDelete(itr2->second);
+                m_channels.erase(itr2);
+            }
+        }
+    }
+
+    return new PyNone();
+}
+
+PyResult LSCService::Handle_DestroyChannel(PyCallArgs& call)
+{
+    if (is_log_enabled(LSC__CALL_DUMP)) {
+        sLog.White("LSCService::Handle_DestroyChannel()", "size=%u", call.tuple->size());
+        call.Dump(LSC__CALL_DUMP);
+    }
+
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyNone();
+    }
+
+    std::map<int32, LSCChannel*>::iterator itr = m_channels.find(arg.arg);
+    if (itr == m_channels.end()) {
+        _log(LSC__ERROR, "%s: Couldn't find channel %u", call.client->GetName(), arg.arg);
+        return new PyNone();
+    }
+
+    // ********** TODO **********
+    // Figure out how to validate whether this character (call.client->GetCharacterID()) is allowed
+    // to destroy this chat channel, and proceed if they are, otherwise, do not.  And, is there an error
+    // packet sent back to the client?
+    // **************************
+
+    // Finally, remove the channel from the server dynamic objects:
+    itr->second->Evacuate(call.client);
+    SafeDelete(itr->second);
+    m_channels.erase(itr);
+
+    // Now, remove the channel from the database:
+    m_db->RemoveChannelFromDatabase(itr->second->GetChannelID());
+
+    return new PyNone();
+}
 
 void LSCService::CharacterLogin(Client* pClient)
 {
     // create Corp chat channel:
-    CreateChannel(pClient->GetCorporationID());
+    CreateChannel((int32)pClient->GetCorporationID());
     // create Alliance chat channel:
-    CreateChannel(pClient->GetAllianceID());
-
+    CreateChannel((int32)pClient->GetAllianceID());
 }
 
 void LSCService::CharacterLogout(uint32 charID, OnLSC_SenderInfo* si)
 {
-    std::map<uint32, LSCChannel*>::iterator cur, end;
+    std::map<int32, LSCChannel*>::iterator cur, end;
     cur = m_channels.begin();
     end = m_channels.end();
     for(; cur != end; cur++)
-        if( cur->second->IsJoined( charID ) )
-            cur->second->LeaveChannel( charID, new OnLSC_SenderInfo( *si ) );
+        if (cur->second->IsJoined(charID))
+            cur->second->LeaveChannel(charID, new OnLSC_SenderInfo(*si));
 
-    SafeDelete( si );
+    SafeDelete(si);
 }
 
 void LSCService::SystemUnload(uint32 systemID, uint32 constID, uint32 regionID)
 {
-    std::map<uint32, LSCChannel*>::iterator itr = m_channels.find(systemID);
+    std::map<int32, LSCChannel*>::iterator itr = m_channels.find(systemID);
     if (itr != m_channels.end()) {
-        SafeDelete( itr->second );
-        m_channels.erase( itr );
+        SafeDelete(itr->second);
+        m_channels.erase(itr);
     }
     /** @todo  find a way to track usages of region and const channels to delete when no longer used */
     //  is this needed?
 }
 
-
-LSCChannel* LSCService::CreateChannel(uint32 channelID, const char * name, const char * motd, LSCChannel::Type type, const char * compkey,
-                                      uint32 ownerID, bool memberless, const char * password, bool maillist, uint32 cspa, uint32 temporary, uint32 mode) {
-    std::map<uint32, LSCChannel*>::iterator itr = m_channels.find(channelID);
+LSCChannel* LSCService::CreateChannel(int32 channelID, const char * name, const char * motd, LSC::Type type, const char * compkey,
+                                      uint32 ownerID, bool memberless, const char * password, bool maillist, uint32 cspa, bool temporary,
+                                      bool languageRestriction, int8 groupMessageID, int8 channelMessageID) {
+    std::map<int32, LSCChannel*>::iterator itr = m_channels.find(channelID);
     if (itr != m_channels.end())
         return itr->second;
-    return m_channels[channelID] = new LSCChannel(this, channelID, type, ownerID, name, motd, compkey, memberless, password, maillist, cspa, temporary, mode);
+    return m_channels[channelID] = new LSCChannel(this, channelID, type, ownerID, name, motd, compkey, memberless, password, maillist, cspa, temporary, languageRestriction, groupMessageID, channelMessageID);
 }
 
-LSCChannel* LSCService::CreateChannel(uint32 channelID, const char * name, const char * motd, LSCChannel::Type type, bool maillist) {
-    std::map<uint32, LSCChannel*>::iterator itr = m_channels.find(channelID);
+LSCChannel* LSCService::CreateChannel(int32 channelID, const char * name, const char * motd, LSC::Type type, bool maillist) {
+    std::map<int32, LSCChannel*>::iterator itr = m_channels.find(channelID);
     if (itr != m_channels.end())
         return itr->second;
-    return m_channels[channelID] = new LSCChannel(this, channelID, type, 1, name, motd, NULL, false, "", maillist, true, false, /*mode*/3);
+    return m_channels[channelID] = new LSCChannel(this, channelID, type, 1, name, motd, nullptr, false, "", maillist, cspa, true, false, 0, 0);
 }
 
-LSCChannel* LSCService::CreateChannel(uint32 channelID, const char * name, LSCChannel::Type type, bool maillist) {
-    std::map<uint32, LSCChannel*>::iterator itr = m_channels.find(channelID);
+LSCChannel* LSCService::CreateChannel(int32 channelID, const char * name, LSC::Type type, bool maillist) {
+    std::map<int32, LSCChannel*>::iterator itr = m_channels.find(channelID);
     if (itr != m_channels.end())
         return itr->second;
-    return m_channels[channelID] = new LSCChannel(this, channelID, type, 1, name, NULL, NULL, false, "", maillist, true, false, /*mode*/3);
+    return m_channels[channelID] = new LSCChannel(this, channelID, type, 1, name, nullptr, nullptr, false, "", maillist, cspa, true, false, 0, 0);
 }
 
-LSCChannel* LSCService::CreateChannel(uint32 channelID) {
+LSCChannel* LSCService::CreateChannel(int32 channelID) {
     if (!channelID)
         return nullptr;
-    std::map<uint32, LSCChannel*>::iterator itr = m_channels.find(channelID);
+    std::map<int32, LSCChannel*>::iterator itr = m_channels.find(channelID);
     if (itr != m_channels.end())
         return itr->second;
-    LSCChannel::Type type;
+    LSC::Type type;
     std::string name;
     std::string motd;
-    if (IsRegion(channelID)) { type = LSCChannel::region; name = "System Channels\\Region"; motd = m_db->GetRegionName(channelID); }
-    else if (IsConstellation(channelID)) {type = LSCChannel::constellation; name = "System Channels\\Constellation"; motd = m_db->GetConstellationName(channelID); }
-    else if (IsSolarSystem(channelID)) { type = LSCChannel::solarsystem; name = "System Channels\\Local"; motd = m_db->GetSolarSystemName(channelID); }
-    else if (IsCorp(channelID)) { type = LSCChannel::corp; name = "System Channels\\Corp"; motd = m_db->GetCorporationName(channelID); }
-    else { type = LSCChannel::normal; m_db->GetChannelInfo(channelID, name, motd); }
+    if (IsRegion(channelID)) { type = LSC::Type::region; name = "System Channels\\Region"; motd = m_db->GetRegionName(channelID); }
+    else if (IsConstellation(channelID)) {type = LSC::Type::constellation; name = "System Channels\\Constellation"; motd = m_db->GetConstellationName(channelID); }
+    else if (IsSolarSystem(channelID)) { type = LSC::Type::solarsystem; name = "System Channels\\Local"; motd = m_db->GetSolarSystemName(channelID); }
+    else if (IsCorp(channelID)) { type = LSC::Type::corp; name = "System Channels\\Corp"; motd = m_db->GetCorporationName(channelID); }
+    else { type = LSC::Type::normal; m_db->GetChannelInfo(channelID, name, motd); }
 
-    return m_channels[channelID] = new LSCChannel(this, channelID, type, 1, name.c_str(), motd.c_str(), NULL, false, NULL, false, true, false, /*mode*/3);
+    return m_channels[channelID] = new LSCChannel(this, channelID, type, 1, name.c_str(), motd.c_str(), "", false, "", nullptr, cspa, false, false, 0, 0);
 }
 
 LSCChannel* LSCService::CreateChannel(const char * name, bool maillist/*false*/) {
-    uint32 nextFreeChannelID = m_db->GetNextAvailableChannelID();
+    int32 nextFreeChannelID = m_db->GetNextAvailableChannelID();
 
-    if( nextFreeChannelID )
-        return CreateChannel(nextFreeChannelID, name, LSCChannel::normal, maillist);
+    if (nextFreeChannelID)
+        return CreateChannel(nextFreeChannelID, name, LSC::Type::normal, maillist);
     else
         return nullptr;
 }
 
 void LSCService::CreateStaticChannels() {
     // hardcode creating server static channels during server startup
-    const char * password = "";
-    const char *motd = "3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-30-30-30-30-3E-3C-62-3E-57-65-6C-63-6F-6D-65-20-74-6F-20-45-56-45-20-4F-6E-6C-69-6E-65-3A-20-49-6E-63-75-72-73-69-6F-6E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-37-66-66-66-3E-20-3C-62-72-3E-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-50-6C-61-79-65-72-20-47-75-69-64-65-73-3A-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-62-32-62-32-62-32-66-66-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-61-35-30-30-3E-3C-75-72-6C-3D-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-77-69-6B-69-2F-43-61-74-65-67-6F-72-79-3A-4E-65-77-5F-50-6C-61-79-65-72-5F-45-78-70-65-72-69-65-6E-63-65-3E-3C-75-3E-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-77-69-6B-69-2F-43-61-74-65-67-6F-72-79-3A-4E-65-77-5F-50-6C-61-79-65-72-5F-45-78-70-65-72-69-65-6E-63-65-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-62-32-62-32-62-32-66-66-3E-3C-2F-75-72-6C-3E-3C-2F-75-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-62-32-62-32-62-32-3E-77-6F-72-74-68-20-61-20-72-65-61-64-2E-2E-3C-62-72-3E-50-61-74-63-68-20-4E-6F-74-65-73-3A-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-62-32-62-32-62-32-66-66-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-61-35-30-30-3E-3C-75-72-6C-3D-68-74-74-70-3A-2F-2F-77-77-77-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-75-70-64-61-74-65-73-2F-70-61-74-63-68-6E-6F-74-65-73-2E-61-73-70-3E-3C-75-3E-68-74-74-70-3A-2F-2F-77-77-77-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-75-70-64-61-74-65-73-2F-70-61-74-63-68-6E-6F-74-65-73-2E-61-73-70-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-30-30-30-30-3E-3C-2F-75-72-6C-3E-3C-2F-62-3E-3C-2F-75-3E-20-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-62-32-62-32-62-32-3E-3C-62-3E-50-6C-65-61-73-65-3A-20-53-74-61-79-20-6F-6E-20-74-6F-70-69-63-2E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-62-32-62-32-62-32-66-66-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-66-66-30-30-3E-4E-6F-20-6F-66-66-74-6F-70-69-63-2C-20-57-54-42-2C-20-57-54-53-2C-20-50-43-2C-20-61-64-76-65-72-74-69-73-69-6E-67-2C-20-72-65-63-72-75-69-74-69-6E-67-2C-20-73-63-61-6D-6D-69-6E-67-20-74-72-61-64-69-6E-67-20-69-6E-20-67-65-6E-65-72-61-6C-20-6F-72-20-62-65-67-67-69-6E-67-20-69-6E-20-74-68-69-73-20-63-68-61-6E-6E-65-6C-2E-20-4E-6F-20-43-41-50-53-20-6F-72-20-74-65-78-74-2D-64-65-63-6F-72-61-74-69-6F-6E-20-65-69-74-68-65-72-20-21-21-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-4C-61-6E-67-75-61-67-65-3A-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-62-32-62-32-62-32-66-66-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-62-32-62-32-62-32-3E-54-68-69-73-20-63-68-61-6E-6E-65-6C-20-69-73-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-66-66-66-66-3E-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-30-30-30-30-3E-45-4E-47-4C-49-53-48-20-4F-4E-4C-59-21-21-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-4C-69-6E-6B-73-3A-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-62-32-62-32-62-32-3E-55-52-4C-27-73-20-67-69-76-65-6E-20-74-6F-20-73-69-74-65-73-20-6F-74-68-65-72-20-74-68-61-6E-20-74-6F-20-77-77-77-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-20-6D-61-79-20-62-65-20-6F-75-74-64-61-74-65-64-2E-20-50-6C-65-61-73-65-20-68-61-6E-64-6C-65-20-61-6C-6C-20-74-68-6F-73-65-20-55-52-4C-27-73-20-77-69-74-68-20-63-61-72-65-2E-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-48-6F-77-20-74-6F-20-63-6F-6E-74-61-63-74-20-61-20-47-4D-3A-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-62-32-62-32-62-32-3E-46-69-6C-65-20-61-20-70-65-74-69-74-69-6F-6E-20-28-20-46-31-32-20-2D-20-50-65-74-69-74-69-6F-6E-73-20-2D-20-4E-65-77-20-50-65-74-69-74-69-6F-6E-20-29-20-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C\
-    -6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-45-70-69-63-20-41-72-63-20-41-67-65-6E-74-73-3A-20-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-61-35-30-30-3E-3C-75-72-6C-3D-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-65-6E-2F-77-69-6B-69-2F-44-6F-6D-69-6E-69-6F-6E-5F-65-70-69-63-5F-61-72-63-73-3E-3C-75-3E-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-65-6E-2F-77-69-6B-69-2F-44-6F-6D-69-6E-69-6F-6E-5F-65-70-69-63-5F-61-72-63-73-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-30-30-30-30-3E-3C-2F-75-72-6C-3E-3C-2F-62-3E-3C-2F-75-3E-20-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-61-35-30-30-3E-3C-75-72-6C-3D-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-65-6E-2F-77-69-6B-69-2F-45-70-69-63-5F-6D-69-73-73-69-6F-6E-5F-61-72-63-73-3E-3C-62-3E-3C-75-3E-68-74-74-70-3A-2F-2F-77-69-6B-69-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-65-6E-2F-77-69-6B-69-2F-45-70-69-63-5F-6D-69-73-73-69-6F-6E-5F-61-72-63-73-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-30-30-30-30-3E-3C-2F-75-72-6C-3E-3C-2F-62-3E-3C-2F-75-3E-20-3C-62-72-3E-3C-62-72-3E-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-3C-62-3E-54-68-65-20-74-6F-70-69-63-20-6F-66-20-74-68-69-73-20-63-68-61-6E-6E-65-6C-20-69-73-20-45-56-45-20-72-65-6C-61-74-65-64-20-68-65-6C-70-21-21-21-3C-62-72-3E-3C-62-72-3E-43-68-61-74-72-75-6C-65-73-3A-20-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-66-66-61-35-30-30-3E-3C-75-72-6C-3D-68-74-74-70-3A-2F-2F-77-77-77-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-70-6E-70-2F-63-68-61-74-72-75-6C-65-73-2E-61-73-70-3E-3C-75-3E-77-77-77-2E-65-76-65-6F-6E-6C-69-6E-65-2E-63-6F-6D-2F-70-6E-70-2F-63-68-61-74-72-75-6C-65-73-2E-61-73-70-3C-2F-63-6F-6C-6F-72-3E-3C-63-6F-6C-6F-72-3D-30-78-66-66-30-30-66-66-30-30-3E-3C-2F-75-72-6C-3E-3C-2F-75-3E-20-70-6C-65-61-73-65-20-72-65-61-64-20-61-6E-64-20-6F-62-73-65-72-76-65-20-74-68-65-6D-2E-2E-3C-2F-63-6F-6C-6F-72-3E-3C-2F-62-3E";
-    CreateChannel(1, "Help\\Rookie Help", "Rookie motd", LSCChannel::normal, "help", 1, false, password, false, cspa, 0, 3);
-    CreateChannel(2, "Help\\Help", motd, LSCChannel::normal, "help", 1, false, password, false, cspa, 0, 3);
+    std::ostringstream str;
+    /*  Incursion Rookie Help MOTD...
+     * <color=0xff007fff><b>Welcome to: EVE Online: Incursion<br></color>
+     * <color=0xff00ff00>Chatrules</color><color=0xffffffff>: </color>
+     * <color=0xffffa500><url=http://www.eveonline.com/pnp/chatrules.asp><u>http://www.eveonline.com/pnp/chatrules.asp</color>
+     * <color=0xffffffff></url></u> </color>
+     * <color=0xffb2b2b2>please read and observe them..<br></color>
+     * <color=0xff00ff00>Topic</color>
+     * <color=0xffffffff>: Stay on topic of EVE-Online related rookie help.<br></color>
+     * <color=0xff00ff00>Rules: </color>
+     * <color=0xffffffff>No WTB, WTS, WTT (aka trading, selling, w.e.), PC, advertising, recruiting, scamming, offering private help in any form or begging in this channel.
+     * No CAPS or text-decoration either<br></color>
+     * <color=0xff00ff00>Language</color><color=0xffffffff>: This channel is ENGLISH ONLY if you want to chat in another language please find the channel in CHANNELS &amp; MAILING LIST (speech bubble in top right corner) then the Languages folder.<br><br></color>
+     * <color=0xffffff00>ISK Advertising: Contrary as to what they spam, CCP has never, will never and does not intend to "authorize" any person or site to sell ISK for RL cash !<br><br></color>
+     * <color=0xff00ff00>Recommended reading</color>
+     * <color=0xffffffff>: </color><color=0xffffa500><url=http://wiki.eveonline.com/wiki/Category:New_Player_Experience><u>http://wiki.eveonline.com/wiki/Category:New_Player_Experience</color>
+     * <color=0xff007fff></url></b></u> <br><br></color>
+     * <color=0xff00ff00><b>Please Note:</color>
+     * <color=0xffffffff> There are no third party applications ().exe) that will magically give you any type of ship you wish or \'hack\' your wallet. Please report characters advertising these types of links IMMEDIATELY via petition and DO NOT download and \'try\' them. <br><br>
+     * Sister of EVE storyline starts in <url=showinfo:5//30005001><u>Arnon</url></b></u> <b>with <url=showinfo:1378//3019356><u>Sister Alitura</url></b></u>. <br><br></color>
+     * <color=0xff00ff00><b>Before asking, please read: </color>
+     * <color=0xffffa500><url=http://wiki.eveonline.com/wiki/Rookie_Help_Channel_FAQ><u>http://wiki.eveonline.com/wiki/Rookie_Help_Channel_FAQ</color>
+     * <color=0xff007fff></url></b></u> <br><br></color>
+     * <color=0xff00ff00><b>Please note: </color>
+     * <color=0xffffffff>To warp to ANY signature you have to use 4 probes and scan it to 100%.</color></b>'
+     */
+    // Incursion Help MOTD...
+    str << "<color=0xffff0000><b>Welcome to Alasiya's EVE Online: Crucible Emulator</color>";
+    str << "<color=0xff007fff> <br><br></color><color=0xff00ff00>Player Guides:</color>";
+    str << "<color=0xffffa500><url=http://wiki.eveonline.com/wiki/Category:New_Player_Experience><u>http://wiki.eveonline.com/wiki/Category:New_Player_Experience</color><color=0xb2b2b2ff></url></u> </color>";
+    str << "<color=0xffb2b2b2><b>Please: Stay on topic.</color><color=0xb2b2b2ff> </color>";
+    str << "<color=0xffffff00>No offtopic, WTB, WTS, PC, advertising, recruiting, scamming/trading in general or begging in this channel. No CAPS or text-decoration.<br></color>";
+    str << "<color=0xff00ff00>Language:</color><color=0xffb2b2b2>This channel is</color><color=0xffff0000>ENGLISH ONLY!!<br></color>";
+    str << "<color=0xff00ff00>How to contact a GM: </color>";
+    str << "<color=0xffb2b2b2>File a petition (F12 - Petitions - New Petition) <br></color>";
+    str << "<color=0xff00ff00><b>The topic of this channel is EVE related help.</color></b>";
 
-    CreateChannel(10, "Trade\\Other", "motd", LSCChannel::normal, "other", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(11, "Trade\\Ships", "motd", LSCChannel::normal, "ships", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(12, "Trade\\Blueprints", "motd", LSCChannel::normal, "blueprints", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(13, "Trade\\Modules and Munitions", "motd", LSCChannel::normal, "modulesandmunitions", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(14, "Trade\\Minerals and Manufacturing", "motd", LSCChannel::normal, "mineralsandmanufacturing", 1, true, password, false, cspa, 0, 3);
+    const char *motd = str.str().c_str();
+    CreateChannel(1, "Help\\Rookie Help", motd, LSC::Type::normal, "help", 1, false, "", false, cspa, false, false, 0, -1);
+    CreateChannel(2, "Help\\Help", motd, LSC::Type::normal, "help", 1, false, "", false, cspa, false, false, 0, -1);
 
-    CreateChannel(16, "Empires\\Caldari", "motd", LSCChannel::normal, "caldari", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(17, "Empires\\Amarr", "motd", LSCChannel::normal, "amarr", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(18, "Empires\\Minmatar", "motd", LSCChannel::normal, "minmatar", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(19, "Empires\\Gallente", "motd", LSCChannel::normal, "gallente", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(20, "Empires\\Jove", "motd", LSCChannel::normal, "jove", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(21, "Alliances\\Smacktalk", "motd", LSCChannel::normal, "smacktalk", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(22, "Alliances\\Rumour Mill", "motd", LSCChannel::normal, "rumourmill", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(23, "Alliances\\Freelancer", "motd", LSCChannel::normal, "freelancer", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(24, "Corporate\\Recruitment", "motd", LSCChannel::normal, "recruitment", 1, true, password, false, cspa, 0, 3);
-    CreateChannel(25, "Corporate\\CEO", "motd", LSCChannel::normal, "ceo", 1, true, password, false, cspa, 0, 3);
+    CreateChannel(10, "Trade\\Other", "motd", LSC::Type::normal, "other", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(11, "Trade\\Ships", "motd", LSC::Type::normal, "ships", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(12, "Trade\\Blueprints", "motd", LSC::Type::normal, "blueprints", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(13, "Trade\\Modules and Munitions", "motd", LSC::Type::normal, "modulesandmunitions", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(14, "Trade\\Minerals and Manufacturing", "motd", LSC::Type::normal, "mineralsandmanufacturing", 1, true, "", false, cspa, false, false, 0, -1);
+
+    CreateChannel(16, "Empires\\Caldari", "motd", LSC::Type::normal, "caldari", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(17, "Empires\\Amarr", "motd", LSC::Type::normal, "amarr", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(18, "Empires\\Minmatar", "motd", LSC::Type::normal, "minmatar", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(19, "Empires\\Gallente", "motd", LSC::Type::normal, "gallente", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(20, "Empires\\Jove", "motd", LSC::Type::normal, "jove", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(21, "Alliances\\Smacktalk", "motd", LSC::Type::normal, "smacktalk", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(22, "Alliances\\Rumour Mill", "motd", LSC::Type::normal, "rumourmill", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(23, "Alliances\\Freelancer", "motd", LSC::Type::normal, "freelancer", 1, true, "", false, cspa, false, false, 0, -1);
+
+    str.clear();
+    // Incursion recruitment MOTD...
+    str << "Welcome to the recruitment channel.  This channel is intended for those players looking to find a new corporation, as well as those looking to enlist new players.";
+    str << "Other activities, such as non-recruitment discussion and scamming are not permitted in this channel.";
+    str << "An additional recruitment source is the <url=http://www.eveonline.com/ingameboard.asp?a=channel&channelID=109585>Alliance and Corporation Recruitment Center</url> section of the forums.";
+    const char *motd2 = str.str().c_str();
+    CreateChannel(24, "Corporate\\Recruitment", motd2, LSC::Type::normal, "recruitment", 1, true, "", false, cspa, false, false, 0, -1);
+    CreateChannel(25, "Corporate\\CEO", "motd", LSC::Type::normal, "ceo", 1, true, "", false, cspa, false, false, 0, -1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1296,19 +1098,19 @@ void LSCService::SendMail(uint32 sender, const std::vector<int32> &recipients, c
 //stuck here to be close to related functionality
 //theres a lot of duplicated crap in here...
 //this could be replaced by the SendNewEveMail if it weren't in the Client
-void Client::SelfEveMail( const char* subject, const char* fmt, ... )
+void Client::SelfEveMail(const char* subject, const char* fmt, ...)
 {
     va_list args;
-    va_start( args, fmt );
+    va_start(args, fmt);
 
-    char* str = NULL;
-    vasprintf( &str, fmt, args );
-    assert( str );
+    char* str = nullptr;
+    vasprintf(&str, fmt, args);
+    assert(str);
 
-    va_end( args );
+    va_end(args);
 
-    m_services.lsc_service->SendMail( GetCharacterID(), GetCharacterID(), subject, str );
-    SafeFree( str );
+    m_services.lsc_service->SendMail(GetCharacterID(), GetCharacterID(), subject, str);
+    SafeFree(str);
 }
 
 
@@ -1360,25 +1162,25 @@ PyResult LSCService::Handle_GetMembers(PyCallArgs &call) {
     }
 
     uint32 channelID;
-    if( arg.channel->IsInt() )
+    if (arg.channel->IsInt())
         channelID = arg.channel->AsInt()->value();
-    else if( arg.channel->IsTuple() )
+    else if (arg.channel->IsTuple())
     {
         PyTuple* prt = arg.channel->AsTuple();
 
-        if( prt->GetItem( 0 )->IsInt() )
-            channelID = prt->GetItem( 0 )->AsInt()->value();
-        else if( prt->GetItem( 0 )->IsTuple() )
+        if (prt->GetItem(0)->IsInt())
+            channelID = prt->GetItem(0)->AsInt()->value();
+        else if (prt->GetItem(0)->IsTuple())
         {
-            prt = prt->GetItem( 0 )->AsTuple();
+            prt = prt->GetItem(0)->AsTuple();
 
-            if( prt->items.size() != 2 || !prt->GetItem( 1 )->IsInt() )
+            if (prt->items.size() != 2 or !prt->GetItem(1)->IsInt())
             {
                 codelog(SERVICE__ERROR, "%s: Bad arguments", call.client->GetName());
                 return nullptr;
             }
 
-            channelID = prt->GetItem( 1 )->AsInt()->value();
+            channelID = prt->GetItem(1)->AsInt()->value();
         }
         else
         {
@@ -1392,7 +1194,7 @@ PyResult LSCService::Handle_GetMembers(PyCallArgs &call) {
         return nullptr;
     }
 
-    if( m_channels.find( channelID ) != m_channels.end() )
+    if (m_channels.find(channelID) != m_channels.end())
         return m_channels[channelID]->EncodeChannelChars();
 
     return nullptr;

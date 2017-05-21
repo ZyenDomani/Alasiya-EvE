@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `channelMods`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `channelMods` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `channelID` int(10) unsigned NOT NULL DEFAULT '0',
+  `channelID` int(10) NOT NULL DEFAULT '0',
   `accessor` int(10) unsigned DEFAULT NULL,
   `mode` int(10) unsigned NOT NULL DEFAULT '0',
   `untilWhen` bigint(20) unsigned DEFAULT NULL,

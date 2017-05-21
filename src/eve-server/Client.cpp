@@ -1540,6 +1540,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
         	return _LoginFail(fail_msg);
         }
 
+        // check this character/account for newbie status and revoke as needed before account update.
     /* update account information, increase login count, last login timestamp and mark account as online */
     m_sdb.UpdateAccountInformation(account_info.name.c_str(), true);
 

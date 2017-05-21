@@ -33,28 +33,6 @@
 #include "chat/LSCChannel.h"
 #include "PyService.h"
 
-/*
- *
- * LSC stands for Large Scale Chat
- *
- *
- * CHTMODE_CREATOR = 8 + 4 + 2 + 1
- * CHTMODE_OPERATOR = 4 + 2 + 1
- * CHTMODE_CONVERSATIONALIST = 2 + 1
- * CHTMODE_SPEAKER = 2
- * CHTMODE_LISTENER = 1
- * CHTMODE_NOTSPECIFIED = -1
- * CHTMODE_DISALLOWED = -2
- * CHTERR_NOSUCHCHANNEL = -3
- * CHTERR_ACCESSDENIED = -4
- * CHTERR_INCORRECTPASSWORD = -5
- * CHTERR_ALREADYEXISTS = -6
- * CHTERR_TOOMANYCHANNELS = -7
- * CHT_MAX_USERS_PER_IMMEDIATE_CHANNEL = 50
- * CHT_MAX_INPUT = 253
- *
- *
-*/
 
 class CommandDispatcher;
 
@@ -63,7 +41,7 @@ class LSCService : public PyService
 public:
     // All user-created chat channels are created with IDs that are in this set:
     //     [baseChannelID,maxChannelID]  (note the inclusivity in that set)
-    static const uint32 BASE_CHANNEL_ID;
+    static const int32 BASE_CHANNEL_ID;
     static const uint32 MAX_CHANNEL_ID;
 
     LSCService(PyServiceMgr *mgr, CommandDispatcher *cd);
@@ -73,7 +51,7 @@ public:
     void CharacterLogin(Client *pClient);
     void CharacterLogout(uint32 charID, OnLSC_SenderInfo * si);
 
-    LSCChannel *CreateChannel(uint32 channelID);
+    LSCChannel *CreateChannel(int32 channelID);
     void SystemUnload(uint32 systemID, uint32 constID, uint32 regionID);
 
     void SendMail(uint32 sender, uint32 recipient, const std::string &subject, const std::string &content) {
@@ -90,7 +68,7 @@ protected:
 
     LSCDB* m_db;
 
-    std::map<uint32, LSCChannel*> m_channels;  //we own these pointers
+    std::map<int32, LSCChannel*> m_channels;  //we own these pointers
 
     PyCallable_DECL_CALL(GetChannels);
     PyCallable_DECL_CALL(GetRookieHelpChannel);
@@ -113,10 +91,11 @@ protected:
     PyCallable_DECL_CALL(DeleteMessages);
 
 private:
-    LSCChannel *CreateChannel(uint32 channelID, const char * name, const char * motd, LSCChannel::Type type, const char * compkey,
-        uint32 ownerID, bool memberless, const char * password, bool maillist, uint32 cspa, uint32 temporary, uint32 mode);
-    LSCChannel *CreateChannel(uint32 channelID, const char * name, const char * motd, LSCChannel::Type type, bool maillist = false);
-    LSCChannel *CreateChannel(uint32 channelID, const char * name, LSCChannel::Type type, bool maillist = false);
+    LSCChannel *CreateChannel(int32 channelID, const char * name, const char * motd, LSC::Type type, const char * compkey,
+                              uint32 ownerID, bool memberless, const char * password, bool maillist, uint32 cspa, bool temporary,
+                              bool languageRestriction, int8 groupMessageID, int8 channelMessageID);
+    LSCChannel *CreateChannel(int32 channelID, const char * name, const char * motd, LSC::Type type, bool maillist = false);
+    LSCChannel *CreateChannel(int32 channelID, const char * name, LSC::Type type, bool maillist = false);
     LSCChannel *CreateChannel(const char * name, bool maillist = false);
 
     void CreateStaticChannels();

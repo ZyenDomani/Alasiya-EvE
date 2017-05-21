@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `channels`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `channels` (
-  `channelID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `channelID` int(10) NOT NULL AUTO_INCREMENT,
   `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
   `displayName` varchar(85) DEFAULT NULL,
   `motd` text,
@@ -33,11 +33,8 @@ CREATE TABLE `channels` (
   `mailingList` tinyint(4) NOT NULL DEFAULT '0',
   `cspa` tinyint(4) NOT NULL DEFAULT '0',
   `temporary` tinyint(4) NOT NULL DEFAULT '0',
-  `mode` tinyint(4) NOT NULL DEFAULT '0',
-  `subscribed` tinyint(4) NOT NULL DEFAULT '0',
-  `estimatedMemberCount` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`channelID`)
-) ENGINE=InnoDB AUTO_INCREMENT=200000001 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2100000000 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,7 +43,6 @@ CREATE TABLE `channels` (
 
 LOCK TABLES `channels` WRITE;
 /*!40000 ALTER TABLE `channels` DISABLE KEYS */;
-INSERT INTO `channels` VALUES (1,1,'Help\\Rookie Help','rookie MOTD','rookiehelp',1,NULL,0,100,0,3,0,7777),(2,1,'Help\\Help','help MOTD','help',1,NULL,0,100,0,3,0,6666),(1000044,1000044,NULL,NULL,NULL,1,NULL,1,127,0,1,1,1252),(1000115,1000115,NULL,NULL,NULL,1,NULL,1,127,0,1,1,1252),(30001407,30001407,NULL,NULL,NULL,1,NULL,1,127,0,1,1,1252),(200000000,140000000,'corp','','corp',0,NULL,0,0,0,127,1,1);
 /*!40000 ALTER TABLE `channels` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

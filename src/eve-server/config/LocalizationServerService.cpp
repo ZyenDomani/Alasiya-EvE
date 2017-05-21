@@ -38,6 +38,7 @@ LocalizationServerService::LocalizationServerService( PyServiceMgr *mgr )
 
     PyCallable_REG_CALL(LocalizationServerService, GetAllTextChanges);
     PyCallable_REG_CALL(LocalizationServerService, UpdateLocalizationQASettings);
+
 }
 
 LocalizationServerService::~LocalizationServerService() {
@@ -46,10 +47,22 @@ LocalizationServerService::~LocalizationServerService() {
 
 PyResult LocalizationServerService::Handle_GetAllTextChanges(PyCallArgs &call)
 {
+/*
+                cacheData = sm.RemoteSvc('localizationServer').GetAllTextChanges(hashData)
+                localization.LogInfo('Localization Client: done asking for initial text and label data from server')
+                if cacheData is not None:
+                    localization.LogInfo('Localization Client: updating internal memory with new text and labels.')
+                    messagePerLanguage, metaDataPerLanguage, labelsDict = cacheData
+            */
     return new PyNone();
 }
 
 PyResult LocalizationServerService::Handle_UpdateLocalizationQASettings(PyCallArgs &call)
 {
+    /*
+     *     sm.RemoteSvc('localizationServer').UpdateLocalizationQASettings(showMessageID=showMessageID, enableBoundaryMarkers=enableBoundaryMarkers)
+     * sm.RemoteSvc('localizationServer').UpdateLocalizationQASettings(showHardcodedStrings=prefs.GetValue('showHardcodedStrings', 0), showMessageID=prefs.GetValue('showMessageID', 0), enableBoundaryMarkers=prefs.GetValue('enableBoundaryMarkers', 0), characterReplacementMethod=prefs.GetValue('characterReplacementMethod', 0), enableTextExpansion=prefs.GetValue('enableTextExpansion', 0))
+     */
+
     return new PyNone();
 }

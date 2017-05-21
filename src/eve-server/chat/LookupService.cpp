@@ -61,7 +61,7 @@ PyResult LookupService::Handle_LookupEvePlayerCharacters(PyCallArgs& call) {
         return nullptr;
     }
 
-    return m_db.LookupPlayerChars(args.searchString.c_str(), args.searchOption ? true : false);
+    return m_db.LookupChars(args.searchString.c_str(), args.searchOption ? true : false);
 }
 
 PyResult LookupService::Handle_LookupCharacters(PyCallArgs &call) {
@@ -101,7 +101,7 @@ PyResult LookupService::Handle_LookupPlayerCharacters(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.LookupPlayerChars(args.searchString.c_str(),  false);
+    return m_db.LookupChars(args.searchString.c_str(), false);
 }
 PyResult LookupService::Handle_LookupCorporations(PyCallArgs &call) {
     Call_LookupStringInt args;

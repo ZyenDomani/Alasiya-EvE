@@ -101,11 +101,13 @@ PyResult MailMgrService::Handle_PrimeOwners(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_SyncMail(PyCallArgs &call)
 {
+    /**  @todo  this will need more work tp implement
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
+    */
 
     PyDict* dummy = new PyDict();
     dummy->SetItemString("oldMail", new PyNone());
