@@ -122,9 +122,9 @@ bool SystemManager::BootSystem() {
     }
 
     //create our chat channels
-    m_services.lsc_service->CreateChannel(m_data.regionID);
-    m_services.lsc_service->CreateChannel(m_data.constellationID);
-    m_services.lsc_service->CreateChannel(m_data.systemID);
+    m_services.lsc_service->CreateSystemChannel(m_data.regionID);
+    m_services.lsc_service->CreateSystemChannel(m_data.constellationID);
+    m_services.lsc_service->CreateSystemChannel(m_data.systemID);
 
     return (m_loaded = true);
 }

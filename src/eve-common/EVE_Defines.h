@@ -43,7 +43,7 @@
 #define minWHConstellation      21000000
 #define maxWHConstellation      21999999
 #define minSolarSystem          30000000
-#define maxSolarSystem          39999999
+#define maxSolarSystem          31999999
 #define minWHSolarSystem        31000000
 #define maxWHSolarSystem        31999999
 #define minValidLocation        30000000
@@ -58,6 +58,8 @@
 #define maxStation              69999999
 #define minUniverseAsteroid     70000000        // deco only
 #define maxUniverseAsteroid     79999999        // deco only
+#define minFleet                80000000
+#define maxFleet                80009999
 #define minAlliance             99000000
 #define maxAlliance             99900000
 #define minPlayerItem           140000000
@@ -107,6 +109,9 @@ minFakeClientItem = 17000000000000000000L
 #define IsContainerLocation(itemID) \
  (itemID >= minValidShipLocation)
 
+#define IsFleet(itemID) \
+((itemID >= minFleet) && (itemID <= maxFleet))
+
 #define IsCorp(itemID) \
 ((itemID >= minNPCCorporation) && (itemID <= maxCorporation))
 
@@ -136,7 +141,13 @@ minFakeClientItem = 17000000000000000000L
 ((itemID >= 20000000) && (itemID < 30000000))
 
 #define IsSolarSystem(itemID) \
-((itemID >= 30000000) && (itemID < 40000000))
+((itemID >= minSolarSystem) && (itemID < maxSolarSystem))
+
+#define IsKSpace(itemID) \
+((itemID >= minSolarSystem) && (itemID < minWHSolarSystem))
+
+#define IsWSpace(itemID) \
+((itemID >= minWHSolarSystem) && (itemID < maxWHSolarSystem))
 
 #define IsUniverseCelestial(itemID) \
 ((itemID >= 40000000) && (itemID < 50000000))

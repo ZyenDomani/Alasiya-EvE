@@ -115,9 +115,8 @@ public:
     PyRep *EncodeEmptyChannelChars();
 
     const char *GetTypeString();
-    bool JoinChannel(Client * c);
-    void LeaveChannel(Client *c, bool self = true);
-    void LeaveChannel(uint32 charID, OnLSC_SenderInfo * si);
+    bool JoinChannel(Client *pClient);
+    void LeaveChannel(Client* pClient);
     bool IsJoined(uint32 charID);
 
     // this is used for updating joined clients when channel config is changed.

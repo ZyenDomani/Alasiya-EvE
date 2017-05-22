@@ -144,7 +144,9 @@ Client::~Client() {
         m_sdb.SetAccountOnlineStatus(GetUserID(), false);
         m_sdb.SetCharacterOnlineStatus(m_char->itemID(), false);
         // LSC logout
-        m_services.lsc_service->CharacterLogout(m_char->itemID(), LSCChannel::_MakeSenderInfo(this));
+        std::set<LSCChannel*> channels = m_channels;
+        for (auto cur : channels)
+            cur->LeaveChannel(this);
         m_services.ClearBoundObjects(this);
 
         m_TS = nullptr;

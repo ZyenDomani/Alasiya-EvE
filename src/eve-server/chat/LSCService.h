@@ -49,9 +49,8 @@ public:
 
     PyResult ExecuteCommand(Client *from, const char *msg);
     void CharacterLogin(Client *pClient);
-    void CharacterLogout(uint32 charID, OnLSC_SenderInfo * si);
 
-    LSCChannel *CreateChannel(int32 channelID);
+    void CreateSystemChannel(int32 channelID);
     void SystemUnload(uint32 systemID, uint32 constID, uint32 regionID);
 
     void SendMail(uint32 sender, uint32 recipient, const std::string &subject, const std::string &content) {
@@ -91,14 +90,12 @@ protected:
     PyCallable_DECL_CALL(DeleteMessages);
 
 private:
-    LSCChannel *CreateChannel(int32 channelID, const char * name, const char * motd, LSC::Type type, const char * compkey,
-                              uint32 ownerID, bool memberless, const char * password, bool maillist, uint32 cspa, bool temporary,
-                              bool languageRestriction, int8 groupMessageID, int8 channelMessageID);
-    LSCChannel *CreateChannel(int32 channelID, const char * name, const char * motd, LSC::Type type, bool maillist = false);
-    LSCChannel *CreateChannel(int32 channelID, const char * name, LSC::Type type, bool maillist = false);
-    LSCChannel *CreateChannel(const char * name, bool maillist = false);
-
     void CreateStaticChannels();
+    LSCChannel *GetChannel(int32 channelID);
+    LSCChannel *CreateChannel(int32 channelID, uint32 ownerID, const char *name, const char *motd, const char *password, const char *compkey,
+                              LSC::Type type=LSC::Type::normal, uint32 cspa=0, int8 groupMessageID=0, int8 channelMessageID=0, bool memberless=false,
+                              bool maillist=false, bool temporary=false, bool languageRestriction=false);
+
 };
 
 #endif

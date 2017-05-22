@@ -22,8 +22,8 @@
             <stringInline value="cspa" />
             <stringInline value="temporary" />
             <stringInline value="languageRestriction" />
-            <stringInline value="subscribed" />
-            <stringInline value="estimatedMemberCount" />
+            <stringInline value="groupMessageID" />
+            <stringInline value="channelMessageID" />
           </listInline>
         </dictInlineEntry>
         <dictInlineEntry key="RowClass">
@@ -46,11 +46,11 @@
       <bool name="memberless" default="false" />
       <string name="password" />
       <bool name="mailingList" default="false" />
-      <int name="cspa" />
+      <int name="cspa" default="0" />
       <bool name="temporary" default="false" />
       <bool name="languageRestriction" default="false" />
-      <bool name="subscribed" default="false" />
-      <int name="estimatedMemberCount" />
+      <int name="groupMessageID" default="0" />
+      <int name="channelMessageID" default="0" />
       </listInline>
   </elementDef>
 
@@ -74,6 +74,7 @@
             <stringInline value="groupMessageID" />
             <stringInline value="channelMessageID" />
             <stringInline value="subscribed" />
+            <stringInline value="estimatedMemberCount" />
           </listInline>
         </dictInlineEntry>
         <dictInlineEntry key="line">
@@ -86,12 +87,13 @@
             <bool name="memberless" default="false" />
             <raw name="password" />
             <bool name="mailingList" default="false" />
-            <int name="cspa" />
+            <int name="cspa" default="0" />
             <bool name="temporary" default="false" />
             <bool name="languageRestriction" default="false" />
             <int name="groupMessageID" default="0" />
             <int name="channelMessageID" default="0" />
             <bool name="subscribed" default="false" />
+            <int name="estimatedMemberCount" default="0" />
           </listInline>
         </dictInlineEntry>
       </dictInline>

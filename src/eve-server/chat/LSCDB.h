@@ -60,33 +60,31 @@ public:
     std::string GetConstellationName(uint32 id) { return GetChannelName(id, "mapConstellations", "constellationName", "constellationID"); }
     std::string GetSolarSystemName(uint32 id) { return GetChannelName(id, "mapSolarSystems", "solarSystemName", "solarSystemID"); }
     std::string GetCorporationName(uint32 id) { return GetChannelName(id, "corporation", "corporationName", "corporationID"); }
+    std::string GetAllianceName(uint32 id) { return GetChannelName(id, "crpAlliance", "allianceShortName", "allianceID"); }
     std::string GetCharacterName(uint32 id) { return GetChannelName(id, "entity", "itemName", "itemID"); }
 
-    void GetChannelInformation(std::string & name, int32 & id,
-        std::string & motd, uint32 & ownerid, std::string & compkey,
-        bool & memberless, std::string & password, bool & maillist,
-        uint32 & cspa, uint32 & temp);
+    int32 GetChannelID(std::string &name);
 
     void GetChannelInformation(int32 channelID, std::string & name,
         std::string & motd, uint32 & ownerid, std::string & compkey,
         bool & memberless, std::string & password, bool & maillist,
-        uint32 & cspa, uint32 & temp);
+        uint32 & cspa);
 
     void GetChannelSubscriptions(uint32 charID, std::vector<long> & ids, std::vector<std::string> & names,
         std::vector<std::string> & MOTDs, std::vector<unsigned long> & ownerids, std::vector<std::string> & compkeys,
         std::vector<int> & memberless, std::vector<std::string> & passwords, std::vector<int> & maillists,
-        std::vector<int> & cspas, std::vector<int> & temps, int & channelCount);
+        std::vector<int> & cspas, int & channelCount);
 
-    std::string GetChannelInfo(int32 channelID, std::string & name, std::string & motd);
+    bool GetChannelInfo(int32 channelID, std::string& name, std::string& motd);
 
     int32 GetChannelIDFromComparisonKey(std::string compkey);
 
-    int WriteNewChannelSubscriptionToDatabase(uint32 characterID, int32 channelID, uint32 corpID, uint32 allianceID, uint64 role, uint32 extra);
+    void UpdateChannelInfo(LSCChannel *channel);
+    void UpdateSubscription(int32 channelID, Client* pClient);
 
-    void UpdateChannelInfo(LSCChannel * channel);
+    void DeleteChannel(int32 channelID);
+    void DeleteSubscription(int32 channelID, uint32 charID);
 
-    int RemoveChannelSubscriptionFromDatabase(int32 channelID, uint32 charID);
-    int RemoveChannelFromDatabase(int32 channelID);
 
 protected:
     std::string GetChannelName(uint32 id, const char * table, const char * column, const char * key);

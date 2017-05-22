@@ -47,7 +47,7 @@ PyRep *LSCChannelChar::Encode() const {
     rs.line = new PyList();
     rs.line->AddItemInt( m_charID );
     rs.line->AddItemString( m_charName.c_str() );
-    rs.line->AddItemInt( 1378 );
+    rs.line->AddItemInt( 1378 );    // fix this
     line.extra = rs.Encode();//m_extra;
 
     return line.Encode();
@@ -105,19 +105,19 @@ void LSCChannel::GetChannelInfo(int32* channelID, uint32* ownerID, std::string& 
     *temporary = m_temporary;
 }
 
-bool LSCChannel::JoinChannel(Client * c) {
+bool LSCChannel::JoinChannel(Client* pClient) {
     /** @todo determine moderator/other rights for given char in this channel and set Mode accordingly */
     m_chars.insert(
         std::make_pair(
-            c->GetCharacterID(),
-            LSCChannelChar( this, c->GetCorporationID(), c->GetCharacterID(), c->GetCharacterName(), c->GetAllianceID(), c->GetWarFactionID(), c->GetAccountRole(), 0,\
-            (m_ownerID == c->GetCharacterID() ? LSC::Mode::chCreator : LSC::Mode::chConversationalist))
+            pClient->GetCharacterID(),
+            LSCChannelChar( this, pClient->GetCorporationID(), pClient->GetCharacterID(), pClient->GetCharacterName(), pClient->GetAllianceID(), pClient->GetWarFactionID(), pClient->GetAccountRole(), 0,\
+            (m_ownerID == pClient->GetCharacterID() ? LSC::Mode::chCreator : LSC::Mode::chConversationalist))
         )
     );
-    c->ChannelJoined( this );
+    pClient->ChannelJoined( this );
 
     OnLSC_JoinChannel join;
-        join.sender = _MakeSenderInfo(c);
+        join.sender = _MakeSenderInfo(pClient);
         join.member_count = (int32)m_chars.size();
         join.channelID = EncodeID();
 
@@ -129,36 +129,12 @@ bool LSCChannel::JoinChannel(Client * c) {
     PyTuple *answer = join.Encode();
     sEntityList.Multicast( "OnLSC", GetTypeString(), &answer, mct );
 
-    _log(LSC__CHANNELS, "%s Joined Channel %u - %s", c->GetName(), m_channelID, m_displayName.c_str());
+    _log(LSC__CHANNELS, "%s Joined Channel %u - %s", pClient->GetName(), m_channelID, m_displayName.c_str());
     return true;
 }
 
-void LSCChannel::LeaveChannel(uint32 charID, OnLSC_SenderInfo * si) {
-    if (m_chars.find(charID) == m_chars.end())
-        return;
-
-    m_chars.erase(charID);
-
-    MulticastTarget mct;
-    std::map<uint32, LSCChannelChar>::iterator cur;
-    cur = m_chars.begin();
-    for(; cur != m_chars.end(); cur++)
-        mct.characters.insert( cur->first );
-
-    OnLSC_LeaveChannel leave;
-    leave.sender = si;
-    leave.member_count = (int32)m_chars.size();
-    leave.channelID = EncodeID();
-
-    PyTuple *rsp = leave.Encode();
-    sEntityList.Multicast("OnLSC", GetTypeString(), &rsp, mct);
-    _log(LSC__CHANNELS, "%s Left Channel %u - %s", sEntityList.FindClientByCharID(charID)->GetName(), m_channelID, m_displayName.c_str());
-
-    /** @todo check for chars in this channel, delete from system if non-static and empty */
-}
-
-void LSCChannel::LeaveChannel(Client *c, bool self) {
-    uint32 charID = c->GetCharacterID();
+void LSCChannel::LeaveChannel(Client *pClient) {
+    uint32 charID = pClient->GetCharacterID();
 
     if (m_chars.find(charID) == m_chars.end())
         return;
@@ -171,7 +147,7 @@ void LSCChannel::LeaveChannel(Client *c, bool self) {
         mct.characters.insert( cur->first );
 
     OnLSC_LeaveChannel leave;
-    leave.sender = _MakeSenderInfo(c);
+    leave.sender = _MakeSenderInfo(pClient);
     leave.member_count = (int32)m_chars.size();
     leave.channelID = EncodeID();
 
@@ -179,8 +155,9 @@ void LSCChannel::LeaveChannel(Client *c, bool self) {
     sEntityList.Multicast("OnLSC", GetTypeString(), &answer, mct);
 
     m_chars.erase(charID);
-    c->ChannelLeft(this);
-    _log(LSC__CHANNELS, "%s Left Channel %u - %s", c->GetName(), m_channelID, m_displayName.c_str());
+    pClient->ChannelLeft(this);
+    _log(LSC__CHANNELS, "%s Left Channel %u - %s", pClient->GetName(), m_channelID, m_displayName.c_str());
+    /** @todo check for chars in this channel, delete from system if non-static and empty */
 }
 
 void LSCChannel::Evacuate(Client * c) {
@@ -289,17 +266,18 @@ PyRep *LSCChannel::EncodeID() {
 PyRep *LSCChannel::EncodeStaticChannel(uint32 charID) {
     ChannelInfoLine line;
         line.channelID = m_channelID;
-        line.comparisonKey = m_comparisonKey;
-        line.cspa = m_cspa;
-        line.displayName = m_displayName;
-        line.estimatedMemberCount = m_chars.size();
-        line.mailingList = m_mailingList;
-        line.memberless = m_memberless;
-        line.motd = m_motd;
         line.ownerID = m_ownerID;
+        line.displayName = m_displayName;
+        line.motd = m_motd;
+        line.comparisonKey = m_comparisonKey;
+        line.memberless = m_memberless;
         line.password = m_password;
-        line.subscribed = (m_chars.find(charID) != m_chars.end());
+        line.mailingList = m_mailingList;
+        line.cspa = m_cspa;
         line.temporary = m_temporary;
+        line.groupMessageID = m_groupMessageID;
+        line.languageRestriction = m_languageRestriction;
+        line.channelMessageID = m_channelMessageID;
     return line.Encode();
 }
 

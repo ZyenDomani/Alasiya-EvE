@@ -32,7 +32,6 @@ CREATE TABLE `channels` (
   `password` varchar(100) DEFAULT NULL,
   `mailingList` tinyint(4) NOT NULL DEFAULT '0',
   `cspa` tinyint(4) NOT NULL DEFAULT '0',
-  `temporary` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`channelID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2100000000 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

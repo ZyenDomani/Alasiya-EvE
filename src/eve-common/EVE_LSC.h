@@ -53,8 +53,8 @@ namespace LSC {
         corp            = 2,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless
         region          = 3,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space
         constellation   = 4,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space
-        solarsystem     = 5,    // send channelID as tuple(id, desc)
-        solarsystem2    = 6,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless in k-space
+        solarsystem     = 5,    // send channelID as tuple(id, desc)  used in w-space, memberless, changes chat window title from "Local" to "System"
+        solarsystem2    = 6,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space (k-space Local channel)
         // end of static channels
         character       = 7,    // for mailing lists using channelID = charID
         // begin dynamic channels
