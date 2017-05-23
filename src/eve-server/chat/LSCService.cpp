@@ -198,10 +198,11 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
     // join channel and send response
     if (!channel->IsJoined(pClient->GetCharacterID()))  {
         if (channel->JoinChannel(pClient)) {
-            // if ((channel->GetChannelID() < 0) or (channel->GetChannelID() > maxStaticChannel))
-            reply.ChannelInfo = channel->EncodeDynamicChannel(pClient->GetCharacterID());
-            // else
-            //     reply.ChannelInfo = channel->EncodeStaticChannel(pClient->GetCharacterID());
+            //if ((channel->GetChannelID() < 0) or (channel->GetChannelID() > maxStaticChannel)) {
+                reply.ChannelInfo = channel->EncodeDynamicChannel(pClient->GetCharacterID());
+            //} else {
+            //    reply.ChannelInfo = channel->EncodeStaticChannel(pClient->GetCharacterID());
+            //}
             reply.ChannelChars = channel->EncodeChannelChars();
             reply.ChannelMods = channel->EncodeChannelMods();
         } else {
@@ -292,10 +293,11 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
         if (!channel->IsJoined(charID)) {
             if (channel->JoinChannel(call.client)) {
                 ChannelJoinOK cjok;
-                // if ((channelID < 0) or (channelID > maxStaticChannel))
+                //if ((channelID < 0) or (channelID > maxStaticChannel)) {
                     cjok.ChannelInfo = channel->EncodeDynamicChannel(charID);
-                // else
-                //     cjok.ChannelInfo = channel->EncodeStaticChannel(charID);
+                //} else {
+                //    cjok.ChannelInfo = channel->EncodeStaticChannel(charID);
+                //}
                 cjok.ChannelMods = channel->EncodeChannelMods();
                 cjok.ChannelChars = channel->EncodeChannelChars();
                 chjr.JoinRsp = cjok.Encode();
@@ -916,7 +918,7 @@ void LSCService::CreateSystemChannel(int32 channelID)
     LSC::Type type = LSC::Type::normal;
     std::string name= "", motd = "";
     int8 messageID = -1, grpMsgID = 0;
-    uint32 ownerID = 1;
+    uint32 ownerID = channelID;
 
     if (IsRegion(channelID)) {
         type = LSC::Type::region;
@@ -949,14 +951,12 @@ void LSCService::CreateSystemChannel(int32 channelID)
         motd = m_db->GetCorporationName(channelID);
         grpMsgID = 4;
         messageID = 0;
-        ownerID = channelID;
     } else if (IsAlliance(channelID)) {
         type = LSC::Type::alliance;
         name = "System Channels\\Alliance";
         motd = m_db->GetAllianceName(channelID);
         grpMsgID = 5;
         messageID = 0;
-        ownerID = channelID;
     } else if (IsFleet(channelID)) {
         type = LSC::Type::fleet;
         name = "System Channels\\Fleet";

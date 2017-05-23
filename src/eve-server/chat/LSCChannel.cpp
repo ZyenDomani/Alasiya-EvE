@@ -84,6 +84,7 @@ LSCChannel::LSCChannel(LSCService* svc, int32 channelID, LSC::Type type, uint32 
   m_groupMessageID(groupMessageID),
   m_channelMessageID(channelMessageID)
 {
+    m_mode = LSC::Mode::chConversationalist;    // default mode '3' for enabling all speakers (till i figure out how to correctly set/change later)
     _log(LSC__CHANNELS, "Creating channel %u - \"%s\"", m_channelID, m_displayName.c_str());
 }
 
@@ -262,7 +263,23 @@ PyRep *LSCChannel::EncodeID() {
         }
     }
 }
-
+/*
+[PyPackedRow 27 bytes]
+["channelID" => <10> [I4]]
+["ownerID" => <1> [I4]]
+["displayName" => <Trade\Other> [WStr]]
+["motd" => <None> [WStr]]
+["comparisonKey" => <other> [WStr]]
+["memberless" => <1> [Bool]]
+["password" => <None> [WStr]]
+["mailingList" => <0> [Bool]]
+["cspa" => <2950> [I4]]
+["temporary" => <0> [Bool]]
+["languageRestriction" => <0> [Bool]]
+["mode" => <3> [I4]]
+["subscribed" => <0> [I4]]
+["estimatedMemberCount" => <110> [I4]]
+*/
 PyRep *LSCChannel::EncodeStaticChannel(uint32 charID) {
     ChannelInfoLine line;
         line.channelID = m_channelID;
@@ -275,9 +292,13 @@ PyRep *LSCChannel::EncodeStaticChannel(uint32 charID) {
         line.mailingList = m_mailingList;
         line.cspa = m_cspa;
         line.temporary = m_temporary;
-        line.groupMessageID = m_groupMessageID;
         line.languageRestriction = m_languageRestriction;
+        line.mode = (int8)m_mode;   // determine calling char's mode for this channel
+        //HACK auto-subscribe to system channels.  TODO determine if calling char is subscribed to this channel
+        line.subscribed = (((m_channelID > 0) and (m_channelID < maxStaticChannel)) ? true : false);
+        line.groupMessageID = m_groupMessageID;
         line.channelMessageID = m_channelMessageID;
+        line.estimatedMemberCount = (int32)m_chars.size();
     return line.Encode();
 }
 
@@ -292,11 +313,14 @@ PyRep *LSCChannel::EncodeDynamicChannel(uint32 charID) {
         info.motd = m_motd;
         info.ownerID = m_ownerID;
         info.password = (m_password.empty() ? (PyRep*)new PyNone() : (PyRep*)new PyString(m_password));
-        info.subscribed = (m_chars.find(charID) != m_chars.end());
+        //HACK auto-subscribe to system channels.  TODO determine if calling char is subscribed to this channel
+        info.subscribed = (((m_channelID > 0) and (m_channelID < maxStaticChannel)) ? true : false);
         info.temporary = m_temporary;
-        info.groupMessageID = m_groupMessageID;
+        info.mode = (int8)m_mode;   // determine calling char's mode for this channel
         info.languageRestriction = m_languageRestriction;
+        info.groupMessageID = m_groupMessageID;
         info.channelMessageID = m_channelMessageID;
+        info.estimatedMemberCount = (int32)m_chars.size();
     return info.Encode();
 }
 

@@ -24,6 +24,9 @@
             <stringInline value="languageRestriction" />
             <stringInline value="groupMessageID" />
             <stringInline value="channelMessageID" />
+            <stringInline value="mode" />
+            <stringInline value="subscribed" />
+            <stringInline value="estimatedMemberCount" />
           </listInline>
         </dictInlineEntry>
         <dictInlineEntry key="RowClass">
@@ -51,7 +54,10 @@
       <bool name="languageRestriction" default="false" />
       <int name="groupMessageID" default="0" />
       <int name="channelMessageID" default="0" />
-      </listInline>
+      <int name="mode" default="0" />
+      <bool name="subscribed" default="false" />
+      <int name="estimatedMemberCount" default="0" />
+    </listInline>
   </elementDef>
 
   <elementDef name="ChannelJoinChannelInfo">
@@ -73,6 +79,7 @@
             <stringInline value="languageRestriction" />
             <stringInline value="groupMessageID" />
             <stringInline value="channelMessageID" />
+            <stringInline value="mode" />
             <stringInline value="subscribed" />
             <stringInline value="estimatedMemberCount" />
           </listInline>
@@ -92,6 +99,7 @@
             <bool name="languageRestriction" default="false" />
             <int name="groupMessageID" default="0" />
             <int name="channelMessageID" default="0" />
+            <int name="mode" default="0" />
             <bool name="subscribed" default="false" />
             <int name="estimatedMemberCount" default="0" />
           </listInline>

@@ -155,6 +155,7 @@ protected:
     LSCService *const   m_service;    //we do not own this
 
     LSC::Type           m_type;
+    LSC::Mode           m_mode;
     // memberless - true = estimate member count, send estimatedMemberCount in packet.  false = actual memberList.count()   (5m refresh in client)
     // non-npc corp, fleet, and k-space local are always memberless=false
     bool                m_memberless;
