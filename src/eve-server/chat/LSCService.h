@@ -92,9 +92,9 @@ protected:
 private:
     void CreateStaticChannels();
     LSCChannel *GetChannel(int32 channelID);
-    LSCChannel *CreateChannel(int32 channelID, uint32 ownerID, const char *name, const char *motd, const char *password, const char *compkey,
-                              LSC::Type type=LSC::Type::normal, uint32 cspa=0, int8 groupMessageID=0, int8 channelMessageID=0, bool memberless=false,
-                              bool maillist=false, bool temporary=false, bool languageRestriction=false);
+    LSCChannel *CreateChannel(int32 channelID, uint32 ownerID, const char* name, std::string motd, const char* password, const char* compkey,
+                              LSC::Type type = LSC::Type::normal, uint32 cspa = 0, int32 groupMessageID = 0, int32 channelMessageID = 0,
+                              bool memberless = false, bool maillist = false, bool temporary = false, bool languageRestriction = false);
 
 };
 

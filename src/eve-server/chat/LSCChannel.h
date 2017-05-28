@@ -89,21 +89,8 @@ protected:
 class LSCChannel {
 public:
     LSCChannel(
-        LSCService *svc,
-        int32 channelID,
-        LSC::Type type,
-        uint32 ownerID,
-        const char *displayName,
-        const char *motd,
-        const char *comparisonKey,
-        bool memberless,
-        const char *password,
-        bool mailingList,
-        uint32 cspa,
-        bool temporary,
-        bool languageRestriction,
-        int8 groupMessageID,
-        int8 channelMessageID
+        LSCService* svc, int32 channelID, LSC::Type type, uint32 ownerID, const char* displayName, const char* comparisonKey, std::string motd,
+        bool memberless, const char* password, bool mailingList, uint32 cspa, bool temporary, bool languageRestriction, int32 groupMessageID, int32 channelMessageID
         );
     virtual ~LSCChannel();
 
@@ -139,13 +126,14 @@ public:
     bool                GetMemberless()                 { return m_memberless; }
     bool                GetMailingList()                { return m_mailingList; }
     bool                GetTemporary()                  { return m_temporary; }
-    int8                GetGrpMsgID()                   { return m_groupMessageID; }
-    int8                GetChMsgID()                    { return m_channelMessageID; }
+    int32               GetGrpMsgID()                   { return m_groupMessageID; }
+    int32               GetChMsgID()                    { return m_channelMessageID; }
     uint16              GetCSPA()                       { return m_cspa; }
     uint32              GetOwnerID()                    { return m_ownerID; }
     int32               GetChannelID()                  { return m_channelID; }
     uint32              GetMemberCount()                { return (uint32)m_chars.size(); }
     LSC::Type           GetType()                       { return m_type; }
+    LSC::Mode           GetMode()                       { return m_mode; }
     std::string         GetDisplayName()                { return m_displayName; }
     std::string         GetMOTD()                       { return m_motd; }
     std::string         GetComparisonKey()              { return m_comparisonKey; }
@@ -162,8 +150,8 @@ protected:
     bool                m_mailingList;
     bool                m_temporary;
     bool                m_languageRestriction;
-    int8                m_groupMessageID;
-    int8                m_channelMessageID;
+    int32               m_groupMessageID;
+    int32               m_channelMessageID;
     uint16              m_cspa;
     uint32              m_ownerID;
     int32               m_channelID;            // ids < 0 are automatic conversationalist mode (or creator) and invite only (per client)

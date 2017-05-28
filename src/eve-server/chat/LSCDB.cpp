@@ -32,12 +32,12 @@ void LSCDB::GetChannelNames(uint32 charID, std::vector<std::string> & names) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        " SELECT "
+        "SELECT"
         "    entity.itemName, "
         "    corporation.corporationName, "
         " FROM chrCharacter "
-        "    LEFT JOIN entity ON entity.itemID = chrCharacter.characterID "
-        "    LEFT JOIN corporation ON chrCharacter.corporationID = corporation.corporationID "
+        "  LEFT JOIN entity ON entity.itemID = chrCharacter.characterID "
+        "  LEFT JOIN corporation ON chrCharacter.corporationID = corporation.corporationID "
         " WHERE chrCharacter.characterID = %u ", charID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -59,7 +59,7 @@ int32 LSCDB::GetNextAvailableChannelID()
     /** @todo fix this shit */
     DBQueryResult res;
     if( !sDatabase.RunQuery( res,
-        " SELECT "
+        "SELECT"
         "    channelID "
         " FROM channels "
         " WHERE channelID >= %i ", LSCService::BASE_CHANNEL_ID ))
@@ -92,17 +92,17 @@ void LSCDB::UpdateChannelInfo(LSCChannel *channel) {
     DBerror err;
     if (!sDatabase.RunQuery(err,
         " INSERT INTO channels"
-        "   (channelID, ownerID, displayName, motd, comparisonKey, memberless, password, mailingList, cspa, temporary)"
-        " VALUES (%i, %u, '%s', '%s', '%s', %u, '%s', %u, %u, %u)"
-        "ON DUPLICATE KEY UPDATE"
-        "ownerID=VALUES(ownerID),"
-        "displayName=VALUES(displayName),"
-        "motd=VALUES(motd),"
-        "comparisonKey=VALUES(comparisonKey),"
-        "memberless=VALUES(memberless),"
-        "password=VALUES(password),"
-        "mailingList=VALUES(mailingList),"
-        "cspa=VALUES(cspa)",
+        "   (channelID, ownerID, displayName, motd, comparisonKey, memberless, password, mailingList, cspa)"
+        " VALUES (%i, %u, '%s', '%s', '%s', %u, '%s', %u, %u)"
+        " ON DUPLICATE KEY UPDATE"
+        "  ownerID=VALUES(ownerID),"
+        "  displayName=VALUES(displayName),"
+        "  motd=VALUES(motd),"
+        "  comparisonKey=VALUES(comparisonKey),"
+        "  memberless=VALUES(memberless),"
+        "  password=VALUES(password),"
+        "  mailingList=VALUES(mailingList),"
+        "  cspa=VALUES(cspa)",
         channel->GetChannelID(),
         channel->GetOwnerID(),
         channel->GetDisplayName().c_str(),
@@ -123,7 +123,7 @@ void LSCDB::UpdateSubscription(int32 channelID, Client* pClient) {
         " INSERT INTO channelChars "
         " (channelID, corpID, charID, allianceID, role, extra) "
         " VALUES (%i, %u, %u, %u, %" PRIu64 ", 0) ",
-        channelID,  pClient->GetCharacterID(), pClient->GetCorporationID(), pClient->GetAllianceID(), pClient->GetAccountRole());
+        channelID, pClient->GetCorporationID(),  pClient->GetCharacterID(), pClient->GetAllianceID(), pClient->GetAccountRole());
 }
 
 void LSCDB::DeleteChannel(int32 channelID)
@@ -147,7 +147,7 @@ bool LSCDB::IsChannelNameAvailable(std::string name)
 
     // MySQL query channels table for any channel whose displayName matches "name":
     if (!sDatabase.RunQuery(res,
-        " SELECT "
+        "SELECT"
         "    displayName "
         " FROM channels "
         " WHERE displayName = upper('%s')", name.c_str()))
@@ -173,7 +173,7 @@ bool LSCDB::IsChannelIDAvailable(int32 channelID)
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        " SELECT "
+        "SELECT"
         "    channelID "
         " FROM channels "
         " WHERE channelID = %i", channelID ))
@@ -199,8 +199,8 @@ bool LSCDB::IsChannelSubscribedByThisChar(uint32 charID, int32 channelID)
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        " SELECT "
-        "    channelID, "
+        "SELECT"
+        "   channelID, "
         "   charID "
         " FROM channelChars "
         " WHERE channelID = %i AND charID = %u", channelID, charID ))
@@ -220,7 +220,7 @@ bool LSCDB::IsChannelSubscribedByThisChar(uint32 charID, int32 channelID)
 
 int32 LSCDB::GetChannelID(std::string &name) {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, " SELECT channelID FROM channels WHERE displayName RLIKE '%s'", name.c_str())) {
+    if (!sDatabase.RunQuery(res, "SELECT channelID FROM channels WHERE displayName RLIKE '%s'", name.c_str())) {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return 0;
     }
@@ -234,7 +234,6 @@ int32 LSCDB::GetChannelID(std::string &name) {
     return row.GetInt(0);
 }
 
-
 // Function: Query 'channels' table for the channel whose 'channelID' matches the ID specified,
 // then return all parameters for that channel.
 void LSCDB::GetChannelInformation(int32 channelID, std::string & name,
@@ -245,9 +244,9 @@ void LSCDB::GetChannelInformation(int32 channelID, std::string & name,
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        " SELECT "
-        "    channelID, "
-        "    displayName, "
+        "SELECT"
+        "   channelID, "
+        "   displayName, "
         "   motd, "
         "   ownerID, "
         "   comparisonKey, "
@@ -273,14 +272,12 @@ void LSCDB::GetChannelInformation(int32 channelID, std::string & name,
     name = (row.IsNull(1) ? "" : row.GetText(1));    // empty displayName field in channels table row returns NULL, so fill this string with "" in that case
     motd = (row.IsNull(2) ? "" : row.GetText(2));    // empty motd field in channels table row returns NULL, so fill this string with "" in that case
     ownerid = row.GetUInt(3);
-    compkey = (row.IsNull(4) ? "" : row.GetText(4));    // empty comparisonKey field in channels table row returns NULL, so fill this string with "" in that case
+    compkey = (row.IsNull(4) ? "" : row.GetText(4)); // empty comparisonKey field in channels table row returns NULL, so fill this string with "" in that case
     memberless = row.GetUInt(5) ? true : false;
-    password = (row.IsNull(6) ? "" : row.GetText(6));    // empty password field in channels table row returns NULL, so fill this string with "" in that case
+    password = (row.IsNull(6) ? "" : row.GetText(6));// empty password field in channels table row returns NULL, so fill this string with "" in that case
     maillist = row.GetUInt(7) ? true : false;
     cspa = row.GetUInt(8);
 }
-
-
 
 // Function: Query the 'channelChars' table for all channels subscribed to by the character specified by charID and
 // return lists of parameters for all of those channels as well as a total channel count.
@@ -296,9 +293,9 @@ void LSCDB::GetChannelSubscriptions(uint32 charID, std::vector<long> & ids, std:
     // that the character (charID) is subscribed to where the channel ID is presented
     // in the first column and the display name of that channel in the second column
     if (!sDatabase.RunQuery(res,
-        " SELECT "
-        "    channelID, "
-        "    displayName, "
+        "SELECT"
+        "   channelID, "
+        "   displayName, "
         "   motd, "
         "   ownerID, "
         "   comparisonKey, "
@@ -405,7 +402,7 @@ PyObject *LSCDB::LookupChars(const char *match, bool exact) {
     if (matchEsc == "__ALL__") {
         if(!sDatabase.RunQuery(res,
             "SELECT "
-            "    characterID AS ownerID"
+            "   characterID AS ownerID"
             " FROM chrCharacter"
             " WHERE characterID >= %u", EVEMU_MINIMUM_DYNAMIC_ID))
         {
@@ -415,7 +412,7 @@ PyObject *LSCDB::LookupChars(const char *match, bool exact) {
     } else {
         if(!sDatabase.RunQuery(res,
             "SELECT "
-            "    itemID AS ownerID"
+            "   itemID AS ownerID"
             " FROM entity"
             " WHERE itemName %s '%s'",
             exact?"=":"RLIKE", matchEsc.c_str()
@@ -474,8 +471,8 @@ PyObject *LSCDB::LookupCorporations(const std::string & search) {
     sDatabase.DoEscapeString(secure, search);
 
     if (!sDatabase.RunQuery(res,
-        " SELECT "
-        " corporationID, corporationName, corporationType "
+        "SELECT"
+        "   corporationID, corporationName, corporationType "
         " FROM corporation "
         " WHERE corporationName RLIKE '%s'", secure.c_str()))
     {
@@ -493,8 +490,8 @@ PyObject *LSCDB::LookupFactions(const std::string & search) {
     sDatabase.DoEscapeString(secure, search);
 
     if (!sDatabase.RunQuery(res,
-        " SELECT "
-        " factionID, factionName "
+        "SELECT"
+        "   factionID, factionName "
         " FROM chrFactions "
         " WHERE factionName RLIKE '%s'", secure.c_str()))
     {
@@ -512,8 +509,8 @@ PyObject *LSCDB::LookupCorporationTickers(const std::string & search) {
     sDatabase.DoEscapeString(secure, search);
 
     if (!sDatabase.RunQuery(res,
-        " SELECT "
-        " corporationID, corporationName, tickerName "
+        "SELECT"
+        "   corporationID, corporationName, tickerName "
         " FROM corporation "
         " WHERE tickerName RLIKE '%s'", secure.c_str()))
     {
@@ -531,8 +528,8 @@ PyObject *LSCDB::LookupStations(const std::string & search) {
     sDatabase.DoEscapeString(secure, search);
 
     if (!sDatabase.RunQuery(res,
-        " SELECT "
-        " stationID, stationName, stationTypeID "
+        "SELECT"
+        "   stationID, stationName, stationTypeID "
         " FROM staStations "
         " WHERE stationName RLIKE '%s'", secure.c_str()))
     {
@@ -550,8 +547,8 @@ PyObject *LSCDB::LookupKnownLocationsByGroup(const std::string & search, uint32 
     sDatabase.DoEscapeString(secure, search);
 
     if (!sDatabase.RunQuery(res,
-        " SELECT "
-        " itemID, itemName, typeID "
+        "SELECT"
+        "   itemID, itemName, typeID "
         " FROM entity "
         " WHERE itemName RLIKE '%s' AND typeID = %u", secure.c_str(), typeID))
     {
@@ -576,8 +573,7 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
     // Store message header
     uint32 messageID;
     if (!sDatabase.RunQueryLID(err, messageID,
-        " INSERT INTO "
-        " eveMail "
+        " INSERT INTO eveMail "
         " (channelID, senderID, subject, created) "
         " VALUES (%u, %u, '%s', %" PRIu64 ") ",
                                recipID, senderID, escaped.c_str(), sentTime ))
@@ -636,16 +632,13 @@ PyRep *LSCDB::GetMailDetails(uint32 messageID, uint32 readerID) {
     //grab the "main message" though... the text/plain clause is pretty hackish.
     if (!sDatabase.RunQuery(result,
         " SELECT eveMail.messageID, eveMail.senderID, eveMail.subject, " // need messageID as char*
-        " eveMailDetails.attachment, eveMailDetails.mimeTypeID, "
-        " eveMailMimeType.mimeType, eveMailMimeType.`binary`, "
-        " eveMail.created, eveMail.channelID "
+        "   eveMailDetails.attachment, eveMailDetails.mimeTypeID, "
+        "   eveMailMimeType.mimeType, eveMailMimeType.`binary`, "
+        "   eveMail.created, eveMail.channelID "
         " FROM eveMail "
-        " LEFT JOIN eveMailDetails"
-        "    ON eveMailDetails.messageID = eveMail.messageID "
-        " LEFT JOIN eveMailMimeType"
-        "    ON eveMailMimeType.mimeTypeID = eveMailDetails.mimeTypeID "
-        " WHERE eveMail.messageID=%u"
-        "    AND channelID=%u",
+        " LEFT JOIN eveMailDetails ON eveMailDetails.messageID = eveMail.messageID "
+        " LEFT JOIN eveMailMimeType ON eveMailMimeType.mimeTypeID = eveMailDetails.mimeTypeID "
+        " WHERE eveMail.messageID=%u AND channelID=%u",
         messageID, readerID
     ))
     {

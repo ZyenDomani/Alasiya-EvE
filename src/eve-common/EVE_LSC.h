@@ -89,6 +89,20 @@ namespace LSC {
 
 }   // namespace LSC
 
+/* groupMessageIDs and descriptions
+ * 1 = Passive
+ * 2 = Aggressive
+ * 3 = Focus Fire
+ *
+ * 263235 = Corporate
+ * 263238 = Help
+ * 263329 = Factions
+ * 263240 = Trade
+ * 263331 = Science and Industry
+ * 263328 = Content
+ *
+ */
+
 namespace Notifications {
     /*
 securityLevelDescriptions = {-10: 'Notifications/SecurityStatus/SecurityDescription_-10',

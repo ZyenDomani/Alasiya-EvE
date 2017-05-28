@@ -40,6 +40,7 @@ PyRep *LSCChannelChar::Encode() const {
     line.warFactionID = m_warFactionID;
     line.mode = m_mode;
 
+    // extra is a list of charID, charName, charTypeID, unknown bool, unknown PyNone
     util_Row rs;
     rs.header.push_back("ownerID");
     rs.header.push_back("ownerName");
@@ -66,14 +67,14 @@ PyRep *LSCChannelMod::Encode() {
     return line.Encode();
 }
 
-LSCChannel::LSCChannel(LSCService* svc, int32 channelID, LSC::Type type, uint32 ownerID, const char* displayName, const char* motd, const char* comparisonKey,
-                       bool memberless, const char* password, bool mailingList, uint32 cspa, bool temporary, bool languageRestriction, int8 groupMessageID, int8 channelMessageID)
+LSCChannel::LSCChannel(LSCService* svc, int32 channelID, LSC::Type type, uint32 ownerID, const char* displayName, const char* comparisonKey, std::string motd,
+                       bool memberless, const char* password, bool mailingList, uint32 cspa, bool temporary, bool languageRestriction, int32 groupMessageID, int32 channelMessageID)
 : m_service(svc),
   m_ownerID(ownerID),
   m_channelID(channelID),
   m_type(type),
+  m_motd(motd),
   m_displayName(displayName==nullptr?"":displayName),
-  m_motd(motd==nullptr?"":motd),
   m_comparisonKey(comparisonKey==nullptr?"":comparisonKey),
   m_memberless(memberless),
   m_password(password==nullptr?"":password),
@@ -85,11 +86,11 @@ LSCChannel::LSCChannel(LSCService* svc, int32 channelID, LSC::Type type, uint32 
   m_channelMessageID(channelMessageID)
 {
     m_mode = LSC::Mode::chConversationalist;    // default mode '3' for enabling all speakers (till i figure out how to correctly set/change later)
-    _log(LSC__CHANNELS, "Creating channel %u - \"%s\"", m_channelID, m_displayName.c_str());
+    _log(LSC__CHANNELS, "Creating channel %u - \"%s\"", m_channelID, (m_displayName == "") ? ((m_comparisonKey == "") ? "null" : m_comparisonKey.c_str()) : m_displayName.c_str());
 }
 
 LSCChannel::~LSCChannel() {
-    _log(LSC__CHANNELS, "Destroying channel %u - \"%s\"", m_channelID, m_displayName.c_str());
+    _log(LSC__CHANNELS, "Destroying channel %u - \"%s\"", m_channelID, (m_displayName == "") ? ((m_comparisonKey == "") ? "null" : m_comparisonKey.c_str()) : m_displayName.c_str());
 }
 
 void LSCChannel::GetChannelInfo(int32* channelID, uint32* ownerID, std::string& displayName, std::string& motd, std::string& comparisonKey, bool* memberless, std::string& password, bool* mailingList, uint32* cspa, uint32* temporary)
@@ -263,23 +264,7 @@ PyRep *LSCChannel::EncodeID() {
         }
     }
 }
-/*
-[PyPackedRow 27 bytes]
-["channelID" => <10> [I4]]
-["ownerID" => <1> [I4]]
-["displayName" => <Trade\Other> [WStr]]
-["motd" => <None> [WStr]]
-["comparisonKey" => <other> [WStr]]
-["memberless" => <1> [Bool]]
-["password" => <None> [WStr]]
-["mailingList" => <0> [Bool]]
-["cspa" => <2950> [I4]]
-["temporary" => <0> [Bool]]
-["languageRestriction" => <0> [Bool]]
-["mode" => <3> [I4]]
-["subscribed" => <0> [I4]]
-["estimatedMemberCount" => <110> [I4]]
-*/
+
 PyRep *LSCChannel::EncodeStaticChannel(uint32 charID) {
     ChannelInfoLine line;
         line.channelID = m_channelID;
@@ -296,8 +281,8 @@ PyRep *LSCChannel::EncodeStaticChannel(uint32 charID) {
         line.mode = (int8)m_mode;   // determine calling char's mode for this channel
         //HACK auto-subscribe to system channels.  TODO determine if calling char is subscribed to this channel
         line.subscribed = (((m_channelID > 0) and (m_channelID < maxStaticChannel)) ? true : false);
-        line.groupMessageID = m_groupMessageID;
-        line.channelMessageID = m_channelMessageID;
+        line.groupMessageID = ((m_groupMessageID == 0) ? static_cast<PyRep*>(new PyNone()) : static_cast<PyRep*>(new PyInt(m_groupMessageID)));
+        line.channelMessageID = ((m_channelMessageID == 0) ? static_cast<PyRep*>(new PyNone()) : static_cast<PyRep*>(new PyInt(m_channelMessageID)));
         line.estimatedMemberCount = (int32)m_chars.size();
     return line.Encode();
 }
@@ -318,8 +303,8 @@ PyRep *LSCChannel::EncodeDynamicChannel(uint32 charID) {
         info.temporary = m_temporary;
         info.mode = (int8)m_mode;   // determine calling char's mode for this channel
         info.languageRestriction = m_languageRestriction;
-        info.groupMessageID = m_groupMessageID;
-        info.channelMessageID = m_channelMessageID;
+        info.groupMessageID = ((m_groupMessageID == 0) ? static_cast<PyRep*>(new PyNone()) : static_cast<PyRep*>(new PyInt(m_groupMessageID)));
+        info.channelMessageID = ((m_channelMessageID == 0) ? static_cast<PyRep*>(new PyNone()) : static_cast<PyRep*>(new PyInt(m_channelMessageID)));
         info.estimatedMemberCount = (int32)m_chars.size();
     return info.Encode();
 }
