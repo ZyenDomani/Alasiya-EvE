@@ -362,19 +362,19 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
     if ((call.tuple->IsTuple()) and (call.tuple->AsTuple()->items[0]->IsInt())) {
         // Decode All User-created chat channel messages here:
         if (!call.tuple->IsTuple()) {
-            _log(NET__PACKET_ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong type: %s", call.tuple->TypeString());
+            _log(LSC__ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong type: %s", call.tuple->TypeString());
             return new PyNone();
         }
         PyTuple* tuple0 = call.tuple->AsTuple();
 
         if (tuple0->size() != 2) {
-            _log(NET__PACKET_ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong size: expected 2, but got %lu", tuple0->size());
+            _log(LSC__ERROR, "LSCService::Handle_SendMessage failed: tuple0 is the wrong size: expected 2, but got %u", tuple0->size());
             return new PyNone();
         }
 
-        channel_id = (call.tuple->AsTuple()->items[0]->AsInt())->value();
-        message = ((call.tuple->AsTuple()->items[1]->AsWString())->content());
-        sLog.White("LSCService", "Handle_SendMessage: call is either User-created chat message or bad packet.");
+        channel_id = call.tuple->AsTuple()->items[0]->AsInt()->value();
+        message = call.tuple->AsTuple()->items[1]->AsWString()->content();
+        _log(LSC__INFO, "Handle_SendMessage: call is player channel chat.");
     } else {
         Call_SendMessage args;
         if (!args.Decode(call.tuple)) {
@@ -383,7 +383,7 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
         }
         channel_id = args.channel.id;
         message = args.message;
-        _log(LSC__INFO, "Handle_SendMessage: call is Corp/Local/Region/Constellation chat.");
+        _log(LSC__INFO, "Handle_SendMessage: call is system channel chat.");
     }
 
     std::map<int32, LSCChannel*>::iterator itr = m_channels.find(channel_id);
@@ -392,23 +392,9 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
         return new PyNone();
     }
 
-    std::string CIC_test_name = "CIC - " + std::string(call.client->GetName());
-    if ((message.substr(0,3) == "pcs") and (itr->second->GetDisplayName() == CIC_test_name)) {
-        _log(LSC__INFO, "CALL to Player Command System via LSC Service");
-        // call to Player Command System to parse command
-        //if (command_ack == 1)
-        message = "[ COMMAND ACKNOWLEDGED ]";
-        //else
-        //  message = "[ COMMAND FAILED ]";
-    }
-
-    if (message == "cic")
-        _log(LSC__INFO, "Message 'cic' received, creating/joining %s...", CIC_test_name.c_str());
-
     if (message.at(0) == '.') {
         _log(LSC__INFO, "CALL to SlashService->SlashCmd() via LSC Service");
-        static_cast<SlashService *>(m_manager->LookupService("slash"))->SlashCommand(call.client, message);
-        return new PyNone();
+        return static_cast<SlashService *>(m_manager->LookupService("slash"))->SlashCommand(call.client, message);
     }
 
     itr->second->SendMessage(call.client, message.c_str());

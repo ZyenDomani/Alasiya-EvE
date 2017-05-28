@@ -49,6 +49,10 @@ SlashService::~SlashService() {
 
 PyResult SlashService::Handle_SlashCmd( PyCallArgs& call )
 {
+    if (is_log_enabled(COMMAND__DUMP)) {
+        sLog.White("LSCService::Handle_AccessControl()", "size=%u", call.tuple->size());
+        call.Dump(COMMAND__DUMP);
+    }
     Call_SingleWStringSoftArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
@@ -61,11 +65,9 @@ PyResult SlashService::Handle_SlashCmd( PyCallArgs& call )
 PyResult SlashService::SlashCommand(Client * client, std::string command)
 {
     if (!(client->GetAccountRole() & ROLE_SLASH)) {
-        _log( COMMAND__ERROR, "%s: Client '%s' used a slash command but does not have ROLE_SLASH. Modified client?", GetName(), client->GetName() );
+        _log( COMMAND__ERROR, "%s: Client '%s' used a slash command but does not have ROLE_SLASH.", GetName(), client->GetName() );
         throw PyException( MakeCustomError( "You need to have ROLE_SLASH to execute commands." ) );
     }
-
-    _log(COMMAND__MESSAGE, "%s: '%s'", client->GetName(), command.c_str() );
 
     return m_commandDispatch->Execute( client, command.c_str() );
 }

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 7.4
+    Log Version: 7.5
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -297,6 +297,8 @@ LOG_TYPE( SERVER, SHUTDOWN, DISABLED, "ServerShutdown" )
 LOG_CATEGORY( COMMAND )
 LOG_TYPE( COMMAND, ERROR, ENABLED, "CmdError" )
 LOG_TYPE( COMMAND, MESSAGE, DISABLED, "CmdMsg" )
+LOG_TYPE( COMMAND, INFO, DISABLED, "CmdInfo" )
+LOG_TYPE( COMMAND, DUMP, DISABLED, "CmdDump" )
 
 LOG_CATEGORY( SHIP )
 LOG_TYPE( SHIP, ERROR, ENABLED, "ShipError" )

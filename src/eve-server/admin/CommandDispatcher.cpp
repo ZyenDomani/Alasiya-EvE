@@ -55,9 +55,7 @@ PyResult CommandDispatcher::Execute( Client* from, const char* msg )
         }
     } */
 
-    //might want to check for # or / at the beginning of this crap.
     Seperator sep( &msg[1] );
-
     if (!sep.argCount()) {
         //empty command, return list of commands
         std::string reason = "Commands: ";
@@ -74,23 +72,17 @@ PyResult CommandDispatcher::Execute( Client* from, const char* msg )
         throw PyException( err );
     }
 
-    std::map<std::string, CommandRecord*>::const_iterator res = m_commands.find( sep.arg( 0 ) );
-    if (m_commands.end() == res )
-    {
-        sLog.Error( "CommandDispatcher", "Unable to find command '%s' for %s", sep.arg( 0 ).c_str(), from->GetName() );
-
+    std::map<std::string, CommandRecord*>::const_iterator itr = m_commands.find( sep.arg( 0 ) );
+    if (m_commands.end() == itr ) {
+        _log(COMMAND__ERROR, "Unable to find command '%s' for %s", sep.arg( 0 ).c_str(), from->GetName() );
         throw PyException( MakeCustomError( "Unknown command '%s'", sep.arg( 0 ).c_str() ) );
     }
 
-    CommandRecord* rec = res->second;
+    CommandRecord* rec = itr->second;
 
-    sLog.Debug( "CommandDispatcher", "Request access to command '%s' with role %p for '%s' with role %p.", \
-                rec->command.c_str(), rec->required_role, from->GetName(), from->GetAccountRole() );
-    if (( from->GetAccountRole() & rec->required_role ) != rec->required_role )
-    {
-        sLog.Error( "CommandDispatcher", "Access denied to %s for command '%s'. --have role %p, need role %p",
-                    from->GetName(), rec->command.c_str(), from->GetAccountRole(), rec->required_role );
-
+    _log(COMMAND__INFO, "Request access to command '%s' with role %p for '%s' with role %p.",  rec->command.c_str(), rec->required_role, from->GetName(), from->GetAccountRole() );
+    if ((from->GetAccountRole() & rec->required_role) != rec->required_role) {
+        _log(COMMAND__ERROR, "Access denied to %s for command '%s'. --have role %p, need role %p", from->GetName(), rec->command.c_str(), from->GetAccountRole(), rec->required_role );
         throw PyException( MakeCustomError( "Access denied to command '%s'", sep.arg( 0 ).c_str() ) );
     }
 
@@ -99,9 +91,9 @@ PyResult CommandDispatcher::Execute( Client* from, const char* msg )
 
 void CommandDispatcher::AddCommand( const char* cmd, const char* desc, uint64 required_role, CommandFunc function )
 {
-    std::map<std::string, CommandRecord*>::iterator res = m_commands.find( cmd );
-    if (res != m_commands.end())
-        SafeDelete( res->second );
+    std::map<std::string, CommandRecord*>::iterator itr = m_commands.find( cmd );
+    if (itr != m_commands.end())
+        SafeDelete( itr->second );
 
     m_commands[cmd] = new CommandRecord( cmd, desc, required_role, function );
 }

@@ -33,51 +33,39 @@
 /************************************************************************/
 Seperator::Seperator( const char* str, const char* divs, const char* quotes )
 {
-    size_t len = strlen( str );
-    bool inQuote = false;
-    std::string* cur = NULL;
+    bool inQuote = false, isDiv = false, isQuote = false;
+    std::string* cur(nullptr);
 
-    for(; 0 < len; ++str, --len )
-    {
+    for (size_t len = strlen( str ); len > 0; ++str, --len ) {
         const char c = *str;
-        const bool isDiv = ( NULL != strchr( divs, c ) );
-        const bool isQuote = ( NULL != strchr( quotes, c ) );
+        isDiv = (strchr(divs, c) != NULL);
+        isQuote = (strchr( quotes, c) != NULL);
 
-        if( !inQuote )
-        {
-            if( NULL == cur )
-            {
-                if( !isDiv )
-                {
+        if (!inQuote) {
+            if (NULL == cur) {
+                if (!isDiv) {
                     mArgs.push_back( "" );
                     cur = &mArgs.back();
 
-                    if( isQuote )
+                    if (isQuote)
                         inQuote = true;
                     else
                         cur->push_back( c );
                 }
-            }
-            else
-            {
-                if( isDiv )
+            } else {
+                if (isDiv)
                     cur = NULL;
                 else
                     cur->push_back( c );
             }
-        }
-        else
-        {
-            if( NULL != cur )
-            {
-                if( isQuote )
+        } else {
+            if (NULL != cur) {
+                if (isQuote)
                     cur = NULL;
                 else
                     cur->push_back( c );
-            }
-            else
-            {
-                if( isDiv )
+            } else {
+                if (isDiv)
                     inQuote = false;
                 else
                     sLog.Error( "Seperator", "Invalid input." );
