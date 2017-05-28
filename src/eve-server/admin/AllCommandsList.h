@@ -3,6 +3,7 @@
 
 #include "admin/GMCommands.h"
 #include "admin/MiningCommands.h"
+#include "admin/SystemCommands.h"
 
 #include "admin/allans_commands.h"
 
