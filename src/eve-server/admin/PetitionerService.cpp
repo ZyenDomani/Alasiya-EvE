@@ -80,13 +80,64 @@ PetitionerService::~PetitionerService() {
 
 
 /*
-PyBoundObject* PetitionerService::_CreateBoundObject( Client* c, const PyRep* bind_args )
-{
-    _log( CLIENT__MESSAGE, "PetitionerService bind request for:" );
-    bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
+ *
+ *
+        catCountry = sm.RemoteSvc('petitioner').GetUserCatalogCountry()
 
-    return new PetitionerBound( m_manager, &m_db );
-}*/
+        can = sm.RemoteSvc('petitioner').MayPetition(categoryID, OocCharacterID)
+
+        self.properties = sm.RemoteSvc('petitioner').GetCategoryProperties(self.category[0])
+        populationInfo = sm.RemoteSvc('petitioner').PropertyPopulationInfo(property.inputInfo, self.OocCharacterID)
+        populationRecords = sm.RemoteSvc('petitioner').GetClientPickerInfo(filterString, elementName)
+                queues = sm.RemoteSvc('petitioner').GetQueues()
+
+                self.categories = sm.RemoteSvc('petitioner').GetCategories()
+                sm.RemoteSvc('petitioner').CreatePetition(subject, petition, categoryID, retval, OocCharacterID, combatLog=combatLog, chatLog=chatLog):
+                sm.RemoteSvc('petitioner').CreatePetition(subject, petition, categoryID, None, self.OocCharacterID, chatLog, combatLog, propertyList)
+
+        sm.RemoteSvc('petitioner').MarkAsRead(messageID)
+
+        newMessages = sm.RemoteSvc('petitioner').GetUnreadMessages()
+        self.NewMessage(newMessages[0].petitionID, newMessages[0].text, newMessages[0].messageID)
+
+        self.mine = sm.RemoteSvc('petitioner').GetMyPetitionsEx()
+
+        sm.RemoteSvc('petitioner').EscalatePetition(petitionid, escalatesTo)
+        sm.RemoteSvc('petitioner').ClaimPetition(p.petitionID)
+        sm.RemoteSvc('petitioner').UnClaimPetition(petitionid)
+        mp = sm.RemoteSvc('petitioner').GetClaimedPetitions()
+        for p in mp:
+            if p.petitionerID not in owners:
+
+
+        parentCategoryDict, childCategoryDict, descriptionDict, self.billingCategories = sm.RemoteSvc('petitioner').GetCategoryHierarchicalInfo()
+
+        sm.RemoteSvc('petitioner').UpdatePetitionRating(p.petitionID, responseTimeRating, helpfulnessRating, attitudeRating, newComment)
+
+        sm.RemoteSvc('petitioner').AddPetitionRating(p.petitionID, responseTimeRating, helpfulnessRating, attitudeRating, newComment, wnd.sr.ratingtime)
+
+
+        mp = sm.RemoteSvc('petitioner').GetPetitionQueue(queueID)
+        for p in mp:
+            if p.petitionerID and p.petitionerID not in owners:
+ *
+
+ pmsgs = sm.RemoteSvc('petitioner').GetPetitionMessages(p.petitionID)
+ for pm in pmsgs:
+     if pm.senderID is not None and pm.senderID not in owners:
+ *
+
+ plogs = sm.RemoteSvc('petitioner').GetLog(p.petitionID)
+ texts = sm.RemoteSvc('petitioner').GetEvents()
+ *
+
+ sm.RemoteSvc('petitioner').PetitioneeChat(petitionid, message, comment)
+ sm.RemoteSvc('petitioner').PetitionerChat(petitionid, message)
+
+
+ sm.RemoteSvc('petitioner').CancelPetition(petitionid)
+ sm.RemoteSvc('petitioner').ClosePetition(petitionid)
+ */
 
 
 PyResult PetitionerService::Handle_GetCategories( PyCallArgs& call )

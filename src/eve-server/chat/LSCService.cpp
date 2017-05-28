@@ -1010,7 +1010,8 @@ void LSCService::CreateStaticChannels() {
     str << "<color=0xff00ff00><b>Language:</b></color>  ";
     str << "<color=0xffffffff>This channel is ENGLISH ONLY.</color><br><br>";
     str << "<color=0xff00ff00><b>How to contact a GM:</b> </color>  ";
-    str << "<color=0xffffffff>File a petition (F12 - Petitions - New Petition)</color><br><br>";
+    str << "<color=0xffffffff>Right now, our petition service isnt operational, so to contact a GM, post on the forums.</color><br><br>";
+    //str << "<color=0xffffffff>File a petition (F12 - Petitions - New Petition)</color><br><br>";
     str << "<color=0xff00ff00><b>ISK Advertising:</b></color>  ";
     str << "<color=0xffff0000>Contrary to what they spam, Alasiya does not authorize any person or site to sell ISK for RL cash.</color><br><br>";
     str << "<color=0xff00ff00><b>Please Note:</b></color><br>";
@@ -1028,7 +1029,8 @@ void LSCService::CreateStaticChannels() {
     str << "<color=0xff00ff00><b>Language:</b></color>  ";
     str << "<color=0xffffffff>This channel is ENGLISH ONLY.</color><br><br>";
     str << "<color=0xff00ff00><b>How to contact a GM:</b> </color>  ";
-    str << "<color=0xffffffff>File a petition (F12 - Petitions - New Petition)</color><br><br>";
+    str << "<color=0xffffffff>Right now, our petition service isnt operational, so to contact a GM, post on the forums.</color><br><br>";
+    //str << "<color=0xffffffff>File a petition (F12 - Petitions - New Petition)</color><br><br>";
     str << "<color=0xff00ff00><b>ISK Advertising:</b></color>  ";
     str << "<color=0xffff0000>Contrary to what they spam, Alasiya does not authorize any person or site to sell ISK for RL cash.</color><br><br>";
     CreateChannel(2, 1, "Help", str.str().c_str(), nullptr, "help", LSC::Type::normal, cspa, 263238, -1/*263262*/, true);
