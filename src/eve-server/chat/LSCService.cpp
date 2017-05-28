@@ -32,6 +32,17 @@
 #include "admin/SlashService.h"
 #include "chat/LSCService.h"
 
+/** @todo
+ * LSC system todo list...
+ * to implement...
+ *   channel password
+ *   private chat invite
+ *
+ * to fix...
+ *   channelID system
+ *
+ */
+
 // Set the base (minimum) and maximum numbers for any user-created chat channel.
 const int32 LSCService::BASE_CHANNEL_ID = 2100000000;      //trial accts are spam-restricted to 1m input buffer when channelID < 2100000000
 const uint32 LSCService::MAX_CHANNEL_ID = 0xFFFFFFFF;
@@ -990,37 +1001,36 @@ void LSCService::CreateStaticChannels() {
 //Help
 // Incursion Rookie Help MOTD
     str.str("");
-    str << "<color=0xff007fff><b>Welcome to the Alasiya EVE Online: Crucible Emulator</color>";
-    str << "<color=0xff00ff00>Chatrules</color><color=0xffffffff>: </color>";
-    str << "<color=0xffffa500><url=http://www.eveonline.com/pnp/chatrules.asp><u>http://www.eveonline.com/pnp/chatrules.asp </color></url></u>";
-    str << "<color=0xffb2b2b2>please read and observe them.</color><br>";
-    str << "<color=0xff00ff00>Topic</color>";
-    str << "<color=0xffffffff>: Stay on topic of EVE-Online related rookie help.<br></color>";
-    str << "<color=0xff00ff00>Rules: </color>";
-    str << "<color=0xffffffff>No WTB, WTS, WTT (aka trading, selling, w.e.), PC, advertising, recruiting, scamming, offering private help in any form or begging in this channel.";
-    str << "No CAPS or text-decoration either<br></color>";
-    str << "<color=0xff00ff00>Language</color><color=0xffffffff>: This channel is ENGLISH ONLY.<br><br></color>";
-    str << "<color=0xffffff00>ISK Advertising: Contrary to what they spam, Alasiya does not authorize any person or site to sell ISK for RL cash!<br><br></color>";
-    str << "<color=0xff00ff00>Recommended reading</color>";
-    str << "<color=0xffffffff>: </color><color=0xffffa500><url=http://wiki.eveonline.com/wiki/Category:New_Player_Experience><u>http://wiki.eveonline.com/wiki/Category:New_Player_Experience</color>";
-    str << "<color=0xff007fff></url></b></u> <br><br></color>";
-    str << "<color=0xff00ff00><b>Please Note:</color>";
-    str << "<color=0xffffffff> There are no third party applications (.exe) that will magically give you any type of ship you wish or hack your wallet. Please report characters advertising these types of links IMMEDIATELY via petition and DO NOT download and try them. <br><br>";
-    str << "Sister of EVE storyline starts in <url=showinfo:5//30005001><u>Arnon</url></b></u> <b>with <url=showinfo:1378//3019356><u>Sister Alitura</url></b></u>. <br><br></color>";
-    str << "<color=0xff00ff00><b>Before asking, please read: </color>";
-    str << "<color=0xffffa500><url=http://wiki.eveonline.com/wiki/Rookie_Help_Channel_FAQ><u>http://wiki.eveonline.com/wiki/Rookie_Help_Channel_FAQ</color></url></b></u><br><br>";
+    str << "<br><color=0xff007fff><b>Welcome to the Alasiya <u>EVE Online: Crucible</u> Emulator</b></color><br><br>";
+    str << "<color=0xff00ff00><b>Topic:</b></color>  ";
+    str << "<color=0xffffffff>EVE-Online related rookie help.</color><br><br>";
+    str << "<color=0xff00ff00><b>Rules:</b></color>  ";
+    str << "<color=0xffffffff>No WTB, WTS, WTT (aka trading, selling, w.e.), PC, advertising, recruiting, scamming, offering private help in any form or begging in this channel.<br>";
+    str << "No CAPS or text-decoration.</color><br><br>";
+    str << "<color=0xff00ff00><b>Language:</b></color>  ";
+    str << "<color=0xffffffff>This channel is ENGLISH ONLY.</color><br><br>";
+    str << "<color=0xff00ff00><b>How to contact a GM:</b> </color>  ";
+    str << "<color=0xffffffff>File a petition (F12 - Petitions - New Petition)</color><br><br>";
+    str << "<color=0xff00ff00><b>ISK Advertising:</b></color>  ";
+    str << "<color=0xffff0000>Contrary to what they spam, Alasiya does not authorize any person or site to sell ISK for RL cash.</color><br><br>";
+    str << "<color=0xff00ff00><b>Please Note:</b></color><br>";
+    str << "<color=0xffffffff>There are no third party applications (.exe) that will magically give you any type of ship you wish or hack your wallet. Please report characters advertising these types of links IMMEDIATELY via petition and DO NOT download and try them. <br><br>";
+    // str << "Sister of EVE storyline starts in <url=showinfo:5//30005001><u>Arnon</url></b></u> <b>with <url=showinfo:1378//3019356><u>Sister Alitura</url></b></u>. <br><br></color>";
     CreateChannel(1, 1, "Rookie Help", str.str().c_str(), nullptr, "help", LSC::Type::normal, cspa, 263238, -1, true);
 // Incursion Help MOTD
     str.str("");
-    str << "<color=0xffff0000><b>Welcome to The Alasiya EVE Online: Crucible Emulator</color>";
-    str << "<color=0xff007fff> <br><br></color><color=0xff00ff00>Player Guides:</color>";
-    str << "<color=0xffffa500><url=http://wiki.eveonline.com/wiki/Category:New_Player_Experience><u>http://wiki.eveonline.com/wiki/Category:New_Player_Experience</color></url></u>";
-    str << "<color=0xffb2b2b2><b>Please: Stay on topic. </color>";
-    str << "<color=0xffffff00>No offtopic, WTB, WTS, PC, advertising, recruiting, scamming/trading in general or begging in this channel. No CAPS or text-decoration.<br></color>";
-    str << "<color=0xff00ff00>Language:</color><color=0xffb2b2b2>This channel is</color><color=0xffff0000>ENGLISH ONLY!!<br></color>";
-    str << "<color=0xff00ff00>How to contact a GM: </color>";
-    str << "<color=0xffb2b2b2>File a petition (F12 - Petitions - New Petition) <br></color>";
-    str << "<color=0xff00ff00><b>The topic of this channel is EVE related help.</color></b>";
+    str << "<br><color=0xff007fff><b>Welcome to the Alasiya <u>EVE Online: Crucible</u> Emulator</color><br><br>";
+    str << "<color=0xff00ff00><b>Topic:</b></color>  ";
+    str << "<color=0xffffffff>EVE-Online related help.</color><br><br>";
+    str << "<color=0xff00ff00><b>Rules:</b></color>  ";
+    str << "<color=0xffffffff>No WTB, WTS, WTT (aka trading, selling, w.e.), PC, advertising, recruiting, scamming, offering private help in any form or begging in this channel.<br>";
+    str << "No CAPS or text-decoration.</color><br><br>";
+    str << "<color=0xff00ff00><b>Language:</b></color>  ";
+    str << "<color=0xffffffff>This channel is ENGLISH ONLY.</color><br><br>";
+    str << "<color=0xff00ff00><b>How to contact a GM:</b> </color>  ";
+    str << "<color=0xffffffff>File a petition (F12 - Petitions - New Petition)</color><br><br>";
+    str << "<color=0xff00ff00><b>ISK Advertising:</b></color>  ";
+    str << "<color=0xffff0000>Contrary to what they spam, Alasiya does not authorize any person or site to sell ISK for RL cash.</color><br><br>";
     CreateChannel(2, 1, "Help", str.str().c_str(), nullptr, "help", LSC::Type::normal, cspa, 263238, -1/*263262*/, true);
 //Empires/Factions
     CreateChannel(10, 1, "Caldari", "Caldari Faction", nullptr, "caldari", LSC::Type::normal, cspa, 263329, -1/*263268*/, true);
@@ -1030,13 +1040,13 @@ void LSCService::CreateStaticChannels() {
     CreateChannel(14, 1, "Jove", "Jove Faction", nullptr, "jove", LSC::Type::normal, cspa, 263329, -1/*263258*/, true);
 // Incursion recruitment MOTD...
     str.str("");
-    str << "<color=0xffffffff>Welcome to the recruitment channel.<br>";
+    str << "<br><color=0xffffffff>Welcome to the recruitment channel.<br><br>";
     str << "This channel is intended for those players looking to find a new corporation, as well as those looking to enlist new players.<br>";
     str << "Other activities, such as non-recruitment discussion and scamming, are not permitted in this channel.";
 //Corporate
     CreateChannel(20, 9, "Recruitment", str.str().c_str(), nullptr, "recruitment", LSC::Type::normal, cspa, 263235, -1/*263286*/, true);
     str.str("");
-    str << "<color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Corporate CEO</color><color=0xffffffff> channel.<br>";
+    str << "<br><color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Corporate CEO</color><color=0xffffffff> channel.<br><br>";
     str << "This channel is intended for corp CEOs to discuss business as they see fit.</color>";
     CreateChannel(21, 9, "CEO", str.str().c_str(), nullptr, "ceo", LSC::Type::normal, cspa, 263235, -1/*263287*/, true);
 //Alliance
@@ -1049,7 +1059,7 @@ void LSCService::CreateStaticChannels() {
     */
 //Trade
     str.str("");
-    str << "<color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Trade</color><color=0xffffffff> channel.<br>";
+    str << "<br><color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Trade</color><color=0xffffffff> channel.<br><br>";
     str << "This channel is intended for those players looking to trade the various items as referenced in the channel title.</color>";
     CreateChannel(40, 1, "Other", str.str().c_str(), nullptr, "other", LSC::Type::normal, cspa, 263240, -1/*263277*/, true);
     CreateChannel(41, 1, "Ships", str.str().c_str(), nullptr, "ships", LSC::Type::normal, cspa, 263240, -1/*263245*/, true);
@@ -1058,7 +1068,7 @@ void LSCService::CreateStaticChannels() {
     CreateChannel(44, 1, "Minerals and Manufacturing", str.str().c_str(), nullptr, "mineralsandmanufacturing", LSC::Type::normal, cspa, 263240, -1/*263275*/, true);
 //Science and Industry
     str.str("");
-    str << "<color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Science and Industry</color><color=0xffffffff> channel.<br>";
+    str << "<br><color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Science and Industry</color><color=0xffffffff> channel.<br><br>";
     str << "This channel is intended for those players looking to discuss the various items as referenced in the channel title.</color>";
     CreateChannel(50, 1, "Boosters", str.str().c_str(), nullptr, "boosters", LSC::Type::normal, cspa, 263331, -1/*263365*/, true);
     CreateChannel(51, 1, "Invention", str.str().c_str(), nullptr, "invention", LSC::Type::normal, cspa, 263331, -1/*263366*/, true);
@@ -1068,7 +1078,7 @@ void LSCService::CreateStaticChannels() {
     CreateChannel(55, 1, "Research", str.str().c_str(), nullptr, "research", LSC::Type::normal, cspa, 263331, -1/*263370*/, true);
 //Groups/Content
     str.str("");
-    str << "<color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Content</color><color=0xffffffff> channel.<br>";
+    str << "<br><color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Content</color><color=0xffffffff> channel.<br><br>";
     str << "This channel is intended for those players looking to discuss the various items as referenced in the channel title.</color>";
     CreateChannel(60, 1, "Incursions", str.str().c_str(), nullptr, "incursions", LSC::Type::normal, cspa, 263328, -1/*263289*/, true);
     CreateChannel(61, 1, "Ratting", str.str().c_str(), nullptr, "ratting", LSC::Type::normal, cspa, 263328, -1/*263338*/, true);
@@ -1077,20 +1087,22 @@ void LSCService::CreateStaticChannels() {
 //Misc
     str.str("");
     str << "<br><color=0xffffffff>Welcome to the <url=http://eve.alasiya.net/phpBB3/viewtopic.php?f=30&t=296>Free Wrecks</url> channel.<br>";
-    str << "Here you can offer your abandoned mission wrecks to any willing freelance salvager in New Eden.</color><br>";
-    str << "<b><u><color=0xff00ffff>Salvagers</color></u><br><color=0xff00ff00>Alphas</color></b><br>";
+    str << "Here you can offer your abandoned mission wrecks to any willing freelance salvager in New Eden.</color><br><br>";
+    str << "<b><u><color=0xff00ffff>Salvagers</color></u><br><color=0xff00ff00>Alphas</color></b>";
     str << "<color=0xffffffff> - Basic salvage fits by race: </color><br>";
     str << "<url=fitting:16236:31083;2:25861;4:8135;1:31370;1:1319;2:4435;1:5973;1:24348;4::>Amarr</url><color=0xffffffff> - </color>";
     str << "<url=fitting:16238:25861;4:1319;2:31370;1:31083;2:4435;2:5973;1:24348;4::>Caldari</url><color=0xffffffff> - </color>";
     str << "<url=fitting:16240:31083;2:25861;4:8135;1:31370;1:1319;2:4435;1:5973;1:24348;4::>Gallente</url><color=0xffffffff> - </color>";
-    str << "<url=fitting:16242:25861;4:1319;2:31370;1:31083;2:6001;1:4435;2:24348;4::>Minmatar</url><color=0xffffffff> </color><br>";
-    str << "<b><color=0xff00ff00>Omegas</color></b><color=0xffffffff> - <i>You should be able to use a </color><url=showinfo:2998>Noctis</url>";
+    str << "<url=fitting:16242:25861;4:1319;2:31370;1:31083;2:6001;1:4435;2:24348;4::>Minmatar</url><color=0xffffffff> </color><br><br>";
+    /*  this suggests t2 shit which isnt avalible yet
+    str << "<b><color=0xff00ff00>Omegas</color></b><color=0xffffffff> - You should be able to use a </color><url=showinfo:2998>Noctis</url>";
     str << "<color=0xffffffff>, </color><url=showinfo:30836>Salvager II's</url><color=0xffffffff> &amp; </color><url=showinfo:4250>Tractor Beam II's</url><br>";
+    */
     str << "<b><u><color=0xff00ffff>Mission Runners</color></b></u><br><color=0xffffffff>";
     str << "Please state where your bookmark will be traded, contracted or if youre hoping to fleet with the salvager looking for work. <br>";
-    str << "If you are contracting or trading bookmarks dont forget to</color> <color=0xff007fff>Abandon all wrecks and containers</color><color=0xffffffff>.</color><br>";
-    str << "<b><u><fontsize=10><color=0xff00ff00>Useful Links.</color></u><br>";
-    str << "<loc><url=http://evemaps.dotlan.net/>DOTLAN</url></loc></b><color=0xffffffff> - A database of everything you need to know about New Eden; maps, corporations, navigations and much more.</color><color=0xcc111100>NOTE:</color><color=0xffffffff> While this site is specific for Tranquility, the maps and navigation are the same here.</color><br>";
+    str << "If you are contracting or trading bookmarks dont forget to</color> <color=0xff007fff>Abandon all wrecks and containers</color><color=0xffffffff>.</color><br><br>";
+    str << "<b><u><color=0xff00ff00>Useful Links.</color></u><br>";
+    str << "<loc><url=http://evemaps.dotlan.net/>DOTLAN</url></loc></b><color=0xffffffff> - A database of everything you need to know about New Eden; maps, corporations, navigations and much more.</color><color=0xff0000ff>NOTE:</color><color=0xffffffff> While this site is specific for Tranquility, the maps and navigation are the same here on Alasiya-EvE.</color><br>";
     str << "<loc><url=http://o.smium.org>Osmium</url></loc><color=0xffffffff> - A site where pilots post their ship fittings to help players get the most out of their ship class.</color><br>";
     str << "<loc><url=http://eve-survival.org/wikka.php?wakka=MissionReports>EVE Survival</url></loc><color=0xffffffff> - A database of missions within New Eden. Here you can find information about gaining the upper hand on those sneaky NPCs and how to perfectly run the mission in question.</color><br>";
     str << "<loc><url=http://www.fuzzwork.co.uk/>Fuzz Work</url></loc><color=0xffffffff> - A brilliant site that has many awesome calculators for LP stores, Blueprints, Invention, Ore and much more!</color><br>";
