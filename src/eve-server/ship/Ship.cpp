@@ -1357,7 +1357,7 @@ void Ship::EncodeDestiny( Buffer& into ) {
         mass.allianceID = GetAllianceID();
         into.Append( mass );
     DataSector data;
-        data.intertia = m_destiny->GetInertia();
+        data.inertia = m_destiny->GetInertia();
         data.maxVelocity = m_destiny->GetMaxVelocity();
         data.velocity_x = m_destiny->GetVelocity().x;
         data.velocity_y = m_destiny->GetVelocity().y;

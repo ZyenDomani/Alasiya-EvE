@@ -36,7 +36,7 @@ struct AddBall_header {
     uint32 eventStamp;  /* statestamp */
 };
 
-typedef enum {
+enum BallMode {
     DSTBALL_GOTO        = 0,    // Also used for AlignTo
     DSTBALL_FOLLOW      = 1,
     DSTBALL_STOP        = 2,
@@ -50,12 +50,11 @@ typedef enum {
     DSTBALL_FIELD       = 10,    //Force field ball
     DSTBALL_RIGID       = 11,   //A ball that will never move, stations, etc..
     DSTBALL_FORMATION   = 12
-} BallMode;
+};
 
 static const uint8 MAX_DSTBALL = DSTBALL_FORMATION;
 
-enum ball_flags
-{
+enum BallFlag {
     IsFree = 0x01,          // set if ball is free to move, has extra BallData
     IsGlobal = 0x02,        // set if ball should be visible from all
     IsMassive = 0x04,       // set if ball is solid
@@ -94,7 +93,7 @@ struct DataSector {
     double velocity_x;
     double velocity_y;
     double velocity_z;
-    float intertia;
+    float inertia;
     float speedfraction;
 };
 

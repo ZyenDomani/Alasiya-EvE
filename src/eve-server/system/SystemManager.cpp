@@ -688,7 +688,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
     _log(SPAWN__MESSAGE, "Spawn called for bubble %u in system %u(%.4f), region %u.",
          pSysBubble->GetID(), m_data.systemID, m_data.securityRating, m_data.regionID);
     uint8 count = m_beltCount;
-    if (count > 5) count -= 2;
+    if (count > 7) count -= 2;
     if (m_activeRatSpawns < count ) {
         m_spawnMgr->DoSpawnForBubble(pSysBubble, m_data.regionID, m_data.securityRating);
         m_ratBubbles.push_back(pSysBubble->GetID());

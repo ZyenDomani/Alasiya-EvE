@@ -159,7 +159,7 @@ void NPC::EncodeDestiny( Buffer& into )
         data.velocity_x = m_destiny->GetVelocity().x;
         data.velocity_y = m_destiny->GetVelocity().y;
         data.velocity_z = m_destiny->GetVelocity().z;
-        data.intertia = m_destiny->GetInertia();
+        data.inertia = m_destiny->GetInertia();
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
     if (mode == DSTBALL_WARP) {

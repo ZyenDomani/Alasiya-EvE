@@ -188,16 +188,14 @@ void LSCChannel::SendMessage(Client * c, const char * message, bool self/*false*
 
     if (self) {
         mct.characters.insert(c->GetCharacterID());
-        sm.sender = _FakeSenderInfo();
     } else {
         std::map<uint32, LSCChannelChar>::iterator cur;
         cur = m_chars.begin();
         for(; cur != m_chars.end(); cur++)
             mct.characters.insert( cur->first );
-
-        sm.sender = _MakeSenderInfo(c);
     }
 
+    sm.sender = _MakeSenderInfo(c);
     sm.channelID = EncodeID();
     sm.message = message;
     sm.member_count = (int32)m_chars.size();

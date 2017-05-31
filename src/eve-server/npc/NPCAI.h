@@ -63,7 +63,8 @@ public:
     // public methods to enable calls from other classes (namely, TurretFormulas.cpp)
     bool IsIdle()                                       { return (m_state == State::Idle); }
     bool IsFighting()                                   { return (m_state != State::Idle); }
-    uint16 GetMaxRange()                                { return m_optimalRange; }
+    uint16 GetOptimalRange()                            { return m_optimalRange; }
+    uint16 GetSigRes()                                  { return m_sigResolution; }
     uint32 GetFalloff()                                 { return m_falloff; }
     uint32 GetAttackRange()                             { return m_maxAttackRange; }
     double GetTrackingSpeed()                           { return m_trackingSpeed; }
@@ -98,6 +99,7 @@ private:
     //these attributes are cached to reduce access times. (much faster but uses more memory)
     uint16 m_maxSpeed;
     uint16 m_attackSpeed;
+    uint16 m_sigResolution;
     uint16 m_orbitSpeed;
     uint16 m_targetRange;   // max targeting range  default: m_maxAttackRange (unused)
     uint16 m_damageMultiplier;

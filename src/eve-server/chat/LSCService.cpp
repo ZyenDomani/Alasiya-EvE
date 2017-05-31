@@ -37,9 +37,11 @@
  * to implement...
  *   channel password
  *   private chat invite
+ *   *more*
  *
  * to fix...
  *   channelID system
+ *   *more*
  *
  */
 
@@ -196,7 +198,7 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
     // create/get channel info
     LSCChannel* channel(nullptr);
     if (joinExisting) {
-        channel = GetChannel(m_db->GetChannelID(name.arg));
+        channel = GetChannelByName(name.arg);
     } else if (create)  {
         // figure out how to determine owner of this channel.....corp, ally, char.  for now, use charID
         int32 nextID = m_db->GetNextAvailableChannelID();
@@ -319,7 +321,7 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
         //else if (((channelID == 1) or (channelID == 2)) and !isRookie)
         //    continue;
 
-        channel = GetChannel(channelID);
+        channel = GetChannelByID(channelID);
         if (!channel)
             continue;
         ChannelJoinReply chjr;
@@ -404,11 +406,11 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
     }
 
     if (message.at(0) == '.') {
-        _log(LSC__INFO, "CALL to SlashService->SlashCmd() via LSC Service");
-        return static_cast<SlashService *>(m_manager->LookupService("slash"))->SlashCommand(call.client, message);
-    }
-
-    itr->second->SendMessage(call.client, message.c_str());
+        _log(LSC__INFO, "SlashService->SlashCmd() called via LSC Service");
+        static_cast<SlashService *>(m_manager->LookupService("slash"))->SlashCommand(call.client, message);
+        itr->second->SendMessage(call.client, message.c_str(), true);
+    } else
+        itr->second->SendMessage(call.client, message.c_str());
 
     return new PyNone();
 }
@@ -925,11 +927,19 @@ LSCChannel* LSCService::CreateChannel(int32 channelID, uint32 ownerID, const cha
     return (m_channels[channelID] = channel);
 }
 
-LSCChannel* LSCService::GetChannel(int32 channelID)
+LSCChannel* LSCService::GetChannelByID(int32 channelID)
 {
     std::map<int32, LSCChannel*>::iterator itr = m_channels.find(channelID);
     if (itr != m_channels.end())
         return itr->second;
+    return nullptr;
+}
+
+LSCChannel* LSCService::GetChannelByName(std::string channelName)
+{
+    for (auto cur : m_channels)
+        if (cur.second->GetDisplayName() == channelName)
+            return cur.second;
     return nullptr;
 }
 
@@ -1110,6 +1120,12 @@ void LSCService::CreateStaticChannels() {
     str << "<loc><url=http://www.fuzzwork.co.uk/>Fuzz Work</url></loc><color=0xffffffff> - A brilliant site that has many awesome calculators for LP stores, Blueprints, Invention, Ore and much more!</color><br>";
     CreateChannel(100, 2, "Free Wrecks", str.str().c_str(), nullptr, "freewrecks", LSC::Type::normal, cspa, 0, 0, true); //256739 <-- this was messageID from error about "channel already joined"
     //CreateChannel(101, 1, "", "motd", nullptr, "*title*", LSC::Type::normal, cspa, 0, 0, true);
+
+//GM Command channel
+    str.str("");
+    str << "<br><color=0xffffffff>Welcome to the</color> <color=0xff00ffff>GM Command</color><color=0xffffffff> channel.<br><br>";
+    str << "This channel is intended for using dot commands.</color>";
+    CreateChannel(2900000000, 1, "Command", str.str().c_str(), nullptr, "command", LSC::Type::custom, cspa, 0, 0, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

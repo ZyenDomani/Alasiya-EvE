@@ -164,9 +164,9 @@ EvilNumber EvEMath::ME_EffectOnWaste( EvilNumber MaterialAmount, EvilNumber Base
 	 return (40000.0 / (YourEffectiveScanResolution.get_double() * pow(asinh(TargetEffectiveSignatureRadius.get_double()),2)));
  }
 
- EvilNumber EvEMath::AlignTimeInSeconds( EvilNumber InertiaFactor, EvilNumber Mass )
+ EvilNumber EvEMath::AlignTimeInSeconds( EvilNumber inertia, EvilNumber Mass )
  {
-	 return ((log(2.0) * InertiaFactor * Mass) / 500000);
+	 return ((log(2.0) * inertia * Mass) / 500000);
  }
 
  EvilNumber EvEMath::TradeBrokerFee( EvilNumber BrokerRelationsSkillLevel, EvilNumber FactionStanding, EvilNumber CorporationStanding )

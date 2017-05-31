@@ -108,7 +108,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         _log(into, "   maxSpeed=%.2f, Vel=(%.3f, %.3f, %.3f) IM=%.4f, SF=%.3f",
             shipchunk->maxVelocity,
             shipchunk->velocity_x, shipchunk->velocity_y, shipchunk->velocity_z,
-            shipchunk->intertia,
+            shipchunk->inertia,
             shipchunk->speedfraction);
     }
 

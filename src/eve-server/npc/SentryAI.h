@@ -42,7 +42,7 @@ public:
     // public methods to enable calls from other classes (namely, TurretFormulas.cpp)
     bool IsIdle()                                       { return (m_state == State::Idle); }
     bool IsFighting()                                   { return (m_state != State::Idle); }
-    uint16 GetMaxRange()                                { return m_optimalRange; }
+    uint16 GetOptimalRange()                                { return m_optimalRange; }
     uint32 GetFalloff()                                 { return m_falloff; }
     uint32 GetAttackRange()                             { return m_maxAttackRange; }
     double GetTrackingSpeed()                           { return m_trackingSpeed; }

@@ -361,7 +361,7 @@ PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, con
 
     // Actually do the unspawn using SystemManager's RemoveEntity:
     if (!pSE) {
-        return new PyString("Un-Spawn Failed: itemID %u not found.", itemID);
+        throw PyException(MakeCustomError("Un-Spawn Failed: itemID %u not found.", itemID));
     } else {
         who->SystemMgr()->RemoveEntity(pSE);
         itemRef->Delete();

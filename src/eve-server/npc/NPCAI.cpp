@@ -66,6 +66,7 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_damageMultiplier = who->GetSelf()->GetAttribute(AttrDamageMultiplier).get_int();
 
     /* set npc ship data */
+    m_sigResolution = who->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_int();
     m_attackSpeed = who->GetSelf()->GetAttribute(AttrSpeed).get_int();
     m_radius = who->GetSelf()->GetAttribute(AttrSignatureRadius).get_int();
 

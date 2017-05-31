@@ -1008,7 +1008,7 @@ void InventoryItem::SaveItem() {
 
 //contents of changes are consumed and cleared
 void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const {
-    if (IsNPCCorp(toID))
+    if (IsNPCCorp(toID) or (toID == 1))
         return;
     //TODO: figure out the appropriate list of interested people...
     Client *c = sEntityList.FindClientByCharID(toID);

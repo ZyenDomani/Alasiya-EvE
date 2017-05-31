@@ -563,6 +563,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             StationData data;
             sDataMgr.GetStationInfo(toID, data);
             warpToPoint.y = data.dockPosition.y;
+        } else if (pSE->IsMoonSE()) {
+            distance += 1200;  // hack distance for moons until i get the radius working correctly
         } else if (pSE->IsCOSE()) {
             distance += 1200;  // hack distance for customs offices until i get the radius working correctly
         } else if (pSE->IsGateSE()) {
@@ -587,7 +589,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    distance += (call.client->GetShipSE()->GetRadius() *2); // add ship diameter to distance
+    distance += (call.client->GetShipSE()->GetRadius() *2); // add ship diameter x2 to distance
     pDestiny->WarpTo(warpToPoint, distance);
 
     return new PyNone();

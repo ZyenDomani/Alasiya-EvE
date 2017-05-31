@@ -23,11 +23,11 @@ UPDATE `market_orders` SET `price`=100 WHERE `price`=0;
   ****************************
  -- use this to spawn items in market for single station
 
-set @stationid=60014809;     --Ryddinjorn VI - Moon 2 - Pator Tech School
+set @stationid=60014809;     --Ryddinjorn VIM2 - Pator Tech School
 set @solarSystemID=30003410; --Ryddinjorn  - minmatar noob system for pator tech
 set @regionid=10000042;      --metropolis
 -----------------
-set @stationid=60014140;     --Zemalu IX - Moon 2 - Thukker Mix Factory(60014140)
+set @stationid=60014140;     --Zemalu IXM2 - Thukker Mix Factory(60014140)
 set @solarSystemID=30000055; --Zemalu
 set @regionid=10000001;      --Derelik
 -----------------
@@ -38,10 +38,14 @@ set @regionid=10000001;      --Derelik
 set @stationid=60004591;     --Abudban IX - Brutor Tribe Bureau
 set @solarSystemID=30002507; --Abudban
 set @regionid=10000030;      --Heimatar
+-----------------
+set @stationid=60012178;     --Aranir VIIIM8 - Ammatar Fleet Logistic Support
+set @solarSystemID=30000092; --Aranir
+set @regionid=10000001;      --Derelik
 
 create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int);
 truncate table tStations;
-insert into tStations values (60014137, 30000053, 10000001);
+insert into tStations values (60012178, 30000092, 10000001);
 
 -- actual seeding
 INSERT INTO market_orders (typeID, charID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState,

@@ -192,14 +192,14 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
         return TargetFail(who);
     }
 
-    uint8 targetSkills = 1; //AttrMaxLockedTargets is for characters too!!
     Character* pChar = mySE->GetPilot()->GetChar().get();
-    targetSkills += pChar->GetSkillLevel(skillTargeting);    // +1 target/level
-    targetSkills += pChar->GetSkillLevel(skillMultitasking);    // +1 target/level
+    uint8 targetSkills = (uint8)pChar->GetAttribute(AttrMaxLockedTargets).get_int(); //AttrMaxLockedTargets is for characters too!!
+    //targetSkills += pChar->GetSkillLevel(skillTargeting);    // +1 target/level
+    //targetSkills += pChar->GetSkillLevel(skillMultitasking);    // +1 target/level
 	uint8 maxLockedTargets = (uint8)ship->GetAttribute(AttrMaxLockedTargets).get_int();
     if (maxLockedTargets < 1)
         maxLockedTargets = 1;
-    // add module updates to target capacity of ship here.
+    // get lower of max targets between ship and char
     if (targetSkills < maxLockedTargets)
         maxLockedTargets = targetSkills;
     if (GetTotalTargets() >= maxLockedTargets) {
@@ -209,20 +209,17 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
         return TargetFail(who);
     }
     // Check against max locked target range
-	double maxTargetLockRange = ship->GetAttribute(AttrMaxTargetRange).get_double();
-    float targetRangeModifier = 1.0f;
-    targetRangeModifier += (0.05 * pChar->GetSkillLevel(skillLongRangeTargeting)); // +5% level
-    maxTargetLockRange *= targetRangeModifier;
+	double maxTargetRange = ship->GetAttribute(AttrMaxTargetRange).get_double();
     GVector rangeToTarget( mySE->GetPosition(), who->GetPosition() );
     // adjust for target radius, in case of ice or other large objects..
     double targetDistance = rangeToTarget.length();
     if (who->IsAsteroidSE())
         targetDistance -= who->GetRadius();
-    if (targetDistance > maxTargetLockRange) {
+    if (targetDistance > maxTargetRange) {
         mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only target to %.0f meters.  %s is %.0f meters away.", \
-            maxTargetLockRange, who->GetName(), targetDistance);
+                        maxTargetRange, who->GetName(), targetDistance);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are too far away.  Ignoring request.", \
-             mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
+                    mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
         return TargetFail(who);
     }
 

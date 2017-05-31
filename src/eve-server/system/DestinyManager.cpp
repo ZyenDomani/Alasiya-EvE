@@ -49,7 +49,7 @@ DestinyManager::DestinyManager(SystemEntity *self)
 : mySE(self),
 m_maxSpeed(1.0f),
 m_shipMaxAccelTime(0.0f),
-State(DSTBALL_STOP),
+State(BallMode::DSTBALL_STOP),
 m_warpTimer(5000),  //completely arbitrary.
 m_moveTimer(0.0),
 m_targetDistance(0.0),
@@ -128,17 +128,17 @@ void DestinyManager::Process() {
 
 void DestinyManager::ProcessState() {
     switch(State) {
-        case DSTBALL_STOP: {
+        case BallMode::DSTBALL_STOP: {
             if (IsMoving()) {
                 _Move();
                 break;
             }
             Stop();
         } break;
-        case DSTBALL_GOTO: {
+        case BallMode::DSTBALL_GOTO: {
             _Move();
         } break;
-        case DSTBALL_MISSILE: {
+        case BallMode::DSTBALL_MISSILE: {
             // if target was removed, continue movement and wait for Missile::EndOfLife() call to do cleanup
             //set current direction based on position and targetPoint.  this will keep missile aligned properly
             GVector moveVector(m_position, m_targetPoint);
@@ -148,17 +148,17 @@ void DestinyManager::ProcessState() {
             m_velocity = (moveVector * m_maxSpeed);
             SetPosition(m_position + m_velocity);
         } break;
-        case DSTBALL_ORBIT: {
+        case BallMode::DSTBALL_ORBIT: {
             if (IsTargetInvalid())
                 return;
             _Orbit();
         } break;
-        case DSTBALL_FOLLOW: {
+        case BallMode::DSTBALL_FOLLOW: {
             if (IsTargetInvalid())
                 return;
             _Follow();
         } break;
-        case DSTBALL_WARP: {
+        case BallMode::DSTBALL_WARP: {
             /*
              * There are three stages of warp, which are functions of time, speed and distance:
              *
@@ -211,13 +211,13 @@ void DestinyManager::ProcessState() {
             }
             _Move();
         } break;
-        case DSTBALL_MUSHROOM:      // aoe?
-        case DSTBALL_BOID:          // this will turn RIGID after a set time
-        case DSTBALL_TROLL:         // seen for wrecks
-        case DSTBALL_MINIBALL:      // used for sentrys
-        case DSTBALL_FIELD:         // dunno
-        case DSTBALL_FORMATION:     // dunno
-        case DSTBALL_RIGID:         // item that never moves
+        case BallMode::DSTBALL_MUSHROOM:      // aoe?
+        case BallMode::DSTBALL_BOID:          // this will turn RIGID after a set time
+        case BallMode::DSTBALL_TROLL:         // seen for wrecks
+        case BallMode::DSTBALL_MINIBALL:      // used for sentrys
+        case BallMode::DSTBALL_FIELD:         // dunno
+        case BallMode::DSTBALL_FORMATION:     // dunno
+        case BallMode::DSTBALL_RIGID:         // item that never moves
             //no default on purpose
             break;
     }
@@ -241,8 +241,8 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
     // this is to start movement when setting fractional speeds from speedo in client.
     //  also a hack to circumvent above check when called again by goto, warp, align, follow for changing direction.
     if (startMovement) {
-        if (State == DSTBALL_STOP)
-            State = DSTBALL_GOTO;
+        if (State == BallMode::DSTBALL_STOP)
+            State = BallMode::DSTBALL_GOTO;
         m_stop = false;
     }
 
@@ -287,9 +287,9 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
         isMoving = true;
     _UpdateVelocity(isMoving);
 
-    if (State == DSTBALL_WARP) {
+    if (State == BallMode::DSTBALL_WARP) {
         // set state to DSTBALL_GOTO after setting warp decel variables, so warp completion will decel properly
-        State = DSTBALL_GOTO;
+        State = BallMode::DSTBALL_GOTO;
         return;
     }
 
@@ -314,7 +314,7 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
 
 void DestinyManager::_UpdateVelocity(bool isMoving) {
     uint8 logType = 0;
-    if ((State == DSTBALL_WARP) and m_warpState) {
+    if ((State == BallMode::DSTBALL_WARP) and m_warpState) {
         /*  _Warp() finished, and ship dropped out of warp at m_speedToLeaveWarp,
          *  reset m_shipMaxAccelTime as a fraction of m_speedToLeaveWarp/m_maxShipSpeed
          *  to set decel correctly, as m_speedToLeaveWarp varies with ship and warp distance.
@@ -453,13 +453,13 @@ void DestinyManager::Stop() {
         // set m_stop and return.
         m_stop = true;
         return;
-    } else if  ((State == DSTBALL_WARP) and (!IsWarping()))  {
+    } else if  ((State == BallMode::DSTBALL_WARP) and (!IsWarping()))  {
         //warp aborted before initalized.  standard Stop() applies.
-        State = DSTBALL_STOP;
+        State = BallMode::DSTBALL_STOP;
     } else if (IsMoving()) {
         //stop called while moving
         // set state to GOTO so _UpdateVelocity() will let us decel correctly
-        State = DSTBALL_STOP;
+        State = BallMode::DSTBALL_STOP;
     }
 
     m_accel = false;
@@ -494,7 +494,7 @@ void DestinyManager::Halt() {
          SafeDelete(m_warpState);
 
     //  reset ALL movement variables and states.  calling this will set object to a COMPLETE and IMMEDIATE stop.
-    State = DSTBALL_STOP;
+     State = BallMode::DSTBALL_STOP;
     m_stop = true;
     m_accel = false;
     m_decel = false;
@@ -608,7 +608,7 @@ void DestinyManager::_Bounce(GVector direction, float speed)
     /*  this code will update ship movement after being bumped
      *  all items will drift to a complete stop, unless other movement is called.
      */
-    State = DSTBALL_GOTO;
+    State = BallMode::DSTBALL_GOTO;
     m_stop = false;
     m_stateStamp = sEntityList.GetStamp();
     m_moveTimer = GetTimeMSeconds();
@@ -1471,8 +1471,8 @@ void DestinyManager::EntityRemoved(SystemEntity *pSE) {
         m_targetEntity.second = nullptr;
 
         switch(State) {
-            case DSTBALL_FOLLOW:
-            case DSTBALL_ORBIT: {
+            case BallMode::DSTBALL_FOLLOW:
+            case BallMode::DSTBALL_ORBIT: {
                 _log(DESTINY__DEBUG, "%u: Our target entity has gone away. Stopping.", mySE->GetID());
                 Stop();
             } break;
@@ -1573,14 +1573,14 @@ void DestinyManager::_BeginMovement() {
 void DestinyManager::Follow(SystemEntity* pSE, double distance) {
     //called from client as 'CmdFollowBall'
     //  also used by 'Approach'
-    if ((State == DSTBALL_FOLLOW) and (m_targetEntity.second == pSE) and (m_followDistance == distance) and (m_userSpeedFraction))
+    if ((State == BallMode::DSTBALL_FOLLOW) and (m_targetEntity.second == pSE) and (m_followDistance == distance) and (m_userSpeedFraction))
         return;
     if (m_orbiting) {
         m_orbiting = 0;
         m_shipHeading = NULL_ORIGIN_V;
     }
 
-    State = DSTBALL_FOLLOW;
+    State = BallMode::DSTBALL_FOLLOW;
     m_targetPoint = pSE->GetPosition();
     m_targetEntity.first = pSE->GetID();
     m_targetEntity.second = pSE;
@@ -1613,7 +1613,7 @@ void DestinyManager::GotoDirection(const GPoint& direction) {
 
     sLog.Yellow("GotoDirection", "Heading: %.3f,%.3f,%.3f  Direction: %.3f,%.3f,%.3f",\
                 m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, direction.x, direction.y, direction.z);
-    State = DSTBALL_GOTO;
+    State = BallMode::DSTBALL_GOTO;
     m_targetPoint = direction *1.0e16;
     _BeginMovement();
 
@@ -1632,7 +1632,7 @@ void DestinyManager::GotoPoint(const GPoint& point) {
         m_shipHeading = NULL_ORIGIN_V;
     }
 
-    State = DSTBALL_GOTO;
+    State = BallMode::DSTBALL_GOTO;
     m_targetPoint = point;
     _BeginMovement();
 
@@ -1668,7 +1668,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
     m_targetEntity.second = nullptr;
 
     if (mySE->IsNPCSE()) {
-        State = DSTBALL_WARP;
+        State = BallMode::DSTBALL_WARP;
 
         // send client updates
         std::vector<PyTuple*> updates;
@@ -1708,7 +1708,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
         if(mySE->HasPilot())
             mySE->GetPilot()->SendErrorMsg("That is too close for your Warp Drive.");
 
-        State = DSTBALL_STOP;
+        State = BallMode::DSTBALL_STOP;
         SafeDelete(m_warpState);
         return;
     }
@@ -1741,7 +1741,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
             _log(DESTINY__WARNING, "Destiny::WarpTo() - %s(%u): Capacitor needed vs current  %.3f / %.3f",
                  mySE->GetName(), mySE->GetID(), capNeeded, currentShipCap);
 
-            State = DSTBALL_STOP;
+            State = BallMode::DSTBALL_STOP;
             SafeDelete(m_warpState);
             return;
             //}
@@ -1760,7 +1760,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
      * not sure how to check for bubble yet...maybe keep them in vector based on system.
      */
 
-    State = DSTBALL_WARP;
+    State = BallMode::DSTBALL_WARP;
 
     // send client updates
     std::vector<PyTuple*> updates;
@@ -1802,7 +1802,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
 }
 
 void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
-    if ((State == DSTBALL_ORBIT) and (m_targetEntity.second == pSE) and (m_followDistance == distance))
+    if ((State == BallMode::DSTBALL_ORBIT) and (m_targetEntity.second == pSE) and (m_followDistance == distance))
         return;
     if (m_orbiting)
         m_shipHeading = NULL_ORIGIN_V;
@@ -1819,7 +1819,7 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
      * speed fractions (usf, csf, asf - via SetSpeedFraction() to begin or alter speed)
      * m_maxOrbitSpeedFraction - calculated max speed to maintain commanded orbit distance.  set in Orbit()
      */
-    State = DSTBALL_ORBIT;
+    State = BallMode::DSTBALL_ORBIT;
     m_orbiting = 1;
     m_targetEntity.first = pSE->GetID();
     m_targetEntity.second = pSE;
@@ -1935,7 +1935,7 @@ void DestinyManager::SetUndockSpeed() {
     m_velocity = m_shipHeading * m_maxSpeed;
 
     if (!mySE->IsMissileSE()) {
-        State = DSTBALL_GOTO;
+        State = BallMode::DSTBALL_GOTO;
         std::vector<PyTuple*> updates;
         DoDestiny_SetBallVelocity bv;
             bv.entityID = mySE->GetID();
@@ -2242,7 +2242,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
     m_shipAgility = m_massMKg * m_shipInertia;
 
     SystemEntity* pTarget = pMissile->GetTarget();
-    State = DSTBALL_MISSILE;
+    State = BallMode::DSTBALL_MISSILE;
     m_stop = false;
     m_stateStamp = sEntityList.GetStamp();
     m_targetPoint = GPoint(pTarget->GetPosition());
@@ -2367,7 +2367,7 @@ void DestinyManager::UnCloak() {
 void DestinyManager::TractorBeamStart(SystemEntity* pShipSE)
 {
     /** @todo  need to update this */
-    State = DSTBALL_FOLLOW;
+    State = BallMode::DSTBALL_FOLLOW;
 
     m_stop = false;
     m_accel = false;
@@ -2555,7 +2555,7 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
                                        bool isActive, double duration, uint32 repeat) const
 {
     //TODO need to figure out what this is....
-    std::vector<int32, std::allocator<int32> > area; 
+    std::vector<int32, std::allocator<int32> > area;
     DoDestiny_OnSpecialFX13 effect;
         effect.entityID = entityID;
         effect.moduleID = moduleID;

@@ -81,7 +81,8 @@ void AsteroidBeltMgr::ClearAll() {
 
 bool AsteroidBeltMgr::CheckSpawn(uint16 bubbleID)
 {
-    if (IsSpawned(bubbleID)) return true;
+    if (IsSpawned(bubbleID))
+        return true;
     /*  if there are already roids created for this belt, they will be loaded in Load()
      * and NOT LOADED in loadsystemdynamics from SystemManager.
      * if Load() has roids for this belt, this belt will have true already set, and checked in SpawnBelt()
@@ -93,7 +94,7 @@ bool AsteroidBeltMgr::CheckSpawn(uint16 bubbleID)
 bool AsteroidBeltMgr::IsSpawned(uint16 bubbleID)
 {
     uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
-    std::map<uint32, bool>::const_iterator itr = m_spawned.find(beltID);
+    std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
     if (itr != m_spawned.end())
         return itr->second;
     return false;
@@ -102,7 +103,7 @@ bool AsteroidBeltMgr::IsSpawned(uint16 bubbleID)
 bool AsteroidBeltMgr::IsActive(uint16 bubbleID)
 {
     uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
-    std::map<uint32, bool>::const_iterator itr = m_active.find(beltID);
+    std::map<uint32, bool>::iterator itr = m_active.find(beltID);
     if (itr != m_active.end())
         return itr->second;
     return false;
