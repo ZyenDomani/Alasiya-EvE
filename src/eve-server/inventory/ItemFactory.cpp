@@ -75,6 +75,8 @@ ItemFactory::~ItemFactory() {
 }
 
 void ItemFactory::SaveItems() {
+    if (sConfig.server.DeleteTrackingCans)
+        m_db.DeleteTrackingCans();
     uint32 count = 0;
     double startTime = GetTimeMSeconds();
     std::vector<SaveData> items;
@@ -421,6 +423,20 @@ AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
 */
 CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
 {
+    /*  this is supposed to create a jetcan for ship tracking as a temp item.
+     * it currently crashes after 4 hits with a "malloc(): smallbin double linked list corrupted"  error.
+     * dunno why.  may track later.  04Jun17
+    uint32 containerID = 0;
+    CargoContainerRef containerRef = CargoContainerRef();
+    std::string str = "Position Test";
+    if (data.name.find(str) != data.name.npos) {
+        containerID = InventoryItem::CreateTempItemID( *this, data );
+        InventoryItemRef itemRef = InventoryItem::SpawnItem( *this, containerID, data );
+        if ( !itemRef )
+            return CargoContainerRef();
+        return RefPtr<CargoContainer>::StaticCast(itemRef);
+    }
+*/
     CargoContainerRef itemRef = CargoContainer::Spawn( *this, data );
     if ( !itemRef )
         return CargoContainerRef();

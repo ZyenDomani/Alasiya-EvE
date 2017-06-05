@@ -274,7 +274,7 @@ bool ConsoleCommand::Process() {
             } else if (strncmp(buf, "t", 1) == 0) {
                 Test();
             } else if (strncmp(buf, "d", 1) == 0) {
-                uint8 maxCount = 20;    // sConfig.server.MaxThreadReport
+                uint8 maxCount = sConfig.server.MaxThreadReport;
                 uint16 count = sThread.Count();
                 sLog.Blue("   Active Threads", "There are %u active threads running in the server.", count);
                 if (count > maxCount)

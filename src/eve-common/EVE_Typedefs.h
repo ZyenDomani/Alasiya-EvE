@@ -299,10 +299,10 @@ enum ClientTimers {
     JumpInvul        = 5000,
     WarpOutInvul     = 5000,
     WarpInInvul      = 18000,   // increased from 10s
-    UndockInvul      = 15000,
+    UndockInvul      = 20000,
     RestoringInvul   = 60000,
-    JumpCloak        = 12000,
-    LoginCloak       = 15000
+    JumpCloak        = 30000,
+    LoginCloak       = 20000
 };
 
 enum ClientState {

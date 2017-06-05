@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    7.6
+    Version:    7.7
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -54,11 +54,14 @@ public:
         bool UseMarketBot;
         bool UseProfiling;
         bool UseShipTracking;
+        bool DeleteTrackingCans;
+        bool PositionHack;
         bool UseStackTrace;
         bool IsTestServer;    // to distuinguish between live production server or experimental testing server
         bool DisableIGB;
         bool BulkDataOD;
         uint8 ServerSleepTime;
+        uint8 MaxThreadReport;
         uint16 idleSleepTime;
         uint16 maxPlayers;
     } server;

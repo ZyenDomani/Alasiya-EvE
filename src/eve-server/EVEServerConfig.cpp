@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    7.6
+    Version:    7.7
 */
 
 
@@ -48,12 +48,15 @@ EVEServerConfig::EVEServerConfig()
     server.IsTestServer = true;
     server.maxPlayers = 500;//N
     server.UseProfiling = false;
+    server.PositionHack = false;
     server.UseShipTracking = false;
+    server.DeleteTrackingCans = true;
     server.UseStackTrace = false;//N
     server.BulkDataOD = false;
     server.ServerSleepTime = 10 /*ms*/;
     server.idleSleepTime = 1000;
     server.DisableIGB = true;
+    server.MaxThreadReport = 20;
 
     // world
     world.chatLogs = false;//N
@@ -200,17 +203,20 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
 {
-    AddValueParser( "DisableIGB",       server.DisableIGB );
-    AddValueParser( "IsTestServer",     server.IsTestServer );
-    AddValueParser( "UseBeanCount",     server.UseBeanCount );
-    AddValueParser( "UseMarketBot",     server.UseMarketBot );
-    AddValueParser( "maxPlayers",       server.maxPlayers );
-    AddValueParser( "UseProfiling",     server.UseProfiling );
-    AddValueParser( "UseShipTracking",  server.UseShipTracking );
-    AddValueParser( "UseStackTrace",    server.UseStackTrace );
-    AddValueParser( "BulkDataOD",       server.BulkDataOD );
-    AddValueParser( "ServerSleepTime",  server.ServerSleepTime );
-    AddValueParser( "idleSleepTime",    server.idleSleepTime );
+    AddValueParser( "DisableIGB",           server.DisableIGB );
+    AddValueParser( "IsTestServer",         server.IsTestServer );
+    AddValueParser( "UseBeanCount",         server.UseBeanCount );
+    AddValueParser( "UseMarketBot",         server.UseMarketBot );
+    AddValueParser( "maxPlayers",           server.maxPlayers );
+    AddValueParser( "UseProfiling",         server.UseProfiling );
+    AddValueParser( "UseShipTracking",      server.UseShipTracking );
+    AddValueParser( "PositionHack",         server.PositionHack );
+    AddValueParser( "DeleteTrackingCans",   server.DeleteTrackingCans );
+    AddValueParser( "UseStackTrace",        server.UseStackTrace );
+    AddValueParser( "BulkDataOD",           server.BulkDataOD );
+    AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
+    AddValueParser( "idleSleepTime",        server.idleSleepTime );
+    AddValueParser( "MaxThreadReport",      server.MaxThreadReport );
 
     const bool result = ParseElementChildren( ele );
 
@@ -220,10 +226,13 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "maxPlayers" );
     RemoveParser( "UseProfiling" );
     RemoveParser( "UseShipTracking" );
+    RemoveParser( "PositionHack" );
+    RemoveParser( "DeleteTrackingCans" );
     RemoveParser( "UseStackTrace" );
     RemoveParser( "BulkDataOD" );
     RemoveParser( "ServerSleepTime" );
     RemoveParser( "idleSleepTime" );
+    RemoveParser( "MaxThreadReport" );
 
     return result;
 }
@@ -260,7 +269,7 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "damageRate",       rates.damageRate );
     AddValueParser( "missileRate",      rates.missileRate );
     AddValueParser( "missileTime",      rates.missileTime );
-    AddValueParser( "turretRate",      rates.turretRate );
+    AddValueParser( "turretRate",       rates.turretRate );
     AddValueParser( "corpCost",         rates.corpCost );
     AddValueParser( "WorldDecay",       rates.WorldDecay );
     AddValueParser( "NPCDecay",         rates.NPCDecay );

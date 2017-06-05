@@ -365,4 +365,3 @@ void ManagerDB::ClearDungeons()
     sDatabase.RunQuery(err, "DELETE FROM dunActive WHERE 1");
     sDatabase.RunQuery(err, "DELETE FROM sysSignatures WHERE 1");
 }
-

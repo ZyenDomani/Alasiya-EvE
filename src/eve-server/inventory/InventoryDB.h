@@ -122,6 +122,8 @@ public:
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 ownerID, std::vector<uint32> &into);
 
+    void DeleteTrackingCans();
+    
     /*
      * Character stuff
      * (chrCharacter, chrSkillQueue)

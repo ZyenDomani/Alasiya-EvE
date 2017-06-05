@@ -712,6 +712,13 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
     return true;
 }
 
+void InventoryDB::DeleteTrackingCans()
+{
+    DBerror err;
+    std::string query = "'%Position Test%'";
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE %s", query.c_str());
+}
+
 bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
     DBQueryResult res;
 

@@ -108,6 +108,7 @@ uint32 InventoryItem::CreateItemID(ItemFactory &factory, ItemData &data) {
 /* This Spawn function is meant for in-memory only items created from the following categorys...
  *  EVEDB::invCategories::Entity (for npcs)
  *  EVEDB::invCategories::Charge (for launched missiles only)
+ *  EVEDB::invCategories::Container (for Position Tracking only)
  *
  * these items meant to never be saved to database
  * and be thrown away on server shutdown.
