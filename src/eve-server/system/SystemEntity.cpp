@@ -61,8 +61,11 @@ SystemEntity::~SystemEntity()
 }
 
 void SystemEntity::Process() {
-    /*  Enable base call to Process Targeting and Movement  */
-    // this order WILL affect Point/Tackle  (kinda like on live)
+    /*  Enable base call to Process Targeting and Movement
+     * this order WILL affect Point/Tackle  (kinda like on live)
+     * processing target first will benefit agressor
+     * processing destiny first will benefit target
+     */
     if (m_targMgr)
         m_targMgr->Process();
     if (m_destiny)

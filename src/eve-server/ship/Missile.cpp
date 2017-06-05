@@ -184,7 +184,8 @@ void Missile::HitTarget() {
      * Ev = Explosion Velocity of the missile,
      * V = velocity of the target ship,
      * DRF = damage reduction factor of the missile.
-     * MIN being a function that chooses the lower of two given vaules,
+     * DRS = damage reduction sensitivity of the missile.
+     * MIN being a function that chooses the lower of the given vaules,
      * ln is natural logarithm.
      */
     double Sr = m_targetSE->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();    // this is a default number, based on itemtype
