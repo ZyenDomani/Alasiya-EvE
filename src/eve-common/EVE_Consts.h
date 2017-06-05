@@ -87,3 +87,27 @@ static const double Gc(6.6725985e-11);     //per client (changed from original 6
  * earth   =  9.807 m/s^2
  * jupiter = 24.790 m/s^2
  */
+
+/* ship agility by class
+ * class          agility
+ * Capsule          .06
+ * Shuttle          1.6
+ * Rookie           5
+ * Frigates         3 - 6 (adv. 3 - 4)
+ * Destroyers       4 - 5
+ * Cruisers         4 - 8
+ * T3 Cruiser       2.4 - 2.8
+ * HAC              5 - 7
+ * Battlecruisers   6 - 9
+ * Battleships      8 - 14
+ * Industrials      8 - 12
+ * Marauder         ~12
+ * Orca             40
+ * Freighters       ~60
+ * Supercarrier     ~60
+ * Command          ~9
+ * Transport        5 or 19
+ * Barges           10 - 18
+ * Dreadnought      ~55
+ * Zephyr           5
+ */

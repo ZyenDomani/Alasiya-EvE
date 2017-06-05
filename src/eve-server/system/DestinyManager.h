@@ -219,6 +219,7 @@ protected:
     uint32 m_stateStamp;                //statestamp of when current state began, in seconds
 
     float m_orbitRadTic;                //in rad/sec  - for orbiting
+    float m_turnFraction;               //fuzzy logic - speed % - used for turn accel/decel checks
     float m_prevSpeedFraction;          //fuzzy logic - speed % - set by _UpdateVelocity for decel where (m_userSpeedFraction == 0)
     float m_userSpeedFraction;          //fuzzy logic - speed % - set by user command
     float m_currentSpeedFraction;       //fuzzy logic - speed % - current ship speed
@@ -230,7 +231,6 @@ protected:
     double m_moveTimer;                 //in ms     - movement timestamp container for calculating csf
 
     GPoint m_targetPoint;
-    GPoint m_turnCenter;                //center point for turns.  used to correctly set radius
     GVector m_shipHeading;              //direction ship is facing
     GVector m_targetHeading;            //direction to target from current heading  -- should this be the *actual* heading of our current target??
     Destiny::BallMode State;
@@ -241,19 +241,19 @@ protected:
     void _Orbit();
     void _Follow();                     //follow or approach object in space
     void _BeginMovement();              //set initial variables for all movement (common code)
-    void _UpdateVelocity(bool isMoving=false);
+    void UpdateVelocity(bool isMoving=false);
 
 private:
     // Internal Collision Methods   -allan Nov 2015
     bool m_bump;
-    void _CheckBump();                              //iterate thru objects in current bubble to check for collisions
-    void _Bump(SystemEntity* who);                  //math methods for determining direction and speed of bumped ships
-    void _Bounce(GVector direction, float speed);   //packet sending for ships after bounce
+    void CheckBump();                              //iterate thru objects in current bubble to check for collisions
+    void Bump(SystemEntity* who);                  //math methods for determining direction and speed of bumped ships
+    void Bounce(GVector direction, float speed);   //packet sending for ships after bounce
 
     // Internal Turn Methods    -allan  Aug - Oct, 2015
-    bool _IsTurn();                     //check for current heading vs target direction. return true if degrees > 2 for warp align and > 0.8 for normal movement
-    GVector _Turn();                    //apply velocity and heading updates as needed for turning
-    void _ClearTurn();
+    bool IsTurn();                     //check for current heading vs target direction. return true if degrees > 2 for warp align and > 0.8 for normal movement
+    void Turn();                       //apply velocity and heading updates as needed for turning
+    void ClearTurn();
 
     // Internal Warp Methods
     Timer m_warpTimer;
