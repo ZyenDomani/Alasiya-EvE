@@ -304,29 +304,29 @@ void Client::ProcessClient() {
     if (m_stateTimer.Check(false)) {
         m_stateTimer.Disable();
         switch (m_clientState) {
-            case csIdle: {
+            case ClientState::csIdle: {
                 sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
                 //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
             } break;
             case csDock: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
                 DockToStation();
-                m_clientState = csIdle;
+                m_clientState = ClientState::csIdle;
                 return;
             } break;
-            case csUndock: {
+            case ClientState::csUndock: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
                 SetBallPark();
             } break;
-            case csKilled: {
+            case ClientState::csKilled: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
                 SetBallPark();
             } break;
-            case csBoard: {
+            case ClientState::csBoard: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
                 SetBallPark();
             } break;
-            case csJump: {
+            case ClientState::csJump: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
                 ExecuteJump();
             } break;
@@ -570,10 +570,8 @@ void Client::SetBallPark() {
     m_login = m_bubbleWait = false;
     if (!pShipSE->SysBubble())
         m_system->AddEntity(pShipSE);
-    if (m_undock)
+    if (m_clientState == ClientState::csUndock)
         pShipSE->DestinyMgr()->Undock(m_movePoint);
-    if (!m_setStateSent)
-        pShipSE->DestinyMgr()->SendSetState();
     if (m_clientState == ClientState::csJump)
         pShipSE->DestinyMgr()->Jump();
     if (m_clientState == ClientState::csBoard) {
@@ -581,7 +579,9 @@ void Client::SetBallPark() {
         pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
         pShipSE->DestinyMgr()->SendSetState();
     }
-    m_clientState = csIdle;
+    if (!m_setStateSent)
+        pShipSE->DestinyMgr()->SendSetState();
+    m_clientState = ClientState::csIdle;
 }
 
 void Client::DockToStation() {

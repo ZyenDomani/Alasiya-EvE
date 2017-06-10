@@ -170,8 +170,6 @@ protected:
     bool m_hasSentShipUpdates;
 
     //things dictated by our entity's configuration:
-    int8 m_warpStrength;                //signed    - >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
-
     uint8 m_warpAccelTime;              //in s      - calculated internally for warp stages
     uint8 m_warpDecelTime;              //in s      - calculated internally for warp stages
 
@@ -195,6 +193,7 @@ protected:
 
     //derrived from above params:
     float m_maxSpeed;                   //in m/s
+    float m_degPerTic;                  //in deg/s  - used to determine rate of direction change
     float m_shipMaxAccelTime;           //in s      - used to determine accel rate, and total accel time
 
     double m_radians;                   //in rad    - radians left in an ongoing turn

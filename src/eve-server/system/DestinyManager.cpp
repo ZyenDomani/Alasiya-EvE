@@ -65,7 +65,6 @@ m_shipWarpSpeed(1.0f),
 m_maxShipSpeed(100.0f),
 m_shipAgility(1.0f),
 m_shipInertia(1.0f),
-m_warpStrength(0),
 m_warpAccelTime(1),
 m_warpDecelTime(1),
 m_warpState(nullptr),
@@ -86,6 +85,7 @@ m_warpCapacitorNeed(0.00001f)
     m_stateStamp = 0;
 
     m_prevSpeed = 0.0f;
+    m_degPerTic = 0.0f;
     m_orbitRadTic = 0.0f;
     m_prevSpeedFraction = 0.0f;
     m_userSpeedFraction = 0.0f;
@@ -274,15 +274,16 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
      *   m_velocity = m_shipHeading * m_currentSpeedFraction * m_maxSpeed
      */
     if ((m_shipMaxAccelTime < 1.0) and (mySE->IsDynamicEntity()))
-        m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
+        if (!mySE->HasPilot()) {
+            m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
+        } else if (!mySE->GetPilot()->IsUndock()) {
+            m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
+        }
 
     if ((m_userSpeedFraction) and ((!fraction) or (m_prevSpeed) or (fraction != m_userSpeedFraction)))
         m_prevSpeedFraction = m_userSpeedFraction;
     else
         m_prevSpeedFraction = 0.0f;
-
-    //if ((m_prevSpeed == 0) and m_prevSpeedFraction)
-    //    m_prevSpeed = m_maxSpeed * m_prevSpeedFraction;
 
     m_userSpeedFraction = fraction;
     bool isMoving = false;
@@ -340,15 +341,17 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
                     logType = 4;
                     m_accel = true;
                     m_decel = false;
-                    double newTime = (-log(1 - m_currentSpeedFraction) * m_shipAgility);
-                    m_moveTimer = (GetTimeMSeconds() - (newTime * 1000));
+                    m_prevSpeed = 0;
+                    m_prevSpeedFraction = 0;
                     m_activeSpeedFraction = m_currentSpeedFraction;
                     delta = 1 - m_currentSpeedFraction;
                 } else {
                     logType = 3;
                     m_decel = true;
                     m_accel = false;
-                    m_prevSpeedFraction = m_activeSpeedFraction;
+                    m_moveTimer = GetTimeMSeconds();
+                    m_prevSpeedFraction = m_currentSpeedFraction;
+                    delta = m_turnFraction / m_currentSpeedFraction;
                 }
             } else if (m_decel) {
                 m_accel = true;
@@ -389,8 +392,7 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
             m_shipMaxAccelTime *= m_userSpeedFraction;      // for accel with user speeds <= 1.0
             m_maxSpeed = m_maxShipSpeed * m_userSpeedFraction;
             //  see notes in _Move() for information relating to accel equations
-            //m_currentSpeedFraction = (1 - exp(-0.01 * m_shipAgility));
-            m_currentSpeedFraction = (1 - exp(-0.01 * 1000000 / (m_shipInertia * m_mass)));
+            m_currentSpeedFraction = (1 - exp(-0.01 / m_shipAgility));
             m_velocity = m_shipHeading * m_maxSpeed * m_currentSpeedFraction;
         }
         _log(DESTINY__MOVE_TRACE, "Destiny::UpdateVelocity - %s(%u): Speed Change - USF: %.2f, ASF: %.2f, CSF: %.2f, PSF: %.2f, prevSpeed: %.2f", \
@@ -716,8 +718,9 @@ void DestinyManager::_Move() {
             move = "accelerating";
 
         //if ship is turning, DO NOT reset CSF here until AFTER initial turn decel.
-        if ((!m_turning) or (m_turnTic > 2))  //normal accel
-            m_currentSpeedFraction = (1 - exp(-timeStamp * 1000000 / (m_shipInertia * m_mass)));
+        //if ((!m_turning) or (m_turnTic > (m_shipAgility * 0.45)))  //normal accel
+            m_currentSpeedFraction = (1 - exp(-timeStamp / m_shipAgility));
+            //m_currentSpeedFraction = (1 - exp(-timeStamp * 1000000 / (m_shipInertia * m_mass)));
 
         if (m_accel)
             m_activeSpeedFraction = m_userSpeedFraction * m_currentSpeedFraction;
@@ -763,11 +766,11 @@ void DestinyManager::_Move() {
         }
     }
     // ships tend to "level out" when stopping.  try to mimic that here
-    if ((m_stop) and (m_currentSpeedFraction < 0.6)) {
-        if (m_shipHeading.y < 0.1)
-            m_shipHeading.y += 0.05;
-        else if (m_shipHeading.y > 0.1)
-            m_shipHeading.y -= 0.05;
+    if ((m_stop) and (m_currentSpeedFraction < 0.4)) {
+        if (m_shipHeading.y < -0.3)
+            m_shipHeading.y += 0.08;
+        else if (m_shipHeading.y > 0.3)
+            m_shipHeading.y -= 0.08;
     }
 
     if (m_orbiting) {
@@ -842,65 +845,60 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
     return true;
 }
 
-void DestinyManager::Turn() {   // tracking within 900m for Frigates.  05Jun17
+void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for BS.  05Jun17
     if (mySE->HasPilot())
         if (mySE->GetPilot()->IsUndock())
             return;
 
     if (!IsTurn()) {
-        // was ship turning?  if so, reset movement variables.
         if (m_turning)
             ClearTurn();
-        // no turn or turn was completed. return current heading, and continue movement.
         return;
     }
     /*when changing directions....
      *  m_moveTimer will have to be reset - call UpdateVelocity() when turn starts
-     *  m_shipHeading will have to be reset - reset in _Move() (our calling function) using the return of this function
+     *  m_shipHeading will have to be reset - reset here and used in _Move() (our calling function)
      *  check for decel, then call UpdateVelocity() to set variables as needed.  Move() will handle the rest.
      */
 
+    float turnTime = (m_shipAgility * 0.45);
     if (!m_turning) {
-        // set initial turn movement and speed variables
         m_turning = true;
-        // the min speed happens at 0.75s (first tic) into turning
-        // turn angle is computed from original turn angle and speed.
-        m_turnFraction = sqrt((cos(m_radians) + 1) /2);  //m_radians is set in IsTurn() function
-        if (m_turnFraction < m_currentSpeedFraction) {
-            // decel from (csf) to (tf) here; ships do this in < 2s.
-            m_prevSpeedFraction = m_currentSpeedFraction;
-            m_currentSpeedFraction = m_turnFraction;
-            UpdateVelocity(true);   // reset movement variables for speed change
-        }
-        m_alignTime = m_turnFraction * m_timeToEnterWarp;
-        m_turnTic = 1;
-        _log(DESTINY__TURN_TRACE, "Destiny::_Turn() - %s(%u): Agility:%.3f, Inertia:%.3f, AlignTime:%.3f, fraction:%.3f", \
-                mySE->GetName(), mySE->GetID(), m_shipAgility, m_shipInertia, m_alignTime, m_turnFraction);
-    } else {
-        if (m_decel) {
-            // decel is complete.  resume accel and continue turn
-            //m_decel = false;  -UpdateVelocity() will reset accel/decel checks...do NOT do it here
-            m_prevSpeed = 0;
-            m_prevSpeedFraction = 0;
-            UpdateVelocity(true);
-        }
-        ++m_turnTic;
+        //m_radians is set in IsTurn() on every tic
+        m_turnFraction = sqrt((cos(m_radians) + 1) /2);
+        //this isnt used yet...used as comparison for testing time calc's
+        m_alignTime = (EvE_RadiansToDegrees(m_radians) / m_degPerTic);
+        _log(DESTINY__TURN_TRACE, "Destiny::Turn() - %s(%u): Agility:%.3f, Inertia:%.3f, alignTime:%.3f, turnTime:%.3f, turnFraction:%.3f, m_degPerTic:%.3f", \
+                mySE->GetName(), mySE->GetID(), m_shipAgility, m_shipInertia, m_alignTime, turnTime, m_turnFraction, m_degPerTic);
     }
+
+    ++m_turnTic;
+
+    // logic to determine speed changes for turning
+    if (m_turnTic < turnTime) {
+        if (m_turnFraction < m_currentSpeedFraction)
+            if (m_accel)
+                UpdateVelocity(true);
+    } else {
+        if (m_decel)
+            UpdateVelocity(true);
+    }
+
 
     /*  class          agility
      * Capsule          .06
      * Shuttle          1.6
      * Rookie           5
-     * Frigates         3 - 6 (adv. 3 - 4)
+     * Frigates         3 - 6 (adv. 3 - 4)  (2s) 1s
      * Destroyers       4 - 5
      * Cruisers         4 - 8
      * T3 Cruiser       2.4 - 2.8
      * HAC              5 - 7
      * Battlecruisers   6 - 9
-     * Battleships      8 - 14
+     * Battleships      8 - 14      (12s) 4s
      * Industrials      8 - 12
      * Marauder         ~12
-     * Orca             40
+     * Orca             40          (40s) 18s
      * Freighters       ~60
      * Supercarrier     ~60
      * Command          ~9
@@ -909,22 +907,24 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates.  05Jun17
      * Dreadnought      ~55
      * Zephyr           5
      */
-    // set ship heading based on position in turn and current speed and ship agility (which is already calculated in csf)
+    // set ship turn amount based on position in turn, current speed and ship agility
     GVector deltaHeading(m_shipHeading, m_targetHeading);
-    float turnPercent = 0, test = m_currentSpeedFraction, test2 = (m_radians / m_alignTime);
-         if (test > 0.8)    turnPercent = 0.2;
-    else if (test > 0.5)    turnPercent = 0.3;
-    //else if (test > 0.4)    turnPercent = 0.3;
-    //else if (test > 0.4)    turnPercent = 0.4;
-    //else if (test > 0.3)    turnPercent = 0.3;
-    //else if (test > 0.2)    turnPercent = 0.3;
-    else                    turnPercent = 0.2;
+    float turnPercent = 0.2f;
+    float degrees = EvE_RadiansToDegrees(m_radians);
+    if (degrees > 90) {
+        if (m_decel and m_turnTic > turnTime) {
+            // turn half of remaining turn (simulate greatest turn angle when (turn > 90*) and (speed < time)
+            turnPercent = 0.5f;
+        } else {
+            turnPercent = m_degPerTic / degrees;
+        }
+    } else if (degrees > m_degPerTic)
+        turnPercent = m_degPerTic / degrees;
 
     deltaHeading *= turnPercent;
-
     m_shipHeading += deltaHeading;
-    _log(DESTINY__TURN_TRACE, "Destiny::_Turn() - csf:%.3f, turnTic:%u, test - 1:%.3f, 2:%.3f  (deltaHeading:%.5f, %.5f, %.5f * turnPercent:%.2f) = shipHeading:%.3f, %.3f, %.3f", \
-            m_currentSpeedFraction, m_turnTic, test, test2, deltaHeading.x, deltaHeading.y, deltaHeading.z, turnPercent, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+    _log(DESTINY__TURN_TRACE, "Destiny::Turn() - csf:%.3f, turnTic:%u, degRemain:%.3f  (deltaHeading:%.5f, %.5f, %.5f * turnPercent:%.2f) = shipHeading:%.3f, %.3f, %.3f", \
+            m_currentSpeedFraction, m_turnTic, degrees, deltaHeading.x, deltaHeading.y, deltaHeading.z, turnPercent, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 }
 
 void DestinyManager::ClearTurn() {
@@ -932,6 +932,7 @@ void DestinyManager::ClearTurn() {
         SetPosition(m_position, true);
     m_turnTic = 0;
     m_turning = false;
+    m_radians = 0.0f;
     m_turnFraction = 0.0f;
     m_alignTime = m_timeToEnterWarp;
 }
@@ -1567,10 +1568,13 @@ void DestinyManager::_BeginMovement() {
         UnCloak();
 
     // if ship is not moving, set initial movement variables
-    // if ship is moving, turn checks will reset movement variables as needed
     if (!m_userSpeedFraction) {
         SetSpeedFraction(1.0f, true);
         _Move();
+    } else if (m_currentSpeedFraction) {
+        // check for moving ship.  this will set m_moveTimer for current ship speed, to allow correct movement after direction change
+        double newTime = (-log(1 - m_currentSpeedFraction) * m_shipAgility);
+        m_moveTimer = (GetTimeMSeconds() - (newTime * 1000));
     }
 
     if (sConfig.server.PositionHack)
@@ -1592,12 +1596,13 @@ void DestinyManager::Follow(SystemEntity* pSE, double distance) {
     m_targetEntity.first = pSE->GetID();
     m_targetEntity.second = pSE;
     m_followDistance = distance;
+    /*  the client doesnt follow this....may fix later.
     if (pSE->IsStationSE()) {
         // set target position to dock of station....NOT in the middle of the fucking thing.
         StationData sData;
         sDataMgr.GetStationInfo(pSE->GetID(), sData);
         m_targetPoint = sData.dockPosition;
-    }
+    } */
     _BeginMovement();
 
     DoDestiny_CmdFollowBall du;
@@ -1662,9 +1667,12 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
         SafeDelete(m_warpState);
 
     /** @todo (allan) finish warp scramble system */
-    if (m_warpStrength < 0/*m_warpScrambleSrength*/)
+    // >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
+    if (mySE->GetSelf()->GetAttribute(AttrWarpScrambleStatus) > 0) {
         if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
             throw PyException(MakeUserError("WarpScrambled"));
+        return;
+    }
 
     m_stopDistance = distance;
     GVector warp_distance(m_position, where);
@@ -2074,6 +2082,7 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     m_shipAgility = m_massMKg * m_shipInertia;
     m_alignTime = (-log(0.25) * m_shipAgility);
     m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
+    m_degPerTic = (90.0f - m_shipAgility) /10;
 
     _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost() - oldMass: %.5f, newMass: %.5f, oldAgility: %.5f, newAgility: %.5f", \
             oldMass, m_mass, oldAgility, m_shipAgility);
@@ -2183,10 +2192,6 @@ Battleships 0.155
     m_radius = ship->GetAttribute(AttrRadius).get_float();
     m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
 
-    //  check for (and set) warp strength modifiers
-    if (ship->HasAttribute(AttrWarpScrambleStatus))
-        m_warpStrength = (int8)ship->GetAttribute(AttrWarpScrambleStatus).get_int();    // >0 == cannot warp
-
     // this will catch speeds/needs for all ships (player and npc), and is easier to do here.
     if (ship->HasAttribute(AttrWarpSpeedMultiplier))
         m_shipWarpSpeed = ship->GetAttribute(AttrWarpSpeedMultiplier).get_float();
@@ -2214,6 +2219,7 @@ Battleships 0.155
      *  agility is an internal-use variable.
      */
     m_shipAgility = m_massMKg * m_shipInertia;
+    m_degPerTic = (90.0f - m_shipAgility) /10;
     // set a maximum acceleration time (based on ship variables)
     //   this is no longer correct.  Vmax/T is the correct formula
     m_shipMaxAccelTime = (-log(0.0001) * m_shipAgility);
