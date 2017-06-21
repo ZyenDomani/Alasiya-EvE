@@ -825,12 +825,21 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
     toVec.normalize();
     float dot = toVec.dotProduct(m_shipHeading);
     if ((dot > 1.0f) or (dot < -1.0f)) {
-        sLog.Error("Destiny::IsTurn()", "%s(%u) - shipHeading has screwed up.  dot is %.5f", \
-                    mySE->GetName(), mySE->GetID(), dot);
+        sLog.Error("Destiny::IsTurn()", "%s(%u) - shipHeading has screwed up.  dot is %.5f", mySE->GetName(), mySE->GetID(), dot);
         _log(DESTINY__ERROR, "Destiny::IsTurn() m_shipHeading: %.3f,%.3f,%.3f.  m_targetHeading: %.3f,%.3f,%.3f, toVec:%.3f,%.3f,%.3f", \
                 m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, m_targetHeading.x, m_targetHeading.y, m_targetHeading.z, toVec.x, toVec.y, toVec.z);
-        Stop();
-        return false;
+        // try to correct for bad heading vector and retest...
+             if (m_shipHeading.x > 1.0f)  m_shipHeading.x -= 1;
+        else if (m_shipHeading.x < 1.0f)  m_shipHeading.x += 1;
+             if (m_shipHeading.y > 1.0f)  m_shipHeading.y -= 1;
+        else if (m_shipHeading.y < 1.0f)  m_shipHeading.y += 1;
+             if (m_shipHeading.z > 1.0f)  m_shipHeading.z -= 1;
+        else if (m_shipHeading.z < 1.0f)  m_shipHeading.z += 1;
+        dot = toVec.dotProduct(m_shipHeading);
+        if ((dot > 1.0f) or (dot < -1.0f)) {
+            sLog.Error("Destiny::IsTurn()", "%s(%u) - shipHeading has screwed up AGAIN.  dot is %.5f", mySE->GetName(), mySE->GetID(), dot);
+            return false;
+        }
     }
     m_radians = acos(dot);
     float degrees = EvE_RadiansToDegrees(m_radians);
@@ -859,6 +868,8 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
      *  m_moveTimer will have to be reset - call UpdateVelocity() when turn starts
      *  m_shipHeading will have to be reset - reset here and used in _Move() (our calling function)
      *  check for decel, then call UpdateVelocity() to set variables as needed.  Move() will handle the rest.
+     *
+     *   m_degPerTic = (90.0f - m_shipAgility) /10;  (this file, set at 2222, reset for ab/mwd at 2087)
      */
 
     float turnTime = (m_shipAgility * 0.45);
@@ -875,7 +886,7 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
     ++m_turnTic;
 
     // logic to determine speed changes for turning
-    if (m_turnTic < turnTime) {
+    if ((m_turnTic < turnTime) or (turnTime < 1.0)) {
         if (m_turnFraction < m_currentSpeedFraction)
             if (m_accel)
                 UpdateVelocity(true);
@@ -912,15 +923,19 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
     float turnPercent = 0.2f;
     float degrees = EvE_RadiansToDegrees(m_radians);
     if (degrees > 90) {
-        if (m_decel and m_turnTic > turnTime) {
+        if (m_decel and (m_turnTic > turnTime)) {
             // turn half of remaining turn (simulate greatest turn angle when (turn > 90*) and (speed < time)
             turnPercent = 0.5f;
         } else {
-            turnPercent = m_degPerTic / degrees;
+            turnPercent = m_degPerTic / (degrees -90);
         }
     } else if (degrees > m_degPerTic)
         turnPercent = m_degPerTic / degrees;
 
+    if (turnPercent > 1.0) {
+        _log(DESTINY__ERROR, "Destiny::Turn() - turnTic:%u, degRemain:%.3f, turnPercent:%.2f", m_turnTic, degrees, turnPercent);
+        turnPercent = 0.9;
+    }
     deltaHeading *= turnPercent;
     m_shipHeading += deltaHeading;
     _log(DESTINY__TURN_TRACE, "Destiny::Turn() - csf:%.3f, turnTic:%u, degRemain:%.3f  (deltaHeading:%.5f, %.5f, %.5f * turnPercent:%.2f) = shipHeading:%.3f, %.3f, %.3f", \
@@ -1945,6 +1960,7 @@ void DestinyManager::SetUndockSpeed() {
     m_shipMaxAccelTime = 0.1f;
     m_prevSpeedFraction = 0.0f;
     m_userSpeedFraction = 1.0f;
+    m_activeSpeedFraction = 1.0f;
     m_currentSpeedFraction = 1.0f;
     m_maxSpeed = m_maxShipSpeed;
     m_velocity = m_shipHeading * m_maxSpeed;

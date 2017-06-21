@@ -300,43 +300,11 @@ void Client::ProcessClient() {
         return;
     }
 
-    /*  this may need to be moved to net process, as some of these are NOT on 1s intervals */
-    if (m_stateTimer.Check(false)) {
-        m_stateTimer.Disable();
-        switch (m_clientState) {
-            case ClientState::csIdle: {
-                sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
-                //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
-            } break;
-            case csDock: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
-                DockToStation();
-                m_clientState = ClientState::csIdle;
-                return;
-            } break;
-            case ClientState::csUndock: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
-                SetBallPark();
-            } break;
-            case ClientState::csKilled: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
-                SetBallPark();
-            } break;
-            case ClientState::csBoard: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
-                SetBallPark();
-            } break;
-            case ClientState::csJump: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
-                ExecuteJump();
-            } break;
-        }
-    }
-
     if (m_invul and m_invulTimer.Check(false)) {
         _log(CLIENT__TIMER, "Client::ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
         m_invulTimer.Disable();
         SetInvul(false);
+        SetUndock(false);
     }
 
     if (m_scanTimer.Check(false)) {
@@ -358,6 +326,37 @@ void Client::ProcessClient() {
         _log(CLIENT__TIMER, "Client::ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
         m_cloakTimer.Disable();
         pShipSE->DestinyMgr()->UnCloak();
+    }
+
+    if (m_stateTimer.Check(false)) {
+        m_stateTimer.Disable();
+        switch (m_clientState) {
+            case ClientState::csDock: {
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
+                DockToStation();
+            } break;
+            case ClientState::csUndock: {
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
+                SetBallPark();
+            } break;
+            case ClientState::csKilled: {
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
+                SetBallPark();
+            } break;
+            case ClientState::csBoard: {
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
+                SetBallPark();
+            } break;
+            case ClientState::csJump: {
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
+                ExecuteJump();
+            } break;
+            //case ClientState::csIdle:
+            default: {
+                sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
+                //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
+            } break;
+        }
     }
 
     if (sConfig.server.UseProfiling)
@@ -585,6 +584,7 @@ void Client::SetBallPark() {
 }
 
 void Client::DockToStation() {
+    m_clientState = ClientState::csIdle;
     pShipSE->DestinyMgr()->Dock();
     m_ship->SaveShip();
 
@@ -842,7 +842,7 @@ void Client::SetClientTimer(ClientState state, uint32 time)
 {
     m_clientState = state;
     m_stateTimer.Start(time);
-    sLog.Cyan("Client::SetTimer()","%s: ClientTimer set %s to %ums.", m_char->itemName().c_str(), GetStateName(state).c_str(), time);
+    _log(CLIENT__TIMER, "%s: ClientTimer set %s to %ums.", m_char->itemName().c_str(), GetStateName(state).c_str(), time);
 }
 
 std::string Client::GetStateName(ClientState state)

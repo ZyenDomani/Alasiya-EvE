@@ -626,7 +626,6 @@ void Character::ResetModifiers()
 void Character::ProcessEffects()
 {
     //  427 total skills.  this should be fairly fast...it is.
-    /** @note  ALL module, missile, and drone code will have to be rewritten because of this new effects code */
     std::vector<InventoryItemRef> allSkills;
     GetSkillsList(allSkills);
 

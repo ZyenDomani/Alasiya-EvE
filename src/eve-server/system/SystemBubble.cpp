@@ -572,12 +572,12 @@ void SystemBubble::RemoveBallExclusive(SystemEntity *about_who) {
 }
 
 void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
-    if (!to_who->HasPilot())
-        return;
     if (m_dynamicEntities.empty())
         return;
+    if ((!to_who->HasPilot()) or (!to_who->SysBubble()))
+        return;
     Client* pClient = to_who->GetPilot();
-    if (!pClient)
+    if (!pClient or pClient->IsDock() or pClient->IsDocked())
         return;
 
     DoDestiny_RemoveBalls remove_balls;
