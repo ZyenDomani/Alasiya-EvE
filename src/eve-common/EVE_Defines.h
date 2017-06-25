@@ -161,8 +161,8 @@ minFakeClientItem = 17000000000000000000L
 #define IsNPCStation(itemID) \
 ((itemID >= minStation) && (itemID <= maxNPCStation))
 
-//#define IsOutpost(itemID) \
-((itemID > maxNPCStation) && (itemID < maxStation))
+//#define IsOutpost(itemID)
+// ((itemID > maxNPCStation) && (itemID < maxStation))
 
 #define IsTrading(itemID) \
 ((itemID >= 64000000) && (itemID < 66000000))

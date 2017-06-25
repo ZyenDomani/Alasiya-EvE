@@ -315,7 +315,7 @@ public:
         bool operator a ( b val) \
         { \
             if (this->mType == evil_number_int) \
-                return this->mValue.iVal a static_cast<uint64>(val); \
+                return this->mValue.iVal a static_cast<int64>(val); \
             else \
                 return this->mValue.fVal a static_cast<double>(val); \
         }
@@ -344,7 +344,7 @@ public:
     LOGIC_OPERATORS_FOR( const int32)
     LOGIC_OPERATORS_FOR( const uint32)
     LOGIC_OPERATORS_FOR( const int64)
-    LOGIC_OPERATORS_FOR( const uint64)
+    //LOGIC_OPERATORS_FOR( const uint64)
     LOGIC_OPERATORS_FOR( const float)
     LOGIC_OPERATORS_FOR( const double)
 

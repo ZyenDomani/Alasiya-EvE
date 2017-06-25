@@ -160,7 +160,7 @@ protected:
 
 //////////////////////////////////////////////////////////////////////////////////
 // Modifier classes containing all data to modify an attribute
-#pragma region Modifier
+/** @todo  wtf is this shit???  */
 
 class Modifier
 : public RefObject
@@ -210,7 +210,6 @@ public:
 
 typedef std::map<uint32, ModifierMap *> ModifierMaps;   // Key= attributeID, Value= ModifierMap class object containing a map of all modifiers for this attribute
 
-#pragma endregion
 /////////////////////////////// END MODIFIER /////////////////////////////////////
 
 /**

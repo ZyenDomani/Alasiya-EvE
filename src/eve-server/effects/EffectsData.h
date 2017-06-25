@@ -232,7 +232,7 @@ dgmPassiveEffectCategories = (dgmEffPassive, dgmEffDungeon, dgmEffSystem)
     */
 
     enum Operands {
-        /** @note  '//*' denotes implemented */
+        // @note  '//*' denotes implemented
         operandADD = 1,             //*
         operandAGGM = 2,            //*
         operandAGIM = 3,            //*

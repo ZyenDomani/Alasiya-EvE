@@ -52,9 +52,9 @@ public:
     bool Check(bool reset = true);
 
     uint32 GetRemainingTime() const;
-    static const uint32 SetCurrentTime();
-    static const uint32 GetCurrentTime();
-    static const uint32 GetTimeSeconds();
+    uint32 SetCurrentTime();
+    uint32 GetCurrentTime();
+    uint32 GetTimeSeconds();
 
 
 private:

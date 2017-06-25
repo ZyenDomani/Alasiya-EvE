@@ -122,18 +122,18 @@ void Timer::Trigger() {
     m_startTime = (currentTime - m_timerTime - 1);
 }
 
-const uint32 Timer::GetCurrentTime() {
+uint32 Timer::GetCurrentTime() {
     return currentTime;
 }
 
 //just to keep all time related crap in one place... not really related to timers.
-const uint32 Timer::GetTimeSeconds() {
+uint32 Timer::GetTimeSeconds() {
     return currentSeconds;
 }
 
-const uint32 Timer::SetCurrentTime()
+uint32 Timer::SetCurrentTime()
 {
-    const uint32 tickCount = ::GetTickCount();
+    uint32 tickCount = ::GetTickCount();
 
     if( lastTime == 0 )
         currentTime = 0;

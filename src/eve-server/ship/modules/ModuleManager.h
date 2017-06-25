@@ -86,10 +86,7 @@ class ModuleManager;
 
 
 
-//////////////////////////////////////////////////////////////////////////////////
 // Container for all ships modules
-#pragma region ModuleContainer
-
 class ModuleManager;
 class ModuleContainer
 {
@@ -171,13 +168,8 @@ private:
     std::map<uint32, uint32> m_ModulesFittedByGroupID;
 };
 
-#pragma endregion
-/////////////////////////// END MODULECONTAINER //////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////////////
 // Primary Module Manager class
-#pragma region ModuleManager
-
 class ModuleManager
 {
 public:
@@ -248,8 +240,6 @@ private:
     std::map<EVEItemFlags, InventoryItemRef> m_charges; // flag, chargeItem
 };
 
-#pragma endregion
-/////////////////////////// END MODULE MANAGER //////////////////////////////////
 
 #endif  /* MODULE_MANAGER_H */
 
