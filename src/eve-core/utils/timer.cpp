@@ -126,12 +126,7 @@ uint32 Timer::GetCurrentTime() {
     return currentTime;
 }
 
-//just to keep all time related crap in one place... not really related to timers.
-uint32 Timer::GetTimeSeconds() {
-    return currentSeconds;
-}
-
-uint32 Timer::SetCurrentTime()
+const void Timer::SetCurrentTime()
 {
     uint32 tickCount = ::GetTickCount();
 
@@ -142,6 +137,9 @@ uint32 Timer::SetCurrentTime()
 
     lastTime = tickCount;
     currentSeconds = (tickCount / 1000);
+}
 
-    return currentTime;
+//just to keep all time related crap in one place... not really related to timers.
+uint32 Timer::GetTimeSeconds() {
+    return currentSeconds;
 }

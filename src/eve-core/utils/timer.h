@@ -51,8 +51,8 @@ public:
     bool TimerFinished();
     bool Check(bool reset = true);
 
+    static const void SetCurrentTime();
     uint32 GetRemainingTime() const;
-    uint32 SetCurrentTime();
     uint32 GetCurrentTime();
     uint32 GetTimeSeconds();
 
