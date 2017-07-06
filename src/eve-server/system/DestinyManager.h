@@ -219,11 +219,11 @@ protected:
 
     float m_orbitRadTic;                //in rad/sec  - for orbiting
     float m_turnFraction;               //fuzzy logic - speed % - used for turn accel/decel checks
-    float m_prevSpeedFraction;          //fuzzy logic - speed % - set by _UpdateVelocity for decel where (m_userSpeedFraction == 0)
+    float m_prevSpeedFraction;          //fuzzy logic - speed % - previous speed fraction used for decel checks when (m_userSpeedFraction == 0)
     float m_userSpeedFraction;          //fuzzy logic - speed % - set by user command
-    float m_currentSpeedFraction;       //fuzzy logic - speed % - current ship speed
-    float m_activeSpeedFraction;        //fuzzy logic - speed % - set by USF and CSF
-    float m_maxOrbitSpeedFraction;      //fuzzy logic - speed % - set by Orbit()
+    float m_currentSpeedFraction;       //fuzzy logic - speed % - holds current euler value for time
+    float m_activeSpeedFraction;        //fuzzy logic - speed % - ship's current speed setting as ratio of CSF to USF (or OSF)
+    float m_maxOrbitSpeedFraction;      //fuzzy logic - speed % - ship's max speed based on orbit data
 
     double m_targetDistance;            //in m
     double m_followDistance;            //in m
@@ -236,7 +236,7 @@ protected:
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
     // movement methods
-    void _Move();                       //apply velocity to our position for for this round of movement
+    void MoveObject();                  //apply velocity to our position for for this round of movement
     void _Orbit();
     void _Follow();                     //follow or approach object in space
     void _BeginMovement();              //set initial variables for all movement (common code)
