@@ -1,33 +1,23 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
+/**
+ * @name BulkMgrService.cpp
+ *   This file is for processing bulkdata
+ *   Copyright 2017  Alasiya-EVEmu Team
+ *
+ * @Author:    ozatomic (hacked for static client data)
+ * @Author:    Allan (added calls and (hacked) updates for new dgm data)
+ * @date:      24 January 2017
+ *
+ */
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        ozatomic (hacked for static client data)
-    Updates:    Allan (added calls and (hacked) updates for new dgm data)
-*/
 
 /** @todo  this system will need to work with objectCache, as those ARE the bulkdata files sent to the client.
  *  they are already packed and loaded into the server.  this system ive created for bulkData is redundant.
  * will have to look into sorting/sending to client eventually, using hash comparison to determine what files to send. (if possible)
  * for now, we'll leave this as-is, because it seems to be working ok, and i *MAY NOT* have complete data for all the bulkfiles
+ */
+
+/** @update  the client install has default bulkdata files found in the eve/bulkdata directory.  need to get these files and compare with
+ * what we have to see what needs to be updated, and go from there.
  */
 
 #include "eve-server.h"
