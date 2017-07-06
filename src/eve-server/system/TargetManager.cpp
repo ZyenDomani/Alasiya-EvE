@@ -192,16 +192,9 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
         return TargetFail(who);
     }
 
-    Character* pChar = mySE->GetPilot()->GetChar().get();
-    uint8 targetSkills = (uint8)pChar->GetAttribute(AttrMaxLockedTargets).get_int(); //AttrMaxLockedTargets is for characters too!!
-    //targetSkills += pChar->GetSkillLevel(skillTargeting);    // +1 target/level
-    //targetSkills += pChar->GetSkillLevel(skillMultitasking);    // +1 target/level
 	uint8 maxLockedTargets = (uint8)ship->GetAttribute(AttrMaxLockedTargets).get_int();
     if (maxLockedTargets < 1)
         maxLockedTargets = 1;
-    // get lower of max targets between ship and char
-    if (targetSkills < maxLockedTargets)
-        maxLockedTargets = targetSkills;
     if (GetTotalTargets() >= maxLockedTargets) {
         mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only handle %u targets at a time.", maxLockedTargets);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
