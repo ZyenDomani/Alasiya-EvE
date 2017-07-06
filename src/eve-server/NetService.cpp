@@ -178,6 +178,7 @@ PyResult NetService::Handle_GetTime(PyCallArgs &call) {
 }
 
 PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call) {
+    /** @todo  this still needs work  */
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT solarSystemID, pilotsDocked, pilotsInSpace FROM mapDynamicData");
 
