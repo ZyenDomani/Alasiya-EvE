@@ -126,7 +126,7 @@ protected:
     bool LoadPlayerDynamics();
 
     // system entity lists:
-    bool m_entityChanged = false;
+    bool m_entityChanged;
     std::map<uint32, NPC*> m_npcs;
     std::map<uint32, Client*> m_clients;
     std::map<uint32, SystemEntity*> m_entities;    //we own these, but they are also referenced in m_bubbles
@@ -134,18 +134,18 @@ protected:
 
 private:
     // for spawn systems     -allan 15July15
-    uint8 m_beltCount = 0;
-    uint8 m_gateCount = 0;
-    uint8 m_activeRatSpawns = 0;
-    uint16 m_activeRoidSpawns = 0;
+    uint8 m_beltCount;
+    uint8 m_gateCount;
+    uint8 m_activeRatSpawns;
+    uint16 m_activeRoidSpawns;
     SpawnBubbleVec m_ratBubbles;  // map of ids of bubbles with rat spawns
     SpawnBubbleVec m_roidBubbles;  // map of ids of bubbles with roid spawns
 
     // for grid Unloading system  -allan  27June2015
-    bool m_loaded = false;
+    bool m_loaded;
     bool SystemActivity();
-    uint32 m_players = 0;
-    uint32 m_activityTime = 0;
+    uint32 m_players;
+    uint32 m_activityTime;
 
     // check for null iterator.  this will need to be moved to a memory code file eventually.
     // unfortunely, this is very specific for which iterators it can check.  see notes in code.

@@ -439,9 +439,6 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
 
     if (mySE->HasPilot()) {
         Character* pChar = mySE->GetPilot()->GetChar().get();
-        // this is applied using skill effects now.
-        //time *= (1 - (0.05 * pChar->GetSkillLevel(skillSignatureAnalysis))); // 5% decrease/level
-
         // fleet invlovement enhances targeting speed using leadership of highest member (2%/lvl)
         if (pChar->fleetID()) { /** @todo  always returns 0 until fleets are implemented */
             //Character* pLeader = pChar->GetFleetLeader;   /** @todo this needs to be written */

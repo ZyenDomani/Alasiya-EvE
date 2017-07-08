@@ -98,9 +98,10 @@ private:
     Timer m_mainTimer;
     Timer m_groupTimer;
 
-    bool m_enabled = false;          //allow spawning?
-    bool m_initalized = false;       //allow spawning?
-    uint32 m_spawnID = 1;   //in case i need to track a specific spawn group.
+    bool m_enabled;         //allow spawning?
+    bool m_initalized;      //allow spawning?
+    
+    uint32 m_spawnID;       //in case i need to track a specific spawn group.
 
     RatBubbleVec m_bubbles;
     SpawnEntryDef m_spawns;

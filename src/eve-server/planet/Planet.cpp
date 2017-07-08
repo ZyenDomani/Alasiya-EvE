@@ -28,6 +28,7 @@ PlanetSE::PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager*
 : StaticSystemEntity(self, services, system),
 m_colonyTimer(100000) //arbitrary default
 {
+    m_hasColony = false;
     m_colonyTimer.Disable();
     self->SetAttribute(AttrMass,   self->type().mass());
     self->SetAttribute(AttrRadius, self->type().radius());

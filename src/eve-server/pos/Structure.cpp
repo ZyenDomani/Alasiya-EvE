@@ -269,10 +269,22 @@ void StructureItem::RemoveItem(InventoryItemRef item)
 StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system, const FactionData& data)
 : ObjectSystemEntity(structure, services, system)
 {
+    m_co = false;
+    m_tcu = false;
+    m_pos = false;
+    m_sbu = false;
+    m_array = false;
+    m_bridge = false;
+    m_jammer = false;
+    m_module = false;
+    m_sentry = false;
+    m_battery = false;
+    m_outpost = false;
+    /** @todo  hacked state...need to fix */
+    m_state = STRUCTURE_ONLINE;
     /** @todo (Allan) fix this later...used for shield passage */
     m_harmonic = 0;
     m_timestamp = Win32TimeNow() - Win32Time_Day;
-    m_state = STRUCTURE_ONLINE;
     /** @todo (Allan) fix this */
     m_warID = data.factionID;
     m_allyID = data.allianceID;

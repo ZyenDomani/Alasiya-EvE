@@ -99,16 +99,16 @@ private:
 
     PlanetDB m_db;
 
-    bool m_active = false;
-    bool m_loaded = false;
-    bool m_newHead = false;
+    bool m_active;
+    bool m_loaded;
+    bool m_newHead;
 
-    uint8 m_pLevel = 0;
-    uint16 m_pg = 0;
-    uint16 m_cpu = 0;
-    uint32 m_colonyID = 0;
+    uint8 m_pLevel;
+    uint16 m_pg;
+    uint16 m_cpu;
+    uint32 m_colonyID;
 
-    uint64 m_procTime = 0;
+    uint64 m_procTime;
 
     std::vector<uint32> tempECUs;
     std::map<uint8, uint32> tempPinIDs;

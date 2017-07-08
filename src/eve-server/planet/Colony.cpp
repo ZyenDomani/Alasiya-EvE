@@ -67,7 +67,14 @@ m_client(pClient),
 m_pSE(pSE->GetPlanetSE()),
 ccPin(new PI_CCPin())
 {
+    m_active = false;
+    m_loaded = false;
+    m_newHead = false;
+
+    m_pg = 0;
+    m_cpu = 0;
     m_pLevel = 5;
+    m_colonyID = 0;
     m_procTime = 0; // process check.  init to zero and changed in pin program install/update
     tempPinIDs.clear();
     _log(PLANET__DEBUG, "Colony::Colony() c'tor called for %s(%u)", pClient->GetCharacterName().c_str(), pClient->GetCharacterID());

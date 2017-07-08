@@ -41,7 +41,7 @@ class Timer;
 class SystemBubble {
 public:
     SystemBubble(SystemManager* pSystem, const GPoint& center, double radius);
-    ~SystemBubble()                                     { clear(); }
+    ~SystemBubble();
 
     SystemEntity* const GetEntity(uint32 entityID) const;
     SystemManager* const GetSystem() const              { return m_system; }
@@ -111,10 +111,10 @@ protected:
     void RemoveBallExclusive(SystemEntity* about_who);
 
 private:
-    SystemManager* m_system = nullptr;
+    SystemManager* m_system;
 
-    uint16 m_bubbleID = 1;
-	uint32 m_systemID = 0;
+    uint16 m_bubbleID;
+	uint32 m_systemID;
 
     static uint32 m_bubbleIncrementer;
 
@@ -124,10 +124,10 @@ private:
 
     // for spawn system     -allan 15July15
     Timer m_spawnTimer;
-    bool m_ice = false;
-    bool m_belt = false;
-    bool m_gate = false;
-    bool m_spawned = false;
+    bool m_ice;
+    bool m_belt;
+    bool m_gate;
+    bool m_spawned;
 };
 
 #endif

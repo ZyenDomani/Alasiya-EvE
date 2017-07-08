@@ -79,7 +79,7 @@ protected:
      */
     std::map<uint32, Colony*> m_colonies;
 
-    bool m_hasColony = false;
+    bool m_hasColony;
 };
 
 #endif  // EVEMU_PLANET_PLANET_H_

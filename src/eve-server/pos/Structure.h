@@ -177,17 +177,17 @@ public:
     void                        SetRotation(GPoint dir) { m_rotation = dir; }
 
 private:
-    bool m_co = false;
-    bool m_tcu = false;
-    bool m_pos = false;
-    bool m_sbu = false;
-    bool m_array = false;
-    bool m_bridge = false;
-    bool m_jammer = false;
-    bool m_module = false;
-    bool m_sentry = false;
-    bool m_battery = false;
-    bool m_outpost = false;
+    bool m_co;
+    bool m_tcu;
+    bool m_pos;
+    bool m_sbu;
+    bool m_array;
+    bool m_bridge;
+    bool m_jammer;
+    bool m_module;
+    bool m_sentry;
+    bool m_battery;
+    bool m_outpost;
 
     uint8 m_state;          /* used to hold POS state (online, reinforced, operating, etc) */
     uint32 m_harmonic;      /* this tracks shield frequency for passing thru POS shields.  not sure how to use it yet.... */
@@ -196,7 +196,7 @@ private:
 
     // for orbital infrastructure (customs office)
     GPoint m_rotation;      /* direction to planet (for correct orientation) */
-    uint32 m_planetID = 0;
+    uint32 m_planetID;
 };
 
 #endif /* !__STRUCTURE__H__INCL__ */
