@@ -152,6 +152,8 @@ void ShipItem::Init()
         m_ModuleManager = new ModuleManager(this);
 
     m_ModuleManager->Initialize();
+    if (IsStation(m_locationID))
+        OnlineAll();    //to show modules being online in fitting window while docked, and to populate the m_onlineModuleVec when undocking.
 }
 
 void ShipItem::InitPod() {

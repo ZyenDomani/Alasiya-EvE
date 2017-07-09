@@ -234,6 +234,11 @@ protected:
     virtual ~ShipItem();
 
 public:
+    /* class type pointer querys. */
+    virtual ShipItem* GetShipItem()                     { return this; }
+    /* class type tests. */
+    virtual bool IsShipItem()                           { return true; }
+
     void Init();
     void InitPod();
     void InitAttribs();

@@ -37,6 +37,7 @@
 class PyRep;
 class PyDict;
 class PyObject;
+class ShipItem;
 class ServiceDB;
 class ItemContainer;
 class Rsp_CommonGetInfo_Entry;
@@ -67,6 +68,11 @@ public:
     virtual ~InventoryItem();
 
     /* begin rewrite */
+
+    /* class type pointer querys. */
+    virtual ShipItem* GetShipItem()                     { return nullptr; }
+    /* class type tests. */
+    virtual bool IsShipItem()                           { return false; }
 
     /* generic access functions handled here */
     Inventory*              GetMyInventory()            { return m_inventory; }
