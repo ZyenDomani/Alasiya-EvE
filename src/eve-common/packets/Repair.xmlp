@@ -24,16 +24,22 @@
 
   <elementDef name="RepairListData">
     <listInline>
-      <long name="ListItemID" />
-      <listInline>
-        <int name="itemID" />
-        <int name="typeID" />
-        <int name="groupID" />
-        <int name="damage" />
-        <int name="maxHealth" />
-        <int name="repairable" />
-        <real name="costToRepairOneUnitOfDamage" />
-      </listInline>
+      <real name="playerStanding" />
+      <string name="serviceCharge" />
+      <string name="discount" />
+      <object name="quote" type="PyObject" />
+    </listInline>
+  </elementDef>
+
+  <elementDef name="RepairListItemData">
+    <listInline>
+      <int name="itemID" />
+      <int name="typeID" />
+      <int name="groupID" />
+      <int name="damage" />
+      <int name="maxHealth" />
+      <int name="repairable" />
+      <real name="costToRepairOneUnitOfDamage" />
     </listInline>
   </elementDef>
 

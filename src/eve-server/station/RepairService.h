@@ -28,14 +28,15 @@
 
 #include "PyService.h"
 
-class RepairService: public PyService {
+class Client;
 
+class RepairService: public PyService {
 public:
     RepairService(PyServiceMgr* mgr);
     virtual ~RepairService();
 
-    PyObject* GetDamageReports();
-    
+    PyObject* GetDamageReports(Client* pClient, uint32 stationID, uint32 itemID);
+
 protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
@@ -46,7 +47,6 @@ protected:
 
 private:
     DBRowDescriptor* CreateHeader();
-    DBRowDescriptor* CreateQuoteHeader();
 };
 
 #endif
