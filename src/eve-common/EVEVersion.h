@@ -39,14 +39,16 @@ static const char* const EVEProjectCodename = "EVE-EVE-TRANQUILITY";
 static const int32 EVEBirthday = 170472;
 
 /*  Allan's Static Definitions */
-static const float Config_Version = 7.6; /* match versions here with eve-server.xml and EveServerConfig.cpp for full config support */
-static const float Log_Version = 7.5;    /* match versions here with logtypes.h and log.ini for full logging support */
-static const float EVE_Build = 1.93;     /* this is for bug tracking on my forums.  -allan 3July15 */
-static const char* const EVEMU_REVISION = "0.8.98-allan";
-static const char* const EVEMU_BUILD_DATE = "21 April 2017";
+/* match versions here with stated files for full support */
+static const float Config_Version = 7.8; /* eve-server.xml and EveServerConfig.cpp */
+static const float Log_Version = 7.5;    /* logtypes.h and log.ini */
+static const float EVE_Build = 1.95;     /* this is for bug tracking on my forums.  -allan 3July15 */
+static const char* const EVEMU_REVISION = "0.9.03-allan";
+static const char* const EVEMU_BUILD_DATE = "9 July 2017";
 /* AI versions for shitz-n-giggles */
-static const float Bot_Version = 0.10;    /* match versions here with MarketBot.xml and MarketBotConf.cpp for full config support */
-static const float NPC_AI_Version = 0.44;
+static const float Bot_Version = 0.10;   /* MarketBot.xml and MarketBotConf.cpp */
+/* these 3 dont have separate config files */
+static const float NPC_AI_Version = 0.45;
 static const float Civilian_AI_Version = 0.10;
 static const float Sentry_AI_Version = 0.10;
 

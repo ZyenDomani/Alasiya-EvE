@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 7.6 -->
+     Version: 7.8 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -9,64 +9,6 @@
 
 
 <eve-server>
-
-    <server>
-        <UseBeanCount>true</UseBeanCount>  <!-- bool  -client python error reporting -->
-        <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
-        <UseProfiling>false</UseProfiling><!-- bool -->
-        <UseShipTracking>false</UseShipTracking><!-- bool -->
-        <UseStackTrace>false</UseStackTrace><!-- bool -log client python error reports to evemu_client_stack_trace.txt-->
-        <ServerSleepTime>10</ServerSleepTime><!-- ms -->
-        <maxPlayers>2500</maxPlayers>
-        <UseMarketBot>false</UseMarketBot>
-        <DisableIGB>false</DisableIGB>
-        <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
-    </server>
-
-    <world>
-        <!-- not implemented yet -->
-        <chatLogs>false</chatLogs><!-- bool -->
-        <globalChat>true</globalChat><!-- bool -->
-        <gridUnload>true</gridUnload><!-- bool -->
-        <gridUnloadTime>300</gridUnloadTime><!-- in seconds (5 min default)-->
-        <loginInfo>true</loginInfo><!-- bool -->
-        <loginMsg>true</loginMsg><!-- bool -->
-        <mailDelay>5</mailDelay>
-        <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
-        <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
-    </world>
-
-    <rates>
-        <secRate>1.0</secRate><!-- only used if != 1.0 -->
-        <damageRate>1.0</damageRate><!-- ALL damage. only used if != 1.0 -->
-        <missileRate>1.0</missileRate><!-- ALL missiles. only used if != 1.0 -->
-        <missileTime>1.0</missileTime><!--  ALL missiles. only used if != 1.0 -->
-        <turretRate>1.0</turretRate><!-- PC turrets. only used if != 1.0 -->
-        <missileRoF>1.0</missileRoF><!-- ALL missiles. only used if != 1.0 -->
-        <turretRoF>1.0</turretRoF><!-- PC turrets. only used if != 1.0 -->
-        <npcBountyMultiply>10.0</npcBountyMultiply><!-- only used if != 1.0 -->
-        <corpCost>20000000</corpCost>
-        <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
-        <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default) -->
-        <NPCDecay>30</NPCDecay><!-- in minutes (30 min default) -->
-        <WebUpdate>15</WebUpdate><!-- save current server status in db.  in minutes  15m default -->
-        <!-- implemented only for salvage max items -->
-        <RateDropItem>2.0</RateDropItem><!--  only used if != 1.0 -->
-        <!-- these rates are not implemented yet -->
-        <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
-        <RepairCost>1.0</RepairCost><!--  only used if != 1.0 -->
-    </rates>
-
-    <bpTimes> <!-- these are multiplied to db values to get a modified result - < 1.0 = faster -->
-        <ResPE>0.5</ResPE>
-        <ResME>0.4</ResME>
-        <ResRE>0.5</ResRE>
-        <MatMod>1.0</MatMod>
-        <ProdMod>1.0</ProdMod>
-        <ResCopy>0.3</ResCopy>
-        <ProdTime>0.3</ProdTime>
-        <WasteMod>1.0</WasteMod>
-    </bpTimes>
 
     <account><!--         0  disable AutoAccount
  6917529027641081856  ???  in packet logs = ROLE_LOGIN | ROLE_PLAYER
@@ -92,6 +34,67 @@
         -->
     </account>
 
+    <server>
+        <UseBeanCount>true</UseBeanCount>  <!-- bool  -client python error reporting -->
+        <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
+        <UseProfiling>false</UseProfiling><!-- bool -->
+        <UseShipTracking>false</UseShipTracking><!-- bool -->
+        <PositionHack>false</PositionHack><!-- bool -->
+        <DeleteTrackingCans>true</DeleteTrackingCans><!-- bool  -delete cans on server shutdown -->
+        <UseStackTrace>false</UseStackTrace><!-- bool -log client python error reports to evemu_client_stack_trace.txt-->
+        <ServerSleepTime>10</ServerSleepTime><!-- ms -->
+        <maxPlayers>2500</maxPlayers>
+        <MaxThreadReport>20</MaxThreadReport>
+        <UseMarketBot>false</UseMarketBot>
+        <DisableIGB>false</DisableIGB>
+        <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
+    </server>
+
+    <world>
+        <!-- not implemented yet -->
+        <chatLogs>false</chatLogs><!-- bool -->
+        <globalChat>true</globalChat><!-- bool -->
+        <gridUnload>true</gridUnload><!-- bool -->
+        <gridUnloadTime>300</gridUnloadTime><!-- in seconds (5 min default)-->
+        <loginInfo>true</loginInfo><!-- bool -->
+        <loginMsg>true</loginMsg><!-- bool -->
+        <mailDelay>5</mailDelay>
+        <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
+        <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
+    </world>
+
+    <rates>
+        <secRate>1.0</secRate><!-- only used if != 1.0 -->
+        <damageRate>1.0</damageRate><!-- ALL damage. only used if != 1.0 -->
+        <missileRate>1.0</missileRate><!-- ALL missiles. only used if != 1.0 -->
+        <missileTime>1.0</missileTime><!--  ALL missiles. only used if != 1.0 -->
+        <missileRoF>1.0</missileRoF><!-- ALL missiles. only used if != 1.0 -->
+        <turretRate>1.0</turretRate><!-- PC turrets. only used if != 1.0 -->
+        <turretRoF>1.0</turretRoF><!-- PC turrets. only used if != 1.0 -->
+        <npcBountyMultiply>1.0</npcBountyMultiply><!-- only used if != 1.0 -->
+        <corpCost>20000000</corpCost>
+        <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
+        <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default) -->
+        <NPCDecay>30</NPCDecay><!-- in minutes (30 min default) -->
+        <WebUpdate>15</WebUpdate><!-- save current server status in db.  in minutes  15m default -->
+        <!-- implemented only for salvage max items -->
+        <RateDropItem>2.0</RateDropItem><!--  only used if != 1.0 -->
+        <!-- these rates are not implemented yet -->
+        <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
+        <RepairCost>1.0</RepairCost><!--  only used if != 1.0 -->
+    </rates>
+
+    <bpTimes> <!-- these are multiplied to db values to get a modified result - < 1.0 = faster -->
+        <ResPE>0.5</ResPE>
+        <ResME>0.4</ResME>
+        <ResRE>0.5</ResRE>
+        <MatMod>1.0</MatMod>
+        <ProdMod>1.0</ProdMod>
+        <ResCopy>0.3</ResCopy>
+        <ProdTime>0.3</ProdTime>
+        <WasteMod>1.0</WasteMod>
+    </bpTimes>
+
     <character>
         <startBalance>600000000.0</startBalance>
         <startAurBalance>600.0</startAurBalance>
@@ -103,12 +106,13 @@
     </character>
 
     <npc>
-        <IdleWander>true</IdleWander><!-- bool  npc will wander when idle -->
+        <IdleWander>true</IdleWander><!-- bool  npc will wander when idle   must be set to 'true' for WarpOut (below) to work -->
+        <WarpOut>600</WarpOut><!-- time npc wanders around bubble before leaving, in sec (5 min default) -->
         <!-- npc podkilling not implemented yet -->
         <TargetPod>false</TargetPod><!-- bool   npc target/attack pod -->
         <TargetPodSec>0</TargetPodSec><!-- npc target/attack pod in truSec of this and lower -->
         <!-- Threat not implemented yet -->
-        <ThreatRadius>1.0</ThreatRadius> <!-- percent of default 0.0 to 1.0 -->
+        <ThreatRadius>1.0</ThreatRadius> <!-- used in conjunction with npc ai target switching -->
         <!-- Spawn Checks and RoamingSpawns are implemented but StaticSpawns are not-->
         <RoamingSpawns>true</RoamingSpawns><!-- bool -->
         <StaticSpawns>false</StaticSpawns><!-- bool -->
@@ -118,6 +122,34 @@
         <SpawnTest>true</SpawnTest><!-- bool - enables 5s respawn timer -->
         <EnableDrones>true</EnableDrones><!-- bool -->
     </npc>
+
+    <threads><!-- not implemented yet -->
+        <NetworkThreads>2</NetworkThreads>
+        <DatabaseThreads>2</DatabaseThreads>
+        <WorldThreads>2</WorldThreads>
+        <ImageServerThreads>1</ImageServerThreads>
+        <ConsoleThreads>1</ConsoleThreads>
+    </threads>
+
+    <cosmic>
+        <EnablePI>true</EnablePI><!-- bool -->
+        <AnomalyEnabled>true</AnomalyEnabled><!-- bool -->
+        <DungeonEnabled>true</DungeonEnabled><!-- bool -->
+        <BeltEnabled>true</BeltEnabled><!-- bool -->
+        <BeltRespawn>6</BeltRespawn><!-- hours  (6h default) -->
+        <roidRadiusMultiplier>1.0</roidRadiusMultiplier><!-- float  used to change default coded roid size (and the belt radius) -->
+        <WormHoleEnabled>true</WormHoleEnabled><!-- bool -->
+        <CiviliansEnabled>true</CiviliansEnabled><!-- bool -->
+        <BumpEnabled>false</BumpEnabled><!-- bool -->
+    </cosmic>
+
+    <crime><!-- not implemented yet -->
+        <CrimFlagTime>900</CrimFlagTime> <!-- seconds  (15m default) -->
+        <AggFlagTime>900</AggFlagTime> <!-- seconds (15m default) -->
+        <WeaponFlagTime>60</WeaponFlagTime> <!-- seconds (60s default) -->
+        <CWSessionTime>60</CWSessionTime> <!-- seconds (60s default) -->
+        <KillRightTime>900</KillRightTime> <!-- seconds (15m default) -->
+    </crime>
 
     <database>
         <host>localhost</host>
@@ -139,32 +171,5 @@
         <imageServer>192.168.1.13</imageServer>
         <imageServerPort>26001</imageServerPort>
     </net>
-
-    <threads><!-- not implemented yet -->
-        <NetworkThreads>2</NetworkThreads>
-        <DatabaseThreads>2</DatabaseThreads>
-        <WorldThreads>2</WorldThreads>
-        <ImageServerThreads>1</ImageServerThreads>
-        <ConsoleThreads>1</ConsoleThreads>
-    </threads>
-
-    <cosmic>
-        <EnablePI>true</EnablePI><!-- bool -->
-        <AnomalyEnabled>true</AnomalyEnabled><!-- bool -->
-        <DungeonEnabled>true</DungeonEnabled><!-- bool -->
-        <BeltEnabled>true</BeltEnabled><!-- bool -->
-        <BeltRespawn>6</BeltRespawn><!-- hours  (6h default) -->
-        <roidRadiusMultiplier>1.0</roidRadiusMultiplier><!-- float  used to change default coded roid size (and the belt radius) -->
-        <WormHoleEnabled>true</WormHoleEnabled><!-- bool -->
-        <BumpEnabled>true</BumpEnabled><!-- bool -->
-    </cosmic>
-
-    <crime><!-- not implemented yet -->
-        <CrimFlagTime>900</CrimFlagTime> <!-- seconds  (15m default) -->
-        <AggFlagTime>900</AggFlagTime> <!-- seconds (15m default) -->
-        <WeaponFlagTime>60</WeaponFlagTime> <!-- seconds (60s default) -->
-        <CWSessionTime>60</CWSessionTime> <!-- seconds (60s default) -->
-        <KillRightTime>900</KillRightTime> <!-- seconds (15m default) -->
-    </crime>
 
 </eve-server>

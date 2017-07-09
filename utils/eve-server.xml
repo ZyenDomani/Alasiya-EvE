@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 7.6 -->
+     Version: 7.8 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -10,14 +10,41 @@
 
 <eve-server>
 
+    <account><!--         0  disable AutoAccount
+ 6917529027641081856  ???  in packet logs = ROLE_LOGIN | ROLE_PLAYER
+ 6917529029788565504 (0x6000000080000000)  ROLE_STD     = ROLE_LOGIN | ROLE_PLAYER | ROLE_IGB
+ 7061644217868615680 (0x6200000080400000)  ROLE_VIP     = ROLE_STD | ROLE_VIPLOGIN | ROLE_HEALSELF
+ 7079658624976683008 (0x6240000280c40000)  ROLE_SLASH   = ROLE_LEGIONEER | ROLE_GML | ROLE_SPAWN | ROLE_VIP | ROLE_HEALOTHERS
+ 7124694621250387968 (0x62e0000280c40000)  ROLE_CREATOR = ROLE_SLASH | ROLE_GMH | ROLE_CONTENT
+ 7131450020691443712 (0x62f8000280c40000)  ROLE_DEV     = ROLE_CREATOR | ROLE_QA | ROLE_PROGRAMMER
+ 7203507614729371648 (0x63f8000280c40000)  ROLE_BOSS    = ROLE_ADMIN | ROLE_DEV
+        -->
+        <autoAccountRole>7131450020691443712</autoAccountRole>
+        <!--
+        <loginMessage>
+            &lt;html&gt;
+                &lt;head&gt;
+                    &lt;b&gt;UPDATED....27June2015&lt;/b&gt;.&lt;br&gt;
+                &lt;/head&gt;
+                &lt;body&gt;
+                    Everything is between 0% and 100% working, most of which are ~75%.&lt;br&gt;
+                &lt;/body&gt;
+            &lt;/html&gt;
+        </loginMessage>
+        -->
+    </account>
+
     <server>
         <UseBeanCount>true</UseBeanCount>  <!-- bool  -client python error reporting -->
         <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
         <UseProfiling>false</UseProfiling><!-- bool -->
         <UseShipTracking>false</UseShipTracking><!-- bool -->
+        <PositionHack>false</PositionHack><!-- bool -->
+        <DeleteTrackingCans>true</DeleteTrackingCans><!-- bool  -delete cans on server shutdown -->
         <UseStackTrace>false</UseStackTrace><!-- bool -log client python error reports to evemu_client_stack_trace.txt-->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
         <maxPlayers>2500</maxPlayers>
+        <MaxThreadReport>20</MaxThreadReport>
         <UseMarketBot>false</UseMarketBot>
         <DisableIGB>true</DisableIGB>
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
@@ -25,7 +52,7 @@
 
     <world>
         <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
-        <StationDockDelay>5</StationDockDelay><!-- in seconds (5 sec default) -->
+        <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
         <gridUnload>true</gridUnload><!-- bool -->
         <gridUnloadTime>300</gridUnloadTime><!-- in seconds (5 min default)-->
     <!-- next 5 not implemented yet -->
@@ -70,30 +97,6 @@
         <WasteMod>1.0</WasteMod>
     </bpTimes>
 
-    <account><!--         0  disable AutoAccount
- 6917529027641081856  ???  in packet logs = ROLE_LOGIN | ROLE_PLAYER
- 6917529029788565504 (0x6000000080000000)  ROLE_STD     = ROLE_LOGIN | ROLE_PLAYER | ROLE_IGB
- 7061644217868615680 (0x6200000080400000)  ROLE_VIP     = ROLE_STD | ROLE_VIPLOGIN | ROLE_HEALSELF
- 7079658624976683008 (0x6240000280c40000)  ROLE_SLASH   = ROLE_LEGIONEER | ROLE_GML | ROLE_SPAWN | ROLE_VIP | ROLE_HEALOTHERS
- 7124694621250387968 (0x62e0000280c40000)  ROLE_CREATOR = ROLE_SLASH | ROLE_GMH | ROLE_CONTENT
- 7131450020691443712 (0x62f8000280c40000)  ROLE_DEV     = ROLE_CREATOR | ROLE_QA | ROLE_PROGRAMMER
- 7203507614729371648 (0x63f8000280c40000)  ROLE_BOSS    = ROLE_ADMIN | ROLE_DEV
-        -->
-        <autoAccountRole>7131450020691443712</autoAccountRole>
-        <!--
-        <loginMessage>
-            &lt;html&gt;
-                &lt;head&gt;
-                    &lt;b&gt;UPDATED....27June2015&lt;/b&gt;.&lt;br&gt;
-                &lt;/head&gt;
-                &lt;body&gt;
-                    Everything is between 0% and 100% working, most of which are ~75%.&lt;br&gt;
-                &lt;/body&gt;
-            &lt;/html&gt;
-        </loginMessage>
-        -->
-    </account>
-
     <character>
         <startBalance>600000000.0</startBalance>
         <startAurBalance>600.0</startAurBalance>
@@ -105,7 +108,8 @@
     </character>
 
     <npc>
-        <IdleWander>false</IdleWander><!-- bool  npc will wander when idle -->
+        <IdleWander>false</IdleWander><!-- bool  npc will wander when idle   must be set to 'true' for WarpOut (below) to work -->
+        <WarpOut>600</WarpOut><!-- time npc wanders around bubble before leaving, in sec (5 min default) -->
         <!-- npc podkilling not implemented yet -->
         <TargetPod>false</TargetPod><!-- bool   npc target/attack pod -->
         <TargetPodSec>0.4</TargetPodSec><!-- float   npc target/attack pod in truSec of this and lower -->
@@ -159,6 +163,7 @@
         <roidRadiusMultiplier>1.0</roidRadiusMultiplier><!-- float  used to change default coded roid size (and the belt radius) -->
         <WormHoleEnabled>false</WormHoleEnabled><!-- bool -->
         <BumpEnabled>false</BumpEnabled><!-- bool -->
+        <CiviliansEnabled>false</CiviliansEnabled><!-- bool -->
     </cosmic>
 
     <crime><!-- not implemented yet -->

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    7.7
+    Version:    7.8
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -152,6 +152,7 @@ public:
     struct
     {
         bool IdleWander;
+        uint16 WarpOut;
         bool RoamingSpawns;
         bool StaticSpawns;
         uint8 RoamingTimer;
