@@ -71,7 +71,9 @@ m_spawnMgr(new SpawnMgr(this, svc))
     m_clients.clear();
     m_entities.clear();
     m_ratBubbles.clear();
-    
+    m_beltVector.clear();
+    m_roidBubbles.clear();
+
     sDataMgr.GetSystemInfo(systemID, m_data);   // system data is now an internal memory (cached) object.  db is hit once at system boot.
     _log(COMMON__MESSAGE, "Created SystemManager %p for System %s(%u)", this, m_data.name.c_str(), m_data.systemID);
 }
@@ -294,8 +296,12 @@ bool SystemManager::LoadSystemStatics() {
             _log(INV__WARNING, "Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
             continue;
         }
-        if (pSE->IsBeltSE() or pSE->IsGateSE() or pSE->IsStationSE())
+        if (pSE->IsGateSE() or pSE->IsStationSE())
             sBubbleMgr.Add(pSE);
+        if (pSE->IsBeltSE()) {
+            sBubbleMgr.Add(pSE);
+            m_beltVector.push_back(cur.itemID);
+        }
         m_entities[cur.itemID] = pSE;
         AddItemToInventory(pSE->GetSelf());
         if (!pSE->LoadExtras(&m_db))
@@ -717,6 +723,12 @@ void SystemManager::RemoveSpawnBubble()
     _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for %s(%u), but needs to be written.", GetName().c_str(), m_data.systemID);
 }
 
+uint32 SystemManager::GetRandBeltID()
+{
+    uint8 randID = MakeRandomInt(0, m_beltCount);
+    return m_beltVector.at(randID);
+}
+
 void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState& into, bool login) const {
     using namespace Destiny;
     Buffer* stateBuffer = new Buffer;
@@ -805,7 +817,7 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
         row->SetField( "ownerID",       new PyInt(1));  // should this be owning factionID?
         row->SetField( "locationID",    new PyLong(m_data.constellationID));
         row->SetField( "flagID",        new PyInt(0));
-        row->SetField( "quantity",     new PyInt(-1));
+        row->SetField( "quantity",      new PyInt(-1));
         row->SetField( "groupID",       new PyInt(5));
         row->SetField( "categoryID",    new PyInt(2));
         row->SetField( "customInfo",    new PyString(""));

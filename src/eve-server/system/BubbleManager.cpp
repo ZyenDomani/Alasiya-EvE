@@ -39,7 +39,7 @@
 struct bubbleDeleter {
     void operator()(SystemBubble*& bRef) { // take pointer by reference
         if (bRef->IsEmpty()) {
-            _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", bRef->GetID() );
+            _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", bRef->GetID() );
             sBubbleMgr.RemoveBubble(bRef->GetSystem()->GetID(), bRef);
             SafeDelete(bRef);
         }
@@ -113,19 +113,19 @@ void BubbleManager::CheckBubble(SystemEntity *pSE) {
     SystemBubble *b = pSE->SysBubble();
     if (b) {
         if (b->InBubble(pSE->GetPosition())) {
-            _log(DESTINY__BUBBLE_TRACE, "BubbleManager::CheckBubble() - Entity '%s'(%u) at (%.2f,%.2f,%.2f) is still located in bubble %u at %.2f,%.2f,%.2f.",\
+            _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::CheckBubble() - Entity '%s'(%u) at (%.2f,%.2f,%.2f) is still located in bubble %u at %.2f,%.2f,%.2f.",\
                  pSE->GetName(), pSE->GetID(), pSE->GetPosition().x, pSE->GetPosition().y, pSE->GetPosition().z,\
                  b->GetID(), b->x(), b->y(), b->z());
             return;
         }
 
-        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::CheckBubble() - Entity '%s'(%u) at (%.2f,%.2f,%.2f) is no longer located in bubble %u at %.2f,%.2f,%.2f.  Removing...",\
+        _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::CheckBubble() - Entity '%s'(%u) at (%.2f,%.2f,%.2f) is no longer located in bubble %u at %.2f,%.2f,%.2f.  Removing...",\
              pSE->GetName(), pSE->GetID(), pSE->GetPosition().x, pSE->GetPosition().y, pSE->GetPosition().z,\
              b->GetID(), b->x(), b->y(), b->z());
         b->Remove(pSE);
     }
 
-    _log(DESTINY__BUBBLE_TRACE, "BubbleManager::CheckBubble() - SystemEntity '%s'(%u) not currently in any Bubble...adding", pSE->GetName(), pSE->GetID() );
+    _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::CheckBubble() - SystemEntity '%s'(%u) not currently in any Bubble...adding", pSE->GetName(), pSE->GetID() );
     Add(pSE);
 }
 
@@ -220,6 +220,16 @@ void BubbleManager::RemoveBubble(uint32 systemID, SystemBubble* pSB)
 void BubbleManager::AddSpawnID(uint16 bubbleID, uint32 spawnID)
 {
     m_spawnIDs.emplace(bubbleID, spawnID);
+}
+
+void BubbleManager::RemoveSpawnID(uint16 bubbleID, uint32 spawnID)
+{
+    auto range = m_spawnIDs.equal_range(bubbleID);
+    for ( auto itr = range.first; itr != range.second; itr++ )
+        if (itr->second = spawnID) {
+            m_spawnIDs.erase(itr);
+            return;
+        }
 }
 
 uint32 BubbleManager::GetBeltID(uint16 bubbleID)

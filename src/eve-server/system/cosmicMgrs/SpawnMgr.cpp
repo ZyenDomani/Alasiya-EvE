@@ -111,6 +111,11 @@ SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
   m_mainTimer(60000),  // 60s ... just putting something here
   m_groupTimer(60000)
 {
+    m_spawnID = 1;
+
+    m_enabled = false;
+    m_initalized = false;
+
     m_mainTimer.Disable();
     m_groupTimer.Disable();
 
@@ -516,8 +521,8 @@ struct SpawnEntry { // notes for me while creating/writing/testing
 void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
 {
     GPoint startPos(pSysBubble->GetCenter());
-    //startPos.MakeRandomPointOnSphere(220000); //220km from bubble center
-    //const GPoint warpToPoint = (pSysBubble->GetCenter() - (MakeRandomInt(-5, 15) *1000));
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from current bubble center
+    const GPoint warpToPoint(pSysBubble->GetCenter());
     _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
                 spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
                 spawnEntry.factionID, spawnEntry.number, spawnEntry.total);
@@ -553,11 +558,10 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
     }
 
     //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
-    //startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 20) *1000);
-    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *5000); //50-75km from current bubble center
-    npc->DestinyMgr()->SetPosition(startPos);
-    //npc->DestinyMgr()->WarpTo(warpToPoint);
     m_system->AddNPC(npc);
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 10) *1000);
+    npc->DestinyMgr()->SetPosition(startPos);
+    npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
 
     spawnEntry.enabled = false;
     _log(SPAWN__TRACE, "ReSpawn() completed for spawnEntryID %u 0x%X in bubble %u.", spawnEntry.spawnID, &spawnEntry, pSysBubble->GetID());
@@ -573,13 +577,12 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
      *  to somewhere around bubble center.  this will make their origin appear elsewhere,
      * but not from same place every time.  they're pirates, they got other shit to do, too.
      *  eventually, when other systems are working, npcs will appear to 'warp in' from a hideout in the current system.
-     *  this particular bit is not general knowledge.
+     *  this particular bit is not general knowledge and will have to be thought out a bit more before coding.
      *
-     * however, warping in dont seem to be working.  will look into later.
      */
     GPoint startPos(pSysBubble->GetCenter());
-    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *8000); //80-120km from current bubble center
-    //const GPoint warpToPoint(pSysBubble->GetCenter());
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from current bubble center
+    const GPoint warpToPoint(pSysBubble->GetCenter());
 
     uint32 corpID = GetCorpID(factionID);
 
@@ -619,10 +622,10 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
                 continue;
             }
             //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
-            //startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 20) *1000);
-            npc->DestinyMgr()->SetPosition(startPos);
-            //npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
             m_system->AddNPC(npc);
+            startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 10) *1000);
+            npc->DestinyMgr()->SetPosition(startPos);
+            npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
 
             se.enabled = false;
             se.groupID = i->type().groupID();

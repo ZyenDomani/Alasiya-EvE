@@ -72,6 +72,7 @@ public:
 protected:
     void Attack(SystemEntity* pTarget);
     void SetIdle();
+    void WarpOut();
     void SetWander();
     void SetChasing(SystemEntity* pTarget);
     void SetEngaged(SystemEntity* pTarget);

@@ -102,6 +102,8 @@ public:
     uint8 BeltCount()                                   { return m_beltCount; }
     uint8 GetRatSpawnCount()                            { return m_activeRatSpawns; }
     uint16 GetRoidSpawnCount()                          { return m_activeRoidSpawns; }
+    uint32 PlayerCount()                                { return m_players; }
+    uint32 GetRandBeltID();
 
     // CosmicMgr interface
     AsteroidBeltMgr* GetBeltMgr()                       { return m_beltMgr; }
@@ -138,6 +140,7 @@ private:
     uint8 m_gateCount;
     uint8 m_activeRatSpawns;
     uint16 m_activeRoidSpawns;
+    std::vector<uint32> m_beltVector;
     SpawnBubbleVec m_ratBubbles;  // map of ids of bubbles with rat spawns
     SpawnBubbleVec m_roidBubbles;  // map of ids of bubbles with roid spawns
 

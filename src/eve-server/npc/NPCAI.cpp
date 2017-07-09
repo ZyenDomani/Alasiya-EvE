@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Updates:    Allan
-    AI Version: 0.44
+    AI Version: 0.45
 */
 
 /** @todo  ai update ideas
@@ -156,8 +156,9 @@ NPCAIMgr::NPCAIMgr(NPC* who)
 
 void NPCAIMgr::Process() {
     if ((!m_processTimer.Check())
-        or (!m_npc->SysBubble()->HasPlayers())
         or m_npc->DestinyMgr()->IsWarping())
+        return;
+    if (!m_npc->SysBubble()->HasPlayers())  // this needs to be separate as bubble = null when warping
         return;
 
     if (m_shieldBoosterTimer.Enabled()
@@ -202,9 +203,16 @@ void NPCAIMgr::Process() {
                     Target(cur->GetShipSE());
                     return;
                 }
-                if (sConfig.npc.IdleWander)
+                if (sConfig.npc.IdleWander) {
                     if (!m_isWandering)
                         SetWander();
+                    else {
+                        if (sConfig.npc.WarpOut < 1)
+                            return;
+                        if (m_npc->DestinyMgr()->GetStateStamp() > sConfig.npc.WarpOut)
+                            WarpOut();
+                    }
+                }
             } else {
                 if (!m_beginFindTarget.Enabled())
                     m_beginFindTarget.Start(m_attackSpeed);  //find target is based on npc attack speed.
@@ -234,6 +242,34 @@ void NPCAIMgr::Process() {
             _log(NPC__AI_TRACE, "%s(%u): Called %s, needs to be completed.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
             // not sure how im gonna do these
         } break;
+    }
+}
+
+void NPCAIMgr::WarpOut()
+{
+    /** @todo  eventually, this will check with anomaly mgr for possible npc hideouts in system
+     * based on npc faction, system, players in system, players in bubble, and *more later*
+     * to determine a warpto target for this npc, or this group
+     *
+     * for now, if there are players in system, just warp to another belt.
+     * note:  must set/reset belt spawn variable if/when spawns jump belts
+     */
+
+    /*
+    m_npc->SystemMgr()->GetAnomMgr();
+    m_npc->SysBubble()->SetSpawned();
+    */
+
+    if (m_npc->SystemMgr()->PlayerCount()) {
+        uint32 newBeltID = m_npc->SystemMgr()->GetRandBeltID();
+        if (newBeltID == sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()))
+            newBeltID = m_npc->SystemMgr()->GetRandBeltID();
+
+        /** @todo find out if any rats remain before setting bubble.spawned to false */
+        m_npc->SysBubble()->SetSpawned(false);
+        SystemEntity* newSE = m_npc->SystemMgr()->GetSE(newBeltID);
+        m_npc->DestinyMgr()->WarpTo(newSE->GetPosition());
+        sBubbleMgr.FindBubble(newSE)->SetSpawned(true);
     }
 }
 

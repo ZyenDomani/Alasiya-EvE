@@ -187,7 +187,7 @@ void DestinyManager::ProcessState() {
                                     mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
                         mySE->GetPilot()->SendErrorMsg("Internal Server Error. Ref: ServerError 35928.   Please Dock or Relog to reset your ship.");
                     } else {
-                        _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) Has WarpState but checks are false.",  \
+                        _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  NPC %s(%u) Has WarpState but checks are false.",  \
                                     mySE->GetName(), mySE->GetID());
                     }
                 }
@@ -209,8 +209,13 @@ void DestinyManager::ProcessState() {
                     SetSpeedFraction(1.0f, true);
             } else if ((sEntityList.GetStamp() - m_stateStamp) > m_timeToEnterWarp) {
                 // catchall for turn checks messed up, and m_moveTimer > ship align time
-                _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > shipTimeToWarp.",  \
-                            mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+                if (mySE->HasPilot()) {
+                    _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  Ship %s(%u) for Player %s(%u) - warp align/speed is incorrect, but time > shipTimeToWarp.",  \
+                                mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+                } else {
+                    _log(DESTINY__ERROR, "Destiny::ProcessState() Error!  NPC %s(%u) - warp align/speed is incorrect, but time > shipTimeToWarp.",  \
+                            mySE->GetName(), mySE->GetID());
+                }
                 m_shipHeading = toVec;
                 _InitWarp();
                 return;
@@ -1472,8 +1477,8 @@ void DestinyManager::_WarpUpdate(double currentShipSpeed) {
                 sBubbleMgr.Remove(mySE);
                 m_inBubble = false;
             }
-    } else if (!m_inBubble and m_warpState->decel) {
-        if (m_targetDistance < BUBBLE_RADIUS_METERS) {    //this assumes target is center of bubble.  will have to fix one day.
+    } else if ((!m_inBubble) and (m_warpState->decel)) {
+        if (m_targetDistance < (BUBBLE_RADIUS_METERS + 20000)) {    //this assumes target is center of bubble.  will have to fix one day.
             _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() .", \
                     mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
             sBubbleMgr.Add(mySE, true);
