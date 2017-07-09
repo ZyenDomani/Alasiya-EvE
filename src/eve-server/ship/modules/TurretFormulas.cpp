@@ -43,7 +43,7 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
     double transversalV = vector.length();
     double angularVel = transversalV / distance;
     float targSig = pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();
-    _log(DAMAGE__TRACE, "Turret::GetToHit - angularVel:%.3f tracking:%.3f, targetSig:%.1f, sigRes:%u", angularVel, trackSpeed, targSig, sigRes);
+    _log(DAMAGE__TRACE, "Turret::GetToHit - transversalV:%.3f tracking:%.3f, targetSig:%.1f, sigRes:%u", transversalV, trackSpeed, targSig, sigRes);
     //  calculations for chance to hit  --UD 29May17
     /*ChanceToHit = 0.5 ^ ((((Transversal speed/(Range to target * Turret Tracking))*(Turret Signature Resolution / Target Signature Radius))^2)
      * + ((max(0, Range To Target - Turret Optimal Range))/Turret Falloff)^2)
@@ -55,7 +55,7 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
      *     e =  (d / falloff) ^ 2
      * tohit =  0.5 ^ (c + e)
      */
-    double a = (transversalV / (distance * trackSpeed));
+    double a = (angularVel / trackSpeed);
     double b = (sigRes / targSig);
     double c = pow((a * b), 2);
     double d = EvE::max(distance - range);
@@ -65,7 +65,6 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
     float ChanceToHit = pow(0.5, c + e);
     _log(DAMAGE__TRACE, "Turret::GetToHit - (%.3f * %.3f)^2 = c:%.5f : (%.3f / %u)^2 = e:%.5f", a, b, c, d, falloff, e);
     _log(DAMAGE__TRACE, "Turret::GetToHit - %f * %f = %.5f", x, y, ChanceToHit);
-
     float rNum = MakeRandomFloat(0.0, 1.0);
     _log(DAMAGE__TRACE, "Turret::GetToHit - ChanceToHit:%f, Rand:%.3f", ChanceToHit, rNum);
     if (rNum <= 0.02)
@@ -93,7 +92,7 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     double angularVel = transversalV / distance;
     _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - angularVel:%.3f tracking:%.3f, targetSig:%.1f, sigRes:%u", angularVel, trackSpeed, targSig, sigRes);
 
-    double a = (transversalV / (distance * trackSpeed));
+    double a = (angularVel / trackSpeed);
     double b = (sigRes / targSig);
     double c = pow((a * b), 2);
     double d = EvE::max(distance - range);
