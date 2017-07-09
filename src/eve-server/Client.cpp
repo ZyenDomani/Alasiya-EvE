@@ -1806,8 +1806,8 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     }
 
     //Debug code
-    if (req.method != "BeanCount")
-        _log(CLIENT__CALL_REP, "%s call made to %s",req.method.c_str(),packet->dest.service.c_str());
+    //if (req.method != "BeanCount")
+        //_log(CLIENT__CALL_REP, "%s call made to %s",req.method.c_str(),packet->dest.service.c_str());
         //sLog.Warning("Client::BeanCount","(%s/%s) BeanCount error reporting and handling is not implemented yet.", \
                      req.method.c_str(),packet->dest.service.c_str());
 
