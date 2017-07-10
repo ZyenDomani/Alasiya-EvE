@@ -35,7 +35,50 @@ CREATE TABLE `dunGroupInfo` (
 
 LOCK TABLES `dunGroupInfo` WRITE;
 /*!40000 ALTER TABLE `dunGroupInfo` DISABLE KEYS */;
-INSERT INTO `dunGroupInfo` VALUES (1,'CorpseTEST'),(2,'SmallAsteroidCluster'),(3,'SmallOmberDeposit'),(4,'SmallKerniteandOmberDeposit'),(5,'SmallJaspet,KerniteandOmberDeposit'),(6,'SmallHemorphite,JaspetandKerniteDeposit'),(7,'SmallHedbergite,HemorphiteandJaspetDeposit'),(8,'SmallHedbergiteandHemorphiteDeposit'),(9,'SmallGneissDeposit'),(10,'SmallDarkOchreandGneissDeposit'),(11,'SmallCrokite,DarkOchreandGneissDeposit'),(12,'SmallSpodumain,CrokiteandDarkOchreDeposit'),(13,'SmallBistotDeposit'),(14,'SmallArkanorandBistotDeposit'),(15,'SmallMercoxit,ArkonorandBistotDeposit'),(16,'ModerateAsteroidCluster'),(17,'AverageOmberDeposit'),(18,'AverageKerniteandOmberDeposit'),(19,'AverageJaspet,KerniteandOmberDeposit'),(20,'AverageHemorphite,JaspetandKerniteDeposit'),(21,'AverageHedbergite,HemorphiteandJaspetDeposit'),(22,'AverageHedbergiteandHemorphiteDeposit'),(23,'AverageGneissDeposit'),(24,'AverageDarkOchreandGneissDeposit'),(25,'AverageCrokite,DarkOchreandGneissDeposit'),(26,'AverageSpodumain,CrokiteandDarkOchreDeposit'),(27,'AverageBistotDeposit'),(28,'AverageArkanorandBistotDeposit'),(29,'AverageMercoxit,ArkonorandBistotDeposit'),(30,'LargeAsteroidCluster'),(31,'LargeOmberDeposit'),(32,'LargeKerniteandOmberDeposit'),(33,'LargeJaspet,KerniteandOmberDeposit'),(34,'LargeHemorphite,JaspetandKerniteDeposit'),(35,'LargeHedbergite,HemorphiteandJaspetDeposit'),(36,'LargeHedbergiteandHemorphiteDeposit'),(37,'LargeGneissDeposit'),(38,'LargeDarkOchreandGneissDeposit'),(39,'LargeCrokite,DarkOchreandGneissDeposit'),(40,'LargeSpodumain,CrokiteandDarkOchreDeposit'),(41,'LargeBistotDeposit'),(42,'LargeArkanorandBistotDeposit'),(43,'LargeMercoxit,ArkonorandBistotDeposit');
+INSERT INTO `dunGroupInfo` VALUES
+(1,'CorpseTEST'),
+(2,'SmallAsteroidCluster'),
+(3,'SmallOmberDeposit'),
+(4,'SmallKerniteandOmberDeposit'),
+(5,'SmallJaspet,KerniteandOmberDeposit'),
+(6,'SmallHemorphite,JaspetandKerniteDeposit'),
+(7,'SmallHedbergite,HemorphiteandJaspetDeposit'),
+(8,'SmallHedbergiteandHemorphiteDeposit'),
+(9,'SmallGneissDeposit'),
+(10,'SmallDarkOchreandGneissDeposit'),
+(11,'SmallCrokite,DarkOchreandGneissDeposit'),
+(12,'SmallSpodumain,CrokiteandDarkOchreDeposit'),
+(13,'SmallBistotDeposit'),
+(14,'SmallArkanorandBistotDeposit'),
+(15,'SmallMercoxit,ArkonorandBistotDeposit'),
+(16,'ModerateAsteroidCluster'),
+(17,'AverageOmberDeposit'),
+(18,'AverageKerniteandOmberDeposit'),
+(19,'AverageJaspet,KerniteandOmberDeposit'),
+(20,'AverageHemorphite,JaspetandKerniteDeposit'),
+(21,'AverageHedbergite,HemorphiteandJaspetDeposit'),
+(22,'AverageHedbergiteandHemorphiteDeposit'),
+(23,'AverageGneissDeposit'),
+(24,'AverageDarkOchreandGneissDeposit'),
+(25,'AverageCrokite,DarkOchreandGneissDeposit'),
+(26,'AverageSpodumain,CrokiteandDarkOchreDeposit'),
+(27,'AverageBistotDeposit'),
+(28,'AverageArkanorandBistotDeposit'),
+(29,'AverageMercoxit,ArkonorandBistotDeposit'),
+(30,'LargeAsteroidCluster'),
+(31,'LargeOmberDeposit'),
+(32,'LargeKerniteandOmberDeposit'),
+(33,'LargeJaspet,KerniteandOmberDeposit'),
+(34,'LargeHemorphite,JaspetandKerniteDeposit'),
+(35,'LargeHedbergite,HemorphiteandJaspetDeposit'),
+(36,'LargeHedbergiteandHemorphiteDeposit'),
+(37,'LargeGneissDeposit'),
+(38,'LargeDarkOchreandGneissDeposit'),
+(39,'LargeCrokite,DarkOchreandGneissDeposit'),
+(40,'LargeSpodumain,CrokiteandDarkOchreDeposit'),
+(41,'LargeBistotDeposit'),
+(42,'LargeArkanorandBistotDeposit'),
+(43,'LargeMercoxit,ArkonorandBistotDeposit');
 /*!40000 ALTER TABLE `dunGroupInfo` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
