@@ -59,7 +59,7 @@ void StaticDataMgr::Populate()
         //SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes
         typeAttr.attributeID = row.GetUInt(1);
         if (row.IsNull(2))
-            typeAttr.value = row.GetFloat(3);
+            typeAttr.value = row.GetDouble(3);
         else
             typeAttr.value = row.GetInt(2);
 
