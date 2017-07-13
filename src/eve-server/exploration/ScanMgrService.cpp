@@ -135,6 +135,10 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
         return nullptr;
     }
 
+    if (!pClient->GetShipSE()->SysBubble()) {
+        // make error here and return
+        return nullptr;
+    }
     if (!pClient->scan())
         pClient->SetScan(new Scan(pClient));
 
