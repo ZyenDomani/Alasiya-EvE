@@ -55,6 +55,7 @@ ShipItem::ShipItem(ItemFactory &_factory, uint32 _shipID, const ShipType &_shipT
 m_pilot(nullptr),
 m_ModuleManager(nullptr)
 {
+    m_isPopped = false;
     m_IsLoaded = false;
     m_isDocking = false;
     m_isUndocking = false;

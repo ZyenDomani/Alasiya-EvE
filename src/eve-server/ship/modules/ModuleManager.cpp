@@ -362,7 +362,10 @@ bool ModuleManager::Initialize() {
 
     GenericModule* mod(nullptr);
     // first we have to fit and online modules
-    for (auto cur : itemVec)
+    for (auto cur : itemVec) {
+        // this is a hack.  dont know why any ship item would have flagAutoFit set, but have seen random errors where charges are set to flagAutoFit
+        if (cur->flag() == flagAutoFit)
+            cur->SetFlag(flagCargoHold);
         if (cur->flag() != flagCargoHold)
             switch (cur->categoryID()) {
                 case EVEDB::invCategories::Module:
@@ -382,6 +385,7 @@ bool ModuleManager::Initialize() {
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
                 } break;
             }
+    }
 /*
     // then load charges
     GenericModule* mod(nullptr);
@@ -969,10 +973,13 @@ void ModuleManager::CharacterBoardingShip()
 
 void ModuleManager::CharacterLeavingShip()
 {
+    // if ship is killed, no point setting modules to offline...just return
+    if (m_Ship->IsPopped())
+        return;
+
     sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
     //this is complicated and im gonna leave it alone for now until
     //a few things become more clear
-
     OfflineAll();
 }
 

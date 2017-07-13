@@ -247,11 +247,11 @@ public:
     static ShipItemRef Spawn(ItemFactory &factory, ItemData &data);
 
     virtual void SetPlayer(Client* pClient);
-    virtual bool HasPilot()                                     { return (m_pilot ? true : false); }
-    virtual Client* GetPilot()                                  { return m_pilot; }
+    virtual bool HasPilot()                             { return (m_pilot ? true : false); }
+    virtual Client* GetPilot()                          { return m_pilot; }
 
-    bool HasModuleManager()                                     { return (m_ModuleManager ? true : false); }
-    ModuleManager* GetModuleManager()                           { return m_ModuleManager; }
+    bool HasModuleManager()                             { return (m_ModuleManager ? true : false); }
+    ModuleManager* GetModuleManager()                   { return m_ModuleManager; }
 
     virtual void Delete();
 
@@ -259,10 +259,12 @@ public:
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item);
     bool ValidateItemSpecifics(InventoryItemRef equip);
 
-    const ShipType & type() const { return static_cast<const ShipType &>(InventoryItem::type()); }
+    const ShipType & type() const                       { return static_cast<const ShipType &>(InventoryItem::type()); }
 
-    bool IsInvul() {return false;}      /** @todo finish this, and find what it's used for */
+    bool IsInvul()                                      { return false; }      /** @todo finish this, and find what it's used for */
 
+    bool IsPopped()                                     { return m_isPopped; }
+    void SetPopped(bool set=false)                      { m_isPopped = set; }
     std::string GetShipDNA();
 
     /*
@@ -399,6 +401,7 @@ private:
     typedef std::map<InventoryItem*, double> iMap;
     std::map<uint16, ShipItem::iMap> m_stackMap;     // stacking attrib storage  attrib, map<InventoryItem*, double>
 
+    bool m_isPopped;
     bool m_isDocking;
     bool m_isUndocking;
 };
