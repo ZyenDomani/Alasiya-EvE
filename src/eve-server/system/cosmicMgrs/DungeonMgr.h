@@ -8,7 +8,7 @@
   *
   */
 
- 
+
 
 #ifndef _EVEMU_SYSTEM_DUNGEONMGR_H
 #define _EVEMU_SYSTEM_DUNGEONMGR_H
@@ -59,11 +59,11 @@ protected:
     typedef std::unordered_multimap<uint16, DunGroupData> DunGroupsDef;     //groupID is key
 
 public:
-    ActiveDungeonDef m_activeDungeons;  // systemID is key.  holds active dungeon data
-    DunTemplateDef m_templates;         // templateID is key.  holds all template data
-    DunRoomInfoDef m_roomInfo;          // roomID is key.  holds all room info
-    DunRoomsDef m_rooms;                // roomID is key.  holds all room data
-    DunGroupsDef m_groups;              // groupID is key. holds all group data
+    ActiveDungeonDef activeDungeons;  // systemID is key.  holds active dungeon data
+    DunTemplateDef templates;         // templateID is key.  holds all template data
+    DunRoomInfoDef roomInfo;          // roomID is key.  holds all room info
+    DunRoomsDef rooms;                // roomID is key.  holds all room data
+    DunGroupsDef groups;              // groupID is key. holds all group data
 
 private:
     ManagerDB m_db;
@@ -87,7 +87,7 @@ class PyServiceMgr;
 class DungeonMgr {
 public:
     DungeonMgr(SystemManager *system, PyServiceMgr& svc);
-    ~DungeonMgr()     { /* do nothing here */ }
+    ~DungeonMgr();
 
 
     void Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr);

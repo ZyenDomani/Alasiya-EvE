@@ -36,45 +36,45 @@ void DungeonDataMgr::_Populate()
     DBResultRow row;
 
     m_db.GetDunTemplates(*res);
-    DunTemplate templates;
+    DunTemplate dtemplates;
     while (res->GetRow(row)) {
         // SELECT dunTemplateID, dunName, dunRoomID, dunEntryID, dunTypeID, dunSpawnType, dunRooms, dunRoomTypeID, dunRoomCategoryID
-        templates.dunName = row.GetText(1);
-        templates.dunRoomID = row.GetInt(2);
-        templates.dunEntryID = row.GetInt(3);
-        templates.dunTypeID = row.GetInt(4);
-        templates.dunSpawnType = row.GetInt(5);
-        templates.dunRooms = row.GetInt(6);
-        templates.dunRoomTypeID = row.GetInt(7);
-        templates.dunRoomCategoryID = row.GetInt(8);
-        m_templates.emplace(row.GetInt(0), templates);
+        dtemplates.dunName = row.GetText(1);
+        dtemplates.dunRoomID = row.GetInt(2);
+        dtemplates.dunEntryID = row.GetInt(3);
+        dtemplates.dunTypeID = row.GetInt(4);
+        dtemplates.dunSpawnType = row.GetInt(5);
+        dtemplates.dunRooms = row.GetInt(6);
+        dtemplates.dunRoomTypeID = row.GetInt(7);
+        dtemplates.dunRoomCategoryID = row.GetInt(8);
+        templates.emplace(row.GetInt(0), dtemplates);
     }
 
     res->Reset();
     m_db.GetDunRoomData(*res);
-    DunRoomData rooms;
+    DunRoomData drooms;
     while (res->GetRow(row)) {
         // SELECT dunRoomID, dunGroupID, xpos, ypos, zpos
-        rooms.dunGroupID = row.GetInt(1);
-        rooms.x = row.GetInt(2);
-        rooms.y = row.GetInt(3);
-        rooms.z = row.GetInt(4);
-        m_rooms.emplace(row.GetInt(0), rooms);
+        drooms.dunGroupID = row.GetInt(1);
+        drooms.x = row.GetInt(2);
+        drooms.y = row.GetInt(3);
+        drooms.z = row.GetInt(4);
+        rooms.emplace(row.GetInt(0), drooms);
     }
 
     res->Reset();
     m_db.GetDunGroupData(*res);
-    DunGroupData groups;
+    DunGroupData dgroups;
     while (res->GetRow(row)) {
         // SELECT d.dunGroupID, d.itemTypeID, t.typeName, t.groupID, g.categoryID, d.xpos, d.ypos, d.zpos
-        groups.typeID = row.GetInt(1);
-        groups.typeName = row.GetText(2);
-        groups.typeGrpID = row.GetInt(3);
-        groups.typeCatID = row.GetInt(4);
-        groups.x = row.GetInt(5);
-        groups.y = row.GetInt(6);
-        groups.z = row.GetInt(7);
-        m_groups.emplace(row.GetInt(0), groups);
+        dgroups.typeID = row.GetInt(1);
+        dgroups.typeName = row.GetText(2);
+        dgroups.typeGrpID = row.GetInt(3);
+        dgroups.typeCatID = row.GetInt(4);
+        dgroups.x = row.GetInt(5);
+        dgroups.y = row.GetInt(6);
+        dgroups.z = row.GetInt(7);
+        groups.emplace(row.GetInt(0), dgroups);
     }
 
     /* not ready yet
@@ -88,7 +88,7 @@ void DungeonDataMgr::_Populate()
         info.dunRoomCategory = row.GetInt(2);
         info.dunRoomSpawnID = row.GetInt(3);
         info.dunRoomSpawnType = row.GetInt(4);
-        m_roomInfo.emplace(info.dunRoomID, info);
+        roomInfo.emplace(info.dunRoomID, info);
     } */
 
     /* not ready yet
@@ -102,7 +102,7 @@ void DungeonDataMgr::_Populate()
         spawn.x = row.GetInt(2);
         spawn.y = row.GetInt(3);
         spawn.z = row.GetInt(4);
-        m_groups.emplace(spawn.dunRoomSpawnID, spawn);
+        groups.emplace(spawn.dunRoomSpawnID, spawn);
     } */
 
 
@@ -110,19 +110,19 @@ void DungeonDataMgr::_Populate()
     SafeDelete(res);
 
     sLog.Cyan("   DungeonDataMgr", "%u rooms in %u buckets and %u groups in %u buckets for %u dungeon templates loaded in %.3fms.",
-              m_rooms.size(), m_rooms.bucket_count(), m_groups.size(), m_groups.bucket_count(), m_templates.size(), (GetTimeMSeconds() - start));
+              rooms.size(), rooms.bucket_count(), groups.size(), groups.bucket_count(), templates.size(), (GetTimeMSeconds() - start));
 }
 
 void DungeonDataMgr::AddDungeon(ActiveDungeon& dungeon)
 {
-    m_activeDungeons.emplace(dungeon.systemID, dungeon);
+    activeDungeons.emplace(dungeon.systemID, dungeon);
     _log(COSMIC_MGR__MESSAGE, "Added Dungeon %u (%u) in systemID %u to active dungeon list.", dungeon.dunItemID, dungeon.dunTemplateID, dungeon.systemID);
     m_db.SaveActiveDungeon(dungeon);
 }
 
 void DungeonDataMgr::GetDungeons(std::vector< ActiveDungeon >& dunList)
 {
-    for (auto cur : m_activeDungeons)
+    for (auto cur : activeDungeons)
         dunList.push_back(cur.second);
 }
 
@@ -134,6 +134,17 @@ m_services(svc)
 {
     m_initalized = false;
     m_anomalyItems.clear();
+}
+
+DungeonMgr::~DungeonMgr()
+{
+    //for now we're deleting everything till i can write proper item handling code
+    std::map<uint32, std::vector<uint32>>::iterator itr = m_dungeonList.begin();
+    while (itr != m_dungeonList.end()) {
+        std::vector<uint32>::iterator itr2 = itr->second.begin();
+        while (itr2 != itr->second.end())
+            InventoryDB::DeleteItem(*itr2);
+    }
 }
 
 void DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
@@ -183,11 +194,14 @@ bool DungeonMgr::Create(uint16 templateID)
     uint32 roomID = 0, typeID = 0;
 
     // get dungeon template
-    std::unordered_multimap<uint16, DunTemplate>::iterator itr = sDunDataMgr.m_templates.find(templateID);
-    if (itr != sDunDataMgr.m_templates.end()) {
-        roomID = itr->second.dunRoomID;
-        typeID = itr->second.dunTypeID;
+    std::unordered_multimap<uint16, DunTemplate>::iterator itr = sDunDataMgr.templates.find(templateID);
+    if (itr == sDunDataMgr.templates.end()) {
+        _log(COSMIC_MGR__ERROR, "DungeonMgr::Create() - template %u not found.", templateID);
+        return false;
     }
+
+    roomID = itr->second.dunRoomID;
+    typeID = itr->second.dunTypeID;
     if (!roomID) {
         _log(COSMIC_MGR__ERROR, "DungeonMgr::Create() - roomID is 0 for template %u.", templateID);
         return false;
@@ -239,13 +253,13 @@ bool DungeonMgr::Create(uint16 templateID)
     // get room and group data and put in spawn vector
     uint16 x=0, y=0, z=0, group = 0;
     DunGroupData grp;
-    auto roomRange = sDunDataMgr.m_rooms.equal_range(roomID);
+    auto roomRange = sDunDataMgr.rooms.equal_range(roomID);
     for (auto it = roomRange.first; it != roomRange.second; it++) {
         x = it->second.x;
         y = it->second.y;
         z = it->second.z;
         group = it->second.dunGroupID;
-        auto groupRange = sDunDataMgr.m_groups.equal_range(group);
+        auto groupRange = sDunDataMgr.groups.equal_range(group);
         for (auto it2 = groupRange.first; it2 != groupRange.second; it2++) {
             grp.typeCatID = it2->second.typeCatID;
             grp.typeGrpID = it2->second.typeGrpID;
@@ -299,18 +313,20 @@ bool DungeonMgr::Create(uint16 templateID)
             continue;
 
         DBSystemDynamicEntity entity;
-            entity.allianceID = 0;
             entity.categoryID = (EVEItemCategories)cur->typeCatID;
-            entity.corporationID = 0;
             entity.groupID = cur->typeGrpID;
             entity.itemID = item->itemID();
             entity.itemName = cur->typeName;
-            entity.ownerID = 1;
             entity.typeID = cur->typeID;
             entity.x = pos2.x;
             entity.y = pos2.y;
             entity.z = pos2.z;
+            /** @todo  fix these... */
+            entity.ownerID = 1;
+            entity.allianceID = 0;
+            entity.corporationID = 0;
         // do the spawn using SystemManager's BuildEntity:
+            /** @todo this is more shit that should NOT be in db */
         m_system->BuildDynamicEntity(entity);
         items.push_back(item->itemID());
         ++cur;
