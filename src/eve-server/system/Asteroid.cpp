@@ -140,3 +140,27 @@ void AsteroidSE::Delete()
     m_system->RemoveEntity(this);
     m_self->Delete();
 }
+
+/*
+ * def ComputeRadiusFromQuantity(categoryID, groupID, typeID, quantity):
+ *    if quantity < 0:
+ *        quantity = 1
+ *    if categoryID == const.categoryAsteroid:
+ *        qty = quantity
+ *        if qty > 130000:
+ *            qty = 130000
+ *        return 89.675 * math.exp(4e-05 * qty)
+ *    if groupID == const.groupHarvestableCloud:
+ *        return quantity * cfg.invtypes.Get(typeID).radius / 10.0
+ *    return quantity * cfg.invtypes.Get(typeID).radius
+ *
+ *
+ * def ComputeQuantityFromRadius(categoryID, groupID, typeID, radius):
+ *    if categoryID == const.categoryAsteroid:
+ *        quantity = math.log(radius / 89.675) * (1.0 / 4e-05)
+ *        return quantity
+ *    if groupID == const.groupHarvestableCloud:
+ *        quantity = radius * 10.0 / cfg.invtypes.Get(typeID).radius
+ *        return quantity
+ *    return radius / cfg.invtypes.Get(typeID).radius
+ */

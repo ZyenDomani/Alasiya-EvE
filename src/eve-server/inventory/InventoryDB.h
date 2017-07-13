@@ -111,7 +111,7 @@ public:
      * (entity)
      */
     bool GetItem(uint32 itemID, ItemData &into);
-    bool DeleteItem(uint32 itemID);
+    static bool DeleteItem(uint32 itemID);
 
     uint32 NewItem(const ItemData &data);
     bool SaveItem(uint32 itemID, const ItemData &data);
@@ -123,7 +123,7 @@ public:
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 ownerID, std::vector<uint32> &into);
 
     void DeleteTrackingCans();
-    
+
     /*
      * Character stuff
      * (chrCharacter, chrSkillQueue)

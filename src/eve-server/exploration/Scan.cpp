@@ -73,9 +73,9 @@ void Scan::RequestScans(PyDict* dict) {
     //  query possible items within scan range, return result. rinse, repeat as needed.
 
     /* will have to write...
-     *  an anomoly handling class/system,       ...started - system/AnomolyMgr.cpp
-     *  a dungeon creation/managing system,     ...started - dungeon/DungeonMgr.cpp
-     *  a wormhole system,                      ...started - system/WormholeMgr.cpp
+     *  an anomoly handling class/system,       ...started - system/cosmicMgrs/AnomolyMgr.cpp
+     *  a dungeon creation/managing system,     ...started - system/cosmicMgrs/DungeonMgr.cpp
+     *  a wormhole system,                      ...started - system/cosmicMgrs/WormholeMgr.cpp
      *  whatever else i find we need as i get to it.
      */
 

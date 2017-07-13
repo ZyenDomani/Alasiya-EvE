@@ -124,9 +124,7 @@ protected:
     double m_chanceOfReverseEngineering;
 };
 
-/*
- * InventoryItem, which represents blueprint
- */
+
 class Blueprint
 : public InventoryItem
 {

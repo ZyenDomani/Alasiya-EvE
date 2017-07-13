@@ -848,7 +848,7 @@ bool InventoryItem::SetQuantity(int32 qty_new, bool notify) {
 
     return true;
 }
-bool InventoryItem::SetFlag(EVEItemFlags new_flag, bool notify) {
+bool InventoryItem::SetFlag(EVEItemFlags new_flag, bool notify/*true*/) {
     EVEItemFlags old_flag = m_flag;
     m_flag = new_flag;
 
@@ -863,7 +863,7 @@ bool InventoryItem::SetFlag(EVEItemFlags new_flag, bool notify) {
     return true;
 }
 
-InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify) {
+InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify/*true*/) {
     if (qty_to_take <= 0) {
         _log(ITEM__ERROR, "%s (%u): Asked to split into a chunk of %d", itemName().c_str(), itemID(), qty_to_take);
         return InventoryItemRef();

@@ -314,6 +314,8 @@ void SystemBubble::GetPlayers(std::vector<Client*> &into) const {
 	/* updated to send ONLY players to the following:         -allan 14Feb15
 	 *    NPCAIMgr::Process()             --for npc targeting
 	 *    SpawnEntry::Process()           --for npc spawning
+     *
+     * this will also send player drones once that system is completed
 	 */
 	into.clear();
 	if (m_players.empty()) return;
