@@ -136,9 +136,9 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "  LEFT JOIN chrCharacter AS c ON c.characterID = e.ownerID"
         "  LEFT JOIN corporation AS co ON co.corporationID = c.corporationID"
         " WHERE e.locationID = %u"
-        "  AND g.categoryID IN (%d, %d, %d, %d, %d, %d, %d, %d)"
+        "  AND g.categoryID IN (%d, %d, %d, %d, %d, %d, %d)"
         "  AND e.ownerID != 1"  // get dynamics not owned by the system
-        "  AND e.itemID NOT IN (c.shipID,c.capsuleID)"
+        "  AND e.itemID NOT IN (c.shipID,c.capsuleID)"  // this is a problem....returns NOTHING because of this line.
         " ORDER BY e.itemID",
         systemID, Celestial/*2*/,     // Celestial is for containers (wrecks, jetcans, lsc)
         // include deployed items owned by players or corps

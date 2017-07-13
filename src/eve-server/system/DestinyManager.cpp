@@ -818,8 +818,8 @@ void DestinyManager::MoveObject() {
     if (sEntityList.GetTracking()) {
         // create jetcan to visualize object movement
         std::ostringstream str;
-        str << "Position Test " << timeStamp;
-        ItemData idata(23, 0, mySE->GetLocationID(), flagAutoFit, str.str().c_str(), m_position);
+        str << timeStamp;
+        ItemData idata(23, 0, mySE->GetLocationID(), flagAutoFit, str.str().c_str(), m_position, "Position Test");
         CargoContainerRef jetCanRef = mySE->GetServices().item_factory->SpawnCargoContainer(idata);
         if (jetCanRef) {
             // create new container
