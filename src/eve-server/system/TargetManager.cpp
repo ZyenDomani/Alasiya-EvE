@@ -302,12 +302,14 @@ void TargetManager::TargetLost(SystemEntity *who) {
     _log(TARGET__INFO, "%s(%u) has lost lock on %s(%u)",
          mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
 
-    mySE->DestinyMgr()->EntityRemoved(who);
+    if (mySE->IsSentrySE())
+        return;
 
+    mySE->DestinyMgr()->EntityRemoved(who);
     if (mySE->IsNPCSE())
         mySE->GetNPCSE()->TargetLost(who);
-
-    if (!mySE->HasPilot()) return;
+    if (!mySE->HasPilot())
+        return;
     Notify_OnTarget te;
         te.mode = "lost";
         te.targetID = who->GetID();

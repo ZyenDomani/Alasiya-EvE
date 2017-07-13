@@ -140,10 +140,8 @@ float TurretFormulas::GetSentryToHit(Sentry* pSentry, SystemEntity* pTarget)
     if (!pTarget)
         return 0;
     double falloff = pSentry->GetSelf()->GetAttribute(AttrFalloff).get_double();
-    double distance = pSentry->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
-    GVector vector = pTarget->GetVelocity() - pSentry->GetVelocity();
-    double transversalV = vector.length();
-    double a = (transversalV / (distance * pSentry->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float()));
+    double distance = pSentry->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
+    double a = (pTarget->GetVelocity().length() / (distance * pSentry->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float()));
     double b = (pSentry->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
     double c = pow((a * b), 2);
     double d = EvE::max(distance - pSentry->GetSelf()->GetAttribute(AttrEntityAttackRange).get_double());

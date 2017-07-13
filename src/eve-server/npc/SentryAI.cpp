@@ -41,7 +41,6 @@ m_webifierTimer(5000)         //arbitrary.
     m_attackSpeed = who->GetSelf()->GetAttribute(AttrSpeed).get_int();
     m_processTimer.Start(m_attackSpeed);
 
-    /** @todo  all of these need to be verified and/or updated */
     // Optimal Range
     m_optimalRange = who->GetSelf()->GetAttribute(AttrMaxRange).get_int();
     // Accuracy falloff  (distance past maximum range at which accuracy has fallen by half)
@@ -79,15 +78,13 @@ m_webifierTimer(5000)         //arbitrary.
 }
 
 void SentryAI::Process() {
-    if ((!m_processTimer.Check())
-        or (!m_npc->SysBubble()->HasPlayers())
-        or m_npc->DestinyMgr()->IsWarping())
+    if ((!m_processTimer.Check()) or (!m_npc->SysBubble()->HasPlayers()))
         return;
 
     /* NPC::State definitions   -allan 25July15  (UD 1June16)
     *   Idle,       // not doing anything, nothing in sight....idle.
-    *   Engaged,    // actively fighting (in orbit).  use m_orbitSpeed.
-    *   Signaling   // calling for help..use m_orbitSpeed *2 to speed tank while calling for reinforcements
+    *   Engaged,    // actively fighting.
+    *   Signaling   // calling for help
     */
     switch(m_state) {
         case State::Idle: {
@@ -155,7 +152,7 @@ void SentryAI::SetIdle() {
 }
 
 void SentryAI::SetEngaged(SystemEntity* pTarget) {
-    if ((m_state == State::Engaged) and m_npc->DestinyMgr()->IsOrbiting())
+    if (m_state == State::Engaged)
         return;
     _log(NPC__AI_TRACE, "%s(%u): Engaged: Begin engaging.  Target is %s(%u).", \
             m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -164,7 +161,7 @@ void SentryAI::SetEngaged(SystemEntity* pTarget) {
 }
 
 void SentryAI::SetSignaling(SystemEntity* pTarget) {
-    if ((m_state == State::Signaling) and m_npc->DestinyMgr()->IsOrbiting())
+    if (m_state == State::Signaling)
         return;
     _log(NPC__AI_TRACE, "%s(%u): Signaling: Begin signaling.  Target is %s(%u).", \
             m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -210,10 +207,7 @@ void SentryAI::Target(SystemEntity* pTarget) {
     bool chase = false;
 
     if (!m_npc->TargetMgr()->StartTargeting(pTarget, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
-        if (chase) {
-            _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
-                    m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-        } else {
+        if (!chase) {
             _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.", \
                     m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
             SetIdle();
@@ -228,15 +222,12 @@ void SentryAI::Targeted(SystemEntity* pAgressor) {
     double targetTime = GetTargetTime();
     switch(m_state) {
         case State::Idle: {
-            _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) in Idle. Begin Approaching and start Targeting sequence.", \
+            _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) in Idle. Begin Targeting sequence.", \
                     m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
 
             bool chase = false;
             if (!m_npc->TargetMgr()->StartTargeting( pAgressor, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
-                if (chase) {
-                    _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
-                            m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
-                } else {
+                if (!chase) {
                     _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.", \
                             m_npc->GetName(), m_npc->GetID(), pAgressor->GetName(), pAgressor->GetID());
                     SetIdle();
@@ -305,7 +296,8 @@ void SentryAI::Attack(SystemEntity* pTarget)
 void SentryAI::AttackTarget(SystemEntity* pTarget) {
     // some npcs use missiles.....write code for using missiles   -- entityMissileTypeID
     std::string guid = "effects.Laser";
-    m_npc->DestinyMgr()->SendSpecialEffect(m_npc->GetSelf()->itemID(),
+    // sentry does NOT have a destiny manager...use target's destiny manager for sending fx
+    pTarget->DestinyMgr()->SendSpecialEffect(m_npc->GetSelf()->itemID(),
                                            m_npc->GetSelf()->itemID(),
                                            m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
                                            pTarget->GetID(),
