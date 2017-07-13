@@ -149,7 +149,7 @@ minFakeClientItem = 17000000000000000000L
 #define IsWSpace(itemID) \
 ((itemID >= minWHSolarSystem) && (itemID < maxWHSolarSystem))
 
-#define IsUniverseCelestial(itemID) \
+#define IsCelestial(itemID) \
 ((itemID >= 40000000) && (itemID < 50000000))
 
 #define IsStargate(itemID) \
@@ -343,7 +343,7 @@ def IsWormholeRegion(regionID):
     return regionID >= const.mapWormholeRegionMin and regionID < const.mapWormholeRegionMax
 
 
-def IsUniverseCelestial(itemID):
+def IsCelestial(itemID):
     return itemID >= const.minUniverseCelestial and itemID <= const.maxUniverseCelestial
 
 

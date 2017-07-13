@@ -208,7 +208,7 @@ void AsteroidBeltMgr::SpawnBelt(uint16 bubbleID)
         return;
 
     uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
-    if (!IsUniverseCelestial(beltID))
+    if (!IsCelestial(beltID))
         return;
 
     SystemEntity* pSE = m_system->GetSEFromInventory(beltID);

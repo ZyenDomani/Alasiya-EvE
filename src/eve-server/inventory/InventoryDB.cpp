@@ -401,7 +401,7 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             codelog(DATABASE__ERROR, "Error in query for station %u: %s", itemID, res.error.c_str());
             return false;
         }
-    } else if (IsUniverseCelestial(itemID)) {
+    } else if (IsCelestial(itemID)) {
         //use mapDenormalize
         if (!sDatabase.RunQuery(res,
             "SELECT"
