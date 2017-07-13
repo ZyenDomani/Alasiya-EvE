@@ -84,7 +84,6 @@ struct ramMaterials {
 
 /* POD structure for character kill data  -allan 01May16 */
 struct CharKillData {
-    uint32 killID;
     uint32 solarSystemID;
     uint32 victimCharacterID;
     uint32 victimCorporationID;
