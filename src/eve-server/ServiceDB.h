@@ -48,6 +48,8 @@ public:
     bool UpdateAccountHash( const char* username, std::string &hash );
     bool UpdateAccountInformation( const char* username, bool isOnline );
 
+    static void SaveKillOrLoss(CharKillData& data);
+
     //destiny setstate stuff:
     PyObject *GetSolDroneState(uint32 systemID) const;
 

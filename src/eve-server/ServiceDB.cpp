@@ -144,6 +144,22 @@ uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, uint64 
     return accountID;
 }
 
+void ServiceDB::SaveKillOrLoss(CharKillData &data) {
+    DBerror err;
+    sDatabase.RunQuery(err,
+        " INSERT INTO chrKillTable"
+        " VALUES (0,%u,%u,%u,"
+        "%u,%u,%u,%u,"
+        "%u,%u,%u,%u,"
+        "%u,%u,%f,%u,"
+        "'%s',%" PRIu64 ",%u)",
+        data.solarSystemID, data.victimCharacterID, data.victimCorporationID,
+        data.victimAllianceID, data.victimFactionID, data.victimShipTypeID, data.victimDamageTaken,
+        data.finalCharacterID, data.finalCorporationID, data.finalAllianceID, data.finalFactionID,
+        data.finalShipTypeID, data.finalWeaponTypeID, data.finalSecurityStatus, data.finalDamageDone,
+        data.killBlob.c_str(), data.killTime, data.moonID);
+}
+
 /** @todo  all of the following bullshit needs to be checked/updated/deleted as appropriate */
 //this function is temporary, I dont plan to keep this crap in the DB.
 //   will make mem object for droneState later...   test with this.

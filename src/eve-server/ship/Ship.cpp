@@ -859,8 +859,8 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
 
     if (IsModuleSlot(flag)) {
         if (!m_ModuleManager) {
-            m_ModuleManager = new ModuleManager(this);
-            m_ModuleManager->Initialize();
+            _log(SHIP__MODULE_ERROR, "Ship::AddItem - %u - m_ModuleManager is null.", m_itemID );
+            return 0;
         }
         if (item->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->LoadCharge(item, flag);

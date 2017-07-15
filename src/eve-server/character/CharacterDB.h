@@ -195,7 +195,6 @@ public:
     void        AddBounty(uint32 charID, uint32 ownerID, uint32 amount);
     uint32      PayBounty(CharacterRef cRef);
 
-    void        SaveKillOrLoss(CharKillData& data);
     PyRep* GetKillOrLoss(uint32 charID);
 
 	// for dynamic db functions    -allan

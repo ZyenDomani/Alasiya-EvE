@@ -157,12 +157,15 @@ public:
     virtual bool                IsOutpostSE()           { return m_outpost; }
     virtual bool                IsJumpBridgeSE()        { return m_bridge; }
 
-    virtual bool                isGlobal()                { return m_co; }    // just in case item->isGlobal() fails here for customs offices...which it may
+    virtual bool                isGlobal()              { return m_co; }    // just in case item->isGlobal() fails here for customs offices...which it may
 
     /* SystemEntity interface */
     virtual void                Process();
     virtual void                EncodeDestiny( Buffer& into );
     virtual PyDict*             MakeSlimItem();
+
+    /* virtual functions default to base class and overridden as needed */
+    virtual void Killed(Damage &fatal_blow);
 
     /* specific functions handled in this class. */
     inline void                 SetPOSState(uint8 state) { m_state = state; }
@@ -190,6 +193,7 @@ private:
     bool m_outpost;
 
     uint8 m_state;          /* used to hold POS state (online, reinforced, operating, etc) */
+    uint32 m_moonID;        /* moon this structure is stationed at.  used for killMail */
     uint32 m_harmonic;      /* this tracks shield frequency for passing thru POS shields.  not sure how to use it yet.... */
     uint32 m_towerID;       /* this is the controlling towerID for POS modules */
     uint64 m_timestamp;     /* used to track start time on POS states (onlining, reinforced, etc) */

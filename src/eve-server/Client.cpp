@@ -412,7 +412,7 @@ void Client::WarpOut() {
     m_ship->SetCustomInfo(ci);
     if (!InPod())
         m_ship->SetFlag(flagShipOffline, false);
-    m_system->RemoveEntity(pShipSE);
+    DestroyShipSE();
     return;
     m_invulTimer.Start(ClientTimers::WarpOutInvul);
     // We are logging out, so we need to warp to a random spot 1Mm away:
@@ -700,6 +700,7 @@ void Client::CreateShipSE() {
 void Client::DestroyShipSE() {
     if (pShipSE) {
         _log(PLAYER__MESSAGE, "DestroyShipSE() - pShipSE %p (%s) destroyed for %s(%u)", pShipSE, m_ship->itemName().c_str(), m_char->itemName().c_str(), m_char->itemID());
+        pShipSE->SysBubble()->Remove(pShipSE);
         m_system->RemoveEntity(pShipSE);
         SafeDelete(pShipSE);
     } else

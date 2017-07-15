@@ -430,7 +430,7 @@ void Ship::Killed(Damage &fatal_blow) {
             data.victimDamageTaken = totalHP;
 
             std::stringstream blob;
-            blob << "'<items><i t=" << data.victimShipTypeID << " f=0 s=1 d=0 x=1/></items>'";
+            blob << "<items><i t=" << data.victimShipTypeID << " f=0 s=1 d=0 x=1/></items>";
             data.killBlob = blob.str().c_str();
             data.killTime = Win32TimeNow();
             data.moonID = 0;
@@ -444,7 +444,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
         m_system->RemoveEntity(this);
 
-        std::string corpse_name = GetName();
+        std::string corpse_name = pPilot->GetName();
         corpse_name += "'s Frozen Corpse";
         uint32 corpseTypeID = 10041; // typeID from 'invTypes' table for "Frozen Corpse"
         ItemData corpseItemData(corpseTypeID, m_self->ownerID(), locationID, flagAutoFit, corpse_name.c_str(), deadPodPosition);
@@ -517,7 +517,7 @@ void Ship::Killed(Damage &fatal_blow) {
             // default to generic frigate wreck till i get better checks and/or complete wreck data
             wreckTypeID = 26557;
         }
-        std::string wreck_name = GetName();
+        std::string wreck_name = pPilot->GetName();
         wreck_name += "'s " + deadShipRef->itemName() + " Wreck";
 
 		ItemData wreckItemData(wreckTypeID, m_self->ownerID(), locationID, flagAutoFit, wreck_name.c_str(), deadShipPosition);
@@ -553,7 +553,7 @@ void Ship::Killed(Damage &fatal_blow) {
                 x = item.qtyDestroyed
             */
         std::stringstream blob;
-        blob << "'<items>";
+        blob << "<items>";
 
         std::map<uint32, InventoryItemRef> deadShipInventory;
         deadShipInventory.clear();
@@ -583,7 +583,7 @@ void Ship::Killed(Damage &fatal_blow) {
                 blob << " d=" << d << " x=" << x << "/>";
             }
         }
-        blob << "</items>'";
+        blob << "</items>";
 
         /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
         CharKillData data;
