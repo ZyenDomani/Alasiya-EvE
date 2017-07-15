@@ -214,6 +214,13 @@ minFakeClientItem = 17000000000000000000L
 
 
 /*
+def Singleton(item):
+    if item[const.ixQuantity] < 0:
+        return -item[const.ixQuantity]
+    if 30000000 <= item[const.ixLocationID] < 40000000:
+        return 1
+    return 0
+
 def IsSystem(ownerID):
     return ownerID <= 10000
 

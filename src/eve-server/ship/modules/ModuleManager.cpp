@@ -386,19 +386,6 @@ bool ModuleManager::Initialize() {
                 } break;
             }
     }
-/*
-    // then load charges
-    GenericModule* mod(nullptr);
-    for (auto cur : itemVec)
-        if ((cur->flag() != flagCargoHold) and (cur->categoryID() == EVEDB::invCategories::Charge)) {
-            mod = GetModule(cur->flag());
-            if (mod)
-                mod->LoadCharge(cur);
-            else
-                _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",\
-                        cur->itemName().c_str(), cur->itemID(), cur->flag() );
-        }
-*/
     return (m_initalized = true);
 }
 
@@ -757,129 +744,63 @@ void ModuleManager::RepairModule(uint32 itemID)
         _log(SHIP__MODULE_ERROR, "ModuleManager::RepairModule() - Called on module %u that is not loaded.", itemID );
 }
 
-/** @todo   need to update this */
 void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 {
     GenericModule* mod = m_Modules->GetModule(flag);
     if (mod) {
-		// Scenarios to handle:
-		// + no charge loaded: check capacity >= volume of charge to add, if true, LOAD
-		//     - ELSE: if charge to load is qty > 1, calculate smallest integer qty that will EQUAL capacity, SPLIT remainder off, then LOAD!
-		// + some charge loaded: check capacity >= volume of charge to add, if true, MERGE new charge to existing
-		//     - ELSE: if charge to load is qty > 1, calculate smallest integer qty that added to existing charge qty will EQUAL capacity, SPLIT remainder off, then LOAD!
+        float modCapacity = mod->getItem()->GetAttribute(AttrCapacity).get_float();
+        float chargeVolume = chargeRef->GetAttribute(AttrVolume).get_float();
 
-		// Key facts to get:
-		// * existing charge ref -> qty and volume/unit
-		// * module ref -> capacity of module
-		// * charge to add ref -> qty and volume/unit
+        if (mod->IsLoaded()) {
+            InventoryItemRef loadedChargeRef = mod->GetLoadedChargeRef();
+            modCapacity -= (loadedChargeRef->GetAttribute(AttrVolume).get_float() * loadedChargeRef->quantity());
+            if ( chargeRef->typeID() != loadedChargeRef->typeID() ) {
+                // change charges
+                UnloadCharge(flag);
+                if (IsStation(m_Ship->locationID()))
+                    loadedChargeRef->Move(m_Ship->locationID(), flagHangar);
+                else {
+                    if (m_Ship->ValidateAddItem(flagCargoHold, loadedChargeRef))
+                        loadedChargeRef->Move(m_Ship->itemID(), flagCargoHold);
+                    else
+                        return; // cant put in cargo.  return without changing charge.
+                }
+            } else {
+                if (modCapacity > chargeVolume) {
+                    uint32 quantityWeCanLoad = floor(modCapacity / chargeVolume);
+                    if (quantityWeCanLoad > 0) {
+                        if (quantityWeCanLoad < chargeRef->quantity()) {
+                            InventoryItemRef loadableChargeQtyRef = chargeRef->Split(quantityWeCanLoad);
+                            loadedChargeRef->Merge(loadableChargeQtyRef);
+                        } else {
+                            loadedChargeRef->Merge(chargeRef);
+                        }
+                        mod->LoadCharge(loadedChargeRef);
+                    }
+                }
+            }
+        }
 
-		EvilNumber modCapacity = mod->getItem()->GetAttribute(AttrCapacity);
-		EvilNumber chargeToLoadVolume = chargeRef->GetAttribute(AttrVolume);
-		EvilNumber chargeToLoadQty = EvilNumber(chargeRef->quantity());
-
-		/////////////////////////////////////////
-		// chargeRef->Split();
-		// chargeRef->Merge();
-		// mod->Load(chargeRef);
-		// chargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
-		/////////////////////////////////////////
-
-		//m_Ship->GetPilot()->MoveItem(chargeRef->itemID(), m_Ship->itemID(), flag);
-
-		if ( mod->IsLoaded() )
-		{
-			// Module is loaded, let's check available capacity:
-			InventoryItemRef loadedChargeRef = mod->GetLoadedChargeRef();
-			EvilNumber loadedChargeVolume = loadedChargeRef->GetAttribute(AttrVolume);
-			EvilNumber loadedChargeQty = EvilNumber(loadedChargeRef->quantity());
-			modCapacity -= (loadedChargeVolume * loadedChargeQty);		// Calculate remaining capacity
-			if ( chargeRef->typeID() != loadedChargeRef->typeID() )
-			{
-				// Different charge type is being swapped into this module, so unload what's loaded
-				if ( IsStation(m_Ship->GetPilot()->GetLocationID()) )
-					loadedChargeRef->Move(m_Ship->locationID(), flagHangar);
-				else
-				{
-					m_Ship->ValidateAddItem(flagCargoHold,loadedChargeRef);
-					loadedChargeRef->Move(m_Ship->itemID(), flagCargoHold);
-				}
-				mod->UnloadCharge();
-
-				// Loading of charge will be performed below
-			}
-			else
-			{
-				if ( modCapacity > chargeToLoadVolume )
-				{
-					// Great!  We can load at least one, let's top off the loaded charges:
-					uint32 quantityWeCanLoad = floor((modCapacity / chargeToLoadVolume).get_float());
-					if ( quantityWeCanLoad > 0 )
-					{
-						if ( quantityWeCanLoad < chargeToLoadQty.get_int() )
-						{
-							// Split chargeRef to qty 'quantityWeCanLoad'
-							// Merge new smaller qty 'quantityWeCanLoad' with loadedChargeRef
-							// Load this merged charge Ref into module
-							InventoryItemRef loadableChargeQtyRef = chargeRef->Split( quantityWeCanLoad );
-							loadableChargeQtyRef->ChangeOwner( chargeRef->ownerID() );
-							loadedChargeRef->Merge( loadableChargeQtyRef );
-							mod->LoadCharge( loadedChargeRef );
-							loadedChargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
-						}
-						else
-						{
-							// Merge chargeRef with loadedChargeRef
-							// Load this merged charge Ref into module
-							loadedChargeRef->Merge( chargeRef );
-							mod->LoadCharge( loadedChargeRef );
-							loadedChargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
-						}
-					}
-					else
-						throw PyException( MakeCustomError( "Cannot load even one unit of this charge!" ) );
-				}
-				else
-				{
-					throw PyException( MakeCustomError( "Charge is full!" ) );
-				}
-			}
-		}
-
-		// Refresh ammo capacity of module in case it was modified in previous code block ahead of a load action:
-		modCapacity = mod->getItem()->GetAttribute(AttrCapacity);
-
-		// Load charge supplied if this module was either never loaded, or just unloaded from a different type right above:
-		if ( !(mod->IsLoaded()) )
-		{
-			// Module is not loaded at all, let's check total volume of charge to load against available capacity:
-			if ( modCapacity >= (chargeToLoadVolume * chargeToLoadQty) )
-			{
-				// We can insert entire stack of chargeRef into module
-				// Load chargeRef as-is into module
-				mod->LoadCharge( chargeRef );
-				chargeRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
-			}
-			else
-			{
-				// We need to split off only as many charge units as can fit into this module
-				// Split chargeRef
-				uint32 quantityWeCanLoad = floor((modCapacity / chargeToLoadVolume).get_float());
-				if ( quantityWeCanLoad > 0 )
-				{
-					// Split chargeRef to qty 'quantityWeCanLoad'
-					// Merge new smaller qty 'quantityWeCanLoad' with loadedChargeRef
-					// Load this merged charge Ref into module
-					InventoryItemRef loadableChargeQtyRef = chargeRef->Split( quantityWeCanLoad );
-					loadableChargeQtyRef->ChangeOwner( chargeRef->ownerID() );
-					mod->LoadCharge( loadableChargeQtyRef );
-					loadableChargeQtyRef->Move(m_Ship->itemID(), flag);		// used to be (m_pOperator->GetLocationID(), flag)
-				}
-				else
-		            throw PyException( MakeCustomError( "Cannot load even one unit of this charge!" ) );
-			}
-		}
+        modCapacity = mod->GetAttribute(AttrCapacity).get_float();
+        if (!(mod->IsLoaded())) {
+            if (modCapacity >= (chargeVolume * chargeRef->quantity())) {
+                chargeRef->Move(m_Ship->itemID(), flag);
+                mod->LoadCharge( chargeRef );
+            } else {
+                uint32 quantityWeCanLoad = floor((modCapacity / chargeVolume));
+                if (quantityWeCanLoad > 0) {
+                    InventoryItemRef loadableChargeQtyRef = chargeRef->Split( quantityWeCanLoad );
+                    loadableChargeQtyRef->ChangeOwner( chargeRef->ownerID() );
+                    loadableChargeQtyRef->Move(m_Ship->itemID(), flag);
+                    mod->LoadCharge( loadableChargeQtyRef );
+                }
+            }
+        } else {
+            _log(SHIP__MODULE_ERROR, "ModuleManager::LoadCharge() - module %s at slot %i is still loaded", mod->getItem()->itemName().c_str(), flag);
+        }
+    } else {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::LoadCharge() - module not found at slot %i", flag);
     }
-    return;
 }
 
 void ModuleManager::UnloadCharge(EVEItemFlags flag)
@@ -895,6 +816,7 @@ void ModuleManager::UnloadCharge(EVEItemFlags flag)
     } else
         _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module not found at slot %i", flag);
 }
+
 void ModuleManager::GetLoadedCharges(std::map< EVEItemFlags, InventoryItemRef >& charges)
 {
     charges = m_charges;
