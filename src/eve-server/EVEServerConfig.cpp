@@ -53,6 +53,7 @@ EVEServerConfig::EVEServerConfig()
     server.DeleteTrackingCans = true;
     server.UseStackTrace = false;//N
     server.BulkDataOD = false;
+    server.NoobShipCheck = true;
     server.ServerSleepTime = 10 /*ms*/;
     server.idleSleepTime = 1000;
     server.DisableIGB = true;
@@ -211,6 +212,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "maxPlayers",           server.maxPlayers );
     AddValueParser( "UseProfiling",         server.UseProfiling );
     AddValueParser( "UseShipTracking",      server.UseShipTracking );
+    AddValueParser( "NoobShipCheck",      server.NoobShipCheck );
     AddValueParser( "PositionHack",         server.PositionHack );
     AddValueParser( "DeleteTrackingCans",   server.DeleteTrackingCans );
     AddValueParser( "UseStackTrace",        server.UseStackTrace );
@@ -227,6 +229,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "maxPlayers" );
     RemoveParser( "UseProfiling" );
     RemoveParser( "UseShipTracking" );
+    RemoveParser( "NoobShipCheck" );
     RemoveParser( "PositionHack" );
     RemoveParser( "DeleteTrackingCans" );
     RemoveParser( "UseStackTrace" );

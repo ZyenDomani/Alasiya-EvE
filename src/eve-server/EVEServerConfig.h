@@ -60,6 +60,7 @@ public:
         bool IsTestServer;    // to distuinguish between live production server or experimental testing server
         bool DisableIGB;
         bool BulkDataOD;
+        bool NoobShipCheck;
         uint8 ServerSleepTime;
         uint8 MaxThreadReport;
         uint16 idleSleepTime;
