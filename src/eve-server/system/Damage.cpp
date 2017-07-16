@@ -147,12 +147,12 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         default: {
             float modifier = d.GetModifier();
             d *= modifier;
-            if (modifier == 3.0)        damageID = 6;
+                 if (modifier == 3.0)   damageID = 6;
             else if (modifier > 1.2501) damageID = 5;
             else if (modifier > 1.0001) damageID = 4;
             else if (modifier > 0.7501) damageID = 3;
             else if (modifier > 0.6251) damageID = 2;
-            else if (modifier > 0.5001) damageID = 1;
+            else if (modifier != 0)     damageID = 1;   // modified from live's 0.5 to enable more "partial hits"
             else                        damageID = 0;
             _log(DAMAGE__TRACE, "%s(%u): Modifier: %.3f, damageID: %u.", GetName(), GetID(), modifier, damageID);
         } break;
@@ -173,10 +173,10 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         if (HasPilot()) {
             float uniformity = m_self->GetAttribute(AttrShieldUniformity).get_float();
             uniformity += (0.05 * GetPilot()->GetChar()->GetSkillLevel(skillTacticalShieldManipulation));
-            if ((available_shield /m_self->GetAttribute(AttrShieldCapacity).get_float()) < uniformity) {
-                float new_damage = d.GetTotal() * 0.01;
-                m_self->SetAttribute(AttrArmorDamage, new_damage);
-                shield_damage -= new_damage;
+            if ((damageID) and (available_shield /m_self->GetAttribute(AttrShieldCapacity).get_float()) < uniformity) {
+                float bleedthru = (d.GetTotal() * 0.01);
+                m_self->SetAttribute(AttrArmorDamage, (bleedthru + m_self->GetAttribute(AttrArmorDamage).get_float()));
+                shield_damage -= bleedthru;
             }
         }
         total_damage += shield_damage;
@@ -418,7 +418,7 @@ void Ship::Killed(Damage &fatal_blow) {
             data.finalCharacterID = killerID;
             data.finalCorporationID = killer->GetCorporationID();
             data.finalAllianceID = killer->GetAllianceID();
-            data.finalFactionID = killer->GetWarFactionID();
+            data.finalFactionID = (killer->GetWarFactionID() > 500021 ? 500021 : killer->GetWarFactionID());
             data.finalShipTypeID = killer->GetTypeID();
             data.finalWeaponTypeID = fatal_blow.weaponRef->typeID();
             data.finalSecurityStatus = 0;   /* fix this */
@@ -597,7 +597,7 @@ void Ship::Killed(Damage &fatal_blow) {
             data.finalCharacterID = killerID;
             data.finalCorporationID = killer->GetCorporationID();
             data.finalAllianceID = killer->GetAllianceID();
-            data.finalFactionID = killer->GetWarFactionID();
+            data.finalFactionID = (killer->GetWarFactionID() > 500021 ? 500021 : killer->GetWarFactionID());
             data.finalShipTypeID = killer->GetTypeID();
             data.finalWeaponTypeID = fatal_blow.weaponRef->typeID();
             data.finalSecurityStatus = 0;  /* fix this */
