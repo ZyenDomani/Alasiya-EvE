@@ -144,6 +144,10 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
 
     pBubble = FindBubble(pSE->SystemMgr()->GetID(), newCenter);
     if (pBubble) {
+        if (pBubble->GetSystem()->GetID() != pSE->SystemMgr()->GetID()) {
+            // this is an error.  bad bubble
+            _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): bubble SysID %u != pSE SysID %u", pSE->GetName(), pSE->GetID(), pBubble->GetSystem()->GetID(), pSE->SystemMgr()->GetID() );
+        }
         _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): Entity %s (%u) being added to existing Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
         pBubble->Add(pSE);
         return;
