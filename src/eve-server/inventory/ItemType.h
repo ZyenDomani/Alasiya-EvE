@@ -349,7 +349,7 @@ public:
     // Full + default constructor:
     ItemData( const char *_name = "", uint32 _typeID = 0, uint32 _ownerID = 0, uint32 _locationID = 0,
               EVEItemFlags _flag = flagAutoFit, bool _contraband = false, bool _singleton = false, uint32 _quantity = 0,
-              const GPoint &_position = GPoint(0, 0, 0), const char *_customInfo = "");
+              const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "");
 
     // Item friendly constructor:
     ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity,
@@ -357,7 +357,7 @@ public:
 
     // Singleton friendly constructor:
     ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
-              const GPoint &_position = GPoint(0, 0, 0), const char *_customInfo = "", bool _contraband = false);
+              const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
 
     // Content:
     std::string     name;
