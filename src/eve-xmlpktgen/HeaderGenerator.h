@@ -46,7 +46,9 @@ protected:
 
     bool ProcessRaw( const TiXmlElement* field );
     bool ProcessInt( const TiXmlElement* field );
+    bool ProcessUInt( const TiXmlElement* field );
     bool ProcessLong( const TiXmlElement* field );
+    bool ProcessULong( const TiXmlElement* field );
     bool ProcessReal( const TiXmlElement* field );
     bool ProcessBool( const TiXmlElement* field );
     bool ProcessNone( const TiXmlElement* field );

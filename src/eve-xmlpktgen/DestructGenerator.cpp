@@ -107,7 +107,17 @@ bool ClassDestructGenerator::ProcessInt( const TiXmlElement* field )
     return true;
 }
 
+bool ClassDestructGenerator::ProcessUInt( const TiXmlElement* field )
+{
+    return true;
+}
+
 bool ClassDestructGenerator::ProcessLong( const TiXmlElement* field )
+{
+    return true;
+}
+
+bool ClassDestructGenerator::ProcessULong( const TiXmlElement* field )
 {
     return true;
 }

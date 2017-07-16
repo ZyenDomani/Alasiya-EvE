@@ -194,8 +194,27 @@ bool ClassHeaderGenerator::ProcessInt( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    int32\t\t%s;\n",
-        name
+             "    int32\t\t%s;\n",
+             name
+    );
+
+    return true;
+}
+
+bool ClassHeaderGenerator::ProcessUInt( const TiXmlElement* field )
+{
+    const char* name = field->Attribute( "name" );
+    if (!name) {
+        _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
+        return false;
+    }
+
+    if (!RegisterName(name, field->Row()))
+        return false;
+
+    fprintf( mOutputFile,
+             "    uint32\t\t%s;\n",
+             name
     );
 
     return true;
@@ -213,8 +232,27 @@ bool ClassHeaderGenerator::ProcessLong( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    int64\t\t%s;\n",
-        name
+             "    int64\t\t%s;\n",
+             name
+    );
+
+    return true;
+}
+
+bool ClassHeaderGenerator::ProcessULong( const TiXmlElement* field )
+{
+    const char* name = field->Attribute( "name" );
+    if (!name) {
+        _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
+        return false;
+    }
+
+    if (!RegisterName(name, field->Row()))
+        return false;
+
+    fprintf( mOutputFile,
+             "    uint64\t\t%s;\n",
+             name
     );
 
     return true;

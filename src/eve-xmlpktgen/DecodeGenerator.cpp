@@ -173,26 +173,73 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
     const char* v = top();
     if (none_marker)
         fprintf(mOutputFile,
-            "    if (%s->IsNone())\n"
-            "        %s = %s;\n"
-            "    else\n",
-            v,
+                "    if (%s->IsNone())\n"
+                "        %s = %s;\n"
+                "    else\n",
+                v,
                 name, none_marker
-       );
+        );
 
     fprintf(mOutputFile,
-        "    if (%s->IsInt())\n"
-        "        %s = %s->AsInt()->value();\n"
-        "    else {\n"
-        "        _log(NET__PACKET_ERROR, \"Decode %s failed: %s is not an int: %%s\", %s->TypeString());\n"
-        "        return false;\n"
-        "    }\n"
-        "\n",
-        v,
+            "    if (%s->IsUInt())\n"
+            "        %s = %s->AsUInt()->value();\n"
+            "    else if (%s->IsInt())\n"
+            "        %s = %s->AsInt()->value();\n"
+            "    else {\n"
+            "        _log(NET__PACKET_ERROR, \"Decode %s failed: %s is not an int: %%s\", %s->TypeString());\n"
+            "        return false;\n"
+            "    }\n"
+            "\n",
+            v,
+            name, v,
+            v,
             name, v,
 
             mName, name, v
-   );
+    );
+
+    pop();
+    return true;
+}
+
+bool ClassDecodeGenerator::ProcessUInt(const TiXmlElement* field)
+{
+    const char* name = field->Attribute("name");
+    if (!name) {
+        _log(COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row());
+        return false;
+    }
+
+    //this should be done better:
+    const char* none_marker = field->Attribute("none_marker");
+
+    const char* v = top();
+    if (none_marker)
+        fprintf(mOutputFile,
+                "    if (%s->IsNone())\n"
+                "        %s = %s;\n"
+                "    else\n",
+                v,
+                name, none_marker
+        );
+
+    fprintf(mOutputFile,
+            "    if (%s->IsUInt())\n"
+            "        %s = %s->AsUInt()->value();\n"
+            "    else if (%s->IsInt())\n"
+            "        %s = %s->AsInt()->value();\n"
+            "    else {\n"
+            "        _log(NET__PACKET_ERROR, \"Decode %s failed: %s is not a uint: %%s\", %s->TypeString());\n"
+            "        return false;\n"
+            "    }\n"
+            "\n",
+            v,
+            name, v,
+            v,
+            name, v,
+
+            mName, name, v
+    );
 
     pop();
     return true;
@@ -212,30 +259,81 @@ bool ClassDecodeGenerator::ProcessLong(const TiXmlElement* field)
     const char* v = top();
     if (none_marker)
         fprintf(mOutputFile,
-            "    if (%s->IsNone())\n"
-            "        %s = %s;\n"
-            "    else\n",
-            v,
+                "    if (%s->IsNone())\n"
+                "        %s = %s;\n"
+                "    else\n",
+                v,
                 name, none_marker
-       );
+        );
 
     fprintf(mOutputFile,
-        "    if (%s->IsLong())\n"
-        "        %s = %s->AsLong()->value();\n"
-        "    else if (%s->IsInt())\n"
-        "        %s = %s->AsInt()->value();\n"
-        "    else {\n"
-        "        _log(NET__PACKET_ERROR, \"Decode %s failed: %s is not a long int: %%s\", %s->TypeString());\n"
-        "        return false;\n"
-        "    }\n"
-        "\n",
-        v,
+            "    if (%s->IsLong())\n"
+            "        %s = %s->AsLong()->value();\n"
+            "    else if (%s->IsInt())\n"
+            "        %s = %s->AsInt()->value();\n"
+            "    else {\n"
+            "        _log(NET__PACKET_ERROR, \"Decode %s failed: %s is not a long int: %%s\", %s->TypeString());\n"
+            "        return false;\n"
+            "    }\n"
+            "\n",
+            v,
             name, v,
-        v,
+            v,
             name, v,
 
             mName, name, v
-   );
+    );
+
+    pop();
+    return true;
+}
+
+bool ClassDecodeGenerator::ProcessULong(const TiXmlElement* field)
+{
+    const char* name = field->Attribute("name");
+    if (!name) {
+        _log(COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row());
+        return false;
+    }
+
+    //this should be done better:
+    const char* none_marker = field->Attribute("none_marker");
+
+    const char* v = top();
+    if (none_marker)
+        fprintf(mOutputFile,
+                "    if (%s->IsNone())\n"
+                "        %s = %s;\n"
+                "    else\n",
+                v,
+                name, none_marker
+        );
+
+    fprintf(mOutputFile,
+            "    if (%s->IsULong())\n"
+            "        %s = %s->AsULong()->value();\n"
+            "    else if (%s->IsLong())\n"
+            "        %s = %s->AsLong()->value();\n"
+            "    else if (%s->IsInt())\n"
+            "        %s = %s->AsInt()->value();\n"
+            "    else if (%s->IsUInt())\n"
+            "        %s = %s->AsUInt()->value();\n"
+            "    else {\n"
+            "        _log(NET__PACKET_ERROR, \"Decode %s failed: %s is not an int: %%s\", %s->TypeString());\n"
+            "        return false;\n"
+            "    }\n"
+            "\n",
+            v,
+            name, v,
+            v,
+            name, v,
+            v,
+            name, v,
+            v,
+            name, v,
+
+            mName, name, v
+    );
 
     pop();
     return true;
@@ -315,16 +413,20 @@ bool ClassDecodeGenerator::ProcessBool(const TiXmlElement* field)
 
     if (soft)
         fprintf(mOutputFile,
-            "    if (%s->IsInt())\n"
-            "        %s = (%s->AsInt()->value() != 0);\n"
-            "    else\n",
-            v,
+                "    if (%s->IsInt())\n"
+                "        %s = (%s->AsInt()->value() != 0);\n"
+                "    else if (%s->IsUInt())\n"
+                "        %s = (%s->AsUInt()->value() != 0);\n"
+                "    else\n",
+                v,
+                name, v,
+                v,
                 name, v
        );
 
     fprintf(mOutputFile,
         "    {\n"
-        "        _log(NET__PACKET_ERROR, \"Decode %s failed: %s is not a boolean: %%s\", %s->TypeString());\n"
+        "        _log(NET__PACKET_ERROR, \"Decode %s failed: %s is not a boolean or integer: %%s\", %s->TypeString());\n"
         "        return false;\n"
         "    }\n"
         "\n",

@@ -47,7 +47,7 @@ PyRep* InflateUnmarshal( const Buffer& data )
     {
         Buffer inflatedData;
         if( !InflateData( data, inflatedData ) )
-            return NULL;
+            return nullptr;
 
         return Unmarshal( inflatedData );
     }
@@ -141,7 +141,7 @@ PyRep* UnmarshalStream::LoadStream( size_t streamLength )
     if( MarshalHeaderByte != header )
     {
         sLog.Error( "Unmarshal", "Invalid stream received (header byte 0x%X).", header );
-        return NULL;
+        return nullptr;
     }
 
     const uint32 saveCount = Read<uint32>();
@@ -195,7 +195,7 @@ PyRep* UnmarshalStream::GetStoredObject( uint32 index )
 {
     if( 0 < index )
         return mStoredObjects->GetItem( --index );
-    return NULL;
+    return nullptr;
 }
 
 void UnmarshalStream::StoreObject( uint32 index, PyRep* object )
@@ -340,7 +340,7 @@ PyRep* UnmarshalStream::LoadTuple()
         if( NULL == rep )
         {
             PyDecRef( tuple );
-            return NULL;
+            return nullptr;
         }
 
         tuple->SetItem( i, rep );
@@ -353,7 +353,7 @@ PyRep* UnmarshalStream::LoadTupleOne()
 {
     PyRep* i = LoadRep();
     if( NULL == i )
-        return NULL;
+        return nullptr;
 
     PyTuple* tuple = new PyTuple( 1 );
     tuple->SetItem( 0, i );
@@ -365,13 +365,13 @@ PyRep* UnmarshalStream::LoadTupleTwo()
 {
     PyRep* i = LoadRep();
     if( NULL == i )
-        return NULL;
+        return nullptr;
 
     PyRep* j = LoadRep();
     if( NULL == j )
     {
         PyDecRef( i );
-        return NULL;
+        return nullptr;
     }
 
     PyTuple *tuple = new PyTuple( 2 );
@@ -392,7 +392,7 @@ PyRep* UnmarshalStream::LoadList()
         if( NULL == rep )
         {
             PyDecRef( list );
-            return NULL;
+            return nullptr;
         }
 
         list->SetItem( i, rep );
@@ -405,7 +405,7 @@ PyRep* UnmarshalStream::LoadListOne()
 {
     PyRep* i = LoadRep();
     if( NULL == i )
-        return NULL;
+        return nullptr;
 
     PyList* list = new PyList();
     list->AddItem( i );
@@ -422,13 +422,13 @@ PyRep* UnmarshalStream::LoadDict()
     {
         PyRep* value = LoadRep();
         if( NULL == value )
-            return NULL;
+            return nullptr;
 
         PyRep* key = LoadRep();
         if( NULL == key )
         {
             PyDecRef( value );
-            return NULL;
+            return nullptr;
         }
 
         dict->SetItem( key, value );
@@ -441,21 +441,21 @@ PyRep* UnmarshalStream::LoadObject()
 {
     PyRep* type = LoadRep();
     if( NULL == type )
-        return NULL;
+        return nullptr;
 
     if( !type->IsString() )
     {
         sLog.Error( "Unmarshal", "Object: Expected 'String' as type, got '%s'.", type->TypeString() );
 
         PyDecRef( type );
-        return NULL;
+        return nullptr;
     }
 
     PyRep* arguments = LoadRep();
     if( NULL == arguments )
     {
         PyDecRef( type );
-        return NULL;
+        return nullptr;
     }
 
     return new PyObject( type->AsString(), arguments );
@@ -485,7 +485,7 @@ PyRep* UnmarshalStream::LoadSubStruct()
 
     PyRep* ss = LoadRep();
     if( NULL == ss )
-        return NULL;
+        return nullptr;
 
     return new PySubStruct( ss );
 }
@@ -496,7 +496,7 @@ PyRep* UnmarshalStream::LoadChecksumedStream()
 
     PyRep* ss = LoadRep();
     if( NULL == ss )
-        return NULL;
+        return nullptr;
 
     return new PyChecksumedStream( ss, sum );
 }
@@ -511,13 +511,13 @@ PyRep* UnmarshalStream::LoadPackedRow()
      */
     PyRep* header_element = LoadRep();
     if( NULL == header_element )
-        return NULL;
+        return nullptr;
 
     Buffer unpacked;
     if( !LoadZeroCompressed( unpacked ) )
     {
         PyDecRef( header_element );
-        return NULL;
+        return nullptr;
     }
 
     // This is only an assumption, though PyPackedRow does not
@@ -554,35 +554,58 @@ PyRep* UnmarshalStream::LoadPackedRow()
         switch( row->header()->GetColumnType( index ) )
         {
             case DBTYPE_I8:
-            case DBTYPE_UI8:
-            case DBTYPE_CY:
-            case DBTYPE_FILETIME:
             {
                 Buffer::const_iterator<int64> v = unpackedItr.As<int64>();
                 row->SetField( index, new PyLong( *v++ ) );
                 unpackedItr = v.As<uint8>();
             } break;
 
+            case DBTYPE_CY:
+            case DBTYPE_UI8:
+            case DBTYPE_FILETIME:
+            {
+                Buffer::const_iterator<uint64> v = unpackedItr.As<uint64>();
+                row->SetField( index, new PyULong( *v++ ) );
+                unpackedItr = v.As<uint8>();
+            } break;
+
             case DBTYPE_I4:
-            case DBTYPE_UI4:
             {
                 Buffer::const_iterator<int32> v = unpackedItr.As<int32>();
                 row->SetField( index, new PyInt( *v++ ) );
                 unpackedItr = v.As<uint8>();
             } break;
 
+            case DBTYPE_UI4:
+            {
+                Buffer::const_iterator<uint32> v = unpackedItr.As<uint32>();
+                row->SetField( index, new PyUInt( *v++ ) );
+                unpackedItr = v.As<uint8>();
+            } break;
+
             case DBTYPE_I2:
-            case DBTYPE_UI2:
             {
                 Buffer::const_iterator<int16> v = unpackedItr.As<int16>();
                 row->SetField( index, new PyInt( *v++ ) );
                 unpackedItr = v.As<uint8>();
             } break;
+            case DBTYPE_UI2:
+            {
+                Buffer::const_iterator<uint16> v = unpackedItr.As<uint16>();
+                row->SetField( index, new PyInt( *v++ ) );
+                unpackedItr = v.As<uint8>();
+            } break;
 
             case DBTYPE_I1:
-            case DBTYPE_UI1:
             {
                 Buffer::const_iterator<int8> v = unpackedItr.As<int8>();
+                row->SetField( index, new PyInt( *v++ ) );
+                unpackedItr = v.As<uint8>();
+            } break;
+
+            case DBTYPE_UI1:
+            {
+                Buffer::const_iterator<uint8> v = unpackedItr.As<uint8>();
                 row->SetField( index, new PyInt( *v++ ) );
                 unpackedItr = v.As<uint8>();
             } break;
@@ -620,7 +643,7 @@ PyRep* UnmarshalStream::LoadPackedRow()
                 if( NULL == el )
                 {
                     PyDecRef( row );
-                    return NULL;
+                    return nullptr;
                 }
 
                 row->SetField( index, el );
@@ -635,7 +658,7 @@ PyRep* UnmarshalStream::LoadError()
 {
     sLog.Error( "Unmarshal", "Invalid opcode encountered." );
 
-    return NULL;
+    return nullptr;
 }
 
 PyRep* UnmarshalStream::LoadSavedStreamElement()
@@ -646,7 +669,7 @@ PyRep* UnmarshalStream::LoadSavedStreamElement()
     if( NULL == obj )
     {
         sLog.Error( "Unmarshal", "SavedStreamElement: Got invalid stored object." );
-        return NULL;
+        return nullptr;
     }
 
     return obj->Clone();
@@ -656,7 +679,7 @@ PyObjectEx* UnmarshalStream::LoadObjectEx( bool is_type_2 )
 {
     PyRep* header = LoadRep();
     if( NULL == header )
-        return NULL;
+        return nullptr;
 
     PyObjectEx* obj = new PyObjectEx( is_type_2, header );
 
@@ -666,7 +689,7 @@ PyObjectEx* UnmarshalStream::LoadObjectEx( bool is_type_2 )
         if( NULL == el )
         {
             PyDecRef( obj );
-            return NULL;
+            return nullptr;
         }
 
         obj->list().AddItem( el );
@@ -680,7 +703,7 @@ PyObjectEx* UnmarshalStream::LoadObjectEx( bool is_type_2 )
         if( NULL == key )
         {
             PyDecRef( obj );
-            return NULL;
+            return nullptr;
         }
 
         PyRep* value = LoadRep();
@@ -688,7 +711,7 @@ PyObjectEx* UnmarshalStream::LoadObjectEx( bool is_type_2 )
         {
             PyDecRef( key );
             PyDecRef( obj );
-            return NULL;
+            return nullptr;
         }
 
         obj->dict().SetItem( key, value );

@@ -160,6 +160,23 @@ bool ClassDumpGenerator::ProcessInt( const TiXmlElement* field )
     return true;
 }
 
+bool ClassDumpGenerator::ProcessUInt( const TiXmlElement* field )
+{
+    const char* name = field->Attribute( "name" );
+    if (!name) {
+        _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
+        return false;
+    }
+
+    fprintf( mOutputFile,
+             "    _log( l_type, \"%%s%s=%%u\", pfx, %s );\n"
+             "\n",
+             name, name
+    );
+
+    return true;
+}
+
 bool ClassDumpGenerator::ProcessLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
@@ -169,9 +186,26 @@ bool ClassDumpGenerator::ProcessLong( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    _log( l_type, \"%%s%s=%%\" PRId64, pfx, %s );\n"
-        "\n",
-        name, name
+             "    _log( l_type, \"%%s%s=%%\" PRId64, pfx, %s );\n"
+             "\n",
+             name, name
+    );
+
+    return true;
+}
+
+bool ClassDumpGenerator::ProcessULong( const TiXmlElement* field )
+{
+    const char* name = field->Attribute( "name" );
+    if (!name) {
+        _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
+        return false;
+    }
+
+    fprintf( mOutputFile,
+             "    _log( l_type, \"%%s%s=%%\" PRIu64, pfx, %s );\n"
+             "\n",
+             name, name
     );
 
     return true;

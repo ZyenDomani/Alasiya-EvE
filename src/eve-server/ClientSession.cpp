@@ -84,6 +84,35 @@ void ClientSession::SetInt( const char* name, int32 value )
     _Set( name, new PyInt( value ) );
 }
 
+uint32 ClientSession::GetLastUInt( const char* name ) const
+{
+    PyRep* v = _GetLast( name );
+    if( v == NULL )
+        return 0;
+
+    if( !v->IsUInt() )
+        return 0;
+
+    return v->AsUInt()->value();
+}
+
+uint32 ClientSession::GetCurrentUInt( const char* name ) const
+{
+    PyRep* v = _GetCurrent( name );
+    if( v == NULL )
+        return 0;
+
+    if( !v->IsUInt() )
+        return 0;
+
+    return v->AsUInt()->value();
+}
+
+void ClientSession::SetUInt( const char* name, uint32 value )
+{
+    _Set( name, new PyUInt( value ) );
+}
+
 int64 ClientSession::GetLastLong( const char* name ) const
 {
     PyRep* v = _GetLast( name );

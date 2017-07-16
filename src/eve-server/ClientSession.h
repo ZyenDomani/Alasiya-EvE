@@ -47,6 +47,11 @@ public:
     int32 GetCurrentInt( const char* name ) const;
     void SetInt( const char* name, int32 value );
 
+    // PyUInt
+    uint32 GetLastUInt( const char* name ) const;
+    uint32 GetCurrentUInt( const char* name ) const;
+    void SetUInt( const char* name, uint32 value );
+
     // PyLong
     int64 GetLastLong( const char* name ) const;
     int64 GetCurrentLong( const char* name ) const;

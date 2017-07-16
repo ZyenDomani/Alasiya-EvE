@@ -72,12 +72,16 @@ PyRep* DBColumnToPyRep( const DBResultRow& row, uint32 index )
         case DBTYPE_I2:
         case DBTYPE_UI2:
         case DBTYPE_I4:
-        case DBTYPE_UI4:
             return new PyInt( row.GetInt( index ) );
 
+        case DBTYPE_UI4:
+            return new PyUInt( row.GetUInt( index ) );
+
         case DBTYPE_I8:
-        case DBTYPE_UI8:
             return new PyLong( row.GetInt64( index ) );
+
+        case DBTYPE_UI8:
+            return new PyULong( row.GetUInt64( index ) );
 
         case DBTYPE_R8:
         case DBTYPE_R4:
@@ -92,10 +96,6 @@ PyRep* DBColumnToPyRep( const DBResultRow& row, uint32 index )
         case DBTYPE_WSTR:
             return new PyWString( row.GetText( index ), row.ColumnLength( index ) );
 
-        default:
-            sLog.Error( "DBColumnToPyRep", "invalid column type: %u", type );
-            /* hack... MAJOR... */
-
         case DBTYPE_BYTES:
         {
             const uint8* data = (const uint8*)row.GetText( index );
@@ -103,6 +103,12 @@ PyRep* DBColumnToPyRep( const DBResultRow& row, uint32 index )
 
             return new PyBuffer( data, data + len );
         }
+
+        default: {
+            sLog.Error( "DBColumnToPyRep", "invalid column type: %u", type );
+            return new PyNone();
+        }
+
     }
 }
 

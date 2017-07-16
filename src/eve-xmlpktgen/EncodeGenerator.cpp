@@ -177,6 +177,36 @@ bool ClassEncodeGenerator::ProcessInt( const TiXmlElement* field )
     return true;
 }
 
+bool ClassEncodeGenerator::ProcessUInt( const TiXmlElement* field )
+{
+    const char* name = field->Attribute( "name" );
+    if (!name) {
+        _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
+        return false;
+    }
+
+    //this should be done better:
+    const char* none_marker = field->Attribute( "none_marker" );
+
+    const char* v = top();
+    if( none_marker != nullptr )
+        fprintf( mOutputFile,
+                 "    if( %s == %s )\n"
+                 "        %s = new PyNone();\n"
+                 "    else\n",
+                 name, none_marker,
+                 v
+        );
+
+    fprintf( mOutputFile,
+             "    %s = new PyUInt( %s );\n",
+             v, name
+    );
+
+    pop();
+    return true;
+}
+
 bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
@@ -191,16 +221,46 @@ bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
     const char* v = top();
     if (none_marker)
         fprintf( mOutputFile,
-            "    if( %s == %s )\n"
-            "        %s = new PyNone();\n"
-            "    else\n",
-            name, none_marker,
-                v
+                 "    if( %s == %s )\n"
+                 "        %s = new PyNone();\n"
+                 "    else\n",
+                 name, none_marker,
+                 v
         );
 
     fprintf( mOutputFile,
-        "    %s = new PyLong( %s );\n",
-        v, name
+             "    %s = new PyLong( %s );\n",
+             v, name
+    );
+
+    pop();
+    return true;
+}
+
+bool ClassEncodeGenerator::ProcessULong( const TiXmlElement* field )
+{
+    const char* name = field->Attribute( "name" );
+    if (!name) {
+        _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
+        return false;
+    }
+
+    //this should be done better:
+    const char* none_marker = field->Attribute( "none_marker" );
+
+    const char* v = top();
+    if (none_marker)
+        fprintf( mOutputFile,
+                 "    if( %s == %s )\n"
+                 "        %s = new PyNone();\n"
+                 "    else\n",
+                 name, none_marker,
+                 v
+        );
+
+    fprintf( mOutputFile,
+             "    %s = new PyULong( %s );\n",
+             v, name
     );
 
     pop();

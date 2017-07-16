@@ -42,6 +42,12 @@ bool PyDumpVisitor::VisitInteger( const PyInt* rep )
     return true;
 }
 
+bool PyDumpVisitor::VisitUInteger( const PyUInt* rep )
+{
+    _print( "%sInteger field: %u", _pfx(), rep->value() );
+    return true;
+}
+
 bool PyDumpVisitor::VisitLong( const PyLong* rep )
 {
     _print( "%sInteger field: %" PRId64, _pfx(), rep->value() );

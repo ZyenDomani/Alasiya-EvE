@@ -658,9 +658,9 @@ bool CorporationDB::CreateCorporationChangePacket(Notify_OnCorporationChanged & 
     cc.stationIDOld = new PyInt(row.GetUInt(12));
     _NI(raceIDOld, 13);
     _NI(allianceIDOld, 14);
-    cc.sharesOld = new PyLong(row.GetUInt64(15));
-    cc.memberCountOld = new PyInt(row.GetUInt(16));
-    cc.memberLimitOld = new PyInt(row.GetUInt(17));
+    cc.sharesOld = new PyULong(row.GetUInt64(15));
+    cc.memberCountOld = new PyUInt(row.GetUInt(16));
+    cc.memberLimitOld = new PyUInt(row.GetUInt(17));
     cc.allowedMemberRaceIDsOld = new PyInt(row.GetUInt(18));
     cc.graphicIDOld = new PyInt(row.GetUInt(19));
     _NI(shape1Old, 20);
@@ -1230,34 +1230,34 @@ bool CorporationDB::CreateMemberAttributeUpdate(MemberAttributeUpdate & attrib, 
 #define PRN new PyNone()
 #define PRI(i) new PyInt(i)
 #define PRL(i) new PyLong(i)
+#define PRU(i) new PyULong(i)
 #define PRS(s) new PyString(s)
-#define PRNI(i) (row.IsNull(i) ? PRL(0) : PRL(row.GetUInt64(i)))
+#define PRNI(i) (row.IsNull(i) ? PRU(0) : PRU(row.GetUInt64(i)))
 #define F(name, o, n) \
     attrib.name##Old = o; \
     attrib.name##New = n
 
     //element                   Old Value               New Value
     F(accountKey,               PRN,                    PRN);
-    // i don't even know what this could refer to
     F(baseID,                   PRN,                    PRN);
     F(characterID,              PRN,                    PRI(charID));
     F(corporationID,            PRI(row.GetUInt(2)),    PRI(newCorpID));
-    // these also have to be queried from the db
     F(divisionID,               PRN,                    PRN);
-    F(roles,                    PRNI(3),                PRI(0));
-    F(grantableRoles,           PRNI(4),                PRI(0));
-    F(grantableRolesAtBase,     PRNI(5),                PRI(0));
-    F(grantableRolesAtHQ,       PRNI(6),                PRI(0));
-    F(grantableRolesAtOther,    PRNI(7),                PRI(0));
+    F(roles,                    PRU(row.GetUInt64(3)),  PRI(0));
+    F(grantableRoles,           PRU(row.GetUInt64(4)),  PRI(0));
+    F(grantableRolesAtBase,     PRU(row.GetUInt64(5)),  PRI(0));
+    F(grantableRolesAtHQ,       PRU(row.GetUInt64(6)),  PRI(0));
+    F(grantableRolesAtOther,    PRU(row.GetUInt64(7)),  PRI(0));
     F(squadronID,               PRN,                    PRN);
-    F(startDateTime,            PRL(row.GetUInt64(1)),  PRL(Win32TimeNow()));
-    // another one i have no idea
-    F(titleMask,                PRN,                    PRI(0));
-    F(baseID,                   PRS(row.GetText(0)),    PRS(""));
+    F(startDateTime,            PRL(row.GetInt64(1)),   PRL(Win32TimeNow()));
+    F(titleMask,                PRS(row.GetText(0)),    PRS(""));
+    // fix this...
+    F(baseID,                   PRN,                    PRI(0));
 #undef F
 #undef PRN
 #undef PRI
 #undef PRS
+#undef PRU
 #undef PRNI
 
     return true;

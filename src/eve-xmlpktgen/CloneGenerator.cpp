@@ -156,9 +156,26 @@ bool ClassCloneGenerator::ProcessInt( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = oth.%s;\n"
-        "\n",
-        name, name
+             "    %s = oth.%s;\n"
+             "\n",
+             name, name
+    );
+
+    return true;
+}
+
+bool ClassCloneGenerator::ProcessUInt( const TiXmlElement* field )
+{
+    const char* name = field->Attribute( "name" );
+    if (!name) {
+        _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
+        return false;
+    }
+
+    fprintf( mOutputFile,
+             "    %s = oth.%s;\n"
+             "\n",
+             name, name
     );
 
     return true;
@@ -173,9 +190,26 @@ bool ClassCloneGenerator::ProcessLong( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    %s = oth.%s;\n"
-        "\n",
-        name, name
+             "    %s = oth.%s;\n"
+             "\n",
+             name, name
+    );
+
+    return true;
+}
+
+bool ClassCloneGenerator::ProcessULong( const TiXmlElement* field )
+{
+    const char* name = field->Attribute( "name" );
+    if (!name) {
+        _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
+        return false;
+    }
+
+    fprintf( mOutputFile,
+             "    %s = oth.%s;\n"
+             "\n",
+             name, name
     );
 
     return true;

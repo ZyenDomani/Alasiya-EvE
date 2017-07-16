@@ -98,6 +98,7 @@ protected:
      *       research shows that Op_PyByte can be negative
      */
     bool VisitInteger( const PyInt* rep );
+    bool VisitUInteger( const PyUInt* rep );
     //! Adds a long to the stream
     bool VisitLong( const PyLong* rep );
     //! Adds a ulong to the stream

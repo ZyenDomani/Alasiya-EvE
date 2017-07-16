@@ -47,7 +47,7 @@
 
 enum DBTYPE
 {
-    //DBTYPE_EMPTY        = 0x00, // not supported
+    //DBTYPE_EMPTY        = 0x00, // not supported  -client has this one defined
     //DBTYPE_NULL         = 0x01, // not supported
     DBTYPE_I2             = 0x02,
     DBTYPE_I4             = 0x03,
@@ -68,17 +68,17 @@ enum DBTYPE
     DBTYPE_UI2            = 0x12,
     DBTYPE_UI4            = 0x13,
     DBTYPE_I8             = 0x14,
-    DBTYPE_UI8              = 0x15,
+    DBTYPE_UI8            = 0x15,
     DBTYPE_FILETIME       = 0x40, // 64-bit timestamp
     //DBTYPE_GUID         = 0x48, // not supported
-    DBTYPE_BYTES          = 0x80,
+    DBTYPE_BYTES          = 0x80, // client defined as 0x1fc, but error when used: Exception:  <type 'exceptions.TypeError'>, DBRowDescriptor doesn't support data type 508
     DBTYPE_STR            = 0x81,
-    DBTYPE_WSTR           = 0x82
+    DBTYPE_WSTR           = 0x82,
     //DBTYPE_NUMERIC      = 0x83, // not supported
     //DBTYPE_UDT          = 0x84, // not supported
     //DBTYPE_DBDATE       = 0x85, // not supported
     //DBTYPE_DBTIME       = 0x86, // not supported
-    //DBTYPE_DBTIMESTAMP  = 0x87, // not supported
+    //DBTYPE_DBTIMESTAMP  = 0x87, // not supported  -client has this one defined
     //DBTYPE_HCHAPTER     = 0x88, // not supported
     //DBTYPE_PROPVARIANT  = 0x8A, // not supported
     //DBTYPE_VARNUMERIC   = 0x8B  // not supported

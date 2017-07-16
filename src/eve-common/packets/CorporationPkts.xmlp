@@ -284,44 +284,44 @@
     <dictInline>
       <dictInlineEntry key="corprole">
         <tupleInline>
-          <long name="corpRoleOld" />
-          <long name="corpRoleNew" />
+          <ulong name="corpRoleOld" />
+          <ulong name="corpRoleNew" />
         </tupleInline>
       </dictInlineEntry>
       <dictInlineEntry key="corpid">
         <tupleInline>
-          <int name="corpidOld" />
-          <int name="corpidNew" />
+          <uint name="corpidOld" />
+          <uint name="corpidNew" />
         </tupleInline>
       </dictInlineEntry>
       <dictInlineEntry key="rolesAtAll">
         <tupleInline>
-          <long name="corpRoleAllOld" />
-          <long name="corpRoleAllNew" />
+          <ulong name="corpRoleAllOld" />
+          <ulong name="corpRoleAllNew" />
         </tupleInline>
       </dictInlineEntry>
       <dictInlineEntry key="rolesAtBase">
         <tupleInline>
-          <long name="corpRoleBaseOld" />
-          <long name="corpRoleBaseNew" />
+          <ulong name="corpRoleBaseOld" />
+          <ulong name="corpRoleBaseNew" />
         </tupleInline>
       </dictInlineEntry>
       <dictInlineEntry key="hqID">
         <tupleInline>
-          <int name="corpHqIDOld" />
-          <int name="corpHqIDNew" />
+          <uint name="corpHqIDOld" />
+          <uint name="corpHqIDNew" />
         </tupleInline>
       </dictInlineEntry>
       <dictInlineEntry key="rolesAtHQ">
         <tupleInline>
-          <long name="corpRoleHQOld" />
-          <long name="corpRoleHQNew" />
+          <ulong name="corpRoleHQOld" />
+          <ulong name="corpRoleHQNew" />
         </tupleInline>
       </dictInlineEntry>
       <dictInlineEntry key="rolesAtOther">
         <tupleInline>
-          <long name="corpRoleOtherOld" />
-          <long name="corpRoleOtherNew" />
+          <ulong name="corpRoleOtherOld" />
+          <ulong name="corpRoleOtherNew" />
         </tupleInline>
       </dictInlineEntry>
     </dictInline>
@@ -457,7 +457,7 @@
 
   <elementDef name="Notify_OnOfficeRentalChanged">
     <tupleInline>
-      <int name="ownerID" />
+      <uint name="ownerID" />
       <int name="officeID" />
       <int name="officeFolderID" />
     </tupleInline>
@@ -511,15 +511,15 @@
 
   <elementDef name="Call_InsertApplication">
     <tupleInline>
-      <int name="corpID" />
+      <uint name="corpID" />
       <string name="message" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Notify_OnCorporationApplicationChanged">
     <tupleInline>
-      <int name="charID" />
-      <int name="corpID" />
+      <uint name="charID" />
+      <uint name="corpID" />
       <dictInline>
         <dictInlineEntry key="status">
           <tupleInline>
@@ -581,7 +581,7 @@
 
   <elementDef name="Call_UpdateApplicationOffer">
     <tupleInline>
-      <int name="charID" />
+      <uint name="charID" />
       <string name="appText" />
       <int name="newStatus" />
       <none />
@@ -703,8 +703,8 @@
       <dictInline>
         <dictInlineEntry key="corporationID">
           <tupleInline>
-            <int name="oldCorpID" />
-            <int name="newCorpID" />
+            <uint name="oldCorpID" />
+            <uint name="newCorpID" />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="startDateTime">
@@ -793,7 +793,7 @@
 
   <elementDef name="Call_GetAssetInventory">
     <tupleInline>
-      <int name="corpID" />
+      <uint name="corpID" />
       <string name="assetKey" />
     </tupleInline>
   </elementDef>

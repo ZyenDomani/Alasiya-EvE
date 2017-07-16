@@ -40,6 +40,7 @@
 const char* const PyRep::s_mTypeString[] =
 {
     "Integer",          //0
+    "UInt",             //0
     "Long",             //1
     "ULong",            //2
     "Real",             //3
@@ -112,7 +113,33 @@ bool PyInt::visit( PyVisitor& v ) const
 int32 PyInt::hash() const
 {
     /* XXX If this is changed, you also need to change the way
-    Python's long, float and complex types are hashed. */
+     *    Python's long, float and complex types are hashed. */
+    int32 x = mValue;
+    if (x == -1 )
+        x = -2;
+    return x;
+}
+
+/************************************************************************/
+/* PyRep Unsigned Integer Class                                                  */
+/************************************************************************/
+PyUInt::PyUInt( const uint32 i ) : PyRep( PyRep::PyTypeUInt ), mValue( i ) {}
+PyUInt::PyUInt( const PyUInt& oth ) : PyRep( PyRep::PyTypeUInt ), mValue( oth.value() ) {}
+
+PyRep* PyUInt::Clone() const
+{
+    return new PyUInt( *this );
+}
+
+bool PyUInt::visit( PyVisitor& v ) const
+{
+    return v.VisitUInteger( this );
+}
+
+int32 PyUInt::hash() const
+{
+    /* XXX If this is changed, you also need to change the way
+     *    Python's long, float and complex types are hashed. */
     int32 x = mValue;
     if (x == -1 )
         x = -2;
@@ -1171,7 +1198,7 @@ bool PyChecksumedStream::visit( PyVisitor& v ) const
 PyTuple * new_tuple(uint64 arg1)
 {
     PyTuple * res = new PyTuple(1);
-    res->SetItem(0, new PyLong(arg1));
+    res->SetItem(0, new PyULong(arg1));
 
     return res;
 }
@@ -1179,8 +1206,8 @@ PyTuple * new_tuple(uint64 arg1)
 PyTuple * new_tuple(uint64 arg1, uint64 arg2)
 {
     PyTuple * res = new PyTuple(2);
-    res->SetItem(0, new PyLong(arg1));
-    res->SetItem(1, new PyLong(arg2));
+    res->SetItem(0, new PyULong(arg1));
+    res->SetItem(1, new PyULong(arg2));
 
     return res;
 }

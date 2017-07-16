@@ -247,7 +247,7 @@
 
   <elementDef name="Call_AddContact">
     <tupleInline>
-      <int name="charID" />
+      <uint name="charID" />
       <int name="standing" />
       <int name="inWatchlist" />
       <int name="notify" />

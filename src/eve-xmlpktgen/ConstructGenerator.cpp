@@ -123,8 +123,28 @@ bool ClassConstructGenerator::ProcessInt( const TiXmlElement* field )
         def = "0";
 
     fprintf( mOutputFile,
-        "    %s = %s;\n",
-        name, def
+             "    %s = %s;\n",
+             name, def
+    );
+
+    return true;
+}
+
+bool ClassConstructGenerator::ProcessUInt( const TiXmlElement* field )
+{
+    const char* name = field->Attribute( "name" );
+    if (!name) {
+        _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
+        return false;
+    }
+
+    const char* def = field->Attribute( "default" );
+    if (!def)
+        def = "0";
+
+    fprintf( mOutputFile,
+             "    %s = %s;\n",
+             name, def
     );
 
     return true;
@@ -143,8 +163,28 @@ bool ClassConstructGenerator::ProcessLong( const TiXmlElement* field )
         def = "0";
 
     fprintf( mOutputFile,
-        "    %s = %s;\n",
-        name, def
+             "    %s = %s;\n",
+             name, def
+    );
+
+    return true;
+}
+
+bool ClassConstructGenerator::ProcessULong( const TiXmlElement* field )
+{
+    const char* name = field->Attribute( "name" );
+    if (!name) {
+        _log( COMMON__ERROR, "field at line %d is missing the name attribute, skipping.", field->Row() );
+        return false;
+    }
+
+    const char* def = field->Attribute( "default" );
+    if (!def)
+        def = "0";
+
+    fprintf( mOutputFile,
+             "    %s = %s;\n",
+             name, def
     );
 
     return true;

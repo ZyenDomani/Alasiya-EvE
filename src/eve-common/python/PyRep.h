@@ -34,6 +34,7 @@
 //#pragma pack(push,1)
 
 class PyInt;
+class PyUInt;
 class PyLong;
 class PyULong;
 class PyFloat;
@@ -79,26 +80,27 @@ public:
     enum PyType
     {
         PyTypeInt               = 0,
-        PyTypeLong              = 1,
-        PyTypeULong             = 2,
-        PyTypeFloat             = 3,
-        PyTypeBool              = 4,
-        PyTypeBuffer            = 5,
-        PyTypeString            = 6,
-        PyTypeWString           = 7,
-        PyTypeToken             = 8,
-        PyTypeTuple             = 9,
-        PyTypeList              = 10,
-        PyTypeDict              = 11,
-        PyTypeNone              = 12,
-        PyTypeSubStruct         = 13,
-        PyTypeSubStream         = 14,
-        PyTypeChecksumedStream  = 15,
-        PyTypeObject            = 16,
-        PyTypeObjectEx          = 17,
-        PyTypePackedRow         = 18,
-        PyTypeMax               = 18,
-        PyTypeError             = 19
+        PyTypeUInt              = 1,
+        PyTypeLong              = 2,
+        PyTypeULong             = 3,
+        PyTypeFloat             = 4,
+        PyTypeBool              = 5,
+        PyTypeBuffer            = 6,
+        PyTypeString            = 7,
+        PyTypeWString           = 8,
+        PyTypeToken             = 9,
+        PyTypeTuple             = 10,
+        PyTypeList              = 11,
+        PyTypeDict              = 12,
+        PyTypeNone              = 13,
+        PyTypeSubStruct         = 14,
+        PyTypeSubStream         = 15,
+        PyTypeChecksumedStream  = 16,
+        PyTypeObject            = 17,
+        PyTypeObjectEx          = 18,
+        PyTypePackedRow         = 19,
+        PyTypeMax               = 20,
+        PyTypeError             = 21
     };
 
     /** PyType check functions
@@ -106,16 +108,8 @@ public:
     //using this method is discouraged, it generally means your doing something wrong... Is<type>() should cover almost all needs
     PyType GetType() const          { return mType; }
 
-    bool IsInt() const
-    {
-#   ifdef HAVE___ASM
-        /* crash when we missed a convertion... lol */
-        if( mType == PyTypeLong )
-            __asm int 3;
-#   endif /* HAVE___ASM */
-        return mType == PyTypeInt;
-    }
-
+    bool IsInt() const              { return mType == PyTypeInt; }
+    bool IsUInt() const             { return mType == PyTypeUInt; }
     bool IsLong() const             { return mType == PyTypeLong; }
     bool IsULong() const            { return mType == PyTypeULong; }
     bool IsFloat() const            { return mType == PyTypeFloat; }
@@ -140,6 +134,8 @@ public:
     // tools for easy access, less typecasting...
     PyInt* AsInt()                                       { assert( IsInt() ); return (PyInt*)this; }
     const PyInt* AsInt() const                           { assert( IsInt() ); return (const PyInt*)this; }
+    PyUInt* AsUInt()                                     { assert( IsUInt() ); return (PyUInt*)this; }
+    const PyUInt* AsUInt() const                         { assert( IsUInt() ); return (const PyUInt*)this; }
     PyLong* AsLong()                                     { assert( IsLong() ); return (PyLong*)this; }
     const PyLong* AsLong() const                         { assert( IsLong() ); return (const PyLong*)this; }
     PyULong* AsULong()                                   { assert( IsULong() ); return (PyULong*)this; }
@@ -233,7 +229,6 @@ protected:
  * @brief Python integer.
  *
  * Class representing 32-bit signed integer.
- * Longer integers may be stored in PyLong.
  */
 class PyInt : public PyRep
 {
@@ -250,6 +245,28 @@ public:
 
 protected:
     const int32 mValue;
+};
+
+/**
+ * @brief Python integer.
+ *
+ * Class representing 32-bit unsigned integer.
+ */
+class PyUInt : public PyRep
+{
+public:
+    PyUInt( const uint32 i );
+    PyUInt( const PyUInt& oth );
+
+    PyRep* Clone() const;
+    bool visit( PyVisitor& v ) const;
+
+    uint32 value() const { return mValue; }
+
+    int32 hash() const;
+
+protected:
+    const uint32 mValue;
 };
 
 /**
@@ -653,7 +670,9 @@ public:
 
     void AddItem( PyRep* i ) { items.push_back( i ); }
     void AddItemInt( int32 intval ) { AddItem( new PyInt( intval ) ); }
+    void AddItemUInt( uint32 intval ) { AddItem( new PyUInt( intval ) ); }
     void AddItemLong( int64 intval ) { AddItem( new PyLong( intval ) ); }
+    void AddItemULong( uint64 intval ) { AddItem( new PyULong( intval ) ); }
     void AddItemReal( double realval ) { AddItem( new PyFloat( realval ) ); }
     void AddItemString( const char* str ) { AddItem( new PyString( str ) ); }
 
