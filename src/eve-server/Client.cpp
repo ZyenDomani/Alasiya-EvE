@@ -28,6 +28,7 @@
 
 #include "Client.h"
 #include "ConsoleCommands.h"
+#include "EVEServerConfig.h"
 #include "LiveUpdateDB.h"
 #include "PyBoundObject.h"
 #include "StaticDataMgr.h"
@@ -595,11 +596,16 @@ void Client::DockToStation() {
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
     m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls
 
-    //Check if player is in pod, in which case they get a rookie ship for free
+    //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a new, fully-fitted ship as replacement.  we dont....yet
-    /** @todo  maybe we should check for recent ship loss to determine if player should get new ship.  ??? */
-    if (m_ship->typeID() == itemTypeCapsule)
-        SpawnNewRookieShip();
+    if (m_ship->typeID() == itemTypeCapsule) {
+        if (sConfig.server.NoobShipCheck) {
+            Inventory* inv = m_system->GetStationFromInventory(m_locationID)->GetMyInventory();
+            if (!inv->HasShip())
+                SpawnNewRookieShip();
+        } else
+            SpawnNewRookieShip();
+    }
 
     SetSessionTimer();
 }
@@ -882,21 +888,41 @@ void Client::CreateNewPod() {
 }
 
 void Client::SpawnNewRookieShip() {
-    /** @todo  add "fully fitted" weapon, drill, and cargo to ship */
+    /** @todo  create/send mail from scc about lost ship */
     //create rookie ship of appropriate type
-    uint32 typeID = amarrRookie;
+    uint32 shipID = amarrRookie, gunID = amarrWeapon;
     EVERace race = m_char->race();
-         if (race == raceCaldari)  typeID = caldariRookie;
-    else if (race == raceGallente) typeID = gallenteRookie;
-    else if (race == raceMinmatar) typeID = minmatarRookie;
+    if (race == raceCaldari) {
+        gunID = caldariWeapon;
+        shipID = caldariRookie;
+    } else if (race == raceGallente) {
+        gunID = gallenteWeapon;
+        shipID = gallenteRookie;
+    } else if (race == raceMinmatar) {
+        gunID = minmatarWeapon;
+        shipID = minmatarRookie;
+    }
 
     std::string name =  m_char->itemName() + "'s Noob Ship";
     //create data for new rookie ship
-    ItemData idata(typeID, m_char->itemID(), 0, flagHangar, name.c_str(), NULL_ORIGIN);
+    ItemData sData(shipID, m_char->itemID(), 0, flagAutoFit, name.c_str());
+    ItemData mData(3651, m_char->itemID(), 0, flagAutoFit);
+    ItemData wData(gunID, m_char->itemID(), 0, flagAutoFit);
+    ItemData cData(itemTypeTrit, m_char->itemID(), 0, flagAutoFit, 100);
     //spawn rookie ship
-    ShipItemRef shipRef = m_services.item_factory->SpawnShip(idata);
-    if (shipRef)
-        shipRef->Move(m_locationID);
+    ShipItemRef sRef = m_services.item_factory->SpawnShip(sData);
+    InventoryItemRef mRef = m_services.item_factory->SpawnItem(mData);
+    InventoryItemRef wRef = m_services.item_factory->SpawnItem(wData);
+    InventoryItemRef cRef = m_services.item_factory->SpawnItem(cData);
+    // create and fit noob items in ship
+    if (sRef)
+        sRef->Move(m_locationID, flagHangar);
+    if (mRef)
+        mRef->Move(sRef->itemID(), flagHiSlot0);
+    if (wRef)
+        wRef->Move(sRef->itemID(), flagHiSlot1);
+    if (cRef)
+        cRef->Move(sRef->itemID(), flagCargoHold);
 }
 
 void Client::ResetAfterPodded() {

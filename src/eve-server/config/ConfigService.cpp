@@ -92,8 +92,7 @@ PyResult ConfigService::Handle_GetMultiAllianceShortNamesEx(PyCallArgs &call) {
 
 
 PyResult ConfigService::Handle_GetMultiLocationsEx(PyCallArgs &call) {      // now working correctly  -allan  25April
-    // the PyRep is passed from client as a pylist....
-/**
+/*
 23:23:57 L ConfigService: Handle_GetMultiLocationsEx
 23:23:57 [SvcCall]   Call Arguments:
 23:23:57 [SvcCall]       Tuple: 1 elements

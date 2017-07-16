@@ -51,6 +51,7 @@ public:
     void StackAll(EVEItemFlags flag, uint32 forOwner = 0);
 
     bool IsEmpty()                                      { return mContents.empty(); }
+    bool HasShip();
     bool LoadContents(ItemFactory* factory);
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
     bool ContentsLoaded() const                         { return mContentsLoaded; }

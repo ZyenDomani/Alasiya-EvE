@@ -21,6 +21,7 @@ typedef EVEDB::invTypes::invTypes EVEItemTypes;
 //by looking at the attributes of an item, not its type.
 typedef enum {
     itemTypeCapsule = 670,
+    itemTypeTrit    = 34,
     AllianceTypeID  = 16159
 } EVEItemTypeID;
 

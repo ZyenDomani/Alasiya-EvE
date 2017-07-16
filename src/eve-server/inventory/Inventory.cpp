@@ -199,7 +199,7 @@ void Inventory::DeleteContents()
     mContentsLoaded = false;
 }
 
-CRowSet* Inventory::List(EVEItemFlags _flag, uint32 forOwner/*0*/) const
+CRowSet* Inventory::List(EVEItemFlags flag, uint32 forOwner/*0*/) const
 {
     PyList *keywords = new PyList();
         keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
@@ -208,23 +208,23 @@ CRowSet* Inventory::List(EVEItemFlags _flag, uint32 forOwner/*0*/) const
         header->AddColumn("itemID",     DBTYPE_I8);
         header->AddColumn("typeID",     DBTYPE_I4);
         header->AddColumn("ownerID",    DBTYPE_I4);
-        header->AddColumn("locationID", DBTYPE_I8);
+        header->AddColumn("locationID", DBTYPE_I4);
         header->AddColumn("flagID",     DBTYPE_I2);
         header->AddColumn("quantity",   DBTYPE_I4);
         header->AddColumn("groupID",    DBTYPE_I2);
         header->AddColumn("categoryID", DBTYPE_I2);
         header->AddColumn("customInfo", DBTYPE_STR);
     CRowSet* rowset = new CRowSet(&header);
-    List(rowset, _flag, forOwner);
+    List(rowset, flag, forOwner);
     return rowset;
 }
 
-void Inventory::List(CRowSet* into, EVEItemFlags _flag, uint32 forOwner) const {
+void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 forOwner) const {
     //there has to be a better way to build this...
     /** @todo  need to verify changing owners when trading non-empty containers */
     PyPackedRow* row = nullptr;
     for (auto cur : mContents) {
-        if (  (cur.second->flag() == _flag        || _flag == flagAnywhere)
+        if (  (cur.second->flag() == flag        || flag == flagAnywhere)
             && (cur.second->ownerID() == forOwner || forOwner == 0))
         {
             row = into->NewRow();
@@ -233,9 +233,9 @@ void Inventory::List(CRowSet* into, EVEItemFlags _flag, uint32 forOwner) const {
     }
 }
 
-InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags _flag) const {
+InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags flag) const {
     for (auto cur : mContents)
-        if (cur.second->flag() == _flag)
+        if (cur.second->flag() == flag)
             return cur.second;
 
     return InventoryItemRef();
@@ -261,6 +261,14 @@ InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) cons
 void Inventory::GetInventoryList(std::map<uint32, InventoryItemRef> &inventory) {
     for (auto cur : mContents)
         inventory.insert(std::pair<uint32, InventoryItemRef>(cur.first, cur.second));
+}
+
+bool Inventory::HasShip()
+{
+    for (auto cur : mContents)
+        if (cur.second->categoryID() == EVEDB::invCategories::Ship)
+            return true;
+    return false;
 }
 
 void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
@@ -325,9 +333,9 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
     return itemVec;  //returns sorted list
 }
 
-uint32 Inventory::FindByFlag(EVEItemFlags _flag, std::vector<InventoryItemRef> &items) const {
+uint32 Inventory::FindByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const {
     for (auto cur : mContents)
-        if (cur.second->flag() == _flag)
+        if (cur.second->flag() == flag)
             items.push_back(cur.second);
 
     return items.size();
@@ -351,10 +359,10 @@ bool Inventory::IsEmptyByFlag(EVEItemFlags flag) const {
     return true;
 }
 
-uint32 Inventory::FindByFlagRange(EVEItemFlags low_flag, EVEItemFlags high_flag, std::vector<InventoryItemRef> &items) const {
+uint32 Inventory::FindByFlagRange(EVEItemFlags lowflag, EVEItemFlags highflag, std::vector<InventoryItemRef> &items) const {
     uint32 count = 0;
     for (auto cur : mContents)
-        if (cur.second->flag() >= low_flag && cur.second->flag() <= high_flag) {
+        if (cur.second->flag() >= lowflag && cur.second->flag() <= highflag) {
             items.push_back(cur.second);
             ++count;
         }

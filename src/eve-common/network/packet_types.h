@@ -121,7 +121,14 @@ enum EVERookieShipTypes {
     amarrRookie                = 596,
     caldariRookie              = 601,
     gallenteRookie             = 606,
-    minmatarRookie             = 588,
+    minmatarRookie             = 588
+};
+
+enum EVERookieWeaponTypes {
+    amarrWeapon                 = 3634,
+    caldariWeapon               = 3638,
+    gallenteWeapon              = 3640,
+    minmatarWeapon              = 3636
 };
 
 //  -allan 5Aug14
