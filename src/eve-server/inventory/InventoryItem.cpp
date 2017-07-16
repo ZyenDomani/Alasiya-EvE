@@ -650,7 +650,7 @@ PyPackedRow* InventoryItem::GetItemRow() const
         header->AddColumn( "itemID",     DBTYPE_I8 );
         header->AddColumn( "typeID",     DBTYPE_I4 );
         header->AddColumn( "ownerID",    DBTYPE_I4 );
-        header->AddColumn( "locationID", DBTYPE_I8 );
+        header->AddColumn( "locationID", DBTYPE_I4 );
         header->AddColumn( "flagID",     DBTYPE_I2 );
         header->AddColumn( "quantity",   DBTYPE_I4 );
         header->AddColumn( "groupID",    DBTYPE_I2 );
@@ -668,7 +668,7 @@ void InventoryItem::GetItemRow( PyPackedRow* into ) const
     into->SetField( "itemID",     new PyLong( m_itemID ) );
     into->SetField( "typeID",     new PyInt( m_type.id() ) );
     into->SetField( "ownerID",    new PyInt( m_ownerID ) );
-    into->SetField( "locationID", new PyLong( m_locationID ) );
+    into->SetField( "locationID", new PyInt( m_locationID ) );
     into->SetField( "flagID",     new PyInt( m_flag ) );
     int32 qty = (m_singleton ? -1 : quantity());
     if (m_type.categoryID() == EVEDB::invCategories::Blueprint)
