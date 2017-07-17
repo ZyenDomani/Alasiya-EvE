@@ -181,16 +181,16 @@ void ShipItem::LogOut()
     m_factory.RemoveItem(m_itemID);
 
     // remove ship item from its' container's inventory list also.
-    Inventory* inv(nullptr);
+    Inventory* pInv(nullptr);
     if (IsStation(m_locationID)) {
         InventoryItemRef station = sEntityList.GetStationByID(m_locationID);
-        inv = station->GetMyInventory();
+        pInv = station->GetMyInventory();
     } else {
         SolarSystemRef system = m_factory.GetSolarSystem(m_locationID);
-        inv = system->GetMyInventory();
+        pInv = system->GetMyInventory();
     }
-    if (inv)
-        inv->RemoveItem(inv->GetByID(m_itemID));
+    if (pInv != nullptr)
+        pInv->RemoveItem(pInv->GetByID(m_itemID));
 }
 
 void ShipItem::SetPlayer(Client* pClient) {
@@ -317,7 +317,7 @@ double ShipItem::GetRemainingVolumeByFlag(EVEItemFlags flag) const {
     return (m_inventory->GetCapacity(flag) - m_cargoHoldsUsedVolumeByFlag.find(flag)->second);
 }
 
-bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
+bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
 {
     /** @todo this will need more work to correctly check hold capacity for offline ships */
     if (!m_pilot)
@@ -326,16 +326,16 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
     CharacterRef character = m_pilot->GetChar();
 
     if (flag == flagDroneBay) {
-        if ( item->categoryID() != EVEDB::invCategories::Drone ) {
+        if ( iRef->categoryID() != EVEDB::invCategories::Drone ) {
             m_pilot->SendErrorMsg("Item Cannot be stowed in the Drone Bay");
             return false;
         }
     } else if (flag == flagShipHangar) {
         if (GetAttribute(AttrHasShipMaintenanceBay) == 0) {
-            m_pilot->SendErrorMsg("%s has no ship maintenance bay.", item->itemName().c_str());
+            m_pilot->SendErrorMsg("%s has no ship maintenance bay.", iRef->itemName().c_str());
             return false;
         }
-        if (item->categoryID() != EVEDB::invCategories::Ship) {
+        if (iRef->categoryID() != EVEDB::invCategories::Ship) {
             m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
             return false;
         }
@@ -346,30 +346,32 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
         }
     } else if ((flag >= flagLowSlot0) and (flag <= flagHiSlot7)) {
         if (m_pilot->IsClient()) {      // why this check?  does it really matter here?  i dont think so...
-            if (!Skill::FitModuleSkillCheck(item, character)) {
-                m_pilot->SendErrorMsg("You do not have the required skills to fit this %s.  Ref: ServerError 25163.", item->itemName().c_str());
+            if (!Skill::FitModuleSkillCheck(iRef, character)) {
+                m_pilot->SendErrorMsg("You do not have the required skills to fit this %s.  Ref: ServerError 25163.", iRef->itemName().c_str());
                 return false;
             }
-            if (!ValidateItemSpecifics(item)) {
-                m_pilot->SendErrorMsg("Your ship cannot equip this %s.  Ref: ServerError 25165.", item->itemName().c_str());
+            if (!ValidateItemSpecifics(iRef)) {
+                m_pilot->SendErrorMsg("Your ship cannot equip this %s.  Ref: ServerError 25165.", iRef->itemName().c_str());
                 return false;
             }
-            if (item->categoryID() == EVEDB::invCategories::Charge) {
+            if (iRef->categoryID() == EVEDB::invCategories::Charge) {
                 if (m_ModuleManager and m_ModuleManager->GetModule(flag)) {
                     InventoryItemRef module = m_ModuleManager->GetModule(flag)->getItem();
-                    if (module->GetAttribute(AttrChargeSize) != item->GetAttribute(AttrChargeSize)) {
+                    if (module == nullptr)
+                        return false;
+                    if (module->GetAttribute(AttrChargeSize) != iRef->GetAttribute(AttrChargeSize)) {
                         sLog.Error("Ship::ValidateAddItem", "Charge size %u for %s does not match Module size %u for %s.",
-                                   item->GetAttribute(AttrChargeSize).get_int(), item->itemName().c_str(),
+                                   iRef->GetAttribute(AttrChargeSize).get_int(), iRef->itemName().c_str(),
                                    module->GetAttribute(AttrChargeSize).get_int(), module->itemName().c_str()
                         );
                         m_pilot->SendErrorMsg("The charge is not the correct size for this module.");
                         return false;
                     }
-                    if ((module->GetAttribute(AttrChargeGroup1) != item->groupID())
-                        and (module->GetAttribute(AttrChargeGroup2) != item->groupID())
-                        and (module->GetAttribute(AttrChargeGroup3) != item->groupID())
-                        and (module->GetAttribute(AttrChargeGroup4) != item->groupID())
-                        and (module->GetAttribute(AttrChargeGroup5) != item->groupID())) {
+                    if ((module->GetAttribute(AttrChargeGroup1) != iRef->groupID())
+                        and (module->GetAttribute(AttrChargeGroup2) != iRef->groupID())
+                        and (module->GetAttribute(AttrChargeGroup3) != iRef->groupID())
+                        and (module->GetAttribute(AttrChargeGroup4) != iRef->groupID())
+                        and (module->GetAttribute(AttrChargeGroup5) != iRef->groupID())) {
                             m_pilot->SendErrorMsg("Incorrect charge type for this module.");
                             return false;
                     }
@@ -388,31 +390,31 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item)
         }
     } else if ((flag >= flagRigSlot0) and (flag <= flagRigSlot7)) {
         if (m_pilot->IsClient()) {
-            if (!Skill::FitModuleSkillCheck(item, character)) {
-                m_pilot->SendErrorMsg("You do not have the required skills to fit this %s", item->itemName().c_str());
+            if (!Skill::FitModuleSkillCheck(iRef, character)) {
+                m_pilot->SendErrorMsg("You do not have the required skills to fit this %s", iRef->itemName().c_str());
                 return false;
             }
-            if (GetAttribute(AttrRigSize) != item->GetAttribute(AttrRigSize)) {
+            if (GetAttribute(AttrRigSize) != iRef->GetAttribute(AttrRigSize)) {
                 m_pilot->SendErrorMsg("Your ship cannot fit this size module");
                 return false;
             }
-            if (GetAttribute(AttrUpgradeLoad) + item->GetAttribute(AttrUpgradeCost) > GetAttribute(AttrUpgradeCapacity)) {
+            if (GetAttribute(AttrUpgradeLoad) + iRef->GetAttribute(AttrUpgradeCost) > GetAttribute(AttrUpgradeCapacity)) {
                 m_pilot->SendErrorMsg("Your ship cannot handle the extra calibration");
                 return false;
             }
         }
     } else if ((flag >= flagSubSystem0) and (flag <= flagSubSystem7)) {
         if (m_pilot->IsClient())
-            if (!Skill::FitModuleSkillCheck(item, character)) {
-                m_pilot->SendErrorMsg("You do not have the required skills to fit this %s", item->itemName().c_str());
+            if (!Skill::FitModuleSkillCheck(iRef, character)) {
+                m_pilot->SendErrorMsg("You do not have the required skills to fit this %s", iRef->itemName().c_str());
                 return false;
             }
     } else {
         // Handle any other flag, legal or not by virtue of GetRemainingVolumeByFlag() and GetCapacity() that handle supported capacity types:
         // (unsupported or illegal flags report capacity of 0.0, so are automatically rejected)
         // check for adding unpackaged ships to cargo of active ship...
-        double volume = item->GetPackagedVolume();
-        if ((GetRemainingVolumeByFlag(flag) < (volume * item->quantity()))) {
+        double volume = iRef->GetPackagedVolume();
+        if ((GetRemainingVolumeByFlag(flag) < (volume * iRef->quantity()))) {
             m_pilot->SendErrorMsg("Not enough cargo space");
             return false;
         }
@@ -504,9 +506,9 @@ PyDict* ShipItem::GetShipState() {
     // Create entry for ShipItem itself:
     result->SetItem(new PyInt(itemID()), GetItemStatusRow());
     // Check for and Create entry for pilot:
-    InventoryItemRef pilot;
-    if (m_inventory->FindSingleByFlag(flagPilot, pilot))
-        result->SetItem(new PyInt(pilot->itemID()), pilot->GetItemStatusRow());
+    InventoryItemRef iRefPilot;
+    if (m_inventory->FindSingleByFlag(flagPilot, iRefPilot))
+        result->SetItem(new PyInt(iRefPilot->itemID()), iRefPilot->GetItemStatusRow());
 
     if (!m_ModuleManager) {
         m_ModuleManager = new ModuleManager(this);
@@ -578,15 +580,15 @@ PyDict* ShipItem::GetChargeState() {
     return result;
 }
 
-void ShipItem::AddItem(InventoryItemRef item)
+void ShipItem::AddItem(InventoryItemRef iRef)
 {
-    if (( item->flag() >= flagSlotFirst)
-        and (item->flag() <= flagSlotLast)
-        and (item->categoryID() != EVEDB::invCategories::Charge)) {
+    if (( iRef->flag() >= flagSlotFirst)
+        and (iRef->flag() <= flagSlotLast)
+        and (iRef->categoryID() != EVEDB::invCategories::Charge)) {
             // make singleton
-            item->ChangeSingleton( true );
+            iRef->ChangeSingleton( true );
         }
-    m_inventory->AddItem( item );
+    m_inventory->AddItem( iRef );
 }
 
 bool ShipItem::ValidateBoardShip(ShipItemRef ship, CharacterRef character) {
@@ -622,21 +624,21 @@ void ShipItem::SaveShip()
         m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
 }
 
-bool ShipItem::ValidateItemSpecifics(InventoryItemRef item) {
+bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef) {
     /** @todo wtf is this shit?  fix it.  */
     uint32 groupID = m_pilot->GetShip()->groupID();
 
     EvilNumber canFitShipGroup1=0, canFitShipGroup2=0, canFitShipGroup3=0, canFitShipGroup4=0;
     // If a ship group restriction is specified, the item must be able to fit to at least one ship group.
-    if (item->HasAttribute(AttrCanFitShipGroup1, canFitShipGroup1)
-        or item->HasAttribute(AttrCanFitShipGroup2, canFitShipGroup2)
-        or item->HasAttribute(AttrCanFitShipGroup3, canFitShipGroup3)
-        or item->HasAttribute(AttrCanFitShipGroup4, canFitShipGroup4)) {
-            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Beginning the group validation for %s(%u):", item->itemName().c_str(), item->itemID());
-            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipGroup1 = %s", item->HasAttribute(AttrCanFitShipGroup1, canFitShipGroup1) ? "True":"False");
-            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipGroup2 = %s", item->HasAttribute(AttrCanFitShipGroup2, canFitShipGroup2) ? "True":"False");
-            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipGroup3 = %s", item->HasAttribute(AttrCanFitShipGroup3, canFitShipGroup3) ? "True":"False");
-            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipGroup4 = %s", item->HasAttribute(AttrCanFitShipGroup4, canFitShipGroup4) ? "True":"False");
+    if (iRef->HasAttribute(AttrCanFitShipGroup1, canFitShipGroup1)
+        or iRef->HasAttribute(AttrCanFitShipGroup2, canFitShipGroup2)
+        or iRef->HasAttribute(AttrCanFitShipGroup3, canFitShipGroup3)
+        or iRef->HasAttribute(AttrCanFitShipGroup4, canFitShipGroup4)) {
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Beginning the group validation for %s(%u):", iRef->itemName().c_str(), iRef->itemID());
+            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipGroup1 = %s", iRef->HasAttribute(AttrCanFitShipGroup1, canFitShipGroup1) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipGroup2 = %s", iRef->HasAttribute(AttrCanFitShipGroup2, canFitShipGroup2) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipGroup3 = %s", iRef->HasAttribute(AttrCanFitShipGroup3, canFitShipGroup3) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipGroup4 = %s", iRef->HasAttribute(AttrCanFitShipGroup4, canFitShipGroup4) ? "True":"False");
             if ((canFitShipGroup1 != groupID)
                 and (canFitShipGroup2 != groupID)
                 and (canFitShipGroup3 != groupID)
@@ -650,15 +652,15 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef item) {
     uint32 typeID = m_pilot->GetShip()->typeID();
     EvilNumber canFitShipType1=0, canFitShipType2=0, canFitShipType3=0, canFitShipType4=0;
     // If a ship type restriction is specified, the item must be able to fit to at least one ship type.
-    if (item->HasAttribute(AttrCanFitShipType1, canFitShipType1)
-        or item->HasAttribute(AttrCanFitShipType2, canFitShipType2)
-        or item->HasAttribute(AttrCanFitShipType3, canFitShipType3)
-        or item->HasAttribute(AttrCanFitShipType4, canFitShipType4)) {
-            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Beginning the type validation for %s(%u):", item->itemName().c_str(), item->itemID());
-            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipType1 = %s", item->HasAttribute(AttrCanFitShipType1, canFitShipType1) ? "True":"False");
-            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipType2 = %s", item->HasAttribute(AttrCanFitShipType2, canFitShipType2) ? "True":"False");
-            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipType3 = %s", item->HasAttribute(AttrCanFitShipType3, canFitShipType3) ? "True":"False");
-            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipType4 = %s", item->HasAttribute(AttrCanFitShipType4, canFitShipType4) ? "True":"False");
+    if (iRef->HasAttribute(AttrCanFitShipType1, canFitShipType1)
+        or iRef->HasAttribute(AttrCanFitShipType2, canFitShipType2)
+        or iRef->HasAttribute(AttrCanFitShipType3, canFitShipType3)
+        or iRef->HasAttribute(AttrCanFitShipType4, canFitShipType4)) {
+            _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Beginning the type validation for %s(%u):", iRef->itemName().c_str(), iRef->itemID());
+            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipType1 = %s", iRef->HasAttribute(AttrCanFitShipType1, canFitShipType1) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipType2 = %s", iRef->HasAttribute(AttrCanFitShipType2, canFitShipType2) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipType3 = %s", iRef->HasAttribute(AttrCanFitShipType3, canFitShipType3) ? "True":"False");
+            _log(SHIP__MODULE_TRACE, "Has AttrCanFitShipType4 = %s", iRef->HasAttribute(AttrCanFitShipType4, canFitShipType4) ? "True":"False");
             if ( (canFitShipType1 != typeID) and (canFitShipType2 != typeID) and (canFitShipType3 != typeID) and (canFitShipType4 != typeID)){
                 _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - No attribute found. typeID = %i", typeID);
                 return false;
@@ -666,7 +668,7 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef item) {
                 _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Item Validation passed.");
         }
 
-    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the %s", item->itemName().c_str());
+    _log(SHIP__MODULE_TRACE, "Ship::ValidateItemSpecifics - Validation passed. Fitting the %s", iRef->itemName().c_str());
     return true;
 }
 
@@ -828,22 +830,22 @@ InventoryItemRef ShipItem::GetModuleRef(uint32 itemID)
 		return InventoryItemRef();
 }
 
-EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef item) {
+EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
     uint16 slotFound = flagIllegal;
     // 1) get slot bank (low, med, high, rig, subsystem) from dgmTypeEffects using item->itemID()
     // 2) query this ship's ModuleManager to determine if there are any free slots in that bank,
     //    it should return a slot flag number for the next available slot starting at the lowest number
     //    for that bank
     // 3) return that slot flag number
-    if (item->type().HasEffect(EVEEffectID::loPower)) {
+    if (iRef->type().HasEffect(EVEEffectID::loPower)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::loPower);
-    } else if (item->type().HasEffect(EVEEffectID::medPower)) {
+    } else if (iRef->type().HasEffect(EVEEffectID::medPower)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::medPower);
-    } else if (item->type().HasEffect(EVEEffectID::hiPower)) {
+    } else if (iRef->type().HasEffect(EVEEffectID::hiPower)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::hiPower);
-    } else if (item->type().HasEffect(EVEEffectID::subSystem)) {
+    } else if (iRef->type().HasEffect(EVEEffectID::subSystem)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::subSystem);
-    } else if (item->type().HasEffect(EVEEffectID::rigSlot)) {
+    } else if (iRef->type().HasEffect(EVEEffectID::rigSlot)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::rigSlot);
     } else {
         // ERROR: This is not a module that fits in any of the slot banks
@@ -852,9 +854,9 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef item) {
     return (EVEItemFlags)slotFound;
 }
 
-uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
+uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef)
 {
-    if (!ValidateAddItem(flag, item))
+    if (!ValidateAddItem(flag, iRef))
         return 0;
 
     if (IsModuleSlot(flag)) {
@@ -862,63 +864,63 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef item)
             _log(SHIP__MODULE_ERROR, "Ship::AddItem - %u - m_ModuleManager is null.", m_itemID );
             return 0;
         }
-        if (item->categoryID() == EVEDB::invCategories::Charge) {
-            m_ModuleManager->LoadCharge(item, flag);
+        if (iRef->categoryID() == EVEDB::invCategories::Charge) {
+            m_ModuleManager->LoadCharge(iRef, flag);
             InventoryItemRef loadedChargeOnModule = m_ModuleManager->GetLoadedChargeOnModule(flag);
-            if (loadedChargeOnModule)
+            if (loadedChargeOnModule != nullptr)
                 return loadedChargeOnModule->itemID();
             else
                 return 0;
-        } else if (item->categoryID() == EVEDB::invCategories::Module) {
-            item->ChangeSingleton(true, false);
+        } else if (iRef->categoryID() == EVEDB::invCategories::Module) {
+            iRef->ChangeSingleton(true, false);
             // rigs are classed in the module category.  check here and call approprate method as needed.
-            if ((item->groupID() >= 773 and item->groupID() <= 782) or item->groupID() == 786) {
-                if (!m_ModuleManager->InstallRig(item, flag))
+            if ((iRef->groupID() >= 773 and iRef->groupID() <= 782) or iRef->groupID() == 786) {
+                if (!m_ModuleManager->InstallRig(iRef, flag))
                     return 0;
-            } else if (!m_ModuleManager->FitModule(item, flag))
+            } else if (!m_ModuleManager->FitModule(iRef, flag))
                 return 0;
-        } else if (item->categoryID() == EVEDB::invCategories::Subsystem) {
-            item->PutOffline();
-            item->ChangeSingleton(true, false);
-            if (!m_ModuleManager->InstallSubSystem(item, flag))
+        } else if (iRef->categoryID() == EVEDB::invCategories::Subsystem) {
+            iRef->PutOffline();
+            iRef->ChangeSingleton(true, false);
+            if (!m_ModuleManager->InstallSubSystem(iRef, flag))
                 return 0;
         }
     } else {
-        ModifyHoldVolumeByFlag( flag, (item->GetAttribute(AttrVolume).get_float() * item->quantity()));
+        ModifyHoldVolumeByFlag( flag, (iRef->GetAttribute(AttrVolume).get_float() * iRef->quantity()));
 	}
 
-    item->Move(itemID(), flag);
+    iRef->Move(itemID(), flag);
 	if (IsModuleSlot(flag)) {
         // may not need this call.  is redundant, but has redundant check built-in...
-        m_ModuleManager->Online(item->itemID());
+        m_ModuleManager->Online(iRef->itemID());
         UpdateModules(flag);
     }
 
-	return item->itemID();
+	return iRef->itemID();
 }
 
-void ShipItem::RemoveItem(InventoryItemRef item, uint32 qty/*0*/)
+void ShipItem::RemoveItem(InventoryItemRef iRef, uint32 qty/*0*/)
 {
     if (!m_pilot)
         return;
 
     // check to see if item is currently in a module slot.  going by category is NOT working after _ExecAdd() updates.
-    if (IsModuleSlot(item->flag())) {
+    if (IsModuleSlot(iRef->flag())) {
         if (!m_ModuleManager) {
             m_ModuleManager = new ModuleManager(this);
             m_ModuleManager->Initialize();
         }
         // if item being removed is in a module slot, remove it via Module Manager here, and let invBound take care of the rest.
-        if (item->categoryID() == EVEDB::invCategories::Charge) {
-            m_ModuleManager->UnloadCharge(item->flag());
-        } else if ((item->categoryID() == EVEDB::invCategories::Module) or (item->categoryID() == EVEDB::invCategories::Subsystem)) {
-            if ((item->flag() >= flagRigSlot0) and (item->flag() <= flagRigSlot7))
-                m_ModuleManager->UninstallRig(item->itemID());
+        if (iRef->categoryID() == EVEDB::invCategories::Charge) {
+            m_ModuleManager->UnloadCharge(iRef->flag());
+        } else if ((iRef->categoryID() == EVEDB::invCategories::Module) or (iRef->categoryID() == EVEDB::invCategories::Subsystem)) {
+            if ((iRef->flag() >= flagRigSlot0) and (iRef->flag() <= flagRigSlot7))
+                m_ModuleManager->UninstallRig(iRef->itemID());
             else
-                m_ModuleManager->UnfitModule(item->itemID());
+                m_ModuleManager->UnfitModule(iRef->itemID());
         }
     } else
-        ModifyHoldVolumeByFlag( item->flag(), -(item->GetAttribute(AttrVolume).get_float() * (qty ? qty : item->quantity())));
+        ModifyHoldVolumeByFlag( iRef->flag(), -(iRef->GetAttribute(AttrVolume).get_float() * (qty ? qty : iRef->quantity())));
 }
 
 void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
@@ -1034,10 +1036,10 @@ void ShipItem::CancelOverloading()
     m_ModuleManager->DeOverload(flag);
 }
 
-void ShipItem::RemoveRig(InventoryItemRef item) {
+void ShipItem::RemoveRig(InventoryItemRef iRef) {
     //may not look like it, but just moving this item will call ModuleManager::UninstallRig().  not anymore.  fix this shit.
-    m_ModuleManager->UninstallRig(item->itemID());
-    item->Move(itemID(), flagCargoHold);
+    m_ModuleManager->UninstallRig(iRef->itemID());
+    iRef->Move(itemID(), flagCargoHold);
 }
 
 void ShipItem::OnlineAll()

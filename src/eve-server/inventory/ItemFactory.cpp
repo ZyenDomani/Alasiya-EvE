@@ -105,79 +105,79 @@ void ItemFactory::SaveItems() {
 }
 
 Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
-    InventoryItemRef item;
+    InventoryItemRef iRef;
     std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
     if (res != m_items.end()){
-        item = res->second;
+        iRef = res->second;
     } else {
         if (load)
-            item = GetItem( itemID );
+            iRef = GetItem( itemID );
     }
 
-    if (item)
-        return item->GetMyInventory();
+    if (iRef != nullptr)
+        return iRef->GetMyInventory();
 
     return nullptr;
 }
 
 InventoryItemRef ItemFactory::GetInventoryItemFromID( uint32 itemID, bool load /*true*/) {
-    InventoryItemRef item;
+    InventoryItemRef iRef;
     std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
     if (res != m_items.end()) {
-        item = res->second;
+        iRef = res->second;
     } else {
         if (load)
-            item = GetItem( itemID );
+            iRef = GetItem( itemID );
     }
 
-    return item;
+    return iRef;
 }
 
-InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load /*true*/)
+InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load/*true*/)
 {
-    InventoryItemRef item;
+    InventoryItemRef iRef;
     std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
     if (res != m_items.end()) {
-        item = res->second;
-        res = m_items.find( item->locationID() );
-        item = res->second;
+        iRef = res->second;
+        res = m_items.find( iRef->locationID() );
+        iRef = res->second;
     } else {
         if (load) {
-            item = GetItem( itemID );
+            iRef = GetItem( itemID );
             std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
             if (res != m_items.end()) {
-                item = res->second;
-                res = m_items.find( item->locationID() );
-                item = res->second;
+                iRef = res->second;
+                res = m_items.find( iRef->locationID() );
+                iRef = res->second;
             }
         }
     }
 
-    return item;
+    return iRef;
 }
 
-Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load)
+Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true*/)
 {
-    InventoryItemRef item;
+    InventoryItemRef iRef;
     std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
     if (res != m_items.end()) {
-        item = res->second;
-        res = m_items.find( item->locationID() );
-        item = res->second;
+        iRef = res->second;
+        res = m_items.find( iRef->locationID() );
+        iRef = res->second;
     } else {
         if (load) {
-            item = GetItem( itemID );
+            iRef = GetItem( itemID );
             std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
             if (res != m_items.end()) {
-                item = res->second;
-                res = m_items.find( item->locationID() );
-                item = res->second;
+                iRef = res->second;
+                res = m_items.find( iRef->locationID() );
+                iRef = res->second;
             }
         }
     }
 
-    if (item)
-        return item->GetMyInventory();
+    if (iRef != nullptr)
+        return iRef->GetMyInventory();
 
     return nullptr;
 }
@@ -196,7 +196,7 @@ const ItemCategory* ItemFactory::GetCategory(EVEItemCategories category) {
     std::map<EVEItemCategories, ItemCategory *>::iterator res = m_categories.find(category);
     if (res == m_categories.end()) {
         ItemCategory *cat = ItemCategory::Load(*this, category);
-        if (!cat)
+        if (cat == nullptr)
             return nullptr;
 
         // insert it into our cache
@@ -211,7 +211,7 @@ const ItemGroup* ItemFactory::GetGroup(uint32 groupID) {
     std::map<uint32, ItemGroup*>::iterator res = m_groups.find(groupID);
     if (res == m_groups.end()) {
         ItemGroup* group = ItemGroup::Load(*this, groupID);
-        if (!group)
+        if (group == nullptr)
             return nullptr;
 
         // insert it into cache
@@ -227,7 +227,7 @@ const _Ty* ItemFactory::_GetType(uint32 typeID) {
     std::map<uint32, ItemType*>::iterator res = m_types.find(typeID);
     if (res == m_types.end()) {
         _Ty* type = _Ty::Load(*this, typeID);
-        if (!type)
+        if (type == nullptr)
             return nullptr;
 
         // insert into cache
@@ -347,78 +347,78 @@ WreckContainerRef ItemFactory::GetWreckContainer(uint32 containerID)
 }
 
 InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
-    InventoryItemRef itemRef = InventoryItem::Spawn(*this, data);
-    if ( !itemRef )
+    InventoryItemRef iRef = InventoryItem::Spawn(*this, data);
+    if (iRef == nullptr)
         return InventoryItemRef();
 
     // spawn successful; store the ref
-    m_items.insert( std::make_pair( itemRef->itemID(), itemRef ) );
+    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
-    return itemRef;
+    return iRef;
 }
 
 BlueprintRef ItemFactory::SpawnBlueprint(ItemData &data, BlueprintData &bpData) {
-    BlueprintRef itemRef = Blueprint::Spawn(*this, data, bpData);
-    if ( !itemRef )
+    BlueprintRef iRef = Blueprint::Spawn(*this, data, bpData);
+    if (iRef == nullptr)
         return BlueprintRef();
 
-    m_items.insert( std::make_pair( itemRef->itemID(), itemRef ) );
+    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
-    return itemRef;
+    return iRef;
 }
 
 CharacterRef ItemFactory::SpawnCharacter(ItemData &data, CharacterData &charData, CorpData &corpData) {
-    CharacterRef itemRef = Character::Spawn(*this, data, charData, corpData);
-    if ( !itemRef )
+    CharacterRef iRef = Character::Spawn(*this, data, charData, corpData);
+    if (iRef == nullptr)
         return CharacterRef();
 
     //  do NOT add new char to item list to allow char to be selected and loaded normally after creation.
     //m_items.insert( std::make_pair( c->itemID(), c ) );
     //++m_itemCount;
-    return itemRef;
+    return iRef;
 }
 
 ShipItemRef ItemFactory::SpawnShip(ItemData &data) {
-    ShipItemRef itemRef = ShipItem::Spawn(*this, data);
-    if ( !itemRef )
+    ShipItemRef iRef = ShipItem::Spawn(*this, data);
+    if (iRef == nullptr)
         return ShipItemRef();
 
-    m_items.insert( std::make_pair( itemRef->itemID(), itemRef ) );
+    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
-    return itemRef;
+    return iRef;
 }
 
 SkillRef ItemFactory::SpawnSkill(ItemData &data)
 {
-    SkillRef itemRef = Skill::Spawn( *this, data );
-    if ( !itemRef )
+    SkillRef iRef = Skill::Spawn( *this, data );
+    if (iRef == nullptr)
         return SkillRef();
 
-    m_items.insert( std::make_pair( itemRef->itemID(), itemRef ) );
+    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
-    return itemRef;
+    return iRef;
 }
 
 StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
 {
-    StructureItemRef itemRef = StructureItem::Spawn( *this, data );
-    if ( !itemRef )
+    StructureItemRef iRef = StructureItem::Spawn( *this, data );
+    if (iRef == nullptr)
         return StructureItemRef();
 
-    m_items.insert( std::make_pair( itemRef->itemID(), itemRef ) );
+    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
-    return itemRef;
+    return iRef;
 }
 /*
 AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
 {
-    AsteroidItemRef itemRef = AsteroidItem::Spawn( *this, idata, adata );
-    if ( !itemRef )
+    AsteroidItemRef iRef = AsteroidItem::Spawn( *this, idata, adata );
+    if (iRef == nullptr)
         return AsteroidItemRef();
 
-    m_items.insert( std::make_pair( itemRef->itemID(), itemRef ) );
+    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
-    return itemRef;
+    return iRef;
 }
 */
 CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
@@ -431,30 +431,30 @@ CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
     std::string str = "Position Test";
     if (data.name.find(str) != data.name.npos) {
         containerID = InventoryItem::CreateTempItemID( *this, data );
-        InventoryItemRef itemRef = InventoryItem::SpawnItem( *this, containerID, data );
-        if ( !itemRef )
+        InventoryItemRef iRef = InventoryItem::SpawnItem( *this, containerID, data );
+        if (iRef == nullptr)
             return CargoContainerRef();
-        return RefPtr<CargoContainer>::StaticCast(itemRef);
+        return RefPtr<CargoContainer>::StaticCast(iRef);
     }
 */
-    CargoContainerRef itemRef = CargoContainer::Spawn( *this, data );
-    if ( !itemRef )
+    CargoContainerRef iRef = CargoContainer::Spawn( *this, data );
+    if (iRef == nullptr)
         return CargoContainerRef();
 
-    m_items.insert( std::make_pair( itemRef->itemID(), itemRef ) );
+    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
-    return itemRef;
+    return iRef;
 }
 
 WreckContainerRef ItemFactory::SpawnWreckContainer(ItemData &data)
 {
-    WreckContainerRef itemRef = WreckContainer::Spawn( *this, data );
-    if ( !itemRef )
+    WreckContainerRef iRef = WreckContainer::Spawn( *this, data );
+    if (iRef == nullptr)
         return WreckContainerRef();
 
-    m_items.insert( std::make_pair( itemRef->itemID(), itemRef ) );
+    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
-    return itemRef;
+    return iRef;
 }
 
 uint32 ItemFactory::GetNextTempID()

@@ -664,12 +664,18 @@ void SystemManager::RemoveNPC(NPC* who) {
 void SystemManager::AddEntity(SystemEntity* who) {
     if (!who)
         return;
-    _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
-    m_entities[who->GetID()] = who;
-    m_entityChanged = true;
+    auto itr = m_entities.find(who->GetID());
+    if (itr != m_entities.end()) {
+        _log(ITEM__WARNING, "%s(%u): Called AddEntity(), but they're already in %s(%u).  Check bubble.", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
+
+    } else {
+        _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
+        m_entities[who->GetID()] = who;
+        m_entityChanged = true;
+        // Add Entity's Item Ref to Solar System Dynamic Inventory:
+        AddItemToInventory( who->GetSelf() );
+    }
     sBubbleMgr.Add(who);
-    // Add Entity's Item Ref to Solar System Dynamic Inventory:
-    AddItemToInventory( who->GetSelf() );
 }
 
 void SystemManager::RemoveEntity(SystemEntity* who) {
@@ -744,7 +750,7 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
         if (cur.second->isGlobal()) // get only global entities here (StaticSystemEntity)
             visibleEntities.push_back(cur.second);
 
-    if (bubble)
+    if (bubble != nullptr)
        bubble->GetEntities(visibleEntities);
 
     into.slims = new PyList();

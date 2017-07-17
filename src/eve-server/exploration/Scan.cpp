@@ -63,7 +63,7 @@ void Scan::RequestScans(PyDict* dict) {
         m_client->GetName(), m_client->GetSystemID(), m_client->GetShipSE()->SysBubble()->GetID() );
 
     bool useProbe = false;
-    if (dict) {
+    if (dict != nullptr) {
         useProbe = true;
         // put probe code here.
         //will probably be complicated.

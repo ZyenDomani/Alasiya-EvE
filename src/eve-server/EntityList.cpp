@@ -97,7 +97,7 @@ void EntityList::Close()
 
 void EntityList::Add( Client* client ) {
     ++m_connections;
-    if (client)
+    if (client != nullptr)
         m_clients.push_back(client);
 }
 
@@ -122,7 +122,7 @@ void EntityList::Process() {
         else {
             pClient = *cur_client;
             cur_client = m_clients.erase(cur_client);
-            if (pClient)
+            if (pClient != nullptr)
                 SafeDelete(pClient);
         }
     }
@@ -198,7 +198,7 @@ Client* EntityList::FindClientByCharID(uint32 char_id) const {
 Client* EntityList::FindClientByName(const char* name) const {
     for (auto cur : m_clients) {
         CharacterRef cRef = cur->GetChar();
-		if (cRef)
+        if (cRef != nullptr)
 			if (cRef->itemName().c_str() == name)
                 return cur;
     }

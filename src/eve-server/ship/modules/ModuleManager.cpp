@@ -79,45 +79,45 @@ void ModuleContainer::ClearModMap() {
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
 }
 
-bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* mod)
+bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* pMod)
 {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.find((uint8)flag);
     if (itr == m_modules.end())
         return false;
     else
-        itr->second = mod;
-    _log(SHIP__MODULE_TRACE, "AddModule() - adding %s.", mod->getItem()->itemName().c_str());
+        itr->second = pMod;
+    _log(SHIP__MODULE_TRACE, "AddModule() - adding %s.", pMod->getItem()->itemName().c_str());
 
     // Maintain the Modules Fitted By Group counter for this module group:
-    if ( m_ModulesFittedByGroupID.find(mod->getItem()->groupID()) != m_ModulesFittedByGroupID.end() )
-        m_ModulesFittedByGroupID.find(mod->getItem()->groupID())->second++;
+    if ( m_ModulesFittedByGroupID.find(pMod->getItem()->groupID()) != m_ModulesFittedByGroupID.end() )
+        m_ModulesFittedByGroupID.find(pMod->getItem()->groupID())->second++;
     else
-        m_ModulesFittedByGroupID.insert(std::pair<uint32,uint32>(mod->getItem()->groupID(), 1));
+        m_ModulesFittedByGroupID.insert(std::pair<uint32,uint32>(pMod->getItem()->groupID(), 1));
 
     // module is fit so change state from MOD_UNFITTED to MOD_OFFLINE now.
-    mod->SetModuleState(ModStates::MOD_OFFLINE);
+    pMod->SetModuleState(ModStates::MOD_OFFLINE);
 	return true;
 }
 
 bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
-    GenericModule* mod = GetModule(flag);
-    if (!mod)
+    GenericModule* pMod = GetModule(flag);
+    if (!pMod)
         return false;
 
-    mod->ProcessEffects(Effects::dgmStatePassive, false);
+    pMod->ProcessEffects(Effects::dgmStatePassive, false);
 
-    deleteModuleRef(mod->flag(), mod);
+    deleteModuleRef(pMod->flag(), pMod);
 	return true;
 }
 
 bool ModuleContainer::RemoveModule(uint32 itemID) {
-    GenericModule* mod = GetModule(itemID);
-    if (!mod)
+    GenericModule* pMod = GetModule(itemID);
+    if (!pMod)
         return false;
 
-    mod->ProcessEffects(Effects::dgmStatePassive, false);
+    pMod->ProcessEffects(Effects::dgmStatePassive, false);
 
-    deleteModuleRef(mod->flag(), mod);
+    deleteModuleRef(pMod->flag(), pMod);
     return true;
 }
 
@@ -300,7 +300,7 @@ void ModuleContainer::SaveModules()
     }
 }
 
-void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* mod)
+void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
 {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.find((uint8)flag);
     if (itr != m_modules.end())
@@ -308,18 +308,18 @@ void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* mod)
         // make error for module not found in map?  should never happen.
 
     // Maintain the Modules Fitted By Group counter for this module group:
-    if (m_ModulesFittedByGroupID.find(mod->getItem()->groupID()) != m_ModulesFittedByGroupID.end()) {
-        if (m_ModulesFittedByGroupID.find(mod->getItem()->groupID())->second > 1) {
+    if (m_ModulesFittedByGroupID.find(pMod->getItem()->groupID()) != m_ModulesFittedByGroupID.end()) {
+        if (m_ModulesFittedByGroupID.find(pMod->getItem()->groupID())->second > 1) {
             // We still have more than one module of this group fitted, so just reduce number fitted by 1:
-            --(m_ModulesFittedByGroupID.find(mod->getItem()->groupID())->second);
+            --(m_ModulesFittedByGroupID.find(pMod->getItem()->groupID())->second);
         } else {
             // This was the last module of this group fitted, so remove the entry from the map:
-            m_ModulesFittedByGroupID.erase(mod->getItem()->groupID());
+            m_ModulesFittedByGroupID.erase(pMod->getItem()->groupID());
         }
     } else
         sLog.Error( "ModuleContainer::deleteModuleRef()", "Removing Module from ship fit when it had NO entry in m_ModulesFittedByGroup !" );
 
-    mod->SetModuleState(ModStates::MOD_UNFITTED);
+    pMod->SetModuleState(ModStates::MOD_UNFITTED);
 }
 
 
@@ -360,7 +360,7 @@ bool ModuleManager::Initialize() {
     std::vector<InventoryItemRef> itemVec;
     m_Ship->GetMyInventory()->GetInventoryVec(itemVec);   // this method also sorts in order - cargo, modules, charge, subsystems.
 
-    GenericModule* mod(nullptr);
+    GenericModule* pMod(nullptr);
     // first we have to fit and online modules
     for (auto cur : itemVec) {
         // this is a hack.  dont know why any ship item would have flagAutoFit set, but have seen random errors where charges are set to flagAutoFit
@@ -375,14 +375,16 @@ bool ModuleManager::Initialize() {
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
                 } break;
                 case EVEDB::invCategories::Charge: {
-                    mod = GetModule(cur->flag());
-                    if (mod) {
-                        mod->SetChargeRef(cur);
+                    pMod = GetModule(cur->flag());
+                    if (pMod != nullptr) {
+                        pMod->SetChargeRef(cur);
                         // set ChargeState == CHG_LOADED here, then when module Online() is called, all effects will be applied in correct order
-                        mod->SetChargeState(ModStates::CHG_LOADED);
-                    } else
+                        pMod->SetChargeState(ModStates::CHG_LOADED);
+                    } else {
                         _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",\
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
+                    }
+                    pMod = nullptr;
                 } break;
             }
     }
@@ -435,11 +437,11 @@ bool ModuleManager::InstallRig(InventoryItemRef item, EVEItemFlags flag) {
 
 void ModuleManager::UninstallRig(uint32 itemID)
 {
-    GenericModule* mod = m_Modules->GetModule(itemID);
-    if (mod) {
-        mod->Offline();
+    GenericModule* pMod = m_Modules->GetModule(itemID);
+    if (pMod != nullptr) {
+        pMod->Offline();
         if (!sConfig.server.IsTestServer)
-            mod->DestroyRig();
+            pMod->DestroyRig();
     }
     m_Modules->RemoveModule(itemID);
     m_Ship->SetAttribute(AttrUpgradeSlotsLeft, m_Ship->GetAttribute(AttrUpgradeSlotsLeft) +1);
@@ -458,22 +460,22 @@ bool ModuleManager::InstallSubSystem(InventoryItemRef item, EVEItemFlags flag)
 
 void ModuleManager::UnfitModule(uint32 itemID)
 {
-    GenericModule* mod = m_Modules->GetModule(itemID);
-    if (mod) {
+    GenericModule* pMod = m_Modules->GetModule(itemID);
+    if (pMod != nullptr) {
         EVEItemFlags flag = flagHangar;
         bool inSpace = IsSolarSystem(m_Ship->locationID());
         if (inSpace)
             flag = flagCargoHold;
-        mod->AbortCycle();
-        mod->Offline();
-        if (mod->IsLoaded()) {
-            mod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
-            mod->UnloadCharge();    // this does not physically remove charge from module, hence the need for the above call.
+        pMod->AbortCycle();
+        pMod->Offline();
+        if (pMod->IsLoaded()) {
+            pMod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
+            pMod->UnloadCharge();    // this does not physically remove charge from module, hence the need for the above call.
         }
 
-        if (mod->isTurretFitted())
+        if (pMod->isTurretFitted())
             m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) +1));
-        if (mod->isLauncherFitted())
+        if (pMod->isLauncherFitted())
             m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) +1));
     }
     m_Modules->RemoveModule(itemID);
@@ -504,55 +506,55 @@ bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
 		return false;
 	} else {
         // create new module object
-		GenericModule* mod = ModuleFactory(item, ShipItemRef(m_Ship));
-		if (!mod)
+		GenericModule* pMod = ModuleFactory(item, ShipItemRef(m_Ship));
+        if (pMod == nullptr)
             return false;
-        if (mod->isMaxGroupFitLimited()) {
-            if (m_Modules->GetFittedModuleCountByGroup(item->groupID()) == mod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int()) {
-                SafeDelete(mod);
+        if (pMod->isMaxGroupFitLimited()) {
+            if (m_Modules->GetFittedModuleCountByGroup(item->groupID()) == pMod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int()) {
+                SafeDelete(pMod);
                 //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
                 //throw PyException( MakeUserError("CantFitTooManyByGroup"));
                 return false;
             }
         }
-        if (mod->isTurretFitted()) {
+        if (pMod->isTurretFitted()) {
             if (m_Ship->GetAttribute(AttrTurretSlotsLeft).get_bool()) {
                 m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) -1));
             } else {
-                SafeDelete(mod);
+                SafeDelete(pMod);
                 //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
                 //throw PyException( MakeUserError("NotEnoughTurretSlots"));    // this takes 2 args, u/k and module's typeID
                 return false;
             }
-		} else if (mod->isLauncherFitted()) {
+		} else if (pMod->isLauncherFitted()) {
             if (m_Ship->GetAttribute(AttrLauncherSlotsLeft).get_bool()) {
                 m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) -1));
             } else {
-                SafeDelete(mod);
+                SafeDelete(pMod);
                 //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
                 //throw PyException( MakeUserError("NotEnoughLauncherSlots"));    // this takes 2 args, u/k and module's typeID
                 return false;
             }
 		}
 
-        return m_Modules->AddModule(flag, mod);
+        return m_Modules->AddModule(flag, pMod);
     }
 }
 
-bool ModuleManager::OnlineCheck(GenericModule* mod)
+bool ModuleManager::OnlineCheck(GenericModule* pMod)
 {
-    if (mod->isRig() or mod->isSubSystem())
+    if (pMod->isRig() or pMod->isSubSystem())
         return true;
     // check PG and CPU usage to see if we have enough to online this module
-    EvilNumber cpuNeed = (m_Ship->GetAttribute(AttrCpuLoad) + mod->GetAttribute(AttrCpu));
+    EvilNumber cpuNeed = (m_Ship->GetAttribute(AttrCpuLoad) + pMod->GetAttribute(AttrCpu));
     if (cpuNeed  > m_Ship->GetAttribute(AttrCpuOutput)) {
         if (!m_Ship->GetPilot()->IsLogin() and m_Ship->GetPilot()->CanThrow()) {
             // throwing an error negates further processing
             float require = m_Ship->GetAttribute(AttrCpu).get_float();
-            float total = mod->GetAttribute(AttrCpuOutput).get_float();
-            float remaining = total - mod->GetAttribute(AttrCpuLoad).get_float();
+            float total = pMod->GetAttribute(AttrCpuOutput).get_float();
+            float remaining = total - pMod->GetAttribute(AttrCpuLoad).get_float();
             std::map<std::string, PyRep *> args;
-            args["moduleType"] = new PyInt(mod->typeID());
+            args["moduleType"] = new PyInt(pMod->typeID());
             args["require"] = new PyFloat(require);
             args["remaining"] = new PyFloat(remaining);
             args["total"] = new PyFloat(total);
@@ -560,15 +562,15 @@ bool ModuleManager::OnlineCheck(GenericModule* mod)
         }
         return false;
     }
-    EvilNumber pgNeed = (m_Ship->GetAttribute(AttrPowerLoad) + mod->GetAttribute(AttrPower));
+    EvilNumber pgNeed = (m_Ship->GetAttribute(AttrPowerLoad) + pMod->GetAttribute(AttrPower));
     if (pgNeed > m_Ship->GetAttribute(AttrPowerOutput)) {
         if (!m_Ship->GetPilot()->IsLogin() and m_Ship->GetPilot()->CanThrow()) {
             // throwing an error negates further processing
             std::map<std::string, PyRep *> args;
-            args["moduleType"] = new PyInt(mod->typeID());
+            args["moduleType"] = new PyInt(pMod->typeID());
             args["require"] = new PyFloat(m_Ship->GetAttribute(AttrPower).get_float());
-            args["remaining"] = new PyFloat(m_Ship->GetAttribute(AttrPowerOutput).get_float() - mod->GetAttribute(AttrPowerLoad).get_float());
-            args["total"] = new PyFloat(mod->GetAttribute(AttrPowerOutput).get_float());
+            args["remaining"] = new PyFloat(m_Ship->GetAttribute(AttrPowerOutput).get_float() - pMod->GetAttribute(AttrPowerLoad).get_float());
+            args["total"] = new PyFloat(pMod->GetAttribute(AttrPowerOutput).get_float());
             throw PyException( MakeUserError("NotEnoughPower", args));
         }
         return false;
@@ -578,17 +580,17 @@ bool ModuleManager::OnlineCheck(GenericModule* mod)
 
 void ModuleManager::Online(uint32 itemID)
 {
-    GenericModule* mod = m_Modules->GetModule(itemID);
-    if (mod) {
-        if (mod->isOnline()) {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s already Online", mod->getItem()->itemName().c_str());
+    GenericModule* pMod = m_Modules->GetModule(itemID);
+    if (pMod != nullptr) {
+        if (pMod->isOnline()) {
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s already Online", pMod->getItem()->itemName().c_str());
             return;
         }
-        if (OnlineCheck(mod)) {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s going Online", mod->getItem()->itemName().c_str());
-            mod->Online();
+        if (OnlineCheck(pMod)) {
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s going Online", pMod->getItem()->itemName().c_str());
+            pMod->Online();
         } else {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  Not enough CPU/PG to put %s online.", mod->getItem()->itemName().c_str());
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  Not enough CPU/PG to put %s online.", pMod->getItem()->itemName().c_str());
            /* if (m_Ship->HasPilot())
                 m_Ship->GetPilot()->SendErrorMsg("Your ship does not have the required resources to online the %s", mod->getItem()->itemName().c_str());
                 */
@@ -599,17 +601,17 @@ void ModuleManager::Online(uint32 itemID)
 
 void ModuleManager::Online(EVEItemFlags flag)
 {
-    GenericModule* mod = m_Modules->GetModule(flag);
-    if (mod) {
-        if (mod->isOnline()) {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  %s already Online", mod->getItem()->itemName().c_str());
+    GenericModule* pMod = m_Modules->GetModule(flag);
+    if (pMod != nullptr) {
+        if (pMod->isOnline()) {
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  %s already Online", pMod->getItem()->itemName().c_str());
             return;
         }
-        if (OnlineCheck(mod)) {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  %s going Online", mod->getItem()->itemName().c_str());
-            mod->Online();
+        if (OnlineCheck(pMod)) {
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  %s going Online", pMod->getItem()->itemName().c_str());
+            pMod->Online();
         } else {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  Not enough CPU/PG to put %s online.", mod->getItem()->itemName().c_str());
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  Not enough CPU/PG to put %s online.", pMod->getItem()->itemName().c_str());
            /* if (m_Ship->HasPilot())
                 m_Ship->GetPilot()->SendErrorMsg("Your ship does not have the required resources to online the %s", mod->getItem()->itemName().c_str());
                 */
@@ -620,30 +622,30 @@ void ModuleManager::Online(EVEItemFlags flag)
 
 void ModuleManager::Offline(uint32 itemID)
 {
-    GenericModule* mod = m_Modules->GetModule(itemID);
-    if (mod) {
-        if (!mod->isOnline()) {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s not Online", mod->getItem()->itemName().c_str());
-            mod->SetModuleState(ModStates::MOD_OFFLINE);
+    GenericModule* pMod = m_Modules->GetModule(itemID);
+    if (pMod != nullptr) {
+        if (!pMod->isOnline()) {
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s not Online", pMod->getItem()->itemName().c_str());
+            pMod->SetModuleState(ModStates::MOD_OFFLINE);
             return;
         }
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s going Offline", mod->getItem()->itemName().c_str());
-        mod->Offline();
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s going Offline", pMod->getItem()->itemName().c_str());
+        pMod->Offline();
     } else
         _log(SHIP__MODULE_ERROR, "ModuleManager::Offline(itemID) -  Module %u not found", itemID);
 }
 
 void ModuleManager::Offline(EVEItemFlags flag)
 {
-    GenericModule* mod = m_Modules->GetModule(flag);
-    if (mod) {
-        if (!mod->isOnline()) {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s not Online", mod->getItem()->itemName().c_str());
-            mod->SetModuleState(ModStates::MOD_OFFLINE);
+    GenericModule* pMod = m_Modules->GetModule(flag);
+    if (pMod != nullptr) {
+        if (!pMod->isOnline()) {
+            _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s not Online", pMod->getItem()->itemName().c_str());
+            pMod->SetModuleState(ModStates::MOD_OFFLINE);
             return;
         }
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s going Offline", mod->getItem()->itemName().c_str());
-        mod->Offline();
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s going Offline", pMod->getItem()->itemName().c_str());
+        pMod->Offline();
     } else
         _log(SHIP__MODULE_ERROR, "ModuleManager::Offline(flag) -  Module at location %u not found", flag);
 }
@@ -674,13 +676,13 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called from a ship with no pilot." );
         return;
     }
-    GenericModule* mod = m_Modules->GetModule(itemID);
-    if (!mod) {
+    GenericModule* pMod = m_Modules->GetModule(itemID);
+    if (pMod == nullptr) {
         _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called on module %u that is not loaded.", itemID );
         return;
-    } else if (!mod->isOnline()) {
+    } else if (!pMod->isOnline()) {
         if (effectID == 16) { //16    online
-            mod->Online();
+            pMod->Online();
         } else {
             // client wont allow activating an offline module.  this is catchall. (but should never hit)
             m_Ship->GetPilot()->SendErrorMsg("You cannot activate an offline module. Ref: ServerError 25164");
@@ -688,71 +690,71 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         return;
     } else {
         _log(SHIP__MODULE_TRACE, "ModuleManager::Activate() - %s (%s)  targetID: %i, repeat: %i.", \
-                mod->getItem()->itemName().c_str(), sFxDataMgr.GetEffectName(effectID).c_str(), targetID, repeat);
-        mod->Activate(effectID, targetID, repeat);
+                pMod->getItem()->itemName().c_str(), sFxDataMgr.GetEffectName(effectID).c_str(), targetID, repeat);
+        pMod->Activate(effectID, targetID, repeat);
     }
 }
 
 void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
 {
-    GenericModule* mod = m_Modules->GetModule(itemID);
-    if (mod) {
-        if (mod->GetModuleState() != ModStates::MOD_ACTIVATED)  // we dont need an error msgs here....this is acceptable, as the module may not be active
+    GenericModule* pMod = m_Modules->GetModule(itemID);
+    if (pMod != nullptr) {
+        if (pMod->GetModuleState() != ModStates::MOD_ACTIVATED)  // we dont need an error msgs here....this is acceptable, as the module may not be active
             return;
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Deactivate() - %s Deactivating - '%s'", mod->getItem()->itemName().c_str(), effectName.c_str());
-        mod->Deactivate();
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Deactivate() - %s Deactivating - '%s'", pMod->getItem()->itemName().c_str(), effectName.c_str());
+        pMod->Deactivate();
     } else
         _log(SHIP__MODULE_ERROR, "ModuleManager::Deactivate() - Called on module %u that is not loaded.", itemID );
 }
 
 void ModuleManager::Overload(EVEItemFlags flag)
 {
-    GenericModule* mod = m_Modules->GetModule(flag);
-    if (mod) {
-        mod->Overload();
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Overload() - %s Overloading...", mod->getItem()->itemName().c_str());
+    GenericModule* pMod = m_Modules->GetModule(flag);
+    if (pMod != nullptr) {
+        pMod->Overload();
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Overload() - %s Overloading...", pMod->getItem()->itemName().c_str());
     } else
         _log(SHIP__MODULE_ERROR, "ModuleManager::Overload() - Called on module that is not loaded at slot %i.", (int8)flag );
 }
 
 void ModuleManager::DeOverload(EVEItemFlags flag)
 {
-    GenericModule* mod = m_Modules->GetModule(flag);
-    if (mod) {
-        mod->DeOverload();
-        _log(SHIP__MODULE_TRACE, "ModuleManager::DeOverload() - %s DeOverload...", mod->getItem()->itemName().c_str());
+    GenericModule* pMod = m_Modules->GetModule(flag);
+    if (pMod != nullptr) {
+        pMod->DeOverload();
+        _log(SHIP__MODULE_TRACE, "ModuleManager::DeOverload() - %s DeOverload...", pMod->getItem()->itemName().c_str());
     } else
         _log(SHIP__MODULE_ERROR, "ModuleManager::DeOverload() - Called on module that is not loaded at slot %i.", (int8)flag);
 }
 
 void ModuleManager::DamageModule(uint32 itemID, EvilNumber val)
 {
-    GenericModule* mod = m_Modules->GetModule(itemID);
-    if (mod) {
-        mod->SetAttribute(AttrHP, val);
-        _log(SHIP__MODULE_TRACE, "ModuleManager::DamageModule() - %s taking %f damage.", mod->getItem()->itemName().c_str(), val.get_float());
+    GenericModule* pMod = m_Modules->GetModule(itemID);
+    if (pMod != nullptr) {
+        pMod->SetAttribute(AttrHP, val);
+        _log(SHIP__MODULE_TRACE, "ModuleManager::DamageModule() - %s taking %f damage.", pMod->getItem()->itemName().c_str(), val.get_float());
     } else
         _log(SHIP__MODULE_ERROR, "ModuleManager::DamageModule() - Called on module %u that is not loaded.", itemID );
 }
 
 void ModuleManager::RepairModule(uint32 itemID)
 {
-    GenericModule* mod = m_Modules->GetModule(itemID);
-    if (mod)
-        mod->Repair();
+    GenericModule* pMod = m_Modules->GetModule(itemID);
+    if (pMod != nullptr)
+        pMod->Repair();
     else
         _log(SHIP__MODULE_ERROR, "ModuleManager::RepairModule() - Called on module %u that is not loaded.", itemID );
 }
 
 void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 {
-    GenericModule* mod = m_Modules->GetModule(flag);
-    if (mod) {
-        float modCapacity = mod->getItem()->GetAttribute(AttrCapacity).get_float();
+    GenericModule* pMod = m_Modules->GetModule(flag);
+    if (pMod != nullptr) {
+        float modCapacity = pMod->getItem()->GetAttribute(AttrCapacity).get_float();
         float chargeVolume = chargeRef->GetAttribute(AttrVolume).get_float();
 
-        if (mod->IsLoaded()) {
-            InventoryItemRef loadedChargeRef = mod->GetLoadedChargeRef();
+        if (pMod->IsLoaded()) {
+            InventoryItemRef loadedChargeRef = pMod->GetLoadedChargeRef();
             modCapacity -= (loadedChargeRef->GetAttribute(AttrVolume).get_float() * loadedChargeRef->quantity());
             if ( chargeRef->typeID() != loadedChargeRef->typeID() ) {
                 // change charges
@@ -775,28 +777,28 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
                         } else {
                             loadedChargeRef->Merge(chargeRef);
                         }
-                        mod->LoadCharge(loadedChargeRef);
+                        pMod->LoadCharge(loadedChargeRef);
                     }
                 }
             }
         }
 
-        modCapacity = mod->GetAttribute(AttrCapacity).get_float();
-        if (!(mod->IsLoaded())) {
+        modCapacity = pMod->GetAttribute(AttrCapacity).get_float();
+        if (!(pMod->IsLoaded())) {
             if (modCapacity >= (chargeVolume * chargeRef->quantity())) {
                 chargeRef->Move(m_Ship->itemID(), flag);
-                mod->LoadCharge( chargeRef );
+                pMod->LoadCharge( chargeRef );
             } else {
                 uint32 quantityWeCanLoad = floor((modCapacity / chargeVolume));
                 if (quantityWeCanLoad > 0) {
                     InventoryItemRef loadableChargeQtyRef = chargeRef->Split( quantityWeCanLoad );
                     loadableChargeQtyRef->ChangeOwner( chargeRef->ownerID() );
                     loadableChargeQtyRef->Move(m_Ship->itemID(), flag);
-                    mod->LoadCharge( loadableChargeQtyRef );
+                    pMod->LoadCharge( loadableChargeQtyRef );
                 }
             }
         } else {
-            _log(SHIP__MODULE_ERROR, "ModuleManager::LoadCharge() - module %s at slot %i is still loaded", mod->getItem()->itemName().c_str(), flag);
+            _log(SHIP__MODULE_ERROR, "ModuleManager::LoadCharge() - module %s at slot %i is still loaded", pMod->getItem()->itemName().c_str(), flag);
         }
     } else {
         _log(SHIP__MODULE_ERROR, "ModuleManager::LoadCharge() - module not found at slot %i", flag);
@@ -805,14 +807,14 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 
 void ModuleManager::UnloadCharge(EVEItemFlags flag)
 {
-    GenericModule* mod = m_Modules->GetModule(flag);
-    if (mod) {
-        if (mod->IsLoaded() ) {
+    GenericModule* pMod = m_Modules->GetModule(flag);
+    if (pMod != nullptr) {
+        if (pMod->IsLoaded() ) {
             _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s",
-                    mod->getItem()->itemName().c_str(), mod->GetLoadedChargeRef()->itemName().c_str());
-            mod->UnloadCharge();
+                    pMod->getItem()->itemName().c_str(), pMod->GetLoadedChargeRef()->itemName().c_str());
+            pMod->UnloadCharge();
         } else
-            _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module %s at slot %i is not loaded", mod->getItem()->itemName().c_str(), flag);
+            _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module %s at slot %i is not loaded", pMod->getItem()->itemName().c_str(), flag);
     } else
         _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module not found at slot %i", flag);
 }
@@ -823,16 +825,16 @@ void ModuleManager::GetLoadedCharges(std::map< EVEItemFlags, InventoryItemRef >&
 }
 
 InventoryItemRef ModuleManager::GetLoadedChargeOnModule(EVEItemFlags flag) {
-    GenericModule* mod = m_Modules->GetModule(flag);
-    if (mod and mod->IsLoaded() )
-        return mod->GetLoadedChargeRef();
+    GenericModule* pMod = m_Modules->GetModule(flag);
+    if ((pMod != nullptr) and pMod->IsLoaded() )
+        return pMod->GetLoadedChargeRef();
     return InventoryItemRef();
 }
 
 InventoryItemRef ModuleManager::GetLoadedChargeOnModule(InventoryItemRef moduleRef) {
-    GenericModule* mod = m_Modules->GetModule(moduleRef->itemID());
-    if (mod and mod->IsLoaded() )
-        return mod->GetLoadedChargeRef();
+    GenericModule* pMod = m_Modules->GetModule(moduleRef->itemID());
+    if ((pMod != nullptr) and pMod->IsLoaded() )
+        return pMod->GetLoadedChargeRef();
     return InventoryItemRef();
 }
 
@@ -853,7 +855,7 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
     sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
     // this one is called from BoardShip() and Ship::Undock()
     //OfflineAll();
-    GenericModule* mod(nullptr);
+    GenericModule* pMod(nullptr);
     m_Ship->SetAttribute(AttrCpuLoad,     0);
     m_Ship->SetAttribute(AttrPowerLoad,   0);
     //m_Ship->SetAttribute(AttrUpgradeLoad, 0);
@@ -954,8 +956,9 @@ void ModuleManager::GetShipRigs(std::vector< uint32 >& modVec)
     GenericModule* pMod(nullptr);
     for (uint8 i = flagRigSlot0; i < flagRigSlot3; i++) {
         pMod = m_Modules->GetModule((EVEItemFlags)i);
-        if (pMod)
+        if (pMod != nullptr)
             modVec.push_back(pMod->itemID());
+        pMod = nullptr;
     }
 }
 
@@ -965,8 +968,9 @@ void ModuleManager::GetShipSubSystems(std::vector< uint32 >& modVec)
     GenericModule* pMod(nullptr);
     for (uint8 i = flagSubSystem0; i < flagSubSystem5; i++) {
         pMod = m_Modules->GetModule((EVEItemFlags)i);
-        if (pMod)
+        if (pMod != nullptr)
             modVec.push_back(pMod->itemID());
+        pMod = nullptr;
     }
 }
 
@@ -989,8 +993,9 @@ void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vecto
     std::map<uint8, GenericModule*> tmpList;
     for (auto cur : modVec) {
         pMod = GetModule(cur);
-        if (pMod)
+        if (pMod != nullptr)
             tmpList.insert(std::pair<uint8, GenericModule*>((uint8)pMod->flag(), pMod));
+        pMod = nullptr;
     }
     if (tmpList.empty())
         return;

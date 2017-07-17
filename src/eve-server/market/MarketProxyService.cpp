@@ -586,7 +586,7 @@ PyResult MarketProxyService::Handle_GetCorporationOrders(PyCallArgs &call)
 
 void MarketProxyService::_SendOnOwnOrderChanged(Client *who, uint32 orderID, const char *action, bool isCorp, PyRep* order) {
     Notify_OnOwnOrderChanged ooc;
-    if (order)
+    if (order != nullptr)
         ooc.order = order;
     else
         ooc.order = m_db.GetOrderRow(orderID);
@@ -772,11 +772,11 @@ void MarketProxyService::_ExecuteSellOrder(uint32 sell_order_id, uint32 stationI
         //TODO:  add money to player corp account.
         //TODO:  find corp wallet division for market orders?
     } else if (orderOwnerID >= EVEMU_MINIMUM_DYNAMIC_ID) {
-        Client* seller = sEntityList.FindClientByCharID(orderOwnerID);
-        if (seller) {
+        Client* pSeller = sEntityList.FindClientByCharID(orderOwnerID);
+        if (pSeller != nullptr) {
             //the seller is logged in, send them a notification...
-            if (!seller->AddBalance(money))
-                codelog(MARKET__ERROR, "%s: Failed to give seller %s (%u) %.2f ISK from order %u", buyer->GetName(), seller->GetName(), orderOwnerID, money, sell_order_id);
+            if (!pSeller->AddBalance(money))
+                codelog(MARKET__ERROR, "%s: Failed to give seller %s (%u) %.2f ISK from order %u", buyer->GetName(), pSeller->GetName(), orderOwnerID, money, sell_order_id);
         } else {
             //seller is not online right now...
             if (!m_db.AddCharacterBalance(orderOwnerID, money))

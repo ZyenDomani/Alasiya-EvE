@@ -130,7 +130,7 @@ Client::~Client() {
             OnCharNoLongerInStation();
         }
 
-        if (pShipSE)
+        if (pShipSE != nullptr)
             WarpOut();
 
         if (!sConsole.IsShutdown()) {
@@ -465,7 +465,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         // remove from 'current' system before resetting system vars
         m_char->AddPilotToDynamicData(m_SystemData.systemID);
         m_system->RemoveClient(this, false, (count = true));
-        if (pShipSE)
+        if (pShipSE != nullptr)
             m_system->RemoveEntity(pShipSE);
         m_system = nullptr;
     }
@@ -626,10 +626,12 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         return;
     }
     /* check for and delete pod entity if boarding new ship */
-    if (m_ship->typeID() == itemTypeCapsule) {
+    if (m_ship->IsPopped()) {
+        pShipSE->DestinyMgr()->SendJettisonPacket();
+    } else if (m_ship->typeID() == itemTypeCapsule) {
         m_ship->Relocate(NULL_ORIGIN);
         DestroyShipSE();
-    } else {
+    } else  {
         m_ship->GetModuleManager()->CharacterLeavingShip();
         m_ship->SetPlayer(nullptr);
         m_ship->SaveShip();
@@ -652,8 +654,6 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
 
     /* set internal vars for new ship */
     SetShip(newShipItemRef);
-    m_ship->SetPlayer(this);
-
     char ci[25];
     if (IsSolarSystem(m_locationID)) {
         /* if ejecting into pod, setup and create new pod object */
@@ -662,7 +662,6 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             CreateShipSE();
             m_char->ResetModifiers();
             m_char->ProcessEffects();
-            pShipSE->SetPilot(this);
             pShipSE->GetShipSE()->SetPodShipID(m_shipId);
             m_system->AddEntity(pShipSE);
         } else {
@@ -671,27 +670,24 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSEFromInventory(m_shipId);
             m_char->ProcessEffects();
-            pShipSE->SetPilot(this);
             m_ship->UpdateModules();
             pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         }
+        pShipSE->SetPilot(this);
         m_char->Move(m_shipId, flagPilot);
-        //SetDestiny(m_ship->position());
         SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
-
         snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
     } else {
         snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
     }
 
     m_ship->SetCustomInfo(ci);
-    //m_ship->SaveShip();
-
     SetSessionTimer();
 }
 
 void Client::CreateShipSE() {
-    if (pShipSE) DestroyShipSE();
+    if (pShipSE != nullptr)
+        DestroyShipSE();
     FactionData data;
         data.allianceID = GetAllianceID();
         data.corporationID = GetCorporationID();
@@ -704,7 +700,7 @@ void Client::CreateShipSE() {
 }
 
 void Client::DestroyShipSE() {
-    if (pShipSE) {
+    if (pShipSE != nullptr) {
         _log(PLAYER__MESSAGE, "DestroyShipSE() - pShipSE %p (%s) destroyed for %s(%u)", pShipSE, m_ship->itemName().c_str(), m_char->itemName().c_str(), m_char->itemID());
         pShipSE->SysBubble()->Remove(pShipSE);
         m_system->RemoveEntity(pShipSE);
@@ -915,13 +911,13 @@ void Client::SpawnNewRookieShip() {
     InventoryItemRef wRef = m_services.item_factory->SpawnItem(wData);
     InventoryItemRef cRef = m_services.item_factory->SpawnItem(cData);
     // create and fit noob items in ship
-    if (sRef)
+    if (sRef != nullptr)
         sRef->Move(m_locationID, flagHangar);
-    if (mRef)
+    if (mRef != nullptr)
         mRef->Move(sRef->itemID(), flagHiSlot0);
-    if (wRef)
+    if (wRef != nullptr)
         wRef->Move(sRef->itemID(), flagHiSlot1);
-    if (cRef)
+    if (cRef != nullptr)
         cRef->Move(sRef->itemID(), flagCargoHold);
 }
 
@@ -1674,7 +1670,7 @@ void Client::_SendCallReturn(const PyAddress& source, uint64 callID, uint32 clie
     p->payload->SetItem(0, new PySubStream(*return_value));
     *return_value = nullptr;   //consumed
 
-    if (channel) {
+    if (channel != nullptr) {
         p->named_payload = new PyDict();
         p->named_payload->SetItemString("channel", new PyString(channel));
     }

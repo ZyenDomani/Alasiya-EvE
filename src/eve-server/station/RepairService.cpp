@@ -266,21 +266,21 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
             //PyInt *pInt = cur->first->AsInt();
             // Location is irrelevant so get list.
             PyList *pList = cur->second->AsList();
-            if (pList) {
+            if (pList != nullptr) {
                 //uint32 locationID = pInt->value();
                 // Iterate through list.
                 PyList::const_iterator itemItr = pList->begin();
                 for (; itemItr != pList->end(); itemItr++) {
                     // List is tuples of itemID, LocationID pairs.
                     PyTuple *tuple = (*itemItr)->AsTuple();
-                    if (tuple) {
+                    if (tuple != nullptr) {
                         // Get the itemID.
                         PyInt *itemInt = tuple->GetItem(0)->AsInt();
                         //PyInt *itemLocation = tuple->GetItem(1)->AsInt();
-                        if (itemInt) {
+                        if (itemInt != nullptr) {
                             // Get the item itself.
                             InventoryItemRef item = factory->GetItem(itemInt->value());
-                            if (item) {
+                            if (item != nullptr) {
                                 // Add type exceptions here.
                                 if (item->categoryID() == EVEDB::invCategories::Blueprint
                                     or item->categoryID() == EVEDB::invCategories::Skill

@@ -43,7 +43,7 @@ DBcore::DBcore(bool compress, bool ssl)
 }
 
 DBcore::~DBcore() {
-    if (mysql) {
+    if (mysql != nullptr) {
         mysql_close(mysql);
         free(mysql);
         SafeDelete(mysql);
@@ -154,7 +154,7 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, boo
 {
     if (pStatus != Connected)
         Open_locked();
-    if (!mysql) {
+    if (mysql == nullptr) {
         pStatus = Error;
         codelog(DATABASE__ERROR, "DBCore Query - mysql = null");
         return false;
@@ -186,9 +186,9 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, boo
 
 
 bool DBcore::RunQuery(const char* query, int32 querylen, char* errbuf, MYSQL_RES** result, int32* affected_rows, int32* last_insert_id, int32* errnum, bool retry) {
-    if (errnum)
+    if (errnum != nullptr)
         *errnum = 0;
-    if (errbuf)
+    if (errbuf != nullptr)
         errbuf[0] = 0;
     MutexLock lock(MDatabase);
 
@@ -196,7 +196,7 @@ bool DBcore::RunQuery(const char* query, int32 querylen, char* errbuf, MYSQL_RES
     if (!DoQuery_locked(err, query, querylen, retry))
     {
         codelog(DATABASE__ERROR, "DBCore Query: %s failed", query);
-        if (errnum)
+        if (errnum != nullptr)
             *errnum = err.GetErrNo();
 
         /* @note possible buffer overflow because the size of 'errbuf' is unknown.
@@ -207,7 +207,7 @@ bool DBcore::RunQuery(const char* query, int32 querylen, char* errbuf, MYSQL_RES
         return false;
     }
 
-    if (result) {
+    if (result != nullptr) {
         if (mysql_field_count(mysql)) {
             *result = mysql_store_result(mysql);
         } else {
@@ -224,9 +224,9 @@ bool DBcore::RunQuery(const char* query, int32 querylen, char* errbuf, MYSQL_RES
             return false;
         }
     }
-    if (affected_rows)
+    if (affected_rows != nullptr)
         *affected_rows = (uint32)mysql_affected_rows(mysql);
-    if (last_insert_id)
+    if (last_insert_id != nullptr)
         *last_insert_id = (uint32)mysql_insert_id(mysql);
     return true;
 }
@@ -294,7 +294,7 @@ bool DBcore::Open(DBerror &err, const char* iHost, const char* iUser, const char
 }
 
 void DBcore::Close() {
-    if (mysql) {
+    if (mysql != nullptr) {
         mysql_close(mysql);
         SafeDelete(mysql);
     } else
@@ -303,7 +303,7 @@ void DBcore::Close() {
 
 
 bool DBcore::Open_locked(int32* errnum, char* errbuf) {
-    if (errbuf)
+    if (errbuf != nullptr)
         errbuf[0] = 0;
     if (GetStatus() == Connected)
         return true;
@@ -333,7 +333,7 @@ bool DBcore::Open_locked(int32* errnum, char* errbuf) {
         pStatus = Error;
         if (errnum)
             *errnum = mysql_errno(mysql);
-        if (errbuf)
+        if (errbuf != nullptr)
             snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
         return false;
     }
@@ -343,7 +343,7 @@ bool DBcore::Open_locked(int32* errnum, char* errbuf) {
         pStatus = Error;
         if (errnum)
             *errnum = mysql_errno(mysql);
-        if (errbuf)
+        if (errbuf != nullptr)
             snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
         return false;
     }
@@ -450,7 +450,7 @@ DBQueryResult::~DBQueryResult()
 {
     SafeDeleteArray( mFields );
 
-    if (mResult)
+    if (mResult != nullptr)
         mysql_free_result( mResult );
 }
 
@@ -473,7 +473,7 @@ bool DBQueryResult::GetRow( DBResultRow& into )
 
 void DBQueryResult::Reset()
 {
-    if (mResult)
+    if (mResult != nullptr)
         mysql_data_seek( mResult, 0);
 }
 
@@ -529,14 +529,14 @@ void DBQueryResult::SetResult( MYSQL_RES** res, uint32 colCount )
 {
     SafeDeleteArray( mFields );
 
-    if (mResult)
+    if (mResult != nullptr)
         mysql_free_result( mResult );
 
     mResult = *res;
     *res = nullptr;
     mColumnCount = colCount;
 
-    if (mResult) {
+    if (mResult != nullptr) {
         mFields = new MYSQL_FIELD*[ ColumnCount() ];
 
         // we are

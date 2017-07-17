@@ -444,7 +444,7 @@ void Character::LogOut()
         InventoryItemRef station = sEntityList.GetStationByID(m_locationID);
         inv = station->GetMyInventory();
     }
-    if (inv)
+    if (inv != nullptr)
         inv->RemoveItem(inv->GetByID(m_itemID));
     */
 }

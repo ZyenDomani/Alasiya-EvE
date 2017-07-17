@@ -106,7 +106,7 @@ bool Inventory::LoadContents(ItemFactory* factory) {
     /* rewrote logic, optimized, and fixed "empty inventory" for new chars in existing systems  -allan 22.2.16 */
     Client* pClient = factory->GetUsingClient();
     if (IsStation(m_inventoryID)) {
-        if (pClient) {
+        if (pClient != nullptr) {
             if (pClient->IsHangarLoaded(m_inventoryID))
                 return true;
             pClient->AddStationHangar(m_inventoryID);
@@ -125,7 +125,7 @@ bool Inventory::LoadContents(ItemFactory* factory) {
         od.locID = m_inventoryID;
 
     std::vector<uint32> items;
-    if (pClient) {
+    if (pClient != nullptr) {
         if (IsStation(m_inventoryID)) {
             if (IsPlayerCorp(pClient->GetCorporationID())){
                 /* this will load all non-NPC corp items in this station */

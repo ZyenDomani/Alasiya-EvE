@@ -110,19 +110,19 @@ void BubbleManager::Process() {
 }
 
 void BubbleManager::CheckBubble(SystemEntity *pSE) {
-    SystemBubble *b = pSE->SysBubble();
-    if (b) {
-        if (b->InBubble(pSE->GetPosition())) {
+    SystemBubble *pBubble = pSE->SysBubble();
+    if (pBubble != nullptr) {
+        if (pBubble->InBubble(pSE->GetPosition())) {
             _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::CheckBubble() - Entity '%s'(%u) at (%.2f,%.2f,%.2f) is still located in bubble %u at %.2f,%.2f,%.2f.",\
                  pSE->GetName(), pSE->GetID(), pSE->GetPosition().x, pSE->GetPosition().y, pSE->GetPosition().z,\
-                 b->GetID(), b->x(), b->y(), b->z());
+                 pBubble->GetID(), pBubble->x(), pBubble->y(), pBubble->z());
             return;
         }
 
         _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::CheckBubble() - Entity '%s'(%u) at (%.2f,%.2f,%.2f) is no longer located in bubble %u at %.2f,%.2f,%.2f.  Removing...",\
              pSE->GetName(), pSE->GetID(), pSE->GetPosition().x, pSE->GetPosition().y, pSE->GetPosition().z,\
-             b->GetID(), b->x(), b->y(), b->z());
-        b->Remove(pSE);
+             pBubble->GetID(), pBubble->x(), pBubble->y(), pBubble->z());
+        pBubble->Remove(pSE);
     }
 
     _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::CheckBubble() - SystemEntity '%s'(%u) not currently in any Bubble...adding", pSE->GetName(), pSE->GetID() );
@@ -143,7 +143,7 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
     }
 
     pBubble = FindBubble(pSE->SystemMgr()->GetID(), newCenter);
-    if (pBubble) {
+    if (pBubble != nullptr) {
         if (pBubble->GetSystem()->GetID() != pSE->SystemMgr()->GetID()) {
             // this is an error.  bad bubble
             _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): bubble SysID %u != pSE SysID %u", pSE->GetName(), pSE->GetID(), pBubble->GetSystem()->GetID(), pSE->SystemMgr()->GetID() );
@@ -173,10 +173,10 @@ void BubbleManager::Remove(SystemEntity *ent) {
     // planets and moons arent in bubbles
     if (ent->IsPlanetSE() or ent->IsMoonSE())
         return;
-    SystemBubble *b = ent->SysBubble();
-    if (b) {
+    SystemBubble *pBubble = ent->SysBubble();
+    if (pBubble != nullptr) {
         _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Remove(): Entity '%s' (%u) being removed from Bubble %u", ent->GetName(), ent->GetID(), b->GetID() );
-        b->Remove(ent);
+        pBubble->Remove(ent);
     }
 }
 

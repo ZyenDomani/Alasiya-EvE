@@ -174,7 +174,7 @@ PyResult BeyonceService::Handle_(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     } else if (pDestiny->IsWarping()) {
@@ -182,7 +182,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
         return new PyNone();
     }
     SystemManager* pSystem = call.client->SystemMgr();
-    if (!pSystem) {
+    if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return new PyNone();
     }
@@ -201,7 +201,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     }
 
     SystemEntity* pEntity = pSystem->GetSE(args.ballID);
-    if (!pEntity) {
+    if (pEntity == nullptr) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %u to Follow/Approach.", call.client->GetName(), args.ballID);
         return new PyNone();
     }
@@ -216,7 +216,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     } else if (pDestiny->IsWarping()) {
@@ -247,7 +247,7 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     } else if (pDestiny->IsWarping()) {
@@ -255,7 +255,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
         return new PyNone();
     }
     SystemManager* pSystem = call.client->SystemMgr();
-    if (!pSystem) {
+    if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return new PyNone();
     }
@@ -267,7 +267,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
     }
 
     SystemEntity* pEntity = pSystem->GetSE(arg.entityID);
-    if (!pEntity) {
+    if (pEntity == nullptr) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %u to AlignTo.", call.client->GetName(), arg.entityID);
         return new PyNone();
     }
@@ -292,7 +292,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
 */
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     } else if (pDestiny->IsWarping()) {
@@ -317,7 +317,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     } else if (pDestiny->IsWarping()) {
@@ -336,7 +336,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
 
     BookmarkService* pBMSvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
 
-    if (!pBMSvc) {
+    if (pBMSvc == nullptr)) {
         sLog.Error( "BeyonceService::Handle_GotoBookmark()", "Attempt to access BookmarkService via (BookmarkService *)(call.client->services().LookupService(\"bookmark\")) returned NULL pointer." );
         return new PyNone();
     } else {
@@ -372,7 +372,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
             bp.CmdOrbit(id, range)
             */
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     } else if (pDestiny->IsWarping()) {
@@ -381,7 +381,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
     }
 
     SystemManager* pSystem = call.client->SystemMgr();
-    if (!pSystem) {
+    if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return new PyNone();
     }
@@ -399,7 +399,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         : args.range->AsFloat()->value();
 
     SystemEntity* pEntity = pSystem->GetSE(args.entityID);
-    if (!pEntity) {
+    if (pEntity == nullptr) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %u to Orbit.", call.client->GetName(), args.entityID);
         return new PyNone();
     }
@@ -417,7 +417,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
   call.Dump(SERVICE__CALL_DUMP);
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     } else if (pDestiny->IsWarping()){
@@ -425,8 +425,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         return new PyNone();
     }
 
-    SystemManager* pSM = call.client->SystemMgr();
-    if (!pSM) {
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: no system manager found", call.client->GetName());
         return new PyNone();
     }
@@ -461,8 +461,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 
     std::string type = call.tuple->GetItem(0)->AsString()->content();
     if (type == "item" ) {
-		pSE = pSM->GetSE(toID);
-        if (!pSE) {
+		pSE = pSystem->GetSE(toID);
+        if (pSE != nullptr) {
             codelog(CLIENT__ERROR, "%s: unable to find location %d", call.client->GetName(), toID);
 			return new PyNone();
 		}
@@ -472,7 +472,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         uint32 bookmarkID = call.tuple->GetItem(1)->AsInt()->value();
 
         BookmarkService* bkSrvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
-        if (!bkSrvc) {
+        if (bkSrvc != nullptr) {
             sLog.Error( "BeyonceService::Handle_WarpToStuff()", "Attempt to access BookmarkService returned NULL." );
             return new PyNone();
         }
@@ -488,8 +488,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint.z = z;
         } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
-            pSE = pSM->GetSE( toID );
-            if (!pSE) {
+            pSE = pSystem->GetSE( toID );
+            if (pSE != nullptr) {
                 sLog.Error( "BeyonceService::Handle_WarpToStuff()", "%s: unable to find location %d", call.client->GetName(), toID );
                 return new PyNone();
             }
@@ -542,7 +542,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
          * s = 20*((1/40)*(10*log10(r/10^6)-39)^20) +0.5
          * s = max(0.5, min(s, 10.5))
          */
-    if (pSE) {
+    if (pSE != nullptr) {
         radius = pSE->GetRadius();
         warpToPoint = pSE->GetPosition();
         if (pSE->IsPlanetSE()) {
@@ -596,15 +596,15 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     } else if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't do this while warping");
         return new PyNone();
     }
-    SystemManager* pSM = call.client->SystemMgr();
-    if (!pSM) {
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: no system manager found", call.client->GetName());
         return new PyNone();
     }
@@ -621,8 +621,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     /** @todo make and set config var for default AP warpTo distance to use here */
     int32 distance = 5000; //15000
 
-    SystemEntity* pSE = pSM->GetSE(arg.destID);
-    if (!pSE) {
+    SystemEntity* pSE = pSystem->GetSE(arg.destID);
+    if (pSE == nullptr) {
 	  codelog(CLIENT__ERROR, "%s: unable to find destination Entity for ID %u", call.client->GetName(), arg.destID);
         return new PyNone();
     }
@@ -641,7 +641,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     }
@@ -666,15 +666,15 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
         return new PyNone();
     }
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     } else if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't do this while warping");
         return new PyNone();
     }
-    SystemManager* pSM = call.client->SystemMgr();
-    if (!pSM) {
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager.", call.client->GetName());
         return new PyNone();
     }
@@ -697,7 +697,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
         return new PyNone();
     }
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     } else if (pDestiny->IsWarping()) {
@@ -746,7 +746,7 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
     //no arguments.
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return new PyNone();
     } else if (pDestiny->IsWarping()) {

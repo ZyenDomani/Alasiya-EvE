@@ -228,19 +228,19 @@ bool AttributeMap::Add( uint16 attrID, EvilNumber& num ) {
 
 bool AttributeMap::SendChanges( PyTuple* attrChange ) {
     if (!attrChange) return true;
-    Client* client(nullptr);
+    Client* pClient(nullptr);
 
     if (IsCharType(mItem.typeID()))
-        client = sEntityList.FindClientByCharID(mItem.itemID());
+        pClient = sEntityList.FindClientByCharID(mItem.itemID());
     else if ((mItem.ownerID() == 1) || IsNPCCorp(mItem.ownerID()))
         return true;
     else
-        client = sEntityList.FindClientByCharID(mItem.ownerID());
+        pClient = sEntityList.FindClientByCharID(mItem.ownerID());
 
-    if (client) {
+    if (pClient != nullptr) {
         if (is_log_enabled(CLIENT__TRACE))
             attrChange->Dump(CLIENT__TRACE, "");
-        client->QueueDestinyEvent(&attrChange);
+        pClient->QueueDestinyEvent(&attrChange);
     } else {
         _log(PLAYER__WARNING, "AttributeMap::SendChanges() - ownerID for %u not found", mItem.itemID() );
         return false;

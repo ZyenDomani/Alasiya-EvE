@@ -821,7 +821,7 @@ void DestinyManager::MoveObject() {
         str << timeStamp;
         ItemData idata(23, 0, mySE->GetLocationID(), flagAutoFit, str.str().c_str(), m_position, "Position Test");
         CargoContainerRef jetCanRef = mySE->GetServices().item_factory->SpawnCargoContainer(idata);
-        if (jetCanRef) {
+        if (jetCanRef != nullptr) {
             // create new container
             FactionData jetcanData;
             jetcanData.allianceID = jetcanData.corporationID = jetcanData.factionID = jetcanData.ownerID = 0;
@@ -2788,5 +2788,7 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
         _log( DESTINY__ERROR, "[%u] Cannot BubbleCast destiny update (u:%u, e:%u); entity (%u) is not in any bubble.", \
                 sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetID() );
         EvE::traceStack();
+        sBubbleMgr.Add(mySE);
+        mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
     }
 }

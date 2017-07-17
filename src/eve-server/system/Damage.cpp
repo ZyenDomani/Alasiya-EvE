@@ -386,7 +386,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
         //  log faction kill in dynamic data   -allan
         //  client logs faction kills in total kills.  return is value1(total kills) - value2(faction kills) > 0:
-        if (pClient) {
+        if (pClient != nullptr) {
             Character* pChar = pClient->GetChar().get();
             pChar->chkDynamicSystemID(locationID);
             pChar->AddKillToDynamicData(locationID);
@@ -449,7 +449,7 @@ void Ship::Killed(Damage &fatal_blow) {
         uint32 corpseTypeID = 10041; // typeID from 'invTypes' table for "Frozen Corpse"
         ItemData corpseItemData(corpseTypeID, m_self->ownerID(), locationID, flagAutoFit, corpse_name.c_str(), deadPodPosition);
         InventoryItemRef corpseItemRef = m_services.item_factory->SpawnItem( corpseItemData );
-        if (corpseItemRef) {
+        if (corpseItemRef != nullptr) {
             DBSystemDynamicEntity corpseEntity;
                 corpseEntity.allianceID = m_allyID;
                 corpseEntity.categoryID = EVEDB::invCategories::Celestial;
@@ -522,7 +522,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
 		ItemData wreckItemData(wreckTypeID, m_self->ownerID(), locationID, flagAutoFit, wreck_name.c_str(), deadShipPosition);
         WreckContainerRef wreckItemRef = m_services.item_factory->SpawnWreckContainer( wreckItemData );
-        if (wreckItemRef) {
+        if (wreckItemRef != nullptr) {
             DBSystemDynamicEntity wreckEntity;
                 wreckEntity.allianceID = killer->GetAllianceID();
                 wreckEntity.categoryID = EVEDB::invCategories::Celestial;
@@ -619,8 +619,8 @@ void Ship::Killed(Damage &fatal_blow) {
         pPilot->BoardShip(podRef);
         pPilot->SetClientTimer(ClientState::csKilled, ClientTimers::KilledTimer);
         m_services.item_factory->UnsetUsingClient();
-        deadShipRef->Delete();
         m_system->RemoveEntity(this);
+        deadShipRef->Delete();
     }
 
     if (pClient and (m_system->GetSystemSecurityRating() > 0)) {

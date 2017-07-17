@@ -1077,7 +1077,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
 }
 
 void InventoryItem::SetCustomInfo(const char *ci) {
-    if (ci)
+    if (ci != nullptr)
         m_customInfo = ci;
     else
         m_customInfo = "";

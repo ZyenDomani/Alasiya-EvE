@@ -256,8 +256,8 @@ public:
     virtual void Delete();
 
     double GetRemainingVolumeByFlag(EVEItemFlags flag) const;
-    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item);
-    bool ValidateItemSpecifics(InventoryItemRef equip);
+    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef);
+    bool ValidateItemSpecifics(InventoryItemRef iRef);
 
     const ShipType & type() const                       { return static_cast<const ShipType &>(InventoryItem::type()); }
 
@@ -308,9 +308,9 @@ public:
     void Overload();
     void CancelOverloading();
     void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);
-    void RemoveRig(InventoryItemRef item);
-    void AddItem(InventoryItemRef item);
-    void RemoveItem( InventoryItemRef item, uint32 qty=0/*, uint32 inventoryID, EVEItemFlags flag*/ );
+    void RemoveRig(InventoryItemRef iRef);
+    void AddItem(InventoryItemRef iRef);
+    void RemoveItem( InventoryItemRef iRef, uint32 qty=0/*, uint32 inventoryID, EVEItemFlags flag*/ );
     void UpdateModules();
     void UpdateModules(EVEItemFlags flag);
     void UnloadModule(uint32 itemID);
@@ -327,8 +327,8 @@ public:
 
     InventoryItemRef GetModuleRef(EVEItemFlags flag);
     InventoryItemRef GetModuleRef(uint32 itemID);
-    EVEItemFlags FindAvailableModuleSlot( InventoryItemRef item );
-    uint32 AddItem( EVEItemFlags flag, InventoryItemRef item);
+    EVEItemFlags FindAvailableModuleSlot( InventoryItemRef iRef );
+    uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef);
     /* end new module manager interface */
 
     // Tactical Interface:
