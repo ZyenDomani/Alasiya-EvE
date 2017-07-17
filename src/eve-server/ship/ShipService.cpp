@@ -865,6 +865,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", 23));
             // create new container
             ContainerSE* cSE = new ContainerSE(newJetcanItem, *m_manager, pSysMgr, data);
+            
             newJetcanItem->SetMySE(cSE);
             pSysMgr->AddEntity(cSE);
             pClient->StartJetcanTimer();

@@ -911,13 +911,13 @@ void Client::SpawnNewRookieShip() {
     InventoryItemRef wRef = m_services.item_factory->SpawnItem(wData);
     InventoryItemRef cRef = m_services.item_factory->SpawnItem(cData);
     // create and fit noob items in ship
-    if (sRef != nullptr)
+    if (sRef.get() != nullptr)
         sRef->Move(m_locationID, flagHangar);
-    if (mRef != nullptr)
+    if (mRef.get() != nullptr)
         mRef->Move(sRef->itemID(), flagHiSlot0);
-    if (wRef != nullptr)
+    if (wRef.get() != nullptr)
         wRef->Move(sRef->itemID(), flagHiSlot1);
-    if (cRef != nullptr)
+    if (cRef.get() != nullptr)
         cRef->Move(sRef->itemID(), flagCargoHold);
 }
 

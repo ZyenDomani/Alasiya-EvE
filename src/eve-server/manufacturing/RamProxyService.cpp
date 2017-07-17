@@ -310,7 +310,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
 
             ItemData idata(cur->typeID, ownerID, 0, outputFlag, quantity);
             InventoryItemRef iRef = m_manager->item_factory->SpawnItem( idata );
-            if (iRef != nullptr)  // make error here
+            if (iRef.get() != nullptr)  // make error here
                 iRef->Move(args.containerID, outputFlag);
         }
     }
@@ -321,7 +321,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
             case ramActivityManufacturing: {
                 ItemData idata(bp->productTypeID(), ownerID, 0, outputFlag, bp->productType().portionSize() * runs);
                 InventoryItemRef iRef = m_manager->item_factory->SpawnItem( idata );
-                if (iRef != nullptr)
+                if (iRef.get() != nullptr)
                     iRef->Move(args.containerID, outputFlag);
             } break;
             case ramActivityResearchingTimeProductivity: {

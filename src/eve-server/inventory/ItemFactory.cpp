@@ -114,7 +114,7 @@ Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
             iRef = GetItem( itemID );
     }
 
-    if (iRef != nullptr)
+    if (iRef.get() != nullptr)
         return iRef->GetMyInventory();
 
     return nullptr;
@@ -176,7 +176,7 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true
         }
     }
 
-    if (iRef != nullptr)
+    if (iRef.get() != nullptr)
         return iRef->GetMyInventory();
 
     return nullptr;
@@ -348,7 +348,7 @@ WreckContainerRef ItemFactory::GetWreckContainer(uint32 containerID)
 
 InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
     InventoryItemRef iRef = InventoryItem::Spawn(*this, data);
-    if (iRef == nullptr)
+    if (iRef.get() == nullptr)
         return InventoryItemRef();
 
     // spawn successful; store the ref
@@ -359,7 +359,7 @@ InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
 
 BlueprintRef ItemFactory::SpawnBlueprint(ItemData &data, BlueprintData &bpData) {
     BlueprintRef iRef = Blueprint::Spawn(*this, data, bpData);
-    if (iRef == nullptr)
+    if (iRef.get() == nullptr)
         return BlueprintRef();
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
@@ -369,7 +369,7 @@ BlueprintRef ItemFactory::SpawnBlueprint(ItemData &data, BlueprintData &bpData) 
 
 CharacterRef ItemFactory::SpawnCharacter(ItemData &data, CharacterData &charData, CorpData &corpData) {
     CharacterRef iRef = Character::Spawn(*this, data, charData, corpData);
-    if (iRef == nullptr)
+    if (iRef.get() == nullptr)
         return CharacterRef();
 
     //  do NOT add new char to item list to allow char to be selected and loaded normally after creation.
@@ -380,7 +380,7 @@ CharacterRef ItemFactory::SpawnCharacter(ItemData &data, CharacterData &charData
 
 ShipItemRef ItemFactory::SpawnShip(ItemData &data) {
     ShipItemRef iRef = ShipItem::Spawn(*this, data);
-    if (iRef == nullptr)
+    if (iRef.get() == nullptr)
         return ShipItemRef();
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
@@ -391,7 +391,7 @@ ShipItemRef ItemFactory::SpawnShip(ItemData &data) {
 SkillRef ItemFactory::SpawnSkill(ItemData &data)
 {
     SkillRef iRef = Skill::Spawn( *this, data );
-    if (iRef == nullptr)
+    if (iRef.get() == nullptr)
         return SkillRef();
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
@@ -402,7 +402,7 @@ SkillRef ItemFactory::SpawnSkill(ItemData &data)
 StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
 {
     StructureItemRef iRef = StructureItem::Spawn( *this, data );
-    if (iRef == nullptr)
+    if (iRef.get() == nullptr)
         return StructureItemRef();
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
@@ -413,7 +413,7 @@ StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
 AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
 {
     AsteroidItemRef iRef = AsteroidItem::Spawn( *this, idata, adata );
-    if (iRef == nullptr)
+    if (iRef.get() == nullptr)
         return AsteroidItemRef();
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
@@ -432,13 +432,13 @@ CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
     if (data.name.find(str) != data.name.npos) {
         containerID = InventoryItem::CreateTempItemID( *this, data );
         InventoryItemRef iRef = InventoryItem::SpawnItem( *this, containerID, data );
-        if (iRef == nullptr)
+        if (iRef.get() == nullptr)
             return CargoContainerRef();
         return RefPtr<CargoContainer>::StaticCast(iRef);
     }
 */
     CargoContainerRef iRef = CargoContainer::Spawn( *this, data );
-    if (iRef == nullptr)
+    if (iRef.get() == nullptr)
         return CargoContainerRef();
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
@@ -449,7 +449,7 @@ CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
 WreckContainerRef ItemFactory::SpawnWreckContainer(ItemData &data)
 {
     WreckContainerRef iRef = WreckContainer::Spawn( *this, data );
-    if (iRef == nullptr)
+    if (iRef.get() == nullptr)
         return WreckContainerRef();
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );

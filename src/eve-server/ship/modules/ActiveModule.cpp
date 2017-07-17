@@ -674,6 +674,8 @@ void ActiveModule::LaunchMissile()
                 m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
 
     Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()),  pSystem, m_modRef, m_targetSE, m_shipRef.get());
+    if (pMissile == nullptr)
+        return; // make error here
     double distance = pMissile->GetSelf()->position().distance(m_targetSE->GetPosition());
     double missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
     double travelTime = (distance/missileSpeed);

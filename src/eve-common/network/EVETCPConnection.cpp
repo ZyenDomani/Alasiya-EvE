@@ -49,34 +49,34 @@ EVETCPConnection::EVETCPConnection( Socket* sock, uint32 rIP, uint16 rPort )
 
 void EVETCPConnection::QueueRep( const PyRep* rep, bool compress )
 {
-    Buffer* buf = new Buffer();
+    Buffer* pBuffer = new Buffer();
 
     // make room for length
-    const Buffer::iterator<uint32> bufLen = buf->end<uint32>();
-    buf->ResizeAt( bufLen, 1 );
+    const Buffer::iterator<uint32> bufLen = pBuffer->end<uint32>();
+    pBuffer->ResizeAt( bufLen, 1 );
 
-    if (PACKET_SIZE_LIMIT < buf->size()) {
-        sLog.Error( "Network", "Packet length %u exceeds hardcoded packet length limit %lu.", buf->size(), PACKET_SIZE_LIMIT );
-        SafeDelete( buf );
+    if (PACKET_SIZE_LIMIT < pBuffer->size()) {
+        sLog.Error( "Network", "Packet length %u exceeds hardcoded packet length limit %lu.", pBuffer->size(), PACKET_SIZE_LIMIT );
+        SafeDelete( pBuffer );
         return;
     }
 
     bool success = false;
 
     if (compress)
-        success = MarshalDeflate(rep, *buf);
+        success = MarshalDeflate(rep, *pBuffer);
     else
-        success = MarshalDeflate(rep, *buf, PACKET_SIZE_LIMIT);
+        success = MarshalDeflate(rep, *pBuffer, PACKET_SIZE_LIMIT);
 
     if (success){
         //DumpBuffer( buf, PACKET_OUTBOUND );
         // write length
-        *bufLen = ( buf->size() - sizeof( uint32 ) );
-        Send( &buf );
+        *bufLen = ( pBuffer->size() - sizeof( uint32 ) );
+        Send( &pBuffer );
     } else
         sLog.Error( "Network", "Failed to marshal new packet." );
 
-    SafeDelete( buf );
+    SafeDelete( pBuffer );
 }
 
 PyRep* EVETCPConnection::PopRep()
