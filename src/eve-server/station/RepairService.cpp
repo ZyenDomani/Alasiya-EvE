@@ -280,7 +280,7 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
                         if (itemInt != nullptr) {
                             // Get the item itself.
                             InventoryItemRef item = factory->GetItem(itemInt->value());
-                            if (item != nullptr) {
+                            if (item.get() != nullptr) {
                                 // Add type exceptions here.
                                 if (item->categoryID() == EVEDB::invCategories::Blueprint
                                     or item->categoryID() == EVEDB::invCategories::Skill

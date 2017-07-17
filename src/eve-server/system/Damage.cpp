@@ -449,7 +449,7 @@ void Ship::Killed(Damage &fatal_blow) {
         uint32 corpseTypeID = 10041; // typeID from 'invTypes' table for "Frozen Corpse"
         ItemData corpseItemData(corpseTypeID, m_self->ownerID(), locationID, flagAutoFit, corpse_name.c_str(), deadPodPosition);
         InventoryItemRef corpseItemRef = m_services.item_factory->SpawnItem( corpseItemData );
-        if (corpseItemRef != nullptr) {
+        if (corpseItemRef.get() != nullptr) {
             DBSystemDynamicEntity corpseEntity;
                 corpseEntity.allianceID = m_allyID;
                 corpseEntity.categoryID = EVEDB::invCategories::Celestial;
@@ -497,7 +497,7 @@ void Ship::Killed(Damage &fatal_blow) {
         podRef->Relocate(capsulePosition);
 
         SystemEntity* pPodEntity = m_system->GetSE(pPilot->GetPodID());
-        if (!pPodEntity) {
+        if (pPodEntity == nullptr) {
             FactionData data;
                 data.allianceID = GetAllianceID();
                 data.corporationID = GetCorporationID();
@@ -522,7 +522,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
 		ItemData wreckItemData(wreckTypeID, m_self->ownerID(), locationID, flagAutoFit, wreck_name.c_str(), deadShipPosition);
         WreckContainerRef wreckItemRef = m_services.item_factory->SpawnWreckContainer( wreckItemData );
-        if (wreckItemRef != nullptr) {
+        if (wreckItemRef.get() != nullptr) {
             DBSystemDynamicEntity wreckEntity;
                 wreckEntity.allianceID = killer->GetAllianceID();
                 wreckEntity.categoryID = EVEDB::invCategories::Celestial;

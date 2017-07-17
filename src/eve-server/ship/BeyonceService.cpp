@@ -336,7 +336,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
 
     BookmarkService* pBMSvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
 
-    if (pBMSvc == nullptr)) {
+    if (pBMSvc == nullptr) {
         sLog.Error( "BeyonceService::Handle_GotoBookmark()", "Attempt to access BookmarkService via (BookmarkService *)(call.client->services().LookupService(\"bookmark\")) returned NULL pointer." );
         return new PyNone();
     } else {

@@ -175,7 +175,7 @@ void BubbleManager::Remove(SystemEntity *ent) {
         return;
     SystemBubble *pBubble = ent->SysBubble();
     if (pBubble != nullptr) {
-        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Remove(): Entity '%s' (%u) being removed from Bubble %u", ent->GetName(), ent->GetID(), b->GetID() );
+        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Remove(): Entity '%s' (%u) being removed from Bubble %u", ent->GetName(), ent->GetID(), pBubble->GetID() );
         pBubble->Remove(ent);
     }
 }

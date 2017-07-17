@@ -357,7 +357,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
             if (iRef->categoryID() == EVEDB::invCategories::Charge) {
                 if (m_ModuleManager and m_ModuleManager->GetModule(flag)) {
                     InventoryItemRef module = m_ModuleManager->GetModule(flag)->getItem();
-                    if (module == nullptr)
+                    if (module.get() == nullptr)
                         return false;
                     if (module->GetAttribute(AttrChargeSize) != iRef->GetAttribute(AttrChargeSize)) {
                         sLog.Error("Ship::ValidateAddItem", "Charge size %u for %s does not match Module size %u for %s.",
@@ -867,7 +867,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef)
         if (iRef->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->LoadCharge(iRef, flag);
             InventoryItemRef loadedChargeOnModule = m_ModuleManager->GetLoadedChargeOnModule(flag);
-            if (loadedChargeOnModule != nullptr)
+            if (loadedChargeOnModule.get() != nullptr)
                 return loadedChargeOnModule->itemID();
             else
                 return 0;

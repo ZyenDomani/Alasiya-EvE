@@ -821,7 +821,7 @@ void DestinyManager::MoveObject() {
         str << timeStamp;
         ItemData idata(23, 0, mySE->GetLocationID(), flagAutoFit, str.str().c_str(), m_position, "Position Test");
         CargoContainerRef jetCanRef = mySE->GetServices().item_factory->SpawnCargoContainer(idata);
-        if (jetCanRef != nullptr) {
+        if (jetCanRef.get() != nullptr) {
             // create new container
             FactionData jetcanData;
             jetcanData.allianceID = jetcanData.corporationID = jetcanData.factionID = jetcanData.ownerID = 0;
