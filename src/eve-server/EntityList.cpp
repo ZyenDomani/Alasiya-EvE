@@ -59,6 +59,8 @@ void EntityList::Initialize() {
     m_stampTimer.Start(1000);
     ServiceDB m_db;
     m_clientSeedID = m_db.SetClientSeed();
+    if (is_log_enabled(SERVER__STACKTRACE))
+        sConfig.server.StackTrace = true;
 }
 
 void EntityList::Shutdown() {

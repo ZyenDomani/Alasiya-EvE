@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 7.8 -->
+     Version: 8.0 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -44,6 +44,7 @@
         <UseStackTrace>false</UseStackTrace><!-- bool -log client python error reports to evemu_client_stack_trace.txt-->
         <NoobShipCheck>false</NoobShipCheck><!-- bool  -check for ship in hangar when docking in a pod -->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
+        <StackTrace>false</StackTrace><!-- bool  -(en/dis)ables sending StackTrace on certain errors -->
         <maxPlayers>2500</maxPlayers>
         <MaxThreadReport>20</MaxThreadReport>
         <UseMarketBot>false</UseMarketBot>

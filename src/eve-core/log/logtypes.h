@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 7.5
+    Log Version: 7.6
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -293,6 +293,7 @@ LOG_TYPE( SERVER, INIT, DISABLED, "ServerInit" )
 LOG_TYPE( SERVER, INFO, DISABLED, "ServerInfo" )
 LOG_TYPE( SERVER, CLIENTS, DISABLED, "ServerClients" )
 LOG_TYPE( SERVER, SHUTDOWN, DISABLED, "ServerShutdown" )
+LOG_TYPE( SERVER, STACKTRACE, DISABLED, "StackTrace" )
 
 LOG_CATEGORY( COMMAND )
 LOG_TYPE( COMMAND, ERROR, ENABLED, "CmdError" )

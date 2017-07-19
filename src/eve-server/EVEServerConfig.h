@@ -61,6 +61,7 @@ public:
         bool DisableIGB;
         bool BulkDataOD;
         bool NoobShipCheck;
+        bool StackTrace;
         uint8 ServerSleepTime;
         uint8 MaxThreadReport;
         uint16 idleSleepTime;

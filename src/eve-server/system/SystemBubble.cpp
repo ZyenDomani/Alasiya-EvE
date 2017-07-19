@@ -162,7 +162,8 @@ void SystemBubble::Add(SystemEntity* pSE) {
         rangeToStar /= ONE_AU_IN_METERS;
         _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Adding entity %u to bubble %u. Distance to Star %.2f AU.  %u/%u Entities in bubble",\
                 pSE->GetID(), GetID(), rangeToStar, m_entities.size(), m_dynamicEntities.size());
-        EvE::traceStack();
+        if (sConfig.server.StackTrace)
+            EvE::traceStack();
     }
 
 	pSE->m_bubble = this;
@@ -231,8 +232,9 @@ void SystemBubble::Remove(SystemEntity *pSE) {
 
     if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
         sLog.Warning("SystemBubble::Remove()", "Removing entity %u from bubble %u", pSE->GetID(), GetID());
-        EvE::traceStack();
     }
+    if (sConfig.server.StackTrace)
+        EvE::traceStack();
     pSE->m_bubble = nullptr;
 }
 
