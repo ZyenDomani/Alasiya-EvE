@@ -348,6 +348,65 @@
     </objectInline>
   </elementDef>
 
+  <elementDef name="GetMembersSparseRowset">
+    <objectInline>
+      <stringInline value="util.SparseRowset" />
+      <tupleInline>
+        <listInline>
+          <stringInline value="characterID" />
+          <stringInline value="corporationID" />
+          <stringInline value="divisionID" />
+          <stringInline value="squadronID" />
+          <stringInline value="title" />
+          <stringInline value="roles" />
+          <stringInline value="grantableRoles" />
+          <stringInline value="startDateTime" />
+          <stringInline value="baseID" />
+          <stringInline value="rolesAtHQ" />
+          <stringInline value="grantableRolesAtHQ" />
+          <stringInline value="rolesAtBase" />
+          <stringInline value="grantableRolesAtBase" />
+          <stringInline value="rolesAtOther" />
+          <stringInline value="grantableRolesAtOther" />
+          <stringInline value="titleMask" />
+          <stringInline value="accountKey" />
+          <stringInline value="rowDate" />
+          <stringInline value="blockRoles" />
+        </listInline>
+        <!-- Substruct containing a substream containing the bind stuff -->
+        <!-- String, Dict, int field -->
+        <substructInline />
+          <substreamInline />
+            <raw name="tuple" />
+        <int name="realRowCount" default="0" />
+      </tupleInline>
+    </objectInline>
+  </elementDef>
+
+  <elementDef name="GetMembersRet">
+    <tupleInline>
+      <uint name="characterID" />
+      <uint name="corporationID" />
+      <int name="divisionID" />
+      <int name="squadronID" />
+      <string name="title" />
+      <ulong name="roles" />
+      <ulong name="grantableRoles" />
+      <ulong name="startDateTime" />
+      <int name="baseID" />
+      <ulong name="rolesAtHQ" />
+      <ulong name="grantableRolesAtHQ" />
+      <ulong name="rolesAtBase" />
+      <ulong name="grantableRolesAtBase" />
+      <ulong name="rolesAtOther" />
+      <ulong name="grantableRolesAtOther" />
+      <ulong name="titleMask" />
+      <ulong name="accountKey" />
+      <ulong name="rowDate" />
+      <ulong name="blockRoles" />
+    </tupleInline>
+  </elementDef>
+
   <elementDef name="Notify_OnObjectPublicAttributesUpdated">
   <!--
         [PyString "OnObjectPublicAttributesUpdated"]

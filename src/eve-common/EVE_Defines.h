@@ -55,7 +55,8 @@
 #define minValidCharLocation    60000000
 #define minStation              60000000
 #define maxNPCStation           60999999
-#define maxStation              69999999
+#define minOutpost              61000000
+#define maxStation              64000000
 #define minUniverseAsteroid     70000000        // deco only
 #define maxUniverseAsteroid     79999999        // deco only
 #define minFleet                80000000
@@ -161,8 +162,8 @@ minFakeClientItem = 17000000000000000000L
 #define IsNPCStation(itemID) \
 ((itemID >= minStation) && (itemID <= maxNPCStation))
 
-//#define IsOutpost(itemID)
-// ((itemID > maxNPCStation) && (itemID < maxStation))
+#define IsOutpost(itemID) \
+ ((itemID >= minOutpost) && (itemID < maxStation))
 
 #define IsTrading(itemID) \
 ((itemID >= 64000000) && (itemID < 66000000))

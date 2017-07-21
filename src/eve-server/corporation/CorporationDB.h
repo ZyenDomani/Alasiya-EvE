@@ -39,6 +39,13 @@ class CorporationDB
 : public ServiceDB
 {
 public:
+    PyRep *GetCorpRoles();
+    PyRep *GetCorpRoleGroups();
+    PyRep *GetTitles(uint32 corpID);
+    PyRep *GetContacts(uint32 corpID);
+    void CreateTitleData(uint32 corpID);
+    PyRep *GetMember(uint32 charID);
+    void GetMembers(uint32 corpID, DBQueryResult& res);
     PyRep *GetCorporations(uint32 corpID);
     PyObject *GetCorporation(uint32 corpID);
     PyObject *GetStations(uint32 corpID);
@@ -51,7 +58,7 @@ public:
     PyObject *GetMedalsReceived(uint32 charID);
     PyObject *GetMedalDetails(uint32 medalID);
 
-    PyObject *ListCorpStations(uint32 corp_id);
+    PyObject *ListCorpStations(uint32 corpID);
 
     PyObject *ListStationOffices(uint32 station_id);
     PyObject *ListStationCorps(uint32 station_id);

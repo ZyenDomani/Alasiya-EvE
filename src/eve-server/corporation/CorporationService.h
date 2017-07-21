@@ -54,7 +54,6 @@ protected:
     PyCallable_DECL_CALL(GetRecruitmentAdRegistryData);
     PyCallable_DECL_CALL(IsEnemyFaction);
     PyCallable_DECL_CALL(GetVoteCasesByCorporation);
-    PyCallable_DECL_CALL(AddCorporateContact);
 };
 
 #endif

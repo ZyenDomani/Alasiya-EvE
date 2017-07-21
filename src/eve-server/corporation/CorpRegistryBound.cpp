@@ -82,39 +82,33 @@ CorpRegistryBound::CorpRegistryBound(PyServiceMgr *mgr, CorporationDB& db, uint3
     PyCallable_REG_CALL(CorpRegistryBound, SetAccountKey);
     PyCallable_REG_CALL(CorpRegistryBound, GetMember);
     PyCallable_REG_CALL(CorpRegistryBound, GetMembers);
+    PyCallable_REG_CALL(CorpRegistryBound, UpdateMember);
     PyCallable_REG_CALL(CorpRegistryBound, GetSharesByShareholder);
     PyCallable_REG_CALL(CorpRegistryBound, GetShareholders);
     PyCallable_REG_CALL(CorpRegistryBound, PayoutDividend);
     PyCallable_REG_CALL(CorpRegistryBound, GetVoteCasesByCorporation);
 
+    PyCallable_REG_CALL(CorpRegistryBound, GetBulletins);
+    PyCallable_REG_CALL(CorpRegistryBound, GetRecentKillsAndLosses);
+    PyCallable_REG_CALL(CorpRegistryBound, GetRoleGroups);
+    PyCallable_REG_CALL(CorpRegistryBound, GetRoles);
+    PyCallable_REG_CALL(CorpRegistryBound, GetLocationalRoles);
+
+    PyCallable_REG_CALL(CorpRegistryBound, GetTitles);
+    PyCallable_REG_CALL(CorpRegistryBound, UpdateTitle);
+    PyCallable_REG_CALL(CorpRegistryBound, UpdateTitles);
+    PyCallable_REG_CALL(CorpRegistryBound, DeleteTitle);
+
+    PyCallable_REG_CALL(CorpRegistryBound, GetCorporateContacts);
+    PyCallable_REG_CALL(CorpRegistryBound, AddCorporateContact);
+    PyCallable_REG_CALL(CorpRegistryBound, EditContactsRelationshipID);
+    PyCallable_REG_CALL(CorpRegistryBound, RemoveCorporateContacts);
+    PyCallable_REG_CALL(CorpRegistryBound, EditCorporateContact);
+
     PyCallable_REG_CALL(CorpRegistryBound, CreateAlliance);
     PyCallable_REG_CALL(CorpRegistryBound, GetSuggestedAllianceShortNames);
 
-    /*
-    02:24:59 [SvcCall] Service CorpRegistryBound::GetBulletins()
-    02:24:59 E Server: Unknown call to 'GetBulletins' by 'allan'
-    02:27:44 [SvcCall] Service CorpRegistryBound::GetRecentKillsAndLosses()
-    02:27:44 E Server: Unknown call to 'GetRecentKillsAndLosses' by 'allan'
-
-    */
     m_corpID = corpID;
-}
-
-PyResult CorpRegistryBound::Handle_CreateAlliance(PyCallArgs &call) {
-    //self.GetCorpRegistry().CreateAlliance(allianceName, shortName, description, url)
-
-    sLog.White("CorpRegistryBound", "Handle_CreateAlliance() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
-
-    sLog.White("CorpRegistryBound", "Handle_GetSuggestedAllianceShortNames() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return nullptr;
 }
 
 PyResult CorpRegistryBound::Handle_GetEveOwners(PyCallArgs &call) {
@@ -130,15 +124,6 @@ PyResult CorpRegistryBound::Handle_GetInfoWindowDataForChar( PyCallArgs& call )
 {    //takes characterID
     //  returns corpID, allianceID, title
     return call.client->GetInfoWindowDataForChar(call.client);
-}
-
-PyResult CorpRegistryBound::Handle_GetLockedItemLocations( PyCallArgs& call )
-{    //takes characterID
-    sLog.White( "CorpRegistryService::Handle_GetLockedItemLocations()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    //this returns an empty list for me on live.
-    return new PyList;
 }
 
 PyResult CorpRegistryBound::Handle_GetCorporation(PyCallArgs &call) {
@@ -208,6 +193,9 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "Failed to record corp creation transaction.");
     }
 
+    // create default role title data
+    m_db.CreateTitleData(corpID);
+
     uint32 location = call.client->GetLocationID();
 
     // Here we send a notification about creating a new corporation...
@@ -227,11 +215,11 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     // Set char's roles in corp
     CorpData roles;
         roles.corpAccountKey = accountingKeyCash;
-        roles.corpRole = corpRoleAll;   //1152919339943329665ULL
-        roles.rolesAtAll = corpRoleAll;
-        roles.rolesAtBase = corpRoleAll;
-        roles.rolesAtHQ = corpRoleAll;
-        roles.rolesAtOther = corpRoleAll;
+        roles.corpRole = corpRoleAdmin;
+        roles.rolesAtAll = corpRoleAdmin;
+        roles.rolesAtBase = corpRoleAdmin;
+        roles.rolesAtHQ = corpRoleAdmin;
+        roles.rolesAtOther = corpRoleAdmin;
 
     //loads up roles and alters session.
     if (!JoinCorporation(call.client, corpID, roles)) {
@@ -251,51 +239,190 @@ bool CorpRegistryBound::JoinCorporation(Client *who, uint32 newCorpID, const Cor
 }
 
 PyResult CorpRegistryBound::Handle_GetMember(PyCallArgs &call) {
-    sLog.White( "CorpRegistryService::Handle_GetMember()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
 
-    return nullptr;
+    Call_SingleIntegerArg args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    return m_db.GetMember(args.arg);
 }
 
 PyResult CorpRegistryBound::Handle_GetMembers(PyCallArgs &call) {
     /*
-        [PyObjectData Name: util.SparseRowset]
-          [PyTuple 3 items]
-            [PyList 19 items]
-              [PyString "characterID"]
-              [PyString "corporationID"]
-              [PyString "divisionID"]
-              [PyString "squadronID"]
-              [PyString "title"]
-              [PyString "roles"]
-              [PyString "grantableRoles"]
-              [PyString "startDateTime"]
-              [PyString "baseID"]
-              [PyString "rolesAtHQ"]
-              [PyString "grantableRolesAtHQ"]
-              [PyString "rolesAtBase"]
-              [PyString "grantableRolesAtBase"]
-              [PyString "rolesAtOther"]
-              [PyString "grantableRolesAtOther"]
-              [PyString "titleMask"]
-              [PyString "accountKey"]
-              [PyString "rowDate"]
-              [PyString "blockRoles"]
-            [PySubStruct]
-              [PySubStream 50 bytes]
-                [PyTuple 3 items]
-                  [PyString "N=700715:7095"]
-                  [PyDict 1 kvp]
-                    [PyString "realRowCount"]
-                    [PyInt 3]
-                  [PyIntegerVar 129527403672992685]
-            [PyInt 3]
-            */
-
-    sLog.White( "CorpRegistryService::Handle_GetMember()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryBound::Handle_GetMembers()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
+    */
+    DBQueryResult res;
+    m_db.GetMembers(m_corpID, res);
+    uint32 rowCount = (uint32)res.GetRowCount();
+
+    GetMembersSparseRowset ret;
+    /*
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        GetMembersRet mRet;
+        mRet.characterID = row.GetInt(0);
+        mRet.corporationID = m_corpID;
+        mRet.divisionID = 0;
+        mRet.squadronID = 0;
+        mRet.title = row.GetText(1);
+        mRet.roles = row.GetUInt64(2);
+        mRet.grantableRoles = row.GetUInt64(3);
+        mRet.startDateTime = row.GetUInt64(4);
+        mRet.baseID = 0;
+        mRet.rolesAtHQ = row.GetUInt64(5);
+        mRet.grantableRolesAtHQ = row.GetUInt64(6);
+        mRet.rolesAtBase = row.GetUInt64(7);
+        mRet.grantableRolesAtBase = row.GetUInt64(8);
+        mRet.rolesAtOther = row.GetUInt64(9);
+        mRet.grantableRolesAtOther = row.GetUInt64(10);
+        mRet.titleMask = 0;
+        mRet.accountKey = row.GetInt(11);
+        mRet.rowDate = Win32TimeNow();
+        mRet.blockRoles = 0;
+    }
+    */
+    PyDict *dict = new PyDict();
+    dict->SetItemString("realRowCount", new PyInt(rowCount));
+    PyTuple* tuple = new PyTuple(3);
+    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, dict);
+        tuple->SetItem(2, new PyLong(Win32TimeNow()));
+    ret.tuple = tuple;
+    ret.realRowCount = rowCount;
+
+    return ret.Encode();
+}
+
+PyResult CorpRegistryBound::Handle_GetRoleGroups(PyCallArgs &call) {
+    return m_db.GetCorpRoleGroups();
+}
+
+PyResult CorpRegistryBound::Handle_GetRoles(PyCallArgs &call) {
+    return m_db.GetCorpRoles();
+}
+
+PyResult CorpRegistryBound::Handle_GetTitles(PyCallArgs &call) {
+    return m_db.GetTitles(m_corpID);
+}
+
+PyResult CorpRegistryBound::Handle_UpdateTitle(PyCallArgs &call) {
+    /*
+    def UpdateTitle(self, titleID, titleName, roles, grantableRoles, rolesAtHQ, grantableRolesAtHQ, rolesAtBase, grantableRolesAtBase, rolesAtOther, grantableRolesAtOther):
+    self.GetCorpRegistry().UpdateTitle(titleID, titleName, roles, grantableRoles, rolesAtHQ, grantableRolesAtHQ, rolesAtBase, grantableRolesAtBase, rolesAtOther, grantableRolesAtOther)
+    */
+    sLog.White( "CorpRegistryBound::Handle_UpdateTitle()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_UpdateTitles(PyCallArgs &call) {
+    /*
+    def UpdateTitles(self, titles):
+    self.GetCorpRegistry().UpdateTitles(titles)
+    */
+    sLog.White( "CorpRegistryBound::Handle_UpdateTitles()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_DeleteTitle(PyCallArgs &call) {
+    /*
+    def DeleteTitle(self, titleID):
+    self.GetCorpRegistry().DeleteTitle(titleID)
+    */
+    sLog.White( "CorpRegistryBound::Handle_DeleteTitle()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_UpdateMember(PyCallArgs &call) {
+    sLog.White( "CorpRegistryBound::Handle_UpdateMember()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+    //return self.GetCorpRegistry().UpdateMember(charIDToUpdate, title, divisionID, squadronID, roles, grantableRoles, rolesAtHQ, grantableRolesAtHQ, rolesAtBase, grantableRolesAtBase, rolesAtOther, grantableRolesAtOther, baseID, titleMask, blockRoles)
 
     return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_GetLocationalRoles(PyCallArgs &call) {
+    sLog.White( "CorpRegistryBound::Handle_GetLocationalRoles()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_GetBulletins(PyCallArgs &call) {
+    sLog.White( "CorpRegistryBound::Handle_GetBulletins()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_GetCorporateContacts(PyCallArgs &call)
+{
+    return m_db.GetContacts(m_corpID);
+}
+
+PyResult CorpRegistryBound::Handle_AddCorporateContact(PyCallArgs &call)
+{
+    //self.GetCorpRegistry().AddCorporateContact(contactID, relationshipID)
+    sLog.White( "CorpRegistryBound::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_EditCorporateContact(PyCallArgs &call)
+{
+    //self.GetCorpRegistry().EditCorporateContact(contactID, relationshipID)
+    sLog.White( "CorpRegistryBound::Handle_EditCorporateContact()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_EditContactsRelationshipID(PyCallArgs &call)
+{
+    //self.GetCorpRegistry().EditContactsRelationshipID(contactIDs, relationshipID)
+    sLog.White( "CorpRegistryBound::Handle_EditContactsRelationshipID()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_RemoveCorporateContacts(PyCallArgs &call) {
+   // self.GetCorpRegistry().RemoveCorporateContacts(contactIDs)
+    sLog.White( "CorpRegistryBound::Handle_RemoveCorporateContacts()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    return nullptr;
+}
+
+
+PyResult CorpRegistryBound::Handle_GetRecentKillsAndLosses(PyCallArgs &call) {
+    sLog.White( "CorpRegistryBound::Handle_GetRecentKillsAndLosses()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_CreateAlliance(PyCallArgs &call) {
+    //self.GetCorpRegistry().CreateAlliance(allianceName, shortName, description, url)
+    sLog.White("CorpRegistryBound", "Handle_CreateAlliance() size=%u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
+    sLog.White("CorpRegistryBound", "Handle_GetSuggestedAllianceShortNames() size=%u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_GetLockedItemLocations( PyCallArgs& call )
+{    //takes characterID
+    sLog.White( "CorpRegistryBound::Handle_GetLockedItemLocations()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    //this returns an empty list for me on live.
+    return new PyList;
 }
 
 PyResult CorpRegistryBound::Handle_GetSuggestedTickerNames(PyCallArgs &call) {
@@ -335,6 +462,7 @@ PyResult CorpRegistryBound::Handle_GetOffices(PyCallArgs &call) {
         return nullptr;
     }
 
+    /** @todo this is wrong....to fix later */
     /*
     [PyTuple 1 items]
       [PySubStream 114 bytes]
@@ -903,7 +1031,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call) {
 //22:31:22 L CorpRegistryBound::Handle_GetSharesByShareholder(): size= 1
 PyResult CorpRegistryBound::Handle_GetSharesByShareholder(PyCallArgs &call) {
     /*
-     1 *6:55:44 L CorpRegistryBound::Handle_GetSharesByShareholder(): size= 1, 0=Boolean
+     16:55:44 L CorpRegistryBound::Handle_GetSharesByShareholder(): size= 1, 0=Boolean
      16:55:44 [SvcCall]   Call Arguments:
      16:55:44 [SvcCall]       Tuple: 1 elements
      16:55:44 [SvcCall]         [ 0] Boolean field: false
@@ -915,28 +1043,28 @@ PyResult CorpRegistryBound::Handle_GetSharesByShareholder(PyCallArgs &call) {
      call.Dump(CORP__CALL_DUMP);
 
      [PyObjectData Name: util.Rowset]
-     [PyDict 3 kvp]
-     [PyString "header"]
-     [PyList 2 items]
-     [PyString "corporationID"]
-     [PyString "shares"]
-     [PyString "RowClass"]
-     [PyToken util.Row]
-     [PyString "lines"]
-     [PyList 2 items]
-     [PyList 2 items]
-     [PyInt 98038978]
-     [PyIntegerVar 250]
-     [PyList 2 items]
-     [PyInt 1630077495]
-     [PyIntegerVar 250]
+       [PyDict 3 kvp]
+         [PyString "header"]
+         [PyList 2 items]
+           [PyString "corporationID"]
+           [PyString "shares"]
+         [PyString "RowClass"]
+        [PyToken util.Row]
+        [PyString "lines"]
+        [PyList 2 items]
+          [PyList 2 items]
+            [PyInt 98038978]
+            [PyIntegerVar 250]
+          [PyList 2 items]
+            [PyInt 1630077495]
+            [PyIntegerVar 250]
      */
 
     return nullptr;
 }
 
 PyResult CorpRegistryBound::Handle_GetShareholders(PyCallArgs &call) {
-    sLog.White( "CorpRegistryService::Handle_GetShareholders()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpRegistryBound::Handle_GetShareholders()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -956,8 +1084,9 @@ PyResult CorpRegistryBound::Handle_SetAccountKey(PyCallArgs &call) {
 
 PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
     sLog.White( "CorpRegistryBound::Handle_PayoutDividend()", "size= %u", call.tuple->size() );
-
     call.Dump(CORP__CALL_DUMP);
+    //self.GetCorpRegistry().PayoutDividend(payShareholders, payoutAmount)
+
     return nullptr;
 }
 

@@ -92,7 +92,7 @@ enum {
     corpRoleLocationTypeOther = 3
 };
 
-typedef enum:uint64_t {
+enum:uint64_t {
     corpRoleDirector                        = 1,
     corpRolePersonnelManager                = 128,
     corpRoleAccountant                      = 256,
@@ -117,48 +117,50 @@ typedef enum:uint64_t {
     corpRoleAccountCanTake1                 = 134217728,
     corpRoleAccountCanTake2                 = 268435456,
     corpRoleAccountCanTake3                 = 536870912,
-    corpRoleAccountCanTake4                 = 1073741824L,
+    corpRoleAccountCanTake4                 = 1073741824,
     corpRoleAccountCanTake5                 = 2147483648L,
     corpRoleAccountCanTake6                 = 4294967296L,
     corpRoleAccountCanTake7                 = 8589934592L,
-    corpRoleDiplomat                        = 17179869184LL,
-    corpRoleEquipmentConfig                 = 2199023255552LL,
-    corpRoleContainerCanTake1               = 4398046511104LL,
-    corpRoleContainerCanTake2               = 8796093022208LL,
-    corpRoleContainerCanTake3               = 17592186044416LL,
-    corpRoleContainerCanTake4               = 35184372088832LL,
-    corpRoleContainerCanTake5               = 70368744177664LL,
-    corpRoleContainerCanTake6               = 140737488355328LL,
-    corpRoleContainerCanTake7               = 281474976710656LL,
-    corpRoleCanRentOffice                   = 562949953421312LL,
-    corpRoleCanRentFactorySlot              = 1125899906842624LL,
-    corpRoleCanRentResearchSlot             = 2251799813685248LL,
-    corpRoleJuniorAccountant                = 4503599627370496LL,
-    corpRoleStarbaseConfig                  = 9007199254740992LL,
-    corpRoleTrader                          = 18014398509481984LL,
-    corpRoleChatManager                     = 36028797018963968LL,
-    corpRoleContractManager                 = 72057594037927936LL,
-    corpRoleInfrastructureTacticalOfficer   = 144115188075855872LL,
-    corpRoleStarbaseCaretaker               = 288230376151711744ULL,
-    corpRoleFittingManager                  = 576460752303423488ULL,
-    corpRoleAll                             = 1152919339943329665ULL,
+    corpRoleDiplomat                        = 17179869184L,
+    corpRoleEquipmentConfig                 = 2199023255552L,
+    corpRoleContainerCanTake1               = 4398046511104L,
+    corpRoleContainerCanTake2               = 8796093022208L,
+    corpRoleContainerCanTake3               = 17592186044416L,
+    corpRoleContainerCanTake4               = 35184372088832L,
+    corpRoleContainerCanTake5               = 70368744177664L,
+    corpRoleContainerCanTake6               = 140737488355328L,
+    corpRoleContainerCanTake7               = 281474976710656L,
+    corpRoleCanRentOffice                   = 562949953421312L,
+    corpRoleCanRentFactorySlot              = 1125899906842624L,
+    corpRoleCanRentResearchSlot             = 2251799813685248L,
+    corpRoleJuniorAccountant                = 4503599627370496L,
+    corpRoleStarbaseConfig                  = 9007199254740992L,
+    corpRoleTrader                          = 18014398509481984L,
+    corpRoleChatManager                     = 36028797018963968L,
+    corpRoleContractManager                 = 72057594037927936L,
+    corpRoleInfrastructureTacticalOfficer   = 144115188075855872L,
+    corpRoleStarbaseCaretaker               = 288230376151711744L,
+    corpRoleFittingManager                  = 576460752303423488L,
 
     //Some Combos
     corpRoleAllHangar   = corpRoleHangarCanTake1|corpRoleHangarCanTake2|corpRoleHangarCanTake3|corpRoleHangarCanTake4|corpRoleHangarCanTake5|corpRoleHangarCanTake6|corpRoleHangarCanTake7|corpRoleHangarCanQuery1|corpRoleHangarCanQuery2|corpRoleHangarCanQuery3|corpRoleHangarCanQuery4|corpRoleHangarCanQuery5|corpRoleHangarCanQuery6|corpRoleHangarCanQuery7,
     corpRoleAllAccount  = corpRoleJuniorAccountant|corpRoleAccountCanTake1|corpRoleAccountCanTake2|corpRoleAccountCanTake3|corpRoleAccountCanTake4|corpRoleAccountCanTake5|corpRoleAccountCanTake6|corpRoleAccountCanTake7|corpRoleAccountant,
     corpRoleAllContainer= corpRoleContainerCanTake1|corpRoleContainerCanTake2|corpRoleContainerCanTake3|corpRoleContainerCanTake4|corpRoleContainerCanTake5|corpRoleContainerCanTake6|corpRoleContainerCanTake7,
     corpRoleAllOffice   = corpRoleCanRentOffice|corpRoleCanRentFactorySlot|corpRoleCanRentResearchSlot,
-    corpRoleAllStarbase = corpRoleStarbaseCaretaker|corpRoleStarbaseConfig,
-    corpRoleAdmin       = 0xfffffffffffffff  /* 1152921504606846975 */
-    /*
-     * 23:54:52 W          Role_All:  1152919339943329665(0xffffe07ffffff81)
-     * 23:54:52 W         Role_Cont:  558551906910208(0x1fc0000000000)
-     * 23:54:52 W        Role_Admin:  1152921504606846975(0xfffffffffffffff)
-     * 23:54:52 W       Role_Hangar:  134209536(0x7ffe000)
-     * 23:54:52 W      Role_Account:  4503616673022208(0x100003f8000100)
-     * 23:54:52 W     Role_Starbase:  297237575406452736(0x420000000000000)
+    corpRoleAllStarbase = corpRoleStarbaseCaretaker|corpRoleStarbaseConfig|corpRoleInfrastructureTacticalOfficer,
+    corpRoleAllManager  = corpRolePersonnelManager|corpRoleStationManager|corpRoleFactoryManager|corpRoleChatManager|corpRoleContractManager|corpRoleFittingManager|corpRoleEquipmentConfig,
+
+    corpRoleAll         = corpRoleAllHangar|corpRoleAllAccount|corpRoleAllContainer|corpRoleAllOffice|corpRoleAllStarbase|corpRoleAllManager|corpRoleAuditor|corpRoleDiplomat,
+    corpRoleAdmin       = corpRoleAll|corpRoleTrader|corpRoleSecurityOfficer|corpRoleDirector
+    /* 18:05:31 G   Alasiya's EvEMu: Common Corp Roles:
+     * 18:37:16 W          Role_All:  1134904941433847168(0xfbffe07fffffd80)
+     * 18:37:16 W         Role_Cont:  558551906910208(0x1fc0000000000)
+     * 18:37:16 W        Role_Admin:  1152919339943329665(0xffffe07ffffff81)
+     * 18:37:16 W       Role_Hangar:  134209536(0x7ffe000)
+     * 18:37:16 W      Role_Account:  4503616673022208(0x100003f8000100)
+     * 18:37:16 W     Role_Starbase:  441352763482308608(0x620000000000000)
      */
-} CorpRoleFlags;
+};
 
 //  -allan 5Aug14
 typedef enum {

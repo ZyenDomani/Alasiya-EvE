@@ -47,7 +47,7 @@ PyObject *CorporationDB::ListCorpStations(uint32 corp_id) {
     ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -66,7 +66,7 @@ PyObject *CorporationDB::ListStationOffices(uint32 station_id) {
     ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -92,7 +92,7 @@ PyObject *CorporationDB::ListStationCorps(uint32 station_id) {
     ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -115,7 +115,7 @@ PyObject *CorporationDB::ListStationOwners(uint32 stationID) {
         " WHERE s.stationID = %u", stationID ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
   } else {
     if (!sDatabase.RunQuery(res,
@@ -131,7 +131,7 @@ PyObject *CorporationDB::ListStationOwners(uint32 stationID) {
         " WHERE e.itemID = %u", stationID ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
   }
@@ -163,13 +163,13 @@ PyRep *CorporationDB::GetCorpInfo(uint32 corpID) {
         " WHERE corporationID = %u", corpID))
     {
         codelog(DATABASE__ERROR, "Error in retrieving corporation's data (%u)", corpID);
-        return NULL;
+        return nullptr;
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
         codelog(CORP__DB_WARNING, "Unable to find corporation's data (%u)", corpID);
-        return NULL;
+        return nullptr;
     }
 
     return (DBResultToRowset(res));
@@ -193,13 +193,13 @@ PyObject *CorporationDB::GetCorporation(uint32 corpID) {
         " WHERE corporationID = %u", corpID))
     {
         codelog(DATABASE__ERROR, "Error in retrieving corporation's data (%u)", corpID);
-        return NULL;
+        return nullptr;
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
         codelog(CORP__DB_WARNING, "Unable to find corporation's data (%u)", corpID);
-        return NULL;
+        return nullptr;
     }
 
     return DBRowToRow(row);
@@ -221,13 +221,13 @@ PyRep *CorporationDB::GetCorporations(uint32 corpID) {
         " WHERE corporationID = %u", corpID))
     {
         codelog(DATABASE__ERROR, "Error in retrieving corporation's data (%u)", corpID);
-        return NULL;
+        return nullptr;
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
         codelog(CORP__DB_WARNING, "Unable to find corporation's data (%u)", corpID);
-        return NULL;
+        return nullptr;
     }
 
     return DBRowToPackedRow(row);
@@ -253,7 +253,7 @@ PyDict *CorporationDB::ListAllCorpInfo() {
     ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return(DBResultToIntRowDict(res, 1));
@@ -402,7 +402,7 @@ PyObject *CorporationDB::ListNPCDivisions() {
         " divisionID, divisionName, description, leaderType"
         " FROM crpNPCDivisions" )) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return (DBResultToRowset(res));
@@ -420,7 +420,7 @@ PyObject *CorporationDB::GetEmploymentRecord(uint32 charID) {
         ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return (DBResultToRowset(res));
@@ -532,21 +532,12 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, uint32 charID
 
     // And create a channel too
     if (!sDatabase.RunQuery(err,
-        " INSERT INTO channels ("
-        "   channelID, ownerID, displayName, motd, comparisonKey, "
-        "   memberless, password, mailingList, cspa, temporary, "
-        "   mode, subscribed, estimatedMemberCount"
-        " ) VALUES ("
-        "   %u, %u, '%s', '%s MOTD', '%s', "
-        "   1, NULL, 0, 127, 0, "
-        "   1, 1, 0"
-        " )",
-        corpID, corpID, cName.c_str(), cName.c_str(), cTick.c_str()
-        ))
+        " INSERT INTO channels (channelID, ownerID, displayName, motd, comparisonKey, memberless, password, mailingList, cspa)"
+        " VALUES (%u, %u, '%s', 'MOTD', '', 0, '', 0, 0)",
+        corpID, corpID, cName.c_str()))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
-        // This is not a serious problem either, but would be good if the channel
-        // were working...
+        // This is not a serious problem either, but would be good if the channel were working...
     }
 
     // update character join corp date
@@ -843,7 +834,178 @@ bool CorporationDB::CreateCorporationCreatePacket(Notify_OnCorporationChanged & 
     return true;
 }
 
-// should this be cached?
+PyRep* CorporationDB::GetMember(uint32 charID)
+{
+    DBQueryResult res;
+
+    /*
+      [PySubStream 328 bytes]
+        [PyPackedRow 110 bytes]
+          ["characterID" => <649670823> [I4]]
+          ["corporationID" => <1630077495> [I4]]
+          ["divisionID" => <0> [I4]]
+          ["squadronID" => <0> [I4]]
+          ["title" => <empty string> [WStr]]
+          ["roles" => <0> [I8]]
+          ["grantableRoles" => <0> [I8]]
+          ["startDateTime" => <129743526000000000> [FileTime]]
+          ["baseID" => <0> [I4]]
+          ["rolesAtHQ" => <0> [I8]]
+          ["grantableRolesAtHQ" => <0> [I8]]
+          ["rolesAtBase" => <0> [I8]]
+          ["grantableRolesAtBase" => <0> [I8]]
+          ["rolesAtOther" => <0> [I8]]
+          ["grantableRolesAtOther" => <0> [I8]]
+          ["titleMask" => <0> [I4]]
+          ["accountKey" => <1006> [I4]]
+          ["rowDate" => <129743526000000000> [FileTime]]
+          ["blockRoles" => <0> [Bool]]
+          ["ownerName" => <Rhonin Caldera> [WStr]]
+          */
+
+    if (!sDatabase.RunQuery(res,
+        " SELECT "
+        "  c.characterID, "
+        "  c.corporationID,"
+        "  0 AS divisionID,"
+        "  0 AS squadronID,"
+        "  c.title, "
+        "  c.rolesAtAll AS roles, "
+        "  c.grantableRoles, "
+        "  c.startDateTime, "
+        "  0 AS baseID,"
+        "  c.rolesAtHQ, "
+        "  c.grantableRolesAtHQ, "
+        "  c.rolesAtBase, "
+        "  c.grantableRolesAtBase,"
+        "  c.rolesAtOther, "
+        "  c.grantableRolesAtOther, "
+        "  0 AS titleMask,"
+        "  c.corpAccountKey AS accountKey, "
+        "  %" PRIu64 " rowDate,"
+        "  c.blockRoles,"
+        "  e.itemName AS ownerName"
+        " FROM chrCharacter AS c"
+        "  LEFT JOIN entity AS e ON (c.characterID = e.itemID) "
+        " WHERE c.characterID = %u ", Win32TimeNow(), charID))
+    {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToPackedRowList(res);
+}
+
+void CorporationDB::GetMembers(uint32 corpID, DBQueryResult& res)
+{
+    /** @todo  this still needs work....todo later  */
+    /*
+    [PyString "characterID"]
+    [PyString "corporationID"]
+    [PyString "divisionID"]
+    [PyString "squadronID"]
+    [PyString "title"]
+    [PyString "roles"]
+    [PyString "grantableRoles"]
+    [PyString "startDateTime"]
+    [PyString "baseID"]
+    [PyString "rolesAtHQ"]
+    [PyString "grantableRolesAtHQ"]
+    [PyString "rolesAtBase"]
+    [PyString "grantableRolesAtBase"]
+    [PyString "rolesAtOther"]
+    [PyString "grantableRolesAtOther"]
+    [PyString "titleMask"]
+    [PyString "accountKey"]
+    [PyString "rowDate"]
+    [PyString "blockRoles"]
+    */
+    if (!sDatabase.RunQuery(res,
+        "SELECT "
+        "  characterID, "
+        "  title, "
+        "  corpRole, "
+        "  grantableRoles, "
+        "  startDateTime, "
+        "  rolesAtAll, "
+        "  rolesAtHQ, "
+        "  grantableRolesAtHQ, "
+        "  rolesAtBase, "
+        "  grantableRolesAtBase,"
+        "  rolesAtOther, "
+        "  grantableRolesAtOther, "
+        "  corpAccountKey "
+        " FROM chrCharacter"
+        " WHERE corporationID = %u", corpID))
+    {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+    }
+}
+
+PyRep* CorporationDB::GetCorpRoles()
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery( res, "SELECT roleID, roleName, shortDescriptionID, descriptionID, roleIID FROM crpRoles")) {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
+PyRep* CorporationDB::GetCorpRoleGroups()
+{
+    DBQueryResult res;
+    //, roleGroupNameID
+    if (!sDatabase.RunQuery( res, "SELECT roleGroupID, roleGroupName, roleMask, appliesTo, appliesToGrantable, isLocational, isDivisional FROM crpRoleGroups")) {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+PyRep* CorporationDB::GetTitles(uint32 corpID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery( res,
+        "SELECT corporationID, titleID, titleName, roles, grantableRoles, rolesAtHQ, grantableRolesAtHQ, rolesAtBase, grantableRolesAtBase, rolesAtOther, grantableRolesAtOther "
+        " FROM crpRoleTitles WHERE corporationID = %u", corpID)) {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToIndexRowset(res, 1);
+}
+
+void CorporationDB::CreateTitleData(uint32 corpID)
+{
+    DBerror err;
+    sDatabase.RunQuery(err,
+        "INSERT INTO crpRoleTitles (corporationID, titleID) VALUES"
+        "(%u,1),(%u,2),(%u,4),(%u,8),(%u,16),(%u,32),(%u,64),(%u,128),(%u,256),(%u,512),(%u,1024),"
+        "(%u,2048),(%u,4096),(%u,8192),(%u,16384),(%u,32768)",
+        corpID,corpID,corpID,corpID,corpID,corpID,corpID,corpID,corpID,corpID,corpID,corpID,corpID,corpID,corpID,corpID);
+}
+
+/* * UPDATE crpRoleTitles SET corporationID=[value-1],titleID=[value-2],titleName=[value-3],roles=[value-4],grantableRoles=[value-5],rolesAtHQ=[value-6],grantableRolesAtHQ=[value-7],rolesAtBase=[value-8],grantableRolesAtBase=[value-9],rolesAtOther=[value-10],grantableRolesAtOther=[value-11] WHERE corporationID
+ */
+
+PyRep* CorporationDB::GetContacts(uint32 corpID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery( res,
+        "SELECT contactID, inWatchlist, relationshipID, labelMask"
+        " FROM crpContacts WHERE corporationID = %u", corpID))
+    {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+    return DBResultToCRowset(res);
+}
+
+
+
+// should this be cached?     ...yes
 PyObject *CorporationDB::GetEveOwners(uint32 corpID) {
     DBQueryResult res;
 /*
@@ -854,7 +1016,7 @@ PyObject *CorporationDB::GetEveOwners(uint32 corpID) {
               ["gender" => <1> [Bool]]
               */
 
-    if ( !sDatabase.RunQuery( res,
+    if (!sDatabase.RunQuery( res,
         "SELECT"
         " c.characterID AS ownerID,"
         " e.itemName AS ownerName,"
@@ -866,7 +1028,7 @@ PyObject *CorporationDB::GetEveOwners(uint32 corpID) {
         ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -883,7 +1045,7 @@ PyObject *CorporationDB::GetStations(uint32 corpID) {
         ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToRowset(res);
 }
@@ -922,7 +1084,7 @@ PyRep *CorporationDB::Fetch(uint32 corpID, uint32 from, uint32 count) {
         ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     res.GetRow(row);
@@ -1036,7 +1198,7 @@ PyRep *CorporationDB::GetMyApplications(uint32 charID) {
         " WHERE characterID = %u ", charID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToRowset(res);
 }
@@ -1075,7 +1237,7 @@ PyRep *CorporationDB::GetApplications(uint32 corpID) {
         " WHERE corporationID = %u ", corpID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToIndexRowset(res, "characterID");
@@ -1365,6 +1527,7 @@ bool CorporationDB::UpdateCorporation(uint32 corpID, const Call_UpdateCorporatio
 bool CorporationDB::UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDict * notif) {
     DBQueryResult res;
 
+    /** @todo  update this  */
     if (!sDatabase.RunQuery(res,
         " SELECT shape1, shape2, shape3, color1, color2, color3, typeface "
         " FROM corporation "
@@ -1415,7 +1578,7 @@ PyRep *CorporationDB::GetMyShares(uint32 charID) {
         " WHERE characterID = %u ", charID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToRowset(res);
 }

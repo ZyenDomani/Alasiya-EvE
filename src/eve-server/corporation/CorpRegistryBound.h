@@ -50,18 +50,28 @@ public:
     PyCallable_DECL_CALL(PayoutDividend);
     PyCallable_DECL_CALL(GetVoteCasesByCorporation);
 
+    PyCallable_DECL_CALL(GetRoleGroups);
+    PyCallable_DECL_CALL(GetRoles);
+
+    PyCallable_DECL_CALL(GetTitles);
+    PyCallable_DECL_CALL(UpdateTitle);
+    PyCallable_DECL_CALL(UpdateTitles);
+    PyCallable_DECL_CALL(DeleteTitle);
+
+    PyCallable_DECL_CALL(GetLocationalRoles);
+    PyCallable_DECL_CALL(GetBulletins);
+    PyCallable_DECL_CALL(GetRecentKillsAndLosses);
+    PyCallable_DECL_CALL(UpdateMember);
+
+    PyCallable_DECL_CALL(GetCorporateContacts);
+    PyCallable_DECL_CALL(AddCorporateContact);
+    PyCallable_DECL_CALL(EditContactsRelationshipID);
+    PyCallable_DECL_CALL(RemoveCorporateContacts);
+    PyCallable_DECL_CALL(EditCorporateContact);
+
     PyCallable_DECL_CALL(CreateAlliance);
     PyCallable_DECL_CALL(GetSuggestedAllianceShortNames);
 
-    /*
-     * 02:42:58 [SvcCall] Service objectCaching::GetCachableObject()
-     * 02:42:59 [SvcCall] Service CorpRegistryBound::GetMember()
-     * 02:42:59 W CorpRegistryService::Handle_GetMember(): size= 1
-     * 02:43:08 [SvcCall] Service CorpRegistryBound::GetRoleGroups()
-     * 02:43:08 E Server: Unknown call to 'GetRoleGroups' by 'emily'
-     * 02:43:08 [SvcCall] Service CorpRegistryBound::GetRoles()
-     * 02:43:08 E Server: Unknown call to 'GetRoles' by 'emily'
-     */
 
 protected:
     bool JoinCorporation(Client *who, uint32 newCorpID, const CorpData &roles);

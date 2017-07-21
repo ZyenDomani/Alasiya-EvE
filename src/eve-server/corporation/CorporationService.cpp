@@ -48,7 +48,6 @@ CorporationService::CorporationService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(CorporationService, GetRecruitmentAdRegistryData);
     PyCallable_REG_CALL(CorporationService, IsEnemyFaction);
     PyCallable_REG_CALL(CorporationService, GetVoteCasesByCorporation);
-    PyCallable_REG_CALL(CorporationService, AddCorporateContact);
 }
 
 CorporationService::~CorporationService() {
@@ -292,14 +291,6 @@ PyResult CorporationService::Handle_GetVoteCasesByCorporation(PyCallArgs &call) 
 22:47:43 [SvcCall]         Integer field: 1
 */
       sLog.White( "CorporationService::Handle_GetVoteCasesByCorporation()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult CorporationService::Handle_AddCorporateContact(PyCallArgs &call)
-{
-      sLog.White( "CorporationService::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
