@@ -577,7 +577,7 @@ void Client::UndockFromStation() {
 
 void Client::SetBallPark() {
     m_login = m_bubbleWait = false;
-    if (pShipSE->SysBubble() = nullptr)
+    if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
     if (m_clientState == ClientState::csUndock)
         pShipSE->DestinyMgr()->Undock(m_movePoint);
