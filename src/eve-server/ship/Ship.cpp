@@ -231,6 +231,9 @@ void ShipItem::SetPlayer(Client* pClient) {
                 }
             }
         }
+    } else {
+        // this will set ship attribs in server data when ship is docked (error fix)
+        ProcessEffects(true);
     }
 }
 
@@ -686,8 +689,8 @@ void ShipItem::ProcessModules() {
 void ShipItem::Dock() {
     m_isDocking = true;
     DeactivateAllModules();
-    OfflineAll();
-    ClearModifiers();
+    //OfflineAll();
+    //ClearModifiers();
     m_onlineModuleVec.clear();
 }
 

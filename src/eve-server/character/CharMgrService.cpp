@@ -174,14 +174,43 @@ PyBoundObject *CharMgrService::_CreateBoundObject(Client *c, const PyRep *bind_a
 
 PyResult CharMgrService::Handle_GetContactList(PyCallArgs &call) {
   /*
-19:52:53 [SvcCall] Service charMgr: calling GetContactList
-19:52:53 [SvcCall]   Call Arguments:
-19:52:53 [SvcCall]       Tuple: Empty
-19:52:53 [SvcCall]   Call Named Arguments:
-19:52:53 [SvcCall]     Argument 'machoVersion':
-19:52:53 [SvcCall]         Integer field: 1
-    call.Dump(SERVICE__CALL_DUMP);
-    */
+                  [PyToken dbutil.CRowset]
+                [PyDict 1 kvp]
+                  [PyString "header"]
+                  [PyObjectEx Normal]
+                    [PyTuple 2 items]
+                      [PyToken blue.DBRowDescriptor]
+                      [PyTuple 1 items]
+                        [PyTuple 4 items]
+                          [PyTuple 2 items]
+                            [PyString "contactID"]
+                            [PyInt 3]
+                          [PyTuple 2 items]
+                            [PyString "inWatchlist"]
+                            [PyInt 11]
+                          [PyTuple 2 items]
+                            [PyString "relationshipID"]
+                            [PyInt 5]
+                          [PyTuple 2 items]
+                            [PyString "labelMask"]
+                            [PyInt 20]
+              [PyPackedRow 21 bytes]
+                ["contactID" => <3008990> [I4]]
+                ["inWatchlist" => <0> [Bool]]
+                ["relationshipID" => <0> [R8]]
+                ["labelMask" => <0> [I8]]
+              [PyPackedRow 21 bytes]
+                ["contactID" => <3008992> [I4]]
+                ["inWatchlist" => <0> [Bool]]
+                ["relationshipID" => <0> [R8]]
+                ["labelMask" => <0> [I8]]
+              [PyPackedRow 21 bytes]
+                ["contactID" => <3009010> [I4]]
+                ["inWatchlist" => <0> [Bool]]
+                ["relationshipID" => <0> [R8]]
+                ["labelMask" => <0> [I8]]
+                */
+  /** @todo  fix this.... */
     // another dummy
     DBRowDescriptor *header = new DBRowDescriptor();
     header->AddColumn("contactID", DBTYPE_I4);

@@ -113,7 +113,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
 }
 
 Client::~Client() {
-    if (m_char) {   // we have valid character
+    if (m_char.get() != nullptr) {   // we have valid character
         /** @todo  - for warping to random point when client logs out in space...
          *      1)  check client IsInSpace(?)
          *      2)  set timer to delay removing bubble/sysmgr/destiny...or check based on destiny->isstopped() or timer on destiny->ismoving()
@@ -231,12 +231,12 @@ bool Client::SelectCharacter(uint32 char_id) {
     }
 
     m_char->SetActiveShip(m_shipId);    // this also saves shipID for char in db. (error fix)
-    m_ship->SetPlayer(this);
 
     GPoint pos(NULL_ORIGIN);
     if (IsSolarSystem(m_locationID))
         pos = m_ship->position();
-    MoveToLocation(m_locationID, pos);
+
+    MoveToLocation(m_locationID, pos);  // this clears effects for docked ships
     SendSessionChange();
 
     // register new pilot in system data
@@ -253,6 +253,11 @@ bool Client::SelectCharacter(uint32 char_id) {
     if (IsSolarSystem(m_locationID)) {
         //m_ship->UpdateModules();
         WarpIn();
+    } else {
+        // apply effects in server data for docked ships
+        m_char->ResetModifiers();
+        m_char->ProcessEffects();
+        m_ship->SetPlayer(this);
     }
 
     //create corp and ally chat channels (if not already created)
@@ -297,7 +302,7 @@ void Client::ProcessClient() {
         return;
     }
 
-    if (!pShipSE) {
+    if (pShipSE == nullptr) {
         sLog.Error("Client","%s: InSpace with no shipSE.", m_char->itemName().c_str());
         return;
     }
@@ -366,8 +371,11 @@ void Client::ProcessClient() {
 }
 
 void Client::SetDestiny(const GPoint& pt, bool count) {
-    if (!pShipSE or !pShipSE->DestinyMgr())
+    if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr)) {
+        m_char->ResetModifiers();
+        m_char->ProcessEffects();
         CreateShipSE();
+    }
     if (IsSolarSystem(m_locationID)) {
         if (pt.isZero()) {
             if (pShipSE->GetPosition().isZero())
@@ -476,7 +484,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_services.item_factory->SetUsingClient(this);
         m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
         m_services.item_factory->UnsetUsingClient();
-        if (!m_system) {
+        if (m_system == nullptr) {
             sLog.Error("Client", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->itemName().c_str(), m_char->itemID());
             SendErrorMsg("Unable to boot system.  Relog and try again.");
             return;
@@ -531,7 +539,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 }
 
 void Client::MoveToPosition(const GPoint &pt) {
-    if (!pShipSE or !pShipSE->DestinyMgr())
+    if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr))
         CreateShipSE();
     pShipSE->DestinyMgr()->SetPosition(pt, true);
     if (m_undock) return;
@@ -569,7 +577,7 @@ void Client::UndockFromStation() {
 
 void Client::SetBallPark() {
     m_login = m_bubbleWait = false;
-    if (!pShipSE->SysBubble())
+    if (pShipSE->SysBubble() = nullptr)
         m_system->AddEntity(pShipSE);
     if (m_clientState == ClientState::csUndock)
         pShipSE->DestinyMgr()->Undock(m_movePoint);
@@ -611,7 +619,7 @@ void Client::DockToStation() {
 }
 
 void Client::BoardShip(ShipItemRef newShipItemRef) {
-    if (!newShipItemRef) {
+    if (newShipItemRef.get() == nullptr) {
         _log(PLAYER__ERROR, "BoardShip() - %s: newShipItemRef == NULL.", m_char->itemName().c_str());
         SendErrorMsg("Could not find ItemRef for ship.  Cannot Board.   Ref: ServerError 12321.");
         return;
@@ -655,29 +663,28 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     /* set internal vars for new ship */
     SetShip(newShipItemRef);
     char ci[25];
+    m_char->ResetModifiers();
+    m_char->ProcessEffects();
     if (IsSolarSystem(m_locationID)) {
         /* if ejecting into pod, setup and create new pod object */
         if (m_ship->typeID() == itemTypeCapsule) {
             m_ship->Move(m_locationID, flagCapsule);
             CreateShipSE();
-            m_char->ResetModifiers();
-            m_char->ProcessEffects();
             pShipSE->GetShipSE()->SetPodShipID(m_shipId);
             m_system->AddEntity(pShipSE);
         } else {
-            m_char->ResetModifiers();
             m_ship->ChangeOwner(m_char->itemID());
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSEFromInventory(m_shipId);
-            m_char->ProcessEffects();
             m_ship->UpdateModules();
             pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         }
-        pShipSE->SetPilot(this);
         m_char->Move(m_shipId, flagPilot);
+        pShipSE->SetPilot(this);
         SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
         snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
     } else {
+        m_ship->SetPlayer(this);
         snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
     }
 
@@ -867,12 +874,12 @@ void Client::SetShip(ShipItemRef shipRef) {
     m_shipId = shipRef->itemID();
     if (IsSolarSystem(m_locationID))
         UpdateSessionInt("shipid", m_shipId);   // update shipID in session
-    if (m_char)
+    if (m_char.get() != nullptr)
         m_char->SetActiveShip(m_shipId);
 }
 
 void Client::PickAlternateShip() {
-    if (m_char)
+    if (m_char.get() != nullptr)
         m_shipId = m_char->PickAlternateShip(m_locationID);
 }
 
@@ -946,7 +953,7 @@ void Client::ResetAfterPodded() {
 }
 
 void Client::UpdateSkillTraining() {
-    if (m_char)
+    if (m_char.get() != nullptr)
         m_timeEndTrain = m_char->GetEndOfTraining();
     else
         m_timeEndTrain = 0;
@@ -1088,7 +1095,8 @@ void Client::UpdateSessionInt(const char *sessionType, int value)
 
 void Client::UpdateCorpSession(Character* pChar)
 {
-    if (!pChar) return;
+    if (pChar == nullptr)
+        return;
     mSession.SetInt("corpid", pChar->corporationID());
     mSession.SetInt("hqID", pChar->corporationHQ());
     mSession.SetInt("corpAccountKey", pChar->corpAccountKey());
@@ -1102,7 +1110,8 @@ void Client::UpdateCorpSession(Character* pChar)
 
 void Client::UpdateFleetSession(Character* pChar)
 {
-    if (!pChar) return;
+    if (pChar == nullptr)
+        return;
     mSession.SetLong("fleetid", pChar->fleetID());
     mSession.SetInt("fleetrole", pChar->fleetRole());
     mSession.SetInt("fleetbooster", pChar->fleetBooster());
@@ -1111,11 +1120,12 @@ void Client::UpdateFleetSession(Character* pChar)
     SendSessionChange();
 }
 
-void Client::_UpdateSession(const CharacterConstRef& character)
+void Client::_UpdateSession(const CharacterConstRef& charRef)
 {
-    if (!character) return;
-    uint32 stationID = character->stationID();
-    uint32 solarsystemID = character->solarSystemID();
+    if (charRef.get() == nullptr)
+        return;
+    uint32 stationID = charRef->stationID();
+    uint32 solarsystemID = charRef->solarSystemID();
     if (stationID) {
         mSession.Clear("solarsystemid");    //must be 0 in station
         mSession.Clear("shipid");    //must be 0 in station
@@ -1135,13 +1145,13 @@ void Client::_UpdateSession(const CharacterConstRef& character)
         mSession.SetInt("shipid", m_shipId);
     }
 
-    mSession.SetInt("charid", character->itemID());
-    mSession.SetString("charname", character->itemName().c_str());
-    mSession.SetInt("corpid", character->corporationID());
+    mSession.SetInt("charid", charRef->itemID());
+    mSession.SetString("charname", charRef->itemName().c_str());
+    mSession.SetInt("corpid", charRef->corporationID());
     // solarsystemid2 is used by client to determine current system.  NOTE:  *MUST* be set to current system.
     mSession.SetInt("solarsystemid2", solarsystemID);
-    mSession.SetInt("constellationid", character->constellationID());
-    mSession.SetInt("regionid", character->regionID());
+    mSession.SetInt("constellationid", charRef->constellationID());
+    mSession.SetInt("regionid", charRef->regionID());
 }
 
 void Client::InitSession(uint32 characterID)
@@ -1278,7 +1288,8 @@ void Client::QueueDestinyEvent(PyTuple** multiEvent) {
 }
 
 void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool IsSetState /*false*/) {
-    if (!update or !(*update)) return;
+    if ((update == nullptr) or ((*update) == nullptr))
+        return;
     DoDestinyAction act;
         act.stamp = sEntityList.GetStamp();
     if (DoPackage/* or m_packaged*/) {
@@ -1809,7 +1820,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
         }
 
         if (nodeID != m_services.GetNodeID()) {
-            sLog.Error("Client","Unknown nodeID %u received (expected %u).", nodeID, m_services.GetNodeID());
+            sLog.Error("Client","Unknown nodeID - received %u but expected %u.", nodeID, m_services.GetNodeID());
             return false;
         }
 
@@ -2008,13 +2019,13 @@ void Client::SelfChatMessage(const char* fmt, ...)
     va_end(args);
 
     if (m_channels.empty()) {
-        if (m_char)
+        if (m_char.get() != nullptr)
             sLog.Error("Client", "%s: Tried to send self chat, but we are not joined to any channels: %s", m_char->itemName().c_str(), str);
         free(str);
         return;
     }
 
-    if (m_char)
+    if (m_char.get() != nullptr)
         sLog.White("Client","%s: Self message on all channels: %s", m_char->itemName().c_str(), str);
 
     //this is such a pile of crap, but im not sure whats better.

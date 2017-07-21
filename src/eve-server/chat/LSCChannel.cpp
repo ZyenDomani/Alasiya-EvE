@@ -318,6 +318,22 @@ PyRep *LSCChannel::EncodeChannelMods()
 }
 
 PyRep *LSCChannel::EncodeChannelChars() {
+    /*
+        [PyObjectData Name: util.Rowset]
+          [PyDict 3 kvp]
+            [PyString "header"]
+            [PyList 6 items]
+              [PyString "charID"]
+              [PyString "corpID"]
+              [PyString "allianceID"]
+              [PyString "warFactionID"]
+              [PyString "role"]
+              [PyString "extra"]
+            [PyString "RowClass"]
+            [PyToken util.Row]
+            [PyString "lines"]
+            [PyList 84 items]
+            */
     ChannelJoinChannelChars info;
     info.lines = new PyList();
     std::map<uint32, LSCChannelChar>::iterator itr = m_chars.begin();
