@@ -270,17 +270,12 @@ struct DmgTypeAttribute {
     EvilNumber value;
 };
 
-class DBSystemEntity {
-public:
+/* structure for loading static system items */
+struct DBSystemEntity {
     uint32 itemID;
     uint32 typeID;
     uint16 groupID;
-    EVEItemCategories categoryID;
-    uint32 orbitID;
-    GPoint position;
     double radius;
-    double security;
-    std::string itemName;
 };
 
 class DBSystemDynamicEntity {

@@ -28,9 +28,37 @@
 
 #include "system/SystemDB.h"
 
+PyObject* SystemDB::ListFactions() {
+    DBQueryResult res;
+
+    if(!sDatabase.RunQuery(res, "SELECT factionID FROM chrFactions")) {
+        codelog(DATABASE__ERROR, "Error in ListFactions query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToRowset(res);
+}
+
+PyObject* SystemDB::ListJumps(uint32 stargateID) {
+    DBQueryResult res;
+
+    if(!sDatabase.RunQuery(res,
+        "SELECT "
+        "   celestialID AS toCelestialID,"
+        "   solarSystemID AS locationID"
+        " FROM mapJumps "
+        "  LEFT JOIN mapDenormalize ON celestialID=itemID"
+        " WHERE stargateID=%u", stargateID)) {
+        codelog(DATABASE__ERROR, "Error in ListJumps query: %s", res.error.c_str());
+    return nullptr;
+        }
+
+        return DBResultToRowset(res);
+}
+
 bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into) {
     std::stringstream query;
-    query << "SELECT itemID,typeID,groupID,orbitID, x,y,z,radius,security,itemName";
+    query << "SELECT itemID,typeID,groupID,radius";
     query << " FROM mapDenormalize WHERE solarSystemID=%u ORDER BY itemID";
 
     DBQueryResult res;
@@ -44,16 +72,10 @@ bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEnt
     DBResultRow row;
     DBSystemEntity entry;
     while(res.GetRow(row)) {
-        entry.itemID = row.GetInt(0);
+        entry.itemID = row.GetUInt(0);
         entry.typeID = row.GetInt(1);
         entry.groupID = row.GetInt(2);
-        entry.orbitID = (row.IsNull(3) ? 0 : row.GetInt(3));
-        entry.position.x = row.GetDouble(4);
-        entry.position.y = row.GetDouble(5);
-        entry.position.z = row.GetDouble(6);
-        entry.radius = row.GetInt(7);
-        entry.security = (row.IsNull(8) ? 0.0 : row.GetDouble(8));
-        entry.itemName = row.GetText(9);
+        entry.radius = row.GetDouble(3);
         into.push_back(entry);
     }
 
@@ -95,7 +117,7 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
     DBResultRow row;
     DBSystemDynamicEntity entry;
     while(res.GetRow(row)) {
-        entry.itemID = row.GetInt(0);
+        entry.itemID = row.GetUInt(0);
         entry.itemName = row.GetText(1);
         entry.typeID = row.GetInt(2);
         entry.ownerID = 1;
@@ -152,14 +174,14 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
     DBResultRow row;
     DBSystemDynamicEntity entry;
     while(res.GetRow(row)) {
-        entry.itemID = row.GetInt(0);
+        entry.itemID = row.GetUInt(0);
         entry.itemName = row.GetText(1);
         entry.typeID = row.GetInt(2);
         entry.ownerID = row.GetInt(3);
         entry.groupID = row.GetInt(4);
         entry.categoryID = (EVEItemCategories)row.GetInt(5);
-        entry.corporationID = row.GetInt(6);
-        entry.allianceID = row.GetInt(7);
+        entry.corporationID = row.GetUInt(6);
+        entry.allianceID = row.GetUInt(7);
         entry.x = row.GetDouble(8);
         entry.y = row.GetDouble(9);
         entry.z = row.GetDouble(10);
@@ -239,82 +261,50 @@ void SystemDB::GetSalvageGroups(DBQueryResult& res) {
     }
 }
 
-PyObject* SystemDB::ListFactions() {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res, "SELECT factionID FROM chrFactions")) {
-        codelog(DATABASE__ERROR, "Error in ListFactions query: %s", res.error.c_str());
-        return nullptr;
-    }
-
-    return DBResultToRowset(res);
-}
-
-PyObject* SystemDB::ListJumps(uint32 stargateID) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT "
-        "   celestialID AS toCelestialID,"
-        "   solarSystemID AS locationID"
-        " FROM mapJumps "
-        "  LEFT JOIN mapDenormalize ON celestialID=itemID"
-        " WHERE stargateID=%u", stargateID)) {
-        codelog(DATABASE__ERROR, "Error in ListJumps query: %s", res.error.c_str());
-        return nullptr;
-    }
-
-    return DBResultToRowset(res);
-}
-
-void SystemDB::GetPlanets(uint32 systemID, std::vector<DBGPointEntity>* planetIDs, uint8* total) {
+void SystemDB::GetPlanets(uint32 systemID, std::vector<DBGPointEntity> &planetIDs, uint8 &total) {
 // groupID = 7
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT itemID, x, y, z, radius FROM mapDenormalize WHERE solarSystemID = %u AND groupID = 7", systemID);
 
     DBResultRow row;
     DBGPointEntity entry;
-	int8 count = 0;
     while(res.GetRow(row)) {
-	    entry.idx = count;
-        entry.itemID = row.GetInt(0);
+        entry.idx = total;
+        entry.itemID = row.GetUInt(0);
         entry.position = GPoint (
 			row.GetDouble(1),
 			row.GetDouble(2),
 			row.GetDouble(3)
         );
-        entry.radius = row.GetInt(4);
-        planetIDs->push_back(entry);
-		++count;
+        entry.radius = row.GetDouble(4);
+        planetIDs.push_back(entry);
+        ++total;
     }
-    *total = count;
 }
 
-void SystemDB::GetMoons(uint32 systemID, std::vector<DBGPointEntity>* moonIDs, uint8* total) {
+void SystemDB::GetMoons(uint32 systemID, std::vector<DBGPointEntity> &moonIDs, uint8 &total) {
 // groupID = 8
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT itemID, x, y, z, radius FROM mapDenormalize WHERE solarSystemID = %u AND groupID = 8", systemID);
 
     DBResultRow row;
     DBGPointEntity entry;
-	int8 count = 0;
     while(res.GetRow(row)) {
-	    entry.idx = count;
-        entry.itemID = row.GetInt(0);
+        entry.idx = total;
+        entry.itemID = row.GetUInt(0);
         entry.position = GPoint (
 			row.GetDouble(1),
 			row.GetDouble(2),
 			row.GetDouble(3)
 			);
-        entry.radius = row.GetInt(4);
+        entry.radius = row.GetDouble(4);
 
-        moonIDs->push_back(entry);
-		++count;
+        moonIDs.push_back(entry);
+        ++total;
     }
-    *total = count;
 }
 
-void SystemDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity >* beltIDs, uint8* total)
+void SystemDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity > &beltIDs, uint8 &total)
 {
     // groupID = 9
     DBQueryResult res;
@@ -322,24 +312,22 @@ void SystemDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity >* beltIDs,
 
     DBResultRow row;
     DBGPointEntity entry;
-    int8 count = 0;
     while(res.GetRow(row)) {
-        entry.idx = count;
-        entry.itemID = row.GetInt(0);
+        entry.idx = total;
+        entry.itemID = row.GetUInt(0);
         entry.position = GPoint (
             row.GetDouble(1),
             row.GetDouble(2),
             row.GetDouble(3)
         );
-        entry.radius = row.GetInt(4);
+        entry.radius = row.GetDouble(4);
 
-        beltIDs->push_back(entry);
-        ++count;
+        beltIDs.push_back(entry);
+        ++total;
     }
-    *total = count;
 }
 
-void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity >* gateIDs, uint8* total)
+void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity > &gateIDs, uint8 &total)
 {
     // groupID = 10
     DBQueryResult res;
@@ -347,19 +335,17 @@ void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity >* gateIDs,
 
     DBResultRow row;
     DBGPointEntity entry;
-    int8 count = 0;
     while(res.GetRow(row)) {
-        entry.idx = count;
-        entry.itemID = row.GetInt(0);
+        entry.idx = total;
+        entry.itemID = row.GetUInt(0);
         entry.position = GPoint (
             row.GetDouble(1),
             row.GetDouble(2),
             row.GetDouble(3)
         );
-        entry.radius = row.GetInt(4);
+        entry.radius = row.GetDouble(4);
 
-        gateIDs->push_back(entry);
-        ++count;
+        gateIDs.push_back(entry);
+        ++total;
     }
-    *total = count;
 }
