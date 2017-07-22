@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 7.6
+    Log Version: 7.7
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -180,6 +180,24 @@ LOG_TYPE( ITEM, WARNING, DISABLED, "ItemWarning" )
 LOG_TYPE( ITEM, MESSAGE, DISABLED, "ItemMsg" )
 LOG_TYPE( ITEM, DEBUG, DISABLED, "ItemDebug" )
 LOG_TYPE( ITEM, TRACE, DISABLED, "ItemTrace" )
+
+LOG_CATEGORY( SE )
+LOG_TYPE( SE, ERROR,   ENABLED, "SE:Error" )
+LOG_TYPE( SE, WARNING, DISABLED, "SE:Warning" )
+LOG_TYPE( SE, MESSAGE, DISABLED, "SE:Msg" )
+LOG_TYPE( SE, DEBUG, DISABLED, "SE:Debug" )
+LOG_TYPE( SE, TRACE, DISABLED, "SE:Trace" )
+LOG_TYPE( SE, DESTINY, DISABLED, "SE:State" )
+LOG_TYPE( SE, SLIMITEM, DISABLED, "SE:SlimItem" )
+
+LOG_CATEGORY( POS )
+LOG_TYPE( POS, ERROR,   ENABLED, "POS:Error" )
+LOG_TYPE( POS, WARNING, DISABLED, "POS:Warning" )
+LOG_TYPE( POS, MESSAGE, DISABLED, "POS:Msg" )
+LOG_TYPE( POS, DEBUG, DISABLED, "POS:Debug" )
+LOG_TYPE( POS, TRACE, DISABLED, "POS:Trace" )
+LOG_TYPE( POS, DESTINY, DISABLED, "POS:State" )
+LOG_TYPE( POS, SLIMITEM, DISABLED, "POS:SlimItem" )
 
 LOG_CATEGORY( CORP )
 LOG_TYPE( CORP, ERROR,   ENABLED, "CorpError" )
