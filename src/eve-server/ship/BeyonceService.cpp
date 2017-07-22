@@ -545,18 +545,14 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     if (pSE != nullptr) {
         radius = pSE->GetRadius();
         warpToPoint = pSE->GetPosition();
-        if (pSE->IsMoonSE() or pSE->IsPlanetSE()) {
+        if (pSE->IsPlanetSE()) {
             srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
             int64 rand = random();
             double j = (((rand / RAND_MAX) -1.0) / 3.0);
             double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
             s = EvE::max(0.5, EvE::min(s, 10.5));
             double t = asin((warpToPoint.x/fabs(warpToPoint.x)) * (warpToPoint.z / sqrt(pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2)))) +j;
-            uint32 d = 0;
-            if (pSE->IsMoonSE())
-                d = radius * s +100000;
-            else
-                d = radius * (s +1) +1000000;
+            uint32 d = radius * (s +1) +1000000;
             warpToPoint.x += (d * sin(t));
             warpToPoint.y += (0.5 * radius * sin(j));
             warpToPoint.z -= (d * cos(t));
@@ -569,11 +565,14 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             distance += (radius /2);
         } else if (pSE->IsGateSE()) {
             distance += (radius /3);  // fudge the distance a bit for gates... its' a lil close by default
+        } else if (pSE->IsMoonSE()) {
+            // hack for warping to moons
+            warpToPoint -= (radius + (radius *2 /8 /*10*/));
         } else if (radius > 90000) {
+            // this doesnt work for moons
             warpToPoint.x += ((radius + 5000000) * cos(radius));
             warpToPoint.y += ((radius * 1.3) - 7500);
             warpToPoint.z -= ((radius + 5000000) * sin(radius));
-            //warpToPoint -= (pSE->GetRadius() + (pSE->GetRadius() *2 /8 /*10*/));
         }
         if (radius < 90000) {
             // this will include stations (max station radius 60km)

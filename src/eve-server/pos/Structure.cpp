@@ -284,6 +284,8 @@ void StructureItem::RemoveItem(InventoryItemRef item)
 StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system, const FactionData& data)
 : ObjectSystemEntity(structure, services, system)
 {
+    //POS will anchor in the middle of the grid that you warp-in to.
+    
     m_co = false;
     m_tcu = false;
     m_pos = false;
