@@ -96,7 +96,7 @@ void Sentry::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
-        mass.Harmonic = -1.0f;
+        mass.harmonic = -1.0f;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );

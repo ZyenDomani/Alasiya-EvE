@@ -84,7 +84,7 @@ struct MassSector {
     uint8  cloak;        // indicates cloak
     uint64 allianceID;
     uint32 corporationID;
-    float Harmonic;
+    int32 harmonic;
 };
 
 //only included if the thing can move...

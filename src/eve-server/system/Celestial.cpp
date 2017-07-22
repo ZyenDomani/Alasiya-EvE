@@ -67,13 +67,13 @@ CelestialObject::CelestialObject(
     const ItemData &_data,
     const CelestialObjectData &_cData)
 : InventoryItem(_factory, _celestialID, _type, _data),
-  m_radius(_cData.radius),
+  m_radius(_cData.radius),  // no longer needed here
   m_security(_cData.security),
   m_celestialIndex(_cData.celestialIndex),
   m_orbitIndex(_cData.orbitIndex)
   {
       m_inventory = new Inventory(InventoryItemRef(this));
-      _log(ITEM__TRACE, "Created CelestialObject for item %s (%u).", itemName().c_str(), itemID());
+      _log(ITEM__TRACE, "Created CelestialObject for item %s (%u) with radius of %.1f.", itemName().c_str(), itemID(), m_radius);
 }
 
 CelestialObjectRef CelestialObject::Load(ItemFactory &factory, uint32 celestialID)
@@ -100,8 +100,7 @@ void CelestialObject::Delete() {
 CelestialSE::CelestialSE(CelestialObjectRef self, PyServiceMgr &services, SystemManager* system)
 : ItemSystemEntity(self, services, system)
 {
-    // Set radius of celestial object
-    self->SetAttribute(AttrRadius, self->type().radius());
+    _log(SE__DEBUG, "Created CSE for item %s (%u) with radius of %.1f.", self->itemName().c_str(), self->itemID(), m_radius);
 }
 
 void CelestialSE::MakeDamageState(DoDestinyDamageState &into)

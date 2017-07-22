@@ -132,68 +132,68 @@ void Concord::EncodeDestiny( Buffer& into ) const
         mode = DSTBALL_GOTO;
 
     BallHeader head;
-    head.entityID = GetID();
-    head.mode = mode;
-    head.radius = GetRadius();
-    head.x = x();
-    head.y = y();
-    head.z = z();
-    head.flags = IsMassive | IsFree;
+        head.entityID = GetID();
+        head.mode = mode;
+        head.radius = GetRadius();
+        head.x = x();
+        head.y = y();
+        head.z = z();
+        head.flags = IsMassive | IsFree;
     into.Append( head );
     MassSector mass;
-    mass.mass = m_destiny->GetMass();
-    mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
-    mass.Harmonic = -1.0f;
-    mass.corporationID = GetCorporationID();
-    mass.allianceID = GetAllianceID();
+        mass.mass = m_destiny->GetMass();
+        mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
+        mass.harmonic = -1.0f;
+        mass.corporationID = GetCorporationID();
+        mass.allianceID = GetAllianceID();
     into.Append( mass );
     DataSector data;
-    data.maxVelocity = m_destiny->GetMaxVelocity();
-    data.velocity_x = m_destiny->GetVelocity().x;
-    data.velocity_y = m_destiny->GetVelocity().y;
-    data.velocity_z = m_destiny->GetVelocity().z;
-    data.inertia = m_destiny->GetInertia();
-    data.speedfraction = m_destiny->GetSpeedFraction();
+        data.maxVelocity = m_destiny->GetMaxVelocity();
+        data.velocity_x = m_destiny->GetVelocity().x;
+        data.velocity_y = m_destiny->GetVelocity().y;
+        data.velocity_z = m_destiny->GetVelocity().z;
+        data.inertia = m_destiny->GetInertia();
+        data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
     if (mode == DSTBALL_WARP) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_WARP_Struct warp;
-        warp.formationID = 0xFF;
-        warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
-        warp.x = target.x;
-        warp.y = target.y;
-        warp.z = target.z;
-        warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-        warp.followRange = 0;
-        warp.followID = 0;  //this isnt right
+            warp.formationID = 0xFF;
+            warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
+            warp.x = target.x;
+            warp.y = target.y;
+            warp.z = target.z;
+            warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
+            warp.followRange = 0;
+            warp.followID = 0;  //this isnt right
         into.Append( warp );
     } else if (mode == DSTBALL_FOLLOW) {
         DSTBALL_FOLLOW_Struct follow;
-        follow.followID = m_destiny->GetTargetID();
-        follow.followRange = m_destiny->GetFollowDistance();
-        follow.formationID = 0xFF;
+            follow.followID = m_destiny->GetTargetID();
+            follow.followRange = m_destiny->GetFollowDistance();
+            follow.formationID = 0xFF;
         into.Append( follow );
     } else if (mode == DSTBALL_ORBIT) {
         DSTBALL_ORBIT_Struct orbit;
-        orbit.followID = m_destiny->GetTargetID();
-        orbit.followRange = m_destiny->GetFollowDistance();
-        orbit.formationID = 0xFF;
+            orbit.followID = m_destiny->GetTargetID();
+            orbit.followRange = m_destiny->GetFollowDistance();
+            orbit.formationID = 0xFF;
         into.Append( orbit );
     } else if (mode == DSTBALL_GOTO) {
         GPoint target = m_destiny->GetTargetPoint();
         DSTBALL_GOTO_Struct go;
-        go.formationID = 0xFF;
-        go.x = target.x;
-        go.y = target.y;
-        go.z = target.z;
+            go.formationID = 0xFF;
+            go.x = target.x;
+            go.y = target.y;
+            go.z = target.z;
         into.Append( go );
     } else {
         DSTBALL_STOP_Struct main;
-        main.formationID = 0xFF;
+            main.formationID = 0xFF;
         into.Append( main );
     }
 
-    _log(DESTINY__UPDATES, "Concord::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "Concord::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 
@@ -274,7 +274,7 @@ m_armorRepairTimer(8000),     //arbitrary.
 m_beginFindTarget(5000),      //arbitrary.
 m_warpScramblerTimer(5000),   //arbitrary.
 m_webifierTimer(5000),        //arbitrary.
-m_radius(who->GetSelf()->GetAttribute(AttrSignatureRadius).get_float()),
+m_sigRadius(who->GetSelf()->GetAttribute(AttrSignatureRadius).get_float()),
 m_attackSpeed(who->GetSelf()->GetAttribute(AttrSpeed).get_float()),
 m_cruiseSpeed(who->GetSelf()->GetAttribute(AttrEntityCruiseSpeed).get_int()),
 m_chaseSpeed(who->GetSelf()->GetAttribute(AttrMaxVelocity).get_int()),
@@ -653,16 +653,17 @@ void ConcordAI::AttackTarget(SystemEntity* pTarget) {
 double ConcordAI::GetTargetTime()
 {
     double targetTime = (m_npc->GetSelf()->GetAttribute(AttrScanSpeed).get_int());
+    float radius = m_npc->GetSelf()->GetAttribute(AttrRadius).get_float();
     if (!targetTime) {
-        if (m_npc->GetSelf()->GetAttribute(AttrRadius) < 30)
+        if (radius < 30)
             targetTime = 1500;
-        else if (m_npc->GetSelf()->GetAttribute(AttrRadius) < 60)
+        else if (radius < 60)
             targetTime = 2500;
-        else if (m_npc->GetSelf()->GetAttribute(AttrRadius) < 150)
+        else if (radius < 150)
             targetTime = 4000;
-        else if (m_npc->GetSelf()->GetAttribute(AttrRadius) < 280)
+        else if (radius < 280)
             targetTime = 6000;
-        else if (m_npc->GetSelf()->GetAttribute(AttrRadius) < 550)
+        else if (radius < 550)
             targetTime = 8000;
         else
             targetTime = 13000;

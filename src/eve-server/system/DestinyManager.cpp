@@ -54,7 +54,6 @@ m_moveTimer(0.0),
 m_targetDistance(0.0),
 m_followDistance(0.0),
 m_stopDistance(0),
-m_radius(1.0f),
 m_mass(1.0f),
 m_turnTic(1),
 m_massMKg(1.0f),
@@ -100,6 +99,7 @@ m_warpCapacitorNeed(0.00001f)
     m_shipHeading = GVector( NULL_ORIGIN );
     m_targetHeading = GVector( NULL_ORIGIN );
 
+    m_radius = mySE->GetRadius();
     m_position = mySE->GetPosition();
 
     m_turnTic = 0;
@@ -2227,7 +2227,6 @@ Battleships 0.155
      *  these attribs are set from ship item when shipSE created.  DO NOT modify anything here
      */
     m_mass = ship->GetAttribute(AttrMass).get_float();
-    m_radius = ship->GetAttribute(AttrRadius).get_float();
     m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
 
     // this will catch speeds/needs for all ships (player and npc), and is easier to do here.
@@ -2296,7 +2295,6 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
     SetPosition(pMissile->GetSelf()->position());
     m_mass = pMissile->GetSelf()->type().mass();
     m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
-    m_radius = pMissile->GetSelf()->type().radius();
     m_shipInertia = pMissile->GetSelf()->GetAttribute(AttrInetia).get_float();
     m_shipAgility = m_massMKg * m_shipInertia;
 

@@ -164,7 +164,7 @@ public:
     EVEItemCategories           GetCategoryID()         { return m_self->categoryID(); }
     EVEItemFlags                GetFlag()               { return m_self->flag(); }
     uint32                      GetID()                 { return m_self->itemID(); }
-    double                      GetRadius();            /* too long to put here */
+    double                      GetRadius()             { return m_radius; }
     uint32                      GetLocationID()         { return m_self->locationID(); }
     const char*                 GetName() const         { return m_self->itemName().c_str(); }
     const GPoint&               GetPosition() const     { return m_self->position(); }
@@ -187,6 +187,7 @@ public:
 
     /* public specific functions handled in base class. */
     virtual void                Abandon();
+
 
     /* generic functions handled here, but set elsewhere */
     const GVector&              GetVelocity()           { return (m_destiny ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
@@ -216,6 +217,8 @@ protected:
     PyServiceMgr&               m_services;
 
     InventoryItemRef            m_self;
+
+    double                      m_radius;
 
     /* ease of access to common data for ownable objects */
     uint32                      m_warID;
@@ -247,12 +250,6 @@ public:
 
     /* virtual functions to be overridden in derived classes */
     virtual bool                LoadExtras(SystemDB *db);
-
-    /* specific functions handled in this class. */
-    virtual double              GetRadius()             { return m_radius; }
-
-private:
-    double                      m_radius;
 
 };
 

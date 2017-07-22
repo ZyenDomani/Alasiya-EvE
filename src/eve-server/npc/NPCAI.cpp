@@ -68,7 +68,7 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     /* set npc ship data */
     m_sigResolution = who->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_int();
     m_attackSpeed = who->GetSelf()->GetAttribute(AttrSpeed).get_int();
-    m_radius = who->GetSelf()->GetAttribute(AttrSignatureRadius).get_int();
+    m_sigRadius = who->GetSelf()->GetAttribute(AttrSignatureRadius).get_int();
 
     /** @todo  all of these need to be verified and/or updated */
 
@@ -567,16 +567,17 @@ void NPCAIMgr::AttackTarget(SystemEntity* pTarget) {
 double NPCAIMgr::GetTargetTime()
 {
     double targetTime = (m_npc->GetSelf()->GetAttribute(AttrScanSpeed).get_int());
+    float radius = m_npc->GetSelf()->GetAttribute(AttrRadius).get_float();
     if (!targetTime) {
-        if (m_npc->GetSelf()->GetAttribute(AttrRadius) < 30)
+        if (radius < 30)
             targetTime = 1500;
-        else if (m_npc->GetSelf()->GetAttribute(AttrRadius) < 60)
+        else if (radius < 60)
             targetTime = 2500;
-        else if (m_npc->GetSelf()->GetAttribute(AttrRadius) < 150)
+        else if (radius < 150)
             targetTime = 4000;
-        else if (m_npc->GetSelf()->GetAttribute(AttrRadius) < 280)
+        else if (radius < 280)
             targetTime = 6000;
-        else if (m_npc->GetSelf()->GetAttribute(AttrRadius) < 550)
+        else if (radius < 550)
             targetTime = 8000;
         else
             targetTime = 13000;

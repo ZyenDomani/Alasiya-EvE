@@ -1130,8 +1130,7 @@ bool InventoryDB::DeleteCharacter(uint32 characterID) {
 bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &into) {
     DBQueryResult res;
 
-    if( IsStaticMapItem( celestialID ) )
-    {
+    if( IsStaticMapItem(celestialID)) {
         // This Celestial object is a static celestial, so get its data from the 'mapDenormalize' table:
         if(!sDatabase.RunQuery(res,
             "SELECT"
@@ -1147,17 +1146,14 @@ bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &in
         DBResultRow row;
         if(!res.GetRow(row)) {
             _log(DATABASE__MESSAGE, "Celestial object %u not found.", celestialID);
-
             return false;
         }
 
         into.security = (row.IsNull(0) ? 0 : row.GetDouble(0));
-        into.radius = (row.IsNull(1) ? 0 : row.GetDouble(1));
+        into.radius = row.GetDouble(1);
         into.celestialIndex = (row.IsNull(2) ? 0 : row.GetUInt(2));
         into.orbitIndex = (row.IsNull(3) ? 0 : row.GetUInt(3));
-    }
-    else
-    {
+    } else {
         // Quite possibly, this Celestial object is a dynamic one, so try to get its data from the 'entity' table,
         // and if it's not there either, then flag an error.
         if(!sDatabase.RunQuery(res,
@@ -1176,12 +1172,11 @@ bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &in
         DBResultRow row;
         if(!res.GetRow(row)) {
             _log(DATABASE__MESSAGE, "Celestial object %u not found.", celestialID);
-
             return false;
         }
 
         into.security = 1.0;
-        into.radius = (row.IsNull(1) ? 0 : row.GetDouble(1));
+        into.radius = (row.IsNull(1) ? 1 : row.GetDouble(1));
         into.celestialIndex = 0;
         into.orbitIndex = 0;
     }

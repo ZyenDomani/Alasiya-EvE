@@ -277,14 +277,14 @@ protected:
     {
         // static load
         _Ty *t = _Ty::template _Load<_Ty>( factory, typeID );
-        if( t == NULL )
-            return NULL;
+        if( t == nullptr )
+            return nullptr;
 
         // dynamic load
         if( !t->_Load(factory) )
         {
             delete t;
-            return NULL;
+            return nullptr;
         }
 
         // return
@@ -298,12 +298,12 @@ protected:
         // pull data
         TypeData data;
         if( !factory.db().GetType( typeID, data ) )
-            return NULL;
+            return nullptr;
 
         // obtain group
         const ItemGroup *g = factory.GetGroup( data.groupID );
-        if( g == NULL )
-            return NULL;
+        if( g == nullptr )
+            return nullptr;
 
         return _Ty::template _LoadType<_Ty>( factory, typeID, *g, data );
     }

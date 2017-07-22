@@ -166,7 +166,7 @@ void Drone::RemoveDrone() {
 }
 
 PyDict* Drone::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for Drone %u ", m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for Drone %u ", m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
@@ -210,7 +210,7 @@ void Drone::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
-        mass.Harmonic = 1.0f;
+        mass.harmonic = 1.0f;
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
     into.Append( mass );
@@ -261,7 +261,7 @@ void Drone::EncodeDestiny( Buffer& into )
         into.Append( main );
     }
 
-    _log(DESTINY__UPDATES, "Drone::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "Drone::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void Drone::MakeDamageState(DoDestinyDamageState &into)

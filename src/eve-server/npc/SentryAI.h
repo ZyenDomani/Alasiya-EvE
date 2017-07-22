@@ -75,7 +75,7 @@ private:
     uint16 m_optimalRange;
     uint16 m_damageMultiplier;
 
-    uint32 m_radius;
+    uint32 m_sigRadius;
     uint32 m_falloff;// distance past maximum range at which accuracy has fallen by half
     uint32 m_sightRange;
     uint32 m_maxAttackRange;// max firing range   default:15000

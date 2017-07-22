@@ -37,7 +37,14 @@
 #include "system/LootSystem.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
-
+/*
+POS__WARNING=1
+POS__MESSAGE=0
+POS__DEBUG=1
+POS__DESTINY=0
+POS__SLIMITEM=0
+POS__TRACE=0
+*/
 /*
  * Structure
  */
@@ -46,6 +53,7 @@ StructureItem::StructureItem(ItemFactory &_factory, uint32 _structureID, const I
 {
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created StructureItem for %s (%u).", itemName().c_str(), itemID());
+    _log(POS__TRACE, "Created StructureItem for %s (%u).", itemName().c_str(), itemID());
 }
 
 StructureItem::~StructureItem()
@@ -288,11 +296,12 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_battery = false;
     m_outpost = false;
     /** @todo  hacked state...need to fix */
+    //res = sm.StartService('pwn').GetStructureState(slimItem)[0] in ('online', 'invulnerable', 'vulnerable', 'reinforced')
     m_state = STRUCTURE_ONLINE;
     /** @todo  hacked moonID...need to fix */
     m_moonID = 0;
     /** @todo (Allan) fix this later...used for shield passage */
-    m_harmonic = 0;
+    m_harmonic = -1;
     m_timestamp = Win32TimeNow() - Win32Time_Day;
     /** @todo (Allan) fix this */
     m_warID = data.factionID;
@@ -301,6 +310,7 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_ownerID = data.ownerID;
 
     Init(structure);
+    _log(SE__DEBUG, "Created StructureSE for item %s (%u).", structure->itemName().c_str(), structure->itemID());
 }
 
 void StructureSE::Init(StructureItemRef structure)
@@ -418,12 +428,12 @@ void StructureSE::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    if (m_tcu) {
+    if (m_tcu or m_pos) {
         MassSector mass;
             mass.cloak = 0;
             mass.corporationID = GetCorporationID();
             mass.allianceID = GetAllianceID();
-            mass.Harmonic = m_harmonic;
+            mass.harmonic = m_harmonic;
             mass.mass = m_self->type().mass();
         into.Append( mass );
     }
@@ -455,12 +465,14 @@ void StructureSE::EncodeDestiny( Buffer& into )
                                       [Radius: 796.5781]
                                       [Offset: (0, 2598, 1)]
 
-            */
-    _log(COMMON__WARNING, "StructureSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+                                      */
+    _log(SE__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(POS__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *StructureSE::MakeSlimItem() {
-    _log(DESTINY__MESSAGE, "MakeSlimItem for StructureSE %u", m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for StructureSE %u", m_self->itemID());
+    _log(POS__SLIMITEM, "MakeSlimItem for StructureSE %u", m_self->itemID());
     /** @todo (Allan) *Timestamp will need to be set to time current state is started. */
     PyDict *slim = new PyDict();
         slim->SetItemString("name",                     new PyString(""));
@@ -475,7 +487,11 @@ PyDict *StructureSE::MakeSlimItem() {
         if (!m_co) {
             slim->SetItemString("posTimestamp",         new PyLong(m_timestamp));
             slim->SetItemString("posState",             new PyInt(GetStructureState()));
-            slim->SetItemString("incapacitated",        new PyInt(0)); /** @todo (Allan) fix this later....check for offline/vulnerable states */
+            // this is only checked when state == (STRUCTURE_SHIELD_REINFORCE || STRUCTURE_ARMOR_REINFORCE)
+            slim->SetItemString("posDelayTime",         new PyInt(GetStructureState()));
+            // this is boolean and ONLY included if structure is incapacitated
+            if (m_state == STATE_INCAPACITATED)
+                slim->SetItemString("incapacitated",    new PyInt(1));
         }
         if (m_outpost) {
             slim->SetItemString("startTimestamp",       new PyLong(m_timestamp));
@@ -502,6 +518,10 @@ PyDict *StructureSE::MakeSlimItem() {
             slim->SetItemString("controlTowerID",       new PyLong(m_towerID));
         }
 
+    if (is_log_enabled(POS__DEBUG)) {
+        _log( POS__DEBUG, "StructureSE::MakeSlimItem()", "%s(%u)", GetName(), GetID());
+        slim->Dump(POS__DEBUG, "     ");
+    }
     return slim;
 }
 
@@ -581,7 +601,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
     } else if (killer->IsDroneSE()) {
         pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
         if (!pClient ) {
-            sLog.Error("Sentry::Killed()", "killer == IsDrone and pPlayer == nullptr");
+            sLog.Error("StructureSE::Killed()", "killer == IsDrone and pPlayer == nullptr");
         } else
             killerID = pClient->GetCharacterID();
     } else
@@ -592,7 +612,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
     GPoint deadPOSPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
     if (!wreckTypeID) {
-        sLog.Error("Sentry::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
+        sLog.Error("StructureSE::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
     }
@@ -604,7 +624,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
     ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), deadPOSPosition, faction);
     WreckContainerRef wreckItemRef = m_self->GetItemFactory()->SpawnWreckContainer( wreckItemData );
     if (!wreckItemRef) {
-        sLog.Error("Sentry::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
+        sLog.Error("StructureSE::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
         return;
     }
 
@@ -637,7 +657,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
         wreckEntity.z = deadPOSPosition.z;
 
     if (!m_system->BuildDynamicEntity(wreckEntity)) {
-        sLog.Error("Sentry::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
+        sLog.Error("StructureSE::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
         return;
     }
 
@@ -703,7 +723,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
 
         ServiceDB::SaveKillOrLoss(data);
 
-    _log(PHYSICS__TRACE, "Sentry::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
+    _log(PHYSICS__TRACE, "StructureSE::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
     GetName(), GetID(), x(), y(), z(), deadPOSPosition.x, deadPOSPosition.y, deadPOSPosition.z);
 
     // cleanup and removal

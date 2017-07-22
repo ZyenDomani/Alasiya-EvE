@@ -1360,7 +1360,7 @@ void Ship::EncodeDestiny( Buffer& into ) {
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
-        mass.Harmonic = -1.0f;      // @todo:  fix this when POS system is more mature
+        mass.harmonic = -1.0f;      // @todo:  fix this when POS system is more mature
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
         into.Append( mass );
@@ -1426,7 +1426,7 @@ void Ship::EncodeDestiny( Buffer& into ) {
         case 12: modeStr = "Formation"; break;
     }
 
-    _log(DESTINY__UPDATES, "Ship::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
+    _log(SE__DESTINY, "Ship::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
             GetName(), head.entityID, modeStr.c_str(), head.flags, data.velocity_x, data.velocity_y, data.velocity_z);
 }
 
@@ -1439,7 +1439,7 @@ void Ship::MakeDamageState(DoDestinyDamageState &into) {
 }
 
 PyDict* Ship::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for Ship %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for Ship %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",               new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",               new PyInt(m_self->typeID()));

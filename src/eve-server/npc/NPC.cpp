@@ -150,7 +150,7 @@ void NPC::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
-        mass.Harmonic = -1.0f;
+        mass.harmonic = -1.0f;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );
@@ -217,7 +217,7 @@ void NPC::EncodeDestiny( Buffer& into )
         case 12: modeStr = "Formation"; break;
     }
 
-    _log(DESTINY__UPDATES, "NPC::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
+    _log(SE__DESTINY, "NPC::EncodeDestiny(): %s - id:%u, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
             GetName(), head.entityID, modeStr.c_str(), head.flags, data.velocity_x, data.velocity_y, data.velocity_z);
 }
 

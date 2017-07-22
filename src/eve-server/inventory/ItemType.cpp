@@ -214,10 +214,10 @@ ItemType* ItemType::Load(ItemFactory &factory, uint32 typeID)
 }
 
 template<class _Ty>
-_Ty* ItemType::_LoadType(ItemFactory &factory, uint32 typeID,  const ItemGroup &group, const TypeData &data)
+_Ty* ItemType::_LoadType(ItemFactory &factory, uint32 typeID, const ItemGroup &group, const TypeData &data)
 {
     switch( group.categoryID() ) {
-        /** @todo  really need planets and moons here to load true radius' (from mapDenormalize)
+        /*  not handled / not needed
         case EVEDB::invCategories::Celestial:
         case EVEDB::invCategories::Skill:
         case EVEDB::invCategories::_System:

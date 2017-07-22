@@ -198,13 +198,13 @@ double SystemDB::GetCelestialRadius(uint32 itemID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res, "SELECT radius FROM mapDenormalize WHERE itemID=%u", itemID )) {
         codelog(DATABASE__ERROR, "Error in GetItemTypeRadius query: %s", res.error.c_str());
-        return 0.0;
+        return 10.1;
     }
 
     DBResultRow row;
     if (res.GetRow(row))
         return (row.GetDouble(0));
-    return 0.0;
+    return 12.3;
 }
 
 bool SystemDB::GetWrecksToTypes(DBQueryResult& res) {

@@ -462,7 +462,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     std::string type = call.tuple->GetItem(0)->AsString()->content();
     if (type == "item" ) {
 		pSE = pSystem->GetSE(toID);
-        if (pSE != nullptr) {
+        if (pSE == nullptr) {
             codelog(CLIENT__ERROR, "%s: unable to find location %d", call.client->GetName(), toID);
 			return new PyNone();
 		}
@@ -472,7 +472,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         uint32 bookmarkID = call.tuple->GetItem(1)->AsInt()->value();
 
         BookmarkService* bkSrvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
-        if (bkSrvc != nullptr) {
+        if (bkSrvc == nullptr) {
             sLog.Error( "BeyonceService::Handle_WarpToStuff()", "Attempt to access BookmarkService returned NULL." );
             return new PyNone();
         }
@@ -489,7 +489,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
             pSE = pSystem->GetSE( toID );
-            if (pSE != nullptr) {
+            if (pSE == nullptr) {
                 sLog.Error( "BeyonceService::Handle_WarpToStuff()", "%s: unable to find location %d", call.client->GetName(), toID );
                 return new PyNone();
             }
@@ -545,36 +545,35 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     if (pSE != nullptr) {
         radius = pSE->GetRadius();
         warpToPoint = pSE->GetPosition();
-        if (pSE->IsPlanetSE()) {
+        if (pSE->IsMoonSE() or pSE->IsPlanetSE()) {
             srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
             int64 rand = random();
             double j = (((rand / RAND_MAX) -1.0) / 3.0);
             double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
             s = EvE::max(0.5, EvE::min(s, 10.5));
             double t = asin((warpToPoint.x/fabs(warpToPoint.x)) * (warpToPoint.z / sqrt(pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2)))) +j;
-            uint32 d = radius * (s +1) +10000;
-            warpToPoint.x += d * sin(t);
-            warpToPoint.y += 0.5 * radius * sin(j);
-            warpToPoint.z -= d * cos(t);
+            uint32 d = 0;
+            if (pSE->IsMoonSE())
+                d = radius * s +100000;
+            else
+                d = radius * (s +1) +1000000;
+            warpToPoint.x += (d * sin(t));
+            warpToPoint.y += (0.5 * radius * sin(j));
+            warpToPoint.z -= (d * cos(t));
         } else if (pSE->IsStationSE()){
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
             StationData data;
             sDataMgr.GetStationInfo(toID, data);
             warpToPoint.y = data.dockPosition.y;
-        } else if (pSE->IsMoonSE()) {
-            distance += radius;
-            distance += 2000;  // hack distance for moons until i get the radius working correctly
         } else if (pSE->IsCOSE()) {
-            distance += 1200;  // hack distance for customs offices until i get the radius working correctly
+            distance += (radius /2);
         } else if (pSE->IsGateSE()) {
-            distance += (radius /4);  // fudge the distance a bit for gates... its' a lil close by default
+            distance += (radius /3);  // fudge the distance a bit for gates... its' a lil close by default
         } else if (radius > 90000) {
-            /** @todo  this formula is right, but isnt working correctly....revert to my formula
-             *   warpToPoint.x += ((radius + 5000000) * cos(radius));
-             *   warpToPoint.y += ((radius * 1.3) - 7500);
-             *   warpToPoint.z -= ((radius + 5000000) * sin(radius));
-             */
-            warpToPoint -= (pSE->GetRadius() + (pSE->GetRadius() *2 /8 /*10*/));
+            warpToPoint.x += ((radius + 5000000) * cos(radius));
+            warpToPoint.y += ((radius * 1.3) - 7500);
+            warpToPoint.z -= ((radius + 5000000) * sin(radius));
+            //warpToPoint -= (pSE->GetRadius() + (pSE->GetRadius() *2 /8 /*10*/));
         }
         if (radius < 90000) {
             // this will include stations (max station radius 60km)
@@ -588,7 +587,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    distance += (call.client->GetShipSE()->GetRadius() *2); // add ship diameter x2 to distance
+    distance += (call.client->GetShipSE()->GetRadius() *2); // add ship diameter to distance
     pDestiny->WarpTo(warpToPoint, distance);
 
     return new PyNone();

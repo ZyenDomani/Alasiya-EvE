@@ -194,11 +194,11 @@ void StationSE::EncodeDestiny( Buffer& into )
         miniball.radius = 1639.241;
     into.Append( miniball );
  */
-    _log(COMMON__WARNING, "StationEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "StationSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *StationSE::MakeSlimItem() {
-    _log(DESTINY__MESSAGE, "MakeSlimItem for StationEntity %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for StationSE %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));

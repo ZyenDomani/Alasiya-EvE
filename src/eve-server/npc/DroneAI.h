@@ -73,7 +73,7 @@ protected:
 
 private:
     //cached to reduce access times. (faster but uses more memory)
-    double m_radius;
+    double m_sigRadius;
     double m_attackSpeed;
     double m_entityFlyRange;
     double m_entityOrbitRange;

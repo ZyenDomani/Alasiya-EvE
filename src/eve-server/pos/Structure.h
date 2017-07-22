@@ -168,14 +168,14 @@ public:
     virtual void Killed(Damage &fatal_blow);
 
     /* specific functions handled in this class. */
-    inline void                 SetPOSState(uint8 state) { m_state = state; }
+    inline void                SetPOSState(uint8 state) { m_state = state; }
 
     uint8                       GetStructureState() const;
 
     PyTuple*                    GetEffectState();
 
     // for orbital infrastructure
-    void                        SetPlanet(uint32 planetID) { m_planetID = planetID; }
+    void                     SetPlanet(uint32 planetID) { m_planetID = planetID; }
     uint32                      GetPlanetID()           { return m_planetID; }
     void                        SetRotation(GPoint dir) { m_rotation = dir; }
 
@@ -192,9 +192,10 @@ private:
     bool m_battery;
     bool m_outpost;
 
+    int32 m_harmonic;       /* this tracks shield frequency for passing thru POS shields.  not sure how to use it yet..  -1 means "none" (i think) */
+
     uint8 m_state;          /* used to hold POS state (online, reinforced, operating, etc) */
     uint32 m_moonID;        /* moon this structure is stationed at.  used for killMail */
-    uint32 m_harmonic;      /* this tracks shield frequency for passing thru POS shields.  not sure how to use it yet.... */
     uint32 m_towerID;       /* this is the controlling towerID for POS modules */
     uint64 m_timestamp;     /* used to track start time on POS states (onlining, reinforced, etc) */
 

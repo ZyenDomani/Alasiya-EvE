@@ -114,7 +114,7 @@ void Missile::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
-        mass.Harmonic = -1.0f;
+        mass.harmonic = -1.0f;
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
     into.Append( mass );
@@ -137,11 +137,11 @@ void Missile::EncodeDestiny( Buffer& into )
         miss.z = z();
     into.Append(miss);
 
-    _log(DESTINY__MESSAGE, "Missile::EncodeDestiny(): %s id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "Missile::EncodeDestiny(): %s id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict* Missile::MakeSlimItem() {
-    _log(DESTINY__MESSAGE, "MakeSlimItem for MissileID %u", m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for Missile %u", m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));

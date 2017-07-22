@@ -96,7 +96,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         len -= sizeof(MassSector);
 
         _log(into, "   mass=%.2f, cloak=%u, harmonic=%f, corp=%u, alliance=%d",
-            masschunk->mass, masschunk->cloak, masschunk->Harmonic, masschunk->corporationID, masschunk->allianceID);
+            masschunk->mass, masschunk->cloak, masschunk->harmonic, masschunk->corporationID, masschunk->allianceID);
     }
 
     //this seems a little strange, but this is how it works...

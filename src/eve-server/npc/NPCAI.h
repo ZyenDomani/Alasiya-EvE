@@ -109,7 +109,7 @@ private:
     uint16 m_armorRepairDuration;
     uint16 m_shieldBoosterDuration;
 
-    uint32 m_radius;
+    uint32 m_sigRadius;
     uint32 m_falloff;// distance past maximum range at which accuracy has fallen by half
     uint32 m_flyRange;  // npc tries to stay at this distance from active target    default:500
     uint32 m_sightRange;

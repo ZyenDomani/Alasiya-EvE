@@ -51,6 +51,8 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
     m_destiny = nullptr;
     m_targMgr = new TargetManager(this);
     Abandon();
+    m_radius = m_self->GetAttribute(AttrRadius).get_double();
+    _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %.1f.", self->itemName().c_str(), self->itemID(), m_radius);
 }
 
 SystemEntity::~SystemEntity()
@@ -70,10 +72,6 @@ void SystemEntity::Process() {
         m_targMgr->Process();
     if (m_destiny)
         m_destiny->Process();
-}
-
-double SystemEntity::GetRadius() {
-    return (m_self->HasAttribute(AttrRadius) ? m_self->GetAttribute(AttrRadius).get_double() : 1.0);
 }
 
 PyTuple* SystemEntity::MakeDamageState() {
@@ -97,7 +95,7 @@ void SystemEntity::MakeDamageState(DoDestinyDamageState &into) {
 }
 
 PyDict* SystemEntity::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for SystemEntity %s(%u)", GetName(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for SE %s(%u)", GetName(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",      new PyInt(1));
@@ -112,7 +110,7 @@ void SystemEntity::EncodeDestiny( Buffer& into )
     BallHeader head;
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_RIGID;
-        head.radius = GetRadius();
+        head.radius = m_radius;
         head.x = x();
         head.y = y();
         head.z = z();
@@ -122,13 +120,13 @@ void SystemEntity::EncodeDestiny( Buffer& into )
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
-    _log(COMMON__WARNING, "SystemEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "SE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 double SystemEntity::DistanceTo2(const SystemEntity* other) {
-    if (!other->m_bubble) return 1000000.0;
-    GVector delta(GetPosition(), other->GetPosition());
-    return delta.length();
+    if (other->m_bubble == nullptr)
+        return 1000000.0;
+    return GetPosition().distance(other->GetPosition());
 }
 
 void SystemEntity::SendDamageStateChanged(SystemEntity* source) {  //working 24Apr15
@@ -209,13 +207,11 @@ StaticSystemEntity::StaticSystemEntity(InventoryItemRef self, PyServiceMgr &serv
 }
 
 bool StaticSystemEntity::LoadExtras(SystemDB *db) {
-    /* set radius on static entities, where type().radius() is incorrect or not set */
-    m_radius = db->GetCelestialRadius(m_self->itemID());
     return true;
 }
 
 PyDict* StaticSystemEntity::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for StaticSystemEntity %s(%u)", GetName(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for SSE %s(%u)", GetName(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
@@ -242,7 +238,7 @@ void StaticSystemEntity::EncodeDestiny( Buffer& into ) {
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
-    _log(COMMON__WARNING, "StaticSystemEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "SSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X, radius:%.1f", GetName(), head.entityID, head.mode, head.flags, head.radius);
 }
 
 BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
@@ -284,7 +280,7 @@ bool StargateSE::LoadExtras(SystemDB *db) {
 }
 
 PyDict* StargateSE::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for StargateSE %s(%u)", GetName(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for StargateSE %s(%u)", GetName(), m_self->itemID());
     /** @todo  finish gate rotation data
     PyTuple* rotation = new PyTuple(3);
         rotation->SetItem(0, new PyFloat(0));
@@ -309,7 +305,7 @@ ItemSystemEntity::ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services
 }
 
 PyDict* ItemSystemEntity::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for ItemSystemEntity %s(%u)", GetName(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for ISE %s(%u)", GetName(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
@@ -333,7 +329,7 @@ void ItemSystemEntity::EncodeDestiny( Buffer& into )
     BallHeader head;
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_FIELD;
-        head.radius = GetRadius();
+        head.radius = m_radius;
         head.x = x();
         head.y = y();
         head.z = z();
@@ -342,7 +338,7 @@ void ItemSystemEntity::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = 10000000000;    // as seen in packets
         mass.cloak = 0;
-        mass.Harmonic = 1.0f;   /** @todo  this will need to be added later */
+        mass.harmonic = 1.0f;   /** @todo  this will need to be added later */
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );
@@ -350,7 +346,7 @@ void ItemSystemEntity::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(COMMON__WARNING, "ItemSystemEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "ISE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
@@ -379,7 +375,7 @@ DungeonSE::DungeonSE(InventoryItemRef self, PyServiceMgr &services, SystemManage
 
 //this is a big hack just to document the kind of stuff a dungeon conveys.
 PyDict *DungeonSE::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for DungeonSE %u", m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for DungeonSE %u", m_self->itemID());
 
     PyDict *slim = new PyDict();
 
@@ -414,7 +410,7 @@ void DungeonSE::EncodeDestiny( Buffer& into )
     BallHeader head;
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_RIGID;
-        head.radius = GetRadius();
+        head.radius = m_radius;
         head.x = x();
         head.y = y();
         head.z = z();
@@ -424,7 +420,7 @@ void DungeonSE::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(COMMON__WARNING, "DungeonSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "DungeonSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 
@@ -441,7 +437,7 @@ void ObjectSystemEntity::EncodeDestiny( Buffer& into )
     BallHeader head;
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_RIGID;
-        head.radius = GetRadius();
+        head.radius = m_radius;
         head.x = x();
         head.y = y();
         head.z = z();
@@ -451,11 +447,11 @@ void ObjectSystemEntity::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(COMMON__WARNING, "DeployableEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "OSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict* ObjectSystemEntity::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for ObjectSystemEntity %s(%u)", GetName(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for OSE %s(%u)", GetName(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(GetTypeID()));
@@ -538,7 +534,7 @@ bool DynamicSystemEntity::Load() {
 }
 
 PyDict *DynamicSystemEntity::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for DynamicSystemEntity %s(%u)", GetName(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for DSE %s(%u)", GetName(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
@@ -558,7 +554,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
     BallHeader head;
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_STOP;
-        head.radius = GetRadius();
+        head.radius = m_radius;
         head.x = x();
         head.y = y();
         head.z = z();
@@ -567,12 +563,12 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
-        mass.Harmonic = 1.0f;
+        mass.harmonic = 1.0f;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );
 
-    _log(COMMON__WARNING, "DynamicSystemEntity::EncodeDestiny() - %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "DSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void DynamicSystemEntity::MakeDamageState(DoDestinyDamageState &into) {

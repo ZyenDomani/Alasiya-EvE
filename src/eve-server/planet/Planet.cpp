@@ -15,6 +15,7 @@
 #include "planet/PlanetMgr.h"
 #include "packets/Planet.h"
 #include "pos/Structure.h"
+#include "system/Celestial.h"
 #include "system/SystemManager.h"
 
 
@@ -30,9 +31,6 @@ m_colonyTimer(100000) //arbitrary default
 {
     m_hasColony = false;
     m_colonyTimer.Disable();
-    self->SetAttribute(AttrMass,   self->type().mass());
-    self->SetAttribute(AttrRadius, self->type().radius());
-    self->SetAttribute(AttrVolume, self->type().volume());
 }
 
 PlanetSE::~PlanetSE()
@@ -46,6 +44,7 @@ PlanetSE::~PlanetSE()
 bool PlanetSE::LoadExtras(SystemDB* db) {
     if (!StaticSystemEntity::LoadExtras(db))
         return false;
+
     /** @todo use this to initialize planet data, create planet manager, or whatever else i decide is needed for planet management
      *  this is called when SE is created.
      */

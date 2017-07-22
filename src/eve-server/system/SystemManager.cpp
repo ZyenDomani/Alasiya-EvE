@@ -272,27 +272,31 @@ bool SystemManager::LoadSystemStatics() {
             } break;
             case EVEDB::invGroups::Stargate: {
                 CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
+                itemRef->SetAttribute(AttrRadius, cur.radius);
                 StargateSE *se = new StargateSE(itemRef, *(GetServiceMgr()), this);
                 ++m_gateCount;
                 pSE = se;
             } break;
             case EVEDB::invGroups::Planet: {
                 CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
+                itemRef->SetAttribute(AttrRadius, cur.radius);
                 PlanetSE *se = new PlanetSE(itemRef, *(GetServiceMgr()), this);
                 pSE = se;
             } break;
             case EVEDB::invGroups::Moon: {
                 CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
+                itemRef->SetAttribute(AttrRadius, cur.radius);
                 MoonSE *se = new MoonSE(itemRef, *(GetServiceMgr()), this);
                 pSE = se;
             } break;
             default: /*sun*/ {    // suns dont have anything special, so they are generic StaticSystemEntitys
                 CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
+                itemRef->SetAttribute(AttrRadius, cur.radius);
                 StaticSystemEntity *se = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
                 pSE = se;
             } break;
         }
-        if (!pSE) {
+        if (pSE == nullptr) {
             _log(INV__WARNING, "Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
             continue;
         }
@@ -469,6 +473,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 PlanetSE* pSE = new PlanetSE(celestial, *(system.GetServiceMgr()), &system);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making PlanetSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                _log(ITEM__ERROR, "DynamicEntityFactory::BuildEntity() making PlanetSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return pSE;
             } else if (entity.groupID == EVEDB::invGroups::Stargate) {
                 CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );

@@ -247,7 +247,7 @@ void ContainerSE::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
-        mass.Harmonic = -1.0f;
+        mass.harmonic = -1.0f;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );
@@ -256,7 +256,7 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         troll.effectStamp = sEntityList.GetStamp();
     into.Append( troll );
 
-    _log(COMMON__WARNING, "ContainerEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "ContainerSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void ContainerSE::MakeDamageState(DoDestinyDamageState &into)
@@ -270,7 +270,7 @@ void ContainerSE::MakeDamageState(DoDestinyDamageState &into)
 }
 
 PyDict *ContainerSE::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for ContainerEntity %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for ContainerSE %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
@@ -447,7 +447,7 @@ void WreckSE::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
-        mass.Harmonic = -1.0f;
+        mass.harmonic = -1.0f;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );
@@ -456,7 +456,7 @@ void WreckSE::EncodeDestiny( Buffer& into )
         troll.formationID = 0xFF;
         troll.effectStamp = sEntityList.GetStamp();
     into.Append( troll );
-    _log(COMMON__WARNING, "WreckEntity::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void WreckSE::MakeWreckState(DoDestinyDamageState3 &into)
@@ -468,7 +468,7 @@ void WreckSE::MakeWreckState(DoDestinyDamageState3 &into)
 
 
 PyDict *WreckSE::MakeSlimItem() {
-    _log(COMMON__WARNING, "MakeSlimItem for WreckEntity %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for WreckSE %s(%u)", m_self->itemName().c_str(), m_self->itemID());
 // NOTE  commented items i havent figured out yet...  -allan 9Dec15
     PyTuple* nameID = new PyTuple(2);
         nameID->SetItem(0,  new PyString("UI/Inflight/WreckNameShipName"));
