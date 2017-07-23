@@ -30,7 +30,6 @@
 
 PyObject* SystemDB::ListFactions() {
     DBQueryResult res;
-
     if(!sDatabase.RunQuery(res, "SELECT factionID FROM chrFactions")) {
         codelog(DATABASE__ERROR, "Error in ListFactions query: %s", res.error.c_str());
         return nullptr;
@@ -41,19 +40,19 @@ PyObject* SystemDB::ListFactions() {
 
 PyObject* SystemDB::ListJumps(uint32 stargateID) {
     DBQueryResult res;
-
     if(!sDatabase.RunQuery(res,
         "SELECT "
         "   celestialID AS toCelestialID,"
         "   solarSystemID AS locationID"
         " FROM mapJumps "
         "  LEFT JOIN mapDenormalize ON celestialID=itemID"
-        " WHERE stargateID=%u", stargateID)) {
+        " WHERE stargateID=%u", stargateID))
+    {
         codelog(DATABASE__ERROR, "Error in ListJumps query: %s", res.error.c_str());
-    return nullptr;
-        }
+        return nullptr;
+    }
 
-        return DBResultToRowset(res);
+    return DBResultToRowset(res);
 }
 
 bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into) {
@@ -114,6 +113,7 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         }
 
     _log(DATABASE__RESULTS, "LoadSystemDynamicEntities returned %u items", res.GetRowCount());
+
     DBResultRow row;
     DBSystemDynamicEntity entry;
     while(res.GetRow(row)) {
@@ -125,6 +125,7 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.categoryID = (EVEItemCategories)row.GetInt(4);
         entry.corporationID = 0;
         entry.allianceID = 0;
+        entry.factionID = 0;
         entry.x = row.GetDouble(5);
         entry.y = row.GetDouble(6);
         entry.z = row.GetDouble(7);
@@ -139,7 +140,7 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
 bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into)
 {
     using namespace EVEDB::invCategories;
-    DBQueryResult res;
+    DBQueryResult res, res2;
 
     if (!sDatabase.RunQuery(res,
         "SELECT"
@@ -149,29 +150,25 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "   e.ownerID,"
         "   t.groupID,"
         "   g.categoryID,"  //5
-        "   IFNULL(c.corporationID, 0),"
-        "   IFNULL(co.allianceID, 0),"
-        "   e.x, e.y, e.z" //10
+        "   e.x, e.y, e.z" //8
         " FROM entity AS e"
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
-        "  LEFT JOIN chrCharacter AS c ON c.characterID = e.ownerID"
-        "  LEFT JOIN corporation AS co ON co.corporationID = c.corporationID"
         " WHERE e.locationID = %u"
         "  AND g.categoryID IN (%d, %d, %d, %d, %d, %d, %d)"
         "  AND e.ownerID != 1"  // get dynamics not owned by the system
-        "  AND e.itemID NOT IN (c.shipID,c.capsuleID)"  // this is a problem....returns NOTHING because of this line.
+        //"  AND e.itemID NOT IN (c.shipID,c.capsuleID)"  // this is a problem....returns NOTHING because of this line.
         " ORDER BY e.itemID",
-        systemID, Celestial/*2*/,     // Celestial is for containers (wrecks, jetcans, lsc)
-        // include deployed items owned by players or corps
-        Deployable/*22*/, Drone/*18*/, Entity/*11*/,    // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
+        systemID, Celestial/*2*/,   // Celestial is for containers (wrecks, jetcans, lsc)
+        Deployable/*22*/,           // include deployed items owned by players or corps
+        Drone/*18*/, Entity/*11*/,  // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
         /*Structure*/23, StructureUpgrade/*39*/, SovereigntyStructure/*40*/ )) {
         codelog(DATABASE__ERROR, "Error in LoadPlayerDynamicEntities query: %s", res.error.c_str());
         return false;
     }
 
     _log(DATABASE__RESULTS, "LoadPlayerDynamicEntities returned %u items", res.GetRowCount());
-    DBResultRow row;
+    DBResultRow row, row2;
     DBSystemDynamicEntity entry;
     while(res.GetRow(row)) {
         entry.itemID = row.GetUInt(0);
@@ -180,11 +177,37 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.ownerID = row.GetInt(3);
         entry.groupID = row.GetInt(4);
         entry.categoryID = (EVEItemCategories)row.GetInt(5);
-        entry.corporationID = row.GetUInt(6);
-        entry.allianceID = row.GetUInt(7);
-        entry.x = row.GetDouble(8);
-        entry.y = row.GetDouble(9);
-        entry.z = row.GetDouble(10);
+        entry.x = row.GetDouble(6);
+        entry.y = row.GetDouble(7);
+        entry.z = row.GetDouble(8);
+        if (IsCorp(entry.ownerID)) {
+            entry.corporationID = entry.ownerID;
+            if (sDatabase.RunQuery(res2, "SELECT allianceID, warFactionID FROM corporation WHERE corporationID = %u", entry.ownerID)) {
+                res2.GetRow(row2);
+                entry.allianceID = row2.GetUInt(0);
+                entry.factionID = row2.GetUInt(1);
+            } else {
+                entry.allianceID = 0;
+                entry.factionID = 0;
+            }
+        } else {
+            //  should we test for ownerID is NOT corp/player here?  dunno...what other entities own things?
+            if (sDatabase.RunQuery(res2,
+                               "SELECT c.corporationID, co.allianceID, co.warFactionID FROM chrCharacter AS c"
+                               " LEFT JOIN corporation AS co USING (corporationID)"
+                               " WHERE c.characterID = %u", entry.ownerID))
+            {
+                res2.GetRow(row2);
+                entry.corporationID = row2.GetUInt(0);
+                entry.allianceID = row2.GetUInt(1);
+                entry.factionID = row2.GetUInt(2);
+            } else {
+                entry.corporationID = 0;
+                entry.allianceID = 0;
+                entry.factionID = 0;
+            }
+        }
+        res2.Reset();
         into.push_back(entry);
     }
     return true;

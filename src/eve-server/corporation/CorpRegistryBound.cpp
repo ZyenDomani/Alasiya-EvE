@@ -108,6 +108,30 @@ CorpRegistryBound::CorpRegistryBound(PyServiceMgr *mgr, CorporationDB& db, uint3
     PyCallable_REG_CALL(CorpRegistryBound, CreateAlliance);
     PyCallable_REG_CALL(CorpRegistryBound, GetSuggestedAllianceShortNames);
 
+    /*
+    def GetMembersPaged(self, page):
+        return self.GetCorpRegistry().GetMembersPaged(page)
+
+    def GetMembersByIds(self, memberIDs):
+        return self.GetCorpRegistry().GetMembersByIds(memberIDs)
+    def GetMemberIDsWithMoreThanAvgShares(self):
+        return self.GetCorpRegistry().GetMemberIDsWithMoreThanAvgShares()
+
+    def GetMemberIDsByQuery(self, query, includeImplied, searchTitles):
+        return self.GetCorpRegistry().GetMemberIDsByQuery(query, includeImplied, searchTitles)
+
+        if eve.session.corprole & const.corpRoleDirector:
+            return self.GetCorpRegistry().GetMemberTrackingInfo()
+        else:
+            return self.GetCorpRegistry().GetMemberTrackingInfoSimple()
+
+    def GetRentalDetailsPlayer(self):
+        return self.GetCorpRegistry().GetRentalDetailsPlayer()
+
+    def GetRentalDetailsCorp(self):
+        return self.GetCorpRegistry().GetRentalDetailsCorp()
+*/
+
     m_corpID = corpID;
 }
 
@@ -190,7 +214,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         reason.c_str()
         )
     ) {
-        codelog(CLIENT__ERROR, "Failed to record corp creation transaction.");
+        codelog(DATABASE__ERROR, "Failed to record corp creation transaction.");
     }
 
     // create default role title data
@@ -1005,7 +1029,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call) {
         "Changing own corporation logo."
     )
     ) {
-        codelog(CLIENT__ERROR, "Failed to record corp logo change transaction.");
+        codelog(DATABASE__ERROR, "Failed to record corp logo change transaction.");
         //no good reason to return... the money has actually been moved.
     }
 

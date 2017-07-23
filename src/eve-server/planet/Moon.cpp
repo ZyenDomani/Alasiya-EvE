@@ -10,6 +10,7 @@
 
 #include "Moon.h"
 #include "pos/Structure.h"
+#include "StaticDataMgr.h"
 #include "system/Celestial.h"
 #include "system/SystemManager.h"
 
@@ -54,14 +55,79 @@ Moon::Moon()
 MoonSE::MoonSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : StaticSystemEntity(self, services, system)
 {
-
+    /** @todo finish moon resources...this is hacked */
+    m_resources.clear();
+/*
+          [PyTuple 2 items]
+            [PyInt 40126701]
+            [PyList 20 items]
+              [PyTuple 2 items]
+                [PyInt 16633]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16634]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16635]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16636]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16637]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16638]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16639]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16640]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16641]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16642]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16643]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16644]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16646]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16647]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16648]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16649]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16650]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16651]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16652]
+                [PyInt 4]
+              [PyTuple 2 items]
+                [PyInt 16653]
+                [PyInt 4]
+                */
 }
 
 bool MoonSE::LoadExtras(SystemDB *db) {
     if (!StaticSystemEntity::LoadExtras(db))
         return false;
 
-    return true;
     /** @todo use this to initialize moongoo data, create planet manager for moon, or whatever else
      * i decide is needed for moon management
      *  this is called when SE is created.
@@ -102,5 +168,27 @@ Moon materials have different rarity classes, starting with R4 being the most co
     Titanium Chromide
     Vanadium Hafnite
      */
+    std::map<uint16, uint8> data;
+    sDataMgr.GetMoonResouces(data);
 
+    for (auto cur : data)
+        switch (cur.second) {
+            case 1: {
+                m_resources.insert(std::pair<uint16, uint8>(cur.first, 6));
+            } break;
+            case 4: {
+                m_resources.insert(std::pair<uint16, uint8>(cur.first, 4));
+            } break;
+            case 6:{
+                m_resources.insert(std::pair<uint16, uint8>(cur.first, 3));
+            } break;
+            case 8:{
+                m_resources.insert(std::pair<uint16, uint8>(cur.first, 2));
+            } break;
+            case 10:{
+                m_resources.insert(std::pair<uint16, uint8>(cur.first, 1));
+            } break;
+        }
+
+    return true;
 }

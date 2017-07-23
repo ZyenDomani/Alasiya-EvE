@@ -188,7 +188,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     }
     Call_FollowBall args;
     if (!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyNone();
     }
 
@@ -226,7 +226,7 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
 
     Call_SingleRealArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyNone();
     }
     /** @todo  rework this...this is to set speed ONLY...NOT to begin moving.  */
@@ -262,7 +262,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
 
     CallAlignTo arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyNone();
     }
 
@@ -302,7 +302,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
 
     Call_PointArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyNone();
     }
 
@@ -327,7 +327,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyNone();
     }
 
@@ -389,7 +389,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
   call.Dump(SERVICE__CALL_DUMP);
     Call_Orbit args;
     if (!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyNone();
     }
 
@@ -427,7 +427,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 
     SystemManager* pSystem = call.client->SystemMgr();
     if (pSystem == nullptr) {
-        codelog(CLIENT__ERROR, "%s: no system manager found", call.client->GetName());
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return new PyNone();
     }
 
@@ -603,7 +603,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     }
     SystemManager* pSystem = call.client->SystemMgr();
     if (pSystem == nullptr) {
-        codelog(CLIENT__ERROR, "%s: no system manager found", call.client->GetName());
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return new PyNone();
     }
 
@@ -611,7 +611,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     //sLog.Warning( "BeyonceBound", "Handle_CmdWarpToStuffAutopilot" );
     CallWarpToStuffAutopilot arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyNone();
 	}
 
@@ -678,7 +678,7 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
     }
     Call_TwoIntegerArgs args;  //sends stationID, shipID
     if (!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyNone();
     }
 
@@ -707,7 +707,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
     // sends fromGateID, toGateID, and shipID
     Call_StargateJump args;
     if (!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyNone();
     }
 
@@ -727,7 +727,7 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 
 	Call_SingleIntList arg;
 	if (!arg.Decode(&call.tuple)) {
-		codelog(CLIENT__ERROR, "%s: failed to decode args", call.client->GetName());
+		codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
 		return new PyNone();
 	}
 

@@ -96,7 +96,7 @@ void Sentry::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
-        mass.harmonic = -1.0f;
+        mass.harmonic = -1;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );
@@ -104,7 +104,7 @@ void Sentry::EncodeDestiny( Buffer& into )
         main.formationID = 0xFF;
     into.Append( main );
 
-    _log(COMMON__WARNING, "Sentry::EncodeDestiny: %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "Sentry::EncodeDestiny: %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void Sentry::SaveSentry()

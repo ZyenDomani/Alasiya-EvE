@@ -258,6 +258,18 @@ bool Client::SelectCharacter(uint32 char_id) {
         m_char->ResetModifiers();
         m_char->ProcessEffects();
         m_ship->SetPlayer(this);
+
+        //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
+        // on live, SCC sends mail about the loss of the players ship, and offers a new, fully-fitted ship as replacement.  we dont....yet
+        //  NOTE:   this also creates rookie ship for new char
+        if (m_ship->typeID() == itemTypeCapsule) {
+            if (sConfig.server.NoobShipCheck) {
+                Inventory* inv = m_system->GetStationFromInventory(m_locationID)->GetMyInventory();
+                if (!inv->HasShip())
+                    SpawnNewRookieShip();
+            } else
+                SpawnNewRookieShip();
+        }
     }
 
     //create corp and ally chat channels (if not already created)
@@ -675,7 +687,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         } else {
             m_ship->ChangeOwner(m_char->itemID());
             m_ship->SetFlag(flagAutoFit);
-            pShipSE = m_system->GetSEFromInventory(m_shipId);
+            pShipSE = m_system->GetSE(m_shipId);
             m_ship->UpdateModules();
             pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         }

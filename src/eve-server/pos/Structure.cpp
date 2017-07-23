@@ -282,10 +282,11 @@ void StructureItem::RemoveItem(InventoryItemRef item)
     AttrPosCargobayAcceptGroup = 1352,
     */
 StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system, const FactionData& data)
-: ObjectSystemEntity(structure, services, system)
+: ObjectSystemEntity(structure, services, system),
+  m_moonSE(nullptr)
 {
     //POS will anchor in the middle of the grid that you warp-in to.
-    
+
     m_co = false;
     m_tcu = false;
     m_pos = false;
@@ -297,15 +298,21 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_sentry = false;
     m_battery = false;
     m_outpost = false;
+
+    m_standing = 0.0f;
+    m_status = 0.0f;
+    m_statusDrop = false;
+    m_corpWar = false;
+    m_standingOwnerID = 0;
+
     /** @todo  hacked state...need to fix */
-    //res = sm.StartService('pwn').GetStructureState(slimItem)[0] in ('online', 'invulnerable', 'vulnerable', 'reinforced')
     m_state = STRUCTURE_ONLINE;
-    /** @todo  hacked moonID...need to fix */
-    m_moonID = 0;
     /** @todo (Allan) fix this later...used for shield passage */
     m_harmonic = -1;
+    /** @todo  this is direction from customs office to planet and set when co is created */
+    m_rotation = NULL_ORIGIN;
     m_timestamp = Win32TimeNow() - Win32Time_Day;
-    /** @todo (Allan) fix this */
+
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
@@ -330,17 +337,25 @@ void StructureSE::Init(StructureItemRef structure)
         } break;
         case EVEDB::invGroups::Control_Tower: {
             m_pos = true;
+            m_harmonic = 1; // or whatever the harmonic is for this tower....
+            m_moonSE = m_system->GetNearestMoon(GetPosition());
             // create and add force field to tower
             /** @todo  this will need to be based on structure state */
             //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
             ItemData idata(EVEDB::invTypes::typeForceField, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);
             InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);
-            if (!iRef)
+            if (iRef.get() == nullptr)
                 break;  // we'll get over it
             iRef->Relocate(GetPosition());
             iRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius));
             ItemSystemEntity* iSE = new ItemSystemEntity(iRef, m_services, m_system);
             m_system->AddEntity(iSE);
+            /** @todo  figure out how to save/load these */
+            m_standing = 0.0f;
+            m_status = 0.0f;
+            m_statusDrop = false;
+            m_corpWar = false;
+            m_standingOwnerID = 0; 
         } break;
         case EVEDB::invGroups::Jump_Portal_Array: {
             m_bridge = true;
@@ -426,15 +441,11 @@ void StructureSE::EncodeDestiny( Buffer& into )
     }
     into.Append( head );
 
-    DSTBALL_RIGID_Struct main;
-        main.formationID = 0xFF;
-    into.Append( main );
-
     if (m_tcu or m_pos) {
         MassSector mass;
             mass.cloak = 0;
-            mass.corporationID = GetCorporationID();
-            mass.allianceID = GetAllianceID();
+            mass.corporationID = m_corpID;
+            mass.allianceID = m_allyID;
             mass.harmonic = m_harmonic;
             mass.mass = m_self->type().mass();
         into.Append( mass );
@@ -468,8 +479,18 @@ void StructureSE::EncodeDestiny( Buffer& into )
                                       [Offset: (0, 2598, 1)]
 
                                       */
+    DSTBALL_RIGID_Struct main;
+        main.formationID = 0xFF;
+    into.Append( main );
+
     _log(SE__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
     _log(POS__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+/*
+    if (is_log_enabled(POS__DEBUG)) {
+        _log( POS__DEBUG, "StructureSE::EncodeDestiny()", "%s(%u)", GetName(), GetID());
+        uint8* data(into.Get<uint8*>(0));
+        Destiny::DumpUpdate( POS__DEBUG, data, (uint32)into.size());    <<-- this doesnt work right....dunno why
+    } */
 }
 
 PyDict *StructureSE::MakeSlimItem() {
@@ -477,7 +498,7 @@ PyDict *StructureSE::MakeSlimItem() {
     _log(POS__SLIMITEM, "MakeSlimItem for StructureSE %u", m_self->itemID());
     /** @todo (Allan) *Timestamp will need to be set to time current state is started. */
     PyDict *slim = new PyDict();
-        slim->SetItemString("name",                     new PyString(""));
+        slim->SetItemString("name",                     new PyString(m_self->itemName()));
         slim->SetItemString("nameID",                   new PyNone());
         slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
@@ -486,11 +507,12 @@ PyDict *StructureSE::MakeSlimItem() {
         slim->SetItemString("corpID",                   new PyInt(m_corpID));  //1000148 for interbus customs office (to be done on creation)
         slim->SetItemString("allianceID",               new PyInt(m_allyID));/** @todo (Allan) fix this later */
         slim->SetItemString("warFactionID",             new PyInt(m_warID));/** @todo (Allan) fix this later */
-        if (!m_co) {
+        if (m_pos) {    // for control towers
             slim->SetItemString("posTimestamp",         new PyLong(m_timestamp));
             slim->SetItemString("posState",             new PyInt(GetStructureState()));
             // this is only checked when state == (STRUCTURE_SHIELD_REINFORCE || STRUCTURE_ARMOR_REINFORCE)
-            slim->SetItemString("posDelayTime",         new PyInt(GetStructureState()));
+            if ((m_state == STRUCTURE_SHIELD_REINFORCE) or (m_state == STRUCTURE_ARMOR_REINFORCE))
+                slim->SetItemString("posDelayTime",         new PyInt(0));
             // this is boolean and ONLY included if structure is incapacitated
             if (m_state == STATE_INCAPACITATED)
                 slim->SetItemString("incapacitated",    new PyInt(1));
@@ -721,7 +743,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
 
             data.killBlob = blob.str().c_str();
             data.killTime = Win32TimeNow();
-            data.moonID = m_moonID;    /* denotes moonID for POS/Structure kills */
+            data.moonID = m_moonSE->GetID();    /* denotes moonID for POS/Structure kills */
 
         ServiceDB::SaveKillOrLoss(data);
 

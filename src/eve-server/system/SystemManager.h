@@ -61,18 +61,21 @@ public:
     SystemManager(uint32 systemID, PyServiceMgr &svc);//, ItemData idata);
     virtual ~SystemManager();
 
-    SystemEntity* GetSE(uint32 entityID) const;
     ItemFactory* itemFactory() const;
-    SystemEntity* GetSEFromInventory(uint32 itemID);
+    SystemEntity* GetSE(uint32 entityID) const;
+
+    PyServiceMgr* GetServiceMgr()                       { return &m_services; }
+    Inventory* GetSystemInv()                           { return m_solarSystemRef->GetMyInventory(); }
+
     ShipItemRef GetShipFromInventory(uint32 shipID);
     StationItemRef GetStationFromInventory(uint32 stationID);
     CargoContainerRef GetContainerFromInventory(uint32 contID);
-    PyServiceMgr* GetServiceMgr()                       { return &m_services; }
-    Inventory* GetSystemInv()                           { return m_solarSystemRef->GetMyInventory(); }
 
     bool ProcessTic();          // called at 1Hz.
     bool BootSystem();
     void UnloadSystem();
+
+    SystemEntity* GetNearestMoon(const GPoint& myPos);
 
     uint32 GetID() const                                { return m_data.systemID; }
     uint32 GetRegionID()                                { return m_data.regionID; }
@@ -131,7 +134,7 @@ protected:
     bool m_entityChanged;
     std::map<uint32, NPC*> m_npcs;
     std::map<uint32, Client*> m_clients;
-    std::map<uint32, SystemEntity*> m_entities;    //we own these, but they are also referenced in m_bubbles
+    std::map<uint32, SystemEntity*> m_entities;     //we own these, but they are also referenced in m_bubbles
     std::map<uint32, SystemEntity*> m_ticEntities;  // this list is for entities that need process tics (objects, npc, client ships)
 
 private:
@@ -143,6 +146,9 @@ private:
     std::vector<uint32> m_beltVector;
     SpawnBubbleVec m_ratBubbles;  // map of ids of bubbles with rat spawns
     SpawnBubbleVec m_roidBubbles;  // map of ids of bubbles with roid spawns
+
+    // for POS system       -allan 23July17
+    std::map<uint32, SystemEntity*> m_moonMap;        // our container, but we DONT own the SE*
 
     // for grid Unloading system  -allan  27June2015
     bool m_loaded;

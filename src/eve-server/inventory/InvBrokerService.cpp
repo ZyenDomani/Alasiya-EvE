@@ -305,8 +305,11 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
         return nullptr;
     }
 
+    /*
+     * 16:43:32 [SvcCall] Service InvBrokerBound::SetLabel()
+     * 16:43:32 [InvError] Character 140000000 tried to rename item 140035963 of character 1001000.
+     */
     item->Rename( args.itemName.c_str() );
-
 
     // This call as-is is NOT correct for any item category other than ships,
     // so until we can get the right string argument for other kinds of session updates,

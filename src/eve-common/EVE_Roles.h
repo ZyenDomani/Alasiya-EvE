@@ -147,8 +147,8 @@ enum:uint64_t {
     corpRoleAllAccount  = corpRoleJuniorAccountant|corpRoleAccountCanTake1|corpRoleAccountCanTake2|corpRoleAccountCanTake3|corpRoleAccountCanTake4|corpRoleAccountCanTake5|corpRoleAccountCanTake6|corpRoleAccountCanTake7|corpRoleAccountant,
     corpRoleAllContainer= corpRoleContainerCanTake1|corpRoleContainerCanTake2|corpRoleContainerCanTake3|corpRoleContainerCanTake4|corpRoleContainerCanTake5|corpRoleContainerCanTake6|corpRoleContainerCanTake7,
     corpRoleAllOffice   = corpRoleCanRentOffice|corpRoleCanRentFactorySlot|corpRoleCanRentResearchSlot,
-    corpRoleAllStarbase = corpRoleStarbaseCaretaker|corpRoleStarbaseConfig|corpRoleInfrastructureTacticalOfficer,
-    corpRoleAllManager  = corpRolePersonnelManager|corpRoleStationManager|corpRoleFactoryManager|corpRoleChatManager|corpRoleContractManager|corpRoleFittingManager|corpRoleEquipmentConfig,
+    corpRoleAllStarbase = corpRoleStarbaseCaretaker|corpRoleStarbaseConfig|corpRoleInfrastructureTacticalOfficer|corpRoleEquipmentConfig,
+    corpRoleAllManager  = corpRolePersonnelManager|corpRoleStationManager|corpRoleFactoryManager|corpRoleChatManager|corpRoleContractManager|corpRoleFittingManager,
 
     corpRoleAll         = corpRoleAllHangar|corpRoleAllAccount|corpRoleAllContainer|corpRoleAllOffice|corpRoleAllStarbase|corpRoleAllManager|corpRoleAuditor|corpRoleDiplomat,
     corpRoleAdmin       = corpRoleAll|corpRoleTrader|corpRoleSecurityOfficer|corpRoleDirector

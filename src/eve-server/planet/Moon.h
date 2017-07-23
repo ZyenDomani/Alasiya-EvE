@@ -16,7 +16,14 @@
 
 class PyServiceMgr;
 class SystemManager;
-class Moon;
+
+class Moon
+{
+public:
+    Moon();
+    ~Moon()       { /* do nothing here */ }
+
+};
 
 class MoonSE
 : public StaticSystemEntity
@@ -32,16 +39,17 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual bool LoadExtras(SystemDB *db);
+
+
+    /* specific functions handled in this class. */
+    std::map<uint16, uint8>::iterator GooEnd()       { return m_resources.end(); }
+    std::map<uint16, uint8>::iterator GooBegin()     { return m_resources.begin(); }
+
+private:
+    std::map<uint16, uint8> m_resources;     // moon goo (typeID, amt)
+
 };
 
-
-class Moon
-{
-public:
-    Moon();
-    ~Moon()       { /* do nothing here */ }
-
-};
 
 
 #endif  // EVEMU_PLANET_MOON_H_

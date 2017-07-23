@@ -102,7 +102,6 @@ void ManagerDB::GetStationSystem(DBQueryResult& res)
     if (!sDatabase.RunQuery(res, "SELECT stationID, solarSystemID FROM staStations")) {
         codelog(DATABASE__ERROR, "Error in GetStationSystem query: %s", res.error.c_str());
     }
-
 }
 
 void ManagerDB::GetStationRegion(DBQueryResult& res)
@@ -110,7 +109,13 @@ void ManagerDB::GetStationRegion(DBQueryResult& res)
     if (!sDatabase.RunQuery(res, "SELECT stationID, regionID FROM staStations")) {
         codelog(DATABASE__ERROR, "Error in GetStationRegion query: %s", res.error.c_str());
     }
+}
 
+void ManagerDB::GetMoonResouces(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT typeID,volume FROM invTypes WHERE groupID = %u", EVEDB::invGroups::Moon_Materials)) {
+        codelog(DATABASE__ERROR, "Error in GetMoonResouces query: %s", res.error.c_str());
+    }
 }
 
 void ManagerDB::SaveAnomaly(CosmicSignature& sig)

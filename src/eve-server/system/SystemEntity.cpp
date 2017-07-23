@@ -47,6 +47,7 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
   m_services(services),
   m_system(system)
 {
+    assert(system != nullptr);
     m_bubble = nullptr;
     m_destiny = nullptr;
     m_targMgr = new TargetManager(this);
@@ -328,21 +329,21 @@ void ItemSystemEntity::EncodeDestiny( Buffer& into )
     using namespace Destiny;
     BallHeader head;
         head.entityID = m_self->itemID();
-        head.mode = DSTBALL_FIELD;
+        head.mode = ((m_self->groupID() == EVEDB::invGroups::Force_Field) ? DSTBALL_FIELD : DSTBALL_RIGID);
         head.radius = m_radius;
         head.x = x();
         head.y = y();
         head.z = z();
         head.flags = IsMassive;
-    into.Append( head );
+        into.Append( head );
     MassSector mass;
         mass.mass = 10000000000;    // as seen in packets
         mass.cloak = 0;
-        mass.harmonic = 1.0f;   /** @todo  this will need to be added later */
+        mass.harmonic = -1;   /** @todo  this will need to be added later */
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );
-    DSTBALL_STOP_Struct main;
+    DSTBALL_FIELD_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
 
@@ -350,11 +351,15 @@ void ItemSystemEntity::EncodeDestiny( Buffer& into )
 }
 
 void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
-    into.shield = (m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double());
-    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
-    into.timestamp = Win32TimeNow();
-    into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double());
-    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double());
+    if (m_self->groupID() == EVEDB::invGroups::Force_Field) {
+        SystemEntity::MakeDamageState(into);
+    } else {
+        into.shield = (m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double());
+        into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();
+        into.timestamp = Win32TimeNow();
+        into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double());
+        into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double());
+    }
 }
 
 DungeonSE::DungeonSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system)
@@ -424,7 +429,7 @@ void DungeonSE::EncodeDestiny( Buffer& into )
 }
 
 
-/* Non-Static / Non-Mobile / Destructable / Celestial Objects - POS Structures, Outposts, Ships, Asteroids */
+/* Non-Static / Non-Mobile / Destructable / Celestial Objects - POS Structures, Outposts, empty Ships, Asteroids */
 ObjectSystemEntity::ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
@@ -563,7 +568,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
-        mass.harmonic = 1.0f;
+        mass.harmonic = -1;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );

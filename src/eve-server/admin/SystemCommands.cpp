@@ -124,6 +124,12 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
         SystemGPoint m_gp;
         if (IsSolarSystem(locationID))
             destinationPoint = m_gp.GetRandPointOnMoon(locationID);//GPoint(12457894200.0f, 17254864800.0f, 14851254800.0f);
+            /*
+        } else if (IsNotStaticItem(locationID)) {
+            destinationPoint = who->SystemMgr()->GetSE(locationID)->GetPosition();
+            locationID = who->GetLocationID();
+        }*/
+
         trMode = 1;
     }
 
@@ -507,6 +513,11 @@ PyResult Command_sov(Client* who, CommandDB* db, PyServiceMgr* services, const S
     /*
      *  ' /sov complete ' + str(itemID)
      */
+    /*
+     * 16:40:32 [CmdDump]   Call Arguments:
+     * 16:40:32 [CmdDump]       Tuple: 1 elements
+     * 16:40:32 [CmdDump]         [ 0] String: '/sov complete 140035963'
+     */
     return NULL;
 }
 
@@ -519,6 +530,12 @@ PyResult Command_pos(Client* who, CommandDB* db, PyServiceMgr* services, const S
      * ' /pos unanchor ' + str(itemID)
      * ' /pos anchor ' + str(itemID)
      * ' /pos offline ' + str(itemID)
+     */
+
+    /*
+     * 16:39:26 [CmdDump]   Call Arguments:
+     * 16:39:26 [CmdDump]       Tuple: 1 elements
+     * 16:39:26 [CmdDump]         [ 0] String: '/pos offline 140035963'
      */
     return NULL;
 }

@@ -586,7 +586,7 @@ PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& item
                 CargoContainerRef contRef = m_manager->item_factory->GetCargoContainer(itemRef->locationID());
                 contRef->RemoveItem(contRef);
             } else {
-                SystemEntity* pSE = pClient->SystemMgr()->GetSEFromInventory(itemRef->locationID());
+                SystemEntity* pSE = pClient->SystemMgr()->GetSE(itemRef->locationID());
                 if (pSE->IsWreckSE()) {
                     WreckContainerRef wreckRef = m_manager->item_factory->GetWreckContainer(itemRef->locationID());
                     wreckRef->RemoveItem(itemRef);

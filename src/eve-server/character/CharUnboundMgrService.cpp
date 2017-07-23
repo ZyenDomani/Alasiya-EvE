@@ -369,19 +369,12 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     if (!initInvItem)
         codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
 
-    // give the player their pod and ship
-    std::string ship_name = char_item->itemName() + "'s Noob Ship";
+    // give the player their pod
     std::string pod_name = char_item->itemName() + "'s Capsule";
-
-    ItemData shipItem( char_type->shipTypeID(), char_item->itemID(), char_item->locationID(), flagHangar, ship_name.c_str() );
-    ShipItemRef ship_item = m_manager->item_factory->SpawnShip( shipItem );
-    ship_item->SaveItem();
     ItemData podItem( itemTypeCapsule, char_item->itemID(), char_item->locationID(), flagCapsule, pod_name.c_str() );
     ShipItemRef pod_item = m_manager->item_factory->SpawnShip( podItem );
     pod_item->SaveItem();
-
     pClient->SetChar(char_item);        // set new charRef in client to properly set and save ship in next call
-    pClient->SetShip(ship_item);
     char_item->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
     char_item->SaveFullCharacter();
 

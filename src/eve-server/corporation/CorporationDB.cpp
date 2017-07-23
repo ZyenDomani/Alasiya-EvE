@@ -838,62 +838,65 @@ PyRep* CorporationDB::GetMember(uint32 charID)
 {
     DBQueryResult res;
 
-    /*
-      [PySubStream 328 bytes]
-        [PyPackedRow 110 bytes]
-          ["characterID" => <649670823> [I4]]
-          ["corporationID" => <1630077495> [I4]]
-          ["divisionID" => <0> [I4]]
-          ["squadronID" => <0> [I4]]
-          ["title" => <empty string> [WStr]]
-          ["roles" => <0> [I8]]
-          ["grantableRoles" => <0> [I8]]
-          ["startDateTime" => <129743526000000000> [FileTime]]
-          ["baseID" => <0> [I4]]
-          ["rolesAtHQ" => <0> [I8]]
-          ["grantableRolesAtHQ" => <0> [I8]]
-          ["rolesAtBase" => <0> [I8]]
-          ["grantableRolesAtBase" => <0> [I8]]
-          ["rolesAtOther" => <0> [I8]]
-          ["grantableRolesAtOther" => <0> [I8]]
-          ["titleMask" => <0> [I4]]
-          ["accountKey" => <1006> [I4]]
-          ["rowDate" => <129743526000000000> [FileTime]]
-          ["blockRoles" => <0> [Bool]]
-          ["ownerName" => <Rhonin Caldera> [WStr]]
-          */
-
     if (!sDatabase.RunQuery(res,
         " SELECT "
         "  c.characterID, "
         "  c.corporationID,"
-        "  0 AS divisionID,"
-        "  0 AS squadronID,"
+        //"  0 AS divisionID,"
+        //"  0 AS squadronID,"
         "  c.title, "
         "  c.rolesAtAll AS roles, "
         "  c.grantableRoles, "
         "  c.startDateTime, "
-        "  0 AS baseID,"
+        //"  0 AS baseID,"
         "  c.rolesAtHQ, "
         "  c.grantableRolesAtHQ, "
         "  c.rolesAtBase, "
         "  c.grantableRolesAtBase,"
         "  c.rolesAtOther, "
         "  c.grantableRolesAtOther, "
-        "  0 AS titleMask,"
+        //"  0 AS titleMask,"
         "  c.corpAccountKey AS accountKey, "
-        "  %" PRIu64 " rowDate,"
+        //"  %" PRIu64 " rowDate,"
         "  c.blockRoles,"
         "  e.itemName AS ownerName"
         " FROM chrCharacter AS c"
         "  LEFT JOIN entity AS e ON (c.characterID = e.itemID) "
-        " WHERE c.characterID = %u ", Win32TimeNow(), charID))
+        " WHERE c.characterID = %u ", charID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
 
-    return DBResultToPackedRowList(res);
+    PyList* list = new PyList();
+    DBResultRow row;
+
+    while (res.GetRow(row)) {
+        PyDict* dict = new PyDict();
+            dict->SetItemString( "characterID",             new PyInt(row.GetInt(0)));
+            dict->SetItemString( "corporationID",           new PyInt(row.GetInt(1)));
+            dict->SetItemString( "divisionID",              new PyInt(0));
+            dict->SetItemString( "squadronID",              new PyInt(0));
+            dict->SetItemString( "title",                   new PyInt(row.GetInt(2)));
+            dict->SetItemString( "roles",                   new PyLong(row.GetInt64(3)));
+            dict->SetItemString( "grantableRoles",          new PyInt(row.GetInt(4)));
+            dict->SetItemString( "startDateTime",           new PyLong(row.GetInt64(5)));
+            dict->SetItemString( "baseID",                  new PyInt(0));
+            dict->SetItemString( "rolesAtHQ",               new PyLong(row.GetInt64(6)));
+            dict->SetItemString( "grantableRolesAtHQ",      new PyLong(row.GetInt64(7)));
+            dict->SetItemString( "rolesAtBase",             new PyLong(row.GetInt64(8)));
+            dict->SetItemString( "grantableRolesAtBase",    new PyLong(row.GetInt64(9)));
+            dict->SetItemString( "rolesAtOther",            new PyLong(row.GetInt64(10)));
+            dict->SetItemString( "grantableRolesAtOther",   new PyLong(row.GetInt64(11)));
+            dict->SetItemString( "titleMask",               new PyInt(0));
+            dict->SetItemString( "accountKey",              new PyInt(row.GetInt(12)));
+            dict->SetItemString( "rowDate",                 new PyULong(Win32TimeNow()));
+            dict->SetItemString( "blockRoles",              new PyInt(0));
+            dict->SetItemString( "ownerName",               new PyString(row.GetText(13)));
+        list->AddItem(dict);
+    }
+
+    return new PyObject("util.KeyVal", list);
 }
 
 void CorporationDB::GetMembers(uint32 corpID, DBQueryResult& res)

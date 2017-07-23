@@ -1069,7 +1069,7 @@ bool CharacterDB::SetNote(uint32 ownerID, uint32 itemID, const char *str) {
              itemID, ownerID)
             )
         {
-            codelog(CLIENT__ERROR, "Error on query: %s", err.c_str());
+            codelog(DATABASE__ERROR, "Error on query: %s", err.c_str());
             return false;
         }
     } else {
@@ -1083,7 +1083,7 @@ bool CharacterDB::SetNote(uint32 ownerID, uint32 itemID, const char *str) {
             ownerID, itemID, escaped.c_str())
             )
         {
-            codelog(CLIENT__ERROR, "Error on query: %s", err.c_str());
+            codelog(DATABASE__ERROR, "Error on query: %s", err.c_str());
             return false;
         }
     }

@@ -3,10 +3,6 @@
 
 COMMAND( search, ROLE_VIP,
          "(text) - Search for items matching the specified query" )
-COMMAND( translocate, ROLE_VIP,
-         "(entityID) - Translocate to the specified entity" )
-COMMAND( tr, ROLE_VIP,
-         "(who) (entityID) - Translocate the specified person to the specified entity" )
 COMMAND( giveisk, ROLE_GMH,
          "(entityID) (amount) - Give the specified amount of cash to the specified character. 0=self." )
 COMMAND( pop, ROLE_ADMIN,

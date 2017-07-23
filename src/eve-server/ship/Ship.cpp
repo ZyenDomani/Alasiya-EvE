@@ -1360,7 +1360,7 @@ void Ship::EncodeDestiny( Buffer& into ) {
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
-        mass.harmonic = -1.0f;      // @todo:  fix this when POS system is more mature
+        mass.harmonic = -1;      // @todo:  fix this when POS system is more mature
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
         into.Append( mass );

@@ -211,7 +211,7 @@ void AsteroidBeltMgr::SpawnBelt(uint16 bubbleID)
     if (!IsCelestial(beltID))
         return;
 
-    SystemEntity* pSE = m_system->GetSEFromInventory(beltID);
+    SystemEntity* pSE = m_system->GetSE(beltID);
 
     bool ice = false;
     if (pSE->GetTypeID() == 17774)

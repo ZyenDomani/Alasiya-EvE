@@ -159,7 +159,7 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
 
 PyObject* RepairService::GetDamageReports(Client* pClient, uint32 stationID, uint32 itemID) {
     PyDict* data = new PyDict();
-        //data->SetItemString("RowClass", new PyToken("util.Row"));
+        data->SetItemString("RowClass", new PyToken("util.Row"));
     PyList* headerList = new PyList(7);
         headerList->SetItem(0, new PyString("itemID"));
         headerList->SetItem(1, new PyString("typeID"));

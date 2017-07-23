@@ -143,7 +143,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
-        mass.harmonic = -1.0f;
+        mass.harmonic = -1;
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
     into.Append( mass );

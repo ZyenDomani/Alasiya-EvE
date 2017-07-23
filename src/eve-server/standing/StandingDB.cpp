@@ -166,7 +166,7 @@ PyRep *StandingDB::GetSystemSovInfo(uint32 systemID) {
      *                        [PyIntegerVar 129743663400000000]
      *                        [PyString "claimStructureID"]     <<<<  Territorial Claim Unit
      *                        [PyIntegerVar 1005712174146]
-     *                        [PyString "hubID"]                <<<<  unknown
+     *                        [PyString "hubID"]                <<<<  iHub (infrastructure hub)
      *                        [PyIntegerVar 1005900797500]
      *                        [PyString "allianceID"]
      *                        [PyInt 99000289]

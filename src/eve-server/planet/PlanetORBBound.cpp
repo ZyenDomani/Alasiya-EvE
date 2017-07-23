@@ -136,6 +136,21 @@ PyResult PlanetORBBound::Handle_GMChangeSpaceObjectOwner( PyCallArgs& call )
     // this is called when taking ownership of control tower
     // sends itemID, corpID
     /*
+                state = slimItem.orbitalState
+                if state in (entities.STATE_UNANCHORING,
+                 entities.STATE_ONLINING,
+                 entities.STATE_ANCHORING,
+                 entities.STATE_OPERATING,
+                 entities.STATE_OFFLINING,
+                 entities.STATE_SHIELD_REINFORCE):
+                    stateText = pos.DISPLAY_NAMES[pos.Entity2DB(state)]
+                    gm.append(('End orbital state change (%s)' % stateText, self.CompleteOrbitalStateChange, (itemID,)))
+                elif state == entities.STATE_ANCHORED:
+                    upgradeType = sm.GetService('godma').GetTypeAttribute2(slimItem.typeID, const.attributeConstructionType)
+                    if upgradeType is not None:
+                        gm.append(('Upgrade to %s' % cfg.invtypes.Get(upgradeType).typeName, self.GMUpgradeOrbital, (itemID,)))
+                gm.append(('GM: Take Control', self.TakeOrbitalOwnership, (itemID, slimItem.planetID)))
+
     def TakeOrbitalOwnership(self, itemID, planetID):
         registry = moniker.GetPlanetOrbitalRegistry(session.solarsystemid)
         registry.GMChangeSpaceObjectOwner(itemID, session.corpid)

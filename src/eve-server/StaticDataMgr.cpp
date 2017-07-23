@@ -34,6 +34,7 @@ int StaticDataMgr::Initialize()
 void StaticDataMgr::Clear()
 {
     m_ramReq.clear();
+    m_moonGoo.clear();
     m_ramMatl.clear();
     m_regions.clear();
     m_systemData.clear();
@@ -211,6 +212,15 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
+    m_db.GetMoonResouces(*res);
+    while (res->GetRow(row)) {
+        //SELECT typeID,volume FROM invTypes [where group=moongoo]
+        m_moonGoo.insert(std::pair<uint16, uint8>(row.GetInt(0), (uint8)(row.GetFloat(1) *10)));
+    }
+    sLog.Cyan("    StaticDataMgr", "%u Moon Resources loaded in %.3fms.", m_moonGoo.size(), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
     m_db.GetRegionFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, factionID FROM mapRegions
@@ -224,6 +234,8 @@ void StaticDataMgr::Populate()
         m_skills.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
     sLog.Cyan("    StaticDataMgr", "%u misc data sets loaded in %.3fms.", (m_regions.size() + m_skills.size()), (GetTimeMSeconds() - start));
+
+
 
     //cleanup
     SafeDelete(res);
@@ -264,6 +276,13 @@ bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
     } else
         _log(DATABASE__MESSAGE, "Failed to query name for skill %u: Skill not found.", skillID);
     return false;
+}
+
+void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data)
+{
+    // make copy
+    for (auto cur : m_moonGoo)
+        data.insert(std::pair<uint16, uint8>(cur.first, cur.second));
 }
 
 void StaticDataMgr::GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData)

@@ -69,6 +69,7 @@ m_spawnMgr(new SpawnMgr(this, svc))
     m_activeRoidSpawns = 0;
 
     m_clients.clear();
+    m_moonMap.clear();
     m_entities.clear();
     m_ratBubbles.clear();
     m_beltVector.clear();
@@ -89,6 +90,7 @@ SystemManager::~SystemManager() {
         UnloadSystem();
 
     m_clients.clear();
+    m_moonMap.clear();
     m_entities.clear();
     m_ratBubbles.clear();
 
@@ -287,6 +289,7 @@ bool SystemManager::LoadSystemStatics() {
                 CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius);
                 MoonSE *se = new MoonSE(itemRef, *(GetServiceMgr()), this);
+                m_moonMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, se));
                 pSE = se;
             } break;
             default: /*sun*/ {    // suns dont have anything special, so they are generic StaticSystemEntitys
@@ -424,7 +427,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
             if ((entity.planetID) and (entity.groupID != EVEDB::invGroups::Test_Orbitals)) {
                 sSE->SetPlanet(entity.planetID);
                 SystemEntity* pPE = system.GetSE(entity.planetID);
-                if (pPE and pPE->IsPlanetSE()) {
+                if ((pPE != nullptr) and pPE->IsPlanetSE()) {
                     GVector dir(structure->position(), pPE->GetPosition());
                     dir.normalize();
                     sSE->SetRotation(dir);
@@ -862,17 +865,10 @@ void SystemManager::RemoveItemFromInventory(InventoryItemRef item)
 }
 
 SystemEntity* SystemManager::GetSE(uint32 entityID) const {
-    std::map<uint32, SystemEntity*>::const_iterator res = m_entities.find(entityID);
-    if (res == m_entities.end())
+    std::map<uint32, SystemEntity*>::const_iterator itr = m_entities.find(entityID);
+    if (itr == m_entities.end())
         return nullptr;
-    return res->second;
-}
-
-SystemEntity* SystemManager::GetSEFromInventory(uint32 itemID) {
-    auto itr = m_entities.find(itemID);
-    if (itr != m_entities.end())
-        return itr->second;
-    return nullptr;
+    return itr->second;
 }
 
 ShipItemRef SystemManager::GetShipFromInventory(uint32 shipID)
@@ -888,6 +884,17 @@ CargoContainerRef SystemManager::GetContainerFromInventory(uint32 contID)
 StationItemRef SystemManager::GetStationFromInventory(uint32 stationID)
 {
     return RefPtr<StationItem>::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( stationID ) );
+}
+
+SystemEntity* SystemManager::GetNearestMoon(const GPoint& myPos)
+{
+    std::map<double, SystemEntity*> sorted;
+    for (auto cur : m_moonMap) {
+        sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
+    }
+    std::map<double, SystemEntity*>::iterator itr = sorted.begin();
+
+    return itr->second;
 }
 
 

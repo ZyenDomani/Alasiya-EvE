@@ -114,7 +114,7 @@ void Missile::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
-        mass.harmonic = -1.0f;
+        mass.harmonic = -1;
         mass.corporationID = GetCorporationID();
         mass.allianceID = GetAllianceID();
     into.Append( mass );

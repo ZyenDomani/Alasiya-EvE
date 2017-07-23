@@ -68,6 +68,9 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
     data += sizeof(BallHeader);
     len -= sizeof(BallHeader);
 
+    if (ballhead->entityID == 0)
+        return 0;
+
     if (ballhead->mode > MAX_DSTBALL) {
         _log(into, "Error: Invalid ball mode %u for ball %d", ballhead->mode, ballhead->entityID);
         return 0;
@@ -87,7 +90,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
     */
     _log(into, "entity=%d, mode=%s(%u) flags=0x%X",
         ballhead->entityID, DSTBALL_modeNames[ballhead->mode], ballhead->mode, ballhead->flags);
-    _log(into, "   pos=(%.3f, %.3f, %.3f), radius=%.2f",
+    _log(into, "   pos=(%.3f, %.3f, %.3f), radius=%.1f",
         ballhead->x, ballhead->y, ballhead->z, ballhead->radius);
 
     if (ballhead->mode != DSTBALL_RIGID) {
@@ -95,7 +98,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         data += sizeof(MassSector);
         len -= sizeof(MassSector);
 
-        _log(into, "   mass=%.2f, cloak=%u, harmonic=%f, corp=%u, alliance=%d",
+        _log(into, "   mass=%.2f, cloak=%u, harmonic=%i, corp=%u, alliance=%d",
             masschunk->mass, masschunk->cloak, masschunk->harmonic, masschunk->corporationID, masschunk->allianceID);
     }
 

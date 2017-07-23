@@ -168,18 +168,33 @@ public:
     virtual void Killed(Damage &fatal_blow);
 
     /* specific functions handled in this class. */
-    inline void                SetPOSState(uint8 state) { m_state = state; }
-
-    uint8                       GetStructureState() const;
-
     PyTuple*                    GetEffectState();
+    uint8                       GetStructureState() const;
+    SystemEntity*               GetMoonEntity()         { return m_moonSE; }
+
+    inline void                SetPOSState(uint8 state) { m_state = state; }
 
     // for orbital infrastructure
     void                     SetPlanet(uint32 planetID) { m_planetID = planetID; }
     uint32                      GetPlanetID()           { return m_planetID; }
     void                        SetRotation(GPoint dir) { m_rotation = dir; }
 
+    // for tower sentry
+    void SetStanding(float set)                         { m_standing = set; }
+    void SetStatus(float set)                           { m_status = set; }
+    void SetStatusDrop(bool set)                        { m_statusDrop = set; }
+    void SetCorpWar(bool set)                           { m_corpWar = set; }
+    void SetStandingOwnerID(uint32 set)                 { m_standingOwnerID = set; }
+
+    bool GetStatusDrop()                                { return m_statusDrop; }
+    bool GetCorpWar()                                   { return m_corpWar; }
+    float GetStanding()                                 { return m_standing;}
+    float GetStatus()                                   { return m_status; }
+    uint32 GetStandingOwnerID()                         { return m_standingOwnerID; }
+
 private:
+    SystemEntity* m_moonSE; /* moon this structure is stationed at.  used for killMail */
+
     bool m_co;
     bool m_tcu;
     bool m_pos;
@@ -195,13 +210,19 @@ private:
     int32 m_harmonic;       /* this tracks shield frequency for passing thru POS shields.  not sure how to use it yet..  -1 means "none" (i think) */
 
     uint8 m_state;          /* used to hold POS state (online, reinforced, operating, etc) */
-    uint32 m_moonID;        /* moon this structure is stationed at.  used for killMail */
     uint32 m_towerID;       /* this is the controlling towerID for POS modules */
     uint64 m_timestamp;     /* used to track start time on POS states (onlining, reinforced, etc) */
 
     // for orbital infrastructure (customs office)
     GPoint m_rotation;      /* direction to planet (for correct orientation) */
     uint32 m_planetID;
+
+    // tower sentry settings
+    float m_standing;
+    float m_status;
+    bool m_statusDrop :1;
+    bool m_corpWar :1;
+    uint32 m_standingOwnerID; // corp/ally
 };
 
 #endif /* !__STRUCTURE__H__INCL__ */

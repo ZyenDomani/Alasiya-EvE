@@ -373,8 +373,6 @@ PyResult MapService::Handle_GetMyExtraMapInfo(PyCallArgs &call)
 PyResult MapService::Handle_GetAllianceJumpBridges(PyCallArgs &call)
 {
      /**
-        if not hasattr(session, 'allianceid') or session.allianceid == None:
-            return
 
         bridgesByLocation = m.GetAllianceJumpBridges()
         for toLocID, fromLocID in bridgesByLocation:
@@ -403,9 +401,9 @@ PyResult MapService::Handle_GetAllianceBeacons(PyCallArgs &call)
 }
 
 PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call)
-{/**
-		  sends nothing (no args)
-              returns  solarSystemID, structureID, ?
+{
+    /*
+    for solarSystemID, structureID in sm.RemoteSvc('map').GetLinkableJumpArrays():
              */
   sLog.White( "MapService::Handle_GetLinkableJumpArrays()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);

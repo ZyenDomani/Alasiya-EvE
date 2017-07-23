@@ -648,7 +648,7 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
         // NOTE:  PI launcheds have 5d timers
         /** @todo check capacities before adding items */
         SystemManager* pSysMgr(m_pSE->SystemMgr());
-        GPoint location(pSysMgr->GetSEFromInventory(m_pSE->GetID())->GetPosition());
+        GPoint location(pSysMgr->GetSE(m_pSE->GetID())->GetPosition());
         location.MakeRandomPointOnSphere(m_pSE->GetRadius() + 1000000);   //1000km orbit for launch can
         ItemData canData(EVEDB::invTypes::typePlanetaryLaunchContainer,
                         m_client->GetCharacterID(),  // owner is Character

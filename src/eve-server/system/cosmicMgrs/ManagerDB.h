@@ -48,6 +48,7 @@ public:
     void GetSystemData(DBQueryResult& res);
     void GetStaticData(DBQueryResult& res); // static items in a solar system
     void GetStationInfo(DBQueryResult& res);
+    void GetMoonResouces(DBQueryResult& res);
     void GetRAMMaterials(DBQueryResult& res);
     void GetBlueprintType(DBQueryResult& res);
     void GetStationSystem(DBQueryResult& res);

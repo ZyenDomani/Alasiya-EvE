@@ -37,6 +37,8 @@ public:
     void                Clear();
     void                GetInfo();
 
+    void                GetMoonResouces(std::map<uint16, uint8>& data);
+
     bool                IsSkillTypeID(uint16 typeID);
     bool                GetSkillName(uint16 skillID, std::string& name);
 
@@ -70,7 +72,7 @@ private:
     ManagerDB           m_db;
     StationDB           m_sdb;
 
-
+    std::map<uint16, uint8>         m_moonGoo;          // typeID/rarity
     std::map<uint32, uint32>        m_regions;          // regionID/factionID
     std::map<uint32, uint32>        m_stationRegion;    // stationID/regionID
     std::map<uint32, uint32>        m_stationSystem;    // stationID/systemID

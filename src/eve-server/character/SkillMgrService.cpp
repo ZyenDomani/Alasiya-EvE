@@ -162,7 +162,7 @@ PyResult SkillMgrBound::Handle_GetSkillQueueAndFreePoints(PyCallArgs &call) {
 PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
     Call_SaveSkillQueue args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -184,7 +184,7 @@ PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
 PyResult SkillMgrBound::Handle_AddToEndOfSkillQueue(PyCallArgs &call) {
     Call_TwoIntegerArgs args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
@@ -201,7 +201,7 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
     call.Dump(SERVICE__CALL_DUMP);
     Call_RespecCharacter spec;
     if (!spec.Decode(call.tuple)) {
-        codelog(CLIENT__ERROR, "Failed to decode RespecCharacter arguments");
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
