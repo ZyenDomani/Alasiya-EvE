@@ -318,6 +318,37 @@ PyResult CorpRegistryBound::Handle_GetMembers(PyCallArgs &call) {
     ret.realRowCount = rowCount;
 
     return ret.Encode();
+    /*
+    PyList* list = new PyList();
+    DBResultRow row;
+
+    while (res.GetRow(row)) {
+        PyDict* dict = new PyDict();
+        dict->SetItemString( "characterID",             new PyInt(row.GetInt(0)));
+        dict->SetItemString( "corporationID",           new PyInt(row.GetInt(1)));
+        dict->SetItemString( "divisionID",              new PyInt(0));
+        dict->SetItemString( "squadronID",              new PyInt(0));
+        dict->SetItemString( "title",                   new PyInt(row.GetInt(2)));
+        dict->SetItemString( "roles",                   new PyLong(row.GetInt64(3)));
+        dict->SetItemString( "grantableRoles",          new PyInt(row.GetInt(4)));
+        dict->SetItemString( "startDateTime",           new PyLong(row.GetInt64(5)));
+        dict->SetItemString( "baseID",                  new PyInt(0));
+        dict->SetItemString( "rolesAtHQ",               new PyLong(row.GetInt64(6)));
+        dict->SetItemString( "grantableRolesAtHQ",      new PyLong(row.GetInt64(7)));
+        dict->SetItemString( "rolesAtBase",             new PyLong(row.GetInt64(8)));
+        dict->SetItemString( "grantableRolesAtBase",    new PyLong(row.GetInt64(9)));
+        dict->SetItemString( "rolesAtOther",            new PyLong(row.GetInt64(10)));
+        dict->SetItemString( "grantableRolesAtOther",   new PyLong(row.GetInt64(11)));
+        dict->SetItemString( "titleMask",               new PyInt(0));
+        dict->SetItemString( "accountKey",              new PyInt(row.GetInt(12)));
+        dict->SetItemString( "rowDate",                 new PyULong(Win32TimeNow()));
+        dict->SetItemString( "blockRoles",              new PyInt(0));
+        dict->SetItemString( "ownerName",               new PyString(row.GetText(13)));
+        list->AddItem(dict);
+    }
+
+    return new PyObject("util.KeyVal", list);
+    */
 }
 
 PyResult CorpRegistryBound::Handle_GetRoleGroups(PyCallArgs &call) {

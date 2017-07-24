@@ -836,6 +836,7 @@ bool CorporationDB::CreateCorporationCreatePacket(Notify_OnCorporationChanged & 
 
 PyRep* CorporationDB::GetMember(uint32 charID)
 {
+    /** @note this is working.  -allan 23July17  */
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
@@ -845,7 +846,7 @@ PyRep* CorporationDB::GetMember(uint32 charID)
         //"  0 AS divisionID,"
         //"  0 AS squadronID,"
         "  c.title, "
-        "  c.rolesAtAll AS roles, "
+        "  c.rolesAtAll, "
         "  c.grantableRoles, "
         "  c.startDateTime, "
         //"  0 AS baseID,"
@@ -856,10 +857,10 @@ PyRep* CorporationDB::GetMember(uint32 charID)
         "  c.rolesAtOther, "
         "  c.grantableRolesAtOther, "
         //"  0 AS titleMask,"
-        "  c.corpAccountKey AS accountKey, "
+        "  c.corpAccountKey, "
         //"  %" PRIu64 " rowDate,"
         "  c.blockRoles,"
-        "  e.itemName AS ownerName"
+        "  e.itemName"
         " FROM chrCharacter AS c"
         "  LEFT JOIN entity AS e ON (c.characterID = e.itemID) "
         " WHERE c.characterID = %u ", charID))
@@ -867,7 +868,32 @@ PyRep* CorporationDB::GetMember(uint32 charID)
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
+    DBResultRow row;
+    res.GetRow(row);
 
+    PyDict* dict = new PyDict();
+        dict->SetItemString( "characterID",             new PyInt(row.GetInt(0)));
+        dict->SetItemString( "corporationID",           new PyInt(row.GetInt(1)));
+        dict->SetItemString( "divisionID",              new PyInt(0));
+        dict->SetItemString( "squadronID",              new PyInt(0));
+        dict->SetItemString( "title",                   new PyInt(row.GetInt(2)));
+        dict->SetItemString( "roles",                   new PyLong(row.GetInt64(3)));
+        dict->SetItemString( "grantableRoles",          new PyInt(row.GetInt(4)));
+        dict->SetItemString( "startDateTime",           new PyLong(row.GetInt64(5)));
+        dict->SetItemString( "baseID",                  new PyInt(0));
+        dict->SetItemString( "rolesAtHQ",               new PyLong(row.GetInt64(6)));
+        dict->SetItemString( "grantableRolesAtHQ",      new PyLong(row.GetInt64(7)));
+        dict->SetItemString( "rolesAtBase",             new PyLong(row.GetInt64(8)));
+        dict->SetItemString( "grantableRolesAtBase",    new PyLong(row.GetInt64(9)));
+        dict->SetItemString( "rolesAtOther",            new PyLong(row.GetInt64(10)));
+        dict->SetItemString( "grantableRolesAtOther",   new PyLong(row.GetInt64(11)));
+        dict->SetItemString( "titleMask",               new PyInt(0));
+        dict->SetItemString( "accountKey",              new PyInt(row.GetInt(12)));
+        dict->SetItemString( "rowDate",                 new PyULong(Win32TimeNow()));
+        dict->SetItemString( "blockRoles",              new PyInt(0));
+        dict->SetItemString( "ownerName",               new PyString(row.GetText(13)));
+    return new PyObject("util.KeyVal", dict);
+/*
     PyList* list = new PyList();
     DBResultRow row;
 
@@ -897,49 +923,36 @@ PyRep* CorporationDB::GetMember(uint32 charID)
     }
 
     return new PyObject("util.KeyVal", list);
+    */
 }
 
 void CorporationDB::GetMembers(uint32 corpID, DBQueryResult& res)
 {
-    /** @todo  this still needs work....todo later  */
-    /*
-    [PyString "characterID"]
-    [PyString "corporationID"]
-    [PyString "divisionID"]
-    [PyString "squadronID"]
-    [PyString "title"]
-    [PyString "roles"]
-    [PyString "grantableRoles"]
-    [PyString "startDateTime"]
-    [PyString "baseID"]
-    [PyString "rolesAtHQ"]
-    [PyString "grantableRolesAtHQ"]
-    [PyString "rolesAtBase"]
-    [PyString "grantableRolesAtBase"]
-    [PyString "rolesAtOther"]
-    [PyString "grantableRolesAtOther"]
-    [PyString "titleMask"]
-    [PyString "accountKey"]
-    [PyString "rowDate"]
-    [PyString "blockRoles"]
-    */
     if (!sDatabase.RunQuery(res,
-        "SELECT "
-        "  characterID, "
-        "  title, "
-        "  corpRole, "
-        "  grantableRoles, "
-        "  startDateTime, "
-        "  rolesAtAll, "
-        "  rolesAtHQ, "
-        "  grantableRolesAtHQ, "
-        "  rolesAtBase, "
-        "  grantableRolesAtBase,"
-        "  rolesAtOther, "
-        "  grantableRolesAtOther, "
-        "  corpAccountKey "
-        " FROM chrCharacter"
-        " WHERE corporationID = %u", corpID))
+        " SELECT "
+        "  c.characterID, "
+        "  c.corporationID,"
+        //"  0 AS divisionID,"
+        //"  0 AS squadronID,"
+        "  c.title, "
+        "  c.rolesAtAll AS roles, "
+        "  c.grantableRoles, "
+        "  c.startDateTime, "
+        //"  0 AS baseID,"
+        "  c.rolesAtHQ, "
+        "  c.grantableRolesAtHQ, "
+        "  c.rolesAtBase, "
+        "  c.grantableRolesAtBase,"
+        "  c.rolesAtOther, "
+        "  c.grantableRolesAtOther, "
+        //"  0 AS titleMask,"
+        "  c.corpAccountKey AS accountKey, "
+        //"  %" PRIu64 " rowDate,"
+        "  c.blockRoles,"
+        "  e.itemName AS ownerName"
+        " FROM chrCharacter AS c"
+        "  LEFT JOIN entity AS e ON (c.characterID = e.itemID) "
+        " WHERE c.corporationID = %u ", corpID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }

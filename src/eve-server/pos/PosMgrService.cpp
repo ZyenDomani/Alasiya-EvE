@@ -27,6 +27,7 @@
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
+#include "packets/POS.h"
 #include "planet/Moon.h"
 #include "pos/PosMgrService.h"
 #include "pos/Structure.h"
@@ -38,7 +39,7 @@ class PosMgrBound
 public:
     PyCallable_Make_Dispatcher(PosMgrBound);
 
-    PosMgrBound(PyServiceMgr* mgr)
+    PosMgrBound(PyServiceMgr* mgr, uint32 systemID)
     : PyBoundObject(mgr),
       m_dispatch(new Dispatcher(this))
     {
@@ -70,6 +71,7 @@ public:
         PyCallable_REG_CALL(PosMgrBound, GetTowerSentrySettings);
         PyCallable_REG_CALL(PosMgrBound, SetTowerSentrySettings);
 
+        m_systemID = systemID;
     }
 
     virtual ~PosMgrBound() {delete m_dispatch;}
@@ -104,6 +106,7 @@ public:
 protected:
     Dispatcher* const m_dispatch;
     PosMgrDB* m_db;        //we do not own this
+    uint32 m_systemID;
 
 };
 
@@ -126,11 +129,16 @@ PosMgrService::~PosMgrService() {
     delete m_dispatch;
 }
 
-PyBoundObject* PosMgrService::_CreateBoundObject( Client* c, const PyRep* bind_args ) {
-    _log( CLIENT__MESSAGE, "PosMgrService bind request for:" );
-    bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
+PyBoundObject* PosMgrService::_CreateBoundObject( Client* pClient, const PyRep* bind_args ) {
+    _log( POS__DUMP, "PosMgrService bind request for:" );
+    bind_args->Dump( POS__DUMP, "    " );
 
-    return new PosMgrBound( m_manager );
+    if (!bind_args->IsInt()){
+        sLog.Error( "PosMgrService::_CreateBoundObject", "%s: bind_args is not int: '%s'. ", pClient->GetName(), bind_args->TypeString() );
+        return nullptr;
+    }
+
+    return new PosMgrBound( m_manager, bind_args->AsInt()->value() );
 }
 
 PyResult PosMgrService::Handle_GetJumpArrays(PyCallArgs &call) {
@@ -149,7 +157,7 @@ PyResult PosMgrService::Handle_GetJumpArrays(PyCallArgs &call) {
     sLog.White( "PosMgrService::Handle_GetJumpArrays()", "size=%u", call.tuple->size());
     call.Dump(POS__DUMP);
 
-    return nullptr;
+    return new PyNone();
 }
 
 PyResult PosMgrService::Handle_GetControlTowers(PyCallArgs &call) {
@@ -161,7 +169,7 @@ PyResult PosMgrService::Handle_GetControlTowers(PyCallArgs &call) {
     sLog.White( "PosMgrService::Handle_GetControlTowers()", "size=%u", call.tuple->size());
     call.Dump(POS__DUMP);
 
-    return nullptr;
+    return new PyNone();
 }
 
 PyResult PosMgrService::Handle_InstallJumpBridgeLink(PyCallArgs &call) {
@@ -174,7 +182,7 @@ PyResult PosMgrService::Handle_InstallJumpBridgeLink(PyCallArgs &call) {
     sLog.White( "PosMgrService::Handle_InstallJumpBridgeLink()", "size=%u", call.tuple->size());
     call.Dump(POS__DUMP);
 
-    return nullptr;
+    return new PyNone();
 }
 
 PyResult PosMgrService::Handle_UninstallJumpBridgeLink(PyCallArgs &call) {
@@ -187,7 +195,7 @@ PyResult PosMgrService::Handle_UninstallJumpBridgeLink(PyCallArgs &call) {
     sLog.White( "PosMgrService::Handle_UninstallJumpBridgeLink()", "size=%u", call.tuple->size());
     call.Dump(POS__DUMP);
 
-    return nullptr;
+    return new PyNone();
 }
 
 PyResult PosMgrService::Handle_GetControlTowerFuelRequirements(PyCallArgs &call) {
@@ -206,19 +214,57 @@ PyResult PosMgrBound::Handle_GetTowerNotificationSettings(PyCallArgs &call) {
     sLog.White( "PosMgrBound::Handle_GetTowerNotificationSettings()", "size=%u", call.tuple->size());
     call.Dump(POS__DUMP);
 
-    PyRep *result(nullptr);
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
 
-    return result;
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyNone();
+    }
+
+    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetPOSSE();
+    if (pSSE == nullptr)
+        return new PyNone();
+
+    PyDict* data = new PyDict();
+    PyList* headerList = new PyList();
+        headerList->AddItem(new PyString("sendFuelNotifications"));
+        headerList->AddItem(new PyString("showInCalendar"));
+        data->SetItemString("header", headerList);
+    PyList* lineList = new PyList();
+        lineList->AddItem(new PyFloat(pSSE->SendFuelNotifications()));
+        lineList->AddItem(new PyFloat(pSSE->ShowInCalendar()));
+        data->SetItemString("line", lineList);
+
+    return new PyObject("util.Row", data);
 }
 
 PyResult PosMgrBound::Handle_SetTowerNotifications(PyCallArgs &call) {
     //self.posMgr.SetTowerNotifications(self.slimItem.itemID, showInCalendar, sendFuelNotifications)
-    sLog.White( "PosMgrBound::Handle_SetTowerNotifications()", "size=%u", call.tuple->size());
-    call.Dump(POS__DUMP);
 
-    PyRep *result(nullptr);
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
 
-    return result;
+    SetTowerNotification args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyNone();
+    }
+
+    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetPOSSE();
+    if (pSSE == nullptr)
+        return new PyNone();
+
+    pSSE->SetSendFuelNotifications(args.sendFuelNotifications);
+    pSSE->SetShowInCalendar(args.showInCalendar);
+    return new PyNone();
 }
 
 PyResult PosMgrBound::Handle_GetTowerSentrySettings(PyCallArgs &call) {
@@ -232,12 +278,12 @@ PyResult PosMgrBound::Handle_GetTowerSentrySettings(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
+        return new PyNone();
     }
 
     StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetPOSSE();
     if (pSSE == nullptr)
-        return nullptr;
+        return new PyNone();
 
     PyDict* data = new PyDict();
     PyList* headerList = new PyList();
@@ -260,33 +306,50 @@ PyResult PosMgrBound::Handle_GetTowerSentrySettings(PyCallArgs &call) {
 
 PyResult PosMgrBound::Handle_SetTowerSentrySettings(PyCallArgs &call) {
     //  self.posMgr.SetTowerSentrySettings(self.slimItem.itemID, standing, status, statusDrop, war, useAllianceStandings)
-    /*
-            [PyString "SetTowerSentrySettings"]
-            [PyTuple 7 items]
-              [PyIntegerVar 1002332856217]
-              [PyFloat 0.1]
-              [PyFloat 0.2]
-              [PyBool True]
-              [PyBool True]
-              [PyBool True]
-              [PyInt 0]
-              */
-    sLog.White( "PosMgrBound::Handle_SetTowerSentrySettings()", "size=%u", call.tuple->size());
-    call.Dump(POS__DUMP);
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
 
-    PyRep *result(nullptr);
+    SetTowerSentrySettings args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyNone();
+    }
 
-    return result;
+    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetPOSSE();
+    if (pSSE == nullptr)
+        return new PyNone();
+
+    pSSE->SetStanding(args.standing);
+    pSSE->SetStatus(args.status);
+    pSSE->SetStatusDrop(args.statusDrop);
+    pSSE->SetCorpWar(args.corpWar);
+    pSSE->SetStandingOwnerID(args.standingOwnerID);
 }
 
 PyResult PosMgrBound::Handle_GetStarbasePermissions(PyCallArgs &call) {
     //  deployFlags, usageFlagsList = self.posMgr.GetStarbasePermissions(self.slimItem.itemID)
-    sLog.White( "PosMgrBound::Handle_GetStarbasePermissions()", "size=%u", call.tuple->size());
-    call.Dump(POS__DUMP);
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
 
-    PyRep *result(nullptr);
+    SetTowerSentrySettings args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyNone();
+    }
 
-    return result;
+    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetPOSSE();
+    if (pSSE == nullptr)
+        return new PyNone();
+
+    /** @todo  incomplete... finish this  */
+
+    return new PyNone();
 }
 
 PyResult PosMgrBound::Handle_SetStarbasePermissions(PyCallArgs &call) {
@@ -330,15 +393,15 @@ if self.moon[1] is not None:
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
+        return new PyNone();
     }
 
     StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetPOSSE();
     if (pSSE == nullptr)
-        return nullptr;
+        return new PyNone();
     MoonSE* pMSE = pSSE->GetMoonEntity()->GetMoonSE();
     if (pMSE == nullptr)
-        return nullptr;
+        return new PyNone();
 
     std::map<uint16, uint8>::iterator itr = pMSE->GooBegin();
     std::map<uint16, uint8>::iterator end = pMSE->GooEnd();
@@ -576,12 +639,26 @@ PyResult PosMgrBound::Handle_CompleteOrbitalStateChange(PyCallArgs &call) {
 */
 
 PyResult PosMgrBound::Handle_GetMoonProcessInfoForTower(PyCallArgs &call) {
-    sLog.White( "PosMgrBound::Handle_GetMoonProcessInfoForTower()", "size=%u", call.tuple->size());
-    call.Dump(POS__DUMP);
+    //itemID, active, reaction, connections, demands, supplies in info:
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
 
-    PyRep *result(nullptr);
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyNone();
+    }
 
-    return result;
+    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetPOSSE();
+    if (pSSE == nullptr)
+        return new PyNone();
+
+    /** @todo  incomplete... finish this  */
+
+    return new PyNone();
 }
 
 PyResult PosMgrBound::Handle_LinkResourcesForTower(PyCallArgs &call) {

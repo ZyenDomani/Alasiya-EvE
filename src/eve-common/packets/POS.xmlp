@@ -1,0 +1,24 @@
+
+
+<elements>
+
+  <elementDef name="SetTowerNotification">
+    <tupleInline>
+      <int name="structureID" />
+      <bool name="showInCalendar" />
+      <bool name="sendFuelNotifications" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="SetTowerSentrySettings">
+    <tupleInline>
+      <int name="structureID" />
+      <real name="standing" />
+      <real name="status" />
+      <bool name="statusDrop" />
+      <bool name="corpWar" />
+      <int name="standingOwnerID" />
+    </tupleInline>
+  </elementDef>
+
+</elements>

@@ -303,6 +303,8 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_status = 0.0f;
     m_statusDrop = false;
     m_corpWar = false;
+    m_showInCalendar = false;
+    m_sendFuelNotifications = false;
     m_standingOwnerID = 0;
 
     /** @todo  hacked state...need to fix */
@@ -355,7 +357,9 @@ void StructureSE::Init(StructureItemRef structure)
             m_status = 0.0f;
             m_statusDrop = false;
             m_corpWar = false;
-            m_standingOwnerID = 0; 
+            m_standingOwnerID = 0;
+            m_showInCalendar = false;
+            m_sendFuelNotifications = false;
         } break;
         case EVEDB::invGroups::Jump_Portal_Array: {
             m_bridge = true;
@@ -441,7 +445,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
     }
     into.Append( head );
 
-    if (m_tcu or m_pos) {
+    //if (m_tcu or m_pos) {
         MassSector mass;
             mass.cloak = 0;
             mass.corporationID = m_corpID;
@@ -449,7 +453,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
             mass.harmonic = m_harmonic;
             mass.mass = m_self->type().mass();
         into.Append( mass );
-    }
+    //}
 
     /** @todo (Allan) fix this when POS system is more operational */
     /* TODO  query and configure miniballs for entity
@@ -505,17 +509,17 @@ PyDict *StructureSE::MakeSlimItem() {
         slim->SetItemString("ownerID",                  new PyInt(m_self->ownerID()));  //1000148 for interbus customs office (to be done on creation)
 
         slim->SetItemString("corpID",                   new PyInt(m_corpID));  //1000148 for interbus customs office (to be done on creation)
-        slim->SetItemString("allianceID",               new PyInt(m_allyID));/** @todo (Allan) fix this later */
-        slim->SetItemString("warFactionID",             new PyInt(m_warID));/** @todo (Allan) fix this later */
-        if (m_pos) {    // for control towers
+        slim->SetItemString("allianceID",               new PyInt(m_allyID));
+        slim->SetItemString("warFactionID",             new PyInt(m_warID));
+        if (m_pos or m_module) {    // for control towers and structures
             slim->SetItemString("posTimestamp",         new PyLong(m_timestamp));
             slim->SetItemString("posState",             new PyInt(GetStructureState()));
+            slim->SetItemString("incapacitated",        new PyInt((m_state == STATE_INCAPACITATED) ? 1 : 0));
+        }
+        if (m_pos) {
             // this is only checked when state == (STRUCTURE_SHIELD_REINFORCE || STRUCTURE_ARMOR_REINFORCE)
             if ((m_state == STRUCTURE_SHIELD_REINFORCE) or (m_state == STRUCTURE_ARMOR_REINFORCE))
                 slim->SetItemString("posDelayTime",         new PyInt(0));
-            // this is boolean and ONLY included if structure is incapacitated
-            if (m_state == STATE_INCAPACITATED)
-                slim->SetItemString("incapacitated",    new PyInt(1));
         }
         if (m_outpost) {
             slim->SetItemString("startTimestamp",       new PyLong(m_timestamp));

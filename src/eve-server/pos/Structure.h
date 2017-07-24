@@ -179,7 +179,7 @@ public:
     uint32                      GetPlanetID()           { return m_planetID; }
     void                        SetRotation(GPoint dir) { m_rotation = dir; }
 
-    // for tower sentry
+    // for tower management
     void SetStanding(float set)                         { m_standing = set; }
     void SetStatus(float set)                           { m_status = set; }
     void SetStatusDrop(bool set)                        { m_statusDrop = set; }
@@ -191,6 +191,12 @@ public:
     float GetStanding()                                 { return m_standing;}
     float GetStatus()                                   { return m_status; }
     uint32 GetStandingOwnerID()                         { return m_standingOwnerID; }
+
+
+    bool ShowInCalendar()                               { return m_showInCalendar; }
+    bool SendFuelNotifications()                        { return m_sendFuelNotifications; }
+    void SetShowInCalendar(bool set)                    { m_showInCalendar = set; }
+    void SetSendFuelNotifications(bool set)             { m_sendFuelNotifications = set; }
 
 private:
     SystemEntity* m_moonSE; /* moon this structure is stationed at.  used for killMail */
@@ -217,12 +223,14 @@ private:
     GPoint m_rotation;      /* direction to planet (for correct orientation) */
     uint32 m_planetID;
 
-    // tower sentry settings
+    // tower management
     float m_standing;
     float m_status;
     bool m_statusDrop :1;
     bool m_corpWar :1;
     uint32 m_standingOwnerID; // corp/ally
+    bool m_showInCalendar :1;
+    bool m_sendFuelNotifications :1;
 };
 
 #endif /* !__STRUCTURE__H__INCL__ */
