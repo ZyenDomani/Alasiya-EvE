@@ -4,13 +4,13 @@
  *   Specific Class for managing POS-specific data.
  *
  * @Author:         Allan
- * @date:   unknown
+ * @date:   24July17
  */
 
-#ifndef EVEMU_POS_STRUCTURE_H_
-#define EVEMU_POS_STRUCTURE_H_
+#ifndef EVEMU_POS_POS_H_
+#define EVEMU_POS_POS_H_
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "pos/Structure.h"
 
@@ -52,9 +52,8 @@ public:
     void SetShowInCalendar(bool set)                    { data.showInCalendar = set; }
     void SetSendFuelNotifications(bool set)             { data.sendFuelNotifications = set; }
 
-protected:
-    void GetTowerData(EVEPOS::TowerData& tData)          { tData = data; }
-    
+    void GetTowerData(EVEPOS::TowerData& tData)         { tData = data; }
+
 private:
     EVEPOS::TowerData data;
 };
@@ -125,4 +124,4 @@ public:
 
 };
 
-#endif  // EVEMU_POS_STRUCTURE_H_
+#endif  // EVEMU_POS_POS_H_

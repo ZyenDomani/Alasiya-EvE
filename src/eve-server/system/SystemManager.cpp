@@ -422,8 +422,8 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
             if (!structure)
                 return nullptr;
             /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-
-            switch(entity.groupID()) {
+            StructureSE* sSE(nullptr);
+            switch(entity.groupID) {
                 case EVEDB::invGroups::Control_Tower: {
                 } break;
                 case EVEDB::invGroups::Mobile_Missile_Sentry:

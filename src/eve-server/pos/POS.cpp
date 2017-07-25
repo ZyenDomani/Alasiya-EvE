@@ -4,7 +4,7 @@
  *   Specific Class for managing POS-specific data.
  *
  * @Author:         Allan
- * @date:   unknown
+ * @date:   24July17
  */
 
 
@@ -55,8 +55,8 @@ void TowerSE::Init(StructureItemRef structure)
     ItemData idata(EVEDB::invTypes::typeForceField, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);
     InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);
     if (iRef.get() == nullptr)
-        break;  // we'll get over it
-        iRef->Relocate(GetPosition());
+        ;  // we'll get over it
+    iRef->Relocate(GetPosition());
     iRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius));
     ItemSystemEntity* iSE = new ItemSystemEntity(iRef, m_services, m_system);
     m_system->AddEntity(iSE);

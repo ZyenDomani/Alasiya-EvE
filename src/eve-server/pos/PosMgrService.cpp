@@ -30,7 +30,7 @@
 #include "packets/POS.h"
 #include "planet/Moon.h"
 #include "pos/PosMgrService.h"
-#include "pos/Structure.h"
+#include "pos/POS.h"
 #include "system/SystemManager.h"
 
 class PosMgrBound
@@ -226,8 +226,8 @@ PyResult PosMgrBound::Handle_GetTowerNotificationSettings(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetTowerSE();
-    if (pSSE == nullptr)
+    TowerSE* pTSE = pSystem->GetSE(arg.arg)->GetTowerSE();
+    if (pTSE == nullptr)
         return new PyNone();
 
     PyDict* data = new PyDict();
@@ -236,8 +236,8 @@ PyResult PosMgrBound::Handle_GetTowerNotificationSettings(PyCallArgs &call) {
         headerList->AddItem(new PyString("showInCalendar"));
         data->SetItemString("header", headerList);
     PyList* lineList = new PyList();
-        lineList->AddItem(new PyFloat(pSSE->SendFuelNotifications()));
-        lineList->AddItem(new PyFloat(pSSE->ShowInCalendar()));
+        lineList->AddItem(new PyFloat(pTSE->SendFuelNotifications()));
+        lineList->AddItem(new PyFloat(pTSE->ShowInCalendar()));
         data->SetItemString("line", lineList);
 
     return new PyObject("util.Row", data);
@@ -258,12 +258,12 @@ PyResult PosMgrBound::Handle_SetTowerNotifications(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetTowerSE();
-    if (pSSE == nullptr)
+    TowerSE* pTSE = pSystem->GetSE(args.structureID)->GetTowerSE();
+    if (pTSE == nullptr)
         return new PyNone();
 
-    pSSE->SetSendFuelNotifications(args.sendFuelNotifications);
-    pSSE->SetShowInCalendar(args.showInCalendar);
+    pTSE->SetSendFuelNotifications(args.sendFuelNotifications);
+    pTSE->SetShowInCalendar(args.showInCalendar);
     return new PyNone();
 }
 
@@ -281,8 +281,8 @@ PyResult PosMgrBound::Handle_GetTowerSentrySettings(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetTowerSE();
-    if (pSSE == nullptr)
+    TowerSE* pTSE = pSystem->GetSE(arg.arg)->GetTowerSE();
+    if (pTSE == nullptr)
         return new PyNone();
 
     PyDict* data = new PyDict();
@@ -294,11 +294,11 @@ PyResult PosMgrBound::Handle_GetTowerSentrySettings(PyCallArgs &call) {
         headerList->AddItem(new PyString("standingOwnerID"));
         data->SetItemString("header", headerList);
     PyList* lineList = new PyList();
-        lineList->AddItem(new PyFloat(pSSE->GetStanding()));
-        lineList->AddItem(new PyFloat(pSSE->GetStatus()));
-        lineList->AddItem(new PyBool(pSSE->GetStatusDrop()));
-        lineList->AddItem(new PyBool(pSSE->GetCorpWar()));
-        lineList->AddItem(new PyInt(pSSE->GetStandingOwnerID()));
+        lineList->AddItem(new PyFloat(pTSE->GetStanding()));
+        lineList->AddItem(new PyFloat(pTSE->GetStatus()));
+        lineList->AddItem(new PyBool(pTSE->GetStatusDrop()));
+        lineList->AddItem(new PyBool(pTSE->GetCorpWar()));
+        lineList->AddItem(new PyInt(pTSE->GetStandingOwnerID()));
         data->SetItemString("line", lineList);
 
     return new PyObject("util.Row", data);
@@ -318,15 +318,15 @@ PyResult PosMgrBound::Handle_SetTowerSentrySettings(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetTowerSE();
-    if (pSSE == nullptr)
+    TowerSE* pTSE = pSystem->GetSE(args.structureID)->GetTowerSE();
+    if (pTSE == nullptr)
         return new PyNone();
 
-    pSSE->SetStanding(args.standing);
-    pSSE->SetStatus(args.status);
-    pSSE->SetStatusDrop(args.statusDrop);
-    pSSE->SetCorpWar(args.corpWar);
-    pSSE->SetStandingOwnerID(args.standingOwnerID);
+    pTSE->SetStanding(args.standing);
+    pTSE->SetStatus(args.status);
+    pTSE->SetStatusDrop(args.statusDrop);
+    pTSE->SetCorpWar(args.corpWar);
+    pTSE->SetStandingOwnerID(args.standingOwnerID);
 }
 
 PyResult PosMgrBound::Handle_GetStarbasePermissions(PyCallArgs &call) {
@@ -343,8 +343,8 @@ PyResult PosMgrBound::Handle_GetStarbasePermissions(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetTowerSE();
-    if (pSSE == nullptr)
+    TowerSE* pTSE = pSystem->GetSE(args.structureID)->GetTowerSE();
+    if (pTSE == nullptr)
         return new PyNone();
 
     /** @todo  incomplete... finish this  */
@@ -396,10 +396,10 @@ if self.moon[1] is not None:
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetTowerSE();
-    if (pSSE == nullptr)
+    TowerSE* pTSE = pSystem->GetSE(arg.arg)->GetTowerSE();
+    if (pTSE == nullptr)
         return new PyNone();
-    MoonSE* pMSE = pSSE->GetMoonEntity()->GetMoonSE();
+    MoonSE* pMSE = pTSE->GetMoonEntity()->GetMoonSE();
     if (pMSE == nullptr)
         return new PyNone();
 
@@ -652,8 +652,8 @@ PyResult PosMgrBound::Handle_GetMoonProcessInfoForTower(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetTowerSE();
-    if (pSSE == nullptr)
+    TowerSE* pTSE = pSystem->GetSE(arg.arg)->GetTowerSE();
+    if (pTSE == nullptr)
         return new PyNone();
 
     /** @todo  incomplete... finish this  */

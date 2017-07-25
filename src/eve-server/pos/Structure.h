@@ -177,16 +177,7 @@ public:
 protected:
     PosMgrDB m_db;
 
-private:
     SystemEntity* m_moonSE; /* moon this structure is stationed at.  used for killMail */
-
-    bool m_co :1;
-    bool m_tcu :1;
-    bool m_sbu :1;
-    bool m_bridge :1;
-    bool m_jammer :1;
-    bool m_module :1;
-    bool m_outpost :1;
 
     uint8 m_state;          /* used to hold POS state (online, reinforced, operating, etc) */
     uint32 m_towerID;       /* this is the controlling towerID for POS modules */
@@ -195,6 +186,15 @@ private:
     // for orbital infrastructure (customs office)
     GPoint m_rotation;      /* direction to planet (for correct orientation) */
     uint32 m_planetID;
+
+private:
+    bool m_co :1;
+    bool m_tcu :1;
+    bool m_sbu :1;
+    bool m_bridge :1;
+    bool m_jammer :1;
+    bool m_module :1;
+    bool m_outpost :1;
 
 };
 

@@ -71,15 +71,15 @@ bool PosMgrDB::GetPOSData(EVEPOS::SaveData& data)
     data.harmonic = 0;
     data.state = 0;
     data.towerID = 0;
-    data.rotation = 0;
+    data.rotation = NULL_ORIGIN;
     data.planetID = 0;
     data.status = 0.0f;
     data.standing = 0.0f;
     data.standingOwnerID = 0;
-    data.corpWar = row.GetBool();
-    data.statusDrop = row.GetBool();
-    data.showInCalendar = row.GetBool();
-    data.sendFuelNotifications = row.GetBool();
+    data.corpWar = row.GetBool(0);
+    data.statusDrop = row.GetBool(0);
+    data.showInCalendar = row.GetBool(0);
+    data.sendFuelNotifications = row.GetBool(0);
     return true;
 }
 
