@@ -226,7 +226,7 @@ PyResult PosMgrBound::Handle_GetTowerNotificationSettings(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetPOSSE();
+    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetTowerSE();
     if (pSSE == nullptr)
         return new PyNone();
 
@@ -258,7 +258,7 @@ PyResult PosMgrBound::Handle_SetTowerNotifications(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetPOSSE();
+    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetTowerSE();
     if (pSSE == nullptr)
         return new PyNone();
 
@@ -281,7 +281,7 @@ PyResult PosMgrBound::Handle_GetTowerSentrySettings(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetPOSSE();
+    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetTowerSE();
     if (pSSE == nullptr)
         return new PyNone();
 
@@ -318,7 +318,7 @@ PyResult PosMgrBound::Handle_SetTowerSentrySettings(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetPOSSE();
+    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetTowerSE();
     if (pSSE == nullptr)
         return new PyNone();
 
@@ -343,7 +343,7 @@ PyResult PosMgrBound::Handle_GetStarbasePermissions(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetPOSSE();
+    StructureSE* pSSE = pSystem->GetSE(args.structureID)->GetTowerSE();
     if (pSSE == nullptr)
         return new PyNone();
 
@@ -396,7 +396,7 @@ if self.moon[1] is not None:
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetPOSSE();
+    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetTowerSE();
     if (pSSE == nullptr)
         return new PyNone();
     MoonSE* pMSE = pSSE->GetMoonEntity()->GetMoonSE();
@@ -652,7 +652,7 @@ PyResult PosMgrBound::Handle_GetMoonProcessInfoForTower(PyCallArgs &call) {
         return new PyNone();
     }
 
-    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetPOSSE();
+    StructureSE* pSSE = pSystem->GetSE(arg.arg)->GetTowerSE();
     if (pSSE == nullptr)
         return new PyNone();
 

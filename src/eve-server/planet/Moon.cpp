@@ -130,7 +130,7 @@ bool MoonSE::LoadExtras(SystemDB *db) {
 
     /** @todo use this to initialize moongoo data, create planet manager for moon, or whatever else
      * i decide is needed for moon management
-     *  this is called when SE is created.
+     *  this is called after SE is created.
      */
 
     /*  moon goo data (notes for me)

@@ -596,7 +596,7 @@ PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& item
                 } else if (pSE->IsShipSE()) {
                     ShipItemRef shipRef = m_manager->item_factory->GetShip(itemRef->locationID());
                     shipRef->RemoveItem(itemRef);
-                } else if (pSE->IsPOSSE()) {
+                } else if (pSE->IsTowerSE()) {
                     StructureItemRef posRef = m_manager->item_factory->GetStructure(itemRef->locationID());
                     posRef->RemoveItem(itemRef);
                 } else {

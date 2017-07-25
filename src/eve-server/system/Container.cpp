@@ -247,7 +247,7 @@ void ContainerSE::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
-        mass.harmonic = -1;
+        mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );
@@ -447,7 +447,7 @@ void WreckSE::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
-        mass.harmonic = -1;
+        mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );

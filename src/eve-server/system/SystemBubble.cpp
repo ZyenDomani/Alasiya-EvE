@@ -370,7 +370,7 @@ void SystemBubble::PrintEntityList() {
             }
         if (cur.second->IsNPCSE())
             sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is NPC.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsPOSSE())
+        if (cur.second->IsTowerSE())
             sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is POS.", cur.second->GetName(), cur.second->GetID() ); found = true;
         if (cur.second->IsJumpBridgeSE())
             sLog.Warning( "SystemBubble::_PrintEntityList()", "entity %s(%u) is JumpBridge.", cur.second->GetName(), cur.second->GetID() ); found = true;

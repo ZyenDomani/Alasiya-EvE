@@ -27,10 +27,11 @@
 #ifndef __SYSTEMENTITY_H_INCL__
 #define __SYSTEMENTITY_H_INCL__
 
+#include "SystemDB.h"
 #include "inventory/InventoryItem.h"
 #include "system/DestinyManager.h"
 #include "system/TargetManager.h"
-#include "SystemDB.h"
+#include "pos/PosMgrDB.h"
 
 class AsteroidBeltMgr;
 class Character;
@@ -61,6 +62,11 @@ class DeployableSE;
 class AsteroidSE;
 class Ship;
 class DungeonSE;
+
+class TowerSE;
+class ArraySE;
+class BatterySE;
+class WeaponSE;
 
 /*
  * base class for all SystemEntities
@@ -94,12 +100,16 @@ public:
     /* Object */
     virtual ObjectSystemEntity* GetObjectSE()           { return nullptr; }
     virtual AsteroidSE*         GetAsteroidSE()         { return nullptr; }
+    virtual StructureSE*        GetPOSSE()              { return nullptr; }
     virtual StructureSE*        GetJumpBridgeSE()       { return nullptr; }
     virtual StructureSE*        GetOutpostSE()          { return nullptr; }
     virtual StructureSE*        GetCOSE()               { return nullptr; }
-    virtual StructureSE*        GetPOSSE()              { return nullptr; }
     virtual StructureSE*        GetTCUSE()              { return nullptr; }
     virtual StructureSE*        GetSBUSE()              { return nullptr; }
+    virtual TowerSE*            GetTowerSE()            { return nullptr; }
+    virtual ArraySE*            GetArraySE()            { return nullptr; }
+    virtual WeaponSE*           GetWeaponSE()           { return nullptr; }
+    virtual BatterySE*          GetBatterySE()          { return nullptr; }
     virtual DeployableSE*       GetDeployableSE()       { return nullptr; }
     virtual Sentry*             GetSentrySE()           { return nullptr; }
     /* Dynamic */
@@ -131,10 +141,14 @@ public:
     /* Object */
     virtual bool                IsObjectEntity()        { return false; }
     virtual bool                IsSentrySE()            { return false; }
-    virtual bool                IsCOSE()                { return false; }
     virtual bool                IsPOSSE()               { return false; }
+    virtual bool                IsCOSE()                { return false; }
     virtual bool                IsTCUSE()               { return false; }
     virtual bool                IsSBUSE()               { return false; }
+    virtual bool                IsTowerSE()             { return false; }
+    virtual bool                IsArraySE()             { return false; }
+    virtual bool                IsWeaponSE()            { return false; }
+    virtual bool                IsBatterySE()           { return false; }
     virtual bool                IsOutpostSE()           { return false; }
     virtual bool                IsAsteroidSE()          { return false; }
     virtual bool                IsDeployableSE()        { return false; }
@@ -219,6 +233,9 @@ protected:
     InventoryItemRef            m_self;
 
     double                      m_radius;
+
+    /* this is POS ForceField status */
+    int32 m_harmonic;
 
     /* ease of access to common data for ownable objects */
     uint32                      m_warID;

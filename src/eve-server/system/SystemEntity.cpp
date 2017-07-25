@@ -53,6 +53,8 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
     m_targMgr = new TargetManager(this);
     Abandon();
     m_radius = m_self->GetAttribute(AttrRadius).get_double();
+    /** @todo (Allan) fix this later...used for shield status */
+    m_harmonic = EVEPOS::ForceField::inactive;
     _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %.1f.", self->itemName().c_str(), self->itemID(), m_radius);
 }
 
@@ -339,7 +341,7 @@ void ItemSystemEntity::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = 10000000000;    // as seen in packets
         mass.cloak = 0;
-        mass.harmonic = -1;   /** @todo  this will need to be added later */
+        mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );
@@ -568,7 +570,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
-        mass.harmonic = -1;
+        mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );

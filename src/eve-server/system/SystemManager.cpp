@@ -422,6 +422,35 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
             if (!structure)
                 return nullptr;
             /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+
+            switch(entity.groupID()) {
+                case EVEDB::invGroups::Control_Tower: {
+                } break;
+                case EVEDB::invGroups::Mobile_Missile_Sentry:
+                case EVEDB::invGroups::Mobile_Projectile_Sentry:
+                case EVEDB::invGroups::Mobile_Laser_Sentry:
+                case EVEDB::invGroups::Mobile_Hybrid_Sentry: {
+                } break;
+                case EVEDB::invGroups::Electronic_Warfare_Battery:
+                case EVEDB::invGroups::Sensor_Dampening_Battery:
+                case EVEDB::invGroups::Stasis_Webification_Battery:
+                case EVEDB::invGroups::Warp_Scrambling_Battery:
+                case EVEDB::invGroups::Energy_Neutralizing_Battery:
+                case EVEDB::invGroups::Target_Painting_Battery: {
+                } break;
+                case EVEDB::invGroups::Refining_Array:
+                case EVEDB::invGroups::Ship_Maintenance_Array:
+                case EVEDB::invGroups::Assembly_Array:
+                case EVEDB::invGroups::Shield_Hardening_Array:
+                    //case EVEDB::invGroups::Force_Field_Array:         // created based on tower status...not checked here (never hits)
+                case EVEDB::invGroups::Corporate_Hangar_Array:
+                case EVEDB::invGroups::Stealth_Emitter_Array:
+                case EVEDB::invGroups::Scanner_Array:
+                case EVEDB::invGroups::Logistics_Array:
+                case EVEDB::invGroups::Cynosural_Generator_Array:
+                case EVEDB::invGroups::Structure_Repair_Array: {
+                } break;
+                default: {
             StructureSE* sSE = new StructureSE(structure, *(system.GetServiceMgr()), &system, data);
             //structure->GetMyInventory()->LoadContents(factory);  this is called during structureItem creation
             if ((entity.planetID) and (entity.groupID != EVEDB::invGroups::Test_Orbitals)) {
@@ -432,6 +461,8 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                     dir.normalize();
                     sSE->SetRotation(dir);
                     pPE->GetPlanetSE()->SetCustomsOffice(sSE);
+                }
+            }
                 }
             }
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -781,7 +812,7 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
             ss.aggressors[ cur->GetID() ] = cur->GetAggressors());
             */
         /** @todo (allan)  to be written (both)   -effectStates is a PyList */
-        //  if ((cur->IsPOSSE()) or (cur->IsOutpost()))
+        //  if ((cur->IsTowerSE()) or (cur->IsOutpost()))
         //ss.effectStates  --pos and other structures (using Notify_OnGodmaShipEffect)
         /*
                             [PyString "effectStates"]

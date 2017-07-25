@@ -382,10 +382,12 @@ SET( planet_SOURCE
      "${TARGET_SOURCE_DIR}/planet/PlanetORBBound.cpp")
 
 SET( pos_INCLUDE
+     "${TARGET_INCLUDE_DIR}/pos/POS.h"
      "${TARGET_INCLUDE_DIR}/pos/PosMgrDB.h"
      "${TARGET_INCLUDE_DIR}/pos/PosMgrService.h"
      "${TARGET_INCLUDE_DIR}/pos/Structure.h" )
 SET( pos_SOURCE
+     "${TARGET_SOURCE_DIR}/pos/POS.cpp"
      "${TARGET_SOURCE_DIR}/pos/PosMgrDB.cpp"
      "${TARGET_SOURCE_DIR}/pos/PosMgrService.cpp"
      "${TARGET_SOURCE_DIR}/pos/Structure.cpp" )

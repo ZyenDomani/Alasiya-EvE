@@ -46,7 +46,7 @@ bool PlanetSE::LoadExtras(SystemDB* db) {
         return false;
 
     /** @todo use this to initialize planet data, create planet manager, or whatever else i decide is needed for planet management
-     *  this is called when SE is created.
+     *  this is called after SE is created.
      */
     std::vector<uint32> typeIDs;
     sPlanetDataMgr.GetPlanetData(m_self->typeID(), typeIDs);

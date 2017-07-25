@@ -150,7 +150,7 @@ void NPC::EncodeDestiny( Buffer& into )
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
-        mass.harmonic = -1;
+        mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = m_allyID;
     into.Append( mass );

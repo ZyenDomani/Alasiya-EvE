@@ -1,28 +1,11 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:     Aknor Jaden
-    Updates:    Allan
-*/
+/**
+ * @name Structure.cpp
+ *   Specific Class for POS items and entities.
+ *
+ * @Author:         Allan
+ * @date:   unknown
+ */
 
 #include "eve-server.h"
 
@@ -32,6 +15,7 @@
 #include "EVEServerConfig.h"
 #include "manufacturing/Blueprint.h"
 #include "pos/Structure.h"
+#include "POS.h"
 #include "system/Container.h"
 #include "system/Damage.h"
 #include "system/LootSystem.h"
@@ -285,32 +269,16 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
 : ObjectSystemEntity(structure, services, system),
   m_moonSE(nullptr)
 {
-    //POS will anchor in the middle of the grid that you warp-in to.
-
     m_co = false;
     m_tcu = false;
-    m_pos = false;
     m_sbu = false;
-    m_array = false;
     m_bridge = false;
     m_jammer = false;
     m_module = false;
-    m_sentry = false;
-    m_battery = false;
     m_outpost = false;
-
-    m_standing = 0.0f;
-    m_status = 0.0f;
-    m_statusDrop = false;
-    m_corpWar = false;
-    m_showInCalendar = false;
-    m_sendFuelNotifications = false;
-    m_standingOwnerID = 0;
 
     /** @todo  hacked state...need to fix */
     m_state = STRUCTURE_ONLINE;
-    /** @todo (Allan) fix this later...used for shield passage */
-    m_harmonic = -1;
     /** @todo  this is direction from customs office to planet and set when co is created */
     m_rotation = NULL_ORIGIN;
     m_timestamp = Win32TimeNow() - Win32Time_Day;
@@ -324,8 +292,50 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     _log(SE__DEBUG, "Created StructureSE for item %s (%u).", structure->itemName().c_str(), structure->itemID());
 }
 
+StructureSE::~StructureSE()
+{
+    /** @todo  change this to store data objects in std::vector (or whatever) in SystemManager
+     * on system unload, call save on data list like ItemFactory does....  */
+    EVEPOS::SaveData data;
+        data.itemID = GetID();
+        data.timestamp = m_timestamp;
+        data.harmonic = m_harmonic;
+        data.state = m_state;
+        data.towerID = m_towerID;
+        data.rotation = m_rotation;
+        data.planetID = m_planetID;
+
+    if (IsTowerSE()) {
+        EVEPOS::TowerData tData;
+        GetTowerSE()->GetTowerData(tData);
+        data.status = tData.status;
+        data.standing = tData.standing;
+        data.standingOwnerID = tData.standingOwnerID;
+        data.corpWar = tData.corpWar;
+        data.statusDrop = tData.statusDrop;
+        data.showInCalendar = tData.showInCalendar;
+        data.sendFuelNotifications = tData.sendFuelNotifications;
+    } else {
+        data.status = 0.0f;
+        data.standing = 0.0f;
+        data.standingOwnerID = 0;
+        data.corpWar = false;
+        data.statusDrop = false;
+        data.showInCalendar = false;
+        data.sendFuelNotifications = false;
+    }
+
+    m_db.SavePOSData(data);
+}
+
+
 void StructureSE::Init(StructureItemRef structure)
 {
+    EVEPOS::SaveData data;
+    data.itemID = structure->itemID();
+    if (!m_db.GetPOSData(data))
+        ;  // invalid data....make error here and break out before creation?
+
     switch(structure->groupID()) {
         case EVEDB::invGroups::Orbital_Infrastructure: {
             m_co = true;
@@ -337,62 +347,8 @@ void StructureSE::Init(StructureItemRef structure)
         case EVEDB::invGroups::Territorial_Claim_Units: {
             m_tcu = true;
         } break;
-        case EVEDB::invGroups::Control_Tower: {
-            m_pos = true;
-            m_harmonic = 1; // or whatever the harmonic is for this tower....
-            m_moonSE = m_system->GetNearestMoon(GetPosition());
-            // create and add force field to tower
-            /** @todo  this will need to be based on structure state */
-            //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
-            ItemData idata(EVEDB::invTypes::typeForceField, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);
-            InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);
-            if (iRef.get() == nullptr)
-                break;  // we'll get over it
-            iRef->Relocate(GetPosition());
-            iRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius));
-            ItemSystemEntity* iSE = new ItemSystemEntity(iRef, m_services, m_system);
-            m_system->AddEntity(iSE);
-            /** @todo  figure out how to save/load these */
-            m_standing = 0.0f;
-            m_status = 0.0f;
-            m_statusDrop = false;
-            m_corpWar = false;
-            m_standingOwnerID = 0;
-            m_showInCalendar = false;
-            m_sendFuelNotifications = false;
-        } break;
         case EVEDB::invGroups::Jump_Portal_Array: {
             m_bridge = true;
-            m_module = true;
-        } break;
-        case EVEDB::invGroups::Mobile_Missile_Sentry:
-        case EVEDB::invGroups::Mobile_Projectile_Sentry:
-        case EVEDB::invGroups::Mobile_Laser_Sentry:
-        case EVEDB::invGroups::Mobile_Hybrid_Sentry: {
-            m_sentry = true;
-            m_module = true;
-        } break;
-        case EVEDB::invGroups::Electronic_Warfare_Battery:
-        case EVEDB::invGroups::Sensor_Dampening_Battery:
-        case EVEDB::invGroups::Stasis_Webification_Battery:
-        case EVEDB::invGroups::Warp_Scrambling_Battery:
-        case EVEDB::invGroups::Energy_Neutralizing_Battery:
-        case EVEDB::invGroups::Target_Painting_Battery: {
-            m_battery = true;
-            m_module = true;
-        } break;
-        case EVEDB::invGroups::Refining_Array:
-        case EVEDB::invGroups::Ship_Maintenance_Array:
-        case EVEDB::invGroups::Assembly_Array:
-        case EVEDB::invGroups::Shield_Hardening_Array:
-        case EVEDB::invGroups::Force_Field_Array:
-        case EVEDB::invGroups::Corporate_Hangar_Array:
-        case EVEDB::invGroups::Stealth_Emitter_Array:
-        case EVEDB::invGroups::Scanner_Array:
-        case EVEDB::invGroups::Logistics_Array:
-        case EVEDB::invGroups::Cynosural_Generator_Array:
-        case EVEDB::invGroups::Structure_Repair_Array: {
-            m_array = true;
             m_module = true;
         } break;
         case EVEDB::invGroups::Cynosural_System_Jammer: {
@@ -410,15 +366,10 @@ void StructureSE::Init(StructureItemRef structure)
         m_towerID = atoi(m_self->customInfo().c_str());
 }
 
-/*
- * fuel bay = flag 0
- * strot bay = flag 122 (2nd storage)
- */
 void StructureSE::Process() {
     /* called by EntityList::Process on every loop */
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
-    /** @todo (Allan)  will need some form of AI to engage defensive modules if/when any structure is attacked */
 }
 
 void StructureSE::EncodeDestiny( Buffer& into )
@@ -511,14 +462,13 @@ PyDict *StructureSE::MakeSlimItem() {
         slim->SetItemString("corpID",                   new PyInt(m_corpID));  //1000148 for interbus customs office (to be done on creation)
         slim->SetItemString("allianceID",               new PyInt(m_allyID));
         slim->SetItemString("warFactionID",             new PyInt(m_warID));
-        if (m_pos or m_module) {    // for control towers and structures
+        if (m_module) {    // for control towers and structures
             slim->SetItemString("posTimestamp",         new PyLong(m_timestamp));
             slim->SetItemString("posState",             new PyInt(GetStructureState()));
             slim->SetItemString("incapacitated",        new PyInt((m_state == STATE_INCAPACITATED) ? 1 : 0));
-        }
-        if (m_pos) {
-            // this is only checked when state == (STRUCTURE_SHIELD_REINFORCE || STRUCTURE_ARMOR_REINFORCE)
-            if ((m_state == STRUCTURE_SHIELD_REINFORCE) or (m_state == STRUCTURE_ARMOR_REINFORCE))
+            // this is time shown in structure status (time left until current state completes)
+            /** @todo this still needs work for logic and info */
+            if ((m_state != STRUCTURE_UNANCHORED) and (m_state != STRUCTURE_ONLINE))
                 slim->SetItemString("posDelayTime",         new PyInt(0));
         }
         if (m_outpost) {
