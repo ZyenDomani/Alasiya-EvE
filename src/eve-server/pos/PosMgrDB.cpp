@@ -10,7 +10,7 @@ PyRep* PosMgrDB::GetControlTowerFuelRequirements() {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         " SELECT "
-        "   controlTowerTypeID, resourceTypeID, purpose, quantity, factionID, minSecurityLevel"
+        "   controlTowerTypeID, resourceTypeID, purpose, quantity, minSecurityLevel, factionID, wormholeClassID"
         " FROM invControlTowerResources "))
     {
         _log(DATABASE__ERROR, "Error in GetControlTowerFuelRequirements query: %s", res.error.c_str());
@@ -28,8 +28,8 @@ PyRep* PosMgrDB::GetControlTowerFuelRequirements() {
             dict->SetItemString( "resourceTypeID",      new PyInt(row.GetInt(1)));
             dict->SetItemString( "purpose",             new PyInt(row.GetInt(2)));
             dict->SetItemString( "quantity",            new PyInt(row.GetInt(3)));
-            dict->SetItemString( "factionID",           new PyInt(row.IsNull(4) ? 0 : row.GetInt(4)));
             dict->SetItemString( "minSecurityLevel",    new PyFloat(row.IsNull(5) ? 0 : row.GetFloat(5)));
+            dict->SetItemString( "factionID",           new PyInt(row.IsNull(4) ? 0 : row.GetInt(4)));
         list->AddItem(dict);
     }
 

@@ -8,115 +8,88 @@
 #ifndef EVE_POS_ENUMS_H
 #define EVE_POS_ENUMS_H
 
-enum StructureState {
-    STRUCTURE_UNANCHORED        = 0,
-    STRUCTURE_ANCHORED          = 1,
-    STRUCTURE_ONLINING          = 2,
-    STRUCTURE_REINFORCED        = 3,
-    STRUCTURE_ONLINE            = 4,
-    STRUCTURE_OPERATING         = 5,
-    STRUCTURE_VULNERABLE        = 6,
-    STRUCTURE_SHIELD_REINFORCE  = 7,
-    STRUCTURE_ARMOR_REINFORCE   = 8,
-    STRUCTURE_INVULNERABLE      = 9
-    /*
-    ANCHORED_STRUCTURE_STATES = (STRUCTURE_ANCHORED,
-                                 STRUCTURE_ONLINING,
-                                 STRUCTURE_REINFORCED,
-                                 STRUCTURE_ONLINE,
-                                 STRUCTURE_OPERATING,
-                                 STRUCTURE_VULNERABLE,
-                                 STRUCTURE_SHIELD_REINFORCE,
-                                 STRUCTURE_ARMOR_REINFORCE,
-                                 STRUCTURE_INVULNERABLE)
-    db2Entity = {STRUCTURE_UNANCHORED: [STATE_UNANCHORING, STATE_UNANCHORED],
-        STRUCTURE_ANCHORED: [STATE_ANCHORING, STATE_ANCHORED],
-        STRUCTURE_ONLINING: [STATE_ONLINING, STATE_ONLINING],
-        STRUCTURE_REINFORCED: [STATE_REINFORCED],
-        STRUCTURE_ONLINE: [STATE_IDLE],
-        STRUCTURE_OPERATING: [STATE_OPERATING, STATE_IDLE],
-        STRUCTURE_VULNERABLE: [STATE_VULNERABLE],
-        STRUCTURE_SHIELD_REINFORCE: [STATE_SHIELD_REINFORCE],
-        STRUCTURE_ARMOR_REINFORCE: [STATE_ARMOR_REINFORCE]}
-     */
-    /*
-ONLINE_STABLE_STATES = (STRUCTURE_REINFORCED,
- STRUCTURE_ONLINE,
- STRUCTURE_OPERATING,
- STRUCTURE_VULNERABLE,
- STRUCTURE_INVULNERABLE,
- STRUCTURE_SHIELD_REINFORCE,
- STRUCTURE_ARMOR_REINFORCE)
+namespace EVEPOS {
+    struct TowerData {
+        // tower management
+        float standing;
+        float status;
+        bool statusDrop :1;
+        bool corpWar :1;
+        uint32 standingOwnerID; // corp/ally
+        bool showInCalendar :1;
+        bool sendFuelNotifications :1;
+    };
 
-def Entity2DB(activityState):
-    if activityState in (STATE_UNANCHORING, STATE_UNANCHORED):
-        return STRUCTURE_UNANCHORED
-    if activityState in (STATE_ANCHORING, STATE_ANCHORED):
-        return STRUCTURE_ANCHORED
-    if activityState == STATE_ONLINING:
-        return STRUCTURE_ONLINING
-    if activityState == STATE_REINFORCED:
-        return STRUCTURE_REINFORCED
-    if activityState == STATE_VULNERABLE:
-        return STRUCTURE_VULNERABLE
-    if activityState == STATE_INVULNERABLE:
-        return STRUCTURE_INVULNERABLE
-    if activityState == STATE_OPERATING:
-        return STRUCTURE_OPERATING
-    if activityState == STATE_SHIELD_REINFORCE:
-        return STRUCTURE_SHIELD_REINFORCE
-    if activityState == STATE_ARMOR_REINFORCE:
-        return STRUCTURE_ARMOR_REINFORCE
-    if activityState >= STATE_IDLE:
-        return STRUCTURE_ONLINE
-*/
-    /*
-     *    pwnStructureStateAnchored = 'anchored',
-     *    pwnStructureStateAnchoring = 'anchoring',
-     *    pwnStructureStateOnline = 'online',
-     *    pwnStructureStateOnlining = 'onlining',
-     *    pwnStructureStateUnanchored = 'unanchored',
-     *    pwnStructureStateUnanchoring = 'unanchoring',
-     *    pwnStructureStateVulnerable = 'vulnerable',
-     *    pwnStructureStateInvulnerable = 'invulnerable',
-     *    pwnStructureStateReinforced = 'reinforced',
-     *    pwnStructureStateOperating = 'operating',
-     *    pwnStructureStateIncapacitated = 'incapacitated',
-     *    pwnStructureStateAnchor = 'anchor',
-     *    pwnStructureStateUnanchor = 'unanchor',
-     *    pwnStructureStateOffline = 'offline',
-     *    pwnStructureStateOnlineActive = 'online - active',
-     *    pwnStructureStateOnlineStartingUp = 'online - starting up'
-     */
-} ;
+    struct SaveData {
+        uint32 itemID;
+        int32 harmonic;       /* this is POS ForceField status */
 
-enum OrbitalState {
-    STATE_OFFLINING             = -7,
-    STATE_ANCHORING             = -6,
-    STATE_ONLINING              = -5,
-    STATE_ANCHORED              = -4,
-    STATE_UNANCHORING           = -3,
-    STATE_UNANCHORED            = -2,
-    STATE_INCAPACITATED         = -1,
-    STATE_IDLE                  = 0,
-    STATE_COMBAT                = 1,
-    STATE_MINING                = 2,
-    STATE_APPROACHING           = 3,
-    STATE_DEPARTING             = 4,
-    STATE_DEPARTING_2           = 5,
-    STATE_PURSUIT               = 6,
-    STATE_FLEEING               = 7,
-    STATE_REINFORCED            = 8,
-    STATE_OPERATING             = 9,
-    STATE_ENGAGE                = 10,
-    STATE_VULNERABLE            = 11,
-    STATE_SHIELD_REINFORCE      = 12,
-    STATE_ARMOR_REINFORCE       = 13,
-    STATE_INVULNERABLE          = 14,
-    STATE_WARPAWAYANDDIE        = 15,
-    STATE_WARPAWAYANDCOMEBACK   = 16,
-    STATE_WARPTOPOSITION        = 17
-} ;
+        uint8 state;          /* used to hold POS state (online, reinforced, operating, etc) */
+        uint32 towerID;       /* this is the controlling towerID for POS modules */
+        uint64 timestamp;     /* used to track start time on POS states (onlining, reinforced, etc) */
+
+        // for orbital infrastructure (customs office)
+        GPoint rotation;      /* direction to planet (for correct orientation) */
+        uint32 planetID;
+
+        // tower management
+        float standing;
+        float status;
+        bool statusDrop :1;
+        bool corpWar :1;
+        uint32 standingOwnerID; // corp/ally
+        bool showInCalendar :1;
+        bool sendFuelNotifications :1;
+    };
+
+    enum ForceField {
+        inactive = -1,
+        offline = 0,
+        online = 1
+    };
+
+    enum StructureState {
+        Incapacitated     = -1,
+        Unanchored        = 0,
+        Anchored          = 1,
+        Onlining         = 2,
+        Reinforced        = 3,
+        Online            = 4,
+        Operating         = 5,
+        Vulnerable        = 6,
+        SheildReinforced  = 7,
+        ArmorReinforced   = 8,
+        Invulnerable      = 9
+    } ;
+
+    // not totally sure what these are for....customs offices for one...
+    enum OrbitalState {
+        STATE_OFFLINING             = -7,
+        STATE_ANCHORING             = -6,
+        STATE_ONLINING              = -5,
+        STATE_ANCHORED              = -4,
+        STATE_UNANCHORING           = -3,
+        STATE_UNANCHORED            = -2,
+        STATE_INCAPACITATED         = -1,
+        STATE_IDLE                  = 0,
+        STATE_COMBAT                = 1,
+        STATE_MINING                = 2,
+        STATE_APPROACHING           = 3,
+        STATE_DEPARTING             = 4,
+        STATE_DEPARTING_2           = 5,
+        STATE_PURSUIT               = 6,
+        STATE_FLEEING               = 7,
+        STATE_REINFORCED            = 8,
+        STATE_OPERATING             = 9,
+        STATE_ENGAGE                = 10,
+        STATE_VULNERABLE            = 11,
+        STATE_SHIELD_REINFORCE      = 12,
+        STATE_ARMOR_REINFORCE       = 13,
+        STATE_INVULNERABLE          = 14,
+        STATE_WARPAWAYANDDIE        = 15,
+        STATE_WARPAWAYANDCOMEBACK   = 16,
+        STATE_WARPTOPOSITION        = 17
+    } ;
 
 /*
  * typedef enum {
@@ -125,6 +98,8 @@ enum OrbitalState {
  *    posMinDamageDiffToPersist = 0.05f
  * };
  */
+}
+
 
 /*  for indy */
 //from table 'ramActivities'

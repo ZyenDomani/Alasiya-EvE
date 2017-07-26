@@ -181,7 +181,9 @@ protected:
 
     uint8 m_state;          /* used to hold POS state (online, reinforced, operating, etc) */
     uint32 m_towerID;       /* this is the controlling towerID for POS modules */
+    uint32 m_delayTime;     /* dynamic - only used for reinforced states */
     uint64 m_timestamp;     /* used to track start time on POS states (onlining, reinforced, etc) */
+
 
     // for orbital infrastructure (customs office)
     GPoint m_rotation;      /* direction to planet (for correct orientation) */

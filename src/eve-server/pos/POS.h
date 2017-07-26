@@ -71,6 +71,8 @@ public:
     /* class type tests. */
     virtual bool                IsArraySE()             { return true; }
 
+    /* SystemEntity interface */
+    virtual void                Process();
 
     /* specific functions handled in this class. */
     void Init(StructureItemRef structure);

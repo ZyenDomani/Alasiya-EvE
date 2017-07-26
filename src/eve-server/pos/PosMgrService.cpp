@@ -164,6 +164,21 @@ PyResult PosMgrService::Handle_GetControlTowers(PyCallArgs &call) {
     /*  ct = sm.RemoteSvc('posMgr').GetControlTowers()
         for row in ct:
             typeID, structureID, solarSystemID = row[0:3]
+
+                        [CRowSet]
+                            [DBRowDescriptor]
+                                ["typeID" =>  [I4] ]
+                                ["itemID" =>  [I8] ]
+                                ["locationID" =>  [I8] ]
+                            Rows:
+                                [PyPackedRow 21 bytes]
+                                    ["typeID" =>  [I4] <20062>]
+                                    ["itemID" =>  [I8] <1013581844534>]
+                                    ["locationID" =>  [I8] <30002206>]
+                                [PyPackedRow 21 bytes]
+                                    ["typeID" =>  [I4] <27606>]
+                                    ["itemID" =>  [I8] <1010759458081>]
+                                    ["locationID" =>  [I8] <30002225>]
     */
 
     sLog.White( "PosMgrService::Handle_GetControlTowers()", "size=%u", call.tuple->size());

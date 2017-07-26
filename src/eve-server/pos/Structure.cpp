@@ -276,11 +276,11 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_module = false;
     m_outpost = false;
 
-    /** @todo  hacked state...need to fix */
-    m_state = STRUCTURE_ONLINE;
+    m_state = EVEPOS::StructureState::Unanchored;
     /** @todo  this is direction from customs office to planet and set when co is created */
     m_rotation = NULL_ORIGIN;
-    m_timestamp = Win32TimeNow() - Win32Time_Day;
+    m_delayTime = 0;
+    m_timestamp = 0;
 
     m_warID = data.factionID;
     m_allyID = data.allianceID;
@@ -295,6 +295,8 @@ StructureSE::~StructureSE()
 {
     /** @todo  change this to store data objects in std::vector (or whatever) in SystemManager
      * on system unload, call save on data list like ItemFactory does....  */
+    // do we need to save POS data like this?
+    //  save data when shit changes?
     EVEPOS::SaveData data;
         data.itemID = GetID();
         data.timestamp = m_timestamp;
@@ -360,15 +362,50 @@ void StructureSE::Init(StructureItemRef structure)
         }
     }
 
-    /** @todo (Allan) set/get control tower id for modules in/from customInfo field of db */
     if (m_module)
-        m_towerID = atoi(m_self->customInfo().c_str());
+        m_towerID = data.towerID;
 }
 
 void StructureSE::Process() {
     /* called by EntityList::Process on every loop */
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
+
+    using namespace EVEPOS;
+    // may be able to process state variables here for all structure items
+    switch (m_state) {
+        case Online:
+        case Anchored:
+        case Unanchored:
+        case Vulnerable:
+        case Invulnerable: {
+            m_timestamp = 0;
+        } break;
+        case Onlining: {
+            m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time state ends
+        } break;
+        case Reinforced: {
+            m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time state ends
+        } break;
+        case Operating: {
+            m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time cycle ends
+        } break;
+        case SheildReinforced:
+        case ArmorReinforced: {
+            m_timestamp = 0;
+            m_delayTime = 0;
+        } break;
+        case Incapacitated: {
+            ;   // do nothing here?
+        } break;
+    };
+
+        /*
+        elif slimItem.posState in (pos.STRUCTURE_SHIELD_REINFORCE, pos.STRUCTURE_ARMOR_REINFORCE):
+            stateName = const.pwnStructureStateReinforced
+            stateTimestamp = slimItem.posTimestamp + slimItem.posDelayTime
+            stateDelay = slimItem.posDelayTime
+            */
 }
 
 void StructureSE::EncodeDestiny( Buffer& into )
@@ -462,19 +499,18 @@ PyDict *StructureSE::MakeSlimItem() {
         slim->SetItemString("allianceID",               new PyInt(m_allyID));
         slim->SetItemString("warFactionID",             new PyInt(m_warID));
         if (m_module) {    // for control towers and structures
-            slim->SetItemString("posTimestamp",         new PyLong(m_timestamp));
+            slim->SetItemString("posTimestamp",         ((m_timestamp > 0) ? new PyLong(m_timestamp) : new PyNone()));
             slim->SetItemString("posState",             new PyInt(GetStructureState()));
-            slim->SetItemString("incapacitated",        new PyInt((m_state == STATE_INCAPACITATED) ? 1 : 0));
+            slim->SetItemString("incapacitated",        new PyInt((m_state == EVEPOS::StructureState::Incapacitated) ? 1 : 0));
             // this is time shown in structure status (time left until current state completes)
-            /** @todo this still needs work for logic and info */
-            if ((m_state != STRUCTURE_UNANCHORED) and (m_state != STRUCTURE_ONLINE))
-                slim->SetItemString("posDelayTime",         new PyInt(0));
+            if (m_delayTime)
+                slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
         }
         if (m_outpost) {
             slim->SetItemString("startTimestamp",       new PyLong(m_timestamp));
             slim->SetItemString("structureState",       new PyInt(GetStructureState()));
-            slim->SetItemString("delayTime",            new PyInt(0));/** @todo (Allan) fix this later - dont know what it is */
-            return slim;
+            if (m_delayTime)
+                slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
         } else if (m_co) {
             slim->SetItemString("level",                new PyInt(1)); //{1-CUSTOMSOFFICE_SPACEPORT, 2-CUSTOMSOFFICE_SPACEELEVATOR}   this is for display model
             slim->SetItemString("orbitalTimestamp",     new PyLong(m_timestamp));
@@ -488,9 +524,8 @@ PyDict *StructureSE::MakeSlimItem() {
             //  dunno what these are...
             slim->SetItemString("orbitalHackerProgress", new PyNone());
             slim->SetItemString("orbitalHackerID",      new PyNone());
-        } else if (m_tcu) {
-            slim->SetItemString("posDelayTime",         new PyInt(0));/** @todo (Allan) fix this later - dont know what it is */
-            return slim;
+        } else if ((m_tcu) and (m_delayTime)) {
+            slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
         } else if (m_module) {
             slim->SetItemString("controlTowerID",       new PyLong(m_towerID));
         }
