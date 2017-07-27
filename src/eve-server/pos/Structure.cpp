@@ -1,7 +1,7 @@
 
 /**
  * @name Structure.cpp
- *   Specific Class for POS items and entities.
+ *   Generic Base Class for POS items and entities.
  *
  * @Author:         Allan
  * @date:   unknown
@@ -15,6 +15,7 @@
 #include "EVEServerConfig.h"
 #include "manufacturing/Blueprint.h"
 #include "pos/POS.h"
+#include "pos/Structure.h"
 #include "system/Container.h"
 #include "system/Damage.h"
 #include "system/LootSystem.h"
@@ -34,6 +35,7 @@ POS__TRACE=0
 StructureItem::StructureItem(ItemFactory &_factory, uint32 _structureID, const ItemType &_itemType, const ItemData &_data)
 : InventoryItem(_factory, _structureID, _itemType, _data)
 {
+    m_flag = flagStructureInactive;
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created StructureItem for %s (%u).", itemName().c_str(), itemID());
     _log(POS__TRACE, "Created StructureItem for %s (%u).", itemName().c_str(), itemID());
@@ -192,8 +194,6 @@ void StructureItem::RemoveItem(InventoryItemRef item)
  * see pics in ::GamePC/G/games/EvE/misc/POS
     flagStructureActive             = 144,
     flagStructureInactive           = 145,
-
-
     AttrOperationConsumptionRate = 687,
     AttrReinforcedConsumptionRate = 688,
     AttrResourceReinforced1Type = 694,
@@ -210,9 +210,7 @@ void StructureItem::RemoveItem(InventoryItemRef item)
     AttrResourceOnline2Type = 706,
     AttrResourceOnline3Type = 707,
     AttrResourceOnline4Type = 708,
-
     ***  many other attributes for towers and their modules.....
-
     AttrControlTowerMissileVelocityBonus = 792,
     AttrControlTowerSize = 1031,
     AttrAnchoringSecurityLevelMax = 1032,
@@ -266,7 +264,8 @@ void StructureItem::RemoveItem(InventoryItemRef item)
     */
 StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system, const FactionData& data)
 : ObjectSystemEntity(structure, services, system),
-  m_moonSE(nullptr)
+  m_moonSE(nullptr),
+  m_procTimer(10000) // arbitrary default
 {
     m_co = false;
     m_tcu = false;
@@ -275,6 +274,8 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_jammer = false;
     m_module = false;
     m_outpost = false;
+
+    m_procTimer.Disable();
 
     m_state = EVEPOS::StructureState::Unanchored;
     /** @todo  this is direction from customs office to planet and set when co is created */
@@ -287,7 +288,6 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
 
-    Init(structure);
     _log(SE__DEBUG, "Created StructureSE for item %s (%u).", structure->itemName().c_str(), structure->itemID());
 }
 
@@ -335,7 +335,7 @@ void StructureSE::Init(StructureItemRef structure)
     EVEPOS::SaveData data;
     data.itemID = structure->itemID();
     if (!m_db.GetPOSData(data))
-        ;  // invalid data....make error here and break out before creation?
+        ;  // invalid data....make error here and break out?  set to default?  inform player?
 
     switch(structure->groupID()) {
         case EVEDB::invGroups::Orbital_Infrastructure: {
@@ -364,6 +364,10 @@ void StructureSE::Init(StructureItemRef structure)
 
     if (m_module)
         m_towerID = data.towerID;
+
+    if ((m_state == EVEPOS::Online) or (m_state == EVEPOS::Operating))
+        m_self->SetFlag(flagStructureActive, false);
+
 }
 
 void StructureSE::Process() {
@@ -372,33 +376,32 @@ void StructureSE::Process() {
     SystemEntity::Process();
 
     using namespace EVEPOS;
-    // may be able to process state variables here for all structure items
-    switch (m_state) {
-        case Online:
-        case Anchored:
-        case Unanchored:
-        case Vulnerable:
-        case Invulnerable: {
-            m_timestamp = 0;
-        } break;
-        case Onlining: {
+    if (m_procTimer.Check(false)) {
+    	m_procTimer.Disable();
+        m_timestamp = 0;
+        if (m_state == Operating) {
             m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time state ends
-        } break;
-        case Reinforced: {
+            // take resources or whatever needs to be done
+        } else if (m_state == Unanchored) {
+            ; // anchor
+        } else if (m_state == Anchored) {
+            ; // unanchor
+        } else if (m_state == Onlining) {
             m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time state ends
-        } break;
-        case Operating: {
-            m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time cycle ends
-        } break;
-        case SheildReinforced:
-        case ArmorReinforced: {
+            ; // unanchor
+        } else if ((m_state == SheildReinforced) or (m_state == ArmorReinforced)) {
             m_timestamp = 0;
             m_delayTime = 0;
-        } break;
-        case Incapacitated: {
-            ;   // do nothing here?
-        } break;
-    };
+        } else if (m_state == Reinforced) {
+            m_self->SetFlag(flagStructureInactive, false);
+            //
+            m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time state ends
+        } else {
+            ; // more?  make error?
+        }
+    }
+
+    /** #todo check/set flags!!  */
 
         /*
         elif slimItem.posState in (pos.STRUCTURE_SHIELD_REINFORCE, pos.STRUCTURE_ARMOR_REINFORCE):
@@ -406,6 +409,31 @@ void StructureSE::Process() {
             stateTimestamp = slimItem.posTimestamp + slimItem.posDelayTime
             stateDelay = slimItem.posDelayTime
             */
+}
+
+void StructureSE::Activate(int32 effectID)
+{
+    // check effectID, check current state, check current timer, set new state, update timer
+
+    /** @todo somehow notify client with one of these effects:
+     *  effectAnchorDrop = 649
+     *  effectAnchorLift = 650
+     *  effectAnchorDropForStructures = 1022
+     *  effectAnchorLiftForStructures = 1023
+     *
+     ** @todo  many more effects to send for.....look into later.
+     * effectOnlineForStructures = 901
+     *
+     ** @note  also note there are timers involved here...
+     */
+    m_self->SetFlag(flagStructureActive, false);
+}
+
+void StructureSE::Deactivate(int32 effectID)
+{
+    // check effectID, check current state, check current timer, set new state, update timer
+
+    m_self->SetFlag(flagStructureInactive, false);
 }
 
 void StructureSE::EncodeDestiny( Buffer& into )
@@ -446,7 +474,6 @@ void StructureSE::EncodeDestiny( Buffer& into )
     /* TODO  query and configure miniballs for entity
      * NOTE  MiniBalls are BROKEN!!!  DO NOT USE!
     into.Append( miniballsCount );
-
     MiniBall miniball;
     for (int16 i; i<miniballsCount; i++) {
         miniball.x = -7701.181;
@@ -468,7 +495,6 @@ void StructureSE::EncodeDestiny( Buffer& into )
                                     [MiniBall]
                                       [Radius: 796.5781]
                                       [Offset: (0, 2598, 1)]
-
                                       */
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
@@ -494,12 +520,11 @@ PyDict *StructureSE::MakeSlimItem() {
         slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",                  new PyInt(m_self->ownerID()));  //1000148 for interbus customs office (to be done on creation)
-
         slim->SetItemString("corpID",                   new PyInt(m_corpID));  //1000148 for interbus customs office (to be done on creation)
         slim->SetItemString("allianceID",               new PyInt(m_allyID));
         slim->SetItemString("warFactionID",             new PyInt(m_warID));
         if (m_module) {    // for control towers and structures
-            slim->SetItemString("posTimestamp",         ((m_timestamp > 0) ? new PyLong(m_timestamp) : new PyNone()));
+            slim->SetItemString("posTimestamp",         new PyLong((m_timestamp > 0) ? m_timestamp : 0));
             slim->SetItemString("posState",             new PyInt(GetStructureState()));
             slim->SetItemString("incapacitated",        new PyInt((m_state == EVEPOS::StructureState::Incapacitated) ? 1 : 0));
             // this is time shown in structure status (time left until current state completes)
@@ -552,24 +577,10 @@ eventSBUExploded = 279
 eventSBUOffline = 257
 eventSBUOnline = 256
 */
-uint8 StructureSE::GetStructureState() const {
-    /** @todo (Allan) fix this when POS system is more operational */
-    /*
-     STRUCTURE_UNANCHORED = 0,
-     STRUCTURE_ANCHORED = 1,
-     STRUCTURE_ONLINING = 2,
-     STRUCTURE_REINFORCED = 3,
-     STRUCTURE_ONLINE = 4,
-     STRUCTURE_OPERATING = 5,
-     STRUCTURE_VULNERABLE = 6,
-     STRUCTURE_SHIELD_REINFORCE = 7,
-     STRUCTURE_ARMOR_REINFORCE = 8,
-     STRUCTURE_INVULNERABLE = 9
-    */
-    return m_state;   /* hack for pos online */
-}
+
 
 PyTuple *StructureSE::GetEffectState() {
+	// this is for sending structure state info in destiny state data
     /** @todo (Allan) fix this when POS system is more operational */
     /* see file:///home/allan/Desktop/cruc/entities/pos_packets/control_tower_packets and cruc/entities/structures for more info */
 
@@ -588,7 +599,7 @@ PyTuple *StructureSE::GetEffectState() {
             effect.duration_ms = -1;
         }
         effect.area = area;
-        effect.guid = "effects.StructureOnline";
+        effect.guid = "effects.StructureOnline"; // this is sent in destiny::SetState.  check for actual effect of this pos
         effect.isOffensive = 0;                     /** @todo (Allan) this should be boolean */
         effect.start = 1;
         effect.active = 1;
@@ -842,8 +853,6 @@ void StructureSE::Killed(Damage &fatal_blow) {
  *
  *
  *
-
-
                       [PyString "SetState"]
                       [PyTuple 1 items]
                         [PyObjectData Name: util.KeyVal]

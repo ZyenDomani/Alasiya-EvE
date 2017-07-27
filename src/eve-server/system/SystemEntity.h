@@ -383,6 +383,7 @@ public:
     virtual void                Killed(Damage &fatal_blow);
 };
 
+/* Mobile Warp Disruptors */
 class DeployableSE
 : public ObjectSystemEntity
 {

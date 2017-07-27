@@ -20,6 +20,11 @@ public:
     void SavePOSData(EVEPOS::SaveData& data);
     void UpdatePOSData(EVEPOS::SaveData& data);
 
+    void UpdatePOSNotify(uint32 towerID, EVEPOS::TowerData& data);
+    void UpdatePOSSentry(uint32 towerID, EVEPOS::TowerData& data);
+    void UpdatePOSPermission(uint32 towerID, EVEPOS::TowerData& data);
+    void UpdatePOSTimeStamp(uint32 towerID, uint64 timeStamp);
+
 };
 
 #endif  // EVEMU_POS_POSMGR_H_

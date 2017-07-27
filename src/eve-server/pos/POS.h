@@ -54,6 +54,11 @@ public:
 
     void GetTowerData(EVEPOS::TowerData& tData)         { tData = data; }
 
+    void UpdateSentry();
+    void UpdateNotify();
+    void UpdatePermission();
+    void UpdateTimeStamp();
+    
 private:
     EVEPOS::TowerData data;
 };

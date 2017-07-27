@@ -88,10 +88,12 @@ void PosMgrDB::SavePOSData(EVEPOS::SaveData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO posStructureData "
-        "(itemID, towerID, planetID, harmonic, standingOwnerID, state, level, standing,"
+        "(itemID, towerID, planetID, harmonic, standingOwnerID, state, standing,"
         " status, timestamp, rotationX, rotationY, rotationZ, statusDrop, corpWar, showInCalendar, sendFuelNotifications)"
-        " VALUES ");
-
+        " VALUES ",
+                (data.itemID, data.towerID, data.planetID, data.harmonic, data.standingOwnerID, data.state, data.standing,
+        data.status, data.timestamp, data.rotation.x, data.rotation.y, data.rotation.z, data.statusDrop, data.corpWar, data.showInCalendar,
+        data.sendFuelNotifications));
 }
 
 void PosMgrDB::UpdatePOSData(EVEPOS::SaveData& data)
@@ -100,26 +102,68 @@ void PosMgrDB::UpdatePOSData(EVEPOS::SaveData& data)
     sDatabase.RunQuery(err,
         "UPDATE posStructureData"
         " SET "
-        "  towerID=[value-2],"
-        "  planetID=[value-3],"
-        "  harmonic=[value-4],"
-        "  standingOwnerID=[value-5],"
-        "  state=[value-6],"
-        "  level=[value-7],"
-        "  standing=[value-8],"
-        "  status=[value-9],"
-        "  timestamp=[value-10],"
-        "  rotationX=[value-11],"
-        "  rotationY=[value-12],"
-        "  rotationZ=[value-13],"
-        "  statusDrop=[value-14],"
-        "  corpWar=[value-15],"
-        "  showInCalendar=[value-16],"
-        "  sendFuelNotifications=[value-17]"
-        " WHERE itemID = %u");
+        "  towerID=%u,"
+        "  planetID=%u,"
+        "  harmonic=%i,"
+        "  standingOwnerID=%u,"
+        "  state=%u,"
+        "  standing=%f,"
+        "  status=%f,"
+        "  timestamp=" PRIu64 ","
+        "  rotationX=%f,"
+        "  rotationY=%f,"
+        "  rotationZ=%f,"
+        "  statusDrop=%i,"
+        "  corpWar=%i,"
+        "  showInCalendar=%i,"
+        "  sendFuelNotifications=%i"
+        " WHERE itemID = %u", data.towerID, data.planetID, data.harmonic, data.standingOwnerID, data.state, data.standing,
+        data.status, data.timestamp, data.rotation.x, data.rotation.y, data.rotation.z, data.statusDrop, data.corpWar, data.showInCalendar,
+        data.sendFuelNotifications, data.itemID);
+}
+
+void PosMgrDB::UpdatePOSNotify(uint32 towerID, EVEPOS::TowerData& data)
+{
+    DBerror err;
+    sDatabase.RunQuery(err,
+        "UPDATE posStructureData"
+        " SET "
+        "  showInCalendar=%i,"
+        "  sendFuelNotifications=%i"
+        " WHERE itemID = %u", data.showInCalendar, data.sendFuelNotifications, towerID);
+}
+
+void PosMgrDB::UpdatePOSPermission(uint32 towerID, EVEPOS::TowerData& data)
+{
+    //DBerror err;
+    //sDatabase.RunQuery(err, "UPDATE posStructureData");
+}
+
+void PosMgrDB::UpdatePOSSentry(uint32 towerID, EVEPOS::TowerData& data)
+{
+    DBerror err;
+    sDatabase.RunQuery(err,
+        "UPDATE posStructureData"
+                       " SET "
+                       "  standingOwnerID=%u,"
+                       "  standing=%f,"
+                       "  status=%f,"
+                       "  statusDrop=%i,"
+                       "  corpWar=%i"
+                       " WHERE itemID = %u", data.standingOwnerID, data.standing, data.status, data.statusDrop, data.corpWar, data.showInCalendar,
+                       data.sendFuelNotifications, towerID);
 
 }
 
+void PosMgrDB::UpdatePOSTimeStamp(uint32 towerID, uint64 timeStamp)
+{
+    DBerror err;
+    sDatabase.RunQuery(err,
+                       "UPDATE posStructureData"
+                       " SET "
+                       "  timestamp=" PRIu64
+                       " WHERE itemID = %u", timeStamp, towerID);
+}
 
 
 

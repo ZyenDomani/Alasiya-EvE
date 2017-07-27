@@ -278,8 +278,7 @@ struct DBSystemEntity {
     double radius;
 };
 
-class DBSystemDynamicEntity {
-public:
+struct DBSystemDynamicEntity {
     uint32 itemID;
     std::string itemName;
     uint32 typeID;

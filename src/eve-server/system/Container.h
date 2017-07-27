@@ -167,6 +167,8 @@ public:
     virtual void Delete();
 
     /* specific functions handled in this class. */
+    void Activate(int32 effectID);
+    void Deactivate(int32 effectID);
     void AnchorContainer();
     bool IsEmpty()                                      { return m_contRef->IsEmpty(); }
 

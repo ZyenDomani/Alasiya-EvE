@@ -10,11 +10,9 @@
     the terms of the GNU Lesser General Public License as published by the Free Software
     Foundation; either version 2 of the License, or (at your option) any later
     version.
-
     This program is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
     FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
     You should have received a copy of the GNU Lesser General Public License along with
     this program; if not, write to the Free Software Foundation, Inc., 59 Temple
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
@@ -31,7 +29,9 @@
 #include "PyServiceCD.h"
 #include "cache/ObjCacheService.h"
 #include "dogmaim/DogmaIMService.h"
+#include "pos/Structure.h"
 #include "ship/modules/GenericModule.h"
+#include "system/Container.h"
 #include "system/SystemManager.h"
 
 /** @todo this is actually DogmaLM (location manager)... */
@@ -207,10 +207,8 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
      * 12:54:01 [SvcCall]         [ 0] Integer field: 140000069     <- shipID
      * 12:54:01 [SvcCall]         [ 1] Integer field: 140000078     <- weapon 2  *dropped ON*
      * 12:54:01 [SvcCall]         [ 2] Integer field: 140000079     <- weapon 1  *dragged*
-
     sLog.White("DogmaIMBound::Handle_LinkWeapons()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
-
      */
 
     Client* pClient = call.client;
@@ -261,7 +259,7 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
     Client* pClient = call.client;
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (!pDestiny) {
+        if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
             return new PyNone();
         } else if (pDestiny->IsWarping()) {
@@ -287,7 +285,7 @@ PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
 
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (!pDestiny) {
+        if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
             return new PyNone();
         } else if (pDestiny->IsWarping()) {
@@ -368,7 +366,6 @@ PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
                 [PyString "GetLocationInfo"]
                 [PyTuple 0 items]
                 [PyDict 0 kvp]
-
     [PyTuple 1 items]                   << response from server
       [PySubStream 43 bytes]
         [PyTuple 2 items]
@@ -383,8 +380,6 @@ PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
       [PyDict 1 kvp]
         [PyString "N=699771:17106"]
         [PyIntegerVar 129503265956883696]
-
-
     sLog.White("DogmaIMBound::Handle_GetLocationInfo()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
                 */
@@ -396,24 +391,12 @@ PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
 
 PyResult DogmaIMBound::Handle_CharGetInfo(PyCallArgs& call) {
     //no arguments
-    PyDict* result = call.client->GetChar()->GetCharInfo();
-    if (!result ) {
-        _log(SERVICE__ERROR, "Unable to build char info for char %u", call.client->GetCharacterID());
-        return new PyNone();
-    }
-
-    return result;
+    return call.client->GetChar()->GetCharInfo();
 }
 
 PyResult DogmaIMBound::Handle_ShipGetInfo(PyCallArgs& call) {
     //no arguments
-    PyDict* result = call.client->GetShip()->ShipGetInfo();
-    if (!result ) {
-        _log(SERVICE__ERROR, "Unable to build ship info for ship %u", call.client->GetShipID());
-        return new PyNone();
-    }
-
-    return result;
+    return call.client->GetShip()->ShipGetInfo();
 }
 
 PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
@@ -423,13 +406,13 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
         return new PyNone();
     }
 
-    InventoryItemRef item = m_manager->item_factory->GetItem(args.arg);
-    if ( !item ) {
+    InventoryItemRef itemRef = m_manager->item_factory->GetItem(args.arg);
+    if (itemRef.get() == nullptr ) {
         _log(SERVICE__ERROR, "Unable to load item %u", args.arg);
         return new PyNone();
     }
 
-    return item->ItemGetInfo();
+    return itemRef->ItemGetInfo();
 }
 
 PyResult DogmaIMBound::Handle_CheckSendLocationInfo(PyCallArgs& call)
@@ -446,7 +429,7 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
 
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (!pDestiny) {
+        if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
             return new PyNone();
         } else if (pDestiny->IsWarping()) {
@@ -473,7 +456,7 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
 
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (!pDestiny) {
+        if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
             return new PyNone();
         } else if (pDestiny->IsWarping()) {
@@ -500,7 +483,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
 
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (!pDestiny) {
+        if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
             return new PyNone();
         } else if (pDestiny->IsWarping()) {
@@ -557,7 +540,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (!pDestiny) {
+        if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
             return new PyNone();
         } else if (pDestiny->IsWarping()) {
@@ -592,7 +575,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 	// Get Reference to Ship, Module, and Charge
 	ShipItemRef shipRef = pClient->GetShip();
 	InventoryItemRef moduleRef = shipRef->GetModuleRef(args.masterID);
-	if (!moduleRef) {
+	if (moduleRef.get() == nullptr) {
 		sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "ERROR: cannot find module into which charge should be loaded." );
 		return new PyNone();
 	}
@@ -611,7 +594,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 		}
 	}
 
-	return nullptr;
+	return new PyNone();
 }
 
 PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
@@ -620,7 +603,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
 
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (!pDestiny) {
+        if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
             return new PyNone();
         } else if (pDestiny->IsWarping()) {
@@ -631,13 +614,12 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         pClient->SendNotifyMsg("You can't do this while docked");
         return new PyNone();
     }
-/*
-    sLog.White("DogmaIMBound::Handle_Activate()", "size= %u from '%s'", call.tuple->size(), pClient->GetName() );
-    call.Dump(SERVICE__CALL_DUMP);
-*/
-    uint32 callTupleSize = (uint32)call.tuple->size(), itemID = 0, effectID = 0;
+
+    uint8 callTupleSize = call.tuple->size();
 
     if (callTupleSize == 2) {
+        // anchor cargo and pos items
+        // online pos items
         Call_TwoIntegerArgs args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -649,60 +631,32 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
             [PyIntegerVar 1002332856217]    << module itemID
             [PyInt 901]             << effectOnlineForStructures
         */
-        // This call is for Anchor/Unanchor an Orbital structure or Cargo Container,
-        //   get the new flag value and change the item referenced:
-        if (call.tuple->items.at(0)->IsInt()) {
-            itemID = call.tuple->items.at(0)->AsInt()->value();
-            if (call.tuple->items.at(1)->IsInt()) {
-                effectID = call.tuple->items.at(1)->AsInt()->value();
-                SystemEntity* se = pClient->SystemMgr()->GetSE(itemID);
-                if (!se) {
-                    sLog.Error("DogmaIMBound::Handle_Activate()", "%u is not a valid EntityID in this system.", itemID);
-                    return new PyNone();
-                }
 
-                /** @todo somehow notify client with one of these effects:
-                 *  effectAnchorDrop = 649
-                 *  effectAnchorLift = 650
-                 *  effectAnchorDropForStructures = 1022
-                 *  effectAnchorLiftForStructures = 1023
-                 *
-                 ** @todo  many more effects to send for.....look into later.
-                 * effectOnlineForStructures = 901
-                 *
-                 ** @note  also note there are timers involved here...
-                 */
+        SystemEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
+        if (pSE == nullptr) {
+            sLog.Error("DogmaIMBound::Handle_Activate()", "%u is not a valid EntityID in this system.", args.arg1);
+             return new PyNone();
+        }
+        // determine if this pSE is pos or cont.
+        //call activate on pSE, pass effectID, send effect to clients (bubblecast) then set timers.
+        if (pSE->IsPOSSE())
+            pSE->GetPOSSE()->Activate(args.arg2);
+        else if (pSE->IsContainerSE())
+            pSE->GetContSE()->Activate(args.arg2);
+        else
+            ; // make error here
 
-                switch(effectID) {
-                    case 649: //effectAnchorDrop;
-                        //pClient->GetShipSE()->DestinyMgr()->SendContainerAnchor( pClient->services().item_factory->GetCargoContainer( itemID ) );
-                        break;
-                    case 650: //effectAnchorLift
-                        //pClient->GetShipSE()->DestinyMgr()->SendContainerUnanchor( pClient->services().item_factory->GetCargoContainer( itemID ) );
-                        break;
-                    case 1022: //effectAnchorDropForStructures
-                        //pClient->GetShipSE()->DestinyMgr()->SendStructureAnchor( pClient->services().item_factory->GetStructure( itemID ) );
-                        break;
-                    case 1023: //effectAnchorLiftForStructures
-                        //pClient->GetShipSE()->DestinyMgr()->SendStructureUnanchor( pClient->services().item_factory->GetStructure( itemID ) );
-                        break;
-                    default:
-                        break;
-                }
-            } else
-                sLog.Error("DogmaIMBound::Handle_Activate()", "call.tuple->items.at( 1 ) was not PyInt expected type." );
-        } else
-            sLog.Error("DogmaIMBound::Handle_Activate()", "call.tuple->items.at( 0 ) was not PyInt expected type." );
     } else if (callTupleSize == 4) {
+        // activate ship module
         Call_Dogma_Activate args;
         if (!args.Decode(&call.tuple)) {
-            _log( SERVICE__ERROR, "Unable to decode arguments from '%s'", pClient->GetName() );
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             return new PyNone();
         }
 
-        //TODO: make sure we are allowed to do this.
         pClient->GetShip()->Activate(args.itemID, args.effectName, args.target, args.repeat);
     }
+    // are there any other cases to test for here?
 
     return new PyNone();
 }
@@ -713,7 +667,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
 
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (!pDestiny) {
+        if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
             return new PyNone();
         } else if (pDestiny->IsWarping()) {
@@ -731,33 +685,57 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
      * 16:42:39 [SvcCallDump]       Tuple: 2 elements
      * 16:42:39 [SvcCallDump]         [ 0] Integer field: 140035963
      * 16:42:39 [SvcCallDump]         [ 1] Integer field: 901
-     * 16:42:39 [SvcCallDump]   Call Named Arguments:
-     * 16:42:39 [SvcCallDump]     Argument 'machoVersion':
-     * 16:42:39 [SvcCallDump]         Integer field: 1
      * 16:42:39 [PacketError] Decode Call_Dogma_Deactivate failed: effectName is not a wide string: Integer
-     * 
      */
-    Call_Dogma_Deactivate args;
+    if (call.tuple->items.at(1)->IsInt()) {
+        // if effect is integer, call is for pos
+        Call_TwoIntegerArgs args;
+        if (!args.Decode(&call.tuple)) {
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            return new PyNone();
+        }
+        SystemEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
+        if (pSE == nullptr) {
+            sLog.Error("DogmaIMBound::Handle_Deactivate()", "%u is not a valid EntityID in this system.", args.arg1);
+             return new PyNone();
+        }
+        // determine if this pSE is pos or cont.
+        //call activate on pSE, pass effectID, send effect to clients (bubblecast) then set timers.
+        if (pSE->IsPOSSE())
+            pSE->GetPOSSE()->Deactivate(args.arg2);
+        else if (pSE->IsContainerSE())
+            pSE->GetContSE()->Deactivate(args.arg2);
+        else
+            ; // make error here
+
+    } else if (call.tuple->items.at(1)->IsWString()) {
+        //if effect is wide string, then call is for module
+        Call_Dogma_Deactivate args;
+        if (!args.Decode(&call.tuple)) {
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            return new PyNone();
+        }
+
+        pClient->GetShip()->Deactivate(args.itemID, args.effectName);
+    }
+    // are there any other cases to test for?
+    return new PyNone();
+}
+
+PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
+    Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyNone();
     }
-
-    //TODO: make sure we are allowed to do this.
-    pClient->GetShip()->Deactivate(args.itemID, args.effectName);
-
-    return nullptr;
-}
-
-PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     Rsp_Dogma_AddTarget rsp;
         rsp.flag = false;
-        rsp.targetList.push_back(0);
+        rsp.targetList.push_back(args.arg);
 
     Client* pClient = call.client;
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (!pDestiny) {
+        if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
             return rsp.Encode();
         } else if (pDestiny->IsWarping()) {
@@ -769,42 +747,35 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if (!pClient->GetShipSE()->TargetMgr())
         return rsp.Encode();
 
-    SystemManager* smgr = pClient->SystemMgr();
-    if (!smgr) {
+    SystemManager* pSysMgr = pClient->SystemMgr();
+    if (pSysMgr == nullptr) {
         _log(PLAYER__WARNING, "Unable to find system manager from '%s'", pClient->GetName());
         return rsp.Encode();
     }
 
-    Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+    SystemEntity* pTSE = pSysMgr->GetSE(args.arg);
+    if (pTSE == nullptr) {
+        _log(INV__WARNING, "Unable to find entity %u in system %u from '%s'", args.arg, pSysMgr->GetID(), pClient->GetName());
         return rsp.Encode();
     }
-    SystemEntity* target = smgr->GetSE(args.arg);
-    if (!target) {
-        _log(INV__WARNING, "Unable to find entity %u in system %u from '%s'", args.arg, smgr->GetID(), pClient->GetName());
-        return rsp.Encode();
-    }
-    if ((!pClient->GetShipSE()->SysBubble()) || (!target->SysBubble())) {
-        _log(DESTINY__ERROR, "Client %u or Target %u does not have a bubble.", pClient->GetName(), target->GetName());
+    if ((pClient->GetShipSE()->SysBubble() == nullptr) || (pTSE->SysBubble() == nullptr)) {
+        _log(DESTINY__ERROR, "Client %u or Target %u does not have a bubble.", pClient->GetName(), pTSE->GetName());
         return rsp.Encode();
     }
 
-    if (!pClient->GetShipSE()->TargetMgr()->StartTargeting(target, pClient->GetShip())) {
+    if (!pClient->GetShipSE()->TargetMgr()->StartTargeting(pTSE, pClient->GetShip())) {
         _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed.");
         return rsp.Encode();
     }
 
     if (sConfig.server.IsTestServer)
         if (is_log_enabled(TARGET__MESSAGE)) {
-            GVector vectorToTarget(pClient->GetShipSE()->GetPosition(), target->GetPosition());
+            GVector vectorToTarget(pClient->GetShipSE()->GetPosition(), pTSE->GetPosition());
             _log(TARGET__MESSAGE, "Handle_AddTarget() - %s(%u) -> %s(%u) at range of %.2f meters.", \
-                        pClient->GetName(), pClient->GetCharacterID(), target->GetName(),target->GetID(), vectorToTarget.length() );
+                        pClient->GetName(), pClient->GetCharacterID(), pTSE->GetName(),pTSE->GetID(), vectorToTarget.length() );
         }
 
     rsp.flag = true;
-    rsp.targetList.clear();
-    rsp.targetList.push_back(target->GetID());
     return rsp.Encode();
 }
 
@@ -817,25 +788,25 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
         return new PyNone();
     }
 
-    SystemManager* smgr = pClient->SystemMgr();
-    if (!smgr) {
+    SystemManager* pSysMgr = pClient->SystemMgr();
+    if (pSysMgr == nullptr) {
         _log(SERVICE__ERROR, "Unable to find system manager for '%s'", pClient->GetName());
         return new PyNone();
     }
-    SystemEntity* target = smgr->GetSE(args.arg);
-    if (!target) {
-        _log(SERVICE__ERROR, "Unable to find entity %u in system %u for '%s'", args.arg, smgr->GetID(), pClient->GetName());
+    SystemEntity* pTSE = pSysMgr->GetSE(args.arg);
+    if (pTSE == nullptr) {
+        _log(SERVICE__ERROR, "Unable to find entity %u in system %u for '%s'", args.arg, pSysMgr->GetID(), pClient->GetName());
         return new PyNone();
     }
 
     if (sConfig.server.IsTestServer)
         if (is_log_enabled(TARGET__MESSAGE)) {
-            GVector vectorToTarget(pClient->GetShipSE()->GetPosition(), target->GetPosition());
+            GVector vectorToTarget(pClient->GetShipSE()->GetPosition(), pTSE->GetPosition());
             _log(TARGET__MESSAGE, "Handle_RemoveTarget() - Removed %s(%u) - Range to Target: %.2f meters.", \
-                            target->GetName(),target->GetID(), vectorToTarget.length() );
+                        pTSE->GetName(),pTSE->GetID(), vectorToTarget.length() );
         }
 
-    pClient->GetShipSE()->TargetMgr()->ClearTarget(target);
+    pClient->GetShipSE()->TargetMgr()->ClearTarget(pTSE);
     return nullptr;
 }
 
@@ -911,7 +882,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         rsp->SetItemString("shipInfo", new PyDict());
 
     /* Setting "shipState" in the Dictionary  -fixed 26Mar16 */
-    if (!pClient->GetShip()) {
+    if (pClient->GetShip().get() == nullptr) {
         _log(SERVICE__ERROR, "Unable to build shipState for %u", pClient->GetShipID());
         return new PyNone();
     }
@@ -924,4 +895,3 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         rsp->Dump(CLIENT__INFO, "     ");
 	return new PyObject("util.KeyVal", rsp );
 }
-

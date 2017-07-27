@@ -225,6 +225,29 @@ void ContainerSE::Delete()
     SystemEntity::Delete();
 }
 
+void ContainerSE::Activate(int32 effectID)
+{
+    // check effectID, check current state, check current timer, set new state, update timer
+
+    /** @todo somehow notify client with one of these effects:
+     *  effectAnchorDrop = 649
+     *  effectAnchorLift = 650
+     *  effectAnchorDropForStructures = 1022
+     *  effectAnchorLiftForStructures = 1023
+     *
+     ** @todo  many more effects to send for.....look into later.
+     * effectOnlineForStructures = 901
+     *
+     ** @note  also note there are timers involved here...
+     */
+}
+
+void ContainerSE::Deactivate(int32 effectID)
+{
+    // check effectID, check current state, check current timer, set new state, update timer
+
+}
+
 void ContainerSE::AnchorContainer()
 {
     m_deleteTimer.Disable();

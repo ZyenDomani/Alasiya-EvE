@@ -10,11 +10,9 @@
     the terms of the GNU Lesser General Public License as published by the Free Software
     Foundation; either version 2 of the License, or (at your option) any later
     version.
-
     This program is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
     FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
     You should have received a copy of the GNU Lesser General Public License along with
     this program; if not, write to the Free Software Foundation, Inc., 59 Temple
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
@@ -34,6 +32,7 @@
 #include "planet/Planet.h"
 #include "planet/Moon.h"
 #include "pos/Structure.h"
+#include "pos/POS.h"
 #include "npc/Drone.h"
 #include "npc/Sentry.h"
 #include "ship/Missile.h"
@@ -71,6 +70,7 @@ m_spawnMgr(new SpawnMgr(this, svc))
     m_clients.clear();
     m_moonMap.clear();
     m_entities.clear();
+    m_planetMap.clear();
     m_ratBubbles.clear();
     m_beltVector.clear();
     m_roidBubbles.clear();
@@ -92,6 +92,7 @@ SystemManager::~SystemManager() {
     m_clients.clear();
     m_moonMap.clear();
     m_entities.clear();
+    m_planetMap.clear();
     m_ratBubbles.clear();
 
     SafeDelete(m_dunMgr);
@@ -261,42 +262,43 @@ bool SystemManager::LoadSystemStatics() {
                 /*  types 12242 - 22298 in group 15 are outposts */
                 /*  types 29323 - 29390 in group 15 are wrecked stations */
                 StationItemRef itemRef = m_services.item_factory->GetStation(cur.itemID);
-                StationSE *se = new StationSE(itemRef, *(GetServiceMgr()), this);
+                StationSE *pSSE = new StationSE(itemRef, *(GetServiceMgr()), this);
                 sEntityList.AddStation(cur.itemID, itemRef);
-                pSE = se;
+                pSE = pSSE;
             } break;
             case EVEDB::invGroups::Asteroid_Belt: {
                 CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
-                BeltSE *se = new BeltSE(itemRef, *(GetServiceMgr()), this);
-                se->SetBeltMgr(m_beltMgr);
+                BeltSE *pBSE = new BeltSE(itemRef, *(GetServiceMgr()), this);
+                pBSE->SetBeltMgr(m_beltMgr);
                 ++m_beltCount;
-                pSE = se;
+                pSE = pBSE;
             } break;
             case EVEDB::invGroups::Stargate: {
                 CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius);
-                StargateSE *se = new StargateSE(itemRef, *(GetServiceMgr()), this);
+                StargateSE *pSSE = new StargateSE(itemRef, *(GetServiceMgr()), this);
                 ++m_gateCount;
-                pSE = se;
+                pSE = pSSE;
             } break;
             case EVEDB::invGroups::Planet: {
                 CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius);
-                PlanetSE *se = new PlanetSE(itemRef, *(GetServiceMgr()), this);
-                pSE = se;
+                PlanetSE *pPSE = new PlanetSE(itemRef, *(GetServiceMgr()), this);
+                m_planetMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pPSE));
+                pSE = pPSE;
             } break;
             case EVEDB::invGroups::Moon: {
                 CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius);
-                MoonSE *se = new MoonSE(itemRef, *(GetServiceMgr()), this);
-                m_moonMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, se));
-                pSE = se;
+                MoonSE *pMSE = new MoonSE(itemRef, *(GetServiceMgr()), this);
+                m_moonMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pMSE));
+                pSE = pMSE;
             } break;
             default: /*sun*/ {    // suns dont have anything special, so they are generic StaticSystemEntitys
                 CelestialObjectRef itemRef = m_services.item_factory->GetCelestialObject(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius);
-                StaticSystemEntity *se = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
-                pSE = se;
+                StaticSystemEntity *pSSE = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
+                pSE = pSSE;
             } break;
         }
         if (pSE == nullptr) {
@@ -309,10 +311,11 @@ bool SystemManager::LoadSystemStatics() {
             sBubbleMgr.Add(pSE);
             m_beltVector.push_back(cur.itemID);
         }
-        m_entities[cur.itemID] = pSE;
-        AddItemToInventory(pSE->GetSelf());
         if (!pSE->LoadExtras(&m_db))
             _log(INV__WARNING, "Failed to load additional data for entity %u. Continuing.", cur.itemID);
+
+        m_entities[cur.itemID] = pSE;
+        AddItemToInventory(pSE->GetSelf());
     }
 
     if (m_entities.size())
@@ -331,10 +334,10 @@ bool SystemManager::LoadSystemDynamics() {
         return false;
     }
 
-    SystemEntity* pSE;
+    SystemEntity* pSE(nullptr);
     for (auto cur : entities) {
         pSE = DynamicEntityFactory::BuildEntity(*this, m_services.item_factory, cur);
-        if (!pSE) {
+        if (pSE == nullptr) {
             _log(ITEM__WARNING, "LoadSystemDynamics() Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
             continue;
         }
@@ -353,10 +356,10 @@ bool SystemManager::LoadPlayerDynamics() {
         return false;
     }
 
-    SystemEntity* pSE;
+    SystemEntity* pSE(nullptr);
     for (auto cur : entities) {
         pSE = DynamicEntityFactory::BuildEntity(*this, m_services.item_factory, cur);
-        if (!pSE) {
+        if (pSE == nullptr) {
             _log(ITEM__WARNING, "LoadSystemDynamics() Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
             continue;
         }
@@ -368,14 +371,14 @@ bool SystemManager::LoadPlayerDynamics() {
 }
 
 bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity) {
-    SystemEntity* se = DynamicEntityFactory::BuildEntity(*this, m_services.item_factory, entity );
-    if (!se) {
+    SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*this, m_services.item_factory, entity );
+    if (pSE == nullptr) {
         sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (type %u)", entity.itemID, entity.typeID );
         return false;
     }
 
     _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Created dynamic entity %u of type %u for system %u", entity.itemID, entity.typeID, m_data.systemID );
-    AddEntity(se);
+    AddEntity(pSE);
     return true;
 }
 
@@ -390,7 +393,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
     switch(entity.categoryID) {
         case EVEDB::invCategories::Asteroid: {
             InventoryItemRef asteroid = factory->GetItem( entity.itemID );
-            if (!asteroid)
+            if (asteroid.get() == nullptr)
                 ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
             AsteroidSE* aSE = new AsteroidSE(asteroid, *(system.GetServiceMgr()), &system);
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making AsteroidSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -398,7 +401,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
         } break;
         case EVEDB::invCategories::Ship: {
             ShipItemRef ship = factory->GetShip( entity.itemID );
-            if (!ship)
+            if (ship.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
             Ship* sSE = new Ship(ship, *(system.GetServiceMgr()), &system, data);
@@ -407,7 +410,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
         } break;
         case EVEDB::invCategories::Deployable: {
             InventoryItemRef deployable = factory->GetItem( entity.itemID );
-            if (!deployable)
+            if (deployable.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
             deployable->SetAttribute(AttrRadius, deployable->type().radius());     // Can you set this somehow from the type class ?
@@ -417,27 +420,36 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
         } break;
         case EVEDB::invCategories::SovereigntyStructure:// SOV structures
         case EVEDB::invCategories::Orbitals:            // planet orbitals
-        case EVEDB::invCategories::Structure: {         // POS Structures of all kinds
+        case EVEDB::invCategories::Structure: {         // POS items
             StructureItemRef structure = factory->GetStructure( entity.itemID );
-            if (!structure)
+            if (structure.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-            StructureSE* sSE(nullptr);
+            StructureSE* pSSE(nullptr);
             switch(entity.groupID) {
                 case EVEDB::invGroups::Control_Tower: {
-                } break;
+                    TowerSE* tSE = new TowerSE(structure, *(system.GetServiceMgr()), &system, data);
+                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making TowerSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    pSSE = tSE;
+                };
                 case EVEDB::invGroups::Mobile_Missile_Sentry:
                 case EVEDB::invGroups::Mobile_Projectile_Sentry:
                 case EVEDB::invGroups::Mobile_Laser_Sentry:
                 case EVEDB::invGroups::Mobile_Hybrid_Sentry: {
-                } break;
+                    WeaponSE* wSE = new WeaponSE(structure, *(system.GetServiceMgr()), &system, data);
+                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making WeaponSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    pSSE =  wSE;
+                };
                 case EVEDB::invGroups::Electronic_Warfare_Battery:
                 case EVEDB::invGroups::Sensor_Dampening_Battery:
                 case EVEDB::invGroups::Stasis_Webification_Battery:
                 case EVEDB::invGroups::Warp_Scrambling_Battery:
                 case EVEDB::invGroups::Energy_Neutralizing_Battery:
                 case EVEDB::invGroups::Target_Painting_Battery: {
-                } break;
+                    BatterySE* bSE = new BatterySE(structure, *(system.GetServiceMgr()), &system, data);
+                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making BatterySE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    pSSE = bSE;
+                };
                 case EVEDB::invGroups::Refining_Array:
                 case EVEDB::invGroups::Ship_Maintenance_Array:
                 case EVEDB::invGroups::Assembly_Array:
@@ -449,24 +461,32 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 case EVEDB::invGroups::Logistics_Array:
                 case EVEDB::invGroups::Cynosural_Generator_Array:
                 case EVEDB::invGroups::Structure_Repair_Array: {
-                } break;
+                    ArraySE* aSE = new ArraySE(structure, *(system.GetServiceMgr()), &system, data);
+                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making ArraySE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    pSSE = aSE;
+                };
                 default: {
-            StructureSE* sSE = new StructureSE(structure, *(system.GetServiceMgr()), &system, data);
-            //structure->GetMyInventory()->LoadContents(factory);  this is called during structureItem creation
-            if ((entity.planetID) and (entity.groupID != EVEDB::invGroups::Test_Orbitals)) {
-                sSE->SetPlanet(entity.planetID);
-                SystemEntity* pPE = system.GetSE(entity.planetID);
-                if ((pPE != nullptr) and pPE->IsPlanetSE()) {
-                    GVector dir(structure->position(), pPE->GetPosition());
-                    dir.normalize();
-                    sSE->SetRotation(dir);
-                    pPE->GetPlanetSE()->SetCustomsOffice(sSE);
-                }
+                    StructureSE* sSE = new StructureSE(structure, *(system.GetServiceMgr()), &system, data);
+                    //structure->GetMyInventory()->LoadContents(factory);  this is called during structureItem creation
+                    if ((entity.planetID) and (entity.groupID != EVEDB::invGroups::Test_Orbitals)) {
+                        sSE->SetPlanet(entity.planetID);
+                        SystemEntity* pPE = system.GetSE(entity.planetID);
+                        if ((pPE != nullptr) and pPE->IsPlanetSE()) {
+                            GVector dir(structure->position(), pPE->GetPosition());
+                            dir.normalize();
+                            sSE->SetRotation(dir);
+                            pPE->GetPlanetSE()->SetCustomsOffice(sSE);
+                        }
+                   }
+                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    pSSE = sSE;
+                };
             }
-                }
-            }
-            _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-            return sSE;
+            if (pSSE == nullptr)
+                return nullptr; // make error and return here
+            // item is created and valid...initalize it.
+            pSSE->Init(structure);
+            return pSSE;
         } break;
         case EVEDB::invCategories::Celestial: {
             // TODO: (just use CelestialEntity class for these until their own classes are written)
@@ -475,7 +495,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
 
             if (entity.groupID == EVEDB::invGroups::Wreck) {
                 WreckContainerRef wreck = factory->GetWreckContainer( entity.itemID );
-                if (!wreck)
+                if (wreck.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 data.factionID = sEntityList.GetWreckFaction(entity.typeID);
@@ -488,7 +508,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 or (entity.groupID == EVEDB::invGroups::Cargo_Container) or (entity.groupID == EVEDB::invGroups::Freight_Container) )
             {
                 CargoContainerRef contRef = factory->GetCargoContainer( entity.itemID );
-                if (!contRef)
+                if (contRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 ContainerSE* cSE = new ContainerSE(contRef, *(system.GetServiceMgr()), &system, data);
@@ -496,27 +516,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 contRef->SetMySE(cSE);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return cSE;
-            } else if ((entity.groupID == EVEDB::invGroups::Sun)
-                or (entity.groupID == EVEDB::invGroups::Planet)
-                or (entity.groupID == EVEDB::invGroups::Moon) )
-            {
-                /** @todo  this needs to be checked....are these celestials loaded here? they should be loaded in system statics */
-                CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
-                if (!celestial)
-                    return nullptr;
-                /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-                PlanetSE* pSE = new PlanetSE(celestial, *(system.GetServiceMgr()), &system);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making PlanetSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                _log(ITEM__ERROR, "DynamicEntityFactory::BuildEntity() making PlanetSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return pSE;
-            } else if (entity.groupID == EVEDB::invGroups::Stargate) {
-                CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
-                if (!celestial)
-                    return nullptr;
-                /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-                StargateSE* sSE = new StargateSE(celestial, *(system.GetServiceMgr()), &system);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making StargateSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return sSE;
             }
             /** @todo (Allan)  need to separate these by class to create proper SE (started) */
             else if ((entity.groupID == EVEDB::invGroups::Biomass)
@@ -536,7 +535,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 or (entity.groupID == EVEDB::invGroups::Warp_Gate) or (entity.groupID == EVEDB::invGroups::Wormhole))
             {
                 CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
-                if (!celestial)
+                if (celestial.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 CelestialSE* cSE = new CelestialSE(celestial, *(system.GetServiceMgr()), &system);
@@ -547,8 +546,9 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
         case EVEDB::invCategories::Entity: {            // Entities
             if (entity.groupID == EVEDB::invGroups::Spawn_Container ) {
                 // For category=Entity, group=Spawn Container, create a CargoContainer object:
+                /** @todo  this needs its own class....there are 477 types, spawing everything..rats, modules, items, etc. */
                 CargoContainerRef contRef = factory->GetCargoContainer( entity.itemID );
-                if (!contRef)
+                if (contRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 ContainerSE* cSE = new ContainerSE(contRef, *(system.GetServiceMgr()), &system, data);
@@ -591,7 +591,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship))
             {
                 InventoryItemRef npcRef = factory->GetItem( entity.itemID );
-                if (!npcRef)
+                if (npcRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 NPC* npcSE = new NPC(npcRef, *(system.GetServiceMgr()), &system, data);
@@ -601,7 +601,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 or (entity.groupID == EVEDB::invGroups::Destructible_Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Mobile_Sentry_Gun))
             {
                 InventoryItemRef sentryRef = factory->GetItem( entity.itemID );
-                if (!sentryRef)
+                if (sentryRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 Sentry* SentrySE = new Sentry(sentryRef, *(system.GetServiceMgr()), &system, data);
@@ -609,7 +609,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 return SentrySE;
             } else {
                 CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
-                if (!celestial)
+                if (celestial.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 CelestialSE* cSE = new CelestialSE(celestial, *(system.GetServiceMgr()), &system);
@@ -619,7 +619,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
         } break;
         case EVEDB::invCategories::Drone: {             // Player Drones
             InventoryItemRef drone = factory->GetItem( entity.itemID );
-            if (!drone)
+            if (drone.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
             GPoint location(entity.x, entity.y, entity.z);
@@ -915,6 +915,17 @@ CargoContainerRef SystemManager::GetContainerFromInventory(uint32 contID)
 StationItemRef SystemManager::GetStationFromInventory(uint32 stationID)
 {
     return RefPtr<StationItem>::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( stationID ) );
+}
+
+uint32 SystemManager::GetNearestPlanet(const GPoint& myPos)
+{
+    std::map<double, SystemEntity*> sorted;
+    for (auto cur : m_planetMap) {
+        sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
+    }
+    std::map<double, SystemEntity*>::iterator itr = sorted.begin();
+
+    return itr->second->GetID();
 }
 
 SystemEntity* SystemManager::GetNearestMoon(const GPoint& myPos)

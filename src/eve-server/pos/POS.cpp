@@ -1,7 +1,7 @@
 
 /**
  * @name POS.cpp
- *   Specific Class for managing POS-specific data.
+ *   Specific Class for POS entities.
  *
  * @Author:         Allan
  * @date:   24July17
@@ -40,6 +40,7 @@ TowerSE::TowerSE(StructureItemRef structure, PyServiceMgr& services, SystemManag
     data.showInCalendar = false;
     data.sendFuelNotifications = false;
 
+    /** @todo  may need to save this itemID, instead of calculating every time. */
     m_moonSE = m_system->GetNearestMoon(GetPosition());
 }
 
@@ -75,7 +76,7 @@ PyDict* TowerSE::MakeSlimItem()
 {
     _log(SE__SLIMITEM, "MakeSlimItem for TowerSE %u", m_self->itemID());
     _log(POS__SLIMITEM, "MakeSlimItem for TowerSE %u", m_self->itemID());
-    
+
     PyDict *slim = new PyDict();
     slim->SetItemString("name",                     new PyString(m_self->itemName()));
     slim->SetItemString("nameID",                   new PyNone());
@@ -85,7 +86,7 @@ PyDict* TowerSE::MakeSlimItem()
     slim->SetItemString("corpID",                   new PyInt(m_corpID));
     slim->SetItemString("allianceID",               new PyInt(m_allyID));
     slim->SetItemString("warFactionID",             new PyInt(m_warID));
-    slim->SetItemString("posTimestamp",             new PyLong(m_timestamp));
+    slim->SetItemString("posTimestamp",             new PyLong((m_timestamp > 0) ? m_timestamp : 0));
     slim->SetItemString("posState",                 new PyInt(GetStructureState()));
     slim->SetItemString("incapacitated",            new PyInt((m_state == EVEPOS::StructureState::Incapacitated) ? 1 : 0));
     // this is time shown in structure status (time left until current state completes)
@@ -97,6 +98,26 @@ PyDict* TowerSE::MakeSlimItem()
         slim->Dump(POS__DEBUG, "     ");
     }
     return slim;
+}
+
+void TowerSE::UpdateSentry()
+{
+    m_db.UpdatePOSSentry(m_towerID, data);
+}
+
+void TowerSE::UpdateNotify()
+{
+    m_db.UpdatePOSNotify(m_towerID, data);
+}
+
+void TowerSE::UpdatePermission()
+{
+    m_db.UpdatePOSPermission(m_towerID, data);
+}
+
+void TowerSE::UpdateTimeStamp()
+{
+    m_db.UpdatePOSTimeStamp(m_towerID, m_timestamp);
 }
 
 /*  for updating structure data

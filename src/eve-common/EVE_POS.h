@@ -52,7 +52,7 @@ namespace EVEPOS {
         Incapacitated     = -1,
         Unanchored        = 0,
         Anchored          = 1,
-        Onlining         = 2,
+        Onlining          = 2,
         Reinforced        = 3,
         Online            = 4,
         Operating         = 5,

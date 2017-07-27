@@ -75,6 +75,7 @@ public:
     bool BootSystem();
     void UnloadSystem();
 
+    uint32 GetNearestPlanet(const GPoint& myPos);
     SystemEntity* GetNearestMoon(const GPoint& myPos);
 
     uint32 GetID() const                                { return m_data.systemID; }
@@ -149,6 +150,7 @@ private:
 
     // for POS system       -allan 23July17
     std::map<uint32, SystemEntity*> m_moonMap;        // our container, but we DONT own the SE*
+    std::map<uint32, SystemEntity*> m_planetMap;      // our container, but we DONT own the SE*
 
     // for grid Unloading system  -allan  27June2015
     bool m_loaded;

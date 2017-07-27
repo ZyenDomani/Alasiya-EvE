@@ -498,12 +498,38 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
 20:06:51 [BindDump]         [ 0]   [ 0]   [ 1] Integer field: 1
 20:06:51 [BindDump]         [ 1] Integer field: 1000172
 20:06:51 [BindDump]         [ 2] Boolean field: false
-20:06:51[00m L [37;01mShipBound::Handle_Drop(): [00msize=3
-[00m20:06:51 [TargetInfo] Created TargMgr 0x39f0500 for Minmatar Control Tower Small(140000078)
-20:06:51 [DestinyMsg] MakeSlimItem for StructureSE 140000078
-20:06:51[36;01m W [37;01mClient::BeanCount: [36;01m(BeanCount/alert) BeanCount error reporting and handling is not implemented yet.
-[00m20:06:51 [ClientCallRep] SendClientStackTraceAlert call made to alert
-EXCEPTION #10 logged at  05/23/2016 20:06:51 Unhandled exception in <TaskletExt object at 35ff1df0, abps=1001, ctxt=None>
+****  same call...new data  *******
+16:21:37 [SvcCall] Service ShipBound::Drop()
+16:21:37 W ShipBound::Handle_Drop(): size=3
+16:21:37 [POS:State] StructureSE::EncodeDestiny(): Minmatar Control Tower Small - id:140035963, mode:11, flags:0xC
+16:21:37 [POS:SlimItem] MakeSlimItem for StructureSE 140035963
+16:21:37 [POS:Debug] StructureSE::MakeSlimItem()
+16:21:37 [POS:Debug]      Dictionary: 11 entries
+16:21:37 [POS:Debug]        [ 0] Key: String: 'posDelayTime'
+16:21:37 [POS:Debug]        [ 0] Value: Integer field: 4
+16:21:37 [POS:Debug]        [ 1] Key: String: 'name'
+16:21:37 [POS:Debug]        [ 1] Value: String: ''
+16:21:37 [POS:Debug]        [ 2] Key: String: 'nameID'
+16:21:37 [POS:Debug]        [ 2] Value: (None)
+16:21:37 [POS:Debug]        [ 3] Key: String: 'typeID'
+16:21:37 [POS:Debug]        [ 3] Value: Integer field: 20066
+16:21:37 [POS:Debug]        [ 4] Key: String: 'itemID'
+16:21:37 [POS:Debug]        [ 4] Value: Integer field: 140035963
+16:21:37 [POS:Debug]        [ 5] Key: String: 'ownerID'
+16:21:37 [POS:Debug]        [ 5] Value: Integer field: 1001000
+16:21:37 [POS:Debug]        [ 6] Key: String: 'corpID'
+16:21:37 [POS:Debug]        [ 6] Value: Integer field: 1001000
+16:21:37 [POS:Debug]        [ 7] Key: String: 'allianceID'
+16:21:37 [POS:Debug]        [ 7] Value: Integer field: 0
+16:21:37 [POS:Debug]        [ 8] Key: String: 'warFactionID'
+16:21:37 [POS:Debug]        [ 8] Value: Integer field: 0
+16:21:37 [POS:Debug]        [ 9] Key: String: 'posState'
+16:21:37 [POS:Debug]        [ 9] Value: Integer field: 4
+16:21:37 [POS:Debug]        [10] Key: String: 'posTimestamp'
+16:21:37 [POS:Debug]        [10] Value: Integer field: 131451456970000000
+16:21:37 [SvcCall] Service alert::BeanCount()
+16:21:37 [SvcCall] Service alert::SendClientStackTraceAlert()
+EXCEPTION #7 logged at  07/22/2017 16:21:36 Unhandled exception in <TaskletExt object at 459eed40, abps=1001, ctxt=None>
 Caught at:
 /common/lib/bluepy.py(98) CallWrapper
 Thrown at:
@@ -512,22 +538,23 @@ Thrown at:
 /client/script/ui/services/menusvc.py(6235) CheckLocked
 /client/script/ui/services/menusvc.py(6332) LaunchForCorp
 /client/script/util/evemisc.py(119) LaunchFromShip
-        errors = set()
-        newIDs = {}
-        ignoreWarning = False
-        items = [<DBRow object [140000078L, 20066, 140000000, 140000068L, 5, 1, 365, 23, '', 1, 0]>]
-        PackError = <function PackError at 0x0B392AB0>
-        item = <DBRow object [140000078L, 20066, 140000000, 140000068L, 5, 1, 365, 23, '', 1, 0]>
-        UnpackError = <function UnpackError at 0x38A355F0>
-        ret = ([...],)
-        whoseBehalfID = 1000172
-        oldItems = [(...)]
+errors = set()
+newIDs = {}
+ignoreWarning = False
+items = [<DBRow object [140035963L, 20066, 140000000, 140035965, 5, 1, 365, 23, '', 1, 0]>]
+PackError = <function PackError at 0x42BE9E30>
+item = <DBRow object [140035963L, 20066, 140000000, 140035965, 5, 1, 365, 23, '', 1, 0]>
+UnpackError = <function UnpackError at 0x06EDAFB0>
+ret = ([...],)
+whoseBehalfID = 1001000
+oldItems = [(...)]
 AttributeError: 'tuple' object has no attribute 'iteritems'
+
 */
     PyList* PyToDropList = drop3args.toDrop;
     uint32 ownerID = drop3args.ownerID;
     //used for LaunchUpgradePlatformWarning
-    bool ignoreWarning = drop3args.ignoreWarning;
+    bool ignoreWarning = drop3args.ignoreWarning, dropped = false;
 
     Call_SingleIntList successfully_dropped;
     Client* pClient = call.client;
@@ -538,108 +565,73 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
         data.factionID = pClient->GetWarFactionID();
         data.ownerID = pClient->GetCharacterID();
 
+    DBSystemDynamicEntity entity;
+        entity.itemID = 0;
+        entity.itemName = "";
+        entity.typeID = 0;
+        entity.groupID = 0;
+        entity.categoryID = EVEDB::invCategories::_System;
+        entity.ownerID = drop3args.ownerID;
+        entity.corporationID = data.corporationID;
+        entity.allianceID = data.allianceID;
+        entity.factionID = data.factionID;
+        entity.planetID = 0;
+        entity.x = 0.0;
+        entity.y = 0.0;
+        entity.z = 0.0;
+
     uint32 contID = 0, itemID = 0, itemQuantity = 0;
+    double radius = pClient->GetShipSE()->GetRadius();
 
     GPoint location(pClient->GetShipSE()->GetPosition());
-    location.MakeRandomPointOnSphereLayer(400.0,(1000.0 + pClient->GetShipSE()->GetRadius()));
 
-    StructureItemRef structureRef;
-    InventoryItemRef cargoItemRef;
-    CargoContainerRef contRef;
+    InventoryItemRef itemRef;
 
     for (uint32 i = 0; i < PyToDropList->size(); i++) {
-        itemID = (uint32)(PyToDropList->items.at(i)->AsTuple()->items.at(0)->AsInt()->value());
+        location.MakeRandomPointOnSphereLayer((300.0 +radius),(800.0 + radius));
+        entity.itemID = (uint32)(PyToDropList->items.at(i)->AsTuple()->items.at(0)->AsInt()->value());
         itemQuantity = (uint32)(PyToDropList->items.at(i)->AsTuple()->items.at(1)->AsInt()->value());
 
-        cargoItemRef = m_manager->item_factory->GetItem(itemID);
-        if (!cargoItemRef) {
+        itemRef = m_manager->item_factory->GetItem(itemID);
+        if (itemRef.get() == nullptr) {
             sLog.Error("ShipBound::Handle_Drop()", "%s: Unable to find item %u to drop.", pClient->GetName(), itemID);
             continue;
         }
 
-        //verify that this item is in fact in the player's ship.
-        if (cargoItemRef->locationID() != pClient->GetShipID()) {
-            sLog.Error("ShipBound::Handle_Drop()", "%s: Item %u is not in our ship (%u), it is in %u. Not dropping.",
-                       pClient->GetName(), itemID, pClient->GetShipID(), cargoItemRef->locationID());
-            continue;
-        }
+        /**@todo  deal with changing quantities as needed */
 
-        if ((IsPlayerCorp(ownerID)) or (ownerID == pClient->GetCharacterID()))
-            cargoItemRef->ChangeOwner(ownerID, true);
-
-        uint32 groupID = m_manager->item_factory->GetItem(itemID)->groupID();
-        if ((groupID == EVEDB::invGroups::Audit_Log_Secure_Container)
-            || (groupID == EVEDB::invGroups::Secure_Cargo_Container)
-            || (groupID == EVEDB::invGroups::Freight_Container)
-            || (groupID == EVEDB::invGroups::Cargo_Container))
-        {
-            // This item is a cargo container, so move it from the ship's cargo into space:
-            contRef = m_manager->item_factory->GetCargoContainer(itemID);
-
-            if (!contRef)
-                throw PyException(MakeCustomError("Unable to spawn item of type %u.", contRef->typeID()));
-
-            // Move item from cargo bay to space:
-            contRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            ContainerSE* cSE = new ContainerSE(contRef, *m_manager, pSysMgr, data);
-            cSE->SetPosition(location);
-            contRef->SetMySE(cSE);
-            contRef->SaveItem();
-            pSysMgr->AddEntity(cSE);
-
-            successfully_dropped.ints.push_back(contRef->itemID());
-            continue;
-        }
-
-        uint32 categoryID = m_manager->item_factory->GetItem(itemID)->categoryID();
-        if ((categoryID == EVEDB::invCategories::Structure)
-            or (categoryID == EVEDB::invCategories::Orbitals)) {
-            // This item is an Orbital structure of some kind, so move it from the ship's cargo into space
-            /** @todo  this needs lots of work for correct placement of orbital items */
-            structureRef = m_manager->item_factory->GetStructure(itemID);
-
-            if (!structureRef)
-                throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", structureRef->typeID()));
-
-            // Move item from cargo bay to space:
-            structureRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            StructureSE* sSE = new StructureSE(structureRef, *m_manager, pSysMgr, data);
-            sSE->SetPosition(location);
-            structureRef->SaveItem();
-            pSysMgr->AddEntity(sSE);
-
-            successfully_dropped.ints.push_back(structureRef->itemID());
-            continue;
-        } else if (categoryID == EVEDB::invCategories::Deployable) {
-            // This item is a Deployable item of some kind, so move it from the ship's cargo into space
-            cargoItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
-            // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
-            DeployableSE* deployableObj = new DeployableSE(cargoItemRef, *m_manager, pSysMgr, data);
-            deployableObj->SetPosition(location);
-            cargoItemRef->SaveItem();
-            pSysMgr->AddEntity(deployableObj);
-
-            successfully_dropped.ints.push_back(cargoItemRef->itemID());
-            continue;
-        } else if ((cargoItemRef->flag() == flagDroneBay) and (cargoItemRef->categoryID() == EVEDB::invCategories::Drone)) {
-            if (!sConfig.npc.EnableDrones) {
-                pClient->SendNotifyMsg("Drones are disabled.");
-                return nullptr;
-            }
+        if ((itemRef->flag() == flagDroneBay) and (itemRef->categoryID() == EVEDB::invCategories::Drone)) {
             // This item is a drone, so launch it into space:
-            if (pClient->LaunchDrone(cargoItemRef))
-                successfully_dropped.ints.push_back(cargoItemRef->itemID());
+            if (pClient->LaunchDrone(itemRef)) {
+                dropped = true;
+                successfully_dropped.ints.push_back(itemID);
+            }
             continue;
         }
-        //else if ()    // Handle other types of cargo, such as launching assembled ships?
-        else {
-            ;// Reject launch for this item
+
+        // Move item from cargo bay to space:
+        itemRef->Move(pClient->GetLocationID(), flagAutoFit);
+        itemRef->Relocate(location);
+
+        entity.itemName = itemRef->itemName();
+        entity.typeID = itemRef->typeID();
+        entity.groupID = itemRef->groupID();
+        entity.categoryID = itemRef->categoryID();
+        if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
+            entity.planetID = pSysMgr->GetNearestPlanet(location);
+        entity.x = itemRef->position().x;
+        entity.y = itemRef->position().y;
+        entity.z = itemRef->position().z;
+
+        if (pSysMgr->BuildDynamicEntity(entity)) {
+            dropped = true;
+            successfully_dropped.ints.push_back(itemID);
         }
     }
 
-    pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
-    return (successfully_dropped.Encode());
+    if (dropped)
+        pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+    return successfully_dropped.Encode();
 }
 
 PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
@@ -865,7 +857,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", 23));
             // create new container
             ContainerSE* cSE = new ContainerSE(newJetcanItem, *m_manager, pSysMgr, data);
-            
+
             newJetcanItem->SetMySE(cSE);
             pSysMgr->AddEntity(cSE);
             pClient->StartJetcanTimer();

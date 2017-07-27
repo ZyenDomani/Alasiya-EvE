@@ -279,6 +279,7 @@ PyResult PosMgrBound::Handle_SetTowerNotifications(PyCallArgs &call) {
 
     pTSE->SetSendFuelNotifications(args.sendFuelNotifications);
     pTSE->SetShowInCalendar(args.showInCalendar);
+    pTSE->UpdateNotify();
     return new PyNone();
 }
 
@@ -342,10 +343,37 @@ PyResult PosMgrBound::Handle_SetTowerSentrySettings(PyCallArgs &call) {
     pTSE->SetStatusDrop(args.statusDrop);
     pTSE->SetCorpWar(args.corpWar);
     pTSE->SetStandingOwnerID(args.standingOwnerID);
+    pTSE->UpdateSentry();
 }
 
 PyResult PosMgrBound::Handle_GetStarbasePermissions(PyCallArgs &call) {
     //  deployFlags, usageFlagsList = self.posMgr.GetStarbasePermissions(self.slimItem.itemID)
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
+
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyNone();
+    }
+
+    TowerSE* pTSE = pSystem->GetSE(arg.arg)->GetTowerSE();
+    if (pTSE == nullptr)
+        return new PyNone();
+
+    /** @todo  incomplete... finish this  */
+
+    return new PyNone();
+}
+
+PyResult PosMgrBound::Handle_SetStarbasePermissions(PyCallArgs &call) {
+    //  self.posMgr.SetStarbasePermissions(self.slimItem.itemID, self.sr.deployFlags, self.sr.usageFlagsList)
+    sLog.White( "PosMgrBound::Handle_SetStarbasePermissions()", "size=%u", call.tuple->size());
+    call.Dump(POS__DUMP);
+
     SystemManager* pSystem = call.client->SystemMgr();
     if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
@@ -363,18 +391,8 @@ PyResult PosMgrBound::Handle_GetStarbasePermissions(PyCallArgs &call) {
         return new PyNone();
 
     /** @todo  incomplete... finish this  */
-
+    pTSE->UpdatePermission();
     return new PyNone();
-}
-
-PyResult PosMgrBound::Handle_SetStarbasePermissions(PyCallArgs &call) {
-    //  self.posMgr.SetStarbasePermissions(self.slimItem.itemID, self.sr.deployFlags, self.sr.usageFlagsList)
-    sLog.White( "PosMgrBound::Handle_SetStarbasePermissions()", "size=%u", call.tuple->size());
-    call.Dump(POS__DUMP);
-
-    PyRep *result(nullptr);
-
-    return result;
 }
 
 PyResult PosMgrBound::Handle_GetMoonForTower( PyCallArgs &call ) {

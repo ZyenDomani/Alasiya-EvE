@@ -163,8 +163,11 @@ public:
     virtual void Killed(Damage &fatal_blow);
 
     /* specific functions handled in this class. */
+    void                           Activate(int32 effectID);
+    void                           Deactivate(int32 effectID);
+
     PyTuple*                    GetEffectState();
-    uint8                       GetStructureState() const;
+    uint8                       GetStructureState() const { return m_state; }
     SystemEntity*               GetMoonEntity()         { return m_moonSE; }
 
     inline void                SetPOSState(uint8 state) { m_state = state; }
@@ -190,6 +193,8 @@ protected:
     uint32 m_planetID;
 
 private:
+    Timer m_procTimer;
+
     bool m_co :1;
     bool m_tcu :1;
     bool m_sbu :1;
@@ -201,5 +206,3 @@ private:
 };
 
 #endif  // EVEMU_POS_STRUCTURE_H_
-
-

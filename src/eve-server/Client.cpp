@@ -1020,6 +1020,10 @@ PyRep *Client::GetInfoWindowDataForChar(Client *pClient) {
 }
 
 bool Client::LaunchDrone(InventoryItemRef drone) {
+    if (!sConfig.npc.EnableDrones) {
+        SendNotifyMsg("Drones are disabled.");
+        return false;
+    }
     if (!IsSolarSystem(m_locationID)) {
         sLog.White("Client::LaunchDrone()","%s: Trying to launch drone when not in space!",  m_char->itemName().c_str());
         return false;
@@ -1049,7 +1053,7 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
         du.controllerID = m_shipId;
         du.controllerOwnerID = m_char->itemID();
         du.activityState = droneIdle;
-        du.targetID = m_shipId;  // use ship as initial target for launch and orbit command
+        du.targetID = 0;
     PyTuple* up = du.Encode();
     pShipSE->DestinyMgr()->SendSingleDestinyUpdate(&up);
 
