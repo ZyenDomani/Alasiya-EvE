@@ -124,7 +124,7 @@ class StructureSE
 {
 public:
     StructureSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& data);
-    virtual ~StructureSE();
+    virtual ~StructureSE()  { /* do nothing here */ }
 
     void Init(StructureItemRef structure);
 
@@ -133,6 +133,7 @@ public:
     virtual StructureSE*        GetCOSE()               { return (m_co ? this : nullptr); }
     virtual StructureSE*        GetTCUSE()              { return (m_tcu ? this : nullptr); }
     virtual StructureSE*        GetSBUSE()              { return (m_sbu ? this : nullptr); }
+    virtual StructureSE*        GetJammerSE()           { return (m_jammer ? this : nullptr); }
     virtual StructureSE*        GetOutpostSE()          { return (m_bridge ? this : nullptr); }
     virtual StructureSE*        GetJumpBridgeSE()       { return (m_outpost ? this : nullptr); }
     virtual TowerSE*            GetTowerSE()            { return nullptr; }
@@ -145,6 +146,7 @@ public:
     virtual bool                IsCOSE()                { return m_co; }
     virtual bool                IsTCUSE()               { return m_tcu; }
     virtual bool                IsSBUSE()               { return m_sbu; }
+    virtual bool                IsJammerSE()            { return m_jammer; }
     virtual bool                IsOutpostSE()           { return m_outpost; }
     virtual bool                IsJumpBridgeSE()        { return m_bridge; }
     virtual bool                IsTowerSE()             { return false; }
@@ -163,11 +165,12 @@ public:
     virtual void Killed(Damage &fatal_blow);
 
     /* specific functions handled in this class. */
-    void                           Activate(int32 effectID);
-    void                           Deactivate(int32 effectID);
+    void                        InitData();
+    void                        Activate(int32 effectID);
+    void                        Deactivate(int32 effectID);
 
     PyTuple*                    GetEffectState();
-    uint8                       GetStructureState() const { return m_state; }
+    uint8                     GetStructureState() const { return m_state; }
     SystemEntity*               GetMoonEntity()         { return m_moonSE; }
 
     inline void                SetPOSState(uint8 state) { m_state = state; }

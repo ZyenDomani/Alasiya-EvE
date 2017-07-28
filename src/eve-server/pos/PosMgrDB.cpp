@@ -13,7 +13,7 @@ PyRep* PosMgrDB::GetControlTowerFuelRequirements() {
         "   controlTowerTypeID, resourceTypeID, purpose, quantity, minSecurityLevel, factionID, wormholeClassID"
         " FROM invControlTowerResources "))
     {
-        _log(DATABASE__ERROR, "Error in GetControlTowerFuelRequirements query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetControlTowerFuelRequirements query: %s", res.error.c_str());
         return nullptr;
     }
 
@@ -45,7 +45,7 @@ PyRep* PosMgrDB::GetSiloCapacityByItemID(uint16 typeID) {
         " FROM dgmTypeAttributes "
         " WHERE typeID = %u AND attributeID = %u", typeID, AttrCapacity))
     {
-        _log(DATABASE__ERROR, "Error in GetSiloCapacityByItemID query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetSiloCapacityByItemID query: %s", res.error.c_str());
         return nullptr;
     }
 
@@ -56,30 +56,34 @@ bool PosMgrDB::GetPOSData(EVEPOS::SaveData& data)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        "SELECT towerID, planetID, harmonic, standingOwnerID, state, level, standing,"
+        "SELECT towerID, planetID, harmonic, standingOwnerID, state, standing,"
         " status, timestamp, rotationX, rotationY, rotationZ, statusDrop, corpWar, showInCalendar, sendFuelNotifications"
         " FROM posStructureData"
         " WHERE itemID = %u", data.itemID))
     {
-        _log(DATABASE__ERROR, "Error in GetPOSData query: %s", res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetPOSData query: %s", res.error.c_str());
         return false;
     }
 
     DBResultRow row;
     res.GetRow(row);
-    data.timestamp = 0;
-    data.harmonic = 0;
-    data.state = 0;
-    data.towerID = 0;
-    data.rotation = NULL_ORIGIN;
-    data.planetID = 0;
-    data.status = 0.0f;
-    data.standing = 0.0f;
-    data.standingOwnerID = 0;
-    data.corpWar = row.GetBool(0);
-    data.statusDrop = row.GetBool(0);
-    data.showInCalendar = row.GetBool(0);
-    data.sendFuelNotifications = row.GetBool(0);
+    data.towerID = row.GetInt(0);
+    data.planetID = row.GetInt(1);
+    data.harmonic = row.GetInt(2);
+    data.standingOwnerID = row.GetInt(3);
+    data.state = row.GetInt(4);
+    data.standing = row.GetFloat(5);
+    data.status = row.GetFloat(6);
+    data.timestamp = row.GetInt64(7);
+    data.rotation = GPoint (
+                row.GetDouble(8),
+                row.GetDouble(9),
+                row.GetDouble(10)
+                );
+    data.statusDrop = row.GetBool(11);
+    data.corpWar = row.GetBool(12);
+    data.showInCalendar = row.GetBool(13);
+    data.sendFuelNotifications = row.GetBool(14);
     return true;
 }
 
@@ -91,7 +95,7 @@ void PosMgrDB::SavePOSData(EVEPOS::SaveData& data)
         "(itemID, towerID, planetID, harmonic, standingOwnerID, state, standing,"
         " status, timestamp, rotationX, rotationY, rotationZ, statusDrop, corpWar, showInCalendar, sendFuelNotifications)"
         " VALUES ",
-                (data.itemID, data.towerID, data.planetID, data.harmonic, data.standingOwnerID, data.state, data.standing,
+        (data.itemID, data.towerID, data.planetID, data.harmonic, data.standingOwnerID, data.state, data.standing,
         data.status, data.timestamp, data.rotation.x, data.rotation.y, data.rotation.z, data.statusDrop, data.corpWar, data.showInCalendar,
         data.sendFuelNotifications));
 }
@@ -139,34 +143,38 @@ void PosMgrDB::UpdatePOSPermission(uint32 towerID, EVEPOS::TowerData& data)
     //sDatabase.RunQuery(err, "UPDATE posStructureData");
 }
 
+void PosMgrDB::UpdatePOSPassword(uint32 towerID, EVEPOS::TowerData& data)
+{
+    DBerror err;
+    sDatabase.RunQuery(err,
+        "UPDATE posStructureData"
+        " SET "
+        "  password='%s'"
+        " WHERE itemID = %u", data.password.c_str(), towerID);
+}
+
 void PosMgrDB::UpdatePOSSentry(uint32 towerID, EVEPOS::TowerData& data)
 {
     DBerror err;
     sDatabase.RunQuery(err,
         "UPDATE posStructureData"
-                       " SET "
-                       "  standingOwnerID=%u,"
-                       "  standing=%f,"
-                       "  status=%f,"
-                       "  statusDrop=%i,"
-                       "  corpWar=%i"
-                       " WHERE itemID = %u", data.standingOwnerID, data.standing, data.status, data.statusDrop, data.corpWar, data.showInCalendar,
-                       data.sendFuelNotifications, towerID);
-
+        " SET "
+        "  standingOwnerID=%u,"
+        "  standing=%f,"
+        "  status=%f,"
+        "  statusDrop=%i,"
+        "  corpWar=%i"
+        " WHERE itemID = %u", data.standingOwnerID, data.standing, data.status, data.statusDrop, data.corpWar, data.showInCalendar,
+            data.sendFuelNotifications, towerID);
 }
 
 void PosMgrDB::UpdatePOSTimeStamp(uint32 towerID, uint64 timeStamp)
 {
     DBerror err;
     sDatabase.RunQuery(err,
-                       "UPDATE posStructureData"
-                       " SET "
-                       "  timestamp=" PRIu64
-                       " WHERE itemID = %u", timeStamp, towerID);
+        "UPDATE posStructureData"
+        " SET "
+        "  timestamp=" PRIu64
+        " WHERE itemID = %u", timeStamp, towerID);
 }
-
-
-
-
-
 

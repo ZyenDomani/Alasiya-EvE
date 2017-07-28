@@ -275,6 +275,8 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_module = false;
     m_outpost = false;
 
+    m_towerID = 0;
+
     m_procTimer.Disable();
 
     m_state = EVEPOS::StructureState::Unanchored;
@@ -291,32 +293,14 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     _log(SE__DEBUG, "Created StructureSE for item %s (%u).", structure->itemName().c_str(), structure->itemID());
 }
 
-StructureSE::~StructureSE()
-{
-    /** @todo  change this to store data objects in std::vector (or whatever) in SystemManager
-     * on system unload, call save on data list like ItemFactory does....  */
-    // do we need to save POS data like this?
-    //  save data when shit changes?
+void StructureSE::InitData() {
     EVEPOS::SaveData data;
         data.itemID = GetID();
-        data.timestamp = m_timestamp;
-        data.harmonic = m_harmonic;
+        data.timestamp = 0;
+        data.harmonic = m_harmonic;     // set during base SE creation
         data.state = m_state;
-        data.towerID = m_towerID;
         data.rotation = m_rotation;
-        data.planetID = m_planetID;
-
-    if (IsTowerSE()) {
-        EVEPOS::TowerData tData;
-        GetTowerSE()->GetTowerData(tData);
-        data.status = tData.status;
-        data.standing = tData.standing;
-        data.standingOwnerID = tData.standingOwnerID;
-        data.corpWar = tData.corpWar;
-        data.statusDrop = tData.statusDrop;
-        data.showInCalendar = tData.showInCalendar;
-        data.sendFuelNotifications = tData.sendFuelNotifications;
-    } else {
+        data.planetID = 0;
         data.status = 0.0f;
         data.standing = 0.0f;
         data.standingOwnerID = 0;
@@ -324,18 +308,31 @@ StructureSE::~StructureSE()
         data.statusDrop = false;
         data.showInCalendar = false;
         data.sendFuelNotifications = false;
-    }
-
+    if (m_module) {
+        bool found = false;
+        // this item is a module.  get towerID and save
+        std::vector<SystemEntity*> seVec;
+        m_bubble->GetEntities(seVec);
+        for (auto cur : seVec) {
+            if (cur->IsTowerSE()) {
+                found = true;
+                m_towerID = cur->GetID();
+                // do we wanna save towerSE for each module?
+            }
+            if (found)
+                break;
+        }
+    } else
+        data.towerID = m_towerID;
     m_db.SavePOSData(data);
 }
-
 
 void StructureSE::Init(StructureItemRef structure)
 {
     EVEPOS::SaveData data;
     data.itemID = structure->itemID();
     if (!m_db.GetPOSData(data))
-        ;  // invalid data....make error here and break out?  set to default?  inform player?
+        data.towerID = 0;  // invalid data....init to 0 as this will only hit for currently-launching items (or errors)
 
     switch(structure->groupID()) {
         case EVEDB::invGroups::Orbital_Infrastructure: {
@@ -353,7 +350,9 @@ void StructureSE::Init(StructureItemRef structure)
             m_module = true;
         } break;
         case EVEDB::invGroups::Cynosural_System_Jammer: {
-            /** @todo (Allan) do we need anything else here?  check for and set system-wide cyno jammer? */
+            /** @todo (Allan) do we need anything else here?  check for and set system-wide cyno jammer?
+             *    as we're nowhere even close to needing/using cyno, this can wait
+             */
             m_jammer = true;
             m_module = true;
         } break;
@@ -365,7 +364,7 @@ void StructureSE::Init(StructureItemRef structure)
     if (m_module)
         m_towerID = data.towerID;
 
-    if ((m_state == EVEPOS::Online) or (m_state == EVEPOS::Operating))
+    if ((m_state == EVEPOS::StructureState::Online) or (m_state == EVEPOS::StructureState::Operating))
         m_self->SetFlag(flagStructureActive, false);
 
 }
@@ -379,20 +378,20 @@ void StructureSE::Process() {
     if (m_procTimer.Check(false)) {
     	m_procTimer.Disable();
         m_timestamp = 0;
-        if (m_state == Operating) {
+        if (m_state == StructureState::Operating) {
             m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time state ends
             // take resources or whatever needs to be done
-        } else if (m_state == Unanchored) {
+        } else if (m_state == StructureState::Unanchored) {
             ; // anchor
-        } else if (m_state == Anchored) {
+        } else if (m_state == StructureState::Anchored) {
             ; // unanchor
-        } else if (m_state == Onlining) {
+        } else if (m_state == StructureState::Onlining) {
             m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time state ends
             ; // unanchor
-        } else if ((m_state == SheildReinforced) or (m_state == ArmorReinforced)) {
+        } else if ((m_state == StructureState::SheildReinforced) or (m_state == StructureState::ArmorReinforced)) {
             m_timestamp = 0;
             m_delayTime = 0;
-        } else if (m_state == Reinforced) {
+        } else if (m_state == StructureState::Reinforced) {
             m_self->SetFlag(flagStructureInactive, false);
             //
             m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time state ends
@@ -411,9 +410,19 @@ void StructureSE::Process() {
             */
 }
 
+/*  for updating structure data
+ *
+ * EVEPOS::SaveData data;
+ * m_db.UpdatePOSData(data);
+ */
+
 void StructureSE::Activate(int32 effectID)
 {
     // check effectID, check current state, check current timer, set new state, update timer
+
+    /** @note  to change tower timers, the m_timestamp will have to be adjusted.
+     *   the client calculates all pos timers internally
+     */
 
     /** @todo somehow notify client with one of these effects:
      *  effectAnchorDrop = 649
@@ -426,7 +435,10 @@ void StructureSE::Activate(int32 effectID)
      *
      ** @note  also note there are timers involved here...
      */
+
+    // call returns nothing, but server sends OnSlimItemChange and OnSpecialFX in a destiny update
     m_self->SetFlag(flagStructureActive, false);
+    m_state = EVEPOS::StructureState::Online;
 }
 
 void StructureSE::Deactivate(int32 effectID)

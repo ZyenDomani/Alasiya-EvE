@@ -40,6 +40,7 @@ public:
     void SetStatusDrop(bool set)                        { data.statusDrop = set; }
     void SetCorpWar(bool set)                           { data.corpWar = set; }
     void SetStandingOwnerID(uint32 set)                 { data.standingOwnerID = set; }
+    void SetTowerPassword(std::string pass)             { data.password = pass; }
 
     bool GetStatusDrop()                                { return data.statusDrop; }
     bool GetCorpWar()                                   { return data.corpWar; }
@@ -56,9 +57,10 @@ public:
 
     void UpdateSentry();
     void UpdateNotify();
-    void UpdatePermission();
+    void UpdatePassword();
     void UpdateTimeStamp();
-    
+    void UpdatePermission();
+
 private:
     EVEPOS::TowerData data;
 };

@@ -101,6 +101,7 @@ public:
     virtual ObjectSystemEntity* GetObjectSE()           { return nullptr; }
     virtual AsteroidSE*         GetAsteroidSE()         { return nullptr; }
     virtual StructureSE*        GetPOSSE()              { return nullptr; }
+    virtual StructureSE*        GetJammerSE()           { return nullptr; }
     virtual StructureSE*        GetJumpBridgeSE()       { return nullptr; }
     virtual StructureSE*        GetOutpostSE()          { return nullptr; }
     virtual StructureSE*        GetCOSE()               { return nullptr; }
@@ -147,6 +148,7 @@ public:
     virtual bool                IsSBUSE()               { return false; }
     virtual bool                IsTowerSE()             { return false; }
     virtual bool                IsArraySE()             { return false; }
+    virtual bool                IsJammerSE()            { return false; }
     virtual bool                IsWeaponSE()            { return false; }
     virtual bool                IsBatterySE()           { return false; }
     virtual bool                IsOutpostSE()           { return false; }

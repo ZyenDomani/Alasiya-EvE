@@ -110,9 +110,9 @@ void TowerSE::UpdateNotify()
     m_db.UpdatePOSNotify(m_towerID, data);
 }
 
-void TowerSE::UpdatePermission()
+void TowerSE::UpdatePassword()
 {
-    m_db.UpdatePOSPermission(m_towerID, data);
+    m_db.UpdatePOSPassword(m_towerID, data);
 }
 
 void TowerSE::UpdateTimeStamp()
@@ -120,11 +120,10 @@ void TowerSE::UpdateTimeStamp()
     m_db.UpdatePOSTimeStamp(m_towerID, m_timestamp);
 }
 
-/*  for updating structure data
- *
- * EVEPOS::SaveData data;
- * m_db.UpdatePOSData(data);
- */
+void TowerSE::UpdatePermission()
+{
+    m_db.UpdatePOSPermission(m_towerID, data);
+}
 
 /** @todo (Allan) set/get control tower id for modules in/from customInfo field of db */
 ArraySE::ArraySE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& data)

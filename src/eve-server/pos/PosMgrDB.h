@@ -22,6 +22,7 @@ public:
 
     void UpdatePOSNotify(uint32 towerID, EVEPOS::TowerData& data);
     void UpdatePOSSentry(uint32 towerID, EVEPOS::TowerData& data);
+    void UpdatePOSPassword(uint32 towerID, EVEPOS::TowerData& data);
     void UpdatePOSPermission(uint32 towerID, EVEPOS::TowerData& data);
     void UpdatePOSTimeStamp(uint32 towerID, uint64 timeStamp);
 

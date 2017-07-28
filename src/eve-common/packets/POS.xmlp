@@ -21,4 +21,13 @@
     </tupleInline>
   </elementDef>
 
+  <elementDef name="SetTowerPassword">
+    <tupleInline>
+      <int name="towerID" />
+      <string name="password" />
+      <bool name="allowCorp" none_marker="0" />
+      <bool name="allowAlliance" none_marker="0" />
+    </tupleInline>
+  </elementDef>
+
 </elements>

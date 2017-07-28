@@ -475,9 +475,26 @@ self.posMgr.SetTowerPassword(self.slimItem.itemID, password, allowCorp, allowAll
   sLog.White( "PosMgrBound::Handle_SetTowerPassword()", "size= %u", call.tuple->size() );
   call.Dump(POS__DUMP);
 */
-  PyRep *result(nullptr);
 
-    return result;
+  SystemManager* pSystem = call.client->SystemMgr();
+  if (pSystem == nullptr) {
+      codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+      return new PyNone();
+  }
+
+  SetTowerPassword args;
+  if (!args.Decode(&call.tuple)) {
+      codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+      return new PyNone();
+  }
+
+  TowerSE* pTSE = pSystem->GetSE(args.towerID)->GetTowerSE();
+  if (pTSE == nullptr)
+      return new PyNone();
+
+  /** @todo  incomplete... finish this  */
+  pTSE->SetTowerPassword(args.password);
+  return new PyNone();
 }
 
 PyResult PosMgrBound::Handle_SetShipPassword( PyCallArgs &call ) {

@@ -304,6 +304,7 @@ void SystemBubble::GetEntities(std::vector<SystemEntity*> &into) const {
     /* updated to send ONLY dynamic entities to the following:         -allan 14Feb15
      *    SystemManager::MakeSetState()   --for player entering new system
      *    Command_killallnpcs()           --GM command
+     *    StructureSE::InitData()         --Get TowerSE for pos items
      */
     if (m_dynamicEntities.empty())
         return;

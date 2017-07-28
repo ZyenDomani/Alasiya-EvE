@@ -10,11 +10,9 @@
     the terms of the GNU Lesser General Public License as published by the Free Software
     Foundation; either version 2 of the License, or (at your option) any later
     version.
-
     This program is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
     FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
     You should have received a copy of the GNU Lesser General Public License along with
     this program; if not, write to the Free Software Foundation, Inc., 59 Temple
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
@@ -549,7 +547,6 @@ ret = ([...],)
 whoseBehalfID = 1001000
 oldItems = [(...)]
 AttributeError: 'tuple' object has no attribute 'iteritems'
-
 */
     PyList* PyToDropList = drop3args.toDrop;
     uint32 ownerID = drop3args.ownerID;
@@ -622,8 +619,10 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
         entity.x = itemRef->position().x;
         entity.y = itemRef->position().y;
         entity.z = itemRef->position().z;
-
-        if (pSysMgr->BuildDynamicEntity(entity)) {
+        SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSysMgr, m_manager->item_factory, entity);
+        if (pSE != nullptr) {
+            if (pSE->IsPOSSE())
+                pSE->GetPOSSE()->InitData();
             dropped = true;
             successfully_dropped.ints.push_back(itemID);
         }
@@ -682,7 +681,6 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
                 [PyIntegerVar 1540263056]
                 [PyIntegerVar 1540263058]
                 [PyIntegerVar 1530423394]
-
                 those items are placed into drone hold, then just a RemoveBalls packet after this.
         */
     Call_SingleIntList args;
@@ -884,8 +882,6 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
      *
   sLog.White("ShipBound::Handle_SelfDestruct()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
-
-
     [PyTuple 1 items]
       [PyTuple 2 items]
         [PyInt 0]
@@ -921,7 +917,6 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
                     [PyInt 24700]
                   [PyString "time"]
                   [PyString "1 Minute 49 Seconds"]
-
     ************  destruct immediate  ****************
     [PyTuple 1 items]
       [PyTuple 2 items]
@@ -938,12 +933,9 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
                   [PyTuple 2 items]
                     [PyInt 4]
                     [PyInt 24700]
-
     ***********  not sure how to kill ship  *************
-
     Damage fatal_blow((static_cast<SystemEntity*>(who)),true);
     entity->Killed(fatal_blow);
-
     *************  cancel destruct  *****************
     [PyTuple 3 items]
       [PyInt 6]
@@ -965,10 +957,8 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
                 [PyDict 1 kvp]
                   [PyString "when"]
                   [PyInt 83]
-
                   //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
         throw PyException(MakeUserError("SelfDestructAborted2"));
-
 */
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
@@ -981,7 +971,6 @@ PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call) {
      13:15:58 L ShipBound::Handle_GetShipConfiguration(): size=0
      13:15:58 [SvcCall]   Call Arguments:
      13:15:58 [SvcCall]       Tuple: Empty
-
      sLog.White("ShipBound::Handle_GetShipConfiguration()", "size=%u", call.tuple->size());
      call.Dump(SERVICE__CALL_DUMP);
      */

@@ -11,6 +11,7 @@
 namespace EVEPOS {
     struct TowerData {
         // tower management
+        std::string password;
         float standing;
         float status;
         bool statusDrop :1;
