@@ -471,7 +471,9 @@ void StructureSE::Activate(int32 effectID)
      ** @note  also note there are timers involved here...
      */
 
-    // call returns nothing, but server sends OnSlimItemChange and OnSpecialFX in a destiny update
+    // check fuel quantity for onlining
+    //  if qty sufficient, set tower to online and send OnSlimItemChange and OnSpecialFX and
+
     m_self->SetFlag(flagStructureActive, false);
     m_state = EVEPOS::StructureState::Online;
 }

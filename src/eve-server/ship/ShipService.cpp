@@ -465,11 +465,15 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
     return nullptr;
 }
 
-/** @todo this needs work.... */
 PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
+    // currently, sendstate screws up when POS tower is in bubble with player
+    /** @todo  fix state when tower is in bubble */
+    call.client->SendNotifyMsg("Launching Items is currently disabled");
+    return new PyDict();
+
     if (IsStation(call.client->GetLocationID())) {
         _log(SERVICE__ERROR, "%s: Trying to drop items when not in space!", call.client->GetName());
-        return(new PyList());
+        return new PyDict();
     }
     sLog.White("ShipBound::Handle_Drop()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
@@ -477,77 +481,16 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
     if (call.tuple->size() != 3) {
         sLog.Error("ShipBound::Handle_Drop()", "call.tuple wrong size, expected 3 items, actual size = %u", call.tuple->size());
         //TODO: throw exception
-        return nullptr;
+        return new PyDict();
     }
 
     Call_Drop3 drop3args;
     if (!drop3args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         //TODO: throw exception
-        return nullptr;
+        return new PyDict();
     }
-/*
-20:06:51 [BindDump] NodeID: 888444 BindID: 124 calling Drop in service manager 'ShipBound'
-20:06:51 [BindDump]   Call Arguments:
-20:06:51 [BindDump]       Tuple: 3 elements
-20:06:51 [BindDump]         [ 0] List: 1 elements
-20:06:51 [BindDump]         [ 0]   [ 0] Tuple: 2 elements
-20:06:51 [BindDump]         [ 0]   [ 0]   [ 0] Integer field: 140000078
-20:06:51 [BindDump]         [ 0]   [ 0]   [ 1] Integer field: 1
-20:06:51 [BindDump]         [ 1] Integer field: 1000172
-20:06:51 [BindDump]         [ 2] Boolean field: false
-****  same call...new data  *******
-16:21:37 [SvcCall] Service ShipBound::Drop()
-16:21:37 W ShipBound::Handle_Drop(): size=3
-16:21:37 [POS:State] StructureSE::EncodeDestiny(): Minmatar Control Tower Small - id:140035963, mode:11, flags:0xC
-16:21:37 [POS:SlimItem] MakeSlimItem for StructureSE 140035963
-16:21:37 [POS:Debug] StructureSE::MakeSlimItem()
-16:21:37 [POS:Debug]      Dictionary: 11 entries
-16:21:37 [POS:Debug]        [ 0] Key: String: 'posDelayTime'
-16:21:37 [POS:Debug]        [ 0] Value: Integer field: 4
-16:21:37 [POS:Debug]        [ 1] Key: String: 'name'
-16:21:37 [POS:Debug]        [ 1] Value: String: ''
-16:21:37 [POS:Debug]        [ 2] Key: String: 'nameID'
-16:21:37 [POS:Debug]        [ 2] Value: (None)
-16:21:37 [POS:Debug]        [ 3] Key: String: 'typeID'
-16:21:37 [POS:Debug]        [ 3] Value: Integer field: 20066
-16:21:37 [POS:Debug]        [ 4] Key: String: 'itemID'
-16:21:37 [POS:Debug]        [ 4] Value: Integer field: 140035963
-16:21:37 [POS:Debug]        [ 5] Key: String: 'ownerID'
-16:21:37 [POS:Debug]        [ 5] Value: Integer field: 1001000
-16:21:37 [POS:Debug]        [ 6] Key: String: 'corpID'
-16:21:37 [POS:Debug]        [ 6] Value: Integer field: 1001000
-16:21:37 [POS:Debug]        [ 7] Key: String: 'allianceID'
-16:21:37 [POS:Debug]        [ 7] Value: Integer field: 0
-16:21:37 [POS:Debug]        [ 8] Key: String: 'warFactionID'
-16:21:37 [POS:Debug]        [ 8] Value: Integer field: 0
-16:21:37 [POS:Debug]        [ 9] Key: String: 'posState'
-16:21:37 [POS:Debug]        [ 9] Value: Integer field: 4
-16:21:37 [POS:Debug]        [10] Key: String: 'posTimestamp'
-16:21:37 [POS:Debug]        [10] Value: Integer field: 131451456970000000
-16:21:37 [SvcCall] Service alert::BeanCount()
-16:21:37 [SvcCall] Service alert::SendClientStackTraceAlert()
-EXCEPTION #7 logged at  07/22/2017 16:21:36 Unhandled exception in <TaskletExt object at 459eed40, abps=1001, ctxt=None>
-Caught at:
-/common/lib/bluepy.py(98) CallWrapper
-Thrown at:
-/common/lib/bluepy.py(86) CallWrapper
-/../carbon/client/script/ui/control/menu.py(517) <lambda>
-/client/script/ui/services/menusvc.py(6235) CheckLocked
-/client/script/ui/services/menusvc.py(6332) LaunchForCorp
-/client/script/util/evemisc.py(119) LaunchFromShip
-errors = set()
-newIDs = {}
-ignoreWarning = False
-items = [<DBRow object [140035963L, 20066, 140000000, 140035965, 5, 1, 365, 23, '', 1, 0]>]
-PackError = <function PackError at 0x42BE9E30>
-item = <DBRow object [140035963L, 20066, 140000000, 140035965, 5, 1, 365, 23, '', 1, 0]>
-UnpackError = <function UnpackError at 0x06EDAFB0>
-ret = ([...],)
-whoseBehalfID = 1001000
-oldItems = [(...)]
-AttributeError: 'tuple' object has no attribute 'iteritems'
-*/
+
     PyList* PyToDropList = drop3args.toDrop;
     uint32 ownerID = drop3args.ownerID;
     //used for LaunchUpgradePlatformWarning
