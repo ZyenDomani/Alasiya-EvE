@@ -16,29 +16,35 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `chrMissionState`
+-- Table structure for table `crpRoleTitles`
 --
 
-DROP TABLE IF EXISTS `chrMissionState`;
+DROP TABLE IF EXISTS `crpRoleTitles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `chrMissionState` (
-  `characterID` int(10) unsigned NOT NULL DEFAULT '0',
-  `missionID` int(10) unsigned NOT NULL DEFAULT '0',
-  `missionState` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `expirationTime` bigint(20) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`characterID`,`missionID`),
-  KEY `missionID` (`missionID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE `crpRoleTitles` (
+  `corporationID` int(10) NOT NULL,
+  `titleID` int(10) NOT NULL,
+  `titleName` varchar(130) COLLATE utf8_unicode_ci NOT NULL,
+  `roles` bigint(20) NOT NULL,
+  `grantableRoles` bigint(20) NOT NULL,
+  `rolesAtHQ` bigint(20) NOT NULL,
+  `grantableRolesAtHQ` bigint(20) NOT NULL,
+  `rolesAtBase` bigint(20) NOT NULL,
+  `grantableRolesAtBase` bigint(20) NOT NULL,
+  `rolesAtOther` bigint(20) NOT NULL,
+  `grantableRolesAtOther` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `chrMissionState`
+-- Dumping data for table `crpRoleTitles`
 --
 
-LOCK TABLES `chrMissionState` WRITE;
-/*!40000 ALTER TABLE `chrMissionState` DISABLE KEYS */;
-/*!40000 ALTER TABLE `chrMissionState` ENABLE KEYS */;
+LOCK TABLES `crpRoleTitles` WRITE;
+/*!40000 ALTER TABLE `crpRoleTitles` DISABLE KEYS */;
+INSERT INTO `crpRoleTitles` VALUES (1001000,32,'',0,0,0,0,0,0,0,0),(1001000,1,'',0,0,0,0,0,0,0,0),(1001000,2,'',0,0,0,0,0,0,0,0),(1001000,4096,'',0,0,0,0,0,0,0,0),(1001000,4,'',0,0,0,0,0,0,0,0),(1001000,1024,'',0,0,0,0,0,0,0,0),(1001000,8192,'',0,0,0,0,0,0,0,0),(1001000,8,'',0,0,0,0,0,0,0,0),(1001000,64,'',0,0,0,0,0,0,0,0),(1001000,128,'',0,0,0,0,0,0,0,0),(1001000,256,'',0,0,0,0,0,0,0,0),(1001000,16384,'',0,0,0,0,0,0,0,0),(1001000,16,'',0,0,0,0,0,0,0,0),(1001000,512,'',0,0,0,0,0,0,0,0),(1001000,32768,'',0,0,0,0,0,0,0,0),(1001000,2048,'',0,0,0,0,0,0,0,0);
+/*!40000 ALTER TABLE `crpRoleTitles` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -50,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-07-29 20:02:23
+-- Dump completed on 2017-07-29 20:02:25

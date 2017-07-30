@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.24-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: new
+-- Host: localhost    Database: alasiya-new
 -- ------------------------------------------------------
 -- Server version	10.0.24-MariaDB
 
@@ -28,11 +28,7 @@ CREATE TABLE `channelChars` (
   `charID` int(10) unsigned NOT NULL DEFAULT '0',
   `allianceID` int(10) unsigned NOT NULL DEFAULT '0',
   `role` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `extra` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`channelID`,`charID`),
-  KEY `FK_CHANNELCHARS_CHARACTER` (`charID`),
-  KEY `FK_CHANNELCHARS_CORPORATIONS` (`corpID`),
-  KEY `FK_CHANNELCHARS_ALLIANCES` (`allianceID`)
+  `extra` int(10) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -54,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-14 22:47:37
+-- Dump completed on 2017-07-29 20:02:22

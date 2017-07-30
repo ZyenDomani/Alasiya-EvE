@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.24-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: new
+-- Host: localhost    Database: alasiya-new
 -- ------------------------------------------------------
 -- Server version	10.0.24-MariaDB
 
@@ -36,6 +36,7 @@ CREATE TABLE `chrSkillQueue` (
 
 LOCK TABLES `chrSkillQueue` WRITE;
 /*!40000 ALTER TABLE `chrSkillQueue` DISABLE KEYS */;
+INSERT INTO `chrSkillQueue` VALUES (140000130,0,29637,2),(140000000,0,3431,4);
 /*!40000 ALTER TABLE `chrSkillQueue` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -48,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-14 22:47:39
+-- Dump completed on 2017-07-29 20:02:24

@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.24-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: new
+-- Host: localhost    Database: alasiya-new
 -- ------------------------------------------------------
 -- Server version	10.0.24-MariaDB
 
@@ -38,7 +38,6 @@ CREATE TABLE `avatar_colors` (
 
 LOCK TABLES `avatar_colors` WRITE;
 /*!40000 ALTER TABLE `avatar_colors` DISABLE KEYS */;
-INSERT INTO `avatar_colors` VALUES (140000000,16,179,0,0.5318,0),(140000000,5,118,0,0,0),(140000000,6,44,177,0,0),(140000000,7,96,0,0,0),(140000000,8,86,0,0.3548,0),(140000000,9,86,0,0.8569,0),(140000130,16,179,0,0.6255,0),(140000130,10,99,0,0.4522,0),(140000130,5,174,0,0,0),(140000130,6,14,15,0,0),(140000130,7,20,0,0,0),(140000130,8,97,0,0.262,0),(140000130,9,86,0,0.2917,0);
 /*!40000 ALTER TABLE `avatar_colors` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-14 22:47:36
+-- Dump completed on 2017-07-29 20:02:22

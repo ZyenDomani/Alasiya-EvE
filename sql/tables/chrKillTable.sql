@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.24-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: new
+-- Host: localhost    Database: alasiya-new
 -- ------------------------------------------------------
 -- Server version	10.0.24-MariaDB
 
@@ -26,17 +26,17 @@ CREATE TABLE `chrKillTable` (
   `killID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `solarSystemID` int(10) unsigned NOT NULL DEFAULT '0',
   `victimCharacterID` int(10) unsigned NOT NULL DEFAULT '0',
-  `victimCorporationID` int(10) unsigned NOT NULL DEFAULT '0',
-  `victimAllianceID` int(10) unsigned NOT NULL DEFAULT '0',
-  `victimFactionID` int(10) unsigned NOT NULL DEFAULT '0',
+  `victimCorporationID` int(10) unsigned NOT NULL,
+  `victimAllianceID` int(10) NOT NULL,
+  `victimFactionID` int(10) unsigned NOT NULL,
   `victimShipTypeID` smallint(4) unsigned NOT NULL DEFAULT '0',
   `victimDamageTaken` int(10) unsigned NOT NULL DEFAULT '0',
   `finalCharacterID` int(10) unsigned NOT NULL DEFAULT '0',
-  `finalCorporationID` int(10) unsigned NOT NULL DEFAULT '0',
-  `finalAllianceID` int(10) unsigned NOT NULL DEFAULT '0',
-  `finalFactionID` int(10) unsigned NOT NULL DEFAULT '0',
+  `finalCorporationID` int(10) unsigned NOT NULL,
+  `finalAllianceID` int(10) unsigned NOT NULL,
+  `finalFactionID` int(10) unsigned NOT NULL,
   `finalShipTypeID` smallint(4) unsigned NOT NULL DEFAULT '0',
-  `finalWeaponTypeID` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `finalWeaponTypeID` smallint(4) unsigned NOT NULL,
   `finalSecurityStatus` double NOT NULL DEFAULT '0',
   `finalDamageDone` int(10) unsigned NOT NULL DEFAULT '0',
   `killBlob` blob NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE `chrKillTable` (
   PRIMARY KEY (`killID`),
   KEY `victimCharacterID` (`victimCharacterID`),
   KEY `finalCharacterID` (`finalCharacterID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -66,4 +66,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-14 22:47:38
+-- Dump completed on 2017-07-29 20:02:23
