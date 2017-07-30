@@ -364,7 +364,7 @@ public:
 class ObjectSystemEntity : public SystemEntity {
 public:
     ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~ObjectSystemEntity()                       { /* Do nothing here */ }
+    virtual ~ObjectSystemEntity();
 
     /* class type pointer querys. */
     virtual ObjectSystemEntity* GetObjectSE()           { return this; }
@@ -391,7 +391,7 @@ class DeployableSE
 {
 public:
     DeployableSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
-    virtual ~DeployableSE();
+    virtual ~DeployableSE()                             { /* Do nothing here */ }
 
     /* class type pointer querys. */
     virtual DeployableSE*       GetDeployableSE()       { return nullptr; }

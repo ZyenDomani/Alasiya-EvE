@@ -431,7 +431,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                     TowerSE* tSE = new TowerSE(structure, *(system.GetServiceMgr()), &system, data);
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making TowerSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE = tSE;
-                };
+                } break;
                 case EVEDB::invGroups::Mobile_Missile_Sentry:
                 case EVEDB::invGroups::Mobile_Projectile_Sentry:
                 case EVEDB::invGroups::Mobile_Laser_Sentry:
@@ -439,7 +439,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                     WeaponSE* wSE = new WeaponSE(structure, *(system.GetServiceMgr()), &system, data);
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making WeaponSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE =  wSE;
-                };
+                } break;
                 case EVEDB::invGroups::Electronic_Warfare_Battery:
                 case EVEDB::invGroups::Sensor_Dampening_Battery:
                 case EVEDB::invGroups::Stasis_Webification_Battery:
@@ -449,7 +449,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                     BatterySE* bSE = new BatterySE(structure, *(system.GetServiceMgr()), &system, data);
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making BatterySE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE = bSE;
-                };
+                } break;
                 case EVEDB::invGroups::Refining_Array:
                 case EVEDB::invGroups::Ship_Maintenance_Array:
                 case EVEDB::invGroups::Assembly_Array:
@@ -464,7 +464,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                     ArraySE* aSE = new ArraySE(structure, *(system.GetServiceMgr()), &system, data);
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making ArraySE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE = aSE;
-                };
+                } break;
                 default: {
                     StructureSE* sSE = new StructureSE(structure, *(system.GetServiceMgr()), &system, data);
                     //structure->GetMyInventory()->LoadContents(factory);  this is called during structureItem creation
@@ -480,12 +480,12 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                    }
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE = sSE;
-                };
+                } break;
             }
             if (pSSE == nullptr)
                 return nullptr; // make error and return here
-            // item is created and valid...initalize it.
-            pSSE->Init(structure);
+            if (!system.IsLoaded())
+                pSSE->Init(structure);
             return pSSE;
         } break;
         case EVEDB::invCategories::Celestial: {
@@ -776,7 +776,7 @@ uint32 SystemManager::GetRandBeltID()
 
 void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState& into, bool login) const {
     using namespace Destiny;
-    Buffer* stateBuffer = new Buffer;
+    Buffer* stateBuffer = new Buffer();
 
     AddBall_header head;
         head.packet_type = 0;   // 0 = full state   1 = balls
@@ -793,8 +793,11 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
        bubble->GetEntities(visibleEntities);
 
     into.slims = new PyList();
+    into.slims->clear();
     into.effectStates = new PyList();
+    into.effectStates->clear();
     into.allianceBridges = new PyList();
+    into.allianceBridges->clear();
 
     //go through all visible entities and gather the info we need...
     for (auto cur : visibleEntities) {

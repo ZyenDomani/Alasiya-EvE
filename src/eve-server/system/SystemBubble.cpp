@@ -405,6 +405,8 @@ void SystemBubble::PrintEntityList() {
 }
 
 void SystemBubble::SendAddBalls(SystemEntity* to_who) {
+    if (!m_system->IsLoaded())
+        return;
     if (m_dynamicEntities.empty())
         return;
     if (!to_who->HasPilot())
@@ -453,6 +455,8 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
 }
 
 void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
+    if (!m_system->IsLoaded())
+        return;
     if (m_dynamicEntities.empty())
         return;
     if (!to_who->HasPilot())
@@ -511,6 +515,8 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
 }
 
 void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
+    if (!m_system->IsLoaded())
+        return;
 	Buffer* destinyBuffer = new Buffer;
 
 	//create AddBalls header
@@ -562,6 +568,8 @@ void SystemBubble::RemoveBall(SystemEntity *about_who) {
     //    removeball.entityID = about_who->GetID();
     // using RemoveBalls instead of RemoveBall because client
     // seems not to trigger explosion on RemoveBall
+    if (!m_system->IsLoaded())
+        return;
     DoDestiny_RemoveBalls removeball;
     removeball.balls.push_back(about_who->GetID());
 
@@ -592,6 +600,8 @@ void SystemBubble::RemoveBallExclusive(SystemEntity *about_who) {
 }
 
 void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
+    if (!m_system->IsLoaded())
+        return;
     if (m_dynamicEntities.empty())
         return;
     if ((!to_who->HasPilot()) or (!to_who->SysBubble()))

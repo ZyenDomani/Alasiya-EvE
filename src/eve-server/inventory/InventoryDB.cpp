@@ -638,11 +638,23 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
             /* this will get agents in station */
             query << " AND ownerID < " << EVEMU_MINIMUM_DYNAMIC_ID;
             query << " AND itemID < " << EVEMU_MINIMUM_DYNAMIC_ID;
-        } else
-            query << " AND ownerID = " << od.ownerID;
+        } else {
+            if (IsPlayerCorp(od.corpID)) {
+                // check for items owned by corp in players cargo/hangar
+                query << " AND ((ownerID = " << od.ownerID << ") OR (ownerID = " << od.corpID << "))";
+            } else {
+                query << " AND ownerID = " << od.ownerID;
+            }
+        }
     } else if (IsNotStaticItem(od.locID)) {
-        if (od.ownerID != 1)
+        if (od.ownerID == 1) {
+            // not sure what to do here....
+        } else if (IsPlayerCorp(od.corpID)) {
+            // check for items owned by corp in players cargo/hangar
+           query << " AND ((ownerID = " << od.ownerID << ") OR (ownerID = " << od.corpID << "))";
+        } else {
             query << " AND ownerID = " << od.ownerID;
+        }
     }
 
     query << " ORDER BY itemID";

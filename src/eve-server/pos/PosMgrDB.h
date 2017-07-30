@@ -7,6 +7,7 @@
 #define EVEMU_POS_POSMGR_H_
 
 #include "ServiceDB.h"
+#include "../../eve-common/EVE_POS.h"
 
 class PosMgrDB
 : public ServiceDB

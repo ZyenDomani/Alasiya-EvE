@@ -166,6 +166,7 @@ public:
 
     /* specific functions handled in this class. */
     void                        InitData();
+    void                        Anchor(GPoint& pos);
     void                        Activate(int32 effectID);
     void                        Deactivate(int32 effectID);
 

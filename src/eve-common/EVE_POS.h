@@ -11,7 +11,10 @@
 namespace EVEPOS {
     struct TowerData {
         // tower management
+        int32 harmonic;       /* this is POS ForceField status */
         std::string password;
+        bool allowCorp :1;
+        bool allowAlliance :1;
         float standing;
         float status;
         bool statusDrop :1;
@@ -36,6 +39,8 @@ namespace EVEPOS {
         // tower management
         float standing;
         float status;
+        bool allowCorp :1;
+        bool allowAlliance :1;
         bool statusDrop :1;
         bool corpWar :1;
         uint32 standingOwnerID; // corp/ally

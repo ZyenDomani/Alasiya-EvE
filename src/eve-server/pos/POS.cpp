@@ -31,7 +31,6 @@
 TowerSE::TowerSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& fData)
 : StructureSE(structure, services, system, fData)
 {
-    // ct will anchor in the middle of the grid that you warp-in to.
     data.status = 0.0f;
     data.standing = 0.0f;
     data.standingOwnerID = 0;
@@ -46,22 +45,19 @@ TowerSE::TowerSE(StructureItemRef structure, PyServiceMgr& services, SystemManag
 
 void TowerSE::Init(StructureItemRef structure)
 {
-    EVEPOS::SaveData data;
-    m_db.GetPOSData(data);
-
-    m_harmonic = EVEPOS::ForceField::inactive; // or whatever the harmonic is for this tower....
-
-    // create and add force field to tower
-    /** @todo  this will need to be based on structure state */
-    //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
-    ItemData idata(EVEDB::invTypes::typeForceField, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);
-    InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);
-    if (iRef.get() == nullptr)
-        ;  // we'll get over it
-    iRef->Relocate(GetPosition());
-    iRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius));
-    ItemSystemEntity* iSE = new ItemSystemEntity(iRef, m_services, m_system);
-    m_system->AddEntity(iSE);
+    // may need to do more shit here...
+    
+    if (m_harmonic == EVEPOS::ForceField::online) {
+        // create and add force field to tower
+        ItemData idata(EVEDB::invTypes::typeForceField, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);
+        InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);
+        if (iRef.get() == nullptr)
+            ;  // we'll get over it
+        iRef->Relocate(GetPosition());
+        iRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius));
+        ItemSystemEntity* iSE = new ItemSystemEntity(iRef, m_services, m_system);
+        m_system->AddEntity(iSE);
+    }
 }
 
 void TowerSE::Process()
@@ -113,6 +109,23 @@ void TowerSE::UpdateNotify()
 void TowerSE::UpdatePassword()
 {
     m_db.UpdatePOSPassword(m_towerID, data);
+
+    // set harmonic for ship to 'offline' (0)   -according to packet data
+
+    // there should be more here....not sure what yet
+
+    if (m_harmonic == EVEPOS::ForceField::inactive) {
+        m_harmonic = data.harmonic = EVEPOS::ForceField::online;
+        // create and add force field to tower
+        ItemData idata(EVEDB::invTypes::typeForceField, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);
+        InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);
+        if (iRef.get() == nullptr)
+            ;  // we'll get over it
+        iRef->Relocate(GetPosition());
+        iRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius));
+        ItemSystemEntity* iSE = new ItemSystemEntity(iRef, m_services, m_system);
+        m_system->AddEntity(iSE);
+    }
 }
 
 void TowerSE::UpdateTimeStamp()

@@ -57,7 +57,8 @@ bool PosMgrDB::GetPOSData(EVEPOS::SaveData& data)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT towerID, planetID, harmonic, standingOwnerID, state, standing,"
-        " status, timestamp, rotationX, rotationY, rotationZ, statusDrop, corpWar, showInCalendar, sendFuelNotifications"
+        " status, timestamp, rotationX, rotationY, rotationZ, statusDrop, corpWar, showInCalendar, sendFuelNotifications,"
+        " allowCorp, allowAlliance"
         " FROM posStructureData"
         " WHERE itemID = %u", data.itemID))
     {
@@ -66,7 +67,8 @@ bool PosMgrDB::GetPOSData(EVEPOS::SaveData& data)
     }
 
     DBResultRow row;
-    res.GetRow(row);
+    if (!res.GetRow(row))
+        return false;
     data.towerID = row.GetInt(0);
     data.planetID = row.GetInt(1);
     data.harmonic = row.GetInt(2);
@@ -84,6 +86,8 @@ bool PosMgrDB::GetPOSData(EVEPOS::SaveData& data)
     data.corpWar = row.GetBool(12);
     data.showInCalendar = row.GetBool(13);
     data.sendFuelNotifications = row.GetBool(14);
+    data.allowCorp = row.GetBool(15);
+    data.allowAlliance = row.GetBool(16);
     return true;
 }
 
@@ -93,11 +97,16 @@ void PosMgrDB::SavePOSData(EVEPOS::SaveData& data)
     sDatabase.RunQuery(err,
         "INSERT INTO posStructureData "
         "(itemID, towerID, planetID, harmonic, standingOwnerID, state, standing,"
-        " status, timestamp, rotationX, rotationY, rotationZ, statusDrop, corpWar, showInCalendar, sendFuelNotifications)"
-        " VALUES ",
-        (data.itemID, data.towerID, data.planetID, data.harmonic, data.standingOwnerID, data.state, data.standing,
-        data.status, data.timestamp, data.rotation.x, data.rotation.y, data.rotation.z, data.statusDrop, data.corpWar, data.showInCalendar,
-        data.sendFuelNotifications));
+        " status, timestamp, rotationX, rotationY, rotationZ, statusDrop, corpWar, showInCalendar, sendFuelNotifications, allowCorp, allowAlliance)"
+        " VALUES ( %u, %u, %u, %f, %u, %u, %f, %u, %" PRIu64 ", %f, %f, %f, %u, %u, %u, %u, %u, %u)"
+        " ON DUPLICATE KEY UPDATE"
+        "  harmonic=VALUES(harmonic),"
+        "  standingOwnerID=VALUES(standingOwnerID),"
+        "  state=VALUES(state),"
+        "  timestamp=VALUES(timestamp)",
+        data.itemID, data.towerID, data.planetID, data.harmonic, data.standingOwnerID, data.state, data.standing,
+         data.status, data.timestamp, data.rotation.x, data.rotation.y, data.rotation.z, data.statusDrop, data.corpWar, data.showInCalendar,
+         data.sendFuelNotifications, data.allowCorp, data.allowAlliance);
 }
 
 void PosMgrDB::UpdatePOSData(EVEPOS::SaveData& data)
@@ -120,10 +129,12 @@ void PosMgrDB::UpdatePOSData(EVEPOS::SaveData& data)
         "  statusDrop=%i,"
         "  corpWar=%i,"
         "  showInCalendar=%i,"
-        "  sendFuelNotifications=%i"
+        "  sendFuelNotifications=%i,"
+        "  allowCorp=%i,"
+        "  allowAlliance=%i"
         " WHERE itemID = %u", data.towerID, data.planetID, data.harmonic, data.standingOwnerID, data.state, data.standing,
         data.status, data.timestamp, data.rotation.x, data.rotation.y, data.rotation.z, data.statusDrop, data.corpWar, data.showInCalendar,
-        data.sendFuelNotifications, data.itemID);
+        data.sendFuelNotifications, data.allowCorp, data.allowAlliance, data.itemID);
 }
 
 void PosMgrDB::UpdatePOSNotify(uint32 towerID, EVEPOS::TowerData& data)
@@ -150,7 +161,9 @@ void PosMgrDB::UpdatePOSPassword(uint32 towerID, EVEPOS::TowerData& data)
         "UPDATE posStructureData"
         " SET "
         "  password='%s'"
-        " WHERE itemID = %u", data.password.c_str(), towerID);
+        "  allowCorp=%i,"
+        "  allowAlliance=%i"
+        " WHERE itemID = %u", data.password.c_str(), data.allowCorp, data.allowAlliance, towerID);
 }
 
 void PosMgrDB::UpdatePOSSentry(uint32 towerID, EVEPOS::TowerData& data)

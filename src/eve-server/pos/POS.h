@@ -40,6 +40,8 @@ public:
     void SetStatusDrop(bool set)                        { data.statusDrop = set; }
     void SetCorpWar(bool set)                           { data.corpWar = set; }
     void SetStandingOwnerID(uint32 set)                 { data.standingOwnerID = set; }
+    void SetCorpAccess(bool set)                        { data.allowCorp = set; }
+    void SetAllyAccess(bool set)                        { data.allowAlliance = set; }
     void SetTowerPassword(std::string pass)             { data.password = pass; }
 
     bool GetStatusDrop()                                { return data.statusDrop; }

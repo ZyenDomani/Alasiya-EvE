@@ -35,7 +35,6 @@ POS__TRACE=0
 StructureItem::StructureItem(ItemFactory &_factory, uint32 _structureID, const ItemType &_itemType, const ItemData &_data)
 : InventoryItem(_factory, _structureID, _itemType, _data)
 {
-    m_flag = flagStructureInactive;
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created StructureItem for %s (%u).", itemName().c_str(), itemID());
     _log(POS__TRACE, "Created StructureItem for %s (%u).", itemName().c_str(), itemID());
@@ -305,13 +304,20 @@ void StructureSE::InitData() {
         data.standing = 0.0f;
         data.standingOwnerID = 0;
         data.corpWar = false;
+        data.allowCorp = false;
         data.statusDrop = false;
+        data.allowAlliance = false;
         data.showInCalendar = false;
         data.sendFuelNotifications = false;
     if (m_module) {
         bool found = false;
         // this item is a module.  get towerID and save
         std::vector<SystemEntity*> seVec;
+        if (m_bubble == nullptr)
+            if (m_system != nullptr)
+                m_system->AddEntity(this);
+            else
+                ; // make error here for no SystemManager?
         m_bubble->GetEntities(seVec);
         for (auto cur : seVec) {
             if (cur->IsTowerSE()) {
@@ -324,6 +330,7 @@ void StructureSE::InitData() {
         }
     } else
         data.towerID = m_towerID;
+
     m_db.SavePOSData(data);
 }
 
@@ -331,8 +338,12 @@ void StructureSE::Init(StructureItemRef structure)
 {
     EVEPOS::SaveData data;
     data.itemID = structure->itemID();
-    if (!m_db.GetPOSData(data))
-        data.towerID = 0;  // invalid data....init to 0 as this will only hit for currently-launching items (or errors)
+    if (!m_db.GetPOSData(data)) {
+        // invalid data....init to 0 as this will only hit for currently-launching items (or errors)
+        InitData();
+        data.towerID = 0;
+    } else
+        m_harmonic = data.harmonic;
 
     switch(structure->groupID()) {
         case EVEDB::invGroups::Orbital_Infrastructure: {
@@ -377,37 +388,37 @@ void StructureSE::Process() {
     using namespace EVEPOS;
     if (m_procTimer.Check(false)) {
     	m_procTimer.Disable();
-        m_timestamp = 0;
-        if (m_state == StructureState::Operating) {
-            m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time state ends
-            // take resources or whatever needs to be done
-        } else if (m_state == StructureState::Unanchored) {
-            ; // anchor
-        } else if (m_state == StructureState::Anchored) {
-            ; // unanchor
-        } else if (m_state == StructureState::Onlining) {
-            m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time state ends
-            ; // unanchor
-        } else if ((m_state == StructureState::SheildReinforced) or (m_state == StructureState::ArmorReinforced)) {
-            m_timestamp = 0;
-            m_delayTime = 0;
-        } else if (m_state == StructureState::Reinforced) {
-            m_self->SetFlag(flagStructureInactive, false);
-            //
-            m_timestamp = Win32TimeNow() + Win32Time_Hour;  // time state ends
-        } else {
-            ; // more?  make error?
+        m_timestamp = 0;  // time state ends
+        m_delayTime = 0;
+
+        switch (m_state) {
+            case StructureState::Unanchored: {
+                m_state = StructureState::Anchored;
+            } break;
+
+            // those below are not coded yet
+            case StructureState::Onlining: {
+                m_self->SetFlag(flagStructureActive);
+            } break;
+
+            case StructureState::Anchored: {
+                ; // unanchor
+            } break;
+
+            case StructureState::Operating: {
+                // take resources or whatever needs to be done
+            } break;
+
+            case StructureState::SheildReinforced:
+            case StructureState::ArmorReinforced: {
+                m_delayTime = 0;
+            } break;
+
+            case StructureState::Reinforced: {
+                m_self->SetFlag(flagStructureInactive, false);
+            } break;
         }
     }
-
-    /** #todo check/set flags!!  */
-
-        /*
-        elif slimItem.posState in (pos.STRUCTURE_SHIELD_REINFORCE, pos.STRUCTURE_ARMOR_REINFORCE):
-            stateName = const.pwnStructureStateReinforced
-            stateTimestamp = slimItem.posTimestamp + slimItem.posDelayTime
-            stateDelay = slimItem.posDelayTime
-            */
 }
 
 /*  for updating structure data
@@ -415,6 +426,30 @@ void StructureSE::Process() {
  * EVEPOS::SaveData data;
  * m_db.UpdatePOSData(data);
  */
+
+void StructureSE::Anchor(GPoint& pos)
+{
+    /* returns SetBallPosition for towers.
+     *    ct will anchor in the middle of the grid that you warp-in to.
+     */
+
+    if (IsTowerSE() or pos.isZero()) {
+        // set position away from current position and send new position to client
+        uint32 dist = MakeRandomInt(200000, 250000);
+        uint32 radius = GetPosition().distance(m_moonSE->GetPosition());
+        float rad = radius / dist;
+
+        GPoint newPos(GetPosition());
+        newPos.x += radius * cos(rad);
+        newPos.z += radius * sin(rad);
+
+        m_destiny->SetPosition(newPos);
+    }
+
+    m_procTimer.SetTimer(m_self->GetAttribute(AttrAnchoringDelay).get_int());
+    m_timestamp = Win32TimeNow();
+
+}
 
 void StructureSE::Activate(int32 effectID)
 {

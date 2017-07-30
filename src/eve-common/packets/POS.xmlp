@@ -21,7 +21,14 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="SetTowerPassword">
+  <elementDef name="SetTowerPassword2">
+    <tupleInline>
+      <int name="towerID" />
+      <string name="password" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="SetTowerPassword4">
     <tupleInline>
       <int name="towerID" />
       <string name="password" />
@@ -29,5 +36,17 @@
       <bool name="allowAlliance" none_marker="0" />
     </tupleInline>
   </elementDef>
+
+  <elementDef name="AnchorStructure">
+    <tupleInline>
+      <int name="structureID" />
+      <tupleInline>
+        <int name="posX" />
+        <int name="posY" />
+        <int name="posZ" />
+      </tupleInline>
+    </tupleInline>
+  </elementDef>
+
 
 </elements>

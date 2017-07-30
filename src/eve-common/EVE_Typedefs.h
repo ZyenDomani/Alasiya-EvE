@@ -62,7 +62,9 @@ enum EVERace {
     raceAmarr       = 4,
     raceGallente    = 8,
     raceJove        = 16,
-    racePirate      = 32
+    racePirate      = 32,
+    raceSleepers    = 64,
+    raceORE         = 128
 };
 
 typedef enum {
@@ -131,6 +133,32 @@ typedef enum {
  * corpDivisionDistribution = 22
  * corpDivisionMining = 23
  * corpDivisionSecurity = 24
+ */
+
+/*
+ * allianceApplicationAccepted = 2
+ * allianceApplicationEffective = 3
+ * allianceApplicationNew = 1
+ * allianceApplicationRejected = 4
+ * allianceCreationCost = 1000000000
+ * allianceMembershipCost = 2000000
+ * allianceRelationshipCompetitor = 3
+ * allianceRelationshipEnemy = 4
+ * allianceRelationshipFriend = 2
+ * allianceRelationshipNAP = 1
+ */
+
+/*
+ * facwarCorporationJoining = 0
+ * facwarCorporationActive = 1
+ * facwarCorporationLeaving = 2
+ * facwarStandingPerVictoryPoint = 0.0015
+ * facwarWarningStandingCharacter = 0
+ * facwarWarningStandingCorporation = 1
+ * facwarOccupierVictoryPointBonus = 0.1
+ * facwarMinStandingsToJoin = 0.5
+ * facwarStatTypeKill = 0
+ * facwarStatTypeLoss = 1
  */
 
 //from market_keyMap
@@ -281,6 +309,103 @@ typedef enum {
     DungeonCompleted    = 1,
     DungeonFailed       = 2
 } DungeonState;
+
+enum EVERookieShipTypes {
+    amarrRookie                = 596,
+    caldariRookie              = 601,
+    gallenteRookie             = 606,
+    minmatarRookie             = 588
+};
+
+enum EVERookieWeaponTypes {
+    amarrWeapon                 = 3634,
+    caldariWeapon               = 3638,
+    gallenteWeapon              = 3640,
+    minmatarWeapon              = 3636
+};
+
+//  -allan 5Aug14
+enum SearchTypes {
+    searchResultAgent           = 1,
+    searchResultCharacter       = 2,
+    searchResultCorporation     = 3,
+    searchResultAlliance        = 4,
+    searchResultFaction         = 5,
+    searchResultConstellation   = 6,
+    searchResultSolarSystem     = 7,
+    searchResultRegion          = 8,
+    searchResultStation         = 9,
+    searchResultInventoryType   = 10,
+    //searchResultAllOwners = [1, 2, 3, 4, 5],
+    //searchResultAllLocations = [6, 7, 8, 9],
+    searchMaxResults            = 500,
+    searchMinWildcardLength     = 3
+};
+
+//  -allan 20Dec14
+typedef enum {
+    agentTypeNonAgent = 1,
+    agentTypeBasicAgent = 2,
+    agentTypeTutorialAgent = 3,
+    agentTypeResearchAgent = 4,
+    agentTypeGenericStorylineMissionAgent = 6,
+    agentTypeStorylineMissionAgent = 7,
+    agentTypeEventMissionAgent = 8,
+    agentTypeFactionalWarfareAgent = 9,
+    agentTypeEpicArcAgent = 10,
+    agentTypeAura = 11
+} agentTypes;
+
+enum EVETutorialTypes {
+    advchannelsTutorial = 50,
+    cloningTutorial = 42,
+    cloningWhenPoddedTutorial = 27,
+    podriskTutorial = 43,
+    skillfittingTutorial = 51,
+    insuranceTutorial = 41,
+    tutorial = 109,
+    tutorialAuraIntroduction = 5,
+    tutorialBoarding = 6,
+    tutorialCharacterSheet = 7,
+    tutorialControlConsole = 18,
+    tutorialItems = 8,
+    tutorialNavigation = 19,
+    tutorialOverview = 21,
+    tutorialSelling = 10,
+    tutorialShips = 6,
+    tutorialSpace = 17,
+    tutorialTargeting = 20,
+    tutorialUndock = 16,
+    tutorialWallet = 11,
+    tutorialWarpingDC = 23,
+    tutorialCombatChooseTheVenue = 103,
+    tutorialCombatConcepts = 105,
+    tutorialCombatKnowYourEquipment = 104,
+    tutorialCombatStudyTheOpponent = 102,
+    tutorialInformativeCareerPlanning = 99,
+    tutorialInformativeCharacterSheetAdvancedInformation = 100,
+    tutorialInformativeContracts = 54,
+    tutorialInformativeCorporations = 33,
+    tutorialInformativeCosmosComplexes = 101,
+    tutorialInformativeCrimeAndPunishment = 97,
+    tutorialInformativeDrones = 65,
+    tutorialInformativeExploration = 124,
+    tutorialInformativeFittingStationService = 13,
+    tutorialInformativeHeat = 123,
+    tutorialInformativeMap = 14,
+    tutorialInformativeMarket = 12,
+    tutorialInformativePeopleAndPlaces = 15,
+    tutorialInformativePoliticsAndmanagement = 98,
+    tutorialInformativeRepairshop = 46,
+    tutorialInformativeReprocessingPlant = 9,
+    tutorialInformativeSalvaging = 122,
+    tutorialInformativeScanning = 63,
+    tutorialInformativeScienceIndustry = 52,
+    tutorialWorldspaceNavigation = 235,
+    tutorialTutorials = 215,
+    tutorialCertificates = 134
+};
+
 
 //  -updated 18Dec16
 enum ClientTimers {
@@ -727,5 +852,111 @@ typedef enum {
     cacheMapOutposts = 100300022,
     cacheMapLandmarks = 100300023
 } cacheFlags;
+
+//the constants are made up of:
+//  prefix     -> cachedObject
+//                config.BulkData.constants
+//     category   -> config.BulkData.categories
+//     group      -> config.BulkData.groups
+//     metaGreoup -> config.BulkData.metagroups
+//     attribute  -> config.BulkData.dgmattribs
+//     effect     -> config.BulkData.dgmeffects
+//    billType   -> config.BulkData.billtypes
+//     role       -> config.Roles
+//     flag       -> config.Flags
+//     race       -> config.Races
+//     bloodline  -> config.Bloodlines
+//     statistic  -> config.Statistics
+//     unit       -> config.Units
+//     channelType -> config.ChannelTypes
+//     encyclopediaType -> config.EncyclopediaTypes
+//     activity   -> config.BulkData.ramactivities
+//     completedStatus -> config.BulkData.ramcompletedstatuses
+//
+// First letter of `Name` field if capitalized when prefixed.
+// see InsertConstantsFromRowset
+
+/*
+ * cacheSystemIntervals = 2000109999
+ * cacheSystemSettings = 2000100001
+ * cacheSystemSchemas = 2000100003
+ * cacheSystemTables = 2000100004
+ * cacheSystemProcedures = 2000100006
+ * cacheSystemEventTypes = 2000100013
+ * cacheUserEventTypes = 2000209999
+ * cacheUserColumns = 2000209998
+ * cacheUserRegions = 2000209997
+ * cacheUserTimeZones = 2000209996
+ * cacheUserCountries = 2000209995
+ * cacheUserTypes = 2000209994
+ * cacheUserStatuses = 2000209993
+ * cacheUserRoles = 2000209992
+ * cacheUserConnectTypes = 2000209991
+ * cacheUserOperatingSystems = 2000209990
+ * cacheStaticSettings = 2000309999
+ * cacheStaticBranches = 2000300001
+ * cacheStaticReleases = 2000300006
+ * cacheStaticIntegrateOptions = 2000300008
+ * cacheMlsLanguages = 2000409999
+ * cacheMlsTranslationStatuses = 2000409998
+ * cacheMlsTextGroupTypes = 2000409997
+ * cacheMlsTextStatuses = 2000409996
+ * cacheMlsTaskStatuses = 2000409995
+ * cacheClusterServices = 2000909999
+ * cacheClusterMachines = 2000909998
+ * cacheClusterProxies = 2000909997
+ * cacheClientBrowserSiteFlags = 2003009999
+ * cacheAccountingKeys = 2001100001
+ * cacheAccountingEntryTypes = 2001100002
+ * cacheInventoryCategories = 2001300001
+ * cacheInventoryGroups = 2001300002
+ * cacheInventoryTypes = 2001300003
+ * cacheInventoryFlags = 2001300012
+ * cacheEventGroups = 2001500002
+ * cacheEventTypes = 2001500003
+ * cacheWorldSpaces = 2001700035
+ * cacheWorldSpaceDistricts = 2001700001
+ * cacheResGraphics = 2001800001
+ * cacheResSounds = 2001800002
+ * cacheResDirectories = 2001800003
+ * cacheResIcons = 2001800004
+ * cacheResDetailMeshes = 2001800005
+ * cacheActionTreeSteps = 2001900002
+ * cacheActionTreeProcs = 2001900003
+ * cacheEntityIngredients = 2002200001
+ * cacheEntityIngredientInitialValues = 2002200002
+ * cacheEntitySpawns = 2002200006
+ * cacheEntityRecipes = 2002200009
+ * cacheEntitySpawnGroups = 2002200010
+ * cacheEntitySpawnGroupLinks = 2002200011
+ * cacheActionObjects = 2002400001
+ * cacheActionStations = 2002400002
+ * cacheActionStationActions = 2002400003
+ * cacheActionObjectStations = 2002400004
+ * cacheActionObjectExits = 2002400005
+ * cacheTreeNodes = 2002500001
+ * cacheTreeLinks = 2002500002
+ * cacheTreeProperties = 2002500005
+ * cachePerceptionSenses = 2002600001
+ * cachePerceptionStimTypes = 2002600002
+ * cachePerceptionSubjects = 2002600004
+ * cachePerceptionTargets = 2002600005
+ * cachePerceptionBehaviorSenses = 2002600010
+ * cachePerceptionBehaviorFilters = 2002600011
+ * cachePerceptionBehaviorDecays = 2002600012
+ * cachePaperdollModifierLocations = 2001600002
+ * cachePaperdollResources = 2001600003
+ * cachePaperdollSculptingLocations = 2001600004
+ * cachePaperdollColors = 2001600005
+ * cachePaperdollColorNames = 2001600006
+ * cachePaperdollColorRestrictions = 2001600007
+ * cacheEncounterEncounters = 2003100001
+ * cacheEncounterCoordinates = 2003100002
+ * cacheEncounterCoordinateSets = 2003100003
+ * cacheStaticUsers = 2000000001
+ * cacheUsersDataset = 2000000002
+ * cacheCharactersDataset = 2000000003
+ * cacheNameNames = 2000000004
+ */
 
 #endif  // EVE_TYPEDEFS_H

@@ -435,6 +435,12 @@ void DungeonSE::EncodeDestiny( Buffer& into )
 ObjectSystemEntity::ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
+    m_destiny = new DestinyManager(this);
+}
+
+ObjectSystemEntity::~ObjectSystemEntity()
+{
+    SafeDelete(m_destiny);
 }
 
 void ObjectSystemEntity::EncodeDestiny( Buffer& into )
@@ -521,12 +527,6 @@ DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, System
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
-    m_destiny = new DestinyManager(this);
-}
-
-DeployableSE::~DeployableSE()
-{
-    SafeDelete(m_destiny);
 }
 
 

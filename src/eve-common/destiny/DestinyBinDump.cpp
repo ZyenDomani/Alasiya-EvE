@@ -72,7 +72,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         return 0;
 
     if (ballhead->mode > MAX_DSTBALL) {
-        _log(into, "Error: Invalid ball mode %u for ball %d", ballhead->mode, ballhead->entityID);
+        _log(into, "Error: Invalid ball mode %u for ball %u", ballhead->mode, ballhead->entityID);
         return 0;
     }
 
@@ -88,7 +88,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         len  -= name->name_len*sizeof(uint16);
     }
     */
-    _log(into, "entity=%d, mode=%s(%u) flags=0x%X",
+    _log(into, "entity=%u, mode=%s(%u) flags=0x%X",
         ballhead->entityID, DSTBALL_modeNames[ballhead->mode], ballhead->mode, ballhead->flags);
     _log(into, "   pos=(%.3f, %.3f, %.3f), radius=%.1f",
         ballhead->x, ballhead->y, ballhead->z, ballhead->radius);
@@ -98,7 +98,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         data += sizeof(MassSector);
         len -= sizeof(MassSector);
 
-        _log(into, "   mass=%.2f, cloak=%u, harmonic=%i, corp=%u, alliance=%d",
+        _log(into, "   mass=%.2f, cloak=%u, harmonic=%i, corp=%u, alliance=%u",
             masschunk->mass, masschunk->cloak, masschunk->harmonic, masschunk->corporationID, masschunk->allianceID);
     }
 
@@ -196,6 +196,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             return 0;
     }
 
+    /*
     if (ballhead->flags & HasMiniBalls) {
         const MiniBallList* mbl = (const MiniBallList*)data;
         data += sizeof( MiniBallList );
@@ -211,6 +212,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             }
         }
     }
+    */
     if (len > init_len) {
         _log(into, "ERROR: Consumed more bytes than given: had %u, used %u", init_len, len);
         return init_len;

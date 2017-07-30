@@ -460,11 +460,11 @@ void DestinyManager::Stop() {
 
     /* AP not implemented yet in this version  -allan 4Mar15
     //Clear autopilot
-    if( mySE->HasPilot() )
+    if (mySE->HasPilot())
         mySE->GetPilot()->SetAutoPilot(false);
     */
 
-    if (!m_userSpeedFraction) {
+    if (m_userSpeedFraction != 0.0f) {
         //state is already at stop. but m_stop wasnt set.
         // set m_stop and return.
         m_stop = true;
@@ -503,7 +503,7 @@ void DestinyManager::Stop() {
 void DestinyManager::Halt() {
     /* AP not implemented yet in this version  -allan 4Mar15
      //*Clear autopilot
-    if( mySE->HasPilot() )
+    if (mySE->HasPilot())
         mySE->GetPilot()->SetAutoPilot(false);
     */
 
@@ -652,7 +652,7 @@ void DestinyManager::Bounce(GVector direction, float speed)
 
 // main movement method
 void DestinyManager::MoveObject() {
-    if (!mySE->SysBubble())
+    if (mySE->SysBubble() == nullptr)
         mySE->SystemMgr()->AddEntity(mySE);
 
     //apply our velocity to our position for 1 unit of time (a second)
@@ -1020,7 +1020,7 @@ void DestinyManager::_Follow() {
                 ssf.fraction = 1;
             updates.push_back(ssf.Encode());
             SendDestinyUpdate(updates);
-        } else if (!m_userSpeedFraction) {
+        } else if (m_userSpeedFraction != 0.0f) {
             SetSpeedFraction(1.0f);
         }
     }
@@ -1520,7 +1520,7 @@ void DestinyManager::EntityRemoved(SystemEntity *pSE) {
 
 bool DestinyManager::IsTargetInvalid()
 {
-    if (!mySE->SystemMgr()->GetSE(m_targetEntity.first)) {
+    if (mySE->SystemMgr()->GetSE(m_targetEntity.first) == nullptr) {
         // Our target was removed
         Stop();
         return true;
@@ -1604,7 +1604,7 @@ void DestinyManager::_BeginMovement() {
         UnCloak();
 
     // if ship is not moving, set initial movement variables
-    if (!m_userSpeedFraction) {
+    if (m_userSpeedFraction == 0.0f) {
         SetSpeedFraction(1.0f, true);
         MoveObject();
     } else {
@@ -1757,7 +1757,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
 
     if (m_targetDistance < minWarpDistance) {
         // warp distance too close.  cancel warp and return
-        if(mySE->HasPilot())
+        if (mySE->HasPilot())
             mySE->GetPilot()->SendErrorMsg("That is too close for your Warp Drive.");
 
         State = Destiny::BallMode::DSTBALL_STOP;
@@ -1885,7 +1885,7 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     // Target (orbited object)
     double Tr = pSE->GetRadius();
     double Tm = pSE->GetSelf()->GetAttribute(AttrMass).get_float();
-    if (!Tm)
+    if (Tm != 0.0)
         Tm = pSE->GetSelf()->type().mass();
 
     _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Target Data - mass:%.3f, speed:%.2f, radius:%.2f", \
@@ -2011,7 +2011,7 @@ PyResult DestinyManager::AttemptDockOperation() {
     uint32 stationID = pClient->GetDockStationID();
     SystemEntity *station = mySE->SystemMgr()->GetSE(stationID);
 
-    if (!station) {
+    if (station == nullptr) {
         codelog(CLIENT__ERROR, "%s: Station %u not found.", pClient->GetName(), stationID);
         pClient->SendErrorMsg("Station Not Found, Docking Aborted.");
         return new PyNone();
@@ -2070,7 +2070,7 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
             du.y = m_position.y;
             du.z = m_position.z;
         PyTuple* up = du.Encode();
-        SendSingleDestinyUpdate(&up, true);    //consumed
+        SendSingleDestinyUpdate(&up);    //consumed
     }
     if (update) {
         DoDestiny_SetBallPosition du;
@@ -2269,7 +2269,7 @@ Battleships 0.155
 
     if (!mySE->HasPilot())
         return;
-    if (mySE->GetPilot()->IsInSpace() and mySE->SysBubble()) {
+    if (mySE->GetPilot()->IsInSpace() and (mySE->SysBubble() != nullptr)) {
         std::vector<PyTuple*> updates;
         DoDestiny_SetBallAgility sbagility;
             sbagility.entityID =  mySE->GetID();
@@ -2730,8 +2730,10 @@ void DestinyManager::SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool 
 }
 
 void DestinyManager::SendSetState() const {
-    if (!mySE->HasPilot()) return;
-    if (mySE->GetPilot()->IsSetStateSent()) return;
+    if (!mySE->HasPilot())
+        return;
+    if (mySE->GetPilot()->IsSetStateSent())
+        return;
 
     _log(DESTINY__MESSAGE, "Destiny::SendSetState() Called for Ship:%s(%u) Pilot:%s(%u)", \
                         mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
@@ -2762,6 +2764,16 @@ void DestinyManager::SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self
 
 void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vector<PyTuple*>& events, bool self_only ) const {
     if (self_only) {
+        if (!mySE->HasPilot()) {
+            // this entity is NOT a player ship...change to BubbleCast (or silently fail)
+            if (mySE->SysBubble() != nullptr) {
+                _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny update (u:%u, e:%u)", sEntityList.GetStamp(), updates.size(), events.size() );
+                mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
+            }
+            updates.clear();
+            events.clear();
+            return;
+        }
         _log(PLAYER__MESSAGE, "[%u] DestinyManager::SendDestinyUpdate() (u:%i, e:%i) called as 'self_only' for %s(%u)", \
                     sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
@@ -2779,7 +2791,7 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
             PySafeDecRef( t ); //they are not required to consume it.
         }
         events.clear();
-    } else if( mySE->SysBubble() ) {
+    } else if (mySE->SysBubble() != nullptr) {
         _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny update (u:%u, e:%u)", sEntityList.GetStamp(), updates.size(), events.size() );
         mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
     } else {

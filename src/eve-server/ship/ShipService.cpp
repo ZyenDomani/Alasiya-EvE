@@ -553,14 +553,14 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
     //used for LaunchUpgradePlatformWarning
     bool ignoreWarning = drop3args.ignoreWarning, dropped = false;
 
-    Call_SingleIntList successfully_dropped;
     Client* pClient = call.client;
     SystemManager* pSysMgr = pClient->SystemMgr();
+
     FactionData data;
         data.allianceID = pClient->GetAllianceID();
         data.corporationID = pClient->GetCorporationID();
         data.factionID = pClient->GetWarFactionID();
-        data.ownerID = pClient->GetCharacterID();
+        data.ownerID = ownerID;
 
     DBSystemDynamicEntity entity;
         entity.itemID = 0;
@@ -568,69 +568,81 @@ AttributeError: 'tuple' object has no attribute 'iteritems'
         entity.typeID = 0;
         entity.groupID = 0;
         entity.categoryID = EVEDB::invCategories::_System;
-        entity.ownerID = drop3args.ownerID;
-        entity.corporationID = data.corporationID;
-        entity.allianceID = data.allianceID;
+        entity.ownerID = data.ownerID;
         entity.factionID = data.factionID;
+        entity.allianceID = data.allianceID;
+        entity.corporationID = data.corporationID;
         entity.planetID = 0;
         entity.x = 0.0;
         entity.y = 0.0;
         entity.z = 0.0;
 
-    uint32 contID = 0, itemID = 0, itemQuantity = 0;
+    uint32 itemQuantity = 0;
     double radius = pClient->GetShipSE()->GetRadius();
 
     GPoint location(pClient->GetShipSE()->GetPosition());
 
     InventoryItemRef itemRef;
 
+    PyDict* dict = new PyDict();
+
     for (uint32 i = 0; i < PyToDropList->size(); i++) {
         location.MakeRandomPointOnSphereLayer((300.0 +radius),(800.0 + radius));
         entity.itemID = (uint32)(PyToDropList->items.at(i)->AsTuple()->items.at(0)->AsInt()->value());
         itemQuantity = (uint32)(PyToDropList->items.at(i)->AsTuple()->items.at(1)->AsInt()->value());
 
-        itemRef = m_manager->item_factory->GetItem(itemID);
+        itemRef = m_manager->item_factory->GetItem(entity.itemID);
         if (itemRef.get() == nullptr) {
-            sLog.Error("ShipBound::Handle_Drop()", "%s: Unable to find item %u to drop.", pClient->GetName(), itemID);
+            sLog.Error("ShipBound::Handle_Drop()", "%s: Unable to find item %u to drop.", pClient->GetName(), entity.itemID);
             continue;
         }
 
         /**@todo  deal with changing quantities as needed */
 
+        PyList* list = new PyList();
         if ((itemRef->flag() == flagDroneBay) and (itemRef->categoryID() == EVEDB::invCategories::Drone)) {
             // This item is a drone, so launch it into space:
             if (pClient->LaunchDrone(itemRef)) {
                 dropped = true;
-                successfully_dropped.ints.push_back(itemID);
+                list->AddItem(new PyInt(entity.itemID));
             }
-            continue;
+        } else {
+            //location += itemRef->radius();
+            // Move item from cargo bay to space:
+            itemRef->Move(pClient->GetLocationID(), flagAutoFit);
+            itemRef->Relocate(location);
+            itemRef->ChangeOwner(entity.ownerID);
+
+            entity.itemName = itemRef->itemName();
+            entity.typeID = itemRef->typeID();
+            entity.groupID = itemRef->groupID();
+            entity.categoryID = itemRef->categoryID();
+            if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
+                entity.planetID = pSysMgr->GetNearestPlanet(location);
+            entity.x = itemRef->position().x;
+            entity.y = itemRef->position().y;
+            entity.z = itemRef->position().z;
+            SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSysMgr, m_manager->item_factory, entity);
+            if (pSE != nullptr) {
+                dropped = true;
+                list->AddItem(new PyInt(entity.itemID));
+                pSysMgr->AddEntity(pSE);
+                if (pSE->IsPOSSE())
+                    pSE->GetPOSSE()->InitData();
+            }
         }
-
-        // Move item from cargo bay to space:
-        itemRef->Move(pClient->GetLocationID(), flagAutoFit);
-        itemRef->Relocate(location);
-
-        entity.itemName = itemRef->itemName();
-        entity.typeID = itemRef->typeID();
-        entity.groupID = itemRef->groupID();
-        entity.categoryID = itemRef->categoryID();
-        if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
-            entity.planetID = pSysMgr->GetNearestPlanet(location);
-        entity.x = itemRef->position().x;
-        entity.y = itemRef->position().y;
-        entity.z = itemRef->position().z;
-        SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSysMgr, m_manager->item_factory, entity);
-        if (pSE != nullptr) {
-            if (pSE->IsPOSSE())
-                pSE->GetPOSSE()->InitData();
-            dropped = true;
-            successfully_dropped.ints.push_back(itemID);
+        if (dropped) {
+            itemRef->ChangeSingleton(true);
+            dict->SetItem(new PyInt(entity.itemID), list);
         }
     }
 
     if (dropped)
         pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
-    return successfully_dropped.Encode();
+    else
+        dict->clear();
+
+    return dict;
 }
 
 PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {

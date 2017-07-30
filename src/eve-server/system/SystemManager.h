@@ -52,6 +52,7 @@ class PyServiceMgr;
 
 class DynamicEntityFactory {
 public:
+    // you MUST call (your SystemManager)->AddEntity() after this to actually put the entity in space
     static SystemEntity* BuildEntity(SystemManager &system, ItemFactory* factory, const DBSystemDynamicEntity &entity);
 };
 
@@ -74,6 +75,8 @@ public:
     bool ProcessTic();          // called at 1Hz.
     bool BootSystem();
     void UnloadSystem();
+
+    bool IsLoaded()                                     { return m_loaded; }
 
     uint32 GetNearestPlanet(const GPoint& myPos);
     SystemEntity* GetNearestMoon(const GPoint& myPos);

@@ -26,6 +26,7 @@
 #ifndef __RAM_PROXY_DB__H__
 #define __RAM_PROXY_DB__H__
 
+#include "../../eve-common/EVE_POS.h"
 #include "inventory/InventoryItem.h"
 #include "ServiceDB.h"
 

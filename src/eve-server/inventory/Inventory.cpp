@@ -126,10 +126,11 @@ bool Inventory::LoadContents(ItemFactory* factory) {
 
     std::vector<uint32> items;
     if (pClient != nullptr) {
+        od.corpID = pClient->GetCorporationID();
         if (IsStation(m_inventoryID)) {
-            if (IsPlayerCorp(pClient->GetCorporationID())){
+            if (IsPlayerCorp(od.corpID)) {
                 /* this will load all non-NPC corp items in this station */
-                od.ownerID = pClient->GetCorporationID();
+                od.ownerID = od.corpID;
                 _log(INV__TRACE, "Inventory::LoadContents()::IsPlayerCorp() - Loading inventory %u(%p) with owner %u", m_inventoryID, this , od.ownerID);
                 GetItems(od, items);
             }
@@ -140,13 +141,14 @@ bool Inventory::LoadContents(ItemFactory* factory) {
     _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory %u(%p) with owner %u", m_inventoryID, this , od.ownerID);
     if (!GetItems(od, items)) {
         _log(INV__ERROR, "Inventory::LoadContents() - Failed to get items of inventory %u", m_inventoryID);
-        if (pClient and IsStation(m_inventoryID))
+        if ((pClient != nullptr) and IsStation(m_inventoryID))
             pClient->RemoveStationHangar(m_inventoryID);
         return false;
     }
 
     for (auto cur : items) {
-        if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_inventoryID)) continue;
+        if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_inventoryID))
+            continue;
         InventoryItemRef i = factory->GetItem(cur);
         if (!i) {
             _log(INV__WARNING, "Inventory::LoadContents() - Failed to load item %u contained in %u. Skipping.", cur, m_inventoryID);
@@ -162,7 +164,8 @@ bool Inventory::LoadContents(ItemFactory* factory) {
 }
 
 void Inventory::AddItem(InventoryItemRef item) {
-    if (!item.get()) return;    //segfault check
+    if (item.get() == nullptr)
+        return;    //segfault check
     std::map<uint32, InventoryItemRef>::iterator res = mContents.find(item->itemID());
     std::pair <std::_Rb_tree_iterator <std::pair <const uint32, InventoryItemRef > >, bool > test;
     if (res == mContents.end())
@@ -175,7 +178,8 @@ void Inventory::AddItem(InventoryItemRef item) {
 }
 
 void Inventory::RemoveItem(InventoryItemRef item) {
-    if (!item.get()) return;    //segfault check
+    if (item.get() == nullptr)
+        return;    //segfault check
     std::map<uint32, InventoryItemRef>::iterator res = mContents.find(item->itemID());
     if (res != mContents.end()) {
         mContents.erase(res->first);

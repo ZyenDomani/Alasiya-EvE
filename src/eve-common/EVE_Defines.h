@@ -1,8 +1,11 @@
+
 /*  EVE_Defines.h
  *   this file defines hard-coded values for game item classes
  *   we also define C-type macros for ease of readibilty in various item conditionals
  *
  */
+
+/** @todo  these values need to be udpated (here and in server code) to match values expected/tested in client */
 
 #ifndef EVE_DEFINES_H
 #define EVE_DEFINES_H
@@ -77,6 +80,10 @@ minPlayerOwner = 90000000
 maxPlayerOwner = 2147483647
 minFakeItem = 9000000000000000000L
 minFakeClientItem = 17000000000000000000L
+
+minDustUser = 1000000000
+minDustCharacter = 2100000000
+maxDustCharacter = 2130000000
 */
 
 //  allan's static defines to ease code checks

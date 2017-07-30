@@ -464,6 +464,13 @@ PyResult PosMgrBound::Handle_SetTowerPassword( PyCallArgs &call ) {
 13:10:09 [SvcCall]         [ 0] Integer field: 140001260    << towerID
 13:10:09 [SvcCall]         [ 1] WString: 'test'             << password
 
+20:31:54 [POS:Dump] PosMgrService bind request for:
+20:31:54 [POS:Dump]     Integer field: 30000092
+20:31:54 [SvcCall] Service PosMgrBound::SetTowerPassword()
+20:31:54 [PacketError] Decode SetTowerPassword failed: tuple0 is the wrong size: expected 4, but got 2
+20:31:54 [SvcError] Handle_SetTowerPassword(/usr/local/src/eve/Alasiya-EvE/src/eve-server/pos/PosMgrService.cpp:487): allan: Failed to decode arguments.
+
+
 self.posMgr.SetTowerPassword(self.slimItem.itemID, password, allowCorp, allowAlliance)
             [PyString "SetTowerPassword"]
             [PyTuple 4 items]
@@ -482,18 +489,38 @@ self.posMgr.SetTowerPassword(self.slimItem.itemID, password, allowCorp, allowAll
       return new PyNone();
   }
 
-  SetTowerPassword args;
-  if (!args.Decode(&call.tuple)) {
-      codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-      return new PyNone();
+  if (call.tuple->size() == 2) {
+    SetTowerPassword2 args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyNone();
+    }
+
+    TowerSE* pTSE = pSystem->GetSE(args.towerID)->GetTowerSE();
+    if (pTSE == nullptr)
+        return new PyNone();
+
+    pTSE->SetTowerPassword(args.password);
+    pTSE->UpdatePassword();
+  } else if (call.tuple->size() == 4) {
+      SetTowerPassword4 args;
+      if (!args.Decode(&call.tuple)) {
+          codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+          return new PyNone();
+      }
+
+      TowerSE* pTSE = pSystem->GetSE(args.towerID)->GetTowerSE();
+      if (pTSE == nullptr)
+          return new PyNone();
+
+      pTSE->SetTowerPassword(args.password);
+      pTSE->SetCorpAccess(args.allowCorp);
+      pTSE->SetAllyAccess(args.allowAlliance);
+      pTSE->UpdatePassword();
+  } else {
+      // make error here?
   }
 
-  TowerSE* pTSE = pSystem->GetSE(args.towerID)->GetTowerSE();
-  if (pTSE == nullptr)
-      return new PyNone();
-
-  /** @todo  incomplete... finish this  */
-  pTSE->SetTowerPassword(args.password);
   return new PyNone();
 }
 
@@ -523,15 +550,40 @@ PyResult PosMgrBound::Handle_GetSiloCapacityByItemID(PyCallArgs &call) {
 }
 
 PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
-    /*  structure state is queried by StructureEntity::GetPOSState()
-     *    state is saved in StructureEntity::m_state (POSState)
+    /*
+     * 12:38:41 W PosMgrBound::Handle_AnchorStructure(): size=2
+     * 12:38:41 [POS:Dump]   Call Arguments:
+     * 12:38:41 [POS:Dump]       Tuple: 2 elements
+     * 12:38:41 [POS:Dump]         [ 0] Integer field: 140035963
+     * 12:38:41 [POS:Dump]         [ 1] Tuple: 3 elements
+     * 12:38:41 [POS:Dump]         [ 1]   [ 0] Integer field: 0
+     * 12:38:41 [POS:Dump]         [ 1]   [ 1] Integer field: 0
+     * 12:38:41 [POS:Dump]         [ 1]   [ 2] Integer field: 0
+     *
      */
     sLog.White( "PosMgrBound::Handle_AnchorStructure()", "size=%u", call.tuple->size());
     call.Dump(POS__DUMP);
 
-    PyRep *result(nullptr);
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
 
-    return result;
+    AnchorStructure args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyNone();
+    }
+
+    StructureSE* pTSE = pSystem->GetSE(args.structureID)->GetPOSSE();
+    if (pTSE == nullptr)
+        return new PyNone();
+
+    GPoint pos(args.posX, args.posY, args.posZ);
+    pTSE->Anchor(pos);
+
+    return new PyNone();
 }
 
 PyResult PosMgrBound::Handle_UnanchorStructure(PyCallArgs &call) {
