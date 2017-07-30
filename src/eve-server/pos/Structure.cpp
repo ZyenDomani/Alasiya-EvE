@@ -437,7 +437,7 @@ void StructureSE::Anchor(GPoint& pos)
         // set position away from current position and send new position to client
         uint32 dist = MakeRandomInt(200000, 250000);
         uint32 radius = GetPosition().distance(m_moonSE->GetPosition());
-        float rad = radius / dist;
+        float rad = dist / radius;
 
         GPoint newPos(GetPosition());
         newPos.x += radius * cos(rad);
