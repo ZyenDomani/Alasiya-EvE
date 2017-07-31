@@ -395,8 +395,8 @@ PyRep* CharacterDB::GetCharPublicInfo3(uint32 characterID) {
         "SELECT "
         "  bounty,"
         "  title,"
-        "  startDateTime"
-        "  description,"
+        "  startDateTime,"
+	"  description,"
         "  corporationID"
         " FROM chrCharacter "
         " WHERE characterID=%u", characterID))
