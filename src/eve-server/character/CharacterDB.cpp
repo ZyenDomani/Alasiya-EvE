@@ -430,7 +430,7 @@ PyRep *CharacterDB::GetInfoWindowDataForChar(uint32 characterID) {
         return nullptr;
     }
 
-    return(DBRowToKeyVal(row));
+    return DBRowToKeyVal(row);
 }
 
 //just return all itemIDs which has ownerID set to characterID
