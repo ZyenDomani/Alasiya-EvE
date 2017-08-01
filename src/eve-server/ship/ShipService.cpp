@@ -568,6 +568,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSysMgr, m_manager->item_factory, entity);
             if (pSE != nullptr) {
                 dropped = true;
+                itemRef->SetFlag(flagStructureInactive);
                 list->AddItem(new PyInt(entity.itemID));
                 pSysMgr->AddEntity(pSE);
                 if (pSE->IsPOSSE())
