@@ -424,7 +424,13 @@ PyRep *CharacterDB::GetInfoWindowDataForChar(uint32 characterID) {
         return nullptr;
     }
 
-    return DBResultToRowset(res);
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        codelog(DATABASE__ERROR, "Expected at least one row when getting character corp info\n");
+        return nullptr;
+    }
+
+    return(DBRowToKeyVal(row));
 }
 
 //just return all itemIDs which has ownerID set to characterID
