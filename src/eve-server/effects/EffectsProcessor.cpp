@@ -478,7 +478,7 @@ std::string FxProc::DecodeExpression(Expression expression, bool restricted/*fal
                 ret << " *needsWork*";
         } break;
     }
-    if (ret == "") {            // check for empty returns
+    if (ret.str() == "") {            // check for empty returns
         if (expression.operandID == operandDEFGROUP) {
             ret << "*groupNameByID*" << expression.expressionValue; // get group name by id here
         } else if (expression.operandID == operandDEFTYPEID) {

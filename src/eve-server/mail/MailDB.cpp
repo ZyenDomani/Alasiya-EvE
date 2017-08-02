@@ -34,12 +34,12 @@ PyRep* MailDB::GetMailStatus(int charId)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-                            "SELECT messageID, statusMask, labelMask, toCharacterIDs "
-                            "FROM mailStatus "
-                            "LEFT JOIN mailMessage ON messageID = id "
+                            "SELECT s.messageID, s.statusMask, s.labelMask "
+                            "FROM mailStatus s "
+                            "LEFT JOIN mailMessage m ON s.messageID = m.messageID "
                             "WHERE characterID = %u", charId)) {
         codelog(DATABASE__ERROR, "Failed to get mail status");
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -48,11 +48,11 @@ PyRep* MailDB::GetNewMail(int charId)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-                            "SELECT messageID, senderID, toCharacterIDs, toListID, "
-                            "toCorpOrAllianceID, title, sentDate FROM mailMessage "
-                            "LEFT JOIN mailStatus ON messageID = id "
+                            "SELECT m.messageID, m.senderID, m.toCharacterIDs, m.toListID, "
+                            "m.toCorpOrAllianceID, m.title, sentDate FROM mailMessage m "
+                            "LEFT JOIN mailStatus s ON s.messageID = m.messageID "
                             "WHERE characterID = %u", charId))
-        return NULL;
+        return nullptr;
     return DBResultToCRowset(res);
 }
 
@@ -152,13 +152,13 @@ PyString* MailDB::GetMailBody(int id) const
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT body FROM mailMessage WHERE messageID = %u", id))
-        return NULL;
+        return nullptr;
     if (res.GetRowCount() <= 0)
-        return NULL;
+        return nullptr;
 
     DBResultRow row;
     if (!res.GetRow(row) || row.IsNull(0))
-        return NULL;
+        return nullptr;
 
     return new PyString(row.GetText(0), row.ColumnLength(0));
 }
@@ -285,7 +285,7 @@ PyRep* MailDB::GetLabels(int characterID) const
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT bit, name, color, ownerId FROM mailLabel WHERE ownerID = %u", characterID))
-        return NULL;
+        return nullptr;
 
     PyDict* ret = new PyDict();
 
@@ -618,7 +618,7 @@ PyDict *MailDB::GetJoinedMailingLists(uint32 characterID)
                             "AND characterID = %u", characterID))
     {
         codelog(DATABASE__ERROR, "Failed to get joined mailing lists");
-        return NULL;
+        return nullptr;
     }
 
     DBResultRow row;
@@ -691,7 +691,7 @@ PyDict *MailDB::GetMailingListMembers(int32 listID)
                             "WHERE listID = %u", listID))
     {
         codelog(DATABASE__ERROR, "Failed to get mailing list members");
-        return NULL;
+        return nullptr;
     }
 
     DBResultRow row;
@@ -718,13 +718,13 @@ PyObject *MailDB::MailingListGetSettings(int32 listID)
                             "WHERE id = %u", listID))
     {
         codelog(DATABASE__ERROR, "Failed to get mailing list settings");
-        return NULL;
+        return nullptr;
     }
     DBResultRow row;
 
     if (!res.GetRow(row)) {
         codelog(DATABASE__ERROR, "mailList didn't give us a row");
-        return NULL;
+        return nullptr;
     }
     
 
@@ -738,7 +738,7 @@ PyObject *MailDB::MailingListGetSettings(int32 listID)
                             "WHERE listID = %u", listID))
     {
         codelog(DATABASE__ERROR, "Failed to get mailing list settings");
-        return NULL;
+        return nullptr;
     }
 
     PyDict *dict = new PyDict();
