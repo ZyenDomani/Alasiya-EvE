@@ -395,6 +395,6 @@ void ConsoleCommand::UpdateStatus() {
 	Status(&state, &threads, &vm, &rss, &user, &kernel);
     if (sConfig.server.IsTestServer)
         _log(SERVER__INFO, "Current Mem usage - RSS: %f, VM: %f", rss, vm);
-	m_db.SaveServerStats(threads + sThread.Count(), rss, vm, user, kernel, pFactory->Count(), sBubbleMgr.Count());
+    ServiceDB::SaveServerStats(threads + sThread.Count(), rss, vm, user, kernel, pFactory->Count(), sBubbleMgr.Count());
 }
 

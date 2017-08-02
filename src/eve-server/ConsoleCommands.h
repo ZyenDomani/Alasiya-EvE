@@ -60,7 +60,6 @@ class ConsoleCommand
 
   private:
 	  // we do NOT own any of these...
-	ServiceDB m_db;
     LSCChannel* plscc;
 	ItemFactory* pFactory;
 	SystemBubble* pBubbles;

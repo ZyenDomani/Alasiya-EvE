@@ -502,8 +502,7 @@ int main( int argc, char* argv[] )
     /* program events system */
     SetupSignals();
 
-    ServiceDB m_sdb;
-    m_sdb.SetServerOnlineStatus(true);
+    ServiceDB::SetServerOnlineStatus(true);
 
     uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
@@ -550,7 +549,7 @@ int main( int argc, char* argv[] )
      */
 
     sLog.Warning("   ServerShutdown", "Main loop stopped" );
-    m_sdb.SetServerOnlineStatus(false);
+    ServiceDB::SetServerOnlineStatus(false);
 
     /* stop TCP listener */
     tcps.Close();

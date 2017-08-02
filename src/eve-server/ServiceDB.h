@@ -63,12 +63,12 @@ public:
     double GetCorpBalance(uint32 corpID, uint16 accountKey);
     bool AddBalanceToCorp(uint32 corpID, double amount);
 
-    void SetServerOnlineStatus(bool online);
+    static void SetServerOnlineStatus(bool online);
     void SetCharacterOnlineStatus(uint32 char_id, bool online);
     void SetAccountOnlineStatus(uint32 accountID, bool online);
     void SetAccountBanStatus(uint32 accountID, bool banned);
 
-    void SaveServerStats(double threads, float rss, float vm, float user, float kernel, uint32 items, uint32 bubbles);
+    static void SaveServerStats(double threads, float rss, float vm, float user, float kernel, uint32 items, uint32 bubbles);
 
     uint32 SetClientSeed();
 
