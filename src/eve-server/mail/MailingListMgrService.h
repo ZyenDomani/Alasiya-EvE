@@ -27,6 +27,7 @@
 #define MAILING_LIST_MGR_SERVICE_H
 
 #include "PyService.h"
+#include "mail/MailDB.h"
 
 class MailingListMgrService
 : public PyService
@@ -38,6 +39,7 @@ public:
 protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
+    MailDB *m_db;
 
     PyCallable_DECL_CALL(GetJoinedLists);
     PyCallable_DECL_CALL(Create);
