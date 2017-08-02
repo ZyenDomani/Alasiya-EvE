@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.24-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: new
+-- Host: localhost    Database: alasiya-new
 -- ------------------------------------------------------
 -- Server version	10.0.24-MariaDB
 
@@ -35,7 +35,7 @@ CREATE TABLE `account` (
   `lastLogin` timestamp NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`accountID`),
   UNIQUE KEY `accountName` (`accountName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,6 +44,7 @@ CREATE TABLE `account` (
 
 LOCK TABLES `account` WRITE;
 /*!40000 ALTER TABLE `account` DISABLE KEYS */;
+INSERT INTO `account` VALUES (1,1,'allan','','‡\rŽÆ ­YÁÄã©V‡´ppsf',7131450020691443712,0,0,105,'2017-07-30 00:48:17'),(2,2,'lee','','‹I<\r¤)hìY†µî§.åöxø¥',7131450020691443712,0,0,421,'2017-07-23 00:42:19'),(3,3,'ray','','Gëb¾L-)*Lý$NßÝ8ÚÚ',7131450020691443712,0,0,3,'2017-07-23 02:14:59');
 /*!40000 ALTER TABLE `account` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-14 22:47:36
+-- Dump completed on 2017-08-01 18:36:19

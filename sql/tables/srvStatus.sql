@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.24-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: new
+-- Host: localhost    Database: alasiya-new
 -- ------------------------------------------------------
 -- Server version	10.0.24-MariaDB
 
@@ -50,7 +50,7 @@ CREATE TABLE `srvStatus` (
 
 LOCK TABLES `srvStatus` WRITE;
 /*!40000 ALTER TABLE `srvStatus` DISABLE KEYS */;
-INSERT INTO `srvStatus` VALUES (1,'',0,0,10101,0.000,0.000,0.00,0.00,0,0,0,0,0,0,0);
+INSERT INTO `srvStatus` VALUES (1,'',0,0,3,0,6,171.461,17.832,3.76,0.87,124,1,22,1501375644,0);
 /*!40000 ALTER TABLE `srvStatus` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -63,4 +63,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-14 22:48:08
+-- Dump completed on 2017-08-01 18:36:52
