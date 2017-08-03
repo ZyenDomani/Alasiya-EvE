@@ -287,7 +287,7 @@ void ServiceDB::SetServerOnlineStatus(bool online) {
     DBerror err;
     sDatabase.RunQuery(err,
         "UPDATE srvStatus SET Online = %u, Connections = 0, startTime = %s WHERE AI = 1",
-        (online ? 1 : 0), (online ? "UNIX_TIMESTAMP(CURRENT_TIMESTAMP)" : 0));
+        (online ? 1 : 0), (online ? "UNIX_TIMESTAMP(CURRENT_TIMESTAMP)" : "0"));
 
     //this is only called on startup/shutdown.  reset all char online counts/status'
     sDatabase.RunQuery(err,

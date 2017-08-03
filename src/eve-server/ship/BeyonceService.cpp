@@ -132,8 +132,10 @@ BeyonceService::~BeyonceService() {
 
 PyBoundObject* BeyonceService::_CreateBoundObject( Client* c, const PyRep* bind_args )
 {
-    _log( CLIENT__MESSAGE, "BeyonceService bind request for:" );
-    bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
+    if (is_log_enabled(COLLECT__OTHER_DUMP)) {
+        _log( CLIENT__MESSAGE, "BeyonceService bind request for:" );
+        bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
+    }
     /*
      * 18:26:29 [ClientMessage] BeyonceService bind request for:
      * 18:26:29 [ClientMessage]     Integer field: 30002547
@@ -150,7 +152,7 @@ PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
     if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
         //this method is not in cache yet, load up the contents and cache it.
         PyRep *res = m_db.GetFormations();
-        if (!res) {
+        if (res == nullptr) {
             codelog(SERVICE__ERROR, "Failed to load cache, generating empty contents.");
             res = new PyNone();
         }
@@ -281,16 +283,6 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
 }
 
 PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
-  /**
-04:45:32 L BeyonceBound: Handle_CmdGotoDirection
-04:45:32 [SvcCall]   Call Arguments:
-04:45:32 [SvcCall]       Tuple: 3 elements
-04:45:32 [SvcCall]         [ 0] Real field: -0.043847
-04:45:32 [SvcCall]         [ 1] Real field: 0.860934
-04:45:32 [SvcCall]         [ 2] Real field: 0.506824
-  call.Dump(SERVICE__CALL_DUMP);
-*/
-
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
@@ -368,9 +360,6 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
 }
 
 PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
-  /*
-            bp.CmdOrbit(id, range)
-            */
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
@@ -385,8 +374,8 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return new PyNone();
     }
-  //sLog.White( "BeyonceBound", "Handle_CmdOrbit" );
-  call.Dump(SERVICE__CALL_DUMP);
+
+    call.Dump(SERVICE__CALL_DUMP);
     Call_Orbit args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -490,7 +479,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
             pSE = pSystem->GetSE( toID );
             if (pSE == nullptr) {
-                sLog.Error( "BeyonceService::Handle_WarpToStuff()", "%s: unable to find location %d", call.client->GetName(), toID );
+                codelog(CLIENT__ERROR, "%s: unable to find location %d", call.client->GetName(), toID);
                 return new PyNone();
             }
         }
@@ -581,6 +570,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             GPoint stopPoint = (vectorFromOrigin * -radius);
             warpToPoint -= stopPoint;
         }
+    } else {
+        // pSE is null....make error and return
+        return new PyNone();
     }
 
     call.client->SetInvul(false);
@@ -703,8 +695,6 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
         return new PyNone();
     }
 
-    //sLog.Warning( "BeyonceBound", "Handle_CmdStargateJump" );
-    // sends fromGateID, toGateID, and shipID
     Call_StargateJump args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -731,7 +721,6 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 		return new PyNone();
 	}
 
-	// this will set corp/ally/faction/owner to '0'
 	for (auto cur : arg.ints)
         call.client->SystemMgr()->GetSE(cur)->Abandon();
 
@@ -740,8 +729,6 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 
 PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
     codelog(CLIENT__ERROR, "%s: Client sent UpdateStateRequest! that means we messed up pretty bad.", call.client->GetName());
-
-    //no arguments.
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {

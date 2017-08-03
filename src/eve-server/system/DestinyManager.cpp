@@ -464,7 +464,7 @@ void DestinyManager::Stop() {
         mySE->GetPilot()->SetAutoPilot(false);
     */
 
-    if (m_userSpeedFraction != 0.0f) {
+    if (m_userSpeedFraction == 0.0f) {
         //state is already at stop. but m_stop wasnt set.
         // set m_stop and return.
         m_stop = true;
@@ -1660,7 +1660,7 @@ void DestinyManager::GotoDirection(const GPoint& direction) {
         m_shipHeading = NULL_ORIGIN_V;
     }
 
-    sLog.Yellow("GotoDirection", "Heading: %.3f,%.3f,%.3f  Direction: %.3f,%.3f,%.3f",\
+   // sLog.Yellow("GotoDirection", "Heading: %.3f,%.3f,%.3f  Direction: %.3f,%.3f,%.3f",\
                 m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, direction.x, direction.y, direction.z);
     State = Destiny::BallMode::DSTBALL_GOTO;
     m_targetPoint = direction *1.0e16;

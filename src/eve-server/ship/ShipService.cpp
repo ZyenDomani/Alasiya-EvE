@@ -306,15 +306,6 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
 }
 
 PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
-    /*
-    if (call.client->IsSessionChange()) {
-        call.client->SendNotifyMsg("Session Change already active.");
-        return nullptr;
-    }*/
-  /**
-       shipsvc.Undock(shipID, ignoreContraband, onlineModules=onlineModules)
-       */
-
     Call_IntBoolArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -344,7 +335,6 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
             pShip->AddModuleToOnlineVec(cur->second->AsInt()->value());
     }
 
-    //do session change...
     pClient->UndockFromStation();
 
     //response should be nodeid and timestamp

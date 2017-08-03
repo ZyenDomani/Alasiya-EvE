@@ -500,6 +500,7 @@ SET( system_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/SystemGPoint.h"
      "${TARGET_INCLUDE_DIR}/system/SystemManager.h"
      "${TARGET_INCLUDE_DIR}/system/TargetManager.h"
+     "${TARGET_INCLUDE_DIR}/system/WorldSpaceServer.h"
      "${TARGET_INCLUDE_DIR}/system/WormholeSvc.h" )
 SET( system_SOURCE
      "${TARGET_SOURCE_DIR}/system/Asteroid.cpp"
@@ -526,6 +527,7 @@ SET( system_SOURCE
      "${TARGET_SOURCE_DIR}/system/SystemGPoint.cpp"
      "${TARGET_SOURCE_DIR}/system/SystemManager.cpp"
      "${TARGET_SOURCE_DIR}/system/TargetManager.cpp"
+     "${TARGET_SOURCE_DIR}/system/WorldSpaceServer.cpp"
      "${TARGET_SOURCE_DIR}/system/WormholeSvc.cpp")
 
 SET( system_managers_INCLUDE

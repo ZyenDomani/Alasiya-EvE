@@ -662,3 +662,25 @@ PyResult Command_warpto(Client* who, CommandDB* db, PyServiceMgr* services, cons
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
+
+
+PyResult Command_entityspawn(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!who->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->SysBubble())
+        who->EnterSystem(who->GetSystemID());
+    if (!who->GetShipSE()->DestinyMgr())
+        who->SetDestiny(NULL_ORIGIN);
+
+//sm.RemoteSvc('slash').SlashCmd('/entityspawn {0} {1} {2} 0 {3}'.format(recipeID, typeID, x, y))
+    /** @todo  finish this.... */
+    who->GetShipSE()->DestinyMgr()->Halt();
+
+    char reply[55];
+    snprintf(reply, 55, "Command Unfinished.\nShip Halted.");
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
