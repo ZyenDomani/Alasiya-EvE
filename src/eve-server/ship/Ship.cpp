@@ -149,7 +149,7 @@ void ShipItem::Init()
     InitAttribs();
 
     // create and initialize the module manager if not already done
-    if (!m_ModuleManager)
+    if (m_ModuleManager == nullptr)
         m_ModuleManager = new ModuleManager(this);
 
     m_ModuleManager->Initialize();
@@ -159,7 +159,7 @@ void ShipItem::Init()
 
 void ShipItem::InitPod() {
     // allocate the module manager, only the first time:
-    if (!m_ModuleManager) {
+    if (m_ModuleManager == nullptr) {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
@@ -204,7 +204,7 @@ void ShipItem::SetPlayer(Client* pClient) {
      */
 
     m_pilot = pClient;
-    if (!m_pilot) {
+    if (m_pilot == nullptr) {
         // remove ship effects and char skill effects for char leaving ship here.
         ProcessEffects(false);
         // should we check for cargo and damage after char leaves ship?  maybe later
@@ -303,7 +303,7 @@ void ShipItem::ModifyHoldVolumeByFlag(EVEItemFlags flag, double amount) {
         m_cargoHoldsUsedVolumeByFlag.find(flag)->second += amount;
     } else {
         _log(SHIP__ERROR, "ModifyContVolumeByFlag() - given flag not found in current map: %u", flag);
-        if (m_pilot)
+        if (m_pilot != nullptr)
             m_pilot->SendErrorMsg("Item not moved.  Ref: ServerError 65282");
     }
 }
@@ -323,7 +323,7 @@ double ShipItem::GetRemainingVolumeByFlag(EVEItemFlags flag) const {
 bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
 {
     /** @todo this will need more work to correctly check hold capacity for offline ships */
-    if (!m_pilot)
+    if (m_pilot == nullptr)
         return true;
 
     CharacterRef character = m_pilot->GetChar();
@@ -438,7 +438,7 @@ PyDict* ShipItem::ShipGetInfo() {
     if ( !Populate( entry ))
         return nullptr;    //print already done.
 
-    PyDict* result = new PyDict;
+    PyDict* result = new PyDict();
     result->SetItem(new PyInt( itemID()), new PyObject("util.KeyVal", entry.Encode()));
     //now encode contents...
     std::vector<InventoryItemRef> equipped;
@@ -463,7 +463,7 @@ PyDict* ShipItem::GetShipInfo()
         return nullptr;
     }
 
-    PyDict *result = new PyDict;
+    PyDict *result = new PyDict();
     Rsp_CommonGetInfo_Entry entry;
 
     //first populate the ship.
@@ -505,7 +505,7 @@ PyDict* ShipItem::GetShipState() {
         }
     }
     // Create new dictionary for shipState:
-    PyDict *result = new PyDict;
+    PyDict *result = new PyDict();
     // Create entry for ShipItem itself:
     result->SetItem(new PyInt(itemID()), GetItemStatusRow());
     // Check for and Create entry for pilot:
@@ -513,7 +513,7 @@ PyDict* ShipItem::GetShipState() {
     if (m_inventory->FindSingleByFlag(flagPilot, iRefPilot))
         result->SetItem(new PyInt(iRefPilot->itemID()), iRefPilot->GetItemStatusRow());
 
-    if (!m_ModuleManager) {
+    if (m_ModuleManager == nullptr) {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
@@ -531,12 +531,12 @@ PyList* ShipItem::ShipGetModuleList() {
         _log(INV__ERROR, "%s(%u): Failed to load contents for ShipGetModuleList", itemName().c_str(), itemID());
         return nullptr;
     }
-    if (!m_ModuleManager) {
+    if (m_ModuleManager == nullptr) {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
 
-    PyList* result = new PyList;
+    PyList* result = new PyList();
     PyTuple* module = new PyTuple(2);
     // Create entries in "onslimitemchange" modules list for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
@@ -558,7 +558,7 @@ PyDict* ShipItem::GetChargeState() {
             return nullptr;
         }
     }
-    if (!m_ModuleManager) {
+    if (m_ModuleManager == nullptr) {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
@@ -568,17 +568,17 @@ PyDict* ShipItem::GetChargeState() {
     m_ModuleManager->GetLoadedCharges(charges);
 
     if (charges.empty()) {
-        PyDict *result = new PyDict;
+        PyDict *result = new PyDict();
         return result;
     }
 
     // Create entries in "shipState" dictionary for loaded charges on ship:
     uint32 shipID = itemID();
-    PyDict* chargeDict = new PyDict;
+    PyDict* chargeDict = new PyDict();
     for (auto cur : charges)
         chargeDict->SetItem(new PyInt((uint32)cur.first), cur.second->GetChargeStatusRow(shipID));
 
-    PyDict *result = new PyDict;
+    PyDict *result = new PyDict();
     result->SetItem(new PyInt(itemID()), chargeDict);
     return result;
 }
@@ -623,7 +623,7 @@ void ShipItem::SaveShip()
 {
     SaveItem();                         // Save ship info
     mAttributeMap.SaveShipState();      // save ship damage
-    if (m_ModuleManager)
+    if (m_ModuleManager != nullptr)
         m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
 }
 
@@ -678,7 +678,7 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef) {
 void ShipItem::ProcessModules() {
     if (m_pilot->IsDocked())
         return;
-    if (m_ModuleManager)
+    if (m_ModuleManager != nullptr)
         m_ModuleManager->Process();
     else {
         _log(SHIP__MODULE_ERROR, "ProcessModules() - %s(%u) has no module manager.", itemName().c_str(), itemID());
@@ -697,7 +697,7 @@ void ShipItem::Dock() {
 void ShipItem::Undock() {
     m_isUndocking = true;
     // apply ship effects, as all variables are set at this point.
-    if (m_ModuleManager) {
+    if (m_ModuleManager != nullptr) {
         ProcessEffects(true, true);
         //m_ModuleManager->CharacterBoardingShip();
         UpdateModules();
@@ -719,7 +719,7 @@ void ShipItem::Undock() {
 }
 
 void ShipItem::Warp() {
-    if (m_ModuleManager)
+    if (m_ModuleManager != nullptr)
         m_ModuleManager->ShipWarping();
     else {
         _log(SHIP__MODULE_ERROR, "Warp() - %s(%u) has no module manager.", itemName().c_str(), itemID());
@@ -728,7 +728,7 @@ void ShipItem::Warp() {
 }
 
 void ShipItem::Jump() {
-    if (m_ModuleManager)
+    if (m_ModuleManager != nullptr)
         m_ModuleManager->ShipJumping();
     else {
         _log(SHIP__MODULE_ERROR, "Jump() - %s(%u) has no module manager.", itemName().c_str(), itemID());
@@ -863,7 +863,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef)
         return 0;
 
     if (IsModuleSlot(flag)) {
-        if (!m_ModuleManager) {
+        if (m_ModuleManager == nullptr) {
             _log(SHIP__MODULE_ERROR, "Ship::AddItem - %u - m_ModuleManager is null.", m_itemID );
             return 0;
         }
@@ -904,12 +904,12 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef)
 
 void ShipItem::RemoveItem(InventoryItemRef iRef, uint32 qty/*0*/)
 {
-    if (!m_pilot)
+    if (m_pilot == nullptr)
         return;
 
     // check to see if item is currently in a module slot.  going by category is NOT working after _ExecAdd() updates.
     if (IsModuleSlot(iRef->flag())) {
-        if (!m_ModuleManager) {
+        if (m_ModuleManager == nullptr) {
             m_ModuleManager = new ModuleManager(this);
             m_ModuleManager->Initialize();
         }
@@ -1047,7 +1047,7 @@ void ShipItem::RemoveRig(InventoryItemRef iRef) {
 
 void ShipItem::OnlineAll()
 {
-    if (m_ModuleManager)
+    if (m_ModuleManager != nullptr)
         m_ModuleManager->OnlineAll();
     else {
         _log(SHIP__MODULE_ERROR, "OnlineAll() - %s(%u) has no module manager.", itemName().c_str(), itemID());
@@ -1057,7 +1057,7 @@ void ShipItem::OnlineAll()
 
 void ShipItem::OfflineAll()
 {
-    if (m_ModuleManager)
+    if (m_ModuleManager != nullptr)
         m_ModuleManager->OfflineAll();
     else {
         _log(SHIP__MODULE_ERROR, "OfflineAll() - %s(%u) has no module manager.", itemName().c_str(), itemID());
@@ -1072,14 +1072,14 @@ void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
 
 void ShipItem::DeactivateAllModules()
 {
-    if (m_ModuleManager)
+    if (m_ModuleManager != nullptr)
         m_ModuleManager->DeactivateAllModules();
 }
 /* End new Module Manager Interface */
 
 void ShipItem::StripFitting()
 {
-    if (m_ModuleManager) {
+    if (m_ModuleManager != nullptr) {
         std::vector<InventoryItemRef> moduleList;
         m_ModuleManager->GetModuleListOfRefsAsc(&moduleList);
         for (auto cur : moduleList) {
@@ -1145,7 +1145,7 @@ void ShipItem::RemoveEffects()
 
 std::string ShipItem::GetShipDNA()
 {
-    if (!m_ModuleManager) {
+    if (m_ModuleManager == nullptr) {
         _log(SHIP__MODULE_ERROR, "GetShipDNA() - %s(%u) has no module manager.", itemName().c_str(), itemID());
         EvE::traceStack();
     }

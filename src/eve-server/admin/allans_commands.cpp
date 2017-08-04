@@ -684,3 +684,24 @@ PyResult Command_entityspawn(Client* who, CommandDB* db, PyServiceMgr* services,
     return new PyString(reply);
 }
 
+/*defaultMacros = {'GMH: Unload All': '/unload me all',
+ ' WM: Remove All Drones': '/unspawn range=500000* only=categoryDrone',
+ 'WM: Remove All Wrecks': '/unspawn range=500000 only=groupWreck',
+ 'WM: Remove CargoContainers': '/unspawn range=500000 only=groupCargoContainer',
+ 'WM: Remove SecureContainers': '/unspawn range=500000 only=groupSecureCargoContainer',
+ 'HEALSELF: Repair My Ship': '/heal',
+ 'HEALSELF: Repair My Modules': '/repairmodules',
+ 'GMH: Online My Modules': '/online me',
+ 'GML: Session Change 5sec': '/sessionchange 5'}
+ */
+
+/*@Allan new command to implement.  I may try but I don't know fuckall for destiny stuff
+ * /reportdesync
+ *
+ * It wants a tuple of (dict, timestamp)
+ * dict is:
+ * key = ballID
+ * val = pos (vector probably best to use util.KeyVal)(uses val.x, val.y, val.z)
+ *
+ * It compares the balls trying to find position and velocity inconsitancies showing them in a model window
+ */
