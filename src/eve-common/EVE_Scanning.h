@@ -12,27 +12,29 @@ static float probeResultInformative = 0.75f;
 static float probeResultGood        = 0.25f;
 static float probeResultUnusable    = 0.001f;
 
+namespace EVESCAN {
 //  -allan 7Jul14
-typedef enum {
-    ScanGroupScrap                  = 1,
-    ScanGroupSignature              = 4,
-    ScanGroupShip                   = 8,
-    ScanGroupStructure              = 16,
-    ScanGroupDroneOrProbe           = 32,
-    ScanGroupCelestial              = 64,
-    ScanGroupAnomaly                = 128
-} ScanGroup;
+enum ScanGroup {
+    ScanGroupScrap         = 1,
+    ScanGroupSignature     = 4,
+    ScanGroupShip          = 8,
+    ScanGroupStructure     = 16,
+    ScanGroupDroneOrProbe  = 32,
+    ScanGroupCelestial     = 64,
+    ScanGroupAnomaly       = 128
+} ;
 
 
-typedef enum {
-    ProbeStateInactive              = 0,
-    ProbeStateIdle                  = 1,
-    ProbeStateMoving                = 2,
-    ProbeStateWarping               = 3,
-    ProbeStateScanning              = 4,
-    ProbeStateReturning             = 5
-} ProbeState;
+enum ProbeState {
+    ProbeStateInactive     = 0,
+    ProbeStateIdle         = 1,
+    ProbeStateMoving       = 2,
+    ProbeStateWarping      = 3,
+    ProbeStateScanning     = 4,
+    ProbeStateReturning    = 5
+};
 
+}
 /*
 
  probeScanGroupScrap = 1

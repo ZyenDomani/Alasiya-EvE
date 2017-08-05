@@ -119,7 +119,7 @@ void MiningLaser::DeactivateCycle(bool abort)
 /** @todo verify for ice and gas */
 void MiningLaser::ProcessCycle(bool partial)
 {
-    // update for t2 crystal shit, if applicable
+    /** @todo check/add data for t2 crystals */
     float cycleVol = GetAttribute(AttrMiningAmount).get_float();
     if (m_chargeLoaded)
         if (m_targetSE->GetGroupID() == m_crystalRoidGrp)
@@ -130,7 +130,7 @@ void MiningLaser::ProcessCycle(bool partial)
 
     if (cycleVol < oreVolume) {
         _log(MINING__ERROR, "%s(%u) - Mining Laser could not extract ore from %s(%u)", \
-              m_modRef->itemName().c_str(), m_modRef->itemID(), m_targetSE->GetSelf()->itemName().c_str(), m_targetSE->GetID() );
+              m_modRef->itemName().c_str(), m_modRef->itemID(), roidRef->itemName().c_str(), m_targetSE->GetID() );
         return;
     }
 
@@ -138,6 +138,7 @@ void MiningLaser::ProcessCycle(bool partial)
     double remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(flagCargoHold);
     double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_double();
 
+    // verify this logic.  fix as needed
     if (remainingCargoVolume < cycleVol) {
         if (remainingCargoVolume > 0)
             if (remainingCargoVolume > oreVolume)
@@ -150,6 +151,7 @@ void MiningLaser::ProcessCycle(bool partial)
             return;
         }
     } else if (partial) {
+        /** @todo  check and fix this shit.....not working right.  */
         oreAmount *= (GetRemainingCycleTimeMS() / GetAttribute(AttrDuration).get_float());
         if (m_iMiner)
             oreAmount = floor(oreAmount);
@@ -158,6 +160,7 @@ void MiningLaser::ProcessCycle(bool partial)
     _log(MINING__DEBUG, "ProcessCycle(%s) -  cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f, oreAmount:%.2f", \
             (partial?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, oreAmount);
 
+    // verify this logic.  fix as needed
     if (oreAmount > roidQuantity)
         oreAmount = roidQuantity;
     if (oreAmount < 1)
@@ -178,7 +181,9 @@ void MiningLaser::ProcessCycle(bool partial)
     roidQuantity -= oreAmount;
     _log(MINING__TRACE, "new roidQuantity %.3f", roidQuantity);
 
-    if (!roidQuantity) {
+    /** @todo  check and fix this shit.....not working right.  */
+    //  oreAmount and roidQuantity are not being set right in above code.....walk thru this entire thing.
+    if (roidQuantity <= 0.0f) {
         ActiveModule::AbortCycle();
         m_targetSE->Delete();
     } else if (!m_iMiner) {
@@ -194,7 +199,7 @@ void MiningLaser::ProcessCycle(bool partial)
                 m_crystalDmg += m_crystalDmgAmount;
                 if (m_crystalDmg > 1.0f) {
                     m_shipRef->GetPilot()->SendNotifyMsg("Your %s loaded in %s has been destroyed.", m_chargeRef->itemName().c_str(), m_modRef->itemName().c_str());
-                    InventoryItemRef chargeRef = m_chargeRef;   // make a copy of item ref, as m_chargeRef = NULL after next call returns
+                    InventoryItemRef chargeRef(m_chargeRef);   // make a copy of item ref, as m_chargeRef = NULL after next call returns
                     m_shipRef->RemoveItem(m_chargeRef);
                     chargeRef->Delete();
                 } else {

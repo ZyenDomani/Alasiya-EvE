@@ -1,4 +1,3 @@
-
  /**
   * @name AnomalyMgr.h
   *     Anomaly managment system for Alasiya EvEmu
@@ -12,7 +11,7 @@
 #define EVEMU_SYSTEM_ANOMALYMGR_H_
 
 /*  this class is in charge of creating/destroying and maintaining
- * anomalies in a system.
+ * anomaly types in it's system.
  *
  *  a new iteration of this class is created for each system as that system is booted.
  */
@@ -35,10 +34,11 @@ class AnomalyMgr
       void Init(AsteroidBeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
       void Process();
 
+      void LoadAnomaly();
       void SaveAnomaly();
+      void CreateAnomaly();
 
 protected:
-    /* we do not own any of these */
     ManagerDB m_db;
 
 private:
@@ -54,4 +54,3 @@ private:
 };
 
 #endif  // EVEMU_SYSTEM_ANOMALYMGR_H_
-
