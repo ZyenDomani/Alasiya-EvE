@@ -469,57 +469,59 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
 PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
 
-    if (args.argCount() < 2) {
-        throw PyException(MakeCustomError("Correct Usage: /fit [typeID] "));
-    }
-
-    int typeID = 0;
-
-    if (args.argCount() == 3)
-    {
-        if (!args.isNumber(2))
-            throw PyException(MakeCustomError("Argument 1 must be type ID."));
-        typeID = atoi(args.arg(2).c_str());
-    }
-    else if (args.argCount() == 2)
-    {
-        if (!args.isNumber(1))
-            throw PyException(MakeCustomError("Argument 1 must be type ID."));
-        typeID = atoi(args.arg(1).c_str());
-    }
-
-    uint32 qty = 1;
-
-    _log(COMMAND__MESSAGE, "Create %s %u times", typeID, qty);
-
-    EVEItemFlags flag;
-    uint32 powerSlot;
-    uint32 useableSlot;
+    uint32 typeID = 0;
+    uint32 itemID = 0;
+    EVEItemFlags flag = (EVEItemFlags)0;
+    uint32 powerSlot = 0;
+    uint32 useableSlot = 0;
     std::string affectName = "online";
 
-    if (typeID == 0)
-        throw PyException(MakeCustomError("Unable to create item of type %u.", typeID));
-    else
-    {
-        //Get Range of slots for item
-        InventoryDB::GetModulePowerSlotByTypeID(typeID, powerSlot);
+    if (args.argCount() < 3) {
+        throw PyException(MakeCustomError("Correct Usage: /fit [me|itemID] [typeID] [flag=??]"));
+    }
 
-        //Get open slots available on ship
-        InventoryDB::GetOpenPowerSlots(powerSlot, who->GetShip(), useableSlot);
+    // DNA tells us what slot to use but we're going to ignore it
+    if (args.arg(1) == "me") {
+        itemID = who->GetShip()->itemID();
+    } else {
+        itemID = atoi(args.arg(1).c_str());
+    }
+
+    typeID = atoi(args.arg(2).c_str());
+    
+    std::string::size_type n = args.arg(3).find("flag=");
+    if (n != std::string::npos) {
+        flag = (EVEItemFlags)atoi(args.arg(3).substr(5).c_str());
+    }
+
+
+    if (typeID == 0) {
+        throw PyException(MakeCustomError("Unable to create item of type %u.", typeID));
+    } else {
+        if (flag == 0) {
+            //Get Range of slots for item
+            InventoryDB::GetModulePowerSlotByTypeID(typeID, powerSlot);
+
+            //Get open slots available on ship
+
+            InventoryDB::GetOpenPowerSlots(powerSlot, who->GetShip(), useableSlot);
+            flag = (EVEItemFlags)useableSlot;
+        }
 
         ItemData idata(
-            typeID,
-            who->GetCharacterID(),
-            0, //temp location
-            flag = (EVEItemFlags)useableSlot,
-            qty
-       );
+                       typeID,
+                       who->GetCharacterID(),
+                       0, //temp location
+                       flag,
+                       1
+                       );
 
         InventoryItemRef i = services->item_factory->SpawnItem(idata);
-        if (!i)
+        if (!i) {
             throw PyException(MakeCustomError("Unable to create item of type %u.", typeID));
+        }
 
-        who->MoveItem(i->itemID(), who->GetShipID(), flag);
+        who->MoveItem(i->itemID(), itemID, flag);
 
         return new PyString("Creation successful.");
     }
