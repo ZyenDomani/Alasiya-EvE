@@ -370,88 +370,104 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
                   [PyInt 10]        << flagdisconnect??
                   [PyInt 0]
             */
-    Call_AssembleShip args;
-    Call_AssembleShipTech3 argsT3;
-    uint32 itemID = 0;
-    std::vector<uint32> subSystemList;
-    bool completeTech3Assembly = false;
-
-    if (!call.tuple->IsTuple())
-        return nullptr;
-
+    
+    /*
     if (!call.tuple->GetItem(0)->IsList()) {
         if (!call.tuple->GetItem(0)->IsInt()) {
             sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: call.tuple->GetItem(0)->IsInt() == false");
-            /** @todo  throw exception */
+            // @todo  throw exception
             return nullptr;
         } else {
         	// T3 managing is broken now - logging on with T3 assembled causes seg fault.
-            /** @todo Re-work the T3 managing. For now, i'm commenting it and leaving an error message on assembly attempt. */
+            // @todo Re-work the T3 managing. For now, i'm commenting it and leaving an error message on assembly attempt.
         	sLog.Error( "Handle_AssembleShip", "Modular ships are not implemented yet" );
         	throw PyException( MakeCustomError( "Modular ships are not implemented yet." ) );
         	return nullptr;
-        	/*
             // Tuple contains single Integer, this is for Tech 3 Ship Assembly:
-            if (!argsT3.Decode(&call.tuple)) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-                return nullptr;
-            }
-            itemID = argsT3.item;
-            if (call.byname.find("subSystems") != call.byname.end()) {
-                PyList * list;
-                if (call.byname.find("subSystems")->second->IsList()) {
-                    list = call.byname.find("subSystems")->second->AsList();
-                    for(uint32 i=0; i<list->size(); i++)
-                        subSystemList.push_back(list->GetItem(i)->AsInt()->value());
-                } else {
-                    sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: !call.byname.find(\"subSystems\")->second->IsList() failed");
-                    return nullptr;
-                }
-            } else {
-                sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: call.byname.find(\"subSystems\") != call.byname.end() failed");
-                return nullptr;
-            }
-            completeTech3Assembly = true;
-            */
-        }
-    } else {
+            //if (!argsT3.Decode(&call.tuple)) {
+                //   codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+                //return nullptr;
+                //}
+                //itemID = argsT3.item;
+                //if (call.byname.find("subSystems") != call.byname.end()) {
+                //PyList * list;
+                //if (call.byname.find("subSystems")->second->IsList()) {
+                //   list = call.byname.find("subSystems")->second->AsList();
+                //  for(uint32 i=0; i<list->size(); i++)
+                //      subSystemList.push_back(list->GetItem(i)->AsInt()->value());
+                //} else {
+                //    sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: !call.byname.find(\"subSystems\")->second->IsList() failed");
+                //    return nullptr;
+                //}
+                //} else {
+                //sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: call.byname.find(\"subSystems\") != call.byname.end() failed");
+                //return nullptr;
+                // }
+                //completeTech3Assembly = true;
+                //}
+                //}
+
+    */
+    Call_AssembleShip args;
+    Call_AssembleShipTech3 argsT3;
+    //Call_AssembleShipWithName argsNamed;
+
+    uint32 itemID = 0;
+    std::vector<uint32> subSystemList;
+    std::vector<int32> itemIDList;
+    bool completeTech3Assembly = false;
+    call.Dump(COLLECT__CALL_DUMP);
+
+    if (call.tuple->GetItem(0)->IsList()) {
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             return nullptr;
         }
-        itemID = args.items.front();
+        itemIDList = args.items;
+    } else if (call.tuple->GetItem(0)->IsInt() &&
+               call.tuple->GetItem(1)->IsString()) {
+        // Ignoring name
+        // Can't get xmlpktgen to pickup the change so.. lol
+        //if (!argsNamed.Decode(&call.tuple)) {
+        //    codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        //    return nullptr;
+        //}
+        itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());
     }
+    
+    for (int i = 0; i < itemIDList.size(); i++) {
+        itemID = itemIDList[i];
 
-    ShipItemRef ship = m_manager->item_factory->GetShip(itemID);
+        ShipItemRef ship = m_manager->item_factory->GetShip(itemID);
 
-    if (!ship) {
-        _log(ITEM__ERROR, "Failed to load ship %u to assemble.", itemID);
-        return nullptr;
-    }
+        if (!ship) {
+            _log(ITEM__ERROR, "Failed to load ship %u to assemble.", itemID);
+            return nullptr;
+        }
 
-    //check if the ship is a stack
-    if (ship->quantity() > 1) {
-        // Split the stack into a new inventory item (new_item) with quantity minus one,
-        // original item (ship) will be left with quantity = 1, then will be assembled:
-        //InventoryItemRef new_item = ship->Split(ship->quantity()-1,true);
-		ship = RefPtr<ShipItem>::StaticCast(ship->Split(1, true));
-		if (!ship) {
-		    _log(ITEM__ERROR, "Failed to split stack to assemble ship %u.", itemID);
-			return nullptr;
-		}
-    }
+        //check if the ship is a stack
+        if (ship->quantity() > 1) {
+            // Split the stack into a new inventory item (new_item) with quantity minus one,
+            // original item (ship) will be left with quantity = 1, then will be assembled:
+            //InventoryItemRef new_item = ship->Split(ship->quantity()-1,true);
+            ship = RefPtr<ShipItem>::StaticCast(ship->Split(1, true));
+            if (!ship) {
+                _log(ITEM__ERROR, "Failed to split stack to assemble ship %u.", itemID);
+                return nullptr;
+            }
+        }
 
-    ship->ChangeSingleton(true, true);
+        ship->ChangeSingleton(true, true);
 
-    if (completeTech3Assembly) {
-        // Move the five specified subsystems to the newly assembled Tech 3 ship
-        InventoryItemRef subSystemItem;
-        for(uint32 index=0; index<subSystemList.size(); index++) {
-            subSystemItem = m_manager->item_factory->GetItem(subSystemList.at(index));
-            subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_int()));
+        if (completeTech3Assembly) {
+            // Move the five specified subsystems to the newly assembled Tech 3 ship
+            InventoryItemRef subSystemItem;
+            for(uint32 index=0; index<subSystemList.size(); index++) {
+                subSystemItem = m_manager->item_factory->GetItem(subSystemList.at(index));
+                subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_int()));
+            }
         }
     }
-
     return nullptr;
 }
 
