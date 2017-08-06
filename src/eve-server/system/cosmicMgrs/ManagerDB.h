@@ -10,7 +10,7 @@
 #define _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
 
 
-#include "../../../eve-common/EVE_Scanning.h"
+#include "EVE_Scanning.h"
 #include "EntityList.h"
 #include "POD_containers.h"
 #include "system/SystemDB.h"
