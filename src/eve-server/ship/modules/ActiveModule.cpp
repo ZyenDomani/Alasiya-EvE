@@ -478,14 +478,14 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
     }
     // process new charge's effects here
     charge->ClearModifiers();
+    fxData data;
+    data.action = Effects::Action::dgmActInvalid;
     for (auto it : charge->type().m_stateFxMap) {
-        fxData data;
-        data.action = Effects::Action::dgmActInvalid;
         data.srcRef = charge;
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         sFxProc.ParseExpression(charge.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     }
-    if (m_shipRef->GetPilot()->IsLogin()) {
+    if (m_shipRef->GetPilot()->IsLogin() or m_shipRef->GetPilot()->IsDocked()) {
         m_ChargeState = ModStates::ChargeStates::CHG_LOADED;
         sFxProc.ApplyEffects(charge.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
     }
@@ -540,6 +540,22 @@ void ActiveModule::UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRe
         Deactivate();
     }
     iRef->SetAttribute(attrID, newValue);
+}
+
+void ActiveModule::ReprocessCharge()
+{
+    if (m_chargeRef.get() == nullptr)
+        return;
+    /*  may not need to reset this...
+    m_chargeRef->ClearModifiers();
+    fxData data;
+    data.action = Effects::Action::dgmActInvalid;
+    for (auto it : m_chargeRef->type().m_stateFxMap) {
+        data.srcRef = m_chargeRef;
+        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
+        sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
+    } */
+    sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 }
 
 bool ActiveModule::CanActivate()

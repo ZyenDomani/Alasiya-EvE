@@ -31,11 +31,11 @@
  */
 AnomalyMgr::AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc)
 : m_system(mgr),
-  m_services(svc)
+m_services(svc),
+m_beltMgr(nullptr),
+m_dungMgr(nullptr),
+m_spawnMgr(nullptr)
 {
-	m_beltMgr(nullptr);
-	m_dungMgr(nullptr);
-	m_spawnMgr(nullptr);
     m_initalized = false;
 }
 

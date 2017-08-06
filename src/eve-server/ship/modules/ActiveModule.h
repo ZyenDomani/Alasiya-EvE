@@ -44,6 +44,8 @@ public:
     virtual void ApplyDamage()                          { /* do nothing here */ }
     // this is a check for those active modules that need it (mining, weapons) and overridden as needed
     virtual bool CanActivate();
+    /* apply charge effects when undocking, as they are reset and not called anywhere else */
+    virtual void ReprocessCharge();
 
     /* ActiveModule methods */
     virtual uint32 GetTargetID()                        { return m_targetID; }

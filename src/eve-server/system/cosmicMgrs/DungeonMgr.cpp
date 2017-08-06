@@ -215,7 +215,7 @@ bool DungeonMgr::Create(uint16 templateID)
         sig.sigID = sEntityList.GetAnomalyID();
         sig.sigItemID = sDunDataMgr.GetDungeonID();
         sig.systemID = m_system->GetID();
-        sig.scanGroupID = ScanGroupAnomaly;         // this will change based on the actual ITEM being scanned...ship, tower, drone, etc.
+        sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupAnomaly;         // this will change based on the actual ITEM being scanned...ship, tower, drone, etc.
         sig.typeID = 25880; // Cosmic_Signature
         sig.groupID = EVEDB::invGroups::Cosmic_Anomaly;
         sig.strengthAttributeID = AttrScanAllStrength;  // Unknown

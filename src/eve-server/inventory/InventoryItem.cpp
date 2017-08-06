@@ -1012,8 +1012,9 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
     if (IsNPCCorp(toID) or (toID == 1))
         return;
     //TODO: figure out the appropriate list of interested people...
-    Client *c = sEntityList.FindClientByCharID(toID);
-    if (!c) return; //not found or not online...
+    Client* pClient = sEntityList.FindClientByCharID(toID);
+    if (pClient == nullptr)
+        return; //not found or not online...
 
     NotifyOnItemChange change;
         change.itemRow = GetItemRow();
@@ -1021,7 +1022,7 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
     changes.clear();    //reset change map for next update.
     PyTuple *tmp = change.Encode();  //this is consumed below
     // not sure what the difference is on the types below...
-    c->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.
+    pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.
     //c->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.
 }
 
@@ -1037,7 +1038,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
         SetAttribute(AttrIsOnline, int(online));
 
     Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
-    if (!pClient) {
+    if (pClient == nullptr) {
         _log(SHIP__MODULE_ERROR, "InventoryItem::SetOnline() - No client object found using m_ownerID (%u) for module %s(%u)", \
                             m_ownerID, m_itemName.c_str(), m_itemID );
         return;

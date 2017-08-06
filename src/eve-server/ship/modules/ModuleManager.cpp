@@ -361,7 +361,7 @@ bool ModuleManager::Initialize() {
     m_Ship->GetMyInventory()->GetInventoryVec(itemVec);   // this method also sorts in order - cargo, modules, charge, subsystems.
 
     GenericModule* pMod(nullptr);
-    // first we have to fit and online modules
+    // first we have to fit modules
     for (auto cur : itemVec) {
         // this is a hack.  dont know why any ship item would have flagAutoFit set, but have seen random errors where charges are set to flagAutoFit
         if (cur->flag() == flagAutoFit)
@@ -854,7 +854,6 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
 {
     sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
     // this one is called from BoardShip() and Ship::Undock()
-    //OfflineAll();
     GenericModule* pMod(nullptr);
     m_Ship->SetAttribute(AttrCpuLoad,     0);
     m_Ship->SetAttribute(AttrPowerLoad,   0);
@@ -870,6 +869,8 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
             if (m_Ship->IsUndocking())
                 cur->SetAttribute(AttrIsOnline, false, false);
             cur->Online();
+            if (cur->IsLoaded())
+                cur->ReprocessCharge();
         }
     } else {
         OnlineAll();

@@ -887,14 +887,13 @@ PyResult Command_ban(Client* who, CommandDB* db, PyServiceMgr* services, const S
 
 PyResult Command_unban(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    ServiceDB m_sdb;
     if (args.argCount() == 2)
     {
 
         if (!args.isNumber(1))
         {
             const char *name = args.arg(1).c_str();
-            m_sdb.SetAccountBanStatus(db->GetAccountID(name),false);
+            ServiceDB::SetAccountBanStatus(db->GetAccountID(name),false);
         }
         else
             throw PyException(MakeCustomError("Correct Usage: /ban [Character Name]"));
@@ -906,7 +905,7 @@ PyResult Command_unban(Client* who, CommandDB* db, PyServiceMgr* services, const
             throw PyException(MakeCustomError("Unknown arguments"));
 
         std::string name = args.arg(1) + " " + args.arg(2);
-        m_sdb.SetAccountBanStatus(db->GetAccountID(name),false);
+        ServiceDB::SetAccountBanStatus(db->GetAccountID(name),false);
     }
     else
         throw PyException(MakeCustomError("Correct Usage: /unban [Character Name / Character ID]"));

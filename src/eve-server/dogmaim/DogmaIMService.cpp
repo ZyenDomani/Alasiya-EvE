@@ -517,18 +517,20 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     ShipItemRef shipRef = pClient->GetShip();
     InventoryItemRef chargeRef = m_manager->item_factory->GetItem(args.itemID);
     Call_SingleIntList chargeList;
+    InventoryItemRef moduleRef;
+    uint32 loadedChargeID = 0;
 
     for (uint8 i=0; i<args.moduleIDs.size(); ++i) {
-        InventoryItemRef moduleRef = shipRef->GetModuleRef(args.moduleIDs.at(i));
-        if (!moduleRef) {
+        moduleRef = shipRef->GetModuleRef(args.moduleIDs.at(i));
+        if (moduleRef.get() == nullptr) {
             sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "ERROR: cannot find module into which charge should be loaded." );
             continue;
         }
 
         EVEItemFlags moduleFlag = moduleRef->flag();
-        uint32 loadedChargeID = shipRef->AddItem( moduleFlag, chargeRef );
+        loadedChargeID = shipRef->AddItem( moduleFlag, chargeRef );
         //Create new item id return result
-        if (loadedChargeID)
+        if (loadedChargeID > 0)
             chargeList.ints.push_back(loadedChargeID);
     }
     //Return new item result
@@ -580,10 +582,14 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 		return new PyNone();
 	}
 
+    EVEItemFlags moduleFlag = moduleRef->flag();
+	InventoryItemRef chargeRef;
+    uint32 loadedChargeID = 0;
+
 	if (!args.itemIDs.empty()) {
-	    InventoryItemRef chargeRef = m_manager->item_factory->GetItem(args.itemIDs.at(0));
-	    EVEItemFlags moduleFlag = moduleRef->flag();
-	    uint32 loadedChargeID = shipRef->AddItem( moduleFlag, chargeRef );
+	    chargeRef = m_manager->item_factory->GetItem(args.itemIDs.at(0));
+        if (chargeRef.get() != nullptr)
+            loadedChargeID = shipRef->AddItem( moduleFlag, chargeRef );
 
 		//Create new item id return result
 	    if (loadedChargeID) {
