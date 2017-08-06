@@ -378,8 +378,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         charRef->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
     }
     pClient->SetChar(charRef);        // set new charRef in client
-    pClient->SpawnNewRookieShip();
-    /** @todo  set client's shipID to new noob ship. */
+    pClient->SetShip(pClient->SpawnNewRookieShip());
+
     charRef->SaveFullCharacter();
 
     // we need to report the charID to the ImageServer so it can correctly assign a previously received image
