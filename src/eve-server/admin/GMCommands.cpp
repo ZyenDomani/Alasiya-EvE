@@ -163,9 +163,10 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
     InventoryItemRef item;
     ShipItemRef ship;
 
-    // "/spawnn" arguments:
+    // Updated(groove)
+    // "/spawnn" arguments: 
     // #1 = quantity ?
-    // #2 = some double value ?
+    // #2 = some double value deviation
     // #3 = typeID
 
     if ((args.argCount() < 4) || (args.argCount() > 4))
@@ -355,8 +356,12 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
         entity.z = loc.z;
 
         // Actually do the spawn using SystemManager's BuildEntity:
-        if (!who->SystemMgr()->BuildDynamicEntity(entity))
+        if (!who->SystemMgr()->BuildDynamicEntity(entity)) {
             return new PyString("Spawn Failed: typeID or typeName not supported.");
+        }
+        if (spawnCount == 1) {
+            return new PyInt(entity.itemID);
+        }
     }
 
     sLog.White("Command_spawn", "%s: Spawned %u in space, %u times", who->GetName(), typeID, spawnCount);
