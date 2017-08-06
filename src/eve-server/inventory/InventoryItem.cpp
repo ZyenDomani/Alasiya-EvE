@@ -1160,6 +1160,7 @@ void InventoryItem::AddModifier(fxData data)
 
 void InventoryItem::RemoveModifier(fxData data)
 {
+    // this isnt right.  need to find and remove ORIGINAL modifier here.
     auto itr = m_modifiers.equal_range(data.math);
     for (auto it = itr.first; it != itr.second; it++)
         if ((it->second.srcRef == data.srcRef) and (it->second.targAttr == data.targAttr))

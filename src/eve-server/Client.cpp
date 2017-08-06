@@ -271,6 +271,8 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_char->SetLoginTime();
     UpdateSkillTraining();
 
+    m_login = false;
+    
     return true;
 }
 

@@ -607,7 +607,9 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 Sentry* SentrySE = new Sentry(sentryRef, *(system.GetServiceMgr()), &system, data);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making Sentry item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return SentrySE;
-            } else {
+            }
+            // may have to create unique class for Billboard (EVEDB::invGroups::Billboard)
+            else {
                 InventoryItemRef iRef = factory->GetItem( entity.itemID );
                 if (iRef.get() == nullptr)
                     return nullptr;

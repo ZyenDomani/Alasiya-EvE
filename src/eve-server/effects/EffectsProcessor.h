@@ -28,7 +28,6 @@ public:
 
     void            ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update=false);
     void            ParseExpression(InventoryItem* pItem, Expression expression, fxData& data, GenericModule* pMod=nullptr);
-    void            EvaluateExpression(const uint16 expID);
     int8            GetEnvironmentEnum(const std::string& domain);
     int8            GetAssociationEnum(const std::string& association);
 
@@ -36,7 +35,6 @@ public:
     std::string     GetMathMethodName(int8 id);
     std::string     GetTargLocName(int8 id);
     std::string     GetStateName(int8 id);
-    std::string     DecodeExpression(Expression expression, bool restricted = false, bool topLevel = false);
 
     EvilNumber      CalculateAttributeValue(EvilNumber val1, EvilNumber val2, /*Effects::Math*/int8 method);
 
