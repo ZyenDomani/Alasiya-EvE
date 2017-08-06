@@ -135,7 +135,7 @@ void ActiveModule::Process()
     // the order of these next two is significant for reloading modules.  check for reload before DoCycle for this tic
     if (m_needsCharge) {
         // is this right?  should i do something else here?
-        if ((!m_chargeRef) or (m_ChargeState == ModStates::ChargeStates::CHG_UNLOADED) or (!m_chargeRef->quantity()) or (!m_chargeLoaded)) {
+        if ((m_chargeRef.get() == nullptr) or (m_ChargeState == ModStates::ChargeStates::CHG_UNLOADED) or (!m_chargeRef->quantity()) or (!m_chargeLoaded)) {
             UnloadCharge();
             SetModuleState(ModStates::ModuleStates::MOD_DEACTIVATING);
             DeactivateCycle(true);
@@ -246,12 +246,12 @@ void ActiveModule::DeOverload()
 // yes, the xxCycle() shit below seems overkill, but each has a specific purpose
 uint32 ActiveModule::DoCycle()
 {
-    if ((!m_destinyMgr) or (!m_bubble)) {
+    if ((m_destinyMgr == nullptr) or (m_bubble == nullptr)) {
         // make error for no destiny/bubble
         Deactivate();
         return 0;
     }
-    if ((m_targetID) and (m_targMgr)) {
+    if ((m_targetID) and (m_targMgr != nullptr)) {
         // data consistency check
         if (m_targMgr->GetTarget(m_targetID) != m_targetSE) {
             _log(SHIP__MODULE_WARNING, "GetTarget() != m_targetSE");
@@ -261,7 +261,7 @@ uint32 ActiveModule::DoCycle()
     }
     if (m_needsCharge) {
         // modules that use scripts arent considered as needsCharge, as they work with or without the script.
-        if ((!m_chargeLoaded) or (!m_chargeRef)) {
+        if ((!m_chargeLoaded) or (m_chargeRef.get() == nullptr)) {
             m_shipRef->GetPilot()->SendErrorMsg("Your %s has no loaded charge.  Deactivating.", m_modRef->itemName().c_str());
             Deactivate();
             return 0;
@@ -493,7 +493,7 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
 
 void ActiveModule::UnloadCharge()
 {
-    if (m_chargeRef) {
+    if (m_chargeRef.get() != nullptr) {
         // remove charge effects here
         m_chargeRef->ClearModifiers();
         for (auto it : m_chargeRef->type().m_stateFxMap) {
@@ -547,7 +547,7 @@ bool ActiveModule::CanActivate()
     // there is still more to be done here.  wip
 
     // check distance for targetable actions
-    if (m_targetSE) {
+    if (m_targetSE != nullptr) {
         if (!m_turret and !m_launcher) {
             float range = GetAttribute(AttrMaxRange).get_float();
             float distance = m_shipRef->position().distance(m_targetSE->GetPosition());
@@ -593,7 +593,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
         ;
 
-    if ((m_targetID) and (m_destinyMgr))
+    if ((m_targetID) and (m_destinyMgr != nullptr))
         m_destinyMgr->SendSpecialEffect(
                 m_shipRef->itemID(),
                 m_modRef->itemID(),
@@ -653,7 +653,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    if (m_destinyMgr)
+    if (m_destinyMgr != nullptr)
         m_destinyMgr->SendDestinyUpdate(updates, events, false);
     else
         m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
@@ -664,12 +664,14 @@ void ActiveModule::LaunchMissile()
 {
     // Actually Launch a missile, creating a new Destiny object for it
     Character* pChar = m_shipRef->GetPilot()->GetChar().get();
+    if (pChar == nullptr)
+        return;
     SystemManager* pSystem = m_shipRef->GetPilot()->SystemMgr();
     ItemData idata(m_chargeRef->typeID(), pChar->itemID(), pChar->locationID(), flagMissile, m_chargeRef->itemName().c_str(), m_shipRef->position() );
 
     InventoryItemRef missileRef = m_shipRef->GetItemFactory()->SpawnItem(idata);
 
-    if (!missileRef)
+    if (missileRef.get() == nullptr)
         throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", \
                 m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
 

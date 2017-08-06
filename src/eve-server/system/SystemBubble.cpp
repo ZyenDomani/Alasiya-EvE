@@ -629,6 +629,9 @@ void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
 
 //send a set of destiny events and updates to every client in the bubble.
 void SystemBubble::BubblecastDestiny(std::vector<PyTuple *> &updates, std::vector<PyTuple *> &events, const char *desc) const {
+    if (m_players.empty())
+        return;
+    
     BubblecastDestinyUpdate(updates, desc);
     BubblecastDestinyEvent(events, desc);
 }

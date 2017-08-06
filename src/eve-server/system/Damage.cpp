@@ -170,6 +170,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     float shield_damage = DamageToShield.GetTotal();
     float available_shield = m_self->GetAttribute(AttrShieldCharge).get_float();
     if (shield_damage <= available_shield) {
+        /** @todo  this works, but still needs work....
         if (HasPilot()) {
             float uniformity = m_self->GetAttribute(AttrShieldUniformity).get_float();
             uniformity += (0.05 * GetPilot()->GetChar()->GetSkillLevel(skillTacticalShieldManipulation));
@@ -178,7 +179,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 m_self->SetAttribute(AttrArmorDamage, (bleedthru + m_self->GetAttribute(AttrArmorDamage).get_float()));
                 shield_damage -= bleedthru;
             }
-        }
+        } */
         total_damage += shield_damage;
         float new_charge = available_shield - shield_damage;
         m_self->SetAttribute(AttrShieldCharge, new_charge);
@@ -307,7 +308,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
 
     if (killed) {
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
-        if (m_targMgr)
+        if (m_targMgr != nullptr)
             m_targMgr->ClearAllTargets(false);
         Killed(d);
         if (d.srcSE->HasPilot())
@@ -321,12 +322,14 @@ bool SystemEntity::ApplyDamage(Damage &d) {
 }
 
 void Ship::Killed(Damage &fatal_blow) {
-    if (!m_bubble or !m_destiny) return;
+    if ((m_bubble == nullptr) or (m_destiny == nullptr))
+        /** @todo  make error here */
+        return;
 
     m_shipRef->SetPopped(true);
 
-    SystemEntity *killer = fatal_blow.srcSE;
-    Client* pClient = nullptr;
+    SystemEntity *killer(fatal_blow.srcSE);
+    Client* pClient(nullptr);
     uint32 killerID = 0;
 
     if (killer->HasPilot()) {
@@ -334,7 +337,8 @@ void Ship::Killed(Damage &fatal_blow) {
         killerID = pClient->GetCharacterID();
     } else if (killer->IsDroneSE()) {
         pClient = sEntityList.FindClientByShip(killer->GetSelf()->ownerID());
-        if (!pClient ) {
+        if (pClient == nullptr) {
+            /** @todo  make error here */
             sLog.Error("Client::Killed()", "killer == IsDrone and pPlayer == nullptr");
         } else
             killerID = pClient->GetCharacterID();
@@ -347,7 +351,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
         // Spawn a wreck for the Ship that was destroyed:
         uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
-        if (!wreckTypeID) {
+        if (wreckTypeID == 0) {
             sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
             // default to generic frigate wreck till i get better checks and/or complete wreck data
             wreckTypeID = 26557;
@@ -356,7 +360,8 @@ void Ship::Killed(Damage &fatal_blow) {
         GPoint wreckPosition = m_destiny->GetPosition();
         ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
         WreckContainerRef wreckItemRef = m_system->GetServiceMgr()->item_factory->SpawnWreckContainer( wreckItemData );
-        if (!wreckItemRef )
+        if (wreckItemRef.get() == nullptr)
+            /** @todo  make error here */
             ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
 
         DBSystemDynamicEntity wreckEntity;
@@ -387,7 +392,7 @@ void Ship::Killed(Damage &fatal_blow) {
         //  log faction kill in dynamic data   -allan
         //  client logs faction kills in total kills.  return is value1(total kills) - value2(faction kills) > 0:
         if (pClient != nullptr) {
-            Character* pChar = pClient->GetChar().get();
+            Character* pChar(pClient->GetChar().get());
             pChar->chkDynamicSystemID(locationID);
             pChar->AddKillToDynamicData(locationID);
             pChar->AddFactionKillToDynamicData(locationID);
@@ -399,12 +404,14 @@ void Ship::Killed(Damage &fatal_blow) {
         return;
     }
 
-    Client* pPilot = m_self->GetPilot();
+    Client* pPilot(m_self->GetPilot());
+    if (pClient == nullptr)
+        /** @todo  make error here */
+        return;
+
     if (pPilot->InPod()) {
-        if (!m_bubble)
-            return;
-        if ( pClient )
-            pClient->GetChar()->PayBounty(pPilot->GetChar());
+
+        pClient->GetChar()->PayBounty(pPilot->GetChar());
 
         /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
         CharKillData data;
@@ -623,7 +630,7 @@ void Ship::Killed(Damage &fatal_blow) {
         deadShipRef->Delete();
     }
 
-    if (pClient and (m_system->GetSystemSecurityRating() > 0)) {
+    if (m_system->GetSystemSecurityRating() > 0) {
         /* http://www.eveinfo.net/wiki/ind~4067.htm
          *  relative_sec_status_penalty = base_penalty * system_truesec * (1 + (victim_sec_status - agressor_sec_status) / 90)
          *  The actual drop in security status seen by the attacker is a function of their current security status and the relative penalty:

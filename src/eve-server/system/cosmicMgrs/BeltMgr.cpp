@@ -345,9 +345,12 @@ void AsteroidBeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius,
 void AsteroidBeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
 {
     auto range = m_asteroids.equal_range(beltID);
-    for (auto itr = range.first; itr != range.second; ++itr)
-        if (pASE == itr->second)
+    for (auto itr = range.first; itr != range.second; itr++) {
+        if (pASE == itr->second) {
             m_asteroids.erase(itr);
+            continue;
+        }
+    }
 
     if (m_asteroids.count(beltID)) {
         std::map<uint32, bool>::iterator itr =  m_spawned.find(beltID);
