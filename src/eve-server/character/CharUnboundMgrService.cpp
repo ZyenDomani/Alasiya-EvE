@@ -204,7 +204,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     // obtain character type
     m_manager->item_factory->SetUsingClient( pClient );
     const CharacterType *char_type = m_manager->item_factory->GetCharacterTypeByBloodline(arg.bloodlineID);
-    if (!char_type)
+    if (char_type == nullptr)
         return nullptr;
 
     // we need to fill these to successfully create character item
@@ -284,8 +284,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         idata.singleton = true;
         idata.locationID = cdata.stationID;
     //create char item
-    CharacterRef char_item = m_manager->item_factory->SpawnCharacter(idata, cdata, corpData);
-    if (!char_item) {
+    CharacterRef charRef = m_manager->item_factory->SpawnCharacter(idata, cdata, corpData);
+    if (charRef.get() == nullptr) {
         //a return to the client of 0 seems to be the only means of marking failure
         _log(CLIENT__ERROR, "Failed to create character '%s'", idata.name.c_str());
         return nullptr;
@@ -293,7 +293,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     //this builds appearance data from strdict
     CharacterAppearance capp;
-        capp.Build(char_item->itemID(), arg.avatarInfo);
+        capp.Build(charRef->itemID(), arg.avatarInfo);
 
     // query attribute bonuses from ancestry
     if (!m_db.GetAttributesFromAncestry(cdata.ancestryID, intelligence, charisma, perception, memory, willpower)) {
@@ -302,14 +302,14 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     }
     // triple attributes and save
     uint8 multiplier = sConfig.character.statMultiplier;
-    char_item->SetAttribute(AttrIntelligence, intelligence * multiplier, false);
-    char_item->SetAttribute(AttrCharisma, charisma * multiplier, false);
-    char_item->SetAttribute(AttrPerception, perception * multiplier, false);
-    char_item->SetAttribute(AttrMemory, memory * multiplier, false);
-    char_item->SetAttribute(AttrWillpower, willpower * multiplier, false);
+    charRef->SetAttribute(AttrIntelligence, intelligence * multiplier, false);
+    charRef->SetAttribute(AttrCharisma, charisma * multiplier, false);
+    charRef->SetAttribute(AttrPerception, perception * multiplier, false);
+    charRef->SetAttribute(AttrMemory, memory * multiplier, false);
+    charRef->SetAttribute(AttrWillpower, willpower * multiplier, false);
 
     // register name
-    m_db.add_name_validation_set(char_item->itemName().c_str(), char_item->itemID());
+    m_db.add_name_validation_set(charRef->itemName().c_str(), charRef->itemID());
 
     //load skills
     std::map<uint32, uint32> startingSkills;
@@ -336,11 +336,11 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     uint8 skillLevel = 0;
     EvilNumber skillPoints = 0, totalPoints = 0;
     for (auto cur : startingSkills) {
-        ItemData skillItem( cur.first, char_item->itemID(), char_item->itemID(), flagSkill );
+        ItemData skillItem( cur.first, charRef->itemID(), charRef->itemID(), flagSkill );
         SkillRef skill = m_manager->item_factory->SpawnSkill( skillItem );
         if (!skill) {
             _log(CLIENT__ERROR, "Failed to add skill %u to char %s(%u) during create.",
-                 cur.first, char_item->itemName().c_str(), char_item->itemID());
+                 cur.first, charRef->itemName().c_str(), charRef->itemID());
             continue;
         }
 
@@ -350,9 +350,9 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         skill->SetAttribute(AttrSkillPoints, skillPoints, false);
         skill->SaveItem();
         totalPoints += skillPoints;
-        char_item->SaveSkillHistory(skillEventCharCreation, // this shows as "Unknown" in PD>Skill>History
+        charRef->SaveSkillHistory(skillEventCharCreation, // this shows as "Unknown" in PD>Skill>History
                                     Win32TimeNow(),
-                                    char_item->itemID(),
+                                    charRef->itemID(),
                                     cur.first,
                                     skillLevel,
                                     skillPoints.get_double(),
@@ -363,30 +363,34 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     /** @todo update this to reflect char career */
 
     // add 1 unit of "Clone Grade Alpha"
-    ItemData itemCloneAlpha( 164, char_item->itemID(), char_item->locationID(), flagClone, 1 );
+    ItemData itemCloneAlpha( 164, charRef->itemID(), charRef->locationID(), flagClone, 1 );
     itemCloneAlpha.customInfo="active";
     InventoryItemRef initInvItem = m_manager->item_factory->SpawnItem( itemCloneAlpha );
-    if (!initInvItem)
-        codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", char_item->itemName().c_str());
+    if (initInvItem.get() == nullptr)
+        codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", charRef->itemName().c_str());
 
     // give the player their pod
-    std::string pod_name = char_item->itemName() + "'s Capsule";
-    ItemData podItem( itemTypeCapsule, char_item->itemID(), char_item->locationID(), flagCapsule, pod_name.c_str() );
+    std::string pod_name = charRef->itemName() + "'s Capsule";
+    ItemData podItem( itemTypeCapsule, charRef->itemID(), charRef->locationID(), flagCapsule, pod_name.c_str() );
     ShipItemRef pod_item = m_manager->item_factory->SpawnShip( podItem );
-    pod_item->SaveItem();
-    pClient->SetChar(char_item);        // set new charRef in client to properly set and save ship in next call
-    char_item->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
-    char_item->SaveFullCharacter();
+    if (pod_item.get() != nullptr) {
+        pod_item->SaveItem();
+        charRef->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
+    }
+    pClient->SetChar(charRef);        // set new charRef in client
+    pClient->SetShip(pClient->SpawnNewRookieShip());
+
+    charRef->SaveFullCharacter();
 
     // we need to report the charID to the ImageServer so it can correctly assign a previously received image
-    sImageServer.ReportNewCharacter(pClient->GetUserID(), char_item->itemID());
+    sImageServer.ReportNewCharacter(pClient->GetUserID(), charRef->itemID());
 
     // Release the item factory now that the character is finished being accessed:
     m_manager->item_factory->UnsetUsingClient();
 
     //  add charID to staticOwners
-    m_db.addOwnerCache(char_item->itemID(), char_item->itemName(), char_type->id() );
+    m_db.addOwnerCache(charRef->itemID(), charRef->itemName(), char_type->id() );
 
-    _log( CLIENT__MESSAGE, "Created New Character  - Sending ID %u as reply", char_item->itemID() );
-    return new PyInt(char_item->itemID());
+    _log( CLIENT__MESSAGE, "Created New Character  - Sending ID %u as reply", charRef->itemID() );
+    return new PyInt(charRef->itemID());
 }

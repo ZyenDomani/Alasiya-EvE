@@ -1,9 +1,10 @@
 
  /**
-  * @name MiningModule.cpp
+  * @name MiningLaser.cpp
   *   mining module class
   * @Author:         Allan
-  * @date:   10 June 2015   -UD/RW 02 April 2017
+  * @date:      10 June 2015   -UD/RW 02 April 2017
+  * @revised:  4 August 2017
   */
 
 
@@ -24,10 +25,7 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
     m_IsInitialCycle = true;
     m_rMiner = m_dcMiner = m_iMiner = m_gMiner = false;
 
-    m_crystalDmg = 0;
-    m_crystalRoidGrp = 0;
-    m_crystalDmgAmount = 0;
-    m_crystalDmgChance = 0;
+    m_crystalDmg = m_crystalRoidGrp = m_crystalDmgAmount = m_crystalDmgChance = 0;
 
     if (m_modRef->groupID() == EVEDB::invGroups::Mining_Laser) {
         m_rMiner = true;
@@ -37,7 +35,7 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
         m_rMiner = true;
     } else if ((m_modRef->typeID() == 16278) or (m_modRef->typeID() == 22229) or (m_modRef->typeID() == 22589) or (m_modRef->typeID() == 22591)
         or (m_modRef->typeID() == 22597) or (m_modRef->typeID() == 22599) or (m_modRef->typeID() == 28752)) {
-        /* this includes 'dev testing modules', also  */
+        /* this includes 'dev testing modules'  */
         m_iMiner = true;
     } else if (m_modRef->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester) {
         m_gMiner = true;
@@ -78,10 +76,9 @@ bool MiningLaser::CanActivate()
         m_targetSE->SystemMgr()->GetBeltMgr()->SetActive(m_targetSE->SysBubble()->GetID());
         return true;
     } else {
-        _log(MINING__WARNING, "Activate() - Invalid target");
+        _log(MINING__WARNING, "Activate() - Invalid target: %s", m_targetSE->GetName());
         if (m_shipRef->HasPilot())
-            if (m_shipRef->GetPilot()->CanThrow())
-                throw PyException( MakeCustomError( "Module Activate: Invalid Target - Ref: ServerError 15628" ) );
+            m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: %s is an invalid target - Ref: ServerError 15628", m_targetSE->GetName());
     }
     return false;
 }
@@ -119,58 +116,61 @@ void MiningLaser::DeactivateCycle(bool abort)
 /** @todo verify for ice and gas */
 void MiningLaser::ProcessCycle(bool partial)
 {
-    // update for t2 crystal shit, if applicable
     float cycleVol = GetAttribute(AttrMiningAmount).get_float();
     if (m_chargeLoaded)
         if (m_targetSE->GetGroupID() == m_crystalRoidGrp)
             cycleVol = GetAttribute(AttrSpecialtyMiningAmount).get_float();
 
 	InventoryItemRef roidRef = m_targetSE->GetSelf();
+	// verify gas clouds have volume attr.
     float oreVolume = roidRef->GetAttribute(AttrVolume).get_float();
 
     if (cycleVol < oreVolume) {
         _log(MINING__ERROR, "%s(%u) - Mining Laser could not extract ore from %s(%u)", \
-              m_modRef->itemName().c_str(), m_modRef->itemID(), m_targetSE->GetSelf()->itemName().c_str(), m_targetSE->GetID() );
+              m_modRef->itemName().c_str(), m_modRef->itemID(), roidRef->itemName().c_str(), m_targetSE->GetID() );
+              /** @todo. send error to client here. */
         return;
     }
 
-    double oreAmount = cycleVol /oreVolume;
+    double oreAmount = (cycleVol /oreVolume);
     double remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(flagCargoHold);
-    double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_double();
 
-    if (remainingCargoVolume < cycleVol) {
-        if (remainingCargoVolume > 0)
-            if (remainingCargoVolume > oreVolume)
-                oreAmount = remainingCargoVolume /oreVolume;
-            else
-                oreAmount = 0;
-        StopTimer();
-        if (!partial) {
-            ActiveModule::AbortCycle();
-            return;
-        }
-    } else if (partial) {
-        oreAmount *= (GetRemainingCycleTimeMS() / GetAttribute(AttrDuration).get_float());
-        if (m_iMiner)
+    if (partial) {
+        // adjust amount AND cycle for partial cycle
+        float delta = (GetRemainingCycleTimeMS() / GetAttribute(AttrDuration).get_float());
+        cycleVol *= delta;
+        oreAmount *= delta;
+        if (m_iMiner or m_gMiner)
             oreAmount = floor(oreAmount);
     }
+
+    if (remainingCargoVolume < cycleVol) {
+        if (remainingCargoVolume > oreVolume)
+            oreAmount = remainingCargoVolume /oreVolume;
+        else
+            oreAmount = 0;
+        StopTimer();
+        // does this make a loop??
+        if (!partial)
+            ActiveModule::AbortCycle();
+        m_shipRef->GetPilot()->SendNotifyMsg("Your cargohold is full.");
+    }
+
+    double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_double();
+    if (oreAmount > roidQuantity)
+        oreAmount = roidQuantity;
 
     _log(MINING__DEBUG, "ProcessCycle(%s) -  cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f, oreAmount:%.2f", \
             (partial?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, oreAmount);
 
-    if (oreAmount > roidQuantity)
-        oreAmount = roidQuantity;
-    if (oreAmount < 1)
-        return;
-
     ItemData idata(roidRef->typeID(), m_shipRef->ownerID(), 0, flagAutoFit, oreAmount);
-    InventoryItemRef ore = m_shipRef->GetItemFactory()->SpawnItem( idata );
-    if (!ore) {
+    InventoryItemRef oRef = m_shipRef->GetItemFactory()->SpawnItem( idata );
+    if (oRef.get() == nullptr) {
         _log(MINING__ERROR, "Could not create mined ore for %s(%u)", m_shipRef->itemName().c_str(), m_shipRef->itemID() );
         return;
     }
 
-    if (!m_shipRef->AddItem(flagCargoHold, ore)) {
+    if (!m_shipRef->AddItem(flagCargoHold, oRef)) {
         _log(MINING__ERROR, "Could not add mined ore in cargo for %s(%u)", m_shipRef->itemName().c_str(), m_shipRef->itemID() );
         return;
     }
@@ -178,27 +178,28 @@ void MiningLaser::ProcessCycle(bool partial)
     roidQuantity -= oreAmount;
     _log(MINING__TRACE, "new roidQuantity %.3f", roidQuantity);
 
-    if (!roidQuantity) {
-        ActiveModule::AbortCycle();
-        m_targetSE->Delete();
-    } else if (!m_iMiner) {
-        // do not reset ice radius
-        /* reversing the radius-to-quantity formula, we get radius = exp((quantity + 112404.8) /25000)  */
-        double radius = exp((roidQuantity +112404.8) /25000);
-        roidRef->SetAttribute(AttrRadius, radius);
+    if (roidQuantity > 0.0f) {
         roidRef->SetAttribute(AttrQuantity, roidQuantity);
+        // do not reset ice radius
+        if (!m_iMiner) {
+            /* reversing the radius-to-quantity formula, we get radius = exp((quantity + 112404.8) /25000)  */
+            double radius = exp((roidQuantity +112404.8) /25000);
+            roidRef->SetAttribute(AttrRadius, radius);
+        }
+    } else {
+        m_targetSE->Delete();
     }
-    if (m_chargeLoaded)
-        if (m_chargeRef->HasAttribute(AttrCrystalsGetDamaged))
-            if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
-                m_crystalDmg += m_crystalDmgAmount;
-                if (m_crystalDmg > 1.0f) {
-                    m_shipRef->GetPilot()->SendNotifyMsg("Your %s loaded in %s has been destroyed.", m_chargeRef->itemName().c_str(), m_modRef->itemName().c_str());
-                    InventoryItemRef chargeRef = m_chargeRef;   // make a copy of item ref, as m_chargeRef = NULL after next call returns
-                    m_shipRef->RemoveItem(m_chargeRef);
-                    chargeRef->Delete();
-                } else {
-                    m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
-                }
+
+    if (m_chargeLoaded and (m_crystalDmgChance > 0.0f))
+        if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
+            m_crystalDmg += m_crystalDmgAmount;
+            if (m_crystalDmg > 1.0f) {
+                m_shipRef->GetPilot()->SendNotifyMsg("Your %s loaded in %s has been destroyed.", m_chargeRef->itemName().c_str(), m_modRef->itemName().c_str());
+                InventoryItemRef chargeRef(m_chargeRef);   // make a copy of charge's item ref, as m_chargeRef = NULL after next call returns
+                m_shipRef->RemoveItem(m_chargeRef);
+                chargeRef->Delete();
+            } else {
+                m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
             }
+        }
 }

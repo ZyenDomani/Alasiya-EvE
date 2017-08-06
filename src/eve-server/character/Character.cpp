@@ -348,8 +348,10 @@ CharacterRef Character::Load(ItemFactory &factory, uint32 characterID) {
 }
 
 bool Character::_Load() {
-    if (m_loaded) return true;
-    if (IsAgent(m_itemID)) return true;
+    if (m_loaded)
+        return true;
+    if (IsAgent(m_itemID))
+        return true;
 
     if (!m_inventory->LoadContents(&m_factory)) {
         sLog.Warning("Character::_Load","LoadContents returned false for char %u", m_itemID);
@@ -631,14 +633,14 @@ void Character::ProcessEffects()
 
     _log(EFFECTS__TRACE, "Character::ParseExpression():  Beginning Character Effects Processing.");
     Effect curEffect;
+    fxData data;
+    data.action = Effects::Action::dgmActInvalid;
     std::vector<TypeEffects> typeFx;
     for (auto curSkill : allSkills) {
         typeFx.clear();
         sFxDataMgr.GetTypeEffect(curSkill->typeID(), typeFx);
         for (auto curFx : typeFx) {
             curEffect = sFxDataMgr.GetEffect(curFx.effectID);
-            fxData data;
-            data.action = Effects::Action::dgmActInvalid;
             data.srcRef = curSkill;
             data.math = data.targLoc = data.fxSrc = data.targAttr = data.srcAttr = data.grpID = data.typeID = 0;
             sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(curEffect.preExpression), data);
@@ -752,6 +754,7 @@ void Character::LoadPausedSkillQueue() {
 
 void Character::UpdateSkillQueue() {
     /* cleaned up code and reworked logic  -allan 28Apr16   -- revisited 23Mar17*/
+    /** @todo  when skill level increases, reset effects map and recalculate everything */
     if (!m_pClient) return;
     SkillRef currentTraining = GetSkillInTraining();
     if (currentTraining) {

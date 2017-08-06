@@ -608,12 +608,12 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making Sentry item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return SentrySE;
             } else {
-                CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
-                if (celestial.get() == nullptr)
+                InventoryItemRef iRef = factory->GetItem( entity.itemID );
+                if (iRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-                CelestialSE* cSE = new CelestialSE(celestial, *(system.GetServiceMgr()), &system);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making CelestialSE-2 item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                ItemSystemEntity* cSE = new ItemSystemEntity(iRef, *(system.GetServiceMgr()), &system);
+                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ItemSystemEntity item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return cSE;
             }
         } break;

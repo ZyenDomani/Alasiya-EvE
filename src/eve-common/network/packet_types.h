@@ -38,7 +38,6 @@
 #include "../EVE_Inventory.h"
 #include "../EVE_Planet.h"
 #include "../EVE_Roles.h"
-#include "../EVE_Scanning.h"
 #include "../EVE_Skills.h"
 #include "../EVE_Typedefs.h"
 

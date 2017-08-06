@@ -420,7 +420,8 @@ enum ClientTimers {
     KilledTimer      = 1500,    // used to reset destiny set state after killed or otherwise changing ships
     ProcTimer        = 1000,    // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
     JetcanTimer      = 180000,  // used to delay jetcan creation.  3min default
-    LogoutTimer      = 1000,    // used to hold client object until WarpOut finishes
+    LogoutTimer      = 10000,    // used to hold client object until WarpOut finishes
+    LoginTimer       = 2000,
     SessionTimer     = 10000,   // used to prevent multiple session changes from occuring too fast
     DockInvul        = 3000,
     JumpInvul        = 5000,
@@ -439,7 +440,8 @@ enum ClientState {
     csUndock = 4,
     csKilled = 5,
     csLogout = 6,
-    csBoard  = 7
+    csBoard  = 7,
+    csLogin  = 8
 };
 
 //  -allan 7Jul14

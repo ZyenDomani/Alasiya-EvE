@@ -152,7 +152,7 @@ public:
     void SetClientTimer(ClientState state, uint32 time=ClientTimers::DefaultTimer);
     void SetDestiny(const GPoint& pt, bool count = false);
     void UpdateSkillTraining();
-	void SpawnNewRookieShip();
+    ShipItemRef SpawnNewRookieShip();
     void LoadStationHangar(uint32 stationID);
     void AddStationHangar(uint32 stationID);
     void RemoveStationHangar(uint32 stationID);

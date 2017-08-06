@@ -146,6 +146,7 @@ void ShipItem::Init()
         return;
     }
 
+    ClearModifiers();
     InitAttribs();
 
     // create and initialize the module manager if not already done
@@ -153,8 +154,7 @@ void ShipItem::Init()
         m_ModuleManager = new ModuleManager(this);
 
     m_ModuleManager->Initialize();
-    if (IsStation(m_locationID))
-        OnlineAll();    //to show modules being online in fitting window while docked, and to populate the m_onlineModuleVec when undocking.
+    OnlineAll();
 }
 
 void ShipItem::InitPod() {
@@ -213,12 +213,10 @@ void ShipItem::SetPlayer(Client* pClient) {
     }
 
     Init();
+    ProcessEffects(true, IsSolarSystem(m_locationID));
 
-    if (IsSolarSystem(m_locationID)) {
-        // this hits ONLY when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
-        ProcessEffects(true, true);
-        m_ModuleManager->CharacterBoardingShip();
-        //UpdateModules();
+    // this hits ONLY when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
+    if (IsSolarSystem(m_locationID))
         if (pClient->IsLogin()) {
             if (sConfig.server.IsTestServer) {
                 // Heal Ship completely on test server
@@ -231,10 +229,6 @@ void ShipItem::SetPlayer(Client* pClient) {
                 }
             }
         }
-    } else {
-        // this will set ship attribs in server data when ship is docked (error fix)
-        ProcessEffects(true);
-    }
 }
 
 void ShipItem::InitAttribs()
@@ -689,17 +683,14 @@ void ShipItem::ProcessModules() {
 void ShipItem::Dock() {
     m_isDocking = true;
     DeactivateAllModules();
-    //OfflineAll();
-    //ClearModifiers();
     m_onlineModuleVec.clear();
 }
 
 void ShipItem::Undock() {
     m_isUndocking = true;
+    //OfflineAll();
     // apply ship effects, as all variables are set at this point.
     if (m_ModuleManager != nullptr) {
-        ProcessEffects(true, true);
-        //m_ModuleManager->CharacterBoardingShip();
         UpdateModules();
     } else {
         _log(SHIP__MODULE_ERROR, "Undock() - %s(%u) has no module manager.", itemName().c_str(), itemID());
@@ -1124,9 +1115,9 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 void ShipItem::ProcessShipEffects(bool update/*false*/)
 {
     _log(EFFECTS__TRACE, "ShipItem::ParseExpression():  Beginning Ship Effects Processing.");
+    fxData data;
+    data.action = Effects::Action::dgmActInvalid;
     for (auto it : m_type.m_stateFxMap) {
-        fxData data;
-        data.action = Effects::Action::dgmActInvalid;
         data.srcRef = static_cast<InventoryItemRef>(this);
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(it.second.preExpression), data);

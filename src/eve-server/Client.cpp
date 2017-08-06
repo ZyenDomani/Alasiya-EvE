@@ -142,9 +142,8 @@ Client::~Client() {
         // remove ship and char memory objects from running server
         m_system->RemoveClient(this, IsDocked(), true);
 
-        ServiceDB m_sdb;
-        m_sdb.SetAccountOnlineStatus(GetUserID(), false);
-        m_sdb.SetCharacterOnlineStatus(m_char->itemID(), false);
+        ServiceDB::SetAccountOnlineStatus(GetUserID(), false);
+        ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), false);
         // LSC logout
         std::set<LSCChannel*> channels = m_channels;
         for (auto cur : channels)
@@ -199,7 +198,7 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     /** @todo any 'return false' will need to remove client from sysMgr to avoid segfault when sEntityList.ProcessClient() is called on it.  */
 
-    if (!m_system) {
+    if (m_system == nullptr) {
         sLog.Error("Client::LoginToSystem()", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->itemName().c_str(), m_char->itemID());
         SendErrorMsg("Unable to boot system %u", m_SystemData.systemID);
         return false;
@@ -207,7 +206,7 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     m_services.item_factory->SetUsingClient(this);
     m_char = m_services.item_factory->GetCharacter(char_id);
-    if (!m_char) {
+    if (m_char.get() == nullptr) {
         sLog.Error("Client::SelectCharacter()", "GetChar for %u = nullptr", char_id);
         m_services.item_factory->UnsetUsingClient();
         return false;
@@ -219,46 +218,37 @@ bool Client::SelectCharacter(uint32 char_id) {
     SetPodItem();
 
     m_ship = m_services.item_factory->GetShip(m_shipId);
-    if (!m_ship) {
+    if (m_ship.get() == nullptr) {
         sLog.Error("Client::SelectCharacter()", "shipID %u invalid for %u.  Picking new ship...", m_shipId, char_id);
         PickAlternateShip();    // incase shipID wasnt set correctly in db (seen on 'bad' Damage::Killed())
         m_ship = m_services.item_factory->GetShip(m_shipId);
-        if (!m_ship) {
+        if (m_ship.get() == nullptr) {
             sLog.Error("Client::SelectCharacter()", "shipID %u for %u also invalid.  Loading Pod.", m_shipId, char_id);
             m_ship = m_pod;
         }
         m_shipId = m_ship->itemID();
     }
 
-    m_char->SetActiveShip(m_shipId);    // this also saves shipID for char in db. (error fix)
-
-    GPoint pos(NULL_ORIGIN);
-    if (IsSolarSystem(m_locationID))
-        pos = m_ship->position();
-
-    MoveToLocation(m_locationID, pos);  // this clears effects for docked ships
-    SendSessionChange();
-
     // register new pilot in system data
     m_system->AddClient(this, IsStation(m_locationID), m_login);
     m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(m_locationID), m_login);
 
-    //johnsus - characterOnline mod
-    ServiceDB m_sdb;
-    m_sdb.SetCharacterOnlineStatus(m_char->itemID(), true);
-    m_services.item_factory->UnsetUsingClient();
-    m_char->SetLoginTime();
-    UpdateSkillTraining();
+    m_char->Move(m_shipId, flagPilot);
+    m_ship->SetPlayer(this);
+    m_ship->OnlineAll();
+
+    GPoint pos(NULL_ORIGIN);
+    if (IsSolarSystem(m_locationID))
+        pos = m_ship->position();
+    MoveToLocation(m_locationID, pos);
+
+    SetClientTimer(ClientState::csLogin, ClientTimers::LoginTimer);
 
     if (IsSolarSystem(m_locationID)) {
-        //m_ship->UpdateModules();
+        m_invulTimer.Start(ClientTimers::LogoutTimer);
+        CreateShipSE();
         WarpIn();
     } else {
-        // apply effects in server data for docked ships
-        m_char->ResetModifiers();
-        m_char->ProcessEffects();
-        m_ship->SetPlayer(this);
-
         //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
         // on live, SCC sends mail about the loss of the players ship, and offers a new, fully-fitted ship as replacement.  we dont....yet
         //  NOTE:   this also creates rookie ship for new char
@@ -275,11 +265,17 @@ bool Client::SelectCharacter(uint32 char_id) {
     //create corp and ally chat channels (if not already created)
     m_services.lsc_service->CharacterLogin(this);
 
+    //johnsus - characterOnline mod
+    ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), true);
+    m_services.item_factory->UnsetUsingClient();
+    m_char->SetLoginTime();
+    UpdateSkillTraining();
+
     return true;
 }
 
 void Client::ProcessClient() {
-    if (!m_locationID)
+    if (m_locationID == 0)
         return;
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
@@ -291,7 +287,7 @@ void Client::ProcessClient() {
         m_char->SetLogonMinutes();
     }
 
-    if ((m_timeEndTrain != 0) and (m_timeEndTrain < EvilTimeNow()))
+    if ((m_timeEndTrain > 0) and (m_timeEndTrain < EvilTimeNow()))
         m_char->UpdateSkillQueue();
 
     if (m_sessionTimer.Check(false)) {
@@ -366,11 +362,20 @@ void Client::ProcessClient() {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
                 SetBallPark();
             } break;
+            case ClientState::csLogin: {
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogin");
+                SetBallPark();
+            } break;
             case ClientState::csJump: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
                 ExecuteJump();
             } break;
-            //case ClientState::csIdle:
+            case ClientState::csIdle: {
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csIdle");
+            } break;
+            case ClientState::csLogout: {
+                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogout");
+            } break;
             default: {
                 sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
                 //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
@@ -383,11 +388,9 @@ void Client::ProcessClient() {
 }
 
 void Client::SetDestiny(const GPoint& pt, bool count) {
-    if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr)) {
-        m_char->ResetModifiers();
-        m_char->ProcessEffects();
+    if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr))
         CreateShipSE();
-    }
+
     if (IsSolarSystem(m_locationID)) {
         if (pt.isZero()) {
             if (pShipSE->GetPosition().isZero())
@@ -406,6 +409,24 @@ void Client::SetDestiny(const GPoint& pt, bool count) {
             SetBallPark();
     } else
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
+}
+
+void Client::SetBallPark() {
+    m_login = m_bubbleWait = false;
+    if (pShipSE->SysBubble() == nullptr)
+        m_system->AddEntity(pShipSE);
+    if (m_clientState == ClientState::csUndock)
+        pShipSE->DestinyMgr()->Undock(m_movePoint);
+    if (m_clientState == ClientState::csJump)
+        pShipSE->DestinyMgr()->Jump();
+    if (m_clientState == ClientState::csBoard) {
+        pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
+        pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
+        pShipSE->DestinyMgr()->SendSetState();
+    }
+    if (!m_setStateSent)
+        pShipSE->DestinyMgr()->SendSetState();
+    m_clientState = ClientState::csIdle;
 }
 
 void Client::WarpIn() {
@@ -490,7 +511,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_system = nullptr;
     }
 
-    if (!m_system) {
+    if (m_system == nullptr) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_system == NULL, m_locationID = %u", m_locationID);
         // find our new system's manager
         m_services.item_factory->SetUsingClient(this);
@@ -512,7 +533,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
 
     char ci[25];
-    if (stationID) {
+    if (stationID > 0) {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
         sDataMgr.GetStationInfo(locationID, m_StationData);
         snprintf(ci, sizeof(ci), "Docked:%u", locationID);
@@ -538,16 +559,15 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (m_char->flag() != flagPilot)
             m_char->Move(m_shipId, flagPilot, false);
 
-        SetDestiny(pt, !m_undock);
+        if (!m_login)
+            SetDestiny(pt, !m_undock);
     }
 
     m_ship->SetCustomInfo(ci);
     m_ship->SaveShip();
 
     _UpdateSession(m_char);
-
-    if (!m_login)
-        SendSessionChange();
+    SendSessionChange();
 }
 
 void Client::MoveToPosition(const GPoint &pt) {
@@ -565,8 +585,6 @@ void Client::UndockFromStation() {
         mts->CancelTrade(this);
     }
 
-    m_ship->OfflineAll();
-
     m_invul = m_undock = true;
     //set position and direction of docking ramp for later use
     m_dockPoint = m_StationData.dockPosition;
@@ -579,32 +597,11 @@ void Client::UndockFromStation() {
      *  ***** 9sec from hitting undock to space view on live. *****
      */
     OnCharNoLongerInStation();
-    m_char->ResetModifiers();
-    m_char->ProcessEffects();
-    CreateShipSE();
-    MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     m_ship->Undock();
+    MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     SetClientTimer(ClientState::csUndock, ClientTimers::UndockTimer);
     m_invulTimer.Start(ClientTimers::UndockInvul);
     SetSessionTimer();
-}
-
-void Client::SetBallPark() {
-    m_login = m_bubbleWait = false;
-    if (pShipSE->SysBubble() == nullptr)
-        m_system->AddEntity(pShipSE);
-    if (m_clientState == ClientState::csUndock)
-        pShipSE->DestinyMgr()->Undock(m_movePoint);
-    if (m_clientState == ClientState::csJump)
-        pShipSE->DestinyMgr()->Jump();
-    if (m_clientState == ClientState::csBoard) {
-        pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
-        pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
-        pShipSE->DestinyMgr()->SendSetState();
-    }
-    if (!m_setStateSent)
-        pShipSE->DestinyMgr()->SendSetState();
-    m_clientState = ClientState::csIdle;
 }
 
 void Client::DockToStation() {
@@ -635,14 +632,14 @@ void Client::DockToStation() {
 void Client::BoardShip(ShipItemRef newShipItemRef) {
     if (newShipItemRef.get() == nullptr) {
         _log(PLAYER__ERROR, "BoardShip() - %s: newShipItemRef == NULL.", m_char->itemName().c_str());
-        SendErrorMsg("Could not find ItemRef for ship.  Cannot Board.   Ref: ServerError 12321.");
+        SendErrorMsg("Could not find ship's ItemRef.  Cannot Board.   Ref: ServerError 12321.");
         return;
     } else if (!newShipItemRef->singleton()) {
         _log(PLAYER__MESSAGE, "%s tried to board ship %u, which is not assembled.", m_char->itemName().c_str(), newShipItemRef->itemID());
         SendErrorMsg("You cannot board a ship which is not assembled!");
         return;
-    } else if (m_ship == newShipItemRef) {
-        // not sure if this is possible...trying to board currently-active ship.
+    } else if ((m_ship == newShipItemRef) and !m_login) {
+        // if char is loging in, this will hit.  unknown about any other time.
         _log(PLAYER__MESSAGE, "%s tried to board active ship %u.", m_char->itemName().c_str(), newShipItemRef->itemID());
         SendErrorMsg("You are already aboard this ship.");
         return;
@@ -650,9 +647,11 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     /* check for and delete pod entity if boarding new ship */
     if (m_ship->IsPopped()) {
         pShipSE->DestinyMgr()->SendJettisonPacket();
-    } else if (m_ship->typeID() == itemTypeCapsule) {
+    } else if ((m_ship->typeID() == itemTypeCapsule) and (!m_login)) {
         m_ship->Relocate(NULL_ORIGIN);
         DestroyShipSE();
+    } else if (m_login) {
+        ;  // do nothing here...just loggin in
     } else  {
         m_ship->GetModuleManager()->CharacterLeavingShip();
         m_ship->SetPlayer(nullptr);
@@ -676,9 +675,11 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
 
     /* set internal vars for new ship */
     SetShip(newShipItemRef);
+
+    m_char->Move(m_shipId, flagPilot);
+    m_ship->SetPlayer(this);
+
     char ci[25];
-    m_char->ResetModifiers();
-    m_char->ProcessEffects();
     if (IsSolarSystem(m_locationID)) {
         /* if ejecting into pod, setup and create new pod object */
         if (m_ship->typeID() == itemTypeCapsule) {
@@ -693,12 +694,10 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             m_ship->UpdateModules();
             pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         }
-        m_char->Move(m_shipId, flagPilot);
         pShipSE->SetPilot(this);
         SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
         snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
     } else {
-        m_ship->SetPlayer(this);
         snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
     }
 
@@ -723,7 +722,8 @@ void Client::CreateShipSE() {
 void Client::DestroyShipSE() {
     if (pShipSE != nullptr) {
         _log(PLAYER__MESSAGE, "DestroyShipSE() - pShipSE %p (%s) destroyed for %s(%u)", pShipSE, m_ship->itemName().c_str(), m_char->itemName().c_str(), m_char->itemID());
-        pShipSE->SysBubble()->Remove(pShipSE);
+        if (pShipSE->SysBubble() != nullptr)
+            pShipSE->SysBubble()->Remove(pShipSE);
         m_system->RemoveEntity(pShipSE);
         SafeDelete(pShipSE);
     } else
@@ -731,7 +731,7 @@ void Client::DestroyShipSE() {
 }
 
 void Client::SetPodItem() {
-    if (!m_char->capsuleID())
+    if (m_char->capsuleID() <= 0)
         CreateNewPod();
     else
         m_pod = m_services.item_factory->GetShip(m_char->capsuleID());
@@ -880,6 +880,7 @@ std::string Client::GetStateName(ClientState state)
         case csKilled:  return "Killed";
         case csLogout:  return "Logout";
         case csBoard:   return "Board";
+        case csLogin:   return "Login";
     }
 }
 
@@ -904,7 +905,7 @@ void Client::CreateNewPod() {
     m_char->SetActivePod(m_pod->itemID());
 }
 
-void Client::SpawnNewRookieShip() {
+ShipItemRef Client::SpawnNewRookieShip() {
     /** @todo  create/send mail from scc about lost ship */
     //create rookie ship of appropriate type
     uint32 shipID = amarrRookie, gunID = amarrWeapon;
@@ -940,6 +941,8 @@ void Client::SpawnNewRookieShip() {
         wRef->Move(sRef->itemID(), flagHiSlot1);
     if (cRef.get() != nullptr)
         cRef->Move(sRef->itemID(), flagCargoHold);
+    // in case caller needs ref to new noob ship
+    return sRef;
 }
 
 void Client::ResetAfterPodded() {
@@ -1437,12 +1440,11 @@ void Client::DisconnectClient()
 }
 void Client::BanClient()
 {
-    ServiceDB m_sdb;
     //send message to client
     SendNotifyMsg("You have been banned from this server and will be disconnected shortly.  You will no longer be able to log in");
 
     //ban the client
-    m_sdb.SetAccountBanStatus(GetUserID(), true);
+    ServiceDB::SetAccountBanStatus(GetUserID(), true);
 }
 
 /************************************************************************/
