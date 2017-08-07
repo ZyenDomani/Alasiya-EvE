@@ -384,6 +384,7 @@ protected:
     /* new effects system */
 public:
     void RemoveEffects();
+    void UpdateEffects();
     void CharacterBoardingShip()                        { m_ModuleManager->CharacterBoardingShip(); }
 
 private:

@@ -381,7 +381,7 @@ bool Character::_Load() {
     // no reason to delete m_modifiers as they are generic, and nothing changes in char when appling to ship.
     //   ....yes, they do.  skills apply to other skills, ships, modules, etc.
     //  it all gets reset when docking, and undock applies everything, so char will need reset also.
-    ProcessEffects();
+    //ProcessEffects();
 
     return m_loaded;
 }

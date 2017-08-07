@@ -235,17 +235,14 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     m_char->Move(m_shipId, flagPilot);
     m_ship->SetPlayer(this);
-    m_ship->OnlineAll();
 
     GPoint pos(NULL_ORIGIN);
     if (IsSolarSystem(m_locationID))
         pos = m_ship->position();
     MoveToLocation(m_locationID, pos);
 
-    SetClientTimer(ClientState::csLogin, ClientTimers::LoginTimer);
-
     if (IsSolarSystem(m_locationID)) {
-        m_invulTimer.Start(ClientTimers::LogoutTimer);
+        m_invulTimer.Start(ClientTimers::LoginTimer);
         CreateShipSE();
         WarpIn();
     } else {
@@ -271,8 +268,6 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_char->SetLoginTime();
     UpdateSkillTraining();
 
-    m_login = false;
-    
     return true;
 }
 
@@ -417,8 +412,10 @@ void Client::SetBallPark() {
     m_login = m_bubbleWait = false;
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
-    if (m_clientState == ClientState::csUndock)
+    if (m_clientState == ClientState::csUndock) {
+        m_ship->Undock();
         pShipSE->DestinyMgr()->Undock(m_movePoint);
+    }
     if (m_clientState == ClientState::csJump)
         pShipSE->DestinyMgr()->Jump();
     if (m_clientState == ClientState::csBoard) {
@@ -561,8 +558,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (m_char->flag() != flagPilot)
             m_char->Move(m_shipId, flagPilot, false);
 
-        if (!m_login)
-            SetDestiny(pt, !m_undock);
+        SetDestiny(pt, !m_undock);
     }
 
     m_ship->SetCustomInfo(ci);
@@ -599,7 +595,6 @@ void Client::UndockFromStation() {
      *  ***** 9sec from hitting undock to space view on live. *****
      */
     OnCharNoLongerInStation();
-    m_ship->Undock();
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     SetClientTimer(ClientState::csUndock, ClientTimers::UndockTimer);
     m_invulTimer.Start(ClientTimers::UndockInvul);

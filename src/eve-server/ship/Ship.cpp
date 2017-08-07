@@ -152,9 +152,7 @@ void ShipItem::Init()
     // create and initialize the module manager if not already done
     if (m_ModuleManager == nullptr)
         m_ModuleManager = new ModuleManager(this);
-
     m_ModuleManager->Initialize();
-    OnlineAll();
 }
 
 void ShipItem::InitPod() {
@@ -214,6 +212,7 @@ void ShipItem::SetPlayer(Client* pClient) {
 
     Init();
     ProcessEffects(true, IsSolarSystem(m_locationID));
+    OnlineAll();
 
     // this hits ONLY when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
     if (IsSolarSystem(m_locationID))
@@ -688,14 +687,18 @@ void ShipItem::Dock() {
 
 void ShipItem::Undock() {
     m_isUndocking = true;
-    //OfflineAll();
     // apply ship effects, as all variables are set at this point.
     if (m_ModuleManager != nullptr) {
+        // this is hacked to reset ship effects, as *something* isnt working right...
+        OfflineAll();
+        ClearModifiers();
+        ProcessEffects(true, IsSolarSystem(m_locationID));
         UpdateModules();
     } else {
         _log(SHIP__MODULE_ERROR, "Undock() - %s(%u) has no module manager.", itemName().c_str(), itemID());
         EvE::traceStack();
     }
+    //UpdateEffects();
 
     if (sConfig.server.IsTestServer) {
         // Heal Ship completely on test server
@@ -913,6 +916,10 @@ void ShipItem::RemoveItem(InventoryItemRef iRef, uint32 qty/*0*/)
             else
                 m_ModuleManager->UnfitModule(iRef->itemID());
         }
+        /*
+        if ((m_pilot != nullptr) and (m_pilot->IsInSpace()))
+            UpdateEffects();
+        */
     } else
         ModifyHoldVolumeByFlag( iRef->flag(), -(iRef->GetAttribute(AttrVolume).get_float() * (qty ? qty : iRef->quantity())));
 }
@@ -966,6 +973,10 @@ void ShipItem::UpdateModules(EVEItemFlags flag)
     // Ship::MoveModuleSlot()
     // Client::MoveItem()               - something has been moved into or out of the ship, recheck all modules for... some reason
     m_ModuleManager->UpdateModules(flag);
+    /*
+    if ((m_pilot != nullptr) and (m_pilot->IsInSpace()))
+        UpdateEffects();
+    */
 }
 
 void ShipItem::UnloadModule(uint32 itemID)
@@ -1103,6 +1114,8 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
         // char effects are processed when char is loaded.
         // apply char effects
         _log(EFFECTS__TRACE, "Applying Char Effects");
+        m_pilot->GetChar()->ResetModifiers();
+        m_pilot->GetChar()->ProcessEffects();
         sFxProc.ApplyEffects(m_pilot->GetChar().get(), m_pilot->GetChar().get(), this, update);
         ProcessShipEffects(update);
         _log(EFFECTS__DEBUG, "ShipItem::ProcessEffects() - %u ship and char effects processed and applied in %.3fms", \
@@ -1132,6 +1145,13 @@ void ShipItem::RemoveEffects()
     SaveShip();
     // clear also reloads default attribs
     ClearModifiers();
+}
+
+void ShipItem::UpdateEffects() {
+    double start = GetTimeMSeconds();
+    RemoveEffects();
+    ProcessEffects(true, IsSolarSystem(m_locationID));
+    _log(EFFECTS__DEBUG, "ShipItem::UpdateEffects() - Effects updated in %.3fms", (GetTimeMSeconds() - start));
 }
 
 std::string ShipItem::GetShipDNA()

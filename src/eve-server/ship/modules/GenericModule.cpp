@@ -102,6 +102,11 @@ void GenericModule::Online()
     m_ModuleState = ModStates::ModuleStates::MOD_ONLINE;
     _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
+    // process passive and online effects AFTER charge is loaded and charge effects are applied. (in the case of charge modifying module - elusive error)
+    ProcessEffects(Effects::dgmStatePassive, true);
+    ProcessEffects(Effects::dgmStateOnline, true);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+
     if (m_ChargeState == ModStates::ChargeStates::CHG_LOADED) {
         if (m_chargeRef.get() == nullptr) {
             _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
@@ -117,15 +122,10 @@ void GenericModule::Online()
                 data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
                 sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
             }
-            //if (!m_shipRef->GetPilot()->IsLogin())
+            //if (m_shipRef->GetPilot()->IsLogin())
                 sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         }
     }
-
-    // process passive and online effects AFTER charge is loaded and charge effects are applied. (in the case of charge modifying module - elusive error)
-    ProcessEffects(Effects::dgmStatePassive, true);
-    ProcessEffects(Effects::dgmStateOnline, true);
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 }
 
 void GenericModule::Offline()
@@ -156,10 +156,6 @@ void GenericModule::Offline()
     _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
     m_modRef->ClearModifiers();
-    ProcessEffects(Effects::dgmStatePassive, false);
-    ProcessEffects(Effects::dgmStateOnline, false);
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
-
     if (m_ChargeState == ModStates::ChargeStates::CHG_LOADED) {
         if (m_chargeRef.get() == nullptr) {
             _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
@@ -177,6 +173,10 @@ void GenericModule::Offline()
             sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         }
     }
+
+    ProcessEffects(Effects::dgmStatePassive, false);
+    ProcessEffects(Effects::dgmStateOnline, false);
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
     m_ModuleState = ModStates::ModuleStates::MOD_OFFLINE;
     m_modRef->PutOffline();
@@ -208,12 +208,12 @@ void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
     m_modRef->type().GetEffectMap(state, effectMap);
     _log(EFFECTS__TRACE, "GenericModule::ProcessEffects() called for %s. effects: %u, state: %s, online: %s", \
             m_modRef->itemName().c_str(), effectMap.size(), sFxProc.GetStateName(state).c_str(), (online ? "true" : "false"));
+    fxData data;
+    data.action = Effects::Action::dgmActInvalid;
+    data.srcRef = m_modRef;
     for (auto it : effectMap) {
         if (it.first == 16)    // skip the online effect.  this is done internally elsewhere
             continue;
-        fxData data;
-        data.action = Effects::Action::dgmActInvalid;
-        data.srcRef = m_modRef;
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         /* module and charge effects will be added/removed from it's item
          * active/overload/gang/other effects will be applied and removed when called.
