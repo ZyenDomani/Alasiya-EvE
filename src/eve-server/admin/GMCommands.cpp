@@ -765,8 +765,9 @@ PyResult Command_unload(Client *who, CommandDB *db, PyServiceMgr *services, cons
                 throw PyException(MakeCustomError("Unable to find character %u", entity));
         }
 
-        if (tgt->IsInSpace())
-            throw PyException(MakeCustomError("Character needs to be docked!"));
+        /// This doesn't seem like a valid requirement
+        //if (tgt->IsInSpace())
+        //    throw PyException(MakeCustomError("Character needs to be docked!"));
 
         if (args.argCount() == 3 && strcmp("all", args.arg(2).c_str())!=0)
             tgt->GetShip()->UnloadModule(item);
@@ -803,17 +804,34 @@ PyResult Command_dogma(Client* who, CommandDB* db, PyServiceMgr* services, const
 {
     //"dogma" "140019878" "agility" "=" "0.2"
 
-    if (!(args.argCount() == 5))
-        throw PyException(MakeCustomError("Correct Usage: /dogma [itemID] [attributeName] = [value]"));
-    if (!args.isNumber(1))
-        throw PyException(MakeCustomError("Invalid itemID. \n Correct Usage: /dogma [itemID] [attributeName] = [value]"));
-    if (args.isNumber(2))
-        throw PyException(MakeCustomError("Invalid attributeName. \n Correct Usage: /dogma [itemID] [attributeName] = [value]"));
-    if (!args.isNumber(4))
-        throw PyException(MakeCustomError("Invalid attribute value. \n Correct Usage: /dogma [itemID] [attributeName] = [value]"));
+    if (!(args.argCount() == 5)) {
+        throw PyException(MakeCustomError("Correct Usage: /dogma [itemID|me] [attributeName] = [value]"));
+    }
 
-    services->item_factory->GetItem(atoi(args.arg(1).c_str()))->SetAttribute(db->GetAttributeID(args.arg(2).c_str()), atof(args.arg(4).c_str()));
+    // First argument could be both
+    if (args.isNumber(2)) {
+        throw PyException(MakeCustomError("/dogma Second argument must be a string"));
+    }
 
+    if (args.arg(3) != "=") {
+        throw PyException(MakeCustomError("/dogma You didn't use an '=' in between your attribute name and value!"));
+    }
+    if (!args.isNumber(4)) {
+        throw PyException(MakeCustomError("/dogma The last argument must be a number"));
+    }
+
+    const char *attributeName = args.arg(2).c_str();
+    float attributeValue = atof(args.arg(4).c_str());
+
+    InventoryItemRef i;
+    if (args.arg(1) == "me") {
+        i = services->item_factory->GetItem(who->GetShip().get()->itemID());
+    } else {
+        i = services->item_factory->GetItem(atoi(args.arg(1).c_str()));
+    }
+
+
+    i->SetAttribute(db->GetAttributeID(attributeName), attributeValue);
     /** @todo  for modules and ships, this will need to call some kind of 'reload' to reset the attrib mem object before new attrib takes affect.  */
 
     return NULL;
