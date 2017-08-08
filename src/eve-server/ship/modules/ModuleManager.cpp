@@ -858,7 +858,9 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
     m_Ship->SetAttribute(AttrCpuLoad,     0);
     m_Ship->SetAttribute(AttrPowerLoad,   0);
     //m_Ship->SetAttribute(AttrUpgradeLoad, 0);
-    if (!modVec.empty()) {
+    if (modVec.empty()) {
+        OnlineAll();
+    } else {
         _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec)");
         // gotta add rigs and Subsystems to the vector, as they wont be listed in the "modules to online" list when undocking.
         GetShipRigs(modVec);
@@ -869,11 +871,9 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
             if (m_Ship->IsUndocking())
                 cur->SetAttribute(AttrIsOnline, false, false);
             cur->Online();
-            if (cur->IsLoaded())
-                cur->ReprocessCharge();
+            //if (cur->IsLoaded())
+            //    cur->ReprocessCharge();
         }
-    } else {
-        OnlineAll();
     }
 }
 

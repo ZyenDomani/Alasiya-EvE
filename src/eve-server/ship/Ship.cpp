@@ -686,19 +686,18 @@ void ShipItem::Dock() {
 }
 
 void ShipItem::Undock() {
-    m_isUndocking = true;
     // apply ship effects, as all variables are set at this point.
     if (m_ModuleManager != nullptr) {
         // this is hacked to reset ship effects, as *something* isnt working right...
         OfflineAll();
-        ClearModifiers();
-        ProcessEffects(true, IsSolarSystem(m_locationID));
+        UpdateEffects();
+        //ClearModifiers();
+        //ProcessEffects(true, IsSolarSystem(m_locationID));
         UpdateModules();
     } else {
         _log(SHIP__MODULE_ERROR, "Undock() - %s(%u) has no module manager.", itemName().c_str(), itemID());
         EvE::traceStack();
     }
-    //UpdateEffects();
 
     if (sConfig.server.IsTestServer) {
         // Heal Ship completely on test server

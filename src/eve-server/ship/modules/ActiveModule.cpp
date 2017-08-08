@@ -493,6 +493,9 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
 
 void ActiveModule::UnloadCharge()
 {
+    /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
+     *    also, DONT reset modifiermap before remoing, to use existing, modified data
+     */
     if (m_chargeRef.get() != nullptr) {
         // remove charge effects here
         m_chargeRef->ClearModifiers();

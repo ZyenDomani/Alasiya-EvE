@@ -162,6 +162,9 @@ void GenericModule::Offline()
                     m_modRef->itemID(), m_modRef->itemName().c_str());
         } else {
             m_chargeRef->ClearModifiers();
+            /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
+             *    also, DONT reset modifiermap before remoing, to use existing, modified data
+             */
             for (auto it : m_chargeRef->type().m_stateFxMap) {
                 fxData data;
                 data.action = Effects::Action::dgmActInvalid;

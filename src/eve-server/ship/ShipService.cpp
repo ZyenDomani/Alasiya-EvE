@@ -138,25 +138,29 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         return nullptr;
     }
 
-    SystemManager* pSysMgr = pClient->SystemMgr();
+    SystemManager* pSystem = pClient->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
     GPoint oldPosition(pClient->GetShipSE()->GetPosition());
 
     // Get ship ItemRefs
-    ShipItemRef oldShipRef = pSysMgr->GetShipFromInventory(args.oldShipID);
+    ShipItemRef oldShipRef = pSystem->GetShipFromInventory(args.oldShipID);
     if (!oldShipRef)
         oldShipRef = pClient->services().item_factory->GetShip(args.oldShipID);
-    ShipItemRef newShipRef = pSysMgr->GetShipFromInventory(args.newShipID);
-    if (!newShipRef)
+    ShipItemRef newShipRef = pSystem->GetShipFromInventory(args.newShipID);
+    if (newShipRef.get() == nullptr)
         newShipRef = pClient->services().item_factory->GetShip(args.newShipID);
 
-    if (!newShipRef) {
+    if (newShipRef.get() == nullptr) {
         _log(SHIP__ERROR, "Handle_Board() - Failed to get new ship %u for %s.", args.newShipID, pClient->GetName());
         throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship"));
         return nullptr;
     }
 
     if (newShipRef->typeID() == itemTypeCapsule) {
-        codelog(ITEM__ERROR, "Empty Pod %u in space.  SystemID %u.", args.newShipID, pSysMgr->GetID());
+        codelog(ITEM__ERROR, "Empty Pod %u in space.  SystemID %u.", args.newShipID, pSystem->GetID());
         throw PyException(MakeCustomError("You already have a pod.  These cannot be boarded manally."));
         return nullptr;
     }
@@ -206,17 +210,22 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
         return nullptr;
     }
 
-    SystemManager* pSysMgr = pClient->SystemMgr();
+    SystemManager* pSystem = pClient->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
+
     GPoint oldPosition(pShipSE->GetPosition());
     GPoint capsulePosition(oldPosition);
     capsulePosition.MakeRandomPointOnSphere(pClient->GetShip()->GetAttribute(AttrRadius).get_float() + (MakeRandomFloat(300, 400)));
 
     // Get ship ItemRefs
     ShipItemRef oldShipRef = pClient->GetShip();
-    if (!oldShipRef)
+    if (oldShipRef.get() == nullptr)
         oldShipRef = pClient->services().item_factory->GetShip(pClient->GetShipID());
-    ShipItemRef capsuleRef = pSysMgr->GetShipFromInventory(pClient->GetPodID());
-    if (!capsuleRef)
+    ShipItemRef capsuleRef = pSystem->GetShipFromInventory(pClient->GetPodID());
+    if (capsuleRef.get() == nullptr)
         capsuleRef = pClient->services().item_factory->GetShip(pClient->GetPodID());
     capsuleRef->Relocate(capsulePosition);
 
@@ -247,7 +256,7 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call) {
     ShipItemRef shipRef = pClient->SystemMgr()->GetShipFromInventory(arg.arg);
     uint32 podID = pClient->GetPodID();
     ShipItemRef podRef = pClient->SystemMgr()->GetShipFromInventory(podID);
-    if (!podRef)
+    if (podRef.get() == nullptr)
         podRef = pClient->services().item_factory->GetShip(podID);
 
     //verify owner (not sure why pod doenst have correct owner...)
@@ -276,13 +285,13 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
 
     Client* pClient = call.client;
     ShipItemRef oldShipRef = pClient->SystemMgr()->GetShipFromInventory(args.oldShipID);
-    if (!oldShipRef)
+    if (oldShipRef.get() == nullptr)
         oldShipRef = pClient->services().item_factory->GetShip(args.oldShipID);
 
     ShipItemRef newShipRef = pClient->SystemMgr()->GetShipFromInventory(args.newShipID);
-    if (!newShipRef)
+    if (newShipRef.get() == nullptr)
         newShipRef = pClient->services().item_factory->GetShip(args.newShipID);
-    if (!newShipRef) {
+    if (newShipRef.get() == nullptr) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
         throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173"));
         return nullptr;
@@ -314,7 +323,12 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     }
 
     Client* pClient = call.client;
-    ShipItem* pShip = pClient->GetShip().get();
+    ShipItemRef pShip = pClient->GetShip();
+    if (pShip.get() == nullptr) {
+        sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get ship item.", pClient->GetName());
+        call.client->SendNotifyMsg("Internal Server Error - Ref:?????   -undock failed.");
+        return nullptr;
+    }
 
     char ci[35];
     snprintf(ci, sizeof(ci), "Undocking:%u", pClient->GetLocationID());
@@ -423,8 +437,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
     }
 
     ShipItemRef ship = m_manager->item_factory->GetShip(itemID);
-
-    if (!ship) {
+    if (ship.get() == nullptr) {
         _log(ITEM__ERROR, "Failed to load ship %u to assemble.", itemID);
         return nullptr;
     }
@@ -487,7 +500,11 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
     bool ignoreWarning = drop3args.ignoreWarning, dropped = false;
 
     Client* pClient = call.client;
-    SystemManager* pSysMgr = pClient->SystemMgr();
+    SystemManager* pSystem = pClient->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
 
     FactionData data;
         data.allianceID = pClient->GetAllianceID();
@@ -551,16 +568,16 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             entity.groupID = itemRef->groupID();
             entity.categoryID = itemRef->categoryID();
             if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
-                entity.planetID = pSysMgr->GetNearestPlanet(location);
+                entity.planetID = pSystem->GetNearestPlanet(location);
             entity.x = itemRef->position().x;
             entity.y = itemRef->position().y;
             entity.z = itemRef->position().z;
-            SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSysMgr, m_manager->item_factory, entity);
+            SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSystem, m_manager->item_factory, entity);
             if (pSE != nullptr) {
                 dropped = true;
                 itemRef->SetFlag(flagStructureInactive);
                 list->AddItem(new PyInt(entity.itemID));
-                pSysMgr->AddEntity(pSE);
+                pSystem->AddEntity(pSE);
                 if (pSE->IsPOSSE())
                     pSE->GetPOSSE()->InitData();
             }
@@ -588,14 +605,22 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     }
 
     Client* pClient = call.client;
-    SystemManager* pSysMgr = pClient->SystemMgr();
-    SystemEntity* pSE = pSysMgr->GetSE(arg.arg);
-    if (!pSE) {
+    SystemManager* pSystem = call.client->SystemMgr();
+    if (pSystem == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
+    SystemEntity* pSE = pSystem->GetSE(arg.arg);
+    if (pSE == nullptr) {
         _log(SERVICE__ERROR, "%s: Unable to find object %u to scoop.", pClient->GetName(), arg.arg);
         return nullptr;
     }
 
-    InventoryItemRef item = pSE->GetSelf();
+    InventoryItemRef iRef = pSE->GetSelf();
+    if (iRef.get() == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        return new PyNone();
+    }
 
     /** @todo check ownership of this object, ie does this character/corporation own this object? */
     // do we really need to do this for anything except for drones that are under control of another player?
@@ -604,16 +629,15 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
 
     // Check cargo bay capacity:
     double capacity = pClient->GetShip()->GetMyInventory()->GetCapacity(flagCargoHold);
-    double volume = item->GetAttribute(AttrVolume).get_float();
+    double volume = iRef->GetAttribute(AttrVolume).get_float();
     if (capacity < volume)
-        throw PyException(MakeCustomError("%s is too large to fit in remaining Cargo bay capacity.", item->itemName().c_str()));
+        throw PyException(MakeCustomError("%s is too large to fit in remaining Cargo bay capacity.", iRef->itemName().c_str()));
     else {
         // We have enough Cargo bay capacity to hold the item being scooped,
         // so take ownership of it and move it into the cargo bay:
-        item->ChangeOwner(pClient->GetCharacterID(), true);
-
-        pClient->MoveItem(item->itemID(), pClient->GetShipID(), flagCargoHold);
-        pSysMgr->RemoveEntity(pSE);
+        iRef->ChangeOwner(pClient->GetCharacterID(), true);
+        pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagCargoHold);
+        pSystem->RemoveEntity(pSE);
     }
 
     return nullptr;
@@ -713,7 +737,8 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     // loop thru items to see if there is a container in this list.
     for (; cur != args.ints.end(); cur++) {
         invItemRef = m_manager->item_factory->GetItem(*cur);
-        if (!invItemRef) continue;
+        if (invItemRef.get() == nullptr)
+            continue;
         groupID = invItemRef->groupID();
 
         if ((groupID == EVEDB::invGroups::Audit_Log_Secure_Container)
@@ -742,14 +767,14 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     // reset iterator and loop thru list.
     for (auto cur : args.ints) {
         invItemRef = m_manager->item_factory->GetItem(cur);
-        if (!invItemRef)
+        if (invItemRef.get() == nullptr)
             continue;
         categoryID = invItemRef->categoryID();
 
         if ((categoryID == EVEDB::invCategories::Structure)
             or (categoryID == EVEDB::invCategories::Orbitals)) {
             structureItemRef = m_manager->item_factory->GetStructure(cur);
-            if (!structureItemRef)
+            if (structureItemRef.get() == nullptr)
                 throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", structureItemRef->typeID()));
 
             structureItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
@@ -761,7 +786,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             continue;
         } else if (categoryID == EVEDB::invCategories::Deployable) {
             cargoItemRef = m_manager->item_factory->GetItem(cur);
-            if (!cargoItemRef)
+            if (cargoItemRef.get() == nullptr)
                 throw PyException(MakeCustomError("Unable to spawn Deployable item of type %u.", cargoItemRef->typeID()));
 
             cargoItemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
@@ -797,7 +822,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                             location);
 
             newJetcanItem = m_manager->item_factory->SpawnCargoContainer(p_idata);
-            if (!newJetcanItem)
+            if (newJetcanItem.get() == nullptr)
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", 23));
             // create new container
             ContainerSE* cSE = new ContainerSE(newJetcanItem, *m_manager, pSysMgr, data);

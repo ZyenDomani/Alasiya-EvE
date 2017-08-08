@@ -587,6 +587,7 @@ void Client::UndockFromStation() {
     //set position and direction of docking ramp for later use
     m_dockPoint = m_StationData.dockPosition;
     m_movePoint = m_StationData.dockOrientation;
+    m_ship->SetUndocking(true);
 
     /** @todo  this needs a bit of work to match live....
      *  Undock Request -> GetCriminalTimeStamps -> Undock -> OnItemsChanged (Undocking:xxxxxxxx) -> OnCharNoLongerInStation ->
@@ -688,9 +689,10 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             m_ship->ChangeOwner(m_char->itemID());
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSE(m_shipId);
-            m_ship->UpdateModules();
+            m_ship->UpdateEffects();
             pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         }
+        m_setStateSent = false;
         pShipSE->SetPilot(this);
         SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
         snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
@@ -882,6 +884,7 @@ std::string Client::GetStateName(ClientState state)
 }
 
 void Client::SetShip(ShipItemRef shipRef) {
+    pShipSE = nullptr;
     m_ship = shipRef;
     m_shipId = shipRef->itemID();
     if (IsSolarSystem(m_locationID))

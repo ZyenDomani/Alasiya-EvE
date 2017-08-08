@@ -152,12 +152,9 @@ bool SystemManager::ProcessTic() {
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     uint32 mLast = 0;
     while (itr != m_entities.end()) {
-        if (mLast) {
-            if (mLast >= itr->first) {
-                ++itr;
-                continue;
-            }
-            mLast = 0;
+        if (mLast >= itr->first) {
+            ++itr;
+            continue;
         }
         if (m_entityChanged) {
             mLast = itr->first;
@@ -196,7 +193,7 @@ bool SystemManager::SystemActivity() {
     return true;
 }
 
-// called from EntityList::Process()
+// called from EntityList::Process() and EntityList::Close()
 void SystemManager::UnloadSystem() {
     sLog.Magenta("    SystemManager", "UnloadSystem() called for %s(%u).", GetName().c_str(), m_data.systemID);
 
@@ -205,7 +202,7 @@ void SystemManager::UnloadSystem() {
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     while (itr != m_entities.end()) {
         // still getting trash data in entity map....dunno why or how
-        if ((!itr->second) or (!itr->second->IsSystemEntity())) {
+        if ((itr->second == nullptr) or (itr->second->DestinyMgr() == nullptr) or (itr->second->SystemMgr() == nullptr)) {
             itr = m_entities.erase(itr);
             continue;
         } else if (itr->second->IsStationSE()) {
