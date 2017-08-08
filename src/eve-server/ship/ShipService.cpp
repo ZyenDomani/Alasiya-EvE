@@ -356,7 +356,6 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
 }
 
 PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
-    /** @todo handle multiple-ship list and Return correct values */
 
     /* 13:05:41 [BindDump] NodeID: 888444 BindID: 129 calling AssembleShip in service manager 'ShipBound'
      * 13:05:41 [BindDump]   Call Arguments:
@@ -385,43 +384,6 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
                   [PyInt 0]
             */
     
-    /*
-    if (!call.tuple->GetItem(0)->IsList()) {
-        if (!call.tuple->GetItem(0)->IsInt()) {
-            sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: call.tuple->GetItem(0)->IsInt() == false");
-            // @todo  throw exception
-            return nullptr;
-        } else {
-        	// T3 managing is broken now - logging on with T3 assembled causes seg fault.
-            // @todo Re-work the T3 managing. For now, i'm commenting it and leaving an error message on assembly attempt.
-        	sLog.Error( "Handle_AssembleShip", "Modular ships are not implemented yet" );
-        	throw PyException( MakeCustomError( "Modular ships are not implemented yet." ) );
-        	return nullptr;
-            // Tuple contains single Integer, this is for Tech 3 Ship Assembly:
-            //if (!argsT3.Decode(&call.tuple)) {
-                //   codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-                //return nullptr;
-                //}
-                //itemID = argsT3.item;
-                //if (call.byname.find("subSystems") != call.byname.end()) {
-                //PyList * list;
-                //if (call.byname.find("subSystems")->second->IsList()) {
-                //   list = call.byname.find("subSystems")->second->AsList();
-                //  for(uint32 i=0; i<list->size(); i++)
-                //      subSystemList.push_back(list->GetItem(i)->AsInt()->value());
-                //} else {
-                //    sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: !call.byname.find(\"subSystems\")->second->IsList() failed");
-                //    return nullptr;
-                //}
-                //} else {
-                //sLog.Error("ShipBound::Handle_AssembleShip()", "Failed to decode arguments: call.byname.find(\"subSystems\") != call.byname.end() failed");
-                //return nullptr;
-                // }
-                //completeTech3Assembly = true;
-                //}
-                //}
-
-    */
     Call_AssembleShip args;
     Call_AssembleShipTech3 argsT3;
     //Call_AssembleShipWithName argsNamed;
@@ -439,14 +401,19 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         }
         itemIDList = args.items;
     } else if (call.tuple->GetItem(0)->IsInt() &&
-               call.tuple->GetItem(1)->IsString()) {
-        // Ignoring name
+               call.tuple->GetItem(1)->IsString()) { 
+        // This block is for how DNA calls AssembleShip
+        // @TODO Ignoring name
         // Can't get xmlpktgen to pickup the change so.. lol
         //if (!argsNamed.Decode(&call.tuple)) {
         //    codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         //    return nullptr;
         //}
         itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());
+    } else { // Because we check for the second item in the list being string we get here for t3 ship assembly
+        sLog.Error( "Handle_AssembleShip", "Modular ships are not implemented yet" );
+        throw PyException( MakeCustomError( "Modular ships are not implemented yet." ) );
+        return nullptr;
     }
     
     for (int i = 0; i < itemIDList.size(); i++) {
