@@ -194,8 +194,8 @@ void FxDataMgr::ConfigureEffects()
            // if (m_fxMap.find(itr->first) != m_fxMap.end())
              //   continue;
             sLog.Yellow("ConfigureEffects", "starting eval for %u:%u (%s)", itr->first, itr->second.effectState, itr->second.effectName.c_str());
-            fxProc.EvaluateExpression(itr->second.preExpression);
-            fxProc.EvaluateExpression(itr->second.postExpression);
+            //fxProc.EvaluateExpression(itr->second.preExpression);
+            //fxProc.EvaluateExpression(itr->second.postExpression);
             m_fxMap.insert(std::pair<uint16, Effect>(itr->first, itr->second));
         }
     }

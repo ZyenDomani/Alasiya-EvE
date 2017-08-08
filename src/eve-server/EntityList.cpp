@@ -148,7 +148,7 @@ void EntityList::Process() {
 
         std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
         while (itr != m_systems.end()) {
-            if (!itr->second) { /* this shouldnt happen.  log error to make note */
+            if (itr->second == nullptr) { /* this shouldnt happen.  log error to make note */
                 sLog.Error(" EntityList::Proc", "Deleting System %u", itr->first);
                 SafeDelete(itr->second);
                 itr = m_systems.erase(itr);

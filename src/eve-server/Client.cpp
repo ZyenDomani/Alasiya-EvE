@@ -235,17 +235,14 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     m_char->Move(m_shipId, flagPilot);
     m_ship->SetPlayer(this);
-    m_ship->OnlineAll();
 
     GPoint pos(NULL_ORIGIN);
     if (IsSolarSystem(m_locationID))
         pos = m_ship->position();
     MoveToLocation(m_locationID, pos);
 
-    SetClientTimer(ClientState::csLogin, ClientTimers::LoginTimer);
-
     if (IsSolarSystem(m_locationID)) {
-        m_invulTimer.Start(ClientTimers::LogoutTimer);
+        m_invulTimer.Start(ClientTimers::LoginTimer);
         CreateShipSE();
         WarpIn();
     } else {
@@ -415,8 +412,10 @@ void Client::SetBallPark() {
     m_login = m_bubbleWait = false;
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
-    if (m_clientState == ClientState::csUndock)
+    if (m_clientState == ClientState::csUndock) {
+        m_ship->Undock();
         pShipSE->DestinyMgr()->Undock(m_movePoint);
+    }
     if (m_clientState == ClientState::csJump)
         pShipSE->DestinyMgr()->Jump();
     if (m_clientState == ClientState::csBoard) {
@@ -559,8 +558,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (m_char->flag() != flagPilot)
             m_char->Move(m_shipId, flagPilot, false);
 
-        if (!m_login)
-            SetDestiny(pt, !m_undock);
+        SetDestiny(pt, !m_undock);
     }
 
     m_ship->SetCustomInfo(ci);
@@ -589,6 +587,7 @@ void Client::UndockFromStation() {
     //set position and direction of docking ramp for later use
     m_dockPoint = m_StationData.dockPosition;
     m_movePoint = m_StationData.dockOrientation;
+    m_ship->SetUndocking(true);
 
     /** @todo  this needs a bit of work to match live....
      *  Undock Request -> GetCriminalTimeStamps -> Undock -> OnItemsChanged (Undocking:xxxxxxxx) -> OnCharNoLongerInStation ->
@@ -597,7 +596,6 @@ void Client::UndockFromStation() {
      *  ***** 9sec from hitting undock to space view on live. *****
      */
     OnCharNoLongerInStation();
-    m_ship->Undock();
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     SetClientTimer(ClientState::csUndock, ClientTimers::UndockTimer);
     m_invulTimer.Start(ClientTimers::UndockInvul);
@@ -691,9 +689,10 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             m_ship->ChangeOwner(m_char->itemID());
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSE(m_shipId);
-            m_ship->UpdateModules();
+            m_ship->UpdateEffects();
             pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         }
+        m_setStateSent = false;
         pShipSE->SetPilot(this);
         SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
         snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
@@ -885,6 +884,7 @@ std::string Client::GetStateName(ClientState state)
 }
 
 void Client::SetShip(ShipItemRef shipRef) {
+    pShipSE = nullptr;
     m_ship = shipRef;
     m_shipId = shipRef->itemID();
     if (IsSolarSystem(m_locationID))

@@ -173,7 +173,7 @@ void ModuleContainer::process(processType p)
         case typeOnlineAll: {
             std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin();
             while (itr != m_modules.rend()) {
-                if (itr->second)
+                if (itr->second != nullptr)
                     itr->second->Online();
                 ++itr;
             }
@@ -181,7 +181,7 @@ void ModuleContainer::process(processType p)
         case typeOfflineAll: {
             std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
             while (itr != m_modules.end()) {
-                if (itr->second)
+                if (itr->second != nullptr)
                     itr->second->Offline();
                 ++itr;
             }
@@ -189,7 +189,7 @@ void ModuleContainer::process(processType p)
         case typeDeactivateAll: {
             std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
             while (itr != m_modules.end()) {
-                if (itr->second)
+                if (itr->second != nullptr)
                     itr->second->Deactivate();
                 ++itr;
             }
@@ -197,7 +197,7 @@ void ModuleContainer::process(processType p)
         case typeUnloadAll: {
             std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
             while (itr != m_modules.end()) {
-                if (itr->second)
+                if (itr->second != nullptr)
                     itr->second->UnloadCharge();
                 ++itr;
             }
@@ -205,7 +205,7 @@ void ModuleContainer::process(processType p)
         case typeProcessAll: {
             std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin();
             while (itr != m_modules.rend()) {
-                if (itr->second)
+                if (itr->second != nullptr)
                     itr->second->Process();
                 ++itr;
             }
@@ -213,7 +213,7 @@ void ModuleContainer::process(processType p)
         case typeAbort: {
             std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
             while (itr != m_modules.end()) {
-                if ((itr->second) and (itr->second->IsActiveModule()))
+                if ((itr->second != nullptr) and (itr->second->IsActiveModule()))
                     itr->second->AbortCycle();
                 ++itr;
             }
@@ -294,7 +294,7 @@ void ModuleContainer::SaveModules()
 {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
     while (itr != m_modules.end()) {
-        if (itr->second)
+        if (itr->second != nullptr)
             itr->second->getItem()->SaveItem();
         ++itr;
     }
@@ -419,7 +419,7 @@ uint16 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
 
 bool ModuleManager::InstallRig(InventoryItemRef item, EVEItemFlags flag) {
     uint8 slots = m_Ship->GetAttribute(AttrUpgradeSlotsLeft).get_int();
-    if (!slots) {
+    if (slots <= 0) {
         /* send error to player?  or does client do it?  dunno...  */
         codelog(SHIP__MODULE_TRACE, "ModuleManager","%s has no upgrade slots left.", m_Ship->itemName().c_str());
         return false;
@@ -858,7 +858,9 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
     m_Ship->SetAttribute(AttrCpuLoad,     0);
     m_Ship->SetAttribute(AttrPowerLoad,   0);
     //m_Ship->SetAttribute(AttrUpgradeLoad, 0);
-    if (!modVec.empty()) {
+    if (modVec.empty()) {
+        OnlineAll();
+    } else {
         _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec)");
         // gotta add rigs and Subsystems to the vector, as they wont be listed in the "modules to online" list when undocking.
         GetShipRigs(modVec);
@@ -869,11 +871,9 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
             if (m_Ship->IsUndocking())
                 cur->SetAttribute(AttrIsOnline, false, false);
             cur->Online();
-            if (cur->IsLoaded())
-                cur->ReprocessCharge();
+            //if (cur->IsLoaded())
+            //    cur->ReprocessCharge();
         }
-    } else {
-        OnlineAll();
     }
 }
 

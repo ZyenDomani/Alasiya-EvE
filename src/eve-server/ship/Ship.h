@@ -322,6 +322,7 @@ public:
     void AbortCycle()                                        { m_ModuleManager->AbortCycle(); }
     bool IsDocking()                                         { return m_isDocking; }
     bool IsUndocking()                                       { return m_isUndocking; }
+    void SetUndocking(bool set=false)                        { m_isUndocking = set; }
     InventoryItemRef GetTargetRef()                          { return m_targetRef; }
     void ClearTargetRef()                                    { m_targetRef = InventoryItemRef(); }
 
@@ -384,6 +385,7 @@ protected:
     /* new effects system */
 public:
     void RemoveEffects();
+    void UpdateEffects();
     void CharacterBoardingShip()                        { m_ModuleManager->CharacterBoardingShip(); }
 
 private:

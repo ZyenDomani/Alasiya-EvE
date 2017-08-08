@@ -1970,6 +1970,8 @@ void DestinyManager::Undock(GPoint dir) {
     m_targetPoint = dir *1.0e16;
     m_shipHeading = GVector(dir);
     SetUndockSpeed();
+    if (mySE->IsShipSE())
+        mySE->GetShipSE()->GetShipItemRef()->SetUndocking(false);
 }
 
 void DestinyManager::SetUndockSpeed() {

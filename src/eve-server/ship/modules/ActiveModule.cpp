@@ -480,8 +480,8 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
     charge->ClearModifiers();
     fxData data;
     data.action = Effects::Action::dgmActInvalid;
+    data.srcRef = charge;
     for (auto it : charge->type().m_stateFxMap) {
-        data.srcRef = charge;
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         sFxProc.ParseExpression(charge.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     }
@@ -493,6 +493,9 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
 
 void ActiveModule::UnloadCharge()
 {
+    /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
+     *    also, DONT reset modifiermap before remoing, to use existing, modified data
+     */
     if (m_chargeRef.get() != nullptr) {
         // remove charge effects here
         m_chargeRef->ClearModifiers();
