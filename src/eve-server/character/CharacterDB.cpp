@@ -178,8 +178,27 @@ PyRep* CharacterDB::ValidateCharName(const char *name)
              -101: localization.GetByLabel('UI/CharacterCreation/InvalidName/Unavailable'),
              -102: localization.GetByLabel('UI/CharacterCreation/InvalidName/Unavailable')}
              */
-    if (!name or (*name == '\0'))
-        return new PyInt(-5);
+    // *name  is sent from client WITHOUT leading space, if there is one, and will not allow more than one space.
+
+    if (name == nullptr or (*name == '\0'))
+        return new PyInt(-1);
+
+    // verify that NO ONE tries to use "CCP *name*"
+    if ((name[0] == 'C') or (name[0] == 'c'))
+        if ((name[1] == 'C') or (name[1] == 'c'))
+            if ((name[2] == 'P') or (name[2] == 'p'))
+                return new PyInt(-5);
+
+    // check for length?   30 max?   funky hack...not used....client caps at 24  (but this works)
+    int8 length = 0;
+    while (name[length] != '\0')
+        length++;
+    //_log(CLIENT__ERROR, "length is %i", length);
+
+    if (length == 0)
+        return new PyInt(-1);
+    else if (length > 30)
+        return new PyInt(-2);
 
     /* hash the name */
     uint32 hash = djb2_hash(name);
