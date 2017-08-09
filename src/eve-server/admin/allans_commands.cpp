@@ -684,6 +684,11 @@ PyResult Command_entityspawn(Client* who, CommandDB* db, PyServiceMgr* services,
     return new PyString(reply);
 }
 
+/* groove's new command.....
+ *    /fit [me|itemID] [typeID] [flag=slot]
+ * then sends ScatterEvent OnRefreshModuleBanks after successful call.
+ */
+
 /*defaultMacros = {'GMH: Unload All': '/unload me all',
  ' WM: Remove All Drones': '/unspawn range=500000* only=categoryDrone',
  'WM: Remove All Wrecks': '/unspawn range=500000 only=groupWreck',

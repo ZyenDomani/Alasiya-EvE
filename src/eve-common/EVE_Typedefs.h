@@ -410,7 +410,7 @@ enum EVETutorialTypes {
 //  -updated 18Dec16
 enum ClientTimers {
     DefaultTimer     = 1000,
-    BoardTimer       = 1200,
+    BoardTimer       = 900,
     JumpTimer        = 300,
     UndockTimer      = 500,     // used to delay sending Destiny::State (client error fix)
     DockingTimer     = 1000,    // Timer to delay docking (as on live)

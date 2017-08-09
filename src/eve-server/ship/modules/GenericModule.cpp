@@ -179,6 +179,9 @@ void GenericModule::Offline()
 
     ProcessEffects(Effects::dgmStatePassive, false);
     ProcessEffects(Effects::dgmStateOnline, false);
+    /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
+     *    also, DONT reset modifiermap before remoing, to use existing, modified data
+     */
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
     m_ModuleState = ModStates::ModuleStates::MOD_OFFLINE;

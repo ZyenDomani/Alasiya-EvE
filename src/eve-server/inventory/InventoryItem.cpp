@@ -1021,9 +1021,10 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
         change.changes = changes;
     changes.clear();    //reset change map for next update.
     PyTuple *tmp = change.Encode();  //this is consumed below
-    // not sure what the difference is on the types below...
-    pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.
-    //c->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.
+    /** @todo  this is hacked and wrong.  see notes below, and correct for each case.  */
+    //  NOTE:  notes are incomplete.
+    pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this *seems* to be sent ONLY from Add/MultiAdd calls
+    //c->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.  <<--  this is called when changing ships in space
 }
 
 void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {

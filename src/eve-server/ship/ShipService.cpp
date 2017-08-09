@@ -147,7 +147,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     // Get ship ItemRefs
     ShipItemRef oldShipRef = pSystem->GetShipFromInventory(args.oldShipID);
-    if (!oldShipRef)
+    if (oldShipRef.get() == nullptr)
         oldShipRef = pClient->services().item_factory->GetShip(args.oldShipID);
     ShipItemRef newShipRef = pSystem->GetShipFromInventory(args.newShipID);
     if (newShipRef.get() == nullptr)
@@ -172,6 +172,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     }
 
     /* all previous SE and DestinyMgr objects are updated to new ship object here */
+    // note:  this isnt right...hackish and funky, but works.
     pClient->BoardShip(newShipRef);
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
@@ -205,6 +206,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
         return nullptr;
     }
 
+    //  do we need this?
     if (pShipSE->DestinyMgr()->IsMoving()) {
         throw PyException(MakeCustomError("You cannot eject while moving."));
         return nullptr;
@@ -227,9 +229,17 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     ShipItemRef capsuleRef = pSystem->GetShipFromInventory(pClient->GetPodID());
     if (capsuleRef.get() == nullptr)
         capsuleRef = pClient->services().item_factory->GetShip(pClient->GetPodID());
+
+    if (capsuleRef.get() == nullptr) {
+        _log(SHIP__ERROR, "Handle_Eject() - Failed to get podItem for %s.", pClient->GetName());
+        throw PyException(MakeCustomError("Something bad happened as you prepared to eject."));
+        return nullptr;
+    }
+
     capsuleRef->Relocate(capsulePosition);
 
     /* all previous SE and DestinyMgr objects are updated to new ship object here */
+    // note:  this isnt right...hackish and funky, but works.
     pClient->BoardShip(capsuleRef);
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
@@ -295,11 +305,6 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
         throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173"));
         return nullptr;
-    }
-
-    if (oldShipRef->typeID() == itemTypeCapsule) {
-        // take pod out of station hangar and relocate to system origin
-        oldShipRef->SetFlag(flagCapsule);
     }
 
     pClient->BoardShip(newShipRef);

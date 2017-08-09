@@ -353,10 +353,12 @@ void Client::ProcessClient() {
             } break;
             case ClientState::csKilled: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
+                // check this, too.  fairly sure live does NOT resend destiny state when killed.  see csBoard notes.
                 SetBallPark();
             } break;
             case ClientState::csBoard: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
+                // this shit isnt right.  check/correct per packet logs.  live DOES NOT resend destiny state!
                 SetBallPark();
             } break;
             case ClientState::csLogin: {
@@ -646,6 +648,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     if (m_ship->IsPopped()) {
         pShipSE->DestinyMgr()->SendJettisonPacket();
     } else if ((m_ship->typeID() == itemTypeCapsule) and (!m_login)) {
+        m_ship->SetFlag(flagCapsule);
         m_ship->Relocate(NULL_ORIGIN);
         DestroyShipSE();
     } else if (m_login) {
@@ -679,6 +682,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
 
     char ci[25];
     if (IsSolarSystem(m_locationID)) {
+        // note:  this isnt right...hackish and funky, but works.
         /* if ejecting into pod, setup and create new pod object */
         if (m_ship->typeID() == itemTypeCapsule) {
             m_ship->Move(m_locationID, flagCapsule);

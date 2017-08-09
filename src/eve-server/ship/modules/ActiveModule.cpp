@@ -506,6 +506,9 @@ void ActiveModule::UnloadCharge()
             data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
             sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
         }
+        /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
+         *    also, DONT reset modifiermap before remoing, to use existing, modified data
+         */
         sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
     }
 
