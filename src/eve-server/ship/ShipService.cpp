@@ -175,6 +175,8 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     // note:  this isnt right...hackish and funky, but works.
     pClient->BoardShip(newShipRef);
 
+    pClient->SendNotifyMsg("This function is hacked.  You will need to warp, wait a couple minutes, then send '/update' command to correct destiny state (or relog).  This will be fixed eventually");
+    
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     return new PyLong(Win32TimeNow());
 }
@@ -241,6 +243,8 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     /* all previous SE and DestinyMgr objects are updated to new ship object here */
     // note:  this isnt right...hackish and funky, but works.
     pClient->BoardShip(capsuleRef);
+
+    pClient->SendNotifyMsg("This function is hacked.  You will need to warp, wait a couple minutes, then send '/update' command to correct destiny state (or relog).  This will be fixed eventually");
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     return new PyLong(Win32TimeNow());
