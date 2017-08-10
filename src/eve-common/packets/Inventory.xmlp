@@ -104,6 +104,13 @@
     </tupleInline>
   </elementDef>
 
+  <elementDef name"Call_AssembleShipWithName">
+    <tupleInline>
+      <int name="itemID" />
+      <stringInline value="itemName" />
+    </tupleInline>
+  </elementDef>
+
   <elementDef name="Call_AssembleShipTech3">
     <tupleInline>
       <int name="item" />
