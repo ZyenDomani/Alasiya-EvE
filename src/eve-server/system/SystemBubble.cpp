@@ -103,11 +103,11 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
             continue;
         }
         pDSE = itr->second->GetDynamicSE();
-        if (!pDSE) {
+        if (pDSE == nullptr) {
             ++itr;
             continue;
         }
-        if (pDSE->DestinyMgr() and pDSE->DestinyMgr()->IsWarping()) {
+        if ((pDSE->DestinyMgr() == nullptr) or pDSE->DestinyMgr()->IsWarping()) {
             ++itr;
             continue;
         }
@@ -206,7 +206,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
 
 void SystemBubble::Remove(SystemEntity *pSE) {
 	//assume that the entity is properly registered for its ID
-	if (!pSE->m_bubble)
+	if (pSE->m_bubble == nullptr)
 		return;
 
     _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Remove() - Removing entity %u from bubble %u", pSE->GetID(), GetID());
@@ -239,7 +239,7 @@ void SystemBubble::Remove(SystemEntity *pSE) {
 }
 
 void SystemBubble::RemoveExclusive(SystemEntity *pSE) {
-	if (!pSE->m_bubble)
+    if (pSE->m_bubble == nullptr)
 		return;
 
     _log(DESTINY__BUBBLE_TRACE, "SystemBubble::RemoveExclusive() - Removing entity %u from bubble %u", pSE->GetID(), GetID());
@@ -263,7 +263,8 @@ void SystemBubble::ResetBubbleRatSpawn()
 
 void SystemBubble::SetSpawnTimer(bool isBelt/*false*/)
 {
-    if (m_system->GetSystemSecurityRating() > 0.90) return;
+    if (m_system->GetSystemSecurityRating() > 0.90)
+        return;
     if (sConfig.server.IsTestServer and sConfig.npc.SpawnTest) {
         m_spawnTimer.Start(5000); /* 5s for testing */
     } else {
@@ -412,7 +413,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     if (!to_who->HasPilot())
         return;
     Client* pClient = to_who->GetPilot();
-    if (!pClient)
+    if (pClient == nullptr)
         return;
     if (is_log_enabled(DESTINY__TRACE))
         PrintEntityList();
@@ -462,7 +463,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
     if (!to_who->HasPilot())
         return;
     Client* pClient = to_who->GetPilot();
-    if (!pClient)
+    if (pClient == nullptr)
         return;
     if (is_log_enabled(DESTINY__TRACE))
         PrintEntityList();
@@ -604,10 +605,10 @@ void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
         return;
     if (m_dynamicEntities.empty())
         return;
-    if ((!to_who->HasPilot()) or (!to_who->SysBubble()))
+    if ((!to_who->HasPilot()) or (to_who->SysBubble() == nullptr))
         return;
     Client* pClient = to_who->GetPilot();
-    if (!pClient or pClient->IsDock() or pClient->IsDocked())
+    if ((pClient == nullptr) or pClient->IsDock() or pClient->IsDocked())
         return;
 
     DoDestiny_RemoveBalls remove_balls;
@@ -631,7 +632,7 @@ void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
 void SystemBubble::BubblecastDestiny(std::vector<PyTuple *> &updates, std::vector<PyTuple *> &events, const char *desc) const {
     if (m_players.empty())
         return;
-    
+
     BubblecastDestinyUpdate(updates, desc);
     BubblecastDestinyEvent(events, desc);
 }
@@ -661,11 +662,10 @@ void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc 
 {
     PyTuple* up = *payload;
     *payload = nullptr;    //could optimize out one of the Clones in here...
-
     PyTuple* up_dup(nullptr);
 
     for (auto cur : m_players) {
-        if (!up_dup)
+        if (up_dup == nullptr)
             up_dup = new PyTuple( *up );
         _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
         if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
@@ -682,14 +682,13 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
 {
     PyTuple* up = *payload;
     *payload = nullptr;    //could optimize out one of the Clones in here...
-
     PyTuple* up_dup(nullptr);
 
     for (auto cur : m_players) {
         // Only queue a Destiny update for this bubble if the current SystemEntity is not 'pSE':
         // (this is an update to all client objects in the bubble EXCLUDING 'pSE')
         if (cur.second->GetShipSE() != pSE) {
-            if (!up_dup)
+            if (up_dup == nullptr)
                 up_dup = new PyTuple( *up );
             _log( DESTINY__BUBBLECAST, "Exclusive Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
             if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
@@ -707,11 +706,10 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
 {
     PyTuple* ev = *payload;
     *payload = nullptr;    //could optimize out one of the Clones in here...
-
     PyTuple* ev_dup(nullptr);
 
     for (auto cur : m_players) {
-        if (!ev_dup)
+        if (ev_dup == nullptr)
             ev_dup = new PyTuple( *ev );
         _log( DESTINY__BUBBLECAST, "Bubblecast %s event to %s(%u)", desc, cur.second->GetName(), cur.first );
         if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
@@ -727,11 +725,10 @@ void SystemBubble::BubblecastSendNotification(const char* notifyType, const char
 {
     PyTuple* ev = *payload;
     *payload = nullptr;    //could optimize out one of the Clones in here...
-
     PyTuple* ev_dup(nullptr);
 
     for (auto cur : m_players) {
-        if (!ev_dup)
+        if (ev_dup == nullptr)
             ev_dup = new PyTuple( *ev );
         _log( DESTINY__BUBBLECAST, "BubblecastNotify %s to %s(%u)", notifyType, cur.second->GetName(), cur.first );
         if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
