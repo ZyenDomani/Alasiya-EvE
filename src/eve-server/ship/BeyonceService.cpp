@@ -162,7 +162,7 @@ PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
 
     //now we know its in the cache one way or the other, so build a
     //cached object cached method call result.
-    return(m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id));
+    return m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
     //return new PyTuple(0);
 }
 
