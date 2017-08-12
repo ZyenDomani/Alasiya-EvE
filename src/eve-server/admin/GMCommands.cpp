@@ -163,9 +163,10 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
     InventoryItemRef item;
     ShipItemRef ship;
 
-    // "/spawnn" arguments:
+    // Updated(groove)
+    // "/spawnn" arguments: 
     // #1 = quantity ?
-    // #2 = some double value ?
+    // #2 = some double value deviation
     // #3 = typeID
 
     if ((args.argCount() < 4) || (args.argCount() > 4))
@@ -355,8 +356,12 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
         entity.z = loc.z;
 
         // Actually do the spawn using SystemManager's BuildEntity:
-        if (!who->SystemMgr()->BuildDynamicEntity(entity))
+        if (!who->SystemMgr()->BuildDynamicEntity(entity)) {
             return new PyString("Spawn Failed: typeID or typeName not supported.");
+        }
+        if (spawnCount == 1) {
+            return new PyInt(entity.itemID);
+        }
     }
 
     sLog.White("Command_spawn", "%s: Spawned %u in space, %u times", who->GetName(), typeID, spawnCount);
@@ -469,57 +474,60 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
 PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
 
-    if (args.argCount() < 2) {
-        throw PyException(MakeCustomError("Correct Usage: /fit [typeID] "));
-    }
-
-    int typeID = 0;
-
-    if (args.argCount() == 3)
-    {
-        if (!args.isNumber(2))
-            throw PyException(MakeCustomError("Argument 1 must be type ID."));
-        typeID = atoi(args.arg(2).c_str());
-    }
-    else if (args.argCount() == 2)
-    {
-        if (!args.isNumber(1))
-            throw PyException(MakeCustomError("Argument 1 must be type ID."));
-        typeID = atoi(args.arg(1).c_str());
-    }
-
-    uint32 qty = 1;
-
-    _log(COMMAND__MESSAGE, "Create %s %u times", typeID, qty);
-
-    EVEItemFlags flag;
-    uint32 powerSlot;
-    uint32 useableSlot;
+    uint32 typeID = 0;
+    uint32 itemID = 0;
+    EVEItemFlags flag = (EVEItemFlags)0;
+    uint32 powerSlot = 0;
+    uint32 useableSlot = 0;
     std::string affectName = "online";
 
-    if (typeID == 0)
-        throw PyException(MakeCustomError("Unable to create item of type %u.", typeID));
-    else
-    {
-        //Get Range of slots for item
-        InventoryDB::GetModulePowerSlotByTypeID(typeID, powerSlot);
+    if (args.argCount() < 3) {
+        throw PyException(MakeCustomError("Correct Usage: /fit [me|itemID] [typeID] [flag=??]"));
+    }
 
-        //Get open slots available on ship
-        InventoryDB::GetOpenPowerSlots(powerSlot, who->GetShip(), useableSlot);
+    // DNA tells us what slot to use but we're going to ignore it
+    if (args.arg(1) == "me") {
+        itemID = who->GetShip()->itemID();
+    } else {
+        itemID = atoi(args.arg(1).c_str());
+    }
+
+    typeID = atoi(args.arg(2).c_str());
+    if (args.argCount() >= 4) {
+        std::string::size_type n = args.arg(3).find("flag=");
+        if (n != std::string::npos) {
+            flag = (EVEItemFlags)atoi(args.arg(3).substr(5).c_str());
+        }
+    }
+
+
+    if (typeID == 0) {
+        throw PyException(MakeCustomError("Unable to create item of type %u.", typeID));
+    } else {
+        if (flag == 0) {
+            //Get Range of slots for item
+            InventoryDB::GetModulePowerSlotByTypeID(typeID, powerSlot);
+
+            //Get open slots available on ship
+
+            InventoryDB::GetOpenPowerSlots(powerSlot, who->GetShip(), useableSlot);
+            flag = (EVEItemFlags)useableSlot;
+        }
 
         ItemData idata(
-            typeID,
-            who->GetCharacterID(),
-            0, //temp location
-            flag = (EVEItemFlags)useableSlot,
-            qty
-       );
+                       typeID,
+                       who->GetCharacterID(),
+                       0, //temp location
+                       flag,
+                       1
+                       );
 
         InventoryItemRef i = services->item_factory->SpawnItem(idata);
-        if (!i)
+        if (!i) {
             throw PyException(MakeCustomError("Unable to create item of type %u.", typeID));
+        }
 
-        who->MoveItem(i->itemID(), who->GetShipID(), flag);
+        who->MoveItem(i->itemID(), itemID, flag);
 
         return new PyString("Creation successful.");
     }
@@ -757,8 +765,9 @@ PyResult Command_unload(Client *who, CommandDB *db, PyServiceMgr *services, cons
                 throw PyException(MakeCustomError("Unable to find character %u", entity));
         }
 
-        if (tgt->IsInSpace())
-            throw PyException(MakeCustomError("Character needs to be docked!"));
+        /// This doesn't seem like a valid requirement
+        //if (tgt->IsInSpace())
+        //    throw PyException(MakeCustomError("Character needs to be docked!"));
 
         if (args.argCount() == 3 && strcmp("all", args.arg(2).c_str())!=0)
             tgt->GetShip()->UnloadModule(item);
@@ -795,17 +804,34 @@ PyResult Command_dogma(Client* who, CommandDB* db, PyServiceMgr* services, const
 {
     //"dogma" "140019878" "agility" "=" "0.2"
 
-    if (!(args.argCount() == 5))
-        throw PyException(MakeCustomError("Correct Usage: /dogma [itemID] [attributeName] = [value]"));
-    if (!args.isNumber(1))
-        throw PyException(MakeCustomError("Invalid itemID. \n Correct Usage: /dogma [itemID] [attributeName] = [value]"));
-    if (args.isNumber(2))
-        throw PyException(MakeCustomError("Invalid attributeName. \n Correct Usage: /dogma [itemID] [attributeName] = [value]"));
-    if (!args.isNumber(4))
-        throw PyException(MakeCustomError("Invalid attribute value. \n Correct Usage: /dogma [itemID] [attributeName] = [value]"));
+    if (!(args.argCount() == 5)) {
+        throw PyException(MakeCustomError("Correct Usage: /dogma [itemID|me] [attributeName] = [value]"));
+    }
 
-    services->item_factory->GetItem(atoi(args.arg(1).c_str()))->SetAttribute(db->GetAttributeID(args.arg(2).c_str()), atof(args.arg(4).c_str()));
+    // First argument could be both
+    if (args.isNumber(2)) {
+        throw PyException(MakeCustomError("/dogma Second argument must be a string"));
+    }
 
+    if (args.arg(3) != "=") {
+        throw PyException(MakeCustomError("/dogma You didn't use an '=' in between your attribute name and value!"));
+    }
+    if (!args.isNumber(4)) {
+        throw PyException(MakeCustomError("/dogma The last argument must be a number"));
+    }
+
+    const char *attributeName = args.arg(2).c_str();
+    float attributeValue = atof(args.arg(4).c_str());
+
+    InventoryItemRef i;
+    if (args.arg(1) == "me") {
+        i = services->item_factory->GetItem(who->GetShip().get()->itemID());
+    } else {
+        i = services->item_factory->GetItem(atoi(args.arg(1).c_str()));
+    }
+
+
+    i->SetAttribute(db->GetAttributeID(attributeName), attributeValue);
     /** @todo  for modules and ships, this will need to call some kind of 'reload' to reset the attrib mem object before new attrib takes affect.  */
 
     return NULL;

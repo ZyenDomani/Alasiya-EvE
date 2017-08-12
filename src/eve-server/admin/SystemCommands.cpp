@@ -238,7 +238,7 @@ PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, cons
     else
         i->Move(locationID, flag, true);
 
-    return new PyString("Creation successful.");
+    return new PyInt(i.get()->itemID());
 }
 
 PyResult Command_createitem(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
