@@ -1112,9 +1112,10 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
         double start = GetTimeMSeconds();
         // char effects are processed when char is loaded.
         // apply char effects
-        _log(EFFECTS__TRACE, "Applying Char Effects");
         m_pilot->GetChar()->ResetModifiers();
+        _log(EFFECTS__TRACE, "ShipItem::ProcessEffects() - Processing Char Effects");
         m_pilot->GetChar()->ProcessEffects();
+        _log(EFFECTS__TRACE, "ShipItem::ProcessEffects() - Applying Char Effects");
         sFxProc.ApplyEffects(m_pilot->GetChar().get(), m_pilot->GetChar().get(), this, update);
         ProcessShipEffects(update);
         _log(EFFECTS__DEBUG, "ShipItem::ProcessEffects() - %u ship and char effects processed and applied in %.3fms", \
@@ -1126,7 +1127,7 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 
 void ShipItem::ProcessShipEffects(bool update/*false*/)
 {
-    _log(EFFECTS__TRACE, "ShipItem::ParseExpression():  Beginning Ship Effects Processing.");
+    _log(EFFECTS__TRACE, "ShipItem::ProcessEffects():  Processing Ship Effects Processing.");
     fxData data;
     data.action = Effects::Action::dgmActInvalid;
     for (auto it : m_type.m_stateFxMap) {

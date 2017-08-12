@@ -759,11 +759,11 @@ void InventoryItem::Rename(const char *to)
     SaveItem();
 }
 
-void InventoryItem::MoveInto(Inventory &new_home, EVEItemFlags _flag, bool notify) {
+void InventoryItem::MoveInto(Inventory &new_home, EVEItemFlags _flag, bool notify/*false*/) {
     Move( new_home.m_inventoryID, _flag, notify );
 }
 
-void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify) {
+void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify/*false*/) {
     uint32 old_location = m_locationID;
     EVEItemFlags old_flag = m_flag;
 
@@ -810,7 +810,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
     }
 }
 
-bool InventoryItem::AlterQuantity(int32 qty_change, bool notify) {
+bool InventoryItem::AlterQuantity(int32 qty_change, bool notify/*false*/) {
     if (qty_change == 0)
         return true;
 
@@ -824,7 +824,7 @@ bool InventoryItem::AlterQuantity(int32 qty_change, bool notify) {
     return SetQuantity(new_qty, notify);
 }
 
-bool InventoryItem::SetQuantity(int32 qty_new, bool notify) {
+bool InventoryItem::SetQuantity(int32 qty_new, bool notify/*false*/) {
     //if an object is singleton, it shouldn't be able to add/remove qty
     if (m_singleton) {
         _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i, the items singleton bit is set", m_itemName.c_str(), m_itemID, qty_new);
@@ -848,7 +848,7 @@ bool InventoryItem::SetQuantity(int32 qty_new, bool notify) {
 
     return true;
 }
-bool InventoryItem::SetFlag(EVEItemFlags new_flag, bool notify/*true*/) {
+bool InventoryItem::SetFlag(EVEItemFlags new_flag, bool notify/*false*/) {
     EVEItemFlags old_flag = m_flag;
     m_flag = new_flag;
 
@@ -863,7 +863,7 @@ bool InventoryItem::SetFlag(EVEItemFlags new_flag, bool notify/*true*/) {
     return true;
 }
 
-InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify/*true*/) {
+InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify/*false*/) {
     if (qty_to_take <= 0) {
         _log(ITEM__ERROR, "%s (%u): Asked to split into a chunk of %d", itemName().c_str(), itemID(), qty_to_take);
         return InventoryItemRef();
@@ -882,8 +882,7 @@ InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify/*true*/) {
     );
 
     InventoryItemRef res = m_factory.SpawnItem(idata);
-    if (notify)
-        res->Move( m_locationID, m_flag );
+    res->Move( m_locationID, m_flag );
 
     return res;
 }
@@ -940,7 +939,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
     return true;
 }
 
-bool InventoryItem::ChangeSingleton(bool new_singleton, bool notify) {
+bool InventoryItem::ChangeSingleton(bool new_singleton, bool notify/*false*/) {
     bool old_singleton = m_singleton;
 
     if (new_singleton == old_singleton)
@@ -962,7 +961,7 @@ bool InventoryItem::ChangeSingleton(bool new_singleton, bool notify) {
     return true;
 }
 
-void InventoryItem::ChangeOwner(uint32 new_owner, bool notify) {
+void InventoryItem::ChangeOwner(uint32 new_owner, bool notify/*false*/) {
     uint32 old_owner = m_ownerID;
 
     if (new_owner == old_owner)
@@ -1021,10 +1020,10 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
         change.changes = changes;
     changes.clear();    //reset change map for next update.
     PyTuple *tmp = change.Encode();  //this is consumed below
-    /** @todo  this is hacked and wrong.  see notes below, and correct for each case.  */
-    //  NOTE:  notes are incomplete.
-    pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this *seems* to be sent ONLY from Add/MultiAdd calls
-    //c->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.  <<--  this is called when changing ships in space
+    if (pClient->IsBoard())
+        pClient->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.  <<--  this is called when changing ships in space
+    else
+        pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this *seems* to be sent ONLY from Add/MultiAdd calls and trade
 }
 
 void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
@@ -1040,7 +1039,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
 
     Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
     if (pClient == nullptr) {
-        _log(SHIP__MODULE_ERROR, "InventoryItem::SetOnline() - No client object found using m_ownerID (%u) for module %s(%u)", \
+        _log(SHIP__MODULE_WARNING, "InventoryItem::SetOnline() - No client object found using m_ownerID (%u) for module %s(%u)", \
                             m_ownerID, m_itemName.c_str(), m_itemID );
         return;
     }

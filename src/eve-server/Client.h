@@ -177,6 +177,7 @@ public:
     bool IsDocked()                                     { return (IsStation(m_locationID) ? true : false); }
     bool IsDock()                                       { return (m_clientState == ClientState::csDock ? true : false); }
     bool IsJump()                                       { return (m_clientState == ClientState::csJump ? true : false); }
+    bool IsBoard()                                      { return (m_clientState == ClientState::csBoard ? true : false); }
     bool IsInvul()                                      { return m_invul; }
     bool IsLogin()                                      { return m_login; }
     bool IsUndock()                                     { return m_undock; }

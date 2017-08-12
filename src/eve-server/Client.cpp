@@ -354,11 +354,13 @@ void Client::ProcessClient() {
             case ClientState::csKilled: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
                 // check this, too.  fairly sure live does NOT resend destiny state when killed.  see csBoard notes.
+                m_setStateSent = false;
                 SetBallPark();
             } break;
             case ClientState::csBoard: {
                 _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
                 // this shit isnt right.  check/correct per packet logs.  live DOES NOT resend destiny state!
+                m_setStateSent = false;
                 SetBallPark();
             } break;
             case ClientState::csLogin: {
@@ -420,11 +422,6 @@ void Client::SetBallPark() {
     }
     if (m_clientState == ClientState::csJump)
         pShipSE->DestinyMgr()->Jump();
-    if (m_clientState == ClientState::csBoard) {
-        pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
-        pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
-        pShipSE->DestinyMgr()->SendSetState();
-    }
     if (!m_setStateSent)
         pShipSE->DestinyMgr()->SendSetState();
     m_clientState = ClientState::csIdle;
@@ -436,7 +433,7 @@ void Client::WarpIn() {
     snprintf(ci, sizeof(ci), "");
     m_ship->SetCustomInfo(ci);
     if (!InPod())
-        m_ship->SetFlag(flagAutoFit, false);
+        m_ship->SetFlag(flagAutoFit);
     m_invulTimer.Start(ClientTimers::WarpInInvul);
     return;
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
@@ -454,7 +451,7 @@ void Client::WarpOut() {
     snprintf(ci, sizeof(ci), "Logout: %s", GetName());
     m_ship->SetCustomInfo(ci);
     if (!InPod())
-        m_ship->SetFlag(flagShipOffline, false);
+        m_ship->SetFlag(flagShipOffline);
     DestroyShipSE();
     return;
     m_invulTimer.Start(ClientTimers::WarpOutInvul);
@@ -644,10 +641,14 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         SendErrorMsg("You are already aboard this ship.");
         return;
     }
-    /* check for and delete pod entity if boarding new ship */
-    if (m_ship->IsPopped()) {
+
+    if (IsInSpace()) {
+        SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
         pShipSE->DestinyMgr()->SendJettisonPacket();
-    } else if ((m_ship->typeID() == itemTypeCapsule) and (!m_login)) {
+    }
+
+    /* check for and delete pod entity if boarding new ship */
+    if ((m_ship->typeID() == itemTypeCapsule) and (!m_login)) {
         m_ship->SetFlag(flagCapsule);
         m_ship->Relocate(NULL_ORIGIN);
         DestroyShipSE();
@@ -660,13 +661,13 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         if (IsInSpace()) {
             pShipSE->Abandon();
             m_ship->ChangeOwner(1);
-            m_ship->SetFlag(flagShipOffline, false);
+            m_ship->SetFlag(flagShipOffline);
             char ci[40];
             snprintf(ci, sizeof(ci), "Abandoned: %s", GetName());
             m_ship->SetCustomInfo(ci);
             pShipSE->DestinyMgr()->UpdateOldShip(m_ship);
-            pShipSE->DestinyMgr()->SendJettisonPacket();
             pShipSE->DestinyMgr()->SendBallInteractive(m_ship);
+            // send OnItemsChanged notifications here for abandonded ship
         } else {
             char ci[1];
             snprintf(ci, sizeof(ci), "");
@@ -682,7 +683,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
 
     char ci[25];
     if (IsSolarSystem(m_locationID)) {
-        // note:  this isnt right...hackish and funky, but works.
+        m_ship->ChangeOwner(m_char->itemID());
         /* if ejecting into pod, setup and create new pod object */
         if (m_ship->typeID() == itemTypeCapsule) {
             m_ship->Move(m_locationID, flagCapsule);
@@ -690,15 +691,26 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             pShipSE->GetShipSE()->SetPodShipID(m_shipId);
             m_system->AddEntity(pShipSE);
         } else {
-            m_ship->ChangeOwner(m_char->itemID());
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSE(m_shipId);
-            m_ship->UpdateEffects();
-            pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
+            if (pShipSE == nullptr) {
+                //  cant find ship.  put player back in pod and send error.
+                if (m_pod.get() == nullptr)
+                    ; // make error here for no pod....shouldnt happen
+                SetShip(m_pod);
+                m_ship->Move(m_locationID, flagCapsule);
+                CreateShipSE();
+                pShipSE->GetShipSE()->SetPodShipID(m_shipId);
+                m_system->AddEntity(pShipSE);
+            }
         }
-        m_setStateSent = false;
+        if (pShipSE == nullptr)
+            ;  // make error here....not sure what else to do.
+        m_ship->UpdateEffects();
+        pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
+        pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
+        pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
         pShipSE->SetPilot(this);
-        SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
         snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
     } else {
         snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);

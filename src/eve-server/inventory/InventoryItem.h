@@ -105,15 +105,15 @@ public:
     void                    Rename(const char *to);
     void                    Relocate(const GPoint &pos);
     void                    SetCustomInfo(const char *ci);
-    void                    ChangeOwner(uint32 new_owner, bool notify=true);
-    void                    Move(uint32 location, EVEItemFlags flag=flagAutoFit, bool notify=true);
-    void                    MoveInto(Inventory &new_home, EVEItemFlags flag=flagAutoFit, bool notify=true);
+    void                    ChangeOwner(uint32 new_owner, bool notify=false);
+    void                    Move(uint32 location, EVEItemFlags flag=flagAutoFit, bool notify=false);
+    void                    MoveInto(Inventory& new_home, EVEItemFlags _flag = flagAutoFit, bool notify = false);
     void                    SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const;
 
-    bool                    ChangeSingleton(bool singleton, bool notify=true);
-    bool                    AlterQuantity(int32 qty_change, bool notify=true);
-    bool                    SetQuantity(int32 qty_new, bool notify=true);
-    bool                    SetFlag(EVEItemFlags new_flag, bool notify=true);
+    bool                    ChangeSingleton(bool singleton, bool notify=false);
+    bool                    AlterQuantity(int32 qty_change, bool notify=false);
+    bool                    SetQuantity(int32 qty_new, bool notify=false);
+    bool                    SetFlag(EVEItemFlags new_flag, bool notify=false);
 
 private:
     /* this should ONLY be called from within InventoryItem */

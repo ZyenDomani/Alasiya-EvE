@@ -376,7 +376,7 @@ void StructureSE::Init(StructureItemRef structure)
         m_towerID = data.towerID;
 
     if ((m_state == EVEPOS::StructureState::Online) or (m_state == EVEPOS::StructureState::Operating))
-        m_self->SetFlag(flagStructureActive, false);
+        m_self->SetFlag(flagStructureActive);
 
 }
 
@@ -415,7 +415,7 @@ void StructureSE::Process() {
             } break;
 
             case StructureState::Reinforced: {
-                m_self->SetFlag(flagStructureInactive, false);
+                m_self->SetFlag(flagStructureInactive);
             } break;
         }
     }
@@ -474,7 +474,7 @@ void StructureSE::Activate(int32 effectID)
     // check fuel quantity for onlining
     //  if qty sufficient, set tower to online and send OnSlimItemChange and OnSpecialFX and
 
-    m_self->SetFlag(flagStructureActive, false);
+    m_self->SetFlag(flagStructureActive);
     m_state = EVEPOS::StructureState::Online;
 }
 
@@ -482,7 +482,7 @@ void StructureSE::Deactivate(int32 effectID)
 {
     // check effectID, check current state, check current timer, set new state, update timer
 
-    m_self->SetFlag(flagStructureInactive, false);
+    m_self->SetFlag(flagStructureInactive);
 }
 
 void StructureSE::EncodeDestiny( Buffer& into )

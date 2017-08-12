@@ -905,7 +905,7 @@ void ModuleManager::CharacterLeavingShip()
     sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
     //this is complicated and im gonna leave it alone for now until
     //a few things become more clear
-    OfflineAll();
+    //OfflineAll();
 }
 
 void ModuleManager::ShipWarping()

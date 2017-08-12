@@ -612,7 +612,7 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
         }
 
         uint32 newOwnerID = (cur.ownerID == pTSes->m_tradeSession.myID ? pTSes->m_tradeSession.herID : pTSes->m_tradeSession.myID);
-        itemRef->ChangeOwner(newOwnerID);
+        itemRef->ChangeOwner(newOwnerID, true);
         itemRef->Move(stationID, flagHangar);
 
         if ((itemRef->categoryID() == EVEDB::invCategories::Ship)
@@ -654,7 +654,7 @@ void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryIt
     }
 
     for (auto cur : InventoryMap)
-        cur.second->ChangeOwner(newOwnerID);
+        cur.second->ChangeOwner(newOwnerID, true);
 }
 
 PyResult TradeService::Handle_InitiateTrade(PyCallArgs &call) {

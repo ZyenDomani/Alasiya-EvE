@@ -247,7 +247,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
             ItemData data(typeID, m_client->GetCharacterID(), 0, flagAutoFit, iRef->quantity() -1);
             InventoryItemRef iRef2 = m_svcMgr->item_factory->SpawnItem(data);
             iRef2->Move(m_client->GetShipID(), flagCargoHold);
-            iRef->SetQuantity(1, false);
+            iRef->SetQuantity(1);
         }
         m_client->GetShip()->RemoveItem(iRef);
     }

@@ -67,20 +67,16 @@ PyPacket::~PyPacket()
 PyPacket *PyPacket::Clone() const
 {
     PyPacket *res = new PyPacket();
-    res->type_string = type_string;
-    res->type = type;
-    res->source = source;
-    res->dest = dest;
-    res->userid = userid;
-    res->payload = (PyTuple *) payload->Clone();
-    if(named_payload == nullptr)
-    {
+        res->type_string = type_string;
+        res->type = type;
+        res->source = source;
+        res->dest = dest;
+        res->userid = userid;
+        res->payload = (PyTuple*) payload->Clone();
+    if (named_payload == nullptr)
         res->named_payload = nullptr;
-    }
     else
-    {
-        res->named_payload = (PyDict *) named_payload->Clone();
-    }
+        res->named_payload = (PyDict*) named_payload->Clone();
     return res;
 }
 
@@ -96,9 +92,9 @@ void PyPacket::Dump(LogType ltype, PyVisitor& dumper)
     _log(ltype, "  User ID: %u", userid);
     _log(ltype, "  Payload:");
     payload->visit( dumper );
-    if(named_payload == nullptr) {
+    if (named_payload == nullptr)
         _log(ltype, "  Named Payload: None");
-    } else {
+    else {
         _log(ltype, "  Named Payload:");
         named_payload->visit( dumper );
     }
@@ -112,25 +108,19 @@ bool PyPacket::Decode(PyRep **in_packet)
     PySafeDecRef(payload);
     PySafeDecRef(named_payload);
 
-    if(packet->IsChecksumedStream())
-    {
+    if (packet->IsChecksumedStream()) {
         PyChecksumedStream* cs = packet->AsChecksumedStream();
-
         //TODO: check cs->checksum
         packet = cs->stream();
         PyIncRef( packet );
-
         PyDecRef( cs );
     }
 
     //Dragon nuance... it gets wrapped again
-    if(packet->IsSubStream())
-    {
+    if (packet->IsSubStream()) {
         PySubStream* ss = packet->AsSubStream();
-
         ss->DecodeData();
-        if(ss->decoded() == nullptr)
-        {
+        if (ss->decoded() == nullptr) {
             codelog(NET__PACKET_ERROR, "failed: unable to decode initial packet substream.");
             PyDecRef(packet);
             return false;
@@ -138,12 +128,10 @@ bool PyPacket::Decode(PyRep **in_packet)
 
         packet = ss->decoded();
         PyIncRef( packet );
-
         PyDecRef( ss );
     }
 
-    if(!packet->IsObject())
-    {
+    if (!packet->IsObject()) {
         codelog(NET__PACKET_ERROR, "failed: packet body is not an 'Object': %s", packet->TypeString());
         PyDecRef(packet);
         return false;
@@ -151,80 +139,68 @@ bool PyPacket::Decode(PyRep **in_packet)
 
     PyObject *packeto = (PyObject *) packet;
     type_string = packeto->type()->content();
-
-    if(!packeto->arguments()->IsTuple())
-    {
+    if (!packeto->arguments()->IsTuple()) {
         codelog(NET__PACKET_ERROR, "failed: packet body does not contain a tuple");
         PyDecRef(packet);
         return false;
     }
 
     PyTuple *tuple = (PyTuple *) packeto->arguments();
-
-    if(tuple->items.size() != 7)
-    {
+    if (tuple->items.size() != 7) {
         codelog(NET__PACKET_ERROR, "failed: packet body does not contain a tuple of length 7");
         PyDecRef(packet);
-
         return false;
     }
 
-    if(!tuple->items[0]->IsInt())
-    {
+    if (!tuple->items[0]->IsInt()) {
         codelog(NET__PACKET_ERROR, "failed: First main tuple element is not an integer");
         PyDecRef(packet);
-
         return false;
     }
+
     PyInt *typer = (PyInt *) tuple->items[0];
     switch(typer->value()) {
-    case AUTHENTICATION_REQ:
-    case AUTHENTICATION_RSP:
-    case IDENTIFICATION_REQ:
-    case IDENTIFICATION_RSP:
-    case CALL_REQ:
-    case CALL_RSP:
-    case TRANSPORTCLOSED:
-    case RESOLVE_REQ:
-    case RESOLVE_RSP:
-    case NOTIFICATION:
-    case ERRORRESPONSE:
-    case SESSIONCHANGENOTIFICATION:
-    case SESSIONINITIALSTATENOTIFICATION:
-    case PING_REQ:
-    case PING_RSP:
-        type = (MACHONETMSG_TYPE) typer->value();
-        break;
-    default:
-        codelog(NET__PACKET_ERROR, "failed: Unknown message type %" PRIu64, typer->value());
-        PyDecRef(packet);
-
-        return false;
-        break;
+        case AUTHENTICATION_REQ:
+        case AUTHENTICATION_RSP:
+        case IDENTIFICATION_REQ:
+        case IDENTIFICATION_RSP:
+        case CALL_REQ:
+        case CALL_RSP:
+        case TRANSPORTCLOSED:
+        case RESOLVE_REQ:
+        case RESOLVE_RSP:
+        case NOTIFICATION:
+        case ERRORRESPONSE:
+        case SESSIONCHANGENOTIFICATION:
+        case SESSIONINITIALSTATENOTIFICATION:
+        case PING_REQ:
+        case PING_RSP: {
+            type = (MACHONETMSG_TYPE) typer->value();
+        } break;
+        default: {
+            codelog(NET__PACKET_ERROR, "failed: Unknown message type %" PRIu64, typer->value());
+            PyDecRef(packet);
+            return false;
+        } break;
     }
 
     //source address
-    if(!source.Decode(tuple->items[1]))
-    {
+    if (!source.Decode(tuple->items[1]))  {
         //error printed in decoder
         PyDecRef(packet);
-
         return false;
     }
     //dest address
-    if(!dest.Decode(tuple->items[2]))
-    {
+    if (!dest.Decode(tuple->items[2])) {
         //error printed in decoder
         PyDecRef(packet);
-
         return false;
     }
 
-    if(tuple->items[3]->IsInt())
-    {
+    if (tuple->items[3]->IsInt()) {
         PyInt *i = (PyInt *) tuple->items[3];
         userid = i->value();
-    } else if(tuple->items[3]->IsNone()) {
+    } else if (tuple->items[3]->IsNone()) {
         userid = 0;
     } else {
         codelog(NET__PACKET_ERROR, "failed: User ID has invalid type");
@@ -233,7 +209,7 @@ bool PyPacket::Decode(PyRep **in_packet)
     }
 
     //payload
-    if(!(tuple->items[4]->IsBuffer() || tuple->items[4]->IsTuple())) {
+    if (!(tuple->items[4]->IsBuffer() or tuple->items[4]->IsTuple())) {
         codelog(NET__PACKET_ERROR, "failed: Fifth main tuple element is not a tuple");
         PyDecRef(packet);
         return false;
@@ -241,19 +217,13 @@ bool PyPacket::Decode(PyRep **in_packet)
     payload = (PyTuple *) tuple->items[4];
     tuple->items[4] = nullptr; //we keep this one
 
-
     //options dict
-    if(tuple->items[5]->IsNone())
-    {
+    if (tuple->items[5]->IsNone())
         named_payload = nullptr;
-    }
-    else if(tuple->items[5]->IsDict())
-    {
+    else if (tuple->items[5]->IsDict()) {
         named_payload = (PyDict *) tuple->items[5];
         tuple->items[5] = nullptr; //we keep this too.
-    }
-    else
-    {
+    } else {
         codelog(NET__PACKET_ERROR, "failed: Sixth main tuple element is not a dict");
         PyDecRef(packet);
         return false;
@@ -263,22 +233,16 @@ bool PyPacket::Decode(PyRep **in_packet)
     return true;
 }
 
-
-
 PyRep *PyPacket::Encode() {
     PyTuple *arg_tuple = new PyTuple(7);
-
     //command
     arg_tuple->items[0] = new PyInt(type);
-
     //source
     arg_tuple->items[1] = source.Encode();
-
     //dest
     arg_tuple->items[2] = dest.Encode();
-
     //userid
-    if(userid == 0)
+    if (userid == 0)
         arg_tuple->items[3] = new PyNone();
     else
         arg_tuple->items[3] = new PyInt(userid);
@@ -289,11 +253,10 @@ PyRep *PyPacket::Encode() {
     arg_tuple->items[4] = payload->Clone();
 
     //named arguments
-    if(named_payload == nullptr) {
+    if (named_payload == nullptr)
         arg_tuple->items[5] = new PyNone();
-    } else {
+    else
         arg_tuple->items[5] = named_payload->Clone();
-    }
 
     //TODO: Not sure what this is, On packets so far they always have as PyNone
     arg_tuple->items[6] = new PyNone();
@@ -301,23 +264,30 @@ PyRep *PyPacket::Encode() {
     return new PyObject( type_string.c_str(), arg_tuple );
 }
 
-PyAddress::PyAddress() : type(Invalid), objectID(0), callID(0), service("") {}
+PyAddress::PyAddress()
+: type(Invalid),
+objectID(0),
+callID(0),
+service("")
+{
+
+}
 
 void PyAddress::Dump(FILE *into, const char *pfx) const {
     switch(type) {
-    case Any:
-        fprintf(into, "%sAny: service='%s' callID=%" PRIu64, pfx, service.c_str(), callID);
+        case Any:
+            fprintf(into, "%sAny: service='%s' callID=%" PRIu64, pfx, service.c_str(), callID);
         break;
-    case Node:
-        fprintf(into, "%sNode: node=0x%" PRIx64 " service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+        case Node:
+            fprintf(into, "%sNode: node=0x%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
         break;
-    case Client:
-        fprintf(into, "%sClient: node=0x%" PRIx64 " service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+        case Client:
+            fprintf(into, "%sClient: node=0x% service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
         break;
-    case Broadcast:
-        fprintf(into, "%sBroadcast: broadcastID='%s' narrowcast=(not decoded yet) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
+        case Broadcast:
+            fprintf(into, "%sBroadcast: broadcastID='%s' narrowcast=(not decoded yet) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
         break;
-    case Invalid:
+        case Invalid:
         break;
     //no default on purpose
     }
@@ -325,19 +295,19 @@ void PyAddress::Dump(FILE *into, const char *pfx) const {
 
 void PyAddress::Dump(LogType ltype, const char *pfx) const {
     switch(type) {
-    case Any:
-        _log(ltype, "%sAny: service='%s' callID=%" PRIu64, pfx, service.c_str(), callID);
+        case Any:
+            _log(ltype, "%sAny: service='%s' callID=%" PRIu64, pfx, service.c_str(), callID);
         break;
-    case Node:
-        _log(ltype, "%sNode: node=0x%" PRIx64 " service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+        case Node:
+            _log(ltype, "%sNode: node=0x%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
         break;
-    case Client:
-        _log(ltype, "%sClient: node=0x%" PRIx64 " service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+        case Client:
+            _log(ltype, "%sClient: node=0x%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
         break;
-    case Broadcast:
-        _log(ltype, "%sBroadcast: broadcastID='%s' narrowcast=(not decoded yet) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
+        case Broadcast:
+            _log(ltype, "%sBroadcast: broadcastID='%s' narrowcast=(not decoded yet) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
         break;
-    case Invalid:
+        case Invalid:
         break;
     //no default on purpose
     }
@@ -355,7 +325,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
     PyRep *base = in_object;
     in_object = nullptr;
 
-    if(!base->IsObject()) {
+    if (!base->IsObject()) {
         codelog(NET__PACKET_ERROR, "Invalid element type, expected object");
         PyDecRef(base);
         return false;
@@ -364,14 +334,14 @@ bool PyAddress::Decode(PyRep *&in_object) {
     PyObject *obj = (PyObject *) base;
     //do we care about the object type? should be "macho.MachoAddress"
 
-    if(!obj->arguments()->IsTuple()) {
+    if (!obj->arguments()->IsTuple()) {
         codelog(NET__PACKET_ERROR, "Invalid argument type, expected tuple");
         PyDecRef(base);
         return false;
     }
 
     PyTuple *args = (PyTuple *) obj->arguments();
-    if(args->items.size() < 3) {
+    if (args->items.size() < 3) {
         codelog(NET__PACKET_ERROR, "Not enough elements in address tuple: %lu", args->items.size());
         args->Dump(NET__PACKET_ERROR, "  ");
         PyDecRef(base);
@@ -379,7 +349,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
     }
 
     //decode the address type.
-    if(!args->items[0]->IsInt()) {
+    if (!args->items[0]->IsInt()) {
         codelog(NET__PACKET_ERROR, "Wrong type on address type element (0)");
         args->items[0]->Dump(NET__PACKET_ERROR, "  ");
         PyDecRef(base);
@@ -388,15 +358,15 @@ bool PyAddress::Decode(PyRep *&in_object) {
     PyInt *typei = (PyInt *) args->items[0];
     switch(typei->value()) {
     case Any: {
-        if(args->items.size() != 3) {
+        if (args->items.size() != 3) {
             codelog(NET__PACKET_ERROR, "Invalid number of elements in Any address tuple: %lu", args->items.size());
             PyDecRef(base);
             return false;
         }
         type = Any;
 
-        if(!_DecodeService(args->items[1])
-        || !_DecodeCallID(args->items[2])) {
+        if (!_DecodeService(args->items[1])
+        or !_DecodeCallID(args->items[2])) {
             PyDecRef(base);
             return false;
         }
@@ -404,32 +374,32 @@ bool PyAddress::Decode(PyRep *&in_object) {
         break;
     }
     case Node: {
-        if(args->items.size() != 4) {
+        if (args->items.size() != 4) {
             codelog(NET__PACKET_ERROR, "Invalid number of elements in Node address tuple: %lu", args->items.size());
             PyDecRef(base);
             return false;
         }
         type = Node;
 
-        if(!_DecodeObjectID(args->items[1])
-        || !_DecodeService(args->items[2])
-        || !_DecodeCallID(args->items[3])) {
+        if (!_DecodeObjectID(args->items[1])
+        or !_DecodeService(args->items[2])
+        or !_DecodeCallID(args->items[3])) {
             PyDecRef(base);
             return false;
         }
         break;
     }
     case Client: {
-        if(args->items.size() != 4) {
+        if (args->items.size() != 4) {
             codelog(NET__PACKET_ERROR, "Invalid number of elements in Client address tuple: %lu", args->items.size());
             PyDecRef(base);
             return false;
         }
         type = Client;
 
-        if(!_DecodeObjectID(args->items[1])
-        || !_DecodeCallID(args->items[2])
-        || !_DecodeService(args->items[3])) {
+        if (!_DecodeObjectID(args->items[1])
+        or !_DecodeCallID(args->items[2])
+        or !_DecodeService(args->items[3])) {
             PyDecRef(base);
             return false;
         }
@@ -437,18 +407,18 @@ bool PyAddress::Decode(PyRep *&in_object) {
         break;
     }
     case Broadcast: {
-        if(args->items.size() != 4) {
+        if (args->items.size() != 4) {
             codelog(NET__PACKET_ERROR, "Invalid number of elements in Broadcast address tuple: %lu", args->items.size());
             PyDecRef(base);
             return false;
         }
         type = Broadcast;
 
-        if(!args->items[1]->IsString()) {
+        if (!args->items[1]->IsString()) {
             codelog(NET__PACKET_ERROR, "Invalid type %s for brodcastID", args->items[1]->TypeString());
             PyDecRef(base);
             return false;
-        } else if(!args->items[3]->IsString()) {
+        } else if (!args->items[3]->IsString()) {
             codelog(NET__PACKET_ERROR, "Invalid type %s for idtype", args->items[3]->TypeString());
             PyDecRef(base);
             return false;
@@ -463,7 +433,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
         //items[2] is either a list or a tuple.
         /*
         //PyList *nclist = (PyList *) args->items[2];
-        if(!nclist->items.empty()) {
+        if (!nclist->items.empty()) {
             printf("Not decoding narrowcast list:");
             nclist->Dump(NET__PACKET_ERROR, "     ");
         }*/
@@ -487,12 +457,12 @@ PyRep *PyAddress::Encode() {
         t = new PyTuple(3);
         t->items[0] = new PyInt((int)type);
 
-        if(service == "")
+        if (service == "")
             t->items[1] = new PyNone();
         else
             t->items[1] = new PyString(service.c_str());
 
-        if(objectID == 0)
+        if (objectID == 0)
             t->items[2] = new PyNone();
         else
             t->items[2] = new PyLong(objectID);
@@ -504,12 +474,12 @@ PyRep *PyAddress::Encode() {
         t->items[0] = new PyInt((int)type);
         t->items[1] = new PyLong(objectID);
 
-        if(service == "")
+        if (service == "")
             t->items[2] = new PyNone();
         else
             t->items[2] = new PyString(service.c_str());
 
-        if(callID == 0)
+        if (callID == 0)
             t->items[3] = new PyNone();
         else
             t->items[3] = new PyLong(callID);
@@ -521,7 +491,7 @@ PyRep *PyAddress::Encode() {
         t->items[0] = new PyInt((int)type);
         t->items[1] = new PyLong(objectID);
         t->items[2] = new PyLong(callID);
-        if(service == "")
+        if (service == "")
             t->items[3] = new PyNone();
         else
             t->items[3] = new PyString(service.c_str());
@@ -532,7 +502,7 @@ PyRep *PyAddress::Encode() {
         t = new PyTuple(4);
         t->items[0] = new PyInt((int)type);
         //broadcastID
-        if(service == "")
+        if (service == "")
             t->items[1] = new PyNone();
         else
             t->items[1] = new PyString(service.c_str());
@@ -555,10 +525,10 @@ PyRep *PyAddress::Encode() {
 }
 
 bool PyAddress::_DecodeService(PyRep *rep) {
-    if(rep->IsString()) {
+    if (rep->IsString()) {
         PyString *s = (PyString *) rep;
         service = s->content();
-    } else if(rep->IsNone()) {
+    } else if (rep->IsNone()) {
         service = "";
     } else {
         codelog(NET__PACKET_ERROR, "Wrong type on service field");
@@ -569,9 +539,9 @@ bool PyAddress::_DecodeService(PyRep *rep) {
 }
 
 bool PyAddress::_DecodeCallID(PyRep *rep) {
-    if(rep->IsInt()) {
+    if (rep->IsInt()) {
         callID = rep->AsInt()->value();
-    } else if(rep->IsNone()) {
+    } else if (rep->IsNone()) {
         callID = 0;
     } else {
         codelog(NET__PACKET_ERROR, "Wrong type on callID field");
@@ -582,9 +552,9 @@ bool PyAddress::_DecodeCallID(PyRep *rep) {
 }
 
 bool PyAddress::_DecodeObjectID(PyRep *rep) {
-    if(rep->IsInt()) {
+    if (rep->IsInt()) {
         objectID = rep->AsInt()->value();
-    } else if(rep->IsNone()) {
+    } else if (rep->IsNone()) {
         objectID = 0;
     } else {
         codelog(NET__PACKET_ERROR, "Wrong type on typed ID field");
@@ -614,7 +584,7 @@ PyCallStream *PyCallStream::Clone() const {
     res->remoteObjectStr = remoteObjectStr;
     res->method = method;
     res->arg_tuple = new PyTuple( *arg_tuple );
-    if(arg_dict == nullptr) {
+    if (arg_dict == nullptr) {
         res->arg_dict = nullptr;
     } else {
         res->arg_dict = new PyDict( *arg_dict );
@@ -625,14 +595,14 @@ PyCallStream *PyCallStream::Clone() const {
 void PyCallStream::Dump(LogType type, PyVisitor& dumper)
 {
     _log(type, "Call Stream:");
-    if(remoteObject == 0) {
+    if (remoteObject == 0)
         _log(type, "  Remote Object: '%s'", remoteObjectStr.c_str());
-    } else
-        _log(type, "  Remote Object: %d", remoteObject);
+    else
+        _log(type, "  Remote Object: %u", remoteObject);
     _log(type, "  Method: %s", method.c_str());
     _log(type, "  Arguments:");
     arg_tuple->visit( dumper );
-    if(arg_dict == nullptr) {
+    if (arg_dict == nullptr) {
         _log(type, "  Named Arguments: None");
     } else {
         _log(type, "  Named Arguments:");
@@ -649,7 +619,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     arg_tuple = nullptr;
     arg_dict = nullptr;
 
-    if(type != "macho.CallReq") {
+    if (type != "macho.CallReq") {
         codelog(NET__PACKET_ERROR, "failed: packet payload has unknown string type '%s'", type.c_str());
         PyDecRef(payload);
         return false;
@@ -667,7 +637,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
 
     PyTuple *payload2 = (PyTuple *) payload->items[0];
-    if(payload2->items.size() != 2) {
+    if (payload2->items.size() != 2) {
         codelog(NET__PACKET_ERROR, "invalid tuple2 length %lu", payload2->items.size());
         PyDecRef(payload);
         return false;
@@ -675,7 +645,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
 
     //decode inner payload tuple
     //ignore tuple 0, it should be an int, dont know what it is
-    if(!payload2->items[1]->IsSubStream()) {
+    if (!payload2->items[1]->IsSubStream()) {
         codelog(NET__PACKET_ERROR, "non-substream type");
         PyDecRef(payload);
         return false;
@@ -683,31 +653,31 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     PySubStream *ss = (PySubStream *) payload2->items[1];
 
     ss->DecodeData();
-    if(ss->decoded() == nullptr) {
+    if (ss->decoded() == nullptr) {
         codelog(NET__PACKET_ERROR, "Unable to decode call stream");
         PyDecRef(payload);
         return false;
     }
 
-    if(!ss->decoded()->IsTuple()) {
+    if (!ss->decoded()->IsTuple()) {
         codelog(NET__PACKET_ERROR, "packet body does not contain a tuple");
         PyDecRef(payload);
         return false;
     }
 
     PyTuple *maint = (PyTuple *) ss->decoded();
-    if(maint->items.size() != 4) {
+    if (maint->items.size() != 4) {
         codelog(NET__PACKET_ERROR, "packet body has %lu elements, expected %d", maint->items.size(), 4);
         PyDecRef(payload);
         return false;
     }
 
     //parse first tuple element, unknown
-    if(maint->items[0]->IsInt()) {
+    if (maint->items[0]->IsInt()) {
         PyInt *tuple0 = (PyInt *) maint->items[0];
         remoteObject = tuple0->value();
         remoteObjectStr = "";
-    } else if(maint->items[0]->IsString()) {
+    } else if (maint->items[0]->IsString()) {
         PyString *tuple0 = (PyString *) maint->items[0];
         remoteObject = 0;
         remoteObjectStr = tuple0->content();
@@ -720,7 +690,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
 
     //parse tuple[1]: method name
-    if(maint->items[1]->IsString()) {
+    if (maint->items[1]->IsString()) {
         PyString *i = (PyString *) maint->items[1];
         method = i->content();
     } else {
@@ -733,7 +703,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
 
     //grab argument list.
-    if(!maint->items[2]->IsTuple()) {
+    if (!maint->items[2]->IsTuple()) {
         codelog(NET__PACKET_ERROR, "argument list has non-tuple type");
         maint->items[2]->Dump(NET__PACKET_ERROR, " --> ");
         codelog(NET__PACKET_ERROR, "in:");
@@ -746,9 +716,9 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     maint->items[2] = nullptr; //we keep this one
 
     //options dict
-    if(maint->items[3]->IsNone()) {
+    if (maint->items[3]->IsNone()) {
         arg_dict = nullptr;
-    } else if(maint->items[3]->IsDict()) {
+    } else if (maint->items[3]->IsDict()) {
         arg_dict = (PyDict *) maint->items[3];
         maint->items[3] = nullptr; //we keep this too.
     } else {
@@ -768,7 +738,7 @@ PyTuple *PyCallStream::Encode() {
     PyTuple *res_tuple = new PyTuple(4);
 
     //remoteObject
-    if(remoteObject == 0)
+    if (remoteObject == 0)
         res_tuple->items[0] = new PyString(remoteObjectStr.c_str());
     else
         res_tuple->items[0] = new PyInt(remoteObject);
@@ -782,25 +752,20 @@ PyTuple *PyCallStream::Encode() {
     res_tuple->items[2] = new PyTuple( *arg_tuple );
 
     //options
-    if(arg_dict == nullptr) {
+    if (arg_dict == nullptr)
         res_tuple->items[3] = new PyNone();
-    } else {
+    else
         res_tuple->items[3] = new PyDict( *arg_dict );
-    }
 
     //now that we have the main arg tuple, build the unknown stuff around it...
     PyTuple *it2 = new PyTuple(2);
-    it2->items[0] = new PyInt(remoteObject==0?1:0); /* some sort of flag, "process here or call UP"....*/
-    it2->items[1] = new PySubStream(res_tuple);
-
+        it2->items[0] = new PyInt(remoteObject==0?1:0); /* some sort of flag, "process here or call UP"....*/
+        it2->items[1] = new PySubStream(res_tuple);
     PyTuple *it1 = new PyTuple(2);
-    it1->items[0] = it2;
-    it1->items[1] = new PyNone();    //this is the "channel" dict if populated.
-
+        it1->items[0] = it2;
+        it1->items[1] = new PyNone();    //this is the "channel" dict if populated.
     return(it1);
 }
-
-
 
 EVENotificationStream::EVENotificationStream()
 : notifyType("NO TYPE SET"),
@@ -822,11 +787,11 @@ EVENotificationStream *EVENotificationStream::Clone() const {
 void EVENotificationStream::Dump(LogType type, PyVisitor& dumper)
 {
     _log(type, "Notification: %s", notifyType.c_str());
-    if(remoteObject == 0) {
+    if (remoteObject == 0)
         _log(type, "  Remote Object: %s", remoteObjectStr.c_str());
-    } else {
+    else
         _log(type, "  Remote Object: %u", remoteObject);
-    }
+    
     _log(type, "  Arguments:");
     args->visit( dumper );
 }
@@ -838,25 +803,25 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     PySafeDecRef(args);
     args = nullptr;
 
-    if(pkt_type != "macho.Notification") {
+    if (pkt_type != "macho.Notification") {
         codelog(NET__PACKET_ERROR, "notification payload has unknown string type %s", pkt_type.c_str());
         PyDecRef(payload);
         return false;
     }
 
     //decode payload tuple
-    if(payload->items.size() != 2) {
+    if (payload->items.size() != 2) {
         codelog(NET__PACKET_ERROR, "invalid tuple length %lu", payload->items.size());
         PyDecRef(payload);
         return false;
     }
-    if(!payload->items[0]->IsTuple()) {
+    if (!payload->items[0]->IsTuple()) {
         codelog(NET__PACKET_ERROR, "non-tuple payload[0]");
         PyDecRef(payload);
         return false;
     }
     PyTuple *payload2 = (PyTuple *) payload->items[0];
-    if(payload2->items.size() != 2) {
+    if (payload2->items.size() != 2) {
         codelog(NET__PACKET_ERROR, "invalid tuple2 length %lu", payload2->items.size());
         PyDecRef(payload);
         return false;
@@ -864,7 +829,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
 
     //decode inner payload tuple
     //ignore tuple 0, it should be an int, dont know what it is
-    if(!payload2->items[1]->IsSubStream()) {
+    if (!payload2->items[1]->IsSubStream()) {
         codelog(NET__PACKET_ERROR, "non-substream type");
         PyDecRef(payload);
         return false;
@@ -872,31 +837,31 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     PySubStream *ss = (PySubStream *) payload2->items[1];
 
     ss->DecodeData();
-    if(ss->decoded() == nullptr) {
+    if (ss->decoded() == nullptr) {
         codelog(NET__PACKET_ERROR, "Unable to decode call stream");
         PyDecRef(payload);
         return false;
     }
 
-    if(!ss->decoded()->IsTuple()) {
+    if (!ss->decoded()->IsTuple()) {
         codelog(NET__PACKET_ERROR, "packet body does not contain a tuple");
         PyDecRef(payload);
         return false;
     }
 
     PyTuple *robjt = (PyTuple *) ss->decoded();
-    if(robjt->items.size() != 2) {
+    if (robjt->items.size() != 2) {
         codelog(NET__PACKET_ERROR, "packet body has %lu elements, expected %d", robjt->items.size(), 2);
         PyDecRef(payload);
         return false;
     }
 
     //parse first tuple element, remote object
-    if(robjt->items[0]->IsInt()) {
+    if (robjt->items[0]->IsInt()) {
         PyInt *tuple0 = (PyInt *) robjt->items[0];
         remoteObject = tuple0->value();
         remoteObjectStr = "";
-    } else if(robjt->items[0]->IsString()) {
+    } else if (robjt->items[0]->IsString()) {
         PyString *tuple0 = (PyString *) robjt->items[0];
         remoteObject = 0;
         remoteObjectStr = tuple0->content();
@@ -908,7 +873,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
         return false;
     }
 
-    if(!robjt->items[1]->IsTuple()) {
+    if (!robjt->items[1]->IsTuple()) {
         codelog(NET__PACKET_ERROR, "main tuple[1] has non-tuple type %s", robjt->items[0]->TypeString());
         _log(NET__PACKET_ERROR, " it is:");
         payload->Dump( NET__PACKET_ERROR, "" );
@@ -917,14 +882,14 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     }
 
     PyTuple *subt = (PyTuple *) robjt->items[1];
-    if(subt->items.size() != 2) {
+    if (subt->items.size() != 2) {
         codelog(NET__PACKET_ERROR, "packet body has %lu elements, expected %d", subt->items.size(), 2);
         PyDecRef(payload);
         return false;
     }
 
     //parse first tuple element, remote object
-    if(subt->items[0]->IsInt()) {
+    if (subt->items[0]->IsInt()) {
         //PyInt *tuple0 = (PyInt *) maint->items[0];
         //no idea what this is.
     } else {
@@ -935,7 +900,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
         return false;
     }
 
-    if(!subt->items[1]->IsTuple()) {
+    if (!subt->items[1]->IsTuple()) {
         codelog(NET__PACKET_ERROR, "subt tuple[1] has non-tuple type %s", robjt->items[0]->TypeString());
         _log(NET__PACKET_ERROR, " it is:");
         payload->Dump( NET__PACKET_ERROR, "" );
@@ -964,8 +929,8 @@ PyTuple *EVENotificationStream::Encode() {
     PyTuple *t2 = new PyTuple(2);
         t2->SetItem(0, new PyInt(0));
         t2->SetItem(1, new PySubStream(t3));
-    PyTuple *t1 = new PyTuple(2);
+    PyTuple *t1 = new PyTuple(1);
         t1->SetItem(0, t2);
-        t1->SetItem(1, new PyNone());
+        //t1->SetItem(1, new PyNone());     // this may not be right.  most packets dont have it, but some do.  dunno what's the difference.
     return(t1);
 }

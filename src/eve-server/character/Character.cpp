@@ -777,7 +777,7 @@ void Character::UpdateSkillQueue() {
 
             currentTraining->SetAttribute(AttrSkillPoints, skillPointsTrained.get_int());
             currentTraining->SetAttribute(AttrExpiryTime, 0, false);
-            currentTraining->SetFlag(flagSkill);
+            currentTraining->SetFlag(flagSkill, true);
             currentTraining = SkillRef();
         }
     }
@@ -800,7 +800,7 @@ void Character::UpdateSkillQueue() {
             EvilNumber CurrentSP = currentTraining->GetAttribute(AttrSkillPoints);
             if (CurrentSP >= NextLevelSP) {
                 currentTraining->SetAttribute(AttrExpiryTime, 0);
-                currentTraining->SetFlag(flagSkill);
+                currentTraining->SetFlag(flagSkill, true);
                 currentTraining = SkillRef();
                 m_skillQueue.erase( m_skillQueue.begin() );
                 break;
@@ -812,7 +812,7 @@ void Character::UpdateSkillQueue() {
                             itemName().c_str(), m_itemID, skillID, level.get_int(), trainingEndTime.get_float());
 
             currentTraining->SetAttribute(AttrExpiryTime, trainingEndTime);
-            currentTraining->SetFlag(flagSkillInTraining);
+            currentTraining->SetFlag(flagSkillInTraining, true);
 
             OnSkillStartTraining osst;
 				osst.itemID = currentTraining->itemID();
@@ -842,7 +842,7 @@ void Character::UpdateSkillQueue() {
             currentTraining->SetAttribute(AttrSkillLevel, level );
             currentTraining->SetAttribute(AttrSkillPoints, newPoints.get_int());
             currentTraining->SetAttribute(AttrExpiryTime, 0, false);
-            currentTraining->SetFlag(flagSkill);
+            currentTraining->SetFlag(flagSkill, true);
             m_skillQueue.erase( m_skillQueue.begin() );
 
             //  start training the next skill in queue when previous skill finished.....hackish persistance  -allan 7Apr14
@@ -862,7 +862,7 @@ void Character::UpdateSkillQueue() {
             EvilNumber CurrentSP = currentTraining->GetAttribute(AttrSkillPoints);
             if (CurrentSP >= NextLevelSP) {
                 currentTraining->SetAttribute(AttrExpiryTime, 0);
-                currentTraining->SetFlag(flagSkill);
+                currentTraining->SetFlag(flagSkill, true);
                 currentTraining = SkillRef();
                 m_skillQueue.erase( m_skillQueue.begin() );
                 break;
@@ -874,7 +874,7 @@ void Character::UpdateSkillQueue() {
                         itemName().c_str(), m_itemID, skillID, level, trainingEndTime.get_float());
 
             currentTraining->SetAttribute(AttrExpiryTime, trainingEndTime);
-            currentTraining->SetFlag(flagSkillInTraining);
+            currentTraining->SetFlag(flagSkillInTraining, true);
 
             OnSkillStartTraining osst;
                 osst.itemID = currentTraining->itemID();

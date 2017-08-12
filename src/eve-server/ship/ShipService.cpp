@@ -133,6 +133,9 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     }
 
     Client* pClient = call.client;
+    pClient->SendNotifyMsg("This function is disabled.  It will be fixed eventually");
+    return nullptr;
+    
     if (pClient->GetShipSE()->DestinyMgr()->IsMoving()) {
         throw PyException(MakeCustomError("You cannot change ships while moving."));
         return nullptr;
@@ -176,13 +179,14 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     pClient->BoardShip(newShipRef);
 
     pClient->SendNotifyMsg("This function is hacked.  You will need to warp, wait a couple minutes, then send '/update' command to correct destiny state (or relog).  This will be fixed eventually");
-    
+
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     return new PyLong(Win32TimeNow());
 }
 
 /* only called in space */
 PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
+
     /*if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
@@ -192,6 +196,8 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     //no arguments.
 
     Client* pClient = call.client;
+    pClient->SendNotifyMsg("This function is disabled.  It will be fixed eventually");
+    return nullptr;
     /** @todo create and implement "Weapon Flag"....
      *      Weapon Flag --  the 60-sec timer started upon any offensive weapon activation
      *   this will be in client's criminaltimer object
