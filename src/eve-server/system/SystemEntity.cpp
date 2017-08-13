@@ -45,12 +45,13 @@
 SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : m_self(self),
   m_services(services),
-  m_system(system)
+  m_system(system),
+  m_bubble(nullptr),
+  m_destiny(nullptr),
+  m_targMgr(new TargetManager(this))
 {
-    assert(system != nullptr);
-    m_bubble = nullptr;
-    m_destiny = nullptr;
-    m_targMgr = new TargetManager(this);
+    assert(m_system != nullptr);
+    assert(m_self.get() != nullptr);
     Abandon();
     m_radius = m_self->GetAttribute(AttrRadius).get_double();
     /** @todo (Allan) fix this later...used for shield status */
@@ -60,7 +61,7 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
 
 SystemEntity::~SystemEntity()
 {
-    if (m_targMgr)
+    if (m_targMgr != nullptr)
         m_targMgr->DoDestruction();
     SafeDelete(m_targMgr);
 }
@@ -71,9 +72,9 @@ void SystemEntity::Process() {
      * processing target first will benefit agressor
      * processing destiny first will benefit target
      */
-    if (m_targMgr)
+    if (m_targMgr != nullptr)
         m_targMgr->Process();
-    if (m_destiny)
+    if (m_destiny != nullptr)
         m_destiny->Process();
 }
 
@@ -253,7 +254,7 @@ bool BeltSE::LoadExtras(SystemDB *db) {
     if (!StaticSystemEntity::LoadExtras(db))
         return false;
 
-    if (!m_bubble)
+    if (m_bubble == nullptr)
         sBubbleMgr.Add(this);
 
     m_bubble->SetBelt(m_self);
@@ -270,13 +271,13 @@ bool StargateSE::LoadExtras(SystemDB *db) {
     if (!StaticSystemEntity::LoadExtras(db))
         return false;
 
-    if (!m_bubble)
+    if (m_bubble == nullptr)
         sBubbleMgr.Add(this);
 
     m_bubble->SetGate(true);
     _log(DESTINY__BUBBLE_DEBUG, "StargateSE::LoadExtras() - IsGate set to true for bubble %u.", m_bubble->GetID() );
     m_jumps = db->ListJumps(m_self->itemID());
-    if (m_jumps)
+    if (m_jumps != nullptr)
         return true;
 
     return false;
@@ -296,7 +297,7 @@ PyDict* StargateSE::MakeSlimItem() {
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
         slim->SetItemString("nameID",       new PyNone());
-    if (m_jumps)
+    if (m_jumps != nullptr)
         slim->SetItemString("jumps", m_jumps->Clone());
     return slim;
 }
@@ -407,7 +408,7 @@ PyDict *DungeonSE::MakeSlimItem() {
     //slim->SetItemString("dunOpenUntil", new PyInt(Win32TimeNow()+Win32Time_Hour));
     slim->SetItemString("dunMusicUrl", new PyString("res:/Sound/Music/Ambient031combat.ogg"));
 
-    return(slim);
+    return slim;
 }
 
 void DungeonSE::EncodeDestiny( Buffer& into )
@@ -474,7 +475,7 @@ PyDict* ObjectSystemEntity::MakeSlimItem() {
         slim->SetItemString("name",         new PyString(m_self->itemName()));
         slim->SetItemString("corpID",       new PyInt(m_corpID));
         slim->SetItemString("allianceID",   new PyInt(m_allyID));
-    return (slim);
+    return slim;
 }
 
 void ObjectSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
@@ -504,7 +505,9 @@ void ObjectSystemEntity::UpdateDamage()
 void ObjectSystemEntity::Killed(Damage &fatal_blow)
 {
     m_targMgr->ClearTargets(false);
-    if (m_destiny && m_bubble) {
+    if (m_destiny != nullptr) {
+        if (m_bubble == nullptr)
+            sBubbleMgr.Add(this);
         m_destiny->Stop();
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
     }
@@ -513,7 +516,7 @@ void ObjectSystemEntity::Killed(Damage &fatal_blow)
 
     /** @todo  test and complete this to null current customs office for this planet ... */
     if (IsCOSE()) {
-        if (GetCOSE()->GetPlanetID()) {
+        if (GetCOSE()->GetPlanetID() > 0) {
             SystemEntity* pSE = m_system->GetSE(GetCOSE()->GetPlanetID());
             pSE->GetPlanetSE()->SetCustomsOffice(nullptr);
         }
@@ -606,9 +609,11 @@ void DynamicSystemEntity::UpdateDamage()
 void DynamicSystemEntity::Killed(Damage &fatal_blow)
 {
     m_targMgr->ClearTargets(false);
-    if (m_destiny && m_bubble) {
+    if (m_destiny != nullptr) {
+        if (m_bubble == nullptr)
+            sBubbleMgr.Add(this);
         m_destiny->Stop();
-        if (IsStaticEntity() || IsObjectEntity())    /* these will never be true here */
+        if (IsStaticEntity() or IsObjectEntity())    /* these will never be true here */
             m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), true);
         else
             m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());

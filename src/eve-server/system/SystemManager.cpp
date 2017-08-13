@@ -53,7 +53,7 @@
 SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)
 :m_services(svc),
 m_anomMgr(new AnomalyMgr(this, svc)),
-m_beltMgr(new AsteroidBeltMgr(this, svc)),
+m_beltMgr(new BeltMgr(this, svc)),
 m_dunMgr(new DungeonMgr(this, svc)),
 m_spawnMgr(new SpawnMgr(this, svc))
 {
@@ -195,12 +195,15 @@ bool SystemManager::SystemActivity() {
 
 // called from EntityList::Process() and EntityList::Close()
 void SystemManager::UnloadSystem() {
+    if (!m_loaded)
+        return;
+
     sLog.Magenta("    SystemManager", "UnloadSystem() called for %s(%u).", GetName().c_str(), m_data.systemID);
 
     m_beltMgr->ClearAll();
 
-    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
-    while (itr != m_entities.end()) {
+    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin(), end = m_entities.end();
+    while (itr != end) {
         // still getting trash data in entity map....dunno why or how
         if ((itr->second == nullptr) or (itr->second->DestinyMgr() == nullptr) or (itr->second->SystemMgr() == nullptr)) {
             itr = m_entities.erase(itr);
@@ -209,12 +212,14 @@ void SystemManager::UnloadSystem() {
             itr->second->GetStationSE()->UnloadStation();
             sEntityList.RemoveStation(itr->first);
             sBubbleMgr.Remove(itr->second);
+            RemoveEntity(itr->second);
         } else if (itr->second->IsNPCSE()) {
             RemoveNPC(itr->second->GetNPCSE());
         } else if (itr->second->IsDynamicEntity()) {
             RemoveEntity(itr->second);
         } else {
             sBubbleMgr.Remove(itr->second);
+            RemoveEntity(itr->second);
         }
 
         m_services.item_factory->RemoveItem(itr->first);

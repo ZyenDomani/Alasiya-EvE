@@ -43,6 +43,8 @@ void StaticDataMgr::Clear()
     m_typeAttrMap.clear();
     m_stationCount.clear();
     m_oreBySecClass.clear();
+    for (auto cur : m_stationPyData)
+        PyDecRef(cur.second);
     m_stationPyData.clear();
     m_stationRegion.clear();
     m_stationSystem.clear();

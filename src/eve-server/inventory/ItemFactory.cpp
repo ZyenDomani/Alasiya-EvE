@@ -27,6 +27,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
+#include "EVEServerConfig.h"
 #include "character/Character.h"
 #include "inventory/ItemFactory.h"
 #include "manufacturing/Blueprint.h"
@@ -114,10 +115,10 @@ Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
             iRef = GetItem( itemID );
     }
 
-    if (iRef.get() != nullptr)
-        return iRef->GetMyInventory();
+    if (iRef.get() == nullptr)
+        return nullptr;
 
-    return nullptr;
+    return iRef->GetMyInventory();
 }
 
 InventoryItemRef ItemFactory::GetInventoryItemFromID( uint32 itemID, bool load /*true*/) {
@@ -129,6 +130,9 @@ InventoryItemRef ItemFactory::GetInventoryItemFromID( uint32 itemID, bool load /
         if (load)
             iRef = GetItem( itemID );
     }
+
+    if (iRef.get() == nullptr)
+        return InventoryItemRef();
 
     return iRef;
 }
@@ -153,6 +157,9 @@ InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load/*true*/)
         }
     }
 
+    if (iRef.get() == nullptr)
+        return InventoryItemRef();
+
     return iRef;
 }
 
@@ -176,14 +183,14 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true
         }
     }
 
-    if (iRef.get() != nullptr)
-        return iRef->GetMyInventory();
+    if (iRef.get() == nullptr)
+        return nullptr;
 
-    return nullptr;
+    return iRef->GetMyInventory();
 }
 
 void ItemFactory::RemoveItem(uint32 itemID) {
-    std::map<uint32, InventoryItemRef>::const_iterator res = m_items.find( itemID );
+    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
     if (res == m_items.end()) {
         _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
     } else {

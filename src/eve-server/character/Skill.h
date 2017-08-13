@@ -26,6 +26,9 @@
 #ifndef __SKILL__H__INCL__
 #define __SKILL__H__INCL__
 
+
+#include "EVEServerConfig.h"
+#include "../../eve-core/utils/misc.h"
 #include "inventory/InventoryItem.h"
 
 class Character;
@@ -104,6 +107,8 @@ protected:
         if( type.categoryID() != EVEDB::invCategories::Skill )
         {
             sLog.Error("Skill", "Trying to load %s as Skill.", type.category().name().c_str() );
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
             return RefPtr<_Ty>();
         }
 

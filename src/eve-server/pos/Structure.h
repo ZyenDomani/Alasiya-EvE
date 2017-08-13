@@ -12,6 +12,7 @@
 #define EVEMU_POS_STRUCTURE_H_
 
 
+#include "EVEServerConfig.h"
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
 
@@ -94,6 +95,8 @@ protected:
             and (type.categoryID() != EVEDB::invCategories::Orbitals))
         {
             _log( ITEM__ERROR, "Trying to load %s as Structure %u.", type.category().name().c_str(), structureID);
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
             return RefPtr<_Ty>();
         }
 

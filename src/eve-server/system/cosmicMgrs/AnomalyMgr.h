@@ -20,7 +20,7 @@
 
 
 class DungeonMgr;
-class AsteroidBeltMgr;
+class BeltMgr;
 class PyServiceMgr;
 class SpawnMgr;
 class SystemManager;
@@ -31,7 +31,7 @@ class AnomalyMgr
       AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
       virtual ~AnomalyMgr()                             { /* do nothing here */ }
 
-      void Init(AsteroidBeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
+      void Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
       void Process();
 
       void LoadAnomaly();
@@ -43,7 +43,7 @@ protected:
 
 private:
     /* we do not own any of these */
-    AsteroidBeltMgr* m_beltMgr;
+    BeltMgr* m_beltMgr;
     DungeonMgr* m_dungMgr;
     SpawnMgr* m_spawnMgr;
     SystemManager* m_system;

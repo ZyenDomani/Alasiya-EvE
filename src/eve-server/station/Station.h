@@ -110,6 +110,8 @@ protected:
     {
         if (group.id() != EVEDB::invGroups::Station) {
             _log( ITEM__ERROR, "Trying to load %s as Station.", group.name().c_str() );
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
             return nullptr;
         }
 
@@ -233,6 +235,8 @@ protected:
         if( type.groupID() != EVEDB::invGroups::Station )
         {
             _log( ITEM__ERROR, "Trying to load %s as Station.", type.group().name().c_str() );
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
             return RefPtr<_Ty>();
         }
         // cast the type

@@ -27,6 +27,7 @@
 #define __SOLAR_SYSTEM__H__INCL__
 
 
+#include "EVEServerConfig.h"
 #include "system/Celestial.h"
 
 /**
@@ -147,6 +148,8 @@ protected:
     {
         if (type.groupID() != EVEDB::invGroups::Solar_System) {
             _log( ITEM__ERROR, "Trying to load %s as Solar system %u.", type.name().c_str(), solarSystemID );
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
             return RefPtr<_Ty>();
         }
 

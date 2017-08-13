@@ -39,7 +39,7 @@ m_spawnMgr(nullptr)
     m_initalized = false;
 }
 
-void AnomalyMgr::Init(AsteroidBeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
+void AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
 {
     m_beltMgr = beltMgr;
     m_dungMgr = dungMgr;

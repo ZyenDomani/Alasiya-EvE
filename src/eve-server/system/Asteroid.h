@@ -96,12 +96,12 @@ public:
 
     /* specific functions handled in this class. */
     void Grow();
-    void SetMgr(AsteroidBeltMgr* beltMgr, uint32 beltID) { m_beltMgr = beltMgr; m_beltID = beltID; }
+    void SetMgr(BeltMgr* beltMgr, uint32 beltID) { m_beltMgr = beltMgr; m_beltID = beltID; }
 
 protected:
 
 private:
-    AsteroidBeltMgr* m_beltMgr;
+    BeltMgr* m_beltMgr;
     Timer m_growTimer;
     uint32 m_beltID;
 

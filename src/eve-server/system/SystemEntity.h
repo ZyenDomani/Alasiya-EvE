@@ -33,7 +33,7 @@
 #include "system/TargetManager.h"
 #include "pos/PosMgrDB.h"
 
-class AsteroidBeltMgr;
+class BeltMgr;
 class Character;
 class Client;
 class Concord;
@@ -288,13 +288,13 @@ public:
     virtual bool                LoadExtras(SystemDB *db);
 
     /* generic access functions handled here */
-    AsteroidBeltMgr*            BeltMgr()               { return m_beltMgr; }
+    BeltMgr*                    GetBeltMgr()            { return m_beltMgr; }
 
     /* specific functions handled in this class. */
-    void          SetBeltMgr(AsteroidBeltMgr* beltMgr)  { m_beltMgr = beltMgr; }
+    void                   SetBeltMgr(BeltMgr* beltMgr) { m_beltMgr = beltMgr; }
 
 protected:
-    AsteroidBeltMgr*            m_beltMgr;
+    BeltMgr*                    m_beltMgr;
 
 };
 

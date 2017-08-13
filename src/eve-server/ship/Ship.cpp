@@ -171,9 +171,9 @@ void ShipItem::InitPod() {
 void ShipItem::LogOut()
 {
     // remove module effects
-    m_ModuleManager->OfflineAll();
+    //m_ModuleManager->OfflineAll();
     // reset ship effects and save ship data
-    ProcessEffects();
+    //ProcessEffects();
 
     // remove ship item from factory master list here, as *something* changes ship postion when saving items from factory.
     m_factory.RemoveItem(m_itemID);

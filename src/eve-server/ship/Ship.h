@@ -361,6 +361,8 @@ protected:
     static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 shipID, const ItemType &type, const ItemData &data) {
         if( type.categoryID() != EVEDB::invCategories::Ship ) {
             _log( ITEM__ERROR, "Trying to load %s as ShipItem.", type.category().name().c_str() );
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
             return RefPtr<_Ty>();
         }
 

@@ -1552,10 +1552,10 @@ void DestinyManager::_BeginMovement() {
             sbagility.entityID =  mySE->GetID();
             sbagility.agility = m_shipInertia;
         updates.push_back(sbagility.Encode());
-        DoDestiny_SetBallMassive sbmassive;
-            sbmassive.entityID = mySE->GetID();
-            sbmassive.is_massive = true;
-        updates.push_back(sbmassive.Encode());
+        //DoDestiny_SetBallMassive sbmassive;
+        //    sbmassive.entityID = mySE->GetID();
+        //    sbmassive.is_massive = true;
+        //updates.push_back(sbmassive.Encode());
         DoDestiny_SetBallMass sbmass;
             sbmass.entityID = mySE->GetID();
             sbmass.mass = m_mass;

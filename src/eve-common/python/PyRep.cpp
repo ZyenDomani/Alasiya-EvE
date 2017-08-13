@@ -669,7 +669,7 @@ bool PyList::visit( PyVisitor& v ) const
 void PyList::clear()
 {
     iterator cur = items.begin();
-    for (; cur != items.end(); ++cur)
+    for (; cur != items.end(); cur++)
         PySafeDecRef( *cur );
 
     items.clear();
@@ -720,7 +720,7 @@ bool PyDict::visit( PyVisitor& v ) const
 void PyDict::clear()
 {
     iterator cur = items.begin();
-    for (; cur != items.end(); ++cur) {
+    for (; cur != items.end(); cur++) {
         PyDecRef( cur->first );
         PySafeDecRef( cur->second );
     }

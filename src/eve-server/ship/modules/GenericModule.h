@@ -16,9 +16,6 @@
 #include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
 
-class ModuleEffects;
-class ModifyModuleAttributesComponent;
-class ModifyShipAttributesComponent;
 
 /* generic module base class */
 class GenericModule
@@ -85,14 +82,15 @@ public:
 
 	/* generic access functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }
-    virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0)
-                                                        { /* Do nothing here */ }
     virtual void Deactivate(std::string effect="")      { /* Do nothing here */ }
     virtual void AbortCycle()                           { /* Do nothing here */ }
     virtual void LoadCharge(InventoryItemRef charge)    { /* Do nothing here */ }
     virtual void UnloadCharge()                         { /* Do nothing here */ }
     virtual void DestroyRig()                           { /* Do nothing here */ }
     virtual void ReprocessCharge()                      { /* Do nothing here */ }
+
+    virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0)
+                                                        { /* Do nothing here */ }
 
     /* generic access functions to be overridden in derived classes as needed */
     virtual void Overload();

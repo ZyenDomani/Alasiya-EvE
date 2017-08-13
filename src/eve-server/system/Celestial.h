@@ -26,6 +26,7 @@
 #ifndef __CELESTIAL__H__INCL__
 #define __CELESTIAL__H__INCL__
 
+#include "EVEServerConfig.h"
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
 
@@ -81,6 +82,8 @@ protected:
     {
         if (type.categoryID() != EVEDB::invCategories::Celestial)  {
             _log( ITEM__ERROR, "Trying to load %s as Celestial.", type.category().name().c_str() );
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
             return RefPtr<_Ty>();
         }
 

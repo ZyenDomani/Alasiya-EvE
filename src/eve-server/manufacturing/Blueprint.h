@@ -27,6 +27,7 @@
 #ifndef __BLUEPRINT_ITEM__H__INCL__
 #define __BLUEPRINT_ITEM__H__INCL__
 
+#include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "inventory/ItemType.h"
 #include "inventory/InventoryItem.h"
@@ -190,6 +191,8 @@ protected:
         if (type.categoryID() != EVEDB::invCategories::Blueprint )
         {
             sLog.Error("Blueprint", "Trying to load %s as Blueprint.", type.category().name().c_str() );
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
             return RefPtr<_Ty>();
         }
         const BlueprintType& bpType = static_cast<const BlueprintType& >( type );

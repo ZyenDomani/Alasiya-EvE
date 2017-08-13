@@ -386,7 +386,7 @@ PyResult Command_beltlist(Client* who, CommandDB* db, PyServiceMgr* services, co
     std::vector<AsteroidSE*> invMap;
     invMap.clear();
     uint32 beltID = sBubbleMgr.GetBeltID(who->GetShipSE()->SysBubble()->GetID());
-    AsteroidBeltMgr* belt = who->GetShipSE()->SystemMgr()->GetBeltMgr();
+    BeltMgr* belt = who->GetShipSE()->SystemMgr()->GetBeltMgr();
     belt->GetList(beltID, invMap);
 
     std::ostringstream str;
