@@ -243,7 +243,6 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     if (IsSolarSystem(m_locationID)) {
         m_invulTimer.Start(ClientTimers::LoginTimer);
-        CreateShipSE();
         WarpIn();
     } else {
         //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free

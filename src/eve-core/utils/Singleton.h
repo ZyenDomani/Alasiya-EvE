@@ -52,13 +52,13 @@ public:
      */
     Singleton()
     {
-        assert( NULL == mInstance.get() );
+        assert(mInstance.get() == nullptr);
     }
 
     /** @return Reference to the singleton instance. */
     static X& get()
     {
-        if( NULL == mInstance.get() )
+        if (mInstance.get() == nullptr)
             mInstance.reset( new X );
 
         return *mInstance;
@@ -70,7 +70,7 @@ protected:
 };
 
 template<typename X>
-std::shared_ptr<X> Singleton<X>::mInstance( NULL );
+std::shared_ptr<X> Singleton<X>::mInstance( nullptr );
 
 #endif /* !__UTILS__SINGLETON_H__INCL__ */
 

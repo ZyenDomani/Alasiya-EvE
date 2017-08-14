@@ -98,7 +98,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
 	DynamicSystemEntity* pDSE(nullptr);
     std::map<uint32, SystemEntity*>::iterator itr = m_dynamicEntities.begin();
     while (itr != m_dynamicEntities.end()) {
-        if (!itr->second) {
+        if (itr->second == nullptr) {
             ++itr;
             continue;
         }
@@ -176,14 +176,6 @@ void SystemBubble::Add(SystemEntity* pSE) {
 	}
 
     if (pSE->HasPilot()) {
-        Client* pClient = pSE->GetPilot();
-        SendAddBalls( pSE );
-        if (!pClient->IsJump()) {
-            if (HasPlayers())
-                AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
-        }
-        m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
-
         // Set spawn timer for this bubble, if needed
         if (m_belt) {
             // check for roids and load/spawn as needed.
@@ -192,6 +184,14 @@ void SystemBubble::Add(SystemEntity* pSE) {
                 if (!m_spawnTimer.Enabled())
                     SetSpawnTimer(true);
         }
+        Client* pClient = pSE->GetPilot();
+        SendAddBalls( pSE );
+        if (!pClient->IsJump()) {
+            if (HasPlayers())
+                AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
+        }
+        m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
+
         if (m_gate and sConfig.npc.StaticSpawns) /* m_gate = false.  will fix when gate spawns are finished */
             if (!m_spawnTimer.Enabled())
                 SetSpawnTimer(false);
@@ -418,7 +418,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     if (is_log_enabled(DESTINY__TRACE))
         PrintEntityList();
 
-    Buffer* destinyBuffer = new Buffer;
+    Buffer* destinyBuffer = new Buffer();
 
     Destiny::AddBall_header head;
         head.packet_type = 1;   // 0 = full state   1 = balls
@@ -426,7 +426,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     destinyBuffer->Append(head);
 
     DoDestiny_AddBalls addballs;
-    addballs.slims = new PyList;
+    addballs.slims = new PyList();
 
     for (auto cur : m_dynamicEntities) {
         if (!cur.second->IsMissileSE())
@@ -434,8 +434,6 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
         addballs.slims->AddItem( new PyObject( "foo.SlimItem", cur.second->MakeSlimItem() ) );
         cur.second->EncodeDestiny( *destinyBuffer );
     }
-
-    //addballs.slims->AddItem( new PyObject( "foo.SlimItem", to_who->MakeSlimItem() ) );
 
     if (addballs.slims->size() < 1) {
         SafeDelete( destinyBuffer );
@@ -468,7 +466,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
     if (is_log_enabled(DESTINY__TRACE))
         PrintEntityList();
 
-	Buffer* destinyBuffer = new Buffer;
+	Buffer* destinyBuffer = new Buffer();
 
 	Destiny::AddBall_header head;
         head.packet_type = 1;   // 0 = full state   1 = balls
@@ -518,7 +516,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
 void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
     if (!m_system->IsLoaded())
         return;
-	Buffer* destinyBuffer = new Buffer;
+	Buffer* destinyBuffer = new Buffer();
 
 	//create AddBalls header
 	Destiny::AddBall_header head;
@@ -527,7 +525,7 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
 	destinyBuffer->Append( head );
 
 	DoDestiny_AddBalls addballs;
-        addballs.slims = new PyList;
+        addballs.slims = new PyList();
 
 	//encode destiny binary
 	about_who->EncodeDestiny( *destinyBuffer );

@@ -130,7 +130,8 @@ void BubbleManager::CheckBubble(SystemEntity *pSE) {
 }
 
 void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
-    if (!pSE) return;
+    if (pSE == nullptr)
+        return;
     const GPoint &pos(pSE->GetPosition());
     if (pos.isZero())
         ; /** @todo do something constructive here */

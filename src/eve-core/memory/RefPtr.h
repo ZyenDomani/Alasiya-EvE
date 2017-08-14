@@ -28,8 +28,6 @@
 
 /**
  * ENABLE_REF_TRACE
- *
- *
  * A way to trace deleted objects still beeing handled in the python layer.
  *
  * As I remember Linux doesn't clear the deleted memory so this would work.
@@ -37,7 +35,7 @@
  * That way the assert will trigger a crash when the object is still being handled but in
  * reality its already deleted.
  */
-//#define ENABLE_REF_TRACE
+#define ENABLE_REF_TRACE
 #ifdef ENABLE_REF_TRACE
 #  define REF_TRACE_MACRO() do { assert( mDeleted == false ); } while (0)
 #else
@@ -80,7 +78,6 @@ public:
     {
         mDeleted = true;
         assert( mRefCount == 0);
-        //DecRef();
     }
 
 protected:
@@ -130,10 +127,10 @@ public:
      *
      * @param[in] p Pointer to object to be referenced.
      */
-    explicit RefPtr( X* p = nullptr )
+    explicit RefPtr( X* p = nullptr)
     : mPtr( p )
     {
-        if (*this)
+        if ( *this )
             (*this)->IncRef();
     }
     /**
@@ -144,7 +141,7 @@ public:
     RefPtr( const RefPtr& oth )
     : mPtr( oth.get() )
     {
-        if (*this)
+        if ( *this )
             (*this)->IncRef();
     }
     /**
@@ -156,7 +153,7 @@ public:
     RefPtr( const RefPtr<Y>& oth )
     : mPtr( oth.get() )
     {
-        if (*this)
+        if ( *this )
             (*this)->IncRef();
     }
 
@@ -165,7 +162,7 @@ public:
      */
     ~RefPtr()
     {
-        if (*this)
+        if ( *this )
             (*this)->DecRef();
     }
 
@@ -176,12 +173,12 @@ public:
      */
     RefPtr& operator=( const RefPtr& oth )
     {
-        if (*this)
+        if ( *this )
             (*this)->DecRef();
 
         mPtr = oth.get();
 
-        if (*this)
+        if ( *this )
             (*this)->IncRef();
 
         return *this;
@@ -194,12 +191,12 @@ public:
     template<typename Y>
     RefPtr& operator=( const RefPtr<Y>& oth )
     {
-        if (*this)
+        if ( *this )
             (*this)->DecRef();
 
         mPtr = oth.get();
 
-        if (*this)
+        if ( *this )
             (*this)->IncRef();
 
         return *this;
@@ -213,10 +210,10 @@ public:
     /**
      * @return True if stores a reference, false otherwise.
      */
-    operator bool() const { return ( get() != nullptr ); }
+    operator bool() const { return ( mPtr != nullptr ); }
 
-    X& operator*() const { assert( *this ); return *get(); }
-    X* operator->() const { assert( *this ); return get(); }
+    X& operator*() const { assert( *this ); return *mPtr; }
+    X* operator->() const { assert( *this ); return mPtr; }
 
     /**
      * @brief Compares two references.
@@ -226,7 +223,7 @@ public:
     template<typename Y>
     bool operator==( const RefPtr<Y>& oth ) const
     {
-        return ( get() == oth.get() );
+        return ( mPtr == oth.get() );
     }
 
     /**

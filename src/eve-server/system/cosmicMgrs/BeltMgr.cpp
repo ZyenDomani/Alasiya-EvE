@@ -165,9 +165,9 @@ bool BeltMgr::Load(uint16 bubbleID) {
 
     itr = m_active.find(beltID);
     if (itr == m_active.end())
-        m_active.insert(std::pair<uint32, bool>(beltID, false));
+        m_active.insert(std::pair<uint32, bool>(beltID, true));
     else
-        itr->second = false;
+        itr->second = true;
 
     return true;
 }

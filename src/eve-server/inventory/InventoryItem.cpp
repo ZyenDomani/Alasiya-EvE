@@ -1088,7 +1088,7 @@ void InventoryItem::SetCustomInfo(const char *ci) {
 void InventoryItem::Relocate(const GPoint &pos)
 {
     m_position = pos;
-    _log(ITEM__TRACE, "%s(%u) Relocating to %.3f, %.3f, %.3f.", m_itemName.c_str(), m_itemID, m_position.x, m_position.y, m_position.z);
+    _log(ITEM__RELOCATE, "%s(%u) Relocating to %.3f, %.3f, %.3f.", m_itemName.c_str(), m_itemID, m_position.x, m_position.y, m_position.z);
 }
 
 void InventoryItem::SetAttribute( uint16 attrID, int64 num, bool notify/*true*/)
