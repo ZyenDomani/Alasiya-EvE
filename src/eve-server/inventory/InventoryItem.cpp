@@ -97,7 +97,7 @@ InventoryItemRef InventoryItem::SpawnItem(ItemFactory &factory, uint32 itemID, c
 uint32 InventoryItem::CreateItemID(ItemFactory &factory, ItemData &data) {
     // obtain type of new item
     const ItemType *iType = factory.GetType(data.typeID);
-    if (iType.get() == nullptr) {
+    if (iType == nullptr) {
         codelog(ITEM__ERROR, "Invalid type returned for typeID %u", data.typeID);
         return 0;
     }
@@ -122,7 +122,7 @@ uint32 InventoryItem::CreateTempItemID(ItemFactory &factory, ItemData &data) {
     // obtain type of new item
     // this also checks that the type is valid
     const ItemType *iType = factory.GetType(data.typeID);
-    if (iType.get() == nullptr) {
+    if (iType == nullptr) {
         codelog(ITEM__ERROR, "Invalid type returned for typeID %u", data.typeID);
         return 0;
     }
@@ -277,7 +277,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
 {
     // obtain type of new item
     const ItemType *iType = factory.GetType( data.typeID );
-    if (iType.get() == nullptr) {
+    if (iType == nullptr) {
         codelog(ITEM__ERROR, "Invalid type returned for typeID %u", data.typeID);
         return InventoryItemRef();
     }
@@ -466,8 +466,8 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 CelestialObjectRef celestialRef = CelestialObject::Load( factory, itemID );
                 if (celestialRef.get() == nullptr)
                     return CelestialObjectRef();
-                if ((iType->groupID() == EVEDB::invGroups::Beacon) or (t->groupID() == EVEDB::invGroups::Effect_Beacon))
-                    celestialRef->SetAttribute(AttrIsGlobal,       1);
+                if ((iType->groupID() == EVEDB::invGroups::Beacon) or (iType->groupID() == EVEDB::invGroups::Effect_Beacon))
+                    celestialRef->SetAttribute(AttrIsGlobal, 1);
                 return celestialRef;
             }
         }
