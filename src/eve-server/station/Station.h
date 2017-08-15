@@ -232,8 +232,7 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 stationID, const ItemType &type, const ItemData &data)
     {
-        if( type.groupID() != EVEDB::invGroups::Station )
-        {
+        if (type.groupID() != EVEDB::invGroups::Station) {
             _log( ITEM__ERROR, "Trying to load %s as Station.", type.group().name().c_str() );
             if (sConfig.server.StackTrace)
                 EvE::traceStack();

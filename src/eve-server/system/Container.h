@@ -28,6 +28,7 @@
 #define __CONTAINER__H__INCL__
 
 
+#include "EVEServerConfig.h"
 #include "inventory/InventoryItem.h"
 #include "system/SystemEntity.h"
 
@@ -109,14 +110,15 @@ protected:
     // Template loader:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 containerID, const ItemType &type, const ItemData &data) {
-        if( (type.groupID() != EVEDB::invGroups::Cargo_Container)
+        if ( (type.groupID() != EVEDB::invGroups::Cargo_Container)
             && (type.groupID() != EVEDB::invGroups::Audit_Log_Secure_Container)
             && (type.groupID() != EVEDB::invGroups::Freight_Container)
             && (type.groupID() != EVEDB::invGroups::Secure_Cargo_Container)
             && (type.groupID() != EVEDB::invGroups::Spawn_Container) )
         {
-            _log( ITEM__ERROR, "CargoContainer::_LoadItem()  Trying to load category=%s, group=%s as CargoContainer %u.",\
-                            type.category().name().c_str(), type.group().name().c_str(), containerID );
+            _log( ITEM__ERROR, "Trying to load %s as Container.", type.category().name().c_str() );
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
             return RefPtr<_Ty>();
         }
         return _Ty::template _LoadCargoContainer<_Ty>( factory, containerID, type, data );
@@ -255,7 +257,9 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 containerID, const ItemType &type, const ItemData &data) {
         if (type.groupID() != EVEDB::invGroups::Wreck) {
-            _log( ITEM__ERROR, "WreckContainer::_LoadItem()  Trying to load category=%s, group=%s as Wreck.", type.category().name().c_str(), type.group().name().c_str() );
+            _log( ITEM__ERROR, "Trying to load %s as Wreck.", type.category().name().c_str() );
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
             return RefPtr<_Ty>();
         }
         return _Ty::template _LoadWreck<_Ty>( factory, containerID, type, data );

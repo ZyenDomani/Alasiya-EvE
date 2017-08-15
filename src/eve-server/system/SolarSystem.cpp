@@ -93,7 +93,6 @@ SolarSystem::SolarSystem(
     // CelestialObject stuff:
     const CelestialObjectData &_cData,
     // SolarSystem stuff:
-    const ItemType &_sunType,
     const SolarSystemData &_ssData)
 : CelestialObject(_factory, _solarSystemID, _type, _data, _cData),
   m_minPosition(_ssData.minPosition),
@@ -109,7 +108,6 @@ SolarSystem::SolarSystem(
   m_security(_ssData.security),
   m_factionID(_ssData.factionID),
   m_radius(_ssData.radius),
-  m_sunType(_sunType),
   m_securityClass(_ssData.securityClass)
 {
     // consistency check

@@ -52,6 +52,13 @@ protected:
     // Template loader:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 asteroidID, const ItemType &type, const ItemData &data) {
+        if (type.categoryID() != EVEDB::invCategories::Asteroid) {
+            _log( ITEM__ERROR, "Trying to load %s as Asteroid.", type.category().name().c_str() );
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
+            return RefPtr<_Ty>();
+        }
+
         AsteroidData dbData;
         if ( !factory.db().GetAsteroid( asteroidID, dbData ) )
             return RefPtr<_Ty>();

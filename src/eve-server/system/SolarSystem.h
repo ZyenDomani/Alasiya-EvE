@@ -110,7 +110,6 @@ public:
     double              security() const                { return m_security; }
     uint32              factionID() const               { return m_factionID; }
     double              radius() const                  { return m_radius; }
-    const ItemType &    sunType() const                 { return m_sunType; }
     const std::string & securityClass() const           { return m_securityClass; }
 
     void AddItemToInventory(InventoryItemRef item);
@@ -126,7 +125,6 @@ protected:
         // CelestialObject stuff:
         const CelestialObjectData &_cData,
         // SolarSystem stuff:
-        const ItemType &_sunType,
         const SolarSystemData &_ssData
     );
     virtual ~SolarSystem();
@@ -144,8 +142,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 solarSystemID, const ItemType &type, const ItemData &data)
-    {
+    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 solarSystemID, const ItemType &type, const ItemData &data) {
         if (type.groupID() != EVEDB::invGroups::Solar_System) {
             _log( ITEM__ERROR, "Trying to load %s as Solar system %u.", type.name().c_str(), solarSystemID );
             if (sConfig.server.StackTrace)
@@ -163,20 +160,15 @@ protected:
         if( !factory.db().GetSolarSystem( solarSystemID, ssData ) )
             return RefPtr<_Ty>();
 
-        // get sun type
-        const ItemType *sunType = factory.GetType( ssData.sunTypeID );
-        if( sunType == NULL )
-            return RefPtr<_Ty>();
-
-        return _Ty::template _LoadSolarSystem<_Ty>( factory, solarSystemID, type, data, cData, *sunType, ssData );
+        return _Ty::template _LoadSolarSystem<_Ty>( factory, solarSystemID, type, data, cData, ssData );
     }
 
     // Actual loading stuff:
     template<class _Ty>
     static RefPtr<_Ty> _LoadSolarSystem(ItemFactory &factory, uint32 solarSystemID, const ItemType &type, const ItemData &data,
-                    const CelestialObjectData &cData, const ItemType &sunType, const SolarSystemData &ssData)
+                    const CelestialObjectData &cData, const SolarSystemData &ssData)
     {
-        return SolarSystemRef( new SolarSystem( factory, solarSystemID, type, data, cData, sunType, ssData ) );
+        return SolarSystemRef( new SolarSystem( factory, solarSystemID, type, data, cData, ssData ) );
     }
 
 
@@ -199,7 +191,6 @@ protected:
     double m_security;
     uint32 m_factionID;
     double m_radius;
-    const ItemType &m_sunType;
     std::string m_securityClass;
 };
 

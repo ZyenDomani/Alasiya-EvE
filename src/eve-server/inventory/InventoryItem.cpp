@@ -85,21 +85,25 @@ InventoryItemRef InventoryItem::Load(ItemFactory &factory, uint32 itemID)
 
 InventoryItemRef InventoryItem::SpawnItem(ItemFactory &factory, uint32 itemID, const ItemData &data)
 {
-    const ItemType *type = factory.GetType( data.typeID );
-	InventoryItemRef itemRef = InventoryItemRef( new InventoryItem(factory, itemID, *type, data) );
-    itemRef->_Load();
+    const ItemType *iType = factory.GetType( data.typeID );
+    InventoryItemRef itemRef = InventoryItemRef( new InventoryItem(factory, itemID, *iType, data) );
+    if (itemRef.get() == nullptr)
+        InventoryItemRef();
+    else
+        itemRef->_Load();
 	return itemRef;
 }
 
 uint32 InventoryItem::CreateItemID(ItemFactory &factory, ItemData &data) {
     // obtain type of new item
-    const ItemType *t = factory.GetType(data.typeID);
-    if (!t) {
+    const ItemType *iType = factory.GetType(data.typeID);
+    if (iType.get() == nullptr) {
         codelog(ITEM__ERROR, "Invalid type returned for typeID %u", data.typeID);
         return 0;
     }
     // fix the name (if empty)
-    if (data.name.empty()) data.name = t->name();
+    if (data.name.empty())
+        data.name = iType->name();
 
     // insert new entry into DB
     return factory.db().NewItem(data);
@@ -117,16 +121,18 @@ uint32 InventoryItem::CreateItemID(ItemFactory &factory, ItemData &data) {
 uint32 InventoryItem::CreateTempItemID(ItemFactory &factory, ItemData &data) {
     // obtain type of new item
     // this also checks that the type is valid
-    const ItemType *t = factory.GetType(data.typeID);
-    if (!t)
+    const ItemType *iType = factory.GetType(data.typeID);
+    if (iType.get() == nullptr) {
+        codelog(ITEM__ERROR, "Invalid type returned for typeID %u", data.typeID);
         return 0;
+    }
 
     // fix the name (if empty)
     if (data.name.empty())
-        data.name = t->name();
+        data.name = iType->name();
 
     // Get a new Entity ID from ItemFactory's ID Authority:
-    if (t->categoryID() == EVEDB::invCategories::Entity) // may need more testing to verify that ONLY NPC's use this method
+    if (iType->categoryID() == EVEDB::invCategories::Entity) // may need more testing to verify that ONLY NPC's use this method
         return factory.GetNextNPCID();
     else if (data.flag == EVEItemFlags::flagMissile)
         return factory.GetNextMissileID();
@@ -270,10 +276,13 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
 InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
 {
     // obtain type of new item
-    const ItemType *t = factory.GetType( data.typeID );
-    if (!t) return InventoryItemRef();
+    const ItemType *iType = factory.GetType( data.typeID );
+    if (iType.get() == nullptr) {
+        codelog(ITEM__ERROR, "Invalid type returned for typeID %u", data.typeID);
+        return InventoryItemRef();
+    }
 
-    switch( t->categoryID() ) {
+    switch( iType->categoryID() ) {
         //! TODO not handled.
         case EVEDB::invCategories::_System:
         case EVEDB::invCategories::Material:
@@ -312,7 +321,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             if (!itemID)
                 return InventoryItemRef();
             InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
-            if (!itemRef)
+            if (itemRef.get() == nullptr)
                 return InventoryItemRef();
             // THESE SHOULD BE MOVED INTO AN Asteroid::Spawn() function that does not exist yet
             // Create default dynamic attributes in the AttributeMap:
@@ -328,7 +337,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             if (!itemID)
                 return InventoryItemRef();
             InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
-            if (!itemRef)
+            if (itemRef.get() == nullptr)
                 return InventoryItemRef();
             // THESE SHOULD BE MOVED INTO A _type::Spawn() function that does not exist yet
             itemRef->SetAttribute(AttrMass,           itemRef->type().mass());           // Mass
@@ -346,7 +355,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                         return InventoryItemRef();
 
                     InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
-                    if (!itemRef)
+                    if (itemRef.get() == nullptr)
                         return InventoryItemRef();
                     // THESE SHOULD BE MOVED INTO A Charge::Spawn() function that does not exist yet
                     itemRef->SetAttribute(AttrMass,       itemRef->type().mass());           // Mass
@@ -362,7 +371,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                         return InventoryItemRef();
 
                     InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
-                    if (!itemRef)
+                    if (itemRef.get() == nullptr)
                         return InventoryItemRef();
                     // THESE SHOULD BE MOVED INTO A Charge::Spawn() function that does not exist yet
                     itemRef->SetAttribute(AttrMass,       itemRef->type().mass());           // Mass
@@ -381,7 +390,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
 			if (!itemID)
 				return InventoryItemRef();
 			 InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
-            if (!itemRef)
+            if (itemRef.get() == nullptr)
                 return InventoryItemRef();
 			return itemRef;
         }
@@ -390,7 +399,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             if (!itemID)
                 return StationItemRef();
             StationItemRef stationRef = StationItem::Load( factory, itemID );
-            if (!stationRef)
+            if (stationRef.get() == nullptr)
                 return StationItemRef();
             // THESE SHOULD BE MOVED INTO A Station::Spawn() function that does not exist yet
             stationRef->SetAttribute(AttrShieldCharge,  stationRef->GetAttribute(AttrShieldCapacity));     // Shield Charge
@@ -402,19 +411,19 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             return stationRef;
         }
         case EVEDB::invCategories::Celestial: {
-            if ( (t->groupID() == EVEDB::invGroups::Secure_Cargo_Container)
-                or (t->groupID() == EVEDB::invGroups::Cargo_Container)
-                or (t->groupID() == EVEDB::invGroups::Freight_Container)
-                or (t->groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
-                or (t->groupID() == EVEDB::invGroups::Spawn_Container)
-                or (t->groupID() == EVEDB::invGroups::Mission_Container))
+            if ( (iType->groupID() == EVEDB::invGroups::Secure_Cargo_Container)
+                or (iType->groupID() == EVEDB::invGroups::Cargo_Container)
+                or (iType->groupID() == EVEDB::invGroups::Freight_Container)
+                or (iType->groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
+                or (iType->groupID() == EVEDB::invGroups::Spawn_Container)
+                or (iType->groupID() == EVEDB::invGroups::Mission_Container))
             {
                 // Spawn new Cargo Container
                 uint32 itemID = CargoContainer::CreateItemID( factory, data );
                 if (!itemID)
                     return CargoContainerRef();
                 CargoContainerRef cargoRef = CargoContainer::Load( factory, itemID );
-                if (!cargoRef)
+                if (cargoRef.get() == nullptr)
                     return CargoContainerRef();
                 // THESE SHOULD BE MOVED INTO A CargoContainer::Spawn() function that does not exist yet
                 cargoRef->SetAttribute(AttrShieldCharge,  cargoRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
@@ -424,13 +433,13 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 cargoRef->SetAttribute(AttrVolume,        cargoRef->GetPackagedVolume());        // Volume
                 cargoRef->SetAttribute(AttrCapacity,      cargoRef->type().capacity());      // Capacity
                 return cargoRef;
-            } else if (t->groupID() == EVEDB::invGroups::Wreck) {
+            } else if (iType->groupID() == EVEDB::invGroups::Wreck) {
                 // Spawn new Wreck Container
                 uint32 itemID = WreckContainer::CreateItemID( factory, data );
                 if (!itemID)
                     return WreckContainerRef();
                 WreckContainerRef wreckRef = WreckContainer::Load( factory, itemID );
-                if (!wreckRef)
+                if (wreckRef.get() == nullptr)
                     return WreckContainerRef();
                 // THESE SHOULD BE MOVED INTO A WreckContainer::Spawn() function that does not exist yet
                 wreckRef->SetAttribute(AttrShieldCharge,  wreckRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
@@ -440,13 +449,13 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 wreckRef->SetAttribute(AttrVolume,        wreckRef->type().volume());        // Volume
                 wreckRef->SetAttribute(AttrCapacity,      wreckRef->type().capacity());      // Capacity
                 return wreckRef;
-            } else if (t->groupID() == EVEDB::invGroups::Force_Field) {
+            } else if (iType->groupID() == EVEDB::invGroups::Force_Field) {
                 // Spawn force field item in EVEMU_TEMP_ENTITY_ID range and does NOT save Force_Field to db
                 uint32 itemID = InventoryItem::CreateTempItemID( factory, data );
                 if (!itemID)
                     return InventoryItemRef();
                 InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
-                if (!itemRef)
+                if (itemRef.get() == nullptr)
                     return InventoryItemRef();
                 return itemRef;
             } else {
@@ -455,9 +464,9 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 if (!itemID)
                     return CelestialObjectRef();
                 CelestialObjectRef celestialRef = CelestialObject::Load( factory, itemID );
-                if (!celestialRef)
+                if (celestialRef.get() == nullptr)
                     return CelestialObjectRef();
-                if ((t->groupID() == EVEDB::invGroups::Beacon) or (t->groupID() == EVEDB::invGroups::Effect_Beacon))
+                if ((iType->groupID() == EVEDB::invGroups::Beacon) or (t->groupID() == EVEDB::invGroups::Effect_Beacon))
                     celestialRef->SetAttribute(AttrIsGlobal,       1);
                 return celestialRef;
             }
@@ -469,7 +478,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
     if (!itemID)
         return InventoryItemRef();
     InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
-    if (!itemRef)
+    if (itemRef.get() == nullptr)
         return InventoryItemRef();
     itemRef->SetAttribute(AttrMass,           itemRef->type().mass());           // Mass
     itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
@@ -737,7 +746,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
 
 PyList* InventoryItem::GetItemInfo() const
 {
-    PyList* itemInfo = new PyList;
+    PyList* itemInfo = new PyList();
         itemInfo->AddItem(GetItemRow());
 
     return itemInfo;
@@ -773,9 +782,9 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
     //first, take myself out of my old inventory, if its loaded.
     if (!IsTradeCont(old_location)) {   // fix for trade containers segfault (as they dont have an inventory* object)
         Inventory *old_inventory = m_factory.GetInventoryFromId( old_location, false );
-        if (old_inventory) {
+        if (old_inventory != nullptr)
             old_inventory->RemoveItem(InventoryItemRef(this));  //releases its ref
-        } else {
+        else {
             if (m_locationID)
                 _log(INV__WARNING, "Inventory for %s not found. %s not removed from it's container's inventory.", itemName().c_str(), old_location);
         }
@@ -787,9 +796,9 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
     //then make sure that my new inventory is updated, if its loaded.
     if (!IsTradeCont(new_location)) {
         Inventory *new_inventory = m_factory.GetInventoryFromId( new_location, false );
-        if (new_inventory) {
+        if (new_inventory != nullptr)
             new_inventory->AddItem(InventoryItemRef(this)); //makes a new ref
-        } else {
+        else {
             if (m_locationID)
                 _log(INV__WARNING, "Inventory for %s not found. %s not added to it's container's inventory.", itemName().c_str(), new_location);
         }
@@ -873,18 +882,10 @@ InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify/*false*/) {
         return InventoryItemRef();
     }
 
-    ItemData idata(
-        m_type.id(),
-        m_ownerID,
-        0,
-        m_flag,
-        qty_to_take
-    );
-
-    InventoryItemRef res = m_factory.SpawnItem(idata);
-    res->Move( m_locationID, m_flag );
-
-    return res;
+    ItemData idata(m_type.id(), m_ownerID, 0, m_flag, qty_to_take);
+    InventoryItemRef iRef = m_factory.SpawnItem(idata);
+    iRef->Move( m_locationID, m_flag );
+    return iRef;
 }
 
 bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notify/*true*/) {
@@ -1093,14 +1094,14 @@ void InventoryItem::Relocate(const GPoint &pos)
 
 void InventoryItem::SetAttribute( uint16 attrID, int64 num, bool notify/*true*/)
 {
-    EvilNumber devil_number(num);
-    mAttributeMap.SetAttribute(attrID, devil_number, notify);
+    EvilNumber eNum(num);
+    mAttributeMap.SetAttribute(attrID, eNum, notify);
 }
 
 void InventoryItem::SetAttribute( uint16 attrID, double num, bool notify/*true*/)
 {
-    EvilNumber devil_number(num);
-    mAttributeMap.SetAttribute(attrID, devil_number, notify);
+    EvilNumber eNum(num);
+    mAttributeMap.SetAttribute(attrID, eNum, notify);
 }
 
 void InventoryItem::SetAttribute( uint16 attrID, EvilNumber num, bool notify/*true*/)
@@ -1110,20 +1111,20 @@ void InventoryItem::SetAttribute( uint16 attrID, EvilNumber num, bool notify/*tr
 
 void InventoryItem::SetAttribute( uint16 attrID, int num, bool notify/*true*/)
 {
-    EvilNumber devil_number(num);
-    mAttributeMap.SetAttribute(attrID, devil_number, notify);
+    EvilNumber eNum(num);
+    mAttributeMap.SetAttribute(attrID, eNum, notify);
 }
 
 void InventoryItem::SetAttribute( uint16 attrID, uint64 num, bool notify/*true*/)
 {
-    EvilNumber devil_number(num);
-    mAttributeMap.SetAttribute(attrID, devil_number, notify);
+    EvilNumber eNum(num);
+    mAttributeMap.SetAttribute(attrID, eNum, notify);
 }
 
 void InventoryItem::SetAttribute( uint16 attrID, uint32 num, bool notify/*true*/)
 {
-    EvilNumber devil_number(num);
-    mAttributeMap.SetAttribute(attrID, devil_number, notify);
+    EvilNumber eNum(num);
+    mAttributeMap.SetAttribute(attrID, eNum, notify);
 }
 
 // new effects system  -allan 4Feb17
@@ -1189,17 +1190,3 @@ void InventoryItem::ClearModifiers()
     mAttributeMap.Load(true);
 }
 
-void InventoryItem::GetEffectsInState(int8 state, std::vector< Effect >& effectRef)
-{
-}
-
-/* currently implemented items for these calls...
- *  charges
- */
-void InventoryItem::ApplyEffect(int8 state)
-{
-}
-
-void InventoryItem::RemoveEffect(int8 state)
-{
-}

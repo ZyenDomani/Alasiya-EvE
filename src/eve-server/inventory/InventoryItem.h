@@ -281,9 +281,6 @@ public:
     void ClearModifiers();
     void AddModifier(fxData data);
     void RemoveModifier(fxData data);
-    void ApplyEffect(int8 state);
-    void RemoveEffect(int8 state);
-    void GetEffectsInState(int8 state, std::vector<Effect>& effectRef);
 
     //  if itemType requires skill(skillID) return true else return false
     bool HasReqSkill(const uint16 skillID)              { return m_type.HasReqSkill(skillID, m_factory); }

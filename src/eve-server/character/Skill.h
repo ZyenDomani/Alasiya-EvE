@@ -103,9 +103,7 @@ protected:
     // Template loader:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 skillID, const ItemType &type, const ItemData &data) {
-        // check it's a skill
-        if( type.categoryID() != EVEDB::invCategories::Skill )
-        {
+        if (type.categoryID() != EVEDB::invCategories::Skill) {
             sLog.Error("Skill", "Trying to load %s as Skill.", type.category().name().c_str() );
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
