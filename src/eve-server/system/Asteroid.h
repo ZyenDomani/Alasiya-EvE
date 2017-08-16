@@ -29,7 +29,7 @@
 
 #include "system/SystemEntity.h"
 
-/**
+/** @todo  finish this to completely remove roids from entity table.
  * InventoryItem for asteroid item....didnt work.  revert to default item
  */
 #if (0)

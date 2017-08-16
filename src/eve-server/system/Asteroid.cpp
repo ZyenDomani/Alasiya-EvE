@@ -20,8 +20,7 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:     Aknor Jaden
-    Updates:    Allan
+    Author:     Allan
 */
 
 #include "eve-server.h"
@@ -36,7 +35,8 @@
 /*
  * AsteroidItem
  */
-/*
+/** @todo  this needs more work to complete.  should be self-conatined creation and loading, and NOT use InventoryItem
+ *
 AsteroidItem::AsteroidItem(ItemFactory& _factory, uint32 _asteroidID, const ItemType& _type, const ItemData& _idata, const AsteroidData& _adata)
 : InventoryItem(_factory, _asteroidID, _type, _idata, _adata),
 m_dbData(_adata)
@@ -51,14 +51,10 @@ AsteroidItemRef AsteroidItem::Load(ItemFactory &factory, uint32 asteroidID)
 
 AsteroidItemRef AsteroidItem::Spawn(ItemFactory& factory, ItemData& idata, AsteroidData& adata) {
     const ItemType *type = factory.GetType(adata.typeID);
-    if (!type)
+    if (type == nullptr)
         return AsteroidItemRef();
 
-    // fix the name (if empty)
-    if (adata.itemName.empty())
-        adata.itemName = type->name();
-
-    uint32 asteroidID = InventoryItem::CreateAsteroidID(factory, adata);
+    uint32 asteroidID = InventoryItem::CreateTempItemID(factory, idata);
     if (asteroidID == 0)
         return AsteroidItemRef();
 
@@ -69,7 +65,6 @@ AsteroidItemRef AsteroidItem::Spawn(ItemFactory& factory, ItemData& idata, Aster
 
     return roidRef;
 }
-
 */
 
 AsteroidSE::AsteroidSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)

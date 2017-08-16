@@ -28,7 +28,7 @@
 
 #include "eve-common.h"
 
-//class AsteroidItem;
+class AsteroidItem;
 class InventoryItem;
 class Blueprint;
 class ShipItem;
@@ -46,8 +46,8 @@ class StationItem;
 /*
  * Typedefs for all item classes we have:
  */
-//typedef RefPtr<AsteroidItem>             AsteroidItemRef;
-//typedef RefPtr<const AsteroidItem>       AsteroidItemConstRef;
+typedef RefPtr<AsteroidItem>             AsteroidItemRef;
+typedef RefPtr<const AsteroidItem>       AsteroidItemConstRef;
 typedef RefPtr<InventoryItem>            InventoryItemRef;
 typedef RefPtr<const InventoryItem>      InventoryItemConstRef;
 typedef RefPtr<Blueprint>                BlueprintRef;

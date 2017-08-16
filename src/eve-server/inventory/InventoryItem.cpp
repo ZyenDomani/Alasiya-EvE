@@ -134,6 +134,8 @@ uint32 InventoryItem::CreateTempItemID(ItemFactory &factory, ItemData &data) {
     // Get a new Entity ID from ItemFactory's ID Authority:
     if (iType->categoryID() == EVEDB::invCategories::Entity) // may need more testing to verify that ONLY NPC's use this method
         return factory.GetNextNPCID();
+    if (iType->categoryID() == EVEDB::invCategories::Asteroid)
+        return factory.GetNextAsteroidID();
     else if (data.flag == EVEItemFlags::flagMissile)
         return factory.GetNextMissileID();
     else
@@ -317,10 +319,10 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             return Blueprint::Spawn( factory, data, bpData );
         }
         case EVEDB::invCategories::Asteroid: {
-            uint32 itemID = InventoryItem::CreateItemID( factory, data );
+            uint32 itemID = InventoryItem::CreateTempItemID( factory, data );
             if (!itemID)
                 return InventoryItemRef();
-            InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
+            InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
             if (itemRef.get() == nullptr)
                 return InventoryItemRef();
             // THESE SHOULD BE MOVED INTO AN Asteroid::Spawn() function that does not exist yet

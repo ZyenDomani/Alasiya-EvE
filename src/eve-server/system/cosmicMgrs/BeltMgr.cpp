@@ -8,6 +8,10 @@
   *
   */
 
+ /** @note  roid save/load uses InventoryItem::Load(), which saves/reads from entity table, which we DONT want for roids.
+  * for now, save and load are disabled, roids are temp items, and use generic InventoryItem class.
+  * this will have to be revisited and corrected to properly implement persistant roids
+  */
 
 
 #include "eve-server.h"
@@ -71,7 +75,8 @@ void BeltMgr::ClearBelt(uint16 bubbleID)
 }
 
 void BeltMgr::ClearAll() {
-    Save();
+    // roids are temp items for now.  dont save them.
+    //Save();
 
     for (auto cur : m_asteroids) {
         m_system->RemoveEntity(cur.second);
@@ -130,7 +135,7 @@ void BeltMgr::Process() {
 }
 
 bool BeltMgr::Load(uint16 bubbleID) {
-    // negate this for now.....save/load not working right, as roids are being added to entity also....
+    // negate this for now.....see notes above
     return false;
 
     std::vector<AsteroidData> entities;
@@ -331,10 +336,15 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
     itemRef->SetAttribute(AttrMass,      itemRef->type().mass() * quantity); // Mass
 
     AsteroidSE* pASE = new AsteroidSE(itemRef, *(m_system->GetServiceMgr()), m_system );
-    m_system->AddEntity(pASE);
+    if (pASE == nullptr)
+        return;
+
     m_asteroids.emplace(std::pair<uint32, AsteroidSE*>(beltID, pASE));
     pASE->SetMgr(this, beltID);
+    m_system->AddEntity(pASE);
 
+    // we are not saving roids at this time.....see notes above
+    /*
     AsteroidData adata;
         adata.beltID = beltID;
         adata.itemName = itemRef->itemName();
@@ -347,10 +357,12 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
         adata.y = position.y;
         adata.z = position.z;
     m_db.SaveRoid(adata);
+    */
 }
 
 void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
 {
+    // this doesnt work right.  not sure why yet.
     auto range = m_asteroids.equal_range(beltID);
     for (auto itr = range.first; itr != range.second; itr++) {
         if (pASE == itr->second) {
