@@ -110,8 +110,6 @@ SolarSystem::SolarSystem(
   m_radius(_ssData.radius),
   m_securityClass(_ssData.securityClass)
 {
-    // consistency check
-    assert(_type.id() == _ssData.sunTypeID);
     m_inventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created SolarSystem Item %p for %s (%u).", this, itemName().c_str(), itemID());
 }

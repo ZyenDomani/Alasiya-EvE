@@ -47,6 +47,8 @@ void BeltMgr::Init(uint32 regionID)
     m_active.clear();
     m_spawned.clear();
 
+    assert(m_system != nullptr);
+
     m_regionID = regionID;
     m_systemID = m_system->GetID();
     m_respawnTimer.Start(sConfig.cosmic.BeltRespawn *60 *60 *1000);  // hours->ms
@@ -128,11 +130,15 @@ void BeltMgr::Process() {
 }
 
 bool BeltMgr::Load(uint16 bubbleID) {
+    // negate this for now.....save/load not working right, as roids are being added to entity also....
+    return false;
+
     std::vector<AsteroidData> entities;
     entities.clear();
     uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
-    m_db.LoadSystemRoids(m_systemID, beltID, entities);
-    if (entities.empty())
+    if (beltID == 0)
+        return false;
+    if (!m_db.LoadSystemRoids(m_systemID, beltID, entities))
         return false;
 
     for (auto entity : entities) {
@@ -212,6 +218,8 @@ void BeltMgr::SpawnBelt(uint16 bubbleID)
         return;
 
     SystemEntity* pSE = m_system->GetSE(beltID);
+    if (pSE == nullptr)
+        return;
 
     bool ice = false;
     if (pSE->GetTypeID() == 17774)
@@ -252,22 +260,21 @@ void BeltMgr::SpawnBelt(uint16 bubbleID)
         elevation = (radius/6);
     }
 
-    double degreeSeperation = (180/pcs);
+    double degreeSeparation = (180/pcs);
     GPoint center = pSE->SysBubble()->GetCenter();
     GPoint mposition = NULL_ORIGIN;
     for (uint32 i = 0; i < pcs; ++i) {
         if (!ice) {
             roidradius = MakeRandomInt(3000, 8000) *security;
         } else {
-            if (security > -0.3) {
+            if (security > -0.3)
                 roidradius = MakeRandomInt(40, 70) *1000; // (40k,70k)  72-102k radius
-            } else {
+            else
                 roidradius = MakeRandomInt(50, 80) *1000; // (50k,80k)  82-112k radius
-            }
             radius += roidradius;
             elevation = (radius + (roidradius /2) /2);
         }
-        theta = EvE_DegreesToRadians(degreeSeperation *i);
+        theta = EvE_DegreesToRadians(degreeSeparation *i);
         mposition.x = (radius + roidradius /10) * cos(theta);
         mposition.z = (radius + roidradius /10) * sin(theta);
         mposition.y = MakeRandomFloat(-elevation, elevation);

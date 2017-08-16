@@ -115,7 +115,7 @@ GPoint hack_sentry_locs[num_hack_sentry_locs] = {
 
 bool SystemManager::BootSystem() {
     m_solarSystemRef = m_services.item_factory->GetSolarSystem(m_data.systemID);
-    assert(m_solarSystemRef);
+    assert(m_solarSystemRef.get() != nullptr);
 
     LoadCosmicMgrs();
 
@@ -640,7 +640,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
 
 void SystemManager::AddClient(Client* who, bool docked, bool count) {
     //called from Client::MoveToLocation()
-    if (!who)
+    if (who == nullptr)
         return;
     auto itr = m_clients.find(who->GetCharacterID());
     if (itr == m_clients.end()) {
@@ -661,7 +661,7 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
 
 void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
     //called from Client::~Client() and Client::MoveToLocation()
-    if (!who)
+    if (who == nullptr)
         return;
     auto itr = m_clients.find(who->GetCharacterID());
     if (itr != m_clients.end()) {
@@ -688,7 +688,7 @@ void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
 }
 
 void SystemManager::AddNPC(NPC* who) {
-    if (!who)
+    if (who == nullptr)
         return;
     _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
     AddEntity(who);
@@ -696,7 +696,7 @@ void SystemManager::AddNPC(NPC* who) {
 }
 
 void SystemManager::RemoveNPC(NPC* who) {
-    if (!who)
+    if (who == nullptr)
         return;
     _log(NPC__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
     RemoveEntity(who);
@@ -705,7 +705,7 @@ void SystemManager::RemoveNPC(NPC* who) {
 }
 
 void SystemManager::AddEntity(SystemEntity* who) {
-    if (!who)
+    if (who == nullptr)
         return;
     auto itr = m_entities.find(who->GetID());
     if (itr != m_entities.end()) {
@@ -722,7 +722,7 @@ void SystemManager::AddEntity(SystemEntity* who) {
 }
 
 void SystemManager::RemoveEntity(SystemEntity* who) {
-    if (!who)
+    if (who == nullptr)
         return;
     sBubbleMgr.Remove(who);
     auto itr = m_entities.find(who->GetID());

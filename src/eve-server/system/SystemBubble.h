@@ -72,6 +72,7 @@ public:
     double y() const                                    { return m_center.y; }
     double z() const                                    { return m_center.z; }
     uint16 GetID()                                      { return m_bubbleID; }
+    uint32 GetSystemID()                                { return m_systemID; }
     GPoint GetCenter()                                  { return m_center; }
 
     void clear();

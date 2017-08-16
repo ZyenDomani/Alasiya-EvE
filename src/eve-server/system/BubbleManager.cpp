@@ -145,11 +145,11 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
 
     pBubble = FindBubble(pSE->SystemMgr()->GetID(), newCenter);
     if (pBubble != nullptr) {
-        if (pBubble->GetSystem()->GetID() != pSE->SystemMgr()->GetID()) {
+        if (pBubble->GetSystemID() != pSE->SystemMgr()->GetID()) {
             // this is an error.  bad bubble
-            _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): bubble SysID %u != pSE SysID %u", pSE->GetName(), pSE->GetID(), pBubble->GetSystem()->GetID(), pSE->SystemMgr()->GetID() );
+            _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): bubble SysID %u != pSE SysID %u", pBubble->GetSystemID(), pSE->SystemMgr()->GetID() );
         }
-        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): Entity %s (%u) being added to existing Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
+        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): Entity %s(%u) being added to existing Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
         pBubble->Add(pSE);
         return;
     }
@@ -160,7 +160,7 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
     // testing....W.I.P.
     m_bubbleMap.emplace(pSE->SystemMgr()->GetID(), pBubble);
 
-    _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): Entity '%s'(%u) being added to NEW Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
+    _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): Entity %s(%u) being added to NEW Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
     pBubble->Add(pSE);
 }
 
@@ -176,7 +176,7 @@ void BubbleManager::Remove(SystemEntity *ent) {
         return;
     SystemBubble *pBubble = ent->SysBubble();
     if (pBubble != nullptr) {
-        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Remove(): Entity '%s' (%u) being removed from Bubble %u", ent->GetName(), ent->GetID(), pBubble->GetID() );
+        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Remove(): Entity %s(%u) being removed from Bubble %u", ent->GetName(), ent->GetID(), pBubble->GetID() );
         pBubble->Remove(ent);
     }
 }
@@ -241,7 +241,7 @@ void BubbleManager::RemoveSpawnID(uint16 bubbleID, uint32 spawnID)
 
 uint32 BubbleManager::GetBeltID(uint16 bubbleID)
 {
-    std::map<uint16, uint32>::const_iterator itr = m_spawnIDs.find(bubbleID);
+    std::map<uint16, uint32>::iterator itr = m_spawnIDs.find(bubbleID);
     if (itr == m_spawnIDs.end())
         return 0;
     return itr->second;

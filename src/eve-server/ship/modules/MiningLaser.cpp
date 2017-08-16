@@ -31,14 +31,14 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
         m_rMiner = true;
     } else if ((m_modRef->typeID() == 12108) or (m_modRef->typeID() == 18068) or (m_modRef->typeID() == 24305) or (m_modRef->typeID() == 28748)) {
         m_dcMiner = true;
-    } else if (m_modRef->groupID() == EVEDB::invGroups::Frequency_Mining_Laser) {
-        m_rMiner = true;
     } else if ((m_modRef->typeID() == 16278) or (m_modRef->typeID() == 22229) or (m_modRef->typeID() == 22589) or (m_modRef->typeID() == 22591)
         or (m_modRef->typeID() == 22597) or (m_modRef->typeID() == 22599) or (m_modRef->typeID() == 28752)) {
         /* this includes 'dev testing modules'  */
         m_iMiner = true;
     } else if (m_modRef->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester) {
         m_gMiner = true;
+    } else if ((m_modRef->groupID() == EVEDB::invGroups::Frequency_Mining_Laser) or (m_modRef->groupID() == EVEDB::invGroups::Strip_Miner)) {
+        m_rMiner = true;
     }
     _log(MINING__TRACE, "MiningLaser Created for %s with %ums Duration.", item->itemName().c_str(), GetAttribute(AttrDuration).get_int());
 }
@@ -65,6 +65,13 @@ void MiningLaser::UnloadCharge()
 
 bool MiningLaser::CanActivate()
 {
+    if (m_targetSE == nullptr){
+        _log(MINING__WARNING, "Activate() - Invalid target: m_targetSE == nullptr");
+        if (m_shipRef->HasPilot())
+            m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: Invalid target - Ref: ServerError 15628");
+        return false;
+    }
+
     // verify module vs target for activation.  disallow if not compatible.
     if ((m_rMiner and (m_targetSE->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid) and (m_targetSE->GetSelf()->groupID() != EVEDB::invGroups::Mercoxit))
         or (m_dcMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit))
@@ -171,7 +178,7 @@ void MiningLaser::ProcessCycle(bool partial)
     }
 
     if (!m_shipRef->AddItem(flagCargoHold, oRef)) {
-        _log(MINING__ERROR, "Could not add mined ore in cargo for %s(%u)", m_shipRef->itemName().c_str(), m_shipRef->itemID() );
+        _log(MINING__ERROR, "Could not create ore in cargo for %s(%u)", m_shipRef->itemName().c_str(), m_shipRef->itemID() );
         return;
     }
 
@@ -186,9 +193,8 @@ void MiningLaser::ProcessCycle(bool partial)
             double radius = exp((roidQuantity +112404.8) /25000);
             roidRef->SetAttribute(AttrRadius, radius);
         }
-    } else {
+    } else
         m_targetSE->Delete();
-    }
 
     if (m_chargeLoaded and (m_crystalDmgChance > 0.0f))
         if (MakeRandomFloat(0,1) < m_crystalDmgChance) {

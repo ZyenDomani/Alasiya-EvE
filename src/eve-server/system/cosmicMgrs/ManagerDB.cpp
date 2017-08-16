@@ -239,7 +239,7 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< As
         into.push_back(entry);
     }
 
-    return !into.empty();
+    return into.empty();
 }
 
 void ManagerDB::SaveRoid(AsteroidData& data)
