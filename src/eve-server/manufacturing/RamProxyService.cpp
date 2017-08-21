@@ -235,7 +235,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
             installedItem = installedItem->Split(1);
         // change to singleton now that bp has been used (this 'unpackages' it)
         installedItem->ChangeSingleton(true, false);
-        installedItem->Move( installedItem->locationID(), flagFactoryBlueprint );
+        installedItem->Move( installedItem->locationID(), flagFactoryBlueprint, true );
 
         // query all items contained in "Bill of Materials" location
         std::vector<InventoryItemRef> items;
@@ -294,7 +294,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
     InventoryItemRef installedItem = m_manager->item_factory->GetItem( installedItemID );
     if ( !installedItem )
         return nullptr;
-    installedItem->Move( installedItem->locationID(), outputFlag );
+    installedItem->Move( installedItem->locationID(), outputFlag, true );
 
     std::vector<RequiredItem> reqItems;
     if ( !m_db.GetRequiredItems( installedItem->typeID(), activity, reqItems ) )
@@ -311,7 +311,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
             ItemData idata(cur->typeID, ownerID, 0, outputFlag, quantity);
             InventoryItemRef iRef = m_manager->item_factory->SpawnItem( idata );
             if (iRef.get() != nullptr)  // make error here
-                iRef->Move(args.containerID, outputFlag);
+                iRef->Move(args.containerID, outputFlag, true);
         }
     }
 
@@ -322,7 +322,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                 ItemData idata(bp->productTypeID(), ownerID, 0, outputFlag, bp->productType().portionSize() * runs);
                 InventoryItemRef iRef = m_manager->item_factory->SpawnItem( idata );
                 if (iRef.get() != nullptr)
-                    iRef->Move(args.containerID, outputFlag);
+                    iRef->Move(args.containerID, outputFlag, true);
             } break;
             case ramActivityResearchingTimeProductivity: {
                 bp->UpdatePE( runs );
@@ -343,7 +343,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                     if (copy) {
                         // bp copies are all singleton
                         copy->ChangeSingleton(true, false);
-                        copy->Move(args.containerID, outputFlag);
+                        copy->Move(args.containerID, outputFlag, true);
                     }
                     --runs;
                 }

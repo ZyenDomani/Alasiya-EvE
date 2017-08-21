@@ -66,6 +66,7 @@ m_shipInertia(1.0f),
 m_warpAccelTime(1),
 m_warpDecelTime(1),
 m_warpState(nullptr),
+m_targBubble(nullptr),
 m_warpCapacitorNeed(0.00001f)
 {
     m_bump = false;
@@ -339,6 +340,7 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
         logType = 1;
         m_decel = true;
         m_accel = false;
+        m_targBubble = nullptr;
         m_shipMaxAccelTime *= (m_speedToLeaveWarp / m_maxShipSpeed);
         m_velocity = m_shipHeading * m_speedToLeaveWarp;
         m_maxSpeed = m_speedToLeaveWarp;
@@ -1323,7 +1325,8 @@ void DestinyManager::_InitWarp() {
         m_warpDecelTime = 23;  //21
     }
 
-    if (m_targetDistance > warpSpeedInMeters) cruise = true;
+    if (m_targetDistance > warpSpeedInMeters)
+        cruise = true;
 
     /*  this is from http://community.eveonline.com/news/dev-blogs/warp-drive-active/
      * For the acceleration phase, k is 3.
@@ -1472,18 +1475,23 @@ void DestinyManager::_WarpUpdate(double currentShipSpeed) {
     SetPosition(m_position);
 
     if (m_inBubble) {
-        if (m_warpState->accel)
+        if (m_warpState->accel) {
             if (!mySE->SysBubble()->InBubble(m_position)) {
+                _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Remove() .", \
+                        mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
                 sBubbleMgr.Remove(mySE);
                 m_inBubble = false;
             }
-    } else if ((!m_inBubble) and (m_warpState->decel)) {
-        if (m_targetDistance < (BUBBLE_RADIUS_METERS + 20000)) {    //this assumes target is center of bubble.  will have to fix one day.
-            _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() .", \
-                    mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
-            sBubbleMgr.Add(mySE, true);
-            SetPosition(m_position, true);
-            m_inBubble = true;
+        }
+    } else if (m_warpState->decel) {
+        if (!m_inBubble) {
+            if (m_targetDistance < (BUBBLE_RADIUS_METERS + 20000)) {    //this assumes target is center of bubble.  will have to fix one day.
+                _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() .", \
+                        mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
+                sBubbleMgr.Add(mySE, true);
+                SetPosition(m_position, true);
+                m_inBubble = true;
+            }
         }
     }
 }
@@ -1716,6 +1724,8 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
     m_targetDistance = warp_distance.length();
     m_targetDistance -= m_stopDistance;
 
+    m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), where);
+
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
 
@@ -1794,6 +1804,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
                  mySE->GetName(), mySE->GetID(), capNeeded, currentShipCap);
 
             State = Destiny::BallMode::DSTBALL_STOP;
+            m_targBubble = nullptr;
             SafeDelete(m_warpState);
             return;
             //}

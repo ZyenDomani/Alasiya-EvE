@@ -74,6 +74,7 @@ protected:
     void SetTimer(uint32 time);
     void StopTimer()                                    { m_timer.Disable(); }
 
+    uint16 m_reloadTime;
     uint16 m_effectID;                                  //passed to us by activate
     uint32 m_targetID;                                  //passed to us by activate
 
@@ -84,7 +85,6 @@ private:
     bool m_Stop : 1;
     bool m_needsCharge : 1;
 
-    uint16 m_reloadTime;
     std::string m_guidStr;
 
 };

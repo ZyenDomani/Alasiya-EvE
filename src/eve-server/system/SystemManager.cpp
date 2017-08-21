@@ -181,12 +181,10 @@ bool SystemManager::ProcessTic() {
 }
 
 bool SystemManager::SystemActivity() {
-    //return true;
-    // system destruction needs work for bubbles and items (but this works as intended)
-    if (!m_activityTime)
+    if (m_activityTime == 0)
         return true;
     if (sConfig.world.gridUnload)
-        if (!m_players)
+        if (m_players < 1)
             if (sConfig.world.gridUnloadTime < (sEntityList.GetStamp() - m_activityTime))
                 return false;
 
@@ -204,31 +202,29 @@ void SystemManager::UnloadSystem() {
 
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin(), end = m_entities.end();
     while (itr != end) {
-        // still getting trash data in entity map....dunno why or how
-        if ((itr->second == nullptr) or (itr->second->DestinyMgr() == nullptr) or (itr->second->SystemMgr() == nullptr)) {
-            itr = m_entities.erase(itr);
-            continue;
-        } else if (itr->second->IsStationSE()) {
-            itr->second->GetStationSE()->UnloadStation();
-            sEntityList.RemoveStation(itr->first);
+        if ((itr->first > 0) and (itr->second != nullptr)) {
+            if (itr->second->IsStationSE()) {
+                itr->second->GetStationSE()->UnloadStation();
+                sEntityList.RemoveStation(itr->first);
+            } else if (itr->second->IsNPCSE()) {
+                sEntityList.RemoveNPC();    // this is for loaded npc count.
+                itr->second->GetNPCSE()->RemoveNPC();
+            }
             sBubbleMgr.Remove(itr->second);
-            RemoveEntity(itr->second);
-        } else if (itr->second->IsNPCSE()) {
-            RemoveNPC(itr->second->GetNPCSE());
-        } else if (itr->second->IsDynamicEntity()) {
-            RemoveEntity(itr->second);
-        } else {
-            sBubbleMgr.Remove(itr->second);
-            RemoveEntity(itr->second);
+            if (itr->second->TargetMgr() != nullptr)
+                itr->second->TargetMgr()->DoDestruction();
+            m_solarSystemRef->RemoveItemFromInventory( itr->second->GetSelf() );
         }
 
         m_services.item_factory->RemoveItem(itr->first);
         SafeDelete(itr->second);
-        ++itr; // = m_entities.erase(itr);      // not sure why .erase() crashes on occasion.  seems like it's only on system shutdown
+        itr = m_entities.erase(itr);      // not sure why .erase() crashes on occasion.  seems like it's only on system shutdown
+        m_entityChanged = true;
     }
-
+    // at this point, system entity list should be clear...but just in case, hit it again
     m_entities.clear();
 
+    // this still needs some work...
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
@@ -755,7 +751,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
     if (m_activeRatSpawns < count ) {
         m_spawnMgr->DoSpawnForBubble(pSysBubble, m_data.regionID, m_data.securityRating);
         m_ratBubbles.push_back(pSysBubble->GetID());
-        _log(SPAWN__TRACE, "DoSpawnForBubble() completed for bubble %u.  %u entries in m_ratBubbles", pSysBubble->GetID(), m_ratBubbles.size());
+        _log(SPAWN__TRACE, "DoSpawnForBubble() completed for bubble %u.  %u items in m_ratBubbles", pSysBubble->GetID(), m_ratBubbles.size());
     }
 }
 
@@ -898,6 +894,12 @@ void SystemManager::AddItemToInventory(InventoryItemRef item)
 
 void SystemManager::RemoveItemFromInventory(InventoryItemRef item)
 {
+    // just in case this is called from elsewhere (which it may be), make sure we remove entity from our map.
+    auto itr = m_entities.find(item->itemID());
+    if (itr != m_entities.end()) {
+        m_entities.erase(itr);
+        m_entityChanged = true;
+    }
     _log(ITEM__TRACE, "SystemManager::RemoveItemFromInventory() - removing item %s(%u) from inventory of %s(%u)", item->itemName().c_str(), item->itemID(), m_data.name.c_str(), m_data.systemID);
     m_solarSystemRef->RemoveItemFromInventory( item );
 }

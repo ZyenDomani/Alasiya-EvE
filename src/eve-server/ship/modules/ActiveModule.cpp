@@ -31,9 +31,11 @@ m_reloadTimer(10000)
             case EVEDB::invGroups::Tracking_Computer:
             case EVEDB::invGroups::Projected_ECCM:
             case EVEDB::invGroups::Remote_Sensor_Booster:
-            case EVEDB::invGroups::Tracking_Disruptor: {
+            case EVEDB::invGroups::Tracking_Disruptor:
+            // mining laser can be used without charge, using default extraction rate
+            case EVEDB::invGroups::Frequency_Mining_Laser: {
                 m_needsCharge = false;
-            }
+            } break;
         }
     } else {
         switch (item->groupID()) {
@@ -54,30 +56,32 @@ m_reloadTimer(10000)
      * set default of 4s for turrets, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
      * maybe make config option later to avoid hard-coding
      */
-    if ((!m_reloadTime) and m_needsCharge)  {
-        switch (item->groupID()) {
-            case EVEDB::invGroups::Projectile_Weapon: {
-                m_reloadTime = 4000;
-            } break;
-            case EVEDB::invGroups::Missile_Launcher_Snowball:
-            case EVEDB::invGroups::Scan_Probe_Launcher: {
-                m_reloadTime = 5000;
-            } break;
-            case EVEDB::invGroups::Missile_Launcher_Cruise:
-            case EVEDB::invGroups::Missile_Launcher_Rocket:
-            case EVEDB::invGroups::Missile_Launcher_Siege:
-            case EVEDB::invGroups::Missile_Launcher_Standard:
-            case EVEDB::invGroups::Missile_Launcher_Heavy:
-            case EVEDB::invGroups::Missile_Launcher_Assault:
-            case EVEDB::invGroups::Missile_Launcher_Defender:
-            case EVEDB::invGroups::Missile_Launcher_Citadel:
-            case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
-            case EVEDB::invGroups::Missile_Launcher_Bomb: {
-                m_reloadTime = 7000;
-            } break;
-            default: {
-                m_reloadTime = 10000;
-            } break;
+    if (m_needsCharge)  {
+        if (m_reloadTime < 1) {
+            switch (item->groupID()) {
+                case EVEDB::invGroups::Projectile_Weapon: {
+                    m_reloadTime = 4000;
+                } break;
+                case EVEDB::invGroups::Missile_Launcher_Snowball:
+                case EVEDB::invGroups::Scan_Probe_Launcher: {
+                    m_reloadTime = 5000;
+                } break;
+                case EVEDB::invGroups::Missile_Launcher_Cruise:
+                case EVEDB::invGroups::Missile_Launcher_Rocket:
+                case EVEDB::invGroups::Missile_Launcher_Siege:
+                case EVEDB::invGroups::Missile_Launcher_Standard:
+                case EVEDB::invGroups::Missile_Launcher_Heavy:
+                case EVEDB::invGroups::Missile_Launcher_Assault:
+                case EVEDB::invGroups::Missile_Launcher_Defender:
+                case EVEDB::invGroups::Missile_Launcher_Citadel:
+                case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
+                case EVEDB::invGroups::Missile_Launcher_Bomb: {
+                    m_reloadTime = 7000;
+                } break;
+                default: {
+                    m_reloadTime = 10000;
+                } break;
+            }
         }
     }
 
@@ -85,7 +89,7 @@ m_reloadTimer(10000)
 
     Clear();
 
-    if ((m_reloadTime > 0) and (m_reloadTime < 9000))
+    if (m_reloadTime > 0)
         _log(SHIP__MODULE_TRACE, "Reload time for %s(%u) set to %ums", item->itemName().c_str(), item->itemID(), m_reloadTime);
 }
 

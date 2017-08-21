@@ -269,7 +269,7 @@ void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     if (!_FindSpawnForBubble(pSysBubble->GetID())) {
-        sLog.Green("SpawnMgr", "DoSpawnForBubble called for bubble %u(%u) in %s(%u)(%.4f). Main Timer enabled.",
+        sLog.Green("SpawnMgr", "DoSpawnForBubble called for bubble %u(%u) in %s(%u)(%.4f).",
                      pSysBubble->GetID(), sBubbleMgr.GetBeltID(pSysBubble->GetID()), m_system->GetName().c_str(), m_system->GetID(), secRating);
         PrepSpawn(pSysBubble, regionID, secRating);
         pSysBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
@@ -581,8 +581,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
      *
      */
     GPoint startPos(pSysBubble->GetCenter());
+    const GPoint warpToPoint(startPos);
     startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from current bubble center
-    const GPoint warpToPoint(pSysBubble->GetCenter());
 
     uint32 corpID = GetCorpID(factionID);
 
@@ -595,18 +595,15 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
         data.ownerID = corpID;
 
     while (cur != m_toSpawn.end()) {
-        ItemData idata(
-            cur->typeID,
-            corpID,
-            m_system->GetID(),
-            flagAutoFit,
-            corpID,  // set ownerID to corpID for rats
-            "BeltRat"
-        );
+        /*
+        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
+                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
+        */
+        ItemData idata(cur->typeID, corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
 
         for (uint8 x=0; x!=cur->quantity; x++) {
             InventoryItemRef i = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db....or save ALL the spawn shit
-            if (!i) {
+            if (i.get() == nullptr) {
                 _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur->typeID);
                 continue;
             }
@@ -623,8 +620,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
             }
             //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
             m_system->AddNPC(npc);
-            startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 10) *1000);
-            npc->DestinyMgr()->SetPosition(startPos);
+            //startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 10) *1000);
+            //npc->DestinyMgr()->SetPosition(startPos);
             npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
 
             se.enabled = false;
@@ -652,7 +649,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
     m_toSpawn.clear();
     m_ratSpawns.clear();
 
-    _log(SPAWN__TRACE, "MakeSpawn() completed. %u bubbles in m_bubbles. %u spawns in m_spawns.", m_bubbles.size(), m_spawns.size());
+    _log(SPAWN__TRACE, "MakeSpawn() completed. %u bubbles in m_bubbles. %u entities in m_spawns.", m_bubbles.size(), m_spawns.size());
 }
 
 void SpawnMgr::RemoveSpawn(uint32 bubbleID, uint32 itemID)

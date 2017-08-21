@@ -135,7 +135,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     Client* pClient = call.client;
     pClient->SendNotifyMsg("This function is disabled.  It will be fixed eventually");
     return nullptr;
-    
+
     if (pClient->GetShipSE()->DestinyMgr()->IsMoving()) {
         throw PyException(MakeCustomError("You cannot change ships while moving."));
         return nullptr;
@@ -283,7 +283,7 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call) {
     podRef->ChangeOwner(pClient->GetCharacterID(), false);
     //move capsule into the players hangar
     sLog.White("ShipBound::Handle_LeaveShip()", "moving pod %u to station %u", podID, pClient->GetStationID());
-    podRef->Move(pClient->GetStationID(), flagHangar);
+    podRef->Move(pClient->GetStationID(), flagHangar, true);
 
     // capsuleID = shipsvc.LeaveShip(shipid)
     return new PyInt(podID);
@@ -398,7 +398,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
                   [PyInt 10]        << flagdisconnect??
                   [PyInt 0]
             */
-    
+
     Call_AssembleShip args;
     Call_AssembleShipTech3 argsT3;
     //Call_AssembleShipWithName argsNamed;
@@ -416,7 +416,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         }
         itemIDList = args.items;
     } else if (call.tuple->GetItem(0)->IsInt() &&
-               call.tuple->GetItem(1)->IsString()) { 
+               call.tuple->GetItem(1)->IsString()) {
         // This block is for how DNA calls AssembleShip
         // @TODO Ignoring name
         // Can't get xmlpktgen to pickup the change so.. lol
@@ -430,7 +430,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         throw PyException( MakeCustomError( "Modular ships are not implemented yet." ) );
         return nullptr;
     }
-    
+
     for (int i = 0; i < itemIDList.size(); i++) {
         itemID = itemIDList[i];
 
@@ -460,7 +460,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
             InventoryItemRef subSystemItem;
             for(uint32 index=0; index<subSystemList.size(); index++) {
                 subSystemItem = m_manager->item_factory->GetItem(subSystemList.at(index));
-                subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_int()));
+                subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_int()), true);
             }
         }
     }
@@ -558,7 +558,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
         } else {
             //location += itemRef->radius();
             // Move item from cargo bay to space:
-            itemRef->Move(pClient->GetLocationID(), flagAutoFit);
+            itemRef->Move(pClient->GetLocationID(), flagAutoFit, true);
             itemRef->Relocate(location);
             itemRef->ChangeOwner(entity.ownerID);
 

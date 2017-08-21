@@ -469,7 +469,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
         pMod->AbortCycle();
         pMod->Offline();
         if (pMod->IsLoaded()) {
-            pMod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag);
+            pMod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag, true);
             pMod->UnloadCharge();    // this does not physically remove charge from module, hence the need for the above call.
         }
 
@@ -760,10 +760,10 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
                 // change charges
                 UnloadCharge(flag);
                 if (IsStation(m_Ship->locationID()))
-                    loadedChargeRef->Move(m_Ship->locationID(), flagHangar);
+                    loadedChargeRef->Move(m_Ship->locationID(), flagHangar, true);
                 else {
                     if (m_Ship->ValidateAddItem(flagCargoHold, loadedChargeRef))
-                        loadedChargeRef->Move(m_Ship->itemID(), flagCargoHold);
+                        loadedChargeRef->Move(m_Ship->itemID(), flagCargoHold, true);
                     else
                         return; // cant put in cargo.  return without changing charge.
                 }
@@ -786,14 +786,14 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
         modCapacity = pMod->GetAttribute(AttrCapacity).get_float();
         if (!(pMod->IsLoaded())) {
             if (modCapacity >= (chargeVolume * chargeRef->quantity())) {
-                chargeRef->Move(m_Ship->itemID(), flag);
+                chargeRef->Move(m_Ship->itemID(), flag, true);
                 pMod->LoadCharge( chargeRef );
             } else {
                 uint32 quantityWeCanLoad = floor((modCapacity / chargeVolume));
                 if (quantityWeCanLoad > 0) {
                     InventoryItemRef loadableChargeQtyRef = chargeRef->Split( quantityWeCanLoad );
                     loadableChargeQtyRef->ChangeOwner( chargeRef->ownerID() );
-                    loadableChargeQtyRef->Move(m_Ship->itemID(), flag);
+                    loadableChargeQtyRef->Move(m_Ship->itemID(), flag, true);
                     pMod->LoadCharge( loadableChargeQtyRef );
                 }
             }

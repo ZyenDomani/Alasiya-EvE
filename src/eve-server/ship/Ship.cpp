@@ -885,7 +885,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef)
         ModifyHoldVolumeByFlag( flag, (iRef->GetAttribute(AttrVolume).get_float() * iRef->quantity()));
 	}
 
-    iRef->Move(itemID(), flag);
+    iRef->Move(itemID(), flag, true);
 	if (IsModuleSlot(flag)) {
         // may not need this call.  is redundant, but has redundant check built-in...
         m_ModuleManager->Online(iRef->itemID());
@@ -1043,7 +1043,7 @@ void ShipItem::CancelOverloading()
 void ShipItem::RemoveRig(InventoryItemRef iRef) {
     //may not look like it, but just moving this item will call ModuleManager::UninstallRig().  not anymore.  fix this shit.
     m_ModuleManager->UninstallRig(iRef->itemID());
-    iRef->Move(itemID(), flagCargoHold);
+    iRef->Move(itemID(), flagCargoHold, true);
 }
 
 void ShipItem::OnlineAll()

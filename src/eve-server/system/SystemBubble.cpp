@@ -99,7 +99,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
     std::map<uint32, SystemEntity*>::iterator itr = m_dynamicEntities.begin();
     while (itr != m_dynamicEntities.end()) {
         if (itr->second == nullptr) {
-            ++itr;
+            itr = m_dynamicEntities.erase(itr);
             continue;
         }
         pDSE = itr->second->GetDynamicSE();
@@ -354,7 +354,7 @@ uint32 SystemBubble::CountNPCs() {
 
 bool SystemBubble::InBubble(const GPoint& pt) const
 {
-	if (m_center.distance(pt) <= m_radius_hysteresis)
+	if (m_center.distance(pt) < m_radius_hysteresis)
 		return true;
 	return false;
 }

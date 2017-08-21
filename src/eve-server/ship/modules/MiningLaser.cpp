@@ -22,6 +22,7 @@
 MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
+
     m_IsInitialCycle = true;
     m_rMiner = m_dcMiner = m_iMiner = m_gMiner = false;
 
@@ -37,7 +38,10 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
         m_iMiner = true;
     } else if (m_modRef->groupID() == EVEDB::invGroups::Gas_Cloud_Harvester) {
         m_gMiner = true;
-    } else if ((m_modRef->groupID() == EVEDB::invGroups::Frequency_Mining_Laser) or (m_modRef->groupID() == EVEDB::invGroups::Strip_Miner)) {
+    } else if (m_modRef->groupID() == EVEDB::invGroups::Frequency_Mining_Laser) {
+        m_rMiner = true;
+        m_reloadTime = 8000;    // this is not set in ActiveModule c'tor.  easier/cheaper to set here.
+    } else if(m_modRef->groupID() == EVEDB::invGroups::Strip_Miner) {
         m_rMiner = true;
     }
     _log(MINING__TRACE, "MiningLaser Created for %s with %ums Duration.", item->itemName().c_str(), GetAttribute(AttrDuration).get_int());
@@ -167,8 +171,8 @@ void MiningLaser::ProcessCycle(bool partial)
     if (oreAmount > roidQuantity)
         oreAmount = roidQuantity;
 
-    _log(MINING__DEBUG, "ProcessCycle(%s) -  cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f, oreAmount:%.2f", \
-            (partial?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, oreAmount);
+    _log(MINING__DEBUG, "ProcessCycle(%s) -  cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f/%.2f, oreAmount:%.2f", \
+    (partial?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, (remainingCargoVolume -cycleVol), oreAmount);
 
     ItemData idata(roidRef->typeID(), m_shipRef->ownerID(), 0, flagAutoFit, oreAmount);
     InventoryItemRef oRef = m_shipRef->GetItemFactory()->SpawnItem( idata );

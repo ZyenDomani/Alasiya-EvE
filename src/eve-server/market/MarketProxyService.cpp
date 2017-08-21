@@ -495,7 +495,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
         ItemData idata(typeID, 1, 0, flagHangar, quantity);
         InventoryItemRef new_item = m_manager->item_factory->SpawnItem(idata);
         new_item->ChangeOwner(call.client->GetCharacterID());
-        new_item->Move(stationID, flagHangar);
+        new_item->Move(stationID, flagHangar, true);
     }
 
     PyRep* order = m_db.GetOrderRow(args.orderID);
@@ -661,7 +661,7 @@ void MarketProxyService::_ExecuteBuyOrder(uint32 buy_order_id, uint32 stationID,
         //entire item is moving...move out of first inventory
         item->Move(0, flagAutoFit, false);
         item->ChangeOwner(orderOwnerID);
-        item->Move(stationID, flagHangar);
+        item->Move(stationID, flagHangar, true);
     } else {
         //need to split item up...
         InventoryItemRef new_item = item->Split(quantity, true);
@@ -671,7 +671,7 @@ void MarketProxyService::_ExecuteBuyOrder(uint32 buy_order_id, uint32 stationID,
         }
         //use the owner change packet to alert the buyer of the new item
         new_item->ChangeOwner(orderOwnerID);
-        new_item->Move(stationID, flagHangar);
+        new_item->Move(stationID, flagHangar, true);
     }
 
     //the buyer has already paid out the money before the buy order
@@ -760,9 +760,9 @@ void MarketProxyService::_ExecuteSellOrder(uint32 sell_order_id, uint32 stationI
     new_item->ChangeOwner(buyer->GetCharacterID());
     new_item->Move(0, flagAutoFit, false);
     if (buyer->IsDocked())
-        new_item->Move(buyer->GetStationID(), flagHangar);
+        new_item->Move(buyer->GetStationID(), flagHangar, true);
     else
-        new_item->Move(stationID, flagHangar);
+        new_item->Move(stationID, flagHangar, true);
 
     //give the money to the seller...
     //TODO: take off market overhead fees...

@@ -319,7 +319,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             return Blueprint::Spawn( factory, data, bpData );
         }
         case EVEDB::invCategories::Asteroid: {
-            uint32 itemID = InventoryItem::CreateTempItemID( factory, data );
+            uint32 itemID = InventoryItem::CreateItemID( factory, data );
             if (!itemID)
                 return InventoryItemRef();
             InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
@@ -575,7 +575,7 @@ void InventoryItem::Delete() {
     if (!IsNPCCorp(ownerID())) {
         //first, get out of client's sight.
         //this also removes us from our inventory.
-        Move(0);
+        Move(0, flagAutoFit, true);
         ChangeOwner(1);
     }
 
@@ -770,11 +770,11 @@ void InventoryItem::Rename(const char *to)
     SaveItem();
 }
 
-void InventoryItem::MoveInto(Inventory &new_home, EVEItemFlags _flag, bool notify/*false*/) {
+void InventoryItem::MoveInto(Inventory &new_home, EVEItemFlags _flag/*flagAutoFit*/, bool notify/*false*/) {
     Move( new_home.m_inventoryID, _flag, notify );
 }
 
-void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify/*false*/) {
+void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit*/, bool notify/*false*/) {
     uint32 old_location = m_locationID;
     EVEItemFlags old_flag = m_flag;
 
@@ -782,7 +782,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
         return; //nothing to do...
 
     //first, take myself out of my old inventory, if its loaded.
-    if (!IsTradeCont(old_location)) {   // fix for trade containers segfault (as they dont have an inventory* object)
+    if (!IsTrading(old_location)) {   // fix for trade containers segfault (as they dont have an inventory* object)
         Inventory *old_inventory = m_factory.GetInventoryFromId( old_location, false );
         if (old_inventory != nullptr)
             old_inventory->RemoveItem(InventoryItemRef(this));  //releases its ref
@@ -796,7 +796,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag, bool notify
     m_flag = new_flag;
 
     //then make sure that my new inventory is updated, if its loaded.
-    if (!IsTradeCont(new_location)) {
+    if (!IsTrading(new_location)) {
         Inventory *new_inventory = m_factory.GetInventoryFromId( new_location, false );
         if (new_inventory != nullptr)
             new_inventory->AddItem(InventoryItemRef(this)); //makes a new ref
@@ -886,7 +886,7 @@ InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify/*false*/) {
 
     ItemData idata(m_type.id(), m_ownerID, 0, m_flag, qty_to_take);
     InventoryItemRef iRef = m_factory.SpawnItem(idata);
-    iRef->Move( m_locationID, m_flag );
+    iRef->Move( m_locationID, m_flag, true);
     return iRef;
 }
 

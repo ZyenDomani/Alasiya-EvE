@@ -710,12 +710,12 @@ bool Character::InjectSkillIntoBrain(SkillRef skill) {
         single_skill->SetAttribute(AttrSkillPoints, 0);
         single_skill->SetAttribute(AttrSkillLevel, 0);
         single_skill->ChangeSingleton(true);
-        single_skill->Move(m_itemID, flagSkill);
+        single_skill->Move(m_itemID, flagSkill, true);
     } else {  // use original skill
         skill->SetAttribute(AttrSkillPoints, 0);
         skill->SetAttribute(AttrSkillLevel, 0);
         skill->ChangeSingleton(true);
-        skill->Move(m_itemID, flagSkill);
+        skill->Move(m_itemID, flagSkill, true);
     }
     // 'skillEventSkillInjected' shows as "Unknown" in PD>Skill>History
     SaveSkillHistory(skillEventSkillInjected, Win32TimeNow(), m_itemID, skill->typeID(), 0, 0, GetTotalSP().get_double() );
@@ -997,7 +997,7 @@ void Character::AddItem(InventoryItemRef item) {
         SkillRef skill = SkillRef::StaticCast( item );
 
         if( !skill->singleton() ) {
-            skill->ChangeSingleton( true );
+            skill->ChangeSingleton( true, true );
             skill->SetAttribute(AttrSkillLevel, 0);
             skill->SetAttribute(AttrSkillPoints, 0);
             if( skill->flag() != flagSkillInTraining )

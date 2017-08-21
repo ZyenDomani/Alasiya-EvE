@@ -534,8 +534,8 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
         sDataMgr.GetStationInfo(locationID, m_StationData);
         snprintf(ci, sizeof(ci), "Docked:%u", locationID);
-        m_char->Move(locationID, flagAutoFit);
-        m_ship->Move(locationID, flagHangar);
+        m_char->Move(locationID, flagAutoFit, true);
+        m_ship->Move(locationID, flagHangar, true);
         m_ship->Relocate(pt);
         m_ship->Dock();
         if (!IsHangarLoaded(locationID))
@@ -547,14 +547,14 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         snprintf(ci, sizeof(ci), "InSpace:%u", locationID);
 
         if (InPod()) {
-            m_ship->Move(locationID, flagCapsule, false);
+            m_ship->Move(locationID, flagCapsule, true);
         } else {
-            m_pod->Move(locationID, flagCapsule, false);
-            m_ship->Move(locationID, flagAutoFit, false);
+            m_pod->Move(locationID, flagCapsule, true);
+            m_ship->Move(locationID, flagAutoFit, true);
         }
 
         if (m_char->flag() != flagPilot)
-            m_char->Move(m_shipId, flagPilot, false);
+            m_char->Move(m_shipId, flagPilot, true);
 
         SetDestiny(pt, !m_undock);
     }
@@ -677,7 +677,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     /* set internal vars for new ship */
     SetShip(newShipItemRef);
 
-    m_char->Move(m_shipId, flagPilot);
+    m_char->Move(m_shipId, flagPilot, true);
     m_ship->SetPlayer(this);
 
     char ci[25];
@@ -685,7 +685,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         m_ship->ChangeOwner(m_char->itemID());
         /* if ejecting into pod, setup and create new pod object */
         if (m_ship->typeID() == itemTypeCapsule) {
-            m_ship->Move(m_locationID, flagCapsule);
+            m_ship->Move(m_locationID, flagCapsule, true);
             CreateShipSE();
             pShipSE->GetShipSE()->SetPodShipID(m_shipId);
             m_system->AddEntity(pShipSE);
@@ -697,7 +697,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
                 if (m_pod.get() == nullptr)
                     ; // make error here for no pod....shouldnt happen
                 SetShip(m_pod);
-                m_ship->Move(m_locationID, flagCapsule);
+                m_ship->Move(m_locationID, flagCapsule, true);
                 CreateShipSE();
                 pShipSE->GetShipSE()->SetPodShipID(m_shipId);
                 m_system->AddEntity(pShipSE);
@@ -1023,7 +1023,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
         return;
     }
 
-    item->Move(location, flag);
+    item->Move(location, flag, true);
 
     /** @todo  this isnt right....correct it.  */
     if ((item->flag() >= flagSlotFirst) and (item->flag() <= flagSlotLast))
@@ -1051,7 +1051,7 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
 
     sLog.White("Client::LaunchDrone()","%s: Launching drone %u",  m_char->itemName().c_str(), drone->itemID());
 
-    drone->Move(m_locationID, flagAutoFit);
+    drone->Move(m_locationID, flagAutoFit, true);
 
     GPoint position(pShipSE->GetPosition());
     position.MakeRandomPointOnSphere(500.0);

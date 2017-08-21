@@ -622,7 +622,7 @@ PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& item
             if (!pShip->AddItem(flag, itemRef)) {
                 // if not, and in station, move item to hangar
                 if (IsStation(pShip->locationID()))
-                    itemRef->Move(pShip->locationID(), flagHangar);
+                    itemRef->Move(pShip->locationID(), flagHangar, true);
             }
         } else {
             // what else do we need to check for here?

@@ -53,6 +53,8 @@ public:
     void Initialize();
     void Process();
 
+    // call to check for and remove empty bubbles from bubble vector
+    void RemoveEmpty();
     //call whenever an entity may have left its bubble.
     void CheckBubble(SystemEntity* ent);
     //call when an entity is added to the system.
@@ -61,6 +63,8 @@ public:
     SystemBubble* FindBubble(SystemEntity *ent) const;
     //call to find the bubble containing the GPoint specified, if no bubble does, return NULL
     SystemBubble* FindBubble(uint32 systemID, const GPoint &pos) const;
+    //same as above, but will create new bubble if none found
+    SystemBubble* GetBubble(SystemManager* sysMgr, const GPoint &pos);
     //call to calculate new bubble's center from entity's velocity:
     void NewBubbleCenter(GVector shipVelocity, GPoint& newBubbleCenter);
     //call when an entity is removed from the system.
@@ -78,6 +82,7 @@ public:
     uint32 GetBeltID(uint16 bubbleID);
 
 private:
+    Timer m_emptyTimer;
     Timer m_wanderTimer;
 
     uint32 m_bubbleID=0;

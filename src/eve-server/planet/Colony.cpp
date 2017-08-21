@@ -310,7 +310,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         } break;
     }
 
-    iRef->Move(m_pSE->GetID(), flagPlanetSurface);
+    iRef->Move(m_pSE->GetID(), flagPlanetSurface, true);
     iRef->ChangeSingleton(true);
     // cannot change attributes on PI items.....  :(
     //iRef->SetAttribute(AttrCpuLoad, m_cpu);
@@ -337,7 +337,7 @@ void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
     }
     ItemData data(2280, m_client->GetCharacterID(), 0, flagAutoFit, 1);
     InventoryItemRef iRef = m_svcMgr->item_factory->SpawnItem(data);
-    iRef->Move(m_pSE->GetID(), flagPlanetSurface);
+    iRef->Move(m_pSE->GetID(), flagPlanetSurface, true);
     iRef->SaveItem();
 
     PI_Link link;
@@ -700,7 +700,7 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
             }
             ItemData iData(cur.first, m_client->GetCharacterID(), 0, flagAutoFit, cur.second);
             InventoryItemRef iRef = m_svcMgr->item_factory->SpawnItem(iData);
-            iRef->Move(cSE->GetID());
+            iRef->Move(cSE->GetID(), flagAutoFit, true);
         }
         m_client->AddBalance(-cost);
         contRef->SaveItem();

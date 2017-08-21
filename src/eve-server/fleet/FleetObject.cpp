@@ -86,6 +86,13 @@ FleetObject::FleetObject(PyServiceMgr *mgr)
     PyCallable_REG_CALL(FleetObject, DeleteWing);
     PyCallable_REG_CALL(FleetObject, DeleteSquad);
     PyCallable_REG_CALL(FleetObject, LeaveFleet);
+
+    /*
+            self.fleet.ChangeWingName(wingID, ret[:MAX_NAME_LENGTH])
+            self.fleet.ChangeSquadName(squadID, ret[:MAX_NAME_LENGTH])
+            self.fleet.SetOptions(options)
+            self.fleet.GetJoinRequests()
+            */
 }
 
 FleetObject::~FleetObject()

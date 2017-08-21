@@ -164,7 +164,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
     ShipItemRef ship;
 
     // Updated(groove)
-    // "/spawnn" arguments: 
+    // "/spawnn" arguments:
     // #1 = quantity ?
     // #2 = some double value deviation
     // #3 = typeID
@@ -672,7 +672,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
             skill->SetAttribute(AttrSkillLevel, level);
             skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
             if (skill->flag() == flagSkillInTraining) {
-                skill->SetFlag(flagSkill);
+                skill->SetFlag(flagSkill, true);
                 skill->SetAttribute(AttrExpiryTime, 0);
             }
         } else {    // Character DOES NOT have this skill

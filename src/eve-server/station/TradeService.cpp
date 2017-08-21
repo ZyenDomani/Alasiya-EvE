@@ -98,7 +98,7 @@ TradeService::TradeService(PyServiceMgr *mgr)
 {
     m_SvcMgr = mgr;
     _SetCallDispatcher(m_dispatch);
-    m_SessionID = 1000;                 //arbitrary starting point
+    m_SessionID = minTradeCont;
 
     PyCallable_REG_CALL(TradeService, InitiateTrade);
 }
@@ -235,7 +235,7 @@ void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSe
             continue;
         }
 
-        itemRef->Move(stationID, flagHangar);
+        itemRef->Move(stationID, flagHangar, true);
     }
 }
 
@@ -369,7 +369,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
         mTI.customInfo = "";
         pTSes->m_tradelist.insert(pTSes->m_tradelist.end(), mTI);
 
-    itemRef->Move(tradeContainerID, (EVEItemFlags)flag);
+        itemRef->Move(tradeContainerID, (EVEItemFlags)flag, true);
 
     PyDict* dict = new PyDict;
         dict->SetItem(new PyInt(ixLocationID), new PyInt(args.arg2));
@@ -462,7 +462,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
             mTI.categoryID = itemRef->categoryID();
             mTI.customInfo = "";
         pTSes->m_tradelist.insert(pTSes->m_tradelist.end(), mTI);
-        itemRef->Move(tradeContID, (EVEItemFlags)flag);
+        itemRef->Move(tradeContID, (EVEItemFlags)flag, true);
 
         PyPackedRow* row = new PyPackedRow( header );
             row->SetField( "itemID",        new PyLong(mTI.itemID));
@@ -613,7 +613,7 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
 
         uint32 newOwnerID = (cur.ownerID == pTSes->m_tradeSession.myID ? pTSes->m_tradeSession.herID : pTSes->m_tradeSession.myID);
         itemRef->ChangeOwner(newOwnerID, true);
-        itemRef->Move(stationID, flagHangar);
+        itemRef->Move(stationID, flagHangar, true);
 
         if ((itemRef->categoryID() == EVEDB::invCategories::Ship)
             || (itemRef->groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
@@ -755,8 +755,8 @@ DBRowDescriptor* TradeService::CreateHeader() {
 
 uint32 TradeService::GetTradeSessionID()
 {
-    if (m_SessionID < 1999)
+    if (m_SessionID < maxTradeCont)
         return ++m_SessionID;
     else
-        return (m_SessionID = 1001);
+        return (m_SessionID = minTradeCont);
 }

@@ -288,7 +288,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             if( !i )
                 continue;
 
-            i->Move(call.client->GetStationID(), flagHangar);
+            i->Move(call.client->GetStationID(), flagHangar, true);
         }
 
         uint32 qtyLeft = item->quantity() % item->type().portionSize();

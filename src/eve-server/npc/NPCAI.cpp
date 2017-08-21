@@ -227,11 +227,11 @@ void NPCAIMgr::Process() {
                 return;
             }
             SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(false);
-            if (!pTarget) {
+            if (pTarget == nullptr) {
                 _log(NPC__AI_TRACE, "%s(%u): Stopped %s, GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
                 SetIdle();
                 return;
-            } else if (!pTarget->SysBubble()) {
+            } else if (pTarget->SysBubble() == nullptr) {
                 m_npc->TargetMgr()->ClearTarget(pTarget);
                 return;
             }
@@ -283,9 +283,9 @@ void NPCAIMgr::SetWander()
     // wandering.  nothing to shoot.  look for target.
     if (m_npc->SysBubble()->HasDynamics()) {
         SystemEntity* pTarget = m_npc->SysBubble()->GetRandomEntity();
-        if (!pTarget)
+        if (pTarget == nullptr)
             pTarget = m_npc->SystemMgr()->GetSE(sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()));
-        if (!pTarget) {
+        if (pTarget == nullptr) {
             _log(NPC__ERROR, "%s(%u): Wandering:  No Target or beltSE found", m_npc->GetName(), m_npc->GetID());
             return;
         }
@@ -302,7 +302,8 @@ void NPCAIMgr::SetWander()
 }
 
 void NPCAIMgr::SetIdle() {
-    if (m_state == State::Idle) return;
+    if (m_state == State::Idle)
+        return;
     // not doing anything....idle.
     _log(NPC__AI_TRACE, "%s(%u): Idle: returning to idle.", \
          m_npc->GetName(), m_npc->GetID());
@@ -511,7 +512,8 @@ void NPCAIMgr::TargetLost(SystemEntity* pTarget) {
 void NPCAIMgr::Attack(SystemEntity* pTarget)
 {
     if (m_mainAttackTimer.Check()) {
-        if (!pTarget) return;
+        if (pTarget == nullptr)
+            return;
         // Check to see if the target still in the bubble (Client warped out)
         if (!m_npc->SysBubble()->InBubble(pTarget->GetPosition())) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) no longer in bubble.  Clear target and move on",

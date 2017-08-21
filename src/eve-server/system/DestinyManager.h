@@ -164,6 +164,7 @@ protected:
     void ProcessState();
 
     SystemEntity* const mySE;			//we do not own this.
+    SystemBubble* m_targBubble;         //we do not own this.
 
     bool IsTargetInvalid();              //performs common target checks
 

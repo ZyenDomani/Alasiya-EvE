@@ -59,9 +59,13 @@
 #define minStation              60000000
 #define maxNPCStation           60999999
 #define minOutpost              61000000
-#define maxStation              64000000
+#define maxStation              63999999
+#define minTradeCont            64000000
+#define maxTradeCont            66000000
 #define minUniverseAsteroid     70000000        // deco only
 #define maxUniverseAsteroid     79999999        // deco only
+#define minControlBunker        80000000
+#define maxControlBunker        80099999
 #define minFleet                80000000
 #define maxFleet                80009999
 #define minAlliance             99000000
@@ -87,14 +91,14 @@ maxDustCharacter = 2130000000
 */
 
 //  allan's static defines to ease code checks
-//  **update these**
+//  * most of these arent implemented yet....client bracketmgr dont like them.
 #define EVEMU_OUTPOST_ID               61000000
 #define EVEMU_SCENERIO_ID              90000000
 #define EVEMU_MAXIMUM_STATIC_ID        99900000
-#define EVEMU_ASTEROID_ID             100000000
 #define EVEMU_TEMP_ENTITY_ID          110000000
 #define EVEMU_PLANET_PIN_ID           130000000
 #define EVEMU_MINIMUM_DYNAMIC_ID      140000000
+#define EVEMU_ASTEROID_ID             450000000
 #define EVEMU_DRONE_ID                500000000
 #define EVEMU_NPC_ID                  750000000
 #define EVEMU_MISSILE_ID             1000000000
@@ -104,9 +108,6 @@ maxDustCharacter = 2130000000
 
 #define IsTempPinID(pinID) \
  (pinID < 1000)
-
-#define IsTradeCont(itemID) \
- ((itemID > 1000) && (itemID < 2000))
 
 #define IsCharType(typeID) \
  ((typeID >= minCharType) && (typeID <= maxCharType))
@@ -170,7 +171,7 @@ maxDustCharacter = 2130000000
 ((itemID >= minStation) && (itemID <= maxNPCStation))
 
 #define IsOutpost(itemID) \
- ((itemID >= minOutpost) && (itemID < maxStation))
+ ((itemID >= minOutpost) && (itemID < maxStation)
 
 #define IsTrading(itemID) \
 ((itemID >= 64000000) && (itemID < 66000000))
@@ -183,6 +184,9 @@ maxDustCharacter = 2130000000
 
 #define IsUniverseAsteroid(itemID) \
 ((itemID >= 70000000) && (itemID < 80000000))
+
+#define IsControlBunker(itemID) \
+ ((itemID >= 80000000) and (itemID < 80100000))
 
 #define IsScenarioItem(itemID) \
 ((itemID >= 90000000) && (itemID < EVEMU_MINIMUM_DYNAMIC_ID))
