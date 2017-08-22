@@ -35,16 +35,16 @@
 class FleetService
 {
 public:
-    uint32 CreateFleet(Client* pClient);
+    int64 CreateFleet(Client* pClient);
     PyObject* CreateWing(Client* pClient);
     PyObject* CreateSquad(Client* pClient);
     PyRep* GetAvailableFleets();
     PyObject* Init(Client* pClient);
 
 protected:
-    static uint32 m_fleetID;
-    static uint32 m_wingID;
-    static uint32 m_squadID;
+    static int64 m_fleetID;
+    static int64 m_wingID;
+    static int64 m_squadID;
 
     // maybe make this info accessable for webapp?
     struct avalibleFleets {
@@ -60,7 +60,7 @@ protected:
         uint16 numMembers;
         bool hideInfo;
         float public_minSecurity;
-        uint32 fleetID;
+        int64 fleetID;
         int public_allowedEntities;
         uint8 inviteScope;
         uint32 solarSystemID;
@@ -69,12 +69,12 @@ protected:
 
 private:
     //list containing all active fleets by ID  (should we also track squadID and wingID with their associated fleetID somewhere?)
-    std::list<uint32> m_fleets;
+    std::list<int64> m_fleets;
 
     //vector containing fleetID, Character* for all members of particular fleet.
     // CharacterRef will contain a FleetData object for that member.
-    std::unordered_multimap<uint32, Character*> m_fleetMembers;
-    std::map<uint32, avalibleFleets*> m_avalibleFleetsMap;
+    std::unordered_multimap<int64, Character*> m_fleetMembers;
+    std::map<int64, avalibleFleets*> m_avalibleFleetsMap;
 
 };
 

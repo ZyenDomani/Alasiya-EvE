@@ -364,7 +364,7 @@ void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
 {
     // this doesnt work right.  not sure why yet.
     auto range = m_asteroids.equal_range(beltID);
-    for (auto itr = range.first; itr != range.second; itr++) {
+    for (auto itr = range.first; itr != range.second; ++itr) {
         if (pASE == itr->second) {
             m_asteroids.erase(itr);
             continue;

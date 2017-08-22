@@ -576,7 +576,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
         uint32 skillID = 0, oldPoints = 0, newPoints = 0;
 
         std::vector<uint32>::const_iterator cur = skillList.begin();
-        for (; cur != skillList.end(); cur++) {
+        for (; cur != skillList.end(); ++cur) {
             skillID = *cur;
             if (character->HasSkillTrainedToLevel(skillID, level))
                 return new PyNone();

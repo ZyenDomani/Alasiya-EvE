@@ -126,7 +126,7 @@ void TargetManager::ClearTargets(bool notify_self) {
         return;
     }
     std::map<SystemEntity*, TargetEntry*>::iterator cur = m_targets.begin();
-    for(; cur != m_targets.end(); cur++) {
+    for(; cur != m_targets.end(); ++cur) {
         _log(TARGET__INFO, "%s(%u) has cleared target %s(%u) during clear all.",
                 mySE->GetName(), mySE->GetID(), cur->first->GetName(), cur->first->GetID());
         cur->first->TargetMgr()->TargetedByLost(mySE);
@@ -147,7 +147,7 @@ void TargetManager::ClearFromTargets() {
 
     //first, clean up our internal structure.
     std::map<SystemEntity*, TargetedByEntry*>::iterator cur = m_targetedBy.begin();
-    for (; cur != m_targetedBy.end(); cur++) {
+    for (; cur != m_targetedBy.end(); ++cur) {
         //do not notify until we clear our target list! otherwise bad things happen.
         ToNotify.push_back(cur->first);
         _log(TARGET__TRACE, "ClearFromTargets:  Added %s(%u) to delete list for %s(%u).", \
@@ -371,7 +371,7 @@ SystemEntity* TargetManager::GetFirstTarget(bool need_locked/*false*/) {
     }
 
     std::map<SystemEntity *, TargetEntry *>::const_iterator cur = m_targets.begin();
-    for (; cur != m_targets.end(); cur++)
+    for (; cur != m_targets.end(); ++cur)
         if (cur->second->state == TargetEntry::Locked)
             return(cur->first);
 
@@ -384,7 +384,7 @@ PyList* TargetManager::GetTargets() const {
         return result;
 
     std::map<SystemEntity *, TargetEntry *>::const_iterator cur = m_targets.begin();
-    for (; cur != m_targets.end(); cur++)
+    for (; cur != m_targets.end(); ++cur)
         result->AddItemInt( cur->first->GetID() );
 
     return result;
@@ -395,7 +395,7 @@ SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/
         return nullptr;
 
     std::map<SystemEntity*, TargetEntry*>::const_iterator cur = m_targets.begin();
-    for (; cur != m_targets.end(); cur++) {
+    for (; cur != m_targets.end(); ++cur) {
         if (cur->first->GetID() != targetID)
             continue;
         //found it...
@@ -416,7 +416,7 @@ PyList* TargetManager::GetTargeters() const {
         return result;
 
     std::map<SystemEntity*, TargetedByEntry*>::const_iterator cur = m_targetedBy.begin();
-    for(; cur != m_targetedBy.end(); cur++)
+    for(; cur != m_targetedBy.end(); ++cur)
         result->AddItemInt( cur->first->GetID() );
 
     return result;

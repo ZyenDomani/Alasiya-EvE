@@ -597,7 +597,7 @@ void PyTuple::clear()
 {
     iterator cur;
     cur = items.begin();
-    for (; cur != items.end(); cur++)
+    for (; cur != items.end(); ++cur)
         PySafeDecRef( *cur );
 
     items.clear();
@@ -609,7 +609,7 @@ PyTuple& PyTuple::operator=( const PyTuple& oth )
     items.resize( oth.size() );
     iterator cur = items.begin();
     const_iterator cur_oth = oth.begin();
-    for (; cur != items.end() && cur_oth != oth.end(); cur++, cur_oth++)
+    for (; cur != items.end() && cur_oth != oth.end(); ++cur, ++cur_oth)
     {
         if (*cur_oth == nullptr )
             *cur = nullptr;
@@ -681,7 +681,7 @@ PyList& PyList::operator=( const PyList& oth )
     items.resize( oth.size() );
     iterator cur = items.begin();
     const_iterator cur_oth = oth.begin();
-    for (; cur != items.end() && cur_oth != oth.end(); cur++, cur_oth++)
+    for (; cur != items.end() && cur_oth != oth.end(); ++cur, ++cur_oth)
     {
         if (*cur_oth == nullptr )
             *cur = nullptr;
@@ -800,7 +800,7 @@ PyDict& PyDict::operator=( const PyDict& oth )
 {
     clear();
     const_iterator cur = oth.begin();
-    for (; cur != oth.end(); cur++)
+    for (; cur != oth.end(); ++cur)
     {
         if (cur->second == nullptr )
             SetItem( cur->first->Clone(), nullptr );
@@ -915,7 +915,7 @@ PyRep* PyObjectEx_Type1::FindKeyword( const char* keyword ) const
     PyDict* kw = GetKeywords();
 
     PyDict::const_iterator cur = kw->begin();
-    for (; cur != kw->end(); cur++) {
+    for (; cur != kw->end(); ++cur) {
         if (cur->first->IsString() )
             if (cur->first->AsString()->content() == keyword )
                 return cur->second;
@@ -1018,7 +1018,7 @@ PyRep* PyObjectEx_Type2::FindKeyword( const char* keyword ) const
     PyDict* kw = GetKeywords();
 
     PyDict::const_iterator cur = kw->begin();
-    for (; cur != kw->end(); cur++) {
+    for (; cur != kw->end(); ++cur) {
         if ( cur->first->IsString() )
             if ( cur->first->AsString()->content() == keyword )
                 return cur->second;

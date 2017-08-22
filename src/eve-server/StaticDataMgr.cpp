@@ -258,7 +258,7 @@ void StaticDataMgr::GetInfo()
 void StaticDataMgr::GetDgmTypeAttrVec(uint32 typeID, std::vector< DmgTypeAttribute >& typeAttrVec)
 {
     auto itr = m_typeAttrMap.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         typeAttrVec.push_back(it->second);
 }
 
@@ -299,14 +299,14 @@ void StaticDataMgr::GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData)
 bool StaticDataMgr::GetRamMaterials(uint16 typeID, std::vector< ramMaterials >& ramMatls)
 {
     auto itr = m_ramMatl.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         ramMatls.push_back(it->second);
 }
 
 bool StaticDataMgr::GetRamRequirements(uint16 typeID, std::vector< ramRequirements >& ramReqs)
 {
     auto itr = m_ramReq.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         ramReqs.push_back(it->second);
 }
 

@@ -124,7 +124,7 @@ bool AttributeMap::Save() {
     std::vector<AttrData> items;
     items.clear();
     AttrMapItr itr = mAttributes.begin();
-    for (; itr != mAttributes.end(); itr++) {
+    for (; itr != mAttributes.end(); ++itr) {
         save = false;
         if (skill)
             if ((itr->first == AttrSkillPoints) or (itr->first == AttrSkillLevel) or (itr->first == AttrExpiryTime))

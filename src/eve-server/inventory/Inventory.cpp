@@ -70,7 +70,7 @@ void Inventory::Unload()
     items.clear();
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin();
     while (itr != mContents.end()) {
-        if (IsNotStaticItem(itr->first)) {   // only save player items
+        if (IsPlayerItem(itr->first)) {   // only save player items
             data.itemID = itr->first;
             data.contraband = itr->second->contraband();
             data.flag = itr->second->flag();
@@ -310,7 +310,7 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
 
     while (!done) { //check if sorted
         done = true;  //assume sorted
-        for (int i = 0, i2 = 1; (i < itemVec.size()) && (i2 < itemVec.size()); i++, i2++) { //iterate though list
+        for (int i = 0, i2 = 1; (i < itemVec.size()) && (i2 < itemVec.size()); ++i, ++i2) { //iterate though list
             if ((IsModuleSlot(itemVec[i]->flag())) && (IsModuleSlot(itemVec[i2]->flag()))) {
                 if (itemVec[i]->categoryID() > itemVec[i2]->categoryID()) {  //check if each pair is sorted by category.  subsystems > charges > modules
                     //it's not, so flip the values

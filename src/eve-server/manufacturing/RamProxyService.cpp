@@ -242,7 +242,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         GetBOMItems( pathBomLocation, items );
 
         std::vector<RequiredItem>::iterator itemItr = reqItems.begin();
-        for (; itemItr != reqItems.end(); itemItr++) {
+        for (; itemItr != reqItems.end(); ++itemItr) {
             if (itemItr->isSkill)
                 continue;       // not interested
 
@@ -253,7 +253,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
             std::vector<InventoryItemRef>::iterator refItr = items.begin();
             // consume required materials
-            for (; refItr != items.end(); refItr++) {
+            for (; refItr != items.end(); ++refItr) {
                 if (((*refItr)->typeID() == itemItr->typeID) and ((*refItr)->ownerID() == call.client->GetCharacterID())) {
                     if (qtyNeeded >= (*refItr)->quantity()) {
                         qtyNeeded -= (*refItr)->quantity();
@@ -302,7 +302,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
 
     // return materials which weren't completely consumed
     std::vector<RequiredItem>::iterator cur = reqItems.begin();
-    for (; cur != reqItems.end(); cur++) {
+    for (; cur != reqItems.end(); ++cur) {
         if ((!cur->isSkill) and (cur->damagePerJob != 1.0)) {
             uint32 quantity = (uint32)(cur->quantity * runs * (1.0 - cur->damagePerJob));
             if (quantity == 0)
@@ -668,7 +668,7 @@ void RamProxyService::VerifyInstallJob_Install(const Rsp_InstallJob &rsp, const 
     GetBOMItems( pathBomLocation, items );
 
     std::vector<RequiredItem>::const_iterator cur = reqItems.begin();
-    for (; cur != reqItems.end(); cur++) {
+    for (; cur != reqItems.end(); ++cur) {
         // check skill (quantity is required level)
         if (cur->isSkill) {
             if (c->GetChar()->GetSkillLevel(cur->typeID) < cur->quantity) {

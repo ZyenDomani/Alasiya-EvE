@@ -216,7 +216,7 @@ Effect FxDataMgr::GetEffect(uint16 eID)
 void FxDataMgr::GetTypeEffect(uint16 typeID, std::vector< TypeEffects >& typeEffMap)
 {
     auto itr = m_typeFxMap.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         typeEffMap.push_back(it->second);
 }
 
@@ -264,7 +264,7 @@ bool FxDataMgr::isAssistance(uint16 eID)
 uint16 FxDataMgr::GetEffectID(std::string effectName)
 {
     std::map<std::string, uint16>::const_iterator itr = m_effectName.find(effectName);
-    for (; itr != m_effectName.end(); itr++)
+    for (; itr != m_effectName.end(); ++itr)
         return itr->second;
     return 0;
 }

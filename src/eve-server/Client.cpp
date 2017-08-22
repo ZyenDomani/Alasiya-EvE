@@ -1910,7 +1910,7 @@ bool Client::Handle_Notify(PyPacket* packet)
         ServerNotification_ReleaseObj element;
 
         PyList::const_iterator cur = notify.elements->begin();
-        for (; cur != notify.elements->end(); cur++) {
+        for (; cur != notify.elements->end(); ++cur) {
             if (!element.Decode(*cur)) {
                 sLog.Error("Client","Notification '%s' from %s: Failed to decode element. Skipping.", notify.method.c_str(),  m_char->itemName().c_str());
                 continue;

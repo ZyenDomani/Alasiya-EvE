@@ -30,9 +30,9 @@
 
 //may need to adjust this later for persistant fleets
 //  these will have to be incremented individually, then stored according to fleet
-uint32 FleetService::m_fleetID = minFleet;  //1000000888444
-uint32 FleetService::m_wingID = m_fleetID + 1000000000000;
-uint32 FleetService::m_squadID = m_wingID + 1000000000000;
+int64 FleetService::m_fleetID = minFleet;  //1000000888444
+int64 FleetService::m_wingID = m_fleetID + 1000000000000;
+int64 FleetService::m_squadID = m_wingID + 1000000000000;
 
 /** @note  fleet IDs explanation
  * ABCDEFG888444
@@ -45,13 +45,13 @@ uint32 FleetService::m_squadID = m_wingID + 1000000000000;
 
 
 //  Manager class functions and methods...
-uint32 FleetService::CreateFleet(Client *pClient)
+int64 FleetService::CreateFleet(Client *pClient)
 {
-    uint32 fleetID = m_fleetID, wingID = m_wingID, squadID = m_squadID;
+    int64 fleetID = m_fleetID;
     FleetData fleet;
         fleet.fleetID = fleetID;        //this is also lsc channel #
-        fleet.wingID = wingID;
-        fleet.squadID = squadID;
+        fleet.wingID = m_wingID;
+        fleet.squadID = m_squadID;
         fleet.fleetRole = fleetRoleLeader;
         fleet.fleetBooster = fleetBoosterFleet;
         fleet.fleetJob = fleetJobCreator;
@@ -124,7 +124,7 @@ PyRep* FleetService::GetAvailableFleets() {
 
             fleetRSP.leader = new PyObject( "util.KeyVal", leaderDict );
 
-        fleetDict->SetItem(new PyInt(fleetRSP.fleetID), fleetRSP.Encode() );
+        fleetDict->SetItem(new PyLong(fleetRSP.fleetID), fleetRSP.Encode() );
     }
 
     return fleetDict;

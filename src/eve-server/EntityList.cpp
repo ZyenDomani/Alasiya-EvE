@@ -262,7 +262,7 @@ void EntityList::Multicast(const character_set &cset, const PyAddress &dest, EVE
     GetClients(cset, result);
 
     std::vector<Client*>::iterator cur = result.begin();
-    for (; cur != result.end(); cur++)
+    for (; cur != result.end(); ++cur)
         (*cur)->SendNotification(dest, noti);
 }
 
@@ -330,7 +330,7 @@ void EntityList::Multicast(const character_set &cset, const char* notifyType, co
 
     std::vector<Client*>::iterator cur = result.begin(), end = result.end();
     PyTuple* payload;
-    for (; cur != end; cur++, num_remaining--) {
+    for (; cur != end; ++cur, --num_remaining) {
         //keep a counter to eliminate an extra copy of in_payload
         if (num_remaining < 2) {
             payload = *in_payload;

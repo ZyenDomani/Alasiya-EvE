@@ -638,7 +638,7 @@ void SystemBubble::BubblecastDestiny(std::vector<PyTuple *> &updates, std::vecto
 //send a set of destiny updates to every client in the bubble.
 void SystemBubble::BubblecastDestinyUpdate(std::vector<PyTuple *> &updates, const char *desc) const {
     std::vector<PyTuple *>::iterator cur = updates.begin();
-    for (; cur != updates.end(); cur++) {
+    for (; cur != updates.end(); ++cur) {
         PyTuple *up = *cur;
         BubblecastDestinyUpdate(&up, desc); //update is consumed.
     }
@@ -648,7 +648,7 @@ void SystemBubble::BubblecastDestinyUpdate(std::vector<PyTuple *> &updates, cons
 //send a set of destiny events to every client in the bubble.
 void SystemBubble::BubblecastDestinyEvent(std::vector<PyTuple *> &events, const char *desc) const {
     std::vector<PyTuple *>::iterator cur = events.begin();
-    for (; cur != events.end(); cur++) {
+    for (; cur != events.end(); ++cur) {
         PyTuple *ev = *cur;
         BubblecastDestinyEvent(&ev, desc); //event is consumed.
     }

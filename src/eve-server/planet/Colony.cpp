@@ -354,7 +354,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
     // routeID is sent as tempID like pins.
     std::list<uint32> list1;
     list1.clear();
-    for (size_t i = 0; i < path->size(); i++) {
+    for (size_t i = 0; i < path->size(); ++i) {
         if (path->GetItem(i)->IsTuple())
             list1.push_back(path->GetItem(i)->AsTuple()->GetItem(1)->AsInt()->value());
         else if (path->GetItem(i)->IsInt())
@@ -453,7 +453,7 @@ void Colony::RemovePin(uint32 pinID)
 void Colony::RemoveLink(uint32 src, uint32 dest)
 {
     std::map<uint32, PI_Link>::iterator itr = ccPin->links.begin();
-    for (; itr != ccPin->links.end(); itr++) {
+    for (; itr != ccPin->links.end(); ++itr) {
         if (itr->second.endpoint1 == src) {
             if (itr->second.endpoint2 == dest) {
                 ccPin->links.erase(itr);

@@ -64,19 +64,19 @@ bool PlanetSE::LoadExtras(SystemDB* db) {
     m_data.dist_4 = MakeRandomInt(2, 75) * sysSec + MakeRandomFloat(0, 1);
     m_data.dist_5 = MakeRandomInt(2, 75) * sysSec + MakeRandomFloat(0, 1);
 
-    for (uint16 i=0; i<3600; i++) {
+    for (uint16 i=0; i<3600; ++i) {
         m_data.buffer_1 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 3k6 bytes.
     }
-    for (uint16 i=0; i<3600; i++) {
+    for (uint16 i=0; i<3600; ++i) {
         m_data.buffer_2 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 3k6 bytes.
     }
-    for (uint16 i=0; i<3600; i++) {
+    for (uint16 i=0; i<3600; ++i) {
         m_data.buffer_3 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 3k6 bytes.
     }
-    for (uint16 i=0; i<3600; i++) {
+    for (uint16 i=0; i<3600; ++i) {
         m_data.buffer_4 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 3k6 bytes.
     }
-    for (uint16 i=0; i<3600; i++) {
+    for (uint16 i=0; i<3600; ++i) {
         m_data.buffer_5 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 3k6 bytes.
     }
 

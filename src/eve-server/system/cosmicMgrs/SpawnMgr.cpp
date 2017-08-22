@@ -187,7 +187,7 @@ void SpawnMgr::Process() {
             RatBubbleVec::iterator curBubbleItr = m_bubbles.begin();
             while (curBubbleItr != m_bubbles.end()) {
                 auto curSpawnItr = m_spawns.equal_range((*curBubbleItr)->GetID());
-                for (auto it = curSpawnItr.first; it != curSpawnItr.second; it++) {
+                for (auto it = curSpawnItr.first; it != curSpawnItr.second; ++it) {
                     if (it->second.enabled) {
                         _log(SPAWN__TRACE, "Process() called, groupTimer hit, bubbleItr != end and spawnItr enabled.  SpawnEntryID %u is 0x%X", \
                                     it->second.spawnID, &it->second);
@@ -318,7 +318,7 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
 
     // get faction's ship typeclass and groupID map
     auto groupRange = sSpawnDataMgr.m_groups.equal_range(factionID);
-    for (auto it = groupRange.first; it != groupRange.second; it++) {
+    for (auto it = groupRange.first; it != groupRange.second; ++it) {
         m_factionGroups.insert(std::pair<uint8, uint32>(it->second.shipClass, it->second.groupID));
     }
     _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_factionGroups size is %u.", m_factionGroups.size());    //should be 12
@@ -364,7 +364,7 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
     RatSpawnClassVec spawnEntry;
     RatSpawnClass spawnClass;
     auto classRange = sSpawnDataMgr.m_classes.equal_range(type);
-    for (auto it = classRange.first; it != classRange.second; it++) {
+    for (auto it = classRange.first; it != classRange.second; ++it) {
         spawnClass.type = it->second.type;
         spawnClass.sub = it->second.sub;
         spawnClass.f = it->second.f;
@@ -497,7 +497,7 @@ uint32 SpawnMgr::GetRandTypeID(uint32 shipClass)
    /** @todo  will need to check typeIDs here for higher-level ships in hi-sec systems */
     std::vector<uint32> typeVec;
     auto typeRange = sSpawnDataMgr.m_types.equal_range(groupID); //groupID is key, typeID is value
-    for (auto it = typeRange.first; it != typeRange.second; it++) {
+    for (auto it = typeRange.first; it != typeRange.second; ++it) {
         typeVec.push_back(it->second);
     }
 
@@ -601,7 +601,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
         */
         ItemData idata(cur->typeID, corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
 
-        for (uint8 x=0; x!=cur->quantity; x++) {
+        for (uint8 x=0; x!=cur->quantity; ++x) {
             InventoryItemRef i = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db....or save ALL the spawn shit
             if (i.get() == nullptr) {
                 _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur->typeID);

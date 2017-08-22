@@ -583,7 +583,7 @@ void PlanetDB::SaveContents(PI_CCPin* ccPin)
     std::map<uint16, uint32>::iterator itr;
     for (auto cur : ccPin->pins) {
         if (cur.second.isStorage) {
-            for (itr = cur.second.contents.begin(); itr != cur.second.contents.end(); itr++) {
+            for (itr = cur.second.contents.begin(); itr != cur.second.contents.end(); ++itr) {
                 if (first) {
                     Inserts << " VALUES ";
                     first = false;
@@ -613,7 +613,7 @@ void PlanetDB::SavePinContents(uint32 ccPinID, uint32 pinID, std::map< uint16, u
 
     bool first = true;
     std::map<uint16, uint32>::iterator itr;
-    for (itr = contents.begin(); itr != contents.end(); itr++) {
+    for (itr = contents.begin(); itr != contents.end(); ++itr) {
         if (first) {
             Inserts << " VALUES ";
             first = false;

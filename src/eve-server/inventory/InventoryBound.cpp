@@ -243,7 +243,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
 
     call.client->services().item_factory->SetUsingClient(call.client);
     std::vector<PyRep *>::const_iterator cur = elements.MMElements->begin();
-    for (; cur != elements.MMElements->end(); cur++) {
+    for (; cur != elements.MMElements->end(); ++cur) {
         if (!element.Decode( *cur )) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             continue;
@@ -518,7 +518,7 @@ PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& item
         pShip = m_manager->item_factory->GetShip(m_self->itemID()).get();
 
     std::vector<int32>::const_iterator cur = items.begin();
-    for (; cur != items.end(); cur++) {
+    for (; cur != items.end(); ++cur) {
         itemRef = m_manager->item_factory->GetItem(*cur);
         old_flag = itemRef->flag();
         quantity = origQty;

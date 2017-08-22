@@ -254,13 +254,13 @@ bool DungeonMgr::Create(uint16 templateID)
     uint16 x=0, y=0, z=0, group = 0;
     DunGroupData grp;
     auto roomRange = sDunDataMgr.rooms.equal_range(roomID);
-    for (auto it = roomRange.first; it != roomRange.second; it++) {
+    for (auto it = roomRange.first; it != roomRange.second; ++it) {
         x = it->second.x;
         y = it->second.y;
         z = it->second.z;
         group = it->second.dunGroupID;
         auto groupRange = sDunDataMgr.groups.equal_range(group);
-        for (auto it2 = groupRange.first; it2 != groupRange.second; it2++) {
+        for (auto it2 = groupRange.first; it2 != groupRange.second; ++it2) {
             grp.typeCatID = it2->second.typeCatID;
             grp.typeGrpID = it2->second.typeGrpID;
             grp.typeName = it2->second.typeName;

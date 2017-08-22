@@ -87,7 +87,7 @@ def GetCycleTimeFromProgramLength(programLength):
 PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
 {
     bool cancel = false;
-    for (int i = 0; i < uuncl.commandList->size(); i++) {
+    for (int i = 0; i < uuncl.commandList->size(); ++i) {
         if (cancel)
             return m_colony->GetColony();
         UUNCommand uunc;

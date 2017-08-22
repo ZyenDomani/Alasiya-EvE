@@ -237,7 +237,7 @@ SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &pos) cons
     // Finds a range containing all elements whose key is k.
     // pair<iterator, iterator> equal_range(const key_type& k)
     auto range = m_bubbleMap.equal_range(systemID);
-    for ( auto itr = range.first; itr != range.second; itr++ )
+    for ( auto itr = range.first; itr != range.second; ++itr )
         if (itr->second->InBubble(pos))
             return itr->second;
 
@@ -265,7 +265,7 @@ void BubbleManager::ClearSystemBubbles(uint32 systemID)
 void BubbleManager::RemoveBubble(uint32 systemID, SystemBubble* pSB)
 {
     auto range = m_bubbleMap.equal_range(systemID);
-    for ( auto itr = range.first; itr != range.second; itr++ )
+    for ( auto itr = range.first; itr != range.second; ++itr)
         if (itr->second = pSB) {
             m_bubbleMap.erase(itr);
             return;
@@ -281,7 +281,7 @@ void BubbleManager::AddSpawnID(uint16 bubbleID, uint32 spawnID)
 void BubbleManager::RemoveSpawnID(uint16 bubbleID, uint32 spawnID)
 {
     auto range = m_spawnIDs.equal_range(bubbleID);
-    for ( auto itr = range.first; itr != range.second; itr++ )
+    for ( auto itr = range.first; itr != range.second; ++itr )
         if (itr->second = spawnID) {
             m_spawnIDs.erase(itr);
             return;

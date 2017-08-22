@@ -147,7 +147,7 @@ void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
     // Finds a range containing all elements whose key is k.
     // pair<iterator, iterator> equal_range(const key_type& k)
     auto range = m_LootGroupMap.equal_range(groupID);
-    for ( auto it = range.first; it != range.second; it++ ) {
+    for ( auto it = range.first; it != range.second; ++it ) {
         // make lootMap of lootGroupID's
         if (MakeRandomFloat(0, 1) < it->second.dropChance){
             randChance = MakeRandomFloat(0, 1);
@@ -166,7 +166,7 @@ void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
             */
 
             auto range2 = m_LootGroupTypeMap.equal_range(it->second.lootGroupID);
-            for (auto it2 = range2.first; it2 != range2.second; it2++) {
+            for (auto it2 = range2.first; it2 != range2.second; ++it2) {
                 if (it2->second.metaLevel == metaLevel)
                     loot_group_list.push_back(it2->second);
             }
@@ -226,7 +226,7 @@ void DGM_Salvage_Table::GetSalvage(uint32 factionID, std::vector<uint32> &itemLi
     double randChance = 0.0;
 
     auto itr = m_SalvageMap.equal_range(factionID);
-    for (auto it = itr.first; it != itr.second; it++) {
+    for (auto it = itr.first; it != itr.second; ++it) {
         itemList.push_back(it->second);
     }
 

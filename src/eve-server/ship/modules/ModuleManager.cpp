@@ -62,20 +62,21 @@ ModuleContainer::ModuleContainer(uint8 lowSlots, uint8 medSlots, uint8 highSlots
 
 ModuleContainer::~ModuleContainer()
 {
-    for (std::map<uint8, GenericModule*>::iterator itr = m_modules.begin(); itr != m_modules.end(); itr++)
+    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin(), end = m_modules.end();
+    for (; itr != end; ++itr)
         SafeDelete(itr->second);
 }
 
 void ModuleContainer::ClearModMap() {
     // this will populate the module map for all slots with null pointer
     // modules
-    for (uint8 flag = flagLowSlot0; flag < flagFixedSlot; flag++)
+    for (uint8 flag = flagLowSlot0; flag < flagFixedSlot; ++flag)
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
     // rigs
-    for (uint8 flag = flagRigSlot0; flag < flagRigSlot3; flag++)
+    for (uint8 flag = flagRigSlot0; flag < flagRigSlot3; ++flag)
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
     //subsystems
-    for (uint8 flag = flagSubSystem0; flag < flagSubSystem5; flag++)
+    for (uint8 flag = flagSubSystem0; flag < flagSubSystem5; ++flag)
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
 }
 
@@ -230,27 +231,27 @@ uint16 ModuleContainer::GetAvailableSlotInBank(EVEEffectID slotBank)
 {
     switch (slotBank) {
         case EVEEffectID::loPower: {
-            for (uint8 slot=flagLowSlot0; slot < (flagLowSlot0 + m_LowSlots); slot++)
+            for (uint8 slot=flagLowSlot0; slot < (flagLowSlot0 + m_LowSlots); ++slot)
 				if ( m_modules[slot] == nullptr )
 					return slot;
             } break;
 		case EVEEffectID::medPower: {
-            for (uint8 slot=flagMedSlot0; slot < (flagMedSlot0 + m_MediumSlots); slot++)
+            for (uint8 slot=flagMedSlot0; slot < (flagMedSlot0 + m_MediumSlots); ++slot)
                 if ( m_modules[slot] == nullptr )
 					return slot;
             } break;
 		case EVEEffectID::hiPower: {
-            for (uint8 slot=flagHiSlot0; slot < (flagHiSlot0 + m_HighSlots); slot++)
+            for (uint8 slot=flagHiSlot0; slot < (flagHiSlot0 + m_HighSlots); ++slot)
                 if ( m_modules[slot] == nullptr )
 					return slot;
             } break;
 		case EVEEffectID::rigSlot: {
-            for (uint8 slot=flagRigSlot0; slot < (flagRigSlot0 + m_RigSlots); slot++)
+            for (uint8 slot=flagRigSlot0; slot < (flagRigSlot0 + m_RigSlots); ++slot)
                 if ( m_modules[slot] == nullptr )
 					return slot;
             } break;
 		case EVEEffectID::subSystem: {
-            for (uint8 slot=flagSubSystem0; slot < (flagSubSystem0 + m_SubSystemSlots); slot++)
+            for (uint8 slot=flagSubSystem0; slot < (flagSubSystem0 + m_SubSystemSlots); ++slot)
                 if ( m_modules[slot] == nullptr )
 					return slot;
             } break;
@@ -955,7 +956,7 @@ void ModuleManager::GetShipRigs(std::vector< uint32 >& modVec)
 {
     // get rigs on ship, by itemID (there's only 3 slots...)
     GenericModule* pMod(nullptr);
-    for (uint8 i = flagRigSlot0; i < flagRigSlot3; i++) {
+    for (uint8 i = flagRigSlot0; i < flagRigSlot3; ++i) {
         pMod = m_Modules->GetModule((EVEItemFlags)i);
         if (pMod != nullptr)
             modVec.push_back(pMod->itemID());
@@ -967,7 +968,7 @@ void ModuleManager::GetShipSubSystems(std::vector< uint32 >& modVec)
 {
     // get subsystems on ship, by itemID (there's only 5 slots...)
     GenericModule* pMod(nullptr);
-    for (uint8 i = flagSubSystem0; i < flagSubSystem5; i++) {
+    for (uint8 i = flagSubSystem0; i < flagSubSystem5; ++i) {
         pMod = m_Modules->GetModule((EVEItemFlags)i);
         if (pMod != nullptr)
             modVec.push_back(pMod->itemID());
@@ -1001,7 +1002,7 @@ void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vecto
     if (tmpList.empty())
         return;
     std::map<uint8, GenericModule*>::reverse_iterator itr = tmpList.rbegin();
-    for (; itr != tmpList.rend(); itr++)
+    for (; itr != tmpList.rend(); ++itr)
         pModList.push_back(itr->second);
 
 }

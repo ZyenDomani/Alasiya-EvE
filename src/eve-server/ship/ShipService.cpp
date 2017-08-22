@@ -360,7 +360,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
         }
         PyDict* onlineModules = call.byname["onlineModules"]->AsDict();
         PyDict::const_iterator cur = onlineModules->begin();
-        for (; cur != onlineModules->end(); cur++)
+        for (; cur != onlineModules->end(); ++cur)
             pShip->AddModuleToOnlineVec(cur->second->AsInt()->value());
     }
 
@@ -431,7 +431,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         return nullptr;
     }
 
-    for (int i = 0; i < itemIDList.size(); i++) {
+    for (int i = 0; i < itemIDList.size(); ++i) {
         itemID = itemIDList[i];
 
         ShipItemRef ship = m_manager->item_factory->GetShip(itemID);
@@ -535,7 +535,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
 
     PyDict* dict = new PyDict();
 
-    for (uint32 i = 0; i < PyToDropList->size(); i++) {
+    for (uint32 i = 0; i < PyToDropList->size(); ++i) {
         location.MakeRandomPointOnSphereLayer((300.0 +radius),(800.0 + radius));
         entity.itemID = (uint32)(PyToDropList->items.at(i)->AsTuple()->items.at(0)->AsInt()->value());
         itemQuantity = (uint32)(PyToDropList->items.at(i)->AsTuple()->items.at(1)->AsInt()->value());
@@ -734,7 +734,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     //args contains id's of items to jettison
     std::vector<int32>::iterator cur = args.ints.begin();
     // loop thru items to see if there is a container in this list.
-    for (; cur != args.ints.end(); cur++) {
+    for (; cur != args.ints.end(); ++cur) {
         invItemRef = m_manager->item_factory->GetItem(*cur);
         if (invItemRef.get() == nullptr)
             continue;
