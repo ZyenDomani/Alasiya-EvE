@@ -43,6 +43,8 @@ public:
 
 protected:
     static uint32 m_fleetID;
+    static uint32 m_wingID;
+    static uint32 m_squadID;
 
     struct avalibleFleets {
         float local_minSecurity;

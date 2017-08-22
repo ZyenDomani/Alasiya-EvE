@@ -49,6 +49,24 @@ public:
         PyCallable_REG_CALL(FleetBound, GetInitState);
         PyCallable_REG_CALL(FleetBound, Invite);
 
+    /*
+            self.fleet.ChangeWingName(wingID, ret[:MAX_NAME_LENGTH])
+            self.fleet.ChangeSquadName(squadID, ret[:MAX_NAME_LENGTH])
+            self.fleet.SetOptions(options)
+            self.fleet.GetJoinRequests()
+            self.fleet.AddToVoiceChat(channelName)
+            self.fleet.SetVoiceMuteStatus(status, channel)
+            self.fleet.ExcludeFromVoiceMute(charid, channel)
+            self.fleet.GetFleetComposition()
+            self.fleet.GetWings()
+            self.fleet.RejectJoinRequest(charID)
+            self.fleet.SendBroadcast(name, self.broadcastScope, itemID)
+            self.fleet.UpdateMemberInfo(self.GetMyShipTypeID())
+            self.fleet.SetMotdEx(motd)
+            self.fleet.GetMotd()
+            self.fleetID = self.fleet.GetFleetID()
+            */
+
     }
     virtual ~FleetBound() {delete m_dispatch;}
     virtual void Release() {
@@ -86,13 +104,6 @@ FleetObject::FleetObject(PyServiceMgr *mgr)
     PyCallable_REG_CALL(FleetObject, DeleteWing);
     PyCallable_REG_CALL(FleetObject, DeleteSquad);
     PyCallable_REG_CALL(FleetObject, LeaveFleet);
-
-    /*
-            self.fleet.ChangeWingName(wingID, ret[:MAX_NAME_LENGTH])
-            self.fleet.ChangeSquadName(squadID, ret[:MAX_NAME_LENGTH])
-            self.fleet.SetOptions(options)
-            self.fleet.GetJoinRequests()
-            */
 }
 
 FleetObject::~FleetObject()
@@ -111,6 +122,8 @@ PyBoundObject* FleetObject::_CreateBoundObject( Client* c, const PyRep* bind_arg
 PyResult FleetBound::Handle_Init(PyCallArgs &call) {
     sLog.White("FleetBound", "Handle_Init() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
+
+    //self.fleet.Init(self.GetMyShipTypeID())
 /*
         from clientID
             [PyString "MachoBindObject"]
@@ -143,6 +156,89 @@ PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
     sLog.White("FleetBound", "Handle_GetInitState() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
+    /*
+        initState = self.fleet.GetInitState()
+        self.fleetID = initState.fleetID
+        self.members = initState.members
+        self.wings = initState.wings
+        self.options = initState.options
+        self.isMutedByLeader = initState.isMutedByLeader
+        self.isExcludedFromMuting = initState.isExcludedFromMuting
+        self.motd = initState.motd
+
+        **returns
+      [PySubStream 386 bytes]
+        [PyObjectData Name: util.KeyVal]
+          [PyDict 8 kvp]
+            [PyString "isExcludedFromMuting"]
+            [PyDict 0 kvp]
+            [PyString "isMutedByLeader"]
+            [PyDict 0 kvp]
+            [PyString "options"]
+            [PyObjectData Name: util.KeyVal]
+              [PyDict 3 kvp]
+                [PyString "isFreeMove"]
+                [PyBool False]
+                [PyString "isRegistered"]
+                [PyBool False]
+                [PyString "isVoiceEnabled"]
+                [PyBool False]
+            [PyString "fleetID"]
+            [PyTuple 1 items]
+              [PyIntegerVar 1601810790423]
+            [PyString "members"]
+            [PyDict 1 kvp]
+              [PyInt 649670823]
+              [PyObjectData Name: util.KeyVal]
+                [PyDict 11 kvp]
+                  [PyString "squadID"]
+                  [PyIntegerVar 3674710790423]
+                  [PyString "roleBooster"]
+                  [PyInt 3]
+                  [PyString "wingID"]
+                  [PyIntegerVar 2610110790423]
+                  [PyString "skills"]
+                  [PyList 3 items]
+                    [PyInt 4]
+                    [PyInt 0]
+                    [PyInt 0]
+                  [PyString "timestamp"]
+                  [PyIntegerVar 129756560170104752]
+                  [PyString "clientID"]
+                  [PyIntegerVar 221031000003102]
+                  [PyString "job"]
+                  [PyInt 2]
+                  [PyString "role"]
+                  [PyInt 3]
+                  [PyString "shipTypeID"]
+                  [PyInt 644]
+                  [PyString "solarSystemID"]
+                  [PyInt 30000302]
+                  [PyString "charID"]
+                  [PyInt 649670823]
+            [PyString "motd"]
+            [PyString ""]
+            [PyString "isLootLogging"]
+            [PyBool True]
+            [PyString "wings"]
+            [PyDict 1 kvp]
+              [PyIntegerVar 2610110790423]
+              [PyObjectData Name: util.KeyVal]
+                [PyDict 3 kvp]
+                  [PyString "wingID"]
+                  [PyIntegerVar 2610110790423]
+                  [PyString "name"]
+                  [PyString ""]
+                  [PyString "squads"]
+                  [PyDict 1 kvp]
+                    [PyIntegerVar 3674710790423]
+                    [PyObjectData Name: util.KeyVal]
+                      [PyDict 2 kvp]
+                        [PyString "squadID"]
+                        [PyIntegerVar 3674710790423]
+                        [PyString "name"]
+                        [PyString ""]
+        */
     //  this xml needs work...
     //GetInitStateRSP rsp;
     //response should be GetInitState response (xml)
@@ -172,8 +268,7 @@ PyResult FleetObject::Handle_CreateFleet(PyCallArgs &call) {
         fbr.FleetBoundID = m_manager->BindObject(call.client, pFB);  // new fleetbound
         fbr.FleetID = fleetID;
         fbr.unknown = 0;
-
-        return fbr.Encode();
+    return fbr.Encode();
 }
 
 PyResult FleetObject::Handle_CreateWing(PyCallArgs &call) {

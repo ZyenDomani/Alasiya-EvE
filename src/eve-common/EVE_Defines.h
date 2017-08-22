@@ -66,12 +66,12 @@
 #define maxUniverseAsteroid     79999999        // deco only
 #define minControlBunker        80000000
 #define maxControlBunker        80099999
-#define minFleet                80000000
-#define maxFleet                80009999
 #define minAlliance             99000000
 #define maxAlliance             99900000
 #define minPlayerItem           140000000
 #define maxEveItem              2147483647      // max short int32
+#define minFleet                1000000888444
+#define maxFleet                1990000888444
 /*
 DSTLOCALBALLS = 0x0C0000000h  (3,221,225,472 decimal)      unknown where this is from
 missile itemID's  dec = 9,000,000,000,000,000,000    hex = 0x7CE66C50E2840000h        from packet sniff
@@ -104,6 +104,9 @@ maxDustCharacter = 2130000000
 #define EVEMU_MISSILE_ID             1000000000
 #define EVEMU_DUNGEON_ID             1200000000
 #define EVEMU_MAX_SHORT_ID           2147483647
+#define EVEMU_FLEET_ID            1000000888444
+#define EVEMU_WING_ID             2000000888444
+#define EVEMU_SQUAD_ID            3000000888444
 #define EVEMU_MAX_LONG_ID   9223372036854775807     //this is max for a SIGNED int64.
 
 #define IsTempPinID(pinID) \

@@ -29,13 +29,25 @@
 #include "fleet/FleetService.h"
 
 //may need to adjust this later for persistant fleets
-uint32 FleetService::m_fleetID = 10;
+//  these will have to be incremented individually, then stored according to fleet
+uint32 FleetService::m_fleetID = minFleet;  //1000000888444
+uint32 FleetService::m_wingID = m_fleetID + 1000000000000;
+uint32 FleetService::m_squadID = m_wingID + 1000000000000;
+
+/** @note  fleet IDs explanation
+ * ABCDEFG888444
+ * A = 1 is fleet, 2 is wing, 3 is squad
+ * BC = fleet IDs 0 - 99
+ * DE = wing IDs 0 - 99
+ * FG = squad IDs 0 - 99
+ * 888444 = nodeID
+ */
+
 
 //  Manager class functions and methods...
-
 uint32 FleetService::CreateFleet(Client *pClient)
 {
-    uint32 fleetID = m_fleetID, wingID = fleetID + 1, squadID = wingID + 1;
+    uint32 fleetID = m_fleetID, wingID = m_wingID, squadID = m_squadID;
     FleetData fleet;
         fleet.fleetID = fleetID;        //this is also lsc channel #
         fleet.wingID = wingID;
@@ -51,7 +63,8 @@ uint32 FleetService::CreateFleet(Client *pClient)
     m_fleets.push_back(fleetID);
     // update the fleet member map with new member for this fleet.
     m_fleetMembers.emplace(fleetID, pClient->GetChar().get());
-    return  m_fleetID++;
+    m_fleetID += 1000000;
+    return fleetID;
 /*
     PyList* list = new PyList;
         list->AddItemInt(pClient->GetChar()->GetSkillLevel(skillLeadership, true));     //skill in Leadership
