@@ -29,9 +29,9 @@
 
 #include "SystemDB.h"
 #include "inventory/InventoryItem.h"
+#include "pos/PosMgrDB.h"
 #include "system/DestinyManager.h"
 #include "system/TargetManager.h"
-#include "pos/PosMgrDB.h"
 
 class BeltMgr;
 class Character;
@@ -206,7 +206,7 @@ public:
 
 
     /* generic functions handled here, but set elsewhere */
-    const GVector&              GetVelocity()           { return (m_destiny ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
+    const GVector&              GetVelocity()           { return (m_destiny != nullptr ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
 
     /* virtual functions default to base class and overridden as needed */
     virtual void                Killed(Damage &fatal_blow) { /* Do nothing here */ }

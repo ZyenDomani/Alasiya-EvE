@@ -166,7 +166,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         }
     }
 
-    if (IsNotStaticItem(args.itemID)) {      // entity #'s above 140m are player-owned.  player is in ship
+    if (IsPlayerItem(args.itemID)) {      // entity #'s above 140m are player-owned.  player is in ship
         typeID = 5;
         point = call.client->GetShipSE()->GetPosition();       // Get x,y,z location.  bm type is coordinate as "spot in xxx system"
         locationID = call.client->GetLocationID();       // locationID of bm is current sol system

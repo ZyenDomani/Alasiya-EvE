@@ -300,7 +300,9 @@ public:
     virtual void EncodeDestiny(Buffer& into);
     virtual PyDict* MakeSlimItem();
     virtual void Delete();
-    void MakeWreckState(DoDestinyDamageState3 &into);
+
+    /* virtual functions default to base class and overridden as needed */
+    virtual void Abandon();
 
     /* specific functions handled in this class. */
     void SetLaunchedByID(uint32 launcherID)             { m_launchedByID = launcherID; }
@@ -315,6 +317,9 @@ protected:
     Timer m_deleteTimer;
 
     uint32 m_launchedByID;
+
+private:
+    bool m_abandoned;
 
 };
 

@@ -646,7 +646,7 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
                 query << " AND ownerID = " << od.ownerID;
             }
         }
-    } else if (IsNotStaticItem(od.locID)) {
+    } else if (IsPlayerItem(od.locID)) {
         if (od.ownerID == 1) {
             // not sure what to do here....
         } else if (IsPlayerCorp(od.corpID)) {

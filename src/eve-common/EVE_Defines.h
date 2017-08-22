@@ -27,14 +27,13 @@
 #define maxStaticChannel        1000
 #define maxEveMarketGroup       350000
 #define minDustMarketGroup      350001
-#define maxDustMarketGroup      999999
+#define maxDustMarketGroup      399999
 #define minBMFolder             100000
 #define maxBMFolder             300000
 #define minFaction              500000
-#define maxFaction              599999
+#define maxFaction              999999
 #define minNPCCorporation       1000000
 #define maxNPCCorporation       1000999
-#define maxCorporation          1999999
 #define minAgent                3000000
 #define maxAgent                3999999
 #define minRegion               10000000
@@ -61,17 +60,30 @@
 #define minOutpost              61000000
 #define maxStation              63999999
 #define minTradeCont            64000000
-#define maxTradeCont            66000000
+#define maxTradeCont            65999999
+#define minOfficeFolder         66000000
+#define maxOfficeFolder         67999999
+#define minFactoryFolder        68000000
+#define maxFactoryFolder        69999999
 #define minUniverseAsteroid     70000000        // deco only
-#define maxUniverseAsteroid     79999999        // deco only
+#define maxUniverseAsteroid     79999999
 #define minControlBunker        80000000
 #define maxControlBunker        80099999
+#define maxNPCItem              89999999
+#define minCharacter            90000000
+#define maxCharacter            98000000
 #define minAlliance             99000000
-#define maxAlliance             99900000
-#define minPlayerItem           140000000
+#define maxAlliance             99999999
+#define minPlayerItem           100000000
+#define minPCCorporation        1600000000
 #define maxEveItem              2147483647      // max short int32
+#define maxPlayerItem           10000000000
 #define minFleet                1000000888444
 #define maxFleet                1990000888444
+
+#define minFakeItem             9000000000000000000
+
+
 /*
 DSTLOCALBALLS = 0x0C0000000h  (3,221,225,472 decimal)      unknown where this is from
 missile itemID's  dec = 9,000,000,000,000,000,000    hex = 0x7CE66C50E2840000h        from packet sniff
@@ -82,7 +94,6 @@ maxInt = 2147483647
 maxBigint = 9223372036854775807L
 minPlayerOwner = 90000000
 maxPlayerOwner = 2147483647
-minFakeItem = 9000000000000000000L
 minFakeClientItem = 17000000000000000000L
 
 minDustUser = 1000000000
@@ -92,9 +103,6 @@ maxDustCharacter = 2130000000
 
 //  allan's static defines to ease code checks
 //  * most of these arent implemented yet....client bracketmgr dont like them.
-#define EVEMU_OUTPOST_ID               61000000
-#define EVEMU_SCENERIO_ID              90000000
-#define EVEMU_MAXIMUM_STATIC_ID        99900000
 #define EVEMU_TEMP_ENTITY_ID          110000000
 #define EVEMU_PLANET_PIN_ID           130000000
 #define EVEMU_MINIMUM_DYNAMIC_ID      140000000
@@ -103,6 +111,7 @@ maxDustCharacter = 2130000000
 #define EVEMU_NPC_ID                  750000000
 #define EVEMU_MISSILE_ID             1000000000
 #define EVEMU_DUNGEON_ID             1200000000
+#define EVEMU_PLAYER_CORP_ID         1600000000
 #define EVEMU_MAX_SHORT_ID           2147483647
 #define EVEMU_FLEET_ID            1000000888444
 #define EVEMU_WING_ID             2000000888444
@@ -125,13 +134,14 @@ maxDustCharacter = 2130000000
 ((itemID >= minFleet) && (itemID <= maxFleet))
 
 #define IsCorp(itemID) \
-((itemID >= minNPCCorporation) && (itemID <= maxCorporation))
+((itemID >= minNPCCorporation) && (itemID <= maxNPCCorporation) \
+|| ((itemID >= minPCCorporation) && (itemID < maxEveItem)))
 
 #define IsNPCCorp(itemID) \
 ((itemID >= minNPCCorporation) && (itemID < maxNPCCorporation))
 
 #define IsPlayerCorp(itemID) \
-((itemID >= maxNPCCorporation) && (itemID < maxCorporation))
+((itemID >= minPCCorporation) && (itemID < maxEveItem))
 
 #define IsAlliance(itemID) \
 ((itemID >= minAlliance) && (itemID < maxAlliance))
@@ -144,13 +154,13 @@ maxDustCharacter = 2130000000
 
 // this covers ALL static celestial-type items
 #define IsStaticMapItem(itemID) \
-((itemID >= minRegion) && (itemID < maxUniverseAsteroid))
+((itemID >= minRegion) && (itemID < maxNPCItem))
 
 #define IsRegion(itemID) \
-((itemID >= 10000000) && (itemID < 20000000))
+((itemID >= minRegion) && (itemID < minConstellation))
 
 #define IsConstellation(itemID) \
-((itemID >= 20000000) && (itemID < 30000000))
+((itemID >= minConstellation) && (itemID < minSolarSystem))
 
 #define IsSolarSystem(itemID) \
 ((itemID >= minSolarSystem) && (itemID < maxSolarSystem))
@@ -162,40 +172,44 @@ maxDustCharacter = 2130000000
 ((itemID >= minWHSolarSystem) && (itemID < maxWHSolarSystem))
 
 #define IsCelestial(itemID) \
-((itemID >= 40000000) && (itemID < 50000000))
+((itemID >= minUniverseCelestial) && (itemID < minStargate))
 
 #define IsStargate(itemID) \
-((itemID >= 50000000) && (itemID < 60000000))
+((itemID >= minStargate) && (itemID < minStation))
 
 #define IsStation(itemID) \
-((itemID >= minStation) && (itemID < maxStation))
+((itemID >= minStation) && (itemID < minTradeCont))
 
 #define IsNPCStation(itemID) \
-((itemID >= minStation) && (itemID <= maxNPCStation))
+((itemID >= minStation) && (itemID < minOutpost))
 
 #define IsOutpost(itemID) \
- ((itemID >= minOutpost) && (itemID < maxStation)
+((itemID >= minOutpost) && (itemID < minTradeCont)
 
 #define IsTrading(itemID) \
-((itemID >= 64000000) && (itemID < 66000000))
+((itemID >= minTradeCont) && (itemID < minOfficeFolder))
 
 #define IsOfficeFolder(itemID) \
-((itemID >= 66000000) && (itemID < 68000000))
+((itemID >= minOfficeFolder) && (itemID < minFactoryFolder))
 
 #define IsFactoryFolder(itemID) \
-((itemID >= 68000000) && (itemID < 70000000))
+((itemID >= minFactoryFolder) && (itemID < minUniverseAsteroid))
 
 #define IsUniverseAsteroid(itemID) \
-((itemID >= 70000000) && (itemID < 80000000))
+((itemID >= minUniverseAsteroid) && (itemID < minControlBunker))
 
 #define IsControlBunker(itemID) \
- ((itemID >= 80000000) and (itemID < 80100000))
+((itemID >= minControlBunker) and (itemID < 80100000))
 
 #define IsScenarioItem(itemID) \
 ((itemID >= 90000000) && (itemID < EVEMU_MINIMUM_DYNAMIC_ID))
 
-#define IsNotStaticItem(itemID) \
-(itemID >= EVEMU_MINIMUM_DYNAMIC_ID)
+#define IsPlayerItem(itemID) \
+((itemID > maxNPCItem) && (itemID < maxPlayerItem))
+
+#define IsFakeItem(itemID) \
+ (itemID >= minFakeItem)
+
 
 #define FlagToSlot(flag) \
 (flag - flagSlotFirst)
@@ -225,7 +239,7 @@ maxDustCharacter = 2130000000
 ((flag >= flagRigSlot0) && (flag <= flagRigSlot7))
 
 #define IsSubSystem(flag) \
-((flag >= flagSubSystem0) && (flag<=flagSubSystem7))
+((flag >= flagSubSystem0) && (flag <= flagSubSystem7))
 
 
 /*

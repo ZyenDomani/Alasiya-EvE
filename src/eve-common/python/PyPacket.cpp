@@ -499,6 +499,13 @@ PyRep *PyAddress::Encode() {
         break;
 
     case Broadcast:
+        /** @todo  fix for fleet shit...
+        [PyInt 4]
+        [PyString "OnFleetJoin"]
+        [PyTuple 1 items]
+          [PyIntegerVar 1246810806465]
+        [PyString "*fleetid"]
+        */
         t = new PyTuple(4);
         t->items[0] = new PyInt((int)type);
         //broadcastID
@@ -507,7 +514,7 @@ PyRep *PyAddress::Encode() {
         else
             t->items[1] = new PyString(service.c_str());
         //narrowcast
-        t->items[2] = new PyList(); // LSC sometimes uses tuple here
+        t->items[2] = new PyList(); // LSC uses tuple here, others usually None()
         //typeID
         t->items[3] = new PyString(bcast_idtype.c_str());
 
@@ -791,7 +798,7 @@ void EVENotificationStream::Dump(LogType type, PyVisitor& dumper)
         _log(type, "  Remote Object: %s", remoteObjectStr.c_str());
     else
         _log(type, "  Remote Object: %u", remoteObject);
-    
+
     _log(type, "  Arguments:");
     args->visit( dumper );
 }

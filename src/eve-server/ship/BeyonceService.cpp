@@ -531,6 +531,33 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
          * s = 20*((1/40)*(10*log10(r/10^6)-39)^20) +0.5
          * s = max(0.5, min(s, 10.5))
          */
+        /** @todo  that may not be right....
+         * this is straight from client
+         *
+         * def GetPlanetWarpInPoint(planetID, locVec, r):
+         *    dx = float(locVec[0])
+         *    dz = float(locVec[2])
+         *    f = float(dz) / float(math.sqrt(dx ** 2 + dz ** 2))
+         *    if dz > 0 and dx > 0 or dz < 0 and dx > 0:
+         *        f *= -1.0
+         *    theta = math.asin(f)
+         *    myRandom = random.Random(planetID)
+         *    rr = (myRandom.random() - 1.0) / 3.0
+         *    theta += rr
+         *    offset = 1000000
+         *    FACTOR = 20.0
+         *    dd = math.pow((FACTOR - 5.0 * math.log10(r / 1000000) - 0.5) / FACTOR, FACTOR) * FACTOR
+         *    dd = min(10.0, max(0.0, dd))
+         *    dd += 0.5
+         *    offset += r * dd
+         *    d = r + offset
+         *    x = 1000000
+         *    z = 0
+         *    x = math.sin(theta) * d
+         *    z = math.cos(theta) * d
+         *    y = r * math.sin(rr) * 0.5
+         *    return util.KeyVal(x=x, y=y, z=z)
+         */
     if (pSE != nullptr) {
         radius = pSE->GetRadius();
         warpToPoint = pSE->GetPosition();

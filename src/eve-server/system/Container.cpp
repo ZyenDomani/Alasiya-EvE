@@ -427,6 +427,7 @@ WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* 
     m_ownerID = data.ownerID;
     m_destiny = new DestinyManager(this);
 
+    m_abandoned = false;
     m_contRef = self;
     m_deleteTimer.Start();
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity());
@@ -453,6 +454,14 @@ void WreckSE::Delete()
     m_targMgr->DoDestruction();
     m_system->RemoveEntity(this);
 }
+
+void WreckSE::Abandon()
+{
+    SystemEntity::Abandon();
+
+    m_abandoned = true;
+}
+
 
 void WreckSE::EncodeDestiny( Buffer& into )
 {
@@ -482,13 +491,6 @@ void WreckSE::EncodeDestiny( Buffer& into )
     _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
-void WreckSE::MakeWreckState(DoDestinyDamageState3 &into)
-{
-    into.shield = 0;
-    into.armor = 0;
-    into.structure = 1.0;
-}
-
 
 PyDict *WreckSE::MakeSlimItem() {
     _log(SE__SLIMITEM, "MakeSlimItem for WreckSE %s(%u)", m_self->itemName().c_str(), m_self->itemID());
@@ -502,12 +504,14 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        PyTuple* tuple1 = new PyTuple(4);
-            tuple1->SetItem(0, new PyInt(m_self->ownerID()));
-            tuple1->SetItem(1, new PyInt(m_corpID));
-            tuple1->SetItem(2, new PyLong(Win32TimeNow()));
-            tuple1->SetItem(3, new PyBool(false));
-        slim->SetItemString("lootRights",       tuple1);
+        if (!m_abandoned) { // this is ONLY for wrecks
+            PyTuple* tuple1 = new PyTuple(4);
+                tuple1->SetItem(0, new PyInt(m_self->ownerID()));
+                tuple1->SetItem(1, new PyInt(m_corpID));
+                tuple1->SetItem(2, new PyNone());  // should be fleetID OR PyNone
+                tuple1->SetItem(3, new PyBool(false));
+            slim->SetItemString("lootRights",       tuple1);
+        }
         slim->SetItemString("corpID",           new PyInt(m_corpID));
         slim->SetItemString("allianceID",       new PyLong(m_allyID));
         slim->SetItemString("isEmpty",          new PyBool(IsEmpty()));
@@ -535,10 +539,10 @@ PyDict *WreckSE::MakeSlimItem() {
                                         [PyString "Matriarch Alvus Wreck"]
                                         [PyString "lootRights"]
                                         [PyTuple 4 items]
-                                          [PyInt 90752035]      << ownerID
-                                          [PyInt 506478887]     << owners corpID
-                                          [PyIntegerVar 1306510806464]  << time
-                                          [PyBool False]            << dunno
+                                          [PyInt 90752035]              << ownerID
+                                          [PyInt 506478887]             << owners corpID
+                                          [PyIntegerVar 1306510806464]  << fleetID
+                                          [PyBool False]                << dunno
                                         [PyString "corpID"]
                                         [PyInt 506478887]
                                         [PyString "allianceID"]

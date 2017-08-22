@@ -79,12 +79,6 @@ class ConsoleCommand
 
     void Test();
 
-
-    struct mydata {
-        uint32 itemID;
-        uint32 typeID;
-        std::string name;
-    };
 };
 
 //Singleton

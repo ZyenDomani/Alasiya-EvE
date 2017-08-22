@@ -125,7 +125,7 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
         if (IsSolarSystem(locationID))
             destinationPoint = m_gp.GetRandPointOnMoon(locationID);//GPoint(12457894200.0f, 17254864800.0f, 14851254800.0f);
             /*
-        } else if (IsNotStaticItem(locationID)) {
+        } else if (IsPlayerItem(locationID)) {
             destinationPoint = who->SystemMgr()->GetSE(locationID)->GetPosition();
             locationID = who->GetLocationID();
         }*/

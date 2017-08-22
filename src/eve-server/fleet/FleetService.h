@@ -46,6 +46,7 @@ protected:
     static uint32 m_wingID;
     static uint32 m_squadID;
 
+    // maybe make this info accessable for webapp?
     struct avalibleFleets {
         float local_minSecurity;
         std::string description;
@@ -67,11 +68,11 @@ protected:
     };
 
 private:
-    //list containing all active fleets by ID
+    //list containing all active fleets by ID  (should we also track squadID and wingID with their associated fleetID somewhere?)
     std::list<uint32> m_fleets;
 
     //vector containing fleetID, Character* for all members of particular fleet.
-    // CharacterRef will contain FleetData with fleet data for that member.
+    // CharacterRef will contain a FleetData object for that member.
     std::unordered_multimap<uint32, Character*> m_fleetMembers;
     std::map<uint32, avalibleFleets*> m_avalibleFleetsMap;
 
@@ -87,9 +88,9 @@ private:
  * 25 10-man squadrons (5 Squads of 9 Pilots + Squad Commander per Wing Commander).
  *
  * To put it another way the maximum size of:
- *   a squadron is 10 members including the commander,
- *   a wing is five squadrons,
- *   a fleet is 5 wings.
+ *   each squadron is 9 members plus the Squad Commander, (10 total)
+ *   each wing is five squadrons plus the Wing Commander, (51 total)
+ *   each fleet is 5 wings plus the Fleet Commander.      (256 total)
  */
 
 /*

@@ -101,7 +101,7 @@ void ImageServerConnection::ProcessHeaders()
     _imageData = sImageServer.GetImage(_category, _id, _size);
     if (!_imageData)
     {
-        if (IsNotStaticItem(_id)) {
+        if (IsPlayerItem(_id)) {
             sLog.Error("     Image Server","Image for itemID %u not found.", _id);
             NotFound();
             return;

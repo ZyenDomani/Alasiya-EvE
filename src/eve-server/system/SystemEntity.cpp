@@ -32,14 +32,14 @@
 #include "PyServiceMgr.h"
 #include "character/Character.h"
 #include "inventory/AttributeEnum.h"
+#include "planet/Planet.h"
+#include "pos/Structure.h"
 #include "system/DestinyManager.h"
 #include "station/Station.h"
 #include "system/LootSystem.h"
 #include "system/SystemBubble.h"
 #include "system/SystemEntity.h"
 #include "system/SystemManager.h"
-#include <pos/Structure.h>
-#include <planet/Planet.h>
 
 
 SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
@@ -51,11 +51,16 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
   m_targMgr(new TargetManager(this))
 {
     assert(m_system != nullptr);
+    assert(m_targMgr != nullptr);
     assert(m_self.get() != nullptr);
+
     Abandon();
+
     m_radius = m_self->GetAttribute(AttrRadius).get_double();
+
     /** @todo (Allan) fix this later...used for shield status */
     m_harmonic = EVEPOS::ForceField::inactive;
+
     _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %.1f.", self->itemName().c_str(), self->itemID(), m_radius);
 }
 
@@ -80,9 +85,10 @@ void SystemEntity::Process() {
 
 PyTuple* SystemEntity::MakeDamageState() {
     if (IsWreckSE()) {
-        WreckSE* pWE;
         DoDestinyDamageState3 ddds;
-        pWE->MakeWreckState(ddds);
+            ddds.shield = 0;
+            ddds.armor = 0;
+            ddds.structure = 1.0;
         return ddds.Encode();
     }
     DoDestinyDamageState ddds;

@@ -59,7 +59,7 @@ public:
         Broadcast = 4,
             /*
              * [1]   broadcastID
-             * [2]   narrowcast??
+             * [2]   narrowcast
              * [3]   idtype
              */
         Any     = 8,

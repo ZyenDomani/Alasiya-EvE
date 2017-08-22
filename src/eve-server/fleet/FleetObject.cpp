@@ -249,6 +249,17 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
     sLog.White("FleetBound", "Handle_Invite() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
+    /*
+        [PySubStream 46 bytes]
+          [PyTuple 4 items]
+            [PyString "N=806465:89893"]
+            [PyString "Invite"]
+            [PyTuple 4 items]
+              [PyInt 649670823]     <-- charID
+              [PyNone]              <-- wingID
+              [PyNone]              <-- squadID
+              [PyNone]              <-- role
+              */
     // this returns none
     return new PyNone();
 }
@@ -265,7 +276,7 @@ PyResult FleetObject::Handle_CreateFleet(PyCallArgs &call) {
     FleetBound* pFB = new FleetBound(m_manager);
 
     FleetBindRSP fbr;
-        fbr.FleetBoundID = m_manager->BindObject(call.client, pFB);  // new fleetbound
+        fbr.FleetBoundID = m_manager->BindObject(call.client, pFB);  // new fleetbound  -should be nodeID
         fbr.FleetID = fleetID;
         fbr.unknown = 0;
     return fbr.Encode();

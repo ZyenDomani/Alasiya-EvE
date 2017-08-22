@@ -300,7 +300,6 @@ bool ConsoleCommand::Process() {
 }
 
 void ConsoleCommand::GetUpTime(uint8* w, uint8* d, uint8* h, uint8* m, uint8* s) {
-    /** @todo (Allan) change this to use entity list, as there is no destiny created on empty server (at startup) */
     uint32 seconds = sEntityList.GetStamp() - 1000;
     float minutes = seconds/60;
     float hours = minutes/60;
