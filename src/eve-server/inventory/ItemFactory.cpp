@@ -85,7 +85,7 @@ void ItemFactory::SaveItems() {
     for (auto cur : m_items) {
         if (cur.second->quantity() < 1)
             continue;
-        if (IsNotStaticItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
+        if (IsPlayerItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
             SaveData data;
                 data.itemID = cur.first;
                 data.contraband = cur.second->contraband();
