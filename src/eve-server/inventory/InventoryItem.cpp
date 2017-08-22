@@ -1134,7 +1134,7 @@ bool InventoryItem::SkillCheck(InventoryItemRef refItem)
 {
     EvilNumber need = 0, has = 0;
     uint16 attr = 182, skill = 277;
-    for (int8 i = 0; i < 3; i++, attr++, skill++) {
+    for (int8 i = 0; i < 3; ++i, ++attr, ++skill) {
         if ((refItem->HasAttribute(attr, need)) and (mAttributeMap.HasAttribute(skill, has))) {
             if (need > has)
                 return false;
@@ -1146,7 +1146,7 @@ bool InventoryItem::SkillCheck(InventoryItemRef refItem)
     }
 
     attr = 1289; skill = 1287;
-    for (int8 i = 0; i < 2; i++, attr++, skill++) {
+    for (int8 i = 0; i < 2; ++i, ++attr, ++skill) {
         if ((refItem->HasAttribute(attr, need)) and (mAttributeMap.HasAttribute(skill, has))) {
             if (need > has)
                 return false;
@@ -1165,7 +1165,7 @@ void InventoryItem::RemoveModifier(fxData data)
 {
     // this isnt right.  need to find and remove ORIGINAL modifier here.
     auto itr = m_modifiers.equal_range(data.math);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         if ((it->second.srcRef == data.srcRef) and (it->second.targAttr == data.targAttr))
             m_modifiers.erase(it);
 
