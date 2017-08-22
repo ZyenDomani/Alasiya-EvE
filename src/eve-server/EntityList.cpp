@@ -106,7 +106,8 @@ void EntityList::Add( Client* client ) {
 void EntityList::Remove(Client* client) {
     /*  this has to use a 'real' iterator for erase() to work. */
 	/* note:  will get expensive for many clients  */
-    for (std::vector<Client*>::iterator cur; cur != m_clients.end(); ++cur)
+    std::vector<Client*>::iterator cur = m_clients.begin(), end = m_clients.end();
+    for (; cur != end; ++cur)
         if ((*cur) == client)
             m_clients.erase(cur);
 }
@@ -172,12 +173,12 @@ SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
         return nullptr;
     }
 
-    std::map<uint32, SystemManager*>::iterator res = m_systems.find(systemID);
-    if (res != m_systems.end())
-        return res->second;
+    std::map<uint32, SystemManager*>::iterator itr = m_systems.find(systemID);
+    if (itr != m_systems.end())
+        return itr->second;
 
     SystemManager* pSM = new SystemManager(systemID, *m_services);
-    if ((!pSM) || (!pSM->BootSystem())) {
+    if ((pSM == nullptr) or (!pSM->BootSystem())) {
         _log(SERVER__INIT_ERR, "BootSystem() - Booting system %u failed", systemID);
         SafeDelete(pSM);
         return nullptr;
@@ -274,14 +275,14 @@ void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple*
 
     for (auto cur : m_clients) {
         switch( target ) {
-        case NOTIF_DEST__LOCATION:
-            if( cur->GetLocationID() != target_id )
-                continue;
-            break;
-        case NOTIF_DEST__CORPORATION:
-            if( cur->GetCorporationID() != target_id )
-                continue;
-            break;
+            case NOTIF_DEST__LOCATION: {
+                if( cur->GetLocationID() != target_id )
+                    continue;
+            } break;
+            case NOTIF_DEST__CORPORATION: {
+                if( cur->GetCorporationID() != target_id )
+                    continue;
+            } break;
         }
 
         PyTuple* temp = new PyTuple(* p );
@@ -297,34 +298,26 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
     PyTuple* payload = *in_payload;
     *in_payload = nullptr;
 
-    //cache these locally to avoid calling empty each iteration.
-    const bool chars_empty = mcset.characters.empty();
-    const bool locs_empty = mcset.locations.empty();
-    const bool corps_empty = mcset.corporations.empty();
-
-    if ( !chars_empty || !locs_empty || !corps_empty ) {
-        for (auto cur : m_clients) {
-            if(      !chars_empty
-                 && mcset.characters.find(cur->GetCharacterID()) != mcset.characters.end() )
-            {
-                //found, carry on...
-            } else if(   !locs_empty
-                      && mcset.locations.find(cur->GetLocationID()) != mcset.locations.end() )
-            {
-                //found, carry on...
-            } else if(   !corps_empty
-                      && mcset.corporations.find(cur->GetCorporationID()) != mcset.corporations.end() )
-            {
-                //found, carry on...
-            } else {
-                //not found in any of the above sets.
-                continue;
+    if (!mcset.characters.empty())
+        for (auto cur : m_clients)
+            if ( mcset.characters.find(cur->GetCharacterID()) != mcset.characters.end()) {
+                PyTuple* temp = new PyTuple(*payload);
+                cur->SendNotification( notifyType, idType, &temp, seq );
             }
 
-            PyTuple* temp = new PyTuple(*payload);
-            cur->SendNotification( notifyType, idType, &temp, seq );
-        }
-    }
+    if (!mcset.locations.empty())
+        for (auto cur : m_clients)
+            if (mcset.locations.find(cur->GetLocationID()) != mcset.locations.end()) {
+                PyTuple* temp = new PyTuple(*payload);
+                cur->SendNotification( notifyType, idType, &temp, seq );
+            }
+
+    if (!mcset.corporations.empty())
+        for (auto cur : m_clients)
+            if (mcset.corporations.find(cur->GetCorporationID()) != mcset.corporations.end()) {
+                PyTuple* temp = new PyTuple(*payload);
+                cur->SendNotification( notifyType, idType, &temp, seq );
+            }
 
     PyDecRef( payload );
 }
@@ -335,9 +328,9 @@ void EntityList::Multicast(const character_set &cset, const char* notifyType, co
 
     size_t num_remaining = result.size();
 
-    std::vector<Client*>::iterator cur = result.begin();
+    std::vector<Client*>::iterator cur = result.begin(), end = result.end();
     PyTuple* payload;
-    for (; cur != result.end(); cur++, num_remaining--) {
+    for (; cur != end; cur++, num_remaining--) {
         //keep a counter to eliminate an extra copy of in_payload
         if (num_remaining < 2) {
             payload = *in_payload;
@@ -362,7 +355,7 @@ void EntityList::Unicast(uint32 charID, const char* notifyType, const char* idTy
 
 void EntityList::GetClients(const character_set &cset, std::vector<Client*> &result) const {
     //this could likely be done better
-    character_set::const_iterator res;
+    character_set::iterator res;
     for (auto cur : m_clients) {
         res = cset.find(cur->GetCharacterID());
         if (res != cset.end()) {
@@ -398,7 +391,7 @@ void EntityList::RegisterSID(int64 &sessionID) {
         sessionID /= EvE_Pi;
         RegisterSID(sessionID);
     }
-    std::set<int64>::const_iterator cur = m_sessions.find(sessionID);
+    std::set<int64>::iterator cur = m_sessions.find(sessionID);
     std::pair<std::_Rb_tree_const_iterator<int64>, bool > test;
     if (cur == m_sessions.end())
         test = m_sessions.insert(sessionID);
