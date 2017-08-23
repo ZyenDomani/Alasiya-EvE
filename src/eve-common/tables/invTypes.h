@@ -74,6 +74,8 @@ namespace EVEDB {
             typeCorporationManagement = 3363,
             typeCorpse = 25,
             typeCorpseFemale = 29148,
+            typeCosmicAnomaly = 28356,
+            typeCosmicSignature = 25880,
             typeCovertCynosuralFieldI = 28650,
             typeCredits = 29,
             typeCriminalConnections = 3361,

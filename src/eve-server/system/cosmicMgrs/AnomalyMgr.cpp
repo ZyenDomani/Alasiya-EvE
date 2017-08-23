@@ -108,8 +108,8 @@ void AnomalyMgr::SaveAnomaly()
     uint8 scanGroupID = EVESCAN::ScanGroup::ScanGroupAnomaly;
     uint16 groupID = EVEDB::invGroups::Cosmic_Anomaly; //885
     uint16 groupID2 = EVEDB::invGroups::Cosmic_Signature; //502
-    uint16 typeID = 28356; // Cosmic_Anomaly - dont need probes or sklls
-    uint16 typeID2 = 25880; // Cosmic_Signature - need probes and skills (exploring)
+    uint16 typeID = EVEDB::invTypes::typeCosmicAnomaly; // 28356 - dont need probes or sklls
+    uint16 typeID2 = EVEDB::invTypes::typeCosmicSignature; // 25880 - need probes and skills (exploring)
 
     uint16 strengthAttributeID = AttrScanAllStrength;
 
@@ -120,6 +120,8 @@ void AnomalyMgr::SaveAnomaly()
 }
 
 void CreateAnomaly() {
+
+}
 	/*. this needs more research to get groups and types right.
 enum ScanGroup {
   ScanGroupScrap         = 1,
@@ -153,7 +155,6 @@ typedef enum {
     typeDED_Complex         = 10
 } dunTypes;
 	 */
-}
 
 /* Cosmic anomalies are PvE sites that can be found throughout EVE. They are found using the system scanner, and require no skills or equipment to locate. To locate cosmic anomalies, simply open the scan window where they are visible as warpable sites.
  *
