@@ -117,7 +117,8 @@ bool SystemManager::BootSystem() {
     m_solarSystemRef = m_services.item_factory->GetSolarSystem(m_data.systemID);
     assert(m_solarSystemRef.get() != nullptr);
 
-    LoadCosmicMgrs();
+    if (!LoadCosmicMgrs())
+        return false;
 
     if (!LoadSystemStatics()) {
         _log(SERVICE__ERROR, "Unable to load System Statics during boot of system %u.", m_data.systemID);
@@ -234,12 +235,29 @@ void SystemManager::UnloadSystem() {
     m_loaded = false;
 }
 
-void SystemManager::LoadCosmicMgrs()
+bool SystemManager::LoadCosmicMgrs()
 {
-    m_spawnMgr->Init();
-    m_beltMgr->Init(m_data.regionID);
-    m_dunMgr->Init(m_anomMgr, m_spawnMgr);
-    m_anomMgr->Init(m_beltMgr, m_dunMgr, m_spawnMgr);
+    if (!m_spawnMgr->Init()) {
+        _log(SERVICE__ERROR, "Unable to load Spawn Manager during boot of system %u.", m_data.systemID);
+        return false;
+    }
+
+    if (!m_beltMgr->Init(m_data.regionID)) {
+        _log(SERVICE__ERROR, "Unable to load Belt Manager during boot of system %u.", m_data.systemID);
+        return false;
+    }
+
+    if (!m_dunMgr->Init(m_anomMgr, m_spawnMgr)) {
+        _log(SERVICE__ERROR, "Unable to load Dungeon Manager during boot of system %u.", m_data.systemID);
+        return false;
+    }
+
+    if (!m_anomMgr->Init(m_beltMgr, m_dunMgr, m_spawnMgr)) {
+        _log(SERVICE__ERROR, "Unable to load Anomaly Manager during boot of system %u.", m_data.systemID);
+        return false;
+    }
+
+    return true;
 }
 
 bool SystemManager::LoadSystemStatics() {

@@ -147,24 +147,40 @@ DungeonMgr::~DungeonMgr()
     }
 }
 
-void DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
+bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
 {
-    m_anomMgr = anomMgr;
-    m_spawnMgr = spawnMgr;
-
     if (!sConfig.cosmic.DungeonEnabled){
         _log(COSMIC_MGR__MESSAGE, "Dungeon System Disabled.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return;
     }
 
-    m_initalized = true;
+    m_anomMgr = anomMgr;
+    m_spawnMgr = spawnMgr;
+
+    if (m_anomMgr == nullptr) {
+        _log(COSMIC_MGR__ERROR, "System Init Fault. anomMgr == nullptr.  Not Initalizing Dungeon Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        return m_initalized;
+    }
+
+    if (m_spawnMgr == nullptr) {
+        _log(COSMIC_MGR__ERROR, "System Init Fault. spawnMgr == nullptr.  Not Initalizing Dungeon Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        return m_initalized;
+    }
+
+    Load();
+
+    //  system tests to determine amounts and types
+
 
     _log(COSMIC_MGR__MESSAGE, "DungeonMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+    return (m_initalized = true);
 }
 
 void DungeonMgr::Process() {
-    if (!m_initalized) return;
-    // im not sure if we need this.  what would be calling Process() on???
+    if (!m_initalized)
+        return;
+
+    // this is used to remove empty/completed/timed-out dungons
 }
 
 void DungeonMgr::Load()

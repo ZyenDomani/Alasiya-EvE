@@ -128,7 +128,7 @@ protected:
     PyServiceMgr& m_services;
     SolarSystemRef m_solarSystemRef;
 
-    void LoadCosmicMgrs();
+    bool LoadCosmicMgrs();
 
     bool LoadSystemStatics();
     bool LoadSystemDynamics();

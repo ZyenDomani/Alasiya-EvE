@@ -90,7 +90,7 @@ public:
     ~DungeonMgr();
 
 
-    void Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr);
+    bool Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr);
     void Process();
     void Load();
 

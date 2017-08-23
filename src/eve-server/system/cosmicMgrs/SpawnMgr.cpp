@@ -127,16 +127,15 @@ SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
     m_factionGroups.clear();
 }
 
-void SpawnMgr::Init()
+bool SpawnMgr::Init()
 {
     if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
         _log(COSMIC_MGR__MESSAGE, "Spawn System Disabled.  Not Initalizing Spawn Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
-        return;
+        return m_initalized;
     }
 
-    m_initalized = true;
-
     _log(COSMIC_MGR__MESSAGE, "SpawnMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+    return (m_initalized = true);
 }
 
 void SpawnMgr::Process() {

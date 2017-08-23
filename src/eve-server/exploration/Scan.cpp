@@ -180,6 +180,22 @@ void Scan::SurveyScan() {
 }
 
 /*
+10 types of anomaly signatures.
+typedef enum {
+    typeMission             = 1,
+    typeGravimetric         = 2,
+    typeMagnetometric       = 3,
+    typeRadar               = 4,
+    typeLadar               = 5,
+    typeWormholes           = 6,
+    typeAnomaly             = 7,
+    typeUnrated             = 8,
+    typeEscalation          = 9,
+    typeDED_Complex         = 10
+} dunTypes;
+*/
+
+/*
  * class CosmicSignature {
  * public:
  *    std::string sigID;  // this is unique xxx-nnn id displayed in scanner

@@ -86,3 +86,49 @@ private:
 #endif  // EVEMU_SYSTEM_BELTMGR_H_
 
 
+/*  data for sovereign nullsec systems that contain an active Ore Prospecting Array.
+ Small Asteroid Cluster
+Arkonor      9600
+Bistot      12800
+Crokite     30000
+Dark Ochre  16000
+Gneiss     170000
+Spodumain  300000
+
+ Medium Asteroid Cluster
+Arkonor     28000
+Bistot      38700
+Crokite     84700
+Dark Ochre  31000
+Gneiss     340000
+Spodumain  270000
+Mercoxit     2600
+
+ Large Asteroid Cluster
+Arkonor     29900
+Bistot      57000
+Crokite    124000
+Dark Ochre  60000
+Gneiss     313500
+Spodumain  368100
+Mercoxit     3500
+
+ Enormous Asteroid Cluster
+Arkonor     58000
+Bistot      86000
+Crokite    169000
+Dark Ochre  50000
+Gneiss     540000
+Spodumain  542000
+Mercoxit     5200
+
+ Colossal Asteroid Cluster
+Arkonor      60800
+Bistot      114300
+Crokite     225200
+Dark Ochre  115000
+Gneiss      630000
+Spodumain   736200
+Mercoxit      7000
+
+*/

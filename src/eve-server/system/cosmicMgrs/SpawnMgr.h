@@ -57,7 +57,7 @@ public:
     SpawnMgr(SystemManager* mgr, PyServiceMgr& svc);
     virtual ~SpawnMgr()                                 { /* nothing do to yet */ }
 
-    void Init();
+    bool Init();
 
     void Process();
     void DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating);

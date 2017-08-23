@@ -6,7 +6,7 @@
   * @date:          12 December 2015
   *
   */
- 
+
 #ifndef EVEMU_SYSTEM_ANOMALYMGR_H_
 #define EVEMU_SYSTEM_ANOMALYMGR_H_
 
@@ -31,7 +31,7 @@ class AnomalyMgr
       AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
       virtual ~AnomalyMgr()                             { /* do nothing here */ }
 
-      void Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
+      bool Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
       void Process();
 
       void LoadAnomaly();
@@ -48,6 +48,11 @@ private:
     SpawnMgr* m_spawnMgr;
     SystemManager* m_system;
     PyServiceMgr& m_services;
+
+    Timer m_dungeonTimer;
+    Timer m_beltTimer;
+    Timer m_spawnTimer;
+    Timer m_anomTimer;
 
     bool m_initalized;
 
