@@ -38,19 +38,24 @@ WormholeMgr::WormholeMgr()
 }
 
 void WormholeMgr::Initialize(PyServiceMgr* svc) {
-    m_services = svc;
     if (!sConfig.cosmic.WormHoleEnabled) {
         sLog.Warning(" Wormhole Manager", "Wormhole Manager Disabled.");
         return;
     }
 
+    m_services = svc;
+
+    m_updateTimer.Start(120000);
+
     m_initalized = true;
     sLog.Blue(" Wormhole Manager", "Wormhole Manager Initialized.");
+
     /* load current data, start timers, process current data, and create new items, if needed */
 }
 
 void WormholeMgr::Process() {
-    if (!m_initalized) return;
+    if (!m_initalized)
+        return;
     if (m_updateTimer.Check(false)) {
         /* do something useful here */
     }

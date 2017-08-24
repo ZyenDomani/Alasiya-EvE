@@ -147,21 +147,14 @@ DungeonMgr::~DungeonMgr()
     }
 }
 
-bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
+bool DungeonMgr::Init(SpawnMgr* spawnMgr)
 {
     if (!sConfig.cosmic.DungeonEnabled){
         _log(COSMIC_MGR__MESSAGE, "Dungeon System Disabled.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
-        return;
-    }
-
-    m_anomMgr = anomMgr;
-    m_spawnMgr = spawnMgr;
-
-    if (m_anomMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "System Init Fault. anomMgr == nullptr.  Not Initalizing Dungeon Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return m_initalized;
     }
 
+    m_spawnMgr = spawnMgr;
     if (m_spawnMgr == nullptr) {
         _log(COSMIC_MGR__ERROR, "System Init Fault. spawnMgr == nullptr.  Not Initalizing Dungeon Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return m_initalized;

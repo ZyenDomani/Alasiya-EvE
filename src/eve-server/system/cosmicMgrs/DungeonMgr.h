@@ -80,7 +80,6 @@ private:
  *  a new iteration of this class is created for each system as that system is booted.
  */
 
-class AnomalyMgr;
 class SpawnMgr;
 class PyServiceMgr;
 
@@ -90,7 +89,7 @@ public:
     ~DungeonMgr();
 
 
-    bool Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr);
+    bool Init(SpawnMgr* spawnMgr);
     void Process();
     void Load();
 
@@ -103,7 +102,6 @@ protected:
 
     /* we do not own any of these */
 private:
-    AnomalyMgr* m_anomMgr;
     SpawnMgr* m_spawnMgr;
     SystemManager* m_system;
     PyServiceMgr& m_services;

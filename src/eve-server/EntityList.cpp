@@ -33,6 +33,7 @@
 #include "market/MarketBotMgr.h"
 #include "system/DestinyManager.h"
 #include "system/SystemManager.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/CivilianMgr.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
 #include "system/cosmicMgrs/ManagerDB.h"
@@ -138,10 +139,11 @@ void EntityList::Process() {
     /* check for 1Hz timer tic */
     if (m_stampTimer.Check()) {
         ++m_stamp;
+        sAnomalyMgr.Process();
         sWHMgr.Process();
         sCivMgr.Process();
         sBubbleMgr.Process();
-        sMktBotMgr.Process();
+        //sMktBotMgr.Process();  // not used yet
 
         for (auto cur : m_clients)
             if (cur->GetLocationID())   /* hack to verify valid client */

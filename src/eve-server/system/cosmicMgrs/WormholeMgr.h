@@ -7,7 +7,7 @@
   * @date:          12 December 2015
   *
   */
- 
+
 
 #ifndef EVEMU_SYSTEM_WORMHOLEMGR_H_
 #define EVEMU_SYSTEM_WORMHOLEMGR_H_
@@ -15,6 +15,7 @@
 
 #include "ServiceDB.h"
 #include "utils/Singleton.h"
+#include "system/cosmicMgrs/ManagerDB.h"
 
 /* this class will control all aspects of
  * creating, monitoring, removing, logging
@@ -34,7 +35,8 @@ public:
     void Process();
 
 private:
-    ServiceDB* m_db;
+    ManagerDB* m_mdb;
+    ServiceDB* m_sdb;
     PyServiceMgr* m_services;
 
     Timer m_updateTimer;

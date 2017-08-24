@@ -590,7 +590,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
     FactionData data;
         data.allianceID = 0;
         data.corporationID = corpID;
-        data.factionID = factionID;
+        data.factionID = (factionID == factionRogueDrones ? 0 : factionID); // the faction of rogue drones is wrong....should be "0" for client to use it right.
         data.ownerID = corpID;
 
     while (cur != m_toSpawn.end()) {

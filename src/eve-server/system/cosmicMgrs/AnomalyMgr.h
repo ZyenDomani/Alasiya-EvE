@@ -16,46 +16,43 @@
  *  a new iteration of this class is created for each system as that system is booted.
  */
 
+#include "utils/Singleton.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 
-class DungeonMgr;
-class BeltMgr;
 class PyServiceMgr;
-class SpawnMgr;
-class SystemManager;
 
 class AnomalyMgr
+: public Singleton<AnomalyMgr>
 {
   public:
-      AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
+      AnomalyMgr();
       virtual ~AnomalyMgr()                             { /* do nothing here */ }
 
-      bool Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
+      void Initialize(PyServiceMgr* svc);
       void Process();
 
-      void LoadAnomaly();
+      void LoadAnomalies();
       void SaveAnomaly();
       void CreateAnomaly();
 
 protected:
-    ManagerDB m_db;
+    ManagerDB* m_mdb;
+    ServiceDB* m_sdb;
 
 private:
     /* we do not own any of these */
-    BeltMgr* m_beltMgr;
-    DungeonMgr* m_dungMgr;
-    SpawnMgr* m_spawnMgr;
-    SystemManager* m_system;
-    PyServiceMgr& m_services;
+    PyServiceMgr* m_services;
 
-    Timer m_dungeonTimer;
-    Timer m_beltTimer;
     Timer m_spawnTimer;
     Timer m_anomTimer;
 
     bool m_initalized;
 
 };
+
+//Singleton
+#define sAnomalyMgr \
+( AnomalyMgr::get() )
 
 #endif  // EVEMU_SYSTEM_ANOMALYMGR_H_
