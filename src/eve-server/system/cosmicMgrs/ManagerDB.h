@@ -15,29 +15,6 @@
 #include "POD_containers.h"
 #include "system/SystemDB.h"
 
-/* more data for signatures...
- * this will have to be checked and set in the code.
- * this is def for scanGroupID:
- *
-typedef enum {
-    ScanGroupScrap                = 1,
-    ScanGroupSignature            = 4,
-    ScanGroupShip                 = 8,
-    ScanGroupStructure            = 16,
-    ScanGroupDroneOrProbe         = 32,
-    ScanGroupCelestial            = 64,
-    ScanGroupAnomaly              = 128
-} ScanGroup;
- *
- *  for strengthAttributeID, use these attributes to indicate site type:
-
- AttrScanRadarStrength = 208,
- AttrScanLadarStrength = 209,
- AttrScanMagnetometricStrength = 210,
- AttrScanGravimetricStrength = 211,
- AttrScanAllStrength = 1136     - unknown
-
-    */
 
 class ManagerDB {
 public:

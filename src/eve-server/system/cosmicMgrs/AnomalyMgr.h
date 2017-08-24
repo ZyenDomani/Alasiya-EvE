@@ -49,6 +49,8 @@ private:
 
     bool m_initalized;
 
+    std::vector<uint32, CosmicSignature> m_sigs;
+
 };
 
 //Singleton
