@@ -44,6 +44,7 @@ class SystemBubble;
 class DoDestiny_SetState;
 class DestinyManager;
 
+class AnomalyMgr;
 class BeltMgr;
 class DungeonMgr;
 class SpawnMgr;
@@ -112,12 +113,14 @@ public:
     uint32 GetRandBeltID();
 
     // CosmicMgr interface
-    BeltMgr* GetBeltMgr()                       { return m_beltMgr; }
+    BeltMgr* GetBeltMgr()                               { return m_beltMgr; }
     SpawnMgr* GetSpawnMgr()                             { return m_spawnMgr; }
+    AnomalyMgr* GetAnomMgr()                            { return m_anomMgr; }
     DungeonMgr* GetDungMgr()                            { return m_dunMgr; }
 
 protected:
-    BeltMgr* m_beltMgr; //we own this, never NULL.
+    AnomalyMgr* m_anomMgr;      //we own this, never NULL.
+    BeltMgr* m_beltMgr;         //we own this, never NULL.
     DungeonMgr* m_dunMgr;       //we own this, never NULL.
     SpawnMgr* m_spawnMgr;       //we own this, never NULL.
 

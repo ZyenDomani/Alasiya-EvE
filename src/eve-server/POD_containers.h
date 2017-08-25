@@ -139,7 +139,7 @@ struct ActiveDungeon {
 /* POD structure for cosmic signatures/anomalies */
 struct CosmicSignature {
     std::string sigID;  // this is unique xxx-nnn id displayed in scanner
-    std::string dungeonName;
+    std::string sigName;
     uint32 systemID;
     uint32 sigItemID;   // itemID of this entry
     uint16 typeID;

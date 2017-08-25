@@ -80,6 +80,7 @@ private:
  *  a new iteration of this class is created for each system as that system is booted.
  */
 
+class AnomalyMgr;
 class SpawnMgr;
 class PyServiceMgr;
 
@@ -89,9 +90,11 @@ public:
     ~DungeonMgr();
 
 
-    bool Init(SpawnMgr* spawnMgr);
+    bool Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr);
     void Process();
     void Load();
+
+    void MakeDungeon(CosmicSignature& sig);
 
     bool Create(uint16 templateID);
 
@@ -102,6 +105,7 @@ protected:
 
     /* we do not own any of these */
 private:
+    AnomalyMgr* m_anomMgr;
     SpawnMgr* m_spawnMgr;
     SystemManager* m_system;
     PyServiceMgr& m_services;

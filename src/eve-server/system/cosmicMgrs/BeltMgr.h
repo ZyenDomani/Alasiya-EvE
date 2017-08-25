@@ -44,6 +44,7 @@ public:
     void ClearBelt(uint16 bubbleID);
     void SetActive(uint16 bubbleID, bool active=true);
     void RegisterBelt(InventoryItemRef itemRef);
+    void Create(CosmicSignature& sig);
 
     bool Load(uint16 bubbleID);
     bool IsActive(uint16 bubbleID);

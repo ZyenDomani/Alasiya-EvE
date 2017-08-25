@@ -52,6 +52,7 @@
 
 SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)
 :m_services(svc),
+m_anomMgr(new AnomalyMgr(this, svc)),
 m_beltMgr(new BeltMgr(this, svc)),
 m_dunMgr(new DungeonMgr(this, svc)),
 m_spawnMgr(new SpawnMgr(this, svc))
@@ -95,6 +96,7 @@ SystemManager::~SystemManager() {
     m_ratBubbles.clear();
 
     SafeDelete(m_dunMgr);
+    SafeDelete(m_anomMgr);
     SafeDelete(m_beltMgr);
     SafeDelete(m_spawnMgr);
 }
@@ -172,6 +174,7 @@ bool SystemManager::ProcessTic() {
     }
 
     /* the following are coded for single-tic calls */
+    m_anomMgr->Process();
     m_beltMgr->Process();
     m_spawnMgr->Process();
 
@@ -241,8 +244,13 @@ bool SystemManager::LoadCosmicMgrs()
 
     m_beltMgr->Init(m_data.regionID);  //nothing to check for in this init.
 
-    if (!m_dunMgr->Init(m_spawnMgr)) {
+    if (!m_dunMgr->Init(m_anomMgr, m_spawnMgr)) {
         _log(SERVICE__ERROR, "Unable to load Dungeon Manager during boot of system %u.", m_data.systemID);
+        return false;
+    }
+
+    if (!m_anomMgr->Init(m_beltMgr, m_dunMgr, m_spawnMgr)) {
+        _log(SERVICE__ERROR, "Unable to load Anomaly Manager during boot of system %u.", m_data.systemID);
         return false;
     }
 

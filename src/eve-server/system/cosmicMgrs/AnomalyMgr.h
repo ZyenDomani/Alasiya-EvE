@@ -16,45 +16,66 @@
  *  a new iteration of this class is created for each system as that system is booted.
  */
 
-#include "utils/Singleton.h"
+#include "system/SystemGPoint.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 
+class DungeonMgr;
+class BeltMgr;
 class PyServiceMgr;
+class SpawnMgr;
+class SystemManager;
 
 class AnomalyMgr
-: public Singleton<AnomalyMgr>
 {
   public:
-      AnomalyMgr();
+      AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
       virtual ~AnomalyMgr()                             { /* do nothing here */ }
 
-      void Initialize(PyServiceMgr* svc);
+      bool Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
       void Process();
 
-      void LoadAnomalies();
       void SaveAnomaly();
       void CreateAnomaly();
+      void LoadAnomalies();
+
+      void AddAnomaly(InventoryItemRef iRef);
+      void GetAnomalyList(CosmicSignature& sig);
 
 protected:
-    ManagerDB* m_mdb;
-    ServiceDB* m_sdb;
+    ManagerDB m_mdb;
+    ServiceDB m_sdb;
+    SystemGPoint m_gp;
+
+    int8 GetAnomalyType();
 
 private:
     /* we do not own any of these */
-    PyServiceMgr* m_services;
+    BeltMgr* m_beltMgr;
+    DungeonMgr* m_dungMgr;
+    SpawnMgr* m_spawnMgr;
+    SystemManager* m_system;
+    PyServiceMgr& m_services;
 
     Timer m_spawnTimer;
     Timer m_anomTimer;
 
     bool m_initalized;
 
-    std::vector<uint32, CosmicSignature> m_sigs;
+    // internal data counters
+    int8 m_Sigs;
+    int8 m_Anoms;
+    int8 m_WH;
+    int8 m_Grav;
+    int8 m_Mag;
+    int8 m_Ladar;
+    int8 m_Radar;
+    int8 m_Unrated;
+    int8 m_Complex;
+
+
+    std::map<uint32, CosmicSignature> m_sigs;
 
 };
-
-//Singleton
-#define sAnomalyMgr \
-( AnomalyMgr::get() )
 
 #endif  // EVEMU_SYSTEM_ANOMALYMGR_H_

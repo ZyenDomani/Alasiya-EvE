@@ -271,10 +271,6 @@ int main( int argc, char* argv[] )
     sLog.Green("       ServerInit", "Starting Wormhole Manager");
     sWHMgr.Initialize(&pyServMgr);
     
-    /* create the AnomalyMgr singleton */
-    sLog.Green("       ServerInit", "Starting Anomaly Manager");
-    sAnomalyMgr.Initialize(&pyServMgr);
-
     /* create the CivilianMgr singleton */
     sLog.Green("       ServerInit", "Starting Civilian Manager");
     sCivMgr.Initialize(&pyServMgr);

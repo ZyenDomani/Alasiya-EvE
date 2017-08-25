@@ -213,6 +213,11 @@ void BeltMgr::GetList(uint32 beltID, std::vector< AsteroidSE* >& list)
         list.push_back(itr->second);
 }
 
+void BeltMgr::Create(CosmicSignature& sig)
+{
+
+}
+
 void BeltMgr::SpawnBelt(uint16 bubbleID)
 {
     if (IsSpawned(bubbleID))

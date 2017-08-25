@@ -119,23 +119,23 @@ void ManagerDB::GetMoonResouces(DBQueryResult& res)
 }
 
 void ManagerDB::SaveAnomaly(CosmicSignature& sig)
-{// sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
+{// sysSignatures (sigID,sigItemID,sigName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
     DBerror err;
     if (!sDatabase.RunQuery(err,
         "INSERT INTO sysSignatures"
-        " (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)"
+        " (sigID,sigItemID,sigName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)"
         " VALUES "
         "('%s', %u, '%s', %u, %u, %u, %u, %u, %f, %f, %f)", \
-            sig.sigID.c_str(), sig.sigItemID, sig.dungeonName.c_str(), sig.systemID, sig.typeID, sig.groupID, \
+            sig.sigID.c_str(), sig.sigItemID, sig.sigName.c_str(), sig.systemID, sig.typeID, sig.groupID, \
             sig.scanGroupID, sig.strengthAttributeID, sig.x, sig.y, sig.z )) {
         _log(DATABASE__ERROR, "SaveActiveDungeon - unable to save dungeon");
         }
 }
 
 void ManagerDB::GetAnomalyList(DBQueryResult& res)
-{// sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
+{// sysSignatures (sigID,sigItemID,sigName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
     if(!sDatabase.RunQuery(res,
-        "SELECT sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z"
+        "SELECT sigID,sigItemID,sigName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z"
         " FROM sysSignatures"
         " ORDER BY systemid")) {
         _log(DATABASE__ERROR, "Error in GetAnomalyList query: %s", res.error.c_str());

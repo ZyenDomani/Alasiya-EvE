@@ -139,7 +139,6 @@ void EntityList::Process() {
     /* check for 1Hz timer tic */
     if (m_stampTimer.Check()) {
         ++m_stamp;
-        sAnomalyMgr.Process();
         sWHMgr.Process();
         sCivMgr.Process();
         sBubbleMgr.Process();

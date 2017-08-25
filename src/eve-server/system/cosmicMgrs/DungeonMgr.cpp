@@ -13,6 +13,7 @@
 
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
 
 DungeonDataMgr::DungeonDataMgr()
@@ -130,7 +131,9 @@ void DungeonDataMgr::GetDungeons(std::vector< ActiveDungeon >& dunList)
 
 DungeonMgr::DungeonMgr(SystemManager* mgr, PyServiceMgr& svc)
 : m_system(mgr),
-m_services(svc)
+m_services(svc),
+m_anomMgr(nullptr),
+m_spawnMgr(nullptr)
 {
     m_initalized = false;
     m_anomalyItems.clear();
@@ -147,14 +150,21 @@ DungeonMgr::~DungeonMgr()
     }
 }
 
-bool DungeonMgr::Init(SpawnMgr* spawnMgr)
+bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
 {
     if (!sConfig.cosmic.DungeonEnabled){
         _log(COSMIC_MGR__MESSAGE, "Dungeon System Disabled.  Not Initializing Dungeon Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return m_initalized;
     }
 
+    m_anomMgr = anomMgr;
     m_spawnMgr = spawnMgr;
+
+    if (m_anomMgr == nullptr) {
+        _log(COSMIC_MGR__ERROR, "System Init Fault. anomMgr == nullptr.  Not Initalizing Dungeon Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        return m_initalized;
+    }
+
     if (m_spawnMgr == nullptr) {
         _log(COSMIC_MGR__ERROR, "System Init Fault. spawnMgr == nullptr.  Not Initalizing Dungeon Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return m_initalized;
@@ -169,11 +179,12 @@ bool DungeonMgr::Init(SpawnMgr* spawnMgr)
     return (m_initalized = true);
 }
 
+// called from AnomalyMgr
 void DungeonMgr::Process() {
     if (!m_initalized)
         return;
 
-    // this is used to remove empty/completed/timed-out dungons
+    // this is used to remove empty/completed/timed-out dungons.
 }
 
 void DungeonMgr::Load()
@@ -200,6 +211,7 @@ void DungeonMgr::Load()
 
 bool DungeonMgr::Create(uint16 templateID)
 {
+    using namespace EVEDUNG;
     uint32 roomID = 0, typeID = 0;
 
     // get dungeon template
@@ -220,7 +232,7 @@ bool DungeonMgr::Create(uint16 templateID)
 
     // begin compiling data for saving in system signatures table.
     CosmicSignature sig;
-        sig.dungeonName = itr->second.dunName;
+        sig.sigName = itr->second.dunName;
         sig.sigID = sEntityList.GetAnomalyID();
         sig.sigItemID = sDunDataMgr.GetDungeonID();
         sig.systemID = m_system->GetID();
@@ -229,33 +241,33 @@ bool DungeonMgr::Create(uint16 templateID)
         sig.groupID = EVEDB::invGroups::Cosmic_Anomaly;
         sig.strengthAttributeID = AttrScanAllStrength;  // Unknown
     switch(typeID) {
-        case typeGravimetric: { // 2
+        case dunTypes::typeGravimetric: { // 2
             sig.typeID = 25880; // Cosmic_Signature
             sig.groupID = EVEDB::invGroups::Cosmic_Signature;
             sig.strengthAttributeID = AttrScanGravimetricStrength;
         } break;
-        case typeMagnetometric: { // 3,
+        case dunTypes::typeMagnetometric: { // 3,
             sig.typeID = 25880; // Cosmic_Signature
             sig.groupID = EVEDB::invGroups::Cosmic_Signature;
             sig.strengthAttributeID = AttrScanMagnetometricStrength;
         } break;
-        case typeRadar: {       // 4,
+        case dunTypes::typeRadar: {       // 4,
             sig.typeID = 25880; // Cosmic_Signature
             sig.groupID = EVEDB::invGroups::Cosmic_Signature;
             sig.strengthAttributeID = AttrScanRadarStrength;
         } break;
-        case typeLadar: {       // 5,
+        case dunTypes::typeLadar: {       // 5,
             sig.typeID = 25880; // Cosmic_Signature
             sig.groupID = EVEDB::invGroups::Cosmic_Signature;
             sig.strengthAttributeID = AttrScanLadarStrength;
         } break;
         // these will use default for now.  maybe change them later...wait till system matures more.
-        case typeMission:       // 1
-        case typeWormholes:     // 6
-        case typeAnomaly:       // 7
-        case typeUnrated:       // 8
-        case typeEscalation:    // 9
-        case typeDED_Complex: { // 10
+        case dunTypes::typeMission:       // 1
+        case dunTypes::typeWormhole:      // 6
+        case dunTypes::typeAnomaly:       // 7
+        case dunTypes::typeUnrated:       // 8
+        case dunTypes::typeEscalation:    // 9
+        case dunTypes::typeDED_Complex: { // 10
         } break;
     }
 
@@ -281,7 +293,7 @@ bool DungeonMgr::Create(uint16 templateID)
         }
     }
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - there are %u items to be created for '%s' (%u:%u) .", \
-            m_anomalyItems.size(), sig.dungeonName.c_str(), sig.sigItemID, templateID);
+            m_anomalyItems.size(), sig.sigName.c_str(), sig.sigItemID, templateID);
 
     // get rand pos >0.5au but <4au from random planet.
     GPoint pos = m_gp.GetAnomalyPoint(m_system);
@@ -348,4 +360,8 @@ bool DungeonMgr::Create(uint16 templateID)
     return true;
 }
 
+void DungeonMgr::MakeDungeon(CosmicSignature& sig)
+{
+
+}
 

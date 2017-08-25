@@ -240,6 +240,9 @@ PyResult MapService::Handle_GetDeadspaceComplexMap(PyCallArgs &call)
 {/* no packet data
         dungeons = sm.RemoteSvc('map').GetDeadspaceComplexMap(eve.session.languageID)
         solarSystemID, dungeonID, difficulty, dungeonName = dungeons
+
+        get this data from managerDB.GetAnomalyList(DBQueryResult& res)
+        res = sysSignatures (sigID,sigItemID,sigName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
 */
   sLog.White( "MapService::Handle_GetDeadspaceComplexMap()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);

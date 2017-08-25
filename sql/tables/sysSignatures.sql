@@ -24,25 +24,29 @@ DROP TABLE IF EXISTS `sysSignatures`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sysSignatures` (
   `sigID` varchar(7) COLLATE utf8_unicode_ci NOT NULL,
-  `dungeonName` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `systemID` int(11) NOT NULL,
   `sigItemID` int(11) NOT NULL,
+  `sigName` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+  `systemID` int(11) NOT NULL,
   `typeID` int(11) NOT NULL,
-  `scanGroupID` int(11) NOT NULL,
   `groupID` int(10) NOT NULL DEFAULT '0',
+  `scanGroupID` int(11) NOT NULL,
   `strengthAttributeID` int(10) NOT NULL DEFAULT '0',
   `x` double NOT NULL,
   `y` double NOT NULL,
-  `z` double NOT NULL,
-  PRIMARY KEY (`sigID`),
-  UNIQUE KEY `sigID` (`sigID`),
-  UNIQUE KEY `sigID_2` (`sigID`)
+  `z` double NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `sysSignatures`
 --
+
+--
+-- Indexes for table `sysSignatures`
+--
+ALTER TABLE `sysSignatures`
+  ADD PRIMARY KEY (`sigID`),
+  ADD UNIQUE KEY `sigID` (`sigID`);
 
 LOCK TABLES `sysSignatures` WRITE;
 /*!40000 ALTER TABLE `sysSignatures` DISABLE KEYS */;

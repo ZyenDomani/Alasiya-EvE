@@ -114,6 +114,12 @@ void Scan::ScanResult() {
     m_db->GetSystemAnomalies(m_client->GetSystemID(), *res);
     PyList* resultList = new PyList;
 
+    /** @todo  will need updates to finish this after AnomolyMgr is more complete...
+     * client->sysmgr->anommgr->GetAnomalyList(CosmicSignature& sig)
+     *   from this sig object, loop thru and get needed variables for scan results.
+     * NOTE. cannot scan pos, wrecks or ships.  they DO have sigIDs, and can get to type (25%), but no farther
+     */
+
     DBResultRow row;
     //(`typeID`, `scanGroupID`, `groupID`, `strengthAttributeID`, `dungeonName`, `sigID`, `x`, `y`, `z`)
     while (res->GetRow(row)) {
