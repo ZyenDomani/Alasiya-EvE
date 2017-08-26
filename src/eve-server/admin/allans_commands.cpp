@@ -60,6 +60,7 @@ PyResult Command_siglist(Client* who, CommandDB* db, PyServiceMgr* services, con
 
     DBQueryResult* res = new DBQueryResult();
 
+    /** @todo update this to use AnomalyManager from current system */
     ManagerDB m_db;
     m_db.GetAnomalyList(*res);
     int count = res->GetRowCount();
@@ -70,8 +71,8 @@ PyResult Command_siglist(Client* who, CommandDB* db, PyServiceMgr* services, con
 
     DBResultRow row;
     while (res->GetRow(row)) {
-        // sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
-        str << row.GetInt(3) << " " << row.GetText(0) << " " << row.GetInt(1) << " '" << row.GetText(2) << "'<br>"; //100
+        // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
+        str << row.GetInt(2) << " " << row.GetText(0) << " " << row.GetInt(1) << " '" << row.GetText(3) << "'<br>"; //100
     }
 
     int size = count * 100;
@@ -81,7 +82,6 @@ PyResult Command_siglist(Client* who, CommandDB* db, PyServiceMgr* services, con
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
-    return nullptr;
 }
 
 PyResult Command_heal(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)

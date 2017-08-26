@@ -142,10 +142,11 @@ struct CosmicSignature {
     std::string sigName;
     uint32 systemID;
     uint32 sigItemID;   // itemID of this entry
-    uint16 typeID;
-    uint16 groupID;
-    uint16 scanGroupID; // see below
-    uint16 strengthAttributeID; // see below
+    uint8 dungeonType;
+    uint16 sigTypeID;
+    uint16 sigGroupID;
+    uint16 scanGroupID;
+    uint16 scanAttributeID;
     double x;
     double y;
     double z;

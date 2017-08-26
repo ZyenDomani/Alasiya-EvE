@@ -24,13 +24,14 @@ DROP TABLE IF EXISTS `sysSignatures`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sysSignatures` (
   `sigID` varchar(7) COLLATE utf8_unicode_ci NOT NULL,
-  `sigItemID` int(11) NOT NULL,
+  `sigItemID` int(11) NOT NULL DEFAULT '0',
+  `dungeonType` int(2) NOT NULL DEFAULT '0',
   `sigName` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
-  `systemID` int(11) NOT NULL,
-  `typeID` int(11) NOT NULL,
-  `groupID` int(10) NOT NULL DEFAULT '0',
-  `scanGroupID` int(11) NOT NULL,
-  `strengthAttributeID` int(10) NOT NULL DEFAULT '0',
+  `systemID` int(11) NOT NULL DEFAULT '0',
+  `sigTypeID` int(11) NOT NULL DEFAULT '0',
+  `sigGroupID` int(10) NOT NULL DEFAULT '0',
+  `scanGroupID` int(11) NOT NULL DEFAULT '0',
+  `scanAttributeID` int(10) NOT NULL DEFAULT '0',
   `x` double NOT NULL,
   `y` double NOT NULL,
   `z` double NOT NULL

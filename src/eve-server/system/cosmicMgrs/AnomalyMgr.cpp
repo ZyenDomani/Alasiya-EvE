@@ -5,7 +5,7 @@
  *
  * @Author:        Allan
  * @date:          12 December 2015 (original idea)
- * @update:        3 August 2017 (implementation)
+ * @update:        3 August 2017 (begin implementation)
  *
  */
 
@@ -27,10 +27,11 @@
  *  it will need access to its system manager (thru m_system), the wh mgr (thru sWHMgr), dungeon mgr (thru m_dungeon), and ???
  *.  we should not need spawn mgr here, as it is called by dunmgr and processed thru sysmgr.
  *
- *  when one anomaly despawns, this class is in charge of creating another as needed.
+ *  when one anomaly despawns, this class is in charge of calling cleanup and creating another as needed.
  *
  *  this class is also in charge of all dynamic anomaly data in the db
- *    pos items, wrecks and abandoned ships will have to process thru here also, as they get sigIDs and are listed on scan results.
+ *    pos items, wrecks and abandoned ships will have to process thru here also,
+ *    as they get sigIDs and are listed on scan results, but cannot be totally scanned down
  */
 
 /*
@@ -51,7 +52,7 @@ m_anomTimer(10000)
     m_initalized = false;
 
     m_anomTimer.Disable();
-    m_spawnTimer.Disable();. // is this needed?
+    m_spawnTimer.Disable(); // is this needed?
 }
 
 bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr) {
@@ -79,9 +80,10 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     }
 
     // set internal check data
-    //. will these be static, var by system, var by trusec, config options, other???
+    // will these be static, var by system, var by trusec, config options, other???
     m_Sigs = 0;
     m_Anoms = 0;
+    // these can use config option to (en/dis)able individual types
     m_WH = 0;
     m_Grav = 0;
     m_Mag = 0;
@@ -90,15 +92,11 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     m_Unrated = 0;
     m_Complex = 0;
 
-    LoadAnomalies();
-
-    m_anomTimer.Start(120000);
     //  system tests to determine amounts and types
 
     /* load current data?, start timers, process current data, and create new items, if needed */
 
-    Process();
-
+    m_anomTimer.Start(120000);  // 2 mins?
 
     _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
     return (m_initalized = true);
@@ -110,6 +108,9 @@ void AnomalyMgr::Process() {
     if (m_anomTimer.Check(false)) {
         /* do something useful here */
         // check for current sys anoms vs max, and create new if needed.
+        //  *somewhere* there is a formula using 1.1 - sysSec and get max number of sigs from that.
+        if (m_Sigs < 15)  //   hardcode to 15 for now
+            CreateAnomaly();
     }
 
     if (m_spawnTimer.Check(false)) {
@@ -129,7 +130,8 @@ void AnomalyMgr::LoadAnomalies() {
 
 void AnomalyMgr::SaveAnomaly()
 {
-	//. same as above...not needed
+	//. same as above...not needed but used for testing for now.
+    //will have to rewrite scan system to use data from here
     for (auto sig : m_sigs)
         m_mdb.SaveAnomaly(sig.second);
 
@@ -137,71 +139,74 @@ void AnomalyMgr::SaveAnomaly()
 
 void AnomalyMgr::CreateAnomaly() {
     using namespace EVEDUNG;
-	/* determine anomaly type, set variables,
-	spawn dungeon, spawn NPCs, save data.
-	*/
- /* will need more here to check and set all items correctly
-    uint8 scanGroupID = EVESCAN::ScanGroup::ScanGroupAnomaly;
-    uint16 groupID = EVEDB::invGroups::Cosmic_Anomaly; //885
-    uint16 groupID2 = EVEDB::invGroups::Cosmic_Signature; //502
-    uint16 typeID = EVEDB::invTypes::typeCosmicAnomaly; // 28356 - dont need probes or sklls
-    uint16 typeID2 = EVEDB::invTypes::typeCosmicSignature; // 25880 - need probes and skills (exploring)
-    uint16 strengthAttributeID = AttrScanAllStrength;
-    */
-    bool isDungeon = false, isBelt = false;
-	uint8 anomalyType = GetAnomalyType();
-    // compile data for new system signature.
+
+    // compile data for new system anomaly.
     CosmicSignature sig;
-    sig.sigName = ""; // will have to determine name and insert here.
     sig.sigID = sEntityList.GetAnomalyID();
-    sig.sigItemID = 0;
+    sig.dungeonType = GetAnomalyType();
     sig.systemID = m_system->GetID();
-    sig.typeID = anomalyType;
-    switch(anomalyType) {
+    switch(sig.dungeonType) {
         case dunTypes::typeGravimetric: { // 2
-            sig.typeID = EVEDB::invTypes::typeCosmicAnomaly;
-            sig.groupID = EVEDB::invGroups::Cosmic_Anomaly;
-            sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupAnomaly;         // this will change based on the actual ITEM being scanned...ship, tower, drone, etc.  see below
-            sig.strengthAttributeID = AttrScanGravimetricStrength;
-            isBelt = true;
+            sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly; //dont need probes or skills for anomalies
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
+            sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupAnomaly;
+            sig.scanAttributeID = AttrScanGravimetricStrength;
         } break;
         case dunTypes::typeMagnetometric: { // 3,
-            sig.typeID = 25880; // Cosmic_Signature
-            sig.groupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.strengthAttributeID = AttrScanMagnetometricStrength;
+            sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;// need probes and exploring skills
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
+            sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupSignature;
+            sig.scanAttributeID = AttrScanMagnetometricStrength;
         } break;
         case dunTypes::typeRadar: {       // 4,
-            sig.typeID = 25880; // Cosmic_Signature
-            sig.groupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.strengthAttributeID = AttrScanRadarStrength;
+            sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
+            sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupSignature;
+            sig.scanAttributeID = AttrScanRadarStrength;
         } break;
         case dunTypes::typeLadar: {       // 5,
-            sig.typeID = 25880; // Cosmic_Signature
-            sig.groupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.strengthAttributeID = AttrScanLadarStrength;
+            sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
+            sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupSignature;
+            sig.scanAttributeID = AttrScanLadarStrength;
         } break;
-        // these will use default for now.  maybe change them later...wait till system matures more and i better understand hoe to implement them.
+        case dunTypes::typeUnrated: {      // 8
+            sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly;
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
+            sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupAnomaly;
+            sig.scanAttributeID = AttrScanAllStrength;
+        } break;
+        // create and register here
         case dunTypes::typeMission:       // 1
+        case dunTypes::typeEscalation:   // 9
+        // these will use default for now.  revisit later when system matures more and i better understand how to implement them.
         case dunTypes::typeWormhole:     // 6
         case dunTypes::typeAnomaly:       // 7
-        case dunTypes::typeUnrated:       // 8
-        case dunTypes::typeEscalation:    // 9
         case dunTypes::typeDED_Complex: { // 10
-            sig.typeID = EVEDB::invTypes::typeCosmicAnomaly;
-            sig.groupID = EVEDB::invGroups::Cosmic_Anomaly;
-            sig.strengthAttributeID = AttrScanAllStrength;  // Unknown
+            sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
+            sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupSignature;
+            sig.scanAttributeID = AttrScanAllStrength;  // Unknown
         } break;
+        case 0:     // error or denied
+            return;
     }
 
- if (isDungeon)
-     m_dungMgr->MakeDungeon(sig); // pass by ref here, so other vars can be set.
- if (isBelt)
-     m_beltMgr->Create(sig); // pass by ref here, so other vars can be set.
+    // dungmgr will determine name and itemID.
+    sig.sigName = "Test Name Here";
+    sig.sigItemID = 0;
+    GPoint pos = m_gp.GetAnomalyPoint(m_system);
+    sig.x = pos.x;
+    sig.y = pos.y;
+    sig.z = pos.z;
+    // all anomalies will be created/populated by dungmgr
+    // dungmgr will set location of anomaly, determine flora and fauna, faction, and triggers where applicable
+    // if npcs, hand off npc control to spawnmgr, which will also handle their triggers
+    // if roids, hand off roid control to beltmgr
+    m_dungMgr->MakeDungeon(sig); // pass by ref here, so other vars can be set.
 
     // add new sig to sysSigMap
-    // we will set location and faction here, dung will set up and call spawn for area, and deal with triggers using process called from sysmgr
-     m_sigs.insert(std::pair<int32, CosmicSignature>(sig.sigItemID, sig)); //key is itemID for ease of removal later
-
+    m_sigs.insert(std::pair<int32, CosmicSignature>(sig.sigItemID, sig)); //key is itemID for ease of removal later
 
     m_mdb.SaveAnomaly(sig);
 }
@@ -210,75 +215,73 @@ int8 AnomalyMgr::GetAnomalyType()
 {
     using namespace EVEDUNG;
 
-    uint8 typeID = MakeRandomInt(1,10);
+    uint8 typeID = MakeRandomInt(2,10); // skip typeMission
     switch(typeID) {
+        case dunTypes::typeAnomaly:    // 7. this is generic
+        case dunTypes::typeEscalation:  // 9
         case dunTypes::typeMission: {   // 1
             // cannot create this type.  try again.
             return GetAnomalyType();
         } break;
         case dunTypes::typeGravimetric: {   // 2
-            m_Grav = 0;
-            m_Sigs = 0;
+            if (m_Grav < 0)
+                return GetAnomalyType();
+
+            ++m_Grav;
+            ++m_Sigs;
         } break;
         case dunTypes::typeMagnetometric: {   // 3
+            if (m_Mag < 0)
+                return GetAnomalyType();
 
-            m_Mag = 0;
-            m_Sigs = 0;
+            ++m_Mag;
+            ++m_Sigs;
         } break;
         case dunTypes::typeRadar: {   // 4
+            if (m_Radar < 0)
+                return GetAnomalyType();
 
-            m_Radar = 0;
-            m_Sigs = 0;
+            ++m_Radar;
+            ++m_Sigs;
         } break;
         case dunTypes::typeLadar: {   // 5
+            if (m_Ladar < 0)
+                return GetAnomalyType();
 
-            m_Ladar = 0;
-            m_Sigs = 0;
+            ++m_Ladar;
+            ++m_Sigs;
         } break;
         case dunTypes::typeWormhole: {   // 6
+            if (m_WH != 0) // cap at 1 per system, except k162
+                return GetAnomalyType();
 
-            m_WH = 0;
-            m_Sigs = 0;
-        } break;
-        case dunTypes::typeAnomaly: {   // 7
-
-            m_Anoms = 0;
+            ++m_WH;
+            ++m_Sigs;
         } break;
         case dunTypes::typeUnrated: {   // 8
+            if ((m_Unrated < 0) or (m_Unrated > 2)) // cap at 3
+                return GetAnomalyType();
 
-            m_Unrated = 0;
-            m_Anoms = 0;
-        } break;
-        case dunTypes::typeEscalation: {   // 9
-            // cannot create this type.  try again.
-            return GetAnomalyType();
+            ++m_Unrated;
+
         } break;
         case dunTypes::typeDED_Complex: {  // 10
+            if ((m_Complex < 0) or (m_Complex > 1)) // cap at 2
+                return GetAnomalyType();
 
-            m_Complex = 0;
-            m_Sigs = 0;
+            ++m_Complex;
+            ++m_Sigs;
         } break;
     }
+    ++m_Anoms; // still not sure how im gonna use these
+    return typeID;
 }
 
 
 void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
-    // add method for pos items, wrecks and abandoned ships
-    // do these need probes to scan down?
-
-}
-
-void AnomalyMgr::GetAnomalyList(CosmicSignature& sig) {
-    // retrieval method for scan queries
-    //. NOTE. cannot scan pos, wrecks or ships.  they DO have sigIDs, and can get to type (25%), but no farther
-}
-
-
-
-/* more data for signatures...
- * this will have to be checked and set in the code.
- * this is def for scanGroupID:
- *
+    // registration method for pos items, wrecks and abandoned ships
+    // creation method for missions, escalations and ??
+    /*
  * enum ScanGroup {
  *    ScanGroupScrap                = 1,. make a sig for wrecks in system?
  *    ScanGroupSignature            = 4,
@@ -288,13 +291,13 @@ void AnomalyMgr::GetAnomalyList(CosmicSignature& sig) {
  *    ScanGroupCelestial            = 64,. not sure here
  *    ScanGroupAnomaly              = 128
  * };
- *
- *  for strengthAttributeID, use these attributes to indicate site type:
- *
- * AttrScanRadarStrength = 208,
- * AttrScanLadarStrength = 209,
- * AttrScanMagnetometricStrength = 210,
- * AttrScanGravimetricStrength = 211,
- * AttrScanAllStrength = 1136     - this is for the "unknown" anomaly type
- *
  */
+
+}
+
+void AnomalyMgr::GetAnomalyList(CosmicSignature& sig) {
+    // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
+    // retrieval method for scan queries
+    //. NOTE. cannot scan pos, wrecks, ships, mission sites, or escalations.  they DO have sigIDs, and can get to type (25%), but no farther
+}
+

@@ -229,37 +229,38 @@ bool DungeonMgr::Create(uint16 templateID)
     }
 
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - templateID %u, roomID %u, typeID %u", templateID, roomID, typeID);
-
+ 
     // begin compiling data for saving in system signatures table.
     CosmicSignature sig;
         sig.sigName = itr->second.dunName;
-        sig.sigID = sEntityList.GetAnomalyID();
-        sig.sigItemID = sDunDataMgr.GetDungeonID();
+        sig.sigID = sEntityList.GetAnomalyID(); // this is unique xxx-nnn id displayed in scanner
+        sig.sigItemID = sDunDataMgr.GetDungeonID();  // itemID of this entry
+        sig.dungeonType = typeID;
         sig.systemID = m_system->GetID();
         sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupAnomaly;         // this will change based on the actual ITEM being scanned...ship, tower, drone, etc.
-        sig.typeID = 25880; // Cosmic_Signature
-        sig.groupID = EVEDB::invGroups::Cosmic_Anomaly;
-        sig.strengthAttributeID = AttrScanAllStrength;  // Unknown
+        sig.sigTypeID = 25880; // Cosmic_Signature
+        sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
+        sig.scanAttributeID = AttrScanAllStrength;  // Unknown
     switch(typeID) {
         case dunTypes::typeGravimetric: { // 2
-            sig.typeID = 25880; // Cosmic_Signature
-            sig.groupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.strengthAttributeID = AttrScanGravimetricStrength;
+            sig.sigTypeID = 25880; // Cosmic_Signature
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
+            sig.scanAttributeID = AttrScanGravimetricStrength;
         } break;
         case dunTypes::typeMagnetometric: { // 3,
-            sig.typeID = 25880; // Cosmic_Signature
-            sig.groupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.strengthAttributeID = AttrScanMagnetometricStrength;
+            sig.sigTypeID = 25880; // Cosmic_Signature
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
+            sig.scanAttributeID = AttrScanMagnetometricStrength;
         } break;
         case dunTypes::typeRadar: {       // 4,
-            sig.typeID = 25880; // Cosmic_Signature
-            sig.groupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.strengthAttributeID = AttrScanRadarStrength;
+            sig.sigTypeID = 25880; // Cosmic_Signature
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
+            sig.scanAttributeID = AttrScanRadarStrength;
         } break;
         case dunTypes::typeLadar: {       // 5,
-            sig.typeID = 25880; // Cosmic_Signature
-            sig.groupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.strengthAttributeID = AttrScanLadarStrength;
+            sig.sigTypeID = 25880; // Cosmic_Signature
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
+            sig.scanAttributeID = AttrScanLadarStrength;
         } break;
         // these will use default for now.  maybe change them later...wait till system matures more.
         case dunTypes::typeMission:       // 1

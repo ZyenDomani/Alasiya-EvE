@@ -118,10 +118,13 @@ void Scan::ScanResult() {
      * client->sysmgr->anommgr->GetAnomalyList(CosmicSignature& sig)
      *   from this sig object, loop thru and get needed variables for scan results.
      * NOTE. cannot scan pos, wrecks or ships.  they DO have sigIDs, and can get to type (25%), but no farther
+     *
+     * also see client code to verify what it expects, and what it can calculate
      */
 
     DBResultRow row;
-    //(`typeID`, `scanGroupID`, `groupID`, `strengthAttributeID`, `dungeonName`, `sigID`, `x`, `y`, `z`)
+    /** @todo re-update this to match names....  */
+    //(sigTypeID,scanGroupID,sigGroupID,scanAttributeID,sigName,sigID,x,y,z)
     while (res->GetRow(row)) {
         SystemScanResultPositive ssrp;
             ssrp.typeID = row.GetInt(0);
@@ -133,7 +136,7 @@ void Scan::ScanResult() {
             ssrp.deviation = 0;     /* for scan probes */
             ssrp.degraded = false;  /* will need to be set in *some* kind of test/conditional */
             ssrp.probeID = m_client->GetShipID();   /* will need to be corrected after implementing probes */
-            ssrp.certainty = 1;     /* will need to be fixed. */
+            ssrp.certainty = ((ssrp.typeID == EVEDB::invTypes::typeCosmicAnomaly) ? 1 : MakeRandomFloat());     /* will need to be fixed.  anomalies are full...others are random */
             ssrp.pos = new PyNone();  /* this is for probe positions (where applicable).  it uses the 'foo.Vector3' token, and coded in scan.xmlp */
         SSR_ObjectEx_Pos ssr_oed;
             ssr_oed.x = row.GetDouble(6);

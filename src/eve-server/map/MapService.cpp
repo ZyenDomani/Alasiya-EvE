@@ -242,7 +242,7 @@ PyResult MapService::Handle_GetDeadspaceComplexMap(PyCallArgs &call)
         solarSystemID, dungeonID, difficulty, dungeonName = dungeons
 
         get this data from managerDB.GetAnomalyList(DBQueryResult& res)
-        res = sysSignatures (sigID,sigItemID,sigName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
+        res =  sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
 */
   sLog.White( "MapService::Handle_GetDeadspaceComplexMap()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);

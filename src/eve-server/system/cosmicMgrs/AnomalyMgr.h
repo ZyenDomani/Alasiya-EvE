@@ -50,7 +50,7 @@ protected:
     int8 GetAnomalyType();
 
 private:
-    /* we do not own any of these */
+    /* we do not own any of these (our sysmgr does) */
     BeltMgr* m_beltMgr;
     DungeonMgr* m_dungMgr;
     SpawnMgr* m_spawnMgr;
@@ -63,15 +63,17 @@ private:
     bool m_initalized;
 
     // internal data counters
-    int8 m_Sigs;
-    int8 m_Anoms;
+    // < 0 (where possible) means "not allowed" 
+    uint16 m_Anoms; // system total, including pos, wrecks, ships.  65535 *should* be large enough
+    uint8 m_Sigs; // total probe-needed items, hard-capped at 256
+    // these should be fine soft-capped at 128
     int8 m_WH;
     int8 m_Grav;
     int8 m_Mag;
     int8 m_Ladar;
     int8 m_Radar;
-    int8 m_Unrated;
-    int8 m_Complex;
+    int8 m_Unrated; // simple combat sites, no probe needed
+    int8 m_Complex; // DED sites
 
 
     std::map<uint32, CosmicSignature> m_sigs;

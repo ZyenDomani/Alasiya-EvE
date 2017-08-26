@@ -119,23 +119,22 @@ void ManagerDB::GetMoonResouces(DBQueryResult& res)
 }
 
 void ManagerDB::SaveAnomaly(CosmicSignature& sig)
-{// sysSignatures (sigID,sigItemID,sigName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
+{// sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
     DBerror err;
     if (!sDatabase.RunQuery(err,
         "INSERT INTO sysSignatures"
-        " (sigID,sigItemID,sigName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)"
-        " VALUES "
-        "('%s', %u, '%s', %u, %u, %u, %u, %u, %f, %f, %f)", \
-            sig.sigID.c_str(), sig.sigItemID, sig.sigName.c_str(), sig.systemID, sig.typeID, sig.groupID, \
-            sig.scanGroupID, sig.strengthAttributeID, sig.x, sig.y, sig.z )) {
+        " (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)"
+        " VALUES ('%s', %u, %u, '%s', %u, %u, %u, %u, %u, %f, %f, %f)", \
+            sig.sigID.c_str(), sig.sigItemID, sig.dungeonType, sig.sigName.c_str(), sig.systemID, sig.sigTypeID, sig.sigGroupID, \
+            sig.scanGroupID, sig.scanAttributeID, sig.x, sig.y, sig.z )) {
         _log(DATABASE__ERROR, "SaveActiveDungeon - unable to save dungeon");
         }
 }
 
 void ManagerDB::GetAnomalyList(DBQueryResult& res)
-{// sysSignatures (sigID,sigItemID,sigName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
+{// sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
     if(!sDatabase.RunQuery(res,
-        "SELECT sigID,sigItemID,sigName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z"
+        "SELECT sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z"
         " FROM sysSignatures"
         " ORDER BY systemid")) {
         _log(DATABASE__ERROR, "Error in GetAnomalyList query: %s", res.error.c_str());
@@ -159,9 +158,9 @@ GPoint ManagerDB::GetAnomalyPos(std::string& string)
 }
 
 void ManagerDB::GetSystemAnomalies(uint32 systemID, DBQueryResult& res)
-{// sysSignatures (typeID,scanGroupID,groupID,strengthAttributeID,dungeonName,sigID,x,y,z)
+{// sysSignatures (sigTypeID,scanGroupID,sigGroupID,scanAttributeID,sigName,sigID,x,y,z)
     if(!sDatabase.RunQuery(res,
-        "SELECT typeID, scanGroupID, groupID, strengthAttributeID, dungeonName, sigID, x, y, z"
+        "SELECT sigTypeID, scanGroupID, sigGroupID, scanAttributeID, sigName, sigID, x, y, z"
         " FROM sysSignatures"
         " WHERE systemID = %u", systemID)) {
         _log(DATABASE__ERROR, "Error in GetSystemAnomalies query: %s", res.error.c_str());
@@ -169,7 +168,7 @@ void ManagerDB::GetSystemAnomalies(uint32 systemID, DBQueryResult& res)
 }
 
 void ManagerDB::GetSystemAnomalies(uint32 systemID, std::vector< CosmicSignature >& sigs)
-{// sysSignatures (sigID,sigItemID,dungeonName,systemID,typeID,groupID,scanGroupID,strengthAttributeID,x,y,z)
+{// sysSignatures (sigID,sigItemID,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
 
 }
 
