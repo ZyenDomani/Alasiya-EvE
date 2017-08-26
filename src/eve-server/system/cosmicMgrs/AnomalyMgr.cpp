@@ -108,7 +108,7 @@ void AnomalyMgr::Process() {
     if (m_anomTimer.Check(false)) {
         /* do something useful here */
         // check for current sys anoms vs max, and create new if needed.
-        //  *somewhere* there is a formula using 1.1 - sysSec and get max number of sigs from that.
+        float security = 1.1 - m_system->GetSystemSecurityRating();  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
         if (m_Sigs < 15)  //   hardcode to 15 for now
             CreateAnomaly();
     }
