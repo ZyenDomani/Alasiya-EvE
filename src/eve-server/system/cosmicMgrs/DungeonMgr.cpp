@@ -13,6 +13,7 @@
 
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
+#include "StaticDataMgr.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
 
@@ -224,6 +225,34 @@ bool DungeonMgr::Create(uint16 templateID, CosmicSignature& sig)
     uint32 typeID = itr->second.dunTypeID;
     sig.sigName = itr->second.dunName.c_str();
 
+    GPoint pos(sig.x, sig.y, sig.z);
+
+    // create and spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
+    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
+
+    /** @todo update this to use temp items */
+    InventoryItemRef iRef = m_services.item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
+    if (iRef.get() == nullptr) // make error and exit
+        return false;
+    // do this or create/add generic se here?
+    DBSystemDynamicEntity entity;
+        entity.categoryID = iRef->categoryID();
+        entity.groupID = iRef->groupID();
+        entity.itemID = iRef->itemID();
+        entity.itemName = sig.sigName;
+        entity.typeID = sig.sigTypeID;
+        entity.x = pos.x;
+        entity.y = pos.y;
+        entity.z = pos.z;
+        /** @todo  fix these... */
+        entity.ownerID = sig.ownerID;
+        entity.allianceID = 0;  /** @todo  may have to write a method to check and set this */
+        entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
+        // do the spawn using SystemManager's BuildEntity:
+    /** @todo this is more shit that should NOT be in db */
+    m_system->BuildDynamicEntity(entity);
+    sig.sigItemID = entity.itemID;
+
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - templateID %u, roomID %u, typeID %u for %s", templateID, roomID, typeID, sig.sigName.c_str());
 
     // get room and group data and put in spawn vector
@@ -308,7 +337,7 @@ bool DungeonMgr::Create(uint16 templateID, CosmicSignature& sig)
     return true;
 }
 
-void DungeonMgr::MakeDungeon(CosmicSignature& sig)
+bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 {
     using namespace EVEDUNG;
 
@@ -376,8 +405,6 @@ void DungeonMgr::MakeDungeon(CosmicSignature& sig)
     */
     uint16 templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + 0;
 
-    std::string dungName = "";
-
-    Create(templateID, sig);
+    return Create(templateID, sig);
 }
 

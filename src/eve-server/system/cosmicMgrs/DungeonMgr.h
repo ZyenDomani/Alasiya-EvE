@@ -94,7 +94,7 @@ public:
     void Process();
     void Load();
 
-    void MakeDungeon(CosmicSignature& sig);
+    bool MakeDungeon(CosmicSignature& sig);
 
     bool Create(uint16 templateID, CosmicSignature& sig);
 

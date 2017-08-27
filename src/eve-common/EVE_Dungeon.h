@@ -15,9 +15,9 @@ namespace EVEDUNG {
         typeRadar               = 4, // hacking
         typeLadar               = 5, // gas mining
         typeWormhole            = 6, // ?
-        typeAnomaly             = 7, //
+        typeAnomaly             = 7, // non-rated dungeon that isnt required to scan with probes
         typeUnrated             = 8, // non-rated dungeon  no waves, possible escalation to complex
-        typeEscalation          = 9, // extra rooms from previous sute
+        typeEscalation          = 9, // extra rooms from previous site
         typeDED_Complex         = 10 // DED rated dungeon
     };
 
