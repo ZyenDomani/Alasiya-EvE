@@ -5,7 +5,7 @@
   *
   * @Author:        Allan
   * @date:          12 December 2015
-  *
+  * @updated:       27 August 2017
   */
 
 
@@ -172,9 +172,6 @@ bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
 
     Load();
 
-    //  system tests to determine amounts and types
-
-
     _log(COSMIC_MGR__MESSAGE, "DungeonMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
     return (m_initalized = true);
 }
@@ -209,11 +206,8 @@ void DungeonMgr::Load()
     } */
 }
 
-bool DungeonMgr::Create(uint16 templateID)
+bool DungeonMgr::Create(uint16 templateID, CosmicSignature& sig)
 {
-    using namespace EVEDUNG;
-    uint32 roomID = 0, typeID = 0;
-
     // get dungeon template
     std::unordered_multimap<uint16, DunTemplate>::iterator itr = sDunDataMgr.templates.find(templateID);
     if (itr == sDunDataMgr.templates.end()) {
@@ -221,59 +215,19 @@ bool DungeonMgr::Create(uint16 templateID)
         return false;
     }
 
-    roomID = itr->second.dunRoomID;
-    typeID = itr->second.dunTypeID;
-    if (!roomID) {
+    uint32 roomID = itr->second.dunRoomID;
+    if (roomID == 0) {
         _log(COSMIC_MGR__ERROR, "DungeonMgr::Create() - roomID is 0 for template %u.", templateID);
         return false;
     }
 
-    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - templateID %u, roomID %u, typeID %u", templateID, roomID, typeID);
- 
-    // begin compiling data for saving in system signatures table.
-    CosmicSignature sig;
-        sig.sigName = itr->second.dunName;
-        sig.sigID = sEntityList.GetAnomalyID(); // this is unique xxx-nnn id displayed in scanner
-        sig.sigItemID = sDunDataMgr.GetDungeonID();  // itemID of this entry
-        sig.dungeonType = typeID;
-        sig.systemID = m_system->GetID();
-        sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupAnomaly;         // this will change based on the actual ITEM being scanned...ship, tower, drone, etc.
-        sig.sigTypeID = 25880; // Cosmic_Signature
-        sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
-        sig.scanAttributeID = AttrScanAllStrength;  // Unknown
-    switch(typeID) {
-        case dunTypes::typeGravimetric: { // 2
-            sig.sigTypeID = 25880; // Cosmic_Signature
-            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.scanAttributeID = AttrScanGravimetricStrength;
-        } break;
-        case dunTypes::typeMagnetometric: { // 3,
-            sig.sigTypeID = 25880; // Cosmic_Signature
-            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.scanAttributeID = AttrScanMagnetometricStrength;
-        } break;
-        case dunTypes::typeRadar: {       // 4,
-            sig.sigTypeID = 25880; // Cosmic_Signature
-            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.scanAttributeID = AttrScanRadarStrength;
-        } break;
-        case dunTypes::typeLadar: {       // 5,
-            sig.sigTypeID = 25880; // Cosmic_Signature
-            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.scanAttributeID = AttrScanLadarStrength;
-        } break;
-        // these will use default for now.  maybe change them later...wait till system matures more.
-        case dunTypes::typeMission:       // 1
-        case dunTypes::typeWormhole:      // 6
-        case dunTypes::typeAnomaly:       // 7
-        case dunTypes::typeUnrated:       // 8
-        case dunTypes::typeEscalation:    // 9
-        case dunTypes::typeDED_Complex: { // 10
-        } break;
-    }
+    uint32 typeID = itr->second.dunTypeID;
+    sig.sigName = itr->second.dunName.c_str();
+
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - templateID %u, roomID %u, typeID %u for %s", templateID, roomID, typeID, sig.sigName.c_str());
 
     // get room and group data and put in spawn vector
-    uint16 x=0, y=0, z=0, group = 0;
+    uint16 x=0, y=0, z=0, group=0;
     DunGroupData grp;
     auto roomRange = sDunDataMgr.rooms.equal_range(roomID);
     for (auto it = roomRange.first; it != roomRange.second; ++it) {
@@ -293,15 +247,6 @@ bool DungeonMgr::Create(uint16 templateID)
             m_anomalyItems.push_back(grp);
         }
     }
-    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - there are %u items to be created for '%s' (%u:%u) .", \
-            m_anomalyItems.size(), sig.sigName.c_str(), sig.sigItemID, templateID);
-
-    // get rand pos >0.5au but <4au from random planet.
-    GPoint pos = m_gp.GetAnomalyPoint(m_system);
-    sig.x = pos.x;
-    sig.y = pos.y;
-    sig.z = pos.z;
-    m_db.SaveAnomaly(sig);
 
     if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
         // setup data to save active dungeon
@@ -311,9 +256,9 @@ bool DungeonMgr::Create(uint16 templateID)
             dungeon.dunItemID = sig.sigItemID;
             dungeon.state = 0;  //dunType here.
             dungeon.systemID = sig.systemID;
-            dungeon.x = pos.x;
-            dungeon.y = pos.y;
-            dungeon.z = pos.z;
+            dungeon.x = sig.x;
+            dungeon.y = sig.y;
+            dungeon.z = sig.z;
         sDunDataMgr.AddDungeon(dungeon);
     }
 
@@ -323,15 +268,15 @@ bool DungeonMgr::Create(uint16 templateID)
     GPoint pos2(NULL_ORIGIN);
     auto cur = m_anomalyItems.begin();
     while (cur != m_anomalyItems.end()) {
-        pos2.x = pos.x + cur->x;
-        pos2.y = pos.y + cur->y;
-        pos2.z = pos.z + cur->z;
+        pos2.x = sig.x + cur->x;
+        pos2.y = sig.y + cur->y;
+        pos2.z = sig.z + cur->z;
         // typeID, ownerID, locationID, flag, name, &_position
         ItemData iData(cur->typeID, 1/*fix this*/, systemID, flagAutoFit, cur->typeName.c_str(), pos2);
 
         /** @todo update this to use temp items */
         InventoryItemRef item = m_services.item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
-        if (!item) // we'll survive...
+        if (item.get() == nullptr) // we'll survive...
             continue;
 
         DBSystemDynamicEntity entity;
@@ -354,15 +299,85 @@ bool DungeonMgr::Create(uint16 templateID)
         ++cur;
     }
 
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created with %u items in system %u using template %u.", \
+              sig.sigItemID, m_anomalyItems.size(),sig.systemID, templateID);
+
     m_anomalyItems.clear();
     m_dungeonList.insert(std::make_pair(sig.sigItemID, items));
-    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created in system %u.", sig.sigItemID, sig.systemID);
 
     return true;
 }
 
 void DungeonMgr::MakeDungeon(CosmicSignature& sig)
 {
+    using namespace EVEDUNG;
 
+    float secRating = m_system->GetSystemSecurityRating();
+
+    int8 type = 1; // > 0.6
+    if (secRating < 0.1)
+        type = 3;
+    else if (secRating < 0.6)
+        type = 2;
+    int8 subType = 1;
+    float level = 1;
+
+    switch (sig.dungeonType) {
+        case dunTypes::typeAnomaly: {
+            subType = MakeRandomInt(1,5);
+            level = MakeRandomFloat();
+            if (level < 0.08)
+                level = 5;
+            else if (level < 0.15)
+                level = 4;
+            else if (level < 0.20)
+                level = 3;
+            else if (level < 0.40)
+                level = 2;
+        } break;
+        case dunTypes::typeMagnetometric: {
+            subType = MakeRandomInt(1,8);
+            if (IsEven(MakeRandomInt(0,10)))
+                level = 2;
+        } break;
+        case dunTypes::typeRadar: {
+            subType = MakeRandomInt(1,8);
+
+        } break;
+        case dunTypes::typeGravimetric: {
+            subType = MakeRandomInt(1,5);
+
+        } break;
+        case dunTypes::typeLadar: {
+            subType = MakeRandomInt(1,8);
+
+        } break;
+        case dunTypes::typeUnrated: {
+            subType = MakeRandomInt(1,5);
+
+        } break;
+    }
+
+    /* templateID format.  ABCDE
+     *       A = sitetype - mission, grav, magn, ldar, radar, anom, unrated, ded, escalation
+     *       B = type - anomaly security: 1=hi, 2=lo, 3=null, 4=mid, mission misc: 1 to 9
+     *       C = subtype  - grav: 0 to 5, anomaly: 1 to 5, missions: 1 to 9, mag: 1 to 8, radar: 1 to 8
+     *       D = level - anomaly: 1 to 5, grav: 1 to 3, radar: type 3, 2 levels
+     *       E = faction - Anomaly: 1=Serpentis, 2=Angel Cartel, 3=Blood Raider Covenant, 4=Guristas Pirates, 5=Sansha's Nation, and 6=Rogue Drones: Missions add the 4 races
+     */
+
+    /*
+    In player-owned sovereign nullsec, using Ore Prospecting Arrays,
+    (23510,'Small Asteroid Cluster',0,2,0,1,0,0,0),
+    (23520,'Moderate Asteroid Cluster',0,2,0,15,0,0,0),
+    (23530,'Large Asteroid Cluster',0,2,0,29,0,0,0),
+    (23540,' Enormous Asteroid Cluster ',0,2,0,29,0,0,0),
+    (23550,'Colossal Asteroid Cluster',0,2,0,29,0,0,0),
+    */
+    uint16 templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + 0;
+
+    std::string dungName = "";
+
+    Create(templateID, sig);
 }
 

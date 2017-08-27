@@ -96,7 +96,7 @@ public:
 
     void MakeDungeon(CosmicSignature& sig);
 
-    bool Create(uint16 templateID);
+    bool Create(uint16 templateID, CosmicSignature& sig);
 
     /* we do not own any of these */
 protected:

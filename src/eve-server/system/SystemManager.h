@@ -118,6 +118,8 @@ public:
     AnomalyMgr* GetAnomMgr()                            { return m_anomMgr; }
     DungeonMgr* GetDungMgr()                            { return m_dunMgr; }
 
+    float GetSecValue()                                 { return m_secValue; }
+
 protected:
     AnomalyMgr* m_anomMgr;      //we own this, never NULL.
     BeltMgr* m_beltMgr;         //we own this, never NULL.
@@ -160,6 +162,8 @@ private:
     bool SystemActivity();
     uint32 m_players;
     uint32 m_activityTime;
+
+    float m_secValue;
 
     // check for null iterator.  this will need to be moved to a memory code file eventually.
     // unfortunely, this is very specific for which iterators it can check.  see notes in code.

@@ -36,7 +36,7 @@ class AnomalyMgr
       void Process();
 
       void SaveAnomaly();
-      void CreateAnomaly();
+      void CreateAnomaly(int8 typeID=0);
       void LoadAnomalies();
 
       void AddAnomaly(InventoryItemRef iRef);
@@ -63,7 +63,7 @@ private:
     bool m_initalized;
 
     // internal data counters
-    // < 0 (where possible) means "not allowed" 
+    // < 0 (where possible) means "not allowed"
     uint16 m_Anoms; // system total, including pos, wrecks, ships.  65535 *should* be large enough
     uint8 m_Sigs; // total probe-needed items, hard-capped at 256
     // these should be fine soft-capped at 128

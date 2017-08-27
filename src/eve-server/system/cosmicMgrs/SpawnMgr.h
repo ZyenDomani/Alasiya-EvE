@@ -26,6 +26,8 @@ public:
     // Initializes the Table:
     int Initialize();
 
+    uint32 GetRegionFaction(uint32 regionID);
+
 protected:
     void _Populate();
 
@@ -100,7 +102,7 @@ private:
 
     bool m_enabled;         //allow spawning?
     bool m_initalized;      //allow spawning?
-    
+
     uint32 m_spawnID;       //in case i need to track a specific spawn group.
 
     RatBubbleVec m_bubbles;

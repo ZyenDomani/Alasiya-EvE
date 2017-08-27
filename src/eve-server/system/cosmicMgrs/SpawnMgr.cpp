@@ -95,6 +95,14 @@ void SpawnDataMgr::_Populate()
               m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_regions.size(), (GetTimeMSeconds() - start));
 }
 
+uint32 SpawnDataMgr::GetRegionFaction(uint32 regionID)
+{
+    std::map<uint32, uint32>::iterator itr = m_regions.find(regionID);
+    if (itr != m_regions.end())
+        return (*itr).second;
+    return 0;
+}
+
 /*
  SPAWN__ERROR
  SPAWN__WARNING
@@ -305,10 +313,9 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
 {
     // get faction for this region
     uint32 factionID = factionRogueDrones; // default to rogue drones.  this is my internal rogue drone factionID.
-    if (MakeRandomFloat() > 0.15) { // random chance for ANY beltspawn to be rogue drone...if chance < 0.15, rat = drone.
-        std::map<uint32, uint32>::iterator itr = sSpawnDataMgr.m_regions.find(regionID);
-        if (itr != sSpawnDataMgr.m_regions.end())
-            factionID = (*itr).second;
+    if (MakeRandomFloat() > 0.15) {
+        // random chance for ANY beltspawn to be rogue drone...if chance < 0.15, rat = drone.
+        factionID = sSpawnDataMgr.GetRegionFaction(regionID);
     }
     if (sConfig.npc.RatFaction)
         factionID = sConfig.npc.RatFaction;

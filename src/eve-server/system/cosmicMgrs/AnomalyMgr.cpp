@@ -14,6 +14,7 @@
 
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
+#include "StaticDataMgr.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/BeltMgr.h"
@@ -92,8 +93,6 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     m_Unrated = 0;
     m_Complex = 0;
 
-    //  system tests to determine amounts and types
-
     /* load current data?, start timers, process current data, and create new items, if needed */
 
     m_anomTimer.Start(120000);  // 2 mins?
@@ -107,8 +106,6 @@ void AnomalyMgr::Process() {
         return;
     if (m_anomTimer.Check(false)) {
         /* do something useful here */
-        // check for current sys anoms vs max, and create new if needed.
-        float security = 1.1 - m_system->GetSystemSecurityRating();  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
         if (m_Sigs < 15)  //   hardcode to 15 for now
             CreateAnomaly();
     }
@@ -137,14 +134,27 @@ void AnomalyMgr::SaveAnomaly()
 
 }
 
-void AnomalyMgr::CreateAnomaly() {
+void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
     using namespace EVEDUNG;
 
     // compile data for new system anomaly.
     CosmicSignature sig;
-    sig.sigID = sEntityList.GetAnomalyID();
-    sig.dungeonType = GetAnomalyType();
-    sig.systemID = m_system->GetID();
+        sig.sigID = sEntityList.GetAnomalyID();
+        if (typeID == 0)
+            sig.dungeonType = GetAnomalyType();
+        else  // mission or escalation being called.
+            sig.dungeonType = typeID;
+        sig.systemID = m_system->GetID();
+        // *Mgr will determine name and itemID.
+        sig.sigName = "Test Name Here";
+
+    sig.ownerID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
+
+    GPoint pos = m_gp.GetAnomalyPoint(m_system);
+        sig.x = pos.x;
+        sig.y = pos.y;
+        sig.z = pos.z;
+
     switch(sig.dungeonType) {
         case dunTypes::typeGravimetric: { // 2
             sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly; //dont need probes or skills for anomalies
@@ -180,7 +190,6 @@ void AnomalyMgr::CreateAnomaly() {
         case dunTypes::typeMission:       // 1
         case dunTypes::typeEscalation:   // 9
         // these will use default for now.  revisit later when system matures more and i better understand how to implement them.
-        case dunTypes::typeWormhole:     // 6
         case dunTypes::typeAnomaly:       // 7
         case dunTypes::typeDED_Complex: { // 10
             sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;
@@ -188,26 +197,51 @@ void AnomalyMgr::CreateAnomaly() {
             sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupSignature;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
         } break;
+        case dunTypes::typeWormhole: {    // 6
+            // hand off to WHMgr and exit after return
+            sWHMgr.Create(sig);
+            m_sigs.insert(std::pair<int32, CosmicSignature>(sig.sigItemID, sig));
+            m_mdb.SaveAnomaly(sig);
+            return;
+        }
         case 0:     // error or denied
             return;
     }
 
-    // dungmgr will determine name and itemID.
-    sig.sigName = "Test Name Here";
-    sig.sigItemID = 0;
-    GPoint pos = m_gp.GetAnomalyPoint(m_system);
-    sig.x = pos.x;
-    sig.y = pos.y;
-    sig.z = pos.z;
-    // all anomalies will be created/populated by dungmgr
-    // dungmgr will set location of anomaly, determine flora and fauna, faction, and triggers where applicable
+    // create and spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
+    GPoint pos = GPoint(sig.x, sig.y, sig.z);
+    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
+
+    /** @todo update this to use temp items */
+    InventoryItemRef iRef = m_services.item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
+    if (iRef.get() == nullptr) // make error and exit
+        return;
+    // do this or create/add generic se here?
+    DBSystemDynamicEntity entity;
+        entity.categoryID = iRef->categoryID();
+        entity.groupID = iRef->groupID();
+        entity.itemID = iRef->itemID();
+        entity.itemName = sig.sigName;
+        entity.typeID = sig.sigTypeID;
+        entity.x = pos.x;
+        entity.y = pos.y;
+        entity.z = pos.z;
+        /** @todo  fix these... */
+        entity.ownerID = sig.ownerID;
+        entity.allianceID = 0;  /** @todo  may have to write a method ot check and set this */
+        entity.corporationID = m_spawnMgr->GetCorpID(entity.ownerID);
+    // do the spawn using SystemManager's BuildEntity:
+    /** @todo this is more shit that should NOT be in db */
+    m_system->BuildDynamicEntity(entity);
+    sig.sigItemID = entity.itemID;
+
+    // all anomalies will be created/populated by dungmgr, except WH (handed off to WHMgr above)
+    // dungmgr will determine and call spawn for flora and fauna, faction, and triggers where applicable
     // if npcs, hand off npc control to spawnmgr, which will also handle their triggers
     // if roids, hand off roid control to beltmgr
     m_dungMgr->MakeDungeon(sig); // pass by ref here, so other vars can be set.
-
     // add new sig to sysSigMap
     m_sigs.insert(std::pair<int32, CosmicSignature>(sig.sigItemID, sig)); //key is itemID for ease of removal later
-
     m_mdb.SaveAnomaly(sig);
 }
 

@@ -13,6 +13,7 @@
 
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
+#include "inventory/InventoryItem.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
 
 /*  this class will need to keep track of all WH in universe, what systems they connect to, and how long they last.
@@ -59,5 +60,20 @@ void WormholeMgr::Process() {
     if (m_updateTimer.Check(false)) {
         /* do something useful here */
     }
+}
+
+void WormholeMgr::Create(CosmicSignature& sig)
+{
+    // create and spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
+    GPoint pos = GPoint(sig.x, sig.y, sig.z);
+    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
+
+    /** @todo update this to use temp items */
+    InventoryItemRef iRef = m_services.item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
+    if (iRef.get() == nullptr) // we'll survive...
+        return;
+    sig.sigItemID = iRef->itemID();
+
+    _log(COSMIC_MGR__MESSAGE, "WormholeMgr::Create() - Creating WormHole type %u in system %u", sig.dungeonType, sig.systemID);
 }
 

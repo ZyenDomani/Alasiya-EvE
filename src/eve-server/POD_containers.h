@@ -140,6 +140,7 @@ struct ActiveDungeon {
 struct CosmicSignature {
     std::string sigID;  // this is unique xxx-nnn id displayed in scanner
     std::string sigName;
+    uint32 ownerID;
     uint32 systemID;
     uint32 sigItemID;   // itemID of this entry
     uint8 dungeonType;

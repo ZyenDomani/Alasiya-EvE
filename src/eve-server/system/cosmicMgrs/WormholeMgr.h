@@ -34,6 +34,8 @@ public:
     void Initialize(PyServiceMgr* svc);
     void Process();
 
+    void Create(CosmicSignature& sig);
+
 private:
     ManagerDB* m_mdb;
     ServiceDB* m_sdb;
