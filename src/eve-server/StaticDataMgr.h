@@ -62,6 +62,8 @@ public:
 
     void                GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData);
 
+    uint32              GetCorpID(uint32 factionID);
+    
 protected:
     void                Populate();
 

@@ -10,6 +10,7 @@
 
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
+#include "StaticDataMgr.h"
 #include "npc/NPC.h"
 #include "system/DestinyManager.h"
 #include "system/SystemManager.h"
@@ -590,7 +591,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
     const GPoint warpToPoint(startPos);
     startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from current bubble center
 
-    uint32 corpID = GetCorpID(factionID);
+    uint32 corpID = sDataMgr.GetCorpID(factionID);
 
     RatSpawnGroupVec::iterator cur = m_toSpawn.begin();
 
@@ -681,18 +682,3 @@ void SpawnMgr::RemoveSpawn(uint32 bubbleID, uint32 itemID)
     _log(SPAWN__TRACE, "RemoveSpawn() did not find item %u in bubble %u, out of %u total spawns in the map.", itemID, bubbleID, m_spawns.size());
     return;
 }
-
-uint32 SpawnMgr::GetCorpID(uint32 factionID)
-{
-    // UGLY HACK for rat corp id from faction.
-    // FIXME this will need more work later.  NONE of the npc types have corp/faction info.
-    switch (factionID) {
-        case factionAngel:          return corpAngel;
-        case factionSanshas:        return corpSanshas;
-        case factionBloodRaider:    return corpBloodRaider;
-        case factionGuristas:       return corpGuristas;
-        case factionSerpentis:      return corpSerpentis;
-        case factionRogueDrones:    return corpRogueDrones;
-    }
-}
-

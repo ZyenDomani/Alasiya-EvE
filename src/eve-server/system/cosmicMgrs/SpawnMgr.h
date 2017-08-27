@@ -73,6 +73,7 @@ public:
     bool IsInitialized()                                { return m_initalized; }
     bool IsTimerStarted()                               { return m_mainTimer.Enabled(); }
 
+
 protected:
     bool _FindSpawnForBubble(uint16 itemID);
     void PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRating);
@@ -82,7 +83,6 @@ protected:
     void MoveSpawn();
 
     uint32 GetRandTypeID(uint32 groupID);
-    uint32 GetCorpID(uint32 factionID);
 
     typedef std::vector<NPC*> RatSpawningVec;
     typedef std::vector<SystemBubble*> RatBubbleVec;

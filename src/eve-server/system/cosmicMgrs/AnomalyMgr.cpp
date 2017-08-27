@@ -209,7 +209,6 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
     }
 
     // create and spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
-    GPoint pos = GPoint(sig.x, sig.y, sig.z);
     ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
 
     /** @todo update this to use temp items */
@@ -229,7 +228,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
         /** @todo  fix these... */
         entity.ownerID = sig.ownerID;
         entity.allianceID = 0;  /** @todo  may have to write a method ot check and set this */
-        entity.corporationID = m_spawnMgr->GetCorpID(entity.ownerID);
+        entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
     // do the spawn using SystemManager's BuildEntity:
     /** @todo this is more shit that should NOT be in db */
     m_system->BuildDynamicEntity(entity);

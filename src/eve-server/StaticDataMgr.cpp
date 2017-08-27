@@ -446,6 +446,20 @@ uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID)
     }
 }
 
+uint32 StaticDataMgr::GetCorpID(uint32 factionID)
+{
+    switch (factionID) {
+        case factionAngel:          return corpAngel;
+        case factionSanshas:        return corpSanshas;
+        case factionBloodRaider:    return corpBloodRaider;
+        case factionGuristas:       return corpGuristas;
+        case factionSerpentis:      return corpSerpentis;
+        case factionRogueDrones:    return corpRogueDrones;
+    }
+}
+
+
+
 bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids) {
     auto groupRange = m_oreBySecClass.equal_range(secClass);
     for (auto it = groupRange.first; it != groupRange.second; ++it) {

@@ -31,9 +31,9 @@
  */
 
 WormholeMgr::WormholeMgr()
-:  m_updateTimer(120000)    // arbitrary 2m default
+:  m_updateTimer(120000),    // arbitrary 2m default
+    m_services(nullptr)
 {
-    m_services = nullptr;
     m_updateTimer.Disable();
     m_initalized = false;
 }
@@ -69,7 +69,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
 
     /** @todo update this to use temp items */
-    InventoryItemRef iRef = m_services.item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
+    InventoryItemRef iRef = m_services->item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
     if (iRef.get() == nullptr) // we'll survive...
         return;
     sig.sigItemID = iRef->itemID();
