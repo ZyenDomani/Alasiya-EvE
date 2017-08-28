@@ -143,7 +143,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
         sig.sigID = sEntityList.GetAnomalyID();
         // *Mgr will determine name and itemID.
         sig.sigName = "Test Name Here";
-        sig.ownerID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
+        sig.ownerID = sDataMgr.GetRegionRatFaction(m_system->GetRegionID());
 
         if (typeID == 0)
             sig.dungeonType = GetAnomalyType();
@@ -218,6 +218,8 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
     // add new sig to sysSigMap
     m_sigs.insert(std::pair<int32, CosmicSignature>(sig.sigItemID, sig)); //key is itemID for ease of removal later
     m_mdb.SaveAnomaly(sig);
+
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Creating Signal %s of type %u  in system %u", sig.sigName.c_str(), sig.dungeonType, sig.systemID);
 }
 
 int8 AnomalyMgr::GetAnomalyType()
@@ -226,7 +228,6 @@ int8 AnomalyMgr::GetAnomalyType()
 
     uint8 typeID = MakeRandomInt(2,10); // skip typeMission
     switch(typeID) {
-        case dunTypes::typeAnomaly:    // 7. this is generic
         case dunTypes::typeEscalation:  // 9
         case dunTypes::typeMission: {   // 1
             // cannot create this type.  try again.
@@ -261,10 +262,13 @@ int8 AnomalyMgr::GetAnomalyType()
             ++m_Sigs;
         } break;
         case dunTypes::typeWormhole: {   // 6
-            if (m_WH != 0) // cap at 1 per system, except k162
+            if (m_WH != 0) // cap at 1 per system, except k162...which ISNT created in this system (it's an exit, from WMS)
                 return GetAnomalyType();
 
             ++m_WH;
+            ++m_Sigs;
+        } break;
+        case dunTypes::typeAnomaly: {   // 7. this is noob dungeon, no probe required
             ++m_Sigs;
         } break;
         case dunTypes::typeUnrated: {   // 8

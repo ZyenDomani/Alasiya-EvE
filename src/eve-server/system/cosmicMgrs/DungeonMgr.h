@@ -110,6 +110,9 @@ private:
     SystemManager* m_system;
     PyServiceMgr& m_services;
 
+    int8 GetFactionID(uint32 factionID);
+    int8 GetRandLevel();
+
     bool m_initalized;
 
     std::vector<DunGroupData> m_anomalyItems;

@@ -270,7 +270,7 @@ int main( int argc, char* argv[] )
     /* create the WormholeMgr singleton */
     sLog.Green("       ServerInit", "Starting Wormhole Manager");
     sWHMgr.Initialize(&pyServMgr);
-    
+
     /* create the CivilianMgr singleton */
     sLog.Green("       ServerInit", "Starting Civilian Manager");
     sCivMgr.Initialize(&pyServMgr);
@@ -412,8 +412,6 @@ int main( int argc, char* argv[] )
     sDGM_Salvage_Table.Initialize();
     sLog.Green("       ServerInit", "Dungeon Data");
     sDunDataMgr.Initialize();
-    sLog.Green("       ServerInit", "Spawn Data");
-    sSpawnDataMgr.Initialize();
     sLog.Green("       ServerInit", "Planet Data");
     sPlanetDataMgr.Initialize();
     sLog.Green("       ServerInit", "PI Data");

@@ -228,17 +228,70 @@ void StaticDataMgr::Populate()
         //SELECT regionID, factionID FROM mapRegions
         m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
     }
+    sLog.Cyan("    StaticDataMgr", "%u Region Factions loaded in %.3fms.", m_regions.size(), (GetTimeMSeconds() - start));
 
     res->Reset();
+    start = GetTimeMSeconds();
+    m_db.GetRegionRatFaction(*res);
+    while (res->GetRow(row)) {
+        //SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0
+        m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
+    }
+
+    res->Reset();
+    start = GetTimeMSeconds();
     m_db.GetSkillList(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=skill]
         m_skills.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
-    sLog.Cyan("    StaticDataMgr", "%u misc data sets loaded in %.3fms.", (m_regions.size() + m_skills.size()), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - start));
 
+    m_db.GetFactionGroups(*res);
+    DBQueryResult* res2 = new DBQueryResult();
+    DBResultRow row2;
+    RatFactionGroups factionGroup;
+    while (res->GetRow(row)) {
+        //SELECT shipClass, groupID, factionID FROM roidRatClassGroup
+        factionGroup.shipClass = row.GetInt(0);
+        factionGroup.groupID = row.GetInt(1);
+        m_groups.emplace(row.GetInt(2), factionGroup);
 
+        m_db.GetGroupTypeIDs(row.GetInt(1), *res2);
+        while (res2->GetRow(row2)) {
+            //SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID LIMIT 10
+            m_types.emplace(row.GetInt(1), row2.GetInt(0));
+        }
+    }
 
+    res->Reset();
+    m_db.GetSpawnClasses(*res);
+    RatSpawnClass spawnClass;
+    while (res->GetRow(row)) {
+        //SELECT type, sub, f, d, c, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass
+        spawnClass.type = row.GetInt(0);
+        spawnClass.sub = row.GetInt(1);
+        spawnClass.f = row.GetInt(2);
+        spawnClass.d = row.GetInt(3);
+        spawnClass.c = row.GetInt(4);
+        spawnClass.bc = row.GetInt(5);
+        spawnClass.bs = row.GetInt(6);
+        spawnClass.h = row.GetInt(7);
+        spawnClass.o = row.GetInt(8);
+        spawnClass.cf = row.GetInt(9);
+        spawnClass.cd = row.GetInt(10);
+        spawnClass.cc = row.GetInt(11);
+        spawnClass.cbc = row.GetInt(12);
+        spawnClass.cbs = row.GetInt(13);
+        m_classes.emplace(row.GetInt(0), spawnClass);
+    }
+
+    //cleanup
+    SafeDelete(res);
+    SafeDelete(res2);
+
+    sLog.Cyan("     SpawnDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fms.",
+              m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_regions.size(), (GetTimeMSeconds() - start));
     //cleanup
     SafeDelete(res);
 }
@@ -399,13 +452,21 @@ bool StaticDataMgr::GetStationInfo(uint32 stationID, StationData& data)
     return true;
 }
 
-uint16 StaticDataMgr::GetRegionFaction(uint32 regionID)
+uint32 StaticDataMgr::GetRegionFaction(uint32 regionID)
 {
     std::map<uint32, uint32>::const_iterator itr = m_regions.find(regionID);
     if (itr != m_regions.end())
         return (*itr).second;
     else
         _log(DATABASE__MESSAGE, "Failed to query faction for region %u: region not found.", regionID);
+    return 0;
+}
+
+uint32 StaticDataMgr::GetRegionRatFaction(uint32 regionID)
+{
+    std::map<uint32, uint32>::iterator itr = m_ratRegions.find(regionID);
+    if (itr != m_ratRegions.end())
+        return (*itr).second;
     return 0;
 }
 
@@ -455,6 +516,30 @@ uint32 StaticDataMgr::GetCorpID(uint32 factionID)
         case factionGuristas:       return corpGuristas;
         case factionSerpentis:      return corpSerpentis;
         case factionRogueDrones:    return corpRogueDrones;
+    }
+}
+
+std::string StaticDataMgr::GetCorpName(uint32 corpID)
+{
+    switch (corpID) {
+        case corpAngel:          return "Angel";
+        case corpSanshas:        return "Sansha";
+        case corpBloodRaider:    return "Blood";
+        case corpGuristas:       return "Guristas";
+        case corpSerpentis:      return "Serpentis";
+        case corpRogueDrones:    return "Drone";
+    }
+}
+
+std::string StaticDataMgr::GetFactionName(uint32 factionID)
+{
+    switch (factionID) {
+        case factionAngel:          return "Angel";
+        case factionSanshas:        return "Sansha";
+        case factionBloodRaider:    return "Blood";
+        case factionGuristas:       return "Guristas";
+        case factionSerpentis:      return "Serpentis";
+        case factionRogueDrones:    return "Drone";
     }
 }
 

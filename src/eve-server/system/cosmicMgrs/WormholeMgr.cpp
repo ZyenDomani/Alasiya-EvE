@@ -64,9 +64,10 @@ void WormholeMgr::Process() {
 
 void WormholeMgr::Create(CosmicSignature& sig)
 {
+    sig.sigName = "WormHole K162 (deco only)";
     // create and spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
     GPoint pos = GPoint(sig.x, sig.y, sig.z);
-    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
+    ItemData iData(30831, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
 
     /** @todo update this to use temp items */
     InventoryItemRef iRef = m_services->item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */

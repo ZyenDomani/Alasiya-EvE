@@ -183,9 +183,13 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         if (IsCorp(entry.ownerID)) {
             entry.corporationID = entry.ownerID;
             if (sDatabase.RunQuery(res2, "SELECT allianceID, warFactionID FROM corporation WHERE corporationID = %u", entry.ownerID)) {
-                res2.GetRow(row2);
-                entry.allianceID = row2.GetUInt(0);
-                entry.factionID = row2.GetUInt(1);
+                if (res2.GetRow(row2)) {
+                    entry.allianceID = row2.GetUInt(0);
+                    entry.factionID = row2.GetUInt(1);
+                } else {
+                    entry.allianceID = 0;
+                    entry.factionID = 0;
+                }
             } else {
                 entry.allianceID = 0;
                 entry.factionID = 0;
@@ -197,10 +201,15 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
                                " LEFT JOIN corporation AS co USING (corporationID)"
                                " WHERE c.characterID = %u", entry.ownerID))
             {
-                res2.GetRow(row2);
-                entry.corporationID = row2.GetUInt(0);
-                entry.allianceID = row2.GetUInt(1);
-                entry.factionID = row2.GetUInt(2);
+                if (res2.GetRow(row2)) {
+                    entry.corporationID = row2.GetUInt(0);
+                    entry.allianceID = row2.GetUInt(1);
+                    entry.factionID = row2.GetUInt(2);
+                } else {
+                    entry.corporationID = 0;
+                    entry.allianceID = 0;
+                    entry.factionID = 0;
+                }
             } else {
                 entry.corporationID = 0;
                 entry.allianceID = 0;

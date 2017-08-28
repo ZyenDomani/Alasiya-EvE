@@ -223,7 +223,16 @@ bool DungeonMgr::Create(uint16 templateID, CosmicSignature& sig)
     }
 
     uint32 typeID = itr->second.dunTypeID;
-    sig.sigName = itr->second.dunName.c_str();
+
+    if ((sig.dungeonType == EVEDUNG::dunTypes::typeMagnetometric)   //3
+        or (sig.dungeonType == EVEDUNG::dunTypes::typeRadar)        //4
+        or (sig.dungeonType == EVEDUNG::dunTypes::typeLadar)        //5
+        or (sig.ownerID == factionRogueDrones)) {
+            sig.sigName = itr->second.dunName;
+        } else {
+            sig.sigName = sDataMgr.GetFactionName((sig.ownerID));
+            sig.sigName += itr->second.dunName;
+        }
 
     GPoint pos(sig.x, sig.y, sig.z);
 
@@ -348,52 +357,132 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
         type = 3;
     else if (secRating < 0.6)
         type = 2;
-    int8 subType = 1;
+
     float level = 1;
+    int8 subType = 1;
+    int8 factionID = GetFactionID(sig.ownerID);
 
     switch (sig.dungeonType) {
-        case dunTypes::typeAnomaly: {
-            subType = MakeRandomInt(1,5);
+        case dunTypes::typeGravimetric: {       // 2
+            if (type == 1) {
+                subType = MakeRandomInt(0,5);
+            } else if (type == 2) {
+                subType = MakeRandomInt(0,3);
+            } else if (type == 3) {
+                subType = MakeRandomInt(0,2);
+            }
+
             level = MakeRandomFloat();
-            if (level < 0.08)
-                level = 5;
-            else if (level < 0.15)
-                level = 4;
-            else if (level < 0.20)
+            if (level < 0.1) {
                 level = 3;
-            else if (level < 0.40)
+            } else if (level < 0.3) {
                 level = 2;
+            } else {
+                level = 1;
+            }
         } break;
-        case dunTypes::typeMagnetometric: {
+        case dunTypes::typeMagnetometric: {     // 3
             subType = MakeRandomInt(1,8);
-            if (IsEven(MakeRandomInt(0,10)))
-                level = 2;
+            if (type == 3) {
+                level = MakeRandomFloat();
+                if (level < 0.1) {
+                    level = 3;
+                    subType = MakeRandomInt(1,7);
+                    factionID = 0;
+                } else if (level < 0.3) {
+                    level = 2;
+                    subType = MakeRandomInt(1,6);
+                } else
+                    level = 1;
+            } else {
+                if (IsEven(MakeRandomInt(0,10)))
+                    level = 2;
+            }
         } break;
-        case dunTypes::typeRadar: {
+        case dunTypes::typeRadar: {             // 4
             subType = MakeRandomInt(1,8);
-
+            if (type == 3)
+                if (IsEven(MakeRandomInt(0,10))) {
+                    level = 2;
+                    factionID = 0;
+                }
         } break;
-        case dunTypes::typeGravimetric: {
+        case dunTypes::typeLadar: {             // 5
+            subType = MakeRandomInt(1,8);
+        } break;
+        case dunTypes::typeAnomaly: {           // 7
             subType = MakeRandomInt(1,5);
-
+            if (type == 1) {
+                if (subType == 1) {
+                    level = GetRandLevel();
+                }
+            } else if (type ==2) {
+                if (subType == 2) {
+                    level = GetRandLevel();
+                } else if (subType == 4) {
+                    level = GetRandLevel();
+                }
+            } else if (type == 3) {
+                if (subType == 1) {
+                    level = GetRandLevel();
+                } else if (subType == 3) {
+                    level = GetRandLevel();
+                }
+            }
         } break;
-        case dunTypes::typeLadar: {
-            subType = MakeRandomInt(1,8);
-
-        } break;
-        case dunTypes::typeUnrated: {
-            subType = MakeRandomInt(1,5);
-
+        case dunTypes::typeUnrated: {           // 8
+            if (factionID == 6)
+                subType = MakeRandomInt(1,3);
+            else
+                subType = MakeRandomInt(1,5);
         } break;
     }
 
     /* templateID format.  ABCDE
      *       A = sitetype - mission, grav, magn, ldar, radar, anom, unrated, ded, escalation
      *       B = type - anomaly security: 1=hi, 2=lo, 3=null, 4=mid, mission misc: 1 to 9
-     *       C = subtype  - grav: 0 to 5, anomaly: 1 to 5, missions: 1 to 9, mag: 1 to 8, radar: 1 to 8
-     *       D = level - anomaly: 1 to 5, grav: 1 to 3, radar: type 3, 2 levels
+     *       C = subtype  - 2: 0 to 5, 7: 1 to 5, 1: 1 to 9, 3: 1 to 8, 5: 1 to 8
+     *       D = level - 7: 1 to 5, 2: 1 to 3, 4: type 3, 2 levels
      *       E = faction - Anomaly: 1=Serpentis, 2=Angel Cartel, 3=Blood Raider Covenant, 4=Guristas Pirates, 5=Sansha's Nation, and 6=Rogue Drones: Missions add the 4 races
      */
+
+
+    uint16 templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + factionID;
+
+    return Create(templateID, sig);
+}
+
+int8 DungeonMgr::GetFactionID(uint32 factionID)
+{
+    switch (factionID) {
+        case factionAngel:          return 2;
+        case factionSanshas:        return 5;
+        case factionBloodRaider:    return 3;
+        case factionGuristas:       return 4;
+        case factionSerpentis:      return 1;
+        case factionRogueDrones:    return 6;
+        // these arent gonna fit...
+        case factionAmarr:          return 6;
+        case factionAmmatar:        return 6;
+        case factionCaldari:        return 6;
+        case factionGallente:       return 6;
+        case factionMinmatar:       return 6;
+    }
+}
+
+int8 DungeonMgr::GetRandLevel()
+{
+    float level = MakeRandomFloat();
+    if (level < 0.15)
+        return 4;
+    else if (level < 0.20)
+        return 3;
+    else if (level < 0.40)
+        return 2;
+    else
+        return 1;
+}
+
 
     /*
     In player-owned sovereign nullsec, using Ore Prospecting Arrays,
@@ -403,8 +492,3 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
     (23540,' Enormous Asteroid Cluster ',0,2,0,29,0,0,0),
     (23550,'Colossal Asteroid Cluster',0,2,0,29,0,0,0),
     */
-    uint16 templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + 0;
-
-    return Create(templateID, sig);
-}
-

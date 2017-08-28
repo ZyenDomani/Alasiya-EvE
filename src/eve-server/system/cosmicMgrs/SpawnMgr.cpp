@@ -18,92 +18,6 @@
 #include "system/cosmicMgrs/SpawnMgr.h"
 
 
-SpawnDataMgr::SpawnDataMgr()
-{
-}
-
-SpawnDataMgr::~SpawnDataMgr()
-{
-    m_groups.clear();
-    m_classes.clear();
-    m_types.clear();
-    m_regions.clear();
-}
-
-int SpawnDataMgr::Initialize()
-{
-    m_db.DeleteSpawnedRats();
-    _Populate();
-    return 1;
-}
-
-void SpawnDataMgr::_Populate()
-{
-    double start = GetTimeMSeconds();
-    DBQueryResult* res = new DBQueryResult();
-    DBQueryResult* res2 = new DBQueryResult();
-    DBResultRow row, row2;
-
-    m_db.GetRegionRatFaction(*res);
-    while (res->GetRow(row)) {
-        //SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0
-        m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
-    }
-
-    res->Reset();
-    m_db.GetFactionGroups(*res);
-    RatFactionGroups factionGroup;
-    while (res->GetRow(row)) {
-        //SELECT shipClass, groupID, factionID FROM roidRatClassGroup
-        factionGroup.shipClass = row.GetInt(0);
-        factionGroup.groupID = row.GetInt(1);
-        m_groups.emplace(row.GetInt(2), factionGroup);
-
-        m_db.GetGroupTypeIDs(row.GetInt(1), *res2);
-        while (res2->GetRow(row2)) {
-            //SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID LIMIT 10
-            m_types.emplace(row.GetInt(1), row2.GetInt(0));
-        }
-    }
-
-    res->Reset();
-    m_db.GetSpawnClasses(*res);
-    RatSpawnClass spawnClass;
-    while (res->GetRow(row)) {
-        //SELECT type, sub, f, d, c, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass
-        spawnClass.type = row.GetInt(0);
-        spawnClass.sub = row.GetInt(1);
-        spawnClass.f = row.GetInt(2);
-        spawnClass.d = row.GetInt(3);
-        spawnClass.c = row.GetInt(4);
-        spawnClass.bc = row.GetInt(5);
-        spawnClass.bs = row.GetInt(6);
-        spawnClass.h = row.GetInt(7);
-        spawnClass.o = row.GetInt(8);
-        spawnClass.cf = row.GetInt(9);
-        spawnClass.cd = row.GetInt(10);
-        spawnClass.cc = row.GetInt(11);
-        spawnClass.cbc = row.GetInt(12);
-        spawnClass.cbs = row.GetInt(13);
-        m_classes.emplace(row.GetInt(0), spawnClass);
-    }
-
-    //cleanup
-    SafeDelete(res);
-    SafeDelete(res2);
-
-    sLog.Cyan("     SpawnDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fms.",
-              m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_regions.size(), (GetTimeMSeconds() - start));
-}
-
-uint32 SpawnDataMgr::GetRegionFaction(uint32 regionID)
-{
-    std::map<uint32, uint32>::iterator itr = m_regions.find(regionID);
-    if (itr != m_regions.end())
-        return (*itr).second;
-    return 0;
-}
-
 /*
  SPAWN__ERROR
  SPAWN__WARNING
@@ -192,8 +106,8 @@ void SpawnMgr::Process() {
     if (m_groupTimer.Enabled()) {
         if (m_groupTimer.Check()) {
             bool killTimer = true;
-            RatBubbleVec::iterator curBubbleItr = m_bubbles.begin();
-            while (curBubbleItr != m_bubbles.end()) {
+            RatBubbleVec::iterator curBubbleItr = m_bubbles.begin(), end = m_bubbles.end();
+            while (curBubbleItr != end) {
                 auto curSpawnItr = m_spawns.equal_range((*curBubbleItr)->GetID());
                 for (auto it = curSpawnItr.first; it != curSpawnItr.second; ++it) {
                     if (it->second.enabled) {
@@ -216,7 +130,7 @@ void SpawnMgr::Process() {
 
             if (killTimer) {
                 m_groupTimer.Disable();
-                _log(SPAWN__MESSAGE, "SpawnMgr::Process() - Spawn Groups full (or no spawns) for %s(%u).  Group Timer disabled.",
+                _log(SPAWN__MESSAGE, "SpawnMgr::Process() - Spawn Groups full (or no spawns) for %s(%u).  Group Timer disabled.", \
                      m_system->GetName().c_str(), m_system->GetID());
             }
         }
@@ -244,8 +158,9 @@ void SpawnMgr::StartMainTimer()
 }
 
 void SpawnMgr::SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID)
-{   // NOTE this DOES NOT remove entity from system or bubble.  user must do this BEFORE calling.
-	if (!pSysBubble) //hack for null sys bubble.
+{
+    // NOTE this DOES NOT remove entity from system or bubble.  user must do this BEFORE calling.
+    if (pSysBubble == nullptr)
         return;
     _log(SPAWN__DEPOP, "SpawnMgr::SpawnDepoped - NPC %u removed from system.  DePop requested", itemID);
     // delete this spawn item from SpawnEntry in this bubble.
@@ -272,6 +187,8 @@ void SpawnMgr::SpawnPopped(uint32 itemID)
 void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
     if (!m_enabled)
+        return;
+    if (pSysBubble == nullptr)
         return;
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
@@ -312,19 +229,19 @@ struct SpawnEntry { // notes for me while creating/writing/testing
 */
 void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
+    if (pSysBubble == nullptr)
+        return;
     // get faction for this region
     uint32 factionID = factionRogueDrones; // default to rogue drones.  this is my internal rogue drone factionID.
-    if (MakeRandomFloat() > 0.15) {
-        // random chance for ANY beltspawn to be rogue drone...if chance < 0.15, rat = drone.
-        factionID = sSpawnDataMgr.GetRegionFaction(regionID);
-    }
     if (sConfig.npc.RatFaction)
         factionID = sConfig.npc.RatFaction;
+    else if (MakeRandomFloat() > 0.15) // random chance for ANY beltspawn to be rogue drone...if chance < 0.15, rat = drone.
+        factionID = sDataMgr.GetRegionFaction(regionID);
 
     _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - factionID is %u for region %u. (config set %s)", factionID, regionID, (sConfig.npc.RatFaction?"true":"false"));
 
     // get faction's ship typeclass and groupID map
-    auto groupRange = sSpawnDataMgr.m_groups.equal_range(factionID);
+    auto groupRange = sDataMgr.m_groups.equal_range(factionID);
     for (auto it = groupRange.first; it != groupRange.second; ++it) {
         m_factionGroups.insert(std::pair<uint8, uint32>(it->second.shipClass, it->second.groupID));
     }
@@ -344,19 +261,15 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
         //NOTE  random checks here are for TESTING only....all rates are high.  make config option later
         double rand = MakeRandomFloat();
         if (rand < 0.1)  //check for officer spawn
-            if (factionID == factionRogueDrones)   //but not for drones.  they dont have officers..make this the rare drone hauler spawn
-                type = 0; //8
-            else
+            if (factionID != factionRogueDrones)   //but not for drones.  they dont have officers..make this the rare drone hauler spawn
                 type = 10;
         else if (rand < 0.15) //check for commander spawn
             type = 9;
         else if (rand < 0.25) //check for hauler spawn   TODO this needs work.  haulers are subclassed by size in db under same groupID.
-            if (factionID == factionRogueDrones)    // hauler spawn for drones already set above...negate this one.
-                type = 0;
-            else
+            if (factionID != factionRogueDrones)    // hauler spawn for drones already set above...negate this one.
                 type = 8;
     }
-    if ((!type) && pSysBubble->IsBelt()) {  // gonna be a 'regular' trusec-based spawn in a belt.
+    if ((type == 0) && pSysBubble->IsBelt()) {  // gonna be a 'regular' trusec-based spawn in a belt.
         if (secRating < -0.8)  type = 7;
         else if (secRating < -0.5) type = 6;
         else if (secRating < -0.2) type = 5;
@@ -370,7 +283,7 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
 
     RatSpawnClassVec spawnEntry;
     RatSpawnClass spawnClass;
-    auto classRange = sSpawnDataMgr.m_classes.equal_range(type);
+    auto classRange = sDataMgr.m_classes.equal_range(type);
     for (auto it = classRange.first; it != classRange.second; ++it) {
         spawnClass.type = it->second.type;
         spawnClass.sub = it->second.sub;
@@ -414,71 +327,71 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
 
     // get typeIDs to spawn based on info in m_factionGroups and ship designators and put into Spawn Vector
     SpawnGroup toSpawn;
-    if (f) {
+    if (f > 0) {
         toSpawn.typeID = GetRandTypeID(1);
         toSpawn.quantity = f;
         m_toSpawn.push_back(toSpawn);
     }
-    if (d) {
+    if (d > 0) {
         toSpawn.typeID = GetRandTypeID(2);
         toSpawn.quantity = d;
         m_toSpawn.push_back(toSpawn);
     }
-    if (c) {
+    if (c > 0) {
         toSpawn.typeID = GetRandTypeID(3);
         toSpawn.quantity = c;
         m_toSpawn.push_back(toSpawn);
     }
-    if (bc) {
+    if (bc > 0) {
         toSpawn.typeID = GetRandTypeID(4);
         toSpawn.quantity = bc;
         m_toSpawn.push_back(toSpawn);
     }
-    if (bs) {
+    if (bs > 0) {
         toSpawn.typeID = GetRandTypeID(5);
         toSpawn.quantity = bs;
         m_toSpawn.push_back(toSpawn);
     }
-    if (h) {
+    if (h > 0) {
         toSpawn.typeID = GetRandTypeID(6);
         toSpawn.quantity = h;
         m_toSpawn.push_back(toSpawn);
     }
-    if ((o) && (factionID != factionRogueDrones)) {    //drones do NOT have officers (internal type 7).
+    if ((o > 0) && (factionID != factionRogueDrones)) {    //drones do NOT have officers (internal type 7).
         toSpawn.typeID = GetRandTypeID(7);
         toSpawn.quantity = o;
         m_toSpawn.push_back(toSpawn);
     }
-    if (cf) {
+    if (cf > 0) {
         toSpawn.typeID = GetRandTypeID(8);
         toSpawn.quantity = cf;
         m_toSpawn.push_back(toSpawn);
     }
-    if (cd) {
+    if (cd > 0) {
         toSpawn.typeID = GetRandTypeID(9);
         toSpawn.quantity = cd;
         m_toSpawn.push_back(toSpawn);
     }
-    if (cc) {
+    if (cc > 0) {
         toSpawn.typeID = GetRandTypeID(10);
         toSpawn.quantity = cc;
         m_toSpawn.push_back(toSpawn);
     }
-    if (cbc) {
+    if (cbc > 0) {
         toSpawn.typeID = GetRandTypeID(11);
         toSpawn.quantity = cbc;
         m_toSpawn.push_back(toSpawn);
     }
-    if (cbs) {
+    if (cbs > 0) {
         toSpawn.typeID = GetRandTypeID(12);
         toSpawn.quantity = cbs;
         m_toSpawn.push_back(toSpawn);
     }
 
-    if ((factionID == factionRogueDrones) && ((bc) || (bs))) {
+    if ((factionID == factionRogueDrones) and ((bc > 0) or (bs > 0))) {
         // spawn 4 drone swarm-class ships for each bc/bs
         toSpawn.typeID = GetRandTypeID(7);
-        toSpawn.quantity = ((bs ? bs : bc) *4);
+        toSpawn.quantity = ((bs > 0 ? bs : bc) *4);
         m_toSpawn.push_back(toSpawn);
     }
 
@@ -494,19 +407,18 @@ uint32 SpawnMgr::GetRandTypeID(uint32 shipClass)
     // get rat faction's groupID based on previously selected shipClass
     uint32 groupID = 0;
     RatFactionGroupsMap::iterator itr = m_factionGroups.find(shipClass);
-    if (itr != m_factionGroups.end()) {
+    if (itr != m_factionGroups.end())
         groupID = itr->second;
-    } else {
+    else {
         _log(SPAWN__ERROR, "SpawnMgr::GetRandTypeID() - Failed to find groupID for shipClass %u.", shipClass);
         return 0;
     }
    //get typeIDs for this groupID from m_types and return only one for spawning
    /** @todo  will need to check typeIDs here for higher-level ships in hi-sec systems */
     std::vector<uint32> typeVec;
-    auto typeRange = sSpawnDataMgr.m_types.equal_range(groupID); //groupID is key, typeID is value
-    for (auto it = typeRange.first; it != typeRange.second; ++it) {
+    auto typeRange = sDataMgr.m_types.equal_range(groupID); //groupID is key, typeID is value
+    for (auto it = typeRange.first; it != typeRange.second; ++it)
         typeVec.push_back(it->second);
-    }
 
     return typeVec.at(MakeRandomInt(0, typeVec.size()));
 }
@@ -533,29 +445,25 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
     _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
                 spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
                 spawnEntry.factionID, spawnEntry.number, spawnEntry.total);
-    ItemData idata(
-        spawnEntry.typeID,
-        spawnEntry.corpID,
-        m_system->GetID(),
-        flagAutoFit,
-        spawnEntry.factionID,  // set ownerID to factionID for rats
-        "BeltRat"
-    );
-
-    InventoryItemRef i = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db.
-    if (!i) {
+    /*
+     *        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
+     *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
+     */
+    ItemData idata(spawnEntry.typeID, spawnEntry.corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
+    InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db.
+    if (iRef.get() == nullptr) {
         _log(SPAWN__ERROR, "Failed to spawn item type %u.", spawnEntry.typeID);
         return;
     }
 
-    _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %s(%u)", i->itemName().c_str(), i->itemID());
+    _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %s(%u)", iRef->itemName().c_str(), iRef->itemID());
 
     FactionData data;
         data.allianceID = 0;
         data.corporationID = spawnEntry.corpID;
         data.factionID = spawnEntry.factionID;
         data.ownerID = spawnEntry.corpID;
-    NPC* npc = new NPC(i, m_services, m_system, data, this);
+    NPC* npc = new NPC(iRef, m_services, m_system, data, this);
 
     // NPC::Load() no longer does anything.  it is still here in case we find a new use for it.
     if (!npc->Load()) {
@@ -567,7 +475,6 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
     //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
     m_system->AddNPC(npc);
     startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 10) *1000);
-    npc->DestinyMgr()->SetPosition(startPos);
     npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
 
     spawnEntry.enabled = false;
@@ -609,15 +516,15 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
         ItemData idata(cur->typeID, corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
 
         for (uint8 x=0; x!=cur->quantity; ++x) {
-            InventoryItemRef i = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db....or save ALL the spawn shit
-            if (i.get() == nullptr) {
+            InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db....or save ALL the spawn shit
+            if (iRef.get() == nullptr) {
                 _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur->typeID);
                 continue;
             }
 
-            _log(SPAWN__POP, "SpawnMgr::MakeSpawn - Spawning NPC %u", i->itemID());
+            _log(SPAWN__POP, "SpawnMgr::MakeSpawn - Spawning NPC %u", iRef->itemID());
 
-            npc = new NPC(i, m_services, m_system, data, this);
+            npc = new NPC(iRef, m_services, m_system, data, this);
 
             // NPC::Load() no longer does anything.  it is still here in case we find a new use for it.
             if (!npc->Load()) {
@@ -632,8 +539,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
             npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
 
             se.enabled = false;
-            se.groupID = i->type().groupID();
-            se.itemID = i->itemID();
+            se.groupID = iRef->type().groupID();
+            se.itemID = iRef->itemID();
             se.total = cur->quantity;
             se.number = x;
             se.typeID = cur->typeID;

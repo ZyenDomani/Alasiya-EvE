@@ -15,40 +15,6 @@
 #include <unordered_map>
 #include "system/cosmicMgrs/ManagerDB.h"
 
-// this class is a singleton object to have a common place for all spawn data
-class SpawnDataMgr
-: public Singleton< SpawnDataMgr >
-{
-public:
-    SpawnDataMgr();
-    virtual ~SpawnDataMgr();
-
-    // Initializes the Table:
-    int Initialize();
-
-    uint32 GetRegionFaction(uint32 regionID);
-
-protected:
-    void _Populate();
-
-    typedef std::map<uint32, uint32> RegionFactionsDef;  //regionID is key, factionID is value
-    typedef std::unordered_multimap<uint32, uint32> RatGroupTypesDef;    //groupID is key, typeID is value
-    typedef std::unordered_multimap<uint8, RatSpawnClass> RatSpawnClassDef;  // type is key
-    typedef std::unordered_multimap<uint32, RatFactionGroups> RatFactionGroupsDef;    //factionID is key
-
-public:
-    RatGroupTypesDef m_types;       // this unordered_multimap holds the invType ids for rats, keyed by rat groupID
-    RatSpawnClassDef m_classes;     // this unordered_multimap holds the spawn type data for individual spawns, keyed by type
-    RegionFactionsDef m_regions;    // this simple map holds regionID/factionID data, keyed by regionID
-    RatFactionGroupsDef m_groups;   // this unordered_multimap holds the groupIDs for each faction, keyed by factionID
-
-private:
-    ManagerDB m_db;
-};
-
-#define sSpawnDataMgr \
-    ( SpawnDataMgr::get() )
-
 class NPC;
 class PyServiceMgr;
 class SystemManager;
