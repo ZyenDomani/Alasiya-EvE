@@ -235,7 +235,7 @@ void StaticDataMgr::Populate()
     m_db.GetRegionRatFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0
-        m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
+        m_ratRegions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
     }
 
     res->Reset();
@@ -247,6 +247,8 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%u skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - start));
 
+    res->Reset();
+    start = GetTimeMSeconds();
     m_db.GetFactionGroups(*res);
     DBQueryResult* res2 = new DBQueryResult();
     DBResultRow row2;
@@ -286,14 +288,12 @@ void StaticDataMgr::Populate()
         m_classes.emplace(row.GetInt(0), spawnClass);
     }
 
+    sLog.Cyan("    StaticDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fms.",
+              m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_ratRegions.size(), (GetTimeMSeconds() - start));
+
     //cleanup
     SafeDelete(res);
     SafeDelete(res2);
-
-    sLog.Cyan("     SpawnDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fms.",
-              m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_regions.size(), (GetTimeMSeconds() - start));
-    //cleanup
-    SafeDelete(res);
 }
 
 void StaticDataMgr::GetInfo()

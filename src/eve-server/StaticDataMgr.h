@@ -72,11 +72,6 @@ protected:
 
     std::vector<uint16> m_items;
 
-    /* spawn data */
-    std::unordered_multimap<uint32, uint32>             m_types;            // ratGroupID/ratTypeID
-    std::unordered_multimap<uint8, RatSpawnClass>       m_classes;          // spawnType/data
-    std::unordered_multimap<uint32, RatFactionGroups>   m_groups;           // factionID/data
-
 private:
     MapDB               m_mdb;
     ManagerDB           m_db;
@@ -98,6 +93,13 @@ private:
 
     std::unordered_multimap<uint16, DmgTypeAttribute>   m_typeAttrMap;      // typeID/data<attrID, value>
 
+public:
+    /* spawn data */
+    std::unordered_multimap<uint32, uint32>             m_types;            // ratGroupID/ratTypeID
+    std::unordered_multimap<uint8, RatSpawnClass>       m_classes;          // spawnType/data
+    std::unordered_multimap<uint32, RatFactionGroups>   m_groups;           // factionID/data
+    
+private:
     std::map<uint32, PyObject*>                         m_stationPyData;    // stationID/data
 
     /* map data */
