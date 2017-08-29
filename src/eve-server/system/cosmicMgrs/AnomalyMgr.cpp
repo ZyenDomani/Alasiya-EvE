@@ -59,6 +59,16 @@ m_anomTimer(10000)
     m_spawnTimer.Disable(); // is this needed?
 }
 
+AnomalyMgr::~AnomalyMgr()
+{
+    InventoryItemRef iRef;
+    for (auto sig : m_sigByItemID) {
+        iRef = m_services.item_factory->GetItem(sig.first);
+        m_system->RemoveItemFromInventory(iRef);
+        iRef->Delete();
+    }
+}
+
 bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr) {
     if (!sConfig.cosmic.AnomalyEnabled) {
          _log(COSMIC_MGR__MESSAGE, "Anomaly System Disabled.  Not Initalizing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());

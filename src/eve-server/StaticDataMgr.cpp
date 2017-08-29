@@ -288,7 +288,7 @@ void StaticDataMgr::Populate()
         m_classes.emplace(row.GetInt(0), spawnClass);
     }
 
-    sLog.Cyan("    StaticDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fms.",
+    sLog.Cyan("    StaticDataMgr", "%u Rat Groups in %u buckets, %u Rat Classes in %u buckets, and %u Rat Types for %u regions loaded in %.3fms.",
               m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_ratRegions.size(), (GetTimeMSeconds() - start));
 
 

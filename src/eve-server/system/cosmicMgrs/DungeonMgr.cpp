@@ -209,10 +209,10 @@ void DungeonMgr::Load()
     } */
 }
 
-bool DungeonMgr::Create(uint16 templateID, CosmicSignature& sig)
+bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
 {
     // get dungeon template
-    std::unordered_multimap<uint16, DunTemplate>::iterator itr = sDunDataMgr.templates.find(templateID);
+    std::unordered_multimap<uint32, DunTemplate>::iterator itr = sDunDataMgr.templates.find(templateID);
     if (itr == sDunDataMgr.templates.end()) {
         _log(COSMIC_MGR__ERROR, "DungeonMgr::Create() - template %u not found.", templateID);
         return false;
@@ -474,8 +474,8 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 
 
     _log(COSMIC_MGR__MESSAGE, "DungeonMgr::MakeDungeon() - Calling Create on type %u", sig.dungeonType);
-    
-    uint16 templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + factionID;
+
+    uint32 templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + factionID;
 
     return Create(templateID, sig);
 }

@@ -807,7 +807,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     }
 
     SaveItem();
-    if (IsNPCCorp(m_ownerID))
+    if (IsNPCCorp(m_ownerID) or IsFaction(m_ownerID))
         return;
 
     //notify about the changes.

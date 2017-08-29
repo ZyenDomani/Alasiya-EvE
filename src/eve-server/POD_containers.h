@@ -128,7 +128,7 @@ struct OreTypeChance {
 struct ActiveDungeon {
     uint32 systemID;
     uint32 dunItemID;
-    uint16 dunTemplateID;
+    uint32 dunTemplateID;
     uint64 dunExpiryTime;
     uint8 state;
     double x;
