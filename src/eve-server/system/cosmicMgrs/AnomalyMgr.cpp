@@ -229,7 +229,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
             m_sigByItemID.insert(std::pair<uint32, CosmicSignature>(sig.sigItemID, sig));
             //m_mdb.SaveAnomaly(sig);
             return;
-        }
+        } break;
         case 0:     // error or denied
             return;
     }
