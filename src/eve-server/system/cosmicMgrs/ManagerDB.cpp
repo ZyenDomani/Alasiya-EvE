@@ -285,6 +285,11 @@ void ManagerDB::SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& ro
     }
 }
 
+void ManagerDB::GetWHSystemClass(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT locationID, wormholeClassID FROM mapLocationWormholeClasses"))
+        _log(DATABASE__ERROR, "Error in GetWHSystemClass query: %s", res.error.c_str());
+}
 
 void ManagerDB::GetDunGroupData(DBQueryResult& res)
 {

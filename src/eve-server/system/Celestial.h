@@ -116,9 +116,7 @@ protected:
  */
 class PyServiceMgr;
 
-class CelestialSE
-: public ItemSystemEntity
-{
+class CelestialSE : public ItemSystemEntity {
 public:
     CelestialSE(CelestialObjectRef self, PyServiceMgr &services, SystemManager* system);
     virtual ~CelestialSE()                              { /* Do nothing here */ }
@@ -131,8 +129,40 @@ public:
     /* SystemEntity interface */
     virtual void MakeDamageState(DoDestinyDamageState &into);
 
-protected:
+};
 
+class AnomalySE : public CelestialSE {
+public:
+    AnomalySE(CelestialObjectRef self, PyServiceMgr &services, SystemManager* system);
+    virtual ~AnomalySE()                                { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual AnomalySE*          GetAnomalySE()          { return this; }
+    /* class type tests. */
+    /* Base */
+    virtual bool                IsAnomalySE()           { return true; }
+
+    /* SystemEntity interface */
+    virtual void                EncodeDestiny( Buffer& into );
+
+    virtual PyDict*             MakeSlimItem();
+};
+
+class WormholeSE : public CelestialSE {
+public:
+    WormholeSE(CelestialObjectRef self, PyServiceMgr& services, SystemManager* system);
+    virtual ~WormholeSE()                               { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual WormholeSE*          GetWormholeSE()        { return this; }
+    /* class type tests. */
+    /* Base */
+    virtual bool                IsWormholeSE()          { return true; }
+
+    /* SystemEntity interface */
+    virtual void                EncodeDestiny( Buffer& into );
+
+    virtual PyDict*             MakeSlimItem();
 };
 
 #endif /* !__CELESTIAL__H__INCL__ */

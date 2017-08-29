@@ -65,6 +65,8 @@ public:
     static GPoint GetAnomalyPos(std::string& string);
 
     /* wormhole manager */
+    void GetWHSystemClass(DBQueryResult& res);
+    
 
 protected:
 

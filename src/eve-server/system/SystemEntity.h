@@ -57,6 +57,8 @@ class BeltSE;
 class DynamicSystemEntity;
 class ItemSystemEntity;
 class ObjectSystemEntity;
+class WormholeSE;
+class AnomalySE;
 class StructureSE;
 class DeployableSE;
 class AsteroidSE;
@@ -96,8 +98,8 @@ public:
     virtual ItemSystemEntity*   GetItemSE()             { return nullptr; }
     virtual ContainerSE*        GetContSE()             { return nullptr; }
     virtual WreckSE*            GetWreckSE()            { return nullptr; }
-    virtual DungeonSE*          GetDungeonSE()          { return nullptr; }
-    /* Object */
+    virtual AnomalySE*          GetAnomalySE()          { return nullptr; }
+    virtual WormholeSE*         GetWormholeSE()         { return nullptr; }
     virtual ObjectSystemEntity* GetObjectSE()           { return nullptr; }
     virtual AsteroidSE*         GetAsteroidSE()         { return nullptr; }
     virtual StructureSE*        GetPOSSE()              { return nullptr; }
@@ -136,7 +138,8 @@ public:
     /* Item */
     virtual bool                IsItemEntity()          { return false; }
     virtual bool                IsWreckSE()             { return false; }
-    virtual bool                IsDungeonSE()           { return false; }
+    virtual bool                IsAnomalySE()           { return false; }
+    virtual bool                IsWormholeSE()          { return false; }
     virtual bool                IsCelestialSE()         { return false; }
     virtual bool                IsContainerSE()         { return false; }
     /* Object */
@@ -341,23 +344,9 @@ public:
     virtual void                MakeDamageState(DoDestinyDamageState &into);
 
     virtual PyDict*             MakeSlimItem();
-};
 
-class DungeonSE : public ItemSystemEntity {
-public:
-    DungeonSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~DungeonSE()                                { /* Do nothing here */ }
-
-    /* class type pointer querys. */
-    virtual DungeonSE*          GetDungeonSE()          { return this; }
-    /* class type tests. */
-    /* Base */
-    virtual bool                IsDungeonSE()           { return true; }
-
-    /* SystemEntity interface */
-    virtual void                EncodeDestiny( Buffer& into );
-
-    virtual PyDict*             MakeSlimItem();
+private:
+    uint16 m_keyType;
 };
 
 /* Non-Static / Non-Mobile / Destructable / Celestial Objects - POS Structures, Outposts, Asteroids, Deployables */

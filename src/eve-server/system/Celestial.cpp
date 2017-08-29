@@ -25,7 +25,9 @@
 
 #include "eve-server.h"
 
+#include "StaticDataMgr.h"
 #include "system/Celestial.h"
+#include "system/SystemManager.h"
 
 /*
  * CelestialObjectData
@@ -117,3 +119,92 @@ void CelestialSE::MakeDamageState(DoDestinyDamageState &into)
     into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
 }
 
+
+AnomalySE::AnomalySE(CelestialObjectRef self, PyServiceMgr& services, SystemManager* system)
+: CelestialSE(self, services, system)
+{
+
+}
+void AnomalySE::EncodeDestiny(Buffer& into)
+{
+    using namespace Destiny;
+    BallHeader head;
+        head.entityID = m_self->itemID();
+        head.mode = DSTBALL_STOP;
+        head.radius = m_radius;
+        head.x = x();
+        head.y = y();
+        head.z = z();
+        head.flags = 0;
+    into.Append( head );
+    MassSector mass;
+        mass.mass = 10000000000;    // as seen in packets
+        mass.cloak = 0;
+        mass.harmonic = m_harmonic;
+        mass.corporationID = -1;
+        mass.allianceID = -1;
+    into.Append( mass );
+    DSTBALL_FIELD_Struct main;
+        main.formationID = 0xFF;
+    into.Append( main );
+
+    _log(SE__DESTINY, "AnomalySE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+}
+PyDict* AnomalySE::MakeSlimItem()
+{
+    _log(SE__SLIMITEM, "MakeSlimItem for AnomalySE %s(%u)", GetName(), m_self->itemID());
+    PyDict *slim = new PyDict();
+        slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
+        slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
+        slim->SetItemString("dungeonDataID",    new PyInt(0)); //?  seen 2990651
+        slim->SetItemString("ownerID",          new PyInt(m_self->ownerID()));
+    return slim;
+}
+
+WormholeSE::WormholeSE(CelestialObjectRef self, PyServiceMgr& services, SystemManager* system)
+: CelestialSE(self, services, system)
+{
+
+}
+
+void WormholeSE::EncodeDestiny(Buffer& into)
+{
+    using namespace Destiny;
+    BallHeader head;
+        head.entityID = m_self->itemID();
+        head.mode = DSTBALL_STOP;
+        head.radius = m_radius;
+        head.x = x();
+        head.y = y();
+        head.z = z();
+        head.flags = 0;
+    into.Append( head );
+    MassSector mass;
+        mass.mass = 10000000000;    // as seen in packets
+        mass.cloak = 0;
+        mass.harmonic = m_harmonic;
+        mass.corporationID = -1;
+        mass.allianceID = -1;
+    into.Append( mass );
+    DSTBALL_FIELD_Struct main;
+        main.formationID = 0xFF;
+    into.Append( main );
+    _log(SE__DESTINY, "WormholeSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+}
+
+PyDict* WormholeSE::MakeSlimItem()
+{
+    _log(SE__SLIMITEM, "MakeSlimItem for WormholeSE %s(%u)", GetName(), m_self->itemID());
+    PyDict *slim = new PyDict();
+        slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
+        slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
+        slim->SetItemString("ownerID",                  new PyInt(m_self->ownerID()));
+        slim->SetItemString("otherSolarSystemClass",    new PyInt(sDataMgr.GetWHSystemClass(m_system->GetID())));   // will have to set this somewhere to ref here
+        slim->SetItemString("wormholeSize",             new PyFloat(1.5)); // <1 = close to collapse
+        slim->SetItemString("wormholeAge",              new PyInt(1));  //1 or 2
+        slim->SetItemString("count",                    new PyInt(1));   //ships jumped thru?
+        slim->SetItemString("dunSpawnID",               new PyInt(27));   //33, 263, 27
+        slim->SetItemString("nebulaType",               new PyInt(16));  //26, 16, 253   << client graphic file #
+        slim->SetItemString("expiryDate",               new PyLong(Win32TimeNow() + Win32Time_Day));  //? not sure here
+    return slim;
+}

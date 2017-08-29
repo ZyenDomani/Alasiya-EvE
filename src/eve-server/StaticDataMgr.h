@@ -59,6 +59,8 @@ public:
     uint32              GetRegionFaction(uint32 regionID);
     uint32              GetRegionRatFaction(uint32 regionID);
 
+    uint8               GetWHSystemClass(uint32 systemID);
+
     void                GetDgmTypeAttrVec(uint32 typeID, std::vector< DmgTypeAttribute >& typeAttrVec);
 
     void                GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData);
@@ -78,6 +80,7 @@ private:
     StationDB           m_sdb;
 
     std::map<uint16, uint8>                             m_moonGoo;          // typeID/rarity
+    std::map<uint32, uint8>                             m_whRegions;        // regionID/classID
     std::map<uint32, uint32>                            m_regions;          // regionID/ownerFactionID
     std::map<uint32, uint32>                            m_ratRegions;       // regionID/ratFactionID
     std::map<uint32, uint32>                            m_stationRegion;    // stationID/regionID
@@ -98,7 +101,7 @@ public:
     std::unordered_multimap<uint32, uint32>             m_types;            // ratGroupID/ratTypeID
     std::unordered_multimap<uint8, RatSpawnClass>       m_classes;          // spawnType/data
     std::unordered_multimap<uint32, RatFactionGroups>   m_groups;           // factionID/data
-    
+
 private:
     std::map<uint32, PyObject*>                         m_stationPyData;    // stationID/data
 

@@ -291,6 +291,17 @@ void StaticDataMgr::Populate()
     sLog.Cyan("    StaticDataMgr", "%u groups in %u buckets, %u classes in %u buckets, and %u types for %u regions loaded in %.3fms.",
               m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_ratRegions.size(), (GetTimeMSeconds() - start));
 
+
+    res->Reset();
+    start = GetTimeMSeconds();
+    m_db.GetWHSystemClass(*res);
+    while (res->GetRow(row)) {
+        //SELECT locationID, wormholeClassID FROM mapLocationWormholeClasses
+        m_whRegions.insert(std::pair<uint32, uint8>(row.GetInt(0), row.GetInt(1)));
+    }
+    sLog.Cyan("    StaticDataMgr", "%u WH System Classes loaded in %.3fms.", m_whRegions.size(), (GetTimeMSeconds() - start));
+
+
     //cleanup
     SafeDelete(res);
     SafeDelete(res2);
@@ -324,7 +335,7 @@ bool StaticDataMgr::IsSkillTypeID(uint16 typeID)
 
 bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
 {
-    std::map<uint16, std::string>::const_iterator itr = m_skills.find(skillID);
+    std::map<uint16, std::string>::iterator itr = m_skills.find(skillID);
     if (itr != m_skills.end()) {
         name = itr->second;
         return true;
@@ -342,7 +353,7 @@ void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data)
 
 void StaticDataMgr::GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData)
 {
-    std::map<uint16, BlueprintTypeData>::const_iterator itr = m_bpTypeData.find(typeID);
+    std::map<uint16, BlueprintTypeData>::iterator itr = m_bpTypeData.find(typeID);
     if (itr != m_bpTypeData.end())
         bpData = itr->second;
     else
@@ -365,7 +376,7 @@ bool StaticDataMgr::GetRamRequirements(uint16 typeID, std::vector< ramRequiremen
 
 PyObject* StaticDataMgr::GetStationData(uint32 stationID)
 {
-    std::map<uint32, PyObject*>::const_iterator itr = m_stationPyData.find(stationID);
+    std::map<uint32, PyObject*>::iterator itr = m_stationPyData.find(stationID);
     if (itr != m_stationPyData.end()) {
         PyIncRef(itr->second);
         return itr->second;
@@ -377,8 +388,8 @@ PyObject* StaticDataMgr::GetStationData(uint32 stationID)
 PyRep* StaticDataMgr::GetStationCount()
 {
     PyList* list = new PyList();
-    std::map<uint32, uint8>::const_iterator itr = m_stationCount.begin();
-    while (itr != m_stationCount.end()) {
+    std::map<uint32, uint8>::iterator itr = m_stationCount.begin(), end = m_stationCount.end();
+    while (itr != end) {
         PyTuple* tuple = new PyTuple(2);
         tuple->SetItem(0, new PyInt(itr->first));
         tuple->SetItem(1, new PyInt(itr->second));
@@ -390,7 +401,7 @@ PyRep* StaticDataMgr::GetStationCount()
 
 uint32 StaticDataMgr::GetStationRegion(uint32 stationID)
 {
-    std::map<uint32, uint32>::const_iterator itr = m_stationRegion.find(stationID);
+    std::map<uint32, uint32>::iterator itr = m_stationRegion.find(stationID);
     if (itr != m_stationRegion.end())
         return itr->second;
     else
@@ -400,12 +411,23 @@ uint32 StaticDataMgr::GetStationRegion(uint32 stationID)
 
 uint32 StaticDataMgr::GetStationSystem(uint32 stationID)
 {
-    std::map<uint32, uint32>::const_iterator itr = m_stationSystem.find(stationID);
+    std::map<uint32, uint32>::iterator itr = m_stationSystem.find(stationID);
     if (itr != m_stationSystem.end())
         return itr->second;
     else
         _log(DATABASE__MESSAGE, "Failed to query info for station %u: Station not found.", stationID);
     return 0;
+}
+
+uint8 StaticDataMgr::GetWHSystemClass(uint32 systemID)
+{
+    std::map<uint32, uint8>::iterator itr = m_whRegions.find(systemID);
+    if (itr != m_whRegions.end())
+        return itr->second;
+    else
+        _log(DATABASE__MESSAGE, "Failed to query WH Class for systemID %u: System not found.", systemID);
+    return 0;
+
 }
 
 bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
@@ -418,7 +440,7 @@ bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
         return false;
     }
 
-    std::map<uint32, SystemData>::const_iterator itr = m_systemData.find(locationID);
+    std::map<uint32, SystemData>::iterator itr = m_systemData.find(locationID);
     if (itr != m_systemData.end()) {
         data = itr->second;
         return true;
@@ -430,7 +452,7 @@ bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
 
 bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)
 {
-    std::map<uint32, StaticData>::const_iterator itr = m_staticData.find(itemID);
+    std::map<uint32, StaticData>::iterator itr = m_staticData.find(itemID);
     if (itr != m_staticData.end()) {
         data = itr->second;
         return true;
@@ -442,7 +464,7 @@ bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)
 
 bool StaticDataMgr::GetStationInfo(uint32 stationID, StationData& data)
 {
-    std::map<uint32, StationData>::const_iterator itr = m_stationData.find(stationID);
+    std::map<uint32, StationData>::iterator itr = m_stationData.find(stationID);
     if (itr != m_stationData.end()) {
         data = itr->second;
         return true;
@@ -454,7 +476,7 @@ bool StaticDataMgr::GetStationInfo(uint32 stationID, StationData& data)
 
 uint32 StaticDataMgr::GetRegionFaction(uint32 regionID)
 {
-    std::map<uint32, uint32>::const_iterator itr = m_regions.find(regionID);
+    std::map<uint32, uint32>::iterator itr = m_regions.find(regionID);
     if (itr != m_regions.end())
         return (*itr).second;
     else
@@ -473,7 +495,7 @@ uint32 StaticDataMgr::GetRegionRatFaction(uint32 regionID)
 uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID)
 {
     uint32 factionID = 0;
-    std::map<uint32, uint32>::const_iterator itr = m_regions.find(regionID);
+    std::map<uint32, uint32>::iterator itr = m_regions.find(regionID);
     if (itr != m_regions.end())
         factionID = (*itr).second;
 

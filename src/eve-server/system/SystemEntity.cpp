@@ -312,6 +312,7 @@ PyDict* StargateSE::MakeSlimItem() {
 ItemSystemEntity::ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
+    m_keyType = 0;
 }
 
 PyDict* ItemSystemEntity::MakeSlimItem() {
@@ -320,7 +321,37 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",      new PyInt(m_self->ownerID()));
-        if (m_self->groupID() != EVEDB::invGroups::Force_Field) {
+        if (m_self->groupID() == EVEDB::invGroups::Warp_Gate) {
+            // this is incomplete........
+            slim->SetItemString("dunSkillLevel", new PyInt(0));   //?
+            slim->SetItemString("dunSkillTypeID", new PyNone());   //?
+            slim->SetItemString("dunObjectID", new PyInt(160449));  //?   902139
+            slim->SetItemString("dunToGateID", new PyInt(160484));  //?   902140
+            slim->SetItemString("dunCloaked", new PyBool(0));   //?
+            slim->SetItemString("dunScenarioID", new PyInt(23));    //?  3347
+            slim->SetItemString("dunSpawnID", new PyInt(1572));  //?
+            slim->SetItemString("dunAmount", new PyFloat(0.0));  //?
+            PyList* classList = new PyList();
+                classList->AddItem( new PyInt(324));
+                classList->AddItem( new PyInt(420));
+                classList->AddItem( new PyInt(541));
+                classList->AddItem( new PyInt(834));
+                classList->AddItem( new PyInt(25));
+                classList->AddItem( new PyInt(830));
+            slim->SetItemString("dunShipClasses", classList);   //?
+            PyList* dirList = new PyList();
+                dirList->AddItem(new PyInt(5));     //234
+                dirList->AddItem(new PyInt(-1));
+                dirList->AddItem(new PyInt(0));
+            slim->SetItemString("dunDirection", dirList);
+            slim->SetItemString("dunKeyLock", new PyInt(0));   //?
+            slim->SetItemString("dunWipeNPC", new PyBool(0));   //?
+            slim->SetItemString("dunKeyQuantity", new PyInt(1));   //?
+            slim->SetItemString("dunKeyTypeID", new PyInt(m_keyType));   //Training Complex Passkey   group Acceleration_Gate_Keys
+            slim->SetItemString("dunOpenUntil", new PyInt(Win32TimeNow()+Win32Time_Hour));   //?
+            slim->SetItemString("dunRoomName", new PyString("Lobby"));   //?
+            slim->SetItemString("dunMusicUrl", new PyString("res:/Sound/Music/Ambient031combat.ogg"));
+        } else if (m_self->groupID() != EVEDB::invGroups::Force_Field) {
             slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
             slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
             slim->SetItemString("name",         new PyString(m_self->itemName()));
@@ -369,72 +400,6 @@ void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
         into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double());
         into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double());
     }
-}
-
-DungeonSE::DungeonSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system)
-: ItemSystemEntity(self, services, system)
-{
-    //will use effects.WarpGateEffect   ....no it wont.  the damn accel gate does.
-    /*TODO  CODERS: upon entering the location of the dungeon for the first time (the one being entered)
-     * the DB should be called to spawn the following in this table.
-     * Just at the location being entered. not for all and only for the first time (but would reset after server restart/shutdown).
-        script is a place-holder in the DB to refer to any particular activity the spawn may do on initial player entry
-            (move to x,y,z RELATIVE to the location or attack target etc etc)
-        location is relative to where the player warps in (which would be 0,0,0 unless scripted elsewhere)
-     there needs to be something linking spawns to their location (dungeonspawnedID) once they have been spawned
-        so they can be removed later. I thought this may have been an entry in entityattributes but I don't think there is a value for that..
-     'spawn' is there because there are multiple typeids that are the same in many parts of a complex.
-    */
-}
-
-//this is a big hack just to document the kind of stuff a dungeon conveys.
-PyDict *DungeonSE::MakeSlimItem() {
-    _log(SE__SLIMITEM, "MakeSlimItem for DungeonSE %u", m_self->itemID());
-
-    PyDict *slim = new PyDict();
-
-    slim->SetItemString("itemID", new PyLong(m_self->itemID()));
-    slim->SetItemString("typeID", new PyInt(12273));
-    slim->SetItemString("ownerID", new PyInt(1));
-
-    slim->SetItemString("dunSkillLevel", new PyInt(0));
-    slim->SetItemString("dunSkillTypeID", new PyNone());
-    slim->SetItemString("dunObjectID", new PyInt(160449));
-    slim->SetItemString("dunWipeNPC", new PyInt(1));
-    slim->SetItemString("dunToGateID", new PyInt(160484));
-    slim->SetItemString("dunCloaked", new PyInt(0));
-    slim->SetItemString("dunScenarioID", new PyInt(23));
-    slim->SetItemString("dunSpawnID", new PyInt(4));
-    slim->SetItemString("dunAmount", new PyFloat(0.0));
-    slim->SetItemString("dunShipClasses", new PyList(/*237, 31*/));
-    slim->SetItemString("dunDirection", new PyList(/*235, 0, 1*/));
-    slim->SetItemString("dunKeyLock", new PyInt(0));
-    //slim->SetItemString("dunKeyQuantity", new PyInt(1));
-    //slim->SetItemString("dunKeyTypeID", new PyInt(21839));
-    //slim->SetItemString("dunOpenUntil", new PyInt(Win32TimeNow()+Win32Time_Hour));
-    slim->SetItemString("dunMusicUrl", new PyString("res:/Sound/Music/Ambient031combat.ogg"));
-
-    return slim;
-}
-
-void DungeonSE::EncodeDestiny( Buffer& into )
-{
-    using namespace Destiny;
-
-    BallHeader head;
-        head.entityID = m_self->itemID();
-        head.mode = DSTBALL_RIGID;
-        head.radius = m_radius;
-        head.x = x();
-        head.y = y();
-        head.z = z();
-        head.flags = IsInteractive;
-    into.Append( head );
-    DSTBALL_STOP_Struct main;
-        main.formationID = 0xFF;
-    into.Append( main );
-
-    _log(SE__DESTINY, "DungeonSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 

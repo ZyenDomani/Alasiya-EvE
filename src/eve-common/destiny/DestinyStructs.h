@@ -82,8 +82,8 @@ struct BallHeader {
 struct MassSector {
     double mass;
     uint8  cloak;        // indicates cloak
-    uint64 allianceID;
-    uint32 corporationID;
+    int64 allianceID;
+    int32 corporationID;
     int32 harmonic;
 };
 
