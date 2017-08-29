@@ -224,9 +224,10 @@ bool DungeonMgr::Create(uint16 templateID, CosmicSignature& sig)
 
     uint32 typeID = itr->second.dunTypeID;
 
-    if ((sig.dungeonType == EVEDUNG::dunTypes::typeMagnetometric)   //3
-        or (sig.dungeonType == EVEDUNG::dunTypes::typeRadar)        //4
-        or (sig.dungeonType == EVEDUNG::dunTypes::typeLadar)        //5
+    if ((sig.dungeonType == EVEDUNG::dunTypes::typeGravimetric)      //2
+        or (sig.dungeonType == EVEDUNG::dunTypes::typeMagnetometric) //3
+        or (sig.dungeonType == EVEDUNG::dunTypes::typeRadar)         //4
+        or (sig.dungeonType == EVEDUNG::dunTypes::typeLadar)         //5
         or (sig.ownerID == factionRogueDrones)) {
             sig.sigName = itr->second.dunName;
         } else {
@@ -364,6 +365,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 
     switch (sig.dungeonType) {
         case dunTypes::typeGravimetric: {       // 2
+            factionID = 0;
             if (type == 1) {
                 subType = MakeRandomInt(0,5);
             } else if (type == 2) {
@@ -408,6 +410,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 }
         } break;
         case dunTypes::typeLadar: {             // 5
+            factionID = 0;
             subType = MakeRandomInt(1,8);
         } break;
         case dunTypes::typeAnomaly: {           // 7
@@ -435,6 +438,27 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 subType = MakeRandomInt(1,3);
             else
                 subType = MakeRandomInt(1,5);
+        } break;
+        case 0: {
+            sig.dungeonType = 7;
+            subType = MakeRandomInt(1,5);
+            if (type == 1) {
+                if (subType == 1) {
+                    level = GetRandLevel();
+                }
+            } else if (type ==2) {
+                if (subType == 2) {
+                    level = GetRandLevel();
+                } else if (subType == 4) {
+                    level = GetRandLevel();
+                }
+            } else if (type == 3) {
+                if (subType == 1) {
+                    level = GetRandLevel();
+                } else if (subType == 3) {
+                    level = GetRandLevel();
+                }
+            }
         } break;
     }
 

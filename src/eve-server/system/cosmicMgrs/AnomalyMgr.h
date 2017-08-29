@@ -47,7 +47,7 @@ protected:
     ServiceDB m_sdb;
     SystemGPoint m_gp;
 
-    int8 GetAnomalyType();
+    uint8 GetAnomalyType();
 
 private:
     /* we do not own any of these (our sysmgr does) */

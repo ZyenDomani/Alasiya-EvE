@@ -94,8 +94,10 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     m_Complex = 0;
 
     /* load current data?, start timers, process current data, and create new items, if needed */
-
-    m_anomTimer.Start(120000);  // 2 mins?
+    if (sConfig.server.IsTestServer)
+        m_anomTimer.Start(1000);  // 1s
+    else
+        m_anomTimer.Start(120000);  // 120s
 
     _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
     return (m_initalized = true);
@@ -104,9 +106,9 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
 void AnomalyMgr::Process() {
     if (!m_initalized)
         return;
-    if (m_anomTimer.Check(false)) {
+    if (m_anomTimer.Check(!sConfig.server.IsTestServer)) {
         /* do something useful here */
-        if (m_Sigs < 15)  //   hardcode to 15 for now
+        if (m_Sigs < 25)  //   hardcode to 25 for now
             CreateAnomaly();
     }
 
@@ -149,6 +151,9 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
             sig.dungeonType = GetAnomalyType();
         else  // mission or escalation being called.
             sig.dungeonType = typeID;
+
+        if (sig.dungeonType == 0)
+            return;     // make error here?
 
     GPoint pos = m_gp.GetAnomalyPoint(m_system);
         sig.x = pos.x;
@@ -219,10 +224,10 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
     m_sigs.insert(std::pair<int32, CosmicSignature>(sig.sigItemID, sig)); //key is itemID for ease of removal later
     m_mdb.SaveAnomaly(sig);
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Creating Signal %s of type %u  in system %u", sig.sigName.c_str(), sig.dungeonType, sig.systemID);
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Creating Signal %s of type %u in system %u", sig.sigName.c_str(), sig.dungeonType, sig.systemID);
 }
 
-int8 AnomalyMgr::GetAnomalyType()
+uint8 AnomalyMgr::GetAnomalyType()
 {
     using namespace EVEDUNG;
 
@@ -276,7 +281,6 @@ int8 AnomalyMgr::GetAnomalyType()
                 return GetAnomalyType();
 
             ++m_Unrated;
-
         } break;
         case dunTypes::typeDED_Complex: {  // 10
             if ((m_Complex < 0) or (m_Complex > 1)) // cap at 2
@@ -287,6 +291,8 @@ int8 AnomalyMgr::GetAnomalyType()
         } break;
     }
     ++m_Anoms; // still not sure how im gonna use these
+
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::GetAnomalyType() - Returning type %u", typeID);
     return typeID;
 }
 
