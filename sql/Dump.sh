@@ -1,13 +1,13 @@
 #/bin/bash
 MYSQL_USER=allan
 MYSQL_PASS=none
-DB_NAME=new
+DB_NAME=alasiya-new
 
 SQL_STRING="SHOW TABLES;"
 # Pipe the SQL into mysql
 TABLES=$(echo $SQL_STRING | mysql -u$MYSQL_USER -p$MYSQL_PASS $DB_NAME -Bs)
 
-mkdir tables
+#mkdir tables
 
 #echo $TABLES
 

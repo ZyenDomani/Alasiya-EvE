@@ -45,7 +45,7 @@ set @regionid=10000001;      --Derelik
 
 create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int);
 truncate table tStations;
-insert into tStations values (60012178, 30000092, 10000001);
+insert into tStations values (60014137, 30000053, 10000001);
 
 -- actual seeding
 INSERT INTO market_orders (typeID, charID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState,
