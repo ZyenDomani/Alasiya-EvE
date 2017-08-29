@@ -13,8 +13,10 @@
 
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
+#include "StaticDataMgr.h"
 #include "inventory/InventoryItem.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
+#include "system/SystemManager.h"
 
 /*  this class will need to keep track of all WH in universe, what systems they connect to, and how long they last.
  *
@@ -74,6 +76,23 @@ void WormholeMgr::Create(CosmicSignature& sig)
     if (iRef.get() == nullptr) // we'll survive...
         return;
     sig.sigItemID = iRef->itemID();
+    // do this or create/add generic se here?
+    DBSystemDynamicEntity entity;
+        entity.categoryID = iRef->categoryID();
+        entity.groupID = iRef->groupID();
+        entity.itemID = iRef->itemID();
+        entity.itemName = sig.sigName;
+        entity.typeID = sig.sigTypeID;
+        entity.x = pos.x;
+        entity.y = pos.y;
+        entity.z = pos.z;
+        /** @todo  fix these... */
+        entity.ownerID = sig.ownerID;
+        entity.allianceID = 0;  /** @todo  may have to write a method to check and set this */
+        entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
+        // do the spawn using SystemManager's BuildEntity:
+    /** @todo this is more shit that should NOT be in db */
+    sEntityList.FindOrBootSystem(sig.systemID)->BuildDynamicEntity(entity);
 
     _log(COSMIC_MGR__MESSAGE, "WormholeMgr::Create() - Creating WormHole type %u in system %u", sig.dungeonType, sig.systemID);
 }

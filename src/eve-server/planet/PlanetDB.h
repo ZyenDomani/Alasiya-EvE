@@ -37,7 +37,7 @@ public:
     PyRep* GetPlanetsForChar(uint32 charID);
     PyRep* GetMyLaunchesDetails(uint32 charID);
 
-    GPoint GetLaunchPos(uint32 launchID);
+    static GPoint GetLaunchPos(uint32 launchID);
 
     void GetPlanetData(DBQueryResult& res);
     void GetSchematicData(DBQueryResult& res);

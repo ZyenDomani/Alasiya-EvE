@@ -40,7 +40,10 @@ class AnomalyMgr
       void LoadAnomalies();
 
       void AddAnomaly(InventoryItemRef iRef);
-      void GetAnomalyList(CosmicSignature& sig);
+      void RemoveAnomaly(uint32 itemID);
+      void GetAnomalyList(std::vector< CosmicSignature >& sig);
+
+      uint32 GetAnomalyID(std::string sigID);
 
 protected:
     ManagerDB m_mdb;
@@ -76,7 +79,8 @@ private:
     int8 m_Complex; // DED sites
 
 
-    std::map<uint32, CosmicSignature> m_sigs;
+    std::map<uint32, CosmicSignature> m_sigByItemID;
+    std::map<std::string, CosmicSignature> m_sigBySigID;
 
 };
 

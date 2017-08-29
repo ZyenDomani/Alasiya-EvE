@@ -74,7 +74,7 @@ m_spawnMgr(new SpawnMgr(this, svc))
     m_ratBubbles.clear();
     m_beltVector.clear();
     m_roidBubbles.clear();
-    
+
     m_secValue = 1.1 - GetSystemSecurityRating();  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
 
     sDataMgr.GetSystemInfo(systemID, m_data);   // system data is now an internal memory (cached) object.  db is hit once at system boot.

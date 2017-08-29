@@ -491,6 +491,7 @@ INSERT INTO `dunTemplates` (`dunTemplateID`, `dunTemplateName`, `dunEntryID`, `d
 (53610, 'Swarm Nebula', 0, 5, 0, 1, 0, 0, 0),
 (53710, 'Boisterous Nebula', 0, 5, 0, 1, 0, 0, 0),
 (53810, 'Thick Nebula', 0, 5, 0, 1, 0, 0, 0),
+
 (71110, 'Hideaway', 0, 7, 0, 1, 0, 0, 0),
 (71120, 'Hidden Hideaway', 0, 7, 0, 1, 0, 0, 0),
 (71130, 'Forsaken Hideaway', 0, 7, 0, 1, 0, 0, 0),

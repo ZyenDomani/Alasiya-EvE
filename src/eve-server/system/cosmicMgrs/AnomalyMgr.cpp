@@ -52,6 +52,9 @@ m_anomTimer(10000)
 {
     m_initalized = false;
 
+    m_sigBySigID.clear();
+    m_sigByItemID.clear();
+
     m_anomTimer.Disable();
     m_spawnTimer.Disable(); // is this needed?
 }
@@ -131,10 +134,22 @@ void AnomalyMgr::SaveAnomaly()
 {
 	//. same as above...not needed but used for testing for now.
     //will have to rewrite scan system to use data from here
-    for (auto sig : m_sigs)
+    for (auto sig : m_sigByItemID)
         m_mdb.SaveAnomaly(sig.second);
 
 }
+
+void AnomalyMgr::RemoveAnomaly(uint32 itemID)
+{
+    std::map<uint32, CosmicSignature>::iterator itr = m_sigByItemID.find(itemID);
+    if (itr != m_sigByItemID.end()) {
+        std::map<std::string, CosmicSignature>::iterator itr2 = m_sigBySigID.find(itr->second.sigID);
+        if (itr2 != m_sigBySigID.end())
+            m_sigBySigID.erase(itr2);
+        m_sigByItemID.erase(itr);
+    }
+}
+
 
 void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
     using namespace EVEDUNG;
@@ -203,14 +218,16 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
         } break;
         case dunTypes::typeWormhole: {    // 6
-            sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;
-            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
-            sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupSignature;
+            // enable WH to be warped to...they are deco only at this time.
+            sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly;
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
+            sig.scanGroupID = EVESCAN::ScanGroup::ScanGroupAnomaly;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
             // hand off to WHMgr and exit after return
             sWHMgr.Create(sig);
-            m_sigs.insert(std::pair<int32, CosmicSignature>(sig.sigItemID, sig));
-            m_mdb.SaveAnomaly(sig);
+            m_sigBySigID.insert(std::pair<std::string, CosmicSignature>(sig.sigID, sig));
+            m_sigByItemID.insert(std::pair<uint32, CosmicSignature>(sig.sigItemID, sig));
+            //m_mdb.SaveAnomaly(sig);
             return;
         }
         case 0:     // error or denied
@@ -220,9 +237,10 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
     // all anomalies will be created/populated by dungmgr, except WH (handed off to WHMgr above)
     if (!m_dungMgr->MakeDungeon(sig)) // pass by ref here, so other vars can be set.
         return;
-    // add new sig to sysSigMap
-    m_sigs.insert(std::pair<int32, CosmicSignature>(sig.sigItemID, sig)); //key is itemID for ease of removal later
-    m_mdb.SaveAnomaly(sig);
+    // add new sig to sysSigMaps
+    m_sigBySigID.insert(std::pair<std::string, CosmicSignature>(sig.sigID, sig));
+    m_sigByItemID.insert(std::pair<uint32, CosmicSignature>(sig.sigItemID, sig)); //key is itemID for ease of removal later
+    //m_mdb.SaveAnomaly(sig);
 
     _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Creating Signal %s of type %u in system %u", sig.sigName.c_str(), sig.dungeonType, sig.systemID);
 }
@@ -296,6 +314,13 @@ uint8 AnomalyMgr::GetAnomalyType()
     return typeID;
 }
 
+uint32 AnomalyMgr::GetAnomalyID(std::string sigID)
+{   // <std::string, CosmicSignature>
+    std::map<std::string, CosmicSignature>::iterator itr = m_sigBySigID.find(sigID);
+    if (itr != m_sigBySigID.end())
+        return itr->second.sigItemID;
+    return 0;
+}
 
 void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
     // registration method for pos items, wrecks and abandoned ships
@@ -314,9 +339,10 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
 
 }
 
-void AnomalyMgr::GetAnomalyList(CosmicSignature& sig) {
+void AnomalyMgr::GetAnomalyList(std::vector<CosmicSignature>& sig) {
     // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
     // retrieval method for scan queries
-    //. NOTE. cannot scan pos, wrecks, ships, mission sites, or escalations.  they DO have sigIDs, and can get to type (25%), but no farther
+    for (auto cur : m_sigByItemID)
+        sig.push_back(cur.second);
 }
 

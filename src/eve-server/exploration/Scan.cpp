@@ -1,27 +1,14 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ /**
+  * @name Scan.cpp
+  *   Scanning methods for Alasiya EvE
+  *
+  * @Author:        Allan
+  * @date:          7Dec15 (working)
+  *
+  */
 
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:     Allan
-*/
+// w.i.p.
 
 #include "eve-server.h"
 
@@ -29,6 +16,7 @@
 #include "exploration/Scan.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
 
 Scan::Scan(Client* pClient)
 {
@@ -85,7 +73,7 @@ void Scan::RequestScans(PyDict* dict) {
     OnSystemScanStarted osss;
         osss.timestamp = Win32TimeNow();
         osss.duration = scanTimer;
-        osss.scanProbesDict = new PyDict;
+        osss.scanProbesDict = new PyDict();
     PyTuple* ev = osss.Encode();
     m_client->SendNotification("OnSystemScanStarted", "charid", &ev);
     m_client->SetScanTimer(scanTimer);
@@ -110,45 +98,34 @@ void Scan::ScanStart()
 void Scan::ScanResult() {
     //  WORKING CODE...DONT FUCK WITH THIS!!  -allan 11Dec15
     /** @todo basic code works.  will need updates and calc's for various things once system matures.  see notes */
-    DBQueryResult* res = new DBQueryResult();
-    m_db->GetSystemAnomalies(m_client->GetSystemID(), *res);
-    PyList* resultList = new PyList;
+    /** @todo  see client code to verify what it expects, and what it can calculate */
+    std::vector<CosmicSignature> sig;
+    m_client->SystemMgr()->GetAnomMgr()->GetAnomalyList(sig);
 
-    /** @todo  will need updates to finish this after AnomolyMgr is more complete...
-     * client->sysmgr->anommgr->GetAnomalyList(CosmicSignature& sig)
-     *   from this sig object, loop thru and get needed variables for scan results.
-     * NOTE. cannot scan pos, wrecks or ships.  they DO have sigIDs, and can get to type (25%), but no farther
-     *
-     * also see client code to verify what it expects, and what it can calculate
-     */
-
-    DBResultRow row;
-    /** @todo re-update this to match names....  */
-    //(sigTypeID,scanGroupID,sigGroupID,scanAttributeID,sigName,sigID,x,y,z)
-    while (res->GetRow(row)) {
+    PyList* resultList = new PyList();
+    //. NOTE. cannot scan pos, wrecks, ships, mission sites, or escalations.  they DO have sigIDs, and can get to type (25%), but no farther
+    for (auto sigs : sig) {
         SystemScanResultPositive ssrp;
-            ssrp.typeID = row.GetInt(0);
-            ssrp.scanGroupID = row.GetInt(1);   // see notes in CosmicMgrs/ManagerDB.h
-            ssrp.groupID = row.GetInt(2);
-            ssrp.strengthAttributeID = row.GetInt(3);  // see notes in CosmicMgrs/ManagerDB.h
-            ssrp.dungeonName = row.GetText(4);
-            ssrp.id = row.GetText(5);
+            ssrp.typeID = sigs.sigTypeID;
+            ssrp.scanGroupID = sigs.scanGroupID;
+            ssrp.groupID = sigs.sigGroupID;
+            ssrp.strengthAttributeID = sigs.scanAttributeID;
+            ssrp.dungeonName = sigs.sigName;
+            ssrp.id = sigs.sigID;
             ssrp.deviation = 0;     /* for scan probes */
             ssrp.degraded = false;  /* will need to be set in *some* kind of test/conditional */
             ssrp.probeID = m_client->GetShipID();   /* will need to be corrected after implementing probes */
             ssrp.certainty = ((ssrp.typeID == EVEDB::invTypes::typeCosmicAnomaly) ? 1 : MakeRandomFloat());     /* will need to be fixed.  anomalies are full...others are random */
             ssrp.pos = new PyNone();  /* this is for probe positions (where applicable).  it uses the 'foo.Vector3' token, and coded in scan.xmlp */
         SSR_ObjectEx_Pos ssr_oed;
-            ssr_oed.x = row.GetDouble(6);
-            ssr_oed.y = row.GetDouble(7);
-            ssr_oed.z = row.GetDouble(8);
+            ssr_oed.x = sigs.x;
+            ssr_oed.y = sigs.y;
+            ssr_oed.z = sigs.z;
         PyToken* token = new PyToken("foo.Vector3");
         PyTuple* oed_tuple = new PyTuple(2);
             oed_tuple->SetItem(0, token);
             oed_tuple->SetItem(1, ssr_oed.Encode());
-
         ssrp.data = new PyObjectEx(false, oed_tuple);  // oed goes here
-
         resultList->AddItem(ssrp.Encode());
     }
 
@@ -161,8 +138,6 @@ void Scan::ScanResult() {
         osss.absentTargets = mtList;
     PyTuple* ev = osss.Encode();
     m_client->SendNotification("OnSystemScanStopped", "charid", &ev);
-
-    SafeDelete(res);
 }
 
 void Scan::SurveyScan() {

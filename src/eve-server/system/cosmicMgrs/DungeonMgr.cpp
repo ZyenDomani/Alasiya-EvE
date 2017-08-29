@@ -142,6 +142,7 @@ m_spawnMgr(nullptr)
 
 DungeonMgr::~DungeonMgr()
 {
+    /*  this may be hanging system unloading....
     //for now we're deleting everything till i can write proper item handling code
     std::map<uint32, std::vector<uint32>>::iterator itr = m_dungeonList.begin();
     while (itr != m_dungeonList.end()) {
@@ -149,6 +150,7 @@ DungeonMgr::~DungeonMgr()
         while (itr2 != itr->second.end())
             InventoryDB::DeleteItem(*itr2);
     }
+    */
 }
 
 bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
@@ -471,6 +473,8 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
      */
 
 
+    _log(COSMIC_MGR__MESSAGE, "DungeonMgr::MakeDungeon() - Calling Create on type %u", sig.dungeonType);
+    
     uint16 templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + factionID;
 
     return Create(templateID, sig);

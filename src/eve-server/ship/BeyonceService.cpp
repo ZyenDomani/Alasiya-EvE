@@ -37,6 +37,7 @@
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
+#include <system/cosmicMgrs/AnomalyMgr.h>
 #include "system/Container.h"
 
 class BeyonceBound
@@ -484,12 +485,13 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             }
         }
     } else if (type == "scan") {
-        ManagerDB mDB;
-        warpToPoint = mDB.GetAnomalyPos(stringArg);
+        uint32 anomID = pSystem->GetAnomMgr()->GetAnomalyID(stringArg);
+        pSE = pSystem->GetSE(anomID);
+        warpToPoint = ManagerDB::GetAnomalyPos(stringArg);
     } else if (type == "launch") {
+        pSE = pSystem->GetSE(toID);
         // launchpickup - launch, launchid
-        PlanetDB mDB;
-        warpToPoint = mDB.GetLaunchPos(toID);
+         warpToPoint = PlanetDB::GetLaunchPos(toID);
     }
 	// the systems below are not implemented yet.  hold on coding till systems are working and we know what needs to be done here
 	// more info can be found in client::menuSvc.py
@@ -599,6 +601,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         }
     } else {
         // pSE is null....make error and return
+        codelog(CLIENT__ERROR, "%s: unable to find location for %s", call.client->GetName(), type.c_str());
+        call.client->SendErrorMsg("WarpTo: item not found.");
         return new PyNone();
     }
 
