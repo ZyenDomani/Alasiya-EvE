@@ -41,7 +41,7 @@ struct bubbleDeleter {
         if (bRef->IsEmpty()) {
             _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", bRef->GetID() );
             sBubbleMgr.RemoveBubble(bRef->GetSystem()->GetID(), bRef);
-            SafeDelete(bRef);
+            //SafeDelete(bRef);
         }
     }
 };
@@ -85,7 +85,7 @@ void BubbleManager::Process() {
 
     if (m_emptyTimer.Check()) {
         std::for_each(m_bubbles.begin(), m_bubbles.end(), bubbleDeleter());
-        std::vector<SystemBubble*>::iterator new_end = std::remove(m_bubbles.begin(), m_bubbles.end(), static_cast<SystemBubble*>(nullptr));
+        std::remove(m_bubbles.begin(), m_bubbles.end(), static_cast<SystemBubble*>(nullptr));
         std::vector<SystemBubble*>::iterator itr = m_bubbles.begin();
         while (itr != m_bubbles.end()) {
             if (*itr == nullptr)
