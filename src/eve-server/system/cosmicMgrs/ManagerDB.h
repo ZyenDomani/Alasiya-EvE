@@ -48,8 +48,9 @@ public:
     void GetGroupTypeIDs(uint32 groupID, DBQueryResult& res);
 
     /* dungeon manager */
-    void GetDunRoomInfo(DBQueryResult& res);
     void GetDunRoomData(DBQueryResult& res);
+    void GetDunRoomInfo(DBQueryResult& res);
+    void GetDunEntryData(DBQueryResult& res);
     void GetDunTemplates(DBQueryResult& res);
     void GetDunGroupData(DBQueryResult& res);
     void GetDunSpawnInfo(DBQueryResult& res);
@@ -66,7 +67,7 @@ public:
 
     /* wormhole manager */
     void GetWHSystemClass(DBQueryResult& res);
-    
+
 
 protected:
 

@@ -161,6 +161,7 @@ public:
         uint8 StaticTimer;
         float ThreatRadius;
         uint32 RatFaction;
+        uint32 AnomalyFaction;
         bool SpawnTest;
         bool EnableDrones;
     } npc;

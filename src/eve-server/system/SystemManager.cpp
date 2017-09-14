@@ -537,6 +537,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
             else if ((entity.groupID == EVEDB::invGroups::Biomass)
                 or (entity.groupID == EVEDB::invGroups::Ring/*wtf*/) or (entity.groupID == EVEDB::invGroups::Secondary_Sun)
                 or (entity.groupID == EVEDB::invGroups::Large_Collidable_Object) or (entity.groupID == EVEDB::invGroups::Large_Collidable_Structure)
+                or (entity.groupID == EVEDB::invGroups::Large_Collidable_Ship)  // this will not hit.  category 11, entity
                 or (entity.groupID == EVEDB::invGroups::Cloud) or (entity.groupID == EVEDB::invGroups::Landmark)
                 or (entity.groupID == EVEDB::invGroups::Comet) or (entity.groupID == EVEDB::invGroups::Destructable_Station_Services)
                 /* test these to see if they are POS types */
@@ -616,7 +617,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                 or ((entity.groupID >= EVEDB::invGroups::Mission_Amarr_Empire_Frigate) and (entity.groupID <= EVEDB::invGroups::Mission_Minmatar_Republic_Battleship))
                 or (entity.groupID == EVEDB::invGroups::Destructible_Agents_In_Space)
                 or ((entity.groupID >= EVEDB::invGroups::Asteroid_Rogue_Drone_Battlecruiser) and (entity.groupID <= EVEDB::invGroups::Asteroid_Rogue_Drone_Swarm))
-                or (entity.groupID == EVEDB::invGroups::Large_Collidable_Ship)
+                or (entity.groupID == EVEDB::invGroups::Large_Collidable_Ship) //  this is wreck?  abandoned ship?
                 or ((entity.groupID >= EVEDB::invGroups::Asteroid_Angel_Cartel_Commander_Frigate) and (entity.groupID <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Frigate))
                 or ((entity.groupID >= EVEDB::invGroups::Mission_Generic_Battleships) and (entity.groupID <= EVEDB::invGroups::Mission_Generic_Destroyers))
                 or ((entity.groupID >= EVEDB::invGroups::Asteroid_Rogue_Drone_Commander_Battlecruiser) and (entity.groupID <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Battleship))

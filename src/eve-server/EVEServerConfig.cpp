@@ -117,6 +117,7 @@ EVEServerConfig::EVEServerConfig()
     npc.RoamingTimer = 15 /*m*/;
     npc.StaticTimer = 10 /*m*/;//P
     npc.RatFaction = 0;
+    npc.AnomalyFaction = 0;
     npc.SpawnTest = false;
     npc.EnableDrones = false;
 
@@ -375,6 +376,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     AddValueParser( "RoamingTimer",     npc.RoamingTimer );
     AddValueParser( "StaticTimer",      npc.StaticTimer );
     AddValueParser( "RatFaction",       npc.RatFaction );
+    AddValueParser( "AnomalyFaction",   npc.AnomalyFaction );
     AddValueParser( "SpawnTest",        npc.SpawnTest );
     AddValueParser( "EnableDrones",     npc.EnableDrones );
 
@@ -388,6 +390,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "RoamingTimer" );
     RemoveParser( "StaticTimer" );
     RemoveParser( "RatFaction" );
+    RemoveParser( "AnomalyFaction" );
     RemoveParser( "SpawnTest" );
     RemoveParser( "EnableDrones" );
 

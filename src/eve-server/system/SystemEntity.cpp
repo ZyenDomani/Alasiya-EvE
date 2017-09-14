@@ -358,6 +358,16 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
             slim->SetItemString("corpID",       new PyInt(m_corpID));
             slim->SetItemString("allianceID",   new PyInt(m_allyID));
         }
+    /** @todo  finish rotation data
+    Large_Collidable_Structure
+    Large_Collidable_Ship
+    Large_Collidable_Object
+    PyTuple* rotation = new PyTuple(3);
+        rotation->SetItem(0, new PyFloat(0));
+        rotation->SetItem(1, new PyFloat(0));
+        rotation->SetItem(2, new PyFloat(0));
+    slim->SetItemString("dunRotation", rotation);
+    */
     return slim;
 }
 

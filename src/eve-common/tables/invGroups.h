@@ -390,7 +390,7 @@ namespace EVEDB {
             Siege_Module_Blueprint = 516,
             Agents_in_Space = 517,
             Anti_Ballistic_Defense_System = 518,
-            Terran_Artifacts = 519,
+            Terran_Artifacts = 519,     // empty group
             Storyline_Frigate = 520,
             Identification = 521,
             Storyline_Cruiser = 522,

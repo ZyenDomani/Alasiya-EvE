@@ -115,7 +115,7 @@ void Scan::ScanResult() {
             ssrp.deviation = 0;     /* for scan probes */
             ssrp.degraded = false;  /* will need to be set in *some* kind of test/conditional */
             ssrp.probeID = m_client->GetShipID();   /* will need to be corrected after implementing probes */
-            ssrp.certainty = ((ssrp.typeID == EVEDB::invTypes::typeCosmicAnomaly) ? 1 : MakeRandomFloat());     /* will need to be fixed.  anomalies are full...others are random */
+            ssrp.certainty = 1; //((ssrp.typeID == EVEDB::invTypes::typeCosmicAnomaly) ? 1 : MakeRandomFloat());     /* will need to be fixed.  anomalies are full...others are random */
             ssrp.pos = new PyNone();  /* this is for probe positions (where applicable).  it uses the 'foo.Vector3' token, and coded in scan.xmlp */
         SSR_ObjectEx_Pos ssr_oed;
             ssr_oed.x = sigs.x;

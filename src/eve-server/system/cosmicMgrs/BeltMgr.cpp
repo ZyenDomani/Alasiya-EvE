@@ -213,9 +213,28 @@ void BeltMgr::GetList(uint32 beltID, std::vector< AsteroidSE* >& list)
         list.push_back(itr->second);
 }
 
-void BeltMgr::Create(CosmicSignature& sig)
-{
+    /*
+struct CosmicSignature {
+    std::string sigID;  // this is unique xxx-nnn id displayed in scanner
+    std::string sigName;
+    uint32 ownerID;
+    uint32 systemID;
+    uint32 sigItemID;   // itemID of this entry
+    uint8 dungeonType;
+    uint16 sigTypeID;
+    uint16 sigGroupID;
+    uint16 scanGroupID;
+    uint16 scanAttributeID;
+    double x;
+    double y;
+    double z;
+};
+*/
 
+bool BeltMgr::Create(CosmicSignature& sig, std::vector<uint16>& roidTypes)
+{
+    // this IS a belt for all intents and purposes, but have to figure out how to do it like this.
+    return true;
 }
 
 void BeltMgr::SpawnBelt(uint16 bubbleID)

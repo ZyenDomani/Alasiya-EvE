@@ -385,7 +385,7 @@ const DBTYPE DBQueryResult::MYSQL_DBTYPE_TABLE_SIGNED[] =
     DBTYPE_I4,      //[ 3]MYSQL_TYPE_LONG               /* INTEGER field */
     DBTYPE_R4,      //[ 4]MYSQL_TYPE_FLOAT              /* FLOAT field */
     DBTYPE_R8,      //[ 5]MYSQL_TYPE_DOUBLE             /* DOUBLE or REAL field */
-    DBTYPE_ERROR,   //[ 6]MYSQL_TYPE_nullptr               /* nullptr-type field */
+    DBTYPE_ERROR,   //[ 6]MYSQL_TYPE_NULL               /* NULL-type field */
     DBTYPE_FILETIME,//[ 7]MYSQL_TYPE_TIMESTAMP          /* TIMESTAMP field */
     DBTYPE_I8,      //[ 8]MYSQL_TYPE_LONGLONG           /* BIGINT field */
     DBTYPE_I4,      //[ 9]MYSQL_TYPE_INT24              /* MEDIUMINT field */
@@ -416,7 +416,7 @@ const DBTYPE DBQueryResult::MYSQL_DBTYPE_TABLE_UNSIGNED[] =
     DBTYPE_UI4,     //[ 3]MYSQL_TYPE_LONG               /* INTEGER field */
     DBTYPE_R4,      //[ 4]MYSQL_TYPE_FLOAT              /* FLOAT field */
     DBTYPE_R8,      //[ 5]MYSQL_TYPE_DOUBLE             /* DOUBLE or REAL field */
-    DBTYPE_ERROR,   //[ 6]MYSQL_TYPE_nullptr               /* nullptr-type field */
+    DBTYPE_ERROR,   //[ 6]MYSQL_TYPE_NULL               /* NULL-type field */
     DBTYPE_FILETIME,//[ 7]MYSQL_TYPE_TIMESTAMP          /* TIMESTAMP field */
     DBTYPE_UI8,     //[ 8]MYSQL_TYPE_LONGLONG           /* BIGINT field */
     DBTYPE_UI4,     //[ 9]MYSQL_TYPE_INT24              /* MEDIUMINT field */
