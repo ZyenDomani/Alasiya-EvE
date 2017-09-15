@@ -309,13 +309,10 @@ struct DBGPointEntity {
 /* POD structure entries for dungeon data */
 struct DunTemplate {
     std::string dunName;
-    uint16 dunRoomID;
+    int32 dunRoomID;
     uint16 dunEntryID;
     uint8 dunTypeID;
     uint8 dunSpawnType;
-    uint8 dunRooms;
-    uint8 dunRoomTypeID;
-    uint8 dunRoomCategoryID;
 };
 
 struct DunRoomInfo {
@@ -327,29 +324,37 @@ struct DunRoomInfo {
 };
 
 struct DunRoomData {
-    uint32 dunGroupID;
-    uint16 x;
-    uint16 y;
-    uint16 z;
+    int32 dunGroupID;
+    int16 x;
+    int16 y;
+    int16 z;
 };
 
 struct DunGroupData {
-    uint32 typeID;
+    int32 typeID;
     std::string typeName;
-    uint32 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
+    int32 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
     uint8 typeCatID;    // this is categoryID of the itemType, and needed to simplify create/spawn code
-    uint16 x;
-    uint16 y;
-    uint16 z;
+    int16 x;
+    int16 y;
+    int16 z;
 };
 
 struct DunRoomSpawnInfo {
     uint16 dunRoomSpawnID;
     uint16 dunRoomSpawnType;
-    uint16 x;
-    uint16 y;
-    uint16 z;
+    int16 x;
+    int16 y;
+    int16 z;
 };
+
+struct DunEntryData {
+    uint16 dunEntryID;
+    int16 x;
+    int16 y;
+    int16 z;
+};
+
 
 /* POD structure entries for PI data */
 struct PlanetResourceData {

@@ -25,6 +25,10 @@ DROP TABLE IF EXISTS `dunRoomSpawnData`;
 CREATE TABLE `dunRoomSpawnData` (
   `dunRoomSpawnID` int(11) NOT NULL,
   `dunRoomSpawnName` varchar(85) COLLATE utf8_bin NOT NULL,
+  `dunRoomSpawnType` int(11) NOT NULL,
+  `xpos` int(11) NOT NULL DEFAULT '0',
+  `ypos` int(11) NOT NULL DEFAULT '0',
+  `zpos` int(11) NOT NULL DEFAULT '0',
   KEY `dunRoomSpawnID` (`dunRoomSpawnID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -35,6 +39,10 @@ CREATE TABLE `dunRoomSpawnData` (
 
 LOCK TABLES `dunRoomSpawnData` WRITE;
 /*!40000 ALTER TABLE `dunRoomSpawnData` DISABLE KEYS */;
+INSERT INTO `dunRoomSpawnData`(`dunRoomSpawnID`, `dunRoomSpawnName`, `dunRoomSpawnType`, `xpos`, `ypos`, `zpos`)
+VALUES
+(0, "", 0,0,0,0);
+
 /*!40000 ALTER TABLE `dunRoomSpawnData` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

@@ -18,6 +18,7 @@
 #include "system/Damage.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
 
@@ -58,22 +59,19 @@ PyResult Command_siglist(Client* who, CommandDB* db, PyServiceMgr* services, con
     /* this command is used to test dungeon spawn system - wip.   -allan 21Feb15
      *   will list currently active dungeons, by systemID.
      */
+    
+    std::vector<CosmicSignature> sig;
+    who->SystemMgr()->GetAnomMgr()->GetSignatureList(sig);
 
-    DBQueryResult* res = new DBQueryResult();
-
-    /** @todo update this to use AnomalyManager from current system */
-    ManagerDB m_db;
-    m_db.GetAnomalyList(*res);
-    int count = res->GetRowCount();
+    int count = sig.size();
 
     std::ostringstream str;
     str << "There are currently %u active dungeons<br>"; //50
     str << "LocationID aID iID 'Name'<br>"; //30
 
-    DBResultRow row;
-    while (res->GetRow(row)) {
+    for (auto sigs : sig) {
         // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
-        str << row.GetInt(2) << " " << row.GetText(0) << " " << row.GetInt(1) << " '" << row.GetText(3) << "'<br>"; //100
+        str << sigs.systemID << " " << sigs.sigID.c_str() << " " << sigs.sigItemID << " '" << sigs.sigName.c_str() << "'<br>"; //100
     }
 
     int size = count * 100;

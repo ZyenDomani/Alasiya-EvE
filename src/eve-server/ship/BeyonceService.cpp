@@ -487,11 +487,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     } else if (type == "scan") {
         uint32 anomID = pSystem->GetAnomMgr()->GetAnomalyID(stringArg);
         pSE = pSystem->GetSE(anomID);
-        warpToPoint = ManagerDB::GetAnomalyPos(stringArg);
     } else if (type == "launch") {
         pSE = pSystem->GetSE(toID);
         // launchpickup - launch, launchid
-         warpToPoint = PlanetDB::GetLaunchPos(toID);
     }
 	// the systems below are not implemented yet.  hold on coding till systems are working and we know what needs to be done here
 	// more info can be found in client::menuSvc.py
@@ -562,6 +560,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
          */
     if (pSE != nullptr) {
         radius = pSE->GetRadius();
+        // this will need adjustment for warping to bookmarks 
         warpToPoint = pSE->GetPosition();
         if (pSE->IsPlanetSE()) {
             srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.

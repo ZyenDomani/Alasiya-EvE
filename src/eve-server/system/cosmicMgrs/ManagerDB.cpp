@@ -149,7 +149,7 @@ GPoint ManagerDB::GetAnomalyPos(std::string& string)
     }
     DBResultRow row;
     if (!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "Error in GetAnomalyPos query: %s", res.error.c_str());
+        _log(DATABASE__MESSAGE, "GetAnomalyPos query returned no items");
         return NULL_ORIGIN;
     }
 
@@ -291,9 +291,15 @@ void ManagerDB::GetWHSystemClass(DBQueryResult& res)
         _log(DATABASE__ERROR, "Error in GetWHSystemClass query: %s", res.error.c_str());
 }
 
+void ManagerDB::GetDunEntryData(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT dunEntryID, dunEntryName, xpos, ypos, zpos FROM dunEntryData"))
+        _log(DATABASE__ERROR, "Error in GetDunRoomData query: %s", res.error.c_str());
+}
+
 void ManagerDB::GetDunGroupData(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT d.dunGroupID, d.itemTypeID, t.typeName, t.groupID, g.categoryID, d.xpos, d.ypos, d.zpos"
+    if (!sDatabase.RunQuery(res, "SELECT d.dunGroupID, d.itemTypeID, d.itemGroupID, t.typeName, t.groupID, g.categoryID, d.xpos, d.ypos, d.zpos"
         " FROM dunGroupData AS d"
         "  LEFT JOIN invTypes AS t ON d.itemTypeID = t.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID" )) {
@@ -322,7 +328,7 @@ void ManagerDB::GetDunSpawnInfo(DBQueryResult& res)
 void ManagerDB::GetDunTemplates(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT dunTemplateID, dunTemplateName, dunRoomID, dunEntryID, dunTypeID, dunSpawnType, dunRooms, dunRoomTypeID, dunRoomCategoryID FROM dunTemplates"))
+        "SELECT dunTemplateID, dunTemplateName, dunEntryID, dunSpawnID, dunRoomID FROM dunTemplates"))
         _log(DATABASE__ERROR, "Error in GetDunTemplates query: %s", res.error.c_str());
 }
 

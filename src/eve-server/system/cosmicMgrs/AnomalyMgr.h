@@ -42,8 +42,10 @@ class AnomalyMgr
       void AddAnomaly(InventoryItemRef iRef);
       void RemoveAnomaly(uint32 itemID);
       void GetAnomalyList(std::vector< CosmicSignature >& sig);
+      void GetSignatureList(std::vector< CosmicSignature >& sig);
 
-      uint32 GetAnomalyID(std::string sigID);
+      uint32 GetAnomalyID(std::string& sigID);
+      GPoint GetAnomalyPos(std::string& sigID);
 
 protected:
     ManagerDB m_mdb;
@@ -80,6 +82,7 @@ private:
 
 
     std::map<uint32, CosmicSignature> m_sigByItemID;
+    std::map<uint32, CosmicSignature> m_anomByItemID;
     std::map<std::string, CosmicSignature> m_sigBySigID;
 
 };

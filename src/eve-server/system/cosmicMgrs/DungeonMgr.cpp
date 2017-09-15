@@ -16,6 +16,7 @@
 #include "StaticDataMgr.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
+#include "BeltMgr.h"
 
 DungeonDataMgr::DungeonDataMgr()
 {
@@ -40,15 +41,11 @@ void DungeonDataMgr::_Populate()
     m_db.GetDunTemplates(*res);
     DunTemplate dtemplates;
     while (res->GetRow(row)) {
-        // SELECT dunTemplateID, dunName, dunRoomID, dunEntryID, dunTypeID, dunSpawnType, dunRooms, dunRoomTypeID, dunRoomCategoryID
+        // SELECT dunTemplateID, dunTemplateName, dunEntryID, dunSpawnID, dunRoomID
         dtemplates.dunName = row.GetText(1);
-        dtemplates.dunRoomID = row.GetInt(2);
-        dtemplates.dunEntryID = row.GetInt(3);
-        dtemplates.dunTypeID = row.GetInt(4);
-        dtemplates.dunSpawnType = row.GetInt(5);
-        dtemplates.dunRooms = row.GetInt(6);
-        dtemplates.dunRoomTypeID = row.GetInt(7);
-        dtemplates.dunRoomCategoryID = row.GetInt(8);
+        dtemplates.dunRoomID = row.GetInt(4);
+        dtemplates.dunEntryID = row.GetInt(2);
+        dtemplates.dunSpawnType = row.GetInt(3);
         templates.emplace(row.GetInt(0), dtemplates);
     }
 
@@ -61,37 +58,34 @@ void DungeonDataMgr::_Populate()
         drooms.x = row.GetInt(2);
         drooms.y = row.GetInt(3);
         drooms.z = row.GetInt(4);
-        rooms.emplace(row.GetInt(0), drooms);
+       rooms.emplace(row.GetInt(0), drooms);
     }
 
     res->Reset();
     m_db.GetDunGroupData(*res);
     DunGroupData dgroups;
     while (res->GetRow(row)) {
-        // SELECT d.dunGroupID, d.itemTypeID, t.typeName, t.groupID, g.categoryID, d.xpos, d.ypos, d.zpos
+        // SELECT d.dunGroupID, d.itemTypeID, d.itemGroupID, t.typeName, t.groupID, g.categoryID, d.xpos, d.ypos, d.zpos
         dgroups.typeID = row.GetInt(1);
-        dgroups.typeName = row.GetText(2);
-        dgroups.typeGrpID = row.GetInt(3);
-        dgroups.typeCatID = row.GetInt(4);
-        dgroups.x = row.GetInt(5);
-        dgroups.y = row.GetInt(6);
-        dgroups.z = row.GetInt(7);
+        dgroups.typeName = row.GetText(3);
+        dgroups.typeGrpID = row.GetInt(4);
+        dgroups.typeCatID = row.GetInt(5);
+        dgroups.x = row.GetInt(6);
+        dgroups.y = row.GetInt(7);
+        dgroups.z = row.GetInt(8);
         groups.emplace(row.GetInt(0), dgroups);
     }
 
-    /* not ready yet
     res->Reset();
-    m_db.GetDunRoomInfo(*res);
-    DunRoomInfo info;
+    m_db.GetDunEntryData(*res);
+    DunEntryData dentry;
     while (res->GetRow(row)) {
-        // SELECT dunRoomID, dunRoomType, dunRoomCategory, dunRoomSpawnID, dunRoomSpawnType
-        info.dunRoomID = row.GetInt(0);
-        info.dunRoomType = row.GetInt(1);
-        info.dunRoomCategory = row.GetInt(2);
-        info.dunRoomSpawnID = row.GetInt(3);
-        info.dunRoomSpawnType = row.GetInt(4);
-        roomInfo.emplace(info.dunRoomID, info);
-    } */
+        //SELECT dunEntryID, xpos, ypos, zpos FROM dunEntryData
+        dentry.x = row.GetInt(1);
+        dentry.y = row.GetInt(2);
+        dentry.z = row.GetInt(3);
+        entrys.emplace(row.GetInt(0), dentry);
+    }
 
     /* not ready yet
     res->Reset();
@@ -107,7 +101,6 @@ void DungeonDataMgr::_Populate()
         groups.emplace(spawn.dunRoomSpawnID, spawn);
     } */
 
-
     //cleanup
     SafeDelete(res);
 
@@ -119,7 +112,7 @@ void DungeonDataMgr::AddDungeon(ActiveDungeon& dungeon)
 {
     activeDungeons.emplace(dungeon.systemID, dungeon);
     _log(COSMIC_MGR__MESSAGE, "Added Dungeon %u (%u) in systemID %u to active dungeon list.", dungeon.dunItemID, dungeon.dunTemplateID, dungeon.systemID);
-    m_db.SaveActiveDungeon(dungeon);
+    //m_db.SaveActiveDungeon(dungeon);
 }
 
 void DungeonDataMgr::GetDungeons(std::vector< ActiveDungeon >& dunList)
@@ -218,13 +211,13 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         return false;
     }
 
-    uint32 roomID = itr->second.dunRoomID;
+    int32 roomID = itr->second.dunRoomID;
     if (roomID == 0) {
         _log(COSMIC_MGR__ERROR, "DungeonMgr::Create() - roomID is 0 for template %u.", templateID);
         return false;
     }
 
-    uint32 typeID = itr->second.dunTypeID;
+    //uint32 typeID = itr->second.dunTypeID;  **removed**
 
     if ((sig.dungeonType == EVEDUNG::dunTypes::typeGravimetric)      //2
         or (sig.dungeonType == EVEDUNG::dunTypes::typeMagnetometric) //3
@@ -233,7 +226,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         or (sig.ownerID == factionRogueDrones)) {
             sig.sigName = itr->second.dunName;
         } else {
-            sig.sigName = sDataMgr.GetFactionName((sig.ownerID));
+            sig.sigName = sDataMgr.GetFactionName(sig.ownerID);
             sig.sigName += itr->second.dunName;
         }
 
@@ -265,18 +258,34 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     m_system->BuildDynamicEntity(entity);
     sig.sigItemID = entity.itemID;
 
-    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - templateID %u, roomID %u, typeID %u for %s", templateID, roomID, typeID, sig.sigName.c_str());
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - templateID %u, roomID %i for %s", templateID, roomID, sig.sigName.c_str());
+
+    /* do we need this?  persistant dungeons? */
+   // if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
+        // setup data to save active dungeon
+        ActiveDungeon dungeon;
+            dungeon.dunExpiryTime = Win32TimeNow() + (Win32Time_Day * 3);       // 3 days - i know this isnt right. just for testing.
+            dungeon.dunTemplateID = templateID;
+            dungeon.dunItemID = sig.sigItemID;
+            dungeon.state = 0;  //dunType here.
+            dungeon.systemID = sig.systemID;
+            dungeon.x = sig.x;
+            dungeon.y = sig.y;
+            dungeon.z = sig.z;
+        sDunDataMgr.AddDungeon(dungeon);
+    //}
 
     // get room and group data and put in spawn vector
-    uint16 x=0, y=0, z=0, group=0;
+    int16 x=0, y=0, z=0;
+    int32 groupID=0;
     DunGroupData grp;
     auto roomRange = sDunDataMgr.rooms.equal_range(roomID);
     for (auto it = roomRange.first; it != roomRange.second; ++it) {
         x = it->second.x;
         y = it->second.y;
         z = it->second.z;
-        group = it->second.dunGroupID;
-        auto groupRange = sDunDataMgr.groups.equal_range(group);
+        groupID = it->second.dunGroupID;
+        auto groupRange = sDunDataMgr.groups.equal_range(groupID);
         for (auto it2 = groupRange.first; it2 != groupRange.second; ++it2) {
             grp.typeCatID = it2->second.typeCatID;
             grp.typeGrpID = it2->second.typeGrpID;
@@ -289,63 +298,59 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         }
     }
 
-    if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
-        // setup data to save active dungeon
-        ActiveDungeon dungeon;
-            dungeon.dunExpiryTime = Win32TimeNow() + (Win32Time_Day * 3);       // 3 days - i know this isnt right. just for testing.
-            dungeon.dunTemplateID = templateID;
-            dungeon.dunItemID = sig.sigItemID;
-            dungeon.state = 0;  //dunType here.
-            dungeon.systemID = sig.systemID;
-            dungeon.x = sig.x;
-            dungeon.y = sig.y;
-            dungeon.z = sig.z;
-        sDunDataMgr.AddDungeon(dungeon);
-    }
+    /* at this point, we have all room/group data.
+     * now, we need to separate grav sites and send to beltMgr for processing.
+     *
+     */
 
-    /* spawning method - just set up data and let SystemManager create and place the object */
-    uint32 systemID = m_system->GetID();
-    std::vector<uint32> items;
-    GPoint pos2(NULL_ORIGIN);
-    auto cur = m_anomalyItems.begin();
-    while (cur != m_anomalyItems.end()) {
-        pos2.x = sig.x + cur->x;
-        pos2.y = sig.y + cur->y;
-        pos2.z = sig.z + cur->z;
-        // typeID, ownerID, locationID, flag, name, &_position
-        ItemData iData(cur->typeID, 1/*fix this*/, systemID, flagAutoFit, cur->typeName.c_str(), pos2);
+    if (sig.dungeonType == EVEDUNG::dunTypes::typeGravimetric) {
+        // dungeon template for grav sites just give 'extra' roid data
+        std::vector<uint16> roidTypes;
+        return m_system->GetBeltMgr()->Create(sig, roidTypes);
+    } else {
+        /* item spawning method - just set up data and let SystemManager create and place the object */
+        uint32 systemID = m_system->GetID();
+        std::vector<uint32> items;
+        GPoint pos2(NULL_ORIGIN);
+        auto cur = m_anomalyItems.begin();
+        while (cur != m_anomalyItems.end()) {
+            pos2.x = sig.x + cur->x;
+            pos2.y = sig.y + cur->y;
+            pos2.z = sig.z + cur->z;
+            // typeID, ownerID, locationID, flag, name, &_position
+            ItemData iData(cur->typeID, sig.ownerID, systemID, flagAutoFit, cur->typeName.c_str(), pos2);
 
-        /** @todo update this to use temp items */
-        InventoryItemRef item = m_services.item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
-        if (item.get() == nullptr) // we'll survive...
-            continue;
+            /** @todo update this to use temp items */
+            InventoryItemRef item = m_services.item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
+            if (item.get() == nullptr) // we'll survive...
+                continue;
 
-        DBSystemDynamicEntity entity;
-            entity.categoryID = (EVEItemCategories)cur->typeCatID;
-            entity.groupID = cur->typeGrpID;
-            entity.itemID = item->itemID();
-            entity.itemName = cur->typeName;
-            entity.typeID = cur->typeID;
-            entity.x = pos2.x;
-            entity.y = pos2.y;
-            entity.z = pos2.z;
-            /** @todo  fix these... */
-            entity.ownerID = 1;
-            entity.allianceID = 0;
-            entity.corporationID = 0;
-        // do the spawn using SystemManager's BuildEntity:
-            /** @todo this is more shit that should NOT be in db */
-        m_system->BuildDynamicEntity(entity);
-        items.push_back(item->itemID());
-        ++cur;
-    }
-
-    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created with %u items in system %u using template %u.", \
+            DBSystemDynamicEntity entity;
+                entity.categoryID = (EVEItemCategories)cur->typeCatID;
+                entity.groupID = cur->typeGrpID;
+                entity.itemID = item->itemID();
+                entity.itemName = cur->typeName;
+                entity.typeID = cur->typeID;
+                entity.x = pos2.x;
+                entity.y = pos2.y;
+                entity.z = pos2.z;
+                /** @todo  fix these... */
+                entity.ownerID = sig.ownerID;
+                entity.allianceID = -1;
+                entity.corporationID = sDataMgr.GetCorpID(sig.ownerID);
+            // do the spawn using SystemManager's BuildEntity:
+                /** @todo this is more shit that should NOT be in db */
+            m_system->BuildDynamicEntity(entity);
+            items.push_back(item->itemID());
+            ++cur;
+        }
+        _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created with %u items in system %u using template %u.", \
               sig.sigItemID, m_anomalyItems.size(),sig.systemID, templateID);
 
-    m_anomalyItems.clear();
-    m_dungeonList.insert(std::make_pair(sig.sigItemID, items));
-
+        m_anomalyItems.clear();
+        if (!items.empty())
+            m_dungeonList.insert(std::make_pair(sig.sigItemID, items));
+    }
     return true;
 }
 
@@ -376,6 +381,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 subType = MakeRandomInt(0,2);
             }
 
+            // this cannot be random....need to verify these roid types CAN spawn in this (m_system) region.
             level = MakeRandomFloat();
             if (level < 0.1) {
                 level = 3;
@@ -401,21 +407,31 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             } else {
                 if (IsEven(MakeRandomInt(0,10)))
                     level = 2;
+                else
+                    level = 1;
             }
         } break;
         case dunTypes::typeRadar: {             // 4
-            subType = MakeRandomInt(1,8);
-            if (type == 3)
-                if (IsEven(MakeRandomInt(0,10))) {
-                    level = 2;
-                    factionID = 0;
-                }
+            if (factionID == 6) {
+                level = 1;
+                subType = 1;
+                factionID = 0;
+            } else {
+                subType = MakeRandomInt(1,8);
+                if (type == 3)
+                    if (IsEven(MakeRandomInt(0,10))) {
+                        level = 2;
+                        factionID = 0;
+                    }
+            }
         } break;
         case dunTypes::typeLadar: {             // 5
             factionID = 0;
             subType = MakeRandomInt(1,8);
         } break;
         case dunTypes::typeAnomaly: {           // 7
+            if (factionID < 6)
+                factionID = 0;
             subType = MakeRandomInt(1,5);
             if (type == 1) {
                 if (subType == 1) {
@@ -435,12 +451,28 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 }
             }
         } break;
+        case dunTypes::typeMission: {   // 1
+            // not sure how im gonna do this one yet...make it unrated for now
+            sig.dungeonType = 8;
+        };
         case dunTypes::typeUnrated: {           // 8
             if (factionID == 6)
                 subType = MakeRandomInt(1,3);
-            else
+            else {
+                factionID = 0;
                 subType = MakeRandomInt(1,5);
+            }
         } break;
+        case dunTypes::typeEscalation:  // 9
+        case dunTypes::typeDED_Complex: {  // 10
+            sig.dungeonType = 9;
+            if (factionID == 6)
+                subType = MakeRandomInt(1,3);
+            else {
+                factionID = 0;
+                subType = MakeRandomInt(1,5);
+            }
+        };
         case 0: {
             sig.dungeonType = 7;
             subType = MakeRandomInt(1,5);
@@ -465,13 +497,12 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
     }
 
     /* templateID format.  ABCDE
-     *       A = sitetype - mission, grav, magn, ldar, radar, anom, unrated, ded, escalation
+     *       A = sitetype - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 7:anomaly, 8:unrated, 9:ded/escalation
      *       B = type - anomaly security: 1=hi, 2=lo, 3=null, 4=mid, mission misc: 1 to 9
      *       C = subtype  - 2: 0 to 5, 7: 1 to 5, 1: 1 to 9, 3: 1 to 8, 5: 1 to 8
-     *       D = level - 7: 1 to 5, 2: 1 to 3, 4: type 3, 2 levels
-     *       E = faction - Anomaly: 1=Serpentis, 2=Angel Cartel, 3=Blood Raider Covenant, 4=Guristas Pirates, 5=Sansha's Nation, and 6=Rogue Drones: Missions add the 4 races
+     *       D = level - 2: 1 to 3, 4: type 3, 2 levels, 7: 1 to 5, 1: 1 to 9
+     *       E = faction - 0=*use region faction*, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7= , 8= , 9=
      */
-
 
     _log(COSMIC_MGR__MESSAGE, "DungeonMgr::MakeDungeon() - Calling Create on type %u", sig.dungeonType);
 
@@ -490,11 +521,11 @@ int8 DungeonMgr::GetFactionID(uint32 factionID)
         case factionSerpentis:      return 1;
         case factionRogueDrones:    return 6;
         // these arent gonna fit...
-        case factionAmarr:          return 6;
-        case factionAmmatar:        return 6;
-        case factionCaldari:        return 6;
-        case factionGallente:       return 6;
-        case factionMinmatar:       return 6;
+        case factionAmarr:          return 0;
+        case factionAmmatar:        return 0;
+        case factionCaldari:        return 0;
+        case factionGallente:       return 0;
+        case factionMinmatar:       return 0;
     }
 }
 

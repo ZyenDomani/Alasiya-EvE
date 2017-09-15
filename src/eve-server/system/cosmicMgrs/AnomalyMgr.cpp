@@ -169,8 +169,13 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
         sig.systemID = m_system->GetID();
         sig.sigID = sEntityList.GetAnomalyID();
         // *Mgr will determine name and itemID.
+        sig.sigItemID = 0;
         sig.sigName = "Test Name Here";
-        sig.ownerID = sDataMgr.GetRegionRatFaction(m_system->GetRegionID());
+        sig.ownerID = 500022;
+        if (sConfig.npc.AnomalyFaction)
+            sig.ownerID = sConfig.npc.AnomalyFaction;
+        else if (MakeRandomFloat() > 0.15) // chance to be rogue drones
+            sig.ownerID =  sDataMgr.GetRegionRatFaction(m_system->GetRegionID());
 
         if (typeID == 0)
             sig.dungeonType = GetAnomalyType();
@@ -248,8 +253,13 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
     if (!m_dungMgr->MakeDungeon(sig)) // pass by ref here, so other vars can be set.
         return;
     // add new sig to sysSigMaps
+    //key is itemID for ease of removal later
     m_sigBySigID.insert(std::pair<std::string, CosmicSignature>(sig.sigID, sig));
-    m_sigByItemID.insert(std::pair<uint32, CosmicSignature>(sig.sigItemID, sig)); //key is itemID for ease of removal later
+    //if (sig.sigTypeID == EVEDB::invTypes::typeCosmicAnomaly)
+        m_sigByItemID.insert(std::pair<uint32, CosmicSignature>(sig.sigItemID, sig));
+   // else
+   //     m_anomByItemID.insert(std::pair<uint32, CosmicSignature>(sig.sigItemID, sig));
+
     //m_mdb.SaveAnomaly(sig);
 
     _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Creating Signal %s of type %u in system %u", sig.sigName.c_str(), sig.dungeonType, sig.systemID);
@@ -324,13 +334,27 @@ uint8 AnomalyMgr::GetAnomalyType()
     return typeID;
 }
 
-uint32 AnomalyMgr::GetAnomalyID(std::string sigID)
+uint32 AnomalyMgr::GetAnomalyID(std::string& sigID)
 {   // <std::string, CosmicSignature>
     std::map<std::string, CosmicSignature>::iterator itr = m_sigBySigID.find(sigID);
     if (itr != m_sigBySigID.end())
         return itr->second.sigItemID;
     return 0;
 }
+
+GPoint AnomalyMgr::GetAnomalyPos(std::string& sigID)
+{
+    // <std::string, CosmicSignature>
+    std::map<std::string, CosmicSignature>::iterator itr = m_sigBySigID.find(sigID);
+    GPoint pos(NULL_ORIGIN);
+    if (itr != m_sigBySigID.end()) {
+        pos.x = itr->second.x;
+        pos.y = itr->second.y;
+        pos.z = itr->second.z;
+    }
+    return pos;
+}
+
 
 void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
     // registration method for pos items, wrecks and abandoned ships
@@ -349,10 +373,18 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
 
 }
 
-void AnomalyMgr::GetAnomalyList(std::vector<CosmicSignature>& sig) {
+void AnomalyMgr::GetSignatureList(std::vector< CosmicSignature >& sig)
+{
     // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
     // retrieval method for scan queries
     for (auto cur : m_sigByItemID)
+        sig.push_back(cur.second);
+}
+
+void AnomalyMgr::GetAnomalyList(std::vector<CosmicSignature>& sig) {
+    // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
+    // retrieval method for scan queries
+    for (auto cur : m_anomByItemID)
         sig.push_back(cur.second);
 }
 

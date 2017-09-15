@@ -507,83 +507,96 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
             // TODO: (just use CelestialEntity class for these until their own classes are written)
             // * WarpGateEntity  <-- Warp_Gate
             // * WormholeEntity  <-- Wormhole
-
-            if (entity.groupID == EVEDB::invGroups::Wreck) {
-                WreckContainerRef wreck = factory->GetWreckContainer( entity.itemID );
-                if (wreck.get() == nullptr)
-                    return nullptr;
-                /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-                data.factionID = sEntityList.GetWreckFaction(entity.typeID);
-                WreckSE* wSE = new WreckSE(wreck, *(system.GetServiceMgr()), &system, data);
-                wreck->GetMyInventory()->LoadContents(factory);
-                wreck->SetMySE(wSE);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WreckSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return wSE;
-            } else if ( (entity.groupID == EVEDB::invGroups::Audit_Log_Secure_Container) or (entity.groupID == EVEDB::invGroups::Secure_Cargo_Container)
-                or (entity.groupID == EVEDB::invGroups::Cargo_Container) or (entity.groupID == EVEDB::invGroups::Freight_Container)
-                or (entity.groupID == EVEDB::invGroups::Shipping_Crates)  )
-            {
-                CargoContainerRef contRef = factory->GetCargoContainer( entity.itemID );
-                if (contRef.get() == nullptr)
-                    return nullptr;
-                /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-                ContainerSE* cSE = new ContainerSE(contRef, *(system.GetServiceMgr()), &system, data);
-                contRef->GetMyInventory()->LoadContents(factory);
-                contRef->SetMySE(cSE);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return cSE;
-            }
+            switch (entity.groupID) {
+                case EVEDB::invGroups::Wreck: {
+                    WreckContainerRef wreck = factory->GetWreckContainer( entity.itemID );
+                    if (wreck.get() == nullptr)
+                        return nullptr;
+                    /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                    data.factionID = sEntityList.GetWreckFaction(entity.typeID);
+                    WreckSE* wSE = new WreckSE(wreck, *(system.GetServiceMgr()), &system, data);
+                    wreck->GetMyInventory()->LoadContents(factory);
+                    wreck->SetMySE(wSE);
+                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WreckSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    return wSE;
+                } break;
+                case EVEDB::invGroups::Audit_Log_Secure_Container:
+                case EVEDB::invGroups::Secure_Cargo_Container:
+                case EVEDB::invGroups::Cargo_Container:
+                case EVEDB::invGroups::Freight_Container:
+                case EVEDB::invGroups::Shipping_Crates: {
+                    CargoContainerRef contRef = factory->GetCargoContainer( entity.itemID );
+                    if (contRef.get() == nullptr)
+                        return nullptr;
+                    /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                    ContainerSE* cSE = new ContainerSE(contRef, *(system.GetServiceMgr()), &system, data);
+                    contRef->GetMyInventory()->LoadContents(factory);
+                    contRef->SetMySE(cSE);
+                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    return cSE;
+                } break;
             /** @todo (Allan)  need to separate these by class to create proper SE (started) */
-            else if ((entity.groupID == EVEDB::invGroups::Biomass)
-                or (entity.groupID == EVEDB::invGroups::Ring/*wtf*/) or (entity.groupID == EVEDB::invGroups::Secondary_Sun)
-                or (entity.groupID == EVEDB::invGroups::Large_Collidable_Object) or (entity.groupID == EVEDB::invGroups::Large_Collidable_Structure)
-                or (entity.groupID == EVEDB::invGroups::Large_Collidable_Ship)  // this will not hit.  category 11, entity
-                or (entity.groupID == EVEDB::invGroups::Cloud) or (entity.groupID == EVEDB::invGroups::Landmark)
-                or (entity.groupID == EVEDB::invGroups::Comet) or (entity.groupID == EVEDB::invGroups::Destructable_Station_Services)
+                case EVEDB::invGroups::Biomass:
+                case EVEDB::invGroups::Ring:/*wtf*/
+                case EVEDB::invGroups::Secondary_Sun:
+                case EVEDB::invGroups::Large_Collidable_Object:
+                case EVEDB::invGroups::Large_Collidable_Structure:
+                case EVEDB::invGroups::Large_Collidable_Ship:  // this will not hit.  category 11, entity
+                case EVEDB::invGroups::Cloud:
+                case EVEDB::invGroups::Landmark:
+                case EVEDB::invGroups::Comet:
+                case EVEDB::invGroups::Destructable_Station_Services:
                 /* test these to see if they are POS types */
-                or (entity.groupID == EVEDB::invGroups::Construction_Platform)
-                or (entity.groupID == EVEDB::invGroups::Station_Improvement_Platform) or (entity.groupID == EVEDB::invGroups::Global_Warp_Disruptor)
-                or (entity.groupID == EVEDB::invGroups::Station_Upgrade_Platform)
-                or (entity.groupID == EVEDB::invGroups::Force_Field)  // <<<  this one is POS type.  it IS a plain CSE
+                case EVEDB::invGroups::Construction_Platform:
+                case EVEDB::invGroups::Station_Improvement_Platform:
+                case EVEDB::invGroups::Global_Warp_Disruptor:
+                case EVEDB::invGroups::Station_Upgrade_Platform:
+                case EVEDB::invGroups::Force_Field:  // <<<  this one is POS type but it IS a plain CSE
                 /* these will get their own class eventually */
-                or (entity.groupID == EVEDB::invGroups::Effect_Beacon)
-                or (entity.groupID == EVEDB::invGroups::Beacon) or (entity.groupID == EVEDB::invGroups::Covert_Beacon)
-                or (entity.groupID == EVEDB::invGroups::Harvestable_Cloud) or (entity.groupID == EVEDB::invGroups::Planetary_Cloud))
-            {
-                CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
-                if (celestial.get() == nullptr)
-                    return nullptr;
-                /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-                CelestialSE* cSE = new CelestialSE(celestial, *(system.GetServiceMgr()), &system);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making CelestialSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return cSE;
-            } else if (entity.groupID == EVEDB::invGroups::Wormhole) {
-                CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
-                if (celestial.get() == nullptr)
-                    return nullptr;
-                /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-                WormholeSE* wSE = new WormholeSE(celestial, *(system.GetServiceMgr()), &system);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WormholeSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return wSE;
-            } else if ((entity.groupID == EVEDB::invGroups::Cosmic_Anomaly) or (entity.groupID == EVEDB::invGroups::Cosmic_Signature)) {
-                CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
-                if (celestial.get() == nullptr)
-                    return nullptr;
-                /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-                AnomalySE* aSE = new AnomalySE(celestial, *(system.GetServiceMgr()), &system);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making AnomalySE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return aSE;
-            } else if (entity.groupID == EVEDB::invGroups::Warp_Gate) { //accel gate
-                // does this need own item, or celestial, or generic or other?
-                InventoryItemRef iRef = factory->GetItem( entity.itemID );
-                //CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
-                if (iRef.get() == nullptr)
-                    return nullptr;
-                /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-                ItemSystemEntity* aSE = new ItemSystemEntity(iRef, *(system.GetServiceMgr()), &system);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ItemSystemEntity item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return aSE;
-            }
+                case EVEDB::invGroups::Effect_Beacon:
+                case EVEDB::invGroups::Beacon:
+                case EVEDB::invGroups::Covert_Beacon:
+                case EVEDB::invGroups::Harvestable_Cloud:
+                case EVEDB::invGroups::Planetary_Cloud: {
+                    CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
+                    if (celestial.get() == nullptr)
+                        return nullptr;
+                    /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                    CelestialSE* cSE = new CelestialSE(celestial, *(system.GetServiceMgr()), &system);
+                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making CelestialSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    return cSE;
+                } break;
+                case EVEDB::invGroups::Wormhole: {
+                    CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
+                    if (celestial.get() == nullptr)
+                        return nullptr;
+                    /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                    WormholeSE* wSE = new WormholeSE(celestial, *(system.GetServiceMgr()), &system);
+                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WormholeSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    return wSE;
+                } break;
+                case EVEDB::invGroups::Cosmic_Anomaly:
+                case EVEDB::invGroups::Cosmic_Signature: {
+                    CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
+                    if (celestial.get() == nullptr)
+                        return nullptr;
+                    /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                    AnomalySE* aSE = new AnomalySE(celestial, *(system.GetServiceMgr()), &system);
+                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making AnomalySE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    return aSE;
+                } break;
+                case EVEDB::invGroups::Warp_Gate: { //accel gate
+                    // does this need own item, or celestial, or generic or other?
+                    InventoryItemRef iRef = factory->GetItem( entity.itemID );
+                    //CelestialObjectRef celestial = factory->GetCelestialObject( entity.itemID );
+                    if (iRef.get() == nullptr)
+                        return nullptr;
+                    /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
+                    ItemSystemEntity* aSE = new ItemSystemEntity(iRef, *(system.GetServiceMgr()), &system);
+                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ItemSystemEntity item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                    return aSE;
+                } break;
+            } break;
         } break;
         case EVEDB::invCategories::Entity: {            // Entities
             if (entity.groupID == EVEDB::invGroups::Spawn_Container ) {     // these are destructible objects found in dungeons

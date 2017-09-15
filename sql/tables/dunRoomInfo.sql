@@ -24,11 +24,8 @@ DROP TABLE IF EXISTS `dunRoomInfo`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `dunRoomInfo` (
   `dunRoomID` int(11) NOT NULL,
-  `dunRoomName` varchar(85) COLLATE utf8_bin NOT NULL,
-  `dunRoomType` int(11) NOT NULL DEFAULT '0',
-  `dunRoomCategory` int(11) NOT NULL DEFAULT '0',
+  `dunRoomName` varchar(150) COLLATE utf8_bin NOT NULL,
   `dunRoomSpawnID` int(11) NOT NULL DEFAULT '0',
-  `dunRoomSpawnType` int(11) NOT NULL DEFAULT '0',
   KEY `dunRoomID` (`dunRoomID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -37,10 +34,95 @@ CREATE TABLE `dunRoomInfo` (
 -- Dumping data for table `dunRoomInfo`
 --
 
-LOCK TABLES `dunRoomInfo` WRITE;
 /*!40000 ALTER TABLE `dunRoomInfo` DISABLE KEYS */;
+INSERT INTO `dunRoomInfo`(`dunRoomID`, `dunRoomName`, `dunRoomSpawnID`)
+VALUES
+-- 7xxx mining rooms
+-- misc common ore types
+(7011,'Small Veldspar Deposit', 0),
+(7012,'Small Scordite Deposit', 0),
+(7013,'Small Pyroxeres Deposit', 0),
+(7014,'Small Plagioclase Deposit', 0),
+(7015,'Small Veldspar and Scordite Deposit', 0),
+
+-- 7066 - 7079 ice (rat type and size by region)
+(7066,'White Glaze Belt',0),
+(7067,'Blue Ice Belt',0),
+(7068,'Glacial Mass Belt',0),
+(7069,'Glare Crust Belt',0),
+(7076,'Enriched White Glaze Belt',0),
+(7077,'Thick Blue Ice Belt',0),
+(7078,'Smooth Glacial Mass Belt',0),
+(7079,'Pristine Glare Crust Belt',0),
+
+
+(7111,'Small Omber Deposit', 0),
+(7112,'Small Kernite and Omber Deposit', 0),
+(7113,'Small Jaspet, Kernite and Omber Deposit', 0),
+(7211,'Small Hemorphite, Jaspet and Kernite Deposit', 0),
+(7212,'Small Hedbergite, Hemorphite and Jaspet Deposit', 0),
+(7213,'Small Hedbergite and Hemorphite Deposit', 0),
+(7214,'Small Gneiss Deposit', 0),
+(7311,'Small Dark Ochre and Gneiss Deposit', 0),
+(7312,'Small Crokite, Dark Ochre and Gneiss Deposit', 0),
+(7313,'Small Spodumain, Crokite and Dark Ochre Deposit', 0),
+(7511,'Small Bistot Deposit', 0),
+(7512,'Small Arkanor and Bistot Deposit', 0),
+(7513,'Small Mercoxit, Arkonor and Bistot Deposit', 0),
+
+(7121,'Medium Omber Deposit', 0),
+(7122,'Medium Kernite and Omber Deposit', 0),
+(7123,'Medium Jaspet, Kernite and Omber Deposit', 0),
+(7221,'Medium Hemorphite, Jaspet and Kernite Deposit', 0),
+(7222,'Medium Hedbergite, Hemorphite and Jaspet Deposit', 0),
+(7223,'Medium Hedbergite and Hemorphite Deposit', 0),
+(7224,'Medium Gneiss Deposit', 0),
+(7321,'Medium Dark Ochre and Gneiss Deposit', 0),
+(7322,'Medium Crokite, Dark Ochre and Gneiss Deposit', 0),
+(7323,'Medium Spodumain, Crokite and Dark Ochre Deposit', 0),
+(7521,'Medium Bistot Deposit', 0),
+(7522,'Medium Arkanor and Bistot Deposit', 0),
+(7523,'Medium Mercoxit, Arkonor and Bistot Deposit', 0),
+
+(7131,'Large Omber Deposit', 0),
+(7132,'Large Kernite and Omber Deposit', 0),
+(7133,'Large Jaspet, Kernite and Omber Deposit', 0),
+(7231,'Large Hemorphite, Jaspet and Kernite Deposit', 0),
+(7232,'Large Hedbergite, Hemorphite and Jaspet Deposit', 0),
+(7233,'Large Hedbergite and Hemorphite Deposit', 0),
+(7234,'Large Gneiss Deposit', 0),
+(7331,'Large Dark Ochre and Gneiss Deposit', 0),
+(7332,'Large Crokite, Dark Ochre and Gneiss Deposit', 0),
+(7333,'Large Spodumain, Crokite and Dark Ochre Deposit', 0),
+(7531,'Large Bistot Deposit', 0),
+(7532,'Large Arkanor and Bistot Deposit', 0),
+(7533,'Large Mercoxit, Arkonor and Bistot Deposit', 0),
+
+-- ladar sites (gas clouds)
+(7010,'Small Nebula - No Rats', 0),
+(7110,'Small Nebula - Small Rats', 0),
+(7210,'Small Nebula - Smallish Rats', 0),
+(7311,'Small Nebula - Medium Rats', 0),
+(7511,'Small Nebula - Large Rats', 0),
+(7120,'Medium Nebula - No Rats', 0),
+(7220,'Medium Nebula - Smallish Rats', 0),
+(7320,'Medium Nebula - Medium Rats', 0),
+(7520,'Medium Nebula - Large Rats', 0),
+(7130,'Large Nebula - Small Rats', 0),
+(7230,'Large Nebula - Medium Rats', 0),
+(7330,'Large Nebula - Large Rats', 0),
+(7530,'Large Nebula - Huge Rats', 0),
+
+-- these grav sites are for sov nullsec with Ore Prospecting Array
+(7110,'Small Asteroid Cluster', 0),
+(7220,'Moderate Asteroid Cluster', 0),
+(7330,'Large Asteroid Cluster', 0),
+(7540,'Enormous Asteroid Cluster', 0),
+(7750,'Colossal Asteroid Cluster', 0),
+
+
+
 /*!40000 ALTER TABLE `dunRoomInfo` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

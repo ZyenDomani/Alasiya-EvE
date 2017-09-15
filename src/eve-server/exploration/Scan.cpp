@@ -60,25 +60,55 @@ void Scan::RequestScans(PyDict* dict) {
     // if probe, get current positions, move as needed (actually, just simulate by removing from bubble, time on distance, add to new bubble)
     //  query possible items within scan range, return result. rinse, repeat as needed.
 
-    /* will have to write...
-     *  an anomoly handling class/system,       ...started - system/cosmicMgrs/AnomolyMgr.cpp
-     *  a dungeon creation/managing system,     ...started - system/cosmicMgrs/DungeonMgr.cpp
-     *  a wormhole system,                      ...started - system/cosmicMgrs/WormholeMgr.cpp
-     *  whatever else i find we need as i get to it.
-     */
-
-    //NOTE  for now, we are returning hard-coded data for appearance and bugfinding.
-
     uint32 scanTimer = m_client->GetShip()->GetAttribute(AttrScanSpeed).get_int();  // attrib 1123
-    OnSystemScanStarted osss;
-        osss.timestamp = Win32TimeNow();
-        osss.duration = scanTimer;
-        osss.scanProbesDict = new PyDict();
-    PyTuple* ev = osss.Encode();
+    OnSystemScanStarted ossst;
+        ossst.timestamp = Win32TimeNow();
+        ossst.duration = scanTimer;
+        ossst.scanProbesDict = new PyDict();
+    PyTuple* ev = ossst.Encode();
     m_client->SendNotification("OnSystemScanStarted", "charid", &ev);
     m_client->SetScanTimer(scanTimer);
 
-    return;
+    /** @note this works....but i dont like it...
+    std::vector<CosmicSignature> sig;
+    m_client->SystemMgr()->GetAnomMgr()->GetAnomalyList(sig);
+
+    PyList* resultList = new PyList();
+    for (auto sigs : sig) {
+        SystemScanResultPositive ssrp;
+            ssrp.typeID = sigs.sigTypeID;
+            ssrp.scanGroupID = sigs.scanGroupID;
+            ssrp.groupID = sigs.sigGroupID;
+            ssrp.strengthAttributeID = sigs.scanAttributeID;
+            ssrp.dungeonName = sigs.sigName;
+            ssrp.id = sigs.sigID;
+            ssrp.deviation = 0;
+            ssrp.degraded = false;
+            ssrp.probeID = m_client->GetShipID();
+            ssrp.certainty = 1;
+            ssrp.pos = new PyNone();
+        SSR_ObjectEx_Pos ssr_oed;
+            ssr_oed.x = sigs.x;
+            ssr_oed.y = sigs.y;
+            ssr_oed.z = sigs.z;
+        PyToken* token = new PyToken("foo.Vector3");
+        PyTuple* oed_tuple = new PyTuple(2);
+            oed_tuple->SetItem(0, token);
+            oed_tuple->SetItem(1, ssr_oed.Encode());
+        ssrp.data = new PyObjectEx(false, oed_tuple);  // oed goes here
+        resultList->AddItem(ssrp.Encode());
+    }
+
+    // dict and list are both empty for now.
+    PyDict* probeDict = new PyDict;
+    PyList* mtList = new PyList(0);
+    OnSystemScanStopped osssp;
+        osssp.scanProbesDict = probeDict;
+        osssp.systemScanResult = resultList;
+        osssp.absentTargets = mtList;
+        ev = osssp.Encode();
+    m_client->SendNotification("OnSystemScanStopped", "charid", &ev);
+    */
 }
 
 /*
@@ -100,7 +130,7 @@ void Scan::ScanResult() {
     /** @todo basic code works.  will need updates and calc's for various things once system matures.  see notes */
     /** @todo  see client code to verify what it expects, and what it can calculate */
     std::vector<CosmicSignature> sig;
-    m_client->SystemMgr()->GetAnomMgr()->GetAnomalyList(sig);
+    m_client->SystemMgr()->GetAnomMgr()->GetSignatureList(sig);
 
     PyList* resultList = new PyList();
     //. NOTE. cannot scan pos, wrecks, ships, mission sites, or escalations.  they DO have sigIDs, and can get to type (25%), but no farther

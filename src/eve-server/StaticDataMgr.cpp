@@ -556,12 +556,12 @@ std::string StaticDataMgr::GetCorpName(uint32 corpID)
 std::string StaticDataMgr::GetFactionName(uint32 factionID)
 {
     switch (factionID) {
-        case factionAngel:          return "Angel";
-        case factionSanshas:        return "Sansha";
-        case factionBloodRaider:    return "Blood";
-        case factionGuristas:       return "Guristas";
-        case factionSerpentis:      return "Serpentis";
-        case factionRogueDrones:    return "Drone";
+        case factionAngel:          return "Angel ";
+        case factionSanshas:        return "Sansha ";
+        case factionBloodRaider:    return "Blood ";
+        case factionGuristas:       return "Guristas ";
+        case factionSerpentis:      return "Serpentis ";
+        case factionRogueDrones:    return "Drone ";
     }
 }
 

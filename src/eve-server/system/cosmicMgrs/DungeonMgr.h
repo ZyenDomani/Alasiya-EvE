@@ -54,14 +54,15 @@ protected:
 
     typedef std::unordered_multimap<uint32, ActiveDungeon> ActiveDungeonDef;    //systemID is key (defined in ManagerDB)
     typedef std::unordered_multimap<uint32, DunTemplate> DunTemplateDef;    //templateID is key
-    typedef std::unordered_multimap<uint16, DunRoomInfo> DunRoomInfoDef;       //roomID is key
-    typedef std::unordered_multimap<uint16, DunRoomData> DunRoomsDef;       //roomID is key
-    typedef std::unordered_multimap<uint16, DunGroupData> DunGroupsDef;     //groupID is key
+    typedef std::unordered_multimap<uint32, DunRoomData> DunRoomsDef;       //roomID is key
+    typedef std::unordered_multimap<uint32, DunEntryData> DunEntryDef;       //entryID is key
+    typedef std::unordered_multimap<uint32, DunGroupData> DunGroupsDef;     //groupID is key
+
 
 public:
     ActiveDungeonDef activeDungeons;  // systemID is key.  holds active dungeon data
     DunTemplateDef templates;         // templateID is key.  holds all template data
-    DunRoomInfoDef roomInfo;          // roomID is key.  holds all room info
+    DunEntryDef entrys;               // entryID is key.  holds all entry data
     DunRoomsDef rooms;                // roomID is key.  holds all room data
     DunGroupsDef groups;              // groupID is key. holds all group data
 
@@ -97,6 +98,7 @@ public:
     bool MakeDungeon(CosmicSignature& sig);
 
     bool Create(uint32 templateID, CosmicSignature& sig);
+
 
     /* we do not own any of these */
 protected:
