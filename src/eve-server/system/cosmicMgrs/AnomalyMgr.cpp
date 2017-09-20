@@ -47,6 +47,9 @@
 AnomalyMgr::AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc)
 :m_services(svc),
 m_system(mgr),
+m_beltMgr(nullptr),
+m_dungMgr(nullptr),
+m_spawnMgr(nullptr),
 m_spawnTimer(10000),
 m_anomTimer(10000)
 {
@@ -94,6 +97,16 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     }
 
     // set internal check data
+    // range is 0.1 for 1.0 system to 2.0 for -0.9 system
+    float security = 1.1 - m_system->GetSystemSecurityRating();
+         if (security == 2.0)  m_maxSigs = 30;
+    else if (security > 1.501) m_maxSigs = 25;
+    else if (security > 1.001) m_maxSigs = 20;
+    else if (security > 0.751) m_maxSigs = 15;
+    else if (security > 0.451) m_maxSigs = 12;
+    else if (security > 0.251) m_maxSigs = 8;
+    else                       m_maxSigs = 5;
+
     // will these be static, var by system, var by trusec, config options, other???
     m_Sigs = 0;
     m_Anoms = 0;
@@ -112,7 +125,7 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     else
         m_anomTimer.Start(120000);  // 120s
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u) with %u Max Signals", m_system->GetName().c_str(), m_system->GetID(), m_maxSigs);
     return (m_initalized = true);
 }
 
@@ -121,7 +134,7 @@ void AnomalyMgr::Process() {
         return;
     if (m_anomTimer.Check(!sConfig.server.IsTestServer)) {
         /* do something useful here */
-        if (m_Sigs < 25)  //   hardcode to 25 for now
+        if (m_Sigs < m_maxSigs)
             CreateAnomaly();
     }
 
@@ -273,7 +286,7 @@ uint8 AnomalyMgr::GetAnomalyType()
     switch(typeID) {
         case dunTypes::typeEscalation:  // 9
         case dunTypes::typeMission: {   // 1
-            // cannot create this type.  try again.
+            // cannot create this type here.  try again.
             return GetAnomalyType();
         } break;
         case dunTypes::typeGravimetric: {   // 2

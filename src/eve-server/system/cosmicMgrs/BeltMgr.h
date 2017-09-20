@@ -44,7 +44,7 @@ public:
     void ClearBelt(uint16 bubbleID);
     void SetActive(uint16 bubbleID, bool active=true);
     void RegisterBelt(InventoryItemRef itemRef);
-    bool Create(CosmicSignature& sig, std::vector< uint16 >& roidTypes);
+    bool Create(CosmicSignature& sig, std::vector<DunGroupData>& roidTypes);
 
     bool Load(uint16 bubbleID);
     bool IsActive(uint16 bubbleID);
@@ -59,8 +59,8 @@ protected:
     ManagerDB m_db;
     Timer m_respawnTimer;
 
-    void SpawnBelt(uint16 bubbleID);
-    void SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position, bool ice);
+    void SpawnBelt(uint16 bubbleID, std::vector< DunGroupData >& roidTypes, int type = 0, bool anomaly = false);
+    void SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position, bool ice=false);
     void GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap< float, uint32 >& roidDist);
 
     uint32 GetAsteroidType(double p, const std::unordered_multimap<float, uint32>& roids);

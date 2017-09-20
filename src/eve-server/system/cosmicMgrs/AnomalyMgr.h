@@ -67,7 +67,8 @@ private:
 
     bool m_initalized;
 
-    // internal data counters
+    // internal data counters   hard-capped at 256/128
+    uint8 m_maxSigs;    // max total for this system
     // < 0 (where possible) means "not allowed"
     uint16 m_Anoms; // system total, including pos, wrecks, ships.  65535 *should* be large enough
     uint8 m_Sigs; // total probe-needed items, hard-capped at 256

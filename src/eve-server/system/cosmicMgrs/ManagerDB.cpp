@@ -299,7 +299,7 @@ void ManagerDB::GetDunEntryData(DBQueryResult& res)
 
 void ManagerDB::GetDunGroupData(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT d.dunGroupID, d.itemTypeID, d.itemGroupID, t.typeName, t.groupID, g.categoryID, d.xpos, d.ypos, d.zpos"
+    if (!sDatabase.RunQuery(res, "SELECT d.dunGroupID, d.itemTypeID, d.itemGroupID, t.typeName, t.groupID, g.categoryID, t.radius, d.xpos, d.ypos, d.zpos"
         " FROM dunGroupData AS d"
         "  LEFT JOIN invTypes AS t ON d.itemTypeID = t.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID" )) {

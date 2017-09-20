@@ -68,7 +68,8 @@ void WormholeMgr::Create(CosmicSignature& sig)
 {
     sig.sigName = "WormHole K162 (deco only)";
     // create and spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
-    GPoint pos = GPoint(sig.x, sig.y, sig.z);
+    GPoint pos(sig.x, sig.y, sig.z);
+    pos += 10000;   // add 10km
     ItemData iData(30831, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
 
     /** @todo update this to use temp items */

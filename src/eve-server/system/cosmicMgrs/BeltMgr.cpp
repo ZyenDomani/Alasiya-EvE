@@ -94,8 +94,11 @@ bool BeltMgr::CheckSpawn(uint16 bubbleID)
      * and NOT LOADED in loadsystemdynamics from SystemManager.
      * if Load() has roids for this belt, this belt will have true already set, and checked in SpawnBelt()
      */
-    if (!Load(bubbleID))
-        SpawnBelt(bubbleID);
+    if (!Load(bubbleID)) {
+        std::vector< DunGroupData > roidTypes;
+        roidTypes.clear();
+        SpawnBelt(bubbleID, roidTypes);
+    }
 }
 
 bool BeltMgr::IsSpawned(uint16 bubbleID)
@@ -129,8 +132,11 @@ void BeltMgr::SetActive(uint16 bubbleID, bool active/*true*/)
 void BeltMgr::Process() {
     if (m_respawnTimer.Check()) {
         for (auto cur : m_spawned)
-            if (!cur.second)
-                SpawnBelt(cur.first);
+            if (!cur.second) {
+                std::vector< DunGroupData > roidTypes;
+                roidTypes.clear();
+                SpawnBelt(cur.first, roidTypes);
+            }
     }
 }
 
@@ -231,19 +237,26 @@ struct CosmicSignature {
 };
 */
 
-bool BeltMgr::Create(CosmicSignature& sig, std::vector<uint16>& roidTypes)
+bool BeltMgr::Create(CosmicSignature& sig, std::vector< DunGroupData >& roidTypes)
 {
-    // this IS a belt for all intents and purposes, but have to figure out how to do it like this.
+    // register this as a belt.
+    SystemEntity* pSE = m_system->GetSE(sig.sigItemID);
+    if (pSE == nullptr)
+        return false;
+    sBubbleMgr.AddSpawnID(pSE->SysBubble()->GetID(), sig.sigItemID);
+    RegisterBelt(pSE->GetSelf());
+    SpawnBelt(pSE->SysBubble()->GetID(),roidTypes, 0, true);
+
     return true;
 }
 
-void BeltMgr::SpawnBelt(uint16 bubbleID)
+void BeltMgr::SpawnBelt(uint16 bubbleID, std::vector< DunGroupData >& roidTypes, int type/*0*/, bool anomaly/*false*/)
 {
     if (IsSpawned(bubbleID))
         return;
 
     uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
-    if (!IsCelestial(beltID))
+    if ((!IsCelestial(beltID)) and (!anomaly))
         return;
 
     SystemEntity* pSE = m_system->GetSE(beltID);
@@ -255,12 +268,20 @@ void BeltMgr::SpawnBelt(uint16 bubbleID)
         ice = true;
 
     float secStatus = m_system->GetSystemSecurityRating();
-    float security = 1.1 - secStatus;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
+    // range is 0.1 for 1.0 system to 2.0 for -0.9 system
+    float security = 1.1 - secStatus;
     std::unordered_multimap<float, uint32> roidDist;
     if (ice) {
         uint8 quarter = sDataMgr.GetRegionQuarter(m_regionID);
         // caldari=1, minmatar=2, amarr=3, gallente=4, none=5
         GetIceDist(quarter, secStatus, roidDist);
+    } else if (anomaly) {
+        std::vector< DunGroupData >::iterator itr = roidTypes.begin(), end = roidTypes.end();
+        for (int8 i=1; itr != end; ++itr, ++i) {
+            if (i > 3)
+                i = 1;
+            roidDist.insert(std::pair<float, uint32>((1.0 - (0.2 * i)), itr->typeID));
+        }
     } else {
         sDataMgr.GetRoidDist(m_system->GetSystemSecurityClass(), roidDist);
     }
@@ -270,18 +291,22 @@ void BeltMgr::SpawnBelt(uint16 bubbleID)
     radius *= sConfig.cosmic.roidRadiusMultiplier;
 
     double roidradius = 0, theta = 0, elevation = 0;
-    if (ice) {  //880 total systems with ice. 293 in hisec
+    if (anomaly) {
+        pcs = roidDist.size();
+        radius += (radius *security);
+        radius += (pcs * 1000 /4);
+        elevation = (radius/4);
+    } else if (ice) {  //880 total systems with ice. 293 in hisec
         //  ice needs to be 30k to 75k, with radius of 40k to 100k
         radius *= 2; //32k base
-        if (security > 0.7) {
+        if (security > 0.7)
             pcs = 1;
-        } else if (security > 0.3) {
+        else if (security > 0.3)
             pcs = 2;
-        } else if (security > -0.4) {
+        else if (security > -0.4)
             pcs = 4;
-        } else {
+        else
             pcs = 6;
-        }
     } else {
         pcs += MakeRandomInt(5, 30);
         radius += (radius *security);
@@ -290,9 +315,9 @@ void BeltMgr::SpawnBelt(uint16 bubbleID)
     }
 
     double degreeSeparation = (180/pcs);
-    GPoint center = pSE->SysBubble()->GetCenter();
-    GPoint mposition = NULL_ORIGIN;
-    for (uint32 i = 0; i < pcs; ++i) {
+    GPoint center(pSE->SysBubble()->GetCenter());
+    GPoint mposition(NULL_ORIGIN);
+    for (uint32 i = 0; i <= pcs; ++i) {
         if (!ice) {
             roidradius = MakeRandomInt(3000, 8000) *security;
         } else {
@@ -303,10 +328,19 @@ void BeltMgr::SpawnBelt(uint16 bubbleID)
             radius += roidradius;
             elevation = (radius + (roidradius /2) /2);
         }
-        theta = EvE_DegreesToRadians(degreeSeparation *i);
-        mposition.x = (radius + roidradius /10) * cos(theta);
-        mposition.z = (radius + roidradius /10) * sin(theta);
-        mposition.y = MakeRandomFloat(-elevation, elevation);
+        /* if (anomaly) {
+            // random for anomaly...may not need this
+            theta = MakeRandomFloat(0, (EvE_Pi*2));
+            mposition.x = (radius + roidradius /10) * cos(theta);
+            mposition.z = (radius + roidradius /10) * sin(theta);
+            mposition.y = MakeRandomFloat(-elevation, elevation);
+        } else */ if (type == 0) {
+            // half-circle type
+            theta = EvE_DegreesToRadians(degreeSeparation * i);
+            mposition.x = (radius + roidradius /10) * cos(theta);
+            mposition.z = (radius + roidradius /10) * sin(theta);
+            mposition.y = MakeRandomFloat(-elevation, elevation);
+        }
         SpawnAsteroid(beltID, GetAsteroidType(MakeRandomFloat(), roidDist), roidradius, (center +mposition), ice);
     }
 
@@ -338,8 +372,8 @@ uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, u
     return 0;
 }
 
-void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position, bool ice) {
-    if (typeID  == 0)
+void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position, bool ice/*false*/) {
+    if (typeID == 0)
         return;
     ItemData idata(typeID, 1, m_systemID, flagAutoFit, "", position);
     InventoryItemRef itemRef = m_system->itemFactory()->SpawnItem(idata);

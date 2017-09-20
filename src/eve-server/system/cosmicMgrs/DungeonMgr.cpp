@@ -17,6 +17,7 @@
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
 #include "BeltMgr.h"
+#include "SpawnMgr.h"
 
 DungeonDataMgr::DungeonDataMgr()
 {
@@ -65,14 +66,15 @@ void DungeonDataMgr::_Populate()
     m_db.GetDunGroupData(*res);
     DunGroupData dgroups;
     while (res->GetRow(row)) {
-        // SELECT d.dunGroupID, d.itemTypeID, d.itemGroupID, t.typeName, t.groupID, g.categoryID, d.xpos, d.ypos, d.zpos
+        // SELECT d.dunGroupID, d.itemTypeID, d.itemGroupID, t.typeName, t.groupID, g.categoryID, t.radius, d.xpos, d.ypos, d.zpos
         dgroups.typeID = row.GetInt(1);
         dgroups.typeName = row.GetText(3);
         dgroups.typeGrpID = row.GetInt(4);
         dgroups.typeCatID = row.GetInt(5);
-        dgroups.x = row.GetInt(6);
-        dgroups.y = row.GetInt(7);
-        dgroups.z = row.GetInt(8);
+        dgroups.radius = row.GetInt(6);
+        dgroups.x = row.GetInt(7);
+        dgroups.y = row.GetInt(8);
+        dgroups.z = row.GetInt(9);
         groups.emplace(row.GetInt(0), dgroups);
     }
 
@@ -100,6 +102,8 @@ void DungeonDataMgr::_Populate()
         spawn.z = row.GetInt(4);
         groups.emplace(spawn.dunRoomSpawnID, spawn);
     } */
+
+    // sort/save template room/group data to avoid compilation later?
 
     //cleanup
     SafeDelete(res);
@@ -135,7 +139,7 @@ m_spawnMgr(nullptr)
 
 DungeonMgr::~DungeonMgr()
 {
-    /*  this may be hanging system unloading....
+    /*  this may be hanging system unloading...
     //for now we're deleting everything till i can write proper item handling code
     std::map<uint32, std::vector<uint32>>::iterator itr = m_dungeonList.begin();
     while (itr != m_dungeonList.end()) {
@@ -143,7 +147,7 @@ DungeonMgr::~DungeonMgr()
         while (itr2 != itr->second.end())
             InventoryDB::DeleteItem(*itr2);
     }
-    */
+*/
 }
 
 bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
@@ -217,7 +221,8 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         return false;
     }
 
-    //uint32 typeID = itr->second.dunTypeID;  **removed**
+    // not coded yet...placeholder for now
+    m_spawnMgr->DoSpawnForAnomaly(itr->second.dunSpawnType);
 
     if ((sig.dungeonType == EVEDUNG::dunTypes::typeGravimetric)      //2
         or (sig.dungeonType == EVEDUNG::dunTypes::typeMagnetometric) //3
@@ -249,9 +254,9 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         entity.x = pos.x;
         entity.y = pos.y;
         entity.z = pos.z;
-        /** @todo  fix these... */
         entity.ownerID = sig.ownerID;
-        entity.allianceID = 0;  /** @todo  may have to write a method to check and set this */
+        /** @todo  may have to write a method to check and set this */
+        entity.allianceID = 0;
         entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
         // do the spawn using SystemManager's BuildEntity:
     /** @todo this is more shit that should NOT be in db */
@@ -260,8 +265,8 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
 
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - templateID %u, roomID %i for %s", templateID, roomID, sig.sigName.c_str());
 
-    /* do we need this?  persistant dungeons? */
-   // if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
+    /* do we need this?  persistant dungeons?
+    if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
         // setup data to save active dungeon
         ActiveDungeon dungeon;
             dungeon.dunExpiryTime = Win32TimeNow() + (Win32Time_Day * 3);       // 3 days - i know this isnt right. just for testing.
@@ -273,41 +278,37 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
             dungeon.y = sig.y;
             dungeon.z = sig.z;
         sDunDataMgr.AddDungeon(dungeon);
-    //}
+    } */
 
-    // get room and group data and put in spawn vector
-    int16 x=0, y=0, z=0;
-    int32 groupID=0;
-    DunGroupData grp;
-    auto roomRange = sDunDataMgr.rooms.equal_range(roomID);
-    for (auto it = roomRange.first; it != roomRange.second; ++it) {
-        x = it->second.x;
-        y = it->second.y;
-        z = it->second.z;
-        groupID = it->second.dunGroupID;
-        auto groupRange = sDunDataMgr.groups.equal_range(groupID);
-        for (auto it2 = groupRange.first; it2 != groupRange.second; ++it2) {
-            grp.typeCatID = it2->second.typeCatID;
-            grp.typeGrpID = it2->second.typeGrpID;
-            grp.typeName = it2->second.typeName;
-            grp.typeID = it2->second.typeID;
-            grp.x = (x + it2->second.x);
-            grp.y = (y + it2->second.y);
-            grp.z = (z + it2->second.z);
-            m_anomalyItems.push_back(grp);
+        int16 x=0, y=0, z=0;
+        DunGroupData grp;
+        auto roomRange = sDunDataMgr.rooms.equal_range(roomID);
+        for (auto it = roomRange.first; it != roomRange.second; ++it) {
+            x = it->second.x;
+            y = it->second.y;
+            z = it->second.z;
+            auto groupRange = sDunDataMgr.groups.equal_range(it->second.dunGroupID);
+            for (auto it2 = groupRange.first; it2 != groupRange.second; ++it2) {
+                grp.typeCatID = it2->second.typeCatID;
+                grp.typeGrpID = it2->second.typeGrpID;
+                grp.typeName = it2->second.typeName;
+                grp.typeID = it2->second.typeID;
+                grp.x = (x + it2->second.x);
+                grp.y = (y + it2->second.y);
+                grp.z = (z + it2->second.z);
+                m_anomalyItems.push_back(grp);
+            }
         }
-    }
-
-    /* at this point, we have all room/group data.
-     * now, we need to separate grav sites and send to beltMgr for processing.
-     *
-     */
-
     if (sig.dungeonType == EVEDUNG::dunTypes::typeGravimetric) {
         // dungeon template for grav sites just give 'extra' roid data
-        std::vector<uint16> roidTypes;
-        return m_system->GetBeltMgr()->Create(sig, roidTypes);
-    } else {
+        m_system->GetBeltMgr()->Create(sig, m_anomalyItems);
+        // clear out extra roids to continue with room deco
+        m_anomalyItems.clear();
+    }
+
+    // create deco items for this dungeon
+    CreateDeco(templateID, sig);
+
         /* item spawning method - just set up data and let SystemManager create and place the object */
         uint32 systemID = m_system->GetID();
         std::vector<uint32> items;
@@ -350,7 +351,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         m_anomalyItems.clear();
         if (!items.empty())
             m_dungeonList.insert(std::make_pair(sig.sigItemID, items));
-    }
+
     return true;
 }
 
@@ -368,11 +369,13 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 
     float level = 1;
     int8 subType = 1;
+
+    // need to determine region sov, region rat or other here also
     int8 factionID = GetFactionID(sig.ownerID);
 
     switch (sig.dungeonType) {
         case dunTypes::typeGravimetric: {       // 2
-            factionID = 0;
+            factionID = 8;  // rats per system
             if (type == 1) {
                 subType = MakeRandomInt(0,5);
             } else if (type == 2) {
@@ -430,6 +433,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             subType = MakeRandomInt(1,8);
         } break;
         case dunTypes::typeAnomaly: {           // 7
+            // fix factionID after anomaly templates are finished
             if (factionID < 6)
                 factionID = 0;
             subType = MakeRandomInt(1,5);
@@ -475,6 +479,9 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
         };
         case 0: {
             sig.dungeonType = 7;
+            // fix factionID after anomaly templates are finished
+            if (factionID < 6)
+                factionID = 0;
             subType = MakeRandomInt(1,5);
             if (type == 1) {
                 if (subType == 1) {
@@ -501,7 +508,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
      *       B = type - anomaly security: 1=hi, 2=lo, 3=null, 4=mid, mission misc: 1 to 9
      *       C = subtype  - 2: 0 to 5, 7: 1 to 5, 1: 1 to 9, 3: 1 to 8, 5: 1 to 8
      *       D = level - 2: 1 to 3, 4: type 3, 2 levels, 7: 1 to 5, 1: 1 to 9
-     *       E = faction - 0=*use region faction*, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7= , 8= , 9=
+     *       E = faction - 0=code defined, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7=region sov , 8=region pirate , 9=other
      */
 
     _log(COSMIC_MGR__MESSAGE, "DungeonMgr::MakeDungeon() - Calling Create on type %u", sig.dungeonType);
@@ -531,7 +538,9 @@ int8 DungeonMgr::GetFactionID(uint32 factionID)
 
 int8 DungeonMgr::GetRandLevel()
 {
-    float level = MakeRandomFloat();
+    double level = MakeRandomFloat();
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::GetRandLevel() - level = %.2f", level);
+
     if (level < 0.15)
         return 4;
     else if (level < 0.20)
@@ -542,6 +551,248 @@ int8 DungeonMgr::GetRandLevel()
         return 1;
 }
 
+/*
+struct CosmicSignature {
+    std::string sigID;  // this is unique xxx-nnn id displayed in scanner
+    std::string sigName;
+    uint32 ownerID;
+    uint32 systemID;
+    uint32 sigItemID;   // itemID of this entry
+    uint8 dungeonType;
+    uint16 sigTypeID;
+    uint16 sigGroupID;
+    uint16 scanGroupID;
+    uint16 scanAttributeID;
+    double x;
+    double y;
+    double z;
+};
+*/
+void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
+{
+    /* templateID format.  ABCDE
+     *       A = site - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 7:anomaly, 8:unrated, 9:ded/escalation
+     *       B = security: 1=hi, 2=lo, 3=null, 4=mid, mission misc: 1 to 9
+     *       C = subtype  - 2: 0 to 5, 7: 1 to 5, 1: 1 to 9, 3: 1 to 8, 5: 1 to 8
+     *       D = level (size) -  0:code defined 1:small(1-5), 2:medium(2-10), 3:large(5-25), 4:enormous(10-50), 5:colossal(20-100), 6-9:ice
+     *       E = faction - 0=code defined, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7=region sov , 8=region pirate , 9=other
+     */
+
+    // templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + factionID;
+
+    uint8 factionID = templateID % 10;
+    uint8 size = templateID / 10 % 10;
+    uint8 subType = templateID / 100 % 10;
+    uint8 type = templateID / 1000 % 10;
+
+    uint16 groupID = 0, radius = 0;
+
+    // create groupIDs for this dungeon, and add to vector
+    std::vector<uint16> groupVec;
+    groupVec.clear();
+
+    if (sig.dungeonType == EVEDUNG::dunTypes::typeMission) {    //1
+    }
+    if (sig.dungeonType == EVEDUNG::dunTypes::typeGravimetric) {    //2
+        groupVec.push_back(130);    //named roids
+        groupVec.push_back(131);    //misc roids
+        groupVec.push_back(132);    //worthless mining types
+        groupVec.push_back(160);    //asteroid colony items
+        groupVec.push_back(620);    // Starbase
+        groupVec.push_back(630);    // Habitation
+        groupVec.push_back(691);    // misc
+    }
+    if (sig.dungeonType == EVEDUNG::dunTypes::typeMagnetometric) {  //3
+        groupVec.push_back(620);    // Starbase
+        groupVec.push_back(630);    // Habitation
+        groupVec.push_back(640);    // Stationary
+        groupVec.push_back(650);    // Indestructible
+        groupVec.push_back(660);    // Forcefield
+        groupVec.push_back(670);    // Shipyard
+        groupVec.push_back(680);    // Construction
+        groupVec.push_back(690);    // Storage
+        groupVec.push_back(691);    // misc
+    }
+    if (sig.dungeonType == EVEDUNG::dunTypes::typeRadar) {  //4
+        groupVec.push_back(130);    //named roids
+        groupVec.push_back(131);    //misc roids
+        groupVec.push_back(160);    //asteroid colony items
+        groupVec.push_back(630);    // Habitation
+        groupVec.push_back(640);    // Stationary
+    }
+    if (sig.dungeonType == EVEDUNG::dunTypes::typeLadar) {  //5
+        groupVec.push_back(132);    //worthless mining types
+        groupVec.push_back(160);    //asteroid colony items
+        groupVec.push_back(670);    // Shipyard
+        groupVec.push_back(680);    // Construction
+        groupVec.push_back(690);    // Storage
+    }
+    if (sig.dungeonType == EVEDUNG::dunTypes::typeAnomaly) {    //7
+        groupVec.push_back(430);    //lco misc
+        groupVec.push_back(431);    //lco Habitation
+        groupVec.push_back(432);    //lco drug labs
+        groupVec.push_back(433);    //lco Starbase
+        groupVec.push_back(691);    // misc
+    }
+    if (sig.dungeonType == EVEDUNG::dunTypes::typeUnrated) {    //8
+        // this will need faction shit
+    }
+    if (sig.dungeonType == EVEDUNG::dunTypes::typeEscalation) { //9
+        // this will need faction shit
+    }
+    if (sig.dungeonType == EVEDUNG::dunTypes::typeDED_Complex) {    //10
+        // this will need faction shit
+    }
+    int8 step = 0;
+    uint16 count = 0, amount = 0, pos = 10000;
+    pos *= size;
+
+    double theta = 0;
+    // range is 0.1 for 1.0 system to 2.0 for -0.9 system
+    size *= ((1.1 - m_system->GetSystemSecurityRating()) /2 *10);
+    uint8 origSize = size;
+    DunGroupData grp;
+    for (auto cur : groupVec) {
+        size = origSize;
+        count = sDunDataMgr.groups.count(cur);
+        if (count < 1)
+            continue;
+        else if (count < size)
+            size = count;
+        _log(COSMIC_MGR__MESSAGE, "DungeonMgr::CreateDeco() - Adding Deco group %u for type %u, subtype %u, size %u, faction %u", cur, sig.dungeonType, subType, size, factionID);
+
+        auto groupRange = sDunDataMgr.groups.equal_range(cur);
+        auto it = groupRange.first;
+
+        for (uint8 i=0; i < size; ++i) {
+            // site size and item radius determine position
+            step = MakeRandomInt(1,count);
+            std::advance(it,step);
+            radius = it->second.radius;
+            grp.typeCatID = it->second.typeCatID;
+            grp.typeGrpID = it->second.typeGrpID;
+            grp.typeName = it->second.typeName;
+            grp.typeID = it->second.typeID;
+            if (sig.dungeonType == EVEDUNG::dunTypes::typeGravimetric) {
+                theta = MakeRandomFloat(0, (EvE_Pi*2));
+                grp.x = (pos + radius * cos(theta)) * (IsEven(MakeRandomInt(0,10)) ? -1 : 1);
+                grp.z = (pos + radius * sin(theta)) * -1;
+                grp.y = MakeRandomFloat(-radius, radius);
+            } else if (IsEven(MakeRandomInt(0,10))) {
+                grp.x = (pos + it->second.x + (radius*2)) * (IsEven(MakeRandomInt(0,10)) ? -1 : 1);
+                grp.z = pos + it->second.z + radius;
+            } else {
+                grp.x = (pos + it->second.x + radius) * -1;
+                grp.z = (pos + it->second.z + (radius*2)) * -1;
+            }
+            grp.y = it->second.y + MakeRandomInt(-2500, radius *2);
+            m_anomalyItems.push_back(grp);
+            it = groupRange.first;
+        }
+    }
+}
+
+
+/* groupID format
+      ABB - item def groups
+   A = group type - 1:deco, 2:system effect beacon, 3:mining, 4:lco, 5:ships, 6:base, 7:station gun, 8:station wrecks, 9:misc
+   B =  1:space objects, 2:effect beacons, 3:roid types, 4:ice types, 5:, 6:asteroid colony, 7:, 8:, 9:misc
+   B = ship/gun faction:  1:Amarr, 2:Caldari, 3:Gallente, 4:Minmatar, 5:Sentinel, 6:Guardian
+   B =  faction:  00:none, 01:Serpentis, 02:Angel, 03:Blood, 04:Guristas, 05:Sansha, 06:Drones, 07:Amarr, 08:Caldari, 09:Gallente,
+                  10:Minmatar, 11:Sleeper, 12:Talocan, 13:Ammatar
+
+1xx  deco items
+110  wormholes
+13x  mining types
+130  named roids
+131  misc roids
+132  worthless mining types
+140  infested items
+160  Asteroid Colony
+191  Monument
+
+2xx  effect beacons
+211 Electronic
+212 omni
+22x Incursion
+23x Black Hole
+24x Magnetar
+25x Pulsar
+26x Red Giant
+27x Wolf Rayet
+28x Cataclysmic Variable
+
+3xx  mining objects
+30x  ore
+34x  ice
+36x  clouds
+
+4xx lco
+401 Serpentis
+402 Angel
+403 Blood
+404 Guristas
+405 Sansha
+406 drone
+407 Amarr
+408 Caldari
+409 Gallente
+410 Minmatar
+42x lco ships
+43x lco structures
+430 lco misc
+431 lco Habitation
+432 lco drug labs
+433 lco Starbase
+
+5xx ships
+51x Amarr
+52x Caldari
+53x Gallente
+54x Minmatar
+
+6xx base
+601 Serpentis
+602 Angel
+603 Blood
+604 Guristas
+605 Sansha
+606 drone
+607 Amarr
+608 Caldari
+609 Gallente
+610 Minmatar
+611 Sleeper
+612 Talocan
+613 Ammatar
+
+620 Starbase
+630 Habitation
+640 Stationary
+650 Indestructible
+660 Forcefield
+670 Shipyard
+680 Construction
+690 Storage
+691 misc
+
+7xx station guns
+
+8xx station and structure ruins
+80x  Sansha
+81x  Amarr
+82x  Caldari
+83x  Gallente
+84x  Minmatar
+85x  misc ruined parts
+86x  misc debris
+
+9xx misc
+91x comets
+92x clouds
+93x environment
+96x event lco/lcs
+*/
 
     /*
     In player-owned sovereign nullsec, using Ore Prospecting Arrays,

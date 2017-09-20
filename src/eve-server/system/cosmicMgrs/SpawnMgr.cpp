@@ -184,6 +184,11 @@ void SpawnMgr::SpawnPopped(uint32 itemID)
     _log(SPAWN__POP, "SpawnMgr::SpawnPopped - Pop called for NPC %u", itemID);
 }
 
+void SpawnMgr::DoSpawnForAnomaly(int32 spawnID)
+{
+
+}
+
 void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
     if (!m_enabled)

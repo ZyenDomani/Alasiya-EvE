@@ -100,10 +100,11 @@ public:
     bool Create(uint32 templateID, CosmicSignature& sig);
 
 
-    /* we do not own any of these */
 protected:
     ManagerDB m_db;
     SystemGPoint m_gp;
+
+    void CreateDeco(uint32 templateID, CosmicSignature& sig);
 
     /* we do not own any of these */
 private:

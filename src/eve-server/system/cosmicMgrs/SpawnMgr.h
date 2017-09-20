@@ -29,6 +29,7 @@ public:
 
     void Process();
     void DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating);
+    void DoSpawnForAnomaly(int32 spawnID);
 
     void SpawnPopped(uint32 itemID);
     void SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID);
