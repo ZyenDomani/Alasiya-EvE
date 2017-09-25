@@ -380,6 +380,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
     }
     /*
      * 22:32:33 E FxProc::ParseExpression: *** ERROR ***  Operand id:69 key:SURVEYSCAN - should be added as SurveyScan()
+     * 21:51:29 [FxWarning] FxProc::ParseExpression() - *** ERROR ***  Operand id:J key:VERIFYTARGETGROUP - should be added as VerifyTargetGroup()
+     *
      */
 }
 
