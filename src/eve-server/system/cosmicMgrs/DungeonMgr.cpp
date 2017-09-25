@@ -674,7 +674,7 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
             grp.typeName = it->second.typeName;
             grp.typeID = it->second.typeID;
             if (sig.dungeonType == EVEDUNG::dunTypes::typeGravimetric) {
-                theta = MakeRandomFloat(0, (EvE_Pi*2));
+                theta = MakeRandomFloat(0, EvE_Pi);
                 grp.x = (pos + radius * cos(theta)) * (IsEven(MakeRandomInt(0,10)) ? -1 : 1);
                 grp.z = (pos + radius * sin(theta)) * -1;
                 grp.y = MakeRandomFloat(-radius, radius);

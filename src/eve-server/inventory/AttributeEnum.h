@@ -1747,7 +1747,7 @@ enum EveAttrEnum {
     compressionQuantityNeeded   1941
     eliteBonusExpedition1   1942
     eliteBonusExpedition2   1943
-    canFitShipType5     1944
+    AttrCanFitShipType5 = 1944,
     nosOverride     1945
     anchoringSecurityLevelMin   1946
     roleBonusOverheatDST    1949
