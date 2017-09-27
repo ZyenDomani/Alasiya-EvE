@@ -626,28 +626,28 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
     _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Beginning the group validation for %s(%u):", iRef->itemName().c_str(), iRef->itemID());
     if (iRef->HasAttribute(AttrCanFitShipGroup1, fitID)) {
         if (fitID == groupID)
-            return true;
+            result = true;
         if (iRef->HasAttribute(AttrCanFitShipGroup2, fitID)) {
             if (fitID == groupID)
-                return true;
+                result = true;
             if (iRef->HasAttribute(AttrCanFitShipGroup3, fitID)) {
                 if (fitID == groupID)
-                    return true;
+                    result = true;
                 if (iRef->HasAttribute(AttrCanFitShipGroup4, fitID)) {
                     if (fitID == groupID)
-                        return true;
+                        result = true;
                     if (iRef->HasAttribute(AttrCanFitShipGroup5, fitID)) {
                         if (fitID == groupID)
-                            return true;
+                            result = true;
                         if (iRef->HasAttribute(AttrCanFitShipGroup6, fitID)) {
                             if (fitID == groupID)
-                                return true;
+                                result = true;
                             if (iRef->HasAttribute(AttrCanFitShipGroup7, fitID)) {
                                 if (fitID == groupID)
-                                    return true;
+                                    result = true;
                                 if (iRef->HasAttribute(AttrCanFitShipGroup8, fitID)) {
                                     if (fitID == groupID)
-                                        return true;
+                                        result = true;
                                 }
                             }
                         }
@@ -666,16 +666,16 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
     if (iRef->HasAttribute(AttrCanFitShipType1, fitID)) {
         result = false;
         if (fitID == groupID)
-            return true;
+            result = true;
         if (iRef->HasAttribute(AttrCanFitShipType2, fitID)) {
             if (fitID == groupID)
-                return true;
+                result = true;
             if (iRef->HasAttribute(AttrCanFitShipType3, fitID)) {
                 if (fitID == groupID)
-                    return true;
+                    result = true;
                 if (iRef->HasAttribute(AttrCanFitShipType4, fitID)) {
                     if (fitID == groupID)
-                        return true;
+                        result = true;
                 }
             }
         }
